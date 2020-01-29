@@ -34,7 +34,8 @@ hsa_status_t (*hsa_init_fn) (void);
 
 char* support_cpu_devices;
 
-void test_setup ()
+void
+test_setup ()
 {
   char* env_runtime;
   char* hsa_runtime_lib;
@@ -68,7 +69,8 @@ void test_setup ()
   support_cpu_devices = getenv ("GCN_SUPPORT_CPU_DEVICES");
 }
 
-static hsa_status_t check_agent_properties (hsa_agent_t agent, void *dev_num_arg)
+static hsa_status_t
+check_agent_properties (hsa_agent_t agent, void *dev_num_arg)
 {
 
   char name[64];
@@ -120,7 +122,8 @@ static hsa_status_t check_agent_properties (hsa_agent_t agent, void *dev_num_arg
   return status;
 }
 
-int main ()
+int
+main ()
 {
   int dev_num = 0;
   test_setup ();

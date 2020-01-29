@@ -14,7 +14,7 @@
    and do basic device independent validation. */
 
 void
-print_device_properties(acc_device_t type)
+print_device_properties (acc_device_t type)
 {
   const char *s;
   size_t v;
@@ -23,7 +23,7 @@ print_device_properties(acc_device_t type)
 
   for (int i = 0; i < dev_count; ++i)
     {
-      printf("  Device %d:\n", i+1);
+      printf ("  Device %d:\n", i+1);
 
       s = acc_get_property_string (i, type, acc_property_vendor);
       printf ("    Vendor: %s\n", s);
@@ -57,19 +57,20 @@ print_device_properties(acc_device_t type)
     }
 }
 
-int main ()
+int
+main ()
 {
-  printf("acc_device_none:\n");
+  printf ("acc_device_none:\n");
   /* For completness; not expected to print anything since there
      should be no devices of this type. */
-  print_device_properties(acc_device_none);
+  print_device_properties (acc_device_none);
 
-  printf("acc_device_default:\n");
-  print_device_properties(acc_device_default);
+  printf ("acc_device_default:\n");
+  print_device_properties (acc_device_default);
 
-  printf("acc_device_host:\n");
-  print_device_properties(acc_device_host);
+  printf ("acc_device_host:\n");
+  print_device_properties (acc_device_host);
 
-  printf("acc_device_not_host:\n");
-  print_device_properties(acc_device_not_host);
+  printf ("acc_device_not_host:\n");
+  print_device_properties (acc_device_not_host);
 }

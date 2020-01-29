@@ -7,19 +7,20 @@
 #include <string.h>
 
 
-void expect_device_string_properties (acc_device_t dev_type, int dev_num,
-				      const char* expected_vendor,
-				      const char* expected_name,
-				      const char* expected_driver)
+void
+expect_device_string_properties (acc_device_t dev_type, int dev_num,
+				 const char* expected_vendor,
+				 const char* expected_name,
+				 const char* expected_driver)
 {
-const char *vendor = acc_get_property_string (dev_num, dev_type,
-					    acc_property_vendor);
-if (strcmp (vendor, expected_vendor))
-{
-    fprintf (stderr, "Expected acc_property_vendor to equal \"%s\", "
-	    "but was \"%s\".\n", expected_vendor, vendor);
-    abort ();
-}
+  const char *vendor = acc_get_property_string (dev_num, dev_type,
+						acc_property_vendor);
+  if (strcmp (vendor, expected_vendor))
+    {
+      fprintf (stderr, "Expected acc_property_vendor to equal \"%s\", "
+	       "but was \"%s\".\n", expected_vendor, vendor);
+      abort ();
+    }
 
   const char *name = acc_get_property_string (dev_num, dev_type,
 					      acc_property_name);
@@ -58,8 +59,9 @@ if (strcmp (vendor, expected_vendor))
     }
 }
 
-void expect_device_memory (acc_device_t dev_type, int dev_num,
-			   size_t expected_total_memory)
+void
+expect_device_memory (acc_device_t dev_type, int dev_num,
+		      size_t expected_total_memory)
 {
 
   size_t total_mem = acc_get_property (dev_num, dev_type,
@@ -83,11 +85,12 @@ void expect_device_memory (acc_device_t dev_type, int dev_num,
     }
 }
 
-void expect_device_properties (acc_device_t dev_type, int dev_num,
-			       size_t expected_total_memory,
-			       const char* expected_vendor,
-			       const char* expected_name,
-			       const char* expected_driver)
+void
+expect_device_properties (acc_device_t dev_type, int dev_num,
+			  size_t expected_total_memory,
+			  const char* expected_vendor,
+			  const char* expected_name,
+			  const char* expected_driver)
 {
   expect_device_string_properties (dev_type, dev_num, expected_vendor,
 				   expected_name, expected_driver);
