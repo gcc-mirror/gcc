@@ -1,5 +1,9 @@
 2020-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93479
+	* libsupc++/compare (__3way_builtin_ptr_cmp): Require <=> to be valid.
+	* testsuite/18_support/comparisons/object/93479.cc: New test.
+
 	* testsuite/std/ranges/access/end.cc: Do not assume test_range::end()
 	returns the same type as test_range::begin(). Add comments.
 	* testsuite/std/ranges/access/rbegin.cc: Likewise.

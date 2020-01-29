@@ -525,7 +525,9 @@ namespace std
     // BUILTIN-PTR-THREE-WAY(T, U)
     template<typename _Tp, typename _Up>
       concept __3way_builtin_ptr_cmp
-	= convertible_to<_Tp, const volatile void*>
+	= requires(_Tp&& __t, _Up&& __u)
+	    { static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u); }
+	  && convertible_to<_Tp, const volatile void*>
 	  && convertible_to<_Up, const volatile void*>
 	  && ! requires(_Tp&& __t, _Up&& __u)
 	     { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
