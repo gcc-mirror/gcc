@@ -1,6 +1,6 @@
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-prop.c (update_indirect_edges_after_inlining):
+	* ipa-prop.c (update_indirect_edges_after_inlining): Fix warning.
 
 2020-01-28  Vladimir Makarov  <vmakarov@redhat.com>
 
