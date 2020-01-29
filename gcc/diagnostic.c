@@ -260,11 +260,26 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
 void
 diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
 {
+  /* value == -1 is the default value.  */
   if (value < 0)
-    value = DIAGNOSTICS_COLOR_DEFAULT;
+    {
+      /* If DIAGNOSTICS_URLS_DEFAULT is -1, default to
+	 -fdiagnostics-urls=auto if GCC_URLS or TERM_URLS is in the
+	 environment, otherwise default to -fdiagnostics-urls=never,
+	 for other values default to that
+	 -fdiagnostics-urls={never,auto,always}.  */
+      if (DIAGNOSTICS_URLS_DEFAULT == -1)
+	{
+	  if (!getenv ("GCC_URLS") && !getenv ("TERM_URLS"))
+	    return;
+	  value = DIAGNOSTICS_URL_AUTO;
+	}
+      else
+	value = DIAGNOSTICS_URLS_DEFAULT;
+    }
 
-  context->printer->show_urls
-    = diagnostic_urls_enabled_p ((diagnostic_url_rule_t) value);
+  context->printer->url_format
+    = determine_url_format ((diagnostic_url_rule_t) value);
 }
 
 /* Do any cleaning up required after the last diagnostic is emitted.  */

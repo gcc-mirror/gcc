@@ -2095,10 +2095,19 @@ GLIBC 2.11 or above, otherwise disabled.
 Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-color=}
 option (if not used explicitly on the command line).  @var{choice}
 can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
-where @samp{auto} is the default.  @samp{auto-if-env} means that
-@option{-fdiagnostics-color=auto} will be the default if @code{GCC_COLORS}
-is present and non-empty in the environment, and
+where @samp{auto} is the default.  @samp{auto-if-env} makes
+@option{-fdiagnostics-color=auto} the default if @env{GCC_COLORS}
+is present and non-empty in the environment of the compiler, and
 @option{-fdiagnostics-color=never} otherwise.
+
+@item --with-diagnostics-urls=@var{choice}
+Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-urls=}
+option (if not used explicitly on the command line).  @var{choice}
+can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
+where @samp{auto} is the default.  @samp{auto-if-env} makes
+@option{-fdiagnostics-urls=auto} the default if @env{GCC_URLS}
+or @env{TERM_URLS} is present and non-empty in the environment of the
+compiler, and @option{-fdiagnostics-urls=never} otherwise.
 
 @item --enable-lto
 @itemx --disable-lto

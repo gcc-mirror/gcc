@@ -1015,6 +1015,7 @@ enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
 with_diagnostics_color
+with_diagnostics_urls
 enable_default_pie
 '
       ac_precious_vars='build_alias
@@ -1836,6 +1837,11 @@ Optional Packages:
                           auto-if-env stands for -fdiagnostics-color=auto if
                           GCC_COLOR environment variable is present and
                           -fdiagnostics-color=never otherwise
+  --with-diagnostics-urls={never,auto,auto-if-env,always}
+                          specify the default of -fdiagnostics-urls option
+                          auto-if-env stands for -fdiagnostics-urls=auto if
+                          GCC_URLS or TERM_URLS environment variable is
+                          present and -fdiagnostics-urls=never otherwise
 
 Some influential environment variables:
   CC          C compiler command
@@ -18974,7 +18980,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18977 "configure"
+#line 18983 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19080,7 +19086,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19083 "configure"
+#line 19089 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -30572,6 +30578,37 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define DIAGNOSTICS_COLOR_DEFAULT $DIAGNOSTICS_COLOR_DEFAULT
+_ACEOF
+
+
+# Specify what should be the default of -fdiagnostics-urls option.
+
+# Check whether --with-diagnostics-urls was given.
+if test "${with_diagnostics_urls+set}" = set; then :
+  withval=$with_diagnostics_urls; case x"$withval" in
+   xnever)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_URLS_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_YES
+     ;;
+   *)
+     as_fn_error $? "$withval is an invalid option to --with-diagnostics-urls" "$LINENO" 5
+     ;;
+ esac
+else
+  DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DIAGNOSTICS_URLS_DEFAULT $DIAGNOSTICS_URLS_DEFAULT
 _ACEOF
 
 

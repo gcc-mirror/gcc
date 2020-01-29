@@ -6741,6 +6741,34 @@ AC_ARG_WITH([diagnostics-color],
 AC_DEFINE_UNQUOTED(DIAGNOSTICS_COLOR_DEFAULT, $DIAGNOSTICS_COLOR_DEFAULT,
 		   [The default for -fdiagnostics-color option])
 
+# Specify what should be the default of -fdiagnostics-urls option.
+AC_ARG_WITH([diagnostics-urls],
+[AC_HELP_STRING([--with-diagnostics-urls={never,auto,auto-if-env,always}],
+                [specify the default of -fdiagnostics-urls option
+                 auto-if-env stands for -fdiagnostics-urls=auto if
+                 GCC_URLS or TERM_URLS environment variable is present and
+                 -fdiagnostics-urls=never otherwise])],
+[case x"$withval" in
+   xnever)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_URLS_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_YES
+     ;;
+   *)
+     AC_MSG_ERROR([$withval is an invalid option to --with-diagnostics-urls])
+     ;;
+ esac],
+[DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO])
+AC_DEFINE_UNQUOTED(DIAGNOSTICS_URLS_DEFAULT, $DIAGNOSTICS_URLS_DEFAULT,
+		   [The default for -fdiagnostics-urls option])
+
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
 gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
