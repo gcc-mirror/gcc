@@ -1,3 +1,15 @@
+2020-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/ranges/access/end.cc: Do not assume test_range::end()
+	returns the same type as test_range::begin(). Add comments.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/range.cc: Do not assume the sentinel for
+	test_range is the same as its iterator type.
+	* testsuite/util/testsuite_iterators.h (test_range::sentinel): Add
+	operator- overloads to satisfy sized_sentinel_for when the iterator
+	satisfies random_access_iterator.
+
 2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93470
