@@ -3,8 +3,6 @@
 ! of all device types mentioned in the OpenACC standard.
 !
 ! See also acc_get_property.c
-! { dg-do run { target { { ! { openacc_host_selected } } && { ! { openacc_amdgcn_accel_selected } } } } }
-! FIXME: This test does not work with the GCN implementation stub yet.
 
 program test
   use openacc

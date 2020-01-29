@@ -1,3 +1,23 @@
+
+2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* plugin-gcn.c (struct agent_info): Add fields "name" and
+	"vendor_name" ...
+	(GOMP_OFFLOAD_init_device): ... and init from here.
+	(struct hsa_context_info): Add field "driver_version_s" ...
+	(init_hsa_contest): ... and init from here.
+	(GOMP_OFFLOAD_openacc_get_property): Replace stub with a proper
+	implementation.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property.c:
+	Enable test execution for amdgcn and host offloading targets.
+	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-aux.c
+	(expect_device_properties): Split function into ...
+	(expect_device_string_properties): ... this new function ...
+	(expect_device_memory): ... and this new function.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-gcn.c:
+	Add test.
+
 2020-01-28  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/deep-copy-2.f90: Remove test from here.

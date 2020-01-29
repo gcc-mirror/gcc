@@ -3,8 +3,7 @@
    of all device types mentioned in the OpenACC standard.
 
    See also acc_get_property.f90. */
-/* { dg-do run { target { { ! { openacc_host_selected } } && { ! { openacc_amdgcn_accel_selected } } } } } */
-/* FIXME: This test does not work with the GCN implementation stub yet.  */
+/* { dg-do run } */
 
 #include <openacc.h>
 #include <stdlib.h>
@@ -20,7 +19,7 @@ print_device_properties(acc_device_t type)
   const char *s;
   size_t v;
 
-  int dev_count = acc_get_num_devices(type);
+  int dev_count = acc_get_num_devices (type);
 
   for (int i = 0; i < dev_count; ++i)
     {

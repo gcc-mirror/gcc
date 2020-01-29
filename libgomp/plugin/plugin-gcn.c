@@ -425,7 +425,10 @@ struct agent_info
 
   /* The instruction set architecture of the device. */
   gcn_isa device_isa;
-
+  /* Name of the agent. */
+  char name[64];
+  /* Name of the vendor of the agent. */
+  char vendor_name[64];
   /* Command queues of the agent.  */
   hsa_queue_t *sync_queue;
   struct goacc_asyncqueue *async_queues, *omp_async_queue;
@@ -544,6 +547,8 @@ struct hsa_context_info
   int agent_count;
   /* Array of agent_info structures describing the individual HSA agents.  */
   struct agent_info *agents;
+  /* Driver version string. */
+  char driver_version_s[30];
 };
 
 /* Format of the on-device heap.
@@ -1512,6 +1517,25 @@ init_hsa_context (void)
       if (status != HSA_STATUS_SUCCESS)
 	GOMP_PLUGIN_error ("Failed to list all HSA runtime agents");
     }
+
+  uint16_t minor, major;
+  status = hsa_fns.hsa_system_get_info_fn (HSA_SYSTEM_INFO_VERSION_MINOR,
+					   &minor);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("Failed to obtain HSA runtime minor version");
+  status = hsa_fns.hsa_system_get_info_fn (HSA_SYSTEM_INFO_VERSION_MAJOR,
+					   &major);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("Failed to obtain HSA runtime major version");
+
+  size_t len = sizeof hsa_context.driver_version_s;
+  int printed = snprintf (hsa_context.driver_version_s, len,
+			  "HSA Runtime %hu.%hu", (unsigned short int)major,
+			  (unsigned short int)minor);
+  if (printed >= len)
+    GCN_WARNING ("HSA runtime version string was truncated."
+		 "Version %hu.%hu is too long.", (unsigned short int)major,
+		 (unsigned short int)minor);
 
   hsa_context.initialized = true;
   return true;
@@ -3410,15 +3434,19 @@ GOMP_OFFLOAD_init_device (int n)
     return hsa_error ("Error requesting maximum queue size of the GCN agent",
 		      status);
 
-  char buf[64];
   status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_NAME,
-					  &buf);
+					  &agent->name);
   if (status != HSA_STATUS_SUCCESS)
     return hsa_error ("Error querying the name of the agent", status);
 
-  agent->device_isa = isa_code (buf);
+  agent->device_isa = isa_code (agent->name);
   if (agent->device_isa < 0)
-    return hsa_error ("Unknown GCN agent architecture.", HSA_STATUS_ERROR);
+    return hsa_error ("Unknown GCN agent architecture", HSA_STATUS_ERROR);
+
+  status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_VENDOR_NAME,
+					  &agent->vendor_name);
+  if (status != HSA_STATUS_SUCCESS)
+    return hsa_error ("Error querying the vendor name of the agent", status);
 
   status = hsa_fns.hsa_queue_create_fn (agent->id, queue_size,
 					HSA_QUEUE_TYPE_MULTI,
@@ -4115,12 +4143,37 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 union goacc_property_value
 GOMP_OFFLOAD_openacc_get_property (int device, enum goacc_property prop)
 {
-  /* Stub. Check device and return default value for unsupported properties. */
-  /* TODO: Implement this function. */
-  get_agent_info (device);
+  struct agent_info *agent = get_agent_info (device);
 
-  union goacc_property_value nullval = { .val = 0 };
-  return nullval;
+  union goacc_property_value propval = { .val = 0 };
+
+  switch (prop)
+    {
+    case GOACC_PROPERTY_FREE_MEMORY:
+      /* Not supported. */
+      break;
+    case GOACC_PROPERTY_MEMORY:
+      {
+	size_t size;
+	hsa_region_t region = agent->data_region;
+	hsa_status_t status =
+	  hsa_fns.hsa_region_get_info_fn (region, HSA_REGION_INFO_SIZE, &size);
+	if (status == HSA_STATUS_SUCCESS)
+	  propval.val = size;
+	break;
+      }
+    case GOACC_PROPERTY_NAME:
+      propval.ptr = agent->name;
+      break;
+    case GOACC_PROPERTY_VENDOR:
+      propval.ptr = agent->vendor_name;
+      break;
+    case GOACC_PROPERTY_DRIVER:
+      propval.ptr = hsa_context.driver_version_s;
+      break;
+    }
+
+  return propval;
 }
 
 /* Set up plugin-specific thread-local-data (host-side).  */
