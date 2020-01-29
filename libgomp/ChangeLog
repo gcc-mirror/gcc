@@ -1,3 +1,6 @@
+2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* oacc-init.c (name_of_acc_device_t): Handle acc_device_radeon.
 
 2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
 
