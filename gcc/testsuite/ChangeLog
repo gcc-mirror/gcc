@@ -1,6 +1,11 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93463
+	* gfortran.dg/goacc/pr93463.f90: New test.
+
 	2020-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93418
