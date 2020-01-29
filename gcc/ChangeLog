@@ -1,3 +1,10 @@
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_edge::resolve_speculation): Only lookup direct edge
+	if called on indirect edge.
+	(cgraph_edge::redirect_call_stmt_to_callee): Lookup indirect edge of
+	speculative call if needed.
+
 2020-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93428

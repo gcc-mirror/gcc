@@ -1189,7 +1189,10 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
   ipa_ref *ref;
 
   gcc_assert (edge->speculative && (!callee_decl || edge->callee));
-  e2 = edge->first_speculative_call_target ();
+  if (!edge->callee)
+    e2 = edge->first_speculative_call_target ();
+  else
+    e2 = edge;
   ref = e2->speculative_call_target_ref ();
   edge = edge->speculative_call_indirect_edge ();
   if (!callee_decl
@@ -1364,7 +1367,8 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       /* If there already is an direct call (i.e. as a result of inliner's
 	 substitution), forget about speculating.  */
       if (decl)
-	e = make_direct (e, cgraph_node::get (decl));
+	e = make_direct (e->speculative_call_indirect_edge (),
+			 cgraph_node::get (decl));
       else
 	{
 	  /* Be sure we redirect all speculative targets before poking
