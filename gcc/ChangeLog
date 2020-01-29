@@ -1,3 +1,8 @@
+2020-01-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (addv64di3_exec): Allow one '0' in each
+	alternative only.
+
 2020-01-31  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movoi_internal_avx): Do not check for

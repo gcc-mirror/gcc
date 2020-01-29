@@ -1200,13 +1200,14 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		 "= &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"	     "= &v,  &v, &v")
 	(vec_merge:V64DI
 	  (plus:V64DI
-	    (match_operand:V64DI 1 "register_operand"		 "%vDb,vDb0")
-	    (match_operand:V64DI 2 "gcn_alu_operand"		 "vDb0, vDb"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0,  U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"		 "   e,   e")))
+	    (match_operand:V64DI 1 "register_operand"	     "%vDb,vDb0,vDb")
+	    (match_operand:V64DI 2 "gcn_alu_operand"	     "vDb0, vDb,vDb"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
+							     "   U,   U,  0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"	     "   e,   e,  e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
