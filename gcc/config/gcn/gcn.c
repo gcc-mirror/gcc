@@ -5929,6 +5929,9 @@ print_operand (FILE *file, rtx x, int code)
 	  case UNORDERED:
 	    s = "_u_";
 	    break;
+	  case LTGT:
+	    s = "_lg_";
+	    break;
 	  default:
 	    output_operand_lossage ("invalid %%xn code");
 	    return;
