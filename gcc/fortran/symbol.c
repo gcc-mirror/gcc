@@ -3132,24 +3132,8 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   gfc_clear_ts (&p->ts);
   gfc_clear_attr (&p->attr);
   p->ns = ns;
-
   p->declared_at = gfc_current_locus;
-
-  if (strlen (name) > GFC_MAX_SYMBOL_LEN)
-    gfc_internal_error ("new_symbol(): Symbol name too long");
-
   p->name = gfc_get_string ("%s", name);
-
-  /* Make sure flags for symbol being C bound are clear initially.  */
-  p->attr.is_bind_c = 0;
-  p->attr.is_iso_c = 0;
-
-  /* Clear the ptrs we may need.  */
-  p->common_block = NULL;
-  p->f2k_derived = NULL;
-  p->assoc = NULL;
-  p->dt_next = NULL;
-  p->fn_result_spec = 0;
 
   return p;
 }

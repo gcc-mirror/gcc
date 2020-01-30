@@ -1,3 +1,12 @@
+2020-01-30  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/87103
+	* expr.c (gfc_check_conformance): Check vsnprintf for truncation.
+	* iresolve.c (gfc_get_string): Likewise.
+	* symbol.c (gfc_new_symbol): Remove check for maximum symbol
+	name length.  Remove redundant 0 setting of new calloc()ed
+	gfc_symbol.
+
 2020-01-30  Paul Thomas  <pault@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
