@@ -1,3 +1,10 @@
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/93488
+
+	* c-c++-common/goacc/pr93488.c: New file.
+
 2020-04-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94727

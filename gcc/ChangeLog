@@ -1,3 +1,11 @@
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/93488
+
+	* omp-expand.c (expand_omp_target): Use force_gimple_operand_gsi on
+	t_async and the wait arguments.
+
 2020-04-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94727
