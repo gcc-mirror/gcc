@@ -1,5 +1,10 @@
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/analyzer/malloc-1.c: Remove include of <string.h>.
+	Use __builtin_ forms of memset and strlen throughout.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/analyzer/conditionals-2.c: Move to...
 	* gcc.dg/analyzer/torture/conditionals-2.c: ...here, converting
 	to a torture test.  Remove redundant include.
