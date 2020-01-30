@@ -1,5 +1,16 @@
 2020-02-03  David Malcolm  <dmalcolm@redhat.com>
 
+	* constraint-manager.cc (range::constrained_to_single_element):
+	Replace fold_build2 with fold_binary.  Remove unnecessary newline.
+	(constraint_manager::get_or_add_equiv_class): Replace fold_build2
+	with fold_binary in two places, and remove out-of-date comment.
+	(constraint_manager::eval_condition): Replace fold_build2 with
+	fold_binary.
+	* region-model.cc (constant_svalue::eval_condition): Likewise.
+	(region_model::on_assignment): Likewise.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93544
 	* diagnostic-manager.cc
 	(diagnostic_manager::prune_for_sm_diagnostic): Bulletproof

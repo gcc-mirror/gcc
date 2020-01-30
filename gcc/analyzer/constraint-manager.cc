@@ -145,10 +145,9 @@ range::constrained_to_single_element (tree *out)
   m_upper_bound.ensure_closed (true);
 
   // Are they equal?
-  tree comparison
-    = fold_build2 (EQ_EXPR, boolean_type_node,
-		   m_lower_bound.m_constant,
-		   m_upper_bound.m_constant);
+  tree comparison = fold_binary (EQ_EXPR, boolean_type_node,
+				 m_lower_bound.m_constant,
+				 m_upper_bound.m_constant);
   if (comparison == boolean_true_node)
     {
       *out = m_lower_bound.m_constant;
@@ -932,7 +931,7 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 	    && types_compatible_p (TREE_TYPE (cst),
 				   TREE_TYPE (ec->m_constant)))
 	  {
-	    tree eq = fold_build2 (EQ_EXPR, boolean_type_node,
+	    tree eq = fold_binary (EQ_EXPR, boolean_type_node,
 				   cst, ec->m_constant);
 	    if (eq == boolean_true_node)
 	      {
@@ -969,10 +968,8 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 		 Determine the direction of the inequality, and record that
 		 fact.  */
 	      tree lt
-		= fold_build2 (LT_EXPR, boolean_type_node,
+		= fold_binary (LT_EXPR, boolean_type_node,
 			       new_ec->m_constant, other_ec.m_constant);
-	      //gcc_assert (lt == boolean_true_node || lt == boolean_false_node);
-	      // not true for int vs float comparisons
 	      if (lt == boolean_true_node)
 		add_constraint_internal (new_id, CONSTRAINT_LT, other_id);
 	      else if (lt == boolean_false_node)
@@ -1018,7 +1015,7 @@ constraint_manager::eval_condition (equiv_class_id lhs_ec,
   if (lhs_const && rhs_const)
     {
       tree comparison
-	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
+	= fold_binary (op, boolean_type_node, lhs_const, rhs_const);
       if (comparison == boolean_true_node)
 	return tristate (tristate::TS_TRUE);
       if (comparison == boolean_false_node)

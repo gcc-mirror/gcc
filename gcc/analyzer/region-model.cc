@@ -670,7 +670,7 @@ constant_svalue::eval_condition (constant_svalue *lhs,
   if (types_compatible_p (TREE_TYPE (lhs_const), TREE_TYPE (rhs_const)))
     {
       tree comparison
-	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
+	= fold_binary (op, boolean_type_node, lhs_const, rhs_const);
       if (comparison == boolean_true_node)
 	return tristate (tristate::TS_TRUE);
       if (comparison == boolean_false_node)
@@ -4088,9 +4088,9 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 	if (tree rhs1_cst = maybe_get_constant (rhs1_sid))
 	  if (tree rhs2_cst = maybe_get_constant (rhs2_sid))
 	    {
-	      tree result = fold_build2 (op, TREE_TYPE (lhs),
+	      tree result = fold_binary (op, TREE_TYPE (lhs),
 					 rhs1_cst, rhs2_cst);
-	      if (CONSTANT_CLASS_P (result))
+	      if (result && CONSTANT_CLASS_P (result))
 		{
 		  svalue_id result_sid
 		    = get_or_create_constant_svalue (result);
