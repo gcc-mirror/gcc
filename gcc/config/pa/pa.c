@@ -9852,7 +9852,7 @@ pa_elf_select_rtx_section (machine_mode mode, rtx x,
     {
       tree decl = SYMBOL_REF_DECL (x);
 
-      if (DECL_P (decl) && DECL_COMDAT_GROUP (decl))
+      if (!decl || (DECL_P (decl) && DECL_COMDAT_GROUP (decl)))
 	return get_named_section (NULL, ".data.rel.ro.local", 1);
     }
 
