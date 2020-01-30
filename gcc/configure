@@ -974,6 +974,7 @@ with_zstd_include
 with_zstd_lib
 enable_rpath
 with_libiconv_prefix
+with_libiconv_type
 enable_sjlj_exceptions
 with_gcc_major_version_only
 enable_secureplt
@@ -1811,6 +1812,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+  --with-libiconv-type=TYPE     type of library to search for (auto/static/shared)
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
   --with-pic              try to use only PIC/non-PIC objects [default=use
@@ -10730,6 +10732,16 @@ if test "${with_libiconv_prefix+set}" = set; then :
 
 fi
 
+
+# Check whether --with-libiconv-type was given.
+if test "${with_libiconv_type+set}" = set; then :
+  withval=$with_libiconv_type;  with_libiconv_type=$withval
+else
+   with_libiconv_type=auto
+fi
+
+  lib_type=`eval echo \$with_libiconv_type`
+
       LIBICONV=
   LTLIBICONV=
   INCICONV=
@@ -10767,13 +10779,13 @@ fi
           found_so=
           found_a=
           if test $use_additional = yes; then
-            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext" && test x$lib_type != xstatic; then
               found_dir="$additional_libdir"
               found_so="$additional_libdir/lib$name.$shlibext"
               if test -f "$additional_libdir/lib$name.la"; then
                 found_la="$additional_libdir/lib$name.la"
               fi
-            else
+            elif test x$lib_type != xshared; then
               if test -f "$additional_libdir/lib$name.$libext"; then
                 found_dir="$additional_libdir"
                 found_a="$additional_libdir/lib$name.$libext"
@@ -10797,13 +10809,13 @@ fi
               case "$x" in
                 -L*)
                   dir=`echo "X$x" | sed -e 's/^X-L//'`
-                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext"; then
+                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext" && test x$lib_type != xstatic; then
                     found_dir="$dir"
                     found_so="$dir/lib$name.$shlibext"
                     if test -f "$dir/lib$name.la"; then
                       found_la="$dir/lib$name.la"
                     fi
-                  else
+                  elif test x$lib_type != xshared; then
                     if test -f "$dir/lib$name.$libext"; then
                       found_dir="$dir"
                       found_a="$dir/lib$name.$libext"
@@ -11031,8 +11043,13 @@ fi
               done
             fi
           else
-                                                            LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
-            LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+                                                            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+            else
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l:lib$name.$libext"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l:lib$name.$libext"
+            fi
           fi
         fi
       fi

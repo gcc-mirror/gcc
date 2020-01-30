@@ -1,3 +1,7 @@
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Update shell syntax.
+
 2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Add new
