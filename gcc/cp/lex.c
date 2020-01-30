@@ -383,169 +383,207 @@ interface_strcmp (const char* s)
 /* We've just read a cpp-token, figure out our next state.  Hey, this
    is a hand-coded co-routine!  */
 
-void *
-module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
+struct token_coro
 {
-  enum mode_sm
+  enum state
   {
-   msm_idle,
-   msm_module_name,
-   msm_module_end,
+   idle,
+   module_first,
+   module_cont,
+   module_end,
   };
-  struct state
+
+  enum state state : 8;
+  bool is_import : 1;
+  bool is_header : 1;
+  bool got_export : 1;
+  bool got_colon : 1;
+  bool want_dot : 1;
+  location_t header_loc;
+  cpp_reader *reader;
+  mkdeps *deps;
+  module_state *module;
+  module_state *import;
+
+  token_coro (cpp_reader *reader)
+    : state (idle),
+    is_import (false), is_header (false),
+    got_export (false), got_colon (false), want_dot (false),
+    header_loc (UNKNOWN_LOCATION),
+    reader (reader), deps (cpp_get_deps (reader)),
+    module (NULL), import (NULL)
   {
-    mode_sm mode : 8;
-    bool is_import : 1;
-    bool is_header : 1;
-    bool got_export : 1;
-    bool got_colon : 1;
-    location_t header_loc;
-    unsigned tok_ix;
-    mkdeps *deps;
-    module_state *module;
-
-    state (mkdeps *deps)
-      : mode (msm_idle),
-      is_import (false), is_header (false),
-      got_export (false), got_colon (false),
-      header_loc (UNKNOWN_LOCATION),
-      tok_ix (0), deps (deps), module (NULL)
-    {
-    }
   };
-  state *data = (state *)data_;
 
-  if (!tok)
-    {
-      /* Initialize or teardown.  */
-      if (data)
-	{
-	  delete data;
-	  data = NULL;
-	}
-      else if (modules_p ())
-	data = new state (cpp_get_deps (pfile));
-      return data;
-    }
-
-  tree ident = NULL_TREE;
-  switch (data->mode)
-    {
-    case msm_idle:
-      if (tok->type == CPP_NAME)
-	{
-	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
-	  int keyword = C_RID_CODE (ident);
+  void resume (int type, int keyword, tree value, location_t loc)
+  {
+    switch (state)
+      {
+      case idle:
+	if (type == CPP_KEYWORD)
 	  switch (keyword)
 	    {
 	    default:
 	      break;
 
 	    case RID__EXPORT:
-	      data->got_export = true;
+	      got_export = true;
 	      break;
 
 	    case RID__IMPORT:
-	      data->is_import = true;
+	      is_import = true;
 	      /* FALLTHRU */
 	    case RID__MODULE:
-	      data->mode = msm_module_name;
-	      data->tok_ix = 0;
-	      data->got_colon = false;
-	      data->is_header = false;
+	      state = module_first;
+	      want_dot = false;
+	      got_colon = false;
+	      is_header = false;
 	      break;
 	    }
-	}
-      break;
+	break;
 
-    case msm_module_name:
-      if (data->is_import && !data->tok_ix
-	  && tok->type == CPP_HEADER_NAME)
-	{
-	  /* A header name.  The preprocessor will have already
-	     done include searching and canonicalization.  */
-	  ident = build_string (tok->val.str.len,
-				(const char *)tok->val.str.text);
-	  data->is_header = true;
-	  data->header_loc = tok->src_loc;
-	  data->mode = msm_module_end;
-	  goto header_unit;
-	}
-
-      switch (tok->type)
-	{
-	case CPP_PADDING:
-	case CPP_COMMENT:
-	  gcc_unreachable ();
-
-	default:
-	  data->mode = msm_module_end;
+      case module_first:
+	if (is_import && type == CPP_HEADER_NAME)
+	  {
+	    /* A header name.  The preprocessor will have already
+	       done include searching and canonicalization.  */
+	    is_header = true;
+	    header_loc = loc;
+	    state = module_end;
+	    goto header_unit;
+	  }
+	
+	if (type == CPP_PADDING || type == CPP_COMMENT)
 	  break;
 
-	case CPP_COLON:
-	  if (data->got_colon)
-	    data->mode = msm_module_end;
-	  data->got_colon = true;
-	  if (!data->tok_ix)
-	    /* We have a leading ':'  */
-	    data->tok_ix--;
-	  /* FALLTHROUGH  */
-	case CPP_DOT:
-	  if (!(data->tok_ix & 1))
-	    data->mode = msm_module_end;
-	  break;
+	state = module_cont;
+	if (type == CPP_COLON && module)
+	  {
+	    got_colon = true;
+	    import = module;
+	    break;
+	  }
+	/* FALLTHROUGH  */
 
-	case CPP_PRAGMA_EOL:
-	case CPP_EOF:
-	  goto module_end;
+      case module_cont:
+	switch (type)
+	  {
+	  case CPP_PADDING:
+	  case CPP_COMMENT:
+	    break;
 
-	case CPP_NAME:
-	  if (data->tok_ix & 1)
-	    {
-	      /* Got name instead of [.:].  */
-	      data->mode = msm_module_end;
-	      break;
-	    }
+	  default:
+	    state = module_end;
+	    break;
 
-	  ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
-	header_unit:
-	  data->module = get_module (ident, data->module, data->got_colon);
-	  break;
-	}
-      data->tok_ix++;
-      break;
+	  case CPP_COLON:
+	    if (got_colon)
+	      state = module_end;
+	    got_colon = true;
+	    /* FALLTHROUGH  */
+	  case CPP_DOT:
+	    if (!want_dot)
+	      state = module_end;
+	    want_dot = false;
+	    break;
 
-    case msm_module_end:
-      if (tok->type == CPP_PRAGMA_EOL
-	  || tok->type == CPP_EOF)
-	{
-	module_end:;
-	  /* End of the directive, register the dep and maybe import
-	     the header.  */
-	  if (data->module)
-	    {
-	      if (data->is_header)
-		/* Load the legacy import.  */
-		import_module (data->module, data->header_loc,
-			       data->got_export, NULL, pfile, false);
+	  case CPP_PRAGMA_EOL:
+	  case CPP_EOF:
+	    goto module_end;
 
-	      if (data->deps)
-		module_preprocess (data->deps, data->module,
-				   data->is_import ? 0
-				   : data->got_export ? +1 : -1);
-	    }
+	  case CPP_NAME:
+	    if (want_dot)
+	      {
+		/* Got name instead of [.:].  */
+		state = module_end;
+		break;
+	      }
+	  header_unit:
+	    import = get_module (value, import, got_colon);
+	    want_dot = true;
+	    break;
+	  }
+	break;
 
-	  data->module = NULL;
-	  data->header_loc = UNKNOWN_LOCATION;
-	  data->is_import = data->is_header = false;
-	  data->got_export = false;
+      case module_end:
+	if (type == CPP_PRAGMA_EOL || type == CPP_EOF)
+	  {
+	  module_end:;
+	    /* End of the directive, register the dep and maybe import
+	       the header.  */
+	    if (import)
+	      {
+		// FIXME: merge these two routines to a single entry
+		// point.
+		// FIXME: No preprocessor loading for preprocessed input
+		if (is_header)
+		  /* Load the header-unit import.  */
+		  import_module_pre (import, header_loc, NULL, reader);
+		
+		if (module_state *m = module_preprocess (deps, import,
+							 is_import, got_export))
+		  module = m;
+	      }
 
-	  data->mode = msm_idle;
-	}
-      break;
+	    import = NULL;
+	    is_import = got_export = false;
+	    state = idle;
+	  }
+	break;
+      }
+  }
+};
+
+/* Initialize or teardown.  */
+
+void *
+module_token_cdtor (cpp_reader *pfile, void *data_)
+{
+  token_coro *coro = (token_coro *)data_;
+  if (coro)
+    {
+      delete coro;
+      coro = NULL;
     }
+  else if (modules_p ())
+    coro = new token_coro (pfile);
 
-  return data;
+  return coro;
+}
+
+void *
+module_token_pre (cpp_reader *pfile, const cpp_token *tok, void *data_)
+{
+  if (!tok)
+    return module_token_cdtor (pfile, data_);
+
+  int type = tok->type;
+  int keyword = RID_MAX;
+  tree value = NULL_TREE;
+
+  if (tok->type == CPP_NAME)
+    {
+      value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+      if (IDENTIFIER_KEYWORD_P (value))
+	{
+	  keyword = C_RID_CODE (value);
+	  type = CPP_KEYWORD;
+	}
+    }
+  else if (tok->type == CPP_HEADER_NAME)
+    value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
+
+  return module_token_lang (type, keyword, value, tok->src_loc, data_);
+}
+
+void *
+module_token_lang (int type, int keyword, tree value, location_t loc,
+		   void *data_)
+{
+  token_coro *coro = (token_coro *)data_;
+  coro->resume (type, keyword, value, loc);
+
+  return data_;
 }
 
 /* Parse a #pragma whose sole argument is a string constant.

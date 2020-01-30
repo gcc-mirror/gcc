@@ -6941,9 +6941,10 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern void *module_preprocess_token (cpp_reader *, const cpp_token *, void *);
-extern tree module_map_header (cpp_reader *, location_t, bool,
-			       const char *, size_t);
+extern void *module_token_pre (cpp_reader *, const cpp_token *, void *);
+extern void *module_token_cdtor (cpp_reader *, void *);
+extern void *module_token_lang (int type, int keyword, tree value, location_t,
+				void *);
 
 /* in method.c */
 extern void init_method				(void);
@@ -7001,7 +7002,9 @@ inline bool global_purview_p ()
 inline bool not_module_p ()
 { return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
 inline bool named_module_p ()
-{ /* The divides are constant shifts!  */
+{ /* This is a named module if exactly one of MODULE and GLOBAL is
+     set.  */
+  /* The divides are constant shifts!  */
   return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
 }
 inline bool header_module_p ()
@@ -7020,7 +7023,8 @@ inline bool module_exporting_p ()
 
 extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
-extern void module_preprocess (mkdeps *, module_state *, int is_module);
+extern module_state *module_preprocess (mkdeps *, module_state *,
+					bool is_import, bool is_export);
 extern bool module_may_redeclare (tree decl);
 
 /* Where the namespace-scope decl was originally declared.  */
@@ -7040,9 +7044,10 @@ extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
 extern void lazy_load_members (tree decl);
 extern bool lazy_specializations_p (unsigned, bool, bool);
-extern bool import_module (module_state *, location_t, bool, tree,
-			   cpp_reader *, bool in_extern_c);
-extern bool declare_module (module_state *, location_t, bool, tree,
+extern void import_module_pre (module_state *, location_t, tree, cpp_reader *);
+extern void import_module_lang (module_state *, location_t, bool, tree,
+				cpp_reader *, bool in_extern_c);
+extern void declare_module (module_state *, location_t, bool, tree attr,
 			    cpp_reader *);
 extern void process_deferred_imports (cpp_reader *);
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);

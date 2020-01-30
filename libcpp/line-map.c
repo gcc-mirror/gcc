@@ -613,6 +613,13 @@ linemap_module_loc (line_maps *set, location_t from, const char *name)
   return loc;
 }
 
+void
+linemap_module_reparent (line_maps *set, location_t loc, location_t adoptor)
+{
+  const line_map_ordinary *map = linemap_ordinary_map_lookup (set, loc);
+  const_cast<line_map_ordinary *> (map)->included_from = adoptor;
+}
+
 /* A linemap at LWM-1 was interrupted to insert module locations & imports.
    Append a new map, continuing the interrupted one.  */
 

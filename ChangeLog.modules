@@ -1,5 +1,56 @@
 2020-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	Implement p1857, part 2
+	libcpp/
+	* include/line-map.h (linemap_module_reparent): Declare.
+	* line-map.c (linemap_module_reparent): New.
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_TOKEN): Adjust.
+	* cp-tree.h (module_preprocess_token): Rename to ...
+	(module_token_pre): ... here.
+	(module_token_{cdtor,lang}): Declare.
+	(module_map_header): Delete.
+	(module_preprocess): Adjust parameters.
+	(import_module): Delete, replace with ...
+	(import_modile_{pre,lang}): ... these.
+	(declare_module): Return void.
+	* lex.c (struct token_coro): New, broken out of ...
+	(module_preprocess_token): ... here.  Replace with ...
+	(module_token_{pre,lang,cdtor}): ... these.
+	* module.cc (module_state::read_location): Deal with early-read
+	partition locations.
+	(module_state::direct_import): Always preserve line map.  Take
+	for_cpp arg.
+	(import_module): Break into ...
+	(import_module_{pre,lang}): ... these.  Disable pending imports.
+	(declare_module): Adjust.
+	(module_map_header): Delete.
+	(module_preprocess): Do not change module array.  Return primary
+	module.
+	* parser.c (cp_lexer_tokenize): Delete.
+	(cp_lexer_new_main): New, resurrected from trunk.  Tokenize the
+	whole buffer.  Call the token coro.
+	(cp_parser_skip_to_closing_parenthesis_1): Deal with falling into
+	a module pseudo-pragma.
+	(cp_parser_skip_to_end_of_{,block_or_}statement): Likewise.
+	(cp_parser_translation_unit): Drop the incremental tokenization.
+	(cp_parser_module_name): Drop KIND parameter.
+	(cp_parser_module_directive_end): New.
+	(cp_parser_{import,module}_declaration): Adjust.
+	(cp_parser_declaration): Deal with (badly placed) import or module
+	declarations.
+	(cp_parser_toplevel_declaration): Restore PRAGMA parsing.
+	(c_parse_file): PCHness handled in cp_lexer_new_main, use it.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-2.C: Adjust expected error
+	* g++.dg/modules/atom-pragma-3.C: Likewise.
+	* g++.dg/modules/exp-xlate-1_b.C: Likewise.
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/p0713-2.C: Likewise.
+	* g++.dg/modules/p0713-3.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_d.C: Temporary XFAIL
+	* g++.dg/modules/unnamed-1_b.C: Adjust output scan
+
 	gcc/cp/
 	* parser.c (cp_lexer_alloc): Remove pch finalizing.
 	(cp_parser_skip_to_closing_parenthesis_1): Deal with falling into

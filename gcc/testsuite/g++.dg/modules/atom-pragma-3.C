@@ -5,7 +5,7 @@ export module foo;
 ;
 
 #pragma pack(2)
-import baz; // { dg-error "must be within preamble" }
+import baz; // { dg-error "must immediately follow" }
 
 int i;
 

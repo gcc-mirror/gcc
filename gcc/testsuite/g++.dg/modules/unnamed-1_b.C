@@ -15,5 +15,5 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {> Bindings '::counter'} module } }
+// { dg-final { scan-lang-dump {Bindings '::counter'} module } }
 // { dg-final { scan-lang-dump {>Loading entity PiL\[0\] section:1} module } }

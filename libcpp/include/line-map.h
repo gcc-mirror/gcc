@@ -440,7 +440,8 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
 
   /* Location from whence this line map was included.  For regular
      #includes, this location will be the last location of a map.  For
-     outermost file, this is 0.  */
+     outermost file, this is 0.  For modules it could be anywhere
+     within a map.  */
   location_t included_from;
 
   /* Size is 20 or 24 bytes, no padding  */
@@ -1132,6 +1133,8 @@ const line_map_macro *linemap_enter_macro (line_maps *, cpp_hashnode *,
 
 extern location_t linemap_module_loc
   (line_maps *, location_t from, const char *name);
+extern void linemap_module_reparent
+  (line_maps *, location_t loc, location_t new_parent);
 
 /* Restore the linemap state such that the map at LWM-1 continues.  */
 extern void linemap_module_restore
