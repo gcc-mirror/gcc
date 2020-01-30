@@ -1096,7 +1096,7 @@ package body Sem_Ch12 is
       --  package. As usual an other association must be last in the list.
 
       procedure Build_Subprogram_Wrappers;
-      --  Ada_2020: AI12-0272 introduces pre/postconditions for formal
+      --  Ada 2020: AI12-0272 introduces pre/postconditions for formal
       --  subprograms. The implementation of making the formal into a renaming
       --  of the actual does not work, given that subprogram renaming cannot
       --  carry aspect specifications. Instead we must create subprogram
@@ -3554,7 +3554,7 @@ package body Sem_Ch12 is
 
       Generate_Reference_To_Generic_Formals (Current_Scope);
 
-      --  For Ada_2020, some formal parameters can carry aspects, which must
+      --  For Ada 2020, some formal parameters can carry aspects, which must
       --  be name-resolved at the end of the list of formal parameters (which
       --  has the semantics of a declaration list).
 
@@ -12361,7 +12361,7 @@ package body Sem_Ch12 is
       Subt       : Entity_Id;
 
       procedure Check_Shared_Variable_Control_Aspects;
-      --  Ada_2020: Verify that shared variable control aspects (RM C.6)
+      --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for a formal type are obeyed by the actual.
 
       procedure Diagnose_Predicated_Actual;
@@ -12392,7 +12392,7 @@ package body Sem_Ch12 is
       --  Check_Shared_Variable_Control_Aspects --
       --------------------------------------------
 
-      --  Ada_2020: Verify that shared variable control aspects (RM C.6)
+      --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for the formal are obeyed by the actual.
 
       procedure Check_Shared_Variable_Control_Aspects is
@@ -13079,7 +13079,7 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12)). Note that AI05-0218-1
          --  removes the second instance of the phrase "or allow pass by copy".
 
-         --  For Ada_2020, the aspect may be specified explicitly for the
+         --  For Ada 2020, the aspect may be specified explicitly for the
          --  formal regardless of whether an ancestor obeys it.
 
          if Is_Atomic (Act_T)

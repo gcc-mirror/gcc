@@ -2805,7 +2805,7 @@ package body Sem_Aggr is
    begin
       if Ada_Version < Ada_2020 then
          Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnatX", N);
+         Error_Msg_N ("\compile with -gnat2020", N);
       end if;
 
       if not Is_Composite_Type (Typ) then
