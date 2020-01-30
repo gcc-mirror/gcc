@@ -1,3 +1,8 @@
+2020-01-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92323
+	* gcc.dg/Warray-bounds-57.c: New test.
+
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93450
