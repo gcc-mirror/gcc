@@ -1,3 +1,7 @@
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-syntax-09-convert.C: New test.
+
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92706
@@ -946,7 +950,7 @@
 	* gcc.target/i386/pr93319-1a.c: Don't include <stdio.h>.
 	(test1): Replace printf with __builtin_printf.
 
-2020-01-21  Bin Cheng  <bin.linux@linux.alibaba.com>
+2020-01-21  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-await-void_type.C: New test.
 

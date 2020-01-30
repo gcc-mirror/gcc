@@ -1357,6 +1357,9 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 				 &buried_stmt, NULL))
 	saved_co_await = r;
     }
+  else if ((stmt_code == CONVERT_EXPR || stmt_code == NOP_EXPR)
+	   && TREE_CODE (TREE_OPERAND (stripped_stmt, 0)) == CO_AWAIT_EXPR)
+    saved_co_await = TREE_OPERAND (stripped_stmt, 0);
 
   if (!saved_co_await)
     return NULL_TREE;
@@ -1513,6 +1516,11 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     {
     default: /* not likely to work .. but... */
       append_to_statement_list (resume_call, &stmt_list);
+      break;
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+      TREE_OPERAND (stripped_stmt, 0) = resume_call;
+      append_to_statement_list (saved_statement, &stmt_list);
       break;
     case INIT_EXPR:
     case MODIFY_EXPR:
