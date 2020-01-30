@@ -102,6 +102,15 @@
 	depending on CC_NZmode vs. CCmode.
 	("*s<nzvccond:code><mode>"): Simlar from "*s<ocond:code>", over
 	NZVCUSE.  Remove FIXME.
+	("cc"): Comment on new use.
+	("cc_enabled"): New attribute.
+	("enabled"): Make default fall back to cc_enabled.
+	("setnz", "ccnz", "setnzvc", "ccnzvc", "setcc", "cccc"): New
+	default_subst_attrs.
+	("setnz_subst", "setnzvc_subst", "setcc_subst"): New default_subst.
+	("*movsi_internal<setcc><setnz><setnzvc>"): Rename from
+	"*movsi_internal".  Correct contents of, and rename attribute
+	"cc" to "cc<cccc><ccnz><ccnzvc>".
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
