@@ -1,5 +1,9 @@
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93494
+	* config/arm/arm.md (uaddvdi4): Actually emit what gen_uaddvsi4
+	returned.
+
 	PR target/91824
 	* config/i386/sse.md
 	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext): Renamed to ...

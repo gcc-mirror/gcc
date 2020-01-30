@@ -721,7 +721,7 @@
       if (!arm_add_operand (hi_op2, SImode))
 	hi_op2 = force_reg (SImode, hi_op2);
 
-      gen_uaddvsi4 (hi_result, hi_op1, hi_op2, operands[3]);
+      emit_insn (gen_uaddvsi4 (hi_result, hi_op1, hi_op2, operands[3]));
     }
   else
     {
