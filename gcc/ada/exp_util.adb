@@ -9331,16 +9331,10 @@ package body Exp_Util is
       Proc_Id := Invariant_Procedure (Typ);
       pragma Assert (Present (Proc_Id));
 
-      --  Ignore the invariant if that policy is in effect
-
-      if Invariants_Ignored (Typ) then
-         return Make_Null_Statement (Loc);
-      else
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name                   => New_Occurrence_Of (Proc_Id, Loc),
-             Parameter_Associations => New_List (Relocate_Node (Expr)));
-      end if;
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => New_Occurrence_Of (Proc_Id, Loc),
+          Parameter_Associations => New_List (Relocate_Node (Expr)));
    end Make_Invariant_Call;
 
    ------------------------

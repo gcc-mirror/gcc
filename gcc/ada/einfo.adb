@@ -629,8 +629,8 @@ package body Einfo is
    --    Is_Activation_Record            Flag305
    --    Needs_Activation_Record         Flag306
    --    Is_Loop_Parameter               Flag307
-   --    Invariants_Ignored              Flag308
 
+   --    (unused)                        Flag308
    --    (unused)                        Flag309
 
    --  Note: Flag310-317 are defined in atree.ads/adb, but not yet in atree.h
@@ -2076,12 +2076,6 @@ package body Einfo is
    begin
       return Node21 (Id);
    end Interface_Name;
-
-   function Invariants_Ignored (Id : E) return B is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Flag308 (Id);
-   end Invariants_Ignored;
 
    function Is_Abstract_Subprogram (Id : E) return B is
    begin
@@ -5283,12 +5277,6 @@ package body Einfo is
    begin
       Set_Node21 (Id, V);
    end Set_Interface_Name;
-
-   procedure Set_Invariants_Ignored (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag308 (Id, V);
-   end Set_Invariants_Ignored;
 
    procedure Set_Is_Abstract_Subprogram (Id : E; V : B := True) is
    begin
@@ -9797,7 +9785,6 @@ package body Einfo is
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));
-      W ("Invariants_Ignored",              Flag308 (Id));
       W ("Is_Abstract_Subprogram",          Flag19  (Id));
       W ("Is_Abstract_Type",                Flag146 (Id));
       W ("Is_Access_Constant",              Flag69  (Id));

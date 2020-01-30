@@ -2269,11 +2269,6 @@ package Einfo is
 --       implemented by a tagged type that are not already implemented by the
 --       ancestors (Ada 2005: AI-251).
 
---    Invariants_Ignored (Flag308)
---       Defined on all types. Indicates whether the type declaration is in
---       a context where Assertion_Policy is Ignore, in which case no checks
---       (static or dynamic) must be generated for objects of the type.
-
 --    Invariant_Procedure (synthesized)
 --       Defined in types and subtypes. Set for private types and their full
 --       views if one or more [class-wide] invariants apply to the type, or
@@ -7289,7 +7284,6 @@ package Einfo is
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
    function Interfaces                          (Id : E) return L;
-   function Invariants_Ignored                  (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
    function Is_Access_Constant                  (Id : E) return B;
@@ -7993,7 +7987,6 @@ package Einfo is
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
    procedure Set_Interfaces                      (Id : E; V : L);
-   procedure Set_Invariants_Ignored              (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
    procedure Set_Is_Access_Constant              (Id : E; V : B := True);
@@ -8826,7 +8819,6 @@ package Einfo is
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
    pragma Inline (Interfaces);
-   pragma Inline (Invariants_Ignored);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
@@ -9364,7 +9356,6 @@ package Einfo is
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
    pragma Inline (Set_Interfaces);
-   pragma Inline (Set_Invariants_Ignored);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
    pragma Inline (Set_Is_Access_Constant);
