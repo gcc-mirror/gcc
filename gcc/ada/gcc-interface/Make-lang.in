@@ -327,6 +327,7 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/g-u3spch.o	\
  ada/get_targ.o	\
  ada/ghost.o	\
+ ada/gnat_cuda.o \
  ada/libgnat/gnat.o	\
  ada/gnatvsn.o	\
  ada/hostparm.o	\

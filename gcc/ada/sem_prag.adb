@@ -44,6 +44,7 @@ with Exp_Util;  use Exp_Util;
 with Expander;  use Expander;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
+with GNAT_CUDA; use GNAT_CUDA;
 with Gnatvsn;   use Gnatvsn;
 with Lib;       use Lib;
 with Lib.Writ;  use Lib.Writ;
@@ -14892,6 +14893,7 @@ package body Sem_Prag is
 
             else
                Set_Is_CUDA_Kernel (Kernel_Proc);
+               Add_CUDA_Kernel (Pack_Id, Kernel_Proc);
             end if;
          end CUDA_Global;
 

@@ -147,7 +147,7 @@ package body Debug is
 
    --  d_a  Stop elaboration checks on accept or select statement
    --  d_b
-   --  d_c
+   --  d_c  CUDA compilation : compile for the host
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
