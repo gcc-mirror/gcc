@@ -111,6 +111,15 @@
 	("*movsi_internal<setcc><setnz><setnzvc>"): Rename from
 	"*movsi_internal".  Correct contents of, and rename attribute
 	"cc" to "cc<cccc><ccnz><ccnzvc>".
+	("anz", "anzvc", "acc"): New define_subst_attrs.
+	("<acc><anz><anzvc>movhi<setcc><setnz><setnzvc>"): Rename from
+	"movhi".  Rename "cc" attribute to "cc<cccc><ccnz><ccnzvc>".
+	("<acc><anz><anzvc>movqi<setcc><setnz><setnzvc>"): Similar from
+	"movqi".  Correct contents of, and rename "cc" attribute to
+	"cc<cccc><ccnz><ccnzvc>".
+	("*b<zcond:code><mode>"): Rename from "b<zcond:code><mode>".
+	("*b<nzvccond:code><mode>"): Rename from "b<nzvccond:code><mode>".
+	("*b<rnzcond:code><mode>"): Rename from "*b<rnzcond:code><mode>".
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 

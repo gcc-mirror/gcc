@@ -239,6 +239,7 @@
 
 (define_subst_attr "setnz" "setnz_subst" "" "_setnz")
 (define_subst_attr "ccnz" "setnz_subst" "" "_enabled")
+(define_subst_attr "anz" "setnz_subst" "" "*")
 
 (define_subst "setnz_subst"
   [(set (match_operand 0)
@@ -251,6 +252,7 @@
 
 (define_subst_attr "setnzvc" "setnzvc_subst" "" "_setnzvc")
 (define_subst_attr "ccnzvc" "setnzvc_subst" "" "_enabled")
+(define_subst_attr "anzvc" "setnzvc_subst" "" "*")
 
 (define_subst "setnzvc_subst"
   [(set (match_operand 0)
@@ -263,6 +265,7 @@
 
 (define_subst_attr "setcc" "setcc_subst" "" "_setcc")
 (define_subst_attr "cccc" "setcc_subst" "" "_enabled")
+(define_subst_attr "acc" "setcc_subst" "" "*")
 
 (define_subst "setcc_subst"
   [(set (match_operand 0)
@@ -609,7 +612,7 @@
 
 ;; FIXME: See movsi.
 
-(define_insn "movhi"
+(define_insn "<acc><anz><anzvc>movhi<setcc><setnz><setnzvc>"
   [(set
     (match_operand:HI 0 "nonimmediate_operand" "=r,r, r,Q>,r,Q>,r,r,r,g,g,r,r,x")
     (match_operand:HI 1 "general_operand"	"r,Q>,M,M, I,r, L,O,n,M,r,g,x,r"))
@@ -649,7 +652,7 @@
   }
 }
   [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,yes,no,no,no,no,yes,yes")
-   (set_attr "cc" "*,*,none,none,*,none,*,clobber,*,none,none,*,none,none")])
+   (set_attr "cc<cccc><ccnz><ccnzvc>" "*,*,none,none,*,none,*,clobber,*,none,none,*,none,none")])
 
 (define_insn "movstricthi"
   [(set
@@ -685,7 +688,7 @@
   ""
   "")
 
-(define_insn "movqi"
+(define_insn "<acc><anz><anzvc>movqi<setcc><setnz><setnzvc>"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,Q>,r, r,Q>,r,g,g,r,r,r,x")
 	(match_operand:QI 1 "general_operand"	    "r,r, Q>,M,M, I,M,r,O,g,x,r"))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
@@ -704,7 +707,8 @@
    move %1,%0
    move %1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,no,yes,no,yes,yes")
-   (set_attr "cc" "*,*,*,*,*,*,*,*,clobber,*,none,none")])
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "*,none,*,none,none,*,none,none,clobber,*,none,none")])
 
 (define_insn "movstrictqi"
   [(set (strict_low_part
@@ -2117,7 +2121,7 @@
 ;; e.g. m68k, so we have to check if overflow bit is set on all "signed"
 ;; conditions.
 
-(define_insn "b<zcond:code><mode>"
+(define_insn "*b<zcond:code><mode>"
   [(set (pc)
 	(if_then_else (zcond (reg:NZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
@@ -2127,7 +2131,7 @@
   "b<CC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "b<nzvccond:code><mode>"
+(define_insn "*b<nzvccond:code><mode>"
   [(set (pc)
 	(if_then_else (nzvccond (reg:NZVCUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
@@ -2137,7 +2141,7 @@
   "b<CC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "b<rnzcond:code><mode>"
+(define_insn "*b<rnzcond:code><mode>"
   [(set (pc)
 	(if_then_else (rnzcond (reg:NZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
