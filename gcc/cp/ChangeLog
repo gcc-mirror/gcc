@@ -1,3 +1,9 @@
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82521
+	* pt.c (tsubst_copy_and_build) [EQ_EXPR]: Only suppress warnings if
+	the expression was dependent before substitution.
+
 2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* coroutines.cc (act_des_fn): New.
