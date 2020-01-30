@@ -7185,6 +7185,12 @@ package body Exp_Attr is
                   Unchecked_Convert_To (Val_Typ, New_Copy_Tree (Pref)),
                 Attribute_Name => Name_Valid);
 
+            --  Required by LLVM although the sizes are the same???
+
+            if Nkind (Prefix (Expr)) = N_Unchecked_Type_Conversion then
+               Set_No_Truncation (Prefix (Expr));
+            end if;
+
          --  Validate the scalar components of an array by iterating over all
          --  dimensions of the array while checking individual components.
 
