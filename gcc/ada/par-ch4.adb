@@ -1690,8 +1690,10 @@ package body Ch4 is
          Set_Component_Associations (Aggregate_Node, Assoc_List);
          Set_Is_Homogeneous_Aggregate (Aggregate_Node);
          Scan;  --  past right bracket
+
          if Token = Tok_Apostrophe then
             Scan;
+
             if Token = Tok_Identifier then
                return P_Reduction_Attribute_Reference (Aggregate_Node);
             end if;
@@ -2928,7 +2930,7 @@ package body Ch4 is
             when Tok_At_Sign =>  --  AI12-0125 : target_name
                if Ada_Version < Ada_2020 then
                   Error_Msg_SC ("target name is an Ada 202x feature");
-                  Error_Msg_SC ("\compile with -gnatX");
+                  Error_Msg_SC ("\compile with -gnat2020");
                end if;
 
                Node1 := P_Name;
@@ -3403,7 +3405,7 @@ package body Ch4 is
 
       if Ada_Version < Ada_2020 then
          Error_Msg_SC ("iterated component is an Ada 202x feature");
-         Error_Msg_SC ("\compile with -gnatX");
+         Error_Msg_SC ("\compile with -gnat2020");
       end if;
 
       return Assoc_Node;

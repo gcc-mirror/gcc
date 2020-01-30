@@ -4756,7 +4756,7 @@ package body Sem_Prag is
          then
             null;
 
-         --  For Ada_2020, pre/postconditions can appear on formal subprograms
+         --  For Ada 2020, pre/postconditions can appear on formal subprograms
 
          elsif Nkind (Subp_Decl) = N_Formal_Concrete_Subprogram_Declaration
             and then Ada_Version >= Ada_2020
@@ -7487,7 +7487,7 @@ package body Sem_Prag is
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            --  In Ada_2020, the pragma can apply to a formal type, for which
+            --  In Ada 2020, the pragma can apply to a formal type, for which
             --  there may be no underlying type.
 
             if Prag_Id = Pragma_Atomic
@@ -30031,7 +30031,7 @@ package body Sem_Prag is
                elsif Present (Generic_Parent (Specification (Stmt))) then
                   return Stmt;
 
-               --  Ada_2020: contract on formal subprogram
+               --  Ada 2020: contract on formal subprogram
 
                elsif Is_Generic_Actual_Subprogram (Defining_Entity (Stmt))
                  and then Ada_Version >= Ada_2020
