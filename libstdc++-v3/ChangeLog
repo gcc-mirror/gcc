@@ -1,3 +1,38 @@
+2020-02-07  Patrick Palka  <ppalka@redhat.com>
+
+	Implement C++20 range adaptors
+	* include/std/ranges: Include <bits/refwrap.h> and <tuple>.
+	(subrange::_S_store_size): Mark as const instead of constexpr to
+	avoid what seems to be a bug in GCC.
+	(__detail::__box): Give it defaulted copy and move constructors.
+	(views::_Single::operator()): Mark constexpr.
+	(views::_Iota::operator()): Mark constexpr.
+	(__detail::Empty): Define.
+	(views::_RangeAdaptor, views::_RangeAdaptorClosure, ref_view, all_view,
+	views::all, filter_view, views::filter, transform_view,
+	views::transform, take_view, views::take, take_while_view,
+	views::take_while, drop_view, views::drop, join_view, views::join,
+	__detail::require_constant, __detail::tiny_range, split_view,
+	views::split, views::_Counted, views::counted, common_view,
+	views::common, reverse_view, views::reverse,
+	views::__detail::__is_reversible_subrange,
+	views::__detail::__is_reverse_view, reverse_view, views::reverse,
+	__detail::__has_tuple_element, elements_view, views::elements,
+	views::keys, views::values): Define.
+	* testsuite/std/ranges/adaptors/all.cc: New test.
+	* testsuite/std/ranges/adaptors/common.cc: Likewise.
+	* testsuite/std/ranges/adaptors/counted.cc: Likewise.
+	* testsuite/std/ranges/adaptors/drop.cc: Likewise.
+	* testsuite/std/ranges/adaptors/drop_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc: Likewise.
+	* testsuite/std/ranges/adaptors/filter.cc: Likewise.
+	* testsuite/std/ranges/adaptors/join.cc: Likewise.
+	* testsuite/std/ranges/adaptors/reverse.cc: Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+
 2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare (__cmp_cat::type): Define typedef for underlying
