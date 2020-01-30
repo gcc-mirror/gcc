@@ -45,6 +45,7 @@ public:
 
   unsigned get_num_checkers () const { return m_checkers.length (); }
 
+private:
   /* The state machines.  */
   auto_delete_vec <state_machine> &m_checkers;
 };

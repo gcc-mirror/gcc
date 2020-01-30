@@ -1,5 +1,13 @@
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-manager.cc (for_each_state_change): Use
+	extrinsic_state::get_num_checkers rather than accessing m_checkers
+	directly.
+	* program-state.cc (program_state::program_state): Likewise.
+	* program-state.h (extrinsic_state::m_checkers): Make private.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93356
 	* region-model.cc (region_model::eval_condition): In both
 	overloads, bail out immediately on floating-point types.
