@@ -12424,7 +12424,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     bit.  This will be converted into a ZERO_EXTRACT.  */
 	  if (const_op == 0 && sign_bit_comparison_p
 	      && CONST_INT_P (XEXP (op0, 1))
-	      && mode_width <= HOST_BITS_PER_WIDE_INT)
+	      && mode_width <= HOST_BITS_PER_WIDE_INT
+	      && UINTVAL (XEXP (op0, 1)) < mode_width)
 	    {
 	      op0 = simplify_and_const_int (NULL_RTX, mode, XEXP (op0, 0),
 					    (HOST_WIDE_INT_1U
