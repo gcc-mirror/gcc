@@ -11,7 +11,7 @@ import nope;
 #endif
 think
 
-// { dg-final { scan-file cpp-2_c.i {cpp-2_c.C"\n\n\n\n__module bob;(\n# 4 "[^\n]*cpp-2_c.C"\n)?\n#pragma GCC unused\n__import "[^\n]*\./cpp-2_b.H" \[\[ CLOSE ]];(\n# 6 "[^\n]*cpp-2_c.C"\n)\n?__import "[^\n]*cpp-2_a.H" \[\[ ]];\n} } }
+// { dg-final { scan-file cpp-2_c.i {cpp-2_c.C"\n\n\n\n__module bob;\n#pragma GCC unused\n__import "[^\n]*\./cpp-2_b.H" \[\[ CLOSE ]];\n__import "[^\n]*cpp-2_a.H" \[\[ ]];\n} } }
 // { dg-final { scan-file cpp-2_c.i "int i;" } }
 // { dg-final { scan-file-not cpp-2_c.i "import nope;" } }
 // { dg-final { scan-file cpp-2_c.i "THIS IS STDIO\n" } }

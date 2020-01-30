@@ -2847,10 +2847,10 @@ _cpp_lex_direct (cpp_reader *pfile)
     {
       if (pfile->state.in_deferred_pragma)
 	{
-	  // FIXME: It is annoying that we emit a line marker to go
-	  // back one line, and then immediately advance to the next
-	  // line.  (Not modules-specific?)
+	  /* The location is at the start of the line following the
+	     pragma.  */
 	  result->type = CPP_PRAGMA_EOL;
+	  result->src_loc = pfile->line_table->highest_line;
 	  pfile->state.in_deferred_pragma = false;
 	  if (!pfile->state.pragma_allow_expansion)
 	    pfile->state.prevent_expansion--;
