@@ -1,3 +1,8 @@
+2020-01-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-loop-ivopts.c (get_iv): Use sizetype for zero-step.
+	(find_inv_vars_cb): Likewise.
+
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* calls.c (special_function_p): Split out the check for DECL_NAME
