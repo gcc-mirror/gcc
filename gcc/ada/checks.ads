@@ -526,12 +526,6 @@ package Checks is
    --                this node is further examined depends on the setting of
    --                the parameter Source_Typ, as described below.
 
-   --    ??? Apply_Length_Check and Apply_Range_Check do not have an Expr
-   --        formal
-
-   --    ??? Apply_Length_Check and Apply_Range_Check have a Ck_Node formal
-   --        which is undocumented, is it the same as Expr?
-
    --    Target_Typ  The target type on which the check is to be based. For
    --                example, if we have a scalar range check, then the check
    --                is that we are in range of this type.
@@ -558,7 +552,7 @@ package Checks is
    --  handled by the caller.
 
    procedure Apply_Length_Check
-     (Ck_Node    : Node_Id;
+     (Expr       : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id := Empty);
    --  This procedure builds a sequence of declarations to do a length check
@@ -576,7 +570,7 @@ package Checks is
    --  in this section.
 
    procedure Apply_Range_Check
-     (Ck_Node    : Node_Id;
+     (Expr       : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id := Empty);
    --  For a Node of kind N_Range, constructs a range check action that tests
@@ -628,7 +622,7 @@ package Checks is
    --  call to Insert_Range_Checks procedure.
 
    function Get_Range_Checks
-     (Ck_Node    : Node_Id;
+     (Expr       : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id := Empty;
       Warn_Node  : Node_Id   := Empty) return Check_Result;
