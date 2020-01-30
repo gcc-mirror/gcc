@@ -1,5 +1,9 @@
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/93384
+	* gcc.dg/lto/pr93384_0.c: New test.
+	* gcc.dg/lto/pr93384_1.c: New file.
+
 	PR middle-end/93505
 	* gcc.c-torture/compile/pr93505.c: New test.
 

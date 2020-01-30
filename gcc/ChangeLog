@@ -1,5 +1,10 @@
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/93384
+	* symtab.c (symtab_node::noninterposable_alias): If localalias
+	already exists, but is not usable, append numbers after it until
+	a unique name is found.  Formatting fix.
+
 	PR middle-end/93505
 	* combine.c (simplify_comparison) <case ROTATE>: Punt on out of range
 	rotate counts.
