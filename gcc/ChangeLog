@@ -1,3 +1,8 @@
+2020-01-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Wrap VECTOR_CST
+	and CONSTRUCTOR in _Literal (type) with TDF_GIMPLE.
+
 2020-01-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_elf_select_rtx_section): Place function pointers
