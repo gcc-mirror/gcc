@@ -1,3 +1,8 @@
+2020-01-30  Jeff Law  <law@redhat.com
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Make existing dg-final scan
+	conditional on !c6x.  Add dg-final scan pattern for c6x.
+
 2020-01-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92323
