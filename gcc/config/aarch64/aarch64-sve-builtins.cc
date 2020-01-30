@@ -354,6 +354,10 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
   D (u32, f16), D (u32, f32), D (u32, f64), \
   D (u64, f16), D (u64, f32), D (u64, f64)
 
+/* _bf16_f32.  */
+#define TYPES_cvt_bfloat(S, D) \
+  D (bf16, f32)
+
 /* _f32_f16
    _f64_f32.  */
 #define TYPES_cvt_long(S, D) \
@@ -471,6 +475,7 @@ DEF_SVE_TYPES_ARRAY (d_unsigned);
 DEF_SVE_TYPES_ARRAY (d_integer);
 DEF_SVE_TYPES_ARRAY (d_data);
 DEF_SVE_TYPES_ARRAY (cvt);
+DEF_SVE_TYPES_ARRAY (cvt_bfloat);
 DEF_SVE_TYPES_ARRAY (cvt_long);
 DEF_SVE_TYPES_ARRAY (cvt_narrow_s);
 DEF_SVE_TYPES_ARRAY (cvt_narrow);

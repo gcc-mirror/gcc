@@ -318,6 +318,18 @@ DEF_SVE_FUNCTION (svzip2, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip2, binary_pred, all_pred, none)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS AARCH64_FL_BF16
+DEF_SVE_FUNCTION (svbfdot, ternary_bfloat_opt_n, s_float, none)
+DEF_SVE_FUNCTION (svbfdot_lane, ternary_bfloat_lanex2, s_float, none)
+DEF_SVE_FUNCTION (svbfmlalb, ternary_bfloat_opt_n, s_float, none)
+DEF_SVE_FUNCTION (svbfmlalb_lane, ternary_bfloat_lane, s_float, none)
+DEF_SVE_FUNCTION (svbfmlalt, ternary_bfloat_opt_n, s_float, none)
+DEF_SVE_FUNCTION (svbfmlalt_lane, ternary_bfloat_lane, s_float, none)
+DEF_SVE_FUNCTION (svbfmmla, ternary_bfloat, s_float, none)
+DEF_SVE_FUNCTION (svcvt, unary_convert, cvt_bfloat, mxz)
+DEF_SVE_FUNCTION (svcvtnt, unary_convert_narrowt, cvt_bfloat, mx)
+#undef REQUIRED_EXTENSIONS
+
 #define REQUIRED_EXTENSIONS AARCH64_FL_I8MM
 DEF_SVE_FUNCTION (svmmla, mmla, s_integer, none)
 DEF_SVE_FUNCTION (svusmmla, ternary_uintq_intq, s_signed, none)

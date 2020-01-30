@@ -1,5 +1,51 @@
 2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.h (TARGET_SVE_BF16): New macro.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svcvtnt): Move to
+	aarch64-sve-builtins-base.h.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svcvtnt): Move to
+	aarch64-sve-builtins-base.cc.
+	* config/aarch64/aarch64-sve-builtins-base.h (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): Declare.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): New functions.
+	* config/aarch64/aarch64-sve-builtins-base.def (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): New functions.
+	(svcvt): Add a form that converts f32 to bf16.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (ternary_bfloat)
+	(ternary_bfloat_lane, ternary_bfloat_lanex2, ternary_bfloat_opt_n):
+	Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_element_type):
+	Treat B as bfloat16_t.
+	(ternary_bfloat_lane_base): New class.
+	(ternary_bfloat_def): Likewise.
+	(ternary_bfloat): New shape.
+	(ternary_bfloat_lane_def): New class.
+	(ternary_bfloat_lane): New shape.
+	(ternary_bfloat_lanex2_def): New class.
+	(ternary_bfloat_lanex2): New shape.
+	(ternary_bfloat_opt_n_def): New class.
+	(ternary_bfloat_opt_n): New shape.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_cvt_bfloat): New macro.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_<sve_fp_op>vnx4sf)
+	(@aarch64_sve_<sve_fp_op>_lanevnx4sf): New patterns.
+	(@aarch64_sve_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>)
+	(@cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>): Likewise.
+	(*cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>): Likewise.
+	(@aarch64_sve_cvtnt<VNx8BF_ONLY:mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_cvtnt<mode>): Key
+	the pattern off the narrow mode instead of the wider one.
+	* config/aarch64/iterators.md (VNx8BF_ONLY): New mode iterator.
+	(UNSPEC_BFMLALB, UNSPEC_BFMLALT, UNSPEC_BFMMLA): New unspecs.
+	(sve_fp_op): Handle them.
+	(SVE_BFLOAT_TERNARY_LONG): New int itertor.
+	(SVE_BFLOAT_TERNARY_LONG_LANE): Likewise.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/arm_sve.h: Include arm_bf16.h.
 	* config/aarch64/aarch64-modes.def (BF): Move definition before
 	VECTOR_MODES.  Remove separate VECTOR_MODES for V4BF and V8BF.

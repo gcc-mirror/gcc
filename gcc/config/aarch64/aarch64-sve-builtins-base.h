@@ -42,6 +42,13 @@ namespace aarch64_sve
     extern const function_base *const svasr;
     extern const function_base *const svasr_wide;
     extern const function_base *const svasrd;
+    extern const function_base *const svbfdot;
+    extern const function_base *const svbfdot_lane;
+    extern const function_base *const svbfmlalb;
+    extern const function_base *const svbfmlalb_lane;
+    extern const function_base *const svbfmlalt;
+    extern const function_base *const svbfmlalt_lane;
+    extern const function_base *const svbfmmla;
     extern const function_base *const svbic;
     extern const function_base *const svbrka;
     extern const function_base *const svbrkb;
@@ -84,6 +91,7 @@ namespace aarch64_sve
     extern const function_base *const svcreate3;
     extern const function_base *const svcreate4;
     extern const function_base *const svcvt;
+    extern const function_base *const svcvtnt;
     extern const function_base *const svdiv;
     extern const function_base *const svdivr;
     extern const function_base *const svdot;

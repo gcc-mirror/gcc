@@ -362,6 +362,7 @@ extern unsigned aarch64_architecture_version;
 /* BF16 instructions are enabled through +bf16.  */
 #define TARGET_BF16_FP (AARCH64_ISA_BF16)
 #define TARGET_BF16_SIMD (AARCH64_ISA_BF16 && TARGET_SIMD)
+#define TARGET_SVE_BF16 (TARGET_SVE && AARCH64_ISA_BF16)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

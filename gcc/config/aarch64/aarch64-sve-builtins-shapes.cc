@@ -78,6 +78,7 @@ apply_predication (const function_instance &instance, tree return_type,
    [01]    - the element type in type suffix 0 or 1 of INSTANCE
    f<bits> - a floating-point type with the given number of bits
    f[01]   - a floating-point type with the same width as type suffix 0 or 1
+   B       - bfloat16_t
    h<elt>  - a half-sized version of <elt>
    p       - a predicate (represented as TYPE_SUFFIX_b)
    q<elt>  - a quarter-sized version of <elt>
@@ -116,6 +117,9 @@ parse_element_type (const function_instance &instance, const char *&format)
 
   if (ch == 'p')
     return TYPE_SUFFIX_b;
+
+  if (ch == 'B')
+    return TYPE_SUFFIX_bf16;
 
   if (ch == 'q')
     {
@@ -918,6 +922,26 @@ struct ternary_resize2_lane_base : public overloaded_base<0>
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+
+/* A specialization of ternary_resize2_lane_base for bfloat16 elements,
+   indexed in groups of N elements.  */
+template<unsigned int N>
+struct ternary_bfloat_lane_base
+  : public ternary_resize2_lane_base<16, TYPE_bfloat, TYPE_bfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vB,vB,su64", group, MODE_none);
+  }
+
+  bool
+  check (function_checker &c) const OVERRIDE
+  {
+    return c.require_immediate_lane_index (3, N);
   }
 };
 
@@ -2694,6 +2718,48 @@ struct tbl_tuple_def : public overloaded_base<0>
   }
 };
 SHAPE (tbl_tuple)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloatt16_t, svbfloat16_t).  */
+struct ternary_bfloat_def
+  : public ternary_resize2_base<16, TYPE_bfloat, TYPE_bfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vB,vB", group, MODE_none);
+  }
+};
+SHAPE (ternary_bfloat)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloat16_t, svbfloat16_t, uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 7].  */
+typedef ternary_bfloat_lane_base<1> ternary_bfloat_lane_def;
+SHAPE (ternary_bfloat_lane)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloat16_t, svbfloat16_t, uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 3].  */
+typedef ternary_bfloat_lane_base<2> ternary_bfloat_lanex2_def;
+SHAPE (ternary_bfloat_lanex2)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloatt16_t, svbfloat16_t)
+   sv<t0>_t svfoo[_n_t0](sv<t0>_t, svbfloat16_t, bfloat16_t).  */
+struct ternary_bfloat_opt_n_def
+  : public ternary_resize2_opt_n_base<16, TYPE_bfloat, TYPE_bfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vB,vB", group, MODE_none);
+    build_all (b, "v0,v0,vB,sB", group, MODE_n);
+  }
+};
+SHAPE (ternary_bfloat_opt_n)
 
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:int:quarter>_t, sv<t0:uint:quarter>_t,
 		       uint64_t)

@@ -148,6 +148,10 @@ namespace aarch64_sve
     extern const function_shape *const store_scatter_offset;
     extern const function_shape *const store_scatter_offset_restricted;
     extern const function_shape *const tbl_tuple;
+    extern const function_shape *const ternary_bfloat;
+    extern const function_shape *const ternary_bfloat_lane;
+    extern const function_shape *const ternary_bfloat_lanex2;
+    extern const function_shape *const ternary_bfloat_opt_n;
     extern const function_shape *const ternary_intq_uintq_lane;
     extern const function_shape *const ternary_intq_uintq_opt_n;
     extern const function_shape *const ternary_lane;

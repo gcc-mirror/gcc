@@ -314,6 +314,7 @@
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx8HI_ONLY [VNx8HI])
+(define_mode_iterator VNx8BF_ONLY [VNx8BF])
 (define_mode_iterator VNx4SI_ONLY [VNx4SI])
 (define_mode_iterator VNx4SF_ONLY [VNx4SF])
 (define_mode_iterator VNx2DI_ONLY [VNx2DI])
@@ -820,6 +821,9 @@
     UNSPEC_USDOT	; Used in aarch64-simd.md.
     UNSPEC_SUDOT	; Used in aarch64-simd.md.
     UNSPEC_BFDOT	; Used in aarch64-simd.md.
+    UNSPEC_BFMLALB	; Used in aarch64-sve.md.
+    UNSPEC_BFMLALT	; Used in aarch64-sve.md.
+    UNSPEC_BFMMLA	; Used in aarch64-sve.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -2235,6 +2239,15 @@
 
 (define_int_iterator SVE_FP_BINARY_INT [UNSPEC_FTSMUL UNSPEC_FTSSEL])
 
+(define_int_iterator SVE_BFLOAT_TERNARY_LONG [UNSPEC_BFDOT
+					      UNSPEC_BFMLALB
+					      UNSPEC_BFMLALT
+					      UNSPEC_BFMMLA])
+
+(define_int_iterator SVE_BFLOAT_TERNARY_LONG_LANE [UNSPEC_BFDOT
+						   UNSPEC_BFMLALB
+						   UNSPEC_BFMLALT])
+
 (define_int_iterator SVE_INT_REDUCTION [UNSPEC_ANDV
 					UNSPEC_IORV
 					UNSPEC_SMAXV
@@ -3225,7 +3238,11 @@
 				  (UNSPEC_SQDMULLBT "sqdmlslbt")
 				  (UNSPEC_SQDMULLT "sqdmlslt")])
 
-(define_int_attr sve_fp_op [(UNSPEC_FRECPE "frecpe")
+(define_int_attr sve_fp_op [(UNSPEC_BFDOT "bfdot")
+			    (UNSPEC_BFMLALB "bfmlalb")
+			    (UNSPEC_BFMLALT "bfmlalt")
+			    (UNSPEC_BFMMLA "bfmmla")
+			    (UNSPEC_FRECPE "frecpe")
 			    (UNSPEC_FRECPS "frecps")
 			    (UNSPEC_RSQRTE "frsqrte")
 			    (UNSPEC_RSQRTS "frsqrts")

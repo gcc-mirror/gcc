@@ -1921,16 +1921,16 @@
 ;; elements, even if the inactive elements don't matter.
 ;;
 ;; These instructions do not take MOVPRFX.
-(define_insn "@aarch64_sve2_cvtnt<mode>"
-  [(set (match_operand:<VNARROW> 0 "register_operand" "=w")
-	(unspec:<VNARROW>
-	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
+(define_insn "@aarch64_sve_cvtnt<mode>"
+  [(set (match_operand:SVE_FULL_HSF 0 "register_operand" "=w")
+	(unspec:SVE_FULL_HSF
+	  [(match_operand:<VWIDE_PRED> 2 "register_operand" "Upl")
 	   (const_int SVE_STRICT_GP)
-	   (match_operand:<VNARROW> 1 "register_operand" "0")
-	   (match_operand:SVE_FULL_SDF 3 "register_operand" "w")]
+	   (match_operand:SVE_FULL_HSF 1 "register_operand" "0")
+	   (match_operand:<VWIDE> 3 "register_operand" "w")]
 	  UNSPEC_COND_FCVTNT))]
   "TARGET_SVE2"
-  "fcvtnt\t%0.<Ventype>, %2/m, %3.<Vetype>"
+  "fcvtnt\t%0.<Vetype>, %2/m, %3.<Vewtype>"
 )
 
 ;; Predicated FCVTX (equivalent to what would be FCVTXNB, except that

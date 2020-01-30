@@ -1,5 +1,26 @@
 2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_bf16_ok):
+	New proc.
+	* gcc.target/aarch64/sve/acle/asm/bfdot_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/bfdot_lane_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalb_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalb_lane_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalt_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalt_lane_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmmla_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/cvt_bf16.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/cvtnt_bf16.c: Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_1.c: Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_lane_1.c:
+	Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_lanex2_1.c:
+	Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_opt_n_1.c:
+	Likweise.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Test mangling
 	of svbfloat16_t.
 	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise for
