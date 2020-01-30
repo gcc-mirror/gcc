@@ -1,6 +1,20 @@
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91824
+	* config/i386/sse.md
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext): Renamed to ...
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext): ... this.  Use
+	any_extend code iterator instead of always zero_extend.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_lt): Renamed to ...
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_lt): ... this.
+	Use any_extend code iterator instead of always zero_extend.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_shift): Renamed to ...
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_shift): ... this.
+	Use any_extend code iterator instead of always zero_extend.
+	(*sse2_pmovmskb_ext): New define_insn.
+	(*sse2_pmovmskb_ext_lt): New define_insn_and_split.
+
+	PR target/91824
 	* config/i386/i386.md (*popcountsi2_zext): New define_insn_and_split.
 	(*popcountsi2_zext_falsedep): New define_insn.
 

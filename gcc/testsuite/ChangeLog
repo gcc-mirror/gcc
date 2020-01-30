@@ -1,6 +1,9 @@
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91824
+	* gcc.target/i386/pr91824-2.c: New test.
+
+	PR target/91824
 	* gcc.target/i386/pr91824-1.c: New test.
 
 2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>

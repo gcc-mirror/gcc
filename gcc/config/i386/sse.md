@@ -15815,9 +15815,9 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext"
+(define_insn "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
+	(any_extend:DI
 	  (unspec:SI
 	    [(match_operand:VF_128_256 1 "register_operand" "x")]
 	    UNSPEC_MOVMSK)))]
@@ -15844,9 +15844,9 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_lt"
+(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_lt"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
+	(any_extend:DI
 	  (unspec:SI
 	    [(lt:VF_128_256
 	       (match_operand:<sseintvecmode> 1 "register_operand" "x")
@@ -15856,7 +15856,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
-	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
+	(any_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
   "operands[1] = gen_lowpart (<MODE>mode, operands[1]);"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex")
@@ -15880,9 +15880,9 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_shift"
+(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_shift"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
+	(any_extend:DI
 	  (unspec:SI
 	    [(subreg:VF_128_256
 	       (ashiftrt:<sseintvecmode>
@@ -15893,7 +15893,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
-	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
+	(any_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
   "operands[1] = gen_lowpart (<MODE>mode, operands[1]);"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex")
@@ -15920,6 +15920,23 @@
 	(zero_extend:DI
 	  (unspec:SI
 	    [(match_operand:VI1_AVX2 1 "register_operand" "x")]
+	    UNSPEC_MOVMSK)))]
+  "TARGET_64BIT && TARGET_SSE2"
+  "%vpmovmskb\t{%1, %k0|%k0, %1}"
+  [(set_attr "type" "ssemov")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (match_test "TARGET_AVX")
+     (const_string "*")
+     (const_string "1")))
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "SI")])
+
+(define_insn "*sse2_pmovmskb_ext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (unspec:SI
+	    [(match_operand:V16QI 1 "register_operand" "x")]
 	    UNSPEC_MOVMSK)))]
   "TARGET_64BIT && TARGET_SSE2"
   "%vpmovmskb\t{%1, %k0|%k0, %1}"
@@ -15965,6 +15982,28 @@
   ""
   [(set (match_dup 0)
 	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
+  ""
+  [(set_attr "type" "ssemov")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (match_test "TARGET_AVX")
+     (const_string "*")
+     (const_string "1")))
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "*sse2_pmovmskb_ext_lt"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (unspec:SI
+	    [(lt:V16QI (match_operand:V16QI 1 "register_operand" "x")
+		       (match_operand:V16QI 2 "const0_operand" "C"))]
+	    UNSPEC_MOVMSK)))]
+  "TARGET_64BIT && TARGET_SSE2"
+  "#"
+  ""
+  [(set (match_dup 0)
+	(sign_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
   ""
   [(set_attr "type" "ssemov")
    (set (attr "prefix_data16")
