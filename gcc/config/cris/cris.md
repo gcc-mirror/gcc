@@ -117,9 +117,15 @@
   (const_string "no"))
 
 ;; We also need attributes to sanely determine the condition code
-;; state.
-
+;; state.  This attribute isn't used as-is, just as a template,
+;; effectively a dummy except in a substitution setting CRIS_CC0_REGNUM
+;; to a specific value.
 (define_attr "cc" "none,clobber,normal" (const_string "normal"))
+
+;; The attribute "_enabled" is appended to "cc", forming "cc_enabled" to
+;; pick out certain alternatives when generating a useful
+;; condition-code-setting.  See the "enabled" attribute.
+(define_attr "cc_enabled" "none,clobber,normal" (const_string "normal"))
 
 ;; At the moment, this attribute is just used to help bb-reorder do its
 ;; work; the default 0 doesn't help it.  Many insns have other lengths,
@@ -147,7 +153,11 @@
 	(not (match_test "dead_or_set_regno_p (insn, CRIS_SRP_REGNUM)")))
    (nil) (nil)])
 
-(define_attr "enabled" "no,yes" (const_string "yes"))
+(define_attr "enabled" "no,yes"
+  (if_then_else
+   (eq_attr "cc_enabled" "normal")
+   (const_string "yes")
+   (const_string "no")))
 
 ;; Iterator definitions.
 
@@ -224,6 +234,44 @@
 (define_code_attr xCC [(eq "CC") (ne "CC") (gtu "CC") (ltu "CC_NZVC")
 		       (geu "CC_NZVC") (leu "CC") (lt "CC") (ge "CC")
 		       (gt "CC_NZVC") (le "CC_NZVC")])
+
+;; Substitutions to describe condition-code settings.
+
+(define_subst_attr "setnz" "setnz_subst" "" "_setnz")
+(define_subst_attr "ccnz" "setnz_subst" "" "_enabled")
+
+(define_subst "setnz_subst"
+  [(set (match_operand 0)
+	(match_operand 1))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "reload_completed"
+  [(set (reg:CC_NZ CRIS_CC0_REGNUM)
+	(compare:CC_NZ (match_dup 1) (const_int 0)))
+   (set (match_operand 0) (match_operand 1))])
+
+(define_subst_attr "setnzvc" "setnzvc_subst" "" "_setnzvc")
+(define_subst_attr "ccnzvc" "setnzvc_subst" "" "_enabled")
+
+(define_subst "setnzvc_subst"
+  [(set (match_operand 0)
+	(match_operand 1))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "reload_completed"
+  [(set (reg:CC_NZVC CRIS_CC0_REGNUM)
+	(compare:CC_NZVC (match_dup 1) (const_int 0)))
+   (set (match_operand 0) (match_operand 1))])
+
+(define_subst_attr "setcc" "setcc_subst" "" "_setcc")
+(define_subst_attr "cccc" "setcc_subst" "" "_enabled")
+
+(define_subst "setcc_subst"
+  [(set (match_operand 0)
+	(match_operand 1))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "reload_completed"
+  [(set (reg:CC CRIS_CC0_REGNUM)
+	(compare:CC (match_dup 1) (const_int 0)))
+   (set (match_operand 0) (match_operand 1))])
 
 ;; Operand and operator predicates.
 
@@ -495,7 +543,9 @@
      }
 })
 
-(define_insn "*movsi_internal"
+;; We provide CC, CC_NZ and CC_NZVC variants, as moves clear V and C
+;; and the result is thus usable in a compare against 0.
+(define_insn "*movsi_internal<setcc><setnz><setnzvc>"
   [(set
     (match_operand:SI 0 "nonimmediate_operand"
 		      "=r,r, r,Q>,r,Q>,g,r,r,g,rQ>,x,  m,x")
@@ -554,7 +604,8 @@
     }
 }
   [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,no,no,no,yes,yes,no,no")
-   (set_attr "cc" "*,*,*,*,*,*,*,*,*,*,none,none,none,none")])
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "*,*,none,none,*,none,none,*,*,none,none,none,none,none")])
 
 ;; FIXME: See movsi.
 
