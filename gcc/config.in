@@ -2185,6 +2185,12 @@
 #endif
 
 
+/* Define if your target C Library properly handles PT_GNU_STACK */
+#ifndef USED_FOR_TARGET
+#undef TARGET_LIBC_GNUSTACK
+#endif
+
+
 /* Define if your target C Library provides the AT_HWCAP value in the TCB */
 #ifndef USED_FOR_TARGET
 #undef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB

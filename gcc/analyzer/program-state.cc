@@ -259,7 +259,8 @@ sm_state_map::set_state (region_model *model,
   if (model == NULL)
     return;
   equiv_class &ec = model->get_constraints ()->get_equiv_class (sid);
-  set_state (ec, state, origin);
+  if (!set_state (ec, state, origin))
+    return;
 
   /* Also do it for all svalues that are equal via non-cm, so that
      e.g. (void *)&r and (foo *)&r transition together.  */
@@ -276,34 +277,42 @@ sm_state_map::set_state (region_model *model,
 }
 
 /* Set the state of EC to STATE, recording that the state came from
-   ORIGIN.  */
+   ORIGIN.
+   Return true if any states of svalue_ids within EC changed.  */
 
-void
+bool
 sm_state_map::set_state (const equiv_class &ec,
 			 state_machine::state_t state,
 			 svalue_id origin)
 {
   int i;
   svalue_id *sid;
+  bool any_changed = false;
   FOR_EACH_VEC_ELT (ec.m_vars, i, sid)
-    impl_set_state (*sid, state, origin);
+    any_changed |= impl_set_state (*sid, state, origin);
+  return any_changed;
 }
 
-/* Set state of PV to STATE, bypassing equivalence classes.  */
+/* Set state of SID to STATE, bypassing equivalence classes.
+   Return true if the state changed.  */
 
-void
+bool
 sm_state_map::impl_set_state (svalue_id sid, state_machine::state_t state,
 			      svalue_id origin)
 {
+  if (get_state (sid) == state)
+    return false;
+
   /* Special-case state 0 as the default value.  */
   if (state == 0)
     {
       if (m_map.get (sid))
 	m_map.remove (sid);
-      return;
+      return true;
     }
   gcc_assert (!sid.null_p ());
   m_map.put (sid, entry_t (state, origin));
+  return true;
 }
 
 /* Set the "global" state within this state map to STATE.  */

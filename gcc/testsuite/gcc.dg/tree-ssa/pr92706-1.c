@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O2 -fdump-tree-esra-details" } */
 
 struct S { int i[4]; } __attribute__((aligned(128)));

@@ -666,12 +666,16 @@ constant_svalue::eval_condition (constant_svalue *lhs,
   gcc_assert (CONSTANT_CLASS_P (lhs_const));
   gcc_assert (CONSTANT_CLASS_P (rhs_const));
 
-  tree comparison
-    = fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
-  if (comparison == boolean_true_node)
-    return tristate (tristate::TS_TRUE);
-  if (comparison == boolean_false_node)
-    return tristate (tristate::TS_FALSE);
+  /* Check for comparable types.  */
+  if (TREE_TYPE (lhs_const) == TREE_TYPE (rhs_const))
+    {
+      tree comparison
+	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
+      if (comparison == boolean_true_node)
+	return tristate (tristate::TS_TRUE);
+      if (comparison == boolean_false_node)
+	return tristate (tristate::TS_FALSE);
+    }
   return tristate::TS_UNKNOWN;
 }
 

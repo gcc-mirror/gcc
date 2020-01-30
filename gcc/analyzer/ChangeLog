@@ -1,3 +1,18 @@
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93450
+	* program-state.cc (sm_state_map::set_state): For the overload
+	taking an svalue_id, bail out if the set_state on the ec does
+	nothing.  Convert the latter's return type from void to bool,
+	returning true if anything changed.
+	(sm_state_map::impl_set_state): Convert the return type from void
+	to bool, returning true if the state changed.
+	* program-state.h (sm_state_map::set_state): Convert return type
+	from void to bool.
+	(sm_state_map::impl_set_state): Likewise.
+	* region-model.cc (constant_svalue::eval_condition): Only call
+	fold_build2 if the types are the same.
+
 2020-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* analyzer.h (PUSH_IGNORE_WFORMAT, POP_IGNORE_WFORMAT): Remove.

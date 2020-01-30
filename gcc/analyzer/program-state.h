@@ -161,10 +161,10 @@ public:
 		  svalue_id sid,
 		  state_machine::state_t state,
 		  svalue_id origin);
-  void set_state (const equiv_class &ec,
+  bool set_state (const equiv_class &ec,
 		  state_machine::state_t state,
 		  svalue_id origin);
-  void impl_set_state (svalue_id sid,
+  bool impl_set_state (svalue_id sid,
 		       state_machine::state_t state,
 		       svalue_id origin);
 

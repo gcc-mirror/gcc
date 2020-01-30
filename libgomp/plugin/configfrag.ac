@@ -211,7 +211,7 @@ if test x"$enable_offload_targets" != x; then
 	case "${target}" in
 	  x86_64-*-*)
 	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "*)
+	      *" -m32 "*|*" -mx32 "*)
 	        PLUGIN_HSA=0
 		;;
 	      *)
@@ -251,7 +251,7 @@ if test x"$enable_offload_targets" != x; then
 	case "${target}" in
 	  x86_64-*-*)
 	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "*)
+	      *" -m32 "*|*" -mx32 "*)
 		PLUGIN_GCN=0
 		;;
 	      *)

@@ -1,3 +1,53 @@
+2020-01-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (print_operand): Handle LTGT.
+	* config/gcn/predicates.md (gcn_fp_compare_operator): Allow ltgt.
+
+2020-01-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Wrap VECTOR_CST
+	and CONSTRUCTOR in _Literal (type) with TDF_GIMPLE.
+
+2020-01-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_elf_select_rtx_section): Place function pointers
+	without a DECL in .data.rel.ro.local.
+
+2020-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93494
+	* config/arm/arm.md (uaddvdi4): Actually emit what gen_uaddvsi4
+	returned.
+
+	PR target/91824
+	* config/i386/sse.md
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext): Renamed to ...
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext): ... this.  Use
+	any_extend code iterator instead of always zero_extend.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_lt): Renamed to ...
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_lt): ... this.
+	Use any_extend code iterator instead of always zero_extend.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_shift): Renamed to ...
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_shift): ... this.
+	Use any_extend code iterator instead of always zero_extend.
+	(*sse2_pmovmskb_ext): New define_insn.
+	(*sse2_pmovmskb_ext_lt): New define_insn_and_split.
+
+	PR target/91824
+	* config/i386/i386.md (*popcountsi2_zext): New define_insn_and_split.
+	(*popcountsi2_zext_falsedep): New define_insn.
+
+2020-01-30  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR bootstrap/93409
+	* config/gcn/gcn-hsa.h (ASM_SPEC): Add -mattr=-code-object-v3 as
+	LLVM's assembler changed the default in version 9.
+
 2020-01-24  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/89689

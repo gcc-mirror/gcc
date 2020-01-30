@@ -3495,8 +3495,10 @@ gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, .
     return true;
 
   va_start (argp, optype_msgid);
-  vsnprintf (buffer, 240, optype_msgid, argp);
+  d = vsnprintf (buffer, sizeof (buffer), optype_msgid, argp);
   va_end (argp);
+  if (d < 1 || d >= (int) sizeof (buffer)) /* Reject truncation.  */
+    gfc_internal_error ("optype_msgid overflow: %d", d);
 
   if (op1->rank != op2->rank)
     {

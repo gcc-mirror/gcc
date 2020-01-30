@@ -29802,6 +29802,23 @@ $as_echo "#define TARGET_LIBC_PROVIDES_HWCAP_IN_TCB 1" >>confdefs.h
 
 fi
 
+# Check if the target LIBC handles PT_GNU_STACK.
+gcc_cv_libc_gnustack=unknown
+case "$target" in
+  mips*-*-linux*)
+
+if test $glibc_version_major -gt 2 \
+  || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 31 ); then :
+  gcc_cv_libc_gnustack=yes
+fi
+    ;;
+esac
+if test x$gcc_cv_libc_gnustack = xyes; then
+
+$as_echo "#define TARGET_LIBC_GNUSTACK 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking dl_iterate_phdr in target C library" >&5
 $as_echo_n "checking dl_iterate_phdr in target C library... " >&6; }
 gcc_cv_target_dl_iterate_phdr=unknown

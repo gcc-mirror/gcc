@@ -1,3 +1,30 @@
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82521
+	* pt.c (tsubst_copy_and_build) [EQ_EXPR]: Only suppress warnings if
+	the expression was dependent before substitution.
+
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (act_des_fn): New.
+	(morph_fn_to_coro): Call act_des_fn to build actor/destroy decls.
+	Access promise via actor function's frame pointer argument.
+	(build_actor_fn, build_destroy_fn): Use frame pointer argument.
+
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (co_await_expander): Handle type conversion case.
+
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90333
+	PR c++/89640
+	PR c++/60503
+	* parser.c (cp_parser_type_specifier_seq): Don't parse attributes in
+	a trailing return type.
+	(cp_parser_lambda_declarator_opt): Parse C++11 attributes before
+	parens.
+
 2020-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91754 - Fix template arguments comparison with class NTTP.

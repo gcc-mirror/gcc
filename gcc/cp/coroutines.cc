@@ -1357,6 +1357,9 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 				 &buried_stmt, NULL))
 	saved_co_await = r;
     }
+  else if ((stmt_code == CONVERT_EXPR || stmt_code == NOP_EXPR)
+	   && TREE_CODE (TREE_OPERAND (stripped_stmt, 0)) == CO_AWAIT_EXPR)
+    saved_co_await = TREE_OPERAND (stripped_stmt, 0);
 
   if (!saved_co_await)
     return NULL_TREE;
@@ -1513,6 +1516,11 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     {
     default: /* not likely to work .. but... */
       append_to_statement_list (resume_call, &stmt_list);
+      break;
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+      TREE_OPERAND (stripped_stmt, 0) = resume_call;
+      append_to_statement_list (saved_statement, &stmt_list);
       break;
     case INIT_EXPR:
     case MODIFY_EXPR:
@@ -1820,11 +1828,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
 
   /* One param, the coro frame pointer.  */
-  tree actor_fp
-    = build_lang_decl (PARM_DECL, get_identifier ("frame_ptr"), coro_frame_ptr);
-  DECL_CONTEXT (actor_fp) = actor;
-  DECL_ARG_TYPE (actor_fp) = type_passed_as (coro_frame_ptr);
-  DECL_ARGUMENTS (actor) = actor_fp;
+  tree actor_fp = DECL_ARGUMENTS (actor);
 
   /* A void return.  */
   tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
@@ -2211,12 +2215,7 @@ build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
 		  tree actor)
 {
   /* One param, the coro frame pointer.  */
-  tree coro_frame_ptr = build_pointer_type (coro_frame_type);
-  tree destr_fp
-    = build_lang_decl (PARM_DECL, get_identifier ("frame_ptr"), coro_frame_ptr);
-  DECL_CONTEXT (destr_fp) = destroy;
-  DECL_ARG_TYPE (destr_fp) = type_passed_as (coro_frame_ptr);
-  DECL_ARGUMENTS (destroy) = destr_fp;
+  tree destr_fp = DECL_ARGUMENTS (destroy);
 
   /* A void return.  */
   tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
@@ -2857,6 +2856,24 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   return NULL_TREE;
 }
 
+/* Build, return FUNCTION_DECL node with its coroutine frame pointer argument
+   for either actor or destroy functions.  */
+
+static tree
+act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
+{
+  tree fn_name = get_fn_local_identifier (orig, name);
+  tree fn = build_lang_decl (FUNCTION_DECL, fn_name, fn_type);
+  DECL_CONTEXT (fn) = DECL_CONTEXT (orig);
+  DECL_INITIAL (fn) = error_mark_node;
+  tree id = get_identifier ("frame_ptr");
+  tree fp = build_lang_decl (PARM_DECL, id, coro_frame_ptr);
+  DECL_CONTEXT (fp) = fn;
+  DECL_ARG_TYPE (fp) = type_passed_as (coro_frame_ptr);
+  DECL_ARGUMENTS (fn) = fp;
+  return fn;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -2983,17 +3000,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     = build_function_type_list (void_type_node, coro_frame_ptr, NULL_TREE);
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
 
-  /* Declare the actor function.  */
-  tree actor_name = get_fn_local_identifier (orig, "actor");
-  tree actor = build_lang_decl (FUNCTION_DECL, actor_name, act_des_fn_type);
-  DECL_CONTEXT (actor) = DECL_CONTEXT (orig);
-  DECL_INITIAL (actor) = error_mark_node;
-
-  /* Declare the destroyer function.  */
-  tree destr_name = get_fn_local_identifier (orig, "destroy");
-  tree destroy = build_lang_decl (FUNCTION_DECL, destr_name, act_des_fn_type);
-  DECL_CONTEXT (destroy) = DECL_CONTEXT (orig);
-  DECL_INITIAL (destroy) = error_mark_node;
+  /* Declare the actor and destroyer function.  */
+  tree actor = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "actor");
+  tree destroy = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "destroy");
 
   /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
@@ -3590,39 +3599,41 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       tree ueh_meth
 	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
 				 fn_start, /*musthave=*/true);
+      /* actor's version of the promise.  */
+      tree actor_frame = build1_loc (fn_start, INDIRECT_REF, coro_frame_type,
+				     DECL_ARGUMENTS (actor));
+      tree ap_m = lookup_member (coro_frame_type, get_identifier ("__p"), 1, 0,
+				 tf_warning_or_error);
+      tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE,
+						false, tf_warning_or_error);
       /* Build promise.unhandled_exception();  */
       tree ueh
-	= build_new_method_call (p, ueh_meth, NULL, NULL_TREE, LOOKUP_NORMAL,
+	= build_new_method_call (ap, ueh_meth, NULL, NULL_TREE, LOOKUP_NORMAL,
 				 NULL, tf_warning_or_error);
 
       /* The try block is just the original function, there's no real
 	 need to call any function to do this.  */
-      tree tcb = build_stmt (fn_start, TRY_BLOCK, NULL_TREE, NULL_TREE);
-      TRY_STMTS (tcb) = fnbody;
-      TRY_HANDLERS (tcb) = push_stmt_list ();
+      fnbody = build_stmt (fn_start, TRY_BLOCK, fnbody, NULL_TREE);
+      TRY_HANDLERS (fnbody) = push_stmt_list ();
       /* Mimic what the parser does for the catch.  */
       tree handler = begin_handler ();
       finish_handler_parms (NULL_TREE, handler); /* catch (...) */
       ueh = maybe_cleanup_point_expr_void (ueh);
       add_stmt (ueh);
       finish_handler (handler);
-      TRY_HANDLERS (tcb) = pop_stmt_list (TRY_HANDLERS (tcb));
+      TRY_HANDLERS (fnbody) = pop_stmt_list (TRY_HANDLERS (fnbody));
       /* If the function starts with a BIND_EXPR, then we need to create
 	 one here to contain the try-catch and to link up the scopes.  */
       if (orig_fn_has_outer_bind)
 	{
-	  tree tcb_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+	  fnbody = build3 (BIND_EXPR, void_type_node, NULL, fnbody, NULL);
 	  /* Make and connect the scope blocks.  */
 	  tree tcb_block = make_node (BLOCK);
 	  /* .. and connect it here.  */
 	  BLOCK_SUPERCONTEXT (replace_blk) = tcb_block;
 	  BLOCK_SUBBLOCKS (tcb_block) = replace_blk;
-	  BIND_EXPR_BLOCK (tcb_bind) = tcb_block;
-	  BIND_EXPR_BODY (tcb_bind) = tcb;
-	  fnbody = tcb_bind;
+	  BIND_EXPR_BLOCK (fnbody) = tcb_block;
 	}
-      else
-	fnbody = tcb;
     }
   else if (pedantic)
     {
