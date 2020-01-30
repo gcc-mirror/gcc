@@ -1,5 +1,17 @@
 2020-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_lexer_alloc): Remove pch finalizing.
+	(cp_parser_skip_to_closing_parenthesis_1): Deal with falling into
+	a CPP_PRAGMA.
+	(cp_parser_skip_to_end_of_{,block_or_}statement): Likewise.
+	(cp_parser_skip_to_pragma_eol): Don't consume CPP_EOF.
+	(cp_parser_new): Take a lexer, don't create it here.
+	(cp_parser_declaration): Just point at peeked tokens, don't copy.
+	(cp_parser_block_declaration): Likewise.
+	(cp_parser_initial_pragma): Don't get the first token.
+	(c_parse_file): Do it here, and finalize pch.
+
 	libcpp/
 	* lex.c (_cpp_lex_direct): Set location of PRAGMA_EOL.
 	gcc/testsuite/

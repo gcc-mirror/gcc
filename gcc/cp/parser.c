@@ -609,12 +609,8 @@ debug (cp_parser *ptr)
 static cp_lexer *
 cp_lexer_alloc (void)
 {
-  cp_lexer *lexer;
-
-  c_common_no_more_pch ();
-
   /* Allocate the memory.  */
-  lexer = ggc_cleared_alloc<cp_lexer> ();
+  cp_lexer *lexer = ggc_cleared_alloc<cp_lexer> ();
 
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
@@ -2131,7 +2127,7 @@ pop_unparsed_function_queues (cp_parser *parser)
 /* Constructors and destructors.  */
 
 static cp_parser *cp_parser_new
-  (void);
+  (cp_lexer *);
 
 /* Routines to parse various constructs.
 
@@ -3793,6 +3789,11 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 	    condop_depth--;
 	  break;
 
+	case CPP_PRAGMA:
+	  /* We fell into a pragma.  Skip it, and continue. */
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  break;
+
 	default:
 	  break;
 	}
@@ -3884,6 +3885,11 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  ++nesting_depth;
 	  break;
 
+	case CPP_PRAGMA:
+	  /* We fell into a pragma.  Skip it, and be done */
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  return;
+
 	default:
 	  break;
 	}
@@ -3959,6 +3965,11 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  nesting_depth++;
 	  break;
 
+	case CPP_PRAGMA:
+	  /* We fell into a pragma.  Skip it, and be done */
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  return;
+
 	default:
 	  break;
 	}
@@ -4025,8 +4036,13 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
   parser->lexer->in_pragma = false;
 
   do
-    token = cp_lexer_consume_token (parser->lexer);
-  while (token->type != CPP_PRAGMA_EOL && token->type != CPP_EOF);
+    {
+      token = cp_lexer_peek_token (parser->lexer);
+      if (token->type == CPP_EOF)
+	break;
+      cp_lexer_consume_token (parser->lexer);
+    }
+  while (token->type != CPP_PRAGMA_EOL);
 
   /* Ensure that the pragma is not parsed again.  */
   cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
@@ -4097,7 +4113,7 @@ cp_parser_make_indirect_declarator (enum tree_code code, tree class_type,
 /* Create a new C++ parser.  */
 
 static cp_parser *
-cp_parser_new (void)
+cp_parser_new (cp_lexer *lexer)
 {
   /* Initialize the binops_by_token so that we can get the tree
      directly from the token.  */
@@ -4105,7 +4121,7 @@ cp_parser_new (void)
     binops_by_token[binops[i].token_type] = binops[i];
 
   cp_parser *parser = ggc_cleared_alloc<cp_parser> ();
-  parser->lexer = cp_lexer_alloc ();
+  parser->lexer = lexer;
   parser->context = cp_parser_context_new (NULL);
 
   /* For now, we always accept GNU extensions.  */
@@ -13748,11 +13764,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 static void
 cp_parser_declaration (cp_parser* parser)
 {
-  cp_token token1;
-  cp_token token2;
   int saved_pedantic;
-  void *p;
-  tree attributes = NULL_TREE;
 
   /* Check for the `__extension__' keyword.  */
   if (cp_parser_extension_opt (parser, &saved_pedantic))
@@ -13766,35 +13778,33 @@ cp_parser_declaration (cp_parser* parser)
     }
 
   /* Try to figure out what kind of declaration is present.  */
-  token1 = *cp_lexer_peek_token (parser->lexer);
+  cp_token *token1 = cp_lexer_peek_token (parser->lexer);
+  cp_token *token2 = NULL;
 
-  if (token1.type != CPP_EOF)
-    token2 = *cp_lexer_peek_nth_token (parser->lexer, 2);
-  else
-    {
-      token2.type = CPP_EOF;
-      token2.keyword = RID_MAX;
-    }
+  if (token1->type != CPP_EOF)
+    token2 = cp_lexer_peek_nth_token (parser->lexer, 2);
 
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
-  p = obstack_alloc (&declarator_obstack, 0);
+  void *p = obstack_alloc (&declarator_obstack, 0);
+
+  tree attributes = NULL_TREE;
 
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
-  if (token1.keyword == RID_EXTERN
-      && cp_parser_is_pure_string_literal (&token2))
+  if (token1->keyword == RID_EXTERN
+      && cp_parser_is_pure_string_literal (token2))
     cp_parser_linkage_specification (parser);
   /* If the next token is `template', then we have either a template
      declaration, an explicit instantiation, or an explicit
      specialization.  */
-  else if (token1.keyword == RID_TEMPLATE)
+  else if (token1->keyword == RID_TEMPLATE)
     {
       /* `template <>' indicates a template specialization.  */
-      if (token2.type == CPP_LESS
+      if (token2->type == CPP_LESS
 	  && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_GREATER)
 	cp_parser_explicit_specialization (parser);
       /* `template <' indicates a template declaration.  */
-      else if (token2.type == CPP_LESS)
+      else if (token2->type == CPP_LESS)
 	cp_parser_template_declaration (parser, /*member_p=*/false);
       /* Anything else must be an explicit instantiation.  */
       else
@@ -13802,7 +13812,7 @@ cp_parser_declaration (cp_parser* parser)
     }
   /* If the next token is `export', it's new-style modules or
      old-style template.  */
-  else if (token1.keyword == RID_EXPORT)
+  else if (token1->keyword == RID_EXPORT)
     {
       if (!modules_p ())
 	cp_parser_template_declaration (parser, /*member_p=*/false);
@@ -13813,34 +13823,34 @@ cp_parser_declaration (cp_parser* parser)
      after that is `template', we have a GNU extended explicit
      instantiation directive.  */
   else if (cp_parser_allow_gnu_extensions_p (parser)
-	   && (token1.keyword == RID_EXTERN
-	       || token1.keyword == RID_STATIC
-	       || token1.keyword == RID_INLINE)
-	   && token2.keyword == RID_TEMPLATE)
+	   && token2->keyword == RID_TEMPLATE
+	   && (token1->keyword == RID_EXTERN
+	       || token1->keyword == RID_STATIC
+	       || token1->keyword == RID_INLINE))
     cp_parser_explicit_instantiation (parser);
   /* If the next token is `namespace', check for a named or unnamed
      namespace definition.  */
-  else if (token1.keyword == RID_NAMESPACE
+  else if (token1->keyword == RID_NAMESPACE
 	   && (/* A named namespace definition.  */
-	       (token2.type == CPP_NAME
+	       (token2->type == CPP_NAME
 		&& (cp_lexer_peek_nth_token (parser->lexer, 3)->type
 		    != CPP_EQ))
-               || (token2.type == CPP_OPEN_SQUARE
+               || (token2->type == CPP_OPEN_SQUARE
                    && cp_lexer_peek_nth_token (parser->lexer, 3)->type
                    == CPP_OPEN_SQUARE)
 	       /* An unnamed namespace definition.  */
-	       || token2.type == CPP_OPEN_BRACE
-	       || token2.keyword == RID_ATTRIBUTE))
+	       || token2->type == CPP_OPEN_BRACE
+	       || token2->keyword == RID_ATTRIBUTE))
     cp_parser_namespace_definition (parser);
   /* An inline (associated) namespace definition.  */
-  else if (token1.keyword == RID_INLINE
-	   && token2.keyword == RID_NAMESPACE)
+  else if (token2->keyword == RID_NAMESPACE
+	   && token1->keyword == RID_INLINE)
     cp_parser_namespace_definition (parser);
   /* Objective-C++ declaration/definition.  */
-  else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1.keyword))
+  else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1->keyword))
     cp_parser_objc_declaration (parser, NULL_TREE);
   else if (c_dialect_objc ()
-	   && token1.keyword == RID_ATTRIBUTE
+	   && token1->keyword == RID_ATTRIBUTE
 	   && cp_parser_objc_valid_prefix_attributes (parser, &attributes))
     cp_parser_objc_declaration (parser, attributes);
   /* At this point we may have a template declared by a concept
@@ -13902,7 +13912,6 @@ static void
 cp_parser_block_declaration (cp_parser *parser,
 			     bool      statement_p)
 {
-  cp_token *token1;
   int saved_pedantic;
 
   /* Check for the `__extension__' keyword.  */
@@ -13918,7 +13927,7 @@ cp_parser_block_declaration (cp_parser *parser,
 
   /* Peek at the next token to figure out which kind of declaration is
      present.  */
-  token1 = cp_lexer_peek_token (parser->lexer);
+  cp_token *token1 = cp_lexer_peek_token (parser->lexer);
 
   /* If the next keyword is `asm', we have an asm-definition.  */
   if (token1->keyword == RID_ASM)
@@ -43723,12 +43732,8 @@ static GTY (()) cp_parser *the_parser;
 static void
 cp_parser_initial_pragma (cp_token *first_token)
 {
-  cp_lexer_get_preprocessor_token (0, first_token);
   if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
-    {
-      c_common_no_more_pch ();
-      return;
-    }
+    return;
 
   cp_lexer_get_preprocessor_token (0, first_token);
 
@@ -44183,9 +44188,15 @@ c_parse_file (void)
   /* It's possible that parsing the first pragma will load a PCH file,
      which is a GC collection point.  So we have to do that before
      allocating any memory.  Modules is incompatible with PCH.  */
+  cp_lexer_get_preprocessor_token (0, &first);
   cp_parser_initial_pragma (&first);
+  c_common_no_more_pch ();
 
-  the_parser = cp_parser_new ();
+  /* cp_lexer_new_main is called before doing any GC allocation
+     because tokenization might load a PCH file.  */
+  cp_lexer *lexer = cp_lexer_alloc ();
+
+  the_parser = cp_parser_new (lexer);
 
   cp_parser_translation_unit (the_parser, &first);
   class_decl_loc_t::diag_mismatched_tags ();
