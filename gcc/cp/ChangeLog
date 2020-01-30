@@ -1,5 +1,12 @@
 2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
+	* coroutines.cc (act_des_fn): New.
+	(morph_fn_to_coro): Call act_des_fn to build actor/destroy decls.
+	Access promise via actor function's frame pointer argument.
+	(build_actor_fn, build_destroy_fn): Use frame pointer argument.
+
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
 	* coroutines.cc (co_await_expander): Handle type conversion case.
 
 2020-01-29  Jason Merrill  <jason@redhat.com>
