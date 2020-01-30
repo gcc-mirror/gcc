@@ -18957,7 +18957,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18960 "configure"
+#line 18977 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19063,7 +19063,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19066 "configure"
+#line 19083 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -29797,6 +29797,23 @@ esac
 if test x$gcc_cv_libc_provides_hwcap_in_tcb = xyes; then
 
 $as_echo "#define TARGET_LIBC_PROVIDES_HWCAP_IN_TCB 1" >>confdefs.h
+
+fi
+
+# Check if the target LIBC handles PT_GNU_STACK.
+gcc_cv_libc_gnustack=unknown
+case "$target" in
+  mips*-*-linux*)
+
+if test $glibc_version_major -gt 2 \
+  || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 31 ); then :
+  gcc_cv_libc_gnustack=yes
+fi
+    ;;
+esac
+if test x$gcc_cv_libc_gnustack = xyes; then
+
+$as_echo "#define TARGET_LIBC_GNUSTACK 1" >>confdefs.h
 
 fi
 
