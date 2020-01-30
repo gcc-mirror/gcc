@@ -1,3 +1,12 @@
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93450
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Only compare constants
+	if their types are compatible.
+	* region-model.cc (constant_svalue::eval_condition): Replace check
+	for identical types with call to types_compatible_p.
+
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* program-state.cc (extrinsic_state::dump_to_pp): New.

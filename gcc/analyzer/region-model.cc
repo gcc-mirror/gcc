@@ -667,7 +667,7 @@ constant_svalue::eval_condition (constant_svalue *lhs,
   gcc_assert (CONSTANT_CLASS_P (rhs_const));
 
   /* Check for comparable types.  */
-  if (TREE_TYPE (lhs_const) == TREE_TYPE (rhs_const))
+  if (types_compatible_p (TREE_TYPE (lhs_const), TREE_TYPE (rhs_const)))
     {
       tree comparison
 	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
