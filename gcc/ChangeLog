@@ -1,3 +1,9 @@
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93356
+	* doc/analyzer.texi (Limitations): Note that constraints on
+	floating-point values are currently ignored.
+
 2020-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/93384

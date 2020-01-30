@@ -1,4 +1,16 @@
-2020-01-30  Jeff Law  <law@redhat.com
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93356
+	* gcc.dg/analyzer/conditionals-notrans.c (test_float_selfcmp):
+	Add.
+	* gcc.dg/analyzer/conditionals-trans.c: Mark floating point
+	comparison test as failing.
+	(test_float_selfcmp): Add.
+	* gcc.dg/analyzer/data-model-1.c: Mark floating point comparison
+	tests as failing.
+	* gcc.dg/analyzer/torture/pr93356.c: New test.
+
+2020-01-30  Jeff Law  <law@redhat.com>
 
 	PR c/88660
 	* gcc.dg/pr88660.c: New test

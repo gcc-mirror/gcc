@@ -5144,6 +5144,15 @@ region_model::eval_condition (svalue_id lhs_sid,
 			      enum tree_code op,
 			      svalue_id rhs_sid) const
 {
+  svalue *lhs = get_svalue (lhs_sid);
+  svalue *rhs = get_svalue (rhs_sid);
+
+  /* For now, make no attempt to capture constraints on floating-point
+     values.  */
+  if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
+      || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
+    return tristate::unknown ();
+
   tristate ts = eval_condition_without_cm (lhs_sid, op, rhs_sid);
 
   if (ts.is_known ())
@@ -5173,6 +5182,12 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
   /* See what we know based on the values.  */
   if (lhs && rhs)
     {
+      /* For now, make no attempt to capture constraints on floating-point
+	 values.  */
+      if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
+	  || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
+	return tristate::unknown ();
+
       if (lhs == rhs)
 	{
 	  /* If we have the same svalue, then we have equality
@@ -5252,6 +5267,11 @@ bool
 region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 			      region_model_context *ctxt)
 {
+  /* For now, make no attempt to capture constraints on floating-point
+     values.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return true;
+
   svalue_id lhs_sid = get_rvalue (lhs, ctxt);
   svalue_id rhs_sid = get_rvalue (rhs, ctxt);
 
@@ -5385,6 +5405,11 @@ region_model::eval_condition (tree lhs,
 			      tree rhs,
 			      region_model_context *ctxt)
 {
+  /* For now, make no attempt to model constraints on floating-point
+     values.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return tristate::unknown ();
+
   return eval_condition (get_rvalue (lhs, ctxt), op, get_rvalue (rhs, ctxt));
 }
 

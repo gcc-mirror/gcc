@@ -1,5 +1,13 @@
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93356
+	* region-model.cc (region_model::eval_condition): In both
+	overloads, bail out immediately on floating-point types.
+	(region_model::eval_condition_without_cm): Likewise.
+	(region_model::add_constraint): Likewise.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93450
 	* program-state.cc (sm_state_map::set_state): For the overload
 	taking an svalue_id, bail out if the set_state on the ec does
