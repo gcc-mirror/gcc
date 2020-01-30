@@ -1,5 +1,11 @@
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/analyzer/conditionals-2.c: Move to...
+	* gcc.dg/analyzer/torture/conditionals-2.c: ...here, converting
+	to a torture test.  Remove redundant include.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93356
 	* gcc.dg/analyzer/conditionals-notrans.c (test_float_selfcmp):
 	Add.
