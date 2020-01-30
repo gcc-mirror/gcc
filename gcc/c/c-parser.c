@@ -6607,7 +6607,7 @@ c_parser_switch_statement (c_parser *parser, bool *if_p)
 	  && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
 	explicit_cast_p = true;
       ce = c_parser_expression (parser);
-      ce = convert_lvalue_to_rvalue (switch_cond_loc, ce, true, false);
+      ce = convert_lvalue_to_rvalue (switch_cond_loc, ce, true, true);
       expr = ce.value;
       /* ??? expr has no valid location?  */
       parens.skip_until_found_close (parser);

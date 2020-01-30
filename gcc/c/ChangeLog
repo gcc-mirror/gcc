@@ -1,3 +1,9 @@
+2020-01-30  Jeff Law  <law@redhat.com>
+
+	PR c/88660
+	* c-parser.c (c_parser_switch_statement): Make sure to request
+	marking the switch expr as used.
+
 2020-01-22  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93348
