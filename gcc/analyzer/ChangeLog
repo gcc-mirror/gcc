@@ -1,5 +1,17 @@
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* program-state.cc (extrinsic_state::dump_to_pp): New.
+	(extrinsic_state::dump_to_file): New.
+	(extrinsic_state::dump): New.
+	* program-state.h (extrinsic_state::dump_to_pp): New decl.
+	(extrinsic_state::dump_to_file): New decl.
+	(extrinsic_state::dump): New decl.
+	* sm.cc: Include "pretty-print.h".
+	(state_machine::dump_to_pp): New.
+	* sm.h (state_machine::dump_to_pp): New decl.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-manager.cc (for_each_state_change): Use
 	extrinsic_state::get_num_checkers rather than accessing m_checkers
 	directly.

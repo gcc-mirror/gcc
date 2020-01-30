@@ -59,6 +59,44 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* class extrinsic_state.  */
+
+/* Dump a multiline representation of this state to PP.  */
+
+void
+extrinsic_state::dump_to_pp (pretty_printer *pp) const
+{
+  pp_printf (pp, "extrinsic_state: %i checker(s)\n", get_num_checkers ());
+  unsigned i;
+  state_machine *checker;
+  FOR_EACH_VEC_ELT (m_checkers, i, checker)
+    {
+      pp_printf (pp, "m_checkers[%i]: %qs\n", i, checker->get_name ());
+      checker->dump_to_pp (pp);
+    }
+}
+
+/* Dump a multiline representation of this state to OUTF.  */
+
+void
+extrinsic_state::dump_to_file (FILE *outf) const
+{
+  pretty_printer pp;
+  if (outf == stderr)
+    pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = outf;
+  dump_to_pp (&pp);
+  pp_flush (&pp);
+}
+
+/* Dump a multiline representation of this state to stderr.  */
+
+DEBUG_FUNCTION void
+extrinsic_state::dump () const
+{
+  dump_to_file (stderr);
+}
+
 /* class sm_state_map.  */
 
 /* sm_state_map's ctor.  */

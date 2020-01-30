@@ -80,6 +80,8 @@ public:
 
   void validate (state_t s) const;
 
+  void dump_to_pp (pretty_printer *pp) const;
+
 protected:
   state_t add_state (const char *name);
 
