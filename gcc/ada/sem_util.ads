@@ -157,14 +157,12 @@ package Sem_Util is
    --  force an error).
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Async_Readers and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Async_Readers.
 
    function Async_Writers_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Async_Writers and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Async_Writers.
 
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
    --  If at the point of declaration an array type has a private or limited
@@ -456,6 +454,19 @@ package Sem_Util is
    --  and the context is external to the protected operation, to warn against
    --  a possible unlocked access to data.
 
+   procedure Check_Volatility_Compatibility
+     (Id1, Id2                     : Entity_Id;
+      Description_1, Description_2 : String;
+      Srcpos_Bearer                : Node_Id);
+   --  Id1 and Id2 should each be the entity of a state abstraction, a
+   --  variable, or a type (i.e., something suitable for passing to
+   --  Async_Readers_Enabled and similar functions).
+   --  Does nothing if SPARK_Mode /= On. Otherwise, flags a legality violation
+   --  if one or more of the four volatility-related aspects is False for Id1
+   --  and True for Id2. The two descriptions are included in the error message
+   --  text; the source position for the generated message is determined by
+   --  Srcpos_Bearer.
+
    function Choice_List (N : Node_Id) return List_Id;
    --  Utility to retrieve the choices of a Component_Association or the
    --  Discrete_Choices of an Iterated_Component_Association. For various
@@ -664,14 +675,12 @@ package Sem_Util is
    --  are looked through.
 
    function Effective_Reads_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Effective_Reads and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Effective_Reads.
 
    function Effective_Writes_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of an abstract state or a variable, determine whether
-   --  Id is subject to external property Effective_Writes and if it is, the
-   --  related expression evaluates to True.
+   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Returns True iff Id is subject to external property Effective_Writes.
 
    function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
    --  Returns the enclosing N_Compilation_Unit node that is the root of a

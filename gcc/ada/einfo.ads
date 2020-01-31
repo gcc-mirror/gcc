@@ -744,9 +744,9 @@ package Einfo is
 
 --    Contract (Node34)
 --       Defined in constant, entry, entry family, operator, [generic] package,
---       package body, protected type, [generic] subprogram, subprogram body,
---       variable and task type entities. Points to the contract of the entity,
---       holding various assertion items and data classifiers.
+--       package body, protected unit, [generic] subprogram, subprogram body,
+--       variable, task unit, and type entities. Points to the contract of the
+--       entity, holding various assertion items and data classifiers.
 
 --    Contract_Wrapper (Node25)
 --       Defined in entry and entry family entities. Set only when the entry

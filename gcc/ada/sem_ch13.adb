@@ -2180,7 +2180,12 @@ package body Sem_Ch13 is
 
             --  Check some general restrictions on language defined aspects
 
-            if not Implementation_Defined_Aspect (A_Id) then
+            if not Implementation_Defined_Aspect (A_Id)
+              or else A_Id = Aspect_Async_Readers
+              or else A_Id = Aspect_Async_Writers
+              or else A_Id = Aspect_Effective_Reads
+              or else A_Id = Aspect_Effective_Reads
+            then
                Error_Msg_Name_1 := Nam;
 
                --  Not allowed for renaming declarations. Examine the original
@@ -2209,6 +2214,10 @@ package body Sem_Ch13 is
                      and then A_Id /= Aspect_Atomic_Components
                      and then A_Id /= Aspect_Independent_Components
                      and then A_Id /= Aspect_Volatile_Components
+                     and then A_Id /= Aspect_Async_Readers
+                     and then A_Id /= Aspect_Async_Writers
+                     and then A_Id /= Aspect_Effective_Reads
+                     and then A_Id /= Aspect_Effective_Reads
                   then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",

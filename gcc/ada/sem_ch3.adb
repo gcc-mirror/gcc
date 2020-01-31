@@ -1398,6 +1398,26 @@ package body Sem_Ch3 is
          Set_Is_Tagged_Type (T, False);
       end if;
 
+      --  For SPARK, check that the designated type is compatible with
+      --  respect to volatility with the access type.
+
+      if SPARK_Mode /= Off
+         and then Comes_From_Source (T)
+      then
+         --  ??? UNIMPLEMENTED
+         --  In the case where the designated type is incomplete at this point,
+         --  performing this check here is harmless but the check will need to
+         --  be repeated when the designated type is complete.
+
+         --  The preceding call to Comes_From_Source is needed because the
+         --  FE sometimes introduces implicitly declared access types. See,
+         --  for example, the expansion of nested_po.ads in OA28-015.
+
+         Check_Volatility_Compatibility
+           (Full_Desig, T, "designated type", "access type",
+            Srcpos_Bearer => T);
+      end if;
+
       Set_Etype (T, T);
 
       --  If the type has appeared already in a with_type clause, it is frozen
@@ -7265,6 +7285,7 @@ package body Sem_Ch3 is
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Parent_Base));
       Set_Parent         (Implicit_Base, Parent (Derived_Type));
       Set_Is_Known_Valid (Implicit_Base, Is_Known_Valid (Parent_Base));
+      Set_Is_Volatile    (Implicit_Base, Is_Volatile    (Parent_Base));
 
       --  Set RM Size for discrete type or decimal fixed-point type
       --  Ordinary fixed-point is excluded, why???

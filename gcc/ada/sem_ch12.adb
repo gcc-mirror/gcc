@@ -11315,6 +11315,44 @@ package body Sem_Ch12 is
                Actual);
          end if;
 
+         --  Check actual/formal compatibility with respect to the four
+         --  volatility refinement aspects.
+
+         declare
+            Actual_Obj : Entity_Id;
+            N          : Node_Id := Actual;
+         begin
+            --  Similar to Sem_Util.Get_Enclosing_Object, but treat
+            --  pointer dereference like component selection.
+            loop
+               if Is_Entity_Name (N) then
+                  Actual_Obj := Entity (N);
+                  exit;
+               end if;
+
+               case Nkind (N) is
+                  when N_Indexed_Component
+                     | N_Selected_Component
+                     | N_Slice
+                     | N_Explicit_Dereference
+                  =>
+                     N := Prefix (N);
+
+                  when N_Type_Conversion =>
+                     N := Expression (N);
+
+                  when others =>
+                     Actual_Obj := Etype (N);
+                     exit;
+               end case;
+            end loop;
+
+            Check_Volatility_Compatibility
+              (Actual_Obj, A_Gen_Obj, "actual object",
+               "its corresponding formal object of mode in out",
+               Srcpos_Bearer => Actual);
+         end;
+
       --  Formal in-parameter
 
       else
@@ -11510,6 +11548,7 @@ package body Sem_Ch12 is
         and then Present (Actual)
         and then Is_Object_Reference (Actual)
         and then Is_Effectively_Volatile_Object (Actual)
+        and then not Is_Effectively_Volatile (A_Gen_Obj)
       then
          Error_Msg_N
            ("volatile object cannot act as actual in generic instantiation",
@@ -12480,6 +12519,14 @@ package body Sem_Ch12 is
                  ("actual for& must have Independent_Components specified",
                      Actual, A_Gen_T);
             end if;
+
+            --  Check actual/formal compatibility with respect to the four
+            --  volatility refinement aspects.
+
+            Check_Volatility_Compatibility
+              (Act_T, A_Gen_T,
+               "actual type", "its corresponding formal type",
+               Srcpos_Bearer => Act_T);
          end if;
       end Check_Shared_Variable_Control_Aspects;
 

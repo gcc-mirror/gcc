@@ -116,8 +116,8 @@ package body Sem_Util is
      (Item_Id  : Entity_Id;
       Property : Name_Id) return Boolean;
    --  Subsidiary to routines Async_xxx_Enabled and Effective_xxx_Enabled.
-   --  Determine whether an abstract state or a variable denoted by entity
-   --  Item_Id has enabled property Property.
+   --  Determine whether the state abstraction, variable, or type denoted by
+   --  entity Item_Id has enabled property Property.
 
    function Has_Null_Extension (T : Entity_Id) return Boolean;
    --  T is a derived tagged type. Check whether the type extension is null.
@@ -4910,6 +4910,96 @@ package body Sem_Util is
          Report_Unused_Body_States (States);
       end if;
    end Check_Unused_Body_States;
+
+   ------------------------------------
+   -- Check_Volatility_Compatibility --
+   ------------------------------------
+
+   procedure Check_Volatility_Compatibility
+     (Id1, Id2                     : Entity_Id;
+      Description_1, Description_2 : String;
+      Srcpos_Bearer                : Node_Id) is
+
+   begin
+      if SPARK_Mode /= On then
+         return;
+      end if;
+
+      declare
+         AR1 : constant Boolean := Async_Readers_Enabled (Id1);
+         AW1 : constant Boolean := Async_Writers_Enabled (Id1);
+         ER1 : constant Boolean := Effective_Reads_Enabled (Id1);
+         EW1 : constant Boolean := Effective_Writes_Enabled (Id1);
+         AR2 : constant Boolean := Async_Readers_Enabled (Id2);
+         AW2 : constant Boolean := Async_Writers_Enabled (Id2);
+         ER2 : constant Boolean := Effective_Reads_Enabled (Id2);
+         EW2 : constant Boolean := Effective_Writes_Enabled (Id2);
+
+         AR_Check_Failed : constant Boolean := AR1 and not AR2;
+         AW_Check_Failed : constant Boolean := AW1 and not AW2;
+         ER_Check_Failed : constant Boolean := ER1 and not ER2;
+         EW_Check_Failed : constant Boolean := EW1 and not EW2;
+
+         package Failure_Description is
+            procedure Note_If_Failure
+              (Failed : Boolean; Aspect_Name : String);
+            --  If Failed is False, do nothing.
+            --  If Failed is True, add Aspect_Name to the failure description.
+
+            function Failure_Text return String;
+            --  returns accumulated list of failing aspects
+         end Failure_Description;
+
+         package body Failure_Description is
+            Description_Buffer : Bounded_String;
+
+            ---------------------
+            -- Note_If_Failure --
+            ---------------------
+
+            procedure Note_If_Failure
+              (Failed : Boolean; Aspect_Name : String) is
+            begin
+               if Failed then
+                  if Description_Buffer.Length /= 0 then
+                     Append (Description_Buffer, ", ");
+                  end if;
+                  Append (Description_Buffer, Aspect_Name);
+               end if;
+            end Note_If_Failure;
+
+            ------------------
+            -- Failure_Text --
+            ------------------
+
+            function Failure_Text return String is
+            begin
+               return +Description_Buffer;
+            end Failure_Text;
+         end Failure_Description;
+
+         use Failure_Description;
+      begin
+         if AR_Check_Failed
+           or AW_Check_Failed
+           or ER_Check_Failed
+           or EW_Check_Failed
+         then
+            Note_If_Failure (AR_Check_Failed, "Async_Readers");
+            Note_If_Failure (AW_Check_Failed, "Async_Writers");
+            Note_If_Failure (ER_Check_Failed, "Effective_Reads");
+            Note_If_Failure (EW_Check_Failed, "Effective_Writes");
+
+            Error_Msg_N
+              (Description_1
+                 & " and "
+                 & Description_2
+                 & " are not compatible with respect to volatility due to "
+                 & Failure_Text,
+               Srcpos_Bearer);
+         end if;
+      end;
+   end Check_Volatility_Compatibility;
 
    -----------------
    -- Choice_List --
@@ -11036,28 +11126,26 @@ package body Sem_Util is
      (Item_Id  : Entity_Id;
       Property : Name_Id) return Boolean
    is
-      function Protected_Object_Has_Enabled_Property return Boolean;
-      --  Determine whether a protected object denoted by Item_Id has the
-      --  property enabled.
+      function Protected_Type_Or_Variable_Has_Enabled_Property return Boolean;
+      --  Determine whether a protected type or variable denoted by Item_Id
+      --  has the property enabled.
 
       function State_Has_Enabled_Property return Boolean;
       --  Determine whether a state denoted by Item_Id has the property enabled
 
-      function Variable_Has_Enabled_Property return Boolean;
-      --  Determine whether a variable denoted by Item_Id has the property
-      --  enabled.
+      function Type_Or_Variable_Has_Enabled_Property
+        (Item_Id : Entity_Id) return Boolean;
+      --  Determine whether type or variable denoted by Item_Id has the
+      --  property enabled.
 
-      -------------------------------------------
-      -- Protected_Object_Has_Enabled_Property --
-      -------------------------------------------
+      -----------------------------------------------------
+      -- Protected_Type_Or_Variable_Has_Enabled_Property --
+      -----------------------------------------------------
 
-      function Protected_Object_Has_Enabled_Property return Boolean is
-         Constits     : constant Elist_Id := Part_Of_Constituents (Item_Id);
-         Constit_Elmt : Elmt_Id;
-         Constit_Id   : Entity_Id;
-
+      function Protected_Type_Or_Variable_Has_Enabled_Property return Boolean
+      is
       begin
-         --  Protected objects always have the properties Async_Readers and
+         --  Protected entities always have the properties Async_Readers and
          --  Async_Writers (SPARK RM 7.1.2(16)).
 
          if Property = Name_Async_Readers
@@ -11069,21 +11157,30 @@ package body Sem_Util is
          --  properties Effective_Reads and Effective_Writes
          --  (SPARK RM 7.1.2(16)).
 
-         elsif Present (Constits) then
-            Constit_Elmt := First_Elmt (Constits);
-            while Present (Constit_Elmt) loop
-               Constit_Id := Node (Constit_Elmt);
+         elsif Is_Single_Protected_Object (Item_Id) then
+            declare
+               Constit_Elmt : Elmt_Id;
+               Constit_Id   : Entity_Id;
+               Constits     : constant Elist_Id
+                 := Part_Of_Constituents (Item_Id);
+            begin
+               if Present (Constits) then
+                  Constit_Elmt := First_Elmt (Constits);
+                  while Present (Constit_Elmt) loop
+                     Constit_Id := Node (Constit_Elmt);
 
-               if Has_Enabled_Property (Constit_Id, Property) then
-                  return True;
+                     if Has_Enabled_Property (Constit_Id, Property) then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Constit_Elmt);
+                  end loop;
                end if;
-
-               Next_Elmt (Constit_Elmt);
-            end loop;
+            end;
          end if;
 
          return False;
-      end Protected_Object_Has_Enabled_Property;
+      end Protected_Type_Or_Variable_Has_Enabled_Property;
 
       --------------------------------
       -- State_Has_Enabled_Property --
@@ -11245,11 +11342,13 @@ package body Sem_Util is
          return False;
       end State_Has_Enabled_Property;
 
-      -----------------------------------
-      -- Variable_Has_Enabled_Property --
-      -----------------------------------
+      -------------------------------------------
+      -- Type_Or_Variable_Has_Enabled_Property --
+      -------------------------------------------
 
-      function Variable_Has_Enabled_Property return Boolean is
+      function Type_Or_Variable_Has_Enabled_Property
+        (Item_Id : Entity_Id) return Boolean
+      is
          function Is_Enabled (Prag : Node_Id) return Boolean;
          --  Determine whether property pragma Prag (if present) denotes an
          --  enabled property.
@@ -11297,7 +11396,11 @@ package body Sem_Util is
          EW : constant Node_Id :=
                 Get_Pragma (Item_Id, Pragma_Effective_Writes);
 
-      --  Start of processing for Variable_Has_Enabled_Property
+         Is_Derived_Type_With_Volatile_Parent_Type : constant Boolean :=
+           Is_Derived_Type (Item_Id)
+           and then Is_Effectively_Volatile (Etype (Base_Type (Item_Id)));
+
+      --  Start of processing for Type_Or_Variable_Has_Enabled_Property
 
       begin
          --  A non-effectively volatile object can never possess external
@@ -11312,23 +11415,57 @@ package body Sem_Util is
          --  property is enabled when the flag evaluates to True or the flag is
          --  missing altogether.
 
-         elsif Property = Name_Async_Readers    and then Is_Enabled (AR) then
-            return True;
+         elsif Property = Name_Async_Readers    and then Present (AR) then
+            return Is_Enabled (AR);
 
-         elsif Property = Name_Async_Writers    and then Is_Enabled (AW) then
-            return True;
+         elsif Property = Name_Async_Writers    and then Present (AW) then
+            return Is_Enabled (AW);
 
-         elsif Property = Name_Effective_Reads  and then Is_Enabled (ER) then
-            return True;
+         elsif Property = Name_Effective_Reads  and then Present (ER) then
+            return Is_Enabled (ER);
 
-         elsif Property = Name_Effective_Writes and then Is_Enabled (EW) then
-            return True;
+         elsif Property = Name_Effective_Writes and then Present (EW) then
+            return Is_Enabled (EW);
+
+         --  If other properties are set explicitly, then this one is set
+         --  implicitly to False, except in the case of a derived type
+         --  whose parent type is volatile (in that case, we will inherit
+         --  from the parent type, below).
+
+         elsif (Present (AR)
+           or else Present (AW)
+           or else Present (ER)
+           or else Present (EW))
+           and then not Is_Derived_Type_With_Volatile_Parent_Type
+         then
+            return False;
+
+         --  For a private type, may need to look at the full view
+
+         elsif Is_Private_Type (Item_Id) and then Present (Full_View (Item_Id))
+         then
+            return Type_Or_Variable_Has_Enabled_Property (Full_View (Item_Id));
+
+         --  For a derived type whose parent type is volatile, the
+         --  property may be inherited (but ignore a non-volatile parent).
+
+         elsif Is_Derived_Type_With_Volatile_Parent_Type then
+            return Type_Or_Variable_Has_Enabled_Property
+              (First_Subtype (Etype (Base_Type (Item_Id))));
+
+         --  If not specified explicitly for an object and the type
+         --  is effectively volatile, then take result from the type.
+
+         elsif not Is_Type (Item_Id)
+           and then Is_Effectively_Volatile (Etype (Item_Id))
+         then
+            return Has_Enabled_Property (Etype (Item_Id), Property);
 
          --  The implicit case lacks all property pragmas
 
          elsif No (AR) and then No (AW) and then No (ER) and then No (EW) then
             if Is_Protected_Type (Etype (Item_Id)) then
-               return Protected_Object_Has_Enabled_Property;
+               return Protected_Type_Or_Variable_Has_Enabled_Property;
             else
                return True;
             end if;
@@ -11336,7 +11473,7 @@ package body Sem_Util is
          else
             return False;
          end if;
-      end Variable_Has_Enabled_Property;
+      end Type_Or_Variable_Has_Enabled_Property;
 
    --  Start of processing for Has_Enabled_Property
 
@@ -11348,7 +11485,11 @@ package body Sem_Util is
          return State_Has_Enabled_Property;
 
       elsif Ekind (Item_Id) = E_Variable then
-         return Variable_Has_Enabled_Property;
+         return Type_Or_Variable_Has_Enabled_Property (Item_Id);
+
+      elsif Is_Type (Item_Id) then
+         return Type_Or_Variable_Has_Enabled_Property
+           (Item_Id => First_Subtype (Item_Id));
 
       --  By default, protected objects only have the properties Async_Readers
       --  and Async_Writers. If they have Part_Of components, they also inherit
@@ -11356,7 +11497,7 @@ package body Sem_Util is
       --  (SPARK RM 7.1.2(16)).
 
       elsif Ekind (Item_Id) = E_Protected_Object then
-         return Protected_Object_Has_Enabled_Property;
+         return Protected_Type_Or_Variable_Has_Enabled_Property;
 
       --  Otherwise a property is enabled when the related item is effectively
       --  volatile.
