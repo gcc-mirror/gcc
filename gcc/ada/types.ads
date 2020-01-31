@@ -687,11 +687,13 @@ package Types is
    Validity_Check         : constant := 17;
    Container_Checks       : constant := 18;
    Tampering_Check        : constant := 19;
+   Program_Error_Check    : constant := 20;
+   Tasking_Check          : constant := 21;
    --  Values used to represent individual predefined checks (including the
    --  setting of Atomic_Synchronization, which is implemented internally using
    --  a "check" whose name is Atomic_Synchronization).
 
-   All_Checks : constant := 20;
+   All_Checks : constant := 22;
    --  Value used to represent All_Checks value
 
    subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;
