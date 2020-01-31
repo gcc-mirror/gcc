@@ -1,5 +1,17 @@
 2020-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (NODE_MODULE): New.
+	(struct cpp_hashnode): Reserve another flag bit.
+	* internal.h (struct spec_nodes): Replace separate module spec
+	nodes by array.
+	(_cpp_setup_module_directive): Delete.
+	* init (post_options): Adjust module node initialization.
+	* directives.c (_cpp_setup_module_directive): Delete, move into ...
+	* lex.c (cpp_maybe_module_directive): ... here.  New, absorb
+	peeking from ...
+	(_cpp_lex_token): ... here.  Call it.
+
 	Merge master b92709388b9aee52db3cd7c227818e0ecccda2e5
 
 	gcc/cp/

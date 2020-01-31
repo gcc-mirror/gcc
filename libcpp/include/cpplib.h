@@ -854,6 +854,7 @@ struct GTY(()) cpp_macro {
 #define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
 #define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
+#define NODE_MODULE (1 << 8)		/* C++-20 module-related name.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -912,10 +913,10 @@ struct GTY(()) cpp_hashnode {
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned int rid_code : 8;		/* Rid code - for front ends.  */
-  unsigned int flags : 8;		/* CPP flags.  */
+  unsigned int flags : 9;		/* CPP flags.  */
   ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
 
-  /* 6 bits spare.  */
+  /* 5 bits spare.  */
 
   /* On a 64-bit system there would be 32-bits of padding to the value
      field.  So placing the deferred index here is not costly.   */

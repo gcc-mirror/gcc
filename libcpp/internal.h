@@ -295,13 +295,11 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
 
-  /* C++2a modules, only set when module_directives is in effect.  */
-  cpp_hashnode *n_export;
-  cpp_hashnode *n_module;
-  cpp_hashnode *n_import;
-  cpp_hashnode *n__module; /* Remapped identifiers.  */
-  cpp_hashnode *n__import;
-  cpp_hashnode *n__export;
+  enum {M_EXPORT, M_MODULE, M_IMPORT, M_HWM};
+  
+  /* C++2a modules, only set when module_directives is in effect.
+     incoming variants [0], outgoing ones [1] */
+  cpp_hashnode *n_modules[2][M_HWM];
 };
 
 typedef struct _cpp_line_note _cpp_line_note;
@@ -758,9 +756,6 @@ extern void _cpp_define_builtin (cpp_reader *, const char *);
 extern char ** _cpp_save_pragma_names (cpp_reader *);
 extern void _cpp_restore_pragma_names (cpp_reader *, char **);
 extern int _cpp_do__Pragma (cpp_reader *, location_t);
-extern bool _cpp_setup_module_directive (cpp_reader *, cpp_token *first,
-					 cpp_token *keyword_token,
-					 int importedness);
 extern void _cpp_init_directives (cpp_reader *);
 extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,

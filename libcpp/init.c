@@ -836,14 +836,23 @@ post_options (cpp_reader *pfile)
 
   if (CPP_OPTION (pfile, module_directives))
     {
-      pfile->spec_nodes.n__export = cpp_lookup (pfile, DSC("__export"));
-      pfile->spec_nodes.n__module = cpp_lookup (pfile, DSC("__module"));
-      pfile->spec_nodes.n__import = cpp_lookup (pfile, DSC("__import"));
-      pfile->spec_nodes.n_export = CPP_OPTION (pfile, preprocessed)
-	? pfile->spec_nodes.n__export : cpp_lookup (pfile, DSC ("export"));
-      pfile->spec_nodes.n_module = CPP_OPTION (pfile, preprocessed)
-	? pfile->spec_nodes.n__module : cpp_lookup (pfile, DSC("module"));
-      pfile->spec_nodes.n_import =  CPP_OPTION (pfile, preprocessed)
-	? pfile->spec_nodes.n__import : cpp_lookup (pfile, DSC("import"));
+      const char *const inits[spec_nodes::M_HWM]
+	= {"__export", "__module", "__import"};
+
+      for (int ix = 0; ix != spec_nodes::M_HWM; ix++)
+	{
+	  cpp_hashnode *node = cpp_lookup (pfile, UC (inits[ix]),
+					   strlen (inits[ix]));
+	  node->flags |= NODE_MODULE;
+	  pfile->spec_nodes.n_modules[1][ix] = node;
+	  if (!CPP_OPTION (pfile, preprocessed))
+	    {
+	      /* Drop the leading '__'.  */
+	      node = cpp_lookup (pfile, NODE_NAME (node) + 2,
+				 NODE_LEN (node) - 2);
+	      node->flags |= NODE_MODULE;
+	    }
+	  pfile->spec_nodes.n_modules[0][ix] = node;
+	}
     }
 }
