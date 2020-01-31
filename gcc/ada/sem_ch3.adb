@@ -7612,12 +7612,42 @@ package body Sem_Ch3 is
       Full_Der  : Entity_Id           := New_Copy (Derived_Type);
       Full_P    : Entity_Id;
 
+      function Available_Full_View (Typ : Entity_Id) return Entity_Id;
+      --  Return the Full_View or Underlying_Full_View of Typ, whichever is
+      --  present (they cannot be both present for the same type), or Empty.
+
       procedure Build_Full_Derivation;
       --  Build full derivation, i.e. derive from the full view
 
       procedure Copy_And_Build;
       --  Copy derived type declaration, replace parent with its full view,
       --  and build derivation
+
+      -------------------------
+      -- Available_Full_View --
+      -------------------------
+
+      function Available_Full_View (Typ : Entity_Id) return Entity_Id is
+      begin
+         if Present (Full_View (Typ)) then
+            return Full_View (Typ);
+
+         elsif Present (Underlying_Full_View (Typ)) then
+
+            --  We should be called on a type with an underlying full view
+            --  only by means of the recursive call made in Copy_And_Build
+            --  through the first call to Build_Derived_Type, or else if
+            --  the parent scope is being analyzed because we are deriving
+            --  a completion.
+
+            pragma Assert (Is_Completion or else In_Private_Part (Par_Scope));
+
+            return Underlying_Full_View (Typ);
+
+         else
+            return Empty;
+         end if;
+      end Available_Full_View;
 
       ---------------------------
       -- Build_Full_Derivation --
@@ -7638,7 +7668,9 @@ package body Sem_Ch3 is
          --  part of a child unit. In that case retrieve the full view of
          --  the parent momentarily.
 
-         elsif not In_Same_Source_Unit (N, Parent_Type) then
+         elsif not In_Same_Source_Unit (N, Parent_Type)
+           and then Present (Full_View (Parent_Type))
+         then
             Full_P := Full_View (Parent_Type);
             Exchange_Declarations (Parent_Type);
             Copy_And_Build;
@@ -7674,11 +7706,13 @@ package body Sem_Ch3 is
          --  completion, i.e. to build the underlying full view of the type,
          --  then use this underlying full view. We cannot do that if this
          --  is not a completion, i.e. to build the full view of the type,
-         --  because this would break the privacy status of the parent.
+         --  because this would break the privacy of the parent type, except
+         --  if the parent scope is being analyzed because we are deriving a
+         --  completion.
 
          if Is_Private_Type (Full_Parent)
            and then Present (Underlying_Full_View (Full_Parent))
-           and then Is_Completion
+           and then (Is_Completion or else In_Private_Part (Par_Scope))
          then
             Full_Parent := Underlying_Full_View (Full_Parent);
          end if;
@@ -7929,9 +7963,7 @@ package body Sem_Ch3 is
          --  case (see point 5. of its head comment) since we build it for the
          --  derived subtype.
 
-         if (Present (Full_View (Parent_Type))
-             or else (Present (Underlying_Full_View (Parent_Type))
-                       and then Is_Completion))
+         if Present (Available_Full_View (Parent_Type))
            and then not Is_Itype (Derived_Type)
          then
             declare
@@ -7983,14 +8015,8 @@ package body Sem_Ch3 is
             end;
          end if;
 
-      elsif (Present (Full_View (Parent_Type))
-              and then
-             Has_Discriminants (Full_View (Parent_Type)))
-        or else (Present (Underlying_Full_View (Parent_Type))
-                  and then
-                 Has_Discriminants (Underlying_Full_View (Parent_Type))
-                  and then
-                 Is_Completion)
+      elsif Present (Available_Full_View (Parent_Type))
+        and then Has_Discriminants (Available_Full_View (Parent_Type))
       then
          if Has_Unknown_Discriminants (Parent_Type)
            and then Nkind (Subtype_Indication (Type_Definition (N))) =
@@ -8027,7 +8053,7 @@ package body Sem_Ch3 is
 
          Set_Stored_Constraint (Derived_Type, No_Elist);
          Set_Is_Constrained
-           (Derived_Type, Is_Constrained (Full_View (Parent_Type)));
+           (Derived_Type, Is_Constrained (Available_Full_View (Parent_Type)));
 
       else
          --  Untagged type, No discriminants on either view
@@ -8040,8 +8066,8 @@ package body Sem_Ch3 is
          end if;
 
          if Present (Discriminant_Specifications (N))
-           and then Present (Full_View (Parent_Type))
-           and then not Is_Tagged_Type (Full_View (Parent_Type))
+           and then Present (Available_Full_View (Parent_Type))
+           and then not Is_Tagged_Type (Available_Full_View (Parent_Type))
          then
             Error_Msg_N ("cannot add discriminants to untagged type", N);
          end if;
@@ -8074,8 +8100,8 @@ package body Sem_Ch3 is
          --  tagged, this mechanism will not work because we cannot derive from
          --  the tagged full view unless we have an extension.
 
-         if Present (Full_View (Parent_Type))
-           and then not Is_Tagged_Type (Full_View (Parent_Type))
+         if Present (Available_Full_View (Parent_Type))
+           and then not Is_Tagged_Type (Available_Full_View (Parent_Type))
            and then not Error_Posted (N)
          then
             Build_Full_Derivation;
