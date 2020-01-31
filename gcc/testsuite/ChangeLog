@@ -1,3 +1,8 @@
+2020-01-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93462
+	* gfortran.dg/goacc/atomic-1.f90: New.
+
 2020-01-31  Tamar Christina  <tamar.christina@arm.com>
 
 	PR rtl-optimization/91838

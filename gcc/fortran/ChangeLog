@@ -1,3 +1,9 @@
+2020-01-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93462
+	* frontend-passes.c (gfc_code_walker): For EXEC_OACC_ATOMIC, set
+	in_omp_atomic to true prevent front-end optimization.
+
 2020-01-30  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/87103
@@ -25,11 +31,11 @@
 
 2020-01-28  Andrew Benson  <abensonca@gmail.com>
 
-        PR fortran/93461
-        * trans.h: Increase GFC_MAX_MANGLED_SYMBOL_LEN to
-        GFC_MAX_SYMBOL_LEN*3+5 to allow for inclusion of submodule name,
-        plus the "." between module and submodule names.
-        * gfortran.dg/pr93461.f90: New test.
+	PR fortran/93461
+	* trans.h: Increase GFC_MAX_MANGLED_SYMBOL_LEN to
+	GFC_MAX_SYMBOL_LEN*3+5 to allow for inclusion of submodule name,
+	plus the "." between module and submodule names.
+	* gfortran.dg/pr93461.f90: New test.
 
 2020-01-28  Andrew Benson  <abensonca@gmail.com>
 
