@@ -61,6 +61,7 @@ gcov-dump [@option{-v}|@option{--version}]
      [@option{-h}|@option{--help}]
      [@option{-l}|@option{--long}]
      [@option{-p}|@option{--positions}]
+     [@option{-r}|@option{--raw}]
      @var{gcovfiles}
 @c man end
 @end ignore
@@ -79,6 +80,10 @@ Dump content of records.
 @item -p
 @itemx --positions
 Dump positions of records.
+
+@item -r
+@itemx --raw
+Print content records in raw format.
 
 @item -v
 @itemx --version
