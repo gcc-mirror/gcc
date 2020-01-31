@@ -1,3 +1,32 @@
+2020-01-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movoi_internal_avx): Do not check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.  Remove MODE_V8SF handling.
+	(*movti_internal): Do not check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	(*movtf_internal): Move check for TARGET_SSE2 and size optimization
+	just after check for TARGET_AVX.
+	(*movdf_internal): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal): Do not check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	* config/i386/sse.md (mov<mode>_internal): Only check
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL with V2DFmode.  Move check
+	for TARGET_SSE2 and size optimization just after check for TARGET_AVX.
+	(<sse>_andnot<mode>3<mask_name>): Move check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL after check for TARGET_AVX.
+	(<code><mode>3<mask_name>): Ditto.
+	(*andnot<mode>3): Ditto.
+	(*andnottf3): Ditto.
+	(*<code><mode>3): Ditto.
+	(*<code>tf3): Ditto.
+	(*andnot<VI:mode>3): Remove
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL handling.
+	(<mask_codefor><code><VI48_AVX_AVX512F:mode>3<mask_name>): Ditto.
+	(*<code><VI12_AVX_AVX512F:mode>3): Ditto.
+	(sse4_1_blendv<ssemodesuffix>): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL):
+	Explain that tune applies to 128bit instructions only.
+
 2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/mkoffload.c (process_asm): Add sgpr_count and vgpr_count
