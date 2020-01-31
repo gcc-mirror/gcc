@@ -1,5 +1,10 @@
 2020-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_skip_to_end_of_statement): Adjust pragma
+	skipping.
+	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+
 	Fix PRAGMA_EOL location
 	libcpp/
 	* lex.c (_cpp_lex_direct): Return CPP_PRAGMA_EOL at end of line.

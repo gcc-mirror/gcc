@@ -3799,9 +3799,11 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  /* FALLTHROUGH  */
 
 	case CPP_PRAGMA:
-	  /* We fell into a pragma.  Skip it, and be done */
+	  /* We fell into a pragma.  Skip it, and continue. */
 	  cp_parser_skip_to_pragma_eol (parser, token);
-	  return;
+	  if (!nesting_depth)
+	    return;
+	  continue;
 
 	default:
 	  break;
@@ -3886,9 +3888,11 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  /* FALLTHROUGH  */
 
 	case CPP_PRAGMA:
-	  /* We fell into a pragma.  Skip it, and be done */
+	  /* Skip it, and continue or return. */
 	  cp_parser_skip_to_pragma_eol (parser, token);
-	  return;
+	  if (!nesting_depth)
+	    return;
+	  continue;
 
 	default:
 	  break;
