@@ -8020,26 +8020,38 @@ package body Sem_Prag is
             --  For the case of a record base type, also set the convention of
             --  any anonymous access types declared in the record which do not
             --  currently have a specified convention.
+            --  Similarly for an array base type and anonymous access types
+            --  components.
 
-            if Is_Record_Type (E) and then Is_Base_Type (E) then
-               declare
-                  Comp : Node_Id;
+            if Is_Base_Type (E) then
+               if Is_Record_Type (E) then
+                  declare
+                     Comp : Node_Id;
 
-               begin
-                  Comp := First_Component (E);
-                  while Present (Comp) loop
-                     if Present (Etype (Comp))
-                       and then Ekind_In (Etype (Comp),
-                                          E_Anonymous_Access_Type,
-                                          E_Anonymous_Access_Subprogram_Type)
-                       and then not Has_Convention_Pragma (Comp)
-                     then
-                        Set_Convention (Comp, C);
-                     end if;
+                  begin
+                     Comp := First_Component (E);
+                     while Present (Comp) loop
+                        if Present (Etype (Comp))
+                          and then
+                            Ekind_In (Etype (Comp),
+                                      E_Anonymous_Access_Type,
+                                      E_Anonymous_Access_Subprogram_Type)
+                          and then not Has_Convention_Pragma (Comp)
+                        then
+                           Set_Convention (Comp, C);
+                        end if;
 
-                     Next_Component (Comp);
-                  end loop;
-               end;
+                        Next_Component (Comp);
+                     end loop;
+                  end;
+
+               elsif Is_Array_Type (E)
+                 and then Ekind_In (Component_Type (E),
+                                    E_Anonymous_Access_Type,
+                                    E_Anonymous_Access_Subprogram_Type)
+               then
+                  Set_Convention (Designated_Type (Component_Type (E)), C);
+               end if;
             end if;
 
             --  Deal with incomplete/private type case, where underlying type
