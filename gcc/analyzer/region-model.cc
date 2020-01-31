@@ -5694,12 +5694,15 @@ region_model::update_for_return_superedge (const return_superedge &return_edge,
   svalue_id result_sid = pop_frame (true, &stats, ctxt);
   // TODO: do something with the stats?
 
+  if (result_sid.null_p ())
+    return;
+
   /* Set the result of the call, within the caller frame.  */
   const gcall *call_stmt = return_edge.get_call_stmt ();
   tree lhs = gimple_call_lhs (call_stmt);
   if (lhs)
     set_value (get_lvalue (lhs, ctxt), result_sid, ctxt);
-  else if (!result_sid.null_p ())
+  else
     {
       /* This could be a leak; try purging again, but this time,
 	 don't special-case the result_sid.  */
