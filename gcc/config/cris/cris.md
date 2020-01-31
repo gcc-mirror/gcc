@@ -913,7 +913,7 @@
   ""
   "")
 
-(define_insn "*adddi3"
+(define_insn "*adddi3<setnz>"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,&r,&r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0,0,0,0,r")
 		 (match_operand:DI 2 "general_operand" "J,N,P,g,!To")))
@@ -936,7 +936,7 @@
   ""
   "")
 
-(define_insn "*addsi3"
+(define_insn "*addsi3<setnz>"
   [(set (match_operand:SI 0 "register_operand"  "=r,r, r,r,r,r,r,  r")
 	(plus:SI
 	 (match_operand:SI 1 "register_operand" "%0,0, 0,0,0,0,r,  r")
@@ -989,7 +989,7 @@
 }
  [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,yes")])
 
-(define_insn "*addhi3"
+(define_insn "*addhi3<setnz>"
   [(set (match_operand:HI 0 "register_operand"		"=r,r, r,r,r,r")
 	(plus:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0,0,r")
 		 (match_operand:HI 2 "general_operand"   "r,Q>,J,N,g,!To")))
@@ -1003,9 +1003,9 @@
    add.w %2,%0
    add.w %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
-   (set_attr "cc" "normal,normal,clobber,clobber,normal,normal")])
+   (set_attr "cc<ccnz>" "normal,normal,clobber,clobber,normal,normal")])
 
-(define_insn "*addqi3"
+(define_insn "*addqi3<setnz>"
   [(set (match_operand:QI 0 "register_operand"		"=r,r, r,r,r,r,r")
 	(plus:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0,0,0,r")
 		 (match_operand:QI 2 "general_operand"	 "r,Q>,J,N,O,g,!To")))
@@ -1020,7 +1020,7 @@
    add.b %2,%0
    add.b %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no")
-   (set_attr "cc" "normal,normal,clobber,clobber,clobber,normal,normal")])
+   (set_attr "cc<ccnz>" "normal,normal,clobber,clobber,clobber,normal,normal")])
 
 ;; Subtract.
 ;;
@@ -1039,7 +1039,7 @@
   ""
   "")
 
-(define_insn "*subdi3"
+(define_insn "*subdi3<setnz>"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,&r,&r")
 	(minus:DI (match_operand:DI 1 "register_operand" "0,0,0,0,r")
 		  (match_operand:DI 2 "general_operand" "J,N,P,g,!To")))
@@ -1062,7 +1062,7 @@
   ""
   "")
 
-(define_insn "*subsi3"
+(define_insn "*subsi3<setnz>"
   [(set (match_operand:SI 0 "register_operand" "=r,r, r,r,r,r,r,r")
 	(minus:SI
 	 (match_operand:SI 1 "register_operand" "0,0, 0,0,0,0,0,r")
@@ -1084,7 +1084,7 @@
    sub.d %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,no")])
 
-(define_insn "*sub<mode>3"
+(define_insn "*sub<mode>3<setnz>"
   [(set (match_operand:BW 0 "register_operand"		"=r,r, r,r,r,r")
 	(minus:BW (match_operand:BW 1 "register_operand" "0,0, 0,0,0,r")
 		  (match_operand:BW 2 "general_operand"  "r,Q>,J,N,g,!To")))
@@ -1098,7 +1098,7 @@
    sub<m> %2,%0
    sub<m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
-   (set_attr "cc" "normal,normal,clobber,clobber,normal,normal")])
+   (set_attr "cc<ccnz>" "normal,normal,clobber,clobber,normal,normal")])
 
 ;; This is the special case when we use what corresponds to the
 ;; instruction above in "casesi".  Do *not* change it to use the generic
