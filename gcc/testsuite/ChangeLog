@@ -1,3 +1,12 @@
+2020-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/91838
+	* g++.dg/pr91838.C: Moved to ...
+	* g++.dg/opt/pr91838.C: ... here.  Require c++11 target instead of
+	dg-skip-if for c++98.  Pass -Wno-psabi -w to avoid psabi style
+	warnings on vector arg passing or return.  Add -masm=att on i?86/x86_64.
+	Only check for pxor %xmm0, %xmm0 on lp64 i?86/x86_64.
+
 2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_aarch64_asm_bf16_ok):
