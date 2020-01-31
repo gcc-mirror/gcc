@@ -1,3 +1,67 @@
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93379
+	* region-model.cc (region_model::update_for_return_superedge):
+	Move check for null result so that it also guards setting the
+	lhs.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93438
+	* region-model.cc (stack_region::can_merge_p): Split into a two
+	pass approach, creating all stack regions first, then populating
+	them.
+	(selftest::test_state_merging): Add test coverage for (a) the case
+	of self-merging a model in which a local in an older stack frame
+	points to a local in a more recent stack frame (which previously
+	would ICE), and (b) the case of self-merging a model in which a
+	local points to a global (which previously worked OK).
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc (is_named_call_p): Replace tests for fndecl being
+	extern at file scope and having a non-NULL DECL_NAME with a call
+	to maybe_special_function_p.
+	* function-set.cc (function_set::contains_decl_p): Add call to
+	maybe_special_function_p.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93450
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Only compare constants
+	if their types are compatible.
+	* region-model.cc (constant_svalue::eval_condition): Replace check
+	for identical types with call to types_compatible_p.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (extrinsic_state::dump_to_pp): New.
+	(extrinsic_state::dump_to_file): New.
+	(extrinsic_state::dump): New.
+	* program-state.h (extrinsic_state::dump_to_pp): New decl.
+	(extrinsic_state::dump_to_file): New decl.
+	(extrinsic_state::dump): New decl.
+	* sm.cc: Include "pretty-print.h".
+	(state_machine::dump_to_pp): New.
+	* sm.h (state_machine::dump_to_pp): New decl.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (for_each_state_change): Use
+	extrinsic_state::get_num_checkers rather than accessing m_checkers
+	directly.
+	* program-state.cc (program_state::program_state): Likewise.
+	* program-state.h (extrinsic_state::m_checkers): Make private.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93356
+	* region-model.cc (region_model::eval_condition): In both
+	overloads, bail out immediately on floating-point types.
+	(region_model::eval_condition_without_cm): Likewise.
+	(region_model::add_constraint): Likewise.
+
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93450

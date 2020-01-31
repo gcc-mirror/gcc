@@ -149,6 +149,12 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 	bits = 0;
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
     }
+  aarch64_def_or_undef (TARGET_SVE_I8MM,
+			"__ARM_FEATURE_SVE_MATMUL_INT8", pfile);
+  aarch64_def_or_undef (TARGET_SVE_F32MM,
+			"__ARM_FEATURE_SVE_MATMUL_FP32", pfile);
+  aarch64_def_or_undef (TARGET_SVE_F64MM,
+			"__ARM_FEATURE_SVE_MATMUL_FP64", pfile);
   aarch64_def_or_undef (TARGET_SVE2, "__ARM_FEATURE_SVE2", pfile);
   aarch64_def_or_undef (TARGET_SVE2_AES, "__ARM_FEATURE_SVE2_AES", pfile);
   aarch64_def_or_undef (TARGET_SVE2_BITPERM,
@@ -171,7 +177,6 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
   aarch64_def_or_undef (TARGET_I8MM, "__ARM_FEATURE_MATMUL_INT8", pfile);
-  aarch64_def_or_undef (TARGET_F64MM, "__ARM_FEATURE_MATMUL_FP64", pfile);
   aarch64_def_or_undef (TARGET_BF16_SIMD,
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
   aarch64_def_or_undef (TARGET_BF16_FP,

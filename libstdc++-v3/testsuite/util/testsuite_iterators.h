@@ -710,10 +710,7 @@ namespace __gnu_test
       auto end() &
       {
 	using I = decltype(get_iterator(bounds.last));
-	if constexpr (std::sentinel_for<I, I>)
-	  return get_iterator(bounds.last);
-	else
-	  return sentinel<I>{bounds.last};
+	return sentinel<I>{bounds.last};
       }
 
       typename Iter<T>::ContainerType bounds;

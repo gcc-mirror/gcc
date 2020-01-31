@@ -12,6 +12,7 @@ void f9(__SVUint64_t) {}
 void f10(__SVFloat16_t) {}
 void f11(__SVFloat32_t) {}
 void f12(__SVFloat64_t) {}
+void f13(__SVBfloat16_t) {}
 
 /* { dg-final { scan-assembler "_Z2f110__SVBool_t:" } } */
 /* { dg-final { scan-assembler "_Z2f210__SVInt8_t:" } } */
@@ -25,3 +26,4 @@ void f12(__SVFloat64_t) {}
 /* { dg-final { scan-assembler "_Z3f1013__SVFloat16_t:" } } */
 /* { dg-final { scan-assembler "_Z3f1113__SVFloat32_t:" } } */
 /* { dg-final { scan-assembler "_Z3f1213__SVFloat64_t:" } } */
+/* { dg-final { scan-assembler "_Z3f1314__SVBfloat16_t:" } } */

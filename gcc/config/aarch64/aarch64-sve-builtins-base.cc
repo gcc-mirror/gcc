@@ -718,16 +718,23 @@ public:
   }
 };
 
-class svdot_lane_impl : public function_base
+class svdotprod_lane_impl : public unspec_based_function_base
 {
 public:
+  CONSTEXPR svdotprod_lane_impl (int unspec_for_sint,
+				 int unspec_for_uint,
+				 int unspec_for_float)
+    : unspec_based_function_base (unspec_for_sint,
+				  unspec_for_uint,
+				  unspec_for_float) {}
+
   rtx
   expand (function_expander &e) const OVERRIDE
   {
     /* Use the same ordering as the dot_prod_optab, with the
        accumulator last.  */
     e.rotate_inputs_left (0, 4);
-    int unspec = (e.type_suffix (0).unsigned_p ? UNSPEC_UDOT : UNSPEC_SDOT);
+    int unspec = unspec_for (e);
     machine_mode mode = e.vector_mode (0);
     return e.use_exact_insn (code_for_aarch64_dot_prod_lane (unspec, mode));
   }
@@ -1509,6 +1516,26 @@ public:
 	return e.use_exact_insn (code_for_aarch64_sve_sub_mul_lane (mode));
       }
     return expand_mla_mls_lane (e, UNSPEC_FMLS);
+  }
+};
+
+class svmmla_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const OVERRIDE
+  {
+    insn_code icode;
+    if (e.type_suffix (0).integer_p)
+      {
+	if (e.type_suffix (0).unsigned_p)
+	  icode = code_for_aarch64_sve_add (UNSPEC_UMATMUL, e.vector_mode (0));
+	else
+	  icode = code_for_aarch64_sve_add (UNSPEC_SMATMUL, e.vector_mode (0));
+      }
+    else
+      icode = code_for_aarch64_sve (UNSPEC_FMMLA, e.vector_mode (0));
+    return e.use_exact_insn (icode);
   }
 };
 
@@ -2330,6 +2357,34 @@ public:
   bool m_high_p;
 };
 
+/* Also implements svsudot.  */
+class svusdot_impl : public function_base
+{
+public:
+  CONSTEXPR svusdot_impl (bool su) : m_su (su) {}
+
+  rtx
+  expand (function_expander &e) const OVERRIDE
+  {
+    /* The implementation of the ACLE function svsudot (for the non-lane
+       version) is through the USDOT instruction but with the second and third
+       inputs swapped.  */
+    if (m_su)
+      e.rotate_inputs_left (1, 2);
+    /* The ACLE function has the same order requirements as for svdot.
+       While there's no requirement for the RTL pattern to have the same sort
+       of order as that for <sur>dot_prod, it's easier to read.
+       Hence we do the same rotation on arguments as svdot_impl does.  */
+    e.rotate_inputs_left (0, 3);
+    machine_mode mode = e.vector_mode (0);
+    insn_code icode = code_for_aarch64_dot_prod (UNSPEC_USDOT, mode);
+    return e.use_exact_insn (icode);
+  }
+
+private:
+  bool m_su;
+};
+
 /* Implements svuzp1 and svuzp2.  */
 class svuzp_impl : public binary_permute
 {
@@ -2489,6 +2544,16 @@ FUNCTION (svandv, reduction, (UNSPEC_ANDV))
 FUNCTION (svasr, rtx_code_function, (ASHIFTRT, ASHIFTRT))
 FUNCTION (svasr_wide, shift_wide, (ASHIFTRT, UNSPEC_ASHIFTRT_WIDE))
 FUNCTION (svasrd, unspec_based_function, (UNSPEC_ASRD, -1, -1))
+FUNCTION (svbfdot, fixed_insn_function, (CODE_FOR_aarch64_sve_bfdotvnx4sf))
+FUNCTION (svbfdot_lane, fixed_insn_function,
+	  (CODE_FOR_aarch64_sve_bfdot_lanevnx4sf))
+FUNCTION (svbfmlalb, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmlalbvnx4sf))
+FUNCTION (svbfmlalb_lane, fixed_insn_function,
+	  (CODE_FOR_aarch64_sve_bfmlalb_lanevnx4sf))
+FUNCTION (svbfmlalt, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmlaltvnx4sf))
+FUNCTION (svbfmlalt_lane, fixed_insn_function,
+	  (CODE_FOR_aarch64_sve_bfmlalt_lanevnx4sf))
+FUNCTION (svbfmmla, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmmlavnx4sf))
 FUNCTION (svbic, svbic_impl,)
 FUNCTION (svbrka, svbrk_unary_impl, (UNSPEC_BRKA))
 FUNCTION (svbrkb, svbrk_unary_impl, (UNSPEC_BRKB))
@@ -2537,10 +2602,11 @@ FUNCTION (svcreate2, svcreate_impl, (2))
 FUNCTION (svcreate3, svcreate_impl, (3))
 FUNCTION (svcreate4, svcreate_impl, (4))
 FUNCTION (svcvt, svcvt_impl,)
+FUNCTION (svcvtnt, CODE_FOR_MODE0 (aarch64_sve_cvtnt),)
 FUNCTION (svdiv, rtx_code_function, (DIV, UDIV, UNSPEC_COND_FDIV))
 FUNCTION (svdivr, rtx_code_function_rotated, (DIV, UDIV, UNSPEC_COND_FDIV))
 FUNCTION (svdot, svdot_impl,)
-FUNCTION (svdot_lane, svdot_lane_impl,)
+FUNCTION (svdot_lane, svdotprod_lane_impl, (UNSPEC_SDOT, UNSPEC_UDOT, -1))
 FUNCTION (svdup, svdup_impl,)
 FUNCTION (svdup_lane, svdup_lane_impl,)
 FUNCTION (svdupq, svdupq_impl,)
@@ -2618,6 +2684,7 @@ FUNCTION (svmla, svmla_impl,)
 FUNCTION (svmla_lane, svmla_lane_impl,)
 FUNCTION (svmls, svmls_impl,)
 FUNCTION (svmls_lane, svmls_lane_impl,)
+FUNCTION (svmmla, svmmla_impl,)
 FUNCTION (svmov, svmov_impl,)
 FUNCTION (svmsb, svmsb_impl,)
 FUNCTION (svmul, rtx_code_function, (MULT, MULT, UNSPEC_COND_FMUL))
@@ -2713,10 +2780,16 @@ FUNCTION (svst4, svst234_impl, (4))
 FUNCTION (svstnt1, svstnt1_impl,)
 FUNCTION (svsub, svsub_impl,)
 FUNCTION (svsubr, rtx_code_function_rotated, (MINUS, MINUS, UNSPEC_COND_FSUB))
+FUNCTION (svsudot, svusdot_impl, (true))
+FUNCTION (svsudot_lane, svdotprod_lane_impl, (UNSPEC_SUDOT, -1, -1))
 FUNCTION (svtbl, svtbl_impl,)
 FUNCTION (svtmad, CODE_FOR_MODE0 (aarch64_sve_tmad),)
 FUNCTION (svtrn1, svtrn_impl, (0))
+FUNCTION (svtrn1q, unspec_based_function, (UNSPEC_TRN1Q, UNSPEC_TRN1Q,
+					   UNSPEC_TRN1Q))
 FUNCTION (svtrn2, svtrn_impl, (1))
+FUNCTION (svtrn2q, unspec_based_function, (UNSPEC_TRN2Q, UNSPEC_TRN2Q,
+					   UNSPEC_TRN2Q))
 FUNCTION (svtsmul, unspec_based_function, (-1, -1, UNSPEC_FTSMUL))
 FUNCTION (svtssel, unspec_based_function, (-1, -1, UNSPEC_FTSSEL))
 FUNCTION (svundef, svundef_impl, (1))
@@ -2725,12 +2798,23 @@ FUNCTION (svundef3, svundef_impl, (3))
 FUNCTION (svundef4, svundef_impl, (4))
 FUNCTION (svunpkhi, svunpk_impl, (true))
 FUNCTION (svunpklo, svunpk_impl, (false))
+FUNCTION (svusdot, svusdot_impl, (false))
+FUNCTION (svusdot_lane, svdotprod_lane_impl, (UNSPEC_USDOT, -1, -1))
+FUNCTION (svusmmla, unspec_based_add_function, (UNSPEC_USMATMUL, -1, -1))
 FUNCTION (svuzp1, svuzp_impl, (0))
+FUNCTION (svuzp1q, unspec_based_function, (UNSPEC_UZP1Q, UNSPEC_UZP1Q,
+					   UNSPEC_UZP1Q))
 FUNCTION (svuzp2, svuzp_impl, (1))
+FUNCTION (svuzp2q, unspec_based_function, (UNSPEC_UZP2Q, UNSPEC_UZP2Q,
+					   UNSPEC_UZP2Q))
 FUNCTION (svwhilele, svwhilelx_impl, (UNSPEC_WHILELE, UNSPEC_WHILELS, true))
 FUNCTION (svwhilelt, svwhilelx_impl, (UNSPEC_WHILELT, UNSPEC_WHILELO, false))
 FUNCTION (svwrffr, svwrffr_impl,)
 FUNCTION (svzip1, svzip_impl, (0))
+FUNCTION (svzip1q, unspec_based_function, (UNSPEC_ZIP1Q, UNSPEC_ZIP1Q,
+					   UNSPEC_ZIP1Q))
 FUNCTION (svzip2, svzip_impl, (1))
+FUNCTION (svzip2q, unspec_based_function, (UNSPEC_ZIP2Q, UNSPEC_ZIP2Q,
+					   UNSPEC_ZIP2Q))
 
 } /* end namespace aarch64_sve */

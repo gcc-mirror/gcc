@@ -1118,12 +1118,14 @@
 		 (const_string "<sseinsnmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
-	       (ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		    (and (eq_attr "alternative" "3")
-			 (match_test "TARGET_SSE_TYPELESS_STORES")))
-		 (const_string "<ssePSmode>")
 	       (ior (not (match_test "TARGET_SSE2"))
 		    (match_test "optimize_function_for_size_p (cfun)"))
+		 (const_string "V4SF")
+	       (and (match_test "<MODE>mode == V2DFmode")
+		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
+		 (const_string "V4SF")
+	       (and (eq_attr "alternative" "3")
+		    (match_test "TARGET_SSE_TYPELESS_STORES"))
 		 (const_string "V4SF")
 	       (and (eq_attr "alternative" "0")
 		    (match_test "TARGET_SSE_LOAD0_BY_PXOR"))
@@ -3555,16 +3557,14 @@
 		 (const_string "<sseintvecmode2>")
 	       (eq_attr "alternative" "3")
 		 (const_string "<sseintvecmode2>")
-	       (and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<MODE>")
 	       (match_test "optimize_function_for_size_p (cfun)")
 		 (const_string "V4SF")
-	       ]
-	       (const_string "<MODE>")))])
-
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<MODE>")))])
 
 (define_insn "<sse>_andnot<mode>3<mask_name>"
   [(set (match_operand:VF_512 0 "register_operand" "=v")
@@ -3673,15 +3673,14 @@
 		 (const_string "<sseintvecmode2>")
 	       (eq_attr "alternative" "3")
 		 (const_string "<sseintvecmode2>")
-	       (and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<MODE>")
 	       (match_test "optimize_function_for_size_p (cfun)")
 		 (const_string "V4SF")
-	       ]
-	       (const_string "<MODE>")))])
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<MODE>")))])
 
 (define_insn "*<code><mode>3<mask_name>"
   [(set (match_operand:VF_512 0 "register_operand" "=v")
@@ -3822,15 +3821,14 @@
 		 (if_then_else (match_test "TARGET_AVX512DQ")
 			       (const_string "<avx512fvecmode>")
 			       (const_string "XI"))
-	       (and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "V4SF")
 	       (match_test "TARGET_AVX")
 		 (const_string "<ssevecmode>")
 	       (match_test "optimize_function_for_size_p (cfun)")
 		 (const_string "V4SF")
-	       ]
-	       (const_string "<ssevecmode>")))])
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<ssevecmode>")))])
 
 (define_insn "*andnottf3"
   [(set (match_operand:TF 0 "register_operand" "=x,x,v,v")
@@ -3879,15 +3877,15 @@
 		 (const_string "TI")
 	       (eq_attr "alternative" "3")
 		 (const_string "XI")
-	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (const_string "V4SF")
 	       (match_test "TARGET_AVX")
 		 (const_string "TI")
 	       (ior (not (match_test "TARGET_SSE2"))
 		    (match_test "optimize_function_for_size_p (cfun)"))
 		 (const_string "V4SF")
-	       ]
-	       (const_string "TI")))])
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "TI")))])
 
 (define_insn "*<code><mode>3"
   [(set (match_operand:MODEF 0 "register_operand" "=x,x,v,v")
@@ -3946,15 +3944,14 @@
 		 (if_then_else (match_test "TARGET_AVX512DQ")
 			       (const_string "<avx512fvecmode>")
 			       (const_string "XI"))
-	       (and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "V4SF")
 	       (match_test "TARGET_AVX")
 		 (const_string "<ssevecmode>")
 	       (match_test "optimize_function_for_size_p (cfun)")
 		 (const_string "V4SF")
-	       ]
-	       (const_string "<ssevecmode>")))])
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<ssevecmode>")))])
 
 (define_expand "<code>tf3"
   [(set (match_operand:TF 0 "register_operand")
@@ -4011,15 +4008,15 @@
 		 (const_string "TI")
 	       (eq_attr "alternative" "3")
 		 (const_string "QI")
-	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (const_string "V4SF")
 	       (match_test "TARGET_AVX")
 		 (const_string "TI")
 	       (ior (not (match_test "TARGET_SSE2"))
 		    (match_test "optimize_function_for_size_p (cfun)"))
 		 (const_string "V4SF")
-	       ]
-	       (const_string "TI")))])
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "TI")))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -13007,10 +13004,7 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex,evex")
    (set (attr "mode")
-	(cond [(and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "<ssePSmode>")
-	       (match_test "TARGET_AVX2")
+	(cond [(match_test "TARGET_AVX2")
 		 (const_string "<sseinsnmode>")
 	       (match_test "TARGET_AVX")
 		 (if_then_else
@@ -13148,10 +13142,7 @@
        (const_string "*")))
    (set_attr "prefix" "<mask_prefix3>,evex")
    (set (attr "mode")
-	(cond [(and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "<ssePSmode>")
-	       (match_test "TARGET_AVX2")
+	(cond [(match_test "TARGET_AVX2")
 		 (const_string "<sseinsnmode>")
 	       (match_test "TARGET_AVX")
 		 (if_then_else
@@ -13244,10 +13235,7 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex,evex")
    (set (attr "mode")
-	(cond [(and (match_test "<MODE_SIZE> == 16")
-		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		 (const_string "<ssePSmode>")
-	       (match_test "TARGET_AVX2")
+	(cond [(match_test "TARGET_AVX2")
 		 (const_string "<sseinsnmode>")
 	       (match_test "TARGET_AVX")
 		 (if_then_else
@@ -17190,14 +17178,14 @@
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "btver2_decode" "vector,vector,vector") 
    (set (attr "mode")
-	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (const_string "V4SF")
-	       (match_test "TARGET_AVX")
+	(cond [(match_test "TARGET_AVX")
 		 (const_string "<ssevecmode>")
 	       (match_test "optimize_function_for_size_p (cfun)")
 		 (const_string "V4SF")
-	       ]
-	       (const_string "<ssevecmode>")))])
+	       (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<ssevecmode>")))])
 
 (define_insn_and_split "*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_lt"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")

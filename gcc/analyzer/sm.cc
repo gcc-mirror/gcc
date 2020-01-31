@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "function.h"
 #include "diagnostic-core.h"
+#include "pretty-print.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -89,6 +90,17 @@ void
 state_machine::validate (state_t s) const
 {
   gcc_assert (s < m_state_names.length ());
+}
+
+/* Dump a multiline representation of this state machine to PP.  */
+
+void
+state_machine::dump_to_pp (pretty_printer *pp) const
+{
+  unsigned i;
+  const char *name;
+  FOR_EACH_VEC_ELT (m_state_names, i, name)
+    pp_printf (pp, "  state %i: %qs\n", i, name);
 }
 
 /* Create instances of the various state machines, each using LOGGER,

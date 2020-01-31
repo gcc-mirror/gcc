@@ -667,7 +667,7 @@ constant_svalue::eval_condition (constant_svalue *lhs,
   gcc_assert (CONSTANT_CLASS_P (rhs_const));
 
   /* Check for comparable types.  */
-  if (TREE_TYPE (lhs_const) == TREE_TYPE (rhs_const))
+  if (types_compatible_p (TREE_TYPE (lhs_const), TREE_TYPE (rhs_const)))
     {
       tree comparison
 	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
@@ -2624,27 +2624,45 @@ stack_region::can_merge_p (const stack_region *stack_region_a,
   stack_region *merged_stack
     = merged_model->get_region <stack_region> (rid_merged_stack);
 
-  for (unsigned i = 0; i < stack_region_a->get_num_frames (); i++)
-    {
-      region_id rid_a = stack_region_a->get_frame_rid (i);
-      frame_region *frame_a = merger->get_region_a <frame_region> (rid_a);
+  /* First, create all frames in the merged model, without populating them.
+     The merging code assumes that all frames in the merged model already exist,
+     so we have to do this first to handle the case in which a local in an
+     older frame points at a local in a more recent frame.  */
+    for (unsigned i = 0; i < stack_region_a->get_num_frames (); i++)
+      {
+	region_id rid_a = stack_region_a->get_frame_rid (i);
+	frame_region *frame_a = merger->get_region_a <frame_region> (rid_a);
 
-      region_id rid_b = stack_region_b->get_frame_rid (i);
-      frame_region *frame_b = merger->get_region_b <frame_region> (rid_b);
+	region_id rid_b = stack_region_b->get_frame_rid (i);
+	frame_region *frame_b = merger->get_region_b <frame_region> (rid_b);
 
-      if (frame_a->get_function () != frame_b->get_function ())
-	return false;
-      frame_region *merged_frame = new frame_region (rid_merged_stack,
-						     frame_a->get_function (),
-						     frame_a->get_depth ());
-      region_id rid_merged_frame = merged_model->add_region (merged_frame);
-      merged_stack->push_frame (rid_merged_frame);
+	if (frame_a->get_function () != frame_b->get_function ())
+	  return false;
 
-      if (!map_region::can_merge_p (frame_a, frame_b,
-				    merged_frame, rid_merged_frame,
-				    merger))
-	return false;
-    }
+	frame_region *merged_frame = new frame_region (rid_merged_stack,
+						       frame_a->get_function (),
+						       frame_a->get_depth ());
+	region_id rid_merged_frame = merged_model->add_region (merged_frame);
+	merged_stack->push_frame (rid_merged_frame);
+      }
+
+    /* Now populate the frames we created.  */
+    for (unsigned i = 0; i < stack_region_a->get_num_frames (); i++)
+      {
+	region_id rid_a = stack_region_a->get_frame_rid (i);
+	frame_region *frame_a = merger->get_region_a <frame_region> (rid_a);
+
+	region_id rid_b = stack_region_b->get_frame_rid (i);
+	frame_region *frame_b = merger->get_region_b <frame_region> (rid_b);
+
+	region_id rid_merged_frame = merged_stack->get_frame_rid (i);
+	frame_region *merged_frame
+	  = merged_model->get_region <frame_region> (rid_merged_frame);
+	if (!map_region::can_merge_p (frame_a, frame_b,
+				      merged_frame, rid_merged_frame,
+				      merger))
+	  return false;
+      }
 
   return true;
 }
@@ -5144,6 +5162,15 @@ region_model::eval_condition (svalue_id lhs_sid,
 			      enum tree_code op,
 			      svalue_id rhs_sid) const
 {
+  svalue *lhs = get_svalue (lhs_sid);
+  svalue *rhs = get_svalue (rhs_sid);
+
+  /* For now, make no attempt to capture constraints on floating-point
+     values.  */
+  if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
+      || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
+    return tristate::unknown ();
+
   tristate ts = eval_condition_without_cm (lhs_sid, op, rhs_sid);
 
   if (ts.is_known ())
@@ -5173,6 +5200,12 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
   /* See what we know based on the values.  */
   if (lhs && rhs)
     {
+      /* For now, make no attempt to capture constraints on floating-point
+	 values.  */
+      if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
+	  || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
+	return tristate::unknown ();
+
       if (lhs == rhs)
 	{
 	  /* If we have the same svalue, then we have equality
@@ -5252,6 +5285,11 @@ bool
 region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 			      region_model_context *ctxt)
 {
+  /* For now, make no attempt to capture constraints on floating-point
+     values.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return true;
+
   svalue_id lhs_sid = get_rvalue (lhs, ctxt);
   svalue_id rhs_sid = get_rvalue (rhs, ctxt);
 
@@ -5385,6 +5423,11 @@ region_model::eval_condition (tree lhs,
 			      tree rhs,
 			      region_model_context *ctxt)
 {
+  /* For now, make no attempt to model constraints on floating-point
+     values.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return tristate::unknown ();
+
   return eval_condition (get_rvalue (lhs, ctxt), op, get_rvalue (rhs, ctxt));
 }
 
@@ -5651,12 +5694,15 @@ region_model::update_for_return_superedge (const return_superedge &return_edge,
   svalue_id result_sid = pop_frame (true, &stats, ctxt);
   // TODO: do something with the stats?
 
+  if (result_sid.null_p ())
+    return;
+
   /* Set the result of the call, within the caller frame.  */
   const gcall *call_stmt = return_edge.get_call_stmt ();
   tree lhs = gimple_call_lhs (call_stmt);
   if (lhs)
     set_value (get_lvalue (lhs, ctxt), result_sid, ctxt);
-  else if (!result_sid.null_p ())
+  else
     {
       /* This could be a leak; try purging again, but this time,
 	 don't special-case the result_sid.  */
@@ -7696,6 +7742,11 @@ test_state_merging ()
 		       integer_type_node);
   tree addr_of_a = build1 (ADDR_EXPR, ptr_type_node, a);
 
+  /* Param "q", a pointer.  */
+  tree q = build_decl (UNKNOWN_LOCATION, PARM_DECL,
+		       get_identifier ("q"),
+		       ptr_type_node);
+
   {
     region_model model0;
     region_model model1;
@@ -7965,6 +8016,60 @@ test_state_merging ()
     /* They should be mergeable, and the result should be the same.  */
     region_model merged;
     ASSERT_TRUE (model0.can_merge_with_p (model1, &merged));
+  }
+
+  /* Verify that we can merge a model in which a local in an older stack
+     frame points to a local in a more recent stack frame.  */
+  {
+    region_model model0;
+    model0.push_frame (DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+    region_id q_in_first_frame = model0.get_lvalue (q, NULL);
+
+    /* Push a second frame.  */
+    region_id rid_2nd_frame
+      = model0.push_frame (DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+
+    /* Have a pointer in the older frame point to a local in the
+       more recent frame.  */
+    svalue_id sid_ptr = model0.get_rvalue (addr_of_a, NULL);
+    model0.set_value (q_in_first_frame, sid_ptr, NULL);
+
+    /* Verify that it's pointing at the newer frame.  */
+    region_id rid_pointee
+      = model0.get_svalue (sid_ptr)->dyn_cast_region_svalue ()->get_pointee ();
+    ASSERT_EQ (model0.get_region (rid_pointee)->get_parent (), rid_2nd_frame);
+
+    model0.canonicalize (NULL);
+
+    region_model model1 (model0);
+    ASSERT_EQ (model0, model1);
+
+    /* They should be mergeable, and the result should be the same
+       (after canonicalization, at least).  */
+    region_model merged;
+    ASSERT_TRUE (model0.can_merge_with_p (model1, &merged));
+    merged.canonicalize (NULL);
+    ASSERT_EQ (model0, merged);
+  }
+
+  /* Verify that we can merge a model in which a local points to a global.  */
+  {
+    region_model model0;
+    model0.push_frame (DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+    model0.set_value (model0.get_lvalue (q, NULL),
+		      model0.get_rvalue (addr_of_y, NULL), NULL);
+
+    model0.canonicalize (NULL);
+
+    region_model model1 (model0);
+    ASSERT_EQ (model0, model1);
+
+    /* They should be mergeable, and the result should be the same
+       (after canonicalization, at least).  */
+    region_model merged;
+    ASSERT_TRUE (model0.can_merge_with_p (model1, &merged));
+    merged.canonicalize (NULL);
+    ASSERT_EQ (model0, merged);
   }
 }
 

@@ -45,6 +45,11 @@ public:
 
   unsigned get_num_checkers () const { return m_checkers.length (); }
 
+  void dump_to_pp (pretty_printer *pp) const;
+  void dump_to_file (FILE *outf) const;
+  void dump () const;
+
+private:
   /* The state machines.  */
   auto_delete_vec <state_machine> &m_checkers;
 };

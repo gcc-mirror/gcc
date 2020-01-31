@@ -1,3 +1,12 @@
+2020-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/24_iterators/range_operations/distance.cc: Do not assume
+	test_range::end() returns the same type as test_range::begin().
+	* testsuite/24_iterators/range_operations/next.cc: Likewise.
+	* testsuite/24_iterators/range_operations/prev.cc: Likewise.
+	* testsuite/util/testsuite_iterators.h (__gnu_test::test_range::end):
+	Always return a sentinel<I>.
+
 2020-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92895

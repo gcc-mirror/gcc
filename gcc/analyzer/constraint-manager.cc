@@ -958,7 +958,9 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 	   other_id.m_idx++)
 	{
 	  const equiv_class &other_ec = other_id.get_obj (*this);
-	  if (other_ec.m_constant)
+	  if (other_ec.m_constant
+	      && types_compatible_p (TREE_TYPE (new_ec->m_constant),
+				     TREE_TYPE (other_ec.m_constant)))
 	    {
 	      /* If we have two ECs, both with constants, the constants must be
 		 non-equal (or they would be in the same EC).

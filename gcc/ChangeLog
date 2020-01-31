@@ -1,3 +1,249 @@
+2020-01-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* ira-color.c (bucket_allocno_compare_func): Move conflict hard
+	reg preferences comparison up.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SVE_BF16): New macro.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svcvtnt): Move to
+	aarch64-sve-builtins-base.h.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svcvtnt): Move to
+	aarch64-sve-builtins-base.cc.
+	* config/aarch64/aarch64-sve-builtins-base.h (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): Declare.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): New functions.
+	* config/aarch64/aarch64-sve-builtins-base.def (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): New functions.
+	(svcvt): Add a form that converts f32 to bf16.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (ternary_bfloat)
+	(ternary_bfloat_lane, ternary_bfloat_lanex2, ternary_bfloat_opt_n):
+	Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_element_type):
+	Treat B as bfloat16_t.
+	(ternary_bfloat_lane_base): New class.
+	(ternary_bfloat_def): Likewise.
+	(ternary_bfloat): New shape.
+	(ternary_bfloat_lane_def): New class.
+	(ternary_bfloat_lane): New shape.
+	(ternary_bfloat_lanex2_def): New class.
+	(ternary_bfloat_lanex2): New shape.
+	(ternary_bfloat_opt_n_def): New class.
+	(ternary_bfloat_opt_n): New shape.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_cvt_bfloat): New macro.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_<sve_fp_op>vnx4sf)
+	(@aarch64_sve_<sve_fp_op>_lanevnx4sf): New patterns.
+	(@aarch64_sve_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>)
+	(@cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>): Likewise.
+	(*cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>): Likewise.
+	(@aarch64_sve_cvtnt<VNx8BF_ONLY:mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_cvtnt<mode>): Key
+	the pattern off the narrow mode instead of the wider one.
+	* config/aarch64/iterators.md (VNx8BF_ONLY): New mode iterator.
+	(UNSPEC_BFMLALB, UNSPEC_BFMLALT, UNSPEC_BFMMLA): New unspecs.
+	(sve_fp_op): Handle them.
+	(SVE_BFLOAT_TERNARY_LONG): New int itertor.
+	(SVE_BFLOAT_TERNARY_LONG_LANE): Likewise.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/arm_sve.h: Include arm_bf16.h.
+	* config/aarch64/aarch64-modes.def (BF): Move definition before
+	VECTOR_MODES.  Remove separate VECTOR_MODES for V4BF and V8BF.
+	(SVE_MODES): Handle BF modes.
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Handle
+	BF modes.
+	(aarch64_full_sve_mode): Likewise.
+	* config/aarch64/iterators.md (SVE_STRUCT): Add VNx16BF, VNx24BF
+	and VNx32BF.
+	(SVE_FULL, SVE_FULL_HSD, SVE_ALL): Add VNx8BF.
+	(Vetype, Vesize, Vctype, VEL, Vel, VEL_INT, V128, v128, vwcore)
+	(V_INT_EQUIV, v_int_equiv, V_FP_EQUIV, v_fp_equiv, vector_count)
+	(insn_length, VSINGLE, vsingle, VPRED, vpred, VDOUBLE): Handle the
+	new SVE BF modes.
+	* config/aarch64/aarch64-sve-builtins.h (TYPE_bfloat): New
+	type_class_index.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_all_arith): New macro.
+	(TYPES_all_data): Add bf16.
+	(TYPES_reinterpret1, TYPES_reinterpret): Likewise.
+	(register_tuple_type): Increase buffer size.
+	* config/aarch64/aarch64-sve-builtins.def (svbfloat16_t): New type.
+	(bf16): New type suffix.
+	* config/aarch64/aarch64-sve-builtins-base.def (svabd, svadd, svaddv)
+	(svcmpeq, svcmpge, svcmpgt, svcmple, svcmplt, svcmpne, svmad, svmax)
+	(svmaxv, svmin, svminv, svmla, svmls, svmsb, svmul, svsub, svsubr):
+	Change type from all_data to all_arith.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svaddp, svmaxp)
+	(svminp): Likewise.
+
+2020-01-31  Dennis Zhang  <dennis.zhang@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (f32mm): Document new AArch64 -march= extension.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_MATMUL_INT8, __ARM_FEATURE_SVE_MATMUL_FP32 and
+	__ARM_FEATURE_SVE_MATMUL_FP64 as appropriate.  Don't define
+	__ARM_FEATURE_MATMUL_FP64.
+	* config/aarch64/aarch64-option-extensions.def (fp, simd, fp16)
+	(sve): Add AARCH64_FL_F32MM to the list of extensions that should
+	be disabled at the same time.
+	(f32mm): New extension.
+	* config/aarch64/aarch64.h (AARCH64_FL_F32MM): New macro.
+	(AARCH64_FL_F64MM): Bump to the next bit up.
+	(AARCH64_ISA_F32MM, TARGET_SVE_I8MM, TARGET_F32MM, TARGET_SVE_F32MM)
+	(TARGET_SVE_F64MM): New macros.
+	* config/aarch64/iterators.md (SVE_MATMULF): New mode iterator.
+	(UNSPEC_FMMLA, UNSPEC_SMATMUL, UNSPEC_UMATMUL, UNSPEC_USMATMUL)
+	(UNSPEC_TRN1Q, UNSPEC_TRN2Q, UNSPEC_UZP1Q, UNSPEC_UZP2Q, UNSPEC_ZIP1Q)
+	(UNSPEC_ZIP2Q): New unspeccs.
+	(DOTPROD_US_ONLY, PERMUTEQ, MATMUL, FMMLA): New int iterators.
+	(optab, sur, perm_insn): Handle the new unspecs.
+	(sve_fp_op): Handle UNSPEC_FMMLA.  Resort.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): Use
+	TARGET_SVE_F64MM instead of separate tests.
+	(@aarch64_<DOTPROD_US_ONLY:sur>dot_prod<vsi2qi>): New pattern.
+	(@aarch64_<DOTPROD_US_ONLY:sur>dot_prod_lane<vsi2qi>): Likewise.
+	(@aarch64_sve_add_<MATMUL:optab><vsi2qi>): Likewise.
+	(@aarch64_sve_<FMMLA:sve_fp_op><mode>): Likewise.
+	(@aarch64_sve_<PERMUTEQ:optab><mode>): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_s_float): New macro.
+	(TYPES_s_float_hsd_integer, TYPES_s_float_sd_integer): Use it.
+	(TYPES_s_signed): New macro.
+	(TYPES_s_integer): Use it.
+	(TYPES_d_float): New macro.
+	(TYPES_d_data): Use it.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (mmla): Declare.
+	(ternary_intq_uintq_lane, ternary_intq_uintq_opt_n, ternary_uintq_intq)
+	(ternary_uintq_intq_lane, ternary_uintq_intq_opt_n): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (mmla_def): New class.
+	(svmmla): New shape.
+	(ternary_resize2_opt_n_base): Add TYPE_CLASS2 and TYPE_CLASS3
+	template parameters.
+	(ternary_resize2_lane_base): Likewise.
+	(ternary_resize2_base): New class.
+	(ternary_qq_lane_base): Likewise.
+	(ternary_intq_uintq_lane_def): Likewise.
+	(ternary_intq_uintq_lane): New shape.
+	(ternary_intq_uintq_opt_n_def): New class
+	(ternary_intq_uintq_opt_n): New shape.
+	(ternary_qq_lane_def): Inherit from ternary_qq_lane_base.
+	(ternary_uintq_intq_def): New class.
+	(ternary_uintq_intq): New shape.
+	(ternary_uintq_intq_lane_def): New class.
+	(ternary_uintq_intq_lane): New shape.
+	(ternary_uintq_intq_opt_n_def): New class.
+	(ternary_uintq_intq_opt_n): New shape.
+	* config/aarch64/aarch64-sve-builtins-base.h (svmmla, svsudot)
+	(svsudot_lane, svtrn1q, svtrn2q, svusdot, svusdot_lane, svusmmla)
+	(svuzp1q, svuzp2q, svzip1q, svzip2q): Declare.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdot_lane_impl):
+	Generalize to...
+	(svdotprod_lane_impl): ...this new class.
+	(svmmla_impl, svusdot_impl): New classes.
+	(svdot_lane): Update to use svdotprod_lane_impl.
+	(svmmla, svsudot, svsudot_lane, svtrn1q, svtrn2q, svusdot)
+	(svusdot_lane, svusmmla, svuzp1q, svuzp2q, svzip1q, svzip2q): New
+	functions.
+	* config/aarch64/aarch64-sve-builtins-base.def (svmmla): New base
+	function, with no types defined.
+	(svmmla, svusmmla, svsudot, svsudot_lane, svusdot, svusdot_lane): New
+	AARCH64_FL_I8MM functions.
+	(svmmla): New AARCH64_FL_F32MM function.
+	(svld1ro): Depend only on AARCH64_FL_F64MM, not on AARCH64_FL_V8_6.
+	(svmmla, svtrn1q, svtrn2q, svuz1q, svuz2q, svzip1q, svzip2q): New
+	AARCH64_FL_F64MM function.
+	(REQUIRED_EXTENSIONS):
+
+2020-01-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (addv64di3_exec): Allow one '0' in each
+	alternative only.
+
+2020-01-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movoi_internal_avx): Do not check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.  Remove MODE_V8SF handling.
+	(*movti_internal): Do not check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	(*movtf_internal): Move check for TARGET_SSE2 and size optimization
+	just after check for TARGET_AVX.
+	(*movdf_internal): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal): Do not check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	* config/i386/sse.md (mov<mode>_internal): Only check
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL with V2DFmode.  Move check
+	for TARGET_SSE2 and size optimization just after check for TARGET_AVX.
+	(<sse>_andnot<mode>3<mask_name>): Move check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL after check for TARGET_AVX.
+	(<code><mode>3<mask_name>): Ditto.
+	(*andnot<mode>3): Ditto.
+	(*andnottf3): Ditto.
+	(*<code><mode>3): Ditto.
+	(*<code>tf3): Ditto.
+	(*andnot<VI:mode>3): Remove
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL handling.
+	(<mask_codefor><code><VI48_AVX_AVX512F:mode>3<mask_name>): Ditto.
+	(*<code><VI12_AVX_AVX512F:mode>3): Ditto.
+	(sse4_1_blendv<ssemodesuffix>): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL):
+	Explain that tune applies to 128bit instructions only.
+
+2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/mkoffload.c (process_asm): Add sgpr_count and vgpr_count
+	to definition of hsa_kernel_description.  Parse assembly to find SGPR
+	and VGPR count of kernel and store in hsa_kernel_description.
+
+2020-01-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/91838
+	* simplify-rtx.c (simplify_binary_operation_1): Update LSHIFTRT case
+	to truncate if allowed or reject combination.
+
+2020-01-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-loop-ivopts.c (get_iv): Use sizetype for zero-step.
+	(find_inv_vars_cb): Likewise.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* calls.c (special_function_p): Split out the check for DECL_NAME
+	being non-NULL and fndecl being extern at file scope into a
+	new maybe_special_function_p and call it.  Drop check for fndecl
+	being non-NULL that was after a usage of DECL_NAME (fndecl).
+	* tree.h (maybe_special_function_p): New inline function.
+
+2020-01-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather<mode>_exec): Move contents ...
+	(mask_gather_load<mode>): ... here, and zero-initialize the
+	destination.
+	(maskload<mode>di): Zero-initialize the destination.
+	* config/gcn/gcn.c:
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93356
+	* doc/analyzer.texi (Limitations): Note that constraints on
+	floating-point values are currently ignored.
+
+2020-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/93384
+	* symtab.c (symtab_node::noninterposable_alias): If localalias
+	already exists, but is not usable, append numbers after it until
+	a unique name is found.  Formatting fix.
+
+	PR middle-end/93505
+	* combine.c (simplify_comparison) <case ROTATE>: Punt on out of range
+	rotate counts.
+
 2020-01-30  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (print_operand): Handle LTGT.

@@ -1,8 +1,6 @@
-// TODO: run this test case at every optimization level
-/* { dg-additional-options "-O2" } */
+/* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 
-#include <stddef.h>
-#include "analyzer-decls.h"
+#include "../analyzer-decls.h"
 
 #define Z_NULL 0
 

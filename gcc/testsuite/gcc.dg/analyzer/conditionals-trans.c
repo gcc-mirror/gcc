@@ -140,5 +140,12 @@ void test_range_float_ge_le (float f)
 {
   if (f >= 4)
     if (f <= 4)
-      __analyzer_eval (f == 4); /* { dg-warning "TRUE" } */
+      __analyzer_eval (f == 4); /* { dg-warning "TRUE" "PR 93356" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "disabled float comparisons" { target *-*-* } .-1 } */
+}
+
+void test_float_selfcmp (float f)
+{
+  __analyzer_eval (f == f); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (f != f); /* { dg-warning "UNKNOWN" } */
 }

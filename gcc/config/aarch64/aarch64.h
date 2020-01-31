@@ -211,8 +211,11 @@ extern unsigned aarch64_architecture_version;
 /* Brain half-precision floating-point (BFloat16) Extension.  */
 #define AARCH64_FL_BF16	      (1ULL << 36)
 
-/* 8-bit Integer Matrix Multiply (F64MM) extensions.  */
-#define AARCH64_FL_F64MM      (1ULL << 37)
+/* 32-bit Floating-point Matrix Multiply (F32MM) extensions.  */
+#define AARCH64_FL_F32MM      (1ULL << 37)
+
+/* 64-bit Floating-point Matrix Multiply (F64MM) extensions.  */
+#define AARCH64_FL_F64MM      (1ULL << 38)
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -270,6 +273,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
 #define AARCH64_ISA_V8_6	   (aarch64_isa_flags & AARCH64_FL_V8_6)
 #define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
+#define AARCH64_ISA_F32MM	   (aarch64_isa_flags & AARCH64_FL_F32MM)
 #define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 
@@ -345,13 +349,20 @@ extern unsigned aarch64_architecture_version;
 
 /* I8MM instructions are enabled through +i8mm.  */
 #define TARGET_I8MM (AARCH64_ISA_I8MM)
+#define TARGET_SVE_I8MM (TARGET_SVE && AARCH64_ISA_I8MM)
+
+/* F32MM instructions are enabled through +f32mm.  */
+#define TARGET_F32MM (AARCH64_ISA_F32MM)
+#define TARGET_SVE_F32MM (TARGET_SVE && AARCH64_ISA_F32MM)
 
 /* F64MM instructions are enabled through +f64mm.  */
 #define TARGET_F64MM (AARCH64_ISA_F64MM)
+#define TARGET_SVE_F64MM (TARGET_SVE && AARCH64_ISA_F64MM)
 
 /* BF16 instructions are enabled through +bf16.  */
 #define TARGET_BF16_FP (AARCH64_ISA_BF16)
 #define TARGET_BF16_SIMD (AARCH64_ISA_BF16 && TARGET_SIMD)
+#define TARGET_SVE_BF16 (TARGET_SVE && AARCH64_ISA_BF16)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -g" } */
-/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-final { check-function-bodies "**" "" { target lp64 } } } */
 
 #include <stdint.h>
 
@@ -10,6 +10,7 @@ typedef uint8_t svuint8_t __attribute__ ((vector_size (32)));
 typedef int16_t svint16_t __attribute__ ((vector_size (32)));
 typedef uint16_t svuint16_t __attribute__ ((vector_size (32)));
 typedef __fp16 svfloat16_t __attribute__ ((vector_size (32)));
+typedef __bf16 svbfloat16_t __attribute__ ((vector_size (32)));
 
 typedef int32_t svint32_t __attribute__ ((vector_size (32)));
 typedef uint32_t svuint32_t __attribute__ ((vector_size (32)));
@@ -80,6 +81,9 @@ CALLEE (u16, svuint16_t)
 
 /* Currently we scalarize this.  */
 CALLEE (f16, svfloat16_t)
+
+/* Currently we scalarize this.  */
+CALLEE (bf16, svbfloat16_t)
 
 /*
 ** callee_s32:
@@ -196,6 +200,16 @@ CALLER (u16, svuint16_t)
 **	ret
 */
 CALLER (f16, svfloat16_t)
+
+/*
+** caller_bf16:
+**	...
+**	bl	callee_bf16
+**	ldr	h0, \[sp, 16\]
+**	ldp	x29, x30, \[sp\], 48
+**	ret
+*/
+CALLER (bf16, svbfloat16_t)
 
 /*
 ** caller_s32:

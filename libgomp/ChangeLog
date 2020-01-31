@@ -1,3 +1,13 @@
+2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct hsa_kernel_description): Add sgpr_count
+	and vgpr_count fields.
+	(struct kernel_info): Add a field for a hsa_kernel_description.
+	(run_kernel): Reduce the number of threads/workers if the requested
+	number would require too many VGPRs.
+	(init_basic_kernel_info): Initialize description field with
+	the hsa_kernel_description entry for the kernel.
+
 2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR bootstrap/93409

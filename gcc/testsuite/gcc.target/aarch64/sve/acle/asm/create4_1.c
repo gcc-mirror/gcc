@@ -51,6 +51,18 @@ TEST_CREATE (create4_u16, svuint16x4_t, svuint16_t,
 	     z0 = svcreate4 (z6, z5, z4, z7))
 
 /*
+** create4_bf16:
+**	mov	z0\.d, z4\.d
+**	mov	z1\.d, z5\.d
+**	mov	z2\.d, z6\.d
+**	mov	z3\.d, z7\.d
+**	ret
+*/
+TEST_CREATE (create4_bf16, svbfloat16x4_t, svbfloat16_t,
+	     z0 = svcreate4_bf16 (z4, z5, z6, z7),
+	     z0 = svcreate4 (z4, z5, z6, z7))
+
+/*
 ** create4_f16:
 **	mov	z0\.d, z4\.d
 **	mov	z1\.d, z5\.d

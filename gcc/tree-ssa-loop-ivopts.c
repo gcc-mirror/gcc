@@ -1246,7 +1246,11 @@ get_iv (struct ivopts_data *data, tree var)
 
       if (!bb
 	  || !flow_bb_inside_loop_p (data->current_loop, bb))
-	set_iv (data, var, var, build_int_cst (type, 0), true);
+	{
+	  if (POINTER_TYPE_P (type))
+	    type = sizetype;
+	  set_iv (data, var, var, build_int_cst (type, 0), true);
+	}
     }
 
   return name_info (data, var)->iv;
@@ -2990,7 +2994,10 @@ find_inv_vars_cb (tree *expr_p, int *ws ATTRIBUTE_UNUSED, void *data)
 
       if (!bb || !flow_bb_inside_loop_p (idata->current_loop, bb))
 	{
-	  set_iv (idata, op, op, build_int_cst (TREE_TYPE (op), 0), true);
+	  tree steptype = TREE_TYPE (op);
+	  if (POINTER_TYPE_P (steptype))
+	    steptype = sizetype;
+	  set_iv (idata, op, op, build_int_cst (steptype, 0), true);
 	  record_invariant (idata, op, false);
 	}
     }

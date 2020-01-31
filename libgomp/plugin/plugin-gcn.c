@@ -371,6 +371,8 @@ struct hsa_kernel_description
 {
   const char *name;
   int oacc_dims[3];  /* Only present for GCN kernels.  */
+  int sgpr_count;
+  int vpgr_count;
 };
 
 /* Mkoffload uses this structure to describe an offload variable.  */
@@ -478,6 +480,8 @@ struct kernel_info
   struct agent_info *agent;
   /* The specific module where the kernel takes place.  */
   struct module_info *module;
+  /* Information provided by mkoffload associated with the kernel.  */
+  struct hsa_kernel_description *description;
   /* Mutex enforcing that at most once thread ever initializes a kernel for
      use.  A thread should have locked agent->module_rwlock for reading before
      acquiring it.  */
@@ -2102,6 +2106,24 @@ run_kernel (struct kernel_info *kernel, void *vars,
 	    struct GOMP_kernel_launch_attributes *kla,
 	    struct goacc_asyncqueue *aq, bool module_locked)
 {
+  GCN_DEBUG ("SGPRs: %d, VGPRs: %d\n", kernel->description->sgpr_count,
+	     kernel->description->vpgr_count);
+
+  /* Reduce the number of threads/workers if there are insufficient
+     VGPRs available to run the kernels together.  */
+  if (kla->ndim == 3 && kernel->description->vpgr_count > 0)
+    {
+      int granulated_vgprs = (kernel->description->vpgr_count + 3) & ~3;
+      int max_threads = (256 / granulated_vgprs) * 4;
+      if (kla->gdims[2] > max_threads)
+	{
+	  GCN_WARNING ("Too many VGPRs required to support %d threads/workers"
+		       " per team/gang - reducing to %d threads/workers.\n",
+		       kla->gdims[2], max_threads);
+	  kla->gdims[2] = max_threads;
+	}
+    }
+
   GCN_DEBUG ("GCN launch on queue: %d:%d\n", kernel->agent->device_id,
 	     (aq ? aq->id : 0));
   GCN_DEBUG ("GCN launch attribs: gdims:[");
@@ -2303,6 +2325,7 @@ init_basic_kernel_info (struct kernel_info *kernel,
   kernel->agent = agent;
   kernel->module = module;
   kernel->name = d->name;
+  kernel->description = d;
   if (pthread_mutex_init (&kernel->init_mutex, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN kernel mutex");

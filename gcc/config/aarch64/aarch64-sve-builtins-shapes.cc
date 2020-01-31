@@ -78,6 +78,7 @@ apply_predication (const function_instance &instance, tree return_type,
    [01]    - the element type in type suffix 0 or 1 of INSTANCE
    f<bits> - a floating-point type with the given number of bits
    f[01]   - a floating-point type with the same width as type suffix 0 or 1
+   B       - bfloat16_t
    h<elt>  - a half-sized version of <elt>
    p       - a predicate (represented as TYPE_SUFFIX_b)
    q<elt>  - a quarter-sized version of <elt>
@@ -116,6 +117,9 @@ parse_element_type (const function_instance &instance, const char *&format)
 
   if (ch == 'p')
     return TYPE_SUFFIX_b;
+
+  if (ch == 'B')
+    return TYPE_SUFFIX_bf16;
 
   if (ch == 'q')
     {
@@ -700,6 +704,58 @@ struct load_ext_gather_base : public overloaded_base<1>
   }
 };
 
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:quarter>_t,
+		       sv<t0:quarter>_t)  (for integer t0)
+   sv<t0>_t svmmla[_t0](sv<t0>_t, sv<t0>_t, sv<t0>_t)  (for floating-point t0)
+
+   The functions act like the equivalent of "ternary_qq" for integer elements
+   and normal vector-only ternary functions for floating-point elements.  */
+struct mmla_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    /* svmmla is distributed over several extensions.  Allow the common
+       denominator to define the overloaded svmmla function without
+       defining any specific versions.  */
+    if (group.types[0][0] != NUM_TYPE_SUFFIXES)
+      {
+	if (type_suffixes[group.types[0][0]].float_p)
+	  build_all (b, "v0,v0,v0,v0", group, MODE_none);
+	else
+	  build_all (b, "v0,v0,vq0,vq0", group, MODE_none);
+      }
+  }
+
+  tree
+  resolve (function_resolver &r) const OVERRIDE
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* Make sure that the function exists now, since not all forms
+       follow a set pattern after this point.  */
+    tree res = r.resolve_to (r.mode_suffix_id, type);
+    if (res == error_mark_node)
+      return res;
+
+    bool float_p = type_suffixes[type].float_p;
+    unsigned int modifier = float_p ? r.SAME_SIZE : r.QUARTER_SIZE;
+    if (!r.require_derived_vector_type (i + 1, i, type, r.SAME_TYPE_CLASS,
+					modifier)
+	|| !r.require_derived_vector_type (i + 2, i, type, r.SAME_TYPE_CLASS,
+					   modifier))
+      return error_mark_node;
+
+    return res;
+  }
+};
+SHAPE (mmla)
+
 /* Base class for prefetch_gather_index and prefetch_gather_offset,
    which differ only in the units of the displacement.  */
 struct prefetch_gather_base : public overloaded_base<0>
@@ -791,11 +847,18 @@ struct ternary_shift_imm_base : public overloaded_base<0>
 
 /* Base class for ternary operations in which the first argument has the
    same element type as the result, and in which the second and third
-   arguments have an element type that is derived the first.  MODIFIER
-   is the number of element bits in the second and third arguments,
-   or a function_resolver modifier that says how this precision is
-   derived from the first argument's elements.  */
-template<unsigned int MODIFIER>
+   arguments have an element type that is derived the first.
+
+   MODIFIER is the number of element bits in the second and third
+   arguments, or a function_resolver modifier that says how this
+   precision is derived from the first argument's elements.
+
+   TYPE_CLASS2 and TYPE_CLASS3 are the type classes of the second and
+   third arguments, or function_resolver::SAME_TYPE_CLASS if the type
+   class is the same as the first argument.  */
+template<unsigned int MODIFIER,
+	 type_class_index TYPE_CLASS2 = function_resolver::SAME_TYPE_CLASS,
+	 type_class_index TYPE_CLASS3 = function_resolver::SAME_TYPE_CLASS>
 struct ternary_resize2_opt_n_base : public overloaded_base<0>
 {
   tree
@@ -805,18 +868,43 @@ struct ternary_resize2_opt_n_base : public overloaded_base<0>
     type_suffix_index type;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
-	|| !r.require_derived_vector_type (i + 1, i, type, r.SAME_TYPE_CLASS,
+	|| !r.require_derived_vector_type (i + 1, i, type, TYPE_CLASS2,
 					   MODIFIER))
       return error_mark_node;
 
-    return r.finish_opt_n_resolution (i + 2, i, type, r.SAME_TYPE_CLASS,
-				      MODIFIER);
+    return r.finish_opt_n_resolution (i + 2, i, type, TYPE_CLASS3, MODIFIER);
+  }
+};
+
+/* Like ternary_resize2_opt_n_base, but for functions that don't take
+   a final scalar argument.  */
+template<unsigned int MODIFIER,
+	 type_class_index TYPE_CLASS2 = function_resolver::SAME_TYPE_CLASS,
+	 type_class_index TYPE_CLASS3 = function_resolver::SAME_TYPE_CLASS>
+struct ternary_resize2_base : public overloaded_base<0>
+{
+  tree
+  resolve (function_resolver &r) const OVERRIDE
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
+	|| !r.require_derived_vector_type (i + 1, i, type, TYPE_CLASS2,
+					   MODIFIER)
+	|| !r.require_derived_vector_type (i + 2, i, type, TYPE_CLASS3,
+					   MODIFIER))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
   }
 };
 
 /* Like ternary_resize2_opt_n_base, but for functions that take a final
    lane argument.  */
-template<unsigned int MODIFIER>
+template<unsigned int MODIFIER,
+	 type_class_index TYPE_CLASS2 = function_resolver::SAME_TYPE_CLASS,
+	 type_class_index TYPE_CLASS3 = function_resolver::SAME_TYPE_CLASS>
 struct ternary_resize2_lane_base : public overloaded_base<0>
 {
   tree
@@ -826,14 +914,49 @@ struct ternary_resize2_lane_base : public overloaded_base<0>
     type_suffix_index type;
     if (!r.check_gp_argument (4, i, nargs)
 	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
-	|| !r.require_derived_vector_type (i + 1, i, type, r.SAME_TYPE_CLASS,
+	|| !r.require_derived_vector_type (i + 1, i, type, TYPE_CLASS2,
 					   MODIFIER)
-	|| !r.require_derived_vector_type (i + 2, i, type, r.SAME_TYPE_CLASS,
+	|| !r.require_derived_vector_type (i + 2, i, type, TYPE_CLASS3,
 					   MODIFIER)
 	|| !r.require_integer_immediate (i + 3))
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+
+/* A specialization of ternary_resize2_lane_base for bfloat16 elements,
+   indexed in groups of N elements.  */
+template<unsigned int N>
+struct ternary_bfloat_lane_base
+  : public ternary_resize2_lane_base<16, TYPE_bfloat, TYPE_bfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vB,vB,su64", group, MODE_none);
+  }
+
+  bool
+  check (function_checker &c) const OVERRIDE
+  {
+    return c.require_immediate_lane_index (3, N);
+  }
+};
+
+/* A specialization of ternary_resize2_lane_base for quarter-sized
+   elements.  */
+template<type_class_index TYPE_CLASS2 = function_resolver::SAME_TYPE_CLASS,
+	 type_class_index TYPE_CLASS3 = function_resolver::SAME_TYPE_CLASS>
+struct ternary_qq_lane_base
+  : public ternary_resize2_lane_base<function_resolver::QUARTER_SIZE,
+				     TYPE_CLASS2, TYPE_CLASS3>
+{
+  bool
+  check (function_checker &c) const OVERRIDE
+  {
+    return c.require_immediate_lane_index (3, 4);
   }
 };
 
@@ -2596,6 +2719,82 @@ struct tbl_tuple_def : public overloaded_base<0>
 };
 SHAPE (tbl_tuple)
 
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloatt16_t, svbfloat16_t).  */
+struct ternary_bfloat_def
+  : public ternary_resize2_base<16, TYPE_bfloat, TYPE_bfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vB,vB", group, MODE_none);
+  }
+};
+SHAPE (ternary_bfloat)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloat16_t, svbfloat16_t, uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 7].  */
+typedef ternary_bfloat_lane_base<1> ternary_bfloat_lane_def;
+SHAPE (ternary_bfloat_lane)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloat16_t, svbfloat16_t, uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 3].  */
+typedef ternary_bfloat_lane_base<2> ternary_bfloat_lanex2_def;
+SHAPE (ternary_bfloat_lanex2)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svbfloatt16_t, svbfloat16_t)
+   sv<t0>_t svfoo[_n_t0](sv<t0>_t, svbfloat16_t, bfloat16_t).  */
+struct ternary_bfloat_opt_n_def
+  : public ternary_resize2_opt_n_base<16, TYPE_bfloat, TYPE_bfloat>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vB,vB", group, MODE_none);
+    build_all (b, "v0,v0,vB,sB", group, MODE_n);
+  }
+};
+SHAPE (ternary_bfloat_opt_n)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:int:quarter>_t, sv<t0:uint:quarter>_t,
+		       uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 16 / sizeof (<t0>_t) - 1].  */
+struct ternary_intq_uintq_lane_def
+  : public ternary_qq_lane_base<TYPE_signed, TYPE_unsigned>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vqs0,vqu0,su64", group, MODE_none);
+  }
+};
+SHAPE (ternary_intq_uintq_lane)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:int:quarter>_t, sv<t0:uint:quarter>_t)
+   sv<t0>_t svfoo[_n_t0](sv<t0>_t, sv<t0:int:quarter>_t,
+			 <t0:uint:quarter>_t).  */
+struct ternary_intq_uintq_opt_n_def
+  : public ternary_resize2_opt_n_base<function_resolver::QUARTER_SIZE,
+				      TYPE_signed, TYPE_unsigned>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vqs0,vqu0", group, MODE_none);
+    build_all (b, "v0,v0,vqs0,squ0", group, MODE_n);
+  }
+};
+SHAPE (ternary_intq_uintq_opt_n)
+
 /* svbool_t svfoo[_<t0>](sv<t0>_t, sv<t0>_t, sv<t0>_t, uint64_t)
 
    where the final argument is an integer constant expression in the
@@ -2716,24 +2915,17 @@ struct ternary_opt_n_def : public overloaded_base<0>
 };
 SHAPE (ternary_opt_n)
 
-/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0.quarter>_t, sv<t0.quarter>_t, uint64_t)
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:quarter>_t, sv<t0:quarter>_t, uint64_t)
 
    where the final argument is an integer constant expression in the range
    [0, 16 / sizeof (<t0>_t) - 1].  */
-struct ternary_qq_lane_def
-  : public ternary_resize2_lane_base<function_resolver::QUARTER_SIZE>
+struct ternary_qq_lane_def : public ternary_qq_lane_base<>
 {
   void
   build (function_builder &b, const function_group_info &group) const OVERRIDE
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vq0,vq0,su64", group, MODE_none);
-  }
-
-  bool
-  check (function_checker &c) const OVERRIDE
-  {
-    return c.require_immediate_lane_index (3, 4);
   }
 };
 SHAPE (ternary_qq_lane)
@@ -2779,8 +2971,8 @@ struct ternary_qq_lane_rotate_def : public overloaded_base<0>
 };
 SHAPE (ternary_qq_lane_rotate)
 
-/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0.quarter>_t, sv<t0.quarter>_t)
-   sv<t0>_t svfoo[_n_t0](sv<t0>_t, sv<t0.quarter>_t, <t0.quarter>_t)
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:quarter>_t, sv<t0:quarter>_t)
+   sv<t0>_t svfoo[_n_t0](sv<t0>_t, sv<t0:quarter>_t, <t0:quarter>_t)
 
    i.e. a version of the standard ternary shape ternary_opt_n in which
    the element type of the last two arguments is the quarter-sized
@@ -2919,6 +3111,55 @@ struct ternary_uint_def : public overloaded_base<0>
   }
 };
 SHAPE (ternary_uint)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, svu<t0:uint:quarter>_t,
+		       sv<t0:int:quarter>_t).  */
+struct ternary_uintq_intq_def
+  : public ternary_resize2_base<function_resolver::QUARTER_SIZE,
+				TYPE_unsigned, TYPE_signed>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vqu0,vqs0", group, MODE_none);
+  }
+};
+SHAPE (ternary_uintq_intq)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:uint:quarter>_t, sv<t0:int:quarter>_t,
+		       uint64_t)
+
+   where the final argument is an integer constant expression in the range
+   [0, 16 / sizeof (<t0>_t) - 1].  */
+struct ternary_uintq_intq_lane_def
+  : public ternary_qq_lane_base<TYPE_unsigned, TYPE_signed>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vqu0,vqs0,su64", group, MODE_none);
+  }
+};
+SHAPE (ternary_uintq_intq_lane)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:uint:quarter>_t, sv<t0:int:quarter>_t)
+   sv<t0>_t svfoo[_n_t0](sv<t0>_t, sv<t0:uint:quarter>_t,
+			 <t0:int:quarter>_t).  */
+struct ternary_uintq_intq_opt_n_def
+  : public ternary_resize2_opt_n_base<function_resolver::QUARTER_SIZE,
+				      TYPE_unsigned, TYPE_signed>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,vqu0,vqs0", group, MODE_none);
+    build_all (b, "v0,v0,vqu0,sqs0", group, MODE_n);
+  }
+};
+SHAPE (ternary_uintq_intq_opt_n)
 
 /* svbool_t svfoo[_<t0>](sv<t0>_t, sv<t0>_t, uint64_t)
 

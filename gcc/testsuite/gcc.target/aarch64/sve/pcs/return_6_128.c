@@ -1,6 +1,6 @@
-/* { dg-do compile { target aarch64_little_endian } } */
+/* { dg-do compile } */
 /* { dg-options "-O -msve-vector-bits=128 -g" } */
-/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-final { check-function-bodies "**" "" { target { aarch64_little_endian && lp64 } } } } */
 
 #include <stdint.h>
 
@@ -10,6 +10,7 @@ typedef uint8_t svuint8_t __attribute__ ((vector_size (16)));
 typedef int16_t svint16_t __attribute__ ((vector_size (16)));
 typedef uint16_t svuint16_t __attribute__ ((vector_size (16)));
 typedef __fp16 svfloat16_t __attribute__ ((vector_size (16)));
+typedef __bf16 svbfloat16_t __attribute__ ((vector_size (16)));
 
 typedef int32_t svint32_t __attribute__ ((vector_size (16)));
 typedef uint32_t svuint32_t __attribute__ ((vector_size (16)));
@@ -60,6 +61,13 @@ CALLEE (u16, svuint16_t)
 **	ret
 */
 CALLEE (f16, svfloat16_t)
+
+/*
+** callee_bf16:
+**	ldr	q0, \[x0\]
+**	ret
+*/
+CALLEE (bf16, svbfloat16_t)
 
 /*
 ** callee_s32:
@@ -164,6 +172,17 @@ CALLER (u16, svuint16_t)
 **	ret
 */
 CALLER (f16, svfloat16_t)
+
+/*
+** caller_bf16:
+**	...
+**	bl	callee_bf16
+**	...
+**	str	q0, \[[^]]*\]
+**	...
+**	ret
+*/
+CALLER (bf16, svbfloat16_t)
 
 /*
 ** caller_s32:
