@@ -1291,6 +1291,8 @@ package body Einfo is
                        E_Package,
                        E_Package_Body)
            or else
+         Is_Type (Id)                         --  types
+           or else
          Ekind (Id) = E_Void);                --  special purpose
       return Node34 (Id);
    end Contract;
@@ -4146,6 +4148,10 @@ package body Einfo is
          Ekind_In (Id, E_Generic_Package,     --  packages
                        E_Package,
                        E_Package_Body)
+
+           or else
+         Is_Type (Id)                         -- types
+
            or else
          Ekind (Id) = E_Void);                --  special purpose
       Set_Node34 (Id, V);
@@ -11271,11 +11277,10 @@ package body Einfo is
             | E_Package
             | E_Package_Body
             | E_Procedure
-            | E_Protected_Type
             | E_Subprogram_Body
             | E_Task_Body
-            | E_Task_Type
             | E_Variable
+            | Type_Kind
             | E_Void
          =>
             Write_Str ("Contract");

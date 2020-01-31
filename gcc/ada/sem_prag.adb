@@ -2123,7 +2123,8 @@ package body Sem_Prag is
                & """No_Caching"" (SPARK RM 7.1.2(6))", N);
          else
             SPARK_Msg_N
-              ("external property % must apply to a volatile object", N);
+              ("external property % must apply to a volatile type or object",
+               N);
          end if;
 
       --  Pragma No_Caching should only apply to volatile variables of
@@ -7847,6 +7848,7 @@ package body Sem_Prag is
            and then Prag_Id = Pragma_Volatile
            and then not Nkind_In (Original_Node (Decl),
                                   N_Full_Type_Declaration,
+                                  N_Formal_Type_Declaration,
                                   N_Object_Declaration,
                                   N_Single_Protected_Declaration,
                                   N_Single_Task_Declaration)
@@ -13476,41 +13478,65 @@ package body Sem_Prag is
             | Pragma_No_Caching
          =>
          Async_Effective : declare
-            Obj_Decl : Node_Id;
-            Obj_Id   : Entity_Id;
-
+            Obj_Or_Type_Decl : Node_Id;
+            Obj_Or_Type_Id   : Entity_Id;
          begin
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments  (1);
 
-            Obj_Decl := Find_Related_Context (N, Do_Checks => True);
+            Obj_Or_Type_Decl := Find_Related_Context (N, Do_Checks => True);
 
-            --  Object declaration
+            --  Pragma must apply to a object declaration or to a type
+            --  declaration (only the former in the No_Caching case).
+            --  Original_Node is necessary to account for untagged derived
+            --  types that are rewritten as subtypes of their
+            --  respective root types.
 
-            if Nkind (Obj_Decl) /= N_Object_Declaration then
-               Pragma_Misplaced;
-               return;
+            if Nkind (Obj_Or_Type_Decl) /= N_Object_Declaration then
+               if (Prag_Id = Pragma_No_Caching)
+                  or not Nkind_In (Original_Node (Obj_Or_Type_Decl),
+                                   N_Full_Type_Declaration,
+                                   N_Private_Type_Declaration,
+                                   N_Formal_Type_Declaration,
+                                   N_Task_Type_Declaration,
+                                   N_Protected_Type_Declaration)
+               then
+                  Pragma_Misplaced;
+                  return;
+               end if;
             end if;
 
-            Obj_Id := Defining_Entity (Obj_Decl);
+            Obj_Or_Type_Id := Defining_Entity (Obj_Or_Type_Decl);
 
             --  Perform minimal verification to ensure that the argument is at
-            --  least a variable. Subsequent finer grained checks will be done
-            --  at the end of the declarative region the contains the pragma.
+            --  least a variable or a type. Subsequent finer grained checks
+            --  will be done at the end of the declarative region that
+            --  contains the pragma.
 
-            if Ekind (Obj_Id) = E_Variable then
+            if Ekind (Obj_Or_Type_Id) = E_Variable or Is_Type (Obj_Or_Type_Id)
+            then
+
+               --  In the case of a type, pragma is a type-related
+               --  representation item and so requires checks common to
+               --  all type-related representation items.
+
+               if Is_Type (Obj_Or_Type_Id)
+                 and then Rep_Item_Too_Late (Obj_Or_Type_Id, N)
+               then
+                  return;
+               end if;
 
                --  A pragma that applies to a Ghost entity becomes Ghost for
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Ghost_Pragma (N, Obj_Id);
+               Mark_Ghost_Pragma (N, Obj_Or_Type_Id);
 
                --  Chain the pragma on the contract for further processing by
                --  Analyze_External_Property_In_Decl_Part.
 
-               Add_Contract_Item (N, Obj_Id);
+               Add_Contract_Item (N, Obj_Or_Type_Id);
 
                --  Analyze the Boolean expression (if any)
 
@@ -13521,7 +13547,8 @@ package body Sem_Prag is
             --  Otherwise the external property applies to a constant
 
             else
-               Error_Pragma ("pragma % must apply to a volatile object");
+               Error_Pragma
+                 ("pragma % must apply to a volatile type or object");
             end if;
          end Async_Effective;
 
@@ -30170,7 +30197,9 @@ package body Sem_Prag is
 
          --  Skip internally generated code
 
-         elsif not Comes_From_Source (Stmt) then
+         elsif not Comes_From_Source (Stmt)
+           and then not Comes_From_Source (Original_Node (Stmt))
+         then
 
             --  The anonymous object created for a single concurrent type is a
             --  suitable context.
