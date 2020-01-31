@@ -1,5 +1,19 @@
 2020-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Fix PRAGMA_EOL location
+	libcpp/
+	* lex.c (_cpp_lex_direct): Return CPP_PRAGMA_EOL at end of line.
+	gcc/cp/
+	* lex.c (token_coro::resume): No need to handle in-pragma EOF.
+	* parser.c (cp_parser_skip_to_pragma_eol): Likewise.
+	(cp_parser_omp_declare_simd, cp_parser_omp_declare_reduction)
+	(cp_parser_oacc_routine, cp_parser_initial_pragma, pragma_lex): Likewise.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Ignore CPP_PRAGMA_EOL in
+	not a pragma.
+	gcc/testsuite/
+	* c-c++-common/cpp/pragma-eof.c: New.
+
 	Implement p1857, part 3
 	gcc/cp/
 	* cp-tree.h (module_preprocess, import_module_pre): Replace with ...

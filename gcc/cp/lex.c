@@ -412,6 +412,8 @@ struct token_coro
   {
   };
 
+  /* Process the next token.  Note we cannot see CPP_EOF inside a
+     pragma -- a CPP_PRAGMA_EOL always happens.  */
   void resume (int type, int keyword, tree value, location_t loc)
   {
     switch (state)
@@ -486,7 +488,6 @@ struct token_coro
 	    break;
 
 	  case CPP_PRAGMA_EOL:
-	  case CPP_EOF:
 	    goto module_end;
 
 	  case CPP_NAME:
@@ -504,7 +505,7 @@ struct token_coro
 	break;
 
       case module_end:
-	if (type == CPP_PRAGMA_EOL || type == CPP_EOF)
+	if (type == CPP_PRAGMA_EOL)
 	  {
 	  module_end:;
 	    /* End of the directive, handle the name.  */

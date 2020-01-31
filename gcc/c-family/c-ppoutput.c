@@ -209,6 +209,10 @@ scan_translation_unit (cpp_reader *pfile)
 	  continue;
 	}
 
+      if (token->type == CPP_PRAGMA_EOL && !in_pragma)
+	/* A module-specific pragma EOL. */
+	continue;
+
       if (token->type == CPP_EOF)
 	break;
 
