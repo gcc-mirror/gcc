@@ -120,6 +120,10 @@
 	("*b<zcond:code><mode>"): Rename from "b<zcond:code><mode>".
 	("*b<nzvccond:code><mode>"): Rename from "b<nzvccond:code><mode>".
 	("*b<rnzcond:code><mode>"): Rename from "*b<rnzcond:code><mode>".
+	("<acc><anz><anzvc>extend<mode>si2<setcc><setnz><setnzvc>"):
+	Rename from "extend<mode>si2".
+	("<acc><anz><anzvc>zero_extend<mode>si2<setcc><setnz><setnzvc>"):
+	Similar, from "zero_extend<mode>si2".
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 

@@ -856,7 +856,7 @@
   ""
   "movs<m> %1,%M0\;smi %H0\;neg.d %H0,%H0")
 
-(define_insn "extend<mode>si2"
+(define_insn "<acc><anz><anzvc>extend<mode>si2<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
 	(sign_extend:SI (match_operand:BW 1 "general_operand" "r,Q>,g")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
@@ -879,7 +879,7 @@
 ;; Zero-extend.  The DImode ones are synthesized by gcc, so we don't
 ;; specify them here.
 
-(define_insn "zero_extend<mode>si2"
+(define_insn "<acc><anz><anzvc>zero_extend<mode>si2<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
 	(zero_extend:SI
 	 (match_operand:BW 1 "nonimmediate_operand" "r,Q>,m")))
