@@ -124,6 +124,14 @@
 	Rename from "extend<mode>si2".
 	("<acc><anz><anzvc>zero_extend<mode>si2<setcc><setnz><setnzvc>"):
 	Similar, from "zero_extend<mode>si2".
+	("*adddi3<setnz>"): Rename from "*adddi3".
+	("*subdi3<setnz>"): Similarly from "*subdi3".
+	("*addsi3<setnz>"): Similarly from "*addsi3".
+	("*subsi3<setnz>"): Similarly from "*subsi3".
+	("*addhi3<setnz>"): Similarly from "*addhi3" and decorate the
+	"cc" attribute to "cc<ccnz>".
+	("*addqi3<setnz>"): Similarly from "*addqi3".
+	("*sub<mode>3<setnz>"): Similarly from "*sub<mode>3".
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
