@@ -56,6 +56,17 @@ is
       return Random (SRN.Generator (Gen));
    end Random;
 
+   function Random
+     (Gen   : Generator;
+      First : Result_Subtype;
+      Last  : Result_Subtype) return Result_Subtype
+   is
+      subtype Local_Subtype is Result_Subtype range First .. Last;
+      function Random is new SRN.Random_Discrete (Local_Subtype, First);
+   begin
+      return Random (SRN.Generator (Gen));
+   end Random;
+
    -----------
    -- Reset --
    -----------

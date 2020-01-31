@@ -51,6 +51,12 @@ is
 
    function Random (Gen : Generator) return Result_Subtype;
 
+   function Random
+     (Gen   : Generator;
+      First : Result_Subtype;
+      Last  : Result_Subtype) return Result_Subtype
+     with Post => Random'Result in First .. Last;
+
    procedure Reset (Gen : Generator; Initiator : Integer);
    procedure Reset (Gen : Generator);
 
