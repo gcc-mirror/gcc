@@ -2251,6 +2251,11 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   ira_allocno_t t2 = ALLOCNO_COLOR_DATA (a2)->first_thread_allocno;
   int cl1 = ALLOCNO_CLASS (a1), cl2 = ALLOCNO_CLASS (a2);
 
+  /* Push allocnos with minimal conflict_allocno_hard_prefs first.  */
+  pref1 = ALLOCNO_COLOR_DATA (a1)->conflict_allocno_hard_prefs;
+  pref2 = ALLOCNO_COLOR_DATA (a2)->conflict_allocno_hard_prefs;
+  if ((diff = pref1 - pref2) != 0)
+    return diff;
   freq1 = ALLOCNO_COLOR_DATA (t1)->thread_freq;
   freq2 = ALLOCNO_COLOR_DATA (t2)->thread_freq;
   if ((diff = freq1 - freq2) != 0)
@@ -2275,11 +2280,6 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   a1_num = ALLOCNO_COLOR_DATA (a1)->available_regs_num;
   a2_num = ALLOCNO_COLOR_DATA (a2)->available_regs_num;
   if ((diff = a2_num - a1_num) != 0)
-    return diff;
-  /* Push allocnos with minimal conflict_allocno_hard_prefs first.  */
-  pref1 = ALLOCNO_COLOR_DATA (a1)->conflict_allocno_hard_prefs;
-  pref2 = ALLOCNO_COLOR_DATA (a2)->conflict_allocno_hard_prefs;
-  if ((diff = pref1 - pref2) != 0)
     return diff;
   return ALLOCNO_NUM (a2) - ALLOCNO_NUM (a1);
 }

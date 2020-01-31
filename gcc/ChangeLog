@@ -1,3 +1,9 @@
+2020-01-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* ira-color.c (bucket_allocno_compare_func): Move conflict hard
+	reg preferences comparison up.
+
 2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.h (TARGET_SVE_BF16): New macro.

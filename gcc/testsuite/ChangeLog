@@ -1,3 +1,8 @@
+2020-01-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* gcc.target/i386/pr91333.c: New.
+
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93379
