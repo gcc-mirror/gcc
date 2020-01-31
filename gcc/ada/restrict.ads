@@ -89,6 +89,7 @@ package Restrict is
      (No_Delay,                    "calendar"),
      (No_Dynamic_Priorities,       "a-dynpri"),
      (No_Finalization,             "a-finali"),
+     (No_IO,                       "a-direct"),
      (No_IO,                       "a-direio"),
      (No_IO,                       "directio"),
      (No_IO,                       "a-sequio"),
