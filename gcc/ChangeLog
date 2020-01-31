@@ -1,3 +1,9 @@
+2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/mkoffload.c (process_asm): Add sgpr_count and vgpr_count
+	to definition of hsa_kernel_description.  Parse assembly to find SGPR
+	and VGPR count of kernel and store in hsa_kernel_description.
+
 2020-01-31  Tamar Christina  <tamar.christina@arm.com>
 
 	PR rtl-optimization/91838
