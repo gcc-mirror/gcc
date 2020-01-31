@@ -164,6 +164,15 @@ package body Sem_Attr is
       Attribute_Max_Alignment_For_Allocation => True,
       others                                 => False);
 
+   --  The following array is the list of attributes defined in the Ada 2020
+   --  RM which are not defined in Ada 2012. These are recognized in Ada
+   --  95/2005/2012 modes, but are considered to be implementation defined.
+
+   Attribute_20 : constant Attribute_Class_Array := Attribute_Class_Array'(
+      Attribute_Enum_Rep                     |
+      Attribute_Enum_Val                     => True,
+      others                                 => False);
+
    --  The following array contains all attributes that imply a modification
    --  of their prefixes or result in an access value. Such prefixes can be
    --  considered as lvalues.
@@ -2867,12 +2876,14 @@ package body Sem_Attr is
       end if;
 
       --  Deal with Ada 2005 attributes that are implementation attributes
-      --  because they appear in a version of Ada before Ada 2005, and
-      --  similarly for Ada 2012 attributes appearing in an earlier version.
+      --  because they appear in a version of Ada before Ada 2005, ditto for
+      --  Ada 2012 and Ada 2020 attributes appearing in an earlier version.
 
       if (Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005)
             or else
          (Attribute_12 (Attr_Id) and then Ada_Version < Ada_2012)
+            or else
+         (Attribute_20 (Attr_Id) and then Ada_Version < Ada_2020)
       then
          Check_Restriction (No_Implementation_Attributes, N);
       end if;
