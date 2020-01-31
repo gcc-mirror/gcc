@@ -1,5 +1,17 @@
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93438
+	* region-model.cc (stack_region::can_merge_p): Split into a two
+	pass approach, creating all stack regions first, then populating
+	them.
+	(selftest::test_state_merging): Add test coverage for (a) the case
+	of self-merging a model in which a local in an older stack frame
+	points to a local in a more recent stack frame (which previously
+	would ICE), and (b) the case of self-merging a model in which a
+	local points to a global (which previously worked OK).
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
 	* analyzer.cc (is_named_call_p): Replace tests for fndecl being
 	extern at file scope and having a non-NULL DECL_NAME with a call
 	to maybe_special_function_p.
