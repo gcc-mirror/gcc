@@ -59,6 +59,8 @@ bool
 function_set::contains_decl_p (tree fndecl) const
 {
   gcc_assert (fndecl && DECL_P (fndecl));
+  if (!maybe_special_function_p (fndecl))
+    return false;
   return contains_name_p (IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 }
 

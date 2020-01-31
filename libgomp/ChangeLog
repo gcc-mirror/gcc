@@ -1,3 +1,50 @@
+2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct hsa_kernel_description): Add sgpr_count
+	and vgpr_count fields.
+	(struct kernel_info): Add a field for a hsa_kernel_description.
+	(run_kernel): Reduce the number of threads/workers if the requested
+	number would require too many VGPRs.
+	(init_basic_kernel_info): Initialize description field with
+	the hsa_kernel_description entry for the kernel.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR bootstrap/93409
+	* plugin/configfrag.ac (enable_offload_targets): Skip
+	HSA and GCN plugin besides -m32 also for -mx32.
+	* configure: Regenerate.
+
+2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* oacc-init.c (name_of_acc_device_t): Handle acc_device_radeon.
+
+2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* plugin-gcn.c (struct agent_info): Add fields "name" and
+	"vendor_name" ...
+	(GOMP_OFFLOAD_init_device): ... and init from here.
+	(struct hsa_context_info): Add field "driver_version_s" ...
+	(init_hsa_contest): ... and init from here.
+	(GOMP_OFFLOAD_openacc_get_property): Replace stub with a proper
+	implementation.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property.c:
+	Enable test execution for amdgcn and host offloading targets.
+	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-aux.c
+	(expect_device_properties): Split function into ...
+	(expect_device_string_properties): ... this new function ...
+	(expect_device_memory): ... and this new function.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-gcn.c:
+	Add test.
+
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/deep-copy-2.f90: Remove test from here.
+	* testsuite/libgomp.oacc-fortran/deep-copy-3.f90: Don't use mixed
+	component/non-component variable refs in a single directive.
+	* testsuite/libgomp.oacc-fortran/classtypes-1.f95: Likewise.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Handle `--with-toolexeclibdir='.

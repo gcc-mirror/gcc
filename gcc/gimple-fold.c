@@ -6665,12 +6665,14 @@ fold_array_ctor_reference (tree type, tree ctor,
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
 
-  if (size > elt_size.to_uhwi () * BITS_PER_UNIT)
+  unsigned HOST_WIDE_INT elt_sz = elt_size.to_uhwi ();
+  if (size > elt_sz * BITS_PER_UNIT)
     {
       /* native_encode_expr constraints.  */
       if (size > MAX_BITSIZE_MODE_ANY_MODE
 	  || size % BITS_PER_UNIT != 0
-	  || inner_offset % BITS_PER_UNIT != 0)
+	  || inner_offset % BITS_PER_UNIT != 0
+	  || elt_sz > MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT)
 	return NULL_TREE;
 
       unsigned ctor_idx;
@@ -6701,10 +6703,11 @@ fold_array_ctor_reference (tree type, tree ctor,
       index = wi::umax (index, access_index);
       do
 	{
-	  int len = native_encode_expr (val, buf + bufoff,
-					elt_size.to_uhwi (),
+	  if (bufoff + elt_sz > sizeof (buf))
+	    elt_sz = sizeof (buf) - bufoff;
+	  int len = native_encode_expr (val, buf + bufoff, elt_sz,
 					inner_offset / BITS_PER_UNIT);
-	  if (len != elt_size - inner_offset / BITS_PER_UNIT)
+	  if (len != (int) elt_sz - inner_offset / BITS_PER_UNIT)
 	    return NULL_TREE;
 	  inner_offset = 0;
 	  bufoff += len;

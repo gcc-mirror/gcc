@@ -11,12 +11,14 @@
 #include <string.h>
 #include <stdio.h>
 
-void expect_device_properties
-(acc_device_t dev_type, int dev_num,
- size_t expected_memory, const char* expected_vendor,
- const char* expected_name, const char* expected_driver);
+void expect_device_properties (acc_device_t dev_type, int dev_num,
+			       size_t expected_memory,
+			       const char* expected_vendor,
+			       const char* expected_name,
+			       const char* expected_driver);
 
-int main ()
+int
+main ()
 {
   int dev_count;
   cudaGetDeviceCount (&dev_count);
@@ -29,26 +31,26 @@ int main ()
 	  abort ();
 	}
 
-      printf("Checking device %d\n", dev_num);
+      printf ("Checking device %d\n", dev_num);
 
       const char *vendor = "Nvidia";
       size_t free_mem;
       size_t total_mem;
-      if (cudaMemGetInfo(&free_mem, &total_mem) != cudaSuccess)
+      if (cudaMemGetInfo (&free_mem, &total_mem) != cudaSuccess)
 	{
 	  fprintf (stderr, "cudaMemGetInfo failed.\n");
 	  abort ();
 	}
 
       struct cudaDeviceProp p;
-      if (cudaGetDeviceProperties(&p, dev_num) != cudaSuccess)
+      if (cudaGetDeviceProperties (&p, dev_num) != cudaSuccess)
 	{
 	  fprintf (stderr, "cudaGetDeviceProperties failed.\n");
 	  abort ();
 	}
 
       int driver_version;
-      if (cudaDriverGetVersion(&driver_version) != cudaSuccess)
+      if (cudaDriverGetVersion (&driver_version) != cudaSuccess)
 	{
 	  fprintf (stderr, "cudaDriverGetVersion failed.\n");
 	  abort ();
@@ -63,7 +65,7 @@ int main ()
 
       /* Note that this check relies on the fact that the device numbering
 	 used by the nvptx plugin agrees with the CUDA device ordering. */
-      expect_device_properties(acc_device_nvidia, dev_num,
-			       total_mem, vendor, p.name, driver);
+      expect_device_properties (acc_device_nvidia, dev_num,
+				total_mem, vendor, p.name, driver);
     }
 }

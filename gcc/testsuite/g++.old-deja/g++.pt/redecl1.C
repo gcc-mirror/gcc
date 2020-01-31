@@ -16,7 +16,7 @@ template <class T> // { dg-error "template parameter" }
 struct S3;
 
 template <int I>
-struct S3; // { dg-error "redeclared here" } 
+struct S3; // { dg-message "note: redeclared here" } 
 
 template <template <class T> class C>
-struct S3; // { dg-error "redeclared here" } 
+struct S3; // { dg-message "note: redeclared here" } 

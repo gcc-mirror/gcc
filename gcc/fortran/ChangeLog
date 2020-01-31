@@ -1,3 +1,78 @@
+2020-01-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93462
+	* frontend-passes.c (gfc_code_walker): For EXEC_OACC_ATOMIC, set
+	in_omp_atomic to true prevent front-end optimization.
+
+2020-01-30  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/87103
+	* expr.c (gfc_check_conformance): Check vsnprintf for truncation.
+	* iresolve.c (gfc_get_string): Likewise.
+	* symbol.c (gfc_new_symbol): Remove check for maximum symbol
+	name length.  Remove redundant 0 setting of new calloc()ed
+	gfc_symbol.
+
+2020-01-30  Paul Thomas  <pault@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92123
+	* trans-decl.c (gfc_get_symbol_decl): Call gfc_defer_symbol_init for
+	CFI descs.
+	(gfc_build_builtin_function_decls): Use ".w." instead of ".ww" or ".wR"
+	for gfor_fndecl_{cfi_to_gfc,gfc_to_cfi}.
+	(convert_CFI_desc): Handle references to CFI descriptors.
+
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93463
+	* openmp.c (oacc_code_to_statement): Handle
+	EXEC_OACC_{ROUTINE,UPDATE,WAIT,CACHE,{ENTER,EXIT}_DATA,DECLARE}.
+
+2020-01-28  Andrew Benson  <abensonca@gmail.com>
+
+	PR fortran/93461
+	* trans.h: Increase GFC_MAX_MANGLED_SYMBOL_LEN to
+	GFC_MAX_SYMBOL_LEN*3+5 to allow for inclusion of submodule name,
+	plus the "." between module and submodule names.
+	* gfortran.dg/pr93461.f90: New test.
+
+2020-01-28  Andrew Benson  <abensonca@gmail.com>
+
+	PR fortran/93473
+	* parse.c: Increase length of char variables to allow them to hold
+	a concatenated module + submodule name.
+	* gfortran.dg/pr93473.f90: New test.
+
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/93025
+	* openmp.c (resolve_omp_clauses): Check array references for contiguity.
+
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.h (gfc_symbol): Add comp_mark bitfield.
+	* openmp.c (resolve_omp_clauses): Disallow mixed component and
+	full-derived-type accesses to the same variable within a single
+	directive.
+
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93464
+	* openmp.c (gfc_omp_check_optional_argument): Avoid ICE when
+	DECL_LANG_SPECIFIC and GFC_DESCRIPTOR_TYPE_P but not
+	GFC_DECL_SAVED_DESCRIPTOR as for local allocatable character vars.
+
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.texi (Runtime): Remove tailing '.' in @menu.
+
+2020-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/85781
+	* trans-expr.c (gfc_conv_substring): Handle non-ARRAY_TYPE strings
+	of Bind(C) procedures.
+
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.c (parse_omp_structured_block): Handle ST_OMP_TARGET_PARALLEL.

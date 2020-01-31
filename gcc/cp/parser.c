@@ -10647,6 +10647,10 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->implicit_template_scope = 0;
     parser->auto_is_implicit_function_template_parm_p = false;
 
+    /* The body of a lambda in a discarded statement is not discarded.  */
+    bool discarded = in_discarded_stmt;
+    in_discarded_stmt = 0;
+
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
@@ -10676,6 +10680,8 @@ cp_parser_lambda_expression (cp_parser* parser)
       maybe_add_lambda_conv_op (type);
 
     finish_struct (type, /*attributes=*/NULL_TREE);
+
+    in_discarded_stmt = discarded;
 
     parser->num_template_parameter_lists = saved_num_template_parameter_lists;
     parser->in_statement = in_statement;
@@ -11073,6 +11079,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       ++parser->num_template_parameter_lists;
     }
 
+  /* Committee discussion supports allowing attributes here.  */
+  lambda_specs.attributes = cp_parser_attributes_opt (parser);
+
   /* The parameter-declaration-clause is optional (unless
      template-parameter-list was given), but must begin with an
      opening parenthesis if present.  */
@@ -11208,7 +11217,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
-		      gnu_attrs);
+		      chainon (gnu_attrs, lambda_specs.attributes));
     if (fco != error_mark_node)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
@@ -22597,6 +22606,18 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       /* Check for attributes first.  */
       if (cp_next_tokens_can_be_attribute_p (parser))
 	{
+	  /* GNU attributes at the end of a declaration apply to the
+	     declaration as a whole, not to the trailing return type.  So look
+	     ahead to see if these attributes are at the end.  */
+	  if (seen_type_specifier && is_trailing_return
+	      && cp_next_tokens_can_be_gnu_attribute_p (parser))
+	    {
+	      size_t n = cp_parser_skip_attributes_opt (parser, 1);
+	      cp_token *tok = cp_lexer_peek_nth_token (parser->lexer, n);
+	      if (tok->type == CPP_SEMICOLON || tok->type == CPP_COMMA
+		  || tok->type == CPP_EQ || tok->type == CPP_OPEN_BRACE)
+		break;
+	    }
 	  type_specifier_seq->attributes
 	    = attr_chainon (type_specifier_seq->attributes,
 			    cp_parser_attributes_opt (parser));

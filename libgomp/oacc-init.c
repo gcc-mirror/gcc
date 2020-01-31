@@ -115,6 +115,7 @@ name_of_acc_device_t (enum acc_device_t type)
     case acc_device_host: return "host";
     case acc_device_not_host: return "not_host";
     case acc_device_nvidia: return "nvidia";
+    case acc_device_radeon: return "radeon";
     default: unknown_device_type_error (type);
     }
   __builtin_unreachable ();

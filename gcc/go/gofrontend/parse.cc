@@ -2651,7 +2651,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
     case Token::TOKEN_IMAGINARY:
       {
 	mpfr_t zero;
-	mpfr_init_set_ui(zero, 0, GMP_RNDN);
+	mpfr_init_set_ui(zero, 0, MPFR_RNDN);
 	mpc_t val;
 	mpc_init2(val, mpc_precision);
 	mpc_set_fr_fr(val, zero, *token->imaginary_value(), MPC_RNDNN);

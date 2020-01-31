@@ -684,10 +684,10 @@ for_each_state_change (const program_state &src_state,
 		       state_change_visitor *visitor)
 {
   gcc_assert (src_state.m_checker_states.length ()
-	      == ext_state.m_checkers.length ());
+	      == ext_state.get_num_checkers ());
   gcc_assert (dst_state.m_checker_states.length ()
-	      == ext_state.m_checkers.length ());
-  for (unsigned i = 0; i < ext_state.m_checkers.length (); i++)
+	      == ext_state.get_num_checkers ());
+  for (unsigned i = 0; i < ext_state.get_num_checkers (); i++)
     {
       const state_machine &sm = ext_state.get_sm (i);
       const sm_state_map &src_smap = *src_state.m_checker_states[i];
@@ -818,12 +818,14 @@ diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
     case PK_BEFORE_STMT:
       {
 	const gimple *stmt = dst_point.get_stmt ();
-	if (is_setjmp_call_p (stmt))
+	const gcall *call = dyn_cast <const gcall *> (stmt);
+	if (call && is_setjmp_call_p (call))
 	  emission_path->add_event
 	    (new setjmp_event (stmt->location,
 			       dst_node,
 			       dst_point.get_fndecl (),
-			       dst_stack_depth));
+			       dst_stack_depth,
+			       call));
 	else
 	  emission_path->add_event
 	    (new statement_event (stmt,

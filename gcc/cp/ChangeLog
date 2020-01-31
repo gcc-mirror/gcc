@@ -1,3 +1,143 @@
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82521
+	* pt.c (tsubst_copy_and_build) [EQ_EXPR]: Only suppress warnings if
+	the expression was dependent before substitution.
+
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (act_des_fn): New.
+	(morph_fn_to_coro): Call act_des_fn to build actor/destroy decls.
+	Access promise via actor function's frame pointer argument.
+	(build_actor_fn, build_destroy_fn): Use frame pointer argument.
+
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (co_await_expander): Handle type conversion case.
+
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90333
+	PR c++/89640
+	PR c++/60503
+	* parser.c (cp_parser_type_specifier_seq): Don't parse attributes in
+	a trailing return type.
+	(cp_parser_lambda_declarator_opt): Parse C++11 attributes before
+	parens.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91754 - Fix template arguments comparison with class NTTP.
+	* pt.c (class_nttp_const_wrapper_p): New.
+	(template_args_equal): See through class_nttp_const_wrapper_p
+	arguments.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92948 - Fix class NTTP with template arguments.
+	* pt.c (convert_nontype_argument): Use IMPLICIT_CONV_EXPR when
+	converting a value-dependent expression to a class type.
+	(tsubst_copy) <case VIEW_CONVERT_EXPR>: Allow IMPLICIT_CONV_EXPR
+	as the result of the tsubst_copy call.
+
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91118
+	* cp-gimplify.c (cxx_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for typeinfo decls.
+
+2020-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93442
+	* parser.c (cp_parser_lambda_expression): Clear in_discarded_stmt.
+
+	PR c++/93477
+	PR c++/91476
+	* decl2.c (copy_linkage): Do copy DECL_ONE_ONLY and DECL_WEAK.
+
+	PR c++/90546
+	* call.c (build_user_type_conversion_1): Allow a template conversion
+	returning an rvalue reference to bind directly to an lvalue.
+
+	PR c++/90731
+	* decl.c (grokdeclarator): Propagate eh spec from typedef.
+
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92440
+	* pt.c (redeclare_class_template): Group couple of
+	errors and inform messages with auto_diagnostic_group.
+
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92440
+	* pt.c (redeclare_class_template): Use inform
+	for the second location.
+
+2020-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90966
+	* pt.c (tsubst_copy) [STRING_CST]: Don't use fold_convert.
+
+2020-01-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93443
+	* coroutines.cc (morph_fn_to_coro): Check the ramp return
+	value when it is constructed from the 'get return object'.
+
+2020-01-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/91826
+	* name-lookup.c (is_ancestor): Allow CHILD to be a namespace alias.
+
+2020-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90992
+	* except.c (maybe_noexcept_warning): Check DECL_IN_SYSTEM_HEADER and
+	temporarily enable -Wsystem-headers.  Change second warning to
+	conditional inform.
+
+	PR c++/90997
+	* semantics.c (finish_call_expr): Don't call
+	instantiate_non_dependent_expr before warn_for_memset.
+
+2020-01-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
+	* constexpr.c (cxx_eval_dynamic_cast_fn): Add a reference
+	dynamic_cast diagnostic.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93400 - ICE with constrained friend.
+	* constraint.cc (maybe_substitute_reqs_for): New.
+	* decl.c (function_requirements_equivalent_p): Call it.
+	* pt.c (tsubst_friend_function): Only substitute
+	TEMPLATE_PARMS_CONSTRAINTS.
+	(tsubst_template_parms): Copy constraints.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93279 - ICE with lambda in member operator.
+	* name-lookup.c (maybe_save_operator_binding): Don't remember
+	class-scope bindings.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93377 - ICE with member alias in constraint.
+	* pt.c (any_template_parm_r): Look at template arguments for all
+	aliases, not only alias templates.
+
+2020-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93299 - ICE in tsubst_copy with parenthesized expression.
+	* pt.c (tsubst_copy): Handle a REF_PARENTHESIZED_P VIEW_CONVERT_EXPR.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92852 - ICE with generic lambda and reference var.
+	* constexpr.c (maybe_constant_value): Likewise.
+
 2020-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/92804

@@ -209,14 +209,16 @@ void test_13 (struct outer *o)
 {
   __analyzer_eval (o->mid.in.f == 0.f); /* { dg-warning "UNKNOWN" } */
   o->mid.in.f = 0.f;
-  __analyzer_eval (o->mid.in.f == 0.f); /* { dg-warning "TRUE" } */
+  __analyzer_eval (o->mid.in.f == 0.f); /* { dg-warning "TRUE" "PR 93356" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "disabled float comparisons" { target *-*-* } .-1 } */
 }
 
 void test_14 (struct outer o)
 {
   __analyzer_eval (o.mid.in.f == 0.f); /* { dg-warning "UNKNOWN" } */
   o.mid.in.f = 0.f;
-  __analyzer_eval (o.mid.in.f == 0.f); /* { dg-warning "TRUE" } */
+  __analyzer_eval (o.mid.in.f == 0.f); /* { dg-warning "TRUE" "PR 93356" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "disabled float comparisons" { target *-*-* } .-1 } */
 }
 
 void test_15 (const char *str)
@@ -947,7 +949,8 @@ void test_42 (void)
   float f;
   i = 42;
   f = i;
-  __analyzer_eval (f == 42.0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (f == 42.0); /* { dg-warning "TRUE" "PR 93356" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "disabled float comparisons" { target *-*-* } .-1 } */
 }
 
 void test_43 (void)

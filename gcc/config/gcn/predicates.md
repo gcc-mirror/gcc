@@ -165,7 +165,7 @@
   (match_code "eq,ne,gt,ge,lt,le,gtu,geu,ltu,leu"))
 
 (define_predicate "gcn_fp_compare_operator"
-  (match_code "eq,ne,gt,ge,lt,le,gtu,geu,ltu,leu,ordered,unordered"))
+  (match_code "eq,ne,gt,ge,lt,le,gtu,geu,ltu,leu,ordered,unordered,ltgt"))
 
 (define_predicate "unary_operator"
   (match_code "not,popcount"))

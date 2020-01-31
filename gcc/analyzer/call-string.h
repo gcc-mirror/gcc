@@ -69,9 +69,6 @@ public:
   void validate () const;
 
 private:
-  static int cmp_1 (const call_string &a,
-		    const call_string &b);
-
   auto_vec<const return_superedge *> m_return_edges;
 };
 

@@ -15018,7 +15018,7 @@ fi
 
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2019 Free Software Foundation, Inc.
+# Copyright (C) 2014-2020 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -15347,7 +15347,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	case "${target}" in
 	  x86_64-*-*)
 	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "*)
+	      *" -m32 "*|*" -mx32 "*)
 	        PLUGIN_HSA=0
 		;;
 	      *)
@@ -15387,7 +15387,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	case "${target}" in
 	  x86_64-*-*)
 	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "*)
+	      *" -m32 "*|*" -mx32 "*)
 		PLUGIN_GCN=0
 		;;
 	      *)

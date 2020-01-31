@@ -942,6 +942,8 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
   tree reqs2 = get_trailing_function_requirements (oldfn);
   if ((reqs1 != NULL_TREE) != (reqs2 != NULL_TREE))
     return false;
+  reqs1 = maybe_substitute_reqs_for (reqs1, newfn);
+  reqs2 = maybe_substitute_reqs_for (reqs2, oldfn);
   return cp_tree_equal (reqs1, reqs2);
 }
 
@@ -12903,6 +12905,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  memfn_quals |= type_memfn_quals (type);
 	  rqual = type_memfn_rqual (type);
 	  type_quals = TYPE_UNQUALIFIED;
+	  raises = TYPE_RAISES_EXCEPTIONS (type);
 	}
     }
 

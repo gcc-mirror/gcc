@@ -101,7 +101,8 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
     }
 
-  if (TREE_CODE (decl) != PARM_DECL
+  if (decl == NULL_TREE
+      || TREE_CODE (decl) != PARM_DECL
       || !DECL_LANG_SPECIFIC (decl)
       || !GFC_DECL_OPTIONAL_ARGUMENT (decl))
     return NULL_TREE;

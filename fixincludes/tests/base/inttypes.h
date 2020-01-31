@@ -33,3 +33,12 @@
 #endif
 
 #endif  /* HPUX_C99_INTTYPES3_CHECK */
+
+
+#if defined( HPUX_C99_INTTYPES4_CHECK )
+#define SCNxMAX SCNx64
+#define SCNuMAX 	 SCNu64
+#define SCNxMAX SCNx32
+#define SCNuMAX 	 SCNu32
+
+#endif  /* HPUX_C99_INTTYPES4_CHECK */

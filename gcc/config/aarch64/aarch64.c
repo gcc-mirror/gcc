@@ -11020,6 +11020,8 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
   rtx inner;
   rtx comparator;
   enum rtx_code cmpcode;
+  const struct cpu_cost_table *extra_cost
+    = aarch64_tune_params.insn_extra_cost;
 
   if (COMPARISON_P (op0))
     {
@@ -11054,8 +11056,17 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 		    /* CBZ/CBNZ.  */
 		    *cost += rtx_cost (inner, VOIDmode, cmpcode, 0, speed);
 
-	        return true;
-	      }
+		  return true;
+		}
+	      if (register_operand (inner, VOIDmode)
+		  && aarch64_imm24 (comparator, VOIDmode))
+		{
+		  /* SUB and SUBS.  */
+		  *cost += COSTS_N_INSNS (2);
+		  if (speed)
+		    *cost += extra_cost->alu.arith * 2;
+		  return true;
+		}
 	    }
 	  else if (cmpcode == LT || cmpcode == GE)
 	    {

@@ -2738,26 +2738,16 @@ make_resolver_func (const tree default_decl,
 		    const tree ifunc_alias_decl,
 		    basic_block *empty_bb)
 {
-  char *resolver_name;
-  tree decl, type, decl_name, t;
+  tree decl, type, t;
 
-  /* IFUNC's have to be globally visible.  So, if the default_decl is
-     not, then the name of the IFUNC should be made unique.  */
-  if (TREE_PUBLIC (default_decl) == 0)
-    {
-      char *ifunc_name = make_unique_name (default_decl, "ifunc", true);
-      symtab->change_decl_assembler_name (ifunc_alias_decl,
-					  get_identifier (ifunc_name));
-      XDELETEVEC (ifunc_name);
-    }
-
-  resolver_name = make_unique_name (default_decl, "resolver", false);
+  /* Create resolver function name based on default_decl.  */
+  tree decl_name = clone_function_name (default_decl, "resolver");
+  const char *resolver_name = IDENTIFIER_POINTER (decl_name);
 
   /* The resolver function should return a (void *). */
   type = build_function_type_list (ptr_type_node, NULL_TREE);
 
   decl = build_fn_decl (resolver_name, type);
-  decl_name = get_identifier (resolver_name);
   SET_DECL_ASSEMBLER_NAME (decl, decl_name);
 
   DECL_NAME (decl) = decl_name;
@@ -2809,7 +2799,6 @@ make_resolver_func (const tree default_decl,
 
   /* Create the alias for dispatch to resolver here.  */
   cgraph_node::create_same_body_alias (ifunc_alias_decl, decl);
-  XDELETEVEC (resolver_name);
   return decl;
 }
 

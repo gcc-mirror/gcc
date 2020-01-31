@@ -6,7 +6,7 @@ namespace N {
     // Injects N::N
     template < T > friend class N;
     // { dg-error "template parameter" "" { target *-*-* } .-1 }
-    // { dg-error "redeclared"  "" { target *-*-* } .-2 }
+    // { dg-message "note: redeclared"  "" { target *-*-* } .-2 }
   };
 }
 

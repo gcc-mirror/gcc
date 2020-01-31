@@ -1824,6 +1824,9 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
   if (CONST_SCALAR_INT_P (op) && is_a <scalar_int_mode> (mode, &result_mode))
     {
       unsigned int width = GET_MODE_PRECISION (result_mode);
+      if (width > MAX_BITSIZE_MODE_ANY_INT)
+	return 0;
+
       wide_int result;
       scalar_int_mode imode = (op_mode == VOIDmode
 			       ? result_mode
@@ -1968,6 +1971,9 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	   && is_int_mode (mode, &result_mode))
     {
       unsigned int width = GET_MODE_PRECISION (result_mode);
+      if (width > MAX_BITSIZE_MODE_ANY_INT)
+	return 0;
+
       /* Although the overflow semantics of RTL's FIX and UNSIGNED_FIX
 	 operators are intentionally left unspecified (to ease implementation
 	 by target backends), for consistency, this routine implements the
@@ -3641,9 +3647,21 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  rtx tmp = gen_int_shift_amount
 	    (inner_mode, INTVAL (XEXP (SUBREG_REG (op0), 1)) + INTVAL (op1));
-	  tmp = simplify_gen_binary (code, inner_mode,
-				     XEXP (SUBREG_REG (op0), 0),
-				     tmp);
+
+	 /* Combine would usually zero out the value when combining two
+	    local shifts and the range becomes larger or equal to the mode.
+	    However since we fold away one of the shifts here combine won't
+	    see it so we should immediately zero the result if it's out of
+	    range.  */
+	 if (code == LSHIFTRT
+	     && INTVAL (tmp) >= GET_MODE_BITSIZE (inner_mode))
+	  tmp = const0_rtx;
+	 else
+	   tmp = simplify_gen_binary (code,
+				      inner_mode,
+				      XEXP (SUBREG_REG (op0), 0),
+				      tmp);
+
 	  return lowpart_subreg (int_mode, tmp, inner_mode);
 	}
 
@@ -4422,7 +4440,8 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
   scalar_int_mode int_mode;
   if (is_a <scalar_int_mode> (mode, &int_mode)
       && CONST_SCALAR_INT_P (op0)
-      && CONST_SCALAR_INT_P (op1))
+      && CONST_SCALAR_INT_P (op1)
+      && GET_MODE_PRECISION (int_mode) <= MAX_BITSIZE_MODE_ANY_INT)
     {
       wide_int result;
       wi::overflow_type overflow;

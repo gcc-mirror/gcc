@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-cddce-details" } */
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 #include <stdlib.h>
 

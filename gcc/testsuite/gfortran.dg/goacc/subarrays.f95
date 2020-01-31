@@ -27,7 +27,7 @@ program test
   ! { dg-error "'a' in MAP clause" "" { target *-*-* } .-2 }
   !$acc end parallel
 
-  !$acc parallel copy (b(1:3,2:4))
+  !$acc parallel copy (b(1:3,2:4)) ! { dg-error "Array is not contiguous" }
   !$acc end parallel
   !$acc parallel copy (b(2:3))
   ! { dg-error "Rank mismatch" "" { target *-*-* } .-1 }

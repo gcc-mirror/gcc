@@ -294,8 +294,6 @@ struct spec_nodes
   cpp_hashnode *n_false;		/* C++ keyword false */
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
-  cpp_hashnode *n__has_include;		/* __has_include operator */
-  cpp_hashnode *n__has_include_next;	/* __has_include_next operator */
 
   /* C++2a modules, only set when module_directives is in effect.  */
   cpp_hashnode *n_export;

@@ -157,3 +157,9 @@ void test_range_float_ge_le (float f)
       __analyzer_eval (f == 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
       /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }
+
+void test_float_selfcmp (float f)
+{
+  __analyzer_eval (f == f); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (f != f); /* { dg-warning "UNKNOWN" } */
+}

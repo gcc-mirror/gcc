@@ -2604,34 +2604,26 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      edge_set_predicate (edge, &bb_predicate);
 	      if (edge->speculative)
 		{
-		  cgraph_edge *direct, *indirect, *next_direct;
-		  ipa_ref *ref;
-		  edge->speculative_call_info (direct, indirect, ref);
-		  gcc_assert (direct == edge);
+		  cgraph_edge *indirect
+			= edge->speculative_call_indirect_edge ();
 	          ipa_call_summary *es2
 			 = ipa_call_summaries->get_create (indirect);
 		  ipa_call_summaries->duplicate (edge, indirect,
 						 es, es2);
 
-		  /* Create and duplicate call summaries for multiple
+		  /* Edge is the first direct call.
+		     create and duplicate call summaries for multiple
 		     speculative call targets.  */
-		  int num_specs = indirect->num_speculative_call_targets_p ();
-		  if (num_specs > 1)
-		    for (next_direct = edge->next_callee;
-			 next_direct && --num_specs;
-			 next_direct = next_direct->next_callee)
-		      {
-			next_direct->speculative_call_info (direct, indirect,
-							    ref);
-			if (direct == next_direct && next_direct->speculative
-			    && edge->call_stmt == stmt)
-			  {
-			    ipa_call_summary *es3
-			      = ipa_call_summaries->get_create (next_direct);
-			    ipa_call_summaries->duplicate (edge, next_direct,
-							   es, es3);
-			  }
-		      }
+		  for (cgraph_edge *direct
+			 = edge->next_speculative_call_target ();
+		       direct;
+		       direct = direct->next_speculative_call_target ())
+		    {
+		      ipa_call_summary *es3
+			= ipa_call_summaries->get_create (direct);
+		      ipa_call_summaries->duplicate (edge, direct,
+						     es, es3);
+		    }
 		}
 	    }
 

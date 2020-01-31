@@ -149,6 +149,7 @@ call_string::calc_recursion_depth () const
 }
 
 /* Comparator for call strings.
+   This implements a version of lexicographical order.
    Return negative if A is before B.
    Return positive if B is after A.
    Return 0 if they are equal.  */
@@ -156,28 +157,6 @@ call_string::calc_recursion_depth () const
 int
 call_string::cmp (const call_string &a,
 		  const call_string &b)
-{
-  int result = cmp_1 (a, b);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = cmp_1 (b, a);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal pairs.  */
-  gcc_assert (result != 0
-	      || a == b);
-
-  return result;
-}
-
-/* Implementation of call_string::cmp.
-   This implements a version of lexicographical order.  */
-
-int
-call_string::cmp_1 (const call_string &a,
-		    const call_string &b)
 {
   unsigned len_a = a.length ();
   unsigned len_b = b.length ();

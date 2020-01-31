@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "predict.h"  /* For enum br_predictor and PRED_*.  */
 
-/* Mangled symbols take the form __module__name.  */
-#define GFC_MAX_MANGLED_SYMBOL_LEN  (GFC_MAX_SYMBOL_LEN*2+4)
+/* Mangled symbols take the form __module__name or __module.submodule__name.  */
+#define GFC_MAX_MANGLED_SYMBOL_LEN  (GFC_MAX_SYMBOL_LEN*3+5)
 
 /* Struct for holding a block of statements.  It should be treated as an
    opaque entity and not modified directly.  This allows us to change the

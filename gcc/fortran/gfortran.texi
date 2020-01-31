@@ -604,15 +604,15 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_STDIN_UNIT:: Unit number for standard input
 * GFORTRAN_STDOUT_UNIT:: Unit number for standard output
 * GFORTRAN_STDERR_UNIT:: Unit number for standard error
-* GFORTRAN_UNBUFFERED_ALL:: Do not buffer I/O for all units.
+* GFORTRAN_UNBUFFERED_ALL:: Do not buffer I/O for all units
 * GFORTRAN_UNBUFFERED_PRECONNECTED:: Do not buffer I/O for preconnected units.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
 * GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
 * GFORTRAN_LIST_SEPARATOR::  Separator for list output
 * GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
-* GFORTRAN_FORMATTED_BUFFER_SIZE:: Buffer size for formatted files.
-* GFORTRAN_UNFORMATTED_BUFFER_SIZE:: Buffer size for unformatted files.
+* GFORTRAN_FORMATTED_BUFFER_SIZE:: Buffer size for formatted files
+* GFORTRAN_UNFORMATTED_BUFFER_SIZE:: Buffer size for unformatted files
 @end menu
 
 @node TMPDIR

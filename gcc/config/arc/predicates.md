@@ -688,11 +688,11 @@
 
 (define_predicate "mlo_operand"
   (and (match_code "reg")
-       (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 59 : 58)")))
+       (match_test "REGNO (op) == R58_REG")))
 
 (define_predicate "mhi_operand"
   (and (match_code "reg")
-       (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 58 : 59)")))
+       (match_test "REGNO (op) == R59_REG")))
 
 (define_predicate "accl_operand"
   (and (match_code "reg")

@@ -1887,7 +1887,20 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
   if (tree t = (TREE_CODE (obj) == COMPONENT_REF
 		? TREE_OPERAND (obj, 1) : obj))
     if (TREE_CODE (t) != FIELD_DECL || !DECL_FIELD_IS_BASE (t))
-      return integer_zero_node;
+      {
+	if (reference_p)
+	  {
+	    if (!ctx->quiet)
+	      {
+		error_at (loc, "reference %<dynamic_cast%> failed");
+		inform (loc, "dynamic type %qT of its operand does "
+			"not have a base class of type %qT",
+			objtype, type);
+	      }
+	    *non_constant_p = true;
+	  }
+	return integer_zero_node;
+      }
 
   /* [class.cdtor] When a dynamic_cast is used in a constructor ...
      or in a destructor ... if the operand of the dynamic_cast refers
@@ -6597,7 +6610,7 @@ maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
   if (cv_cache == NULL)
     cv_cache = hash_map<tree, tree>::create_ggc (101);
   if (tree *cached = cv_cache->get (t))
-    return *cached;
+    return unshare_expr_without_location (*cached);
 
   r = cxx_eval_outermost_constant_expr (t, true, true, false, false, decl);
   gcc_checking_assert (r == t

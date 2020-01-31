@@ -2334,8 +2334,12 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       else
 	tmp = build_fold_indirect_ref_loc (input_location,
 				       se->expr);
-      tmp = gfc_build_array_ref (tmp, start.expr, NULL);
-      se->expr = gfc_build_addr_expr (type, tmp);
+      /* For BIND(C), a BT_CHARACTER is not an ARRAY_TYPE.  */
+      if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
+	{
+	  tmp = gfc_build_array_ref (tmp, start.expr, NULL);
+	  se->expr = gfc_build_addr_expr (type, tmp);
+	}
     }
 
   /* Length = end + 1 - start.  */

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=skylake-avx512 -O2" } */
-/* { dg-final { scan-assembler-times "(?:vmovups|vmovdqu)\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*\\)(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[2346\]*\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*\\)(?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>
 

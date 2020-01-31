@@ -45,6 +45,11 @@ public:
 
   unsigned get_num_checkers () const { return m_checkers.length (); }
 
+  void dump_to_pp (pretty_printer *pp) const;
+  void dump_to_file (FILE *outf) const;
+  void dump () const;
+
+private:
   /* The state machines.  */
   auto_delete_vec <state_machine> &m_checkers;
 };
@@ -132,7 +137,7 @@ public:
     svalue_id m_origin;
   };
   typedef hash_map <svalue_id, entry_t> map_t;
-  typedef typename map_t::iterator iterator_t;
+  typedef map_t::iterator iterator_t;
 
   sm_state_map ();
 
@@ -161,10 +166,10 @@ public:
 		  svalue_id sid,
 		  state_machine::state_t state,
 		  svalue_id origin);
-  void set_state (const equiv_class &ec,
+  bool set_state (const equiv_class &ec,
 		  state_machine::state_t state,
 		  svalue_id origin);
-  void impl_set_state (svalue_id sid,
+  bool impl_set_state (svalue_id sid,
 		       state_machine::state_t state,
 		       svalue_id origin);
 

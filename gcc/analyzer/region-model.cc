@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "diagnostic-core.h"
 #include "graphviz.h"
 #include "options.h"
 #include "cgraph.h"
@@ -37,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "diagnostic-core.h"
 #include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
@@ -88,14 +88,12 @@ dump_tree (pretty_printer *pp, tree t)
 void
 path_var::dump (pretty_printer *pp) const
 {
-PUSH_IGNORE_WFORMAT
   if (m_tree == NULL_TREE)
     pp_string (pp, "NULL");
   if (CONSTANT_CLASS_P (m_tree))
     pp_printf (pp, "%qE", m_tree);
   else
     pp_printf (pp, "(%qE @ %i)", m_tree, m_stack_depth);
-POP_IGNORE_WFORMAT
 }
 
 /* For use in printing a comma-separated list.  */
@@ -318,13 +316,11 @@ svalue::print (const region_model &model,
   this_sid.print (pp);
   pp_string (pp, ": {");
 
-PUSH_IGNORE_WFORMAT
   if (m_type)
     {
       gcc_assert (TYPE_P (m_type));
       pp_printf (pp, "type: %qT, ", m_type);
     }
-POP_IGNORE_WFORMAT
 
   /* vfunc.  */
   print_details (model, this_sid, pp);
@@ -670,12 +666,16 @@ constant_svalue::eval_condition (constant_svalue *lhs,
   gcc_assert (CONSTANT_CLASS_P (lhs_const));
   gcc_assert (CONSTANT_CLASS_P (rhs_const));
 
-  tree comparison
-    = fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
-  if (comparison == boolean_true_node)
-    return tristate (tristate::TS_TRUE);
-  if (comparison == boolean_false_node)
-    return tristate (tristate::TS_FALSE);
+  /* Check for comparable types.  */
+  if (types_compatible_p (TREE_TYPE (lhs_const), TREE_TYPE (rhs_const)))
+    {
+      tree comparison
+	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
+      if (comparison == boolean_true_node)
+	return tristate (tristate::TS_TRUE);
+      if (comparison == boolean_false_node)
+	return tristate (tristate::TS_FALSE);
+    }
   return tristate::TS_UNKNOWN;
 }
 
@@ -686,9 +686,7 @@ constant_svalue::print_details (const region_model &model ATTRIBUTE_UNUSED,
 				svalue_id this_sid ATTRIBUTE_UNUSED,
 				pretty_printer *pp) const
 {
-PUSH_IGNORE_WFORMAT
   pp_printf (pp, "%qE", m_cst_expr);
-POP_IGNORE_WFORMAT
 }
 
 /* Implementation of svalue::get_child_sid vfunc for constant_svalue.  */
@@ -1284,9 +1282,7 @@ region::dump_to_pp (const region_model &model,
     }
   if (m_type)
     {
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%s type: %qT", field_prefix, m_type);
-POP_IGNORE_WFORMAT
       pp_newline (pp);
     }
 
@@ -1336,9 +1332,7 @@ region::dump_child_label (const region_model &model,
 	pp_string (pp, "active ");
       else
 	pp_string (pp, "inactive ");
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "view as %qT: ", child->get_type ());
-POP_IGNORE_WFORMAT
     }
 }
 
@@ -1468,10 +1462,8 @@ region::print_fields (const region_model &model ATTRIBUTE_UNUSED,
   pp_printf (pp, ", sval: ");
   m_sval_id.print (pp);
 
-PUSH_IGNORE_WFORMAT
   if (m_type)
     pp_printf (pp, ", type: %qT", m_type);
-POP_IGNORE_WFORMAT
 }
 
 /* Determine if a pointer to this region must be non-NULL.
@@ -1574,9 +1566,7 @@ map_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       tree expr = (*iter).first;
       region_id child_rid = (*iter).second;
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE: ", expr);
-POP_IGNORE_WFORMAT
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -1601,9 +1591,7 @@ map_region::dump_dot_to_pp (const region_model &model,
 
       pp_printf (pp, "rid_label_%i [label=\"", child_rid.as_int ());
       pp_write_text_to_stream (pp);
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE", expr);
-POP_IGNORE_WFORMAT
       pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
       pp_string (pp, "\"];");
       pp_newline (pp);
@@ -1633,12 +1621,10 @@ map_region::dump_child_label (const region_model &model,
       if (child_rid == (*iter).second)
 	{
 	  tree key = (*iter).first;
-PUSH_IGNORE_WFORMAT
 	  if (DECL_P (key))
 	    pp_printf (pp, "%qD: ", key);
 	  else
 	    pp_printf (pp, "%qE: ", key);
-POP_IGNORE_WFORMAT
 	}
     }
 }
@@ -1811,11 +1797,22 @@ tree_cmp (const_tree t1, const_tree t2)
 
     case REAL_CST:
       {
-	real_value *rv1 = TREE_REAL_CST_PTR (t1);
-	real_value *rv2 = TREE_REAL_CST_PTR (t2);
+	const real_value *rv1 = TREE_REAL_CST_PTR (t1);
+	const real_value *rv2 = TREE_REAL_CST_PTR (t2);
+	if (real_compare (UNORDERED_EXPR, rv1, rv2))
+	  {
+	    /* Impose an arbitrary order on NaNs relative to other NaNs
+	       and to non-NaNs.  */
+	    if (int cmp_isnan = real_isnan (rv1) - real_isnan (rv2))
+	      return cmp_isnan;
+	    if (int cmp_issignaling_nan
+		  = real_issignaling_nan (rv1) - real_issignaling_nan (rv2))
+	      return cmp_issignaling_nan;
+	    return real_isneg (rv1) - real_isneg (rv2);
+	  }
 	if (real_compare (LT_EXPR, rv1, rv2))
 	  return -1;
-	if (real_compare (LT_EXPR, rv2, rv1))
+	if (real_compare (GT_EXPR, rv1, rv2))
 	  return 1;
 	return 0;
       }
@@ -1843,21 +1840,7 @@ tree_cmp (const void *p1, const void *p2)
   const_tree t1 = *(const_tree const *)p1;
   const_tree t2 = *(const_tree const *)p2;
 
-  int result = tree_cmp (t1, t2);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = tree_cmp (t2, t1);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal pairs.  */
-#if 0
-  gcc_assert (result != 0
-	      || t1 == t2);
-#endif
-
-  return result;
+  return tree_cmp (t1, t2);
 }
 
 /* Attempt to merge MAP_REGION_A and MAP_REGION_B into MERGED_MAP_REGION,
@@ -2249,9 +2232,7 @@ array_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       int key = (*iter).first;
       region_id child_rid = (*iter).second;
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "[%i]: ", key);
-POP_IGNORE_WFORMAT
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -2276,9 +2257,7 @@ array_region::dump_dot_to_pp (const region_model &model,
 
       pp_printf (pp, "rid_label_%i [label=\"", child_rid.as_int ());
       pp_write_text_to_stream (pp);
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qi", key);
-POP_IGNORE_WFORMAT
       pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
       pp_string (pp, "\"];");
       pp_newline (pp);
@@ -3830,27 +3809,26 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
-	  return warning_at (rich_loc, m,
-			     OPT_Wanalyzer_use_of_uninitialized_value,
-			     "use of uninitialized value %qE",
-			     m_expr);
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_of_uninitialized_value,
+			       "use of uninitialized value %qE",
+			       m_expr);
 	}
 	break;
       case POISON_KIND_FREED:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (416); /* "CWE-416: Use After Free".  */
-	  return warning_at (rich_loc, m,
-			     OPT_Wanalyzer_use_after_free,
-			     "use after %<free%> of %qE",
-			     m_expr);
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_after_free,
+			       "use after %<free%> of %qE",
+			       m_expr);
 	}
 	break;
       case POISON_KIND_POPPED_STACK:
 	{
-	  diagnostic_metadata m;
 	  /* TODO: which CWE?  */
-	  return warning_at (rich_loc, m,
+	  return warning_at (rich_loc,
 			     OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame,
 			     "use of pointer %qE within stale stack frame",
 			     m_expr);
@@ -4480,11 +4458,11 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
     set_value (get_lvalue (lhs, ctxt), get_rvalue (rhs, ctxt), ctxt);
 }
 
-/* Update this model for a call and return of "setjmp" at CALL within ENODE,
-   using CTXT to report any diagnostics.
+/* Update this model for a call and return of setjmp/sigsetjmp at CALL within
+   ENODE, using CTXT to report any diagnostics.
 
-   This is for the initial direct invocation of setjmp (which returns 0),
-   as opposed to any second return due to longjmp.  */
+   This is for the initial direct invocation of setjmp/sigsetjmp (which returns
+   0), as opposed to any second return due to longjmp/sigsetjmp.  */
 
 void
 region_model::on_setjmp (const gcall *call, const exploded_node *enode,
@@ -5166,6 +5144,15 @@ region_model::eval_condition (svalue_id lhs_sid,
 			      enum tree_code op,
 			      svalue_id rhs_sid) const
 {
+  svalue *lhs = get_svalue (lhs_sid);
+  svalue *rhs = get_svalue (rhs_sid);
+
+  /* For now, make no attempt to capture constraints on floating-point
+     values.  */
+  if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
+      || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
+    return tristate::unknown ();
+
   tristate ts = eval_condition_without_cm (lhs_sid, op, rhs_sid);
 
   if (ts.is_known ())
@@ -5195,6 +5182,12 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
   /* See what we know based on the values.  */
   if (lhs && rhs)
     {
+      /* For now, make no attempt to capture constraints on floating-point
+	 values.  */
+      if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
+	  || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
+	return tristate::unknown ();
+
       if (lhs == rhs)
 	{
 	  /* If we have the same svalue, then we have equality
@@ -5274,6 +5267,11 @@ bool
 region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 			      region_model_context *ctxt)
 {
+  /* For now, make no attempt to capture constraints on floating-point
+     values.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return true;
+
   svalue_id lhs_sid = get_rvalue (lhs, ctxt);
   svalue_id rhs_sid = get_rvalue (rhs, ctxt);
 
@@ -5407,6 +5405,11 @@ region_model::eval_condition (tree lhs,
 			      tree rhs,
 			      region_model_context *ctxt)
 {
+  /* For now, make no attempt to model constraints on floating-point
+     values.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return tristate::unknown ();
+
   return eval_condition (get_rvalue (lhs, ctxt), op, get_rvalue (rhs, ctxt));
 }
 
@@ -6941,6 +6944,58 @@ namespace ana {
 
 namespace selftest {
 
+/* Build a constant tree of the given type from STR.  */
+
+static tree
+build_real_cst_from_string (tree type, const char *str)
+{
+  REAL_VALUE_TYPE real;
+  real_from_string (&real, str);
+  return build_real (type, real);
+}
+
+/* Append various "interesting" constants to OUT (e.g. NaN).  */
+
+static void
+append_interesting_constants (auto_vec<tree> *out)
+{
+  out->safe_push (build_int_cst (integer_type_node, 0));
+  out->safe_push (build_int_cst (integer_type_node, 42));
+  out->safe_push (build_int_cst (unsigned_type_node, 0));
+  out->safe_push (build_int_cst (unsigned_type_node, 42));
+  out->safe_push (build_real_cst_from_string (float_type_node, "QNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-QNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "SNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-SNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "0.0"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-0.0"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "Inf"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-Inf"));
+}
+
+/* Verify that tree_cmp is a well-behaved comparator for qsort, even
+   if the underlying constants aren't comparable.  */
+
+static void
+test_tree_cmp_on_constants ()
+{
+  auto_vec<tree> csts;
+  append_interesting_constants (&csts);
+
+  /* Try sorting every triple. */
+  const unsigned num = csts.length ();
+  for (unsigned i = 0; i < num; i++)
+    for (unsigned j = 0; j < num; j++)
+      for (unsigned k = 0; k < num; k++)
+	{
+	  auto_vec<tree> v (3);
+	  v.quick_push (csts[i]);
+	  v.quick_push (csts[j]);
+	  v.quick_push (csts[k]);
+	  v.qsort (tree_cmp);
+	}
+}
+
 /* Implementation detail of the ASSERT_CONDITION_* macros.  */
 
 void
@@ -7591,6 +7646,25 @@ test_canonicalization_3 ()
   ASSERT_EQ (model0, model1);
 }
 
+/* Verify that we can canonicalize a model containing NaN and other real
+   constants.  */
+
+static void
+test_canonicalization_4 ()
+{
+  auto_vec<tree> csts;
+  append_interesting_constants (&csts);
+
+  region_model model;
+
+  unsigned i;
+  tree cst;
+  FOR_EACH_VEC_ELT (csts, i, cst)
+    model.get_rvalue (cst, NULL);
+
+  model.canonicalize (NULL);
+}
+
 /* Assert that if we have two region_model instances
    with values VAL_A and VAL_B for EXPR that they are
    mergable.  Write the merged model to *OUT_MERGED_MODEL,
@@ -7971,6 +8045,7 @@ test_constraint_merging ()
 void
 analyzer_region_model_cc_tests ()
 {
+  test_tree_cmp_on_constants ();
   test_dump ();
   test_unique_constants ();
   test_svalue_equality ();
@@ -7983,6 +8058,7 @@ analyzer_region_model_cc_tests ()
   test_canonicalization_1 ();
   test_canonicalization_2 ();
   test_canonicalization_3 ();
+  test_canonicalization_4 ();
   test_state_merging ();
   test_constraint_merging ();
 }

@@ -453,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * Such a separate base class template is necessary in order to
     * conditionally make copy/move constructors trivial.
     *
-    * When the contained value is trivally copy/move constructible,
+    * When the contained value is trivially copy/move constructible,
     * the copy/move constructors of _Optional_base will invoke the
     * trivial copy/move constructor of _Optional_payload. Otherwise,
     * they will invoke _Optional_payload(bool, const _Optional_payload&)

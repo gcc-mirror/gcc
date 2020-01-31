@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "fold-const.h"
 #include "selftest.h"
+#include "diagnostic-core.h"
 #include "graphviz.h"
 #include "function.h"
 #include "analyzer/analyzer.h"
@@ -120,13 +121,11 @@ bound::get_relation_as_str () const
 void
 range::dump (pretty_printer *pp) const
 {
-PUSH_IGNORE_WFORMAT
   pp_printf (pp, "%qE %s x %s %qE",
 	     m_lower_bound.m_constant,
 	     m_lower_bound.get_relation_as_str (),
 	     m_upper_bound.get_relation_as_str (),
 	     m_upper_bound.m_constant);
-POP_IGNORE_WFORMAT
 }
 
 /* Determine if there is only one possible value for this range.
@@ -200,9 +199,7 @@ equiv_class::print (pretty_printer *pp) const
     {
       if (i > 0)
 	pp_string (pp, " == ");
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE", m_constant);
-POP_IGNORE_WFORMAT
     }
   pp_character (pp, '}');
 }
@@ -961,7 +958,9 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 	   other_id.m_idx++)
 	{
 	  const equiv_class &other_ec = other_id.get_obj (*this);
-	  if (other_ec.m_constant)
+	  if (other_ec.m_constant
+	      && types_compatible_p (TREE_TYPE (new_ec->m_constant),
+				     TREE_TYPE (other_ec.m_constant)))
 	    {
 	      /* If we have two ECs, both with constants, the constants must be
 		 non-equal (or they would be in the same EC).

@@ -3237,7 +3237,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
-		     "(%s -> %s) but cannot refer to it. Giving up.\n",
+		     "(%s -> %s) but cannot refer to it.  Giving up.\n",
 		     ie->caller->dump_name (),
 		     ie->callee->dump_name ());
 	  return NULL;
@@ -3248,25 +3248,26 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
   /* If the edge is already speculated.  */
   if (speculative && ie->speculative)
     {
-      struct cgraph_edge *e2;
-      struct ipa_ref *ref;
-      ie->speculative_call_info (e2, ie, ref);
-      if (e2->callee->ultimate_alias_target ()
-	  != callee->ultimate_alias_target ())
+      if (dump_file)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative "
-		     "target (%s -> %s) but the call is already "
-		     "speculated to %s. Giving up.\n",
-		     ie->caller->dump_name (), callee->dump_name (),
-		     e2->callee->dump_name ());
-	}
-      else
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative target "
-		     "(%s -> %s) this agree with previous speculation.\n",
-		     ie->caller->dump_name (), callee->dump_name ());
+	  cgraph_edge *e2 = ie->speculative_call_for_target (callee);
+	  if (!e2)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "ipa-prop: Discovered call to a "
+			 "speculative target (%s -> %s) but the call is "
+			 "already speculated to different target.  "
+			 "Giving up.\n",
+			 ie->caller->dump_name (), callee->dump_name ());
+	    }
+	  else
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "ipa-prop: Discovered call to a speculative target "
+			 "(%s -> %s) this agree with previous speculation.\n",
+			 ie->caller->dump_name (), callee->dump_name ());
+	    }
 	}
       return NULL;
     }
@@ -3771,7 +3772,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       class cgraph_indirect_call_info *ici = ie->indirect_info;
       struct ipa_jump_func *jfunc;
       int param_index;
-      cgraph_node *spec_target = NULL;
 
       next_ie = ie->next_callee;
 
@@ -3787,14 +3787,11 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
+      cgraph_node *spec_target = NULL;
 
+      /* FIXME: This may need updating for multiple calls.  */
       if (ie->speculative)
-	{
-	  struct cgraph_edge *de;
-          struct ipa_ref *ref;
-	  ie->speculative_call_info (de, ie, ref);
-	  spec_target = de->callee;
-	}
+	spec_target = ie->first_speculative_call_target ()->callee;
 
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;

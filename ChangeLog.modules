@@ -1,5 +1,7 @@
 2020-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master b92709388b9aee52db3cd7c227818e0ecccda2e5
+
 	gcc/cp/
 	* parser.c (cp_parser_skip_to_end_of_statement): Adjust pragma
 	skipping.

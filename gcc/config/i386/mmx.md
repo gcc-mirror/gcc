@@ -195,11 +195,7 @@
 		     (match_test "<MODE>mode == V2SFmode")
 		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
-			  (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
-		       (const_string "V4SF")
-		     (match_test "TARGET_AVX")
-		       (const_string "TI")
-		     (match_test "optimize_function_for_size_p (cfun)")
+			  (match_test "optimize_function_for_size_p (cfun)"))
 		       (const_string "V4SF")
 		    ]
 		    (const_string "TI"))

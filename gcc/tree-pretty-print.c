@@ -2078,6 +2078,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case VECTOR_CST:
       {
 	unsigned i;
+	if (flags & TDF_GIMPLE)
+	  {
+	    pp_string (pp, "_Literal (");
+	    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+	    pp_string (pp, ") ");
+	  }
 	pp_string (pp, "{ ");
 	unsigned HOST_WIDE_INT nunits;
 	if (!VECTOR_CST_NELTS (node).is_constant (&nunits))
@@ -2315,6 +2321,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	bool is_struct_init = false;
 	bool is_array_init = false;
 	widest_int curidx;
+	if (flags & TDF_GIMPLE)
+	  {
+	    pp_string (pp, "_Literal (");
+	    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+	    pp_string (pp, ") ");
+	  }
 	pp_left_brace (pp);
 	if (TREE_CLOBBER_P (node))
 	  pp_string (pp, "CLOBBER");
