@@ -3187,27 +3187,31 @@ A memory reference that is encoded within the opcode.
 
 @item PowerPC and IBM RS6000---@file{config/rs6000/constraints.md}
 @table @code
-@item b
-Address base register
+@item r
+A general purpose register (GPR), @code{r0}@dots{}@code{r31}.
 
-@item d
-Floating point register (containing 64-bit value)
+@item b
+A base register.  Like @code{r}, but @code{r0} is not allowed, so
+@code{r1}@dots{}@code{r31}.
 
 @item f
-Floating point register (containing 32-bit value)
+A floating point register (FPR), @code{f0}@dots{}@code{f31}.
+
+@item d
+A floating point register.  This is the same as @code{f} nowadays;
+historically @code{f} was for single-precision and @code{d} was for
+double-precision floating point.
 
 @item v
-Altivec vector register
+An Altivec vector register (VR), @code{v0}@dots{}@code{v31}.
 
 @item wa
-Any VSX register if the @option{-mvsx} option was used or NO_REGS.
+A VSX register (VSR), @code{vs0}@dots{}@code{vs63}.  This is either an
+FPR (@code{vs0}@dots{}@code{vs31} are @code{f0}@dots{}@code{f31}) or a VR
+(@code{vs32}@dots{}@code{vs63} are @code{v0}@dots{}@code{v31}).
 
-When using the register constraint @code{wa}
-that takes VSX registers, you must use @code{%x<n>} in the template so
-that the correct register is used.  Otherwise the register number
-output in the assembly file will be incorrect if an Altivec register
-is an operand of a VSX instruction that expects VSX register
-numbering.
+When using @code{wa}, you should use the @code{%x} output modifier, so that
+the correct register number is printed.  For example:
 
 @smallexample
 asm ("xvadddp %x0,%x1,%x2"
@@ -3215,20 +3219,7 @@ asm ("xvadddp %x0,%x1,%x2"
      : "wa" (v2), "wa" (v3));
 @end smallexample
 
-@noindent
-is correct, but:
-
-@smallexample
-asm ("xvadddp %0,%1,%2" 
-     : "=wa" (v1) 
-     : "wa" (v2), "wa" (v3));
-@end smallexample
-
-@noindent
-is not correct.
-
-If an instruction only takes Altivec registers, you do not want to use
-@code{%x<n>}.
+You should not use @code{%x} for @code{v} operands:
 
 @smallexample
 asm ("xsaddqp %0,%1,%2"
@@ -3236,37 +3227,45 @@ asm ("xsaddqp %0,%1,%2"
      : "v" (v2), "v" (v3));
 @end smallexample
 
-@noindent
-is correct because the @code{xsaddqp} instruction only takes Altivec
-registers, while:
+@ifset INTERNALS
+@item h
+A special register (@code{vrsave}, @code{ctr}, or @code{lr}).
+@end ifset
 
-@smallexample
-asm ("xsaddqp %x0,%x1,%x2" 
-     : "=v" (v1) 
-     : "v" (v2), "v" (v3));
-@end smallexample
+@item c
+The count register, @code{ctr}.
 
-@noindent
-is incorrect.
+@item l
+The link register, @code{lr}.
+
+@item x
+Condition register field 0, @code{cr0}.
+
+@item y
+Any condition register field, @code{cr0}@dots{}@code{cr7}.
+
+@ifset INTERNALS
+@item z
+The carry bit, @code{XER[CA]}.
 
 @item we
-VSX register if the @option{-mcpu=power9} and @option{-m64} options
-were used or NO_REGS.
+Like @code{wa}, if @option{-mpower9-vector} and @option{-m64} are used;
+otherwise, @code{NO_REGS}.
 
 @item wn
-No register (NO_REGS).
+No register (@code{NO_REGS}).
 
 @item wr
-General purpose register if 64-bit instructions are enabled or NO_REGS.
+Like @code{r}, if @option{-mpowerpc64} is used; otherwise, @code{NO_REGS}.
 
 @item wx
-Floating point register if the STFIWX instruction is enabled or NO_REGS.
+Like @code{d}, if @option{-mpowerpc-gfxopt} is used; otherwise, @code{NO_REGS}.
 
 @item wA
-Address base register if 64-bit instructions are enabled or NO_REGS.
+Like @code{b}, if @option{-mpowerpc64} is used; otherwise, @code{NO_REGS}.
 
 @item wB
-Signed 5-bit constant integer that can be loaded into an altivec register.
+Signed 5-bit constant integer that can be loaded into an Altivec register.
 
 @item wD
 Int constant that is the element number of the 64-bit scalar in a vector.
@@ -3275,90 +3274,78 @@ Int constant that is the element number of the 64-bit scalar in a vector.
 Vector constant that can be loaded with the XXSPLTIB instruction.
 
 @item wF
-Memory operand suitable for power8 GPR load fusion
-
-@item wG
-Memory operand suitable for TOC fusion memory references.
+Memory operand suitable for power8 GPR load fusion.
 
 @item wL
-Int constant that is the element number that the MFVSRLD instruction.
-targets.
+Int constant that is the element number mfvsrld accesses in a vector.
 
 @item wM
 Match vector constant with all 1's if the XXLORC instruction is available.
 
 @item wO
-A memory operand suitable for the ISA 3.0 vector d-form instructions.
+Memory operand suitable for the ISA 3.0 vector d-form instructions.
 
 @item wQ
-A memory address that will work with the @code{lq} and @code{stq}
-instructions.
+Memory operand suitable for the load/store quad instructions.
 
 @item wS
 Vector constant that can be loaded with XXSPLTIB & sign extension.
 
-@item h
-@samp{VRSAVE}, @samp{CTR}, or @samp{LINK} register
+@item wY
+A memory operand for a DS-form instruction.
 
-@item c
-@samp{CTR} register
-
-@item l
-@samp{LINK} register
-
-@item x
-@samp{CR} register (condition register) number 0
-
-@item y
-@samp{CR} register (condition register)
-
-@item z
-@samp{XER[CA]} carry bit (part of the XER register)
+@item wZ
+An indexed or indirect memory operand, ignoring the bottom 4 bits.
+@end ifset
 
 @item I
-Signed 16-bit constant
+A signed 16-bit constant.
 
 @item J
-Unsigned 16-bit constant shifted left 16 bits (use @samp{L} instead for
-@code{SImode} constants)
+An unsigned 16-bit constant shifted left 16 bits (use @code{L} instead
+for @code{SImode} constants).
 
 @item K
-Unsigned 16-bit constant
+An unsigned 16-bit constant.
 
 @item L
-Signed 16-bit constant shifted left 16 bits
+A signed 16-bit constant shifted left 16 bits.
 
+@ifset INTERNALS
 @item M
-Constant larger than 31
+An integer constant greater than 31.
 
 @item N
-Exact power of 2
+An exact power of 2.
 
 @item O
-Zero
+The integer constant zero.
 
 @item P
-Constant whose negation is a signed 16-bit constant
+A constant whose negation is a signed 16-bit constant.
+@end ifset
 
 @item eI
-Signed 34-bit integer constant if prefixed instructions are supported.
+A signed 34-bit integer constant if prefixed instructions are supported.
 
+@ifset INTERNALS
 @item G
-Floating point constant that can be loaded into a register with one
-instruction per word
+A floating point constant that can be loaded into a register with one
+instruction per word.
 
 @item H
-Integer/Floating point constant that can be loaded into a register using
-three instructions
+A floating point constant that can be loaded into a register using
+three instructions.
+@end ifset
 
 @item m
-Memory operand.
+A memory operand.
 Normally, @code{m} does not allow addresses that update the base register.
-If @samp{<} or @samp{>} constraint is also used, they are allowed and
+If the @code{<} or @code{>} constraint is also used, they are allowed and
 therefore on PowerPC targets in that case it is only safe
-to use @samp{m<>} in an @code{asm} statement if that @code{asm} statement
+to use @code{m<>} in an @code{asm} statement if that @code{asm} statement
 accesses the operand exactly once.  The @code{asm} statement must also
-use @samp{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
+use @code{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
 corresponding load or store instruction.  For example:
 
 @smallexample
@@ -3373,35 +3360,44 @@ asm ("st %1,%0" : "=m<>" (mem) : "r" (val));
 
 is not.
 
+@ifset INTERNALS
 @item es
 A ``stable'' memory operand; that is, one which does not include any
 automodification of the base register.  This used to be useful when
-@samp{m} allowed automodification of the base register, but as those are now only
-allowed when @samp{<} or @samp{>} is used, @samp{es} is basically the same
-as @samp{m} without @samp{<} and @samp{>}.
+@code{m} allowed automodification of the base register, but as those
+are now only allowed when @code{<} or @code{>} is used, @code{es} is
+basically the same as @code{m} without @code{<} and @code{>}.
+@end ifset
 
 @item Q
 A memory operand addressed by just a base register.
 
-@item Z
-Memory operand that is an indexed or indirect from a register (it is
-usually better to use @samp{m} or @samp{es} in @code{asm} statements)
+@ifset INTERNALS
+@item Y
+A memory operand for a DQ-form instruction.
+@end ifset
 
+@item Z
+A memory operand accessed with indexed or indirect addressing.
+
+@ifset INTERNALS
 @item R
-AIX TOC entry
+An AIX TOC entry.
+@end ifset
 
 @item a
-Address operand that is an indexed or indirect from a register (@samp{p} is
-preferable for @code{asm} statements)
+An indexed or indirect address.
 
+@ifset INTERNALS
 @item U
-System V Release 4 small data area reference
+A V.4 small data reference.
 
 @item W
-Vector constant that does not require memory
+A vector constant that does not require memory.
 
 @item j
-Vector constant that is all zeros.
+The zero vector constant.
+@end ifset
 
 @end table
 
