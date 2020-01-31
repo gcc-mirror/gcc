@@ -58,7 +58,7 @@ package body Exp_Imgv is
       Pref      : Entity_Id;
       Attr_Name : Name_Id;
       Str_Typ   : Entity_Id);
-   --  AI12-00124: Rewrite attribute 'Image when it is applied to an object
+   --  AI12-0124: Rewrite attribute 'Image when it is applied to an object
    --  reference as an attribute applied to a type. N denotes the node to be
    --  rewritten, Pref denotes the prefix of the 'Image attribute, and Name
    --  and Str_Typ specify which specific string type and 'Image attribute to
@@ -263,7 +263,7 @@ package body Exp_Imgv is
    --      tv = Long_Long_Integer?(Expr) [convert with no scaling]
    --      pm = typ'Scale (typ = subtype of expression)
 
-   --  For enumeration types other than those declared packages Standard
+   --  For enumeration types other than those declared in package Standard
    --  or System, Snn, Pnn, are expanded as above, but the call looks like:
 
    --    Image_Enumeration_NN (rt'Pos (X), Snn, Pnn, typS, typI'Address)
@@ -474,22 +474,23 @@ package body Exp_Imgv is
       if Is_Object_Image (Pref) then
          Rewrite_Object_Image (N, Pref, Name_Image, Standard_String);
          return;
+      end if;
+
+      Ptyp := Entity (Pref);
+      Rtyp := Root_Type (Ptyp);
 
       --  Enable speed-optimized expansion of user-defined enumeration types
       --  if we are compiling with optimizations enabled and enumeration type
       --  literals are generated. Otherwise the call will be expanded into a
       --  call to the runtime library.
 
-      elsif Optimization_Level > 0
+      if Optimization_Level > 0
         and then not Global_Discard_Names
-        and then Is_User_Defined_Enumeration_Type (Root_Type (Entity (Pref)))
+        and then Is_User_Defined_Enumeration_Type (Rtyp)
       then
          Expand_User_Defined_Enumeration_Image;
          return;
       end if;
-
-      Ptyp := Entity (Pref);
-      Rtyp := Root_Type (Ptyp);
 
       --  Build declarations of Snn and Pnn to be inserted
 

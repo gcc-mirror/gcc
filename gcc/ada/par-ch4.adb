@@ -51,7 +51,7 @@ package body Ch4 is
    --  or a type. For those attributes, a left parenthesis after the attribute
    --  should not be analyzed as the beginning of a parameters list because it
    --  may denote a slice operation (X'Img (1 .. 2)) or a type conversion
-   --  (X'Class (Y)). The Ada 2012 attribute 'Old is in this category.
+   --  (X'Class (Y)).
 
    --  Note: Loop_Entry is in this list because, although it can take an
    --  optional argument (the loop name), we can't distinguish that at parse

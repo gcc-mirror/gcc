@@ -1430,12 +1430,12 @@ package body Sem_Attr is
       begin
          Check_SPARK_05_Restriction_On_Attribute;
 
-         --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for
+         --  AI12-0124: The ARG has adopted the GNAT semantics of 'Img for
          --  scalar types, so that the prefix can be an object, a named value,
-         --  or a type, and there is no need for an argument in this case.
+         --  or a type. If the prefix is an object, there is no argument.
 
          if Attr_Id = Attribute_Img
-           or else (Ada_Version > Ada_2005 and then Is_Object_Image (P))
+           or else (Ada_Version >= Ada_2012 and then Is_Object_Image (P))
          then
             Check_E0;
             Set_Etype (N, Str_Typ);
@@ -1465,7 +1465,7 @@ package body Sem_Attr is
               or else not Is_Type (Entity (P))
               or else not Is_Scalar_Type (P_Type)
             then
-               if Ada_Version > Ada_2005 then
+               if Ada_Version >= Ada_2012 then
                   Error_Attr_P
                     ("prefix of % attribute must be a scalar type or a scalar "
                      & "object name");
