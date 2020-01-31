@@ -663,7 +663,10 @@ cp_lexer_new_main (void)
 		      - 1;
 
   if (coro)
-    module_token_cdtor (parse_in, coro);
+    {
+      preprocessed_module (parse_in);
+      module_token_cdtor (parse_in, coro);
+    }
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -4758,7 +4761,6 @@ cp_parser_translation_unit (cp_parser* parser)
 
   module_preamble preamble =
     modules_p () && !module_purview_p () ? MP_FIRST : MP_NOTHING;
-  bool deferred_imports = false;
   bool implicit_extern_c = false;
 
   /* Parse until EOF.  */
@@ -4796,14 +4798,8 @@ cp_parser_translation_unit (cp_parser* parser)
 	    }
 	  if (next->keyword == RID__MODULE)
 	    {
-	      if (deferred_imports)
-		/* The GMF may have deferred imports.  Do them before
-		   we become a module.  */
-		process_deferred_imports (parse_in);
-
 	      preamble
 		= cp_parser_module_declaration (parser, preamble, exporting);
-	      deferred_imports = true;
 	      continue;
 	    }
 	  else if (next->keyword == RID__IMPORT)
@@ -4819,7 +4815,6 @@ cp_parser_translation_unit (cp_parser* parser)
 		  exporting = false;
 		}
 	      cp_parser_import_declaration (parser, preamble, exporting);
-	      deferred_imports = true;
 	      continue;
 	    }
 	  else
@@ -4851,19 +4846,8 @@ cp_parser_translation_unit (cp_parser* parser)
 	    cp_lexer_consume_token (parser->lexer);
 	}
       else
-	{
-	  if (deferred_imports)
-	    {
-	      deferred_imports = false;
-	      process_deferred_imports (parse_in);
-	    }
-	  cp_parser_toplevel_declaration (parser);
-	}
+	cp_parser_toplevel_declaration (parser);
     }
-
-  /* We may have ended on a deferred import.  */
-  if (deferred_imports)
-    process_deferred_imports (parse_in);
 
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
@@ -13485,8 +13469,9 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
 	goto skip_eol;
       cp_parser_require_pragma_eol (parser, token);
-      import_module_lang (mod, token->location, exporting, attrs, parse_in,
-			  current_lang_name == lang_name_c);
+      import_module (mod, token->location, exporting, attrs, parse_in,
+		     current_lang_name == lang_name_cplusplus
+		     ? lang_cplusplus : lang_c);
     }
 
 }

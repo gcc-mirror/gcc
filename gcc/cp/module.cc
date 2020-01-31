@@ -3341,6 +3341,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   loc_range_t GTY((skip)) ordinary_locs;
   loc_range_t GTY((skip)) macro_locs;
 
+  // FIXME: I think we only need one of these, because once we've set
+  // LOC, we'll have a line-map to refer to.
   /* The LOC is unset until we import the module.  */
   location_t loc; 	/* Location referring to module itself.  */
   /* The FROM_LOC is unset until we process a declaration.  */
@@ -3353,19 +3355,25 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   unsigned short subst;	/* Mangle subst if !0.  */
 
+  bool module_p : 1;    /* /The/ module of this TU.  */
   bool header_p : 1;	/* Is a header import.  */
+
+  // FIXME: now we have MODULE_P, interface_p can be deduced.
+  // primary_p might not be needed either
   bool direct_p : 1;	/* A direct import of TU (includes interface
 			   of implementation for which primary_p).  */
   bool primary_p : 1;   /* Is the primary interface of this
 			   implementation unit.  */
   bool interface_p : 1; /* Is an interface (partition or primary).  */
   bool exported_p : 1;	/* Direct_p && exported.  */
+
   // FIXME: The following flag is at least misnamed.  rename to
   // 'importing_p' to detect loops.
   bool imported_p : 1;	/* Import has been done.  */
   bool partition_p : 1; /* A partition.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
   bool cmi_noted_p : 1;
+
   bool lazy_preprocessor_p : 1; /* Preprocessor phase to do.  */
   bool lazy_language_p : 1;  /* Language phase to do.  */
 
@@ -3593,7 +3601,8 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0),
     partition_p (partition)
 {
-  header_p = direct_p = primary_p = interface_p = exported_p
+  module_p = header_p = direct_p = false;
+  primary_p = interface_p = exported_p
     = imported_p = from_partition_p = cmi_noted_p = false;
   lazy_preprocessor_p = lazy_language_p = false;
   extensions = 0;
@@ -3678,12 +3687,11 @@ module_state_hash::equal (const value_type existing,
 /********************************************************************/
 /* Global state */
 
+// FIXME: Put in header somewhere, and maybe verify value
+static const location_t main_source_loc = 32;
+
 /* Mapper name.  */
 static const char *module_mapper_name;
-
-// FIXME: pending_imports disabled during 1857 transition
-/* Deferred imports.  */
-static vec<module_state *, va_heap, vl_embed> *pending_imports;
 
 /* CMI repository path and workspace.  */
 static char *cmi_repo;
@@ -17743,6 +17751,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 
   if (fname)
     {
+      // FIXME: Seems wrong place now?
       gcc_assert (!filename);
       filename = xstrdup (fname);
     }
@@ -17802,7 +17811,6 @@ module_state::direct_import (cpp_reader *reader, bool for_cpp)
   direct_p = true;
   if (!is_imported () && mod == MODULE_UNKNOWN)
     {
-      char *fname = NULL;
       unsigned pre_hwm = 0;
 
       /* Preserve the state of the line-map.  */
@@ -17815,7 +17823,11 @@ module_state::direct_import (cpp_reader *reader, bool for_cpp)
 	spans.close ();
 
       maybe_create_loc ();
-      fname = module_mapper::import_export (this, false);
+
+      char *fname = NULL;
+      // FIXME: Seems wrong place now.  do in caller?
+      if (for_cpp)
+	fname = module_mapper::import_export (this, false);
 
       if (!do_import (fname, reader)
 	  && !flag_preprocess_only)
@@ -18043,110 +18055,82 @@ lazy_load_members (tree decl)
   timevar_stop (TV_MODULE_IMPORT);
 }
 
-/* Import IMP for preprocessor goodies.  */
-// FIXME: These two routines can probably be merged as a post-p1857 cleanup
+/* Import module IMPORT. PHASE < 0 -> preprocessoryness. PHASE >= 0
+   enum language.  */
 
 void
-import_module_pre (module_state *imp, location_t from_loc, tree,
-		   cpp_reader *reader)
+import_module (module_state *import, location_t from_loc, bool exporting_p,
+	       tree, cpp_reader *reader, int phase)
 {
-  gcc_checking_assert (imp->is_header ());
-  from_loc = ordinary_loc_of (line_table, from_loc);
-
-  if (!imp->is_direct ())
-    {
-      if (!imp->is_detached ())
-	/* This was indirectly imported, reparent it so the include
-	   chain shows it directly.  */
-	linemap_module_reparent (line_table, imp->loc, from_loc);
-      imp->attach (from_loc);
-    }
-  imp->direct_import (reader, true);
-}
-
-/* Import IMP for language goodies.  It might already have been
-   imported for its preprocesseriness.  */
-
-void
-import_module_lang (module_state *imp, location_t from_loc, bool exporting,
-		    tree, cpp_reader *reader, bool /*in_extern_c*/)
-{
-  from_loc = ordinary_loc_of (line_table, from_loc);
-
-  if (!imp->check_not_purview (from_loc))
+  if (!import->check_not_purview (from_loc))
     return;
 
-  if (exporting || module_exporting_p ())
-    imp->exported_p = true;
-  
-  if (!imp->is_direct ())
-    {
-      if (!imp->is_detached ())
-	linemap_module_reparent (line_table, imp->loc, from_loc);
-      imp->attach (from_loc);
-    }
-  imp->direct_import (reader, false);
+  if (exporting_p || module_exporting_p ())
+    import->exported_p = true;
+
+  gcc_checking_assert (!import->module_p);
+  gcc_checking_assert (import->is_direct () && !import->is_detached ());
+
+  import->direct_import (reader, phase < 0);
 }
 
 /* Declare the name of the current module to be NAME.  EXPORTING_p is
    true if this TU is the exporting module unit.  */
 
 void
-declare_module (module_state *state, location_t from_loc, bool exporting_p,
+declare_module (module_state *module, location_t from_loc, bool exporting_p,
 		tree, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ());
-  from_loc = ordinary_loc_of (line_table, from_loc);
 
   module_state *current = (*modules)[0];
-  if (module_purview_p () || !state->is_detached ())
+  if (module_purview_p () || module->is_imported ())
     {
       error_at (from_loc, module_purview_p ()
 		? G_("module already declared")
 		: G_("module already imported"));
       if (module_purview_p ())
-	state = current;
-      inform (state->from_loc,
+	module = current;
+      inform (module->from_loc,
 	      module_purview_p ()
 	      ? G_("module %qs declared here")
 	      : G_("module %qs imported here"),
-	      state->get_flatname ());
+	      module->get_flatname ());
       return;
     }
 
-  state->attach (from_loc);
+  gcc_checking_assert (module->module_p);
+  gcc_checking_assert (module->is_direct () && !module->is_detached ());
 
   /* Yer a module, 'arry.  */
   module_kind &= ~MK_GLOBAL;
   module_kind |= MK_MODULE;
 
-  if (state->is_partition () || exporting_p)
+  if (module->is_partition () || exporting_p)
     {
-      if (state->is_partition ())
+      if (module->is_partition ())
 	module_kind |= MK_PARTITION;
 
       if (exporting_p)
 	{
-	  state->interface_p = true;
+	  module->interface_p = true;
 	  module_kind |= MK_INTERFACE;
 	}
 
-      if (state->is_header ())
+      if (module->is_header ())
 	module_kind |= MK_GLOBAL | MK_EXPORTING;
 
       /* Copy the importing information we may have already done.  */
-      state->imports = current->imports;
+      module->imports = current->imports;
 
-      state->mod = 0;
-      (*modules)[0] = state;
-      if (char *fname = module_mapper::import_export (state, true))
-	state->filename = xstrdup (fname);
+      module->mod = 0;
+      (*modules)[0] = module;
     }
   else
     {
-      state->primary_p = state->interface_p = true;
-      current->parent = state; /* So mangler knows module identity. */
-      state->direct_import (reader, false);
+      module->primary_p = module->interface_p = true;
+      current->parent = module; /* So mangler knows module identity. */
+      module->direct_import (reader, false);
     }
 }
 
@@ -18338,33 +18322,6 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   return res;
 }
 
-module_state *
-module_preprocess (mkdeps *deps, module_state *state,
-		   bool is_import, bool is_export)
-{
-  if (!state->flatname)
-    state->set_flatname ();
-
-  if (deps)
-    {
-      // FIXME: We should possibly do this after tokenization, when
-      // we've resolved the cmi names via the mapper
-      const char *path = NULL;
-      if (!is_import && (is_export || state->is_partition ()))
-	{
-	  path = state->filename;
-	  if (!path)
-	    path = module_mapper::import_export (state, true);
-	  path = path ? maybe_add_cmi_prefix (path) : "";
-	}
-
-      deps_add_module (deps, state->get_flatname (),
-		       path, state->is_header ());
-    }
-
-  return is_import ? NULL : get_primary (state);
-}
-
 /* We've just properly entered the main source file.  I.e. after the
    command line, builtins and forced headers.  Record the line map and
    location of this map.  Note we may be called more than once.  The
@@ -18384,103 +18341,138 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	{
 	  /* Tell the preprocessor this is an include file.  */
 	  cpp_retrofit_as_include (reader);
+
 	  /* Set the module header name from the main_input_filename.  */
 	  const char *main = main_input_filename;
 	  size_t len = strlen (main);
 	  main = canonicalize_header_name (NULL, 0, true, main, len);
-	  module_state *state = get_module (build_string (len, main));
+	  module_state *module = get_module (build_string (len, main));
+
+	  preprocess_module (module, spans.main_start (), false, true, reader);
 	  if (!flag_preprocess_only)
-	    {
-	      declare_module (state, spans.main_start (), true, NULL, reader);
-	      process_deferred_imports (reader);
-	    }
-	  else if (mkdeps *deps = cpp_get_deps (reader))
-	    module_preprocess (deps, state, false, true);
+	    declare_module (module, spans.main_start (), true, NULL, reader);
 	}
     }
 }
 
-/* Process any deferred imports.   */
+/* We've just lexed a module-specific control line for MODULE.  Mark
+   the module as a direct import, and possibly load up its macro
+   state.  */
+
+module_state *
+preprocess_module (module_state *module, location_t from_loc,
+		   bool is_import, bool is_export,
+		   cpp_reader *reader)
+{
+  if (!is_import)
+    {
+      if (module->from_loc)
+	/* It's already been mentioned, so ignore its module-ness.  */
+	is_import = true;
+      else
+	{
+	  /* Record it is the module.  */
+	  module->module_p = true;
+	  module->exported_p = is_export;
+	}
+    }
+
+  if (!module->is_direct ())
+    {
+      /* Mark as a direct import.  */
+      module->direct_p = true;
+      module->from_loc = ordinary_loc_of (line_table, from_loc);
+      if (module->loc)
+	/* This was indirectly imported (by an earlier header unit
+	   when preprocessing), reparent it so the include chain shows
+	   as a direct import.  */
+	linemap_module_reparent (line_table, module->loc, module->from_loc);
+      if (!module->flatname)
+	module->set_flatname ();
+    }
+
+  if (is_import && !module->module_p && module->is_header ())
+    // FIXME: Skip when preprocessed input
+    import_module (module, module->from_loc, false, NULL, reader, -1);
+
+  return is_import ? NULL : get_primary (module);
+}
+
+/* We've completed phase-4 translation.  Emit any dependency
+   information for the direct imports, and fill in their file names.  */
 
 void
-process_deferred_imports (cpp_reader *reader)
+preprocessed_module (cpp_reader *reader)
 {
-  if (!vec_safe_length (pending_imports))
-    return;
+  module_mapper *mapper = module_mapper::get (main_source_loc);
 
-  dump.push (NULL);
-  dump () && dump ("Processing %u deferred imports",
-		   vec_safe_length (pending_imports));
+  /* Stupid GTY doesn't grok a typedef here.  And using type = is, too
+     modern.  */
+#define iterator hash_table<module_state_hash>::iterator
+  /* using iterator = hash_table<module_state_hash>::iterator;  */
 
-  /* Preserve the state of the line-map.  */
-  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (module_has_cmi_p ())
-    spans.close ();
-
-  module_state *imp = (*pending_imports)[0];
-  module_mapper *mapper = module_mapper::get (imp->from_loc);
-  bool has_bmi = !imp->mod;
-  bool any = false;
-
-  timevar_start (TV_MODULE_MAPPER);
   if (mapper->is_server ())
-    /* Send batched request to mapper.  */
-    for (unsigned ix = 0; ix != pending_imports->length (); ix++)
-      {
-	imp = (*pending_imports)[ix];
-	if (!imp->filename && !imp->imported_p)
-	  {
-	    /* The user may be directly importing the same module
-	       twice in a single block (they do this kind of thing).
-	       We only want one filename request, abuse the imported
-	       flag to do that.  */
-	    imp->imported_p = true;
-	    if (!any)
-	      mapper->cork ();
-	    any = true;
-	    mapper->imex_query (imp, !ix && has_bmi);
-	  }
-      }
-
-  if (any)
-    mapper->uncork (imp->from_loc);
-
-  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
     {
-      imp = (*pending_imports)[ix];
+      /* Walk the module hash, asking for the names of all unknown
+	 direct imports.  */
+      timevar_start (TV_MODULE_MAPPER);
 
-      /* Read the mapper's responses.  */
-      if (any && !imp->filename)
+      dump.push (NULL);
+      dump () && dump ("Resolving direct import names");
+
+      bool any = false;
+      iterator end = modules_hash->end ();
+      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
 	{
-	  imp->imported_p = false;
-	  if (char *fname = mapper->imex_response (imp))
-	    imp->filename = xstrdup (fname);
+	  module_state *module = *iter;
+	  if (module->is_direct () && !module->filename)
+	    {
+	      if (!any)
+		mapper->cork ();
+	      any = true;
+	      mapper->imex_query (module, module->module_p
+				  && (module->is_partition ()
+				      || module->exported_p));
+	    }
 	}
 
-      imp->maybe_create_loc ();
+      if (any)
+	{
+	  mapper->uncork (main_source_loc);
+	  for (iterator iter = modules_hash->begin (); iter != end; ++iter)
+	    {
+	      module_state *module = *iter;
+	      if (module->is_direct () && !module->filename)
+		if (char *fname = mapper->imex_response (module))
+		  module->filename = xstrdup (fname);
+	    }
+	  mapper->maybe_uncork (main_source_loc);
+	}
+
+      dump.pop (0);
+
+      timevar_stop (TV_MODULE_MAPPER);
     }
 
-  if (any)
-    mapper->maybe_uncork (imp->loc);
-  timevar_stop (TV_MODULE_MAPPER);
-
-  /* Now do the importing, which might cause additional requests
-     (although nested import filenames are usually in their
-     importer's import table).  */
-  for (unsigned ix = has_bmi ? 1 : 0;
-       ix != pending_imports->length (); ix++)
+  if (mkdeps *deps = cpp_get_deps (reader))
     {
-      module_state *imp = (*pending_imports)[ix];
-      imp->direct_import (reader, true);
+      /* Walk the module hash, informing the dependency machinery.  */
+      iterator end = modules_hash->end ();
+      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
+	{
+	  module_state *module = *iter;
+
+	  if (module->is_direct ())
+	    {
+	      const char *path = "";
+	      if (module->filename)
+		path = maybe_add_cmi_prefix (module->filename);
+	      deps_add_module (deps, module->get_flatname (),
+			       path, module->is_header());
+	    }
+	}
     }
-
-  dump.pop (0);
-
-  vec_free (pending_imports);
-
-  linemap_module_restore (line_table, pre_hwm);
-  if (module_has_cmi_p ())
-    spans.open ();
+#undef iterator
 }
 
 /* VAL is a global tree, add it to the global vec if it is

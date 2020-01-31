@@ -1,3 +1,37 @@
+2020-01-31  Nathan Sidwell  <nathan@acm.org>
+
+	Implement p1857, part 3
+	gcc/cp/
+	* cp-tree.h (module_preprocess, import_module_pre): Replace with ...
+	(preprocess_module): ... this.
+	(import_module_lang): Replace with ...
+	(import_module): ... this.
+	(preprocessed_module): Declare.
+	(process_deferred_imports): Delete.
+	* lex.c (struct token_coro): Report via preprocess_module.
+	(module_token_pre): Call preprocessed_module on teardown.
+	* module.cc (module_state::module_p): New flag.
+	(main_source_loc): New.
+	(pending_imports): Delete.
+	(module_state::direct_import): Do not get filename here.
+	(import_module_lang): Replace with ...
+	(import_module): Drop attach logic.
+	(declare_module): Adjust.
+	(module_preprocess, import_module_pre): Replace with ...
+	(preprocess_module): ... this.  Do attach logic here.
+	(preprocessed_module): New.  Do deps and module server name comms.
+	(process_deferred_imports): Delete.
+	* parser.c (cp_lexer_new_main): Call preprocessed_module when
+	done.
+	(cp_parser_translation_unit): Drop deferred imports logic.
+	(cp_parser_import_declaration): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-2_d.C: Remove xfail.
+	* g++.dg/modules/bad-mapper-1.C: Adjust diagnostic loc.
+	* g++.dg/modules/bad-mapper-2.C: Likewise.
+	* g++.dg/modules/bad-mapper-3.C: Likewise.
+	* g++.dg/modules/map-2.C: Likewise.
+
 2020-01-30  Nathan Sidwell  <nathan@acm.org>
 
 	Implement p1857, part 2

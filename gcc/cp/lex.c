@@ -395,23 +395,20 @@ struct token_coro
 
   enum state state : 8;
   bool is_import : 1;
-  bool is_header : 1;
   bool got_export : 1;
   bool got_colon : 1;
   bool want_dot : 1;
-  location_t header_loc;
+
+  location_t token_loc;
   cpp_reader *reader;
-  mkdeps *deps;
   module_state *module;
   module_state *import;
 
   token_coro (cpp_reader *reader)
-    : state (idle),
-    is_import (false), is_header (false),
+    : state (idle), is_import (false),
     got_export (false), got_colon (false), want_dot (false),
-    header_loc (UNKNOWN_LOCATION),
-    reader (reader), deps (cpp_get_deps (reader)),
-    module (NULL), import (NULL)
+    token_loc (UNKNOWN_LOCATION),
+    reader (reader), module (NULL), import (NULL)
   {
   };
 
@@ -437,7 +434,8 @@ struct token_coro
 	      state = module_first;
 	      want_dot = false;
 	      got_colon = false;
-	      is_header = false;
+	      token_loc = loc;
+	      import = NULL;
 	      break;
 	    }
 	break;
@@ -447,8 +445,6 @@ struct token_coro
 	  {
 	    /* A header name.  The preprocessor will have already
 	       done include searching and canonicalization.  */
-	    is_header = true;
-	    header_loc = loc;
 	    state = module_end;
 	    goto header_unit;
 	  }
@@ -473,6 +469,8 @@ struct token_coro
 	    break;
 
 	  default:
+	    /* If we ever need to pay attention to attributes for
+	       header modules, more logic will be needed.  */
 	    state = module_end;
 	    break;
 
@@ -509,23 +507,14 @@ struct token_coro
 	if (type == CPP_PRAGMA_EOL || type == CPP_EOF)
 	  {
 	  module_end:;
-	    /* End of the directive, register the dep and maybe import
-	       the header.  */
+	    /* End of the directive, handle the name.  */
 	    if (import)
-	      {
-		// FIXME: merge these two routines to a single entry
-		// point.
-		// FIXME: No preprocessor loading for preprocessed input
-		if (is_header)
-		  /* Load the header-unit import.  */
-		  import_module_pre (import, header_loc, NULL, reader);
-		
-		if (module_state *m = module_preprocess (deps, import,
-							 is_import, got_export))
+	      if (module_state *m
+		  = preprocess_module (import, token_loc,
+				       is_import, got_export, reader))
+		if (!module)
 		  module = m;
-	      }
 
-	    import = NULL;
 	    is_import = got_export = false;
 	    state = idle;
 	  }
@@ -555,7 +544,11 @@ void *
 module_token_pre (cpp_reader *pfile, const cpp_token *tok, void *data_)
 {
   if (!tok)
-    return module_token_cdtor (pfile, data_);
+    {
+      if (data_)
+	preprocessed_module (pfile);
+      return module_token_cdtor (pfile, data_);
+    }
 
   int type = tok->type;
   int keyword = RID_MAX;

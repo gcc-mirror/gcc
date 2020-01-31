@@ -7023,8 +7023,6 @@ inline bool module_exporting_p ()
 
 extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
-extern module_state *module_preprocess (mkdeps *, module_state *,
-					bool is_import, bool is_export);
 extern bool module_may_redeclare (tree decl);
 
 /* Where the namespace-scope decl was originally declared.  */
@@ -7044,12 +7042,15 @@ extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
 extern void lazy_load_members (tree decl);
 extern bool lazy_specializations_p (unsigned, bool, bool);
-extern void import_module_pre (module_state *, location_t, tree, cpp_reader *);
-extern void import_module_lang (module_state *, location_t, bool, tree,
-				cpp_reader *, bool in_extern_c);
-extern void declare_module (module_state *, location_t, bool, tree attr,
-			    cpp_reader *);
-extern void process_deferred_imports (cpp_reader *);
+extern module_state *preprocess_module (module_state *, location_t,
+					bool is_import, bool export_p,
+					cpp_reader *reader);
+extern void preprocessed_module (cpp_reader *reader);
+extern void import_module (module_state *, location_t, bool export_p,
+			   tree attr, cpp_reader *, int phase);
+extern void declare_module (module_state *, location_t, bool export_p,
+			    tree attr, cpp_reader *);
+
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);

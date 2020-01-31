@@ -12,5 +12,4 @@ int i;
 int j; // end here
 
 // No duplicate mapper request.
-// FIXME: need to rejig the mapper request queueing post-1857
-// { dg-final { scan-lang-dump "Mapper request:\\+IMPORT kevin\n-\n" module { xfail *-*-* } } }
+// { dg-final { scan-lang-dump "Mapper request:\\+IMPORT kevin\n-\n" module } }
