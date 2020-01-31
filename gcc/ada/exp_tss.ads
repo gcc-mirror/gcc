@@ -170,12 +170,9 @@ package Exp_Tss is
    --  be explicitly frozen, so the N_Freeze_Entity node always exists).
 
    function TSS (Typ : Entity_Id; Nam : TSS_Name_Type) return Entity_Id;
-   --  Finds the TSS with the given name associated with the given type
-   --  If no such TSS exists, then Empty is returned;
-
    function TSS (Typ : Entity_Id; Nam : Name_Id) return Entity_Id;
-   --  Finds the TSS with the given name associated with the given type. If
-   --  no such TSS exists, then Empty is returned.
+   --  Finds the TSS with the given name associated with the given type.
+   --  If no such TSS exists, then Empty is returned.
 
    function Same_TSS (E1, E2 : Entity_Id) return Boolean;
    --  Returns True if E1 and E2 are the same kind of TSS, even if the names
