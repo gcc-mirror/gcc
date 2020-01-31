@@ -1,5 +1,11 @@
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93457
+	* region-model.cc (make_region_for_type): Use VOID_TYPE_P rather
+	than checking against void_type_node.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93373
 	* region-model.cc (ASSERT_COMPAT_TYPES): Convert to...
 	(assert_compat_types): ...this, and bail when either type is NULL,

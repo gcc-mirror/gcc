@@ -6005,7 +6005,7 @@ make_region_for_type (region_id parent_rid, tree type)
     return new function_region (parent_rid, type);
 
   /* If we have a void *, make a new symbolic region.  */
-  if (type == void_type_node)
+  if (VOID_TYPE_P (type))
     return new symbolic_region (parent_rid, false);
 
   gcc_unreachable ();
