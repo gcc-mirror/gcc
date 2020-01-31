@@ -1,5 +1,10 @@
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/91123
+	* gcc.dg/tree-ssa/ssa-fre-85.c: New testcase.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92819
 	* gcc.target/i386/pr92819.c: New testcase.
 	* gcc.target/i386/pr92803.c: Adjust.
