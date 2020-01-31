@@ -295,7 +295,8 @@ ipa_profile_generate_summary (void)
 		      speculative_call_summary *csum
 			= call_sums->get_create (e);
 
-		      for (unsigned j = 0; j < GCOV_TOPN_VALUES; j++)
+		      for (unsigned j = 0; j < GCOV_TOPN_MAXIMUM_TRACKED_VALUES;
+			   j++)
 			{
 			  if (!get_nth_most_common_value (NULL, "indirect call",
 							  h, &val, &count, &all,
@@ -342,7 +343,7 @@ ipa_profile_write_edge_summary (lto_simple_output_block *ob,
 
   len = csum->speculative_call_targets.length ();
 
-  gcc_assert (len <= GCOV_TOPN_VALUES);
+  gcc_assert (len <= GCOV_TOPN_MAXIMUM_TRACKED_VALUES);
 
   streamer_write_hwi_stream (ob->main_stream, len);
 
@@ -448,8 +449,7 @@ ipa_profile_read_edge_summary (class lto_input_block *ib, cgraph_edge *edge)
   unsigned i, len;
 
   len = streamer_read_hwi (ib);
-  gcc_assert (len <= GCOV_TOPN_VALUES);
-
+  gcc_assert (len <= GCOV_TOPN_MAXIMUM_TRACKED_VALUES);
   speculative_call_summary *csum = call_sums->get_create (edge);
 
   for (i = 0; i < len; i++)
@@ -885,8 +885,7 @@ ipa_profile (void)
 				   item.target_probability
 				     / (float) REG_BR_PROB_BASE);
 			}
-		      if (item.target_probability
-		 	  < REG_BR_PROB_BASE / GCOV_TOPN_VALUES / 2)
+		      if (item.target_probability < REG_BR_PROB_BASE / 2)
 			{
 			  nuseless++;
 			  if (dump_file)

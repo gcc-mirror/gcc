@@ -765,26 +765,22 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 static void
 sort_hist_values (histogram_value hist)
 {
-  /* counters[2] equal to -1 means that all counters are invalidated.  */
-  if (hist->hvalue.counters[2] == -1)
-    return;
-
   gcc_assert (hist->type == HIST_TYPE_TOPN_VALUES
 	      || hist->type == HIST_TYPE_INDIR_CALL);
 
-  gcc_assert (hist->n_counters == GCOV_TOPN_VALUES_COUNTERS);
-
+  int counters = hist->hvalue.counters[1];
+  for (int i = 0; i < counters - 1; i++)
   /* Hist value is organized as:
-     [total_executions, value1, counter1, ..., value4, counter4]
+     [total_executions, N, counter1, ..., valueN, counterN]
      Use decrease bubble sort to rearrange it.  The sort starts from <value1,
      counter1> and compares counter first.  If counter is same, compares the
      value, exchange it if small to keep stable.  */
-  for (unsigned i = 0; i < GCOV_TOPN_VALUES - 1; i++)
+
     {
       bool swapped = false;
-      for (unsigned j = 0; j < GCOV_TOPN_VALUES - 1 - i; j++)
+      for (int j = 0; j < counters - 1 - i; j++)
 	{
-	  gcov_type *p = &hist->hvalue.counters[2 * j + 1];
+	  gcov_type *p = &hist->hvalue.counters[2 * j + 2];
 	  if (p[1] < p[3] || (p[1] == p[3] && p[0] < p[2]))
 	    {
 	      std::swap (p[0], p[2]);
@@ -847,30 +843,42 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
       gimple *stmt = hist->hvalue.stmt;
 
       t = (int) hist->type;
+      bool topn_p = (hist->type == HIST_TYPE_TOPN_VALUES
+		     || hist->type == HIST_TYPE_INDIR_CALL);
 
-      aact_count = act_count[t];
-
-      if (act_count[t])
-        act_count[t] += hist->n_counters;
-
-      gimple_add_histogram_value (cfun, stmt, hist);
-      hist->hvalue.counters =  XNEWVEC (gcov_type, hist->n_counters);
-      for (j = 0; j < hist->n_counters; j++)
-        if (aact_count)
-          hist->hvalue.counters[j] = aact_count[j];
-        else
-          hist->hvalue.counters[j] = 0;
-
-      if (hist->type == HIST_TYPE_TOPN_VALUES
-	  || hist->type == HIST_TYPE_INDIR_CALL)
+      /* TOP N counter uses variable number of counters.  */
+      if (topn_p)
 	{
-	  /* Each count value is multiplied by GCOV_TOPN_VALUES.  */
-	  if (hist->hvalue.counters[2] != -1)
-	    for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-	      hist->hvalue.counters[2 * i + 2]
-		= RDIV (hist->hvalue.counters[2 * i + 2], GCOV_TOPN_VALUES);
-
+	  unsigned total_size;
+	  if (act_count[t])
+	    total_size = 2 + 2 * act_count[t][1];
+	  else
+	    total_size = 2;
+	  gimple_add_histogram_value (cfun, stmt, hist);
+	  hist->n_counters = total_size;
+	  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
+	  for (j = 0; j < hist->n_counters; j++)
+	    if (act_count[t])
+	      hist->hvalue.counters[j] = act_count[t][j];
+	    else
+	      hist->hvalue.counters[j] = 0;
+	  act_count[t] += hist->n_counters;
 	  sort_hist_values (hist);
+	}
+      else
+	{
+	  aact_count = act_count[t];
+
+	  if (act_count[t])
+	    act_count[t] += hist->n_counters;
+
+	  gimple_add_histogram_value (cfun, stmt, hist);
+	  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
+	  for (j = 0; j < hist->n_counters; j++)
+	    if (aact_count)
+	      hist->hvalue.counters[j] = aact_count[j];
+	    else
+	      hist->hvalue.counters[j] = 0;
 	}
 
       /* Time profiler counter is not related to any statement,

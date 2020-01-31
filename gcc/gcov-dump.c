@@ -49,6 +49,7 @@ typedef struct tag_format
 
 static int flag_dump_contents = 0;
 static int flag_dump_positions = 0;
+static int flag_dump_raw = 0;
 
 static const struct option options[] =
 {
@@ -95,7 +96,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
 
   diagnostic_initialize (global_dc, 0);
 
-  while ((opt = getopt_long (argc, argv, "hlpvw", options, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "hlprvw", options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -110,6 +111,9 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
 	  break;
 	case 'p':
 	  flag_dump_positions = 1;
+	  break;
+	case 'r':
+	  flag_dump_raw = 1;
 	  break;
 	default:
 	  fprintf (stderr, "unknown flag `%c'\n", opt);
@@ -129,6 +133,7 @@ print_usage (void)
   printf ("  -h, --help           Print this help\n");
   printf ("  -l, --long           Dump record contents too\n");
   printf ("  -p, --positions      Dump record positions\n");
+  printf ("  -r, --raw		  Print content records in raw format\n");
   printf ("  -v, --version        Print version number\n");
   printf ("\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
@@ -441,7 +446,12 @@ tag_counters (const char *filename ATTRIBUTE_UNUSED,
 	{
 	  gcov_type count;
 
-	  if (!(ix & 7))
+	  if (flag_dump_raw)
+	    {
+	      if (ix == 0)
+		printf (": ");
+	    }
+	  else if (!(ix & 7))
 	    {
 	      printf ("\n");
 	      print_prefix (filename, depth, gcov_position ());
