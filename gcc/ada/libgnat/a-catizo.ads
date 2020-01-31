@@ -16,7 +16,9 @@
 --  This package provides routines to determine the offset of dates to GMT.
 --  It is defined in the Ada 2005 RM (9.6.1).
 
-package Ada.Calendar.Time_Zones is
+package Ada.Calendar.Time_Zones
+--  with Nonblocking
+is
 
    --  Time zone manipulation
 
@@ -24,7 +26,9 @@ package Ada.Calendar.Time_Zones is
 
    Unknown_Zone_Error : exception;
 
-   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset;
+   function Local_Time_Offset (Date : Time := Clock) return Time_Offset;
+   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset
+     renames Local_Time_Offset;
    --  Returns (in minutes), the difference between the implementation-defined
    --  time zone of Calendar, and UTC time, at the time Date. If the time zone
    --  of the Calendar implementation is unknown, raises Unknown_Zone_Error.
