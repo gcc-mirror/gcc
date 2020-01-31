@@ -2993,6 +2993,24 @@ package body Sem_Ch9 is
          else
             Set_First_Private_Entity (Spec_Id, First_Entity (Spec_Id));
          end if;
+
+         --  The entity list of the current scope now includes entities in
+         --  the spec as well as the body. Their declarations will become
+         --  part of the statement sequence of the task body procedure that
+         --  is built during expansion. Indicate that aspect specifications
+         --  for these entities need not be rechecked. The guards on
+         --  Check_Aspect_At_End_Of_Declarations are not sufficient to
+         --  suppress these checks, because the declarations come from source.
+
+         declare
+            Priv : Entity_Id := First_Private_Entity (Spec_Id);
+
+         begin
+            while Present (Priv) loop
+               Set_Has_Delayed_Aspects (Priv, False);
+               Next_Entity (Priv);
+            end loop;
+         end;
       end if;
 
       --  Mark all handlers as not suitable for local raise optimization,
