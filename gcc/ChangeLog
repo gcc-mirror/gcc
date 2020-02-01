@@ -1,3 +1,14 @@
+2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
+
+	* configure.ac [nios2-*-*]: Check HAVE_AS_NIOS2_GOTOFF_RELOCATION.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* config/nios2/nios2.h (ASM_PREFERRED_EH_DATA_FORMAT): Fix handling
+	for PIC when HAVE_AS_NIOS2_GOTOFF_RELOCATION.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): New.
+
 2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* configure: Regenerate.
