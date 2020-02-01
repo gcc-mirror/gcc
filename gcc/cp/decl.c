@@ -12318,7 +12318,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 		 The optional attribute-specifier-seq appertains to
 		 the function type.  */
-	      decl_attributes (&type, attrs, 0);
+	      cplus_decl_attributes (&type, attrs, 0);
 
 	    if (raises)
 	      type = build_exception_variant (type, raises);
