@@ -974,6 +974,7 @@ with_zstd_include
 with_zstd_lib
 enable_rpath
 with_libiconv_prefix
+with_libiconv_type
 enable_sjlj_exceptions
 with_gcc_major_version_only
 enable_secureplt
@@ -1811,6 +1812,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+  --with-libiconv-type=TYPE     type of library to search for (auto/static/shared)
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
   --with-pic              try to use only PIC/non-PIC objects [default=use
@@ -10732,6 +10734,16 @@ if test "${with_libiconv_prefix+set}" = set; then :
 
 fi
 
+
+# Check whether --with-libiconv-type was given.
+if test "${with_libiconv_type+set}" = set; then :
+  withval=$with_libiconv_type;  with_libiconv_type=$withval
+else
+   with_libiconv_type=auto
+fi
+
+  lib_type=`eval echo \$with_libiconv_type`
+
       LIBICONV=
   LTLIBICONV=
   INCICONV=
@@ -10769,13 +10781,13 @@ fi
           found_so=
           found_a=
           if test $use_additional = yes; then
-            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext" && test x$lib_type != xstatic; then
               found_dir="$additional_libdir"
               found_so="$additional_libdir/lib$name.$shlibext"
               if test -f "$additional_libdir/lib$name.la"; then
                 found_la="$additional_libdir/lib$name.la"
               fi
-            else
+            elif test x$lib_type != xshared; then
               if test -f "$additional_libdir/lib$name.$libext"; then
                 found_dir="$additional_libdir"
                 found_a="$additional_libdir/lib$name.$libext"
@@ -10799,13 +10811,13 @@ fi
               case "$x" in
                 -L*)
                   dir=`echo "X$x" | sed -e 's/^X-L//'`
-                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext"; then
+                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext" && test x$lib_type != xstatic; then
                     found_dir="$dir"
                     found_so="$dir/lib$name.$shlibext"
                     if test -f "$dir/lib$name.la"; then
                       found_la="$dir/lib$name.la"
                     fi
-                  else
+                  elif test x$lib_type != xshared; then
                     if test -f "$dir/lib$name.$libext"; then
                       found_dir="$dir"
                       found_a="$dir/lib$name.$libext"
@@ -11033,8 +11045,13 @@ fi
               done
             fi
           else
-                                                            LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
-            LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+                                                            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+            else
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l:lib$name.$libext"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l:lib$name.$libext"
+            fi
           fi
         fi
       fi
@@ -27957,6 +27974,43 @@ fi
 $as_echo "#define HAVE_NEWLIB_NANO_FORMATTED_IO 1" >>confdefs.h
 
       fi
+    ;;
+    nios2-*-*)
+    # Versions 2.33 and earlier lacked support for the %gotoff relocation
+    # syntax that is documented in the ABI specification.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for support for %gotoff relocations in constant data" >&5
+$as_echo_n "checking assembler for support for %gotoff relocations in constant data... " >&6; }
+if ${gcc_cv_as_nios2_gotoff_relocation+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_nios2_gotoff_relocation=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '	.extern foo
+	.data
+	.long %gotoff(foo)' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_nios2_gotoff_relocation=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_nios2_gotoff_relocation" >&5
+$as_echo "$gcc_cv_as_nios2_gotoff_relocation" >&6; }
+if test $gcc_cv_as_nios2_gotoff_relocation = yes; then
+
+$as_echo "#define HAVE_AS_NIOS2_GOTOFF_RELOCATION 1" >>confdefs.h
+
+fi
+
     ;;
     riscv*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5

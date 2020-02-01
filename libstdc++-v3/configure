@@ -29506,7 +29506,7 @@ fi
               done
             fi
           else
-                                                            if x$lib_type = xauto || x$lib_type = xshared; then
+                                                            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
               LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
               LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
             else

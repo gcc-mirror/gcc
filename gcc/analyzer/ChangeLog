@@ -1,5 +1,20 @@
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93457
+	* region-model.cc (make_region_for_type): Use VOID_TYPE_P rather
+	than checking against void_type_node.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93373
+	* region-model.cc (ASSERT_COMPAT_TYPES): Convert to...
+	(assert_compat_types): ...this, and bail when either type is NULL,
+	or when VOID_TYPE_P (dst_type).
+	(region_model::get_lvalue): Update for above conversion.
+	(region_model::get_rvalue): Likewise.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93379
 	* region-model.cc (region_model::update_for_return_superedge):
 	Move check for null result so that it also guards setting the

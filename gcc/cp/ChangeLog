@@ -1,3 +1,20 @@
+2020-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86216
+	* semantics.c (process_outer_var_ref): Capture VLAs even in
+	unevaluated context.
+
+	PR c++/14179
+	* decl.c (reshape_init_array_1): Reuse a single CONSTRUCTOR with
+	non-aggregate elements.
+	(reshape_init_array): Add first_initializer_p parm.
+	(reshape_init_r): Change first_initializer_p from bool to tree.
+	(reshape_init): Pass init to it.
+
+	PR c++/14179
+	* parser.c (cp_parser_initializer_list): Suppress location wrappers
+	after 256 elements.
+
 2020-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82521

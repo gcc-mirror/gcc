@@ -329,7 +329,7 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
     return 1;
 
 #ifdef CRT_GET_RFIB_DATA
-# ifdef __i386__
+# if defined __i386__ || defined __nios2__
   data->dbase = NULL;
   if (p_dynamic)
     {
