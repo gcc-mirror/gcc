@@ -1,3 +1,9 @@
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88256
+	* cp-gimplify.c (predeclare_vla): New.
+	(cp_genericize_r) [NOP_EXPR]: Call it.
+
 2020-02-03  Jun Ma <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (transform_await_wrapper): Set actor funcion as
