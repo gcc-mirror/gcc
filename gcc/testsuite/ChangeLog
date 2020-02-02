@@ -1,3 +1,9 @@
+2020-02-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* gcc.target/i386/pr91333.c: Add vmovsd to regexp.  Set up count
+	to 3.
+
 2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
