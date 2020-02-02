@@ -1419,7 +1419,7 @@
 ;; pressure (worse code).  That will hopefully change with an
 ;; improved reload pass.
 
-(define_insn "*expanded_andsi"
+(define_insn "*expanded_andsi<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand"	       "=r,r,r, r,r")
 	(and:SI (match_operand:SI 1 "register_operand" "%0,0,0, 0,r")
 		(match_operand:SI 2 "general_operand"   "I,r,Q>,g,!To")))
@@ -1499,10 +1499,12 @@
 
 ;; Catch-all andhi3 pattern.
 
-(define_insn "*expanded_andhi"
-  [(set (match_operand:HI 0 "register_operand"	       "=r,r,r, r,r,r,r")
-	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0, 0,0,0,r")
-		(match_operand:HI 2 "general_operand"   "I,r,Q>,L,O,g,!To")))
+(define_insn "*expanded_andhi<setcc><setnz><setnzvc>"
+  [(set (match_operand:HI 0 "register_operand"	       "=r,r, r,r, r,r,r,r")
+	(and:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0, 0,0,0,r")
+		(match_operand:HI 2 "general_operand"   "I,Kc,r,Q>,L,O,g,!To")))
+		;; The "Kc" alternative above, is there to match for cmpelim;
+		;; it will be dominated by the "I" alternative at other times.
    (clobber (reg:CC CRIS_CC0_REGNUM))]
 
 ;; Sidenote: the tightening from "general_operand" to
@@ -1513,14 +1515,16 @@
   ""
   "@
    andq %2,%0
+   andq %2,%0
    and.w %2,%0
    and.w %2,%0
    and.w %2,%0
    anDq %b2,%0
    and.w %2,%0
    and.w %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,yes,no,yes,no,no")
-   (set_attr "cc" "clobber,normal,normal,normal,clobber,normal,normal")])
+  [(set_attr "slottable" "yes,yes,yes,yes,no,yes,no,no")
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "clobber,normal,normal,normal,normal,clobber,normal,normal")])
 
 ;; A strict_low_part pattern.
 
@@ -1568,21 +1572,23 @@
   ""
   "")
 
-(define_insn "*andqi3"
-  [(set (match_operand:QI 0 "register_operand"	       "=r,r,r, r,r,r")
-	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0, 0,0,r")
-		(match_operand:QI 2 "general_operand"   "I,r,Q>,O,g,!To")))
+(define_insn "*andqi3<setcc><setnz><setnzvc>"
+  [(set (match_operand:QI 0 "register_operand"	       "=r,r, r,r, r,r,r")
+	(and:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0, 0,0,r")
+		(match_operand:QI 2 "general_operand"   "I,Kc,r,Q>,O,g,!To")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   ""
   "@
+   andq %2,%0
    andq %2,%0
    and.b %2,%0
    and.b %2,%0
    andQ %b2,%0
    and.b %2,%0
    and.b %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,no,no")
-   (set_attr "cc" "clobber,normal,normal,clobber,normal,normal")])
+  [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no")
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "clobber,normal,normal,normal,clobber,normal,normal")])
 
 (define_insn "*andqi_lowpart"
   [(set (strict_low_part
@@ -1613,7 +1619,7 @@
   ""
   "")
 
-(define_insn "*iorsi3"
+(define_insn "*iorsi3<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand"	       "=r,r,r, r,r,r")
 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0, 0,0,r")
 		(match_operand:SI 2 "general_operand"  "I, r,Q>,n,g,!To")))
@@ -1627,9 +1633,10 @@
    or.d %2,%0
    or.d %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,no,no,no")
-   (set_attr "cc" "normal,normal,normal,clobber,normal,normal")])
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "normal,normal,normal,clobber,normal,normal")])
 
-(define_insn "*iorhi3"
+(define_insn "*iorhi3<setcc><setnz><setnzvc>"
   [(set (match_operand:HI 0 "register_operand"	       "=r,r,r, r,r,r,r")
 	(ior:HI (match_operand:HI 1 "register_operand" "%0,0,0, 0,0,0,r")
 		(match_operand:HI 2 "general_operand"   "I,r,Q>,L,O,g,!To")))
@@ -1644,9 +1651,10 @@
    or.w %2,%0
    or.w %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,no,yes,no,no")
-   (set_attr "cc" "clobber,normal,normal,normal,clobber,normal,normal")])
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "clobber,normal,normal,normal,clobber,normal,normal")])
 
-(define_insn "*iorqi3"
+(define_insn "*iorqi3<setcc><setnz><setnzvc>"
   [(set (match_operand:QI 0 "register_operand"	       "=r,r,r, r,r,r")
 	(ior:QI (match_operand:QI 1 "register_operand" "%0,0,0, 0,0,r")
 		(match_operand:QI 2 "general_operand"   "I,r,Q>,O,g,!To")))
@@ -1660,14 +1668,15 @@
    or.b %2,%0
    or.b %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
-   (set_attr "cc" "clobber,normal,normal,clobber,normal,normal")])
+   (set_attr "cc<cccc><ccnz><ccnzvc>"
+	     "clobber,normal,normal,clobber,normal,normal")])
 
 ;; Exclusive-or
 
 ;; See comment about "anddi3" for xordi3 - no need for such a pattern.
 ;; FIXME: Do we really need the shorter variants?
 
-(define_insn "xorsi3"
+(define_insn "<acc><anz><anzvc>xorsi3<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(xor:SI (match_operand:SI 1 "register_operand" "%0")
 		(match_operand:SI 2 "register_operand" "r")))
@@ -1730,7 +1739,7 @@
 ;; See comment on anddi3 - no need for a DImode pattern.
 ;; See also xor comment.
 
-(define_insn "one_cmplsi2"
+(define_insn "<acc><anz><anzvc>one_cmplsi2<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(not:SI (match_operand:SI 1 "register_operand" "0")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
