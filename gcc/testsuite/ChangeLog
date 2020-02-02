@@ -1,3 +1,8 @@
+2020-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/darwin-abi-12.c: Add '-fcommon' to the
+	options.
+
 2020-02-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/91333
