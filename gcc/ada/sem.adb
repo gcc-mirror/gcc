@@ -1842,7 +1842,9 @@ package body Sem is
 
                procedure Assert_Done (Withed_Unit : Node_Id) is
                begin
-                  if not Done (Get_Cunit_Unit_Number (Withed_Unit)) then
+                  if Withed_Unit /= Main_CU
+                    and then not Done (Get_Cunit_Unit_Number (Withed_Unit))
+                  then
                      if not Nkind_In
                               (Unit (Withed_Unit),
                                  N_Generic_Package_Declaration,
