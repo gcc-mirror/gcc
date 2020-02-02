@@ -132,6 +132,19 @@
 	"cc" attribute to "cc<ccnz>".
 	("*addqi3<setnz>"): Similarly from "*addqi3".
 	("*sub<mode>3<setnz>"): Similarly from "*sub<mode>3".
+	("*expanded_andsi<setcc><setnz><setnzvc>"): Rename from
+	"*expanded_andsi".
+	("*iorsi3<setcc><setnz><setnzvc>"): Similar from "*iorsi3".
+	Decorate "cc" attribute to make "cc<cccc><ccnz><ccnzvc>".
+	("*iorhi3<setcc><setnz><setnzvc>"): Similar from "*iorhi3".
+	("*iorqi3<setcc><setnz><setnzvc>"): Similar from "*iorqi3".
+	("*expanded_andhi<setcc><setnz><setnzvc>"): Similar from
+	"*expanded_andhi".  Add quick cc-setting alternative for 0..31.
+	("*andqi3<setcc><setnz><setnzvc>"): Similar from "*andqi3".
+	("<acc><anz><anzvc>xorsi3<setcc><setnz><setnzvc>"): Rename
+	from "xorsi3".
+	("<acc><anz><anzvc>one_cmplsi2<setcc><setnz><setnzvc>"): Rename
+	from "one_cmplsi2".
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
