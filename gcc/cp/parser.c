@@ -13448,18 +13448,21 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
-  if (preamble == MP_BAD || current_scope () != global_namespace)
-    {
-      error_at (token->location, "import-declaration must be at global scope");
-    skip_eol:
-      cp_parser_skip_to_pragma_eol (parser, token);
-    }
-  else if (preamble != MP_PREAMBLE
-	   && module_purview_p () && !global_purview_p ())
+  if (preamble != MP_PREAMBLE && module_purview_p () && !global_purview_p ())
     {
       error_at (token->location, "import-declarations must immediately"
 		" follow the module-declaration");
-      goto skip_eol;
+    note_lexer:
+      inform (token->location, "perhaps insert a line break, or other"
+	      " disambiguation, to prevent this being considered a"
+	      " module-directive control-line");
+    skip_eol:
+      cp_parser_skip_to_pragma_eol (parser, token);
+    }
+  else if (preamble == MP_BAD || current_scope () != global_namespace)
+    {
+      error_at (token->location, "import-declaration must be at global scope");
+      goto note_lexer;
     }
   else
     {
@@ -13469,8 +13472,11 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
 	goto skip_eol;
       cp_parser_require_pragma_eol (parser, token);
-      if (false && named_module_p ())
-	// FIXME: Can we and do we need to detect this?
+      
+      if (attrs && module_purview_p () && !global_purview_p ()
+	  && private_lookup_attribute ("__translated",
+				       strlen ("__translated"), attrs))
+	// FIXME: Is this actually an error (rather than just bad code)?
 	warning_at (token->location, 0, "include-translated header unit"
 		    " in module purview is fragile");
 
