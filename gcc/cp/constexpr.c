@@ -5322,8 +5322,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = *p;
       else if (lval)
 	/* Defer in case this is only used for its type.  */;
-      else if (TYPE_REF_P (TREE_TYPE (t)))
-	/* Defer, there's no lvalue->rvalue conversion.  */;
       else if (COMPLETE_TYPE_P (TREE_TYPE (t))
 	       && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
 	{

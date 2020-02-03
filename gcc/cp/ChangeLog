@@ -1,5 +1,11 @@
 2020-02-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66477
+	* constexpr.c (cxx_eval_constant_expression) [PARM_DECL]: Don't
+	defer loading the value of a reference.
+
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
 	PR c++/91953
 	* constexpr.c (potential_constant_expression_1) [PARM_DECL]: Allow
 	empty class type.
