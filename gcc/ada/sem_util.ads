@@ -1251,6 +1251,7 @@ package Sem_Util is
    --    * A task type
    --    * A private type with pragma Default_Initial_Condition that provides
    --      full default initialization.
+   --  This function is not used in GNATprove anymore, but is used in CodePeer.
 
    function Has_Fully_Default_Initializing_DIC_Pragma
      (Typ : Entity_Id) return Boolean;
