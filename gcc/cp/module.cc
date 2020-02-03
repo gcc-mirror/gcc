@@ -3355,6 +3355,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   unsigned short subst;	/* Mangle subst if !0.  */
 
+  /* 0 - not loaded
+     1 - initial load
+     2 - cpp loaded (only relevant if cpp loading occurs)
+     3 - lang loaded.  */
+  unsigned load_state : 2;	/* loaded state*/
+
   bool module_p : 1;    /* /The/ module of this TU.  */
   bool partition_p : 1; /* A partition.  */
   bool header_p : 1;	/* Is a header unit.  */
@@ -3367,19 +3373,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   
   bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
 			   do it again  */
-  bool loaded_p : 1;	/* Phase-0 load occurred.  */
-  bool loaded_cpp_p : 1; /* Preprocessor (phase-1) load occurred.  */
-  bool loaded_lang_p : 1; /* Language (phase-2) load occurred.  */
-
   
   // FIXME: The following flags can all go away.
   bool interface_p : 1;
   bool primary_p : 1;
-  bool imported_p : 1;	/* Import has been done.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
-
-  bool lazy_preprocessor_p : 1; /* Preprocessor phase to do.  */
-  bool lazy_language_p : 1;  /* Language phase to do.  */
 
   /* Record extensions emitted or permitted.  */
   unsigned char extensions : SE_BITS;
@@ -3407,19 +3405,26 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
 
  public:
-  /* Is this not a real module?  */
-  bool is_detached () const
+  /* Is the module-state for the current TU.  */
+  bool is_module () const
   {
-    return from_loc == UNKNOWN_LOCATION;
+    return module_p;
   }
+  /* Is a direct import of this TU -- true of the module_p module
+     too.  */
   bool is_direct () const
   {
     return direct_p;
   }
-  bool is_imported () const
+
+ public:
+  /* Is this not a real module?  */
+  // FIXME: Rename or remove
+  bool is_detached () const
   {
-    return imported_p;
+    return from_loc == UNKNOWN_LOCATION;
   }
+
   bool is_primary () const
   {
     return primary_p;
@@ -3607,11 +3612,9 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   module_p = partition_p = header_p = exported_p = false;
   direct_p = partition_direct_p = false;
   cmi_noted_p = false;
-  loaded_p = loaded_cpp_p = loaded_lang_p = false;
+  load_state = 0;
 
-  primary_p = interface_p = exported_p
-    = imported_p = from_partition_p = cmi_noted_p = false;
-  lazy_preprocessor_p = lazy_language_p = false;
+  primary_p = interface_p = from_partition_p = false;
 
   partition_p = partition;
 
@@ -13678,7 +13681,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  if (imp->is_detached ())
 	    imp->attach (floc);
 
-	  if (!imp->is_imported ())
+	  if (!imp->load_state)
 	    {
 	      unsigned n = dump.push (imp);
 	      imp->maybe_create_loc ();
@@ -17123,7 +17126,7 @@ module_state::read_preprocessor ()
 
   gcc_checking_assert (is_header ());
 
-  if (lazy_preprocessor_p)
+  if (load_state != 2)
     {
       gcc_checking_assert (slurp->remap_module (0) == mod);
 
@@ -17150,7 +17153,7 @@ module_state::read_preprocessor ()
       if (ok && !read_macros ())
 	ok = false;
 
-      lazy_preprocessor_p = false;
+      load_state = 2;
 
       if (flag_preprocess_only)
 	/* We're done with the string table.  */
@@ -17169,7 +17172,7 @@ module_state::read_language ()
 {
   bool ok = true;
 
-  if (lazy_language_p)
+  if (load_state != 3)
     {
       gcc_checking_assert (slurp && slurp->current == ~0u
 			   && slurp->remap_module (0) == mod);
@@ -17248,7 +17251,7 @@ module_state::read_language ()
 
       function_depth--;
 
-      lazy_language_p = false;
+      load_state = 3;
 
       gcc_assert (slurp->current == ~0u);
 
@@ -17338,14 +17341,14 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	    : G_("during lazy loading of %<%E%s%E@%s%>"),
 	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
 
-  // FIXME: The lazy_preprocessor_p is too restrictive, if we've
-  // completed preprocessing and it is set, that means this header is
-  // not in the directly reachable graph.
-  if (!lazy_preprocessor_p && !lazy_language_p
+  if (load_state == 3
       && slurp->current == ~0u && !slurp->remaining)
     {
       lazy_open--;
-      // FIXME: Can we just keep the file mapped until after preprocessing?
+      // FIXME: Can we just keep the file mapped until after
+      // preprocessing?  I think that's what the above load_state == 3
+      // is ensuring?
+      // Should this fn set load_state to 3 on error?
       if (slurp->macro_defs.size)
 	from ()->preserve (slurp->macro_defs);
       if (slurp->macro_tbl.size)
@@ -17744,7 +17747,7 @@ bool
 module_state::do_import (char const *fname, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ()
-	      && !is_imported () && loc != UNKNOWN_LOCATION);
+	      && !load_state && loc != UNKNOWN_LOCATION);
   unsigned diags = is_direct () ? errorcount + 1 : 0;
 
   if (lazy_open >= lazy_limit)
@@ -17771,18 +17774,15 @@ module_state::do_import (char const *fname, cpp_reader *reader)
     }
 
   announce ("importing");
-  imported_p = true;
+  load_state = 1;
   lazy_open++;
   if (read_initial (fd, e, reader))
     {
+      // FIXME: Reconsider
       bool preprocessed = cpp_get_options (reader)->preprocessed;
-
-      if (is_header () && !preprocessed)
-	lazy_preprocessor_p = true;
 
       if (!flag_preprocess_only)
 	{
-	  lazy_language_p = true;
 	  if (preprocessed)
 	    /* If we're not in the preprocessor, do the language importing
 	       now, so that we try not to thrash the LRU cache in the
@@ -17792,7 +17792,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
     }
   slurp->lru = ++lazy_lru;
   gcc_assert (slurp->current == ~0u);
-  
+
   bool ok = check_read (diags);
   announce (flag_module_lazy ? "lazy" : "imported");
 
@@ -17802,7 +17802,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 /* Import this module now.  Fatal error on failure.  LAZY is true if
    we're a lazy pending imports (which will have preserved the line
    map already).  */
-
+// FIXME: perhaps this should be split for lang and cpp uses?
 void
 module_state::direct_import (cpp_reader *reader, bool for_cpp)
 {
@@ -17810,7 +17810,8 @@ module_state::direct_import (cpp_reader *reader, bool for_cpp)
   unsigned n = dump.push (this);
 
   gcc_checking_assert (direct_p);
-  if (!is_imported () && mod == MODULE_UNKNOWN)
+  // FIXME: Why the mod == check?
+  if (!load_state && mod == MODULE_UNKNOWN)
     {
       maybe_create_loc ();
 
@@ -17825,7 +17826,7 @@ module_state::direct_import (cpp_reader *reader, bool for_cpp)
 
     }
 
-  if (is_imported ())
+  if (load_state)
     {
       direct_p = true;
 
@@ -18069,7 +18070,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
 
   module_state *current = (*modules)[0];
-  if (module_purview_p () || module->is_imported ())
+  if (module_purview_p () || module->load_state)
     {
       error_at (from_loc, module_purview_p ()
 		? G_("module already declared")
@@ -18375,7 +18376,7 @@ preprocess_module (module_state *module, location_t from_loc,
     }
 
   if (is_import && !module->module_p && module->is_header ()
-      && !module->is_imported ())
+      && !module->load_state)
     {
       // FIXME: Skip when preprocessed input
 

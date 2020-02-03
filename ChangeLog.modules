@@ -1,6 +1,13 @@
 2020-02-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct module_state): Add load_state, not flags.
+	Remove imported_p, lazy_{preprocessor,language}_p.
+	(module_state::read_{imports,preprocessor,language}): Adjust.
+	(module_state::{check_read,{do,direct}_import}): Adjust.
+	({declare,preprocess}_module): Adjust.
+
+	gcc/cp/
 	* cp-tree.h (module_normal_import_p): Delete.
 	* module.cc (struct module_state): Rationalize flags.
 	(module_normal_import_p): Delete.
