@@ -1,5 +1,16 @@
 2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/rs6000.c (get_vector_offset): New helper function
+	to calculate the offset in memory from the start of a vector of a
+	particular element.  Add code to keep the element number in
+	bounds if the element number is variable.
+	(rs6000_adjust_vec_address): Move calculation of offset of the
+	vector element to get_vector_offset.
+	(rs6000_split_vec_extract_var): Do not do the initial AND of
+	element here, move the code to get_vector_offset.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Add some
 	gcc_asserts.
 

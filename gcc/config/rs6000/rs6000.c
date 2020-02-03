@@ -6750,10 +6750,54 @@ hard_reg_and_mode_to_addr_mask (rtx reg, machine_mode mode)
   return addr_mask;
 }
 
+/* Return the offset within a memory object (MEM) of a vector type to a given
+   element within the vector (ELEMENT) with an element size (SCALAR_SIZE).  If
+   the element is constant, we return a constant integer.
+
+   Otherwise, we use a base register temporary to calculate the offset after
+   masking it to fit within the bounds of the vector and scaling it.  The
+   masking is required by the 64-bit ELF version 2 ABI for the vec_extract
+   built-in function.  */
+
+static rtx
+get_vector_offset (rtx mem, rtx element, rtx base_tmp, unsigned scalar_size)
+{
+  if (CONST_INT_P (element))
+    return GEN_INT (INTVAL (element) * scalar_size);
+
+  /* All insns should use the 'Q' constraint (address is a single register) if
+     the element number is not a constant.  */
+  rtx addr = XEXP (mem, 0);
+  gcc_assert (satisfies_constraint_Q (addr));
+
+  /* Mask the element to make sure the element number is between 0 and the
+     maximum number of elements - 1 so that we don't generate an address
+     outside the vector.  */
+  rtx num_ele_m1 = GEN_INT (GET_MODE_NUNITS (GET_MODE (mem)) - 1);
+  rtx and_op = gen_rtx_AND (Pmode, element, num_ele_m1);
+  emit_insn (gen_rtx_SET (base_tmp, and_op));
+
+  /* Shift the element to get the byte offset from the element number.  */
+  int shift = exact_log2 (scalar_size);
+  gcc_assert (shift >= 0);
+
+  if (shift > 0)
+    {
+      rtx shift_op = gen_rtx_ASHIFT (Pmode, base_tmp, GEN_INT (shift));
+      emit_insn (gen_rtx_SET (base_tmp, shift_op));
+    }
+
+  return base_tmp;
+}
+
 /* Adjust a memory address (MEM) of a vector type to point to a scalar field
    within the vector (ELEMENT) with a mode (SCALAR_MODE).  Use a base register
    temporary (BASE_TMP) to fixup the address.  Return the new memory address
-   that is valid for reads or writes to a given register (SCALAR_REG).  */
+   that is valid for reads or writes to a given register (SCALAR_REG).
+
+   This function is expected to be called after reload is completed when we are
+   splitting insns.  The temporary BASE_TMP might be set multiple times with
+   this code.  */
 
 rtx
 rs6000_adjust_vec_address (rtx scalar_reg,
@@ -6764,7 +6808,6 @@ rs6000_adjust_vec_address (rtx scalar_reg,
 {
   unsigned scalar_size = GET_MODE_SIZE (scalar_mode);
   rtx addr = XEXP (mem, 0);
-  rtx element_offset;
   rtx new_addr;
   bool valid_addr_p;
 
@@ -6776,30 +6819,7 @@ rs6000_adjust_vec_address (rtx scalar_reg,
 
   /* Calculate what we need to add to the address to get the element
      address.  */
-  if (CONST_INT_P (element))
-    element_offset = GEN_INT (INTVAL (element) * scalar_size);
-  else
-    {
-      /* All insns should use the 'Q' constraint (address is a single register)
-	 if the element number is not a constant.  */
-      gcc_assert (REG_P (addr) || SUBREG_P (addr));
-
-      int byte_shift = exact_log2 (scalar_size);
-      gcc_assert (byte_shift >= 0);
-
-      if (byte_shift == 0)
-	element_offset = element;
-
-      else
-	{
-	  if (TARGET_POWERPC64)
-	    emit_insn (gen_ashldi3 (base_tmp, element, GEN_INT (byte_shift)));
-	  else
-	    emit_insn (gen_ashlsi3 (base_tmp, element, GEN_INT (byte_shift)));
-
-	  element_offset = base_tmp;
-	}
-    }
+  rtx element_offset = get_vector_offset (mem, element, base_tmp, scalar_size);
 
   /* Create the new address pointing to the element within the vector.  If we
      are adding 0, we don't have to change the address.  */
@@ -6935,13 +6955,9 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
      systems.  */
   if (MEM_P (src))
     {
-      int num_elements = GET_MODE_NUNITS (mode);
-      rtx num_ele_m1 = GEN_INT (num_elements - 1);
-
-      emit_insn (gen_anddi3 (element, element, num_ele_m1));
-      gcc_assert (REG_P (tmp_gpr));
-      emit_move_insn (dest, rs6000_adjust_vec_address (dest, src, element,
-						       tmp_gpr, scalar_mode));
+      emit_move_insn (dest,
+		      rs6000_adjust_vec_address (dest, src, element, tmp_gpr,
+						 scalar_mode));
       return;
     }
 
