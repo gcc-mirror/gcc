@@ -437,7 +437,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   gv->println("style=\"solid\";");
   gv->println("color=\"black\";");
   gv->println("fillcolor=\"lightgrey\";");
-  gv->println("label=\"sn: %i\";", m_index);
+  gv->println("label=\"sn: %i (bb: %i)\";", m_index, m_bb->index);
 
   pretty_printer *pp = gv->get_pp ();
 

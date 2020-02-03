@@ -1,3 +1,50 @@
+2020-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md: Improve documentation.
+
+2020-02-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/93548
+	* config/arm/t-arm: ($(srcdir)/config/arm/arm-tune.md)
+	($(srcdir)/config/arm/arm-tables.opt): Use move-if-change.
+
+2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc: Remove "carrizo" support.
+	* config/gcn/gcn-opts.h (processor_type): Likewise.
+	* config/gcn/gcn.c (gcn_omp_device_kind_arch_isa): Likewise.
+	* config/gcn/gcn.opt (gpu_type): Likewise.
+	* config/gcn/t-omp-device: Likewise.
+
+2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* config/arm/arm-protos.h: New function arm_gen_far_branch prototype.
+	* config/arm/arm.c (arm_gen_far_branch): New function
+	arm_gen_far_branch.
+	* config/arm/arm.md: Update b<cond> for Thumb2 range checks.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi: Update mention of OpenACC version to 2.6.
+
+2020-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93533
+	* config/s390/s390.md (popcounthi2_z196): Fix up expander to emit
+	valid RTL to sum up the lowest and second lowest bytes of the popcnt
+	result.
+
+2020-02-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* ira-color.c (struct allocno_color_data): Add member
+	hard_reg_prefs.
+	(init_allocno_threads): Set the member up.
+	(bucket_allocno_compare_func): Add compare hard reg
+	prefs.
+
 2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.

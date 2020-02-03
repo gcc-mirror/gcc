@@ -792,7 +792,7 @@ module openacc
   public :: acc_delete_async, acc_update_device_async, acc_update_self_async
   public :: acc_copyout_finalize, acc_delete_finalize
 
-  integer, parameter :: openacc_version = 201306
+  integer, parameter :: openacc_version = 201711
 
   interface acc_get_num_devices
     procedure :: acc_get_num_devices_h

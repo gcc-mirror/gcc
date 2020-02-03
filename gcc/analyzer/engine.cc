@@ -663,6 +663,27 @@ impl_region_model_context::on_condition (tree lhs, enum tree_code op, tree rhs)
     }
 }
 
+/* Implementation of region_model_context::on_phi vfunc.
+   Notify all state machines about the phi, which could lead to
+   state transitions.  */
+
+void
+impl_region_model_context::on_phi (const gphi *phi, tree rhs)
+{
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+    {
+      const state_machine &sm = m_ext_state.get_sm (sm_idx);
+      impl_sm_context sm_ctxt (*m_eg, sm_idx, sm, m_enode_for_diag,
+			       m_old_state, m_new_state,
+			       m_change,
+			       m_old_state->m_checker_states[sm_idx],
+			       m_new_state->m_checker_states[sm_idx]);
+      sm.on_phi (&sm_ctxt, m_enode_for_diag->get_supernode (), phi, rhs);
+    }
+}
+
 /* struct point_and_state.  */
 
 /* Assert that this object is sane.  */
@@ -2811,7 +2832,8 @@ public:
 		 (const void *)this);
     gv->indent ();
     gv->println ("style=\"dashed\";");
-    gv->println ("label=\"SN: %i\";", m_supernode->m_index);
+    gv->println ("label=\"SN: %i (bb: %i)\";",
+		 m_supernode->m_index, m_supernode->m_bb->index);
 
     int i;
     exploded_node *enode;

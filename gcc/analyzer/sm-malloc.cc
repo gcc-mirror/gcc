@@ -57,6 +57,11 @@ public:
 		const supernode *node,
 		const gimple *stmt) const FINAL OVERRIDE;
 
+  void on_phi (sm_context *sm_ctxt,
+	       const supernode *node,
+	       const gphi *phi,
+	       tree rhs) const FINAL OVERRIDE;
+
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
@@ -91,6 +96,12 @@ public:
 
   /* Stop state, for pointers we don't want to track any more.  */
   state_t m_stop;
+
+private:
+  void on_zero_assignment (sm_context *sm_ctxt,
+			   const supernode *node,
+			   const gimple *stmt,
+			   tree lhs) const;
 };
 
 /* Class for diagnostics relating to malloc_state_machine.  */
@@ -682,15 +693,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
       }
 
   if (tree lhs = is_zero_assignment (stmt))
-    {
-      if (any_pointer_p (lhs))
-	{
-	  sm_ctxt->on_transition (node, stmt, lhs, m_start, m_null);
-	  sm_ctxt->on_transition (node, stmt, lhs, m_unchecked, m_null);
-	  sm_ctxt->on_transition (node, stmt, lhs, m_nonnull, m_null);
-	  sm_ctxt->on_transition (node, stmt, lhs, m_freed, m_null);
-	}
-    }
+    if (any_pointer_p (lhs))
+      on_zero_assignment (sm_ctxt, node, stmt,lhs);
 
   if (const gassign *assign_stmt = dyn_cast <const gassign *> (stmt))
     {
@@ -734,6 +738,21 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	}
     }
   return false;
+}
+
+/* Implementation of state_machine::on_phi vfunc for malloc_state_machine.  */
+
+void
+malloc_state_machine::on_phi (sm_context *sm_ctxt,
+			      const supernode *node,
+			      const gphi *phi,
+			      tree rhs) const
+{
+  if (zerop (rhs))
+    {
+      tree lhs = gimple_phi_result (phi);
+      on_zero_assignment (sm_ctxt, node, phi, lhs);
+    }
 }
 
 /* Implementation of state_machine::on_condition vfunc for malloc_state_machine.
@@ -787,6 +806,21 @@ pending_diagnostic *
 malloc_state_machine::on_leak (tree var) const
 {
   return new malloc_leak (*this, var);
+}
+
+/* Shared logic for handling GIMPLE_ASSIGNs and GIMPLE_PHIs that
+   assign zero to LHS.  */
+
+void
+malloc_state_machine::on_zero_assignment (sm_context *sm_ctxt,
+					  const supernode *node,
+					  const gimple *stmt,
+					  tree lhs) const
+{
+  sm_ctxt->on_transition (node, stmt, lhs, m_start, m_null);
+  sm_ctxt->on_transition (node, stmt, lhs, m_unchecked, m_null);
+  sm_ctxt->on_transition (node, stmt, lhs, m_nonnull, m_null);
+  sm_ctxt->on_transition (node, stmt, lhs, m_freed, m_null);
 }
 
 } // anonymous namespace

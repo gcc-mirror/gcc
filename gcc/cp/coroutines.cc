@@ -91,6 +91,8 @@ struct GTY((for_user)) coroutine_info
   tree promise_proxy; /* Likewise, a proxy promise instance.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
 				    function into a coroutine.  */
+  /* Flags to avoid repeated errors for per-function issues.  */
+  bool coro_ret_type_error_emitted;
 };
 
 struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
@@ -169,7 +171,8 @@ get_or_insert_coroutine_info (tree fn_decl)
 coroutine_info *
 get_coroutine_info (tree fn_decl)
 {
-  gcc_checking_assert (coroutine_info_table != NULL);
+  if (coroutine_info_table == NULL)
+    return NULL;
 
   coroutine_info **slot = coroutine_info_table->find_slot_with_hash
     (fn_decl, coroutine_info_hasher::hash (fn_decl), NO_INSERT);
@@ -255,11 +258,25 @@ static GTY(()) tree void_coro_handle_type;
 static tree
 find_coro_traits_template_decl (location_t kw)
 {
+  /* If we are missing fundmental information, such as the traits, (or the
+     declaration found is not a type template), then don't emit an error for
+     every keyword in a TU, just do it once.  */
+  static bool traits_error_emitted = false;
+
   tree traits_decl = lookup_qualified_name (std_node, coro_traits_identifier,
-					    0, true);
-  if (traits_decl == NULL_TREE || traits_decl == error_mark_node)
+					    0,
+					    /*complain=*/!traits_error_emitted);
+  if (traits_decl == error_mark_node
+      || !DECL_TYPE_TEMPLATE_P (traits_decl))
     {
-      error_at (kw, "cannot find %<coroutine traits%> template");
+      if (!traits_error_emitted)
+	{
+	  gcc_rich_location richloc (kw);
+	  error_at (&richloc, "coroutines require a traits template; cannot"
+		    " find %<%E::%E%>", std_node, coro_traits_identifier);
+	  inform (&richloc, "perhaps %<#include <coroutine>%> is missing");
+	  traits_error_emitted = true;
+	}
       return NULL_TREE;
     }
   else
@@ -299,7 +316,7 @@ instantiate_coro_traits (tree fndecl, location_t kw)
 			     /*in_decl=*/NULL_TREE, /*context=*/NULL_TREE,
 			     /*entering scope=*/false, tf_warning_or_error);
 
-  if (traits_class == error_mark_node || traits_class == NULL_TREE)
+  if (traits_class == error_mark_node)
     {
       error_at (kw, "cannot instantiate %<coroutine traits%>");
       return NULL_TREE;
@@ -313,11 +330,18 @@ instantiate_coro_traits (tree fndecl, location_t kw)
 static tree
 find_coro_handle_template_decl (location_t kw)
 {
+  /* As for the coroutine traits, this error is per TU, so only emit
+    it once.  */
+  static bool coro_handle_error_emitted = false;
   tree handle_decl = lookup_qualified_name (std_node, coro_handle_identifier,
-					    0, true);
-  if (handle_decl == NULL_TREE || handle_decl == error_mark_node)
+					    0, !coro_handle_error_emitted);
+  if (handle_decl == error_mark_node
+      || !DECL_CLASS_TEMPLATE_P (handle_decl))
     {
-      error_at (kw, "cannot find %<coroutine handle%> template");
+      if (!coro_handle_error_emitted)
+	error_at (kw, "coroutines require a handle class template;"
+		  " cannot find %<%E::%E%>", std_node, coro_handle_identifier);
+      coro_handle_error_emitted = true;
       return NULL_TREE;
     }
   else
@@ -370,33 +394,41 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 {
   gcc_assert (fndecl != NULL_TREE);
 
-  /* Save the coroutine data on the side to avoid the overhead on every
-     function decl.  */
-
-  /* We only need one entry per coroutine in a TU, the assumption here is that
-     there are typically not 1000s.  */
   if (!coro_initialized)
     {
-      gcc_checking_assert (coroutine_info_table == NULL);
-      /* A table to hold the state, per coroutine decl.  */
-      coroutine_info_table =
-	hash_table<coroutine_info_hasher>::create_ggc (11);
-      /* Set up the identifiers we will use.  */
-      gcc_checking_assert (coro_traits_identifier == NULL);
+      /* Trees we only need to create once.
+	 Set up the identifiers we will use.  */
       coro_init_identifiers ();
-      /* Trees we only need to create once.  */
+
       /* Coroutine traits template.  */
       coro_traits_templ = find_coro_traits_template_decl (loc);
-      gcc_checking_assert (coro_traits_templ != NULL);
+      if (coro_traits_templ == NULL_TREE)
+	return false;
+
       /*  coroutine_handle<> template.  */
       coro_handle_templ = find_coro_handle_template_decl (loc);
-      gcc_checking_assert (coro_handle_templ != NULL);
+      if (coro_handle_templ == NULL_TREE)
+	return false;
+
       /*  We can also instantiate the void coroutine_handle<>  */
       void_coro_handle_type =
 	instantiate_coro_handle_for_promise_type (loc, NULL_TREE);
-      gcc_checking_assert (void_coro_handle_type != NULL);
+      if (void_coro_handle_type == NULL_TREE)
+	return false;
+
+      /* A table to hold the state, per coroutine decl.  */
+      gcc_checking_assert (coroutine_info_table == NULL);
+      coroutine_info_table =
+	hash_table<coroutine_info_hasher>::create_ggc (11);
+
+      if (coroutine_info_table == NULL)
+	return false;
+
       coro_initialized = true;
     }
+
+  /* Save the coroutine data on the side to avoid the overhead on every
+     function decl tree.  */
 
   coroutine_info *coro_info = get_or_insert_coroutine_info (fndecl);
   /* Without this, we cannot really proceed.  */
@@ -407,6 +439,19 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
     {
       /* Get the coroutine traits template class instance for the function
 	 signature we have - coroutine_traits <R, ...>  */
+      tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
+      if (!CLASS_TYPE_P (return_type))
+	{
+	  /* It makes more sense to show the function header for this, even
+	     though we will have encountered it when processing a keyword.
+	     Only emit the error once, not for every keyword we encounter.  */
+	  if (!coro_info->coro_ret_type_error_emitted)
+	    error_at (DECL_SOURCE_LOCATION (fndecl), "coroutine return type"
+		      " %qT is not a class", return_type);
+	  coro_info->coro_ret_type_error_emitted = true;
+	  return false;
+	}
+
       tree templ_class = instantiate_coro_traits (fndecl, loc);
 
       /* Find the promise type for that.  */
@@ -597,11 +642,17 @@ coro_function_valid_p (tree fndecl)
 {
   location_t f_loc = DECL_SOURCE_LOCATION (fndecl);
 
+  /* For cases where fundamental information cannot be found, e.g. the
+     coroutine traits are missing, we need to punt early.  */
+  if (!coro_promise_type_found_p (fndecl, f_loc))
+    return false;
+
   /* Since we think the function is a coroutine, that implies we parsed
      a keyword that triggered this.  Keywords check promise validity for
      their context and thus the promise type should be known at this point.  */
-  gcc_checking_assert (get_coroutine_handle_type (fndecl) != NULL_TREE
-		       && get_coroutine_promise_type (fndecl) != NULL_TREE);
+  if (get_coroutine_handle_type (fndecl) == NULL_TREE
+      || get_coroutine_promise_type (fndecl) == NULL_TREE)
+    return false;
 
   if (current_function_returns_value || current_function_returns_null)
     {
@@ -1580,6 +1631,7 @@ static hash_map<tree, suspend_point_info> *suspend_points;
 
 struct await_xform_data
 {
+  tree actor_fn;   /* Decl for context.  */
   tree actor_frame;
   tree promise_proxy;
   tree real_promise;
@@ -1660,12 +1712,16 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
 static tree
 transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 {
+  /* Set actor function as new DECL_CONTEXT of label_decl.  */
+  struct await_xform_data *xform = (struct await_xform_data *) d;
+  if (TREE_CODE (*stmt) == LABEL_DECL
+      && DECL_CONTEXT (*stmt) != xform->actor_fn)
+    DECL_CONTEXT (*stmt) = xform->actor_fn;
+
   if (TREE_CODE (*stmt) != CO_AWAIT_EXPR && TREE_CODE (*stmt) != CO_YIELD_EXPR)
     return NULL_TREE;
 
   tree await_expr = *stmt;
-  await_xform_data *xform = (await_xform_data *) d;
-
   *stmt = transform_await_expr (await_expr, xform);
   if (*stmt == error_mark_node)
     *do_subtree = 0;
@@ -2018,7 +2074,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
      decide where to put things.  */
 
   await_xform_data xform
-    = {actor_frame, promise_proxy, ap, self_h_proxy, ash};
+    = {actor, actor_frame, promise_proxy, ap, self_h_proxy, ash};
 
   /* Get a reference to the initial suspend var in the frame.  */
   transform_await_expr (initial_await, &xform);

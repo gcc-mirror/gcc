@@ -74,6 +74,8 @@ class impl_region_model_context : public region_model_context
 
   void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE;
 
+  void on_phi (const gphi *phi, tree rhs) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   const exploded_node *m_enode_for_diag;

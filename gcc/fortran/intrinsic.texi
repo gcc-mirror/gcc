@@ -15307,13 +15307,16 @@ below.
 For details refer to the actual
 @uref{http://www.openmp.org/wp-content/uploads/openmp-4.5.pdf,
 OpenMP Application Program Interface v4.5}.
+And for the @code{pause}-related constants to the OpenMP 5.0 specification.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
 
 @table @asis
 @item @code{omp_lock_kind}
+@item @code{omp_lock_hint_kind}
 @item @code{omp_nest_lock_kind}
+@item @code{omp_pause_resource_kind}
 @item @code{omp_proc_bind_kind}
 @item @code{omp_sched_kind}
 @end table
@@ -15344,13 +15347,31 @@ kind @code{omp_proc_bind_kind}:
 @item @code{omp_proc_bind_spread}
 @end table
 
+The following scalar integer named constants are of the
+kind @code{omp_lock_hint_kind}:
+
+@table @asis
+@item @code{omp_lock_hint_none}
+@item @code{omp_lock_hint_uncontended}
+@item @code{omp_lock_hint_contended}
+@item @code{omp_lock_hint_nonspeculative}
+@item @code{omp_lock_hint_speculative}
+@end table
+
+And the following two scalar integer named constants are of the
+kind @code{omp_pause_resource_kind}:
+
+@table @asis
+@item @code{omp_pause_soft}
+@item @code{omp_pause_hard}
+@end table
 
 
 @node OpenACC Module OPENACC
 @section OpenACC Module @code{OPENACC}
 @table @asis
 @item @emph{Standard}:
-OpenACC Application Programming Interface v2.0
+OpenACC Application Programming Interface v2.6
 @end table
 
 
@@ -15364,9 +15385,9 @@ are listed below.
 
 For details refer to the actual
 @uref{http://www.openacc.org/,
-OpenACC Application Programming Interface v2.0}.
+OpenACC Application Programming Interface v2.6}.
 
 @code{OPENACC} provides the scalar default-integer
 named constant @code{openacc_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenACC version; for OpenACC v2.0 the value is @code{201306}.
+of the OpenACC version; for OpenACC v2.6 the value is @code{201711}.

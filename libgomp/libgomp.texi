@@ -1820,7 +1820,7 @@ arranges for automatic linking of the OpenACC runtime library
 
 A complete description of all OpenACC directives accepted may be found in 
 the @uref{https://www.openacc.org, OpenACC} Application Programming
-Interface manual, version 2.0.
+Interface manual, version 2.6.
 
 Note that this is an experimental feature and subject to
 change in future versions of GCC.  See
@@ -1836,7 +1836,7 @@ change in future versions of GCC.  See
 @chapter OpenACC Runtime Library Routines
 
 The runtime routines described here are defined by section 3 of the OpenACC
-specifications in version 2.0.
+specifications in version 2.6.
 They have C linkage, and do not throw exceptions.
 Generally, they are available only for the host, with the exception of
 @code{acc_on_device}, which is available for both the host and the
@@ -1892,6 +1892,8 @@ acceleration device.
                                 present on device.
 * acc_memcpy_to_device::        Copy host memory to device memory.
 * acc_memcpy_from_device::      Copy device memory to host memory.
+* acc_attach::                  Let device pointer point to device-pointer target.
+* acc_detach::                  Let device pointer point to host-pointer target.
 
 API routines for target platforms.
 
@@ -1929,7 +1931,7 @@ for the device type specified in @var{devicetype}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.1.
 @end table
 
@@ -1954,7 +1956,7 @@ in @var{devicetype}, to use when executing a parallel or kernels region.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.2.
 @end table
 
@@ -1979,7 +1981,7 @@ parallel or kernels region.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.3.
 @end table
 
@@ -2006,7 +2008,7 @@ type @var{devicetype}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.4.
 @end table
 
@@ -2033,7 +2035,7 @@ region.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.5.
 @end table
 
@@ -2100,8 +2102,8 @@ a zero and Fortran returns a @code{false}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.6.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.9.
 @end table
 
 
@@ -2128,8 +2130,8 @@ Fortran returns a @code{false}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.7.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.10.
 @end table
 
 
@@ -2156,8 +2158,8 @@ specified in @var{arg}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.8.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.11.
 @end table
 
 
@@ -2181,8 +2183,8 @@ This function waits for the completion of all asynchronous operations.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.10.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.13.
 @end table
 
 
@@ -2207,8 +2209,8 @@ any queue.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.11.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.14.
 @end table
 
 
@@ -2232,8 +2234,8 @@ asynchronous operations enqueued on queue @var{arg}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.9.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.12.
 @end table
 
 
@@ -2257,8 +2259,8 @@ This function initializes the runtime for the device type specified in
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.12.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.7.
 @end table
 
 
@@ -2282,8 +2284,8 @@ This function shuts down the runtime for the device type specified in
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.13.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.8.
 @end table
 
 
@@ -2313,8 +2315,8 @@ return @code{false}.
 
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.14.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.17.
 @end table
 
 
@@ -2332,8 +2334,8 @@ the device address of the allocated memory.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.15.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.18.
 @end table
 
 
@@ -2350,8 +2352,8 @@ Free previously allocated device memory at the device address @code{a}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.16.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.19.
 @end table
 
 
@@ -2371,6 +2373,7 @@ variable or array element and @var{len} specifies the length in bytes.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{void *acc_copyin(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{void *acc_copyin_async(h_void *a, size_t len, int async);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2380,11 +2383,18 @@ variable or array element and @var{len} specifies the length in bytes.
 @item @emph{Interface}: @tab @code{subroutine acc_copyin(a, len)}
 @item                   @tab @code{type, dimension(:[,:]...) :: a}
 @item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_copyin_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_copyin_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.17.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.20.
 @end table
 
 
@@ -2401,6 +2411,9 @@ the newly allocated device memory is returned.
 In Fortran, two (2) forms are supported. In the first form, @var{a} specifies
 a contiguous array section. The second form @var{a} specifies a variable or
 array element and @var{len} specifies the length in bytes.
+
+Note that @code{acc_present_or_copyin} and @code{acc_pcopyin} exist for
+backward compatibility with OpenACC 2.0; use @ref{acc_copyin} instead.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -2423,8 +2436,8 @@ array element and @var{len} specifies the length in bytes.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.18.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.20.
 @end table
 
 
@@ -2444,6 +2457,7 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{void *acc_create(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{void *acc_create_async(h_void *a, size_t len, int async);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2453,11 +2467,18 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Interface}: @tab @code{subroutine acc_create(a, len)}
 @item                   @tab @code{type, dimension(:[,:]...) :: a}
 @item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_create_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_create_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.19.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.21.
 @end table
 
 
@@ -2475,6 +2496,8 @@ In Fortran, two (2) forms are supported. In the first form, @var{a} specifies
 a contiguous array section. The second form @var{a} specifies a variable or
 array element and @var{len} specifies the length in bytes.
 
+Note that @code{acc_present_or_create} and @code{acc_pcreate} exist for
+backward compatibility with OpenACC 2.0; use @ref{acc_create} instead.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -2497,8 +2520,8 @@ array element and @var{len} specifies the length in bytes.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.20.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.21.
 @end table
 
 
@@ -2517,6 +2540,9 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_copyout(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{acc_copyout_async(h_void *a, size_t len, int async);}
+@item @emph{Prototype}: @tab @code{acc_copyout_finalize(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{acc_copyout_finalize_async(h_void *a, size_t len, int async);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2526,11 +2552,30 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Interface}: @tab @code{subroutine acc_copyout(a, len)}
 @item                   @tab @code{type, dimension(:[,:]...) :: a}
 @item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_copyout_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_copyout_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize(a)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize(a, len)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_copyout_finalize_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.21.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.22.
 @end table
 
 
@@ -2549,6 +2594,9 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_delete(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{acc_delete_async(h_void *a, size_t len, int async);}
+@item @emph{Prototype}: @tab @code{acc_delete_finalize(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{acc_delete_finalize_async(h_void *a, size_t len, int async);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2558,11 +2606,30 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Interface}: @tab @code{subroutine acc_delete(a, len)}
 @item                   @tab @code{type, dimension(:[,:]...) :: a}
 @item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_finalize(a)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_finalize(a, len)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_async_finalize(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_delete_async_finalize(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.22.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.23.
 @end table
 
 
@@ -2582,6 +2649,7 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_update_device(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{acc_update_device(h_void *a, size_t len, async);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2591,11 +2659,18 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Interface}: @tab @code{subroutine acc_update_device(a, len)}
 @item                   @tab @code{type, dimension(:[,:]...) :: a}
 @item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_update_device_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_update_device_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.23.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.24.
 @end table
 
 
@@ -2615,6 +2690,7 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_update_self(h_void *a, size_t len);}
+@item @emph{Prototype}: @tab @code{acc_update_self_async(h_void *a, size_t len, int async);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2624,11 +2700,18 @@ array element and @var{len} specifies the length in bytes.
 @item @emph{Interface}: @tab @code{subroutine acc_update_self(a, len)}
 @item                   @tab @code{type, dimension(:[,:]...) :: a}
 @item                   @tab @code{integer len}
+@item @emph{Interface}: @tab @code{subroutine acc_update_self_async(a, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
+@item @emph{Interface}: @tab @code{subroutine acc_update_self_async(a, len, async)}
+@item                   @tab @code{type, dimension(:[,:]...) :: a}
+@item                   @tab @code{integer len}
+@item                   @tab @code{integer(acc_handle_kind) :: async}
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.24.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.25.
 @end table
 
 
@@ -2647,8 +2730,8 @@ specified with the host address @var{h} and a length of @var{len}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.25.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.26.
 @end table
 
 
@@ -2666,8 +2749,8 @@ specified by @var{h}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.26.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.27.
 @end table
 
 
@@ -2685,8 +2768,8 @@ host address specified by @var{h}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.27.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.28.
 @end table
 
 
@@ -2704,8 +2787,8 @@ device address specified by @var{d}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.28.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.29.
 @end table
 
 
@@ -2743,8 +2826,8 @@ a @code{false} is return to indicate the mapped memory is not present.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.29.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.30.
 @end table
 
 
@@ -2763,8 +2846,8 @@ device memory specified by the device address @var{dest} for a length of
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.30.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.31.
 @end table
 
 
@@ -2783,8 +2866,50 @@ device memory specified by the device address @var{dest} for a length of
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
-3.2.31.
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.32.
+@end table
+
+
+
+@node acc_attach
+@section @code{acc_attach} -- Let device pointer point to device-pointer target.
+@table @asis
+@item @emph{Description}
+This function updates a pointer on the device from pointing to a host-pointer
+address to pointing to the corresponding device data.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{acc_attach(h_void **ptr);}
+@item @emph{Prototype}: @tab @code{acc_attach_async(h_void **ptr, int async);}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.34.
+@end table
+
+
+
+@node acc_detach
+@section @code{acc_detach} -- Let device pointer point to host-pointer target.
+@table @asis
+@item @emph{Description}
+This function updates a pointer on the device from pointing to a device-pointer
+address to pointing to the corresponding host data.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{acc_detach(h_void **ptr);}
+@item @emph{Prototype}: @tab @code{acc_detach_async(h_void **ptr, int async);}
+@item @emph{Prototype}: @tab @code{acc_detach_finalize(h_void **ptr);}
+@item @emph{Prototype}: @tab @code{acc_detach_finalize_async(h_void **ptr, int async);}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.35.
 @end table
 
 
@@ -2802,7 +2927,7 @@ as used by the CUDA Runtime or Driver API's.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 A.2.1.1.
 @end table
 
@@ -2821,7 +2946,7 @@ as used by the CUDA Runtime or Driver API's.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 A.2.1.2.
 @end table
 
@@ -2840,7 +2965,7 @@ This handle is the same as used by the CUDA Runtime or Driver API's.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 A.2.1.3.
 @end table
 
@@ -2864,7 +2989,7 @@ The return value is not specified.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 A.2.1.4.
 @end table
 
@@ -2980,7 +3105,7 @@ The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
 @section @code{ACC_DEVICE_TYPE}
 @table @asis
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 4.1.
 @end table
 
@@ -2990,7 +3115,7 @@ The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
 @section @code{ACC_DEVICE_NUM}
 @table @asis
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.0}, section
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
 4.2.
 @end table
 
@@ -3220,7 +3345,7 @@ is called prior to a call to an OpenACC function, then you must call
 @code{acc_set_device_num()}@footnote{More complete information
 about @env{ACC_DEVICE_TYPE} and @env{ACC_DEVICE_NUM} can be found in
 sections 4.1 and 4.2 of the @uref{https://www.openacc.org, OpenACC}
-Application Programming Interface”, Version 2.0.}
+Application Programming Interface”, Version 2.6.}
 
 
 

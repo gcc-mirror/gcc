@@ -1,4 +1,6 @@
 /* { dg-do compile { target powerpc*-*-darwin* } } */
+/* This test explicitly checks for output that expects common.  */
+/* { dg-additional-options "-fcommon" { target powerpc*-*-darwin* } } */
 /* { dg-final { scan-assembler ".comm\[\t \]_x,12,2" } } */
 /* { dg-final { scan-assembler-not ".space 7" } } */
 /* PR 23071 */

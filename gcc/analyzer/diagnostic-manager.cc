@@ -1087,6 +1087,15 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			  pp_gimple_stmt_1 (&pp, phi, 0, (dump_flags_t)0);
 			  log ("  phi: %s", pp_formatted_text (&pp));
 			}
+		      /* If we've chosen a bad exploded_path, then the
+			 phi arg might be a constant.  Fail gracefully for
+			 this case.  */
+		      if (CONSTANT_CLASS_P (var))
+			{
+			  log ("new var is a constant (bad path?);"
+			       " setting var to NULL");
+			  var = NULL;
+			}
 		    }
 		}
 

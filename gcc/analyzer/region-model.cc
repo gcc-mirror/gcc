@@ -670,7 +670,7 @@ constant_svalue::eval_condition (constant_svalue *lhs,
   if (types_compatible_p (TREE_TYPE (lhs_const), TREE_TYPE (rhs_const)))
     {
       tree comparison
-	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
+	= fold_binary (op, boolean_type_node, lhs_const, rhs_const);
       if (comparison == boolean_true_node)
 	return tristate (tristate::TS_TRUE);
       if (comparison == boolean_false_node)
@@ -4088,9 +4088,9 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 	if (tree rhs1_cst = maybe_get_constant (rhs1_sid))
 	  if (tree rhs2_cst = maybe_get_constant (rhs2_sid))
 	    {
-	      tree result = fold_build2 (op, TREE_TYPE (lhs),
+	      tree result = fold_binary (op, TREE_TYPE (lhs),
 					 rhs1_cst, rhs2_cst);
-	      if (CONSTANT_CLASS_P (result))
+	      if (result && CONSTANT_CLASS_P (result))
 		{
 		  svalue_id result_sid
 		    = get_or_create_constant_svalue (result);
@@ -4163,7 +4163,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	{
 	  region_id frame_rid = get_current_frame_id ();
 	  region_id new_rid
-	    = add_region (new symbolic_region (frame_rid, false));
+	    = add_region (new symbolic_region (frame_rid, NULL_TREE, false));
 	  if (!lhs_rid.null_p ())
 	    {
 	      svalue_id ptr_sid
@@ -4568,7 +4568,8 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
    where RHS is for the appropriate edge.  */
 
 void
-region_model::handle_phi (tree lhs, tree rhs, bool is_back_edge,
+region_model::handle_phi (const gphi *phi,
+			  tree lhs, tree rhs, bool is_back_edge,
 			  region_model_context *ctxt)
 {
   /* For now, don't bother tracking the .MEM SSA names.  */
@@ -4593,6 +4594,9 @@ region_model::handle_phi (tree lhs, tree rhs, bool is_back_edge,
     }
   else
     set_value (get_lvalue (lhs, ctxt), rhs_sid, ctxt);
+
+  if (ctxt)
+    ctxt->on_phi (phi, rhs);
 }
 
 /* Implementation of region_model::get_lvalue; the latter adds type-checking.
@@ -5113,7 +5117,7 @@ region_model::deref_rvalue (svalue_id ptr_sid, region_model_context *ctxt)
 	   We don't know if it on the heap, stack, or a global,
 	   so use the root region as parent.  */
 	region_id new_rid
-	  = add_region (new symbolic_region (m_root_rid, false));
+	  = add_region (new symbolic_region (m_root_rid, NULL_TREE, false));
 
 	/* We need to write the region back into the pointer,
 	   or we'll get a new, different region each time.
@@ -5455,7 +5459,7 @@ region_model::add_new_malloc_region ()
 {
   region_id heap_rid
     = get_root_region ()->ensure_heap_region (this);
-  return add_region (new symbolic_region (heap_rid, true));
+  return add_region (new symbolic_region (heap_rid, NULL_TREE, true));
 }
 
 /* Attempt to return a tree that represents SID, or return NULL_TREE.
@@ -5584,7 +5588,7 @@ region_model::update_for_phis (const supernode *snode,
 
       /* Update next_state based on phi.  */
       bool is_back_edge = last_cfg_superedge->back_edge_p ();
-      handle_phi (lhs, src, is_back_edge, ctxt);
+      handle_phi (phi, lhs, src, is_back_edge, ctxt);
     }
 }
 
@@ -6006,7 +6010,7 @@ make_region_for_type (region_id parent_rid, tree type)
 
   /* If we have a void *, make a new symbolic region.  */
   if (VOID_TYPE_P (type))
-    return new symbolic_region (parent_rid, false);
+    return new symbolic_region (parent_rid, type, false);
 
   gcc_unreachable ();
 }

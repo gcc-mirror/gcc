@@ -485,9 +485,6 @@ include OpenMP, Cray-style pointers, some old vendor extensions, and several
 Fortran 2003 and Fortran 2008 features, including TR 15581.  However, it is
 still under development and has a few remaining rough edges.
 There also is initial support for OpenACC.
-Note that this is an experimental feature, incomplete, and subject to
-change in future versions of GCC.  See
-@uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
 At present, the GNU Fortran compiler passes the
 @uref{http://www.fortran-2000.com/ArnaudRecipes/fcvs21_f95.html,
@@ -546,10 +543,8 @@ status} and @ref{Fortran 2018 status} sections of the documentation.
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 4.0 and most of the features of the 4.5 version,
 @url{http://openmp.org/@/wp/@/openmp-specifications/}).
-There also is initial support for the OpenACC specification (targeting
-version 2.0, @uref{http://www.openacc.org/}).
-Note that this is an experimental feature, incomplete, and subject to
-change in future versions of GCC.  See
+There also is support for the OpenACC specification (targeting
+version 2.6, @uref{http://www.openacc.org/}).  See
 @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
 @node Varying Length Character Strings
@@ -2245,7 +2240,7 @@ influence run-time behavior.
 
 GNU Fortran strives to be compatible to the
 @uref{http://www.openacc.org/, OpenACC Application Programming
-Interface v2.0}.
+Interface v2.6}.
 
 To enable the processing of the OpenACC directive @code{!$acc} in
 free-form source code; the @code{c$acc}, @code{*$acc} and @code{!$acc}
@@ -2260,10 +2255,6 @@ Library}.
 The OpenACC Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{openacc} and in a form of a
 Fortran @code{include} file named @file{openacc_lib.h}.
-
-Note that this is an experimental feature, incomplete, and subject to
-change in future versions of GCC.  See
-@uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
 @node Argument list functions
 @subsection Argument list functions @code{%VAL}, @code{%REF} and @code{%LOC}

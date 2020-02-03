@@ -1,3 +1,57 @@
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* constraint-manager.cc (range::constrained_to_single_element):
+	Replace fold_build2 with fold_binary.  Remove unnecessary newline.
+	(constraint_manager::get_or_add_equiv_class): Replace fold_build2
+	with fold_binary in two places, and remove out-of-date comment.
+	(constraint_manager::eval_condition): Replace fold_build2 with
+	fold_binary.
+	* region-model.cc (constant_svalue::eval_condition): Likewise.
+	(region_model::on_assignment): Likewise.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93544
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Bulletproof
+	against bad choices due to bad paths.
+	* engine.cc (impl_region_model_context::on_phi): New.
+	* exploded-graph.h (impl_region_model_context::on_phi): New decl.
+	* region-model.cc (region_model::on_longjmp): Likewise.
+	(region_model::handle_phi): Add phi param.  Call the ctxt's on_phi
+	vfunc.
+	(region_model::update_for_phis): Pass phi to handle_phi.
+	* region-model.h (region_model::handle_phi): Add phi param.
+	(region_model_context::on_phi): New vfunc.
+	(test_region_model_context::on_phi): New.
+	* sm-malloc.cc (malloc_state_machine::on_phi): New.
+	(malloc_state_machine::on_zero_assignment): New.
+	* sm.h (state_machine::on_phi): New vfunc.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (supernode_cluster::dump_dot): Show BB index as
+	well as SN index.
+	* supergraph.cc (supernode::dump_dot): Likewise.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93546
+	* region-model.cc (region_model::on_call_pre): Update for new
+	param of symbolic_region ctor.
+	(region_model::deref_rvalue): Likewise.
+	(region_model::add_new_malloc_region): Likewise.
+	(make_region_for_type): Likewise, preserving type.
+	* region-model.h (symbolic_region::symbolic_region): Add "type"
+	param and pass it to base class ctor.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93547
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Ensure types are
+	compatible before comparing constants.
+
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93457

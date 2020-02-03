@@ -1,3 +1,70 @@
+2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93458
+	* g++.dg/coroutines/pr93458-1-missing-traits.C: New test.
+	* g++.dg/coroutines/pr93458-2-bad-traits.C: New test.
+	* g++.dg/coroutines/pr93458-3-missing-handle.C: New test.
+	* g++.dg/coroutines/pr93458-4-bad-coro-handle.C: New test.
+	* g++.dg/coroutines/pr93458-5-bad-coro-type.C: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93544
+	* gcc.dg/analyzer/torture/pr93544.c: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93546
+	* gcc.dg/analyzer/pr93546.c: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93547
+	* gcc.dg/analyzer/pr93547.c: New test.
+
+2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* gcc.target/arm/pr91816.c: New test.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/cpp/openacc-define-3.c: Update expected value for
+	_OPENACC define.
+	* gfortran.dg/openacc-define-3.f90: Likewise.
+
+2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93427
+	* gfortran.dg/associate_52.f90: New.
+
+2020-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93533
+	* gcc.c-torture/compile/pr93533.c: New test.
+	* gcc.target/s390/pr93533.c: New test.
+
+2020-02-03  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-04-control-flow.C: Add label.
+
+2020-02-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93530 - ICE on invalid alignas in a template.
+	* g++.dg/cpp0x/alignas18.C: New test.
+
+2020-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/darwin-abi-12.c: Add '-fcommon' to the
+	options.
+
+2020-02-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* gcc.target/i386/pr91333.c: Add vmovsd to regexp.  Set up count
+	to 3.
+
 2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
