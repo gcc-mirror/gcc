@@ -1,3 +1,12 @@
+2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93458
+	* g++.dg/coroutines/pr93458-1-missing-traits.C: New test.
+	* g++.dg/coroutines/pr93458-2-bad-traits.C: New test.
+	* g++.dg/coroutines/pr93458-3-missing-handle.C: New test.
+	* g++.dg/coroutines/pr93458-4-bad-coro-handle.C: New test.
+	* g++.dg/coroutines/pr93458-5-bad-coro-type.C: New test.
+
 2020-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93544

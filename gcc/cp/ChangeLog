@@ -1,3 +1,25 @@
+2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93458
+	* coroutines.cc (struct coroutine_info): Add a bool flag to note
+	that we emitted an error for a bad function return type.
+	(get_coroutine_info): Tolerate an unset info table in case of
+	missing traits.
+	(find_coro_traits_template_decl): In case of error or if we didn't
+	find a type template, note we emitted the error and suppress
+	duplicates.
+	(find_coro_handle_template_decl): Likewise.
+	(instantiate_coro_traits): Only check for error_mark_node in the
+	return from lookup_qualified_name. 
+	(coro_promise_type_found_p): Reorder initialization so that we check
+	for the traits and their usability before allocation of the info
+	table.  Check for a suitable return type and emit a diagnostic for
+	here instead of relying on the lookup machinery.  This allows the
+	error to have a better location, and means we can suppress multiple
+	copies.
+	(coro_function_valid_p): Re-check for a valid promise (and thus the
+	traits) before proceeding.  Tolerate missing info as a fatal error.
+
 2020-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/88256
