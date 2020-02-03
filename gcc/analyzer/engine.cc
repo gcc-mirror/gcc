@@ -2811,7 +2811,8 @@ public:
 		 (const void *)this);
     gv->indent ();
     gv->println ("style=\"dashed\";");
-    gv->println ("label=\"SN: %i\";", m_supernode->m_index);
+    gv->println ("label=\"SN: %i (bb: %i)\";",
+		 m_supernode->m_index, m_supernode->m_bb->index);
 
     int i;
     exploded_node *enode;
