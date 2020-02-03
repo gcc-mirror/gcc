@@ -1758,7 +1758,7 @@
 
 ;; Arithmetic/Logical shift right (and SI left).
 
-(define_insn "<shlr>si3"
+(define_insn "<acc><anz><anzvc><shlr>si3<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(shift:SI (match_operand:SI 1 "register_operand" "0")
 		  (match_operand:SI 2 "nonmemory_operand" "Kcr")))
@@ -1918,7 +1918,7 @@
   ""
   "operands[2] = gen_reg_rtx (SImode); operands[3] = gen_reg_rtx (SImode);")
 
-(define_insn "clzsi2"
+(define_insn "<acc><anz><anzvc>clzsi2<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(clz:SI (match_operand:SI 1 "register_operand" "r")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
@@ -1926,7 +1926,7 @@
   "lz %1,%0"
   [(set_attr "slottable" "yes")])
 
-(define_insn "bswapsi2"
+(define_insn "<acc><anz><anzvc>bswapsi2<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(bswap:SI (match_operand:SI 1 "register_operand" "0")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
@@ -1979,7 +1979,7 @@
   ""
   "")
 
-(define_insn "*uminsi3"
+(define_insn "*uminsi3<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand"		 "=r,r, r,r")
 	(umin:SI  (match_operand:SI 1 "register_operand" "%0,0, 0,r")
 		  (match_operand:SI 2 "general_operand"   "r,Q>,g,!To")))
