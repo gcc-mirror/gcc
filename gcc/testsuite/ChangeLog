@@ -1,4 +1,10 @@
-2020-02-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93533
+	* gcc.c-torture/compile/pr93533.c: New test.
+	* gcc.target/s390/pr93533.c: New test.
+
+2020-02-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-await-04-control-flow.C: Add label.
 
