@@ -397,6 +397,13 @@ package Sem_Attr is
       --  as Range applied to the array itself. The result is of type universal
       --  integer.
 
+      ------------
+      -- Reduce --
+      ------------
+
+      Attribute_Reduce => True,
+      --  See AI12-0262-1
+
       ---------
       -- Ref --
       ---------
