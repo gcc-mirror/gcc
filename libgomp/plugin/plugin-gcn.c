@@ -403,7 +403,6 @@ struct gcn_image_desc
    See https://llvm.org/docs/AMDGPUUsage.html#amdgpu-ef-amdgpu-mach-table */
 
 typedef enum {
-  EF_AMDGPU_MACH_AMDGCN_GFX801 = 0x028,
   EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
@@ -1629,7 +1628,6 @@ elf_gcn_isa_field (Elf64_Ehdr *image)
   return image->e_flags & EF_AMDGPU_MACH_MASK;
 }
 
-const static char *gcn_gfx801_s = "gfx801";
 const static char *gcn_gfx803_s = "gfx803";
 const static char *gcn_gfx900_s = "gfx900";
 const static char *gcn_gfx906_s = "gfx906";
@@ -1642,8 +1640,6 @@ static const char*
 isa_hsa_name (int isa) {
   switch(isa)
     {
-    case EF_AMDGPU_MACH_AMDGCN_GFX801:
-      return gcn_gfx801_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX803:
       return gcn_gfx803_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX900:
@@ -1662,8 +1658,6 @@ static const char*
 isa_gcc_name (int isa) {
   switch(isa)
     {
-    case EF_AMDGPU_MACH_AMDGCN_GFX801:
-      return "carrizo";
     case EF_AMDGPU_MACH_AMDGCN_GFX803:
       return "fiji";
     default:
@@ -1676,9 +1670,6 @@ isa_gcc_name (int isa) {
 
 static gcn_isa
 isa_code(const char *isa) {
-  if (!strncmp (isa, gcn_gfx801_s, gcn_isa_name_len))
-    return EF_AMDGPU_MACH_AMDGCN_GFX801;
-
   if (!strncmp (isa, gcn_gfx803_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX803;
 

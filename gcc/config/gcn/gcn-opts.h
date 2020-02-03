@@ -20,7 +20,6 @@
 /* Which processor to generate code or schedule for.  */
 enum processor_type
 {
-  PROCESSOR_CARRIZO,
   PROCESSOR_FIJI,
   PROCESSOR_VEGA
 };

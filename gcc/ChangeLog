@@ -1,3 +1,11 @@
+2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc: Remove "carrizo" support.
+	* config/gcn/gcn-opts.h (processor_type): Likewise.
+	* config/gcn/gcn.c (gcn_omp_device_kind_arch_isa): Likewise.
+	* config/gcn/gcn.opt (gpu_type): Likewise.
+	* config/gcn/t-omp-device: Likewise.
+
 2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	PR target/91816

@@ -1,3 +1,11 @@
+2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX801): Remove.
+	(gcn_gfx801_s): Remove.
+	(isa_hsa_name): Remove gfx801.
+	(isa_gcc_name): Remove gfx801/carizzo.
+	(isa_code): Remove gfx801.
+
 2020-02-03  Julian Brown  <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
