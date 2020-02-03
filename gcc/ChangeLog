@@ -1,5 +1,17 @@
 2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Add forward
+	reference.
+	(hard_reg_and_mode_to_addr_mask): Delete.
+	(rs6000_adjust_vec_address): If the original vector address
+	was REG+REG or REG+OFFSET and the element is not zero, do the add
+	of the elements in the original address before adding the offset
+	for the vector element.  Use address_to_insn_form to validate the
+	address using the register being loaded, rather than guessing
+	whether the address is a DS-FORM or DQ-FORM address.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
 	* config/rs6000/rs6000.c (get_vector_offset): New helper function
 	to calculate the offset in memory from the start of a vector of a
 	particular element.  Add code to keep the element number in
