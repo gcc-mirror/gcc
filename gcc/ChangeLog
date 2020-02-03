@@ -1,5 +1,12 @@
 2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR target/87763
+	* config/aarch64/aarch64-protos.h (aarch64_movk_shift): Declare.
+	* config/aarch64/aarch64.c (aarch64_movk_shift): New function.
+	* config/aarch64/aarch64.md (aarch64_movk<mode>): New pattern.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR rtl-optimization/87763
 	* config/aarch64/aarch64.md (*ashiftsi_extvdi_bfiz): New pattern.
 

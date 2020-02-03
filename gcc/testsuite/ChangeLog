@@ -1,3 +1,8 @@
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/87763
+	* gcc.target/aarch64/movk_2.c: New test.
+
 2020-02-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93597 - ICE with lambda in operator function.
