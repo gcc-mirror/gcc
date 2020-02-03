@@ -6767,6 +6767,60 @@ get_vector_offset (rtx mem, rtx element, rtx base_tmp, unsigned scalar_size)
   return base_tmp;
 }
 
+/* Helper function update PC-relative addresses when we are adjusting a memory
+   address (ADDR) to a vector to point to a scalar field within the vector with
+   a constant offset (ELEMENT_OFFSET).  If the address is not valid, we can
+   use the base register temporary (BASE_TMP) to form the address.  */
+
+static rtx
+adjust_vec_address_pcrel (rtx addr, rtx element_offset, rtx base_tmp)
+{
+  rtx new_addr = NULL;
+
+  gcc_assert (CONST_INT_P (element_offset));
+
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  if (GET_CODE (addr) == PLUS)
+    {
+      rtx op0 = XEXP (addr, 0);
+      rtx op1 = XEXP (addr, 1);
+
+      if (CONST_INT_P (op1))
+	{
+	  HOST_WIDE_INT offset
+	    = INTVAL (XEXP (addr, 1)) + INTVAL (element_offset);
+
+	  if (offset == 0)
+	    new_addr = op0;
+
+	  else
+	    {
+	      rtx plus = gen_rtx_PLUS (Pmode, op0, GEN_INT (offset));
+	      new_addr = gen_rtx_CONST (Pmode, plus);
+	    }
+	}
+
+      else
+	{
+	  emit_move_insn (base_tmp, addr);
+	  new_addr = gen_rtx_PLUS (Pmode, base_tmp, element_offset);
+	}
+    }
+
+  else if (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
+    {
+      rtx plus = gen_rtx_PLUS (Pmode, addr, element_offset);
+      new_addr = gen_rtx_CONST (Pmode, plus);
+    }
+
+  else
+    gcc_unreachable ();
+
+  return new_addr;
+}
+
 /* Adjust a memory address (MEM) of a vector type to point to a scalar field
    within the vector (ELEMENT) with a mode (SCALAR_MODE).  Use a base register
    temporary (BASE_TMP) to fixup the address.  Return the new memory address
@@ -6806,6 +6860,11 @@ rs6000_adjust_vec_address (rtx scalar_reg,
      address.  */
   else if (REG_P (addr) || SUBREG_P (addr))
     new_addr = gen_rtx_PLUS (Pmode, addr, element_offset);
+
+  /* For references to local static variables, fold a constant offset into the
+     address.  */
+  else if (pcrel_local_address (addr, Pmode) && CONST_INT_P (element_offset))
+    new_addr = adjust_vec_address_pcrel (addr, element_offset, base_tmp);
 
   /* Optimize D-FORM addresses with constant offset with a constant element, to
      include the element offset in the address directly.  */
