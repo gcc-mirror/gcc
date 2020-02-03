@@ -1,3 +1,8 @@
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Add some
+	gcc_asserts.
+
 2020-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md: Improve documentation.

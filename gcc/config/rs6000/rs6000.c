@@ -6768,6 +6768,9 @@ rs6000_adjust_vec_address (rtx scalar_reg,
   rtx new_addr;
   bool valid_addr_p;
 
+  gcc_assert (!reg_mentioned_p (base_tmp, addr));
+  gcc_assert (!reg_mentioned_p (base_tmp, element));
+
   /* Vector addresses should not have PRE_INC, PRE_DEC, or PRE_MODIFY.  */
   gcc_assert (GET_RTX_CLASS (GET_CODE (addr)) != RTX_AUTOINC);
 
@@ -6777,6 +6780,10 @@ rs6000_adjust_vec_address (rtx scalar_reg,
     element_offset = GEN_INT (INTVAL (element) * scalar_size);
   else
     {
+      /* All insns should use the 'Q' constraint (address is a single register)
+	 if the element number is not a constant.  */
+      gcc_assert (REG_P (addr) || SUBREG_P (addr));
+
       int byte_shift = exact_log2 (scalar_size);
       gcc_assert (byte_shift >= 0);
 
