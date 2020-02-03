@@ -1,5 +1,11 @@
 2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/93541
+	* intrinisic.texi (OpenMP Modules OMP_LIB and OMP_LIB_KINDS):
+	Add undocumented parameters from omp_lib.f90.in.
+
+2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/93427
 	* resolve.c (resolve_assoc_var): Remove too strict check.
 	* gfortran.dg/associate_51.f90: Update test case.
