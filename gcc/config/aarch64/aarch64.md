@@ -5771,6 +5771,21 @@
   [(set_attr "type" "bfx")]
 )
 
+(define_insn "*ashiftsi_extvdi_bfiz"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI
+	  (match_operator:SI 4 "subreg_lowpart_operator"
+	    [(sign_extract:DI
+	       (match_operand:DI 1 "register_operand" "r")
+	       (match_operand 2 "aarch64_simd_shift_imm_offset_si")
+	       (const_int 0))])
+	  (match_operand 3 "aarch64_simd_shift_imm_si")))]
+  "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
+	     1, GET_MODE_BITSIZE (SImode) - 1)"
+  "sbfiz\\t%w0, %w1, %3, %2"
+  [(set_attr "type" "bfx")]
+)
+
 ;; When the bit position and width of the equivalent extraction add up to 32
 ;; we can use a W-reg LSL instruction taking advantage of the implicit
 ;; zero-extension of the X-reg.

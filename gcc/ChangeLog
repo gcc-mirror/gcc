@@ -1,3 +1,8 @@
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/87763
+	* config/aarch64/aarch64.md (*ashiftsi_extvdi_bfiz): New pattern.
+
 2020-02-06  Delia Burduv  <delia.burduv@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def
