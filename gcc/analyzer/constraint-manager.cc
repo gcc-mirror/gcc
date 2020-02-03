@@ -928,7 +928,9 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
       int i;
       equiv_class *ec;
       FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
-	if (ec->m_constant)
+	if (ec->m_constant
+	    && types_compatible_p (TREE_TYPE (cst),
+				   TREE_TYPE (ec->m_constant)))
 	  {
 	    tree eq = fold_build2 (EQ_EXPR, boolean_type_node,
 				   cst, ec->m_constant);

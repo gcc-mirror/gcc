@@ -1,3 +1,10 @@
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93547
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Ensure types are
+	compatible before comparing constants.
+
 2020-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93457

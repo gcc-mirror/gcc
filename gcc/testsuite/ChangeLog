@@ -1,3 +1,8 @@
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93547
+	* gcc.dg/analyzer/pr93547.c: New test.
+
 2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	PR target/91816
