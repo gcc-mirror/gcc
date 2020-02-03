@@ -1701,7 +1701,7 @@ package body Scng is
             if Source (Scan_Ptr + 1) = '"' then
                goto Scan_Wide_Character;
 
-            elsif Ada_Version = Ada_2020 then
+            elsif Ada_Version >= Ada_2020 then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
                return;

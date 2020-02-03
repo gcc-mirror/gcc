@@ -976,7 +976,7 @@ package Snames is
    Name_Priority                       : constant Name_Id := N + $; -- Ada 05
    Name_Range                          : constant Name_Id := N + $;
    Name_Range_Length                   : constant Name_Id := N + $; -- GNAT
-   Name_Reduce                         : constant Name_Id := N + $;
+   Name_Reduce                         : constant Name_Id := N + $; -- GNAT
    Name_Ref                            : constant Name_Id := N + $; -- GNAT
    Name_Restriction_Set                : constant Name_Id := N + $; -- GNAT
    Name_Result                         : constant Name_Id := N + $; -- GNAT

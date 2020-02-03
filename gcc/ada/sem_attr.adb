@@ -5572,6 +5572,11 @@ package body Sem_Attr is
       when Attribute_Reduce =>
          Check_E2;
 
+         if not Extensions_Allowed then
+            Error_Attr
+              ("% attribute only supported under -gnatX", P);
+         end if;
+
          declare
             Stream : constant Node_Id := Prefix (N);
             Typ    : Entity_Id;
