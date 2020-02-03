@@ -3376,8 +3376,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   
   // FIXME: The following flags can all go away.
   bool interface_p : 1;
-  bool primary_p : 1;
-  bool from_partition_p : 1; /* Direct import of a partition.  */
 
   /* Record extensions emitted or permitted.  */
   unsigned char extensions : SE_BITS;
@@ -3410,6 +3408,14 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return module_p;
   }
+  bool is_partition () const
+  {
+    return partition_p;
+  }
+  bool is_header () const
+  {
+    return header_p;
+  }
   /* Is a direct import of this TU -- true of the module_p module
      too.  */
   bool is_direct () const
@@ -3425,21 +3431,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
     return from_loc == UNKNOWN_LOCATION;
   }
 
-  bool is_primary () const
-  {
-    return primary_p;
-  }
   bool is_interface () const
   {
     return interface_p;
-  }
-  bool is_header () const
-  {
-    return header_p;
-  }
-  bool is_partition () const
-  {
-    return partition_p;
   }
 
  public:
@@ -3614,7 +3608,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   cmi_noted_p = false;
   load_state = 0;
 
-  primary_p = interface_p = from_partition_p = false;
+  interface_p = false;
 
   partition_p = partition;
 
@@ -7642,7 +7636,7 @@ trees_in::decl_value ()
 	      gcc_unreachable ();
 
 	    case NAMESPACE_DECL:
-	      if (is_mod && !(state->is_primary () || state->is_partition ()))
+	      if (is_mod && !(state->is_module () || state->is_partition ()))
 		kind = "unique";
 	      else
 		// FIXME: process MK_enum separately here
@@ -7659,7 +7653,7 @@ trees_in::decl_value ()
 	      break;
 
 	    case TYPE_DECL:
-	      if (is_mod && !(state->is_primary () || state->is_partition ())
+	      if (is_mod && !(state->is_module () || state->is_partition ())
 		  /* Implicit member functions can come from
 		     anywhere.  */
 		  && !(DECL_ARTIFICIAL (decl)
@@ -13710,8 +13704,8 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 		continue;
 	    }
 
-	  if (is_partition () && !imp->is_partition ())
-	    imp->from_partition_p = true;
+	  if (is_partition ())
+	    imp->partition_direct_p = true;
 	}
       else
 	{
@@ -14203,7 +14197,7 @@ module_state::read_cluster (unsigned snum)
 	    tree visible = NULL_TREE;
 	    tree type = NULL_TREE;
 	    bool dedup = (TREE_PUBLIC (ns)
-			  && (is_primary ()
+			  && (is_module ()
 			      || is_partition ()
 			      || is_header ()));
 
@@ -14265,12 +14259,12 @@ module_state::read_cluster (unsigned snum)
 	    if (sec.get_overrun ())
 	      break; /* Bail.  */
 
-	    if (is_primary () || is_partition ())
+	    if (is_module () || is_partition ())
 	      visible = decls;
 
 	    dump () && dump ("Binding of %P", ns, name);
 	    if (!set_module_binding (ns, name, mod,
-				     is_primary () || is_partition (),
+				     is_module () || is_partition (),
 				     decls, type, visible))
 	      sec.set_overrun ();
 
@@ -14529,7 +14523,7 @@ module_state::read_namespaces (unsigned num)
 		       public_p ? ", public" : "",
 		       inline_p ? ", inline" : "");
       bool visible_p = (export_p
-			|| (public_p && (is_partition () || is_primary ())));
+			|| (public_p && (is_partition () || is_module ())));
       tree inner = add_imported_namespace (parent, id, mod,
 					   src_loc, visible_p, inline_p,
 					   anon_id);
@@ -14873,7 +14867,7 @@ module_state::read_pendings (unsigned count)
 	  if (not_loaded
 	      && (origin_from->is_header ()
 		  || (origin_from->is_partition ()
-		      || origin_from->is_primary ())))
+		      || origin_from->is_module ())))
 	    note_pending_specializations (ns, name, origin_from->is_header ());
 	}
     }
@@ -14891,9 +14885,11 @@ bool
 lazy_specializations_p (unsigned mod, bool header_p, bool partition_p)
 {
   module_state *module = (*modules)[mod];
+
   if (module->is_header ())
     return header_p;
-  if (module->is_primary () || module->is_partition ())
+
+  if (module->is_module () || module->is_partition ())
     return partition_p;
 
   return false;
@@ -16816,9 +16812,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
     {
       module_state *imp = (*modules)[ix];
 
-      /* Promote any non-partition import from a partition, unless
+      /* Promote any non-partition direct import from a partition, unless
 	 we're a partition.  */
-      if (!is_partition () && !imp->is_partition () && imp->from_partition_p)
+      if (!is_partition () && !imp->is_partition () && imp->partition_direct_p)
 	imp->direct_p = true;
 
       /* Write any import that is not a partition, unless we're a
@@ -17084,7 +17080,7 @@ module_state::read_initial (int fd, int e, cpp_reader *reader)
 
   /* Read the elided partition table, if we're the primary partition.  */
   // FIXME: Likewise as with imports
-  if (ok && config.num_partitions && is_primary ()
+  if (ok && config.num_partitions && is_module ()
       && !read_partitions (config.num_partitions))
     ok = false;
 
@@ -17447,7 +17443,7 @@ module_state::set_import (module_state const *import, bool is_export)
      the primary interface or a partition we'll see its imports.  */
   // FIXME: We have to separate out the imports that only happen in
   // the GMF
-  bitmap_ior_into (imports, import->is_primary () || import->is_partition ()
+  bitmap_ior_into (imports, import->is_module () || import->is_partition ()
 		   ? import->imports : import->exports);
 
   if (is_export)
@@ -18114,7 +18110,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
     }
   else
     {
-      module->primary_p = module->interface_p = true;
+      module->interface_p = true;
       current->parent = module; /* So mangler knows module identity. */
       module->direct_import (reader, false);
     }

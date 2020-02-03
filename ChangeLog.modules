@@ -1,6 +1,10 @@
 2020-02-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct module_state): Drop primary_p &
+	from_partition_p.  Map uses to module_p and partition_direct_p.
+
+	gcc/cp/
 	* module.cc (struct module_state): Add load_state, not flags.
 	Remove imported_p, lazy_{preprocessor,language}_p.
 	(module_state::read_{imports,preprocessor,language}): Adjust.
