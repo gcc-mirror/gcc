@@ -1,6 +1,15 @@
 2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline
+	2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93541
+	* intrinisic.texi (OpenMP Modules OMP_LIB and OMP_LIB_KINDS):
+	Add undocumented parameters from omp_lib.f90.in.
+
+2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
 	2020-01-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93462
