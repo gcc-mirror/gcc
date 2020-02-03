@@ -1,5 +1,10 @@
 2020-02-03  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93546
+	* gcc.dg/analyzer/pr93546.c: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93547
 	* gcc.dg/analyzer/pr93547.c: New test.
 

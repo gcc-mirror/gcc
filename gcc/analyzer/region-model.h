@@ -1606,8 +1606,8 @@ namespace ana {
 class symbolic_region : public region
 {
 public:
-  symbolic_region (region_id parent_rid, bool possibly_null)
-  : region (parent_rid, svalue_id::null (), NULL_TREE),
+  symbolic_region (region_id parent_rid, tree type, bool possibly_null)
+  : region (parent_rid, svalue_id::null (), type),
     m_possibly_null (possibly_null)
   {}
   symbolic_region (const symbolic_region &other);

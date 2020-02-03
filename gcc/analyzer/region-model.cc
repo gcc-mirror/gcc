@@ -4163,7 +4163,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	{
 	  region_id frame_rid = get_current_frame_id ();
 	  region_id new_rid
-	    = add_region (new symbolic_region (frame_rid, false));
+	    = add_region (new symbolic_region (frame_rid, NULL_TREE, false));
 	  if (!lhs_rid.null_p ())
 	    {
 	      svalue_id ptr_sid
@@ -5113,7 +5113,7 @@ region_model::deref_rvalue (svalue_id ptr_sid, region_model_context *ctxt)
 	   We don't know if it on the heap, stack, or a global,
 	   so use the root region as parent.  */
 	region_id new_rid
-	  = add_region (new symbolic_region (m_root_rid, false));
+	  = add_region (new symbolic_region (m_root_rid, NULL_TREE, false));
 
 	/* We need to write the region back into the pointer,
 	   or we'll get a new, different region each time.
@@ -5455,7 +5455,7 @@ region_model::add_new_malloc_region ()
 {
   region_id heap_rid
     = get_root_region ()->ensure_heap_region (this);
-  return add_region (new symbolic_region (heap_rid, true));
+  return add_region (new symbolic_region (heap_rid, NULL_TREE, true));
 }
 
 /* Attempt to return a tree that represents SID, or return NULL_TREE.
@@ -6006,7 +6006,7 @@ make_region_for_type (region_id parent_rid, tree type)
 
   /* If we have a void *, make a new symbolic region.  */
   if (VOID_TYPE_P (type))
-    return new symbolic_region (parent_rid, false);
+    return new symbolic_region (parent_rid, type, false);
 
   gcc_unreachable ();
 }
