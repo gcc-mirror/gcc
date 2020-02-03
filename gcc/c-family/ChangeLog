@@ -1,3 +1,8 @@
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update _OPENACC define to 201711.
+
 2020-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89357

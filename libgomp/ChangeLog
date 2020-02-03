@@ -1,3 +1,15 @@
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenACC Runtime Library Routines): Document *_async
+	and *_finalize variants; document acc_attach and acc_detach; update
+	references from OpenACC 2.0 to 2.6.
+	* openacc.f90 (openacc_version): Update to 201711.
+	* openacc_lib.h (openacc_version): Update to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Update expected
+	openacc_version to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+
 2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* plugin/plugin-gcn.c (struct hsa_kernel_description): Add sgpr_count

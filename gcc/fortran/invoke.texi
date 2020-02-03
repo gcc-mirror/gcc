@@ -420,10 +420,6 @@ compilation sentinels in free form and @code{c$}, @code{*$} and
 @code{!$} sentinels in fixed form, and when linking arranges for the
 OpenACC runtime library to be linked in.
 
-Note that this is an experimental feature, incomplete, and subject to
-change in future versions of GCC.  See
-@w{@uref{https://gcc.gnu.org/wiki/OpenACC}} for more information.
-
 @item -fopenmp
 @opindex @code{fopenmp}
 @cindex OpenMP
