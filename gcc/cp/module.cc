@@ -3356,23 +3356,27 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned short subst;	/* Mangle subst if !0.  */
 
   bool module_p : 1;    /* /The/ module of this TU.  */
-  bool header_p : 1;	/* Is a header import.  */
-
-  // FIXME: now we have MODULE_P, interface_p can be deduced.
-  // primary_p might not be needed either
-  bool direct_p : 1;	/* A direct import of TU (includes interface
-			   of implementation for which primary_p).  */
-  bool primary_p : 1;   /* Is the primary interface of this
-			   implementation unit.  */
-  bool interface_p : 1; /* Is an interface (partition or primary).  */
-  bool exported_p : 1;	/* Direct_p && exported.  */
-
-  // FIXME: The following flag is at least misnamed.  rename to
-  // 'importing_p' to detect loops.
-  bool imported_p : 1;	/* Import has been done.  */
   bool partition_p : 1; /* A partition.  */
+  bool header_p : 1;	/* Is a header unit.  */
+  bool exported_p : 1;	/* direct_p && exported.  */
+
+  bool direct_p : 1;	/* A direct import of TU, includes that of the
+			   module itself.  */
+  bool partition_direct_p : 1; /* A direct import of an imported
+				  partition.  */
+  
+  bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
+			   do it again  */
+  bool loaded_p : 1;	/* Phase-0 load occurred.  */
+  bool loaded_cpp_p : 1; /* Preprocessor (phase-1) load occurred.  */
+  bool loaded_lang_p : 1; /* Language (phase-2) load occurred.  */
+
+  
+  // FIXME: The following flags can all go away.
+  bool interface_p : 1;
+  bool primary_p : 1;
+  bool imported_p : 1;	/* Import has been done.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
-  bool cmi_noted_p : 1;
 
   bool lazy_preprocessor_p : 1; /* Preprocessor phase to do.  */
   bool lazy_language_p : 1;  /* Language phase to do.  */
@@ -3598,13 +3602,19 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     entity_lwm (~0u >> 1), entity_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0),
-    partition_p (partition)
+    crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0)
 {
-  module_p = header_p = direct_p = false;
+  module_p = partition_p = header_p = exported_p = false;
+  direct_p = partition_direct_p = false;
+  cmi_noted_p = false;
+  loaded_p = loaded_cpp_p = loaded_lang_p = false;
+
   primary_p = interface_p = exported_p
     = imported_p = from_partition_p = cmi_noted_p = false;
   lazy_preprocessor_p = lazy_language_p = false;
+
+  partition_p = partition;
+
   extensions = 0;
   if (name && TREE_CODE (name) == STRING_CST)
     {
@@ -12480,15 +12490,6 @@ get_module (const char *ptr)
   return mod;
 }
 
-bool
-module_normal_import_p (unsigned m)
-{
-  module_state *module = (*modules)[m];
-
-  return !(module->is_header () || module->is_partition ()
-	   || module->is_primary ());
-}
-
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
@@ -17808,20 +17809,9 @@ module_state::direct_import (cpp_reader *reader, bool for_cpp)
   timevar_start (TV_MODULE_IMPORT);
   unsigned n = dump.push (this);
 
-  direct_p = true;
+  gcc_checking_assert (direct_p);
   if (!is_imported () && mod == MODULE_UNKNOWN)
     {
-      unsigned pre_hwm = 0;
-
-      /* Preserve the state of the line-map.  */
-      // FIXME: Only need to do this for in-tokenizing importing --
-      // i.e. [indirectly from] a header unit during preprocessing
-      pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-      if (true // FIXME: our tokenizer coroutine can tell us this
-	       // early enough.  Oly need to do this
-	  || module_has_cmi_p ())
-	spans.close ();
-
       maybe_create_loc ();
 
       char *fname = NULL;
@@ -17833,10 +17823,6 @@ module_state::direct_import (cpp_reader *reader, bool for_cpp)
 	  && !flag_preprocess_only)
 	fatal_error (loc, "returning to gate for a mechanical issue");
 
-      /* Restore the line-map state.  */
-      linemap_module_restore (line_table, pre_hwm);
-      if (true || module_has_cmi_p ())
-	spans.open ();
     }
 
   if (is_imported ())
@@ -18055,12 +18041,11 @@ lazy_load_members (tree decl)
   timevar_stop (TV_MODULE_IMPORT);
 }
 
-/* Import module IMPORT. PHASE < 0 -> preprocessoryness. PHASE >= 0
-   enum language.  */
+/* Import module IMPORT.  */
 
 void
 import_module (module_state *import, location_t from_loc, bool exporting_p,
-	       tree, cpp_reader *reader, int phase)
+	       tree, cpp_reader *reader)
 {
   if (!import->check_not_purview (from_loc))
     return;
@@ -18071,7 +18056,7 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
   gcc_checking_assert (!import->module_p);
   gcc_checking_assert (import->is_direct () && !import->is_detached ());
 
-  import->direct_import (reader, phase < 0);
+  import->direct_import (reader, false);
 }
 
 /* Declare the name of the current module to be NAME.  EXPORTING_p is
@@ -18389,9 +18374,31 @@ preprocess_module (module_state *module, location_t from_loc,
 	module->set_flatname ();
     }
 
-  if (is_import && !module->module_p && module->is_header ())
-    // FIXME: Skip when preprocessed input
-    import_module (module, module->from_loc, false, NULL, reader, -1);
+  if (is_import && !module->module_p && module->is_header ()
+      && !module->is_imported ())
+    {
+      // FIXME: Skip when preprocessed input
+
+      unsigned pre_hwm = 0;
+
+      /* Preserve the state of the line-map.  */
+      pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+      if (true // FIXME: our tokenizer coroutine can tell us this
+	       // early enough.  Oly need to do this
+	  || module_has_cmi_p ())
+	spans.close ();
+      
+#if 0
+      if (!module->filename)
+	module->filename = module_mapper::import_export (module, false);
+#endif
+      module->direct_import (reader, true);
+
+      /* Restore the line-map state.  */
+      linemap_module_restore (line_table, pre_hwm);
+      if (true || module_has_cmi_p ())
+	spans.open ();
+    }
 
   return is_import ? NULL : get_primary (module);
 }
@@ -18403,6 +18410,8 @@ void
 preprocessed_module (cpp_reader *reader)
 {
   module_mapper *mapper = module_mapper::get (main_source_loc);
+
+  spans.close ();
 
   /* Stupid GTY doesn't grok a typedef here.  And using type = is, too
      modern.  */
@@ -18731,7 +18740,6 @@ finish_module_processing (cpp_reader *reader)
 
       timevar_start (TV_MODULE_EXPORT);
 
-      spans.close ();
       /* Force a valid but empty line map at the end.  This simplifies
 	 the line table preparation and writing logic.  */
       linemap_add (line_table, LC_ENTER, false, "", 0);

@@ -1,6 +1,17 @@
 2020-02-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_normal_import_p): Delete.
+	* module.cc (struct module_state): Rationalize flags.
+	(module_normal_import_p): Delete.
+	(module_state::direct_import): Don't save and restore line state
+	here.
+	(import_module): Just for language.
+	(preprocess_module): Save line state here.
+	* parser.c (cp_parser_import_declaration): Adjust.
+	(cp_parser_declaration_seq_opt): Drop superflous pragma parsing.
+
+	gcc/cp/
 	* parser.c (cp_parser_import_declaration): Diagnose include
 	translation in purview.  Emit not about module-directive control lines.
 	gcc/testsuite/

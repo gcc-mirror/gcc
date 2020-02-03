@@ -7037,7 +7037,6 @@ extern void set_defining_module (tree);
 
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
-extern bool module_normal_import_p (unsigned m);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
 extern void lazy_load_members (tree decl);
@@ -7047,7 +7046,7 @@ extern module_state *preprocess_module (module_state *, location_t,
 					cpp_reader *reader);
 extern void preprocessed_module (cpp_reader *reader);
 extern void import_module (module_state *, location_t, bool export_p,
-			   tree attr, cpp_reader *, int phase);
+			   tree attr, cpp_reader *);
 extern void declare_module (module_state *, location_t, bool export_p,
 			    tree attr, cpp_reader *);
 

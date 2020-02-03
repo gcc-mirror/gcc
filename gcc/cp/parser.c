@@ -13480,9 +13480,7 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
 	warning_at (token->location, 0, "include-translated header unit"
 		    " in module purview is fragile");
 
-      import_module (mod, token->location, exporting, attrs, parse_in,
-		     current_lang_name == lang_name_cplusplus
-		     ? lang_cplusplus : lang_c);
+      import_module (mod, token->location, exporting, attrs, parse_in);
     }
 
 }
@@ -13557,12 +13555,6 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
       if (token->type == CPP_CLOSE_BRACE
 	  || token->type == CPP_EOF)
  	break;
-      else if (token->type == CPP_PRAGMA)
-	/* A top-level declaration can consist solely of a #pragma.
-	   A nested declaration cannot, so this is done here and not
-	   in cp_parser_declaration.  (A #pragma at block scope is
-	   handled in cp_parser_statement.)  */
-	cp_parser_pragma (parser, pragma_external, NULL);
       else
 	cp_parser_toplevel_declaration (parser);
     }
