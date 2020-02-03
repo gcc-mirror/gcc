@@ -4568,7 +4568,8 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
    where RHS is for the appropriate edge.  */
 
 void
-region_model::handle_phi (tree lhs, tree rhs, bool is_back_edge,
+region_model::handle_phi (const gphi *phi,
+			  tree lhs, tree rhs, bool is_back_edge,
 			  region_model_context *ctxt)
 {
   /* For now, don't bother tracking the .MEM SSA names.  */
@@ -4593,6 +4594,9 @@ region_model::handle_phi (tree lhs, tree rhs, bool is_back_edge,
     }
   else
     set_value (get_lvalue (lhs, ctxt), rhs_sid, ctxt);
+
+  if (ctxt)
+    ctxt->on_phi (phi, rhs);
 }
 
 /* Implementation of region_model::get_lvalue; the latter adds type-checking.
@@ -5584,7 +5588,7 @@ region_model::update_for_phis (const supernode *snode,
 
       /* Update next_state based on phi.  */
       bool is_back_edge = last_cfg_superedge->back_edge_p ();
-      handle_phi (lhs, src, is_back_edge, ctxt);
+      handle_phi (phi, lhs, src, is_back_edge, ctxt);
     }
 }
 
