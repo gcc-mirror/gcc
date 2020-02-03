@@ -3188,6 +3188,12 @@ package Rtsfind is
    --  Wide_Wide_Text_IO.xxx, where xxx is one of the subpackages of Text_IO
    --  that is specially handled as described for Check_Text_IO_Special_Unit.
 
+   function Is_Text_IO_Special_Package (E : Entity_Id) return Boolean;
+   --  Return True iff E is one of the special generic Text_IO packages, which
+   --  Ada RM defines to be nested in Ada.Text_IO, but GNAT defines as its
+   --  private children. This is similar to Is_Text_IO_Special_Unit, but is
+   --  meant to be used on a fully resolved AST, especially in the backends.
+
    function RTE (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the
    --  corresponding value in the RE_Id enumeration type, returns the Id of the
