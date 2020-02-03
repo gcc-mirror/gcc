@@ -3671,7 +3671,12 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
      explicitly declared at all if requested.  */
   if (sym->attr.if_source == IFSRC_UNKNOWN && !sym->attr.is_iso_c)
     {
-      if (sym->ns->has_implicit_none_export && sym->attr.proc == PROC_UNKNOWN)
+      bool has_implicit_none_export = false;
+      if (sym->attr.proc == PROC_UNKNOWN)
+	for (gfc_namespace *ns = sym->ns; ns; ns = ns->parent)
+	   if (ns->has_implicit_none_export)
+	     has_implicit_none_export = true;
+      if (has_implicit_none_export)
 	{
 	  const char *guessed
 	    = gfc_lookup_function_fuzzy (sym->name, sym->ns->sym_root);

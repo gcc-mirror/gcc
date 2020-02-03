@@ -1,3 +1,14 @@
+2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-01-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93309
+	* interface.c (gfc_procedure_use): Also check parent namespace for
+	'implict none (external)'.
+	* symbol.c (gfc_get_namespace): Don't set has_implicit_none_export
+	to parent namespace's setting.
+
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.c (parse_omp_structured_block): Handle ST_OMP_TARGET_PARALLEL.
@@ -10,7 +21,7 @@
 
 2020-01-17  Mark Eggleston  <mark.eggleston@codethink.com>
 
-        Backport from mainline
+	Backport from mainline
 	Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/93236
