@@ -18293,13 +18293,12 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
       unsigned col = SOURCE_COLUMN (map, loc);
       col -= (col != 0); /* Columns are 1-based.  */
 
-      size_t len = strlen (path);
-      char *res = XNEWVEC (char, len + 60 + col);
+      unsigned len = strlen (path);
+      unsigned alloc = len + col + 60;
+      char *res = XNEWVEC (char, alloc);
 
-      /* Internal keyword to permit use inside extern "C" {...}.
-	 Bad glibc! No biscuit!  */
       strcpy (res, "__import");
-      size_t actual = 8;
+      unsigned actual = 8;
       if (col > actual)
 	{
 	  memset (res + actual, ' ', col - actual);
@@ -18307,12 +18306,11 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 	}
       /* No need to encode characters, that's not how header names are
 	 handled.  */
-      res[actual++] = '"';
-      memcpy (res + actual, path, len);
-      actual += len;
-      res[actual++] = '"';
-      strcpy (res + actual, ";\n\n");
-      actual += 3;
+      actual += snprintf (res + actual, alloc - actual,
+			  "\"%.*s\" [[__translated]];\n\n",
+			  len, path);
+      gcc_checking_assert (actual < alloc);
+
       /* cpplib will delete the buffer.  */
       cpp_push_buffer (reader, reinterpret_cast<unsigned char *> (res),
 		       actual, false);

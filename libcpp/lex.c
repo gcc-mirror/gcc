@@ -2604,17 +2604,17 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
   cpp_hashnode *node = result->val.node.node;
   cpp_token *peek = result;
   cpp_token *keyword = peek;
-  cpp_hashnode *(&n_modules)[2][spec_nodes::M_HWM] = pfile->spec_nodes.n_modules;
-  int importedness = 0;
+  cpp_hashnode *(&n_modules)[spec_nodes::M_HWM][2] = pfile->spec_nodes.n_modules;
+  int header_count = 0;
 
-  if (node == n_modules[0][spec_nodes::M_EXPORT])
+  /* Enter directives mode for the peeking.  */
+  pfile->state.in_deferred_pragma = true;
+  pfile->state.pragma_allow_expansion = true;
+  pfile->state.save_comments = 0;
+  pfile->directive_line = result->src_loc;
+
+  if (node == n_modules[spec_nodes::M_EXPORT][0])
     {
-      /* Enter directives mode for the peeking.  */
-      pfile->state.in_deferred_pragma = true;
-      pfile->state.pragma_allow_expansion = true;
-      pfile->state.save_comments = 0;
-      pfile->directive_line = result->src_loc;
-
       peek = _cpp_lex_direct (pfile);
       keyword = peek;
       backup++;
@@ -2625,29 +2625,18 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	goto not_module;
     }
 
-  // FIXME: A bit kludgy to for xlated includes.  Fix with extra _
-  // spelling.
-  if (__builtin_expect (node == n_modules[1][spec_nodes::M_IMPORT], false))
-    importedness = -1;  /* __import  */
-  else if (__builtin_expect (node == n_modules[0][spec_nodes::M_IMPORT], false))
-    importedness = +1;  /* import  */
-  else if (__builtin_expect (node == n_modules[0][spec_nodes::M_MODULE], false))
+  if (__builtin_expect (node == n_modules[spec_nodes::M_IMPORT][1], false))
+    header_count = backup + 2 + 16;  /* __import  */
+  else if (__builtin_expect (node == n_modules[spec_nodes::M_IMPORT][0], false))
+    header_count = backup + 2;  /* import  */
+  else if (__builtin_expect (node == n_modules[spec_nodes::M_MODULE][0], false))
     ; /* module  */
   else
     goto not_module;
 
   /* We've seen [export] {module|import|__import}.  Check the next
      token.  */
-  if (!backup)
-    {
-      /* Enter directives mode for the peeking.  */
-      pfile->state.in_deferred_pragma = true;
-      pfile->state.pragma_allow_expansion = true;
-      pfile->state.save_comments = 0;
-      pfile->directive_line = result->src_loc;
-    }
-
-  if (importedness)
+  if (header_count)
     /* After 'import' a header name may appear.  */
     pfile->state.angled_headers = true;
   peek = _cpp_lex_direct (pfile);
@@ -2659,7 +2648,7 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
      tokens.  */
   if (peek->type == CPP_NAME
       || peek->type == CPP_COLON
-      ||  (importedness
+      ||  (header_count
 	   ? (peek->type == CPP_LESS
 	      || (peek->type == CPP_STRING && peek->val.str.text[0] != 'R')
 	      || peek->type == CPP_HEADER_NAME)
@@ -2667,7 +2656,7 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
     {
       pfile->state.pragma_allow_expansion = !CPP_OPTION (pfile, preprocessed);
 
-      if (!importedness && linemap_included_from
+      if (!header_count && linemap_included_from
 	  (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)))
 	cpp_error_with_line (pfile, CPP_DL_ERROR, keyword->src_loc, 0,
 			     "module control-line cannot be in included file");
@@ -2690,34 +2679,24 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	}
 
       /* Map to underbar variants.  */
-      keyword->val.node.node
-	= pfile->spec_nodes.n_modules[1][importedness ? spec_nodes::M_IMPORT
-					 : spec_nodes::M_MODULE];
+      keyword->val.node.node = n_modules[header_count
+					 ? spec_nodes::M_IMPORT
+					 : spec_nodes::M_MODULE][1];
       if (backup != 1)
-	result->val.node.node
-	  = pfile->spec_nodes.n_modules[1][spec_nodes::M_EXPORT];
+	result->val.node.node = n_modules[spec_nodes::M_EXPORT][1];
 
-      if (importedness)
-	{
-	  /* Tell the tokenizer we expect a
-	     header-name down the road.  */
-	  unsigned count = backup + 1;
-	  if (importedness < 0)
-	    count |= 16;
-	  pfile->state.directive_file_token = count;
-	}
+      /* Maybe tell the tokenizer we expect a header-name down the
+	 road.  */
+      pfile->state.directive_file_token = header_count;
     }
   else
     {
     not_module:
-      if (backup)
-	{
-	  /* Drop out of directive mode.  */
-	  pfile->state.save_comments
-	    = !CPP_OPTION (pfile, discard_comments);
-	  pfile->state.in_deferred_pragma = false;
-	  pfile->state.angled_headers = false;
-	}
+      /* Drop out of directive mode.  */
+      pfile->state.save_comments
+	= !CPP_OPTION (pfile, discard_comments);
+      pfile->state.in_deferred_pragma = false;
+      pfile->state.angled_headers = false;
     }
 
   /* In either case we want to backup the peeked tokens.  */

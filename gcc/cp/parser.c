@@ -4805,14 +4805,6 @@ cp_parser_translation_unit (cp_parser* parser)
 	    {
 	      if (preamble == MP_FIRST)
 		preamble = MP_NOTHING;
-	      if (false && named_module_p ()
-		  && IDENTIFIER_POINTER (next->u.value)[0] == '_')
-		{
-		  // FIXME: Can we and do we need to detect this?
-		  error_at (next->location, "include-translated header unit"
-			    " not permitted in module purview");
-		  exporting = false;
-		}
 	      cp_parser_import_declaration (parser, preamble, exporting);
 	      continue;
 	    }
@@ -13473,10 +13465,15 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
     {
       module_state *mod = cp_parser_module_name (parser);
       tree attrs = cp_parser_attributes_opt (parser);
-      
+
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
 	goto skip_eol;
       cp_parser_require_pragma_eol (parser, token);
+      if (false && named_module_p ())
+	// FIXME: Can we and do we need to detect this?
+	warning_at (token->location, 0, "include-translated header unit"
+		    " in module purview is fragile");
+
       import_module (mod, token->location, exporting, attrs, parse_in,
 		     current_lang_name == lang_name_cplusplus
 		     ? lang_cplusplus : lang_c);
@@ -13519,7 +13516,17 @@ cp_parser_module_export (cp_parser *parser)
       cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
     }
   else
-    cp_parser_declaration (parser);
+    {
+      /* Explicitly check if the next tokens might be a
+         module-directive line, so we can give a clearer error message
+         about why the directive will be rejected.  */
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID__MODULE)
+	  || cp_lexer_next_token_is_keyword (parser->lexer, RID__IMPORT)
+	  || cp_lexer_next_token_is_keyword (parser->lexer, RID__EXPORT))
+	error_at (token->location, "%<export%> not part of following"
+		  " module-directive");
+      cp_parser_declaration (parser);
+    }
 
   module_kind = mk;
 }

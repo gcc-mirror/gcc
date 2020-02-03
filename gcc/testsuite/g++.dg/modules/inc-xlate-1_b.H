@@ -18,4 +18,4 @@ extern "C" {
 #endif
 #endif
 
-// { dg-final { scan-file inc-xlate-1_b.i {__import "[^\n]*inc-xlate-1_a.H";\n} } }
+// { dg-final { scan-file inc-xlate-1_b.i {__import "[^\n]*inc-xlate-1_a.H" \[\[__translated\]\];\n} } }

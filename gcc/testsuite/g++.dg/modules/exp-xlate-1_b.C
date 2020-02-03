@@ -2,8 +2,6 @@
 export module evil;
 // { dg-module-cmi !evil }
 
-// FIXME: xfailing until __import and co are actual keywords.
-export
-#include "exp-xlate-1_a.H" // { dg-error "not permitted" "" { xfail *-*-* } }
-// { dg-bogus "must immediately follow" "" { xfail *-*-* } .-1 }
+export // { dg-error "not part of following" }
+#include "exp-xlate-1_a.H" // { dg-error "must immediately follow" }
 // { dg-prune-output {not writing module} }

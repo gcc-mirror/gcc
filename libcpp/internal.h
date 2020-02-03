@@ -299,7 +299,7 @@ struct spec_nodes
   
   /* C++2a modules, only set when module_directives is in effect.
      incoming variants [0], outgoing ones [1] */
-  cpp_hashnode *n_modules[2][M_HWM];
+  cpp_hashnode *n_modules[M_HWM][2];
 };
 
 typedef struct _cpp_line_note _cpp_line_note;

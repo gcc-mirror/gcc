@@ -844,7 +844,7 @@ post_options (cpp_reader *pfile)
 	  cpp_hashnode *node = cpp_lookup (pfile, UC (inits[ix]),
 					   strlen (inits[ix]));
 	  node->flags |= NODE_MODULE;
-	  pfile->spec_nodes.n_modules[1][ix] = node;
+	  pfile->spec_nodes.n_modules[ix][1] = node;
 	  if (!CPP_OPTION (pfile, preprocessed))
 	    {
 	      /* Drop the leading '__'.  */
@@ -852,7 +852,7 @@ post_options (cpp_reader *pfile)
 				 NODE_LEN (node) - 2);
 	      node->flags |= NODE_MODULE;
 	    }
-	  pfile->spec_nodes.n_modules[0][ix] = node;
+	  pfile->spec_nodes.n_modules[ix][0] = node;
 	}
     }
 }
