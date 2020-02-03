@@ -1,3 +1,11 @@
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91953
+	* constexpr.c (potential_constant_expression_1) [PARM_DECL]: Allow
+	empty class type.
+	[COMPONENT_REF]: A member function reference doesn't use the object
+	as an rvalue.
+
 2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/93458
