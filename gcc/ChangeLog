@@ -145,6 +145,13 @@
 	from "xorsi3".
 	("<acc><anz><anzvc>one_cmplsi2<setcc><setnz><setnzvc>"): Rename
 	from "one_cmplsi2".
+	("<acc><anz><anzvc><shlr>si3<setcc><setnz><setnzvc>"): Rename
+	from "<shlr>si3".
+	("<acc><anz><anzvc>clzsi2<setcc><setnz><setnzvc>"): Rename
+	from "clzsi2".
+	("<acc><anz><anzvc>bswapsi2<setcc><setnz><setnzvc>"): Rename
+	from "bswapsi2".
+	("*uminsi3<setcc><setnz><setnzvc>"): Rename from "*uminsi3".
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
