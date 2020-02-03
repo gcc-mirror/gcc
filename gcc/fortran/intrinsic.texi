@@ -14825,6 +14825,7 @@ named constants:
 
 @table @asis
 @item @code{omp_lock_kind}
+@item @code{omp_lock_hint_kind}
 @item @code{omp_nest_lock_kind}
 @item @code{omp_proc_bind_kind}
 @item @code{omp_sched_kind}
@@ -14856,6 +14857,16 @@ kind @code{omp_proc_bind_kind}:
 @item @code{omp_proc_bind_spread}
 @end table
 
+The following scalar integer named constants are of the
+kind @code{omp_lock_hint_kind}:
+
+@table @asis
+@item @code{omp_lock_hint_none}
+@item @code{omp_lock_hint_uncontended}
+@item @code{omp_lock_hint_contended}
+@item @code{omp_lock_hint_nonspeculative}
+@item @code{omp_lock_hint_speculative}
+@end table
 
 
 @node OpenACC Module OPENACC
