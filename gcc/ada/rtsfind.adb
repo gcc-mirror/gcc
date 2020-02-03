@@ -759,6 +759,37 @@ package body Rtsfind is
       return Present (E) and then E = Ent;
    end Is_RTU;
 
+   --------------------------------
+   -- Is_Text_IO_Special_Package --
+   --------------------------------
+
+   function Is_Text_IO_Special_Package (E : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Is_Package_Or_Generic_Package (E));
+
+      --  ??? detection with a scope climbing might be more efficient
+
+      for U in Ada_Text_IO_Child loop
+         if Is_RTU (E, U) then
+            return True;
+         end if;
+      end loop;
+
+      for U in Ada_Wide_Text_IO_Child loop
+         if Is_RTU (E, U) then
+            return True;
+         end if;
+      end loop;
+
+      for U in Ada_Wide_Wide_Text_IO_Child loop
+         if Is_RTU (E, U) then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Text_IO_Special_Package;
+
    -----------------------------
    -- Is_Text_IO_Special_Unit --
    -----------------------------
