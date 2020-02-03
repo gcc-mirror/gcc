@@ -8846,8 +8846,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
       if (tsym->attr.subroutine
 	  || tsym->attr.external
-	  || (tsym->attr.function
-	      && (tsym->result != tsym || tsym->attr.recursive)))
+	  || (tsym->attr.function && tsym->result != tsym))
 	{
 	  gfc_error ("Associating entity %qs at %L is a procedure name",
 		     tsym->name, &target->where);
