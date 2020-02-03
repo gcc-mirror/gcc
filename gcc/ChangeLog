@@ -1,3 +1,11 @@
+2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* config/arm/arm-protos.h: New function arm_gen_far_branch prototype.
+	* config/arm/arm.c (arm_gen_far_branch): New function
+	arm_gen_far_branch.
+	* config/arm/arm.md: Update b<cond> for Thumb2 range checks.
+
 2020-02-03  Julian Brown  <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

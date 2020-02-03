@@ -7584,8 +7584,14 @@
 ;; And for backward branches we have 
 ;;   (neg_range - neg_base_offs + pc_offs) = (neg_range - (-2 or -4) + 4).
 ;;
+;; In 16-bit Thumb these ranges are:
 ;; For a 'b'       pos_range = 2046, neg_range = -2048 giving (-2040->2048).
 ;; For a 'b<cond>' pos_range = 254,  neg_range = -256  giving (-250 ->256).
+
+;; In 32-bit Thumb these ranges are:
+;; For a 'b'       +/- 16MB is not checked for.
+;; For a 'b<cond>' pos_range = 1048574,  neg_range = -1048576  giving
+;; (-1048568 -> 1048576).
 
 (define_expand "cbranchsi4"
   [(set (pc) (if_then_else
@@ -7759,23 +7765,50 @@
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "TARGET_32BIT"
-  "*
-  if (arm_ccfsm_state == 1 || arm_ccfsm_state == 2)
+  {
+    if (arm_ccfsm_state == 1 || arm_ccfsm_state == 2)
     {
       arm_ccfsm_state += 2;
-      return \"\";
+      return "";
     }
-  return \"b%d1\\t%l0\";
-  "
+    switch (get_attr_length (insn))
+      {
+	case 2: /* Thumb2 16-bit b{cond}.  */
+	case 4: /* Thumb2 32-bit b{cond} or A32 b{cond}.  */
+	  return "b%d1\t%l0";
+	  break;
+
+	/* Thumb2 b{cond} out of range.  Use 16-bit b{cond} and
+	   unconditional branch b.  */
+	default: return arm_gen_far_branch (operands, 0, "Lbcond", "b%D1\t");
+      }
+  }
   [(set_attr "conds" "use")
    (set_attr "type" "branch")
    (set (attr "length")
-	(if_then_else
-	   (and (match_test "TARGET_THUMB2")
-		(and (ge (minus (match_dup 0) (pc)) (const_int -250))
-		     (le (minus (match_dup 0) (pc)) (const_int 256))))
-	   (const_int 2)
-	   (const_int 4)))]
+    (if_then_else (match_test "!TARGET_THUMB2")
+
+      ;;Target is not Thumb2, therefore is A32.  Generate b{cond}.
+      (const_int 4)
+
+      ;; Check if target is within 16-bit Thumb2 b{cond} range.
+      (if_then_else (and (ge (minus (match_dup 0) (pc)) (const_int -250))
+		         (le (minus (match_dup 0) (pc)) (const_int 256)))
+
+	;; Target is Thumb2, within narrow range.
+	;; Generate b{cond}.
+	(const_int 2)
+
+	;; Check if target is within 32-bit Thumb2 b{cond} range.
+	(if_then_else (and (ge (minus (match_dup 0) (pc))(const_int -1048568))
+			   (le (minus (match_dup 0) (pc)) (const_int 1048576)))
+
+	  ;; Target is Thumb2, within wide range.
+	  ;; Generate b{cond}
+	  (const_int 4)
+	  ;; Target is Thumb2, out of range.
+	  ;; Generate narrow b{cond} and unconditional branch b.
+	  (const_int 6)))))]
 )
 
 (define_insn "*arm_cond_branch_reversed"
@@ -7785,23 +7818,50 @@
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   "TARGET_32BIT"
-  "*
-  if (arm_ccfsm_state == 1 || arm_ccfsm_state == 2)
+  {
+    if (arm_ccfsm_state == 1 || arm_ccfsm_state == 2)
     {
       arm_ccfsm_state += 2;
-      return \"\";
+      return "";
     }
-  return \"b%D1\\t%l0\";
-  "
+    switch (get_attr_length (insn))
+      {
+	case 2: /* Thumb2 16-bit b{cond}.  */
+	case 4: /* Thumb2 32-bit b{cond} or A32 b{cond}.  */
+	  return "b%D1\t%l0";
+	  break;
+
+	/* Thumb2 b{cond} out of range.  Use 16-bit b{cond} and
+	   unconditional branch b.  */
+	default: return arm_gen_far_branch (operands, 0, "Lbcond", "b%d1\t");
+      }
+  }
   [(set_attr "conds" "use")
    (set_attr "type" "branch")
    (set (attr "length")
-	(if_then_else
-	   (and (match_test "TARGET_THUMB2")
-		(and (ge (minus (match_dup 0) (pc)) (const_int -250))
-		     (le (minus (match_dup 0) (pc)) (const_int 256))))
-	   (const_int 2)
-	   (const_int 4)))]
+    (if_then_else (match_test "!TARGET_THUMB2")
+
+      ;;Target is not Thumb2, therefore is A32.  Generate b{cond}.
+      (const_int 4)
+
+      ;; Check if target is within 16-bit Thumb2 b{cond} range.
+      (if_then_else (and (ge (minus (match_dup 0) (pc)) (const_int -250))
+			 (le (minus (match_dup 0) (pc)) (const_int 256)))
+
+	;; Target is Thumb2, within narrow range.
+	;; Generate b{cond}.
+	(const_int 2)
+
+	;; Check if target is within 32-bit Thumb2 b{cond} range.
+	(if_then_else (and (ge (minus (match_dup 0) (pc))(const_int -1048568))
+			   (le (minus (match_dup 0) (pc)) (const_int 1048576)))
+
+	  ;; Target is Thumb2, within wide range.
+	  ;; Generate b{cond}.
+	  (const_int 4)
+	  ;; Target is Thumb2, out of range.
+	  ;; Generate narrow b{cond} and unconditional branch b.
+	  (const_int 6)))))]
 )
 
 

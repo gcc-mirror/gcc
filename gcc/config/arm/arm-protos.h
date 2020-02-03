@@ -577,4 +577,6 @@ void arm_parse_option_features (sbitmap, const cpu_arch_option *,
 
 void arm_initialize_isa (sbitmap, const enum isa_feature *);
 
+const char * arm_gen_far_branch (rtx *, int, const char * , const char *);
+
 #endif /* ! GCC_ARM_PROTOS_H */

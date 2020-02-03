@@ -1,3 +1,8 @@
+2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* gcc.target/arm/pr91816.c: New test.
+
 2020-02-03  Julian Brown  <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
