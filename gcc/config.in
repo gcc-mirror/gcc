@@ -1386,6 +1386,13 @@
 #endif
 
 
+/* Define 0/1 if your assembler supports marking sections with SHF_GNU_RETAIN
+   flag. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_SHF_GNU_RETAIN
+#endif
+
+
 /* Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.
    */
 #ifndef USED_FOR_TARGET

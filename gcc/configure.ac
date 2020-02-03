@@ -3330,6 +3330,26 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
   [`if test $gcc_cv_as_section_exclude_e = yes || test $gcc_cv_as_section_exclude_hash = yes; then echo 1; else echo 0; fi`],
 [Define if your assembler supports specifying the exclude section flag.])
 
+# Test if the assembler supports the section flag 'R' for specifying
+# section with SHF_GNU_RETAIN.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'R', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_shf_gnu_retain=no
+    ;;
+  *)
+    gcc_GAS_CHECK_FEATURE([section 'R' flag], gcc_cv_as_shf_gnu_retain,
+      [elf,2,36,0], [--fatal-warnings],
+      [.section .foo,"awR",%progbits
+.byte 0])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_GNU_RETAIN,
+  [`if test $gcc_cv_as_shf_gnu_retain = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports marking sections with SHF_GNU_RETAIN flag.])
+
 gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [elf,2,12,0], [--fatal-warnings],
  [.section .rodata.str, "aMS", @progbits, 1])

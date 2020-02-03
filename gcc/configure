@@ -24430,6 +24430,57 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# Test if the assembler supports the section flag 'R' for specifying
+# section with SHF_GNU_RETAIN.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'R', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_shf_gnu_retain=no
+    ;;
+  *)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section 'R' flag" >&5
+$as_echo_n "checking assembler for section 'R' flag... " >&6; }
+if ${gcc_cv_as_shf_gnu_retain+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_shf_gnu_retain=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
+  then gcc_cv_as_shf_gnu_retain=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.section .foo,"awR",%progbits
+.byte 0' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_shf_gnu_retain=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_shf_gnu_retain" >&5
+$as_echo "$gcc_cv_as_shf_gnu_retain" >&6; }
+
+
+    ;;
+esac
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_SHF_GNU_RETAIN `if test $gcc_cv_as_shf_gnu_retain = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section merging support" >&5
 $as_echo_n "checking assembler for section merging support... " >&6; }
 if ${gcc_cv_as_shf_merge+:} false; then :

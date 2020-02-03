@@ -2462,6 +2462,9 @@ Target supports wide characters.
 @subsubsection Other attributes
 
 @table @code
+@item R_flag_in_section
+Target supports the 'R' flag in .section directive in assembly inputs.
+
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 

@@ -289,6 +289,10 @@ get_section (const char *name, unsigned int flags, tree decl,
   slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
 					    INSERT);
   flags |= SECTION_NAMED;
+  if (HAVE_GAS_SHF_GNU_RETAIN
+      && decl != nullptr
+      && DECL_PRESERVE_P (decl))
+    flags |= SECTION_RETAIN;
   if (*slot == NULL)
     {
       sect = ggc_alloc<section> ();
@@ -469,6 +473,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
   if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
+	  || (HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
@@ -1207,7 +1212,8 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
   if (vnode)
     vnode->get_constructor ();
 
-  if (DECL_COMMON (decl))
+  if (DECL_COMMON (decl)
+      && !(HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
     {
       /* If the decl has been given an explicit section name, or it resides
 	 in a non-generic address space, then it isn't common, and shouldn't
@@ -6745,9 +6751,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
-     part of a COMDAT groups, in which case GAS requires the full
-     declaration every time.  */
+     part of a COMDAT groups or with SHF_GNU_RETAIN, in which case GAS
+     requires the full declaration every time.  */
   if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+      && !(flags & SECTION_RETAIN)
       && (flags & SECTION_DECLARED))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
@@ -6780,6 +6787,8 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 	*f++ = TLS_SECTION_ASM_FLAG;
       if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
 	*f++ = 'G';
+      if (flags & SECTION_RETAIN)
+	*f++ = 'R';
 #ifdef MACH_DEP_SECTION_ASM_FLAG
       if (flags & SECTION_MACH_DEP)
 	*f++ = MACH_DEP_SECTION_ASM_FLAG;
