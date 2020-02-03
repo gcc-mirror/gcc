@@ -19553,6 +19553,22 @@ The second argument to @var{__builtin_crypto_vshasigmad} and
 integer that is 0 or 1.  The third argument to these built-in functions
 must be a constant integer in the range of 0 to 15.
 
+The following sign extension builtins are provided:
+
+@smallexample
+vector signed int vec_signexti (vector signed char a)
+vector signed long long vec_signextll (vector signed char a)
+vector signed int vec_signexti (vector signed short a)
+vector signed long long vec_signextll (vector signed short a)
+vector signed long long vec_signextll (vector signed int a)
+vector signed long long vec_signextq (vector signed long long a)
+@end smallexample
+
+Each element of the result is produced by sign-extending the element of the
+input vector that would fall in the least significant portion of the result
+element. For example, a sign-extension of a vector signed char to a vector
+signed long long will sign extend the rightmost byte of each doubleword.
+
 @node PowerPC AltiVec Built-in Functions Available on ISA 3.1
 @subsubsection PowerPC AltiVec Built-in Functions Available on ISA 3.1
 

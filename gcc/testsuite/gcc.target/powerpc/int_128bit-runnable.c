@@ -4,7 +4,7 @@
 
 /* Check that the expected 128-bit instructions are generated if the processor
    supports the 128-bit integer instructions. */
-/* { dg-final { scan-assembler-times {\mvextsd2q\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mvextsd2q\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mvslq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvsrq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvsraq\M} 2 } } */
@@ -85,6 +85,45 @@ int main ()
   vector __int128 vec_arg1, vec_arg2, vec_result;
   vector unsigned __int128 vec_uarg1, vec_uarg2, vec_uarg3, vec_uresult;
   vector bool __int128  vec_result_bool;
+
+  /* sign extend double to 128-bit integer  */
+  vec_arg1_di[0] = 1000;
+  vec_arg1_di[1] = -123456;
+
+  expected_result = 1000;
+
+  vec_result = vec_signextq (vec_arg1_di);
+
+  if (vec_result[0] != expected_result) {
+#if DEBUG
+    printf("ERROR: vec_signextq ((long long) %lld) =  ",  vec_arg1_di[0]);
+    print_i128(vec_result[0]);
+    printf("\n does not match expected_result = ");
+    print_i128(expected_result);
+    printf("\n\n");
+#else
+    abort();
+#endif
+  }
+
+  vec_arg1_di[0] = -123456;
+  vec_arg1_di[1] = 1000;
+
+  expected_result = -123456;
+
+  vec_result = vec_signextq (vec_arg1_di);
+
+  if (vec_result[0] != expected_result) {
+#if DEBUG
+    printf("ERROR: vec_signextq ((long long) %lld) =  ",  vec_arg1_di[0]);
+    print_i128(vec_result[0]);
+    printf("\n does not match expected_result = ");
+    print_i128(expected_result);
+    printf("\n\n");
+#else
+    abort();
+#endif
+  }
   
   /* test shift 128-bit integers.
      Note, shift amount is given by the lower 7-bits of the shift amount. */
