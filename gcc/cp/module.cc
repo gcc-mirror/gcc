@@ -3362,21 +3362,17 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned load_state : 2;	/* loaded state*/
 
   bool module_p : 1;    /* /The/ module of this TU.  */
-  bool partition_p : 1; /* A partition.  */
   bool header_p : 1;	/* Is a header unit.  */
-  bool exported_p : 1;	/* direct_p && exported.  */
+  bool interface_p : 1; /* An interface.  */
+  bool partition_p : 1; /* A partition.  */
 
-  bool direct_p : 1;	/* A direct import of TU, includes that of the
-			   module itself.  */
-  bool partition_direct_p : 1; /* A direct import of an imported
-				  partition.  */
-  
+  bool direct_p : 1;	/* A direct import of TU, includes the module
+			   itself.  */
+  bool partition_direct_p : 1; /* A direct import of a partition.  */
+  bool exported_p : 1;	/* (direct_p || partition_direct_p) && exported.  */
   bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
 			   do it again  */
   
-  // FIXME: The following flags can all go away.
-  bool interface_p : 1;
-
   /* Record extensions emitted or permitted.  */
   unsigned char extensions : SE_BITS;
 
@@ -3403,24 +3399,36 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
 
  public:
-  /* Is the module-state for the current TU.  */
+  /* Kind of this module.  */
   bool is_module () const
   {
     return module_p;
-  }
-  bool is_partition () const
-  {
-    return partition_p;
   }
   bool is_header () const
   {
     return header_p;
   }
-  /* Is a direct import of this TU -- true of the module_p module
-     too.  */
+  bool is_interface () const
+  {
+    return interface_p;
+  }
+  bool is_partition () const
+  {
+    return partition_p;
+  }
+
+  /* How this module is used in the current TU.  */
+  bool is_exported () const
+  {
+    return exported_p;
+  }
   bool is_direct () const
   {
     return direct_p;
+  }
+  bool is_partition_direct () const
+  {
+    return partition_direct_p;
   }
 
  public:
@@ -3429,11 +3437,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool is_detached () const
   {
     return from_loc == UNKNOWN_LOCATION;
-  }
-
-  bool is_interface () const
-  {
-    return interface_p;
   }
 
  public:
@@ -3603,12 +3606,13 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0)
 {
-  module_p = partition_p = header_p = exported_p = false;
-  direct_p = partition_direct_p = false;
-  cmi_noted_p = false;
   load_state = 0;
 
-  interface_p = false;
+  module_p = header_p = interface_p = partition_p = false;
+
+  direct_p = partition_direct_p = exported_p = false;
+
+  cmi_noted_p = false;
 
   partition_p = partition;
 
@@ -3616,13 +3620,13 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   if (name && TREE_CODE (name) == STRING_CST)
     {
       header_p = true;
+
       const char *string = TREE_STRING_POINTER (name);
       gcc_checking_assert (string[0] == '.'
 			   ? IS_DIR_SEPARATOR (string[1])
 			   : IS_ABSOLUTE_PATH (string));
     }
-  else
-    gcc_checking_assert (!name || ISALPHA (IDENTIFIER_POINTER (name)[0]));
+
   gcc_checking_assert (!(parent && header_p));
 }
 
@@ -13705,7 +13709,11 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	    }
 
 	  if (is_partition ())
-	    imp->partition_direct_p = true;
+	    {
+	      imp->partition_direct_p = true;
+	      if (exported)
+		imp->exported_p = true;
+	    }
 	}
       else
 	{
@@ -18330,6 +18338,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 
 	  preprocess_module (module, spans.main_start (), false, true, reader);
 	  if (!flag_preprocess_only)
+	    // FIXME: Move to preprocessed_module
 	    declare_module (module, spans.main_start (), true, NULL, reader);
 	}
     }

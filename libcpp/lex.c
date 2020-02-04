@@ -2702,6 +2702,8 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
   /* In either case we want to backup the peeked tokens.  */
   if (backup)
     {
+      /* If we saw EOL, we should drop it, because this isn't a module
+	 control-line after all.  */
       bool eol = peek->type == CPP_PRAGMA_EOL;
       if (!eol || backup > 1)
 	{

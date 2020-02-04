@@ -1,3 +1,9 @@
+2020-02-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (struct module_state): Cleanly separate module kind
+	flags from module use flags.
+
 2020-02-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
