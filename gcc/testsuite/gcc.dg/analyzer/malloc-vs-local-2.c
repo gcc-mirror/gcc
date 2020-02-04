@@ -24,8 +24,7 @@ int test_repeated_predicate_1 (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   {
     int *p = ptr;
@@ -38,8 +37,7 @@ int test_repeated_predicate_1 (int n)
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -60,8 +58,7 @@ int test_repeated_predicate_1a (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   {
     int *p = ptr;
@@ -72,8 +69,7 @@ int test_repeated_predicate_1a (int n)
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -94,11 +90,11 @@ int test_repeated_predicate_2 (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff_2 (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -123,7 +119,7 @@ int test_explicit_flag (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   {
     int *p = ptr;
@@ -136,7 +132,7 @@ int test_explicit_flag (int n)
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   if (need_to_free)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -157,7 +153,7 @@ int test_pointer_comparison (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   {
     int *p = ptr;
@@ -170,7 +166,7 @@ int test_pointer_comparison (int n)
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   if (ptr != buf)
     free (ptr); /* { dg-bogus "not on the heap" } */

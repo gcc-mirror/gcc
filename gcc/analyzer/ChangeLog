@@ -1,3 +1,22 @@
+2020-02-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::dump_dot): Show merger enodes.
+	(worklist::add_node): Assert that the node's m_status is
+	STATUS_WORKLIST.
+	(exploded_graph::process_worklist): Likewise for nodes from the
+	worklist.  Set status of merged nodes to STATUS_MERGER.
+	(exploded_graph::process_node): Set status of node to
+	STATUS_PROCESSED.
+	(exploded_graph::dump_exploded_nodes): Rework handling of
+	"__analyzer_dump_exploded_nodes", splitting enodes by status into
+	"processed" and "merger", showing the count of just the processed
+	enodes at the call, rather than the count of all enodes.
+	* exploded-graph.h (exploded_node::status): New enum.
+	(exploded_node::exploded_node): Initialize m_status to
+	STATUS_WORKLIST.
+	(exploded_node::get_status): New getter.
+	(exploded_node::set_status): New setter.
+
 2020-02-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93543

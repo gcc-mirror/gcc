@@ -1,3 +1,32 @@
+2020-02-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-1.c: Update for changed output to
+	__analyzer_dump_exploded_nodes, dropping redundant call at merger.
+	* gcc.dg/analyzer/data-model-7.c: Likewise.
+	* gcc.dg/analyzer/loop-2.c: Update for changed output format.
+	* gcc.dg/analyzer/loop-2a.c: Likewise.
+	* gcc.dg/analyzer/loop-4.c: Likewise.
+	* gcc.dg/analyzer/loop.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-10.c: Likewise; drop redundant
+	call at merger.
+	* gcc.dg/analyzer/malloc-vs-local-1a.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-1b.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-3.c: Likewise.
+	* gcc.dg/analyzer/paths-1.c: Likewise.
+	* gcc.dg/analyzer/paths-1a.c: Likewise.
+	* gcc.dg/analyzer/paths-2.c: Likewise.
+	* gcc.dg/analyzer/paths-3.c: Likewise.
+	* gcc.dg/analyzer/paths-4.c: Update for changed output format.
+	* gcc.dg/analyzer/paths-5.c: Likewise.
+	* gcc.dg/analyzer/paths-6.c: Likewise; drop redundant calls
+	at merger.
+	* gcc.dg/analyzer/paths-7.c: Likewise.
+	* gcc.dg/analyzer/torture/conditionals-2.c: Update for changed
+	output format.
+	* gcc.dg/analyzer/zlib-1.c: Likewise; drop redundant calls.
+	* gcc.dg/analyzer/zlib-5.c: Update for changed output format.
+
 2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92190

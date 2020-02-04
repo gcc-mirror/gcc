@@ -10,8 +10,7 @@ int test (int flag)
     other_flag = 0;
 
   /* With state-merging, we lose the relationship between 'flag' and 'other_flag'.  */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   if (other_flag)
     __analyzer_eval (flag); /* { dg-warning "UNKNOWN" } */

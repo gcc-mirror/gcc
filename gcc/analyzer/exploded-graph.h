@@ -151,9 +151,26 @@ struct eg_traits
 class exploded_node : public dnode<eg_traits>
 {
  public:
+  /* Has this enode had exploded_graph::process_node called on it?
+     This allows us to distinguish enodes that were merged during
+     worklist-handling, and thus never had process_node called on them
+     (in favor of processing the merged node).  */
+  enum status
+  {
+    /* Node is in the worklist.  */
+    STATUS_WORKLIST,
+
+    /* Node has had exploded_graph::process_node called on it.  */
+    STATUS_PROCESSED,
+
+    /* Node was left unprocessed due to merger; it won't have had
+       exploded_graph::process_node called on it.  */
+    STATUS_MERGER
+  };
+
   exploded_node (point_and_state ps,
 		 int index)
-  : m_ps (ps), m_index (index)
+  : m_ps (ps), m_status (STATUS_WORKLIST), m_index (index)
   {
     gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
   }
@@ -240,6 +257,13 @@ class exploded_node : public dnode<eg_traits>
 
   void dump_succs_and_preds (FILE *outf) const;
 
+  enum status get_status () const { return m_status; }
+  void set_status (enum status status)
+  {
+    gcc_assert (m_status == STATUS_WORKLIST);
+    m_status = status;
+  }
+
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_node);
 
@@ -248,6 +272,8 @@ private:
   /* The <program_point, program_state> pair.  This is const, as it
      is immutable once the exploded_node has been created.  */
   const point_and_state m_ps;
+
+  enum status m_status;
 
 public:
   /* The index of this exploded_node.  */

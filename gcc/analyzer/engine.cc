@@ -827,6 +827,8 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_write_text_to_stream (pp);
 
   pp_printf (pp, "EN: %i", m_index);
+  if (m_status == STATUS_MERGER)
+    pp_string (pp, " (merger)");
   pp_newline (pp);
 
   format f (true);
@@ -1638,6 +1640,7 @@ worklist::peek_next ()
 void
 worklist::add_node (exploded_node *enode)
 {
+  gcc_assert (enode->get_status () == exploded_node::STATUS_WORKLIST);
   m_queue.insert (key_t (*this, enode), enode);
 }
 
@@ -2124,6 +2127,7 @@ exploded_graph::process_worklist ()
   while (m_worklist.length () > 0)
     {
       exploded_node *node = m_worklist.take_next ();
+      gcc_assert (node->get_status () == exploded_node::STATUS_WORKLIST);
       gcc_assert (node->m_succs.length () == 0
 		  || node == m_origin);
 
@@ -2136,6 +2140,8 @@ exploded_graph::process_worklist ()
       if (flag_analyzer_state_merge && node != m_origin)
 	if (exploded_node *node_2 = m_worklist.peek_next ())
 	  {
+	    gcc_assert (node_2->get_status ()
+			== exploded_node::STATUS_WORKLIST);
 	    gcc_assert (node->m_succs.length () == 0);
 	    gcc_assert (node_2->m_succs.length () == 0);
 
@@ -2181,6 +2187,7 @@ exploded_graph::process_worklist ()
 
 			/* Remove node_2 from the worklist.  */
 			m_worklist.take_next ();
+			node_2->set_status (exploded_node::STATUS_MERGER);
 
 			/* Continue processing "node" below.  */
 		      }
@@ -2190,6 +2197,7 @@ exploded_graph::process_worklist ()
 			   in the worklist, to be processed on the next
 			   iteration.  */
 			add_edge (node, node_2, NULL, change);
+			node->set_status (exploded_node::STATUS_MERGER);
 			continue;
 		      }
 		    else
@@ -2232,12 +2240,18 @@ exploded_graph::process_worklist ()
 			if (merged_enode == node)
 			  m_worklist.add_node (merged_enode);
 			else
-			  add_edge (node, merged_enode, NULL, change);
+			  {
+			    add_edge (node, merged_enode, NULL, change);
+			    node->set_status (exploded_node::STATUS_MERGER);
+			  }
 
 			if (merged_enode == node_2)
 			  m_worklist.add_node (merged_enode);
 			else
-			  add_edge (node_2, merged_enode, NULL, change);
+			  {
+			    add_edge (node_2, merged_enode, NULL, change);
+			    node_2->set_status (exploded_node::STATUS_MERGER);
+			  }
 
 			continue;
 		      }
@@ -2319,6 +2333,8 @@ exploded_graph::process_node (exploded_node *node)
 {
   logger * const logger = get_logger ();
   LOG_FUNC_1 (logger, "EN: %i", node->m_index);
+
+  node->set_status (exploded_node::STATUS_PROCESSED);
 
   const program_point &point = node->get_point ();
 
@@ -3180,8 +3196,16 @@ exploded_graph::dump_exploded_nodes () const
     }
 
   /* Emit a warning at any call to "__analyzer_dump_exploded_nodes",
-     giving the number of exploded nodes for "before-stmt", and their
-     IDs.  */
+     giving the number of processed exploded nodes for "before-stmt",
+     and the IDs of processed and merger enodes.
+
+     We highlight the count of *processed* enodes since this is of most
+     interest in DejaGnu tests for ensuring that state merger has
+     happened.
+
+     We don't show the count of merger enodes, as this is more of an
+     implementation detail of the merging that we don't want to bake
+     into our expected DejaGnu messages.  */
 
   unsigned i;
   exploded_node *enode;
@@ -3199,25 +3223,43 @@ exploded_graph::dump_exploded_nodes () const
 	      if (seen.contains (stmt))
 		continue;
 
+	      auto_vec<exploded_node *> processed_enodes;
+	      auto_vec<exploded_node *> merger_enodes;
 	      /* This is O(N^2).  */
 	      unsigned j;
-	      auto_vec<exploded_node *> enodes;
 	      exploded_node *other_enode;
 	      FOR_EACH_VEC_ELT (m_nodes, j, other_enode)
 		{
 		  if (other_enode->get_point ().get_kind () != PK_BEFORE_STMT)
 		    continue;
 		  if (other_enode->get_stmt () == stmt)
-		    enodes.safe_push (other_enode);
+		    switch (other_enode->get_status ())
+		      {
+		      default:
+			gcc_unreachable ();
+		      case exploded_node::STATUS_PROCESSED:
+			processed_enodes.safe_push (other_enode);
+			break;
+		      case exploded_node::STATUS_MERGER:
+			merger_enodes.safe_push (other_enode);
+			break;
+		      }
 		}
 
 	      pretty_printer pp;
-	      print_enode_indices (&pp, enodes);
+	      pp_character (&pp, '[');
+	      print_enode_indices (&pp, processed_enodes);
+	      if (merger_enodes.length () > 0)
+		{
+		  pp_string (&pp, "] merger(s): [");
+		  print_enode_indices (&pp, merger_enodes);
+		}
+	      pp_character (&pp, ']');
 
-	      warning_n (stmt->location, 0, enodes.length (),
-			 "%i exploded node: %s",
-			 "%i exploded nodes: %s",
-			 enodes.length (), pp_formatted_text (&pp));
+	      warning_n (stmt->location, 0, processed_enodes.length (),
+			 "%i processed enode: %s",
+			 "%i processed enodes: %s",
+			 processed_enodes.length (), pp_formatted_text (&pp));
 	      seen.add (stmt);
 
 	      /* If the argument is non-zero, then print all of the states
@@ -3233,10 +3275,11 @@ exploded_graph::dump_exploded_nodes () const
 	      if (i_arg)
 		{
 		  exploded_node *other_enode;
-		  FOR_EACH_VEC_ELT (enodes, j, other_enode)
+		  FOR_EACH_VEC_ELT (processed_enodes, j, other_enode)
 		    {
 		      fprintf (stderr, "%i of %i: EN %i:\n",
-			       j + 1, enodes.length (), other_enode->m_index);
+			       j + 1, processed_enodes.length (),
+			       other_enode->m_index);
 		      other_enode->dump_succs_and_preds (stderr);
 		      /* Dump state.  */
 		      other_enode->get_state ().dump (m_ext_state, false);
