@@ -276,7 +276,9 @@ package Sem_Eval is
    --  or character literals. In the latter two cases, the value returned is
    --  the Pos value in the relevant enumeration type. It can also be used for
    --  fixed-point values, in which case it returns the corresponding integer
-   --  value. It cannot be used for floating-point values.
+   --  value, but it cannot be used for floating-point values. Finally, it can
+   --  also be used for the Null access value, as well as for the result of an
+   --  unchecked conversion of the aforementioned handled values.
 
    function Expr_Value_E (N : Node_Id) return Entity_Id;
    --  Returns the folded value of the expression. This function is called in
