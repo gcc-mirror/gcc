@@ -1,5 +1,9 @@
 2020-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/cpp/has-include-1.c: New test.
+	* c-c++-common/cpp/has-include-next-1.c: New test.
+	* c-c++-common/gomp/has-include-1.c: New test.
+
 	PR preprocessor/93545
 	* c-c++-common/cpp/pr88974.c: Expect another diagnostics during error
 	recovery.

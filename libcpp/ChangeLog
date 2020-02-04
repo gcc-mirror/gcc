@@ -1,5 +1,8 @@
 2020-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* macro.c (builtin_has_include): Diagnose __has_include* use outside
+	of preprocessing directives.
+
 	PR preprocessor/93545
 	* macro.c (cpp_get_token_no_padding): New function.
 	(builtin_has_include): Use it instead of cpp_get_token.  Don't check

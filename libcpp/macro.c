@@ -359,6 +359,11 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
 {
   int result = 0;
 
+  if (!pfile->state.in_directive)
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "\"%s\" used outside of preprocessing directive",
+	       NODE_NAME (op));
+
   pfile->state.angled_headers = true;
   const cpp_token *token = cpp_get_token_no_padding (pfile);
   bool paren = token->type == CPP_OPEN_PAREN;
