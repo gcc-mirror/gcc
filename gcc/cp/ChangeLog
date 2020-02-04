@@ -1,3 +1,11 @@
+2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (find_promise_type): Delete unused forward
+	declaration.
+	(struct coroutine_info): Add a bool for no promise type error.
+	(coro_promise_type_found_p): Only emit the error for a missing
+	promise once in each affected coroutine.
+
 2020-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66477

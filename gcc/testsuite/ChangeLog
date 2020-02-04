@@ -1,3 +1,7 @@
+2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-missing-promise.C: New test.
+
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91123
