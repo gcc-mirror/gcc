@@ -1,5 +1,9 @@
 2020-02-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93551
+	* constraint.cc (satisfy_declaration_constraints): Check return
+	value of push_tinst_level.
+
 	PR c++/90951
 	* constexpr.c (cxx_eval_array_reference): {}-initialize missing
 	elements instead of value-initializing them.
