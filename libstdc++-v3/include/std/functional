@@ -953,7 +953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NOT_FN_CALL_OP( const & )
       _GLIBCXX_NOT_FN_CALL_OP( && )
       _GLIBCXX_NOT_FN_CALL_OP( const && )
-#undef _GLIBCXX_NOT_FN_CALL
+#undef _GLIBCXX_NOT_FN_CALL_OP
 
     private:
       _Fn _M_fn;

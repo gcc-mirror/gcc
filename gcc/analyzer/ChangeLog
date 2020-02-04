@@ -1,3 +1,10 @@
+2020-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93543
+	* engine.cc (pod_hash_traits<function_call_string>::mark_empty):
+	Eliminate reinterpret_cast.
+	(pod_hash_traits<function_call_string>::is_empty): Likewise.
+
 2020-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* constraint-manager.cc (range::constrained_to_single_element):

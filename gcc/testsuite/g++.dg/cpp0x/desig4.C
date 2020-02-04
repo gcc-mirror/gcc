@@ -13,9 +13,9 @@ private:
 };
 
 SomeClass::SomeClass()
- : member({
+ : member{
    [INDEX1] = { .field = 0 },  // { dg-error "constant expression" }
    [INDEX2] = { .field = 1 }   // { dg-error "constant expression" }
- })
+ }
 {
 }

@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "hash-map.h"
 
-static tree find_promise_type (tree);
 static bool coro_promise_type_found_p (tree, location_t);
 
 /* GCC C++ coroutines implementation.
@@ -93,6 +92,7 @@ struct GTY((for_user)) coroutine_info
 				    function into a coroutine.  */
   /* Flags to avoid repeated errors for per-function issues.  */
   bool coro_ret_type_error_emitted;
+  bool coro_promise_error_emitted;
 };
 
 struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
@@ -460,7 +460,10 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* If we don't find it, punt on the rest.  */
       if (coro_info->promise_type == NULL_TREE)
 	{
-	  error_at (loc, "unable to find the promise type for this coroutine");
+	  if (!coro_info->coro_promise_error_emitted)
+	    error_at (loc, "unable to find the promise type for"
+		      " this coroutine");
+	  coro_info->coro_promise_error_emitted = true;
 	  return false;
 	}
 

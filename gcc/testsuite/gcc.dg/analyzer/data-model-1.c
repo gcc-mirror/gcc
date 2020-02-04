@@ -171,8 +171,8 @@ int test_12c (void)
 
 struct coord
 {
-  int x;
-  int y;
+  long x;
+  long y;
 };
 
 int test_12d (struct coord c)

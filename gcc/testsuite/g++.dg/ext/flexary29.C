@@ -4,7 +4,7 @@
 
 struct A
 {
-  constexpr A() : i(), x() {}
+  constexpr A() : i(), x() {}	// { dg-error "flexible" }
   int i;
   char x[];
 };

@@ -1,3 +1,42 @@
+2020-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-1.c (struct coord): Convert fields
+	from int to long.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93538
+	* gcc.dg/tree-ssa/forwprop-38.c: New testcase.
+
+2020-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/has-include-1.c: New test.
+	* c-c++-common/cpp/has-include-next-1.c: New test.
+	* c-c++-common/gomp/has-include-1.c: New test.
+
+	PR preprocessor/93545
+	* c-c++-common/cpp/pr88974.c: Expect another diagnostics during error
+	recovery.
+	* c-c++-common/cpp/pr93545-1.c: New test.
+	* c-c++-common/cpp/pr93545-2.c: New test.
+	* c-c++-common/cpp/pr93545-3.c: New test.
+	* c-c++-common/cpp/pr93545-4.c: New test.
+
+2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-missing-promise.C: New test.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91123
+	* gcc.dg/tree-ssa/ssa-fre-85.c: New testcase.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* gcc.target/i386/pr92819.c: New testcase.
+	* gcc.target/i386/pr92803.c: Adjust.
+
 2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/93458

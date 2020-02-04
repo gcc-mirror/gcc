@@ -1,3 +1,70 @@
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93538
+	* match.pd (addr EQ/NE ptr): Amend to handle &ptr->x EQ/NE ptr.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91123
+	* tree-ssa-sccvn.c (vn_walk_cb_data::finish): New method.
+	(vn_walk_cb_data::last_vuse): New member.
+	(vn_walk_cb_data::saved_operands): Likewsie.
+	(vn_walk_cb_data::~vn_walk_cb_data): Release saved_operands.
+	(vn_walk_cb_data::push_partial_def): Use finish.
+	(vn_reference_lookup_2): Update last_vuse and use finish if
+	we've saved operands.
+	(vn_reference_lookup_3): Use finish and update calls to
+	push_partial_defs everywhere.  When translating through
+	memcpy or aggregate copies save off operands and alias-set.
+	(eliminate_dom_walker::eliminate_stmt): Restore VN_WALKREWRITE
+	operation for redundant store removal.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Avoid
+	generating more stmts than before.
+
+2020-02-04  Martin Liska  <mliska@suse.cz>
+
+	* config/arm/arm.c (arm_gen_far_branch): Move the function
+	outside of selftests.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (adjust_vec_address_pcrel): New helper
+	function to adjust PC-relative vector addresses.
+	(rs6000_adjust_vec_address): Call adjust_vec_address_pcrel to
+	handle vectors with PC-relative addresses.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Add forward
+	reference.
+	(hard_reg_and_mode_to_addr_mask): Delete.
+	(rs6000_adjust_vec_address): If the original vector address
+	was REG+REG or REG+OFFSET and the element is not zero, do the add
+	of the elements in the original address before adding the offset
+	for the vector element.  Use address_to_insn_form to validate the
+	address using the register being loaded, rather than guessing
+	whether the address is a DS-FORM or DQ-FORM address.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (get_vector_offset): New helper function
+	to calculate the offset in memory from the start of a vector of a
+	particular element.  Add code to keep the element number in
+	bounds if the element number is variable.
+	(rs6000_adjust_vec_address): Move calculation of offset of the
+	vector element to get_vector_offset.
+	(rs6000_split_vec_extract_var): Do not do the initial AND of
+	element here, move the code to get_vector_offset.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Add some
+	gcc_asserts.
+
 2020-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md: Improve documentation.

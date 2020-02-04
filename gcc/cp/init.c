@@ -801,6 +801,17 @@ perform_member_init (tree member, tree init)
 		    member);
     }
 
+  if (maybe_reject_flexarray_init (member, init))
+    return;
+
+  if (init && TREE_CODE (init) == TREE_LIST
+      && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
+	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
+	  || !(/* cxx_dialect >= cxx2a ? CP_AGGREGATE_TYPE_P (type) */
+	       /* :  */CLASS_TYPE_P (type))))
+    init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+					    tf_warning_or_error);
+
   if (init == void_type_node)
     {
       /* mem() means value-initialization.  */
@@ -832,12 +843,7 @@ perform_member_init (tree member, tree init)
     }
   else if (init
 	   && (TYPE_REF_P (type)
-	       /* Pre-digested NSDMI.  */
-	       || (((TREE_CODE (init) == CONSTRUCTOR
-		     && TREE_TYPE (init) == type)
-		    /* { } mem-initializer.  */
-		    || (TREE_CODE (init) == TREE_LIST
-			&& DIRECT_LIST_INIT_P (TREE_VALUE (init))))
+	       || (TREE_CODE (init) == CONSTRUCTOR
 		   && (CP_AGGREGATE_TYPE_P (type)
 		       || is_std_init_list (type)))))
     {
@@ -847,10 +853,7 @@ perform_member_init (tree member, tree init)
 	 persists until the constructor exits."  */
       unsigned i; tree t;
       releasing_vec cleanups;
-      if (TREE_CODE (init) == TREE_LIST)
-	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-						tf_warning_or_error);
-      if (TREE_TYPE (init) != type)
+      if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init), type))
 	{
 	  if (BRACE_ENCLOSED_INITIALIZER_P (init)
 	      && CP_AGGREGATE_TYPE_P (type))
@@ -876,23 +879,6 @@ perform_member_init (tree member, tree init)
     {
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  if (init)
-	    {
-	      /* Check to make sure the member initializer is valid and
-		 something like a CONSTRUCTOR in: T a[] = { 1, 2 } and
-		 if it isn't, return early to avoid triggering another
-		 error below.  */
-	      if (maybe_reject_flexarray_init (member, init))
-		return;
-
-	      if (TREE_CODE (init) != TREE_LIST || TREE_CHAIN (init))
-		init = error_mark_node;
-	      else
-		init = TREE_VALUE (init);
-
-	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
-		init = digest_init (type, init, tf_warning_or_error);
-	    }
 	  if (init == NULL_TREE
 	      || same_type_ignoring_top_level_qualifiers_p (type,
 							    TREE_TYPE (init)))
@@ -962,16 +948,10 @@ perform_member_init (tree member, tree init)
 						      /*using_new=*/false,
 						      /*complain=*/true);
 	}
-      else if (TREE_CODE (init) == TREE_LIST)
-	/* There was an explicit member initialization.  Do some work
-	   in that case.  */
-	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-						tf_warning_or_error);
 
       maybe_warn_list_ctor (member, init);
 
-      /* Reject a member initializer for a flexible array member.  */
-      if (init && !maybe_reject_flexarray_init (member, init))
+      if (init)
 	finish_expr_stmt (cp_build_modify_expr (input_location, decl,
 						INIT_EXPR, init,
 						tf_warning_or_error));

@@ -1,3 +1,33 @@
+2020-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86917
+	* init.c (perform_member_init): Simplify.
+	* constexpr.c (cx_check_missing_mem_inits): Allow uninitialized
+	flexarray.
+	(cxx_eval_vec_init_1): Handle CONSTRUCTOR.
+
+2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (find_promise_type): Delete unused forward
+	declaration.
+	(struct coroutine_info): Add a bool for no promise type error.
+	(coro_promise_type_found_p): Only emit the error for a missing
+	promise once in each affected coroutine.
+
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66477
+	* constexpr.c (cxx_eval_constant_expression) [PARM_DECL]: Don't
+	defer loading the value of a reference.
+
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91953
+	* constexpr.c (potential_constant_expression_1) [PARM_DECL]: Allow
+	empty class type.
+	[COMPONENT_REF]: A member function reference doesn't use the object
+	as an rvalue.
+
 2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/93458

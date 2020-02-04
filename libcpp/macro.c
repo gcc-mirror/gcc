@@ -336,6 +336,22 @@ unsigned num_expanded_macros_counter = 0;
    from macro expansion.  */
 unsigned num_macro_tokens_counter = 0;
 
+/* Wrapper around cpp_get_token to skip CPP_PADDING tokens
+   and not consume CPP_EOF.  */
+static const cpp_token *
+cpp_get_token_no_padding (cpp_reader *pfile)
+{
+  for (;;)
+    {
+      const cpp_token *ret = cpp_peek_token (pfile, 0);
+      if (ret->type == CPP_EOF)
+	return ret;
+      ret = cpp_get_token (pfile);
+      if (ret->type != CPP_PADDING)
+	return ret;
+    }
+}
+
 /* Handle meeting "__has_include" builtin macro.  */
 
 static int
@@ -343,11 +359,16 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
 {
   int result = 0;
 
+  if (!pfile->state.in_directive)
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "\"%s\" used outside of preprocessing directive",
+	       NODE_NAME (op));
+
   pfile->state.angled_headers = true;
-  const cpp_token *token = cpp_get_token (pfile);
+  const cpp_token *token = cpp_get_token_no_padding (pfile);
   bool paren = token->type == CPP_OPEN_PAREN;
   if (paren)
-    token = cpp_get_token (pfile);
+    token = cpp_get_token_no_padding (pfile);
   else
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing '(' before \"%s\" operand", NODE_NAME (op));
@@ -379,7 +400,8 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
       XDELETEVEC (fname);
     }
 
-  if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+  if (paren
+      && cpp_get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"%s\" operand", NODE_NAME (op));
 

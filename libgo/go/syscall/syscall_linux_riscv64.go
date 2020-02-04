@@ -4,20 +4,6 @@
 
 package syscall
 
-import "unsafe"
-
 func (r *PtraceRegs) PC() uint64 { return r.Pc }
 
 func (r *PtraceRegs) SetPC(pc uint64) { r.Pc = pc }
-
-func (iov *Iovec) SetLen(length int) {
-	iov.Len = uint64(length)
-}
-
-func (msghdr *Msghdr) SetControllen(length int) {
-	msghdr.Controllen = uint64(length)
-}
-
-func (cmsg *Cmsghdr) SetLen(length int) {
-	cmsg.Len = uint64(length)
-}
