@@ -3341,13 +3341,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   loc_range_t GTY((skip)) ordinary_locs;
   loc_range_t GTY((skip)) macro_locs;
 
-  // FIXME: I think we only need one of these, because once we've set
-  // LOC, we'll have a line-map to refer to.
-  /* The LOC is unset until we import the module.  */
+  /* LOC is first set too the importing location.  When initially
+     loaded it refers to a module loc whose parent is the importing
+     location.  */
   location_t loc; 	/* Location referring to module itself.  */
-  /* The FROM_LOC is unset until we process a declaration.  */
-  location_t from_loc;  /* Location module was imported at.  */
-
   unsigned crc;		/* CRC we saw reading it in. */
 
   unsigned mod;		/* Module owner number.  */
@@ -3433,10 +3430,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Is this not a real module?  */
-  // FIXME: Rename or remove
-  bool is_detached () const
+  bool is_rooted () const
   {
-    return from_loc == UNKNOWN_LOCATION;
+    return loc != UNKNOWN_LOCATION;
   }
 
  public:
@@ -3560,23 +3556,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return flatname;
   }
-
- public:
-  /* Create a location for module.   */
-  void maybe_create_loc ()
-  {
-    gcc_checking_assert (from_loc != UNKNOWN_LOCATION);
-    if (loc == UNKNOWN_LOCATION)
-      /* Error paths can cause this to be set and then repeated.  */
-      loc = linemap_module_loc (line_table, from_loc, get_flatname ());
-  }
-  void attach (location_t from)
-  {
-    from_loc = from;
-
-    if (!flatname)
-      set_flatname ();
-  }
+  location_t imported_from () const;
 
  public:
   bool do_import (const char *filename, cpp_reader *);
@@ -3602,7 +3582,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     flatname (NULL), filename (NULL),
     entity_lwm (~0u >> 1), entity_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
-    loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
+    loc (UNKNOWN_LOCATION),
     crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0)
 {
   load_state = 0;
@@ -3871,7 +3851,7 @@ public:
   void imex_query (const module_state *, bool exporting);
   char *imex_response (const module_state *state)
   {
-    return get_response (state->from_loc) > 0 ? cmi_response (state) : NULL;
+    return get_response (state->loc) > 0 ? cmi_response (state) : NULL;
   }
   bool translate_include (location_t, const char *path, size_t len);
 
@@ -4363,7 +4343,7 @@ dumper::operator () (const char *format, ...)
 	    const char *str = "(none)";
 	    if (module_state *m = va_arg (args, module_state *))
 	      {
-		if (m->is_detached ())
+		if (!m->is_rooted ())
 		  str = "(detached)";
 		else
 		  str = m->get_flatname ();
@@ -13256,7 +13236,7 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, bool exporting)
 {
-  send_command (state->from_loc, "%sPORT %s",
+  send_command (state->loc, "%sPORT %s",
 		exporting ? "EX" : "IM",
 		state->get_flatname ());
 }
@@ -13268,19 +13248,19 @@ module_mapper::cmi_response (const module_state *state)
 {
   char *filename = NULL;
 
-  switch (response_word (state->from_loc, "OK", "ERROR", NULL))
+  switch (response_word (state->loc, "OK", "ERROR", NULL))
     {
     default:
       break;
 
     case 0: /* OK $bmifile  */
-      filename = response_token (state->from_loc, true);
+      filename = response_token (state->loc, true);
       filename = maybe_strip_cmi_prefix (filename);
-      response_eol (state->from_loc);
+      response_eol (state->loc);
       break;
 
     case 1: /* ERROR $msg */
-      error_at (state->from_loc, "mapper cannot provide module %qs: %s",
+      error_at (state->loc, "mapper cannot provide module %qs: %s",
 		state->get_flatname (), response_error ());
       break;
     }
@@ -13293,7 +13273,7 @@ module_mapper::cmi_response (const module_state *state)
 char *
 module_mapper::import_export (const module_state *state, bool export_p)
 {
-  module_mapper *mapper = get (state->from_loc);
+  module_mapper *mapper = get (state->loc);
 
   if (!mapper->is_server ())
     return NULL;
@@ -13312,13 +13292,13 @@ bool
 module_mapper::export_done (const module_state *state)
 {
   bool ok = true;
-  module_mapper *mapper = get (state->from_loc);
+  module_mapper *mapper = get (state->loc);
 
   if (mapper->is_server ())
     {
       timevar_start (TV_MODULE_MAPPER);
       dump (dumper::MAPPER) && dump ("Completed mapper");
-      mapper->send_command (state->from_loc, "DONE %s",
+      mapper->send_command (state->loc, "DONE %s",
 			    state->get_flatname ());
       timevar_stop (TV_MODULE_MAPPER);
     }
@@ -13372,7 +13352,7 @@ module_mapper::translate_include (location_t loc, const char *path, size_t len)
 /* If THIS is the current purview, issue an import error and return false.  */
 
 bool
-module_state::check_not_purview (location_t loc)
+module_state::check_not_purview (location_t from)
 {
   module_state *imp = (*modules)[0];
   if (imp && !imp->name)
@@ -13380,9 +13360,8 @@ module_state::check_not_purview (location_t loc)
   if (imp == this)
     {
       /* Cannot import the current module.  */
-      error_at (loc, "cannot import module %qs in its own purview",
-		get_flatname ());
-      inform (from_loc, "module %qs declared here", get_flatname ());
+      error_at (from, "cannot import module in its own purview");
+      inform (loc, "module %qs declared here", get_flatname ());
       return false;
     }
   return true;
@@ -13619,7 +13598,7 @@ module_state::write_imports (bytes_out &sec, bool direct)
 	  sec.u32 (imp->crc);
 	  if (direct)
 	    {
-	      write_location (sec, imp->from_loc);
+	      write_location (sec, imp->imported_from ());
 	      sec.str (imp->filename);
 	      sec.u (imp->exported_p);
 	    }
@@ -13675,20 +13654,21 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  if (!imp->check_not_purview (loc))
 	    continue;
 
-	  if (imp->is_detached ())
-	    imp->attach (floc);
-
 	  if (!imp->load_state)
 	    {
-	      unsigned n = dump.push (imp);
-	      imp->maybe_create_loc ();
+	      imp->loc = floc;
 	      imp->crc = crc;
+	      if (!imp->get_flatname ())
+		imp->set_flatname ();
+
+	      unsigned n = dump.push (imp);
 
 	      if (imp->filename)
 		fname = NULL;
 	      else if (!fname[0])
 		fname = module_mapper::import_export (imp, false);
 
+	      // FIXME: use the contained assert as the condition
 	      if (imp->mod == MODULE_UNKNOWN_PARTITION)
 		{
 		  /* Must import the partition now, as inter-module
@@ -13717,7 +13697,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       else
 	{
 	  /* An indirect import, find it, it should already be here.  */
-	  if (imp->is_detached ())
+	  if (!imp->load_state)
 	    {
 	      error_at (loc, "indirect import %qs is not already loaded", name);
 	      continue;
@@ -13803,8 +13783,8 @@ module_state::write_partitions (elf_out *to, unsigned count, unsigned *crc_ptr)
 			   imp, imp->crc);
 	  sec.str (imp->get_flatname ());
 	  sec.u32 (imp->crc);
-	  write_location (sec,
-			  imp->is_direct () ? imp->from_loc : UNKNOWN_LOCATION);
+	  write_location (sec, imp->is_direct ()
+			  ? imp->imported_from () : UNKNOWN_LOCATION);
 	  sec.str (imp->filename);
 	}
     }
@@ -13836,7 +13816,7 @@ module_state::read_partitions (unsigned count)
       dump () && dump ("Reading elided partition %s (crc=%x)", name, crc);
 
       module_state *imp = get_module (name);
-      if (!imp || !imp->is_partition () || !imp->is_detached ()
+      if (!imp || !imp->is_partition () || imp->is_rooted ()
 	  || get_primary (imp) != this)
 	{
 	  sec.set_overrun ();
@@ -13845,7 +13825,7 @@ module_state::read_partitions (unsigned count)
 
       /* Attach the partition without loading it.  We'll have to load
 	 for real if it's indirectly imported.  */
-      imp->attach (floc);
+      imp->loc = floc;
       imp->crc = crc;
       // FIXME: Can't we use MODULE_UNKNOWN and imp->is_partition ()?
       imp->mod = MODULE_UNKNOWN_PARTITION; /* Mark as wierd.   */
@@ -14957,6 +14937,19 @@ module_for_macro_loc (location_t loc)
     }
 
   return NULL;
+}
+
+location_t
+module_state::imported_from () const
+{
+  location_t from = loc;
+  line_map_ordinary const *fmap
+    = linemap_check_ordinary (linemap_lookup (line_table, from));
+
+  if (MAP_MODULE_P (fmap))
+    from = linemap_included_from (fmap);
+
+  return from;
 }
 
 /* If we're not streaming, record that we need location LOC.
@@ -17448,8 +17441,6 @@ module_state::set_import (module_state const *import, bool is_export)
 
   /* We see IMPORT's exports (which includes IMPORT).  If IMPORT is
      the primary interface or a partition we'll see its imports.  */
-  // FIXME: We have to separate out the imports that only happen in
-  // the GMF
   bitmap_ior_into (imports, import->is_module () || import->is_partition ()
 		   ? import->imports : import->exports);
 
@@ -17749,20 +17740,21 @@ module_state::set_flatname ()
 bool
 module_state::do_import (char const *fname, cpp_reader *reader)
 {
-  gcc_assert (global_namespace == current_scope ()
-	      && !load_state && loc != UNKNOWN_LOCATION);
+  gcc_assert (global_namespace == current_scope () && !load_state);
   unsigned diags = is_direct () ? errorcount + 1 : 0;
+
+  loc = linemap_module_loc (line_table, loc, get_flatname ());
 
   if (lazy_open >= lazy_limit)
     freeze_an_elf ();
 
   if (fname)
     {
-      // FIXME: Seems wrong place now?
       gcc_assert (!filename);
       filename = xstrdup (fname);
     }
 
+  // FIXME: wrong place!
   if (mkdeps *deps = cpp_get_deps (reader))
     deps_add_module (deps, get_flatname ());
 
@@ -17991,14 +17983,11 @@ direct_import (module_state *import, cpp_reader *reader)
   timevar_start (TV_MODULE_IMPORT);
   unsigned n = dump.push (import);
 
-  gcc_checking_assert (import->direct_p);
+  gcc_checking_assert (import->direct_p && import->is_rooted ());
   if (!import->load_state)
-    {
-      import->maybe_create_loc ();
-      if (!import->do_import (NULL, reader))
-	fatal_error (import->loc,
-		     "returning to the gate for a mechanical issue");
-    }
+    if (!import->do_import (NULL, reader))
+      fatal_error (import->loc,
+		   "returning to the gate for a mechanical issue");
 
   if (import->load_state < 3)
     import->read_language ();
@@ -18021,8 +18010,13 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
   if (exporting_p || module_exporting_p ())
     import->exported_p = true;
 
+  if (import->load_state)
+    {
+      from_loc = ordinary_loc_of (line_table, from_loc);
+      linemap_module_reparent (line_table, import->loc, from_loc);
+    }
   gcc_checking_assert (!import->module_p);
-  gcc_checking_assert (import->is_direct () && !import->is_detached ());
+  gcc_checking_assert (import->is_direct () && import->is_rooted ());
 
   direct_import (import, reader);
 }
@@ -18044,8 +18038,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
 		: G_("module already imported"));
       if (module_purview_p ())
 	module = current;
-      inform (module->from_loc,
-	      module_purview_p ()
+      inform (module->loc, module_purview_p ()
 	      ? G_("module %qs declared here")
 	      : G_("module %qs imported here"),
 	      module->get_flatname ());
@@ -18053,7 +18046,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
     }
 
   gcc_checking_assert (module->module_p);
-  gcc_checking_assert (module->is_direct () && !module->is_detached ());
+  gcc_checking_assert (module->is_direct () && module->is_rooted ());
 
   /* Yer a module, 'arry.  */
   module_kind &= ~MK_GLOBAL;
@@ -18061,6 +18054,8 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
 
   if (module->is_partition () || exporting_p)
     {
+      gcc_checking_assert (module->get_flatname ());
+
       if (module->is_partition ())
 	module_kind |= MK_PARTITION;
 
@@ -18074,6 +18069,8 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
 	module_kind |= MK_GLOBAL | MK_EXPORTING;
 
       /* Copy the importing information we may have already done.  */
+      // FIXME: We have to separate out the imports that only happen
+      // in the GMF
       module->imports = current->imports;
 
       module->mod = 0;
@@ -18092,7 +18089,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
 void
 module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
 {
-  if (!header_module_p ())
+  if (!flag_header_unit)
     {
       /* Turn us off.  */
       struct cpp_callbacks *cb = cpp_get_callbacks (reader);
@@ -18299,10 +18296,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	  main = canonicalize_header_name (NULL, 0, true, main, len);
 	  module_state *module = get_module (build_string (len, main));
 
-	  preprocess_module (module, spans.main_start (), false, true, reader);
-	  if (!flag_preprocess_only)
-	    // FIXME: Move to preprocessed_module
-	    declare_module (module, spans.main_start (), true, NULL, reader);
+	  preprocess_module (module, main_source_loc, false, true, reader);
 	}
     }
 }
@@ -18318,7 +18312,7 @@ preprocess_module (module_state *module, location_t from_loc,
 {
   if (!is_import)
     {
-      if (module->from_loc)
+      if (module->loc)
 	/* It's already been mentioned, so ignore its module-ness.  */
 	is_import = true;
       else
@@ -18333,14 +18327,11 @@ preprocess_module (module_state *module, location_t from_loc,
     {
       /* Mark as a direct import.  */
       module->direct_p = true;
-      module->from_loc = ordinary_loc_of (line_table, from_loc);
-      if (module->loc)
-	/* This was indirectly imported (by an earlier header unit
-	   when preprocessing), reparent it so the include chain shows
-	   as a direct import.  */
-	linemap_module_reparent (line_table, module->loc, module->from_loc);
-      if (!module->flatname)
-	module->set_flatname ();
+      if (!module->load_state)
+	{
+	  module->loc = ordinary_loc_of (line_table, from_loc);
+	  module->set_flatname ();
+	}
     }
 
   if (is_import && !module->module_p && module->is_header ()
@@ -18356,12 +18347,10 @@ preprocess_module (module_state *module, location_t from_loc,
 
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (true // FIXME: our tokenizer coroutine can tell us this
-	      // early enough.  Oly need to do this
+	  if (true // FIXME: Only need to do this when there is, or
+		   // might be, a CMI emitted
 	      || module_has_cmi_p ())
 	    spans.close ();
-
-	  module->maybe_create_loc ();
 
 	  char *fname = module_mapper::import_export (module, false);
 	  if (!module->do_import (fname, reader))
@@ -18458,6 +18447,20 @@ preprocessed_module (cpp_reader *reader)
 		path = maybe_add_cmi_prefix (module->filename);
 	      deps_add_module (deps, module->get_flatname (),
 			       path, module->is_header());
+	    }
+	}
+    }
+
+  if (flag_header_unit && !flag_preprocess_only)
+    {
+      iterator end = modules_hash->end ();
+      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
+	{
+	  module_state *module = *iter;
+	  if (module->is_module ())
+	    {
+	      declare_module (module, main_source_loc, true, NULL, reader);
+	      break;
 	    }
 	}
     }
@@ -18760,8 +18763,7 @@ finish_module_processing (cpp_reader *reader)
 	}
 
       if (errorcount)
-	warning_at (state->from_loc, 0,
-		    "not writing module %qs due to errors",
+	warning_at (state->loc, 0, "not writing module %qs due to errors",
 		    state->get_flatname ());
       else
 	{
@@ -18774,8 +18776,7 @@ finish_module_processing (cpp_reader *reader)
 
 	  if (to.get_error ())
 	    {
-	      error_at (state->from_loc,
-			"failed to write compiled module: %s",
+	      error_at (state->loc, "failed to write compiled module: %s",
 			to.get_error (state->filename));
 	      state->note_cmi_name ();
 	    }

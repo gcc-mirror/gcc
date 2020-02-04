@@ -663,10 +663,7 @@ cp_lexer_new_main (void)
 		      - 1;
 
   if (coro)
-    {
-      preprocessed_module (parse_in);
-      module_token_cdtor (parse_in, coro);
-    }
+    module_token_cdtor (parse_in, coro);
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */

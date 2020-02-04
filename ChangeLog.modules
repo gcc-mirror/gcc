@@ -1,6 +1,23 @@
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* lex.c (module_token_cdtor): Call preprocessed_module on
+	teardown here ...
+	* parser.c (cp_lexer_new_main): ... not here.
+	* module.cc (struct module_state): Drop from_loc.  Use loc in most
+	places.
+	(module_state::{maybe_create_loc,attach,is_detached): Delete.
+	(module_state::is_rooted): New.  Use it in place of is_detached.
+	(module_state::imported_from): New.
+	(module_state::do_import): Create module loc here ...
+	(direct_import): ... not here ...
+	(preprocess_module): ... or here.
+	(import_module): Reparent here.
+	(module_cpp_undef): Check flag_header_unit.
+	(module_begin_main_file): Do not declare_module here ...
+	(preprocessed_module): ... do it here.
+
+	gcc/cp/
 	* module.cc (module_state::direct_import): Delete.
 	(module_state::do_import): Only ever do initial read.
 	(direct_import): New non-member fn.

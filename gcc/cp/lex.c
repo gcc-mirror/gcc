@@ -532,6 +532,7 @@ module_token_cdtor (cpp_reader *pfile, void *data_)
   token_coro *coro = (token_coro *)data_;
   if (coro)
     {
+      preprocessed_module (pfile);
       delete coro;
       coro = NULL;
     }
@@ -542,14 +543,20 @@ module_token_cdtor (cpp_reader *pfile, void *data_)
 }
 
 void *
+module_token_lang (int type, int keyword, tree value, location_t loc,
+		   void *data_)
+{
+  token_coro *coro = (token_coro *)data_;
+  coro->resume (type, keyword, value, loc);
+
+  return data_;
+}
+
+void *
 module_token_pre (cpp_reader *pfile, const cpp_token *tok, void *data_)
 {
   if (!tok)
-    {
-      if (data_)
-	preprocessed_module (pfile);
-      return module_token_cdtor (pfile, data_);
-    }
+    return module_token_cdtor (pfile, data_);
 
   int type = tok->type;
   int keyword = RID_MAX;
@@ -568,16 +575,6 @@ module_token_pre (cpp_reader *pfile, const cpp_token *tok, void *data_)
     value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
 
   return module_token_lang (type, keyword, value, tok->src_loc, data_);
-}
-
-void *
-module_token_lang (int type, int keyword, tree value, location_t loc,
-		   void *data_)
-{
-  token_coro *coro = (token_coro *)data_;
-  coro->resume (type, keyword, value, loc);
-
-  return data_;
 }
 
 /* Parse a #pragma whose sole argument is a string constant.
