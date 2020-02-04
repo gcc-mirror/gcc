@@ -1,3 +1,8 @@
+2020-02-04  Martin Liska  <mliska@suse.cz>
+
+	* config/arm/arm.c (arm_gen_far_branch): Move the function
+	outside of selftests.
+
 2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (adjust_vec_address_pcrel): New helper
