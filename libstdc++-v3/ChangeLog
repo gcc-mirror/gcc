@@ -1,5 +1,8 @@
 2020-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_GLIBCXX_NOT_FN_CALL_OP): Un-define after
+	use.
+
 	PR libstdc++/93562
 	* include/bits/unique_ptr.h (__uniq_ptr_impl::swap): Define.
 	(unique_ptr::swap, unique_ptr<T[], D>::swap): Call it.
