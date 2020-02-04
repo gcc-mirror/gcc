@@ -45,7 +45,7 @@ void dump_sese (const sese_l &);
 /* Get the entry of an sese S.  */
 
 static inline basic_block
-get_entry_bb (sese_l &s)
+get_entry_bb (const sese_l &s)
 {
   return s.entry->dest;
 }
@@ -53,7 +53,7 @@ get_entry_bb (sese_l &s)
 /* Get the exit of an sese S.  */
 
 static inline basic_block
-get_exit_bb (sese_l &s)
+get_exit_bb (const sese_l &s)
 {
   return s.exit->src;
 }
