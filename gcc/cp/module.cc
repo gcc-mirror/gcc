@@ -3580,7 +3580,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   bool do_import (const char *filename, cpp_reader *);
-  void direct_import (cpp_reader *, bool for_cpp);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -13290,7 +13289,7 @@ module_mapper::cmi_response (const module_state *state)
 }
 
 /* Import query.  */
-
+// FIXME, we only ever import.  plus get should always be main-file location
 char *
 module_mapper::import_export (const module_state *state, bool export_p)
 {
@@ -17780,20 +17779,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   announce ("importing");
   load_state = 1;
   lazy_open++;
-  if (read_initial (fd, e, reader))
-    {
-      // FIXME: Reconsider
-      bool preprocessed = cpp_get_options (reader)->preprocessed;
-
-      if (!flag_preprocess_only)
-	{
-	  if (preprocessed)
-	    /* If we're not in the preprocessor, do the language importing
-	       now, so that we try not to thrash the LRU cache in the
-	       worst case.  */
-	    read_language ();
-	}
-    }
+  read_initial (fd, e, reader);
   slurp->lru = ++lazy_lru;
   gcc_assert (slurp->current == ~0u);
 
@@ -17801,53 +17787,6 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   announce (flag_module_lazy ? "lazy" : "imported");
 
   return ok;
-}
-
-/* Import this module now.  Fatal error on failure.  LAZY is true if
-   we're a lazy pending imports (which will have preserved the line
-   map already).  */
-// FIXME: perhaps this should be split for lang and cpp uses?
-void
-module_state::direct_import (cpp_reader *reader, bool for_cpp)
-{
-  timevar_start (TV_MODULE_IMPORT);
-  unsigned n = dump.push (this);
-
-  gcc_checking_assert (direct_p);
-  // FIXME: Why the mod == check?
-  if (!load_state && mod == MODULE_UNKNOWN)
-    {
-      maybe_create_loc ();
-
-      char *fname = NULL;
-      // FIXME: Seems wrong place now.  do in caller?
-      if (for_cpp)
-	fname = module_mapper::import_export (this, false);
-
-      if (!do_import (fname, reader)
-	  && !flag_preprocess_only)
-	fatal_error (loc, "returning to gate for a mechanical issue");
-
-    }
-
-  if (load_state)
-    {
-      direct_p = true;
-
-      if (for_cpp)
-	{
-	  read_preprocessor ();
-	  import_macros ();
-	}
-      else
-	{
-	  read_language ();
-	  (*modules)[0]->set_import (this, exported_p);
-	}
-    }
-
-  dump.pop (n);
-  timevar_stop (TV_MODULE_IMPORT);
 }
 
 /* Attempt to increase the file descriptor limit.  */
@@ -18046,6 +17985,30 @@ lazy_load_members (tree decl)
   timevar_stop (TV_MODULE_IMPORT);
 }
 
+static void
+direct_import (module_state *import, cpp_reader *reader)
+{
+  timevar_start (TV_MODULE_IMPORT);
+  unsigned n = dump.push (import);
+
+  gcc_checking_assert (import->direct_p);
+  if (!import->load_state)
+    {
+      import->maybe_create_loc ();
+      if (!import->do_import (NULL, reader))
+	fatal_error (import->loc,
+		     "returning to the gate for a mechanical issue");
+    }
+
+  if (import->load_state < 3)
+    import->read_language ();
+
+  (*modules)[0]->set_import (import, import->exported_p);
+
+  dump.pop (n);
+  timevar_stop (TV_MODULE_IMPORT);
+}
+
 /* Import module IMPORT.  */
 
 void
@@ -18061,7 +18024,7 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
   gcc_checking_assert (!import->module_p);
   gcc_checking_assert (import->is_direct () && !import->is_detached ());
 
-  import->direct_import (reader, false);
+  direct_import (import, reader);
 }
 
 /* Declare the name of the current module to be NAME.  EXPORTING_p is
@@ -18120,7 +18083,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
     {
       module->interface_p = true;
       current->parent = module; /* So mangler knows module identity. */
-      module->direct_import (reader, false);
+      direct_import (module, reader);
     }
 }
 
@@ -18381,29 +18344,42 @@ preprocess_module (module_state *module, location_t from_loc,
     }
 
   if (is_import && !module->module_p && module->is_header ()
-      && !module->load_state)
+      && module->load_state < 2)
     {
       // FIXME: Skip when preprocessed input
+      timevar_start (TV_MODULE_IMPORT);
+      unsigned n = dump.push (module);
 
-      unsigned pre_hwm = 0;
+      if (!module->load_state)
+	{
+	  unsigned pre_hwm = 0;
 
-      /* Preserve the state of the line-map.  */
-      pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-      if (true // FIXME: our tokenizer coroutine can tell us this
-	       // early enough.  Oly need to do this
-	  || module_has_cmi_p ())
-	spans.close ();
-      
-#if 0
-      if (!module->filename)
-	module->filename = module_mapper::import_export (module, false);
-#endif
-      module->direct_import (reader, true);
+	  /* Preserve the state of the line-map.  */
+	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+	  if (true // FIXME: our tokenizer coroutine can tell us this
+	      // early enough.  Oly need to do this
+	      || module_has_cmi_p ())
+	    spans.close ();
 
-      /* Restore the line-map state.  */
-      linemap_module_restore (line_table, pre_hwm);
-      if (true || module_has_cmi_p ())
-	spans.open ();
+	  module->maybe_create_loc ();
+
+	  char *fname = module_mapper::import_export (module, false);
+	  if (!module->do_import (fname, reader))
+	    fatal_error (module->loc,
+			 "returning to gate for a mechanical issue");
+
+	  /* Restore the line-map state.  */
+	  linemap_module_restore (line_table, pre_hwm);
+	  if (true || module_has_cmi_p ())
+	    spans.open ();
+	}
+
+      if (module->load_state < 2)
+	if (module->read_preprocessor ())
+	  module->import_macros ();
+
+      dump.pop (n);
+      timevar_stop (TV_MODULE_IMPORT);
     }
 
   return is_import ? NULL : get_primary (module);

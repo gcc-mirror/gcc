@@ -1,6 +1,13 @@
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::direct_import): Delete.
+	(module_state::do_import): Only ever do initial read.
+	(direct_import): New non-member fn.
+	({import,declare}_module): Call it.
+	(preprocess_module): Call do_import.
+
+	gcc/cp/
 	* module.cc (struct module_state): Cleanly separate module kind
 	flags from module use flags.
 
