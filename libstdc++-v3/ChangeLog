@@ -1,3 +1,14 @@
+2020-05-06  François Dumont  <fdumont@gcc.gnu.org>
+
+        * include/bits/stl_algobase.h (struct _Bit_iterator): New declaration.
+        (std::__fill_a1(_Bit_iterator, _Bit_iterator, const bool&)): Likewise.
+        * include/bits/stl_bvector.h (__fill_bvector): Move outside
+        _GLIBCXX_STD_C namespace.
+        (fill(_Bit_iterator, _Bit_iterator, const bool&)): Likewise and rename
+        into...
+        (__fill_a1): ...this.
+        * testsuite/25_algorithms/fill/bvector/1.cc: New.
+
 2020-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
