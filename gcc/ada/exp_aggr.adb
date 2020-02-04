@@ -5390,9 +5390,10 @@ package body Exp_Aggr is
             return Expr_Value_R (Expr) = Ureal_0;
          end if;
 
-         --  For other types, we can look into the value as an integer
+         --  For other types, we can look into the value as an integer, which
+         --  means the representation value for enumeration literals.
 
-         Value := Expr_Value (Expr);
+         Value := Expr_Rep_Value (Expr);
 
          if Has_Biased_Representation (Ctyp) then
             Value := Value - Expr_Value (Type_Low_Bound (Ctyp));

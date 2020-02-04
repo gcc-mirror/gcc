@@ -4203,10 +4203,16 @@ package body Sem_Eval is
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          return Corresponding_Integer_Value (N);
 
-      --  Otherwise must be character literal
+      --  The NULL access value
 
-      else
-         pragma Assert (Kind = N_Character_Literal);
+      elsif Kind = N_Null then
+         pragma Assert (Is_Access_Type (Underlying_Type (Etype (N)))
+           or else Error_Posted (N));
+         return Uint_0;
+
+      --  Character literal
+
+      elsif Kind = N_Character_Literal then
          Ent := Entity (N);
 
          --  Since Character literals of type Standard.Character don't have any
@@ -4220,6 +4226,15 @@ package body Sem_Eval is
          else
             return Enumeration_Rep (Ent);
          end if;
+
+      --  Unchecked conversion, which can come from System'To_Address (X)
+      --  where X is a static integer expression. Recursively evaluate X.
+
+      elsif Kind = N_Unchecked_Type_Conversion then
+         return Expr_Rep_Value (Expression (N));
+
+      else
+         raise Program_Error;
       end if;
    end Expr_Rep_Value;
 
