@@ -1,5 +1,9 @@
 2020-02-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90951
+	* constexpr.c (cxx_eval_array_reference): {}-initialize missing
+	elements instead of value-initializing them.
+
 	PR c++/86917
 	* init.c (perform_member_init): Simplify.
 	* constexpr.c (cx_check_missing_mem_inits): Allow uninitialized
