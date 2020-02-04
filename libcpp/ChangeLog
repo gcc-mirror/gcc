@@ -1,3 +1,10 @@
+2020-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/93545
+	* macro.c (cpp_get_token_no_padding): New function.
+	(builtin_has_include): Use it instead of cpp_get_token.  Don't check
+	SEEN_EOL.
+
 2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* configure: Regenerate.
