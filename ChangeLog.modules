@@ -1,6 +1,14 @@
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::do_import): Drop deps handling here.
+	(preprocess_module): Mark interface.
+	(preprocessed_module): Correct dependency generation.
+	(finish_module_processing): Drop deps handling here.
+	libcpp/
+	* mkdeps.c (make_write): Note Make 4.3's &: targets
+
+	gcc/cp/
 	* module.cc (MODULE_UNKNOWN_PARTITION): Delete.
 	(module_state::read_imports): Drop special partition detection.
 	(module_state::read_partitions): Drop special partition setting.

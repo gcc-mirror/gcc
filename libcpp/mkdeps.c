@@ -453,7 +453,10 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 
       if (d->bmi_name && !d->is_header_unit)
 	{
-	  /* bmi-name :| first-target */
+	  /* An order-only dependency.
+	      bmi-name :| first-target
+	     We can probably drop this this in favour of Make-4.3's grouped
+	      targets '&:'  */
 	  column = make_write_name (d->bmi_name, fp, 0, colmax);
 	  fputs (":|", fp);
 	  column++;

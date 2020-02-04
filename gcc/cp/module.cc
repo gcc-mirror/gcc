@@ -10581,7 +10581,6 @@ trees_out::mark_class_member (tree member, bool do_defn)
     mark_declaration (member, do_defn && has_definition (member));
 }
 
-// FIXME: When members are indexed, much of this goes away.
 void
 trees_out::mark_class_def (tree defn)
 {
@@ -13268,11 +13267,11 @@ module_mapper::cmi_response (const module_state *state)
 }
 
 /* Import query.  */
-// FIXME, we only ever import.  plus get should always be main-file location
+
 char *
 module_mapper::import_export (const module_state *state, bool export_p)
 {
-  module_mapper *mapper = get (state->loc);
+  module_mapper *mapper = get (main_source_loc);
 
   if (!mapper->is_server ())
     return NULL;
@@ -13291,7 +13290,7 @@ bool
 module_mapper::export_done (const module_state *state)
 {
   bool ok = true;
-  module_mapper *mapper = get (state->loc);
+  module_mapper *mapper = get (main_source_loc);
 
   if (mapper->is_server ())
     {
@@ -14269,7 +14268,7 @@ module_state::read_cluster (unsigned snum)
 
 	    if (sec.get_overrun ())
 	      break;
-	    // FIXME:Perhaps this also needs doint earlier -- see
+	    // FIXME:Perhaps this also needs doing earlier -- see
 	    // entity_index handling in trees_in::decl_value
 	    if (flags & cdf_is_specialization)
 	      install_specialization (decl, flags & cdf_is_partial);
@@ -14947,7 +14946,7 @@ void
 module_state::write_location (bytes_out &sec, location_t loc)
 {
   if (!sec.streaming_p ())
-    // FIXME: Implement optimization
+    // FIXME: Implement location pruning optimization
     return;
 
   if (IS_ADHOC_LOC (loc))
@@ -16106,8 +16105,6 @@ macro_loc_cmp (const void *a_, const void *b_)
 
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
-// FIXME: macros from command line and forced headers are not to be
-// exported.
 
 unsigned
 module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
@@ -16194,7 +16191,7 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   return count;
 }
 
-// FIXME: Once we have importin phases done, we probably don't need
+// FIXME: Once we have importing phases done, we probably don't need
 // this so early.  Remember, with mmap, all this is doing is setting
 // pointers.
 
@@ -17742,10 +17739,6 @@ module_state::do_import (char const *fname, cpp_reader *reader)
       filename = xstrdup (fname);
     }
 
-  // FIXME: wrong place!
-  if (mkdeps *deps = cpp_get_deps (reader))
-    deps_add_module (deps, get_flatname ());
-
   int fd = -1;
   int e = ENOENT;
   if (filename)
@@ -18307,7 +18300,11 @@ preprocess_module (module_state *module, location_t from_loc,
 	{
 	  /* Record it is the module.  */
 	  module->module_p = true;
-	  module->exported_p = is_export;
+	  if (is_export)
+	    {
+	      module->exported_p = true;
+	      module->interface_p = true;
+	    }
 	}
     }
 
@@ -18430,8 +18427,9 @@ preprocessed_module (cpp_reader *reader)
 
 	  if (module->is_direct ())
 	    {
-	      const char *path = "";
-	      if (module->filename)
+	      const char *path = NULL;
+	      if (module->is_module ()
+		  && (module->is_interface () || module->is_partition ()))
 		path = maybe_add_cmi_prefix (module->filename);
 	      deps_add_module (deps, module->get_flatname (),
 			       path, module->is_header());
@@ -18732,10 +18730,6 @@ finish_module_processing (cpp_reader *reader)
 	  tmp_name = XNEWVEC (char, len + 3);
 	  memcpy (tmp_name, path, len);
 	  strcpy (&tmp_name[len], "~");
-
-	  if (mkdeps *deps = cpp_get_deps (reader))
-	    deps_add_module (deps, state->get_flatname (), path,
-			     state->is_header ());
 
 	  if (!errorcount)
 	    for (unsigned again = 2; ; again--)
