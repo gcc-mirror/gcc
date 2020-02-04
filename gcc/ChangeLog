@@ -1,5 +1,10 @@
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/93538
+	* match.pd (addr EQ/NE ptr): Amend to handle &ptr->x EQ/NE ptr.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/91123
 	* tree-ssa-sccvn.c (vn_walk_cb_data::finish): New method.
 	(vn_walk_cb_data::last_vuse): New member.
