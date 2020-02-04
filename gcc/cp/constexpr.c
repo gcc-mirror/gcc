@@ -826,7 +826,12 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 		return true;
 	      continue;
 	    }
-	  ftype = strip_array_types (TREE_TYPE (field));
+	  ftype = TREE_TYPE (field);
+	  if (!ftype || !TYPE_P (ftype) || !COMPLETE_TYPE_P (ftype))
+	    /* A flexible array can't be intialized here, so don't complain
+	       that it isn't.  */
+	    continue;
+	  ftype = strip_array_types (ftype);
 	  if (type_has_constexpr_default_constructor (ftype))
 	    {
 	      /* It's OK to skip a member with a trivial constexpr ctor.
@@ -3783,6 +3788,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   bool pre_init = false;
   unsigned HOST_WIDE_INT i;
   tsubst_flags_t complain = ctx->quiet ? tf_none : tf_warning_or_error;
+
+  if (init && TREE_CODE (init) == CONSTRUCTOR)
+    return cxx_eval_bare_aggregate (ctx, init, lval,
+				    non_constant_p, overflow_p);
 
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types

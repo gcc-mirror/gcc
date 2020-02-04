@@ -1,3 +1,11 @@
+2020-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86917
+	* init.c (perform_member_init): Simplify.
+	* constexpr.c (cx_check_missing_mem_inits): Allow uninitialized
+	flexarray.
+	(cxx_eval_vec_init_1): Handle CONSTRUCTOR.
+
 2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (find_promise_type): Delete unused forward
