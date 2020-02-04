@@ -302,7 +302,6 @@ int module_dump_id;
 
 /* We have a special module owner.  */
 #define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
-#define MODULE_UNKNOWN_PARTITION (MODULE_UNKNOWN - 1)
 
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX ".gnu.c++"
@@ -13668,17 +13667,8 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      else if (!fname[0])
 		fname = module_mapper::import_export (imp, false);
 
-	      // FIXME: use the contained assert as the condition
-	      if (imp->mod == MODULE_UNKNOWN_PARTITION)
-		{
-		  /* Must import the partition now, as inter-module
-		     references from the partition we must be in
-		     require it.  The deduping machinery better be
-		     working ...  */
-		  dump () && dump ("Importing elided partition %M", imp);
-		  gcc_assert (imp->is_partition () && is_partition ());
-		  imp->mod = MODULE_UNKNOWN;
-		}
+	      if (imp->is_partition ())
+		dump () && dump ("Importing elided partition %M", imp);
 
 	      if (!imp->do_import (fname, reader))
 		imp = NULL;
@@ -13827,8 +13817,6 @@ module_state::read_partitions (unsigned count)
 	 for real if it's indirectly imported.  */
       imp->loc = floc;
       imp->crc = crc;
-      // FIXME: Can't we use MODULE_UNKNOWN and imp->is_partition ()?
-      imp->mod = MODULE_UNKNOWN_PARTITION; /* Mark as wierd.   */
       if (!imp->filename && fname[0])
 	imp->filename = xstrdup (fname);
     }
@@ -18200,7 +18188,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   dump (dumper::MAPPER) && dump ("Checking include translation '%s'", path);
   bool res = false;
-  module_mapper *mapper = module_mapper::get (loc);
+  module_mapper *mapper = module_mapper::get (main_source_loc);
   if (mapper->is_live ())
     {
       size_t len = strlen (path);
@@ -18658,7 +18646,7 @@ init_module_processing (cpp_reader *reader)
 
   if (!flag_module_lazy)
     /* Get the mapper now, if we're not being lazy.  */
-    module_mapper::get (BUILTINS_LOCATION);
+    module_mapper::get (main_source_loc);
 
   if (!flag_preprocess_only)
     {
@@ -18816,7 +18804,7 @@ finish_module_processing (cpp_reader *reader)
 
   /* We're now done with everything but the module names.  */
   set_cmi_repo (NULL);
-  module_mapper::fini (input_location);
+  module_mapper::fini (main_source_loc);
   module_state_config::release ();
 
 #if CHECKING_P

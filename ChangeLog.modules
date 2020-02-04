@@ -1,6 +1,13 @@
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (MODULE_UNKNOWN_PARTITION): Delete.
+	(module_state::read_imports): Drop special partition detection.
+	(module_state::read_partitions): Drop special partition setting.
+	(module_translate_include): Use main_source_loc for mapper.
+	({init,fini}_module_processing): Likewise.
+
+	gcc/cp/
 	* lex.c (module_token_cdtor): Call preprocessed_module on
 	teardown here ...
 	* parser.c (cp_lexer_new_main): ... not here.
