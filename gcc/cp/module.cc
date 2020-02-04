@@ -18319,10 +18319,12 @@ preprocess_module (module_state *module, location_t from_loc,
 	}
     }
 
-  if (is_import && !module->module_p && module->is_header ()
-      && module->load_state < 2)
+  if (is_import
+      && !module->is_module () && module->is_header ()
+      && module->load_state < 2
+      && (!cpp_get_options (reader)->preprocessed
+	  || cpp_get_options (reader)->directives_only))
     {
-      // FIXME: Skip when preprocessed input
       timevar_start (TV_MODULE_IMPORT);
       unsigned n = dump.push (module);
 
@@ -18332,10 +18334,10 @@ preprocess_module (module_state *module, location_t from_loc,
 
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (true // FIXME: Only need to do this when there is, or
-		   // might be, a CMI emitted
-	      || module_has_cmi_p ())
-	    spans.close ();
+	  /* We only need to close the span, if we're going to emit a
+	     CMI.  But that's a little tricky -- our token scanner
+	     needs to be smarter -- and this isn't much state.  */
+	  spans.close ();
 
 	  char *fname = module_mapper::import_export (module, false);
 	  if (!module->do_import (fname, reader))
@@ -18344,8 +18346,7 @@ preprocess_module (module_state *module, location_t from_loc,
 
 	  /* Restore the line-map state.  */
 	  linemap_module_restore (line_table, pre_hwm);
-	  if (true || module_has_cmi_p ())
-	    spans.open ();
+	  spans.open ();
 	}
 
       if (module->load_state < 2)

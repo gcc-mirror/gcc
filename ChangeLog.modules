@@ -1,6 +1,13 @@
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (preprocess_module): Don't load header unit if not
+	preprocessing.  Always close and reopen the line map spans.
+	libcpp/
+	* include/cpplib.h (cpp_get_options, cpp_get_callbacks)
+	(cpp_get_deps): Mark as PURE.
+
+	gcc/cp/
 	* module.cc (module_state::do_import): Drop deps handling here.
 	(preprocess_module): Mark interface.
 	(preprocessed_module): Correct dependency generation.

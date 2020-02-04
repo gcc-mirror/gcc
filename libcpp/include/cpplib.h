@@ -994,10 +994,10 @@ extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
    call cpp_finish on that reader.  You can either edit the callbacks
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
-extern cpp_options *cpp_get_options (cpp_reader *);
-extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
+extern cpp_options *cpp_get_options (cpp_reader *) ATTRIBUTE_PURE;
+extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
-extern class mkdeps *cpp_get_deps (cpp_reader *);
+extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
 extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
 					 bool angle_p,  location_t);
