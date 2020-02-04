@@ -36,5 +36,6 @@ barf (v8sf x)
 /* We expect all other CTORs to turn into permutes, the FP converting ones
    to two each with the one with constants possibly elided in the future
    by converting 3.0f and 1.0f "back" to integers.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 4 "forwprop1" } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "forwprop1" { xfail *-*-* } } } */
+/* For foo we do nothing.  */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 2 "forwprop1" { xfail *-*-* } } } */

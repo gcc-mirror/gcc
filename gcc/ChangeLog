@@ -1,3 +1,9 @@
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Avoid
+	generating more stmts than before.
+
 2020-02-04  Martin Liska  <mliska@suse.cz>
 
 	* config/arm/arm.c (arm_gen_far_branch): Move the function
