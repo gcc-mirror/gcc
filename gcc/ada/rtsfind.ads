@@ -59,6 +59,9 @@ package Rtsfind is
    --  the compilation except in the presence of use clauses, which might
    --  result in unexpected ambiguities.
 
+   --  NOTE: If RTU_Id is modified, the subtypes of RTU_Id in the package body
+   --  might need to be modified. See Get_Unit_Name.
+
    type RTU_Id is (
 
       --  Runtime packages, for list of accessible entities in each package,
@@ -379,97 +382,6 @@ package Rtsfind is
       System_Tasking_Restricted_Stages,
       System_Tasking_Rendezvous,
       System_Tasking_Stages);
-
-   subtype Ada_Child is RTU_Id
-     range Ada_Calendar .. Ada_Wide_Wide_Text_IO_Modular_IO;
-   --  Range of values for children or grandchildren of Ada
-
-   subtype Ada_Calendar_Child is Ada_Child
-     range Ada_Calendar_Delays .. Ada_Calendar_Delays;
-   --  Range of values for children of Ada.Calendar
-
-   subtype Ada_Dispatching_Child is RTU_Id
-     range Ada_Dispatching_EDF .. Ada_Dispatching_EDF;
-   --  Range of values for children of Ada.Dispatching
-
-   subtype Ada_Interrupts_Child is Ada_Child range
-     Ada_Interrupts_Names .. Ada_Interrupts_Names;
-   --  Range of values for children of Ada.Interrupts
-
-   subtype Ada_Numerics_Child is Ada_Child
-     range Ada_Numerics_Generic_Elementary_Functions ..
-           Ada_Numerics_Generic_Elementary_Functions;
-   --  Range of values for children of Ada.Numerics
-
-   subtype Ada_Real_Time_Child is Ada_Child
-     range Ada_Real_Time_Delays .. Ada_Real_Time_Timing_Events;
-   --  Range of values for children of Ada.Real_Time
-
-   subtype Ada_Streams_Child is Ada_Child
-     range Ada_Streams_Stream_IO .. Ada_Streams_Stream_IO;
-   --  Range of values for children of Ada.Streams
-
-   subtype Ada_Strings_Child is Ada_Child
-     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Utils;
-   --  Range of values for children and grandchildren of Ada.Strings
-
-   subtype Ada_Strings_Text_Output_Child is Ada_Child
-     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Utils;
-   --  Range of values for children of Ada.Strings.Text_Output
-
-   subtype Ada_Text_IO_Child is Ada_Child
-     range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;
-   --  Range of values for children of Ada.Text_IO
-
-   subtype Ada_Wide_Text_IO_Child is Ada_Child
-     range Ada_Wide_Text_IO_Decimal_IO .. Ada_Wide_Text_IO_Modular_IO;
-   --  Range of values for children of Ada.Text_IO
-
-   subtype Ada_Wide_Wide_Text_IO_Child is Ada_Child
-     range Ada_Wide_Wide_Text_IO_Decimal_IO ..
-           Ada_Wide_Wide_Text_IO_Modular_IO;
-
-   subtype Interfaces_Child is RTU_Id
-     range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
-   --  Range of values for children of Interfaces
-
-   subtype System_Child is RTU_Id
-     range System_Address_Image .. System_Tasking_Stages;
-   --  Range of values for children or grandchildren of System
-
-   subtype System_Dim_Child is RTU_Id
-     range System_Dim_Float_IO .. System_Dim_Integer_IO;
-   --  Range of values for children of System.Dim
-
-   subtype System_Multiprocessors_Child is RTU_Id
-     range System_Multiprocessors_Dispatching_Domains ..
-       System_Multiprocessors_Dispatching_Domains;
-   --  Range of values for children of System.Multiprocessors
-
-   subtype System_Storage_Pools_Child is RTU_Id
-     range System_Storage_Pools_Subpools .. System_Storage_Pools_Subpools;
-
-   subtype System_Strings_Child is RTU_Id
-     range System_Strings_Stream_Ops .. System_Strings_Stream_Ops;
-
-   subtype System_Tasking_Child is System_Child
-     range System_Tasking_Async_Delays .. System_Tasking_Stages;
-   --  Range of values for children of System.Tasking
-
-   subtype System_Tasking_Protected_Objects_Child is System_Tasking_Child
-     range System_Tasking_Protected_Objects_Entries ..
-       System_Tasking_Protected_Objects_Single_Entry;
-   --  Range of values for children of System.Tasking.Protected_Objects
-
-   subtype System_Tasking_Restricted_Child is System_Tasking_Child
-     range System_Tasking_Restricted_Stages ..
-       System_Tasking_Restricted_Stages;
-   --  Range of values for children of System.Tasking.Restricted
-
-   subtype System_Tasking_Async_Delays_Child is System_Tasking_Child
-     range System_Tasking_Async_Delays_Enqueue_Calendar ..
-       System_Tasking_Async_Delays_Enqueue_RT;
-   --  Range of values for children of System.Tasking.Async_Delays
 
    --------------------------
    -- Runtime Entity Table --
@@ -3193,6 +3105,7 @@ package Rtsfind is
    --  Ada RM defines to be nested in Ada.Text_IO, but GNAT defines as its
    --  private children. This is similar to Is_Text_IO_Special_Unit, but is
    --  meant to be used on a fully resolved AST, especially in the backends.
+   --  This is used by SPARK.
 
    function RTE (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the
