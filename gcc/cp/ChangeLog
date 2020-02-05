@@ -1,3 +1,8 @@
+2020-02-05  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (maybe_promote_captured_temps): Increase the index
+	number for temporary variables' name.
+
 2020-02-05  Jun Ma <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (build_co_await): Call convert_from_reference

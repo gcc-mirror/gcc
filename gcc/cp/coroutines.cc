@@ -2676,12 +2676,12 @@ maybe_promote_captured_temps (tree *stmt, void *d)
       /* Collected the scope vars we need move the temps to regular. */
       tree aw_bind_body = push_stmt_list ();
       tree varlist = NULL_TREE;
-      unsigned vnum = 0;
+      int vnum = -1;
       while (!awpts->to_replace->is_empty ())
 	{
 	  size_t bufsize = sizeof ("__aw_.tmp.") + 20;
 	  char *buf = (char *) alloca (bufsize);
-	  snprintf (buf, bufsize, "__aw_%d.tmp.%d", awpts->count, vnum);
+	  snprintf (buf, bufsize, "__aw_%d.tmp.%d", awpts->count, ++vnum);
 	  tree to_replace = awpts->to_replace->pop ();
 	  tree orig_temp;
 	  if (TREE_CODE (to_replace) == CO_AWAIT_EXPR)
