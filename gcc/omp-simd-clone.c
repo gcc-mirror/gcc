@@ -1703,14 +1703,22 @@ expand_simd_clones (struct cgraph_node *node)
 	     already.  */
 	  tree id = simd_clone_mangle (node, clone);
 	  if (id == NULL_TREE)
-	    continue;
+	    {
+	      if (i == 0)
+		clone->nargs += clone->inbranch;
+	      continue;
+	    }
 
 	  /* Only when we are sure we want to create the clone actually
 	     clone the function (or definitions) or create another
 	     extern FUNCTION_DECL (for prototypes without definitions).  */
 	  struct cgraph_node *n = simd_clone_create (node);
 	  if (n == NULL)
-	    continue;
+	    {
+	      if (i == 0)
+		clone->nargs += clone->inbranch;
+	      continue;
+	    }
 
 	  n->simdclone = clone;
 	  clone->origin = node;
