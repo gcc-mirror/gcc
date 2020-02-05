@@ -97,9 +97,9 @@ class vr_values : public gori_compute
  private:
   void range_of_ssa_name (irange &r, tree op, gimple * = NULL);
   equivalence_iterator *m_equivalences;
-  bool outgoing_edge_range_with_equivalences_p (irange &, edge, tree name);
-  bool solve_equiv_at_statement (irange &,
-				 tree, gimple *stmt, const irange &);
+  bool refine_range_with_equivalences_p (irange &, edge, tree name);
+  bool solve_name_at_statement (irange &,
+				tree, gimple *stmt, const irange &);
   bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
 				     const irange &equiv_range);
   void range_for_op2 (irange &, gimple *, tree type);

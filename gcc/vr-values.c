@@ -1996,73 +1996,69 @@ vr_values::save_equivalences (equivalence_iterator *iter)
   m_equivalences = iter;
 }
 
-// Calculate a range on edge E and return it in R.  Try to evaluate a
-// range for NAME on this edge.  Return FALSE if this is either not a
-// control edge or NAME is not defined by this edge.
+// Calculate the range for NAME on edge E and return it in R.
+// Return FALSE if unable to compute a range.
 
 bool
 vr_values::outgoing_edge_range_p (irange &r, edge e, tree name,
-				  const irange *name_range)
+				  const irange *known_range ATTRIBUTE_UNUSED)
 {
-  if (gori_compute::outgoing_edge_range_p (r, e, name, name_range)
-      && !r.varying_p ())
-    return true;
-
-  return outgoing_edge_range_with_equivalences_p (r, e, name);
+  if (!gori_compute::outgoing_edge_range_p (r, e, name))
+    r.set_varying (TREE_TYPE (name));
+  refine_range_with_equivalences_p (r, e, name);
+  widest_irange tmp;
+  range_of_ssa_name (tmp, name);
+  r.intersect (tmp);
+  return !r.varying_p ();
 }
 
+// R is a known range for NAME on edge E.  Refine it with any
+// equivalences NAME may have.
+
 bool
-vr_values::outgoing_edge_range_with_equivalences_p
-				(irange &r, edge e, tree name)
+vr_values::refine_range_with_equivalences_p (irange &r, edge e, tree name)
 {
-  widest_irange branch_range;
-  gimple *stmt = gimple_outgoing_edge_range_p (branch_range, e);
-  if (!stmt)
+  widest_irange branch_range, tmp;
+  gimple *branch = gimple_outgoing_edge_range_p (branch_range, e);
+  if (!branch)
     return false;
 
-  r.set_varying (TREE_TYPE (name));
+  if (solve_name_at_statement (tmp, name, branch, branch_range))
+    r.intersect (tmp);
 
-  // Use any equivalence that can help us solve for NAME, to refine
-  // the final range.
+  // Solve each equivalence and use them to refine the range.
   tree equiv;
   while ((equiv = m_equivalences->next ()) != NULL)
     {
       if (!m_gori_map.is_export_p (equiv, e->src))
 	continue;
 
-      widest_irange equiv_range, tmp;
-      if (solve_equiv_at_statement (equiv_range, equiv, stmt, branch_range)
-	  // Try to solve conditional again with our new knowledge.
-	  && (solve_equiv_at_statement (tmp, name, stmt, branch_range)
-	      // If that doesn't work...then try with the USE/DEF
-	      // chain of the equivalence.
-	      || solve_name_given_equivalence (tmp, name, equiv, equiv_range))
-	  && !tmp.undefined_p ()
-	  && !tmp.varying_p ())
+      widest_irange equiv_range;
+      if (solve_name_at_statement (equiv_range, equiv, branch, branch_range))
 	{
-	  tree name_type = TREE_TYPE (name);
-	  tree equiv_type = tmp.type ();
+	  gimple *equiv_def = SSA_NAME_DEF_STMT (equiv);
+	  if (!equiv_def->bb
+	      || !dominated_by_p (CDI_DOMINATORS, e->src, equiv_def->bb))
+	    continue;
 
-	  if (equiv_type == name_type)
+	  if (solve_name_given_equivalence (tmp, name, equiv, equiv_range))
 	    r.intersect (tmp);
-	  else if (TYPE_PRECISION (equiv_type) == TYPE_PRECISION (name_type))
-	    {
-	      range_cast (tmp, name_type);
-	      r.intersect (tmp);
-	    }
 	}
     }
   return !r.varying_p ();
 }
 
+// Compute a range for NAME as it would appear in STMT and return it
+// in R.  LHS is the known range for STMT.
+
 bool
-vr_values::solve_equiv_at_statement (irange &r,
-				     tree name, gimple *stmt,
-				     const irange &lhs)
+vr_values::solve_name_at_statement (irange &r,
+				    tree name, gimple *stmt,
+				    const irange &lhs)
 {
-  widest_irange known_range_of_name;
-  range_of_ssa_name (known_range_of_name, name);
-  return compute_operand_range (r, stmt, lhs, name, &known_range_of_name);
+  widest_irange name_range;
+  range_of_ssa_name (name_range, name, stmt);
+  return compute_operand_range (r, stmt, lhs, name, &name_range);
 }
 
 bool

@@ -225,7 +225,7 @@ evrp_range_analyzer::try_find_new_range_with_gori
   equivalence_iterator iter (name, known_range, asserts);
   vr_values->save_equivalences (&iter);
 
-  if (vr_values->outgoing_edge_range_p (res, e, name, known_range))
+  if (vr_values->outgoing_edge_range_p (res, e, name))
     return;
   res.set_varying (TREE_TYPE (name));
 }

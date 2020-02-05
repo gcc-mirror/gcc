@@ -1870,7 +1870,7 @@ void
 operator_bitwise_and::remove_impossible_ranges (irange &r,
 						const irange &rh) const
 {
-  if (!unsigned_singleton_p (rh))
+  if (r.undefined_p () || !unsigned_singleton_p (rh))
     return;
 
   tree tmask;
