@@ -18336,7 +18336,9 @@ preprocess_module (module_state *module, location_t from_loc,
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
 	  /* We only need to close the span, if we're going to emit a
 	     CMI.  But that's a little tricky -- our token scanner
-	     needs to be smarter -- and this isn't much state.  */
+	     needs to be smarter -- and this isn't much state.
+	     Remember, we've not parsed anything at this point, so
+	     our module state flags are inadequate.  */
 	  spans.close ();
 
 	  char *fname = module_mapper::import_export (module, false);
