@@ -1,3 +1,9 @@
+2020-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90648
+	* genmatch.c (dt_node::gen_kids_1): Emit number of argument
+	checks before matching calls.
+
 2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-alias.c (aliasing_matching_component_refs_p): Fix up
