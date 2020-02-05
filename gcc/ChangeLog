@@ -1,3 +1,10 @@
+2020-02-06  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/93300
+	* config/arm/arm.c (arm_block_arith_comp_libfuncs_for_mode): New.
+	(arm_init_libfuncs): Add BFmode support to block spurious BF libfuncs.
+	Use arm_block_arith_comp_libfuncs_for_mode for HFmode.
+
 2020-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93594
