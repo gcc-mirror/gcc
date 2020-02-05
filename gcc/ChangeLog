@@ -1,3 +1,8 @@
+2020-02-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93568
+	* config/rs6000/rs6000.c (get_vector_offset): Fix
+
 2020-02-05  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Use / not space.

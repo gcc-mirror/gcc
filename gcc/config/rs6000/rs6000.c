@@ -6744,8 +6744,7 @@ get_vector_offset (rtx mem, rtx element, rtx base_tmp, unsigned scalar_size)
 
   /* All insns should use the 'Q' constraint (address is a single register) if
      the element number is not a constant.  */
-  rtx addr = XEXP (mem, 0);
-  gcc_assert (satisfies_constraint_Q (addr));
+  gcc_assert (satisfies_constraint_Q (mem));
 
   /* Mask the element to make sure the element number is between 0 and the
      maximum number of elements - 1 so that we don't generate an address
