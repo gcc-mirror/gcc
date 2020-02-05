@@ -3156,7 +3156,7 @@
     rtx op1vec = gen_reg_rtx (V64DImode);
 
     emit_insn (gen_mulv64di3_zext_dup2 (tmp, v1, operands[2]));
-    emit_insn (gen_vec_duplicatev64si (op1vec, operands[1]));
+    emit_insn (gen_vec_duplicatev64di (op1vec, operands[1]));
     emit_insn (gen_addv64di3 (operands[0], tmp, op1vec));
     DONE;
   })

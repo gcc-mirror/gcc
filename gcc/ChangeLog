@@ -1,3 +1,7 @@
+2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vec_seriesv64di): Use gen_vec_duplicatev64di.
+
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Add SVE
