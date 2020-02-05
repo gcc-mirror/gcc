@@ -53,7 +53,6 @@ static macro_queue *define_queue, *undef_queue;
 
 /* General output routines.  */
 static void scan_translation_unit (cpp_reader *);
-static void print_lines_directives_only (int, const void *, size_t);
 static void scan_translation_unit_directives_only (cpp_reader *);
 static void scan_translation_unit_trad (cpp_reader *);
 static void account_for_newlines (const unsigned char *, size_t);
@@ -314,7 +313,7 @@ scan_translation_unit (cpp_reader *pfile)
 }
 
 static void
-print_lines_directives_only (int lines, const void *buf, size_t size)
+print_lines_directives_only (unsigned lines, const void *buf, size_t size)
 {
   print.src_line += lines;
   fwrite (buf, 1, size, print.outf);
@@ -325,12 +324,8 @@ print_lines_directives_only (int lines, const void *buf, size_t size)
 static void
 scan_translation_unit_directives_only (cpp_reader *pfile)
 {
-  struct _cpp_dir_only_callbacks cb;
-
-  cb.print_lines = print_lines_directives_only;
-  cb.maybe_print_line = maybe_print_line;
-
-  _cpp_preprocess_dir_only (pfile, &cb);
+  cpp_directive_only_process (pfile, print_lines_directives_only,
+			      maybe_print_line);
 }
 
 /* Adjust print.src_line for newlines embedded in output.  */

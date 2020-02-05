@@ -1,3 +1,19 @@
+2020-02-05  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* directives-only.c: Delete.
+	* Makefile.in: Remove it.
+	* include/cpplib.h (cpp_directives_only_process): Declare.
+	* internal.h (struct _cpp_dir_only): Delete.
+	(_cpp_preprocess_dir_only): Delete.
+	* lex.c (cpp_directive_only_process): New implementation.
+	gcc/c-family/
+	* c-ppoutput.c (print_lines_directive_only): lines is unsigned.
+	(scan_translation_unit_directives_only): Reimplement.
+	gcc/testsuite/
+	* gcc.dg/cpp: Move directives-only tests to ...
+	* c-c++-common/cpp: ... here.
+
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

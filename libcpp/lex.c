@@ -3989,3 +3989,241 @@ cpp_stop_forcing_token_locations (cpp_reader *r)
 {
   r->forced_token_location = 0;
 }
+
+/* Directives only scanning.  */
+
+void
+cpp_directive_only_process (cpp_reader *pfile,
+			    void (*print_lines) (unsigned nlines,
+						 const void *, size_t),
+			    bool (*line_marker) (location_t))
+{
+  enum DO_state {
+   DO_bol = 1 << 0,
+   DO_string_lit = 1 << 1,
+   DO_char_lit = 1 << 2,
+   DO_rstring_lit = 1 << 3,
+   DO_line_comment = 1 << 4,
+   DO_block_comment = 1 << 5,
+   DO_escaped = 1 << 6,
+   DO_slash = 1 << 7,
+   DO_star = 1 << 8,
+
+   DO_quoted = DO_string_lit | DO_char_lit | DO_rstring_lit,
+   DO_comment = DO_line_comment | DO_block_comment
+  };
+
+  bool module_p = CPP_OPTION (pfile, module_directives);
+
+  do
+    {
+    restart:
+      /* Buffer initialization, but no line cleaning. */
+      cpp_buffer *buffer = pfile->buffer;
+      buffer->cur_note = buffer->notes_used = 0;
+      buffer->cur = buffer->line_base = buffer->next_line;
+      buffer->need_line = false;
+      /* Files always end in a newline.  We rely on this for
+	 character peeking safety.  */
+      gcc_assert (buffer->rlimit[-1] == '\n');
+
+      const unsigned char *base = buffer->cur;
+      unsigned line_count = 0;
+      const unsigned char *line_start = base;
+
+      unsigned state = DO_bol;
+      location_t uloc = 0;  /* Current block element start.  */
+
+      for (const unsigned char *pos = base, *limit = buffer->rlimit;
+	   pos < limit;)
+	{
+	  unsigned char c = *pos++;
+	  if (!__builtin_expect (state == DO_bol, false))
+	    /* Not DO_bol  */;
+	  else if (__builtin_expect (c == '#', false))
+	    {
+	      /* Line directive.  */
+	      if (line_start > base && !pfile->state.skipping)
+		print_lines (line_count, base, line_start - base);
+
+	      /* Prep things for directive handling. */
+	      buffer->next_line = pos;
+	      buffer->need_line = true;
+	      _cpp_get_fresh_line (pfile);
+
+	      /* Ensure proper column numbering for generated error messages. */
+	      buffer->line_base -= pos - line_start;
+
+	      _cpp_handle_directive (pfile, line_start + 1 != pos);
+
+	      /* Sanitize the line settings.  Duplicate #include's can
+		 mess things up. */
+	      // FIXME: Necessary?
+	      pfile->line_table->highest_location
+		= pfile->line_table->highest_line;
+
+	      if (!pfile->state.skipping
+		  && pfile->buffer->next_line < pfile->buffer->rlimit)
+		line_marker (pfile->line_table->highest_line);
+
+	      goto restart;
+	    }
+	  else if (module_p)
+	    {
+	      // FIXME:  Fully detect module lines
+	      if (__builtin_expect (c == '_', false))
+		{
+		}
+	      else if (__builtin_expect (c == 'e', false))
+		{
+		}
+	      else if (__builtin_expect (c == 'i', false))
+		{
+		}
+	      else if (__builtin_expect (c == 'm', false))
+		{
+		}
+	    }
+
+	  /* Not a special DO_bol character.  */
+	  switch (c)
+	    {
+	    case ' ':
+	    case '\t':
+	      /* Horizontal whitespace  */
+	      state &= ~(DO_escaped | DO_slash | DO_star);
+	      break;
+
+	    case '\r': /* MAC line ending, or Windows \r\n  */
+	      if (*pos == '\n')
+		break;
+	      /* FALLTHROUGH */
+
+	    case '\n':
+	      state &= ~DO_escaped;
+	      state |= DO_bol;
+	      state &= ~DO_line_comment;
+
+	    next_line:
+	      CPP_INCREMENT_LINE (pfile, 0);
+	      line_count++;
+	      line_start = pos;
+	      break;
+
+	    case '\\':
+	      /* <backslash><newline> is removed, and doesn't undo any
+		 preceeding escape or whatnot.  */
+	      if (__builtin_expect (*pos == '\n', false))
+		{
+		newline:
+		  pos++;
+		  goto next_line;
+		}
+	      else if (__builtin_expect (*pos == '\r', false))
+		{
+		  if (pos[1] == '\n')
+		    pos++;
+		  goto newline;
+		}
+	      else if (__builtin_expect (state & DO_escaped, 0))
+		state &= ~DO_escaped;
+	      else if (__builtin_expect (0 != (state & DO_quoted), 1))
+		state |= DO_escaped;
+	      else
+		{
+		  state &= ~(DO_slash | DO_star);
+		  if (!(state & DO_comment))
+		    {
+		      uloc = linemap_position_for_column (pfile->line_table,
+							  pos - line_start);
+		      cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
+					   "stray '\\'");
+		    }
+		}
+	      break;
+
+	    case '\"':
+	    case '\'':
+	      if (__builtin_expect (state & DO_escaped, 0))
+		state &= ~DO_escaped;
+	      else if (state & DO_quoted)
+		{
+		  if (state & (c == '\'' ? DO_char_lit : DO_string_lit))
+		    state &= ~DO_quoted;
+		}
+	      else if (!(state & DO_comment))
+		{
+		  /* Begin quoted element.  */
+		  uloc = linemap_position_for_column (pfile->line_table,
+						      pos - line_start);
+		  if (c == '\'')
+		    state |= DO_char_lit;
+		  else
+		    // FIXME: Raw string detection
+		    state |= DO_string_lit;
+		  pfile->mi_valid = false;
+		}
+	      state &= ~DO_bol;
+	      break;
+
+	    case '*':
+	      if (state & DO_block_comment)
+		{
+		  state |= DO_star;
+		  goto maybe_digraph;
+		}
+	      if (state & DO_slash)
+		state |= DO_block_comment;
+	      goto dflt;
+
+	    case '/':
+	      if (state & DO_star)
+		{
+		  state &= ~(DO_block_comment | DO_star);
+		  break;
+		}
+	      else if (!(state & (DO_quoted | DO_comment)))
+		{
+		  if (!(state & DO_slash))
+		    {
+		      uloc = linemap_position_for_column (pfile->line_table,
+							  pos - line_start);
+		      state |= DO_slash;
+		      goto maybe_digraph;
+		    }
+		  state |= DO_line_comment;
+		}
+	      goto dflt;
+
+	    default:
+	    dflt:
+	      if (!(state & (DO_comment | DO_quoted)))
+		pfile->mi_valid = false;
+	      /* FALLTHROUGH  */
+
+	    case '\v':
+	    case '\f':
+	      state &= ~(DO_slash | DO_star);
+	      if (!(state & DO_comment))
+		/* Comments are whitespace, and do not change BOLness  */
+		state &= ~DO_bol;
+
+	    maybe_digraph:
+	      state &= ~DO_escaped;
+	    }
+	}
+
+      if (state & DO_block_comment)
+	cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
+			     "unterminated comment");
+      if (state & DO_quoted)
+	cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
+			     "unterminated literal");
+
+      if (line_start > base && !pfile->state.skipping)
+	print_lines (line_count, base, line_start - base);
+
+      _cpp_pop_buffer (pfile);
+    }
+  while (pfile->buffer);
+}
