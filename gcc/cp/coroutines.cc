@@ -847,8 +847,8 @@ finish_co_await_expr (location_t kw, tree expr)
       /* If we don't know the promise type, we can't proceed.  */
       tree functype = TREE_TYPE (current_function_decl);
       if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-	return build5_loc (kw, CO_AWAIT_EXPR, TREE_TYPE (expr), expr, NULL_TREE,
-			   NULL_TREE, NULL_TREE, integer_zero_node);
+	return build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
+			   NULL_TREE, NULL_TREE, NULL_TREE, integer_zero_node);
     }
 
   /* We must be able to look up the "await_transform" method in the scope of
@@ -925,7 +925,7 @@ finish_co_yield_expr (location_t kw, tree expr)
       tree functype = TREE_TYPE (current_function_decl);
       /* If we don't know the promise type, we can't proceed.  */
       if (dependent_type_p (functype) || type_dependent_expression_p (expr))
-	return build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (expr), expr,
+	return build2_loc (kw, CO_YIELD_EXPR, unknown_type_node, expr,
 			   NULL_TREE);
     }
 

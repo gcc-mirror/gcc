@@ -1,3 +1,11 @@
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (finish_co_await_expr): Build co_await_expr
+	with unknown_type_node.
+	(finish_co_yield_expr): Ditto.
+	*pt.c (type_dependent_expression_p): Set co_await/yield_expr
+	with unknown type as dependent.
+
 2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (struct local_var_info): Adjust to remove the

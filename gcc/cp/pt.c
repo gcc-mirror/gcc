@@ -26701,6 +26701,11 @@ type_dependent_expression_p (tree expression)
       if (TREE_CODE (expression) == SCOPE_REF)
 	return false;
 
+      /* CO_AWAIT/YIELD_EXPR with unknown type is always dependent.  */
+      if (TREE_CODE (expression) == CO_AWAIT_EXPR
+	  || TREE_CODE (expression) == CO_YIELD_EXPR)
+	return true;
+
       if (BASELINK_P (expression))
 	{
 	  if (BASELINK_OPTYPE (expression)
