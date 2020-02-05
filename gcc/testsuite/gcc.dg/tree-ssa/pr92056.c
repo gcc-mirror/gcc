@@ -1,8 +1,9 @@
-/* PR tree-optimization/92056 */
-/* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times "return 1;" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-not "strcmp \\(" "optimized" } } */
+/* PR tree-optimization/92056
+   { dg-do compile }
+   { dg-options "-O2 -fdump-tree-optimized" }
+   Xfailed until pr93518 is resolved.
+   { dg-final { scan-tree-dump-times "return 1;" 2 "optimized" { xfail *-*-* } } }
+   { dg-final { scan-tree-dump-not "strcmp \\(" "optimized" { xfail *-*-* } } } */
 
 void bar (int, char *);
 

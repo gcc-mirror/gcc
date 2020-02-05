@@ -642,10 +642,22 @@ void test_multiple_overlap (int i)
   }
 
   {
-    char a[4];                /* { dg-message "declared here" } */
+    char a[4];
+
+    /* There is no overlap here because the length of a3 is at most 1
+       and a4 is necessarily the empty string.  */
+    char *d = a;
+    char *a3 = a + 2;
+    char *a4 = a + 3;
+
+    T (d, "%s%s", a3, a4);
+  }
+
+  {
+    char a[5];                /* { dg-message "declared here" } */
 
     /* a3 and a4 may overlap the output.  They will only not overlap
-       it when a3 is empty, and a4 is at most chaeracter byte long.  */
+       it when a3 is empty, and a4 is at most 1 character long.  */
     char *d = a;
     char *a3 = a + 2;
     char *a4 = a + 3;

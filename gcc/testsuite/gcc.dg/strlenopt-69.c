@@ -35,6 +35,8 @@ void test_array_lit (void)
 
 void test_memarray_lit (struct S *p)
 {
+#if 0
+  /* Member arrays not handled due to the fix for PR 92765.  */
   A (strcmp (p->a4, "1234"));
   A (strcmp (p->a4, "12345"));
   A (strcmp (p->a4, "123456"));
@@ -42,6 +44,7 @@ void test_memarray_lit (struct S *p)
   A (strcmp ("1234", p->a4));
   A (strcmp ("12345", p->a4));
   A (strcmp ("123456", p->a4));
+#endif
 }
 
 /* Verify that the equality of empty strings is folded.  */

@@ -1,3 +1,22 @@
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92765
+	* g++.dg/tree-ssa/strlenopt-1.C: New test.
+	* g++.dg/tree-ssa/strlenopt-2.C: New test.
+	* gcc.dg/Warray-bounds-58.c: New test.
+	* gcc.dg/Wrestrict-20.c: Avoid a valid -Wformat-overflow.
+	* gcc.dg/Wstring-compare.c: Xfail a test.
+	* gcc.dg/strcmpopt_2.c: Disable tests.
+	* gcc.dg/strcmpopt_4.c: Adjust tests.
+	* gcc.dg/strcmpopt_10.c: New test.
+	* gcc.dg/strcmpopt_11.c: New test.
+	* gcc.dg/strlenopt-69.c: Disable tests.
+	* gcc.dg/strlenopt-92.c: New test.
+	* gcc.dg/strlenopt-93.c: New test.
+	* gcc.dg/strlenopt.h: Declare calloc.
+	* gcc.dg/tree-ssa/pr92056.c: Xfail tests until pr93518 is resolved.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-23.c: Correct test (pr93517).
+
 2020-02-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93559 - ICE with CONSTRUCTOR flags verification.

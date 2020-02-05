@@ -15,7 +15,7 @@ void test_warn (char *p)
   sprintf (a, "a=%s", a);     /* { dg-warning "-Wrestrict" } */
 
   p = a;
-  char *q = p + 1;
+  char *q = p + 3;
   sprintf (p, "a=%s", q);     /* { dg-warning "-Wrestrict" } */
 }
 
@@ -31,7 +31,7 @@ void test_nowarn_front_end (char *d)
 void test_nowarn_sprintf_pass (char *d)
 {
   char *q = d;
-  
+
   sprintf (d, "p=%p", q);
   snprintf (d, 32, "p=%p", q);
 

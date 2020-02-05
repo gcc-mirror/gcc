@@ -1,3 +1,15 @@
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92765
+	* gimple-fold.c (get_range_strlen_tree): Handle MEM_REF and PARM_DECL.
+	* tree-ssa-strlen.c (compute_string_length): Remove.
+	(determine_min_objsize): Remove.
+	(get_len_or_size): Add an argument.  Call get_range_strlen_dynamic.
+	Avoid using type size as the upper bound on string length.
+	(handle_builtin_string_cmp): Add an argument.  Adjust.
+	(strlen_check_and_optimize_call): Pass additional argument to
+	handle_builtin_string_cmp.
+
 2020-02-05  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*pushdi2_rex64 peephole2): Remove.
