@@ -1,3 +1,9 @@
+2020-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93559 - ICE with CONSTRUCTOR flags verification.
+	* decl.c (reshape_init_array_1): Don't reuse a CONSTRUCTOR with
+	TREE_SIDE_EFFECTS.
+
 2020-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92593
