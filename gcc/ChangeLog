@@ -1,3 +1,9 @@
+2020-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92003
+	* symtab.c (symtab_node::nonzero_address): A DECL_COMDAT decl has
+	non-zero address even if weak and not yet defined.
+
 2020-02-05  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92765
