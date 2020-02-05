@@ -1,6 +1,15 @@
 2020-02-14  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2020-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90648
+	* genmatch.c (dt_node::gen_kids_1): Emit number of argument
+	checks before matching calls.
+
+2020-02-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2020-01-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93381

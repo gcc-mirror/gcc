@@ -3035,10 +3035,15 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	    {
 	      expr *e = as_a <expr *>(fns[i]->op);
 	      fprintf_indent (f, indent, "case %s:\n", e->operation->id);
-	      fprintf_indent (f, indent, "  {\n");
-	      fns[i]->gen (f, indent + 4, true);
-	      fprintf_indent (f, indent, "    break;\n");
-	      fprintf_indent (f, indent, "  }\n");
+	      /* We need to be defensive against bogus prototypes allowing
+		 calls with not enough arguments.  */
+	      fprintf_indent (f, indent,
+			      "  if (gimple_call_num_args (def) == %d)\n"
+			      "    {\n", e->ops.length ());
+	      fns[i]->gen (f, indent + 6, true);
+	      fprintf_indent (f, indent,
+			      "    }\n"
+			      "  break;\n");
 	    }
 
 	  fprintf_indent (f, indent, "default:;\n");
@@ -3099,10 +3104,11 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	  gcc_assert (e->operation->kind == id_base::FN);
 
 	  fprintf_indent (f, indent, "case %s:\n", e->operation->id);
-	  fprintf_indent (f, indent, "  {\n");
-	  generic_fns[j]->gen (f, indent + 4, false);
-	  fprintf_indent (f, indent, "    break;\n");
-	  fprintf_indent (f, indent, "  }\n");
+	  fprintf_indent (f, indent, "  if (call_expr_nargs (%s) == %d)\n"
+				     "    {\n", kid_opname, e->ops.length ());
+	  generic_fns[j]->gen (f, indent + 6, false);
+	  fprintf_indent (f, indent, "    }\n"
+				     "  break;\n");
 	}
       fprintf_indent (f, indent, "default:;\n");
 
