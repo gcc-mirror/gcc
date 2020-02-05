@@ -1,3 +1,11 @@
+2020-02-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*pushdi2_rex64 peephole2): Remove.
+	(*pushdi2_rex64 peephole2): Unconditionally split after
+	epilogue_completed.
+	(*ashl<mode>3_doubleword): Ditto.
+	(*<shift_insn><mode>3_doubleword): Ditto.
+
 2020-02-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93568
