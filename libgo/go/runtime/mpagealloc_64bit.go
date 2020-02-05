@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build amd64 !darwin,arm64 mips64 mips64le ppc64 ppc64le s390x arm64be alpha sparc64 ia64 riscv64
+// +build amd64 !darwin,arm64 mips64 mips64le ppc64 ppc64le riscv64 s390x arm64be alpha sparc64 ia64
 
 // See mpagealloc_32bit.go for why darwin/arm64 is excluded here.
 

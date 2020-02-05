@@ -1993,6 +1993,7 @@ func StructOf(fields []StructField) Type {
 
 	lastzero := uintptr(0)
 	repr = append(repr, "struct {"...)
+	pkgpath := ""
 	for i, field := range fields {
 		if field.Name == "" {
 			panic("reflect.StructOf: field " + strconv.Itoa(i) + " has no name")
@@ -2003,10 +2004,17 @@ func StructOf(fields []StructField) Type {
 		if field.Type == nil {
 			panic("reflect.StructOf: field " + strconv.Itoa(i) + " has no type")
 		}
-		f := runtimeStructField(field)
+		f, fpkgpath := runtimeStructField(field)
 		ft := f.typ
 		if ft.kind&kindGCProg != 0 {
 			hasGCProg = true
+		}
+		if fpkgpath != "" {
+			if pkgpath == "" {
+				pkgpath = fpkgpath
+			} else if pkgpath != fpkgpath {
+				panic("reflect.Struct: fields with different PkgPath " + pkgpath + " and " + fpkgpath)
+			}
 		}
 
 		// Update string and hash
@@ -2229,7 +2237,10 @@ func StructOf(fields []StructField) Type {
 	return addToCache(&typ.rtype)
 }
 
-func runtimeStructField(field StructField) structField {
+// runtimeStructField takes a StructField value passed to StructOf and
+// returns both the corresponding internal representation, of type
+// structField, and the pkgpath value to use for this field.
+func runtimeStructField(field StructField) (structField, string) {
 	if field.Anonymous && field.PkgPath != "" {
 		panic("reflect.StructOf: field \"" + field.Name + "\" is anonymous but has PkgPath set")
 	}
@@ -2263,13 +2274,14 @@ func runtimeStructField(field StructField) structField {
 		s := field.PkgPath
 		pkgPath = &s
 	}
-	return structField{
+	f := structField{
 		name:        name,
 		pkgPath:     pkgPath,
 		typ:         field.Type.common(),
 		tag:         tag,
 		offsetEmbed: offsetEmbed,
 	}
+	return f, field.PkgPath
 }
 
 // typeptrdata returns the length in bytes of the prefix of t

@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin
+// +build aix darwin solaris
 
 package unix
 
-import (
-	"syscall"
-	_ "unsafe" // for go:linkname
-)
+import "syscall"
+
+//extern __go_fcntl_uintptr
+func fcntl(uintptr, uintptr, uintptr) (uintptr, uintptr)
 
 func IsNonblock(fd int) (nonblocking bool, err error) {
-	flag, e1 := fcntl(fd, syscall.F_GETFL, 0)
-	if e1 != nil {
-		return false, e1
+	flag, e1 := fcntl(uintptr(fd), syscall.F_GETFL, 0)
+	if e1 != 0 {
+		return false, syscall.Errno(e1)
 	}
 	return flag&syscall.O_NONBLOCK != 0, nil
 }
-
-// Implemented in syscall/syscall_darwin.go.
-//go:linkname fcntl syscall.fcntl
-func fcntl(fd int, cmd int, arg int) (int, error)

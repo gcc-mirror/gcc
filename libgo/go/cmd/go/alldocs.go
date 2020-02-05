@@ -907,7 +907,7 @@
 //         Main      bool         // is this the main module?
 //         Indirect  bool         // is this module only an indirect dependency of main module?
 //         Dir       string       // directory holding files for this module, if any
-//         GoMod     string       // path to go.mod file for this module, if any
+//         GoMod     string       // path to go.mod file used when loading this module, if any
 //         GoVersion string       // go version used in module
 //         Error     *ModuleError // error loading module
 //     }
@@ -915,6 +915,9 @@
 //     type ModuleError struct {
 //         Err string // the error itself
 //     }
+//
+// The file GoMod refers to may be outside the module directory if the
+// module is in the module cache or if the -modfile flag is used.
 //
 // The default output is to print the module path and then
 // information about the version and replacement if any.
@@ -1020,7 +1023,9 @@
 // execution. The "go mod download" command is useful mainly for pre-filling
 // the local cache or to compute the answers for a Go module proxy.
 //
-// By default, download reports errors to standard error but is otherwise silent.
+// By default, download writes nothing to standard output. It may print progress
+// messages and errors to standard error.
+//
 // The -json flag causes download to print a sequence of JSON objects
 // to standard output, describing each downloaded module (or failure),
 // corresponding to this Go struct:
@@ -2346,14 +2351,15 @@
 //
 // Module support
 //
-// Go 1.13 includes support for Go modules. Module-aware mode is active by default
-// whenever a go.mod file is found in, or in a parent of, the current directory.
+// The go command includes support for Go modules. Module-aware mode is active
+// by default whenever a go.mod file is found in the current directory or in
+// any parent directory.
 //
 // The quickest way to take advantage of module support is to check out your
 // repository, create a go.mod file (described in the next section) there, and run
 // go commands from within that file tree.
 //
-// For more fine-grained control, Go 1.13 continues to respect
+// For more fine-grained control, the go command continues to respect
 // a temporary environment variable, GO111MODULE, which can be set to one
 // of three string values: off, on, or auto (the default).
 // If GO111MODULE=on, then the go command requires the use of modules,

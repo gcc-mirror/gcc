@@ -4,10 +4,7 @@
 
 package poll
 
-import (
-	"syscall"
-	_ "unsafe" // for go:linkname
-)
+import "syscall"
 
 // Fsync invokes SYS_FCNTL with SYS_FULLFSYNC because
 // on OS X, SYS_FSYNC doesn't fully flush contents to disk.
@@ -20,19 +17,4 @@ func (fd *FD) Fsync() error {
 
 	_, e1 := fcntl(fd.Sysfd, syscall.F_FULLFSYNC, 0)
 	return e1
-}
-
-// Use a helper function to call fcntl.  This is defined in C in
-// libgo/runtime.
-//extern __go_fcntl_uintptr
-func libc_fcntl(uintptr, uintptr, uintptr) (uintptr, uintptr)
-
-func fcntl(fd int, cmd int, arg int) (int, error) {
-	syscall.Entersyscall()
-	r, e := libc_fcntl(uintptr(fd), uintptr(cmd), uintptr(arg))
-	syscall.Exitsyscall()
-	if e != 0 {
-		return int(r), syscall.Errno(e)
-	}
-	return int(r), nil
 }

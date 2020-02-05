@@ -1550,6 +1550,44 @@ func TestTransportDialPreservesNetOpProxyError(t *testing.T) {
 	}
 }
 
+// Issue 36431: calls to RoundTrip should not mutate t.ProxyConnectHeader.
+//
+// (A bug caused dialConn to instead write the per-request Proxy-Authorization
+// header through to the shared Header instance, introducing a data race.)
+func TestTransportProxyDialDoesNotMutateProxyConnectHeader(t *testing.T) {
+	setParallel(t)
+	defer afterTest(t)
+
+	proxy := httptest.NewTLSServer(NotFoundHandler())
+	defer proxy.Close()
+	c := proxy.Client()
+
+	tr := c.Transport.(*Transport)
+	tr.Proxy = func(*Request) (*url.URL, error) {
+		u, _ := url.Parse(proxy.URL)
+		u.User = url.UserPassword("aladdin", "opensesame")
+		return u, nil
+	}
+	h := tr.ProxyConnectHeader
+	if h == nil {
+		h = make(Header)
+	}
+	tr.ProxyConnectHeader = h.Clone()
+
+	req, err := NewRequest("GET", "https://golang.fake.tld/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = c.Do(req)
+	if err == nil {
+		t.Errorf("unexpected Get success")
+	}
+
+	if !reflect.DeepEqual(tr.ProxyConnectHeader, h) {
+		t.Errorf("tr.ProxyConnectHeader = %v; want %v", tr.ProxyConnectHeader, h)
+	}
+}
+
 // TestTransportGzipRecursive sends a gzip quine and checks that the
 // client gets the same value back. This is more cute than anything,
 // but checks that we don't recurse forever, and checks that
@@ -6107,5 +6145,37 @@ func TestTransportDecrementConnWhenIdleConnRemoved(t *testing.T) {
 
 	for err := range errCh {
 		t.Errorf("error occurred: %v", err)
+	}
+}
+
+// Issue 36820
+// Test that we use the older backward compatible cancellation protocol
+// when a RoundTripper is registered via RegisterProtocol.
+func TestAltProtoCancellation(t *testing.T) {
+	defer afterTest(t)
+	tr := &Transport{}
+	c := &Client{
+		Transport: tr,
+		Timeout:   time.Millisecond,
+	}
+	tr.RegisterProtocol("timeout", timeoutProto{})
+	_, err := c.Get("timeout://bar.com/path")
+	if err == nil {
+		t.Error("request unexpectedly succeeded")
+	} else if !strings.Contains(err.Error(), timeoutProtoErr.Error()) {
+		t.Errorf("got error %q, does not contain expected string %q", err, timeoutProtoErr)
+	}
+}
+
+var timeoutProtoErr = errors.New("canceled as expected")
+
+type timeoutProto struct{}
+
+func (timeoutProto) RoundTrip(req *Request) (*Response, error) {
+	select {
+	case <-req.Cancel:
+		return nil, timeoutProtoErr
+	case <-time.After(5 * time.Second):
+		return nil, errors.New("request was not canceled")
 	}
 }
