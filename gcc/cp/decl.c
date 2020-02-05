@@ -13259,10 +13259,13 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (declspecs->explicit_specifier)
 	      store_explicit_specifier (decl, declspecs->explicit_specifier);
 	  }
-	else if (!staticp && !dependent_type_p (type)
-		 && !COMPLETE_TYPE_P (complete_type (type))
-		 && (!complete_or_array_type_p (type)
-		     || initialized == 0))
+	else if (!staticp
+		 && ((current_class_type
+		      && same_type_p (type, current_class_type))
+		     || (!dependent_type_p (type)
+			 && !COMPLETE_TYPE_P (complete_type (type))
+			 && (!complete_or_array_type_p (type)
+			     || initialized == 0))))
 	  {
 	    if (TREE_CODE (type) != ARRAY_TYPE
 		|| !COMPLETE_TYPE_P (TREE_TYPE (type)))

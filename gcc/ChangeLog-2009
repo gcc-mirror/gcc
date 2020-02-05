@@ -14477,7 +14477,7 @@
 	(aapcs_layout_arg): New function.
 	(arm_init_cumulative_args): Initialize AAPCS args data.
 	(arm_function_arg): Handle AAPCS variants using new interface.
-	(arm_arg_parital_bytes): Likewise.
+	(arm_arg_partial_bytes): Likewise.
 	(arm_function_arg_advance): New function.
 	(arm_function_ok_for_sibcall): Ensure that sibling calls agree on
 	calling conventions.

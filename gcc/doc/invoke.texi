@@ -31106,6 +31106,10 @@ precompiled header.  The following are known to be safe:
 -fsched-verbose=@var{number}  -fschedule-insns  -fvisibility= @gol
 -pedantic-errors}
 
+@item Address space layout randomization (ASLR) can lead to not binary identical
+PCH files.  If you rely on stable PCH file contents disable ASLR when generating
+PCH files.
+
 @end itemize
 
 For all of these except the last, the compiler automatically

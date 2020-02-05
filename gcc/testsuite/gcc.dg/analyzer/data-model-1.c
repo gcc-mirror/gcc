@@ -895,8 +895,7 @@ int test_40 (int flag)
     i = 17;
 
   /* With state-merging, we lose the relationship between 'flag' and 'i'.  */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   if (flag)
     __analyzer_eval (i == 43); /* { dg-warning "UNKNOWN" } */

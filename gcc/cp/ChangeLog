@@ -1,4 +1,32 @@
+2020-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92593
+	* decl.c (grokdeclarator): Reject field of current class type even
+	in a template.
+
+2020-02-05  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (maybe_promote_captured_temps): Increase the index
+	number for temporary variables' name.
+
+2020-02-05  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (build_co_await): Call convert_from_reference
+	to wrap co_await_expr with indirect_ref which avoid
+	reference/non-reference type confusion.
+
+	(co_await_expander):  Sink to call_expr if await_resume
+	is wrapped by indirect_ref.
+
 2020-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93551
+	* constraint.cc (satisfy_declaration_constraints): Check return
+	value of push_tinst_level.
+
+	PR c++/90951
+	* constexpr.c (cxx_eval_array_reference): {}-initialize missing
+	elements instead of value-initializing them.
 
 	PR c++/86917
 	* init.c (perform_member_init): Simplify.

@@ -10,7 +10,7 @@ void test(void)
 {
   union u u;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
 
   for (u.i=0; u.i<256; u.i++) {
@@ -19,7 +19,7 @@ void test(void)
     /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-2 } */
     /* (should report TRUE twice). */
 
-    __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+    __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
     //__analyzer_eval (u.i == 0); /* { d-todo-g-warning "UNKNOWN" "" { xfail *-*-* } } */
       /* { d-todo-g-warning "TRUE" "" { target *-*-* } .-1 } */
@@ -36,5 +36,5 @@ void test(void)
   /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   /* TODO(xfail^^^): ideally it should figure out i == 256 at exit.  */
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }

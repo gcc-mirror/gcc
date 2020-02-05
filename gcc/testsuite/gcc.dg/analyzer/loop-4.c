@@ -9,7 +9,7 @@ void test(void)
 {
   int i, j, k;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   for (i=0; i<256; i++) {
 
@@ -25,7 +25,7 @@ void test(void)
 
       __analyzer_eval (j < 256); /* { dg-warning "TRUE" } */
 
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
       for (k=0; k<256; k++) {
 
@@ -34,10 +34,10 @@ void test(void)
 
 	__analyzer_eval (k < 256); /* { dg-warning "TRUE" } */
 
-	__analyzer_dump_exploded_nodes (0); /* { dg-warning "4 exploded nodes" } */
+	__analyzer_dump_exploded_nodes (0); /* { dg-warning "4 processed enodes" } */
       }
     }
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }

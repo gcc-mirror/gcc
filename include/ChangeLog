@@ -1,3 +1,8 @@
+2020-02-05  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* hashtab.h (htab_remove_elt): Make a parameter const.
+	(htab_remove_elt_with_hash): Likewise.
+
 2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gomp-constants.h (enum gomp_device_property): Remove.

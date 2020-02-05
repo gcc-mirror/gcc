@@ -1,3 +1,10 @@
+2020-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR lto/93489
+	* lto-dump.c (dump_list_functions): Do not
+	load body for aliases.
+	(dump_body): Likewise here.
+
 2020-01-16  Martin Liska  <mliska@suse.cz>
 
 	* lto-partition.c (lto_balanced_map): Remember

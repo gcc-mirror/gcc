@@ -1,3 +1,50 @@
+2020-02-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Use / not space.
+
+2020-02-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi
+	(Special Functions for Debugging the Analyzer): Update description
+	of __analyzer_dump_exploded_nodes.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92190
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper): Only
+	include sets and not clobbers in the vzeroupper pattern.
+	* config/i386/sse.md (*avx_vzeroupper): Require in insn condition that
+	the parallel has 17 (64-bit) or 9 (32-bit) elts.
+	(*avx_vzeroupper_1): New define_insn_and_split.
+
+	PR target/92190
+	* recog.c (pass_split_after_reload::gate): For STACK_REGS targets,
+	don't run when !optimize.
+	(pass_split_before_regstack::gate): For STACK_REGS targets, run even
+	when !optimize.
+
+2020-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90648
+	* genmatch.c (dt_node::gen_kids_1): Emit number of argument
+	checks before matching calls.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-alias.c (aliasing_matching_component_refs_p): Fix up
+	function comment typo.
+
+	PR middle-end/93555
+	* omp-simd-clone.c (expand_simd_clones): If simd_clone_mangle or
+	simd_clone_create failed when i == 0, adjust clone->nargs by
+	clone->inbranch.
+
+2020-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92717
+	* doc/invoke.texi: Document that one should
+	not combine ASLR and -fpch.
+
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93538
