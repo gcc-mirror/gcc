@@ -514,7 +514,11 @@ package body Checks is
          if Nkind (Checks (J)) = N_Raise_Constraint_Error
            and then Present (Condition (Checks (J)))
          then
-            if not Has_Dynamic_Range_Check (Internal_Flag_Node) then
+            if Has_Dynamic_Range_Check (Internal_Flag_Node) then
+               pragma Assert (False);
+               null;
+
+            else
                Append_To (Stmts, Checks (J));
                Set_Has_Dynamic_Range_Check (Internal_Flag_Node);
             end if;
@@ -7470,7 +7474,11 @@ package body Checks is
          if Nkind (Checks (J)) = N_Raise_Constraint_Error
            and then Present (Condition (Checks (J)))
          then
-            if not Has_Dynamic_Range_Check (Internal_Flag_Node) then
+            if Has_Dynamic_Range_Check (Internal_Flag_Node) then
+               pragma Assert (False);
+               null;
+
+            else
                Check_Node := Checks (J);
                Mark_Rewrite_Insertion (Check_Node);
 

@@ -45,6 +45,7 @@ with Layout;    use Layout;
 with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
 with Namet;     use Namet;
+with Nlists;    use Nlists;
 with Nmake;     use Nmake;
 with Opt;       use Opt;
 with Restrict;  use Restrict;
@@ -21214,7 +21215,7 @@ package body Sem_Ch3 is
      (R            : Node_Id;
       T            : Entity_Id;
       Subtyp       : Entity_Id := Empty;
-      Check_List   : List_Id   := Empty_List;
+      Check_List   : List_Id   := No_List;
       R_Check_Off  : Boolean   := False;
       In_Iter_Schm : Boolean   := False)
    is
@@ -21435,9 +21436,13 @@ package body Sem_Ch3 is
                         end if;
                      end;
 
-                  --  Insertion before a declaration. If the declaration
-                  --  includes discriminants, the list of applicable checks
-                  --  is given by the caller.
+                  --  Case of declarations. If the declaration is for a type
+                  --  and involves discriminants, the checks are premature at
+                  --  the declaration point and need to wait for the expansion
+                  --  of the initialization procedure, which will pass in the
+                  --  list to put them on; otherwise, the checks are done at
+                  --  the declaration point and there is no need to do them
+                  --  again in the initialization procedure.
 
                   elsif Nkind (Insert_Node) in N_Declaration then
                      Def_Id := Defining_Identifier (Insert_Node);
@@ -21448,19 +21453,22 @@ package body Sem_Ch3 is
                         (Ekind (Def_Id) = E_Protected_Type
                           and then Has_Discriminants (Def_Id))
                      then
-                        Append_Range_Checks
-                          (R_Checks,
-                            Check_List, Def_Id, Sloc (Insert_Node), R);
+                        if Present (Check_List) then
+                           Append_Range_Checks
+                             (R_Checks,
+                               Check_List, Def_Id, Sloc (Insert_Node), R);
+                        end if;
 
                      else
-                        Insert_Range_Checks
-                          (R_Checks,
-                            Insert_Node, Def_Id, Sloc (Insert_Node), R);
-
+                        if No (Check_List) then
+                           Insert_Range_Checks
+                             (R_Checks,
+                               Insert_Node, Def_Id, Sloc (Insert_Node), R);
+                        end if;
                      end if;
 
-                  --  Insertion before a statement. Range appears in the
-                  --  context of a quantified expression. Insertion will
+                  --  Case of statements. Drop the checks, as the range appears
+                  --  in the context of a quantified expression. Insertion will
                   --  take place when expression is expanded.
 
                   else
