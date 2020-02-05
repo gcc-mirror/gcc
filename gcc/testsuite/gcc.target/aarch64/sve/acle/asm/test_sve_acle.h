@@ -68,12 +68,52 @@
     return z0_res;						\
   }
 
+#define TEST_TRIPLE_Z(NAME, TYPE1, TYPE2, TYPE3, CODE1, CODE2)	\
+  PROTO (NAME, TYPE1, (TYPE1 z0, TYPE1 z1, TYPE2 z2, TYPE2 z3,	\
+		       TYPE3 z4, TYPE3 z5,			\
+		       svbool_t p0, svbool_t p1))		\
+  {								\
+    INVOKE (CODE1, CODE2);					\
+    return z0;							\
+  }
+
+#define TEST_TRIPLE_Z_REV2(NAME, TYPE1, TYPE2, TYPE3, CODE1, CODE2)\
+  PROTO (NAME, TYPE1, (TYPE2 z0, TYPE2 z1, TYPE1 z2, TYPE1 z3,	\
+		       TYPE3 z4, TYPE3 z5,			\
+		       svbool_t p0, svbool_t p1))		\
+  {								\
+    TYPE1 z0_res;						\
+    INVOKE (CODE1, CODE2);					\
+    return z0_res;						\
+  }
+
+#define TEST_TRIPLE_Z_REV(NAME, TYPE1, TYPE2, TYPE3, CODE1, CODE2)\
+  PROTO (NAME, TYPE1, (TYPE3 z0, TYPE3 z1, TYPE2 z2, TYPE2 z3,	\
+		       TYPE1 z4, TYPE1 z5,			\
+		       svbool_t p0, svbool_t p1))		\
+  {								\
+    TYPE1 z0_res;						\
+    INVOKE (CODE1, CODE2);					\
+    return z0_res;						\
+  }
+
 #define TEST_DUAL_LANE_REG(NAME, ZTYPE1, ZTYPE2, REG, CODE1, CODE2) \
   PROTO (NAME, void, (void))					\
   {								\
     register ZTYPE1 z0 __asm ("z0");				\
     register ZTYPE2 z1 __asm ("z1");				\
     register ZTYPE2 REG __asm (#REG);				\
+    __asm volatile ("" : "=w" (z0), "=w" (z1), "=w" (REG));	\
+    INVOKE (CODE1, CODE2);					\
+    __asm volatile ("" :: "w" (z0));				\
+  }
+
+#define TEST_TRIPLE_LANE_REG(NAME, ZTYPE1, ZTYPE2, ZTYPE3, REG, CODE1, CODE2) \
+  PROTO (NAME, void, (void))					\
+  {								\
+    register ZTYPE1 z0 __asm ("z0");				\
+    register ZTYPE2 z1 __asm ("z1");				\
+    register ZTYPE3 REG __asm (#REG);				\
     __asm volatile ("" : "=w" (z0), "=w" (z1), "=w" (REG));	\
     INVOKE (CODE1, CODE2);					\
     __asm volatile ("" :: "w" (z0));				\
@@ -127,6 +167,15 @@
 			ZTYPE1 z3, ZTYPE2 z4, ZTYPE2 z5,	\
 			ZTYPE2 z6, ZTYPE2 z7, svbool_t p0,	\
 			svbool_t p1, STYPE x0))			\
+  {								\
+    INVOKE (CODE1, CODE2);					\
+    return z0;							\
+  }
+
+#define TEST_TRIPLE_ZX(NAME, TYPE1, TYPE2, TYPE3, CODE1, CODE2)	\
+  PROTO (NAME, TYPE1, (TYPE1 z0, TYPE1 z1, TYPE2 z2, TYPE2 z3,	\
+		       TYPE3 x0, TYPE3 x1,			\
+		       svbool_t p0, svbool_t p1))		\
   {								\
     INVOKE (CODE1, CODE2);					\
     return z0;							\

@@ -13,6 +13,5 @@ void test (struct foo *pf)
     bar (0);
   else
     bar (1);
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }

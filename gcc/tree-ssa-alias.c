@@ -856,7 +856,7 @@ type_has_components_p (tree type)
 
 /* MATCH1 and MATCH2 which are part of access path of REF1 and REF2
    respectively are either pointing to same address or are completely
-   disjoint. If PARITAL_OVERLAP is true, assume that outermost arrays may
+   disjoint. If PARTIAL_OVERLAP is true, assume that outermost arrays may
    just partly overlap.
 
    Try to disambiguate using the access path starting from the match

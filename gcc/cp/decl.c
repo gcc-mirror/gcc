@@ -5984,7 +5984,7 @@ struct reshape_iter
   constructor_elt *end;
 };
 
-static tree reshape_init_r (tree, reshape_iter *, bool, tsubst_flags_t);
+static tree reshape_init_r (tree, reshape_iter *, tree, tsubst_flags_t);
 
 /* FIELD is a FIELD_DECL or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
@@ -6032,15 +6032,21 @@ is_direct_enum_init (tree type, tree init)
 
 static tree
 reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
-		      tsubst_flags_t complain)
+		      tree first_initializer_p, tsubst_flags_t complain)
 {
   tree new_init;
   bool sized_array_p = (max_index && TREE_CONSTANT (max_index));
   unsigned HOST_WIDE_INT max_index_cst = 0;
   unsigned HOST_WIDE_INT index;
 
-  /* The initializer for an array is always a CONSTRUCTOR.  */
-  new_init = build_constructor (init_list_type_node, NULL);
+  /* The initializer for an array is always a CONSTRUCTOR.  If this is the
+     outermost CONSTRUCTOR and the element type is non-aggregate, we don't need
+     to build a new one.  */
+  bool reuse = first_initializer_p && !CP_AGGREGATE_TYPE_P (elt_type);
+  if (reuse)
+    new_init = first_initializer_p;
+  else
+    new_init = build_constructor (init_list_type_node, NULL);
 
   if (sized_array_p)
     {
@@ -6067,12 +6073,20 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       constructor_elt *old_cur = d->cur;
 
       check_array_designated_initializer (d->cur, index);
-      elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false,
+      elt_init = reshape_init_r (elt_type, d,
+				 /*first_initializer_p=*/NULL_TREE,
 				 complain);
       if (elt_init == error_mark_node)
 	return error_mark_node;
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
-			      size_int (index), elt_init);
+      tree idx = size_int (index);
+      if (reuse)
+	{
+	  old_cur->index = idx;
+	  old_cur->value = elt_init;
+	}
+      else
+	CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
+				idx, elt_init);
       if (!TREE_CONSTANT (elt_init))
 	TREE_CONSTANT (new_init) = false;
 
@@ -6109,7 +6123,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
    Parameters are the same of reshape_init_r.  */
 
 static tree
-reshape_init_array (tree type, reshape_iter *d, tsubst_flags_t complain)
+reshape_init_array (tree type, reshape_iter *d, tree first_initializer_p,
+		    tsubst_flags_t complain)
 {
   tree max_index = NULL_TREE;
 
@@ -6118,7 +6133,8 @@ reshape_init_array (tree type, reshape_iter *d, tsubst_flags_t complain)
   if (TYPE_DOMAIN (type))
     max_index = array_type_nelts (type);
 
-  return reshape_init_array_1 (TREE_TYPE (type), max_index, d, complain);
+  return reshape_init_array_1 (TREE_TYPE (type), max_index, d,
+			       first_initializer_p, complain);
 }
 
 /* Subroutine of reshape_init_r, processes the initializers for vectors.
@@ -6149,7 +6165,8 @@ reshape_init_vector (tree type, reshape_iter *d, tsubst_flags_t complain)
   if (VECTOR_TYPE_P (type))
     max_index = size_int (TYPE_VECTOR_SUBPARTS (type) - 1);
 
-  return reshape_init_array_1 (TREE_TYPE (type), max_index, d, complain);
+  return reshape_init_array_1 (TREE_TYPE (type), max_index, d,
+			       NULL_TREE, complain);
 }
 
 /* Subroutine of reshape_init_r, processes the initializers for classes
@@ -6232,7 +6249,8 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	break;
 
       field_init = reshape_init_r (TREE_TYPE (field), d,
-				   /*first_initializer_p=*/false, complain);
+				   /*first_initializer_p=*/NULL_TREE,
+				   complain);
       if (field_init == error_mark_node)
 	return error_mark_node;
 
@@ -6283,11 +6301,11 @@ has_designator_problem (reshape_iter *d, tsubst_flags_t complain)
 /* Subroutine of reshape_init, which processes a single initializer (part of
    a CONSTRUCTOR). TYPE is the type of the variable being initialized, D is the
    iterator within the CONSTRUCTOR which points to the initializer to process.
-   FIRST_INITIALIZER_P is true if this is the first initializer of the
-   outermost CONSTRUCTOR node.  */
+   If this is the first initializer of the outermost CONSTRUCTOR node,
+   FIRST_INITIALIZER_P is that CONSTRUCTOR; otherwise, it is NULL_TREE.  */
 
 static tree
-reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
+reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 		tsubst_flags_t complain)
 {
   tree init = d->cur->value;
@@ -6484,7 +6502,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
   if (CLASS_TYPE_P (type))
     return reshape_init_class (type, d, first_initializer_p, complain);
   else if (TREE_CODE (type) == ARRAY_TYPE)
-    return reshape_init_array (type, d, complain);
+    return reshape_init_array (type, d, first_initializer_p, complain);
   else if (VECTOR_TYPE_P (type))
     return reshape_init_vector (type, d, complain);
   else
@@ -6548,7 +6566,7 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   d.cur = &(*v)[0];
   d.end = d.cur + v->length ();
 
-  new_init = reshape_init_r (type, &d, true, complain);
+  new_init = reshape_init_r (type, &d, init, complain);
   if (new_init == error_mark_node)
     return error_mark_node;
 
@@ -12355,7 +12373,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 		 The optional attribute-specifier-seq appertains to
 		 the function type.  */
-	      decl_attributes (&type, attrs, 0);
+	      cplus_decl_attributes (&type, attrs, 0);
 
 	    if (raises)
 	      type = build_exception_variant (type, raises);
@@ -13298,10 +13316,13 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (declspecs->explicit_specifier)
 	      store_explicit_specifier (decl, declspecs->explicit_specifier);
 	  }
-	else if (!staticp && !dependent_type_p (type)
-		 && !COMPLETE_TYPE_P (complete_type (type))
-		 && (!complete_or_array_type_p (type)
-		     || initialized == 0))
+	else if (!staticp
+		 && ((current_class_type
+		      && same_type_p (type, current_class_type))
+		     || (!dependent_type_p (type)
+			 && !COMPLETE_TYPE_P (complete_type (type))
+			 && (!complete_or_array_type_p (type)
+			     || initialized == 0))))
 	  {
 	    if (TREE_CODE (type) != ARRAY_TYPE
 		|| !COMPLETE_TYPE_P (TREE_TYPE (type)))

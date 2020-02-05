@@ -1,3 +1,341 @@
+2020-02-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Use / not space.
+
+2020-02-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi
+	(Special Functions for Debugging the Analyzer): Update description
+	of __analyzer_dump_exploded_nodes.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92190
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper): Only
+	include sets and not clobbers in the vzeroupper pattern.
+	* config/i386/sse.md (*avx_vzeroupper): Require in insn condition that
+	the parallel has 17 (64-bit) or 9 (32-bit) elts.
+	(*avx_vzeroupper_1): New define_insn_and_split.
+
+	PR target/92190
+	* recog.c (pass_split_after_reload::gate): For STACK_REGS targets,
+	don't run when !optimize.
+	(pass_split_before_regstack::gate): For STACK_REGS targets, run even
+	when !optimize.
+
+2020-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90648
+	* genmatch.c (dt_node::gen_kids_1): Emit number of argument
+	checks before matching calls.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-alias.c (aliasing_matching_component_refs_p): Fix up
+	function comment typo.
+
+	PR middle-end/93555
+	* omp-simd-clone.c (expand_simd_clones): If simd_clone_mangle or
+	simd_clone_create failed when i == 0, adjust clone->nargs by
+	clone->inbranch.
+
+2020-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92717
+	* doc/invoke.texi: Document that one should
+	not combine ASLR and -fpch.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93538
+	* match.pd (addr EQ/NE ptr): Amend to handle &ptr->x EQ/NE ptr.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91123
+	* tree-ssa-sccvn.c (vn_walk_cb_data::finish): New method.
+	(vn_walk_cb_data::last_vuse): New member.
+	(vn_walk_cb_data::saved_operands): Likewsie.
+	(vn_walk_cb_data::~vn_walk_cb_data): Release saved_operands.
+	(vn_walk_cb_data::push_partial_def): Use finish.
+	(vn_reference_lookup_2): Update last_vuse and use finish if
+	we've saved operands.
+	(vn_reference_lookup_3): Use finish and update calls to
+	push_partial_defs everywhere.  When translating through
+	memcpy or aggregate copies save off operands and alias-set.
+	(eliminate_dom_walker::eliminate_stmt): Restore VN_WALKREWRITE
+	operation for redundant store removal.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Avoid
+	generating more stmts than before.
+
+2020-02-04  Martin Liska  <mliska@suse.cz>
+
+	* config/arm/arm.c (arm_gen_far_branch): Move the function
+	outside of selftests.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (adjust_vec_address_pcrel): New helper
+	function to adjust PC-relative vector addresses.
+	(rs6000_adjust_vec_address): Call adjust_vec_address_pcrel to
+	handle vectors with PC-relative addresses.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Add forward
+	reference.
+	(hard_reg_and_mode_to_addr_mask): Delete.
+	(rs6000_adjust_vec_address): If the original vector address
+	was REG+REG or REG+OFFSET and the element is not zero, do the add
+	of the elements in the original address before adding the offset
+	for the vector element.  Use address_to_insn_form to validate the
+	address using the register being loaded, rather than guessing
+	whether the address is a DS-FORM or DQ-FORM address.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (get_vector_offset): New helper function
+	to calculate the offset in memory from the start of a vector of a
+	particular element.  Add code to keep the element number in
+	bounds if the element number is variable.
+	(rs6000_adjust_vec_address): Move calculation of offset of the
+	vector element to get_vector_offset.
+	(rs6000_split_vec_extract_var): Do not do the initial AND of
+	element here, move the code to get_vector_offset.
+
+2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Add some
+	gcc_asserts.
+
+2020-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md: Improve documentation.
+
+2020-02-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/93548
+	* config/arm/t-arm: ($(srcdir)/config/arm/arm-tune.md)
+	($(srcdir)/config/arm/arm-tables.opt): Use move-if-change.
+
+2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc: Remove "carrizo" support.
+	* config/gcn/gcn-opts.h (processor_type): Likewise.
+	* config/gcn/gcn.c (gcn_omp_device_kind_arch_isa): Likewise.
+	* config/gcn/gcn.opt (gpu_type): Likewise.
+	* config/gcn/t-omp-device: Likewise.
+
+2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* config/arm/arm-protos.h: New function arm_gen_far_branch prototype.
+	* config/arm/arm.c (arm_gen_far_branch): New function
+	arm_gen_far_branch.
+	* config/arm/arm.md: Update b<cond> for Thumb2 range checks.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi: Update mention of OpenACC version to 2.6.
+
+2020-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93533
+	* config/s390/s390.md (popcounthi2_z196): Fix up expander to emit
+	valid RTL to sum up the lowest and second lowest bytes of the popcnt
+	result.
+
+2020-02-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* ira-color.c (struct allocno_color_data): Add member
+	hard_reg_prefs.
+	(init_allocno_threads): Set the member up.
+	(bucket_allocno_compare_func): Add compare hard reg
+	prefs.
+
+2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
+
+	* configure.ac [nios2-*-*]: Check HAVE_AS_NIOS2_GOTOFF_RELOCATION.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* config/nios2/nios2.h (ASM_PREFERRED_EH_DATA_FORMAT): Fix handling
+	for PIC when HAVE_AS_NIOS2_GOTOFF_RELOCATION.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): New.
+
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
+2020-01-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* ira-color.c (bucket_allocno_compare_func): Move conflict hard
+	reg preferences comparison up.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SVE_BF16): New macro.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svcvtnt): Move to
+	aarch64-sve-builtins-base.h.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svcvtnt): Move to
+	aarch64-sve-builtins-base.cc.
+	* config/aarch64/aarch64-sve-builtins-base.h (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): Declare.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): New functions.
+	* config/aarch64/aarch64-sve-builtins-base.def (svbfdot, svbfdot_lane)
+	(svbfmlalb, svbfmlalb_lane, svbfmlalt, svbfmlalt_lane, svbfmmla)
+	(svcvtnt): New functions.
+	(svcvt): Add a form that converts f32 to bf16.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (ternary_bfloat)
+	(ternary_bfloat_lane, ternary_bfloat_lanex2, ternary_bfloat_opt_n):
+	Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_element_type):
+	Treat B as bfloat16_t.
+	(ternary_bfloat_lane_base): New class.
+	(ternary_bfloat_def): Likewise.
+	(ternary_bfloat): New shape.
+	(ternary_bfloat_lane_def): New class.
+	(ternary_bfloat_lane): New shape.
+	(ternary_bfloat_lanex2_def): New class.
+	(ternary_bfloat_lanex2): New shape.
+	(ternary_bfloat_opt_n_def): New class.
+	(ternary_bfloat_opt_n): New shape.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_cvt_bfloat): New macro.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_<sve_fp_op>vnx4sf)
+	(@aarch64_sve_<sve_fp_op>_lanevnx4sf): New patterns.
+	(@aarch64_sve_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>)
+	(@cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>): Likewise.
+	(*cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>): Likewise.
+	(@aarch64_sve_cvtnt<VNx8BF_ONLY:mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_cvtnt<mode>): Key
+	the pattern off the narrow mode instead of the wider one.
+	* config/aarch64/iterators.md (VNx8BF_ONLY): New mode iterator.
+	(UNSPEC_BFMLALB, UNSPEC_BFMLALT, UNSPEC_BFMMLA): New unspecs.
+	(sve_fp_op): Handle them.
+	(SVE_BFLOAT_TERNARY_LONG): New int itertor.
+	(SVE_BFLOAT_TERNARY_LONG_LANE): Likewise.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/arm_sve.h: Include arm_bf16.h.
+	* config/aarch64/aarch64-modes.def (BF): Move definition before
+	VECTOR_MODES.  Remove separate VECTOR_MODES for V4BF and V8BF.
+	(SVE_MODES): Handle BF modes.
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Handle
+	BF modes.
+	(aarch64_full_sve_mode): Likewise.
+	* config/aarch64/iterators.md (SVE_STRUCT): Add VNx16BF, VNx24BF
+	and VNx32BF.
+	(SVE_FULL, SVE_FULL_HSD, SVE_ALL): Add VNx8BF.
+	(Vetype, Vesize, Vctype, VEL, Vel, VEL_INT, V128, v128, vwcore)
+	(V_INT_EQUIV, v_int_equiv, V_FP_EQUIV, v_fp_equiv, vector_count)
+	(insn_length, VSINGLE, vsingle, VPRED, vpred, VDOUBLE): Handle the
+	new SVE BF modes.
+	* config/aarch64/aarch64-sve-builtins.h (TYPE_bfloat): New
+	type_class_index.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_all_arith): New macro.
+	(TYPES_all_data): Add bf16.
+	(TYPES_reinterpret1, TYPES_reinterpret): Likewise.
+	(register_tuple_type): Increase buffer size.
+	* config/aarch64/aarch64-sve-builtins.def (svbfloat16_t): New type.
+	(bf16): New type suffix.
+	* config/aarch64/aarch64-sve-builtins-base.def (svabd, svadd, svaddv)
+	(svcmpeq, svcmpge, svcmpgt, svcmple, svcmplt, svcmpne, svmad, svmax)
+	(svmaxv, svmin, svminv, svmla, svmls, svmsb, svmul, svsub, svsubr):
+	Change type from all_data to all_arith.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svaddp, svmaxp)
+	(svminp): Likewise.
+
+2020-01-31  Dennis Zhang  <dennis.zhang@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (f32mm): Document new AArch64 -march= extension.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_MATMUL_INT8, __ARM_FEATURE_SVE_MATMUL_FP32 and
+	__ARM_FEATURE_SVE_MATMUL_FP64 as appropriate.  Don't define
+	__ARM_FEATURE_MATMUL_FP64.
+	* config/aarch64/aarch64-option-extensions.def (fp, simd, fp16)
+	(sve): Add AARCH64_FL_F32MM to the list of extensions that should
+	be disabled at the same time.
+	(f32mm): New extension.
+	* config/aarch64/aarch64.h (AARCH64_FL_F32MM): New macro.
+	(AARCH64_FL_F64MM): Bump to the next bit up.
+	(AARCH64_ISA_F32MM, TARGET_SVE_I8MM, TARGET_F32MM, TARGET_SVE_F32MM)
+	(TARGET_SVE_F64MM): New macros.
+	* config/aarch64/iterators.md (SVE_MATMULF): New mode iterator.
+	(UNSPEC_FMMLA, UNSPEC_SMATMUL, UNSPEC_UMATMUL, UNSPEC_USMATMUL)
+	(UNSPEC_TRN1Q, UNSPEC_TRN2Q, UNSPEC_UZP1Q, UNSPEC_UZP2Q, UNSPEC_ZIP1Q)
+	(UNSPEC_ZIP2Q): New unspeccs.
+	(DOTPROD_US_ONLY, PERMUTEQ, MATMUL, FMMLA): New int iterators.
+	(optab, sur, perm_insn): Handle the new unspecs.
+	(sve_fp_op): Handle UNSPEC_FMMLA.  Resort.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): Use
+	TARGET_SVE_F64MM instead of separate tests.
+	(@aarch64_<DOTPROD_US_ONLY:sur>dot_prod<vsi2qi>): New pattern.
+	(@aarch64_<DOTPROD_US_ONLY:sur>dot_prod_lane<vsi2qi>): Likewise.
+	(@aarch64_sve_add_<MATMUL:optab><vsi2qi>): Likewise.
+	(@aarch64_sve_<FMMLA:sve_fp_op><mode>): Likewise.
+	(@aarch64_sve_<PERMUTEQ:optab><mode>): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_s_float): New macro.
+	(TYPES_s_float_hsd_integer, TYPES_s_float_sd_integer): Use it.
+	(TYPES_s_signed): New macro.
+	(TYPES_s_integer): Use it.
+	(TYPES_d_float): New macro.
+	(TYPES_d_data): Use it.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (mmla): Declare.
+	(ternary_intq_uintq_lane, ternary_intq_uintq_opt_n, ternary_uintq_intq)
+	(ternary_uintq_intq_lane, ternary_uintq_intq_opt_n): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (mmla_def): New class.
+	(svmmla): New shape.
+	(ternary_resize2_opt_n_base): Add TYPE_CLASS2 and TYPE_CLASS3
+	template parameters.
+	(ternary_resize2_lane_base): Likewise.
+	(ternary_resize2_base): New class.
+	(ternary_qq_lane_base): Likewise.
+	(ternary_intq_uintq_lane_def): Likewise.
+	(ternary_intq_uintq_lane): New shape.
+	(ternary_intq_uintq_opt_n_def): New class
+	(ternary_intq_uintq_opt_n): New shape.
+	(ternary_qq_lane_def): Inherit from ternary_qq_lane_base.
+	(ternary_uintq_intq_def): New class.
+	(ternary_uintq_intq): New shape.
+	(ternary_uintq_intq_lane_def): New class.
+	(ternary_uintq_intq_lane): New shape.
+	(ternary_uintq_intq_opt_n_def): New class.
+	(ternary_uintq_intq_opt_n): New shape.
+	* config/aarch64/aarch64-sve-builtins-base.h (svmmla, svsudot)
+	(svsudot_lane, svtrn1q, svtrn2q, svusdot, svusdot_lane, svusmmla)
+	(svuzp1q, svuzp2q, svzip1q, svzip2q): Declare.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdot_lane_impl):
+	Generalize to...
+	(svdotprod_lane_impl): ...this new class.
+	(svmmla_impl, svusdot_impl): New classes.
+	(svdot_lane): Update to use svdotprod_lane_impl.
+	(svmmla, svsudot, svsudot_lane, svtrn1q, svtrn2q, svusdot)
+	(svusdot_lane, svusmmla, svuzp1q, svuzp2q, svzip1q, svzip2q): New
+	functions.
+	* config/aarch64/aarch64-sve-builtins-base.def (svmmla): New base
+	function, with no types defined.
+	(svmmla, svusmmla, svsudot, svsudot_lane, svusdot, svusdot_lane): New
+	AARCH64_FL_I8MM functions.
+	(svmmla): New AARCH64_FL_F32MM function.
+	(svld1ro): Depend only on AARCH64_FL_F64MM, not on AARCH64_FL_V8_6.
+	(svmmla, svtrn1q, svtrn2q, svuz1q, svuz2q, svzip1q, svzip2q): New
+	AARCH64_FL_F64MM function.
+	(REQUIRED_EXTENSIONS):
+
 2020-01-31  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (addv64di3_exec): Allow one '0' in each

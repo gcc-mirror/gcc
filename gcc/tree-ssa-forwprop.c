@@ -2230,7 +2230,6 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   unsigned HOST_WIDE_INT refnelts;
   enum tree_code conv_code;
   constructor_elt *elt;
-  bool maybe_ident;
 
   op = gimple_assign_rhs1 (stmt);
   type = TREE_TYPE (op);
@@ -2245,7 +2244,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   orig[0] = NULL;
   orig[1] = NULL;
   conv_code = ERROR_MARK;
-  maybe_ident = true;
+  bool maybe_ident = true;
+  bool maybe_blend[2] = { true, true };
   tree one_constant = NULL_TREE;
   tree one_nonconstant = NULL_TREE;
   auto_vec<tree> constants;
@@ -2290,6 +2290,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	      orig[j] = ref;
 	      if (elem != i || j != 0)
 		maybe_ident = false;
+	      if (elem != i)
+		maybe_blend[j] = false;
 	      elts.safe_push (std::make_pair (j, elem));
 	      continue;
 	    }
@@ -2439,6 +2441,15 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     }
   else
     {
+      /* If we combine a vector with a non-vector avoid cases where
+	 we'll obviously end up with more GIMPLE stmts which is when
+	 we'll later not fold this to a single insert into the vector
+	 and we had a single extract originally.  See PR92819.  */
+      if (nelts == 2
+	  && refnelts > 2
+	  && orig[1] == error_mark_node
+	  && !maybe_blend[0])
+	return false;
       tree mask_type, perm_type, conv_src_type;
       perm_type = TREE_TYPE (orig[0]);
       conv_src_type = (nelts == refnelts

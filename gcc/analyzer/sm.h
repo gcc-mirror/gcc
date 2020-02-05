@@ -62,6 +62,13 @@ public:
 			const supernode *node,
 			const gimple *stmt) const = 0;
 
+  virtual void on_phi (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+		       const supernode *node ATTRIBUTE_UNUSED,
+		       const gphi *phi ATTRIBUTE_UNUSED,
+		       tree rhs ATTRIBUTE_UNUSED) const
+  {
+  }
+
   virtual void on_condition (sm_context *sm_ctxt,
 			     const supernode *node,
 			     const gimple *stmt,

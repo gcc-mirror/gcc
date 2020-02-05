@@ -1,5 +1,7 @@
 2020-02-05  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master fa0c6e297b22d5883857d0db4a6a8be0967cb16f
+
 	libcpp/
 	* directives-only.c: Delete.
 	* Makefile.in: Remove it.

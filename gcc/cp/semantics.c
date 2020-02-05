@@ -3537,8 +3537,15 @@ tree
 process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 {
   if (cp_unevaluated_operand)
-    /* It's not a use (3.2) if we're in an unevaluated context.  */
-    return decl;
+    {
+      tree type = TREE_TYPE (decl);
+      if (!dependent_type_p (type)
+	  && variably_modified_type_p (type, NULL_TREE))
+	/* VLAs are used even in unevaluated context.  */;
+      else
+	/* It's not a use (3.2) if we're in an unevaluated context.  */
+	return decl;
+    }
   if (decl == error_mark_node)
     return decl;
 

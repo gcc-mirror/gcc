@@ -818,7 +818,12 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 		return true;
 	      continue;
 	    }
-	  ftype = strip_array_types (TREE_TYPE (field));
+	  ftype = TREE_TYPE (field);
+	  if (!ftype || !TYPE_P (ftype) || !COMPLETE_TYPE_P (ftype))
+	    /* A flexible array can't be intialized here, so don't complain
+	       that it isn't.  */
+	    continue;
+	  ftype = strip_array_types (ftype);
 	  if (type_has_constexpr_default_constructor (ftype))
 	    {
 	      /* It's OK to skip a member with a trivial constexpr ctor.
@@ -3318,8 +3323,16 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
     }
 
   /* If it's within the array bounds but doesn't have an explicit
-     initializer, it's value-initialized.  */
-  tree val = build_value_init (elem_type, tf_warning_or_error);
+     initializer, it's initialized from {}.  But use build_value_init
+     directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
+  tree val;
+  if (CP_AGGREGATE_TYPE_P (elem_type))
+    {
+      tree empty_ctor = build_constructor (init_list_type_node, NULL);
+      val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
+    }
+  else
+    val = build_value_init (elem_type, tf_warning_or_error);
   return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
 				       overflow_p);
 }
@@ -3782,6 +3795,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   bool pre_init = false;
   unsigned HOST_WIDE_INT i;
   tsubst_flags_t complain = ctx->quiet ? tf_none : tf_warning_or_error;
+
+  if (init && TREE_CODE (init) == CONSTRUCTOR)
+    return cxx_eval_bare_aggregate (ctx, init, lval,
+				    non_constant_p, overflow_p);
 
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types
@@ -5321,8 +5338,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = *p;
       else if (lval)
 	/* Defer in case this is only used for its type.  */;
-      else if (TYPE_REF_P (TREE_TYPE (t)))
-	/* Defer, there's no lvalue->rvalue conversion.  */;
       else if (COMPLETE_TYPE_P (TREE_TYPE (t))
 	       && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
 	{
@@ -7012,8 +7027,13 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case PARM_DECL:
-      if (now)
+      if (now && want_rval)
 	{
+	  tree type = TREE_TYPE (t);
+	  if (dependent_type_p (type)
+	      || is_really_empty_class (type, /*ignore_vptr*/false))
+	    /* An empty class has no data to read.  */
+	    return true;
 	  if (flags & tf_error)
 	    error ("%qE is not a constant expression", t);
 	  return false;
@@ -7269,10 +7289,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 #endif
       return RECUR (t, any);
 
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
     case COMPONENT_REF:
-    case BIT_FIELD_REF:
     case ARROW_EXPR:
     case OFFSET_REF:
       /* -- a class member access unless its postfix-expression is
@@ -7281,6 +7298,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 postfix-expression being a potential constant expression.  */
       if (type_unknown_p (t))
 	return true;
+      if (is_overloaded_fn (t))
+	/* In a template, a COMPONENT_REF of a function expresses ob.fn(),
+	   which uses ob as an lvalue.  */
+	want_rval = false;
+      gcc_fallthrough ();
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case BIT_FIELD_REF:
       return RECUR (TREE_OPERAND (t, 0), want_rval);
 
     case EXPR_PACK_EXPANSION:

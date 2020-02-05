@@ -173,8 +173,8 @@ extern void *	htab_find_with_hash (htab_t, const void *, hashval_t);
 extern void **	htab_find_slot_with_hash (htab_t, const void *,
 					  hashval_t, enum insert_option);
 extern void	htab_clear_slot	(htab_t, void **);
-extern void	htab_remove_elt	(htab_t, void *);
-extern void	htab_remove_elt_with_hash (htab_t, void *, hashval_t);
+extern void	htab_remove_elt	(htab_t, const void *);
+extern void	htab_remove_elt_with_hash (htab_t, const void *, hashval_t);
 
 extern void	htab_traverse (htab_t, htab_trav, void *);
 extern void	htab_traverse_noresize (htab_t, htab_trav, void *);

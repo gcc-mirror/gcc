@@ -4267,19 +4267,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    { constant_boolean_node (above ? false : true, type); }))))))))))))
 
 (for cmp (eq ne)
- /* A local variable can never be pointed to by
-    the default SSA name of an incoming parameter.
-    SSA names are canonicalized to 2nd place.  */
  (simplify
+  /* SSA names are canonicalized to 2nd place.  */
   (cmp addr@0 SSA_NAME@1)
-  (if (SSA_NAME_IS_DEFAULT_DEF (@1)
-       && TREE_CODE (SSA_NAME_VAR (@1)) == PARM_DECL)
-   (with { tree base = get_base_address (TREE_OPERAND (@0, 0)); }
-    (if (TREE_CODE (base) == VAR_DECL
-         && auto_var_in_fn_p (base, current_function_decl))
-     (if (cmp == NE_EXPR)
-      { constant_boolean_node (true, type); }
-      { constant_boolean_node (false, type); }))))))
+  (with
+   { poly_int64 off; tree base; }
+   /* A local variable can never be pointed to by
+      the default SSA name of an incoming parameter.  */
+   (if (SSA_NAME_IS_DEFAULT_DEF (@1)
+	&& TREE_CODE (SSA_NAME_VAR (@1)) == PARM_DECL
+	&& (base = get_base_address (TREE_OPERAND (@0, 0)))
+	&& TREE_CODE (base) == VAR_DECL
+	&& auto_var_in_fn_p (base, current_function_decl))
+    (if (cmp == NE_EXPR)
+     { constant_boolean_node (true, type); }
+     { constant_boolean_node (false, type); })
+    /* If the address is based on @1 decide using the offset.  */
+    (if ((base = get_addr_base_and_unit_offset (TREE_OPERAND (@0, 0), &off))
+	 && TREE_CODE (base) == MEM_REF
+	 && TREE_OPERAND (base, 0) == @1)
+     (with { off += mem_ref_offset (base).force_shwi (); }
+      (if (known_ne (off, 0))
+       { constant_boolean_node (cmp == NE_EXPR, type); }
+       (if (known_eq (off, 0))
+        { constant_boolean_node (cmp == EQ_EXPR, type); }))))))))
 
 /* Equality compare simplifications from fold_binary  */
 (for cmp (eq ne)

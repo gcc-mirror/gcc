@@ -709,7 +709,7 @@ htab_find_slot (htab_t htab, const PTR element, enum insert_option insert)
    element in the hash table, this function does nothing.  */
 
 void
-htab_remove_elt (htab_t htab, PTR element)
+htab_remove_elt (htab_t htab, const PTR element)
 {
   htab_remove_elt_with_hash (htab, element, (*htab->hash_f) (element));
 }
@@ -720,7 +720,7 @@ htab_remove_elt (htab_t htab, PTR element)
    function does nothing.  */
 
 void
-htab_remove_elt_with_hash (htab_t htab, PTR element, hashval_t hash)
+htab_remove_elt_with_hash (htab_t htab, const PTR element, hashval_t hash)
 {
   PTR *slot;
 

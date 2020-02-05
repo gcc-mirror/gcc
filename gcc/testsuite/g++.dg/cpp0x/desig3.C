@@ -13,9 +13,9 @@ private:
 };
 
 SomeClass::SomeClass()
- : member({
+ : member{
    [INDEX1] = { .field = 0 },
    [INDEX2] = { .field = 1 }
- })
+ }
 {
 }

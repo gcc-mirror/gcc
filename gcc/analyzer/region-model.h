@@ -1606,8 +1606,8 @@ namespace ana {
 class symbolic_region : public region
 {
 public:
-  symbolic_region (region_id parent_rid, bool possibly_null)
-  : region (parent_rid, svalue_id::null (), NULL_TREE),
+  symbolic_region (region_id parent_rid, tree type, bool possibly_null)
+  : region (parent_rid, svalue_id::null (), type),
     m_possibly_null (possibly_null)
   {}
   symbolic_region (const symbolic_region &other);
@@ -1691,7 +1691,8 @@ class region_model
 			const cfg_superedge *last_cfg_superedge,
 			region_model_context *ctxt);
 
-  void handle_phi (tree lhs, tree rhs, bool is_back_edge,
+  void handle_phi (const gphi *phi,
+		   tree lhs, tree rhs, bool is_back_edge,
 		   region_model_context *ctxt);
 
   bool maybe_update_for_edge (const superedge &edge,
@@ -1932,6 +1933,10 @@ class region_model_context
   /* Hooks for clients to be notified when an unknown change happens
      to SID (in response to a call to an unknown function).  */
   virtual void on_unknown_change (svalue_id sid) = 0;
+
+  /* Hooks for clients to be notified when a phi node is handled,
+     where RHS is the pertinent argument.  */
+  virtual void on_phi (const gphi *phi, tree rhs) = 0;
 };
 
 /* A bundle of data for use when attempting to merge two region_model
@@ -2105,6 +2110,11 @@ public:
   }
 
   void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+  }
+
+  void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
+	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
   {
   }
 

@@ -1,3 +1,18 @@
+2020-02-03  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (libbacktrace_TEST_CFLAGS): Define.
+	(test_elf32_CFLAGS): Use $(libbacktrace_test_CFLAGS).
+	(test_elf_64_CFLAGS, test_xcoff_32_CFLAGS): Likewise.
+	(test_xcoff_64_CFLAGS, test_pecoff_CFLAGS): Likewise.
+	(test_unknown_CFLAGS, unittest_CFLAGS): Likewise.
+	(unittest_alloc_CFLAGS, allocfail_CFLAGS): Likewise.
+	(b2test_CFLAGS, b3test_CFLAGS, btest_CFLAGS): Likewise.
+	(btest_lto_CFLAGS, btest_alloc_CFLAGS, stest_CFLAGS): Likewise.
+	(stest_alloc_CFLAGS): Likewise.
+	* Makefile.in: Regenerate.
+	* ztest.c (error_callback_compress): Mark vdata unused.
+	(test_large): Add casts to avoid warnings.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

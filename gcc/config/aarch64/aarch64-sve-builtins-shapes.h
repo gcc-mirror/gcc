@@ -124,6 +124,7 @@ namespace aarch64_sve
     extern const function_shape *const load_gather_sv_restricted;
     extern const function_shape *const load_gather_vs;
     extern const function_shape *const load_replicate;
+    extern const function_shape *const mmla;
     extern const function_shape *const pattern_pred;
     extern const function_shape *const prefetch;
     extern const function_shape *const prefetch_gather_index;
@@ -147,6 +148,12 @@ namespace aarch64_sve
     extern const function_shape *const store_scatter_offset;
     extern const function_shape *const store_scatter_offset_restricted;
     extern const function_shape *const tbl_tuple;
+    extern const function_shape *const ternary_bfloat;
+    extern const function_shape *const ternary_bfloat_lane;
+    extern const function_shape *const ternary_bfloat_lanex2;
+    extern const function_shape *const ternary_bfloat_opt_n;
+    extern const function_shape *const ternary_intq_uintq_lane;
+    extern const function_shape *const ternary_intq_uintq_opt_n;
     extern const function_shape *const ternary_lane;
     extern const function_shape *const ternary_lane_rotate;
     extern const function_shape *const ternary_long_lane;
@@ -160,6 +167,9 @@ namespace aarch64_sve
     extern const function_shape *const ternary_shift_left_imm;
     extern const function_shape *const ternary_shift_right_imm;
     extern const function_shape *const ternary_uint;
+    extern const function_shape *const ternary_uintq_intq;
+    extern const function_shape *const ternary_uintq_intq_lane;
+    extern const function_shape *const ternary_uintq_intq_opt_n;
     extern const function_shape *const tmad;
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;

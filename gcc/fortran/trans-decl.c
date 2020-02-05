@@ -2645,8 +2645,8 @@ create_function_arglist (gfc_symbol * sym)
 	      || f->sym->ts.u.cl->backend_decl == length)
 	    {
 	      if (POINTER_TYPE_P (len_type))
-		f->sym->ts.u.cl->backend_decl =
-			build_fold_indirect_ref_loc (input_location, length);
+		f->sym->ts.u.cl->backend_decl
+		  = build_fold_indirect_ref_loc (input_location, length);
 	      else if (f->sym->ts.u.cl->backend_decl == NULL)
 		gfc_create_string_length (f->sym);
 
@@ -2677,6 +2677,8 @@ create_function_arglist (gfc_symbol * sym)
           DECL_ARG_TYPE (tmp) = boolean_type_node;
           TREE_READONLY (tmp) = 1;
           gfc_finish_decl (tmp);
+
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	}
 
       /* For non-constant length array arguments, make sure they use

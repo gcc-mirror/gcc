@@ -23641,6 +23641,9 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
   /* Assume all of the expressions are constant.  */
   *non_constant_p = false;
 
+  unsigned nelts = 0;
+  int suppress = suppress_location_wrappers;
+
   /* Parse the rest of the list.  */
   while (true)
     {
@@ -23780,6 +23783,19 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
       if (token->type == CPP_CLOSE_BRACE)
 	break;
 
+      /* Suppress location wrappers in a long initializer to save memory
+	 (14179).  The cutoff is chosen arbitrarily.  */
+      const unsigned loc_max = 256;
+      unsigned incr = 1;
+      if (TREE_CODE (initializer) == CONSTRUCTOR)
+	/* Look one level down because it's easy.  Looking deeper would require
+	   passing down a nelts pointer, and I don't think multi-level massive
+	   initializers are common enough to justify this.  */
+	incr = CONSTRUCTOR_NELTS (initializer);
+      nelts += incr;
+      if (nelts >= loc_max && (nelts - incr) < loc_max)
+	++suppress_location_wrappers;
+
       /* Consume the `,' token.  */
       cp_lexer_consume_token (parser->lexer);
     }
@@ -23808,6 +23824,8 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 	if (designator && TREE_CODE (designator) == IDENTIFIER_NODE)
 	  IDENTIFIER_MARKED (designator) = 0;
     }
+
+  suppress_location_wrappers = suppress;
 
   *designated = first_designator != NULL_TREE;
   return v;

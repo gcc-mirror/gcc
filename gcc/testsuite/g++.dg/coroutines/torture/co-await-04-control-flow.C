@@ -16,9 +16,11 @@ coro1
 f ()
 {
   if (gX < 12) {
+L1:
     gX += y;
     gX += co_await 11;
   } else
+L2:
     gX += co_await 12;
     
   co_return gX;

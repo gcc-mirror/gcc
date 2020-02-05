@@ -2249,7 +2249,7 @@ freestanding and hosted environments.
 Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
 @code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
 compiler generates accelerated code according to the OpenACC Application
-Programming Interface v2.0 @w{@uref{https://www.openacc.org}}.  This option
+Programming Interface v2.6 @w{@uref{https://www.openacc.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
@@ -17055,6 +17055,10 @@ Enable 8-bit Integer Matrix Multiply instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item f32mm
+Enable 32-bit Floating point Matrix Multiply instructions.  This also enables
+SVE instructions.  Use of this option with architectures prior to Armv8.2-A is
+not supported.
 @item f64mm
 Enable 64-bit Floating point Matrix Multiply instructions.  This also enables
 SVE instructions.  Use of this option with architectures prior to Armv8.2-A is
@@ -31160,6 +31164,10 @@ precompiled header.  The following are known to be safe:
 -fsched-spec  -fsched-spec-load  -fsched-spec-load-dangerous @gol
 -fsched-verbose=@var{number}  -fschedule-insns  -fvisibility= @gol
 -pedantic-errors}
+
+@item Address space layout randomization (ASLR) can lead to not binary identical
+PCH files.  If you rely on stable PCH file contents disable ASLR when generating
+PCH files.
 
 @end itemize
 

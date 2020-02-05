@@ -1,3 +1,29 @@
+2020-02-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_nvptx): Pass flags as 'options'
+	and not as 'source' argument to libgomp_target_compile.
+
+2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX801): Remove.
+	(gcn_gfx801_s): Remove.
+	(isa_hsa_name): Remove gfx801.
+	(isa_gcc_name): Remove gfx801/carizzo.
+	(isa_code): Remove gfx801.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenACC Runtime Library Routines): Document *_async
+	and *_finalize variants; document acc_attach and acc_detach; update
+	references from OpenACC 2.0 to 2.6.
+	* openacc.f90 (openacc_version): Update to 201711.
+	* openacc_lib.h (openacc_version): Update to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Update expected
+	openacc_version to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+
 2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* plugin/plugin-gcn.c (struct hsa_kernel_description): Add sgpr_count

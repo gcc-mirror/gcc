@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -msve-vector-bits=512 -g" } */
-/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-final { check-function-bodies "**" "" { target lp64 } } } */
 
 #define CALLEE(SUFFIX, TYPE)			\
   TYPE __attribute__((noipa))			\
@@ -48,6 +48,14 @@ CALLEE (u16, __SVUint16_t)
 **	ret
 */
 CALLEE (f16, __SVFloat16_t)
+
+/*
+** callee_bf16:
+**	ptrue	(p[0-7])\.b, vl64
+**	ld1h	z0\.h, \1/z, \[x0\]
+**	ret
+*/
+CALLEE (bf16, __SVBfloat16_t)
 
 /*
 ** callee_s32:
@@ -105,6 +113,14 @@ CALLEE (f64, __SVFloat64_t)
   caller_##SUFFIX (TYPE *ptr1)					\
   {								\
     return svaddv (svptrue_b8 (), callee_##SUFFIX (ptr1));	\
+  }
+
+#define CALLER_BF16(SUFFIX, TYPE)				\
+  typeof (svlasta (svptrue_b8 (), *(TYPE *) 0))			\
+  __attribute__((noipa))					\
+  caller_##SUFFIX (TYPE *ptr1)					\
+  {								\
+    return svlasta (svptrue_b8 (), callee_##SUFFIX (ptr1));	\
   }
 
 /*
@@ -165,6 +181,17 @@ CALLER (u16, __SVUint16_t)
 **	ret
 */
 CALLER (f16, __SVFloat16_t)
+
+/*
+** caller_bf16:
+**	...
+**	bl	callee_bf16
+**	ptrue	(p[0-7])\.b, vl64
+**	lasta	h0, \1, z0\.h
+**	ldp	x29, x30, \[sp\], 16
+**	ret
+*/
+CALLER_BF16 (bf16, __SVBfloat16_t)
 
 /*
 ** caller_s32:

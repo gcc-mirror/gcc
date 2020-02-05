@@ -492,7 +492,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
             dnl known to the linker and runtime loader. (All the system
             dnl directories known to the linker should also be known to the
             dnl runtime loader, otherwise the system is severely misconfigured.)
-            if x$lib_type = xauto || x$lib_type = xshared; then
+            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
               LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }-l$name"
               LTLIB[]NAME="${LTLIB[]NAME}${LTLIB[]NAME:+ }-l$name"
             else

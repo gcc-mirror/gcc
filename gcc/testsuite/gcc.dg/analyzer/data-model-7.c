@@ -10,8 +10,7 @@ int test_40 (int flag)
     i = 17;
 
   /* Without state-merging, we retain the relationship between 'flag' and 'i'.  */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (flag)
     __analyzer_eval (i == 43); /* { dg-warning "TRUE" } */

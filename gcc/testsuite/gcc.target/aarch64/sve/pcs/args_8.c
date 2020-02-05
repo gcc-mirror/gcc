@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-options "-O -g" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

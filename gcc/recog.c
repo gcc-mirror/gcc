@@ -3924,14 +3924,7 @@ public:
   virtual bool gate (function *)
     {
       /* If optimizing, then go ahead and split insns now.  */
-      if (optimize > 0)
-	return true;
-
-#ifdef STACK_REGS
-      return true;
-#else
-      return false;
-#endif
+      return optimize > 0;
     }
 
   virtual unsigned int execute (function *)
@@ -3991,12 +3984,12 @@ pass_split_before_regstack::gate (function *)
      split until final which doesn't allow splitting
      if HAVE_ATTR_length.  */
 # ifdef INSN_SCHEDULING
-  return (optimize && !flag_schedule_insns_after_reload);
+  return !optimize || !flag_schedule_insns_after_reload;
 # else
-  return (optimize);
+  return true;
 # endif
 #else
-  return 0;
+  return false;
 #endif
 }
 

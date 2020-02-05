@@ -151,6 +151,8 @@ struct allocno_color_data
   ira_allocno_t next_thread_allocno;
   /* All thread frequency.  Defined only for first thread allocno.  */
   int thread_freq;
+  /* Sum of frequencies of hard register preferences of the allocno.  */
+  int hard_reg_prefs;
 };
 
 /* See above.  */
@@ -2173,6 +2175,7 @@ init_allocno_threads (void)
   ira_allocno_t a;
   unsigned int j;
   bitmap_iterator bi;
+  ira_pref_t pref;
 
   EXECUTE_IF_SET_IN_BITMAP (consideration_allocno_bitmap, 0, j, bi)
     {
@@ -2181,6 +2184,9 @@ init_allocno_threads (void)
       ALLOCNO_COLOR_DATA (a)->first_thread_allocno
 	= ALLOCNO_COLOR_DATA (a)->next_thread_allocno = a;
       ALLOCNO_COLOR_DATA (a)->thread_freq = ALLOCNO_FREQ (a);
+      ALLOCNO_COLOR_DATA (a)->hard_reg_prefs = 0;
+      for (pref = ALLOCNO_PREFS (a); pref != NULL; pref = pref->next_pref)
+	ALLOCNO_COLOR_DATA (a)->hard_reg_prefs += pref->freq;
     }
 }
 
@@ -2251,6 +2257,16 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   ira_allocno_t t2 = ALLOCNO_COLOR_DATA (a2)->first_thread_allocno;
   int cl1 = ALLOCNO_CLASS (a1), cl2 = ALLOCNO_CLASS (a2);
 
+  /* Push allocnos with minimal hard_reg_prefs first.  */
+  pref1 = ALLOCNO_COLOR_DATA (a1)->hard_reg_prefs;
+  pref2 = ALLOCNO_COLOR_DATA (a2)->hard_reg_prefs;
+  if ((diff = pref1 - pref2) != 0)
+    return diff;
+  /* Push allocnos with minimal conflict_allocno_hard_prefs first.  */
+  pref1 = ALLOCNO_COLOR_DATA (a1)->conflict_allocno_hard_prefs;
+  pref2 = ALLOCNO_COLOR_DATA (a2)->conflict_allocno_hard_prefs;
+  if ((diff = pref1 - pref2) != 0)
+    return diff;
   freq1 = ALLOCNO_COLOR_DATA (t1)->thread_freq;
   freq2 = ALLOCNO_COLOR_DATA (t2)->thread_freq;
   if ((diff = freq1 - freq2) != 0)
@@ -2275,11 +2291,6 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   a1_num = ALLOCNO_COLOR_DATA (a1)->available_regs_num;
   a2_num = ALLOCNO_COLOR_DATA (a2)->available_regs_num;
   if ((diff = a2_num - a1_num) != 0)
-    return diff;
-  /* Push allocnos with minimal conflict_allocno_hard_prefs first.  */
-  pref1 = ALLOCNO_COLOR_DATA (a1)->conflict_allocno_hard_prefs;
-  pref2 = ALLOCNO_COLOR_DATA (a2)->conflict_allocno_hard_prefs;
-  if ((diff = pref1 - pref2) != 0)
     return diff;
   return ALLOCNO_NUM (a2) - ALLOCNO_NUM (a1);
 }

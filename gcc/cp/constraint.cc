@@ -2692,7 +2692,8 @@ satisfy_declaration_constraints (tree t, subst_info info)
   tree result = boolean_true_node;
   if (norm)
     {
-      push_tinst_level (t);
+      if (!push_tinst_level (t))
+	return result;
       push_access_scope (t);
       result = satisfy_associated_constraints (norm, args, info);
       pop_access_scope (t);

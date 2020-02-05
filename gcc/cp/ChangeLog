@@ -1,3 +1,118 @@
+2020-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92593
+	* decl.c (grokdeclarator): Reject field of current class type even
+	in a template.
+
+2020-02-05  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (maybe_promote_captured_temps): Increase the index
+	number for temporary variables' name.
+
+2020-02-05  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (build_co_await): Call convert_from_reference
+	to wrap co_await_expr with indirect_ref which avoid
+	reference/non-reference type confusion.
+
+	(co_await_expander):  Sink to call_expr if await_resume
+	is wrapped by indirect_ref.
+
+2020-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93551
+	* constraint.cc (satisfy_declaration_constraints): Check return
+	value of push_tinst_level.
+
+	PR c++/90951
+	* constexpr.c (cxx_eval_array_reference): {}-initialize missing
+	elements instead of value-initializing them.
+
+	PR c++/86917
+	* init.c (perform_member_init): Simplify.
+	* constexpr.c (cx_check_missing_mem_inits): Allow uninitialized
+	flexarray.
+	(cxx_eval_vec_init_1): Handle CONSTRUCTOR.
+
+2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (find_promise_type): Delete unused forward
+	declaration.
+	(struct coroutine_info): Add a bool for no promise type error.
+	(coro_promise_type_found_p): Only emit the error for a missing
+	promise once in each affected coroutine.
+
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66477
+	* constexpr.c (cxx_eval_constant_expression) [PARM_DECL]: Don't
+	defer loading the value of a reference.
+
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91953
+	* constexpr.c (potential_constant_expression_1) [PARM_DECL]: Allow
+	empty class type.
+	[COMPONENT_REF]: A member function reference doesn't use the object
+	as an rvalue.
+
+2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93458
+	* coroutines.cc (struct coroutine_info): Add a bool flag to note
+	that we emitted an error for a bad function return type.
+	(get_coroutine_info): Tolerate an unset info table in case of
+	missing traits.
+	(find_coro_traits_template_decl): In case of error or if we didn't
+	find a type template, note we emitted the error and suppress
+	duplicates.
+	(find_coro_handle_template_decl): Likewise.
+	(instantiate_coro_traits): Only check for error_mark_node in the
+	return from lookup_qualified_name. 
+	(coro_promise_type_found_p): Reorder initialization so that we check
+	for the traits and their usability before allocation of the info
+	table.  Check for a suitable return type and emit a diagnostic for
+	here instead of relying on the lookup machinery.  This allows the
+	error to have a better location, and means we can suppress multiple
+	copies.
+	(coro_function_valid_p): Re-check for a valid promise (and thus the
+	traits) before proceeding.  Tolerate missing info as a fatal error.
+
+2020-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88256
+	* cp-gimplify.c (predeclare_vla): New.
+	(cp_genericize_r) [NOP_EXPR]: Call it.
+
+2020-02-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (transform_await_wrapper): Set actor funcion as
+	new context of label_decl.
+	(build_actor_fn): Fill new field of await_xform_data.
+
+2020-02-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93530 - ICE on invalid alignas in a template.
+	* decl.c (grokdeclarator): Call cplus_decl_attributes instead of
+	decl_attributes.
+
+2020-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86216
+	* semantics.c (process_outer_var_ref): Capture VLAs even in
+	unevaluated context.
+
+	PR c++/14179
+	* decl.c (reshape_init_array_1): Reuse a single CONSTRUCTOR with
+	non-aggregate elements.
+	(reshape_init_array): Add first_initializer_p parm.
+	(reshape_init_r): Change first_initializer_p from bool to tree.
+	(reshape_init): Pass init to it.
+
+	PR c++/14179
+	* parser.c (cp_parser_initializer_list): Suppress location wrappers
+	after 256 elements.
+
 2020-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82521

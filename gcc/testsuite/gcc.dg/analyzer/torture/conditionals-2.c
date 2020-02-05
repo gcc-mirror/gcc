@@ -7,7 +7,7 @@
 static void __attribute__((noinline))
 test_1_callee (void *p, void *q)
 {
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   __analyzer_eval (p == Z_NULL); /* { dg-warning "FALSE" } */
   __analyzer_eval (p != Z_NULL); /* { dg-warning "TRUE" } */
@@ -27,7 +27,7 @@ void test_1 (void *p, void *q)
 static void __attribute__((noinline))
 test_2_callee (void *p, void *q)
 {
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   __analyzer_eval (p == Z_NULL); /* { dg-warning "FALSE" } */
   __analyzer_eval (p != Z_NULL); /* { dg-warning "TRUE" } */

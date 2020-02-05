@@ -1188,6 +1188,36 @@ static tree genericize_spaceship (tree expr)
   return genericize_spaceship (type, op0, op1);
 }
 
+/* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
+   to trigger gimplify_type_sizes; otherwise a cast to pointer-to-VLA confuses
+   the middle-end (c++/88256).  */
+
+static tree
+predeclare_vla (tree expr)
+{
+  tree type = TREE_TYPE (expr);
+  if (type == error_mark_node)
+    return expr;
+
+  /* We need to strip pointers for gimplify_type_sizes.  */
+  tree vla = type;
+  while (POINTER_TYPE_P (vla))
+    {
+      if (TYPE_NAME (vla))
+	return expr;
+      vla = TREE_TYPE (vla);
+    }
+  if (TYPE_NAME (vla) || !variably_modified_type_p (vla, NULL_TREE))
+    return expr;
+
+  tree decl = build_decl (input_location, TYPE_DECL, NULL_TREE, vla);
+  DECL_ARTIFICIAL (decl) = 1;
+  TYPE_NAME (vla) = decl;
+  tree dexp = build_stmt (input_location, DECL_EXPR, decl);
+  expr = build2 (COMPOUND_EXPR, type, dexp, expr);
+  return expr;
+}
+
 /* Perform any pre-gimplification lowering of C++ front end trees to
    GENERIC.  */
 
@@ -1648,6 +1678,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case NOP_EXPR:
+      *stmt_p = predeclare_vla (*stmt_p);
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT)
 	  && TYPE_REF_P (TREE_TYPE (stmt)))

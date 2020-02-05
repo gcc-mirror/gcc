@@ -1,3 +1,12 @@
+2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
+
+	* config.host [nios2-*-linux*] (tmake_file, tm_file): Adjust.
+	* config/nios2-elf-lib.h: New.
+	* unwind-dw2-fde-dip.c (_Unwind_IteratePhdrCallback): Use existing
+	code for finding GOT base for nios2.
+
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/93403

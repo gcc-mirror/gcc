@@ -5167,6 +5167,17 @@ pointers into PC-relative form.])
 configured with --enable-newlib-nano-formatted-io.])
       fi
     ;;
+    nios2-*-*)
+    # Versions 2.33 and earlier lacked support for the %gotoff relocation
+    # syntax that is documented in the ABI specification.
+    gcc_GAS_CHECK_FEATURE([support for %gotoff relocations in constant data],
+      gcc_cv_as_nios2_gotoff_relocation,,,
+[	.extern foo
+	.data
+	.long %gotoff(foo)],,
+      [AC_DEFINE(HAVE_AS_NIOS2_GOTOFF_RELOCATION, 1,
+          [Define if your assembler supports %gotoff relocation syntax.])])
+    ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
       gcc_cv_as_riscv_attribute, [2,32,0],,
