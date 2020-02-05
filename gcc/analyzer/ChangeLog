@@ -1,3 +1,11 @@
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (print_quoted_type): New function.
+	(svalue::print): Use it to replace %qT.
+	(region::dump_to_pp): Likewise.
+	(region::dump_child_label): Likewise.
+	(region::print_fields): Likewise.
+
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93659
