@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
+#include "dbgcnt.h"
 
 evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
   : stack (10), m_update_global_ranges (update_global_ranges)
@@ -339,7 +340,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 				      asserts[i].expr,
 				      asserts[i].comp_code,
 				      asserts[i].val);
-	      if (CHECKING_P)
+	      if (CHECKING_P && dbg_cnt (evrp_find_range))
 		{
 		  tree name = asserts[i].name;
 		  if (dump_file)
