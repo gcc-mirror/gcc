@@ -1,6 +1,13 @@
 2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92190
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper): Only
+	include sets and not clobbers in the vzeroupper pattern.
+	* config/i386/sse.md (*avx_vzeroupper): Require in insn condition that
+	the parallel has 17 (64-bit) or 9 (32-bit) elts.
+	(*avx_vzeroupper_1): New define_insn_and_split.
+
+	PR target/92190
 	* recog.c (pass_split_after_reload::gate): For STACK_REGS targets,
 	don't run when !optimize.
 	(pass_split_before_regstack::gate): For STACK_REGS targets, run even

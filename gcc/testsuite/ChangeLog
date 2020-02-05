@@ -1,3 +1,8 @@
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92190
+	* gcc.target/i386/pr92190.c: New test.
+
 2020-02-05  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/92177

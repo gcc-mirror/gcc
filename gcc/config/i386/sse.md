@@ -19818,8 +19818,46 @@
 (define_insn "*avx_vzeroupper"
   [(match_parallel 0 "vzeroupper_pattern"
      [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
-  "TARGET_AVX"
+  "TARGET_AVX && XVECLEN (operands[0], 0) == (TARGET_64BIT ? 16 : 8) + 1"
   "vzeroupper"
+  [(set_attr "type" "sse")
+   (set_attr "modrm" "0")
+   (set_attr "memory" "none")
+   (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
+   (set_attr "mode" "OI")])
+
+(define_insn_and_split "*avx_vzeroupper_1"
+  [(match_parallel 0 "vzeroupper_pattern"
+     [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
+  "TARGET_AVX && XVECLEN (operands[0], 0) != (TARGET_64BIT ? 16 : 8) + 1"
+  "#"
+  "&& epilogue_completed"
+  [(match_dup 0)]
+{
+  /* For IPA-RA purposes, make it clear the instruction clobbers
+     even XMM registers not mentioned explicitly in the pattern.  */
+  unsigned int nregs = TARGET_64BIT ? 16 : 8;
+  unsigned int npats = XVECLEN (operands[0], 0);
+  rtvec vec = rtvec_alloc (nregs + 1);
+  RTVEC_ELT (vec, 0) = XVECEXP (operands[0], 0, 0);
+  for (unsigned int i = 0, j = 1; i < nregs; ++i)
+    {
+      unsigned int regno = GET_SSE_REGNO (i);
+      if (j < npats
+	  && REGNO (SET_DEST (XVECEXP (operands[0], 0, j))) == regno)
+	{
+	  RTVEC_ELT (vec, i + 1) = XVECEXP (operands[0], 0, j);
+	  j++;
+	}
+      else
+	{
+	  rtx reg = gen_rtx_REG (V2DImode, regno);
+	  RTVEC_ELT (vec, i + 1) = gen_rtx_CLOBBER (VOIDmode, reg);
+	}
+    }
+  operands[0] = gen_rtx_PARALLEL (VOIDmode, vec);
+}
   [(set_attr "type" "sse")
    (set_attr "modrm" "0")
    (set_attr "memory" "none")

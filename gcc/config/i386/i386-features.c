@@ -1764,29 +1764,32 @@ convert_scalars_to_vector (bool timode_p)
 
      (set (reg:V2DF R) (reg:V2DF R))
 
-   which preserves the low 128 bits but clobbers the upper bits.
-   For a dead register we just use:
-
-     (clobber (reg:V2DF R))
-
-   which invalidates any previous contents of R and stops R from becoming
-   live across the vzeroupper in future.  */
+   which preserves the low 128 bits but clobbers the upper bits.  */
 
 static void
 ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
 {
   rtx pattern = PATTERN (insn);
   unsigned int nregs = TARGET_64BIT ? 16 : 8;
-  rtvec vec = rtvec_alloc (nregs + 1);
-  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
+  unsigned int npats = nregs;
   for (unsigned int i = 0; i < nregs; ++i)
     {
       unsigned int regno = GET_SSE_REGNO (i);
+      if (!bitmap_bit_p (live_regs, regno))
+	npats--;
+    }
+  if (npats == 0)
+    return;
+  rtvec vec = rtvec_alloc (npats + 1);
+  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
+  for (unsigned int i = 0, j = 0; i < nregs; ++i)
+    {
+      unsigned int regno = GET_SSE_REGNO (i);
+      if (!bitmap_bit_p (live_regs, regno))
+	continue;
       rtx reg = gen_rtx_REG (V2DImode, regno);
-      if (bitmap_bit_p (live_regs, regno))
-	RTVEC_ELT (vec, i + 1) = gen_rtx_SET (reg, reg);
-      else
-	RTVEC_ELT (vec, i + 1) = gen_rtx_CLOBBER (VOIDmode, reg);
+      ++j;
+      RTVEC_ELT (vec, j) = gen_rtx_SET (reg, reg);
     }
   XVEC (pattern, 0) = vec;
   df_insn_rescan (insn);
