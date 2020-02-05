@@ -1,6 +1,15 @@
 2020-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* parser.c (cp_parser_import_declaration): Be stricter about preamble.
+	gcc/testsuite/
+	g++.dg/modules/atom-decl-2.C: Adjust diagnostics.
+	g++.dg/modules/atom-pragma-3.C: Likewise.
+	g++.dg/modules/exp-xlate-1_b.C: Likewise.
+	g++.dg/modules/inc-xlate-1_e.C: Likewise.
+	g++.dg/modules/atom-preamble-2_f.C: New.
+
+	gcc/cp/
 	* module.cc (preprocess_module): Don't load header unit if not
 	preprocessing.  Always close and reopen the line map spans.
 	libcpp/

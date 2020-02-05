@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module thing;
 int i;
-import baz; // { dg-error "must immediately follow" }
+import baz; // { dg-error "must be contiguous" }
 
 // { dg-warning "not writing module" "" { target *-*-* } 0 }

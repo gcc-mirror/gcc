@@ -5,7 +5,7 @@ export module foo;
 ;
 
 #pragma pack(2)
-import baz; // { dg-error "must immediately follow" }
+import baz; // { dg-error "must be contiguous" }
 
 int i;
 
