@@ -29,10 +29,10 @@ main1 (unsigned int x, unsigned int y)
     }
   else
     {
-      out[0] = a0 * x;
-      out[1] = a1 * y;
-      out[2] = a2 * x;
-      out[3] = a3 * y;
+      out[0] = a0 * (x + 1);
+      out[1] = a1 * (y + 1);
+      out[2] = a2 * (x + 1);
+      out[3] = a3 * (y + 1);
     }
 
   if (x)
@@ -40,10 +40,10 @@ main1 (unsigned int x, unsigned int y)
 
   /* Check results.  */
   if ((x <= y 
-       && (out[0] != (in[0] + 23) * x
-           || out[1] != (in[1] + 142) * y
-           || out[2] != (in[2] + 2) * x
-           || out[3] != (in[3] + 31) * y))
+       && (out[0] != (in[0] + 23) * (x + 1)
+           || out[1] != (in[1] + 142) * (y + 1)
+           || out[2] != (in[2] + 2) * (x + 1)
+           || out[3] != (in[3] + 31) * (y + 1)))
        || (x > y
            && (b[0] != (in[0] + 23)
                || b[1] != (in[1] + 142)
