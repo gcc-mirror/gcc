@@ -70,17 +70,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  { *__t } -> __can_reference;
 	};
-
-    // FIXME: needed due to PR c++/67704
-    template<__detail::__dereferenceable _Tp>
-      struct __iter_ref
-      {
-	using type = decltype(*std::declval<_Tp&>());
-      };
   } // namespace __detail
 
-  template<typename _Tp>
-    using iter_reference_t = typename __detail::__iter_ref<_Tp>::type;
+  template<__detail::__dereferenceable _Tp>
+    using iter_reference_t = decltype(*std::declval<_Tp&>());
 
   namespace ranges
   {
@@ -127,26 +120,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     } // inline namespace __cust
   } // namespace ranges
 
-  namespace __detail
-  {
-    // FIXME: needed due to PR c++/67704
-    template<__detail::__dereferenceable _Tp>
-      struct __iter_rvalue_ref
-      { };
-
-    template<__detail::__dereferenceable _Tp>
-      requires requires(_Tp& __t)
-      {
-	{ ranges::iter_move(__t) } -> __detail::__can_reference;
-      }
-      struct __iter_rvalue_ref<_Tp>
-      { using type = decltype(ranges::iter_move(std::declval<_Tp&>())); };
-
-  } // namespace __detail
-
-  template<typename _Tp>
+  template<__detail::__dereferenceable _Tp>
+    requires requires(_Tp& __t)
+    { { ranges::iter_move(__t) } -> __detail::__can_reference; }
     using iter_rvalue_reference_t
-      = typename __detail::__iter_rvalue_ref<_Tp>::type;
+      = decltype(ranges::iter_move(std::declval<_Tp&>()));
 
   template<typename> struct incrementable_traits { };
 
@@ -467,18 +445,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && common_reference_with<iter_rvalue_reference_t<_In>&&,
 			       const iter_value_t<_In>&>;
 
-  namespace __detail
-  {
-    // FIXME: needed due to PR c++/67704
-    template<readable _Tp>
-      struct __iter_common_ref
-      : common_reference<iter_reference_t<_Tp>, iter_value_t<_Tp>&>
-      { };
-  } // namespace __detail
-
-  template<typename _Tp>
+  template<readable _Tp>
     using iter_common_reference_t
-      = typename __detail::__iter_common_ref<_Tp>::type;
+      = common_reference_t<iter_reference_t<_Tp>, iter_value_t<_Tp>&>;
 
   /// Requirements for writing a value into an iterator's referenced object.
   template<typename _Out, typename _Tp>
@@ -663,24 +632,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && strict_weak_order<_Fn&, iter_common_reference_t<_I1>,
 			   iter_common_reference_t<_I2>>;
 
-  namespace __detail
-  {
-    // FIXME: needed due to PR c++/67704
-    template<typename _Fn, typename... _Is>
-      struct __indirect_result
-      { };
-
-    template<typename _Fn, typename... _Is>
-      requires (readable<_Is> && ...)
-	&& invocable<_Fn, iter_reference_t<_Is>...>
-      struct __indirect_result<_Fn, _Is...>
-      : invoke_result<_Fn, iter_reference_t<_Is>...>
-      { };
-  } // namespace __detail
-
   template<typename _Fn, typename... _Is>
-    using indirect_result_t = typename
-      __detail::__indirect_result<_Fn, _Is...>::type;
+    requires (readable<_Is> && ...)
+      && invocable<_Fn, iter_reference_t<_Is>...>
+    using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Is>...>;
 
   /// [projected], projected
   template<readable _Iter, indirectly_regular_unary_invocable<_Iter> _Proj>
