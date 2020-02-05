@@ -1,3 +1,9 @@
+2020-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92717
+	* doc/invoke.texi: Document that one should
+	not combine ASLR and -fpch.
+
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93538
