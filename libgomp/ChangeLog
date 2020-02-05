@@ -1,3 +1,9 @@
+2020-02-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_nvptx): Pass flags as 'options'
+	and not as 'source' argument to libgomp_target_compile.
+
 2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX801): Remove.
