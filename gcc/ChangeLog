@@ -1,5 +1,8 @@
 2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa-alias.c (aliasing_matching_component_refs_p): Fix up
+	function comment typo.
+
 	PR middle-end/93555
 	* omp-simd-clone.c (expand_simd_clones): If simd_clone_mangle or
 	simd_clone_create failed when i == 0, adjust clone->nargs by
