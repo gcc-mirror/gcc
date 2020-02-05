@@ -1,3 +1,7 @@
+2020-02-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Use / not space.
+
 2020-02-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi
