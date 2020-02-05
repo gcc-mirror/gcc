@@ -5804,6 +5804,15 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  If the base type is a scalar type, or else if there is no
+      --  constraint, the atomic flag is inherited by the subtype.
+
+      if Is_Scalar_Type (Id)
+        or else Is_Entity_Name (Subtype_Indication (N))
+      then
+         Set_Is_Atomic (Id, Is_Atomic (T));
+      end if;
+
       --  Remaining processing depends on characteristics of base type
 
       T := Etype (Id);
