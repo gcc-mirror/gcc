@@ -1,3 +1,10 @@
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93555
+	* omp-simd-clone.c (expand_simd_clones): If simd_clone_mangle or
+	simd_clone_create failed when i == 0, adjust clone->nargs by
+	clone->inbranch.
+
 2020-02-05  Martin Liska  <mliska@suse.cz>
 
 	PR c++/92717
