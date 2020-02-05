@@ -4690,6 +4690,19 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
       }
       break;
 
+    case CONST_DECL:
+      {
+	tree cst_type = TREE_TYPE (expr);
+	region_id cst_rid = add_region_for_type (m_root_rid, cst_type);
+	if (tree value = DECL_INITIAL (expr))
+	  {
+	    svalue_id sid = get_rvalue (value, ctxt);
+	    get_region (cst_rid)->set_value (*this, cst_rid, sid, ctxt);
+	  }
+	return cst_rid;
+      }
+      break;
+
     case STRING_CST:
       {
 	tree cst_type = TREE_TYPE (expr);
