@@ -3,6 +3,9 @@
 	Backported from mainline
 	2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/93557
+	* c-c++-common/Wunused-var-17.c: New test.
+
 	PR middle-end/93555
 	* c-c++-common/gomp/pr93555-1.c: New test.
 	* c-c++-common/gomp/pr93555-2.c: New test.

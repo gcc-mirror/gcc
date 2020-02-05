@@ -1,6 +1,12 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93557
+	* semantics.c (cp_build_vec_convert): Call decay_conversion on arg
+	prior to passing it to c_build_vec_convert.
+
 	2020-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91118
