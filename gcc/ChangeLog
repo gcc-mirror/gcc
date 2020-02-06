@@ -1,3 +1,11 @@
+2020-02-06  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/91971
+	PR gcov-profile/93466
+	* coverage.c (coverage_init): Revert mangling of
+	path into filename.  It can lead to huge filename length.
+	Creation of subfolders seem more natural.
+
 2020-02-06  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	PR target/93300
