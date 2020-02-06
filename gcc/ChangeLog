@@ -1,5 +1,10 @@
 2020-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93594
+	* config/i386/predicates.md (avx_identity_operand): New predicate.
+	* config/i386/sse.md (*avx_vec_concat<mode>_1): New
+	define_insn_and_split.
+
 	PR libgomp/93515
 	* omp-low.c (use_pointer_for_field): For nested constructs, also
 	look for map clauses on target construct.

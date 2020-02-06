@@ -1584,6 +1584,19 @@
   return true;
 })
 
+;; Return true if OP is a parallel for identity permute.
+(define_predicate "avx_identity_operand"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int i, nelt = XVECLEN (op, 0);
+
+  for (i = 0; i < nelt; ++i)
+    if (INTVAL (XVECEXP (op, 0, i)) != i)
+      return false;
+  return true;
+})
+
 ;; Return true if OP is a proper third operand to vpblendw256.
 (define_predicate "avx2_pblendw_operand"
   (match_code "const_int")
