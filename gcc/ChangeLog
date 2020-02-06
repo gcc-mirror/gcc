@@ -1,3 +1,11 @@
+2020-02-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93569
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Before ISA 3.0
+	we only had X-FORM (reg+reg) addressing for vectors.  Also before
+	ISA 3.0, we only had X-FORM addressing for scalars in the
+	traditional Altivec registers.
+
 2020-02-06  <zhongyunde@huawei.com>
   	    Vladimir Makarov  <vmakarov@redhat.com>
 

@@ -24932,7 +24932,8 @@ reg_to_non_prefixed (rtx reg, machine_mode mode)
   unsigned size = GET_MODE_SIZE (mode);
 
   /* FPR registers use D-mode for scalars, and DQ-mode for vectors, IEEE
-     128-bit floating point, and 128-bit integers.  */
+     128-bit floating point, and 128-bit integers.  Before power9, only indexed
+     addressing was available for vectors.  */
   if (FP_REGNO_P (r))
     {
       if (mode == SFmode || size == 8 || FLOAT128_2REG_P (mode))
@@ -24945,16 +24946,20 @@ reg_to_non_prefixed (rtx reg, machine_mode mode)
 	       && (VECTOR_MODE_P (mode)
 		   || FLOAT128_VECTOR_P (mode)
 		   || mode == TImode || mode == CTImode))
-	return NON_PREFIXED_DQ;
+	return (TARGET_P9_VECTOR) ? NON_PREFIXED_DQ : NON_PREFIXED_X;
 
       else
 	return NON_PREFIXED_DEFAULT;
     }
 
   /* Altivec registers use DS-mode for scalars, and DQ-mode for vectors, IEEE
-     128-bit floating point, and 128-bit integers.  */
+     128-bit floating point, and 128-bit integers.  Before power9, only indexed
+     addressing was available.  */
   else if (ALTIVEC_REGNO_P (r))
     {
+      if (!TARGET_P9_VECTOR)
+	return NON_PREFIXED_X;
+
       if (mode == SFmode || size == 8 || FLOAT128_2REG_P (mode))
 	return NON_PREFIXED_DS;
 
