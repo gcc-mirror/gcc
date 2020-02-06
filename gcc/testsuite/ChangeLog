@@ -1,5 +1,12 @@
 2020-02-06  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93375
+	* gcc.dg/analyzer/pr93375.c: Rework test case to avoid per-target
+	differences in how __builtin_memcpy has been optimized at the time
+	the analyzer runs.
+
+2020-02-06  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/analyzer/torture/intptr_t.c: New test.
 
 2020-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
