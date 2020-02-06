@@ -3992,7 +3992,9 @@ cpp_stop_forcing_token_locations (cpp_reader *r)
 
 /* Directives only scanning.  When raw string literals are enabled,
    .*R"<chars>(...)<chars>" is a raw string.  Further, the contained
-   <chars> and its parens cannot be broken over a line.  */
+   <chars> and its parens cannot be broken over a (escaped) line.
+   Neither can the R and the " be broken that way.  Deal with it, you
+   obfuscator of code.  */
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
@@ -4010,11 +4012,10 @@ cpp_directive_only_process (cpp_reader *pfile,
    DO_escaped = 1 << 6, /* After \  */
    DO_slash = 1 << 7,	/* After / */
    DO_star = 1 << 8, 	/* After * */
-   DO_R = 1 << 9,	/* After R */
 
    DO_quoted = DO_string_lit | DO_char_lit | DO_raw_lit,
    DO_comment = DO_line_comment | DO_block_comment,
-   DO_special = DO_slash | DO_star | DO_R | DO_escaped
+   DO_special = DO_slash | DO_star | DO_escaped
   };
 
   bool module_p = CPP_OPTION (pfile, module_directives);
@@ -4039,7 +4040,7 @@ cpp_directive_only_process (cpp_reader *pfile,
       unsigned state = DO_bol;
       location_t uloc = 0;  /* Current block element start.  */
       const unsigned char *raw_chars = NULL;
-      unsigned raw_count = 0;
+      int raw_count = 0;
 
       for (const unsigned char *pos = base, *limit = buffer->rlimit;
 	   pos < limit;)
@@ -4165,9 +4166,22 @@ cpp_directive_only_process (cpp_reader *pfile,
 		state &= ~DO_escaped;
 	      else if (state & DO_quoted)
 		{
-		  if (state & DO_raw_lit)
-		    ;
-		  else if (state & (c == '\'' ? DO_char_lit : DO_string_lit))
+		  if (c == '\'')
+		    {
+		      if (state & DO_char_lit)
+			state &= DO_quoted;
+		    }
+		  else if (state & DO_raw_lit)
+		    {
+		      /* Don't deal with escaped newlines here
+			 either.  */
+		      if (pos - line_start >= raw_count + 2
+			  && pos[-raw_count - 2] == ')'
+			  && !memcmp (&pos[-raw_count - 1],
+				      raw_chars, raw_count))
+			state &= ~DO_raw_lit;
+		    }
+		  else
 		    state &= ~DO_quoted;
 		}
 	      else if (!(state & DO_comment))
@@ -4177,25 +4191,25 @@ cpp_directive_only_process (cpp_reader *pfile,
 						      pos - line_start);
 		  if (c == '\'')
 		    state |= DO_char_lit;
-		  else if (state & DO_R)
+		  else if (raw_p
+			   && !(state & DO_bol)
+			   /* Safe to peek backwards if not at BOL.  */
+			   && pos[-2] == 'R')
 		    {
-		      // FIXME: Raw string detection
+		      const char *bad_chars = " ()\\\t\v\f\r\n";
+		      const char *str_chars = " ()\\tvfrn";
 		      raw_chars = pos;
 		      for (raw_count = 0; pos[raw_count] != '('; raw_count++)
-			if (pos[raw_count] == '\n'
-			    || pos[raw_count] == '\r'
-			    || pos[raw_count] == '\\')
+			if (const char *bad = strchr (bad_chars, pos[raw_count]))
 			  {
-			    /* These aren't necessarily errors, but
-			       we're in a non-conforming mode anyway,
-			       so let's not deal with this corner
-			       case.  */
+			    /* We'll reject an attempt to have an
+			       escaped line break here.  Your code is
+			       bad, and you should feel bad.  */
+			    unsigned ix = bad - bad_chars;
 			    cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
-						 "encountered %s scanning raw"
-						 " string-literal delimiter",
-						 pos[raw_count] == '\\'
-						 ? "'\\'"
-						 : "physical end of line");
+						 "encountered '%s%c' scanning"
+						 " raw string-literal delimiter",
+						 &"\\"[ix < 3], str_chars[ix]);
 			    break;
 			  }
 		      state |= DO_raw_lit;
@@ -4236,30 +4250,6 @@ cpp_directive_only_process (cpp_reader *pfile,
 		      break;
 		    }
 		  state |= DO_line_comment;
-		}
-	      goto dflt;
-
-	    case 'R':
-	      if (raw_p && !(state & (DO_quoted | DO_comment)))
-		{
-		  state &= ~DO_special;
-		  state |= DO_R;
-		  break;
-		}
-	      goto dflt;
-
-	    case ')':
-	      if (__builtin_expect (state & DO_raw_lit, 0))
-		{
-		  /* Again, don't deal with escaped newlines here
-		     either.  */
-		  for (unsigned ix = 0; ix != raw_count; ix++)
-		    if (pos[ix] != raw_chars[ix])
-		      goto dflt;
-		  if (pos[raw_count] != '\"')
-		    goto dflt;
-		  pos += raw_count + 1;
-		  state &= ~DO_raw_lit;
 		}
 	      goto dflt;
 
