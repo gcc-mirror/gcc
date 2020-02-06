@@ -3,6 +3,14 @@
 	PR target/87763
 	* gcc.target/aarch64/movk_2.c: New test.
 
+2020-02-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/memcpy-strategy-1.c (dg-final):
+	Unify scan-assembler strings for all targets.
+	* gcc.target/i386/memcpy-strategy-2.c (dg-final): Ditto.
+	* gcc.target/i386/memcpy-strategy-3.c (dg-final): Ditto.
+	* gcc.target/i386/memcpy-vector_loop-1.c (dg-final): Ditto.
+
 2020-02-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93597 - ICE with lambda in operator function.
