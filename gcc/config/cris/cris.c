@@ -1531,9 +1531,9 @@ cris_select_cc_mode (enum rtx_code op, rtx x, rtx y)
     return CCmode;
 
   /* If we have a comparison that doesn't have to look at V or C, check
-     operand x; if it looks like a binary operator, return CC_NZmode,
-     else CCmode, so we only use CC_NZmode for the cases where we don't
-     actually have both V and C valid.  */
+     operand x; if it's a valid operator, return CC_NZmode, else CCmode,
+     so we only use CC_NZmode for the cases where we don't actually have
+     both V and C valid.  */
   if (op == EQ || op ==  NE || op ==  GTU || op ==  LEU
       || op ==  LT || op ==  GE)
     {
@@ -1542,7 +1542,7 @@ cris_select_cc_mode (enum rtx_code op, rtx x, rtx y)
     /* Mentioning the rtx_code here is required but not sufficient: the
        insn also needs to be decorated with <setnz> (and the
        anonymization prefix <anz> for a named pattern).  */
-      return e == PLUS || e == MINUS || e == MULT || e == NOT
+      return e == PLUS || e == MINUS || e == MULT || e == NOT || e == NEG
 	? CC_NZmode : CCmode;
     }
 
