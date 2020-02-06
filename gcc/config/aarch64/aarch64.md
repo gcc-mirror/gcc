@@ -1297,6 +1297,7 @@
     operands[3] = gen_int_mode (shift, SImode);
     return "movk\\t%<w>0, #%X2, lsl %3";
   }
+  [(set_attr "type" "mov_imm")]
 )
 
 (define_expand "movti"

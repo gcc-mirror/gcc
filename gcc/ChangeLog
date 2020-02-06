@@ -1,3 +1,8 @@
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_movk<mode>): Add a type
+	attribute.
+
 2020-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Handle the case
