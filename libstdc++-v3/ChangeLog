@@ -1,5 +1,24 @@
 2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare (__cmp_cat::type): Define typedef for underlying
+	type of enumerations and comparison category types.
+	(__cmp_cat::_Ord, __cmp_cat::_Ncmp): Add underlying type.
+	(__cmp_cat::_Ncmp::unordered): Change value to 2.
+	(partial_ordering::_M_value, weak_ordering::_M_value)
+	(strong_ordering::_M_value): Change type to __cmp_cat::type.
+	(partial_ordering::_M_is_ordered): Remove data member.
+	(partial_ordering): Use second bit of _M_value for unordered. Adjust
+	comparison operators.
+	(weak_ordering::operator partial_ordering): Simplify to remove
+	branches.
+	(operator<=>(unspecified, weak_ordering)): Likewise.
+	(strong_ordering::operator partial_ordering): Likewise.
+	(strong_ordering::operator weak_ordering): Likewise.
+	(operator<=>(unspecified, strong_ordering)): Likewise.
+	* testsuite/18_support/comparisons/categories/partialord.cc: New test.
+	* testsuite/18_support/comparisons/categories/strongord.cc: New test.
+	* testsuite/18_support/comparisons/categories/weakord.cc: New test.
+
 	* include/std/ranges (iota_view::_Iterator): Fix typo in name of
 	__cpp_lib_three_way_comparison macro and use deduced return type for
 	operator<=>.
