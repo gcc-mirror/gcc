@@ -1,6 +1,12 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/93515
+	* gimplify.c (gimplify_scan_omp_clauses) <do_notice>: If adding
+	shared clause, call omp_notice_variable on outer context if any.
+
 	2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93555
