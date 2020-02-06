@@ -2137,6 +2137,11 @@ package body Exp_Disp is
       end loop;
 
       Thunk_Id := Make_Temporary (Loc, 'T');
+
+      --  Note: any change to this symbol name needs to be coordinated
+      --  with GNATcoverage, as that tool relies on it to identify
+      --  thunks and exclude them from source coverage analysis.
+
       Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
