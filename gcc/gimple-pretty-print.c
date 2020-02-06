@@ -189,6 +189,55 @@ print_gimple_expr (FILE *file, gimple *g, int spc, dump_flags_t flags)
   pp_flush (&buffer);
 }
 
+DEBUG_FUNCTION char *
+strcpy_gimple (char *dest, const gimple *g)
+{
+  pretty_printer pp;
+  pp_gimple_stmt_1 (&pp, g, 0, TDF_NONE);
+  const char *str = pp_formatted_text (&pp);
+  return strcpy (dest, str);
+}
+
+DEBUG_FUNCTION int
+strncmp_gimple (const gimple *g, const char *str, size_t n)
+{
+  char gstr[100];
+  strcpy_gimple (gstr, g);
+  return strncmp (gstr, str, n);
+}
+
+DEBUG_FUNCTION int
+strcmp_gimple (const gimple *g, const char *str)
+{
+  char gstr[100];
+  strcpy_gimple (gstr, g);
+  return strcmp (gstr, str);
+}
+
+DEBUG_FUNCTION char *
+strcpy_tree (char *dest, tree t)
+{
+  pretty_printer pp;
+  dump_generic_node (&pp, t, 0, TDF_VOPS|TDF_MEMSYMS, false);
+  const char *str = pp_formatted_text (&pp);
+  return strcpy (dest, str);
+}
+
+DEBUG_FUNCTION int
+strncmp_tree (tree t, const char *str, size_t n)
+{
+  char tstr[100];
+  strcpy_tree (tstr, t);
+  return strncmp (tstr, str, n);
+}
+
+DEBUG_FUNCTION int
+strcmp_tree (tree t, const char *str)
+{
+  char tstr[100];
+  strcpy_tree (tstr, t);
+  return strcmp (tstr, str);
+}
 
 /* Print the GIMPLE sequence SEQ on BUFFER using SPC indentation
    spaces and FLAGS as in pp_gimple_stmt_1.
