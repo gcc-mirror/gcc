@@ -1772,8 +1772,30 @@ cris_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
       return false;
 
     case ZERO_EXTRACT:
-      if (outer_code != COMPARE)
-        return false;
+      /* Conditionals are split after reload, giving a different look.  */
+      if (reload_completed)
+	{
+	  if (outer_code != COMPARE)
+	    return false;
+	}
+      else
+	switch (outer_code)
+	  {
+	  case EQ:
+	  case NE:
+	  case LT:
+	  case LTU:
+	  case LE:
+	  case LEU:
+	  case GT:
+	  case GTU:
+	  case GE:
+	  case GEU:
+	    break;
+
+	  default:
+	    return false;
+	  }
       /* fall through */
 
     case ZERO_EXTEND: case SIGN_EXTEND:

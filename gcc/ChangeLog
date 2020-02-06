@@ -153,6 +153,20 @@
 	from "bswapsi2".
 	("*uminsi3<setcc><setnz><setnzvc>"): Rename from "*uminsi3".
 
+	* config/cris/cris-modes.def (CC_ZnN): New CC_MODE.
+	* config/cris/cris.c (cris_rtx_costs): Handle pre-split bit-test
+	* config/cris/cris.md (ZnNNZSET, ZnNNZUSE): New mode_iterators.
+	(znnCC, rznnCC): New code_attrs.
+	("*btst<mode>"): Iterator over ZnNNZSET instead of NZVCSET.  Remove
+	obseolete comment.  Add belt-and-suspenders mode-test to condition.
+	Add fixme regarding remaining matched-but-not-generated case.
+	("*cbranch<mode>4_btstrq1_<CC>"): New insn_and_split.
+	("*cbranch<mode>4_btstqb0_<CC>"): Rename from
+	"*cbranch<mode>4_btstq<CC>".  Split to CC_NZ instead of CC.
+	("*b<zcond:code><mode>"): Iterate over ZnNNZUSE instead of NZUSE.
+	Handle output of CC_ZnNmode.
+	("*b<nzcond:code>_reversed<mode>"): Ditto.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove
