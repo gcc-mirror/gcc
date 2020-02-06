@@ -1,3 +1,25 @@
+2020-02-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(bfmlaq): New built-in function.
+	(bfmlalb): New built-in function.
+	(bfmlalt): New built-in function.
+	(bfmlalb_lane): New built-in function.
+	(bfmlalt_lane): New built-in function.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_bfmmlaqv4sf): New pattern.
+	(aarch64_bfmlal<bt>v4sf): New pattern.
+	(aarch64_bfmlal<bt>_lane<q>v4sf): New pattern.
+	* config/aarch64/arm_neon.h (vbfmmlaq_f32): New intrinsic.
+	(vbfmlalbq_f32): New intrinsic.
+	(vbfmlaltq_f32): New intrinsic.
+	(vbfmlalbq_lane_f32): New intrinsic.
+	(vbfmlaltq_lane_f32): New intrinsic.
+	(vbfmlalbq_laneq_f32): New intrinsic.
+	(vbfmlaltq_laneq_f32): New intrinsic.
+	* config/aarch64/iterators.md (BF_MLA): New int iterator.
+	(bt): New int attribute.
+
 2020-02-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*pushtf): Emit "#" instead of

@@ -692,3 +692,14 @@
   VAR2 (TERNOP, bfdot, 0, v2sf, v4sf)
   VAR2 (QUADOP_LANE_PAIR, bfdot_lane, 0, v2sf, v4sf)
   VAR2 (QUADOP_LANE_PAIR, bfdot_laneq, 0, v2sf, v4sf)
+
+  /* Implemented by aarch64_bfmmlaqv4sf  */
+  VAR1 (TERNOP, bfmmlaq, 0, v4sf)
+
+  /* Implemented by aarch64_bfmlal<bt>{_lane{q}}v4sf  */
+  VAR1 (TERNOP, bfmlalb, 0, v4sf)
+  VAR1 (TERNOP, bfmlalt, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalb_lane, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalt_lane, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, v4sf)
