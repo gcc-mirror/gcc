@@ -810,7 +810,7 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   // would be lost.  */
   if (!lhs.singleton_p ())
     {
-      int_range<1> r1;
+      widest_irange r1;
       if (logical_combine (r1, code, m_bool_zero, op1_true, op1_false,
 			   op2_true, op2_false)
 	  && logical_combine (r, code, m_bool_one, op1_true, op1_false,
@@ -838,11 +838,11 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	else
 	  {
 	    // The FALSE side is the union of the other 3 cases.
-	    int_range<1> ff (op1_false);
+	    widest_irange ff (op1_false);
 	    ff.intersect (op2_false);
-	    int_range<1> tf (op1_true);
+	    widest_irange tf (op1_true);
 	    tf.intersect (op2_false);
-	    int_range<1> ft (op1_false);
+	    widest_irange ft (op1_false);
 	    ft.intersect (op2_true);
 	    r = ff;
 	    r.union_ (tf);
@@ -866,11 +866,11 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	  {
 	    // The TRUE side of an OR operation will be the union of
 	    // the other three combinations.
-	    int_range<1> tt (op1_true);
+	    widest_irange tt (op1_true);
 	    tt.intersect (op2_true);
-	    int_range<1> tf (op1_true);
+	    widest_irange tf (op1_true);
 	    tf.intersect (op2_false);
-	    int_range<1> ft (op1_false);
+	    widest_irange ft (op1_false);
 	    ft.intersect (op2_true);
 	    r = tt;
 	    r.union_ (tf);
@@ -902,7 +902,7 @@ gori_compute::compute_logical_operands (irange &r, gimple *s,
   const unsigned depth_limit = 6;	// Max depth of logical recursion.
   static unsigned depth = 0;		// Current depth of recursion.
 
-  int_range<1> op1_true, op1_false, op2_true, op2_false;
+  widest_irange op1_true, op1_false, op2_true, op2_false;
 
   // Reaching this point means NAME is not in this stmt, but one of
   // the names in it ought to be derived from it.  */
