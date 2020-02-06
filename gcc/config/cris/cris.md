@@ -197,6 +197,8 @@
 (define_mode_iterator NZUSE [CC CC_NZ CC_NZVC])
 (define_mode_iterator NZVCSET [CC CC_NZVC CC_NZ])
 (define_mode_iterator NZVCUSE [CC_NZVC])
+(define_mode_iterator ZnNNZSET [CC_ZnN CC_NZ])
+(define_mode_iterator ZnNNZUSE [CC CC_ZnN CC_NZ CC_NZVC])
 
 ;; All conditions.
 (define_code_iterator cond [eq ne gtu ltu geu leu gt le lt ge])
@@ -229,6 +231,12 @@
 
 ;; Reverse of oCC.
 (define_code_attr roCC [(lt "pl") (ge "mi") (gtu "eq") (ltu "ne")])
+
+;; CC_Z_IN_NOT_N, a.k.a. CC_ZnNmode.
+(define_code_attr znnCC [(eq "pl") (ne "mi")])
+
+;;; ...and the reverse
+(define_code_attr rznnCC [(eq "mi") (ne "pl")])
 
 ;; Required unoptimized CCmode, different for nzcond and nzvccond.
 (define_code_attr xCC [(eq "CC") (ne "CC") (gtu "CC") (ltu "CC_NZVC")
@@ -386,20 +394,20 @@
 ;; of zeros starting at bit 0).
 
 ;; SImode.  This mode is the only one needed, since gcc automatically
-;; extends subregs for lower-size modes.  FIXME: Add testcase.
+;; extends subregs for lower-size modes.
 (define_insn "*btst<mode>"
-  [(set (reg:NZVCSET CRIS_CC0_REGNUM)
-	(compare:NZVCSET
+  [(set (reg:ZnNNZSET CRIS_CC0_REGNUM)
+	(compare:ZnNNZSET
 	 (zero_extract:SI
 	  (match_operand:SI 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
 	  (match_operand:SI 1 "const_int_operand" "Kc,n,Kc,n,Kc,n,n")
 	  (match_operand:SI 2 "nonmemory_operand" "M, M,Kc,n,r, r,r"))
 	 (const_int 0)))]
   ;; Either it is a single bit, or consecutive ones starting at 0.
-  ;; The btst ones depend on stuff in NOTICE_UPDATE_CC.
   "reload_completed
    && CONST_INT_P (operands[1])
-   && (operands[1] == const1_rtx || operands[2] == const0_rtx)
+   && ((operands[1] == const1_rtx && <MODE>mode == CC_ZnNmode)
+       || (operands[2] == const0_rtx && <MODE>mode == CC_NZmode))
    && (REG_S_P (operands[0])
        || (operands[1] == const1_rtx
 	   && REG_S_P (operands[2])
@@ -410,7 +418,7 @@
 ;; The next-to-last "&&" condition above should be caught by some kind of
 ;; canonicalization in gcc, but we can easily help with it here.
 ;;  It results from expressions of the type
-;; "power_of_2_value & (1 << y)".
+;; "power_of_2_value & (1 << y)".  FIXME: Add testcase.
 ;;
 ;; Since there may be codes with tests in on bits (in constant position)
 ;; beyond the size of a word, handle that by assuming those bits are 0.
@@ -2099,8 +2107,34 @@
 		      (pc)))]
   "")
 
-;; FIXME: this matches only a subset of what the "*btst" pattern can handle.
-(define_insn_and_split "*cbranch<mode>4_btstq<CC>"
+;; Test a single bit at operand[0] against 0/non-0.
+(define_insn_and_split "*cbranch<mode>4_btstrq1_<CC>"
+  [(set (pc)
+	(if_then_else
+	 (zcond
+	  (zero_extract:BWD
+	   (match_operand:BWD 0 "register_operand" "r,r")
+	   (const_int 1)
+	   (match_operand:SI 1 "nonmemory_operand" "Kc,r"))
+	  (const_int 0))
+	 (label_ref (match_operand 2 ""))
+	 (pc)))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (reg:CC_ZnN CRIS_CC0_REGNUM)
+	(compare:CC_ZnN
+	 (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+	 (const_int 0)))
+   (set (pc)
+	(if_then_else (zcond (reg:CC_ZnN CRIS_CC0_REGNUM) (const_int 0))
+		      (label_ref (match_dup 2))
+		      (pc)))]
+  "")
+
+;; Test a field of bits starting at bit 0 against 0/non-0.
+(define_insn_and_split "*cbranch<mode>4_btstqb0_<CC>"
   [(set (pc)
 	(if_then_else
 	 (zcond
@@ -2115,12 +2149,12 @@
   ""
   "#"
   "&& reload_completed"
-  [(set (reg:CC CRIS_CC0_REGNUM)
-	(compare:CC
+  [(set (reg:CC_NZ CRIS_CC0_REGNUM)
+	(compare:CC_NZ
 	 (zero_extract:SI (match_dup 0) (match_dup 1) (const_int 0))
 	 (const_int 0)))
    (set (pc)
-	(if_then_else (zcond (reg:CC CRIS_CC0_REGNUM) (const_int 0))
+	(if_then_else (zcond (reg:CC_NZ CRIS_CC0_REGNUM) (const_int 0))
 		      (label_ref (match_dup 2))
 		      (pc)))]
   "")
@@ -2132,12 +2166,14 @@
 
 (define_insn "*b<zcond:code><mode>"
   [(set (pc)
-	(if_then_else (zcond (reg:NZUSE CRIS_CC0_REGNUM)
+	(if_then_else (zcond (reg:ZnNNZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "reload_completed"
-  "b<CC> %l0%#"
+{
+  return <MODE>mode == CC_ZnNmode ? "b<znnCC> %l0%#" : "b<CC> %l0%#";
+}
   [(set_attr "slottable" "has_slot")])
 
 (define_insn "*b<nzvccond:code><mode>"
@@ -2166,12 +2202,14 @@
 
 (define_insn "*b<nzcond:code>_reversed<mode>"
   [(set (pc)
-	(if_then_else (nzcond (reg:NZUSE CRIS_CC0_REGNUM)
-			     (const_int 0))
+	(if_then_else (nzcond (reg:ZnNNZUSE CRIS_CC0_REGNUM)
+			      (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   "reload_completed"
-  "b<rCC> %l0%#"
+{
+  return <MODE>mode == CC_ZnNmode ? "b<rznnCC> %l0%#" : "b<rCC> %l0%#";
+}
   [(set_attr "slottable" "has_slot")])
 
 (define_insn "*b<nzvccond:code>_reversed<mode>"

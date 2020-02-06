@@ -28,8 +28,6 @@ along with GCC; see the file COPYING3.  If not see
    (fpcraz).  The two subsets meaningful to gcc are all of N, Z, V, C
    versus just N, Z; some CC-users care only about N and/or Z and some
    that care about at least one of those flags together with V and/or C.
-   (FIXME: the result of testing a single bit using the btst instruction
-   should be described as a separate mode.)
 
    The plain "CC_MODE (CC)" (which is always present in gcc), is used to
    reflect the "unoptimized" state, where the CC-setter is a compare
@@ -52,3 +50,7 @@ CC_MODE (CC_NZ);
    are set to usable values, fpcraz.  For a condition-code user: at least
    one of V and C are used and possibly N and Z too.  */
 CC_MODE (CC_NZVC);
+
+/* The result of a btst / btstq instruction for extracting a single bit
+   goes negated into the N flag, or in olde cc0-parlance, CC_Z_IN_NOT_N.  */
+CC_MODE (CC_ZnN);
