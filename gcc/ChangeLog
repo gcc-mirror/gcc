@@ -1,3 +1,7 @@
+2020-02-06  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm-tables.opt: Regenerate.
+
 2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/87763
