@@ -313,10 +313,32 @@ scan_translation_unit (cpp_reader *pfile)
 }
 
 static void
-print_lines_directives_only (unsigned lines, const void *buf, size_t size)
+directives_only_cb (CPP_DO_task task, void *data, ...)
 {
-  print.src_line += lines;
-  fwrite (buf, 1, size, print.outf);
+  va_list args;
+  va_start (args, data);
+
+  switch (task)
+    {
+    default:
+      gcc_unreachable ();
+
+    case CPP_DO_print:
+      {
+	print.src_line += va_arg (args, unsigned);
+
+	const void *buf = va_arg (args, void *);
+	size_t size = va_arg (args, size_t);
+	fwrite (buf, 1, size, print.outf);
+      }
+      break;
+
+    case CPP_DO_location:
+      maybe_print_line (va_arg (args, location_t));
+      break;
+    }
+
+  va_end (args);
 }
 
 /* Writes out the preprocessed file, handling spacing and paste
@@ -324,8 +346,7 @@ print_lines_directives_only (unsigned lines, const void *buf, size_t size)
 static void
 scan_translation_unit_directives_only (cpp_reader *pfile)
 {
-  cpp_directive_only_process (pfile, print_lines_directives_only,
-			      maybe_print_line);
+  cpp_directive_only_process (pfile, NULL, directives_only_cb);
 }
 
 /* Adjust print.src_line for newlines embedded in output.  */

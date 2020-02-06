@@ -1,6 +1,16 @@
 2020-02-06  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* include/cpplib.h (enum CPP_DO_task): New.
+	(cpp_directive_only_process): Adjust prototype.
+	* lex.c (cpp_directives_only_process): Take data pointer and
+	generic callback, adjust.
+	gcc/c-family/
+	* c-ppoutput.c (print_lines_directives_only): Replace with ...
+	(directives_only_cb): ... this new function.
+	(scan_directive_only_preprocess): Adjust call.
+
+	libcpp/
 	* lex.c (cpp_directive_only_process): Simplify raw string lexing.
 
 	libcpp/

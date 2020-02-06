@@ -3998,9 +3998,8 @@ cpp_stop_forcing_token_locations (cpp_reader *r)
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
-			    void (*print_lines) (unsigned nlines,
-						 const void *, size_t),
-			    bool (*line_marker) (location_t))
+			    void *data,
+			    void (*cb) (CPP_DO_task, void *, ...))
 {
   enum DO_state {
    DO_bol = 1 << 0,
@@ -4052,7 +4051,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 	    {
 	      /* Line directive.  */
 	      if (line_start > base && !pfile->state.skipping)
-		print_lines (line_count, base, line_start - base);
+		cb (CPP_DO_print, data, line_count, base, line_start - base);
 
 	      /* Prep things for directive handling. */
 	      buffer->next_line = pos;
@@ -4072,7 +4071,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 
 	      if (!pfile->state.skipping
 		  && pfile->buffer->next_line < pfile->buffer->rlimit)
-		line_marker (pfile->line_table->highest_line);
+		cb (CPP_DO_location, data, pfile->line_table->highest_line);
 
 	      goto restart;
 	    }
@@ -4274,7 +4273,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 			     "unterminated literal");
 
       if (line_start > base && !pfile->state.skipping)
-	print_lines (line_count, base, line_start - base);
+	cb (CPP_DO_print, data, line_count, base, line_start - base);
 
       _cpp_pop_buffer (pfile);
     }
