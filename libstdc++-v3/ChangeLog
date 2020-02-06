@@ -1,5 +1,8 @@
 2020-02-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Fix PR
+	number in comment. Fix indentation.
+
 	* include/bits/stl_algobase.h (__iter_swap, __iter_swap<true>): Remove
 	redundant _GLIBCXX20_CONSTEXPR.
 

@@ -1737,12 +1737,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-    // FIXME: This has to be at namespace-scope because of PR 92078.
+    // FIXME: This has to be at namespace-scope because of PR 92103.
     template<typename _Iter>
       struct __common_iter_ptr
-	{
-	  using type = void;
-	};
+      {
+	using type = void;
+      };
 
     template<typename _Iter>
       requires __detail::__common_iter_has_arrow<_Iter>
