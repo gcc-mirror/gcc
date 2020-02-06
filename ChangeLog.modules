@@ -1,3 +1,10 @@
+2020-02-06  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* lex.c (cpp_directive_only_process): Add raw string lexing.
+	gcc/testsuite/
+	* c-c++-common/cpp/dir-only-7.c: New.
+
 2020-02-05  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master fa0c6e297b22d5883857d0db4a6a8be0967cb16f

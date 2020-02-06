@@ -3990,7 +3990,9 @@ cpp_stop_forcing_token_locations (cpp_reader *r)
   r->forced_token_location = 0;
 }
 
-/* Directives only scanning.  */
+/* Directives only scanning.  When raw string literals are enabled,
+   .*R"<chars>(...)<chars>" is a raw string.  Further, the contained
+   <chars> and its parens cannot be broken over a line.  */
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
@@ -4002,18 +4004,21 @@ cpp_directive_only_process (cpp_reader *pfile,
    DO_bol = 1 << 0,
    DO_string_lit = 1 << 1,
    DO_char_lit = 1 << 2,
-   DO_rstring_lit = 1 << 3,
+   DO_raw_lit = 1 << 3,
    DO_line_comment = 1 << 4,
    DO_block_comment = 1 << 5,
-   DO_escaped = 1 << 6,
-   DO_slash = 1 << 7,
-   DO_star = 1 << 8,
+   DO_escaped = 1 << 6, /* After \  */
+   DO_slash = 1 << 7,	/* After / */
+   DO_star = 1 << 8, 	/* After * */
+   DO_R = 1 << 9,	/* After R */
 
-   DO_quoted = DO_string_lit | DO_char_lit | DO_rstring_lit,
-   DO_comment = DO_line_comment | DO_block_comment
+   DO_quoted = DO_string_lit | DO_char_lit | DO_raw_lit,
+   DO_comment = DO_line_comment | DO_block_comment,
+   DO_special = DO_slash | DO_star | DO_R | DO_escaped
   };
 
   bool module_p = CPP_OPTION (pfile, module_directives);
+  bool raw_p = CPP_OPTION (pfile, rliterals);
 
   do
     {
@@ -4033,6 +4038,8 @@ cpp_directive_only_process (cpp_reader *pfile,
 
       unsigned state = DO_bol;
       location_t uloc = 0;  /* Current block element start.  */
+      const unsigned char *raw_chars = NULL;
+      unsigned raw_count = 0;
 
       for (const unsigned char *pos = base, *limit = buffer->rlimit;
 	   pos < limit;)
@@ -4088,21 +4095,27 @@ cpp_directive_only_process (cpp_reader *pfile,
 	  /* Not a special DO_bol character.  */
 	  switch (c)
 	    {
+	    case '\v':
+	    case '\f':
+	      /* Whitespace.  */
+	      if (!(state & DO_comment))
+		state &= ~DO_bol;
+	      /* FALLTHROUGH  */
+
 	    case ' ':
 	    case '\t':
 	      /* Horizontal whitespace  */
-	      state &= ~(DO_escaped | DO_slash | DO_star);
+	      state &= ~DO_special;
 	      break;
 
 	    case '\r': /* MAC line ending, or Windows \r\n  */
 	      if (*pos == '\n')
-		break;
+		pos++;
 	      /* FALLTHROUGH */
 
 	    case '\n':
-	      state &= ~DO_escaped;
+	      state &= ~(DO_special | DO_line_comment);
 	      state |= DO_bol;
-	      state &= ~DO_line_comment;
 
 	    next_line:
 	      CPP_INCREMENT_LINE (pfile, 0);
@@ -4125,13 +4138,17 @@ cpp_directive_only_process (cpp_reader *pfile,
 		    pos++;
 		  goto newline;
 		}
-	      else if (__builtin_expect (state & DO_escaped, 0))
-		state &= ~DO_escaped;
+
+	      if (__builtin_expect (state & DO_escaped, 0))
+		state &= ~DO_special;
 	      else if (__builtin_expect (0 != (state & DO_quoted), 1))
-		state |= DO_escaped;
+		{
+		  if (!(state & DO_raw_lit))
+		    state |= DO_escaped;
+		}
 	      else
 		{
-		  state &= ~(DO_slash | DO_star);
+		  state &= ~DO_special;
 		  if (!(state & DO_comment))
 		    {
 		      uloc = linemap_position_for_column (pfile->line_table,
@@ -4148,7 +4165,9 @@ cpp_directive_only_process (cpp_reader *pfile,
 		state &= ~DO_escaped;
 	      else if (state & DO_quoted)
 		{
-		  if (state & (c == '\'' ? DO_char_lit : DO_string_lit))
+		  if (state & DO_raw_lit)
+		    ;
+		  else if (state & (c == '\'' ? DO_char_lit : DO_string_lit))
 		    state &= ~DO_quoted;
 		}
 	      else if (!(state & DO_comment))
@@ -4158,20 +4177,43 @@ cpp_directive_only_process (cpp_reader *pfile,
 						      pos - line_start);
 		  if (c == '\'')
 		    state |= DO_char_lit;
+		  else if (state & DO_R)
+		    {
+		      // FIXME: Raw string detection
+		      raw_chars = pos;
+		      for (raw_count = 0; pos[raw_count] != '('; raw_count++)
+			if (pos[raw_count] == '\n'
+			    || pos[raw_count] == '\r'
+			    || pos[raw_count] == '\\')
+			  {
+			    /* These aren't necessarily errors, but
+			       we're in a non-conforming mode anyway,
+			       so let's not deal with this corner
+			       case.  */
+			    cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
+						 "encountered %s scanning raw"
+						 " string-literal delimiter",
+						 pos[raw_count] == '\\'
+						 ? "'\\'"
+						 : "physical end of line");
+			    break;
+			  }
+		      state |= DO_raw_lit;
+		    }
 		  else
-		    // FIXME: Raw string detection
 		    state |= DO_string_lit;
 		  pfile->mi_valid = false;
 		}
-	      state &= ~DO_bol;
+	      state &= ~(DO_bol | DO_special);
 	      break;
 
 	    case '*':
 	      if (state & DO_block_comment)
 		{
 		  state |= DO_star;
-		  goto maybe_digraph;
+		  break;
 		}
+
 	      if (state & DO_slash)
 		state |= DO_block_comment;
 	      goto dflt;
@@ -4182,34 +4224,55 @@ cpp_directive_only_process (cpp_reader *pfile,
 		  state &= ~(DO_block_comment | DO_star);
 		  break;
 		}
-	      else if (!(state & (DO_quoted | DO_comment)))
+
+	      if (!(state & (DO_quoted | DO_comment)))
 		{
 		  if (!(state & DO_slash))
 		    {
 		      uloc = linemap_position_for_column (pfile->line_table,
 							  pos - line_start);
+		      state &= ~DO_special;
 		      state |= DO_slash;
-		      goto maybe_digraph;
+		      break;
 		    }
 		  state |= DO_line_comment;
 		}
 	      goto dflt;
 
+	    case 'R':
+	      if (raw_p && !(state & (DO_quoted | DO_comment)))
+		{
+		  state &= ~DO_special;
+		  state |= DO_R;
+		  break;
+		}
+	      goto dflt;
+
+	    case ')':
+	      if (__builtin_expect (state & DO_raw_lit, 0))
+		{
+		  /* Again, don't deal with escaped newlines here
+		     either.  */
+		  for (unsigned ix = 0; ix != raw_count; ix++)
+		    if (pos[ix] != raw_chars[ix])
+		      goto dflt;
+		  if (pos[raw_count] != '\"')
+		    goto dflt;
+		  pos += raw_count + 1;
+		  state &= ~DO_raw_lit;
+		}
+	      goto dflt;
+
 	    default:
 	    dflt:
-	      if (!(state & (DO_comment | DO_quoted)))
-		pfile->mi_valid = false;
-	      /* FALLTHROUGH  */
-
-	    case '\v':
-	    case '\f':
-	      state &= ~(DO_slash | DO_star);
 	      if (!(state & DO_comment))
-		/* Comments are whitespace, and do not change BOLness  */
-		state &= ~DO_bol;
-
-	    maybe_digraph:
-	      state &= ~DO_escaped;
+		{
+		  /* Comments are whitespace, and do not change BOLness  */
+		  pfile->mi_valid = false;
+		  state &= ~DO_bol;
+		}
+	      state &= ~DO_special;
+	      break;
 	    }
 	}
 
