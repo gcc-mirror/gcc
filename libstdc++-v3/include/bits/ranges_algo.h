@@ -1219,7 +1219,9 @@ namespace ranges
   template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	   weakly_incrementable _Out,
 	   copy_constructible _Fp, typename _Proj = identity>
-    requires writable<_Out, indirect_result_t<_Fp&, projected<_Iter, _Proj>>>
+    requires indirectly_writable<_Out,
+				 indirect_result_t<_Fp&,
+				   projected<_Iter, _Proj>>>
     constexpr unary_transform_result<_Iter, _Out>
     transform(_Iter __first1, _Sent __last1, _Out __result,
 	      _Fp __op, _Proj __proj = {})
@@ -1231,9 +1233,9 @@ namespace ranges
 
   template<input_range _Range, weakly_incrementable _Out,
 	   copy_constructible _Fp, typename _Proj = identity>
-    requires writable<_Out,
-		      indirect_result_t<_Fp&, projected<iterator_t<_Range>,
-						      _Proj>>>
+    requires indirectly_writable<_Out,
+				 indirect_result_t<_Fp&,
+				   projected<iterator_t<_Range>, _Proj>>>
     constexpr unary_transform_result<safe_iterator_t<_Range>, _Out>
     transform(_Range&& __r, _Out __result, _Fp __op, _Proj __proj = {})
     {
@@ -1268,8 +1270,10 @@ namespace ranges
 	   input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
 	   weakly_incrementable _Out, copy_constructible _Fp,
 	   typename _Proj1 = identity, typename _Proj2 = identity>
-    requires writable<_Out, indirect_result_t<_Fp&, projected<_Iter1, _Proj1>,
-					   projected<_Iter2, _Proj2>>>
+    requires indirectly_writable<_Out,
+				 indirect_result_t<_Fp&,
+				   projected<_Iter1, _Proj1>,
+				   projected<_Iter2, _Proj2>>>
     constexpr binary_transform_result<_Iter1, _Iter2, _Out>
     transform(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
 	      _Out __result, _Fp __binary_op,
@@ -1286,11 +1290,10 @@ namespace ranges
   template<input_range _Range1, input_range _Range2,
 	   weakly_incrementable _Out, copy_constructible _Fp,
 	   typename _Proj1 = identity, typename _Proj2 = identity>
-    requires writable<_Out, indirect_result_t<_Fp&,
-					      projected<iterator_t<_Range1>,
-							_Proj1>,
-					      projected<iterator_t<_Range2>,
-							_Proj2>>>
+    requires indirectly_writable<_Out,
+				 indirect_result_t<_Fp&,
+				   projected<iterator_t<_Range1>, _Proj1>,
+				   projected<iterator_t<_Range2>, _Proj2>>>
     constexpr binary_transform_result<safe_iterator_t<_Range1>,
 				      safe_iterator_t<_Range2>, _Out>
     transform(_Range1&& __r1, _Range2&& __r2, _Out __result,
@@ -1304,9 +1307,9 @@ namespace ranges
 
   template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	   typename _Tp1, typename _Tp2, typename _Proj = identity>
-    requires writable<_Iter, const _Tp2&> &&
-	     indirect_binary_predicate<ranges::equal_to,
-				       projected<_Iter, _Proj>, const _Tp1*>
+    requires indirectly_writable<_Iter, const _Tp2&>
+      && indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>,
+				   const _Tp1*>
     constexpr _Iter
     replace(_Iter __first, _Sent __last,
 	    const _Tp1& __old_value, const _Tp2& __new_value,
@@ -1320,10 +1323,10 @@ namespace ranges
 
   template<input_range _Range,
 	   typename _Tp1, typename _Tp2, typename _Proj = identity>
-    requires writable<iterator_t<_Range>, const _Tp2&> &&
-	     indirect_binary_predicate<ranges::equal_to,
-				       projected<iterator_t<_Range>, _Proj>,
-						 const _Tp1*>
+    requires indirectly_writable<iterator_t<_Range>, const _Tp2&>
+      && indirect_binary_predicate<ranges::equal_to,
+				   projected<iterator_t<_Range>, _Proj>,
+				   const _Tp1*>
     constexpr safe_iterator_t<_Range>
     replace(_Range&& __r,
 	    const _Tp1& __old_value, const _Tp2& __new_value,
@@ -1336,7 +1339,7 @@ namespace ranges
   template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	   typename _Tp, typename _Proj = identity,
 	   indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-    requires writable<_Iter, const _Tp&>
+    requires indirectly_writable<_Iter, const _Tp&>
     constexpr _Iter
     replace_if(_Iter __first, _Sent __last,
 	       _Pred __pred, const _Tp& __new_value, _Proj __proj = {})
@@ -1349,7 +1352,7 @@ namespace ranges
 
   template<input_range _Range, typename _Tp, typename _Proj = identity,
 	   indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
-    requires writable<iterator_t<_Range>, const _Tp&>
+    requires indirectly_writable<iterator_t<_Range>, const _Tp&>
     constexpr safe_iterator_t<_Range>
     replace_if(_Range&& __r,
 	       _Pred __pred, const _Tp& __new_value, _Proj __proj = {})
@@ -1496,7 +1499,8 @@ namespace ranges
     }
 
   template<input_or_output_iterator _Out, copy_constructible _Fp>
-    requires invocable<_Fp&> && writable<_Out, invoke_result_t<_Fp&>>
+    requires invocable<_Fp&>
+      && indirectly_writable<_Out, invoke_result_t<_Fp&>>
     constexpr _Out
     generate_n(_Out __first, iter_difference_t<_Out> __n, _Fp __gen)
     {
@@ -1507,7 +1511,8 @@ namespace ranges
 
   template<input_or_output_iterator _Out, sentinel_for<_Out> _Sent,
 	   copy_constructible _Fp>
-    requires invocable<_Fp&> && writable<_Out, invoke_result_t<_Fp&>>
+    requires invocable<_Fp&>
+      && indirectly_writable<_Out, invoke_result_t<_Fp&>>
     constexpr _Out
     generate(_Out __first, _Sent __last, _Fp __gen)
     {
@@ -1573,10 +1578,10 @@ namespace ranges
     }
 
   template<forward_range _Range, typename _Tp, typename _Proj = identity>
-    requires permutable<iterator_t<_Range>> &&
-	     indirect_binary_predicate<ranges::equal_to,
-				       projected<iterator_t<_Range>, _Proj>,
-				       const _Tp*>
+    requires permutable<iterator_t<_Range>>
+      && indirect_binary_predicate<ranges::equal_to,
+				   projected<iterator_t<_Range>, _Proj>,
+				   const _Tp*>
     constexpr safe_subrange_t<_Range>
     remove(_Range&& __r, const _Tp& __value, _Proj __proj = {})
     {

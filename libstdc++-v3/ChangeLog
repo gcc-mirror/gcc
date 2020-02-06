@@ -1,5 +1,24 @@
 2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/iterator_concepts.h (iter_difference_t, iter_value_t):
+	Use remove_cvref_t.
+	(readable_traits): Rename to indirectly_readable_traits.
+	(readable): Rename to indirectly_readable.
+	(writable): Rename to indirectly_writable.
+	(__detail::__iter_exchange_move): Do not use remove_reference_t.
+	(indirectly_swappable): Adjust requires expression parameter types.
+	expression.
+	* include/bits/ranges_algo.h (ranges::transform, ranges::replace)
+	(ranges::replace_if, ranges::generate_n, ranges::generate)
+	(ranges::remove): Use new name for writable.
+	* include/bits/stl_iterator.h (__detail::__common_iter_has_arrow):
+	Use new name for readable.
+	* include/ext/pointer.h (readable_traits<_Pointer_adapter<P>>): Use
+	new name for readable_traits.
+	* testsuite/24_iterators/associated_types/readable.traits.cc: Likewise.
+	* testsuite/24_iterators/indirect_callable/projected.cc: Adjust for
+	new definition of indirectly_readable.
+
 	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Change
 	to take parameters of common_iterator, instead of the common_iterator
 	type itself. Fix argument for __common_iter_has_arrow constraint.

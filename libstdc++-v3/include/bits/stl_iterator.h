@@ -1417,7 +1417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _It>
-      concept __common_iter_has_arrow = readable<const _It>
+      concept __common_iter_has_arrow = indirectly_readable<const _It>
 	&& (requires(const _It& __it) { __it.operator->(); }
 	    || is_reference_v<iter_reference_t<_It>>
 	    || constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);

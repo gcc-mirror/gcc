@@ -24,9 +24,9 @@ struct none;
 
 template<typename T>
   concept has_readable_traits_type
-    = requires { typename std::readable_traits<T>::value_type; };
+    = requires { typename std::indirectly_readable_traits<T>::value_type; };
 
-// Check std::readable_traits<T>::value_type is U (or doesn't exist).
+// Check std::indirectly_readable_traits<T>::value_type is U (or doesn't exist).
 template<typename T, typename U>
   concept check_readable_traits
     = (has_readable_traits_type<T> != std::same_as<U, none>);
@@ -62,7 +62,7 @@ static_assert( check_readable_traits<const D, none> );
 
 struct E { };
 template<>
-  struct std::readable_traits<E> { using value_type = long; };
+  struct std::indirectly_readable_traits<E> { using value_type = long; };
 static_assert( check_readable_traits<E, long> );
 static_assert( check_readable_traits<const E, long> );
 
@@ -103,7 +103,7 @@ static_assert( check_alias<F, std::iterator_traits<F>::value_type> );
 
 struct G { };
 template<>
-  struct std::readable_traits<G> { using value_type = G; };
+  struct std::indirectly_readable_traits<G> { using value_type = G; };
 template<>
   struct std::iterator_traits<G> { using value_type = int; };
 // iterator_traits<G> is specialized, so use its value_type.
@@ -111,7 +111,7 @@ static_assert( check_alias<G, std::iterator_traits<G>::value_type> );
 
 struct H { };
 template<>
-  struct std::readable_traits<H> { using value_type = H; };
+  struct std::indirectly_readable_traits<H> { using value_type = H; };
 template<>
   struct std::iterator_traits<H>
   {
@@ -128,8 +128,8 @@ struct I
   using value_type = I;
 };
 // iterator_traits<I> is not specialized, and no standard specialization
-// matches, so use readable_traits.
-static_assert( check_alias<I, std::readable_traits<I>::value_type> );
+// matches, so use indirectly_readable_traits.
+static_assert( check_alias<I, std::indirectly_readable_traits<I>::value_type> );
 
 struct J
 {
