@@ -3,6 +3,9 @@
 	* include/bits/stl_algobase.h (__iter_swap, __iter_swap<true>): Remove
 	redundant _GLIBCXX20_CONSTEXPR.
 
+	* include/std/ranges (viewable_range): Replace decay_t with
+	remove_cvref_t (LWG 3375).
+
 2020-02-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (iter_reference_t)

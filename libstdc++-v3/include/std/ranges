@@ -92,7 +92,7 @@ namespace ranges
   /// A range which can be safely converted to a view.
   template<typename _Tp>
     concept viewable_range = range<_Tp>
-      && (safe_range<_Tp> || view<decay_t<_Tp>>);
+      && (safe_range<_Tp> || view<remove_cvref_t<_Tp>>);
 
   namespace __detail
   {
