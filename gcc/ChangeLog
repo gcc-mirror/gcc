@@ -4,6 +4,12 @@
 	2020-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/93515
+	* omp-low.c (use_pointer_for_field): For nested constructs, also
+	look for map clauses on target construct.
+	(scan_omp_1_stmt) <case GIMPLE_OMP_TARGET>: Bump temporarily
+	taskreg_nesting_level.
+
+	PR libgomp/93515
 	* gimplify.c (gimplify_scan_omp_clauses) <do_notice>: If adding
 	shared clause, call omp_notice_variable on outer context if any.
 
