@@ -1,3 +1,12 @@
+2020-02-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*pushtf): Emit "#" instead of
+	calling gcc_unreachable in insn output.
+	(*pushxf): Ditto.
+	(*pushdf): Ditto.
+	(*pushsf_rex64): Ditto for alternatives other than 1.
+	(*pushsf): Ditto for alternatives other than 1.
+
 2020-02-06  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/91971
