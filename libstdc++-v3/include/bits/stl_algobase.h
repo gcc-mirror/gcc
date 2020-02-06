@@ -139,7 +139,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __iter_swap
     {
       template<typename _ForwardIterator1, typename _ForwardIterator2>
-	_GLIBCXX20_CONSTEXPR
 	static void
 	iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
 	{
@@ -155,14 +154,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __iter_swap<true>
     {
       template<typename _ForwardIterator1, typename _ForwardIterator2>
-	_GLIBCXX20_CONSTEXPR
 	static void
 	iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
 	{
 	  swap(*__a, *__b);
 	}
     };
-#endif
+#endif // C++03
 
   /**
    *  @brief Swaps the contents of two iterators.
@@ -205,6 +203,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	&& __are_same<_ValueType2&, _ReferenceType2>::__value>::
 	iter_swap(__a, __b);
 #else
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 187. iter_swap underspecified
       swap(*__a, *__b);
 #endif
     }

@@ -5989,7 +5989,9 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
   /* The initializer for an array is always a CONSTRUCTOR.  If this is the
      outermost CONSTRUCTOR and the element type is non-aggregate, we don't need
      to build a new one.  */
-  bool reuse = first_initializer_p && !CP_AGGREGATE_TYPE_P (elt_type);
+  bool reuse = (first_initializer_p
+		&& !CP_AGGREGATE_TYPE_P (elt_type)
+		&& !TREE_SIDE_EFFECTS (first_initializer_p));
   if (reuse)
     new_init = first_initializer_p;
   else

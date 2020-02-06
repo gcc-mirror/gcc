@@ -1282,6 +1282,24 @@
   [(set_attr "type" "mov_imm")]
 )
 
+;; Match MOVK as a normal AND and IOR operation.
+(define_insn "aarch64_movk<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
+			  (match_operand:GPI 2 "const_int_operand"))
+		 (match_operand:GPI 3 "const_int_operand")))]
+  "aarch64_movk_shift (rtx_mode_t (operands[2], <MODE>mode),
+		       rtx_mode_t (operands[3], <MODE>mode)) >= 0"
+  {
+    int shift = aarch64_movk_shift (rtx_mode_t (operands[2], <MODE>mode),
+				    rtx_mode_t (operands[3], <MODE>mode));
+    operands[2] = gen_int_mode (UINTVAL (operands[3]) >> shift, SImode);
+    operands[3] = gen_int_mode (shift, SImode);
+    return "movk\\t%<w>0, #%X2, lsl %3";
+  }
+  [(set_attr "type" "mov_imm")]
+)
+
 (define_expand "movti"
   [(set (match_operand:TI 0 "nonimmediate_operand")
 	(match_operand:TI 1 "general_operand"))]
@@ -5768,6 +5786,21 @@
   "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
 	     1, GET_MODE_BITSIZE (<MODE>mode) - 1)"
   "sbfiz\\t%<w>0, %<w>1, %3, %2"
+  [(set_attr "type" "bfx")]
+)
+
+(define_insn "*ashiftsi_extvdi_bfiz"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI
+	  (match_operator:SI 4 "subreg_lowpart_operator"
+	    [(sign_extract:DI
+	       (match_operand:DI 1 "register_operand" "r")
+	       (match_operand 2 "aarch64_simd_shift_imm_offset_si")
+	       (const_int 0))])
+	  (match_operand 3 "aarch64_simd_shift_imm_si")))]
+  "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
+	     1, GET_MODE_BITSIZE (SImode) - 1)"
+  "sbfiz\\t%w0, %w1, %3, %2"
   [(set_attr "type" "bfx")]
 )
 

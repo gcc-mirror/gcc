@@ -1,3 +1,8 @@
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	* include/cpplib.h (cpp_builtin_type): Remove trailing comma to
+	avoid pedantic warnings in C++ 98 mode.
+
 2020-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* macro.c (builtin_has_include): Diagnose __has_include* use outside

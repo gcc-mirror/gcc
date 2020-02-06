@@ -120,7 +120,8 @@ void strcmp_array_copy (void)
 
 void strcmp_member_array_lit (const struct S *p)
 {
-  T (p->a4, "1234");        // { dg-warning "length 4 and an array of size 4 " }
+  // Not handled due to the fix for PR 92756.
+  T (p->a4, "1234");        // { dg-warning "length 4 and an array of size 4 " "pr92765" { xfail *-*-* } }
 }
 
 
