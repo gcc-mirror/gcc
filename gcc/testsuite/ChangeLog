@@ -1,3 +1,11 @@
+2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.target/arm/multilib.exp (multilib_config): Pass flags to
+	…_target_compile as (additional_flags=) option and not as source
+	filename to make it work with remote execution.
+	* lib/target-supports.exp (check_runtime, check_gc_sections_available,
+	check_effective_target_gas, check_effective_target_gld): Likewise.
+
 2020-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93594
