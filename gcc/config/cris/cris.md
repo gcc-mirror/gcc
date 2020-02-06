@@ -1734,7 +1734,7 @@
 ;; No "negdi2" although we could make one up that may be faster than
 ;; the one in libgcc.
 
-(define_insn "neg<mode>2"
+(define_insn "<anz>neg<mode>2<setnz>"
   [(set (match_operand:BWD 0 "register_operand" "=r")
 	(neg:BWD (match_operand:BWD 1 "register_operand" "r")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]

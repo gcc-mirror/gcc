@@ -167,6 +167,11 @@
 	Handle output of CC_ZnNmode.
 	("*b<nzcond:code>_reversed<mode>"): Ditto.
 
+	* config/cris/cris.c (cris_select_cc_mode): Return CC_NZmode for
+	NEG too.  Correct comment.
+	* config/cris/cris.md ("<anz>neg<mode>2<setnz>"): Rename from
+	"neg<mode>2".
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove
