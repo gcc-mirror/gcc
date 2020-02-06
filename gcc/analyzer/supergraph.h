@@ -156,7 +156,7 @@ public:
     return m_nodes[idx];
   }
 
-  unsigned get_num_snodes (function *fun) const
+  unsigned get_num_snodes (const function *fun) const
   {
     function_to_num_snodes_t &map
       = const_cast <function_to_num_snodes_t &>(m_function_to_num_snodes);
@@ -201,7 +201,7 @@ private:
   typedef ordered_hash_map<gimple *, supernode *> stmt_to_node_t;
   stmt_to_node_t m_stmt_to_node_t;
 
-  typedef hash_map<function *, unsigned> function_to_num_snodes_t;
+  typedef hash_map<const function *, unsigned> function_to_num_snodes_t;
   function_to_num_snodes_t m_function_to_num_snodes;
 };
 

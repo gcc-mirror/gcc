@@ -1,5 +1,12 @@
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93288
+	* g++.dg/analyzer/malloc.C: Add test coverage for a double-free
+	called in a constructor.
+	* g++.dg/analyzer/pr93288.C: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93212
 	* g++.dg/analyzer/analyzer.exp: New subdirectory and .exp suite.
 	* g++.dg/analyzer/malloc.C: New test.
