@@ -48,9 +48,11 @@ namespace std
 
   namespace __cmp_cat
   {
-    enum class _Ord { equivalent = 0, less = -1, greater = 1 };
+    using type = signed char;
 
-    enum class _Ncmp { _Unordered = -127 };
+    enum class _Ord : type { equivalent = 0, less = -1, greater = 1 };
+
+    enum class _Ncmp : type { _Unordered = 2 };
 
     struct __unspec
     {
@@ -60,18 +62,21 @@ namespace std
 
   class partial_ordering
   {
-    int _M_value;
-    bool _M_is_ordered;
+    // less=0xff, equiv=0x00, greater=0x01, unordered=0x02
+    __cmp_cat::type _M_value;
 
     constexpr explicit
     partial_ordering(__cmp_cat::_Ord __v) noexcept
-    : _M_value(int(__v)), _M_is_ordered(true)
+    : _M_value(__cmp_cat::type(__v))
     { }
 
     constexpr explicit
     partial_ordering(__cmp_cat::_Ncmp __v) noexcept
-    : _M_value(int(__v)), _M_is_ordered(false)
+    : _M_value(__cmp_cat::type(__v))
     { }
+
+    friend class weak_ordering;
+    friend class strong_ordering;
 
   public:
     // valid values
@@ -83,42 +88,42 @@ namespace std
     // comparisons
     friend constexpr bool
     operator==(partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __v._M_is_ordered && __v._M_value == 0; }
+    { return __v._M_value == 0; }
 
     friend constexpr bool
     operator==(partial_ordering, partial_ordering) noexcept = default;
 
     friend constexpr bool
     operator< (partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __v._M_is_ordered && __v._M_value < 0; }
+    { return __v._M_value == -1; }
 
     friend constexpr bool
     operator> (partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __v._M_is_ordered && __v._M_value > 0; }
+    { return __v._M_value == 1; }
 
     friend constexpr bool
     operator<=(partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __v._M_is_ordered && __v._M_value <= 0; }
+    { return __v._M_value <= 0; }
 
     friend constexpr bool
     operator>=(partial_ordering __v, __cmp_cat::__unspec) noexcept
-    { return __v._M_is_ordered && __v._M_value >= 0; }
+    { return __cmp_cat::type(__v._M_value & 1) == __v._M_value; }
 
     friend constexpr bool
     operator< (__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return __v._M_is_ordered && 0 < __v._M_value; }
+    { return __v._M_value == 1; }
 
     friend constexpr bool
     operator> (__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return __v._M_is_ordered && 0 > __v._M_value; }
+    { return __v._M_value == -1; }
 
     friend constexpr bool
     operator<=(__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return __v._M_is_ordered && 0 <= __v._M_value; }
+    { return __cmp_cat::type(__v._M_value & 1) == __v._M_value; }
 
     friend constexpr bool
     operator>=(__cmp_cat::__unspec, partial_ordering __v) noexcept
-    { return __v._M_is_ordered && 0 >= __v._M_value; }
+    { return 0 >= __v._M_value; }
 
     friend constexpr partial_ordering
     operator<=>(partial_ordering __v, __cmp_cat::__unspec) noexcept
@@ -127,10 +132,8 @@ namespace std
     friend constexpr partial_ordering
     operator<=>(__cmp_cat::__unspec, partial_ordering __v) noexcept
     {
-      if (__v < 0)
-	return  partial_ordering::greater;
-      else if (__v > 0)
-	return partial_ordering::less;
+      if (__v._M_value & 1)
+	return partial_ordering(__cmp_cat::_Ord(-__v._M_value));
       else
 	return __v;
     }
@@ -151,11 +154,13 @@ namespace std
 
   class weak_ordering
   {
-    int _M_value;
+    __cmp_cat::type _M_value;
 
     constexpr explicit
-    weak_ordering(__cmp_cat::_Ord __v) noexcept : _M_value(int(__v))
+    weak_ordering(__cmp_cat::_Ord __v) noexcept : _M_value(__cmp_cat::type(__v))
     { }
+
+    friend class strong_ordering;
 
   public:
     // valid values
@@ -164,14 +169,7 @@ namespace std
     static const weak_ordering greater;
 
     constexpr operator partial_ordering() const noexcept
-    {
-      if (_M_value == 0)
-	return partial_ordering::equivalent;
-      else if (_M_value < 0)
-	return partial_ordering::less;
-      else
-	return partial_ordering::greater;
-    }
+    { return partial_ordering(__cmp_cat::_Ord(_M_value)); }
 
     // comparisons
     friend constexpr bool
@@ -219,14 +217,7 @@ namespace std
 
     friend constexpr weak_ordering
     operator<=>(__cmp_cat::__unspec, weak_ordering __v) noexcept
-    {
-      if (__v < 0)
-	return  weak_ordering::greater;
-      else if (__v > 0)
-	return weak_ordering::less;
-      else
-	return __v;
-    }
+    { return weak_ordering(__cmp_cat::_Ord(-__v._M_value)); }
   };
 
   // valid values' definitions
@@ -241,11 +232,11 @@ namespace std
 
   class strong_ordering
   {
-    int _M_value;
+    __cmp_cat::type _M_value;
 
     constexpr explicit
     strong_ordering(__cmp_cat::_Ord __v) noexcept
-    : _M_value(int(__v))
+    : _M_value(__cmp_cat::type(__v))
     { }
 
   public:
@@ -256,24 +247,10 @@ namespace std
     static const strong_ordering greater;
 
     constexpr operator partial_ordering() const noexcept
-    {
-      if (_M_value == 0)
-	return partial_ordering::equivalent;
-      else if (_M_value < 0)
-	return partial_ordering::less;
-      else
-	return partial_ordering::greater;
-    }
+    { return partial_ordering(__cmp_cat::_Ord(_M_value)); }
 
     constexpr operator weak_ordering() const noexcept
-    {
-      if (_M_value == 0)
-	return weak_ordering::equivalent;
-      else if (_M_value < 0)
-	return weak_ordering::less;
-      else
-	return weak_ordering::greater;
-    }
+    { return weak_ordering(__cmp_cat::_Ord(_M_value)); }
 
     // comparisons
     friend constexpr bool
@@ -321,14 +298,7 @@ namespace std
 
     friend constexpr strong_ordering
     operator<=>(__cmp_cat::__unspec, strong_ordering __v) noexcept
-    {
-      if (__v < 0)
-	return  strong_ordering::greater;
-      else if (__v > 0)
-	return strong_ordering::less;
-      else
-	return __v;
-    }
+    { return strong_ordering(__cmp_cat::_Ord(-__v._M_value)); }
   };
 
   // valid values' definitions

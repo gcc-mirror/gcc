@@ -1,3 +1,19 @@
+2020-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92654
+	* tree.c (cp_walk_subtrees): Walk into type template arguments.
+	* cp-tree.h (TYPE_TEMPLATE_INFO_MAYBE_ALIAS): Use typedef_variant_p
+	instead of TYPE_ALIAS_P.
+	* pt.c (push_template_decl_real): Likewise.
+	(find_parameter_packs_r): Likewise.  Remove dead code.
+	* error.c (find_typenames_r): Remove dead code.
+
+2020-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92517
+	* parser.c (cp_parser_constraint_primary_expression): Do the main
+	parse non-tentatively.
+
 2020-02-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93597 - ICE with lambda in operator function.

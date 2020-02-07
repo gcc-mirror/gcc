@@ -1,3 +1,49 @@
+2020-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* testsuite/gcc.target/powerpc/pr92923-1.c: Add -mvsx.
+
+2020-02-07  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/aarch64/simd/vmmla.c: New test.
+
+2020-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93519
+	* gcc.dg/Wrestrict-21.c: New testcase.
+
+2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85667
+	* gcc.target/i386/pr85667-10.c: New test.
+	* gcc.target/i386/pr85667-7.c: Likewise.
+	* gcc.target/i386/pr85667-8.c: Likewise.
+	* gcc.target/i386/pr85667-9.c: Likewise.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93122
+	* gcc.target/powerpc/pr93122.c: New test.
+
+2020-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89404
+	* g++.dg/ext/vla21.C: New.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93615
+	* gcc.dg/pr93615.c: New test.
+
+	PR target/93611
+	* gcc.target/i386/pr93611.c: New test.
+
+2020-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* gcc.dg/analyzer/pr93375.c: Rework test case to avoid per-target
+	differences in how __builtin_memcpy has been optimized at the time
+	the analyzer runs.
+
 2020-02-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/torture/intptr_t.c: New test.

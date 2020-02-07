@@ -3818,9 +3818,12 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     (struct find_parameter_pack_data*)data;
   bool parameter_pack_p = false;
 
-  /* Handle type aliases/typedefs.  */
-  if (TYPE_ALIAS_P (t))
+  /* Don't look through typedefs; we are interested in whether a
+     parameter pack is actually written in the expression/type we're
+     looking at, not the target type.  */
+  if (TYPE_P (t) && typedef_variant_p (t))
     {
+      /* But do look at arguments for an alias template.  */
       if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
 	cp_walk_tree (&TI_ARGS (tinfo),
 		      &find_parameter_packs_r,
@@ -3903,47 +3906,19 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 		  &find_parameter_packs_r, ppd, ppd->visited);
 
   /* This switch statement will return immediately if we don't find a
-     parameter pack.  */
+     parameter pack.  ??? Should some of these be in cp_walk_subtrees?  */
   switch (TREE_CODE (t))
     {
-    case TEMPLATE_PARM_INDEX:
-      return NULL_TREE;
-
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       /* Check the template itself.  */
       cp_walk_tree (&TREE_TYPE (TYPE_TI_TEMPLATE (t)),
 		    &find_parameter_packs_r, ppd, ppd->visited);
-      /* Check the template arguments.  */
-      cp_walk_tree (&TYPE_TI_ARGS (t), &find_parameter_packs_r, ppd,
-		    ppd->visited);
-      *walk_subtrees = 0;
-      return NULL_TREE;
-
-    case TEMPLATE_TYPE_PARM:
-    case TEMPLATE_TEMPLATE_PARM:
-      return NULL_TREE;
-
-    case PARM_DECL:
       return NULL_TREE;
 
     case DECL_EXPR:
       /* Ignore the declaration of a capture proxy for a parameter pack.  */
       if (is_capture_proxy (DECL_EXPR_DECL (t)))
 	*walk_subtrees = 0;
-      return NULL_TREE;
-
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (t))
-	return NULL_TREE;
-      /* Fall through.  */
-
-    case UNION_TYPE:
-    case ENUMERAL_TYPE:
-      if (TYPE_TEMPLATE_INFO (t))
-	cp_walk_tree (&TYPE_TI_ARGS (t),
-		      &find_parameter_packs_r, ppd, ppd->visited);
-
-      *walk_subtrees = 0;
       return NULL_TREE;
 
     case TEMPLATE_DECL:
@@ -5794,8 +5769,7 @@ push_template_decl_real (tree decl, bool is_friend)
       if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
 	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs ((TREE_CODE (decl) == TYPE_DECL
-					    && TYPE_DECL_ALIAS_P (decl))
+  else if (check_for_bare_parameter_packs (is_typedef_decl (decl)
 					   ? DECL_ORIGINAL_TYPE (decl)
 					   : TREE_TYPE (decl)))
     {

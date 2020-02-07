@@ -1,5 +1,7 @@
 /* { dg-additional-options "-Wno-implicit-int" } */
 
+extern void foo (void *) __attribute__((nonnull));
+
 void
 en (jm)
 {
@@ -11,5 +13,5 @@ p2 ()
   char *rl = 0;
 
   en ();
-  __builtin_memcpy (rl, 0, sizeof (0)); /* { dg-warning "dereference of NULL" } */
+  foo (rl); /* { dg-warning "use of NULL 'rl' where non-null expected" } */
 }

@@ -1,3 +1,199 @@
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (iter_difference_t, iter_value_t):
+	Use remove_cvref_t.
+	(readable_traits): Rename to indirectly_readable_traits.
+	(readable): Rename to indirectly_readable.
+	(writable): Rename to indirectly_writable.
+	(__detail::__iter_exchange_move): Do not use remove_reference_t.
+	(indirectly_swappable): Adjust requires expression parameter types.
+	expression.
+	* include/bits/ranges_algo.h (ranges::transform, ranges::replace)
+	(ranges::replace_if, ranges::generate_n, ranges::generate)
+	(ranges::remove): Use new name for writable.
+	* include/bits/stl_iterator.h (__detail::__common_iter_has_arrow):
+	Use new name for readable.
+	* include/ext/pointer.h (readable_traits<_Pointer_adapter<P>>): Use
+	new name for readable_traits.
+	* testsuite/24_iterators/associated_types/readable.traits.cc: Likewise.
+	* testsuite/24_iterators/indirect_callable/projected.cc: Adjust for
+	new definition of indirectly_readable.
+
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Change
+	to take parameters of common_iterator, instead of the common_iterator
+	type itself. Fix argument for __common_iter_has_arrow constraint.
+	(iterator_traits<common_iterator<I, S>>::pointer): Adjust.
+
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (iota_view): Add braces to prevent -Wempty-body
+	warning.
+	(basic_istream_view::_Iterator::operator++()): Add missing return.
+
+2020-02-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h: Remove extraneous &&.
+
+	* include/std/ranges (ranges::__detail::__stream_extractable,
+	ranges::basic_istream_view, ranges::istream_view): Define.
+	* testsuite/std/ranges/istream_view: New test.
+
+	Implement C++20 range adaptors
+	* include/std/ranges: Include <bits/refwrap.h> and <tuple>.
+	(subrange::_S_store_size): Mark as const instead of constexpr to
+	avoid what seems to be a bug in GCC.
+	(__detail::__box): Give it defaulted copy and move constructors.
+	(ranges::views::_Single::operator()): Mark constexpr.
+	(ranges::views::_Iota::operator()): Mark constexpr.
+	(__detail::Empty): Define.
+	(ranges::views::__closure::_RangeAdaptor,
+	ranges::views::__closure::_RangeAdaptorClosure, ref_view, all_view,
+	ranges::views::all, ranges::__detail::find_if,
+	ranges::__detail::find_if_not, ranges::__detail::mismatch,
+	ranges::detail::min, filter_view, ranges::views::filter, transform_view,
+	ranges::views::transform, take_view, ranges::views::take,
+	take_while_view, ranges::views::take_while, drop_view,
+	ranges::views::drop, join_view, ranges::views::join,
+	__detail::require_constant, __detail::tiny_range, split_view,
+	ranges::views::split, ranges::views::_Counted, ranges::views::counted,
+	common_view, ranges::views::common, reverse_view,
+	ranges::views::reverse,
+	ranges::views::__detail::__is_reversible_subrange,
+	ranges::views::__detail::__is_reverse_view, reverse_view,
+	ranges::views::reverse, __detail::__has_tuple_element, elements_view,
+	ranges::views::elements, ranges::views::keys, ranges::views::values):
+	Define.
+	(views): Alias for ranges::views.
+	(tuple_size<ranges::subrange<>>, tuple_element<0, ranges::subrange>,
+	tuple_element<1, ranges::subrange>): New partial specializations.
+	* testsuite/std/ranges/adaptors/all.cc: New test.
+	* testsuite/std/ranges/adaptors/common.cc: Likewise.
+	* testsuite/std/ranges/adaptors/counted.cc: Likewise.
+	* testsuite/std/ranges/adaptors/drop.cc: Likewise.
+	* testsuite/std/ranges/adaptors/drop_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc: Likewise.
+	* testsuite/std/ranges/adaptors/filter.cc: Likewise.
+	* testsuite/std/ranges/adaptors/join.cc: Likewise.
+	* testsuite/std/ranges/adaptors/reverse.cc: Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::type): Define typedef for underlying
+	type of enumerations and comparison category types.
+	(__cmp_cat::_Ord, __cmp_cat::_Ncmp): Add underlying type.
+	(__cmp_cat::_Ncmp::unordered): Change value to 2.
+	(partial_ordering::_M_value, weak_ordering::_M_value)
+	(strong_ordering::_M_value): Change type to __cmp_cat::type.
+	(partial_ordering::_M_is_ordered): Remove data member.
+	(partial_ordering): Use second bit of _M_value for unordered. Adjust
+	comparison operators.
+	(weak_ordering::operator partial_ordering): Simplify to remove
+	branches.
+	(operator<=>(unspecified, weak_ordering)): Likewise.
+	(strong_ordering::operator partial_ordering): Likewise.
+	(strong_ordering::operator weak_ordering): Likewise.
+	(operator<=>(unspecified, strong_ordering)): Likewise.
+	* testsuite/18_support/comparisons/categories/partialord.cc: New test.
+	* testsuite/18_support/comparisons/categories/strongord.cc: New test.
+	* testsuite/18_support/comparisons/categories/weakord.cc: New test.
+
+	* include/std/ranges (iota_view::_Iterator): Fix typo in name of
+	__cpp_lib_three_way_comparison macro and use deduced return type for
+	operator<=>.
+	* testsuite/std/ranges/iota/iterator.cc: New test.
+
+2020-02-07  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement C++20 constrained algorithms
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/algorithm: Include <bits/ranges_algo.h>.
+	* include/bits/ranges_algo.h: New file.
+	* testsuite/25_algorithms/adjacent_find/constrained.cc: New test.
+	* testsuite/25_algorithms/all_of/constrained.cc: New test.
+	* testsuite/25_algorithms/any_of/constrained.cc: New test.
+	* testsuite/25_algorithms/binary_search/constrained.cc: New test.
+	* testsuite/25_algorithms/copy/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_n/constrained.cc: New test.
+	* testsuite/25_algorithms/count/constrained.cc: New test.
+	* testsuite/25_algorithms/count_if/constrained.cc: New test.
+	* testsuite/25_algorithms/equal/constrained.cc: New test.
+	* testsuite/25_algorithms/equal_range/constrained.cc: New test.
+	* testsuite/25_algorithms/fill/constrained.cc: New test.
+	* testsuite/25_algorithms/fill_n/constrained.cc: New test.
+	* testsuite/25_algorithms/find/constrained.cc: New test.
+	* testsuite/25_algorithms/find_end/constrained.cc: New test.
+	* testsuite/25_algorithms/find_first_of/constrained.cc: New test.
+	* testsuite/25_algorithms/find_if/constrained.cc: New test.
+	* testsuite/25_algorithms/find_if_not/constrained.cc: New test.
+	* testsuite/25_algorithms/for_each/constrained.cc: New test.
+	* testsuite/25_algorithms/generate/constrained.cc: New test.
+	* testsuite/25_algorithms/generate_n/constrained.cc: New test.
+	* testsuite/25_algorithms/heap/constrained.cc: New test.
+	* testsuite/25_algorithms/includes/constrained.cc: New test.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: New test.
+	* testsuite/25_algorithms/is_partitioned/constrained.cc: New test.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/is_sorted/constrained.cc: New test.
+	* testsuite/25_algorithms/is_sorted_until/constrained.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc: New
+	test.
+	* testsuite/25_algorithms/lower_bound/constrained.cc: New test.
+	* testsuite/25_algorithms/max/constrained.cc: New test.
+	* testsuite/25_algorithms/max_element/constrained.cc: New test.
+	* testsuite/25_algorithms/merge/constrained.cc: New test.
+	* testsuite/25_algorithms/min/constrained.cc: New test.
+	* testsuite/25_algorithms/min_element/constrained.cc: New test.
+	* testsuite/25_algorithms/minmax/constrained.cc: New test.
+	* testsuite/25_algorithms/minmax_element/constrained.cc: New test.
+	* testsuite/25_algorithms/mismatch/constrained.cc: New test.
+	* testsuite/25_algorithms/move/constrained.cc: New test.
+	* testsuite/25_algorithms/move_backward/constrained.cc: New test.
+	* testsuite/25_algorithms/next_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/none_of/constrained.cc: New test.
+	* testsuite/25_algorithms/nth_element/constrained.cc: New test.
+	* testsuite/25_algorithms/partial_sort/constrained.cc: New test.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/partition/constrained.cc: New test.
+	* testsuite/25_algorithms/partition_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/partition_point/constrained.cc: New test.
+	* testsuite/25_algorithms/prev_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/remove/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_if/constrained.cc: New test.
+	* testsuite/25_algorithms/replace/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_if/constrained.cc: New test.
+	* testsuite/25_algorithms/reverse/constrained.cc: New test.
+	* testsuite/25_algorithms/reverse_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/rotate/constrained.cc: New test.
+	* testsuite/25_algorithms/rotate_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/search/constrained.cc: New test.
+	* testsuite/25_algorithms/search_n/constrained.cc: New test.
+	* testsuite/25_algorithms/set_difference/constrained.cc: New test.
+	* testsuite/25_algorithms/set_intersection/constrained.cc: New test.
+	* testsuite/25_algorithms/set_symmetric_difference/constrained.cc: New
+	test.
+	* testsuite/25_algorithms/set_union/constrained.cc: New test.
+	* testsuite/25_algorithms/shuffle/constrained.cc: New test.
+	* testsuite/25_algorithms/sort/constrained.cc: New test.
+	* testsuite/25_algorithms/stable_partition/constrained.cc: New test.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: New test.
+	* testsuite/25_algorithms/swap_ranges/constrained.cc: New test.
+	* testsuite/25_algorithms/transform/constrained.cc: New test.
+	* testsuite/25_algorithms/unique/constrained.cc: New test.
+	* testsuite/25_algorithms/unique_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/upper_bound/constrained.cc: New test.
+
 2020-02-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Fix PR

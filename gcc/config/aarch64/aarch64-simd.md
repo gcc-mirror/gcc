@@ -7173,3 +7173,15 @@
 }
   [(set_attr "type" "neon_fp_mla_s_scalar_q")]
 )
+
+;; 8-bit integer matrix multiply-accumulate
+(define_insn "aarch64_simd_<sur>mmlav16qi"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+	(plus:V4SI
+	 (unspec:V4SI [(match_operand:V16QI 2 "register_operand" "w")
+		       (match_operand:V16QI 3 "register_operand" "w")] MATMUL)
+	 (match_operand:V4SI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "<sur>mmla\\t%0.4s, %2.16b, %3.16b"
+  [(set_attr "type" "neon_mla_s_q")]
+)

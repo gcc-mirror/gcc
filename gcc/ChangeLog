@@ -1,3 +1,66 @@
+2020-02-07  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (simd_smmla): New entry.
+	(simd_ummla, simd_usmmla): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_<sur>mmlav16qi): New.
+	* config/aarch64/arm_neon.h (vmmlaq_s32, vmmlaq_u32): New.
+	(vusmmlaq_s32): New.
+
+2020-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93519
+	* tree-inline.c (fold_marked_statements): Do a PRE walk,
+	skipping unreachable regions.
+	(optimize_inline_calls): Skip folding stmts when we didn't
+	inline.
+
+2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85667
+	* config/i386/i386.c (function_arg_ms_64): Add a type argument.
+	Don't return aggregates with only SFmode and DFmode in SSE
+	register.
+	(ix86_function_arg): Pass arg.type to function_arg_ms_64.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93122
+	* config/rs6000/rs6000-logue.c
+	(rs6000_emit_probe_stack_range_stack_clash): Always use gen_add3_insn,
+	if it fails, move rs into end_addr and retry.  Add
+	REG_FRAME_RELATED_EXPR note whenever it returns more than one insn or
+	the insn pattern doesn't describe well what exactly happens to
+	dwarf2cfi.c.
+
+	PR target/93594
+	* config/i386/predicates.md (avx_identity_operand): Remove.
+	* config/i386/sse.md (*avx_vec_concat<mode>_1): Remove.
+	(avx_<castmode><avxsizesuffix>_<castmode>,
+	avx512f_<castmode><avxsizesuffix>_256<castmode>): Change patterns to
+	a VEC_CONCAT of the operand and UNSPEC_CAST.
+	(avx512f_<castmode><avxsizesuffix>_<castmode>): Change pattern to
+	a VEC_CONCAT of VEC_CONCAT of the operand and UNSPEC_CAST with
+	UNSPEC_CAST.
+
+	PR target/93611
+	* config/i386/i386.c (ix86_lea_outperforms): Make sure to clear
+	recog_data.insn if distance_non_agu_define changed it.
+
+2020-02-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93569
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Before ISA 3.0
+	we only had X-FORM (reg+reg) addressing for vectors.  Also before
+	ISA 3.0, we only had X-FORM addressing for scalars in the
+	traditional Altivec registers.
+
+2020-02-06  <zhongyunde@huawei.com>
+  	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93561
+	* lra-assigns.c (spill_for): Check that tested hard regno is not out of
+	hard register range.
+
 2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.md (aarch64_movk<mode>): Add a type
