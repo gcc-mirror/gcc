@@ -1,5 +1,7 @@
 2020-02-07  Patrick Palka  <ppalka@redhat.com>
 
+	* include/bits/ranges_algo.h: Remove extraneous &&.
+
 	* include/std/ranges (ranges::__detail::__stream_extractable,
 	ranges::basic_istream_view, ranges::istream_view): Define.
 	* testsuite/std/ranges/istream_view: New test.

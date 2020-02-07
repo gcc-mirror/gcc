@@ -1250,7 +1250,7 @@ namespace ranges
       [[no_unique_address]] _Out  out;
 
       template<typename _IIter1, typename _IIter2, typename _OOut>
-	requires convertible_to<const _Iter1&, _IIter1> &&
+	requires convertible_to<const _Iter1&, _IIter1>
 	  && convertible_to<const _Iter2&, _IIter2>
 	  && convertible_to<const _Out&, _OOut>
 	operator binary_transform_result<_IIter1, _IIter2, _OOut>() const &
