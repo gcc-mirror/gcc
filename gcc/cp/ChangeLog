@@ -1,3 +1,9 @@
+2020-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92947 - Paren init of aggregates in unevaluated context.
+	* call.c (build_new_method_call_1): Don't check
+	cp_unevaluated_operand.  Check the return value of digest_init.
+
 2020-02-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92654

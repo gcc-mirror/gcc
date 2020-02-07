@@ -1,3 +1,8 @@
+2020-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92947 - Paren init of aggregates in unevaluated context.
+	* g++.dg/cpp2a/paren-init21.C: New test.
+
 2020-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* testsuite/gcc.target/powerpc/pr92923-1.c: Add -mvsx.

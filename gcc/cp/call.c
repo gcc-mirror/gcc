@@ -10179,7 +10179,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	 the two.  */
       if (DECL_CONSTRUCTOR_P (fn)
 	  && !(flags & LOOKUP_ONLYCONVERTING)
-	  && !cp_unevaluated_operand
 	  && cxx_dialect >= cxx2a
 	  && CP_AGGREGATE_TYPE_P (basetype)
 	  && !user_args->is_empty ())
@@ -10194,6 +10193,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  else
 	    {
 	      ctor = digest_init (basetype, ctor, complain);
+	      if (ctor == error_mark_node)
+		return error_mark_node;
 	      ctor = build2 (INIT_EXPR, TREE_TYPE (instance), instance, ctor);
 	      TREE_SIDE_EFFECTS (ctor) = true;
 	      return ctor;
