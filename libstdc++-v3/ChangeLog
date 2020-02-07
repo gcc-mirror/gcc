@@ -1,3 +1,10 @@
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (iota_view::_Iterator): Fix typo in name of
+	__cpp_lib_three_way_comparison macro and use deduced return type for
+	operator<=>.
+	* testsuite/std/ranges/iota/iterator.cc: New test.
+
 2020-02-07  Patrick Palka  <ppalka@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

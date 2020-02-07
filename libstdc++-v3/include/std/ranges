@@ -776,8 +776,8 @@ namespace ranges
 	  requires totally_ordered<_Winc>
 	{ return !(__x < __y); }
 
-#ifdef __cpp_lib_threeway_comparison
-	friend constexpr compare_three_way_result_t<_Winc>
+#ifdef __cpp_lib_three_way_comparison
+	friend constexpr auto
 	operator<=>(const _Iterator& __x, const _Iterator& __y)
 	  requires totally_ordered<_Winc> && three_way_comparable<_Winc>
 	{ return __x._M_value <=> __y._M_value; }
