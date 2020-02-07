@@ -1,5 +1,12 @@
 2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Change
+	to take parameters of common_iterator, instead of the common_iterator
+	type itself. Fix argument for __common_iter_has_arrow constraint.
+	(iterator_traits<common_iterator<I, S>>::pointer): Adjust.
+
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/std/ranges (iota_view): Add braces to prevent -Wempty-body
 	warning.
 	(basic_istream_view::_Iterator::operator++()): Add missing return.

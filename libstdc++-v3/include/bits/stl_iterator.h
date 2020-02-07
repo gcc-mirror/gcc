@@ -1738,17 +1738,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     // FIXME: This has to be at namespace-scope because of PR 92103.
-    template<typename _Iter>
+    template<typename _It, typename _Sent>
       struct __common_iter_ptr
       {
 	using type = void;
       };
 
-    template<typename _Iter>
-      requires __detail::__common_iter_has_arrow<_Iter>
-      struct __common_iter_ptr<_Iter>
+    template<typename _It, typename _Sent>
+      requires __detail::__common_iter_has_arrow<_It>
+      struct __common_iter_ptr<_It, _Sent>
       {
-	using type = decltype(std::declval<const _Iter&>().operator->());
+	using common_iterator = std::common_iterator<_It, _Sent>;
+
+	using type
+	  = decltype(std::declval<const common_iterator&>().operator->());
       };
   } // namespace __detail
 
@@ -1762,8 +1765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	forward_iterator_tag, input_iterator_tag>;
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
-      using pointer = typename
-	__detail::__common_iter_ptr<common_iterator<_It, _Sent>>::type;
+      using pointer = typename __detail::__common_iter_ptr<_It, _Sent>::type;
       using reference = iter_reference_t<_It>;
     };
 
