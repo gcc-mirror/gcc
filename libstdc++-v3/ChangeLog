@@ -1,5 +1,7 @@
 2020-02-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/typeinfo (type_info::operator!=): Remove for C++20.
+
 	* include/std/thread (thread::id::operator<=>): Define for C++20.
 	* testsuite/30_threads/thread/id/70294.cc: Do not take addresses of
 	functions in namespace std.
