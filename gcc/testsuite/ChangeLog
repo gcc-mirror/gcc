@@ -1,3 +1,8 @@
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93611
+	* gcc.target/i386/pr93611.c: New test.
+
 2020-02-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93375

@@ -14459,8 +14459,17 @@ ix86_lea_outperforms (rtx_insn *insn, unsigned int regno0, unsigned int regno1,
       return true;
     }
 
+  rtx_insn *rinsn = recog_data.insn;
+
   dist_define = distance_non_agu_define (regno1, regno2, insn);
   dist_use = distance_agu_use (regno0, insn);
+
+  /* distance_non_agu_define can call extract_insn_cached.  If this function
+     is called from define_split conditions, that can break insn splitting,
+     because split_insns works by clearing recog_data.insn and then modifying
+     recog_data.operand array and match the various split conditions.  */
+  if (recog_data.insn != rinsn)
+    recog_data.insn = NULL;
 
   if (dist_define < 0 || dist_define >= LEA_MAX_STALL)
     {

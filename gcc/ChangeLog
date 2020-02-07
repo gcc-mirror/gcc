@@ -1,3 +1,9 @@
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93611
+	* config/i386/i386.c (ix86_lea_outperforms): Make sure to clear
+	recog_data.insn if distance_non_agu_define changed it.
+
 2020-02-06  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93569
