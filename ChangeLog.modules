@@ -1,3 +1,10 @@
+2020-02-07  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/c-family/
+	* c-ppoutput.c (class token_streamer): New class, swallow guts of
+	...
+	(scan_translation_unit): ... this.  Use it.
+
 2020-02-06  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

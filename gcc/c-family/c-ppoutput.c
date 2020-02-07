@@ -165,17 +165,147 @@ init_pp_output (FILE *out_stream)
   print.prev_was_system_token = false;
 }
 
+// FIXME: Ideally we'd just turn the entirety of the print struct into
+// an encapsulated streamer ...
+
+class token_streamer
+{
+  bool avoid_paste;
+  bool do_line_adjustments;
+  bool in_pragma;
+  bool line_marker_emitted;
+
+ public:
+  token_streamer (cpp_reader *pfile)
+    :avoid_paste (false),
+    do_line_adjustments (cpp_get_options (pfile)->lang != CLK_ASM
+			 && !flag_no_line_commands),
+    in_pragma (false),
+    line_marker_emitted (false)
+    {
+    }
+
+  void stream (cpp_reader *pfile, const cpp_token *tok, location_t);
+};
+
+void
+token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
+			location_t loc)
+{
+  if (token->type == CPP_PADDING)
+    {
+      avoid_paste = true;
+      if (print.source == NULL
+	  || (!(print.source->flags & PREV_WHITE)
+	      && token->val.source == NULL))
+	print.source = token->val.source;
+      return;
+    }
+
+  if (token->type == CPP_PRAGMA_EOL && !in_pragma)
+    /* A module-specific pragma EOL. */
+    return;
+
+  if (token->type == CPP_EOF)
+    return;
+
+  /* Subtle logic to output a space if and only if necessary.  */
+  if (avoid_paste)
+    {
+      int src_line = LOCATION_LINE (loc);
+
+      if (print.source == NULL)
+	print.source = token;
+
+      if (src_line != print.src_line
+	  && do_line_adjustments
+	  && !in_pragma)
+	{
+	  line_marker_emitted = do_line_change (pfile, token, loc, false);
+	  putc (' ', print.outf);
+	  print.printed = true;
+	}
+      else if (print.source->flags & PREV_WHITE
+	       || (print.prev
+		   && cpp_avoid_paste (pfile, print.prev, token))
+	       || (print.prev == NULL && token->type == CPP_HASH))
+	{
+	  putc (' ', print.outf);
+	  print.printed = true;
+	}
+    }
+  else if (token->flags & PREV_WHITE)
+    {
+      int src_line = LOCATION_LINE (loc);
+
+      if (src_line != print.src_line
+	  && do_line_adjustments
+	  && !in_pragma)
+	line_marker_emitted = do_line_change (pfile, token, loc, false);
+      putc (' ', print.outf);
+      print.printed = true;
+    }
+
+  avoid_paste = false;
+  print.source = NULL;
+  print.prev = token;
+  if (token->type == CPP_PRAGMA)
+    {
+      const char *space;
+      const char *name;
+
+      line_marker_emitted = maybe_print_line (token->src_loc);
+      fputs ("#pragma ", print.outf);
+      c_pp_lookup_pragma (token->val.pragma, &space, &name);
+      if (space)
+	fprintf (print.outf, "%s %s", space, name);
+      else
+	fprintf (print.outf, "%s", name);
+      print.printed = true;
+      in_pragma = true;
+    }
+  else if (token->type == CPP_PRAGMA_EOL)
+    {
+      maybe_print_line (token->src_loc);
+      in_pragma = false;
+    }
+  else
+    {
+      if (cpp_get_options (parse_in)->debug)
+	linemap_dump_location (line_table, token->src_loc, print.outf);
+
+      if (do_line_adjustments
+	  && !in_pragma
+	  && !line_marker_emitted
+	  && print.prev_was_system_token != !!in_system_header_at (loc)
+	  && !is_location_from_builtin_token (loc))
+	/* The system-ness of this token is different from the one of
+	   the previous token.  Let's emit a line change to mark the
+	   new system-ness before we emit the token.  */
+	{
+	  do_line_change (pfile, token, loc, false);
+	  print.prev_was_system_token = !!in_system_header_at (loc);
+	}
+      cpp_output_token (token, print.outf);
+      line_marker_emitted = false;
+      print.printed = true;
+    }
+
+  /* CPP_COMMENT tokens and raw-string literal tokens can have
+     embedded new-line characters.  Rather than enumerating all the
+     possible token types just check if token uses val.str union
+     member.  */
+  if (cpp_token_val_index (token) == CPP_TOKEN_FLD_STR)
+    account_for_newlines (token->val.str.text, token->val.str.len);
+}
+
 /* Writes out the preprocessed file, handling spacing and paste
    avoidance issues.  */
+
 static void
 scan_translation_unit (cpp_reader *pfile)
 {
-  bool avoid_paste = false;
-  bool do_line_adjustments
-    = cpp_get_options (parse_in)->lang != CLK_ASM
-      && !flag_no_line_commands;
-  bool in_pragma = false;
-  bool line_marker_emitted = false;
+  token_streamer streamer (pfile);
   void *filter = NULL;
 
   if (lang_hooks.preprocess_token)
@@ -184,132 +314,19 @@ scan_translation_unit (cpp_reader *pfile)
   print.source = NULL;
   for (;;)
     {
-      location_t loc = UNKNOWN_LOCATION;
-      const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
+      location_t spelling_loc;
+      const cpp_token *token
+	= cpp_get_token_with_location (pfile, &spelling_loc);
+
       if (filter)
-	{
-	  filter = lang_hooks.preprocess_token (pfile, token, filter);
-	  if (!filter)
-	    {
-	      /* We're bailing out, possibly in the middle of a #if
-		 nest.  We don't want that to cause problems.  */
-	      cpp_clear_if_stack (pfile);
-	      break;
-	    }
-	}
-
-      if (token->type == CPP_PADDING)
-	{
-	  avoid_paste = true;
-	  if (print.source == NULL
-	      || (!(print.source->flags & PREV_WHITE)
-		  && token->val.source == NULL))
-	    print.source = token->val.source;
-	  continue;
-	}
-
-      if (token->type == CPP_PRAGMA_EOL && !in_pragma)
-	/* A module-specific pragma EOL. */
-	continue;
-
+	lang_hooks.preprocess_token (pfile, token, filter);
+      streamer.stream (pfile, token, spelling_loc);
       if (token->type == CPP_EOF)
 	break;
-
-      /* Subtle logic to output a space if and only if necessary.  */
-      if (avoid_paste)
-	{
-	  int src_line = LOCATION_LINE (loc);
-
-	  if (print.source == NULL)
-	    print.source = token;
-
-	  if (src_line != print.src_line
-	      && do_line_adjustments
-	      && !in_pragma)
-	    {
-	      line_marker_emitted = do_line_change (pfile, token, loc, false);
-	      putc (' ', print.outf);
-	      print.printed = true;
-	    }
-	  else if (print.source->flags & PREV_WHITE
-		   || (print.prev
-		       && cpp_avoid_paste (pfile, print.prev, token))
-		   || (print.prev == NULL && token->type == CPP_HASH))
-	    {
-	      putc (' ', print.outf);
-	      print.printed = true;
-	    }
-	}
-      else if (token->flags & PREV_WHITE)
-	{
-	  int src_line = LOCATION_LINE (loc);
-
-	  if (src_line != print.src_line
-	      && do_line_adjustments
-	      && !in_pragma)
-	    line_marker_emitted = do_line_change (pfile, token, loc, false);
-	  putc (' ', print.outf);
-	  print.printed = true;
-	}
-
-      avoid_paste = false;
-      print.source = NULL;
-      print.prev = token;
-      if (token->type == CPP_PRAGMA)
-	{
-	  const char *space;
-	  const char *name;
-
-	  line_marker_emitted = maybe_print_line (token->src_loc);
-	  fputs ("#pragma ", print.outf);
-	  c_pp_lookup_pragma (token->val.pragma, &space, &name);
-	  if (space)
-	    fprintf (print.outf, "%s %s", space, name);
-	  else
-	    fprintf (print.outf, "%s", name);
-	  print.printed = true;
-	  in_pragma = true;
-	}
-      else if (token->type == CPP_PRAGMA_EOL)
-	{
-	  maybe_print_line (token->src_loc);
-	  in_pragma = false;
-	}
-      else
-	{
-	  if (cpp_get_options (parse_in)->debug)
-	    linemap_dump_location (line_table, token->src_loc, print.outf);
-
-	  if (do_line_adjustments
-	      && !in_pragma
-	      && !line_marker_emitted
-	      && print.prev_was_system_token != !!in_system_header_at (loc)
-	      && !is_location_from_builtin_token (loc))
-	    /* The system-ness of this token is different from the one
-	       of the previous token.  Let's emit a line change to
-	       mark the new system-ness before we emit the token.  */
-	    {
-	      do_line_change (pfile, token, loc, false);
-	      print.prev_was_system_token = !!in_system_header_at (loc);
-	    }
-	  cpp_output_token (token, print.outf);
-	  line_marker_emitted = false;
-	  print.printed = true;
-	}
-
-      /* CPP_COMMENT tokens and raw-string literal tokens can
-	 have embedded new-line characters.  Rather than enumerating
-	 all the possible token types just check if token uses
-	 val.str union member.  */
-      if (cpp_token_val_index (token) == CPP_TOKEN_FLD_STR)
-	account_for_newlines (token->val.str.text, token->val.str.len);
     }
 
   if (filter)
-    {
-      filter = lang_hooks.preprocess_token (pfile, NULL, filter);
-      gcc_checking_assert (!filter);
-    }
+    lang_hooks.preprocess_token (pfile, NULL, filter);
 }
 
 static void
