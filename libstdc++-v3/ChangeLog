@@ -5,20 +5,29 @@
 	(subrange::_S_store_size): Mark as const instead of constexpr to
 	avoid what seems to be a bug in GCC.
 	(__detail::__box): Give it defaulted copy and move constructors.
-	(views::_Single::operator()): Mark constexpr.
-	(views::_Iota::operator()): Mark constexpr.
+	(ranges::views::_Single::operator()): Mark constexpr.
+	(ranges::views::_Iota::operator()): Mark constexpr.
 	(__detail::Empty): Define.
-	(views::_RangeAdaptor, views::_RangeAdaptorClosure, ref_view, all_view,
-	views::all, filter_view, views::filter, transform_view,
-	views::transform, take_view, views::take, take_while_view,
-	views::take_while, drop_view, views::drop, join_view, views::join,
+	(ranges::views::__closure::_RangeAdaptor,
+	ranges::views::__closure::_RangeAdaptorClosure, ref_view, all_view,
+	ranges::views::all, ranges::__detail::find_if,
+	ranges::__detail::find_if_not, ranges::__detail::mismatch,
+	ranges::detail::min, filter_view, ranges::views::filter, transform_view,
+	ranges::views::transform, take_view, ranges::views::take,
+	take_while_view, ranges::views::take_while, drop_view,
+	ranges::views::drop, join_view, ranges::views::join,
 	__detail::require_constant, __detail::tiny_range, split_view,
-	views::split, views::_Counted, views::counted, common_view,
-	views::common, reverse_view, views::reverse,
-	views::__detail::__is_reversible_subrange,
-	views::__detail::__is_reverse_view, reverse_view, views::reverse,
-	__detail::__has_tuple_element, elements_view, views::elements,
-	views::keys, views::values): Define.
+	ranges::views::split, ranges::views::_Counted, ranges::views::counted,
+	common_view, ranges::views::common, reverse_view,
+	ranges::views::reverse,
+	ranges::views::__detail::__is_reversible_subrange,
+	ranges::views::__detail::__is_reverse_view, reverse_view,
+	ranges::views::reverse, __detail::__has_tuple_element, elements_view,
+	ranges::views::elements, ranges::views::keys, ranges::views::values):
+	Define.
+	(views): Alias for ranges::views.
+	(tuple_size<ranges::subrange<>>, tuple_element<0, ranges::subrange>,
+	tuple_element<1, ranges::subrange>): New partial specializations.
 	* testsuite/std/ranges/adaptors/all.cc: New test.
 	* testsuite/std/ranges/adaptors/common.cc: Likewise.
 	* testsuite/std/ranges/adaptors/counted.cc: Likewise.
