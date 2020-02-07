@@ -1,5 +1,9 @@
 2020-02-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92852
+	* constexpr.c (maybe_constant_value): Don't unshare if the cached
+	value is the same as the argument.
+
 	* typeck.c (maybe_warn_about_returning_address_of_local): Add
 	location parameter.
 
