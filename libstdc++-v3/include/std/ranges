@@ -872,7 +872,9 @@ namespace ranges
       : _M_value(__value), _M_bound(__bound)
       {
 	if constexpr (totally_ordered_with<_Winc, _Bound>)
-	  __glibcxx_assert( bool(__value <= __bound) );
+	  {
+	    __glibcxx_assert( bool(__value <= __bound) );
+	  }
       }
 
       constexpr _Iterator
@@ -1012,6 +1014,7 @@ namespace views
 	{
 	  __glibcxx_assert(_M_parent->_M_stream != nullptr);
 	  *_M_parent->_M_stream >> _M_parent->_M_object;
+	  return *this;
 	}
 
 	void
