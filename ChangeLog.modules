@@ -1,6 +1,9 @@
 2020-02-07  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* lex.c (cpp_directive_only_process): Re-reimplement.
+
+	libcpp/
 	* lex.c (cpp_maybe_module_directive): Use 'module control-line'
 	here ...
 	gcc/cp/

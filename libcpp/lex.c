@@ -4208,34 +4208,14 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
   return true;
 }
 
-/* Directives-only scanning.  When raw string literals are enabled,
-   .*R"<chars>(...)<chars>" is a raw string.  Further, the contained
-   <chars> and its parens cannot be broken over a (escaped) line.
-   Neither can the R and the " be broken that way.  Deal with it, you
-   obfuscator of code.  */
-// FIXME: Ok, voice in my head, I'll to it properly ...
+/* Directives-only scanning.  Somewhat more relaxed than correct
+   parsing -- some ill-formed programs will not be rejected.  */
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
 			    void *data,
 			    void (*cb) (cpp_reader *, CPP_DO_task, void *, ...))
 {
-  enum DO_state {
-   DO_bol = 1 << 0,
-   DO_string_lit = 1 << 1,
-   DO_char_lit = 1 << 2,
-   DO_raw_lit = 1 << 3,
-   DO_line_comment = 1 << 4,
-   DO_block_comment = 1 << 5,
-   DO_escaped = 1 << 6, /* After \  */
-   DO_slash = 1 << 7,	/* After / */
-   DO_star = 1 << 8, 	/* After * */
-
-   DO_quoted = DO_string_lit | DO_char_lit | DO_raw_lit,
-   DO_comment = DO_line_comment | DO_block_comment,
-   DO_special = DO_slash | DO_star | DO_escaped
-  };
-
   bool module_p = CPP_OPTION (pfile, module_directives);
 
   do
@@ -4254,102 +4234,20 @@ cpp_directive_only_process (cpp_reader *pfile,
       unsigned line_count = 0;
       const unsigned char *line_start = base;
 
-      unsigned state = DO_bol;
-      location_t uloc = 0;  /* Current block element start.  */
-      const unsigned char *raw_chars = NULL;
-      int raw_count = 0;
+      bool bol = true;
+      bool raw = false;
+      bool ulit = false;
 
       for (const unsigned char *pos = base, *limit = buffer->rlimit;
 	   pos < limit;)
 	{
 	  unsigned char c = *pos++;
-	  if (!__builtin_expect (state == DO_bol, false))
-	    /* Not DO_bol  */;
-	  else if (__builtin_expect (c == '#', false))
-	    {
-	      /* Line directive.  */
-	      if (pos - 1 > base && !pfile->state.skipping)
-		cb (pfile, CPP_DO_print, data,
-		    line_count, base, pos - 1 - base);
-
-	      /* Prep things for directive handling. */
-	      buffer->next_line = pos;
-	      buffer->need_line = true;
-	      _cpp_get_fresh_line (pfile);
-
-	      /* Ensure proper column numbering for generated error messages. */
-	      buffer->line_base -= pos - line_start;
-
-	      _cpp_handle_directive (pfile, line_start + 1 != pos);
-
-	      /* Sanitize the line settings.  Duplicate #include's can
-		 mess things up. */
-	      // FIXME: Necessary?
-	      pfile->line_table->highest_location
-		= pfile->line_table->highest_line;
-
-	      if (!pfile->state.skipping
-		  && pfile->buffer->next_line < pfile->buffer->rlimit)
-		cb (pfile, CPP_DO_location, data,
-		    pfile->line_table->highest_line);
-
-	      goto restart;
-	    }
-	  else if (module_p && !pfile->state.skipping
-		   && do_peek_module (pfile, c, pos, limit))
-	    {
-	      /* We've seen the start of a module control line.
-		 Start up the tokenizer.  */
-	      pos--; /* Backup over the first character.  */
-
-	      /* Backup over whitespace to start of line.  */
-	      while (pos > line_start
-		     && (pos[-1] == ' ' || pos[-1] == '\t'))
-		pos--;
-
-	      if (pos > base)
-		cb (pfile, CPP_DO_print, data, line_count, base, pos - base);
-
-	      /* Prep things for directive handling. */
-	      buffer->next_line = pos;
-	      buffer->need_line = true;
-
-	      /* Now get tokens until the PRAGMA_EOL.  */
-	      do
-		{
-		  location_t spelling;
-		  const cpp_token *tok
-		    = cpp_get_token_with_location (pfile, &spelling);
-
-		  if (pfile->state.in_deferred_pragma
-		      || tok->type == CPP_PRAGMA_EOL)
-		    cb (pfile, CPP_DO_token, data, tok, spelling);
-		  else
-		    {
-		      /* Something wrong.  */
-		      // FIXME: don't explode!
-		      gcc_assert (false);
-		    }
-		}
-	      while (pfile->state.in_deferred_pragma);
-
-	      goto restart;
-	    }
-
-	  /* Not a special DO_bol character.  */
+	  /* This matches the switch in _cpp_lex_direct.  */
 	  switch (c)
 	    {
-	    case '\v':
-	    case '\f':
-	      /* Whitespace.  */
-	      if (!(state & DO_comment))
-		state &= ~DO_bol;
-	      /* FALLTHROUGH  */
-
-	    case ' ':
-	    case '\t':
-	      /* Horizontal whitespace  */
-	      state &= ~DO_special;
+	    case ' ': case '\t': case '\f': case '\v':
+	      /* Whitespace, do nothing.  */
+	      ulit = false;
 	      break;
 
 	    case '\r': /* MAC line ending, or Windows \r\n  */
@@ -4358,8 +4256,8 @@ cpp_directive_only_process (cpp_reader *pfile,
 	      /* FALLTHROUGH */
 
 	    case '\n':
-	      state &= ~(DO_special | DO_line_comment);
-	      state |= DO_bol;
+	      bol = true;
+	      ulit = false;
 
 	    next_line:
 	      CPP_INCREMENT_LINE (pfile, 0);
@@ -4370,154 +4268,395 @@ cpp_directive_only_process (cpp_reader *pfile,
 	    case '\\':
 	      /* <backslash><newline> is removed, and doesn't undo any
 		 preceeding escape or whatnot.  */
-	      if (__builtin_expect (*pos == '\n', false))
+	      if (*pos == '\n')
 		{
-		newline:
 		  pos++;
 		  goto next_line;
 		}
-	      else if (__builtin_expect (*pos == '\r', false))
+	      else if (*pos == '\r')
 		{
 		  if (pos[1] == '\n')
 		    pos++;
-		  goto newline;
+		  pos++;
+		  goto next_line;
 		}
 
-	      if (__builtin_expect (state & DO_escaped, 0))
-		state &= ~DO_special;
-	      else if (__builtin_expect (0 != (state & DO_quoted), 1))
-		{
-		  if (!(state & DO_raw_lit))
-		    state |= DO_escaped;
-		}
-	      else
-		{
-		  state &= ~DO_special;
-		  if (!(state & DO_comment))
-		    {
-		      uloc = linemap_position_for_column (pfile->line_table,
-							  pos - line_start);
-		      cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
-					   "stray '\\'");
-		    }
-		}
+	      pfile->mi_valid = false;
+	      bol = false;
+	      ulit = false;
 	      break;
+	      
+	    case '#':
+	      if (bol)
+		{
+		  /* Line directive.  */
+		  if (pos - 1 > base && !pfile->state.skipping)
+		    cb (pfile, CPP_DO_print, data,
+			line_count, base, pos - 1 - base);
 
-	    case '\"':
-	    case '\'':
-	      if (__builtin_expect (state & DO_escaped, 0))
-		state &= ~DO_escaped;
-	      else if (state & DO_quoted)
-		{
-		  if (c == '\'')
-		    {
-		      if (state & DO_char_lit)
-			state &= DO_quoted;
-		    }
-		  else if (state & DO_raw_lit)
-		    {
-		      /* Don't deal with escaped newlines here
-			 either.  */
-		      if (pos - line_start >= raw_count + 2
-			  && pos[-raw_count - 2] == ')'
-			  && !memcmp (&pos[-raw_count - 1],
-				      raw_chars, raw_count))
-			state &= ~DO_raw_lit;
-		    }
-		  else
-		    state &= ~DO_quoted;
+		  /* Prep things for directive handling. */
+		  buffer->next_line = pos;
+		  buffer->need_line = true;
+		  _cpp_get_fresh_line (pfile);
+
+		  /* Ensure proper column numbering for generated
+		     error messages. */
+		  buffer->line_base -= pos - line_start;
+
+		  _cpp_handle_directive (pfile, line_start + 1 != pos);
+
+		  /* Sanitize the line settings.  Duplicate #include's can
+		     mess things up. */
+		  // FIXME: Necessary?
+		  pfile->line_table->highest_location
+		    = pfile->line_table->highest_line;
+
+		  if (!pfile->state.skipping
+		      && pfile->buffer->next_line < pfile->buffer->rlimit)
+		    cb (pfile, CPP_DO_location, data,
+			pfile->line_table->highest_line);
+
+		  goto restart;
 		}
-	      else if (!(state & DO_comment))
-		{
-		  /* Begin quoted element.  */
-		  uloc = linemap_position_for_column (pfile->line_table,
-						      pos - line_start);
-		  if (c == '\'')
-		    state |= DO_char_lit;
-		  else if (CPP_OPTION (pfile, rliterals)
-			   && !(state & DO_bol)
-			   /* Safe to peek backwards if not at BOL.  */
-			   && pos[-2] == 'R')
-		    {
-		      const char *bad_chars = " ()\\\t\v\f\r\n";
-		      const char *str_chars = " ()\\tvfrn";
-		      raw_chars = pos;
-		      for (raw_count = 0; pos[raw_count] != '('; raw_count++)
-			if (const char *bad = strchr (bad_chars, pos[raw_count]))
-			  {
-			    /* We'll reject an attempt to have an
-			       escaped line break here.  Your code is
-			       bad, and you should feel bad.  */
-			    unsigned ix = bad - bad_chars;
-			    cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
-						 "encountered '%s%c' scanning"
-						 " raw string-literal delimiter",
-						 &"\\"[ix < 3], str_chars[ix]);
-			    break;
-			  }
-		      state |= DO_raw_lit;
-		    }
-		  else
-		    state |= DO_string_lit;
-		  pfile->mi_valid = false;
-		}
-	      state &= ~(DO_bol | DO_special);
+	      pfile->mi_valid = false;
+	      bol = false;
+	      ulit = false;
 	      break;
-
-	    case '*':
-	      if (state & DO_block_comment)
-		{
-		  state |= DO_star;
-		  break;
-		}
-
-	      if (state & DO_slash)
-		state |= DO_block_comment;
-	      goto dflt;
 
 	    case '/':
-	      if (state & DO_star)
-		{
-		  state &= ~(DO_block_comment | DO_star);
-		  break;
-		}
+	      {
+		const unsigned char *peek = do_peek_next (pos, limit);
+		if (!(*peek == '/' || *peek == '*'))
+		  {
+		    pfile->mi_valid = false;
+		    bol = false;
+		    ulit = false;
+		    break;
+		  }
 
-	      if (!(state & (DO_quoted | DO_comment)))
+		/* Line or block comment  */
+		bool is_block = *peek == '*';
+		bool star = false;
+		bool esc = false;
+		location_t sloc
+		  = linemap_position_for_column (pfile->line_table,
+						 pos - line_start);
+
+		while (pos < limit)
+		  {
+		    char c = *pos++;
+		    switch (c)
+		      {
+		      case '\\':
+			esc = true;
+			break;
+
+		      case '\r':
+			if (*pos == '\n')
+			  pos++;
+			/* FALLTHROUGH  */
+
+		      case '\n':
+			{
+			  CPP_INCREMENT_LINE (pfile, 0);
+			  line_count++;
+			  line_start = pos;
+			  if (!esc && !is_block)
+			    {
+			      bol = true;
+			      goto done_comment;
+			    }
+			}
+			if (!esc)
+			  star = false;
+			esc = false;
+			break;
+
+		      case '*':
+			if (pos > peek && !esc)
+			  star = is_block;
+			esc = false;
+			break;
+
+		      case '/':
+			if (star)
+			  goto done_comment;
+			/* FALLTHROUGH  */
+
+		      default:
+			star = false;
+			esc = false;
+			break;
+		      }
+		  }
+		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				     "unterminated comment");
+	      done_comment:
+		ulit = false;
+		break;
+	      }
+
+	    case '\'':
+	    case '\"':
+	      {
+		/* String or char literal.  */
+	      do_string:
+		unsigned char end = c;
+		int raw_len = -1;
+		int raw_pos = -1;
+		unsigned char raw_delim[16 + 1]; /* 'At most 16' */
+		location_t sloc = linemap_position_for_column (pfile->line_table,
+							       pos - line_start);
+		bool prefixing = raw;
+		int esc = 0;
+
+		if (prefixing)
+		  raw_len = 0;
+		while (pos < limit)
+		  {
+		    char c = *pos++;
+		    switch (c)
+		      {
+		      case '\\':
+			if (raw_len < 0)
+			  esc++;
+			break;
+
+		      case '\r':
+			if (*pos == '\n')
+			  pos++;
+			/* FALLTHROUGH  */
+
+		      case '\n':
+			{
+			  CPP_INCREMENT_LINE (pfile, 0);
+			  line_count++;
+			  line_start = pos;
+			}
+			if (esc)
+			  esc--;
+			break;
+
+		      default:
+			if (raw_len >= 0)
+			  {
+			    if (prefixing)
+			      {
+				if (c == '(')
+				  {
+				    raw_delim[raw_len++] = end;
+				    prefixing = false;
+				  }
+				else if (raw_len == sizeof (raw_delim) - 1)
+				  {
+				    cpp_error_with_line (pfile, CPP_DL_ERROR,
+							 sloc, 0,
+							 "raw string delimiter"
+							 " longer than %d"
+							 " characters",
+							 raw_len);
+				    raw_len = -1;
+				  }
+				else if (strchr (") \\\t\v\f\n", c))
+				  {
+				    cpp_error_with_line (pfile, CPP_DL_ERROR,
+							 sloc, 0,
+							 "invalid character '%c'"
+							 " in raw string"
+							 " delimiter", c);
+				    raw_len = -1;
+				  }
+				else
+				  raw_delim[raw_len++] = c;
+			      }
+			    else if (c == ')')
+			      raw_pos = 0;
+			    else if (raw_pos >= 0)
+			      {
+				if (raw_delim[raw_pos] == c)
+				  {
+				    raw_pos++;
+				    if (raw_pos == raw_len)
+				      goto done_string;
+				  }
+				else
+				  raw_pos = -1;
+			      }
+			  }
+			else if (!(esc & 1) && c == end)
+			  goto done_string;
+			esc = 0;
+			break;
+		      }
+		  }
+		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				     "unterminated literal");
+	      done_string:
+		pfile->mi_valid = false;
+		bol = false;
+		ulit = true;
+	      }
+	      break;
+
+	    case '_':
+	    case 'e':
+	    case 'i':
+	    case 'm':
+	      if (bol && module_p && !pfile->state.skipping
+		  && do_peek_module (pfile, c, pos, limit))
 		{
-		  if (!(state & DO_slash))
+		  /* We've seen the start of a module control line.
+		     Start up the tokenizer.  */
+		  pos--; /* Backup over the first character.  */
+
+		  /* Backup over whitespace to start of line.  */
+		  while (pos > line_start
+			 && (pos[-1] == ' ' || pos[-1] == '\t'))
+		    pos--;
+
+		  if (pos > base)
+		    cb (pfile, CPP_DO_print, data, line_count, base, pos - base);
+
+		  /* Prep things for directive handling. */
+		  buffer->next_line = pos;
+		  buffer->need_line = true;
+
+		  /* Now get tokens until the PRAGMA_EOL.  */
+		  do
 		    {
-		      uloc = linemap_position_for_column (pfile->line_table,
-							  pos - line_start);
-		      state &= ~DO_special;
-		      state |= DO_slash;
-		      break;
+		      location_t spelling;
+		      const cpp_token *tok
+			= cpp_get_token_with_location (pfile, &spelling);
+
+		      if (pfile->state.in_deferred_pragma
+			  || tok->type == CPP_PRAGMA_EOL)
+			cb (pfile, CPP_DO_token, data, tok, spelling);
+		      else
+			{
+			  /* Something wrong.  */
+			  // FIXME: don't explode!
+			  gcc_assert (false);
+			}
 		    }
-		  state |= DO_line_comment;
+		  while (pfile->state.in_deferred_pragma);
+		  pfile->mi_valid = false;
+		  goto restart;
 		}
-	      goto dflt;
+	      goto do_ident_num;
+
+	    case 'u':
+	    case 'U':
+	    case 'L':
+	    case 'R':
+	      /* 'L', 'u', 'U', 'u8' or 'R' may introduce wide characters,
+		 wide strings or raw strings.  */
+	      if (ulit && CPP_OPTION (pfile, uliterals))
+		goto do_ident_num;
+
+	      {
+		bool eight = c == 'u';
+		raw = c == 'R';
+
+		pos--;
+		while (pos < limit)
+		  {
+		    c = *++pos;
+		    switch (c)
+		      {
+		      case '\\':
+			switch (pos[1])
+			  {
+			  case '\r':
+			    if (pos[2] == '\n')
+			      pos++;
+			    /* FALLTHROUGH  */
+
+			  case '\n':
+			    pos += 2;
+			    CPP_INCREMENT_LINE (pfile, 0);
+			    line_count++;
+			    line_start = pos;
+			    continue;
+
+			  default:
+			    break;
+			  }
+			goto done_ident_num;
+
+		      case '8':
+			if (!eight)
+			  goto do_ident_num;
+			eight = false;
+			break;
+
+		      case 'R':
+			if (raw)
+			  goto do_ident_num;
+			raw = true;
+			break;
+
+		      default:
+			goto maybe_ident_num;
+
+		      case '"':
+			pos++;
+			goto do_string;
+		      }
+		  }
+	      }
+	      break;
 
 	    default:
-	    dflt:
-	      if (!(state & DO_comment))
+	      // FIXME: We should probably do something about unicode
+	      // identifiers
+	      maybe_ident_num:
+	      if (ISIDNUM (c)
+		  || (c == '$' && CPP_OPTION (pfile, dollars_in_ident)))
 		{
-		  /* Comments are whitespace, and do not change BOLness  */
-		  pfile->mi_valid = false;
-		  state &= ~DO_bol;
+		do_ident_num:
+		  pos--;
+		  while (++pos < limit)
+		    {
+		      char c = *pos;
+		      if (ISIDNUM (c)
+			  || (c == '$' && CPP_OPTION (pfile, dollars_in_ident)))
+			;
+		      else if (c == '`' && CPP_OPTION (pfile, digit_separators))
+			;
+		      else if (c == '\\')
+			{
+			  switch (pos[1])
+			    {
+			    case '\r':
+			      if (pos[2] == '\n')
+				pos++;
+			      /* FALLTHROUGH  */
+
+			    case '\n':
+			      pos += 2;
+			      CPP_INCREMENT_LINE (pfile, 0);
+			      line_count++;
+			      line_start = pos;
+			      break;
+
+			    default:
+			      goto done_ident_num;
+			    }
+			}
+		      else
+			break;
+		    }
+		done_ident_num:;
 		}
-	      state &= ~DO_special;
+	      bol = false;
+	      ulit = false;
+	      pfile->mi_valid = false;
 	      break;
-	    }
+	      }
 	}
 
-      if (state & DO_block_comment)
-	cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
-			     "unterminated comment");
-      if (state & DO_quoted)
-	cpp_error_with_line (pfile, CPP_DL_ERROR, uloc, 0,
-			     "unterminated literal");
-
-      if (line_start > base && !pfile->state.skipping)
-	cb (pfile, CPP_DO_print, data, line_count, base, line_start - base);
+      if (buffer->rlimit > base && !pfile->state.skipping)
+	cb (pfile, CPP_DO_print, data, line_count, base, buffer->rlimit - base);
 
       _cpp_pop_buffer (pfile);
     }
