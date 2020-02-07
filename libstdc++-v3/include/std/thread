@@ -45,7 +45,8 @@
 #include <tuple>  // std::tuple
 
 #if __cplusplus > 201703L
-# include <stop_token> // std::stop_source, std::stop_token, std::nostopstate
+# include <compare>	// std::strong_ordering
+# include <stop_token>	// std::stop_source, std::stop_token, std::nostopstate
 #endif
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
@@ -96,17 +97,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend class thread;
-      friend class hash<thread::id>;
+      friend class hash<id>;
 
       friend bool
-      operator==(thread::id __x, thread::id __y) noexcept;
+      operator==(id __x, id __y) noexcept;
 
+#if __cpp_lib_three_way_comparison
+      friend strong_ordering
+      operator<=>(id __x, id __y) noexcept;
+#else
       friend bool
-      operator<(thread::id __x, thread::id __y) noexcept;
+      operator<(id __x, id __y) noexcept;
+#endif
 
       template<class _CharT, class _Traits>
 	friend basic_ostream<_CharT, _Traits>&
-	operator<<(basic_ostream<_CharT, _Traits>& __out, thread::id __id);
+	operator<<(basic_ostream<_CharT, _Traits>& __out, id __id);
     };
 
   private:
@@ -180,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     detach();
 
-    thread::id
+    id
     get_id() const noexcept
     { return _M_id; }
 
@@ -296,6 +302,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __x._M_thread == __y._M_thread;
   }
 
+#if __cpp_lib_three_way_comparison
+  inline strong_ordering
+  operator<=>(thread::id __x, thread::id __y) noexcept
+  { return __x._M_thread <=> __y._M_thread; }
+#else
   inline bool
   operator!=(thread::id __x, thread::id __y) noexcept
   { return !(__x == __y); }
@@ -319,6 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline bool
   operator>=(thread::id __x, thread::id __y) noexcept
   { return !(__x < __y); }
+#endif // __cpp_lib_three_way_comparison
 
   // DR 889.
   /// std::hash specialization for thread::id.
@@ -424,8 +436,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class jthread
   {
   public:
-    using id = std::thread::id;
-    using native_handle_type = std::thread::native_handle_type;
+    using id = thread::id;
+    using native_handle_type = thread::native_handle_type;
 
     jthread() noexcept
     : _M_stop_source{nostopstate}
@@ -498,7 +510,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[nodiscard]] static unsigned
     hardware_concurrency() noexcept
     {
-      return std::thread::hardware_concurrency();
+      return thread::hardware_concurrency();
     }
 
     [[nodiscard]] stop_source
@@ -544,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     stop_source _M_stop_source;
-    std::thread _M_thread;
+    thread _M_thread;
   };
 #endif // __cpp_lib_jthread
 _GLIBCXX_END_NAMESPACE_VERSION

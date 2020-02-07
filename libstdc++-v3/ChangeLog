@@ -1,3 +1,10 @@
+2020-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread (thread::id::operator<=>): Define for C++20.
+	* testsuite/30_threads/thread/id/70294.cc: Do not take addresses of
+	functions in namespace std.
+	* testsuite/30_threads/thread/id/operators_c++20.cc: New test.
+
 2020-02-19  Patrick Palka  <ppalka@redhat.com>
 
 	* testsuite/std/ranges/adaptors/split.cc (test03): Don't include the
