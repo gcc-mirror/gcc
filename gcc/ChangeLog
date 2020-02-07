@@ -1,5 +1,15 @@
 2020-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93594
+	* config/i386/predicates.md (avx_identity_operand): Remove.
+	* config/i386/sse.md (*avx_vec_concat<mode>_1): Remove.
+	(avx_<castmode><avxsizesuffix>_<castmode>,
+	avx512f_<castmode><avxsizesuffix>_256<castmode>): Change patterns to
+	a VEC_CONCAT of the operand and UNSPEC_CAST.
+	(avx512f_<castmode><avxsizesuffix>_<castmode>): Change pattern to
+	a VEC_CONCAT of VEC_CONCAT of the operand and UNSPEC_CAST with
+	UNSPEC_CAST.
+
 	PR target/93611
 	* config/i386/i386.c (ix86_lea_outperforms): Make sure to clear
 	recog_data.insn if distance_non_agu_define changed it.

@@ -21157,9 +21157,9 @@
 
 (define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")
-	(unspec:AVX256MODE2P
-	  [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_CAST))]
+	(vec_concat:AVX256MODE2P
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")
+	  (unspec:<ssehalfvecmode> [(const_int 0)] UNSPEC_CAST)))]
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
@@ -21357,24 +21357,6 @@
    (set_attr "length_immediate" "1,1,*,*")
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn_and_split "*avx_vec_concat<mode>_1"
-  [(set (match_operand:V_256_512 0 "register_operand")
-	(vec_concat:V_256_512
-	  (vec_select:<ssehalfvecmode>
-	    (unspec:V_256_512
-	      [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand")]
-	      UNSPEC_CAST)
-	    (match_parallel 3 "avx_identity_operand"
-	      [(match_operand 4 "const_int_operand")]))
-	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand")))]
-  "TARGET_AVX
-   && (operands[2] == CONST0_RTX (<ssehalfvecmode>mode)
-       || !MEM_P (operands[1]))
-   && ix86_pre_reload_split ()"
-  "#"
-  "&& 1"
-  [(set (match_dup 0) (vec_concat:V_256_512 (match_dup 1) (match_dup 2)))])
 
 (define_insn "vcvtph2ps<mask_name>"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -22198,9 +22180,11 @@
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")
-	(unspec:AVX512MODE2P
-	  [(match_operand:<ssequartermode> 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_CAST))]
+	(vec_concat:AVX512MODE2P
+	  (vec_concat:<ssehalfvecmode>
+	    (match_operand:<ssequartermode> 1 "nonimmediate_operand" "xm,x")
+	    (unspec:<ssequartermode> [(const_int 0)] UNSPEC_CAST))
+	  (unspec:<ssehalfvecmode> [(const_int 0)] UNSPEC_CAST)))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
@@ -22215,9 +22199,9 @@
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_256<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")
-	(unspec:AVX512MODE2P
-	  [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_CAST))]
+	(vec_concat:AVX512MODE2P
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")
+	  (unspec:<ssehalfvecmode> [(const_int 0)] UNSPEC_CAST)))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
