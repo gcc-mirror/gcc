@@ -1127,8 +1127,6 @@ extern void cpp_define_lazily (cpp_reader *, cpp_hashnode *node, unsigned N);
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);
 
-extern void cpp_clear_if_stack (cpp_reader *);
-
 extern cpp_buffer *cpp_push_buffer (cpp_reader *, const unsigned char *,
 				    size_t, int);
 extern int cpp_defined (cpp_reader *, const unsigned char *, int);

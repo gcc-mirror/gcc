@@ -1,5 +1,9 @@
 2020-02-07  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* internal/cpplib.h (cpp_clear_if_stack): Don't declare.
+	* directives.c (cpp_clear_if_stack): Delete.
+
 	Merge master 82aee6dd61e2a5b4e4b124f896c8403169688f41
 
 	-fdirectives-only (a bit buggy)

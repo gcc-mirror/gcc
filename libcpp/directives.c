@@ -2566,16 +2566,6 @@ cpp_get_deps (cpp_reader *pfile)
   return pfile->deps;
 }
 
-/* Close #ifs stack open files.  */
-
-void
-cpp_clear_if_stack (cpp_reader *pfile)
-{
-  /* We can have a NULL buffer, if we peeked to EOF.  */
-  for (cpp_buffer *buffer = pfile->buffer; buffer; buffer = buffer->prev)
-    buffer->if_stack = NULL;
-}
-
 /* Push a new buffer on the buffer stack.  Returns the new buffer; it
    doesn't fail.  It does not generate a file change call back; that
    is the responsibility of the caller.  */
