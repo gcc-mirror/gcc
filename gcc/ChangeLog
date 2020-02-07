@@ -1,5 +1,13 @@
 2020-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93122
+	* config/rs6000/rs6000-logue.c
+	(rs6000_emit_probe_stack_range_stack_clash): Always use gen_add3_insn,
+	if it fails, move rs into end_addr and retry.  Add
+	REG_FRAME_RELATED_EXPR note whenever it returns more than one insn or
+	the insn pattern doesn't describe well what exactly happens to
+	dwarf2cfi.c.
+
 	PR target/93594
 	* config/i386/predicates.md (avx_identity_operand): Remove.
 	* config/i386/sse.md (*avx_vec_concat<mode>_1): Remove.
