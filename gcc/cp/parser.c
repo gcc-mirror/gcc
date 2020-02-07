@@ -3395,7 +3395,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	  if (!modules_p ())
 	    inform (location, "%qE only available with %<-fmodules-ts%>", id);
 	  else
-	    inform (location, "%qE was not recognized as a control-line", id);
+	    inform (location, "%qE was not recognized as a module control-line",
+		    id);
 	}
       else if (TREE_CODE (id) == IDENTIFIER_NODE
 	       && cxx_dialect < cxx11
@@ -13452,7 +13453,7 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
     note_lexer:
       inform (token->location, "perhaps insert a line break, or other"
 	      " disambiguation, to prevent this being considered a"
-	      " module-directive control-line");
+	      " module control-line");
     skip_eol:
       cp_parser_skip_to_pragma_eol (parser, token);
     }

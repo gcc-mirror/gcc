@@ -2675,7 +2675,7 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	      && _cpp_maybe_notify_macro_use (pfile, node, tok->src_loc)
 	      && !cpp_fun_like_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_ERROR, tok->src_loc, 0, 
-				 "control-line \"%s\" cannot be"
+				 "module control-line \"%s\" cannot be"
 				 " an object-like macro",
 				 NODE_NAME (node));
 	}

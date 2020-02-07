@@ -1,6 +1,13 @@
 2020-02-07  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* lex.c (cpp_maybe_module_directive): Use 'module control-line'
+	here ...
+	gcc/cp/
+	* parser.c (cp_parser_diagnose_invalid_type_name): ... here ...
+	(cp_parser_import_declaration): ... and here.
+
+	libcpp/
 	* internal/cpplib.h (cpp_clear_if_stack): Don't declare.
 	* directives.c (cpp_clear_if_stack): Delete.
 
