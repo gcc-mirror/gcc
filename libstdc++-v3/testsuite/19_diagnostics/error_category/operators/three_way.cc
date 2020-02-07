@@ -1,7 +1,4 @@
-// { dg-do run { target c++11 } }
-// { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
-
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,24 +15,34 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
+
 #include <system_error>
 #include <testsuite_error.h>
 
-void test01()
+void
+test01()
 {
-  std::error_condition e1;
-  std::error_condition e2(std::errc::operation_not_supported);
+  __gnu_test::test_category c1;
+  VERIFY( std::is_eq(c1 <=> c1) );
+  __gnu_test::test_derived_category c2;
+  VERIFY( std::is_neq(c1 <=> c2) );
+}
 
-  VERIFY( !(e1 != e1) );
-  VERIFY( e1 != e2 );
-
-  const __gnu_test::test_category cat;
-  std::error_condition e3(e2.value(), cat);
-  VERIFY( e2 != e3 );
+void
+test02()
+{
+  __gnu_test::test_category c1;
+  VERIFY( c1 <= c1 );
+  VERIFY( c1 >= c1 );
+  __gnu_test::test_derived_category c2;
+  VERIFY( (c1 < c2) || (c2 < c1) );
+  VERIFY( (c1 > c2) || (c2 > c1) );
 }
 
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

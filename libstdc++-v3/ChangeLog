@@ -1,5 +1,26 @@
 2020-02-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/system_error (error_category::operator<=>)
+	(operator<=>(const error_code&, const error_code&))
+	(operator<=>(const error_condition&, const error_condition&)): Define
+	for C++20.
+	* testsuite/19_diagnostics/error_category/operators/less.cc: New test.
+	* testsuite/19_diagnostics/error_category/operators/three_way.cc: New
+	test.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Remove
+	incorrect comment.
+	* testsuite/19_diagnostics/error_code/operators/less.cc: New test.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Remove
+	incorrect comment.
+	* testsuite/19_diagnostics/error_code/operators/three_way.cc: New test.
+	* testsuite/19_diagnostics/error_condition/operators/equal.cc: Remove
+	incorrect comment.
+	* testsuite/19_diagnostics/error_condition/operators/less.cc: New test.
+	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc:
+	Remove incorrect comment.
+	* testsuite/19_diagnostics/error_condition/operators/three_way.cc: New
+	test.
+
 	* libsupc++/typeinfo (type_info::operator!=): Remove for C++20.
 
 	* include/std/thread (thread::id::operator<=>): Define for C++20.
