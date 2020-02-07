@@ -1,5 +1,8 @@
 2020-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93615
+	* gcc.dg/pr93615.c: New test.
+
 	PR target/93611
 	* gcc.target/i386/pr93611.c: New test.
 
