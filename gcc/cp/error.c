@@ -1526,12 +1526,6 @@ find_typenames_r (tree *tp, int *walk_subtrees, void *data)
   if (mv && (mv == *tp || !d->p_set->add (mv)))
     vec_safe_push (d->typenames, mv);
 
-  /* Search into class template arguments, which cp_walk_subtrees
-     doesn't do.  */
-  if (CLASS_TYPE_P (*tp) && CLASSTYPE_TEMPLATE_INFO (*tp))
-    cp_walk_tree (&CLASSTYPE_TI_ARGS (*tp), find_typenames_r,
-		  data, d->p_set);
-
   return NULL_TREE;
 }
 

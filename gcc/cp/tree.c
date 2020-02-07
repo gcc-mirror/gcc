@@ -4918,6 +4918,11 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     }							\
   while (0)
 
+  if (TYPE_P (*tp))
+    /* Walk into template args without looking through typedefs.  */
+    if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
+      WALK_SUBTREE (TI_ARGS (ti));
+
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */
   result = NULL_TREE;

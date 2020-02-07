@@ -3482,7 +3482,7 @@ struct GTY(()) lang_decl {
    for the alias template (if any).  Otherwise behave as
    TYPE_TEMPLATE_INFO.  */
 #define TYPE_TEMPLATE_INFO_MAYBE_ALIAS(NODE)				\
-  (TYPE_ALIAS_P (NODE)							\
+  (typedef_variant_p (NODE)						\
    ? TYPE_ALIAS_TEMPLATE_INFO (NODE)					\
    : TYPE_TEMPLATE_INFO (NODE))
 
