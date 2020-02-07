@@ -1,3 +1,11 @@
+2020-02-07  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (simd_smmla): New entry.
+	(simd_ummla, simd_usmmla): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_<sur>mmlav16qi): New.
+	* config/aarch64/arm_neon.h (vmmlaq_s32, vmmlaq_u32): New.
+	(vusmmlaq_s32): New.
+
 2020-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93519

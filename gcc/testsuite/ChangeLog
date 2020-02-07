@@ -1,3 +1,7 @@
+2020-02-07  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/aarch64/simd/vmmla.c: New test.
+
 2020-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93519

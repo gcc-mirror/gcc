@@ -703,3 +703,8 @@
   VAR1 (QUADOP_LANE, bfmlalt_lane, 0, v4sf)
   VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, v4sf)
   VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, v4sf)
+
+  /* Implemented by aarch64_simd_<sur>mmlav16qi.  */
+  VAR1 (TERNOP, simd_smmla, 0, v16qi)
+  VAR1 (TERNOPU, simd_ummla, 0, v16qi)
+  VAR1 (TERNOP_SSUS, simd_usmmla, 0, v16qi)
