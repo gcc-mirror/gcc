@@ -40,7 +40,8 @@ proc multilib_config {profile} {
 proc check_multi_dir { gcc_opts multi_dir } {
     global tool
 
-    set gcc_output [${tool}_target_compile "--print-multi-directory $gcc_opts" "" "none" ""]
+    set options [list "additional_flags=[concat "--print-multi-directory" [gcc_opts]]"]
+    set gcc_output [${tool}_target_compile "" "" "none" $options]
     if { [string match "$multi_dir\n" $gcc_output] } {
 	pass "multilibdir $gcc_opts $multi_dir"
     } else {

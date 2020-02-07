@@ -1,5 +1,7 @@
 2020-02-07  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 82aee6dd61e2a5b4e4b124f896c8403169688f41
+
 	-fdirectives-only (a bit buggy)
 	gcc/c-family/
 	* c-ppoutput.c (token_streamer::stream): Adust PRAGMA_EOL.

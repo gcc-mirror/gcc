@@ -27827,7 +27827,7 @@ cp_parser_constraint_primary_expression (cp_parser *parser, bool lambda_p)
       return e;
     }
 
-  cp_parser_parse_tentatively (parser);
+  cp_lexer_save_tokens (parser->lexer);
   cp_id_kind idk;
   location_t loc = input_location;
   cp_expr expr = cp_parser_primary_expression (parser,
@@ -27843,19 +27843,16 @@ cp_parser_constraint_primary_expression (cp_parser *parser, bool lambda_p)
       /* The primary-expression could be part of an unenclosed non-logical
 	 compound expression.  */
       pce = cp_parser_constraint_requires_parens (parser, lambda_p);
-      if (pce != pce_ok)
-	cp_parser_simulate_error (parser);
-      else
-	expr = finish_constraint_primary_expr (expr);
     }
-  if (cp_parser_parse_definitely (parser))
-    return expr;
-  if (expr == error_mark_node)
-    return error_mark_node;
+  if (pce == pce_ok)
+    {
+      cp_lexer_commit_tokens (parser->lexer);
+      return finish_constraint_primary_expr (expr);
+    }
 
   /* Retry the parse at a lower precedence. If that succeeds, diagnose the
      error, but return the expression as if it were valid.  */
-  gcc_assert (pce != pce_ok);
+  cp_lexer_rollback_tokens (parser->lexer);
   cp_parser_parse_tentatively (parser);
   if (pce == pce_maybe_operator)
     expr = cp_parser_assignment_expression (parser, NULL, false, false);

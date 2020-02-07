@@ -260,7 +260,8 @@ proc check_runtime {prop args} {
 proc check_configured_with { pattern } {
     global tool
 
-    set gcc_output [${tool}_target_compile "-v" "" "none" ""]
+    set options [list "additional_flags=-v"]
+    set gcc_output [${tool}_target_compile "" "" "none" $options]
     if { [ regexp "Configured with: \[^\n\]*$pattern" $gcc_output ] } {
         verbose "Matched: $pattern" 2
         return 1
@@ -504,7 +505,8 @@ proc check_gc_sections_available { } {
 	}
 
 	# Check if the ld used by gcc supports --gc-sections.
-	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set options [list "additional_flags=-print-prog-name=ld"]
+	set gcc_ld [lindex [${tool}_target_compile "" "" "none" $options] 0]
 	set ld_output [remote_exec host "$gcc_ld" "--help"]
 	if { [ string first "--gc-sections" $ld_output ] >= 0 } {
 	    return 1
@@ -8566,7 +8568,8 @@ proc check_effective_target_gas { } {
 
     if {![info exists use_gas_saved]} {
 	# Check if the as used by gcc is GNU as.
-	set gcc_as [lindex [${tool}_target_compile "-print-prog-name=as" "" "none" ""] 0]
+	set options [list "additional_flags=-print-prog-name=as"]
+	set gcc_as [lindex [${tool}_target_compile "" "" "none" $options] 0]
 	# Provide /dev/null as input, otherwise gas times out reading from
 	# stdin.
 	set status [remote_exec host "$gcc_as" "-v /dev/null"]
@@ -8588,7 +8591,8 @@ proc check_effective_target_gld { } {
 
     if {![info exists use_gld_saved]} {
 	# Check if the ld used by gcc is GNU ld.
-	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set options [list "additional_flags=-print-prog-name=ld"]
+	set gcc_ld [lindex [${tool}_target_compile "" "" "none" $options] 0]
 	set status [remote_exec host "$gcc_ld" "--version"]
 	set ld_output [lindex $status 1]
 	if { [ string first "GNU" $ld_output ] >= 0 } {

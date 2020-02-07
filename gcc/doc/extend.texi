@@ -17166,7 +17166,7 @@ unsigned long __builtin_ppc_mftb ();
 double __builtin_unpack_ibm128 (__ibm128, int);
 __ibm128 __builtin_pack_ibm128 (double, double);
 double __builtin_mffs (void);
-double __builtin_mtfsf (const int, double);
+void __builtin_mtfsf (const int, double);
 void __builtin_mtfsb0 (const int);
 void __builtin_mtfsb1 (const int);
 void __builtin_set_fpscr_rn (int);

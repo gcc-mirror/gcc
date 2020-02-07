@@ -1,3 +1,110 @@
+2020-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93519
+	* gcc.dg/Wrestrict-21.c: New testcase.
+
+2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85667
+	* gcc.target/i386/pr85667-10.c: New test.
+	* gcc.target/i386/pr85667-7.c: Likewise.
+	* gcc.target/i386/pr85667-8.c: Likewise.
+	* gcc.target/i386/pr85667-9.c: Likewise.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93122
+	* gcc.target/powerpc/pr93122.c: New test.
+
+2020-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89404
+	* g++.dg/ext/vla21.C: New.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93615
+	* gcc.dg/pr93615.c: New test.
+
+	PR target/93611
+	* gcc.target/i386/pr93611.c: New test.
+
+2020-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* gcc.dg/analyzer/pr93375.c: Rework test case to avoid per-target
+	differences in how __builtin_memcpy has been optimized at the time
+	the analyzer runs.
+
+2020-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/torture/intptr_t.c: New test.
+
+2020-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr93012.c: New.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/87763
+	* gcc.target/aarch64/movk_2.c: New test.
+
+2020-02-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/memcpy-strategy-1.c (dg-final):
+	Unify scan-assembler strings for all targets.
+	* gcc.target/i386/memcpy-strategy-2.c (dg-final): Ditto.
+	* gcc.target/i386/memcpy-strategy-3.c (dg-final): Ditto.
+	* gcc.target/i386/memcpy-vector_loop-1.c (dg-final): Ditto.
+
+2020-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93597 - ICE with lambda in operator function.
+	* g++.dg/cpp0x/lambda/lambda-93597.C: New test.
+
+2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.target/arm/multilib.exp (multilib_config): Pass flags to
+	…_target_compile as (additional_flags=) option and not as source
+	filename to make it work with remote execution.
+	* lib/target-supports.exp (check_runtime, check_gc_sections_available,
+	check_effective_target_gas, check_effective_target_gld): Likewise.
+
+2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93594
+	* gcc.target/i386/avx2-pr93594.c: New test.
+
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92765
+	* g++.dg/tree-ssa/strlenopt-1.C: New test.
+	* g++.dg/tree-ssa/strlenopt-2.C: New test.
+	* gcc.dg/Warray-bounds-58.c: New test.
+	* gcc.dg/Wrestrict-20.c: Avoid a valid -Wformat-overflow.
+	* gcc.dg/Wstring-compare.c: Xfail a test.
+	* gcc.dg/strcmpopt_2.c: Disable tests.
+	* gcc.dg/strcmpopt_4.c: Adjust tests.
+	* gcc.dg/strcmpopt_10.c: New test.
+	* gcc.dg/strcmpopt_11.c: New test.
+	* gcc.dg/strlenopt-69.c: Disable tests.
+	* gcc.dg/strlenopt-92.c: New test.
+	* gcc.dg/strlenopt-93.c: New test.
+	* gcc.dg/strlenopt.h: Declare calloc.
+	* gcc.dg/tree-ssa/pr92056.c: Xfail tests until pr93518 is resolved.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-23.c: Correct test (pr93517).
+
+2020-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93559 - ICE with CONSTRUCTOR flags verification.
+	* g++.dg/cpp0x/initlist119.C: New test.
+	* g++.dg/cpp0x/initlist120.C: New test.
+	
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93557
+	* c-c++-common/Wunused-var-17.c: New test.
+
 2020-02-05  Jeff Law  <law@redhat.com>
 
 	* gcc.target/hppa/shadd-3.c: Disable delay slot filling and

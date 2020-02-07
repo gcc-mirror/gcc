@@ -1,3 +1,11 @@
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93615
+	* config/arm/unwind-arm.h (gnu_Unwind_Find_got): Rename to ...
+	(_Unwind_gnu_Find_got): ... this.  Use __asm instead of asm.  Remove
+	trailing :s in asm.  Formatting fixes.
+	(_Unwind_decode_typeinfo_ptr): Adjust caller.
+
 2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.

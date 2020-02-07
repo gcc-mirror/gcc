@@ -1,3 +1,183 @@
+2020-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93519
+	* tree-inline.c (fold_marked_statements): Do a PRE walk,
+	skipping unreachable regions.
+	(optimize_inline_calls): Skip folding stmts when we didn't
+	inline.
+
+2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85667
+	* config/i386/i386.c (function_arg_ms_64): Add a type argument.
+	Don't return aggregates with only SFmode and DFmode in SSE
+	register.
+	(ix86_function_arg): Pass arg.type to function_arg_ms_64.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93122
+	* config/rs6000/rs6000-logue.c
+	(rs6000_emit_probe_stack_range_stack_clash): Always use gen_add3_insn,
+	if it fails, move rs into end_addr and retry.  Add
+	REG_FRAME_RELATED_EXPR note whenever it returns more than one insn or
+	the insn pattern doesn't describe well what exactly happens to
+	dwarf2cfi.c.
+
+	PR target/93594
+	* config/i386/predicates.md (avx_identity_operand): Remove.
+	* config/i386/sse.md (*avx_vec_concat<mode>_1): Remove.
+	(avx_<castmode><avxsizesuffix>_<castmode>,
+	avx512f_<castmode><avxsizesuffix>_256<castmode>): Change patterns to
+	a VEC_CONCAT of the operand and UNSPEC_CAST.
+	(avx512f_<castmode><avxsizesuffix>_<castmode>): Change pattern to
+	a VEC_CONCAT of VEC_CONCAT of the operand and UNSPEC_CAST with
+	UNSPEC_CAST.
+
+	PR target/93611
+	* config/i386/i386.c (ix86_lea_outperforms): Make sure to clear
+	recog_data.insn if distance_non_agu_define changed it.
+
+2020-02-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93569
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Before ISA 3.0
+	we only had X-FORM (reg+reg) addressing for vectors.  Also before
+	ISA 3.0, we only had X-FORM addressing for scalars in the
+	traditional Altivec registers.
+
+2020-02-06  <zhongyunde@huawei.com>
+  	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93561
+	* lra-assigns.c (spill_for): Check that tested hard regno is not out of
+	hard register range.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_movk<mode>): Add a type
+	attribute.
+
+2020-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Handle the case
+	where the low and the high 32 bits are equal to each other specially,
+	with an rldimi instruction.
+
+2020-02-06  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm-cpus.in: Set profile M for armv8.1-m.main.
+
+2020-02-06  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm-tables.opt: Regenerate.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/87763
+	* config/aarch64/aarch64-protos.h (aarch64_movk_shift): Declare.
+	* config/aarch64/aarch64.c (aarch64_movk_shift): New function.
+	* config/aarch64/aarch64.md (aarch64_movk<mode>): New pattern.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/87763
+	* config/aarch64/aarch64.md (*ashiftsi_extvdi_bfiz): New pattern.
+
+2020-02-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(bfmlaq): New built-in function.
+	(bfmlalb): New built-in function.
+	(bfmlalt): New built-in function.
+	(bfmlalb_lane): New built-in function.
+	(bfmlalt_lane): New built-in function.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_bfmmlaqv4sf): New pattern.
+	(aarch64_bfmlal<bt>v4sf): New pattern.
+	(aarch64_bfmlal<bt>_lane<q>v4sf): New pattern.
+	* config/aarch64/arm_neon.h (vbfmmlaq_f32): New intrinsic.
+	(vbfmlalbq_f32): New intrinsic.
+	(vbfmlaltq_f32): New intrinsic.
+	(vbfmlalbq_lane_f32): New intrinsic.
+	(vbfmlaltq_lane_f32): New intrinsic.
+	(vbfmlalbq_laneq_f32): New intrinsic.
+	(vbfmlaltq_laneq_f32): New intrinsic.
+	* config/aarch64/iterators.md (BF_MLA): New int iterator.
+	(bt): New int attribute.
+
+2020-02-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*pushtf): Emit "#" instead of
+	calling gcc_unreachable in insn output.
+	(*pushxf): Ditto.
+	(*pushdf): Ditto.
+	(*pushsf_rex64): Ditto for alternatives other than 1.
+	(*pushsf): Ditto for alternatives other than 1.
+
+2020-02-06  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/91971
+	PR gcov-profile/93466
+	* coverage.c (coverage_init): Revert mangling of
+	path into filename.  It can lead to huge filename length.
+	Creation of subfolders seem more natural.
+
+2020-02-06  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/93300
+	* config/arm/arm.c (arm_block_arith_comp_libfuncs_for_mode): New.
+	(arm_init_libfuncs): Add BFmode support to block spurious BF libfuncs.
+	Use arm_block_arith_comp_libfuncs_for_mode for HFmode.
+
+2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93594
+	* config/i386/predicates.md (avx_identity_operand): New predicate.
+	* config/i386/sse.md (*avx_vec_concat<mode>_1): New
+	define_insn_and_split.
+
+	PR libgomp/93515
+	* omp-low.c (use_pointer_for_field): For nested constructs, also
+	look for map clauses on target construct.
+	(scan_omp_1_stmt) <case GIMPLE_OMP_TARGET>: Bump temporarily
+	taskreg_nesting_level.
+
+	PR libgomp/93515
+	* gimplify.c (gimplify_scan_omp_clauses) <do_notice>: If adding
+	shared clause, call omp_notice_variable on outer context if any.
+
+2020-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92003
+	* symtab.c (symtab_node::nonzero_address): A DECL_COMDAT decl has
+	non-zero address even if weak and not yet defined.
+
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92765
+	* gimple-fold.c (get_range_strlen_tree): Handle MEM_REF and PARM_DECL.
+	* tree-ssa-strlen.c (compute_string_length): Remove.
+	(determine_min_objsize): Remove.
+	(get_len_or_size): Add an argument.  Call get_range_strlen_dynamic.
+	Avoid using type size as the upper bound on string length.
+	(handle_builtin_string_cmp): Add an argument.  Adjust.
+	(strlen_check_and_optimize_call): Pass additional argument to
+	handle_builtin_string_cmp.
+
+2020-02-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*pushdi2_rex64 peephole2): Remove.
+	(*pushdi2_rex64 peephole2): Unconditionally split after
+	epilogue_completed.
+	(*ashl<mode>3_doubleword): Ditto.
+	(*<shift_insn><mode>3_doubleword): Ditto.
+
+2020-02-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93568
+	* config/rs6000/rs6000.c (get_vector_offset): Fix
+
 2020-02-05  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Use / not space.

@@ -21157,9 +21157,9 @@
 
 (define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")
-	(unspec:AVX256MODE2P
-	  [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_CAST))]
+	(vec_concat:AVX256MODE2P
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")
+	  (unspec:<ssehalfvecmode> [(const_int 0)] UNSPEC_CAST)))]
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
@@ -22180,9 +22180,11 @@
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")
-	(unspec:AVX512MODE2P
-	  [(match_operand:<ssequartermode> 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_CAST))]
+	(vec_concat:AVX512MODE2P
+	  (vec_concat:<ssehalfvecmode>
+	    (match_operand:<ssequartermode> 1 "nonimmediate_operand" "xm,x")
+	    (unspec:<ssequartermode> [(const_int 0)] UNSPEC_CAST))
+	  (unspec:<ssehalfvecmode> [(const_int 0)] UNSPEC_CAST)))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
@@ -22197,9 +22199,9 @@
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_256<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")
-	(unspec:AVX512MODE2P
-	  [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_CAST))]
+	(vec_concat:AVX512MODE2P
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")
+	  (unspec:<ssehalfvecmode> [(const_int 0)] UNSPEC_CAST)))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"

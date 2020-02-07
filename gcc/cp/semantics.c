@@ -10403,7 +10403,8 @@ cp_build_vec_convert (tree arg, location_t loc, tree type,
 
   tree ret = NULL_TREE;
   if (!type_dependent_expression_p (arg) && !dependent_type_p (type))
-    ret = c_build_vec_convert (cp_expr_loc_or_input_loc (arg), arg,
+    ret = c_build_vec_convert (cp_expr_loc_or_input_loc (arg),
+			       decay_conversion (arg, complain),
 			       loc, type, (complain & tf_error) != 0);
 
   if (!processing_template_decl)

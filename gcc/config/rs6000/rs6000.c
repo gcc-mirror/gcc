@@ -6744,8 +6744,7 @@ get_vector_offset (rtx mem, rtx element, rtx base_tmp, unsigned scalar_size)
 
   /* All insns should use the 'Q' constraint (address is a single register) if
      the element number is not a constant.  */
-  rtx addr = XEXP (mem, 0);
-  gcc_assert (satisfies_constraint_Q (addr));
+  gcc_assert (satisfies_constraint_Q (mem));
 
   /* Mask the element to make sure the element number is between 0 and the
      maximum number of elements - 1 so that we don't generate an address
@@ -9257,6 +9256,15 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
 		      gen_rtx_ZERO_EXTEND (DImode,
 					   gen_lowpart (SImode,
 							copy_rtx (temp))));
+    }
+  else if (ud1 == ud3 && ud2 == ud4)
+    {
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      HOST_WIDE_INT num = (ud2 << 16) | ud1;
+      rs6000_emit_set_long_const (temp, (num ^ 0x80000000) - 0x80000000);
+      rtx one = gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff));
+      rtx two = gen_rtx_ASHIFT (DImode, temp, GEN_INT (32));
+      emit_move_insn (dest, gen_rtx_IOR (DImode, one, two));
     }
   else if ((ud4 == 0xffff && (ud3 & 0x8000))
 	   || (ud4 == 0 && ! (ud3 & 0x8000)))
@@ -24924,7 +24932,8 @@ reg_to_non_prefixed (rtx reg, machine_mode mode)
   unsigned size = GET_MODE_SIZE (mode);
 
   /* FPR registers use D-mode for scalars, and DQ-mode for vectors, IEEE
-     128-bit floating point, and 128-bit integers.  */
+     128-bit floating point, and 128-bit integers.  Before power9, only indexed
+     addressing was available for vectors.  */
   if (FP_REGNO_P (r))
     {
       if (mode == SFmode || size == 8 || FLOAT128_2REG_P (mode))
@@ -24937,16 +24946,20 @@ reg_to_non_prefixed (rtx reg, machine_mode mode)
 	       && (VECTOR_MODE_P (mode)
 		   || FLOAT128_VECTOR_P (mode)
 		   || mode == TImode || mode == CTImode))
-	return NON_PREFIXED_DQ;
+	return (TARGET_P9_VECTOR) ? NON_PREFIXED_DQ : NON_PREFIXED_X;
 
       else
 	return NON_PREFIXED_DEFAULT;
     }
 
   /* Altivec registers use DS-mode for scalars, and DQ-mode for vectors, IEEE
-     128-bit floating point, and 128-bit integers.  */
+     128-bit floating point, and 128-bit integers.  Before power9, only indexed
+     addressing was available.  */
   else if (ALTIVEC_REGNO_P (r))
     {
+      if (!TARGET_P9_VECTOR)
+	return NON_PREFIXED_X;
+
       if (mode == SFmode || size == 8 || FLOAT128_2REG_P (mode))
 	return NON_PREFIXED_DS;
 

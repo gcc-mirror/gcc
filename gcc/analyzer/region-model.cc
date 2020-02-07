@@ -4977,7 +4977,7 @@ region_model::maybe_cast_1 (tree dst_type, svalue_id sid)
     return sid;
 
   if (POINTER_TYPE_P (dst_type)
-      && POINTER_TYPE_P (src_type))
+      || POINTER_TYPE_P (src_type))
     {
       /* Pointer to region.  */
       if (region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())

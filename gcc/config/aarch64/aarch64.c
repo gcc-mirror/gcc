@@ -7895,6 +7895,30 @@ aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
 	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
 }
 
+/* Test whether:
+
+     X = (X & AND_VAL) | IOR_VAL;
+
+   can be implemented using:
+
+     MOVK X, #(IOR_VAL >> shift), LSL #shift
+
+   Return the shift if so, otherwise return -1.  */
+int
+aarch64_movk_shift (const wide_int_ref &and_val,
+		    const wide_int_ref &ior_val)
+{
+  unsigned int precision = and_val.get_precision ();
+  unsigned HOST_WIDE_INT mask = 0xffff;
+  for (unsigned int shift = 0; shift < precision; shift += 16)
+    {
+      if (and_val == ~mask && (ior_val & mask) == ior_val)
+	return shift;
+      mask <<= 16;
+    }
+  return -1;
+}
+
 /* VAL is a value with the inner mode of MODE.  Replicate it to fill a
    64-bit (DImode) integer.  */
 

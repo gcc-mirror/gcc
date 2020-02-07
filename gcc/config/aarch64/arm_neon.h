@@ -34660,6 +34660,60 @@ vbfdotq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
   return __builtin_aarch64_bfdot_laneqv4sf (__r, __a, __b, __index);
 }
 
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmmlaq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b)
+
+{
+  return __builtin_aarch64_bfmmlaqv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmlalbq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b)
+{
+  return __builtin_aarch64_bfmlalbv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmlaltq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b)
+{
+  return __builtin_aarch64_bfmlaltv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmlalbq_lane_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x4_t __b,
+		    const int __index)
+{
+  return __builtin_aarch64_bfmlalb_lanev4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmlaltq_lane_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x4_t __b,
+		    const int __index)
+{
+  return __builtin_aarch64_bfmlalt_lanev4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmlalbq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
+		     const int __index)
+{
+  return __builtin_aarch64_bfmlalb_lane_qv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfmlaltq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
+		     const int __index)
+{
+  return __builtin_aarch64_bfmlalt_lane_qv4sf (__r, __a, __b, __index);
+}
+
 #pragma GCC pop_options
 
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */

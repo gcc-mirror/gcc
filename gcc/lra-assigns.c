@@ -964,6 +964,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
       bitmap_clear (&spill_pseudos_bitmap);
       for (j = hard_regno_nregs (hard_regno, mode) - 1; j >= 0; j--)
 	{
+          if (hard_regno + j >= FIRST_PSEUDO_REGISTER)
+	    break;
 	  if (try_hard_reg_pseudos_check[hard_regno + j] != curr_pseudo_check)
 	    continue;
 	  lra_assert (!bitmap_empty_p (&try_hard_reg_pseudos[hard_regno + j]));

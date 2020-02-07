@@ -327,7 +327,8 @@ get_next_strinfo (strinfo *si)
 /* Helper function for get_stridx.  Return the strinfo index of the address
    of EXP, which is available in PTR if nonnull.  If OFFSET_OUT, it is
    OK to return the index for some X <= &EXP and store &EXP - X in
-   *OFFSET_OUT.  When nonnull uses RVALS to determine range information.  */
+   *OFFSET_OUT.  When RVALS is nonnull uses it to determine range
+   information.  */
 
 static int
 get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out,
@@ -4061,105 +4062,20 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Given an index to the strinfo vector, compute the string length
-   for the corresponding string. Return -1 when unknown.  */
-
-static HOST_WIDE_INT
-compute_string_length (int idx)
-{
-  HOST_WIDE_INT string_leni = -1;
-  gcc_assert (idx != 0);
-
-  if (idx < 0)
-   return ~idx;
-
-  strinfo *si = get_strinfo (idx);
-  if (si)
-    {
-      tree const_string_len = get_string_length (si);
-      if (const_string_len && tree_fits_shwi_p (const_string_len))
-	string_leni = tree_to_shwi (const_string_len);
-    }
-
-  if (string_leni < 0)
-    return -1;
-
-  return string_leni;
-}
-
-/* Determine the minimum size of the object referenced by DEST expression
-   which must have a pointer type.
-   Return the minimum size of the object if successful or HWI_M1U when
-   the size cannot be determined.  */
-
-static unsigned HOST_WIDE_INT
-determine_min_objsize (tree dest)
-{
-  unsigned HOST_WIDE_INT size = 0;
-
-  init_object_sizes ();
-
-  if (compute_builtin_object_size (dest, 2, &size))
-    return size;
-
-  /* Try to determine the size of the object through the RHS
-     of the assign statement.  */
-  if (TREE_CODE (dest) == SSA_NAME)
-    {
-      gimple *stmt = SSA_NAME_DEF_STMT (dest);
-      if (!is_gimple_assign (stmt))
-	return HOST_WIDE_INT_M1U;
-
-      if (!gimple_assign_single_p (stmt)
-	  && !gimple_assign_unary_nop_p (stmt))
-	return HOST_WIDE_INT_M1U;
-
-      dest = gimple_assign_rhs1 (stmt);
-      return determine_min_objsize (dest);
-    }
-
-  /* Try to determine the size of the object from its type.  */
-  if (TREE_CODE (dest) != ADDR_EXPR)
-    return HOST_WIDE_INT_M1U;
-
-  tree type = TREE_TYPE (dest);
-  if (TREE_CODE (type) == POINTER_TYPE)
-    type = TREE_TYPE (type);
-
-  type = TYPE_MAIN_VARIANT (type);
-
-  /* The size of a flexible array cannot be determined.  Otherwise,
-     for arrays with more than one element, return the size of its
-     type.  GCC itself misuses arrays of both zero and one elements
-     as flexible array members so they are excluded as well.  */
-  if (TREE_CODE (type) != ARRAY_TYPE
-      || !array_at_struct_end_p (dest))
-    {
-      tree type_size = TYPE_SIZE_UNIT (type);
-      if (type_size && TREE_CODE (type_size) == INTEGER_CST
-	  && !integer_onep (type_size)
-	  && !integer_zerop (type_size))
-        return tree_to_uhwi (type_size);
-    }
-
-  return HOST_WIDE_INT_M1U;
-}
-
-/* Given strinfo IDX for ARG, set LENRNG[] to the range of lengths
-   of  the string(s) referenced by ARG if it can be determined.
-   If the length cannot be determined, set *SIZE to the size of
+/* Given strinfo IDX for ARG, sets LENRNG[] to the range of lengths
+   of the string(s) referenced by ARG if it can be determined.
+   If the length cannot be determined, sets *SIZE to the size of
    the array the string is stored in, if any.  If no such array is
-   known, set *SIZE to -1.  When the strings are nul-terminated set
-   *NULTERM to true, otherwise to false.  Return true on success.  */
+   known, sets *SIZE to -1.  When the strings are nul-terminated sets
+   *NULTERM to true, otherwise to false.  When nonnull uses RVALS to
+   determine range information. Returns true on success.  */
 
 static bool
 get_len_or_size (tree arg, int idx, unsigned HOST_WIDE_INT lenrng[2],
-		 unsigned HOST_WIDE_INT *size, bool *nulterm)
+		 unsigned HOST_WIDE_INT *size, bool *nulterm,
+		 const vr_values *rvals)
 {
-  /* Set so that both LEN and ~LEN are invalid lengths, i.e.,
-     maximum possible length + 1.  */
-  lenrng[0] = lenrng[1] = HOST_WIDE_INT_MAX;
-
+  /* Invalidate.  */
   *size = HOST_WIDE_INT_M1U;
 
   if (idx < 0)
@@ -4168,13 +4084,18 @@ get_len_or_size (tree arg, int idx, unsigned HOST_WIDE_INT lenrng[2],
       lenrng[0] = ~idx;
       lenrng[1] = lenrng[0];
       *nulterm = true;
+      return true;
     }
-  else if (idx == 0)
-    ; /* Handled below.  */
-  else if (strinfo *si = get_strinfo (idx))
+
+  /* Set so that both LEN and ~LEN are invalid lengths, i.e., maximum
+     possible length + 1.  */
+  lenrng[0] = lenrng[1] = HOST_WIDE_INT_MAX;
+
+  if (strinfo *si = idx ? get_strinfo (idx) : NULL)
     {
+      /* FIXME: Handle all this in_range_strlen_dynamic.  */
       if (!si->nonzero_chars)
-	arg = si->ptr;
+	;
       else if (tree_fits_uhwi_p (si->nonzero_chars))
 	{
 	  lenrng[0] = tree_to_uhwi (si->nonzero_chars);
@@ -4195,42 +4116,62 @@ get_len_or_size (tree arg, int idx, unsigned HOST_WIDE_INT lenrng[2],
 	      *nulterm = si->full_string_p;
 	    }
 	}
-      else if (si->ptr)
-	arg = si->ptr;
     }
 
-  if (lenrng[0] == HOST_WIDE_INT_MAX)
+  if (lenrng[0] != HOST_WIDE_INT_MAX)
+    return true;
+
+  /* Compute the minimum and maximum real or possible lengths.  */
+  c_strlen_data lendata = { };
+  /* Set MAXBOUND to an arbitrary non-null non-integer node as a request
+     to have it set to the length of the longest string in a PHI.  */
+  lendata.maxbound = arg;
+  get_range_strlen_dynamic (arg, &lendata, rvals);
+
+  unsigned HOST_WIDE_INT maxbound = HOST_WIDE_INT_M1U;
+  if (tree_fits_uhwi_p (lendata.maxbound)
+      && !integer_all_onesp (lendata.maxbound))
+    maxbound = tree_to_uhwi (lendata.maxbound);
+
+  if (tree_fits_uhwi_p (lendata.minlen) && tree_fits_uhwi_p (lendata.maxlen))
     {
-      /* Compute the minimum and maximum real or possible lengths.  */
-      c_strlen_data lendata = { };
-      if (get_range_strlen (arg, &lendata, /* eltsize = */1))
+      unsigned HOST_WIDE_INT minlen = tree_to_uhwi (lendata.minlen);
+      unsigned HOST_WIDE_INT maxlen = tree_to_uhwi (lendata.maxlen);
+
+      /* The longest string in this data model.  */
+      const unsigned HOST_WIDE_INT lenmax
+	= tree_to_uhwi (max_object_size ()) - 2;
+
+      if (maxbound == HOST_WIDE_INT_M1U)
 	{
-	  if (tree_fits_shwi_p (lendata.maxlen) && !lendata.maxbound)
-	    {
-	      lenrng[0] = tree_to_shwi (lendata.minlen);
-	      lenrng[1] = tree_to_shwi (lendata.maxlen);
-	      *nulterm = true;
-	    }
-	  else if (lendata.maxbound && tree_fits_shwi_p (lendata.maxbound))
-	    {
-	      /* Set *SIZE to the conservative LENDATA.MAXBOUND which
-		 is a conservative estimate of the longest string based
-		 on the sizes of the arrays referenced by ARG.  */
-	      *size = tree_to_uhwi (lendata.maxbound) + 1;
-	      *nulterm = false;
-	    }
+	  lenrng[0] = minlen;
+	  lenrng[1] = maxlen;
+	  *nulterm = minlen == maxlen;
 	}
-      else
+      else if (maxlen < lenmax)
 	{
-	  /* Set *SIZE to the size of the smallest object referenced
-	     by ARG if ARG denotes a single object, or to HWI_M1U
-	     otherwise.  */
-	  *size = determine_min_objsize (arg);
+	  *size = maxbound + 1;
 	  *nulterm = false;
 	}
+      else
+	return false;
+
+      return true;
     }
 
-  return lenrng[0] != HOST_WIDE_INT_MAX || *size != HOST_WIDE_INT_M1U;
+  if (maxbound != HOST_WIDE_INT_M1U
+      && lendata.maxlen
+      && !integer_all_onesp (lendata.maxlen))
+    {
+      /* Set *SIZE to LENDATA.MAXBOUND which is a conservative estimate
+	 of the longest string based on the sizes of the arrays referenced
+	 by ARG.  */
+      *size = maxbound + 1;
+      *nulterm = false;
+      return true;
+    }
+
+  return false;
 }
 
 /* If IDX1 and IDX2 refer to strings A and B of unequal lengths, return
@@ -4245,15 +4186,15 @@ get_len_or_size (tree arg, int idx, unsigned HOST_WIDE_INT lenrng[2],
 static tree
 strxcmp_eqz_result (tree arg1, int idx1, tree arg2, int idx2,
 		    unsigned HOST_WIDE_INT bound, unsigned HOST_WIDE_INT len[2],
-		    unsigned HOST_WIDE_INT *psize)
+		    unsigned HOST_WIDE_INT *psize, const vr_values *rvals)
 {
   /* Determine the range the length of each string is in and whether it's
      known to be nul-terminated, or the size of the array it's stored in.  */
   bool nul1, nul2;
   unsigned HOST_WIDE_INT siz1, siz2;
   unsigned HOST_WIDE_INT len1rng[2], len2rng[2];
-  if (!get_len_or_size (arg1, idx1, len1rng, &siz1, &nul1)
-      || !get_len_or_size (arg2, idx2, len2rng, &siz2, &nul2))
+  if (!get_len_or_size (arg1, idx1, len1rng, &siz1, &nul1, rvals)
+      || !get_len_or_size (arg2, idx2, len2rng, &siz2, &nul2, rvals))
     return NULL_TREE;
 
   /* BOUND is set to HWI_M1U for strcmp and less to strncmp, and LENiRNG
@@ -4405,7 +4346,7 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
    another and false otherwise.  */
 
 static bool
-handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
+handle_builtin_string_cmp (gimple_stmt_iterator *gsi, const vr_values *rvals)
 {
   gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
   tree lhs = gimple_call_lhs (stmt);
@@ -4451,7 +4392,7 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
        or definitely unequal and if so, either fold the result to zero
        (when equal) or set the range of the result to ~[0, 0] otherwise.  */
     if (tree eqz = strxcmp_eqz_result (arg1, idx1, arg2, idx2, bound,
-				       len, &siz))
+				       len, &siz, rvals))
       {
 	if (integer_zerop (eqz))
 	  {
@@ -4482,26 +4423,31 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
   HOST_WIDE_INT cstlen1 = -1, cstlen2 = -1;
   HOST_WIDE_INT arysiz1 = -1, arysiz2 = -1;
 
-  if (idx1)
-    cstlen1 = compute_string_length (idx1);
-  else
-    arysiz1 = determine_min_objsize (arg1);
+  {
+    unsigned HOST_WIDE_INT len1rng[2], len2rng[2];
+    unsigned HOST_WIDE_INT arsz1, arsz2;
+    bool nulterm[2];
+
+    if (!get_len_or_size (arg1, idx1, len1rng, &arsz1, nulterm, rvals)
+	|| !get_len_or_size (arg2, idx2, len2rng, &arsz2, nulterm + 1, rvals))
+      return false;
+
+    if (len1rng[0] == len1rng[1] && len1rng[0] < HOST_WIDE_INT_MAX)
+      cstlen1 = len1rng[0];
+    else if (arsz1 < HOST_WIDE_INT_M1U)
+      arysiz1 = arsz1;
+
+    if (len2rng[0] == len2rng[1] && len2rng[0] < HOST_WIDE_INT_MAX)
+      cstlen2 = len2rng[0];
+    else if (arsz2 < HOST_WIDE_INT_M1U)
+      arysiz2 = arsz2;
+  }
 
   /* Bail if neither the string length nor the size of the array
      it is stored in can be determined.  */
-  if (cstlen1 < 0 && arysiz1 < 0)
-    return false;
-
-  /* Repeat for the second argument.  */
-  if (idx2)
-    cstlen2 = compute_string_length (idx2);
-  else
-    arysiz2 = determine_min_objsize (arg2);
-
-  if (cstlen2 < 0 && arysiz2 < 0)
-    return false;
-
-  if (cstlen1 < 0 && cstlen2 < 0)
+  if ((cstlen1 < 0 && arysiz1 < 0)
+      || (cstlen2 < 0 && arysiz2 < 0)
+      || (cstlen1 < 0 && cstlen2 < 0))
     return false;
 
   if (cstlen1 >= 0)
@@ -5435,7 +5381,7 @@ strlen_check_and_optimize_call (gimple_stmt_iterator *gsi, bool *zero_write,
       break;
     case BUILT_IN_STRCMP:
     case BUILT_IN_STRNCMP:
-      if (handle_builtin_string_cmp (gsi))
+      if (handle_builtin_string_cmp (gsi, rvals))
 	return false;
       break;
     default:

@@ -1,3 +1,8 @@
+2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/93515
+	* testsuite/libgomp.c-c++-common/pr93515.c: New test.
+
 2020-02-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/lib/libgomp.exp

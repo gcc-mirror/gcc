@@ -9464,9 +9464,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 				  == POINTER_TYPE))))
 		    omp_firstprivatize_variable (outer_ctx, decl);
 		  else
-		    omp_add_variable (outer_ctx, decl,
-				      GOVD_SEEN | GOVD_SHARED);
-		  omp_notice_variable (outer_ctx, decl, true);
+		    {
+		      omp_add_variable (outer_ctx, decl,
+					GOVD_SEEN | GOVD_SHARED);
+		      if (outer_ctx->outer_context)
+			omp_notice_variable (outer_ctx->outer_context, decl,
+					     true);
+		    }
 		}
 	    }
 	  if (outer_ctx)

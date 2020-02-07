@@ -5,6 +5,7 @@
 #define NULL ((void *) 0)
 typedef __SIZE_TYPE__ size_t;
 extern void abort (void);
+void *calloc (size_t, size_t);
 void *malloc (size_t);
 void free (void *);
 char *strdup (const char *);

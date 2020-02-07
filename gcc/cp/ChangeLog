@@ -1,3 +1,32 @@
+2020-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92517
+	* parser.c (cp_parser_constraint_primary_expression): Do the main
+	parse non-tentatively.
+
+2020-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93597 - ICE with lambda in operator function.
+	* name-lookup.c (maybe_save_operator_binding): Check is_overloaded_fn.
+
+2020-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93140
+	* pt.c (tsubst_decl) [PARM_DECL]: Check cp_unevaluated_operand in
+	handling of TREE_CHAIN for empty pack.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93557
+	* semantics.c (cp_build_vec_convert): Call decay_conversion on arg
+	prior to passing it to c_build_vec_convert.
+
+2020-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93559 - ICE with CONSTRUCTOR flags verification.
+	* decl.c (reshape_init_array_1): Don't reuse a CONSTRUCTOR with
+	TREE_SIDE_EFFECTS.
+
 2020-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92593

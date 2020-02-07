@@ -2491,10 +2491,35 @@ arm_set_fixed_conv_libfunc (convert_optab optable, machine_mode to,
 
 static GTY(()) rtx speculation_barrier_libfunc;
 
+/* Record that we have no arithmetic or comparison libfuncs for
+   machine mode MODE.  */
+
+static void
+arm_block_arith_comp_libfuncs_for_mode (machine_mode mode)
+{
+  /* Arithmetic.  */
+  set_optab_libfunc (add_optab, mode, NULL);
+  set_optab_libfunc (sdiv_optab, mode, NULL);
+  set_optab_libfunc (smul_optab, mode, NULL);
+  set_optab_libfunc (neg_optab, mode, NULL);
+  set_optab_libfunc (sub_optab, mode, NULL);
+
+  /* Comparisons.  */
+  set_optab_libfunc (eq_optab, mode, NULL);
+  set_optab_libfunc (ne_optab, mode, NULL);
+  set_optab_libfunc (lt_optab, mode, NULL);
+  set_optab_libfunc (le_optab, mode, NULL);
+  set_optab_libfunc (ge_optab, mode, NULL);
+  set_optab_libfunc (gt_optab, mode, NULL);
+  set_optab_libfunc (unord_optab, mode, NULL);
+}
+
 /* Set up library functions unique to ARM.  */
 static void
 arm_init_libfuncs (void)
 {
+  machine_mode mode_iter;
+
   /* For Linux, we have access to kernel support for atomic operations.  */
   if (arm_abi == ARM_ABI_AAPCS_LINUX)
     init_sync_libfuncs (MAX_SYNC_LIBFUNC_SIZE);
@@ -2623,26 +2648,22 @@ arm_init_libfuncs (void)
 			 ? "__gnu_d2h_ieee"
 			 : "__gnu_d2h_alternative"));
 
-      /* Arithmetic.  */
-      set_optab_libfunc (add_optab, HFmode, NULL);
-      set_optab_libfunc (sdiv_optab, HFmode, NULL);
-      set_optab_libfunc (smul_optab, HFmode, NULL);
-      set_optab_libfunc (neg_optab, HFmode, NULL);
-      set_optab_libfunc (sub_optab, HFmode, NULL);
-
-      /* Comparisons.  */
-      set_optab_libfunc (eq_optab, HFmode, NULL);
-      set_optab_libfunc (ne_optab, HFmode, NULL);
-      set_optab_libfunc (lt_optab, HFmode, NULL);
-      set_optab_libfunc (le_optab, HFmode, NULL);
-      set_optab_libfunc (ge_optab, HFmode, NULL);
-      set_optab_libfunc (gt_optab, HFmode, NULL);
-      set_optab_libfunc (unord_optab, HFmode, NULL);
+      arm_block_arith_comp_libfuncs_for_mode (HFmode);
       break;
 
     default:
       break;
     }
+
+  /* For all possible libcalls in BFmode, record NULL.  */
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_FLOAT)
+    {
+      set_conv_libfunc (trunc_optab, BFmode, mode_iter, NULL);
+      set_conv_libfunc (trunc_optab, mode_iter, BFmode, NULL);
+      set_conv_libfunc (sext_optab, mode_iter, BFmode, NULL);
+      set_conv_libfunc (sext_optab, BFmode, mode_iter, NULL);
+    }
+  arm_block_arith_comp_libfuncs_for_mode (BFmode);
 
   /* Use names prefixed with __gnu_ for fixed-point helper functions.  */
   {

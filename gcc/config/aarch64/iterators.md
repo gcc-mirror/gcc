@@ -2620,6 +2620,9 @@
 
 (define_int_iterator FMMLA [UNSPEC_FMMLA])
 
+(define_int_iterator BF_MLA [UNSPEC_BFMLALB
+			     UNSPEC_BFMLALT])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -2870,6 +2873,8 @@
 
 (define_int_attr ab [(UNSPEC_CLASTA "a") (UNSPEC_CLASTB "b")
 		     (UNSPEC_LASTA "a") (UNSPEC_LASTB "b")])
+
+(define_int_attr bt [(UNSPEC_BFMLALB "b") (UNSPEC_BFMLALT "t")])
 
 (define_int_attr addsub [(UNSPEC_SHADD "add")
 			 (UNSPEC_UHADD "add")

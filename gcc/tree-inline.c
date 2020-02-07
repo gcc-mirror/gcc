@@ -5261,86 +5261,117 @@ static void
 fold_marked_statements (int first, hash_set<gimple *> *statements)
 {
   auto_bitmap to_purge;
-  for (; first < last_basic_block_for_fn (cfun); first++)
-    if (BASIC_BLOCK_FOR_FN (cfun, first))
-      {
-        gimple_stmt_iterator gsi;
 
-	for (gsi = gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, first));
-	     !gsi_end_p (gsi);
-	     gsi_next (&gsi))
-	  if (statements->contains (gsi_stmt (gsi)))
-	    {
-	      gimple *old_stmt = gsi_stmt (gsi);
-	      tree old_decl
-		= is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
+  auto_vec<edge, 20> stack (n_basic_blocks_for_fn (cfun) + 2);
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  bitmap_clear (visited);
 
-	      if (old_decl && fndecl_built_in_p (old_decl))
-		{
-		  /* Folding builtins can create multiple instructions,
-		     we need to look at all of them.  */
-		  gimple_stmt_iterator i2 = gsi;
-		  gsi_prev (&i2);
-		  if (fold_stmt (&gsi))
-		    {
-		      gimple *new_stmt;
-		      /* If a builtin at the end of a bb folded into nothing,
-			 the following loop won't work.  */
-		      if (gsi_end_p (gsi))
-			{
-			  cgraph_update_edges_for_call_stmt (old_stmt,
-							     old_decl, NULL);
-			  break;
-			}
-		      if (gsi_end_p (i2))
-			i2 = gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, first));
-		      else
+  stack.quick_push (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+  while (!stack.is_empty ())
+    {
+      /* Look at the edge on the top of the stack.  */
+      edge e = stack.pop ();
+      basic_block dest = e->dest;
+
+      if (dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  || bitmap_bit_p (visited, dest->index))
+	continue;
+
+      bitmap_set_bit (visited, dest->index);
+
+      if (dest->index >= first)
+	for (gimple_stmt_iterator gsi = gsi_start_bb (dest);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    if (!statements->contains (gsi_stmt (gsi)))
+	      continue;
+
+	    gimple *old_stmt = gsi_stmt (gsi);
+	    tree old_decl = (is_gimple_call (old_stmt)
+			     ? gimple_call_fndecl (old_stmt) : 0);
+	    if (old_decl && fndecl_built_in_p (old_decl))
+	      {
+		/* Folding builtins can create multiple instructions,
+		   we need to look at all of them.  */
+		gimple_stmt_iterator i2 = gsi;
+		gsi_prev (&i2);
+		if (fold_stmt (&gsi))
+		  {
+		    gimple *new_stmt;
+		    /* If a builtin at the end of a bb folded into nothing,
+		       the following loop won't work.  */
+		    if (gsi_end_p (gsi))
+		      {
+			cgraph_update_edges_for_call_stmt (old_stmt,
+							   old_decl, NULL);
+			break;
+		      }
+		    if (gsi_end_p (i2))
+		      i2 = gsi_start_bb (dest);
+		    else
+		      gsi_next (&i2);
+		    while (1)
+		      {
+			new_stmt = gsi_stmt (i2);
+			update_stmt (new_stmt);
+			cgraph_update_edges_for_call_stmt (old_stmt, old_decl,
+							   new_stmt);
+
+			if (new_stmt == gsi_stmt (gsi))
+			  {
+			    /* It is okay to check only for the very last
+			       of these statements.  If it is a throwing
+			       statement nothing will change.  If it isn't
+			       this can remove EH edges.  If that weren't
+			       correct then because some intermediate stmts
+			       throw, but not the last one.  That would mean
+			       we'd have to split the block, which we can't
+			       here and we'd loose anyway.  And as builtins
+			       probably never throw, this all
+			       is mood anyway.  */
+			    if (maybe_clean_or_replace_eh_stmt (old_stmt,
+								new_stmt))
+			      bitmap_set_bit (to_purge, dest->index);
+			    break;
+			  }
 			gsi_next (&i2);
-		      while (1)
-			{
-			  new_stmt = gsi_stmt (i2);
-			  update_stmt (new_stmt);
-			  cgraph_update_edges_for_call_stmt (old_stmt, old_decl,
-							     new_stmt);
+		      }
+		  }
+	      }
+	    else if (fold_stmt (&gsi))
+	      {
+		/* Re-read the statement from GSI as fold_stmt() may
+		   have changed it.  */
+		gimple *new_stmt = gsi_stmt (gsi);
+		update_stmt (new_stmt);
 
-			  if (new_stmt == gsi_stmt (gsi))
-			    {
-			      /* It is okay to check only for the very last
-				 of these statements.  If it is a throwing
-				 statement nothing will change.  If it isn't
-				 this can remove EH edges.  If that weren't
-				 correct then because some intermediate stmts
-				 throw, but not the last one.  That would mean
-				 we'd have to split the block, which we can't
-				 here and we'd loose anyway.  And as builtins
-				 probably never throw, this all
-				 is mood anyway.  */
-			      if (maybe_clean_or_replace_eh_stmt (old_stmt,
-								  new_stmt))
-				bitmap_set_bit (to_purge, first);
-			      break;
-			    }
-			  gsi_next (&i2);
-			}
-		    }
-		}
-	      else if (fold_stmt (&gsi))
-		{
-		  /* Re-read the statement from GSI as fold_stmt() may
-		     have changed it.  */
-		  gimple *new_stmt = gsi_stmt (gsi);
-		  update_stmt (new_stmt);
+		if (is_gimple_call (old_stmt)
+		    || is_gimple_call (new_stmt))
+		  cgraph_update_edges_for_call_stmt (old_stmt, old_decl,
+						     new_stmt);
 
-		  if (is_gimple_call (old_stmt)
-		      || is_gimple_call (new_stmt))
-		    cgraph_update_edges_for_call_stmt (old_stmt, old_decl,
-						       new_stmt);
+		if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
+		  bitmap_set_bit (to_purge, dest->index);
+	      }
+	  }
 
-		  if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
-		    bitmap_set_bit (to_purge, first);
-		}
+      if (EDGE_COUNT (dest->succs) > 0)
+	{
+	  /* Avoid warnings emitted from folding statements that
+	     became unreachable because of inlined function parameter
+	     propagation.  */
+	  e = find_taken_edge (dest, NULL_TREE);
+	  if (e)
+	    stack.quick_push (e);
+	  else
+	    {
+	      edge_iterator ei;
+	      FOR_EACH_EDGE (e, ei, dest->succs)
+		stack.safe_push (e);
 	    }
-      }
+	}
+    }
+
   gimple_purge_all_dead_eh_edges (to_purge);
 }
 
@@ -5404,6 +5435,13 @@ optimize_inline_calls (tree fn)
 	gcc_assert (e->inline_failed);
     }
 
+  /* If we didn't inline into the function there is nothing to do.  */
+  if (!inlined_p)
+    {
+      delete id.statements_to_fold;
+      return 0;
+    }
+
   /* Fold queued statements.  */
   update_max_bb_count ();
   fold_marked_statements (last, id.statements_to_fold);
@@ -5425,10 +5463,6 @@ optimize_inline_calls (tree fn)
     }
 
   gcc_assert (!id.debug_stmts.exists ());
-
-  /* If we didn't inline into the function there is nothing to do.  */
-  if (!inlined_p)
-    return 0;
 
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (fn);
