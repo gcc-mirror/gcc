@@ -1,3 +1,8 @@
+2020-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89404
+	* g++.dg/ext/vla21.C: New.
+
 2020-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93615
