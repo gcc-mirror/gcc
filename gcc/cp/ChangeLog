@@ -1,3 +1,8 @@
+2020-02-08  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (process_init_constructor): Also clear TREE_SIDE_EFFECTS
+	if appropriate.
+
 2020-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93549
