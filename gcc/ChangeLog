@@ -1,3 +1,21 @@
+2020-03-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (dpp_move<mode>): New.
+	(reduc_insn): Use 'U' and 'B' operand codes.
+	(reduc_<reduc_op>_scal_<mode>): Allow all types.
+	(reduc_<reduc_op>_scal_v64di): Delete.
+	(*<reduc_op>_dpp_shr_<mode>): Allow all 1reg types.
+	(*plus_carry_dpp_shr_v64si): Change to ...
+	(*plus_carry_dpp_shr_<mode>): ... this and allow all 1reg int types.
+	(mov_from_lane63_v64di): Change to ...
+	(mov_from_lane63_<mode>): ... this, and allow all 64-bit modes.
+	* config/gcn/gcn.c (gcn_expand_dpp_shr_insn): Increase buffer size.
+	Support UNSPEC_MOV_DPP_SHR output formats.
+	(gcn_expand_reduc_scalar): Add "use_moves" reductions.
+	Add "use_extends" reductions.
+	(print_operand_address): Add 'I' and 'U' codes.
+	* config/gcn/gcn.md (unspec): Add UNSPEC_MOV_DPP_SHR.
+
 2020-03-02  Martin Liska  <mliska@suse.cz>
 
 	* lto-wrapper.c: Fix typo in comment about

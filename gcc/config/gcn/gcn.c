@@ -4121,7 +4121,7 @@ char *
 gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 			 int unspec, int shift)
 {
-  static char buf[64];
+  static char buf[128];
   const char *dpp;
   const char *vcc_in = "";
   const char *vcc_out = "";
@@ -4162,7 +4162,13 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
       gcc_unreachable ();
     }
 
-  sprintf (buf, "%s\t%%0%s, %%1, %%2%s %s", insn, vcc_out, vcc_in, dpp);
+  if (unspec == UNSPEC_MOV_DPP_SHR && vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else if (unspec == UNSPEC_MOV_DPP_SHR)
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0%s, %%1, %%2%s %s", insn, vcc_out, vcc_in, dpp);
 
   return buf;
 }
@@ -4176,7 +4182,28 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 rtx
 gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 {
-  rtx tmp = gen_reg_rtx (mode);
+  machine_mode orig_mode = mode;
+  bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
+		      || unspec == UNSPEC_SMAX_DPP_SHR
+		      || unspec == UNSPEC_UMIN_DPP_SHR
+		      || unspec == UNSPEC_UMAX_DPP_SHR)
+		     && mode == V64DImode)
+		    || (unspec == UNSPEC_PLUS_DPP_SHR
+			&& mode == V64DFmode));
+  rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
+		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
+		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
+		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
+		   : unspec == UNSPEC_PLUS_DPP_SHR ? PLUS
+		   : UNKNOWN);
+  bool use_extends = ((unspec == UNSPEC_SMIN_DPP_SHR
+		       || unspec == UNSPEC_SMAX_DPP_SHR
+		       || unspec == UNSPEC_UMIN_DPP_SHR
+		       || unspec == UNSPEC_UMAX_DPP_SHR)
+		      && (mode == V64QImode
+			  || mode == V64HImode));
+  bool unsignedp = (unspec == UNSPEC_UMIN_DPP_SHR
+		    || unspec == UNSPEC_UMAX_DPP_SHR);
   bool use_plus_carry = unspec == UNSPEC_PLUS_DPP_SHR
 			&& GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 			&& (TARGET_GCN3 || mode == V64DImode);
@@ -4184,36 +4211,60 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
   if (use_plus_carry)
     unspec = UNSPEC_PLUS_CARRY_DPP_SHR;
 
+  if (use_extends)
+    {
+      rtx tmp = gen_reg_rtx (V64SImode);
+      convert_move (tmp, src, unsignedp);
+      src = tmp;
+      mode = V64SImode;
+    }
+
   /* Perform reduction by first performing the reduction operation on every
      pair of lanes, then on every pair of results from the previous
      iteration (thereby effectively reducing every 4 lanes) and so on until
      all lanes are reduced.  */
+  rtx in, out = src;
   for (int i = 0, shift = 1; i < 6; i++, shift <<= 1)
     {
       rtx shift_val = gen_rtx_CONST_INT (VOIDmode, shift);
-      rtx insn = gen_rtx_SET (tmp,
-			      gen_rtx_UNSPEC (mode,
-					      gen_rtvec (3,
-							 src, src, shift_val),
-					      unspec));
+      in = out;
+      out = gen_reg_rtx (mode);
 
-      /* Add clobber for instructions that set the carry flags.  */
-      if (use_plus_carry)
+      if (use_moves)
 	{
-	  rtx clobber = gen_rtx_CLOBBER (VOIDmode,
-					 gen_rtx_REG (DImode, VCC_REG));
-	  insn = gen_rtx_PARALLEL (VOIDmode,
-				   gen_rtvec (2, insn, clobber));
+	  rtx tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_dpp_move (mode, tmp, in, shift_val));
+	  emit_insn (gen_rtx_SET (out, gen_rtx_fmt_ee (code, mode, tmp, in)));
 	}
+      else
+	{
+	  rtx insn = gen_rtx_SET (out,
+				  gen_rtx_UNSPEC (mode,
+						  gen_rtvec (3, in, in,
+							     shift_val),
+						  unspec));
 
-      emit_insn (insn);
+	  /* Add clobber for instructions that set the carry flags.  */
+	  if (use_plus_carry)
+	    {
+	      rtx clobber = gen_rtx_CLOBBER (VOIDmode,
+					     gen_rtx_REG (DImode, VCC_REG));
+	      insn = gen_rtx_PARALLEL (VOIDmode,
+				       gen_rtvec (2, insn, clobber));
+	    }
 
-      /* The source operands for every iteration after the first
-	   should be TMP.  */
-      src = tmp;
+	  emit_insn (insn);
+	}
     }
 
-  return tmp;
+  if (use_extends)
+    {
+      rtx tmp = gen_reg_rtx (orig_mode);
+      convert_move (tmp, out, unsignedp);
+      out = tmp;
+    }
+
+  return out;
 }
 
 /* Implement TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST.  */
@@ -5442,7 +5493,9 @@ print_operand_address (FILE *file, rtx mem)
    b - print operand size as untyped operand (b8/b16/b32/b64)
    B - print operand size as SI/DI untyped operand (b32/b32/b32/b64)
    i - print operand size as untyped operand (i16/b32/i64)
+   I - print operand size as SI/DI untyped operand(i32/b32/i64)
    u - print operand size as untyped operand (u16/u32/u64)
+   U - print operand size as SI/DI untyped operand(u32/u64)
    o - print operand size as memory access size for loads
        (ubyte/ushort/dword/dwordx2/wordx3/dwordx4)
    s - print operand size as memory access size for stores
@@ -5537,9 +5590,12 @@ print_operand (FILE *file, rtx x, int code)
       fputs (")", file);
       return;
     case 'i':
+    case 'I':
     case 'u':
+    case 'U':
       {
 	bool signed_p = code == 'i';
+	bool min32_p = code == 'I' || code == 'U';
 	const char *s = "";
 	machine_mode mode = GET_MODE (x);
 	if (VECTOR_MODE_P (mode))
@@ -5568,6 +5624,21 @@ print_operand (FILE *file, rtx x, int code)
 	      break;
 	    case 8:
 	      s = "_f64";
+	      break;
+	    default:
+	      output_operand_lossage ("invalid operand %%xn code");
+	      return;
+	    }
+	else if (min32_p)
+	  switch (GET_MODE_SIZE (mode))
+	    {
+	    case 1:
+	    case 2:
+	    case 4:
+	      s = signed_p ? "_i32" : "_u32";
+	      break;
+	    case 8:
+	      s = signed_p ? "_i64" : "_u64";
 	      break;
 	    default:
 	      output_operand_lossage ("invalid operand %%xn code");

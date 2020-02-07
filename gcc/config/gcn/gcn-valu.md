@@ -985,6 +985,20 @@
   [(set_attr "type" "vmult")
    (set_attr "length" "24")])
 
+(define_insn "@dpp_move<mode>"
+  [(set (match_operand:VEC_REG_MODE 0 "register_operand"    "=v")
+	(unspec:VEC_REG_MODE
+	  [(match_operand:VEC_REG_MODE 1 "register_operand" " v")
+	   (match_operand:SI 2 "const_int_operand"	    " n")]
+	  UNSPEC_MOV_DPP_SHR))]
+  ""
+  {
+    return gcn_expand_dpp_shr_insn (<MODE>mode, "v_mov_b32",
+				    UNSPEC_MOV_DPP_SHR, INTVAL (operands[2]));
+  }
+  [(set_attr "type" "vop_dpp")
+   (set_attr "length" "16")])
+
 ;; }}}
 ;; {{{ ALU special case: add/sub
 
@@ -2969,15 +2983,15 @@
 			     (UNSPEC_SMAX_DPP_SHR "v_max%i0")
 			     (UNSPEC_UMIN_DPP_SHR "v_min%u0")
 			     (UNSPEC_UMAX_DPP_SHR "v_max%u0")
-			     (UNSPEC_PLUS_DPP_SHR "v_add%u0")
-			     (UNSPEC_AND_DPP_SHR  "v_and%b0")
-			     (UNSPEC_IOR_DPP_SHR  "v_or%b0")
-			     (UNSPEC_XOR_DPP_SHR  "v_xor%b0")])
+			     (UNSPEC_PLUS_DPP_SHR "v_add%U0")
+			     (UNSPEC_AND_DPP_SHR  "v_and%B0")
+			     (UNSPEC_IOR_DPP_SHR  "v_or%B0")
+			     (UNSPEC_XOR_DPP_SHR  "v_xor%B0")])
 
 (define_expand "reduc_<reduc_op>_scal_<mode>"
   [(set (match_operand:<SCALAR_MODE> 0 "register_operand")
 	(unspec:<SCALAR_MODE>
-	  [(match_operand:VEC_1REG_MODE 1 "register_operand")]
+	  [(match_operand:VEC_ALLREG_MODE 1 "register_operand")]
 	  REDUC_UNSPEC))]
   ""
   {
@@ -2990,29 +3004,15 @@
     DONE;
   })
 
-(define_expand "reduc_<reduc_op>_scal_v64di"
-  [(set (match_operand:DI 0 "register_operand")
-	(unspec:DI
-	  [(match_operand:V64DI 1 "register_operand")]
-	  REDUC_2REG_UNSPEC))]
-  ""
-  {
-    rtx tmp = gcn_expand_reduc_scalar (V64DImode, operands[1],
-				       <reduc_unspec>);
-
-    /* The result of the reduction is in lane 63 of tmp.  */
-    emit_insn (gen_mov_from_lane63_v64di (operands[0], tmp));
-
-    DONE;
-  })
 
 (define_insn "*<reduc_op>_dpp_shr_<mode>"
-  [(set (match_operand:VEC_1REG_MODE 0 "register_operand"   "=v")
-	(unspec:VEC_1REG_MODE
-	  [(match_operand:VEC_1REG_MODE 1 "register_operand" "v")
-	   (match_operand:VEC_1REG_MODE 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"	     "n")]
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "register_operand"   "=v")
+	(unspec:VEC_ALL1REG_MODE
+	  [(match_operand:VEC_ALL1REG_MODE 1 "register_operand" "v")
+	   (match_operand:VEC_ALL1REG_MODE 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"		"n")]
 	  REDUC_UNSPEC))]
+  ; GCN3 requires a carry out, GCN5 not
   "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
      && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)"
   {
@@ -3051,18 +3051,17 @@
 
 ; Special cases for addition.
 
-(define_insn "*plus_carry_dpp_shr_v64si"
-  [(set (match_operand:V64SI 0 "register_operand"   "=v")
-	(unspec:V64SI
-	  [(match_operand:V64SI 1 "register_operand" "v")
-	   (match_operand:V64SI 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"   "n")]
+(define_insn "*plus_carry_dpp_shr_<mode>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"   "=v")
+	(unspec:VEC_ALL1REG_INT_MODE
+	  [(match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" "v")
+	   (match_operand:VEC_ALL1REG_INT_MODE 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"		    "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
   ""
   {
-    const char *insn = TARGET_GCN3 ? "v_add%u0" : "v_add_co%u0";
-    return gcn_expand_dpp_shr_insn (V64SImode, insn,
+    return gcn_expand_dpp_shr_insn (V64SImode, "v_add%^_u32",
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
 				    INTVAL (operands[3]));
   }
@@ -3080,8 +3079,7 @@
    (clobber (reg:DI VCC_REG))]
   ""
   {
-    const char *insn = TARGET_GCN3 ? "v_addc%u0" : "v_addc_co%u0";
-    return gcn_expand_dpp_shr_insn (V64SImode, insn,
+    return gcn_expand_dpp_shr_insn (V64SImode, "v_addc%^_u32",
 				    UNSPEC_PLUS_CARRY_IN_DPP_SHR,
 				    INTVAL (operands[3]));
   }
@@ -3134,10 +3132,10 @@
    (set_attr "exec" "none,*")
    (set_attr "length" "8")])
 
-(define_insn "mov_from_lane63_v64di"
-  [(set (match_operand:DI 0 "register_operand"	     "=Sg,v")
-	(unspec:DI
-	  [(match_operand:V64DI 1 "register_operand"   "v,v")]
+(define_insn "mov_from_lane63_<mode>"
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"  "=Sg,v")
+	(unspec:<SCALAR_MODE>
+	  [(match_operand:VEC_2REG_MODE 1 "register_operand" "v,v")]
 	  UNSPEC_MOV_FROM_LANE63))]
   ""
   "@
