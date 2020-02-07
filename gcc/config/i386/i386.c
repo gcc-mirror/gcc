@@ -8665,7 +8665,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 
 static rtx
 function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
-		    machine_mode orig_mode, bool named,
+		    machine_mode orig_mode, bool named, const_tree type,
 		    HOST_WIDE_INT bytes)
 {
   unsigned int regno;
@@ -8685,7 +8685,10 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
   if (TARGET_SSE && (mode == SFmode || mode == DFmode))
     {
       if (named)
-	regno = cum->regno + FIRST_SSE_REG;
+	{
+	  if (type == NULL_TREE || !AGGREGATE_TYPE_P (type))
+	    regno = cum->regno + FIRST_SSE_REG;
+	}
       else
 	{
 	  rtx t1, t2;
@@ -8773,7 +8776,7 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
       enum calling_abi call_abi = cum ? cum->call_abi : ix86_abi;
 
       if (call_abi == MS_ABI)
-	arg = function_arg_ms_64 (cum, mode, omode, named, bytes);
+	arg = function_arg_ms_64 (cum, mode, omode, named, type, bytes);
       else
 	arg = function_arg_64 (cum, mode, omode, type, named);
     }

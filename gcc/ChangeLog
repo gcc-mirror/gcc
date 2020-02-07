@@ -1,3 +1,14 @@
+2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85667
+	* config/i386/i386.c (function_arg_ms_64): Add a type argument.
+	Don't return aggregates with only SFmode and DFmode in SSE
+	register.
+	(ix86_function_arg): Pass type to function_arg_ms_64.
+
 2020-01-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_elf_select_rtx_section): Place function pointers
