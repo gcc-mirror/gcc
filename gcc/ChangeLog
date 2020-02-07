@@ -1,3 +1,11 @@
+2020-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93519
+	* tree-inline.c (fold_marked_statements): Do a PRE walk,
+	skipping unreachable regions.
+	(optimize_inline_calls): Skip folding stmts when we didn't
+	inline.
+
 2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85667
