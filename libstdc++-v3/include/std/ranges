@@ -951,6 +951,100 @@ namespace views
   inline constexpr _Iota iota{};
 } // namespace views
 
+  namespace __detail
+  {
+    template<typename _Val, typename _CharT, typename _Traits>
+      concept __stream_extractable
+	= requires(basic_istream<_CharT, _Traits>& is, _Val& t) { is >> t; };
+  } // namespace __detail
+
+  template<movable _Val, typename _CharT, typename _Traits>
+    requires default_initializable<_Val>
+      && __detail::__stream_extractable<_Val, _CharT, _Traits>
+    class basic_istream_view
+    : public view_interface<basic_istream_view<_Val, _CharT, _Traits>>
+    {
+    public:
+      basic_istream_view() = default;
+
+      constexpr explicit
+      basic_istream_view(basic_istream<_CharT, _Traits>& __stream)
+	: _M_stream(std::__addressof(__stream))
+      { }
+
+      constexpr auto
+      begin()
+      {
+	if (_M_stream != nullptr)
+	  *_M_stream >> _M_object;
+	return _Iterator{*this};
+      }
+
+      constexpr default_sentinel_t
+      end() const noexcept
+      { return default_sentinel; }
+
+    private:
+      basic_istream<_CharT, _Traits>* _M_stream = nullptr;
+      _Val _M_object = _Val();
+
+      struct _Iterator
+      {
+      public:
+	using iterator_category = input_iterator_tag;
+	using difference_type = ptrdiff_t;
+	using value_type = _Val;
+
+	_Iterator() = default;
+
+	constexpr explicit
+	_Iterator(basic_istream_view& __parent) noexcept
+	  : _M_parent(std::__addressof(__parent))
+	{ }
+
+	_Iterator(const _Iterator&) = delete;
+	_Iterator(_Iterator&&) = default;
+	_Iterator& operator=(const _Iterator&) = delete;
+	_Iterator& operator=(_Iterator&&) = default;
+
+	_Iterator&
+	operator++()
+	{
+	  __glibcxx_assert(_M_parent->_M_stream != nullptr);
+	  *_M_parent->_M_stream >> _M_parent->_M_object;
+	}
+
+	void
+	operator++(int)
+	{ ++*this; }
+
+	_Val&
+	operator*() const
+	{
+	  __glibcxx_assert(_M_parent->_M_stream != nullptr);
+	  return _M_parent->_M_object;
+	}
+
+	friend bool
+	operator==(const _Iterator& __x, default_sentinel_t)
+	{ return __x._M_at_end(); }
+
+      private:
+	basic_istream_view* _M_parent = nullptr;
+
+	bool
+	_M_at_end() const
+	{ return _M_parent == nullptr || !*_M_parent->_M_stream; }
+      };
+
+      friend _Iterator;
+    };
+
+  template<typename _Val, typename _CharT, typename _Traits>
+    basic_istream_view<_Val, _CharT, _Traits>
+    istream_view(basic_istream<_CharT, _Traits>& __s)
+    { return basic_istream_view<_Val, _CharT, _Traits>{__s}; }
+
 namespace __detail
 {
   struct _Empty { };
