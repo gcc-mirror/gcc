@@ -2646,6 +2646,8 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
      header-name preprocessing tokens, or module
      followed by identifier, ':' or ';' preprocessing
      tokens.  */
+  // FIXME: should I be rejecting identifiers that are keywords?  I
+  // don't know that at this point?
   if (peek->type == CPP_NAME
       || peek->type == CPP_COLON
       ||  (header_count
@@ -3990,16 +3992,233 @@ cpp_stop_forcing_token_locations (cpp_reader *r)
   r->forced_token_location = 0;
 }
 
-/* Directives only scanning.  When raw string literals are enabled,
+/* We're looking at \, if it's escaping EOL, look past it.  If at
+   LIMIT, don't advance.  */
+
+static const unsigned char *
+do_peek_backslash (const unsigned char *peek, const unsigned char *limit)
+{
+  const unsigned char *probe = peek;
+
+  if (__builtin_expect (peek[1] == '\n', true))
+    {
+    eol:
+      probe += 2;
+      if (__builtin_expect (probe < limit, true))
+	{
+	  peek = probe;
+	  if (*peek == '\\')
+	    /* The user might be perverse.  */
+	    return do_peek_backslash (peek, limit);
+	}
+    }
+  else if (__builtin_expect (peek[1] == '\r', false))
+    {
+      if (probe[2] == '\n')
+	probe++;
+      goto eol;
+    }
+
+  return peek;
+}
+
+static const unsigned char *
+do_peek_next (const unsigned char *peek, const unsigned char *limit)
+{
+  if (__builtin_expect (*peek == '\\', false))
+    peek = do_peek_backslash (peek, limit);
+  return peek;
+}
+
+/* If PEEK[-1] is identifier MATCH, scan past it and trailing white
+   space.  Otherwise return NULL.  */
+
+static const unsigned char *
+do_peek_ident (const char *match, const unsigned char *peek,
+	       const unsigned char *limit)
+{
+  for (; *++match; peek++)
+    if (*peek != *match)
+      {
+	peek = do_peek_next (peek, limit);
+	if (*peek != *match)
+	  return NULL;
+      }
+
+  /* Must now not be looking at an identifier char.  */
+  peek = do_peek_next (peek, limit);
+  if (ISIDNUM (*peek))
+    return NULL;
+
+  /* Skip control-line whitespace.  */
+ ws:
+  while (*peek == ' ' || *peek == '\t')
+    peek++;
+  if (__builtin_expect (*peek == '\\', false))
+    {
+      peek = do_peek_backslash (peek, limit);
+      if (*peek != '\\')
+	goto ws;
+    }
+
+  return peek;
+}
+
+/* Are we looking at a module control line starting as PEEK - 1?  */
+
+static bool
+do_peek_module (cpp_reader *pfile, unsigned char c,
+		const unsigned char *peek, const unsigned char *limit)
+{
+  bool import = false;
+
+  if (__builtin_expect (c == 'e', false))
+    {
+      if (!((peek[0] == 'x' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("export", peek, limit))))
+	return false;
+
+      /* export, peek for import or module.  No need to peek __import
+	 here.  */
+      if (peek[0] == 'i')
+	{
+	  if (!((peek[1] == 'm' || peek[1] == '\\')
+		&& (peek = do_peek_ident ("import", peek + 1, limit))))
+	    return false;
+	  import = true;
+	}
+      else if (peek[0] == 'm')
+	{
+	  if (!((peek[1] == 'o' || peek[1] == '\\')
+		&& (peek = do_peek_ident ("module", peek + 1, limit))))
+	    return false;
+	}
+      else
+	return false;
+    }
+  else if (__builtin_expect (c == 'i', false))
+    {
+      if (!((peek[0] == 'm' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("import", peek, limit))))
+	return false;
+      import = true;
+    }
+  else if (__builtin_expect (c == '_', false))
+    {
+      /* Needed for translated includes.   */
+      if (!((peek[0] == '_' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("__import", peek, limit))))
+	return false;
+      import = true;
+    }
+  else if (__builtin_expect (c == 'm', false))
+    {
+      if (!((peek[0] == 'o' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("module", peek, limit))))
+	return false;
+    }
+  else
+    return false;
+
+  /* Peek the next character to see if it's good enough.  We'll be at
+     the first non-whitespace char, including skipping an escaped
+     newline.  */
+  /* ... import followed by identifier, ':', '<' or header-name
+     preprocessing tokens, or module followed by identifier, ':' or
+     ';' preprocessing tokens.  */
+  // FIXME: Not sure what to do about unicode here
+  unsigned char p = *peek++;
+      
+  /* A character literal is ... single quotes, ... optionally preceded
+     by u8, u, U, or L */
+  /* A string-literal is a ... double quotes, optionally prefixed by
+     R, u8, u8R, u, uR, U, UR, L, or LR */
+  if (p == 'u')
+    {
+      peek = do_peek_next (peek, limit);
+      if (*peek == '8')
+	{
+	  peek++;
+	  goto peek_u8;
+	}
+      goto peek_u;
+    }
+  else if (p == 'U' || p == 'L')
+    {
+    peek_u8:
+      peek = do_peek_next (peek, limit);
+    peek_u:
+      if (*peek == '\"' || *peek == '\'')
+	return false;
+
+      if (*peek == 'R')
+	goto peek_R;
+      /* Identifier. Ok.  */
+    }
+  else if (p == 'R')
+    {
+    peek_R:
+      if (CPP_OPTION (pfile, rliterals))
+	{
+	  peek = do_peek_next (peek, limit);
+	  if (*peek == '\"')
+	    return false;
+	}
+      /* Identifier. Ok.  */
+    }
+  else if (p == '_'
+	   || (p >= 'a' && p <= 'z')
+	   || (p >= 'A' && p <= 'Z'))
+    {
+      /* IDENTIFIER.  Ok. */
+    }
+  else if (p == '<')
+    {
+      /* Maybe angle header, ok for import.  Reject
+	 '<=', '<<' digraph:'<:'.  */
+      if (!import)
+	return false;
+      peek = do_peek_next (peek, limit);
+      if (*peek == '=' || *peek == '<'
+	  || (*peek == ':' && CPP_OPTION (pfile, digraphs)))
+	return false;
+    }
+  else if (p == ';')
+    {
+      /* SEMICOLON, ok for module.  */
+      if (import)
+	return false;
+    }
+  else if (p == '"')
+    {
+      /* STRING, ok for import.  */
+      if (!import)
+	return false;
+    }
+  else if (p == ':')
+    {
+      /* Maybe COLON, ok.  Reject '::', digraph:':>'.  */
+      peek = do_peek_next (peek, limit);
+      if (*peek == ':' || (*peek == '>' && CPP_OPTION (pfile, digraphs)))
+	return false;
+    }
+  else
+    return false;
+
+  return true;
+}
+
+/* Directives-only scanning.  When raw string literals are enabled,
    .*R"<chars>(...)<chars>" is a raw string.  Further, the contained
    <chars> and its parens cannot be broken over a (escaped) line.
    Neither can the R and the " be broken that way.  Deal with it, you
    obfuscator of code.  */
+// FIXME: Ok, voice in my head, I'll to it properly ...
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
 			    void *data,
-			    void (*cb) (CPP_DO_task, void *, ...))
+			    void (*cb) (cpp_reader *, CPP_DO_task, void *, ...))
 {
   enum DO_state {
    DO_bol = 1 << 0,
@@ -4018,7 +4237,6 @@ cpp_directive_only_process (cpp_reader *pfile,
   };
 
   bool module_p = CPP_OPTION (pfile, module_directives);
-  bool raw_p = CPP_OPTION (pfile, rliterals);
 
   do
     {
@@ -4050,8 +4268,9 @@ cpp_directive_only_process (cpp_reader *pfile,
 	  else if (__builtin_expect (c == '#', false))
 	    {
 	      /* Line directive.  */
-	      if (line_start > base && !pfile->state.skipping)
-		cb (CPP_DO_print, data, line_count, base, line_start - base);
+	      if (pos - 1 > base && !pfile->state.skipping)
+		cb (pfile, CPP_DO_print, data,
+		    line_count, base, pos - 1 - base);
 
 	      /* Prep things for directive handling. */
 	      buffer->next_line = pos;
@@ -4071,25 +4290,50 @@ cpp_directive_only_process (cpp_reader *pfile,
 
 	      if (!pfile->state.skipping
 		  && pfile->buffer->next_line < pfile->buffer->rlimit)
-		cb (CPP_DO_location, data, pfile->line_table->highest_line);
+		cb (pfile, CPP_DO_location, data,
+		    pfile->line_table->highest_line);
 
 	      goto restart;
 	    }
-	  else if (module_p)
+	  else if (module_p && !pfile->state.skipping
+		   && do_peek_module (pfile, c, pos, limit))
 	    {
-	      // FIXME:  Fully detect module lines
-	      if (__builtin_expect (c == '_', false))
+	      /* We've seen the start of a module control line.
+		 Start up the tokenizer.  */
+	      pos--; /* Backup over the first character.  */
+
+	      /* Backup over whitespace to start of line.  */
+	      while (pos > line_start
+		     && (pos[-1] == ' ' || pos[-1] == '\t'))
+		pos--;
+
+	      if (pos > base)
+		cb (pfile, CPP_DO_print, data, line_count, base, pos - base);
+
+	      /* Prep things for directive handling. */
+	      buffer->next_line = pos;
+	      buffer->need_line = true;
+
+	      /* Now get tokens until the PRAGMA_EOL.  */
+	      do
 		{
+		  location_t spelling;
+		  const cpp_token *tok
+		    = cpp_get_token_with_location (pfile, &spelling);
+
+		  if (pfile->state.in_deferred_pragma
+		      || tok->type == CPP_PRAGMA_EOL)
+		    cb (pfile, CPP_DO_token, data, tok, spelling);
+		  else
+		    {
+		      /* Something wrong.  */
+		      // FIXME: don't explode!
+		      gcc_assert (false);
+		    }
 		}
-	      else if (__builtin_expect (c == 'e', false))
-		{
-		}
-	      else if (__builtin_expect (c == 'i', false))
-		{
-		}
-	      else if (__builtin_expect (c == 'm', false))
-		{
-		}
+	      while (pfile->state.in_deferred_pragma);
+
+	      goto restart;
 	    }
 
 	  /* Not a special DO_bol character.  */
@@ -4190,7 +4434,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 						      pos - line_start);
 		  if (c == '\'')
 		    state |= DO_char_lit;
-		  else if (raw_p
+		  else if (CPP_OPTION (pfile, rliterals)
 			   && !(state & DO_bol)
 			   /* Safe to peek backwards if not at BOL.  */
 			   && pos[-2] == 'R')
@@ -4273,7 +4517,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 			     "unterminated literal");
 
       if (line_start > base && !pfile->state.skipping)
-	cb (CPP_DO_print, data, line_count, base, line_start - base);
+	cb (pfile, CPP_DO_print, data, line_count, base, line_start - base);
 
       _cpp_pop_buffer (pfile);
     }

@@ -1,5 +1,21 @@
 2020-02-07  Nathan Sidwell  <nathan@acm.org>
 
+	-fdirectives-only (a bit buggy)
+	gcc/c-family/
+	* c-ppoutput.c (token_streamer::stream): Adust PRAGMA_EOL.
+	(class_do_streamer): New.
+	(directives_only_cb): Extend for token streaming.
+	(scan_translation_unit_directives_only): Pay attention to
+	preprocess lang_hook.
+	(print_line_1): Ignore UNKNOWN_LOCATIONs.
+	libcpp/
+	* include/cpplib.h (cpp_directives_only): Add cpp_reader to
+	callback.
+	* lex.c (do_peek_{backslash,next,ident,module): New.
+	(cpp_directive_only_preprocess): Add module peeking.
+	gcc/testsuite/
+	* g++.dg/modules/dir-only-2_[ab].[CH]: New.
+
 	gcc/c-family/
 	* c-ppoutput.c (class token_streamer): New class, swallow guts of
 	...

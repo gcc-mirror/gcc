@@ -1366,7 +1366,8 @@ enum CPP_DO_task
 
 extern void cpp_directive_only_process (cpp_reader *pfile,
 					void *data,
-					void (*cb) (CPP_DO_task,
+					void (*cb) (cpp_reader *,
+						    CPP_DO_task,
 						    void *data, ...));
 
 /* In expr.c */
