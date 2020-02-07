@@ -1,5 +1,12 @@
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93350
+	* region-model.cc (region_model::get_lvalue_1):
+	Handle BIT_FIELD_REF.
+	(make_region_for_type): Handle VECTOR_TYPE.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93647
 	* diagnostic-manager.cc
 	(diagnostic_manager::prune_for_sm_diagnostic): Bulletproof against

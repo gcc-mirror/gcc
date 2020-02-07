@@ -4635,6 +4635,14 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
       }
       break;
 
+    case BIT_FIELD_REF:
+      {
+	/* For now, create a view, as if a cast, ignoring the bit positions.  */
+	tree obj = TREE_OPERAND (expr, 0);
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+      };
+      break;
+
     case MEM_REF:
       {
 	tree ptr = TREE_OPERAND (expr, 0);
@@ -6008,7 +6016,8 @@ make_region_for_type (region_id parent_rid, tree type)
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
       || POINTER_TYPE_P (type)
-      || TREE_CODE (type) == COMPLEX_TYPE)
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
     return new primitive_region (parent_rid, type);
 
   if (TREE_CODE (type) == RECORD_TYPE)
