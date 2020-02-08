@@ -3028,8 +3028,32 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
   if (end > 0)
     {
       tree cindex = (*elts)[end - 1].index;
-      if (TREE_CODE (cindex) == INTEGER_CST
-	  && compare_tree_int (cindex, end - 1) == 0)
+      if (cindex == NULL_TREE)
+	{
+	  /* Verify that if the last index is missing, all indexes
+	     are missing.  */
+	  if (flag_checking)
+	    for (unsigned int j = 0; j < len - 1; ++j)
+	      gcc_assert ((*elts)[j].index == NULL_TREE);
+	  if (i < end)
+	    return i;
+	  else
+	    {
+	      begin = end;
+	      if (i == end)
+		/* If the element is to be added right at the end,
+		   make sure it is added with cleared index too.  */
+		dindex = NULL_TREE;
+	      else if (insert)
+		/* Otherwise, in order not to break the assumption
+		   that CONSTRUCTOR either has all indexes or none,
+		   we need to add indexes to all elements.  */
+		for (unsigned int j = 0; j < len; ++j)
+		  (*elts)[j].index = build_int_cst (TREE_TYPE (dindex), j);
+	    }
+	}
+      else if (TREE_CODE (cindex) == INTEGER_CST
+	       && compare_tree_int (cindex, end - 1) == 0)
 	{
 	  if (i < end)
 	    return i;
@@ -4551,7 +4575,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	    = find_array_ctor_elt (*valp, index, /*insert*/true);
 	  gcc_assert (i >= 0);
 	  cep = CONSTRUCTOR_ELT (*valp, i);
-	  gcc_assert (TREE_CODE (cep->index) != RANGE_EXPR);
+	  gcc_assert (cep->index == NULL_TREE
+		      || TREE_CODE (cep->index) != RANGE_EXPR);
 	}
       else
 	{

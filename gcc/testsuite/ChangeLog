@@ -1,3 +1,8 @@
+2020-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93549
+	* g++.dg/ext/constexpr-pr93549.C: New test.
+
 2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

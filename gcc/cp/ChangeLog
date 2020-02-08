@@ -1,3 +1,12 @@
+2020-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93549
+	* constexpr.c (find_array_ctor_elt): If last element has no index,
+	for flag_checking verify all elts have no index.  If i is within the
+	elts, return it directly, if it is right after the last elt, append
+	if NULL index, otherwise force indexes on all elts.
+	(cxx_eval_store_expression): Allow cep->index to be NULL.
+
 2020-02-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92947 - Paren init of aggregates in unevaluated context.
