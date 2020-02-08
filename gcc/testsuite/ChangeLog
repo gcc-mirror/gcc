@@ -1,6 +1,12 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65782
+	* gcc.target/i386/pr65782.c: New test.
+
 	2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93557

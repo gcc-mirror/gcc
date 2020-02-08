@@ -1082,9 +1082,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
      6,   6,    6,    6,    6,    6,    6,    6,		\
 /*xmm16,xmm17,xmm18,xmm19,xmm20,xmm21,xmm22,xmm23*/		\
-     6,    6,     6,    6,    6,    6,    6,    6,		\
+     1,    1,     1,    1,    1,    1,    1,    1,		\
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
-     6,    6,     6,    6,    6,    6,    6,    6,		\
+     1,    1,     1,    1,    1,    1,    1,    1,		\
  /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
      1,   1,   1,   1,   1,   1,   1,   1 }
 

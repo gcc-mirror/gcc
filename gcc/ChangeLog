@@ -1,6 +1,13 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65782
+	* config/i386/i386.h (CALL_USED_REGISTERS): Make
+	xmm16-xmm31 call-used even in 64-bit ms-abi.
+
 	2020-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/93515
