@@ -1,3 +1,8 @@
+2020-02-08  Andrew Pinski  <apinski@marvel.com>
+
+	PR target/91927
+	* gcc.target/aarch64/pr91927.c: New testcase.
+
 2020-02-08  Peter Bergner <bergner@linux.ibm.com>
 
 	PR target/93136
