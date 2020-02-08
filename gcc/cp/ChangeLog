@@ -1,3 +1,38 @@
+2020-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90691
+	* expr.c (fold_for_warn): Call maybe_constant_value.
+	* constexpr.c (struct constexpr_ctx): Add uid_sensitive bit-field.
+	(maybe_constant_value): Add uid_sensitive parm.
+	(get_fundef_copy): Don't copy if it's true.
+	(cxx_eval_call_expression): Don't instantiate if it's true.
+	(cxx_eval_outermost_constant_expr): Likewise.
+
+	PR c++/92852
+	* constexpr.c (maybe_constant_value): Don't unshare if the cached
+	value is the same as the argument.
+
+	* typeck.c (maybe_warn_about_returning_address_of_local): Add
+	location parameter.
+
+	* typeck2.c (process_init_constructor): Also clear TREE_SIDE_EFFECTS
+	if appropriate.
+
+2020-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93549
+	* constexpr.c (find_array_ctor_elt): If last element has no index,
+	for flag_checking verify all elts have no index.  If i is within the
+	elts, return it directly, if it is right after the last elt, append
+	if NULL index, otherwise force indexes on all elts.
+	(cxx_eval_store_expression): Allow cep->index to be NULL.
+
+2020-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92947 - Paren init of aggregates in unevaluated context.
+	* call.c (build_new_method_call_1): Don't check
+	cp_unevaluated_operand.  Check the return value of digest_init.
+
 2020-02-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92654

@@ -1929,11 +1929,15 @@ process_init_constructor (tree type, tree init, int nested, int flags,
       TREE_SIDE_EFFECTS (init) = true;
     }
   else if (picflags & PICFLAG_NOT_ALL_CONSTANT)
-    /* Make sure TREE_CONSTANT isn't set from build_constructor.  */
-    TREE_CONSTANT (init) = false;
+    {
+      /* Make sure TREE_CONSTANT isn't set from build_constructor.  */
+      TREE_CONSTANT (init) = false;
+      TREE_SIDE_EFFECTS (init) = false;
+    }
   else
     {
       TREE_CONSTANT (init) = 1;
+      TREE_SIDE_EFFECTS (init) = false;
       if (!(picflags & PICFLAG_NOT_ALL_SIMPLE))
 	TREE_STATIC (init) = 1;
     }

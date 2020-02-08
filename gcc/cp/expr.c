@@ -397,6 +397,8 @@ fold_for_warn (tree x)
       else
 	return f;
     }
+  else if (cxx_dialect >= cxx11)
+    x = maybe_constant_value (x, NULL_TREE, false, true);
 
   return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
 }
