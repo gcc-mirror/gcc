@@ -4209,7 +4209,13 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
 }
 
 /* Directives-only scanning.  Somewhat more relaxed than correct
-   parsing -- some ill-formed programs will not be rejected.  */
+   parsing -- some ill-formed programs will not be rejected.  We also
+   interpret 'R"' as beginning a raw string, even when R is ending an
+   identifier that is not a valid raw string introducer.  (To do
+   otherwise means we have to lex identifiers in all their glory,
+   which would slow us down to deal with a case that is bad code and
+   the author of it should feel bad.  And hey, this is a
+   non-conforming mode anyway.  */
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
@@ -4236,7 +4242,6 @@ cpp_directive_only_process (cpp_reader *pfile,
 
       bool bol = true;
       bool raw = false;
-      bool ulit = false;
 
       for (const unsigned char *pos = base, *limit = buffer->rlimit;
 	   pos < limit;)
@@ -4247,7 +4252,6 @@ cpp_directive_only_process (cpp_reader *pfile,
 	    {
 	    case ' ': case '\t': case '\f': case '\v':
 	      /* Whitespace, do nothing.  */
-	      ulit = false;
 	      break;
 
 	    case '\r': /* MAC line ending, or Windows \r\n  */
@@ -4257,7 +4261,6 @@ cpp_directive_only_process (cpp_reader *pfile,
 
 	    case '\n':
 	      bol = true;
-	      ulit = false;
 
 	    next_line:
 	      CPP_INCREMENT_LINE (pfile, 0);
@@ -4280,11 +4283,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 		  pos++;
 		  goto next_line;
 		}
-
-	      pfile->mi_valid = false;
-	      bol = false;
-	      ulit = false;
-	      break;
+	      goto dflt;
 	      
 	    case '#':
 	      if (bol)
@@ -4318,21 +4317,13 @@ cpp_directive_only_process (cpp_reader *pfile,
 
 		  goto restart;
 		}
-	      pfile->mi_valid = false;
-	      bol = false;
-	      ulit = false;
-	      break;
+	      goto dflt;
 
 	    case '/':
 	      {
 		const unsigned char *peek = do_peek_next (pos, limit);
 		if (!(*peek == '/' || *peek == '*'))
-		  {
-		    pfile->mi_valid = false;
-		    bol = false;
-		    ulit = false;
-		    break;
-		  }
+		  goto dflt;
 
 		/* Line or block comment  */
 		bool is_block = *peek == '*';
@@ -4392,33 +4383,61 @@ cpp_directive_only_process (cpp_reader *pfile,
 		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
 				     "unterminated comment");
 	      done_comment:
-		ulit = false;
 		break;
 	      }
 
 	    case '\'':
 	    case '\"':
 	      {
-		/* String or char literal.  */
-	      do_string:
+		/* (Possibly raw) string or char literal.  */
 		unsigned char end = c;
-		int raw_len = -1;
-		int raw_pos = -1;
-		unsigned char raw_delim[16 + 1]; /* 'At most 16' */
+		int delim_len = -1;
+		const unsigned char *delim = NULL;
 		location_t sloc = linemap_position_for_column (pfile->line_table,
 							       pos - line_start);
-		bool prefixing = raw;
 		int esc = 0;
 
-		if (prefixing)
-		  raw_len = 0;
+		if (raw)
+		  {
+		    /* There can be no line breaks in the delimiter.  */
+		    delim = pos;
+		    for (delim_len = 0; (c = *pos++) != '('; delim_len++)
+		      {
+			if (delim_len == 16)
+			  {
+			    cpp_error_with_line (pfile, CPP_DL_ERROR,
+						 sloc, 0,
+						 "raw string delimiter"
+						 " longer than %d"
+						 " characters",
+						 delim_len);
+			    raw = false;
+			    pos = delim;
+			    break;
+			  }
+			if (strchr (") \\\t\v\f\n", c))
+			  {
+			    cpp_error_with_line (pfile, CPP_DL_ERROR,
+						 sloc, 0,
+						 "invalid character '%c'"
+						 " in raw string"
+						 " delimiter", c);
+			    raw = false;
+			    pos = delim;
+			    break;
+			  }
+			if (pos >= limit)
+			  goto bad_string;
+		      }
+		  }
+		
 		while (pos < limit)
 		  {
 		    char c = *pos++;
 		    switch (c)
 		      {
 		      case '\\':
-			if (raw_len < 0)
+			if (!raw)
 			  esc++;
 			break;
 
@@ -4437,66 +4456,32 @@ cpp_directive_only_process (cpp_reader *pfile,
 			  esc--;
 			break;
 
-		      default:
-			if (raw_len >= 0)
+		      case ')':
+			if (raw
+			    && pos + delim_len + 1 < limit
+			    && pos[delim_len] == end
+			    && !memcmp (delim, pos, delim_len))
 			  {
-			    if (prefixing)
-			      {
-				if (c == '(')
-				  {
-				    raw_delim[raw_len++] = end;
-				    prefixing = false;
-				  }
-				else if (raw_len == sizeof (raw_delim) - 1)
-				  {
-				    cpp_error_with_line (pfile, CPP_DL_ERROR,
-							 sloc, 0,
-							 "raw string delimiter"
-							 " longer than %d"
-							 " characters",
-							 raw_len);
-				    raw_len = -1;
-				  }
-				else if (strchr (") \\\t\v\f\n", c))
-				  {
-				    cpp_error_with_line (pfile, CPP_DL_ERROR,
-							 sloc, 0,
-							 "invalid character '%c'"
-							 " in raw string"
-							 " delimiter", c);
-				    raw_len = -1;
-				  }
-				else
-				  raw_delim[raw_len++] = c;
-			      }
-			    else if (c == ')')
-			      raw_pos = 0;
-			    else if (raw_pos >= 0)
-			      {
-				if (raw_delim[raw_pos] == c)
-				  {
-				    raw_pos++;
-				    if (raw_pos == raw_len)
-				      goto done_string;
-				  }
-				else
-				  raw_pos = -1;
-			      }
+			    pos += delim_len + 1;
+			    raw = false;
+			    goto done_string;
 			  }
-			else if (!(esc & 1) && c == end)
+			break;
+
+		      default:
+			if (!raw && !(esc & 1) && c == end)
 			  goto done_string;
 			esc = 0;
 			break;
 		      }
 		  }
+	      bad_string:
 		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
 				     "unterminated literal");
-	      done_string:
-		pfile->mi_valid = false;
-		bol = false;
-		ulit = true;
+		
+	      done_string:;
 	      }
-	      break;
+	      goto dflt;
 
 	    case '_':
 	    case 'e':
@@ -4542,117 +4527,18 @@ cpp_directive_only_process (cpp_reader *pfile,
 		  pfile->mi_valid = false;
 		  goto restart;
 		}
-	      goto do_ident_num;
+	      goto dflt;
 
-	    case 'u':
-	    case 'U':
-	    case 'L':
 	    case 'R':
-	      /* 'L', 'u', 'U', 'u8' or 'R' may introduce wide characters,
-		 wide strings or raw strings.  */
-	      if (ulit && CPP_OPTION (pfile, uliterals))
-		goto do_ident_num;
-
-	      {
-		bool eight = c == 'u';
-		raw = c == 'R';
-
-		pos--;
-		while (pos < limit)
-		  {
-		    c = *++pos;
-		    switch (c)
-		      {
-		      case '\\':
-			switch (pos[1])
-			  {
-			  case '\r':
-			    if (pos[2] == '\n')
-			      pos++;
-			    /* FALLTHROUGH  */
-
-			  case '\n':
-			    pos += 2;
-			    CPP_INCREMENT_LINE (pfile, 0);
-			    line_count++;
-			    line_start = pos;
-			    continue;
-
-			  default:
-			    break;
-			  }
-			goto done_ident_num;
-
-		      case '8':
-			if (!eight)
-			  goto do_ident_num;
-			eight = false;
-			break;
-
-		      case 'R':
-			if (raw)
-			  goto do_ident_num;
-			raw = true;
-			break;
-
-		      default:
-			goto maybe_ident_num;
-
-		      case '"':
-			pos++;
-			goto do_string;
-		      }
-		  }
-	      }
-	      break;
+	      raw = *do_peek_next (pos, limit) == '"';
+	      goto dflt;
 
 	    default:
-	      // FIXME: We should probably do something about unicode
-	      // identifiers
-	      maybe_ident_num:
-	      if (ISIDNUM (c)
-		  || (c == '$' && CPP_OPTION (pfile, dollars_in_ident)))
-		{
-		do_ident_num:
-		  pos--;
-		  while (++pos < limit)
-		    {
-		      char c = *pos;
-		      if (ISIDNUM (c)
-			  || (c == '$' && CPP_OPTION (pfile, dollars_in_ident)))
-			;
-		      else if (c == '`' && CPP_OPTION (pfile, digit_separators))
-			;
-		      else if (c == '\\')
-			{
-			  switch (pos[1])
-			    {
-			    case '\r':
-			      if (pos[2] == '\n')
-				pos++;
-			      /* FALLTHROUGH  */
-
-			    case '\n':
-			      pos += 2;
-			      CPP_INCREMENT_LINE (pfile, 0);
-			      line_count++;
-			      line_start = pos;
-			      break;
-
-			    default:
-			      goto done_ident_num;
-			    }
-			}
-		      else
-			break;
-		    }
-		done_ident_num:;
-		}
+	    dflt:
 	      bol = false;
-	      ulit = false;
 	      pfile->mi_valid = false;
 	      break;
-	      }
+	    }
 	}
 
       if (buffer->rlimit > base && !pfile->state.skipping)
