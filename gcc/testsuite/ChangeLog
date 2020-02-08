@@ -1,3 +1,13 @@
+2020-02-08  Peter Bergner <bergner@linux.ibm.com>
+
+	PR target/93136
+	* gcc.dg/vmx/ops.c: Add -flax-vector-conversions to dg-options.
+	* gcc.target/powerpc/vsx-vector-6.h: Split tests into smaller functions.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Adjust scan-assembler-times
+	regex directives.  Adjust expected instruction counts.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Likewise.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Likewise.
+
 2020-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93549
