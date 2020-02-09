@@ -268,6 +268,13 @@ along with GCC; see the file COPYING3.  If not see
   1, 1									\
 }
 
+/* Select a register mode required for caller save of hard regno REGNO.
+   Contrary to what is documented, the default is not the smallest suitable
+   mode but the largest suitable mode for the given (REGNO, NREGS) pair and
+   it quickly creates paradoxical subregs that can be problematic.  */
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
+  ((MODE) == VOIDmode ? choose_hard_reg_mode (REGNO, NREGS, NULL) : (MODE))
+
 /* Internal macros to classify an ISA register's type.  */
 
 #define GP_REG_FIRST 0

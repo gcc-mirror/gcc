@@ -1,3 +1,37 @@
+2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* recog.c: Move pass_split_before_sched2 code in front of
+	pass_split_before_regstack.
+	(pass_data_split_before_sched2): Rename pass to split3 from split4.
+	(pass_data_split_before_regstack): Rename pass to split4 from split3.
+	(rest_of_handle_split_before_sched2): Remove.
+	(pass_split_before_sched2::execute): Unconditionally call
+	split_all_insns.
+	(enable_split_before_sched2): New function.
+	(pass_split_before_sched2::gate): Use enable_split_before_sched2.
+	(pass_split_before_regstack::gate): Ditto.
+	* config/nds32/nds32.c (nds32_split_double_word_load_store_p):
+	Update name check for renamed split4 pass.
+	* config/sh/sh.c (register_sh_passes): Update pass insertion
+	point for renamed split4 pass.
+
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Promote
+	DECL_IN_CONSTANT_POOL variables into "omp declare target" to avoid
+	copying them around between host and target.
+
+2020-02-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/91927
+	* config/aarch64/aarch64-simd.md (movmisalign<mode>): Check
+	STRICT_ALIGNMENT also.
+
+2020-02-08  Jim Wilson  <jimw@sifive.com>
+
+	PR target/93532
+	* config/riscv/riscv.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+
 2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
