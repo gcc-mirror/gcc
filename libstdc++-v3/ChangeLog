@@ -1,3 +1,12 @@
+2020-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_cmp.h (__detail::__eq_builtin_ptr_cmp): Require
+	equality comparison to be valid and return bool.
+	(__detail::__less_builtin_ptr_cmp): Likewise for less-than comparison.
+	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: Check
+	type with ambiguous conversion to fundamental types.
+	* testsuite/20_util/function_objects/range.cmp/less.cc: Likewise.
+
 2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (iter_difference_t, iter_value_t):

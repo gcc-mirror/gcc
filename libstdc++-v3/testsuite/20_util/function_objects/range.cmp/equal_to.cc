@@ -69,6 +69,15 @@ test02()
   VERIFY( f(x, x) );
 }
 
+struct Y
+{
+  operator void*() const;
+  operator int() const;
+};
+
+// X{} == X{} is ambiguous so ranges::equal_to{}(X{}, X{}) should be invalid
+static_assert( !std::is_invocable_v<F&, Y, Y> );
+
 int
 main()
 {
