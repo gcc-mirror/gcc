@@ -31166,7 +31166,7 @@ package body Sem_Prag is
          Error_Msg_N ("condition is not known at compile time", Arg1x);
 
       elsif Warn_On_Unknown_Compile_Time_Warning then
-         Error_Msg_N ("?condition is not known at compile time", Arg1x);
+         Error_Msg_N ("??condition is not known at compile time", Arg1x);
       end if;
    end Validate_Compile_Time_Warning_Or_Error;
 
