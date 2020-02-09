@@ -1135,6 +1135,15 @@ build_array_of_n_type (tree elt, int n)
   return build_cplus_array_type (elt, build_index_type (size_int (n - 1)));
 }
 
+/* True iff T is an array of unknown bound.  */
+
+bool
+array_of_unknown_bound_p (const_tree t)
+{
+  return (TREE_CODE (t) == ARRAY_TYPE
+	  && !TYPE_DOMAIN (t));
+}
+
 /* True iff T is an N3639 array of runtime bound (VLA).  These were approved
    for C++14 but then removed.  This should only be used for N3639
    specifically; code wondering more generally if something is a VLA should use
