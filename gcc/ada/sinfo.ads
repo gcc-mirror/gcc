@@ -425,7 +425,6 @@ package Sinfo is
    --       Must_Not_Freeze          (Flag8-Sem)  set if must not freeze
    --       Do_Range_Check           (Flag9-Sem)  set if a range check needed
    --       Has_Dynamic_Length_Check (Flag10-Sem) set if length check inserted
-   --       Has_Dynamic_Range_Check  (Flag12-Sem) set if range check inserted
    --       Assignment_OK            (Flag15-Sem) set if modification is OK
    --       Is_Controlling_Actual    (Flag16-Sem) set for controlling argument
 
@@ -1455,14 +1454,6 @@ package Sinfo is
    --    that one of the routines in unit Checks has generated a length check
    --    action which has been inserted at the flagged node. This is used to
    --    avoid the generation of duplicate checks.
-
-   --  Has_Dynamic_Range_Check (Flag12-Sem)
-   --    This flag is present in N_Subtype_Declaration nodes and on all
-   --    expression nodes. It is set to indicate that one of the routines in
-   --    unit Checks has generated a range check action which has been inserted
-   --    at the flagged node. This is used to avoid the generation of duplicate
-   --    checks. Why does this occur on N_Subtype_Declaration nodes, what does
-   --    it mean in that context???
 
    --  Has_Local_Raise (Flag8-Sem)
    --    Present in exception handler nodes. Set if the handler can be entered
@@ -2866,7 +2857,6 @@ package Sinfo is
       --  Subtype_Indication (Node5)
       --  Generic_Parent_Type (Node4-Sem) (set for an actual derived type).
       --  Exception_Junk (Flag8-Sem)
-      --  Has_Dynamic_Range_Check (Flag12-Sem)
 
       -------------------------------
       -- 3.2.2  Subtype Indication --
@@ -9588,9 +9578,6 @@ package Sinfo is
    function Has_Dynamic_Length_Check
      (N : Node_Id) return Boolean;    -- Flag10
 
-   function Has_Dynamic_Range_Check
-     (N : Node_Id) return Boolean;    -- Flag12
-
    function Has_Init_Expression
      (N : Node_Id) return Boolean;    -- Flag14
 
@@ -10693,9 +10680,6 @@ package Sinfo is
 
    procedure Set_Has_Dynamic_Length_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag10
-
-   procedure Set_Has_Dynamic_Range_Check
-     (N : Node_Id; Val : Boolean := True);    -- Flag12
 
    procedure Set_Has_Init_Expression
      (N : Node_Id; Val : Boolean := True);    -- Flag14
@@ -13347,7 +13331,6 @@ package Sinfo is
    pragma Inline (Has_Created_Identifier);
    pragma Inline (Has_Dereference_Action);
    pragma Inline (Has_Dynamic_Length_Check);
-   pragma Inline (Has_Dynamic_Range_Check);
    pragma Inline (Has_Init_Expression);
    pragma Inline (Has_Local_Raise);
    pragma Inline (Has_Self_Reference);
@@ -13712,7 +13695,6 @@ package Sinfo is
    pragma Inline (Set_Has_Created_Identifier);
    pragma Inline (Set_Has_Dereference_Action);
    pragma Inline (Set_Has_Dynamic_Length_Check);
-   pragma Inline (Set_Has_Dynamic_Range_Check);
    pragma Inline (Set_Has_Init_Expression);
    pragma Inline (Set_Has_Local_Raise);
    pragma Inline (Set_Has_No_Elaboration_Code);

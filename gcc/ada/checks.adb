@@ -488,16 +488,12 @@ package body Checks is
      (Checks       : Check_Result;
       Stmts        : List_Id;
       Suppress_Typ : Entity_Id;
-      Static_Sloc  : Source_Ptr;
-      Flag_Node    : Node_Id)
+      Static_Sloc  : Source_Ptr)
    is
       Checks_On : constant Boolean :=
                     not Index_Checks_Suppressed (Suppress_Typ)
                       or else
                     not Range_Checks_Suppressed (Suppress_Typ);
-
-      Internal_Flag_Node   : constant Node_Id    := Flag_Node;
-      Internal_Static_Sloc : constant Source_Ptr := Static_Sloc;
 
    begin
       --  For now we just return if Checks_On is false, however this should be
@@ -514,19 +510,11 @@ package body Checks is
          if Nkind (Checks (J)) = N_Raise_Constraint_Error
            and then Present (Condition (Checks (J)))
          then
-            if Has_Dynamic_Range_Check (Internal_Flag_Node) then
-               pragma Assert (False);
-               null;
-
-            else
-               Append_To (Stmts, Checks (J));
-               Set_Has_Dynamic_Range_Check (Internal_Flag_Node);
-            end if;
-
+            Append_To (Stmts, Checks (J));
          else
             Append_To
               (Stmts,
-                Make_Raise_Constraint_Error (Internal_Static_Sloc,
+                Make_Raise_Constraint_Error (Static_Sloc,
                   Reason => CE_Range_Check_Failed));
          end if;
       end loop;
@@ -3439,14 +3427,6 @@ package body Checks is
             --  this action analyses the triggering condition.
 
             Insert_Action (Expr, R_Cno);
-
-            --  This old code doesn't make sense, why is the context flagged as
-            --  requiring dynamic range checks now in the middle of generating
-            --  them ???
-
-            if not Do_Static then
-               Set_Has_Dynamic_Range_Check (Expr);
-            end if;
 
             --  The triggering condition evaluates to True, the range check
             --  can be converted into a compile time constraint check.
@@ -7444,8 +7424,7 @@ package body Checks is
      (Checks       : Check_Result;
       Node         : Node_Id;
       Suppress_Typ : Entity_Id;
-      Static_Sloc  : Source_Ptr := No_Location;
-      Flag_Node    : Node_Id    := Empty;
+      Static_Sloc  : Source_Ptr;
       Do_Before    : Boolean    := False)
    is
       Checks_On  : constant Boolean :=
@@ -7453,9 +7432,7 @@ package body Checks is
                        or else
                      not Range_Checks_Suppressed (Suppress_Typ);
 
-      Check_Node           : Node_Id;
-      Internal_Flag_Node   : Node_Id    := Flag_Node;
-      Internal_Static_Sloc : Source_Ptr := Static_Sloc;
+      Check_Node : Node_Id;
 
    begin
       --  For now we just return if Checks_On is false, however this should be
@@ -7466,48 +7443,25 @@ package body Checks is
          return;
       end if;
 
-      if Static_Sloc = No_Location then
-         Internal_Static_Sloc := Sloc (Node);
-      end if;
-
-      if No (Flag_Node) then
-         Internal_Flag_Node := Node;
-      end if;
-
       for J in 1 .. 2 loop
          exit when No (Checks (J));
 
          if Nkind (Checks (J)) = N_Raise_Constraint_Error
            and then Present (Condition (Checks (J)))
          then
-            if Has_Dynamic_Range_Check (Internal_Flag_Node) then
-               pragma Assert (False);
-               null;
-
-            else
-               Check_Node := Checks (J);
-               Mark_Rewrite_Insertion (Check_Node);
-
-               if Do_Before then
-                  Insert_Before_And_Analyze (Node, Check_Node);
-               else
-                  Insert_After_And_Analyze (Node, Check_Node);
-               end if;
-
-               Set_Has_Dynamic_Range_Check (Internal_Flag_Node);
-            end if;
-
+            Check_Node := Checks (J);
          else
             Check_Node :=
-              Make_Raise_Constraint_Error (Internal_Static_Sloc,
+              Make_Raise_Constraint_Error (Static_Sloc,
                 Reason => CE_Range_Check_Failed);
-            Mark_Rewrite_Insertion (Check_Node);
+         end if;
 
-            if Do_Before then
-               Insert_Before_And_Analyze (Node, Check_Node);
-            else
-               Insert_After_And_Analyze (Node, Check_Node);
-            end if;
+         Mark_Rewrite_Insertion (Check_Node);
+
+         if Do_Before then
+            Insert_Before_And_Analyze (Node, Check_Node);
+         else
+            Insert_After_And_Analyze (Node, Check_Node);
          end if;
       end loop;
    end Insert_Range_Checks;

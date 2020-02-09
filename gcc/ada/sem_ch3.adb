@@ -5768,7 +5768,6 @@ package body Sem_Ch3 is
                Target_Index : Node_Id :=
                                 First_Index (Etype
                                   (Subtype_Mark (Subtype_Indication (N))));
-               Has_Dyn_Chk  : Boolean := Has_Dynamic_Range_Check (N);
 
             begin
                while Present (Subt_Index) loop
@@ -5789,34 +5788,17 @@ package body Sem_Ch3 is
                              Etype (Subt_Index),
                              Defining_Identifier (N));
 
-                        --  Reset Has_Dynamic_Range_Check on the subtype to
-                        --  prevent elision of the index check due to a dynamic
-                        --  check generated for a preceding index (needed since
-                        --  Insert_Range_Checks tries to avoid generating
-                        --  redundant checks on a given declaration).
-
-                        Set_Has_Dynamic_Range_Check (N, False);
-
                         Insert_Range_Checks
                           (R_Checks,
                            N,
                            Target_Typ,
                            Sloc (Defining_Identifier (N)));
-
-                        --  Record whether this index involved a dynamic check
-
-                        Has_Dyn_Chk :=
-                          Has_Dyn_Chk or else Has_Dynamic_Range_Check (N);
                      end;
                   end if;
 
                   Next_Index (Subt_Index);
                   Next_Index (Target_Index);
                end loop;
-
-               --  Finally, mark whether the subtype involves dynamic checks
-
-               Set_Has_Dynamic_Range_Check (N, Has_Dyn_Chk);
             end;
          end if;
       end if;
@@ -21233,7 +21215,6 @@ package body Sem_Ch3 is
                               Insert_Node,
                               Def_Id,
                               Sloc (Insert_Node),
-                              R,
                               Do_Before => True);
                         end if;
                      end;
@@ -21258,14 +21239,14 @@ package body Sem_Ch3 is
                         if Present (Check_List) then
                            Append_Range_Checks
                              (R_Checks,
-                               Check_List, Def_Id, Sloc (Insert_Node), R);
+                               Check_List, Def_Id, Sloc (Insert_Node));
                         end if;
 
                      else
                         if No (Check_List) then
                            Insert_Range_Checks
                              (R_Checks,
-                               Insert_Node, Def_Id, Sloc (Insert_Node), R);
+                               Insert_Node, Def_Id, Sloc (Insert_Node));
                         end if;
                      end if;
 

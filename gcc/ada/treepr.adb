@@ -1131,12 +1131,6 @@ package body Treepr is
                Print_Eol;
             end if;
 
-            if Has_Dynamic_Range_Check (N) then
-               Print_Str (Prefix_Str_Char);
-               Print_Str ("Has_Dynamic_Range_Check = True");
-               Print_Eol;
-            end if;
-
             if Is_Controlling_Actual (N) then
                Print_Str (Prefix_Str_Char);
                Print_Str ("Is_Controlling_Actual = True");

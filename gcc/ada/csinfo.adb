@@ -89,10 +89,10 @@ procedure CSinfo is
    Flags : TV.Table (20);
    --  Maps flag numbers to letters
 
-   N_Fields : constant Pattern := BreakX ("JL");
-   E_Fields : constant Pattern := BreakX ("5EFGHIJLOP");
-   U_Fields : constant Pattern := BreakX ("1345EFGHIJKLOPQ");
-   B_Fields : constant Pattern := BreakX ("12345EFGHIJKLOPQ");
+   N_Fields : constant Pattern := BreakX ("J");
+   E_Fields : constant Pattern := BreakX ("5EFGHIJOP");
+   U_Fields : constant Pattern := BreakX ("1345EFGHIJKOPQ");
+   B_Fields : constant Pattern := BreakX ("12345EFGHIJKOPQ");
 
    Line : VString;
    Bad  : Boolean;
@@ -215,7 +215,6 @@ begin
    Set (Special, "First_Itype",                      True);
    Set (Special, "Has_Aspect_Specifications",        True);
    Set (Special, "Has_Dynamic_Itype",                True);
-   Set (Special, "Has_Dynamic_Range_Check",          True);
    Set (Special, "Has_Dynamic_Length_Check",         True);
    Set (Special, "Has_Private_View",                 True);
    Set (Special, "Is_Controlling_Actual",            True);

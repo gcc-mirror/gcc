@@ -1523,15 +1523,6 @@ package body Sinfo is
       return Flag10 (N);
    end Has_Dynamic_Length_Check;
 
-   function Has_Dynamic_Range_Check
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind =  N_Subtype_Declaration
-        or else NT (N).Nkind in N_Subexpr);
-      return Flag12 (N);
-   end Has_Dynamic_Range_Check;
-
    function Has_Init_Expression
       (N : Node_Id) return Boolean is
    begin
@@ -4996,15 +4987,6 @@ package body Sinfo is
         or else NT (N).Nkind in N_Subexpr);
       Set_Flag10 (N, Val);
    end Set_Has_Dynamic_Length_Check;
-
-   procedure Set_Has_Dynamic_Range_Check
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind =  N_Subtype_Declaration
-        or else NT (N).Nkind in N_Subexpr);
-      Set_Flag12 (N, Val);
-   end Set_Has_Dynamic_Range_Check;
 
    procedure Set_Has_Init_Expression
       (N : Node_Id; Val : Boolean := True) is
