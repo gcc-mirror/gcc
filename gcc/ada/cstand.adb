@@ -1573,7 +1573,9 @@ package body CStand is
       Build_Exception (S_Tasking_Error);
 
       --  Numeric_Error is a normal exception in Ada 83, but in Ada 95
-      --  it is a renaming of Constraint_Error. Is this test too early???
+      --  it is a renaming of Constraint_Error. This test is too early since
+      --  it doesn't handle pragma Ada_83. But it's not worth the trouble of
+      --  fixing this.
 
       if Ada_Version = Ada_83 then
          Build_Exception (S_Numeric_Error);
