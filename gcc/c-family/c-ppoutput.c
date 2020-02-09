@@ -309,10 +309,10 @@ static void
 scan_translation_unit (cpp_reader *pfile)
 {
   token_streamer streamer (pfile);
-  void *filter = NULL;
+  uintptr_t filter = 0;
 
   if (lang_hooks.preprocess_token)
-    filter = lang_hooks.preprocess_token (pfile, NULL, NULL);
+    filter = lang_hooks.preprocess_token (pfile, NULL, filter);
 
   print.source = NULL;
   for (;;)
@@ -337,9 +337,9 @@ scan_translation_unit (cpp_reader *pfile)
 class do_streamer : public token_streamer
 {
  public:
-  void *filter;
+  uintptr_t filter;
 
-  do_streamer (cpp_reader *pfile, void *filter)
+  do_streamer (cpp_reader *pfile, uintptr_t filter)
     :token_streamer (pfile), filter (filter)
     {
     }
@@ -390,9 +390,9 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
 static void
 scan_translation_unit_directives_only (cpp_reader *pfile)
 {
-  void *filter = NULL;
+  uintptr_t filter = 0;
   if (lang_hooks.preprocess_token)
-    filter = lang_hooks.preprocess_token (pfile, NULL, NULL);
+    filter = lang_hooks.preprocess_token (pfile, NULL, filter);
   do_streamer streamer (pfile, filter);
   cpp_directive_only_process (pfile, &streamer, directives_only_cb);
   if (streamer.filter)

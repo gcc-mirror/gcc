@@ -6941,10 +6941,10 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern void *module_token_pre (cpp_reader *, const cpp_token *, void *);
-extern void *module_token_cdtor (cpp_reader *, void *);
-extern void *module_token_lang (int type, int keyword, tree value, location_t,
-				void *);
+extern uintptr_t module_token_pre (cpp_reader *, const cpp_token *, uintptr_t);
+extern uintptr_t module_token_cdtor (cpp_reader *, uintptr_t);
+extern uintptr_t module_token_lang (int type, int keyword, tree value,
+				    location_t, uintptr_t);
 
 /* in method.c */
 extern void init_method				(void);

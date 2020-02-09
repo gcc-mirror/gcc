@@ -642,7 +642,7 @@ cp_lexer_new_main (void)
   /* Put the first token in the buffer.  */
   cp_token *tok = lexer->buffer->quick_push (token);
 
-  void *coro = NULL;
+  uintptr_t coro = 0;
   if (modules_p ())
     coro = module_token_cdtor (parse_in, coro);
 

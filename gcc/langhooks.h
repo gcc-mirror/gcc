@@ -368,7 +368,7 @@ struct lang_hooks
 						  cpp_hashnode *);
 
   /* Observer for preprocessing stream.  */
-  void *(*preprocess_token) (cpp_reader *, const cpp_token *, void *);
+  uintptr_t (*preprocess_token) (cpp_reader *, const cpp_token *, uintptr_t);
 
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);

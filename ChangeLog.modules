@@ -1,5 +1,19 @@
 2020-02-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* langhooks (struct lang_hooks): preprocess_token takes and
+	returns a uintptr_t.
+	gcc/cp/
+	* cp-tree.h (module_token_{pre,cdtor,lang}): Change cookie type.
+	* lex.c  (module_token_{pre,cdtor,lang}): Change cookie type.
+	* parser.c (cp_lexer_new): Likewise.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Adjust lang hook use.
+	(class do_streamer): Likewise.
+	(scan_translation_unit_directives_only): Likewise.
+
+2020-02-08  Nathan Sidwell  <nathan@acm.org>
+
 	libcpp/
 	* lex.c (cpp_directive_only_process): Relax raw string detection.
 

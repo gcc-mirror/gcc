@@ -414,7 +414,7 @@ struct token_coro
 
   /* Process the next token.  Note we cannot see CPP_EOF inside a
      pragma -- a CPP_PRAGMA_EOL always happens.  */
-  void resume (int type, int keyword, tree value, location_t loc)
+  uintptr_t resume (int type, int keyword, tree value, location_t loc)
   {
     switch (state)
       {
@@ -521,39 +521,38 @@ struct token_coro
 	  }
 	break;
       }
+
+    return 0;
   }
 };
 
 /* Initialize or teardown.  */
 
-void *
-module_token_cdtor (cpp_reader *pfile, void *data_)
+uintptr_t
+module_token_cdtor (cpp_reader *pfile, uintptr_t data_)
 {
-  token_coro *coro = (token_coro *)data_;
-  if (coro)
+  if (token_coro *coro = reinterpret_cast<token_coro *> (data_))
     {
       preprocessed_module (pfile);
       delete coro;
-      coro = NULL;
+      data_ = 0;
     }
   else if (modules_p ())
-    coro = new token_coro (pfile);
-
-  return coro;
-}
-
-void *
-module_token_lang (int type, int keyword, tree value, location_t loc,
-		   void *data_)
-{
-  token_coro *coro = (token_coro *)data_;
-  coro->resume (type, keyword, value, loc);
+    data_ = reinterpret_cast <uintptr_t > (new token_coro (pfile));
 
   return data_;
 }
 
-void *
-module_token_pre (cpp_reader *pfile, const cpp_token *tok, void *data_)
+uintptr_t
+module_token_lang (int type, int keyword, tree value, location_t loc,
+		   uintptr_t data_)
+{
+  token_coro *coro = reinterpret_cast <token_coro *> (data_);
+  return coro->resume (type, keyword, value, loc);
+}
+
+uintptr_t
+module_token_pre (cpp_reader *pfile, const cpp_token *tok, uintptr_t data_)
 {
   if (!tok)
     return module_token_cdtor (pfile, data_);
