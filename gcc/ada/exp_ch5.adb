@@ -2465,8 +2465,7 @@ package body Exp_Ch5 is
                     (C_Es,
                      N,
                      Target_Typ,
-                     Sloc (Lhs),
-                     Lhs);
+                     Sloc (Lhs));
                end;
             end if;
          end if;

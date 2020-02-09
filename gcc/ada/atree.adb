@@ -1659,12 +1659,6 @@ package body Atree is
          Nodes.Table (New_Id).Rewrite_Ins := False;
          pragma Debug (New_Node_Debugging_Output (New_Id));
 
-         --  Clear Has_Dynamic_Range_Check since it doesn't apply anymore
-
-         if Nkind (Source) in N_Subexpr then
-            Set_Has_Dynamic_Range_Check (New_Id, False);
-         end if;
-
          --  Clear Is_Overloaded since we cannot have semantic interpretations
          --  of this new node.
 
