@@ -1,3 +1,7 @@
+2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr91333.c (dg-do): Fix target selector.
+
 2020-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93633
