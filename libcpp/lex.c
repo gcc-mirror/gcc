@@ -2947,6 +2947,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	     in a deferred pragma we always see CPP_PRAGMA_EOL before
 	     any CPP_EOF.  */
 	  result->type = CPP_PRAGMA_EOL;
+	  result->flags &= ~PREV_WHITE;
 	  pfile->state.in_deferred_pragma = false;
 	  if (!pfile->state.pragma_allow_expansion)
 	    pfile->state.prevent_expansion--;
@@ -4524,6 +4525,9 @@ cpp_directive_only_process (cpp_reader *pfile,
 			}
 		    }
 		  while (pfile->state.in_deferred_pragma);
+		  if (pfile->buffer->next_line < pfile->buffer->rlimit)
+		    cb (pfile, CPP_DO_location, data,
+			pfile->line_table->highest_line);
 		  pfile->mi_valid = false;
 		  goto restart;
 		}

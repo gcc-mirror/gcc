@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "gcc-rich-location.h"
 #include "cp-name-hint.h"
+#include "langhooks.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -416,6 +417,8 @@ struct token_coro
      pragma -- a CPP_PRAGMA_EOL always happens.  */
   uintptr_t resume (int type, int keyword, tree value, location_t loc)
   {
+    unsigned res = 0;
+
     switch (state)
       {
       case idle:
@@ -427,6 +430,7 @@ struct token_coro
 
 	    case RID__EXPORT:
 	      got_export = true;
+	      res = lang_hooks::PT_begin_pragma;
 	      break;
 
 	    case RID__IMPORT:
@@ -438,6 +442,8 @@ struct token_coro
 	      got_colon = false;
 	      token_loc = loc;
 	      import = NULL;
+	      if (!got_export)
+		res = lang_hooks::PT_begin_pragma;
 	      break;
 	    }
 	break;
@@ -522,7 +528,7 @@ struct token_coro
 	break;
       }
 
-    return 0;
+    return res;
   }
 };
 

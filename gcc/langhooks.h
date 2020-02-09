@@ -369,6 +369,12 @@ struct lang_hooks
 
   /* Observer for preprocessing stream.  */
   uintptr_t (*preprocess_token) (cpp_reader *, const cpp_token *, uintptr_t);
+  /* Various flags it can return about the token.  */
+  enum PT_flags
+    {
+     PT_begin_pragma = 1 << 0
+    };
+  
 
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);

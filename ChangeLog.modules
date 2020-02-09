@@ -1,5 +1,23 @@
 2020-02-08  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	lex.c (_cpp_lex_direct): PRAGMA_EOL is never pre-padded.
+	(cpp_directive_only_process): Emit line marker after module
+	control-line.
+	gcc/
+	* langhooks.h (struct lang_hooks): Add PT_flags enum.
+	gcc/c-family/
+	* c-ppoutput.c (token_streamer): Add begin_pragma.
+	(token_streamer::stream): Remove out-of-pragma EOL procesing.
+	Ignore pragma_eol location.
+	(scan_translation_unit): Pay attention to filter return flags.
+	(directives_only_cb): Likewise.
+	gcc/cp/
+	* lex.c: Inlude langhooks.
+	(coro::resume): Return pragma begin flag.
+	gcc/testsuite/
+	* g++.dg/modules/dir-only-2_b.c: Add broken line check.
+
 	gcc/
 	* langhooks (struct lang_hooks): preprocess_token takes and
 	returns a uintptr_t.

@@ -185,6 +185,11 @@ class token_streamer
     {
     }
 
+  void begin_pragma () 
+  {
+    in_pragma = true;
+  }
+
   void stream (cpp_reader *pfile, const cpp_token *tok, location_t);
 };
 
@@ -199,13 +204,6 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
 	  || (!(print.source->flags & PREV_WHITE)
 	      && token->val.source == NULL))
 	print.source = token->val.source;
-      return;
-    }
-
-  if (token->type == CPP_PRAGMA_EOL && !in_pragma)
-    {
-      /* A module-specific pragma EOL. */
-      maybe_print_line (UNKNOWN_LOCATION);
       return;
     }
 
@@ -269,7 +267,7 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
     }
   else if (token->type == CPP_PRAGMA_EOL)
     {
-      maybe_print_line (token->src_loc);
+      maybe_print_line (UNKNOWN_LOCATION);
       in_pragma = false;
     }
   else
@@ -321,11 +319,13 @@ scan_translation_unit (cpp_reader *pfile)
       const cpp_token *token
 	= cpp_get_token_with_location (pfile, &spelling_loc);
 
-      // FIXME: We have to tell the streamer we're in a pseudo-pragma
-      // so it knows to use \ line terminators
-      if (filter)
-	lang_hooks.preprocess_token (pfile, token, filter);
       streamer.stream (pfile, token, spelling_loc);
+      if (filter)
+	{
+	  unsigned flags = lang_hooks.preprocess_token (pfile, token, filter);
+	  if (flags & lang_hooks::PT_begin_pragma)
+	    streamer.begin_pragma ();
+	}
       if (token->type == CPP_EOF)
 	break;
     }
@@ -375,9 +375,14 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
       {
 	const cpp_token *token = va_arg (args, const cpp_token *);
 	location_t spelling_loc = va_arg (args, location_t);
-	if (streamer->filter)
-	  lang_hooks.preprocess_token (pfile, token, streamer->filter);
 	streamer->stream (pfile, token, spelling_loc);
+	if (streamer->filter)
+	  {
+	    unsigned flags = lang_hooks.preprocess_token
+	      (pfile, token, streamer->filter);
+	    if (flags & lang_hooks::PT_begin_pragma)
+	      streamer->begin_pragma ();
+	  }
       }
       break;
     }
