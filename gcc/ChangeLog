@@ -1,3 +1,9 @@
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Promote
+	DECL_IN_CONSTANT_POOL variables into "omp declare target" to avoid
+	copying them around between host and target.
+
 2020-02-08  Andrew Pinski  <apinski@marvell.com>
 
 	PR target/91927
