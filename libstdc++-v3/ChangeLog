@@ -1,5 +1,9 @@
 2020-02-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: Fix
+	comment.
+	* testsuite/20_util/function_objects/range.cmp/less.ccL Likewise.
+
 	* include/std/ranges: Fix non-ASCII characters in comment.
 
 	* include/bits/range_cmp.h (__detail::__eq_builtin_ptr_cmp): Require

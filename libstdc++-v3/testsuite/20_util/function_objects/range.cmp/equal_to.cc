@@ -75,7 +75,7 @@ struct Y
   operator int() const;
 };
 
-// X{} == X{} is ambiguous so ranges::equal_to{}(X{}, X{}) should be invalid
+// Y{} == Y{} is ambiguous so ranges::equal_to{}(Y{}, Y{}) should be invalid
 static_assert( !std::is_invocable_v<F&, Y, Y> );
 
 int

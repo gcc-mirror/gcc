@@ -80,7 +80,7 @@ struct Y
   operator int() const;
 };
 
-// X{} == X{} is ambiguous so ranges::less{}(X{}, X{}) should be invalid
+// Y{} == Y{} is ambiguous so ranges::less{}(Y{}, Y{}) should be invalid
 static_assert( !std::is_invocable_v<F&, Y, Y> );
 
 int
