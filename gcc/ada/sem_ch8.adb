@@ -759,12 +759,13 @@ package body Sem_Ch8 is
    -----------------------------
 
    procedure Analyze_Object_Renaming (N : Node_Id) is
-      Id  : constant Entity_Id  := Defining_Identifier (N);
-      Loc : constant Source_Ptr := Sloc (N);
-      Nam : constant Node_Id    := Name (N);
-      Dec : Node_Id;
-      T   : Entity_Id;
-      T2  : Entity_Id;
+      Id            : constant Entity_Id  := Defining_Identifier (N);
+      Loc           : constant Source_Ptr := Sloc (N);
+      Nam           : constant Node_Id    := Name (N);
+      Is_Object_Ref : Boolean := False;
+      Dec           : Node_Id;
+      T             : Entity_Id;
+      T2            : Entity_Id;
 
       procedure Check_Constrained_Object;
       --  If the nominal type is unconstrained but the renamed object is
@@ -1016,18 +1017,6 @@ package body Sem_Ch8 is
             Mark_Ghost_Renaming (N, Entity (Nam));
          end if;
 
-         --  Reject renamings of conversions unless the type is tagged, or
-         --  the conversion is implicit (which can occur for cases of anonymous
-         --  access types in Ada 2012).
-
-         if Nkind (Nam) = N_Type_Conversion
-           and then Comes_From_Source (Nam)
-           and then not Is_Tagged_Type (T)
-         then
-            Error_Msg_N
-              ("renaming of conversion only allowed for tagged types", Nam);
-         end if;
-
          Resolve (Nam, T);
 
          --  If the renamed object is a function call of a limited type,
@@ -1268,15 +1257,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Ada 2005 (AI-327)
-
-      if Ada_Version >= Ada_2005
-        and then Nkind (Nam) = N_Attribute_Reference
-        and then Attribute_Name (Nam) = Name_Priority
-      then
-         null;
-
-      elsif Ada_Version >= Ada_2005 and then Nkind (Nam) in N_Has_Entity then
+      if Ada_Version >= Ada_2005 and then Nkind (Nam) in N_Has_Entity then
          declare
             Nam_Ent  : constant Entity_Id := Entity (Get_Object_Name (Nam));
             Nam_Decl : constant Node_Id   := Declaration_Node (Nam_Ent);
@@ -1375,13 +1356,33 @@ package body Sem_Ch8 is
 
       Init_Object_Size_Align (Id);
 
+      --  If N comes from source then check that the original node is an
+      --  object reference since there may have been several rewritting and
+      --  folding. Do not do this for N_Function_Call or N_Explicit_Dereference
+      --  which might correspond to rewrites of e.g. N_Selected_Component
+      --  (for example Object.Method rewriting).
+      --  If N does not come from source then assume the tree is properly
+      --  formed and accept any object reference. In such cases we do support
+      --  more cases of renamings anyway, so the actual check on which renaming
+      --  is valid is better left to the code generator as a last sanity
+      --  check.
+
+      if Comes_From_Source (N) then
+         if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference) then
+            Is_Object_Ref := Is_Object_Reference (Nam);
+         else
+            Is_Object_Ref := Is_Object_Reference (Original_Node (Nam));
+         end if;
+      else
+         Is_Object_Ref := True;
+      end if;
+
       if T = Any_Type or else Etype (Nam) = Any_Type then
          return;
 
-      --  Verify that the renamed entity is an object or a function call. It
-      --  may have been rewritten in several ways.
+      --  Verify that the renamed entity is an object or function call.
 
-      elsif Is_Object_Reference (Nam) then
+      elsif Is_Object_Ref then
          if Comes_From_Source (N) then
             if Is_Dependent_Component_Of_Mutable_Object (Nam) then
                Error_Msg_N
@@ -1400,49 +1401,15 @@ package body Sem_Ch8 is
             end if;
          end if;
 
-      --  A static function call may have been folded into a literal
+      --  Weird but legal, equivalent to renaming a function call. Illegal
+      --  if the literal is the result of constant-folding an attribute
+      --  reference that is not a function.
 
-      elsif Nkind (Original_Node (Nam)) = N_Function_Call
-
-        --  When expansion is disabled, attribute reference is not rewritten
-        --  as function call. Otherwise it may be rewritten as a conversion,
-        --  so check original node.
-
-        or else (Nkind (Original_Node (Nam)) = N_Attribute_Reference
-                  and then Is_Function_Attribute_Name
-                             (Attribute_Name (Original_Node (Nam))))
-
-        --  Weird but legal, equivalent to renaming a function call. Illegal
-        --  if the literal is the result of constant-folding an attribute
-        --  reference that is not a function.
-
-        or else (Is_Entity_Name (Nam)
-                  and then Ekind (Entity (Nam)) = E_Enumeration_Literal
-                  and then
-                    Nkind (Original_Node (Nam)) /= N_Attribute_Reference)
-
-        or else (Nkind (Nam) = N_Type_Conversion
-                  and then Is_Tagged_Type (Entity (Subtype_Mark (Nam))))
+      elsif Is_Entity_Name (Nam)
+        and then Ekind (Entity (Nam)) = E_Enumeration_Literal
+        and then Nkind (Original_Node (Nam)) /= N_Attribute_Reference
       then
          null;
-
-      elsif Nkind (Nam) = N_Type_Conversion then
-         Error_Msg_N
-           ("renaming of conversion only allowed for tagged types", Nam);
-
-      --  Ada 2005 (AI-327)
-
-      elsif Ada_Version >= Ada_2005
-        and then Nkind (Nam) = N_Attribute_Reference
-        and then Attribute_Name (Nam) = Name_Priority
-      then
-         null;
-
-      --  Allow internally generated x'Ref resulting in N_Reference node
-
-      elsif Nkind (Nam) = N_Reference then
-         null;
-
       else
          Error_Msg_N ("expect object name in renaming", Nam);
       end if;

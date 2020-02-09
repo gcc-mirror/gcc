@@ -16420,33 +16420,6 @@ package body Sem_Util is
    -------------------------
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
-      function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean;
-      --  Determine whether N is the name of an internally-generated renaming
-
-      --------------------------------------
-      -- Is_Internally_Generated_Renaming --
-      --------------------------------------
-
-      function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean is
-         P : Node_Id;
-
-      begin
-         P := N;
-         while Present (P) loop
-            if Nkind (P) = N_Object_Renaming_Declaration then
-               return not Comes_From_Source (P);
-            elsif Is_List_Member (P) then
-               return False;
-            end if;
-
-            P := Parent (P);
-         end loop;
-
-         return False;
-      end Is_Internally_Generated_Renaming;
-
-   --  Start of processing for Is_Object_Reference
-
    begin
       if Is_Entity_Name (N) then
          return Present (Entity (N)) and then Is_Object (Entity (N));
@@ -16472,13 +16445,14 @@ package body Sem_Util is
             =>
                return Etype (N) /= Standard_Void_Type;
 
-            --  Attributes references 'Loop_Entry, 'Old, and 'Result yield
-            --  objects, even though they are not functions.
+            --  Attributes references 'Loop_Entry, 'Old, 'Priority and 'Result
+            --  yield objects, even though they are not functions.
 
             when N_Attribute_Reference =>
                return
                  Nam_In (Attribute_Name (N), Name_Loop_Entry,
                                              Name_Old,
+                                             Name_Priority,
                                              Name_Result)
                    or else Is_Function_Attribute_Name (Attribute_Name (N));
 
@@ -16501,9 +16475,19 @@ package body Sem_Util is
             --  A view conversion of a tagged object is an object reference
 
             when N_Type_Conversion =>
-               return Is_Tagged_Type (Etype (Subtype_Mark (N)))
-                 and then Is_Tagged_Type (Etype (Expression (N)))
-                 and then Is_Object_Reference (Expression (N));
+               if Ada_Version <= Ada_2012 then
+                  --  A view conversion of a tagged object is an object
+                  --  reference.
+                  return Is_Tagged_Type (Etype (Subtype_Mark (N)))
+                    and then Is_Tagged_Type (Etype (Expression (N)))
+                    and then Is_Object_Reference (Expression (N));
+
+               else
+                  --  AI12-0226: In Ada 202x a value conversion of an object is
+                  --  an object.
+
+                  return Is_Object_Reference (Expression (N));
+               end if;
 
             --  An unchecked type conversion is considered to be an object if
             --  the operand is an object (this construction arises only as a
@@ -16511,14 +16495,6 @@ package body Sem_Util is
 
             when N_Unchecked_Type_Conversion =>
                return True;
-
-            --  Allow string literals to act as objects as long as they appear
-            --  in internally-generated renamings. The expansion of iterators
-            --  may generate such renamings when the range involves a string
-            --  literal.
-
-            when N_String_Literal =>
-               return Is_Internally_Generated_Renaming (Parent (N));
 
             --  AI05-0003: In Ada 2012 a qualified expression is a name.
             --  This allows disambiguation of function calls and the use
