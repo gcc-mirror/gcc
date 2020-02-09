@@ -535,7 +535,7 @@ composite_type (tree t1, tree t2)
 
 	n = newargs;
 
-	for (; p1 && p1 != void_list_node;
+	for (p1 && p1 != void_list_node;
 	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
 	  {
 	    /* A null type means arg type is not specified.
