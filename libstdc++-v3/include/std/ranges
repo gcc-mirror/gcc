@@ -2590,8 +2590,8 @@ namespace views
 
 	  // XXX: [24.7.11.3.1]
 	  //  Many of the following specifications refer to the notional member
-	  //  current of outer-iterator.  current is equivalent to current_­ if
-	  //  V models forward_range, and parent_->current_­ otherwise.
+	  //  current of outer-iterator.  current is equivalent to current_ if
+	  //  V models forward_range, and parent_->current_ otherwise.
 	  constexpr auto&
 	  __current()
 	  {

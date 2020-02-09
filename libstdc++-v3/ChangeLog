@@ -1,5 +1,7 @@
 2020-02-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges: Fix non-ASCII characters in comment.
+
 	* include/bits/range_cmp.h (__detail::__eq_builtin_ptr_cmp): Require
 	equality comparison to be valid and return bool.
 	(__detail::__less_builtin_ptr_cmp): Likewise for less-than comparison.
