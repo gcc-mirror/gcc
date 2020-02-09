@@ -5496,7 +5496,7 @@ nds32_split_double_word_load_store_p(rtx *operands, bool load_p)
     return false;
 
   const char *pass_name = current_pass->name;
-  if (pass_name && ((strcmp (pass_name, "split4") == 0)
+  if (pass_name && ((strcmp (pass_name, "split3") == 0)
 		     || (strcmp (pass_name, "split5") == 0)))
     return !satisfies_constraint_Da (mem) || MEM_VOLATILE_P (mem);
 
