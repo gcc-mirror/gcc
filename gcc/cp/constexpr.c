@@ -6063,6 +6063,17 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	       && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1)))
 	  obj = TREE_OPERAND (obj, 0);
 	tree objtype = TREE_TYPE (obj);
+	if (VAR_P (obj)
+	    && DECL_NAME (obj) == heap_identifier
+	    && TREE_CODE (objtype) == ARRAY_TYPE)
+	  objtype = TREE_TYPE (objtype);
+	if (!CLASS_TYPE_P (objtype))
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc, "expression %qE is not a constant expression", t);
+	    *non_constant_p = true;
+	    return t;
+	  }
 	/* Find the function decl in the virtual functions list.  TOKEN is
 	   the DECL_VINDEX that says which function we're looking for.  */
 	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));

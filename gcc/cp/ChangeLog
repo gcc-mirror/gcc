@@ -1,3 +1,10 @@
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93633
+	* constexpr.c (cxx_eval_constant_expression): If obj is heap var with
+	ARRAY_TYPE, use the element type.  Punt if objtype after that is not
+	a class type.
+
 2020-02-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90691

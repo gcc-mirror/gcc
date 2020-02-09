@@ -1,3 +1,10 @@
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93633
+	* g++.dg/cpp2a/constexpr-new11.C: New test.
+	* g++.dg/cpp2a/constexpr-new12.C: New test.
+	* g++.dg/cpp2a/constexpr-new13.C: New test.
+
 2020-02-08  Andrew Pinski  <apinski@marvel.com>
 
 	PR target/91927
