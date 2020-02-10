@@ -1,3 +1,9 @@
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* gcc.dg/format/gcc_diag-11.c (test_cdiag_bad_words): Add two further
+	tests.
+
 2020-02-10  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/93203

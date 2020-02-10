@@ -400,6 +400,8 @@ void test_cdiag_bad_words (tree t, gimple *gc)
   cdiag ("you can't do that"); /* { dg-warning "contraction 'can't' in format" } */
   cdiag ("you can%'t do that");/* { dg-warning "contraction 'can%'t' in format" } */
   cdiag ("Can%'t touch this.");/* { dg-warning "contraction 'Can%'t' in format" } */
+  cdiag ("can%'");
+  cdiag ("can%' whatever");
   cdiag ("on the commandline");/* { dg-warning "misspelled term 'commandline' in format; use 'command line' instead" } */
   cdiag ("command line option");/* { dg-warning "misspelled term 'command line option' in format; use 'command-line option' instead" } */
   cdiag ("it mustn't be");     /* { dg-warning "contraction 'mustn't' in format" } */
