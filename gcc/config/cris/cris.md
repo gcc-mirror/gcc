@@ -179,16 +179,51 @@
 (define_code_attr shlr [(ashiftrt "ashr") (lshiftrt "lshr") (ashift "ashl")])
 (define_code_attr slr [(ashiftrt "asr") (lshiftrt "lsr") (ashift "lsl")])
 
+;; Compares, branches, cbranch, cstore.  Conditions gt and le are CC_NZVC.
+;; Others start out as CCmode and can degenerate to CC_NZmode.
+;; Incidental setters are either CC_NZVCmode or CC_NZmode.  See also
+;; cris-modes.def.
+(define_mode_iterator NZSET [CC_NZ])
+(define_mode_iterator NZUSE [CC CC_NZ CC_NZVC])
+(define_mode_iterator NZVCSET [CC CC_NZVC CC_NZ])
+(define_mode_iterator NZVCUSE [CC_NZVC])
+
+;; All conditions.
+(define_code_iterator cond [eq ne gtu ltu geu leu gt le lt ge])
+
+;; Just equal and not equal.
 (define_code_iterator zcond [eq ne])
-(define_code_iterator ncond [eq ne gtu ltu geu leu])
-(define_code_iterator ocond [gt le])
-(define_code_iterator rcond [lt ge])
+
+;; Conditions that look only at Z and/or N (or can do with that).
+(define_code_iterator nzcond [eq ne gtu leu lt ge])
+
+;; The complement of nzcond within cond; conditions that look (also) on V
+;; or C.
+(define_code_iterator nzvccond [geu ltu gt le])
+
+;; Within nzcond, those that give different opcodes when operands are
+;; reversed or that can ignore V or C.  Also, the complement of zcond
+;; within nzcond.
+(define_code_iterator rnzcond [gtu leu lt ge])
+
+;; CRIS condition mnemonic.
 (define_code_attr CC [(eq "eq") (ne "ne") (gt "gt") (gtu "hi") (lt "lt")
 		      (ltu "lo") (ge "ge") (geu "hs") (le "le") (leu "ls")])
+
+;; CRIS reverse condition mnemonic.
 (define_code_attr rCC [(eq "ne") (ne "eq") (gt "le") (gtu "ls") (lt "ge")
 		       (ltu "hs") (ge "lt") (geu "lo") (le "gt") (leu "hi")])
-(define_code_attr oCC [(lt "mi") (ge "pl")])
-(define_code_attr roCC [(lt "pl") (ge "mi")])
+
+;; Mnemomic for the CRIS condition when V or C can be ignored.
+(define_code_attr oCC [(lt "mi") (ge "pl") (gtu "eq") (ltu "ne")])
+
+;; Reverse of oCC.
+(define_code_attr roCC [(lt "pl") (ge "mi") (gtu "eq") (ltu "ne")])
+
+;; Required unoptimized CCmode, different for nzcond and nzvccond.
+(define_code_attr xCC [(eq "CC") (ne "CC") (gtu "CC") (ltu "CC_NZVC")
+		       (geu "CC_NZVC") (leu "CC") (lt "CC") (ge "CC")
+		       (gt "CC_NZVC") (le "CC_NZVC")])
 
 ;; Operand and operator predicates.
 
@@ -209,9 +244,9 @@
 ;; (It shouldn't be; it should be done as part of register allocation.)
 (define_mode_attr sCC_destc
  [(DI "r, r,r,r,r,r,r") (SI "r,r, r,  r,r,r") (HI "r, r,  r,r") (QI "r, r,  r,r")])
-(define_mode_attr cmp_op1c
+(define_mode_attr cmp_op0c
  [(DI "rm,r,r,r,r,r,r") (SI "r,r, rQ>,r,r,m") (HI "r, rQ>,r,m") (QI "r, rQ>,r,m")])
-(define_mode_attr cmp_op2c
+(define_mode_attr cmp_op1c
  [(DI "M,Kc,I,P,n,r,o") (SI "I,rQ>,M, P,g,M") (HI "rQ>,M, g,M") (QI "rQ>,M, g,M")])
 
 ;; We could optimize the sizes of the immediate operands for various
@@ -219,10 +254,11 @@
 ;; DImode for anything else but a structure/block-mode.  Just do the
 ;; obvious stuff for the straight-forward constraint letters.
 
-(define_insn "*cmpdi"
-  [(set (reg:CC CRIS_CC0_REGNUM)
-	(compare:CC (match_operand:DI_ 0 "nonimmediate_operand" "<cmp_op1c>")
-		    (match_operand:DI_ 1 "general_operand" "<cmp_op2c>")))]
+(define_insn "*cmpdi<NZVCSET:mode>"
+  [(set (reg:NZVCSET CRIS_CC0_REGNUM)
+	(compare:NZVCSET
+	 (match_operand:DI_ 0 "nonimmediate_operand" "<cmp_op0c>")
+	 (match_operand:DI_ 1 "general_operand" "<cmp_op1c>")))]
   "reload_completed"
   "@
    test.d %M0\;ax\;test.d %H0
@@ -252,9 +288,9 @@
 ;; constants, but sometimes gcc will find its way to use it for other
 ;; (memory) operands.  Avoid side-effect patterns, though (see above).
 
-(define_insn "*cmp_ext<mode>"
-  [(set (reg:CC CRIS_CC0_REGNUM)
-	(compare:CC
+(define_insn "*cmp_ext<BW:mode><NZVCSET:mode>"
+  [(set (reg:NZVCSET CRIS_CC0_REGNUM)
+	(compare:NZVCSET
 	 (match_operand:SI 0 "register_operand" "r,r")
 	 (match_operator:SI 2 "cris_extend_operator"
 			 [(match_operand:BW 1 "memory_operand" "Q>,m")])))]
@@ -265,11 +301,11 @@
 ;; The "normal" compare patterns, from SI on.  Special-cases with zero
 ;; are covered above.
 
-(define_insn "*cmpsi"
-  [(set (reg:CC CRIS_CC0_REGNUM)
-	(compare:CC
-	 (match_operand:SI_ 0 "nonimmediate_operand" "<cmp_op1c>")
-	 (match_operand:SI_ 1 "general_operand" "<cmp_op2c>")))]
+(define_insn "*cmpsi<NZVCSET:mode>"
+  [(set (reg:NZVCSET CRIS_CC0_REGNUM)
+	(compare:NZVCSET
+	 (match_operand:SI_ 0 "nonimmediate_operand" "<cmp_op0c>")
+	 (match_operand:SI_ 1 "general_operand" "<cmp_op1c>")))]
   "reload_completed"
   "@
    cmpq %1,%0
@@ -280,10 +316,11 @@
    test.d %0"
   [(set_attr "slottable" "yes,yes,yes,no,no,no")])
 
-(define_insn "*cmp<mode>"
-  [(set (reg:CC CRIS_CC0_REGNUM)
-	(compare:CC (match_operand:BW 0 "nonimmediate_operand" "<cmp_op1c>")
-		    (match_operand:BW 1 "general_operand" "<cmp_op2c>")))]
+(define_insn "*cmp<BW:mode><NZVCSET:mode>"
+  [(set (reg:NZVCSET CRIS_CC0_REGNUM)
+	(compare:NZVCSET
+	 (match_operand:BW 0 "nonimmediate_operand" "<cmp_op0c>")
+	 (match_operand:BW 1 "general_operand" "<cmp_op1c>")))]
   "reload_completed"
   "@
    cmp<m> %1,%0
@@ -299,9 +336,9 @@
 
 ;; SImode.  This mode is the only one needed, since gcc automatically
 ;; extends subregs for lower-size modes.  FIXME: Add testcase.
-(define_insn "*btst"
-  [(set (reg:CC CRIS_CC0_REGNUM)
-	(compare:CC
+(define_insn "*btst<mode>"
+  [(set (reg:NZVCSET CRIS_CC0_REGNUM)
+	(compare:NZVCSET
 	 (zero_extract:SI
 	  (match_operand:SI 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
 	  (match_operand:SI 1 "const_int_operand" "Kc,n,Kc,n,Kc,n,n")
@@ -1978,22 +2015,23 @@
   ""
   "cris_reduce_compare (&operands[0], &operands[1], &operands[2]);")
 
-(define_insn_and_split "*cbranch<mode>4"
+(define_insn_and_split "*cbranch<mode><code>4"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "ordered_comparison_operator"
-	  [(match_operand:BWDD 1 "nonimmediate_operand" "<cmp_op1c>")
-	   (match_operand:BWDD 2 "general_operand" "<cmp_op2c>")])
-	 (label_ref (match_operand 3 ""))
+	 (cond
+	  (match_operand:BWDD 0 "nonimmediate_operand" "<cmp_op0c>")
+	  (match_operand:BWDD 1 "general_operand" "<cmp_op1c>"))
+	 (label_ref (match_operand 2 ""))
 	 (pc)))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   ""
   "#"
   "&& reload_completed"
-  [(set (reg:CC CRIS_CC0_REGNUM) (compare:CC (match_dup 1) (match_dup 2)))
+  [(set (reg:<xCC> CRIS_CC0_REGNUM)
+	(compare:<xCC> (match_dup 0) (match_dup 1)))
    (set (pc)
-	(if_then_else (match_op_dup 0 [(reg:CC CRIS_CC0_REGNUM) (const_int 0)])
-		      (label_ref (match_dup 3))
+	(if_then_else (cond (reg:<xCC> CRIS_CC0_REGNUM) (const_int 0))
+		      (label_ref (match_dup 2))
 		      (pc)))]
   "")
 
@@ -2019,7 +2057,7 @@
 	 (const_int 0)))
    (set (pc)
 	(if_then_else (zcond (reg:CC CRIS_CC0_REGNUM) (const_int 0))
-		      (label_ref (match_dup 3))
+		      (label_ref (match_dup 2))
 		      (pc)))]
   "")
 
@@ -2028,9 +2066,9 @@
 ;; e.g. m68k, so we have to check if overflow bit is set on all "signed"
 ;; conditions.
 
-(define_insn "b<ncond:code>"
+(define_insn "b<zcond:code><mode>"
   [(set (pc)
-	(if_then_else (ncond (reg:CC CRIS_CC0_REGNUM)
+	(if_then_else (zcond (reg:NZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
@@ -2038,33 +2076,33 @@
   "b<CC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "b<ocond:code>"
+(define_insn "b<nzvccond:code><mode>"
   [(set (pc)
-	(if_then_else (ocond (reg:CC CRIS_CC0_REGNUM)
+	(if_then_else (nzvccond (reg:NZVCUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "reload_completed"
-  ;; FIXME: optimize out the compare and handle CC_NO_OVERFLOW.
   "b<CC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "b<rcond:code>"
+(define_insn "b<rnzcond:code><mode>"
   [(set (pc)
-	(if_then_else (rcond (reg:CC CRIS_CC0_REGNUM)
+	(if_then_else (rnzcond (reg:NZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "reload_completed"
-  ;; FIXME: optimize out the compare and handle CC_NO_OVERFLOW.
-  "b<CC> %l0%#"
+{
+  return <MODE>mode == CC_NZmode ? "b<oCC> %l0%#": "b<CC> %l0%#";
+}
   [(set_attr "slottable" "has_slot")])
 
 ;; Reversed anonymous patterns to the ones above, as mandated.
 
-(define_insn "*b<ncond:code>_reversed"
+(define_insn "*b<nzcond:code>_reversed<mode>"
   [(set (pc)
-	(if_then_else (ncond (reg:CC CRIS_CC0_REGNUM)
+	(if_then_else (nzcond (reg:NZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
@@ -2072,26 +2110,26 @@
   "b<rCC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "*b<ocond:code>_reversed"
+(define_insn "*b<nzvccond:code>_reversed<mode>"
   [(set (pc)
-	(if_then_else (ocond (reg:CC CRIS_CC0_REGNUM)
+	(if_then_else (nzvccond (reg:NZVCUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   "reload_completed"
-  ;; FIXME: optimize out the compare and handle CC_NO_OVERFLOW.
   "b<rCC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "*b<rcond:code>_reversed"
+(define_insn "*b<rnzcond:code>_reversed<mode>"
   [(set (pc)
-	(if_then_else (rcond (reg:CC CRIS_CC0_REGNUM)
+	(if_then_else (rnzcond (reg:NZUSE CRIS_CC0_REGNUM)
 			     (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   "reload_completed"
-  ;; FIXME: optimize out the compare and handle CC_NO_OVERFLOW.
-  "b<rCC> %l0%#"
+{
+  return <MODE>mode == CC_NZmode ? "b<roCC> %l0%#" : "b<rCC> %l0%#";
+}
   [(set_attr "slottable" "has_slot")])
 
 ;; Set on condition: sCC.
@@ -2106,46 +2144,46 @@
   ""
   "cris_reduce_compare (&operands[1], &operands[2], &operands[3]);")
 
-(define_insn_and_split "*cstore<mode>4"
+(define_insn_and_split "*cstore<mode><code>4"
   [(set (match_operand:SI 0 "register_operand" "=<sCC_destc>")
-	(match_operator:SI 1 "ordered_comparison_operator"
-	 [(match_operand:BWDD 2 "nonimmediate_operand" "<cmp_op1c>")
-	  (match_operand:BWDD 3 "general_operand" "<cmp_op2c>")]))
+	(cond:SI
+	 (match_operand:BWDD 1 "nonimmediate_operand" "<cmp_op0c>")
+	 (match_operand:BWDD 2 "general_operand" "<cmp_op1c>")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   ""
   "#"
   "&& reload_completed"
-  [(set (reg:CC CRIS_CC0_REGNUM) (compare:CC (match_dup 2) (match_dup 3)))
-   (set (match_operand:SI 0 "register_operand")
-	(match_operator:SI 1 "ordered_comparison_operator"
-	 [(reg:CC CRIS_CC0_REGNUM) (const_int 0)]))]
+  [(set (reg:<xCC> CRIS_CC0_REGNUM)
+	(compare:<xCC> (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(cond:SI (reg:<xCC> CRIS_CC0_REGNUM) (const_int 0)))]
   "")
 
 ;; Like bCC, we have to check the overflow bit for
 ;; signed conditions.
 
-(define_insn "*s<ncond:code>"
+(define_insn "*s<nzcond:code><mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(ncond:SI (reg:CC CRIS_CC0_REGNUM) (const_int 0)))]
+	(nzcond:SI (reg:NZUSE CRIS_CC0_REGNUM) (const_int 0)))]
   "reload_completed"
   "s<CC> %0"
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
 
-(define_insn "*s<rcond:code>"
+(define_insn "*s<rnzcond:code><mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(rcond:SI (reg:CC CRIS_CC0_REGNUM) (const_int 0)))]
+	(rnzcond:SI (reg:NZUSE CRIS_CC0_REGNUM) (const_int 0)))]
   "reload_completed"
-  ;; FIXME: optimize out the compare and handle CC_NO_OVERFLOW.
-  "s<CC> %0"
+{
+  return <MODE>mode == CC_NZmode ? "s<oCC> %0" : "s<CC> %0";
+}
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
 
-(define_insn "*s<ocond:code>"
+(define_insn "*s<nzvccond:code><mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(ocond:SI (reg:CC CRIS_CC0_REGNUM) (const_int 0)))]
+	(nzvccond:SI (reg:NZVCUSE CRIS_CC0_REGNUM) (const_int 0)))]
   "reload_completed"
-  ;; FIXME: optimize out the compare and handle CC_NO_OVERFLOW.
   "s<CC> %0"
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])

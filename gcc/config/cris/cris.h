@@ -699,7 +699,9 @@ struct cum_args {int regs;};
 /* Node: Condition Code */
 
 /* FIXME: Maybe define TARGET_CANONICALIZE_COMPARISON later, when
-   playing with optimizations.  Definitely define SELECT_CC_MODE.  */
+   playing with optimizations.  */
+
+#define SELECT_CC_MODE(op, x, y) cris_select_cc_mode(op, x, y)
 
 #define REVERSIBLE_CC_MODE(MODE) true
 
