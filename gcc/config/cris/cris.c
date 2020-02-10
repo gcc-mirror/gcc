@@ -133,6 +133,7 @@ static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
 static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
+static machine_mode cris_cc_modes_compatible (machine_mode, machine_mode);
 static bool cris_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int cris_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool cris_pass_by_reference (cumulative_args_t,
@@ -225,6 +226,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
    CRIS so don't waste compilation cycles on enabling a pass that does
    nothing.  Beware of changes to its usage; it may make sense to enable
    "later".  */
+
+#undef TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE cris_cc_modes_compatible
 
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM CRIS_CC0_REGNUM
@@ -1507,6 +1511,73 @@ cris_memory_move_cost (machine_mode mode,
     return 4;
   else
     return 6;
+}
+
+/* Worker function for SELECT_CC_MODE.  */
+
+machine_mode
+cris_select_cc_mode (enum rtx_code op, rtx x, rtx y)
+{
+  /* We have different sets of patterns before and after
+     reload_completed, and everything before reload_completed is CCmode.
+     At the time of this writing, this function isn't called before that
+     time, so let's just gcc_assert on that assumption rather than doing
+     "if (!reload_completed) return CCmode;".  */
+  gcc_assert (reload_completed);
+
+  /* For float mode or comparisons with something other than 0, we
+     always go with CCmode.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_INT || y != const0_rtx)
+    return CCmode;
+
+  /* If we have a comparison that doesn't have to look at V or C, check
+     operand x; if it looks like a binary operator, return CC_NZmode,
+     else CCmode, so we only use CC_NZmode for the cases where we don't
+     actually have both V and C valid.  */
+  if (op == EQ || op ==  NE || op ==  GTU || op ==  LEU
+      || op ==  LT || op ==  GE)
+    {
+      enum rtx_code e = GET_CODE (x);
+
+    /* Mentioning the rtx_code here is required but not sufficient: the
+       insn also needs to be decorated with <setnz> (and the
+       anonymization prefix <anz> for a named pattern).  */
+      return e == PLUS || e == MINUS || e == MULT || e == NOT
+	? CC_NZmode : CCmode;
+    }
+
+  /* We should only get here for comparison operators.  */
+  gcc_assert (op ==  GEU || op ==  LTU || op ==  GT || op ==  LE);
+
+  return CC_NZVCmode;
+}
+
+/* Worker function for TARGET_CC_MODES_COMPATIBLE.
+   We start with CCmode for most comparisons, which merges and yields to
+   CC_NZmode or CC_NZVCmode.  The exceptions have CC_NZVCmode and can't do with
+   another mode.  */
+
+static machine_mode
+cris_cc_modes_compatible (machine_mode m1, machine_mode m2)
+{
+  if (m1 == CC_NZVCmode)
+    {
+      if (m2 == CC_NZVCmode || m2 == CCmode)
+	return CC_NZVCmode;
+      return VOIDmode;
+    }
+
+  if (m2 == CC_NZVCmode)
+    {
+      if (m1 == CC_NZVCmode || m1 == CCmode)
+	return CC_NZVCmode;
+      return VOIDmode;
+    }
+
+  if (m1 != m2)
+    return CC_NZmode;
+
+  return m1;
 }
 
 /* Return != 0 if the return sequence for the current function is short,

@@ -52,6 +52,57 @@
 	("*mov_fromzero<mode>_split"): New split.
 	("*mov_fromzero<mode>"): New insn.
 
+	Prepare for cmpelim pass to eliminate redundant compare insns.
+	* config/cris/cris-modes.def: New file.
+	* config/cris/cris-protos.h (cris_select_cc_mode): Declare.
+	(cris_notice_update_cc): Remove left-over declaration.
+	* config/cris/cris.c (TARGET_CC_MODES_COMPATIBLE): Define.
+	(cris_select_cc_mode, cris_cc_modes_compatible): New functions.
+	* config/cris/cris.h (SELECT_CC_MODE): Define.
+	* config/cris/cris.md (NZSET, NZUSE, NZVCSET, NZVCUSE): New
+	mode_iterators.
+	(cond): New code_iterator.
+	(nzcond): Replacement for incorrect ncond.  All callers changed.
+	(nzvccond): Replacement for ocond.  All callers changed.
+	(rnzcond): Replacement for rcond.  All callers changed.
+	(xCC): New code_attr.
+	(cmp_op1c, cmp_op0c): Renumber from cmp_op1c and cmp_op2c.  All
+	users changed.
+	("*cmpdi<NZVCSET:mode>"): Rename from "*cmpdi".  Replace
+	CCmode with iteration over NZVCSET.
+	("*cmp_ext<BW:mode><NZVCSET:mode>"): Similarly; rename from
+	"*cmp_ext<mode>".
+	("*cmpsi<NZVCSET:mode>"): Similarly, from "*cmpsi".
+	("*cmp<BW:mode><NZVCSET:mode>"): Similarly from "*cmp<mode>".
+	("*btst<mode>"): Similarly, from "*btst".
+	("*cbranch<mode><code>4"): Rename from "*cbranch<mode>4",
+	iterating over cond instead of matching the comparison with
+	ordered_comparison_operator.
+	("*cbranch<mode>4_btstq<CC>"): Correct label operand number.
+	("b<zcond:code><mode>"): Rename from "b<ncond:code>", iterating
+	over NZUSE.
+	("b<nzvccond:code><mode>"): Similarly from "b<ocond:code>", over
+	NZVCUSE.  Remove FIXME.
+	("*b<nzcond:code>_reversed<mode>"): Similarly from
+	"*b<ncond:code>_reversed", over NZUSE.
+	("*b<nzvccond:code>_reversed<mode>"): Similarly from
+	"*b<ocond:code>_reversed", over NZVCUSE.  Remove FIXME.
+	("b<rnzcond:code><mode>"): Similarly from "b<rcond:code>",
+	over NZUSE.  Reinstate "b<oCC>" vs. "b<CC>" mnemonic choice,
+	depending on CC_NZmode vs. CCmode.  Remove FIXME.
+	("*b<rnzcond:code>_reversed<mode>"): Similarly from
+	"*b<rcond:code>_reversed", over NZUSE.
+	("*cstore<mode><code>4"): Rename from "*cstore<mode>4",
+	iterating over cond instead of matching the comparison with
+	ordered_comparison_operator.
+	("*s<nzcond:code><mode>"): Rename from "*s<ncond:code>",
+	iterating over NZUSE.
+	("*s<rnzcond:code><mode>"): Similar from "*s<rcond:code>", over
+	NZUSE.  Reinstate "b<oCC>" vs. "b<CC>" mnemonic choice,
+	depending on CC_NZmode vs. CCmode.
+	("*s<nzvccond:code><mode>"): Simlar from "*s<ocond:code>", over
+	NZVCUSE.  Remove FIXME.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove
