@@ -1,3 +1,11 @@
+2020-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93650
+	PR c++/90691
+	* constexpr.c (maybe_constant_value): Correct earlier change.
+	(cxx_eval_binary_expression) [SPACESHIP_EXPR]: Pass lval through.
+	* method.c (genericize_spaceship): Wrap result in TARGET_EXPR.
+
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69448
