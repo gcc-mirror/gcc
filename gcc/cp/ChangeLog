@@ -1,3 +1,8 @@
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* error.c (dump_decl_name): Fix up last argument to strncmp.
+
 2020-02-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93618
