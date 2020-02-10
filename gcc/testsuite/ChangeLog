@@ -2,6 +2,8 @@
 
 	* gcc.target/cris/cris.exp (check_effective_target_cc0): New.
 
+	* gcc.target/cris/pr93372-1.c: New test.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91913
