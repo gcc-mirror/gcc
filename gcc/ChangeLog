@@ -1,3 +1,10 @@
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58218
+	PR other/93641
+	* config/i386/i386.c (x86_64_elf_section_type_flags): Fix up last
+	arguments of strncmp.
+
 2020-02-10  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/93203
