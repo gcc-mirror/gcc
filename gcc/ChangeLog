@@ -1,3 +1,9 @@
+2020-02-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/93641
+	* config/darwin-c.c (darwin_cfstring_ref_p): Fix up last
+	argument of strncmp.
+
 2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	Try to generate zero-based comparisons.
