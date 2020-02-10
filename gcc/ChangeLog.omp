@@ -1,5 +1,11 @@
 2020-07-15  Julian Brown  <julian@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (scatter<mode>_insn_1offset_ds<exec_scatter>):
+	Add waitcnt.
+	(*mov<mode>_insn, *movti_insn): Add waitcnt to ds_write alternatives.
+
+2020-07-15  Julian Brown  <julian@codesourcery.com>
+
 	* config/gcn/gcn-protos.h (gcn_goacc_adjust_private_decl): Update
 	prototype.
 	* config/gcn/gcn-tree.c (gcn_goacc_get_worker_red_decl): Use
