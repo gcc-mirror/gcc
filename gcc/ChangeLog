@@ -1,6 +1,13 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93637
+	* config/i386/sse.md (VI_256_AVX2): New mode iterator.
+	(vcond_mask_<mode><sseintvecmodelower>): Use it instead of VI_256.
+	Change condition from TARGET_AVX2 to TARGET_AVX.
+
 	2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 

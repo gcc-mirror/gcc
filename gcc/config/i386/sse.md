@@ -3180,13 +3180,19 @@
 	  (match_operand:<avx512fmaskmode> 3 "register_operand")))]
   "TARGET_AVX512BW")
 
+;; As vcondv4div4df and vcondv8siv8sf are enabled already with TARGET_AVX,
+;; and their condition can be folded late into a constant, we need to
+;; support vcond_mask_v4div4di and vcond_mask_v8siv8si for TARGET_AVX.
+(define_mode_iterator VI_256_AVX2 [(V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
+				   V8SI V4DI])
+
 (define_expand "vcond_mask_<mode><sseintvecmodelower>"
-  [(set (match_operand:VI_256 0 "register_operand")
-	(vec_merge:VI_256
-	  (match_operand:VI_256 1 "nonimmediate_operand")
-	  (match_operand:VI_256 2 "nonimm_or_0_operand")
+  [(set (match_operand:VI_256_AVX2 0 "register_operand")
+	(vec_merge:VI_256_AVX2
+	  (match_operand:VI_256_AVX2 1 "nonimmediate_operand")
+	  (match_operand:VI_256_AVX2 2 "nonimm_or_0_operand")
 	  (match_operand:<sseintvecmode> 3 "register_operand")))]
-  "TARGET_AVX2"
+  "TARGET_AVX"
 {
   ix86_expand_sse_movcc (operands[0], operands[3],
 			 operands[1], operands[2]);

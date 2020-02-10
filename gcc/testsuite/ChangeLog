@@ -1,6 +1,11 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93637
+	* gcc.target/i386/avx-pr93637.c: New test.
+
 	2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
