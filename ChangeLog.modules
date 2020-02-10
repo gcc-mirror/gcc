@@ -1,3 +1,12 @@
+2020-02-10  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	lex.c (do_peek_prev): New.
+	(cpp_directive_only_process): Peek backwards from 'R' to check it
+	is a raw literal.
+	gcc/testsuite/
+	* c-c++-common/cpp/dir-only-7.c: Extend.
+
 2020-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

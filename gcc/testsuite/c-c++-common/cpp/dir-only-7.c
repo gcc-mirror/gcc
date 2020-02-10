@@ -14,4 +14,14 @@ R"stuff(
 #error "no bob"
 #endif
 
-/* comment */
+bob\
+\
+R"regular string not an erroneous raw one"
+
+"regular"R"***(not a raw string"
+#define HERE 1
+ //)***"
+#ifndef HERE
+#error "oops no HERE"
+#endif
+ /* comment */

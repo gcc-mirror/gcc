@@ -4031,6 +4031,35 @@ do_peek_next (const unsigned char *peek, const unsigned char *limit)
   return peek;
 }
 
+static const unsigned char *
+do_peek_prev (const unsigned char *peek, const unsigned char *bound)
+{
+  if (peek == bound)
+    return NULL;
+
+  unsigned char c = *--peek;
+  if (__builtin_expect (c == '\n', false)
+      || __builtin_expect (c == 'r', false))
+    {
+      if (peek == bound)
+	return peek;
+      int ix = -1;
+      if (c == '\n' && peek[ix] == '\r')
+	{
+	  if (peek + ix == bound)
+	    return peek;
+	  ix--;
+	}
+
+      if (peek[ix] == '\\')
+	return do_peek_prev (peek + ix, bound);
+
+      return peek;
+    }
+  else
+    return peek;
+}
+
 /* If PEEK[-1] is identifier MATCH, scan past it and trailing white
    space.  Otherwise return NULL.  */
 
@@ -4210,13 +4239,7 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
 }
 
 /* Directives-only scanning.  Somewhat more relaxed than correct
-   parsing -- some ill-formed programs will not be rejected.  We also
-   interpret 'R"' as beginning a raw string, even when R is ending an
-   identifier that is not a valid raw string introducer.  (To do
-   otherwise means we have to lex identifiers in all their glory,
-   which would slow us down to deal with a case that is bad code and
-   the author of it should feel bad.  And hey, this is a
-   non-conforming mode anyway.  */
+   parsing -- some ill-formed programs will not be rejected.  */
 
 void
 cpp_directive_only_process (cpp_reader *pfile,
@@ -4534,7 +4557,58 @@ cpp_directive_only_process (cpp_reader *pfile,
 	      goto dflt;
 
 	    case 'R':
-	      raw = *do_peek_next (pos, limit) == '"';
+	      if (!CPP_OPTION (pfile, rliterals))
+		;
+	      else if (__builtin_expect (*do_peek_next (pos, limit) == '"',
+					 false))
+		{
+		  /* Must be preceeded by u, u8, L, U, or
+		     non-alphanum (not a raw literal)
+		     further that must not be preceeded by " or ', (not a
+		     user literal suffix'd string or char).  */
+		  // FIXME, backup over utf8?
+		  const unsigned char *peek = pos - 1;
+		  bool first = true;
+		  bool eight = false;
+
+		  /* Peek backwards to determine if we're really
+		     looking at a raw literal.  */
+		  while ((peek = do_peek_prev (peek, base)))
+		    {
+		      unsigned char c = *peek;
+		      if (first)
+			{
+			  if (c == 'L' || c == 'U' || c == 'u')
+			    ; // ok
+			  else if (c == '8')
+			    eight = true;
+			  else
+			    goto maybe_raw;
+			  first = false;
+			}
+		      else if (eight)
+			{
+			  if (c == 'u')
+			    eight = false;
+			  else
+			    break; /* Not raw.  */
+			}
+		      else
+			{
+			maybe_raw:
+			  if (ISIDNUM (c))
+			    break;
+
+			  if ((c != '\"' && c != '\'')
+			      || !CPP_OPTION (pfile, uliterals))
+			    peek = NULL;
+			  break;
+			}
+		    }
+
+		  if (!peek)
+		    raw = true;
+		}
 	      goto dflt;
 
 	    default:

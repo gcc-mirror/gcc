@@ -18508,7 +18508,7 @@ init_module_processing (cpp_reader *reader)
 	{
 	  warning (0, flag_dump_macros == 'M'
 		   ? G_("macro debug output may be incomplete with modules")
-		   : G_("module dependencies require full preprocessing"));
+		   : G_("module dependencies require preprocessing"));
 	  if (cpp_opts->deps.style != DEPS_NONE)
 	    inform (input_location, "you should use the %<-%s%> option",
 		    cpp_opts->deps.style == DEPS_SYSTEM ? "MD" : "MMD");
