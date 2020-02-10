@@ -972,8 +972,14 @@ package body Ch12 is
 
       if Token = Tok_With then
 
-         if Ada_Version >= Ada_2020 and Token /= Tok_Private then
+         if Ada_Version >= Ada_2020 and not Next_Token_Is (Tok_Private) then
+
             --  Formal type has aspect specifications, parsed later.
+            --  Otherwise this is a formal derived type. Note that it may
+            --  also include later aspect specifications, as in:
+
+            --    type DT is new T with private with atomic;
+
             return Def_Node;
 
          else

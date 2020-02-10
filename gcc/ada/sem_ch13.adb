@@ -13027,7 +13027,7 @@ package body Sem_Ch13 is
 
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean is
       function Has_Generic_Parent (E : Entity_Id) return Boolean;
-      --  Return True if any ancestor is a generic type
+      --  Return True if R or any ancestor is a generic type
 
       ------------------------
       -- Has_Generic_Parent --
@@ -13037,6 +13037,10 @@ package body Sem_Ch13 is
          Ancestor_Type : Entity_Id := Etype (E);
 
       begin
+         if Is_Generic_Type (E) then
+            return True;
+         end if;
+
          while Present (Ancestor_Type)
            and then not Is_Generic_Type (Ancestor_Type)
            and then Etype (Ancestor_Type) /= Ancestor_Type
