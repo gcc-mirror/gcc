@@ -1,3 +1,10 @@
+2020-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/93615
+	* unwind-arm-common.inc: Replace uses of gnu_Unwind_Find_got with
+	_Unwind_gnu_Find_got.
+	* unwind-pe.h: Likewise.
+
 2020-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93615

@@ -267,7 +267,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 	     into account.  */
 	  if ((encoding & DW_EH_PE_pcrel) && (encoding & DW_EH_PE_indirect))
 	    {
-	      result += gnu_Unwind_Find_got ((_Unwind_Ptr) u);
+	      result += _Unwind_gnu_Find_got ((_Unwind_Ptr) u);
 	      result = *(_Unwind_Internal_Ptr *) result;
 	    }
 	  else
