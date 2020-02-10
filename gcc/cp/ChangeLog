@@ -1,3 +1,9 @@
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	* error.c (dump_decl) [CONCEPT_DECL]: Use dump_simple_decl.
+	(dump_simple_decl): Handle standard concept definitions as well as
+	variable concept definitions.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/93641

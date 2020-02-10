@@ -1037,14 +1037,13 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 
   if (flags & TFF_DECL_SPECIFIERS)
     {
-      if (VAR_P (t) && DECL_DECLARED_CONSTEXPR_P (t))
-        {
-	  if (DECL_LANG_SPECIFIC (t) && DECL_DECLARED_CONCEPT_P (t))
-	    pp_cxx_ws_string (pp, "concept");
-	  else
-	    pp_cxx_ws_string (pp, "constexpr");
-	}
-      dump_type_prefix (pp, type, flags & ~TFF_UNQUALIFIED_NAME);
+      if (concept_definition_p (t))
+	pp_cxx_ws_string (pp, "concept");
+      else if (VAR_P (t) && DECL_DECLARED_CONSTEXPR_P (t))
+	pp_cxx_ws_string (pp, "constexpr");
+
+      if (!standard_concept_p (t))
+	dump_type_prefix (pp, type, flags & ~TFF_UNQUALIFIED_NAME);
       pp_maybe_space (pp);
     }
   if (! (flags & TFF_UNQUALIFIED_NAME)
@@ -1296,8 +1295,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case CONCEPT_DECL:
-      pp_cxx_ws_string (pp, "concept");
-      dump_decl_name (pp, DECL_NAME (t), flags);
+      dump_simple_decl (pp, t, TREE_TYPE (t), flags);
       break;
 
     case WILDCARD_DECL:

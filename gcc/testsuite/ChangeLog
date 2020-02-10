@@ -1,3 +1,7 @@
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts6.C: New test.
+
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93350
