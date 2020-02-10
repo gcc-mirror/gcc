@@ -4283,11 +4283,6 @@ package body Exp_Aggr is
             if Is_Overloaded (Expr) then
                return False;
 
-            elsif Nkind (Expr) = N_Aggregate
-               and then not Is_Others_Aggregate (Expr)
-            then
-               return False;
-
             elsif Nkind (Expr) = N_Allocator then
 
                --  For now, too complex to analyze
