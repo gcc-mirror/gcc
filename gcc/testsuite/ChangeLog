@@ -1,3 +1,8 @@
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93637
+	* gcc.target/i386/avx-pr93637.c: New test.
+
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93405
