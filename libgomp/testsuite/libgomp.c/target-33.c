@@ -1,3 +1,6 @@
+/* { dg-xfail-run-if "GOMP_OFFLOAD_async_run not implemented" { offload_target_nvptx } }
+   Cf. https://gcc.gnu.org/PR81688.  */
+
 extern void abort (void);
 
 int
