@@ -1,3 +1,14 @@
+2020-02-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93640
+	* c-attribs.c (handle_access_attribute): Correct off-by-one mistakes.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* c-format.c (check_plain): Fix up last argument of strncasecmp.
+	Remove useless extra test.
+
 2020-02-03  Julian Brown  <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

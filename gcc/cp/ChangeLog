@@ -1,3 +1,14 @@
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* error.c (dump_decl_name): Fix up last argument to strncmp.
+
+2020-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93618
+	* tree.c (array_of_unknown_bound_p): New.
+	* init.c (perform_member_init): Do nothing for flexible arrays.
+
 2020-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93633

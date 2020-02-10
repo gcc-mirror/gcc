@@ -10541,7 +10541,7 @@ generated with the following @code{define_subst}:
   ""
   [(set (match_dup 0)
         (match_dup 1))
-   (clobber (reg:CC FLAGS_REG))]
+   (clobber (reg:CC FLAGS_REG))])
 @end smallexample
 
 This @code{define_subst} can be applied to any RTL pattern containing

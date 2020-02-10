@@ -1,3 +1,57 @@
+2020-02-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/93641
+	* config/darwin-c.c (darwin_cfstring_ref_p): Fix up last
+	argument of strncmp.
+
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	Try to generate zero-based comparisons.
+	* config/cris/cris.c (cris_reduce_compare): New function.
+	* config/cris/cris-protos.h  (cris_reduce_compare): Add prototype.
+	* config/cris/cris.md ("cbranch<mode>4", "cbranchdi4", "cstoredi4")
+	(cstore<mode>4"): Apply cris_reduce_compare in expanders.
+
+2020-02-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/91913
+	* config/arm/arm.md (movsi_compare0): Allow SP as a source register
+	in Thumb state and also as a destination in Arm state.  Add T16
+	variants.
+
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* md.texi (Define Subst): Match closing paren in example.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58218
+	PR other/93641
+	* config/i386/i386.c (x86_64_elf_section_type_flags): Fix up last
+	arguments of strncmp.
+
+2020-02-10  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93203
+	* ipa-cp.c (ipcp_lattice::add_value): Add source with same call edge
+	but different source value.
+	(adjust_callers_for_value_intersection): New function.
+	(gather_edges_for_value): Adjust order of callers to let a
+	non-self-recursive caller be the first element.
+	(self_recursive_pass_through_p): Add a new parameter "simple", and
+	check generalized self-recursive pass-through jump function.
+	(self_recursive_agg_pass_through_p): Likewise.
+	(find_more_scalar_values_for_callers_subset): Compute value from
+	pass-through jump function for self-recursive.
+	(intersect_with_plats): Cleanup previous implementation code for value
+	itersection with self-recursive call edge.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Deduce value from pass-through jump
+	function for self-recursive call edge.  Cleanup previous implementation
+	code for value intersection with self-recursive call edge.
+	(decide_whether_version_node): Remove dead callers and adjust order
+	to let a non-self-recursive caller be the first element.
+
 2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* recog.c: Move pass_split_before_sched2 code in front of
