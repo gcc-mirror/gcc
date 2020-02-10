@@ -1,5 +1,13 @@
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93659
+	* analyzer.opt (-param=analyzer-max-recursion-depth=): Fix "tha"
+	-> "that" typo.
+	(Wanalyzer-use-of-uninitialized-value): Fix "initialized" ->
+	"uninitialized" typo.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93350
 	* region-model.cc (region_model::get_lvalue_1):
 	Handle BIT_FIELD_REF.

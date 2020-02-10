@@ -32,7 +32,7 @@ The maximum number of exploded nodes per program point within the analyzer, befo
 
 -param=analyzer-max-recursion-depth=
 Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
-The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call tha would recurse deeper.
+The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
 -param=analyzer-min-snodes-for-call-summary=
 Common Joined UInteger Var(param_analyzer_min_snodes_for_call_summary) Init(10) Param
@@ -100,7 +100,7 @@ Warn about code paths in which a pointer to a stale stack frame is used.
 
 Wanalyzer-use-of-uninitialized-value
 Common Var(warn_analyzer_use_of_uninitialized_value) Init(1) Warning
-Warn about code paths in which an initialized value is used.
+Warn about code paths in which an uninitialized value is used.
 
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
