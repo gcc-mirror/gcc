@@ -1,3 +1,11 @@
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	Try to generate zero-based comparisons.
+	* config/cris/cris.c (cris_reduce_compare): New function.
+	* config/cris/cris-protos.h  (cris_reduce_compare): Add prototype.
+	* config/cris/cris.md ("cbranch<mode>4", "cbranchdi4", "cstoredi4")
+	(cstore<mode>4"): Apply cris_reduce_compare in expanders.
+
 2020-02-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/91913
