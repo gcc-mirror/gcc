@@ -1,5 +1,14 @@
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93649
+	* constraint-manager.cc (constraint_manager::add_constraint): When
+	merging equivalence classes and updating m_constant, also update
+	m_cst_sid.
+	(constraint_manager::validate): If m_constant is non-NULL assert
+	that m_cst_sid is non-null and is valid.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93657
 	* analyzer.opt (fdump-analyzer): Reword description.
 	(fdump-analyzer-stderr): Likewise.

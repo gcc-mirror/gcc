@@ -1,3 +1,8 @@
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93649
+	* gcc.dg/analyzer/torture/pr93649.c: New test.
+
 2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/pr70010-2.c: Add -maltivec.
