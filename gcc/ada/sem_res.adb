@@ -4276,71 +4276,6 @@ package body Sem_Res is
                  ("invalid use of untagged formal incomplete type", A);
             end if;
 
-            if Comes_From_Source (Original_Node (N))
-              and then Nkind_In (Original_Node (N), N_Function_Call,
-                                                    N_Procedure_Call_Statement)
-            then
-               --  In formal mode, check that actual parameters matching
-               --  formals of tagged types are objects (or ancestor type
-               --  conversions of objects), not general expressions.
-
-               if Is_Actual_Tagged_Parameter (A) then
-                  if Is_SPARK_05_Object_Reference (A) then
-                     null;
-
-                  elsif Nkind (A) = N_Type_Conversion then
-                     declare
-                        Operand     : constant Node_Id   := Expression (A);
-                        Operand_Typ : constant Entity_Id := Etype (Operand);
-                        Target_Typ  : constant Entity_Id := A_Typ;
-
-                     begin
-                        if not Is_SPARK_05_Object_Reference (Operand) then
-                           Check_SPARK_05_Restriction
-                             ("object required", Operand);
-
-                        --  In formal mode, the only view conversions are those
-                        --  involving ancestor conversion of an extended type.
-
-                        elsif not
-                          (Is_Tagged_Type (Target_Typ)
-                           and then not Is_Class_Wide_Type (Target_Typ)
-                           and then Is_Tagged_Type (Operand_Typ)
-                           and then not Is_Class_Wide_Type (Operand_Typ)
-                           and then Is_Ancestor (Target_Typ, Operand_Typ))
-                        then
-                           if Ekind_In
-                             (F, E_Out_Parameter, E_In_Out_Parameter)
-                           then
-                              Check_SPARK_05_Restriction
-                                ("ancestor conversion is the only permitted "
-                                 & "view conversion", A);
-                           else
-                              Check_SPARK_05_Restriction
-                                ("ancestor conversion required", A);
-                           end if;
-
-                        else
-                           null;
-                        end if;
-                     end;
-
-                  else
-                     Check_SPARK_05_Restriction ("object required", A);
-                  end if;
-
-               --  In formal mode, the only view conversions are those
-               --  involving ancestor conversion of an extended type.
-
-               elsif Nkind (A) = N_Type_Conversion
-                 and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
-               then
-                  Check_SPARK_05_Restriction
-                    ("ancestor conversion is the only permitted view "
-                     & "conversion", A);
-               end if;
-            end if;
-
             --  has warnings suppressed, then we reset Never_Set_In_Source for
             --  the calling entity. The reason for this is to catch cases like
             --  GNAT.Spitbol.Patterns.Vstring_Var where the called subprogram
@@ -5916,20 +5851,6 @@ package body Sem_Res is
       Analyze_Dimension (N);
       Eval_Arithmetic_Op (N);
 
-      --  In SPARK, a multiplication or division with operands of fixed point
-      --  types must be qualified or explicitly converted to identify the
-      --  result type.
-
-      if (Is_Fixed_Point_Type (Etype (L))
-           or else Is_Fixed_Point_Type (Etype (R)))
-        and then Nkind_In (N, N_Op_Multiply, N_Op_Divide)
-        and then
-          not Nkind_In (Parent (N), N_Qualified_Expression, N_Type_Conversion)
-      then
-         Check_SPARK_05_Restriction
-           ("operation should be qualified or explicitly converted", N);
-      end if;
-
       --  Set overflow and division checking bit
 
       if Nkind (N) in N_Op then
@@ -6308,30 +6229,6 @@ package body Sem_Res is
          end if;
       end if;
 
-      --  If the SPARK_05 restriction is active, we are not allowed
-      --  to have a call to a subprogram before we see its completion.
-
-      if not Has_Completion (Nam)
-        and then Restriction_Check_Required (SPARK_05)
-
-        --  Don't flag strange internal calls
-
-        and then Comes_From_Source (N)
-        and then Comes_From_Source (Nam)
-
-        --  Only flag calls in extended main source
-
-        and then In_Extended_Main_Source_Unit (Nam)
-        and then In_Extended_Main_Source_Unit (N)
-
-        --  Exclude enumeration literals from this processing
-
-        and then Ekind (Nam) /= E_Enumeration_Literal
-      then
-         Check_SPARK_05_Restriction
-           ("call to subprogram cannot appear before its body", N);
-      end if;
-
       --  Check that this is not a call to a protected procedure or entry from
       --  within a protected function.
 
@@ -6565,16 +6462,6 @@ package body Sem_Res is
 
       if Comes_From_Source (N) then
          Scop := Current_Scope;
-
-         --  Check violation of SPARK_05 restriction which does not permit
-         --  a subprogram body to contain a call to the subprogram directly.
-
-         if Restriction_Check_Required (SPARK_05)
-           and then Same_Or_Aliased_Subprograms (Nam, Scop)
-         then
-            Check_SPARK_05_Restriction
-              ("subprogram may not contain direct call to itself", N);
-         end if;
 
          --  Issue warning for possible infinite recursion in the absence
          --  of the No_Recursion restriction.
@@ -6932,17 +6819,6 @@ package body Sem_Res is
       --  expression.
 
       Check_For_Eliminated_Subprogram (Subp, Nam);
-
-      --  In formal mode, the primitive operations of a tagged type or type
-      --  extension do not include functions that return the tagged type.
-
-      if Nkind (N) = N_Function_Call
-        and then Is_Tagged_Type (Etype (N))
-        and then Is_Entity_Name (Name (N))
-        and then Is_Inherited_Operation_For_Type (Entity (Name (N)), Etype (N))
-      then
-         Check_SPARK_05_Restriction ("function not inherited", N);
-      end if;
 
       --  Implement rule in 12.5.1 (23.3/2): In an instance, if the actual is
       --  class-wide and the call dispatches on result in a context that does
@@ -7375,20 +7251,6 @@ package body Sem_Res is
       Check_Unset_Reference (R);
       Generate_Operator_Reference (N, T);
       Check_Low_Bound_Tested (N);
-
-      --  In SPARK, ordering operators <, <=, >, >= are not defined for Boolean
-      --  types or array types except String.
-
-      if Is_Boolean_Type (T) then
-         Check_SPARK_05_Restriction
-           ("comparison is not defined on Boolean type", N);
-
-      elsif Is_Array_Type (T)
-        and then Base_Type (T) /= Standard_String
-      then
-         Check_SPARK_05_Restriction
-           ("comparison is not defined on array types other than String", N);
-      end if;
 
       --  Check comparison on unordered enumeration
 
@@ -8462,27 +8324,6 @@ package body Sem_Res is
          Resolve (L, T);
          Resolve (R, T);
 
-         --  In SPARK, equality operators = and /= for array types other than
-         --  String are only defined when, for each index position, the
-         --  operands have equal static bounds.
-
-         if Is_Array_Type (T) then
-
-            --  Protect call to Matching_Static_Array_Bounds to avoid costly
-            --  operation if not needed.
-
-            if Restriction_Check_Required (SPARK_05)
-              and then Base_Type (T) /= Standard_String
-              and then Base_Type (Etype (L)) = Base_Type (Etype (R))
-              and then Etype (L) /= Any_Composite  --  or else L in error
-              and then Etype (R) /= Any_Composite  --  or else R in error
-              and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
-            then
-               Check_SPARK_05_Restriction
-                 ("array types should have matching static bounds", N);
-            end if;
-         end if;
-
          --  If the unique type is a class-wide type then it will be expanded
          --  into a dispatching call to the predefined primitive. Therefore we
          --  check here for potential violation of such restriction.
@@ -9322,34 +9163,6 @@ package body Sem_Res is
       Set_Etype (N, B_Typ);
       Generate_Operator_Reference (N, B_Typ);
       Eval_Logical_Op (N);
-
-      --  In SPARK, logical operations AND, OR and XOR for arrays are defined
-      --  only when both operands have same static lower and higher bounds. Of
-      --  course the types have to match, so only check if operands are
-      --  compatible and the node itself has no errors.
-
-      if Is_Array_Type (B_Typ)
-        and then Nkind (N) in N_Binary_Op
-      then
-         declare
-            Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
-            Right_Typ : constant Node_Id := Etype (Right_Opnd (N));
-
-         begin
-            --  Protect call to Matching_Static_Array_Bounds to avoid costly
-            --  operation if not needed.
-
-            if Restriction_Check_Required (SPARK_05)
-              and then Base_Type (Left_Typ) = Base_Type (Right_Typ)
-              and then Left_Typ /= Any_Composite  --  or Left_Opnd in error
-              and then Right_Typ /= Any_Composite  --  or Right_Opnd in error
-              and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
-            then
-               Check_SPARK_05_Restriction
-                 ("array types should have matching static bounds", N);
-            end if;
-         end;
-      end if;
    end Resolve_Logical_Op;
 
    ---------------------------
@@ -9707,11 +9520,6 @@ package body Sem_Res is
          exit when NN = N;
          NN := Parent (NN);
       end loop;
-
-      if Base_Type (Etype (N)) /= Standard_String then
-         Check_SPARK_05_Restriction
-           ("result of concatenation should have type String", N);
-      end if;
    end Resolve_Op_Concat;
 
    ---------------------------
@@ -9834,34 +9642,6 @@ package body Sem_Res is
 
       else
          Resolve (Arg, Btyp);
-      end if;
-
-      --  Concatenation is restricted in SPARK: each operand must be either a
-      --  string literal, the name of a string constant, a static character or
-      --  string expression, or another concatenation. Arg cannot be a
-      --  concatenation here as callers of Resolve_Op_Concat_Arg call it
-      --  separately on each final operand, past concatenation operations.
-
-      if Is_Character_Type (Etype (Arg)) then
-         if not Is_OK_Static_Expression (Arg) then
-            Check_SPARK_05_Restriction
-              ("character operand for concatenation should be static", Arg);
-         end if;
-
-      elsif Is_String_Type (Etype (Arg)) then
-         if not (Nkind_In (Arg, N_Identifier, N_Expanded_Name)
-                  and then Is_Constant_Object (Entity (Arg)))
-           and then not Is_OK_Static_Expression (Arg)
-         then
-            Check_SPARK_05_Restriction
-              ("string operand for concatenation should be static", Arg);
-         end if;
-
-      --  Do not issue error on an operand that is neither a character nor a
-      --  string, as the error is issued in Resolve_Op_Concat.
-
-      else
-         null;
       end if;
 
       Check_Unset_Reference (Arg);
@@ -10188,19 +9968,6 @@ package body Sem_Res is
 
    begin
       Resolve (Expr, Target_Typ);
-
-      --  Protect call to Matching_Static_Array_Bounds to avoid costly
-      --  operation if not needed.
-
-      if Restriction_Check_Required (SPARK_05)
-        and then Is_Array_Type (Target_Typ)
-        and then Is_Array_Type (Etype (Expr))
-        and then Etype (Expr) /= Any_Composite  --  or else Expr in error
-        and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
-      then
-         Check_SPARK_05_Restriction
-           ("array types should have matching static bounds", N);
-      end if;
 
       --  A qualified expression requires an exact match of the type, class-
       --  wide matching is not allowed. However, if the qualifying type is
@@ -11524,35 +11291,6 @@ package body Sem_Res is
 
       Resolve (Operand);
 
-      --  In SPARK, a type conversion between array types should be restricted
-      --  to types which have matching static bounds.
-
-      --  Protect call to Matching_Static_Array_Bounds to avoid costly
-      --  operation if not needed.
-
-      if Restriction_Check_Required (SPARK_05)
-        and then Is_Array_Type (Target_Typ)
-        and then Is_Array_Type (Operand_Typ)
-        and then Operand_Typ /= Any_Composite  --  or else Operand in error
-        and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
-      then
-         Check_SPARK_05_Restriction
-           ("array types should have matching static bounds", N);
-      end if;
-
-      --  In formal mode, the operand of an ancestor type conversion must be an
-      --  object (not an expression).
-
-      if Is_Tagged_Type (Target_Typ)
-        and then not Is_Class_Wide_Type (Target_Typ)
-        and then Is_Tagged_Type (Operand_Typ)
-        and then not Is_Class_Wide_Type (Operand_Typ)
-        and then Is_Ancestor (Target_Typ, Operand_Typ)
-        and then not Is_SPARK_05_Object_Reference (Operand)
-      then
-         Check_SPARK_05_Restriction ("object required", Operand);
-      end if;
-
       Analyze_Dimension (N);
 
       --  Note: we do the Eval_Type_Conversion call before applying the
@@ -11871,12 +11609,6 @@ package body Sem_Res is
       Hi    : Uint;
 
    begin
-      if Is_Modular_Integer_Type (Typ) and then Nkind (N) /= N_Op_Not then
-         Error_Msg_Name_1 := Chars (Typ);
-         Check_SPARK_05_Restriction
-           ("unary operator not defined for modular type%", N);
-      end if;
-
       --  Deal with intrinsic unary operators
 
       if Comes_From_Source (N)

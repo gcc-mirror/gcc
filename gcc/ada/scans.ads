@@ -226,9 +226,6 @@ package Scans is
       --  the characters '#', '$', '?', '@', '`', '\', '^', '~', or '_'. The
       --  character value itself is stored in Scans.Special_Character.
 
-      Tok_SPARK_Hide,
-      --  HIDE directive in SPARK
-
       No_Token);
       --  No_Token is used for initializing Token values to indicate that
       --  no value has been set yet.

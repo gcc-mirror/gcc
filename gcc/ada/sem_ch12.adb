@@ -3576,8 +3576,6 @@ package body Sem_Ch12 is
       Save_Parent : Node_Id;
 
    begin
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
-
       --  A generic may grant access to its private enclosing context depending
       --  on the placement of its corresponding body. From elaboration point of
       --  view, the flow of execution may enter this private context, and then
@@ -3782,8 +3780,6 @@ package body Sem_Ch12 is
       Typ         : Entity_Id;
 
    begin
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
-
       --  A generic may grant access to its private enclosing context depending
       --  on the placement of its corresponding body. From elaboration point of
       --  view, the flow of execution may enter this private context, and then
@@ -4114,8 +4110,6 @@ package body Sem_Ch12 is
          Level    => True,
          Modes    => True,
          Warnings => True);
-
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for Text_IO special unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO.
@@ -5561,8 +5555,6 @@ package body Sem_Ch12 is
          Level    => True,
          Modes    => True,
          Warnings => True);
-
-      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for special Text_IO unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO. Of course

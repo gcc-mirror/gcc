@@ -1977,17 +1977,6 @@ package Sem_Util is
    --  Determine whether arbitrary entity Id denotes the anonymous object
    --  created for a single task type.
 
-   function Is_SPARK_05_Initialization_Expr (N : Node_Id) return Boolean;
-   --  Determines if the tree referenced by N represents an initialization
-   --  expression in SPARK 2005, suitable for initializing an object in an
-   --  object declaration.
-
-   function Is_SPARK_05_Object_Reference (N : Node_Id) return Boolean;
-   --  Determines if the tree referenced by N represents an object in SPARK
-   --  2005. This differs from Is_Object_Reference in that only variables,
-   --  constants, formal parameters, and selected_components of those are
-   --  valid objects in SPARK 2005.
-
    function Is_Special_Aliased_Formal_Access
      (Exp  : Node_Id;
       Scop : Entity_Id) return Boolean;
