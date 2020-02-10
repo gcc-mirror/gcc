@@ -923,7 +923,7 @@
   {
     addr_space_t as = INTVAL (operands[3]);
     static char buf[200];
-    sprintf (buf, "ds_write%%b2\t%%0, %%2 offset:%%1%s",
+    sprintf (buf, "ds_write%%b2\t%%0, %%2 offset:%%1%s\;s_waitcnt\tlgkmcnt(0)",
 	     (AS_GDS_P (as) ? " gds" : ""));
     return buf;
   }
