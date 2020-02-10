@@ -554,7 +554,7 @@
   flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
   flat_store_dword\t%A0, %1%O0%g0
   v_mov_b32\t%0, %1
-  ds_write_b32\t%A0, %1%O0
+  ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   s_mov_b32\t%0, %1
   global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
@@ -582,7 +582,7 @@
   flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
   flat_store%s0\t%A0, %1%O0%g0
   v_mov_b32\t%0, %1
-  ds_write%b0\t%A0, %1%O0
+  ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
   global_store%s0\t%A0, %1%O0%g0"
@@ -611,7 +611,7 @@
   #
   flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
   flat_store_dwordx2\t%A0, %1%O0%g0
-  ds_write_b64\t%A0, %1%O0
+  ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
   global_store_dwordx2\t%A0, %1%O0%g0"
@@ -667,7 +667,7 @@
   #
   global_store_dwordx4\t%A0, %1%O0%g0
   global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  ds_write_b128\t%A0, %1%O0
+  ds_write_b128\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)"
   "reload_completed
    && REG_P (operands[0])
