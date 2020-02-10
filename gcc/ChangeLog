@@ -1,3 +1,9 @@
+2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	New.
+
 2020-02-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/91913

@@ -1,3 +1,9 @@
+2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* g++.target/i386/pr85334-1.C: New test.
+	* g++.target/i386/pr85334-2.C: Likewise.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/93641
