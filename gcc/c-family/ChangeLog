@@ -1,3 +1,8 @@
+2020-02-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93640
+	* c-attribs.c (handle_access_attribute): Correct off-by-one mistakes.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/93641

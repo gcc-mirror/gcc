@@ -3999,8 +3999,8 @@ handle_access_attribute (tree *node, tree name, tree args,
     }
 
   const bool read_only = strncmp (ps, "read_only", 9) == 0;
-  const bool write_only = strncmp (ps, "write_only", 9) == 0;
-  if (!read_only && !write_only && strncmp (ps, "read_write", 9))
+  const bool write_only = strncmp (ps, "write_only", 10) == 0;
+  if (!read_only && !write_only && strncmp (ps, "read_write", 10))
     {
       error ("attribute %qE invalid mode %qs; expected one of "
 	     "%qs, %qs, or %qs", name, access_str,
