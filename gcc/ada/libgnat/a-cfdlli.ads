@@ -789,9 +789,10 @@ is
                 Count => Count);
 
    procedure Delete (Container : in out List; Position : in out Cursor) with
-     Global => null,
-     Pre    => Has_Element (Container, Position),
-     Post   =>
+     Global  => null,
+     Depends => (Container =>+ Position, Position => null),
+     Pre     => Has_Element (Container, Position),
+     Post    =>
        Length (Container) = Length (Container)'Old - 1
 
          --  Position is set to No_Element
