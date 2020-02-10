@@ -14901,11 +14901,8 @@ cp_parser_decltype (cp_parser *parser)
     }
 
   if (!expr)
-    {
-      /* Build auto.  */
-      expr = make_decltype_auto ();
-      AUTO_IS_DECLTYPE (expr) = true;
-    }
+    /* Build auto.  */
+    expr = make_decltype_auto ();
   else
     expr = finish_decltype_type (expr, id_expression_or_member_access_p,
 				 tf_warning_or_error);

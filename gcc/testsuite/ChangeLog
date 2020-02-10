@@ -1,5 +1,12 @@
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/69448
+	PR c++/80471
+	* g++.dg/concepts/abbrev3.C: New test.
+	* g++.dg/cpp2a/concepts-pr80471.C: Adjust a static_assert to expect the
+	correct behavior.
+	* g++.dg/cpp0x/auto9.C: Adjust a dg-error directive.
+
 	* g++.dg/cpp2a/concepts6.C: New test.
 
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>

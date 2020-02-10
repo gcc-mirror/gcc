@@ -1,5 +1,21 @@
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/69448
+	PR c++/80471
+	* type-utils.h (find_type_usage): Refactor to take a tree * and to
+	return a tree *, and update documentation accordingly.
+	* pt.c (make_auto_1): Set AUTO_IS_DECLTYPE when building a
+	decltype(auto) node.
+	(make_constrained_decltype_auto): No need to explicitly set
+	AUTO_IS_DECLTYPE anymore.
+	(splice_late_return_type): Use find_type_usage to find and
+	replace a possibly nested auto node instead of using is_auto.
+	Check test for is_auto into an assert when deciding whether
+	to late_return_type.
+	(type_uses_auto): Adjust the call to find_type_usage.
+	* parser.c (cp_parser_decltype): No need to explicitly set
+	AUTO_IS_DECLTYPE anymore.
+
 	* error.c (dump_decl) [CONCEPT_DECL]: Use dump_simple_decl.
 	(dump_simple_decl): Handle standard concept definitions as well as
 	variable concept definitions.
