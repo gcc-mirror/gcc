@@ -49,3 +49,46 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	}					\
     }						\
     while (0)
+
+/* Linux CET kernel places a restore token on shadow stack for signal
+   handler to enhance security.  The restore token is 8 byte and aligned
+   to 8 bytes.  It is usually transparent to user programs since kernel
+   will pop the restore token when signal handler returns.  But when an
+   exception is thrown from a signal handler, now we need to pop the
+   restore token from shadow stack.  For x86-64, we just need to treat
+   the signal frame as normal frame.  For i386, we need to search for
+   the restore token to check if the original shadow stack is 8 byte
+   aligned.  If the original shadow stack is 8 byte aligned, we just
+   need to pop 2 slots, one restore token, from shadow stack.  Otherwise,
+   we need to pop 3 slots, one restore token + 4 byte padding, from
+   shadow stack.  */
+#ifndef __x86_64__
+#undef _Unwind_Frames_Increment
+#define _Unwind_Frames_Increment(context, frames)	\
+  if (_Unwind_IsSignalFrame (context))			\
+    do							\
+      {							\
+	_Unwind_Word ssp, prev_ssp, token;		\
+	ssp = _get_ssp ();				\
+	if (ssp != 0)					\
+	  {						\
+	    /* Align shadow stack pointer to the next	\
+	       8 byte aligned boundary.  */		\
+	    ssp = (ssp + 4) & ~7;			\
+	    do						\
+	      {						\
+		/* Look for a restore token.  */	\
+		token = (*(_Unwind_Word *) (ssp - 8));	\
+		prev_ssp = token & ~7;			\
+		if (prev_ssp == ssp)			\
+		  break;				\
+		ssp += 8;				\
+	      }						\
+	    while (1);					\
+	    frames += (token & 0x4) ? 3 : 2;		\
+	  }						\
+      }							\
+    while (0);						\
+  else							\
+    frames++;
+#endif
