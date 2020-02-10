@@ -2,6 +2,7 @@
 
 	PR ipa/93203
 	* g++.dg/ipa/pr93203.C: New test.
+	* gcc.dg/ipa/ipcp-1: Change dump string.
 
 2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
 
