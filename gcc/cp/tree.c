@@ -5024,6 +5024,11 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       *walk_subtrees_p = 0;
       break;
 
+    case CONSTRUCTOR:
+      if (COMPOUND_LITERAL_P (*tp))
+	WALK_SUBTREE (TREE_TYPE (*tp));
+      break;
+
     case TRAIT_EXPR:
       WALK_SUBTREE (TRAIT_EXPR_TYPE1 (*tp));
       WALK_SUBTREE (TRAIT_EXPR_TYPE2 (*tp));
