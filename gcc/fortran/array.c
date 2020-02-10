@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "options.h"
 #include "gfortran.h"
+#include "parse.h"
 #include "match.h"
 #include "constructor.h"
 
@@ -822,7 +823,6 @@ cleanup:
   return MATCH_ERROR;
 }
 
-
 /* Given a symbol and an array specification, modify the symbol to
    have that array specification.  The error locus is needed in case
    something goes wrong.  On failure, the caller must free the spec.  */
@@ -831,10 +831,17 @@ bool
 gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 {
   int i;
-
+  symbol_attribute *attr;
+  
   if (as == NULL)
     return true;
 
+  /* If the symbol corresponds to a submodule module procedure the array spec is
+     already set, so do not attempt to set it again here. */
+  attr = &sym->attr;
+  if (gfc_submodule_procedure(attr))
+    return true;
+  
   if (as->rank
       && !gfc_add_dimension (&sym->attr, sym->name, error_loc))
     return false;

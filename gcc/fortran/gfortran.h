@@ -2845,6 +2845,13 @@ bool gfc_insert_parameter_exprs (gfc_expr *, gfc_actual_arglist *);
 match gfc_get_pdt_instance (gfc_actual_arglist *, gfc_symbol **,
 			    gfc_actual_arglist **);
 
+
+/* Given a symbol, test whether it is a module procedure in a submodule */
+#define gfc_submodule_procedure(attr)				     \
+  (gfc_state_stack->previous && gfc_state_stack->previous->previous  \
+   && gfc_state_stack->previous->previous->state == COMP_SUBMODULE   \
+   && attr->module_procedure)
+
 /* scanner.c */
 void gfc_scanner_done_1 (void);
 void gfc_scanner_init_1 (void);

@@ -1014,7 +1014,7 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
   if (check_used (attr, NULL, where))
     return false;
 
-  if (attr->allocatable)
+  if (attr->allocatable && ! gfc_submodule_procedure(attr))
     {
       duplicate_attr ("ALLOCATABLE", where);
       return false;
@@ -1081,7 +1081,7 @@ gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
   if (check_used (attr, name, where))
     return false;
 
-  if (attr->dimension)
+  if (attr->dimension && ! gfc_submodule_procedure(attr))
     {
       duplicate_attr ("DIMENSION", where);
       return false;
@@ -1208,7 +1208,8 @@ gfc_add_pointer (symbol_attribute *attr, locus *where)
     return false;
 
   if (attr->pointer && !(attr->if_source == IFSRC_IFBODY
-      && !gfc_find_state (COMP_INTERFACE)))
+      && !gfc_find_state (COMP_INTERFACE))
+      && ! gfc_submodule_procedure(attr))
     {
       duplicate_attr ("POINTER", where);
       return false;
