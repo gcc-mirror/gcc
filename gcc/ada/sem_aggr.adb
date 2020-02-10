@@ -117,15 +117,6 @@ package body Sem_Aggr is
    --  Expression is also OK in an instance or inlining context, because we
    --  have already preanalyzed and it is known to be type correct.
 
-   procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
-   --  Given aggregate Expr, check that sub-aggregates of Expr that are nested
-   --  at Level are qualified. If Level = 0, this applies to Expr directly.
-   --  Only issue errors in formal verification mode.
-
-   function Is_Top_Level_Aggregate (Expr : Node_Id) return Boolean;
-   --  Return True of Expr is an aggregate not contained directly in another
-   --  aggregate.
-
    ------------------------------------------------------
    -- Subprograms used for RECORD AGGREGATE Processing --
    ------------------------------------------------------
@@ -731,43 +722,6 @@ package body Sem_Aggr is
       end if;
    end Check_Expr_OK_In_Limited_Aggregate;
 
-   -------------------------------
-   -- Check_Qualified_Aggregate --
-   -------------------------------
-
-   procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id) is
-      Comp_Expr : Node_Id;
-      Comp_Assn : Node_Id;
-
-   begin
-      if Level = 0 then
-         if Nkind (Parent (Expr)) /= N_Qualified_Expression then
-            Check_SPARK_05_Restriction ("aggregate should be qualified", Expr);
-         end if;
-
-      else
-         Comp_Expr := First (Expressions (Expr));
-         while Present (Comp_Expr) loop
-            if Nkind (Comp_Expr) = N_Aggregate then
-               Check_Qualified_Aggregate (Level - 1, Comp_Expr);
-            end if;
-
-            Comp_Expr := Next (Comp_Expr);
-         end loop;
-
-         Comp_Assn := First (Component_Associations (Expr));
-         while Present (Comp_Assn) loop
-            Comp_Expr := Expression (Comp_Assn);
-
-            if Nkind (Comp_Expr) = N_Aggregate then
-               Check_Qualified_Aggregate (Level - 1, Comp_Expr);
-            end if;
-
-            Comp_Assn := Next (Comp_Assn);
-         end loop;
-      end if;
-   end Check_Qualified_Aggregate;
-
    ----------------------------------------
    -- Check_Static_Discriminated_Subtype --
    ----------------------------------------
@@ -853,17 +807,6 @@ package body Sem_Aggr is
         and then No (Next (First (Choice_List (First (Assoc)))));
    end Is_Single_Aggregate;
 
-   ----------------------------
-   -- Is_Top_Level_Aggregate --
-   ----------------------------
-
-   function Is_Top_Level_Aggregate (Expr : Node_Id) return Boolean is
-   begin
-      return Nkind (Parent (Expr)) /= N_Aggregate
-        and then (Nkind (Parent (Expr)) /= N_Component_Association
-                   or else Nkind (Parent (Parent (Expr))) /= N_Aggregate);
-   end Is_Top_Level_Aggregate;
-
    --------------------------------
    -- Make_String_Into_Aggregate --
    --------------------------------
@@ -946,41 +889,6 @@ package body Sem_Aggr is
                Next (Comp);
             end loop;
          end;
-      end if;
-
-      --  An unqualified aggregate is restricted in SPARK to:
-
-      --    An aggregate item inside an aggregate for a multi-dimensional array
-
-      --    An expression being assigned to an unconstrained array, but only if
-      --    the aggregate specifies a value for OTHERS only.
-
-      if Nkind (Parent (N)) = N_Qualified_Expression then
-         if Is_Array_Type (Typ) then
-            Check_Qualified_Aggregate (Number_Dimensions (Typ), N);
-         else
-            Check_Qualified_Aggregate (1, N);
-         end if;
-      else
-         if Is_Array_Type (Typ)
-           and then Nkind (Parent (N)) = N_Assignment_Statement
-           and then not Is_Constrained (Etype (Name (Parent (N))))
-         then
-            if not Is_Others_Aggregate (N) then
-               Check_SPARK_05_Restriction
-                 ("array aggregate should have only OTHERS", N);
-            end if;
-
-         elsif Is_Top_Level_Aggregate (N) then
-            Check_SPARK_05_Restriction ("aggregate should be qualified", N);
-
-         --  The legality of this unqualified aggregate is checked by calling
-         --  Check_Qualified_Aggregate from one of its enclosing aggregate,
-         --  unless one of these already causes an error to be issued.
-
-         else
-            null;
-         end if;
       end if;
 
       --  Check for aggregates not allowed in configurable run-time mode.
@@ -2069,16 +1977,6 @@ package body Sem_Aggr is
                      --  bounds of the array aggregate are within range.
 
                      Set_Do_Range_Check (Choice, False);
-
-                     --  In SPARK, the choice must be static
-
-                     if not (Is_OK_Static_Expression (Choice)
-                              or else (Nkind (Choice) = N_Range
-                                        and then Is_OK_Static_Range (Choice)))
-                     then
-                        Check_SPARK_05_Restriction
-                          ("choice should be static", Choice);
-                     end if;
                   end if;
 
                   --  If we could not resolve the discrete choice stop here
@@ -3257,7 +3155,6 @@ package body Sem_Aggr is
       --  In SPARK, the ancestor part cannot be a type mark
 
       if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
-         Check_SPARK_05_Restriction ("ancestor part cannot be a type mark", A);
 
          --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
          --  must not have unknown discriminants.
@@ -4332,12 +4229,6 @@ package body Sem_Aggr is
       if Present (Component_Associations (N))
         and then Present (First (Component_Associations (N)))
       then
-         if Present (Expressions (N)) then
-            Check_SPARK_05_Restriction
-              ("named association cannot follow positional one",
-               First (Choices (First (Component_Associations (N)))));
-         end if;
-
          declare
             Assoc : Node_Id;
 
@@ -4349,18 +4240,6 @@ package body Sem_Aggr is
                     ("iterated component association can only appear in an "
                      & "array aggregate", N);
                   raise Unrecoverable_Error;
-
-               else
-                  if List_Length (Choices (Assoc)) > 1 then
-                     Check_SPARK_05_Restriction
-                       ("component association in record aggregate must "
-                        & "contain a single choice", Assoc);
-                  end if;
-
-                  if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                     Check_SPARK_05_Restriction
-                       ("record aggregate cannot contain OTHERS", Assoc);
-                  end if;
                end if;
 
                Assoc := Next (Assoc);

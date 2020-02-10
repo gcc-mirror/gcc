@@ -568,8 +568,6 @@ package body Sem_Ch8 is
       Nam : constant Node_Id   := Name (N);
 
    begin
-      Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
-
       Enter_Name (Id);
       Analyze (Nam);
 
@@ -681,8 +679,6 @@ package body Sem_Ch8 is
       if Name (N) = Error then
          return;
       end if;
-
-      Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
 
@@ -871,8 +867,6 @@ package body Sem_Ch8 is
       if Nam = Error then
          return;
       end if;
-
-      Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
       Enter_Name (Id);
@@ -3898,8 +3892,6 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Use_Package
 
    begin
-      Check_SPARK_05_Restriction ("use clause is not allowed", N);
-
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
       --  Use clause not allowed in a spec of a predefined package declaration
@@ -7240,21 +7232,6 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Selector name cannot be a character literal or an operator symbol in
-      --  SPARK, except for the operator symbol in a renaming.
-
-      if Restriction_Check_Required (SPARK_05) then
-         if Nkind (Selector_Name (N)) = N_Character_Literal then
-            Check_SPARK_05_Restriction
-              ("character literal cannot be prefixed", N);
-         elsif Nkind (Selector_Name (N)) = N_Operator_Symbol
-           and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
-         then
-            Check_SPARK_05_Restriction
-              ("operator symbol cannot be prefixed", N);
-         end if;
-      end if;
-
       --  If the selector already has an entity, the node has been constructed
       --  in the course of expansion, and is known to be valid. Do not verify
       --  that it is defined for the type (it may be a private component used
@@ -7709,21 +7686,6 @@ package body Sem_Ch8 is
                Error_Msg_N ("invalid prefix in selected component", P);
             end if;
          end if;
-
-         --  Selector name is restricted in SPARK
-
-         if Nkind (N) = N_Expanded_Name
-           and then Restriction_Check_Required (SPARK_05)
-         then
-            if Is_Subprogram (P_Name) then
-               Check_SPARK_05_Restriction
-                 ("prefix of expanded name cannot be a subprogram", P);
-            elsif Ekind (P_Name) = E_Loop then
-               Check_SPARK_05_Restriction
-                 ("prefix of expanded name cannot be a loop statement", P);
-            end if;
-         end if;
-
       else
          --  If prefix is not the name of an entity, it must be an expression,
          --  whose type is appropriate for a record. This is determined by
@@ -7881,10 +7843,6 @@ package body Sem_Ch8 is
          --  Base attribute, not allowed in Ada 83
 
          elsif Attribute_Name (N) = Name_Base then
-            Error_Msg_Name_1 := Name_Base;
-            Check_SPARK_05_Restriction
-              ("attribute% is only allowed as prefix of another attribute", N);
-
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_N
                  ("(Ada 83) Base attribute not allowed in subtype mark", N);

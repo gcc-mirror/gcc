@@ -6244,33 +6244,7 @@ package body Exp_Ch6 is
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;
 
-   --  Start of processing for Expand_N_Subprogram_Declaration
-
    begin
-      --  In SPARK, subprogram declarations are only allowed in package
-      --  specifications.
-
-      if Nkind (Parent (N)) /= N_Package_Specification then
-         if Nkind (Parent (N)) = N_Compilation_Unit then
-            Check_SPARK_05_Restriction
-              ("subprogram declaration is not a library item", N);
-
-         elsif Present (Next (N))
-           and then Nkind (Next (N)) = N_Pragma
-           and then Get_Pragma_Id (Next (N)) = Pragma_Import
-         then
-            --  In SPARK, subprogram declarations are also permitted in
-            --  declarative parts when immediately followed by a corresponding
-            --  pragma Import. We only check here that there is some pragma
-            --  Import.
-
-            null;
-         else
-            Check_SPARK_05_Restriction
-              ("subprogram declaration is not allowed here", N);
-         end if;
-      end if;
-
       --  Deal with case of protected subprogram. Do not generate protected
       --  operation if operation is flagged as eliminated.
 

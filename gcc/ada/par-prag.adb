@@ -102,10 +102,6 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --    are some obsolescent features (e.g. character replacements) which are
    --    handled at parse time.
    --
-   --    SPARK must be processed at parse time, since this restriction controls
-   --    whether the scanner recognizes a spark HIDE directive formatted as an
-   --    Ada comment (and generates a Tok_SPARK_Hide token for the directive).
-   --
    --    No_Dependence must be processed at parse time, since otherwise it gets
    --    handled too late.
    --
@@ -257,12 +253,11 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
-               when Name_SPARK
-                  | Name_SPARK_05
-               =>
-                  Set_Restriction (SPARK_05, Pragma_Node);
-                  Restriction_Warnings (SPARK_05) :=
-                    Prag_Id = Pragma_Restriction_Warnings;
+               when Name_SPARK_05 =>
+                  Error_Msg_Name_1 := Chars (Expr);
+                  Error_Msg_N
+                    ("??% restriction is obsolete and ignored, consider " &
+                     "using 'S'P'A'R'K_'Mode and gnatprove instead", Arg);
 
                when others =>
                   null;

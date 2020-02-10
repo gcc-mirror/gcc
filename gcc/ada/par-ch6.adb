@@ -707,9 +707,6 @@ package body Ch6 is
          else
             Scan_Body_Or_Expression_Function : declare
 
-               Body_Is_Hidden_In_SPARK : Boolean;
-               Hidden_Region_Start     : Source_Ptr;
-
                function Likely_Expression_Function return Boolean;
                --  Returns True if we have a probable case of an expression
                --  function omitting the parentheses, if so, returns True
@@ -942,25 +939,7 @@ package body Ch6 is
                      Set_Aspect_Specifications (Body_Node, Aspects);
                   end if;
 
-                  --  In SPARK, a HIDE directive can be placed at the beginning
-                  --  of a subprogram implementation, thus hiding the
-                  --  subprogram body from SPARK tool-set. No violation of the
-                  --  SPARK restriction should be issued on nodes in a hidden
-                  --  part, which is obtained by marking such hidden parts.
-
-                  if Token = Tok_SPARK_Hide then
-                     Body_Is_Hidden_In_SPARK := True;
-                     Hidden_Region_Start     := Token_Ptr;
-                     Scan; -- past HIDE directive
-                  else
-                     Body_Is_Hidden_In_SPARK := False;
-                  end if;
-
                   Parse_Decls_Begin_End (Body_Node);
-
-                  if Body_Is_Hidden_In_SPARK then
-                     Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
-                  end if;
                end if;
 
                return Body_Node;

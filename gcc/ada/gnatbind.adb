@@ -221,6 +221,9 @@ procedure Gnatbind is
          No_Use_Of_Pragma                => False,
          --  Requires a parameter value, not a count
 
+         SPARK_05                        => False,
+         --  Obsolete restriction
+
          others                          => True);
 
       Additional_Restrictions_Listed : Boolean := False;
