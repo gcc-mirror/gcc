@@ -1,5 +1,11 @@
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93657
+	* analyzer.opt (fdump-analyzer): Reword description.
+	(fdump-analyzer-stderr): Likewise.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
 	* region-model.cc (print_quoted_type): New function.
 	(svalue::print): Use it to replace %qT.
 	(region::dump_to_pp): Likewise.

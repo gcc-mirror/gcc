@@ -144,11 +144,11 @@ Control which events are displayed in diagnostic paths.
 
 fdump-analyzer
 Common RejectNegative Var(flag_dump_analyzer)
-Dump internal details about what the analyzer is doing to SRCFILE.analyzer.txt.
+Dump various analyzer internals to SRCFILE.analyzer.txt.
 
 fdump-analyzer-stderr
 Common RejectNegative Var(flag_dump_analyzer_stderr)
-Dump internal details about what the analyzer is doing to stderr.
+Dump various analyzer internals to stderr.
 
 fdump-analyzer-callgraph
 Common RejectNegative Var(flag_dump_analyzer_callgraph)
