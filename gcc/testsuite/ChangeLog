@@ -1,3 +1,7 @@
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/cris.exp (check_effective_target_cc0): New.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91913
