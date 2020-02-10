@@ -1,5 +1,14 @@
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93647
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Bulletproof against
+	VAR being constant.
+	* region-model.cc (region_model::get_lvalue_1): Provide a better
+	error message when encountering an unhandled tree code.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93405
 	* region-model.cc (region_model::get_lvalue_1): Implement
 	CONST_DECL.

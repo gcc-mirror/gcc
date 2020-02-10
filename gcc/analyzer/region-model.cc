@@ -4614,6 +4614,8 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (expr))
     {
     default:
+      internal_error ("unhandled tree code in region_model::get_lvalue_1: %qs",
+		      get_tree_code_name (TREE_CODE (expr)));
       gcc_unreachable ();
 
     case ARRAY_REF:
