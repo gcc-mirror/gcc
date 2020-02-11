@@ -1,3 +1,8 @@
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr70010-2.c: Add -maltivec.
+	* gcc.target/powerpc/pr70010-3.c: Add -maltivec.
+
 2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* gcc.target/arm/simd/vdot-2-1.c: New test.
