@@ -1447,7 +1447,7 @@ c_finish_options (void)
     {
       const line_map_ordinary *bltin_map
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-					       _("<built-in>"), 0));
+					       _("<built-in>"), 1));
       cb_file_change (parse_in, bltin_map);
 
       /* Make sure all of the builtins about to be declared have
@@ -1470,7 +1470,7 @@ c_finish_options (void)
 
       const line_map_ordinary *cmd_map
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-					       _("<command-line>"), 0));
+					       _("<command-line>"), 1));
       cb_file_change (parse_in, cmd_map);
 
       /* All command line defines must have the same location.  */
@@ -1585,7 +1585,7 @@ cb_file_change (cpp_reader *reader, const line_map_ordinary *new_map)
 
   if (new_map && cpp_opts->preprocessed
       && lang_hooks.preprocess_main_file && MAIN_FILE_P (new_map)
-      && new_map - LINEMAPS_ORDINARY_MAPS (line_table) > 2)
+      && ORDINARY_MAP_STARTING_LINE_NUMBER (new_map))
     /* We're starting the main file.  Inform the FE of that.  */
     lang_hooks.preprocess_main_file (reader, line_table, new_map);
 

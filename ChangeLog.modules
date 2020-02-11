@@ -1,5 +1,14 @@
 2020-02-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family.
+	* c-opts.c (c_finish_options): Builtins & command-line starts at
+	1.
+	(cb_file_change): Alter detection of main file start.
+	* c-ppoutput.c (print_line_1): Don't nadger line zero.
+	gcc/testsuite/
+	* g++.dg/modules/dir-only-3.C: Update line nos
+	* g++.dg/modules/dir-only-4.C: New.
+
 	gcc/c-family/
 	* c-optsc (c_common_post_options): Set module_directives
 	regardless of preprocessed state.

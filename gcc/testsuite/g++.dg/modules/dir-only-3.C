@@ -1,4 +1,4 @@
-# 1 "dir-only-3.C"
+# 0 "dir-only-3.C"
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 31 "<command-line>"

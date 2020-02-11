@@ -511,8 +511,7 @@ print_line_1 (location_t src_loc, const char *special_flags, FILE *stream)
       print.src_file = file_path;
 
       fprintf (stream, "# %u \"%s\"%s",
-	       print.src_line == 0 ? 1 : print.src_line,
-	       to_file_quoted, special_flags);
+	       print.src_line, to_file_quoted, special_flags);
 
       int sysp = in_system_header_at (src_loc);
       if (sysp == 2)
