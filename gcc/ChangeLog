@@ -1,3 +1,35 @@
+2020-02-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (cint34_operand): Rename the
+	-mprefixed-addr option to be -mprefixed.
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): Rename
+	the -mprefixed-addr option to be -mprefixed.
+	(OTHER_FUTURE_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Rename
+	the -mprefixed-addr option to be -mprefixed.  Change error
+	messages to refer to -mprefixed.
+	(num_insns_constant_gpr): Rename the -mprefixed-addr option to be
+	-mprefixed.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_mode_dependent_address): Likewise.
+	(rs6000_opt_masks): Change the spelling of "-mprefixed-addr" to be
+	"-mprefixed" for target attributes and pragmas.
+	(address_to_insn_form): Rename the -mprefixed-addr option to be
+	-mprefixed.
+	(rs6000_adjust_insn_length): Likewise.
+	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): Rename the
+	-mprefixed-addr option to be -mprefixed.
+	(ASM_OUTPUT_OPCODE): Likewise.
+	* config/rs6000/rs6000.md (prefixed insn attribute): Rename the
+	-mprefixed-addr option to be -mprefixed.
+	* config/rs6000/rs6000.opt (-mprefixed): Rename the
+	-mprefixed-addr option to be prefixed.  Change the option from
+	being undocumented to being documented.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document the
+	-mprefixed option.  Update the -mpcrel documentation to mention
+	-mprefixed.
+
 2020-02-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* ira-conflicts.c (print_hard_reg_set): Correct output for sets

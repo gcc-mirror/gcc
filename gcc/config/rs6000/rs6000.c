@@ -4013,22 +4013,22 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
-  /* -mprefixed-addr (and hence -mpcrel) requires -mcpu=future.  */
-  if (TARGET_PREFIXED_ADDR && !TARGET_FUTURE)
+  /* -mprefixed (and hence -mpcrel) requires -mcpu=future.  */
+  if (TARGET_PREFIXED && !TARGET_FUTURE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
 	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED_ADDR) != 0)
-	error ("%qs requires %qs", "-mprefixed-addr", "-mcpu=future");
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
+	error ("%qs requires %qs", "-mprefixed", "-mcpu=future");
 
-      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED_ADDR);
+      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED);
     }
 
   /* -mpcrel requires prefixed load/store addressing.  */
-  if (TARGET_PCREL && !TARGET_PREFIXED_ADDR)
+  if (TARGET_PCREL && !TARGET_PREFIXED)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mpcrel", "-mprefixed-addr");
+	error ("%qs requires %qs", "-mpcrel", "-mprefixed");
 
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
@@ -5571,7 +5571,7 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
     return 1;
 
   /* PADDI can support up to 34 bit signed integers.  */
-  else if (TARGET_PREFIXED_ADDR && SIGNED_INTEGER_34BIT_P (value))
+  else if (TARGET_PREFIXED && SIGNED_INTEGER_34BIT_P (value))
     return 1;
 
   else if (TARGET_POWERPC64)
@@ -7960,7 +7960,7 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
       break;
     }
 
-  if (TARGET_PREFIXED_ADDR)
+  if (TARGET_PREFIXED)
     return SIGNED_34BIT_OFFSET_EXTRA_P (offset, extra);
   else
     return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
@@ -8954,7 +8954,7 @@ rs6000_mode_dependent_address (const_rtx addr)
 	{
 	  HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
 	  HOST_WIDE_INT extra = TARGET_POWERPC64 ? 8 : 12;
-	  if (TARGET_PREFIXED_ADDR)
+	  if (TARGET_PREFIXED)
 	    return !SIGNED_34BIT_OFFSET_EXTRA_P (val, extra);
 	  else
 	    return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
@@ -22884,7 +22884,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "power9-vector",		OPTION_MASK_P9_VECTOR,		false, true  },
   { "powerpc-gfxopt",		OPTION_MASK_PPC_GFXOPT,		false, true  },
   { "powerpc-gpopt",		OPTION_MASK_PPC_GPOPT,		false, true  },
-  { "prefixed-addr",		OPTION_MASK_PREFIXED_ADDR,	false, true  },
+  { "prefixed",			OPTION_MASK_PREFIXED,		false, true  },
   { "quad-memory",		OPTION_MASK_QUAD_MEMORY,	false, true  },
   { "quad-memory-atomic",	OPTION_MASK_QUAD_MEMORY_ATOMIC,	false, true  },
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
@@ -24849,7 +24849,7 @@ address_to_insn_form (rtx addr,
   /* Large offsets must be prefixed.  */
   if (!SIGNED_INTEGER_16BIT_P (offset))
     {
-      if (TARGET_PREFIXED_ADDR)
+      if (TARGET_PREFIXED)
 	return INSN_FORM_PREFIXED_NUMERIC;
 
       return INSN_FORM_BAD;
@@ -24889,7 +24889,7 @@ address_to_insn_form (rtx addr,
       if ((offset & 3) == 0)
 	return INSN_FORM_DS;
 
-      else if (TARGET_PREFIXED_ADDR)
+      else if (TARGET_PREFIXED)
 	return INSN_FORM_PREFIXED_NUMERIC;
 
       else
@@ -24900,7 +24900,7 @@ address_to_insn_form (rtx addr,
       if ((offset & 15) == 0)
 	return INSN_FORM_DQ;
 
-      else if (TARGET_PREFIXED_ADDR)
+      else if (TARGET_PREFIXED)
 	return INSN_FORM_PREFIXED_NUMERIC;
 
       else
@@ -25150,7 +25150,7 @@ rs6000_asm_output_opcode (FILE *stream)
 int
 rs6000_adjust_insn_length (rtx_insn *insn, int length)
 {
-  if (TARGET_PREFIXED_ADDR && NONJUMP_INSN_P (insn))
+  if (TARGET_PREFIXED && NONJUMP_INSN_P (insn))
     {
       rtx pattern = PATTERN (insn);
       if (GET_CODE (pattern) != USE && GET_CODE (pattern) != CLOBBER
