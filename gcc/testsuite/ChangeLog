@@ -1,3 +1,12 @@
+2020-02-11  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from mainline
+	2020-01-31  Tamar Christina  <tamar.christina@arm.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/91838
+	* g++.dg/opt/pr91838.C: New test.
+
 2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

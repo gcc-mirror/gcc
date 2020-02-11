@@ -1,3 +1,12 @@
+2020-02-11  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from mainline
+	2020-01-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/91838
+	* simplify-rtx.c (simplify_binary_operation_1): Update LSHIFTRT case
+	to truncate if allowed or reject combination.
+
 2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

@@ -3519,9 +3519,21 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  rtx tmp = gen_int_shift_amount
 	    (inner_mode, INTVAL (XEXP (SUBREG_REG (op0), 1)) + INTVAL (op1));
-	  tmp = simplify_gen_binary (code, inner_mode,
-				     XEXP (SUBREG_REG (op0), 0),
-				     tmp);
+
+	 /* Combine would usually zero out the value when combining two
+	    local shifts and the range becomes larger or equal to the mode.
+	    However since we fold away one of the shifts here combine won't
+	    see it so we should immediately zero the result if it's out of
+	    range.  */
+	 if (code == LSHIFTRT
+	     && INTVAL (tmp) >= GET_MODE_BITSIZE (inner_mode))
+	  tmp = const0_rtx;
+	 else
+	   tmp = simplify_gen_binary (code,
+				      inner_mode,
+				      XEXP (SUBREG_REG (op0), 0),
+				      tmp);
+
 	  return lowpart_subreg (int_mode, tmp, inner_mode);
 	}
 
