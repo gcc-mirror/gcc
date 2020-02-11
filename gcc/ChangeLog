@@ -1,3 +1,22 @@
+2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm-builtins.c (enum arm_type_qualifiers): 
+	(USTERNOP_QUALIFIERS): New define.
+	(USMAC_LANE_QUADTUP_QUALIFIERS): New define.
+	(SUMAC_LANE_QUADTUP_QUALIFIERS): New define.
+	(arm_expand_builtin_args): Add case ARG_BUILTIN_LANE_QUADTUP_INDEX.
+	(arm_expand_builtin_1): Add qualifier_lane_quadtup_index.
+	* config/arm/arm_neon.h (vusdot_s32): New.
+	(vusdot_lane_s32): New.
+	(vusdotq_lane_s32): New.
+	(vsudot_lane_s32): New.
+	(vsudotq_lane_s32): New.
+	* config/arm/arm_neon_builtins.def (usdot, usdot_lane,sudot_lane): New.
+	* config/arm/iterators.md (DOTPROD_I8MM): New.
+	(sup, opsuffix): Add <us/su>.
+	* config/arm/neon.md (neon_usdot, <us/su>dot_lane: New.
+	* config/arm/unspecs.md (UNSPEC_DOT_US, UNSPEC_DOT_SU): New.
+
 2020-02-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93661

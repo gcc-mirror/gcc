@@ -3279,6 +3279,20 @@
   [(set_attr "type" "neon_dot<q>")]
 )
 
+;; These instructions map to the __builtins for the Dot Product operations.
+(define_insn "neon_usdot<vsi2qi>"
+  [(set (match_operand:VCVTI 0 "register_operand" "=w")
+	(plus:VCVTI
+	  (unspec:VCVTI
+	    [(match_operand:<VSI2QI> 2 "register_operand" "w")
+	    (match_operand:<VSI2QI> 3 "register_operand" "w")]
+	    UNSPEC_DOT_US)
+	  (match_operand:VCVTI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "vusdot.s8\\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
 ;; These instructions map to the __builtins for the Dot Product
 ;; indexed operations.
 (define_insn "neon_<sup>dot_lane<vsi2qi>"
@@ -3293,6 +3307,25 @@
   {
     operands[4]
       = GEN_INT (NEON_ENDIAN_LANE_N (V8QImode, INTVAL (operands[4])));
+    return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
+  }
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the Dot Product
+;; indexed operations in the v8.6 I8MM extension.
+(define_insn "neon_<sup>dot_lane<vsi2qi>"
+  [(set (match_operand:VCVTI 0 "register_operand" "=w")
+	(plus:VCVTI
+	  (unspec:VCVTI
+	   [(match_operand:<VSI2QI> 2 "register_operand" "w")
+	    (match_operand:V8QI 3 "register_operand" "t")
+	    (match_operand:SI 4 "immediate_operand" "i")]
+	    DOTPROD_I8MM)
+	  (match_operand:VCVTI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[4]));
     return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
   }
   [(set_attr "type" "neon_dot<q>")]

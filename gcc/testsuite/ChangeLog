@@ -1,3 +1,10 @@
+2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: New test.
+	* gcc.target/arm/simd/vdot-2-2.c: New test.
+	* gcc.target/arm/simd/vdot-2-3.c: New test.
+	* gcc.target/arm/simd/vdot-2-4.c: New test.
+
 2020-02-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93661
