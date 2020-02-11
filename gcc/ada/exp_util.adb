@@ -6575,6 +6575,35 @@ package body Exp_Util is
       end;
    end Get_Current_Value_Condition;
 
+   -----------------------
+   -- Get_Index_Subtype --
+   -----------------------
+
+   function Get_Index_Subtype (N : Node_Id) return Node_Id is
+      P_Type : Entity_Id := Etype (Prefix (N));
+      Indx   : Node_Id;
+      J      : Int;
+
+   begin
+      if Is_Access_Type (P_Type) then
+         P_Type := Designated_Type (P_Type);
+      end if;
+
+      if No (Expressions (N)) then
+         J := 1;
+      else
+         J := UI_To_Int (Expr_Value (First (Expressions (N))));
+      end if;
+
+      Indx := First_Index (P_Type);
+      while J > 1 loop
+         Next_Index (Indx);
+         J := J - 1;
+      end loop;
+
+      return Etype (Indx);
+   end Get_Index_Subtype;
+
    ---------------------
    -- Get_Stream_Size --
    ---------------------
