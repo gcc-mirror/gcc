@@ -1,3 +1,9 @@
+2020-02-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* ira-conflicts.c (print_hard_reg_set): Correct output for sets
+	including FIRST_PSEUDO_REGISTER - 1.
+	* ira-color.c (print_hard_reg_set): Ditto.
+
 2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/arm/arm-builtins.c (enum arm_type_qualifiers): 
