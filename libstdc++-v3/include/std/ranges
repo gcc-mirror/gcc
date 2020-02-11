@@ -1334,6 +1334,83 @@ namespace views
       }
   } // namespace __detail
 
+  namespace __detail
+  {
+    template<range _Range>
+      struct _CachedPosition
+      {
+	constexpr bool
+	_M_has_value() const
+	{ return false; }
+
+	constexpr iterator_t<_Range>
+	_M_get(const _Range&) const
+	{
+	  __glibcxx_assert(false);
+	  return {};
+	}
+
+	constexpr void
+	_M_set(const _Range&, const iterator_t<_Range>&) const
+	{ }
+      };
+
+    template<forward_range _Range>
+      struct _CachedPosition<_Range>
+      {
+      private:
+	iterator_t<_Range> _M_iter{};
+
+      public:
+	constexpr bool
+	_M_has_value() const
+	{ return _M_iter != iterator_t<_Range>{}; }
+
+	constexpr iterator_t<_Range>
+	_M_get(const _Range&) const
+	{
+	  __glibcxx_assert(_M_has_value());
+	  return _M_iter;
+	}
+
+	constexpr void
+	_M_set(const _Range&, const iterator_t<_Range>& __it)
+	{
+	  __glibcxx_assert(!_M_has_value());
+	  _M_iter = __it;
+	}
+      };
+
+    template<random_access_range _Range>
+      requires (sizeof(range_difference_t<_Range>)
+		<= sizeof(iterator_t<_Range>))
+      struct _CachedPosition<_Range>
+      {
+      private:
+	range_difference_t<_Range> _M_offset = -1;
+
+      public:
+	constexpr bool
+	_M_has_value() const
+	{ return _M_offset >= 0; }
+
+	constexpr iterator_t<_Range>
+	_M_get(_Range& __r) const
+	{
+	  __glibcxx_assert(_M_has_value());
+	  return ranges::begin(__r) + _M_offset;
+	}
+
+	constexpr void
+	_M_set(_Range& __r, const iterator_t<_Range>& __it)
+	{
+	  __glibcxx_assert(!_M_has_value());
+	  _M_offset = __it - ranges::begin(__r);
+	}
+      };
+
+  } // namespace __detail
+
   template<input_range _Vp,
 	   indirect_unary_predicate<iterator_t<_Vp>> _Pred>
     requires view<_Vp> && is_object_v<_Pred>
@@ -1491,6 +1568,7 @@ namespace views
 
       _Vp _M_base = _Vp();
       __detail::__box<_Pred> _M_pred;
+      [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     public:
       filter_view() = default;
@@ -1515,11 +1593,15 @@ namespace views
       constexpr _Iterator
       begin()
       {
-	// XXX: we need to cache the result here as per [range.filter.view]
+	if (_M_cached_begin._M_has_value())
+	  return {*this, _M_cached_begin._M_get(_M_base)};
+
 	__glibcxx_assert(_M_pred.has_value());
-	return {*this, __detail::find_if(ranges::begin(_M_base),
-					 ranges::end(_M_base),
-					 std::ref(*_M_pred))};
+	auto __it = __detail::find_if(ranges::begin(_M_base),
+				      ranges::end(_M_base),
+				      std::ref(*_M_pred));
+	_M_cached_begin._M_set(_M_base, __it);
+	return {*this, std::move(__it)};
       }
 
       constexpr auto
@@ -2127,6 +2209,11 @@ namespace views
       _Vp _M_base = _Vp();
       range_difference_t<_Vp> _M_count = 0;
 
+      static constexpr bool _S_needs_cached_begin = !random_access_range<_Vp>;
+      [[no_unique_address]]
+	__detail::__maybe_empty_t<_S_needs_cached_begin,
+				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
+
     public:
       drop_view() = default;
 
@@ -2147,9 +2234,15 @@ namespace views
       begin() requires (!(__detail::__simple_view<_Vp>
 			  && random_access_range<_Vp>))
       {
-	// XXX: we need to cache the result here as per [range.drop.view]
-	return ranges::next(ranges::begin(_M_base), _M_count,
-			    ranges::end(_M_base));
+	if constexpr (_S_needs_cached_begin)
+	  if (_M_cached_begin._M_has_value())
+	    return _M_cached_begin._M_get(_M_base);
+
+	auto __it = ranges::next(ranges::begin(_M_base),
+				 _M_count, ranges::end(_M_base));
+	if constexpr (_S_needs_cached_begin)
+	  _M_cached_begin._M_set(_M_base, __it);
+	return __it;
       }
 
       constexpr auto
@@ -2205,6 +2298,7 @@ namespace views
     private:
       _Vp _M_base = _Vp();
       __detail::__box<_Pred> _M_pred;
+      [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     public:
       drop_while_view() = default;
@@ -2229,10 +2323,14 @@ namespace views
       constexpr auto
       begin()
       {
-	// XXX: we need to cache the result here as per [range.drop.while.view]
-	return __detail::find_if_not(ranges::begin(_M_base),
-				     ranges::end(_M_base),
-				     std::cref(*_M_pred));
+	if (_M_cached_begin._M_has_value())
+	  return _M_cached_begin._M_get(_M_base);
+
+	auto __it = __detail::find_if_not(ranges::begin(_M_base),
+					  ranges::end(_M_base),
+					  std::cref(*_M_pred));
+	_M_cached_begin._M_set(_M_base, __it);
+	return __it;
       }
 
       constexpr auto
@@ -3079,6 +3177,11 @@ namespace views
     private:
       _Vp _M_base = _Vp();
 
+      static constexpr bool _S_needs_cached_begin = !random_access_range<_Vp>;
+      [[no_unique_address]]
+	__detail::__maybe_empty_t<_S_needs_cached_begin,
+				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
+
     public:
       reverse_view() = default;
 
@@ -3098,9 +3201,14 @@ namespace views
       constexpr reverse_iterator<iterator_t<_Vp>>
       begin()
       {
-	// XXX: we need to cache the result here as per [range.reverse.view]
-	return make_reverse_iterator(ranges::next(ranges::begin(_M_base),
-						  ranges::end(_M_base)));
+	if constexpr (_S_needs_cached_begin)
+	  if (_M_cached_begin._M_has_value())
+	    return make_reverse_iterator(_M_cached_begin._M_get(_M_base));
+
+	auto __it = ranges::next(ranges::begin(_M_base), ranges::end(_M_base));
+	if constexpr (_S_needs_cached_begin)
+	  _M_cached_begin._M_set(_M_base, __it);
+	return make_reverse_iterator(std::move(__it));
       }
 
       constexpr auto

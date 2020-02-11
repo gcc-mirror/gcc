@@ -1,3 +1,31 @@
+2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::_CachedPosition): New struct.
+	(views::filter_view::_S_needs_cached_begin): New member variable.
+	(views::filter_view::_M_cached_begin): New member variable.
+	(views::filter_view::begin): Use _M_cached_begin to cache its
+	result.
+	(views::drop_view::_S_needs_cached_begin): New static member variable.
+	(views::drop_view::_M_cached_begin): New member variable.
+	(views::drop_view::begin): Use _M_cached_begin to cache its result
+	when _S_needs_cached_begin.
+	(views::drop_while_view::_M_cached_begin): New member variable.
+	(views::drop_while_view::begin): Use _M_cached_begin to cache its
+	result.
+	(views::reverse_view::_S_needs_cached_begin): New static member
+	variable.
+	(views::reverse_view::_M_cached_begin): New member variable.
+	(views::reverse_view::begin): Use _M_cached_begin to cache its result
+	when _S_needs_cached_begin.
+	* testsuite/std/ranges/adaptors/drop.cc: Augment test to check that
+	drop_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/drop_while.cc: Augment test to check
+	that drop_while_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/filter.cc: Augment test to check that
+	filter_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/reverse.cc: Augment test to check that
+	reverse_view::begin caches its result.
+
 2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
