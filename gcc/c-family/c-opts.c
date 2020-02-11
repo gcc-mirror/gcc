@@ -1116,7 +1116,7 @@ c_common_post_options (const char **pfilename)
   // FIXME: Add a lang_hook to dink options.  That can do both the
   // preprocess_translate_include hook, and setting the module-pragma
   cb->translate_include = lang_hooks.preprocess_translate_include;
-  if (flag_modules && !cpp_opts->preprocessed)
+  if (flag_modules)
     cpp_opts->module_directives = true;
     
   cpp_post_options (parse_in);

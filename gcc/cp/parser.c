@@ -3958,7 +3958,11 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
   parser->lexer->in_pragma = false;
 
   do
-    token = cp_lexer_consume_token (parser->lexer);
+    {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+	break;
+      token = cp_lexer_consume_token (parser->lexer);
+    }
   while (token->type != CPP_PRAGMA_EOL);
 
   /* Ensure that the pragma is not parsed again.  */

@@ -1,5 +1,14 @@
 2020-02-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c-optsc (c_common_post_options): Set module_directives
+	regardless of preprocessed state.
+	gcc/cp/
+	* parser.c (cp_parser_skip_to_pragma_eol): Don't explode on
+	meeting actual EOF.
+	gcc/testsuite/
+	* g++.dg/modules/dir-only-3.C: New.
+
 	Merge master a6ee556c7659877bb59b719f11ca2153e86ded59
 
 2020-02-10  Nathan Sidwell  <nathan@acm.org>
