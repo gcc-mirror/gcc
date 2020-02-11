@@ -27513,6 +27513,8 @@ make_auto_1 (tree name, bool set_canonical)
     TYPE_CANONICAL (au) = canonical_type_parameter (au);
   DECL_ARTIFICIAL (TYPE_NAME (au)) = 1;
   SET_DECL_TEMPLATE_PARM_P (TYPE_NAME (au));
+  if (name == decltype_auto_identifier)
+    AUTO_IS_DECLTYPE (au) = true;
 
   return au;
 }
@@ -27590,8 +27592,6 @@ tree
 make_constrained_decltype_auto (tree con, tree args)
 {
   tree type = make_auto_1 (decltype_auto_identifier, false);
-  /* FIXME: I don't know why this isn't done in make_auto_1.  */
-  AUTO_IS_DECLTYPE (type) = true;
   return make_constrained_placeholder_type (type, con, args);
 }
 
@@ -28904,17 +28904,20 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 tree
 splice_late_return_type (tree type, tree late_return_type)
 {
-  if (is_auto (type))
+  if (late_return_type)
     {
-      if (late_return_type)
-	return late_return_type;
+      gcc_assert (is_auto (type) || seen_error ());
+      return late_return_type;
+    }
 
-      tree idx = get_template_parm_index (type);
+  if (tree *auto_node = find_type_usage (&type, is_auto))
+    {
+      tree idx = get_template_parm_index (*auto_node);
       if (TEMPLATE_PARM_LEVEL (idx) <= processing_template_decl)
 	/* In an abbreviated function template we didn't know we were dealing
 	   with a function template when we saw the auto return type, so update
 	   it to have the correct level.  */
-	return make_auto_1 (TYPE_IDENTIFIER (type), true);
+	*auto_node = make_auto_1 (TYPE_IDENTIFIER (*auto_node), true);
     }
   return type;
 }
@@ -28960,8 +28963,10 @@ type_uses_auto (tree type)
       else
 	return NULL_TREE;
     }
+  else if (tree *tp = find_type_usage (&type, is_auto))
+    return *tp;
   else
-    return find_type_usage (type, is_auto);
+    return NULL_TREE;
 }
 
 /* Report ill-formed occurrences of auto types in ARGUMENTS.  If

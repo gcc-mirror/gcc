@@ -1398,13 +1398,14 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 /* exploded_edge's ctor.  */
 
 exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
+			      const extrinsic_state &ext_state,
 			      const superedge *sedge,
 			      const state_change &change,
 			      custom_info_t *custom_info)
 : dedge<eg_traits> (src, dest), m_sedge (sedge), m_change (change),
   m_custom_info (custom_info)
 {
-  change.validate (dest->get_state ());
+  change.validate (dest->get_state (), ext_state);
 }
 
 /* exploded_edge's dtor.  */
@@ -1898,8 +1899,14 @@ exploded_graph::get_or_create_node (const program_point &point,
 		logger->log ("merging new state with that of EN: %i",
 			     existing_enode->m_index);
 
-	      /* Try again for a cache hit.  */
+	      /* Try again for a cache hit.
+		 Whether we get one or not, merged_state's value_ids have no
+		 relationship to those of the input state, and thus to those
+		 of CHANGE, so we must purge any svalue_ids from *CHANGE.  */
 	      ps.set_state (merged_state);
+	      if (change)
+		change->on_svalue_purge (svalue_id::from_int (0));
+
 	      if (exploded_node **slot = m_point_and_state_to_node.get (&ps))
 		{
 		  /* An exploded_node for PS already exists.  */
@@ -1910,13 +1917,6 @@ exploded_graph::get_or_create_node (const program_point &point,
 		  per_cs_stats->m_node_reuse_after_merge_count++;
 		  return *slot;
 		}
-
-	      /* Otherwise, continue, using the merged state in "ps".
-		 Given that merged_state's svalue_ids have no relationship
-		 to those of the input state, and thus to those of CHANGE,
-		 purge any svalue_ids from *CHANGE.  */
-	      if (change)
-		change->on_svalue_purge (svalue_id::from_int (0));
 	    }
 	  else
 	    if (logger)
@@ -1986,7 +1986,8 @@ exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  const state_change &change,
 			  exploded_edge::custom_info_t *custom_info)
 {
-  exploded_edge *e = new exploded_edge (src, dest, sedge, change, custom_info);
+  exploded_edge *e = new exploded_edge (src, dest, m_ext_state,
+					sedge, change, custom_info);
   digraph<eg_traits>::add_edge (e);
   return e;
 }
@@ -3197,15 +3198,15 @@ exploded_graph::dump_exploded_nodes () const
 
   /* Emit a warning at any call to "__analyzer_dump_exploded_nodes",
      giving the number of processed exploded nodes for "before-stmt",
-     and the IDs of processed and merger enodes.
+     and the IDs of processed, merger, and worklist enodes.
 
      We highlight the count of *processed* enodes since this is of most
      interest in DejaGnu tests for ensuring that state merger has
      happened.
 
-     We don't show the count of merger enodes, as this is more of an
-     implementation detail of the merging that we don't want to bake
-     into our expected DejaGnu messages.  */
+     We don't show the count of merger and worklist enodes, as this is
+     more of an implementation detail of the merging/worklist that we
+     don't want to bake into our expected DejaGnu messages.  */
 
   unsigned i;
   exploded_node *enode;
@@ -3225,6 +3226,7 @@ exploded_graph::dump_exploded_nodes () const
 
 	      auto_vec<exploded_node *> processed_enodes;
 	      auto_vec<exploded_node *> merger_enodes;
+	      auto_vec<exploded_node *> worklist_enodes;
 	      /* This is O(N^2).  */
 	      unsigned j;
 	      exploded_node *other_enode;
@@ -3237,6 +3239,9 @@ exploded_graph::dump_exploded_nodes () const
 		      {
 		      default:
 			gcc_unreachable ();
+		      case exploded_node::STATUS_WORKLIST:
+			worklist_enodes.safe_push (other_enode);
+			break;
 		      case exploded_node::STATUS_PROCESSED:
 			processed_enodes.safe_push (other_enode);
 			break;
@@ -3253,6 +3258,11 @@ exploded_graph::dump_exploded_nodes () const
 		{
 		  pp_string (&pp, "] merger(s): [");
 		  print_enode_indices (&pp, merger_enodes);
+		}
+	      if (worklist_enodes.length () > 0)
+		{
+		  pp_string (&pp, "] worklist: [");
+		  print_enode_indices (&pp, worklist_enodes);
 		}
 	      pp_character (&pp, ']');
 

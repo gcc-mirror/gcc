@@ -2834,7 +2834,7 @@ cxx_fold_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
 
 static tree
 cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
-			    bool /*lval*/,
+			    bool lval,
 			    bool *non_constant_p, bool *overflow_p)
 {
   tree r = NULL_TREE;
@@ -2902,7 +2902,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   else if (code == SPACESHIP_EXPR)
     {
       r = genericize_spaceship (type, lhs, rhs);
-      r = cxx_eval_constant_expression (ctx, r, false, non_constant_p,
+      r = cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
 					overflow_p);
     }
 
@@ -6686,13 +6686,11 @@ maybe_constant_value (tree t, tree decl, bool manifestly_const_eval,
 	  r = unshare_expr_without_location (r);
 	  protected_set_expr_location (r, EXPR_LOCATION (t));
 	}
-      if (r != t || TREE_CONSTANT (t) || !manifestly_const_eval)
-	return r;
-      /* If we cached this as non-constant and we need a constant value, try
-	 again; we might have failed before due to UID_SENSITIVE.  */
+      return r;
     }
 
-  r = cxx_eval_outermost_constant_expr (t, true, true, false, false, decl);
+  r = cxx_eval_outermost_constant_expr (t, true, true, false, false,
+					decl, uid_sensitive);
   gcc_checking_assert (r == t
 		       || CONVERT_EXPR_P (t)
 		       || TREE_CODE (t) == VIEW_CONVERT_EXPR

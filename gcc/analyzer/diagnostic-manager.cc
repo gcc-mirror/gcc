@@ -965,6 +965,12 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 					     tree var,
 					     state_machine::state_t state) const
 {
+  /* If we have a constant (such as NULL), assume its state is also
+     constant, so as not to attempt to get its lvalue whilst tracking the
+     origin of the state.  */
+  if (var && CONSTANT_CLASS_P (var))
+    var = NULL_TREE;
+
   int idx = path->num_events () - 1;
   while (idx >= 0 && idx < (signed)path->num_events ())
     {

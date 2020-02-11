@@ -352,6 +352,10 @@ VAR2 (UTERNOP, udot, v8qi, v16qi)
 VAR2 (MAC_LANE, sdot_lane, v8qi, v16qi)
 VAR2 (UMAC_LANE, udot_lane, v8qi, v16qi)
 
+VAR1 (USTERNOP, usdot, v8qi)
+VAR2 (USMAC_LANE_QUADTUP, usdot_lane, v8qi, v16qi)
+VAR2 (SUMAC_LANE_QUADTUP, sudot_lane, v8qi, v16qi)
+
 VAR4 (BINOP, vcadd90, v4hf, v2sf, v8hf, v4sf)
 VAR4 (BINOP, vcadd270, v4hf, v2sf, v8hf, v4sf)
 VAR4 (TERNOP, vcmla0, v2sf, v4sf, v4hf, v8hf)

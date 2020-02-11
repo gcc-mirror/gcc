@@ -480,6 +480,8 @@
 
 (define_int_iterator DOTPROD [UNSPEC_DOT_S UNSPEC_DOT_U])
 
+(define_int_iterator DOTPROD_I8MM [UNSPEC_DOT_US UNSPEC_DOT_SU])
+
 (define_int_iterator VFMLHALVES [UNSPEC_VFML_LO UNSPEC_VFML_HI])
 
 (define_int_iterator VCADD [UNSPEC_VCADD90 UNSPEC_VCADD270])
@@ -938,6 +940,7 @@
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
   (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
   (UNSPEC_DOT_S "s") (UNSPEC_DOT_U "u")
+  (UNSPEC_DOT_US "us") (UNSPEC_DOT_SU "su")
   (UNSPEC_SSAT16 "s") (UNSPEC_USAT16 "u")
 ])
 
@@ -1169,6 +1172,9 @@
 (define_int_attr MRRC [(VUNSPEC_MRRC "MRRC") (VUNSPEC_MRRC2 "MRRC2")])
 
 (define_int_attr opsuffix [(UNSPEC_DOT_S "s8")
-			   (UNSPEC_DOT_U "u8")])
+			   (UNSPEC_DOT_U "u8")
+			   (UNSPEC_DOT_US "s8")
+			   (UNSPEC_DOT_SU "u8")
+			   ])
 
 (define_int_attr smlaw_op [(UNSPEC_SMLAWB "smlawb") (UNSPEC_SMLAWT "smlawt")])

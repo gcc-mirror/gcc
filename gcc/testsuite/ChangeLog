@@ -1,3 +1,80 @@
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_ppc_ieee128_ok): New.
+	* gcc.target/powerpc/pr92796.c: Add a require-effective-target
+	statement for ppc_ieee128_ok.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93374
+	* gcc.dg/analyzer/torture/pr93374.c: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93669
+	* gcc.dg/analyzer/pr93669.c: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93649
+	* gcc.dg/analyzer/torture/pr93649.c: New test.
+
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr70010-2.c: Add -maltivec.
+	* gcc.target/powerpc/pr70010-3.c: Add -maltivec.
+
+2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: New test.
+	* gcc.target/arm/simd/vdot-2-2.c: New test.
+	* gcc.target/arm/simd/vdot-2-3.c: New test.
+	* gcc.target/arm/simd/vdot-2-4.c: New test.
+
+2020-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93661
+	PR tree-optimization/93662
+	* gcc.dg/pr93661.c: New testcase.
+
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/69448
+	PR c++/80471
+	* g++.dg/concepts/abbrev3.C: New test.
+	* g++.dg/cpp2a/concepts-pr80471.C: Adjust a static_assert to expect the
+	correct behavior.
+	* g++.dg/cpp0x/auto9.C: Adjust a dg-error directive.
+
+	* g++.dg/cpp2a/concepts6.C: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93350
+	* gcc.dg/analyzer/torture/pr93350.c: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93647
+	* gcc.dg/analyzer/torture/pr93647.c: New test.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93637
+	* gcc.target/i386/avx-pr93637.c: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93405
+	* gfortran.dg/analyzer/pr93405.f90: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gfortran.dg/analyzer/analyzer.exp: New subdirectory and .exp
+	suite.
+	* gfortran.dg/analyzer/malloc-example.f90: New test.
+	* gfortran.dg/analyzer/malloc.f90: New test.
+
 2020-02-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/93640

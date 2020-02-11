@@ -1,3 +1,83 @@
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93374
+	* engine.cc (exploded_edge::exploded_edge): Add ext_state param
+	and pass it to change.validate.
+	(exploded_graph::get_or_create_node): Move purging of change
+	svalues to also cover the case of reusing an existing enode.
+	(exploded_graph::add_edge): Pass m_ext_state to exploded_edge's
+	ctor.
+	* exploded-graph.h (exploded_edge::exploded_edge): Add ext_state
+	param.
+	* program-state.cc (state_change::sm_change::validate): Likewise.
+	Assert that m_sm_idx is sane.  Use ext_state to validate
+	m_old_state and m_new_state.
+	(state_change::validate): Add ext_state param and pass it to
+	the sm_change validate calls.
+	* program-state.h (state_change::sm_change::validate): Add
+	ext_state param.
+	(state_change::validate): Likewise.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93669
+	* engine.cc (exploded_graph::dump_exploded_nodes): Handle missing
+	case of STATUS_WORKLIST in implementation of
+	"__analyzer_dump_exploded_nodes".
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93649
+	* constraint-manager.cc (constraint_manager::add_constraint): When
+	merging equivalence classes and updating m_constant, also update
+	m_cst_sid.
+	(constraint_manager::validate): If m_constant is non-NULL assert
+	that m_cst_sid is non-null and is valid.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93657
+	* analyzer.opt (fdump-analyzer): Reword description.
+	(fdump-analyzer-stderr): Likewise.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (print_quoted_type): New function.
+	(svalue::print): Use it to replace %qT.
+	(region::dump_to_pp): Likewise.
+	(region::dump_child_label): Likewise.
+	(region::print_fields): Likewise.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93659
+	* analyzer.opt (-param=analyzer-max-recursion-depth=): Fix "tha"
+	-> "that" typo.
+	(Wanalyzer-use-of-uninitialized-value): Fix "initialized" ->
+	"uninitialized" typo.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93350
+	* region-model.cc (region_model::get_lvalue_1):
+	Handle BIT_FIELD_REF.
+	(make_region_for_type): Handle VECTOR_TYPE.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93647
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Bulletproof against
+	VAR being constant.
+	* region-model.cc (region_model::get_lvalue_1): Provide a better
+	error message when encountering an unhandled tree code.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93405
+	* region-model.cc (region_model::get_lvalue_1): Implement
+	CONST_DECL.
+
 2020-02-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::maybe_cast_1): Attempt to provide

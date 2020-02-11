@@ -73,6 +73,25 @@ dump_tree (pretty_printer *pp, tree t)
   dump_generic_node (pp, t, 0, TDF_SLIM, 0);
 }
 
+/* Equivalent to pp_printf (pp, "%qT", t), to avoid nesting pp_printf
+   calls within other pp_printf calls.
+
+   default_tree_printer handles 'T' and some other codes by calling
+     dump_generic_node (pp, t, 0, TDF_SLIM, 0);
+   dump_generic_node calls pp_printf in various places, leading to
+   garbled output.
+
+   Ideally pp_printf could be made to be reentrant, but in the meantime
+   this function provides a workaround.  */
+
+static void
+print_quoted_type (pretty_printer *pp, tree t)
+{
+  pp_begin_quote (pp, pp_show_color (pp));
+  dump_generic_node (pp, t, 0, TDF_SLIM, 0);
+  pp_end_quote (pp, pp_show_color (pp));
+}
+
 /* Dump this path_var to PP (which must support %E for trees).
 
    Express the stack depth using an "@DEPTH" suffix, so e.g. given
@@ -319,7 +338,9 @@ svalue::print (const region_model &model,
   if (m_type)
     {
       gcc_assert (TYPE_P (m_type));
-      pp_printf (pp, "type: %qT, ", m_type);
+      pp_string (pp, "type: ");
+      print_quoted_type (pp, m_type);
+      pp_string (pp, ", ");
     }
 
   /* vfunc.  */
@@ -1282,7 +1303,8 @@ region::dump_to_pp (const region_model &model,
     }
   if (m_type)
     {
-      pp_printf (pp, "%s type: %qT", field_prefix, m_type);
+      pp_printf (pp, "%s type: ", field_prefix);
+      print_quoted_type (pp, m_type);
       pp_newline (pp);
     }
 
@@ -1332,7 +1354,9 @@ region::dump_child_label (const region_model &model,
 	pp_string (pp, "active ");
       else
 	pp_string (pp, "inactive ");
-      pp_printf (pp, "view as %qT: ", child->get_type ());
+      pp_string (pp, "view as ");
+      print_quoted_type (pp, child->get_type ());
+      pp_string (pp, ": ");
     }
 }
 
@@ -1463,7 +1487,10 @@ region::print_fields (const region_model &model ATTRIBUTE_UNUSED,
   m_sval_id.print (pp);
 
   if (m_type)
-    pp_printf (pp, ", type: %qT", m_type);
+    {
+      pp_printf (pp, ", type: ");
+      print_quoted_type (pp, m_type);
+    }
 }
 
 /* Determine if a pointer to this region must be non-NULL.
@@ -4614,6 +4641,8 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (expr))
     {
     default:
+      internal_error ("unhandled tree code in region_model::get_lvalue_1: %qs",
+		      get_tree_code_name (TREE_CODE (expr)));
       gcc_unreachable ();
 
     case ARRAY_REF:
@@ -4631,6 +4660,14 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	array_region *array_reg = get_region<array_region> (array_rid);
 	return array_reg->get_element (this, array_rid, index_sid, ctxt);
       }
+      break;
+
+    case BIT_FIELD_REF:
+      {
+	/* For now, create a view, as if a cast, ignoring the bit positions.  */
+	tree obj = TREE_OPERAND (expr, 0);
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+      };
       break;
 
     case MEM_REF:
@@ -4687,6 +4724,19 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	region_id struct_or_union_rid
 	  = get_or_create_view (obj_rid, TREE_TYPE (obj));
 	return get_field_region (struct_or_union_rid, field);
+      }
+      break;
+
+    case CONST_DECL:
+      {
+	tree cst_type = TREE_TYPE (expr);
+	region_id cst_rid = add_region_for_type (m_root_rid, cst_type);
+	if (tree value = DECL_INITIAL (expr))
+	  {
+	    svalue_id sid = get_rvalue (value, ctxt);
+	    get_region (cst_rid)->set_value (*this, cst_rid, sid, ctxt);
+	  }
+	return cst_rid;
       }
       break;
 
@@ -5993,7 +6043,8 @@ make_region_for_type (region_id parent_rid, tree type)
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
       || POINTER_TYPE_P (type)
-      || TREE_CODE (type) == COMPLEX_TYPE)
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
     return new primitive_region (parent_rid, type);
 
   if (TREE_CODE (type) == RECORD_TYPE)

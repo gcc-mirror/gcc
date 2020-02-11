@@ -86,7 +86,10 @@ enum arm_type_qualifiers
   qualifier_const_void_pointer = 0x802,
   /* Lane indices selected in pairs - must be within range of previous
      argument = a vector.  */
-  qualifier_lane_pair_index = 0x1000
+  qualifier_lane_pair_index = 0x1000,
+  /* Lane indices selected in quadtuplets - must be within range of previous
+     argument = a vector.  */
+  qualifier_lane_quadtup_index = 0x2000
 };
 
 /*  The qualifier_internal allows generation of a unary builtin from
@@ -121,6 +124,13 @@ arm_unsigned_uternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned };
 #define UTERNOP_QUALIFIERS (arm_unsigned_uternop_qualifiers)
+
+/* T (T, unsigned T, T).  */
+static enum arm_type_qualifiers
+arm_usternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned,
+      qualifier_none };
+#define USTERNOP_QUALIFIERS (arm_usternop_qualifiers)
 
 /* T (T, immediate).  */
 static enum arm_type_qualifiers
@@ -175,6 +185,20 @@ arm_umac_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_lane_index };
 #define UMAC_LANE_QUALIFIERS (arm_umac_lane_qualifiers)
+
+/* T (T, unsigned T, T, lane index).  */
+static enum arm_type_qualifiers
+arm_usmac_lane_quadtup_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned,
+      qualifier_none, qualifier_lane_quadtup_index };
+#define USMAC_LANE_QUADTUP_QUALIFIERS (arm_usmac_lane_quadtup_qualifiers)
+
+/* T (T, T, unsigend T, lane index).  */
+static enum arm_type_qualifiers
+arm_sumac_lane_quadtup_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_unsigned, qualifier_lane_quadtup_index };
+#define SUMAC_LANE_QUADTUP_QUALIFIERS (arm_sumac_lane_quadtup_qualifiers)
 
 /* T (T, T, immediate).  */
 static enum arm_type_qualifiers
@@ -2177,6 +2201,7 @@ typedef enum {
   ARG_BUILTIN_LANE_INDEX,
   ARG_BUILTIN_STRUCT_LOAD_STORE_LANE_INDEX,
   ARG_BUILTIN_LANE_PAIR_INDEX,
+  ARG_BUILTIN_LANE_QUADTUP_INDEX,
   ARG_BUILTIN_NEON_MEMORY,
   ARG_BUILTIN_MEMORY,
   ARG_BUILTIN_STOP
@@ -2325,11 +2350,24 @@ arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
 	      if (CONST_INT_P (op[argc]))
 		{
 		  machine_mode vmode = mode[argc - 1];
-		  neon_lane_bounds (op[argc], 0, GET_MODE_NUNITS (vmode) / 2, exp);
+		  neon_lane_bounds (op[argc], 0,
+				    GET_MODE_NUNITS (vmode) / 2, exp);
 		}
-	      /* If the lane index isn't a constant then the next
-		 case will error.  */
-	      /* Fall through.  */
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
+
+	    case ARG_BUILTIN_LANE_QUADTUP_INDEX:
+	      /* Previous argument must be a vector, which this indexes.  */
+	      gcc_assert (argc > 0);
+	      if (CONST_INT_P (op[argc]))
+		{
+		  machine_mode vmode = mode[argc - 1];
+		  neon_lane_bounds (op[argc], 0,
+				    GET_MODE_NUNITS (vmode) / 4, exp);
+		}
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
+
 	    case ARG_BUILTIN_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opno].predicate)
@@ -2493,6 +2531,8 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
 	args[k] = ARG_BUILTIN_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_lane_pair_index)
 	args[k] = ARG_BUILTIN_LANE_PAIR_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_lane_quadtup_index)
+	args[k] = ARG_BUILTIN_LANE_QUADTUP_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_struct_load_store_lane_index)
 	args[k] = ARG_BUILTIN_STRUCT_LOAD_STORE_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_immediate)

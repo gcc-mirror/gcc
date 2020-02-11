@@ -18,6 +18,6 @@ int main()
 {
   int i;
   static_assert(is_same< decltype(f(i)), int& >, "");
-  static_assert(is_same< decltype(g(i)), int  >, "");
+  static_assert(is_same< decltype(g(i)), int& >, "");
   static_assert(is_same< decltype(z(i)), int& >, "");
 }

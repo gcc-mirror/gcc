@@ -1208,7 +1208,8 @@ See RS/6000 and PowerPC Options.
 -mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware @gol
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} -mpcrel -mno-pcrel}
+-mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
+-mpcrel -mno-pcrel}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -22327,7 +22328,6 @@ faster on processors with 32-bit busses at the expense of more memory.
 aligns structures containing the above types differently than
 most published application binary interface specifications for the m68k.
 
-@item -mpcrel
 @opindex mpcrel
 Use the pc-relative addressing mode of the 68000 directly, instead of
 using a global offset table.  At present, this option implies @option{-fpic},
@@ -26415,7 +26415,16 @@ the offset with a symbol reference to a canary in the TLS block.
 @opindex mpcrel
 @opindex mno-pcrel
 Generate (do not generate) pc-relative addressing when the option
-@option{-mcpu=future} is used.
+@option{-mcpu=future} is used.  The @option{-mpcrel} option requires
+that the medium code model (@option{-mcmodel=medium}) and prefixed
+addressing (@option{-mprefixed}) options are enabled.
+
+@item -mprefixed
+@itemx -mno-prefixed
+@opindex mprefixed
+@opindex mno-prefixed
+Generate (do not generate) addressing modes using prefixed load and
+store instructions when the option @option{-mcpu=future} is used.
 @end table
 
 @node RX Options

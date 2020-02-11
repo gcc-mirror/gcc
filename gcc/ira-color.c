@@ -480,24 +480,26 @@ first_common_ancestor_node (allocno_hard_regs_node_t first,
 static void
 print_hard_reg_set (FILE *f, HARD_REG_SET set, bool new_line_p)
 {
-  int i, start;
+  int i, start, end;
 
-  for (start = -1, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  for (start = end = -1, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (TEST_HARD_REG_BIT (set, i))
+      bool reg_included = TEST_HARD_REG_BIT (set, i);
+
+      if (reg_included)
 	{
-	  if (i == 0 || ! TEST_HARD_REG_BIT (set, i - 1))
+	  if (start == -1)
 	    start = i;
+	  end = i;
 	}
-      if (start >= 0
-	  && (i == FIRST_PSEUDO_REGISTER - 1 || ! TEST_HARD_REG_BIT (set, i)))
+      if (start >= 0 && (!reg_included || i == FIRST_PSEUDO_REGISTER - 1))
 	{
-	  if (start == i - 1)
+	  if (start == end)
 	    fprintf (f, " %d", start);
-	  else if (start == i - 2)
-	    fprintf (f, " %d %d", start, start + 1);
+	  else if (start == end + 1)
+	    fprintf (f, " %d %d", start, end);
 	  else
-	    fprintf (f, " %d-%d", start, i - 1);
+	    fprintf (f, " %d-%d", start, end);
 	  start = -1;
 	}
     }

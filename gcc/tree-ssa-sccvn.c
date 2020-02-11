@@ -2504,6 +2504,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* For now handle clearing memory with partial defs.  */
       else if (known_eq (ref->size, maxsize)
 	       && integer_zerop (gimple_call_arg (def_stmt, 1))
+	       && tree_fits_poly_int64_p (len)
 	       && tree_to_poly_int64 (len).is_constant (&leni)
 	       && offset.is_constant (&offseti)
 	       && offset2.is_constant (&offset2i)

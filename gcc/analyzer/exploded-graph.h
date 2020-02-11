@@ -306,6 +306,7 @@ class exploded_edge : public dedge<eg_traits>
   };
 
   exploded_edge (exploded_node *src, exploded_node *dest,
+		 const extrinsic_state &ext_state,
 		 const superedge *sedge,
 		 const state_change &change,
 		 custom_info_t *custom_info);

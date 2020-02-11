@@ -1075,6 +1075,9 @@ genericize_spaceship (tree type, tree op0, tree op1)
   comp = fold_build2 (EQ_EXPR, boolean_type_node, op0, op1);
   r = fold_build3 (COND_EXPR, type, comp, eq, r);
 
+  /* Wrap the whole thing in a TARGET_EXPR like build_conditional_expr_1.  */
+  r = get_target_expr (r);
+
   return r;
 }
 
