@@ -1,3 +1,11 @@
+2020-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93661
+	PR tree-optimization/93662
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Properly guard
+	tree_to_poly_int64.
+	* tree-sra.c (get_access_for_expr): Likewise.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93637

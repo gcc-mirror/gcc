@@ -1,3 +1,9 @@
+2020-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93661
+	PR tree-optimization/93662
+	* gcc.dg/pr93661.c: New testcase.
+
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69448

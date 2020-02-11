@@ -3605,8 +3605,10 @@ get_access_for_expr (tree expr)
 
   if (tree basesize = DECL_SIZE (base))
     {
-      poly_int64 sz = tree_to_poly_int64 (basesize);
-      if (offset < 0 || known_le (sz, offset))
+      poly_int64 sz;
+      if (offset < 0
+	  || !poly_int_tree_p (basesize, &sz)
+	  || known_le (sz, offset))
 	return NULL;
     }
 
