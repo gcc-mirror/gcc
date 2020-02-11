@@ -1,5 +1,12 @@
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93669
+	* engine.cc (exploded_graph::dump_exploded_nodes): Handle missing
+	case of STATUS_WORKLIST in implementation of
+	"__analyzer_dump_exploded_nodes".
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93649
 	* constraint-manager.cc (constraint_manager::add_constraint): When
 	merging equivalence classes and updating m_constant, also update

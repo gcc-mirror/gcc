@@ -3197,15 +3197,15 @@ exploded_graph::dump_exploded_nodes () const
 
   /* Emit a warning at any call to "__analyzer_dump_exploded_nodes",
      giving the number of processed exploded nodes for "before-stmt",
-     and the IDs of processed and merger enodes.
+     and the IDs of processed, merger, and worklist enodes.
 
      We highlight the count of *processed* enodes since this is of most
      interest in DejaGnu tests for ensuring that state merger has
      happened.
 
-     We don't show the count of merger enodes, as this is more of an
-     implementation detail of the merging that we don't want to bake
-     into our expected DejaGnu messages.  */
+     We don't show the count of merger and worklist enodes, as this is
+     more of an implementation detail of the merging/worklist that we
+     don't want to bake into our expected DejaGnu messages.  */
 
   unsigned i;
   exploded_node *enode;
@@ -3225,6 +3225,7 @@ exploded_graph::dump_exploded_nodes () const
 
 	      auto_vec<exploded_node *> processed_enodes;
 	      auto_vec<exploded_node *> merger_enodes;
+	      auto_vec<exploded_node *> worklist_enodes;
 	      /* This is O(N^2).  */
 	      unsigned j;
 	      exploded_node *other_enode;
@@ -3237,6 +3238,9 @@ exploded_graph::dump_exploded_nodes () const
 		      {
 		      default:
 			gcc_unreachable ();
+		      case exploded_node::STATUS_WORKLIST:
+			worklist_enodes.safe_push (other_enode);
+			break;
 		      case exploded_node::STATUS_PROCESSED:
 			processed_enodes.safe_push (other_enode);
 			break;
@@ -3253,6 +3257,11 @@ exploded_graph::dump_exploded_nodes () const
 		{
 		  pp_string (&pp, "] merger(s): [");
 		  print_enode_indices (&pp, merger_enodes);
+		}
+	      if (worklist_enodes.length () > 0)
+		{
+		  pp_string (&pp, "] worklist: [");
+		  print_enode_indices (&pp, worklist_enodes);
 		}
 	      pp_character (&pp, ']');
 
