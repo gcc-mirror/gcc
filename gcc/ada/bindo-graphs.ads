@@ -702,13 +702,22 @@ package Bindo.Graphs is
 
          No_Cycle_Kind);
 
-      --  The following type represents the various kinds of library edges
+      --  The following type represents the various kinds of library edges.
+      --  The order is important here, and roughly corresponds to the order
+      --  in which edges are added to the graph. See Add_Edge_Kind_Check for
+      --  details.
 
       type Library_Graph_Edge_Kind is
         (Body_Before_Spec_Edge,
          --  Successor denotes spec, Predecessor denotes a body. This is a
          --  special edge kind used only during the discovery of components.
          --  Note that a body can never be elaborated before its spec.
+
+         Spec_Before_Body_Edge,
+         --  Successor denotes a body, Predecessor denotes a spec
+
+         With_Edge,
+         --  Successor withs Predecessor
 
          Elaborate_Edge,
          --  Successor withs Predecessor, and has pragma Elaborate for it
@@ -723,12 +732,6 @@ package Bindo.Graphs is
          Invocation_Edge,
          --  An invocation construct in unit Successor invokes a target in unit
          --  Predecessor.
-
-         Spec_Before_Body_Edge,
-         --  Successor denotes a body, Predecessor denotes a spec
-
-         With_Edge,
-         --  Successor withs Predecessor
 
          No_Edge);
 
