@@ -724,6 +724,10 @@ package Exp_Util is
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
 
+   function Get_Index_Subtype (N : Node_Id) return Entity_Id;
+   --  Used for Last, Last, and Length, when the prefix is an array type.
+   --  Obtains the corresponding index subtype.
+
    function Get_Stream_Size (E : Entity_Id) return Uint;
    --  Return the stream size value of the subtype E
 
