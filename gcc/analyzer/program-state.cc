@@ -1083,8 +1083,13 @@ state_change::sm_change::on_svalue_purge (svalue_id first_unused_sid)
 /* Assert that this object is sane.  */
 
 void
-state_change::sm_change::validate (const program_state &new_state) const
+state_change::sm_change::validate (const program_state &new_state,
+				   const extrinsic_state &ext_state) const
 {
+  gcc_assert ((unsigned)m_sm_idx < ext_state.get_num_checkers ());
+  const state_machine &sm = ext_state.get_sm (m_sm_idx);
+  sm.validate (m_old_state);
+  sm.validate (m_new_state);
   m_new_sid.validate (*new_state.m_region_model);
 }
 
@@ -1191,7 +1196,8 @@ state_change::on_svalue_purge (svalue_id first_unused_sid)
 /* Assert that this object is sane.  */
 
 void
-state_change::validate (const program_state &new_state) const
+state_change::validate (const program_state &new_state,
+			const extrinsic_state &ext_state) const
 {
   /* Skip this in a release build.  */
 #if !CHECKING_P
@@ -1200,7 +1206,7 @@ state_change::validate (const program_state &new_state) const
   unsigned i;
   sm_change *change;
   FOR_EACH_VEC_ELT (m_sm_changes, i, change)
-    change->validate (new_state);
+    change->validate (new_state, ext_state);
 }
 
 #if CHECKING_P

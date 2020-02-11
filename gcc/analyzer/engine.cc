@@ -1398,13 +1398,14 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 /* exploded_edge's ctor.  */
 
 exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
+			      const extrinsic_state &ext_state,
 			      const superedge *sedge,
 			      const state_change &change,
 			      custom_info_t *custom_info)
 : dedge<eg_traits> (src, dest), m_sedge (sedge), m_change (change),
   m_custom_info (custom_info)
 {
-  change.validate (dest->get_state ());
+  change.validate (dest->get_state (), ext_state);
 }
 
 /* exploded_edge's dtor.  */
@@ -1898,8 +1899,14 @@ exploded_graph::get_or_create_node (const program_point &point,
 		logger->log ("merging new state with that of EN: %i",
 			     existing_enode->m_index);
 
-	      /* Try again for a cache hit.  */
+	      /* Try again for a cache hit.
+		 Whether we get one or not, merged_state's value_ids have no
+		 relationship to those of the input state, and thus to those
+		 of CHANGE, so we must purge any svalue_ids from *CHANGE.  */
 	      ps.set_state (merged_state);
+	      if (change)
+		change->on_svalue_purge (svalue_id::from_int (0));
+
 	      if (exploded_node **slot = m_point_and_state_to_node.get (&ps))
 		{
 		  /* An exploded_node for PS already exists.  */
@@ -1910,13 +1917,6 @@ exploded_graph::get_or_create_node (const program_point &point,
 		  per_cs_stats->m_node_reuse_after_merge_count++;
 		  return *slot;
 		}
-
-	      /* Otherwise, continue, using the merged state in "ps".
-		 Given that merged_state's svalue_ids have no relationship
-		 to those of the input state, and thus to those of CHANGE,
-		 purge any svalue_ids from *CHANGE.  */
-	      if (change)
-		change->on_svalue_purge (svalue_id::from_int (0));
 	    }
 	  else
 	    if (logger)
@@ -1986,7 +1986,8 @@ exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  const state_change &change,
 			  exploded_edge::custom_info_t *custom_info)
 {
-  exploded_edge *e = new exploded_edge (src, dest, sedge, change, custom_info);
+  exploded_edge *e = new exploded_edge (src, dest, m_ext_state,
+					sedge, change, custom_info);
   digraph<eg_traits>::add_edge (e);
   return e;
 }

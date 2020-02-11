@@ -343,7 +343,8 @@ class state_change
     void remap_svalue_ids (const svalue_id_map &map);
     int on_svalue_purge (svalue_id first_unused_sid);
 
-    void validate (const program_state &new_state) const;
+    void validate (const program_state &new_state,
+		   const extrinsic_state &ext_state) const;
 
     int m_sm_idx;
     svalue_id m_new_sid;
@@ -367,7 +368,8 @@ class state_change
   void remap_svalue_ids (const svalue_id_map &map);
   int on_svalue_purge (svalue_id first_unused_sid);
 
-  void validate (const program_state &new_state) const;
+  void validate (const program_state &new_state,
+		 const extrinsic_state &ext_state) const;
 
  private:
   auto_vec<sm_change> m_sm_changes;

@@ -1,5 +1,25 @@
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93374
+	* engine.cc (exploded_edge::exploded_edge): Add ext_state param
+	and pass it to change.validate.
+	(exploded_graph::get_or_create_node): Move purging of change
+	svalues to also cover the case of reusing an existing enode.
+	(exploded_graph::add_edge): Pass m_ext_state to exploded_edge's
+	ctor.
+	* exploded-graph.h (exploded_edge::exploded_edge): Add ext_state
+	param.
+	* program-state.cc (state_change::sm_change::validate): Likewise.
+	Assert that m_sm_idx is sane.  Use ext_state to validate
+	m_old_state and m_new_state.
+	(state_change::validate): Add ext_state param and pass it to
+	the sm_change validate calls.
+	* program-state.h (state_change::sm_change::validate): Add
+	ext_state param.
+	(state_change::validate): Likewise.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93669
 	* engine.cc (exploded_graph::dump_exploded_nodes): Handle missing
 	case of STATUS_WORKLIST in implementation of
