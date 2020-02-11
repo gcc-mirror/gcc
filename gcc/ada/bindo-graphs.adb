@@ -1060,18 +1060,30 @@ package body Bindo.Graphs is
       --  corresponding specs or bodies, where the body is a predecessor
       --  and the spec is a successor. Add all edges to list Edges.
 
-      function Add_Edge_With_Return
+      procedure Add_Edge_Kind_Check
+        (G              : Library_Graph;
+         Pred           : Library_Graph_Vertex_Id;
+         Succ           : Library_Graph_Vertex_Id;
+         Kind           : Library_Graph_Edge_Kind);
+      --  This is called by Add_Edge in the case where there is already a
+      --  Pred-->Succ edge, to assert that the new Kind is appropriate. Raises
+      --  Program_Error if a bug is detected. The purpose is to prevent bugs
+      --  where calling Add_Edge in different orders produces different output.
+
+      function Add_Edge
         (G              : Library_Graph;
          Pred           : Library_Graph_Vertex_Id;
          Succ           : Library_Graph_Vertex_Id;
          Kind           : Library_Graph_Edge_Kind;
          Activates_Task : Boolean) return Library_Graph_Edge_Id;
-      pragma Inline (Add_Edge_With_Return);
+      pragma Inline (Add_Edge);
       --  Create a new edge in library graph G with source vertex Pred and
       --  destination vertex Succ, and return its handle. Kind denotes the
       --  nature of the edge. Activates_Task should be set when the edge
       --  involves a task activation. If Pred and Succ are already related,
-      --  no edge is created and No_Library_Graph_Edge is returned.
+      --  no edge is created and No_Library_Graph_Edge is returned, but if
+      --  Activates_Task is True, then the flag of the existing edge is
+      --  updated.
 
       function At_Least_One_Edge_Satisfies
         (G         : Library_Graph;
@@ -1276,6 +1288,12 @@ package body Bindo.Graphs is
       --
       --    * Cycle_Limit is the upper bound of the number of cycles to be
       --      discovered.
+
+      function Find_Edge
+        (G    : Library_Graph;
+         Pred : Library_Graph_Vertex_Id;
+         Succ : Library_Graph_Vertex_Id) return Library_Graph_Edge_Id;
+      --  There must be an edge Pred-->Succ; this returns it
 
       function Find_First_Lower_Precedence_Cycle
         (G     : Library_Graph;
@@ -1502,6 +1520,11 @@ package body Bindo.Graphs is
       --  is the number of invocation edges along the cycle path. Indent is
       --  the desired indentation level for tracing.
 
+      procedure Set_Activates_Task
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
+      --  Set the Activates_Task flag of the Edge to True
+
       procedure Set_Component_Attributes
         (G    : Library_Graph;
          Comp : Component_Id;
@@ -1518,11 +1541,10 @@ package body Bindo.Graphs is
 
       procedure Set_Is_Recorded_Edge
         (G   : Library_Graph;
-         Rel : Predecessor_Successor_Relation;
-         Val : Boolean := True);
+         Rel : Predecessor_Successor_Relation);
       pragma Inline (Set_Is_Recorded_Edge);
       --  Mark a predecessor vertex and a successor vertex described by
-      --  relation Rel as already linked depending on value Val.
+      --  relation Rel as already linked.
 
       procedure Set_LGC_Attributes
         (G     : Library_Graph;
@@ -1635,12 +1657,7 @@ package body Bindo.Graphs is
          Edge : Library_Graph_Edge_Id) return Boolean
       is
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return
-           Kind (G, Edge) = Invocation_Edge
-            and then Get_LGE_Attributes (G, Edge).Activates_Task;
+         return Get_LGE_Attributes (G, Edge).Activates_Task;
       end Activates_Task;
 
       -------------------------------
@@ -1674,7 +1691,7 @@ package body Bindo.Graphs is
          --  the body may be visited first, yet Corresponding_Item will still
          --  attempt to create the Body_Before_Spec edge. This is OK because
          --  successor and predecessor are kept consistent in both cases, and
-         --  Add_Edge_With_Return will prevent the creation of the second edge.
+         --  Add_Edge will prevent the creation of the second edge.
 
          --  Assume that no Body_Before_Spec is necessary
 
@@ -1684,7 +1701,7 @@ package body Bindo.Graphs is
 
          if Is_Body_With_Spec (G, Vertex) then
             Edge :=
-              Add_Edge_With_Return
+              Add_Edge
                 (G              => G,
                  Pred           => Vertex,
                  Succ           => Corresponding_Item (G, Vertex),
@@ -1695,7 +1712,7 @@ package body Bindo.Graphs is
 
          elsif Is_Spec_With_Body (G, Vertex) then
             Edge :=
-              Add_Edge_With_Return
+              Add_Edge
                 (G              => G,
                  Pred           => Corresponding_Item (G, Vertex),
                  Succ           => Vertex,
@@ -1745,30 +1762,72 @@ package body Bindo.Graphs is
          Kind           : Library_Graph_Edge_Kind;
          Activates_Task : Boolean)
       is
-         Edge : Library_Graph_Edge_Id;
-         pragma Unreferenced (Edge);
-
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Pred));
-         pragma Assert (Present (Succ));
-         pragma Assert (Kind /= No_Edge);
-         pragma Assert (not Activates_Task or else Kind = Invocation_Edge);
-
-         Edge :=
-           Add_Edge_With_Return
+         Ignore : constant Library_Graph_Edge_Id :=
+           Add_Edge
              (G              => G,
               Pred           => Pred,
               Succ           => Succ,
               Kind           => Kind,
               Activates_Task => Activates_Task);
+      begin
+         null;
       end Add_Edge;
 
-      --------------------------
-      -- Add_Edge_With_Return --
-      --------------------------
+      -------------------------
+      -- Add_Edge_Kind_Check --
+      -------------------------
 
-      function Add_Edge_With_Return
+      procedure Add_Edge_Kind_Check
+        (G              : Library_Graph;
+         Pred           : Library_Graph_Vertex_Id;
+         Succ           : Library_Graph_Vertex_Id;
+         Kind           : Library_Graph_Edge_Kind)
+      is
+         Old_Edge : constant Library_Graph_Edge_Id :=
+           Find_Edge (G, Pred, Succ);
+         Attributes : constant Library_Graph_Edge_Attributes :=
+           Get_LGE_Attributes (G, Old_Edge);
+         OK : Boolean;
+      begin
+         case Kind is
+            --  We call Add_Edge with Body_Before_Spec_Edge twice -- once
+            --  for  the spec and once for the body, but no other Kind can
+            --  be spec-->body.
+
+            when Body_Before_Spec_Edge =>
+               OK := Attributes.Kind = Body_Before_Spec_Edge;
+
+            --  Spec_Before_Body_Edge comes first
+
+            when Spec_Before_Body_Edge =>
+               OK := False;
+
+            --  With clauses and forced edges come after Spec_Before_Body_Edge
+
+            when With_Edge | Elaborate_Edge | Elaborate_All_Edge
+              | Forced_Edge =>
+               OK := Attributes.Kind <= Kind;
+
+            --  Invocation_Edge can come after anything, including another
+            --  Invocation_Edge.
+
+            when Invocation_Edge =>
+               OK := True;
+
+            when No_Edge =>
+               OK := False;
+         end case;
+
+         if not OK then
+            raise Program_Error;
+         end if;
+      end Add_Edge_Kind_Check;
+
+      --------------
+      -- Add_Edge --
+      --------------
+
+      function Add_Edge
         (G              : Library_Graph;
          Pred           : Library_Graph_Vertex_Id;
          Succ           : Library_Graph_Vertex_Id;
@@ -1778,19 +1837,29 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Pred));
          pragma Assert (Present (Succ));
-         pragma Assert (Kind /= No_Edge);
+         pragma Assert (Kind = Invocation_Edge or else not Activates_Task);
+         --  Only invocation edges can activate tasks
 
          Rel : constant Predecessor_Successor_Relation :=
-                 (Predecessor => Pred,
-                  Successor   => Succ);
+           (Predecessor => Pred, Successor => Succ);
 
          Edge : Library_Graph_Edge_Id;
 
       begin
-         --  Nothing to do when the predecessor and successor are already
-         --  related by an edge.
+         --  If we already have a Pred-->Succ edge, we don't add another
+         --  one. But we need to update Activates_Task, in order to avoid
+         --  depending on the order of processing of edges. If we have
+         --  Pred-->Succ with Activates_Task=True, and another Pred-->Succ with
+         --  Activates_Task=False, we want Activates_Task to be True no matter
+         --  which order we processed those two Add_Edge calls.
 
          if Is_Recorded_Edge (G, Rel) then
+            pragma Debug (Add_Edge_Kind_Check (G, Pred, Succ, Kind));
+
+            if Activates_Task then
+               Set_Activates_Task (G, Find_Edge (G, Pred, Succ));
+            end if;
+
             return No_Library_Graph_Edge;
          end if;
 
@@ -1834,7 +1903,7 @@ package body Bindo.Graphs is
          Increment_Library_Graph_Edge_Count (G, Kind);
 
          return Edge;
-      end Add_Edge_With_Return;
+      end Add_Edge;
 
       ----------------
       -- Add_Vertex --
@@ -3140,6 +3209,44 @@ package body Bindo.Graphs is
          LGV_Sets.Destroy  (Visited_Set);
          LGV_Lists.Destroy (Visited_Stack);
       end Find_Cycles_In_Component;
+
+      ---------------
+      -- Find_Edge --
+      ---------------
+
+      function Find_Edge
+        (G    : Library_Graph;
+         Pred : Library_Graph_Vertex_Id;
+         Succ : Library_Graph_Vertex_Id) return Library_Graph_Edge_Id
+      is
+         Result : Library_Graph_Edge_Id := No_Library_Graph_Edge;
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_To_Successors_Iterator :=
+           Iterate_Edges_To_Successors (G, Pred);
+
+      begin
+         --  IMPORTANT:
+         --
+         --    * The iteration must run to completion in order to unlock the
+         --      edges to successors.
+
+         --  This does a linear search through the successors of Pred.
+         --  Efficiency is not a problem, because this is called only when
+         --  Activates_Task is True, which is rare, and anyway, there aren't
+         --  usually large numbers of successors.
+
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            if Succ = Successor (G, Edge) then
+               pragma Assert (not Present (Result));
+               Result := Edge;
+            end if;
+         end loop;
+
+         pragma Assert (Present (Result));
+         return Result;
+      end Find_Edge;
 
       ---------------------------------------
       -- Find_First_Lower_Precedence_Cycle --
@@ -4459,9 +4566,6 @@ package body Bindo.Graphs is
          Edge : Library_Graph_Edge_Id) return Library_Graph_Edge_Kind
       is
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
          return Get_LGE_Attributes (G, Edge).Kind;
       end Kind;
 
@@ -5097,6 +5201,21 @@ package body Bindo.Graphs is
               and then LGE_Lists.Equal (Left.Path, Right.Path);
       end Same_Library_Graph_Cycle_Attributes;
 
+      ------------------------
+      -- Set_Activates_Task --
+      ------------------------
+
+      procedure Set_Activates_Task
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
+      is
+         Attributes : Library_Graph_Edge_Attributes :=
+           Get_LGE_Attributes (G, Edge);
+      begin
+         Attributes.Activates_Task := True;
+         Set_LGE_Attributes (G, Edge, Attributes);
+      end Set_Activates_Task;
+
       ------------------------------
       -- Set_Component_Attributes --
       ------------------------------
@@ -5175,19 +5294,14 @@ package body Bindo.Graphs is
 
       procedure Set_Is_Recorded_Edge
         (G   : Library_Graph;
-         Rel : Predecessor_Successor_Relation;
-         Val : Boolean := True)
+         Rel : Predecessor_Successor_Relation)
       is
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Rel.Predecessor));
          pragma Assert (Present (Rel.Successor));
 
-         if Val then
-            RE_Sets.Insert (G.Recorded_Edges, Rel);
-         else
-            RE_Sets.Delete (G.Recorded_Edges, Rel);
-         end if;
+         RE_Sets.Insert (G.Recorded_Edges, Rel);
       end Set_Is_Recorded_Edge;
 
       ------------------------
@@ -5211,9 +5325,9 @@ package body Bindo.Graphs is
       ------------------------
 
       procedure Set_LGE_Attributes
-        (G      : Library_Graph;
+        (G    : Library_Graph;
          Edge : Library_Graph_Edge_Id;
-         Val    : Library_Graph_Edge_Attributes)
+         Val  : Library_Graph_Edge_Attributes)
       is
       begin
          pragma Assert (Present (G));

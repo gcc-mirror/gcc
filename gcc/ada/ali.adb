@@ -242,31 +242,33 @@ package body ALI is
 
    --  The following variable records which characters currently are used as
    --  line type markers in the ALI file. This is used in Scan_ALI to detect
-   --  (or skip) invalid lines. The following letters are still available:
-   --
-   --    B F H J K O Q Z
+   --  (or skip) invalid lines.
 
    Known_ALI_Lines : constant array (Character range 'A' .. 'Z') of Boolean :=
-     ('A'    => True,  --  argument
-      'C'    => True,  --  SCO information
-      'D'    => True,  --  dependency
-      'E'    => True,  --  external
-      'G'    => True,  --  invocation graph
-      'I'    => True,  --  interrupt
-      'L'    => True,  --  linker option
-      'M'    => True,  --  main program
-      'N'    => True,  --  notes
-      'P'    => True,  --  program
-      'R'    => True,  --  restriction
-      'S'    => True,  --  specific dispatching
-      'T'    => True,  --  task stack information
-      'U'    => True,  --  unit
-      'V'    => True,  --  version
-      'W'    => True,  --  with
-      'X'    => True,  --  xref
-      'Y'    => True,  --  limited_with
-      'Z'    => True,  --  implicit with from instantiation
-      others => False);
+     ('A' | --  argument
+      'C' | --  SCO information
+      'D' | --  dependency
+      'E' | --  external
+      'G' | --  invocation graph
+      'I' | --  interrupt
+      'L' | --  linker option
+      'M' | --  main program
+      'N' | --  notes
+      'P' | --  program
+      'R' | --  restriction
+      'S' | --  specific dispatching
+      'T' | --  task stack information
+      'U' | --  unit
+      'V' | --  version
+      'W' | --  with
+      'X' | --  xref
+      'Y' | --  limited_with
+      'Z'   --  implicit with from instantiation
+          => True,
+
+      --  Still available:
+
+      'B' | 'F' | 'H' | 'J' | 'K' | 'O' | 'Q' => False);
 
    ------------------------------
    -- Add_Invocation_Construct --
