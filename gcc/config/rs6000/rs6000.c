@@ -2135,7 +2135,7 @@ rs6000_debug_print_mode (ssize_t m)
       spaces = 0;
     }
   else
-    spaces += sizeof ("  Reload=sl") - 1;
+    spaces += strlen ("  Reload=sl");
 
   if (reg_addr[m].scalar_in_vmx_p)
     {
@@ -2143,7 +2143,7 @@ rs6000_debug_print_mode (ssize_t m)
       spaces = 0;
     }
   else
-    spaces += sizeof ("  Upper=y") - 1;
+    spaces += strlen ("  Upper=y");
 
   if (rs6000_vector_unit[m] != VECTOR_NONE
       || rs6000_vector_mem[m] != VECTOR_NONE)
@@ -5206,7 +5206,7 @@ rs6000_builtin_vectorized_libmass (combined_fn fn, tree type_out,
   if (!bname)
     return NULL_TREE;
 
-  strcpy (name, bname + sizeof ("__builtin_") - 1);
+  strcpy (name, bname + strlen ("__builtin_"));
   strcat (name, suffix);
 
   if (n_args == 1)
@@ -23547,7 +23547,7 @@ rs6000_print_options_internal (FILE *file,
 	  if ((flags & mask) == 0)
 	    {
 	      no_str = "no-";
-	      len += sizeof ("no-") - 1;
+	      len += strlen ("no-");
 	    }
 
 	  flags &= ~mask;
@@ -23558,7 +23558,7 @@ rs6000_print_options_internal (FILE *file,
 	  if ((flags & mask) != 0)
 	    {
 	      no_str = "no-";
-	      len += sizeof ("no-") - 1;
+	      len += strlen ("no-");
 	    }
 
 	  flags |= mask;
@@ -23574,7 +23574,7 @@ rs6000_print_options_internal (FILE *file,
 
       fprintf (file, "%s%s%s%s", comma, prefix, no_str, name);
       comma = ", ";
-      comma_len = sizeof (", ") - 1;
+      comma_len = strlen (", ");
     }
 
   fputs ("\n", file);

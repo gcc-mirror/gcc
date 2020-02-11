@@ -1,3 +1,10 @@
+2020-02-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_debug_print_mode): Don't use sizeof
+	where strlen is more legible.
+	(rs6000_builtin_vectorized_libmass): Ditto.
+	(rs6000_print_options_internal): Ditto.
+
 2020-02-11  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/93683
