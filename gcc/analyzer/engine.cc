@@ -854,6 +854,20 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
       }
   }
 
+  /* Dump any saved_diagnostics at this enode.  */
+  {
+    const diagnostic_manager &dm = args.m_eg.get_diagnostic_manager ();
+    for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
+      {
+	const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
+	if (sd->m_enode == this)
+	  {
+	    pp_printf (pp, "DIAGNOSTIC: %s", sd->m_d->get_kind ());
+	    pp_newline (pp);
+	  }
+      }
+  }
+
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
   pp_string (pp, "\"];\n\n");

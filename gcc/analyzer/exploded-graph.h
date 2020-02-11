@@ -768,6 +768,10 @@ public:
   {
     return m_diagnostic_manager;
   }
+  const diagnostic_manager &get_diagnostic_manager () const
+  {
+    return m_diagnostic_manager;
+  }
 
   stats *get_global_stats () { return &m_global_stats; }
   stats *get_or_create_function_stats (function *fn);
