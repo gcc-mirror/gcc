@@ -3815,9 +3815,12 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     (struct find_parameter_pack_data*)data;
   bool parameter_pack_p = false;
 
-  /* Handle type aliases/typedefs.  */
-  if (TYPE_ALIAS_P (t))
+  /* Don't look through typedefs; we are interested in whether a
+     parameter pack is actually written in the expression/type we're
+     looking at, not the target type.  */
+  if (TYPE_P (t) && typedef_variant_p (t))
     {
+      /* But do look at arguments for an alias template.  */
       if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
 	cp_walk_tree (&TI_ARGS (tinfo),
 		      &find_parameter_packs_r,
@@ -3900,47 +3903,19 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 		  &find_parameter_packs_r, ppd, ppd->visited);
 
   /* This switch statement will return immediately if we don't find a
-     parameter pack.  */
+     parameter pack.  ??? Should some of these be in cp_walk_subtrees?  */
   switch (TREE_CODE (t))
     {
-    case TEMPLATE_PARM_INDEX:
-      return NULL_TREE;
-
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       /* Check the template itself.  */
       cp_walk_tree (&TREE_TYPE (TYPE_TI_TEMPLATE (t)),
 		    &find_parameter_packs_r, ppd, ppd->visited);
-      /* Check the template arguments.  */
-      cp_walk_tree (&TYPE_TI_ARGS (t), &find_parameter_packs_r, ppd,
-		    ppd->visited);
-      *walk_subtrees = 0;
-      return NULL_TREE;
-
-    case TEMPLATE_TYPE_PARM:
-    case TEMPLATE_TEMPLATE_PARM:
-      return NULL_TREE;
-
-    case PARM_DECL:
       return NULL_TREE;
 
     case DECL_EXPR:
       /* Ignore the declaration of a capture proxy for a parameter pack.  */
       if (is_capture_proxy (DECL_EXPR_DECL (t)))
 	*walk_subtrees = 0;
-      return NULL_TREE;
-
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (t))
-	return NULL_TREE;
-      /* Fall through.  */
-
-    case UNION_TYPE:
-    case ENUMERAL_TYPE:
-      if (TYPE_TEMPLATE_INFO (t))
-	cp_walk_tree (&TYPE_TI_ARGS (t),
-		      &find_parameter_packs_r, ppd, ppd->visited);
-
-      *walk_subtrees = 0;
       return NULL_TREE;
 
     case TEMPLATE_DECL:
@@ -5797,8 +5772,7 @@ push_template_decl_real (tree decl, bool is_friend)
       if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
 	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs ((TREE_CODE (decl) == TYPE_DECL
-					    && TYPE_DECL_ALIAS_P (decl))
+  else if (check_for_bare_parameter_packs (is_typedef_decl (decl)
 					   ? DECL_ORIGINAL_TYPE (decl)
 					   : TREE_TYPE (decl)))
     {
@@ -27615,6 +27589,8 @@ make_auto_1 (tree name, bool set_canonical)
     TYPE_CANONICAL (au) = canonical_type_parameter (au);
   DECL_ARTIFICIAL (TYPE_NAME (au)) = 1;
   SET_DECL_TEMPLATE_PARM_P (TYPE_NAME (au));
+  if (name == decltype_auto_identifier)
+    AUTO_IS_DECLTYPE (au) = true;
 
   return au;
 }
@@ -27692,8 +27668,6 @@ tree
 make_constrained_decltype_auto (tree con, tree args)
 {
   tree type = make_auto_1 (decltype_auto_identifier, false);
-  /* FIXME: I don't know why this isn't done in make_auto_1.  */
-  AUTO_IS_DECLTYPE (type) = true;
   return make_constrained_placeholder_type (type, con, args);
 }
 
@@ -29006,17 +28980,20 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 tree
 splice_late_return_type (tree type, tree late_return_type)
 {
-  if (is_auto (type))
+  if (late_return_type)
     {
-      if (late_return_type)
-	return late_return_type;
+      gcc_assert (is_auto (type) || seen_error ());
+      return late_return_type;
+    }
 
-      tree idx = get_template_parm_index (type);
+  if (tree *auto_node = find_type_usage (&type, is_auto))
+    {
+      tree idx = get_template_parm_index (*auto_node);
       if (TEMPLATE_PARM_LEVEL (idx) <= processing_template_decl)
 	/* In an abbreviated function template we didn't know we were dealing
 	   with a function template when we saw the auto return type, so update
 	   it to have the correct level.  */
-	return make_auto_1 (TYPE_IDENTIFIER (type), true);
+	*auto_node = make_auto_1 (TYPE_IDENTIFIER (*auto_node), true);
     }
   return type;
 }
@@ -29062,8 +29039,10 @@ type_uses_auto (tree type)
       else
 	return NULL_TREE;
     }
+  else if (tree *tp = find_type_usage (&type, is_auto))
+    return *tp;
   else
-    return find_type_usage (type, is_auto);
+    return NULL_TREE;
 }
 
 /* Report ill-formed occurrences of auto types in ARGUMENTS.  If

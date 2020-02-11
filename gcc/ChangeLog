@@ -1,3 +1,113 @@
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93637
+	* config/i386/sse.md (VI_256_AVX2): New mode iterator.
+	(vcond_mask_<mode><sseintvecmodelower>): Use it instead of VI_256.
+	Change condition from TARGET_AVX2 to TARGET_AVX.
+
+2020-02-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/93641
+	* config/darwin-c.c (darwin_cfstring_ref_p): Fix up last
+	argument of strncmp.
+
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	Try to generate zero-based comparisons.
+	* config/cris/cris.c (cris_reduce_compare): New function.
+	* config/cris/cris-protos.h  (cris_reduce_compare): Add prototype.
+	* config/cris/cris.md ("cbranch<mode>4", "cbranchdi4", "cstoredi4")
+	(cstore<mode>4"): Apply cris_reduce_compare in expanders.
+
+2020-02-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/91913
+	* config/arm/arm.md (movsi_compare0): Allow SP as a source register
+	in Thumb state and also as a destination in Arm state.  Add T16
+	variants.
+
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* md.texi (Define Subst): Match closing paren in example.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58218
+	PR other/93641
+	* config/i386/i386.c (x86_64_elf_section_type_flags): Fix up last
+	arguments of strncmp.
+
+2020-02-10  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93203
+	* ipa-cp.c (ipcp_lattice::add_value): Add source with same call edge
+	but different source value.
+	(adjust_callers_for_value_intersection): New function.
+	(gather_edges_for_value): Adjust order of callers to let a
+	non-self-recursive caller be the first element.
+	(self_recursive_pass_through_p): Add a new parameter "simple", and
+	check generalized self-recursive pass-through jump function.
+	(self_recursive_agg_pass_through_p): Likewise.
+	(find_more_scalar_values_for_callers_subset): Compute value from
+	pass-through jump function for self-recursive.
+	(intersect_with_plats): Cleanup previous implementation code for value
+	itersection with self-recursive call edge.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Deduce value from pass-through jump
+	function for self-recursive call edge.  Cleanup previous implementation
+	code for value intersection with self-recursive call edge.
+	(decide_whether_version_node): Remove dead callers and adjust order
+	to let a non-self-recursive caller be the first element.
+
+2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* recog.c: Move pass_split_before_sched2 code in front of
+	pass_split_before_regstack.
+	(pass_data_split_before_sched2): Rename pass to split3 from split4.
+	(pass_data_split_before_regstack): Rename pass to split4 from split3.
+	(rest_of_handle_split_before_sched2): Remove.
+	(pass_split_before_sched2::execute): Unconditionally call
+	split_all_insns.
+	(enable_split_before_sched2): New function.
+	(pass_split_before_sched2::gate): Use enable_split_before_sched2.
+	(pass_split_before_regstack::gate): Ditto.
+	* config/nds32/nds32.c (nds32_split_double_word_load_store_p):
+	Update name check for renamed split4 pass.
+	* config/sh/sh.c (register_sh_passes): Update pass insertion
+	point for renamed split4 pass.
+
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Promote
+	DECL_IN_CONSTANT_POOL variables into "omp declare target" to avoid
+	copying them around between host and target.
+
+2020-02-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/91927
+	* config/aarch64/aarch64-simd.md (movmisalign<mode>): Check
+	STRICT_ALIGNMENT also.
+
+2020-02-08  Jim Wilson  <jimw@sifive.com>
+
+	PR target/93532
+	* config/riscv/riscv.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+
+2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65782
+	* config/i386/i386.h (CALL_USED_REGISTERS): Make
+	xmm16-xmm31 call-used even in 64-bit ms-abi.
+
+2020-02-07  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (simd_smmla): New entry.
+	(simd_ummla, simd_usmmla): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_<sur>mmlav16qi): New.
+	* config/aarch64/arm_neon.h (vmmlaq_s32, vmmlaq_u32): New.
+	(vusmmlaq_s32): New.
+
 2020-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93519

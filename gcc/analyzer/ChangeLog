@@ -1,3 +1,33 @@
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93659
+	* analyzer.opt (-param=analyzer-max-recursion-depth=): Fix "tha"
+	-> "that" typo.
+	(Wanalyzer-use-of-uninitialized-value): Fix "initialized" ->
+	"uninitialized" typo.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93350
+	* region-model.cc (region_model::get_lvalue_1):
+	Handle BIT_FIELD_REF.
+	(make_region_for_type): Handle VECTOR_TYPE.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93647
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Bulletproof against
+	VAR being constant.
+	* region-model.cc (region_model::get_lvalue_1): Provide a better
+	error message when encountering an unhandled tree code.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93405
+	* region-model.cc (region_model::get_lvalue_1): Implement
+	CONST_DECL.
+
 2020-02-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::maybe_cast_1): Attempt to provide

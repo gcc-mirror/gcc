@@ -3627,7 +3627,7 @@ struct GTY(()) lang_decl {
    for the alias template (if any).  Otherwise behave as
    TYPE_TEMPLATE_INFO.  */
 #define TYPE_TEMPLATE_INFO_MAYBE_ALIAS(NODE)				\
-  (TYPE_ALIAS_P (NODE)							\
+  (typedef_variant_p (NODE)						\
    ? TYPE_ALIAS_TEMPLATE_INFO (NODE)					\
    : TYPE_TEMPLATE_INFO (NODE))
 
@@ -7681,6 +7681,7 @@ extern tree build_exception_variant		(tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
+extern bool array_of_unknown_bound_p		(const_tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);
@@ -8200,7 +8201,7 @@ extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
-extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,

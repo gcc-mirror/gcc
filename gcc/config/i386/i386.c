@@ -751,8 +751,9 @@ x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_RELRO;
 
   if (strcmp (name, ".lbss") == 0
-      || strncmp (name, ".lbss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.lb.", 16) == 0)
+      || strncmp (name, ".lbss.", sizeof (".lbss.") - 1) == 0
+      || strncmp (name, ".gnu.linkonce.lb.",
+		  sizeof (".gnu.linkonce.lb.") - 1) == 0)
     flags |= SECTION_BSS;
 
   return flags;

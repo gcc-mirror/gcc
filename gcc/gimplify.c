@@ -9906,6 +9906,22 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  error ("%<_Atomic%> %qD in implicit %<map%> clause", decl);
 	  return 0;
 	}
+      if (VAR_P (decl)
+	  && DECL_IN_CONSTANT_POOL (decl)
+          && !lookup_attribute ("omp declare target",
+				DECL_ATTRIBUTES (decl)))
+	{
+	  tree id = get_identifier ("omp declare target");
+	  DECL_ATTRIBUTES (decl)
+	    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
+	  varpool_node *node = varpool_node::get (decl);
+	  if (node)
+	    {
+	      node->offloadable = 1;
+	      if (ENABLE_OFFLOADING)
+		g->have_offload = true;
+	    }
+	}
     }
   else if (flags & GOVD_SHARED)
     {

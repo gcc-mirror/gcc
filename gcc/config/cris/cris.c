@@ -3053,6 +3053,63 @@ cris_split_movdx (rtx *operands)
   return val;
 }
 
+/* Try to change a comparison against a constant to be against zero, and
+   an unsigned compare against zero to be an equality test.  Beware:
+   only valid for compares of integer-type operands.  Also, note that we
+   don't use operand 0 at the moment.  */
+
+void
+cris_reduce_compare (rtx *relp, rtx *, rtx *op1p)
+{
+  rtx op1 = *op1p;
+  rtx_code code = GET_CODE (*relp);
+
+  /* Code lifted mostly from emit_store_flag_1.  */
+  switch (code)
+    {
+    case LT:
+      if (op1 == const1_rtx)
+	code = LE;
+      break;
+    case LE:
+      if (op1 == constm1_rtx)
+	code = LT;
+      break;
+    case GE:
+      if (op1 == const1_rtx)
+	code = GT;
+      break;
+    case GT:
+      if (op1 == constm1_rtx)
+	code = GE;
+      break;
+    case GEU:
+      if (op1 == const1_rtx)
+	code = NE;
+      break;
+    case LTU:
+      if (op1 == const1_rtx)
+	code = EQ;
+      break;
+    case GTU:
+      if (op1 == const0_rtx)
+	code = NE;
+      break;
+    case LEU:
+      if (op1 == const0_rtx)
+	code = EQ;
+      break;
+    default:
+      break;
+    }
+
+  if (code != GET_CODE (*relp))
+  {
+    *op1p = const0_rtx;
+    PUT_CODE (*relp, code);
+  }
+}
+
 /* The expander for the prologue pattern name.  */
 
 void

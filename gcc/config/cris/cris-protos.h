@@ -38,6 +38,7 @@ extern bool cris_constant_index_p (const_rtx);
 extern bool cris_base_p (const_rtx, bool);
 extern bool cris_base_or_autoincr_p (const_rtx, bool);
 extern bool cris_bdap_index_p (const_rtx, bool);
+extern void cris_reduce_compare (rtx *, rtx *, rtx *);
 extern bool cris_biap_index_p (const_rtx, bool);
 extern bool cris_legitimate_address_p (machine_mode, rtx, bool);
 extern bool cris_store_multiple_op_p (rtx);

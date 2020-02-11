@@ -1,3 +1,88 @@
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/69448
+	PR c++/80471
+	* type-utils.h (find_type_usage): Refactor to take a tree * and to
+	return a tree *, and update documentation accordingly.
+	* pt.c (make_auto_1): Set AUTO_IS_DECLTYPE when building a
+	decltype(auto) node.
+	(make_constrained_decltype_auto): No need to explicitly set
+	AUTO_IS_DECLTYPE anymore.
+	(splice_late_return_type): Use find_type_usage to find and
+	replace a possibly nested auto node instead of using is_auto.
+	Check test for is_auto into an assert when deciding whether
+	to late_return_type.
+	(type_uses_auto): Adjust the call to find_type_usage.
+	* parser.c (cp_parser_decltype): No need to explicitly set
+	AUTO_IS_DECLTYPE anymore.
+
+	* error.c (dump_decl) [CONCEPT_DECL]: Use dump_simple_decl.
+	(dump_simple_decl): Handle standard concept definitions as well as
+	variable concept definitions.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* error.c (dump_decl_name): Fix up last argument to strncmp.
+
+2020-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93618
+	* tree.c (array_of_unknown_bound_p): New.
+	* init.c (perform_member_init): Do nothing for flexible arrays.
+
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93633
+	* constexpr.c (cxx_eval_constant_expression): If obj is heap var with
+	ARRAY_TYPE, use the element type.  Punt if objtype after that is not
+	a class type.
+
+2020-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90691
+	* expr.c (fold_for_warn): Call maybe_constant_value.
+	* constexpr.c (struct constexpr_ctx): Add uid_sensitive bit-field.
+	(maybe_constant_value): Add uid_sensitive parm.
+	(get_fundef_copy): Don't copy if it's true.
+	(cxx_eval_call_expression): Don't instantiate if it's true.
+	(cxx_eval_outermost_constant_expr): Likewise.
+
+	PR c++/92852
+	* constexpr.c (maybe_constant_value): Don't unshare if the cached
+	value is the same as the argument.
+
+	* typeck.c (maybe_warn_about_returning_address_of_local): Add
+	location parameter.
+
+	* typeck2.c (process_init_constructor): Also clear TREE_SIDE_EFFECTS
+	if appropriate.
+
+2020-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93549
+	* constexpr.c (find_array_ctor_elt): If last element has no index,
+	for flag_checking verify all elts have no index.  If i is within the
+	elts, return it directly, if it is right after the last elt, append
+	if NULL index, otherwise force indexes on all elts.
+	(cxx_eval_store_expression): Allow cep->index to be NULL.
+
+2020-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92947 - Paren init of aggregates in unevaluated context.
+	* call.c (build_new_method_call_1): Don't check
+	cp_unevaluated_operand.  Check the return value of digest_init.
+
+2020-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92654
+	* tree.c (cp_walk_subtrees): Walk into type template arguments.
+	* cp-tree.h (TYPE_TEMPLATE_INFO_MAYBE_ALIAS): Use typedef_variant_p
+	instead of TYPE_ALIAS_P.
+	* pt.c (push_template_decl_real): Likewise.
+	(find_parameter_packs_r): Likewise.  Remove dead code.
+	* error.c (find_typenames_r): Remove dead code.
+
 2020-02-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92517

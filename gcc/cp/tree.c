@@ -1135,6 +1135,15 @@ build_array_of_n_type (tree elt, int n)
   return build_cplus_array_type (elt, build_index_type (size_int (n - 1)));
 }
 
+/* True iff T is an array of unknown bound.  */
+
+bool
+array_of_unknown_bound_p (const_tree t)
+{
+  return (TREE_CODE (t) == ARRAY_TYPE
+	  && !TYPE_DOMAIN (t));
+}
+
 /* True iff T is an N3639 array of runtime bound (VLA).  These were approved
    for C++14 but then removed.  This should only be used for N3639
    specifically; code wondering more generally if something is a VLA should use
@@ -4939,6 +4948,11 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       if (result) goto out;				\
     }							\
   while (0)
+
+  if (TYPE_P (*tp))
+    /* Walk into template args without looking through typedefs.  */
+    if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
+      WALK_SUBTREE (TI_ARGS (ti));
 
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */

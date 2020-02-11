@@ -3270,8 +3270,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 			       "quoted %qs directive in format; "
 			       "use %qs instead", "%s", "%qs");
       else if (format_chars - orig_format_chars > 2
-	       && !strncasecmp (format_chars - 3, "can%'t", 5)
-	       && !ISALPHA (format_chars[1]))
+	       && !strncasecmp (format_chars - 3, "can%'t", 6))
 	format_warning_substr (format_string_loc,
 			       format_string_cst,
 			       fmtchrpos - 3, fmtchrpos + 3, opt,

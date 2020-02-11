@@ -58,7 +58,7 @@ static tree pointer_diff (location_t, tree, tree, tree, tsubst_flags_t, tree *);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
-static bool maybe_warn_about_returning_address_of_local (tree);
+static bool maybe_warn_about_returning_address_of_local (tree, location_t = UNKNOWN_LOCATION);
 static void error_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
@@ -9471,11 +9471,12 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
    temporary give an appropriate warning and return true.  */
 
 static bool
-maybe_warn_about_returning_address_of_local (tree retval)
+maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = fold_for_warn (retval);
-  location_t loc = cp_expr_loc_or_input_loc (retval);
+  if (!loc)
+    loc = cp_expr_loc_or_input_loc (retval);
 
   for (;;)
     {
@@ -9509,7 +9510,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  || is_std_forward_p (whats_returned)))
     {
       tree arg = CALL_EXPR_ARG (whats_returned, 0);
-      return maybe_warn_about_returning_address_of_local (arg);
+      return maybe_warn_about_returning_address_of_local (arg, loc);
     }
 
   if (TREE_CODE (whats_returned) != ADDR_EXPR)
@@ -9555,7 +9556,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  if (TYPE_REF_P (TREE_TYPE (base)))
 	    {
 	      if (tree init = DECL_INITIAL (base))
-		return maybe_warn_about_returning_address_of_local (init);
+		return maybe_warn_about_returning_address_of_local (init, loc);
 	      else
 		return false;
 	    }
@@ -10082,7 +10083,7 @@ check_return_expr (tree retval, bool *no_warning)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 TREE_OPERAND (retval, 0));
       else if (!processing_template_decl
-	       && maybe_warn_about_returning_address_of_local (retval)
+	       && maybe_warn_about_returning_address_of_local (retval, loc)
 	       && INDIRECT_TYPE_P (valtype))
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));

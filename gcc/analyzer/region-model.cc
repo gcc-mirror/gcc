@@ -4614,6 +4614,8 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (expr))
     {
     default:
+      internal_error ("unhandled tree code in region_model::get_lvalue_1: %qs",
+		      get_tree_code_name (TREE_CODE (expr)));
       gcc_unreachable ();
 
     case ARRAY_REF:
@@ -4631,6 +4633,14 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	array_region *array_reg = get_region<array_region> (array_rid);
 	return array_reg->get_element (this, array_rid, index_sid, ctxt);
       }
+      break;
+
+    case BIT_FIELD_REF:
+      {
+	/* For now, create a view, as if a cast, ignoring the bit positions.  */
+	tree obj = TREE_OPERAND (expr, 0);
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+      };
       break;
 
     case MEM_REF:
@@ -4687,6 +4697,19 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	region_id struct_or_union_rid
 	  = get_or_create_view (obj_rid, TREE_TYPE (obj));
 	return get_field_region (struct_or_union_rid, field);
+      }
+      break;
+
+    case CONST_DECL:
+      {
+	tree cst_type = TREE_TYPE (expr);
+	region_id cst_rid = add_region_for_type (m_root_rid, cst_type);
+	if (tree value = DECL_INITIAL (expr))
+	  {
+	    svalue_id sid = get_rvalue (value, ctxt);
+	    get_region (cst_rid)->set_value (*this, cst_rid, sid, ctxt);
+	  }
+	return cst_rid;
       }
       break;
 
@@ -5993,7 +6016,8 @@ make_region_for_type (region_id parent_rid, tree type)
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
       || POINTER_TYPE_P (type)
-      || TREE_CODE (type) == COMPLEX_TYPE)
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
     return new primitive_region (parent_rid, type);
 
   if (TREE_CODE (type) == RECORD_TYPE)

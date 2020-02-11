@@ -1,3 +1,16 @@
+
+2020-02-10  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.c/target-33.c: Add xfail for execution on
+	offload_target_nvptx, cf. https://gcc.gnu.org/PR81688.
+	* testsuite/libgomp.c/target-34.c: Likewise.
+	* testsuite/libgomp.c/target-link-1.c: Add xfail for
+	offload_target_nvptx, cf. https://gcc.gnu.org/PR81689.
+
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-38.c: New test.
+
 2020-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/93515

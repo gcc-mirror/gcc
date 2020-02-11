@@ -22,7 +22,7 @@ struct A
 struct A2
 {
   operator auto () -> int;			// { dg-error "invalid use of|trailing return type" }
-  operator auto*() -> int;			// { dg-error "invalid use of|trailing return type" }
+  operator auto*() -> int;			// { dg-error "invalid use of|trailing return type|cannot be overloaded" }
 };
 
 template <typename> struct B

@@ -801,8 +801,11 @@ perform_member_init (tree member, tree init)
 		    member);
     }
 
-  if (maybe_reject_flexarray_init (member, init))
-    return;
+  if (array_of_unknown_bound_p (type))
+    {
+      maybe_reject_flexarray_init (member, init);
+      return;
+    }
 
   if (init && TREE_CODE (init) == TREE_LIST
       && (DIRECT_LIST_INIT_P (TREE_VALUE (init))

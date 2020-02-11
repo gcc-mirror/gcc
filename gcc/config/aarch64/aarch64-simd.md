@@ -41,7 +41,7 @@
 (define_expand "movmisalign<mode>"
   [(set (match_operand:VALL 0 "nonimmediate_operand")
         (match_operand:VALL 1 "general_operand"))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && !STRICT_ALIGNMENT"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
      are non-registers (e.g. memory := constant, which can be created by the
@@ -7172,4 +7172,16 @@
   return "bfmlal<bt>\\t%0.4s, %2.8h, %3.h[%4]";
 }
   [(set_attr "type" "neon_fp_mla_s_scalar_q")]
+)
+
+;; 8-bit integer matrix multiply-accumulate
+(define_insn "aarch64_simd_<sur>mmlav16qi"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+	(plus:V4SI
+	 (unspec:V4SI [(match_operand:V16QI 2 "register_operand" "w")
+		       (match_operand:V16QI 3 "register_operand" "w")] MATMUL)
+	 (match_operand:V4SI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "<sur>mmla\\t%0.4s, %2.16b, %3.16b"
+  [(set_attr "type" "neon_mla_s_q")]
 )
