@@ -1,3 +1,13 @@
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	LWG 3389 and LWG 3390
+	* include/bits/stl_iterator.h (move_move_iterator): Use std::move when
+	constructing the move_iterator with __i.
+	(counted_iterator::counted_iterator): Use std::move when initializing
+	M_current with __i.
+	* testsuite/24_iterators/counted_iterator/lwg3389.cc: New test.
+	* testsuite/24_iterators/move_iterator/lwg3390.cc: New test.
+
 2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libstdc++/79193
