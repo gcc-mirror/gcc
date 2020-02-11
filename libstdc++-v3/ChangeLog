@@ -1,3 +1,9 @@
+2020-02-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h
+	(_Hashtable<>(_Hashtable&&, std::allocator_type&)): Add
+	missing std namespace qualification to forward call.
+
 2020-02-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: Fix
