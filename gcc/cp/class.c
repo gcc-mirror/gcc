@@ -3241,7 +3241,11 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       {
 	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
 					 NULL_TREE);
-	add_method (t, eq, false);
+	if (DECL_FRIEND_P (space))
+	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
+		     NULL_TREE, NO_SPECIAL, true);
+	else
+	  add_method (t, eq, false);
       }
 
   while (*access_decls)

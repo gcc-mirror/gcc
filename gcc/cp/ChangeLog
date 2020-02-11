@@ -1,5 +1,14 @@
 2020-02-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93675
+	* class.c (add_implicitly_declared_members): Use do_friend.
+	* method.c (implicitly_declare_fn): Fix friend handling.
+	(decl_remember_implicit_trigger_p): New.
+	(synthesize_method): Use it.
+	* decl2.c (mark_used): Use it.
+
+2020-02-11  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93650
 	PR c++/90691
 	* constexpr.c (maybe_constant_value): Correct earlier change.
