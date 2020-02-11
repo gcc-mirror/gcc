@@ -2613,12 +2613,22 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	continue;
 
       parm = TREE_OPERAND (parm, 0);
-      if (TREE_CODE (parm) == VAR_DECL && !DECL_ARTIFICIAL (parm))
-	/* This isn't a temporary... */
-	continue;
 
-      if (TREE_CODE (parm) == PARM_DECL)
-	/* .. nor is this... */
+      /* In case of component_ref, we need to capture the object of base
+	 class as if it is temporary object.  There are two possibilities:
+	 (*base).field and base->field.  */
+      while (TREE_CODE (parm) == COMPONENT_REF)
+	{
+	  parm = TREE_OPERAND (parm, 0);
+	  if (TREE_CODE (parm) == INDIRECT_REF)
+	    parm = TREE_OPERAND (parm, 0);
+	  parm = STRIP_NOPS (parm);
+	}
+
+      /* This isn't a temporary.  */
+      if ((TREE_CODE (parm) == VAR_DECL && !DECL_ARTIFICIAL (parm))
+	  || TREE_CODE (parm) == PARM_DECL
+	  || TREE_CODE (parm) == NON_LVALUE_EXPR)
 	continue;
 
       if (TREE_CODE (parm) == TARGET_EXPR)

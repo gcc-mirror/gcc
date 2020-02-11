@@ -31,6 +31,10 @@
 
 2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
 
+	* g++.dg/coroutines/torture/co-await-15-capture-comp-ref.C: New test.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
 	* g++.dg/coroutines/torture/co-await-14-template-traits.C: New test.
 
 2020-03-02  David Malcolm  <dmalcolm@redhat.com>

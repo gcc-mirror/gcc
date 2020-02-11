@@ -7,6 +7,11 @@
 
 2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
 
+	* coroutines.cc (captures_temporary): Strip component_ref
+	to its base object.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
 	* coroutines.cc (finish_co_await_expr): Build co_await_expr
 	with unknown_type_node.
 	(finish_co_yield_expr): Ditto.
