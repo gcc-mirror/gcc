@@ -1,3 +1,8 @@
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* g++.dg/parse/attr4.C: New test.
+
 2020-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93670

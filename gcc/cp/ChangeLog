@@ -1,3 +1,9 @@
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* parser.c (cp_parser_std_attribute): Peek a token first before
+	consuming it.
+
 2020-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93675
