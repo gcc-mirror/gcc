@@ -1,3 +1,8 @@
+2020-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93683
+	* gcc.dg/tree-ssa/ssa-dse-39.c: New test.
+
 2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_ppc_ieee128_ok): New.

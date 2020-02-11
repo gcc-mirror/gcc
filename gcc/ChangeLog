@@ -1,3 +1,8 @@
+2020-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93683
+	* tree-ssa-alias.c (stmt_kills_ref_p): Avoid using LHS when not set.
+
 2020-02-11  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (cint34_operand): Rename the
