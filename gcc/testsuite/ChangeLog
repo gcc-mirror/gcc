@@ -1,3 +1,9 @@
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_ppc_ieee128_ok): New.
+	* gcc.target/powerpc/pr92796.c: Add a require-effective-target
+	statement for ppc_ieee128_ok.
+
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93374

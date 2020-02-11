@@ -2250,6 +2250,25 @@ proc check_ppc_float128_hw_available { } {
     }]
 }
 
+# See if the __ieee128 keyword is understood.
+proc check_effective_target_ppc_ieee128_ok { } {
+    return [check_cached_effective_target ppc_ieee128_ok {
+	# disable on AIX.
+	if { [istarget *-*-aix*] } {
+	    expr 0
+	} else {
+	    set options "-mfloat128"
+	    check_runtime_nocache ppc_ieee128_ok {
+		int main()
+		{
+		  __ieee128 a;
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing VSX instructions, 0
 # otherwise.  Cache the result.
 
