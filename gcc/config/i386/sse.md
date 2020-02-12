@@ -8719,13 +8719,16 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_mode_iterator VI48F_256_DQ
+  [V8SI V8SF (V4DI "TARGET_AVX512DQ") (V4DF "TARGET_AVX512DQ")])
+
 (define_expand "avx512vl_vextractf128<mode>"
   [(match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
-   (match_operand:VI48F_256 1 "register_operand")
+   (match_operand:VI48F_256_DQ 1 "register_operand")
    (match_operand:SI 2 "const_0_to_1_operand")
    (match_operand:<ssehalfvecmode> 3 "nonimm_or_0_operand")
    (match_operand:QI 4 "register_operand")]
-  "TARGET_AVX512DQ && TARGET_AVX512VL"
+  "TARGET_AVX512VL"
 {
   rtx (*insn)(rtx, rtx, rtx, rtx);
   rtx dest = operands[0];
@@ -8793,14 +8796,19 @@
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
   "TARGET_AVX512F
-   && <mask_mode512bit_condition>
+   && <mask_avx512dq_condition>
    && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>
       || (!TARGET_AVX512VL
 	  && !REG_P (operands[0])
 	  && EXT_REX_SSE_REG_P (operands[1])))
-    return "vextract<shuffletype>32x8\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
+    {
+      if (TARGET_AVX512DQ)
+	return "vextract<shuffletype>32x8\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
+      else
+	return "vextract<shuffletype>64x4\t{$0x0, %1, %0|%0, %1, 0x0}";
+    }
   else
     return "#";
 }
@@ -8910,7 +8918,7 @@
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
   "TARGET_AVX
-   && <mask_avx512vl_condition> && <mask_avx512dq_condition>
+   && <mask_avx512vl_condition>
    && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>)

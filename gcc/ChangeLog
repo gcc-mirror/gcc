@@ -1,3 +1,16 @@
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93670
+	* config/i386/sse.md (VI48F_256_DQ): New mode iterator.
+	(avx512vl_vextractf128<mode>): Use it instead of VI48F_256.  Remove
+	TARGET_AVX512DQ from condition.
+	(vec_extract_lo_<mode><mask_name>): Use <mask_avx512dq_condition>
+	instead of <mask_mode512bit_condition> in condition.  If
+	TARGET_AVX512DQ is false, emit vextract*64x4 instead of
+	vextract*32x8.
+	(vec_extract_lo_<mode><mask_name>): Drop <mask_avx512dq_condition>
+	from condition.
+
 2020-02-12  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/91052
