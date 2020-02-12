@@ -1,3 +1,11 @@
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>): New pattern.
+	* config/aarch64/aarch64.md (popcount<mode>2): Use it instead of
+	generating separate ADDV and zero_extend patterns.
+	* config/aarch64/iterators.md (VDQV_E): New iterator.
+
 2020-02-12  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (cpymemsi, movmd): Remove dead patterns,

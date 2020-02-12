@@ -1,3 +1,7 @@
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/popcnt2.c: New test.
+
 2020-02-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88819

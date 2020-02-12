@@ -208,6 +208,9 @@
 ;; Advanced SIMD modes (except V2DI) for Integer reduction across lanes.
 (define_mode_iterator VDQV_S [V8QI V16QI V4HI V8HI V4SI])
 
+;; Advanced SIMD modes for Integer reduction across lanes (zero/sign extended).
+(define_mode_iterator VDQV_E [V8QI V16QI V4HI V8HI])
+
 ;; All double integer narrow-able modes.
 (define_mode_iterator VDN [V4HI V2SI DI])
 
