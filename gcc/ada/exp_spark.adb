@@ -295,6 +295,13 @@ package body Exp_SPARK is
                      Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
             Analyze_And_Resolve (N, Standard_Boolean);
          end if;
+
+      --  For attributes First and Last simply reuse the standard expansion
+
+      elsif Attr_Id = Attribute_First
+        or else Attr_Id = Attribute_Last
+      then
+         Exp_Attr.Expand_N_Attribute_Reference (N);
       end if;
    end Expand_SPARK_N_Attribute_Reference;
 
