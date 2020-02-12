@@ -1,3 +1,8 @@
+2020-02-12  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (comparison shortening peepholes): Drop
+	(and (xor)) variant.  Combine other two into single peephole.
+
 2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/93565
