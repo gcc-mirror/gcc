@@ -1,5 +1,17 @@
 2020-02-13  Patrick Palka  <ppalka@redhat.com>
 
+	* include/Makefile.am: Add <bits/ranges_uninitialized.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/ranges_uninitialized.h: New header.
+	* include/std/memory: Include it.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc: New
+	test.
+	* .../uninitialized_copy/constrained.cc: New test.
+	* .../uninitialized_default_construct/constrained.cc: New test.
+	* .../uninitialized_fill/constrained.cc: New test.
+	* .../uninitialized_move/constrained.cc: New test.
+	* .../uninitialized_value_construct/constrained.cc: New test.
+
 	* include/Makefile.am: Add bits/ranges_algobase.h
 	* include/Makefile.in: Regenerate.
 	* bits/ranges_algo.h: Include <bits/ranges_algobase.h> and refactor
