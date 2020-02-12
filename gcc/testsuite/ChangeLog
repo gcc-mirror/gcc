@@ -1,5 +1,8 @@
 2020-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/powerpc/pr93122.c: Use -mprefixed instead of
+	-mprefixed-addr in dg-options.
+
 	PR middle-end/93663
 	* gcc.dg/torture/builtin-round-roundeven.c (main): Add tests
 	for DBL_MAX, inf, their negations and nan.
