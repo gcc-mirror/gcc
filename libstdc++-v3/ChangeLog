@@ -1,3 +1,17 @@
+2020-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/Makefile.am: Add bits/ranges_algobase.h
+	* include/Makefile.in: Regenerate.
+	* bits/ranges_algo.h: Include <bits/ranges_algobase.h> and refactor
+	existing #includes.
+	(__detail::__is_normal_iterator, __detail::is_reverse_iterator,
+	__detail::__is_move_iterator, copy_result, move_result,
+	__equal, equal, copy_result, move_result, move_backward_result,
+	copy_backward_result, __copy_or_move_backward, __copy_or_move, copy,
+	move, copy_backward, move_backward, copy_n_result, copy_n, fill_n,
+	fill): Split out into ...
+	* bits/range_algobase.h: ... this new header.
+
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
 	LWG 3389 and LWG 3390
