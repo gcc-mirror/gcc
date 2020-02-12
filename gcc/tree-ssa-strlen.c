@@ -192,7 +192,7 @@ struct laststmt_struct
 } laststmt;
 
 static int get_stridx_plus_constant (strinfo *, unsigned HOST_WIDE_INT, tree);
-static void handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *);
+static void handle_builtin_stxncpy_strncat (bool, gimple_stmt_iterator *);
 
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
@@ -2876,10 +2876,10 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
    and if so, issue an appropriate warning.  */
 
 static void
-handle_builtin_strncat (built_in_function bcode, gimple_stmt_iterator *gsi)
+handle_builtin_strncat (built_in_function, gimple_stmt_iterator *gsi)
 {
   /* Same as stxncpy().  */
-  handle_builtin_stxncpy (bcode, gsi);
+  handle_builtin_stxncpy_strncat (true, gsi);
 }
 
 /* Return true if LEN depends on a call to strlen(SRC) in an interesting
@@ -2974,8 +2974,8 @@ is_strlen_related_p (tree src, tree len)
   return false;
 }
 
-/* Called by handle_builtin_stxncpy and by gimple_fold_builtin_strncpy
-   in gimple-fold.c.
+/* Called by handle_builtin_stxncpy_strncat and by
+   gimple_fold_builtin_strncpy in gimple-fold.c.
    Check to see if the specified bound is a) equal to the size of
    the destination DST and if so, b) if it's immediately followed by
    DST[CNT - 1] = '\0'.  If a) holds and b) does not, warn.  Otherwise,
@@ -3283,13 +3283,14 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
   return false;
 }
 
-/* Check the arguments to the built-in forms of stpncpy and strncpy for
-   out-of-bounds offsets or overlapping access, and to see if the size
-   is derived from calling strlen() on the source argument, and if so,
-   issue the appropriate warning.  */
+/* Check the arguments to the built-in forms of stpncpy, strncpy, and
+   strncat, for out-of-bounds offsets or overlapping access, and to see
+   if the size is derived from calling strlen() on the source argument,
+   and if so, issue the appropriate warning.
+   APPEND_P is true for strncat.  */
 
 static void
-handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
+handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
 {
   if (!strlen_to_stridx)
     return;
@@ -3385,7 +3386,8 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
      whether its value is known.  Otherwise, issue the more generic
      -Wstringop-overflow which triggers for LEN arguments that in
      any meaningful way depend on strlen(SRC).  */
-  if (sisrc == silen
+  if (!append_p
+      && sisrc == silen
       && is_strlen_related_p (src, len)
       && warning_at (callloc, OPT_Wstringop_truncation,
 		     "%G%qD output truncated before terminating nul "
@@ -5352,7 +5354,7 @@ strlen_check_and_optimize_call (gimple_stmt_iterator *gsi, bool *zero_write,
     case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRNCPY:
     case BUILT_IN_STRNCPY_CHK:
-      handle_builtin_stxncpy (DECL_FUNCTION_CODE (callee), gsi);
+      handle_builtin_stxncpy_strncat (false, gsi);
       break;
 
     case BUILT_IN_MEMCPY:

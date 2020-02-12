@@ -1,6 +1,6 @@
 /* PR target/93122 */
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-fstack-clash-protection -mprefixed-addr -mfuture" } */
+/* { dg-options "-fstack-clash-protection -mprefixed -mfuture" } */
 
 void bar (char *);
 

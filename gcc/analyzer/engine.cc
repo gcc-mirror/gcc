@@ -1044,19 +1044,19 @@ exploded_node::on_stmt (exploded_graph &eg,
       const sm_state_map *old_smap
 	= old_state.m_checker_states[sm_idx];
       sm_state_map *new_smap = state->m_checker_states[sm_idx];
-      impl_sm_context ctxt (eg, sm_idx, sm, this, &old_state, state,
-			    change,
-			    old_smap, new_smap);
+      impl_sm_context sm_ctxt (eg, sm_idx, sm, this, &old_state, state,
+			       change,
+			       old_smap, new_smap);
       /* Allow the state_machine to handle the stmt.  */
-      if (sm.on_stmt (&ctxt, snode, stmt))
+      if (sm.on_stmt (&sm_ctxt, snode, stmt))
 	unknown_side_effects = false;
       else
 	{
 	  /* For those stmts that were not handled by the state machine.  */
 	  if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	    {
-	      tree callee_fndecl = gimple_call_fndecl (call);
-	      // TODO: maybe we can be smarter about handling function pointers?
+	      tree callee_fndecl
+		= state->m_region_model->get_fndecl_for_call (call, &ctxt);
 
 	      if (!fndecl_has_gimple_body_p (callee_fndecl))
 		new_smap->purge_for_unknown_fncall (eg, sm, call, callee_fndecl,

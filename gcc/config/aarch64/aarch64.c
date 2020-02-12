@@ -11507,6 +11507,13 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 
       return false;
 
+    case CTZ:
+      *cost = COSTS_N_INSNS (2);
+
+      if (speed)
+	*cost += extra_cost->alu.clz + extra_cost->alu.rev;
+      return false;
+
     case COMPARE:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);

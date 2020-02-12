@@ -1375,7 +1375,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR move_iterator<_Iterator>
     make_move_iterator(_Iterator __i)
-    { return move_iterator<_Iterator>(__i); }
+    { return move_iterator<_Iterator>(std::move(__i)); }
 
   template<typename _Iterator, typename _ReturnType
     = typename conditional<__move_if_noexcept_cond
@@ -1782,7 +1782,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       counted_iterator(_It __i, iter_difference_t<_It> __n)
-      : _M_current(__i), _M_length(__n)
+      : _M_current(std::move(__i)), _M_length(__n)
       { __glibcxx_assert(__n >= 0); }
 
       template<typename _It2>

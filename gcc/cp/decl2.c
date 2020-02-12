@@ -5650,7 +5650,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       /* Remember the current location for a function we will end up
 	 synthesizing.  Then we can inform the user where it was
 	 required in the case of error.  */
-      if (DECL_ARTIFICIAL (decl))
+      if (decl_remember_implicit_trigger_p (decl))
 	DECL_SOURCE_LOCATION (decl) = input_location;
 
       /* Synthesizing an implicitly defined member function will result in

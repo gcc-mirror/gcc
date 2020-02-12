@@ -1,85 +1,14 @@
 //  { dg-do run }
 
-// check codegen for overloaded operator new/delete.
+// check codegen for overloaded simple operator new/delete.
 
-#include "../coro.h"
+#define PROVIDE_NEW_SZT
+#define PROVIDE_DEL_VP
+
+#include "../coro1-allocators.h"
 
 int used_ovl_new = 0;
 int used_ovl_del = 0;
-
-struct coro1 {
-  struct promise_type;
-  using handle_type = coro::coroutine_handle<coro1::promise_type>;
-  handle_type handle;
-  coro1 () noexcept : handle(0) {}
-  coro1 (handle_type _handle) noexcept
-    : handle(_handle)  {
-        PRINT("Created coro1 object from handle");
-  }
-  coro1 (const coro1 &) = delete; // no copying
-  coro1 (coro1 &&s) noexcept : handle(s.handle)  {
-	s.handle = nullptr;
-	PRINT("coro1 mv ctor ");
-  }
-  coro1 &operator = (coro1 &&s) noexcept {
-	handle = s.handle;
-	s.handle = nullptr;
-	PRINT("coro1 op=  ");
-	return *this;
-  }
-  ~coro1() noexcept {
-        PRINT("Destroyed coro1");
-        if ( handle )
-          handle.destroy();
-  }
-
-  struct suspend_never_prt {
-  bool await_ready() const noexcept { return true; }
-  void await_suspend(handle_type) const noexcept { PRINT ("susp-never-susp");}
-  void await_resume() const noexcept { PRINT ("susp-never-resume");}
-  ~suspend_never_prt() {};
-  };
-
-  struct  suspend_always_prt {
-  bool await_ready() const noexcept { return false; }
-  void await_suspend(handle_type) const noexcept { PRINT ("susp-always-susp");}
-  void await_resume() const noexcept { PRINT ("susp-always-resume");}
-  };
-
-  struct promise_type {
-  promise_type() {  PRINT ("Created Promise"); }
-  ~promise_type() { PRINT ("Destroyed Promise"); }
-
-  void *operator new (std::size_t sz) {
-    PRINT ("promise_type: used overloaded operator new");
-    used_ovl_new++;
-    return ::operator new(sz);
-  }
-
-  void operator delete (void *p)  {
-    PRINT ("promise_type: used overloaded operator delete");
-    used_ovl_del++;
-    return ::operator delete(p);
-  }
-
-  auto get_return_object () {
-    PRINT ("get_return_object: handle from promise");
-    return handle_type::from_promise (*this);
-  }
-  auto initial_suspend () {
-    PRINT ("get initial_suspend (always)");
-    return suspend_always_prt{};
-  }
-  auto final_suspend () {
-    PRINT ("get final_suspend (always)");
-    return suspend_always_prt{};
-  }
-  void return_void () {
-    PRINT ("return_void ()");
-  }
-  void unhandled_exception() { PRINT ("** unhandled exception"); }
-  }; // promise
-}; // coro1
 
 struct coro1
 f () noexcept

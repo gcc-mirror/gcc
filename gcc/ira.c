@@ -3784,6 +3784,11 @@ combine_and_move_insns (void)
       if (can_throw_internal (def_insn))
 	continue;
 
+      /* Instructions with multiple sets can only be moved if DF analysis is
+	 performed for all of the registers set.  See PR91052.  */
+      if (multiple_sets (def_insn))
+	continue;
+
       basic_block use_bb = BLOCK_FOR_INSN (use_insn);
       basic_block def_bb = BLOCK_FOR_INSN (def_insn);
       if (bb_loop_depth (use_bb) > bb_loop_depth (def_bb))

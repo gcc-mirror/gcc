@@ -1,3 +1,78 @@
+2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-allocators.h: New.
+	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: New test.
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C: Use new
+	coro1-allocators.h header.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C: Likewise.
+	* g++.dg/coroutines/torture/alloc-02-fail-new-grooaf-check.C: New.
+	* g++.dg/coroutines/torture/alloc-03-overload-new-1.C: New test.
+	* g++.dg/coroutines/torture/alloc-04-overload-del-use-two-args.C:New.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/pr93122.c: Use -mprefixed instead of
+	-mprefixed-addr in dg-options.
+
+	PR middle-end/93663
+	* gcc.dg/torture/builtin-round-roundeven.c (main): Add tests
+	for DBL_MAX, inf, their negations and nan.
+
+2020-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93646
+	* gcc.dg/Wstringop-overflow-31.c: New test.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/93565
+	* gcc.target/aarch64/pr93565.c: New test.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/popcnt2.c: New test.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88819
+	* g++.dg/cpp2a/nontype-class32.C: New test.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* g++.dg/parse/attr4.C: New test.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93670
+	* gcc.target/i386/avx512vl-pr93670.c: New test.
+
+2020-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93697
+	* gcc.dg/pr93661.c: Pass -w, remove dg-warning.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93288
+	* g++.dg/analyzer/malloc.C: Add test coverage for a double-free
+	called in a constructor.
+	* g++.dg/analyzer/pr93288.C: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93212
+	* g++.dg/analyzer/analyzer.exp: New subdirectory and .exp suite.
+	* g++.dg/analyzer/malloc.C: New test.
+	* g++.dg/analyzer/pr93212.C: New test.
+
+2020-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93683
+	* gcc.dg/tree-ssa/ssa-dse-39.c: New test.
+
 2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_ppc_ieee128_ok): New.

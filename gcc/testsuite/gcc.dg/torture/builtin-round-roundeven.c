@@ -18,6 +18,13 @@ main (void)
   TEST(roundeven,  -1.5, -2);
   TEST(roundeven,  3.499, 3);
   TEST(roundeven,  3.501, 4);
+  TEST(roundeven,  __DBL_MAX__, __DBL_MAX__);
+  TEST(roundeven,  -__DBL_MAX__, -__DBL_MAX__);
+  TEST(roundeven,  __builtin_inf (), __builtin_inf ());
+  TEST(roundeven,  -__builtin_inf (), -__builtin_inf ());
+
+  if (!__builtin_isnan (__builtin_roundeven (__builtin_nan (""))))
+    link_error (__LINE__);
 
   if (__builtin_copysign (1, __builtin_roundeven (-0.5)) != -1)
     link_error (__LINE__);
@@ -31,6 +38,5 @@ main (void)
     link_error (__LINE__);
   if (__builtin_copysign (-1, __builtin_roundeven (0.25)) != 1)
     link_error (__LINE__);
- return 0;
+  return 0;
 }
-

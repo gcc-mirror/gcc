@@ -1,3 +1,25 @@
+2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Implement deallocation function
+	selection per n4849, dcl.fct.def.coroutine bullet 12.
+	(morph_fn_to_coro): Implement allocation function selection per
+	n4849, dcl.fct.def.coroutine bullets 9 and 10.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* parser.c (cp_parser_std_attribute): Peek a token first before
+	consuming it.
+
+2020-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93675
+	* class.c (add_implicitly_declared_members): Use do_friend.
+	* method.c (implicitly_declare_fn): Fix friend handling.
+	(decl_remember_implicit_trigger_p): New.
+	(synthesize_method): Use it.
+	* decl2.c (mark_used): Use it.
+
 2020-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93650

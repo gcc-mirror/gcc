@@ -1371,7 +1371,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using _Fwd_Ht = typename
 	    conditional<__move_if_noexcept_cond<value_type>::value,
 			const _Hashtable&, _Hashtable&&>::type;
-	  _M_assign(forward<_Fwd_Ht>(__ht), __alloc_gen);
+	  _M_assign(std::forward<_Fwd_Ht>(__ht), __alloc_gen);
 	  __ht.clear();
 	}
     }

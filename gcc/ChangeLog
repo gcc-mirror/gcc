@@ -1,3 +1,84 @@
+2020-02-12  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (comparison shortening peepholes): Use
+	a mode iterator to merge the HImode and SImode peepholes.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93663
+	* real.c (is_even): Make static.  Function comment fix.
+	(is_halfway_below): Make static, don't assert R is not inf/nan,
+	instead return false for those.  Small formatting fixes.
+
+2020-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93646
+	* tree-ssa-strlen.c (handle_builtin_stxncpy): Rename...
+	(handle_builtin_stxncpy_strncat): ...to this.  Change first argument.
+	Issue only -Wstringop-overflow strncat, never -Wstringop-truncation.
+	(strlen_check_and_optimize_call): Adjust callee name.
+
+2020-02-12  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (comparison shortening peepholes): Drop
+	(and (xor)) variant.  Combine other two into single peephole.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/93565
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Add CTZ costs.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>): New pattern.
+	* config/aarch64/aarch64.md (popcount<mode>2): Use it instead of
+	generating separate ADDV and zero_extend patterns.
+	* config/aarch64/iterators.md (VDQV_E): New iterator.
+
+2020-02-12  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (cpymemsi, movmd): Remove dead patterns,
+	expanders, splits, etc.
+	(movmd_internal_<mode>, movmd splitter, movstr, movsd): Likewise.
+	(stpcpy_internal_<mode>, stpcpy splitter): Likewise.
+	(peepholes to convert QI/HI mode pushes to SI mode pushes): Likewise.
+	* config/h8300/h8300.c (h8300_swap_into_er6): Remove unused function.
+	(h8300_swap_out_of_er6, h8sx_emit_movmd): Likewise
+	* config/h8300/h8300-protos.h (h8300_swap_into_er6): Remove unused
+	function prototype.
+	(h8300_swap_out_of_er6, h8sx_emit_movmd): Likewise.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93670
+	* config/i386/sse.md (VI48F_256_DQ): New mode iterator.
+	(avx512vl_vextractf128<mode>): Use it instead of VI48F_256.  Remove
+	TARGET_AVX512DQ from condition.
+	(vec_extract_lo_<mode><mask_name>): Use <mask_avx512dq_condition>
+	instead of <mask_mode512bit_condition> in condition.  If
+	TARGET_AVX512DQ is false, emit vextract*64x4 instead of
+	vextract*32x8.
+	(vec_extract_lo_<mode><mask_name>): Drop <mask_avx512dq_condition>
+	from condition.
+
+2020-02-12  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/91052
+	* ira.c (combine_and_move_insns): Skip multiple_sets def_insn.
+
+2020-02-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_debug_print_mode): Don't use sizeof
+	where strlen is more legible.
+	(rs6000_builtin_vectorized_libmass): Ditto.
+	(rs6000_print_options_internal): Ditto.
+
+2020-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93683
+	* tree-ssa-alias.c (stmt_kills_ref_p): Avoid using LHS when not set.
+
 2020-02-11  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (cint34_operand): Rename the

@@ -1,5 +1,26 @@
 2020-02-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93288
+	* analysis-plan.cc (analysis_plan::use_summary_p): Look through
+	the ultimate_alias_target when getting the called function.
+	* engine.cc (exploded_node::on_stmt): Rename second "ctxt" to
+	"sm_ctxt".  Use the region_model's get_fndecl_for_call rather than
+	gimple_call_fndecl.
+	* region-model.cc (region_model::get_fndecl_for_call): Use
+	ultimate_alias_target on fndecl.
+	* supergraph.cc (get_ultimate_function_for_cgraph_edge): New
+	function.
+	(supergraph_call_edge): Use it when rejecting edges without
+	functions.
+	(supergraph::supergraph): Use it to get the function for the
+	cgraph_edge when building interprocedural superedges.
+	(callgraph_superedge::get_callee_function):  Use it.
+	* supergraph.h (supergraph::get_num_snodes): Make param const.
+	(supergraph::function_to_num_snodes_t): Make first type param
+	const.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93374
 	* engine.cc (exploded_edge::exploded_edge): Add ext_state param
 	and pass it to change.validate.

@@ -4848,7 +4848,6 @@
 {
   rtx v = gen_reg_rtx (V8QImode);
   rtx v1 = gen_reg_rtx (V8QImode);
-  rtx r = gen_reg_rtx (QImode);
   rtx in = operands[1];
   rtx out = operands[0];
   if(<MODE>mode == SImode)
@@ -4862,8 +4861,7 @@
     }
   emit_move_insn (v, gen_lowpart (V8QImode, in));
   emit_insn (gen_popcountv8qi2 (v1, v));
-  emit_insn (gen_reduc_plus_scal_v8qi (r, v1));
-  emit_insn (gen_zero_extendqi<mode>2 (out, r));
+  emit_insn (gen_aarch64_zero_extend<mode>_reduc_plus_v8qi (out, v1));
   DONE;
 })
 

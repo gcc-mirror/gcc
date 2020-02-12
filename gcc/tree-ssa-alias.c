@@ -3265,6 +3265,8 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		    return false;
 
 		  dest = gimple_call_lhs (stmt);
+		  if (!dest)
+		    return false;
 		  len = fold_build2 (MULT_EXPR, TREE_TYPE (arg0), arg0, arg1);
 		}
 	      else
