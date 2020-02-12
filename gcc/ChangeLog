@@ -1,5 +1,10 @@
 2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	PR rtl-optimization/93565
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Add CTZ costs.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>): New pattern.
 	* config/aarch64/aarch64.md (popcount<mode>2): Use it instead of
