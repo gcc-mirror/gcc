@@ -1,3 +1,16 @@
+2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-allocators.h: New.
+	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: New test.
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C: Use new
+	coro1-allocators.h header.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C: Likewise.
+	* g++.dg/coroutines/torture/alloc-02-fail-new-grooaf-check.C: New.
+	* g++.dg/coroutines/torture/alloc-03-overload-new-1.C: New test.
+	* g++.dg/coroutines/torture/alloc-04-overload-del-use-two-args.C:New.
+
 2020-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/powerpc/pr93122.c: Use -mprefixed instead of

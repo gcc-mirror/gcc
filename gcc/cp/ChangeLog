@@ -1,3 +1,10 @@
+2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Implement deallocation function
+	selection per n4849, dcl.fct.def.coroutine bullet 12.
+	(morph_fn_to_coro): Implement allocation function selection per
+	n4849, dcl.fct.def.coroutine bullets 9 and 10.
+
 2020-02-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93684 - ICE-on-invalid with broken attribute.
