@@ -1,3 +1,9 @@
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93663
+	* gcc.dg/torture/builtin-round-roundeven.c (main): Add tests
+	for DBL_MAX, inf, their negations and nan.
+
 2020-02-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/93646

@@ -1,3 +1,10 @@
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93663
+	* real.c (is_even): Make static.  Function comment fix.
+	(is_halfway_below): Make static, don't assert R is not inf/nan,
+	instead return false for those.  Small formatting fixes.
+
 2020-02-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/93646
