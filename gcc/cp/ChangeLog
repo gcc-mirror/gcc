@@ -1,3 +1,9 @@
+2020-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93710 - poor diagnostic for array initializer.
+	* call.c (build_user_type_conversion_1): Use cp_expr_loc_or_input_loc
+	for an error call.
+
 2020-02-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92556
