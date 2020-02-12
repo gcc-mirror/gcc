@@ -1,3 +1,8 @@
+2020-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93646
+	* gcc.dg/Wstringop-overflow-31.c: New test.
+
 2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/93565

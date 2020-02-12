@@ -1,3 +1,11 @@
+2020-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93646
+	* tree-ssa-strlen.c (handle_builtin_stxncpy): Rename...
+	(handle_builtin_stxncpy_strncat): ...to this.  Change first argument.
+	Issue only -Wstringop-overflow strncat, never -Wstringop-truncation.
+	(strlen_check_and_optimize_call): Adjust callee name.
+
 2020-02-12  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (comparison shortening peepholes): Drop
