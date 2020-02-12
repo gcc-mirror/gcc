@@ -67,16 +67,20 @@ MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null\
 
 # Try git commit and dirty info
 MODULE_REVISION := $(shell git -C $(srcdir)/.. rev-parse --short HEAD \
-  2>/dev/null | sed 's/\(.\)/git-\1/')
+  2>/dev/null)
 ifneq ($(MODULE_REVISION),)
-# It is git, figure dirty info
-MODULE_REVISION := $(MODULE_REVISION)$(shell git -C $(srcdir)/.. \
-    status --porcelain 2>/dev/null | sed -ne 's/..*/M/p;q')
+# It is git, figure branch & dirty info
+# Subterfuge for gnumake's changing #-quote requirements
+GIT_INFO := \#
+GIT_INFO := -ne '1{s/$(GIT_INFO)$(GIT_INFO) \(.*\)*\.\.\..*/\1/;p}'
+GIT_INFO := $(shell git -C $(srcdir)/.. status --porcelain --branch 2>/dev/null \
+  | sed $(GIT_INFO) -e '2,$${s/[^?].*/M/p;q}')
+MODULE_REVISION := $(word 1,$(GIT_INFO)) $(MODULE_REVISION)$(word 2,$(GIT_INFO))
 endif
 ifeq ($(MODULE_REVISION),)
 # Git does not have keyword expansion, use the date of the most recent entry.
 MODULE_REVISION := $(shell head -1 $(srcdir)/../ChangeLog.modules \
-  2>/dev/null | sed -ne 's/^\([0-9]\+\)-\([0-9]\+\)-\([0-9]\+\) .*/log-\1\2\3/p')
+  2>/dev/null | sed -ne 's/^\([0-9]\+\)-\([0-9]\+\)-\([0-9]\+\) .*/\1\2\3/p')
 endif
 ifeq ($(MODULE_REVISION),)
 MODULE_REVISION := unknown

@@ -1,6 +1,11 @@
+2020-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* Make-lang.in (MODULE_REVISION): Add branch name.
+
 2020-02-11  Nathan Sidwell  <nathan@acm.org>
 
-	gcc/c-family.
+	gcc/c-family/
 	* c-opts.c (c_finish_options): Builtins & command-line starts at
 	1.
 	(cb_file_change): Alter detection of main file start.
