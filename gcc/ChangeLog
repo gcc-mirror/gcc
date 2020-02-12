@@ -1,3 +1,8 @@
+2020-02-12  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/91052
+	* ira.c (combine_and_move_insns): Skip multiple_sets def_insn.
+
 2020-02-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_debug_print_mode): Don't use sizeof
