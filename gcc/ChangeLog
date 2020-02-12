@@ -1,3 +1,8 @@
+2020-02-12  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (comparison shortening peepholes): Use
+	a mode iterator to merge the HImode and SImode peepholes.
+
 2020-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93663
