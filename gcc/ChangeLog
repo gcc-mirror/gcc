@@ -1,3 +1,16 @@
+2020-02-12  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (cpymemsi, movmd): Remove dead patterns,
+	expanders, splits, etc.
+	(movmd_internal_<mode>, movmd splitter, movstr, movsd): Likewise.
+	(stpcpy_internal_<mode>, stpcpy splitter): Likewise.
+	(peepholes to convert QI/HI mode pushes to SI mode pushes): Likewise.
+	* config/h8300/h8300.c (h8300_swap_into_er6): Remove unused function.
+	(h8300_swap_out_of_er6, h8sx_emit_movmd): Likewise
+	* config/h8300/h8300-protos.h (h8300_swap_into_er6): Remove unused
+	function prototype.
+	(h8300_swap_out_of_er6, h8sx_emit_movmd): Likewise.
+
 2020-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93670
