@@ -1,5 +1,11 @@
 2020-02-17  David Malcolm  <dmalcolm@redhat.com>
 
+	* sm-malloc.cc (malloc_diagnostic::describe_state_change): For
+	transition to the "null" state, only say "assuming" when
+	transitioning from the "unchecked" state.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-manager.h (diagnostic_manager::get_saved_diagnostic):
 	Add const overload.
 	* engine.cc (exploded_node::dump_dot): Dump saved_diagnostics.

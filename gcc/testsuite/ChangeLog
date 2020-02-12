@@ -1,3 +1,7 @@
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-1.c (test_48): New.
+
 2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93047
