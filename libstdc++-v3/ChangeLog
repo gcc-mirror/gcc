@@ -1,3 +1,10 @@
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
 2020-02-12  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable.h
