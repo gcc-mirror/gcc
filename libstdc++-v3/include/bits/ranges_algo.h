@@ -73,7 +73,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr bool
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (!(bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -82,7 +83,8 @@ namespace ranges
       }
 
     template<input_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
@@ -99,7 +101,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr bool
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -108,12 +111,13 @@ namespace ranges
       }
 
     template<input_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			      std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -125,7 +129,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr bool
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -134,7 +139,8 @@ namespace ranges
       }
 
     template<input_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
@@ -183,7 +189,7 @@ namespace ranges
       operator()(_Range&& __r, _Fun __f, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				std::move(__f), std::move(__proj));
+		       std::move(__f), std::move(__proj));
       }
   };
 
@@ -196,7 +202,8 @@ namespace ranges
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<_Iter, _Proj>, const _Tp*>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 const _Tp& __value, _Proj __proj = {}) const
       {
 	while (__first != __last
 	    && !(std::__invoke(__proj, *__first) == __value))
@@ -211,8 +218,8 @@ namespace ranges
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
-	return (*this)(ranges::begin(__r), ranges::end(__r), __value,
-			    std::move(__proj));
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+		       __value, std::move(__proj));
       }
   };
 
@@ -224,7 +231,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	while (__first != __last
 	    && !(bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -239,7 +247,7 @@ namespace ranges
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			       std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -251,7 +259,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	while (__first != __last
 	    && (bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -266,7 +275,7 @@ namespace ranges
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -281,8 +290,8 @@ namespace ranges
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
       constexpr _Iter1
       operator()(_Iter1 __first1, _Sent1 __last1,
-		    _Iter2 __first2, _Sent2 __last2,
-		    _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	for (; __first1 != __last1; ++__first1)
 	  for (auto __iter = __first2; __iter != __last2; ++__iter)
@@ -299,13 +308,13 @@ namespace ranges
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
       constexpr safe_iterator_t<_Range1>
-      operator()(_Range1&& __r1, _Range2&& __r2,
-		    _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				     ranges::begin(__r2), ranges::end(__r2),
-				     std::move(__pred),
-				     std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -319,7 +328,8 @@ namespace ranges
 					 projected<_Iter, _Proj>,
 					 const _Tp*>
       constexpr iter_difference_t<_Iter>
-      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 const _Tp& __value, _Proj __proj = {}) const
       {
 	iter_difference_t<_Iter> __n = 0;
 	for (; __first != __last; ++__first)
@@ -336,7 +346,7 @@ namespace ranges
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			     __value, std::move(__proj));
+		       __value, std::move(__proj));
       }
   };
 
@@ -348,7 +358,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr iter_difference_t<_Iter>
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	iter_difference_t<_Iter> __n = 0;
 	for (; __first != __last; ++__first)
@@ -359,12 +370,13 @@ namespace ranges
 
     template<input_range _Range,
 	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       constexpr range_difference_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -397,8 +409,9 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
       constexpr mismatch_result<_Iter1, _Iter2>
-      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	       _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2
 	       && (bool)std::__invoke(__pred,
@@ -417,13 +430,13 @@ namespace ranges
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
       constexpr mismatch_result<iterator_t<_Range1>, iterator_t<_Range2>>
-      operator()(_Range1&& __r1, _Range2&& __r2,
-	       _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				ranges::begin(__r2), ranges::end(__r2),
-				std::move(__pred),
-				std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -437,8 +450,9 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
       constexpr subrange<_Iter1>
-      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	     _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	if (__first1 == __last1 || __first2 == __last2)
 	  return {__first1, __first1};
@@ -480,13 +494,13 @@ namespace ranges
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
       constexpr safe_subrange_t<_Range1>
-      operator()(_Range1&& __r1, _Range2&& __r2,
-	     _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-			      ranges::begin(__r2), ranges::end(__r2),
-			      std::move(__pred),
-			      std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -499,7 +513,7 @@ namespace ranges
       requires indirectly_comparable<_Iter, const _Tp*, _Pred, _Proj>
       constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last, iter_difference_t<_Iter> __count,
-	       const _Tp& __value, _Pred __pred = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Pred __pred = {}, _Proj __proj = {}) const
       {
 	if (__count <= 0)
 	  return {__first, __first};
@@ -510,7 +524,8 @@ namespace ranges
 	if (__count == 1)
 	  {
 	    __first = ranges::find_if(std::move(__first), __last,
-				      std::move(__value_comp), std::move(__proj));
+				      std::move(__value_comp),
+				      std::move(__proj));
 	    if (__first == __last)
 	      return {__first, __first};
 	    else
@@ -565,14 +580,15 @@ namespace ranges
 
     template<forward_range _Range, typename _Tp,
 	     typename _Pred = ranges::equal_to, typename _Proj = identity>
-      requires indirectly_comparable<iterator_t<_Range>, const _Tp*, _Pred, _Proj>
+      requires indirectly_comparable<iterator_t<_Range>, const _Tp*,
+				     _Pred, _Proj>
       constexpr safe_subrange_t<_Range>
       operator()(_Range&& __r, range_difference_t<_Range> __count,
 	       const _Tp& __value, _Pred __pred = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				std::move(__count), __value,
-				std::move(__pred), std::move(__proj));
+		       std::move(__count), __value,
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -587,8 +603,8 @@ namespace ranges
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
       constexpr subrange<_Iter1>
       operator()(_Iter1 __first1, _Sent1 __last1,
-	       _Iter2 __first2, _Sent2 __last2,
-	       _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	if constexpr (bidirectional_iterator<_Iter1>
 		      && bidirectional_iterator<_Iter2>)
@@ -643,13 +659,13 @@ namespace ranges
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
       constexpr safe_subrange_t<_Range1>
-      operator()(_Range1&& __r1, _Range2&& __r2,
-	       _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				ranges::begin(__r2), ranges::end(__r2),
-				std::move(__pred),
-				std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -664,7 +680,7 @@ namespace ranges
 	       = ranges::equal_to>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		    _Pred __pred = {}, _Proj __proj = {}) const
+		 _Pred __pred = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return __first;
@@ -687,7 +703,7 @@ namespace ranges
       operator()(_Range&& __r, _Pred __pred = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				     std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -703,8 +719,8 @@ namespace ranges
 	       = ranges::equal_to>
       constexpr bool
       operator()(_Iter1 __first1, _Sent1 __last1,
-		     _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
-		     _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	constexpr bool __sized_iters
 	  = (sized_sentinel_for<_Sent1, _Iter1>
@@ -769,12 +785,12 @@ namespace ranges
 	       projected<iterator_t<_Range2>, _Proj2>> _Pred = ranges::equal_to>
       constexpr bool
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
-		     _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				      ranges::begin(__r2), ranges::end(__r2),
-				      std::move(__pred),
-				      std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -791,7 +807,7 @@ namespace ranges
       requires indirectly_copyable<_Iter, _Out>
       constexpr copy_if_result<_Iter, _Out>
       operator()(_Iter __first, _Sent __last, _Out __result,
-	      _Pred __pred, _Proj __proj = {}) const
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -804,14 +820,16 @@ namespace ranges
 
     template<input_range _Range, weakly_incrementable _Out,
 	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
       constexpr copy_if_result<safe_iterator_t<_Range>, _Out>
-      operator()(_Range&& __r, _Out __result, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Range&& __r, _Out __result,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			       std::move(__result),
-			       std::move(__pred), std::move(__proj));
+		       std::move(__result),
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -827,7 +845,7 @@ namespace ranges
       requires indirectly_swappable<_Iter1, _Iter2>
       constexpr swap_ranges_result<_Iter1, _Iter2>
       operator()(_Iter1 __first1, _Sent1 __last1,
-		  _Iter2 __first2, _Sent2 __last2) const
+		 _Iter2 __first2, _Sent2 __last2) const
       {
 	for (; __first1 != __last1 && __first2 != __last2;
 	     ++__first1, (void)++__first2)
@@ -842,7 +860,7 @@ namespace ranges
       operator()(_Range1&& __r1, _Range2&& __r2) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				   ranges::begin(__r2), ranges::end(__r2));
+		       ranges::begin(__r2), ranges::end(__r2));
       }
   };
 
@@ -883,7 +901,7 @@ namespace ranges
 				     projected<_Iter, _Proj>>>
       constexpr unary_transform_result<_Iter, _Out>
       operator()(_Iter __first1, _Sent __last1, _Out __result,
-		_Fp __op, _Proj __proj = {}) const
+		 _Fp __op, _Proj __proj = {}) const
       {
 	for (; __first1 != __last1; ++__first1, (void)++__result)
 	  *__result = std::__invoke(__op, std::__invoke(__proj, *__first1));
@@ -899,8 +917,8 @@ namespace ranges
       operator()(_Range&& __r, _Out __result, _Fp __op, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__result),
-				 std::move(__op), std::move(__proj));
+		       std::move(__result),
+		       std::move(__op), std::move(__proj));
       }
 
     template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
@@ -912,9 +930,10 @@ namespace ranges
 				     projected<_Iter1, _Proj1>,
 				     projected<_Iter2, _Proj2>>>
       constexpr binary_transform_result<_Iter1, _Iter2, _Out>
-      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-		_Out __result, _Fp __binary_op,
-		_Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2,
+		 _Out __result, _Fp __binary_op,
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	for (; __first1 != __last1 && __first2 != __last2;
 	     ++__first1, (void)++__first2, ++__result)
@@ -933,13 +952,13 @@ namespace ranges
 				     projected<iterator_t<_Range2>, _Proj2>>>
       constexpr binary_transform_result<safe_iterator_t<_Range1>,
 					safe_iterator_t<_Range2>, _Out>
-      operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
-		_Fp __binary_op, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2, _Out __result, _Fp __binary_op,
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				 ranges::begin(__r2), ranges::end(__r2),
-				 std::move(__result), std::move(__binary_op),
-				 std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__result), std::move(__binary_op),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -954,8 +973,8 @@ namespace ranges
 				     const _Tp1*>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-	      const _Tp1& __old_value, const _Tp2& __new_value,
-	      _Proj __proj = {}) const
+		 const _Tp1& __old_value, const _Tp2& __new_value,
+		 _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (std::__invoke(__proj, *__first) == __old_value)
@@ -971,11 +990,11 @@ namespace ranges
 				     const _Tp1*>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r,
-	      const _Tp1& __old_value, const _Tp2& __new_value,
-	      _Proj __proj = {}) const
+		 const _Tp1& __old_value, const _Tp2& __new_value,
+		 _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			       __old_value, __new_value, std::move(__proj));
+		       __old_value, __new_value, std::move(__proj));
       }
   };
 
@@ -998,15 +1017,15 @@ namespace ranges
       }
 
     template<input_range _Range, typename _Tp, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires indirectly_writable<iterator_t<_Range>, const _Tp&>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r,
 		 _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				  std::move(__pred), __new_value,
-				  std::move(__proj));
+		       std::move(__pred), __new_value, std::move(__proj));
       }
   };
 
@@ -1025,8 +1044,8 @@ namespace ranges
 				     projected<_Iter, _Proj>, const _Tp1*>
       constexpr replace_copy_result<_Iter, _Out>
       operator()(_Iter __first, _Sent __last, _Out __result,
-		   const _Tp1& __old_value, const _Tp2& __new_value,
-		   _Proj __proj = {}) const
+		 const _Tp1& __old_value, const _Tp2& __new_value,
+		 _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first, (void)++__result)
 	  if (std::__invoke(__proj, *__first) == __old_value)
@@ -1044,12 +1063,12 @@ namespace ranges
 				     const _Tp1*>
       constexpr replace_copy_result<safe_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
-		   const _Tp1& __old_value, const _Tp2& __new_value,
-		   _Proj __proj = {}) const
+		 const _Tp1& __old_value, const _Tp2& __new_value,
+		 _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				    std::move(__result), __old_value,
-				    __new_value, std::move(__proj));
+		       std::move(__result), __old_value,
+		       __new_value, std::move(__proj));
       }
   };
 
@@ -1067,7 +1086,7 @@ namespace ranges
       requires indirectly_copyable<_Iter, _Out>
       constexpr replace_copy_if_result<_Iter, _Out>
       operator()(_Iter __first, _Sent __last, _Out __result,
-		      _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
+		 _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first, (void)++__result)
 	  if (std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -1080,15 +1099,16 @@ namespace ranges
     template<input_range _Range,
 	     typename _Tp, output_iterator<const _Tp&> _Out,
 	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
       constexpr replace_copy_if_result<safe_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
-		      _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
+		 _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				       std::move(__result), std::move(__pred),
-				       __new_value, std::move(__proj));
+		       std::move(__result), std::move(__pred),
+		       __new_value, std::move(__proj));
       }
   };
 
@@ -1129,8 +1149,7 @@ namespace ranges
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r, _Fp __gen) const
       {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-				std::move(__gen));
+	return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__gen));
       }
   };
 
@@ -1142,7 +1161,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr subrange<_Iter>
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	__first = ranges::find_if(__first, __last, __pred, __proj);
 	if (__first == __last)
@@ -1161,13 +1181,14 @@ namespace ranges
       }
 
     template<forward_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires permutable<iterator_t<_Range>>
       constexpr safe_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -1181,7 +1202,8 @@ namespace ranges
 					 projected<_Iter, _Proj>,
 					 const _Tp*>
       constexpr subrange<_Iter>
-      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 const _Tp& __value, _Proj __proj = {}) const
       {
 	auto __pred = [&] (auto&& __arg) {
 	  return std::forward<decltype(__arg)>(__arg) == __value;
@@ -1199,7 +1221,7 @@ namespace ranges
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			      __value, std::move(__proj));
+		       __value, std::move(__proj));
       }
   };
 
@@ -1216,7 +1238,7 @@ namespace ranges
       requires indirectly_copyable<_Iter, _Out>
       constexpr remove_copy_if_result<_Iter, _Out>
       operator()(_Iter __first, _Sent __last, _Out __result,
-		     _Pred __pred, _Proj __proj = {}) const
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (!(bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -1229,15 +1251,16 @@ namespace ranges
 
     template<input_range _Range, weakly_incrementable _Out,
 	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
       constexpr remove_copy_if_result<safe_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
-		     _Pred __pred, _Proj __proj = {}) const
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				      std::move(__result),
-				      std::move(__pred), std::move(__proj));
+		       std::move(__result),
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -1256,7 +1279,7 @@ namespace ranges
 				     const _Tp*>
       constexpr remove_copy_result<_Iter, _Out>
       operator()(_Iter __first, _Sent __last, _Out __result,
-		  const _Tp& __value, _Proj __proj = {}) const
+		 const _Tp& __value, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (!(std::__invoke(__proj, *__first) == __value))
@@ -1275,11 +1298,10 @@ namespace ranges
 				     const _Tp*>
       constexpr remove_copy_result<safe_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
-		  const _Tp& __value, _Proj __proj = {}) const
+		 const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   std::move(__result), __value,
-				   std::move(__proj));
+		       std::move(__result), __value, std::move(__proj));
       }
   };
 
@@ -1292,7 +1314,8 @@ namespace ranges
 	     indirect_equivalence_relation<
 	       projected<_Iter, _Proj>> _Comp = ranges::equal_to>
       constexpr subrange<_Iter>
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	__first = ranges::adjacent_find(__first, __last, __comp, __proj);
 	if (__first == __last)
@@ -1316,7 +1339,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			      std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1338,7 +1361,7 @@ namespace ranges
 	    || indirectly_copyable_storable<_Iter, _Out>)
       constexpr unique_copy_result<_Iter, _Out>
       operator()(_Iter __first, _Sent __last, _Out __result,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return {std::move(__first), std::move(__result)};
@@ -1398,11 +1421,11 @@ namespace ranges
 	    || indirectly_copyable_storable<iterator_t<_Range>, _Out>)
       constexpr unique_copy_result<safe_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   std::move(__result),
-				   std::move(__comp), std::move(__proj));
+		       std::move(__result),
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1485,7 +1508,7 @@ namespace ranges
       operator()(_Range&& __r, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				    std::move(__result));
+		       std::move(__result));
       }
   };
 
@@ -1631,9 +1654,8 @@ namespace ranges
       constexpr safe_subrange_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle) const
       {
-	return (*this)(ranges::begin(__r),
-			      std::move(__middle),
-			      ranges::end(__r));
+	return (*this)(ranges::begin(__r), std::move(__middle),
+		       ranges::end(__r));
       }
   };
 
@@ -1648,7 +1670,8 @@ namespace ranges
 	     weakly_incrementable _Out>
       requires indirectly_copyable<_Iter, _Out>
       constexpr rotate_copy_result<_Iter, _Out>
-      operator()(_Iter __first, _Iter __middle, _Sent __last, _Out __result) const
+      operator()(_Iter __first, _Iter __middle, _Sent __last,
+		 _Out __result) const
       {
 	auto __copy1 = ranges::copy(__middle,
 				    std::move(__last),
@@ -1664,10 +1687,8 @@ namespace ranges
       constexpr rotate_copy_result<safe_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, iterator_t<_Range> __middle, _Out __result) const
       {
-	return (*this)(ranges::begin(__r),
-				   std::move(__middle),
-				   ranges::end(__r),
-				   std::move(__result));
+	return (*this)(ranges::begin(__r), std::move(__middle),
+		       ranges::end(__r), std::move(__result));
       }
   };
 
@@ -1695,7 +1716,7 @@ namespace ranges
       operator()(_Range&& __r, _Gen&& __g) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			       std::forward<_Gen>(__g));
+		       std::forward<_Gen>(__g));
       }
   };
 
@@ -1708,7 +1729,8 @@ namespace ranges
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::push_heap(__first, __lasti,
@@ -1723,7 +1745,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1735,7 +1757,8 @@ namespace ranges
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::pop_heap(__first, __lasti,
@@ -1750,7 +1773,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1762,7 +1785,8 @@ namespace ranges
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::make_heap(__first, __lasti,
@@ -1777,7 +1801,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1789,7 +1813,8 @@ namespace ranges
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::sort_heap(__first, __lasti,
@@ -1804,7 +1829,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1818,7 +1843,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		    _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	iter_difference_t<_Iter> __n = ranges::distance(__first, __last);
 	iter_difference_t<_Iter> __parent = 0, __child = 1;
@@ -1841,7 +1866,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				     std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1854,7 +1879,8 @@ namespace ranges
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
       constexpr bool
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (__last
 		== ranges::is_heap_until(__first, __last,
@@ -1870,7 +1896,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			       std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1882,7 +1908,8 @@ namespace ranges
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::sort(std::move(__first), __lasti,
@@ -1897,7 +1924,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			    std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1910,7 +1937,7 @@ namespace ranges
       requires sortable<_Iter, _Comp, _Proj>
       _Iter
       operator()(_Iter __first, _Sent __last,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::stable_sort(std::move(__first), __lasti,
@@ -1925,7 +1952,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1938,7 +1965,7 @@ namespace ranges
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
       operator()(_Iter __first, _Iter __middle, _Sent __last,
-		   _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __middle)
 	  return ranges::next(__first, __last);
@@ -1964,12 +1991,11 @@ namespace ranges
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle,
-		   _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	return (*this)(ranges::begin(__r),
-				    std::move(__middle),
-				    ranges::end(__r),
-				    std::move(__comp), std::move(__proj));
+	return (*this)(ranges::begin(__r), std::move(__middle),
+		       ranges::end(__r),
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -1991,9 +2017,9 @@ namespace ranges
 				      projected<_Iter2, _Proj2>>
       constexpr partial_sort_copy_result<_Iter1, _Iter2>
       operator()(_Iter1 __first, _Sent1 __last,
-			_Iter2 __result_first, _Sent2 __result_last,
-			_Comp __comp = {},
-			_Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __result_first, _Sent2 __result_last,
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	if (__result_first == __result_last)
 	  {
@@ -2039,12 +2065,12 @@ namespace ranges
       constexpr partial_sort_copy_result<safe_iterator_t<_Range1>,
 					 safe_iterator_t<_Range2>>
       operator()(_Range1&& __r, _Range2&& __out, _Comp __comp = {},
-			_Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-					 ranges::begin(__out), ranges::end(__out),
-					 std::move(__comp),
-					 std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__out), ranges::end(__out),
+		       std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -2058,7 +2084,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		      _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return __first;
@@ -2079,7 +2105,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				       std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2092,7 +2118,8 @@ namespace ranges
 	     indirect_strict_weak_order<projected<_Iter, _Proj>>
 	       _Comp = ranges::less>
       constexpr bool
-      operator()(_Iter __first, _Sent __last, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return true;
@@ -2113,7 +2140,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2126,7 +2153,7 @@ namespace ranges
       requires sortable<_Iter, _Comp, _Proj>
       constexpr _Iter
       operator()(_Iter __first, _Iter __nth, _Sent __last,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::nth_element(std::move(__first), std::move(__nth), __lasti,
@@ -2139,11 +2166,10 @@ namespace ranges
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __nth,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), std::move(__nth),
-				   ranges::end(__r),
-				   std::move(__comp), std::move(__proj));
+		       ranges::end(__r), std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2157,7 +2183,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		  const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __len = ranges::distance(__first, __last);
 
@@ -2184,11 +2210,10 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r,
-		  const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   __value,
-				   std::move(__comp), std::move(__proj));
+		       __value, std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2202,7 +2227,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		  const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __len = ranges::distance(__first, __last);
 
@@ -2229,11 +2254,10 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r,
-		  const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   __value,
-				   std::move(__comp), std::move(__proj));
+		       __value, std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2247,7 +2271,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr subrange<_Iter>
       operator()(_Iter __first, _Sent __last,
-		  const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __len = ranges::distance(__first, __last);
 
@@ -2290,11 +2314,10 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr safe_subrange_t<_Range>
       operator()(_Range&& __r, const _Tp& __value,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   __value,
-				   std::move(__comp), std::move(__proj));
+		       __value, std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2308,12 +2331,13 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr bool
       operator()(_Iter __first, _Sent __last,
-		    const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
+		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __i = ranges::lower_bound(__first, __last, __value, __comp, __proj);
 	if (__i == __last)
 	  return false;
-	return !(bool)std::__invoke(__comp, __value, std::__invoke(__proj, *__i));
+	return !(bool)std::__invoke(__comp, __value,
+				    std::__invoke(__proj, *__i));
       }
 
     template<forward_range _Range,
@@ -2323,11 +2347,10 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr bool
       operator()(_Range&& __r, const _Tp& __value, _Comp __comp = {},
-		    _Proj __proj = {}) const
+		 _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				     __value,
-				     std::move(__comp), std::move(__proj));
+		       __value, std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2339,9 +2362,11 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr bool
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
-	__first = ranges::find_if_not(std::move(__first), __last, __pred, __proj);
+	__first = ranges::find_if_not(std::move(__first), __last,
+				      __pred, __proj);
 	if (__first == __last)
 	  return true;
 	++__first;
@@ -2350,12 +2375,13 @@ namespace ranges
       }
 
     template<input_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       constexpr bool
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				      std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -2367,7 +2393,8 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr subrange<_Iter>
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	if constexpr (bidirectional_iterator<_Iter>)
 	  {
@@ -2378,7 +2405,8 @@ namespace ranges
 		for (;;)
 		  if (__first == __tail)
 		    return {std::move(__first), std::move(__lasti)};
-		  else if (std::__invoke(__pred, std::__invoke(__proj, *__first)))
+		  else if (std::__invoke(__pred,
+					 std::__invoke(__proj, *__first)))
 		    ++__first;
 		  else
 		    break;
@@ -2417,13 +2445,14 @@ namespace ranges
       }
 
     template<forward_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires permutable<iterator_t<_Range>>
       constexpr safe_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				 std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -2436,7 +2465,8 @@ namespace ranges
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       requires permutable<_Iter>
       subrange<_Iter>
-      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	auto __middle
@@ -2446,13 +2476,14 @@ namespace ranges
       }
 
     template<bidirectional_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires permutable<iterator_t<_Range>>
       safe_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-					std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -2490,8 +2521,8 @@ namespace ranges
 	&& indirectly_copyable<_Iter, _O2>
       constexpr partition_copy_result<_Iter, _Out1, _O2>
       operator()(_Iter __first, _Sent __last,
-		     _Out1 __out_true, _O2 __out_false,
-		     _Pred __pred, _Proj __proj = {}) const
+		 _Out1 __out_true, _O2 __out_false,
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
 	  if (std::__invoke(__pred, std::__invoke(__proj, *__first)))
@@ -2505,22 +2536,24 @@ namespace ranges
 	      ++__out_false;
 	    }
 
-	return {std::move(__first), std::move(__out_true), std::move(__out_false)};
+	return {std::move(__first),
+		std::move(__out_true), std::move(__out_false)};
       }
 
     template<input_range _Range, weakly_incrementable _Out1,
 	     weakly_incrementable _O2,
 	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out1>
 	&& indirectly_copyable<iterator_t<_Range>, _O2>
       constexpr partition_copy_result<safe_iterator_t<_Range>, _Out1, _O2>
       operator()(_Range&& __r, _Out1 out_true, _O2 out_false,
-		     _Pred __pred, _Proj __proj = {}) const
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				      std::move(out_true), std::move(out_false),
-				      std::move(__pred), std::move(__proj));
+		       std::move(out_true), std::move(out_false),
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -2533,7 +2566,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		      _Pred __pred, _Proj __proj = {}) const
+		 _Pred __pred, _Proj __proj = {}) const
       {
 	auto __len = ranges::distance(__first, __last);
 
@@ -2555,12 +2588,13 @@ namespace ranges
       }
 
     template<forward_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
+	       _Pred>
       constexpr safe_iterator_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				       std::move(__pred), std::move(__proj));
+		       std::move(__pred), std::move(__proj));
       }
   };
 
@@ -2578,8 +2612,9 @@ namespace ranges
       requires mergeable<_Iter1, _Iter2, _Out, _Comp, _Proj1, _Proj2>
       constexpr merge_result<_Iter1, _Iter2, _Out>
       operator()(_Iter1 __first1, _Sent1 __last1,
-	    _Iter2 __first2, _Sent2 __last2, _Out __result,
-	    _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2, _Out __result,
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2)
 	  {
@@ -2614,12 +2649,13 @@ namespace ranges
 			     safe_iterator_t<_Range2>,
 			     _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
-	    _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-			     ranges::begin(__r2), ranges::end(__r2),
-			     std::move(__result), std::move(__comp),
-			     std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__result), std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -2633,7 +2669,7 @@ namespace ranges
       requires sortable<_Iter, _Comp, _Proj>
       _Iter
       operator()(_Iter __first, _Iter __middle, _Sent __last,
-		    _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
 	std::inplace_merge(std::move(__first), std::move(__middle), __lasti,
@@ -2646,11 +2682,11 @@ namespace ranges
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
       safe_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle,
-		    _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), std::move(__middle),
-				     ranges::end(__r),
-				     std::move(__comp), std::move(__proj));
+		       ranges::end(__r),
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -2665,8 +2701,10 @@ namespace ranges
 					projected<_Iter2, _Proj2>>
 	       _Comp = ranges::less>
       constexpr bool
-      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	       _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2,
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2)
 	  if (std::__invoke(__comp,
@@ -2686,19 +2724,19 @@ namespace ranges
 	return __first2 == __last2;
       }
 
-    template<input_range _Range1, input_range _Range2, typename _Proj1 = identity,
-	     typename _Proj2 = identity,
+    template<input_range _Range1, input_range _Range2,
+	     typename _Proj1 = identity, typename _Proj2 = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range1>, _Proj1>,
 					projected<iterator_t<_Range2>, _Proj2>>
 	       _Comp = ranges::less>
       constexpr bool
       operator()(_Range1&& __r1, _Range2&& __r2, _Comp __comp = {},
-	       _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				ranges::begin(__r2), ranges::end(__r2),
-				std::move(__comp),
-				std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -2715,9 +2753,10 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires mergeable<_Iter1, _Iter2, _Out, _Comp, _Proj1, _Proj2>
       constexpr set_union_result<_Iter1, _Iter2, _Out>
-      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-		_Out __result, _Comp __comp = {},
-		_Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2,
+		 _Out __result, _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2)
 	  {
@@ -2758,20 +2797,22 @@ namespace ranges
 			 _Comp, _Proj1, _Proj2>
       constexpr set_union_result<safe_iterator_t<_Range1>,
 				 safe_iterator_t<_Range2>, _Out>
-      operator()(_Range1&& __r1, _Range2&& __r2, _Out __result, _Comp __comp = {},
-		_Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2,
+		 _Out __result, _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				 ranges::begin(__r2), ranges::end(__r2),
-				 std::move(__result), std::move(__comp),
-				 std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__result), std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
   inline constexpr __set_union_fn set_union{};
 
   template<typename _Iter1, typename _Iter2, typename _Out>
-    using set_intersection_result = binary_transform_result<_Iter1, _Iter2, _Out>;
+    using set_intersection_result
+      = binary_transform_result<_Iter1, _Iter2, _Out>;
 
   struct __set_intersection_fn
   {
@@ -2782,9 +2823,9 @@ namespace ranges
       requires mergeable<_Iter1, _Iter2, _Out, _Comp, _Proj1, _Proj2>
       constexpr set_intersection_result<_Iter1, _Iter2, _Out>
       operator()(_Iter1 __first1, _Sent1 __last1,
-		       _Iter2 __first2, _Sent2 __last2, _Out __result,
-		       _Comp __comp = {},
-		       _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2, _Out __result,
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2)
 	  if (std::__invoke(__comp,
@@ -2816,12 +2857,13 @@ namespace ranges
       constexpr set_intersection_result<safe_iterator_t<_Range1>,
 					safe_iterator_t<_Range2>, _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
-		       _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-					ranges::begin(__r2), ranges::end(__r2),
-					std::move(__result), std::move(__comp),
-					std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__result), std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -2839,8 +2881,9 @@ namespace ranges
       requires mergeable<_Iter1, _Iter2, _Out, _Comp, _Proj1, _Proj2>
       constexpr set_difference_result<_Iter1, _Out>
       operator()(_Iter1 __first1, _Sent1 __last1,
-		     _Iter2 __first2, _Sent2 __last2, _Out __result,
-		     _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2, _Out __result,
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2)
 	  if (std::__invoke(__comp,
@@ -2871,12 +2914,13 @@ namespace ranges
 			 _Comp, _Proj1, _Proj2>
       constexpr set_difference_result<safe_iterator_t<_Range1>, _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
-		     _Comp __comp = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-				      ranges::begin(__r2), ranges::end(__r2),
-				      std::move(__result), std::move(__comp),
-				      std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__result), std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -2895,9 +2939,9 @@ namespace ranges
       requires mergeable<_Iter1, _Iter2, _Out, _Comp, _Proj1, _Proj2>
       constexpr set_symmetric_difference_result<_Iter1, _Iter2, _Out>
       operator()(_Iter1 __first1, _Sent1 __last1,
-			       _Iter2 __first2, _Sent2 __last2,
-			       _Out __result, _Comp __comp = {},
-			       _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2,
+		 _Out __result, _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	while (__first1 != __last1 && __first2 != __last2)
 	  if (std::__invoke(__comp,
@@ -2938,14 +2982,13 @@ namespace ranges
 						safe_iterator_t<_Range2>,
 						_Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
-			       _Comp __comp = {},
-			       _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
-	return (*this)
-		(ranges::begin(__r1), ranges::end(__r1),
-		 ranges::begin(__r2), ranges::end(__r2),
-		 std::move(__result), std::move(__comp),
-		 std::move(__proj1), std::move(__proj2));
+	return (*this)(ranges::begin(__r1), ranges::end(__r1),
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__result), std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -2957,7 +3000,8 @@ namespace ranges
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
       constexpr const _Tp&
-      operator()(const _Tp& __a, const _Tp& __b, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(const _Tp& __a, const _Tp& __b,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (std::__invoke(std::move(__comp),
 			  std::__invoke(__proj, __b),
@@ -2994,10 +3038,11 @@ namespace ranges
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
       constexpr _Tp
-      operator()(initializer_list<_Tp> __r, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(initializer_list<_Tp> __r,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::subrange(__r),
-			   std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3009,7 +3054,8 @@ namespace ranges
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
       constexpr const _Tp&
-      operator()(const _Tp& __a, const _Tp& __b, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(const _Tp& __a, const _Tp& __b,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (std::__invoke(std::move(__comp),
 			  std::__invoke(__proj, __a),
@@ -3046,10 +3092,11 @@ namespace ranges
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
       constexpr _Tp
-      operator()(initializer_list<_Tp> __r, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(initializer_list<_Tp> __r,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::subrange(__r),
-			   std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3078,7 +3125,8 @@ namespace ranges
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
       constexpr minmax_result<const _Tp&>
-      operator()(const _Tp& __a, const _Tp& __b, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(const _Tp& __a, const _Tp& __b,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (std::__invoke(std::move(__comp),
 			  std::__invoke(__proj, __b),
@@ -3119,10 +3167,11 @@ namespace ranges
 	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
 	       _Comp = ranges::less>
       constexpr minmax_result<_Tp>
-      operator()(initializer_list<_Tp> __r, _Comp __comp = {}, _Proj __proj = {}) const
+      operator()(initializer_list<_Tp> __r,
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::subrange(__r),
-			      std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3136,7 +3185,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return __first;
@@ -3159,7 +3208,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3173,7 +3222,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
-		  _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return __first;
@@ -3196,7 +3245,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				   std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3213,7 +3262,7 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr minmax_element_result<_Iter>
       operator()(_Iter __first, _Sent __last,
-		     _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return {__first, __first};
@@ -3241,7 +3290,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				      std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3257,19 +3306,18 @@ namespace ranges
 	       _Comp = ranges::less>
       constexpr bool
       operator()(_Iter1 __first1, _Sent1 __last1,
-			      _Iter2 __first2, _Sent2 __last2,
-			      _Comp __comp = {},
-			      _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Iter2 __first2, _Sent2 __last2,
+		 _Comp __comp = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	if constexpr (__detail::__is_normal_iterator<_Iter1>
 		      || __detail::__is_normal_iterator<_Iter2>)
-	  return (*this)
-		   (std::__niter_base(std::move(__first1)),
-		    std::__niter_base(std::move(__last1)),
-		    std::__niter_base(std::move(__first2)),
-		    std::__niter_base(std::move(__last2)),
-		    std::move(__comp),
-		    std::move(__proj1), std::move(__proj2));
+	  return (*this)(std::__niter_base(std::move(__first1)),
+			 std::__niter_base(std::move(__last1)),
+			 std::__niter_base(std::move(__first2)),
+			 std::__niter_base(std::move(__last2)),
+			 std::move(__comp),
+			 std::move(__proj1), std::move(__proj2));
 
 	constexpr bool __sized_iters
 	  = (sized_sentinel_for<_Sent1, _Iter1>
@@ -3331,20 +3379,19 @@ namespace ranges
 	return __first1 == __last1 && __first2 != __last2;
       }
 
-    template<input_range _Range1, input_range _Range2, typename _Proj1 = identity,
-	     typename _Proj2 = identity,
+    template<input_range _Range1, input_range _Range2,
+	     typename _Proj1 = identity, typename _Proj2 = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range1>, _Proj1>,
 					projected<iterator_t<_Range2>, _Proj2>>
 	       _Comp = ranges::less>
       constexpr bool
       operator()(_Range1&& __r1, _Range2&& __r2, _Comp __comp = {},
-			      _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
-	return (*this)
-		(ranges::begin(__r1), ranges::end(__r1),
-		 ranges::begin(__r2), ranges::end(__r2),
-		 std::move(__comp),
-		 std::move(__proj1), std::move(__proj2));
+	return (*this)(ranges::begin(__r1), ranges::end(__r1),
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__comp),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -3364,7 +3411,7 @@ namespace ranges
       requires sortable<_Iter, _Comp, _Proj>
       constexpr next_permutation_result<_Iter>
       operator()(_Iter __first, _Sent __last,
-		       _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return {false, std::move(__first)};
@@ -3410,7 +3457,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-					std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 
@@ -3426,7 +3473,7 @@ namespace ranges
       requires sortable<_Iter, _Comp, _Proj>
       constexpr prev_permutation_result<_Iter>
       operator()(_Iter __first, _Sent __last,
-		       _Comp __comp = {}, _Proj __proj = {}) const
+		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
 	  return {false, std::move(__first)};
@@ -3472,7 +3519,7 @@ namespace ranges
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-					std::move(__comp), std::move(__proj));
+		       std::move(__comp), std::move(__proj));
       }
   };
 

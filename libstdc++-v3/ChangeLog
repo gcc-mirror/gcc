@@ -1,5 +1,9 @@
 2020-02-15  Patrick Palka  <ppalka@redhat.com>
 
+	* include/bits/ranges_algo.h: Adjust whitespace and formatting.
+	* include/bits/ranges_algobase.h: Likewise.
+	* include/bits/ranges_uninitialized.h: Likewise.
+
 	* include/bits/ranges_algo.h: (adjacent_find, all_of, any_of,
 	binary_search, copy_if, count, count_if, equal_range, find, find_end,
 	find_first_of, find_if, find_if_not, for_each, generate, generate_n,

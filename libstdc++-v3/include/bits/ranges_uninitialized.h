@@ -162,8 +162,7 @@ namespace ranges
       safe_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
-	return (*this)(ranges::begin(__r),
-						       ranges::end(__r));
+	return (*this)(ranges::begin(__r), ranges::end(__r));
       }
   };
 
@@ -175,8 +174,7 @@ namespace ranges
     template<__detail::__nothrow_forward_iterator _Iter>
       requires default_initializable<iter_value_t<_Iter>>
       _Iter
-      operator()(_Iter __first,
-					iter_difference_t<_Iter> __n) const
+      operator()(_Iter __first, iter_difference_t<_Iter> __n) const
       {
 	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
 	if constexpr (is_trivially_default_constructible_v<_ValueType>)
@@ -222,8 +220,7 @@ namespace ranges
       safe_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
-	return (*this)(ranges::begin(__r),
-						     ranges::end(__r));
+	return (*this)(ranges::begin(__r), ranges::end(__r));
       }
   };
 
@@ -266,7 +263,7 @@ namespace ranges
       requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
       uninitialized_copy_result<_Iter, _Out>
       operator()(_Iter __ifirst, _ISent __ilast,
-			 _Out __ofirst, _OSent __olast) const
+		 _Out __ofirst, _OSent __olast) const
       {
 	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
 	if constexpr (sized_sentinel_for<_ISent, _Iter>
@@ -297,10 +294,8 @@ namespace ranges
 				safe_iterator_t<_ORange>>
       operator()(_IRange&& __inr, _ORange&& __outr) const
       {
-	return (*this)(ranges::begin(__inr),
-					  ranges::end(__inr),
-					  ranges::begin(__outr),
-					  ranges::end(__outr));
+	return (*this)(ranges::begin(__inr), ranges::end(__inr),
+		       ranges::begin(__outr), ranges::end(__outr));
       }
   };
 
@@ -316,7 +311,7 @@ namespace ranges
       requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
       uninitialized_copy_n_result<_Iter, _Out>
       operator()(_Iter __ifirst, iter_difference_t<_Iter> __n,
-			   _Out __ofirst, _Sent __olast) const
+		 _Out __ofirst, _Sent __olast) const
       {
 	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
 	if constexpr (sized_sentinel_for<_Sent, _Out>
@@ -353,7 +348,7 @@ namespace ranges
 				  iter_rvalue_reference_t<_Iter>>
       uninitialized_move_result<_Iter, _Out>
       operator()(_Iter __ifirst, _ISent __ilast,
-			 _Out __ofirst, _OSent __olast) const
+		 _Out __ofirst, _OSent __olast) const
       {
 	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
 	if constexpr (sized_sentinel_for<_ISent, _Iter>
@@ -386,10 +381,8 @@ namespace ranges
 				safe_iterator_t<_ORange>>
       operator()(_IRange&& __inr, _ORange&& __outr) const
       {
-	return (*this)(ranges::begin(__inr),
-					  ranges::end(__inr),
-					  ranges::begin(__outr),
-					  ranges::end(__outr));
+	return (*this)(ranges::begin(__inr), ranges::end(__inr),
+		       ranges::begin(__outr), ranges::end(__outr));
       }
   };
 
@@ -406,7 +399,7 @@ namespace ranges
 				    iter_rvalue_reference_t<_Iter>>
       uninitialized_move_n_result<_Iter, _Out>
       operator()(_Iter __ifirst, iter_difference_t<_Iter> __n,
-			   _Out __ofirst, _Sent __olast) const
+		 _Out __ofirst, _Sent __olast) const
       {
 	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
 	if constexpr (sized_sentinel_for<_Sent, _Out>
@@ -460,8 +453,7 @@ namespace ranges
       safe_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __x) const
       {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-					  __x);
+	return (*this)(ranges::begin(__r), ranges::end(__r), __x);
       }
   };
 
@@ -473,7 +465,7 @@ namespace ranges
       requires constructible_from<iter_value_t<_Iter>, const _Tp&>
       _Iter
       operator()(_Iter __first, iter_difference_t<_Iter> __n,
-			   const _Tp& __x) const
+		 const _Tp& __x) const
       {
 	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
 	if constexpr (is_trivial_v<_ValueType>
@@ -541,7 +533,9 @@ namespace ranges
     requires destructible<range_value_t<_Range>>
     constexpr safe_iterator_t<_Range>
     __destroy_fn::operator()(_Range&& __r) const noexcept
-    { return (*this)(ranges::begin(__r), ranges::end(__r)); }
+    {
+      return (*this)(ranges::begin(__r), ranges::end(__r));
+    }
 
   struct __destroy_n_fn
   {

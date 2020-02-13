@@ -79,19 +79,20 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
       constexpr bool
-      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	    _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	// TODO: implement more specializations to at least have parity with
 	// std::equal.
 	if constexpr (__detail::__is_normal_iterator<_Iter1>
 		      || __detail::__is_normal_iterator<_Iter2>)
 	  return (*this)(std::__niter_base(std::move(__first1)),
-			       std::__niter_base(std::move(__last1)),
-			       std::__niter_base(std::move(__first2)),
-			       std::__niter_base(std::move(__last2)),
-			       std::move(__pred),
-			       std::move(__proj1), std::move(__proj2));
+			 std::__niter_base(std::move(__last1)),
+			 std::__niter_base(std::move(__first2)),
+			 std::__niter_base(std::move(__last2)),
+			 std::move(__pred),
+			 std::move(__proj1), std::move(__proj2));
 
 	constexpr bool __sized_iters
 	  = (sized_sentinel_for<_Sent1, _Iter1>
@@ -147,13 +148,13 @@ namespace ranges
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
       constexpr bool
-      operator()(_Range1&& __r1, _Range2&& __r2,
-	    _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-			     ranges::begin(__r2), ranges::end(__r2),
-			     std::move(__pred),
-			     std::move(__proj1), std::move(__proj2));
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
       }
   };
 
@@ -312,7 +313,7 @@ namespace ranges
       operator()(_Range&& __r, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			    std::move(__result));
+		       std::move(__result));
       }
   };
 
@@ -337,7 +338,7 @@ namespace ranges
       operator()(_Range&& __r, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-			    std::move(__result));
+		       std::move(__result));
       }
   };
 
@@ -454,7 +455,7 @@ namespace ranges
       operator()(_Range&& __r, _Iter __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				     std::move(__result));
+		       std::move(__result));
       }
   };
 
@@ -479,7 +480,7 @@ namespace ranges
       operator()(_Range&& __r, _Iter __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-				     std::move(__result));
+		       std::move(__result));
       }
   };
 
@@ -493,7 +494,8 @@ namespace ranges
     template<input_iterator _Iter, weakly_incrementable _Out>
       requires indirectly_copyable<_Iter, _Out>
       constexpr copy_n_result<_Iter, _Out>
-      operator()(_Iter __first, iter_difference_t<_Iter> __n, _Out __result) const
+      operator()(_Iter __first, iter_difference_t<_Iter> __n,
+		 _Out __result) const
       {
 	if constexpr (random_access_iterator<_Iter>)
 	  return ranges::copy(__first, __first + __n, std::move(__result));
@@ -512,7 +514,8 @@ namespace ranges
   {
     template<typename _Tp, output_iterator<const _Tp&> _Out>
       constexpr _Out
-      operator()(_Out __first, iter_difference_t<_Out> __n, const _Tp& __value) const
+      operator()(_Out __first, iter_difference_t<_Out> __n,
+		 const _Tp& __value) const
       {
 	// TODO: implement more specializations to be at least on par with
 	// std::fill_n
