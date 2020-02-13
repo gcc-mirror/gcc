@@ -1,5 +1,8 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/93576
+	* gcc.dg/pr93576.c: New test.
+
 	PR target/93696
 	* gcc.target/i386/pr93696-1.c: New test.
 	* gcc.target/i386/pr93696-2.c: New test.

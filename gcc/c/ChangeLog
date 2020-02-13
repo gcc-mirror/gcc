@@ -1,3 +1,9 @@
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93576
+	* c-decl.c (grokdeclarator): If this_size_varies, only push size into
+	*expr if it has side effects.
+
 2020-01-22  Joseph Myers  <joseph@codesourcery.com>
 
 	Backport from mainline:
