@@ -1,3 +1,7 @@
+2020-02-13  Matheus Castanho  <msc@linux.ibm.com>
+
+	* fixinc.in: Skip machine_name fix on powerpc*-*-linux*.
+
 2020-02-13  Alexandre Oliva <oliva@adacore.com>
 
 	* mkheaders.in: Re-create subdirs, copy limits.h into subdir.
