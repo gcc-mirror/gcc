@@ -1,3 +1,9 @@
+2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* config/i386/i386.c (ix86_trampoline_init): Skip ENDBR32 at
+	the target function entry.
+
 2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* common/config/arc/arc-common.c (arc_option_optimization_table):
