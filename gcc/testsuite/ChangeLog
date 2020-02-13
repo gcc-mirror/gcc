@@ -1,3 +1,8 @@
+2020-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93717
+	* gcc.dg/optimize-bswapsi-2.c: Add BE case.
+
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93673
