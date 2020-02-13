@@ -563,6 +563,14 @@ func schedinit() {
 
 	sched.lastpoll = uint64(nanotime())
 	procs := ncpu
+
+	// In 32-bit mode, we can burn a lot of memory on thread stacks.
+	// Try to avoid this by limiting the number of threads we run
+	// by default.
+	if sys.PtrSize == 4 && procs > 32 {
+		procs = 32
+	}
+
 	if n, ok := atoi32(gogetenv("GOMAXPROCS")); ok && n > 0 {
 		procs = n
 	}
