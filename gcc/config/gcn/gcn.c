@@ -50,6 +50,7 @@
 #include "varasm.h"
 #include "intl.h"
 #include "rtl-iter.h"
+#include "gimple.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -4988,9 +4989,15 @@ gcn_oacc_dim_pos (int dim)
 /* Implement TARGET_GOACC_FORK_JOIN.  */
 
 static bool
-gcn_fork_join (gcall *ARG_UNUSED (call), const int *ARG_UNUSED (dims),
+gcn_fork_join (gcall *call, const int *ARG_UNUSED (dims),
 	       bool ARG_UNUSED (is_fork))
 {
+  tree arg = gimple_call_arg (call, 2);
+  unsigned axis = TREE_INT_CST_LOW (arg);
+
+  if (!is_fork && axis == GOMP_DIM_WORKER && dims[axis] != 1)
+    return true;
+
   return false;
 }
 
