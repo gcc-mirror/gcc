@@ -1,3 +1,10 @@
+2020-02-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/constexpr-static13.C:
+	Add -fdelete-null-pointer-checks.
+	* g++.dg/cpp2a/constexpr-new11.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new12.C: Likewise.
+
 2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/93656

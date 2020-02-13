@@ -1,5 +1,6 @@
 // PR c++/92003
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 // { dg-prune-output "narrowing conversion" }
 
 constexpr char const* get_c_str() { return "abc"; }
