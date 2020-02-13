@@ -1,5 +1,10 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93673
+	* gcc.target/i386/avx512f-pr93673.c: New test.
+	* gcc.target/i386/avx512dq-pr93673.c: New test.
+	* gcc.target/i386/avx512bw-pr93673.c: New test.
+
 	* g++.dg/analyzer/pr93212.C: Require c++14 rather than c++11.
 
 2020-02-12  Iain Sandoe  <iain@sandoe.co.uk>
