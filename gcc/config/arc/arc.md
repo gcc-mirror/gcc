@@ -2275,19 +2275,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
 
 (define_insn_and_split "mulsidi_600"
-  [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"  "%Rcq#q, c,c,  c"))
-		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "Rcq#q,cL,L,C32"))))
-   (clobber (reg:DI MUL64_OUT_REG))]
+  [(set (match_operand:DI 0 "register_operand"                           "=r,r,  r")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"  "%r,r,  r"))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand" "rL,L,C32"))))
+   (clobber (reg:DI R58_REG))]
   "TARGET_MUL64_SET"
   "#"
-  "TARGET_MUL64_SET"
+  "TARGET_MUL64_SET && reload_completed"
   [(const_int 0)]
-  "emit_insn (gen_mul64 (operands[1], operands[2]));
-   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
-   DONE;"
+ {
+   int hi = !TARGET_BIG_ENDIAN;
+   int lo = !hi;
+   rtx lr = operand_subword (operands[0], lo, 0, DImode);
+   rtx hr = operand_subword (operands[0], hi, 0, DImode);
+   emit_insn (gen_mul64 (operands[1], operands[2]));
+   emit_move_insn (lr, gen_rtx_REG (SImode, R58_REG));
+   emit_move_insn (hr, gen_rtx_REG (SImode, R59_REG));
+   DONE;
+ }
   [(set_attr "type" "multi")
-   (set_attr "length" "8")])
+   (set_attr "length" "4,4,8")])
 
 (define_insn "mul64"
   [(set (reg:DI MUL64_OUT_REG)
@@ -2303,19 +2310,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
 
 (define_insn_and_split "umulsidi_600"
-  [(set (match_operand:DI 0 "register_operand"                            "=c,c, c")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"   "%c,c, c"))
-		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "cL,L,C32"))))
-   (clobber (reg:DI MUL64_OUT_REG))]
+  [(set (match_operand:DI 0 "register_operand"                            "=r,r, r")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"   "%r,r, r"))
+		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand"  "rL,L,C32"))))
+   (clobber (reg:DI R58_REG))]
   "TARGET_MUL64_SET"
   "#"
-  "TARGET_MUL64_SET"
+  "TARGET_MUL64_SET && reload_completed"
   [(const_int 0)]
-  "emit_insn (gen_mulu64 (operands[1], operands[2]));
-   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
-   DONE;"
+ {
+   int hi = !TARGET_BIG_ENDIAN;
+   int lo = !hi;
+   rtx lr = operand_subword (operands[0], lo, 0, DImode);
+   rtx hr = operand_subword (operands[0], hi, 0, DImode);
+   emit_insn (gen_mulu64 (operands[1], operands[2]));
+   emit_move_insn (lr, gen_rtx_REG (SImode, R58_REG));
+   emit_move_insn (hr, gen_rtx_REG (SImode, R59_REG));
+   DONE;
+ }
   [(set_attr "type" "umulti")
-   (set_attr "length" "8")])
+   (set_attr "length" "4,4,8")])
 
 (define_insn "mulu64"
   [(set (reg:DI MUL64_OUT_REG)

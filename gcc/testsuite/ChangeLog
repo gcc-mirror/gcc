@@ -1,3 +1,8 @@
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+	Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/mul64-1.c: New test.
+
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93696
