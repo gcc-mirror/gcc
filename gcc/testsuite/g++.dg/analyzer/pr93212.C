@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++14 } }
 
 #include <iostream>
 auto lol()

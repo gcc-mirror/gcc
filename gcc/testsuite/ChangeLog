@@ -1,4 +1,8 @@
-2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/analyzer/pr93212.C: Require c++14 rather than c++11.
+
+2020-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro1-allocators.h: New.
 	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: New test.
