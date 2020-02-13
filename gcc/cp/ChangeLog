@@ -1,3 +1,9 @@
+2020-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93643
+	PR c++/91476
+	* tree.c (decl_linkage): Always lk_none for locals.
+
 2020-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92583
