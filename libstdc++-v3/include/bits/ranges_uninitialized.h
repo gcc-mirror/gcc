@@ -78,11 +78,21 @@ namespace ranges
 	   && __nothrow_forward_iterator<iterator_t<_Range>>);
   } // namespace __detail
 
-  template<__detail::__nothrow_input_iterator _Iter,
-	   __detail::__nothrow_sentinel<_Iter> _Sent>
-    requires destructible<iter_value_t<_Iter>>
-    constexpr _Iter
-    destroy(_Iter __first, _Sent __last) noexcept;
+  struct __destroy_fn
+  {
+    template<__detail::__nothrow_input_iterator _Iter,
+	     __detail::__nothrow_sentinel<_Iter> _Sent>
+      requires destructible<iter_value_t<_Iter>>
+      constexpr _Iter
+      operator()(_Iter __first, _Sent __last) const noexcept;
+
+    template<__detail::__nothrow_input_range _Range>
+      requires destructible<range_value_t<_Range>>
+      constexpr safe_iterator_t<_Range>
+      operator()(_Range&& __r) const noexcept;
+  };
+
+  inline constexpr __destroy_fn destroy{};
 
   namespace __detail
   {
@@ -126,332 +136,396 @@ namespace ranges
       };
   } // namespace __detail
 
-  template<__detail::__nothrow_forward_iterator _Iter,
-	   __detail::__nothrow_sentinel<_Iter> _Sent>
-    requires default_initializable<iter_value_t<_Iter>>
-    _Iter
-    uninitialized_default_construct(_Iter __first, _Sent __last)
-    {
-      using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
-      if constexpr (is_trivially_default_constructible_v<_ValueType>)
-	return ranges::next(__first, __last);
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__first);
-	  for (; __first != __last; ++__first)
-	    ::new (__detail::__voidify(*__first)) _ValueType;
-	  __guard.release();
-	  return __first;
-	}
-    }
+  struct __uninitialized_default_construct_fn
+  {
+    template<__detail::__nothrow_forward_iterator _Iter,
+	     __detail::__nothrow_sentinel<_Iter> _Sent>
+      requires default_initializable<iter_value_t<_Iter>>
+      _Iter
+      operator()(_Iter __first, _Sent __last) const
+      {
+	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
+	if constexpr (is_trivially_default_constructible_v<_ValueType>)
+	  return ranges::next(__first, __last);
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__first);
+	    for (; __first != __last; ++__first)
+	      ::new (__detail::__voidify(*__first)) _ValueType;
+	    __guard.release();
+	    return __first;
+	  }
+      }
 
-  template<__detail::__nothrow_forward_range _Range>
-    requires default_initializable<range_value_t<_Range>>
-    safe_iterator_t<_Range>
-    uninitialized_default_construct(_Range&& __r)
-    {
-      return ranges::uninitialized_default_construct(ranges::begin(__r),
+    template<__detail::__nothrow_forward_range _Range>
+      requires default_initializable<range_value_t<_Range>>
+      safe_iterator_t<_Range>
+      operator()(_Range&& __r) const
+      {
+	return (*this)(ranges::begin(__r),
+						       ranges::end(__r));
+      }
+  };
+
+  inline constexpr __uninitialized_default_construct_fn
+    uninitialized_default_construct{};
+
+  struct __uninitialized_default_construct_n_fn
+  {
+    template<__detail::__nothrow_forward_iterator _Iter>
+      requires default_initializable<iter_value_t<_Iter>>
+      _Iter
+      operator()(_Iter __first,
+					iter_difference_t<_Iter> __n) const
+      {
+	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
+	if constexpr (is_trivially_default_constructible_v<_ValueType>)
+	  return ranges::next(__first, __n);
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__first);
+	    for (; __n > 0; ++__first, (void) --__n)
+	      ::new (__detail::__voidify(*__first)) _ValueType;
+	    __guard.release();
+	    return __first;
+	  }
+      }
+  };
+
+  inline constexpr __uninitialized_default_construct_n_fn
+    uninitialized_default_construct_n;
+
+  struct __uninitialized_value_construct_fn
+  {
+    template<__detail::__nothrow_forward_iterator _Iter,
+	     __detail::__nothrow_sentinel<_Iter> _Sent>
+      requires default_initializable<iter_value_t<_Iter>>
+      _Iter
+      operator()(_Iter __first, _Sent __last) const
+      {
+	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
+	if constexpr (is_trivial_v<_ValueType>
+		      && is_copy_assignable_v<_ValueType>)
+	  return ranges::fill(__first, __last, _ValueType());
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__first);
+	    for (; __first != __last; ++__first)
+	      ::new (__detail::__voidify(*__first)) _ValueType();
+	    __guard.release();
+	    return __first;
+	  }
+      }
+
+    template<__detail::__nothrow_forward_range _Range>
+      requires default_initializable<range_value_t<_Range>>
+      safe_iterator_t<_Range>
+      operator()(_Range&& __r) const
+      {
+	return (*this)(ranges::begin(__r),
 						     ranges::end(__r));
-    }
+      }
+  };
 
-  template<__detail::__nothrow_forward_iterator _Iter>
-    requires default_initializable<iter_value_t<_Iter>>
-    _Iter
-    uninitialized_default_construct_n(_Iter __first,
-				      iter_difference_t<_Iter> __n)
-    {
-      using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
-      if constexpr (is_trivially_default_constructible_v<_ValueType>)
-	return ranges::next(__first, __n);
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__first);
-	  for (; __n > 0; ++__first, (void) --__n)
-	    ::new (__detail::__voidify(*__first)) _ValueType;
-	  __guard.release();
-	  return __first;
-	}
-    }
+  inline constexpr __uninitialized_value_construct_fn
+    uninitialized_value_construct{};
 
-  template<__detail::__nothrow_forward_iterator _Iter,
-	   __detail::__nothrow_sentinel<_Iter> _Sent>
-    requires default_initializable<iter_value_t<_Iter>>
-    _Iter
-    uninitialized_value_construct(_Iter __first, _Sent __last)
-    {
-      using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
-      if constexpr (is_trivial_v<_ValueType>
-		    && is_copy_assignable_v<_ValueType>)
-	return ranges::fill(__first, __last, _ValueType());
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__first);
-	  for (; __first != __last; ++__first)
-	    ::new (__detail::__voidify(*__first)) _ValueType();
-	  __guard.release();
-	  return __first;
-	}
-    }
+  struct __uninitialized_value_construct_n_fn
+  {
+    template<__detail::__nothrow_forward_iterator _Iter>
+      requires default_initializable<iter_value_t<_Iter>>
+      _Iter
+      operator()(_Iter __first, iter_difference_t<_Iter> __n) const
+      {
+	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
+	if constexpr (is_trivial_v<_ValueType>
+		      && is_copy_assignable_v<_ValueType>)
+	  return ranges::fill_n(__first, __n, _ValueType());
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__first);
+	    for (; __n > 0; ++__first, (void) --__n)
+	      ::new (__detail::__voidify(*__first)) _ValueType();
+	    __guard.release();
+	    return __first;
+	  }
+      }
+  };
 
-  template<__detail::__nothrow_forward_range _Range>
-    requires default_initializable<range_value_t<_Range>>
-    safe_iterator_t<_Range>
-    uninitialized_value_construct(_Range&& __r)
-    {
-      return ranges::uninitialized_value_construct(ranges::begin(__r),
-						   ranges::end(__r));
-    }
-
-  template<__detail::__nothrow_forward_iterator _Iter>
-    requires default_initializable<iter_value_t<_Iter>>
-    _Iter
-    uninitialized_value_construct_n(_Iter __first, iter_difference_t<_Iter> __n)
-    {
-      using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
-      if constexpr (is_trivial_v<_ValueType>
-		    && is_copy_assignable_v<_ValueType>)
-	return ranges::fill_n(__first, __n, _ValueType());
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__first);
-	  for (; __n > 0; ++__first, (void) --__n)
-	    ::new (__detail::__voidify(*__first)) _ValueType();
-	  __guard.release();
-	  return __first;
-	}
-    }
+  inline constexpr __uninitialized_value_construct_n_fn
+    uninitialized_value_construct_n;
 
   template<typename _Iter, typename _Out>
     using uninitialized_copy_result = copy_result<_Iter, _Out>;
 
-  template<input_iterator _Iter, sentinel_for<_Iter> _ISent,
-	   __detail::__nothrow_forward_iterator _Out,
-	   __detail::__nothrow_sentinel<_Out> _OSent>
-    requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
-    uninitialized_copy_result<_Iter, _Out>
-    uninitialized_copy(_Iter __ifirst, _ISent __ilast,
-		       _Out __ofirst, _OSent __olast)
-    {
-      using _OutType = remove_reference_t<iter_reference_t<_Out>>;
-      if constexpr (sized_sentinel_for<_ISent, _Iter>
-		    && sized_sentinel_for<_OSent, _Out>
-		    && is_trivial_v<_OutType>
-		    && is_nothrow_assignable_v<_OutType,
-					       iter_reference_t<_Iter>>)
-	{
-	  auto __d1 = ranges::distance(__ifirst, __ilast);
-	  auto __d2 = ranges::distance(__ofirst, __olast);
-	  return ranges::copy_n(__ifirst, std::min(__d1, __d2), __ofirst);
-	}
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__ofirst);
-	  for (; __ifirst != __ilast && __ofirst != __olast;
-	       ++__ofirst, (void)++__ifirst)
-	    ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
-	  __guard.release();
-	  return {__ifirst, __ofirst};
-	}
-    }
+  struct __uninitialized_copy_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _ISent,
+	     __detail::__nothrow_forward_iterator _Out,
+	     __detail::__nothrow_sentinel<_Out> _OSent>
+      requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
+      uninitialized_copy_result<_Iter, _Out>
+      operator()(_Iter __ifirst, _ISent __ilast,
+			 _Out __ofirst, _OSent __olast) const
+      {
+	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
+	if constexpr (sized_sentinel_for<_ISent, _Iter>
+		      && sized_sentinel_for<_OSent, _Out>
+		      && is_trivial_v<_OutType>
+		      && is_nothrow_assignable_v<_OutType,
+						 iter_reference_t<_Iter>>)
+	  {
+	    auto __d1 = ranges::distance(__ifirst, __ilast);
+	    auto __d2 = ranges::distance(__ofirst, __olast);
+	    return ranges::copy_n(__ifirst, std::min(__d1, __d2), __ofirst);
+	  }
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    for (; __ifirst != __ilast && __ofirst != __olast;
+		 ++__ofirst, (void)++__ifirst)
+	      ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
+	    __guard.release();
+	    return {__ifirst, __ofirst};
+	  }
+      }
 
-  template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
-    requires constructible_from<range_value_t<_ORange>,
-				range_reference_t<_IRange>>
-    uninitialized_copy_result<safe_iterator_t<_IRange>,
-			      safe_iterator_t<_ORange>>
-    uninitialized_copy(_IRange&& __inr, _ORange&& __outr)
-    {
-      return ranges::uninitialized_copy(ranges::begin(__inr),
-					ranges::end(__inr),
-					ranges::begin(__outr),
-					ranges::end(__outr));
-    }
+    template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
+      requires constructible_from<range_value_t<_ORange>,
+				  range_reference_t<_IRange>>
+      uninitialized_copy_result<safe_iterator_t<_IRange>,
+				safe_iterator_t<_ORange>>
+      operator()(_IRange&& __inr, _ORange&& __outr) const
+      {
+	return (*this)(ranges::begin(__inr),
+					  ranges::end(__inr),
+					  ranges::begin(__outr),
+					  ranges::end(__outr));
+      }
+  };
+
+  inline constexpr __uninitialized_copy_fn uninitialized_copy{};
 
   template<typename _Iter, typename _Out>
     using uninitialized_copy_n_result = uninitialized_copy_result<_Iter, _Out>;
 
+  struct __uninitialized_copy_n_fn
+  {
     template<input_iterator _Iter, __detail::__nothrow_forward_iterator _Out,
-      __detail::__nothrow_sentinel<_Out> _Sent>
-    requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
-    uninitialized_copy_n_result<_Iter, _Out>
-    uninitialized_copy_n(_Iter __ifirst, iter_difference_t<_Iter> __n,
-			 _Out __ofirst, _Sent __olast)
-    {
-      using _OutType = remove_reference_t<iter_reference_t<_Out>>;
-      if constexpr (sized_sentinel_for<_Sent, _Out>
-		    && is_trivial_v<_OutType>
-		    && is_nothrow_assignable_v<_OutType,
-					       iter_reference_t<_Iter>>)
-	{
-	  auto __d = ranges::distance(__ofirst, __olast);
-	  return ranges::copy_n(__ifirst, std::min(__n, __d), __ofirst);
-	}
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__ofirst);
-	  for (; __n > 0 && __ofirst != __olast;
-	       ++__ofirst, (void)++__ifirst, (void)--__n)
-	    ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
-	  __guard.release();
-	  return {__ifirst, __ofirst};
-	}
-    }
+	     __detail::__nothrow_sentinel<_Out> _Sent>
+      requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
+      uninitialized_copy_n_result<_Iter, _Out>
+      operator()(_Iter __ifirst, iter_difference_t<_Iter> __n,
+			   _Out __ofirst, _Sent __olast) const
+      {
+	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
+	if constexpr (sized_sentinel_for<_Sent, _Out>
+		      && is_trivial_v<_OutType>
+		      && is_nothrow_assignable_v<_OutType,
+						 iter_reference_t<_Iter>>)
+	  {
+	    auto __d = ranges::distance(__ofirst, __olast);
+	    return ranges::copy_n(__ifirst, std::min(__n, __d), __ofirst);
+	  }
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    for (; __n > 0 && __ofirst != __olast;
+		 ++__ofirst, (void)++__ifirst, (void)--__n)
+	      ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
+	    __guard.release();
+	    return {__ifirst, __ofirst};
+	  }
+      }
+  };
+
+  inline constexpr __uninitialized_copy_n_fn uninitialized_copy_n{};
 
   template<typename _Iter, typename _Out>
     using uninitialized_move_result = uninitialized_copy_result<_Iter, _Out>;
 
-  template<input_iterator _Iter, sentinel_for<_Iter> _ISent,
-	   __detail::__nothrow_forward_iterator _Out,
-	   __detail::__nothrow_sentinel<_Out> _OSent>
-    requires constructible_from<iter_value_t<_Out>,
-				iter_rvalue_reference_t<_Iter>>
-    uninitialized_move_result<_Iter, _Out>
-    uninitialized_move(_Iter __ifirst, _ISent __ilast,
-		       _Out __ofirst, _OSent __olast)
-    {
-      using _OutType = remove_reference_t<iter_reference_t<_Out>>;
-      if constexpr (sized_sentinel_for<_ISent, _Iter>
-		    && sized_sentinel_for<_OSent, _Out>
-		    && is_trivial_v<_OutType>
-		    && is_nothrow_assignable_v<_OutType,
-					       iter_rvalue_reference_t<_Iter>>)
-	{
-	  auto __d1 = ranges::distance(__ifirst, __ilast);
-	  auto __d2 = ranges::distance(__ofirst, __olast);
-	  return ranges::copy_n(std::make_move_iterator(__ifirst),
-				std::min(__d1, __d2), __ofirst);
-	}
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__ofirst);
-	  for (; __ifirst != __ilast && __ofirst != __olast;
-	       ++__ofirst, (void)++__ifirst)
-	    ::new (__detail::__voidify(*__ofirst))
-		  _OutType(ranges::iter_move(__ifirst));
-	  __guard.release();
-	  return {__ifirst, __ofirst};
-	}
-    }
+  struct __uninitialized_move_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _ISent,
+	     __detail::__nothrow_forward_iterator _Out,
+	     __detail::__nothrow_sentinel<_Out> _OSent>
+      requires constructible_from<iter_value_t<_Out>,
+				  iter_rvalue_reference_t<_Iter>>
+      uninitialized_move_result<_Iter, _Out>
+      operator()(_Iter __ifirst, _ISent __ilast,
+			 _Out __ofirst, _OSent __olast) const
+      {
+	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
+	if constexpr (sized_sentinel_for<_ISent, _Iter>
+		      && sized_sentinel_for<_OSent, _Out>
+		      && is_trivial_v<_OutType>
+		      && is_nothrow_assignable_v<_OutType,
+						 iter_rvalue_reference_t<_Iter>>)
+	  {
+	    auto __d1 = ranges::distance(__ifirst, __ilast);
+	    auto __d2 = ranges::distance(__ofirst, __olast);
+	    return ranges::copy_n(std::make_move_iterator(__ifirst),
+				  std::min(__d1, __d2), __ofirst);
+	  }
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    for (; __ifirst != __ilast && __ofirst != __olast;
+		 ++__ofirst, (void)++__ifirst)
+	      ::new (__detail::__voidify(*__ofirst))
+		    _OutType(ranges::iter_move(__ifirst));
+	    __guard.release();
+	    return {__ifirst, __ofirst};
+	  }
+      }
 
-  template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
-    requires constructible_from<range_value_t<_ORange>,
-	     range_rvalue_reference_t<_IRange>>
-    uninitialized_move_result<safe_iterator_t<_IRange>,
-			      safe_iterator_t<_ORange>>
-    uninitialized_move(_IRange&& __inr, _ORange&& __outr)
-    {
-      return ranges::uninitialized_move(ranges::begin(__inr),
-					ranges::end(__inr),
-					ranges::begin(__outr),
-					ranges::end(__outr));
-    }
+    template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
+      requires constructible_from<range_value_t<_ORange>,
+	       range_rvalue_reference_t<_IRange>>
+      uninitialized_move_result<safe_iterator_t<_IRange>,
+				safe_iterator_t<_ORange>>
+      operator()(_IRange&& __inr, _ORange&& __outr) const
+      {
+	return (*this)(ranges::begin(__inr),
+					  ranges::end(__inr),
+					  ranges::begin(__outr),
+					  ranges::end(__outr));
+      }
+  };
+
+  inline constexpr __uninitialized_move_fn uninitialized_move{};
 
   template<typename _Iter, typename _Out>
     using uninitialized_move_n_result = uninitialized_copy_result<_Iter, _Out>;
 
-  template<input_iterator _Iter, __detail::__nothrow_forward_iterator _Out,
-    __detail::__nothrow_sentinel<_Out> _Sent>
-      requires constructible_from<iter_value_t<_Out>,
-				  iter_rvalue_reference_t<_Iter>>
-    uninitialized_move_n_result<_Iter, _Out>
-    uninitialized_move_n(_Iter __ifirst, iter_difference_t<_Iter> __n,
-			 _Out __ofirst, _Sent __olast)
-    {
-      using _OutType = remove_reference_t<iter_reference_t<_Out>>;
-      if constexpr (sized_sentinel_for<_Sent, _Out>
-		    && is_trivial_v<_OutType>
-		    && is_nothrow_assignable_v<_OutType,
-					       iter_rvalue_reference_t<_Iter>>)
-	{
-	  auto __d = ranges::distance(__ofirst, __olast);
-	  return ranges::copy_n(std::make_move_iterator(__ifirst),
-				std::min(__n, __d), __ofirst);
-	}
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__ofirst);
-	  for (; __n > 0 && __ofirst != __olast;
-	       ++__ofirst, (void)++__ifirst, (void)--__n)
-	    ::new (__detail::__voidify(*__ofirst))
-		  _OutType(ranges::iter_move(__ifirst));
-	  __guard.release();
-	  return {__ifirst, __ofirst};
-	}
-    }
+  struct __uninitialized_move_n_fn
+  {
+    template<input_iterator _Iter, __detail::__nothrow_forward_iterator _Out,
+      __detail::__nothrow_sentinel<_Out> _Sent>
+	requires constructible_from<iter_value_t<_Out>,
+				    iter_rvalue_reference_t<_Iter>>
+      uninitialized_move_n_result<_Iter, _Out>
+      operator()(_Iter __ifirst, iter_difference_t<_Iter> __n,
+			   _Out __ofirst, _Sent __olast) const
+      {
+	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
+	if constexpr (sized_sentinel_for<_Sent, _Out>
+		      && is_trivial_v<_OutType>
+		      && is_nothrow_assignable_v<_OutType,
+						 iter_rvalue_reference_t<_Iter>>)
+	  {
+	    auto __d = ranges::distance(__ofirst, __olast);
+	    return ranges::copy_n(std::make_move_iterator(__ifirst),
+				  std::min(__n, __d), __ofirst);
+	  }
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    for (; __n > 0 && __ofirst != __olast;
+		 ++__ofirst, (void)++__ifirst, (void)--__n)
+	      ::new (__detail::__voidify(*__ofirst))
+		    _OutType(ranges::iter_move(__ifirst));
+	    __guard.release();
+	    return {__ifirst, __ofirst};
+	  }
+      }
+  };
 
-  template<__detail::__nothrow_forward_iterator _Iter,
-	   __detail::__nothrow_sentinel<_Iter> _Sent, typename _Tp>
-    requires constructible_from<iter_value_t<_Iter>, const _Tp&>
-    _Iter
-    uninitialized_fill(_Iter __first, _Sent __last, const _Tp& __x)
-    {
-      using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
-      if constexpr (is_trivial_v<_ValueType>
-		    && is_nothrow_assignable_v<_ValueType, const _Tp&>)
-	return ranges::fill(__first, __last, __x);
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__first);
-	  for (; __first != __last; ++__first)
-	    ::new (__detail::__voidify(*__first)) _ValueType(__x);
-	  __guard.release();
-	  return __first;
-	}
-    }
+  inline constexpr __uninitialized_move_n_fn uninitialized_move_n{};
 
-  template<__detail::__nothrow_forward_range _Range, typename _Tp>
-    requires constructible_from<range_value_t<_Range>, const _Tp&>
-    safe_iterator_t<_Range>
-    uninitialized_fill(_Range&& __r, const _Tp& __x)
-    {
-      return ranges::uninitialized_fill(ranges::begin(__r), ranges::end(__r),
-					__x);
-    }
+  struct __uninitialized_fill_fn
+  {
+    template<__detail::__nothrow_forward_iterator _Iter,
+	     __detail::__nothrow_sentinel<_Iter> _Sent, typename _Tp>
+      requires constructible_from<iter_value_t<_Iter>, const _Tp&>
+      _Iter
+      operator()(_Iter __first, _Sent __last, const _Tp& __x) const
+      {
+	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
+	if constexpr (is_trivial_v<_ValueType>
+		      && is_nothrow_assignable_v<_ValueType, const _Tp&>)
+	  return ranges::fill(__first, __last, __x);
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__first);
+	    for (; __first != __last; ++__first)
+	      ::new (__detail::__voidify(*__first)) _ValueType(__x);
+	    __guard.release();
+	    return __first;
+	  }
+      }
 
-  template<__detail::__nothrow_forward_iterator _Iter, typename _Tp>
-    requires constructible_from<iter_value_t<_Iter>, const _Tp&>
-    _Iter
-    uninitialized_fill_n(_Iter __first, iter_difference_t<_Iter> __n,
-			 const _Tp& __x)
-    {
-      using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
-      if constexpr (is_trivial_v<_ValueType>
-		    && is_nothrow_assignable_v<_ValueType, const _Tp&>)
-	return ranges::fill_n(__first, __n, __x);
-      else
-	{
-	  auto __guard = __detail::_DestroyGuard(&__first);
-	  for (; __n > 0; ++__first, (void)--__n)
-	    ::new (__detail::__voidify(*__first)) _ValueType(__x);
-	  __guard.release();
-	  return __first;
-	}
-    }
+    template<__detail::__nothrow_forward_range _Range, typename _Tp>
+      requires constructible_from<range_value_t<_Range>, const _Tp&>
+      safe_iterator_t<_Range>
+      operator()(_Range&& __r, const _Tp& __x) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+					  __x);
+      }
+  };
 
-  template<typename _Tp, typename... _Args>
-    requires requires { ::new (declval<void*>()) _Tp(declval<_Args>()...); }
-    constexpr _Tp*
-    construct_at(_Tp* __location, _Args&&... __args)
-    {
-      return ::new (__detail::__voidify(*__location))
-		   _Tp(std::forward<_Args>(__args)...);
-    }
+  inline constexpr __uninitialized_fill_fn uninitialized_fill{};
 
-  template<destructible _Tp>
-    constexpr void
-    destroy_at(_Tp* __location) noexcept
-    {
-      if constexpr (is_array_v<_Tp>)
-	ranges::destroy(ranges::begin(*__location), ranges::end(*__location));
-      else
-	__location->~_Tp();
-    }
+  struct __uninitialized_fill_n_fn
+  {
+    template<__detail::__nothrow_forward_iterator _Iter, typename _Tp>
+      requires constructible_from<iter_value_t<_Iter>, const _Tp&>
+      _Iter
+      operator()(_Iter __first, iter_difference_t<_Iter> __n,
+			   const _Tp& __x) const
+      {
+	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
+	if constexpr (is_trivial_v<_ValueType>
+		      && is_nothrow_assignable_v<_ValueType, const _Tp&>)
+	  return ranges::fill_n(__first, __n, __x);
+	else
+	  {
+	    auto __guard = __detail::_DestroyGuard(&__first);
+	    for (; __n > 0; ++__first, (void)--__n)
+	      ::new (__detail::__voidify(*__first)) _ValueType(__x);
+	    __guard.release();
+	    return __first;
+	  }
+      }
+  };
+
+  inline constexpr __uninitialized_fill_n_fn uninitialized_fill_n{};
+
+  struct __construct_at_fn
+  {
+    template<typename _Tp, typename... _Args>
+      requires requires { ::new (declval<void*>()) _Tp(declval<_Args>()...); }
+      constexpr _Tp*
+      operator()(_Tp* __location, _Args&&... __args) const
+      {
+	return ::new (__detail::__voidify(*__location))
+		     _Tp(std::forward<_Args>(__args)...);
+      }
+  };
+
+  inline constexpr __construct_at_fn construct_at{};
+
+  struct __destroy_at_fn
+  {
+    template<destructible _Tp>
+      constexpr void
+      operator()(_Tp* __location) const noexcept
+      {
+	if constexpr (is_array_v<_Tp>)
+	  ranges::destroy(ranges::begin(*__location), ranges::end(*__location));
+	else
+	  __location->~_Tp();
+      }
+  };
+
+  inline constexpr __destroy_at_fn destroy_at{};
 
   template<__detail::__nothrow_input_iterator _Iter,
 	   __detail::__nothrow_sentinel<_Iter> _Sent>
     requires destructible<iter_value_t<_Iter>>
     constexpr _Iter
-    destroy(_Iter __first, _Sent __last) noexcept
+    __destroy_fn::operator()(_Iter __first, _Sent __last) const noexcept
     {
       if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
 	return ranges::next(__first, __last);
@@ -466,23 +540,28 @@ namespace ranges
   template<__detail::__nothrow_input_range _Range>
     requires destructible<range_value_t<_Range>>
     constexpr safe_iterator_t<_Range>
-    destroy(_Range&& __r) noexcept
-    { return ranges::destroy(ranges::begin(__r), ranges::end(__r)); }
+    __destroy_fn::operator()(_Range&& __r) const noexcept
+    { return (*this)(ranges::begin(__r), ranges::end(__r)); }
 
-  template<__detail::__nothrow_input_iterator _Iter>
-    requires destructible<iter_value_t<_Iter>>
-    constexpr _Iter
-    destroy_n(_Iter __first, iter_difference_t<_Iter> __n) noexcept
-    {
-      if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
-	return ranges::next(__first, __n);
-      else
-	{
-	  for (; __n > 0; ++__first, (void)--__n)
-	    ranges::destroy_at(std::__addressof(*__first));
-	  return __first;
-	}
-    }
+  struct __destroy_n_fn
+  {
+    template<__detail::__nothrow_input_iterator _Iter>
+      requires destructible<iter_value_t<_Iter>>
+      constexpr _Iter
+      operator()(_Iter __first, iter_difference_t<_Iter> __n) const noexcept
+      {
+	if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
+	  return ranges::next(__first, __n);
+	else
+	  {
+	    for (; __n > 0; ++__first, (void)--__n)
+	      ranges::destroy_at(std::__addressof(*__first));
+	    return __first;
+	  }
+      }
+  };
+
+  inline constexpr __destroy_n_fn destroy_n{};
 }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

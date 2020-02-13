@@ -71,88 +71,93 @@ namespace ranges
 	__is_move_iterator<move_iterator<_Iterator>> = true;
   } // namespace __detail
 
-  template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	   input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	   typename _Pred = ranges::equal_to,
-	   typename _Proj1 = identity, typename _Proj2 = identity>
-    requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-    constexpr bool
-    equal(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	  _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
-    {
-      // TODO: implement more specializations to at least have parity with
-      // std::equal.
-      if constexpr (__detail::__is_normal_iterator<_Iter1>
-		    || __detail::__is_normal_iterator<_Iter2>)
-	return ranges::equal(std::__niter_base(std::move(__first1)),
-			     std::__niter_base(std::move(__last1)),
-			     std::__niter_base(std::move(__first2)),
-			     std::__niter_base(std::move(__last2)),
+  struct __equal_fn
+  {
+    template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
+	    _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	// TODO: implement more specializations to at least have parity with
+	// std::equal.
+	if constexpr (__detail::__is_normal_iterator<_Iter1>
+		      || __detail::__is_normal_iterator<_Iter2>)
+	  return (*this)(std::__niter_base(std::move(__first1)),
+			       std::__niter_base(std::move(__last1)),
+			       std::__niter_base(std::move(__first2)),
+			       std::__niter_base(std::move(__last2)),
+			       std::move(__pred),
+			       std::move(__proj1), std::move(__proj2));
+
+	constexpr bool __sized_iters
+	  = (sized_sentinel_for<_Sent1, _Iter1>
+	     && sized_sentinel_for<_Sent2, _Iter2>);
+	if constexpr (__sized_iters)
+	  {
+	    auto __d1 = ranges::distance(__first1, __last1);
+	    auto __d2 = ranges::distance(__first2, __last2);
+	    if (__d1 != __d2)
+	      return false;
+
+	    using _ValueType1 = iter_value_t<_Iter1>;
+	    using _ValueType2 = iter_value_t<_Iter2>;
+	    constexpr bool __use_memcmp
+	      = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
+		 && is_same_v<_ValueType1, _ValueType2>
+		 && is_pointer_v<_Iter1>
+		 && is_pointer_v<_Iter2>
+		 && is_same_v<_Pred, ranges::equal_to>
+		 && is_same_v<_Proj1, identity>
+		 && is_same_v<_Proj2, identity>);
+	    if constexpr (__use_memcmp)
+	      {
+		if (const size_t __len = (__last1 - __first1))
+		  return !std::__memcmp(__first1, __first2, __len);
+		return true;
+	      }
+	    else
+	      {
+		for (; __first1 != __last1; ++__first1, (void)++__first2)
+		  if (!(bool)std::__invoke(__pred,
+					   std::__invoke(__proj1, *__first1),
+					   std::__invoke(__proj2, *__first2)))
+		    return false;
+		return true;
+	      }
+	  }
+	else
+	  {
+	    for (; __first1 != __last1 && __first2 != __last2;
+		 ++__first1, (void)++__first2)
+	      if (!(bool)std::__invoke(__pred,
+				       std::__invoke(__proj1, *__first1),
+				       std::__invoke(__proj2, *__first2)))
+		return false;
+	    return __first1 == __last1 && __first2 == __last2;
+	  }
+      }
+
+    template<input_range _Range1, input_range _Range2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
+				     _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Range1&& __r1, _Range2&& __r2,
+	    _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	return (*this)(ranges::begin(__r1), ranges::end(__r1),
+			     ranges::begin(__r2), ranges::end(__r2),
 			     std::move(__pred),
 			     std::move(__proj1), std::move(__proj2));
+      }
+  };
 
-      constexpr bool __sized_iters
-	= (sized_sentinel_for<_Sent1, _Iter1>
-	   && sized_sentinel_for<_Sent2, _Iter2>);
-      if constexpr (__sized_iters)
-	{
-	  auto __d1 = ranges::distance(__first1, __last1);
-	  auto __d2 = ranges::distance(__first2, __last2);
-	  if (__d1 != __d2)
-	    return false;
-
-	  using _ValueType1 = iter_value_t<_Iter1>;
-	  using _ValueType2 = iter_value_t<_Iter2>;
-	  constexpr bool __use_memcmp
-	    = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
-	       && is_same_v<_ValueType1, _ValueType2>
-	       && is_pointer_v<_Iter1>
-	       && is_pointer_v<_Iter2>
-	       && is_same_v<_Pred, ranges::equal_to>
-	       && is_same_v<_Proj1, identity>
-	       && is_same_v<_Proj2, identity>);
-	  if constexpr (__use_memcmp)
-	    {
-	      if (const size_t __len = (__last1 - __first1))
-		return !std::__memcmp(__first1, __first2, __len);
-	      return true;
-	    }
-	  else
-	    {
-	      for (; __first1 != __last1; ++__first1, (void)++__first2)
-		if (!(bool)std::__invoke(__pred,
-					 std::__invoke(__proj1, *__first1),
-					 std::__invoke(__proj2, *__first2)))
-		  return false;
-	      return true;
-	    }
-	}
-      else
-	{
-	  for (; __first1 != __last1 && __first2 != __last2;
-	       ++__first1, (void)++__first2)
-	    if (!(bool)std::__invoke(__pred,
-				     std::__invoke(__proj1, *__first1),
-				     std::__invoke(__proj2, *__first2)))
-	      return false;
-	  return __first1 == __last1 && __first2 == __last2;
-	}
-    }
-
-  template<input_range _Range1, input_range _Range2,
-	   typename _Pred = ranges::equal_to,
-	   typename _Proj1 = identity, typename _Proj2 = identity>
-    requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
-				   _Pred, _Proj1, _Proj2>
-    constexpr bool
-    equal(_Range1&& __r1, _Range2&& __r2,
-	  _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
-    {
-      return ranges::equal(ranges::begin(__r1), ranges::end(__r1),
-			   ranges::begin(__r2), ranges::end(__r2),
-			   std::move(__pred),
-			   std::move(__proj1), std::move(__proj2));
-    }
+  inline constexpr __equal_fn equal{};
 
   template<typename _Iter, typename _Out>
     struct copy_result
@@ -288,45 +293,55 @@ namespace ranges
 	}
     }
 
-  template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	   weakly_incrementable _Out>
-    requires indirectly_copyable<_Iter, _Out>
-    constexpr copy_result<_Iter, _Out>
-    copy(_Iter __first, _Sent __last, _Out __result)
-    {
-      return ranges::__copy_or_move<false>(std::move(__first),
-					   std::move(__last),
-					   std::move(__result));
-    }
+  struct __copy_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     weakly_incrementable _Out>
+      requires indirectly_copyable<_Iter, _Out>
+      constexpr copy_result<_Iter, _Out>
+      operator()(_Iter __first, _Sent __last, _Out __result) const
+      {
+	return ranges::__copy_or_move<false>(std::move(__first),
+					     std::move(__last),
+					     std::move(__result));
+      }
 
-  template<input_range _Range, weakly_incrementable _Out>
-    requires indirectly_copyable<iterator_t<_Range>, _Out>
-    constexpr copy_result<safe_iterator_t<_Range>, _Out>
-    copy(_Range&& __r, _Out __result)
-    {
-      return ranges::copy(ranges::begin(__r), ranges::end(__r),
-			  std::move(__result));
-    }
+    template<input_range _Range, weakly_incrementable _Out>
+      requires indirectly_copyable<iterator_t<_Range>, _Out>
+      constexpr copy_result<safe_iterator_t<_Range>, _Out>
+      operator()(_Range&& __r, _Out __result) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+			    std::move(__result));
+      }
+  };
 
-  template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	   weakly_incrementable _Out>
-    requires indirectly_movable<_Iter, _Out>
-    constexpr move_result<_Iter, _Out>
-    move(_Iter __first, _Sent __last, _Out __result)
-    {
-      return ranges::__copy_or_move<true>(std::move(__first),
-					  std::move(__last),
-					  std::move(__result));
-    }
+  inline constexpr __copy_fn copy{};
 
-  template<input_range _Range, weakly_incrementable _Out>
-    requires indirectly_movable<iterator_t<_Range>, _Out>
-    constexpr move_result<safe_iterator_t<_Range>, _Out>
-    move(_Range&& __r, _Out __result)
-    {
-      return ranges::move(ranges::begin(__r), ranges::end(__r),
-			  std::move(__result));
-    }
+  struct __move_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     weakly_incrementable _Out>
+      requires indirectly_movable<_Iter, _Out>
+      constexpr move_result<_Iter, _Out>
+      operator()(_Iter __first, _Sent __last, _Out __result) const
+      {
+	return ranges::__copy_or_move<true>(std::move(__first),
+					    std::move(__last),
+					    std::move(__result));
+      }
+
+    template<input_range _Range, weakly_incrementable _Out>
+      requires indirectly_movable<iterator_t<_Range>, _Out>
+      constexpr move_result<safe_iterator_t<_Range>, _Out>
+      operator()(_Range&& __r, _Out __result) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+			    std::move(__result));
+      }
+  };
+
+  inline constexpr __move_fn move{};
 
   template<bool _IsMove,
 	   bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -420,127 +435,152 @@ namespace ranges
 	}
     }
 
-  template<bidirectional_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	   bidirectional_iterator _Iter2>
-    requires indirectly_copyable<_Iter1, _Iter2>
-    constexpr copy_backward_result<_Iter1, _Iter2>
-    copy_backward(_Iter1 __first, _Sent1 __last, _Iter2 __result)
-    {
-      return ranges::__copy_or_move_backward<false>(std::move(__first),
-						    std::move(__last),
-						    std::move(__result));
-    }
+  struct __copy_backward_fn
+  {
+    template<bidirectional_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     bidirectional_iterator _Iter2>
+      requires indirectly_copyable<_Iter1, _Iter2>
+      constexpr copy_backward_result<_Iter1, _Iter2>
+      operator()(_Iter1 __first, _Sent1 __last, _Iter2 __result) const
+      {
+	return ranges::__copy_or_move_backward<false>(std::move(__first),
+						      std::move(__last),
+						      std::move(__result));
+      }
 
-  template<bidirectional_range _Range, bidirectional_iterator _Iter>
-    requires indirectly_copyable<iterator_t<_Range>, _Iter>
-    constexpr copy_backward_result<safe_iterator_t<_Range>, _Iter>
-    copy_backward(_Range&& __r, _Iter __result)
-    {
-      return ranges::copy_backward(ranges::begin(__r), ranges::end(__r),
-				   std::move(__result));
-    }
+    template<bidirectional_range _Range, bidirectional_iterator _Iter>
+      requires indirectly_copyable<iterator_t<_Range>, _Iter>
+      constexpr copy_backward_result<safe_iterator_t<_Range>, _Iter>
+      operator()(_Range&& __r, _Iter __result) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+				     std::move(__result));
+      }
+  };
 
-  template<bidirectional_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	   bidirectional_iterator _Iter2>
-    requires indirectly_movable<_Iter1, _Iter2>
-    constexpr move_backward_result<_Iter1, _Iter2>
-    move_backward(_Iter1 __first, _Sent1 __last, _Iter2 __result)
-    {
-      return ranges::__copy_or_move_backward<true>(std::move(__first),
-						   std::move(__last),
-						   std::move(__result));
-    }
+  inline constexpr __copy_backward_fn copy_backward{};
 
-  template<bidirectional_range _Range, bidirectional_iterator _Iter>
-    requires indirectly_movable<iterator_t<_Range>, _Iter>
-    constexpr move_backward_result<safe_iterator_t<_Range>, _Iter>
-    move_backward(_Range&& __r, _Iter __result)
-    {
-      return ranges::move_backward(ranges::begin(__r), ranges::end(__r),
-				   std::move(__result));
-    }
+  struct __move_backward_fn
+  {
+    template<bidirectional_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     bidirectional_iterator _Iter2>
+      requires indirectly_movable<_Iter1, _Iter2>
+      constexpr move_backward_result<_Iter1, _Iter2>
+      operator()(_Iter1 __first, _Sent1 __last, _Iter2 __result) const
+      {
+	return ranges::__copy_or_move_backward<true>(std::move(__first),
+						     std::move(__last),
+						     std::move(__result));
+      }
+
+    template<bidirectional_range _Range, bidirectional_iterator _Iter>
+      requires indirectly_movable<iterator_t<_Range>, _Iter>
+      constexpr move_backward_result<safe_iterator_t<_Range>, _Iter>
+      operator()(_Range&& __r, _Iter __result) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+				     std::move(__result));
+      }
+  };
+
+  inline constexpr __move_backward_fn move_backward{};
 
   template<typename _Iter, typename _Out>
     using copy_n_result = copy_result<_Iter, _Out>;
 
-  template<input_iterator _Iter, weakly_incrementable _Out>
-    requires indirectly_copyable<_Iter, _Out>
-    constexpr copy_n_result<_Iter, _Out>
-    copy_n(_Iter __first, iter_difference_t<_Iter> __n, _Out __result)
-    {
-      if constexpr (random_access_iterator<_Iter>)
-	return ranges::copy(__first, __first + __n, std::move(__result));
-      else
-	{
-	  for (; __n > 0; --__n, (void)++__result, (void)++__first)
-	    *__result = *__first;
-	  return {std::move(__first), std::move(__result)};
-	}
-    }
+  struct __copy_n_fn
+  {
+    template<input_iterator _Iter, weakly_incrementable _Out>
+      requires indirectly_copyable<_Iter, _Out>
+      constexpr copy_n_result<_Iter, _Out>
+      operator()(_Iter __first, iter_difference_t<_Iter> __n, _Out __result) const
+      {
+	if constexpr (random_access_iterator<_Iter>)
+	  return ranges::copy(__first, __first + __n, std::move(__result));
+	else
+	  {
+	    for (; __n > 0; --__n, (void)++__result, (void)++__first)
+	      *__result = *__first;
+	    return {std::move(__first), std::move(__result)};
+	  }
+      }
+  };
 
-  template<typename _Tp, output_iterator<const _Tp&> _Out>
-    constexpr _Out
-    fill_n(_Out __first, iter_difference_t<_Out> __n, const _Tp& __value)
-    {
-      // TODO: implement more specializations to be at least on par with
-      // std::fill_n
-      if (__n <= 0)
-	return __first;
+  inline constexpr __copy_n_fn copy_n{};
 
-      // TODO: is __is_byte the best condition?
-      if constexpr (is_pointer_v<_Out> && __is_byte<_Tp>::__value)
-	{
-	  __builtin_memset(__first, static_cast<unsigned char>(__value), __n);
-	  return __first + __n;
-	}
-      else if constexpr (is_scalar_v<_Tp>)
-	{
-	  const auto __tmp = __value;
-	  for (; __n > 0; --__n, (void)++__first)
-	    *__first = __tmp;
+  struct __fill_n_fn
+  {
+    template<typename _Tp, output_iterator<const _Tp&> _Out>
+      constexpr _Out
+      operator()(_Out __first, iter_difference_t<_Out> __n, const _Tp& __value) const
+      {
+	// TODO: implement more specializations to be at least on par with
+	// std::fill_n
+	if (__n <= 0)
 	  return __first;
-	}
-      else
-	{
-	  for (; __n > 0; --__n, (void)++__first)
-	    *__first = __value;
-	  return __first;
-	}
-    }
 
-  template<typename _Tp,
-	   output_iterator<const _Tp&> _Out, sentinel_for<_Out> _Sent>
-    constexpr _Out
-    fill(_Out __first, _Sent __last, const _Tp& __value)
-    {
-      // TODO: implement more specializations to be at least on par with
-      // std::fill
-      if constexpr (sized_sentinel_for<_Sent, _Out>)
-	{
-	  const auto __len = __last - __first;
-	  return ranges::fill_n(__first, __len, __value);
-	}
-      else if constexpr (is_scalar_v<_Tp>)
-	{
-	  const auto __tmp = __value;
-	  for (; __first != __last; ++__first)
-	    *__first = __tmp;
-	  return __first;
-	}
-      else
-	{
-	  for (; __first != __last; ++__first)
-	    *__first = __value;
-	  return __first;
-	}
-    }
+	// TODO: is __is_byte the best condition?
+	if constexpr (is_pointer_v<_Out> && __is_byte<_Tp>::__value)
+	  {
+	    __builtin_memset(__first, static_cast<unsigned char>(__value), __n);
+	    return __first + __n;
+	  }
+	else if constexpr (is_scalar_v<_Tp>)
+	  {
+	    const auto __tmp = __value;
+	    for (; __n > 0; --__n, (void)++__first)
+	      *__first = __tmp;
+	    return __first;
+	  }
+	else
+	  {
+	    for (; __n > 0; --__n, (void)++__first)
+	      *__first = __value;
+	    return __first;
+	  }
+      }
+  };
 
-  template<typename _Tp, output_range<const _Tp&> _Range>
-    constexpr safe_iterator_t<_Range>
-    fill(_Range&& __r, const _Tp& __value)
-    {
-      return ranges::fill(ranges::begin(__r), ranges::end(__r), __value);
-    }
+  inline constexpr __fill_n_fn fill_n{};
+
+  struct __fill_fn
+  {
+    template<typename _Tp,
+	     output_iterator<const _Tp&> _Out, sentinel_for<_Out> _Sent>
+      constexpr _Out
+      operator()(_Out __first, _Sent __last, const _Tp& __value) const
+      {
+	// TODO: implement more specializations to be at least on par with
+	// std::fill
+	if constexpr (sized_sentinel_for<_Sent, _Out>)
+	  {
+	    const auto __len = __last - __first;
+	    return ranges::fill_n(__first, __len, __value);
+	  }
+	else if constexpr (is_scalar_v<_Tp>)
+	  {
+	    const auto __tmp = __value;
+	    for (; __first != __last; ++__first)
+	      *__first = __tmp;
+	    return __first;
+	  }
+	else
+	  {
+	    for (; __first != __last; ++__first)
+	      *__first = __value;
+	    return __first;
+	  }
+      }
+
+    template<typename _Tp, output_range<const _Tp&> _Range>
+      constexpr safe_iterator_t<_Range>
+      operator()(_Range&& __r, const _Tp& __value) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r), __value);
+      }
+  };
+
+  inline constexpr __fill_fn fill{};
 }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

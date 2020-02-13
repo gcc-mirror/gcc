@@ -1,5 +1,29 @@
 2020-02-15  Patrick Palka  <ppalka@redhat.com>
 
+	* include/bits/ranges_algo.h: (adjacent_find, all_of, any_of,
+	binary_search, copy_if, count, count_if, equal_range, find, find_end,
+	find_first_of, find_if, find_if_not, for_each, generate, generate_n,
+	includes, inplace_merge, is_heap, is_heap_until, is_partitioned,
+	is_permutation, is_sorted, is_sorted_until, lexicographical_compare,
+	lower_bound, make_heap, max, max_element, merge, min, min_element,
+	minmax, minmax_element, mismatch, next_permutation, none_of,
+	nth_element, partial_sort, partial_sort_copy, partition, partition_copy,
+	partition_point, pop_heap, prev_permutation, push_heap, remove,
+	remove_copy, remove_copy_if, remove_if, replace, replace_copy,
+	replace_copy_if, replace_if, reverse, reverse_copy, rotate, rotate_copy,
+	search, search_n, set_difference, set_intersection,
+	set_symmetric_difference, set_union, shuffle, sort, sort_heap,
+	stable_partition, stable_sort, swap_ranges, transform, unique,
+	unique_copy, upper_bound): Convert into function objects.
+	* include/bits/ranges_algobase.h: (equal, copy, move, copy_n, fill_n,
+	fill, move_backward, copy_backward): Likewise.
+	* include/bits/ranges_uninitialized.h (uninitialized_default_construct,
+	uninitialized_default_construct_n, uninitialized_value_construct,
+	uninitialized_value_construct_n, uninitialized_copy,
+	uninitialized_copy_n, uninitialized_move, uninitialized_move_n,
+	uninitialized_fill, uninitialized_fill_n, construct_at, destroy_at,
+	destroy, destroy_n): Likewise.
+
 	* include/bits/ranges_algo.h (ranges::__find_end): Fold into ...
 	(ranges::find_end): ... here.
 	(ranges::__lexicographical_compare): Fold into ...
