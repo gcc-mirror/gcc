@@ -513,40 +513,7 @@ namespace ranges
 			      std::move(__pred), std::move(__proj));
     }
 
-  template<forward_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	   forward_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	   typename _Pred = ranges::equal_to,
-	   typename _Proj1 = identity, typename _Proj2 = identity>
-    requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-    constexpr subrange<_Iter1>
-    __find_end(_Iter1 __first1, _Sent1 __last1,
-	       _Iter2 __first2, _Sent2 __last2,
-	       _Pred __pred, _Proj1 __proj1, _Proj2 __proj2)
-    {
-      auto __i = ranges::next(__first1, __last1);
-      if (__first2 == __last2)
-	return {__i, __i};
 
-      auto __result_begin = __i;
-      auto __result_end = __i;
-      for (;;)
-	{
-	  auto __new_range = ranges::search(__first1, __last1,
-					    __first2, __last2,
-					    __pred, __proj1, __proj2);
-	  auto __new_result_begin = ranges::begin(__new_range);
-	  auto __new_result_end = ranges::end(__new_range);
-	  if (__new_result_begin == __last1)
-	    return {__result_begin, __result_end};
-	  else
-	    {
-	      __result_begin = __new_result_begin;
-	      __result_end = __new_result_end;
-	      __first1 = __result_begin;
-	      ++__first1;
-	    }
-	}
-    }
 
   template<forward_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
 	   forward_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
@@ -578,9 +545,31 @@ namespace ranges
 	    return {__result_first, __result_last};
 	}
       else
-	return ranges::__find_end(__first1, __last1, __first2, __last2,
-				  std::move(__pred),
-				  std::move(__proj1), std::move(__proj2));
+	{
+	  auto __i = ranges::next(__first1, __last1);
+	  if (__first2 == __last2)
+	    return {__i, __i};
+
+	  auto __result_begin = __i;
+	  auto __result_end = __i;
+	  for (;;)
+	    {
+	      auto __new_range = ranges::search(__first1, __last1,
+						__first2, __last2,
+						__pred, __proj1, __proj2);
+	      auto __new_result_begin = ranges::begin(__new_range);
+	      auto __new_result_end = ranges::end(__new_range);
+	      if (__new_result_begin == __last1)
+		return {__result_begin, __result_end};
+	      else
+		{
+		  __result_begin = __new_result_begin;
+		  __result_end = __new_result_end;
+		  __first1 = __result_begin;
+		  ++__first1;
+		}
+	    }
+	}
     }
 
   template<forward_range _Range1, forward_range _Range2,
@@ -2908,14 +2897,26 @@ namespace ranges
 
   template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
 	   input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	   typename _Proj1, typename _Proj2,
+	   typename _Proj1 = identity, typename _Proj2 = identity,
 	   indirect_strict_weak_order<projected<_Iter1, _Proj1>,
-				      projected<_Iter2, _Proj2>> _Comp>
+				      projected<_Iter2, _Proj2>>
+	     _Comp = ranges::less>
     constexpr bool
-    __lexicographical_compare(_Iter1 __first1, _Sent1 __last1,
-			      _Iter2 __first2, _Sent2 __last2,
-			      _Comp __comp, _Proj1 __proj1, _Proj2 __proj2)
+    lexicographical_compare(_Iter1 __first1, _Sent1 __last1,
+			    _Iter2 __first2, _Sent2 __last2,
+			    _Comp __comp = {},
+			    _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
     {
+      if constexpr (__detail::__is_normal_iterator<_Iter1>
+		    || __detail::__is_normal_iterator<_Iter2>)
+	return ranges::lexicographical_compare
+		 (std::__niter_base(std::move(__first1)),
+		  std::__niter_base(std::move(__last1)),
+		  std::__niter_base(std::move(__first2)),
+		  std::__niter_base(std::move(__last2)),
+		  std::move(__comp),
+		  std::move(__proj1), std::move(__proj2));
+
       constexpr bool __sized_iters
 	= (sized_sentinel_for<_Sent1, _Iter1>
 	   && sized_sentinel_for<_Sent2, _Iter2>);
@@ -2974,27 +2975,6 @@ namespace ranges
 	    return false;
 	}
       return __first1 == __last1 && __first2 != __last2;
-    }
-
-  template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	   input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	   typename _Proj1 = identity, typename _Proj2 = identity,
-	   indirect_strict_weak_order<projected<_Iter1, _Proj1>,
-				      projected<_Iter2, _Proj2>>
-	     _Comp = ranges::less>
-    constexpr bool
-    lexicographical_compare(_Iter1 __first1, _Sent1 __last1,
-			    _Iter2 __first2, _Sent2 __last2,
-			    _Comp __comp = {},
-			    _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
-    {
-      return (ranges::__lexicographical_compare
-	      (std::__niter_base(std::move(__first1)),
-	       std::__niter_base(std::move(__last1)),
-	       std::__niter_base(std::move(__first2)),
-	       std::__niter_base(std::move(__last2)),
-	       std::move(__comp),
-	       std::move(__proj1), std::move(__proj2)));
     }
 
   template<input_range _Range1, input_range _Range2, typename _Proj1 = identity,

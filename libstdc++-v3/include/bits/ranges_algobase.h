@@ -73,14 +73,24 @@ namespace ranges
 
   template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
 	   input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	   typename _Pred, typename _Proj1, typename _Proj2>
+	   typename _Pred = ranges::equal_to,
+	   typename _Proj1 = identity, typename _Proj2 = identity>
     requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
     constexpr bool
-    __equal(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	    _Pred __pred, _Proj1 __proj1, _Proj2 __proj2)
+    equal(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
+	  _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
     {
       // TODO: implement more specializations to at least have parity with
       // std::equal.
+      if constexpr (__detail::__is_normal_iterator<_Iter1>
+		    || __detail::__is_normal_iterator<_Iter2>)
+	return ranges::equal(std::__niter_base(std::move(__first1)),
+			     std::__niter_base(std::move(__last1)),
+			     std::__niter_base(std::move(__first2)),
+			     std::__niter_base(std::move(__last2)),
+			     std::move(__pred),
+			     std::move(__proj1), std::move(__proj2));
+
       constexpr bool __sized_iters
 	= (sized_sentinel_for<_Sent1, _Iter1>
 	   && sized_sentinel_for<_Sent2, _Iter2>);
@@ -127,23 +137,6 @@ namespace ranges
 	      return false;
 	  return __first1 == __last1 && __first2 == __last2;
 	}
-    }
-
-  template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	   input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	   typename _Pred = ranges::equal_to,
-	   typename _Proj1 = identity, typename _Proj2 = identity>
-    requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-    constexpr bool
-    equal(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	  _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
-    {
-      return ranges::__equal(std::__niter_base(std::move(__first1)),
-			     std::__niter_base(std::move(__last1)),
-			     std::__niter_base(std::move(__first2)),
-			     std::__niter_base(std::move(__last2)),
-			     std::move(__pred),
-			     std::move(__proj1), std::move(__proj2));
     }
 
   template<input_range _Range1, input_range _Range2,
