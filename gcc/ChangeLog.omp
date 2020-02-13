@@ -1,5 +1,20 @@
 2020-07-15  Julian Brown  <julian@codesourcery.com>
 
+	* config/gcn/gcn.c (gimple.h): Include.
+	(gcn_fork_join): Emit barrier for worker-level joins.
+	* omp-sese.c (find_local_vars_to_propagate): Add writes_gangprivate
+	bitmap parameter. Set bit for blocks containing gang-private variable
+	writes.
+	(worker_single_simple): Don't emit barrier after predicated block.
+	(worker_single_copy): Don't emit barrier if we're not broadcasting
+	anything and the block contains no gang-private writes.
+	(neuter_worker_single): Don't predicate blocks that only contain NOPs
+	or internal marker functions.  Pass has_gangprivate_write argument to
+	worker_single_copy.
+	(oacc_do_neutering): Add writes_gangprivate bitmap handling.
+
+2020-07-15  Julian Brown  <julian@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (scatter<mode>_insn_1offset_ds<exec_scatter>):
 	Add waitcnt.
 	(*mov<mode>_insn, *movti_insn): Add waitcnt to ds_write alternatives.
