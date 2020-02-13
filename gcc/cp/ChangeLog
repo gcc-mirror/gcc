@@ -1,3 +1,10 @@
+2020-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92583
+	PR c++/92654
+	* tree.c (cp_walk_subtrees): Walk CONSTRUCTOR types here.
+	* pt.c (find_parameter_packs_r): Not here.
+
 2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
 
 	* coroutines.cc (build_actor_fn): Implement deallocation function

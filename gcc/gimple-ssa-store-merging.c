@@ -1475,66 +1475,6 @@ dump_char_array (FILE *fd, unsigned char *ptr, unsigned int len)
   fprintf (fd, "\n");
 }
 
-/* Shift left the bytes in PTR of SZ elements by AMNT bits, carrying over the
-   bits between adjacent elements.  AMNT should be within
-   [0, BITS_PER_UNIT).
-   Example, AMNT = 2:
-   00011111|11100000 << 2 = 01111111|10000000
-   PTR[1]  | PTR[0]         PTR[1]  | PTR[0].  */
-
-static void
-shift_bytes_in_array (unsigned char *ptr, unsigned int sz, unsigned int amnt)
-{
-  if (amnt == 0)
-    return;
-
-  unsigned char carry_over = 0U;
-  unsigned char carry_mask = (~0U) << (unsigned char) (BITS_PER_UNIT - amnt);
-  unsigned char clear_mask = (~0U) << amnt;
-
-  for (unsigned int i = 0; i < sz; i++)
-    {
-      unsigned prev_carry_over = carry_over;
-      carry_over = (ptr[i] & carry_mask) >> (BITS_PER_UNIT - amnt);
-
-      ptr[i] <<= amnt;
-      if (i != 0)
-	{
-	  ptr[i] &= clear_mask;
-	  ptr[i] |= prev_carry_over;
-	}
-    }
-}
-
-/* Like shift_bytes_in_array but for big-endian.
-   Shift right the bytes in PTR of SZ elements by AMNT bits, carrying over the
-   bits between adjacent elements.  AMNT should be within
-   [0, BITS_PER_UNIT).
-   Example, AMNT = 2:
-   00011111|11100000 >> 2 = 00000111|11111000
-   PTR[0]  | PTR[1]         PTR[0]  | PTR[1].  */
-
-static void
-shift_bytes_in_array_right (unsigned char *ptr, unsigned int sz,
-			    unsigned int amnt)
-{
-  if (amnt == 0)
-    return;
-
-  unsigned char carry_over = 0U;
-  unsigned char carry_mask = ~(~0U << amnt);
-
-  for (unsigned int i = 0; i < sz; i++)
-    {
-      unsigned prev_carry_over = carry_over;
-      carry_over = ptr[i] & carry_mask;
-
-      carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
-      ptr[i] >>= amnt;
-      ptr[i] |= prev_carry_over;
-    }
-}
-
 /* Clear out LEN bits starting from bit START in the byte array
    PTR.  This clears the bits to the *right* from START.
    START must be within [0, BITS_PER_UNIT) and counts starting from
@@ -1793,7 +1733,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   /* Create the shifted version of EXPR.  */
   if (!BYTES_BIG_ENDIAN)
     {
-      shift_bytes_in_array (tmpbuf, byte_size, shift_amnt);
+      shift_bytes_in_array_left (tmpbuf, byte_size, shift_amnt);
       if (shift_amnt == 0)
 	byte_size--;
     }
@@ -5092,11 +5032,11 @@ verify_array_eq (unsigned char *x, unsigned char *y, unsigned int n)
     }
 }
 
-/* Test shift_bytes_in_array and that it carries bits across between
+/* Test shift_bytes_in_array_left and that it carries bits across between
    bytes correctly.  */
 
 static void
-verify_shift_bytes_in_array (void)
+verify_shift_bytes_in_array_left (void)
 {
    /* byte 1   | byte 0
       00011111 | 11100000.  */
@@ -5105,13 +5045,13 @@ verify_shift_bytes_in_array (void)
   memcpy (in, orig, sizeof orig);
 
   unsigned char expected[2] = { 0x80, 0x7f };
-  shift_bytes_in_array (in, sizeof (in), 2);
+  shift_bytes_in_array_left (in, sizeof (in), 2);
   verify_array_eq (in, expected, sizeof (in));
 
   memcpy (in, orig, sizeof orig);
   memcpy (expected, orig, sizeof orig);
   /* Check that shifting by zero doesn't change anything.  */
-  shift_bytes_in_array (in, sizeof (in), 0);
+  shift_bytes_in_array_left (in, sizeof (in), 0);
   verify_array_eq (in, expected, sizeof (in));
 
 }
@@ -5196,7 +5136,7 @@ verify_clear_bit_region_be (void)
 void
 store_merging_c_tests (void)
 {
-  verify_shift_bytes_in_array ();
+  verify_shift_bytes_in_array_left ();
   verify_shift_bytes_in_array_right ();
   verify_clear_bit_region ();
   verify_clear_bit_region_be ();

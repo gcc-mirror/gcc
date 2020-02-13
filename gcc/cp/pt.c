@@ -3924,9 +3924,6 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     case TEMPLATE_DECL:
       if (!DECL_TEMPLATE_TEMPLATE_PARM_P (t))
 	return NULL_TREE;
-      gcc_fallthrough();
-
-    case CONSTRUCTOR:
       cp_walk_tree (&TREE_TYPE (t),
 		    &find_parameter_packs_r, ppd, ppd->visited);
       return NULL_TREE;

@@ -1,3 +1,16 @@
+2020-02-13  Frederik Harwath  <frederik@codesourcery.com>
+
+	PR libgomp/93481
+	* plugin/plugin-nvptx.c: Remove GOMP_OFFLOAD_async_run stub.
+	* target.c (gomp_load_plugin_for_device): Make "async_run" loading
+	optional.
+	(gomp_target_task_fn): Assert "devicep->async_run_func".
+	(clear_unsupported_flags): New function to remove unsupported flags
+	(right now only GOMP_TARGET_FLAG_NOWAIT) that can be be ignored.
+	(GOMP_target_ext): Apply clear_unsupported_flags to flags.
+	* testsuite/libgomp.c/target-33.c:
+	Remove xfail for offload_target_nvptx.
+	* testsuite/libgomp.c/target-34.c: Likewise.
 
 2020-02-10  Frederik Harwath  <frederik@codesourcery.com>
 

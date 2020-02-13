@@ -1,3 +1,88 @@
+2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* config/i386/i386.c (ix86_trampoline_init): Skip ENDBR32 at
+	the target function entry.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Disable if-conversion step when optimized for size.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_conditional_register_usage): R0-R3 and
+	R12-R15 are always in ARCOMPACT16_REGS register class.
+	* config/arc/arc.opt (mq-class): Deprecate.
+	* config/arc/constraint.md ("q"): Remove dependency on mq-class
+	option.
+	* doc/invoke.texi (mq-class): Update text.
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Update list.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_insn_cost): New function.
+	(TARGET_INSN_COST): Define.
+	* config/arc/arc.md (cost): New attribute.
+	(add_n): Use arc_nonmemory_operand.
+	(ashlsi3_insn): Likewise, also update constraints.
+	(ashrsi3_insn): Likewise.
+	(rotrsi3): Likewise.
+	(add_shift): Likewise.
+	* config/arc/predicates.md (arc_nonmemory_operand): New predicate.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsidi_600): Correctly select mlo/mhi
+	registers.
+	(umulsidi_600): Likewise.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93696
+	* config/i386/avx512bitalgintrin.h (_mm512_mask_popcnt_epi8,
+	_mm512_mask_popcnt_epi16, _mm256_mask_popcnt_epi8,
+	_mm256_mask_popcnt_epi16, _mm_mask_popcnt_epi8,
+	_mm_mask_popcnt_epi16): Rename __B argument to __A and __A to __W,
+	pass __A to the builtin followed by __W instead of __A followed by
+	__B.
+	* config/i386/avx512vpopcntdqintrin.h (_mm512_mask_popcnt_epi32,
+	_mm512_mask_popcnt_epi64): Likewise.
+	* config/i386/avx512vpopcntdqvlintrin.h (_mm_mask_popcnt_epi32,
+	_mm256_mask_popcnt_epi32, _mm_mask_popcnt_epi64,
+	_mm256_mask_popcnt_epi64): Likewise.
+
+	PR tree-optimization/93582
+	* fold-const.h (shift_bytes_in_array_left,
+	shift_bytes_in_array_right): Declare.
+	* fold-const.c (shift_bytes_in_array_left,
+	shift_bytes_in_array_right): New function, moved from
+	gimple-ssa-store-merging.c, no longer static.
+	* gimple-ssa-store-merging.c (shift_bytes_in_array): Move
+	to gimple-ssa-store-merging.c and rename to shift_bytes_in_array_left.
+	(shift_bytes_in_array_right): Move to gimple-ssa-store-merging.c.
+	(encode_tree_to_bitpos): Use shift_bytes_in_array_left instead of
+	shift_bytes_in_array.
+	(verify_shift_bytes_in_array): Rename to ...
+	(verify_shift_bytes_in_array_left): ... this.  Use
+	shift_bytes_in_array_left instead of shift_bytes_in_array.
+	(store_merging_c_tests): Call verify_shift_bytes_in_array_left
+	instead of verify_shift_bytes_in_array.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): For native_encode_expr
+	/ native_interpret_expr where the store covers all needed bits,
+	punt on PDP-endian, otherwise allow all involved offsets and sizes
+	not to be byte-aligned.
+
+	PR target/93673
+	* config/i386/sse.md (k<code><mode>): Drop mode from last operand and
+	use const_0_to_255_operand predicate instead of immediate_operand.
+	(avx512dq_fpclass<mode><mask_scalar_merge_name>,
+	avx512dq_vmfpclass<mode><mask_scalar_merge_name>,
+	vgf2p8affineinvqb_<mode><mask_name>,
+	vgf2p8affineqb_<mode><mask_name>): Drop mode from
+	const_0_to_255_operand predicated operands.
+
 2020-02-12  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (comparison shortening peepholes): Use

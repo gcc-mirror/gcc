@@ -1,4 +1,58 @@
-2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* gcc.target/i386/pr93656.c: New test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/nps400-1.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/or-cnst-size2.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+	Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/mul64-1.c: New test.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93696
+	* gcc.target/i386/pr93696-1.c: New test.
+	* gcc.target/i386/pr93696-2.c: New test.
+	* gcc.target/i386/avx512bitalg-vpopcntw-1.c (TEST): Fix argument order
+	of _mm*_mask_popcnt_*.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntbvl.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntwvl.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntw.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c (foo): Likewise.
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-1.c: New test.
+	* gcc.dg/tree-ssa/pr93582-2.c: New test.
+	* gcc.dg/tree-ssa/pr93582-3.c: New test.
+
+2020-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93717
+	* gcc.dg/optimize-bswapsi-2.c: Add BE case.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93673
+	* gcc.target/i386/avx512f-pr93673.c: New test.
+	* gcc.target/i386/avx512dq-pr93673.c: New test.
+	* gcc.target/i386/avx512bw-pr93673.c: New test.
+
+	* g++.dg/analyzer/pr93212.C: Require c++14 rather than c++11.
+
+2020-02-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro1-allocators.h: New.
 	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: New test.

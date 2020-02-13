@@ -45,15 +45,26 @@ uint32_t read_be32_3 (unsigned char *data)
 }
 
 static inline unsigned short
-get_unaligned_16 (unsigned char *p)
+get_unaligned_16_le (unsigned char *p)
 {
   return p[0] | (p[1] << 8);
 }
 unsigned int
-get_unaligned_32 (unsigned char *p)
+get_unaligned_32_le (unsigned char *p)
 {
-  return get_unaligned_16 (p) | (get_unaligned_16 (p + 2) << 16);
+  return get_unaligned_16_le (p) | (get_unaligned_16_le (p + 2) << 16);
+}
+
+static inline unsigned short
+get_unaligned_16_be (unsigned char *p)
+{
+  return p[1] | (p[0] << 8);
+}
+unsigned int
+get_unaligned_32_be (unsigned char *p)
+{
+  return get_unaligned_16_be (p + 2) | (get_unaligned_16_be (p) << 16);
 }
 
 /* { dg-final { scan-tree-dump-times "32 bit load in target endianness found at" 4 "bswap" } } */
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 4 "bswap" } } */
