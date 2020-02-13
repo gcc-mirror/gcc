@@ -117,13 +117,13 @@ struct conversion {
     /* The next conversion in the chain.  Since the conversions are
        arranged from outermost to innermost, the NEXT conversion will
        actually be performed before this conversion.  This variant is
-       used only when KIND is neither ck_identity, ck_ambig nor
+       used only when KIND is neither ck_identity, ck_aggr, ck_ambig nor
        ck_list.  Please use the next_conversion function instead
        of using this field directly.  */
     conversion *next;
     /* The expression at the beginning of the conversion chain.  This
-       variant is used only if KIND is ck_identity or ck_ambig.  You can
-       use conv_get_original_expr to get this expression.  */
+       variant is used only if KIND is ck_identity, ck_aggr, or ck_ambig.
+       You can use conv_get_original_expr to get this expression.  */
     tree expr;
     /* The array of conversions for an initializer_list, so this
        variant is used only when KIN D is ck_list.  */
@@ -861,7 +861,8 @@ next_conversion (conversion *conv)
   if (conv == NULL
       || conv->kind == ck_identity
       || conv->kind == ck_ambig
-      || conv->kind == ck_list)
+      || conv->kind == ck_list
+      || conv->kind == ck_aggr)
     return NULL;
   return conv->u.next;
 }
@@ -1030,7 +1031,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   c->rank = cr_exact;
   c->user_conv_p = true;
   c->check_narrowing = true;
-  c->u.next = NULL;
+  c->u.expr = ctor;
   return c;
 }
 
@@ -1083,7 +1084,7 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   c->rank = rank;
   c->user_conv_p = user;
   c->bad_p = bad;
-  c->u.next = build_identity_conv (TREE_TYPE (ctor), ctor);
+  c->u.expr = ctor;
   return c;
 }
 
@@ -1129,7 +1130,7 @@ build_complex_conv (tree type, tree ctor, int flags,
   c->rank = rank;
   c->user_conv_p = user;
   c->bad_p = bad;
-  c->u.next = NULL;
+  c->u.expr = ctor;
   return c;
 }
 
@@ -10500,7 +10501,7 @@ static tree
 conv_get_original_expr (conversion *c)
 {
   for (; c; c = next_conversion (c))
-    if (c->kind == ck_identity || c->kind == ck_ambig)
+    if (c->kind == ck_identity || c->kind == ck_ambig || c->kind == ck_aggr)
       return c->u.expr;
   return NULL_TREE;
 }
