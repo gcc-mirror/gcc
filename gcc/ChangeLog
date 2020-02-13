@@ -1,5 +1,10 @@
 2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Disable if-conversion step when optimized for size.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_conditional_register_usage): R0-R3 and
 	R12-R15 are always in ARCOMPACT16_REGS register class.
 	* config/arc/arc.opt (mq-class): Deprecate.
