@@ -1,5 +1,9 @@
 2020-02-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93713
+	* name-lookup.c (matching_fn_p): A function does not match a
+	template.
+
 	PR c++/93643
 	PR c++/91476
 	* tree.c (decl_linkage): Always lk_none for locals.
