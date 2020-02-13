@@ -1,5 +1,20 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93696
+	* gcc.target/i386/pr93696-1.c: New test.
+	* gcc.target/i386/pr93696-2.c: New test.
+	* gcc.target/i386/avx512bitalg-vpopcntw-1.c (TEST): Fix argument order
+	of _mm*_mask_popcnt_*.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntbvl.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntwvl.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntw.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c (foo): Likewise.
+
 	PR tree-optimization/93582
 	* gcc.dg/tree-ssa/pr93582-1.c: New test.
 	* gcc.dg/tree-ssa/pr93582-2.c: New test.
