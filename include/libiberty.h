@@ -713,11 +713,6 @@ extern unsigned long long int strtoull (const char *nptr,
                                         char **endptr, int base);
 #endif
 
-#if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
-/* Compare version strings.  */
-extern int strverscmp (const char *, const char *);
-#endif
-
 /* Set the title of a process */
 extern void setproctitle (const char *name, ...);
 
