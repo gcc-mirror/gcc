@@ -1,5 +1,18 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93696
+	* config/i386/avx512bitalgintrin.h (_mm512_mask_popcnt_epi8,
+	_mm512_mask_popcnt_epi16, _mm256_mask_popcnt_epi8,
+	_mm256_mask_popcnt_epi16, _mm_mask_popcnt_epi8,
+	_mm_mask_popcnt_epi16): Rename __B argument to __A and __A to __W,
+	pass __A to the builtin followed by __W instead of __A followed by
+	__B.
+	* config/i386/avx512vpopcntdqintrin.h (_mm512_mask_popcnt_epi32,
+	_mm512_mask_popcnt_epi64): Likewise.
+	* config/i386/avx512vpopcntdqvlintrin.h (_mm_mask_popcnt_epi32,
+	_mm256_mask_popcnt_epi32, _mm_mask_popcnt_epi64,
+	_mm256_mask_popcnt_epi64): Likewise.
+
 	PR target/93673
 	* config/i386/sse.md (k<code><mode>): Drop mode from last operand and
 	use const_0_to_255_operand predicate instead of immediate_operand.
