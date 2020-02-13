@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { ! { clmcpu } } } */
-/* { dg-options "-mcpu=nps400 -mq-class -mbitops -munaligned-access -mcmem -O2 -fno-strict-aliasing" } */
+/* { dg-options "-mcpu=nps400 -mbitops -munaligned-access -mcmem -O2 -fno-strict-aliasing" } */
 
 enum npsdp_mem_space_type {
   NPSDP_EXTERNAL_MS = 1

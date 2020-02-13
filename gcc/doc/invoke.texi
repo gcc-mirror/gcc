@@ -17845,7 +17845,7 @@ while increasing the instruction count.
 
 @item -mq-class
 @opindex mq-class
-Enable @samp{q} instruction alternatives.
+Ths option is deprecated.  Enable @samp{q} instruction alternatives.
 This is the default for @option{-Os}.
 
 @item -mRcq

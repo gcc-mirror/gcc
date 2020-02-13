@@ -1,5 +1,9 @@
 2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/nps400-1.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/or-cnst-size2.c: Update test.
 
 2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>

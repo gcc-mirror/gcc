@@ -1427,9 +1427,6 @@ arc_override_options (void)
   if (flag_no_common == 255)
     flag_no_common = !TARGET_NO_SDATA_SET;
 
-  if (TARGET_MIXED_CODE)
-    TARGET_Q_CLASS = 1;
-
   /* Check for small data option */
   if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;
@@ -1956,8 +1953,7 @@ arc_conditional_register_usage (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (i < ILINK1_REG)
       {
-	if ((TARGET_Q_CLASS || TARGET_RRQ_CLASS)
-	    && ((i <= R3_REG) || ((i >= R12_REG) && (i <= R15_REG))))
+	if ((i <= R3_REG) || ((i >= R12_REG) && (i <= R15_REG)))
 	  arc_regno_reg_class[i] = ARCOMPACT16_REGS;
 	else
 	  arc_regno_reg_class[i] = GENERAL_REGS;
