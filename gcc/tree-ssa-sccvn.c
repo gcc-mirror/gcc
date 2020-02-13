@@ -2586,13 +2586,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && is_gimple_reg_type (vr->type)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
-	   && CHAR_BIT == 8 && BITS_PER_UNIT == 8
+	   && CHAR_BIT == 8
+	   && BITS_PER_UNIT == 8
+	   && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
 	   /* native_encode and native_decode operate on arrays of bytes
 	      and so fundamentally need a compile-time size and offset.  */
 	   && maxsize.is_constant (&maxsizei)
-	   && maxsizei % BITS_PER_UNIT == 0
 	   && offset.is_constant (&offseti)
-	   && offseti % BITS_PER_UNIT == 0
 	   && (is_gimple_min_invariant (gimple_assign_rhs1 (def_stmt))
 	       || (TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
 		   && is_gimple_min_invariant (SSA_VAL (gimple_assign_rhs1 (def_stmt))))))
@@ -2617,8 +2617,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  && !reverse
 	  && !storage_order_barrier_p (lhs)
 	  && known_eq (maxsize2, size2)
-	  && multiple_p (size2, BITS_PER_UNIT)
-	  && multiple_p (offset2, BITS_PER_UNIT)
 	  && adjust_offsets_for_equal_base_address (base, &offset,
 						    base2, &offset2)
 	  && offset.is_constant (&offseti)
@@ -2629,37 +2627,80 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      && known_subrange_p (offseti, maxsizei, offset2, size2))
 	    {
 	      /* We support up to 512-bit values (for V8DFmode).  */
-	      unsigned char buffer[64];
+	      unsigned char buffer[65];
 	      int len;
 
 	      tree rhs = gimple_assign_rhs1 (def_stmt);
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = SSA_VAL (rhs);
-	      unsigned pad = 0;
-	      if (BYTES_BIG_ENDIAN
-		  && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (rhs))))
-		{
-		  /* On big-endian the padding is at the 'front' so
-		     just skip the initial bytes.  */
-		  fixed_size_mode mode
-		    = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (rhs)));
-		  pad = GET_MODE_SIZE (mode) - size2i / BITS_PER_UNIT;
-		}
 	      len = native_encode_expr (rhs,
-					buffer, sizeof (buffer),
-					((offseti - offset2i) / BITS_PER_UNIT
-					 + pad));
+					buffer, sizeof (buffer) - 1,
+					(offseti - offset2i) / BITS_PER_UNIT);
 	      if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
 		{
 		  tree type = vr->type;
+		  unsigned char *buf = buffer;
+		  unsigned int amnt = 0;
 		  /* Make sure to interpret in a type that has a range
 		     covering the whole access size.  */
 		  if (INTEGRAL_TYPE_P (vr->type)
 		      && maxsizei != TYPE_PRECISION (vr->type))
 		    type = build_nonstandard_integer_type (maxsizei,
 							   TYPE_UNSIGNED (type));
-		  tree val = native_interpret_expr (type, buffer,
-						    maxsizei / BITS_PER_UNIT);
+		  if (BYTES_BIG_ENDIAN)
+		    {
+		      /* For big-endian native_encode_expr stored the rhs
+			 such that the LSB of it is the LSB of buffer[len - 1].
+			 That bit is stored into memory at position
+			 offset2 + size2 - 1, i.e. in byte
+			 base + (offset2 + size2 - 1) / BITS_PER_UNIT.
+			 E.g. for offset2 1 and size2 14, rhs -1 and memory
+			 previously cleared that is:
+			 0        1
+			 01111111|11111110
+			 Now, if we want to extract offset 2 and size 12 from
+			 it using native_interpret_expr (which actually works
+			 for integral bitfield types in terms of byte size of
+			 the mode), the native_encode_expr stored the value
+			 into buffer as
+			 XX111111|11111111
+			 and returned len 2 (the X bits are outside of
+			 precision).
+			 Let sz be maxsize / BITS_PER_UNIT if not extracting
+			 a bitfield, and GET_MODE_SIZE otherwise.
+			 We need to align the LSB of the value we want to
+			 extract as the LSB of buf[sz - 1].
+			 The LSB from memory we need to read is at position
+			 offset + maxsize - 1.  */
+		      HOST_WIDE_INT sz = maxsizei / BITS_PER_UNIT;
+		      if (INTEGRAL_TYPE_P (type))
+			sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+		      amnt = ((unsigned HOST_WIDE_INT) offset2i + size2i
+			      - offseti - maxsizei) % BITS_PER_UNIT;
+		      if (amnt)
+			shift_bytes_in_array_right (buffer, len, amnt);
+		      amnt = ((unsigned HOST_WIDE_INT) offset2i + size2i
+			      - offseti - maxsizei - amnt) / BITS_PER_UNIT;
+		      if ((unsigned HOST_WIDE_INT) sz + amnt > (unsigned) len)
+			len = 0;
+		      else
+			{
+			  buf = buffer + len - sz - amnt;
+			  len -= (buf - buffer);
+			}
+		    }
+		  else
+		    {
+		      amnt = ((unsigned HOST_WIDE_INT) offset2i
+			      - offseti) % BITS_PER_UNIT;
+		      if (amnt)
+			{
+			  buffer[len] = 0;
+			  shift_bytes_in_array_left (buffer, len + 1, amnt);
+			  buf = buffer + 1;
+			}
+		    }
+		  tree val = native_interpret_expr (type, buf, len);
 		  /* If we chop off bits because the types precision doesn't
 		     match the memory access size this is ok when optimizing
 		     reads but not when called from the DSE code during
@@ -2677,7 +2718,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		    return data->finish (get_alias_set (lhs), val);
 		}
 	    }
-	  else if (ranges_known_overlap_p (offseti, maxsizei, offset2i, size2i))
+	  else if (ranges_known_overlap_p (offseti, maxsizei, offset2i,
+					   size2i)
+		   && maxsizei % BITS_PER_UNIT == 0
+		   && offseti % BITS_PER_UNIT == 0
+		   && size2i % BITS_PER_UNIT == 0
+		   && offset2i % BITS_PER_UNIT == 0)
 	    {
 	      pd_data pd;
 	      tree rhs = gimple_assign_rhs1 (def_stmt);

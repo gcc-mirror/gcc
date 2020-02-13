@@ -1,3 +1,10 @@
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-1.c: New test.
+	* gcc.dg/tree-ssa/pr93582-2.c: New test.
+	* gcc.dg/tree-ssa/pr93582-3.c: New test.
+
 2020-02-13  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/93717

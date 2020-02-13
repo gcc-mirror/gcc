@@ -1,5 +1,26 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93582
+	* fold-const.h (shift_bytes_in_array_left,
+	shift_bytes_in_array_right): Declare.
+	* fold-const.c (shift_bytes_in_array_left,
+	shift_bytes_in_array_right): New function, moved from
+	gimple-ssa-store-merging.c, no longer static.
+	* gimple-ssa-store-merging.c (shift_bytes_in_array): Move
+	to gimple-ssa-store-merging.c and rename to shift_bytes_in_array_left.
+	(shift_bytes_in_array_right): Move to gimple-ssa-store-merging.c.
+	(encode_tree_to_bitpos): Use shift_bytes_in_array_left instead of
+	shift_bytes_in_array.
+	(verify_shift_bytes_in_array): Rename to ...
+	(verify_shift_bytes_in_array_left): ... this.  Use
+	shift_bytes_in_array_left instead of shift_bytes_in_array.
+	(store_merging_c_tests): Call verify_shift_bytes_in_array_left
+	instead of verify_shift_bytes_in_array.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): For native_encode_expr
+	/ native_interpret_expr where the store covers all needed bits,
+	punt on PDP-endian, otherwise allow all involved offsets and sizes
+	not to be byte-aligned.
+
 	PR target/93673
 	* config/i386/sse.md (k<code><mode>): Drop mode from last operand and
 	use const_0_to_255_operand predicate instead of immediate_operand.
