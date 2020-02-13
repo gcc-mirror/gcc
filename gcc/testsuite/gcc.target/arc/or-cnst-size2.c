@@ -9,4 +9,4 @@ int foo (void)
 }
 
 /* { dg-final { scan-assembler "tst" } } */
-/* { dg-final { scan-assembler "bset.eq" } } */
+/* { dg-final { scan-assembler "bset" } } */

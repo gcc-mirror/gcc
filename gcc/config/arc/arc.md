@@ -228,6 +228,10 @@
   ]
 )
 
+;; What is the insn_cost for this insn?  The target hook can still override
+;; this.  For optimizing for size the "length" attribute is used instead.
+(define_attr "cost" "" (const_int 0))
+
 (define_attr "is_sfunc" "no,yes" (const_string "no"))
 
 ;; Insn type.  Used to default other attribute values.
@@ -3127,9 +3131,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:SI 0 "dest_reg_operand" "=q,r,r")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			  (match_operand:SI 2 "_2_4_8_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand" "0,r,Csz")))]
+		 (match_operand:SI 3 "arc_nonmemory_operand" "0,r,Csz")))]
   ""
-  "add%z2%?\\t%0,%3,%1%&"
+  "add%z2%?\\t%0,%3,%1"
   [(set_attr "type" "shift")
    (set_attr "length" "*,4,8")
    (set_attr "predicable" "yes,no,no")
@@ -3560,26 +3564,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; to truncate a symbol in a u6 immediate; but that's rather exotic, so only
 ; provide one alternatice for this, without condexec support.
 (define_insn "*ashlsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"           "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCsz")
-		   (match_operand:SI 2 "nonmemory_operand"  "K,  K,RcqqM, cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"                 "=q,q, q, r, r,   r")
+	(ashift:SI (match_operand:SI 1 "arc_nonmemory_operand" "!0,q, 0, 0, r,rCsz")
+		   (match_operand:SI 2 "nonmemory_operand"      "K,K,qM,rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
        || register_operand (operands[2], SImode))"
-  "asl%? %0,%1,%2%&"
+  "asl%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn "*ashrsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(ashiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCsz")
-		     (match_operand:SI 2 "nonmemory_operand"  "K,  K,RcqqM, cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"                   "=q,q, q, r, r,   r")
+	(ashiftrt:SI (match_operand:SI 1 "arc_nonmemory_operand" "!0,q, 0, 0, r,rCsz")
+		     (match_operand:SI 2 "nonmemory_operand"      "K,K,qM,rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
        || register_operand (operands[2], SImode))"
-  "asr%? %0,%1,%2%&"
+  "asr%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,no,yes,no,no")
@@ -3600,11 +3604,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn "rotrsi3"
-  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcw, w,   w")
-	(rotatert:SI (match_operand:SI 1 "register_operand"  " 0,cL,cCsz")
-		     (match_operand:SI 2 "nonmemory_operand" "cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"                    "=r, r,   r")
+	(rotatert:SI (match_operand:SI 1 "arc_nonmemory_operand"  " 0,rL,rCsz")
+		     (match_operand:SI 2 "nonmemory_operand"      "rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER"
-  "ror%? %0,%1,%2"
+  "ror%?\\t%0,%1,%2"
   [(set_attr "type" "shift,shift,shift")
    (set_attr "predicable" "yes,no,no")
    (set_attr "length" "4,4,8")])
@@ -4336,16 +4340,15 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 	(ashift:SI (match_operand:SI 1 "register_operand" "")
 		   (match_operand:SI 2 "_1_2_3_operand" "")))
   (set (match_operand:SI 3 "dest_reg_operand" "")
-       (plus:SI (match_operand:SI 4 "nonmemory_operand" "")
-		(match_operand:SI 5 "nonmemory_operand" "")))]
+       (plus:SI (match_operand:SI 4 "arc_nonmemory_operand" "")
+		(match_operand:SI 5 "arc_nonmemory_operand" "")))]
   "(true_regnum (operands[4]) == true_regnum (operands[0])
        || true_regnum (operands[5]) == true_regnum (operands[0]))
    && (peep2_reg_dead_p (2, operands[0])
-       || (true_regnum (operands[3]) == true_regnum (operands[0])))
-   && !(optimize_size && satisfies_constraint_I (operands[4]))
-   && !(optimize_size && satisfies_constraint_I (operands[5]))"
- ;; the preparation statements take care to put proper operand in operands[4]
- ;; operands[4] will always contain the correct operand. This is added to satisfy commutativity
+       || (true_regnum (operands[3]) == true_regnum (operands[0])))"
+ ;; the preparation statements take care to put proper operand in
+ ;; operands[4] operands[4] will always contain the correct
+ ;; operand. This is added to satisfy commutativity
   [(set (match_dup 3)
 	(plus:SI (mult:SI (match_dup 1)
 			  (match_dup 2))
@@ -6422,7 +6425,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
 	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			    (match_operand:SI 2 "_1_2_3_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand"  "0,r,Csz")))]
+		 (match_operand:SI 3 "arc_nonmemory_operand"  "0,r,Csz")))]
   ""
   "add%2%?\\t%0,%3,%1"
   [(set_attr "length" "*,4,8")

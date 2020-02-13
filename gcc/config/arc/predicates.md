@@ -795,3 +795,8 @@
   {
    return arc_check_multi (op, false);
 })
+
+(define_predicate "arc_nonmemory_operand"
+  (ior (match_test "register_operand (op, mode)")
+       (and (match_code "const_int, symbol_ref")
+	    (match_test "!optimize_size"))))

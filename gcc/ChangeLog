@@ -1,5 +1,17 @@
 2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_insn_cost): New function.
+	(TARGET_INSN_COST): Define.
+	* config/arc/arc.md (cost): New attribute.
+	(add_n): Use arc_nonmemory_operand.
+	(ashlsi3_insn): Likewise, also update constraints.
+	(ashrsi3_insn): Likewise.
+	(rotrsi3): Likewise.
+	(add_shift): Likewise.
+	* config/arc/predicates.md (arc_nonmemory_operand): New predicate.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (mulsidi_600): Correctly select mlo/mhi
 	registers.
 	(umulsidi_600): Likewise.
