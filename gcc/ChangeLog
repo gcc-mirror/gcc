@@ -3,6 +3,12 @@
 	Backported from mainline
 	2019-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/92357
+	* ipa-fnsummary.c (ipa_fn_summary_write): Use
+	lto_symtab_encoder_iterator with lsei_start_function_in_partition and
+	lsei_next_function_in_partition instead of walking all cgraph nodes
+	in encoder.
+
 	PR tree-optimization/92930
 	* ipa-pure-const.c (special_builtin_state): Don't handle
 	BUILT_IN_APPLY.

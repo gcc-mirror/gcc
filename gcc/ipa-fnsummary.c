@@ -3413,24 +3413,24 @@ static void
 ipa_fn_summary_write (void)
 {
   struct output_block *ob = create_output_block (LTO_section_ipa_fn_summary);
+  lto_symtab_encoder_iterator lsei;
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
-  int i;
 
-  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
+       lsei_next_function_in_partition (&lsei))
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
-      if (cnode && cnode->definition && !cnode->alias)
+      cgraph_node *cnode = lsei_cgraph_node (lsei);
+      if (cnode->definition && !cnode->alias)
 	count++;
     }
   streamer_write_uhwi (ob, count);
 
-  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
+       lsei_next_function_in_partition (&lsei))
     {
-      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
-      if (cnode && cnode->definition && !cnode->alias)
+      cgraph_node *cnode = lsei_cgraph_node (lsei);
+      if (cnode->definition && !cnode->alias)
 	{
 	  struct ipa_fn_summary *info = ipa_fn_summaries->get (cnode);
 	  struct bitpack_d bp;
