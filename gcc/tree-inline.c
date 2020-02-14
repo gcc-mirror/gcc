@@ -4499,7 +4499,8 @@ reset_debug_bindings (copy_body_data *id, gimple_stmt_iterator gsi)
 /* If STMT is a GIMPLE_CALL, replace it with its inline expansion.  */
 
 static bool
-expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
+expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
+		    bitmap to_purge)
 {
   tree use_retvar;
   tree fn;
@@ -4644,7 +4645,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       gimple_call_set_fndecl (stmt, edge->callee->decl);
       update_stmt (stmt);
       id->src_node->remove ();
-      expand_call_inline (bb, stmt, id);
+      expand_call_inline (bb, stmt, id, to_purge);
       maybe_remove_unused_call_args (cfun, stmt);
       return true;
     }
@@ -5002,10 +5003,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     }
 
   if (purge_dead_abnormal_edges)
-    {
-      gimple_purge_dead_eh_edges (return_block);
-      gimple_purge_dead_abnormal_call_edges (return_block);
-    }
+    bitmap_set_bit (to_purge, return_block->index);
 
   /* If the value of the new expression is ignored, that's OK.  We
      don't warn about this for CALL_EXPRs, so we shouldn't warn about
@@ -5043,7 +5041,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
    in a MODIFY_EXPR.  */
 
 static bool
-gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
+gimple_expand_calls_inline (basic_block bb, copy_body_data *id,
+			    bitmap to_purge)
 {
   gimple_stmt_iterator gsi;
   bool inlined = false;
@@ -5055,7 +5054,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
 
       if (is_gimple_call (stmt)
 	  && !gimple_call_internal_p (stmt))
-	inlined |= expand_call_inline (bb, stmt, id);
+	inlined |= expand_call_inline (bb, stmt, id, to_purge);
     }
 
   return inlined;
@@ -5068,6 +5067,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
 static void
 fold_marked_statements (int first, hash_set<gimple *> *statements)
 {
+  auto_bitmap to_purge;
   for (; first < last_basic_block_for_fn (cfun); first++)
     if (BASIC_BLOCK_FOR_FN (cfun, first))
       {
@@ -5079,7 +5079,8 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 	  if (statements->contains (gsi_stmt (gsi)))
 	    {
 	      gimple *old_stmt = gsi_stmt (gsi);
-	      tree old_decl = is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
+	      tree old_decl
+		= is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
 
 	      if (old_decl && fndecl_built_in_p (old_decl))
 		{
@@ -5123,8 +5124,7 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 				 is mood anyway.  */
 			      if (maybe_clean_or_replace_eh_stmt (old_stmt,
 								  new_stmt))
-				gimple_purge_dead_eh_edges (
-				  BASIC_BLOCK_FOR_FN (cfun, first));
+				bitmap_set_bit (to_purge, first);
 			      break;
 			    }
 			  gsi_next (&i2);
@@ -5144,11 +5144,11 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 						       new_stmt);
 
 		  if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
-		    gimple_purge_dead_eh_edges (BASIC_BLOCK_FOR_FN (cfun,
-								    first));
+		    bitmap_set_bit (to_purge, first);
 		}
 	    }
       }
+  gimple_purge_all_dead_eh_edges (to_purge);
 }
 
 /* Expand calls to inline functions in the body of FN.  */
@@ -5194,8 +5194,9 @@ optimize_inline_calls (tree fn)
      will split id->current_basic_block, and the new blocks will
      follow it; we'll trudge through them, processing their CALL_EXPRs
      along the way.  */
+  auto_bitmap to_purge;
   FOR_EACH_BB_FN (bb, cfun)
-    inlined_p |= gimple_expand_calls_inline (bb, &id);
+    inlined_p |= gimple_expand_calls_inline (bb, &id, to_purge);
 
   pop_gimplify_context (NULL);
 
@@ -5214,6 +5215,21 @@ optimize_inline_calls (tree fn)
   update_max_bb_count ();
   fold_marked_statements (last, id.statements_to_fold);
   delete id.statements_to_fold;
+
+  /* Finally purge EH and abnormal edges from the call stmts we inlined.
+     We need to do this after fold_marked_statements since that may walk
+     the SSA use-def chain.  */
+  unsigned i;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (to_purge, 0, i, bi)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (bb)
+	{
+	  gimple_purge_dead_eh_edges (bb);
+	  gimple_purge_dead_abnormal_call_edges (bb);
+	}
+    }
 
   gcc_assert (!id.debug_stmts.exists ());
 
