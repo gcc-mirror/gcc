@@ -3,6 +3,9 @@
 	Backported from mainline
 	2020-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93333
+	* gcc.c-torture/compile/pr93333.c: New test.
+
 	PR target/93073
 	* gcc.target/powerpc/pr93073.c: New test.
 

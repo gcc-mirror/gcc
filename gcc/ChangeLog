@@ -3,6 +3,10 @@
 	Backported from mainline
 	2020-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93333
+	* config/riscv/riscv.c (riscv_rtx_costs) <case ZERO_EXTRACT>: Verify
+	the last two operands are CONST_INT_P before using them as such.
+
 	PR target/93073
 	* config/rs6000/rs6000.c (rs6000_emit_cmove): If using fsel, punt for
 	compare_mode other than SFmode or DFmode.

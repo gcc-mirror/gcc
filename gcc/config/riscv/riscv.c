@@ -1515,7 +1515,10 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case ZERO_EXTRACT:
       /* This is an SImode shift.  */
-      if (outer_code == SET && (INTVAL (XEXP (x, 2)) > 0)
+      if (outer_code == SET
+	  && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2))
+	  && (INTVAL (XEXP (x, 2)) > 0)
 	  && (INTVAL (XEXP (x, 1)) + INTVAL (XEXP (x, 2)) == 32))
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
