@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92992
+	* g++.dg/cpp0x/nullptr45.C: New test.
+
 	2019-12-19  Jakub Jelinek  <jakub@redhat.com>
 
  	PR fortran/92977
