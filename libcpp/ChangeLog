@@ -1,3 +1,20 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Partially implement P1042R1: __VA_OPT__ wording clarifications
+	PR preprocessor/92319
+	* macro.c (expand_arg): Move declarations before vaopt_state
+	definition.
+	(class vaopt_state): Move enum update_type definition earlier.  Remove
+	m_allowed member, add m_arg and m_update members.
+	(vaopt_state::vaopt_state): Change last argument from bool any_args
+	to macro_arg *arg, initialize m_arg and m_update instead of m_allowed.
+	(vaopt_state::update): When bumping m_state from 1 to 2 and m_update
+	is ERROR, determine if __VA_ARGS__ expansion has any non-CPP_PADDING
+	tokens and set m_update to INCLUDE if it has any, DROP otherwise.
+	Return m_update instead of m_allowed ? INCLUDE : DROP in m_state >= 2.
+	(replace_args, create_iso_definition): Adjust last argument to
+	vaopt_state ctor.
+
 2020-02-05  Martin Sebor  <msebor@redhat.com>
 
 	* include/cpplib.h (cpp_builtin_type): Remove trailing comma to

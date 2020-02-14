@@ -1,3 +1,9 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Partially implement P1042R1: __VA_OPT__ wording clarifications
+	PR preprocessor/92319
+	* c-c++-common/cpp/va-opt-4.c: New test.
+
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93576
