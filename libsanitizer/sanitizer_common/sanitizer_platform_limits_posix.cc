@@ -1147,8 +1147,12 @@ CHECK_SIZE_AND_OFFSET(ipc_perm, uid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, gid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, cuid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, cgid);
-#if !defined(__aarch64__) || !SANITIZER_LINUX || __GLIBC_PREREQ (2, 21)
+#if (!defined(__aarch64__) || !SANITIZER_LINUX || __GLIBC_PREREQ (2, 21)) && \
+    !defined(__arm__)
 /* On aarch64 glibc 2.20 and earlier provided incorrect mode field.  */
+/* On Arm glibc 2.31 and later provide a different mode field, this field is
+   never used by libsanitizer so we can simply ignore this assert for all glibc
+   versions.  */
 CHECK_SIZE_AND_OFFSET(ipc_perm, mode);
 #endif
 

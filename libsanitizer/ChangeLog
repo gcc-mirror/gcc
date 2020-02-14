@@ -1,3 +1,12 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.cc:
+	Cherry-pick compiler-rt revision r375220.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
