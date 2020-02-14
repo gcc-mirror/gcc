@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92930
+	* gcc.dg/tree-ssa/pr92930.c: New test.
+
 	2019-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92904

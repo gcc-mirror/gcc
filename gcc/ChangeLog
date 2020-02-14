@@ -1,6 +1,12 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92930
+	* ipa-pure-const.c (special_builtin_state): Don't handle
+	BUILT_IN_APPLY.
+
 	2019-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92904
