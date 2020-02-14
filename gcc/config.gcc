@@ -414,7 +414,8 @@ i[34567]86-*-*)
 		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h
 		       waitpkgintrin.h cldemoteintrin.h avx512bf16vlintrin.h
 		       avx512bf16intrin.h enqcmdintrin.h serializeintrin.h
-		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h"
+		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
+		       tsxldtrkintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -448,7 +449,8 @@ x86_64-*-*)
 		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h
 		       waitpkgintrin.h cldemoteintrin.h avx512bf16vlintrin.h
 		       avx512bf16intrin.h enqcmdintrin.h serializeintrin.h
-		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h"
+		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
+		       tsxldtrkintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h

@@ -206,7 +206,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mptwrite",	OPTION_MASK_ISA2_PTWRITE },
   { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
   { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD },
-  { "-mserialize",	OPTION_MASK_ISA2_SERIALIZE }
+  { "-mserialize",	OPTION_MASK_ISA2_SERIALIZE },
+  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1019,6 +1020,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
     IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
     IX86_ATTR_ISA ("serialize", OPT_mserialize),
+    IX86_ATTR_ISA ("tsxldtrk", OPT_mtsxldtrk),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
