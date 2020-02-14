@@ -93,25 +93,14 @@ struct macro_arg_saved_data {
 static const char *vaopt_paste_error =
   N_("'##' cannot appear at either end of __VA_OPT__");
 
+static void expand_arg (cpp_reader *, macro_arg *);
+
 /* A class for tracking __VA_OPT__ state while iterating over a
    sequence of tokens.  This is used during both macro definition and
    expansion.  */
 class vaopt_state {
 
  public:
-
-  /* Initialize the state tracker.  ANY_ARGS is true if variable
-     arguments were provided to the macro invocation.  */
-  vaopt_state (cpp_reader *pfile, bool is_variadic, bool any_args)
-    : m_pfile (pfile),
-    m_allowed (any_args),
-    m_variadic (is_variadic),
-    m_last_was_paste (false),
-    m_state (0),
-    m_paste_location (0),
-    m_location (0)
-  {
-  }
 
   enum update_type
   {
@@ -121,6 +110,20 @@ class vaopt_state {
     BEGIN,
     END
   };
+
+  /* Initialize the state tracker.  ANY_ARGS is true if variable
+     arguments were provided to the macro invocation.  */
+  vaopt_state (cpp_reader *pfile, bool is_variadic, macro_arg *arg)
+    : m_pfile (pfile),
+    m_arg (arg),
+    m_variadic (is_variadic),
+    m_last_was_paste (false),
+    m_state (0),
+    m_paste_location (0),
+    m_location (0),
+    m_update (ERROR)
+  {
+  }
 
   /* Given a token, update the state of this tracker and return a
      boolean indicating whether the token should be be included in the
@@ -154,6 +157,23 @@ class vaopt_state {
 	    return ERROR;
 	  }
 	++m_state;
+	if (m_update == ERROR)
+	  {
+	    if (m_arg == NULL)
+	      m_update = INCLUDE;
+	    else
+	      {
+		m_update = DROP;
+		if (!m_arg->expanded)
+		  expand_arg (m_pfile, m_arg);
+		for (unsigned idx = 0; idx < m_arg->expanded_count; ++idx)
+		  if (m_arg->expanded[idx]->type != CPP_PADDING)
+		    {
+		      m_update = INCLUDE;
+		      break;
+		    }
+	      }
+	  }
 	return DROP;
       }
     else if (m_state >= 2)
@@ -197,7 +217,7 @@ class vaopt_state {
 		return END;
 	      }
 	  }
-	return m_allowed ? INCLUDE : DROP;
+	return m_update;
       }
 
     /* Nothing to do with __VA_OPT__.  */
@@ -219,8 +239,9 @@ class vaopt_state {
   /* The cpp_reader.  */
   cpp_reader *m_pfile;
 
-  /* True if there were varargs.  */
-  bool m_allowed;
+  /* The __VA_ARGS__ argument.  */
+  macro_arg *m_arg;
+
   /* True if the macro is variadic.  */
   bool m_variadic;
   /* If true, the previous token was ##.  This is used to detect when
@@ -239,6 +260,10 @@ class vaopt_state {
 
   /* Location of the __VA_OPT__ token.  */
   location_t m_location;
+
+  /* If __VA_ARGS__ substitutes to no preprocessing tokens,
+     INCLUDE, otherwise DROP.  ERROR when unknown yet.  */
+  update_type m_update;
 };
 
 /* Macro expansion.  */
@@ -256,7 +281,6 @@ static _cpp_buff *collect_args (cpp_reader *, const cpp_hashnode *,
 				_cpp_buff **, unsigned *);
 static cpp_context *next_context (cpp_reader *);
 static const cpp_token *padding_token (cpp_reader *, const cpp_token *);
-static void expand_arg (cpp_reader *, macro_arg *);
 static const cpp_token *new_string_token (cpp_reader *, uchar *, unsigned int);
 static const cpp_token *stringify_arg (cpp_reader *, macro_arg *);
 static void paste_all_tokens (cpp_reader *, const cpp_token *);
@@ -1924,8 +1948,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 				 num_macro_tokens);
     }
   i = 0;
-  vaopt_state vaopt_tracker (pfile, macro->variadic,
-			     args[macro->paramc - 1].count > 0);
+  vaopt_state vaopt_tracker (pfile, macro->variadic, &args[macro->paramc - 1]);
   const cpp_token **vaopt_start = NULL;
   for (src = macro->exp.tokens; src < limit; src++)
     {
@@ -3424,7 +3447,7 @@ create_iso_definition (cpp_reader *pfile)
       macro->count = 1;
     }
 
-  for (vaopt_state vaopt_tracker (pfile, macro->variadic, true);; token = NULL)
+  for (vaopt_state vaopt_tracker (pfile, macro->variadic, NULL);; token = NULL)
     {
       if (!token)
 	{

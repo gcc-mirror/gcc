@@ -1,3 +1,28 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61414
+	* class.c (enum_min_precision): Change prec type from int to int &.
+
+	PR libstdc++/92906
+	* cp-tree.h (enum cp_tree_index): Add CPTI_FALLBACK_DFLOAT32_TYPE,
+	CPTI_FALLBACK_DFLOAT64_TYPE and CPTI_FALLBACK_DFLOAT128_TYPE.
+	(fallback_dfloat32_type, fallback_dfloat64_type,
+	fallback_dfloat128_type): Define.
+	* mangle.c (write_builtin_type): Handle fallback_dfloat*_type like
+	dfloat*_type_node.
+	* rtti.c (emit_support_tinfos): Emit DFP typeinfos even when dfp
+	is disabled for compatibility.
+
+2020-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93713
+	* name-lookup.c (matching_fn_p): A function does not match a
+	template.
+
+	PR c++/93643
+	PR c++/91476
+	* tree.c (decl_linkage): Always lk_none for locals.
+
 2020-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92583

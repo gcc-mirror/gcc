@@ -5266,6 +5266,10 @@ decl_linkage (tree decl)
   if (TREE_CODE (decl) == FIELD_DECL)
     return lk_none;
 
+  /* Things in local scope do not have linkage.  */
+  if (decl_function_context (decl))
+    return lk_none;
+
   /* Things that are TREE_PUBLIC have external linkage.  */
   if (TREE_PUBLIC (decl))
     return lk_external;
@@ -5284,11 +5288,6 @@ decl_linkage (tree decl)
      type.  */
   if (TREE_CODE (decl) == CONST_DECL)
     return decl_linkage (TYPE_NAME (DECL_CONTEXT (decl)));
-
-  /* Things in local scope do not have linkage, if they don't have
-     TREE_PUBLIC set.  */
-  if (decl_function_context (decl))
-    return lk_none;
 
   /* Members of the anonymous namespace also have TREE_PUBLIC unset, but
      are considered to have external linkage for language purposes, as do

@@ -136,7 +136,7 @@ fi
 #  disable the fix.
 
 case "${target_canonical}" in
-    *-*-vxworks*)
+    *-*-vxworks* | powerpc*-*-linux*)
 	test -f ${MACRO_LIST} &&  echo > ${MACRO_LIST}
         ;;
 esac

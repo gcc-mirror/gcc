@@ -86,6 +86,7 @@ for ml in `cat ${itoolsdatadir}/fixinc_list`; do
   sysroot_headers_suffix=`echo ${ml} | sed -e 's/;.*$//'`
   multi_dir=`echo ${ml} | sed -e 's/^[^;]*;//'`
   subincdir=${incdir}${multi_dir}
+  ${mkinstalldirs} ${subincdir}
   . ${itoolsdatadir}/mkheaders.conf
   if [ x${STMP_FIXINC} != x ] ; then
 	TARGET_MACHINE="${target}" target_canonical="${target}" \
@@ -100,5 +101,5 @@ for ml in `cat ${itoolsdatadir}/fixinc_list`; do
 	fi
   fi
 
-  cp ${itoolsdatadir}/include${multi_dir}/limits.h ${subincdir}
+  cp ${itoolsdatadir}/include${multi_dir}/limits.h ${subincdir}/limits.h
 done

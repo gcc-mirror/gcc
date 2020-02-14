@@ -66,6 +66,7 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_tempbuf.h>
 #include <bits/stl_raw_storage_iter.h>
+#include <bits/ranges_uninitialized.h>
 
 #if __cplusplus >= 201103L
 #  include <exception>        	  // std::exception
