@@ -3972,11 +3972,8 @@ eligible_for_call_delay (rtx_insn *trial)
   if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
     return 0;
 
-  /* Binutils allows
-       call __tls_get_addr, %tgd_call (foo)
-        add %l7, %o0, %o0, %tgd_add (foo)
-     while Sun as/ld does not.  */
-  if (TARGET_GNU_TLS || !TARGET_TLS)
+  /* The only problematic cases are TLS sequences with Sun as/ld.  */
+  if ((TARGET_GNU_TLS && HAVE_GNU_LD) || !TARGET_TLS)
     return 1;
 
   pat = PATTERN (trial);
