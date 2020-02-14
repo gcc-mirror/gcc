@@ -1076,6 +1076,10 @@ reload_combine_recognize_pattern (rtx_insn *insn)
       struct reg_use *use = reg_state[regno].reg_use + i;
       if (GET_MODE (*use->usep) != mode)
 	return false;
+      /* Don't try to adjust (use (REGX)).  */
+      if (GET_CODE (PATTERN (use->insn)) == USE
+	  && &XEXP (PATTERN (use->insn), 0) == use->usep)
+	return false;
     }
 
   /* Look for (set (REGX) (CONST_INT))

@@ -1,6 +1,12 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93402
+	* postreload.c (reload_combine_recognize_pattern): Don't try to adjust
+	USE insns.
+
 	2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91298

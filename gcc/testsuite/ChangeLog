@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93402
+	* gcc.c-torture/execute/pr93402.c: New test.
+
 	2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91298
