@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/93087
+	* c-c++-common/cold-1.c: New test.
+
 	2019-12-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92438
