@@ -1,3 +1,11 @@
+2020-02-14  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* lex.c (cpp_directive_only_process): Cope with number
+	punctuators.
+	gcc/testsuite/
+	* c-c++-common/cpp/dir-only-8.c: New.
+
 2020-02-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

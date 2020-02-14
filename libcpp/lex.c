@@ -4267,6 +4267,7 @@ cpp_directive_only_process (cpp_reader *pfile,
       bool bol = true;
       bool raw = false;
 
+      const unsigned char *lwm = base;
       for (const unsigned char *pos = base, *limit = buffer->rlimit;
 	   pos < limit;)
 	{
@@ -4407,10 +4408,66 @@ cpp_directive_only_process (cpp_reader *pfile,
 		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
 				     "unterminated comment");
 	      done_comment:
+		lwm = pos;
 		break;
 	      }
 
 	    case '\'':
+	      if (CPP_OPTION (pfile, digit_separators)
+		  && ISIDNUM (*do_peek_next (pos, limit)))
+		{
+		  /* Check whether this is a number punctuator
+		     \.?<digit>(<digit>|<identifier-nondigit>
+		     |'<digit>|'<nondigit>|[eEpP]<sign>|\.)*  */
+		  const unsigned char *peek = pos - 1;
+		  bool maybe_start = false;
+		  while ((peek = do_peek_prev (peek, lwm)))
+		    {
+		      unsigned char p = *peek;
+		      if (ISDIGIT (p))
+			maybe_start = true;
+		      else if (p == '.')
+			;
+		      else if (ISIDNUM (p))
+			maybe_start = false;
+		      else if (p == '+' || p == '-')
+			{
+			  if (const unsigned char *peek_prev
+			      = do_peek_prev (peek, lwm))
+			    {
+			      p = *peek_prev;
+			      if (p == 'e' || p == 'E'
+				  || p == 'p' || p == 'P')
+				maybe_start = false;
+			      else
+				break;
+			    }
+			  else
+			    break;
+			}
+		      else if (p == '\'')
+			{
+			  /* If this is lwm, this must be the end of a
+			     previous string.  So this is a trailing
+			     literal type, (a) if those are allowed,
+			     and (b) maybe_start is false.  Otherwise
+			     this must be a CPP_NUMBER because we've
+			     met another ', and we'd have checked that
+			     in its own right.  */
+			  if (peek != lwm || !CPP_OPTION (pfile, uliterals))
+			    maybe_start = true;
+			  break;
+			}
+		      else
+			break;
+		    }
+
+		  if (maybe_start)
+		    /* A CPP NUMBER.  */
+		    goto dflt;
+		}
+	      /* FALLTHROUGH  */
+
 	    case '\"':
 	      {
 		/* (Possibly raw) string or char literal.  */
@@ -4454,7 +4511,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 			  goto bad_string;
 		      }
 		  }
-		
+
 		while (pos < limit)
 		  {
 		    char c = *pos++;
@@ -4503,7 +4560,8 @@ cpp_directive_only_process (cpp_reader *pfile,
 		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
 				     "unterminated literal");
 		
-	      done_string:;
+	      done_string:
+		lwm = pos - 1;
 	      }
 	      goto dflt;
 
@@ -4566,14 +4624,14 @@ cpp_directive_only_process (cpp_reader *pfile,
 		     non-alphanum (not a raw literal)
 		     further that must not be preceeded by " or ', (not a
 		     user literal suffix'd string or char).  */
-		  // FIXME, backup over utf8?
+		  // FIXME, backup over utf8?,
 		  const unsigned char *peek = pos - 1;
 		  bool first = true;
 		  bool eight = false;
 
 		  /* Peek backwards to determine if we're really
 		     looking at a raw literal.  */
-		  while ((peek = do_peek_prev (peek, base)))
+		  while ((peek = do_peek_prev (peek, lwm)))
 		    {
 		      unsigned char c = *peek;
 		      if (first)
