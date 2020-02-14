@@ -43,10 +43,10 @@ _mm512_popcnt_epi32 (__m512i __A)
 
 extern __inline __m512i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_popcnt_epi32 (__m512i __A, __mmask16 __U, __m512i __B)
+_mm512_mask_popcnt_epi32 (__m512i __W, __mmask16 __U, __m512i __A)
 {
   return (__m512i) __builtin_ia32_vpopcountd_v16si_mask ((__v16si) __A,
-							 (__v16si) __B,
+							 (__v16si) __W,
 							 (__mmask16) __U);
 }
 
@@ -69,10 +69,10 @@ _mm512_popcnt_epi64 (__m512i __A)
 
 extern __inline __m512i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_popcnt_epi64 (__m512i __A, __mmask8 __U, __m512i __B)
+_mm512_mask_popcnt_epi64 (__m512i __W, __mmask8 __U, __m512i __A)
 {
   return (__m512i) __builtin_ia32_vpopcountq_v8di_mask ((__v8di) __A,
-							(__v8di) __B,
+							(__v8di) __W,
 							(__mmask8) __U);
 }
 

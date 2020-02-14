@@ -18,13 +18,13 @@ int foo ()
   __mmask8 msk8;
   __m256i c256 = _mm256_popcnt_epi16 (y);
   asm volatile ("" : "+v" (c256));
-  c256 = _mm256_mask_popcnt_epi16 (y, msk16, y_1);
+  c256 = _mm256_mask_popcnt_epi16 (y_1, msk16, y);
   asm volatile ("" : "+v" (c256));
   c256 = _mm256_maskz_popcnt_epi16 (msk16, y);
   asm volatile ("" : "+v" (c256));
   __m128i c128 = _mm_popcnt_epi16 (x);
   asm volatile ("" : "+v" (c128));
-  c128 = _mm_mask_popcnt_epi16 (x, msk8, x_1);
+  c128 = _mm_mask_popcnt_epi16 (x_1, msk8, x);
   asm volatile ("" : "+v" (c128));
   c128 = _mm_maskz_popcnt_epi16 (msk8, x);
   asm volatile ("" : "+v" (c128));
