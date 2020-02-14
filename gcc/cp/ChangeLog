@@ -1,6 +1,23 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* parser.c (cp_parser_omp_declare_reduction_exprs): If
+	processing_template_decl, wrap the combiner or initializer
+	into EXPR_STMT.
+	* decl.c (start_preparsed_function): Don't start a lambda scope
+	for DECL_OMP_DECLARE_REDUCTION_P functions.
+	(finish_function): Don't finish a lambda scope for
+	DECL_OMP_DECLARE_REDUCTION_P functions, nor cp_fold_function
+	them nor cp_genericize them.
+	* mangle.c (decl_mangling_context): Look through
+	DECL_OMP_DECLARE_REDUCTION_P functions.
+	* semantics.c (expand_or_defer_fn_1): For DECL_OMP_DECLARE_REDUCTION_P
+	functions, use tentative linkage, don't keep their bodies with
+	-fkeep-inline-functions and return false at the end.
+
 	2019-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92524

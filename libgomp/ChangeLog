@@ -1,3 +1,12 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* testsuite/libgomp.c++/udr-20.C: New test.
+	* testsuite/libgomp.c++/udr-21.C: New test.
+
 2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline

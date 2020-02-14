@@ -37615,6 +37615,8 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
   combiner = cp_parser_expression (parser);
   finish_expr_stmt (combiner);
   block = finish_omp_structured_block (block);
+  if (processing_template_decl)
+    block = build_stmt (input_location, EXPR_STMT, block);
   add_stmt (block);
 
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
@@ -37717,6 +37719,8 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
 
       block = finish_omp_structured_block (block);
       cp_walk_tree (&block, cp_remove_omp_priv_cleanup_stmt, omp_priv, NULL);
+      if (processing_template_decl)
+	block = build_stmt (input_location, EXPR_STMT, block);
       add_stmt (block);
 
       if (ctor)
