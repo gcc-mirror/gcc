@@ -1,3 +1,11 @@
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92704
+	* gcc.dg/torture/pr92704.c: New testcase.
+
 2020-02-14 Hongtao Liu  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/avx512vbmi2-vpshld-1.c: New test.
