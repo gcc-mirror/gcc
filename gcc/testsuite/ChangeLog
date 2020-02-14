@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92615
+	* gcc.target/i386/pr92615.c: New test.
+
 	2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90842
