@@ -1965,8 +1965,7 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
 
   def = NULL_TREE;
   scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
-  if (TREE_CODE (oprnd1) == INTEGER_CST
-      || TYPE_MODE (TREE_TYPE (oprnd1)) == mode)
+  if (dt != vect_internal_def || TYPE_MODE (TREE_TYPE (oprnd1)) == mode)
     def = oprnd1;
   else if (def_stmt && gimple_assign_cast_p (def_stmt))
     {
@@ -1982,14 +1981,7 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
     {
       def = vect_recog_temp_ssa_var (type, NULL);
       def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd1);
-      if (ext_def)
-	{
-	  basic_block new_bb
-	    = gsi_insert_on_edge_immediate (ext_def, def_stmt);
-	  gcc_assert (!new_bb);
-	}
-      else
-	append_pattern_def_seq (stmt_vinfo, def_stmt);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
     }
   stype = TREE_TYPE (def);
   scalar_int_mode smode = SCALAR_INT_TYPE_MODE (stype);
