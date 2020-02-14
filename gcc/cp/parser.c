@@ -26811,11 +26811,26 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	  /* A parameter declaration begins with a decl-specifier,
 	     which is either the "attribute" keyword, a storage class
 	     specifier, or (usually) a type-specifier.  */
-	  && !cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
+	  && (!cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
+	      /* GNU attributes can actually appear both at the start of
+		 a parameter and parenthesized declarator.
+		 S (__attribute__((unused)) int);
+		 is a constructor, but
+		 S (__attribute__((unused)) foo) (int);
+		 is a function declaration.  */
+	      || (cp_parser_allow_gnu_extensions_p (parser)
+		  && cp_next_tokens_can_be_gnu_attribute_p (parser))))
 	{
 	  tree type;
 	  tree pushed_scope = NULL_TREE;
 	  unsigned saved_num_template_parameter_lists;
+
+	  if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+	    {
+	      unsigned int n = cp_parser_skip_gnu_attributes_opt (parser, 1);
+	      while (--n)
+		cp_lexer_consume_token (parser->lexer);
+	    }
 
 	  /* Names appearing in the type-specifier should be looked up
 	     in the scope of the class.  */

@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92438
+	* g++.dg/ext/attrib61.C: New test.
+
 	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92992
