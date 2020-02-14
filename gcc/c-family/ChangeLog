@@ -1,3 +1,20 @@
+2020-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c: Include bitmap.h.
+	(dump_ada_double_name): Rename into...
+	(dump_anonymous_type_name): ...this.  Always use the TYPE_UID.
+	(dump_ada_array_type): Adjust to above renaming.  Robustify.
+	(dump_nested_types_1): New function copied from...  Add dumped_types
+	parameter and pass it down to dump_nested_type.
+	(dump_nested_types): ...this.  Remove parent parameter.  Just call
+	dump_nested_types_1 on an automatic bitmap.
+	(dump_nested_type): Add dumped_types parameter.
+	<ARRAY_TYPE>: Do not dump it if already present in dumped_types.
+	Adjust recursive calls and adjust to above renaming.
+	(dump_ada_declaration): Adjust call to dump_nested_types.
+	Tidy up and adjust to above renaming.
+	(dump_ada_specs): Initialize and release bitmap obstack.
+
 2020-02-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/93640
