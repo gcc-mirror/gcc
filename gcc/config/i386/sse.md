@@ -1537,7 +1537,7 @@
   [(set (match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "=k")
 	(any_lshift:SWI1248_AVX512BWDQ
 	  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")
-	  (match_operand:QI 2 "immediate_operand" "n")))
+	  (match_operand 2 "const_0_to_255_operand" "n")))
    (unspec [(const_int 0)] UNSPEC_MASKOP)]
   "TARGET_AVX512F"
   "k<mshift><mskmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
@@ -19650,7 +19650,7 @@
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
           (unspec:<avx512fmaskmode>
             [(match_operand:VF_AVX512VL 1 "register_operand" "v")
-             (match_operand:QI 2 "const_0_to_255_operand" "n")]
+             (match_operand 2 "const_0_to_255_operand" "n")]
              UNSPEC_FPCLASS))]
    "TARGET_AVX512DQ"
    "vfpclass<ssemodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
@@ -19664,7 +19664,7 @@
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
 	    [(match_operand:VF_128 1 "register_operand" "v")
-             (match_operand:QI 2 "const_0_to_255_operand" "n")]
+             (match_operand 2 "const_0_to_255_operand" "n")]
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]
    "TARGET_AVX512DQ"
@@ -20269,7 +20269,7 @@
 	(unspec:VI1_AVX512F
 	  [(match_operand:VI1_AVX512F 1 "register_operand" "%0,x,v")
 	   (match_operand:VI1_AVX512F 2 "nonimmediate_operand" "xBm,xm,vm")
-	   (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
+	   (match_operand 3 "const_0_to_255_operand" "n,n,n")]
 	  UNSPEC_GF2P8AFFINEINV))]
   "TARGET_GFNI"
   "@
@@ -20287,7 +20287,7 @@
 	(unspec:VI1_AVX512F
 	  [(match_operand:VI1_AVX512F 1 "register_operand" "%0,x,v")
 	   (match_operand:VI1_AVX512F 2 "nonimmediate_operand" "xBm,xm,vm")
-	   (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
+	   (match_operand 3 "const_0_to_255_operand" "n,n,n")]
 	  UNSPEC_GF2P8AFFINE))]
   "TARGET_GFNI"
   "@

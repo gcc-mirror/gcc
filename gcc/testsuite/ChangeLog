@@ -1,6 +1,13 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93673
+	* gcc.target/i386/avx512f-pr93673.c: New test.
+	* gcc.target/i386/avx512dq-pr93673.c: New test.
+	* gcc.target/i386/avx512bw-pr93673.c: New test.
+
 	2020-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93670
