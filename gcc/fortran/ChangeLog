@@ -1,6 +1,12 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92899
+	* trans-openmp.c (gfc_trans_omp_atomic): For GFC_OMP_ATOMIC_SWAP,
+	do look through conversion on expr2 if any.
+
 	2019-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92781

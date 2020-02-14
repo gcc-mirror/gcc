@@ -3182,7 +3182,6 @@ gfc_trans_omp_atomic (gfc_code *code)
   expr2 = code->expr2;
   if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
        != GFC_OMP_ATOMIC_WRITE)
-      && (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SWAP) == 0
       && expr2->expr_type == EXPR_FUNCTION
       && expr2->value.function.isym
       && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
