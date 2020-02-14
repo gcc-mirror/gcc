@@ -3219,7 +3219,7 @@ enum_min_precision (tree type)
     enum_to_min_precision = hash_map<tree, int>::create_ggc (37);
 
   bool existed;
-  int prec = enum_to_min_precision->get_or_insert (type, &existed);
+  int &prec = enum_to_min_precision->get_or_insert (type, &existed);
   if (existed)
     return prec;
 
