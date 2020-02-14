@@ -10453,6 +10453,9 @@ the package or subprogram, controlling whether the check will be present.
 
 @geindex Enum_Rep
 
+Note that this attribute is now standard in Ada 202x and is available
+as an implementation defined attribute for earlier Ada versions.
+
 For every enumeration subtype @code{S}, @code{S'Enum_Rep} denotes a
 function with the following spec:
 
@@ -10489,6 +10492,9 @@ may raise @code{Constraint_Error}.
 @geindex Representation of enums
 
 @geindex Enum_Val
+
+Note that this attribute is now standard in Ada 202x and is available
+as an implementation defined attribute for earlier Ada versions.
 
 For every enumeration subtype @code{S}, @code{S'Enum_Val} denotes a
 function with the following spec:
