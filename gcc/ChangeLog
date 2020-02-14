@@ -1,6 +1,14 @@
 2020-02-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2020-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93054
+	* gimplify.c (gimplify_expr): Deal with NOP definitions.
+
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2020-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR debug/92763
