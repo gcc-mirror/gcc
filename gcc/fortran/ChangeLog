@@ -1,6 +1,13 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92781
+	* trans-decl.c (gfc_get_symbol_decl): If sym->backend_decl is
+	current_function_decl, add length to current rather than parent
+	function and expect DECL_CONTEXT (length) to be current_function_decl.
+
 	2019-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/91944

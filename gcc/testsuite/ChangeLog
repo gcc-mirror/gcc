@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92781
+	* gfortran.dg/pr92781.f90: New test.
+
 	2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92732
