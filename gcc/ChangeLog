@@ -1,3 +1,8 @@
+2020-02-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	* rtlanal.c (rtx_cost): Handle a SET up front. Avoid division if
+	the mode is not wider than UNITS_PER_WORD.
+
 2020-02-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/93516
