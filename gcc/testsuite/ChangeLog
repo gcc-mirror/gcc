@@ -1,3 +1,11 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90842
+	* g++.dg/cpp1y/lambda-generic-90842.C: New test.
+
 2020-01-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

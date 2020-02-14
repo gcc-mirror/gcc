@@ -1,3 +1,15 @@
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-21  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/90842
+	* parser.c (cp_parser_decl_specifier_seq): For concept or typedef
+	break early if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+	For type specifiers, set CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS
+	if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR is set.
+
 2020-01-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/91826
