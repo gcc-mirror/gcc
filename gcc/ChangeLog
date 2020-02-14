@@ -1,7 +1,14 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
-	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+	2019-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92904
+	* config/i386/i386.c (ix86_gimplify_va_arg): If need_intregs and
+	not need_temp, decrease alignment of the read because the GPR save
+	area only guarantees 8-byte alignment.
+
+	2019-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92723
 	* tree-vect-patterns.c (vect_recog_rotate_pattern): If dt is not

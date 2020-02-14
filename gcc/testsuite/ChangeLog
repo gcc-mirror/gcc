@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92904
+	* gcc.c-torture/execute/pr92904.c: New test.
+
 	2019-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92781
