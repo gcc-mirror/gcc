@@ -1,5 +1,10 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/61414
+	* class.c (enum_min_precision): Change prec type from int to int &.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
 	Backported from mainline
 	2020-01-17  Jakub Jelinek  <jakub@redhat.com>
 
