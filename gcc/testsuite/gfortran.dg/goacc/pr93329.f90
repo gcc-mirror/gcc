@@ -68,8 +68,8 @@
 !$omp target exit data map(from: x)	! { dg-error "OMP TARGET EXIT DATA directive cannot be specified within" }
 !$acc end kernels
 !$acc kernels
-!!$omp target parallel
-!!$omp end target parallel
+!$omp target parallel		! { dg-error "OMP TARGET PARALLEL directive cannot be specified within" }
+!$omp end target parallel
 !$acc end kernels
 !$acc kernels
 !$omp target parallel do	! { dg-error "OMP TARGET PARALLEL DO directive cannot be specified within" }

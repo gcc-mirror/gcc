@@ -4745,6 +4745,7 @@ gfc_trans_omp_target (gfc_code *code)
       {
 	stmtblock_t iblock;
 
+	pushlevel ();
 	gfc_start_block (&iblock);
 	tree inner_clauses
 	  = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_PARALLEL],
