@@ -657,6 +657,15 @@ goacc_runtime_initialize (void)
   goacc_host_init ();
 }
 
+static void __attribute__((destructor))
+goacc_runtime_deinitialize (void)
+{
+#if !(defined HAVE_TLS || defined USE_EMUTLS)
+  pthread_key_delete (goacc_tls_key);
+#endif
+  pthread_key_delete (goacc_cleanup_key);
+}
+
 /* Compiler helper functions */
 
 attribute_hidden void
