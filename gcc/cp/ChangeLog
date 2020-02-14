@@ -1,6 +1,12 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93228
+	* parser.c (cp_parser_template_name): Look up deprecated attribute
+	in DECL_TEMPLATE_RESULT or its type's attributes.
+
 	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92992

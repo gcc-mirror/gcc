@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93228
+	* g++.dg/cpp1y/attr-deprecated-3.C: New test.
+
 	2020-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/93202

@@ -16166,7 +16166,17 @@ cp_parser_template_name (cp_parser* parser,
     {
       if (TREE_DEPRECATED (decl)
 	  && deprecated_state != DEPRECATED_SUPPRESS)
-	warn_deprecated_use (decl, NULL_TREE);
+	{
+	  tree d = DECL_TEMPLATE_RESULT (decl);
+	  tree attr;
+	  if (TREE_CODE (d) == TYPE_DECL)
+	    attr = lookup_attribute ("deprecated",
+				     TYPE_ATTRIBUTES (TREE_TYPE (d)));
+	  else
+	    attr = lookup_attribute ("deprecated",
+				     DECL_ATTRIBUTES (d));
+	  warn_deprecated_use (decl, attr);
+	}
     }
   else
     {
