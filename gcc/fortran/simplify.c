@@ -7170,7 +7170,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   nelem = mpz_get_si (size) * ncopies;
   if (nelem > flag_max_array_constructor)
     {
-      if (gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER)
+      if (gfc_init_expr_flag)
 	{
 	  gfc_error ("The number of elements (%d) in the array constructor "
 		     "at %L requires an increase of the allowed %d upper "
