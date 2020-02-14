@@ -2785,9 +2785,17 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	}
 
       rchild->grp_hint = 1;
-      new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
-						false, (lacc->grp_write
-							|| rchild->grp_write));
+      /* Because get_ref_base_and_extent always includes padding in size for
+	 accesses to DECLs but not necessarily for COMPONENT_REFs of the same
+	 type, we might be actually attempting to here to create a child of the
+	 same type as the parent.  */
+      if (!types_compatible_p (lacc->type, rchild->type))
+	new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
+						  false,
+						  (lacc->grp_write
+						   || rchild->grp_write));
+      else
+	new_acc = lacc;
       gcc_checking_assert (new_acc);
       if (racc->first_child)
 	propagate_subaccesses_from_rhs (new_acc, rchild);
@@ -2834,10 +2842,19 @@ propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
 	  continue;
 	}
 
-      struct access *new_acc
-	=  create_artificial_child_access (racc, lchild, norm_offset,
-					   true, false);
-      propagate_subaccesses_from_lhs (lchild, new_acc);
+      /* Because get_ref_base_and_extent always includes padding in size for
+	 accesses to DECLs but not necessarily for COMPONENT_REFs of the same
+	 type, we might be actually attempting to here to create a child of the
+	 same type as the parent.  */
+      if (!types_compatible_p (racc->type, lchild->type))
+	{
+	  struct access *new_acc
+	    = create_artificial_child_access (racc, lchild, norm_offset,
+					      true, false);
+	  propagate_subaccesses_from_lhs (lchild, new_acc);
+	}
+      else
+	propagate_subaccesses_from_lhs (lchild, racc);
       ret = true;
     }
   return ret;
