@@ -1344,7 +1344,7 @@ See RS/6000 and PowerPC Options.
 -mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
--mrdseed  -msgx -mavx512vp2intersect -mserialize @gol
+-mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -29467,6 +29467,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -menqcmd
 @opindex menqcmd
+@need 200
+@itemx -mtsxldtrk
+@opindex mtsxldtrk
 @need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq

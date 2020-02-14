@@ -571,6 +571,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__MMX_WITH_SSE__");
   if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)
     def_or_undef (parse_in, "__ENQCMD__");
+  if (isa_flag2 & OPTION_MASK_ISA2_TSXLDTRK)
+    def_or_undef (parse_in, "__TSXLDTRK__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
