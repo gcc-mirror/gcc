@@ -4031,8 +4031,13 @@ package body Sem_Eval is
 
             --  Real to integer conversion
 
-            else
+            elsif To_Be_Treated_As_Real (Source_Type) then
                Result := UR_To_Uint (Expr_Value_R (Operand));
+
+            --  Enumeration to integer conversion, aka 'Enum_Rep
+
+            else
+               Result := Expr_Rep_Value (Operand);
             end if;
 
             --  If fixed-point type (Conversion_OK must be set), then the
@@ -4076,7 +4081,6 @@ package body Sem_Eval is
       if Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
          Out_Of_Range (N);
       end if;
-
    end Eval_Type_Conversion;
 
    -------------------
