@@ -1224,6 +1224,8 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
   tree type = TREE_TYPE (decl);
+  if (DECL_BIT_FIELD_TYPE (decl))
+    type = DECL_BIT_FIELD_TYPE (decl);
   int flags = LOOKUP_IMPLICIT;
   if (DIRECT_LIST_INIT_P (init))
     flags = LOOKUP_NORMAL;

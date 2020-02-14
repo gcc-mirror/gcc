@@ -15,11 +15,9 @@ const int b = 0;
 struct S {
   int c : 5 = 2 * a;			// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
   int d : 6 { c + a };			// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
-					// { dg-warning "narrowing conversion of" "" { target *-*-* } .-1 }
   int e : true ? 7 : a = 3;
   int f : (true ? 8 : b) = d + a;	// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
   int g : (true ? 9 : b) { f + a };	// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
-					// { dg-warning "narrowing conversion of" "" { target *-*-* } .-1 }
   int h : 1 || new int { 0 };
   int i = g + a;
 };
@@ -28,11 +26,9 @@ template <bool V, int W>
 struct U {
   int j : W = 3 * a;			// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
   int k : W { j + a };			// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
-					// { dg-warning "narrowing conversion of" "" { target *-*-* } .-1 }
   int l : V ? 7 : a = 3;
   int m : (V ? W : b) = k + a;		// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
   int n : (V ? W : b) { m + a };	// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
-					// { dg-warning "narrowing conversion of" "" { target *-*-* } .-1 }
   int o : 1 || new int { 0 };
   int p = n + a;
 };

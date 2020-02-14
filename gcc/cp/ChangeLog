@@ -1,6 +1,12 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92732
+	* typeck2.c (digest_nsdmi_init): For bitfields, use
+	DECL_BIT_FIELD_TYPE instead of TREE_TYPE.
+
 	2019-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60228
