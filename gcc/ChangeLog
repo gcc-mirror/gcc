@@ -1,3 +1,9 @@
+2020-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/93704
+	* config/sparc/sparc.c (eligible_for_call_delay): Test HAVE_GNU_LD in
+	conjunction with TARGET_GNU_TLS in early return.
+
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
