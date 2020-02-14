@@ -1,5 +1,8 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/61414
+	* class.c (enum_min_precision): Change prec type from int to int &.
+
 	PR libstdc++/92906
 	* cp-tree.h (enum cp_tree_index): Add CPTI_FALLBACK_DFLOAT32_TYPE,
 	CPTI_FALLBACK_DFLOAT64_TYPE and CPTI_FALLBACK_DFLOAT128_TYPE.
