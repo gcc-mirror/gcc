@@ -573,7 +573,8 @@ sm_state_map::validate (const state_machine &sm,
 
 program_state::program_state (const extrinsic_state &ext_state)
 : m_region_model (new region_model ()),
-  m_checker_states (ext_state.get_num_checkers ())
+  m_checker_states (ext_state.get_num_checkers ()),
+  m_valid (true)
 {
   int num_states = ext_state.get_num_checkers ();
   for (int i = 0; i < num_states; i++)
@@ -584,7 +585,8 @@ program_state::program_state (const extrinsic_state &ext_state)
 
 program_state::program_state (const program_state &other)
 : m_region_model (new region_model (*other.m_region_model)),
-  m_checker_states (other.m_checker_states.length ())
+  m_checker_states (other.m_checker_states.length ()),
+  m_valid (true)
 {
   int i;
   sm_state_map *smap;
@@ -610,6 +612,8 @@ program_state::operator= (const program_state &other)
   FOR_EACH_VEC_ELT (other.m_checker_states, i, smap)
     m_checker_states.quick_push (smap->clone ());
 
+  m_valid = other.m_valid;
+
   return *this;
 }
 
@@ -626,6 +630,8 @@ program_state::program_state (program_state &&other)
   FOR_EACH_VEC_ELT (other.m_checker_states, i, smap)
     m_checker_states.quick_push (smap);
   other.m_checker_states.truncate (0);
+
+  m_valid = other.m_valid;
 }
 #endif
 
@@ -693,6 +699,11 @@ program_state::print (const extrinsic_state &ext_state,
 	  pp_newline (pp);
 	}
     }
+  if (!m_valid)
+    {
+      pp_printf (pp, "invalid state");
+      pp_newline (pp);
+    }
 }
 
 /* Dump a multiline representation of this state to PP.  */
@@ -715,6 +726,12 @@ program_state::dump_to_pp (const extrinsic_state &ext_state,
 	  smap->print (ext_state.get_sm (i), pp);
 	  pp_newline (pp);
 	}
+    }
+
+  if (!m_valid)
+    {
+      pp_printf (pp, "invalid state");
+      pp_newline (pp);
     }
 }
 

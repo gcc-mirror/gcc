@@ -4641,9 +4641,19 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (expr))
     {
     default:
-      internal_error ("unhandled tree code in region_model::get_lvalue_1: %qs",
-		      get_tree_code_name (TREE_CODE (expr)));
-      gcc_unreachable ();
+      {
+	/* If we see a tree code we we don't know how to handle, rather than
+	   ICE or generate bogus results, create a dummy region, and notify
+	   CTXT so that it can mark the new state as being not properly
+	   modelled.  The exploded graph can then stop exploring that path,
+	   since any diagnostics we might issue will have questionable
+	   validity.  */
+	region_id new_rid
+	  = add_region (new symbolic_region (m_root_rid, NULL_TREE, false));
+	ctxt->on_unknown_tree_code (pv, dump_location_t ());
+	return new_rid;
+      }
+      break;
 
     case ARRAY_REF:
       {
@@ -4749,6 +4759,13 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	cst_region->set_value (*this, cst_rid, cst_sid, ctxt);
 	return cst_rid;
       }
+      break;
+
+    case VIEW_CONVERT_EXPR:
+      {
+	tree obj = TREE_OPERAND (expr, 0);
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+      };
       break;
     }
 }

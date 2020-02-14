@@ -1,5 +1,12 @@
 2020-02-17  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93388
+	* gcc.dg/analyzer/torture/20060625-1.c: New test.
+	* gcc.dg/analyzer/torture/pr51628-30.c: New test.
+	* gcc.dg/analyzer/torture/pr59037.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/analyzer/malloc-1.c (test_48): New.
 
 2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>

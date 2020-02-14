@@ -684,6 +684,25 @@ impl_region_model_context::on_phi (const gphi *phi, tree rhs)
     }
 }
 
+/* Implementation of region_model_context::on_unknown_tree_code vfunc.
+   Mark the new state as being invalid for further exploration.
+   TODO(stage1): introduce a warning for when this occurs.  */
+
+void
+impl_region_model_context::on_unknown_tree_code (path_var pv,
+						 const dump_location_t &loc)
+{
+  logger * const logger = get_logger ();
+  if (logger)
+    logger->log ("unhandled tree code: %qs in %qs at %s:%i",
+		 get_tree_code_name (TREE_CODE (pv.m_tree)),
+		 loc.get_impl_location ().m_function,
+		 loc.get_impl_location ().m_file,
+		 loc.get_impl_location ().m_line);
+  if (m_new_state)
+    m_new_state->m_valid = false;
+}
+
 /* struct point_and_state.  */
 
 /* Assert that this object is sane.  */
@@ -1843,6 +1862,15 @@ exploded_graph::get_or_create_node (const program_point &point,
       pp_string (pp, "state: ");
       state.dump (m_ext_state, true);
       logger->end_log_line ();
+    }
+
+  /* Stop exploring paths for which we don't know how to effectively
+     model the state.  */
+  if (!state.m_valid)
+    {
+      if (logger)
+	logger->log ("invalid state; not creating node");
+      return NULL;
     }
 
   auto_cfun sentinel (point.get_function ());

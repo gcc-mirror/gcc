@@ -76,6 +76,9 @@ class impl_region_model_context : public region_model_context
 
   void on_phi (const gphi *phi, tree rhs) FINAL OVERRIDE;
 
+  void on_unknown_tree_code (path_var pv,
+			     const dump_location_t &loc) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   const exploded_node *m_enode_for_diag;
@@ -100,6 +103,9 @@ public:
     m_state (state),
     m_hash (m_point.hash () ^ m_state.hash ())
   {
+    /* We shouldn't be building point_and_states and thus exploded_nodes
+       for states that aren't valid.  */
+    gcc_assert (state.m_valid);
   }
 
   hashval_t hash () const
