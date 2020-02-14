@@ -13525,7 +13525,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	{
 	  /* Avoid the extra copy if possible.  */
 	  *expr_p = create_tmp_reg (TREE_TYPE (name));
-	  gimple_set_lhs (SSA_NAME_DEF_STMT (name), *expr_p);
+	  if (!gimple_nop_p (SSA_NAME_DEF_STMT (name)))
+	    gimple_set_lhs (SSA_NAME_DEF_STMT (name), *expr_p);
 	  release_ssa_name (name);
 	}
     }
