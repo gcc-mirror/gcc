@@ -1650,6 +1650,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 		typefm = make_signed_type (TYPE_PRECISION (typefm));
 	      TREE_TYPE (typefm) = type;
 	    }
+	  *no_add_attrs = false;
 	}
       else if (VECTOR_MODE_P (mode)
 	       ? TREE_CODE (type) != TREE_CODE (TREE_TYPE (typefm))
