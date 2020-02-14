@@ -2932,7 +2932,8 @@ riscv_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
 	break;
 
       default:
-	gcc_unreachable ();
+	output_operand_lossage ("invalid use of '%%%c'", hi_reloc ? 'h' : 'R');
+	return;
     }
 
   fprintf (file, "%s(", reloc);
