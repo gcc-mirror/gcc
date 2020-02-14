@@ -29580,9 +29580,9 @@ prune_unused_types (void)
   for (i = 0; base_types.iterate (i, &base_type); i++)
     prune_unused_types_mark (base_type, 1);
 
-  /* For -fvar-tracking-assignments, also set the mark on nodes that could be
-     referenced by DW_TAG_call_site DW_AT_call_origin (i.e. direct call
-     callees).  */
+  /* Also set the mark on nodes that could be referenced by
+     DW_TAG_call_site DW_AT_call_origin (i.e. direct call callees) or
+     by DW_TAG_inlined_subroutine origins.  */
   cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
     if (cnode->referred_to_p (false))
@@ -29591,8 +29591,7 @@ prune_unused_types (void)
 	if (die == NULL || die->die_mark)
 	  continue;
 	for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
-	  if (e->caller != cnode
-	      && opt_for_fn (e->caller->decl, flag_var_tracking_assignments))
+	  if (e->caller != cnode)
 	    {
 	      prune_unused_types_mark (die, 1);
 	      break;
