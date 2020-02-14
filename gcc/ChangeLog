@@ -1,6 +1,14 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91298
+	* output.h (assemble_name_resolve): Declare.
+	* varasm.c (assemble_name_resolve): New function.
+	(assemble_name): Use it.
+	* config/i386/i386.h (ASM_OUTPUT_SYMBOL_REF): Define.
+
 	2020-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93333

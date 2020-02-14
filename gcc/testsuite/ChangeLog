@@ -3,6 +3,10 @@
 	Backported from mainline
 	2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/91298
+	* gcc.target/i386/pr91298-1.c: New test.
+	* gcc.target/i386/pr91298-2.c: New test.
+
 	* gfortran.dg/gomp/target-parallel1.f90: New test.
 	* gfortran.dg/goacc/pr93329.f90: Enable commented out target parallel
 	test.

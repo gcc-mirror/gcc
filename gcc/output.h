@@ -240,6 +240,12 @@ extern void assemble_label (FILE *, const char *);
    addition of an underscore).  */
 extern void assemble_name_raw (FILE *, const char *);
 
+/* Return NAME that should actually be emitted, looking through
+   transparent aliases.  If NAME refers to an entity that is also
+   represented as a tree (like a function or variable), mark the entity
+   as referenced.  */
+extern const char *assemble_name_resolve (const char *);
+
 /* Like assemble_name_raw, but should be used when NAME might refer to
    an entity that is also represented as a tree (like a function or
    variable).  If NAME does refer to such an entity, that entity will
