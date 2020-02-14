@@ -26999,6 +26999,9 @@ lookup_filename (const char *file_name)
   if (!file_name)
     return NULL;
 
+  if (!file_name[0])
+    file_name = "<stdin>";
+
   dwarf_file_data **slot
     = file_table->find_slot_with_hash (file_name, htab_hash_string (file_name),
 				       INSERT);
