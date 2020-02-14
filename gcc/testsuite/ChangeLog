@@ -1,6 +1,11 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93073
+	* gcc.target/powerpc/pr93073.c: New test.
+
 	2020-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93228

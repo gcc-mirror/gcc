@@ -23551,6 +23551,11 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 
   /* At this point we know we can use fsel.  */
 
+  /* Don't allow compare_mode other than SFmode or DFmode, for others there
+     is no fsel instruction.  */
+  if (compare_mode != SFmode && compare_mode != DFmode)
+    return 0;
+
   /* Reduce the comparison to a comparison against zero.  */
   if (! is_against_zero)
     {
