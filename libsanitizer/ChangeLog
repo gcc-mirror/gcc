@@ -1,6 +1,13 @@
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Cherry-pick
+	llvm-project revision 947f9692440836dcb8d88b74b69dd379d85974ce.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Likewise.
+
 	2019-10-22  Tamar Christina  <tamar.christina@arm.com>
 
 	PR sanitizer/92154
