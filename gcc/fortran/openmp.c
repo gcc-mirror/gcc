@@ -5790,6 +5790,20 @@ oacc_code_to_statement (gfc_code *code)
       return ST_OACC_LOOP;
     case EXEC_OACC_ATOMIC:
       return ST_OACC_ATOMIC;
+    case EXEC_OACC_ROUTINE:
+      return ST_OACC_ROUTINE;
+    case EXEC_OACC_UPDATE:
+      return ST_OACC_UPDATE;
+    case EXEC_OACC_WAIT:
+      return ST_OACC_WAIT;
+    case EXEC_OACC_CACHE:
+      return ST_OACC_CACHE;
+    case EXEC_OACC_ENTER_DATA:
+      return ST_OACC_ENTER_DATA;
+    case EXEC_OACC_EXIT_DATA:
+      return ST_OACC_EXIT_DATA;
+    case EXEC_OACC_DECLARE:
+      return ST_OACC_DECLARE;
     default:
       gcc_unreachable ();
     }
