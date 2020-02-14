@@ -7,6 +7,13 @@
 	* parser.c (cp_parser_template_name): Look up deprecated attribute
 	in DECL_TEMPLATE_RESULT or its type's attributes.
 
+	2019-12-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92438
+	* parser.c (cp_parser_constructor_declarator_p): If open paren
+	is followed by RID_ATTRIBUTE, skip over the attribute tokens and
+	try to parse type specifier.
+
 	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92992
