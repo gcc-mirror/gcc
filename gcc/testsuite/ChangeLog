@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92648
+	* g++.dg/cpp0x/gen-attrs-71.C: New test.
+
 	PR c++/61414
 	* g++.dg/cpp0x/enum23.C: Remove xfail.
 	* g++.dg/cpp0x/enum28.C: New test.

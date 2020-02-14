@@ -2646,6 +2646,7 @@ static bool cp_parser_init_statement_p
   (cp_parser *);
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
+static size_t cp_parser_skip_balanced_tokens (cp_parser *, size_t);
 
 /* Concept-related syntactic transformations */
 
@@ -25399,6 +25400,17 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	&& attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
+
+    const attribute_spec *as
+      = lookup_attribute_spec (TREE_PURPOSE (attribute));
+    if (as == NULL)
+      {
+	/* For unknown attributes, just skip balanced tokens instead of
+	   trying to parse the arguments.  */
+	for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 1; n; --n)
+	  cp_lexer_consume_token (parser->lexer);
+	return attribute;
+      }
 
     vec = cp_parser_parenthesized_expression_list
       (parser, attr_flag, /*cast_p=*/false,
