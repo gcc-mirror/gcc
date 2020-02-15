@@ -1,3 +1,10 @@
+2020-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (uniform_random_bit_generator): Require min()
+	and max() to be constant expressions and min() to be less than max().
+	* testsuite/26_numerics/random/concept.cc: Check additional cases.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error lineno.
+
 2020-02-13  Patrick Palka  <ppalka@redhat.com>
 
 	* include/Makefile.am: Add <bits/ranges_uninitialized.h>.

@@ -219,3 +219,30 @@ struct N11
 };
 
 static_assert( ! std::uniform_random_bit_generator<N11> );
+
+struct N12
+{
+  unsigned operator()();
+  static unsigned min() { return 0; } // not constexpr
+  static constexpr unsigned max() { return 1; }
+};
+
+static_assert( ! std::uniform_random_bit_generator<N12> ); // LWG 3150
+
+struct N13
+{
+  unsigned operator()();
+  static constexpr unsigned min() { return 0; }
+  static unsigned max() { return 1; } // not constexpr
+};
+
+static_assert( ! std::uniform_random_bit_generator<N13> ); // LWG 3150
+
+struct N14
+{
+  unsigned operator()();
+  static constexpr unsigned min() { return 1; }
+  static constexpr unsigned max() { return 0; } // max not greater than min
+};
+
+static_assert( ! std::uniform_random_bit_generator<N14> ); // LWG 3150
