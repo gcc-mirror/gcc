@@ -70,7 +70,7 @@ is
    --  used in this package and System.File_IO.
 
    for File_Mode use
-     (In_File     => 0,  -- System.FIle_IO.File_Mode'Pos (In_File)
+     (In_File     => 0,  -- System.File_IO.File_Mode'Pos (In_File)
       Out_File    => 2,  -- System.File_IO.File_Mode'Pos (Out_File)
       Append_File => 3); -- System.File_IO.File_Mode'Pos (Append_File)
 
