@@ -2557,8 +2557,11 @@ __attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (c
 
 @item alias ("@var{target}")
 @cindex @code{alias} function attribute
-The @code{alias} attribute causes the declaration to be emitted as an
-alias for another symbol, which must be specified.  For instance,
+The @code{alias} attribute causes the declaration to be emitted as an alias
+for another symbol, which must have been previously declared with the same
+type, and for variables, also the same size and alignment.  Declaring an alias
+with a different type than the target is undefined and may be diagnosed.  As
+an example, the following declarations:
 
 @smallexample
 void __f () @{ /* @r{Do something.} */; @}
@@ -2566,9 +2569,9 @@ void f () __attribute__ ((weak, alias ("__f")));
 @end smallexample
 
 @noindent
-defines @samp{f} to be a weak alias for @samp{__f}.  In C++, the
-mangled name for the target must be used.  It is an error if @samp{__f}
-is not defined in the same translation unit.
+define @samp{f} to be a weak alias for @samp{__f}.  In C++, the mangled name
+for the target must be used.  It is an error if @samp{__f} is not defined in
+the same translation unit.
 
 This attribute requires assembler and object file support,
 and may not be available on all targets.
@@ -3919,31 +3922,43 @@ results in warning on line 5.
 
 @item weak
 @cindex @code{weak} function attribute
-The @code{weak} attribute causes the declaration to be emitted as a weak
-symbol rather than a global.  This is primarily useful in defining
-library functions that can be overridden in user code, though it can
-also be used with non-function declarations.  Weak symbols are supported
-for ELF targets, and also for a.out targets when using the GNU assembler
-and linker.
+The @code{weak} attribute causes a declaration of an external symbol
+to be emitted as a weak symbol rather than a global.  This is primarily
+useful in defining library functions that can be overridden in user code,
+though it can also be used with non-function declarations.  The overriding
+symbol must have the same type as the weak symbol.  In addition, if it
+designates a variable it must also have the same size and alignment as
+the weak symbol.  Weak symbols are supported for ELF targets, and also
+for a.out targets when using the GNU assembler and linker.
 
 @item weakref
 @itemx weakref ("@var{target}")
 @cindex @code{weakref} function attribute
 The @code{weakref} attribute marks a declaration as a weak reference.
 Without arguments, it should be accompanied by an @code{alias} attribute
-naming the target symbol.  Optionally, the @var{target} may be given as
-an argument to @code{weakref} itself.  In either case, @code{weakref}
-implicitly marks the declaration as @code{weak}.  Without a
-@var{target}, given as an argument to @code{weakref} or to @code{alias},
-@code{weakref} is equivalent to @code{weak}.
+naming the target symbol.  Alternatively, @var{target} may be given as
+an argument to @code{weakref} itself, naming the target definition of
+the alias.  The @var{target} must have the same type as the declaration.
+In addition, if it designates a variable it must also have the same size
+and alignment as the declaration.  In either form of the declaration
+@code{weakref} implicitly marks the declared symbol as @code{weak}.  Without
+a @var{target} given as an argument to @code{weakref} or to @code{alias},
+@code{weakref} is equivalent to @code{weak} (in that case the declaration
+may be @code{extern}).
 
 @smallexample
-static int x() __attribute__ ((weakref ("y")));
+/* Given the declaration: */
+extern int y (void);
+
+/* the following... */
+static int x (void) __attribute__ ((weakref ("y")));
+
 /* is equivalent to... */
-static int x() __attribute__ ((weak, weakref, alias ("y")));
-/* and to... */
-static int x() __attribute__ ((weakref));
-static int x() __attribute__ ((alias ("y")));
+static int x (void) __attribute__ ((weakref, alias ("y")));
+
+/* or, alternatively, to... */
+static int x (void) __attribute__ ((weakref));
+static int x (void) __attribute__ ((alias ("y")));
 @end smallexample
 
 A weak reference is an alias that does not by itself require a
@@ -3956,10 +3971,10 @@ symbol, not necessarily in the same translation unit.
 The effect is equivalent to moving all references to the alias to a
 separate translation unit, renaming the alias to the aliased symbol,
 declaring it as weak, compiling the two separate translation units and
-performing a link with relocatable output (ie: @code{ld -r}) on them.
+performing a link with relocatable output (i.e.@: @code{ld -r}) on them.
 
-At present, a declaration to which @code{weakref} is attached can
-only be @code{static}.
+A declaration to which @code{weakref} is attached and that is associated
+with a named @code{target} must be @code{static}.
 
 @end table
 
