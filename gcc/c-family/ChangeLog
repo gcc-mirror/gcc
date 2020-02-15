@@ -1,3 +1,7 @@
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -std=c++20.
+
 2020-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c: Include bitmap.h.

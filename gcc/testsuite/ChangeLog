@@ -1,3 +1,9 @@
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++2a_only): Also
+	look for -std=*++20.
+	(check_effective_target_concepts): Use check_effective_target_c++2a.
+
 2020-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93744

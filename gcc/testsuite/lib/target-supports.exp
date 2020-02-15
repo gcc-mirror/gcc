@@ -8806,7 +8806,7 @@ proc check_effective_target_c++2a_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    if [check-flags { { } { } { -std=c++2a -std=gnu++2a } }] {
+    if [check-flags { { } { } { -std=c++2a -std=gnu++2a -std=c++20 -std=gnu++20 } }] {
 	return 1
     }
     if { $cxx_default == "c++20" && [check-flags { { } { } { } { -std=* } }] } {
@@ -8818,9 +8818,12 @@ proc check_effective_target_c++2a { } {
     return [check_effective_target_c++2a_only]
 }
 
-# Check for C++ Concepts TS support, i.e. -fconcepts flag.
+# Check for C++ Concepts support, i.e. -fconcepts flag.
 proc check_effective_target_concepts { } {
-    return [check-flags { "" { } { -fconcepts -std=*2a } }]
+    if [check_effective_target_c++2a] {
+	return 1
+    }
+    return [check-flags { "" { } { -fconcepts } }]
 }
 
 # Return 1 if expensive testcases should be run.
