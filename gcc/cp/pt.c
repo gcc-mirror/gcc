@@ -10479,6 +10479,15 @@ any_template_parm_r (tree t, void *data)
       }
       break;
 
+    case LAMBDA_EXPR:
+      {
+	/* Look in the parms and body.  */
+	tree fn = lambda_function (t);
+	WALK_SUBTREE (TREE_TYPE (fn));
+	WALK_SUBTREE (DECL_SAVED_TREE (fn));
+      }
+      break;
+
     default:
       break;
     }

@@ -1,5 +1,8 @@
 2020-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92556
+	* pt.c (any_template_parm_r): Look into lambda body.
+
 	PR c++/92583
 	* pt.c (any_template_parm_r): Remove CONSTRUCTOR handling.
 
