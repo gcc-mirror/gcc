@@ -93,11 +93,8 @@ namespace ranges
 			 std::__niter_base(std::move(__last2)),
 			 std::move(__pred),
 			 std::move(__proj1), std::move(__proj2));
-
-	constexpr bool __sized_iters
-	  = (sized_sentinel_for<_Sent1, _Iter1>
-	     && sized_sentinel_for<_Sent2, _Iter2>);
-	if constexpr (__sized_iters)
+	else if constexpr (sized_sentinel_for<_Sent1, _Iter1>
+			   && sized_sentinel_for<_Sent2, _Iter2>)
 	  {
 	    auto __d1 = ranges::distance(__first1, __last1);
 	    auto __d2 = ranges::distance(__first2, __last2);

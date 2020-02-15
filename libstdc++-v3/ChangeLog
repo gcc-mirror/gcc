@@ -1,3 +1,9 @@
+2020-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):
+	Move code after an early exit constexpr if to under an else branch.
+	* include/bits/ranges_algobase.h (__equal_fn::operator()): Likewise.
+
 2020-02-15  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_algo.h: Adjust whitespace and formatting.
