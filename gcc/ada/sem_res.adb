@@ -9034,10 +9034,10 @@ package body Sem_Res is
          Eval_Indexed_Component (N);
       end if;
 
-      --  If the array type is atomic, and the component is not atomic, then
-      --  this is worth a warning, since we have a situation where the access
-      --  to the component may cause extra read/writes of the atomic array
-      --  object, or partial word accesses, which could be unexpected.
+      --  If the array type is atomic and the component is not, then this is
+      --  worth a warning before Ada 2020, since we have a situation where the
+      --  access to the component may cause extra read/writes of the atomic
+      --  object, or partial word accesses, both of which may be unexpected.
 
       if Nkind (N) = N_Indexed_Component
         and then Is_Atomic_Ref_With_Address (N)
@@ -9046,6 +9046,7 @@ package body Sem_Res is
                                  and then Has_Atomic_Components
                                             (Entity (Prefix (N)))))
         and then not Is_Atomic (Component_Type (Array_Type))
+        and then Ada_Version < Ada_2020
       then
          Error_Msg_N
            ("??access to non-atomic component of atomic array", Prefix (N));
@@ -10727,15 +10728,16 @@ package body Sem_Res is
       --  Note: No Eval processing is required, because the prefix is of a
       --  record type, or protected type, and neither can possibly be static.
 
-      --  If the record type is atomic, and the component is non-atomic, then
-      --  this is worth a warning, since we have a situation where the access
-      --  to the component may cause extra read/writes of the atomic array
+      --  If the record type is atomic and the component is not, then this is
+      --  worth a warning before Ada 2020, since we have a situation where the
+      --  access to the component may cause extra read/writes of the atomic
       --  object, or partial word accesses, both of which may be unexpected.
 
       if Nkind (N) = N_Selected_Component
         and then Is_Atomic_Ref_With_Address (N)
         and then not Is_Atomic (Entity (S))
         and then not Is_Atomic (Etype (Entity (S)))
+        and then Ada_Version < Ada_2020
       then
          Error_Msg_N
            ("??access to non-atomic component of atomic record",
