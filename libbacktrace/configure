@@ -13182,6 +13182,76 @@ $as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
 
 fi
 
+# Check for sysctl definitions.
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for KERN_PROC" >&5
+$as_echo_n "checking for KERN_PROC... " >&6; }
+if ${libbacktrace_cv_proc+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+int
+main ()
+{
+int mib0 = CTL_KERN; int mib1 = KERN_PROC; int mib2 = KERN_PROC_PATHNAME;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_proc=yes
+else
+  libbacktrace_cv_proc=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_proc" >&5
+$as_echo "$libbacktrace_cv_proc" >&6; }
+if test "$libbacktrace_cv_proc" = "yes"; then
+
+$as_echo "#define HAVE_KERN_PROC 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for KERN_PROG_ARGS" >&5
+$as_echo_n "checking for KERN_PROG_ARGS... " >&6; }
+if ${libbacktrace_cv_procargs+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+int
+main ()
+{
+int mib0 = CTL_KERN; int mib1 = KERN_PROC_ARGS; int mib2 = KERN_PROC_PATHNAME;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_procargs=yes
+else
+  libbacktrace_cv_procargs=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_procargs" >&5
+$as_echo "$libbacktrace_cv_procargs" >&6; }
+if test "$libbacktrace_cv_procargs" = "yes"; then
+
+$as_echo "#define HAVE_KERN_PROC_ARGS 1" >>confdefs.h
+
+fi
+
 # Check for the clock_gettime function.
 for ac_func in clock_gettime
 do :

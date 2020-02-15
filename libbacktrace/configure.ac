@@ -388,6 +388,36 @@ if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
 fi
 
+# Check for sysctl definitions.
+
+AC_CACHE_CHECK([for KERN_PROC],
+[libbacktrace_cv_proc],
+[AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+#include <sys/types.h>
+#include <sys/sysctl.h>
+], [int mib0 = CTL_KERN; int mib1 = KERN_PROC; int mib2 = KERN_PROC_PATHNAME;])],
+  [libbacktrace_cv_proc=yes],
+  [libbacktrace_cv_proc=no])])
+if test "$libbacktrace_cv_proc" = "yes"; then
+  AC_DEFINE([HAVE_KERN_PROC], 1,
+            [Define to 1 if you have KERN_PROC and KERN_PROC_PATHNAME in <sys/sysctl.h>.])
+fi
+
+AC_CACHE_CHECK([for KERN_PROG_ARGS],
+[libbacktrace_cv_procargs],
+[AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+#include <sys/types.h>
+#include <sys/sysctl.h>
+], [int mib0 = CTL_KERN; int mib1 = KERN_PROC_ARGS; int mib2 = KERN_PROC_PATHNAME;])],
+  [libbacktrace_cv_procargs=yes],
+  [libbacktrace_cv_procargs=no])])
+if test "$libbacktrace_cv_procargs" = "yes"; then
+  AC_DEFINE([HAVE_KERN_PROC_ARGS], 1,
+            [Define to 1 if you have KERN_PROCARGS and KERN_PROC_PATHNAME in <sys/sysctl.h>.])
+fi
+
 # Check for the clock_gettime function.
 AC_CHECK_FUNCS(clock_gettime)
 clock_gettime_link=
