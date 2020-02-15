@@ -184,7 +184,7 @@
 #define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_invoke 201907L
-#define __cpp_lib_erase_if 201900L
+#define __cpp_lib_erase_if 202002L
 #define __cpp_lib_interpolate 201902L
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201907L

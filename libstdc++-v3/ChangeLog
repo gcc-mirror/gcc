@@ -1,5 +1,23 @@
 2020-02-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/erase_if.h (__cpp_lib_erase_if): Define to 202002L.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/string: Likewise.
+	* include/std/vector: Likewise.
+	* include/std/version: Likewise.
+	* testsuite/23_containers/deque/erasure.cc: Test for new value.
+	* testsuite/23_containers/forward_list/erasure.cc: Likewise.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+	* testsuite/23_containers/map/erasure.cc: Likewise.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/23_containers/vector/erasure.cc: Likewise.
+
+2020-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/bits/random.h (uniform_random_bit_generator): Require min()
 	and max() to be constant expressions and min() to be less than max().
 	* testsuite/26_numerics/random/concept.cc: Check additional cases.
