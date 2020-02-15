@@ -60,6 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	{ _Gen::min() } -> same_as<invoke_result_t<_Gen&>>;
 	{ _Gen::max() } -> same_as<invoke_result_t<_Gen&>>;
+	requires bool_constant<(_Gen::min() < _Gen::max())>::value;
       };
 #endif
 

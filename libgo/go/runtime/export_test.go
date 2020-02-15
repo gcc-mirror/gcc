@@ -45,6 +45,9 @@ var NetpollGenericInit = netpollGenericInit
 
 var ParseRelease = parseRelease
 
+var Memmove = memmove
+var MemclrNoHeapPointers = memclrNoHeapPointers
+
 const PreemptMSupported = preemptMSupported
 
 type LFNode struct {
@@ -573,6 +576,7 @@ const (
 	PageSize         = pageSize
 	PallocChunkPages = pallocChunkPages
 	PageAlloc64Bit   = pageAlloc64Bit
+	PallocSumBytes   = pallocSumBytes
 )
 
 // Expose pallocSum for testing.

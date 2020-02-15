@@ -1,3 +1,47 @@
+2020-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93744
+	* match.pd (((m1 >/</>=/<= m2) * d -> (m1 >/</>=/<= m2) ? d : 0,
+	A - ((A - B) & -(C cmp D)) -> (C cmp D) ? B : A,
+	A + ((B - A) & -(C cmp D)) -> (C cmp D) ? B : A): For GENERIC, make
+	sure @2 in the first and @1 in the other patterns has no side-effects.
+
+2020-02-15  David Malcolm  <dmalcolm@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 87488
+	PR other/93168
+	* config.in (DIAGNOSTICS_URLS_DEFAULT): New define.
+	* configure.ac (--with-diagnostics-urls): New configuration
+	option, based on --with-diagnostics-color.
+	(DIAGNOSTICS_URLS_DEFAULT): New define.
+	* config.h: Regenerate.
+	* configure: Regenerate.
+	* diagnostic.c (diagnostic_urls_init): Handle -1 for
+	DIAGNOSTICS_URLS_DEFAULT from configure-time
+	--with-diagnostics-urls=auto-if-env by querying for a GCC_URLS
+	and TERM_URLS environment variable.
+	* diagnostic-url.h (diagnostic_url_format): New enum type.
+	(diagnostic_urls_enabled_p): rename to...
+	(determine_url_format): ... this, and change return type.
+	* diagnostic-color.c (parse_env_vars_for_urls): New helper function.
+	(auto_enable_urls): Disable URLs on xfce4-terminal, gnome-terminal,
+	the linux console, and mingw.
+	(diagnostic_urls_enabled_p): rename to...
+	(determine_url_format): ... this, and adjust.
+	* pretty-print.h (pretty_printer::show_urls): rename to...
+	(pretty_printer::url_format): ... this, and change to enum.
+	* pretty-print.c (pretty_printer::pretty_printer,
+	pp_begin_url, pp_end_url, test_urls): Adjust.
+	* doc/install.texi (--with-diagnostics-urls): Document the new
+	configuration option.
+	(--with-diagnostics-color): Document the existing interaction
+	with GCC_COLORS better.
+	* doc/invoke.texi (-fdiagnostics-urls): Add GCC_URLS and TERM_URLS
+	vindex reference.  Update description of defaults based on the above.
+	(-fdiagnostics-color): Update description of how -fdiagnostics-color
+	interacts with GCC_COLORS.
+
 2020-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/93704

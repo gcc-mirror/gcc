@@ -203,7 +203,12 @@ func Import(path string) (m module.Version, dir string, err error) {
 		latest := map[string]string{} // path -> version
 		for _, r := range modFile.Replace {
 			if maybeInModule(path, r.Old.Path) {
-				latest[r.Old.Path] = semver.Max(r.Old.Version, latest[r.Old.Path])
+				// Don't use semver.Max here; need to preserve +incompatible suffix.
+				v := latest[r.Old.Path]
+				if semver.Compare(r.Old.Version, v) > 0 {
+					v = r.Old.Version
+				}
+				latest[r.Old.Path] = v
 			}
 		}
 
@@ -263,6 +268,8 @@ func Import(path string) (m module.Version, dir string, err error) {
 		// Instead of trying QueryPackage, report an ImportMissingError immediately.
 		return module.Version{}, "", &ImportMissingError{Path: path}
 	}
+
+	fmt.Fprintf(os.Stderr, "go: finding module for package %s\n", path)
 
 	candidates, err := QueryPackage(path, "latest", Allowed)
 	if err != nil {

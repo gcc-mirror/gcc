@@ -1472,7 +1472,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp (gt lt ge le)
 (simplify
  (mult (convert (cmp @0 @1)) @2)
-  (cond (cmp @0 @1) @2 { build_zero_cst (type); })))
+  (if (GIMPLE || !TREE_SIDE_EFFECTS (@2))
+   (cond (cmp @0 @1) @2 { build_zero_cst (type); }))))
 
 /* For integral types with undefined overflow and C != 0 fold
    x * C EQ/NE y * C into x EQ/NE y.  */
@@ -2709,7 +2710,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
        && INTEGRAL_TYPE_P (TREE_TYPE (@5))
        && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
-	   || !TYPE_UNSIGNED (TREE_TYPE (@4))))
+	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
+       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
    (cond (cmp @2 @3) @1 @0)))
  (simplify
   (plus:c @0 (bit_and:c (minus @1 @0)
@@ -2719,7 +2721,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
        && INTEGRAL_TYPE_P (TREE_TYPE (@5))
        && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
-	   || !TYPE_UNSIGNED (TREE_TYPE (@4))))
+	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
+       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
    (cond (cmp @2 @3) @1 @0))))
 
 /* Simplifications of shift and rotates.  */
