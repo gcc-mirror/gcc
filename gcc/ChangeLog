@@ -1,3 +1,11 @@
+2020-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93744
+	* match.pd (((m1 >/</>=/<= m2) * d -> (m1 >/</>=/<= m2) ? d : 0,
+	A - ((A - B) & -(C cmp D)) -> (C cmp D) ? B : A,
+	A + ((B - A) & -(C cmp D)) -> (C cmp D) ? B : A): For GENERIC, make
+	sure @2 in the first and @1 in the other patterns has no side-effects.
+
 2020-02-15  David Malcolm  <dmalcolm@redhat.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
