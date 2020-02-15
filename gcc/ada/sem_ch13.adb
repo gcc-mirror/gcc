@@ -91,6 +91,13 @@ package body Sem_Ch13 is
    --  type whose inherited alignment is no longer appropriate for the new
    --  size value. In this case, we reset the Alignment to unknown.
 
+   function All_Static_Choices (L : List_Id) return Boolean;
+   --  Returns true if all elements of the list are OK static choices
+   --  as defined below for Is_Static_Choice. Used for case expression
+   --  alternatives and for the right operand of a membership test. An
+   --  others_choice is static if the corresponding expression is static.
+   --  The staticness of the bounds is checked separately.
+
    procedure Build_Discrete_Static_Predicate
      (Typ  : Entity_Id;
       Expr : Node_Id;
@@ -153,6 +160,15 @@ package body Sem_Ch13 is
    --  is declared, as explained in AI-00137 and the corrigendum. Attributes
    --  that do not specify a representation characteristic are operational
    --  attributes.
+
+   function Is_Static_Choice (N : Node_Id) return Boolean;
+   --  Returns True if N represents a static choice (static subtype, or
+   --  static subtype indication, or static expression, or static range).
+   --
+   --  Note that this is a bit more inclusive than we actually need
+   --  (in particular membership tests do not allow the use of subtype
+   --  indications). But that doesn't matter, we have already checked
+   --  that the construct is legal to get this far.
 
    function Is_Type_Related_Rep_Item (N : Node_Id) return Boolean;
    --  Returns True for a representation clause/pragma that specifies a
@@ -819,6 +835,38 @@ package body Sem_Ch13 is
          Init_Alignment (Typ);
       end if;
    end Alignment_Check_For_Size_Change;
+
+   function All_Membership_Choices_Static (Expr : Node_Id)
+     return Boolean
+   is
+      pragma Assert (Nkind (Expr) in N_Membership_Test);
+   begin
+      return ((Present (Right_Opnd (Expr))
+              and then Is_Static_Choice (Right_Opnd (Expr)))
+            or else
+              (Present (Alternatives (Expr))
+              and then All_Static_Choices (Alternatives (Expr))));
+   end All_Membership_Choices_Static;
+
+   ------------------------
+   -- All_Static_Choices --
+   ------------------------
+
+   function All_Static_Choices (L : List_Id) return Boolean is
+      N : Node_Id;
+
+   begin
+      N := First (L);
+      while Present (N) loop
+         if not Is_Static_Choice (N) then
+            return False;
+         end if;
+
+         Next (N);
+      end loop;
+
+      return True;
+   end All_Static_Choices;
 
    -------------------------------------
    -- Analyze_Aspects_At_Freeze_Point --
@@ -12163,22 +12211,6 @@ package body Sem_Ch13 is
       --  the alternatives are static (have all static choices, and a static
       --  expression).
 
-      function All_Static_Choices (L : List_Id) return Boolean;
-      --  Returns true if all elements of the list are OK static choices
-      --  as defined below for Is_Static_Choice. Used for case expression
-      --  alternatives and for the right operand of a membership test. An
-      --  others_choice is static if the corresponding expression is static.
-      --  The staticness of the bounds is checked separately.
-
-      function Is_Static_Choice (N : Node_Id) return Boolean;
-      --  Returns True if N represents a static choice (static subtype, or
-      --  static subtype indication, or static expression, or static range).
-      --
-      --  Note that this is a bit more inclusive than we actually need
-      --  (in particular membership tests do not allow the use of subtype
-      --  indications). But that doesn't matter, we have already checked
-      --  that the construct is legal to get this far.
-
       function Is_Type_Ref (N : Node_Id) return Boolean;
       pragma Inline (Is_Type_Ref);
       --  Returns True if N is a reference to the type for the predicate in the
@@ -12214,41 +12246,6 @@ package body Sem_Ch13 is
          return True;
       end All_Static_Case_Alternatives;
 
-      ------------------------
-      -- All_Static_Choices --
-      ------------------------
-
-      function All_Static_Choices (L : List_Id) return Boolean is
-         N : Node_Id;
-
-      begin
-         N := First (L);
-         while Present (N) loop
-            if not Is_Static_Choice (N) then
-               return False;
-            end if;
-
-            Next (N);
-         end loop;
-
-         return True;
-      end All_Static_Choices;
-
-      ----------------------
-      -- Is_Static_Choice --
-      ----------------------
-
-      function Is_Static_Choice (N : Node_Id) return Boolean is
-      begin
-         return Nkind (N) = N_Others_Choice
-           or else Is_OK_Static_Expression (N)
-           or else (Is_Entity_Name (N) and then Is_Type (Entity (N))
-                     and then Is_OK_Static_Subtype (Entity (N)))
-           or else (Nkind (N) = N_Subtype_Indication
-                     and then Is_OK_Static_Subtype (Entity (N)))
-           or else (Nkind (N) = N_Range and then Is_OK_Static_Range (N));
-      end Is_Static_Choice;
-
       -----------------
       -- Is_Type_Ref --
       -----------------
@@ -12277,11 +12274,7 @@ package body Sem_Ch13 is
       --  for a static membership test.
 
       elsif Nkind (Expr) in N_Membership_Test
-        and then ((Present (Right_Opnd (Expr))
-                    and then Is_Static_Choice (Right_Opnd (Expr)))
-                  or else
-                    (Present (Alternatives (Expr))
-                      and then All_Static_Choices (Alternatives (Expr))))
+        and then All_Membership_Choices_Static (Expr)
       then
          return True;
 
@@ -12383,6 +12376,21 @@ package body Sem_Ch13 is
          return False;
       end if;
    end Is_Predicate_Static;
+
+   ----------------------
+   -- Is_Static_Choice --
+   ----------------------
+
+   function Is_Static_Choice (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Others_Choice
+        or else Is_OK_Static_Expression (N)
+        or else (Is_Entity_Name (N) and then Is_Type (Entity (N))
+                  and then Is_OK_Static_Subtype (Entity (N)))
+        or else (Nkind (N) = N_Subtype_Indication
+                  and then Is_OK_Static_Subtype (Entity (N)))
+        or else (Nkind (N) = N_Range and then Is_OK_Static_Range (N));
+   end Is_Static_Choice;
 
    ------------------------------
    -- Is_Type_Related_Rep_Item --

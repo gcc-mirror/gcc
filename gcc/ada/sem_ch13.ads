@@ -28,6 +28,9 @@ with Types; use Types;
 with Uintp; use Uintp;
 
 package Sem_Ch13 is
+   function All_Membership_Choices_Static (Expr : Node_Id) return Boolean;
+   --  Given a membership test, returns True iff all choices are static.
+
    procedure Analyze_At_Clause                          (N : Node_Id);
    procedure Analyze_Attribute_Definition_Clause        (N : Node_Id);
    procedure Analyze_Enumeration_Representation_Clause  (N : Node_Id);
