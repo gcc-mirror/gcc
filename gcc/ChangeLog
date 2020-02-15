@@ -1,3 +1,10 @@
+2020-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93744
+	* match.pd (((m1 >/</>=/<= m2) * d -> (m1 >/</>=/<= m2) ? d : 0): For
+	GENERIC, make sure @2 in the first and @1 in the other patterns has no
+	side-effects.
+
 2020-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/93704

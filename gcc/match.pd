@@ -1419,7 +1419,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp (gt lt ge le)
 (simplify
  (mult (convert (cmp @0 @1)) @2)
-  (cond (cmp @0 @1) @2 { build_zero_cst (type); })))
+  (if (GIMPLE || !TREE_SIDE_EFFECTS (@2))
+   (cond (cmp @0 @1) @2 { build_zero_cst (type); }))))
 
 /* For integral types with undefined overflow and C != 0 fold
    x * C EQ/NE y * C into x EQ/NE y.  */
