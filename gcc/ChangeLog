@@ -1,3 +1,7 @@
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C Dialect Options): Add -std=c++20.
+
 2020-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93744

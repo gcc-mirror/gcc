@@ -2078,13 +2078,15 @@ The name @samp{c++1z} is deprecated.
 GNU dialect of @option{-std=c++17}.
 The name @samp{gnu++1z} is deprecated.
 
-@item c++2a
-The next revision of the ISO C++ standard, tentatively planned for
+@item c++20
+@itemx c++2a
+The next revision of the ISO C++ standard, planned for
 2020.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
-@item gnu++2a
-GNU dialect of @option{-std=c++2a}.  Support is highly experimental,
+@item gnu++20
+@itemx gnu++2a
+GNU dialect of @option{-std=c++20}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table

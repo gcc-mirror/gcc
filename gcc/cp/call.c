@@ -4172,8 +4172,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       if (complain & tf_error)
 	{
 	  auto_diagnostic_group d;
-	  error ("conversion from %qH to %qI is ambiguous",
-		 fromtype, totype);
+	  error_at (cp_expr_loc_or_input_loc (expr),
+		    "conversion from %qH to %qI is ambiguous",
+		    fromtype, totype);
 	  print_z_candidates (location_of (expr), candidates);
 	}
 

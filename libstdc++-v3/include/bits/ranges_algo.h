@@ -3318,65 +3318,68 @@ namespace ranges
 			 std::__niter_base(std::move(__last2)),
 			 std::move(__comp),
 			 std::move(__proj1), std::move(__proj2));
-
-	constexpr bool __sized_iters
-	  = (sized_sentinel_for<_Sent1, _Iter1>
-	     && sized_sentinel_for<_Sent2, _Iter2>);
-	if constexpr (__sized_iters)
+	else
 	  {
-	    auto __d1 = ranges::distance(__first1, __last1);
-	    auto __d2 = ranges::distance(__first2, __last2);
-
-	    using _ValueType1 = iter_value_t<_Iter1>;
-	    using _ValueType2 = iter_value_t<_Iter2>;
-	    constexpr bool __use_memcmp
-	      = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
-		 && is_same_v<_ValueType1, _ValueType2>
-		 && is_pointer_v<_Iter1>
-		 && is_pointer_v<_Iter2>
-		 && (is_same_v<_Comp, ranges::less>
-		     || is_same_v<_Comp, ranges::greater>)
-		 && is_same_v<_Proj1, identity>
-		 && is_same_v<_Proj2, identity>);
-	    if constexpr (__use_memcmp)
+	    constexpr bool __sized_iters
+	      = (sized_sentinel_for<_Sent1, _Iter1>
+		 && sized_sentinel_for<_Sent2, _Iter2>);
+	    if constexpr (__sized_iters)
 	      {
-		if (const auto __len = std::min(__d1, __d2))
-		  {
-		    const auto __c = std::__memcmp(__first1, __first2, __len);
-		    if constexpr (is_same_v<_Comp, ranges::less>)
-		      {
-			if (__c < 0)
-			  return true;
-			if (__c > 0)
-			  return false;
-		      }
-		    else if constexpr (is_same_v<_Comp, ranges::greater>)
-		      {
-			if (__c > 0)
-			  return true;
-			if (__c < 0)
-			  return false;
-		      }
-		    else
-		      __builtin_unreachable();
-		  }
-		return (__last1 - __first1 < __last2 - __first2);
-	      }
-	  }
+		auto __d1 = ranges::distance(__first1, __last1);
+		auto __d2 = ranges::distance(__first2, __last2);
 
-	for (; __first1 != __last1 && __first2 != __last2;
-	     ++__first1, (void) ++__first2)
-	  {
-	    if (std::__invoke(__comp,
-			      std::__invoke(__proj1, *__first1),
-			      std::__invoke(__proj2, *__first2)))
-	      return true;
-	    if (std::__invoke(__comp,
-			      std::__invoke(__proj2, *__first2),
-			      std::__invoke(__proj1, *__first1)))
-	      return false;
+		using _ValueType1 = iter_value_t<_Iter1>;
+		using _ValueType2 = iter_value_t<_Iter2>;
+		constexpr bool __use_memcmp
+		  = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
+		     && is_same_v<_ValueType1, _ValueType2>
+		     && is_pointer_v<_Iter1>
+		     && is_pointer_v<_Iter2>
+		     && (is_same_v<_Comp, ranges::less>
+			 || is_same_v<_Comp, ranges::greater>)
+		     && is_same_v<_Proj1, identity>
+		     && is_same_v<_Proj2, identity>);
+		if constexpr (__use_memcmp)
+		  {
+		    if (const auto __len = std::min(__d1, __d2))
+		      {
+			const auto __c
+			  = std::__memcmp(__first1, __first2, __len);
+			if constexpr (is_same_v<_Comp, ranges::less>)
+			  {
+			    if (__c < 0)
+			      return true;
+			    if (__c > 0)
+			      return false;
+			  }
+			else if constexpr (is_same_v<_Comp, ranges::greater>)
+			  {
+			    if (__c > 0)
+			      return true;
+			    if (__c < 0)
+			      return false;
+			  }
+			else
+			  __builtin_unreachable();
+		      }
+		    return (__last1 - __first1 < __last2 - __first2);
+		  }
+	      }
+
+	    for (; __first1 != __last1 && __first2 != __last2;
+		 ++__first1, (void) ++__first2)
+	      {
+		if (std::__invoke(__comp,
+				  std::__invoke(__proj1, *__first1),
+				  std::__invoke(__proj2, *__first2)))
+		  return true;
+		if (std::__invoke(__comp,
+				  std::__invoke(__proj2, *__first2),
+				  std::__invoke(__proj1, *__first1)))
+		  return false;
+	      }
+	    return __first1 == __last1 && __first2 != __last2;
 	  }
-	return __first1 == __last1 && __first2 != __last2;
       }
 
     template<input_range _Range1, input_range _Range2,
