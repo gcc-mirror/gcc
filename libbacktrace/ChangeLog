@@ -1,3 +1,7 @@
+2020-02-15  Ian Lance Taylor  <iant@golang.org>
+
+	* ztest.c (test_large): Update file to current libgo test file.
+
 2020-02-03  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (libbacktrace_TEST_CFLAGS): Define.
