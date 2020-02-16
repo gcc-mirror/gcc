@@ -11279,10 +11279,9 @@ package body Sem_Ch12 is
             --  access type.
 
             if Ada_Version < Ada_2005
-              or else Ekind (Base_Type (Ftyp))           /=
-                                                  E_Anonymous_Access_Type
-              or else Ekind (Base_Type (Etype (Actual))) /=
-                                                  E_Anonymous_Access_Type
+              or else Ekind (Base_Type (Ftyp)) not in Anonymous_Access_Kind
+              or else Ekind (Base_Type (Etype (Actual)))
+                        not in Anonymous_Access_Kind
             then
                Error_Msg_NE
                  ("type of actual does not match type of&", Actual, Gen_Obj);
@@ -11477,15 +11476,19 @@ package body Sem_Ch12 is
          Actual_Decl := Parent (Entity (Actual));
       end if;
 
-      --  Ada 2005 (AI-423): For a formal object declaration with a null
-      --  exclusion or an access definition that has a null exclusion: If the
-      --  actual matching the formal object declaration denotes a generic
-      --  formal object of another generic unit G, and the instantiation
-      --  containing the actual occurs within the body of G or within the body
-      --  of a generic unit declared within the declarative region of G, then
-      --  the declaration of the formal object of G must have a null exclusion.
-      --  Otherwise, the subtype of the actual matching the formal object
-      --  declaration shall exclude null.
+      --  Ada 2005 (AI-423) refined by AI12-0287:
+      --  For an object_renaming_declaration with a null_exclusion or an
+      --  access_definition that has a null_exclusion, the subtype of the
+      --  object_name shall exclude null. In addition, if the
+      --  object_renaming_declaration occurs within the body of a generic unit
+      --  G or within the body of a generic unit declared within the
+      --  declarative region of generic unit G, then:
+      --  * if the object_name statically denotes a generic formal object of
+      --    mode in out of G, then the declaration of that object shall have a
+      --    null_exclusion;
+      --  * if the object_name statically denotes a call of a generic formal
+      --    function of G, then the declaration of the result of that function
+      --    shall have a null_exclusion.
 
       if Ada_Version >= Ada_2005
         and then Present (Actual_Decl)
@@ -11494,6 +11497,11 @@ package body Sem_Ch12 is
         and then Nkind (Analyzed_Formal) = N_Formal_Object_Declaration
         and then not Has_Null_Exclusion (Actual_Decl)
         and then Has_Null_Exclusion (Analyzed_Formal)
+        and then Ekind (Defining_Identifier (Analyzed_Formal))
+                  = E_Generic_In_Out_Parameter
+        and then ((In_Generic_Scope (Entity (Actual))
+                    and then In_Package_Body (Scope (Entity (Actual))))
+                  or else not Can_Never_Be_Null (Etype (Actual)))
       then
          Error_Msg_Sloc := Sloc (Analyzed_Formal);
          Error_Msg_N
