@@ -1,3 +1,9 @@
+2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93743
+	* config/i386/i386.md (atan2xf3): Swap operands 1 and 2.
+	(atan2<mode>3): Update operand order in the call to gen_atan2xf3.
+
 2020-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93744
