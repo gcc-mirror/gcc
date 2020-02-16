@@ -1,3 +1,8 @@
+2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93743
+	* gcc.target/i386/pr93743.c : New test.
+
 2020-02-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93710 - poor diagnostic for array initializer.
