@@ -238,6 +238,7 @@ FORMAT_FILE=
 backtrace_supports_data=yes
 case "$libbacktrace_cv_sys_filetype" in
 elf*) FORMAT_FILE="elf.lo" ;;
+macho) FORMAT_FILE="macho.lo" ;;
 pecoff) FORMAT_FILE="pecoff.lo"
         backtrace_supports_data=no
 	;;
@@ -339,6 +340,9 @@ fi
 if test "$have_dl_iterate_phdr" = "yes"; then
   AC_DEFINE(HAVE_DL_ITERATE_PHDR, 1, [Define if dl_iterate_phdr is available.])
 fi
+
+# Check for header file for Mach-O image functions.
+AC_CHECK_HEADERS(mach-o/dyld.h)
 
 # Check for loadquery.
 AC_CHECK_HEADERS(sys/ldr.h)
@@ -483,6 +487,8 @@ AC_CACHE_CHECK([whether objcopy supports debuglink],
 [libbacktrace_cv_objcopy_debuglink],
 [if test -n "${with_target_subdir}"; then
   libbacktrace_cv_objcopy_debuglink=no
+elif ! test -n "${OBJCOPY}"; then
+  libbacktrace_cv_objcopy_debuglink=no
 elif ${OBJCOPY} --add-gnu-debuglink=x /bin/ls /tmp/ls$$; then
   rm -f /tmp/ls$$
   libbacktrace_cv_objcopy_debuglink=yes
@@ -490,6 +496,10 @@ else
   libbacktrace_cv_objcopy_debuglink=no
 fi])
 AM_CONDITIONAL(HAVE_OBJCOPY_DEBUGLINK, test "$libbacktrace_cv_objcopy_debuglink" = yes)
+
+AC_ARG_VAR(DSYMUTIL, [location of dsymutil])
+AC_CHECK_PROG(DSYMUTIL, dsymutil, dsymutil)
+AM_CONDITIONAL(HAVE_DSYMUTIL, test -n "${DSYMUTIL}")
 
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],

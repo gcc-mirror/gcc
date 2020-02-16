@@ -1,5 +1,24 @@
 2020-05-09  Ian Lance Taylor  <iant@golang.org>
 
+	PR libbacktrace/88745
+	* macho.c: New file.
+	* filetype.awk: Recognize Mach-O files.
+	* Makefile.am (FORMAT_FILES): Add macho.c.
+	(check_DATA): New variable.  Set to .dSYM if HAVE_DSYMUTIL.
+	(%.dSYM): New pattern target.
+	(test_macho_SOURCES, test_macho_CFLAGS): New targets.
+	(test_macho_LDADD): New target.
+	(BUILDTESTS): Add test_macho.
+	(macho.lo): Add dependencies.
+	* configure.ac: Recognize macho file type.  Check for
+	mach-o/dyld.h.  Don't try to run objcopy if we don't find it.
+	Look for dsymutil and define a HAVE_DSYMUTIL conditional.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
 	* read.c (backtrace_get_view): Support short read.
 
 2020-05-09  Ian Lance Taylor  <iant@golang.org>
