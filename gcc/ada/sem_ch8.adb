@@ -1278,7 +1278,7 @@ package body Sem_Ch8 is
                then
                   if not Can_Never_Be_Null (Etype (Nam_Ent)) then
                      Error_Msg_N
-                       ("renamed formal does not exclude `NULL` "
+                       ("object does not exclude `NULL` "
                         & "(RM 8.5.1(4.6/2))", N);
 
                   elsif In_Package_Body (Scope (Id)) then
@@ -1292,7 +1292,7 @@ package body Sem_Ch8 is
 
                elsif not Can_Never_Be_Null (Etype (Nam_Ent)) then
                   Error_Msg_N
-                    ("renamed object does not exclude `NULL` "
+                    ("object does not exclude `NULL` "
                      & "(RM 8.5.1(4.6/2))", N);
 
                --  An instance is illegal if it contains a renaming that
@@ -1309,8 +1309,7 @@ package body Sem_Ch8 is
                                             N_Raise_Constraint_Error
                then
                   Error_Msg_N
-                    ("renamed actual does not exclude `NULL` "
-                     & "(RM 8.5.1(4.6/2))", N);
+                    ("actual does not exclude `NULL` (RM 8.5.1(4.6/2))", N);
 
                --  Finally, if there is a null exclusion, the subtype mark
                --  must not be null-excluding.
@@ -1328,8 +1327,7 @@ package body Sem_Ch8 is
               and then not Can_Never_Be_Null (Etype (Nam_Ent))
             then
                Error_Msg_N
-                 ("renamed object does not exclude `NULL` "
-                  & "(RM 8.5.1(4.6/2))", N);
+                 ("object does not exclude `NULL` (RM 8.5.1(4.6/2))", N);
 
             elsif Has_Null_Exclusion (N)
               and then No (Access_Definition (N))
