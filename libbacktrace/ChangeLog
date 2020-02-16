@@ -1,3 +1,8 @@
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): If debug sections are very large or far apart,
+	read them individually rather than as a single view.
+
 2020-05-08  Ian Lance Taylor  <iant@golang.org>
 
 	* fileline.c (sysctl_exec_name): New static function.
