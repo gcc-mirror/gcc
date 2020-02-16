@@ -1,5 +1,9 @@
 2020-05-09  Ian Lance Taylor  <iant@golang.org>
 
+	* read.c (backtrace_get_view): Support short read.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
 	* elf.c (elf_add): If debug sections are very large or far apart,
 	read them individually rather than as a single view.
 
