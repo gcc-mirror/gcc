@@ -1,5 +1,27 @@
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	P1956R1 On the names of low-level bit manipulation functions
+	* include/bits/hashtable_policy.h: Update comment.
+	* include/std/bit (__ispow2, __ceil2, __floor2, __log2p1): Rename.
+	(ispow2, ceil2, floor2, log2p1): Likewise.
+	(__cpp_lib_int_pow2): Add feature test macro.
+	* include/std/charconv (__to_chars_len_2): Adjust use of __log2p1.
+	* include/std/memory (assume_aligned): Adjust use of ispow2.
+	* include/std/version (__cpp_lib_int_pow2): Add.
+	* libsupc++/new_opa.cc: Adjust use of __ispow2.
+	* src/c++17/memory_resource.cc: Likewise, and for __ceil2 and __log2p1.
+	* testsuite/17_intro/freestanding.cc: Adjust use of ispow2.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil_neg.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_floor.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_width.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/has_single_bit.cc: ... here.
+
 	* include/std/charconv: Add comment.
 
 	PR libstdc++/92546 (partial)

@@ -211,12 +211,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     constexpr bool
-    __ispow2(_Tp __x) noexcept
+    __has_single_bit(_Tp __x) noexcept
     { return std::__popcount(__x) == 1; }
 
   template<typename _Tp>
     constexpr _Tp
-    __ceil2(_Tp __x) noexcept
+    __bit_ceil(_Tp __x) noexcept
     {
       using std::__detail::__int_limits;
       constexpr auto _Nd = __int_limits<_Tp>::digits;
@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     constexpr _Tp
-    __floor2(_Tp __x) noexcept
+    __bit_floor(_Tp __x) noexcept
     {
       constexpr auto _Nd = __detail::__int_limits<_Tp>::digits;
       if (__x == 0)
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     constexpr _Tp
-    __log2p1(_Tp __x) noexcept
+    __bit_width(_Tp __x) noexcept
     {
       constexpr auto _Nd = __detail::__int_limits<_Tp>::digits;
       return _Nd - std::__countl_zero(__x);
@@ -325,29 +325,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [bit.pow.two], integral powers of 2
 
+#define __cpp_lib_int_pow2 202002L
+
   /// True if `x` is a power of two, false otherwise.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, bool>
-    ispow2(_Tp __x) noexcept
-    { return std::__ispow2(__x); }
+    has_single_bit(_Tp __x) noexcept
+    { return std::__has_single_bit(__x); }
 
   /// The smallest power-of-two not less than `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp>
-    ceil2(_Tp __x) noexcept
-    { return std::__ceil2(__x); }
+    bit_ceil(_Tp __x) noexcept
+    { return std::__bit_ceil(__x); }
 
   /// The largest power-of-two not greater than `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp>
-    floor2(_Tp __x) noexcept
-    { return std::__floor2(__x); }
+    bit_floor(_Tp __x) noexcept
+    { return std::__bit_floor(__x); }
 
   /// The smallest integer greater than the base-2 logarithm of `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp>
-    log2p1(_Tp __x) noexcept
-    { return std::__log2p1(__x); }
+    bit_width(_Tp __x) noexcept
+    { return std::__bit_width(__x); }
 
 #define __cpp_lib_endian 201907L
 

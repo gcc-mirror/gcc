@@ -93,7 +93,7 @@
 #if __cplusplus >= 201103L
 #include <cstdint>
 #if __cplusplus > 201703L
-# include <bit>			// for ispow2
+# include <bit>			// for has_single_bit
 # include <new>			// for placement operator new
 # include <tuple>		// for tuple, make_tuple, make_from_tuple
 #endif
@@ -191,7 +191,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr _Tp* assume_aligned(_Tp* __ptr)
     {
-      static_assert(std::ispow2(_Align));
+      static_assert(std::has_single_bit(_Align));
       _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
       return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
     }

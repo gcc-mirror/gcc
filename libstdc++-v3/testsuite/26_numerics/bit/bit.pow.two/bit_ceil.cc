@@ -21,40 +21,68 @@
 #include <bit>
 #include <limits>
 
+template<typename T>
+  constexpr T max = std::numeric_limits<T>::max();
+// Largest representable power of two (i.e. has most significant bit set)
+template<typename T>
+  constexpr T maxpow2 = T(1) << (std::numeric_limits<T>::digits - 1);
+
+// Detect whether std::bit_ceil(N) is a constant expression.
+template<auto N, typename = void>
+  struct bit_ceil_valid
+  : std::false_type { };
+
+template<auto N>
+  struct bit_ceil_valid<N, std::void_t<char[(std::bit_ceil(N), 1)]>>
+  : std::true_type { };
+
 template<typename UInt>
 constexpr auto
 test(UInt x)
--> decltype(std::log2p1(x))
+-> decltype(std::bit_ceil(x))
 {
-  static_assert( noexcept(std::log2p1(x)) );
+  static_assert( noexcept(std::bit_ceil(x)) );
 
-  static_assert( std::log2p1(UInt(0)) == 0 );
-  static_assert( std::log2p1(UInt(1)) == 1 );
-  static_assert( std::log2p1(UInt(2)) == 2 );
-  static_assert( std::log2p1(UInt(3)) == 2 );
-  static_assert( std::log2p1(UInt(4)) == 3 );
-  static_assert( std::log2p1(UInt(0x11)) == 5 );
-  static_assert( std::log2p1(UInt(0x20)) == 6 );
+  static_assert( std::bit_ceil(UInt(0)) == 1 );
+  static_assert( std::bit_ceil(UInt(1)) == 1 );
+  static_assert( std::bit_ceil(UInt(2)) == 2 );
+  static_assert( std::bit_ceil(UInt(3)) == 4 );
+  static_assert( std::bit_ceil(UInt(4)) == 4 );
+  static_assert( std::bit_ceil(UInt(0x11)) == 0x20 );
+  static_assert( std::bit_ceil(UInt(0x20)) == 0x20 );
 
   if constexpr (std::numeric_limits<UInt>::digits > 8)
   {
-    static_assert( std::log2p1(UInt(0x201)) == 10 );
-    static_assert( std::log2p1(UInt(0x8ff)) == 12 );
-    static_assert( std::log2p1(UInt(0x1000)) == 13 );
+    static_assert( std::bit_ceil(UInt(0x201)) == 0x400 );
+    static_assert( std::bit_ceil(UInt(0x8ff)) == 0x1000 );
+    static_assert( std::bit_ceil(UInt(0x1000)) == 0x1000 );
   }
 
   if constexpr (std::numeric_limits<UInt>::digits > 32)
   {
-    static_assert( std::log2p1(UInt(0xabcdef)) == 24 );
-    static_assert( std::log2p1(UInt(0x1000000)) == 25 );
-    static_assert( std::log2p1(UInt(0x1000001)) == 25 );
+    static_assert( std::bit_ceil(UInt(0xabcdef)) == 0x1000000 );
+    static_assert( std::bit_ceil(UInt(0x1000000)) == 0x1000000 );
+    static_assert( std::bit_ceil(UInt(0x1000001)) == 0x2000000 );
   }
 
   if constexpr (std::numeric_limits<UInt>::digits > 64)
   {
-    static_assert( std::log2p1(UInt(1) << 64) == 65 );
-    static_assert( std::log2p1(UInt(3) << 64) == 66 );
+    static_assert( std::bit_ceil(UInt(1) << 64) == (UInt(1) << 64) );
+    static_assert( std::bit_ceil(UInt(3) << 64) == (UInt(4) << 64) );
   }
+
+  constexpr UInt msb = maxpow2<UInt>;
+  static_assert( bit_ceil_valid<msb>() );
+  static_assert( std::bit_ceil( msb ) == msb );
+  static_assert( std::bit_ceil( UInt(msb - 1) ) == msb );
+  static_assert( std::bit_ceil( UInt(msb - 2) ) == msb );
+  static_assert( std::bit_ceil( UInt(msb - 3) ) == msb );
+
+  // P1355R2: not a constant expression if the result is not representable
+  static_assert( !bit_ceil_valid<UInt(msb + 1)>() );
+  static_assert( !bit_ceil_valid<max<UInt>>() );
+  static_assert( !bit_ceil_valid<UInt(max<UInt> - 1)>() );
+  static_assert( !bit_ceil_valid<UInt(max<UInt> - 2)>() );
 
   return true;
 }
@@ -65,7 +93,7 @@ static_assert( test( (unsigned int)0 ) );
 static_assert( test( (unsigned long)0 ) );
 static_assert( test( (unsigned long long)0 ) );
 
-// std::log2p1(T) shall not participate in overload resolution
+// std::bit_ceil(T) shall not participate in overload resolution
 // unless T is an unsigned integer type.
 struct X { constexpr bool did_not_match() { return true; } };
 constexpr X test(...) { return X{}; }
@@ -94,6 +122,10 @@ static_assert( test( (__GLIBCXX_TYPE_INT_N_1)0 ).did_not_match() );
 #if defined(__GLIBCXX_TYPE_INT_N_2)
 static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_2)0 ) );
 static_assert( test( (__GLIBCXX_TYPE_INT_N_2)0 ).did_not_match() );
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_3)0 ) );
+static_assert( test( (__GLIBCXX_TYPE_INT_N_3)0 ).did_not_match() );
 #endif
 
 #include <cstddef>

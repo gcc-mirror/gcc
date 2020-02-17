@@ -38,7 +38,7 @@
 #if __cplusplus >= 201402L
 
 #include <type_traits>
-#include <bit>			// for __log2p1
+#include <bit>			// for __bit_width
 #include <cctype>		// for isdigit
 #include <bits/charconv.h>	// for __to_chars_len, __to_chars_10_impl
 #include <bits/error_constants.h> // for std::errc
@@ -101,7 +101,7 @@ namespace __detail
   template<typename _Tp>
     constexpr unsigned
     __to_chars_len_2(_Tp __value) noexcept
-    { return std::__log2p1(__value); }
+    { return std::__bit_width(__value); }
 
   // Generic implementation for arbitrary bases.
   template<typename _Tp>

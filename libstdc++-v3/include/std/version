@@ -174,6 +174,7 @@
 # define __cpp_lib_destroying_delete 201806L
 #endif
 #define __cpp_lib_endian 201907L
+#define __cpp_lib_int_pow2 202002L
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif

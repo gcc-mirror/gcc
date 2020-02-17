@@ -115,7 +115,7 @@ operator new (std::size_t sz, std::align_val_t al)
 
   /* Alignment must be a power of two.  */
   /* XXX This should be checked by the compiler (PR 86878).  */
-  if (__builtin_expect (!std::__ispow2(align), false))
+  if (__builtin_expect (!std::__has_single_bit(align), false))
     _GLIBCXX_THROW_OR_ABORT(bad_alloc());
 
   /* malloc (0) is unpredictable; avoid it.  */

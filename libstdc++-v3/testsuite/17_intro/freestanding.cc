@@ -52,7 +52,7 @@ int main()
   std::initializer_list<int> ilisti __attribute__((unused));
 
 #if __cplusplus > 201703L
-  static_assert( std::ispow2(256u) );
+  static_assert( std::has_single_bit(256u) );
   static_assert( __cpp_lib_void_t >= 201411L );
 #endif
 
