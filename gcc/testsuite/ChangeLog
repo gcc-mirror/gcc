@@ -1,3 +1,8 @@
+2020-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/94176
+	* gcc.target/powerpc/fold-vec-mule-misc.c: Use vmx_hw selector.
+
 2020-03-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94099
