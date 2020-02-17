@@ -1,3 +1,8 @@
+2020-02-26  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93047
+	* gcc.dg/torture/stackalign/builtin-return-2.c: New test case.
+
 2020-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93820
