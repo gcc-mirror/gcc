@@ -844,18 +844,23 @@ package body Sem_Ch8 is
       begin
          Obj_Nam := Nod;
          while Present (Obj_Nam) loop
-            if Nkind_In (Obj_Nam, N_Attribute_Reference,
-                                  N_Explicit_Dereference,
-                                  N_Indexed_Component,
-                                  N_Slice)
-            then
-               Obj_Nam := Prefix (Obj_Nam);
+            case Nkind (Obj_Nam) is
+               when N_Attribute_Reference
+                  | N_Explicit_Dereference
+                  | N_Indexed_Component
+                  | N_Slice
+               =>
+                  Obj_Nam := Prefix (Obj_Nam);
 
-            elsif Nkind (Obj_Nam) = N_Selected_Component then
-               Obj_Nam := Selector_Name (Obj_Nam);
-            else
-               exit;
-            end if;
+               when N_Selected_Component =>
+                  Obj_Nam := Selector_Name (Obj_Nam);
+
+               when N_Qualified_Expression | N_Type_Conversion =>
+                  Obj_Nam := Expression (Obj_Nam);
+
+               when others =>
+                  exit;
+            end case;
          end loop;
 
          return Obj_Nam;
@@ -1046,8 +1051,8 @@ package body Sem_Ch8 is
 
          if Nkind (Nam) = N_Type_Conversion
            and then not Comes_From_Source (Nam)
-           and then Ekind (Etype (Expression (Nam))) = E_Anonymous_Access_Type
-           and then Ekind (T) /= E_Anonymous_Access_Type
+           and then Ekind (Etype (Expression (Nam))) in Anonymous_Access_Kind
+           and then Ekind (T) not in Anonymous_Access_Kind
          then
             Wrong_Type (Expression (Nam), T); -- Should we give better error???
          end if;

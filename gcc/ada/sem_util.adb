@@ -13736,6 +13736,13 @@ package body Sem_Util is
          return Is_Tagged_Type (Etype (Obj))
            and then Is_Aliased_View (Expression (Obj));
 
+      --  Ada 202x AI12-0228
+
+      elsif Nkind (Obj) = N_Qualified_Expression
+        and then Ada_Version >= Ada_2012
+      then
+         return Is_Aliased_View (Expression (Obj));
+
       elsif Nkind (Obj) = N_Explicit_Dereference then
          return Nkind (Original_Node (Obj)) /= N_Function_Call;
 
@@ -14582,6 +14589,8 @@ package body Sem_Util is
          Deref := Prefix (Deref);
       end loop;
 
+      Deref := Original_Node (Deref);
+
       --  If the prefix is a qualified expression of a variable, then function
       --  Is_Variable will return False for that because a qualified expression
       --  denotes a constant view, so we need to get the name being qualified
@@ -14599,9 +14608,11 @@ package body Sem_Util is
 
       if Is_Variable (Object)
         or else Is_Variable (Deref)
-        or else (Ada_Version >= Ada_2005
-                  and then (Nkind (Deref) = N_Explicit_Dereference
-                             or else Is_Access_Type (Etype (Deref))))
+        or else
+          (Ada_Version >= Ada_2005
+            and then (Nkind (Deref) = N_Explicit_Dereference
+                       or else (Present (Etype (Deref))
+                                 and then Is_Access_Type (Etype (Deref)))))
       then
          if Nkind (Object) = N_Selected_Component then
 
