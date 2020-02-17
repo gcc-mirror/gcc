@@ -195,6 +195,39 @@ namespace ranges
 
   inline constexpr __for_each_fn for_each{};
 
+  template<typename _Iter, typename _Fp>
+    using for_each_n_result = for_each_result<_Iter, _Fp>;
+
+  struct __for_each_n_fn
+  {
+    template<input_iterator _Iter, typename _Proj = identity,
+	     indirectly_unary_invocable<projected<_Iter, _Proj>> _Fun>
+      constexpr for_each_n_result<_Iter, _Fun>
+      operator()(_Iter __first, iter_difference_t<_Iter> __n,
+		 _Fun __f, _Proj __proj = {}) const
+      {
+	if constexpr (random_access_iterator<_Iter>)
+	  {
+	    if (__n <= 0)
+	      return {std::move(__first), std::move(__f)};
+	    auto __last = __first + __n;
+	    return ranges::for_each(std::move(__first), std::move(__last),
+				    std::move(__f), std::move(__proj));
+	  }
+	else
+	  {
+	    while (__n-- > 0)
+	      {
+		std::__invoke(__f, std::__invoke(__proj, *__first));
+		++__first;
+	      }
+	    return {std::move(__first), std::move(__f)};
+	  }
+      }
+  };
+
+  inline constexpr __for_each_n_fn for_each_n{};
+
   struct __find_fn
   {
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp,
@@ -1694,6 +1727,64 @@ namespace ranges
 
   inline constexpr __rotate_copy_fn rotate_copy{};
 
+  struct __sample_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     weakly_incrementable _Out, typename _Gen>
+      requires (forward_iterator<_Iter> || random_access_iterator<_Out>)
+	&& indirectly_copyable<_Iter, _Out>
+	&& uniform_random_bit_generator<remove_reference_t<_Gen>>
+      _Out
+      operator()(_Iter __first, _Sent __last, _Out __out,
+		 iter_difference_t<_Iter> __n, _Gen&& __g) const
+      {
+	if constexpr (forward_iterator<_Iter>)
+	  {
+	    // FIXME: Forwarding to std::sample here requires computing __lasti
+	    // which may take linear time.
+	    auto __lasti = ranges::next(__first, __last);
+	    return std::sample(std::move(__first), std::move(__lasti),
+			       std::move(__out), __n, std::forward<_Gen>(__g));
+	  }
+	else
+	  {
+	    using __distrib_type
+	      = uniform_int_distribution<iter_difference_t<_Iter>>;
+	    using __param_type = typename __distrib_type::param_type;
+	    __distrib_type __d{};
+	    iter_difference_t<_Iter> __sample_sz = 0;
+	    while (__first != __last && __sample_sz != __n)
+	      {
+		__out[__sample_sz++] = *__first;
+		++__first;
+	      }
+	    for (auto __pop_sz = __sample_sz; __first != __last;
+		++__first, (void) ++__pop_sz)
+	      {
+		const auto __k = __d(__g, __param_type{0, __pop_sz});
+		if (__k < __n)
+		  __out[__k] = *__first;
+	      }
+	    return __out + __sample_sz;
+	  }
+      }
+
+    template<input_range _Range, weakly_incrementable _Out, typename _Gen>
+      requires (forward_range<_Range> || random_access_iterator<_Out>)
+	&& indirectly_copyable<iterator_t<_Range>, _Out>
+	&& uniform_random_bit_generator<remove_reference_t<_Gen>>
+      _Out
+      operator()(_Range&& __r, _Out __out,
+		 range_difference_t<_Range> __n, _Gen&& __g) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+		       std::move(__out), __n,
+		       std::forward<_Gen>(__g));
+      }
+  };
+
+  inline constexpr __sample_fn sample{};
+
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
   struct __shuffle_fn
   {
@@ -3101,6 +3192,30 @@ namespace ranges
   };
 
   inline constexpr __max_fn max{};
+
+  struct __clamp_fn
+  {
+    template<typename _Tp, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<const _Tp*, _Proj>> _Comp
+	       = ranges::less>
+      constexpr const _Tp&
+      operator()(const _Tp& __val, const _Tp& __lo, const _Tp& __hi,
+		 _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	__glibcxx_assert(!(std::__invoke(__comp,
+					 std::__invoke(__proj, __hi),
+					 std::__invoke(__proj, __lo))));
+	auto&& __proj_val = std::__invoke(__proj, __val);
+	if (std::__invoke(__comp, __proj_val, std::__invoke(__proj, __lo)))
+	  return __lo;
+	else if (std::__invoke(__comp, std::__invoke(__proj, __hi), __proj_val))
+	  return __hi;
+	else
+	  return __val;
+      }
+  };
+
+  inline constexpr __clamp_fn clamp{};
 
   template<typename _Tp>
     struct minmax_result

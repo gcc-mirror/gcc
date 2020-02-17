@@ -1,3 +1,12 @@
+2020-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	P1243R4 Rangify new algorithms
+	* include/bits/ranges_algo.h (for_each_n_result, __for_each_n_fn,
+	for_each_n, __sample_fn, sample, __clamp_fn, clamp): New.
+	* testsuite/25_algorithms/clamp/constrained.cc: New test.
+	* testsuite/25_algorithms/for_each/constrained.cc: Augment test.
+	* testsuite/25_algorithms/sample/constrained.cc: New test.
+
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	P1964R2 Wording for boolean-testable
