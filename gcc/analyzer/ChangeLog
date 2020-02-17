@@ -1,5 +1,13 @@
 2020-02-18  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93777
+	* region-model.cc (region_model::maybe_cast_1): Replace assertion
+	that build_cast returns non-NULL with a conditional, falling
+	through to the logic which returns a new unknown value of the
+	desired type if it fails.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93778
 	* engine.cc (impl_region_model_context::on_unknown_tree_code):
 	Rename to...

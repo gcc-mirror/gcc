@@ -5089,10 +5089,9 @@ region_model::maybe_cast_1 (tree dst_type, svalue_id sid)
   /* Attempt to cast constants.  */
   if (tree src_cst = sval->maybe_get_constant ())
     {
-      tree dst = build_cast (dst_type, src_cst);
-      gcc_assert (dst != NULL_TREE);
-      if (CONSTANT_CLASS_P (dst))
-	return get_or_create_constant_svalue (dst);
+      if (tree dst = build_cast (dst_type, src_cst))
+	if (CONSTANT_CLASS_P (dst))
+	  return get_or_create_constant_svalue (dst);
     }
 
   /* Otherwise, return a new unknown value.  */
