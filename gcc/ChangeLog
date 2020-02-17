@@ -1,3 +1,9 @@
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/86134
+	* opts-global.c (print_ignored_options): Use inform and
+	amend message.
+
 2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93047

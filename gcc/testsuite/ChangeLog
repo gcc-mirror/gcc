@@ -1,3 +1,9 @@
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/86134
+	* gcc.dg/pr86134.c: New testcase.
+	* gcc.dg/pr28322-2.c: Adjust.
+
 2020-02-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93388
