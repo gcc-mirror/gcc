@@ -1,3 +1,12 @@
+2020-02-14 Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vbmi2-vpshld-1.c: New test.
+	* gcc.target/i386/avx512vbmi2-vpshrd-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Add -mavx512vbmi2.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add -mavx512vbmi2 and tests.
+	* gcc.target/i386/sse-22.c: Ditto.
+
 2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93743
