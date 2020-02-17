@@ -1,3 +1,25 @@
+2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_standard_integer): New helper trait.
+	* include/std/utility (cmp_equal, cmp_not_equal, cmp_less, cmp_greater)
+	(cmp_less_equal, cmp_greater_equal, in_range): Define for C++20.
+	* include/std/version (__cpp_lib_integer_comparison_functions): Define.
+	* testsuite/20_util/integer_comparisons/1.cc: New test.
+	* testsuite/20_util/integer_comparisons/2.cc: New test.
+	* testsuite/20_util/integer_comparisons/equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/in_range.cc: New test.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/less.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/not_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/not_equal_neg.cc: New test.
+
 2020-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):

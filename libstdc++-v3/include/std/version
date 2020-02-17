@@ -180,6 +180,7 @@
 
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_bind_front 201907L
+#define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
