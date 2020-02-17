@@ -1897,8 +1897,8 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 }
 
 /* Return true, if a ipcp_value VAL is orginated from parameter value of
-   self-feeding recursive function by applying non-passthrough arithmetic
-   transformation.  */
+   self-feeding recursive function via some kind of pass-through jump
+   function.  */
 
 static bool
 self_recursively_generated_p (ipcp_value<tree> *val)
@@ -1909,9 +1909,11 @@ self_recursively_generated_p (ipcp_value<tree> *val)
     {
       cgraph_edge *cs = src->cs;
 
-      if (!src->val || cs->caller != cs->callee->function_symbol ()
-	  || src->val == val)
+      if (!src->val || cs->caller != cs->callee->function_symbol ())
 	return false;
+
+      if (src->val == val)
+	continue;
 
       if (!info)
 	info = IPA_NODE_REF (cs->caller);
