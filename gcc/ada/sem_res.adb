@@ -10008,27 +10008,13 @@ package body Sem_Res is
          Apply_Scalar_Range_Check (Expr, Typ);
       end if;
 
-      --  Finally, check whether a predicate applies to the target type. This
-      --  comes from AI12-0100. As for type conversions, check the enclosing
-      --  context to prevent an infinite expansion.
+      --  AI12-0100: Once the qualified expression is resolved, check whether
+      --  operand statisfies a static predicate of the target subtype, if any.
+      --  In the static expression case, a predicate check failure is an error.
 
       if Has_Predicates (Target_Typ) then
-         if Nkind (Parent (N)) = N_Function_Call
-           and then Present (Name (Parent (N)))
-           and then (Is_Predicate_Function (Entity (Name (Parent (N))))
-                       or else
-                     Is_Predicate_Function_M (Entity (Name (Parent (N)))))
-         then
-            null;
-
-         --  In the case of a qualified expression in an allocator, the check
-         --  is applied when expanding the allocator, so avoid redundant check.
-
-         elsif Nkind (N) = N_Qualified_Expression
-           and then Nkind (Parent (N)) /= N_Allocator
-         then
-            Apply_Predicate_Check (N, Target_Typ);
-         end if;
+         Check_Expression_Against_Static_Predicate
+           (N, Target_Typ, Static_Failure_Is_Error => True);
       end if;
    end Resolve_Qualified_Expression;
 
@@ -11553,11 +11539,13 @@ package body Sem_Res is
          end;
       end if;
 
-      --  Ada 2012: once the type conversion is resolved, check whether the
-      --  operand statisfies the static predicate of the target type.
+      --  Ada 2012: Once the type conversion is resolved, check whether the
+      --  operand statisfies a static predicate of the target subtype, if any.
+      --  In the static expression case, a predicate check failure is an error.
 
       if Has_Predicates (Target_Typ) then
-         Check_Expression_Against_Static_Predicate (N, Target_Typ);
+         Check_Expression_Against_Static_Predicate
+           (N, Target_Typ, Static_Failure_Is_Error => True);
       end if;
 
       --  If at this stage we have a real to integer conversion, make sure that

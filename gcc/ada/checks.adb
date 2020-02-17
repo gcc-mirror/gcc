@@ -2789,7 +2789,13 @@ package body Checks is
                begin
                   while Present (P) loop
                      if Nkind (P) = N_Subprogram_Body
-                       and then Corresponding_Spec (P) = Scope (Entity (N))
+                       and then
+                         ((Present (Corresponding_Spec (P))
+                            and then
+                              Corresponding_Spec (P) = Scope (Entity (N)))
+                            or else
+                              Defining_Unit_Name (Specification (P)) =
+                                Scope (Entity (N)))
                      then
                         In_Body := True;
                         exit;
