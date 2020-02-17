@@ -1,3 +1,8 @@
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93775
+	* gcc.dg/analyzer/20020129-1.c: New test.
+
 2020-02-17  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.dg/tls/emutls-3.c: New, combining emutls-2.c and

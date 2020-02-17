@@ -6693,6 +6693,8 @@ region_model::get_fndecl_for_call (const gcall *call,
       if (code)
 	{
 	  tree fn_decl = code->get_tree_for_child_region (fn_rid);
+	  if (!fn_decl)
+	    return NULL_TREE;
 	  const cgraph_node *ultimate_node
 	    = cgraph_node::get (fn_decl)->ultimate_alias_target ();
 	  if (ultimate_node)

@@ -1,5 +1,12 @@
 2020-02-17  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93775
+	* region-model.cc (region_model::get_fndecl_for_call): Handle the
+	case where the code_region's get_tree_for_child_region returns
+	NULL.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93388
 	* engine.cc (impl_region_model_context::on_unknown_tree_code):
 	New.
