@@ -693,7 +693,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _In, typename _Out>
     concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
+      && indirectly_writable<_Out, iter_value_t<_In>&>
       && indirectly_writable<_Out, const iter_value_t<_In>&>
+      && indirectly_writable<_Out, iter_value_t<_In>&&>
+      && indirectly_writable<_Out, const iter_value_t<_In>&&>
       && copyable<iter_value_t<_In>>
       && constructible_from<iter_value_t<_In>, iter_reference_t<_In>>
       && assignable_from<iter_value_t<_In>&, iter_reference_t<_In>>;

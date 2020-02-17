@@ -251,7 +251,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     concept copyable = copy_constructible<_Tp> && movable<_Tp>
-      && assignable_from<_Tp&, const _Tp&>;
+      && assignable_from<_Tp&, _Tp&> && assignable_from<_Tp&, const _Tp&>
+      && assignable_from<_Tp&, const _Tp>;
 
   template<typename _Tp>
     concept semiregular = copyable<_Tp> && default_initializable<_Tp>;
