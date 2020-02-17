@@ -205,14 +205,12 @@ bool helpflag;			/* true if --help */
 static int shared_obj;			/* true if -shared */
 static int static_obj;			/* true if -static */
 
-static char *c_file;		/* <xxx>.c for constructor/destructor list.  */
-static char *o_file;		/* <xxx>.o for constructor/destructor list.  */
+static const char *c_file;		/* <xxx>.c for constructor/destructor list.  */
+static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
 static const char *export_file;		/* <xxx>.x for AIX export list.  */
 #endif
 static char **lto_o_files;		/* Output files for LTO.  */
-const char *ldout;			/* File for ld stdout.  */
-const char *lderrout;			/* File for ld stderr.  */
 static const char *output_file;		/* Output file for ld.  */
 static const char *nm_file_name;	/* pathname of nm */
 #ifdef LDD_SUFFIX
@@ -384,6 +382,10 @@ static void scan_prog_file (const char *, scanpass, scanfilter);
 void
 tool_cleanup (bool from_signal)
 {
+  /* maybe_unlink may call notice, which is not signal safe.  */
+  if (from_signal)
+    verbose = false;
+
   if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
 
@@ -397,20 +399,6 @@ tool_cleanup (bool from_signal)
 
   if (lto_o_files)
     maybe_unlink_list (lto_o_files);
-
-  if (ldout != 0 && ldout[0])
-    {
-      if (!from_signal)
-	dump_ld_file (ldout, stdout);
-      maybe_unlink (ldout);
-    }
-
-  if (lderrout != 0 && lderrout[0])
-    {
-      if (!from_signal)
-	dump_ld_file (lderrout, stderr);
-      maybe_unlink (lderrout);
-    }
 }
 
 static void
@@ -474,77 +462,6 @@ extract_string (const char **pp)
   obstack_1grow (&temporary_obstack, '\0');
   *pp = p;
   return XOBFINISH (&temporary_obstack, char *);
-}
-
-void
-dump_ld_file (const char *name, FILE *to)
-{
-  FILE *stream = fopen (name, "r");
-
-  if (stream == 0)
-    return;
-  while (1)
-    {
-      int c;
-      while (c = getc (stream),
-	     c != EOF && (ISIDNUM (c) || c == '$' || c == '.'))
-	obstack_1grow (&temporary_obstack, c);
-      if (obstack_object_size (&temporary_obstack) > 0)
-	{
-	  const char *word, *p;
-	  char *result;
-	  obstack_1grow (&temporary_obstack, '\0');
-	  word = XOBFINISH (&temporary_obstack, const char *);
-
-	  if (*word == '.')
-	    ++word, putc ('.', to);
-	  p = word;
-	  if (!strncmp (p, USER_LABEL_PREFIX, strlen (USER_LABEL_PREFIX)))
-	    p += strlen (USER_LABEL_PREFIX);
-
-#ifdef HAVE_LD_DEMANGLE
-	  result = 0;
-#else
-	  if (no_demangle)
-	    result = 0;
-	  else
-	    result = cplus_demangle (p, DMGL_PARAMS | DMGL_ANSI | DMGL_VERBOSE);
-#endif
-
-	  if (result)
-	    {
-	      int diff;
-	      fputs (result, to);
-
-	      diff = strlen (word) - strlen (result);
-	      while (diff > 0 && c == ' ')
-		--diff, putc (' ', to);
-	      if (diff < 0 && c == ' ')
-		{
-		  while (diff < 0 && c == ' ')
-		    ++diff, c = getc (stream);
-		  if (!ISSPACE (c))
-		    {
-		      /* Make sure we output at least one space, or
-			 the demangled symbol name will run into
-			 whatever text follows.  */
-		      putc (' ', to);
-		    }
-		}
-
-	      free (result);
-	    }
-	  else
-	    fputs (word, to);
-
-	  fflush (to);
-	  obstack_free (&temporary_obstack, temporary_firstobj);
-	}
-      if (c == EOF)
-	break;
-      putc (c, to);
-    }
-  fclose (stream);
 }
 
 /* Return the kind of symbol denoted by name S.  */
@@ -744,7 +661,10 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 	      ++num_files;
 	  }
 
-	lto_o_files = XNEWVEC (char *, num_files + 1);
+	/* signal handler may access uninitialized memory
+	   and delete whatever it points to, if lto_o_files
+	   is not allocatted with calloc.  */
+	lto_o_files = XCNEWVEC (char *, num_files + 1);
 	lto_o_files[num_files] = NULL;
 	start = XOBFINISH (&temporary_obstack, char *);
 	for (i = 0; i < num_files; ++i)
@@ -1262,27 +1182,19 @@ main (int argc, char **argv)
   /* Make temp file names.  */
   if (save_temps)
     {
-      c_file = (char *) xmalloc (strlen (output_file)
-				  + sizeof (".cdtor.c") + 1);
-      strcpy (c_file, output_file);
-      strcat (c_file, ".cdtor.c");
-      o_file = (char *) xmalloc (strlen (output_file)
-				  + sizeof (".cdtor.o") + 1);
-      strcpy (o_file, output_file);
-      strcat (o_file, ".cdtor.o");
+      c_file = concat (output_file, ".cdtor.c", NULL);
+      o_file = concat (output_file, ".cdtor.o", NULL);
+#ifdef COLLECT_EXPORT_LIST
+      export_file = concat (output_file, ".x", NULL);
+#endif
     }
   else
     {
       c_file = make_temp_file (".cdtor.c");
       o_file = make_temp_file (".cdtor.o");
-    }
 #ifdef COLLECT_EXPORT_LIST
-  export_file = make_temp_file (".x");
+      export_file = make_temp_file (".x");
 #endif
-  if (!debug)
-    {
-      ldout = make_temp_file (".ld");
-      lderrout = make_temp_file (".le");
     }
   /* Build the command line to compile the ctor/dtor list.  */
   *c_ptr++ = c_file_name;
@@ -1811,9 +1723,6 @@ main (int argc, char **argv)
       maybe_unlink (export_file);
 #endif
       post_ld_pass (/*temp_file*/false);
-
-      maybe_unlink (c_file);
-      maybe_unlink (o_file);
       return 0;
     }
 
@@ -1910,13 +1819,6 @@ main (int argc, char **argv)
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
   scan_prog_file (output_file, PASS_SECOND, SCAN_ALL);
-#endif
-
-  maybe_unlink (c_file);
-  maybe_unlink (o_file);
-
-#ifdef COLLECT_EXPORT_LIST
-  maybe_unlink (export_file);
 #endif
 
   return 0;

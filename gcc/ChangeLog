@@ -1,3 +1,17 @@
+2020-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* collect2.c (c_file, o_file): Make const again.
+	(ldout,lderrout, dump_ld_file): Remove.
+	(tool_cleanup): Avoid calling not signal-safe functions.
+	(maybe_run_lto_and_relink): Avoid possible signal handler
+	access to unintialzed memory (lto_o_files).
+	(main): Avoid leaking temp files in $TMPDIR.
+	Initialize c_file/o_file with concat, which avoids exposing
+	uninitialized memory to signal handler, which calls unlink(!).
+	Avoid calling maybe_unlink when the main function returns,
+	since the atexit handler is already doing this.
+	* collect2.h (dump_ld_file, ldout, lderrout): Remove.
+
 2020-02-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/93776
