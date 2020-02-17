@@ -157,7 +157,7 @@ namespace ranges
   inline constexpr __equal_fn equal{};
 
   template<typename _Iter, typename _Out>
-    struct copy_result
+    struct in_out_result
     {
       [[no_unique_address]] _Iter in;
       [[no_unique_address]] _Out out;
@@ -165,24 +165,29 @@ namespace ranges
       template<typename _Iter2, typename _Out2>
 	requires convertible_to<const _Iter&, _Iter2>
 	  && convertible_to<const _Out&, _Out2>
-	operator copy_result<_Iter2, _Out2>() const &
+	constexpr
+	operator in_out_result<_Iter2, _Out2>() const &
 	{ return {in, out}; }
 
       template<typename _Iter2, typename _Out2>
 	requires convertible_to<_Iter, _Iter2>
 	  && convertible_to<_Out, _Out2>
-	operator copy_result<_Iter2, _Out2>() &&
+	constexpr
+	operator in_out_result<_Iter2, _Out2>() &&
 	{ return {std::move(in), std::move(out)}; }
     };
 
   template<typename _Iter, typename _Out>
-    using move_result = copy_result<_Iter, _Out>;
+    using copy_result = in_out_result<_Iter, _Out>;
+
+  template<typename _Iter, typename _Out>
+    using move_result = in_out_result<_Iter, _Out>;
 
   template<typename _Iter1, typename _Iter2>
-    using move_backward_result = copy_result<_Iter1, _Iter2>;
+    using move_backward_result = in_out_result<_Iter1, _Iter2>;
 
   template<typename _Iter1, typename _Iter2>
-    using copy_backward_result = copy_result<_Iter1, _Iter2>;
+    using copy_backward_result = in_out_result<_Iter1, _Iter2>;
 
   template<bool _IsMove,
 	   bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -483,7 +488,7 @@ namespace ranges
   inline constexpr __move_backward_fn move_backward{};
 
   template<typename _Iter, typename _Out>
-    using copy_n_result = copy_result<_Iter, _Out>;
+    using copy_n_result = in_out_result<_Iter, _Out>;
 
   struct __copy_n_fn
   {

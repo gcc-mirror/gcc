@@ -1,5 +1,46 @@
 2020-02-17  Patrick Palka  <ppalka@redhat.com>
 
+	P2106R0 Alternative wording for GB315 and GB316
+	* include/bits/ranges_algo.h (in_fun_result): New.
+	(for_each_result, for_each_n_result): Change into an alias of
+	in_fun_result.
+	(in_in_result): New.
+	(mismatch_result): Change into an alias of in_in_result.
+	(copy_if_result): Change into an alias of in_out_result.
+	(swap_ranges_result): Change into an alias of in_in_result.
+	(unary_transform_result): Change into an alias of in_out_result.
+	(in_in_out_result): New.
+	(binary_transform_result): Change into an alias of in_in_out_result.
+	(replace_copy_result, replace_copy_if_result, remove_copy_if_result,
+	remove_copy_result, unique_copy_result, reverse_copy_result,
+	rotate_copy_result, partial_sort_copy_result): Change into an alias of
+	in_out_result.
+	(in_out_out_result): New.
+	(partition_copy_result, merge_result): Change into an alias of
+	in_out_out_result.
+	(set_union_result, set_intersection_result): Change into an alias of
+	in_in_out_result.
+	(set_difference_result): Change into an alias of in_out_result.
+	(set_symmetric_difference): Change into an alias of in_in_out_result.
+	(min_max_result): New.
+	(minmax_result, minmax_element_result): Change into an alias of
+	min_max_result.
+	(in_found_result): New.
+	(next_permutation_result, prev_permutation_result): Change into an alias
+	of in_found_result.
+	(__next_permutation_fn::operator(), __prev_permutation_fn::operator()):
+	Adjust following changes to next_permutation_result and
+	prev_permutation_result.
+	* include/bits/ranges_algobase.h (in_out_result): New.
+	(copy_result, move_result, move_backward_result, copy_backward_result,
+	copy_n_result): Change into an alias of in_out_result.
+	* include/bits/ranges_uninitialized.h (uninitialized_copy_result,
+	uninitialized_copy_n_result, uninitialized_move_result,
+	uninitialized_move_n_result): Likewise.
+	* testsuite/25_algorithms/next_permutation/constrained.cc: Adjust uses of
+	structured bindings.
+	* testsuite/25_algorithms/prev_permutation/constrained.cc: Likewise.
+
 	P1243R4 Rangify new algorithms
 	* include/bits/ranges_algo.h (for_each_n_result, __for_each_n_fn,
 	for_each_n, __sample_fn, sample, __clamp_fn, clamp): New.
