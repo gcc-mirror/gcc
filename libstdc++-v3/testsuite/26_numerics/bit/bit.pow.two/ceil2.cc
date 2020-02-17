@@ -19,6 +19,7 @@
 // { dg-do compile { target c++2a } }
 
 #include <bit>
+#include <limits>
 
 template<typename T>
   constexpr T max = std::numeric_limits<T>::max();

@@ -20,6 +20,7 @@
 // { dg-xfail-run-if "__glibcxx_assert in ceil2 should fail" { *-*-* } }
 
 #include <bit>
+#include <limits>
 
 // P1355R2: not a constant expression if the result is not representable
 

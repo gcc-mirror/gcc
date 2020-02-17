@@ -34,7 +34,7 @@
 #if __cplusplus >= 201402L
 
 #include <type_traits>
-#include <limits>
+#include <bits/int_limits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -55,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp
     __rotl(_Tp __x, int __s) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      constexpr auto _Nd = __detail::__int_limits<_Tp>::digits;
       const int __r = __s % _Nd;
       if (__r == 0)
 	return __x;
@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp
     __rotr(_Tp __x, int __s) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      constexpr auto _Nd = __detail::__int_limits<_Tp>::digits;
       const int __r = __s % _Nd;
       if (__r == 0)
 	return __x;
@@ -83,14 +83,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countl_zero(_Tp __x) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      using std::__detail::__int_limits;
+      constexpr auto _Nd = __int_limits<_Tp>::digits;
 
       if (__x == 0)
         return _Nd;
 
-      constexpr auto _Nd_ull = numeric_limits<unsigned long long>::digits;
-      constexpr auto _Nd_ul = numeric_limits<unsigned long>::digits;
-      constexpr auto _Nd_u = numeric_limits<unsigned>::digits;
+      constexpr auto _Nd_ull = __int_limits<unsigned long long>::digits;
+      constexpr auto _Nd_ul = __int_limits<unsigned long>::digits;
+      constexpr auto _Nd_u = __int_limits<unsigned>::digits;
 
       if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
 	{
@@ -118,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      constexpr int __diff = (2 * _Nd_ull) - _Nd;
 	      return __builtin_clzll(__high) - __diff;
 	    }
-	  constexpr auto __max_ull = numeric_limits<unsigned long long>::max();
+	  constexpr auto __max_ull = __int_limits<unsigned long long>::max();
 	  unsigned long long __low = __x & __max_ull;
 	  return (_Nd - _Nd_ull) + __builtin_clzll(__low);
 	}
@@ -128,8 +129,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countl_one(_Tp __x) noexcept
     {
-      if (__x == numeric_limits<_Tp>::max())
-        return numeric_limits<_Tp>::digits;
+      if (__x == __detail::__int_limits<_Tp>::max())
+	return __detail::__int_limits<_Tp>::digits;
       return std::__countl_zero<_Tp>((_Tp)~__x);
     }
 
@@ -137,14 +138,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countr_zero(_Tp __x) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      using std::__detail::__int_limits;
+      constexpr auto _Nd = __int_limits<_Tp>::digits;
 
       if (__x == 0)
         return _Nd;
 
-      constexpr auto _Nd_ull = numeric_limits<unsigned long long>::digits;
-      constexpr auto _Nd_ul = numeric_limits<unsigned long>::digits;
-      constexpr auto _Nd_u = numeric_limits<unsigned>::digits;
+      constexpr auto _Nd_ull = __int_limits<unsigned long long>::digits;
+      constexpr auto _Nd_ul = __int_limits<unsigned long>::digits;
+      constexpr auto _Nd_u = __int_limits<unsigned>::digits;
 
       if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
 	return __builtin_ctz(__x);
@@ -157,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(_Nd <= (2 * _Nd_ull),
 			"Maximum supported integer size is 128-bit");
 
-	  constexpr auto __max_ull = numeric_limits<unsigned long long>::max();
+	  constexpr auto __max_ull = __int_limits<unsigned long long>::max();
 	  unsigned long long __low = __x & __max_ull;
 	  if (__low != 0)
 	    return __builtin_ctzll(__low);
@@ -170,8 +172,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countr_one(_Tp __x) noexcept
     {
-      if (__x == numeric_limits<_Tp>::max())
-        return numeric_limits<_Tp>::digits;
+      if (__x == __detail::__int_limits<_Tp>::max())
+	return __detail::__int_limits<_Tp>::digits;
       return std::__countr_zero((_Tp)~__x);
     }
 
@@ -179,14 +181,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __popcount(_Tp __x) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      using std::__detail::__int_limits;
+      constexpr auto _Nd = __int_limits<_Tp>::digits;
 
       if (__x == 0)
         return 0;
 
-      constexpr auto _Nd_ull = numeric_limits<unsigned long long>::digits;
-      constexpr auto _Nd_ul = numeric_limits<unsigned long>::digits;
-      constexpr auto _Nd_u = numeric_limits<unsigned>::digits;
+      constexpr auto _Nd_ull = __int_limits<unsigned long long>::digits;
+      constexpr auto _Nd_ul = __int_limits<unsigned long>::digits;
+      constexpr auto _Nd_u = __int_limits<unsigned>::digits;
 
       if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
 	return __builtin_popcount(__x);
@@ -199,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(_Nd <= (2 * _Nd_ull),
 			"Maximum supported integer size is 128-bit");
 
-	  constexpr auto __max_ull = numeric_limits<unsigned long long>::max();
+	  constexpr auto __max_ull = __int_limits<unsigned long long>::max();
 	  unsigned long long __low = __x & __max_ull;
 	  unsigned long long __high = __x >> _Nd_ull;
 	  return __builtin_popcountll(__low) + __builtin_popcountll(__high);
@@ -215,7 +218,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp
     __ceil2(_Tp __x) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      using std::__detail::__int_limits;
+      constexpr auto _Nd = __int_limits<_Tp>::digits;
       if (__x == 0 || __x == 1)
         return 1;
       auto __shift_exponent = _Nd - std::__countl_zero((_Tp)(__x - 1u));
@@ -226,7 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
       if (!__builtin_is_constant_evaluated())
 	{
-	  __glibcxx_assert( __shift_exponent != numeric_limits<_Tp>::digits );
+	  __glibcxx_assert( __shift_exponent != __int_limits<_Tp>::digits );
 	}
 #endif
       using __promoted_type = decltype(__x << 1);
@@ -247,7 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp
     __floor2(_Tp __x) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      constexpr auto _Nd = __detail::__int_limits<_Tp>::digits;
       if (__x == 0)
         return 0;
       return (_Tp)1u << (_Nd - std::__countl_zero((_Tp)(__x >> 1)));
@@ -257,7 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp
     __log2p1(_Tp __x) noexcept
     {
-      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      constexpr auto _Nd = __detail::__int_limits<_Tp>::digits;
       return _Nd - std::__countl_zero(__x);
     }
 

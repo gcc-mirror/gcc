@@ -19,6 +19,7 @@
 // { dg-do compile { target c++2a } }
 
 #include <bit>
+#include <limits>
 
 template<typename UInt>
 constexpr auto

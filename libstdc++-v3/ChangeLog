@@ -1,5 +1,35 @@
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/92546 (partial)
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/int_limits.h: New header.
+	* include/bits/parse_numbers.h (__select_int::_Select_int): Replace
+	numeric_limits with __detail::__int_limits.
+	* include/std/bit (__rotl, __rotr, __countl_zero, __countl_one)
+	(__countr_zero, __countr_one, __popcount, __ceil2, __floor2, __log2p1):
+	Likewise.
+	* include/std/charconv (__to_chars_8, __from_chars_binary)
+	(__from_chars_alpha_to_num, from_chars): Likewise.
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Likewise.
+	* include/std/string_view (basic_string_view::_S_compare): Likewise.
+	* include/std/utility (in_range): Likewise.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc: Adjust for
+	extra error about incomplete type __int_limits<bool>.
+	* testsuite/26_numerics/bit/bit.count/countl_one.cc: Include <limits>.
+	* testsuite/26_numerics/bit/bit.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/popcount.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotl.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotr.cc: Likewise.
+
 	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter.to_string): Update
 	value for partial_ordering::unordered.
 

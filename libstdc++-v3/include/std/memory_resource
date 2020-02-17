@@ -33,13 +33,13 @@
 
 #if __cplusplus >= 201703L
 
-#include <limits>			// numeric_limits
 #include <memory>			// align, allocator_arg_t, __uses_alloc
 #include <utility>			// pair, index_sequence
 #include <vector>			// vector
 #include <cstddef>			// size_t, max_align_t, byte
 #include <shared_mutex>			// shared_mutex
 #include <bits/functexcept.h>
+#include <bits/int_limits.h>
 #include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -166,7 +166,7 @@ namespace pmr
       allocate(size_t __n)
       __attribute__((__returns_nonnull__))
       {
-	if (__n > (numeric_limits<size_t>::max() / sizeof(_Tp)))
+	if (__n > (__detail::__int_limits<size_t>::max() / sizeof(_Tp)))
 	  std::__throw_bad_alloc();
 	return static_cast<_Tp*>(_M_resource->allocate(__n * sizeof(_Tp),
 						       alignof(_Tp)));
@@ -192,7 +192,7 @@ namespace pmr
 	_Up*
 	allocate_object(size_t __n = 1)
 	{
-	  if ((std::numeric_limits<size_t>::max() / sizeof(_Up)) < __n)
+	  if ((__detail::__int_limits<size_t>::max() / sizeof(_Up)) < __n)
 	    __throw_length_error("polymorphic_allocator::allocate_object");
 	  return static_cast<_Up*>(allocate_bytes(__n * sizeof(_Up),
 						  alignof(_Up)));

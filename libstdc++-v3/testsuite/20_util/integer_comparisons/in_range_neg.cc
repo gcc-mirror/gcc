@@ -34,3 +34,4 @@ bool k = std::in_range<int>(U'a'); // { dg-error "here" }
 bool l = std::in_range<char32_t>(97); // { dg-error "here" }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
+// { dg-prune-output "incomplete type" }

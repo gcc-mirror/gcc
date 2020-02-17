@@ -34,11 +34,11 @@
 #if __cplusplus >= 201402L
 
 #include <type_traits>
-#include <limits>
 #include <bit>			// for __log2p1
 #include <cctype>		// for isdigit
 #include <bits/charconv.h>	// for __to_chars_len, __to_chars_10_impl
 #include <bits/error_constants.h> // for std::errc
+#include <bits/int_limits.h>
 
 // Define when floating point is supported: #define __cpp_lib_to_chars 201611L
 
@@ -222,7 +222,7 @@ namespace __detail
       to_chars_result __res;
       unsigned __len;
 
-      if _GLIBCXX17_CONSTEXPR (numeric_limits<_Tp>::digits <= 16)
+      if _GLIBCXX17_CONSTEXPR (__detail::__int_limits<_Tp>::digits <= 16)
 	{
 	  __len = __val > 077777u ? 6u
 	    : __val > 07777u ? 5u
@@ -410,7 +410,7 @@ namespace __detail
 	  __i++;
 	}
       __first += __i;
-      return __i <= numeric_limits<_Tp>::digits;
+      return __i <= __detail::__int_limits<_Tp>::digits;
     }
 
   /// std::from_chars implementation for integers in bases 3 to 10.
@@ -529,7 +529,7 @@ namespace __detail
     case 'Z':
       return 35;
     }
-    return std::numeric_limits<unsigned char>::max();
+    return __detail::__int_limits<unsigned char>::max();
   }
 
   /// std::from_chars implementation for integers in bases 11 to 26.
@@ -616,10 +616,10 @@ namespace __detail
 		}
 	      else
 		{
-		  if _GLIBCXX17_CONSTEXPR
-		    (numeric_limits<_Up>::max() > numeric_limits<_Tp>::max())
+		  if _GLIBCXX17_CONSTEXPR (__detail::__int_limits<_Up>::max()
+		      > __detail::__int_limits<_Tp>::max())
 		    {
-		      if (__val > numeric_limits<_Tp>::max())
+		      if (__val > __detail::__int_limits<_Tp>::max())
 			__res.ec = errc::result_out_of_range;
 		      else
 			__value = __val;
