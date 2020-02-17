@@ -206,7 +206,7 @@ namespace ranges
 		 const _Tp& __value, _Proj __proj = {}) const
       {
 	while (__first != __last
-	    && !(std::__invoke(__proj, *__first) == __value))
+	    && !(bool)(std::__invoke(__proj, *__first) == __value))
 	  ++__first;
 	return __first;
       }
@@ -295,9 +295,9 @@ namespace ranges
       {
 	for (; __first1 != __last1; ++__first1)
 	  for (auto __iter = __first2; __iter != __last2; ++__iter)
-	    if (std::__invoke(__pred,
-			      std::__invoke(__proj1, *__first1),
-			      std::__invoke(__proj2, *__iter)))
+	    if ((bool)std::__invoke(__pred,
+				    std::__invoke(__proj1, *__first1),
+				    std::__invoke(__proj2, *__iter)))
 	      return __first1;
 	return __first1;
       }
@@ -687,9 +687,9 @@ namespace ranges
 	auto __next = __first;
 	for (; ++__next != __last; __first = __next)
 	  {
-	    if (std::__invoke(__pred,
-			      std::__invoke(__proj, *__first),
-			      std::__invoke(__proj, *__next)))
+	    if ((bool)std::__invoke(__pred,
+				    std::__invoke(__proj, *__first),
+				    std::__invoke(__proj, *__next)))
 	      return __first;
 	  }
 	return __next;

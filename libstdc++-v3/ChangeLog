@@ -1,5 +1,16 @@
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	P1964R2 Wording for boolean-testable
+	* include/bits/ranges_algo.h (__find_fn, __find_first_of_fn)
+	(__adjacent_find_fn): Cast result of predicate to bool.
+	* include/std/concepts (__boolean): Remove.
+	(__detail::__boolean_testable_impl, __detail::__boolean_testable): Add
+	new helper concepts.
+	(__detail::__weakly_eq_cmp_with, totally_ordered, totally_ordered_with)
+	(predicate): Use __boolean_testable instead of boolean.
+	* libsupc++/compare (__detail::__partially_ordered, _Synth3way):
+	Likewise.
+
 	P1970R2 Consistency for size() functions: Add ranges::ssize
 	* include/bits/range_access.h (_SSize, ssize): Define for C++20.
 	* testsuite/std/ranges/access/ssize.cc: New test.

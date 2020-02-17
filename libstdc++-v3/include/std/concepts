@@ -259,27 +259,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [concepts.compare], comparison concepts
 
-  /// [concept.boolean], concept boolean
-  template<typename _Bp>
-    concept boolean
-      = movable<remove_cvref_t<_Bp>>
-      && requires(__detail::__cref<_Bp> __b1, __detail::__cref<_Bp> __b2,
-		  const bool __a) {
-	{ __b1 } -> convertible_to<bool>;
-	{ !__b1 } -> convertible_to<bool>;
-	{ __b1 && __b2 } -> same_as<bool>;
-	{ __b1 && __a  } -> same_as<bool>;
-	{ __a  && __b2 } -> same_as<bool>;
-	{ __b1 || __b2 } -> same_as<bool>;
-	{ __b1 || __a  } -> same_as<bool>;
-	{ __a  || __b2 } -> same_as<bool>;
-	{ __b1 == __b2 } -> convertible_to<bool>;
-	{ __b1 == __a  } -> convertible_to<bool>;
-	{ __a  == __b2 } -> convertible_to<bool>;
-	{ __b1 != __b2 } -> convertible_to<bool>;
-	{ __b1 != __a  } -> convertible_to<bool>;
-	{ __a  != __b2 } -> convertible_to<bool>;
-      };
+  // [concept.booleantestable], Boolean testability
+  namespace __detail
+  {
+    template<typename _Tp>
+      concept __boolean_testable_impl = convertible_to<_Tp, bool>;
+
+    template<typename _Tp>
+      concept __boolean_testable
+	= __boolean_testable_impl<_Tp>
+	  && requires(_Tp&& __t)
+	  { { !static_cast<_Tp&&>(__t) } -> __boolean_testable_impl; };
+  } // namespace __detail
 
   // [concept.equalitycomparable], concept equality_comparable
 
@@ -288,10 +279,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, typename _Up>
       concept __weakly_eq_cmp_with
 	= requires(__detail::__cref<_Tp> __t, __detail::__cref<_Up> __u) {
-	  { __t == __u } -> boolean;
-	  { __t != __u } -> boolean;
-	  { __u == __t } -> boolean;
-	  { __u != __t } -> boolean;
+	  { __t == __u } -> __boolean_testable;
+	  { __t != __u } -> __boolean_testable;
+	  { __u == __t } -> __boolean_testable;
+	  { __u != __t } -> __boolean_testable;
 	};
   } // namespace __detail
 
@@ -311,10 +302,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept totally_ordered
       = equality_comparable<_Tp>
       && requires(__detail::__cref<_Tp> __a, __detail::__cref<_Tp> __b) {
-	{ __a <  __b } -> boolean;
-	{ __a >  __b } -> boolean;
-	{ __a <= __b } -> boolean;
-	{ __a >= __b } -> boolean;
+	{ __a <  __b } -> __detail::__boolean_testable;
+	{ __a >  __b } -> __detail::__boolean_testable;
+	{ __a <= __b } -> __detail::__boolean_testable;
+	{ __a >= __b } -> __detail::__boolean_testable;
       };
 
   template<typename _Tp, typename _Up>
@@ -325,14 +316,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    __detail::__cref<_Up>>>
       && equality_comparable_with<_Tp, _Up>
       && requires(__detail::__cref<_Tp> __t, __detail::__cref<_Up> __u) {
-	{ __t <  __u } -> boolean;
-	{ __t >  __u } -> boolean;
-	{ __t <= __u } -> boolean;
-	{ __t >= __u } -> boolean;
-	{ __u <  __t } -> boolean;
-	{ __u >  __t } -> boolean;
-	{ __u <= __t } -> boolean;
-	{ __u >= __t } -> boolean;
+	{ __t <  __u } -> __detail::__boolean_testable;
+	{ __t >  __u } -> __detail::__boolean_testable;
+	{ __t <= __u } -> __detail::__boolean_testable;
+	{ __t >= __u } -> __detail::__boolean_testable;
+	{ __u <  __t } -> __detail::__boolean_testable;
+	{ __u >  __t } -> __detail::__boolean_testable;
+	{ __u <= __t } -> __detail::__boolean_testable;
+	{ __u >= __t } -> __detail::__boolean_testable;
       };
 
   template<typename _Tp>
@@ -351,7 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// [concept.predicate], concept predicate
   template<typename _Fn, typename... _Args>
     concept predicate = regular_invocable<_Fn, _Args...>
-      && boolean<invoke_result_t<_Fn, _Args...>>;
+      && __detail::__boolean_testable<invoke_result_t<_Fn, _Args...>>;
 
   /// [concept.relation], concept relation
   template<typename _Rel, typename _Tp, typename _Up>

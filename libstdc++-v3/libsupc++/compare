@@ -416,14 +416,14 @@ namespace std
       concept __partially_ordered_with
 	= requires(const remove_reference_t<_Tp>& __t,
 		   const remove_reference_t<_Up>& __u) {
-	  { __t <  __u } -> boolean;
-	  { __t >  __u } -> boolean;
-	  { __t <= __u } -> boolean;
-	  { __t >= __u } -> boolean;
-	  { __u <  __t } -> boolean;
-	  { __u >  __t } -> boolean;
-	  { __u <= __t } -> boolean;
-	  { __u >= __t } -> boolean;
+	  { __t <  __u } -> __boolean_testable;
+	  { __t >  __u } -> __boolean_testable;
+	  { __t <= __u } -> __boolean_testable;
+	  { __t >= __u } -> __boolean_testable;
+	  { __u <  __t } -> __boolean_testable;
+	  { __u >  __t } -> __boolean_testable;
+	  { __u <= __t } -> __boolean_testable;
+	  { __u >= __t } -> __boolean_testable;
 	};
   } // namespace __detail
 
@@ -879,8 +879,8 @@ namespace std
 	operator()(const _Tp& __t, const _Up& __u) const
 	requires requires
 	{
-	  { __t < __u } -> convertible_to<bool>;
-	  { __u < __t } -> convertible_to<bool>;
+	  { __t < __u } -> __boolean_testable;
+	  { __u < __t } -> __boolean_testable;
 	}
 	{
 	  if constexpr (three_way_comparable_with<_Tp, _Up>)
