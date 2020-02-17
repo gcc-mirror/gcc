@@ -37,10 +37,10 @@
 
 #if __cplusplus >= 201703L
 
-#include <limits>
 #include <iosfwd>
 #include <bits/char_traits.h>
 #include <bits/functional_hash.h>
+#include <bits/int_limits.h>
 #include <bits/range_access.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -456,10 +456,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
 	const difference_type __diff = __n1 - __n2;
-	if (__diff > std::numeric_limits<int>::max())
-	  return std::numeric_limits<int>::max();
-	if (__diff < std::numeric_limits<int>::min())
-	  return std::numeric_limits<int>::min();
+	if (__diff > __detail::__int_limits<int>::max())
+	  return __detail::__int_limits<int>::max();
+	if (__diff < __detail::__int_limits<int>::min())
+	  return __detail::__int_limits<int>::min();
 	return static_cast<int>(__diff);
       }
 

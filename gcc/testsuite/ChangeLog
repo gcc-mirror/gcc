@@ -1,3 +1,44 @@
+2020-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/pr93565.c: Fix test for ilp32.
+
+2020-02-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Correct
+	number of expected insns.
+
+2020-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93760
+	* g++.dg/lto/odr-8_1.C: Fix grammar.
+
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/86134
+	* gcc.dg/pr86134.c: New testcase.
+	* gcc.dg/pr28322-2.c: Adjust.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* gcc.dg/analyzer/torture/20060625-1.c: New test.
+	* gcc.dg/analyzer/torture/pr51628-30.c: New test.
+	* gcc.dg/analyzer/torture/pr59037.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-1.c (test_48): New.
+
+2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93047
+	* gcc.dg/torture/stackalign/builtin-return-2.c: New test case.
+
+2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93743
+	* gcc.target/i386/pr93743.c : New test.
+
 2020-02-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93710 - poor diagnostic for array initializer.

@@ -3968,7 +3968,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_VSX)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) != 0)
-	    error ("%qs requires VSX support", "%<-mfloat128%>");
+	    error ("%qs requires VSX support", "-mfloat128");
 
 	  TARGET_FLOAT128_TYPE = 0;
 	  rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_KEYWORD

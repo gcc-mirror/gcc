@@ -1,3 +1,112 @@
+2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	P1964R2 Wording for boolean-testable
+	* include/bits/ranges_algo.h (__find_fn, __find_first_of_fn)
+	(__adjacent_find_fn): Cast result of predicate to bool.
+	* include/std/concepts (__boolean): Remove.
+	(__detail::__boolean_testable_impl, __detail::__boolean_testable): Add
+	new helper concepts.
+	(__detail::__weakly_eq_cmp_with, totally_ordered, totally_ordered_with)
+	(predicate): Use __boolean_testable instead of boolean.
+	* libsupc++/compare (__detail::__partially_ordered, _Synth3way):
+	Likewise.
+
+	P1970R2 Consistency for size() functions: Add ranges::ssize
+	* include/bits/range_access.h (_SSize, ssize): Define for C++20.
+	* testsuite/std/ranges/access/ssize.cc: New test.
+
+	P1956R1 On the names of low-level bit manipulation functions
+	* include/bits/hashtable_policy.h: Update comment.
+	* include/std/bit (__ispow2, __ceil2, __floor2, __log2p1): Rename.
+	(ispow2, ceil2, floor2, log2p1): Likewise.
+	(__cpp_lib_int_pow2): Add feature test macro.
+	* include/std/charconv (__to_chars_len_2): Adjust use of __log2p1.
+	* include/std/memory (assume_aligned): Adjust use of ispow2.
+	* include/std/version (__cpp_lib_int_pow2): Add.
+	* libsupc++/new_opa.cc: Adjust use of __ispow2.
+	* src/c++17/memory_resource.cc: Likewise, and for __ceil2 and __log2p1.
+	* testsuite/17_intro/freestanding.cc: Adjust use of ispow2.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil_neg.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_floor.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_width.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/has_single_bit.cc: ... here.
+
+	* include/std/charconv: Add comment.
+
+	PR libstdc++/92546 (partial)
+	* include/bits/random.h (uniform_random_bit_generator): Move definition
+	to <bits/uniform_int_dist.h>.
+	* include/bits/ranges_algo.h: Include <bits/uniform_int_dist.h> instead
+	of <bits/random.h>.
+	* include/bits/ranges_algobase.h: Do not include <cmath>.
+	* include/bits/uniform_int_dist.h (uniform_random_bit_generator):
+	Move here.
+	* include/std/ranges: Do not include <limits>.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error lineno.
+
+	PR libstdc++/92546 (partial)
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/int_limits.h: New header.
+	* include/bits/parse_numbers.h (__select_int::_Select_int): Replace
+	numeric_limits with __detail::__int_limits.
+	* include/std/bit (__rotl, __rotr, __countl_zero, __countl_one)
+	(__countr_zero, __countr_one, __popcount, __ceil2, __floor2, __log2p1):
+	Likewise.
+	* include/std/charconv (__to_chars_8, __from_chars_binary)
+	(__from_chars_alpha_to_num, from_chars): Likewise.
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Likewise.
+	* include/std/string_view (basic_string_view::_S_compare): Likewise.
+	* include/std/utility (in_range): Likewise.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc: Adjust for
+	extra error about incomplete type __int_limits<bool>.
+	* testsuite/26_numerics/bit/bit.count/countl_one.cc: Include <limits>.
+	* testsuite/26_numerics/bit/bit.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/popcount.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotl.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotr.cc: Likewise.
+
+	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter.to_string): Update
+	value for partial_ordering::unordered.
+
+	* include/bits/iterator_concepts.h (indirectly_copyable_storable): Add
+	const-qualified expression variations.
+	* include/std/concepts (copyable): Likewise.
+
+	* include/std/type_traits (__is_standard_integer): New helper trait.
+	* include/std/utility (cmp_equal, cmp_not_equal, cmp_less, cmp_greater)
+	(cmp_less_equal, cmp_greater_equal, in_range): Define for C++20.
+	* include/std/version (__cpp_lib_integer_comparison_functions): Define.
+	* testsuite/20_util/integer_comparisons/1.cc: New test.
+	* testsuite/20_util/integer_comparisons/2.cc: New test.
+	* testsuite/20_util/integer_comparisons/equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/in_range.cc: New test.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/less.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/not_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/not_equal_neg.cc: New test.
+
 2020-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):

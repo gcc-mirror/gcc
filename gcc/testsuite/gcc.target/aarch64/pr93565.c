@@ -14,13 +14,13 @@ static const char table[64] = {
      9, 30, 45, 41,  8, 40,  7,  6,
 };
 
-static inline int ctz1 (unsigned long  b)
+static inline int ctz1 (unsigned long long  b)
 {
-  unsigned long lsb = b & -b;
+  unsigned long long lsb = b & -b;
   return table[(lsb * magic) >> 58];
 }
 
-void f (unsigned long x, int *p)
+void f (unsigned long long x, int *p)
 {
   if (x != 0)
     {

@@ -19,40 +19,41 @@
 // { dg-do compile { target c++2a } }
 
 #include <bit>
+#include <limits>
 
 template<typename UInt>
 constexpr auto
 test(UInt x)
--> decltype(std::log2p1(x))
+-> decltype(std::bit_width(x))
 {
-  static_assert( noexcept(std::log2p1(x)) );
+  static_assert( noexcept(std::bit_width(x)) );
 
-  static_assert( std::log2p1(UInt(0)) == 0 );
-  static_assert( std::log2p1(UInt(1)) == 1 );
-  static_assert( std::log2p1(UInt(2)) == 2 );
-  static_assert( std::log2p1(UInt(3)) == 2 );
-  static_assert( std::log2p1(UInt(4)) == 3 );
-  static_assert( std::log2p1(UInt(0x11)) == 5 );
-  static_assert( std::log2p1(UInt(0x20)) == 6 );
+  static_assert( std::bit_width(UInt(0)) == 0 );
+  static_assert( std::bit_width(UInt(1)) == 1 );
+  static_assert( std::bit_width(UInt(2)) == 2 );
+  static_assert( std::bit_width(UInt(3)) == 2 );
+  static_assert( std::bit_width(UInt(4)) == 3 );
+  static_assert( std::bit_width(UInt(0x11)) == 5 );
+  static_assert( std::bit_width(UInt(0x20)) == 6 );
 
   if constexpr (std::numeric_limits<UInt>::digits > 8)
   {
-    static_assert( std::log2p1(UInt(0x201)) == 10 );
-    static_assert( std::log2p1(UInt(0x8ff)) == 12 );
-    static_assert( std::log2p1(UInt(0x1000)) == 13 );
+    static_assert( std::bit_width(UInt(0x201)) == 10 );
+    static_assert( std::bit_width(UInt(0x8ff)) == 12 );
+    static_assert( std::bit_width(UInt(0x1000)) == 13 );
   }
 
   if constexpr (std::numeric_limits<UInt>::digits > 32)
   {
-    static_assert( std::log2p1(UInt(0xabcdef)) == 24 );
-    static_assert( std::log2p1(UInt(0x1000000)) == 25 );
-    static_assert( std::log2p1(UInt(0x1000001)) == 25 );
+    static_assert( std::bit_width(UInt(0xabcdef)) == 24 );
+    static_assert( std::bit_width(UInt(0x1000000)) == 25 );
+    static_assert( std::bit_width(UInt(0x1000001)) == 25 );
   }
 
   if constexpr (std::numeric_limits<UInt>::digits > 64)
   {
-    static_assert( std::log2p1(UInt(1) << 64) == 65 );
-    static_assert( std::log2p1(UInt(3) << 64) == 66 );
+    static_assert( std::bit_width(UInt(1) << 64) == 65 );
+    static_assert( std::bit_width(UInt(3) << 64) == 66 );
   }
 
   return true;
@@ -64,7 +65,7 @@ static_assert( test( (unsigned int)0 ) );
 static_assert( test( (unsigned long)0 ) );
 static_assert( test( (unsigned long long)0 ) );
 
-// std::log2p1(T) shall not participate in overload resolution
+// std::bit_width(T) shall not participate in overload resolution
 // unless T is an unsigned integer type.
 struct X { constexpr bool did_not_match() { return true; } };
 constexpr X test(...) { return X{}; }

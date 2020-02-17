@@ -35,6 +35,7 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <bits/iterator_concepts.h>
+#include <bits/int_limits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -723,6 +724,32 @@ namespace ranges
 	}
     };
 
+    struct _SSize
+    {
+      template<typename _Tp>
+	requires requires (_Tp&& __e)
+	  {
+	    _Begin{}(std::forward<_Tp>(__e));
+	    _Size{}(std::forward<_Tp>(__e));
+	  }
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_Size{}(std::forward<_Tp>(__e))))
+	{
+	  using __iter_type = decltype(_Begin{}(std::forward<_Tp>(__e)));
+	  using __diff_type = iter_difference_t<__iter_type>;
+	  using std::__detail::__int_limits;
+	  auto __size = _Size{}(std::forward<_Tp>(__e));
+	  if constexpr (integral<__diff_type>)
+	    {
+	      if constexpr (__int_limits<__diff_type>::digits
+			    < __int_limits<ptrdiff_t>::digits)
+		return static_cast<ptrdiff_t>(__size);
+	    }
+	  return static_cast<__diff_type>(__size);
+	}
+    };
+
     template<typename _Tp>
       concept __member_empty = requires(_Tp&& __t)
 	{ bool(std::forward<_Tp>(__t).empty()); };
@@ -834,6 +861,7 @@ namespace ranges
     inline constexpr __cust_access::_CRBegin crbegin{};
     inline constexpr __cust_access::_CREnd crend{};
     inline constexpr __cust_access::_Size size{};
+    inline constexpr __cust_access::_SSize ssize{};
     inline constexpr __cust_access::_Empty empty{};
     inline constexpr __cust_access::_Data data{};
     inline constexpr __cust_access::_CData cdata{};

@@ -286,6 +286,11 @@ public:
   /* TODO: lose the pointer here (const-correctness issues?).  */
   region_model *m_region_model;
   auto_delete_vec<sm_state_map> m_checker_states;
+
+  /* If false, then don't attempt to explore further states along this path.
+     For use in "handling" lvalues for tree codes we haven't yet
+     implemented.  */
+  bool m_valid;
 };
 
 /* An abstract base class for use with for_each_state_change.  */

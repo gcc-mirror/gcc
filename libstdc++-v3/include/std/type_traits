@@ -622,6 +622,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  >;
 
+  // Check if a type is one of the signed or unsigned integer types.
+  template<typename _Tp>
+    using __is_standard_integer
+      = __or_<__is_signed_integer<_Tp>, __is_unsigned_integer<_Tp>>;
 
   // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;

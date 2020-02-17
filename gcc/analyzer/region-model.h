@@ -1937,6 +1937,11 @@ class region_model_context
   /* Hooks for clients to be notified when a phi node is handled,
      where RHS is the pertinent argument.  */
   virtual void on_phi (const gphi *phi, tree rhs) = 0;
+
+  /* Hooks for clients to be notified when the region model doesn't
+     know how to handle the tree code of PV at LOC.  */
+  virtual void on_unknown_tree_code (path_var pv,
+				     const dump_location_t &loc) = 0;
 };
 
 /* A bundle of data for use when attempting to merge two region_model
@@ -2116,6 +2121,13 @@ public:
   void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
 	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
   {
+  }
+
+  void on_unknown_tree_code (path_var pv, const dump_location_t &)
+    FINAL OVERRIDE
+  {
+    internal_error ("unhandled tree code: %qs",
+		    get_tree_code_name (TREE_CODE (pv.m_tree)));
   }
 
 private:

@@ -95,6 +95,10 @@ public:
   {
     return m_saved_diagnostics[idx];
   }
+  const saved_diagnostic *get_saved_diagnostic (unsigned idx) const
+  {
+    return m_saved_diagnostics[idx];
+  }
 
 private:
   void build_emission_path (const exploded_graph &eg,
