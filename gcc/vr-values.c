@@ -1956,6 +1956,12 @@ vr_values::dump_all_value_ranges (FILE *file)
   m_gori_map.dump (file);
 }
 
+// Register any SSA_NAMEs that may help us determine a range for NAME.
+// The union of all these for a block is conceptually what the GORI
+// exports table is.  At some point, we should remove this and just
+// look at the GORI exports-- or trap when any of these SSA_NAMEs is
+// not in the GORI export table.
+
 equivalence_iterator::equivalence_iterator (tree name,
 					    const value_range_equiv *vr,
 					    const vec<assert_info> &asserts)
