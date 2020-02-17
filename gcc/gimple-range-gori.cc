@@ -1033,9 +1033,13 @@ gori_compute::compute_operand2_range (irange &r, gimple *s,
   // Get a range for op1.
   get_tree_range (op1_range, op1, name, name_range);
 
-  // calculate the range for op2 based on lhs and op1.
+  // Calculate the range for op2 based on lhs and op1.
   if (!gimple_range_calc_op2 (s, op2_range, lhs, op1_range))
-    return false;
+    {
+      get_tree_range (op2_range, op2, name, name_range);
+      if (op2_range.varying_p ())
+	return false;
+    }
 
   // Also pick up what is known about op2's range at this point
   get_tree_range (r, op2, name, name_range);
