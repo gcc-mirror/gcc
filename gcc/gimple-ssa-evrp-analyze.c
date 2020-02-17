@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 #include "dbgcnt.h"
+#include "gimple-range.h"
 
 evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
   : stack (10), m_update_global_ranges (update_global_ranges)
@@ -291,6 +292,37 @@ evrp_range_analyzer::assert_gori_is_as_good
   if (gori_range_is_same (range_evrp, range_gori)
       || gori_range_is_better (range_evrp, range_gori))
     return;
+
+  // Ignore various known discrepancies.
+  widest_irange tmp;
+  gimple *stmt = gimple_outgoing_edge_range_p (tmp, e);
+  if (stmt && is_a<gcond *> (stmt))
+    {
+      gcond *gc = as_a<gcond *> (stmt);
+      tree lhs = gimple_cond_lhs (gc);
+      tree rhs = gimple_cond_rhs (gc);
+
+      if (TREE_CODE (lhs) == SSA_NAME)
+	{
+	  // Comparison between two SSA_NAMEs are equivalences which the
+	  // ranger will handle.
+	  if (TREE_CODE (rhs) == SSA_NAME)
+	    return;
+
+	  // Ignore problematic casts for which evrp lies and ignores
+	  // the upper bits.
+	  //
+	  // SMALLER = (cast) NAME
+	  // if (SMALLER == 0)
+	  gimple *def = SSA_NAME_DEF_STMT (lhs);
+	  if (def
+	      && gimple_assign_cast_p (def)
+	      && gimple_assign_rhs1 (def) == name
+	      && (TYPE_PRECISION (TREE_TYPE (name))
+		  > TYPE_PRECISION (TREE_TYPE (lhs))))
+	    return;
+	}
+    }
 
   debug_gori_ranges (name, e, range_evrp, range_gori, asserts);
   gcc_unreachable ();
