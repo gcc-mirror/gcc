@@ -125,15 +125,18 @@ package Sem_Eval is
    -----------------
 
    procedure Check_Expression_Against_Static_Predicate
-     (Expr : Node_Id;
-      Typ  : Entity_Id);
+     (Expr                    : Node_Id;
+      Typ                     : Entity_Id;
+      Static_Failure_Is_Error : Boolean := False);
    --  Determine whether an arbitrary expression satisfies the static predicate
    --  of a type. The routine does nothing if Expr is not known at compile time
-   --  or Typ lacks a static predicate, otherwise it may emit a warning if the
-   --  expression is prohibited by the predicate. If the expression is a static
-   --  expression and it fails a predicate that was not explicitly stated to be
-   --  a dynamic predicate, then an additional warning is given, and the flag
-   --  Is_Static_Expression is reset on Expr.
+   --  or Typ lacks a static predicate; otherwise it may emit a warning if the
+   --  expression is prohibited by the predicate, or if Static_Failure_Is_Error
+   --  is True then an error will be flagged. If the expression is a static
+   --  expression, it fails a predicate that was not explicitly stated to be
+   --  a dynamic predicate, and Static_Failure_Is_Error is False, then an
+   --  additional warning is given, and the flag Is_Static_Expression is reset
+   --  on Expr.
 
    procedure Check_Non_Static_Context (N : Node_Id);
    --  Deals with the special check required for a static expression that

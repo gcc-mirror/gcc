@@ -10424,6 +10424,10 @@ package body Exp_Ch4 is
 
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
 
+      --  Apply possible predicate check
+
+      Apply_Predicate_Check (Operand, Target_Type);
+
       if Do_Range_Check (Operand) then
          Generate_Range_Check (Operand, Target_Type, CE_Range_Check_Failed);
       end if;
