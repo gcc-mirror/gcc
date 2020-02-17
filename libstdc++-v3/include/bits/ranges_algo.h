@@ -33,7 +33,7 @@
 #if __cplusplus > 201703L
 
 #include <bits/ranges_algobase.h>
-#include <bits/random.h> // concept uniform_random_bit_generator
+#include <bits/uniform_int_dist.h> // concept uniform_random_bit_generator
 
 #if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)

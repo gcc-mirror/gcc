@@ -32,7 +32,6 @@
 
 #if __cplusplus > 201703L
 
-#include <cmath>
 #include <compare>
 #include <iterator>
 // #include <bits/range_concepts.h>
