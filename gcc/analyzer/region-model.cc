@@ -6514,24 +6514,27 @@ region_model::convert_byte_offset_to_array_index (tree ptr_type,
 
       /* Arithmetic on void-pointers is a GNU C extension, treating the size
 	 of a void as 1.
-	 https://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html
-
-	 Returning early for this case avoids a diagnostic from within the
-	 call to size_in_bytes.  */
+	 https://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html  */
       if (TREE_CODE (elem_type) == VOID_TYPE)
 	return offset_sid;
 
-      /* This might not be a constant.  */
-      tree byte_size = size_in_bytes (elem_type);
-
-      /* Try to get a constant by dividing, ensuring that we're in a
-	 signed representation first.  */
-      tree index
-	= fold_binary (TRUNC_DIV_EXPR, ssizetype,
-		       fold_convert (ssizetype, offset_cst),
-		       fold_convert (ssizetype, byte_size));
-      if (index && TREE_CODE (index) == INTEGER_CST)
-	return get_or_create_constant_svalue (index);
+      /* First, use int_size_in_bytes, to reject the case where we have an
+	 incomplete type, or a non-constant value.  */
+      HOST_WIDE_INT hwi_byte_size = int_size_in_bytes (elem_type);
+      if (hwi_byte_size > 0)
+	{
+	  /* Now call size_in_bytes to get the answer in tree form.  */
+	  tree byte_size = size_in_bytes (elem_type);
+	  gcc_assert (byte_size);
+	  /* Try to get a constant by dividing, ensuring that we're in a
+	     signed representation first.  */
+	  tree index
+	    = fold_binary (TRUNC_DIV_EXPR, ssizetype,
+			   fold_convert (ssizetype, offset_cst),
+			   fold_convert (ssizetype, byte_size));
+	  if (index && TREE_CODE (index) == INTEGER_CST)
+	    return get_or_create_constant_svalue (index);
+	}
     }
 
   /* Otherwise, we don't know the array index; generate a new unknown value.

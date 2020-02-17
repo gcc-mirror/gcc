@@ -1,3 +1,11 @@
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93774
+	* region-model.cc
+	(region_model::convert_byte_offset_to_array_index): Use
+	int_size_in_bytes before calling size_in_bytes, to gracefully fail
+	on incomplete types.
+
 2020-02-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93775
