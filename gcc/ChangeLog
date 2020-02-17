@@ -1,3 +1,8 @@
+2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93047
+	* config/rs6000/rs6000.md (untyped_call): Add emit_clobber.
+
 2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93743
