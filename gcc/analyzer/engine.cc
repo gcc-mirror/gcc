@@ -684,18 +684,18 @@ impl_region_model_context::on_phi (const gphi *phi, tree rhs)
     }
 }
 
-/* Implementation of region_model_context::on_unknown_tree_code vfunc.
+/* Implementation of region_model_context::on_unexpected_tree_code vfunc.
    Mark the new state as being invalid for further exploration.
    TODO(stage1): introduce a warning for when this occurs.  */
 
 void
-impl_region_model_context::on_unknown_tree_code (path_var pv,
-						 const dump_location_t &loc)
+impl_region_model_context::on_unexpected_tree_code (tree t,
+						    const dump_location_t &loc)
 {
   logger * const logger = get_logger ();
   if (logger)
     logger->log ("unhandled tree code: %qs in %qs at %s:%i",
-		 get_tree_code_name (TREE_CODE (pv.m_tree)),
+		 get_tree_code_name (TREE_CODE (t)),
 		 loc.get_impl_location ().m_function,
 		 loc.get_impl_location ().m_file,
 		 loc.get_impl_location ().m_line);
@@ -1093,7 +1093,8 @@ exploded_node::on_stmt (exploded_graph &eg,
 
 	      if (!fndecl_has_gimple_body_p (callee_fndecl))
 		new_smap->purge_for_unknown_fncall (eg, sm, call, callee_fndecl,
-						    state->m_region_model);
+						    state->m_region_model,
+						    &ctxt);
 	    }
 	}
       if (*old_smap != *new_smap)

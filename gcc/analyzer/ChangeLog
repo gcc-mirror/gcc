@@ -1,5 +1,37 @@
 2020-02-18  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93778
+	* engine.cc (impl_region_model_context::on_unknown_tree_code):
+	Rename to...
+	(impl_region_model_context::on_unexpected_tree_code): ...this and
+	convert first argument from path_var to tree.
+	(exploded_node::on_stmt): Pass ctxt to purge_for_unknown_fncall.
+	* exploded-graph.h (region_model_context::on_unknown_tree_code):
+	Rename to...
+	(region_model_context::on_unexpected_tree_code): ...this and
+	convert first argument from path_var to tree.
+	* program-state.cc (sm_state_map::purge_for_unknown_fncall): Add
+	ctxt param and pass on to calls to get_rvalue.
+	* program-state.h (sm_state_map::purge_for_unknown_fncall): Add
+	ctxt param.
+	* region-model.cc (region_model::handle_unrecognized_call): Pass
+	ctxt on to call to get_rvalue.
+	(region_model::get_lvalue_1): Move body of default case to
+	region_model::make_region_for_unexpected_tree_code and call it.
+	Within COMPONENT_REF case, reject attempts to handle types other
+	than RECORD_TYPE and UNION_TYPE.
+	(region_model::make_region_for_unexpected_tree_code): New
+	function, based on default case of region_model::get_lvalue_1.
+	* region-model.h
+	(region_model::make_region_for_unexpected_tree_code): New decl.
+	(region_model::on_unknown_tree_code): Rename to...
+	(region_model::on_unexpected_tree_code): ...this and convert first
+	argument from path_var to tree.
+	(class test_region_model_context): Update vfunc implementation for
+	above change.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93774
 	* region-model.cc
 	(region_model::convert_byte_offset_to_array_index): Use

@@ -380,7 +380,8 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
 					const state_machine &sm,
 					const gcall *call,
 					tree fndecl,
-					region_model *new_model)
+					region_model *new_model,
+					region_model_context *ctxt)
 {
   logger * const logger = eg.get_logger ();
   if (logger)
@@ -413,7 +414,7 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
 	      continue;
 	}
       tree parm = gimple_call_arg (call, arg_idx);
-      svalue_id parm_sid = new_model->get_rvalue (parm, NULL);
+      svalue_id parm_sid = new_model->get_rvalue (parm, ctxt);
       set_state (new_model, parm_sid, 0, svalue_id::null ());
 
       /* Also clear sm-state from svalue_ids that are passed via a
@@ -421,7 +422,7 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
       if (TREE_CODE (parm) == ADDR_EXPR)
 	{
 	  tree pointee = TREE_OPERAND (parm, 0);
-	  svalue_id parm_sid = new_model->get_rvalue (pointee, NULL);
+	  svalue_id parm_sid = new_model->get_rvalue (pointee, ctxt);
 	  set_state (new_model, parm_sid, 0, svalue_id::null ());
 	}
     }
@@ -429,7 +430,7 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
   /* Purge any state for any LHS.  */
   if (tree lhs = gimple_call_lhs (call))
     {
-      svalue_id lhs_sid = new_model->get_rvalue (lhs, NULL);
+      svalue_id lhs_sid = new_model->get_rvalue (lhs, ctxt);
       set_state (new_model, lhs_sid, 0, svalue_id::null ());
     }
 }
