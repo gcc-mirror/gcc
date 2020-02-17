@@ -1,5 +1,8 @@
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter.to_string): Update
+	value for partial_ordering::unordered.
+
 	* include/bits/iterator_concepts.h (indirectly_copyable_storable): Add
 	const-qualified expression variations.
 	* include/std/concepts (copyable): Likewise.
