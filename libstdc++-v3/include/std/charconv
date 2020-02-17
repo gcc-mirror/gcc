@@ -31,6 +31,10 @@
 
 #pragma GCC system_header
 
+// As an extension we support <charconv> in C++14, but this header should not
+// be included by any other library headers in C++14 mode. This ensures that
+// the names defined in this header are not added to namespace std unless a
+// user explicitly includes <charconv> in C++14 code.
 #if __cplusplus >= 201402L
 
 #include <type_traits>
