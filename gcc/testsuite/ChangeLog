@@ -1,3 +1,8 @@
+2020-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93760
+	* g++.dg/lto/odr-8_1.C: Fix grammar.
+
 2020-02-17  Richard Biener  <rguenther@suse.de>
 
 	PR c/86134

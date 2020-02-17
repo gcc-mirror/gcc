@@ -1,5 +1,10 @@
 2020-02-17  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/93760
+	* ipa-devirt.c (odr_types_equivalent_p): Fix grammar.
+
+2020-02-17  Martin Liska  <mliska@suse.cz>
+
 	PR translation/93755
 	* config/rs6000/rs6000.c (rs6000_option_override_internal):
 	Fix double quotes.
