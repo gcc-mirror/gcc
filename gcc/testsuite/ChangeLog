@@ -1,3 +1,9 @@
+2020-02-17  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.dg/tls/emutls-3.c: New, combining emutls-2.c and
+	thr-init-2.c into an execution test with explicitly common
+	variables.
+
 2020-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/pr93565.c: Fix test for ilp32.
