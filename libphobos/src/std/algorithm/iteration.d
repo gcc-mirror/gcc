@@ -3151,7 +3151,7 @@ The number of seeds must be correspondingly increased.
     static assert(!is(typeof(reduce!(min, max)(tuple(c), "hello"))));
     //"Seed (dchar, dchar, dchar) does not have the correct amount of fields (should be 2)"
     static assert(!is(typeof(reduce!(min, max)(tuple(c, c, c), "hello"))));
-    //"Incompatable function/seed/element: all(alias pred = "a")/int/dchar"
+    //"Incompatible function/seed/element: all(alias pred = "a")/int/dchar"
     static assert(!is(typeof(reduce!all(1, "hello"))));
     static assert(!is(typeof(reduce!(all, all)(tuple(1, 1), "hello"))));
 }
