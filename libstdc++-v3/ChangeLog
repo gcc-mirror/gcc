@@ -1,5 +1,9 @@
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	P1970R2 Consistency for size() functions: Add ranges::ssize
+	* include/bits/range_access.h (_SSize, ssize): Define for C++20.
+	* testsuite/std/ranges/access/ssize.cc: New test.
+
 	P1956R1 On the names of low-level bit manipulation functions
 	* include/bits/hashtable_policy.h: Update comment.
 	* include/std/bit (__ispow2, __ceil2, __floor2, __log2p1): Rename.
