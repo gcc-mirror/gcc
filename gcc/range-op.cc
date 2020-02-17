@@ -1103,7 +1103,31 @@ public:
 		        const wide_int &rh_ub) const;
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &w0, const wide_int &w1) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_mult;
+
+bool
+operator_mult::op1_range (irange &r, tree type,
+			  const irange &lhs, const irange &op2) const
+{
+  tree offset;
+  if (op2.singleton_p (&offset) && !integer_zerop (offset))
+    return range_op_handler (TRUNC_DIV_EXPR, type)->fold_range (r, type,
+								lhs, op2);
+  return false;
+}
+
+bool
+operator_mult::op2_range (irange &r, tree type,
+			  const irange &lhs, const irange &op1) const
+{
+  return operator_mult::op1_range (r, type, lhs, op1);
+}
 
 bool
 operator_mult::wi_op_overflows (wide_int &res, tree type,
