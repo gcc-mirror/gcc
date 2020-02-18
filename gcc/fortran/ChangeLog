@@ -1,5 +1,11 @@
 2020-02-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/93601
+	* match.c (gfc_match_assignment) : Reject assignment if
+	the lhs stype is BT_CLASS and the rhs type is BT_BOZ.
+
+2020-02-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/93603
 	* match.c (gfc_match_associate) : If target expression
 	has the type BT_BOZ output an error and goto
