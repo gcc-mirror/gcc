@@ -1,3 +1,8 @@
+2020-02-19  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.C: add -mavx512vbmi2
+	* g++.dg/other/i386-3.C: Ditto.
+
 2020-02-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vmull_high.c: New.
