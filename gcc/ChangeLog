@@ -1,5 +1,10 @@
 2020-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93780
+	* tree-ssa.c (non_rewritable_lvalue_p): Check valid_vector_subparts_p
+	before calling build_vector_type.
+	(execute_update_addresses_taken): Likewise.
+
 	PR driver/93796
 	* params.opt (-param=ipa-max-switch-predicate-bounds=): Fix help
 	typo, functoin -> function.
