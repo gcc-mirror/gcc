@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +20,29 @@
 
 #include <span>
 
-#ifndef __cpp_lib_span
-# error "Feature-test macro for span missing in <span>"
-#elif __cpp_lib_span != 202002L
-# error "Feature-test macro for span has wrong value in <span>"
-#endif
+struct Range
+{
+  int* begin();
+  int* end();
+  unsigned size() const;
+} r;
+
+auto first = std::begin(r), last = std::end(r);
+
+// span(It, size_type)
+std::span<int> s1 = {first, 2};
+std::span<int, 2> s2 = {first, 2}; // { dg-error "could not convert" }
+
+// span(It, End)
+std::span<int> s3 = {first, last};
+std::span<int, 2> s4 = {first, last}; // { dg-error "could not convert" }
+
+// span(R&&)
+std::span<int> s5 = r;
+std::span<int, 2> s6 = r; // { dg-error "conversion from" }
+
+// span(const span<OtherElement, OtherExtent>&)
+std::span<const int> s7 = s5;
+std::span<const int> s8 = s6;
+std::span<const int, 1> s9 = s5.first(1);  // { dg-error "conversion from" }
+std::span<const int, 1> s10 = s7.first(1); // { dg-error "conversion from" }

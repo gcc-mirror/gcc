@@ -1,5 +1,19 @@
 2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	P1976R2 Fixed-size span construction from dynamic range
+	* include/std/span (__cpp_lib_span): Update value.
+	(span(It, size_type), span(It, End)): Make conditionally explicit. Add
+	assertion.
+	(span(R&&), span(const span<OType, OExtent>&)): Likewise and relax
+	constraints.
+	(span::first<Count>(), span::last<Count>()): Use explicit type in
+	return statement.
+	(as_bytes, as_writable_bytes): Likewise.
+	* include/std/version (__cpp_lib_span): Update value.
+	* testsuite/23_containers/span/1.cc: Check new value.
+	* testsuite/23_containers/span/2.cc: Check new value.
+	* testsuite/23_containers/span/explicit.cc: New test.
+
 	* include/std/span (span::__is_compatible_array): Simplify alias
 	template by using requires-clause.
 	(span::__is_compatible_ref): New alias template for constraining

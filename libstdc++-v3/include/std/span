@@ -48,7 +48,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_span 201902L
+#define __cpp_lib_span 202002L
 
   inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
@@ -158,23 +158,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<contiguous_iterator _It>
 	requires __is_compatible_ref<iter_reference_t<_It>>::value
-	constexpr
+	constexpr explicit(extent != dynamic_extent)
 	span(_It __first, size_type __count)
 	noexcept
 	: _M_extent(__count), _M_ptr(std::to_address(__first))
-	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
+	{
+	  if constexpr (_Extent != dynamic_extent)
+	    {
+	      __glibcxx_assert(__count == _Extent);
+	    }
+	}
 
       template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
 	requires __is_compatible_ref<iter_reference_t<_It>>::value
 	  && (!is_convertible_v<_End, size_type>)
-	constexpr
+	constexpr explicit(extent != dynamic_extent)
 	span(_It __first, _End __last)
 	noexcept(noexcept(__last - __first))
 	: _M_extent(static_cast<size_type>(__last - __first)),
 	  _M_ptr(std::to_address(__first))
 	{
-	  if (_Extent != dynamic_extent)
-	    __glibcxx_assert((__last - __first) == _Extent);
+	  if constexpr (_Extent != dynamic_extent)
+	    {
+	      __glibcxx_assert((__last - __first) == _Extent);
+	    }
 	}
 
       template<typename _Tp, size_t _ArrayExtent>
@@ -199,30 +206,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Range>
-	requires (_Extent == dynamic_extent)
-	  && ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
+	requires ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
 	  && (ranges::safe_range<_Range> || is_const_v<element_type>)
 	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
 	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
 	  && (!is_array_v<remove_cvref_t<_Range>>)
 	  && __is_compatible_ref<ranges::range_reference_t<_Range>>::value
-	constexpr
+	constexpr explicit(extent != dynamic_extent)
 	span(_Range&& __range)
 	noexcept(noexcept(ranges::data(__range))
 		  && noexcept(ranges::size(__range)))
 	: span(ranges::data(__range), ranges::size(__range))
-	{ }
+	{
+	  if constexpr (extent != dynamic_extent)
+	    {
+	      __glibcxx_assert(ranges::size(__range) == extent);
+	    }
+	}
 
       constexpr
       span(const span&) noexcept = default;
 
       template<typename _OType, size_t _OExtent>
-	requires (_Extent == dynamic_extent || _Extent == _OExtent)
+	requires (_Extent == dynamic_extent || _OExtent == dynamic_extent
+		  || _Extent == _OExtent)
 	  && (__is_array_convertible<_Type, _OType>::value)
 	constexpr
+	explicit(extent != dynamic_extent && _OExtent == dynamic_extent)
 	span(const span<_OType, _OExtent>& __s) noexcept
 	: _M_extent(__s.size()), _M_ptr(__s.data())
-	{ }
+	{
+	  if constexpr (extent != dynamic_extent)
+	    {
+	      __glibcxx_assert(__s.size() == extent);
+	    }
+	}
 
       ~span() noexcept = default;
 
@@ -317,7 +335,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(_Count <= size());
 	  else
 	    static_assert(_Count <= extent);
-	  return { this->data(), _Count };
+	  using _Sp = span<element_type, _Count>;
+	  return _Sp{ this->data(), _Count };
 	}
 
       constexpr span<element_type, dynamic_extent>
@@ -335,7 +354,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(_Count <= size());
 	  else
 	    static_assert(_Count <= extent);
-	  return { this->data() + (this->size() - _Count), _Count };
+	  using _Sp = span<element_type, _Count>;
+	  return _Sp{ this->data() + (this->size() - _Count), _Count };
 	}
 
       constexpr span<element_type, dynamic_extent>
@@ -351,12 +371,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	-> span<element_type, _S_subspan_extent<_Offset, _Count>()>
 	{
 	  if constexpr (_Extent == dynamic_extent)
-	    __glibcxx_assert(_Offset <= size());
+	    {
+	      __glibcxx_assert(_Offset <= size());
+	    }
 	  else
 	    static_assert(_Offset <= extent);
 
+	  using _Sp = span<element_type, _S_subspan_extent<_Offset, _Count>()>;
+
 	  if constexpr (_Count == dynamic_extent)
-	    return { this->data() + _Offset, this->size() - _Offset };
+	    return _Sp{ this->data() + _Offset, this->size() - _Offset };
 	  else
 	    {
 	      if constexpr (_Extent == dynamic_extent)
@@ -369,7 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  static_assert(_Count <= extent);
 		  static_assert(_Count <= (extent - _Offset));
 		}
-	      return { this->data() + _Offset, _Count };
+	      return _Sp{ this->data() + _Offset, _Count };
 	    }
 	}
 
@@ -419,7 +443,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	? dynamic_extent : _Extent * sizeof(_Type)>
     as_bytes(span<_Type, _Extent> __sp) noexcept
     {
-      return {reinterpret_cast<const byte*>(__sp.data()), __sp.size_bytes()};
+      auto data = reinterpret_cast<const byte*>(__sp.data());
+      auto size = __sp.size_bytes();
+      constexpr auto extent = _Extent == dynamic_extent
+	? dynamic_extent : _Extent * sizeof(_Type);
+      return span<const byte, extent>{data, size};
     }
 
   template<typename _Type, size_t _Extent>
@@ -428,7 +456,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        ? dynamic_extent : _Extent * sizeof(_Type)>
     as_writable_bytes(span<_Type, _Extent> __sp) noexcept
     {
-      return {reinterpret_cast<byte*>(__sp.data()), __sp.size_bytes()};
+      auto data = reinterpret_cast<byte*>(__sp.data());
+      auto size = __sp.size_bytes();
+      constexpr auto extent = _Extent == dynamic_extent
+	? dynamic_extent : _Extent * sizeof(_Type);
+      return span<byte, extent>{data, size};
     }
 
   namespace ranges
