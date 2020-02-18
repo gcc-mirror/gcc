@@ -265,8 +265,10 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 		    ? "Top N value counter" : "Indirect call counter"));
 	  if (hist->hvalue.counters)
 	    {
-	      fprintf (dump_file, " all: %" PRId64 ", values: ",
-		       (int64_t) hist->hvalue.counters[0]);
+	      fprintf (dump_file, " all: %" PRId64 "%s, values: ",
+		       abs ((int64_t) hist->hvalue.counters[0]),
+		       hist->hvalue.counters[0] < 0
+		       ? " (values missing)": "");
 	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
 		{
 		  fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
@@ -719,25 +721,38 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
 
 /* Return the n-th value count of TOPN_VALUE histogram.  If
    there's a value, return true and set VALUE and COUNT
-   arguments.  */
+   arguments.
+
+   Counters have the following meaning.
+
+   abs (counters[0]) is the number of executions
+   for i in 0 ... TOPN-1
+     counters[2 * i + 1] is target
+     abs (counters[2 * i + 2]) is corresponding hitrate counter.
+
+   Value of counters[0] negative when counter became
+   full during merging and some values are lost.  */
 
 bool
 get_nth_most_common_value (gimple *stmt, const char *counter_type,
 			   histogram_value hist, gcov_type *value,
 			   gcov_type *count, gcov_type *all, unsigned n)
 {
-  if (hist->hvalue.counters[2] == -1)
-    return false;
-
   gcc_assert (n < GCOV_TOPN_VALUES);
 
   *count = 0;
   *value = 0;
 
-  gcov_type read_all = hist->hvalue.counters[0];
+  gcov_type read_all = abs (hist->hvalue.counters[0]);
 
   gcov_type v = hist->hvalue.counters[2 * n + 1];
   gcov_type c = hist->hvalue.counters[2 * n + 2];
+
+  if (hist->hvalue.counters[0] < 0
+      && (flag_profile_reproducible == PROFILE_REPRODUCIBILITY_PARALLEL_RUNS
+	  || (flag_profile_reproducible
+	      == PROFILE_REPRODUCIBILITY_MULTITHREADED)))
+    return false;
 
   /* Indirect calls can't be verified.  */
   if (stmt

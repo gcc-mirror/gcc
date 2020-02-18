@@ -1,3 +1,14 @@
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92924
+	* common.opt: Add -fprofile-reproducibility.
+	* doc/invoke.texi: Document it.
+	* value-prof.c (dump_histogram_value):
+	Document and support behavior for counters[0]
+	being a negative value.
+	(get_nth_most_common_value): Handle negative
+	counters[0] in respect to flag_profile_reproducible.
+
 2020-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/93797
