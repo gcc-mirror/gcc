@@ -1,3 +1,7 @@
+2020-02-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vmull_high.c: New.
+
 2020-02-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93817

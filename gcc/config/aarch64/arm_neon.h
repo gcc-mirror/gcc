@@ -9221,72 +9221,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_s8 (int8x16_t __a, int8x16_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("smull2 %0.8h,%1.16b,%2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_vec_widen_smult_hi_v16qi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_s16 (int16x8_t __a, int16x8_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("smull2 %0.4s,%1.8h,%2.8h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_vec_widen_smult_hi_v8hi (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_s32 (int32x4_t __a, int32x4_t __b)
 {
-  int64x2_t __result;
-  __asm__ ("smull2 %0.2d,%1.4s,%2.4s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_vec_widen_smult_hi_v4si (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  uint16x8_t __result;
-  __asm__ ("umull2 %0.8h,%1.16b,%2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_vec_widen_umult_hi_v16qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("umull2 %0.4s,%1.8h,%2.8h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_vec_widen_umult_hi_v8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  uint64x2_t __result;
-  __asm__ ("umull2 %0.2d,%1.4s,%2.4s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_vec_widen_umult_hi_v4si_uuu (__a, __b);
 }
 
 #define vmull_lane_s16(a, b, c)                                         \
@@ -9457,72 +9427,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_s8 (int8x8_t __a, int8x8_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("smull %0.8h, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_intrinsic_vec_smult_lo_v8qi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_s16 (int16x4_t __a, int16x4_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("smull %0.4s, %1.4h, %2.4h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_intrinsic_vec_smult_lo_v4hi (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_s32 (int32x2_t __a, int32x2_t __b)
 {
-  int64x2_t __result;
-  __asm__ ("smull %0.2d, %1.2s, %2.2s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_intrinsic_vec_smult_lo_v2si (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  uint16x8_t __result;
-  __asm__ ("umull %0.8h, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_intrinsic_vec_umult_lo_v8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("umull %0.4s, %1.4h, %2.4h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_intrinsic_vec_umult_lo_v4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  uint64x2_t __result;
-  __asm__ ("umull %0.2d, %1.2s, %2.2s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_intrinsic_vec_umult_lo_v2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t

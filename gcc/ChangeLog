@@ -1,3 +1,25 @@
+2020-02-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(intrinsic_vec_smult_lo_): New.
+	(intrinsic_vec_umult_lo_): Likewise.
+	(vec_widen_smult_hi_): Likewise.
+	(vec_widen_umult_hi_): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_intrinsic_vec_<su>mult_lo_<mode>): New.
+	* config/aarch64/arm_neon.h (vmull_high_s8): Use intrinsics.
+	(vmull_high_s16): Likewise.
+	(vmull_high_s32): Likewise.
+	(vmull_high_u8): Likewise.
+	(vmull_high_u16): Likewise.
+	(vmull_high_u32): Likewise.
+	(vmull_s8): Likewise.
+	(vmull_s16): Likewise.
+	(vmull_s32): Likewise.
+	(vmull_u8): Likewise.
+	(vmull_u16): Likewise.
+	(vmull_u32): Likewise.
+
 2020-02-18  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (stream_out_histogram_value): Restore LTO PGO
