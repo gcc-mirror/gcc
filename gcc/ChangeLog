@@ -1,5 +1,13 @@
 2020-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/93797
+	* cgraph.c (verify_speculative_call): Use speculative_id instead of
+	speculative_uid in messages.  Remove trailing whitespace from error
+	message.  Use num_speculative_call_targets instead of
+	num_speculative_targets in a message.
+	(cgraph_node::verify_node): Use call_stmt instead of cal_stmt in
+	edge messages and stmt instead of cal_stmt in reference message.
+
 	PR tree-optimization/93780
 	* tree-ssa.c (non_rewritable_lvalue_p): Check valid_vector_subparts_p
 	before calling build_vector_type.

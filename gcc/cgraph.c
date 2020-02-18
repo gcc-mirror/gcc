@@ -3230,14 +3230,14 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
 	if (direct->speculative_id >= num)
 	  {
 	    error ("direct call to %s in speculative call sequence has "
-		   "speculative_uid %i out of range",
+		   "speculative_id %i out of range",
 		   direct->callee->dump_name (), direct->speculative_id);
 	    return true;
 	  }
 	if (direct_calls[direct->speculative_id])
 	  {
 	    error ("duplicate direct call to %s in speculative call sequence "
-		   "with speculative_uid %i",
+		   "with speculative_id %i",
 		   direct->callee->dump_name (), direct->speculative_id);
 	    return true;
 	  }
@@ -3248,7 +3248,7 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
       && first_call != node->get_edge (first_call->call_stmt))
     {
       error ("call stmt hash does not point to first direct edge of "
-	     "speculative call sequence ");
+	     "speculative call sequence");
       return true;
     }
 
@@ -3260,14 +3260,14 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
 	if (ref->speculative_id >= num)
 	  {
 	    error ("direct call to %s in speculative call sequence has "
-		   "speculative_uid %i out of range",
+		   "speculative_id %i out of range",
 		   ref->referred->dump_name (), ref->speculative_id);
 	    return true;
 	  }
 	if (refs[ref->speculative_id])
 	  {
 	    error ("duplicate reference %s in speculative call sequence "
-		   "with speculative_uid %i",
+		   "with speculative_id %i",
 		   ref->referred->dump_name (), ref->speculative_id);
 	    return true;
 	  }
@@ -3294,7 +3294,7 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
   if (num_targets != indirect->num_speculative_call_targets_p ())
     {
       error ("number of speculative targets %i mismatched with "
-	     "num_speculative_targets %i",
+	     "num_speculative_call_targets %i",
 	     num_targets,
 	     indirect->num_speculative_call_targets_p ());
       return true;
@@ -3400,7 +3400,7 @@ cgraph_node::verify_node (void)
 	}
       if (e->call_stmt && e->lto_stmt_uid)
 	{
-	  error ("edge has both cal_stmt and lto_stmt_uid set");
+	  error ("edge has both call_stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
     }
@@ -3471,7 +3471,7 @@ cgraph_node::verify_node (void)
 	}
       if (e->call_stmt && e->lto_stmt_uid)
 	{
-	  error ("edge has both cal_stmt and lto_stmt_uid set");
+	  error ("edge has both call_stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
       if (e->speculative
@@ -3509,7 +3509,7 @@ cgraph_node::verify_node (void)
     {
       if (ref->stmt && ref->lto_stmt_uid)
 	{
-	  error ("reference has both cal_stmt and lto_stmt_uid set");
+	  error ("reference has both stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
       if (ref->speculative
