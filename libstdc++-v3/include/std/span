@@ -123,20 +123,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3255. span's array constructor is too strict
       template<typename _Tp, size_t _ArrayExtent>
-	using __is_compatible_array = __and_<
-	  bool_constant<(_Extent == dynamic_extent || _ArrayExtent == _Extent)>,
-	  __is_array_convertible<_Type, _Tp>>;
+	requires (_Extent == dynamic_extent || _ArrayExtent == _Extent)
+	using __is_compatible_array = __is_array_convertible<_Type, _Tp>;
 
-      template<typename _Iter, typename _Ref = iter_reference_t<_Iter>>
-	using __is_compatible_iterator = __and_<
-	  bool_constant<contiguous_iterator<_Iter>>,
-	  is_lvalue_reference<iter_reference_t<_Iter>>,
-	  is_same<iter_value_t<_Iter>, remove_cvref_t<_Ref>>,
-	  __is_array_convertible<_Type, remove_reference_t<_Ref>>>;
-
-      template<typename _Range>
-	using __is_compatible_range
-	  = __is_compatible_iterator<ranges::iterator_t<_Range>>;
+      template<typename _Ref>
+	using __is_compatible_ref
+	  = __is_array_convertible<_Type, remove_reference_t<_Ref>>;
 
     public:
       // member types
@@ -165,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       template<contiguous_iterator _It>
-	requires (__is_compatible_iterator<_It>::value)
+	requires __is_compatible_ref<iter_reference_t<_It>>::value
 	constexpr
 	span(_It __first, size_type __count)
 	noexcept
@@ -173,8 +165,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
 
       template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
-	  requires (__is_compatible_iterator<_It>::value)
-	    && (!is_convertible_v<_End, size_type>)
+	requires __is_compatible_ref<iter_reference_t<_It>>::value
+	  && (!is_convertible_v<_End, size_type>)
 	constexpr
 	span(_It __first, _End __last)
 	noexcept(noexcept(__last - __first))
@@ -186,32 +178,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp, size_t _ArrayExtent>
-	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
+	requires __is_compatible_array<_Tp, _ArrayExtent>::value
 	constexpr
 	span(_Tp (&__arr)[_ArrayExtent]) noexcept
 	: span(static_cast<pointer>(__arr), _ArrayExtent)
 	{ }
 
       template<typename _Tp, size_t _ArrayExtent>
-	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
+	requires __is_compatible_array<_Tp, _ArrayExtent>::value
 	constexpr
 	span(array<_Tp, _ArrayExtent>& __arr) noexcept
 	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
       template<typename _Tp, size_t _ArrayExtent>
-	  requires (__is_compatible_array<const _Tp, _ArrayExtent>::value)
+	requires __is_compatible_array<const _Tp, _ArrayExtent>::value
 	constexpr
 	span(const array<_Tp, _ArrayExtent>& __arr) noexcept
 	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
-      template<ranges::contiguous_range _Range>
+      template<typename _Range>
 	requires (_Extent == dynamic_extent)
+	  && ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
+	  && (ranges::safe_range<_Range> || is_const_v<element_type>)
 	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
 	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
-	  && (!is_array_v<remove_reference_t<_Range>>)
-	  && (__is_compatible_range<_Range>::value)
+	  && (!is_array_v<remove_cvref_t<_Range>>)
+	  && __is_compatible_ref<ranges::range_reference_t<_Range>>::value
 	constexpr
 	span(_Range&& __range)
 	noexcept(noexcept(ranges::data(__range))

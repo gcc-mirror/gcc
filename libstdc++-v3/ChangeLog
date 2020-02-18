@@ -1,5 +1,15 @@
 2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/span (span::__is_compatible_array): Simplify alias
+	template by using requires-clause.
+	(span::__is_compatible_ref): New alias template for constraining
+	constructors.
+	(span::__is_compatible_iterator, span::__is_compatible_range): Remove.
+	(span(It, size_type), span(It, End)): Use __is_compatible_ref.
+	(span(T(&)[N], span(array<T, N>&), span(const array<T, N>&)): Remove
+	redundant parentheses.
+	(span(R&&)): Add missing constraints.
+
 	* include/std/span (span): Reorder members and rename template
 	parameters to match declarations in the C++2a working paper.
 
