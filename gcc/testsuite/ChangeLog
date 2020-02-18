@@ -1,3 +1,11 @@
+2020-02-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93767
+	* gcc.dg/vect/pr93767.c: New test.
+
 2020-02-24  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	Backported from master

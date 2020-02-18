@@ -3228,14 +3228,14 @@ vect_compile_time_alias (dr_vec_info *a, dr_vec_info *b,
   if (tree_int_cst_compare (DR_STEP (a->dr), size_zero_node) < 0)
     {
       const_length_a = (-wi::to_poly_wide (segment_length_a)).force_uhwi ();
-      offset_a = (offset_a + access_size_a) - const_length_a;
+      offset_a -= const_length_a;
     }
   else
     const_length_a = tree_to_poly_uint64 (segment_length_a);
   if (tree_int_cst_compare (DR_STEP (b->dr), size_zero_node) < 0)
     {
       const_length_b = (-wi::to_poly_wide (segment_length_b)).force_uhwi ();
-      offset_b = (offset_b + access_size_b) - const_length_b;
+      offset_b -= const_length_b;
     }
   else
     const_length_b = tree_to_poly_uint64 (segment_length_b);
