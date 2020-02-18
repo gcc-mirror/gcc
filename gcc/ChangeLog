@@ -1,3 +1,53 @@
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/aarch64/iterators.md (VDQF_F16) Add V4BF and V8BF.
+	(VALL_F16): Likewise.
+	(VALLDI_F16): Likewise.
+	(Vtype): Likewise.
+	(Vetype): Likewise.
+	(vswap_width_name): Likewise.
+	(VSWAP_WIDTH): Likewise.
+	(Vel): Likewise.
+	(VEL): Likewise.
+	(q): Likewise.
+	* config/aarch64/arm_neon.h (vset_lane_bf16, vsetq_lane_bf16): New.
+	(vget_lane_bf16, vgetq_lane_bf16): New.
+	(vcreate_bf16): New.
+	(vdup_n_bf16, vdupq_n_bf16): New.
+	(vdup_lane_bf16, vdup_laneq_bf16): New.
+	(vdupq_lane_bf16, vdupq_laneq_bf16): New.
+	(vduph_lane_bf16, vduph_laneq_bf16): New.
+	(vreinterpret_bf16_u8, vreinterpretq_bf16_u8): New.
+	(vreinterpret_bf16_u16, vreinterpretq_bf16_u16): New.
+	(vreinterpret_bf16_u32, vreinterpretq_bf16_u32): New.
+	(vreinterpret_bf16_u64, vreinterpretq_bf16_u64): New.
+	(vreinterpret_bf16_s8, vreinterpretq_bf16_s8): New.
+	(vreinterpret_bf16_s16, vreinterpretq_bf16_s16): New.
+	(vreinterpret_bf16_s32, vreinterpretq_bf16_s32): New.
+	(vreinterpret_bf16_s64, vreinterpretq_bf16_s64): New.
+	(vreinterpret_bf16_p8, vreinterpretq_bf16_p8): New.
+	(vreinterpret_bf16_p16, vreinterpretq_bf16_p16): New.
+	(vreinterpret_bf16_p64, vreinterpretq_bf16_p64): New
+	(vreinterpret_bf16_f16, vreinterpretq_bf16_f16): New
+	(vreinterpret_bf16_f32, vreinterpretq_bf16_f32): New.
+	(vreinterpret_bf16_f64, vreinterpretq_bf16_f64): New.
+	(vreinterpretq_bf16_p128): New.
+	(vreinterpret_s8_bf16, vreinterpretq_s8_bf16): New.
+	(vreinterpret_s16_bf16, vreinterpretq_s16_bf16): New.
+	(vreinterpret_s32_bf16, vreinterpretq_s32_bf16): New.
+	(vreinterpret_s64_bf16, vreinterpretq_s64_bf16): New.
+	(vreinterpret_u8_bf16, vreinterpretq_u8_bf16): New.
+	(vreinterpret_u16_bf16, vreinterpretq_u16_bf16): New.
+	(vreinterpret_u32_bf16, vreinterpretq_u32_bf16): New.
+	(vreinterpret_u64_bf16, vreinterpretq_u64_bf16): New.
+	(vreinterpret_p8_bf16, vreinterpretq_p8_bf16): New.
+	(vreinterpret_p16_bf16, vreinterpretq_p16_bf16): New.
+	(vreinterpret_p64_bf16, vreinterpretq_p64_bf16): New.
+	(vreinterpret_f32_bf16, vreinterpretq_f32_bf16): New.
+	(vreinterpret_f64_bf16,vreinterpretq_f64_bf16): New.
+	(vreinterpret_f16_bf16,vreinterpretq_f16_bf16): New.
+	(vreinterpretq_p128_bf16): New.
+
 2020-02-25  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/arm/arm_neon.h (vbfdot_f32, vbfdotq_f32): New

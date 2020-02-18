@@ -139,7 +139,8 @@
 (define_mode_iterator PTR [(SI "ptr_mode == SImode") (DI "ptr_mode == DImode")])
 
 ;; Advanced SIMD Float modes suitable for moving, loading and storing.
-(define_mode_iterator VDQF_F16 [V4HF V8HF V2SF V4SF V2DF])
+(define_mode_iterator VDQF_F16 [V4HF V8HF V2SF V4SF V2DF
+				V4BF V8BF])
 
 ;; Advanced SIMD Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
@@ -180,7 +181,7 @@
 
 ;; All Advanced SIMD modes suitable for moving, loading, and storing.
 (define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
-				V4HF V8HF V2SF V4SF V2DF])
+				V4HF V8HF V4BF V8BF V2SF V4SF V2DF])
 
 ;; All Advanced SIMD modes suitable for moving, loading, and storing,
 ;; including special Bfloat vector types.
@@ -196,7 +197,7 @@
 
 ;; All Advanced SIMD modes and DI.
 (define_mode_iterator VALLDI_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
-				  V4HF V8HF V2SF V4SF V2DF DI])
+				  V4HF V8HF V4BF V8BF V2SF V4SF V2DF DI])
 
 ;; All Advanced SIMD modes, plus DI and DF.
 (define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI
@@ -972,6 +973,7 @@
 
 (define_mode_attr Vtype [(V8QI "8b") (V16QI "16b")
 			 (V4HI "4h") (V8HI  "8h")
+			 (V4BF "4h") (V8BF  "8h")
                          (V2SI "2s") (V4SI  "4s")
                          (DI   "1d") (DF    "1d")
                          (V2DI "2d") (V2SF "2s")
@@ -1015,6 +1017,7 @@
 			  (VNx4SF "s") (VNx2SF "s")
 			  (VNx2DI "d")
 			  (VNx2DF "d")
+			  (BF "h") (V4BF "h") (V8BF "h")
 			  (HF "h")
 			  (SF "s") (DF "d")
 			  (QI "b") (HI "h")
@@ -1083,6 +1086,7 @@
 		       (DF   "DF") (V2DF  "DF")
 		       (SI   "SI") (HI    "HI")
 		       (QI   "QI")
+		       (V4BF "BF") (V8BF "BF")
 		       (VNx16QI "QI") (VNx8QI "QI") (VNx4QI "QI") (VNx2QI "QI")
 		       (VNx8HI "HI") (VNx4HI "HI") (VNx2HI "HI")
 		       (VNx8HF "HF") (VNx4HF "HF") (VNx2HF "HF")
@@ -1102,6 +1106,7 @@
 		       (V2DF "df") (DF   "df")
 		       (SI   "si") (HI   "hi")
 		       (QI   "qi")
+		       (V4BF "bf") (V8BF "bf")
 		       (VNx16QI "qi") (VNx8QI "qi") (VNx4QI "qi") (VNx2QI "qi")
 		       (VNx8HI "hi") (VNx4HI "hi") (VNx2HI "hi")
 		       (VNx8HF "hf") (VNx4HF "hf") (VNx2HF "hf")
@@ -1422,6 +1427,7 @@
 
 (define_mode_attr VSWAP_WIDTH [(V8QI "V16QI") (V16QI "V8QI")
 				(V4HI "V8HI") (V8HI  "V4HI")
+				(V8BF "V4BF") (V4BF  "V8BF")
 				(V2SI "V4SI") (V4SI  "V2SI")
 				(DI   "V2DI") (V2DI  "DI")
 				(V2SF "V4SF") (V4SF  "V2SF")
@@ -1434,6 +1440,7 @@
 				    (DI   "to_128") (V2DI  "to_64")
 				    (V4HF "to_128") (V8HF  "to_64")
 				    (V2SF "to_128") (V4SF  "to_64")
+				    (V4BF "to_128") (V8BF  "to_64")
 				    (DF   "to_128") (V2DF  "to_64")])
 
 ;; For certain vector-by-element multiplication instructions we must
@@ -1467,6 +1474,7 @@
 ;; Defined to '_q' for 128-bit types.
 (define_mode_attr q [(V8QI "") (V16QI "_q")
 		     (V4HI "") (V8HI  "_q")
+		     (V4BF "") (V8BF  "_q")
 		     (V2SI "") (V4SI  "_q")
 		     (DI   "") (V2DI  "_q")
 		     (V4HF "") (V8HF "_q")
