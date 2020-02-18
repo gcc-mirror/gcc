@@ -1103,6 +1103,9 @@ namespace views
       };
 
     template<typename _Callable>
+      _RangeAdaptor(_Callable) -> _RangeAdaptor<_Callable>;
+
+    template<typename _Callable>
       struct _RangeAdaptorClosure : public _RangeAdaptor<_Callable>
       {
 	using _RangeAdaptor<_Callable>::_RangeAdaptor;
@@ -1325,7 +1328,7 @@ namespace views
 	static constexpr auto
 	_S_iter_cat()
 	{
-	  using _Cat = iterator_traits<iterator_t<_Vp>>::iterator_category;
+	  using _Cat = typename iterator_traits<_Vp_iter>::iterator_category;
 	  if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
 	    return bidirectional_iterator_tag{};
 	  else if constexpr (derived_from<_Cat, forward_iterator_tag>)
@@ -1336,7 +1339,9 @@ namespace views
 
 	friend filter_view;
 
-	iterator_t<_Vp> _M_current = iterator_t<_Vp>();
+	using _Vp_iter = iterator_t<_Vp>;
+
+	_Vp_iter _M_current = _Vp_iter();
 	filter_view* _M_parent = nullptr;
 
       public:
@@ -1348,17 +1353,17 @@ namespace views
 	_Iterator() = default;
 
 	constexpr
-	_Iterator(filter_view& __parent, iterator_t<_Vp> __current)
+	_Iterator(filter_view& __parent, _Vp_iter __current)
 	  : _M_current(std::move(__current)),
 	    _M_parent(std::__addressof(__parent))
 	{ }
 
-	constexpr iterator_t<_Vp>
+	constexpr _Vp_iter
 	base() const &
-	  requires copyable<iterator_t<_Vp>>
+	  requires copyable<_Vp_iter>
 	{ return _M_current; }
 
-	constexpr iterator_t<_Vp>
+	constexpr _Vp_iter
 	base() &&
 	{ return std::move(_M_current); }
 
@@ -1366,10 +1371,10 @@ namespace views
 	operator*() const
 	{ return *_M_current; }
 
-	constexpr iterator_t<_Vp>
+	constexpr _Vp_iter
 	operator->() const
-	  requires __detail::__has_arrow<iterator_t<_Vp>>
-	    && copyable<iterator_t<_Vp>>
+	  requires __detail::__has_arrow<_Vp_iter>
+	    && copyable<_Vp_iter>
 	{ return _M_current; }
 
 	constexpr _Iterator&
@@ -1412,7 +1417,7 @@ namespace views
 
 	friend constexpr bool
 	operator==(const _Iterator& __x, const _Iterator& __y)
-	  requires equality_comparable<iterator_t<_Vp>>
+	  requires equality_comparable<_Vp_iter>
 	{ return __x._M_current == __y._M_current; }
 
 	friend constexpr range_rvalue_reference_t<_Vp>
@@ -1423,7 +1428,7 @@ namespace views
 	friend constexpr void
 	iter_swap(const _Iterator& __x, const _Iterator& __y)
 	  noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
-	  requires indirectly_swappable<iterator_t<_Vp>>
+	  requires indirectly_swappable<_Vp_iter>
 	{ ranges::iter_swap(__x._M_current, __y._M_current); }
       };
 
@@ -1548,7 +1553,8 @@ namespace views
 	  static constexpr auto
 	  _S_iter_cat()
 	  {
-	    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+	    using _Cat
+              = typename iterator_traits<_Base_iter>::iterator_category;
 	    if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
 	      return random_access_iterator_tag{};
 	    else
@@ -1566,7 +1572,9 @@ namespace views
 	      return *__i;
 	  }
 
-	  iterator_t<_Base> _M_current = iterator_t<_Base>();
+	  using _Base_iter = iterator_t<_Base>;
+
+	  _Base_iter _M_current = _Base_iter();
 	  _Parent* _M_parent = nullptr;
 
 	public:
@@ -1579,7 +1587,7 @@ namespace views
 	  _Iterator() = default;
 
 	  constexpr
-	  _Iterator(_Parent& __parent, iterator_t<_Base> __current)
+	  _Iterator(_Parent& __parent, _Base_iter __current)
 	    : _M_current(std::move(__current)),
 	      _M_parent(std::__addressof(__parent))
 	  { }
@@ -1587,16 +1595,16 @@ namespace views
 	  constexpr
 	  _Iterator(_Iterator<!_Const> __i)
 	    requires _Const
-	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
+	      && convertible_to<iterator_t<_Vp>, _Base_iter>
 	    : _M_current(std::move(__i._M_current)), _M_parent(__i._M_parent)
 	  { }
 
-	  constexpr iterator_t<_Base>
+	  constexpr _Base_iter
 	  base() const &
-	    requires copyable<iterator_t<_Base>>
+	    requires copyable<_Base_iter>
 	  { return _M_current; }
 
-	  constexpr iterator_t<_Base>
+	  constexpr _Base_iter
 	  base() &&
 	  { return std::move(_M_current); }
 
@@ -1659,7 +1667,7 @@ namespace views
 
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
-	    requires equality_comparable<iterator_t<_Base>>
+	    requires equality_comparable<_Base_iter>
 	  { return __x._M_current == __y._M_current; }
 
 	  friend constexpr bool
@@ -1686,7 +1694,7 @@ namespace views
 	  friend constexpr auto
 	  operator<=>(const _Iterator& __x, const _Iterator& __y)
 	    requires random_access_range<_Base>
-	      && three_way_comparable<iterator_t<_Base>>
+	      && three_way_comparable<_Base_iter>
 	  { return __x._M_current <=> __y._M_current; }
 #endif
 
@@ -1717,7 +1725,7 @@ namespace views
 	  friend constexpr void
 	  iter_swap(const _Iterator& __x, const _Iterator& __y)
 	    noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
-	    requires indirectly_swappable<iterator_t<_Base>>
+	    requires indirectly_swappable<_Base_iter>
 	  { return ranges::iter_swap(__x._M_current, __y._M_current); }
 
 	  friend _Sentinel<_Const>;
@@ -2271,7 +2279,7 @@ namespace views
 	      }
 
 	    if constexpr (_S_ref_is_glvalue)
-	      _M_inner = iterator_t<range_reference_t<_Base>>();
+	      _M_inner = _Inner_iter();
 	  }
 
 	  static constexpr auto
@@ -2293,10 +2301,9 @@ namespace views
 	  _S_iter_cat()
 	  {
 	    using _OuterCat
-	      = iterator_traits<iterator_t<_Base>>::iterator_category;
+	      = typename iterator_traits<_Outer_iter>::iterator_category;
 	    using _InnerCat
-	      = iterator_traits<iterator_t<range_reference_t<_Base>>>
-		 ::iterator_category;
+	      = typename iterator_traits<_Inner_iter>::iterator_category;
 	    if constexpr (_S_ref_is_glvalue
 			  && derived_from<_OuterCat, bidirectional_iterator_tag>
 			  && derived_from<_InnerCat, bidirectional_iterator_tag>)
@@ -2312,9 +2319,11 @@ namespace views
 	      return output_iterator_tag{};
 	  }
 
-	  iterator_t<_Base> _M_outer = iterator_t<_Base>();
-	  iterator_t<range_reference_t<_Base>> _M_inner
-	    = iterator_t<range_reference_t<_Base>>();
+	  using _Outer_iter = iterator_t<_Base>;
+	  using _Inner_iter = iterator_t<range_reference_t<_Base>>;
+
+	  _Outer_iter _M_outer = _Outer_iter();
+	  _Inner_iter _M_inner = _Inner_iter();
 	  _Parent* _M_parent = nullptr;
 
 	public:
@@ -2330,7 +2339,7 @@ namespace views
 	  // XXX: had to change the type of __outer from iterator_t<_Vp> to
 	  // iterator_t<_Base> here, a possible defect in the spec?
 	  constexpr
-	  _Iterator(_Parent& __parent, iterator_t<_Base> __outer)
+	  _Iterator(_Parent& __parent, _Outer_iter __outer)
 	    : _M_outer(std::move(__outer)),
 	      _M_parent(std::__addressof(__parent))
 	  { _M_satisfy(); }
@@ -2338,9 +2347,8 @@ namespace views
 	  constexpr
 	  _Iterator(_Iterator<!_Const> __i)
 	    requires _Const
-	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
-	      && convertible_to<iterator_t<_InnerRange>,
-				iterator_t<range_reference_t<_Base>>>
+	      && convertible_to<iterator_t<_Vp>, _Outer_iter>
+	      && convertible_to<iterator_t<_InnerRange>, _Inner_iter>
 	    : _M_outer(std::move(__i._M_outer)), _M_inner(__i._M_inner),
 	      _M_parent(__i._M_parent)
 	  { }
@@ -2349,10 +2357,10 @@ namespace views
 	  operator*() const
 	  { return *_M_inner; }
 
-	  constexpr iterator_t<_Base>
+	  constexpr _Outer_iter
 	  operator->() const
-	    requires __detail::__has_arrow<iterator_t<_Base>>
-	      && copyable<iterator_t<_Base>>
+	    requires __detail::__has_arrow<_Outer_iter>
+	      && copyable<_Outer_iter>
 	  { return _M_inner; }
 
 	  constexpr _Iterator&
@@ -2412,8 +2420,8 @@ namespace views
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
 	    requires _S_ref_is_glvalue
-	      && equality_comparable<iterator_t<_Base>>
-	      && equality_comparable<iterator_t<range_reference_t<_Base>>>
+	      && equality_comparable<_Outer_iter>
+	      && equality_comparable<_Inner_iter>
 	  {
 	    return (__x._M_outer == __y._M_outer
 		    && __x._M_inner == __y._M_inner);
@@ -2764,7 +2772,8 @@ namespace views
 	  static constexpr auto
 	  _S_iter_cat()
 	  {
-	    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+	    using _Cat
+              = typename iterator_traits<iterator_t<_Base>>::iterator_category;
 	    if constexpr (derived_from<_Cat, forward_iterator_tag>)
 	      return forward_iterator_tag{};
 	    else
@@ -2786,7 +2795,8 @@ namespace views
 	  bool _M_incremented = false;
 
 	public:
-	  using iterator_concept = typename _OuterIter<_Const>::iterator_concept;
+	  using iterator_concept
+	    = typename _OuterIter<_Const>::iterator_concept;
 	  using iterator_category = decltype(_S_iter_cat());
 	  using value_type = range_value_t<_Base>;
 	  using difference_type = range_difference_t<_Base>;

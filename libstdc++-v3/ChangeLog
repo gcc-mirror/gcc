@@ -1,5 +1,17 @@
 2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93818
+	* include/std/ranges (_RangeAdaptor): Add deduction guide.
+	(filter_view::_Iterator): Add alias _Vp_iter and use in place of
+	iterator_t<_Vp>.
+	(filter_view::_Iterator::_S_iter_cat()): Add 'typename'.
+	(transform_view::_Iterator): Add alias _Base_iter and use in place of
+	iterator_t<_Base>.
+	(transform_view::_Iterator::_S_iter_cat()): Add 'typename'.
+	(join_view::_Iterator): Add _Outer_iter and _Inner_iter aliases.
+	(join_view::_Iterator::_S_iter_cat()): Add 'typename'.
+	(split_view::_InnerIter::_S_iter_cat()): Likewise.
+
 	* testsuite/20_util/integer_comparisons/equal.cc: Fix invalid
 	assumption that long is wider than int.
 	* testsuite/20_util/integer_comparisons/greater_equal.cc: Likewise.
