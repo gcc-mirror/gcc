@@ -1,5 +1,12 @@
 2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/integer_comparisons/equal.cc: Fix invalid
+	assumption that long is wider than int.
+	* testsuite/20_util/integer_comparisons/greater_equal.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/less.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/less_equal.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/not_equal.cc: Likewise.
+
 	P1976R2 Fixed-size span construction from dynamic range
 	* include/std/span (__cpp_lib_span): Update value.
 	(span(It, size_type), span(It, End)): Make conditionally explicit. Add

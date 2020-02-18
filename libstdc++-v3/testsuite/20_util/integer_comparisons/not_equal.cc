@@ -57,7 +57,7 @@ test03()
   VERIFY( std::cmp_not_equal(ss, u) );
   VERIFY( std::cmp_not_equal(u, ss) );
 
-  unsigned long ul = (unsigned long) -1;
+  unsigned long long ul = (unsigned long long) -1;
   VERIFY( std::cmp_not_equal(s, ul) );
   VERIFY( std::cmp_not_equal(ul, s) );
   VERIFY( std::cmp_not_equal(ss, ul) );

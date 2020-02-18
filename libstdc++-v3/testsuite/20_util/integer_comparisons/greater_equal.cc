@@ -62,7 +62,7 @@ test03()
   VERIFY( std::cmp_greater_equal(u, ss) );
   VERIFY( std::cmp_greater_equal(u, -2U) );
 
-  unsigned long ul = (unsigned long) -1;
+  unsigned long long ul = (unsigned long long) -1;
   VERIFY( !std::cmp_greater_equal(s, ul) );
   VERIFY( std::cmp_greater_equal(ul, s) );
   VERIFY( !std::cmp_greater_equal(ss, ul) );

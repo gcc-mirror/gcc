@@ -60,7 +60,7 @@ test03()
   VERIFY( std::cmp_less(ss, u) );
   VERIFY( !std::cmp_less(u, ss) );
 
-  unsigned long ul = (unsigned long) -1;
+  unsigned long long ul = (unsigned long long) -1;
   VERIFY( std::cmp_less(s, ul) );
   VERIFY( !std::cmp_less(ul, s) );
   VERIFY( std::cmp_less(ss, ul) );
