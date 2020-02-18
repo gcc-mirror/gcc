@@ -2202,8 +2202,28 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  if (inquiry)
 	    sym = NULL;
 
-	  if (sep == '%' && primary->ts.type != BT_UNKNOWN)
-	    intrinsic = true;
+	  if (sep == '%')
+	    {
+	      if (tmp)
+		{
+		  if ((tmp->u.i == INQUIRY_RE || tmp->u.i == INQUIRY_IM)
+		      && primary->ts.type != BT_COMPLEX)
+		    {
+			gfc_error ("The RE or IM part_ref at %C must be "
+				   "applied to a COMPLEX expression");
+			return MATCH_ERROR;
+		    }
+		  else if (tmp->u.i == INQUIRY_LEN
+			   && primary->ts.type != BT_CHARACTER)
+		    {
+			gfc_error ("The LEN part_ref at %C must be applied "
+				   "to a CHARACTER expression");
+			return MATCH_ERROR;
+		    }
+		}
+	      if (primary->ts.type != BT_UNKNOWN)
+		intrinsic = true;
+	    }
 	}
       else
 	inquiry = false;
