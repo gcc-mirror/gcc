@@ -1,3 +1,7 @@
+2020-02-18  Jon Beniston <jon@beniston.com>
+
+	* gcc.dg/strcmpopt_6.c: Add space in array for terminator.
+
 2020-02-18  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	PR fortran/93714
