@@ -2002,6 +2002,14 @@ vr_values::save_equivalences (equivalence_iterator *iter)
   m_equivalences = iter;
 }
 
+// FIXME: Come up with a better name.
+
+bool
+vr_values::in_export_list (tree name, basic_block bb)
+{
+  return m_gori_map.is_export_p (name, bb);
+}
+
 // Calculate the range for NAME on edge E and return it in R.
 // Return FALSE if unable to compute a range.
 

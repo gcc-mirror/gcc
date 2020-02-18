@@ -220,6 +220,9 @@ evrp_range_analyzer::try_find_new_range_with_gori
 				(irange &res, tree name, edge e,
 				 const vec<assert_info> &asserts)
 {
+  if (!vr_values->in_export_list (name, e->src))
+    return;
+
   const value_range_equiv *known_range = get_value_range (name);
   // ?? Perhaps it's worth calling normalize_addresses here?
   if (known_range && !range_has_numeric_bounds_p (known_range))
@@ -365,23 +368,29 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	  for (unsigned i = 0; i < asserts.length (); ++i)
 	    {
 	      widest_irange vr_gori;
-	      try_find_new_range_with_gori (vr_gori, asserts[i].name, pred_e,
-					    asserts);
+	      bool gori_can_calculate
+		= vr_values->in_export_list (asserts[i].name, pred_e->src);
+	      if (gori_can_calculate)
+		try_find_new_range_with_gori (vr_gori, asserts[i].name,
+					      pred_e, asserts);
 	      value_range_equiv *vr
 		= try_find_new_range (asserts[i].name,
 				      asserts[i].expr,
 				      asserts[i].comp_code,
 				      asserts[i].val);
-	      if (CHECKING_P && dbg_cnt (evrp_find_range))
+	      if (gori_can_calculate)
 		{
-		  tree name = asserts[i].name;
-		  if (dump_file)
-		    dump_gori_improvements (name, vr, &vr_gori);
-		  if (getenv("GORIME"))
-		    assert_gori_is_as_good (name, pred_e, vr, &vr_gori,
-					    asserts);
+		  if (CHECKING_P && dbg_cnt (evrp_find_range))
+		    {
+		      tree name = asserts[i].name;
+		      if (dump_file)
+			dump_gori_improvements (name, vr, &vr_gori);
+		      if (getenv("GORIME"))
+			assert_gori_is_as_good (name, pred_e, vr, &vr_gori,
+						asserts);
+		    }
+		  vr = merge_gori_and_evrp_results (vr, &vr_gori);
 		}
-	      vr = merge_gori_and_evrp_results (vr, &vr_gori);
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
 	    }

@@ -93,6 +93,7 @@ class vr_values : public gori_compute
 
   bool outgoing_edge_range_p (irange &, edge, tree name,
 			      const irange *name_range = NULL);
+  bool in_export_list (tree name, basic_block);
   void save_equivalences (equivalence_iterator *);
  private:
   void range_of_ssa_name (irange &r, tree op, gimple * = NULL);
