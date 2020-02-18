@@ -104,8 +104,6 @@ main()
   static_assert(data_span_first.size() == 3);
   static_assert(data_span_first.front() == 0);
   static_assert(data_span_first.back() == 2);
-  static_assert(std::tuple_size_v<decltype(data_span_first)> == 3);
-  static_assert(std::is_same_v<std::tuple_element_t<0, decltype(data_span_first)>, const int>);
 
   constexpr auto data_span_first_dyn = data_span.first(4);
   static_assert(
@@ -122,8 +120,6 @@ main()
   static_assert(data_span_last.size() == 5);
   static_assert(data_span_last.front() == 4);
   static_assert(data_span_last.back() == 8);
-  static_assert(std::tuple_size_v<decltype(data_span_last)> == 5);
-  static_assert(std::is_same_v<std::tuple_element_t<0, decltype(data_span_last)>, const int>);
 
   constexpr auto data_span_last_dyn = data_span.last(6);
   static_assert(

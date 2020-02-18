@@ -440,36 +440,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return {reinterpret_cast<byte*>(__sp.data()), __sp.size_bytes()};
     }
 
-  // tuple helpers
-  template<size_t _Index, typename _Type, size_t _Extent>
-    constexpr _Type&
-    get(span<_Type, _Extent> __sp) noexcept
-    {
-      static_assert(_Extent != dynamic_extent && _Index < _Extent,
-	"get<I> can only be used with a span of non-dynamic (fixed) extent");
-      return __sp[_Index];
-    }
-
-  template<typename _Tp> struct tuple_size;
-  template<size_t __i, typename _Tp> struct tuple_element;
-
-  template<typename _Type, size_t _Extent>
-    struct tuple_size<span<_Type, _Extent>>
-    : public integral_constant<size_t, _Extent>
-    {
-      static_assert(_Extent != dynamic_extent, "tuple_size can only "
-	"be used with a span of non-dynamic (fixed) extent");
-    };
-
-  template<size_t _Index, typename _Type, size_t _Extent>
-    struct tuple_element<_Index, span<_Type, _Extent>>
-    {
-      static_assert(_Extent != dynamic_extent, "tuple_element can only "
-	"be used with a span of non-dynamic (fixed) extent");
-      static_assert(_Index < _Extent, "Index is less than Extent");
-      using type = _Type;
-    };
-
   namespace ranges
   {
     template<typename> extern inline const bool enable_safe_range;

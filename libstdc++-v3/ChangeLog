@@ -1,3 +1,14 @@
+2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	P2116R0 Remove tuple-like protocol support from fixed-extent span
+	* include/std/span (get, tuple_size, tuple_element): Remove.
+	* testsuite/23_containers/span/everything.cc: Remove checks for
+	tuple-like API.
+	* testsuite/23_containers/span/get_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_element_dynamic_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_element_oob_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_size_neg.cc: Remove.
+
 2020-02-17  Patrick Palka  <ppalka@redhat.com>
 
 	P2106R0 Alternative wording for GB315 and GB316
