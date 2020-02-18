@@ -332,7 +332,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_TOPN_VALUES && i > 0)
+      if (hist->type == HIST_TYPE_TOPN_VALUES)
 	;
       else
 	gcc_assert (value >= 0);
