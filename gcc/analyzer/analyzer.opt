@@ -152,7 +152,7 @@ Dump various analyzer internals to stderr.
 
 fdump-analyzer-callgraph
 Common RejectNegative Var(flag_dump_analyzer_callgraph)
-Dump the analyzer supergraph to a SRCFILE.callgraph.dot file.
+Dump analyzer-specific call graph information to a SRCFILE.callgraph.dot file.
 
 fdump-analyzer-exploded-graph
 Common RejectNegative Var(flag_dump_analyzer_exploded_graph)

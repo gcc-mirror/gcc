@@ -1,5 +1,10 @@
 2020-02-18  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93692
+	* analyzer.opt (fdump-analyzer-callgraph): Rewrite description.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93777
 	* region-model.cc (region_model::maybe_cast_1): Replace assertion
 	that build_cast returns non-NULL with a conditional, falling
