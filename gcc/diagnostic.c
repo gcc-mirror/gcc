@@ -983,12 +983,16 @@ print_any_cwe (diagnostic_context *context,
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
 				     diagnostic_kind_color[diagnostic->kind]));
-      char *cwe_url = get_cwe_url (cwe);
-      pp_begin_url (pp, cwe_url);
-      free (cwe_url);
+      if (pp->url_format != URL_FORMAT_NONE)
+	{
+	  char *cwe_url = get_cwe_url (cwe);
+	  pp_begin_url (pp, cwe_url);
+	  free (cwe_url);
+	}
       pp_printf (pp, "CWE-%i", cwe);
       pp_set_prefix (context->printer, saved_prefix);
-      pp_end_url (pp);
+      if (pp->url_format != URL_FORMAT_NONE)
+	pp_end_url (pp);
       pp_string (pp, colorize_stop (pp_show_color (pp)));
       pp_character (pp, ']');
     }
@@ -1011,7 +1015,8 @@ print_option_information (diagnostic_context *context,
   if (option_text)
     {
       char *option_url = NULL;
-      if (context->get_option_url)
+      if (context->get_option_url
+	  && context->printer->url_format != URL_FORMAT_NONE)
 	option_url = context->get_option_url (context,
 					      diagnostic->option_index);
       pretty_printer *pp = context->printer;

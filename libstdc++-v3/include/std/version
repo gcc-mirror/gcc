@@ -193,7 +193,7 @@
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants 201907L
-#define __cpp_lib_span 201902L
+#define __cpp_lib_span 202002L
 #if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
 # define __cpp_lib_three_way_comparison 201711L
 #endif

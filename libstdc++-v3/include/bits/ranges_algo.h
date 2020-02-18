@@ -152,7 +152,7 @@ namespace ranges
   inline constexpr __none_of_fn none_of{};
 
   template<typename _Iter, typename _Fp>
-    struct for_each_result
+    struct in_fun_result
     {
       [[no_unique_address]] _Iter in;
       [[no_unique_address]] _Fp fun;
@@ -160,14 +160,19 @@ namespace ranges
       template<typename _Iter2, typename _F2p>
 	requires convertible_to<const _Iter&, _Iter2>
 	  && convertible_to<const _Fp&, _F2p>
-	operator for_each_result<_Iter2, _F2p>() const &
+	constexpr
+	operator in_fun_result<_Iter2, _F2p>() const &
 	{ return {in, fun}; }
 
       template<typename _Iter2, typename _F2p>
 	requires convertible_to<_Iter, _Iter2> && convertible_to<_Fp, _F2p>
-	operator for_each_result<_Iter2, _F2p>() &&
+	constexpr
+	operator in_fun_result<_Iter2, _F2p>() &&
 	{ return {std::move(in), std::move(fun)}; }
     };
+
+  template<typename _Iter, typename _Fp>
+    using for_each_result = in_fun_result<_Iter, _Fp>;
 
   struct __for_each_fn
   {
@@ -194,6 +199,39 @@ namespace ranges
   };
 
   inline constexpr __for_each_fn for_each{};
+
+  template<typename _Iter, typename _Fp>
+    using for_each_n_result = in_fun_result<_Iter, _Fp>;
+
+  struct __for_each_n_fn
+  {
+    template<input_iterator _Iter, typename _Proj = identity,
+	     indirectly_unary_invocable<projected<_Iter, _Proj>> _Fun>
+      constexpr for_each_n_result<_Iter, _Fun>
+      operator()(_Iter __first, iter_difference_t<_Iter> __n,
+		 _Fun __f, _Proj __proj = {}) const
+      {
+	if constexpr (random_access_iterator<_Iter>)
+	  {
+	    if (__n <= 0)
+	      return {std::move(__first), std::move(__f)};
+	    auto __last = __first + __n;
+	    return ranges::for_each(std::move(__first), std::move(__last),
+				    std::move(__f), std::move(__proj));
+	  }
+	else
+	  {
+	    while (__n-- > 0)
+	      {
+		std::__invoke(__f, std::__invoke(__proj, *__first));
+		++__first;
+	      }
+	    return {std::move(__first), std::move(__f)};
+	  }
+      }
+  };
+
+  inline constexpr __for_each_n_fn for_each_n{};
 
   struct __find_fn
   {
@@ -383,7 +421,7 @@ namespace ranges
   inline constexpr __count_if_fn count_if{};
 
   template<typename _Iter1, typename _Iter2>
-    struct mismatch_result
+    struct in_in_result
     {
       [[no_unique_address]] _Iter1 in1;
       [[no_unique_address]] _Iter2 in2;
@@ -391,15 +429,20 @@ namespace ranges
       template<typename _IIter1, typename _IIter2>
 	requires convertible_to<const _Iter1&, _IIter1>
 	  && convertible_to<const _Iter2&, _IIter2>
-	operator mismatch_result<_IIter1, _IIter2>() const &
+	constexpr
+	operator in_in_result<_IIter1, _IIter2>() const &
 	{ return {in1, in2}; }
 
       template<typename _IIter1, typename _IIter2>
 	requires convertible_to<_Iter1, _IIter1>
 	  && convertible_to<_Iter2, _IIter2>
-	operator mismatch_result<_IIter1, _IIter2>() &&
+	constexpr
+	operator in_in_result<_IIter1, _IIter2>() &&
 	{ return {std::move(in1), std::move(in2)}; }
     };
+
+  template<typename _Iter1, typename _Iter2>
+    using mismatch_result = in_in_result<_Iter1, _Iter2>;
 
   struct __mismatch_fn
   {
@@ -797,7 +840,7 @@ namespace ranges
   inline constexpr __is_permutation_fn is_permutation{};
 
   template<typename _Iter, typename _Out>
-    using copy_if_result = copy_result<_Iter, _Out>;
+    using copy_if_result = in_out_result<_Iter, _Out>;
 
   struct __copy_if_fn
   {
@@ -836,7 +879,7 @@ namespace ranges
   inline constexpr __copy_if_fn copy_if{};
 
   template<typename _Iter1, typename _Iter2>
-    using swap_ranges_result = mismatch_result<_Iter1, _Iter2>;
+    using swap_ranges_result = in_in_result<_Iter1, _Iter2>;
 
   struct __swap_ranges_fn
   {
@@ -867,10 +910,10 @@ namespace ranges
   inline constexpr __swap_ranges_fn swap_ranges{};
 
   template<typename _Iter, typename _Out>
-    using unary_transform_result = copy_result<_Iter, _Out>;
+    using unary_transform_result = in_out_result<_Iter, _Out>;
 
   template<typename _Iter1, typename _Iter2, typename _Out>
-    struct binary_transform_result
+    struct in_in_out_result
     {
       [[no_unique_address]] _Iter1 in1;
       [[no_unique_address]] _Iter2 in2;
@@ -880,16 +923,21 @@ namespace ranges
 	requires convertible_to<const _Iter1&, _IIter1>
 	  && convertible_to<const _Iter2&, _IIter2>
 	  && convertible_to<const _Out&, _OOut>
-	operator binary_transform_result<_IIter1, _IIter2, _OOut>() const &
+	constexpr
+	operator in_in_out_result<_IIter1, _IIter2, _OOut>() const &
 	{ return {in1, in2, out}; }
 
       template<typename _IIter1, typename _IIter2, typename _OOut>
 	requires convertible_to<_Iter1, _IIter1>
 	  && convertible_to<_Iter2, _IIter2>
 	  && convertible_to<_Out, _OOut>
-	operator binary_transform_result<_IIter1, _IIter2, _OOut>() &&
+	constexpr
+	operator in_in_out_result<_IIter1, _IIter2, _OOut>() &&
 	{ return {std::move(in1), std::move(in2), std::move(out)}; }
     };
+
+  template<typename _Iter1, typename _Iter2, typename _Out>
+    using binary_transform_result = in_in_out_result<_Iter1, _Iter2, _Out>;
 
   struct __transform_fn
   {
@@ -1032,7 +1080,7 @@ namespace ranges
   inline constexpr __replace_if_fn replace_if{};
 
   template<typename _Iter, typename _Out>
-    using replace_copy_result = copy_result<_Iter, _Out>;
+    using replace_copy_result = in_out_result<_Iter, _Out>;
 
   struct __replace_copy_fn
   {
@@ -1075,7 +1123,7 @@ namespace ranges
   inline constexpr __replace_copy_fn replace_copy{};
 
   template<typename _Iter, typename _Out>
-    using replace_copy_if_result = copy_result<_Iter, _Out>;
+    using replace_copy_if_result = in_out_result<_Iter, _Out>;
 
   struct __replace_copy_if_fn
   {
@@ -1228,7 +1276,7 @@ namespace ranges
   inline constexpr __remove_fn remove{};
 
   template<typename _Iter, typename _Out>
-    using remove_copy_if_result = copy_result<_Iter, _Out>;
+    using remove_copy_if_result = in_out_result<_Iter, _Out>;
 
   struct __remove_copy_if_fn
   {
@@ -1267,7 +1315,7 @@ namespace ranges
   inline constexpr __remove_copy_if_fn remove_copy_if{};
 
   template<typename _Iter, typename _Out>
-    using remove_copy_result = copy_result<_Iter, _Out>;
+    using remove_copy_result = in_out_result<_Iter, _Out>;
 
   struct __remove_copy_fn
   {
@@ -1346,7 +1394,7 @@ namespace ranges
   inline constexpr __unique_fn unique{};
 
   template<typename _Iter, typename _Out>
-    using unique_copy_result = copy_result<_Iter, _Out>;
+    using unique_copy_result = in_out_result<_Iter, _Out>;
 
   struct __unique_copy_fn
   {
@@ -1481,7 +1529,7 @@ namespace ranges
   inline constexpr __reverse_fn reverse{};
 
   template<typename _Iter, typename _Out>
-    using reverse_copy_result = copy_result<_Iter, _Out>;
+    using reverse_copy_result = in_out_result<_Iter, _Out>;
 
   struct __reverse_copy_fn
   {
@@ -1662,7 +1710,7 @@ namespace ranges
   inline constexpr __rotate_fn rotate{};
 
   template<typename _Iter, typename _Out>
-    using rotate_copy_result = copy_result<_Iter, _Out>;
+    using rotate_copy_result = in_out_result<_Iter, _Out>;
 
   struct __rotate_copy_fn
   {
@@ -1693,6 +1741,64 @@ namespace ranges
   };
 
   inline constexpr __rotate_copy_fn rotate_copy{};
+
+  struct __sample_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     weakly_incrementable _Out, typename _Gen>
+      requires (forward_iterator<_Iter> || random_access_iterator<_Out>)
+	&& indirectly_copyable<_Iter, _Out>
+	&& uniform_random_bit_generator<remove_reference_t<_Gen>>
+      _Out
+      operator()(_Iter __first, _Sent __last, _Out __out,
+		 iter_difference_t<_Iter> __n, _Gen&& __g) const
+      {
+	if constexpr (forward_iterator<_Iter>)
+	  {
+	    // FIXME: Forwarding to std::sample here requires computing __lasti
+	    // which may take linear time.
+	    auto __lasti = ranges::next(__first, __last);
+	    return std::sample(std::move(__first), std::move(__lasti),
+			       std::move(__out), __n, std::forward<_Gen>(__g));
+	  }
+	else
+	  {
+	    using __distrib_type
+	      = uniform_int_distribution<iter_difference_t<_Iter>>;
+	    using __param_type = typename __distrib_type::param_type;
+	    __distrib_type __d{};
+	    iter_difference_t<_Iter> __sample_sz = 0;
+	    while (__first != __last && __sample_sz != __n)
+	      {
+		__out[__sample_sz++] = *__first;
+		++__first;
+	      }
+	    for (auto __pop_sz = __sample_sz; __first != __last;
+		++__first, (void) ++__pop_sz)
+	      {
+		const auto __k = __d(__g, __param_type{0, __pop_sz});
+		if (__k < __n)
+		  __out[__k] = *__first;
+	      }
+	    return __out + __sample_sz;
+	  }
+      }
+
+    template<input_range _Range, weakly_incrementable _Out, typename _Gen>
+      requires (forward_range<_Range> || random_access_iterator<_Out>)
+	&& indirectly_copyable<iterator_t<_Range>, _Out>
+	&& uniform_random_bit_generator<remove_reference_t<_Gen>>
+      _Out
+      operator()(_Range&& __r, _Out __out,
+		 range_difference_t<_Range> __n, _Gen&& __g) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+		       std::move(__out), __n,
+		       std::forward<_Gen>(__g));
+      }
+  };
+
+  inline constexpr __sample_fn sample{};
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
   struct __shuffle_fn
@@ -2002,7 +2108,7 @@ namespace ranges
   inline constexpr __partial_sort_fn partial_sort{};
 
   template<typename _Iter, typename _Out>
-    using partial_sort_copy_result = copy_result<_Iter, _Out>;
+    using partial_sort_copy_result = in_out_result<_Iter, _Out>;
 
   struct __partial_sort_copy_fn
   {
@@ -2489,27 +2595,32 @@ namespace ranges
 
   inline constexpr __stable_partition_fn stable_partition{};
 
-  template<typename _Iter, typename _Out1, typename _O2>
-    struct partition_copy_result
+  template<typename _Iter, typename _Out1, typename _Out2>
+    struct in_out_out_result
     {
       [[no_unique_address]] _Iter  in;
       [[no_unique_address]] _Out1 out1;
-      [[no_unique_address]] _O2 out2;
+      [[no_unique_address]] _Out2 out2;
 
       template<typename _IIter, typename _OOut1, typename _OOut2>
 	requires convertible_to<const _Iter&, _IIter>
 	  && convertible_to<const _Out1&, _OOut1>
-	  && convertible_to<const _O2&, _OOut2>
-	operator partition_copy_result<_IIter, _OOut1, _OOut2>() const &
+	  && convertible_to<const _Out2&, _OOut2>
+	constexpr
+	operator in_out_out_result<_IIter, _OOut1, _OOut2>() const &
 	{ return {in, out1, out2}; }
 
       template<typename _IIter, typename _OOut1, typename _OOut2>
 	requires convertible_to<_Iter, _IIter>
 	  && convertible_to<_Out1, _OOut1>
-	  && convertible_to<_O2, _OOut2>
-	operator partition_copy_result<_IIter, _OOut1, _OOut2>() &&
+	  && convertible_to<_Out2, _OOut2>
+	constexpr
+	operator in_out_out_result<_IIter, _OOut1, _OOut2>() &&
 	{ return {std::move(in), std::move(out1), std::move(out2)}; }
     };
+
+  template<typename _Iter, typename _Out1, typename _Out2>
+    using partition_copy_result = in_out_out_result<_Iter, _Out1, _Out2>;
 
   struct __partition_copy_fn
   {
@@ -2601,7 +2712,7 @@ namespace ranges
   inline constexpr __partition_point_fn partition_point{};
 
   template<typename _Iter1, typename _Iter2, typename _Out>
-    using merge_result = binary_transform_result<_Iter1, _Iter2, _Out>;
+    using merge_result = in_in_out_result<_Iter1, _Iter2, _Out>;
 
   struct __merge_fn
   {
@@ -2743,7 +2854,7 @@ namespace ranges
   inline constexpr __includes_fn includes{};
 
   template<typename _Iter1, typename _Iter2, typename _Out>
-    using set_union_result = binary_transform_result<_Iter1, _Iter2, _Out>;
+    using set_union_result = in_in_out_result<_Iter1, _Iter2, _Out>;
 
   struct __set_union_fn
   {
@@ -2811,8 +2922,7 @@ namespace ranges
   inline constexpr __set_union_fn set_union{};
 
   template<typename _Iter1, typename _Iter2, typename _Out>
-    using set_intersection_result
-      = binary_transform_result<_Iter1, _Iter2, _Out>;
+    using set_intersection_result = in_in_out_result<_Iter1, _Iter2, _Out>;
 
   struct __set_intersection_fn
   {
@@ -2870,7 +2980,7 @@ namespace ranges
   inline constexpr __set_intersection_fn set_intersection{};
 
   template<typename _Iter, typename _Out>
-    using set_difference_result = copy_result<_Iter, _Out>;
+    using set_difference_result = in_out_result<_Iter, _Out>;
 
   struct __set_difference_fn
   {
@@ -2928,7 +3038,7 @@ namespace ranges
 
   template<typename _Iter1, typename _Iter2, typename _Out>
     using set_symmetric_difference_result
-      = binary_transform_result<_Iter1, _Iter2, _Out>;
+      = in_in_out_result<_Iter1, _Iter2, _Out>;
 
   struct __set_symmetric_difference_fn
   {
@@ -3102,22 +3212,51 @@ namespace ranges
 
   inline constexpr __max_fn max{};
 
+  struct __clamp_fn
+  {
+    template<typename _Tp, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<const _Tp*, _Proj>> _Comp
+	       = ranges::less>
+      constexpr const _Tp&
+      operator()(const _Tp& __val, const _Tp& __lo, const _Tp& __hi,
+		 _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	__glibcxx_assert(!(std::__invoke(__comp,
+					 std::__invoke(__proj, __hi),
+					 std::__invoke(__proj, __lo))));
+	auto&& __proj_val = std::__invoke(__proj, __val);
+	if (std::__invoke(__comp, __proj_val, std::__invoke(__proj, __lo)))
+	  return __lo;
+	else if (std::__invoke(__comp, std::__invoke(__proj, __hi), __proj_val))
+	  return __hi;
+	else
+	  return __val;
+      }
+  };
+
+  inline constexpr __clamp_fn clamp{};
+
   template<typename _Tp>
-    struct minmax_result
+    struct min_max_result
     {
       [[no_unique_address]] _Tp min;
       [[no_unique_address]] _Tp max;
 
       template<typename _Tp2>
 	requires convertible_to<const _Tp&, _Tp2>
-	operator minmax_result<_Tp2>() const &
+	constexpr
+	operator min_max_result<_Tp2>() const &
 	{ return {min, max}; }
 
       template<typename _Tp2>
 	requires convertible_to<_Tp, _Tp2>
-	operator minmax_result<_Tp2>() &&
+	constexpr
+	operator min_max_result<_Tp2>() &&
 	{ return {std::move(min), std::move(max)}; }
     };
+
+  template<typename _Tp>
+    using minmax_result = min_max_result<_Tp>;
 
   struct __minmax_fn
   {
@@ -3252,7 +3391,7 @@ namespace ranges
   inline constexpr __max_element_fn max_element{};
 
   template<typename _Iter>
-    using minmax_element_result = minmax_result<_Iter>;
+    using minmax_element_result = min_max_result<_Iter>;
 
   struct __minmax_element_fn
   {
@@ -3401,11 +3540,26 @@ namespace ranges
   inline constexpr __lexicographical_compare_fn lexicographical_compare;
 
   template<typename _Iter>
-    struct next_permutation_result
+    struct in_found_result
     {
+      [[no_unique_address]] _Iter in;
       bool found;
-      _Iter in;
+
+      template<typename _Iter2>
+	requires convertible_to<const _Iter&, _Iter2>
+	constexpr
+	operator in_found_result<_Iter2>() const &
+	{ return {in, found}; }
+
+      template<typename _Iter2>
+	requires convertible_to<_Iter, _Iter2>
+	constexpr
+	operator in_found_result<_Iter2>() &&
+	{ return {std::move(in), found}; }
     };
+
+  template<typename _Iter>
+    using next_permutation_result = in_found_result<_Iter>;
 
   struct __next_permutation_fn
   {
@@ -3417,12 +3571,12 @@ namespace ranges
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
-	  return {false, std::move(__first)};
+	  return {std::move(__first), false};
 
 	auto __i = __first;
 	++__i;
 	if (__i == __last)
-	  return {false, std::move(__i)};
+	  return {std::move(__i), false};
 
 	auto __lasti = ranges::next(__first, __last);
 	__i = __lasti;
@@ -3443,12 +3597,12 @@ namespace ranges
 		  ;
 		ranges::iter_swap(__i, __j);
 		ranges::reverse(__ii, __last);
-		return {true, std::move(__lasti)};
+		return {std::move(__lasti), true};
 	      }
 	    if (__i == __first)
 	      {
 		ranges::reverse(__first, __last);
-		return {false, std::move(__lasti)};
+		return {std::move(__lasti), false};
 	      }
 	  }
       }
@@ -3467,7 +3621,7 @@ namespace ranges
   inline constexpr __next_permutation_fn next_permutation{};
 
   template<typename _Iter>
-    using prev_permutation_result = next_permutation_result<_Iter>;
+    using prev_permutation_result = in_found_result<_Iter>;
 
   struct __prev_permutation_fn
   {
@@ -3479,12 +3633,12 @@ namespace ranges
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	if (__first == __last)
-	  return {false, std::move(__first)};
+	  return {std::move(__first), false};
 
 	auto __i = __first;
 	++__i;
 	if (__i == __last)
-	  return {false, std::move(__i)};
+	  return {std::move(__i), false};
 
 	auto __lasti = ranges::next(__first, __last);
 	__i = __lasti;
@@ -3505,12 +3659,12 @@ namespace ranges
 		  ;
 		ranges::iter_swap(__i, __j);
 		ranges::reverse(__ii, __last);
-		return {true, std::move(__lasti)};
+		return {std::move(__lasti), true};
 	      }
 	    if (__i == __first)
 	      {
 		ranges::reverse(__first, __last);
-		return {false, std::move(__lasti)};
+		return {std::move(__lasti), false};
 	      }
 	  }
       }

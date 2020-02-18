@@ -76,8 +76,8 @@ class impl_region_model_context : public region_model_context
 
   void on_phi (const gphi *phi, tree rhs) FINAL OVERRIDE;
 
-  void on_unknown_tree_code (path_var pv,
-			     const dump_location_t &loc) FINAL OVERRIDE;
+  void on_unexpected_tree_code (tree t,
+				const dump_location_t &loc) FINAL OVERRIDE;
 
   exploded_graph *m_eg;
   log_user m_logger;

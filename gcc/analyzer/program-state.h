@@ -179,7 +179,8 @@ public:
   void purge_for_unknown_fncall (const exploded_graph &eg,
 				 const state_machine &sm,
 				 const gcall *call, tree fndecl,
-				 region_model *new_model);
+				 region_model *new_model,
+				 region_model_context *ctxt);
 
   void remap_svalue_ids (const svalue_id_map &map);
 

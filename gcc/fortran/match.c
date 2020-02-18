@@ -1348,6 +1348,16 @@ gfc_match_assignment (void)
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
 
+  if (m == MATCH_YES
+      && rvalue->ts.type == BT_BOZ
+      && lvalue->ts.type == BT_CLASS)
+    {
+      m = MATCH_ERROR;
+      gfc_error ("BOZ literal constant at %L is neither a DATA statement "
+		 "value nor an actual argument of INT/REAL/DBLE/CMPLX "
+		 "intrinsic subprogram", &rvalue->where);
+    }
+
   if (lvalue->expr_type == EXPR_CONSTANT)
     {
       /* This clobbers %len and %kind.  */
@@ -1954,6 +1964,14 @@ gfc_match_associate (void)
       if (gfc_is_coindexed (newAssoc->target))
 	{
 	  gfc_error ("Association target at %C must not be coindexed");
+	  goto assocListError;
+	}
+
+      /* The target expression cannot be a BOZ literal constant.  */
+      if (newAssoc->target->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Association target at %L cannot be a BOZ literal "
+		     "constant", &newAssoc->target->where);
 	  goto assocListError;
 	}
 

@@ -212,6 +212,13 @@ enum profile_update {
   PROFILE_UPDATE_PREFER_ATOMIC
 };
 
+/* Type of profile reproducibility methods.  */
+enum profile_reproducibility {
+    PROFILE_REPRODUCIBILITY_SERIAL,
+    PROFILE_REPRODUCIBILITY_PARALLEL_RUNS,
+    PROFILE_REPRODUCIBILITY_MULTITHREADED
+};
+
 /* Types of unwind/exception handling info that can be generated.  */
 
 enum unwind_info_type

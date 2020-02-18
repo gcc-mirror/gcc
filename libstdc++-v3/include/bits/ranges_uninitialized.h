@@ -253,7 +253,7 @@ namespace ranges
     uninitialized_value_construct_n;
 
   template<typename _Iter, typename _Out>
-    using uninitialized_copy_result = copy_result<_Iter, _Out>;
+    using uninitialized_copy_result = in_out_result<_Iter, _Out>;
 
   struct __uninitialized_copy_fn
   {
@@ -302,7 +302,7 @@ namespace ranges
   inline constexpr __uninitialized_copy_fn uninitialized_copy{};
 
   template<typename _Iter, typename _Out>
-    using uninitialized_copy_n_result = uninitialized_copy_result<_Iter, _Out>;
+    using uninitialized_copy_n_result = in_out_result<_Iter, _Out>;
 
   struct __uninitialized_copy_n_fn
   {
@@ -337,7 +337,7 @@ namespace ranges
   inline constexpr __uninitialized_copy_n_fn uninitialized_copy_n{};
 
   template<typename _Iter, typename _Out>
-    using uninitialized_move_result = uninitialized_copy_result<_Iter, _Out>;
+    using uninitialized_move_result = in_out_result<_Iter, _Out>;
 
   struct __uninitialized_move_fn
   {
@@ -389,7 +389,7 @@ namespace ranges
   inline constexpr __uninitialized_move_fn uninitialized_move{};
 
   template<typename _Iter, typename _Out>
-    using uninitialized_move_n_result = uninitialized_copy_result<_Iter, _Out>;
+    using uninitialized_move_n_result = in_out_result<_Iter, _Out>;
 
   struct __uninitialized_move_n_fn
   {

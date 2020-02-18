@@ -1,3 +1,32 @@
+2020-02-18  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/93714
+	* expr.c (gfc_check_pointer_assign): Move check for
+	matching character length to after checking the lvalue
+	attributes for target or pointer.
+
+2020-02-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93601
+	* match.c (gfc_match_assignment) : Reject assignment if
+	the lhs stype is BT_CLASS and the rhs type is BT_BOZ.
+
+2020-02-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93603
+	* match.c (gfc_match_associate) : If target expression
+	has the type BT_BOZ output an error and goto
+	assocListError.
+
+2020-02-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/93580
+	* primary.c (gfc_match_varspec): If the symbol following %
+	is re or im and the primary expression type is not BT_COMPLEX
+	issue an error. If the symbol is len and the primary
+	expression type is not BT_CHARACTER is an error.
+
 2020-02-10  Andrew Benson  <abensonca@gmail.com>
 
         PR fortran/83113

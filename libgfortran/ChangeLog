@@ -1,3 +1,27 @@
+2020-02-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93599
+	* io/async.c (destroy_adv_cond): Do not destroy lock.
+	(async_io): Make sure au->lock is locked for finishing of thread.
+	Do not lock/unlock around signalling emptysignal. Unlock au->lock
+	before return.
+	(init_adv_cond): Do not initialize lock.
+	(enqueue_transfer): Unlock after signal.
+	(enqueue_done_id): Likewise.
+	(enqueue_done): Likewise.
+	(enqueue_close): Likewise.
+	(enqueue_data_transfer): Likewise.
+	(async_wait_id): Do not lock/unlock around signalling au->work.
+	(async_wait): Unlock after signal.
+	* io/async.h (SIGNAL): Add comment about needed au->lock.
+	Remove locking/unlocking of advcond->lock.
+	(WAIT_SIGNAL_MUTEX): Add comment. Remove locking/unlocking of
+	advcond->lock.  Unlock mutex only at the end.  Loop on
+	__ghread_cond_wait returning zero.
+	(REVOKE_SIGNAL): Add comment. Remove locking/unlocking of
+	advcond->lock.
+	(struct adv_cond): Remove mutex from struct.
+
 2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libstdc++/79193

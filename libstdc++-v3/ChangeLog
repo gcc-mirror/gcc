@@ -1,3 +1,98 @@
+2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/integer_comparisons/equal.cc: Fix invalid
+	assumption that long is wider than int.
+	* testsuite/20_util/integer_comparisons/greater_equal.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/less.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/less_equal.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/not_equal.cc: Likewise.
+
+	P1976R2 Fixed-size span construction from dynamic range
+	* include/std/span (__cpp_lib_span): Update value.
+	(span(It, size_type), span(It, End)): Make conditionally explicit. Add
+	assertion.
+	(span(R&&), span(const span<OType, OExtent>&)): Likewise and relax
+	constraints.
+	(span::first<Count>(), span::last<Count>()): Use explicit type in
+	return statement.
+	(as_bytes, as_writable_bytes): Likewise.
+	* include/std/version (__cpp_lib_span): Update value.
+	* testsuite/23_containers/span/1.cc: Check new value.
+	* testsuite/23_containers/span/2.cc: Check new value.
+	* testsuite/23_containers/span/explicit.cc: New test.
+
+	* include/std/span (span::__is_compatible_array): Simplify alias
+	template by using requires-clause.
+	(span::__is_compatible_ref): New alias template for constraining
+	constructors.
+	(span::__is_compatible_iterator, span::__is_compatible_range): Remove.
+	(span(It, size_type), span(It, End)): Use __is_compatible_ref.
+	(span(T(&)[N], span(array<T, N>&), span(const array<T, N>&)): Remove
+	redundant parentheses.
+	(span(R&&)): Add missing constraints.
+
+	* include/std/span (span): Reorder members and rename template
+	parameters to match declarations in the C++2a working paper.
+
+	P2116R0 Remove tuple-like protocol support from fixed-extent span
+	* include/std/span (get, tuple_size, tuple_element): Remove.
+	* testsuite/23_containers/span/everything.cc: Remove checks for
+	tuple-like API.
+	* testsuite/23_containers/span/get_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_element_dynamic_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_element_oob_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_size_neg.cc: Remove.
+
+2020-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	P2106R0 Alternative wording for GB315 and GB316
+	* include/bits/ranges_algo.h (in_fun_result): New.
+	(for_each_result, for_each_n_result): Change into an alias of
+	in_fun_result.
+	(in_in_result): New.
+	(mismatch_result): Change into an alias of in_in_result.
+	(copy_if_result): Change into an alias of in_out_result.
+	(swap_ranges_result): Change into an alias of in_in_result.
+	(unary_transform_result): Change into an alias of in_out_result.
+	(in_in_out_result): New.
+	(binary_transform_result): Change into an alias of in_in_out_result.
+	(replace_copy_result, replace_copy_if_result, remove_copy_if_result,
+	remove_copy_result, unique_copy_result, reverse_copy_result,
+	rotate_copy_result, partial_sort_copy_result): Change into an alias of
+	in_out_result.
+	(in_out_out_result): New.
+	(partition_copy_result, merge_result): Change into an alias of
+	in_out_out_result.
+	(set_union_result, set_intersection_result): Change into an alias of
+	in_in_out_result.
+	(set_difference_result): Change into an alias of in_out_result.
+	(set_symmetric_difference): Change into an alias of in_in_out_result.
+	(min_max_result): New.
+	(minmax_result, minmax_element_result): Change into an alias of
+	min_max_result.
+	(in_found_result): New.
+	(next_permutation_result, prev_permutation_result): Change into an alias
+	of in_found_result.
+	(__next_permutation_fn::operator(), __prev_permutation_fn::operator()):
+	Adjust following changes to next_permutation_result and
+	prev_permutation_result.
+	* include/bits/ranges_algobase.h (in_out_result): New.
+	(copy_result, move_result, move_backward_result, copy_backward_result,
+	copy_n_result): Change into an alias of in_out_result.
+	* include/bits/ranges_uninitialized.h (uninitialized_copy_result,
+	uninitialized_copy_n_result, uninitialized_move_result,
+	uninitialized_move_n_result): Likewise.
+	* testsuite/25_algorithms/next_permutation/constrained.cc: Adjust uses of
+	structured bindings.
+	* testsuite/25_algorithms/prev_permutation/constrained.cc: Likewise.
+
+	P1243R4 Rangify new algorithms
+	* include/bits/ranges_algo.h (for_each_n_result, __for_each_n_fn,
+	for_each_n, __sample_fn, sample, __clamp_fn, clamp): New.
+	* testsuite/25_algorithms/clamp/constrained.cc: New test.
+	* testsuite/25_algorithms/for_each/constrained.cc: Augment test.
+	* testsuite/25_algorithms/sample/constrained.cc: New test.
+
 2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	P1964R2 Wording for boolean-testable

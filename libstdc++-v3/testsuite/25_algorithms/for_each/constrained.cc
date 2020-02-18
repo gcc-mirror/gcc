@@ -26,6 +26,7 @@ using __gnu_test::test_container;
 using __gnu_test::test_range;
 using __gnu_test::input_iterator_wrapper;
 using __gnu_test::forward_iterator_wrapper;
+using __gnu_test::random_access_iterator_wrapper;
 
 namespace ranges = std::ranges;
 
@@ -75,9 +76,52 @@ test02()
   static_assert(f() == 6);
 }
 
+template<template<typename> typename wrapper>
+void
+test03()
+{
+  int x[] = {1,2,3,4,5};
+  test_range<int, wrapper> rx(x);
+  int s = 0;
+  auto func = [&s](int i){ s += i; };
+  auto [i,f] = ranges::for_each_n(rx.begin(), 3, func);
+  VERIFY( i.ptr = x+3 );
+  VERIFY( s == 1+2+3 );
+  f(1);
+  VERIFY( s == 1+2+3+1 );
+
+  s = 0;
+  rx.bounds.first = x;
+  auto [j,g] = ranges::for_each_n(rx.begin(), -1, func);
+  VERIFY( j.ptr == x );
+  VERIFY( s == 0 );
+  g(1);
+  VERIFY( s == 1 );
+
+  s = 0;
+  rx.bounds.first = x;
+  auto [k,h] = ranges::for_each_n(rx.begin(), 5, func, std::negate<>{});
+  VERIFY( k.ptr == x+5 );
+  VERIFY( s == -(1+2+3+4+5) );
+  h(-6);
+  VERIFY( s == -(1+2+3+4+5+6) );
+}
+
+constexpr bool
+test04()
+{
+  int x[] = {1,2,3,4,5};
+  int p = 1;
+  ranges::for_each_n(x+1, 4, [&p](int i){ p*=i; }, [](int i){ return i+1; });
+  return p == 3*4*5*6;
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03<input_iterator_wrapper>();
+  test03<random_access_iterator_wrapper>();
+  static_assert(test04());
 }

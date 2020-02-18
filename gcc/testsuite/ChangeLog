@@ -1,3 +1,70 @@
+2020-02-18  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93714
+	* gfortran.dg/char_pointer_assign_6.f90: Look for no target
+	message instead of length mismatch.
+	* gfortran.dg/pr93714_1.f90
+	* gfortran.dg/pr93714_2.f90
+
+2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93601
+	* gfortran.dg/pr93601.f90 : New test.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93583
+	* gcc.dg/ipa/pr93583.c: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93777
+	* g++.dg/analyzer/pr93777.C: New test.
+	* gfortran.dg/analyzer/pr93777.f90: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93778
+	* gfortran.dg/analyzer/pr93778.f90: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93774
+	* gfortran.dg/analyzer/deferred_character_25.f90: New test,
+	based on gfortran.dg/deferred_character_25.f90.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93779
+	* gfortran.dg/analyzer/pr88304-2.f90: New test, adapted from
+	gfortran.fortran-torture/compile/pr88304-2.f90
+
+2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93603
+	* gfortran.dg/pr93603.f90 : New test.
+
+2020-02-20  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93580
+	* gfortran.dg/dg/pr93580.f90: New test.
+
+2020-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93780
+	* gcc.dg/pr93780.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93775
+	* gcc.dg/analyzer/20020129-1.c: New test.
+
+2020-02-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tls/emutls-3.c: New, combining emutls-2.c and
+	thr-init-2.c into an execution test with explicitly common
+	variables.
+
 2020-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/pr93565.c: Fix test for ilp32.

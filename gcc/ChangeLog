@@ -1,3 +1,69 @@
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (stream_out_histogram_value): Restore LTO PGO
+	bootstrap by missing removal of invalid sanity check.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92518
+	* ipa-icf-gimple.c (func_checker::compare_gimple_assign):
+	Always compare LHS of gimple_assign.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93583
+	* cgraph.c (cgraph_node::verify_node): Verify MALLOC attribute
+	and return type of functions.
+	* ipa-param-manipulation.c (ipa_param_adjustments::adjust_decl):
+	Drop MALLOC attribute for void functions.
+	* ipa-pure-const.c (funct_state_summary_t::duplicate): Drop
+	malloc_state for a new VOID clone.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92924
+	* common.opt: Add -fprofile-reproducibility.
+	* doc/invoke.texi: Document it.
+	* value-prof.c (dump_histogram_value):
+	Document and support behavior for counters[0]
+	being a negative value.
+	(get_nth_most_common_value): Handle negative
+	counters[0] in respect to flag_profile_reproducible.
+
+2020-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/93797
+	* cgraph.c (verify_speculative_call): Use speculative_id instead of
+	speculative_uid in messages.  Remove trailing whitespace from error
+	message.  Use num_speculative_call_targets instead of
+	num_speculative_targets in a message.
+	(cgraph_node::verify_node): Use call_stmt instead of cal_stmt in
+	edge messages and stmt instead of cal_stmt in reference message.
+
+	PR tree-optimization/93780
+	* tree-ssa.c (non_rewritable_lvalue_p): Check valid_vector_subparts_p
+	before calling build_vector_type.
+	(execute_update_addresses_taken): Likewise.
+
+	PR driver/93796
+	* params.opt (-param=ipa-max-switch-predicate-bounds=): Fix help
+	typo, functoin -> function.
+	* tree.c (free_lang_data_in_decl): Fix comment typo,
+	functoin -> function.
+	* ipa-visibility.c (cgraph_externally_visible_p): Likewise.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (print_any_cwe): Don't call get_cwe_url if URLs
+	won't be printed.
+	(print_option_information): Don't call get_option_url if URLs
+	won't be printed.
+
+2020-02-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-emutls.c (new_emutls_decl, emutls_common_1): Complete
+	handling of register_common-less targets.
+
 2020-02-17  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/93760
