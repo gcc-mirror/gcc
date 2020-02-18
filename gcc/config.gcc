@@ -2976,6 +2976,27 @@ powerpc*-*-linux*)
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
 	;;
+powerpc*-wrs-vxworks7r*)
+
+	# Wind River 7 post SR0600 is mostly like Linux so we setup
+	# our config in a very similar fashion and adjust to a few
+	# specificities.
+
+	# The system compiler is configured with secureplt by default.
+	tm_file="${tm_file} rs6000/secureplt.h"
+
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h freebsd-spec.h"
+	tm_file="${tm_file} rs6000/sysv4.h rs6000/biarch64.h rs6000/default64.h rs6000/linux64.h"
+	tm_file="${tm_file} vx-common.h vxworks.h rs6000/vxworks.h"
+
+	extra_options="${extra_options} rs6000/sysv4.opt linux.opt rs6000/linux64.opt"
+
+	tmake_file="${tmake_file} t-linux rs6000/t-linux64 rs6000/t-fprules rs6000/t-ppccomm"
+	tmake_file="${tmake_file} rs6000/t-vxworks"
+
+	tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+	extra_objs="$extra_objs linux.o rs6000-linux.o"
+	;;
 powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
