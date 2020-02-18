@@ -620,8 +620,8 @@ func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
       arg1 = gimple_op (s1, i);
       arg2 = gimple_op (s2, i);
 
-      /* LHS types of NOP_EXPR must be compatible.  */
-      if (CONVERT_EXPR_CODE_P (code1) && i == 0)
+      /* Compare types for LHS.  */
+      if (i == 0)
 	{
 	  if (!compatible_types_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
 	    return return_false_with_msg ("GIMPLE NOP LHS type mismatch");

@@ -1,5 +1,11 @@
 2020-02-18  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/92518
+	* ipa-icf-gimple.c (func_checker::compare_gimple_assign):
+	Always compare LHS of gimple_assign.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/93583
 	* cgraph.c (cgraph_node::verify_node): Verify MALLOC attribute
 	and return type of functions.
