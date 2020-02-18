@@ -1957,6 +1957,14 @@ gfc_match_associate (void)
 	  goto assocListError;
 	}
 
+      /* The target expression cannot be a BOZ literal constant.  */
+      if (newAssoc->target->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Association target at %L cannot be a BOZ literal "
+		     "constant", &newAssoc->target->where);
+	  goto assocListError;
+	}
+
       /* The `variable' field is left blank for now; because the target is not
 	 yet resolved, we can't use gfc_has_vector_subscript to determine it
 	 for now.  This is set during resolution.  */
