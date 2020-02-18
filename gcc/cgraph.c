@@ -3374,6 +3374,13 @@ cgraph_node::verify_node (void)
       error ("calls_comdat_local is set outside of a comdat group");
       error_found = true;
     }
+  if (DECL_IS_MALLOC (decl)
+      && !POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    {
+      error ("malloc attribute should be used for a function that "
+	     "returns a pointer");
+      error_found = true;
+    }
   for (e = indirect_calls; e; e = e->next_callee)
     {
       if (e->aux)

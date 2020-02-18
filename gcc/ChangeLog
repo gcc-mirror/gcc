@@ -1,5 +1,15 @@
 2020-02-18  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/93583
+	* cgraph.c (cgraph_node::verify_node): Verify MALLOC attribute
+	and return type of functions.
+	* ipa-param-manipulation.c (ipa_param_adjustments::adjust_decl):
+	Drop MALLOC attribute for void functions.
+	* ipa-pure-const.c (funct_state_summary_t::duplicate): Drop
+	malloc_state for a new VOID clone.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/92924
 	* common.opt: Add -fprofile-reproducibility.
 	* doc/invoke.texi: Document it.
