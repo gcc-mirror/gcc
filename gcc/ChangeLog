@@ -1,3 +1,12 @@
+2020-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/93796
+	* params.opt (-param=ipa-max-switch-predicate-bounds=): Fix help
+	typo, functoin -> function.
+	* tree.c (free_lang_data_in_decl): Fix comment typo,
+	functoin -> function.
+	* ipa-visibility.c (cgraph_externally_visible_p): Likewise.
+
 2020-02-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic.c (print_any_cwe): Don't call get_cwe_url if URLs
@@ -5,7 +14,7 @@
 	(print_option_information): Don't call get_option_url if URLs
 	won't be printed.
 
-2020-02-17  Alexandre Oliva <oliva@adacore.com>
+2020-02-17  Alexandre Oliva  <oliva@adacore.com>
 
 	* tree-emutls.c (new_emutls_decl, emutls_common_1): Complete
 	handling of register_common-less targets.
