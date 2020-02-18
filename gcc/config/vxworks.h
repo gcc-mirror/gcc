@@ -70,6 +70,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #endif
 
+/* Our ports rely on gnu-user.h, which #defines _POSIX_SOURCE for
+   C++ by default.  VxWorks doesn't provide 100% of what this implies
+   (e.g. ::mkstemp), so, arrange to prevent that by falling back to
+   the default CPP spec for C++ as well.  */
+#undef CPLUSPLUS_CPP_SPEC
+
 /* For VxWorks static rtps, the system provides libc_internal.a, a superset of
    libgcc.a that we need to use e.g. to satisfy references to __init and
    __fini.  We still want our libgcc to prevail for symbols it would provide
