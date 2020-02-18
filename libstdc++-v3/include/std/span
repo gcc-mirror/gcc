@@ -140,25 +140,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // member types
-      using value_type             = remove_cv_t<_Type>;
       using element_type           = _Type;
+      using value_type             = remove_cv_t<_Type>;
       using size_type              = size_t;
-      using reference              = element_type&;
-      using const_reference        = const element_type&;
+      using difference_type        = ptrdiff_t;
       using pointer                = _Type*;
       using const_pointer          = const _Type*;
-      using iterator
-	= __gnu_cxx::__normal_iterator<pointer, span>;
-      using const_iterator
-	= __gnu_cxx::__normal_iterator<const_pointer, span>;
+      using reference              = element_type&;
+      using const_reference        = const element_type&;
+      using iterator = __gnu_cxx::__normal_iterator<pointer, span>;
+      using const_iterator = __gnu_cxx::__normal_iterator<const_pointer, span>;
       using reverse_iterator       = std::reverse_iterator<iterator>;
       using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-      using difference_type        = ptrdiff_t;
 
       // member constants
-      static inline constexpr size_t extent = _Extent;
+      static constexpr size_t extent = _Extent;
 
-      // constructors
+      // constructors, copy and assignment
 
       constexpr
       span() noexcept
@@ -166,8 +164,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_extent(0), _M_ptr(nullptr)
       { }
 
-      constexpr
-      span(const span&) noexcept = default;
+      template<contiguous_iterator _It>
+	requires (__is_compatible_iterator<_It>::value)
+	constexpr
+	span(_It __first, size_type __count)
+	noexcept
+	: _M_extent(__count), _M_ptr(std::to_address(__first))
+	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
+
+      template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
+	  requires (__is_compatible_iterator<_It>::value)
+	    && (!is_convertible_v<_End, size_type>)
+	constexpr
+	span(_It __first, _End __last)
+	noexcept(noexcept(__last - __first))
+	: _M_extent(static_cast<size_type>(__last - __first)),
+	  _M_ptr(std::to_address(__first))
+	{
+	  if (_Extent != dynamic_extent)
+	    __glibcxx_assert((__last - __first) == _Extent);
+	}
 
       template<typename _Tp, size_t _ArrayExtent>
 	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
@@ -203,27 +219,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: span(ranges::data(__range), ranges::size(__range))
 	{ }
 
-      template<contiguous_iterator _ContiguousIterator,
-	sized_sentinel_for<_ContiguousIterator> _Sentinel>
-	  requires (__is_compatible_iterator<_ContiguousIterator>::value)
-	    && (!is_convertible_v<_Sentinel, size_type>)
-	constexpr
-	span(_ContiguousIterator __first, _Sentinel __last)
-	noexcept(noexcept(__last - __first))
-	: _M_extent(static_cast<size_type>(__last - __first)),
-	  _M_ptr(std::to_address(__first))
-	{
-	  if (_Extent != dynamic_extent)
-	    __glibcxx_assert((__last - __first) == _Extent);
-	}
-
-      template<contiguous_iterator _ContiguousIterator>
-	requires (__is_compatible_iterator<_ContiguousIterator>::value)
-	constexpr
-	span(_ContiguousIterator __first, size_type __count)
-	noexcept
-	: _M_extent(__count), _M_ptr(std::to_address(__first))
-	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
+      constexpr
+      span(const span&) noexcept = default;
 
       template<typename _OType, size_t _OExtent>
 	requires (_Extent == dynamic_extent || _Extent == _OExtent)
@@ -233,7 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_extent(__s.size()), _M_ptr(__s.data())
 	{ }
 
-      // assignment
+      ~span() noexcept = default;
 
       constexpr span&
       operator=(const span&) noexcept = default;
@@ -414,8 +411,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     span(const array<_Type, _ArrayExtent>&)
       -> span<const _Type, _ArrayExtent>;
 
-  template<contiguous_iterator _Iter, typename _Sentinel>
-    span(_Iter, _Sentinel)
+  template<contiguous_iterator _Iter, typename _End>
+    span(_Iter, _End)
       -> span<remove_reference_t<iter_reference_t<_Iter>>>;
 
   template<typename _Range>

@@ -1,5 +1,8 @@
 2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/span (span): Reorder members and rename template
+	parameters to match declarations in the C++2a working paper.
+
 	P2116R0 Remove tuple-like protocol support from fixed-extent span
 	* include/std/span (get, tuple_size, tuple_element): Remove.
 	* testsuite/23_containers/span/everything.cc: Remove checks for
