@@ -1,3 +1,11 @@
+2020-02-18  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93714
+	* gfortran.dg/char_pointer_assign_6.f90: Look for no target
+	message instead of length mismatch.
+	* gfortran.dg/pr93714_1.f90
+	* gfortran.dg/pr93714_2.f90
+
 2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/93601
