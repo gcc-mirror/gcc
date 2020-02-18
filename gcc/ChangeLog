@@ -1,5 +1,59 @@
 2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (aarch64_scalar_builtin_types):
+	Add simd_bf.
+	(aarch64_init_simd_builtin_scalar_types): Register simd_bf.
+	(VAR15, VAR16): New.
+	* config/aarch64/iterators.md (VALLDIF): Enable for V4BF and V8BF.
+	(VD): Enable for V4BF.
+	(VDC): Likewise.
+	(VQ): Enable for V8BF.
+	(VQ2): Likewise.
+	(VQ_NO2E): Likewise.
+	(VDBL, Vdbl): Add V4BF.
+	(V_INT_EQUIV, v_int_equiv): Add V4BF and V8BF.
+	* config/aarch64/arm_neon.h (bfloat16x4x2_t): New typedef.
+	(bfloat16x8x2_t): Likewise.
+	(bfloat16x4x3_t): Likewise.
+	(bfloat16x8x3_t): Likewise.
+	(bfloat16x4x4_t): Likewise.
+	(bfloat16x8x4_t): Likewise.
+	(vcombine_bf16): New.
+	(vld1_bf16, vld1_bf16_x2): New.
+	(vld1_bf16_x3, vld1_bf16_x4): New.
+	(vld1q_bf16, vld1q_bf16_x2): New.
+	(vld1q_bf16_x3, vld1q_bf16_x4): New.
+	(vld1_lane_bf16): New.
+	(vld1q_lane_bf16): New.
+	(vld1_dup_bf16): New.
+	(vld1q_dup_bf16): New.
+	(vld2_bf16): New.
+	(vld2q_bf16): New.
+	(vld2_dup_bf16): New.
+	(vld2q_dup_bf16): New.
+	(vld3_bf16): New.
+	(vld3q_bf16): New.
+	(vld3_dup_bf16): New.
+	(vld3q_dup_bf16): New.
+	(vld4_bf16): New.
+	(vld4q_bf16): New.
+	(vld4_dup_bf16): New.
+	(vld4q_dup_bf16): New.
+	(vst1_bf16, vst1_bf16_x2): New.
+	(vst1_bf16_x3, vst1_bf16_x4): New.
+	(vst1q_bf16, vst1q_bf16_x2): New.
+	(vst1q_bf16_x3, vst1q_bf16_x4): New.
+	(vst1_lane_bf16): New.
+	(vst1q_lane_bf16): New.
+	(vst2_bf16): New.
+	(vst2q_bf16): New.
+	(vst3_bf16): New.
+	(vst3q_bf16): New.
+	(vst4_bf16): New.
+	(vst4q_bf16): New.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
 	* config/aarch64/iterators.md (VDQF_F16) Add V4BF and V8BF.
 	(VALL_F16): Likewise.
 	(VALLDI_F16): Likewise.

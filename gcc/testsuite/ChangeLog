@@ -1,5 +1,10 @@
 2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstn.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldn.c: New test.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/bf16_dup.c: New test.
 	* gcc.target/aarch64/advsimd-intrinsics/bf16_reinterpret.c: New test.
 

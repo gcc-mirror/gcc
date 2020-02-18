@@ -87,7 +87,7 @@
 (define_mode_iterator VSDQ_I_DI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI DI])
 
 ;; Double vector modes.
-(define_mode_iterator VD [V8QI V4HI V4HF V2SI V2SF])
+(define_mode_iterator VD [V8QI V4HI V4HF V2SI V2SF V4BF])
 
 ;; Double vector modes suitable for moving.  Includes BFmode.
 (define_mode_iterator VDMOV [V8QI V4HI V4HF V4BF V2SI V2SF])
@@ -105,10 +105,10 @@
 (define_mode_iterator VDQ_BHSI [V8QI V16QI V4HI V8HI V2SI V4SI])
 
 ;; Quad vector modes.
-(define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
+(define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF V8BF])
 
 ;; Copy of the above.
-(define_mode_iterator VQ2 [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
+(define_mode_iterator VQ2 [V16QI V8HI V4SI V2DI V8HF V8BF V4SF V2DF])
 
 ;; Quad vector modes suitable for moving.  Includes BFmode.
 (define_mode_iterator VQMOV [V16QI V8HI V4SI V2DI V8HF V8BF V4SF V2DF])
@@ -120,7 +120,7 @@
 (define_mode_iterator VQ_I [V16QI V8HI V4SI V2DI])
 
 ;; VQ without 2 element modes.
-(define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V8HF V4SF])
+(define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V8HF V4SF V8BF])
 
 ;; Quad vector with only 2 element modes.
 (define_mode_iterator VQ_2E [V2DI V2DF])
@@ -200,7 +200,7 @@
 				  V4HF V8HF V4BF V8BF V2SF V4SF V2DF DI])
 
 ;; All Advanced SIMD modes, plus DI and DF.
-(define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI
+(define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI V4BF V8BF
 			       V2DI V4HF V8HF V2SF V4SF V2DF DI DF])
 
 ;; Advanced SIMD modes for Integer reduction across lanes.
@@ -226,7 +226,7 @@
 (define_mode_iterator VQW [V16QI V8HI V4SI])
 
 ;; Double vector modes for combines.
-(define_mode_iterator VDC [V8QI V4HI V4HF V2SI V2SF DI DF])
+(define_mode_iterator VDC [V8QI V4HI V4BF V4HF V2SI V2SF DI DF])
 
 ;; Advanced SIMD modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
@@ -1171,7 +1171,7 @@
 
 ;; Double modes of vector modes.
 (define_mode_attr VDBL [(V8QI "V16QI") (V4HI "V8HI")
-			(V4HF "V8HF")
+			(V4HF "V8HF")  (V4BF "V8BF")
 			(V2SI "V4SI")  (V2SF "V4SF")
 			(SI   "V2SI")  (DI   "V2DI")
 			(DF   "V2DF")])
@@ -1181,7 +1181,7 @@
 
 ;; Double modes of vector modes (lower case).
 (define_mode_attr Vdbl [(V8QI "v16qi") (V4HI "v8hi")
-			(V4HF "v8hf")
+			(V4HF "v8hf")  (V4BF "v8bf")
 			(V2SI "v4si")  (V2SF "v4sf")
 			(SI   "v2si")  (DI   "v2di")
 			(DF   "v2df")])
@@ -1314,6 +1314,7 @@
 			       (V2SI "V2SI") (V4SI  "V4SI")
 			       (DI   "DI")   (V2DI  "V2DI")
 			       (V4HF "V4HI") (V8HF  "V8HI")
+			       (V4BF "V4HI") (V8BF  "V8HI")
 			       (V2SF "V2SI") (V4SF  "V4SI")
 			       (DF   "DI")   (V2DF  "V2DI")
 			       (SF   "SI")   (SI    "SI")
@@ -1331,6 +1332,7 @@
 			       (V2SI "v2si") (V4SI  "v4si")
 			       (DI   "di")   (V2DI  "v2di")
 			       (V4HF "v4hi") (V8HF  "v8hi")
+			       (V4BF "v4hi") (V8BF  "v8hi")
 			       (V2SF "v2si") (V4SF  "v4si")
 			       (DF   "di")   (V2DF  "v2di")
 			       (SF   "si")
