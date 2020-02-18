@@ -1,6 +1,15 @@
 2020-02-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
+	2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93767
+	* tree-vect-data-refs.c (vect_compile_time_alias): Remove the
+	access-size bias from the offset calculations for negative strides.
+
+2020-02-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
 	2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/93434
