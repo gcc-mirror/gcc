@@ -1,3 +1,8 @@
+2020-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93817
+	* g++.dg/diagnostic/array-init1.C: Fix for ILP32.
+
 2020-02-18  Jon Beniston <jon@beniston.com>
 
 	* gcc.dg/strcmpopt_6.c: Add space in array for terminator.
