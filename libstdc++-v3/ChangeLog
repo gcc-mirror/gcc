@@ -1,3 +1,19 @@
+2020-02-18  Patrick Palka  <ppalka@redhat.com>
+
+	P1983R0 Wording for GB301, US296, US292, US291, and US283
+	* include/std/ranges (filter_view::pred): New member function.
+	(join_view::_Iterator::_Iterator): Remove now-redundant comment since
+	P1983R0 fixes the highlighted issue in the same way.
+	(join_view::_Iterator<_Const>): Add friend
+	join_view::_Iterator<!_Const>.
+	(join_view::_M_inner): Remove mutable specifier, effectively reverting
+	the proposed wording changes of P3278.
+	(join_view::begin): Refine the condition for when to return a const
+	iterator.
+	(split_view::_OuterIter::_OuterIter): Adjust constraints.
+	* testsuite/std/ranges/adaptors/filter.cc: Test that filter_view::pred
+	exists and works.
+
 2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93818

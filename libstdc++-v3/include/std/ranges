@@ -1488,6 +1488,10 @@ namespace views
       base() &&
       { return std::move(_M_base); }
 
+      constexpr const _Pred&
+      pred() const
+      { return *_M_pred; }
+
       constexpr _Iterator
       begin()
       {
@@ -2336,8 +2340,6 @@ namespace views
 
 	  _Iterator() = default;
 
-	  // XXX: had to change the type of __outer from iterator_t<_Vp> to
-	  // iterator_t<_Base> here, a possible defect in the spec?
 	  constexpr
 	  _Iterator(_Parent& __parent, _Outer_iter __outer)
 	    : _M_outer(std::move(__outer)),
@@ -2437,6 +2439,7 @@ namespace views
 	    noexcept(noexcept(ranges::iter_swap(__x._M_inner, __y._M_inner)))
 	  { return ranges::iter_swap(__x._M_inner, __y._M_inner); }
 
+	  friend _Iterator<!_Const>;
 	  friend _Sentinel<_Const>;
 	};
 
@@ -2475,8 +2478,7 @@ namespace views
       _Vp _M_base = _Vp();
 
       // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
-      // Applied P3278 and made this field mutable.
-      [[no_unique_address]] mutable
+      [[no_unique_address]]
 	conditional_t<!is_reference_v<_InnerRange>,
 		      all_view<_InnerRange>, __detail::_Empty> _M_inner;
 
@@ -2509,8 +2511,10 @@ namespace views
       constexpr auto
       begin()
       {
-	return _Iterator<__detail::__simple_view<_Vp>>{*this,
-						       ranges::begin(_M_base)};
+	constexpr bool __use_const
+	  = (__detail::__simple_view<_Vp>
+	     && is_reference_v<range_reference_t<_Vp>>);
+	return _Iterator<__use_const>{*this, ranges::begin(_M_base)};
       }
 
       constexpr auto
@@ -2676,7 +2680,7 @@ namespace views
 	  constexpr
 	  _OuterIter(_OuterIter<!_Const> __i)
 	    requires _Const
-	      && convertible_to<iterator_t<_Vp>, iterator_t<const _Vp>>
+	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
 	    : _M_parent(__i._M_parent), _M_current(std::move(__i._M_current))
 	  { }
 

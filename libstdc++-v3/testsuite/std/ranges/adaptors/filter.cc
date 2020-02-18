@@ -46,6 +46,8 @@ test01()
   static_assert(ranges::range<ranges::all_view<R>>);
   VERIFY( ranges::equal(v, (int[]){1,3,5}) );
   VERIFY( ranges::equal(v | views::reverse, (int[]){5,3,1}) );
+  VERIFY( v.pred()(3) == true );
+  VERIFY( v.pred()(4) == false );
 }
 
 void
