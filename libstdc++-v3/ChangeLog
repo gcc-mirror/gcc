@@ -1,5 +1,10 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (common_iterator): Add copyable<I>
+	requirement (LWG 3385).
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Adjust
+	expected declaration.
+
 	* include/std/ranges (take_while_view, drop_view, drop_while_view)
 	(elements_view:_Iterator): Initialize data members (LWG 3364).
 

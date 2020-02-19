@@ -56,7 +56,7 @@ namespace std
   template<semiregular S> class move_sentinel;
 
   template<input_or_output_iterator I, sentinel_for<I> S>
-    requires (!same_as<I, S>)
+    requires (!same_as<I, S>) && copyable<I>
     class common_iterator;
 
   template<class I, class S>

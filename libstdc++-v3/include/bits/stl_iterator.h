@@ -1426,7 +1426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// An iterator/sentinel adaptor for representing a non-common range.
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    requires (!same_as<_It, _Sent>)
+    requires (!same_as<_It, _Sent>) && copyable<_It>
   class common_iterator
   {
     template<typename _Tp, typename _Up>
