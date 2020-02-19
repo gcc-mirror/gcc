@@ -74,10 +74,28 @@ test03()
   VERIFY( i == v.end() );
 }
 
+void
+test04()
+{
+  auto x = "the  quick  brown  fox"sv;
+  std::initializer_list<char> p = {' ', ' '};
+  static_assert(!ranges::view<decltype(p)>);
+  static_assert(std::same_as<decltype(p | views::all),
+			     ranges::ref_view<decltype(p)>>);
+  auto v = x | views::split(p);
+  auto i = v.begin();
+  VERIFY( ranges::equal(*i++, "the"sv) );
+  VERIFY( ranges::equal(*i++, "quick"sv) );
+  VERIFY( ranges::equal(*i++, "brown"sv) );
+  VERIFY( ranges::equal(*i++, "fox"sv) );
+  VERIFY( i == v.end() );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

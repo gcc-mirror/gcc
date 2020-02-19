@@ -1,5 +1,13 @@
 2020-02-20  Patrick Palka  <ppalka@redhat.com>
 
+	* include/std/ranges (views::__adaptor::__maybe_refwrap): New utility
+	function.
+	(views::__adaptor::_RangeAdaptor::operator()): Add comments.  Use
+	__maybe_refwrap to capture lvalue references by reference, and then use
+	unwrap_reference_t to forward the by-reference captures as references.
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+	* testsuite/std/ranges/adaptors/split_neg.cc: New test.
+
 	* include/std/ranges (iota_view): Forward declare _Sentinel.
 	(iota_view::_Iterator): Befriend _Sentinel.
 	(iota_view::_Sentinel::_M_equal): New member function.
