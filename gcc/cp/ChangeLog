@@ -1,5 +1,10 @@
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/93676 - value-init crash in template.
+	* init.c (build_new_1): Don't call build_vec_init in a template.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/93862 - ICE with static_cast when converting from int[].
 	* call.c (reference_compatible_p): No longer static.
 	* cp-tree.h (reference_compatible_p): Declare.
