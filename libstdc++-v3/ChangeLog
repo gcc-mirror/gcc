@@ -1,3 +1,9 @@
+2020-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/std/ranges/adaptors/split.cc (test03): Don't include the
+	null terminator of the underlying string as part of the test_range.
+	(main): Call test03.
+
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (common_iterator): Add copyable<I>
