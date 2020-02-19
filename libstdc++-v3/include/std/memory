@@ -387,9 +387,10 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     uninitialized_construct_using_allocator(_Tp* __p, const _Alloc& __a,
 					    _Args&&... __args)
     {
-      void* __vp = const_cast<void*>(static_cast<const volatile void*>(__p));
-      return ::new(__vp) _Tp(std::make_obj_using_allocator<_Tp>(__a,
-	    std::forward<_Args>(__args)...));
+      return std::apply([&](auto&&... __xs) {
+	return std::construct_at(__p, std::forward<decltype(__xs)>(__xs)...);
+      }, std::uses_allocator_construction_args<_Tp>(__a,
+	std::forward<_Args>(__args)...));
     }
 // @}
 

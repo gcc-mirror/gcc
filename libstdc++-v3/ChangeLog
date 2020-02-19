@@ -1,5 +1,8 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/memory (uninitialized_construct_using_allocator): Use
+	std::construct_at (LWG 3321).
+
 	* include/std/memory_resource (polymorphic_allocator::allocate_bytes)
 	(polymorphic_allocator::allocate_object)
 	(polymorphic_allocator::new_object): Add nodiscard attribute (LWG3304).
