@@ -1,5 +1,10 @@
 2020-05-09  Ian Lance Taylor  <iant@golang.org>
 
+	* elf.c (elf_add): Don't free strtab if an error occurs after
+	recording symbol information.
+
+2020-05-09  Ian Lance Taylor  <iant@golang.org>
+
 	PR libbacktrace/88745
 	* macho.c: New file.
 	* filetype.awk: Recognize Mach-O files.
