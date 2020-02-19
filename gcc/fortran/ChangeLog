@@ -1,3 +1,13 @@
+2020-02-19  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from mainline
+	2020-02-18  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/93714
+	* expr.c (gfc_check_pointer_assign): Move check for
+	matching character length to after checking the lvalue
+	attributes for target or pointer.
+
 2020-02-18  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from mainline
