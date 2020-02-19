@@ -1,5 +1,11 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/numeric (midpoint(T8, T*)): Do not check for complete
+	type during overload resolution, use static assert instead (LWG 3200).
+	* testsuite/26_numerics/midpoint/pointer.cc: Do not test with
+	incomplete type.
+	* testsuite/26_numerics/midpoint/pointer_neg.cc: New test.
+
 	* include/std/span (span(T (&)[N])): Use non-deduced context to
 	prevent first parameter from interfering with class template argument
 	deduction (LWG 3369).
