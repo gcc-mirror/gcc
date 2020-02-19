@@ -44,6 +44,7 @@ module openacc_kinds
   integer, parameter :: acc_device_kind = int32
 
   ! Keep in sync with include/gomp-constants.h.
+  integer (acc_device_kind), parameter :: acc_device_current = -3
   integer (acc_device_kind), parameter :: acc_device_none = 0
   integer (acc_device_kind), parameter :: acc_device_default = 1
   integer (acc_device_kind), parameter :: acc_device_host = 2
@@ -59,19 +60,19 @@ module openacc_internal
   implicit none
 
   interface
-    function acc_on_device_h (d)
+    function acc_on_device_h (devicetype)
       import
-      integer (acc_device_kind) d
+      integer (acc_device_kind) devicetype
       logical acc_on_device_h
     end function
   end interface
 
   interface
-    function acc_on_device_l (d) &
+    function acc_on_device_l (devicetype) &
         bind (C, name = "acc_on_device")
       use iso_c_binding, only: c_int
       integer (c_int) :: acc_on_device_l
-      integer (c_int), value :: d
+      integer (c_int), value :: devicetype
     end function
   end interface
 end module openacc_internal
@@ -96,14 +97,10 @@ module openacc
 
 end module openacc
 
-function acc_on_device_h (d)
+function acc_on_device_h (devicetype)
   use openacc_internal, only: acc_on_device_l
   use openacc_kinds
-  integer (acc_device_kind) d
+  integer (acc_device_kind) devicetype
   logical acc_on_device_h
-  if (acc_on_device_l (d) .eq. 1) then
-    acc_on_device_h = .TRUE.
-  else
-    acc_on_device_h = .FALSE.
-  end if
+  acc_on_device_h = acc_on_device_l (devicetype) /= 0
 end function
