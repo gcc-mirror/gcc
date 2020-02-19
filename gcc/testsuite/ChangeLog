@@ -1,3 +1,8 @@
+2020-02-18  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mavx512vbmi2.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/92768
