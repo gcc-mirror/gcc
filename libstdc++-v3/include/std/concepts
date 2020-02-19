@@ -311,10 +311,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     concept totally_ordered_with
       = totally_ordered<_Tp> && totally_ordered<_Up>
-      && common_reference_with<__detail::__cref<_Tp>, __detail::__cref<_Up>>
+      && equality_comparable_with<_Tp, _Up>
       && totally_ordered<common_reference_t<__detail::__cref<_Tp>,
 					    __detail::__cref<_Up>>>
-      && equality_comparable_with<_Tp, _Up>
       && requires(__detail::__cref<_Tp> __t, __detail::__cref<_Up> __u) {
 	{ __t <  __u } -> __detail::__boolean_testable;
 	{ __t >  __u } -> __detail::__boolean_testable;
