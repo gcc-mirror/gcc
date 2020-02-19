@@ -1,3 +1,8 @@
+2020-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gimplefe-41.c: Add -msse2 additional options for x86 targets.
+	* gcc.dg/ipa/ipa-sra-19.c: Ditto.
+
 2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/93767
