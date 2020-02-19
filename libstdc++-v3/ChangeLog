@@ -1,5 +1,9 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_access.h (range_size_t): Define alias template.
+	* include/std/ranges (all_view): Rename to views::all_t (LWG 3335).
+	* testsuite/std/ranges/adaptors/filter.cc: Adjust to new name.
+
 	* include/std/ranges (filter_view, transform_view, take_view)
 	(join_view, split_view, reverse_view): Remove commented-out converting
 	constructors (LWG 3280).

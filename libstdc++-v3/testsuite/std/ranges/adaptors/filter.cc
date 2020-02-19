@@ -43,7 +43,7 @@ test01()
   static_assert(!ranges::sized_range<R>);
   static_assert(ranges::bidirectional_range<R>);
   static_assert(!ranges::random_access_range<R>);
-  static_assert(ranges::range<ranges::all_view<R>>);
+  static_assert(ranges::range<views::all_t<R>>);
   VERIFY( ranges::equal(v, (int[]){1,3,5}) );
   VERIFY( ranges::equal(v | views::reverse, (int[]){5,3,1}) );
   VERIFY( v.pred()(3) == true );

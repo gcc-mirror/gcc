@@ -905,6 +905,9 @@ namespace ranges
     concept sized_range = range<_Tp>
       && requires(_Tp& __t) { ranges::size(__t); };
 
+  template<sized_range _Range>
+    using range_size_t = decltype(ranges::size(std::declval<_Range&>()));
+
   // [range.refinements]
 
   /// A range for which ranges::begin returns an output iterator.

@@ -1236,10 +1236,11 @@ namespace views
 	else
 	  return subrange{std::forward<_Range>(__r)};
       };
-  } // namespace views
 
-  template<viewable_range _Range>
-    using all_view = decltype(views::all(declval<_Range>()));
+    template<viewable_range _Range>
+      using all_t = decltype(all(std::declval<_Range>()));
+
+  } // namespace views
 
   // XXX: the following algos are copied from ranges_algo.h to avoid a circular
   // dependency with that header.
@@ -1503,7 +1504,7 @@ namespace views
     };
 
   template<typename _Range, typename _Pred>
-    filter_view(_Range&&, _Pred) -> filter_view<all_view<_Range>, _Pred>;
+    filter_view(_Range&&, _Pred) -> filter_view<views::all_t<_Range>, _Pred>;
 
   namespace views
   {
@@ -1836,7 +1837,7 @@ namespace views
     };
 
   template<typename _Range, typename _Fp>
-    transform_view(_Range&&, _Fp) -> transform_view<all_view<_Range>, _Fp>;
+    transform_view(_Range&&, _Fp) -> transform_view<views::all_t<_Range>, _Fp>;
 
   namespace views
   {
@@ -1974,7 +1975,7 @@ namespace views
 
   template<range _Range>
     take_view(_Range&&, range_difference_t<_Range>)
-      -> take_view<all_view<_Range>>;
+      -> take_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -2066,7 +2067,7 @@ namespace views
 
   template<typename _Range, typename _Pred>
     take_while_view(_Range&&, _Pred)
-      -> take_while_view<all_view<_Range>, _Pred>;
+      -> take_while_view<views::all_t<_Range>, _Pred>;
 
   namespace views
   {
@@ -2143,7 +2144,7 @@ namespace views
 
   template<typename _Range>
     drop_view(_Range&&, range_difference_t<_Range>)
-      -> drop_view<all_view<_Range>>;
+      -> drop_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -2199,7 +2200,7 @@ namespace views
 
   template<typename _Range, typename _Pred>
     drop_while_view(_Range&&, _Pred)
-      -> drop_while_view<all_view<_Range>, _Pred>;
+      -> drop_while_view<views::all_t<_Range>, _Pred>;
 
   namespace views
   {
@@ -2450,7 +2451,7 @@ namespace views
       // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
       [[no_unique_address]]
 	conditional_t<!is_reference_v<_InnerRange>,
-		      all_view<_InnerRange>, __detail::_Empty> _M_inner;
+		      views::all_t<_InnerRange>, __detail::_Empty> _M_inner;
 
     public:
       join_view() = default;
@@ -2514,7 +2515,7 @@ namespace views
     };
 
   template<typename _Range>
-    explicit join_view(_Range&&) -> join_view<all_view<_Range>>;
+    explicit join_view(_Range&&) -> join_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -2838,7 +2839,7 @@ namespace views
       { }
 
       template<input_range _Range>
-	requires constructible_from<_Vp, all_view<_Range>>
+	requires constructible_from<_Vp, views::all_t<_Range>>
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
 	constexpr
 	split_view(_Range&& __r, range_value_t<_Range> __e)
@@ -2893,11 +2894,11 @@ namespace views
 
   template<typename _Range, typename _Pred>
     split_view(_Range&&, _Pred&&)
-      -> split_view<all_view<_Range>, all_view<_Pred>>;
+      -> split_view<views::all_t<_Range>, views::all_t<_Pred>>;
 
   template<input_range _Range>
     split_view(_Range&&, range_value_t<_Range>)
-      -> split_view<all_view<_Range>, single_view<range_value_t<_Range>>>;
+      -> split_view<views::all_t<_Range>, single_view<range_value_t<_Range>>>;
 
   namespace views
   {
@@ -2945,7 +2946,7 @@ namespace views
       /* XXX: LWG 3280 didn't remove this constructor, but I think it should?
       template<viewable_range _Range>
 	requires (!common_range<_Range>)
-	  && constructible_from<_Vp, all_view<_Range>>
+	  && constructible_from<_Vp, views::all_t<_Range>>
 	constexpr explicit
 	common_view(_Range&& __r)
 	  : _M_base(views::all(std::forward<_Range>(__r)))
@@ -3010,7 +3011,7 @@ namespace views
     };
 
   template<typename _Range>
-    common_view(_Range&&) -> common_view<all_view<_Range>>;
+    common_view(_Range&&) -> common_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -3083,7 +3084,7 @@ namespace views
     };
 
   template<typename _Range>
-    reverse_view(_Range&&) -> reverse_view<all_view<_Range>>;
+    reverse_view(_Range&&) -> reverse_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -3356,10 +3357,10 @@ namespace views
     };
 
   template<typename _Range>
-    using keys_view = elements_view<all_view<_Range>, 0>;
+    using keys_view = elements_view<views::all_t<_Range>, 0>;
 
   template<typename _Range>
-    using values_view = elements_view<all_view<_Range>, 1>;
+    using values_view = elements_view<views::all_t<_Range>, 1>;
 
   namespace views
   {
@@ -3367,7 +3368,8 @@ namespace views
     inline constexpr __adaptor::_RangeAdaptorClosure elements
       = [] <viewable_range _Range> (_Range&& __r)
       {
-	return elements_view<all_view<_Range>, _Nm>{std::forward<_Range>(__r)};
+	using _El = elements_view<views::all_t<_Range>, _Nm>;
+	return _El{std::forward<_Range>(__r)};
       };
 
     inline constexpr __adaptor::_RangeAdaptorClosure keys = elements<0>;
