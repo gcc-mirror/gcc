@@ -1,5 +1,9 @@
 2020-02-19  Mark Eggleston <markeggleston@gcc.gnu.org>
 
+	* typebound_call_22.d03 : Remove xfail clause.
+
+2020-02-19  Mark Eggleston <markeggleston@gcc.gnu.org>
+
 	Backported from mainline
 	2020-02-18  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
