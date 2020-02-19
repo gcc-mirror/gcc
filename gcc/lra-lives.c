@@ -1023,6 +1023,51 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	make_hard_regno_live (regno);
       }
 
+  /* Pseudos can't go in stack regs at the start of a basic block that
+     is reached by an abnormal edge.  Likewise for registers that are at
+     least partly call clobbered, because caller-save, fixup_abnormal_edges
+     and possibly the table driven EH machinery are not quite ready to
+     handle such pseudos live across such edges.  */
+  if (bb_has_abnormal_pred (bb))
+    {
+      HARD_REG_SET clobbers;
+
+      CLEAR_HARD_REG_SET (clobbers);
+#ifdef STACK_REGS
+      EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, px)
+	lra_reg_info[px].no_stack_p = true;
+      for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
+	SET_HARD_REG_BIT (clobbers, px);
+#endif
+      /* No need to record conflicts for call clobbered regs if we
+	 have nonlocal labels around, as we don't ever try to
+	 allocate such regs in this case.  */
+      if (!cfun->has_nonlocal_label
+	  && has_abnormal_call_or_eh_pred_edge_p (bb))
+	for (px = 0; HARD_REGISTER_NUM_P (px); px++)
+	  if (eh_edge_abi.clobbers_at_least_part_of_reg_p (px)
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+	      /* We should create a conflict of PIC pseudo with PIC
+		 hard reg as PIC hard reg can have a wrong value after
+		 jump described by the abnormal edge.  In this case we
+		 cannot allocate PIC hard reg to PIC pseudo as PIC
+		 pseudo will also have a wrong value.  */
+	      || (px == REAL_PIC_OFFSET_TABLE_REGNUM
+		  && pic_offset_table_rtx != NULL_RTX
+		  && !HARD_REGISTER_P (pic_offset_table_rtx))
+#endif
+	      )
+	    SET_HARD_REG_BIT (clobbers, px);
+
+      clobbers &= ~hard_regs_live;
+      for (px = 0; HARD_REGISTER_NUM_P (px); px++)
+	if (TEST_HARD_REG_BIT (clobbers, px))
+	  {
+	    make_hard_regno_live (px);
+	    make_hard_regno_dead (px);
+	  }
+    }
+
   bool live_change_p = false;
   /* Check if bb border live info was changed.  */
   unsigned int live_pseudos_num = 0;
@@ -1049,65 +1094,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    fprintf (lra_dump_file,
 		     "  r%d is added to live at bb%d start\n", j, bb->index);
     }
-
-  /* The order of this code and the code below is important.  At this
-     point hard_regs_live does genuinely contain only live registers.
-     Below we pretend other hard registers are live in order to create
-     conflicts with pseudos, but this fake live set shouldn't leak out
-     into the df info.  */
-  for (i = 0; HARD_REGISTER_NUM_P (i); ++i)
-    {
-      if (!TEST_HARD_REG_BIT (hard_regs_live, i))
-	continue;
-
-      if (!TEST_HARD_REG_BIT (hard_regs_spilled_into, i))
-	continue;
-
-      if (bitmap_bit_p (df_get_live_in (bb), i))
-	continue;
-
-      live_change_p = true;
-      if (lra_dump_file)
-	fprintf (lra_dump_file,
-		 "  hard reg r%d is added to live at bb%d start\n", i,
-		 bb->index);
-      bitmap_set_bit (df_get_live_in (bb), i);
-    }
-
-  /* Pseudos can't go in stack regs at the start of a basic block that
-     is reached by an abnormal edge.  Likewise for registers that are at
-     least partly call clobbered, because caller-save, fixup_abnormal_edges
-     and possibly the table driven EH machinery are not quite ready to
-     handle such pseudos live across such edges.  */
-  if (bb_has_abnormal_pred (bb))
-    {
-#ifdef STACK_REGS
-      EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, px)
-	lra_reg_info[px].no_stack_p = true;
-      for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
-	make_hard_regno_live (px);
-#endif
-      /* No need to record conflicts for call clobbered regs if we
-	 have nonlocal labels around, as we don't ever try to
-	 allocate such regs in this case.  */
-      if (!cfun->has_nonlocal_label
-	  && has_abnormal_call_or_eh_pred_edge_p (bb))
-	for (px = 0; HARD_REGISTER_NUM_P (px); px++)
-	  if (eh_edge_abi.clobbers_at_least_part_of_reg_p (px)
-#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
-	      /* We should create a conflict of PIC pseudo with PIC
-		 hard reg as PIC hard reg can have a wrong value after
-		 jump described by the abnormal edge.  In this case we
-		 cannot allocate PIC hard reg to PIC pseudo as PIC
-		 pseudo will also have a wrong value.  */
-	      || (px == REAL_PIC_OFFSET_TABLE_REGNUM
-		  && pic_offset_table_rtx != NULL_RTX
-		  && !HARD_REGISTER_P (pic_offset_table_rtx))
-#endif
-	      )
-	    make_hard_regno_live (px);
-    }
-
   /* See if we'll need an increment at the end of this basic block.
      An increment is needed if the PSEUDOS_LIVE set is not empty,
      to make sure the finish points are set up correctly.  */
@@ -1125,6 +1111,25 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	break;
       if (sparseset_bit_p (pseudos_live_through_calls, j))
 	check_pseudos_live_through_calls (j, last_call_abi);
+    }
+
+  for (i = 0; HARD_REGISTER_NUM_P (i); ++i)
+    {
+      if (!TEST_HARD_REG_BIT (hard_regs_live, i))
+	continue;
+
+      if (!TEST_HARD_REG_BIT (hard_regs_spilled_into, i))
+	continue;
+
+      if (bitmap_bit_p (df_get_live_in (bb), i))
+	continue;
+
+      live_change_p = true;
+      if (lra_dump_file)
+	fprintf (lra_dump_file,
+		 "  hard reg r%d is added to live at bb%d start\n", i,
+		 bb->index);
+      bitmap_set_bit (df_get_live_in (bb), i);
     }
 
   if (need_curr_point_incr)

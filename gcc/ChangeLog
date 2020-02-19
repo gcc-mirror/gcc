@@ -1,3 +1,10 @@
+2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/PR92989
+	* lra-lives.c (process_bb_lives): Restore the original order
+	of the bb liveness update.  Call make_hard_regno_dead for each
+	register clobbered at the start of an EH receiver.
+
 2020-02-18  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/93763
