@@ -1470,17 +1470,6 @@ namespace views
 	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range>
-	requires viewable_range<_Range>
-	  && constructible_from<_Vp, all_view<_Range>>
-	constexpr
-	filter_view(_Range&& __r, _Pred __pred)
-	  : _M_base(views::all(std::forward<_Range>(__r))),
-	    _M_pred(std::move(__pred))
-	{ }
-      */
-
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
       { return _M_base; }
@@ -1799,17 +1788,6 @@ namespace views
 	: _M_base(std::move(__base)), _M_fun(std::move(__fun))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range>
-	requires viewable_range<_Range>
-	  && constructible_from<_Vp, all_view<_Range>>
-	constexpr
-	transform_view(_Range&& __r, _Fp __fun)
-	  : _M_base(views::all(std::forward<_Range>(__r)))
-	{
-	}
-	*/
-
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
       { return _M_base ; }
@@ -1914,15 +1892,6 @@ namespace views
       take_view(_Vp base, range_difference_t<_Vp> __count)
 	: _M_base(std::move(base)), _M_count(std::move(__count))
       { }
-
-      /* XXX: P3280 removes this constructor
-      template<viewable_range _Range>
-	requires constructible_from<_Vp, all_view<_Range>>
-      constexpr
-      take_view(_Range&& __r, range_difference_t<_Vp> __count)
-	: _M_base(views::all(std::forward<_Range>(__r))), _M_count(__count)
-      { }
-      */
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -2491,16 +2460,6 @@ namespace views
 	: _M_base(std::move(__base))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range>
-	requires viewable_range<_Range>
-	  && constructible_from<_Vp, all_view<_Range>>
-      constexpr explicit
-      join_view(_Range&& __r)
-	: _M_base(views::all(std::forward<_Range>(__r)))
-      { }
-      */
-
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
       { return _M_base; }
@@ -2878,17 +2837,6 @@ namespace views
 	: _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range, forward_range _Pred>
-	requires constructible_from<_Vp, all_view<_Range>>
-	  && constructible_from<_Pattern, all_view<_Pred>>
-	constexpr
-	split_view(_Range&& __r, _Pred&& __p)
-	  : _M_base(views::all(std::forward<_Range>(__r))),
-	    _M_pattern(views::all(std::forward<_Pred>(__p)))
-      { }
-      */
-
       template<input_range _Range>
 	requires constructible_from<_Vp, all_view<_Range>>
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
@@ -2994,14 +2942,15 @@ namespace views
 	: _M_base(std::move(__r))
       { }
 
-      /* XXX: P3280 doesn't remove this constructor, but I think it should?
+      /* XXX: LWG 3280 didn't remove this constructor, but I think it should?
       template<viewable_range _Range>
-	requires (!common_range<_Range>) && constructible_from<_Vp, all_view<_Range>>
+	requires (!common_range<_Range>)
+	  && constructible_from<_Vp, all_view<_Range>>
 	constexpr explicit
 	common_view(_Range&& __r)
 	  : _M_base(views::all(std::forward<_Range>(__r)))
 	{ }
-	*/
+      */
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -3091,15 +3040,6 @@ namespace views
       reverse_view(_Vp __r)
 	: _M_base(std::move(__r))
 	{ }
-
-      /* XXX: P3280 removes this constructor
-      template<viewable_range _Range>
-	requires bidirectional_range<_Range> && constructible_from<_Vp, all_view<_Range>>
-	constexpr explicit
-	reverse_view(_Range&& __r)
-	  : _M_base(views::all(std::forward<_Range>(__r)))
-	{ }
-	*/
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>

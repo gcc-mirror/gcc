@@ -1,5 +1,9 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges (filter_view, transform_view, take_view)
+	(join_view, split_view, reverse_view): Remove commented-out converting
+	constructors (LWG 3280).
+
 	* include/std/memory (uninitialized_construct_using_allocator): Use
 	std::construct_at (LWG 3321).
 
