@@ -2008,7 +2008,7 @@ namespace views
 	  { return __y._M_end == __x || !std::__invoke(*__y._M_pred, *__x); }
 	};
 
-      _Vp _M_base;
+      _Vp _M_base = _Vp();
       __detail::__box<_Pred> _M_pred;
 
     public:
@@ -2068,8 +2068,8 @@ namespace views
     class drop_view : public view_interface<drop_view<_Vp>>
     {
     private:
-      _Vp _M_base;
-      range_difference_t<_Vp> _M_count;
+      _Vp _M_base = _Vp();
+      range_difference_t<_Vp> _M_count = 0;
 
     public:
       drop_view() = default;
@@ -2147,7 +2147,7 @@ namespace views
     class drop_while_view : public view_interface<drop_while_view<_Vp, _Pred>>
     {
     private:
-      _Vp _M_base;
+      _Vp _M_base = _Vp();
       __detail::__box<_Pred> _M_pred;
 
     public:
@@ -3179,7 +3179,7 @@ namespace views
 	{
 	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
 
-	  iterator_t<_Base> _M_current;
+	  iterator_t<_Base> _M_current = iterator_t<_Base>();
 
 	  friend _Iterator<!_Const>;
 
