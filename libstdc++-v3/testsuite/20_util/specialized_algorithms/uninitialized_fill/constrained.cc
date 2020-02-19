@@ -45,7 +45,7 @@ test01(const T& value)
       auto buffer = std::unique_ptr<char[]>(new char[sizeof(T)*size]);
       std::span<T> rx((T *)buffer.get(), size);
 
-      auto i = rx.cbegin();
+      auto i = rx.begin();
       if (k == 0)
 	i = ranges::uninitialized_fill(rx.begin(), rx.end(), value);
       else if (k == 1)
@@ -53,15 +53,15 @@ test01(const T& value)
       else if (k == 2)
 	i = ranges::uninitialized_fill_n(rx.begin(), 1024, value);
       else if (k == 3)
-	i = ranges::uninitialized_fill(rx.cbegin(), rx.cend(), value);
+	i = ranges::uninitialized_fill(rx.begin(), rx.end(), value);
       else if (k == 4)
 	i = ranges::uninitialized_fill(std::as_const(rx), value);
       else if (k == 5)
-	i = ranges::uninitialized_fill_n(rx.cbegin(), 1024, value);
+	i = ranges::uninitialized_fill_n(rx.begin(), 1024, value);
       else
 	__builtin_abort();
 
-      VERIFY( i == rx.cend() );
+      VERIFY( i == rx.end() );
       VERIFY( ranges::find_if(rx, [&value](const T& v) { return value != v; }) == i );
 
       ranges::destroy(rx);

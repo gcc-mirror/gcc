@@ -1,5 +1,23 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/span (span::const_iterator, span::const_reverse_iterator)
+	(span::cbegin(), span::cend(), span::crbegin(), span::crend()):
+	Remove (LWG 3320).
+	* testsuite/23_containers/span/everything.cc: Replace uses of cbegin
+	and cend.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/
+	uninitialized_default_construct/constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/
+	constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/
+	constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/
+	uninitialized_value_construct/constrained.cc: Likewise.
+
 	* include/bits/range_access.h (range_size_t): Define alias template.
 	* include/std/ranges (all_view): Rename to views::all_t (LWG 3335).
 	* testsuite/std/ranges/adaptors/filter.cc: Adjust to new name.

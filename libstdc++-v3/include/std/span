@@ -141,9 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using reference              = element_type&;
       using const_reference        = const element_type&;
       using iterator = __gnu_cxx::__normal_iterator<pointer, span>;
-      using const_iterator = __gnu_cxx::__normal_iterator<const_pointer, span>;
       using reverse_iterator       = std::reverse_iterator<iterator>;
-      using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
       // member constants
       static constexpr size_t extent = _Extent;
@@ -297,33 +295,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       begin() const noexcept
       { return iterator(this->_M_ptr); }
 
-      constexpr const_iterator
-      cbegin() const noexcept
-      { return const_iterator(this->_M_ptr); }
-
       constexpr iterator
       end() const noexcept
       { return iterator(this->_M_ptr + this->size()); }
-
-      constexpr const_iterator
-      cend() const noexcept
-      { return const_iterator(this->_M_ptr + this->size()); }
 
       constexpr reverse_iterator
       rbegin() const noexcept
       { return reverse_iterator(this->end()); }
 
-      constexpr const_reverse_iterator
-      crbegin() const noexcept
-      { return const_reverse_iterator(this->cend()); }
-
       constexpr reverse_iterator
       rend() const noexcept
       { return reverse_iterator(this->begin()); }
-
-      constexpr const_reverse_iterator
-      crend() const noexcept
-      { return const_reverse_iterator(this->cbegin()); }
 
       // subviews
 

@@ -54,7 +54,7 @@ test01()
       ranges::uninitialized_default_construct(rx);
       VERIFY( X::count == size );
 
-      auto i = rx.cbegin();
+      auto i = rx.begin();
       if (k == 0)
 	i = ranges::destroy(rx);
       else if (k == 1)
@@ -64,7 +64,7 @@ test01()
       else
 	__builtin_abort();
 
-      VERIFY( i == rx.cend() );
+      VERIFY( i == rx.end() );
       VERIFY( X::count == 0 );
     }
 }
