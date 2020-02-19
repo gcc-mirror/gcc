@@ -411,20 +411,6 @@ namespace std
     template<typename _Tp, typename _Cat>
       concept __compares_as
 	= same_as<common_comparison_category_t<_Tp, _Cat>, _Cat>;
-
-    template<typename _Tp, typename _Up>
-      concept __partially_ordered_with
-	= requires(const remove_reference_t<_Tp>& __t,
-		   const remove_reference_t<_Up>& __u) {
-	  { __t <  __u } -> __boolean_testable;
-	  { __t >  __u } -> __boolean_testable;
-	  { __t <= __u } -> __boolean_testable;
-	  { __t >= __u } -> __boolean_testable;
-	  { __u <  __t } -> __boolean_testable;
-	  { __u >  __t } -> __boolean_testable;
-	  { __u <= __t } -> __boolean_testable;
-	  { __u >= __t } -> __boolean_testable;
-	};
   } // namespace __detail
 
   // [cmp.concept], concept three_way_comparable

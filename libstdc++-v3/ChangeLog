@@ -1,5 +1,12 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/concepts (__detail::__partially_ordered_with): Move here
+	from <compare>.
+	(totally_ordered, totally_ordered_with): Use __partially_ordered_with
+	to simplify definition (LWG 3331).
+	* libsupc++/compare (__detail::__partially_ordered_with): Move to
+	<concepts>.
+
 	* include/std/concepts (totally_ordered_with): Remove redundant
 	requirement (LWG 3329).
 
