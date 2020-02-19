@@ -167,7 +167,7 @@ namespace pmr
       __attribute__((__returns_nonnull__))
       {
 	if (__n > (__detail::__int_limits<size_t>::max() / sizeof(_Tp)))
-	  std::__throw_bad_alloc();
+	  _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
 	return static_cast<_Tp*>(_M_resource->allocate(__n * sizeof(_Tp),
 						       alignof(_Tp)));
       }
@@ -193,7 +193,7 @@ namespace pmr
 	allocate_object(size_t __n = 1)
 	{
 	  if ((__detail::__int_limits<size_t>::max() / sizeof(_Up)) < __n)
-	    __throw_length_error("polymorphic_allocator::allocate_object");
+	    _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
 	  return static_cast<_Up*>(allocate_bytes(__n * sizeof(_Up),
 						  alignof(_Up)));
 	}
