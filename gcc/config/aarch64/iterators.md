@@ -2277,6 +2277,19 @@
 					UNSPEC_COND_FRINTZ
 					UNSPEC_COND_FSQRT])
 
+;; Same as SVE_COND_FP_UNARY, but without codes that have a dedicated
+;; <optab><mode>2 expander.
+(define_int_iterator SVE_COND_FP_UNARY_OPTAB [UNSPEC_COND_FABS
+					      UNSPEC_COND_FNEG
+					      UNSPEC_COND_FRECPX
+					      UNSPEC_COND_FRINTA
+					      UNSPEC_COND_FRINTI
+					      UNSPEC_COND_FRINTM
+					      UNSPEC_COND_FRINTN
+					      UNSPEC_COND_FRINTP
+					      UNSPEC_COND_FRINTX
+					      UNSPEC_COND_FRINTZ])
+
 (define_int_iterator SVE_COND_FCVT [UNSPEC_COND_FCVT])
 (define_int_iterator SVE_COND_FCVTI [UNSPEC_COND_FCVTZS UNSPEC_COND_FCVTZU])
 (define_int_iterator SVE_COND_ICVTF [UNSPEC_COND_SCVTF UNSPEC_COND_UCVTF])

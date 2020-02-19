@@ -1,5 +1,13 @@
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Add SVE
+	support.  Use aarch64_emit_mult instead of emitting multiplication
+	instructions directly.
+	* config/aarch64/aarch64-sve.md (sqrt<mode>2, rsqrt<mode>2)
+	(@aarch64_rsqrte<mode>, @aarch64_rsqrts<mode>): New expanders.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_emit_mult): New function.
 	(aarch64_emit_approx_div): Add SVE support.  Use aarch64_emit_mult
 	instead of emitting multiplication instructions directly.

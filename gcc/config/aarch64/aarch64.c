@@ -12790,6 +12790,9 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     /* Caller assumes we cannot fail.  */
     gcc_assert (use_rsqrt_p (mode));
 
+  rtx pg = NULL_RTX;
+  if (aarch64_sve_mode_p (mode))
+    pg = aarch64_ptrue_reg (aarch64_sve_pred_mode (mode));
   machine_mode mmsk = (VECTOR_MODE_P (mode)
 		       ? related_int_vector_mode (mode).require ()
 		       : int_mode_for_mode (mode).require ());
@@ -12798,11 +12801,21 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     {
       /* When calculating the approximate square root, compare the
 	 argument with 0.0 and create a mask.  */
-      xmsk = gen_reg_rtx (mmsk);
-      emit_insn (gen_rtx_SET (xmsk,
-			      gen_rtx_NEG (mmsk,
-					   gen_rtx_EQ (mmsk, src,
-						       CONST0_RTX (mode)))));
+      rtx zero = CONST0_RTX (mode);
+      if (pg)
+	{
+	  xmsk = gen_reg_rtx (GET_MODE (pg));
+	  rtx hint = gen_int_mode (SVE_KNOWN_PTRUE, SImode);
+	  emit_insn (gen_aarch64_pred_fcm (UNSPEC_COND_FCMNE, mode,
+					   xmsk, pg, hint, src, zero));
+	}
+      else
+	{
+	  xmsk = gen_reg_rtx (mmsk);
+	  emit_insn (gen_rtx_SET (xmsk,
+				  gen_rtx_NEG (mmsk,
+					       gen_rtx_EQ (mmsk, src, zero))));
+	}
     }
 
   /* Estimate the approximate reciprocal square root.  */
@@ -12824,29 +12837,40 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
   while (iterations--)
     {
       rtx x2 = gen_reg_rtx (mode);
-      emit_set_insn (x2, gen_rtx_MULT (mode, xdst, xdst));
+      aarch64_emit_mult (x2, pg, xdst, xdst);
 
       emit_insn (gen_aarch64_rsqrts (mode, x1, src, x2));
 
       if (iterations > 0)
-	emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, x1));
+	aarch64_emit_mult (xdst, pg, xdst, x1);
     }
 
   if (!recp)
     {
-      /* Qualify the approximate reciprocal square root when the argument is
-	 0.0 by squashing the intermediary result to 0.0.  */
-      rtx xtmp = gen_reg_rtx (mmsk);
-      emit_set_insn (xtmp, gen_rtx_AND (mmsk, gen_rtx_NOT (mmsk, xmsk),
-					      gen_rtx_SUBREG (mmsk, xdst, 0)));
-      emit_move_insn (xdst, gen_rtx_SUBREG (mode, xtmp, 0));
+      if (pg)
+	/* Multiply nonzero source values by the corresponding intermediate
+	   result elements, so that the final calculation is the approximate
+	   square root rather than its reciprocal.  Select a zero result for
+	   zero source values, to avoid the Inf * 0 -> NaN that we'd get
+	   otherwise.  */
+	emit_insn (gen_cond (UNSPEC_COND_FMUL, mode,
+			     xdst, xmsk, xdst, src, CONST0_RTX (mode)));
+      else
+	{
+	  /* Qualify the approximate reciprocal square root when the
+	     argument is 0.0 by squashing the intermediary result to 0.0.  */
+	  rtx xtmp = gen_reg_rtx (mmsk);
+	  emit_set_insn (xtmp, gen_rtx_AND (mmsk, gen_rtx_NOT (mmsk, xmsk),
+					    gen_rtx_SUBREG (mmsk, xdst, 0)));
+	  emit_move_insn (xdst, gen_rtx_SUBREG (mode, xtmp, 0));
 
-      /* Calculate the approximate square root.  */
-      emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, src));
+	  /* Calculate the approximate square root.  */
+	  aarch64_emit_mult (xdst, pg, xdst, src);
+	}
     }
 
   /* Finalize the approximation.  */
-  emit_set_insn (dst, gen_rtx_MULT (mode, xdst, x1));
+  aarch64_emit_mult (dst, pg, xdst, x1);
 
   return true;
 }

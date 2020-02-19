@@ -1,5 +1,12 @@
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/rsqrt_1.c: New test.
+	* gcc.target/aarch64/sve/rsqrt_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1_run.c: Likewise.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/recip_1.c: New test.
 	* gcc.target/aarch64/sve/recip_1_run.c: Likewise.
 	* gcc.target/aarch64/sve/recip_2.c: Likewise.
