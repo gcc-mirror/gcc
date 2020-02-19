@@ -663,7 +663,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 
 	/* signal handler may access uninitialized memory
 	   and delete whatever it points to, if lto_o_files
-	   is not allocatted with calloc.  */
+	   is not allocated with calloc.  */
 	lto_o_files = XCNEWVEC (char *, num_files + 1);
 	lto_o_files[num_files] = NULL;
 	start = XOBFINISH (&temporary_obstack, char *);
