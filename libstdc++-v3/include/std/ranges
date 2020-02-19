@@ -214,6 +214,12 @@ namespace ranges
 
   namespace __detail
   {
+    template<class _From, class _To>
+      concept __convertible_to_non_slicing = convertible_to<_From, _To>
+	&& !(is_pointer_v<decay_t<_From>> && is_pointer_v<decay_t<_To>>
+	    && __not_same_as<remove_pointer_t<decay_t<_From>>,
+			     remove_pointer_t<decay_t<_To>>>);
+
     template<typename _Tp>
       concept __pair_like
 	= !is_reference_v<_Tp> && requires(_Tp __t)
@@ -227,18 +233,11 @@ namespace ranges
 	};
 
     template<typename _Tp, typename _Up, typename _Vp>
-      concept __pair_like_convertible_to
-	= !range<_Tp> && __pair_like<remove_reference_t<_Tp>>
-	&& requires(_Tp&& __t)
-	{
-	  { get<0>(std::forward<_Tp>(__t)) } -> convertible_to<_Up>;
-	  { get<1>(std::forward<_Tp>(__t)) } -> convertible_to<_Vp>;
-	};
-
-    template<typename _Tp, typename _Up, typename _Vp>
       concept __pair_like_convertible_from
 	= !range<_Tp> && __pair_like<_Tp>
-	&& constructible_from<_Tp, _Up, _Vp>;
+	&& constructible_from<_Tp, _Up, _Vp>
+	&& __convertible_to_non_slicing<_Up, tuple_element_t<0, _Tp>>
+	&& convertible_to<_Vp, tuple_element_t<1, _Tp>>;
 
     template<typename _Tp>
       concept __iterator_sentinel_pair
@@ -277,12 +276,13 @@ namespace ranges
       subrange() = default;
 
       constexpr
-      subrange(_It __i, _Sent __s) requires (!_S_store_size)
+      subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s)
+	requires (!_S_store_size)
       : _M_begin(std::move(__i)), _M_end(__s)
       { }
 
       constexpr
-      subrange(_It __i, _Sent __s,
+      subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s,
 	       __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
 	requires (_Kind == subrange_kind::sized)
       : _M_begin(std::move(__i)), _M_end(__s)
@@ -295,7 +295,7 @@ namespace ranges
 
       template<__detail::__not_same_as<subrange> _Rng>
 	requires borrowed_range<_Rng>
-	  && convertible_to<iterator_t<_Rng>, _It>
+	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r) requires (!_S_store_size || sized_range<_Rng>)
@@ -306,30 +306,13 @@ namespace ranges
 	}
 
       template<borrowed_range _Rng>
-	requires convertible_to<iterator_t<_Rng>, _It>
+	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r,
 		 __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
 	requires (_Kind == subrange_kind::sized)
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
-	{ }
-
-      template<__detail::__not_same_as<subrange> _PairLike>
-	requires __detail::__pair_like_convertible_to<_PairLike, _It, _Sent>
-	constexpr
-	subrange(_PairLike&& __r) requires (!_S_store_size)
-	: subrange{std::get<0>(std::forward<_PairLike>(__r)),
-		   std::get<1>(std::forward<_PairLike>(__r))}
-	{ }
-
-      template<__detail::__pair_like_convertible_to<_It, _Sent> _PairLike>
-	constexpr
-	subrange(_PairLike&& __r,
-		 __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
-	requires (_Kind == subrange_kind::sized)
-	: subrange{std::get<0>(std::forward<_PairLike>(__r)),
-		   std::get<1>(std::forward<_PairLike>(__r)), __n}
 	{ }
 
       template<__detail::__not_same_as<subrange> _PairLike>
@@ -401,6 +384,9 @@ namespace ranges
 	return *this;
       }
     };
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    subrange(_It, _Sent) -> subrange<_It, _Sent>;
 
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
     subrange(_It, _Sent,
