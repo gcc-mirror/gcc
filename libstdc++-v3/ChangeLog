@@ -1,3 +1,9 @@
+2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__find_fn, __find_first_of_fn)
+	(__adjacent_find_fn, __remove_if_fn, __remove_copy_if_fn)
+	(__unique_fn, __unique_copy_fn): Remove redundant conversions to bool.
+
 2020-02-18  Patrick Palka  <ppalka@redhat.com>
 
 	P1983R0 Wording for GB301, US296, US292, US291, and US283
