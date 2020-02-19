@@ -1,5 +1,10 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges (tuple_element<0, const subrange<I, S, K>>)
+	(tuple_element<1, const subrange<I, S, K>>): Add partial
+	specializations (LWG 3398).
+	* testsuite/std/ranges/subrange/tuple_like.cc: New test.
+
 	* include/bits/ranges_algo.h (__find_fn, __find_first_of_fn)
 	(__adjacent_find_fn, __remove_if_fn, __remove_copy_if_fn)
 	(__unique_fn, __unique_copy_fn): Remove redundant conversions to bool.

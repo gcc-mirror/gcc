@@ -3193,7 +3193,6 @@ namespace views
 	typename tuple_size<_Tp>::type;
 	requires _Nm < tuple_size_v<_Tp>;
 	typename tuple_element_t<_Nm, _Tp>;
-	// XXX: we applied P3323 here
 	{ std::get<_Nm>(__t) }
 	  -> convertible_to<const tuple_element_t<_Nm, _Tp>&>;
       };
@@ -3449,6 +3448,14 @@ namespace views
 
   template<typename _Iter, typename _Sent, ranges::subrange_kind _Kind>
     struct tuple_element<1, ranges::subrange<_Iter, _Sent, _Kind>>
+    { using type = _Sent; };
+
+  template<typename _Iter, typename _Sent, ranges::subrange_kind _Kind>
+    struct tuple_element<0, const ranges::subrange<_Iter, _Sent, _Kind>>
+    { using type = _Iter; };
+
+  template<typename _Iter, typename _Sent, ranges::subrange_kind _Kind>
+    struct tuple_element<1, const ranges::subrange<_Iter, _Sent, _Kind>>
     { using type = _Sent; };
 
 _GLIBCXX_END_NAMESPACE_VERSION
