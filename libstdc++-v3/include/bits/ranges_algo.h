@@ -190,7 +190,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirectly_unary_invocable<projected<iterator_t<_Range>, _Proj>>
 	       _Fun>
-      constexpr for_each_result<safe_iterator_t<_Range>, _Fun>
+      constexpr for_each_result<borrowed_iterator_t<_Range>, _Fun>
       operator()(_Range&& __r, _Fun __f, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -253,7 +253,7 @@ namespace ranges
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<iterator_t<_Range>, _Proj>,
 					 const _Tp*>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -281,7 +281,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -309,7 +309,7 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -345,7 +345,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
-      constexpr safe_iterator_t<_Range1>
+      constexpr borrowed_iterator_t<_Range1>
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -536,7 +536,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
-      constexpr safe_subrange_t<_Range1>
+      constexpr borrowed_subrange_t<_Range1>
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -625,7 +625,7 @@ namespace ranges
 	     typename _Pred = ranges::equal_to, typename _Proj = identity>
       requires indirectly_comparable<iterator_t<_Range>, const _Tp*,
 				     _Pred, _Proj>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, range_difference_t<_Range> __count,
 	       const _Tp& __value, _Pred __pred = {}, _Proj __proj = {}) const
       {
@@ -701,7 +701,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
-      constexpr safe_subrange_t<_Range1>
+      constexpr borrowed_subrange_t<_Range1>
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -742,7 +742,7 @@ namespace ranges
 	     indirect_binary_predicate<
 	       projected<iterator_t<_Range>, _Proj>,
 	       projected<iterator_t<_Range>, _Proj>> _Pred = ranges::equal_to>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Pred __pred = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -866,7 +866,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
-      constexpr copy_if_result<safe_iterator_t<_Range>, _Out>
+      constexpr copy_if_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -898,8 +898,8 @@ namespace ranges
 
     template<input_range _Range1, input_range _Range2>
       requires indirectly_swappable<iterator_t<_Range1>, iterator_t<_Range2>>
-      constexpr swap_ranges_result<safe_iterator_t<_Range1>,
-				   safe_iterator_t<_Range2>>
+      constexpr swap_ranges_result<borrowed_iterator_t<_Range1>,
+				   borrowed_iterator_t<_Range2>>
       operator()(_Range1&& __r1, _Range2&& __r2) const
       {
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
@@ -961,7 +961,7 @@ namespace ranges
       requires indirectly_writable<_Out,
 				   indirect_result_t<_Fp&,
 				     projected<iterator_t<_Range>, _Proj>>>
-      constexpr unary_transform_result<safe_iterator_t<_Range>, _Out>
+      constexpr unary_transform_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result, _Fp __op, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -998,8 +998,8 @@ namespace ranges
 				   indirect_result_t<_Fp&,
 				     projected<iterator_t<_Range1>, _Proj1>,
 				     projected<iterator_t<_Range2>, _Proj2>>>
-      constexpr binary_transform_result<safe_iterator_t<_Range1>,
-					safe_iterator_t<_Range2>, _Out>
+      constexpr binary_transform_result<borrowed_iterator_t<_Range1>,
+					borrowed_iterator_t<_Range2>, _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result, _Fp __binary_op,
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -1036,7 +1036,7 @@ namespace ranges
 	&& indirect_binary_predicate<ranges::equal_to,
 				     projected<iterator_t<_Range>, _Proj>,
 				     const _Tp1*>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r,
 		 const _Tp1& __old_value, const _Tp2& __new_value,
 		 _Proj __proj = {}) const
@@ -1068,7 +1068,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires indirectly_writable<iterator_t<_Range>, const _Tp&>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r,
 		 _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
       {
@@ -1109,7 +1109,7 @@ namespace ranges
 	&& indirect_binary_predicate<ranges::equal_to,
 				     projected<iterator_t<_Range>, _Proj>,
 				     const _Tp1*>
-      constexpr replace_copy_result<safe_iterator_t<_Range>, _Out>
+      constexpr replace_copy_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
 		 const _Tp1& __old_value, const _Tp2& __new_value,
 		 _Proj __proj = {}) const
@@ -1150,7 +1150,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
-      constexpr replace_copy_if_result<safe_iterator_t<_Range>, _Out>
+      constexpr replace_copy_if_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
 		 _Pred __pred, const _Tp& __new_value, _Proj __proj = {}) const
       {
@@ -1194,7 +1194,7 @@ namespace ranges
 
     template<typename _Range, copy_constructible _Fp>
       requires invocable<_Fp&> && output_range<_Range, invoke_result_t<_Fp&>>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Fp __gen) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__gen));
@@ -1232,7 +1232,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires permutable<iterator_t<_Range>>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1265,7 +1265,7 @@ namespace ranges
 	&& indirect_binary_predicate<ranges::equal_to,
 				     projected<iterator_t<_Range>, _Proj>,
 				     const _Tp*>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1302,7 +1302,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
-      constexpr remove_copy_if_result<safe_iterator_t<_Range>, _Out>
+      constexpr remove_copy_if_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -1344,7 +1344,7 @@ namespace ranges
 	&& indirect_binary_predicate<ranges::equal_to,
 				     projected<iterator_t<_Range>, _Proj>,
 				     const _Tp*>
-      constexpr remove_copy_result<safe_iterator_t<_Range>, _Out>
+      constexpr remove_copy_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
 		 const _Tp& __value, _Proj __proj = {}) const
       {
@@ -1383,7 +1383,7 @@ namespace ranges
 	     indirect_equivalence_relation<
 	       projected<iterator_t<_Range>, _Proj>> _Comp = ranges::equal_to>
       requires permutable<iterator_t<_Range>>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1467,7 +1467,7 @@ namespace ranges
 	    || (input_iterator<_Out>
 		&& same_as<range_value_t<_Range>, iter_value_t<_Out>>)
 	    || indirectly_copyable_storable<iterator_t<_Range>, _Out>)
-      constexpr unique_copy_result<safe_iterator_t<_Range>, _Out>
+      constexpr unique_copy_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -1519,7 +1519,7 @@ namespace ranges
 
     template<bidirectional_range _Range>
       requires permutable<iterator_t<_Range>>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r));
@@ -1552,7 +1552,7 @@ namespace ranges
 
     template<bidirectional_range _Range, weakly_incrementable _Out>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
-      constexpr reverse_copy_result<safe_iterator_t<_Range>, _Out>
+      constexpr reverse_copy_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1699,7 +1699,7 @@ namespace ranges
 
     template<forward_range _Range>
       requires permutable<iterator_t<_Range>>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle) const
       {
 	return (*this)(ranges::begin(__r), std::move(__middle),
@@ -1732,7 +1732,7 @@ namespace ranges
 
     template<forward_range _Range, weakly_incrementable _Out>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
-      constexpr rotate_copy_result<safe_iterator_t<_Range>, _Out>
+      constexpr rotate_copy_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, iterator_t<_Range> __middle, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), std::move(__middle),
@@ -1818,7 +1818,7 @@ namespace ranges
     template<random_access_range _Range, typename _Gen>
       requires permutable<iterator_t<_Range>>
 	&& uniform_random_bit_generator<remove_reference_t<_Gen>>
-      safe_iterator_t<_Range>
+      borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Gen&& __g) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1847,7 +1847,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1875,7 +1875,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1903,7 +1903,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1931,7 +1931,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -1968,7 +1968,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2026,7 +2026,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2054,7 +2054,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      safe_iterator_t<_Range>
+      borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2095,7 +2095,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2168,8 +2168,8 @@ namespace ranges
 	&& indirect_strict_weak_order<_Comp,
 				      projected<iterator_t<_Range1>, _Proj1>,
 				      projected<iterator_t<_Range2>, _Proj2>>
-      constexpr partial_sort_copy_result<safe_iterator_t<_Range1>,
-					 safe_iterator_t<_Range2>>
+      constexpr partial_sort_copy_result<borrowed_iterator_t<_Range1>,
+					 borrowed_iterator_t<_Range2>>
       operator()(_Range1&& __r, _Range2&& __out, _Comp __comp = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
@@ -2207,7 +2207,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2270,7 +2270,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __nth,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2314,7 +2314,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2358,7 +2358,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r,
 		 const _Tp& __value, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2418,7 +2418,7 @@ namespace ranges
 	     indirect_strict_weak_order<const _Tp*,
 					projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, const _Tp& __value,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2554,7 +2554,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires permutable<iterator_t<_Range>>
-      constexpr safe_subrange_t<_Range>
+      constexpr borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2585,7 +2585,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires permutable<iterator_t<_Range>>
-      safe_subrange_t<_Range>
+      borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2658,7 +2658,7 @@ namespace ranges
 	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out1>
 	&& indirectly_copyable<iterator_t<_Range>, _O2>
-      constexpr partition_copy_result<safe_iterator_t<_Range>, _Out1, _O2>
+      constexpr partition_copy_result<borrowed_iterator_t<_Range>, _Out1, _O2>
       operator()(_Range&& __r, _Out1 out_true, _O2 out_false,
 		 _Pred __pred, _Proj __proj = {}) const
       {
@@ -2701,7 +2701,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -2756,8 +2756,8 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires mergeable<iterator_t<_Range1>, iterator_t<_Range2>, _Out,
 			 _Comp, _Proj1, _Proj2>
-      constexpr merge_result<safe_iterator_t<_Range1>,
-			     safe_iterator_t<_Range2>,
+      constexpr merge_result<borrowed_iterator_t<_Range1>,
+			     borrowed_iterator_t<_Range2>,
 			     _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
 		 _Comp __comp = {},
@@ -2791,7 +2791,7 @@ namespace ranges
     template<bidirectional_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      safe_iterator_t<_Range>
+      borrowed_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2906,8 +2906,8 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires mergeable<iterator_t<_Range1>, iterator_t<_Range2>, _Out,
 			 _Comp, _Proj1, _Proj2>
-      constexpr set_union_result<safe_iterator_t<_Range1>,
-				 safe_iterator_t<_Range2>, _Out>
+      constexpr set_union_result<borrowed_iterator_t<_Range1>,
+				 borrowed_iterator_t<_Range2>, _Out>
       operator()(_Range1&& __r1, _Range2&& __r2,
 		 _Out __result, _Comp __comp = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
@@ -2964,8 +2964,8 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires mergeable<iterator_t<_Range1>, iterator_t<_Range2>, _Out,
 			 _Comp, _Proj1, _Proj2>
-      constexpr set_intersection_result<safe_iterator_t<_Range1>,
-					safe_iterator_t<_Range2>, _Out>
+      constexpr set_intersection_result<borrowed_iterator_t<_Range1>,
+					borrowed_iterator_t<_Range2>, _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
 		 _Comp __comp = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
@@ -3022,7 +3022,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires mergeable<iterator_t<_Range1>, iterator_t<_Range2>, _Out,
 			 _Comp, _Proj1, _Proj2>
-      constexpr set_difference_result<safe_iterator_t<_Range1>, _Out>
+      constexpr set_difference_result<borrowed_iterator_t<_Range1>, _Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
 		 _Comp __comp = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
@@ -3088,8 +3088,8 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires mergeable<iterator_t<_Range1>, iterator_t<_Range2>, _Out,
 			 _Comp, _Proj1, _Proj2>
-      constexpr set_symmetric_difference_result<safe_iterator_t<_Range1>,
-						safe_iterator_t<_Range2>,
+      constexpr set_symmetric_difference_result<borrowed_iterator_t<_Range1>,
+						borrowed_iterator_t<_Range2>,
 						_Out>
       operator()(_Range1&& __r1, _Range2&& __r2, _Out __result,
 		 _Comp __comp = {},
@@ -3343,7 +3343,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -3380,7 +3380,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -3425,7 +3425,7 @@ namespace ranges
     template<forward_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      constexpr minmax_element_result<safe_iterator_t<_Range>>
+      constexpr minmax_element_result<borrowed_iterator_t<_Range>>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -3610,7 +3610,7 @@ namespace ranges
     template<bidirectional_range _Range, typename _Comp = ranges::less,
 	     typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr next_permutation_result<safe_iterator_t<_Range>>
+      constexpr next_permutation_result<borrowed_iterator_t<_Range>>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -3672,7 +3672,7 @@ namespace ranges
     template<bidirectional_range _Range, typename _Comp = ranges::less,
 	     typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
-      constexpr prev_permutation_result<safe_iterator_t<_Range>>
+      constexpr prev_permutation_result<borrowed_iterator_t<_Range>>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),

@@ -1,5 +1,33 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	LWG 3379. "safe" in several library names is misleading
+	* include/bits/range_access.h (enable_safe_range): Rename to
+	enable_borrowed_range.
+	(__detail::__maybe_safe_range): Rename to __maybe_borrowed_range.
+	(safe_range): Rename to borrowed_range.
+	* include/bits/ranges_algo.h: Adjust to use new names.
+	* include/bits/ranges_algobase.h: Likewise.
+	* include/bits/ranges_uninitialized.h: Likewise.
+	* include/std/ranges: Likewise.
+	(safe_iterator_t): Rename to borrowed_iterator_t.
+	(safe_subrange_t): Rename to borrowed_subrange_t.
+	* include/std/span: Adjust to use new names.
+	* include/std/string_view: Likewise.
+	* include/experimental/string_view: Likewise.
+	* testsuite/std/ranges/access/begin.cc: Likewise.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/safe_range.cc: Likewise.
+	* testsuite/std/ranges/safe_range_types.cc: Likewise.
+	* testsuite/util/testsuite_iterators.h: Likewise.
+
 	* include/std/ranges (tuple_element<0, const subrange<I, S, K>>)
 	(tuple_element<1, const subrange<I, S, K>>): Add partial
 	specializations (LWG 3398).

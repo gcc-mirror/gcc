@@ -207,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Range>
 	requires ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
-	  && (ranges::safe_range<_Range> || is_const_v<element_type>)
+	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
 	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
 	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
 	  && (!is_array_v<remove_cvref_t<_Range>>)
@@ -465,11 +465,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace ranges
   {
-    template<typename> extern inline const bool enable_safe_range;
-    // Opt-in to safe_range concept
+    template<typename> extern inline const bool enable_borrowed_range;
+    // Opt-in to borrowed_range concept
     template<typename _ElementType, size_t _Extent>
       inline constexpr bool
-	enable_safe_range<span<_ElementType, _Extent>> = true;
+	enable_borrowed_range<span<_ElementType, _Extent>> = true;
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

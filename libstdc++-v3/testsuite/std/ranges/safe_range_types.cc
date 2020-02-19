@@ -25,35 +25,35 @@
 
 template<typename T>
 constexpr bool
-rvalue_is_safe_range()
+rvalue_is_borrowed_range()
 {
-  using std::ranges::safe_range;
+  using std::ranges::borrowed_range;
 
-  // An lvalue range always models safe_range
-  static_assert( safe_range<T&> );
-  static_assert( safe_range<const T&> );
+  // An lvalue range always models borrowed_range
+  static_assert( borrowed_range<T&> );
+  static_assert( borrowed_range<const T&> );
 
   // Result should not depend on addition of const or rvalue-reference.
-  static_assert( safe_range<T&&> == safe_range<T> );
-  static_assert( safe_range<const T> == safe_range<T> );
-  static_assert( safe_range<const T&&> == safe_range<T> );
+  static_assert( borrowed_range<T&&> == borrowed_range<T> );
+  static_assert( borrowed_range<const T> == borrowed_range<T> );
+  static_assert( borrowed_range<const T&&> == borrowed_range<T> );
 
-  return std::ranges::safe_range<T>;
+  return std::ranges::borrowed_range<T>;
 }
 
-static_assert( rvalue_is_safe_range<std::ranges::subrange<int*, int*>>() );
-static_assert( rvalue_is_safe_range<std::ranges::empty_view<int>>() );
-static_assert( rvalue_is_safe_range<std::ranges::iota_view<int>>() );
-static_assert( rvalue_is_safe_range<std::ranges::iota_view<int, int>>() );
+static_assert( rvalue_is_borrowed_range<std::ranges::subrange<int*, int*>>() );
+static_assert( rvalue_is_borrowed_range<std::ranges::empty_view<int>>() );
+static_assert( rvalue_is_borrowed_range<std::ranges::iota_view<int>>() );
+static_assert( rvalue_is_borrowed_range<std::ranges::iota_view<int, int>>() );
 
-static_assert( rvalue_is_safe_range<std::span<int>>() );
-static_assert( rvalue_is_safe_range<std::span<int, 99>>() );
+static_assert( rvalue_is_borrowed_range<std::span<int>>() );
+static_assert( rvalue_is_borrowed_range<std::span<int, 99>>() );
 
-static_assert( ! rvalue_is_safe_range<std::string>() );
-static_assert( ! rvalue_is_safe_range<std::wstring>() );
+static_assert( ! rvalue_is_borrowed_range<std::string>() );
+static_assert( ! rvalue_is_borrowed_range<std::wstring>() );
 
-static_assert( rvalue_is_safe_range<std::string_view>() );
-static_assert( rvalue_is_safe_range<std::wstring_view>() );
+static_assert( rvalue_is_borrowed_range<std::string_view>() );
+static_assert( rvalue_is_borrowed_range<std::wstring_view>() );
 
-static_assert( rvalue_is_safe_range<std::experimental::string_view>() );
-static_assert( rvalue_is_safe_range<std::experimental::wstring_view>() );
+static_assert( rvalue_is_borrowed_range<std::experimental::string_view>() );
+static_assert( rvalue_is_borrowed_range<std::experimental::wstring_view>() );

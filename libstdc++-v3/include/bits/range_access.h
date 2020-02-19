@@ -344,7 +344,7 @@ namespace ranges
     inline constexpr bool disable_sized_range = false;
 
   template<typename _Tp>
-    inline constexpr bool enable_safe_range = false;
+    inline constexpr bool enable_borrowed_range = false;
 
   namespace __detail
   {
@@ -357,16 +357,17 @@ namespace ranges
       using __make_unsigned_like_t
 	= conditional_t<_MaxDiff, __max_size_type, make_unsigned_t<_Tp>>;
 
-    // Part of the constraints of ranges::safe_range
+    // Part of the constraints of ranges::borrowed_range
     template<typename _Tp>
-      concept __maybe_safe_range
-	= is_lvalue_reference_v<_Tp> || enable_safe_range<remove_cvref_t<_Tp>>;
+      concept __maybe_borrowed_range
+	= is_lvalue_reference_v<_Tp>
+	  || enable_borrowed_range<remove_cvref_t<_Tp>>;
 
   } // namespace __detail
 
   namespace __cust_access
   {
-    using std::ranges::__detail::__maybe_safe_range;
+    using std::ranges::__detail::__maybe_borrowed_range;
     using std::__detail::__class_or_enum;
 
     template<typename _Tp>
@@ -407,7 +408,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
 	constexpr auto
@@ -459,7 +460,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
 	|| __adl_end<_Tp>
 	constexpr auto
@@ -559,7 +560,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
 	constexpr auto
 	operator()(_Tp&& __t) const
@@ -616,7 +617,7 @@ namespace ranges
 	}
 
     public:
-      template<__maybe_safe_range _Tp>
+      template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
 	constexpr auto
 	operator()(_Tp&& __t) const
@@ -875,9 +876,10 @@ namespace ranges
 	ranges::end(__t);
       };
 
-  /// [range.range] The safe_range concept.
+  /// [range.range] The borrowed_range concept.
   template<typename _Tp>
-    concept safe_range = range<_Tp> && __detail::__maybe_safe_range<_Tp>;
+    concept borrowed_range
+      = range<_Tp> && __detail::__maybe_borrowed_range<_Tp>;
 
   template<range _Range>
     using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));

@@ -57,7 +57,7 @@ struct R
 };
 
 // This is a lie, ranges::begin(R&&) returns a dangling iterator.
-template<> constexpr bool std::ranges::enable_safe_range<R> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R> = true;
 
 void
 test03()
