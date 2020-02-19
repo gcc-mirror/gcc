@@ -1,5 +1,14 @@
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_emit_mult): New function.
+	(aarch64_emit_approx_div): Add SVE support.  Use aarch64_emit_mult
+	instead of emitting multiplication instructions directly.
+	* config/aarch64/iterators.md (SVE_COND_FP_BINARY_OPTAB): New iterator.
+	* config/aarch64/aarch64-sve.md (div<mode>3, @aarch64_frecpe<mode>)
+	(@aarch64_frecps<mode>): New expanders.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (AARCH64_APPROX_MODE): Operate
 	on and produce uint64_ts rather than ints.
 	(AARCH64_APPROX_NONE, AARCH64_APPROX_ALL): Change to uint64_ts.

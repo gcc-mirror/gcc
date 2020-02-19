@@ -2291,6 +2291,17 @@
 					 UNSPEC_COND_FMULX
 					 UNSPEC_COND_FSUB])
 
+;; Same as SVE_COND_FP_BINARY, but without codes that have a dedicated
+;; <optab><mode>3 expander.
+(define_int_iterator SVE_COND_FP_BINARY_OPTAB [UNSPEC_COND_FADD
+					       UNSPEC_COND_FMAX
+					       UNSPEC_COND_FMAXNM
+					       UNSPEC_COND_FMIN
+					       UNSPEC_COND_FMINNM
+					       UNSPEC_COND_FMUL
+					       UNSPEC_COND_FMULX
+					       UNSPEC_COND_FSUB])
+
 (define_int_iterator SVE_COND_FP_BINARY_INT [UNSPEC_COND_FSCALE])
 
 (define_int_iterator SVE_COND_FP_ADD [UNSPEC_COND_FADD])

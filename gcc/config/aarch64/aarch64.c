@@ -12739,6 +12739,25 @@ aarch64_builtin_reciprocal (tree fndecl)
   gcc_unreachable ();
 }
 
+/* Emit code to perform the floating-point operation:
+
+     DST = SRC1 * SRC2
+
+   where all three operands are already known to be registers.
+   If the operation is an SVE one, PTRUE is a suitable all-true
+   predicate.  */
+
+static void
+aarch64_emit_mult (rtx dst, rtx ptrue, rtx src1, rtx src2)
+{
+  if (ptrue)
+    emit_insn (gen_aarch64_pred (UNSPEC_COND_FMUL, GET_MODE (dst),
+				 dst, ptrue, src1, src2,
+				 gen_int_mode (SVE_RELAXED_GP, SImode)));
+  else
+    emit_set_insn (dst, gen_rtx_MULT (GET_MODE (dst), src1, src2));
+}
+
 /* Emit instruction sequence to compute either the approximate square root
    or its approximate reciprocal, depending on the flag RECP, and return
    whether the sequence was emitted or not.  */
@@ -12857,6 +12876,10 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
   if (!TARGET_SIMD && VECTOR_MODE_P (mode))
     return false;
 
+  rtx pg = NULL_RTX;
+  if (aarch64_sve_mode_p (mode))
+    pg = aarch64_ptrue_reg (aarch64_sve_pred_mode (mode));
+
   /* Estimate the approximate reciprocal.  */
   rtx xrcp = gen_reg_rtx (mode);
   emit_insn (gen_aarch64_frecpe (mode, xrcp, den));
@@ -12876,7 +12899,7 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
       emit_insn (gen_aarch64_frecps (mode, xtmp, xrcp, den));
 
       if (iterations > 0)
-	emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xtmp));
+	aarch64_emit_mult (xrcp, pg, xrcp, xtmp);
     }
 
   if (num != CONST1_RTX (mode))
@@ -12884,11 +12907,11 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
       /* As the approximate reciprocal of DEN is already calculated, only
 	 calculate the approximate division when NUM is not 1.0.  */
       rtx xnum = force_reg (mode, num);
-      emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xnum));
+      aarch64_emit_mult (xrcp, pg, xrcp, xnum);
     }
 
   /* Finalize the approximation.  */
-  emit_set_insn (quo, gen_rtx_MULT (mode, xrcp, xtmp));
+  aarch64_emit_mult (quo, pg, xrcp, xtmp);
   return true;
 }
 

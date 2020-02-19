@@ -99,6 +99,7 @@
 ;; ---- [FP] Subtraction
 ;; ---- [FP] Absolute difference
 ;; ---- [FP] Multiplication
+;; ---- [FP] Division
 ;; ---- [FP] Binary logical operations
 ;; ---- [FP] Sign copying
 ;; ---- [FP] Maximum and minimum
@@ -4719,7 +4720,7 @@
 	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_FULL_F 1 "<sve_pred_fp_rhs1_operand>")
 	   (match_operand:SVE_FULL_F 2 "<sve_pred_fp_rhs2_operand>")]
-	  SVE_COND_FP_BINARY))]
+	  SVE_COND_FP_BINARY_OPTAB))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
@@ -5453,6 +5454,47 @@
 	  (match_operand:SVE_FULL_F 1 "register_operand" "w")))]
   "TARGET_SVE"
   "fmul\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>[%3]"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Division
+;; -------------------------------------------------------------------------
+;; The patterns in this section are synthetic.
+;; -------------------------------------------------------------------------
+
+(define_expand "div<mode>3"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:SVE_FULL_F 1 "nonmemory_operand")
+	   (match_operand:SVE_FULL_F 2 "register_operand")]
+	  UNSPEC_COND_FDIV))]
+  "TARGET_SVE"
+  {
+    if (aarch64_emit_approx_div (operands[0], operands[1], operands[2]))
+      DONE;
+
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
+(define_expand "@aarch64_frecpe<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:SVE_FULL_F 1 "register_operand")]
+	  UNSPEC_FRECPE))]
+  "TARGET_SVE"
+)
+
+(define_expand "@aarch64_frecps<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:SVE_FULL_F 1 "register_operand")
+	   (match_operand:SVE_FULL_F 2 "register_operand")]
+	  UNSPEC_FRECPS))]
+  "TARGET_SVE"
 )
 
 ;; -------------------------------------------------------------------------
