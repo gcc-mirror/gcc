@@ -94,6 +94,11 @@
 ; an IT block in their expansion which is not a short IT.
 (define_attr "enabled_for_short_it" "no,yes" (const_string "yes"))
 
+; Mark an instruction sequence as the required way of loading a
+; constant when -mpure-code is enabled (which implies
+; arm_disable_literal_pool)
+(define_attr "required_for_purecode" "no,yes" (const_string "no"))
+
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
 (define_attr "shift" "" (const_int 0))
@@ -235,6 +240,10 @@
 
 	  (and (eq_attr "enabled_for_short_it" "no")
 	       (match_test "arm_restrict_it"))
+	  (const_string "no")
+
+	  (and (eq_attr "required_for_purecode" "yes")
+	       (not (match_test "arm_disable_literal_pool")))
 	  (const_string "no")
 
 	  (eq_attr "arch_enabled" "no")

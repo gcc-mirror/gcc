@@ -691,8 +691,8 @@
 )
 
 (define_insn "*thumb1_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=l,l,r,l,l,l,>,l, m,*l*h*k")
-	(match_operand:SI 1 "general_operand"      "l, I,j,J,K,>,l,mi,l,*l*h*k"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=l,l,r,l,l,l,>,l, l, m,*l*h*k")
+	(match_operand:SI 1 "general_operand"      "l, I,j,J,K,>,l,i, mi,l,*l*h*k"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
@@ -704,14 +704,16 @@
    #
    ldmia\\t%1, {%0}
    stmia\\t%0, {%1}
+   movs\\t%0, #:upper8_15:%1; lsls\\t%0, #8; adds\\t%0, #:upper0_7:%1; lsls\\t%0, #8; adds\\t%0, #:lower8_15:%1; lsls\\t%0, #8; adds\\t%0, #:lower0_7:%1
    ldr\\t%0, %1
    str\\t%1, %0
    mov\\t%0, %1"
-  [(set_attr "length" "2,2,4,4,4,2,2,2,2,2")
-   (set_attr "type" "mov_reg,mov_imm,mov_imm,multiple,multiple,load_4,store_4,load_4,store_4,mov_reg")
-   (set_attr "pool_range" "*,*,*,*,*,*,*,1018,*,*")
-   (set_attr "arch" "t1,t1,v8mb,t1,t1,t1,t1,t1,t1,t1")
-   (set_attr "conds" "set,clob,nocond,*,*,nocond,nocond,nocond,nocond,nocond")])
+  [(set_attr "length" "2,2,4,4,4,2,2,14,2,2,2")
+   (set_attr "type" "mov_reg,mov_imm,mov_imm,multiple,multiple,load_4,store_4,alu_sreg,load_4,store_4,mov_reg")
+   (set_attr "pool_range" "*,*,*,*,*,*,*, *,1018,*,*")
+   (set_attr "arch" "t1,t1,v8mb,t1,t1,t1,t1,t1,t1,t1,t1")
+   (set_attr "required_for_purecode" "no,no,no,no,no,no,no,yes,no,no,no")
+   (set_attr "conds" "set,clob,nocond,*,*,nocond,nocond,nocond,nocond,nocond,nocond")])
 
 ; Split the load of 64-bit constant into two loads for high and low 32-bit parts respectively
 ; to see if we can load them in fewer instructions or fewer cycles.

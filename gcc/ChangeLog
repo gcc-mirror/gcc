@@ -1,6 +1,16 @@
 2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline
+	2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.md (required_for_purecode): New attribute.
+	(enabled): Handle required_for_purecode.
+	* config/arm/thumb1.md (thumb1_movsi_insn): Add alternative to
+	work with -mpure-code.
+
+2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
 	2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm-protos.h (thumb1_gen_const_int): Add new prototype.
