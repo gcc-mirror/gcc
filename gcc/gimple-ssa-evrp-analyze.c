@@ -273,16 +273,14 @@ evrp_range_analyzer::debug_gori_ranges (tree name, edge e,
   fprintf (stderr, "\n");
   fprintf (stderr, "==============================================\n");
   debug_function (current_function_decl, TDF_NONE);
-  fprintf (stderr, "Known value_ranges and equivalences:\n");
-  fprintf (stderr, "------------------------------------\n");
-  vr_values->dump_all_value_ranges (stderr);
   if (asserts.length () > 0)
     {
-      fprintf (stderr, "\nASSERT equivalences:\n");
-      fprintf (stderr, "--------------------------\n");
+      fprintf (stderr, "asserts:\n");
+      fprintf (stderr, "--------\n");
       extern void debug (const vec<assert_info> &);
       debug (asserts);
     }
+  vr_values->dump_all_value_ranges (stderr);
 }
 
 void

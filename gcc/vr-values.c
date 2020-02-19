@@ -1940,6 +1940,10 @@ vr_values::dump_all_value_ranges (FILE *file)
 {
   size_t i;
 
+  fprintf (file, "GORI map:\n");
+  m_gori_map.dump (file);
+  fprintf (file, "-----------------\n");
+
   for (i = 0; i < num_vr_values; i++)
     {
       if (vr_value[i])
@@ -1950,10 +1954,6 @@ vr_values::dump_all_value_ranges (FILE *file)
 	  fprintf (file, "\n");
 	}
     }
-
-  fprintf (file, "\n");
-  fprintf (file, "GORI map:\n");
-  m_gori_map.dump (file);
 }
 
 // Register any SSA_NAMEs that may help us determine a range for NAME.
