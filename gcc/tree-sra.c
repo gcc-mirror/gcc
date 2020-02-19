@@ -926,6 +926,8 @@ create_access (tree expr, gimple *stmt, bool write)
       size = max_size;
       unscalarizable_region = true;
     }
+  if (size == 0)
+    return NULL;
   if (size < 0)
     {
       disqualify_candidate (base, "Encountered an unconstrained access.");
@@ -3643,7 +3645,8 @@ get_access_for_expr (tree expr)
 	return NULL;
     }
 
-  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
+  if (max_size == 0
+      || !bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;
 
   return get_var_base_offset_size_access (base, offset, max_size);

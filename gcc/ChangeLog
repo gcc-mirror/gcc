@@ -1,5 +1,11 @@
 2020-02-19  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/93776
+	* tree-sra.c (create_access): Do not create zero size accesses.
+	(get_access_for_expr): Do not search for zero sized accesses.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/93667
 	* tree-sra.c (scalarizable_type_p): Return false if record fields
 	do not follow wach other.
