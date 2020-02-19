@@ -1,5 +1,9 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/memory_resource (polymorphic_allocator::allocate_bytes)
+	(polymorphic_allocator::allocate_object)
+	(polymorphic_allocator::new_object): Add nodiscard attribute (LWG3304).
+
 	LWG 3379. "safe" in several library names is misleading
 	* include/bits/range_access.h (enable_safe_range): Rename to
 	enable_borrowed_range.

@@ -178,7 +178,7 @@ namespace pmr
       { _M_resource->deallocate(__p, __n * sizeof(_Tp), alignof(_Tp)); }
 
 #if __cplusplus > 201703L
-      void*
+      [[nodiscard]] void*
       allocate_bytes(size_t __nbytes,
 		     size_t __alignment = alignof(max_align_t))
       { return _M_resource->allocate(__nbytes, __alignment); }
@@ -189,7 +189,7 @@ namespace pmr
       { _M_resource->deallocate(__p, __nbytes, __alignment); }
 
       template<typename _Up>
-	_Up*
+	[[nodiscard]] _Up*
 	allocate_object(size_t __n = 1)
 	{
 	  if ((__detail::__int_limits<size_t>::max() / sizeof(_Up)) < __n)
@@ -204,7 +204,7 @@ namespace pmr
 	{ deallocate_bytes(__p, __n * sizeof(_Up), alignof(_Up)); }
 
       template<typename _Up, typename... _CtorArgs>
-	_Up*
+	[[nodiscard]] _Up*
 	new_object(_CtorArgs&&... __ctor_args)
 	{
 	  _Up* __p = allocate_object<_Up>();
