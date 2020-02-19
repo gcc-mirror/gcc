@@ -1,3 +1,9 @@
+2020-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93169 - wrong-code with a non-constexpr constructor.
+	* constexpr.c (cxx_eval_call_expression): Only set TREE_READONLY
+	on constant CONSTRUCTORs.
+
 2020-02-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93710 - poor diagnostic for array initializer.

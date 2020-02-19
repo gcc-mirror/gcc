@@ -2474,7 +2474,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 						     /*lval*/false,
 						     non_constant_p,
 						     overflow_p);
-	      TREE_READONLY (e) = true;
+	      if (TREE_CODE (e) == CONSTRUCTOR && !*non_constant_p)
+		TREE_READONLY (e) = true;
 	    }
 
 	  /* Forget the saved values of the callee's SAVE_EXPRs and
