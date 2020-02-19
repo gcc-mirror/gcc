@@ -327,8 +327,20 @@ evrp_range_analyzer::assert_gori_is_as_good
 	}
     }
 
-  dump_gori_differences (stderr, name, e, range_evrp, range_gori, asserts);
-  gcc_unreachable ();
+  FILE *out = stderr;
+  bool dumping = false;
+  if (!strcmp (getenv ("GORIME"), "dump"))
+    {
+      dumping = true;
+      out = fopen ("/tmp/gori-differences", "a");
+      fprintf (out, "=========FILE: %s ========\n",
+	       main_input_filename ? main_input_filename : "UNKNOWN");
+    }
+  dump_gori_differences (out, name, e, range_evrp, range_gori, asserts);
+  if (dumping)
+    fclose (out);
+  else
+    gcc_unreachable ();
 }
 
 void
