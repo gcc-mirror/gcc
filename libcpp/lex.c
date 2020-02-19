@@ -4413,62 +4413,127 @@ cpp_directive_only_process (cpp_reader *pfile,
 	      }
 
 	    case '\'':
-	      if (CPP_OPTION (pfile, digit_separators)
-		  && ISIDNUM (*do_peek_next (pos, limit)))
-		{
-		  /* Check whether this is a number punctuator
-		     \.?<digit>(<digit>|<identifier-nondigit>
-		     |'<digit>|'<nondigit>|[eEpP]<sign>|\.)*  */
-		  const unsigned char *peek = pos - 1;
-		  bool maybe_start = false;
-		  while ((peek = do_peek_prev (peek, lwm)))
-		    {
-		      unsigned char p = *peek;
-		      if (ISDIGIT (p))
-			maybe_start = true;
-		      else if (p == '.')
-			;
-		      else if (ISIDNUM (p))
-			maybe_start = false;
-		      else if (p == '+' || p == '-')
-			{
-			  if (const unsigned char *peek_prev
-			      = do_peek_prev (peek, lwm))
-			    {
-			      p = *peek_prev;
-			      if (p == 'e' || p == 'E'
-				  || p == 'p' || p == 'P')
-				maybe_start = false;
-			      else
-				break;
-			    }
-			  else
-			    break;
-			}
-		      else if (p == '\'')
-			{
-			  /* If this is lwm, this must be the end of a
-			     previous string.  So this is a trailing
-			     literal type, (a) if those are allowed,
+	      if (!CPP_OPTION (pfile, digit_separators))
+		goto delimited_string;
+	      /* Possibly a number punctuator.  */
+	      if (!ISIDNUM (*do_peek_next (pos, limit)))
+		goto delimited_string;
+
+	      {
+		/* Check if it's a number punctuator
+		   \.?<digit>(<digit>|<identifier-nondigit>
+		   |'<digit>|'<nondigit>|[eEpP]<sign>|\.)* */
+		const unsigned char *peek = pos - 1;
+		bool maybe_number_start = false;
+
+		while ((peek = do_peek_prev (peek, lwm)))
+		  {
+		    unsigned char p = *peek;
+		    if (ISDIGIT (p))
+		      maybe_number_start = true;
+		    else if (p == '.')
+		      ;
+		    else if (ISIDNUM (p))
+		      maybe_number_start = false;
+		    else if (p == '+' || p == '-')
+		      {
+			if (const unsigned char *peek_prev
+			    = do_peek_prev (peek, lwm))
+			  {
+			    p = *peek_prev;
+			    if (p == 'e' || p == 'E'
+				|| p == 'p' || p == 'P')
+			      maybe_number_start = false;
+			    else
+			      break;
+			  }
+			else
+			  break;
+		      }
+		    else if (p == '\'')
+		      {
+			/* If this is lwm, this must be the end of a
+			   previous string.  So this is a trailing
+			   literal type, (a) if those are allowed,
 			     and (b) maybe_start is false.  Otherwise
 			     this must be a CPP_NUMBER because we've
 			     met another ', and we'd have checked that
 			     in its own right.  */
-			  if (peek != lwm || !CPP_OPTION (pfile, uliterals))
-			    maybe_start = true;
-			  break;
-			}
-		      else
+			if (peek != lwm || !CPP_OPTION (pfile, uliterals))
+			  maybe_number_start = true;
 			break;
-		    }
+		      }
+		    else
+		      break;
+		  }
 
-		  if (maybe_start)
-		    /* A CPP NUMBER.  */
-		    goto dflt;
-		}
-	      /* FALLTHROUGH  */
+		if (maybe_number_start)
+		  /* A CPP NUMBER.  */
+		  goto dflt;
+	      }
+	      goto delimited_string;
 
 	    case '\"':
+	      if (!CPP_OPTION (pfile, rliterals))
+		goto delimited_string;
+	      
+	      {
+		/* Check if it's a raw string
+		   {U,L,u,u8}R  */
+		// FIXME: Not quite right, because we could be backing
+		// over a CPP-number such as 0e+R.  We should combine
+		// the ' and " backscanning
+		const unsigned char *peek = pos - 1;
+		bool first = true;
+		bool eight = false;
+		while ((peek = do_peek_prev (peek, lwm)))
+		  {
+		    unsigned char p = *peek;
+		    if (first)
+		      {
+			if (!raw)
+			  {
+			    if (p != 'R')
+			      break;
+			    raw = true;
+			    continue;
+			  }
+
+			first = false;
+			if (p == 'L' || p == 'U' || p == 'u')
+			  ;
+			else if (p == '8')
+			  eight = true;
+			else
+			  goto second_raw;
+		      }
+		    else if (eight)
+		      {
+			if (p != 'u')
+			  {
+			    raw = false;
+			    break;
+			  }
+			eight = false;
+		      }
+		    else
+		      {
+		      second_raw:;
+			if (ISIDNUM (p))
+			  raw = false;
+			else if (p == '\'' || p == '\"')
+			  {
+			    if (peek == lwm)
+			      raw = false;
+			  }
+			break;
+		      }
+		  }
+
+		goto delimited_string;
+	      }
+
+	    delimited_string:
 	      {
 		/* (Possibly raw) string or char literal.  */
 		unsigned char end = c;
@@ -4561,6 +4626,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 				     "unterminated literal");
 		
 	      done_string:
+		raw = false;
 		lwm = pos - 1;
 	      }
 	      goto dflt;
@@ -4611,61 +4677,6 @@ cpp_directive_only_process (cpp_reader *pfile,
 			pfile->line_table->highest_line);
 		  pfile->mi_valid = false;
 		  goto restart;
-		}
-	      goto dflt;
-
-	    case 'R':
-	      if (!CPP_OPTION (pfile, rliterals))
-		;
-	      else if (__builtin_expect (*do_peek_next (pos, limit) == '"',
-					 false))
-		{
-		  /* Must be preceeded by u, u8, L, U, or
-		     non-alphanum (not a raw literal)
-		     further that must not be preceeded by " or ', (not a
-		     user literal suffix'd string or char).  */
-		  // FIXME, backup over utf8?,
-		  const unsigned char *peek = pos - 1;
-		  bool first = true;
-		  bool eight = false;
-
-		  /* Peek backwards to determine if we're really
-		     looking at a raw literal.  */
-		  while ((peek = do_peek_prev (peek, lwm)))
-		    {
-		      unsigned char c = *peek;
-		      if (first)
-			{
-			  if (c == 'L' || c == 'U' || c == 'u')
-			    ; // ok
-			  else if (c == '8')
-			    eight = true;
-			  else
-			    goto maybe_raw;
-			  first = false;
-			}
-		      else if (eight)
-			{
-			  if (c == 'u')
-			    eight = false;
-			  else
-			    break; /* Not raw.  */
-			}
-		      else
-			{
-			maybe_raw:
-			  if (ISIDNUM (c))
-			    break;
-
-			  if ((c != '\"' && c != '\'')
-			      || !CPP_OPTION (pfile, uliterals))
-			    peek = NULL;
-			  break;
-			}
-		    }
-
-		  if (!peek)
-		    raw = true;
 		}
 	      goto dflt;
 

@@ -1,3 +1,9 @@
+2020-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* lex.c (cp_directive_only_process): Deal with raw strings by
+	backtracking.
+
 2020-02-14  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
