@@ -79,6 +79,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     namespace __cust_imove
     {
+      void iter_move();
+
       template<typename _Tp>
 	concept __adl_imove
 	  = (std::__detail::__class_or_enum<remove_reference_t<_Tp>>)

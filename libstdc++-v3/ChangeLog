@@ -1,5 +1,8 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/iterator_concepts.h (iter_move): Add declaration to
+	prevent unqualified lookup finding a suitable declaration (LWG 3247).
+
 	* include/std/memory_resource (polymorphic_allocator::allocate)
 	(polymorphic_allocator::allocate_object): Change type of exception to
 	bad_array_new_length (LWG 3237).
