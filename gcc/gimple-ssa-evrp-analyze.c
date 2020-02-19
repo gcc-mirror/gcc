@@ -256,31 +256,33 @@ dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 }
 
 void
-evrp_range_analyzer::debug_gori_ranges (tree name, edge e,
-					const irange *range_evrp,
-					const irange *range_gori,
-					const vec<assert_info> &asserts) const
+evrp_range_analyzer::dump_gori_differences (FILE *out,
+					    tree name, edge e,
+					    const irange *range_evrp,
+					    const irange *range_gori,
+					    const vec<assert_info> &asserts)
+  const
 {
-  fprintf (stderr, "Different ranges on edge (%d -> %d) for SSA: ",
+  fprintf (out, "Different ranges on edge (%d -> %d) for SSA: ",
 	   e->src->index, e->dest->index);
-  print_generic_stmt (stderr, name, TDF_VOPS|TDF_MEMSYMS);
-  fprintf (stderr, "\tevrp: ");
-  range_evrp->dump (stderr);
-  fprintf (stderr, "\n\tgori: ");
-  range_gori->dump (stderr);
-  fprintf (stderr, "\n\n");
-  dump_bb (stderr, e->src, 0, TDF_NONE);
-  fprintf (stderr, "\n");
-  fprintf (stderr, "==============================================\n");
-  debug_function (current_function_decl, TDF_NONE);
+  print_generic_stmt (out, name, TDF_VOPS|TDF_MEMSYMS);
+  fprintf (out, "\tevrp: ");
+  range_evrp->dump (out);
+  fprintf (out, "\n\tgori: ");
+  range_gori->dump (out);
+  fprintf (out, "\n\n");
+  dump_bb (out, e->src, 0, TDF_NONE);
+  fprintf (out, "\n");
+  fprintf (out, "==============================================\n");
+  dump_function_to_file (current_function_decl, out, TDF_NONE);
   if (asserts.length () > 0)
     {
-      fprintf (stderr, "asserts:\n");
-      fprintf (stderr, "--------\n");
-      extern void debug (const vec<assert_info> &);
-      debug (asserts);
+      fprintf (out, "asserts:\n");
+      fprintf (out, "--------\n");
+      extern void dump_asserts_info (FILE *, const vec<assert_info> &);
+      dump_asserts_info (out, asserts);
     }
-  vr_values->dump_all_value_ranges (stderr);
+  vr_values->dump_all_value_ranges (out);
 }
 
 void
@@ -325,7 +327,7 @@ evrp_range_analyzer::assert_gori_is_as_good
 	}
     }
 
-  debug_gori_ranges (name, e, range_evrp, range_gori, asserts);
+  dump_gori_differences (stderr, name, e, range_evrp, range_gori, asserts);
   gcc_unreachable ();
 }
 
