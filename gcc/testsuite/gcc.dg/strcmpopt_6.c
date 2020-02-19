@@ -33,7 +33,7 @@ test_strlen_lt6_strcmp_abcd (const char *s)
 __attribute__ ((noclone, noinline)) int
 test_strcpy_strcmp_abc (const char *s)
 {
-  char a[4];
+  char a[5];
   strcpy (a, s);
   return strcmp (a, "abc") == 0;
 }

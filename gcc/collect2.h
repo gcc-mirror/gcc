@@ -25,12 +25,8 @@ extern struct pex_obj *collect_execute (const char *, char **, const char *,
 
 extern int collect_wait (const char *, struct pex_obj *);
 
-extern void dump_ld_file (const char *, FILE *);
-
 extern int file_exists (const char *);
 
-extern const char *ldout;
-extern const char *lderrout;
 extern const char *c_file_name;
 extern struct obstack temporary_obstack;
 extern char *temporary_firstobj;

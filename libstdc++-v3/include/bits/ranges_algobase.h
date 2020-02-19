@@ -310,7 +310,7 @@ namespace ranges
 
     template<input_range _Range, weakly_incrementable _Out>
       requires indirectly_copyable<iterator_t<_Range>, _Out>
-      constexpr copy_result<safe_iterator_t<_Range>, _Out>
+      constexpr copy_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -335,7 +335,7 @@ namespace ranges
 
     template<input_range _Range, weakly_incrementable _Out>
       requires indirectly_movable<iterator_t<_Range>, _Out>
-      constexpr move_result<safe_iterator_t<_Range>, _Out>
+      constexpr move_result<borrowed_iterator_t<_Range>, _Out>
       operator()(_Range&& __r, _Out __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -452,7 +452,7 @@ namespace ranges
 
     template<bidirectional_range _Range, bidirectional_iterator _Iter>
       requires indirectly_copyable<iterator_t<_Range>, _Iter>
-      constexpr copy_backward_result<safe_iterator_t<_Range>, _Iter>
+      constexpr copy_backward_result<borrowed_iterator_t<_Range>, _Iter>
       operator()(_Range&& __r, _Iter __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -477,7 +477,7 @@ namespace ranges
 
     template<bidirectional_range _Range, bidirectional_iterator _Iter>
       requires indirectly_movable<iterator_t<_Range>, _Iter>
-      constexpr move_backward_result<safe_iterator_t<_Range>, _Iter>
+      constexpr move_backward_result<borrowed_iterator_t<_Range>, _Iter>
       operator()(_Range&& __r, _Iter __result) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
@@ -577,7 +577,7 @@ namespace ranges
       }
 
     template<typename _Tp, output_range<const _Tp&> _Range>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __value) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r), __value);

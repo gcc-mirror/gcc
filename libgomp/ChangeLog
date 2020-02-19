@@ -1,3 +1,34 @@
+2020-02-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* .gitattributes: New; whitespace handling for Fortran's openacc_lib.h.
+	* config/accel/openacc.f90 (openacc_kinds): Add acc_device_current.
+	(openacc_internal, acc_on_device_h): Fix argument name; minor cleanup.
+	* libgomp.texi (Enabling OpenACC): No longer mark as experimental.
+	(acc_set_device_num): Fix Fortran argument name, use same name for C.
+	(acc_get_property): Update Fortran interface to post-OpenACC 3.0
+	corrections; add note about the previous interface and named constant.
+	(OpenACC library and environment variables): Fix two typos.
+	* openacc.f90: Use for all procedures the argument names from the spec
+	as for …_h they are user visible.
+	(openacc_kinds): Rename acc_device_property to
+	acc_device_property_kinds and change value to int32 ; and update users.
+	Re-add acc_device_property for for backward compatibility.
+	(acc_get_property_string_h): Clean up as acc_device_property_kind
+	changed.
+	(acc_get_property_h): Likewise and return c_size_t instead of
+	acc_device_property.
+	(openacc): Also export acc_device_property_kinds.
+	(acc_async_test_h, acc_async_test_all_h, acc_on_device_h,
+	acc_is_present_32_h, acc_is_present_64_h): Simplify logical-return-value
+	handling; check against /= 0 instead of == 1 to match C.
+	* openacc_lib.h: Use for all procedures the argument names from the spec
+	as for …_h they are user visible. Place !GCC$ into the first column to
+	be active also for fixed-form souce form.
+	(acc_device_current, acc_device_property_kind, acc_device_property,
+	acc_property_memory, acc_property_free_memory, acc_property_name,
+	acc_property_vendor, acc_property_driver): New named constants.
+	(acc_get_property, acc_get_property_string): New generic interface.
+
 2020-02-13  Frederik Harwath  <frederik@codesourcery.com>
 
 	PR libgomp/93481

@@ -765,8 +765,8 @@ namespace __gnu_test
       = test_sized_range<T, output_iterator_wrapper>;
 
 // test_range and test_sized_range do not own their elements, so they model
-// std::ranges::safe_range.  This file does not define specializations of
-// std::ranges::enable_safe_range, so that individual tests can decide
+// std::ranges::borrowed_range.  This file does not define specializations of
+// std::ranges::enable_borrowed_range, so that individual tests can decide
 // whether or not to do so.
 // This is also true for test_container, although only when it has forward
 // iterators (because output_iterator_wrapper and input_iterator_wrapper are

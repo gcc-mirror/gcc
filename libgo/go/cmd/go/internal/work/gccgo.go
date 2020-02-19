@@ -596,14 +596,28 @@ func gccgoPkgpath(p *load.Package) string {
 	return p.ImportPath
 }
 
+// gccgoCleanPkgpath returns the form of p's pkgpath that gccgo uses
+// for symbol names. This is like gccgoPkgpathToSymbolNew in cmd/cgo/out.go.
 func gccgoCleanPkgpath(p *load.Package) string {
-	clean := func(r rune) rune {
+	ppath := gccgoPkgpath(p)
+	bsl := []byte{}
+	changed := false
+	for _, c := range []byte(ppath) {
 		switch {
-		case 'A' <= r && r <= 'Z', 'a' <= r && r <= 'z',
-			'0' <= r && r <= '9':
-			return r
+		case 'A' <= c && c <= 'Z', 'a' <= c && c <= 'z',
+			'0' <= c && c <= '9', c == '_':
+			bsl = append(bsl, c)
+		case c == '.':
+			bsl = append(bsl, ".x2e"...)
+			changed = true
+		default:
+			encbytes := []byte(fmt.Sprintf("..z%02x", c))
+			bsl = append(bsl, encbytes...)
+			changed = true
 		}
-		return '_'
 	}
-	return strings.Map(clean, gccgoPkgpath(p))
+	if !changed {
+		return ppath
+	}
+	return string(bsl)
 }

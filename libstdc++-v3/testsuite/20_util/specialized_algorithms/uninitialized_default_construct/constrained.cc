@@ -53,7 +53,7 @@ test01()
 	  ranges::fill(rx, t);
 	}
 
-      auto i = rx.cbegin();
+      auto i = rx.begin();
       if (k == 0)
 	i = ranges::uninitialized_default_construct(rx.begin(), rx.end());
       else if (k == 1)
@@ -63,15 +63,15 @@ test01()
       else if constexpr (std::is_fundamental_v<T>)
 	continue;
       else if (k == 3)
-	i = ranges::uninitialized_default_construct(rx.cbegin(), rx.cend());
+	i = ranges::uninitialized_default_construct(rx.begin(), rx.end());
       else if (k == 4)
 	i = ranges::uninitialized_default_construct(std::as_const(rx));
       else if (k == 5)
-	i = ranges::uninitialized_default_construct_n(rx.cbegin(), 1024);
+	i = ranges::uninitialized_default_construct_n(rx.begin(), 1024);
       else
 	__builtin_abort();
 
-      VERIFY( i == rx.cend() );
+      VERIFY( i == rx.end() );
       VERIFY( ranges::find_if(rx, [&t](const T& v) { return t != v; }) == i );
 
       ranges::destroy(rx);

@@ -1,3 +1,67 @@
+2020-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* collect2.c (maybe_run_lto_and_relink): Fix typo in
+	comment.
+
+2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93767
+	* tree-vect-data-refs.c (vect_compile_time_alias): Remove the
+	access-size bias from the offset calculations for negative strides.
+
+2020-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* collect2.c (c_file, o_file): Make const again.
+	(ldout,lderrout, dump_ld_file): Remove.
+	(tool_cleanup): Avoid calling not signal-safe functions.
+	(maybe_run_lto_and_relink): Avoid possible signal handler
+	access to unintialzed memory (lto_o_files).
+	(main): Avoid leaking temp files in $TMPDIR.
+	Initialize c_file/o_file with concat, which avoids exposing
+	uninitialized memory to signal handler, which calls unlink(!).
+	Avoid calling maybe_unlink when the main function returns,
+	since the atexit handler is already doing this.
+	* collect2.h (dump_ld_file, ldout, lderrout): Remove.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93776
+	* tree-sra.c (create_access): Do not create zero size accesses.
+	(get_access_for_expr): Do not search for zero sized accesses.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93667
+	* tree-sra.c (scalarizable_type_p): Return false if record fields
+	do not follow wach other.
+
+2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_output_move) Using fmv.x.w/fmv.w.x
+	rather than fmv.x.s/fmv.s.x.
+
+2020-02-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(intrinsic_vec_smult_lo_): New.
+	(intrinsic_vec_umult_lo_): Likewise.
+	(vec_widen_smult_hi_): Likewise.
+	(vec_widen_umult_hi_): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_intrinsic_vec_<su>mult_lo_<mode>): New.
+	* config/aarch64/arm_neon.h (vmull_high_s8): Use intrinsics.
+	(vmull_high_s16): Likewise.
+	(vmull_high_s32): Likewise.
+	(vmull_high_u8): Likewise.
+	(vmull_high_u16): Likewise.
+	(vmull_high_u32): Likewise.
+	(vmull_s8): Likewise.
+	(vmull_s16): Likewise.
+	(vmull_s32): Likewise.
+	(vmull_u8): Likewise.
+	(vmull_u16): Likewise.
+	(vmull_u32): Likewise.
+
 2020-02-18  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (stream_out_histogram_value): Restore LTO PGO

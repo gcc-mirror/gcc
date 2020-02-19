@@ -1917,7 +1917,7 @@ riscv_output_move (rtx dest, rtx src)
   if (dest_code == REG && GP_REG_P (REGNO (dest)))
     {
       if (src_code == REG && FP_REG_P (REGNO (src)))
-	return dbl_p ? "fmv.x.d\t%0,%1" : "fmv.x.s\t%0,%1";
+	return dbl_p ? "fmv.x.d\t%0,%1" : "fmv.x.w\t%0,%1";
 
       if (src_code == MEM)
 	switch (GET_MODE_SIZE (mode))
@@ -1954,7 +1954,7 @@ riscv_output_move (rtx dest, rtx src)
 	  if (FP_REG_P (REGNO (dest)))
 	    {
 	      if (!dbl_p)
-		return "fmv.s.x\t%0,%z1";
+		return "fmv.w.x\t%0,%z1";
 	      if (TARGET_64BIT)
 		return "fmv.d.x\t%0,%z1";
 	      /* in RV32, we can emulate fmv.d.x %0, x0 using fcvt.d.w */

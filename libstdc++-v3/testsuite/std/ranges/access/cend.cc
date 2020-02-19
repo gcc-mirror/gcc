@@ -60,7 +60,7 @@ struct RV // view on an R
 };
 
 // Allow ranges::end to work with RV&&
-template<> constexpr bool std::ranges::enable_safe_range<RV> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<RV> = true;
 
 void
 test03()
@@ -98,7 +98,7 @@ struct RR
 };
 
 // N.B. this is a lie, begin/end on an RR rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<RR> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<RR> = true;
 
 void
 test04()

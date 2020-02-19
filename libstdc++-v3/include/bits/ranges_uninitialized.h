@@ -88,7 +88,7 @@ namespace ranges
 
     template<__detail::__nothrow_input_range _Range>
       requires destructible<range_value_t<_Range>>
-      constexpr safe_iterator_t<_Range>
+      constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r) const noexcept;
   };
 
@@ -159,7 +159,7 @@ namespace ranges
 
     template<__detail::__nothrow_forward_range _Range>
       requires default_initializable<range_value_t<_Range>>
-      safe_iterator_t<_Range>
+      borrowed_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r));
@@ -217,7 +217,7 @@ namespace ranges
 
     template<__detail::__nothrow_forward_range _Range>
       requires default_initializable<range_value_t<_Range>>
-      safe_iterator_t<_Range>
+      borrowed_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r));
@@ -290,8 +290,8 @@ namespace ranges
     template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
       requires constructible_from<range_value_t<_ORange>,
 				  range_reference_t<_IRange>>
-      uninitialized_copy_result<safe_iterator_t<_IRange>,
-				safe_iterator_t<_ORange>>
+      uninitialized_copy_result<borrowed_iterator_t<_IRange>,
+				borrowed_iterator_t<_ORange>>
       operator()(_IRange&& __inr, _ORange&& __outr) const
       {
 	return (*this)(ranges::begin(__inr), ranges::end(__inr),
@@ -377,8 +377,8 @@ namespace ranges
     template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
       requires constructible_from<range_value_t<_ORange>,
 	       range_rvalue_reference_t<_IRange>>
-      uninitialized_move_result<safe_iterator_t<_IRange>,
-				safe_iterator_t<_ORange>>
+      uninitialized_move_result<borrowed_iterator_t<_IRange>,
+				borrowed_iterator_t<_ORange>>
       operator()(_IRange&& __inr, _ORange&& __outr) const
       {
 	return (*this)(ranges::begin(__inr), ranges::end(__inr),
@@ -450,7 +450,7 @@ namespace ranges
 
     template<__detail::__nothrow_forward_range _Range, typename _Tp>
       requires constructible_from<range_value_t<_Range>, const _Tp&>
-      safe_iterator_t<_Range>
+      borrowed_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __x) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r), __x);
@@ -531,7 +531,7 @@ namespace ranges
 
   template<__detail::__nothrow_input_range _Range>
     requires destructible<range_value_t<_Range>>
-    constexpr safe_iterator_t<_Range>
+    constexpr borrowed_iterator_t<_Range>
     __destroy_fn::operator()(_Range&& __r) const noexcept
     {
       return (*this)(ranges::begin(__r), ranges::end(__r));

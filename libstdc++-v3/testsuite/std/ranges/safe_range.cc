@@ -21,21 +21,21 @@
 #include <ranges>
 #include <testsuite_iterators.h>
 
-static_assert( std::ranges::safe_range<int(&)[1]> );
-static_assert( std::ranges::safe_range<const int(&)[1]> );
-static_assert( !std::ranges::safe_range<int[1]> );
-static_assert( !std::ranges::safe_range<int*> );
+static_assert( std::ranges::borrowed_range<int(&)[1]> );
+static_assert( std::ranges::borrowed_range<const int(&)[1]> );
+static_assert( !std::ranges::borrowed_range<int[1]> );
+static_assert( !std::ranges::borrowed_range<int*> );
 
 using __gnu_test::test_contiguous_range;
 
-static_assert( !std::ranges::safe_range<test_contiguous_range<int>> );
-static_assert( std::ranges::safe_range<test_contiguous_range<int>&> );
-static_assert( !std::ranges::safe_range<test_contiguous_range<int>&&> );
+static_assert( !std::ranges::borrowed_range<test_contiguous_range<int>> );
+static_assert( std::ranges::borrowed_range<test_contiguous_range<int>&> );
+static_assert( !std::ranges::borrowed_range<test_contiguous_range<int>&&> );
 
 template<>
 constexpr bool
-  std::ranges::enable_safe_range<test_contiguous_range<long>> = true;
+  std::ranges::enable_borrowed_range<test_contiguous_range<long>> = true;
 
-static_assert( std::ranges::safe_range<test_contiguous_range<long>> );
-static_assert( std::ranges::safe_range<test_contiguous_range<long>&> );
-static_assert( std::ranges::safe_range<test_contiguous_range<long>&&> );
+static_assert( std::ranges::borrowed_range<test_contiguous_range<long>> );
+static_assert( std::ranges::borrowed_range<test_contiguous_range<long>&> );
+static_assert( std::ranges::borrowed_range<test_contiguous_range<long>&&> );

@@ -208,10 +208,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    constexpr
-    enable_if_t<__and_v<is_object<_Tp>, bool_constant<sizeof(_Tp) != 0>>, _Tp*>
+    constexpr enable_if_t<is_object_v<_Tp>, _Tp*>
     midpoint(_Tp* __a, _Tp* __b) noexcept
     {
+      static_assert( sizeof(_Tp) != 0, "type must be complete" );
       return __a  + (__b - __a) / 2;
     }
 _GLIBCXX_END_NAMESPACE_VERSION
