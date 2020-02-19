@@ -3895,13 +3895,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue, bool is_init_expr)
   if (rvalue->expr_type == EXPR_NULL)
     return true;
 
-  if (lvalue->ts.type == BT_CHARACTER)
-    {
-      bool t = gfc_check_same_strlen (lvalue, rvalue, "pointer assignment");
-      if (!t)
-	return false;
-    }
-
   if (rvalue->expr_type == EXPR_VARIABLE && is_subref_array (rvalue))
     lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
 
@@ -3955,6 +3948,13 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue, bool is_init_expr)
 		     "nor POINTER at %L", &rvalue->where);
 	  return false;
 	}
+    }
+
+  if (lvalue->ts.type == BT_CHARACTER)
+    {
+      bool t = gfc_check_same_strlen (lvalue, rvalue, "pointer assignment");
+      if (!t)
+	return false;
     }
 
   if (is_pure && gfc_impure_variable (rvalue->symtree->n.sym))
