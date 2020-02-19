@@ -3242,6 +3242,8 @@ template <typename _From, typename _To>
   template<typename _Tp>
     using type_identity_t = typename type_identity<_Tp>::type;
 
+#define __cpp_lib_unwrap_ref 201811L
+
   /// Unwrap a reference_wrapper
   template<typename _Tp>
     struct unwrap_reference { using type = _Tp; };

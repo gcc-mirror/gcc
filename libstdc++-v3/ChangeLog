@@ -1,5 +1,10 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/type_traits (__cpp_lib_unwrap_ref): Define (LWG 3348).
+	* include/std/version (__cpp_lib_unwrap_ref): Likewise.
+	* testsuite/20_util/unwrap_reference/1.cc: Check macro.
+	* testsuite/20_util/unwrap_reference/3.cc: New test.
+
 	* include/std/numeric (midpoint(T8, T*)): Do not check for complete
 	type during overload resolution, use static assert instead (LWG 3200).
 	* testsuite/26_numerics/midpoint/pointer.cc: Do not test with
