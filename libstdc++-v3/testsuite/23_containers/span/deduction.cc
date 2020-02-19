@@ -73,7 +73,7 @@ test01()
   std::span s9(s2);
   static_assert( is_static_span<int, 2>(s9) );
 
-  std::span s10(const_cast<std::span<int, 2>&>(s2));
+  std::span s10(const_cast<const std::span<int, 2>&>(s2));
   static_assert( is_static_span<int, 2>(s10) );
 
   std::span s11(s5);

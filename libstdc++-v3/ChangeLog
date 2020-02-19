@@ -1,5 +1,12 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/span (span(T (&)[N])): Use non-deduced context to
+	prevent first parameter from interfering with class template argument
+	deduction (LWG 3369).
+	* testsuite/23_containers/span/deduction.cc: Add missing 'const'.
+	* testsuite/23_containers/span/lwg3255.cc: Check for construction from
+	rvalues.
+
 	* include/std/span (span::const_iterator, span::const_reverse_iterator)
 	(span::cbegin(), span::cend(), span::crbegin(), span::crend()):
 	Remove (LWG 3320).

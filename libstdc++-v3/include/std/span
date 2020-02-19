@@ -182,10 +182,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
-      template<typename _Tp, size_t _ArrayExtent>
-	requires __is_compatible_array<_Tp, _ArrayExtent>::value
+      template<size_t _ArrayExtent>
+	requires (_Extent == dynamic_extent || _ArrayExtent == _Extent)
 	constexpr
-	span(_Tp (&__arr)[_ArrayExtent]) noexcept
+	span(type_identity_t<element_type> (&__arr)[_ArrayExtent]) noexcept
 	: span(static_cast<pointer>(__arr), _ArrayExtent)
 	{ }
 
