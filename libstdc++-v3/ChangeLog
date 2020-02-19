@@ -1,5 +1,9 @@
 2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare (three_way_comparable): Remove always-false check
+	that should have been removed with weak_equality (P1959R0).
+	(three_way_comparable_with): Likewise. Reorder requirements (LWG 3360).
+
 	* include/std/concepts (__detail::__partially_ordered_with): Move here
 	from <compare>.
 	(totally_ordered, totally_ordered_with): Use __partially_ordered_with
