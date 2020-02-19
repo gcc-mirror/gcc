@@ -958,6 +958,9 @@ scalarizable_type_p (tree type, bool const_decl)
   if (type_contains_placeholder_p (type))
     return false;
 
+  bool have_predecessor_field = false;
+  HOST_WIDE_INT prev_pos = 0;
+
   switch (TREE_CODE (type))
   {
   case RECORD_TYPE:
@@ -965,6 +968,17 @@ scalarizable_type_p (tree type, bool const_decl)
       if (TREE_CODE (fld) == FIELD_DECL)
 	{
 	  tree ft = TREE_TYPE (fld);
+
+	  if (zerop (DECL_SIZE (fld)))
+	    continue;
+
+	  HOST_WIDE_INT pos = int_bit_position (fld);
+	  if (have_predecessor_field
+	      && pos <= prev_pos)
+	    return false;
+
+	  have_predecessor_field = true;
+	  prev_pos = pos;
 
 	  if (DECL_BIT_FIELD (fld))
 	    return false;

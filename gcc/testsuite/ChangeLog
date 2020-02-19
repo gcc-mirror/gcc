@@ -1,3 +1,8 @@
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93667
+	* g++.dg/tree-ssa/pr93667.C: New test.
+
 2020-02-19  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* g++.dg/other/i386-2.C: add -mavx512vbmi2
