@@ -1,3 +1,9 @@
+2020-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92128
+	* gcc.dg/strlenopt-81.c: Align arrays to let strictly aligned targets
+	optimize away calls as expected.
+
 2020-02-19  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/gimplefe-41.c: Add -msse2 additional options for x86 targets.
