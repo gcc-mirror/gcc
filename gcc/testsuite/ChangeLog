@@ -1,3 +1,8 @@
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic2.C: New test.
+	* g++.dg/concepts/diagnostic3.C: New test.
+
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93676 - value-init crash in template.

@@ -1,3 +1,19 @@
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (finish_constraint_binary_op): Set expr's location range
+	to the range of its operands.
+	(satisfy_atom): Pass MAP instead of ARGS to diagnose_atomic_constraint.
+	(diagnose_trait_expr): Take the instantiated parameter mapping MAP
+	instead of the corresponding template arguments ARGS and adjust body
+	accordingly.
+	(diagnose_requires_expr): Likewise.
+	(diagnose_atomic_constraint): Likewise.  When printing an atomic
+	constraint expression, print the instantiated parameter mapping
+	alongside it.
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression)
+	[NONTYPE_ARGUMENT_PACK]: Print braces around a NONTYPE_ARGUMENT_PACK.
+	(cxx_pretty_printer::type_id): Handle TYPE_ARGUMENT_PACK.
+
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93676 - value-init crash in template.
