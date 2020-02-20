@@ -1,5 +1,18 @@
 2020-02-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_access.h (ranges::begin): Reject array of
+	incomplete type.
+	(ranges::end, ranges::size): Require arrays to be bounded.
+	(ranges::data): Require lvalue or borrowed_range.
+	(ranges::iterator_t): Remove constraint.
+	* testsuite/std/ranges/access/begin.cc: Do not check array of
+	incomplete type.
+	* testsuite/std/ranges/access/begin_neg.cc: New test.
+	* testsuite/std/ranges/access/end_neg.cc: Adjust expected error.
+	* testsuite/std/ranges/access/size_neg.cc: Adjust expected error.
+	* testsuite/std/ranges/access/ssize.cc: Do not check array of
+	incomplete type.
+
 	* include/std/system_error (error_category::operator<=>)
 	(operator<=>(const error_code&, const error_code&))
 	(operator<=>(const error_condition&, const error_condition&)): Define

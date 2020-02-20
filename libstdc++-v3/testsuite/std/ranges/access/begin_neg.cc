@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,10 +20,20 @@
 
 #include <ranges>
 
-extern int unbounded[];
-
 auto
 test01()
 {
-  return std::ranges::size(unbounded); // { dg-error "no match" }
+  using A = int[2];
+  extern A&& f(); // rvalue of type that doesn't satisfy borrowed_range
+  return std::ranges::begin(f()); // { dg-error "no match" }
 }
+
+struct incomplete;
+extern incomplete array[2];
+
+auto
+test02()
+{
+  return std::ranges::begin(array); // { dg-error "here" }
+}
+// { dg-error "incomplete type" "" { target *-*-* } 0 }
