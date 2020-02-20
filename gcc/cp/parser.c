@@ -14164,7 +14164,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 			 "allowed in a C++20 concept definition");
 	      else
 		pedwarn (token->location, 0, "C++20 concept definition syntax "
-			 "is %<concept <name> = <expr>%> ");
+			 "is %<concept <name> = <expr>%>");
             }
 
 	  /* In C++20 a concept definition is just 'concept name = expr;'
