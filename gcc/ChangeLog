@@ -1,3 +1,12 @@
+2020-02-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* config/i386/i386.c (ix86_trampoline_init): Skip ENDBR32 at
+	the target function entry.
+
 2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
