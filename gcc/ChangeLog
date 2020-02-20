@@ -1,5 +1,12 @@
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (AARCH64_APPROX_MODE): Operate
+	on and produce uint64_ts rather than ints.
+	(AARCH64_APPROX_NONE, AARCH64_APPROX_ALL): Change to uint64_ts.
+	(cpu_approx_modes): Change the fields from unsigned int to uint64_t.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Don't create
 	an unused xmsk register when handling approximate rsqrt.
 
