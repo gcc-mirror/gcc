@@ -381,7 +381,8 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	    {
 	      widest_irange vr_gori;
 	      bool gori_can_calculate
-		= vr_values->in_export_list (asserts[i].name, pred_e->src);
+		= (vr_values->in_export_list (asserts[i].name, pred_e->src)
+		   && asserts[i].gori_computable_p);
 	      if (gori_can_calculate)
 		try_find_new_range_with_gori (vr_gori, asserts[i].name,
 					      pred_e, asserts);

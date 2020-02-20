@@ -108,6 +108,8 @@ struct assert_info
 
   /* Expression to compare.  */
   tree expr;
+
+  bool gori_computable_p;
 };
 
 extern void register_edge_assert_for (tree, edge, enum tree_code,

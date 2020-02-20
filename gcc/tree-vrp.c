@@ -1447,7 +1447,9 @@ dump_assert_info (FILE *file, const assert_info &assert)
   fprintf (file, "] %s ", get_tree_code_name (assert.comp_code));
   fprintf (file, "val=[");
   print_generic_expr (file, assert.val);
-  fprintf (file, "]\n\n");
+  fprintf (file, "]\n");
+  fprintf (file, "\tgori_computable: %d\n", assert.gori_computable_p);
+  fprintf (file, "\n");
 }
 
 DEBUG_FUNCTION void
@@ -1474,6 +1476,23 @@ debug (const vec<assert_info> &asserts)
   dump_asserts_info (stderr, asserts);
 }
 
+class gori_computable
+{
+  static bool current_status;
+public:
+  gori_computable (bool new_status)
+  {
+    saved_status = current_status;
+    current_status = new_status;
+  }
+  ~gori_computable () { current_status = saved_status; }
+  static bool status () { return current_status; }
+private:
+  bool saved_status;
+};
+
+bool gori_computable::current_status = true;
+
 /* Push the assert info for NAME, EXPR, COMP_CODE and VAL to ASSERTS.  */
 
 static void
@@ -1487,6 +1506,9 @@ add_assert_info (vec<assert_info> &asserts,
     val = drop_tree_overflow (val);
   info.val = val;
   info.expr = expr;
+  info.gori_computable_p = gori_computable::status ();
+  if (TREE_CODE (val) == SSA_NAME)
+    info.gori_computable_p = false;
   asserts.safe_push (info);
   if (dump_enabled_p ())
     dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
@@ -1922,6 +1944,7 @@ register_edge_assert_for_2 (tree name, edge e,
        || comp_code == EQ_EXPR)
       && TREE_CODE (val) == INTEGER_CST)
     {
+      gori_computable set_gori_computable (false);
       imm_use_iterator ui;
       gimple *use_stmt;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
@@ -2102,6 +2125,7 @@ register_edge_assert_for_2 (tree name, edge e,
          simply register the same assert for it.  */
       if (CONVERT_EXPR_CODE_P (rhs_code))
 	{
+	  gori_computable set_gori_computable (false);
 	  wide_int rmin, rmax;
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
