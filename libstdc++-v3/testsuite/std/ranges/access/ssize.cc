@@ -75,7 +75,7 @@ test05()
 void
 test06()
 {
-  auto i = std::views::iota(1ull, 5);
+  auto i = std::views::iota(1ull, 5u);
   auto s = std::ranges::ssize(i);
   using R = std::ranges::range_difference_t<decltype(i)>;
   static_assert( std::same_as<decltype(s), R> );

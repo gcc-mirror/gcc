@@ -635,6 +635,8 @@ namespace ranges
     class iota_view : public view_interface<iota_view<_Winc, _Bound>>
     {
     private:
+      struct _Sentinel;
+
       struct _Iterator
       {
       private:
@@ -811,11 +813,17 @@ namespace ranges
 
       private:
 	_Winc _M_value = _Winc();
+
+        friend _Sentinel;
       };
 
       struct _Sentinel
       {
       private:
+	constexpr bool
+	_M_equal(const _Iterator& __x) const
+	{ return __x._M_value == _M_bound; }
+
 	_Bound _M_bound = _Bound();
 
       public:
@@ -827,7 +835,7 @@ namespace ranges
 
 	friend constexpr bool
 	operator==(const _Iterator& __x, const _Sentinel& __y)
-	{ return __x._M_value == __y._M_bound; }
+	{ return __y._M_equal(__x); }
 
 	friend constexpr iter_difference_t<_Winc>
 	operator-(const _Iterator& __x, const _Sentinel& __y)
@@ -933,7 +941,7 @@ namespace views
     template<typename _Tp, typename _Up>
       constexpr auto
       operator()(_Tp&& __e, _Up&& __f) const
-      { return iota_view{std::forward<_Tp>(__e), std::forward<_Tp>(__f)}; }
+      { return iota_view{std::forward<_Tp>(__e), std::forward<_Up>(__f)}; }
   };
 
   inline constexpr _Iota iota{};

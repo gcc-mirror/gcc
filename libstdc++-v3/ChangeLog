@@ -1,3 +1,15 @@
+2020-02-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (iota_view): Forward declare _Sentinel.
+	(iota_view::_Iterator): Befriend _Sentinel.
+	(iota_view::_Sentinel::_M_equal): New member function.
+	(iota_view::_Sentinel::operator==): Use it.
+	(views::_Iota::operator()): Forward __f using the correct type.
+	* testsuite/std/ranges/access/ssize.cc (test06): Don't call views::iota
+	with integers of different signedness, to appease iota_view's deduction
+	guide.
+	* testsuite/std/ranges/iota/iota_view.cc: Augment test.
+
 2020-02-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_access.h (ranges::begin): Reject array of
