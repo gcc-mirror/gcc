@@ -1,3 +1,10 @@
+2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93828
+	* config/i386/mmx.md (*vec_extractv2sf_1): Match source operand
+	to destination operand for shufps alternative.
+	(*vec_extractv2si_1): Ditto.
+
 2020-02-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* collect2.c (tool_cleanup): Avoid calling not signal-safe
