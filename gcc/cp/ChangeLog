@@ -1,3 +1,8 @@
+2020-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93801
+	* parser.c (cp_parser_check_class_key): Only handle true C++ class-keys.
+
 2020-02-20  Martin Liska  <mliska@suse.cz>
 
 	PR translation/93841

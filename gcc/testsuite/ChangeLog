@@ -1,3 +1,8 @@
+2020-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93801
+	* g++.dg/warn/Wredundant-tags-3.C: New test.
+
 2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93828
