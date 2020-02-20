@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { target { ! ia32 } } }
 // { dg-require-effective-target c++11 }
 // { dg-options "-O2 -march=k8" }
 
