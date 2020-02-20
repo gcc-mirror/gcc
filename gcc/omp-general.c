@@ -1759,6 +1759,8 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 	    c = c_p;
 	  }
 	break;
+      case OMP_CLAUSE_NOHOST:
+	break;
       default:
 	gcc_unreachable ();
       }

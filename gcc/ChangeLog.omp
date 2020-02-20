@@ -1,3 +1,8 @@
+2020-02-20  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-general.c (oacc_verify_routine_clauses): Handle
+	OMP_CLAUSE_NOHOST.
+
 2020-02-19  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Handle
