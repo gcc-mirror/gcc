@@ -12761,7 +12761,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
 		& AARCH64_APPROX_MODE (mode))))
 	return false;
 
-      if (flag_finite_math_only
+      if (!flag_finite_math_only
 	  || flag_trapping_math
 	  || !flag_unsafe_math_optimizations
 	  || optimize_function_for_size_p (cfun))

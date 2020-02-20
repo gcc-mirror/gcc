@@ -1,3 +1,8 @@
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Fix inverted
+	flag_finite_math_only condition.
+
 2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93828
