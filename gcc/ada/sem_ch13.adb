@@ -836,9 +836,11 @@ package body Sem_Ch13 is
       end if;
    end Alignment_Check_For_Size_Change;
 
-   function All_Membership_Choices_Static (Expr : Node_Id)
-     return Boolean
-   is
+   -----------------------------------
+   -- All_Membership_Choices_Static --
+   -----------------------------------
+
+   function All_Membership_Choices_Static (Expr : Node_Id) return Boolean is
       pragma Assert (Nkind (Expr) in N_Membership_Test);
    begin
       return ((Present (Right_Opnd (Expr))
