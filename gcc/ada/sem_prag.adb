@@ -4330,9 +4330,9 @@ package body Sem_Prag is
       procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
       --  up the Profile. Profile must be either GNAT_Extended_Ravenscar,
-      --  GNAT_Ravenscar_EDF, or Ravenscar. N is the corresponding pragma node,
-      --  which is used for error messages on any constructs violating the
-      --  profile.
+      --  GNAT_Ravenscar_EDF, Jorvik, or Ravenscar. N is the corresponding
+      --  pragma node, which is used for error messages on any constructs
+      --  violating the profile.
 
       ---------------------
       -- Ada_2005_Pragma --
@@ -11162,7 +11162,7 @@ package body Sem_Prag is
       --    Set required policies
 
       --      pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
-      --        (For Ravenscar and GNAT_Extended_Ravenscar profiles)
+      --        (For Ravenscar, Jorvik, and GNAT_Extended_Ravenscar profiles)
       --      pragma Task_Dispatching_Policy (EDF_Across_Priorities)
       --        (For GNAT_Ravenscar_EDF profile)
       --      pragma Locking_Policy (Ceiling_Locking)
@@ -11282,6 +11282,10 @@ package body Sem_Prag is
          --  Set the following restrictions which were added to Ada 2005:
          --    No_Dependence => Ada.Execution_Time.Group_Budget
          --    No_Dependence => Ada.Execution_Time.Timers
+
+         --  ??? Eventually when AI12-0073 is implemented, we'll register a
+         --  No_Dependence restriction on Ada.Synchronous_Barriers
+         --  for Ravenscar but not for Jorvik.
 
          if Ada_Version >= Ada_2005 then
             Pref_Id := Make_Identifier (Loc, Name_Find ("ada"));
@@ -21313,6 +21317,9 @@ package body Sem_Prag is
             begin
                if Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (Ravenscar, N);
+
+               elsif Chars (Argx) = Name_Jorvik then
+                  Set_Ravenscar_Profile (Jorvik, N);
 
                elsif Chars (Argx) = Name_Gnat_Extended_Ravenscar then
                   Set_Ravenscar_Profile (GNAT_Extended_Ravenscar, N);
