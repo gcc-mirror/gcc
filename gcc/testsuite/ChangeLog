@@ -1,3 +1,11 @@
+2020-02-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* gcc.target/i386/pr93656.c: New test.
+
 2020-02-19  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	* typebound_call_22.d03 : Remove xfail clause.
