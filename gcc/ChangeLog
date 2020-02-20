@@ -1,3 +1,9 @@
+2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Handle VSX
+	vector modes.
+
 2020-02-20  Martin Liska  <mliska@suse.cz>
 
 	PR translation/93831
