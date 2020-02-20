@@ -11283,10 +11283,6 @@ package body Sem_Prag is
          --    No_Dependence => Ada.Execution_Time.Group_Budget
          --    No_Dependence => Ada.Execution_Time.Timers
 
-         --  ??? Eventually when AI12-0073 is implemented, we'll register a
-         --  No_Dependence restriction on Ada.Synchronous_Barriers
-         --  for Ravenscar but not for Jorvik.
-
          if Ada_Version >= Ada_2005 then
             Pref_Id := Make_Identifier (Loc, Name_Find ("ada"));
             Sel_Id  := Make_Identifier (Loc, Name_Find ("execution_time"));
@@ -11325,7 +11321,7 @@ package body Sem_Prag is
          end if;
 
          --  Set the following restriction which was added to Ada 2012 (see
-         --  AI-0171):
+         --  AI05-0171):
          --    No_Dependence => System.Multiprocessors.Dispatching_Domains
 
          if Ada_Version >= Ada_2012 then
@@ -11350,7 +11346,32 @@ package body Sem_Prag is
               (Unit    => Nod,
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
+
+            --  Set the following restriction which was added to Ada 2020,
+            --  but as a binding interpretation:
+            --     No_Dependence => Ada.Synchronous_Barriers
+            --  for Ravenscar (and therefore for Ravenscar variants) but not
+            --  for Jorvik. The unit Ada.Synchronous_Barriers was introduced
+            --  in Ada2012 (AI05-0174).
+
+            if Profile /= Jorvik then
+               Pref_Id := Make_Identifier (Loc, Name_Find ("ada"));
+               Sel_Id  := Make_Identifier (Loc, Name_Find
+                                                  ("synchronous_barriers"));
+
+               Nod :=
+                 Make_Selected_Component
+                   (Sloc          => Loc,
+                    Prefix        => Pref_Id,
+                    Selector_Name => Sel_Id);
+
+               Set_Restriction_No_Dependence
+                 (Unit    => Nod,
+                  Warn    => Treat_Restrictions_As_Warnings,
+                  Profile => Ravenscar);
+            end if;
          end if;
+
       end Set_Ravenscar_Profile;
 
    --  Start of processing for Analyze_Pragma
