@@ -1861,15 +1861,6 @@ rtx
 gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
 			   bool unsigned_p, rtx exec)
 {
-  /* Convert the offsets to V64SImode.
-     TODO: more conversions will be needed when more types are vectorized. */
-  if (GET_MODE (offsets) == V64DImode)
-    {
-      rtx tmp = gen_reg_rtx (V64SImode);
-      emit_insn (gen_truncv64div64si2 (tmp, offsets));
-      offsets = tmp;
-    }
-
   rtx tmpsi = gen_reg_rtx (V64SImode);
   rtx tmpdi = gen_reg_rtx (V64DImode);
   rtx undefsi = exec ? gcn_gen_undef (V64SImode) : NULL;

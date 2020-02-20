@@ -679,10 +679,10 @@
 ;;   fields normally found in a MEM.
 ;; - Multiple forms of address expression are supported, below.
 
-(define_expand "gather_load<mode>"
+(define_expand "gather_load<mode>v64si"
   [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (match_operand 2 "register_operand")
+   (match_operand:V64SI 2 "register_operand")
    (match_operand 3 "immediate_operand")
    (match_operand:SI 4 "gcn_alu_operand")]
   ""
@@ -811,9 +811,9 @@
   [(set_attr "type" "flat")
    (set_attr "length" "12")])
 
-(define_expand "scatter_store<mode>"
+(define_expand "scatter_store<mode>v64si"
   [(match_operand:DI 0 "register_operand")
-   (match_operand 1 "register_operand")
+   (match_operand:V64SI 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
    (match_operand:VEC_ALLREG_MODE 4 "register_operand")]
@@ -830,34 +830,6 @@
       emit_insn (gen_scatter<mode>_insn_2offsets (operands[0], addr,
 						  const0_rtx, operands[4],
 						  const0_rtx, const0_rtx));
-    DONE;
-  })
-
-(define_expand "scatter<mode>_exec"
-  [(match_operand:DI 0 "register_operand")
-   (match_operand 1 "register_operand")
-   (match_operand 2 "immediate_operand")
-   (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:VEC_ALLREG_MODE 4 "register_operand")
-   (match_operand:DI 5 "gcn_exec_reg_operand")]
-  ""
-  {
-    operands[5] = force_reg (DImode, operands[5]);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
-					  operands[1], operands[3],
-					  INTVAL (operands[2]), operands[5]);
-
-    if (GET_MODE (addr) == V64DImode)
-      emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
-						      operands[4], const0_rtx,
-						      const0_rtx,
-						      operands[5]));
-    else
-      emit_insn (gen_scatter<mode>_insn_2offsets_exec (operands[0], addr,
-						       const0_rtx, operands[4],
-						       const0_rtx, const0_rtx,
-						       operands[5]));
     DONE;
   })
 
@@ -2795,26 +2767,16 @@
     DONE;
   })
 
-(define_expand "mask_gather_load<mode>"
+(define_expand "mask_gather_load<mode>v64si"
   [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (match_operand 2 "register_operand")
+   (match_operand:V64SI 2 "register_operand")
    (match_operand 3 "immediate_operand")
    (match_operand:SI 4 "gcn_alu_operand")
    (match_operand:DI 5 "")]
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
-
-    /* TODO: more conversions will be needed when more types are vectorized. */
-    if (GET_MODE (operands[2]) == V64DImode)
-      {
-	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_truncv64div64si2_exec (tmp, operands[2],
-					      gcn_gen_undef (V64SImode),
-					      exec));
-	operands[2] = tmp;
-      }
 
     rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
 					  operands[2], operands[4],
@@ -2836,9 +2798,9 @@
     DONE;
   })
 
-(define_expand "mask_scatter_store<mode>"
+(define_expand "mask_scatter_store<mode>v64si"
   [(match_operand:DI 0 "register_operand")
-   (match_operand 1 "register_operand")
+   (match_operand:V64SI 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
    (match_operand:VEC_ALLREG_MODE 4 "register_operand")
@@ -2847,18 +2809,20 @@
   {
     rtx exec = force_reg (DImode, operands[5]);
 
-    /* TODO: more conversions will be needed when more types are vectorized. */
-    if (GET_MODE (operands[1]) == V64DImode)
-      {
-	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_truncv64div64si2_exec (tmp, operands[1],
-					      gcn_gen_undef (V64SImode),
-					      exec));
-	operands[1] = tmp;
-      }
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
+					  operands[1], operands[3],
+					  INTVAL (operands[2]), exec);
 
-    emit_insn (gen_scatter<mode>_exec (operands[0], operands[1], operands[2],
-				       operands[3], operands[4], exec));
+    if (GET_MODE (addr) == V64DImode)
+      emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
+						      operands[4], const0_rtx,
+						      const0_rtx,
+						      exec));
+    else
+      emit_insn (gen_scatter<mode>_insn_2offsets_exec (operands[0], addr,
+						       const0_rtx, operands[4],
+						       const0_rtx, const0_rtx,
+						       exec));
     DONE;
   })
 

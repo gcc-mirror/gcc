@@ -1,3 +1,18 @@
+2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather_load<mode>): Rename to ...
+	(gather_load<mode>v64si): ... this and set operand 2 to V64SI.
+	(scatter_store<mode>): Rename to ...
+	(scatter_store<mode>v64si): ... this and set operand 1 to V64SI.
+	(scatter<mode>_exec): Delete. Move contents ...
+	(mask_scatter_store<mode>): ... here, and rename that to ...
+	(mask_gather_load<mode>v64si): ... this. Set operand 2 to V64SI.
+	Remove mode conversion.
+	(mask_gather_load<mode>): Rename to ...
+	(mask_scatter_store<mode>v64si): ... this. Set operand 1 to V64SI.
+	Remove mode conversion.
+	* config/gcn/gcn.c (gcn_expand_scaled_offsets): Remove mode conversion.
+
 2020-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/93845
