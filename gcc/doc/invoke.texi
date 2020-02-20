@@ -24907,7 +24907,7 @@ compare and set flag operations.
 @item -mcmov
 @opindex mcmov
 Enable generation of conditional move (@code{l.cmov}) instructions.  By
-default the equivalent will be generated using using set and branch.
+default the equivalent will be generated using set and branch.
 
 @item -mror
 @opindex mror

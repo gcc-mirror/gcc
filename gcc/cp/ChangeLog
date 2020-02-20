@@ -1,5 +1,11 @@
 2020-02-20  Martin Liska  <mliska@suse.cz>
 
+	PR translation/93841
+	* config/or1k/or1k.opt: Remove superfluous word.
+	* doc/invoke.texi: Likewise.
+
+2020-02-20  Martin Liska  <mliska@suse.cz>
+
 	PR translation/93838
 	* parser.c (cp_parser_decl_specifier_seq): Remove trailing space.
 
