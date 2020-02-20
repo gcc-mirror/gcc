@@ -844,11 +844,16 @@ package body Sem_Ch13 is
    function All_Membership_Choices_Static (Expr : Node_Id) return Boolean is
       pragma Assert (Nkind (Expr) in N_Membership_Test);
    begin
-      return ((Present (Right_Opnd (Expr))
-              and then Is_Static_Choice (Right_Opnd (Expr)))
-            or else
-              (Present (Alternatives (Expr))
-              and then All_Static_Choices (Alternatives (Expr))));
+      pragma Assert
+        (Present (Right_Opnd (Expr))
+           xor
+         Present (Alternatives (Expr)));
+
+      if Present (Right_Opnd (Expr)) then
+         return Is_Static_Choice (Right_Opnd (Expr));
+      else
+         return All_Static_Choices (Alternatives (Expr));
+      end if;
    end All_Membership_Choices_Static;
 
    ------------------------
