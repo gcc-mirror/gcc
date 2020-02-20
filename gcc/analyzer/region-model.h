@@ -891,7 +891,7 @@ public:
   region_id get_view (tree type, region_model *model) const;
   bool is_view_p () const { return m_is_view; }
 
-  void validate (const region_model *model) const;
+  virtual void validate (const region_model &model) const;
 
   bool non_null_p (const region_model &model) const;
 
@@ -1014,6 +1014,7 @@ public:
 		     region_id this_rid,
 		     pretty_printer *pp) const
     OVERRIDE;
+  void validate (const region_model &model) const FINAL OVERRIDE;
 
  private:
   /* Mapping from tree to child region.  */
@@ -1396,6 +1397,7 @@ public:
 		     region_id this_rid,
 		     pretty_printer *pp) const
     OVERRIDE;
+  void validate (const region_model &model) const FINAL OVERRIDE;
 
   static key_t key_from_constant (tree cst);
 
@@ -1461,6 +1463,8 @@ public:
 
   svalue_id get_value_by_name (tree identifier,
 			       const region_model &model) const;
+
+  void validate (const region_model &model) const FINAL OVERRIDE;
 
  private:
   void add_to_hash (inchash::hash &hstate) const FINAL OVERRIDE;
@@ -1576,6 +1580,8 @@ public:
 
   svalue_id get_value_by_name (tree identifier,
 			       const region_model &model) const;
+
+  void validate (const region_model &model) const FINAL OVERRIDE;
 
 private:
   void add_to_hash (inchash::hash &hstate) const FINAL OVERRIDE;
