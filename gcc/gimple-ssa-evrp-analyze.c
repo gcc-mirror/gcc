@@ -274,7 +274,6 @@ evrp_range_analyzer::dump_gori_differences (FILE *out,
   dump_bb (out, e->src, 0, TDF_NONE);
   fprintf (out, "\n");
   fprintf (out, "==============================================\n");
-  dump_function_to_file (current_function_decl, out, TDF_NONE);
   if (asserts.length () > 0)
     {
       fprintf (out, "asserts:\n");
@@ -282,6 +281,7 @@ evrp_range_analyzer::dump_gori_differences (FILE *out,
       extern void dump_asserts_info (FILE *, const vec<assert_info> &);
       dump_asserts_info (out, asserts);
     }
+  dump_function_to_file (current_function_decl, out, TDF_NONE);
   vr_values->dump_all_value_ranges (out);
 }
 
