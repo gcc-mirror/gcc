@@ -1,5 +1,10 @@
 2020-02-20  Martin Liska  <mliska@suse.cz>
 
+	PR translation/93831
+	* config/darwin.c (darwin_override_options): Change 64b to 64-bit mode.
+
+2020-02-20  Martin Liska  <mliska@suse.cz>
+
 	PR translation/93830
 	* common/config/avr/avr-common.c: Remote trailing "|".
 
