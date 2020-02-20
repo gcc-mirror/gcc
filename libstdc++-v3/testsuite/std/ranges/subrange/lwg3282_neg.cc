@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,10 +20,12 @@
 
 #include <ranges>
 
-extern int unbounded[];
+using std::ranges::subrange;
 
-auto
-test01()
-{
-  return std::ranges::size(unbounded); // { dg-error "no match" }
-}
+// LWG 3282. subrange converting constructor should disallow derived to base
+// conversions
+
+struct Base {};
+struct Derived : Base {};
+subrange<Derived*> sd;
+subrange<Base*> sb = sd; // { dg-error "conversion" }

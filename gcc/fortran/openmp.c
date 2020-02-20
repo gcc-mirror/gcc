@@ -6192,10 +6192,8 @@ resolve_oacc_loop_blocks (gfc_code *code)
   if (code->ext.omp_clauses->tile_list)
     {
       gfc_expr_list *el;
-      int num = 0;
       for (el = code->ext.omp_clauses->tile_list; el; el = el->next)
 	{
-	  num++;
 	  if (el->expr == NULL)
 	    {
 	      /* NULL expressions are used to represent '*' arguments.
@@ -6213,7 +6211,6 @@ resolve_oacc_loop_blocks (gfc_code *code)
 			   &code->loc);
 	    }
 	}
-      resolve_oacc_nested_loops (code, code->block->next, num, "tiled");
     }
 }
 
@@ -6265,6 +6262,18 @@ resolve_oacc_loop (gfc_code *code)
 
   do_code = code->block->next;
   collapse = code->ext.omp_clauses->collapse;
+
+  /* Both collapsed and tiled loops are lowered the same way, but are not
+     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
+  if (code->ext.omp_clauses->tile_list)
+    {
+      int num = 0;
+      gfc_expr_list *el;
+      for (el = code->ext.omp_clauses->tile_list; el; el = el->next)
+	++num;
+      resolve_oacc_nested_loops (code, code->block->next, num, "tiled");
+      return;
+    }
 
   if (collapse <= 0)
     collapse = 1;

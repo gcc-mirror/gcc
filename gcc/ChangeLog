@@ -1,3 +1,19 @@
+2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Handle VSX
+	vector modes.
+
+2020-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR translation/93831
+	* config/darwin.c (darwin_override_options): Change 64b to 64-bit mode.
+
+2020-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR translation/93830
+	* common/config/avr/avr-common.c: Remote trailing "|".
+
 2020-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* collect2.c (maybe_run_lto_and_relink): Fix typo in

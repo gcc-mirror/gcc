@@ -1,4 +1,7 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// { dg-do run { target c++11 } }
+// { dg-additional-options "-static-libgcc" { target *-*-mingw* } }
+
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,15 +18,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+#include <system_error>
+#include <testsuite_error.h>
 
-#include <ranges>
-
-extern int unbounded[];
-
-auto
-test01()
+int main()
 {
-  return std::ranges::size(unbounded); // { dg-error "no match" }
+  __gnu_test::test_category c1;
+  VERIFY( !(c1 < c1) );
+  __gnu_test::test_derived_category c2;
+  VERIFY( (c1 < c2) || (c2 < c1) );
 }

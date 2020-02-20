@@ -382,8 +382,8 @@ namespace ranges
 	  { __decay_copy(__t.begin()) } -> input_or_output_iterator;
 	};
 
-    template<typename _Tp> void begin(_Tp&&) = delete;
-    template<typename _Tp> void begin(initializer_list<_Tp>&&) = delete;
+    void begin(auto&) = delete;
+    void begin(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_begin = __class_or_enum<remove_reference_t<_Tp>>
@@ -417,7 +417,9 @@ namespace ranges
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
-	      return __t;
+	      using _Up = remove_all_extents_t<remove_reference_t<_Tp>>;
+	      static_assert(sizeof(_Up) != 0, "not array of incomplete type");
+	      return __t + 0;
 	    }
 	  else if constexpr (__member_begin<_Tp>)
 	    return __t.begin();
@@ -433,8 +435,8 @@ namespace ranges
 	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
 	};
 
-    template<typename _Tp> void end(_Tp&&) = delete;
-    template<typename _Tp> void end(initializer_list<_Tp>&&) = delete;
+    void end(auto&) = delete;
+    void end(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
@@ -451,7 +453,7 @@ namespace ranges
 	static constexpr bool
 	_S_noexcept()
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_end<_Tp>)
 	    return noexcept(__decay_copy(std::declval<_Tp&>().end()));
@@ -461,15 +463,14 @@ namespace ranges
 
     public:
       template<__maybe_borrowed_range _Tp>
-	requires is_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
+	requires is_bounded_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
 	|| __adl_end<_Tp>
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
-	      static_assert(is_bounded_array_v<remove_reference_t<_Tp>>);
 	      return __t + extent_v<remove_reference_t<_Tp>>;
 	    }
 	  else if constexpr (__member_end<_Tp>)
@@ -519,7 +520,8 @@ namespace ranges
 	  { __decay_copy(__t.rbegin()) } -> input_or_output_iterator;
 	};
 
-    template<typename _Tp> void rbegin(_Tp&&) = delete;
+    void rbegin(auto&) = delete;
+    void rbegin(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_rbegin = __class_or_enum<remove_reference_t<_Tp>>
@@ -582,7 +584,8 @@ namespace ranges
 	    -> sentinel_for<decltype(_RBegin{}(__t))>;
 	};
 
-    template<typename _Tp> void rend(_Tp&&) = delete;
+    void rend(auto&) = delete;
+    void rend(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_rend = __class_or_enum<remove_reference_t<_Tp>>
@@ -664,7 +667,8 @@ namespace ranges
 	    -> __detail::__is_integer_like;
 	};
 
-    template<typename _Tp> void size(_Tp&&) = delete;
+    void size(auto&) = delete;
+    void size(const auto&) = delete;
 
     template<typename _Tp>
       concept __adl_size = __class_or_enum<remove_reference_t<_Tp>>
@@ -691,7 +695,7 @@ namespace ranges
 	static constexpr bool
 	_S_noexcept()
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_size<_Tp>)
 	    return noexcept(__decay_copy(std::declval<_Tp>().size()));
@@ -704,14 +708,13 @@ namespace ranges
 
     public:
       template<typename _Tp>
-	requires is_array_v<remove_reference_t<_Tp>>
+	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
 	constexpr auto
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
-	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
+	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
-	      static_assert(is_bounded_array_v<remove_reference_t<_Tp>>);
 	      return extent_v<remove_reference_t<_Tp>>;
 	    }
 	  else if constexpr (__member_size<_Tp>)
@@ -826,7 +829,8 @@ namespace ranges
 	}
 
     public:
-      template<typename _Tp> requires __member_data<_Tp> || __begin_data<_Tp>
+      template<__maybe_borrowed_range _Tp>
+	requires __member_data<_Tp> || __begin_data<_Tp>
 	constexpr auto
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
@@ -881,8 +885,8 @@ namespace ranges
     concept borrowed_range
       = range<_Tp> && __detail::__maybe_borrowed_range<_Tp>;
 
-  template<range _Range>
-    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
+  template<typename _Tp>
+    using iterator_t = decltype(ranges::begin(std::declval<_Tp&>()));
 
   template<range _Range>
     using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));

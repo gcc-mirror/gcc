@@ -1,3 +1,29 @@
+2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* gcc.target/powerpc/pr93658.c: New test.
+
+2020-02-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93825
+	* gfortran.dg/goacc/tile-3.f90: New.
+
+2020-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93169 - wrong-code with a non-constexpr constructor.
+	* g++.dg/cpp0x/constexpr-93169.C: New test.
+
+2020-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92128
+	* gcc.dg/strlenopt-81.c: Align arrays to let strictly aligned targets
+	optimize away calls as expected.
+
+2020-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gimplefe-41.c: Add -msse2 additional options for x86 targets.
+	* gcc.dg/ipa/ipa-sra-19.c: Ditto.
+
 2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/93767

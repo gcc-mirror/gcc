@@ -39,6 +39,9 @@
 #include <bits/error_constants.h>
 #include <iosfwd>
 #include <stdexcept>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -130,16 +133,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     equivalent(const error_code& __code, int __i) const noexcept;
 
     bool
-    operator<(const error_category& __other) const noexcept
-    { return less<const error_category*>()(this, &__other); }
-
-    bool
     operator==(const error_category& __other) const noexcept
     { return this == &__other; }
 
+#if __cpp_lib_three_way_comparison
+    strong_ordering
+    operator<=>(const error_category& __rhs) const noexcept
+    { return std::compare_three_way()(this, &__rhs); }
+#else
     bool
     operator!=(const error_category& __other) const noexcept
     { return this != &__other; }
+
+    bool
+    operator<(const error_category& __other) const noexcept
+    { return less<const error_category*>()(this, &__other); }
+#endif
   };
 
   // DR 890.
@@ -230,6 +239,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   make_error_code(errc __e) noexcept
   { return error_code(static_cast<int>(__e), generic_category()); }
 
+#if __cpp_lib_three_way_comparison
+  inline strong_ordering
+  operator<=>(const error_code& __lhs, const error_code& __rhs) noexcept
+  {
+    if (auto __c = __lhs.category() <=> __rhs.category(); __c != 0)
+      return __c;
+    return __lhs.value() <=> __rhs.value();
+  }
+#else
   inline bool
   operator<(const error_code& __lhs, const error_code& __rhs) noexcept
   {
@@ -237,6 +255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || (__lhs.category() == __rhs.category()
 		&& __lhs.value() < __rhs.value()));
   }
+#endif
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
@@ -316,17 +335,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   make_error_condition(errc __e) noexcept
   { return error_condition(static_cast<int>(__e), generic_category()); }
 
-  /// Define an ordering for error_condition objects.
-  /// @relates error_condition
-  inline bool
-  operator<(const error_condition& __lhs,
-	    const error_condition& __rhs) noexcept
-  {
-    return (__lhs.category() < __rhs.category()
-	    || (__lhs.category() == __rhs.category()
-		&& __lhs.value() < __rhs.value()));
-  }
-
   // 19.4.4 Comparison operators
 
   /// @relates error_code
@@ -344,15 +352,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || __rhs.category().equivalent(__lhs, __rhs.value()));
   }
 
-  /// @relates error_code
-  /// @relates error_condition
-  inline bool
-  operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
-  {
-    return (__rhs.category().equivalent(__rhs.value(), __lhs)
-	    || __lhs.category().equivalent(__rhs, __lhs.value()));
-  }
-
   /// @relates error_condition
   inline bool
   operator==(const error_condition& __lhs,
@@ -360,6 +359,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     return (__lhs.category() == __rhs.category()
 	    && __lhs.value() == __rhs.value());
+  }
+
+#if __cpp_lib_three_way_comparison
+  /// Define an ordering for error_condition objects.
+  /// @relates error_condition
+  inline strong_ordering
+  operator<=>(const error_condition& __lhs,
+	      const error_condition& __rhs) noexcept
+  {
+    if (auto __c = __lhs.category() <=> __rhs.category(); __c != 0)
+      return __c;
+    return __lhs.value() <=> __rhs.value();
+  }
+#else
+  /// Define an ordering for error_condition objects.
+  /// @relates error_condition
+  inline bool
+  operator<(const error_condition& __lhs,
+	    const error_condition& __rhs) noexcept
+  {
+    return (__lhs.category() < __rhs.category()
+	    || (__lhs.category() == __rhs.category()
+		&& __lhs.value() < __rhs.value()));
+  }
+
+  /// @relates error_code
+  /// @relates error_condition
+  inline bool
+  operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
+  {
+    return (__rhs.category().equivalent(__rhs.value(), __lhs)
+	    || __lhs.category().equivalent(__rhs, __lhs.value()));
   }
 
   /// @relates error_code
@@ -384,7 +415,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   operator!=(const error_condition& __lhs,
 	     const error_condition& __rhs) noexcept
   { return !(__lhs == __rhs); }
-
+#endif // three_way_comparison
 
   /**
    * @brief An exception type that includes an `error_code` value.

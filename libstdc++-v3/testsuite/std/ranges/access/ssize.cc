@@ -36,11 +36,6 @@ test01()
   static_assert( std::same_as<decltype(std::ranges::ssize(a2)), ptrdiff_t> );
   VERIFY( std::ranges::ssize(a2) == 2);
   static_assert( noexcept(std::ranges::ssize(a2)) );
-
-  struct Incomplete;
-  using A = Incomplete[2]; // bounded array of incomplete type
-  extern A& f();
-  static_assert( std::same_as<decltype(std::ranges::ssize(f())), ptrdiff_t> );
 }
 
 void
@@ -80,7 +75,7 @@ test05()
 void
 test06()
 {
-  auto i = std::views::iota(1ull, 5);
+  auto i = std::views::iota(1ull, 5u);
   auto s = std::ranges::ssize(i);
   using R = std::ranges::range_difference_t<decltype(i)>;
   static_assert( std::same_as<decltype(s), R> );

@@ -61,10 +61,27 @@ test03()
   VERIFY( it == v.end() );
 }
 
+void
+test04()
+{
+  int x[] = {1,2,3};
+  auto v = std::ranges::views::iota(std::counted_iterator(x, 3),
+				    std::default_sentinel);
+  auto it = v.begin();
+  VERIFY( (*it).base() == x );
+  ++it;
+  VERIFY( (*it).base() == x+1 );
+  ++it;
+  VERIFY( (*it).base() == x+2 );
+  ++it;
+  VERIFY( it == v.end() );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

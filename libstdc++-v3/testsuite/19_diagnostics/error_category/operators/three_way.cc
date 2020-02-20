@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,14 +16,33 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do run { target c++2a } }
 
-#include <ranges>
+#include <system_error>
+#include <testsuite_error.h>
 
-extern int unbounded[];
-
-auto
+void
 test01()
 {
-  return std::ranges::size(unbounded); // { dg-error "no match" }
+  __gnu_test::test_category c1;
+  VERIFY( std::is_eq(c1 <=> c1) );
+  __gnu_test::test_derived_category c2;
+  VERIFY( std::is_neq(c1 <=> c2) );
+}
+
+void
+test02()
+{
+  __gnu_test::test_category c1;
+  VERIFY( c1 <= c1 );
+  VERIFY( c1 >= c1 );
+  __gnu_test::test_derived_category c2;
+  VERIFY( (c1 < c2) || (c2 < c1) );
+  VERIFY( (c1 > c2) || (c2 > c1) );
+}
+
+int main()
+{
+  test01();
+  test02();
 }
