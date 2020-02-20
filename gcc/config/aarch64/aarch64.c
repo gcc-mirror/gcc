@@ -12774,14 +12774,17 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
   machine_mode mmsk = (VECTOR_MODE_P (mode)
 		       ? related_int_vector_mode (mode).require ()
 		       : int_mode_for_mode (mode).require ());
-  rtx xmsk = gen_reg_rtx (mmsk);
+  rtx xmsk = NULL_RTX;
   if (!recp)
-    /* When calculating the approximate square root, compare the
-       argument with 0.0 and create a mask.  */
-    emit_insn (gen_rtx_SET (xmsk,
-			    gen_rtx_NEG (mmsk,
-					 gen_rtx_EQ (mmsk, src,
-						     CONST0_RTX (mode)))));
+    {
+      /* When calculating the approximate square root, compare the
+	 argument with 0.0 and create a mask.  */
+      xmsk = gen_reg_rtx (mmsk);
+      emit_insn (gen_rtx_SET (xmsk,
+			      gen_rtx_NEG (mmsk,
+					   gen_rtx_EQ (mmsk, src,
+						       CONST0_RTX (mode)))));
+    }
 
   /* Estimate the approximate reciprocal square root.  */
   rtx xdst = gen_reg_rtx (mode);

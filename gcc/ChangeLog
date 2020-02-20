@@ -1,5 +1,10 @@
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Don't create
+	an unused xmsk register when handling approximate rsqrt.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Fix inverted
 	flag_finite_math_only condition.
 
