@@ -596,7 +596,7 @@ uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 
 uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 	uint8x16_t *pseed;
-	uint32x4_t vinit32;
+	uint64x2_t vinit64;
 	uint8x16_t vinit;
 	uint8x16_t vseed, vseed2, vseed3, vseed4;
 	uint8x16_t vseed5, vseed6, vseed7, vseed8;
@@ -610,10 +610,10 @@ uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 	pseed = (uint8x16_t*)(aeskeysched.__values);
 
 	// Combined hash seed and length.
-	vinit32 = vdupq_n_u32(0);
-	vinit32[0] = (uint32)seed;
-	vinit32[1] = (uint32)size;
-	vinit = vreinterpretq_u8_u32(vinit32);
+	vinit64 = vdupq_n_u64(0);
+	vinit64[0] = (uint64)seed;
+	vinit64[1] = (uint64)size;
+	vinit = vreinterpretq_u8_u64(vinit64);
 
 	// Mix in per-process seed.
 	vseed = vaeseq_u8(*pseed, vinit);
@@ -626,7 +626,7 @@ uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 			// Return 64 bits of scrambled input seed.
 			return vreinterpretq_u64_u8(vseed)[0];
 		} else if (size < 16) {
-			vval = vreinterpretq_u8_u32(vdupq_n_u32(0));
+			vval = vreinterpretq_u8_u64(vdupq_n_u64(0));
 			if ((size & 8) != 0) {
 				vval = vreinterpretq_u8_u64(vld1q_lane_u64((uint64_t*)(p), vreinterpretq_u64_u8(vval), 0));
 				p = (void*)((uint64_t*)(p) + 1);
