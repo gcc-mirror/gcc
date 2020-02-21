@@ -2852,7 +2852,7 @@ package body Sem_Res is
                return;
 
             --  Under relaxed RM semantics silently replace occurrences of null
-            --  by System.Address_Null.
+            --  by System.Null_Address.
 
             elsif Null_To_Null_Address_Convert_OK (N, Typ) then
                Replace_Null_By_Null_Address (N);
