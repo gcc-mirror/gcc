@@ -1,3 +1,11 @@
+2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and
+	double-word size when handling aggregate return values.
+	* gcc/config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Fix to indicate
+	that homogeneous SFmode and DFmode aggregates are passed and returned
+	in general registers.
+
 2020-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/93759
