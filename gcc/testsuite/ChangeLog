@@ -9,6 +9,11 @@
 
 2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/pr69052.c: Require target ia32.
+	(dg-options): Add -fcommon and remove -pie.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/vect/vect-epilogues.c (scan-tree-dump): Require
 	vect_mutiple_sizes effective target.
 
