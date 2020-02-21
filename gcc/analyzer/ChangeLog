@@ -1,5 +1,11 @@
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93032
+	* sm.cc (make_checkers): Require the "taint" checker to be
+	explicitly enabled.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93899
 	* engine.cc
 	(impl_region_model_context::impl_region_model_context): Add logger

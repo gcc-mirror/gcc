@@ -1,5 +1,11 @@
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93032
+	* gcc.dg/analyzer/pr93382.c: Add "-fanalyzer-checker=taint".
+	* gcc.dg/analyzer/taint-1.c: Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93899
 	* g++.dg/analyzer/pr93899.C: New test.
 

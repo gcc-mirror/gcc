@@ -1,5 +1,14 @@
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93032
+	* doc/invoke.texi (-Wnanalyzer-tainted-array-index): Note that
+	-fanalyzer-checker=taint is also required.
+	(-fanalyzer-checker=): Note that providing this option enables the
+	given checker, and doing so may be required for checkers that are
+	disabled by default.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
 	* doc/invoke.texi (-fanalyzer-verbosity=): "2" only shows
 	significant control flow events; add a "3" which shows all
 	control flow events; the old "3" becomes "4".
