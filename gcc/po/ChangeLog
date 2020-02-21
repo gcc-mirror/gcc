@@ -1,3 +1,10 @@
+2020-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/93759
+	* exgettext: For *.opt help texts, use __opt_help_text("...")
+	rather than _("...") in the $emsg file and pass options that
+	say that this implies no-c-format.
+
 2020-02-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* de.po: Update.

@@ -1,3 +1,9 @@
+2020-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/93759
+	* opts.c (print_filtered_help): Translate help before appending
+	messages to it rather than after that.
+
 2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/PR92989

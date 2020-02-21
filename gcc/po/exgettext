@@ -227,6 +227,7 @@ END {
 	}
     }
     print emsg > posr
+    print "--keyword=__opt_help_text\n--flag=__opt_help_text:1:no-c-format" >> kopt
 }'
 ) || exit
 
@@ -240,7 +241,7 @@ echo "scanning option files..." >&2
     while (getline < file) {
 	if (/^[ \t]*(;|$)/ || !/^[^ \t]/) {
 	    if (field > 2)
-		printf("_(\"%s\")\n", line)
+		printf("__opt_help_text(\"%s\")\n", line)
 	    field = 0
 	} else {
 	    if ((field == 1) && /MissingArgError/) {
@@ -287,7 +288,7 @@ echo "scanning option files..." >&2
 	lineno++;
     }
     if (field > 2)
-	printf("_(\"%s\")\n", line)
+	printf("__opt_help_text(\"%s\")\n", line)
   }') >> $emsg
 
 # Run the xgettext commands, with temporary added as a file to scan.
