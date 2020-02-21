@@ -1,3 +1,8 @@
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-epilogues.c (scan-tree-dump): Require
+	vect_mutiple_sizes effective target.
+
 2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
 	    Richard Biener  <rguenther@suse.de>
 
