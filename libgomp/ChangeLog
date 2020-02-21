@@ -1,3 +1,10 @@
+2020-02-21  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Adapt to
+	changes from 2020-02-19, i.e. use integer(c_size_t) instead of
+	integer(acc_device_property) for the type of the return value of
+	acc_get_property.
+
 2020-02-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* .gitattributes: New; whitespace handling for Fortran's openacc_lib.h.
