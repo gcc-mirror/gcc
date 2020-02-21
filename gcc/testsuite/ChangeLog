@@ -1,3 +1,8 @@
+2020-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93845
+	* g++.dg/tree-ssa/pr93845.C: New test.
+
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/rsqrt_1.c: New test.

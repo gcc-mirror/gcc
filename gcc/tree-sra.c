@@ -2355,7 +2355,8 @@ verify_sra_access_forest (struct access *root)
       gcc_assert (offset == access->offset);
       gcc_assert (access->grp_unscalarizable_region
 		  || size == max_size);
-      gcc_assert (max_size == access->size);
+      gcc_assert (!is_gimple_reg_type (access->type)
+		  || max_size == access->size);
       gcc_assert (reverse == access->reverse);
 
       if (access->first_child)

@@ -1,3 +1,9 @@
+2020-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93845
+	* tree-sra.c (verify_sra_access_forest): Only test access size of
+	scalar types.
+
 2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_hard_regno_mode_ok): Align VGPR pairs.
