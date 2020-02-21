@@ -3697,15 +3697,15 @@ package body Sem_Ch4 is
 
          --  To avoid breaking privacy, Is_Hidden gets set elsewhere on such
          --  primitives, but we still need to verify that Nam is indeed a
-         --  controlled subprogram. So, we do that here and issue the
-         --  appropriate error.
+         --  non-visible controlled subprogram. So, we do that here and issue
+         --  the appropriate error.
 
          if Is_Hidden (Nam)
            and then not In_Instance
            and then not Comes_From_Source (Nam)
            and then Comes_From_Source (N)
 
-           --  Verify Nam is a controlled primitive
+           --  Verify Nam is a non-visible controlled primitive
 
            and then Nam_In (Chars (Nam), Name_Adjust,
                                          Name_Finalize,
@@ -3713,6 +3713,7 @@ package body Sem_Ch4 is
            and then Ekind (Nam) = E_Procedure
            and then Is_Controlled (Etype (First_Form))
            and then No (Next_Formal (First_Form))
+           and then not Is_Visibly_Controlled (Etype (First_Form))
          then
             Error_Msg_Node_2 := Etype (First_Form);
             Error_Msg_NE ("call to non-visible controlled primitive & on type"
