@@ -1810,7 +1810,6 @@ vect_slp_rearrange_stmts (slp_tree node, unsigned int group_size,
 static bool
 vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
 {
-  unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_instn);
   unsigned int i, j;
   unsigned int lidx;
   slp_tree node, load;
@@ -1821,14 +1820,16 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
   /* Compare all the permutation sequences to the first one.  We know
      that at least one load is permuted.  */
   node = SLP_INSTANCE_LOADS (slp_instn)[0];
-  if (!node->load_permutation.exists ())
+  if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
     return false;
+  unsigned int group_size = SLP_TREE_LOAD_PERMUTATION (node).length ();
   for (i = 1; SLP_INSTANCE_LOADS (slp_instn).iterate (i, &load); ++i)
     {
-      if (!load->load_permutation.exists ())
+      if (!SLP_TREE_LOAD_PERMUTATION (load).exists ()
+	  || SLP_TREE_LOAD_PERMUTATION (load).length () != group_size)
 	return false;
-      FOR_EACH_VEC_ELT (load->load_permutation, j, lidx)
-	if (lidx != node->load_permutation[j])
+      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (load), j, lidx)
+	if (lidx != SLP_TREE_LOAD_PERMUTATION (node)[j])
 	  return false;
     }
 
@@ -2151,7 +2152,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  /* Create a new SLP instance.  */
 	  new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
-	  SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMT (new_instance) = constructor ? stmt_info : NULL;
@@ -2239,6 +2239,12 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	    }
 
 	  vinfo->slp_instances.safe_push (new_instance);
+
+	  /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
+	     the number of scalar stmts in the root in a few places.
+	     Verify that assumption holds.  */
+	  gcc_assert (SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (new_instance))
+			.length () == group_size);
 
 	  if (dump_enabled_p ())
 	    {
@@ -2670,7 +2676,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 	vf = loop_vinfo->vectorization_factor;
       else
 	vf = 1;
-      unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (node_instance);
+      unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       SLP_TREE_NUMBER_OF_VEC_STMTS (node)
 	= vect_get_num_vectors (vf * group_size, vectype);
@@ -2956,7 +2962,8 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       auto_vec<bool, 20> life;
-      life.safe_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
+      life.safe_grow_cleared
+	(SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance)).length ());
       vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, visited);
@@ -3791,8 +3798,7 @@ vect_get_slp_defs (vec_info *vinfo,
 
 /* Generate vector permute statements from a list of loads in DR_CHAIN.
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
-   permute statements for the SLP node NODE of the SLP instance
-   SLP_NODE_INSTANCE.  */
+   permute statements for the SLP node NODE.  */
 
 bool
 vect_transform_slp_perm_load (vec_info *vinfo,
@@ -4040,7 +4046,7 @@ vect_schedule_slp_instance (vec_info *vinfo,
   /* VECTYPE is the type of the destination.  */
   vectype = STMT_VINFO_VECTYPE (stmt_info);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  group_size = SLP_INSTANCE_GROUP_SIZE (instance);
+  group_size = SLP_TREE_SCALAR_STMTS (node).length ();
 
   gcc_assert (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
   SLP_TREE_VEC_STMTS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));

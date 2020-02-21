@@ -6574,7 +6574,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 which each SLP statement has its own initial value and in which
 	 that value needs to be repeated for every instance of the
 	 statement within the initial vector.  */
-      unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
+      unsigned int group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       if (!neutral_op
 	  && !can_duplicate_and_interleave_p (loop_vinfo, group_size,
 					      TREE_TYPE (vectype_out)))
