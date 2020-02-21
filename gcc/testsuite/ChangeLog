@@ -1,3 +1,9 @@
+2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+  	PR tree-optimization/93586
+	* gcc.dg/torture/pr93586.c: New testcase.
+
 2020-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/93845

@@ -1,3 +1,11 @@
+2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+  	PR tree-optimization/93586
+	* tree-ssa-alias.c (nonoverlapping_array_refs_p): Finish array walk
+	after mismatched array refs; do not sure type size information to
+	recover from unmatched referneces with !flag_strict_aliasing_p.
+
 2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (gather_load<mode>): Rename to ...
