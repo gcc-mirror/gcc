@@ -1,3 +1,8 @@
+2020-02-21  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* doc/sourcebuild.texi (arm_v8_1m_mve_ok):
+	Document new target supports option.
+
 2020-02-21  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/arm/arm_neon.h (vmmlaq_s32, vmmlaq_u32, vusmmlaq_s32): New.
