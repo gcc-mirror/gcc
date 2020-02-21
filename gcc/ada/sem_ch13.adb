@@ -48,6 +48,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
+with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
@@ -6415,6 +6416,12 @@ package body Sem_Ch13 is
                return;
             end if;
 
+            --  Validate_Remote_Access_To_Class_Wide_Type for attribute
+            --  Storage_Pool since this attribute cannot be defined for such
+            --  types (RM E.2.2(17)).
+
+            Validate_Remote_Access_To_Class_Wide_Type (N);
+
             --  If the argument is a name that is not an entity name, then
             --  we construct a renaming operation to define an entity of
             --  type storage pool.
@@ -6524,6 +6531,12 @@ package body Sem_Ch13 is
                null;
 
             else
+               --  Validate_Remote_Access_To_Class_Wide_Type for attribute
+               --  Storage_Size since this attribute cannot be defined for such
+               --  types (RM E.2.2(17)).
+
+               Validate_Remote_Access_To_Class_Wide_Type (N);
+
                Analyze_And_Resolve (Expr, Any_Integer);
 
                if Is_Access_Type (U_Ent) then
