@@ -6585,3 +6585,14 @@ if (BYTES_BIG_ENDIAN)
  "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_fp_abd_s<q>")]
 )
+
+(define_insn "neon_<sup>mmlav16qi"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+	(plus:V4SI
+	 (unspec:V4SI [(match_operand:V16QI 2 "register_operand" "w")
+		       (match_operand:V16QI 3 "register_operand" "w")] MATMUL)
+	 (match_operand:V4SI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "v<sup>mmla.<mmla_sfx>\t%q0, %q2, %q3"
+  [(set_attr "type" "neon_mla_s_q")]
+)

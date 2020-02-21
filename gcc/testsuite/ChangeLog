@@ -1,3 +1,67 @@
+2020-02-21  Martin Sebor  <msebor@redhat.com>
+
+	PR gcov-profile/93753
+	* g++.dg/ext/flexary36.C: New test.
+	* g++.dg/lto/pr93166_0.C: Make struct with flexarray valid.
+
+2020-02-21  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/vmmla_1.c: New test.
+
+2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/armv8_1m-shift-imm-1.c: Add MVE target checks.
+	* gcc.target/arm/armv8_1m-shift-reg-1.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): New.
+	(check_effective_target_arm_v8_1m_mve_ok): New.
+	(add_options_for_v8_1m_mve): New.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr69052.c: Require target ia32.
+	(dg-options): Add -fcommon and remove -pie.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-epilogues.c (scan-tree-dump): Require
+	vect_mutiple_sizes effective target.
+
+2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+  	PR tree-optimization/93586
+	* gcc.dg/torture/pr93586.c: New testcase.
+
+2020-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93845
+	* g++.dg/tree-ssa/pr93845.C: New test.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/rsqrt_1.c: New test.
+	* gcc.target/aarch64/sve/rsqrt_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1_run.c: Likewise.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/recip_1.c: New test.
+	* gcc.target/aarch64/sve/recip_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/recip_2.c: Likewise.
+	* gcc.target/aarch64/sve/recip_2_run.c: Likewise.
+
+2020-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93801
+	* g++.dg/warn/Wredundant-tags-3.C: New test.
+
+2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93828
+	* g++.target/i386/pr93828.C: New test.
+
 2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/93658

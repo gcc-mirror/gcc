@@ -1051,6 +1051,21 @@ namespace views
 {
   namespace __adaptor
   {
+    template<typename _Tp>
+      inline constexpr auto
+      __maybe_refwrap(_Tp& __arg)
+      { return reference_wrapper<_Tp>{__arg}; }
+
+    template<typename _Tp>
+      inline constexpr auto
+      __maybe_refwrap(const _Tp& __arg)
+      { return reference_wrapper<const _Tp>{__arg}; }
+
+    template<typename _Tp>
+      inline constexpr decltype(auto)
+      __maybe_refwrap(_Tp&& __arg)
+      { return std::forward<_Tp>(__arg); }
+
     template<typename _Callable>
       struct _RangeAdaptorClosure;
 
@@ -1079,18 +1094,47 @@ namespace views
 	  constexpr auto
 	  operator()(_Args&&... __args) const
 	  {
+	    // [range.adaptor.object]: If a range adaptor object accepts more
+	    // than one argument, then the following expressions are equivalent:
+	    //
+	    //   (1) adaptor(range, args...)
+	    //   (2) adaptor(args...)(range)
+	    //   (3) range | adaptor(args...)
+	    //
+	    // In this case, adaptor(args...) is a range adaptor closure object.
+	    //
+	    // We handle (1) and (2) here, and (3) is just a special case of a
+	    // more general case already handled by _RangeAdaptorClosure.
 	    if constexpr (is_invocable_v<_Callable, _Args...>)
 	      {
 		static_assert(sizeof...(_Args) != 1,
 			      "a _RangeAdaptor that accepts only one argument "
 			      "should be defined as a _RangeAdaptorClosure");
+		// Here we handle adaptor(range, args...) -- just forward all
+		// arguments to the underlying adaptor routine.
 		return _Callable{}(std::forward<_Args>(__args)...);
 	      }
 	    else
 	      {
-		auto __closure = [__args...] <typename _Range> (_Range&& __r) {
-		  return _Callable{}(std::forward<_Range>(__r), __args...);
-		};
+		// Here we handle adaptor(args...)(range).
+		// Given args..., we return a _RangeAdaptorClosure that takes a
+		// range argument, such that (2) is equivalent to (1).
+		//
+		// We need to be careful about how we capture args... in this
+		// closure.  By using __maybe_refwrap, we capture lvalue
+		// references by reference (through a reference_wrapper) and
+		// otherwise capture by value.
+		auto __closure
+		  = [...__args(__maybe_refwrap(std::forward<_Args>(__args)))]
+		    <typename _Range> (_Range&& __r) {
+		      // This static_cast has two purposes: it forwards a
+		      // reference_wrapper<T> capture as a T&, and otherwise
+		      // forwards the captured argument as an rvalue.
+		      return _Callable{}(std::forward<_Range>(__r),
+			       (static_cast<unwrap_reference_t
+					    <remove_const_t<decltype(__args)>>>
+				(__args))...);
+		    };
 		using _ClosureType = decltype(__closure);
 		return _RangeAdaptorClosure<_ClosureType>(std::move(__closure));
 	      }

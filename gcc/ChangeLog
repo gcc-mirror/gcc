@@ -1,3 +1,127 @@
+2020-02-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/93860
+	* config/darwin-c.c (pop_field_alignment): Adjust quoting of
+	error string.
+
+2020-02-21  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* doc/sourcebuild.texi (arm_v8_1m_mve_ok):
+	Document new target supports option.
+
+2020-02-21  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm_neon.h (vmmlaq_s32, vmmlaq_u32, vusmmlaq_s32): New.
+	* config/arm/arm_neon_builtins.def (smmla, ummla, usmmla): New.
+	* config/arm/iterators.md (MATMUL): New iterator.
+	(sup): Add UNSPEC_MATMUL_S, UNSPEC_MATMUL_U, and UNSPEC_MATMUL_US.
+	(mmla_sfx): New attribute.
+	* config/arm/neon.md (neon_<sup>mmlav16qi): New.
+	* config/arm/unspecs.md (UNSPEC_MATMUL_S, UNSPEC_MATMUL_U): New.
+	(UNSPEC_MATMUL_US): New.
+
+2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm.md: Prevent scalar shifts from being used when big
+	endian is enabled.
+
+2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+  	PR tree-optimization/93586
+	* tree-ssa-alias.c (nonoverlapping_array_refs_p): Finish array walk
+	after mismatched array refs; do not sure type size information to
+	recover from unmatched referneces with !flag_strict_aliasing_p.
+
+2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather_load<mode>): Rename to ...
+	(gather_load<mode>v64si): ... this and set operand 2 to V64SI.
+	(scatter_store<mode>): Rename to ...
+	(scatter_store<mode>v64si): ... this and set operand 1 to V64SI.
+	(scatter<mode>_exec): Delete. Move contents ...
+	(mask_scatter_store<mode>): ... here, and rename that to ...
+	(mask_gather_load<mode>v64si): ... this. Set operand 2 to V64SI.
+	Remove mode conversion.
+	(mask_gather_load<mode>): Rename to ...
+	(mask_scatter_store<mode>v64si): ... this. Set operand 1 to V64SI.
+	Remove mode conversion.
+	* config/gcn/gcn.c (gcn_expand_scaled_offsets): Remove mode conversion.
+
+2020-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93845
+	* tree-sra.c (verify_sra_access_forest): Only test access size of
+	scalar types.
+
+2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_hard_regno_mode_ok): Align VGPR pairs.
+	* config/gcn/gcn-valu.md (addv64di3): Remove early-clobber.
+	(addv64di3_exec): Likewise.
+	(subv64di3): Likewise.
+	(subv64di3_exec): Likewise.
+	(addv64di3_zext): Likewise.
+	(addv64di3_zext_exec): Likewise.
+	(addv64di3_zext_dup): Likewise.
+	(addv64di3_zext_dup_exec): Likewise.
+	(addv64di3_zext_dup2): Likewise.
+	(addv64di3_zext_dup2_exec): Likewise.
+	(addv64di3_sext_dup2): Likewise.
+	(addv64di3_sext_dup2_exec): Likewise.
+	(<expander>v64di3): Likewise.
+	(<expander>v64di3_exec): Likewise.
+	(*<reduc_op>_dpp_shr_v64di): Likewise.
+	(*plus_carry_dpp_shr_v64di): Likewise.
+	* config/gcn/gcn.md (adddi3): Likewise.
+	(addptrdi3): Likewise.
+	(<expander>di3): Likewise.
+
+2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vec_seriesv64di): Use gen_vec_duplicatev64di.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Add SVE
+	support.  Use aarch64_emit_mult instead of emitting multiplication
+	instructions directly.
+	* config/aarch64/aarch64-sve.md (sqrt<mode>2, rsqrt<mode>2)
+	(@aarch64_rsqrte<mode>, @aarch64_rsqrts<mode>): New expanders.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_mult): New function.
+	(aarch64_emit_approx_div): Add SVE support.  Use aarch64_emit_mult
+	instead of emitting multiplication instructions directly.
+	* config/aarch64/iterators.md (SVE_COND_FP_BINARY_OPTAB): New iterator.
+	* config/aarch64/aarch64-sve.md (div<mode>3, @aarch64_frecpe<mode>)
+	(@aarch64_frecps<mode>): New expanders.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (AARCH64_APPROX_MODE): Operate
+	on and produce uint64_ts rather than ints.
+	(AARCH64_APPROX_NONE, AARCH64_APPROX_ALL): Change to uint64_ts.
+	(cpu_approx_modes): Change the fields from unsigned int to uint64_t.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Don't create
+	an unused xmsk register when handling approximate rsqrt.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Fix inverted
+	flag_finite_math_only condition.
+
+2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93828
+	* config/i386/mmx.md (*vec_extractv2sf_1): Match source operand
+	to destination operand for shufps alternative.
+	(*vec_extractv2si_1): Ditto.
+
 2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/93658

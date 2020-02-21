@@ -487,6 +487,8 @@
 (define_int_iterator VCADD [UNSPEC_VCADD90 UNSPEC_VCADD270])
 (define_int_iterator VCMLA [UNSPEC_VCMLA UNSPEC_VCMLA90 UNSPEC_VCMLA180 UNSPEC_VCMLA270])
 
+(define_int_iterator MATMUL [UNSPEC_MATMUL_S UNSPEC_MATMUL_U UNSPEC_MATMUL_US])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -942,6 +944,7 @@
   (UNSPEC_DOT_S "s") (UNSPEC_DOT_U "u")
   (UNSPEC_DOT_US "us") (UNSPEC_DOT_SU "su")
   (UNSPEC_SSAT16 "s") (UNSPEC_USAT16 "u")
+  (UNSPEC_MATMUL_S "s") (UNSPEC_MATMUL_U "u") (UNSPEC_MATMUL_US "us")
 ])
 
 (define_int_attr vfml_half
@@ -1109,6 +1112,9 @@
 			    (UNSPEC_SMLSDX "smlsdx") (UNSPEC_SMUAD "smuad")
 			    (UNSPEC_SMUADX "smuadx") (UNSPEC_SSAT16 "ssat16")
 			    (UNSPEC_USAT16 "usat16")])
+
+(define_int_attr mmla_sfx [(UNSPEC_MATMUL_S "s8") (UNSPEC_MATMUL_U "u8")
+			   (UNSPEC_MATMUL_US "s8")])
 
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])

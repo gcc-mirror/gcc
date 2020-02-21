@@ -645,14 +645,14 @@
 (define_insn "*vec_extractv2sf_1"
   [(set (match_operand:SF 0 "nonimmediate_operand"     "=y,x,x,y,x,f,r")
 	(vec_select:SF
-	  (match_operand:V2SF 1 "nonimmediate_operand" " 0,x,x,o,o,o,o")
+	  (match_operand:V2SF 1 "nonimmediate_operand" " 0,x,0,o,o,o,o")
 	  (parallel [(const_int 1)])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    punpckhdq\t%0, %0
    %vmovshdup\t{%1, %0|%0, %1}
-   shufps\t{$0xe5, %1, %0|%0, %1, 0xe5}
+   shufps\t{$0xe5, %0, %0|%0, %0, 0xe5}
    #
    #
    #
@@ -1794,7 +1794,7 @@
 (define_insn "*vec_extractv2si_1"
   [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,rm,x,x,y,x,r")
 	(vec_select:SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,x ,x,x,o,o,o")
+	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,x ,x,0,o,o,o")
 	  (parallel [(const_int 1)])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -1802,7 +1802,7 @@
    punpckhdq\t%0, %0
    %vpextrd\t{$1, %1, %0|%0, %1, 1}
    %vpshufd\t{$0xe5, %1, %0|%0, %1, 0xe5}
-   shufps\t{$0xe5, %1, %0|%0, %1, 0xe5}
+   shufps\t{$0xe5, %0, %0|%0, %0, 0xe5}
    #
    #
    #"

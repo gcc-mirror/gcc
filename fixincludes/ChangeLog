@@ -1,3 +1,7 @@
+2020-02-20  Alexandre Oliva <oliva@adacore.com>
+
+	* mkheaders.in: Don't require build-time shell on host.
+
 2020-02-13  Matheus Castanho  <msc@linux.ibm.com>
 
 	* fixinc.in: Skip machine_name fix on powerpc*-*-linux*.

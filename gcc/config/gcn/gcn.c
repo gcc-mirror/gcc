@@ -458,7 +458,15 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	    || (!((regno - FIRST_SGPR_REG) & 1) && sgpr_2reg_mode_p (mode))
 	    || (((regno - FIRST_SGPR_REG) & 3) == 0 && mode == TImode));
   if (VGPR_REGNO_P (regno))
-    return (vgpr_1reg_mode_p (mode) || vgpr_2reg_mode_p (mode)
+    /* Vector instructions do not care about the alignment of register
+       pairs, but where there is no 64-bit instruction, many of the
+       define_split do not work if the input and output registers partially
+       overlap.  We tried to fix this with early clobber and match
+       constraints, but it was bug prone, added complexity, and conflicts
+       with the 'U0' constraints on vec_merge.
+       Therefore, we restrict ourselved to aligned registers.  */
+    return (vgpr_1reg_mode_p (mode)
+	    || (!((regno - FIRST_VGPR_REG) & 1) && vgpr_2reg_mode_p (mode))
 	    /* TImode is used by DImode compare_and_swap.  */
 	    || mode == TImode);
   return false;
@@ -1853,15 +1861,6 @@ rtx
 gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
 			   bool unsigned_p, rtx exec)
 {
-  /* Convert the offsets to V64SImode.
-     TODO: more conversions will be needed when more types are vectorized. */
-  if (GET_MODE (offsets) == V64DImode)
-    {
-      rtx tmp = gen_reg_rtx (V64SImode);
-      emit_insn (gen_truncv64div64si2 (tmp, offsets));
-      offsets = tmp;
-    }
-
   rtx tmpsi = gen_reg_rtx (V64SImode);
   rtx tmpdi = gen_reg_rtx (V64DImode);
   rtx undefsi = exec ? gcn_gen_undef (V64SImode) : NULL;
