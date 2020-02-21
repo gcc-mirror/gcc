@@ -763,6 +763,19 @@ gori_compute::compute_operand_range_op (irange &r, gimple *stmt,
   return false;
 }
 
+static bool
+range_is_either_true_or_false (const irange &r)
+{
+  if (r.undefined_p ())
+    return false;
+
+  // This is complicated by the fact that Ada has multi-bit booleans,
+  // so true can be ~[0, 0] (i.e. [1,MAX]).
+  tree type = r.type ();
+  gcc_checking_assert (types_compatible_p (type, boolean_type_node));
+  return (r.singleton_p () || !r.contains_p (build_zero_cst (type)));
+}
+
 // Evaluate a binary logical expression by combining the true and
 // false ranges for each of the operands based on the result value in
 // the LHS.
@@ -810,7 +823,7 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   // FALSE results and combine them.  If we fell back to VARYING any
   // range restrictions that have been discovered up to this point
   // would be lost.  */
-  if (!lhs.singleton_p ())
+  if (!range_is_either_true_or_false (lhs))
     {
       widest_irange r1;
       if (logical_combine (r1, code, m_bool_zero, op1_true, op1_false,

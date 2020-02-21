@@ -313,6 +313,13 @@ range_true (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
   return int_range<1> (type, wi::one (prec), wi::one (prec));
+#if 0
+  // ??
+  // Build ~[0,0] instead of [1,1] because Ada booleans may be larger
+  // than 1-bit.
+  tree zero = build_zero_cst (type);
+  return int_range<1> (zero, zero, VR_ANTI_RANGE);
+#endif
 }
 
 // Return a value_range instance that is a boolean FALSE.
@@ -350,16 +357,16 @@ get_bool_state (irange &r, const irange &lhs, tree val_type)
       return BRS_EMPTY;
     }
 
-  // If the bounds aren't the same, then it's not a constant.
-  if (!wi::eq_p (lhs.upper_bound (), lhs.lower_bound ()))
+  if (lhs.zero_p ())
+    return BRS_FALSE;
+
+  // For TRUE, we can't just test for [1,1] because Ada can have
+  // multi-bit booleans, and TRUE values can be: [1, MAX], ~[0], etc.
+  if (lhs.contains_p (build_zero_cst (lhs.type ())))
     {
       r.set_varying (val_type);
       return BRS_FULL;
     }
-
-  if (lhs.zero_p ())
-    return BRS_FALSE;
-
   return BRS_TRUE;
 }
 
