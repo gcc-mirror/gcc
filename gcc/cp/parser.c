@@ -30998,6 +30998,13 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   if (!warn_mismatched_tags && !warn_redundant_tags)
     return;
 
+  /* Only consider the true class-keys below and ignore typename_type,
+     etc. that are not C++ class-keys.  */
+  if (class_key != class_type
+      && class_key != record_type
+      && class_key != union_type)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
@@ -31005,13 +31012,6 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
   pop_deferring_access_checks ();
-
-  /* Only consider the true class-keys below and ignore typename_type,
-     etc. that are not C++ class-keys.  */
-  if (class_key != class_type
-      && class_key != record_type
-      && class_key != union_type)
-    return;
 
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name
