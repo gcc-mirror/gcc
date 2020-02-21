@@ -79,7 +79,7 @@ pop_field_alignment (void)
       free (entry);
     }
   else
-    error ("too many %<#pragma options%> align=reset");
+    error ("too many %<#pragma options align=reset%>");
 }
 
 /* Handlers for Darwin-specific pragmas.  */

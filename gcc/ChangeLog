@@ -1,3 +1,9 @@
+2020-02-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/93860
+	* config/darwin-c.c (pop_field_alignment): Adjust quoting of
+	error string.
+
 2020-02-21  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* doc/sourcebuild.texi (arm_v8_1m_mve_ok):
