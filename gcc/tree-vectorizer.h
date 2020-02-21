@@ -119,13 +119,16 @@ typedef struct _slp_tree *slp_tree;
 struct _slp_tree {
   /* Nodes that contain def-stmts of this node statements operands.  */
   vec<slp_tree> children;
+
   /* A group of scalar stmts to be vectorized together.  */
   vec<stmt_vec_info> stmts;
   /* A group of scalar operands to be vectorized together.  */
   vec<tree> ops;
+
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
   vec<unsigned> load_permutation;
+
   /* Vectorized stmt/s.  */
   vec<stmt_vec_info> vec_stmts;
   /* Number of vector stmts that are created to replace the group of scalar
@@ -133,6 +136,7 @@ struct _slp_tree {
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
      divided by vector size.  */
   unsigned int vec_stmts_size;
+
   /* Reference count in the SLP graph.  */
   unsigned int refcnt;
   /* The maximum number of vector elements for the subtree rooted
@@ -156,9 +160,6 @@ public:
      from, NULL otherwise.  */
   stmt_vec_info root_stmt;
 
-  /* Size of groups of scalar stmts that will be replaced by SIMD stmt/s.  */
-  unsigned int group_size;
-
   /* The unrolling factor required to vectorized this SLP instance.  */
   poly_uint64 unrolling_factor;
 
@@ -172,7 +173,6 @@ public:
 
 /* Access Functions.  */
 #define SLP_INSTANCE_TREE(S)                     (S)->root
-#define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt

@@ -1,3 +1,24 @@
+2020-05-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (SLP_INSTANCE_GROUP_SIZE): Remove.
+	(_slp_instance::group_size): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): The group size
+	is the number of lanes in the node.
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Likewise.
+	(vect_analyze_slp_instance): Do not set SLP_INSTANCE_GROUP_SIZE,
+	verify it matches the instance trees number of lanes.
+	(vect_slp_analyze_node_operations_1): Use the numer of lanes
+	in the node as group size.
+	(vect_bb_vectorization_profitable_p): Use the instance root
+	number of lanes for the size of life.
+	(vect_schedule_slp_instance): Use the number of lanes as
+	group_size.
+	* tree-vect-stmts.c (vectorizable_load): Remove SLP instance
+	parameter.  Use the number of lanes of the load for the group
+	size in the gap adjustment code.
+	(vect_analyze_stmt): Adjust.
+	(vect_transform_stmt): Likewise.
+
 2020-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/95080

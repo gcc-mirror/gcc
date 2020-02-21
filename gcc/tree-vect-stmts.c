@@ -8606,7 +8606,6 @@ static bool
 vectorizable_load (vec_info *vinfo,
 		   stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   stmt_vec_info *vec_stmt, slp_tree slp_node,
-		   slp_instance slp_node_instance,
 		   stmt_vector_for_cost *cost_vec)
 {
   tree scalar_dest;
@@ -9221,8 +9220,9 @@ vectorizable_load (vec_info *vinfo,
 	     unpermuted sequence.  In other cases we need to load the
 	     whole group, not only the number of vector stmts the
 	     permutation result fits in.  */
+	  unsigned scalar_lanes = SLP_TREE_SCALAR_STMTS (slp_node).length ();
 	  if (slp_perm
-	      && (group_size != SLP_INSTANCE_GROUP_SIZE (slp_node_instance)
+	      && (group_size != scalar_lanes 
 		  || !multiple_p (nunits, group_size)))
 	    {
 	      /* We don't yet generate such SLP_TREE_LOAD_PERMUTATIONs for
@@ -9236,7 +9236,7 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	      group_gap_adj
-		= group_size - SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
+		= group_size - scalar_lanes;
 	    }
     	}
       else
@@ -11062,8 +11062,7 @@ vect_analyze_stmt (vec_info *vinfo,
 				     NULL, NULL, node, cost_vec)
 	  || vectorizable_assignment (vinfo, stmt_info,
 				      NULL, NULL, node, cost_vec)
-	  || vectorizable_load (vinfo, stmt_info,
-				NULL, NULL, node, node_instance, cost_vec)
+	  || vectorizable_load (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_store (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
 				     node, node_instance, cost_vec)
@@ -11091,7 +11090,7 @@ vect_analyze_stmt (vec_info *vinfo,
 	      || vectorizable_assignment (vinfo, stmt_info, NULL, NULL, node,
 					  cost_vec)
 	      || vectorizable_load (vinfo, stmt_info,
-				    NULL, NULL, node, node_instance, cost_vec)
+				    NULL, NULL, node, cost_vec)
 	      || vectorizable_store (vinfo, stmt_info,
 				     NULL, NULL, node, cost_vec)
 	      || vectorizable_condition (vinfo, stmt_info,
@@ -11182,7 +11181,7 @@ vect_transform_stmt (vec_info *vinfo,
 
     case load_vec_info_type:
       done = vectorizable_load (vinfo, stmt_info, gsi, &vec_stmt, slp_node,
-                                slp_node_instance, NULL);
+				NULL);
       gcc_assert (done);
       break;
 
