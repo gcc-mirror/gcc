@@ -1,5 +1,28 @@
 2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn.c (gcn_hard_regno_mode_ok): Align VGPR pairs.
+	* config/gcn/gcn-valu.md (addv64di3): Remove early-clobber.
+	(addv64di3_exec): Likewise.
+	(subv64di3): Likewise.
+	(subv64di3_exec): Likewise.
+	(addv64di3_zext): Likewise.
+	(addv64di3_zext_exec): Likewise.
+	(addv64di3_zext_dup): Likewise.
+	(addv64di3_zext_dup_exec): Likewise.
+	(addv64di3_zext_dup2): Likewise.
+	(addv64di3_zext_dup2_exec): Likewise.
+	(addv64di3_sext_dup2): Likewise.
+	(addv64di3_sext_dup2_exec): Likewise.
+	(<expander>v64di3): Likewise.
+	(<expander>v64di3_exec): Likewise.
+	(*<reduc_op>_dpp_shr_v64di): Likewise.
+	(*plus_carry_dpp_shr_v64di): Likewise.
+	* config/gcn/gcn.md (adddi3): Likewise.
+	(addptrdi3): Likewise.
+	(<expander>di3): Likewise.
+
+2020-02-21  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (vec_seriesv64di): Use gen_vec_duplicatev64di.
 
 2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
