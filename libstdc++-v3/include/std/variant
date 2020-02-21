@@ -45,6 +45,9 @@
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1181,10 +1184,7 @@ namespace __variant
             __ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
 	}, __rhs); \
       return __ret; \
-    } \
-\
-  constexpr bool operator __OP(monostate, monostate) noexcept \
-  { return 0 __OP 0; }
+    }
 
   _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
   _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
@@ -1194,6 +1194,45 @@ namespace __variant
   _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
 
 #undef _VARIANT_RELATION_FUNCTION_TEMPLATE
+
+  constexpr bool operator==(monostate, monostate) noexcept { return true; }
+
+#ifdef __cpp_lib_three_way_comparison
+  template<typename... _Types>
+    requires (three_way_comparable<_Types> && ...)
+    constexpr
+    common_comparison_category_t<compare_three_way_result_t<_Types>...>
+    operator<=>(const variant<_Types...>& __v, const variant<_Types...>& __w)
+    {
+      common_comparison_category_t<compare_three_way_result_t<_Types>...> __ret
+	= strong_ordering::equal;
+
+      __detail::__variant::__raw_idx_visit(
+	[&__ret, &__v] (auto&& __w_mem, auto __w_index) mutable
+	{
+	  if constexpr (__w_index != variant_npos)
+	    {
+	      if (__v.index() == __w_index)
+		{
+		  auto& __this_mem = std::get<__w_index>(__v);
+		  __ret = __this_mem <=> __w_mem;
+		  return;
+		}
+	    }
+	  __ret = (__v.index() + 1) <=> (__w_index + 1);
+	}, __w);
+      return __ret;
+    }
+
+  constexpr strong_ordering
+  operator<=>(monostate, monostate) noexcept { return strong_ordering::equal; }
+#else
+  constexpr bool operator!=(monostate, monostate) noexcept { return false; }
+  constexpr bool operator<(monostate, monostate) noexcept { return false; }
+  constexpr bool operator>(monostate, monostate) noexcept { return false; }
+  constexpr bool operator<=(monostate, monostate) noexcept { return true; }
+  constexpr bool operator>=(monostate, monostate) noexcept { return true; }
+#endif
 
   template<typename _Visitor, typename... _Variants>
     constexpr decltype(auto) visit(_Visitor&&, _Variants&&...);

@@ -1,3 +1,20 @@
+2020-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (operator<=>(optional<T>, optional<U>))
+	(operator<=>(optional<T>, nullopt), operator<=>(optional<T>, U)):
+	Define for C++20.
+	* include/std/tuple (__tuple_cmp): New helper function for <=>.
+	(operator<=>(tuple<T...>, tuple<U>...)): Define for C++20.
+	* include/std/variant (operator<=>(variant<T...>, variant<T...>))
+	(operator<=>(monostate, monostate)): Define for C++20.
+	* testsuite/20_util/optional/relops/three_way.cc: New test.
+	* testsuite/20_util/tuple/comparison_operators/three_way.cc: New test.
+	* testsuite/20_util/variant/89851.cc: Move to ...
+	* testsuite/20_util/variant/relops/89851.cc: ... here.
+	* testsuite/20_util/variant/90008.cc: Move to ...
+	* testsuite/20_util/variant/relops/90008.cc: ... here.
+	* testsuite/20_util/variant/relops/three_way.cc: New test.
+
 2020-02-20  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (views::__adaptor::__maybe_refwrap): New utility
