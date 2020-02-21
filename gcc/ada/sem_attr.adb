@@ -6004,7 +6004,7 @@ package body Sem_Attr is
 
             --  Validate_Remote_Access_To_Class_Wide_Type for attribute
             --  Storage_Pool since this attribute is not defined for such
-            --  types (RM E.2.3(22)).
+            --  types (RM E.2.2(17)).
 
             Validate_Remote_Access_To_Class_Wide_Type (N);
 
@@ -6038,9 +6038,9 @@ package body Sem_Attr is
                Check_Type;
                Set_Etype (N, Universal_Integer);
 
-               --   Validate_Remote_Access_To_Class_Wide_Type for attribute
-               --   Storage_Size since this attribute is not defined for
-               --   such types (RM E.2.3(22)).
+               --  Validate_Remote_Access_To_Class_Wide_Type for attribute
+               --  Storage_Size since this attribute is not defined for
+               --  such types (RM E.2.2(17)).
 
                Validate_Remote_Access_To_Class_Wide_Type (N);
 

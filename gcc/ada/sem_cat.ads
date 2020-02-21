@@ -120,8 +120,8 @@ package Sem_Cat is
    --  Checks that Storage_Pool and Storage_Size attribute references are
    --  not applied to remote access-to-class-wide types. Also checks that the
    --  expected type for an allocator cannot be a remote access-to-class-wide
-   --  type. ALso checks that a remote access-to-class-wide type cannot be an
-   --  actual parameter for a generic formal access type. RM E.2.3(22).
+   --  type. Also checks that a remote access-to-class-wide type cannot be an
+   --  actual parameter for a generic formal access type. RM E.2.2(17).
 
    procedure Validate_RT_RAT_Component (N : Node_Id);
    --  Given N, the package library unit declaration node, we should check
