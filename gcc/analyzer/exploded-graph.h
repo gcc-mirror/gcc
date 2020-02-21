@@ -400,6 +400,8 @@ struct stats
   void log (logger *logger) const;
   void dump (FILE *out) const;
 
+  int get_total_enodes () const;
+
   int m_num_nodes[NUM_POINT_KINDS];
   int m_node_reuse_count;
   int m_node_reuse_after_merge_count;
@@ -466,11 +468,14 @@ struct eg_hash_map_traits
 struct per_program_point_data
 {
   per_program_point_data (const program_point &key)
-  : m_key (key)
+  : m_key (key), m_excess_enodes (0)
   {}
 
   const program_point m_key;
   auto_vec<exploded_node *> m_enodes;
+  /* The number of attempts to create an enode for this point
+     after exceeding --param=analyzer-max-enodes-per-program-point.  */
+  int m_excess_enodes;
 };
 
 /* Traits class for storing per-program_point data within
@@ -791,6 +796,8 @@ public:
   { return &m_per_call_string_data; }
 
 private:
+  void print_bar_charts (pretty_printer *pp) const;
+
   DISABLE_COPY_AND_ASSIGN (exploded_graph);
 
   const supergraph &m_sg;

@@ -1,3 +1,28 @@
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* bar-chart.cc: New file.
+	* bar-chart.h: New file.
+	* engine.cc: Include "analyzer/bar-chart.h".
+	(stats::log): Only log the m_num_nodes kinds that are non-zero.
+	(stats::dump): Likewise when dumping.
+	(stats::get_total_enodes): New.
+	(exploded_graph::get_or_create_node): Increment the per-point-data
+	m_excess_enodes when hitting the per-program-point limit on
+	enodes.
+	(exploded_graph::print_bar_charts): New.
+	(exploded_graph::log_stats): Log the number of unprocessed enodes
+	in the worklist.  Call print_bar_charts.
+	(exploded_graph::dump_stats): Print the number of unprocessed
+	enodes in the worklist.
+	* exploded-graph.h (stats::get_total_enodes): New decl.
+	(struct per_program_point_data): Add field m_excess_enodes.
+	(exploded_graph::print_bar_charts): New decl.
+	* supergraph.cc (superedge::dump): New.
+	(superedge::dump): New.
+	* supergraph.h (supernode::get_function): New.
+	(superedge::dump): New decl.
+	(superedge::dump): New decl.
+
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (exploded_graph::get_or_create_node): Dump the

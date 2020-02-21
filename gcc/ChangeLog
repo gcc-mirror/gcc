@@ -1,3 +1,7 @@
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/bar-chart.o.
+
 2020-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93820
