@@ -1,3 +1,8 @@
+2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm.md: Prevent scalar shifts from being used when big
+	endian is enabled.
+
 2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
 	    Richard Biener  <rguenther@suse.de>
 

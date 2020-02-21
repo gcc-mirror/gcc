@@ -1,3 +1,12 @@
+2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/armv8_1m-shift-imm-1.c: Add MVE target checks.
+	* gcc.target/arm/armv8_1m-shift-reg-1.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): New.
+	(check_effective_target_arm_v8_1m_mve_ok): New.
+	(add_options_for_v8_1m_mve): New.
+
 2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-epilogues.c (scan-tree-dump): Require

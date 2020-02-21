@@ -4399,7 +4399,7 @@
                    (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
-  if (TARGET_HAVE_MVE)
+  if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN)
     {
       if (!reg_or_int_operand (operands[2], SImode))
         operands[2] = force_reg (SImode, operands[2]);
@@ -4443,7 +4443,7 @@
   "TARGET_32BIT"
   "
   /* Armv8.1-M Mainline double shifts are not expanded.  */
-  if (TARGET_HAVE_MVE
+  if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
       && arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
     {
       if (!reg_overlap_mentioned_p(operands[0], operands[1]))
@@ -4478,7 +4478,7 @@
   "TARGET_32BIT"
   "
   /* Armv8.1-M Mainline double shifts are not expanded.  */
-  if (TARGET_HAVE_MVE
+  if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
     && long_shift_imm (operands[2], GET_MODE (operands[2])))
     {
       if (!reg_overlap_mentioned_p(operands[0], operands[1]))
