@@ -1,3 +1,9 @@
+2020-02-18  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93763
+	* ipa-cp.c (self_recursively_generated_p): Mark self-dependent value as
+	self-recursively generated.
+
 2020-02-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/93860
