@@ -1,3 +1,10 @@
+2020-02-24  Patrick Palka  <ppalka@redhat.com>
+
+	P0769R2 Add shift to <algorithm>
+	* include/bits/ranges_algo.h (shift_left, shift_right): New.
+	* testsuite/25_algorithms/shift_left/1.cc: New test.
+	* testsuite/25_algorithms/shift_right/1.cc: New test.
+
 2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
