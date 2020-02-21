@@ -1,3 +1,7 @@
+2020-02-21  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/vmmla_1.c: New test.
+
 2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 
 	* gcc.target/arm/armv8_1m-shift-imm-1.c: Add MVE target checks.

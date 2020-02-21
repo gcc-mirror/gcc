@@ -18791,6 +18791,34 @@ vsudotq_lane_s32 (int32x4_t __r, int8x16_t __a,
 #pragma GCC pop_options
 #endif
 
+/* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+i8mm")
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmmlaq_s32 (int32x4_t __r, int8x16_t __a, int8x16_t __b)
+{
+  return __builtin_neon_smmlav16qi (__r, __a, __b);
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmmlaq_u32 (uint32x4_t __r, uint8x16_t __a, uint8x16_t __b)
+{
+  return __builtin_neon_ummlav16qi_uuuu (__r, __a, __b);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusmmlaq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b)
+{
+  return __builtin_neon_usmmlav16qi_ssus (__r, __a, __b);
+}
+
+#pragma GCC pop_options
+
 #ifdef __cplusplus
 }
 #endif
