@@ -25,3 +25,11 @@ R"regular string not an erroneous raw one"
 #error "oops no HERE"
 #endif
  /* comment */
+
+
+0e+R"*(not a raw string"
+#define CPP_NUM 1
+ //)*"
+#ifndef CPP_NUM
+#error "oops no CPP_NUM"
+#endif

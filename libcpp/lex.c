@@ -4415,24 +4415,75 @@ cpp_directive_only_process (cpp_reader *pfile,
 	    case '\'':
 	      if (!CPP_OPTION (pfile, digit_separators))
 		goto delimited_string;
+
 	      /* Possibly a number punctuator.  */
 	      if (!ISIDNUM (*do_peek_next (pos, limit)))
 		goto delimited_string;
 
+	      goto quote_peek;
+
+	    case '\"':
+	      if (!CPP_OPTION (pfile, rliterals))
+		goto delimited_string;
+
+	    quote_peek:
 	      {
-		/* Check if it's a number punctuator
+		/* For ' see if it's a number punctuator
 		   \.?<digit>(<digit>|<identifier-nondigit>
 		   |'<digit>|'<nondigit>|[eEpP]<sign>|\.)* */
+		/* For " see if it's a raw string
+		   {U,L,u,u8}R.  This includes CPP_NUMBER detection,
+		   because that could be 0e+R.  */
 		const unsigned char *peek = pos - 1;
+		bool quote_first = c == '"';
+		bool quote_eight = false;
 		bool maybe_number_start = false;
+		bool want_number = false;
 
 		while ((peek = do_peek_prev (peek, lwm)))
 		  {
 		    unsigned char p = *peek;
+		    if (quote_first)
+		      {
+			if (!raw)
+			  {
+			    if (p != 'R')
+			      break;
+			    raw = true;
+			    continue;
+			  }
+
+			quote_first = false;
+			if (p == 'L' || p == 'U' || p == 'u')
+			  ;
+			else if (p == '8')
+			  quote_eight = true;
+			else
+			  goto second_raw;
+		      }
+		    else if (quote_eight)
+		      {
+			if (p != 'u')
+			  {
+			    raw = false;
+			    break;
+			  }
+			quote_eight = false;
+		      }
+		    else if (c == '"')
+		      {
+		      second_raw:;
+			if (!want_number && ISIDNUM (p))
+			  {
+			    raw = false;
+			    break;
+			  }
+		      }
+
 		    if (ISDIGIT (p))
 		      maybe_number_start = true;
 		    else if (p == '.')
-		      ;
+		      want_number = true;
 		    else if (ISIDNUM (p))
 		      maybe_number_start = false;
 		    else if (p == '+' || p == '-')
@@ -4443,14 +4494,17 @@ cpp_directive_only_process (cpp_reader *pfile,
 			    p = *peek_prev;
 			    if (p == 'e' || p == 'E'
 				|| p == 'p' || p == 'P')
-			      maybe_number_start = false;
+			      {
+				want_number = true;
+				maybe_number_start = false;
+			      }
 			    else
 			      break;
 			  }
 			else
 			  break;
 		      }
-		    else if (p == '\'')
+		    else if (p == '\'' || p == '\"')
 		      {
 			/* If this is lwm, this must be the end of a
 			   previous string.  So this is a trailing
@@ -4459,75 +4513,29 @@ cpp_directive_only_process (cpp_reader *pfile,
 			     this must be a CPP_NUMBER because we've
 			     met another ', and we'd have checked that
 			     in its own right.  */
-			if (peek != lwm || !CPP_OPTION (pfile, uliterals))
+			if (peek == lwm && CPP_OPTION (pfile, uliterals))
+			  {
+			    if  (!maybe_number_start && !want_number)
+			      /* Must be a literal type.  */
+			      raw = false;
+			  }
+			else if (p == '\''
+				 && CPP_OPTION (pfile, digit_separators))
 			  maybe_number_start = true;
 			break;
 		      }
-		    else
+		    else if (c == '\'')
+		      break;
+		    else if (!quote_first && !quote_eight)
 		      break;
 		  }
 
 		if (maybe_number_start)
-		  /* A CPP NUMBER.  */
-		  goto dflt;
-	      }
-	      goto delimited_string;
-
-	    case '\"':
-	      if (!CPP_OPTION (pfile, rliterals))
-		goto delimited_string;
-	      
-	      {
-		/* Check if it's a raw string
-		   {U,L,u,u8}R  */
-		// FIXME: Not quite right, because we could be backing
-		// over a CPP-number such as 0e+R.  We should combine
-		// the ' and " backscanning
-		const unsigned char *peek = pos - 1;
-		bool first = true;
-		bool eight = false;
-		while ((peek = do_peek_prev (peek, lwm)))
 		  {
-		    unsigned char p = *peek;
-		    if (first)
-		      {
-			if (!raw)
-			  {
-			    if (p != 'R')
-			      break;
-			    raw = true;
-			    continue;
-			  }
-
-			first = false;
-			if (p == 'L' || p == 'U' || p == 'u')
-			  ;
-			else if (p == '8')
-			  eight = true;
-			else
-			  goto second_raw;
-		      }
-		    else if (eight)
-		      {
-			if (p != 'u')
-			  {
-			    raw = false;
-			    break;
-			  }
-			eight = false;
-		      }
-		    else
-		      {
-		      second_raw:;
-			if (ISIDNUM (p))
-			  raw = false;
-			else if (p == '\'' || p == '\"')
-			  {
-			    if (peek == lwm)
-			      raw = false;
-			  }
-			break;
-		      }
+		    if (c == '\'')
+		      /* A CPP NUMBER.  */
+		      goto dflt;
+		    raw = false;
 		  }
 
 		goto delimited_string;

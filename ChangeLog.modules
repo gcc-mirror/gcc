@@ -1,3 +1,11 @@
+2020-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* lex.c (cpp_directives_only): Commonize ' & " peeking, add
+	cpp-number vs raw-string detection.
+	gcc/testsuite/
+	* c-c++-common/cpp/dir-only-7.c: Add test.
+
 2020-02-19  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
