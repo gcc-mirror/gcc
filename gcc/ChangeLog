@@ -1,3 +1,30 @@
+2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and
+	double-word size when handling aggregate return values.
+	* gcc/config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Fix to indicate
+	that homogeneous SFmode and DFmode aggregates are passed and returned
+	in general registers.
+
+2020-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/93759
+	* opts.c (print_filtered_help): Translate help before appending
+	messages to it rather than after that.
+
+2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/PR92989
+	* lra-lives.c (process_bb_lives): Restore the original order
+	of the bb liveness update.  Call make_hard_regno_dead for each
+	register clobbered at the start of an EH receiver.
+
+2020-02-18  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93763
+	* ipa-cp.c (self_recursively_generated_p): Mark self-dependent value as
+	self-recursively generated.
+
 2020-02-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/93860

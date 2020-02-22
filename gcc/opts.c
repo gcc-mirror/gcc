@@ -1309,10 +1309,13 @@ print_filtered_help (unsigned int include_flags,
 	  help = undocumented_msg;
 	}
 
+      /* Get the translation.  */
+      help = _(help);
+
       if (option->alias_target < N_OPTS
 	  && cl_options [option->alias_target].help)
 	{
-	  if (help == undocumented_msg)
+	  if (option->help == NULL)
 	    {
 	      /* For undocumented options that are aliases for other options
 		 that are documented, point the reader to the other option in
@@ -1346,9 +1349,6 @@ print_filtered_help (unsigned int include_flags,
 
 	  help = new_help;
 	}
-
-      /* Get the translation.  */
-      help = _(help);
 
       /* Find the gap between the name of the
 	 option and its descriptive text.  */
