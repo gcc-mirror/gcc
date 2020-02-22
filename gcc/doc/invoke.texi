@@ -8506,12 +8506,17 @@ As per the previous level, but also show events for the entry
 to each function.
 
 @item 2
-As per the previous level, but also show  events relating to
-control flow (e.g. ``true path taken'' at a conditional).
+As per the previous level, but also show events relating to
+control flow that are significant to triggering the issue
+(e.g. ``true path taken'' at a conditional).
 
 This level is the default.
 
 @item 3
+As per the previous level, but show all control flow events, not
+just significant ones.
+
+@item 4
 This level is intended for analyzer developers; it adds various
 other events intended for debugging the analyzer.
 

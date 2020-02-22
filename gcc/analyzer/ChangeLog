@@ -1,3 +1,32 @@
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (superedge_event::should_filter_p): Update
+	filter for empty descriptions to cover verbosity level 3 as well
+	as 2.
+	* diagnostic-manager.cc: Include "analyzer/reachability.h".
+	(class path_builder): New class.
+	(diagnostic_manager::emit_saved_diagnostic): Create a path_builder
+	and pass it to build_emission_path, rather passing eg; similarly
+	for add_events_for_eedge and ext_state.
+	(diagnostic_manager::build_emission_path): Replace "eg" param
+	with a path_builder, pass it to add_events_for_eedge.
+	(diagnostic_manager::add_events_for_eedge): Replace ext_state
+	param with path_builder; pass it to add_events_for_superedge.
+	(diagnostic_manager::significant_edge_p): New.
+	(diagnostic_manager::add_events_for_superedge): Add path_builder
+	param.  Reject insignificant edges at verbosity levels below 3.
+	(diagnostic_manager::prune_for_sm_diagnostic): Update highest
+	verbosity level to 4.
+	* diagnostic-manager.h (class path_builder): New forward decl.
+	(diagnostic_manager::build_emission_path): Replace "eg" param
+	with a path_builder.
+	(diagnostic_manager::add_events_for_eedge): Replace ext_state
+	param with path_builder.
+	(diagnostic_manager::significant_edge_p): New.
+	(diagnostic_manager::add_events_for_superedge): Add path_builder
+	param.
+	* reachability.h: New file.
+
 2020-02-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93692

@@ -1,3 +1,13 @@
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/analyzer-verbosity-2a.c: New test.
+	* gcc.dg/analyzer/analyzer-verbosity-3.c: New test, based on
+	analyzer-verbosity-2.c
+	* gcc.dg/analyzer/analyzer-verbosity-3a.c: New test.
+	* gcc.dg/analyzer/edges-1.c: New test.
+	* gcc.dg/analyzer/edges-2.c: New test.
+	* gcc.dg/analyzer/file-paths-1.c: Add -fanalyzer-verbosity=3.
+
 2020-02-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93869 - ICE with -Wmismatched-tags.
