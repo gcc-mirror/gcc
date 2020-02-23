@@ -1,5 +1,10 @@
 2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/93889
+	* interface.c (compare_parameter): Fix error message.
+
+2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/93890
 	* interface.c: Replace "can not" by "cannot" and remove trailing
 	space.

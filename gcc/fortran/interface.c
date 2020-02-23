@@ -2223,7 +2223,7 @@ argument_rank_mismatch (const char *name, locus *where,
 		       where, where_formal, rank1);
       else
 	gfc_error_opt (0, "Rank mismatch between actual argument at %L "
-		       "and actual argument at %L (rank-%d and rank-%d", where,
+		       "and actual argument at %L (rank-%d and rank-%d)", where,
 		       where_formal, rank1, rank2);
     }
 }
