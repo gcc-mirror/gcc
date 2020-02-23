@@ -1,3 +1,8 @@
+2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93890
+	* gfortran.dg/argument_checking_24.f90: Correct test case.
+
 2020-02-21  Martin Sebor  <msebor@redhat.com>
 
 	PR gcov-profile/93753

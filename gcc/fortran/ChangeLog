@@ -1,3 +1,9 @@
+2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93890
+	* interface.c: Replace "can not" by "cannot" and remove trailing
+	space.
+
 2020-02-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93825

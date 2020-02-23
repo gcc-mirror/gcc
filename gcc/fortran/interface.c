@@ -2660,8 +2660,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	{
 	  if (formal->attr.artificial)
 	    gfc_error ("Element of assumed-shape or pointer array "
-		       "as actual argument at %L can not correspond to "
-		       "actual argument at %L ",
+		       "as actual argument at %L cannot correspond to "
+		       "actual argument at %L",
 		       &actual->where, &formal->declared_at);
 	  else
 	    gfc_error ("Element of assumed-shape or pointer "
