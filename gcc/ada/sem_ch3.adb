@@ -4366,8 +4366,10 @@ package body Sem_Ch3 is
       --  We need a predicate check if the type has predicates that are not
       --  ignored, and if either there is an initializing expression, or for
       --  default initialization when we have at least one case of an explicit
-      --  default initial value and then this is not an internal declaration
-      --  whose initialization comes later (as for an aggregate expansion).
+      --  default initial value (including via a Default_Value or
+      --  Default_Component_Value aspect, see AI12-0301) and then this is not
+      --  an internal declaration whose initialization comes later (as for an
+      --  aggregate expansion).
       --  If expression is an aggregate it may be expanded into assignments
       --  and the declaration itself is marked with No_Initialization, but
       --  the predicate still applies.
