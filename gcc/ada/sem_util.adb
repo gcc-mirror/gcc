@@ -16863,7 +16863,7 @@ package body Sem_Util is
    is
    begin
       if Is_Scalar_Type (Typ) then
-         return False;
+         return Has_Default_Aspect (Base_Type (Typ));
 
       elsif Is_Access_Type (Typ) then
          return Include_Implicit;
@@ -16872,8 +16872,9 @@ package body Sem_Util is
 
          --  If component type is partially initialized, so is array type
 
-         if Is_Partially_Initialized_Type
-              (Component_Type (Typ), Include_Implicit)
+         if Has_Default_Aspect (Base_Type (Typ))
+           or else Is_Partially_Initialized_Type
+                     (Component_Type (Typ), Include_Implicit)
          then
             return True;
 

@@ -1872,7 +1872,8 @@ package Sem_Util is
    --  Typ is a type entity. This function returns true if this type is partly
    --  initialized, meaning that an object of the type is at least partly
    --  initialized (in particular in the record case, that at least one
-   --  component has an initialization expression). Note that initialization
+   --  component has an initialization expression, including via Default_Value
+   --  and Default_Component_Value aspects). Note that initialization
    --  resulting from the use of pragma Normalize_Scalars does not count.
    --  Include_Implicit controls whether implicit initialization of access
    --  values to null, and of discriminant values, is counted as making the
