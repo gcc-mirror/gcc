@@ -1,3 +1,20 @@
+2020-02-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93564
+	* ira-color.c (struct update_cost_queue_elem): New member start.
+	(queue_update_cost, get_next_update_cost): Add new arg start.
+	(allocnos_conflict_p): New function.
+	(update_costs_from_allocno): Add new arg conflict_cost_update_p.
+	Add checking conflicts with allocnos_conflict_p.
+	(update_costs_from_prefs, restore_costs_from_copies): Adjust
+	update_costs_from_allocno calls.
+	(update_conflict_hard_regno_costs): Add checking conflicts with
+	allocnos_conflict_p.  Adjust calls of queue_update_cost and
+	get_next_update_cost.
+	(assign_hard_reg): Adjust calls of queue_update_cost.  Add
+	debugging print.
+	(bucket_allocno_compare_func): Restore previous version.
+
 2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and
