@@ -3241,8 +3241,9 @@ package body Sem_Eval is
    ------------------------
 
    --  Relational operations are static functions, so the result is static if
-   --  both operands are static (RM 4.9(7), 4.9(20)), except that for strings,
-   --  the result is never static, even if the operands are.
+   --  both operands are static (RM 4.9(7), 4.9(20)), except that up to Ada
+   --  2012, for strings the result is never static, even if the operands are.
+   --  The string case was relaxed in Ada 2020, see AI12-0201.
 
    --  However, for internally generated nodes, we allow string equality and
    --  inequality to be static. This is because we rewrite A in "ABC" as an
@@ -3583,7 +3584,13 @@ package body Sem_Eval is
               and then Right_Len /= Uint_Minus_1
               and then Left_Len /= Right_Len
             then
-               Fold_Uint (N, Test (Nkind (N) = N_Op_Ne), False);
+               --  AI12-0201: comparison of string is static in Ada 202x
+
+               Fold_Uint
+                 (N,
+                  Test (Nkind (N) = N_Op_Ne),
+                  Static => Ada_Version >= Ada_2020
+                              and then Is_String_Type (Left_Typ));
                Warn_On_Known_Condition (N);
                return;
             end if;
@@ -3602,16 +3609,23 @@ package body Sem_Eval is
          Test_Expression_Is_Foldable
            (N, Left, Right, Is_Static_Expression, Fold);
 
-         --  Only comparisons of scalars can give static results. A comparison
-         --  of strings never yields a static result, even if both operands are
-         --  static strings, except that as noted above, we allow equality and
+         --  Comparisons of scalars can give static results.
+         --  In addition starting with Ada 202x (AI12-0201), comparison of
+         --  strings can also give static results, and as noted above, we also
+         --  allow for earlier Ada versions internally generated equality and
          --  inequality for strings.
+         --  ??? The Comes_From_Source test below isn't correct and will accept
+         --  some cases that are illegal in Ada 2012. and before. Now that
+         --  Ada 202x has relaxed the rules, this doesn't really matter.
 
-         if Is_String_Type (Left_Typ)
-           and then not Comes_From_Source (N)
-           and then Nkind_In (N, N_Op_Eq, N_Op_Ne)
-         then
-            null;
+         if Is_String_Type (Left_Typ) then
+            if Ada_Version < Ada_2020
+              and then (Comes_From_Source (N)
+                         or else not Nkind_In (N, N_Op_Eq, N_Op_Ne))
+            then
+               Is_Static_Expression := False;
+               Set_Is_Static_Expression (N, False);
+            end if;
 
          elsif not Is_Scalar_Type (Left_Typ) then
             Is_Static_Expression := False;
@@ -3854,8 +3868,11 @@ package body Sem_Eval is
       end if;
 
       --  If original node was a type conversion, then result if non-static
+      --  up to Ada 2012. AI12-0201 changes that with Ada 202x.
 
-      if Nkind (Original_Node (N)) = N_Type_Conversion then
+      if Nkind (Original_Node (N)) = N_Type_Conversion
+        and then Ada_Version <= Ada_2012
+      then
          Set_Is_Static_Expression (N, False);
          return;
       end if;
@@ -3938,6 +3955,7 @@ package body Sem_Eval is
    --  A type conversion is potentially static if its subtype mark is for a
    --  static scalar subtype, and its operand expression is potentially static
    --  (RM 4.9(10)).
+   --  Also add support for static string types.
 
    procedure Eval_Type_Conversion (N : Node_Id) is
       Operand     : constant Node_Id   := Expression (N);
@@ -4011,10 +4029,14 @@ package body Sem_Eval is
       --  following type test, fixed-point counts as real unless the flag
       --  Conversion_OK is set, in which case it counts as integer.
 
-      --  Fold conversion, case of string type. The result is not static
+      --  Fold conversion, case of string type. The result is static starting
+      --  with Ada 202x (AI12-0201).
 
       if Is_String_Type (Target_Type) then
-         Fold_Str (N, Strval (Get_String_Val (Operand)), Static => False);
+         Fold_Str
+           (N,
+            Strval (Get_String_Val (Operand)),
+            Static => Ada_Version >= Ada_2020);
          return;
 
       --  Fold conversion, case of integer target type
