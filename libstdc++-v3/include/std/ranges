@@ -615,6 +615,7 @@ namespace ranges
   template<weakly_incrementable _Winc,
 	   semiregular _Bound = unreachable_sentinel_t>
     requires std::__detail::__weakly_eq_cmp_with<_Winc, _Bound>
+      && semiregular<_Winc>
     class iota_view : public view_interface<iota_view<_Winc, _Bound>>
     {
     private:
