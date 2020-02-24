@@ -79,7 +79,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L
       constexpr
-      istream_iterator(default_sentinel_t) noexcept
+      istream_iterator(default_sentinel_t)
+      noexcept(is_nothrow_default_constructible_v<_Tp>)
       : istream_iterator() { }
 #endif
 

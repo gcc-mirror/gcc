@@ -19,9 +19,18 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <iterator>
+#include <istream>
 
 // C++20 doesn't require this to be non-throwing.
 static_assert( std::is_nothrow_constructible_v<std::istream_iterator<int>,
 					       std::default_sentinel_t> );
 
 constexpr std::istream_iterator<int> i = std::default_sentinel;
+
+struct X { X() noexcept(false); };
+std::istream& operator<<(std::istream&, X&);
+
+static_assert( std::is_constructible_v<std::istream_iterator<X>,
+				       std::default_sentinel_t> );
+static_assert( ! std::is_nothrow_constructible_v<std::istream_iterator<X>,
+						 std::default_sentinel_t> );

@@ -1,6 +1,11 @@
 2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
+	Make noexcept-specifier conditional.
+	* testsuite/24_iterators/istream_iterator/cons/sentinel.cc: Check
+	noexcept-specifier.
+
+	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
 	Add constructor.
 	(operator==(istream_iterator, default_sentinel_t)): Add operator.
 	(ostream_iterator::difference_type): Define to ptrdiff_t for C++20.
