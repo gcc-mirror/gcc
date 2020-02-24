@@ -1,3 +1,8 @@
+2020-02-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-1.c: Compile with -mno-pcrel.
+	* gcc.target/powerpc/ppc64-abi-2.c: Likewise.
+
 2020-02-27  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.target/aarch64/vect-mull.x (SH): Undefine.
