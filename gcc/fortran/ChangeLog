@@ -1,3 +1,9 @@
+2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93552
+	* match.c (match_exit_cycle): With OpenACC, check the kernels loop
+	directive and tile clause as well.
+
 2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93889

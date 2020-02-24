@@ -1,3 +1,8 @@
+2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93552
+	* gfortran.dg/goacc/tile-4.f90: New.
+
 2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
 
@@ -43,7 +48,7 @@
 2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
 	    Richard Biener  <rguenther@suse.de>
 
-  	PR tree-optimization/93586
+	PR tree-optimization/93586
 	* gcc.dg/torture/pr93586.c: New testcase.
 
 2020-02-21  Martin Jambor  <mjambor@suse.cz>
