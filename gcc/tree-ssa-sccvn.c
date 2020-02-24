@@ -1774,7 +1774,11 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd,
   const HOST_WIDE_INT bufsize = 64;
   /* We're using a fixed buffer for encoding so fail early if the object
      we want to interpret is bigger.  */
-  if (maxsizei > bufsize * BITS_PER_UNIT)
+  if (maxsizei > bufsize * BITS_PER_UNIT
+      || CHAR_BIT != 8
+      || BITS_PER_UNIT != 8
+      /* Not prepared to handle PDP endian.  */
+      || BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
     return (void *)-1;
 
   bool pd_constant_p = (TREE_CODE (pd.rhs) == CONSTRUCTOR
@@ -1854,46 +1858,163 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd,
   /* Now we have merged newr into the range tree.  When we have covered
      [offseti, sizei] then the tree will contain exactly one node which has
      the desired properties and it will be 'r'.  */
-  if (!known_subrange_p (0, maxsizei / BITS_PER_UNIT, r->offset, r->size))
+  if (!known_subrange_p (0, maxsizei, r->offset, r->size))
     /* Continue looking for partial defs.  */
     return NULL;
 
   /* Now simply native encode all partial defs in reverse order.  */
   unsigned ndefs = partial_defs.length ();
   /* We support up to 512-bit values (for V8DFmode).  */
-  unsigned char buffer[bufsize];
+  unsigned char buffer[bufsize + 1];
+  unsigned char this_buffer[bufsize + 1];
   int len;
 
+  memset (buffer, 0, bufsize + 1);
+  unsigned needed_len = ROUND_UP (maxsizei, BITS_PER_UNIT) / BITS_PER_UNIT;
   while (!partial_defs.is_empty ())
     {
       pd_data pd = partial_defs.pop ();
-      gcc_checking_assert (pd.offset < bufsize);
+      unsigned int amnt;
       if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
-	/* Empty CONSTRUCTOR.  */
-	memset (buffer + MAX (0, pd.offset),
-		0, MIN (bufsize - MAX (0, pd.offset),
-			pd.size + MIN (0, pd.offset)));
+	{
+	  /* Empty CONSTRUCTOR.  */
+	  if (pd.size >= needed_len * BITS_PER_UNIT)
+	    len = needed_len;
+	  else
+	    len = ROUND_UP (pd.size, BITS_PER_UNIT) / BITS_PER_UNIT;
+	  memset (this_buffer, 0, len);
+	}
       else
 	{
-	  unsigned pad = 0;
-	  if (BYTES_BIG_ENDIAN
-	      && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (pd.rhs))))
-	    {
-	      /* On big-endian the padding is at the 'front' so just skip
-		 the initial bytes.  */
-	      fixed_size_mode mode
-		= as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (pd.rhs)));
-	      pad = GET_MODE_SIZE (mode) - pd.size;
-	    }
-	  len = native_encode_expr (pd.rhs, buffer + MAX (0, pd.offset),
-				    bufsize - MAX (0, pd.offset),
-				    MAX (0, -pd.offset) + pad);
-	  if (len <= 0 || len < (pd.size - MAX (0, -pd.offset)))
+	  len = native_encode_expr (pd.rhs, this_buffer, bufsize,
+				    MAX (0, -pd.offset) / BITS_PER_UNIT);
+	  if (len <= 0
+	      || len < (ROUND_UP (pd.size, BITS_PER_UNIT) / BITS_PER_UNIT
+			- MAX (0, -pd.offset) / BITS_PER_UNIT))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Failed to encode %u "
 			 "partial definitions\n", ndefs);
 	      return (void *)-1;
+	    }
+	}
+
+      unsigned char *p = buffer;
+      HOST_WIDE_INT size = pd.size;
+      if (pd.offset < 0)
+	size -= ROUND_DOWN (-pd.offset, BITS_PER_UNIT);
+      this_buffer[len] = 0;
+      if (BYTES_BIG_ENDIAN)
+	{
+	  /* LSB of this_buffer[len - 1] byte should be at
+	     pd.offset + pd.size - 1 bits in buffer.  */
+	  amnt = ((unsigned HOST_WIDE_INT) pd.offset
+		  + pd.size) % BITS_PER_UNIT;
+	  if (amnt)
+	    shift_bytes_in_array_right (this_buffer, len + 1, amnt);
+	  unsigned char *q = this_buffer;
+	  unsigned int off = 0;
+	  if (pd.offset >= 0)
+	    {
+	      unsigned int msk;
+	      off = pd.offset / BITS_PER_UNIT;
+	      gcc_assert (off < needed_len);
+	      p = buffer + off;
+	      if (size <= amnt)
+		{
+		  msk = ((1 << size) - 1) << (BITS_PER_UNIT - amnt);
+		  *p = (*p & ~msk) | (this_buffer[len] & msk);
+		  size = 0;
+		}
+	      else
+		{
+		  if (TREE_CODE (pd.rhs) != CONSTRUCTOR)
+		    q = (this_buffer + len
+			 - (ROUND_UP (size - amnt, BITS_PER_UNIT)
+			    / BITS_PER_UNIT));
+		  if (pd.offset % BITS_PER_UNIT)
+		    {
+		      msk = -1U << (BITS_PER_UNIT
+				    - (pd.offset % BITS_PER_UNIT));
+		      *p = (*p & msk) | (*q & ~msk);
+		      p++;
+		      q++;
+		      off++;
+		      size -= BITS_PER_UNIT - (pd.offset % BITS_PER_UNIT);
+		      gcc_assert (size >= 0);
+		    }
+		}
+	    }
+	  else if (TREE_CODE (pd.rhs) != CONSTRUCTOR)
+	    {
+	      q = (this_buffer + len
+		   - (ROUND_UP (size - amnt, BITS_PER_UNIT)
+		      / BITS_PER_UNIT));
+	      if (pd.offset % BITS_PER_UNIT)
+		{
+		  q++;
+		  size -= BITS_PER_UNIT - ((unsigned HOST_WIDE_INT) pd.offset
+					   % BITS_PER_UNIT);
+		  gcc_assert (size >= 0);
+		}
+	    }
+	  if ((unsigned HOST_WIDE_INT) size / BITS_PER_UNIT + off
+	      > needed_len)
+	    size = (needed_len - off) * BITS_PER_UNIT;
+	  memcpy (p, q, size / BITS_PER_UNIT);
+	  if (size % BITS_PER_UNIT)
+	    {
+	      unsigned int msk
+		= -1U << (BITS_PER_UNIT - (size % BITS_PER_UNIT));
+	      p += size / BITS_PER_UNIT;
+	      q += size / BITS_PER_UNIT;
+	      *p = (*q & msk) | (*p & ~msk);
+	    }
+	}
+      else
+	{
+	  size = MIN (size, (HOST_WIDE_INT) needed_len * BITS_PER_UNIT);
+	  if (pd.offset >= 0)
+	    {
+	      /* LSB of this_buffer[0] byte should be at pd.offset bits
+		 in buffer.  */
+	      unsigned int msk;
+	      amnt = pd.offset % BITS_PER_UNIT;
+	      if (amnt)
+		shift_bytes_in_array_left (this_buffer, len + 1, amnt);
+	      unsigned int off = pd.offset / BITS_PER_UNIT;
+	      gcc_assert (off < needed_len);
+	      p = buffer + off;
+	      if (amnt + size < BITS_PER_UNIT)
+		{
+		  /* Low amnt bits come from *p, then size bits
+		     from this_buffer[0] and the remaining again from
+		     *p.  */
+		  msk = ((1 << size) - 1) << amnt;
+		  *p = (*p & ~msk) | (this_buffer[0] & msk);
+		  size = 0;
+		}
+	      else if (amnt)
+		{
+		  msk = -1U << amnt;
+		  *p = (*p & ~msk) | (this_buffer[0] & msk);
+		  p++;
+		  size -= (BITS_PER_UNIT - amnt);
+		}
+	    }
+	  else
+	    {
+	      amnt = (unsigned HOST_WIDE_INT) pd.offset % BITS_PER_UNIT;
+	      if (amnt)
+		shift_bytes_in_array_left (this_buffer, len + 1, amnt);
+	    }
+	  memcpy (p, this_buffer + (amnt != 0), size / BITS_PER_UNIT);
+	  p += size / BITS_PER_UNIT;
+	  if (size % BITS_PER_UNIT)
+	    {
+	      unsigned int msk = -1U << (size % BITS_PER_UNIT);
+	      *p = (this_buffer[(amnt != 0) + size / BITS_PER_UNIT]
+		    & ~msk) | (*p & msk);
 	    }
 	}
     }
@@ -1903,7 +2024,26 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd,
      access size.  */
   if (INTEGRAL_TYPE_P (vr->type) && maxsizei != TYPE_PRECISION (vr->type))
     type = build_nonstandard_integer_type (maxsizei, TYPE_UNSIGNED (type));
-  tree val = native_interpret_expr (type, buffer, maxsizei / BITS_PER_UNIT);
+  tree val;
+  if (BYTES_BIG_ENDIAN)
+    {
+      unsigned sz = needed_len;
+      if (maxsizei % BITS_PER_UNIT)
+	shift_bytes_in_array_right (buffer, needed_len,
+				    BITS_PER_UNIT
+				    - (maxsizei % BITS_PER_UNIT));
+      if (INTEGRAL_TYPE_P (type))
+	sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+      if (sz > needed_len)
+	{
+	  memcpy (this_buffer + (sz - needed_len), buffer, needed_len);
+	  val = native_interpret_expr (type, this_buffer, sz);
+	}
+      else
+	val = native_interpret_expr (type, buffer, needed_len);
+    }
+  else
+    val = native_interpret_expr (type, buffer, bufsize);
   /* If we chop off bits because the types precision doesn't match the memory
      access size this is ok when optimizing reads but not when called from
      the DSE code during elimination.  */
@@ -2478,8 +2618,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  tree val;
 	  if (integer_zerop (gimple_call_arg (def_stmt, 1)))
 	    val = build_zero_cst (vr->type);
-	  else if (INTEGRAL_TYPE_P (vr->type)
-		   && known_eq (ref->size, 8))
+	  else if (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8))
 	    {
 	      gimple_match_op res_op (gimple_match_cond::UNCOND, NOP_EXPR,
 				      vr->type, gimple_call_arg (def_stmt, 1));
@@ -2491,11 +2630,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  else
 	    {
-	      unsigned len = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type));
-	      unsigned char *buf = XALLOCAVEC (unsigned char, len);
+	      unsigned buflen = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type));
+	      unsigned char *buf = XALLOCAVEC (unsigned char, buflen);
 	      memset (buf, TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 1)),
-		      len);
-	      val = native_interpret_expr (vr->type, buf, len);
+		      buflen);
+	      val = native_interpret_expr (vr->type, buf, buflen);
 	      if (!val)
 		return (void *)-1;
 	    }
@@ -2506,15 +2645,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	       && integer_zerop (gimple_call_arg (def_stmt, 1))
 	       && tree_fits_poly_int64_p (len)
 	       && tree_to_poly_int64 (len).is_constant (&leni)
+	       && leni <= INTTYPE_MAXIMUM (HOST_WIDE_INT) / BITS_PER_UNIT
 	       && offset.is_constant (&offseti)
 	       && offset2.is_constant (&offset2i)
 	       && maxsize.is_constant (&maxsizei)
-	       && ranges_known_overlap_p (offseti, maxsizei, offset2i, leni))
+	       && ranges_known_overlap_p (offseti, maxsizei, offset2i,
+					  leni << LOG2_BITS_PER_UNIT))
 	{
 	  pd_data pd;
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
-	  pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
-	  pd.size = leni;
+	  pd.offset = offset2i - offseti;
+	  pd.size = leni << LOG2_BITS_PER_UNIT;
 	  return data->push_partial_def (pd, 0, maxsizei);
 	}
     }
@@ -2558,13 +2699,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  else if (known_eq (ref->size, maxsize)
 		   && maxsize.is_constant (&maxsizei)
-		   && maxsizei % BITS_PER_UNIT == 0
 		   && offset.is_constant (&offseti)
-		   && offseti % BITS_PER_UNIT == 0
 		   && offset2.is_constant (&offset2i)
-		   && offset2i % BITS_PER_UNIT == 0
 		   && size2.is_constant (&size2i)
-		   && size2i % BITS_PER_UNIT == 0
 		   && ranges_known_overlap_p (offseti, maxsizei,
 					      offset2i, size2i))
 	    {
@@ -2573,8 +2710,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		 by a later def.  */
 	      pd_data pd;
 	      pd.rhs = gimple_assign_rhs1 (def_stmt);
-	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
-	      pd.size = size2i / BITS_PER_UNIT;
+	      pd.offset = offset2i - offseti;
+	      pd.size = size2i;
 	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
 	    }
 	}
@@ -2719,19 +2856,15 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		}
 	    }
 	  else if (ranges_known_overlap_p (offseti, maxsizei, offset2i,
-					   size2i)
-		   && maxsizei % BITS_PER_UNIT == 0
-		   && offseti % BITS_PER_UNIT == 0
-		   && size2i % BITS_PER_UNIT == 0
-		   && offset2i % BITS_PER_UNIT == 0)
+					   size2i))
 	    {
 	      pd_data pd;
 	      tree rhs = gimple_assign_rhs1 (def_stmt);
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = SSA_VAL (rhs);
 	      pd.rhs = rhs;
-	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
-	      pd.size = size2i / BITS_PER_UNIT;
+	      pd.offset = offset2i - offseti;
+	      pd.size = size2i;
 	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
 	    }
 	}
@@ -2803,19 +2936,15 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		return data->finish (get_alias_set (lhs), val);
 	    }
 	  else if (maxsize.is_constant (&maxsizei)
-		   && maxsizei % BITS_PER_UNIT == 0
 		   && offset.is_constant (&offseti)
-		   && offseti % BITS_PER_UNIT == 0
 		   && offset2.is_constant (&offset2i)
-		   && offset2i % BITS_PER_UNIT == 0
 		   && size2.is_constant (&size2i)
-		   && size2i % BITS_PER_UNIT == 0
 		   && ranges_known_overlap_p (offset, maxsize, offset2, size2))
 	    {
 	      pd_data pd;
 	      pd.rhs = SSA_VAL (def_rhs);
-	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
-	      pd.size = size2i / BITS_PER_UNIT;
+	      pd.offset = offset2i - offseti;
+	      pd.size = size2i;
 	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
 	    }
 	}
@@ -2945,14 +3074,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     coming from targets that like to gimplify init-ctors as
 	     aggregate copies from constant data like aarch64 for
 	     PR83518.  */
-	  if (maxsize.is_constant (&maxsizei)
-	      && known_eq (ref->size, maxsize))
+	  if (maxsize.is_constant (&maxsizei) && known_eq (ref->size, maxsize))
 	    {
 	      pd_data pd;
 	      pd.rhs = val;
 	      pd.offset = 0;
-	      pd.size = maxsizei / BITS_PER_UNIT;
-	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
+	      pd.size = maxsizei;
+	      return data->push_partial_def (pd, get_alias_set (lhs),
+					     maxsizei);
 	    }
 	}
 

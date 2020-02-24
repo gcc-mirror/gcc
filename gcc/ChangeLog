@@ -1,3 +1,16 @@
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Consider
+	pd.offset and pd.size to be counted in bits rather than bytes, add
+	support for maxsizei that is not a multiple of BITS_PER_UNIT and
+	handle bitfield stores and loads.
+	(vn_reference_lookup_3): Don't call ranges_known_overlap_p with
+	uncomparable quantities - bytes vs. bits.  Allow push_partial_def
+	on offsets/sizes that aren't multiple of BITS_PER_UNIT and adjust
+	pd.offset/pd.size to be counted in bits rather than bytes.
+	Formatting fix.  Rename shadowed len variable to buflen.
+
 2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
 

@@ -1,3 +1,12 @@
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-4.c: New test.
+	* gcc.dg/tree-ssa/pr93582-5.c: New test.
+	* gcc.dg/tree-ssa/pr93582-6.c: New test.
+	* gcc.dg/tree-ssa/pr93582-7.c: New test.
+	* gcc.dg/tree-ssa/pr93582-8.c: New test.
+
 2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93552
