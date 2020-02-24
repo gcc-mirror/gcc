@@ -1,5 +1,10 @@
 2020-02-25  Patrick Palka  <ppalka@redhat.com>
 
+	LWG 3313 join_view::_Iterator::operator-- is incorrectly constrained
+	* include/std/ranges (join_view::_Iterator::operator--): Require that
+	range_reference_t<_Base> models common_range.
+	* testsuite/std/ranges/adaptors/lwg3313_neg.cc: New test.
+
 	LWG 3301 transform_view::_Iterator has incorrect iterator_category
 	* include/std/ranges (transform_view::_Iterator::_S_iter_cat): Adjust
 	determination of iterator_category as per LWG 3301.

@@ -2399,6 +2399,7 @@ namespace views
 	  operator--()
 	    requires _S_ref_is_glvalue && bidirectional_range<_Base>
 	      && bidirectional_range<range_reference_t<_Base>>
+	      && common_range<range_reference_t<_Base>>
 	  {
 	    if (_M_outer == ranges::end(_M_parent->_M_base))
 	      _M_inner = ranges::end(*--_M_outer);
@@ -2412,6 +2413,7 @@ namespace views
 	  operator--(int)
 	    requires _S_ref_is_glvalue && bidirectional_range<_Base>
 	      && bidirectional_range<range_reference_t<_Base>>
+	      && common_range<range_reference_t<_Base>>
 	  {
 	    auto __tmp = *this;
 	    --*this;
