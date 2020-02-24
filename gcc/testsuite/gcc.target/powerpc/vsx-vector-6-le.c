@@ -14,7 +14,7 @@
    their usage counts being stable.  Therefore, we just ensure at least one
    xxlor instruction was generated.  */
 /* { dg-final { scan-assembler "xxlor" } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 5 } } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp" 6 } } */
 /* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
 /* { dg-final { scan-assembler-times "xvcmpgedp" 6 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */

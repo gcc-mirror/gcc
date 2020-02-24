@@ -9951,7 +9951,7 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   bool quad_offset_p = mode_supports_vsx_dform_quad (mode);
 
   /* If this is an unaligned stvx/ldvx type address, discard the outer AND.  */
-  if (VECTOR_MEM_ALTIVEC_P (mode)
+  if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
       && GET_CODE (x) == AND
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && INTVAL (XEXP (x, 1)) == -16)

@@ -1,6 +1,15 @@
 2020-02-23  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backport from master
+	2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Handle VSX
+	vector modes.
+
+2020-02-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backport from master
 	2020-02-03  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (get_vector_offset): New helper function
