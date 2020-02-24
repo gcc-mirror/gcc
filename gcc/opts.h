@@ -456,4 +456,9 @@ extern bool parse_and_check_align_values (const char *flag,
 					  bool report_error,
 					  location_t loc);
 
+extern void parse_options_from_collect_gcc_options (const char *, obstack *,
+						    int *);
+
+extern void prepend_xassembler_to_collect_as_options (const char *, obstack *);
+
 #endif

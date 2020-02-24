@@ -10273,6 +10273,12 @@ conflicting translation units.  Specifically
 precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
 
+When you need to pass options to the assembler via @option{-Wa} or
+@option{-Xassembler} make sure to either compile such translation
+units with @option{-fno-lto} or consistently use the same assembler
+options on all translation units.  You can alternatively also
+specify assembler options at LTO link time.
+
 If LTO encounters objects with C linkage declared with incompatible
 types in separate translation units to be linked together (undefined
 behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
