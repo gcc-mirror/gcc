@@ -1,3 +1,11 @@
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* g++.dg/ext/consteval1.C: Change dg-{message,error} into dg-bogus.
+	* g++.dg/cpp2a/consteval6.C: Likewise.
+	* g++.dg/cpp2a/consteval3.C: Change dg-error for unevaluated operands
+	into dg-bogus.
+
 2020-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR lto/78353

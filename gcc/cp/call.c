@@ -8425,6 +8425,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	current_function_returns_abnormally = 1;
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fn)
+	  && cp_unevaluated_operand == 0
 	  && (current_function_decl == NULL_TREE
 	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
 	  && (current_binding_level->kind != sk_function_parms
@@ -9061,6 +9062,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
       if (TREE_CODE (fndecl) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fndecl)
+	  && cp_unevaluated_operand == 0
 	  && (current_function_decl == NULL_TREE
 	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
 	  && (current_binding_level->kind != sk_function_parms

@@ -1,3 +1,9 @@
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* call.c (build_over_call): Don't evaluate immediate functions in
+	unevaluated operands.
+
 2020-02-24  Jason Merrill  <jason@redhat.com>
 
 	P0780R2: Resolve lambda init-capture pack grammar.
