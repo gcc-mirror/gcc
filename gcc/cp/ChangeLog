@@ -1,3 +1,9 @@
+2020-02-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92852
+	* constexpr.c (maybe_constant_value): Don't unshare if the cached
+	value is the same as the argument.
+
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/61414
