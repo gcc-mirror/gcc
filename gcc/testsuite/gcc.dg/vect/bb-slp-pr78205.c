@@ -19,7 +19,9 @@ void foo ()
 }
 
 /* We may not vectorize the store to x[] as it accesses c out-of bounds
-   but we do want to vectorize the other two store groups.  */
+   but we do want to vectorize the other two store groups.  But we may
+   end up using scalar loads to vectorize the last group.  */
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" } } */
-/* { dg-final { scan-tree-dump-times "x\\\[\[0-1\]\\\] = " 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "BB vectorization with gaps at the end of a load is not supported" 1 "slp2" } } */
+/* { dg-final { scan-tree-dump-times " = c\\\[4\\\];" 1 "optimized" } } */

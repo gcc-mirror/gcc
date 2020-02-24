@@ -1,3 +1,10 @@
+2020-05-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pr68892.c: Adjust for not supported
+	SLP permutations becoming builds from scalars.
+	* gcc.dg/vect/bb-slp-pr78205.c: Likewise.
+	* gcc.dg/vect/bb-slp-34.c: Likewise.
+
 2020-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/raw-string-6.c: Adjust EOF error location.
