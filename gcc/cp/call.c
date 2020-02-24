@@ -204,7 +204,6 @@ static struct z_candidate *add_candidate
 	 conversion **, tree, tree, int, struct rejection_reason *, int);
 static tree source_type (conversion *);
 static void add_warning (struct z_candidate *, struct z_candidate *);
-static bool reference_compatible_p (tree, tree);
 static conversion *direct_reference_binding (tree, conversion *);
 static bool promoted_arithmetic_type_p (tree);
 static conversion *conditional_conversion (tree, tree, tsubst_flags_t);
@@ -1554,7 +1553,7 @@ reference_related_p (tree t1, tree t2)
 
 /* Returns nonzero if T1 is reference-compatible with T2.  */
 
-static bool
+bool
 reference_compatible_p (tree t1, tree t2)
 {
   /* [dcl.init.ref]

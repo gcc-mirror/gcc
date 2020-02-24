@@ -7383,7 +7383,7 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
   if (TYPE_REF_P (type)
       && TYPE_REF_IS_RVALUE (type)
       && (clk = real_lvalue_p (expr))
-      && reference_related_p (TREE_TYPE (type), intype)
+      && reference_compatible_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
       if (processing_template_decl)

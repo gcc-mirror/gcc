@@ -1,5 +1,13 @@
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/93862 - ICE with static_cast when converting from int[].
+	* call.c (reference_compatible_p): No longer static.
+	* cp-tree.h (reference_compatible_p): Declare.
+	* typeck.c (build_static_cast_1): Use reference_compatible_p instead
+	of reference_related_p.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
 	* constexpr.c (reduced_constant_expression_p): Don't crash on a null
 	field.

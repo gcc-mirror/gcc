@@ -1,5 +1,10 @@
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/93862 - ICE with static_cast when converting from int[].
+	* g++.dg/cpp0x/rv-cast7.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
 	DR 1423, Convertibility of nullptr to bool.
 	* g++.dg/DRs/dr1423.C: New test.
 
