@@ -168,16 +168,17 @@ range_def_chain::get_def_chain (tree name)
   if (SSA_NAME_IS_DEFAULT_DEF (name))
     return NULL;
 
-  gimple *s = SSA_NAME_DEF_STMT (name);
-  if (gimple_range_handler (s))
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
+  if (gimple_range_handler (stmt))
     {
-      ssa1 = gimple_range_ssa_p (gimple_range_operand1 (s));
-      ssa2 = gimple_range_ssa_p (gimple_range_operand2 (s));
+      ssa1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
+      ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
       ssa3 = NULL_TREE;
     }
-  else if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
+  else if (is_a<gassign *> (stmt)
+	   && gimple_assign_rhs_code (stmt) == COND_EXPR)
     {
-      gassign *st = as_a<gassign *> (s);
+      gassign *st = as_a<gassign *> (stmt);
       ssa1 = gimple_range_ssa_p (gimple_assign_rhs1 (st));
       ssa2 = gimple_range_ssa_p (gimple_assign_rhs2 (st));
       ssa3 = gimple_range_ssa_p (gimple_assign_rhs3 (st));
@@ -185,7 +186,7 @@ range_def_chain::get_def_chain (tree name)
   else
     return NULL;
 
-  basic_block bb = gimple_bb (s);
+  basic_block bb = gimple_bb (stmt);
 
   // Allocate a new bitmap and initialize it.
   m_def_chain[v] = BITMAP_ALLOC (NULL);
@@ -351,23 +352,23 @@ gori_map::calculate_gori (basic_block bb)
 
   // If this block's last statement may generate range informaiton, go
   // calculate it.
-  gimple *s = gimple_outgoing_range_stmt_p (bb);
-  if (!s)
+  gimple *stmt = gimple_outgoing_range_stmt_p (bb);
+  if (!stmt)
     return;
-  if (is_a<gcond *> (s))
+  if (is_a<gcond *> (stmt))
     {
-      gcond *gc = as_a<gcond *>(s);
+      gcond *gc = as_a<gcond *>(stmt);
       name = gimple_range_ssa_p (gimple_cond_lhs (gc));
-      maybe_add_gori (name, gimple_bb (s));
+      maybe_add_gori (name, gimple_bb (stmt));
 
       name = gimple_range_ssa_p (gimple_cond_rhs (gc));
-      maybe_add_gori (name, gimple_bb (s));
+      maybe_add_gori (name, gimple_bb (stmt));
     }
   else
     {
-      gswitch *gs = as_a<gswitch *>(s);
+      gswitch *gs = as_a<gswitch *>(stmt);
       name = gimple_range_ssa_p (gimple_switch_index (gs));
-      maybe_add_gori (name, gimple_bb (s));
+      maybe_add_gori (name, gimple_bb (stmt));
     }
 }
 
@@ -484,7 +485,7 @@ debug (gori_map &g)
 
 void
 gori_compute::range_of_ssa_name (irange &r, tree name,
-				 gimple *s ATTRIBUTE_UNUSED)
+				 gimple *stmt ATTRIBUTE_UNUSED)
 {
   r = gimple_range_global (name);
 }
@@ -496,7 +497,7 @@ gori_compute::range_of_ssa_name (irange &r, tree name,
 // the type of EXPR.
 
 bool
-gori_compute::range_of_expr (irange &r, tree expr, gimple *s)
+gori_compute::range_of_expr (irange &r, tree expr, gimple *stmt)
 {
   tree type;
   if (TYPE_P (expr))
@@ -515,7 +516,7 @@ gori_compute::range_of_expr (irange &r, tree expr, gimple *s)
 	return true;
 
       case SSA_NAME:
-        range_of_ssa_name (r, expr, s);
+	range_of_ssa_name (r, expr, stmt);
 	return true;
 
       case ADDR_EXPR:
@@ -562,15 +563,15 @@ gori_compute::get_tree_range (irange &r, tree expr, tree name,
 // range can be calculated.
 
 bool
-gori_compute::compute_name_range_op (irange &r, gimple *s,
+gori_compute::compute_name_range_op (irange &r, gimple *stmt,
 				     const irange &lhs,
 				     tree name,
 				     const irange *name_range)
 {
   widest_irange op1_range, op2_range;
 
-  tree op1 = gimple_range_operand1 (s);
-  tree op2 = gimple_range_operand2 (s);
+  tree op1 = gimple_range_operand1 (stmt);
+  tree op2 = gimple_range_operand2 (stmt);
 
   // Operand 1 is the name being looked for, evaluate it.
   if (op1 == name)
@@ -582,11 +583,11 @@ gori_compute::compute_name_range_op (irange &r, gimple *s,
 	  // further, the results will be better.  Start with what we
 	  // know of the range of OP1.
 	  get_tree_range (op1_range, op1, name, name_range);
-	  return gimple_range_calc_op1 (s, r, lhs, op1_range);
+	  return gimple_range_calc_op1 (stmt, r, lhs, op1_range);
 	}
       // If we need the second operand, get a value and evaluate.
       get_tree_range (op2_range, op2, name, name_range);
-      if (gimple_range_calc_op1 (s, r, lhs, op2_range))
+      if (gimple_range_calc_op1 (stmt, r, lhs, op2_range))
 	{
 	  // If op1 also has a range, intersect the 2 ranges.
 	  if (name_range)
@@ -599,7 +600,7 @@ gori_compute::compute_name_range_op (irange &r, gimple *s,
   if (op2 == name)
     {
       get_tree_range (op1_range, op1, name, name_range);
-      if (gimple_range_calc_op2 (s, r, lhs, op1_range))
+      if (gimple_range_calc_op2 (stmt, r, lhs, op1_range))
 	{
 	  // If op2 also has a range, intersect the 2 ranges.
 	  if (name_range)
@@ -892,7 +893,7 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 // coming into S.
 
 bool
-gori_compute::compute_logical_operands (irange &r, gimple *s,
+gori_compute::compute_logical_operands (irange &r, gimple *stmt,
 					const irange &lhs,
 					tree name,
 					const irange *name_range)
@@ -907,8 +908,8 @@ gori_compute::compute_logical_operands (irange &r, gimple *s,
 
   // Reaching this point means NAME is not in this stmt, but one of
   // the names in it ought to be derived from it.  */
-  op1 = gimple_range_operand1 (s);
-  op2 = gimple_range_operand2 (s);
+  op1 = gimple_range_operand1 (stmt);
+  op2 = gimple_range_operand2 (stmt);
   gcc_checking_assert (op1 != name && op2 != name);
 
   op1_in_chain = (gimple_range_ssa_p (op1)
@@ -966,7 +967,7 @@ gori_compute::compute_logical_operands (irange &r, gimple *s,
 	  op2_false = op2_true;
 	}
     }
-  if (!ret || !logical_combine (r, gimple_expr_code (s), lhs, op1_true,
+  if (!ret || !logical_combine (r, gimple_expr_code (stmt), lhs, op1_true,
 				op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
 
@@ -981,13 +982,13 @@ gori_compute::compute_logical_operands (irange &r, gimple *s,
 // NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand1_range (irange &r, gimple *s,
+gori_compute::compute_operand1_range (irange &r, gimple *stmt,
 				      const irange &lhs, tree name,
 				      const irange *name_range)
 {
   widest_irange op1_range, op2_range;
-  tree op1 = gimple_range_operand1 (s);
-  tree op2 = gimple_range_operand2 (s);
+  tree op1 = gimple_range_operand1 (stmt);
+  tree op2 = gimple_range_operand2 (stmt);
 
   // Determine a known range for operand1 ().
   get_tree_range (op1_range, op1, name, name_range);
@@ -998,13 +999,13 @@ gori_compute::compute_operand1_range (irange &r, gimple *s,
       // we pass op1_range to the unary operation. Nomally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
-      if (!gimple_range_calc_op1 (s, r, lhs, op1_range))
+      if (!gimple_range_calc_op1 (stmt, r, lhs, op1_range))
 	return false;
     }
   else
     {
       get_tree_range (op2_range, op2, name, name_range);
-      if (!gimple_range_calc_op1 (s, r, lhs, op2_range))
+      if (!gimple_range_calc_op1 (stmt, r, lhs, op2_range))
 	return false;
     }
 
@@ -1023,19 +1024,19 @@ gori_compute::compute_operand1_range (irange &r, gimple *s,
 // NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand2_range (irange &r, gimple *s,
+gori_compute::compute_operand2_range (irange &r, gimple *stmt,
 				      const irange &lhs, tree name,
 				      const irange *name_range)
 {
   widest_irange op1_range, op2_range;
-  tree op1 = gimple_range_operand1 (s);
-  tree op2 = gimple_range_operand2 (s);
+  tree op1 = gimple_range_operand1 (stmt);
+  tree op2 = gimple_range_operand2 (stmt);
 
   // Get a range for op1.
   get_tree_range (op1_range, op1, name, name_range);
 
   // Calculate the range for op2 based on lhs and op1.
-  if (!gimple_range_calc_op2 (s, op2_range, lhs, op1_range))
+  if (!gimple_range_calc_op2 (stmt, op2_range, lhs, op1_range))
     {
       get_tree_range (op2_range, op2, name, name_range);
       if (op2_range.varying_p ())
@@ -1061,7 +1062,7 @@ gori_compute::compute_operand2_range (irange &r, gimple *s,
 bool
 gori_compute::compute_operand1_and_operand2_range
 					(irange &r,
-					 gimple *s,
+					 gimple *stmt,
 					 const irange &lhs,
 					 tree name,
 					 const irange *name_range)
@@ -1070,11 +1071,11 @@ gori_compute::compute_operand1_and_operand2_range
 
   // Calculate a good a range for op2. Since op1 == op2, this will
   // have already included whatever the actual range of name is.
-  if (!compute_operand2_range (op_range, s, lhs, name, name_range))
+  if (!compute_operand2_range (op_range, stmt, lhs, name, name_range))
     return false;
 
   // Now get the range thru op1...
-  if (!compute_operand1_range (r, s, lhs, name, name_range))
+  if (!compute_operand1_range (r, stmt, lhs, name, name_range))
     return false;
 
   // Whichever range is the most permissive is the one we need to
@@ -1103,13 +1104,13 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
 
   gcc_checking_assert (gimple_range_ssa_p (name));
   // Determine if there is an outgoing edge.
-  gimple *s = gimple_outgoing_edge_range_p (lhs, e);
-  if (!s)
+  gimple *stmt = gimple_outgoing_edge_range_p (lhs, e);
+  if (!stmt)
     return false;
 
   // If NAME can be calculated on the edge, use that.
   if (m_gori_map.is_export_p (name, e->src))
-    return compute_operand_range (r, s, lhs, name, name_range);
+    return compute_operand_range (r, stmt, lhs, name, name_range);
 
   // Otherwise see if NAME is derived from something that can be
   // calculated.  This performs no dynamic lookups whatsover, so it is
