@@ -1,3 +1,9 @@
+2020-02-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_emit_float_compare): Change the code gen
+	for LTGT.
+	(riscv_rtx_costs): Update cost model for LTGT.
+
 2020-02-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/93564
