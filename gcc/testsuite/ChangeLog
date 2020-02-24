@@ -1,3 +1,10 @@
+2020-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR lto/78353
+	* gcc.target/arm/pr78353-1.c: Add arm_arch_v7a_multilib effective
+	target.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
 2020-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93582
