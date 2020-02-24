@@ -31021,13 +31021,6 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
       && class_key != union_type)
     return;
 
-  /* Only consider the true class-keys below and ignore typename_type,
-     etc. that are not C++ class-keys.  */
-  if (class_key != class_type
-      && class_key != record_type
-      && class_key != union_type)
-    return;
-
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE

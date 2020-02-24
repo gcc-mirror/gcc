@@ -3,6 +3,7 @@
 	PR c++/93804
 	* parser.c (cp_parser_check_class_key): Avoid issuing -Wredundant-tags
 	in shared C/C++ code in headers.
+	Remove a duplicate hunk of code.
 
 2020-02-24  Marek Polacek  <polacek@redhat.com>
 
