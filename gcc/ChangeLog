@@ -1,3 +1,25 @@
+2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR driver/47785
+	* gcc.c (putenv_COLLECT_AS_OPTIONS): New function.
+	(driver::main): Call putenv_COLLECT_AS_OPTIONS.
+	* opts-common.c (parse_options_from_collect_gcc_options): New function.
+	(prepend_xassembler_to_collect_as_options): Likewise.
+	* opts.h (parse_options_from_collect_gcc_options): Declare prototype.
+	(prepend_xassembler_to_collect_as_options): Likewise.
+	* lto-opts.c (lto_write_options): Stream assembler options
+	in COLLECT_AS_OPTIONS.
+	* lto-wrapper.c (xassembler_options_error): New static variable.
+	(get_options_from_collect_gcc_options): Move parsing options code to
+	parse_options_from_collect_gcc_options and call it.
+	(merge_and_complain): Validate -Xassembler options.
+	(append_compiler_options): Handle OPT_Xassembler.
+	(run_gcc): Append command line -Xassembler options to
+	collect_gcc_options.
+	* doc/invoke.texi: Add documentation about using Xassembler
+	options with LTO.
+
 2020-02-24  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/riscv.c (riscv_emit_float_compare): Change the code gen

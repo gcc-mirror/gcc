@@ -11159,6 +11159,12 @@ conflicting translation units.  Specifically
 precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
 
+When you need to pass options to the assembler via @option{-Wa} or
+@option{-Xassembler} make sure to either compile such translation
+units with @option{-fno-lto} or consistently use the same assembler
+options on all translation units.  You can alternatively also
+specify assembler options at LTO link time.
+
 To enable debug info generation you need to supply @option{-g} at
 compile time.  If any of the input files at link time were built
 with debug info generation enabled the link will enable debug info
