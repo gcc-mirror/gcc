@@ -30837,15 +30837,31 @@ cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
   /* The enum-key is redundant for uses of the TYPE that are not
      declarations and for which name lookup returns just the type
      itself.  */
-  if (decl == type_decl)
+  if (decl != type_decl)
+    return;
+
+  if (scoped_key != RID_CLASS
+      && scoped_key != RID_STRUCT
+      && current_lang_name != lang_name_cplusplus
+      && current_namespace == global_namespace)
     {
-      gcc_rich_location richloc (key_loc);
-      richloc.add_fixit_remove (key_loc);
-      warning_at (&richloc, OPT_Wredundant_tags,
-		  "redundant enum-key %<enum%s%> in reference to %q#T",
-		  (scoped_key == RID_CLASS ? " class"
-		   : scoped_key == RID_STRUCT ? " struct" : ""), type);
+      /* Avoid issuing the diagnostic for apparently redundant (unscoped)
+	 enum tag in shared C/C++ code in files (such as headers) included
+	 in the main source file.  */
+      const line_map_ordinary *map = NULL;
+      linemap_resolve_location (line_table, key_loc,
+				LRK_MACRO_DEFINITION_LOCATION,
+				&map);
+      if (!MAIN_FILE_P (map))
+	return;
     }
+
+  gcc_rich_location richloc (key_loc);
+  richloc.add_fixit_remove (key_loc);
+  warning_at (&richloc, OPT_Wredundant_tags,
+	      "redundant enum-key %<enum%s%> in reference to %q#T",
+	      (scoped_key == RID_CLASS ? " class"
+	       : scoped_key == RID_STRUCT ? " struct" : ""), type);
 }
 
 /* Describes the set of declarations of a struct, class, or class template
@@ -31005,6 +31021,13 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
       && class_key != union_type)
     return;
 
+  /* Only consider the true class-keys below and ignore typename_type,
+     etc. that are not C++ class-keys.  */
+  if (class_key != class_type
+      && class_key != record_type
+      && class_key != union_type)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
@@ -31017,15 +31040,32 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
      neither definitions of it nor declarations, and for which name
      lookup returns just the type itself.  */
   bool key_redundant = !def_p && !decl_p && decl == type_decl;
+
+  if (key_redundant
+      && class_key != class_type
+      && current_lang_name != lang_name_cplusplus
+      && current_namespace == global_namespace)
+    {
+      /* Avoid issuing the diagnostic for apparently redundant struct
+	 and union class-keys in shared C/C++ code in files (such as
+	 headers) included in the main source file.  */
+      const line_map_ordinary *map = NULL;
+      linemap_resolve_location (line_table, key_loc,
+				LRK_MACRO_DEFINITION_LOCATION,
+				&map);
+      if (!MAIN_FILE_P (map))
+	key_redundant = false;
+    }
+
   if (key_redundant)
     {
       gcc_rich_location richloc (key_loc);
       richloc.add_fixit_remove (key_loc);
       warning_at (&richloc, OPT_Wredundant_tags,
-		"redundant class-key %qs in reference to %q#T",
-		class_key == union_type ? "union"
-		: class_key == record_type ? "struct" : "class",
-		type);
+		  "redundant class-key %qs in reference to %q#T",
+		  class_key == union_type ? "union"
+		  : class_key == record_type ? "struct" : "class",
+		  type);
     }
 
   if (seen_as_union || !warn_mismatched_tags)

@@ -1,3 +1,10 @@
+2020-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93804
+	* g++.dg/warn/Wredundant-tags-4.C: New test.
+	* g++.dg/warn/Wredundant-tags-5.C: New test.
+	* g++.dg/warn/Wredundant-tags-5.h: New test.
+
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/analyzer-verbosity-2a.c: New test.
