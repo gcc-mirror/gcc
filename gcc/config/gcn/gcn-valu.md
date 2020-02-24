@@ -679,10 +679,10 @@
 ;;   fields normally found in a MEM.
 ;; - Multiple forms of address expression are supported, below.
 
-(define_expand "gather_load<mode>"
+(define_expand "gather_load<mode>v64si"
   [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (match_operand 2 "register_operand")
+   (match_operand:V64SI 2 "register_operand")
    (match_operand 3 "immediate_operand")
    (match_operand:SI 4 "gcn_alu_operand")]
   ""
@@ -811,9 +811,9 @@
   [(set_attr "type" "flat")
    (set_attr "length" "12")])
 
-(define_expand "scatter_store<mode>"
+(define_expand "scatter_store<mode>v64si"
   [(match_operand:DI 0 "register_operand")
-   (match_operand 1 "register_operand")
+   (match_operand:V64SI 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
    (match_operand:VEC_ALLREG_MODE 4 "register_operand")]
@@ -830,34 +830,6 @@
       emit_insn (gen_scatter<mode>_insn_2offsets (operands[0], addr,
 						  const0_rtx, operands[4],
 						  const0_rtx, const0_rtx));
-    DONE;
-  })
-
-(define_expand "scatter<mode>_exec"
-  [(match_operand:DI 0 "register_operand")
-   (match_operand 1 "register_operand")
-   (match_operand 2 "immediate_operand")
-   (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:VEC_ALLREG_MODE 4 "register_operand")
-   (match_operand:DI 5 "gcn_exec_reg_operand")]
-  ""
-  {
-    operands[5] = force_reg (DImode, operands[5]);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
-					  operands[1], operands[3],
-					  INTVAL (operands[2]), operands[5]);
-
-    if (GET_MODE (addr) == V64DImode)
-      emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
-						      operands[4], const0_rtx,
-						      const0_rtx,
-						      operands[5]));
-    else
-      emit_insn (gen_scatter<mode>_insn_2offsets_exec (operands[0], addr,
-						       const0_rtx, operands[4],
-						       const0_rtx, const0_rtx,
-						       operands[5]));
     DONE;
   })
 
@@ -1171,10 +1143,10 @@
    (set_attr "length" "4,8,4,8")])
 
 (define_insn_and_split "addv64di3"
-  [(set (match_operand:V64DI 0 "register_operand"   "= &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"   "=  v")
 	(plus:V64DI
-	  (match_operand:V64DI 1 "register_operand" "%vDb,vDb0")
-	  (match_operand:V64DI 2 "gcn_alu_operand"  "vDb0, vDb")))
+	  (match_operand:V64DI 1 "register_operand" "%vDb")
+	  (match_operand:V64DI 2 "gcn_alu_operand"  " vDb")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1200,14 +1172,13 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_exec"
-  [(set (match_operand:V64DI 0 "register_operand"	     "= &v,  &v, &v")
+  [(set (match_operand:V64DI 0 "register_operand"		  "=  v")
 	(vec_merge:V64DI
 	  (plus:V64DI
-	    (match_operand:V64DI 1 "register_operand"	     "%vDb,vDb0,vDb")
-	    (match_operand:V64DI 2 "gcn_alu_operand"	     "vDb0, vDb,vDb"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
-							     "   U,   U,  0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"	     "   e,   e,  e")))
+	    (match_operand:V64DI 1 "register_operand"		  "%vDb")
+	    (match_operand:V64DI 2 "gcn_alu_operand"		  " vDb"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" "  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "   e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1238,10 +1209,10 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "subv64di3"
-  [(set (match_operand:V64DI 0 "register_operand"  "=&v,  &v,  &v, &v")
-	(minus:V64DI                                                 
-	  (match_operand:V64DI 1 "gcn_alu_operand" "vDb,vDb0,   v, v0")
-	  (match_operand:V64DI 2 "gcn_alu_operand" " v0,   v,vDb0,vDb")))
+  [(set (match_operand:V64DI 0 "register_operand"  "= v,  v")
+	(minus:V64DI                                        
+	  (match_operand:V64DI 1 "gcn_alu_operand" "vDb,  v")
+	  (match_operand:V64DI 2 "gcn_alu_operand" "  v,vDb")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1267,14 +1238,13 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "subv64di3_exec"
-  [(set (match_operand:V64DI 0 "register_operand"    "= &v,   &v,   &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"		 "=  v,   v")
 	(vec_merge:V64DI                                                         
 	  (minus:V64DI                                                           
-	    (match_operand:V64DI 1 "gcn_alu_operand" "vSvB,vSvB0,    v,  v0")
-	    (match_operand:V64DI 2 "gcn_alu_operand" "  v0,    v,vSvB0,vSvB"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
-						     "  U0,   U0,   U0,  U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand" "   e,    e,    e,   e")))
+	    (match_operand:V64DI 1 "gcn_alu_operand"		 "vSvB,   v")
+	    (match_operand:V64DI 2 "gcn_alu_operand"		 "   v,vSvB"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0,  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"		 "   e,   e")))
    (clobber (reg:DI VCC_REG))]
   "register_operand (operands[1], VOIDmode)
    || register_operand (operands[2], VOIDmode)"
@@ -1306,11 +1276,11 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext"
-  [(set (match_operand:V64DI 0 "register_operand"    "=&v, &v,  &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"    "= v,  v")
 	(plus:V64DI
 	  (zero_extend:V64DI
-	    (match_operand:V64SI 1 "gcn_alu_operand" "0vA,0vB,  vA,  vB"))
-	  (match_operand:V64DI 2 "gcn_alu_operand"   "vDb,vDA,0vDb,0vDA")))
+	    (match_operand:V64SI 1 "gcn_alu_operand" " vA, vB"))
+	  (match_operand:V64DI 2 "gcn_alu_operand"   "vDb,vDA")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1334,15 +1304,14 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_exec"
-  [(set (match_operand:V64DI 0 "register_operand"	 "=&v,  &v, &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"		  "= v,  v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (zero_extend:V64DI
-	      (match_operand:V64SI 1 "gcn_alu_operand"	 "0vA,  vA,0vB,  vB"))
-	    (match_operand:V64DI 2 "gcn_alu_operand"	 "vDb,0vDb,vDA,0vDA"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
-							 " U0,  U0, U0,  U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"	 "  e,   e,  e,   e")))
+	      (match_operand:V64SI 1 "gcn_alu_operand"		  " vA, vB"))
+	    (match_operand:V64DI 2 "gcn_alu_operand"		  "vDb,vDA"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0, U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "  e,  e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1371,12 +1340,12 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup"
-  [(set (match_operand:V64DI 0 "register_operand"   "= &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"   "= v,  v")
 	(plus:V64DI
 	  (zero_extend:V64DI
 	    (vec_duplicate:V64SI
-	      (match_operand:SI 1 "gcn_alu_operand" " BSv, ASv")))
-	  (match_operand:V64DI 2 "gcn_alu_operand"  "vDA0,vDb0")))
+	      (match_operand:SI 1 "gcn_alu_operand" "BSv,ASv")))
+	  (match_operand:V64DI 2 "gcn_alu_operand"  "vDA,vDb")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1400,15 +1369,15 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		 "= &v,  &v")
+  [(set (match_operand:V64DI 0 "register_operand"		  "= v,  v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (zero_extend:V64DI
 	      (vec_duplicate:V64SI
-		(match_operand:SI 1 "gcn_alu_operand"		 " ASv, BSv")))
-	    (match_operand:V64DI 2 "gcn_alu_operand"		 "vDb0,vDA0"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0,  U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"		 "   e,   e")))
+		(match_operand:SI 1 "gcn_alu_operand"		  "ASv,BSv")))
+	    (match_operand:V64DI 2 "gcn_alu_operand"		  "vDb,vDA"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0, U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "  e,  e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1437,7 +1406,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup2"
-  [(set (match_operand:V64DI 0 "register_operand"		     "= &v")
+  [(set (match_operand:V64DI 0 "register_operand"		     "=  v")
 	(plus:V64DI
 	  (zero_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand" " vA"))
 	  (vec_duplicate:V64DI (match_operand:DI 2 "gcn_alu_operand" "DbSv"))))
@@ -1463,7 +1432,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup2_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		       "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"		       "= v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (zero_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand"
@@ -1500,7 +1469,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_sext_dup2"
-  [(set (match_operand:V64DI 0 "register_operand"		      "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"		      "= v")
 	(plus:V64DI
 	  (sign_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand" " vA"))
 	  (vec_duplicate:V64DI (match_operand:DI 2 "gcn_alu_operand"  "BSv"))))
@@ -1528,7 +1497,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_sext_dup2_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		       "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"		       "= v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (sign_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand"
@@ -1935,10 +1904,10 @@
    (set_attr "length" "8,8")])
 
 (define_insn_and_split "<expander>v64di3"
-  [(set (match_operand:V64DI 0 "gcn_valu_dst_operand" "=&v,RD")
+  [(set (match_operand:V64DI 0 "gcn_valu_dst_operand"	    "=  v,RD")
 	(bitop:V64DI
-	  (match_operand:V64DI 1 "gcn_valu_src0_operand"	  "%  v,RD")
-	  (match_operand:V64DI 2 "gcn_valu_src1com_operand"	  "vSvB, v")))]
+	  (match_operand:V64DI 1 "gcn_valu_src0_operand"    "%  v,RD")
+	  (match_operand:V64DI 2 "gcn_valu_src1com_operand" "vSvB, v")))]
   ""
   "@
    #
@@ -1960,7 +1929,7 @@
    (set_attr "length" "16,8")])
 
 (define_insn_and_split "<expander>v64di3_exec"
-  [(set (match_operand:V64DI 0 "gcn_valu_dst_operand" "=&v,RD")
+  [(set (match_operand:V64DI 0 "gcn_valu_dst_operand"		  "=  v,RD")
 	(vec_merge:V64DI
 	  (bitop:V64DI
 	    (match_operand:V64DI 1 "gcn_valu_src0_operand"	  "%  v,RD")
@@ -2798,26 +2767,16 @@
     DONE;
   })
 
-(define_expand "mask_gather_load<mode>"
+(define_expand "mask_gather_load<mode>v64si"
   [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (match_operand 2 "register_operand")
+   (match_operand:V64SI 2 "register_operand")
    (match_operand 3 "immediate_operand")
    (match_operand:SI 4 "gcn_alu_operand")
    (match_operand:DI 5 "")]
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
-
-    /* TODO: more conversions will be needed when more types are vectorized. */
-    if (GET_MODE (operands[2]) == V64DImode)
-      {
-	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_truncv64div64si2_exec (tmp, operands[2],
-					      gcn_gen_undef (V64SImode),
-					      exec));
-	operands[2] = tmp;
-      }
 
     rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
 					  operands[2], operands[4],
@@ -2839,9 +2798,9 @@
     DONE;
   })
 
-(define_expand "mask_scatter_store<mode>"
+(define_expand "mask_scatter_store<mode>v64si"
   [(match_operand:DI 0 "register_operand")
-   (match_operand 1 "register_operand")
+   (match_operand:V64SI 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
    (match_operand:VEC_ALLREG_MODE 4 "register_operand")
@@ -2850,18 +2809,20 @@
   {
     rtx exec = force_reg (DImode, operands[5]);
 
-    /* TODO: more conversions will be needed when more types are vectorized. */
-    if (GET_MODE (operands[1]) == V64DImode)
-      {
-	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_truncv64div64si2_exec (tmp, operands[1],
-					      gcn_gen_undef (V64SImode),
-					      exec));
-	operands[1] = tmp;
-      }
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
+					  operands[1], operands[3],
+					  INTVAL (operands[2]), exec);
 
-    emit_insn (gen_scatter<mode>_exec (operands[0], operands[1], operands[2],
-				       operands[3], operands[4], exec));
+    if (GET_MODE (addr) == V64DImode)
+      emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
+						      operands[4], const0_rtx,
+						      const0_rtx,
+						      exec));
+    else
+      emit_insn (gen_scatter<mode>_insn_2offsets_exec (operands[0], addr,
+						       const0_rtx, operands[4],
+						       const0_rtx, const0_rtx,
+						       exec));
     DONE;
   })
 
@@ -2999,11 +2960,11 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "*<reduc_op>_dpp_shr_v64di"
-  [(set (match_operand:V64DI 0 "register_operand"   "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"   "=v")
 	(unspec:V64DI
-	  [(match_operand:V64DI 1 "register_operand" "v0")
-	   (match_operand:V64DI 2 "register_operand" "v0")
-	   (match_operand:SI 3 "const_int_operand"    "n")]
+	  [(match_operand:V64DI 1 "register_operand" "v")
+	   (match_operand:V64DI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"   "n")]
 	  REDUC_2REG_UNSPEC))]
   ""
   "#"
@@ -3065,11 +3026,11 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "*plus_carry_dpp_shr_v64di"
-  [(set (match_operand:V64DI 0 "register_operand"   "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"   "=v")
 	(unspec:V64DI
-	  [(match_operand:V64DI 1 "register_operand" "v0")
-	   (match_operand:V64DI 2 "register_operand" "v0")
-	   (match_operand:SI 3 "const_int_operand"    "n")]
+	  [(match_operand:V64DI 1 "register_operand" "v")
+	   (match_operand:V64DI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"   "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
   ""
@@ -3156,7 +3117,7 @@
     rtx op1vec = gen_reg_rtx (V64DImode);
 
     emit_insn (gen_mulv64di3_zext_dup2 (tmp, v1, operands[2]));
-    emit_insn (gen_vec_duplicatev64si (op1vec, operands[1]));
+    emit_insn (gen_vec_duplicatev64di (op1vec, operands[1]));
     emit_insn (gen_addv64di3 (operands[0], tmp, op1vec));
     DONE;
   })

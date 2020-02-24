@@ -104,8 +104,6 @@ main()
   static_assert(data_span_first.size() == 3);
   static_assert(data_span_first.front() == 0);
   static_assert(data_span_first.back() == 2);
-  static_assert(std::tuple_size_v<decltype(data_span_first)> == 3);
-  static_assert(std::is_same_v<std::tuple_element_t<0, decltype(data_span_first)>, const int>);
 
   constexpr auto data_span_first_dyn = data_span.first(4);
   static_assert(
@@ -122,8 +120,6 @@ main()
   static_assert(data_span_last.size() == 5);
   static_assert(data_span_last.front() == 4);
   static_assert(data_span_last.back() == 8);
-  static_assert(std::tuple_size_v<decltype(data_span_last)> == 5);
-  static_assert(std::is_same_v<std::tuple_element_t<0, decltype(data_span_last)>, const int>);
 
   constexpr auto data_span_last_dyn = data_span.last(6);
   static_assert(
@@ -166,9 +162,8 @@ main()
   bool really_empty1 = std::empty(shorts);
   bool really_empty2 = shorts.data() == nullptr;
   bool really_empty3 = shorts.begin() == shorts.end();
-  bool really_empty4 = shorts.cbegin() == shorts.cend();
   bool really_empty =
-    really_empty0 && really_empty1 && really_empty2 && really_empty3 && really_empty4;
+    really_empty0 && really_empty1 && really_empty2 && really_empty3;
   (void)really_empty;
   VERIFY(really_empty);
 
@@ -183,10 +178,10 @@ main()
   std::span<const std::byte> muh_byte_span   = std::as_bytes(muh_span);
   std::span<std::byte> muh_mutable_byte_span = std::as_writable_bytes(muh_span);
   std::span<std::byte> muh_original_byte_span(original_bytes, original_bytes + 4);
-  bool definitely_reinterpret_casted0 = std::equal(muh_byte_span.cbegin(), muh_byte_span.cend(),
-    muh_original_byte_span.cbegin(), muh_original_byte_span.cend());
-  bool definitely_reinterpret_casted1 = std::equal(muh_mutable_byte_span.cbegin(),
-    muh_mutable_byte_span.cend(), muh_original_byte_span.cbegin(), muh_original_byte_span.cend());
+  bool definitely_reinterpret_casted0 = std::equal(muh_byte_span.begin(), muh_byte_span.end(),
+    muh_original_byte_span.begin(), muh_original_byte_span.end());
+  bool definitely_reinterpret_casted1 = std::equal(muh_mutable_byte_span.begin(),
+    muh_mutable_byte_span.end(), muh_original_byte_span.begin(), muh_original_byte_span.end());
   bool definitely_reinterpret_casted =
     definitely_reinterpret_casted0 && definitely_reinterpret_casted1;
   (void)definitely_reinterpret_casted;
@@ -194,8 +189,8 @@ main()
 
   std::span<std::byte> muh_original_byte_span_ptr_size(original_bytes, 4);
   bool definitely_equivalent =
-    std::equal(muh_original_byte_span_ptr_size.cbegin(), muh_original_byte_span_ptr_size.cend(),
-      muh_original_byte_span.cbegin(), muh_original_byte_span.cend());
+    std::equal(muh_original_byte_span_ptr_size.begin(), muh_original_byte_span_ptr_size.end(),
+      muh_original_byte_span.begin(), muh_original_byte_span.end());
   (void)definitely_equivalent;
   VERIFY(definitely_equivalent);
 

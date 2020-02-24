@@ -1,3 +1,112 @@
+2020-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93882
+	* decl.c (grokdeclarator): Use %qs in a diagnostic message.
+
+2020-02-21  Martin Sebor  <msebor@redhat.com>
+
+	PR gcov-profile/93753
+	* class.c (check_flexarrays): Tighten up a test for potential members
+	of anonymous structs or unions.
+
+2020-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93801
+	* parser.c (cp_parser_check_class_key): Only handle true C++ class-keys.
+
+2020-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR translation/93841
+	* config/or1k/or1k.opt: Remove superfluous word.
+	* doc/invoke.texi: Likewise.
+
+2020-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR translation/93838
+	* parser.c (cp_parser_decl_specifier_seq): Remove trailing space.
+
+2020-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93169 - wrong-code with a non-constexpr constructor.
+	* constexpr.c (cxx_eval_call_expression): Only set TREE_READONLY
+	on constant CONSTRUCTORs.
+
+2020-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93710 - poor diagnostic for array initializer.
+	* call.c (build_user_type_conversion_1): Use cp_expr_loc_or_input_loc
+	for an error call.
+
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92556
+	* pt.c (any_template_parm_r): Look into lambda body.
+
+	PR c++/92583
+	* pt.c (any_template_parm_r): Remove CONSTRUCTOR handling.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61414
+	* class.c (enum_min_precision): Change prec type from int to int &.
+
+	PR libstdc++/92906
+	* cp-tree.h (enum cp_tree_index): Add CPTI_FALLBACK_DFLOAT32_TYPE,
+	CPTI_FALLBACK_DFLOAT64_TYPE and CPTI_FALLBACK_DFLOAT128_TYPE.
+	(fallback_dfloat32_type, fallback_dfloat64_type,
+	fallback_dfloat128_type): Define.
+	* mangle.c (write_builtin_type): Handle fallback_dfloat*_type like
+	dfloat*_type_node.
+	* rtti.c (emit_support_tinfos): Emit DFP typeinfos even when dfp
+	is disabled for compatibility.
+
+2020-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93713
+	* name-lookup.c (matching_fn_p): A function does not match a
+	template.
+
+	PR c++/93643
+	PR c++/91476
+	* tree.c (decl_linkage): Always lk_none for locals.
+
+2020-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92583
+	PR c++/92654
+	* tree.c (cp_walk_subtrees): Walk CONSTRUCTOR types here.
+	* pt.c (find_parameter_packs_r): Not here.
+
+2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Implement deallocation function
+	selection per n4849, dcl.fct.def.coroutine bullet 12.
+	(morph_fn_to_coro): Implement allocation function selection per
+	n4849, dcl.fct.def.coroutine bullets 9 and 10.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* parser.c (cp_parser_std_attribute): Peek a token first before
+	consuming it.
+
+2020-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93675
+	* class.c (add_implicitly_declared_members): Use do_friend.
+	* method.c (implicitly_declare_fn): Fix friend handling.
+	(decl_remember_implicit_trigger_p): New.
+	(synthesize_method): Use it.
+	* decl2.c (mark_used): Use it.
+
+2020-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93650
+	PR c++/90691
+	* constexpr.c (maybe_constant_value): Correct earlier change.
+	(cxx_eval_binary_expression) [SPACESHIP_EXPR]: Pass lval through.
+	* method.c (genericize_spaceship): Wrap result in TARGET_EXPR.
+
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69448

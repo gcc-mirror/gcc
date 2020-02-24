@@ -57,10 +57,14 @@ static_assert( !is_constructible_v<span<const int, 1>, const array<const int, 2>
 static_assert( is_constructible_v<span<int>, int(&)[2]> );
 static_assert( is_constructible_v<span<const int>, int(&)[2]> );
 static_assert( is_constructible_v<span<const int>, const int(&)[2]> );
+static_assert( is_constructible_v<span<const int>, int[2]> );
+static_assert( is_constructible_v<span<const int>, const int[2]> );
 
 static_assert( is_constructible_v<span<int>, array<int, 2>&> );
 static_assert( is_constructible_v<span<const int>, array<int, 2>&> );
 static_assert( is_constructible_v<span<const int>, array<const int, 2>&> );
+static_assert( is_constructible_v<span<const int>, array<int, 2>> );
+static_assert( is_constructible_v<span<const int>, array<const int, 2>> );
 
 static_assert( is_constructible_v<span<const int>, const array<int, 2>&> );
 static_assert( is_constructible_v<span<const int>, const array<const int, 2>&> );

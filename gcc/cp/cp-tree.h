@@ -216,6 +216,10 @@ enum cp_tree_index
 
     CPTI_SOURCE_LOCATION_IMPL,
 
+    CPTI_FALLBACK_DFLOAT32_TYPE,
+    CPTI_FALLBACK_DFLOAT64_TYPE,
+    CPTI_FALLBACK_DFLOAT128_TYPE,
+
     CPTI_MAX
 };
 
@@ -376,6 +380,12 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    access nodes in tree.h.  */
 
 #define access_default_node		null_node
+
+/* Variant of dfloat{32,64,128}_type_node only used for fundamental
+   rtti purposes if DFP is disabled.  */
+#define fallback_dfloat32_type		cp_global_trees[CPTI_FALLBACK_DFLOAT32_TYPE]
+#define fallback_dfloat64_type		cp_global_trees[CPTI_FALLBACK_DFLOAT64_TYPE]
+#define fallback_dfloat128_type		cp_global_trees[CPTI_FALLBACK_DFLOAT128_TYPE]
 
 
 #include "name-lookup.h"
@@ -6960,6 +6970,7 @@ extern void after_nsdmi_defaulted_late_checks   (tree);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
 extern void deduce_inheriting_ctor		(tree);
+extern bool decl_remember_implicit_trigger_p	(tree);
 extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);

@@ -1348,6 +1348,16 @@ gfc_match_assignment (void)
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
 
+  if (m == MATCH_YES
+      && rvalue->ts.type == BT_BOZ
+      && lvalue->ts.type == BT_CLASS)
+    {
+      m = MATCH_ERROR;
+      gfc_error ("BOZ literal constant at %L is neither a DATA statement "
+		 "value nor an actual argument of INT/REAL/DBLE/CMPLX "
+		 "intrinsic subprogram", &rvalue->where);
+    }
+
   if (lvalue->expr_type == EXPR_CONSTANT)
     {
       /* This clobbers %len and %kind.  */
@@ -1954,6 +1964,14 @@ gfc_match_associate (void)
       if (gfc_is_coindexed (newAssoc->target))
 	{
 	  gfc_error ("Association target at %C must not be coindexed");
+	  goto assocListError;
+	}
+
+      /* The target expression cannot be a BOZ literal constant.  */
+      if (newAssoc->target->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Association target at %L cannot be a BOZ literal "
+		     "constant", &newAssoc->target->where);
 	  goto assocListError;
 	}
 
@@ -2860,6 +2878,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
       && (o->head->op == EXEC_OACC_LOOP
+	  || o->head->op == EXEC_OACC_KERNELS_LOOP
 	  || o->head->op == EXEC_OACC_PARALLEL_LOOP
 	  || o->head->op == EXEC_OACC_SERIAL_LOOP))
     {
@@ -2869,9 +2888,20 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL
-	  && o->previous->tail->ext.omp_clauses->collapse > 1)
-	collapse = o->previous->tail->ext.omp_clauses->collapse;
+      if (o->previous->tail->ext.omp_clauses != NULL)
+	{
+	  /* Both collapsed and tiled loops are lowered the same way, but are not
+	     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
+	  if (o->previous->tail->ext.omp_clauses->tile_list)
+	    {
+	      collapse = 0;
+	      gfc_expr_list *el = o->previous->tail->ext.omp_clauses->tile_list;
+	      for ( ; el; el = el->next)
+		++collapse;
+	    }
+	  else if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	    collapse = o->previous->tail->ext.omp_clauses->collapse;
+	}
       if (st == ST_EXIT && cnt <= collapse)
 	{
 	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
@@ -2879,8 +2909,11 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	}
       if (st == ST_CYCLE && cnt < collapse)
 	{
-	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
-		     " !$ACC LOOP loop");
+	  gfc_error (o->previous->tail->ext.omp_clauses->tile_list
+		     ? G_("CYCLE statement at %C to non-innermost tiled"
+			  " !$ACC LOOP loop")
+		     : G_("CYCLE statement at %C to non-innermost collapsed"
+			  " !$ACC LOOP loop"));
 	  return MATCH_ERROR;
 	}
     }

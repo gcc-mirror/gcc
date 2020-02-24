@@ -43,10 +43,10 @@ _mm_popcnt_epi32 (__m128i __A)
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_popcnt_epi32 (__m128i __A, __mmask16 __U, __m128i __B)
+_mm_mask_popcnt_epi32 (__m128i __W, __mmask16 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountd_v4si_mask ((__v4si) __A,
-							 (__v4si) __B,
+							 (__v4si) __W,
 							 (__mmask16) __U);
 }
 
@@ -69,10 +69,10 @@ _mm256_popcnt_epi32 (__m256i __A)
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_popcnt_epi32 (__m256i __A, __mmask16 __U, __m256i __B)
+_mm256_mask_popcnt_epi32 (__m256i __W, __mmask16 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountd_v8si_mask ((__v8si) __A,
-							 (__v8si) __B,
+							 (__v8si) __W,
 							 (__mmask16) __U);
 }
 
@@ -95,10 +95,10 @@ _mm_popcnt_epi64 (__m128i __A)
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_popcnt_epi64 (__m128i __A, __mmask8 __U, __m128i __B)
+_mm_mask_popcnt_epi64 (__m128i __W, __mmask8 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountq_v2di_mask ((__v2di) __A,
-							(__v2di) __B,
+							(__v2di) __W,
 							(__mmask8) __U);
 }
 
@@ -121,10 +121,10 @@ _mm256_popcnt_epi64 (__m256i __A)
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_popcnt_epi64 (__m256i __A, __mmask8 __U, __m256i __B)
+_mm256_mask_popcnt_epi64 (__m256i __W, __mmask8 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountq_v4di_mask ((__v4di) __A,
-							(__v4di) __B,
+							(__v4di) __W,
 							(__mmask8) __U);
 }
 
@@ -144,4 +144,3 @@ _mm256_maskz_popcnt_epi64 (__mmask8 __U, __m256i __A)
 #endif /* __DISABLE_AVX512VPOPCNTDQVL__ */
 
 #endif /* _AVX512VPOPCNTDQVLINTRIN_H_INCLUDED */
-

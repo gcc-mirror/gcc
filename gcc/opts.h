@@ -460,6 +460,11 @@ extern bool parse_and_check_align_values (const char *flag,
 					  bool report_error,
 					  location_t loc);
 
+extern void parse_options_from_collect_gcc_options (const char *, obstack *,
+						    int *);
+
+extern void prepend_xassembler_to_collect_as_options (const char *, obstack *);
+
 /* Set OPTION in OPTS to VALUE if the option is not set in OPTS_SET.  */
 
 #define SET_OPTION_IF_UNSET(OPTS, OPTS_SET, OPTION, VALUE) \

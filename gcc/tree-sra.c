@@ -926,6 +926,8 @@ create_access (tree expr, gimple *stmt, bool write)
       size = max_size;
       unscalarizable_region = true;
     }
+  if (size == 0)
+    return NULL;
   if (size < 0)
     {
       disqualify_candidate (base, "Encountered an unconstrained access.");
@@ -958,6 +960,9 @@ scalarizable_type_p (tree type, bool const_decl)
   if (type_contains_placeholder_p (type))
     return false;
 
+  bool have_predecessor_field = false;
+  HOST_WIDE_INT prev_pos = 0;
+
   switch (TREE_CODE (type))
   {
   case RECORD_TYPE:
@@ -965,6 +970,17 @@ scalarizable_type_p (tree type, bool const_decl)
       if (TREE_CODE (fld) == FIELD_DECL)
 	{
 	  tree ft = TREE_TYPE (fld);
+
+	  if (zerop (DECL_SIZE (fld)))
+	    continue;
+
+	  HOST_WIDE_INT pos = int_bit_position (fld);
+	  if (have_predecessor_field
+	      && pos <= prev_pos)
+	    return false;
+
+	  have_predecessor_field = true;
+	  prev_pos = pos;
 
 	  if (DECL_BIT_FIELD (fld))
 	    return false;
@@ -2339,7 +2355,8 @@ verify_sra_access_forest (struct access *root)
       gcc_assert (offset == access->offset);
       gcc_assert (access->grp_unscalarizable_region
 		  || size == max_size);
-      gcc_assert (max_size == access->size);
+      gcc_assert (!is_gimple_reg_type (access->type)
+		  || max_size == access->size);
       gcc_assert (reverse == access->reverse);
 
       if (access->first_child)
@@ -2785,9 +2802,17 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	}
 
       rchild->grp_hint = 1;
-      new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
-						false, (lacc->grp_write
-							|| rchild->grp_write));
+      /* Because get_ref_base_and_extent always includes padding in size for
+	 accesses to DECLs but not necessarily for COMPONENT_REFs of the same
+	 type, we might be actually attempting to here to create a child of the
+	 same type as the parent.  */
+      if (!types_compatible_p (lacc->type, rchild->type))
+	new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
+						  false,
+						  (lacc->grp_write
+						   || rchild->grp_write));
+      else
+	new_acc = lacc;
       gcc_checking_assert (new_acc);
       if (racc->first_child)
 	propagate_subaccesses_from_rhs (new_acc, rchild);
@@ -2834,10 +2859,19 @@ propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
 	  continue;
 	}
 
-      struct access *new_acc
-	=  create_artificial_child_access (racc, lchild, norm_offset,
-					   true, false);
-      propagate_subaccesses_from_lhs (lchild, new_acc);
+      /* Because get_ref_base_and_extent always includes padding in size for
+	 accesses to DECLs but not necessarily for COMPONENT_REFs of the same
+	 type, we might be actually attempting to here to create a child of the
+	 same type as the parent.  */
+      if (!types_compatible_p (racc->type, lchild->type))
+	{
+	  struct access *new_acc
+	    = create_artificial_child_access (racc, lchild, norm_offset,
+					      true, false);
+	  propagate_subaccesses_from_lhs (lchild, new_acc);
+	}
+      else
+	propagate_subaccesses_from_lhs (lchild, racc);
       ret = true;
     }
   return ret;
@@ -3605,12 +3639,15 @@ get_access_for_expr (tree expr)
 
   if (tree basesize = DECL_SIZE (base))
     {
-      poly_int64 sz = tree_to_poly_int64 (basesize);
-      if (offset < 0 || known_le (sz, offset))
+      poly_int64 sz;
+      if (offset < 0
+	  || !poly_int_tree_p (basesize, &sz)
+	  || known_le (sz, offset))
 	return NULL;
     }
 
-  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
+  if (max_size == 0
+      || !bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;
 
   return get_var_base_offset_size_access (base, offset, max_size);

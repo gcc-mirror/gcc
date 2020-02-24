@@ -563,7 +563,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
 -fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
--fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} @gol
+-fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -1209,7 +1209,8 @@ See RS/6000 and PowerPC Options.
 -mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware @gol
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} -mpcrel -mno-pcrel}
+-mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
+-mpcrel -mno-pcrel}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -2078,13 +2079,15 @@ The name @samp{c++1z} is deprecated.
 GNU dialect of @option{-std=c++17}.
 The name @samp{gnu++1z} is deprecated.
 
-@item c++2a
-The next revision of the ISO C++ standard, tentatively planned for
+@item c++20
+@itemx c++2a
+The next revision of the ISO C++ standard, planned for
 2020.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
-@item gnu++2a
-GNU dialect of @option{-std=c++2a}.  Support is highly experimental,
+@item gnu++20
+@itemx gnu++2a
+GNU dialect of @option{-std=c++20}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table
@@ -3965,7 +3968,8 @@ or @samp{auto}.  The default depends on how the compiler has been configured,
 it can be any of the above @var{WHEN} options or also @samp{never}
 if @env{GCC_COLORS} environment variable isn't present in the environment,
 and @samp{auto} otherwise.
-@samp{auto} means to use color only when the standard error is a terminal.
+@samp{auto} makes GCC use color only when the standard error is a terminal,
+and when not executing in an emacs shell.
 The forms @option{-fdiagnostics-color} and @option{-fno-diagnostics-color} are
 aliases for @option{-fdiagnostics-color=always} and
 @option{-fdiagnostics-color=never}, respectively.
@@ -4078,14 +4082,46 @@ arguments in the C++ frontend.
 @item -fdiagnostics-urls[=@var{WHEN}]
 @opindex fdiagnostics-urls
 @cindex urls
+@vindex GCC_URLS @r{environment variable}
+@vindex TERM_URLS @r{environment variable}
 Use escape sequences to embed URLs in diagnostics.  For example, when
 @option{-fdiagnostics-show-option} emits text showing the command-line
 option controlling a diagnostic, embed a URL for documentation of that
 option.
 
 @var{WHEN} is @samp{never}, @samp{always}, or @samp{auto}.
-The default is @samp{auto}, which means to use URL escape sequences only
-when the standard error is a terminal.
+@samp{auto} makes GCC use URL escape sequences only when the standard error
+is a terminal, and when not executing in an emacs shell or any graphical
+terminal which is known to be incompatible with this feature, see below.
+
+The default depends on how the compiler has been configured.
+It can be any of the above @var{WHEN} options.
+
+GCC can also be configured (via the
+@option{--with-diagnostics-urls=auto-if-env} configure-time option)
+so that the default is affected by environment variables.
+Under such a configuration, GCC defaults to using @samp{auto}
+if either @env{GCC_URLS} or @env{TERM_URLS} environment variables are
+present and non-empty in the environment of the compiler, or @samp{never}
+if neither are.
+
+However, even with @option{-fdiagnostics-urls=always} the behavior is
+dependent on those environment variables:
+If @env{GCC_URLS} is set to empty or @samp{no}, do not embed URLs in
+diagnostics.  If set to @samp{st}, URLs use ST escape sequences.
+If set to @samp{bel}, the default, URLs use BEL escape sequences.
+Any other non-empty value enables the feature.
+If @env{GCC_URLS} is not set, use @env{TERM_URLS} as a fallback.
+Note: ST is an ANSI escape sequence, string terminator @samp{ESC \},
+BEL is an ASCII character, CTRL-G that usually sounds like a beep.
+
+At this time GCC tries to detect also a few terminals that are known to
+not implement the URL feature, and have bugs or at least had bugs in
+some versions that are still in use, where the URL escapes are likely
+to misbehave, i.e. print garbage on the screen.
+That list is currently xfce4-terminal, certain known to be buggy
+gnome-terminal versions, the linux console, and mingw.
+This check can be skipped with the @option{-fdiagnostics-urls=always}.
 
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option
@@ -11169,6 +11205,12 @@ conflicting translation units.  Specifically
 precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
 
+When you need to pass options to the assembler via @option{-Wa} or
+@option{-Xassembler} make sure to either compile such translation
+units with @option{-fno-lto} or consistently use the same assembler
+options on all translation units.  You can alternatively also
+specify assembler options at LTO link time.
+
 To enable debug info generation you need to supply @option{-g} at
 compile time.  If any of the input files at link time were built
 with debug info generation enabled the link will enable debug info
@@ -13369,6 +13411,35 @@ all the regular expressions (separated by a semi-colon).
 
 For example, @option{-fprofile-exclude-files=/usr/*} will prevent instrumentation
 of all files that are located in @file{/usr/} folder.
+
+@item -fprofile-reproducible
+@opindex fprofile-reproducible
+Control level of reproducibility of profile gathered by
+@code{-fprofile-generate}.  This makes it possible to rebuild program
+with same outcome which is useful, for example, for distribution
+packages.
+
+With @option{-fprofile-reproducibility=serial} the profile gathered by
+@option{-fprofile-generate} is reproducible provided the trained program
+behaves the same at each invocation of the train run, it is not
+multi-threaded and profile data streaming is always done in the same
+order.  Note that profile streaming happens at the end of program run but
+also before @code{fork} function is invoked.
+
+Note that it is quite common that execution counts of some part of
+programs depends, for example, on length of temporary file names or
+memory space randomization (that may affect hash-table collision rate).
+Such non-reproducible part of programs may be annotated by
+@code{no_instrument_function} function attribute. @code{gcov-dump} with
+@option{-l} can be used to dump gathered data and verify that they are
+indeed reproducible.
+
+With @option{-fprofile-reproducibility=parallel-runs} collected profile
+stays reproducible regardless the order of streaming of the data into
+gcda files.  This setting makes it possible to run multiple instances of
+instrumented program in parallel (such as with @code{make -j}). This
+reduces quality of gathered data, in particular of indirect call
+profiling.
 
 @item -fsanitize=address
 @opindex fsanitize=address
@@ -17903,7 +17974,7 @@ while increasing the instruction count.
 
 @item -mq-class
 @opindex mq-class
-Enable @samp{q} instruction alternatives.
+Ths option is deprecated.  Enable @samp{q} instruction alternatives.
 This is the default for @option{-Os}.
 
 @item -mRcq
@@ -22386,7 +22457,6 @@ faster on processors with 32-bit busses at the expense of more memory.
 aligns structures containing the above types differently than
 most published application binary interface specifications for the m68k.
 
-@item -mpcrel
 @opindex mpcrel
 Use the pc-relative addressing mode of the 68000 directly, instead of
 using a global offset table.  At present, this option implies @option{-fpic},
@@ -24902,7 +24972,7 @@ compare and set flag operations.
 @item -mcmov
 @opindex mcmov
 Enable generation of conditional move (@code{l.cmov}) instructions.  By
-default the equivalent will be generated using using set and branch.
+default the equivalent will be generated using set and branch.
 
 @item -mror
 @opindex mror
@@ -26474,7 +26544,16 @@ the offset with a symbol reference to a canary in the TLS block.
 @opindex mpcrel
 @opindex mno-pcrel
 Generate (do not generate) pc-relative addressing when the option
-@option{-mcpu=future} is used.
+@option{-mcpu=future} is used.  The @option{-mpcrel} option requires
+that the medium code model (@option{-mcmodel=medium}) and prefixed
+addressing (@option{-mprefixed}) options are enabled.
+
+@item -mprefixed
+@itemx -mno-prefixed
+@opindex mprefixed
+@opindex mno-prefixed
+Generate (do not generate) addressing modes using prefixed load and
+store instructions when the option @option{-mcpu=future} is used.
 @end table
 
 @node RX Options

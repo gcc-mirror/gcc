@@ -61,10 +61,10 @@ _mm512_popcnt_epi16 (__m512i __A)
 
 extern __inline __m512i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_popcnt_epi8 (__m512i __A, __mmask64 __U, __m512i __B)
+_mm512_mask_popcnt_epi8 (__m512i __W, __mmask64 __U, __m512i __A)
 {
   return (__m512i) __builtin_ia32_vpopcountb_v64qi_mask ((__v64qi) __A,
-							 (__v64qi) __B,
+							 (__v64qi) __W,
 							 (__mmask64) __U);
 }
 
@@ -79,10 +79,10 @@ _mm512_maskz_popcnt_epi8 (__mmask64 __U, __m512i __A)
 }
 extern __inline __m512i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_popcnt_epi16 (__m512i __A, __mmask32 __U, __m512i __B)
+_mm512_mask_popcnt_epi16 (__m512i __W, __mmask32 __U, __m512i __A)
 {
   return (__m512i) __builtin_ia32_vpopcountw_v32hi_mask ((__v32hi) __A,
-							(__v32hi) __B,
+							(__v32hi) __W,
 							(__mmask32) __U);
 }
 
@@ -127,10 +127,10 @@ _mm512_mask_bitshuffle_epi64_mask (__mmask64 __M, __m512i __A, __m512i __B)
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_popcnt_epi8 (__m256i __A, __mmask32 __U, __m256i __B)
+_mm256_mask_popcnt_epi8 (__m256i __W, __mmask32 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountb_v32qi_mask ((__v32qi) __A,
-							 (__v32qi) __B,
+							 (__v32qi) __W,
 							 (__mmask32) __U);
 }
 
@@ -222,10 +222,10 @@ _mm_popcnt_epi16 (__m128i __A)
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_popcnt_epi16 (__m256i __A, __mmask16 __U, __m256i __B)
+_mm256_mask_popcnt_epi16 (__m256i __W, __mmask16 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountw_v16hi_mask ((__v16hi) __A,
-							(__v16hi) __B,
+							(__v16hi) __W,
 							(__mmask16) __U);
 }
 
@@ -241,10 +241,10 @@ _mm256_maskz_popcnt_epi16 (__mmask16 __U, __m256i __A)
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_popcnt_epi8 (__m128i __A, __mmask16 __U, __m128i __B)
+_mm_mask_popcnt_epi8 (__m128i __W, __mmask16 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountb_v16qi_mask ((__v16qi) __A,
-							 (__v16qi) __B,
+							 (__v16qi) __W,
 							 (__mmask16) __U);
 }
 
@@ -259,10 +259,10 @@ _mm_maskz_popcnt_epi8 (__mmask16 __U, __m128i __A)
 }
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_popcnt_epi16 (__m128i __A, __mmask8 __U, __m128i __B)
+_mm_mask_popcnt_epi16 (__m128i __W, __mmask8 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountw_v8hi_mask ((__v8hi) __A,
-							(__v8hi) __B,
+							(__v8hi) __W,
 							(__mmask8) __U);
 }
 

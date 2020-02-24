@@ -508,7 +508,7 @@ namespace __detail
   inline std::size_t
   __clp2(std::size_t __n) noexcept
   {
-    // Equivalent to return __n ? std::ceil2(__n) : 0;
+    // Equivalent to return __n ? std::bit_ceil(__n) : 0;
     if (__n < 2)
       return __n;
     const unsigned __lz = sizeof(size_t) > sizeof(long)

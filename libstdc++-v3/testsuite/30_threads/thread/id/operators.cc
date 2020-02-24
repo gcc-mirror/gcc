@@ -20,16 +20,26 @@
 
 #include <thread>
 
+template<typename Expected, typename T>
+  struct check_type
+  : std::false_type
+  { };
+
+template<typename Expected>
+  struct check_type<Expected, Expected>
+  : std::true_type
+  { };
+
 void test01()
 {
   // thread::id operators
   std::thread::id id1;
   std::thread::id id2;
 
-  id1 == id2;
-  id1 != id2;
-  id1 < id2;
-  id1 > id2;
-  id1 >= id2;
-  id1 <= id2;
+  static_assert( check_type<bool, decltype(id1 == id2)>{} );
+  static_assert( check_type<bool, decltype(id1 != id2)>{} );
+  static_assert( check_type<bool, decltype(id1 < id2)>{} );
+  static_assert( check_type<bool, decltype(id1 > id2)>{} );
+  static_assert( check_type<bool, decltype(id1 >= id2)>{} );
+  static_assert( check_type<bool, decltype(id1 <= id2)>{} );
 }

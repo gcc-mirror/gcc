@@ -34,9 +34,9 @@
 
 // From n3642.pdf except I added binary literals and digit separator '\''.
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
-#include <limits>
+#include <bits/int_limits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -265,7 +265,7 @@ namespace __select_int
 
   template<unsigned long long _Val, typename _IntType, typename... _Ints>
     struct _Select_int_base<_Val, _IntType, _Ints...>
-    : conditional_t<(_Val <= std::numeric_limits<_IntType>::max()),
+    : conditional_t<(_Val <= __detail::__int_limits<_IntType>::max()),
 		    integral_constant<_IntType, _Val>,
 		    _Select_int_base<_Val, _Ints...>>
     { };
@@ -289,6 +289,6 @@ namespace __select_int
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // __cplusplus > 201103L
+#endif // C++14
 
 #endif // _GLIBCXX_PARSE_NUMBERS_H

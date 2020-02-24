@@ -686,8 +686,8 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
 
 	if (rhs_ec_obj.m_constant)
 	  {
-	    //gcc_assert (lhs_ec_obj.m_constant == NULL);
 	    lhs_ec_obj.m_constant = rhs_ec_obj.m_constant;
+	    lhs_ec_obj.m_cst_sid = rhs_ec_obj.m_cst_sid;
 	  }
 
 	/* Drop rhs equivalence class, overwriting it with the
@@ -1516,7 +1516,11 @@ constraint_manager::validate () const
 	  gcc_assert (sid->as_int () < get_num_svalues ());
 	}
       if (ec->m_constant)
-	gcc_assert (CONSTANT_CLASS_P (ec->m_constant));
+	{
+	  gcc_assert (CONSTANT_CLASS_P (ec->m_constant));
+	  gcc_assert (!ec->m_cst_sid.null_p ());
+	  gcc_assert (ec->m_cst_sid.as_int () < get_num_svalues ());
+	}
 #if 0
       else
 	gcc_assert (ec->m_vars.length () > 0);

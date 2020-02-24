@@ -1157,11 +1157,14 @@ funct_state_summary_t::insert (cgraph_node *node, funct_state_d *state)
 /* Called when new clone is inserted to callgraph late.  */
 
 void
-funct_state_summary_t::duplicate (cgraph_node *, cgraph_node *,
+funct_state_summary_t::duplicate (cgraph_node *, cgraph_node *dst,
 				  funct_state_d *src_data,
 				  funct_state_d *dst_data)
 {
   new (dst_data) funct_state_d (*src_data);
+  if (dst_data->malloc_state == STATE_MALLOC
+      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (dst->decl))))
+    dst_data->malloc_state = STATE_MALLOC_BOTTOM;
 }
 
 

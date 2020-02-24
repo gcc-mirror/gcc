@@ -120,7 +120,11 @@ analysis_plan::use_summary_p (const cgraph_edge *edge) const
 
   /* Require the callee to be sufficiently complex to be worth
      summarizing.  */
-  if ((int)m_sg.get_num_snodes (callee->get_fun ())
+  const function *fun
+    = const_cast <cgraph_node *> (callee)->ultimate_alias_target ()->get_fun ();
+  /* TODO(stage1): can ultimate_alias_target be made const?  */
+
+  if ((int)m_sg.get_num_snodes (fun)
       < param_analyzer_min_snodes_for_call_summary)
     return false;
 

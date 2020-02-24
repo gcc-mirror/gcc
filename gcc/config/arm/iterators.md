@@ -480,10 +480,14 @@
 
 (define_int_iterator DOTPROD [UNSPEC_DOT_S UNSPEC_DOT_U])
 
+(define_int_iterator DOTPROD_I8MM [UNSPEC_DOT_US UNSPEC_DOT_SU])
+
 (define_int_iterator VFMLHALVES [UNSPEC_VFML_LO UNSPEC_VFML_HI])
 
 (define_int_iterator VCADD [UNSPEC_VCADD90 UNSPEC_VCADD270])
 (define_int_iterator VCMLA [UNSPEC_VCMLA UNSPEC_VCMLA90 UNSPEC_VCMLA180 UNSPEC_VCMLA270])
+
+(define_int_iterator MATMUL [UNSPEC_MATMUL_S UNSPEC_MATMUL_U UNSPEC_MATMUL_US])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
@@ -938,7 +942,9 @@
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
   (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
   (UNSPEC_DOT_S "s") (UNSPEC_DOT_U "u")
+  (UNSPEC_DOT_US "us") (UNSPEC_DOT_SU "su")
   (UNSPEC_SSAT16 "s") (UNSPEC_USAT16 "u")
+  (UNSPEC_MATMUL_S "s") (UNSPEC_MATMUL_U "u") (UNSPEC_MATMUL_US "us")
 ])
 
 (define_int_attr vfml_half
@@ -1107,6 +1113,9 @@
 			    (UNSPEC_SMUADX "smuadx") (UNSPEC_SSAT16 "ssat16")
 			    (UNSPEC_USAT16 "usat16")])
 
+(define_int_attr mmla_sfx [(UNSPEC_MATMUL_S "s8") (UNSPEC_MATMUL_U "u8")
+			   (UNSPEC_MATMUL_US "s8")])
+
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])
 (define_code_attr return_str [(return "") (simple_return "simple_")])
@@ -1169,6 +1178,9 @@
 (define_int_attr MRRC [(VUNSPEC_MRRC "MRRC") (VUNSPEC_MRRC2 "MRRC2")])
 
 (define_int_attr opsuffix [(UNSPEC_DOT_S "s8")
-			   (UNSPEC_DOT_U "u8")])
+			   (UNSPEC_DOT_U "u8")
+			   (UNSPEC_DOT_US "s8")
+			   (UNSPEC_DOT_SU "u8")
+			   ])
 
 (define_int_attr smlaw_op [(UNSPEC_SMLAWB "smlawb") (UNSPEC_SMLAWT "smlawt")])

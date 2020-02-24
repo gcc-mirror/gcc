@@ -335,7 +335,7 @@ Target Warn(%qs is deprecated)
 Enable compact casesi pattern.
 
 mq-class
-Target Var(TARGET_Q_CLASS)
+Target Warn(%qs is deprecated)
 Enable 'q' instruction alternatives.
 
 mexpand-adddi

@@ -3247,7 +3247,11 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       {
 	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
 					 NULL_TREE);
-	add_method (t, eq, false);
+	if (DECL_FRIEND_P (space))
+	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
+		     NULL_TREE, NO_SPECIAL, true);
+	else
+	  add_method (t, eq, false);
       }
 
   while (*access_decls)
@@ -3291,7 +3295,7 @@ enum_min_precision (tree type)
     enum_to_min_precision = hash_map<tree, int>::create_ggc (37);
 
   bool existed;
-  int prec = enum_to_min_precision->get_or_insert (type, &existed);
+  int &prec = enum_to_min_precision->get_or_insert (type, &existed);
   if (existed)
     return prec;
 
@@ -7162,6 +7166,8 @@ check_flexarrays (tree t, flexmems_t *fmem /* = NULL */,
   /* Is the type unnamed (and therefore a member of it potentially
      an anonymous struct or union)?  */
   bool maybe_anon_p = TYPE_UNNAMED_P (t);
+  if (tree ctx = maybe_anon_p ? TYPE_CONTEXT (t) : NULL_TREE)
+    maybe_anon_p = RECORD_OR_UNION_TYPE_P (ctx);
 
   /* Search the members of the current (possibly derived) class, skipping
      unnamed structs and unions since those could be anonymous.  */

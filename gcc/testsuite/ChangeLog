@@ -1,3 +1,484 @@
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-4.c: New test.
+	* gcc.dg/tree-ssa/pr93582-5.c: New test.
+	* gcc.dg/tree-ssa/pr93582-6.c: New test.
+	* gcc.dg/tree-ssa/pr93582-7.c: New test.
+	* gcc.dg/tree-ssa/pr93582-8.c: New test.
+
+2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93552
+	* gfortran.dg/goacc/tile-4.f90: New.
+
+2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR driver/47785
+	PR lto/78353
+	* gcc.target/arm/pr78353-1.c: New test.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
+2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93890
+	* gfortran.dg/argument_checking_24.f90: Correct test case.
+
+2020-02-21  Martin Sebor  <msebor@redhat.com>
+
+	PR gcov-profile/93753
+	* g++.dg/ext/flexary36.C: New test.
+	* g++.dg/lto/pr93166_0.C: Make struct with flexarray valid.
+
+2020-02-21  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/vmmla_1.c: New test.
+
+2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/armv8_1m-shift-imm-1.c: Add MVE target checks.
+	* gcc.target/arm/armv8_1m-shift-reg-1.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): New.
+	(check_effective_target_arm_v8_1m_mve_ok): New.
+	(add_options_for_v8_1m_mve): New.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr69052.c: Require target ia32.
+	(dg-options): Add -fcommon and remove -pie.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-epilogues.c (scan-tree-dump): Require
+	vect_mutiple_sizes effective target.
+
+2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93586
+	* gcc.dg/torture/pr93586.c: New testcase.
+
+2020-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93845
+	* g++.dg/tree-ssa/pr93845.C: New test.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/rsqrt_1.c: New test.
+	* gcc.target/aarch64/sve/rsqrt_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1_run.c: Likewise.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/recip_1.c: New test.
+	* gcc.target/aarch64/sve/recip_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/recip_2.c: Likewise.
+	* gcc.target/aarch64/sve/recip_2_run.c: Likewise.
+
+2020-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93801
+	* g++.dg/warn/Wredundant-tags-3.C: New test.
+
+2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93828
+	* g++.target/i386/pr93828.C: New test.
+
+2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* gcc.target/powerpc/pr93658.c: New test.
+
+2020-02-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93825
+	* gfortran.dg/goacc/tile-3.f90: New.
+
+2020-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93169 - wrong-code with a non-constexpr constructor.
+	* g++.dg/cpp0x/constexpr-93169.C: New test.
+
+2020-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92128
+	* gcc.dg/strlenopt-81.c: Align arrays to let strictly aligned targets
+	optimize away calls as expected.
+
+2020-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gimplefe-41.c: Add -msse2 additional options for x86 targets.
+	* gcc.dg/ipa/ipa-sra-19.c: Ditto.
+
+2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93767
+	* gcc.dg/vect/pr93767.c: New test.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93776
+	* gcc.dg/tree-ssa/pr93776.c: New test.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93667
+	* g++.dg/tree-ssa/pr93667.C: New test.
+
+2020-02-19  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.C: add -mavx512vbmi2
+	* g++.dg/other/i386-3.C: Ditto.
+
+2020-02-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vmull_high.c: New.
+
+2020-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93817
+	* g++.dg/diagnostic/array-init1.C: Fix for ILP32.
+
+2020-02-18  Jon Beniston <jon@beniston.com>
+
+	* gcc.dg/strcmpopt_6.c: Add space in array for terminator.
+
+2020-02-18  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93714
+	* gfortran.dg/char_pointer_assign_6.f90: Look for no target
+	message instead of length mismatch.
+	* gfortran.dg/pr93714_1.f90
+	* gfortran.dg/pr93714_2.f90
+
+2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93601
+	* gfortran.dg/pr93601.f90 : New test.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93583
+	* gcc.dg/ipa/pr93583.c: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93777
+	* g++.dg/analyzer/pr93777.C: New test.
+	* gfortran.dg/analyzer/pr93777.f90: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93778
+	* gfortran.dg/analyzer/pr93778.f90: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93774
+	* gfortran.dg/analyzer/deferred_character_25.f90: New test,
+	based on gfortran.dg/deferred_character_25.f90.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93779
+	* gfortran.dg/analyzer/pr88304-2.f90: New test, adapted from
+	gfortran.fortran-torture/compile/pr88304-2.f90
+
+2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93603
+	* gfortran.dg/pr93603.f90 : New test.
+
+2020-02-20  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93580
+	* gfortran.dg/dg/pr93580.f90: New test.
+
+2020-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93780
+	* gcc.dg/pr93780.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93775
+	* gcc.dg/analyzer/20020129-1.c: New test.
+
+2020-02-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tls/emutls-3.c: New, combining emutls-2.c and
+	thr-init-2.c into an execution test with explicitly common
+	variables.
+
+2020-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/pr93565.c: Fix test for ilp32.
+
+2020-02-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Correct
+	number of expected insns.
+
+2020-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93760
+	* g++.dg/lto/odr-8_1.C: Fix grammar.
+
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/86134
+	* gcc.dg/pr86134.c: New testcase.
+	* gcc.dg/pr28322-2.c: Adjust.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* gcc.dg/analyzer/torture/20060625-1.c: New test.
+	* gcc.dg/analyzer/torture/pr51628-30.c: New test.
+	* gcc.dg/analyzer/torture/pr59037.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-1.c (test_48): New.
+
+2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93047
+	* gcc.dg/torture/stackalign/builtin-return-2.c: New test case.
+
+2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93743
+	* gcc.target/i386/pr93743.c : New test.
+
+2020-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93710 - poor diagnostic for array initializer.
+	* g++.dg/diagnostic/array-init1.C: New test.
+
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++2a_only): Also
+	look for -std=*++20.
+	(check_effective_target_concepts): Use check_effective_target_c++2a.
+
+2020-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93744
+	* gcc.c-torture/execute/pr93744-1.c: New test.
+	* gcc.c-torture/execute/pr93744-2.c: New test.
+	* gcc.c-torture/execute/pr93744-3.c: New test.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61414
+	* g++.dg/cpp0x/enum39.C: New test.
+
+2020-02-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93516
+	* g++.dg/tree-ssa/pr93516.C: New test.
+
+2020-02-14 Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vbmi2-vpshld-1.c: New test.
+	* gcc.target/i386/avx512vbmi2-vpshrd-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Add -mavx512vbmi2.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add -mavx512vbmi2 and tests.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Partially implement P1042R1: __VA_OPT__ wording clarifications
+	PR preprocessor/92319
+	* c-c++-common/cpp/va-opt-4.c: New test.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93576
+	* gcc.dg/pr93576.c: New test.
+
+2020-02-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/constexpr-static13.C:
+	Add -fdelete-null-pointer-checks.
+	* g++.dg/cpp2a/constexpr-new11.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new12.C: Likewise.
+
+2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* gcc.target/i386/pr93656.c: New test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/nps400-1.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/or-cnst-size2.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+	Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/mul64-1.c: New test.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93696
+	* gcc.target/i386/pr93696-1.c: New test.
+	* gcc.target/i386/pr93696-2.c: New test.
+	* gcc.target/i386/avx512bitalg-vpopcntw-1.c (TEST): Fix argument order
+	of _mm*_mask_popcnt_*.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntbvl.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntwvl.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntw.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c (foo): Likewise.
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-1.c: New test.
+	* gcc.dg/tree-ssa/pr93582-2.c: New test.
+	* gcc.dg/tree-ssa/pr93582-3.c: New test.
+
+2020-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93717
+	* gcc.dg/optimize-bswapsi-2.c: Add BE case.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93673
+	* gcc.target/i386/avx512f-pr93673.c: New test.
+	* gcc.target/i386/avx512dq-pr93673.c: New test.
+	* gcc.target/i386/avx512bw-pr93673.c: New test.
+
+	* g++.dg/analyzer/pr93212.C: Require c++14 rather than c++11.
+
+2020-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-allocators.h: New.
+	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: New test.
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C: Use new
+	coro1-allocators.h header.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C: Likewise.
+	* g++.dg/coroutines/torture/alloc-02-fail-new-grooaf-check.C: New.
+	* g++.dg/coroutines/torture/alloc-03-overload-new-1.C: New test.
+	* g++.dg/coroutines/torture/alloc-04-overload-del-use-two-args.C:New.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/pr93122.c: Use -mprefixed instead of
+	-mprefixed-addr in dg-options.
+
+	PR middle-end/93663
+	* gcc.dg/torture/builtin-round-roundeven.c (main): Add tests
+	for DBL_MAX, inf, their negations and nan.
+
+2020-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93646
+	* gcc.dg/Wstringop-overflow-31.c: New test.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/93565
+	* gcc.target/aarch64/pr93565.c: New test.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/popcnt2.c: New test.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88819
+	* g++.dg/cpp2a/nontype-class32.C: New test.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* g++.dg/parse/attr4.C: New test.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93670
+	* gcc.target/i386/avx512vl-pr93670.c: New test.
+
+2020-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93697
+	* gcc.dg/pr93661.c: Pass -w, remove dg-warning.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93288
+	* g++.dg/analyzer/malloc.C: Add test coverage for a double-free
+	called in a constructor.
+	* g++.dg/analyzer/pr93288.C: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93212
+	* g++.dg/analyzer/analyzer.exp: New subdirectory and .exp suite.
+	* g++.dg/analyzer/malloc.C: New test.
+	* g++.dg/analyzer/pr93212.C: New test.
+
+2020-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93683
+	* gcc.dg/tree-ssa/ssa-dse-39.c: New test.
+
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_ppc_ieee128_ok): New.
+	* gcc.target/powerpc/pr92796.c: Add a require-effective-target
+	statement for ppc_ieee128_ok.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93374
+	* gcc.dg/analyzer/torture/pr93374.c: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93669
+	* gcc.dg/analyzer/pr93669.c: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93649
+	* gcc.dg/analyzer/torture/pr93649.c: New test.
+
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr70010-2.c: Add -maltivec.
+	* gcc.target/powerpc/pr70010-3.c: Add -maltivec.
+
+2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: New test.
+	* gcc.target/arm/simd/vdot-2-2.c: New test.
+	* gcc.target/arm/simd/vdot-2-3.c: New test.
+	* gcc.target/arm/simd/vdot-2-4.c: New test.
+
+2020-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93661
+	PR tree-optimization/93662
+	* gcc.dg/pr93661.c: New testcase.
+
 2020-02-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69448

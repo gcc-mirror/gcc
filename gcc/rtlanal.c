@@ -4207,18 +4207,23 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
   const char *fmt;
   int total;
   int factor;
+  unsigned mode_size;
 
   if (x == 0)
     return 0;
 
-  if (GET_MODE (x) != VOIDmode)
+  if (GET_CODE (x) == SET)
+    /* A SET doesn't have a mode, so let's look at the SET_DEST to get
+       the mode for the factor.  */
+    mode = GET_MODE (SET_DEST (x));
+  else if (GET_MODE (x) != VOIDmode)
     mode = GET_MODE (x);
+
+  mode_size = estimated_poly_value (GET_MODE_SIZE (mode));
 
   /* A size N times larger than UNITS_PER_WORD likely needs N times as
      many insns, taking N times as long.  */
-  factor = estimated_poly_value (GET_MODE_SIZE (mode)) / UNITS_PER_WORD;
-  if (factor == 0)
-    factor = 1;
+  factor = mode_size > UNITS_PER_WORD ? mode_size / UNITS_PER_WORD : 1;
 
   /* Compute the default costs of certain things.
      Note that targetm.rtx_costs can override the defaults.  */
@@ -4243,14 +4248,6 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       /* Used in combine.c as a marker.  */
       total = 0;
       break;
-    case SET:
-      /* A SET doesn't have a mode, so let's look at the SET_DEST to get
-	 the mode for the factor.  */
-      mode = GET_MODE (SET_DEST (x));
-      factor = estimated_poly_value (GET_MODE_SIZE (mode)) / UNITS_PER_WORD;
-      if (factor == 0)
-	factor = 1;
-      /* FALLTHRU */
     default:
       total = factor * COSTS_N_INSNS (1);
     }

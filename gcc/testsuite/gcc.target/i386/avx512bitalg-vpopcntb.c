@@ -13,7 +13,7 @@ int foo ()
   __mmask16 msk;
   __m512i c = _mm512_popcnt_epi8 (z);
   asm volatile ("" : "+v" (c));
-  c = _mm512_mask_popcnt_epi8 (z, msk, z1);
+  c = _mm512_mask_popcnt_epi8 (z1, msk, z);
   asm volatile ("" : "+v" (c));
   c = _mm512_maskz_popcnt_epi8 (msk, z);
   asm volatile ("" : "+v" (c));

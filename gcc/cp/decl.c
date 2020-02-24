@@ -11306,7 +11306,7 @@ grokdeclarator (const cp_declarator *declarator,
   if (constinit_p && typedef_p)
     {
       error_at (declspecs->locations[ds_constinit],
-		"%<constinit%> cannot appear in a typedef declaration");
+		"%qs cannot appear in a typedef declaration", "constinit");
       return error_mark_node;
     }
 

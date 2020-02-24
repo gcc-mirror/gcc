@@ -2796,12 +2796,14 @@ update_local_overload (cxx_binding *binding, tree newval)
 static bool
 matching_fn_p (tree one, tree two)
 {
+  if (TREE_CODE (one) != TREE_CODE (two))
+    return false;
+
   if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (one)),
 		  TYPE_ARG_TYPES (TREE_TYPE (two))))
     return false;
 
-  if (TREE_CODE (one) == TEMPLATE_DECL
-      && TREE_CODE (two) == TEMPLATE_DECL)
+  if (TREE_CODE (one) == TEMPLATE_DECL)
     {
       /* Compare template parms.  */
       if (!comp_template_parms (DECL_TEMPLATE_PARMS (one),

@@ -1839,6 +1839,17 @@
   [(set_attr "type" "neon_mul_<Vetype>_long")]
 )
 
+(define_insn "aarch64_intrinsic_vec_<su>mult_lo_<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(mult:<VWIDE> (ANY_EXTEND:<VWIDE>
+			 (match_operand:VD_BHSI 1 "register_operand" "w"))
+		      (ANY_EXTEND:<VWIDE>
+			 (match_operand:VD_BHSI 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "<su>mull\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_mul_<Vetype>_long")]
+)
+
 (define_expand "vec_widen_<su>mult_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
    (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
@@ -2472,6 +2483,17 @@
  "TARGET_SIMD"
  "add<VDQV:vp>\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
+)
+
+;; ADDV with result zero-extended to SI/DImode (for popcount).
+(define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
+ [(set (match_operand:GPI 0 "register_operand" "=w")
+       (zero_extend:GPI
+	(unspec:<VDQV_E:VEL> [(match_operand:VDQV_E 1 "register_operand" "w")]
+			     UNSPEC_ADDV)))]
+ "TARGET_SIMD"
+ "add<VDQV_E:vp>\\t%<VDQV_E:Vetype>0, %1.<VDQV_E:Vtype>"
+  [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
 )
 
 (define_insn "aarch64_reduc_plus_internalv2si"

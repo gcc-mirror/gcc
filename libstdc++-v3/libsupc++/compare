@@ -411,28 +411,13 @@ namespace std
     template<typename _Tp, typename _Cat>
       concept __compares_as
 	= same_as<common_comparison_category_t<_Tp, _Cat>, _Cat>;
-
-    template<typename _Tp, typename _Up>
-      concept __partially_ordered_with
-	= requires(const remove_reference_t<_Tp>& __t,
-		   const remove_reference_t<_Up>& __u) {
-	  { __t <  __u } -> boolean;
-	  { __t >  __u } -> boolean;
-	  { __t <= __u } -> boolean;
-	  { __t >= __u } -> boolean;
-	  { __u <  __t } -> boolean;
-	  { __u >  __t } -> boolean;
-	  { __u <= __t } -> boolean;
-	  { __u >= __t } -> boolean;
-	};
   } // namespace __detail
 
   // [cmp.concept], concept three_way_comparable
   template<typename _Tp, typename _Cat = partial_ordering>
     concept three_way_comparable
       = __detail::__weakly_eq_cmp_with<_Tp, _Tp>
-      && (!convertible_to<_Cat, partial_ordering>
-	  || __detail::__partially_ordered_with<_Tp, _Tp>)
+      && __detail::__partially_ordered_with<_Tp, _Tp>
       && requires(const remove_reference_t<_Tp>& __a,
 		  const remove_reference_t<_Tp>& __b) {
 	{ __a <=> __b } -> __detail::__compares_as<_Cat>;
@@ -440,16 +425,15 @@ namespace std
 
   template<typename _Tp, typename _Up, typename _Cat = partial_ordering>
     concept three_way_comparable_with
-      = __detail::__weakly_eq_cmp_with<_Tp, _Up>
-      && (!convertible_to<_Cat, partial_ordering>
-	  || __detail::__partially_ordered_with<_Tp, _Up>)
-      && three_way_comparable<_Tp, _Cat>
+      = three_way_comparable<_Tp, _Cat>
       && three_way_comparable<_Up, _Cat>
       && common_reference_with<const remove_reference_t<_Tp>&,
 			       const remove_reference_t<_Up>&>
       && three_way_comparable<
 	  common_reference_t<const remove_reference_t<_Tp>&,
 			     const remove_reference_t<_Up>&>, _Cat>
+      && __detail::__weakly_eq_cmp_with<_Tp, _Up>
+      && __detail::__partially_ordered_with<_Tp, _Up>
       && requires(const remove_reference_t<_Tp>& __t,
 		  const remove_reference_t<_Up>& __u) {
 	{ __t <=> __u } -> __detail::__compares_as<_Cat>;
@@ -879,8 +863,8 @@ namespace std
 	operator()(const _Tp& __t, const _Up& __u) const
 	requires requires
 	{
-	  { __t < __u } -> convertible_to<bool>;
-	  { __u < __t } -> convertible_to<bool>;
+	  { __t < __u } -> __boolean_testable;
+	  { __u < __t } -> __boolean_testable;
 	}
 	{
 	  if constexpr (three_way_comparable_with<_Tp, _Up>)

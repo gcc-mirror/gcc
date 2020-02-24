@@ -1550,7 +1550,8 @@ non_rewritable_lvalue_p (tree lhs)
 	      && multiple_p (lhs_bits,
 			     tree_to_uhwi
 			       (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl)))),
-			     &nelts))
+			     &nelts)
+	      && valid_vector_subparts_p (nelts))
 	    {
 	      if (known_eq (nelts, 1u))
 		return false;
@@ -1925,7 +1926,8 @@ execute_update_addresses_taken (void)
 					     (TYPE_SIZE (TREE_TYPE
 							   (TREE_TYPE (sym)))),
 					   &nelts)
-			    && maybe_ne (nelts, 1u))
+			    && maybe_ne (nelts, 1u)
+			    && valid_vector_subparts_p (nelts))
 			  temtype = build_vector_type (temtype, nelts);
 			tree tem = make_ssa_name (temtype);
 			gimple *pun

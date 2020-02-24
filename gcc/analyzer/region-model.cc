@@ -73,6 +73,25 @@ dump_tree (pretty_printer *pp, tree t)
   dump_generic_node (pp, t, 0, TDF_SLIM, 0);
 }
 
+/* Equivalent to pp_printf (pp, "%qT", t), to avoid nesting pp_printf
+   calls within other pp_printf calls.
+
+   default_tree_printer handles 'T' and some other codes by calling
+     dump_generic_node (pp, t, 0, TDF_SLIM, 0);
+   dump_generic_node calls pp_printf in various places, leading to
+   garbled output.
+
+   Ideally pp_printf could be made to be reentrant, but in the meantime
+   this function provides a workaround.  */
+
+static void
+print_quoted_type (pretty_printer *pp, tree t)
+{
+  pp_begin_quote (pp, pp_show_color (pp));
+  dump_generic_node (pp, t, 0, TDF_SLIM, 0);
+  pp_end_quote (pp, pp_show_color (pp));
+}
+
 /* Dump this path_var to PP (which must support %E for trees).
 
    Express the stack depth using an "@DEPTH" suffix, so e.g. given
@@ -319,7 +338,9 @@ svalue::print (const region_model &model,
   if (m_type)
     {
       gcc_assert (TYPE_P (m_type));
-      pp_printf (pp, "type: %qT, ", m_type);
+      pp_string (pp, "type: ");
+      print_quoted_type (pp, m_type);
+      pp_string (pp, ", ");
     }
 
   /* vfunc.  */
@@ -1282,7 +1303,8 @@ region::dump_to_pp (const region_model &model,
     }
   if (m_type)
     {
-      pp_printf (pp, "%s type: %qT", field_prefix, m_type);
+      pp_printf (pp, "%s type: ", field_prefix);
+      print_quoted_type (pp, m_type);
       pp_newline (pp);
     }
 
@@ -1332,7 +1354,9 @@ region::dump_child_label (const region_model &model,
 	pp_string (pp, "active ");
       else
 	pp_string (pp, "inactive ");
-      pp_printf (pp, "view as %qT: ", child->get_type ());
+      pp_string (pp, "view as ");
+      print_quoted_type (pp, child->get_type ());
+      pp_string (pp, ": ");
     }
 }
 
@@ -1463,7 +1487,10 @@ region::print_fields (const region_model &model ATTRIBUTE_UNUSED,
   m_sval_id.print (pp);
 
   if (m_type)
-    pp_printf (pp, ", type: %qT", m_type);
+    {
+      pp_printf (pp, ", type: ");
+      print_quoted_type (pp, m_type);
+    }
 }
 
 /* Determine if a pointer to this region must be non-NULL.
@@ -4404,7 +4431,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 	  }
 
 	tree parm = gimple_call_arg (call, arg_idx);
-	svalue_id parm_sid = get_rvalue (parm, NULL);
+	svalue_id parm_sid = get_rvalue (parm, ctxt);
 	svalue *parm_sval = get_svalue (parm_sid);
 	if (parm_sval)
 	  if (region_svalue *parm_ptr = parm_sval->dyn_cast_region_svalue ())
@@ -4614,9 +4641,8 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (expr))
     {
     default:
-      internal_error ("unhandled tree code in region_model::get_lvalue_1: %qs",
-		      get_tree_code_name (TREE_CODE (expr)));
-      gcc_unreachable ();
+      return make_region_for_unexpected_tree_code (ctxt, expr,
+						   dump_location_t ());
 
     case ARRAY_REF:
       {
@@ -4693,6 +4719,11 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	/* obj.field  */
 	tree obj = TREE_OPERAND (expr, 0);
 	tree field = TREE_OPERAND (expr, 1);
+	tree obj_type = TREE_TYPE (obj);
+	if (TREE_CODE (obj_type) != RECORD_TYPE
+	    && TREE_CODE (obj_type) != UNION_TYPE)
+	  return make_region_for_unexpected_tree_code (ctxt, obj_type,
+						       dump_location_t ());
 	region_id obj_rid = get_lvalue (obj, ctxt);
 	region_id struct_or_union_rid
 	  = get_or_create_view (obj_rid, TREE_TYPE (obj));
@@ -4723,7 +4754,32 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	return cst_rid;
       }
       break;
+
+    case VIEW_CONVERT_EXPR:
+      {
+	tree obj = TREE_OPERAND (expr, 0);
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+      };
+      break;
     }
+}
+
+/* If we see a tree code we we don't know how to handle, rather than
+   ICE or generate bogus results, create a dummy region, and notify
+   CTXT so that it can mark the new state as being not properly
+   modelled.  The exploded graph can then stop exploring that path,
+   since any diagnostics we might issue will have questionable
+   validity.  */
+
+region_id
+region_model::make_region_for_unexpected_tree_code (region_model_context *ctxt,
+						    tree t,
+						    const dump_location_t &loc)
+{
+  region_id new_rid
+    = add_region (new symbolic_region (m_root_rid, NULL_TREE, false));
+  ctxt->on_unexpected_tree_code (t, loc);
+  return new_rid;
 }
 
 /* Assert that SRC_TYPE can be converted to DST_TYPE as a no-op.  */
@@ -5033,10 +5089,9 @@ region_model::maybe_cast_1 (tree dst_type, svalue_id sid)
   /* Attempt to cast constants.  */
   if (tree src_cst = sval->maybe_get_constant ())
     {
-      tree dst = build_cast (dst_type, src_cst);
-      gcc_assert (dst != NULL_TREE);
-      if (CONSTANT_CLASS_P (dst))
-	return get_or_create_constant_svalue (dst);
+      if (tree dst = build_cast (dst_type, src_cst))
+	if (CONSTANT_CLASS_P (dst))
+	  return get_or_create_constant_svalue (dst);
     }
 
   /* Otherwise, return a new unknown value.  */
@@ -6470,24 +6525,27 @@ region_model::convert_byte_offset_to_array_index (tree ptr_type,
 
       /* Arithmetic on void-pointers is a GNU C extension, treating the size
 	 of a void as 1.
-	 https://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html
-
-	 Returning early for this case avoids a diagnostic from within the
-	 call to size_in_bytes.  */
+	 https://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html  */
       if (TREE_CODE (elem_type) == VOID_TYPE)
 	return offset_sid;
 
-      /* This might not be a constant.  */
-      tree byte_size = size_in_bytes (elem_type);
-
-      /* Try to get a constant by dividing, ensuring that we're in a
-	 signed representation first.  */
-      tree index
-	= fold_binary (TRUNC_DIV_EXPR, ssizetype,
-		       fold_convert (ssizetype, offset_cst),
-		       fold_convert (ssizetype, byte_size));
-      if (index && TREE_CODE (index) == INTEGER_CST)
-	return get_or_create_constant_svalue (index);
+      /* First, use int_size_in_bytes, to reject the case where we have an
+	 incomplete type, or a non-constant value.  */
+      HOST_WIDE_INT hwi_byte_size = int_size_in_bytes (elem_type);
+      if (hwi_byte_size > 0)
+	{
+	  /* Now call size_in_bytes to get the answer in tree form.  */
+	  tree byte_size = size_in_bytes (elem_type);
+	  gcc_assert (byte_size);
+	  /* Try to get a constant by dividing, ensuring that we're in a
+	     signed representation first.  */
+	  tree index
+	    = fold_binary (TRUNC_DIV_EXPR, ssizetype,
+			   fold_convert (ssizetype, offset_cst),
+			   fold_convert (ssizetype, byte_size));
+	  if (index && TREE_CODE (index) == INTEGER_CST)
+	    return get_or_create_constant_svalue (index);
+	}
     }
 
   /* Otherwise, we don't know the array index; generate a new unknown value.
@@ -6649,7 +6707,12 @@ region_model::get_fndecl_for_call (const gcall *call,
       if (code)
 	{
 	  tree fn_decl = code->get_tree_for_child_region (fn_rid);
-	  return fn_decl;
+	  if (!fn_decl)
+	    return NULL_TREE;
+	  const cgraph_node *ultimate_node
+	    = cgraph_node::get (fn_decl)->ultimate_alias_target ();
+	  if (ultimate_node)
+	    return ultimate_node->decl;
 	}
     }
 

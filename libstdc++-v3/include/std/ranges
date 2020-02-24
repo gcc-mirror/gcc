@@ -42,7 +42,6 @@
 #include <compare>
 #include <initializer_list>
 #include <iterator>
-#include <limits>
 #include <optional>
 #include <tuple>
 
@@ -66,25 +65,8 @@ namespace ranges
 
   struct view_base { };
 
-  namespace __detail
-  {
-    template<typename _Tp>
-      concept __deep_const_range = range<_Tp> && range<const _Tp>
-	&& same_as<range_reference_t<_Tp>, range_reference_t<const _Tp>>;
-
-    template<typename _Tp>
-      inline constexpr bool __enable_view_impl
-	= derived_from<_Tp, view_base> || (!__deep_const_range<_Tp>);
-
-    template<typename _Tp>
-      inline constexpr bool __enable_view_impl<std::initializer_list<_Tp>>
-	= false;
-
-  } // namespace __detail
-
   template<typename _Tp>
-    inline constexpr bool enable_view
-      = __detail::__enable_view_impl<remove_cv_t<_Tp>>;
+    inline constexpr bool enable_view = derived_from<_Tp, view_base>;
 
   template<typename _Tp>
     concept view
@@ -94,7 +76,7 @@ namespace ranges
   /// A range which can be safely converted to a view.
   template<typename _Tp>
     concept viewable_range = range<_Tp>
-      && (safe_range<_Tp> || view<remove_cvref_t<_Tp>>);
+      && (borrowed_range<_Tp> || view<remove_cvref_t<_Tp>>);
 
   namespace __detail
   {
@@ -215,6 +197,12 @@ namespace ranges
 
   namespace __detail
   {
+    template<class _From, class _To>
+      concept __convertible_to_non_slicing = convertible_to<_From, _To>
+	&& !(is_pointer_v<decay_t<_From>> && is_pointer_v<decay_t<_To>>
+	    && __not_same_as<remove_pointer_t<decay_t<_From>>,
+			     remove_pointer_t<decay_t<_To>>>);
+
     template<typename _Tp>
       concept __pair_like
 	= !is_reference_v<_Tp> && requires(_Tp __t)
@@ -228,18 +216,11 @@ namespace ranges
 	};
 
     template<typename _Tp, typename _Up, typename _Vp>
-      concept __pair_like_convertible_to
-	= !range<_Tp> && __pair_like<remove_reference_t<_Tp>>
-	&& requires(_Tp&& __t)
-	{
-	  { get<0>(std::forward<_Tp>(__t)) } -> convertible_to<_Up>;
-	  { get<1>(std::forward<_Tp>(__t)) } -> convertible_to<_Vp>;
-	};
-
-    template<typename _Tp, typename _Up, typename _Vp>
       concept __pair_like_convertible_from
 	= !range<_Tp> && __pair_like<_Tp>
-	&& constructible_from<_Tp, _Up, _Vp>;
+	&& constructible_from<_Tp, _Up, _Vp>
+	&& __convertible_to_non_slicing<_Up, tuple_element_t<0, _Tp>>
+	&& convertible_to<_Vp, tuple_element_t<1, _Tp>>;
 
     template<typename _Tp>
       concept __iterator_sentinel_pair
@@ -278,12 +259,13 @@ namespace ranges
       subrange() = default;
 
       constexpr
-      subrange(_It __i, _Sent __s) requires (!_S_store_size)
+      subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s)
+	requires (!_S_store_size)
       : _M_begin(std::move(__i)), _M_end(__s)
       { }
 
       constexpr
-      subrange(_It __i, _Sent __s,
+      subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s,
 	       __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
 	requires (_Kind == subrange_kind::sized)
       : _M_begin(std::move(__i)), _M_end(__s)
@@ -295,8 +277,8 @@ namespace ranges
       }
 
       template<__detail::__not_same_as<subrange> _Rng>
-	requires safe_range<_Rng>
-	  && convertible_to<iterator_t<_Rng>, _It>
+	requires borrowed_range<_Rng>
+	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r) requires (!_S_store_size || sized_range<_Rng>)
@@ -306,31 +288,14 @@ namespace ranges
 	    _M_size._M_size = ranges::size(__r);
 	}
 
-      template<safe_range _Rng>
-	requires convertible_to<iterator_t<_Rng>, _It>
+      template<borrowed_range _Rng>
+	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r,
 		 __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
 	requires (_Kind == subrange_kind::sized)
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
-	{ }
-
-      template<__detail::__not_same_as<subrange> _PairLike>
-	requires __detail::__pair_like_convertible_to<_PairLike, _It, _Sent>
-	constexpr
-	subrange(_PairLike&& __r) requires (!_S_store_size)
-	: subrange{std::get<0>(std::forward<_PairLike>(__r)),
-		   std::get<1>(std::forward<_PairLike>(__r))}
-	{ }
-
-      template<__detail::__pair_like_convertible_to<_It, _Sent> _PairLike>
-	constexpr
-	subrange(_PairLike&& __r,
-		 __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
-	requires (_Kind == subrange_kind::sized)
-	: subrange{std::get<0>(std::forward<_PairLike>(__r)),
-		   std::get<1>(std::forward<_PairLike>(__r)), __n}
 	{ }
 
       template<__detail::__not_same_as<subrange> _PairLike>
@@ -404,6 +369,9 @@ namespace ranges
     };
 
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    subrange(_It, _Sent) -> subrange<_It, _Sent>;
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
     subrange(_It, _Sent,
 	     __detail::__make_unsigned_like_t<iter_difference_t<_It>>)
       -> subrange<_It, _Sent, subrange_kind::sized>;
@@ -418,14 +386,14 @@ namespace ranges
       -> subrange<tuple_element_t<0, _Pr>, tuple_element_t<1, _Pr>,
 		  subrange_kind::sized>;
 
-  template<safe_range _Rng>
+  template<borrowed_range _Rng>
     subrange(_Rng&&)
       -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
 		 (sized_range<_Rng>
 		  || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>)
 		 ? subrange_kind::sized : subrange_kind::unsized>;
 
-  template<safe_range _Rng>
+  template<borrowed_range _Rng>
     subrange(_Rng&&,
 	     __detail::__make_unsigned_like_t<range_difference_t<_Rng>>)
       -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>, subrange_kind::sized>;
@@ -455,7 +423,7 @@ namespace ranges
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent,
 	   subrange_kind _Kind>
     inline constexpr bool
-      enable_safe_range<subrange<_It, _Sent, _Kind>> = true;
+      enable_borrowed_range<subrange<_It, _Sent, _Kind>> = true;
 
 } // namespace ranges
 
@@ -472,14 +440,14 @@ namespace ranges
   };
 
   template<range _Range>
-    using safe_iterator_t = conditional_t<safe_range<_Range>,
-					  iterator_t<_Range>,
-					  dangling>;
+    using borrowed_iterator_t = conditional_t<borrowed_range<_Range>,
+					      iterator_t<_Range>,
+					      dangling>;
 
   template<range _Range>
-    using safe_subrange_t = conditional_t<safe_range<_Range>,
-					  subrange<iterator_t<_Range>>,
-					  dangling>;
+    using borrowed_subrange_t = conditional_t<borrowed_range<_Range>,
+					      subrange<iterator_t<_Range>>,
+					      dangling>;
 
   template<typename _Tp> requires is_object_v<_Tp>
     class empty_view
@@ -494,7 +462,7 @@ namespace ranges
     };
 
   template<typename _Tp>
-    inline constexpr bool enable_safe_range<empty_view<_Tp>> = true;
+    inline constexpr bool enable_borrowed_range<empty_view<_Tp>> = true;
 
   namespace __detail
   {
@@ -650,6 +618,8 @@ namespace ranges
     class iota_view : public view_interface<iota_view<_Winc, _Bound>>
     {
     private:
+      struct _Sentinel;
+
       struct _Iterator
       {
       private:
@@ -826,11 +796,17 @@ namespace ranges
 
       private:
 	_Winc _M_value = _Winc();
+
+        friend _Sentinel;
       };
 
       struct _Sentinel
       {
       private:
+	constexpr bool
+	_M_equal(const _Iterator& __x) const
+	{ return __x._M_value == _M_bound; }
+
 	_Bound _M_bound = _Bound();
 
       public:
@@ -842,7 +818,7 @@ namespace ranges
 
 	friend constexpr bool
 	operator==(const _Iterator& __x, const _Sentinel& __y)
-	{ return __x._M_value == __y._M_bound; }
+	{ return __y._M_equal(__x); }
 
 	friend constexpr iter_difference_t<_Winc>
 	operator-(const _Iterator& __x, const _Sentinel& __y)
@@ -920,7 +896,8 @@ namespace ranges
     iota_view(_Winc, _Bound) -> iota_view<_Winc, _Bound>;
 
   template<weakly_incrementable _Winc, semiregular _Bound>
-    inline constexpr bool enable_safe_range<iota_view<_Winc, _Bound>> = true;
+    inline constexpr bool
+      enable_borrowed_range<iota_view<_Winc, _Bound>> = true;
 
 namespace views
 {
@@ -947,7 +924,7 @@ namespace views
     template<typename _Tp, typename _Up>
       constexpr auto
       operator()(_Tp&& __e, _Up&& __f) const
-      { return iota_view{std::forward<_Tp>(__e), std::forward<_Tp>(__f)}; }
+      { return iota_view{std::forward<_Tp>(__e), std::forward<_Up>(__f)}; }
   };
 
   inline constexpr _Iota iota{};
@@ -1057,6 +1034,21 @@ namespace views
 {
   namespace __adaptor
   {
+    template<typename _Tp>
+      inline constexpr auto
+      __maybe_refwrap(_Tp& __arg)
+      { return reference_wrapper<_Tp>{__arg}; }
+
+    template<typename _Tp>
+      inline constexpr auto
+      __maybe_refwrap(const _Tp& __arg)
+      { return reference_wrapper<const _Tp>{__arg}; }
+
+    template<typename _Tp>
+      inline constexpr decltype(auto)
+      __maybe_refwrap(_Tp&& __arg)
+      { return std::forward<_Tp>(__arg); }
+
     template<typename _Callable>
       struct _RangeAdaptorClosure;
 
@@ -1085,23 +1077,55 @@ namespace views
 	  constexpr auto
 	  operator()(_Args&&... __args) const
 	  {
+	    // [range.adaptor.object]: If a range adaptor object accepts more
+	    // than one argument, then the following expressions are equivalent:
+	    //
+	    //   (1) adaptor(range, args...)
+	    //   (2) adaptor(args...)(range)
+	    //   (3) range | adaptor(args...)
+	    //
+	    // In this case, adaptor(args...) is a range adaptor closure object.
+	    //
+	    // We handle (1) and (2) here, and (3) is just a special case of a
+	    // more general case already handled by _RangeAdaptorClosure.
 	    if constexpr (is_invocable_v<_Callable, _Args...>)
 	      {
 		static_assert(sizeof...(_Args) != 1,
 			      "a _RangeAdaptor that accepts only one argument "
 			      "should be defined as a _RangeAdaptorClosure");
+		// Here we handle adaptor(range, args...) -- just forward all
+		// arguments to the underlying adaptor routine.
 		return _Callable{}(std::forward<_Args>(__args)...);
 	      }
 	    else
 	      {
-		auto __closure = [__args...] <typename _Range> (_Range&& __r) {
-		  return _Callable{}(std::forward<_Range>(__r), __args...);
-		};
+		// Here we handle adaptor(args...)(range).
+		// Given args..., we return a _RangeAdaptorClosure that takes a
+		// range argument, such that (2) is equivalent to (1).
+		//
+		// We need to be careful about how we capture args... in this
+		// closure.  By using __maybe_refwrap, we capture lvalue
+		// references by reference (through a reference_wrapper) and
+		// otherwise capture by value.
+		auto __closure
+		  = [...__args(__maybe_refwrap(std::forward<_Args>(__args)))]
+		    <typename _Range> (_Range&& __r) {
+		      // This static_cast has two purposes: it forwards a
+		      // reference_wrapper<T> capture as a T&, and otherwise
+		      // forwards the captured argument as an rvalue.
+		      return _Callable{}(std::forward<_Range>(__r),
+			       (static_cast<unwrap_reference_t
+					    <remove_const_t<decltype(__args)>>>
+				(__args))...);
+		    };
 		using _ClosureType = decltype(__closure);
 		return _RangeAdaptorClosure<_ClosureType>(std::move(__closure));
 	      }
 	  }
       };
+
+    template<typename _Callable>
+      _RangeAdaptor(_Callable) -> _RangeAdaptor<_Callable>;
 
     template<typename _Callable>
       struct _RangeAdaptorClosure : public _RangeAdaptor<_Callable>
@@ -1219,7 +1243,7 @@ namespace views
     ref_view(_Range&) -> ref_view<_Range>;
 
   template<typename _Tp>
-    inline constexpr bool enable_safe_range<ref_view<_Tp>> = true;
+    inline constexpr bool enable_borrowed_range<ref_view<_Tp>> = true;
 
   namespace views
   {
@@ -1233,10 +1257,11 @@ namespace views
 	else
 	  return subrange{std::forward<_Range>(__r)};
       };
-  } // namespace views
 
-  template<viewable_range _Range>
-    using all_view = decltype(views::all(declval<_Range>()));
+    template<viewable_range _Range>
+      using all_t = decltype(all(std::declval<_Range>()));
+
+  } // namespace views
 
   // XXX: the following algos are copied from ranges_algo.h to avoid a circular
   // dependency with that header.
@@ -1326,7 +1351,7 @@ namespace views
 	static constexpr auto
 	_S_iter_cat()
 	{
-	  using _Cat = iterator_traits<iterator_t<_Vp>>::iterator_category;
+	  using _Cat = typename iterator_traits<_Vp_iter>::iterator_category;
 	  if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
 	    return bidirectional_iterator_tag{};
 	  else if constexpr (derived_from<_Cat, forward_iterator_tag>)
@@ -1337,7 +1362,9 @@ namespace views
 
 	friend filter_view;
 
-	iterator_t<_Vp> _M_current = iterator_t<_Vp>();
+	using _Vp_iter = iterator_t<_Vp>;
+
+	_Vp_iter _M_current = _Vp_iter();
 	filter_view* _M_parent = nullptr;
 
       public:
@@ -1349,17 +1376,17 @@ namespace views
 	_Iterator() = default;
 
 	constexpr
-	_Iterator(filter_view& __parent, iterator_t<_Vp> __current)
+	_Iterator(filter_view& __parent, _Vp_iter __current)
 	  : _M_current(std::move(__current)),
 	    _M_parent(std::__addressof(__parent))
 	{ }
 
-	constexpr iterator_t<_Vp>
+	constexpr _Vp_iter
 	base() const &
-	  requires copyable<iterator_t<_Vp>>
+	  requires copyable<_Vp_iter>
 	{ return _M_current; }
 
-	constexpr iterator_t<_Vp>
+	constexpr _Vp_iter
 	base() &&
 	{ return std::move(_M_current); }
 
@@ -1367,10 +1394,10 @@ namespace views
 	operator*() const
 	{ return *_M_current; }
 
-	constexpr iterator_t<_Vp>
+	constexpr _Vp_iter
 	operator->() const
-	  requires __detail::__has_arrow<iterator_t<_Vp>>
-	    && copyable<iterator_t<_Vp>>
+	  requires __detail::__has_arrow<_Vp_iter>
+	    && copyable<_Vp_iter>
 	{ return _M_current; }
 
 	constexpr _Iterator&
@@ -1413,7 +1440,7 @@ namespace views
 
 	friend constexpr bool
 	operator==(const _Iterator& __x, const _Iterator& __y)
-	  requires equality_comparable<iterator_t<_Vp>>
+	  requires equality_comparable<_Vp_iter>
 	{ return __x._M_current == __y._M_current; }
 
 	friend constexpr range_rvalue_reference_t<_Vp>
@@ -1424,7 +1451,7 @@ namespace views
 	friend constexpr void
 	iter_swap(const _Iterator& __x, const _Iterator& __y)
 	  noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
-	  requires indirectly_swappable<iterator_t<_Vp>>
+	  requires indirectly_swappable<_Vp_iter>
 	{ ranges::iter_swap(__x._M_current, __y._M_current); }
       };
 
@@ -1465,17 +1492,6 @@ namespace views
 	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range>
-	requires viewable_range<_Range>
-	  && constructible_from<_Vp, all_view<_Range>>
-	constexpr
-	filter_view(_Range&& __r, _Pred __pred)
-	  : _M_base(views::all(std::forward<_Range>(__r))),
-	    _M_pred(std::move(__pred))
-	{ }
-      */
-
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
       { return _M_base; }
@@ -1483,6 +1499,10 @@ namespace views
       constexpr _Vp
       base() &&
       { return std::move(_M_base); }
+
+      constexpr const _Pred&
+      pred() const
+      { return *_M_pred; }
 
       constexpr _Iterator
       begin()
@@ -1505,7 +1525,7 @@ namespace views
     };
 
   template<typename _Range, typename _Pred>
-    filter_view(_Range&&, _Pred) -> filter_view<all_view<_Range>, _Pred>;
+    filter_view(_Range&&, _Pred) -> filter_view<views::all_t<_Range>, _Pred>;
 
   namespace views
   {
@@ -1549,7 +1569,8 @@ namespace views
 	  static constexpr auto
 	  _S_iter_cat()
 	  {
-	    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+	    using _Cat
+              = typename iterator_traits<_Base_iter>::iterator_category;
 	    if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
 	      return random_access_iterator_tag{};
 	    else
@@ -1567,7 +1588,9 @@ namespace views
 	      return *__i;
 	  }
 
-	  iterator_t<_Base> _M_current = iterator_t<_Base>();
+	  using _Base_iter = iterator_t<_Base>;
+
+	  _Base_iter _M_current = _Base_iter();
 	  _Parent* _M_parent = nullptr;
 
 	public:
@@ -1580,7 +1603,7 @@ namespace views
 	  _Iterator() = default;
 
 	  constexpr
-	  _Iterator(_Parent& __parent, iterator_t<_Base> __current)
+	  _Iterator(_Parent& __parent, _Base_iter __current)
 	    : _M_current(std::move(__current)),
 	      _M_parent(std::__addressof(__parent))
 	  { }
@@ -1588,16 +1611,16 @@ namespace views
 	  constexpr
 	  _Iterator(_Iterator<!_Const> __i)
 	    requires _Const
-	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
+	      && convertible_to<iterator_t<_Vp>, _Base_iter>
 	    : _M_current(std::move(__i._M_current)), _M_parent(__i._M_parent)
 	  { }
 
-	  constexpr iterator_t<_Base>
+	  constexpr _Base_iter
 	  base() const &
-	    requires copyable<iterator_t<_Base>>
+	    requires copyable<_Base_iter>
 	  { return _M_current; }
 
-	  constexpr iterator_t<_Base>
+	  constexpr _Base_iter
 	  base() &&
 	  { return std::move(_M_current); }
 
@@ -1660,7 +1683,7 @@ namespace views
 
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
-	    requires equality_comparable<iterator_t<_Base>>
+	    requires equality_comparable<_Base_iter>
 	  { return __x._M_current == __y._M_current; }
 
 	  friend constexpr bool
@@ -1687,7 +1710,7 @@ namespace views
 	  friend constexpr auto
 	  operator<=>(const _Iterator& __x, const _Iterator& __y)
 	    requires random_access_range<_Base>
-	      && three_way_comparable<iterator_t<_Base>>
+	      && three_way_comparable<_Base_iter>
 	  { return __x._M_current <=> __y._M_current; }
 #endif
 
@@ -1718,7 +1741,7 @@ namespace views
 	  friend constexpr void
 	  iter_swap(const _Iterator& __x, const _Iterator& __y)
 	    noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
-	    requires indirectly_swappable<iterator_t<_Base>>
+	    requires indirectly_swappable<_Base_iter>
 	  { return ranges::iter_swap(__x._M_current, __y._M_current); }
 
 	  friend _Sentinel<_Const>;
@@ -1787,17 +1810,6 @@ namespace views
 	: _M_base(std::move(__base)), _M_fun(std::move(__fun))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range>
-	requires viewable_range<_Range>
-	  && constructible_from<_Vp, all_view<_Range>>
-	constexpr
-	transform_view(_Range&& __r, _Fp __fun)
-	  : _M_base(views::all(std::forward<_Range>(__r)))
-	{
-	}
-	*/
-
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
       { return _M_base ; }
@@ -1846,7 +1858,7 @@ namespace views
     };
 
   template<typename _Range, typename _Fp>
-    transform_view(_Range&&, _Fp) -> transform_view<all_view<_Range>, _Fp>;
+    transform_view(_Range&&, _Fp) -> transform_view<views::all_t<_Range>, _Fp>;
 
   namespace views
   {
@@ -1902,15 +1914,6 @@ namespace views
       take_view(_Vp base, range_difference_t<_Vp> __count)
 	: _M_base(std::move(base)), _M_count(std::move(__count))
       { }
-
-      /* XXX: P3280 removes this constructor
-      template<viewable_range _Range>
-	requires constructible_from<_Vp, all_view<_Range>>
-      constexpr
-      take_view(_Range&& __r, range_difference_t<_Vp> __count)
-	: _M_base(views::all(std::forward<_Range>(__r))), _M_count(__count)
-      { }
-      */
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -1993,7 +1996,7 @@ namespace views
 
   template<range _Range>
     take_view(_Range&&, range_difference_t<_Range>)
-      -> take_view<all_view<_Range>>;
+      -> take_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -2040,7 +2043,7 @@ namespace views
 	  { return __y._M_end == __x || !std::__invoke(*__y._M_pred, *__x); }
 	};
 
-      _Vp _M_base;
+      _Vp _M_base = _Vp();
       __detail::__box<_Pred> _M_pred;
 
     public:
@@ -2085,7 +2088,7 @@ namespace views
 
   template<typename _Range, typename _Pred>
     take_while_view(_Range&&, _Pred)
-      -> take_while_view<all_view<_Range>, _Pred>;
+      -> take_while_view<views::all_t<_Range>, _Pred>;
 
   namespace views
   {
@@ -2100,8 +2103,8 @@ namespace views
     class drop_view : public view_interface<drop_view<_Vp>>
     {
     private:
-      _Vp _M_base;
-      range_difference_t<_Vp> _M_count;
+      _Vp _M_base = _Vp();
+      range_difference_t<_Vp> _M_count = 0;
 
     public:
       drop_view() = default;
@@ -2162,7 +2165,7 @@ namespace views
 
   template<typename _Range>
     drop_view(_Range&&, range_difference_t<_Range>)
-      -> drop_view<all_view<_Range>>;
+      -> drop_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -2179,7 +2182,7 @@ namespace views
     class drop_while_view : public view_interface<drop_while_view<_Vp, _Pred>>
     {
     private:
-      _Vp _M_base;
+      _Vp _M_base = _Vp();
       __detail::__box<_Pred> _M_pred;
 
     public:
@@ -2218,7 +2221,7 @@ namespace views
 
   template<typename _Range, typename _Pred>
     drop_while_view(_Range&&, _Pred)
-      -> drop_while_view<all_view<_Range>, _Pred>;
+      -> drop_while_view<views::all_t<_Range>, _Pred>;
 
   namespace views
   {
@@ -2272,7 +2275,7 @@ namespace views
 	      }
 
 	    if constexpr (_S_ref_is_glvalue)
-	      _M_inner = iterator_t<range_reference_t<_Base>>();
+	      _M_inner = _Inner_iter();
 	  }
 
 	  static constexpr auto
@@ -2294,10 +2297,9 @@ namespace views
 	  _S_iter_cat()
 	  {
 	    using _OuterCat
-	      = iterator_traits<iterator_t<_Base>>::iterator_category;
+	      = typename iterator_traits<_Outer_iter>::iterator_category;
 	    using _InnerCat
-	      = iterator_traits<iterator_t<range_reference_t<_Base>>>
-		 ::iterator_category;
+	      = typename iterator_traits<_Inner_iter>::iterator_category;
 	    if constexpr (_S_ref_is_glvalue
 			  && derived_from<_OuterCat, bidirectional_iterator_tag>
 			  && derived_from<_InnerCat, bidirectional_iterator_tag>)
@@ -2313,9 +2315,11 @@ namespace views
 	      return output_iterator_tag{};
 	  }
 
-	  iterator_t<_Base> _M_outer = iterator_t<_Base>();
-	  iterator_t<range_reference_t<_Base>> _M_inner
-	    = iterator_t<range_reference_t<_Base>>();
+	  using _Outer_iter = iterator_t<_Base>;
+	  using _Inner_iter = iterator_t<range_reference_t<_Base>>;
+
+	  _Outer_iter _M_outer = _Outer_iter();
+	  _Inner_iter _M_inner = _Inner_iter();
 	  _Parent* _M_parent = nullptr;
 
 	public:
@@ -2328,10 +2332,8 @@ namespace views
 
 	  _Iterator() = default;
 
-	  // XXX: had to change the type of __outer from iterator_t<_Vp> to
-	  // iterator_t<_Base> here, a possible defect in the spec?
 	  constexpr
-	  _Iterator(_Parent& __parent, iterator_t<_Base> __outer)
+	  _Iterator(_Parent& __parent, _Outer_iter __outer)
 	    : _M_outer(std::move(__outer)),
 	      _M_parent(std::__addressof(__parent))
 	  { _M_satisfy(); }
@@ -2339,9 +2341,8 @@ namespace views
 	  constexpr
 	  _Iterator(_Iterator<!_Const> __i)
 	    requires _Const
-	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
-	      && convertible_to<iterator_t<_InnerRange>,
-				iterator_t<range_reference_t<_Base>>>
+	      && convertible_to<iterator_t<_Vp>, _Outer_iter>
+	      && convertible_to<iterator_t<_InnerRange>, _Inner_iter>
 	    : _M_outer(std::move(__i._M_outer)), _M_inner(__i._M_inner),
 	      _M_parent(__i._M_parent)
 	  { }
@@ -2350,10 +2351,10 @@ namespace views
 	  operator*() const
 	  { return *_M_inner; }
 
-	  constexpr iterator_t<_Base>
+	  constexpr _Outer_iter
 	  operator->() const
-	    requires __detail::__has_arrow<iterator_t<_Base>>
-	      && copyable<iterator_t<_Base>>
+	    requires __detail::__has_arrow<_Outer_iter>
+	      && copyable<_Outer_iter>
 	  { return _M_inner; }
 
 	  constexpr _Iterator&
@@ -2413,8 +2414,8 @@ namespace views
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
 	    requires _S_ref_is_glvalue
-	      && equality_comparable<iterator_t<_Base>>
-	      && equality_comparable<iterator_t<range_reference_t<_Base>>>
+	      && equality_comparable<_Outer_iter>
+	      && equality_comparable<_Inner_iter>
 	  {
 	    return (__x._M_outer == __y._M_outer
 		    && __x._M_inner == __y._M_inner);
@@ -2430,6 +2431,7 @@ namespace views
 	    noexcept(noexcept(ranges::iter_swap(__x._M_inner, __y._M_inner)))
 	  { return ranges::iter_swap(__x._M_inner, __y._M_inner); }
 
+	  friend _Iterator<!_Const>;
 	  friend _Sentinel<_Const>;
 	};
 
@@ -2468,10 +2470,9 @@ namespace views
       _Vp _M_base = _Vp();
 
       // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
-      // Applied P3278 and made this field mutable.
-      [[no_unique_address]] mutable
+      [[no_unique_address]]
 	conditional_t<!is_reference_v<_InnerRange>,
-		      all_view<_InnerRange>, __detail::_Empty> _M_inner;
+		      views::all_t<_InnerRange>, __detail::_Empty> _M_inner;
 
     public:
       join_view() = default;
@@ -2480,16 +2481,6 @@ namespace views
       join_view(_Vp __base)
 	: _M_base(std::move(__base))
       { }
-
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range>
-	requires viewable_range<_Range>
-	  && constructible_from<_Vp, all_view<_Range>>
-      constexpr explicit
-      join_view(_Range&& __r)
-	: _M_base(views::all(std::forward<_Range>(__r)))
-      { }
-      */
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -2502,8 +2493,10 @@ namespace views
       constexpr auto
       begin()
       {
-	return _Iterator<__detail::__simple_view<_Vp>>{*this,
-						       ranges::begin(_M_base)};
+	constexpr bool __use_const
+	  = (__detail::__simple_view<_Vp>
+	     && is_reference_v<range_reference_t<_Vp>>);
+	return _Iterator<__use_const>{*this, ranges::begin(_M_base)};
       }
 
       constexpr auto
@@ -2543,7 +2536,7 @@ namespace views
     };
 
   template<typename _Range>
-    explicit join_view(_Range&&) -> join_view<all_view<_Range>>;
+    explicit join_view(_Range&&) -> join_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -2669,7 +2662,7 @@ namespace views
 	  constexpr
 	  _OuterIter(_OuterIter<!_Const> __i)
 	    requires _Const
-	      && convertible_to<iterator_t<_Vp>, iterator_t<const _Vp>>
+	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
 	    : _M_parent(__i._M_parent), _M_current(std::move(__i._M_current))
 	  { }
 
@@ -2765,7 +2758,8 @@ namespace views
 	  static constexpr auto
 	  _S_iter_cat()
 	  {
-	    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+	    using _Cat
+              = typename iterator_traits<iterator_t<_Base>>::iterator_category;
 	    if constexpr (derived_from<_Cat, forward_iterator_tag>)
 	      return forward_iterator_tag{};
 	    else
@@ -2787,7 +2781,8 @@ namespace views
 	  bool _M_incremented = false;
 
 	public:
-	  using iterator_concept = typename _OuterIter<_Const>::iterator_concept;
+	  using iterator_concept
+	    = typename _OuterIter<_Const>::iterator_concept;
 	  using iterator_category = decltype(_S_iter_cat());
 	  using value_type = range_value_t<_Base>;
 	  using difference_type = range_difference_t<_Base>;
@@ -2864,19 +2859,8 @@ namespace views
 	: _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
       { }
 
-      /* XXX: P3280 removes this constructor
-      template<input_range _Range, forward_range _Pred>
-	requires constructible_from<_Vp, all_view<_Range>>
-	  && constructible_from<_Pattern, all_view<_Pred>>
-	constexpr
-	split_view(_Range&& __r, _Pred&& __p)
-	  : _M_base(views::all(std::forward<_Range>(__r))),
-	    _M_pattern(views::all(std::forward<_Pred>(__p)))
-      { }
-      */
-
       template<input_range _Range>
-	requires constructible_from<_Vp, all_view<_Range>>
+	requires constructible_from<_Vp, views::all_t<_Range>>
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
 	constexpr
 	split_view(_Range&& __r, range_value_t<_Range> __e)
@@ -2931,11 +2915,11 @@ namespace views
 
   template<typename _Range, typename _Pred>
     split_view(_Range&&, _Pred&&)
-      -> split_view<all_view<_Range>, all_view<_Pred>>;
+      -> split_view<views::all_t<_Range>, views::all_t<_Pred>>;
 
   template<input_range _Range>
     split_view(_Range&&, range_value_t<_Range>)
-      -> split_view<all_view<_Range>, single_view<range_value_t<_Range>>>;
+      -> split_view<views::all_t<_Range>, single_view<range_value_t<_Range>>>;
 
   namespace views
   {
@@ -2980,14 +2964,15 @@ namespace views
 	: _M_base(std::move(__r))
       { }
 
-      /* XXX: P3280 doesn't remove this constructor, but I think it should?
+      /* XXX: LWG 3280 didn't remove this constructor, but I think it should?
       template<viewable_range _Range>
-	requires (!common_range<_Range>) && constructible_from<_Vp, all_view<_Range>>
+	requires (!common_range<_Range>)
+	  && constructible_from<_Vp, views::all_t<_Range>>
 	constexpr explicit
 	common_view(_Range&& __r)
 	  : _M_base(views::all(std::forward<_Range>(__r)))
 	{ }
-	*/
+      */
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -3047,7 +3032,7 @@ namespace views
     };
 
   template<typename _Range>
-    common_view(_Range&&) -> common_view<all_view<_Range>>;
+    common_view(_Range&&) -> common_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -3077,15 +3062,6 @@ namespace views
       reverse_view(_Vp __r)
 	: _M_base(std::move(__r))
 	{ }
-
-      /* XXX: P3280 removes this constructor
-      template<viewable_range _Range>
-	requires bidirectional_range<_Range> && constructible_from<_Vp, all_view<_Range>>
-	constexpr explicit
-	reverse_view(_Range&& __r)
-	  : _M_base(views::all(std::forward<_Range>(__r)))
-	{ }
-	*/
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -3129,7 +3105,7 @@ namespace views
     };
 
   template<typename _Range>
-    reverse_view(_Range&&) -> reverse_view<all_view<_Range>>;
+    reverse_view(_Range&&) -> reverse_view<views::all_t<_Range>>;
 
   namespace views
   {
@@ -3180,7 +3156,6 @@ namespace views
 	typename tuple_size<_Tp>::type;
 	requires _Nm < tuple_size_v<_Tp>;
 	typename tuple_element_t<_Nm, _Tp>;
-	// XXX: we applied P3323 here
 	{ std::get<_Nm>(__t) }
 	  -> convertible_to<const tuple_element_t<_Nm, _Tp>&>;
       };
@@ -3239,7 +3214,7 @@ namespace views
 	{
 	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
 
-	  iterator_t<_Base> _M_current;
+	  iterator_t<_Base> _M_current = iterator_t<_Base>();
 
 	  friend _Iterator<!_Const>;
 
@@ -3403,10 +3378,10 @@ namespace views
     };
 
   template<typename _Range>
-    using keys_view = elements_view<all_view<_Range>, 0>;
+    using keys_view = elements_view<views::all_t<_Range>, 0>;
 
   template<typename _Range>
-    using values_view = elements_view<all_view<_Range>, 1>;
+    using values_view = elements_view<views::all_t<_Range>, 1>;
 
   namespace views
   {
@@ -3414,7 +3389,8 @@ namespace views
     inline constexpr __adaptor::_RangeAdaptorClosure elements
       = [] <viewable_range _Range> (_Range&& __r)
       {
-	return elements_view<all_view<_Range>, _Nm>{std::forward<_Range>(__r)};
+	using _El = elements_view<views::all_t<_Range>, _Nm>;
+	return _El{std::forward<_Range>(__r)};
       };
 
     inline constexpr __adaptor::_RangeAdaptorClosure keys = elements<0>;
@@ -3436,6 +3412,14 @@ namespace views
 
   template<typename _Iter, typename _Sent, ranges::subrange_kind _Kind>
     struct tuple_element<1, ranges::subrange<_Iter, _Sent, _Kind>>
+    { using type = _Sent; };
+
+  template<typename _Iter, typename _Sent, ranges::subrange_kind _Kind>
+    struct tuple_element<0, const ranges::subrange<_Iter, _Sent, _Kind>>
+    { using type = _Iter; };
+
+  template<typename _Iter, typename _Sent, ranges::subrange_kind _Kind>
+    struct tuple_element<1, const ranges::subrange<_Iter, _Sent, _Kind>>
     { using type = _Sent; };
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -2135,7 +2135,7 @@ rs6000_debug_print_mode (ssize_t m)
       spaces = 0;
     }
   else
-    spaces += sizeof ("  Reload=sl") - 1;
+    spaces += strlen ("  Reload=sl");
 
   if (reg_addr[m].scalar_in_vmx_p)
     {
@@ -2143,7 +2143,7 @@ rs6000_debug_print_mode (ssize_t m)
       spaces = 0;
     }
   else
-    spaces += sizeof ("  Upper=y") - 1;
+    spaces += strlen ("  Upper=y");
 
   if (rs6000_vector_unit[m] != VECTOR_NONE
       || rs6000_vector_mem[m] != VECTOR_NONE)
@@ -3968,7 +3968,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_VSX)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) != 0)
-	    error ("%qs requires VSX support", "%<-mfloat128%>");
+	    error ("%qs requires VSX support", "-mfloat128");
 
 	  TARGET_FLOAT128_TYPE = 0;
 	  rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_KEYWORD
@@ -4013,22 +4013,22 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
-  /* -mprefixed-addr (and hence -mpcrel) requires -mcpu=future.  */
-  if (TARGET_PREFIXED_ADDR && !TARGET_FUTURE)
+  /* -mprefixed (and hence -mpcrel) requires -mcpu=future.  */
+  if (TARGET_PREFIXED && !TARGET_FUTURE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
 	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED_ADDR) != 0)
-	error ("%qs requires %qs", "-mprefixed-addr", "-mcpu=future");
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
+	error ("%qs requires %qs", "-mprefixed", "-mcpu=future");
 
-      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED_ADDR);
+      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED);
     }
 
   /* -mpcrel requires prefixed load/store addressing.  */
-  if (TARGET_PCREL && !TARGET_PREFIXED_ADDR)
+  if (TARGET_PCREL && !TARGET_PREFIXED)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mpcrel", "-mprefixed-addr");
+	error ("%qs requires %qs", "-mpcrel", "-mprefixed");
 
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
@@ -5206,7 +5206,7 @@ rs6000_builtin_vectorized_libmass (combined_fn fn, tree type_out,
   if (!bname)
     return NULL_TREE;
 
-  strcpy (name, bname + sizeof ("__builtin_") - 1);
+  strcpy (name, bname + strlen ("__builtin_"));
   strcat (name, suffix);
 
   if (n_args == 1)
@@ -5571,7 +5571,7 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
     return 1;
 
   /* PADDI can support up to 34 bit signed integers.  */
-  else if (TARGET_PREFIXED_ADDR && SIGNED_INTEGER_34BIT_P (value))
+  else if (TARGET_PREFIXED && SIGNED_INTEGER_34BIT_P (value))
     return 1;
 
   else if (TARGET_POWERPC64)
@@ -7960,7 +7960,7 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
       break;
     }
 
-  if (TARGET_PREFIXED_ADDR)
+  if (TARGET_PREFIXED)
     return SIGNED_34BIT_OFFSET_EXTRA_P (offset, extra);
   else
     return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
@@ -8808,7 +8808,7 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   bool quad_offset_p = mode_supports_dq_form (mode);
 
   /* If this is an unaligned stvx/ldvx type address, discard the outer AND.  */
-  if (VECTOR_MEM_ALTIVEC_P (mode)
+  if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
       && GET_CODE (x) == AND
       && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) == -16)
@@ -8954,7 +8954,7 @@ rs6000_mode_dependent_address (const_rtx addr)
 	{
 	  HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
 	  HOST_WIDE_INT extra = TARGET_POWERPC64 ? 8 : 12;
-	  if (TARGET_PREFIXED_ADDR)
+	  if (TARGET_PREFIXED)
 	    return !SIGNED_34BIT_OFFSET_EXTRA_P (val, extra);
 	  else
 	    return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
@@ -22884,7 +22884,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "power9-vector",		OPTION_MASK_P9_VECTOR,		false, true  },
   { "powerpc-gfxopt",		OPTION_MASK_PPC_GFXOPT,		false, true  },
   { "powerpc-gpopt",		OPTION_MASK_PPC_GPOPT,		false, true  },
-  { "prefixed-addr",		OPTION_MASK_PREFIXED_ADDR,	false, true  },
+  { "prefixed",			OPTION_MASK_PREFIXED,		false, true  },
   { "quad-memory",		OPTION_MASK_QUAD_MEMORY,	false, true  },
   { "quad-memory-atomic",	OPTION_MASK_QUAD_MEMORY_ATOMIC,	false, true  },
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
@@ -23547,7 +23547,7 @@ rs6000_print_options_internal (FILE *file,
 	  if ((flags & mask) == 0)
 	    {
 	      no_str = "no-";
-	      len += sizeof ("no-") - 1;
+	      len += strlen ("no-");
 	    }
 
 	  flags &= ~mask;
@@ -23558,7 +23558,7 @@ rs6000_print_options_internal (FILE *file,
 	  if ((flags & mask) != 0)
 	    {
 	      no_str = "no-";
-	      len += sizeof ("no-") - 1;
+	      len += strlen ("no-");
 	    }
 
 	  flags |= mask;
@@ -23574,7 +23574,7 @@ rs6000_print_options_internal (FILE *file,
 
       fprintf (file, "%s%s%s%s", comma, prefix, no_str, name);
       comma = ", ";
-      comma_len = sizeof (", ") - 1;
+      comma_len = strlen (", ");
     }
 
   fputs ("\n", file);
@@ -24849,7 +24849,7 @@ address_to_insn_form (rtx addr,
   /* Large offsets must be prefixed.  */
   if (!SIGNED_INTEGER_16BIT_P (offset))
     {
-      if (TARGET_PREFIXED_ADDR)
+      if (TARGET_PREFIXED)
 	return INSN_FORM_PREFIXED_NUMERIC;
 
       return INSN_FORM_BAD;
@@ -24889,7 +24889,7 @@ address_to_insn_form (rtx addr,
       if ((offset & 3) == 0)
 	return INSN_FORM_DS;
 
-      else if (TARGET_PREFIXED_ADDR)
+      else if (TARGET_PREFIXED)
 	return INSN_FORM_PREFIXED_NUMERIC;
 
       else
@@ -24900,7 +24900,7 @@ address_to_insn_form (rtx addr,
       if ((offset & 15) == 0)
 	return INSN_FORM_DQ;
 
-      else if (TARGET_PREFIXED_ADDR)
+      else if (TARGET_PREFIXED)
 	return INSN_FORM_PREFIXED_NUMERIC;
 
       else
@@ -25150,7 +25150,7 @@ rs6000_asm_output_opcode (FILE *stream)
 int
 rs6000_adjust_insn_length (rtx_insn *insn, int length)
 {
-  if (TARGET_PREFIXED_ADDR && NONJUMP_INSN_P (insn))
+  if (TARGET_PREFIXED && NONJUMP_INSN_P (insn))
     {
       rtx pattern = PATTERN (insn);
       if (GET_CODE (pattern) != USE && GET_CODE (pattern) != CLOBBER

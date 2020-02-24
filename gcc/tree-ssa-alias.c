@@ -1486,9 +1486,27 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 		    .nonoverlapping_refs_since_match_p_no_alias;
 		  return 1;
 		}
-	      partial_overlap = false;
 	      if (cmp == -1)
-		seen_unmatched_ref_p = true;
+		{
+		  seen_unmatched_ref_p = true;
+		  /* We can not maintain the invariant that bases are either
+		     same or completely disjoint.  However we can still recover
+		     from type based alias analysis if we reach referneces to
+		     same sizes.  We do not attempt to match array sizes, so
+		     just finish array walking and look for component refs.  */
+		  if (!flag_strict_aliasing)
+		    {
+		      ++alias_stats.nonoverlapping_refs_since_match_p_may_alias;
+		      return -1;
+		    }
+		  for (i++; i < narray_refs1; i++)
+		    {
+		      component_refs1.pop ();
+		      component_refs2.pop ();
+		    }
+		  break;
+		}
+	      partial_overlap = false;
 	    }
 	}
 
@@ -1503,7 +1521,14 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	    }
 	  ref1 = component_refs1.pop ();
 	  if (TREE_CODE (ref1) != COMPONENT_REF)
-	    seen_unmatched_ref_p = true;
+	    {
+	      seen_unmatched_ref_p = true;
+	      if (!flag_strict_aliasing)
+		{
+		  ++alias_stats.nonoverlapping_refs_since_match_p_may_alias;
+		  return -1;
+		}
+	    }
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref1, 0))));
 
@@ -1517,7 +1542,14 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	    }
 	  ref2 = component_refs2.pop ();
 	  if (TREE_CODE (ref2) != COMPONENT_REF)
-	    seen_unmatched_ref_p = true;
+	    {
+	      if (!flag_strict_aliasing)
+		{
+		  ++alias_stats.nonoverlapping_refs_since_match_p_may_alias;
+		  return -1;
+		}
+	      seen_unmatched_ref_p = true;
+	    }
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref2, 0))));
 
@@ -1536,6 +1568,8 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
       tree type2 = DECL_CONTEXT (field2);
 
       partial_overlap = false;
+
+      gcc_checking_assert (!seen_unmatched_ref_p || flag_strict_aliasing);
 
       /* If we skipped array refs on type of different sizes, we can
 	 no longer be sure that there are not partial overlaps.  */
@@ -3265,6 +3299,8 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		    return false;
 
 		  dest = gimple_call_lhs (stmt);
+		  if (!dest)
+		    return false;
 		  len = fold_build2 (MULT_EXPR, TREE_TYPE (arg0), arg0, arg1);
 		}
 	      else

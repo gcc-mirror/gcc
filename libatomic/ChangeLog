@@ -1,3 +1,16 @@
+2020-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/55930
+	* Makefile.am (M_DEPS): Guard the empty definition with
+	@AMDEP_FALSE@ rather than @AMDEP_TRUE@.
+	* Makefile.in: Regenerated.
+
+2020-02-22  Richard Purdie  <rpurdie@rpsys.net>
+
+	PR other/55930
+	* Makefile.am (M_DEPS): Honor -disable-dependency-tracking.
+	* Makefile.in: Regenerated.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Handle `--with-toolexeclibdir='.

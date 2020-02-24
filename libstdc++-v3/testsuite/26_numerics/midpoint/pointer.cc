@@ -19,7 +19,6 @@
 // { dg-do run { target c++2a } }
 
 #include <numeric>
-#include <climits>
 #include <testsuite_hooks.h>
 
 const int* p = nullptr;
@@ -36,7 +35,6 @@ template<typename T> constexpr bool no_midpoint()
 static_assert(no_midpoint<void>());
 static_assert(no_midpoint<int()>());
 static_assert(no_midpoint<int&>());
-static_assert(no_midpoint<struct Incomplete>());
 
 constexpr int ca[3] = {};
 static_assert( std::midpoint(ca, ca+3) == ca+1 );

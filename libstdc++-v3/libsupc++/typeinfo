@@ -133,8 +133,11 @@ namespace std
     { return __name == __arg.__name; }
   #endif
 #endif
+
+#if __cpp_impl_three_way_comparison < 201907L
     bool operator!=(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     { return !operator==(__arg); }
+#endif
 
 #if __cplusplus >= 201103L
     size_t hash_code() const noexcept

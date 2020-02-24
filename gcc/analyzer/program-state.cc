@@ -380,7 +380,8 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
 					const state_machine &sm,
 					const gcall *call,
 					tree fndecl,
-					region_model *new_model)
+					region_model *new_model,
+					region_model_context *ctxt)
 {
   logger * const logger = eg.get_logger ();
   if (logger)
@@ -413,7 +414,7 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
 	      continue;
 	}
       tree parm = gimple_call_arg (call, arg_idx);
-      svalue_id parm_sid = new_model->get_rvalue (parm, NULL);
+      svalue_id parm_sid = new_model->get_rvalue (parm, ctxt);
       set_state (new_model, parm_sid, 0, svalue_id::null ());
 
       /* Also clear sm-state from svalue_ids that are passed via a
@@ -421,7 +422,7 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
       if (TREE_CODE (parm) == ADDR_EXPR)
 	{
 	  tree pointee = TREE_OPERAND (parm, 0);
-	  svalue_id parm_sid = new_model->get_rvalue (pointee, NULL);
+	  svalue_id parm_sid = new_model->get_rvalue (pointee, ctxt);
 	  set_state (new_model, parm_sid, 0, svalue_id::null ());
 	}
     }
@@ -429,7 +430,7 @@ sm_state_map::purge_for_unknown_fncall (const exploded_graph &eg,
   /* Purge any state for any LHS.  */
   if (tree lhs = gimple_call_lhs (call))
     {
-      svalue_id lhs_sid = new_model->get_rvalue (lhs, NULL);
+      svalue_id lhs_sid = new_model->get_rvalue (lhs, ctxt);
       set_state (new_model, lhs_sid, 0, svalue_id::null ());
     }
 }
@@ -573,7 +574,8 @@ sm_state_map::validate (const state_machine &sm,
 
 program_state::program_state (const extrinsic_state &ext_state)
 : m_region_model (new region_model ()),
-  m_checker_states (ext_state.get_num_checkers ())
+  m_checker_states (ext_state.get_num_checkers ()),
+  m_valid (true)
 {
   int num_states = ext_state.get_num_checkers ();
   for (int i = 0; i < num_states; i++)
@@ -584,7 +586,8 @@ program_state::program_state (const extrinsic_state &ext_state)
 
 program_state::program_state (const program_state &other)
 : m_region_model (new region_model (*other.m_region_model)),
-  m_checker_states (other.m_checker_states.length ())
+  m_checker_states (other.m_checker_states.length ()),
+  m_valid (true)
 {
   int i;
   sm_state_map *smap;
@@ -610,6 +613,8 @@ program_state::operator= (const program_state &other)
   FOR_EACH_VEC_ELT (other.m_checker_states, i, smap)
     m_checker_states.quick_push (smap->clone ());
 
+  m_valid = other.m_valid;
+
   return *this;
 }
 
@@ -626,6 +631,8 @@ program_state::program_state (program_state &&other)
   FOR_EACH_VEC_ELT (other.m_checker_states, i, smap)
     m_checker_states.quick_push (smap);
   other.m_checker_states.truncate (0);
+
+  m_valid = other.m_valid;
 }
 #endif
 
@@ -693,6 +700,11 @@ program_state::print (const extrinsic_state &ext_state,
 	  pp_newline (pp);
 	}
     }
+  if (!m_valid)
+    {
+      pp_printf (pp, "invalid state");
+      pp_newline (pp);
+    }
 }
 
 /* Dump a multiline representation of this state to PP.  */
@@ -715,6 +727,12 @@ program_state::dump_to_pp (const extrinsic_state &ext_state,
 	  smap->print (ext_state.get_sm (i), pp);
 	  pp_newline (pp);
 	}
+    }
+
+  if (!m_valid)
+    {
+      pp_printf (pp, "invalid state");
+      pp_newline (pp);
     }
 }
 
@@ -1083,8 +1101,13 @@ state_change::sm_change::on_svalue_purge (svalue_id first_unused_sid)
 /* Assert that this object is sane.  */
 
 void
-state_change::sm_change::validate (const program_state &new_state) const
+state_change::sm_change::validate (const program_state &new_state,
+				   const extrinsic_state &ext_state) const
 {
+  gcc_assert ((unsigned)m_sm_idx < ext_state.get_num_checkers ());
+  const state_machine &sm = ext_state.get_sm (m_sm_idx);
+  sm.validate (m_old_state);
+  sm.validate (m_new_state);
   m_new_sid.validate (*new_state.m_region_model);
 }
 
@@ -1191,7 +1214,8 @@ state_change::on_svalue_purge (svalue_id first_unused_sid)
 /* Assert that this object is sane.  */
 
 void
-state_change::validate (const program_state &new_state) const
+state_change::validate (const program_state &new_state,
+			const extrinsic_state &ext_state) const
 {
   /* Skip this in a release build.  */
 #if !CHECKING_P
@@ -1200,7 +1224,7 @@ state_change::validate (const program_state &new_state) const
   unsigned i;
   sm_change *change;
   FOR_EACH_VEC_ELT (m_sm_changes, i, change)
-    change->validate (new_state);
+    change->validate (new_state, ext_state);
 }
 
 #if CHECKING_P

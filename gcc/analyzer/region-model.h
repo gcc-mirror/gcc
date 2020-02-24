@@ -1835,6 +1835,10 @@ class region_model
   region_id get_lvalue_1 (path_var pv, region_model_context *ctxt);
   svalue_id get_rvalue_1 (path_var pv, region_model_context *ctxt);
 
+  region_id make_region_for_unexpected_tree_code (region_model_context *ctxt,
+						  tree t,
+						  const dump_location_t &loc);
+
   void add_any_constraints_from_ssa_def_stmt (tree lhs,
 					      enum tree_code op,
 					      tree rhs,
@@ -1937,6 +1941,11 @@ class region_model_context
   /* Hooks for clients to be notified when a phi node is handled,
      where RHS is the pertinent argument.  */
   virtual void on_phi (const gphi *phi, tree rhs) = 0;
+
+  /* Hooks for clients to be notified when the region model doesn't
+     know how to handle the tree code of T at LOC.  */
+  virtual void on_unexpected_tree_code (tree t,
+					const dump_location_t &loc) = 0;
 };
 
 /* A bundle of data for use when attempting to merge two region_model
@@ -2116,6 +2125,13 @@ public:
   void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
 	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
   {
+  }
+
+  void on_unexpected_tree_code (tree t, const dump_location_t &)
+    FINAL OVERRIDE
+  {
+    internal_error ("unhandled tree code: %qs",
+		    get_tree_code_name (TREE_CODE (t)));
   }
 
 private:

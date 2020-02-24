@@ -2558,7 +2558,7 @@ typedef struct GTY(()) machine_function
 #define FINAL_PRESCAN_INSN(INSN, OPERANDS, NOPERANDS)			\
 do									\
   {									\
-    if (TARGET_PREFIXED_ADDR)						\
+    if (TARGET_PREFIXED)						\
       rs6000_final_prescan_insn (INSN, OPERANDS, NOPERANDS);		\
   }									\
 while (0)
@@ -2568,7 +2568,7 @@ while (0)
 #define ASM_OUTPUT_OPCODE(STREAM, OPCODE)				\
   do									\
     {									\
-     if (TARGET_PREFIXED_ADDR)						\
+     if (TARGET_PREFIXED)						\
        rs6000_asm_output_opcode (STREAM);				\
     }									\
   while (0)

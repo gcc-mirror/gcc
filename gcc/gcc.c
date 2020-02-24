@@ -5245,6 +5245,34 @@ do_specs_vec (vec<char_p> vec)
     }
 }
 
+/* Add options passed via -Xassembler or -Wa to COLLECT_AS_OPTIONS.  */
+
+static void
+putenv_COLLECT_AS_OPTIONS (vec<char_p> vec)
+{
+  if (vec.is_empty ())
+     return;
+
+  obstack_init (&collect_obstack);
+  obstack_grow (&collect_obstack, "COLLECT_AS_OPTIONS=",
+		strlen ("COLLECT_AS_OPTIONS="));
+
+  char *opt;
+  unsigned ix;
+
+  FOR_EACH_VEC_ELT (vec, ix, opt)
+    {
+      obstack_1grow (&collect_obstack, '\'');
+      obstack_grow (&collect_obstack, opt, strlen (opt));
+      obstack_1grow (&collect_obstack, '\'');
+      if (ix < vec.length () - 1)
+	obstack_1grow(&collect_obstack, ' ');
+    }
+
+  obstack_1grow (&collect_obstack, '\0');
+  xputenv (XOBFINISH (&collect_obstack, char *));
+}
+
 /* Process the sub-spec SPEC as a portion of a larger spec.
    This is like processing a whole spec except that we do
    not initialize at the beginning and we do not supply a
@@ -7366,6 +7394,7 @@ driver::main (int argc, char **argv)
   global_initializations ();
   build_multilib_strings ();
   set_up_specs ();
+  putenv_COLLECT_AS_OPTIONS (assembler_options);
   putenv_COLLECT_GCC (argv[0]);
   maybe_putenv_COLLECT_LTO_WRAPPER ();
   maybe_putenv_OFFLOAD_TARGETS ();

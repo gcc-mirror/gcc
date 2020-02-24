@@ -76,6 +76,8 @@
 ;; ---- [INT] Logical inverse
 ;; ---- [FP<-INT] General unary arithmetic that maps to unspecs
 ;; ---- [FP] General unary arithmetic corresponding to unspecs
+;; ---- [FP] Square root
+;; ---- [FP] Reciprocal square root
 ;; ---- [PRED] Inverse
 
 ;; == Binary arithmetic
@@ -99,6 +101,7 @@
 ;; ---- [FP] Subtraction
 ;; ---- [FP] Absolute difference
 ;; ---- [FP] Multiplication
+;; ---- [FP] Division
 ;; ---- [FP] Binary logical operations
 ;; ---- [FP] Sign copying
 ;; ---- [FP] Maximum and minimum
@@ -3245,7 +3248,7 @@
 ;; - FRINTP
 ;; - FRINTX
 ;; - FRINTZ
-;; - FRSQRT
+;; - FRSQRTE
 ;; - FSQRT
 ;; -------------------------------------------------------------------------
 
@@ -3266,7 +3269,7 @@
 	  [(match_dup 2)
 	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_FULL_F 1 "register_operand")]
-	  SVE_COND_FP_UNARY))]
+	  SVE_COND_FP_UNARY_OPTAB))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
@@ -3354,6 +3357,56 @@
     operands[4] = copy_rtx (operands[1]);
   }
   [(set_attr "movprfx" "*,yes,yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Square root
+;; -------------------------------------------------------------------------
+
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_dup 2)
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:SVE_FULL_F 1 "register_operand")]
+	  UNSPEC_COND_FSQRT))]
+  "TARGET_SVE"
+{
+  if (aarch64_emit_approx_sqrt (operands[0], operands[1], false))
+    DONE;
+  operands[2] = aarch64_ptrue_reg (<VPRED>mode);
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Reciprocal square root
+;; -------------------------------------------------------------------------
+
+(define_expand "rsqrt<mode>2"
+  [(set (match_operand:SVE_FULL_SDF 0 "register_operand")
+	(unspec:SVE_FULL_SDF
+	  [(match_operand:SVE_FULL_SDF 1 "register_operand")]
+	  UNSPEC_RSQRT))]
+  "TARGET_SVE"
+{
+  aarch64_emit_approx_sqrt (operands[0], operands[1], true);
+  DONE;
+})
+
+(define_expand "@aarch64_rsqrte<mode>"
+  [(set (match_operand:SVE_FULL_SDF 0 "register_operand")
+	(unspec:SVE_FULL_SDF
+	  [(match_operand:SVE_FULL_SDF 1 "register_operand")]
+	  UNSPEC_RSQRTE))]
+  "TARGET_SVE"
+)
+
+(define_expand "@aarch64_rsqrts<mode>"
+  [(set (match_operand:SVE_FULL_SDF 0 "register_operand")
+	(unspec:SVE_FULL_SDF
+	  [(match_operand:SVE_FULL_SDF 1 "register_operand")
+	   (match_operand:SVE_FULL_SDF 2 "register_operand")]
+	  UNSPEC_RSQRTS))]
+  "TARGET_SVE"
 )
 
 ;; -------------------------------------------------------------------------
@@ -4719,7 +4772,7 @@
 	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_FULL_F 1 "<sve_pred_fp_rhs1_operand>")
 	   (match_operand:SVE_FULL_F 2 "<sve_pred_fp_rhs2_operand>")]
-	  SVE_COND_FP_BINARY))]
+	  SVE_COND_FP_BINARY_OPTAB))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
@@ -5453,6 +5506,47 @@
 	  (match_operand:SVE_FULL_F 1 "register_operand" "w")))]
   "TARGET_SVE"
   "fmul\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>[%3]"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Division
+;; -------------------------------------------------------------------------
+;; The patterns in this section are synthetic.
+;; -------------------------------------------------------------------------
+
+(define_expand "div<mode>3"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:SVE_FULL_F 1 "nonmemory_operand")
+	   (match_operand:SVE_FULL_F 2 "register_operand")]
+	  UNSPEC_COND_FDIV))]
+  "TARGET_SVE"
+  {
+    if (aarch64_emit_approx_div (operands[0], operands[1], operands[2]))
+      DONE;
+
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
+(define_expand "@aarch64_frecpe<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:SVE_FULL_F 1 "register_operand")]
+	  UNSPEC_FRECPE))]
+  "TARGET_SVE"
+)
+
+(define_expand "@aarch64_frecps<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:SVE_FULL_F 1 "register_operand")
+	   (match_operand:SVE_FULL_F 2 "register_operand")]
+	  UNSPEC_FRECPS))]
+  "TARGET_SVE"
 )
 
 ;; -------------------------------------------------------------------------

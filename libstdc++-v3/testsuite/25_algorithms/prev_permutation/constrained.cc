@@ -41,7 +41,7 @@ test01()
       for (int j = 0; ; j++)
 	{
 	  auto found1 = std::prev_permutation(cx.begin(), cx.end());
-	  auto [found2,last] = ranges::prev_permutation(cy.begin(), cy.end());
+	  auto [last,found2] = ranges::prev_permutation(cy.begin(), cy.end());
 	  VERIFY( found1 == found2 );
 	  VERIFY( ranges::equal(cx, cy) );
 	  if (!found2)
@@ -55,7 +55,7 @@ test02()
 {
   int x[] = {1, 2, 3, 4, 5};
   test_range<int, bidirectional_iterator_wrapper> rx(x);
-  auto [found,last] = ranges::prev_permutation(rx, ranges::greater{});
+  auto [last,found] = ranges::prev_permutation(rx, ranges::greater{});
   VERIFY( found && last == rx.end() );
   VERIFY( last == rx.end() );
   VERIFY( ranges::equal(rx, (int[]){1,2,3,5,4}) );

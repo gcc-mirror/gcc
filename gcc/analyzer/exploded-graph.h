@@ -76,6 +76,9 @@ class impl_region_model_context : public region_model_context
 
   void on_phi (const gphi *phi, tree rhs) FINAL OVERRIDE;
 
+  void on_unexpected_tree_code (tree t,
+				const dump_location_t &loc) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   const exploded_node *m_enode_for_diag;
@@ -100,6 +103,9 @@ public:
     m_state (state),
     m_hash (m_point.hash () ^ m_state.hash ())
   {
+    /* We shouldn't be building point_and_states and thus exploded_nodes
+       for states that aren't valid.  */
+    gcc_assert (state.m_valid);
   }
 
   hashval_t hash () const
@@ -306,6 +312,7 @@ class exploded_edge : public dedge<eg_traits>
   };
 
   exploded_edge (exploded_node *src, exploded_node *dest,
+		 const extrinsic_state &ext_state,
 		 const superedge *sedge,
 		 const state_change &change,
 		 custom_info_t *custom_info);
@@ -764,6 +771,10 @@ public:
 			pending_diagnostic *d);
 
   diagnostic_manager &get_diagnostic_manager ()
+  {
+    return m_diagnostic_manager;
+  }
+  const diagnostic_manager &get_diagnostic_manager () const
   {
     return m_diagnostic_manager;
   }

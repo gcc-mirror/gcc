@@ -3921,9 +3921,6 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     case TEMPLATE_DECL:
       if (!DECL_TEMPLATE_TEMPLATE_PARM_P (t))
 	return NULL_TREE;
-      gcc_fallthrough();
-
-    case CONSTRUCTOR:
       cp_walk_tree (&TREE_TYPE (t),
 		    &find_parameter_packs_r, ppd, ppd->visited);
       return NULL_TREE;
@@ -10485,11 +10482,6 @@ any_template_parm_r (tree t, void *data)
       WALK_SUBTREE (TREE_OPERAND (t, 1));
       break;
 
-    case CONSTRUCTOR:
-      if (TREE_TYPE (t))
-        WALK_SUBTREE (TREE_TYPE (t));
-      break;
-
     case PARM_DECL:
       /* A parameter or constraint variable may also depend on a template
 	 parameter without explicitly naming it.  */
@@ -10518,6 +10510,15 @@ any_template_parm_r (tree t, void *data)
 	    for (int i = 0; i < ddepth; ++i)
 	      WALK_SUBTREE (TMPL_ARGS_LEVEL (dargs, i+1));
 	  }
+      }
+      break;
+
+    case LAMBDA_EXPR:
+      {
+	/* Look in the parms and body.  */
+	tree fn = lambda_function (t);
+	WALK_SUBTREE (TREE_TYPE (fn));
+	WALK_SUBTREE (DECL_SAVED_TREE (fn));
       }
       break;
 

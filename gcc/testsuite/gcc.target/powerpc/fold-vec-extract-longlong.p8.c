@@ -5,25 +5,26 @@
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
-// targeting P8, both LE and BE. six tests.
+// Targeting P8LE and P8BE, six tests total.
 // P8 (LE) constants: mfvsrd
-// P8 (LE) variables: xori, rldic, mtvsrd, xxpermdi, vslo, mfvsrd
-// P8 (BE) constants: xxpermdi, mfvsrd
-// P8 (BE) Variables:       rldic, mtvsrd, xxpermdi, vslo, mfvsrd
+// P8 (LE) variables: addi,xxpermdi,mr,stxvd2x|stxvd4x,rldicl,sldi,ldx,blr
+// P8 (BE) constants: mfvsrd
+// P8 (BE) Variables: addi,xxpermdi,rldicl,mr,stxvd2x|stxvd4x,sldi,ldx,blr
 
-/* results. */
-/* { dg-final { scan-assembler-times {\mxori\M} 3 { target le } } } */
-/* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 3 } } */
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxvw4x\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi\M} 6 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\madd\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlwz\M} 11 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mmfvsrd\M} 6 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mmtvsrd\M} 3 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mxxpermdi\M} 3 { target le } } } */
-/* { dg-final { scan-assembler-times {\mxxpermdi\M} 6 { target { be && lp64 } } } } */
 /* { dg-final { scan-assembler-times {\mxxpermdi\M} 2 { target { be && ilp32 } } } } */
-/* { dg-final { scan-assembler-times {\mvslo\M} 3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mxxpermdi\M} 3 { target { be && lp64 } } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxvw4x\M} 3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxvw4x\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mrldicl\M|\mrldic\M|\mrlwinm\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mmfvsrd\M} 3 { target { lp64 } } } } */
+/* { dg-final { scan-assembler-times {\mmfvsrd\M} 0 { target { be && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\mmtvsrd\M} 0 { target { lp64 } } } } */
+/* { dg-final { scan-assembler-times {\mmtvsrd\M} 0 { target { be && ilp32 } } } } */
 
 #include <altivec.h>
 

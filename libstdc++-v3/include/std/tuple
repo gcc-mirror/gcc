@@ -39,6 +39,9 @@
 #include <array>
 #include <bits/uses_allocator.h>
 #include <bits/invoke.h>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1397,6 +1400,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __compare::__eq(__t, __u);
     }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _Cat, typename _Tp, typename _Up>
+    constexpr _Cat
+    __tuple_cmp(const _Tp&, const _Up&, index_sequence<>)
+    { return _Cat::equivalent; }
+
+  template<typename _Cat, typename _Tp, typename _Up,
+	   size_t _Idx0, size_t... _Idxs>
+    constexpr _Cat
+    __tuple_cmp(const _Tp& __t, const _Up& __u,
+		index_sequence<_Idx0, _Idxs...>)
+    {
+      auto __c
+	= __detail::__synth3way(std::get<_Idx0>(__t), std::get<_Idx0>(__u));
+      if (__c != 0)
+	return __c;
+      return std::__tuple_cmp<_Cat>(__t, __u, index_sequence<_Idxs...>());
+    }
+
+  template<typename... _Tps, typename... _Ups>
+    constexpr
+    common_comparison_category_t<__detail::__synth3way_t<_Tps, _Ups>...>
+    operator<=>(const tuple<_Tps...>& __t, const tuple<_Ups...>& __u)
+    {
+      using _Cat
+	= common_comparison_category_t<__detail::__synth3way_t<_Tps, _Ups>...>;
+      return std::__tuple_cmp<_Cat>(__t, __u, index_sequence_for<_Tps...>());
+    }
+#else
   template<typename... _TElements, typename... _UElements>
     constexpr bool
     operator<(const tuple<_TElements...>& __t,
@@ -1433,6 +1465,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__t < __u); }
+#endif // three_way_comparison
 
   // NB: DR 705.
   template<typename... _Elements>

@@ -315,8 +315,8 @@ test_large (struct backtrace_state *state)
   size_t ctimes[16];
   size_t ztimes[16];
   static const char * const names[] = {
-    "Mark.Twain-Tom.Sawyer.txt",
-    "../libgo/go/compress/testdata/Mark.Twain-Tom.Sawyer.txt"
+    "Isaac.Newton-Opticks.txt",
+    "../libgo/go/testdata/Isaac.Newton-Opticks.txt",
   };
 
   orig_buf = NULL;

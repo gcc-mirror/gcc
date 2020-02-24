@@ -109,7 +109,7 @@ public:
   QSignalMapper *m_sortSignalMapper;
 };
 struct {
-  int data[];
+  int n, data[];
 } b;
 unsigned c[]{};
 void TreeView::qt_static_metacall(QObject *p1, QMetaObject::Call, int,

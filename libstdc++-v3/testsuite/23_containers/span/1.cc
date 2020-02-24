@@ -22,6 +22,6 @@
 
 #ifndef __cpp_lib_span
 # error "Feature-test macro for span missing in <span>"
-#elif __cpp_lib_span != 201902L
+#elif __cpp_lib_span != 202002L
 # error "Feature-test macro for span has wrong value in <span>"
 #endif

@@ -4,7 +4,9 @@
 
 package syscall
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 func (ts *StTimespec) Unix() (sec int64, nsec int64) {
 	return int64(ts.Sec), int64(ts.Nsec)

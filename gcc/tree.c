@@ -5812,7 +5812,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
     }
   else if (VAR_P (decl))
     {
-      /* See comment above why we set the flag for functoins.  */
+      /* See comment above why we set the flag for functions.  */
       if (TREE_PUBLIC (decl))
 	TREE_ADDRESSABLE (decl) = true;
       if ((DECL_EXTERNAL (decl)

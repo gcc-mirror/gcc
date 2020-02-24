@@ -1,3 +1,173 @@
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93692
+	* analyzer.opt (fdump-analyzer-callgraph): Rewrite description.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93777
+	* region-model.cc (region_model::maybe_cast_1): Replace assertion
+	that build_cast returns non-NULL with a conditional, falling
+	through to the logic which returns a new unknown value of the
+	desired type if it fails.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93778
+	* engine.cc (impl_region_model_context::on_unknown_tree_code):
+	Rename to...
+	(impl_region_model_context::on_unexpected_tree_code): ...this and
+	convert first argument from path_var to tree.
+	(exploded_node::on_stmt): Pass ctxt to purge_for_unknown_fncall.
+	* exploded-graph.h (region_model_context::on_unknown_tree_code):
+	Rename to...
+	(region_model_context::on_unexpected_tree_code): ...this and
+	convert first argument from path_var to tree.
+	* program-state.cc (sm_state_map::purge_for_unknown_fncall): Add
+	ctxt param and pass on to calls to get_rvalue.
+	* program-state.h (sm_state_map::purge_for_unknown_fncall): Add
+	ctxt param.
+	* region-model.cc (region_model::handle_unrecognized_call): Pass
+	ctxt on to call to get_rvalue.
+	(region_model::get_lvalue_1): Move body of default case to
+	region_model::make_region_for_unexpected_tree_code and call it.
+	Within COMPONENT_REF case, reject attempts to handle types other
+	than RECORD_TYPE and UNION_TYPE.
+	(region_model::make_region_for_unexpected_tree_code): New
+	function, based on default case of region_model::get_lvalue_1.
+	* region-model.h
+	(region_model::make_region_for_unexpected_tree_code): New decl.
+	(region_model::on_unknown_tree_code): Rename to...
+	(region_model::on_unexpected_tree_code): ...this and convert first
+	argument from path_var to tree.
+	(class test_region_model_context): Update vfunc implementation for
+	above change.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93774
+	* region-model.cc
+	(region_model::convert_byte_offset_to_array_index): Use
+	int_size_in_bytes before calling size_in_bytes, to gracefully fail
+	on incomplete types.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93775
+	* region-model.cc (region_model::get_fndecl_for_call): Handle the
+	case where the code_region's get_tree_for_child_region returns
+	NULL.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* engine.cc (impl_region_model_context::on_unknown_tree_code):
+	New.
+	(exploded_graph::get_or_create_node): Reject invalid states.
+	* exploded-graph.h
+	(impl_region_model_context::on_unknown_tree_code): New decl.
+	(point_and_state::point_and_state): Assert that the state is
+	valid.
+	* program-state.cc (program_state::program_state): Initialize
+	m_valid to true.
+	(program_state::operator=): Copy m_valid.
+	(program_state::program_state): Likewise for move constructor.
+	(program_state::print): Print m_valid.
+	(program_state::dump_to_pp): Likewise.
+	* program-state.h (program_state::m_valid): New field.
+	* region-model.cc (region_model::get_lvalue_1): Implement the
+	default case by returning a new symbolic region and calling
+	the context's on_unknown_tree_code, rather than issuing an
+	internal_error.  Implement VIEW_CONVERT_EXPR.
+	* region-model.h (region_model_context::on_unknown_tree_code): New
+	vfunc.
+	(test_region_model_context::on_unknown_tree_code): New.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (malloc_diagnostic::describe_state_change): For
+	transition to the "null" state, only say "assuming" when
+	transitioning from the "unchecked" state.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.h (diagnostic_manager::get_saved_diagnostic):
+	Add const overload.
+	* engine.cc (exploded_node::dump_dot): Dump saved_diagnostics.
+	* exploded-graph.h (exploded_graph::get_diagnostic_manager): Add
+	const overload.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93288
+	* analysis-plan.cc (analysis_plan::use_summary_p): Look through
+	the ultimate_alias_target when getting the called function.
+	* engine.cc (exploded_node::on_stmt): Rename second "ctxt" to
+	"sm_ctxt".  Use the region_model's get_fndecl_for_call rather than
+	gimple_call_fndecl.
+	* region-model.cc (region_model::get_fndecl_for_call): Use
+	ultimate_alias_target on fndecl.
+	* supergraph.cc (get_ultimate_function_for_cgraph_edge): New
+	function.
+	(supergraph_call_edge): Use it when rejecting edges without
+	functions.
+	(supergraph::supergraph): Use it to get the function for the
+	cgraph_edge when building interprocedural superedges.
+	(callgraph_superedge::get_callee_function):  Use it.
+	* supergraph.h (supergraph::get_num_snodes): Make param const.
+	(supergraph::function_to_num_snodes_t): Make first type param
+	const.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93374
+	* engine.cc (exploded_edge::exploded_edge): Add ext_state param
+	and pass it to change.validate.
+	(exploded_graph::get_or_create_node): Move purging of change
+	svalues to also cover the case of reusing an existing enode.
+	(exploded_graph::add_edge): Pass m_ext_state to exploded_edge's
+	ctor.
+	* exploded-graph.h (exploded_edge::exploded_edge): Add ext_state
+	param.
+	* program-state.cc (state_change::sm_change::validate): Likewise.
+	Assert that m_sm_idx is sane.  Use ext_state to validate
+	m_old_state and m_new_state.
+	(state_change::validate): Add ext_state param and pass it to
+	the sm_change validate calls.
+	* program-state.h (state_change::sm_change::validate): Add
+	ext_state param.
+	(state_change::validate): Likewise.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93669
+	* engine.cc (exploded_graph::dump_exploded_nodes): Handle missing
+	case of STATUS_WORKLIST in implementation of
+	"__analyzer_dump_exploded_nodes".
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93649
+	* constraint-manager.cc (constraint_manager::add_constraint): When
+	merging equivalence classes and updating m_constant, also update
+	m_cst_sid.
+	(constraint_manager::validate): If m_constant is non-NULL assert
+	that m_cst_sid is non-null and is valid.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93657
+	* analyzer.opt (fdump-analyzer): Reword description.
+	(fdump-analyzer-stderr): Likewise.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (print_quoted_type): New function.
+	(svalue::print): Use it to replace %qT.
+	(region::dump_to_pp): Likewise.
+	(region::dump_child_label): Likewise.
+	(region::print_fields): Likewise.
+
 2020-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93659

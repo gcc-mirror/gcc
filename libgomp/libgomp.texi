@@ -1818,13 +1818,11 @@ flag @option{-fopenacc} must be specified.  This enables the OpenACC directive
 arranges for automatic linking of the OpenACC runtime library 
 (@ref{OpenACC Runtime Library Routines}).
 
+See @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
+
 A complete description of all OpenACC directives accepted may be found in 
 the @uref{https://www.openacc.org, OpenACC} Application Programming
 Interface manual, version 2.6.
-
-Note that this is an experimental feature and subject to
-change in future versions of GCC.  See
-@uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
 
 
@@ -1992,12 +1990,12 @@ parallel or kernels region.
 @table @asis
 @item @emph{Description}
 This function will indicate to the runtime which device number,
-specified by @var{num}, associated with the specified device
+specified by @var{devicenum}, associated with the specified device
 type @var{devicetype}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_set_device_num(int num, acc_device_t devicetype);}
+@item @emph{Prototype}: @tab @code{acc_set_device_num(int devicenum, acc_device_t devicetype);}
 @end multitable
 
 @item @emph{Fortran}:
@@ -2055,6 +2053,14 @@ The Fortran @code{acc_get_property_string} subroutine returns the string
 retrieved in its fourth argument while the remaining entry points are
 functions, which pass the return value as their result.
 
+Note for Fortran, only: the OpenACC technical committee corrected and, hence,
+modified the interface introduced in OpenACC 2.6.  The kind-value parameter
+@code{acc_device_property} has been renamed to @code{acc_device_property_kind}
+for consistency and the return type of the @code{acc_get_property} function is
+now a @code{c_size_t} integer instead of a @code{acc_device_property} integer.
+The parameter @code{acc_device_property} will continue to be provided,
+but might be removed in a future version of GCC.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{size_t acc_get_property(int devicenum, acc_device_t devicetype, acc_device_property_t property);}
@@ -2065,10 +2071,11 @@ functions, which pass the return value as their result.
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{function acc_get_property(devicenum, devicetype, property)}
 @item @emph{Interface}: @tab @code{subroutine acc_get_property_string(devicenum, devicetype, property, string)}
+@item                   @tab @code{use ISO_C_Binding, only: c_size_t}
 @item                   @tab @code{integer devicenum}
 @item                   @tab @code{integer(kind=acc_device_kind) devicetype}
-@item                   @tab @code{integer(kind=acc_device_property) property}
-@item                   @tab @code{integer(kind=acc_device_property) acc_get_property}
+@item                   @tab @code{integer(kind=acc_device_property_kind) property}
+@item                   @tab @code{integer(kind=c_size_t) acc_get_property}
 @item                   @tab @code{character(*) string}
 @end multitable
 
@@ -3331,8 +3338,8 @@ similarly to the first use case.
 
 There are two environment variables associated with the OpenACC library
 that may be used to control the device type and device number:
-@env{ACC_DEVICE_TYPE} and @env{ACC_DEVICE_NUM}, respecively. These two
-environement variables can be used as an alternative to calling
+@env{ACC_DEVICE_TYPE} and @env{ACC_DEVICE_NUM}, respectively. These two
+environment variables can be used as an alternative to calling
 @code{acc_set_device_num()}. As seen in the second use case, the device
 type and device number were specified using @code{acc_set_device_num()}.
 If however, the aforementioned environment variables were set, then the

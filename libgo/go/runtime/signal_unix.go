@@ -399,6 +399,16 @@ func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 			sigprofNonGo(pc)
 			return
 		}
+		if sig == sigPreempt && preemptMSupported && debug.asyncpreemptoff == 0 {
+			// This is probably a signal from preemptM sent
+			// while executing Go code but received while
+			// executing non-Go code.
+			// We got past sigfwdgo, so we know that there is
+			// no non-Go signal handler for sigPreempt.
+			// The default behavior for sigPreempt is to ignore
+			// the signal, so badsignal will be a no-op anyway.
+			return
+		}
 		badsignal(uintptr(sig), &c)
 		return
 	}

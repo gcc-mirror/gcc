@@ -14493,7 +14493,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 			 "allowed in a C++20 concept definition");
 	      else
 		pedwarn (token->location, 0, "C++20 concept definition syntax "
-			 "is %<concept <name> = <expr>%> ");
+			 "is %<concept <name> = <expr>%>");
             }
 
 	  /* In C++20 a concept definition is just 'concept name = expr;'
@@ -27074,7 +27074,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 				   "with scoped attribute token");
       attr_ns = attr_id;
 
-      token = cp_lexer_consume_token (parser->lexer);
+      token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_NAME)
 	attr_id = token->u.value;
       else if (token->type == CPP_KEYWORD)
@@ -27087,6 +27087,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 		    "expected an identifier for the attribute name");
 	  return error_mark_node;
 	}
+      cp_lexer_consume_token (parser->lexer);
 
       attr_ns = canonicalize_attr_name (attr_ns);
       attr_id = canonicalize_attr_name (attr_id);
@@ -31350,6 +31351,13 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
   pop_deferring_access_checks ();
+
+  /* Only consider the true class-keys below and ignore typename_type,
+     etc. that are not C++ class-keys.  */
+  if (class_key != class_type
+      && class_key != record_type
+      && class_key != union_type)
+    return;
 
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name

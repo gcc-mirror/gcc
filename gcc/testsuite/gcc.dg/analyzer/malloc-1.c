@@ -583,3 +583,9 @@ int test_47 (void)
   }
   return p_size;
 }
+
+void test_48 (void)
+{
+  int *p = NULL; /* { dg-message "'p' is NULL" } */
+  *p = 1; /* { dg-warning "dereference of NULL 'p'" } */
+}

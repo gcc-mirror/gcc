@@ -25,7 +25,7 @@
 #include <memory_resource>
 #include <algorithm>			// lower_bound, rotate
 #include <atomic>
-#include <bit>				// __ceil2, __log2p1
+#include <bit>				// has_single_bit, bit_ceil, bit_width
 #include <new>
 #if ATOMIC_POINTER_LOCK_FREE != 2
 # include <bits/std_mutex.h>	// std::mutex, std::lock_guard
@@ -189,7 +189,7 @@ namespace pmr
     allocate(memory_resource* __r, size_t __size, size_t __align,
 	     _Chunk*& __head)
     {
-      __size = std::__ceil2(__size + sizeof(_Chunk));
+      __size = std::__bit_ceil(__size + sizeof(_Chunk));
 
       if constexpr (alignof(_Chunk) > 1)
 	{
@@ -237,8 +237,8 @@ namespace pmr
 
   private:
     _Chunk(size_t __size, size_t __align, _Chunk* __next) noexcept
-    : _M_size(std::__log2p1(__size) - 1),
-      _M_align(std::__log2p1(__align) - 1)
+    : _M_size(std::__bit_width(__size) - 1),
+      _M_align(std::__bit_width(__align) - 1)
     {
       __builtin_memcpy(_M_next, &__next, sizeof(__next));
       _M_canary = _M_size | _M_align;
@@ -430,7 +430,7 @@ namespace pmr
   private:
     static constexpr unsigned _S_size_digits
       = (numeric_limits<size_type>::digits
-	  + std::__log2p1(bits_per_word) - 1) / 2;
+	  + std::__bit_width(bits_per_word) - 1) / 2;
 
     word* _M_words = nullptr;
     // Number of blocks represented by the bitset:
@@ -553,7 +553,7 @@ namespace pmr
     // Alignment must be a power-of-two so we only need to use enough bits
     // to store the power, not the actual value:
     static constexpr unsigned _S_alignbits
-      = std::__log2p1((unsigned)numeric_limits<size_t>::digits - 1);
+      = std::__bit_width((unsigned)numeric_limits<size_t>::digits - 1);
     // Use the remaining bits to store the size:
     static constexpr unsigned _S_sizebits
       = numeric_limits<size_t>::digits - _S_alignbits;
@@ -564,7 +564,7 @@ namespace pmr
 
     big_block(size_t bytes, size_t alignment)
     : _M_size(alloc_size(bytes) >> _S_alignbits),
-      _M_align_exp(std::__log2p1(alignment) - 1u)
+      _M_align_exp(std::__bit_width(alignment) - 1u)
     { }
 
     void* pointer = nullptr;
@@ -686,7 +686,7 @@ namespace pmr
       const size_t __words = (__blocks + __bits - 1) / __bits;
       const size_t __block_size = block_size();
       size_t __bytes = __blocks * __block_size + __words * sizeof(word);
-      size_t __alignment = std::__ceil2(__block_size);
+      size_t __alignment = std::__bit_ceil(__block_size);
       void* __p = __r->allocate(__bytes, __alignment);
       __try
 	{
@@ -713,7 +713,7 @@ namespace pmr
 
     void release(memory_resource* __r)
     {
-      const size_t __alignment = std::__ceil2(block_size());
+      const size_t __alignment = std::__bit_ceil(block_size());
       for (auto& __c : _M_chunks)
 	if (__c._M_p)
 	  __r->deallocate(__c._M_p, __c._M_bytes, __alignment);
@@ -894,7 +894,7 @@ namespace pmr
     else
       {
 	// Round to preferred granularity
-	static_assert(std::__ispow2(pool_sizes[0]));
+	static_assert(std::__has_single_bit(pool_sizes[0]));
 	constexpr size_t mask = pool_sizes[0] - 1;
 	opts.largest_required_pool_block += mask;
 	opts.largest_required_pool_block &= ~mask;

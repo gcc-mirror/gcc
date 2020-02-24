@@ -130,8 +130,15 @@ public:
       return change.formatted_print ("assuming %qE is non-NULL",
 				     change.m_expr);
     if (change.m_new_state == m_sm.m_null)
-      return change.formatted_print ("assuming %qE is NULL",
-				     change.m_expr);
+      {
+	if (change.m_old_state == m_sm.m_unchecked)
+	  return change.formatted_print ("assuming %qE is NULL",
+					 change.m_expr);
+	else
+	  return change.formatted_print ("%qE is NULL",
+					 change.m_expr);
+      }
+
     return label_text ();
   }
 

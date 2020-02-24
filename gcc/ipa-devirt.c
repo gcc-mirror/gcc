@@ -1548,7 +1548,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       && COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
     {
       warn_odr (t1, t2, NULL, NULL, warn, warned,
-		G_("one type needs to be constructed while other not"));
+		G_("one type needs to be constructed while the other does not"));
       gcc_checking_assert (RECORD_OR_UNION_TYPE_P (t1));
       return false;
     }

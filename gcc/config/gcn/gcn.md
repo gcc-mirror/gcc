@@ -1065,22 +1065,16 @@
 ; through some RTL optimisation passes, and means the CC reg we set isn't
 ; dependent on the constraint alternative (which doesn't seem to work well).
 
-; There's an early clobber in the case where "v[0:1]=v[1:2]+?" but
-; "v[0:1]=v[0:1]+?" is fine (as is "v[1:2]=v[0:1]+?", but that's trickier).
-
 ; If v_addc_u32 is used to add with carry, a 32-bit literal constant cannot be
 ; used as an operand due to the read of VCC, so we restrict constants to the
 ; inlinable range for that alternative.
 
 (define_insn_and_split "adddi3"
-  [(set (match_operand:DI 0 "register_operand"		
-					      "=&Sg,&Sg,&Sg,&Sg,&v,&v,&v,&v")
-	(plus:DI (match_operand:DI 1 "register_operand" 
-					      "  Sg,  0,  0, Sg, v, 0, 0, v")
-		 (match_operand:DI 2 "nonmemory_operand"
-					      "   0,SgB,  0,SgB, 0,vA, 0,vA")))
-   (clobber (match_scratch:BI 3		      "= cs, cs, cs, cs, X, X, X, X"))
-   (clobber (match_scratch:DI 4		      "=  X,  X,  X,  X,cV,cV,cV,cV"))]
+  [(set (match_operand:DI 0 "register_operand"		 "=Sg, v")
+	(plus:DI (match_operand:DI 1 "register_operand"  " Sg, v")
+		 (match_operand:DI 2 "nonmemory_operand" "SgB,vA")))
+   (clobber (match_scratch:BI 3				 "=cs, X"))
+   (clobber (match_scratch:DI 4				 "= X,cV"))]
   ""
   "#"
   "&& reload_completed"
@@ -1109,7 +1103,7 @@
 		  cc));
     DONE;
   }
-  [(set_attr "type" "mult,mult,mult,mult,vmult,vmult,vmult,vmult")
+  [(set_attr "type" "mult,vmult")
    (set_attr "length" "8")])
 
 (define_expand "adddi3_scc"
@@ -1196,11 +1190,14 @@
 ; for this, so we use a custom VOP3 add with CC_SAVE_REG as a temp.
 ; Note that it is not safe to save/clobber/restore SCC because doing so will
 ; break data-flow analysis, so this must use vector registers.
+;
+; The "v0" should be just "v", but somehow the "0" helps LRA not loop forever
+; on testcase pr54713-2.c with -O0. It's only an optimization hint anyway.
 
 (define_insn "addptrdi3"
-  [(set (match_operand:DI 0 "register_operand"		 "= &v")
-	(plus:DI (match_operand:DI 1 "register_operand"	 "  v0")
-		 (match_operand:DI 2 "nonmemory_operand" "vDA0")))]
+  [(set (match_operand:DI 0 "register_operand"		 "= v")
+	(plus:DI (match_operand:DI 1 "register_operand"	 " v0")
+		 (match_operand:DI 2 "nonmemory_operand" "vDA")))]
   ""
   {
     rtx new_operands[4] = { operands[0], operands[1], operands[2],
@@ -1470,15 +1467,14 @@
 (define_code_iterator vec_and_scalar64_com [and ior xor])
 
 (define_insn_and_split "<expander>di3"
-   [(set (match_operand:DI 0 "register_operand"  "= Sg,   &v,   &v")
+   [(set (match_operand:DI 0 "register_operand"  "= Sg,    v")
 	 (vec_and_scalar64_com:DI
-	  (match_operand:DI 1 "gcn_alu_operand"  "%SgA,vSvDB,vSvDB")
-	   (match_operand:DI 2 "gcn_alu_operand" " SgC,    v,    0")))
-   (clobber (match_scratch:BI 3			 "= cs,    X,    X"))]
+	  (match_operand:DI 1 "gcn_alu_operand"  "%SgA,vSvDB")
+	   (match_operand:DI 2 "gcn_alu_operand" " SgC,    v")))
+   (clobber (match_scratch:BI 3			 "= cs,    X"))]
   ""
   "@
    s_<mnemonic>0\t%0, %1, %2
-   #
    #"
   "reload_completed && gcn_vgpr_register_operand (operands[0], DImode)"
   [(parallel [(set (match_dup 4)
@@ -1495,7 +1491,7 @@
     operands[8] = gcn_operand_part (DImode, operands[1], 1);
     operands[9] = gcn_operand_part (DImode, operands[2], 1);
   }
-  [(set_attr "type" "sop2,vop2,vop2")
+  [(set_attr "type" "sop2,vop2")
    (set_attr "length" "8")])
 
 (define_insn "<expander>di3"

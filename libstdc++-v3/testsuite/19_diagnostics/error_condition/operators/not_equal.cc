@@ -21,7 +21,6 @@
 #include <system_error>
 #include <testsuite_error.h>
 
-// unspecified bool operator positive tests
 void test01()
 {
   std::error_condition e1;

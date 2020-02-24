@@ -150,7 +150,7 @@ done
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
   skip=false
   case "$d" in
-  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/diff/* | | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* )
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/diff/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/*)
     ;;
   ./cmd/*)
     skip=true

@@ -4864,6 +4864,9 @@ func TestStructOfExportRules(t *testing.T) {
 			if exported != test.exported {
 				t.Errorf("test-%d: got exported=%v want exported=%v", i, exported, test.exported)
 			}
+			if field.PkgPath != test.field.PkgPath {
+				t.Errorf("test-%d: got PkgPath=%q want pkgPath=%q", i, field.PkgPath, test.field.PkgPath)
+			}
 		})
 	}
 }
@@ -5325,6 +5328,24 @@ func TestStructOfTooManyFields(t *testing.T) {
 	if _, present := tt.MethodByName("After"); !present {
 		t.Errorf("Expected method `After` to be found")
 	}
+}
+
+func TestStructOfDifferentPkgPath(t *testing.T) {
+	fields := []StructField{
+		{
+			Name:    "f1",
+			PkgPath: "p1",
+			Type:    TypeOf(int(0)),
+		},
+		{
+			Name:    "f2",
+			PkgPath: "p2",
+			Type:    TypeOf(int(0)),
+		},
+	}
+	shouldPanic(func() {
+		StructOf(fields)
+	})
 }
 
 func TestChanOf(t *testing.T) {

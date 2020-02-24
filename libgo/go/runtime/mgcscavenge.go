@@ -80,6 +80,17 @@ const (
 	// maxPagesPerPhysPage is the maximum number of supported runtime pages per
 	// physical page, based on maxPhysPageSize.
 	maxPagesPerPhysPage = maxPhysPageSize / pageSize
+
+	// scavengeCostRatio is the approximate ratio between the costs of using previously
+	// scavenged memory and scavenging memory.
+	//
+	// For most systems the cost of scavenging greatly outweighs the costs
+	// associated with using scavenged memory, making this constant 0. On other systems
+	// (especially ones where "sysUsed" is not just a no-op) this cost is non-trivial.
+	//
+	// This ratio is used as part of multiplicative factor to help the scavenger account
+	// for the additional costs of using scavenged memory in its pacing.
+	scavengeCostRatio = 0.7 * sys.GoosDarwin
 )
 
 // heapRetained returns an estimate of the current heap RSS.
@@ -248,7 +259,7 @@ func bgscavenge(c chan int) {
 		released := uintptr(0)
 
 		// Time in scavenging critical section.
-		crit := int64(0)
+		crit := float64(0)
 
 		// Run on the system stack since we grab the heap lock,
 		// and a stack growth with the heap lock means a deadlock.
@@ -266,15 +277,9 @@ func bgscavenge(c chan int) {
 			// Scavenge one page, and measure the amount of time spent scavenging.
 			start := nanotime()
 			released = mheap_.pages.scavengeOne(physPageSize, false)
-			crit = nanotime() - start
+			atomic.Xadduintptr(&mheap_.pages.scavReleased, released)
+			crit = float64(nanotime() - start)
 		})
-
-		if debug.gctrace > 0 {
-			if released > 0 {
-				print("scvg: ", released>>10, " KB released\n")
-			}
-			print("scvg: inuse: ", memstats.heap_inuse>>20, ", idle: ", memstats.heap_idle>>20, ", sys: ", memstats.heap_sys>>20, ", released: ", memstats.heap_released>>20, ", consumed: ", (memstats.heap_sys-memstats.heap_released)>>20, " (MB)\n")
-		}
 
 		if released == 0 {
 			lock(&scavenge.lock)
@@ -282,6 +287,14 @@ func bgscavenge(c chan int) {
 			goparkunlock(&scavenge.lock, waitReasonGCScavengeWait, traceEvGoBlock, 1)
 			continue
 		}
+
+		// Multiply the critical time by 1 + the ratio of the costs of using
+		// scavenged memory vs. scavenging memory. This forces us to pay down
+		// the cost of reusing this memory eagerly by sleeping for a longer period
+		// of time and scavenging less frequently. More concretely, we avoid situations
+		// where we end up scavenging so often that we hurt allocation performance
+		// because of the additional overheads of using scavenged memory.
+		crit *= 1 + scavengeCostRatio
 
 		// If we spent more than 10 ms (for example, if the OS scheduled us away, or someone
 		// put their machine to sleep) in the critical section, bound the time we use to
@@ -298,13 +311,13 @@ func bgscavenge(c chan int) {
 		// much, then scavengeEMWA < idealFraction, so we'll adjust the sleep time
 		// down.
 		adjust := scavengeEWMA / idealFraction
-		sleepTime := int64(adjust * float64(crit) / (scavengePercent / 100.0))
+		sleepTime := int64(adjust * crit / (scavengePercent / 100.0))
 
 		// Go to sleep.
 		slept := scavengeSleep(sleepTime)
 
 		// Compute the new ratio.
-		fraction := float64(crit) / float64(crit+slept)
+		fraction := crit / (crit + float64(slept))
 
 		// Set a lower bound on the fraction.
 		// Due to OS-related anomalies we may "sleep" for an inordinate amount
@@ -348,12 +361,39 @@ func (s *pageAlloc) scavenge(nbytes uintptr, locked bool) uintptr {
 	return released
 }
 
+// printScavTrace prints a scavenge trace line to standard error.
+//
+// released should be the amount of memory released since the last time this
+// was called, and forced indicates whether the scavenge was forced by the
+// application.
+func printScavTrace(released uintptr, forced bool) {
+	printlock()
+	print("scav ",
+		released>>10, " KiB work, ",
+		atomic.Load64(&memstats.heap_released)>>10, " KiB total, ",
+		(atomic.Load64(&memstats.heap_inuse)*100)/heapRetained(), "% util",
+	)
+	if forced {
+		print(" (forced)")
+	}
+	println()
+	printunlock()
+}
+
 // resetScavengeAddr sets the scavenge start address to the top of the heap's
 // address space. This should be called each time the scavenger's pacing
 // changes.
 //
 // s.mheapLock must be held.
 func (s *pageAlloc) resetScavengeAddr() {
+	released := atomic.Loaduintptr(&s.scavReleased)
+	if debug.scavtrace > 0 {
+		printScavTrace(released, false)
+	}
+	// Subtract from scavReleased instead of just setting it to zero because
+	// the scavenger could have increased scavReleased concurrently with the
+	// load above, and we may miss an update by just blindly zeroing the field.
+	atomic.Xadduintptr(&s.scavReleased, -released)
 	s.scavAddr = chunkBase(s.end) - 1
 }
 
@@ -415,7 +455,10 @@ func (s *pageAlloc) scavengeOne(max uintptr, locked bool) uintptr {
 
 	// Check the chunk containing the scav addr, starting at the addr
 	// and see if there are any free and unscavenged pages.
-	if s.summary[len(s.summary)-1][ci].max() >= uint(minPages) {
+	//
+	// Only check this if s.scavAddr is covered by any address range
+	// in s.inUse, so that we know our check of the summary is safe.
+	if s.inUse.contains(s.scavAddr) && s.summary[len(s.summary)-1][ci].max() >= uint(minPages) {
 		// We only bother looking for a candidate if there at least
 		// minPages free pages at all. It's important that we only
 		// continue if the summary says we can because that's how

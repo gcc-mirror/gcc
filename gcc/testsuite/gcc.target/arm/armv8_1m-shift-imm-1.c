@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv8.1-m.main+mve -mfloat-abi=softfp" } */
+/* { dg-options "-O2 -mfloat-abi=softfp -mlittle-endian" } */
+/* { dg-require-effective-target arm_v8_1m_mve_ok } */
+/* { dg-add-options arm_v8_1m_mve } */
 
 long long longval1;
 long long unsigned longval2;

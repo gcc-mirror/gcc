@@ -236,7 +236,7 @@ Maximum number of operations in a parameter expression that can be handled by IP
 
 -param=ipa-max-switch-predicate-bounds=
 Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
-Maximal number of boundary endpoints of case ranges of switch statement used during IPA functoin summary generation.
+Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation.
 
 -param=ipa-sra-max-replacements=
 Common Joined UInteger Var(param_ipa_sra_max_replacements) Optimization Init(8) IntegerRange(0, 16) Param

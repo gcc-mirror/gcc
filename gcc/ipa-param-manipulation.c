@@ -410,6 +410,10 @@ ipa_param_adjustments::adjust_decl (tree orig_decl)
   DECL_VIRTUAL_P (new_decl) = 0;
   DECL_LANG_SPECIFIC (new_decl) = NULL;
 
+  /* Drop MALLOC attribute for a void function.  */
+  if (m_skip_return)
+    DECL_IS_MALLOC (new_decl) = 0;
+
   return new_decl;
 }
 

@@ -26,13 +26,14 @@ end program test
 ! and do basic device independent validation.
 subroutine print_device_properties (device_type)
   use openacc
+  use iso_c_binding, only: c_size_t
   implicit none
 
   integer, intent(in) :: device_type
 
   integer :: device_count
   integer :: device
-  integer(acc_device_property) :: v
+  integer(c_size_t) :: v
   character*256 :: s
 
   device_count = acc_get_num_devices(device_type)

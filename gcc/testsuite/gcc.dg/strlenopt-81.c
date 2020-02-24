@@ -1,6 +1,6 @@
-/* PR tree-optimization/ - fold strlen relational expressions
+/* PR tree-optimization/91996 - fold non-constant strlen relational expressions
    { dg-do run }
-   { dg-options "-O2 -Wall -Wno-unused-local-typedefs -fdump-tree-optimized" } */
+   { dg-options "-O2 -Wall -Wno-unused-local-typedefs" } */
 
 typedef __SIZE_TYPE__ size_t;
 
@@ -17,7 +17,10 @@ typedef __SIZE_TYPE__ size_t;
     CAT (CAT (test_on_line_, __LINE__), _not_eliminated)();		\
   } typedef void dummy_type
 
-char a[32], b[32];
+
+/* Set the alignment for targets that depend on it in order to
+   optimize away the ELIM calls.  See pr92128.  */
+__attribute__ ((aligned(4))) char a[32], b[32];
 
 void init (void)
 {
@@ -89,7 +92,9 @@ NOIPA void test_local_cpy_4 (void)
   size_t blen = __builtin_strlen (b);
   if (blen < 9) return;
 
-  char a[10] = "abcdefgh";
+/* Set the alignment for targets that depend on it in order to
+   optimize away the ELIM calls.  See pr92128.  */
+  __attribute__ ((aligned(4))) char a[10] = "abcdefgh";
   char *d = a;
   __builtin_memcpy (d, b, 4);
 
