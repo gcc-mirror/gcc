@@ -13439,7 +13439,6 @@ cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
 
 /* Import-declaration
    [__export] __import module-name attr-spec-seq-opt ; PRAGMA_EOL */
-// FIXME: This is untidy due to the 1857 transition in progress
 
 static void
 cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
@@ -13474,6 +13473,10 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
 	goto skip_eol;
       cp_parser_require_pragma_eol (parser, token);
+
+      if (parser->in_unbraced_linkage_specification_p)
+	error_at (token->location, "import cannot appear directly in"
+		  " a linkage-specification");
 
       if (attrs && module_purview_p () && !global_purview_p ()
 	  && private_lookup_attribute ("__translated",

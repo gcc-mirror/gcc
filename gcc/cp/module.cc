@@ -17988,6 +17988,17 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
   if (!import->check_not_purview (from_loc))
     return;
 
+  if (!import->is_header () && current_lang_depth ())
+    /* Only header units should appear inside language
+       specifications.  The std doesn't specify this, but I think
+       that's an error in resolving US 033, because language linkage
+       is also our escape clause to getting things into the global
+       module, so we don't want to confuse things by having to think
+       about whether 'extern "C++" { import foo; }' puts foo's
+       contents into the global module all of a sudden.  */
+    warning (0, "import of named module %qs inside language-linkage block",
+	     import->get_flatname ());
+
   if (exporting_p || module_exporting_p ())
     import->exported_p = true;
 

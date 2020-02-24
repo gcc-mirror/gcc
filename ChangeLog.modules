@@ -1,5 +1,15 @@
 2020-02-24  Nathan Sidwell  <nathan@acm.org>
 
+	Implement US033
+	gcc/cp/
+	* module.cc (import_module): Check language-linkage depth.
+	* parser.c (cp_parser_import_declaration): Check if direct
+	language linkage.
+	gcc/testsuite/
+	* g++.dg/modules/inc-xlate-1_d.C: Delete.
+	* g++.dg/modules/lang-1_[abc].[HC]: New.
+	* g++.dg/modules/lang-2_[ab].C: New.
+
 	Merge master 3841739c29a54c0141c3156cdd47891c258b2b88
 
 2020-02-22  Nathan Sidwell  <nathan@acm.org>
