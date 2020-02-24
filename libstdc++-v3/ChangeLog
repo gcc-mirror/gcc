@@ -1,5 +1,10 @@
 2020-02-25  Patrick Palka  <ppalka@redhat.com>
 
+	LWG 3301 transform_view::_Iterator has incorrect iterator_category
+	* include/std/ranges (transform_view::_Iterator::_S_iter_cat): Adjust
+	determination of iterator_category as per LWG 3301.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
 	LWG 3292 iota_view is under-constrained
 	* include/std/ranges (iota_view): Require that _Winc models semiregular
 	  as per LWG 3292.

@@ -1570,12 +1570,18 @@ namespace views
 	  static constexpr auto
 	  _S_iter_cat()
 	  {
-	    using _Cat
-              = typename iterator_traits<_Base_iter>::iterator_category;
-	    if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
-	      return random_access_iterator_tag{};
+	    using _Res = invoke_result_t<_Fp&, range_reference_t<_Base>>;
+	    if constexpr (is_lvalue_reference_v<_Res>)
+	      {
+		using _Cat
+		  = typename iterator_traits<_Base_iter>::iterator_category;
+		if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
+		  return random_access_iterator_tag{};
+		else
+		  return _Cat{};
+	      }
 	    else
-	      return _Cat{};
+	      return input_iterator_tag{};
 	  }
 
 	  static constexpr decltype(auto)
