@@ -1,3 +1,22 @@
+2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__deep_const_range, __enable_view_impl): Remove.
+	(ranges::enable_view): Simplify (LWG 3326).
+	* include/bits/range_access.h (ranges::enable_view): Declare.
+	* include/bits/regex.h (__enable_view_impl): Remove partial
+	specialization.
+	* include/bits/stl_multiset.h (__enable_view_impl): Likewise.
+	* include/bits/stl_set.h (__enable_view_impl): Likewise.
+	* include/bits/unordered_set.h (__enable_view_impl): Likewise.
+	* include/debug/multiset.h (__enable_view_impl): Likewise.
+	* include/debug/set.h (__enable_view_impl): Likewise.
+	* include/debug/unordered_set (__enable_view_impl): Likewise.
+	* include/experimental/string_view (ranges::enable_view): Define
+	partial specialization.
+	* include/std/span (ranges::enable_view): Likewise.
+	* include/std/string_view (ranges::enable_view): Likewise.
+	* testsuite/std/ranges/view.cc: Check satisfaction of updated concept.
+
 2020-02-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/optional (operator<=>(optional<T>, optional<U>))
