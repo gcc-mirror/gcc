@@ -2414,6 +2414,12 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_bitwise_xor;
 
 void
@@ -2447,6 +2453,47 @@ operator_bitwise_xor::wi_fold (irange &r, tree type,
     r.set_varying (type);
 }
 
+bool
+operator_bitwise_xor::op1_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op2) const
+{
+  if (lhs.undefined_p () || lhs.varying_p ())
+    {
+      r = lhs;
+      return true;
+    }
+  if (types_compatible_p (type, boolean_type_node))
+    {
+      switch (get_bool_state (r, lhs, type))
+	{
+	case BRS_TRUE:
+	  if (op2.varying_p ())
+	    r.set_varying (type);
+	  else if (op2.zero_p ())
+	    r = range_true (type);
+	  else
+	    r = range_false (type);
+	  break;
+	case BRS_FALSE:
+	  r = op2;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      return true;
+    }
+  r.set_varying (type);
+  return true;
+}
+
+bool
+operator_bitwise_xor::op2_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op1) const
+{
+  return operator_bitwise_xor::op1_range (r, type, lhs, op1);
+}
 
 class operator_trunc_mod : public range_operator
 {
