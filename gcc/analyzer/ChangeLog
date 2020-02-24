@@ -1,5 +1,61 @@
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93899
+	* engine.cc
+	(impl_region_model_context::impl_region_model_context): Add logger
+	param.
+	* engine.cc (exploded_graph::add_function_entry): Create an
+	impl_region_model_context and pass it to the push_frame call.
+	Bail if the resulting state is invalid.
+	(exploded_graph::build_initial_worklist): Likewise.
+	(exploded_graph::build_initial_worklist): Handle the case where
+	add_function_entry fails.
+	* exploded-graph.h
+	(impl_region_model_context::impl_region_model_context): Add logger
+	param.
+	* region-model.cc (map_region::get_or_create): Add ctxt param and
+	pass it to add_region_for_type.
+	(map_region::can_merge_p): Pass NULL as a ctxt to call to
+	get_or_create.
+	(array_region::get_element): Pass ctxt to call to get_or_create.
+	(array_region::get_or_create): Add ctxt param and pass it to
+	add_region_for_type.
+	(root_region::push_frame): Pass ctxt to get_or_create calls.
+	(region_model::get_lvalue_1): Likewise.
+	(region_model::make_region_for_unexpected_tree_code): Assert that
+	ctxt is non-NULL.
+	(region_model::get_rvalue_1): Pass ctxt to get_svalue_for_fndecl
+	and get_svalue_for_label calls.
+	(region_model::get_svalue_for_fndecl): Add ctxt param and pass it
+	to get_region_for_fndecl.
+	(region_model::get_region_for_fndecl): Add ctxt param and pass it
+	to get_or_create.
+	(region_model::get_svalue_for_label): Add ctxt param and pass it
+	to get_region_for_label.
+	(region_model::get_region_for_label): Add ctxt param and pass it
+	to get_region_for_fndecl and get_or_create.
+	(region_model::get_field_region): Add ctxt param and pass it to
+	get_or_create_view and get_or_create.
+	(make_region_for_type): Replace gcc_unreachable with return NULL.
+	(region_model::add_region_for_type): Add ctxt param.  Handle a
+	return of NULL from make_region_for_type by calling
+	make_region_for_unexpected_tree_code.
+	(region_model::get_or_create_mem_ref): Pass ctxt to calls to
+	get_or_create_view.
+	(region_model::get_or_create_view): Add ctxt param and pass it to
+	add_region_for_type.
+	(selftest::test_state_merging): Pass ctxt to get_or_create_view.
+	* region-model.h (region_model::get_or_create): Add ctxt param.
+	(region_model::add_region_for_type): Likewise.
+	(region_model::get_svalue_for_fndecl): Likewise.
+	(region_model::get_svalue_for_label): Likewise.
+	(region_model::get_region_for_fndecl): Likewise.
+	(region_model::get_region_for_label): Likewise.
+	(region_model::get_field_region): Likewise.
+	(region_model::get_or_create_view): Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
 	* checker-path.cc (superedge_event::should_filter_p): Update
 	filter for empty descriptions to cover verbosity level 3 as well
 	as 2.
