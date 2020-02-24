@@ -1,5 +1,10 @@
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
+	DR 1423, Convertibility of nullptr to bool.
+	* g++.dg/DRs/dr1423.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
 	* g++.dg/cpp2a/constexpr-init16.C: New test.
 	* g++.dg/cpp2a/constexpr-init17.C: New test.
