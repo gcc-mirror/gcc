@@ -2390,7 +2390,7 @@ package body Sem_Ch5 is
             --  AI12-0047 stipulates that the domain (array or container)
             --  cannot be a component that depends on a discriminant if the
             --  enclosing object is mutable, to prevent a modification of the
-            --  dowmain of iteration in the course of an iteration.
+            --  domain of iteration in the course of an iteration.
 
             --  If the object is an expression it has been captured in a
             --  temporary, so examine original node.

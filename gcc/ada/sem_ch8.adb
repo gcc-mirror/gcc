@@ -1826,6 +1826,7 @@ package body Sem_Ch8 is
       Is_Body : Boolean)
    is
       Old_S : Entity_Id;
+      Nam   : Entity_Id;
 
       function Conforms
         (Subp : Entity_Id;
@@ -1902,7 +1903,7 @@ package body Sem_Ch8 is
       end if;
 
       if Old_S = Any_Id then
-         Error_Msg_N (" no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification",  N);
 
       else
          if Is_Body then
@@ -1918,6 +1919,21 @@ package body Sem_Ch8 is
 
             if not Conforms (Old_S, Mode_Conformant) then
                Error_Msg_N ("mode conformance error in renaming", N);
+            end if;
+
+            --  AI12-0204: The prefix of a prefixed view that is renamed or
+            --  passed as a formal subprogram must be renamable as an object.
+
+            Nam := Prefix (Name (N));
+
+            if Is_Object_Reference (Nam) then
+               if Is_Dependent_Component_Of_Mutable_Object (Nam) then
+                  Error_Msg_N
+                    ("illegal renaming of discriminant-dependent component",
+                     Nam);
+               end if;
+            else
+               Error_Msg_N ("expect object name in renaming", Nam);
             end if;
 
             --  Enforce the rule given in (RM 6.3.1 (10.1/2)): a prefixed
