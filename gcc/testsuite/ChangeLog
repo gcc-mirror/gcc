@@ -1,3 +1,9 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
+	* g++.dg/cpp2a/constexpr-init16.C: New test.
+	* g++.dg/cpp2a/constexpr-init17.C: New test.
+
 2020-02-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/93843

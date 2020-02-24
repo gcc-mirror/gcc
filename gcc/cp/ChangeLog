@@ -1,3 +1,9 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
+	* constexpr.c (reduced_constant_expression_p): Don't crash on a null
+	field.
+
 2020-02-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/93804
