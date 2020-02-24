@@ -334,7 +334,7 @@ superedge_event::should_filter_p (int verbosity) const
 	if (verbosity < 2)
 	  return true;
 
-	if (verbosity == 2)
+	if (verbosity < 4)
 	  {
 	    /* Filter events with empty descriptions.  This ought to filter
 	       FALLTHRU, but retain true/false/switch edges.  */

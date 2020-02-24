@@ -346,6 +346,9 @@ namespace ranges
   template<typename _Tp>
     inline constexpr bool enable_borrowed_range = false;
 
+  template<typename _Tp>
+    extern const bool enable_view;
+
   namespace __detail
   {
     template<integral _Tp>

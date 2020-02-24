@@ -73,6 +73,7 @@ static char *offload_objects_file_name;
 static char *makefile;
 static unsigned int num_deb_objs;
 static const char **early_debug_object_names;
+static bool xassembler_options_error = false;
 
 const char tool_name[] = "lto-wrapper";
 
@@ -137,42 +138,14 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 				      unsigned int *decoded_options_count)
 {
   struct obstack argv_obstack;
-  char *argv_storage;
   const char **argv;
-  int j, k, argc;
+  int argc;
 
-  argv_storage = xstrdup (collect_gcc_options);
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, collect_gcc);
 
-  for (j = 0, k = 0; argv_storage[j] != '\0'; ++j)
-    {
-      if (argv_storage[j] == '\'')
-	{
-	  obstack_ptr_grow (&argv_obstack, &argv_storage[k]);
-	  ++j;
-	  do
-	    {
-	      if (argv_storage[j] == '\0')
-		fatal_error (input_location,
-			     "malformed %<COLLECT_GCC_OPTIONS%>");
-	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
-		{
-		  argv_storage[k++] = '\'';
-		  j += 4;
-		}
-	      else if (argv_storage[j] == '\'')
-		break;
-	      else
-		argv_storage[k++] = argv_storage[j++];
-	    }
-	  while (1);
-	  argv_storage[k++] = '\0';
-	}
-    }
-
-  obstack_ptr_grow (&argv_obstack, NULL);
-  argc = obstack_object_size (&argv_obstack) / sizeof (void *) - 1;
+  parse_options_from_collect_gcc_options (collect_gcc_options,
+					  &argv_obstack, &argc);
   argv = XOBFINISH (&argv_obstack, const char **);
 
   decode_cmdline_options_to_array (argc, (const char **)argv, CL_DRIVER,
@@ -512,6 +485,45 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
       }
    else
      j++;
+
+  if (!xassembler_options_error)
+    for (i = j = 0; ; i++, j++)
+      {
+	for (; i < *decoded_options_count; i++)
+	  if ((*decoded_options)[i].opt_index == OPT_Xassembler)
+	    break;
+
+	for (; j < fdecoded_options_count; j++)
+	  if (fdecoded_options[j].opt_index == OPT_Xassembler)
+	    break;
+
+	if (i == *decoded_options_count && j == fdecoded_options_count)
+	  break;
+	else if (i < *decoded_options_count && j == fdecoded_options_count)
+	  {
+	    warning (0, "Extra option to -Xassembler: %s,"
+		     " dropping all -Xassembler and -Wa options.",
+		     (*decoded_options)[i].arg);
+	    xassembler_options_error = true;
+	    break;
+	  }
+	else if (i == *decoded_options_count && j < fdecoded_options_count)
+	  {
+	    warning (0, "Extra option to -Xassembler: %s,"
+		     " dropping all -Xassembler and -Wa options.",
+		     fdecoded_options[j].arg);
+	    xassembler_options_error = true;
+	    break;
+	  }
+	else if (strcmp ((*decoded_options)[i].arg, fdecoded_options[j].arg))
+	  {
+	    warning (0, "Options to Xassembler do not match: %s, %s,"
+		     " dropping all -Xassembler and -Wa options.",
+		     (*decoded_options)[i].arg, fdecoded_options[j].arg);
+	    xassembler_options_error = true;
+	    break;
+	  }
+      }
 }
 
 /* Auxiliary function that frees elements of PTR and PTR itself.
@@ -624,6 +636,13 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	  break;
+
+	case OPT_Xassembler:
+	  /* When we detected a mismatch in assembler options between
+	     the input TU's fall back to previous behavior of ignoring them.  */
+	  if (xassembler_options_error)
+	    continue;
 	  break;
 
 	default:
@@ -1251,7 +1270,8 @@ run_gcc (unsigned argc, char *argv[])
   const char **argv_ptr;
   char *list_option_full = NULL;
   const char *linker_output = NULL;
-  const char *collect_gcc, *collect_gcc_options;
+  const char *collect_gcc;
+  char *collect_gcc_options;
   int parallel = 0;
   int jobserver = 0;
   int auto_parallel = 0;
@@ -1281,6 +1301,25 @@ run_gcc (unsigned argc, char *argv[])
   if (!collect_gcc_options)
     fatal_error (input_location,
 		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
+
+  char *collect_as_options = getenv ("COLLECT_AS_OPTIONS");
+
+  /* Prepend -Xassembler to each option, and append the string
+     to collect_gcc_options.  */
+  if (collect_as_options)
+    {
+      obstack temporary_obstack;
+      obstack_init (&temporary_obstack);
+
+      prepend_xassembler_to_collect_as_options (collect_as_options,
+						&temporary_obstack);
+      obstack_1grow (&temporary_obstack, '\0');
+
+      char *xassembler_opts_string
+	= XOBFINISH (&temporary_obstack, char *);
+      strcat (collect_gcc_options, xassembler_opts_string);
+    }
+
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
 					&decoded_options,
 					&decoded_options_count);

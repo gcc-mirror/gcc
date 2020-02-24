@@ -1,3 +1,83 @@
+2020-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93804
+	* g++.dg/warn/Wredundant-tags-4.C: New test.
+	* g++.dg/warn/Wredundant-tags-5.C: New test.
+	* g++.dg/warn/Wredundant-tags-5.h: New test.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/analyzer-verbosity-2a.c: New test.
+	* gcc.dg/analyzer/analyzer-verbosity-3.c: New test, based on
+	analyzer-verbosity-2.c
+	* gcc.dg/analyzer/analyzer-verbosity-3a.c: New test.
+	* gcc.dg/analyzer/edges-1.c: New test.
+	* gcc.dg/analyzer/edges-2.c: New test.
+	* gcc.dg/analyzer/file-paths-1.c: Add -fanalyzer-verbosity=3.
+
+2020-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93869 - ICE with -Wmismatched-tags.
+	* g++.dg/warn/Wmismatched-tags-2.C: New test.
+
+2020-02-20  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93835
+	* gfortran.dg/pr77351.f90 : Check for one error instead of two.
+	* gfortran.dg/pr93835.f08 : New test.
+
+2020-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93712 - ICE with ill-formed array list-initialization.
+	* g++.dg/cpp0x/initlist-array11.C: New test.
+
+2020-02-20  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93604
+	* gfortran.dg/pr93604.f90 : New test.
+
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* g++.dg/ext/consteval1.C: Change dg-{message,error} into dg-bogus.
+	* g++.dg/cpp2a/consteval6.C: Likewise.
+	* g++.dg/cpp2a/consteval3.C: Change dg-error for unevaluated operands
+	into dg-bogus.
+
+2020-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR lto/78353
+	* gcc.target/arm/pr78353-1.c: Add arm_arch_v7a_multilib effective
+	target.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-4.c: New test.
+	* gcc.dg/tree-ssa/pr93582-5.c: New test.
+	* gcc.dg/tree-ssa/pr93582-6.c: New test.
+	* gcc.dg/tree-ssa/pr93582-7.c: New test.
+	* gcc.dg/tree-ssa/pr93582-8.c: New test.
+
+2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93552
+	* gfortran.dg/goacc/tile-4.f90: New.
+
+2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR driver/47785
+	PR lto/78353
+	* gcc.target/arm/pr78353-1.c: New test.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
+2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93890
+	* gfortran.dg/argument_checking_24.f90: Correct test case.
+
 2020-02-21  Martin Sebor  <msebor@redhat.com>
 
 	PR gcov-profile/93753
@@ -30,7 +110,7 @@
 2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
 	    Richard Biener  <rguenther@suse.de>
 
-  	PR tree-optimization/93586
+	PR tree-optimization/93586
 	* gcc.dg/torture/pr93586.c: New testcase.
 
 2020-02-21  Martin Jambor  <mjambor@suse.cz>

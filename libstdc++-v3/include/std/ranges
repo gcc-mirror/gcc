@@ -65,25 +65,8 @@ namespace ranges
 
   struct view_base { };
 
-  namespace __detail
-  {
-    template<typename _Tp>
-      concept __deep_const_range = range<_Tp> && range<const _Tp>
-	&& same_as<range_reference_t<_Tp>, range_reference_t<const _Tp>>;
-
-    template<typename _Tp>
-      inline constexpr bool __enable_view_impl
-	= derived_from<_Tp, view_base> || (!__deep_const_range<_Tp>);
-
-    template<typename _Tp>
-      inline constexpr bool __enable_view_impl<std::initializer_list<_Tp>>
-	= false;
-
-  } // namespace __detail
-
   template<typename _Tp>
-    inline constexpr bool enable_view
-      = __detail::__enable_view_impl<remove_cv_t<_Tp>>;
+    inline constexpr bool enable_view = derived_from<_Tp, view_base>;
 
   template<typename _Tp>
     concept view

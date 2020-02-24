@@ -53,6 +53,8 @@ private:
   DISABLE_COPY_AND_ASSIGN (saved_diagnostic);
 };
 
+class path_builder;
+
 /* A class with responsibility for saving pending diagnostics, so that
    they can be emitted after the exploded_graph is complete.
    This lets us de-duplicate diagnostics, and find the shortest path
@@ -101,15 +103,19 @@ public:
   }
 
 private:
-  void build_emission_path (const exploded_graph &eg,
+  void build_emission_path (const path_builder &pb,
 			    const exploded_path &epath,
 			    checker_path *emission_path) const;
 
-  void add_events_for_eedge (const exploded_edge &eedge,
-			     const extrinsic_state &ext_state,
+  void add_events_for_eedge (const path_builder &pb,
+			     const exploded_edge &eedge,
 			     checker_path *emission_path) const;
 
-  void add_events_for_superedge (const exploded_edge &eedge,
+  bool significant_edge_p (const path_builder &pb,
+			   const exploded_edge &eedge) const;
+
+  void add_events_for_superedge (const path_builder &pb,
+				 const exploded_edge &eedge,
 				 checker_path *emission_path) const;
 
   void prune_path (checker_path *path,

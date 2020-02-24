@@ -115,6 +115,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_CONSTEXPR istreambuf_iterator() _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
 
+#if __cplusplus > 201703L
+      constexpr istreambuf_iterator(default_sentinel_t) noexcept
+      : istreambuf_iterator() { }
+#endif
+
 #if __cplusplus >= 201103L
       istreambuf_iterator(const istreambuf_iterator&) noexcept = default;
 
@@ -209,6 +214,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const int_type __eof = traits_type::eof();
 	return traits_type::eq_int_type(__c, __eof);
       }
+
+#if __cplusplus > 201703L
+      friend bool
+      operator==(const istreambuf_iterator& __i, default_sentinel_t __s)
+      { return __i._M_at_eof(); }
+#endif
     };
 
   template<typename _CharT, typename _Traits>

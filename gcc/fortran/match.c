@@ -2878,6 +2878,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
       && (o->head->op == EXEC_OACC_LOOP
+	  || o->head->op == EXEC_OACC_KERNELS_LOOP
 	  || o->head->op == EXEC_OACC_PARALLEL_LOOP
 	  || o->head->op == EXEC_OACC_SERIAL_LOOP))
     {
@@ -2887,9 +2888,20 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL
-	  && o->previous->tail->ext.omp_clauses->collapse > 1)
-	collapse = o->previous->tail->ext.omp_clauses->collapse;
+      if (o->previous->tail->ext.omp_clauses != NULL)
+	{
+	  /* Both collapsed and tiled loops are lowered the same way, but are not
+	     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
+	  if (o->previous->tail->ext.omp_clauses->tile_list)
+	    {
+	      collapse = 0;
+	      gfc_expr_list *el = o->previous->tail->ext.omp_clauses->tile_list;
+	      for ( ; el; el = el->next)
+		++collapse;
+	    }
+	  else if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	    collapse = o->previous->tail->ext.omp_clauses->collapse;
+	}
       if (st == ST_EXIT && cnt <= collapse)
 	{
 	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
@@ -2897,8 +2909,11 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	}
       if (st == ST_CYCLE && cnt < collapse)
 	{
-	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
-		     " !$ACC LOOP loop");
+	  gfc_error (o->previous->tail->ext.omp_clauses->tile_list
+		     ? G_("CYCLE statement at %C to non-innermost tiled"
+			  " !$ACC LOOP loop")
+		     : G_("CYCLE statement at %C to non-innermost collapsed"
+			  " !$ACC LOOP loop"));
 	  return MATCH_ERROR;
 	}
     }

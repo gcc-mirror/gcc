@@ -1,3 +1,67 @@
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fanalyzer-verbosity=): "2" only shows
+	significant control flow events; add a "3" which shows all
+	control flow events; the old "3" becomes "4".
+
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Consider
+	pd.offset and pd.size to be counted in bits rather than bytes, add
+	support for maxsizei that is not a multiple of BITS_PER_UNIT and
+	handle bitfield stores and loads.
+	(vn_reference_lookup_3): Don't call ranges_known_overlap_p with
+	uncomparable quantities - bytes vs. bits.  Allow push_partial_def
+	on offsets/sizes that aren't multiple of BITS_PER_UNIT and adjust
+	pd.offset/pd.size to be counted in bits rather than bytes.
+	Formatting fix.  Rename shadowed len variable to buflen.
+
+2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR driver/47785
+	* gcc.c (putenv_COLLECT_AS_OPTIONS): New function.
+	(driver::main): Call putenv_COLLECT_AS_OPTIONS.
+	* opts-common.c (parse_options_from_collect_gcc_options): New function.
+	(prepend_xassembler_to_collect_as_options): Likewise.
+	* opts.h (parse_options_from_collect_gcc_options): Declare prototype.
+	(prepend_xassembler_to_collect_as_options): Likewise.
+	* lto-opts.c (lto_write_options): Stream assembler options
+	in COLLECT_AS_OPTIONS.
+	* lto-wrapper.c (xassembler_options_error): New static variable.
+	(get_options_from_collect_gcc_options): Move parsing options code to
+	parse_options_from_collect_gcc_options and call it.
+	(merge_and_complain): Validate -Xassembler options.
+	(append_compiler_options): Handle OPT_Xassembler.
+	(run_gcc): Append command line -Xassembler options to
+	collect_gcc_options.
+	* doc/invoke.texi: Add documentation about using Xassembler
+	options with LTO.
+
+2020-02-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_emit_float_compare): Change the code gen
+	for LTGT.
+	(riscv_rtx_costs): Update cost model for LTGT.
+
+2020-02-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93564
+	* ira-color.c (struct update_cost_queue_elem): New member start.
+	(queue_update_cost, get_next_update_cost): Add new arg start.
+	(allocnos_conflict_p): New function.
+	(update_costs_from_allocno): Add new arg conflict_cost_update_p.
+	Add checking conflicts with allocnos_conflict_p.
+	(update_costs_from_prefs, restore_costs_from_copies): Adjust
+	update_costs_from_allocno calls.
+	(update_conflict_hard_regno_costs): Add checking conflicts with
+	allocnos_conflict_p.  Adjust calls of queue_update_cost and
+	get_next_update_cost.
+	(assign_hard_reg): Adjust calls of queue_update_cost.  Add
+	debugging print.
+	(bucket_allocno_compare_func): Restore previous version.
+
 2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and

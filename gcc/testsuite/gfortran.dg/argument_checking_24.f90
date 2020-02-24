@@ -33,14 +33,14 @@ contains
     call invalid_4 (b) ! { dg-error "Rank mismatch" }w
     call invalid_5 (b) ! { dg-error "Rank mismatch" }
     call invalid_5 (vv(1)%x) ! { dg-error "Rank mismatch" }
-    call invalid_6 (x) ! { dg-error "can not correspond to actual argument" }
-    call invalid_6 (pointer_v%x(1)) ! { dg-error "can not correspond to actual argument" }
+    call invalid_6 (x) ! { dg-error "cannot correspond to actual argument" }
+    call invalid_6 (pointer_v%x(1)) ! { dg-error "cannot correspond to actual argument" }
     call invalid_7 (pointer_v%x(1)) ! { dg-error "Rank mismatch" }
     call invalid_7 (x) ! { dg-error "Rank mismatch" }
     call invalid_8 (p(1)) ! { dg-error "Rank mismatch" }
     call invalid_8 (x) ! { dg-error "Rank mismatch" }
-    call invalid_9 (x) ! { dg-error "can not correspond to actual argument" }
-    call invalid_9 (p(1)) ! { dg-error "can not correspond to actual argument" }
+    call invalid_9 (x) ! { dg-error "cannot correspond to actual argument" }
+    call invalid_9 (p(1)) ! { dg-error "cannot correspond to actual argument" }
   end subroutine foo
 
   subroutine bar(a, alloc)

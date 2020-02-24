@@ -447,11 +447,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace ranges
   {
-    template<typename> extern inline const bool enable_borrowed_range;
     // Opt-in to borrowed_range concept
     template<typename _ElementType, size_t _Extent>
       inline constexpr bool
 	enable_borrowed_range<span<_ElementType, _Extent>> = true;
+
+    // Opt-in to view concept
+    template<typename _ElementType, size_t _Extent>
+      inline constexpr bool
+	enable_view<span<_ElementType, _Extent>>
+	  = _Extent == 0 || _Extent == dynamic_extent;
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -1,3 +1,36 @@
+2020-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93804
+	* parser.c (cp_parser_check_class_key): Avoid issuing -Wredundant-tags
+	in shared C/C++ code in headers.
+	Remove a duplicate hunk of code.
+
+2020-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93869 - ICE with -Wmismatched-tags.
+	* parser.c (cp_parser_check_class_key): Check class_key earlier.
+
+2020-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93712 - ICE with ill-formed array list-initialization.
+	* call.c (next_conversion): Return NULL for ck_aggr.
+	(build_aggr_conv): Set u.expr instead of u.next.
+	(build_array_conv): Likewise.
+	(build_complex_conv): Likewise.
+	(conv_get_original_expr): Handle ck_aggr.
+
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* call.c (build_over_call): Don't evaluate immediate functions in
+	unevaluated operands.
+
+2020-02-24  Jason Merrill  <jason@redhat.com>
+
+	P0780R2: Resolve lambda init-capture pack grammar.
+	* parser.c (cp_parser_lambda_introducer): Expect &...x=y rather than
+	...&x=y.
+
 2020-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93882

@@ -1703,10 +1703,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case UNEQ:
-    case LTGT:
       /* (FEQ(A, A) & FEQ(B, B)) compared against FEQ(A, B).  */
       mode = GET_MODE (XEXP (x, 0));
       *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (3);
+      return false;
+
+    case LTGT:
+      /* (FLT(A, A) || FGT(B, B)).  */
+      mode = GET_MODE (XEXP (x, 0));
+      *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (2);
       return false;
 
     case UNGE:
@@ -2239,9 +2244,8 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
       break;
 
     case UNEQ:
-    case LTGT:
       /* ordered(a, b) > (a == b) */
-      *code = fp_code == LTGT ? GTU : EQ;
+      *code = EQ;
       tmp0 = riscv_force_binary (word_mode, EQ, cmp_op0, cmp_op0);
       tmp1 = riscv_force_binary (word_mode, EQ, cmp_op1, cmp_op1);
       *op0 = riscv_force_binary (word_mode, AND, tmp0, tmp1);
@@ -2291,6 +2295,13 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
       /* We have instructions for these cases.  */
       *op0 = riscv_force_binary (word_mode, fp_code, cmp_op0, cmp_op1);
       *op1 = const0_rtx;
+      break;
+
+    case LTGT:
+      /* (a < b) | (a > b) */
+      *code = IOR;
+      *op0 = riscv_force_binary (word_mode, LT, cmp_op0, cmp_op1);
+      *op1 = riscv_force_binary (word_mode, GT, cmp_op0, cmp_op1);
       break;
 
     default:

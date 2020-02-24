@@ -727,11 +727,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_concepts
   namespace ranges
   {
-    template<typename> extern inline const bool enable_borrowed_range;
     // Opt-in to borrowed_range concept
     template<typename _CharT, typename _Traits>
       inline constexpr bool
 	enable_borrowed_range<basic_string_view<_CharT, _Traits>> = true;
+
+    // Opt-in to view concept
+    template<typename _CharT, typename _Traits>
+      inline constexpr bool
+	enable_view<basic_string_view<_CharT, _Traits>> = true;
   }
 #endif
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -8506,12 +8506,17 @@ As per the previous level, but also show events for the entry
 to each function.
 
 @item 2
-As per the previous level, but also show  events relating to
-control flow (e.g. ``true path taken'' at a conditional).
+As per the previous level, but also show events relating to
+control flow that are significant to triggering the issue
+(e.g. ``true path taken'' at a conditional).
 
 This level is the default.
 
 @item 3
+As per the previous level, but show all control flow events, not
+just significant ones.
+
+@item 4
 This level is intended for analyzer developers; it adds various
 other events intended for debugging the analyzer.
 
@@ -11158,6 +11163,12 @@ conflicting translation units.  Specifically
 @option{-fno-strict-overflow}, @option{-fwrapv} and @option{-fno-trapv} take
 precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
+
+When you need to pass options to the assembler via @option{-Wa} or
+@option{-Xassembler} make sure to either compile such translation
+units with @option{-fno-lto} or consistently use the same assembler
+options on all translation units.  You can alternatively also
+specify assembler options at LTO link time.
 
 To enable debug info generation you need to supply @option{-g} at
 compile time.  If any of the input files at link time were built

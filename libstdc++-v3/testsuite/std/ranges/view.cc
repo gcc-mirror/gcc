@@ -19,13 +19,23 @@
 // { dg-do compile { target c++2a } }
 
 #include <ranges>
+#include <span>
+#include <string_view>
+#include <experimental/string_view>
+#include <vector>
 #include <vector>
 #include <set>
 #include <unordered_set>
 #include <regex>
 #include <testsuite_iterators.h>
 
-static_assert(std::ranges::view<std::vector<int>>);
+static_assert(std::ranges::view<std::span<int>>);
+static_assert(std::ranges::view<std::span<int, 0>>);
+static_assert(!std::ranges::view<std::span<int, 1>>);
+static_assert(std::ranges::view<std::string_view>);
+static_assert(std::ranges::view<std::experimental::string_view>);
+
+static_assert(!std::ranges::view<std::vector<int>>);
 static_assert(!std::ranges::view<const std::vector<int>>);
 static_assert(!std::ranges::view<std::initializer_list<int>>);
 static_assert(!std::ranges::view<const std::initializer_list<int>>);
