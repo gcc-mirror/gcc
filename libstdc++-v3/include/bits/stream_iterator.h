@@ -77,6 +77,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _M_ok(__obj._M_ok)
       { }
 
+#if __cplusplus > 201703L
+      constexpr
+      istream_iterator(default_sentinel_t) noexcept
+      : istream_iterator() { }
+#endif
+
 #if __cplusplus >= 201103L
       istream_iterator& operator=(const istream_iterator&) = default;
       ~istream_iterator() = default;
@@ -145,6 +151,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       operator!=(const istream_iterator& __x, const istream_iterator& __y)
       { return !__x._M_equal(__y); }
+
+#if __cplusplus > 201703L
+      friend bool
+      operator==(const istream_iterator& __i, default_sentinel_t)
+      { return !__i._M_stream; }
+#endif
     };
 
   /**
@@ -166,6 +178,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       //@{
       /// Public typedef
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+#endif
       typedef _CharT                         char_type;
       typedef _Traits                        traits_type;
       typedef basic_ostream<_CharT, _Traits> ostream_type;
