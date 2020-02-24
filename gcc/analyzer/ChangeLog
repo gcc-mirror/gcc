@@ -1,5 +1,10 @@
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
+	* engine.cc (exploded_graph::get_or_create_node): Dump the
+	program_state to the pp, rather than to stderr.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93032
 	* sm.cc (make_checkers): Require the "taint" checker to be
 	explicitly enabled.

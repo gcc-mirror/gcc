@@ -1866,7 +1866,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       logger->end_log_line ();
       logger->start_log_line ();
       pp_string (pp, "state: ");
-      state.dump (m_ext_state, true);
+      state.dump_to_pp (m_ext_state, true, pp);
       logger->end_log_line ();
     }
 
