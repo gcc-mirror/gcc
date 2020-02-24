@@ -1540,6 +1540,8 @@ namespace views
   template<input_range _Vp, copy_constructible _Fp>
     requires view<_Vp> && is_object_v<_Fp>
       && regular_invocable<_Fp&, range_reference_t<_Vp>>
+      && std::__detail::__can_reference<invoke_result_t<_Fp&,
+							range_reference_t<_Vp>>>
     class transform_view : public view_interface<transform_view<_Vp, _Fp>>
     {
     private:

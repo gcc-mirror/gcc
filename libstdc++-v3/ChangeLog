@@ -1,5 +1,11 @@
 2020-02-25  Patrick Palka  <ppalka@redhat.com>
 
+	LWG 3325 Constrain return type of transformation function for
+	transform_view
+	* include/std/ranges (transform_view): Constrain the return type of the
+	transformation function as per LWG 3325.
+	* testsuite/std/ranges/adaptors/lwg3325_neg.cc: New test.
+
 	LWG 3313 join_view::_Iterator::operator-- is incorrectly constrained
 	* include/std/ranges (join_view::_Iterator::operator--): Require that
 	range_reference_t<_Base> models common_range.
