@@ -68,10 +68,26 @@ test03()
   VERIFY( ranges::equal(v, (int[]){0,1,2,3,4}) );
 }
 
+template<typename T>
+concept has_iterator_category = requires { typename T::iterator_category; };
+
+void
+test04()
+{
+  std::istringstream s("12345");
+  auto v = ranges::istream_view<char>(s);
+  // LWG 3397
+  using It = ranges::iterator_t<decltype(v)>;
+  static_assert(!has_iterator_category<It>);
+  static_assert(std::input_iterator<It>);
+  static_assert(!std::forward_iterator<It>);
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

@@ -971,7 +971,7 @@ namespace views
       struct _Iterator
       {
       public:
-	using iterator_category = input_iterator_tag;
+	using iterator_concept = input_iterator_tag;
 	using difference_type = ptrdiff_t;
 	using value_type = _Val;
 

@@ -1,5 +1,12 @@
 2020-02-25  Patrick Palka  <ppalka@redhat.com>
 
+	LWG 3397 basic_istream_view::iterator should not provide
+	iterator_category
+	* include/std/ranges (basic_istream_view:_Iterator::iterator_category):
+	Rename to ...
+	(basic_istream_view:_Iterator::iterator_concept): ... this.
+	* testsuite/std/ranges/istream_view.cc: Augment test.
+
 	LWG 3325 Constrain return type of transformation function for
 	transform_view
 	* include/std/ranges (transform_view): Constrain the return type of the
