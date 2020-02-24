@@ -1,5 +1,21 @@
 2020-02-24  Patrick Palka  <ppalka@redhat.com>
 
+	PR libstdc++/93884
+	* include/bits/ranges_algobase.h (__copy_or_move,
+	__copy_or_move_backward): Don't inspect the iter_value_t of the output
+	iterator, instead inspect its iterator_traits directly.
+	* include/bits/stl_iterator.h (back_insert_iterator::container):
+	Conditionally initialize.
+	(back_insert_iterator::difference_type): Conditionally define.
+	(back_insert_iterator::back_insert_iterator): Conditionally define this
+	default constructor.
+	(front_insert_iterator::container): Conditionally initialize.
+	(front_insert_iterator::difference_type): Conditionally define.
+	(front_insert_iterator::front_insert_iterator): Conditionally define
+	this default constructor.
+	* 24_iterators/back_insert_iterator/pr93884.cc: New test.
+	* 24_iterators/front_insert_iterator/pr93884.cc: New test.
+
 	P0769R2 Add shift to <algorithm>
 	* include/bits/ranges_algo.h (shift_left, shift_right): New.
 	* testsuite/25_algorithms/shift_left/1.cc: New test.

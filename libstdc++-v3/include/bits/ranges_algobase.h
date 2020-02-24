@@ -249,7 +249,7 @@ namespace ranges
       else if constexpr (sized_sentinel_for<_Sent, _Iter>)
 	{
 	  using _ValueTypeI = iter_value_t<_Iter>;
-	  using _ValueTypeO = iter_value_t<_Out>;
+	  using _ValueTypeO = typename iterator_traits<_Out>::value_type;
 	  constexpr bool __use_memmove
 	    = (is_trivially_copyable_v<_ValueTypeI>
 	       && is_same_v<_ValueTypeI, _ValueTypeO>
@@ -386,7 +386,7 @@ namespace ranges
       else if constexpr (sized_sentinel_for<_Sent, _Iter>)
 	{
 	  using _ValueTypeI = iter_value_t<_Iter>;
-	  using _ValueTypeO = iter_value_t<_Out>;
+	  using _ValueTypeO = typename iterator_traits<_Out>::value_type;
 	  constexpr bool __use_memmove
 	    = (is_trivially_copyable_v<_ValueTypeI>
 	       && is_same_v<_ValueTypeI, _ValueTypeO>
