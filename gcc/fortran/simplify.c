@@ -5539,7 +5539,7 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
   bool continue_loop;
   bool ma;
 
-  for (i = 0; i<array->rank; i++)
+  for (i = 0; i < array->rank; i++)
     res[i] = -1;
 
   /* Shortcut for constant .FALSE. MASK.  */
@@ -5582,7 +5582,7 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
 
 	  if (ma && gfc_compare_expr (a, value, INTRINSIC_EQ) == 0)
 	    {
-	      for (i = 0; i<array->rank; i++)
+	      for (i = 0; i < array->rank; i++)
 		res[i] = count[i];
 	      if (!back_val)
 		goto finish;
@@ -5607,9 +5607,9 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
 	} while (count[n] == extent[n]);
     }
 
- finish:
+finish:
   result_ctor = gfc_constructor_first (result->value.constructor);
-  for (i = 0; i<array->rank; i++)
+  for (i = 0; i < array->rank; i++)
     {
       gfc_expr *r_expr;
       r_expr = result_ctor->expr;
@@ -7255,6 +7255,8 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
     return NULL;
 
   result = gfc_get_array_expr (BT_INTEGER, k, &source->where);
+  result->shape = gfc_get_shape (1);
+  mpz_init (result->shape[0]);
 
   if (source->rank == 0)
     return result;
@@ -7310,6 +7312,8 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
 
   if (t)
     gfc_clear_shape (shape, source->rank);
+
+  mpz_set_si (result->shape[0], source->rank);
 
   return result;
 }
