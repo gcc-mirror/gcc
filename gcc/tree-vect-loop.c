@@ -2049,6 +2049,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 
       /* Update the vectorization factor based on the SLP decision.  */
       vect_update_vf_for_slp (loop_vinfo);
+
+      /* Optimize the SLP graph with the vectorization factor fixed.  */
+      vect_optimize_slp (loop_vinfo);
     }
 
   bool saved_can_fully_mask_p = LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo);
