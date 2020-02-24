@@ -1,3 +1,12 @@
+2020-02-24  Mark Eggleston  <mark.eggleston@codethink.com>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93835
+	* decl.c (gfc_match_data) : Check whether the data expression
+	is a derived type and is a constructor. If a BOZ constant
+	is encountered in the constructor output an error and return
+	MATCH_ERROR.
+
 2020-02-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/93604
