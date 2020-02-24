@@ -10620,6 +10620,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
   /* Record default capture mode.  "[&" "[=" "[&," "[=,"  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_AND)
+      && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS)
       && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)
       && !cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_THIS))
     LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) = CPLD_REFERENCE;
@@ -10715,6 +10716,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  continue;
 	}
 
+      /* Remember whether we want to capture as a reference or not.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
+	{
+	  capture_kind = BY_REFERENCE;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+
       bool init_pack_expansion = false;
       location_t ellipsis_loc = UNKNOWN_LOCATION;
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -10727,9 +10735,12 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  init_pack_expansion = true;
 	}
 
-      /* Remember whether we want to capture as a reference or not.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
+      /* Early C++20 drafts had ...& instead of &...; be forgiving.  */
+      if (init_pack_expansion && capture_kind != BY_REFERENCE
+	  && cp_lexer_next_token_is (parser->lexer, CPP_AND))
 	{
+	  pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		   0, "%<&%> should come before %<...%>");
 	  capture_kind = BY_REFERENCE;
 	  cp_lexer_consume_token (parser->lexer);
 	}

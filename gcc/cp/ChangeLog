@@ -1,3 +1,9 @@
+2020-02-24  Jason Merrill  <jason@redhat.com>
+
+	P0780R2: Resolve lambda init-capture pack grammar.
+	* parser.c (cp_parser_lambda_introducer): Expect &...x=y rather than
+	...&x=y.
+
 2020-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93882
