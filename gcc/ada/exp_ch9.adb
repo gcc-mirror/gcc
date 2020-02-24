@@ -3469,10 +3469,13 @@ package body Exp_Ch9 is
 
       --  Generate:
       --    <Ptr_Typ>M : Master_Id renames _Master;
+      --  and add a numeric suffix to the name to ensure that it is
+      --  unique in case other access types in nested constructs
+      --  are homonyms of this one.
 
       Master_Id :=
         Make_Defining_Identifier (Loc,
-          New_External_Name (Chars (Ptr_Typ), 'M'));
+          New_External_Name (Chars (Ptr_Typ), 'M', -1));
 
       Master_Decl :=
         Make_Object_Renaming_Declaration (Loc,
