@@ -1,3 +1,8 @@
+2020-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93868
+	* gcc.dg/torture/pr93868.c: New testcase.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93874
