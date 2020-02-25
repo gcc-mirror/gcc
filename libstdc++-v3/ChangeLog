@@ -1,4 +1,4 @@
-2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
+2020-02-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/move_backward/93872.cc: Add test left out of
 	previous commit.
