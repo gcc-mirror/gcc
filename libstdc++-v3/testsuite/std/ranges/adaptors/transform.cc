@@ -77,10 +77,34 @@ test03()
   VERIFY( ranges::equal(v, (int[]){1,2,3,4,5}) );
 }
 
+void
+test04()
+{
+  // LWG 3301
+    {
+      auto f = [] (int x) { return x; };
+      int x[] = {1,2,3,4,5};
+      auto v = x | views::transform(f);
+      auto i = v.begin();
+      using Cat = decltype(i)::iterator_category;
+      static_assert(std::same_as<Cat, std::input_iterator_tag>);
+    }
+
+    {
+      auto f = [] (int &x) -> int& { return x; };
+      int x[] = {1,2,3,4,5};
+      auto v = x | views::transform(f);
+      auto i = v.begin();
+      using Cat = decltype(i)::iterator_category;
+      static_assert(std::derived_from<Cat, std::forward_iterator_tag>);
+    }
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

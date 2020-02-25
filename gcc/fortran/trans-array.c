@@ -9846,7 +9846,7 @@ gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 }
 
 
-/* Recursively traverse an object of paramterized derived type, generating
+/* Recursively traverse an object of parameterized derived type, generating
    code to allocate parameterized components.  */
 
 tree
@@ -9862,7 +9862,7 @@ gfc_allocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank,
   return res;
 }
 
-/* Recursively traverse an object of paramterized derived type, generating
+/* Recursively traverse an object of parameterized derived type, generating
    code to deallocate parameterized components.  */
 
 tree
@@ -9873,7 +9873,7 @@ gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
 }
 
 
-/* Recursively traverse a dummy of paramterized derived type to check the
+/* Recursively traverse a dummy of parameterized derived type to check the
    values of LEN parameters.  */
 
 tree

@@ -381,3 +381,7 @@ VAR2 (MAC_LANE_PAIR, vcmlaq_lane270, v4sf, v8hf)
 VAR1 (TERNOP, smmla, v16qi)
 VAR1 (UTERNOP, ummla, v16qi)
 VAR1 (USTERNOP, usmmla, v16qi)
+
+VAR2 (TERNOP, vbfdot, v2sf, v4sf)
+VAR2 (MAC_LANE_PAIR, vbfdot_lanev4bf, v2sf, v4sf)
+VAR2 (MAC_LANE_PAIR, vbfdot_lanev8bf, v2sf, v4sf)

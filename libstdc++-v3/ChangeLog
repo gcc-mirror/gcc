@@ -1,3 +1,58 @@
+2020-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	LWG 3397 basic_istream_view::iterator should not provide
+	iterator_category
+	* include/std/ranges (basic_istream_view:_Iterator::iterator_category):
+	Rename to ...
+	(basic_istream_view:_Iterator::iterator_concept): ... this.
+	* testsuite/std/ranges/istream_view.cc: Augment test.
+
+	LWG 3325 Constrain return type of transformation function for
+	transform_view
+	* include/std/ranges (transform_view): Constrain the return type of the
+	transformation function as per LWG 3325.
+	* testsuite/std/ranges/adaptors/lwg3325_neg.cc: New test.
+
+	LWG 3313 join_view::_Iterator::operator-- is incorrectly constrained
+	* include/std/ranges (join_view::_Iterator::operator--): Require that
+	range_reference_t<_Base> models common_range.
+	* testsuite/std/ranges/adaptors/lwg3313_neg.cc: New test.
+
+	LWG 3301 transform_view::_Iterator has incorrect iterator_category
+	* include/std/ranges (transform_view::_Iterator::_S_iter_cat): Adjust
+	determination of iterator_category as per LWG 3301.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
+	LWG 3292 iota_view is under-constrained
+	* include/std/ranges (iota_view): Require that _Winc models semiregular
+	  as per LWG 3292.
+	* testsuite/std/ranges/iota/lwg3292_neg.cc: New test.
+
+2020-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__copy_or_move): Do not use memmove
+	during constant evaluation. Call __builtin_memmove directly instead of
+	__memmove.
+	(__copy_or_move_backward): Likewise.
+	* include/bits/stl_algobase.h (__memmove): Remove.
+	(__copy_move<M, true, random_access_iterator_tag>::__copy_m)
+	(__copy_move_backward<M, true, random_access_iterator_tag>::__copy_m):
+	Use __builtin_memmove directly instead of __memmove.
+	(__copy_move_a2): Do not use memmove during constant evaluation.
+	(__copy_move_backward_a2): Use _IsMove constant to select correct
+	__copy_move_backward specialization.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Check for copies
+	begin turned into moves during constant evaluation.
+
+	* testsuite/25_algorithms/move_backward/93872.cc: Add test left out of
+	previous commit.
+
+	PR libstdc++/93872
+	* include/bits/stl_algobase.h (__memmove): Cast away const before
+	doing move assignment.
+	* testsuite/25_algorithms/move/93872.cc: New test.
+	* testsuite/25_algorithms/move_backward/93872.cc: New test.
+
 2020-02-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/93884

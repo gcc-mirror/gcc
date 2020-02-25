@@ -1,3 +1,9 @@
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93858
+	* c-pragma.c (handle_pragma_diagnostic): Add missing ? after
+	"did you mean" hint in diagnostics.
+
 2020-02-15  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -std=c++20.

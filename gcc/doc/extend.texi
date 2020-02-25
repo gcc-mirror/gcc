@@ -2526,7 +2526,7 @@ the @code{puts} function, or the second and third arguments to
 the @code{memcpy} function.
 
 @smallexample
-__attribute__ ((access (read_only))) int puts (const char*);
+__attribute__ ((access (read_only, 1))) int puts (const char*);
 __attribute__ ((access (read_only, 1, 2))) void* memcpy (void*, const void*, size_t);
 @end smallexample
 

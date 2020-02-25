@@ -1,3 +1,66 @@
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstn.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldn.c: New test.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_dup.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_reinterpret.c: New test.
+
+2020-02-25  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/bf16_dot_1.c: New test.
+	* gcc.target/arm/simd/bf16_dot_2.c: New test.
+	* gcc.target/arm/simd/bf16_dot_3.c: New test.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93908
+	* gcc.c-torture/execute/pr93908.c: New test.
+
+2019-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto24.adb: New test.
+	* gnat.dg/lto24_pkg1.ads: New helper.
+	* gnat.dg/lto24_pkg2.ad[sb]: Likewise.
+
+2020-02-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-86.c: New testcase.
+
+2020-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93868
+	* gcc.dg/torture/pr93868.c: New testcase.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93874
+	* gcc.dg/pr93874.c: New test.
+
+	PR ipa/93763
+	* gcc.dg/ipa/pr93763.c: Adjust the test so that it compiles without
+	warnings and still ICEs before the ipa-cp.c fix.
+	* g++.dg/ipa/pr93763.C: Require c++11 effective target.
+
+	PR translation/93864
+	* objc.dg/encode-2.m: Fix comment typo paramter -> parameter.
+	* obj-c++.dg/encode-4.mm: Likewise.
+	* gfortran.dg/data_array_5.f90: Likewise.
+	* gcc.dg/decl-1.c: Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93032
+	* gcc.dg/analyzer/pr93382.c: Add "-fanalyzer-checker=taint".
+	* gcc.dg/analyzer/taint-1.c: Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93899
+	* g++.dg/analyzer/pr93899.C: New test.
+
 2020-02-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/93804

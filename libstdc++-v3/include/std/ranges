@@ -615,6 +615,7 @@ namespace ranges
   template<weakly_incrementable _Winc,
 	   semiregular _Bound = unreachable_sentinel_t>
     requires std::__detail::__weakly_eq_cmp_with<_Winc, _Bound>
+      && semiregular<_Winc>
     class iota_view : public view_interface<iota_view<_Winc, _Bound>>
     {
     private:
@@ -970,7 +971,7 @@ namespace views
       struct _Iterator
       {
       public:
-	using iterator_category = input_iterator_tag;
+	using iterator_concept = input_iterator_tag;
 	using difference_type = ptrdiff_t;
 	using value_type = _Val;
 
@@ -1539,6 +1540,8 @@ namespace views
   template<input_range _Vp, copy_constructible _Fp>
     requires view<_Vp> && is_object_v<_Fp>
       && regular_invocable<_Fp&, range_reference_t<_Vp>>
+      && std::__detail::__can_reference<invoke_result_t<_Fp&,
+							range_reference_t<_Vp>>>
     class transform_view : public view_interface<transform_view<_Vp, _Fp>>
     {
     private:
@@ -1569,12 +1572,18 @@ namespace views
 	  static constexpr auto
 	  _S_iter_cat()
 	  {
-	    using _Cat
-              = typename iterator_traits<_Base_iter>::iterator_category;
-	    if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
-	      return random_access_iterator_tag{};
+	    using _Res = invoke_result_t<_Fp&, range_reference_t<_Base>>;
+	    if constexpr (is_lvalue_reference_v<_Res>)
+	      {
+		using _Cat
+		  = typename iterator_traits<_Base_iter>::iterator_category;
+		if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
+		  return random_access_iterator_tag{};
+		else
+		  return _Cat{};
+	      }
 	    else
-	      return _Cat{};
+	      return input_iterator_tag{};
 	  }
 
 	  static constexpr decltype(auto)
@@ -2392,6 +2401,7 @@ namespace views
 	  operator--()
 	    requires _S_ref_is_glvalue && bidirectional_range<_Base>
 	      && bidirectional_range<range_reference_t<_Base>>
+	      && common_range<range_reference_t<_Base>>
 	  {
 	    if (_M_outer == ranges::end(_M_parent->_M_base))
 	      _M_inner = ranges::end(*--_M_outer);
@@ -2405,6 +2415,7 @@ namespace views
 	  operator--(int)
 	    requires _S_ref_is_glvalue && bidirectional_range<_Base>
 	      && bidirectional_range<range_reference_t<_Base>>
+	      && common_range<range_reference_t<_Base>>
 	  {
 	    auto __tmp = *this;
 	    --*this;

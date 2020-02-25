@@ -90,8 +90,9 @@ impl_region_model_context (exploded_graph &eg,
 impl_region_model_context::
 impl_region_model_context (program_state *state,
 			   state_change *change,
-			   const extrinsic_state &ext_state)
-: m_eg (NULL), m_logger (NULL), m_enode_for_diag (NULL),
+			   const extrinsic_state &ext_state,
+			   logger *logger)
+: m_eg (NULL), m_logger (logger), m_enode_for_diag (NULL),
   m_old_state (NULL),
   m_new_state (state),
   m_change (change),
@@ -1829,7 +1830,11 @@ exploded_graph::add_function_entry (function *fun)
 {
   program_point point = program_point::from_function_entry (m_sg, fun);
   program_state state (m_ext_state);
-  state.m_region_model->push_frame (fun, NULL, NULL);
+  impl_region_model_context ctxt (&state, NULL, m_ext_state, get_logger ());
+  state.m_region_model->push_frame (fun, NULL, &ctxt);
+
+  if (!state.m_valid)
+    return NULL;
 
   exploded_node *enode = get_or_create_node (point, state, NULL);
   /* We should never fail to add such a node.  */
@@ -1861,7 +1866,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       logger->end_log_line ();
       logger->start_log_line ();
       pp_string (pp, "state: ");
-      state.dump (m_ext_state, true);
+      state.dump_to_pp (m_ext_state, true, pp);
       logger->end_log_line ();
     }
 
@@ -2150,8 +2155,13 @@ exploded_graph::build_initial_worklist ()
       continue;
     exploded_node *enode = add_function_entry (fun);
     if (logger)
-      logger->log ("created EN %i for %qE entrypoint",
-		   enode->m_index, fun->decl);
+      {
+	if (enode)
+	  logger->log ("created EN %i for %qE entrypoint",
+		       enode->m_index, fun->decl);
+	else
+	  logger->log ("did not create enode for %qE entrypoint", fun->decl);
+      }
   }
 }
 

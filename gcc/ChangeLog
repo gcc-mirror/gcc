@@ -1,3 +1,178 @@
+2020-02-25  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute access): Correct an example.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_scalar_builtin_types):
+	Add simd_bf.
+	(aarch64_init_simd_builtin_scalar_types): Register simd_bf.
+	(VAR15, VAR16): New.
+	* config/aarch64/iterators.md (VALLDIF): Enable for V4BF and V8BF.
+	(VD): Enable for V4BF.
+	(VDC): Likewise.
+	(VQ): Enable for V8BF.
+	(VQ2): Likewise.
+	(VQ_NO2E): Likewise.
+	(VDBL, Vdbl): Add V4BF.
+	(V_INT_EQUIV, v_int_equiv): Add V4BF and V8BF.
+	* config/aarch64/arm_neon.h (bfloat16x4x2_t): New typedef.
+	(bfloat16x8x2_t): Likewise.
+	(bfloat16x4x3_t): Likewise.
+	(bfloat16x8x3_t): Likewise.
+	(bfloat16x4x4_t): Likewise.
+	(bfloat16x8x4_t): Likewise.
+	(vcombine_bf16): New.
+	(vld1_bf16, vld1_bf16_x2): New.
+	(vld1_bf16_x3, vld1_bf16_x4): New.
+	(vld1q_bf16, vld1q_bf16_x2): New.
+	(vld1q_bf16_x3, vld1q_bf16_x4): New.
+	(vld1_lane_bf16): New.
+	(vld1q_lane_bf16): New.
+	(vld1_dup_bf16): New.
+	(vld1q_dup_bf16): New.
+	(vld2_bf16): New.
+	(vld2q_bf16): New.
+	(vld2_dup_bf16): New.
+	(vld2q_dup_bf16): New.
+	(vld3_bf16): New.
+	(vld3q_bf16): New.
+	(vld3_dup_bf16): New.
+	(vld3q_dup_bf16): New.
+	(vld4_bf16): New.
+	(vld4q_bf16): New.
+	(vld4_dup_bf16): New.
+	(vld4q_dup_bf16): New.
+	(vst1_bf16, vst1_bf16_x2): New.
+	(vst1_bf16_x3, vst1_bf16_x4): New.
+	(vst1q_bf16, vst1q_bf16_x2): New.
+	(vst1q_bf16_x3, vst1q_bf16_x4): New.
+	(vst1_lane_bf16): New.
+	(vst1q_lane_bf16): New.
+	(vst2_bf16): New.
+	(vst2q_bf16): New.
+	(vst3_bf16): New.
+	(vst3q_bf16): New.
+	(vst4_bf16): New.
+	(vst4q_bf16): New.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/aarch64/iterators.md (VDQF_F16) Add V4BF and V8BF.
+	(VALL_F16): Likewise.
+	(VALLDI_F16): Likewise.
+	(Vtype): Likewise.
+	(Vetype): Likewise.
+	(vswap_width_name): Likewise.
+	(VSWAP_WIDTH): Likewise.
+	(Vel): Likewise.
+	(VEL): Likewise.
+	(q): Likewise.
+	* config/aarch64/arm_neon.h (vset_lane_bf16, vsetq_lane_bf16): New.
+	(vget_lane_bf16, vgetq_lane_bf16): New.
+	(vcreate_bf16): New.
+	(vdup_n_bf16, vdupq_n_bf16): New.
+	(vdup_lane_bf16, vdup_laneq_bf16): New.
+	(vdupq_lane_bf16, vdupq_laneq_bf16): New.
+	(vduph_lane_bf16, vduph_laneq_bf16): New.
+	(vreinterpret_bf16_u8, vreinterpretq_bf16_u8): New.
+	(vreinterpret_bf16_u16, vreinterpretq_bf16_u16): New.
+	(vreinterpret_bf16_u32, vreinterpretq_bf16_u32): New.
+	(vreinterpret_bf16_u64, vreinterpretq_bf16_u64): New.
+	(vreinterpret_bf16_s8, vreinterpretq_bf16_s8): New.
+	(vreinterpret_bf16_s16, vreinterpretq_bf16_s16): New.
+	(vreinterpret_bf16_s32, vreinterpretq_bf16_s32): New.
+	(vreinterpret_bf16_s64, vreinterpretq_bf16_s64): New.
+	(vreinterpret_bf16_p8, vreinterpretq_bf16_p8): New.
+	(vreinterpret_bf16_p16, vreinterpretq_bf16_p16): New.
+	(vreinterpret_bf16_p64, vreinterpretq_bf16_p64): New
+	(vreinterpret_bf16_f16, vreinterpretq_bf16_f16): New
+	(vreinterpret_bf16_f32, vreinterpretq_bf16_f32): New.
+	(vreinterpret_bf16_f64, vreinterpretq_bf16_f64): New.
+	(vreinterpretq_bf16_p128): New.
+	(vreinterpret_s8_bf16, vreinterpretq_s8_bf16): New.
+	(vreinterpret_s16_bf16, vreinterpretq_s16_bf16): New.
+	(vreinterpret_s32_bf16, vreinterpretq_s32_bf16): New.
+	(vreinterpret_s64_bf16, vreinterpretq_s64_bf16): New.
+	(vreinterpret_u8_bf16, vreinterpretq_u8_bf16): New.
+	(vreinterpret_u16_bf16, vreinterpretq_u16_bf16): New.
+	(vreinterpret_u32_bf16, vreinterpretq_u32_bf16): New.
+	(vreinterpret_u64_bf16, vreinterpretq_u64_bf16): New.
+	(vreinterpret_p8_bf16, vreinterpretq_p8_bf16): New.
+	(vreinterpret_p16_bf16, vreinterpretq_p16_bf16): New.
+	(vreinterpret_p64_bf16, vreinterpretq_p64_bf16): New.
+	(vreinterpret_f32_bf16, vreinterpretq_f32_bf16): New.
+	(vreinterpret_f64_bf16,vreinterpretq_f64_bf16): New.
+	(vreinterpret_f16_bf16,vreinterpretq_f16_bf16): New.
+	(vreinterpretq_p128_bf16): New.
+
+2020-02-25  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm_neon.h (vbfdot_f32, vbfdotq_f32): New
+	(vbfdot_lane_f32, vbfdotq_laneq_f32): New.
+	(vbfdot_laneq_f32, vbfdotq_lane_f32): New.
+	* config/arm/arm_neon_builtins.def (vbfdot): New entry.
+	(vbfdot_lanev4bf, vbfdot_lanev8bf): Likewise.
+	* config/arm/iterators.md (VSF2BF): New attribute.
+	* config/arm/neon.md (neon_vbfdot<VCVTF:mode>): New entry.
+	(neon_vbfdot_lanev4bf<VCVTF:mode>): Likewise.
+	(neon_vbfdot_lanev8bf<VCVTF:mode>): Likewise.
+
+2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.md (required_for_purecode): New attribute.
+	(enabled): Handle required_for_purecode.
+	* config/arm/thumb1.md (thumb1_movsi_insn): Add alternative to
+	work with -mpure-code.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93908
+	* combine.c (find_split_point): For store into ZERO_EXTRACT, and src
+	with mask.
+
+2019-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (dwarf2out_size_function): Run in early-DWARF mode.
+
+2020-02-25  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* doc/install.texi (--enable-checking): Adjust wording.
+
+2020-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93868
+	* tree-vect-slp.c (slp_copy_subtree): New function.
+	(vect_attempt_slp_rearrange_stmts): Copy the SLP tree before
+	re-arranging stmts in it.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93874
+	* passes.c (pass_manager::dump_passes): Create a cgraph node for the
+	dummy function and remove it at the end.
+
+	PR translation/93864
+	* config/lm32/lm32.c (lm32_setup_incoming_varargs): Fix comment typo
+	paramter -> parameter.
+	* config/aarch64/aarch64.c (aarch64_is_extend_from_extract): Likewise.
+	* ipa-prop.h (struct ipa_agg_replacement_value): Likewise.
+
+2020-02-24  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* doc/install.texi (--enable-checking): Properly document current
+	behavior.
+	(--enable-stage1-checking): Minor clarification about bootstrap.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93032
+	* doc/invoke.texi (-Wnanalyzer-tainted-array-index): Note that
+	-fanalyzer-checker=taint is also required.
+	(-fanalyzer-checker=): Note that providing this option enables the
+	given checker, and doing so may be required for checkers that are
+	disabled by default.
+
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (-fanalyzer-verbosity=): "2" only shows

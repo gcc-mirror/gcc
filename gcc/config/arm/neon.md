@@ -6596,3 +6596,51 @@ if (BYTES_BIG_ENDIAN)
   "v<sup>mmla.<mmla_sfx>\t%q0, %q2, %q3"
   [(set_attr "type" "neon_mla_s_q")]
 )
+
+(define_insn "neon_vbfdot<VCVTF:mode>"
+  [(set (match_operand:VCVTF 0 "register_operand" "=w")
+	(plus:VCVTF (match_operand:VCVTF 1 "register_operand" "0")
+		    (unspec:VCVTF [
+			    (match_operand:<VSF2BF> 2 "register_operand" "w")
+			    (match_operand:<VSF2BF> 3 "register_operand" "w")]
+		     UNSPEC_DOT_S)))]
+  "TARGET_BF16_SIMD"
+  "vdot.bf16\\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+(define_insn "neon_vbfdot_lanev4bf<VCVTF:mode>"
+  [(set (match_operand:VCVTF 0 "register_operand" "=w")
+	(plus:VCVTF (match_operand:VCVTF 1 "register_operand" "0")
+		    (unspec:VCVTF [
+			    (match_operand:<VSF2BF> 2 "register_operand" "w")
+			    (match_operand:V4BF 3 "register_operand" "x")
+			    (match_operand:SI 4 "immediate_operand" "i")]
+		     UNSPEC_DOT_S)))]
+  "TARGET_BF16_SIMD"
+  "vdot.bf16\\t%<V_reg>0, %<V_reg>2, %P3[%c4]"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+(define_insn "neon_vbfdot_lanev8bf<VCVTF:mode>"
+  [(set (match_operand:VCVTF 0 "register_operand" "=w")
+	(plus:VCVTF (match_operand:VCVTF 1 "register_operand" "0")
+		    (unspec:VCVTF [
+			    (match_operand:<VSF2BF> 2 "register_operand" "w")
+			    (match_operand:V8BF 3 "register_operand" "x")
+			    (match_operand:SI 4 "immediate_operand" "i")]
+		     UNSPEC_DOT_S)))]
+  "TARGET_BF16_SIMD"
+  {
+    int lane = INTVAL (operands[4]);
+    int half = GET_MODE_NUNITS (GET_MODE (operands[3])) / 4;
+    if (lane < half)
+      return "vdot.bf16\\t%<V_reg>0, %<V_reg>2, %e3[%c4]";
+    else
+      {
+	operands[4] = GEN_INT (lane - half);
+	return "vdot.bf16\\t%<V_reg>0, %<V_reg>2, %f3[%c4]";
+      }
+  }
+  [(set_attr "type" "neon_dot<q>")]
+)

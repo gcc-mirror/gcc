@@ -1660,20 +1660,22 @@ map_region::dump_child_label (const region_model &model,
    If it doesn't already exist, create a child map_region, using TYPE for
    its type.
    Return the region_id of the child (whether pre-existing, or
-   newly-created).  */
+   newly-created).
+   Notify CTXT if we don't know how to handle TYPE.  */
 
 region_id
 map_region::get_or_create (region_model *model,
 			   region_id this_rid,
 			   tree key,
-			   tree type)
+			   tree type,
+			   region_model_context *ctxt)
 {
   gcc_assert (key);
   gcc_assert (valid_key_p (key));
   region_id *slot = m_map.get (key);
   if (slot)
     return *slot;
-  region_id child_rid = model->add_region_for_type (this_rid, type);
+  region_id child_rid = model->add_region_for_type (this_rid, type, ctxt);
   m_map.put (key, child_rid);
   return child_rid;
 }
@@ -1906,7 +1908,8 @@ map_region::can_merge_p (const map_region *map_region_a,
 	    = merged_map_region->get_or_create (merger->m_merged_model,
 						merged_rid,
 						key_a,
-						child_region_a->get_type ());
+						child_region_a->get_type (),
+						NULL);
 
 	  region *child_merged_region
 	    = merger->m_merged_model->get_region (child_merged_rid);
@@ -2194,7 +2197,7 @@ region_id
 array_region::get_element (region_model *model,
 			   region_id this_rid,
 			   svalue_id index_sid,
-			   region_model_context *ctxt ATTRIBUTE_UNUSED)
+			   region_model_context *ctxt)
 {
   tree element_type = TREE_TYPE (get_type ());
   svalue *index_sval = model->get_svalue (index_sid);
@@ -2202,11 +2205,11 @@ array_region::get_element (region_model *model,
     {
       key_t key = key_from_constant (cst_index);
       region_id element_rid
-	= get_or_create (model, this_rid, key, element_type);
+	= get_or_create (model, this_rid, key, element_type, ctxt);
       return element_rid;
    }
 
-  return model->get_or_create_view (this_rid, element_type);
+  return model->get_or_create_view (this_rid, element_type, ctxt);
 }
 
 /* Implementation of region::clone vfunc for array_region.  */
@@ -2323,18 +2326,20 @@ array_region::dump_child_label (const region_model &model,
    If it doesn't already exist, create a child array_region, using TYPE for
    its type.
    Return the region_id of the child (whether pre-existing, or
-   newly-created).  */
+   newly-created).
+   Notify CTXT if we don't know how to handle TYPE.  */
 
 region_id
 array_region::get_or_create (region_model *model,
 			     region_id this_rid,
 			     key_t key,
-			     tree type)
+			     tree type,
+			     region_model_context *ctxt)
 {
   region_id *slot = m_map.get (key);
   if (slot)
     return *slot;
-  region_id child_rid = model->add_region_for_type (this_rid, type);
+  region_id child_rid = model->add_region_for_type (this_rid, type, ctxt);
   m_map.put (key, child_rid);
   return child_rid;
 }
@@ -2890,7 +2895,7 @@ root_region::push_frame (region_model *model, function *fun,
 	  svalue_id arg_sid = (*arg_sids)[idx];
 	  region_id parm_rid
 	    = region->get_or_create (model, frame_rid, iter_parm,
-				     TREE_TYPE (iter_parm));
+				     TREE_TYPE (iter_parm), ctxt);
 	  model->set_value (parm_rid, arg_sid, ctxt);
 
 	  /* Also do it for default SSA name (sharing the same unknown
@@ -2900,7 +2905,7 @@ root_region::push_frame (region_model *model, function *fun,
 	    {
 	      region_id defssa_rid
 		= region->get_or_create (model, frame_rid, parm_default_ssa,
-					 TREE_TYPE (iter_parm));
+					 TREE_TYPE (iter_parm), ctxt);
 	      model->set_value (defssa_rid, arg_sid, ctxt);
 	    }
 	}
@@ -2917,7 +2922,7 @@ root_region::push_frame (region_model *model, function *fun,
 	{
 	  region_id parm_rid
 	    = region->get_or_create (model, frame_rid, iter_parm,
-				     TREE_TYPE (iter_parm));
+				     TREE_TYPE (iter_parm), ctxt);
 	  svalue_id parm_sid
 	    = model->set_to_new_unknown_value (parm_rid, TREE_TYPE (iter_parm),
 					       ctxt);
@@ -2929,7 +2934,7 @@ root_region::push_frame (region_model *model, function *fun,
 	    {
 	      region_id defssa_rid
 		= region->get_or_create (model, frame_rid, parm_default_ssa,
-					 TREE_TYPE (iter_parm));
+					 TREE_TYPE (iter_parm), ctxt);
 	      model->get_region (defssa_rid)->set_value (*model, defssa_rid,
 							 parm_sid, ctxt);
 	    }
@@ -4665,7 +4670,8 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
       {
 	/* For now, create a view, as if a cast, ignoring the bit positions.  */
 	tree obj = TREE_OPERAND (expr, 0);
-	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr),
+				   ctxt);
       };
       break;
 
@@ -4688,7 +4694,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	    = get_root_region ()->ensure_globals_region (this);
 	  map_region *globals = get_region<map_region> (globals_rid);
 	  region_id var_rid = globals->get_or_create (this, globals_rid, expr,
-						      TREE_TYPE (expr));
+						      TREE_TYPE (expr), ctxt);
 	  return var_rid;
 	}
 
@@ -4710,7 +4716,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 	frame_region *frame = get_region <frame_region> (frame_rid);
 	gcc_assert (frame);
 	region_id child_rid = frame->get_or_create (this, frame_rid, expr,
-						    TREE_TYPE (expr));
+						    TREE_TYPE (expr), ctxt);
 	return child_rid;
       }
 
@@ -4726,15 +4732,15 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 						       dump_location_t ());
 	region_id obj_rid = get_lvalue (obj, ctxt);
 	region_id struct_or_union_rid
-	  = get_or_create_view (obj_rid, TREE_TYPE (obj));
-	return get_field_region (struct_or_union_rid, field);
+	  = get_or_create_view (obj_rid, TREE_TYPE (obj), ctxt);
+	return get_field_region (struct_or_union_rid, field, ctxt);
       }
       break;
 
     case CONST_DECL:
       {
 	tree cst_type = TREE_TYPE (expr);
-	region_id cst_rid = add_region_for_type (m_root_rid, cst_type);
+	region_id cst_rid = add_region_for_type (m_root_rid, cst_type, ctxt);
 	if (tree value = DECL_INITIAL (expr))
 	  {
 	    svalue_id sid = get_rvalue (value, ctxt);
@@ -4758,7 +4764,8 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
     case VIEW_CONVERT_EXPR:
       {
 	tree obj = TREE_OPERAND (expr, 0);
-	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr));
+	return get_or_create_view (get_lvalue (obj, ctxt), TREE_TYPE (expr),
+				   ctxt);
       };
       break;
     }
@@ -4776,6 +4783,7 @@ region_model::make_region_for_unexpected_tree_code (region_model_context *ctxt,
 						    tree t,
 						    const dump_location_t &loc)
 {
+  gcc_assert (ctxt);
   region_id new_rid
     = add_region (new symbolic_region (m_root_rid, NULL_TREE, false));
   ctxt->on_unexpected_tree_code (t, loc);
@@ -4840,9 +4848,9 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
 	tree expr = pv.m_tree;
 	tree op0 = TREE_OPERAND (expr, 0);
 	if (TREE_CODE (op0) == FUNCTION_DECL)
-	  return get_svalue_for_fndecl (TREE_TYPE (expr), op0);
+	  return get_svalue_for_fndecl (TREE_TYPE (expr), op0, ctxt);
 	else if (TREE_CODE (op0) == LABEL_DECL)
-	  return get_svalue_for_label (TREE_TYPE (expr), op0);
+	  return get_svalue_for_label (TREE_TYPE (expr), op0, ctxt);
 	region_id expr_rid = get_lvalue (op0, ctxt);
 	return get_or_create_ptr_svalue (TREE_TYPE (expr), expr_rid);
       }
@@ -4945,10 +4953,11 @@ region_model::get_or_create_constant_svalue (tree cst_expr)
    creating the function_region if necessary.  */
 
 svalue_id
-region_model::get_svalue_for_fndecl (tree ptr_type, tree fndecl)
+region_model::get_svalue_for_fndecl (tree ptr_type, tree fndecl,
+				     region_model_context *ctxt)
 {
   gcc_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
-  region_id function_rid = get_region_for_fndecl (fndecl);
+  region_id function_rid = get_region_for_fndecl (fndecl, ctxt);
   return get_or_create_ptr_svalue (ptr_type, function_rid);
 }
 
@@ -4956,24 +4965,27 @@ region_model::get_svalue_for_fndecl (tree ptr_type, tree fndecl)
    creating it if necessary.  */
 
 region_id
-region_model::get_region_for_fndecl (tree fndecl)
+region_model::get_region_for_fndecl (tree fndecl,
+				     region_model_context *ctxt)
 {
   gcc_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
 
   region_id code_rid = get_root_region ()->ensure_code_region (this);
   code_region *code = get_root_region ()->get_code_region (this);
 
-  return code->get_or_create (this, code_rid, fndecl, TREE_TYPE (fndecl));
+  return code->get_or_create (this, code_rid, fndecl, TREE_TYPE (fndecl),
+			      ctxt);
 }
 
 /* Return an svalue_id for a region_svalue for LABEL,
    creating the label_region if necessary.  */
 
 svalue_id
-region_model::get_svalue_for_label (tree ptr_type, tree label)
+region_model::get_svalue_for_label (tree ptr_type, tree label,
+				    region_model_context *ctxt)
 {
   gcc_assert (TREE_CODE (label) == LABEL_DECL);
-  region_id label_rid = get_region_for_label (label);
+  region_id label_rid = get_region_for_label (label, ctxt);
   return get_or_create_ptr_svalue (ptr_type, label_rid);
 }
 
@@ -4981,16 +4993,18 @@ region_model::get_svalue_for_label (tree ptr_type, tree label)
    creating it if necessary.  */
 
 region_id
-region_model::get_region_for_label (tree label)
+region_model::get_region_for_label (tree label,
+				    region_model_context *ctxt)
 {
   gcc_assert (TREE_CODE (label) == LABEL_DECL);
 
   tree fndecl = DECL_CONTEXT (label);
   gcc_assert (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL);
 
-  region_id func_rid = get_region_for_fndecl (fndecl);
+  region_id func_rid = get_region_for_fndecl (fndecl, ctxt);
   function_region *func_reg = get_region <function_region> (func_rid);
-  return func_reg->get_or_create (this, func_rid, label, TREE_TYPE (label));
+  return func_reg->get_or_create (this, func_rid, label, TREE_TYPE (label),
+				  ctxt);
 }
 
 /* Build a cast of SRC_EXPR to DST_TYPE, or return NULL_TREE.
@@ -5124,7 +5138,8 @@ region_model::maybe_cast (tree dst_type, svalue_id sid,
    return the child region's region_id.  */
 
 region_id
-region_model::get_field_region (region_id struct_or_union_rid, tree field)
+region_model::get_field_region (region_id struct_or_union_rid, tree field,
+				region_model_context *ctxt)
 {
   struct_or_union_region *sou_reg
     = get_region<struct_or_union_region> (struct_or_union_rid);
@@ -5141,7 +5156,7 @@ region_model::get_field_region (region_id struct_or_union_rid, tree field)
       /* Union.
 	 Get a view of the union as a whole, with the type of the field.  */
       region_id view_rid
-	= get_or_create_view (struct_or_union_rid, field_type_with_quals);
+	= get_or_create_view (struct_or_union_rid, field_type_with_quals, ctxt);
       return view_rid;
     }
   else
@@ -5149,7 +5164,7 @@ region_model::get_field_region (region_id struct_or_union_rid, tree field)
       /* Struct.  */
       region_id child_rid
 	= sou_reg->get_or_create (this, struct_or_union_rid, field,
-				  field_type_with_quals);
+				  field_type_with_quals, ctxt);
       return child_rid;
     }
 }
@@ -6061,7 +6076,8 @@ region_model::get_region (region_id rid) const
 }
 
 /* Make a region of an appropriate subclass for TYPE,
-   with parent PARENT_RID.  */
+   with parent PARENT_RID, or return NULL for types we don't yet know
+   how to handle.  */
 
 static region *
 make_region_for_type (region_id parent_rid, tree type)
@@ -6091,18 +6107,24 @@ make_region_for_type (region_id parent_rid, tree type)
   if (VOID_TYPE_P (type))
     return new symbolic_region (parent_rid, type, false);
 
-  gcc_unreachable ();
+  return NULL;
 }
 
 /* Add a region with type TYPE and parent PARENT_RID.  */
 
 region_id
-region_model::add_region_for_type (region_id parent_rid, tree type)
+region_model::add_region_for_type (region_id parent_rid, tree type,
+				   region_model_context *ctxt)
 {
   gcc_assert (TYPE_P (type));
 
-  region *new_region = make_region_for_type (parent_rid, type);
-  return add_region (new_region);
+  if (region *new_region = make_region_for_type (parent_rid, type))
+    return add_region (new_region);
+
+  /* If we can't handle TYPE, return a placeholder region, and stop
+     exploring this path.  */
+  return make_region_for_unexpected_tree_code (ctxt, type,
+					       dump_location_t ());
 }
 
 /* Helper class for region_model::purge_unused_svalues.  */
@@ -6581,7 +6603,7 @@ region_model::get_or_create_mem_ref (tree type,
       if (zerop (cst_sval->get_constant ()))
 	{
 	  /* Handle the zero offset case.  */
-	  return get_or_create_view (raw_rid, type);
+	  return get_or_create_view (raw_rid, type, ctxt);
 	}
 
       /* If we're already within an array of the correct type,
@@ -6622,7 +6644,7 @@ region_model::get_or_create_mem_ref (tree type,
 		  region_id element_rid
 		    = parent_array->get_element (this, raw_rid, index_sid,
 						 ctxt);
-		  return get_or_create_view (element_rid, type);
+		  return get_or_create_view (element_rid, type, ctxt);
 		}
 	    }
 	}
@@ -6630,7 +6652,7 @@ region_model::get_or_create_mem_ref (tree type,
 
   tree array_type = build_array_type (TREE_TYPE (ptr_type),
 				      integer_type_node);
-  region_id array_view_rid = get_or_create_view (raw_rid, array_type);
+  region_id array_view_rid = get_or_create_view (raw_rid, array_type, ctxt);
   array_region *array_reg = get_region <array_region> (array_view_rid);
 
   svalue_id index_sid
@@ -6639,7 +6661,7 @@ region_model::get_or_create_mem_ref (tree type,
   region_id element_rid
     = array_reg->get_element (this, array_view_rid, index_sid, ctxt);
 
-  return get_or_create_view (element_rid, type);
+  return get_or_create_view (element_rid, type, ctxt);
 }
 
 /* Get a region of type TYPE for PTR_SID + OFFSET_SID.
@@ -6664,7 +6686,8 @@ region_model::get_or_create_pointer_plus_expr (tree type,
    Return the id of the view (or RAW_ID if it of the same type).  */
 
 region_id
-region_model::get_or_create_view (region_id raw_rid, tree type)
+region_model::get_or_create_view (region_id raw_rid, tree type,
+				  region_model_context *ctxt)
 {
   region *raw_region = get_region (raw_rid);
 
@@ -6679,7 +6702,7 @@ region_model::get_or_create_view (region_id raw_rid, tree type)
 
       /* Otherwise, make one (adding it to the region_model and
 	 to the viewed region).  */
-      region_id view_rid = add_region_for_type (raw_rid, type);
+      region_id view_rid = add_region_for_type (raw_rid, type, ctxt);
       raw_region->add_view (view_rid, this);
       // TODO: something to signify that this is a "view"
       return view_rid;
@@ -8102,7 +8125,8 @@ test_state_merging ()
     region_model model0;
 
     region_id x_rid = model0.get_lvalue (x, &ctxt);
-    region_id x_as_ptr = model0.get_or_create_view (x_rid, ptr_type_node);
+    region_id x_as_ptr = model0.get_or_create_view (x_rid, ptr_type_node,
+						    &ctxt);
     model0.set_value (x_as_ptr, model0.get_rvalue (addr_of_y, &ctxt), &ctxt);
 
     region_model model1 (model0);

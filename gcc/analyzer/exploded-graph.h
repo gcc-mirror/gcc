@@ -43,7 +43,8 @@ class impl_region_model_context : public region_model_context
 
   impl_region_model_context (program_state *state,
 			     state_change *change,
-			     const extrinsic_state &ext_state);
+			     const extrinsic_state &ext_state,
+			     logger *logger = NULL);
 
   void warn (pending_diagnostic *d) FINAL OVERRIDE;
 

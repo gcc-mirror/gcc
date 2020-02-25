@@ -835,6 +835,8 @@
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 
+(define_mode_attr VSF2BF [(V2SF "V4BF") (V4SF "V8BF")])
+
 ;;----------------------------------------------------------------------------
 ;; Code attributes
 ;;----------------------------------------------------------------------------

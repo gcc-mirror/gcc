@@ -6629,8 +6629,9 @@ no longer exists, and likely lead to a crash (or worse).
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
 @opindex Wno-analyzer-tainted-array-index
-This warning requires @option{-fanalyzer}, which enables it; use
-@option{-Wno-analyzer-tainted-array-index} to disable it.
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-array-index} to disable it.
 
 This diagnostic warns for paths through the code in which a value
 that could be under an attacker's control is used as the index
@@ -8436,7 +8437,12 @@ call site, and that are sufficiently complicated (as per
 
 @item -fanalyzer-checker=@var{name}
 @opindex fanalyzer-checker
-Restrict the analyzer to run just the named checker.
+Restrict the analyzer to run just the named checker, and enable it.
+
+Some checkers are disabled by default (even with @option{-fanalyzer}),
+such as the @code{taint} checker that implements
+@option{-Wanalyzer-tainted-array-index}, and this option is required
+to enable them.
 
 @item -fanalyzer-fine-grained
 @opindex fanalyzer-fine-grained

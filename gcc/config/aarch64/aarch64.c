@@ -2294,7 +2294,7 @@ aarch64_is_noplt_call_p (rtx sym)
 
 /* Return true if the offsets to a zero/sign-extract operation
    represent an expression that matches an extend operation.  The
-   operands represent the paramters from
+   operands represent the parameters from
 
    (extract:MODE (mult (reg) (MULT_IMM)) (EXTRACT_IMM) (const_int 0)).  */
 bool

@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! Tests the fix for PR36371, in which the locus for the errors pointed to
-! the paramter declaration rather than the data statement.
+! the parameter declaration rather than the data statement.
 !
 ! Contributed by Dominique d'Humieres <dominiq@lps.ens.fr>
 !

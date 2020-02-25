@@ -18819,6 +18819,58 @@ vusmmlaq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b)
 
 #pragma GCC pop_options
 
+/* AdvSIMD Brain half-precision float-point (Bfloat16) intrinsics.  */
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+bf16")
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x4_t __b)
+{
+  return __builtin_neon_vbfdotv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b)
+{
+  return __builtin_neon_vbfdotv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_lane_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x4_t __b,
+		 const int __index)
+{
+  return __builtin_neon_vbfdot_lanev4bfv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
+		   const int __index)
+{
+  return __builtin_neon_vbfdot_lanev8bfv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_laneq_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x8_t __b,
+		  const int __index)
+{
+  return __builtin_neon_vbfdot_lanev8bfv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_lane_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x4_t __b,
+		  const int __index)
+{
+  return __builtin_neon_vbfdot_lanev4bfv4sf (__r, __a, __b, __index);
+}
+
+#pragma GCC pop_options
+
 #ifdef __cplusplus
 }
 #endif
