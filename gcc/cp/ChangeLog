@@ -1,5 +1,11 @@
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87685 - generic lambda 'this' capture error.
+	* lambda.c (lambda_expr_this_capture): Change add_capture_p to int.
+	(maybe_generic_this_capture): Pass -1.
+
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
 	PR c++/87554 - ICE with extern template and reference member.
 	* decl.c (cp_finish_decl): Don't set DECL_INITIAL of external vars.
 

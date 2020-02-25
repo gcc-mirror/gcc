@@ -705,10 +705,11 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 
 /* Return the capture pertaining to a use of 'this' in LAMBDA, in the
    form of an INDIRECT_REF, possibly adding it through default
-   capturing, if ADD_CAPTURE_P is true.  */
+   capturing, if ADD_CAPTURE_P is nonzero.  If ADD_CAPTURE_P is negative,
+   try to capture but don't complain if we can't.  */
 
 tree
-lambda_expr_this_capture (tree lambda, bool add_capture_p)
+lambda_expr_this_capture (tree lambda, int add_capture_p)
 {
   tree result;
 
@@ -804,7 +805,7 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
     result = this_capture;
   else if (!this_capture)
     {
-      if (add_capture_p)
+      if (add_capture_p == 1)
 	{
 	  error ("%<this%> was not captured for this lambda function");
 	  result = error_mark_node;
@@ -908,7 +909,7 @@ maybe_generic_this_capture (tree object, tree fns)
 	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
-	      lambda_expr_this_capture (lam, true);
+	      lambda_expr_this_capture (lam, /*maybe*/-1);
 	      break;
 	    }
       }
