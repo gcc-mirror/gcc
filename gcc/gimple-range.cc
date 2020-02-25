@@ -52,16 +52,16 @@ along with GCC; see the file COPYING3.  If not see
 // builtin function is a boolean result.
 
 static void
-gimple_range_adjustment (const gimple *s, irange &res)
+gimple_range_adjustment (const gimple *stmt, irange &res)
 {
-  switch (gimple_expr_code (s))
+  switch (gimple_expr_code (stmt))
     {
     case IMAGPART_EXPR:
       {
 	tree name;
-	tree type = TREE_TYPE (gimple_assign_lhs (s));
+	tree type = TREE_TYPE (gimple_assign_lhs (stmt));
 
-	name = TREE_OPERAND (gimple_assign_rhs1 (s), 0);
+	name = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
 	if (TREE_CODE (name) == SSA_NAME)
 	  {
 	    gimple *def_stmt = SSA_NAME_DEF_STMT (name);
@@ -219,15 +219,15 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
 // the result in RES.  Return false if the operation fails.
 
 bool
-gimple_range_fold (const gimple *s, irange &res, const irange &r1)
+gimple_range_fold (const gimple *stmt, irange &res, const irange &r1)
 {
-  gcc_checking_assert (gimple_range_handler (s));
+  gcc_checking_assert (gimple_range_handler (stmt));
 
-  tree type = gimple_expr_type (s);;
+  tree type = gimple_expr_type (stmt);
   int_range<1> r2 (type);
   // Single ssa operations require the LHS type as the second range.
 
-  return gimple_range_fold (s, res, r1, r2);
+  return gimple_range_fold (stmt, res, r1, r2);
 }
 
 
@@ -235,15 +235,16 @@ gimple_range_fold (const gimple *s, irange &res, const irange &r1)
 // returning the result in RES.  Return false if the operation fails.
 
 bool
-gimple_range_fold (const gimple *s, irange &res,
+gimple_range_fold (const gimple *stmt, irange &res,
 		   const irange &r1, const irange &r2)
 {
-  gcc_checking_assert (gimple_range_handler (s));
+  gcc_checking_assert (gimple_range_handler (stmt));
 
-  gimple_range_handler (s)->fold_range (res, gimple_expr_type (s), r1, r2);
+  gimple_range_handler (stmt)->fold_range (res, gimple_expr_type (stmt),
+					   r1, r2);
 
   // If there are any gimple lookups, do those now.
-  gimple_range_adjustment (s, res);
+  gimple_range_adjustment (stmt, res);
   return true;
 }
 
@@ -253,18 +254,18 @@ gimple_range_fold (const gimple *s, irange &res,
 // &(SSA_NAME expr), return the SSA_NAME instead of the ADDR expr.
 
 tree
-gimple_range_operand1 (const gimple *s)
+gimple_range_operand1 (const gimple *stmt)
 {
-  gcc_checking_assert (gimple_range_handler (s));
+  gcc_checking_assert (gimple_range_handler (stmt));
 
-  switch (gimple_code (s))
+  switch (gimple_code (stmt))
     {
       case GIMPLE_COND:
-        return gimple_cond_lhs (s);
+        return gimple_cond_lhs (stmt);
       case GIMPLE_ASSIGN:
         {
-	  tree expr = gimple_assign_rhs1 (s);
-	  if (gimple_assign_rhs_code (s) == ADDR_EXPR)
+	  tree expr = gimple_assign_rhs1 (stmt);
+	  if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
 	    {
 	      // If the base address is an SSA_NAME, we return it
 	      // here.  This allows processing of the range of that
@@ -289,20 +290,20 @@ gimple_range_operand1 (const gimple *s)
 }
 
 
-// Return the second operand of statement S, otherwise return NULL_TREE.
+// Return the second operand of statement STMT, otherwise return NULL_TREE.
 
 tree
-gimple_range_operand2 (const gimple *s)
+gimple_range_operand2 (const gimple *stmt)
 {
-  gcc_checking_assert (gimple_range_handler (s));
+  gcc_checking_assert (gimple_range_handler (stmt));
 
-  switch (gimple_code (s))
+  switch (gimple_code (stmt))
     {
     case GIMPLE_COND:
-      return gimple_cond_rhs (s);
+      return gimple_cond_rhs (stmt);
     case GIMPLE_ASSIGN:
-      if (gimple_num_ops (s) >= 3)
-	return gimple_assign_rhs2 (s);
+      if (gimple_num_ops (stmt) >= 3)
+	return gimple_assign_rhs2 (stmt);
     default:
       break;
     }
@@ -316,12 +317,12 @@ gimple_range_operand2 (const gimple *s)
 // LHS_RANGE.  Return false if nothing can be determined.
 
 bool
-gimple_range_calc_op1 (const gimple *s, irange &r, const irange &lhs_range)
+gimple_range_calc_op1 (const gimple *stmt, irange &r, const irange &lhs_range)
 {
-  gcc_checking_assert (gimple_num_ops (s) < 3);
+  gcc_checking_assert (gimple_num_ops (stmt) < 3);
   // An empty range is viral, so return an empty range.
 
-  tree type = TREE_TYPE (gimple_range_operand1 (s));
+  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
   if (lhs_range.undefined_p ())
     {
       r.set_undefined ();
@@ -330,7 +331,8 @@ gimple_range_calc_op1 (const gimple *s, irange &r, const irange &lhs_range)
   // Unary operations require the type of the first operand in the
   // second range position.
   int_range<1> type_range (type);
-  return gimple_range_handler (s)->op1_range (r, type, lhs_range, type_range);
+  return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
+						 type_range);
 }
 
 
@@ -340,20 +342,21 @@ gimple_range_calc_op1 (const gimple *s, irange &r, const irange &lhs_range)
 // nothing can be determined.
 
 bool
-gimple_range_calc_op1 (const gimple *s, irange &r,
+gimple_range_calc_op1 (const gimple *stmt, irange &r,
 		       const irange &lhs_range, const irange &op2_range)
 {
   // Unary operation are allowed to pass a range in for second operand
   // as there are often additional restrictions beyond the type which
   // can be imposed.  See operator_cast::op1_range.()
-  tree type = TREE_TYPE (gimple_range_operand1 (s));
+  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
   // An empty range is viral, so return an empty range.
   if (op2_range.undefined_p () || lhs_range.undefined_p ())
     {
       r.set_undefined ();
       return true;
     }
-  return gimple_range_handler (s)->op1_range (r, type, lhs_range, op2_range);
+  return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
+						 op2_range);
 }
 
 
@@ -363,15 +366,16 @@ gimple_range_calc_op1 (const gimple *s, irange &r,
 // nothing can be determined.
 
 bool
-gimple_range_calc_op2 (const gimple *s, irange &r,
+gimple_range_calc_op2 (const gimple *stmt, irange &r,
 		       const irange &lhs_range, const irange &op1_range)
 {
-  tree type = TREE_TYPE (gimple_range_operand2 (s));
+  tree type = TREE_TYPE (gimple_range_operand2 (stmt));
   // An empty range is viral, so return an empty range.
   if (op1_range.undefined_p () || lhs_range.undefined_p ())
     {
       r.set_undefined ();
       return true;
     }
-  return gimple_range_handler (s)->op2_range (r, type, lhs_range, op1_range);
+  return gimple_range_handler (stmt)->op2_range (r, type, lhs_range,
+						 op1_range);
 }

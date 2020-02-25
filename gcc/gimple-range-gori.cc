@@ -492,8 +492,8 @@ gori_compute::range_of_ssa_name (irange &r, tree name,
 
 
 // This function returns a range for a tree node.  If optional
-// statement S is present, then the range would be if it were to
-// appear as a use on S.  Return false if ranges are not supported for
+// statement STMT is present, then the range would be if it were to
+// appear as a use on STMT.  Return false if ranges are not supported for
 // the type of EXPR.
 
 bool
@@ -541,7 +541,7 @@ gori_compute::range_of_expr (irange &r, tree expr, gimple *stmt)
 // Same as range_of_expr, but no statement option, and perform
 // substitution of NAME with RANGE_OF_NAME if expr happens to match
 // it.  Since there is no statement, this enforces that ranges for
-// ssa-names invoked wont go off and calculate a range in derived
+// ssa-names invoked won't go off and calculate a range in derived
 // bases.
 
 void
@@ -989,10 +989,10 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
 }
 
 
-// Calculate a range for NAME from the operand 1 position of S
+// Calculate a range for NAME from the operand 1 position of STMT
 // assuming the result of the statement is LHS.  Return the range in
 // R, or false if no range could be calculated.  If present,
-// NAME_RANGE is any known range for NAME coming into S.
+// NAME_RANGE is any known range for NAME coming into STMT.
 
 bool
 gori_compute::compute_operand1_range (irange &r, gimple *stmt,
@@ -1009,7 +1009,7 @@ gori_compute::compute_operand1_range (irange &r, gimple *stmt,
   // Now calcuated the operand and put that result in r.
   if (!op2)
     {
-      // we pass op1_range to the unary operation. Nomally it's a
+      // We pass op1_range to the unary operation.  Nomally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
       if (!gimple_range_calc_op1 (stmt, r, lhs, op1_range))
