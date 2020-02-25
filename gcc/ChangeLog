@@ -1,3 +1,9 @@
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93908
+	* combine.c (find_split_point): For store into ZERO_EXTRACT, and src
+	with mask.
+
 2019-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (dwarf2out_size_function): Run in early-DWARF mode.
