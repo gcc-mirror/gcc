@@ -1,3 +1,9 @@
+2020-02-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/93843
+	* gcc.dg/vect/pr93843-1.c: New test.
+	* gcc.dg/vect/pr93843-2.c: Likewise.
+
 2020-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93820
