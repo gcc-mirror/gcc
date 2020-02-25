@@ -1,5 +1,8 @@
 2020-02-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/merge-12{,_[ab]}.[hHC]: New.
+
 	gcc/cp/
 	* typeck.c (structural_comptypes): Deal with TYPE_ARGUMENT_PACK.
 	gcc/testsuite/
