@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target c++11 } } */
 /* { dg-options "-O3" } */
 
 struct search_param {

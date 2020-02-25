@@ -1,5 +1,10 @@
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/93763
+	* gcc.dg/ipa/pr93763.c: Adjust the test so that it compiles without
+	warnings and still ICEs before the ipa-cp.c fix.
+	* g++.dg/ipa/pr93763.C: Require c++11 effective target.
+
 	PR translation/93864
 	* objc.dg/encode-2.m: Fix comment typo paramter -> parameter.
 	* obj-c++.dg/encode-4.mm: Likewise.
