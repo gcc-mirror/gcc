@@ -1848,8 +1848,9 @@ properly if you are building the compiler with GCC@.
 
 When the option is not specified, the active set of checks depends on context.
 Namely, bootstrap stage 1 defaults to @samp{--enable-checking=yes}, builds
-from release archives default to @samp{--enable-checking=release}, and
-otherwise @samp{--enable-checking=yes,extra} is used.  When the option is
+from release branches or release archives default to
+@samp{--enable-checking=release}, and otherwise
+@samp{--enable-checking=yes,extra} is used.  When the option is
 specified without a @var{list}, the result is the same as
 @samp{--enable-checking=yes}.  Likewise, @samp{--disable-checking} is
 equivalent to @samp{--enable-checking=no}.
@@ -1872,8 +1873,9 @@ checking with extra checks that might affect code generation and should
 therefore not differ between stage1 and later stages in bootstrap.
 
 The @samp{valgrind} check requires the external @command{valgrind} simulator,
-available from @uref{http://valgrind.org/}.  The @samp{df}, @samp{rtl},
-@samp{gcac} and @samp{valgrind} checks are very expensive.
+available from @uref{http://valgrind.org/}.  The @samp{rtl} checks are
+expensive and the @samp{df}, @samp{gcac} and @samp{valgrind} checks are very
+expensive.
 
 @item --disable-stage1-checking
 @itemx --enable-stage1-checking
