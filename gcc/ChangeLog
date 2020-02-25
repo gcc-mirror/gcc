@@ -1,3 +1,11 @@
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/93864
+	* config/lm32/lm32.c (lm32_setup_incoming_varargs): Fix comment typo
+	paramter -> parameter.
+	* config/aarch64/aarch64.c (aarch64_is_extend_from_extract): Likewise.
+	* ipa-prop.h (struct ipa_agg_replacement_value): Likewise.
+
 2020-02-24  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* doc/install.texi (--enable-checking): Properly document current

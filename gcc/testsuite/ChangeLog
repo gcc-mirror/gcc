@@ -1,3 +1,11 @@
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/93864
+	* objc.dg/encode-2.m: Fix comment typo paramter -> parameter.
+	* obj-c++.dg/encode-4.mm: Likewise.
+	* gfortran.dg/data_array_5.f90: Likewise.
+	* gcc.dg/decl-1.c: Likewise.
+
 2020-02-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93032
