@@ -1,3 +1,12 @@
+2020-02-25  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backport from master
+	2020-02-24  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* doc/install.texi (--enable-checking): Properly document current
+	behavior.
+	(--enable-stage1-checking): Minor clarification about bootstrap.
+
 2020-02-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
