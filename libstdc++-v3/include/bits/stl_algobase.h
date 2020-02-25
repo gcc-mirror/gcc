@@ -95,7 +95,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for(; __num > 0; --__num)
 	    {
 	      if constexpr (_IsMove)
-		*__dst = std::move(*__src);
+		// This const_cast looks unsafe, but we only use this function
+		// for trivially-copyable types, which means this assignment
+		// is trivial and so doesn't alter the source anyway.
+		// See PR 93872 for why it's needed.
+		*__dst = std::move(*const_cast<_Tp*>(__src));
 	      else
 		*__dst = *__src;
 	      ++__src;

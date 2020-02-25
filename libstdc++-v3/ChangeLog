@@ -1,3 +1,11 @@
+2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93872
+	* include/bits/stl_algobase.h (__memmove): Cast away const before
+	doing move assignment.
+	* testsuite/25_algorithms/move/93872.cc: New test.
+	* testsuite/25_algorithms/move_backward/93872.cc: New test.
+
 2020-02-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/93884
