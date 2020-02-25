@@ -1,3 +1,15 @@
+2020-02-25  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm_neon.h (vbfdot_f32, vbfdotq_f32): New
+	(vbfdot_lane_f32, vbfdotq_laneq_f32): New.
+	(vbfdot_laneq_f32, vbfdotq_lane_f32): New.
+	* config/arm/arm_neon_builtins.def (vbfdot): New entry.
+	(vbfdot_lanev4bf, vbfdot_lanev8bf): Likewise.
+	* config/arm/iterators.md (VSF2BF): New attribute.
+	* config/arm/neon.md (neon_vbfdot<VCVTF:mode>): New entry.
+	(neon_vbfdot_lanev4bf<VCVTF:mode>): Likewise.
+	(neon_vbfdot_lanev8bf<VCVTF:mode>): Likewise.
+
 2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm.md (required_for_purecode): New attribute.

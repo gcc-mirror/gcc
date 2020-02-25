@@ -1,3 +1,9 @@
+2020-02-25  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/bf16_dot_1.c: New test.
+	* gcc.target/arm/simd/bf16_dot_2.c: New test.
+	* gcc.target/arm/simd/bf16_dot_3.c: New test.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93908
