@@ -1,3 +1,10 @@
+2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.md (required_for_purecode): New attribute.
+	(enabled): Handle required_for_purecode.
+	* config/arm/thumb1.md (thumb1_movsi_insn): Add alternative to
+	work with -mpure-code.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93908
