@@ -248,37 +248,41 @@ namespace ranges
 	}
       else if constexpr (sized_sentinel_for<_Sent, _Iter>)
 	{
-	  using _ValueTypeI = iter_value_t<_Iter>;
-	  using _ValueTypeO = typename iterator_traits<_Out>::value_type;
-	  constexpr bool __use_memmove
-	    = (is_trivially_copyable_v<_ValueTypeI>
-	       && is_same_v<_ValueTypeI, _ValueTypeO>
-	       && is_pointer_v<_Iter>
-	       && is_pointer_v<_Out>);
+#ifdef __cpp_lib_is_constant_evaluated
+	  if (!std::is_constant_evaluated())
+#endif
+	    {
+	      using _ValueTypeI = iter_value_t<_Iter>;
+	      using _ValueTypeO = typename iterator_traits<_Out>::value_type;
+	      constexpr bool __use_memmove
+		= (is_trivially_copyable_v<_ValueTypeI>
+		    && is_same_v<_ValueTypeI, _ValueTypeO>
+		    && is_pointer_v<_Iter>
+		    && is_pointer_v<_Out>);
 
-	  if constexpr (__use_memmove)
-	    {
-	      static_assert(_IsMove
-			    ? is_move_assignable_v<_ValueTypeI>
-			    : is_copy_assignable_v<_ValueTypeI>);
-	      auto __num = __last - __first;
-	      if (__num)
-		std::__memmove<_IsMove>(__result, __first, __num);
-	      return {__first + __num, __result + __num};
-	    }
-	  else
-	    {
-	      for (auto __n = __last - __first; __n > 0; --__n)
+	      if constexpr (__use_memmove)
 		{
-		  if constexpr (_IsMove)
-		    *__result = std::move(*__first);
-		  else
-		    *__result = *__first;
-		  ++__first;
-		  ++__result;
+		  static_assert(_IsMove
+		      ? is_move_assignable_v<_ValueTypeI>
+		      : is_copy_assignable_v<_ValueTypeI>);
+		  auto __num = __last - __first;
+		  if (__num)
+		    __builtin_memmove(__result, __first,
+			sizeof(_ValueTypeI) * __num);
+		  return {__first + __num, __result + __num};
 		}
-	      return {std::move(__first), std::move(__result)};
 	    }
+
+	  for (auto __n = __last - __first; __n > 0; --__n)
+	    {
+	      if constexpr (_IsMove)
+		*__result = std::move(*__first);
+	      else
+		*__result = *__first;
+	      ++__first;
+	      ++__result;
+	    }
+	  return {std::move(__first), std::move(__result)};
 	}
       else
 	{
@@ -385,39 +389,43 @@ namespace ranges
 	}
       else if constexpr (sized_sentinel_for<_Sent, _Iter>)
 	{
-	  using _ValueTypeI = iter_value_t<_Iter>;
-	  using _ValueTypeO = typename iterator_traits<_Out>::value_type;
-	  constexpr bool __use_memmove
-	    = (is_trivially_copyable_v<_ValueTypeI>
-	       && is_same_v<_ValueTypeI, _ValueTypeO>
-	       && is_pointer_v<_Iter>
-	       && is_pointer_v<_Out>);
-	  if constexpr (__use_memmove)
+#ifdef __cpp_lib_is_constant_evaluated
+	  if (!std::is_constant_evaluated())
+#endif
 	    {
-	      static_assert(_IsMove
-			    ? is_move_assignable_v<_ValueTypeI>
-			    : is_copy_assignable_v<_ValueTypeI>);
-	      auto __num = __last - __first;
-	      if (__num)
-		std::__memmove<_IsMove>(__result - __num, __first, __num);
-	      return {__first + __num, __result - __num};
-	    }
-	  else
-	    {
-	      auto __lasti = ranges::next(__first, __last);
-	      auto __tail = __lasti;
-
-	      for (auto __n = __last - __first; __n > 0; --__n)
+	      using _ValueTypeI = iter_value_t<_Iter>;
+	      using _ValueTypeO = typename iterator_traits<_Out>::value_type;
+	      constexpr bool __use_memmove
+		= (is_trivially_copyable_v<_ValueTypeI>
+		    && is_same_v<_ValueTypeI, _ValueTypeO>
+		    && is_pointer_v<_Iter>
+		    && is_pointer_v<_Out>);
+	      if constexpr (__use_memmove)
 		{
-		  --__tail;
-		  --__result;
-		  if constexpr (_IsMove)
-		    *__result = std::move(*__tail);
-		  else
-		    *__result = *__tail;
+		  static_assert(_IsMove
+		      ? is_move_assignable_v<_ValueTypeI>
+		      : is_copy_assignable_v<_ValueTypeI>);
+		  auto __num = __last - __first;
+		  if (__num)
+		    __builtin_memmove(__result - __num, __first,
+				      sizeof(_ValueTypeI) * __num);
+		  return {__first + __num, __result - __num};
 		}
-	      return {std::move(__lasti), std::move(__result)};
 	    }
+
+	  auto __lasti = ranges::next(__first, __last);
+	  auto __tail = __lasti;
+
+	  for (auto __n = __last - __first; __n > 0; --__n)
+	    {
+	      --__tail;
+	      --__result;
+	      if constexpr (_IsMove)
+		*__result = std::move(*__tail);
+	      else
+		*__result = *__tail;
+	    }
+	  return {std::move(__lasti), std::move(__result)};
 	}
       else
 	{

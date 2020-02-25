@@ -81,39 +81,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /*
-   * A constexpr wrapper for __builtin_memmove.
-   * @param __num The number of elements of type _Tp (not bytes).
-   */
-  template<bool _IsMove, typename _Tp>
-    _GLIBCXX14_CONSTEXPR
-    inline void*
-    __memmove(_Tp* __dst, const _Tp* __src, size_t __num)
-    {
-#ifdef __cpp_lib_is_constant_evaluated
-      if (std::is_constant_evaluated())
-	{
-	  for(; __num > 0; --__num)
-	    {
-	      if constexpr (_IsMove)
-		// This const_cast looks unsafe, but we only use this function
-		// for trivially-copyable types, which means this assignment
-		// is trivial and so doesn't alter the source anyway.
-		// See PR 93872 for why it's needed.
-		*__dst = std::move(*const_cast<_Tp*>(__src));
-	      else
-		*__dst = *__src;
-	      ++__src;
-	      ++__dst;
-	    }
-	  return __dst;
-	}
-      else
-#endif
-	return __builtin_memmove(__dst, __src, sizeof(_Tp) * __num);
-      return __dst;
-    }
-
-  /*
    * A constexpr wrapper for __builtin_memcmp.
    * @param __num The number of elements of type _Tp (not bytes).
    */
@@ -453,7 +420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
-	    std::__memmove<_IsMove>(__result, __first, _Num);
+	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
 	  return __result + _Num;
 	}
     };
@@ -492,9 +459,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _OI
     __copy_move_a2(_II __first, _II __last, _OI __result)
     {
+      typedef typename iterator_traits<_II>::iterator_category _Category;
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return std::__copy_move<_IsMove, false, _Category>::
+	  __copy_m(__first, __last, __result);
+#endif
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
-      typedef typename iterator_traits<_II>::iterator_category _Category;
       const bool __simple = (__is_trivially_copyable(_ValueTypeI)
 			     && __is_pointer<_II>::__value
 			     && __is_pointer<_OI>::__value
@@ -719,7 +691,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
-	    std::__memmove<_IsMove>(__result - _Num, __first, _Num);
+	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
 	  return __result - _Num;
 	}
     };
@@ -729,20 +701,19 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     inline _BI2
     __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
     {
+      typedef typename iterator_traits<_BI1>::iterator_category _Category;
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return std::__copy_move_backward<_IsMove, false, _Category>::
+	  __copy_move_b(__first, __last, __result);
+#endif
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
-      typedef typename iterator_traits<_BI1>::iterator_category _Category;
       const bool __simple = (__is_trivially_copyable(_ValueType1)
 			     && __is_pointer<_BI1>::__value
 			     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
 
-#ifdef __cpp_lib_is_constant_evaluated
-      if (std::is_constant_evaluated())
-	return std::__copy_move_backward<true, false,
-			      _Category>::__copy_move_b(__first, __last,
-							__result);
-#endif
       return std::__copy_move_backward<_IsMove, __simple,
 				       _Category>::__copy_move_b(__first,
 								 __last,

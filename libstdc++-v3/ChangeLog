@@ -1,5 +1,19 @@
 2020-02-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/ranges_algobase.h (__copy_or_move): Do not use memmove
+	during constant evaluation. Call __builtin_memmove directly instead of
+	__memmove.
+	(__copy_or_move_backward): Likewise.
+	* include/bits/stl_algobase.h (__memmove): Remove.
+	(__copy_move<M, true, random_access_iterator_tag>::__copy_m)
+	(__copy_move_backward<M, true, random_access_iterator_tag>::__copy_m):
+	Use __builtin_memmove directly instead of __memmove.
+	(__copy_move_a2): Do not use memmove during constant evaluation.
+	(__copy_move_backward_a2): Use _IsMove constant to select correct
+	__copy_move_backward specialization.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Check for copies
+	begin turned into moves during constant evaluation.
+
 	* testsuite/25_algorithms/move_backward/93872.cc: Add test left out of
 	previous commit.
 
