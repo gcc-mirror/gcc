@@ -27685,6 +27685,7 @@ dwarf2out_inline_entry (tree block)
 static void
 dwarf2out_size_function (tree decl)
 {
+  set_early_dwarf s;
   function_to_dwarf_procedure (decl);
 }
 

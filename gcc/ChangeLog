@@ -1,3 +1,7 @@
+2019-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (dwarf2out_size_function): Run in early-DWARF mode.
+
 2020-02-25  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backport from master
