@@ -34,6 +34,123 @@
 #define __DISABLE_AVX512FP16VL__
 #endif /* __AVX512FP16VL__ */
 
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_castph_ps (__m128h __a)
+{
+  return (__m128) __a;
+}
+
+extern __inline __m256
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castph_ps (__m256h __a)
+{
+  return (__m256) __a;
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_castph_pd (__m128h __a)
+{
+  return (__m128d) __a;
+}
+
+extern __inline __m256d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castph_pd (__m256h __a)
+{
+  return (__m256d) __a;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_castph_si128 (__m128h __a)
+{
+  return (__m128i) __a;
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castph_si256 (__m256h __a)
+{
+  return (__m256i) __a;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_castps_ph (__m128 __a)
+{
+  return (__m128h) __a;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castps_ph (__m256 __a)
+{
+  return (__m256h) __a;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_castpd_ph (__m128d __a)
+{
+  return (__m128h) __a;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castpd_ph (__m256d __a)
+{
+  return (__m256h) __a;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_castsi128_ph (__m128i __a)
+{
+  return (__m128h) __a;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castsi256_ph (__m256i __a)
+{
+  return (__m256h) __a;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castph256_ph128 (__m256h __A)
+{
+  union
+  {
+    __m128h a[2];
+    __m256h v;
+  } u = { .v = __A };
+  return u.a[0];
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_castph128_ph256 (__m128h __A)
+{
+  union
+  {
+    __m128h a[2];
+    __m256h v;
+  } u;
+  u.a[0] = __A;
+  return u.v;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_zextph128_ph256 (__m128h __A)
+{
+  return (__m256h) _mm256_insertf128_ps (_mm256_setzero_ps (),
+					 (__m128) __A, 0);
+}
+
 /* Intrinsics v[add,sub,mul,div]ph.  */
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))

@@ -192,6 +192,159 @@ _mm512_setzero_ph (void)
   return _mm512_set1_ph (0.0f);
 }
 
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_undefined_ph (void)
+{
+  __m128h __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_undefined_ph (void)
+{
+  __m256h __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_undefined_ph (void)
+{
+  __m512h __Y = __Y;
+  return __Y;
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsh_h (__m128h __A)
+{
+  return __A[0];
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtsh_h (__m256h __A)
+{
+  return __A[0];
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtsh_h (__m512h __A)
+{
+  return __A[0];
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph_ps (__m512h __a)
+{
+  return (__m512) __a;
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph_pd (__m512h __a)
+{
+  return (__m512d) __a;
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph_si512 (__m512h __a)
+{
+  return (__m512i) __a;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph512_ph128 (__m512h __A)
+{
+  union
+  {
+    __m128h a[4];
+    __m512h v;
+  } u = { .v = __A };
+  return u.a[0];
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph512_ph256 (__m512h __A)
+{
+  union
+  {
+    __m256h a[2];
+    __m512h v;
+  } u = { .v = __A };
+  return u.a[0];
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph128_ph512 (__m128h __A)
+{
+  union
+  {
+    __m128h a[4];
+    __m512h v;
+  } u;
+  u.a[0] = __A;
+  return u.v;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castph256_ph512 (__m256h __A)
+{
+  union
+  {
+    __m256h a[2];
+    __m512h v;
+  } u;
+  u.a[0] = __A;
+  return u.v;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextph128_ph512 (__m128h __A)
+{
+  return (__m512h) _mm512_insertf32x4 (_mm512_setzero_ps (),
+				       (__m128) __A, 0);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextph256_ph512 (__m256h __A)
+{
+  return (__m512h) _mm512_insertf64x4 (_mm512_setzero_pd (),
+				       (__m256d) __A, 0);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castps_ph (__m512 __a)
+{
+  return (__m512h) __a;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castpd_ph (__m512d __a)
+{
+  return (__m512h) __a;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_castsi512_ph (__m512i __a)
+{
+  return (__m512h) __a;
+}
+
 /* Create a vector with element 0 as F and the rest zero.  */
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
