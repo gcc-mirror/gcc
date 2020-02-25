@@ -1,5 +1,11 @@
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/89831 - error with qualified-id in const member function.
+	* semantics.c (finish_non_static_data_member): Use object cv-quals
+	in scoped case, too.
+
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
 	PR c++/88380 - wrong-code with flexible array and NSDMI.
 	* typeck2.c (process_init_constructor_record): Skip flexarrays.
 
