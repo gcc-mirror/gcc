@@ -1,3 +1,7 @@
+2020-02-25  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute access): Correct an example.
+
 2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_scalar_builtin_types):
