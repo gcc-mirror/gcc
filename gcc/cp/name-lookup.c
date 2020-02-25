@@ -3549,7 +3549,8 @@ enum merge_match
   };
 
 static tree
-check_mergeable_decl (merge_match kind, tree decl, tree ovl, tree ret, tree args)
+check_mergeable_decl (merge_match kind, tree decl, tree ovl,
+		      tree ret, tree args, tree reqs)
 {
   if (kind == MM_anon_enum)
     gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
@@ -3584,8 +3585,7 @@ check_mergeable_decl (merge_match kind, tree decl, tree ovl, tree ret, tree args
       switch (TREE_CODE (d_inner))
 	{
 	case TEMPLATE_DECL:
-	  if (comp_template_parms (DECL_TEMPLATE_PARMS (d_inner),
-				   DECL_TEMPLATE_PARMS (m_inner)))
+	  if (template_heads_equivalent_p (d_inner, m_inner))
 	    {
 	      d_inner = DECL_TEMPLATE_RESULT (d_inner);
 	      m_inner = DECL_TEMPLATE_RESULT (m_inner);
@@ -3595,12 +3595,30 @@ check_mergeable_decl (merge_match kind, tree decl, tree ovl, tree ret, tree args
 
 	case FUNCTION_DECL:
 	  // FIXME: Perhaps simply !null ret?
+	  // FIXME: Compare constraints
 	  if (TREE_TYPE (m_inner)
 	      && ((d_inner == decl
 		   && !IDENTIFIER_CONV_OP_P (DECL_NAME (d_inner)))
 		  || same_type_p (ret, TREE_TYPE (TREE_TYPE (m_inner))))
 	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (m_inner))))
-	    return match;
+	    {
+	      tree m_reqs = get_constraints (m_inner);
+	      if (m_reqs)
+		{
+		  if (cxx_dialect < cxx2a)
+		    m_reqs = CI_ASSOCIATED_CONSTRAINTS (m_reqs);
+		  else
+		    {
+		      m_reqs = CI_DECLARATOR_REQS (m_reqs);
+		      if (!m_reqs != !reqs)
+			break;
+		      m_reqs = maybe_substitute_reqs_for (m_reqs, m_inner);
+		    }
+		}
+
+	      if (cp_tree_equal (m_reqs, reqs))
+		return match;
+	    }
 	  break;
 
 	case TYPE_DECL:
@@ -3700,6 +3718,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	{
 	  tree ret = NULL_TREE;
 	  tree args = NULL_TREE;
+	  tree reqs = NULL_TREE;
 	  tree inner = decl;
 
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -3708,12 +3727,25 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	  if (TREE_CODE (inner) == FUNCTION_DECL)
 	    {
 	      if (inner != decl)
-		ret = TREE_TYPE (TREE_TYPE (inner));
+		{
+		  ret = TREE_TYPE (TREE_TYPE (inner));
+		  reqs = get_constraints (inner);
+		  if (reqs)
+		    {
+		      if (cxx_dialect < cxx2a)
+			reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
+		      else
+			{
+			  gcc_assert (!DECL_FRIEND_P (inner));
+			  reqs = CI_DECLARATOR_REQS (reqs);
+			}
+		    }
+		}
 	      args = TYPE_ARG_TYPES (TREE_TYPE (inner));
 	    }
 
 	  if (tree match = check_mergeable_decl
-	      (MM_namespace_scope, decl, mergeable, ret, args))
+	      (MM_namespace_scope, decl, mergeable, ret, args, reqs))
 	    {
 	      match = duplicate_decls (decl, match, is_friend);
 	      if (TREE_CODE (match) == TYPE_DECL)
@@ -3953,7 +3985,7 @@ pushdecl (tree x, bool is_friend)
 // that that's happening
 tree
 mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
-			    tree ret, tree args)
+			    tree ret, tree args, tree reqs)
 {
   tree *slot = find_namespace_slot (ctx, name, true);
   tree *gslot = get_fixed_binding_slot
@@ -3961,7 +3993,7 @@ mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
 
   if (tree match = check_mergeable_decl
       (DECL_NAME (decl) ? MM_namespace_scope : MM_anon_enum,
-       decl, *gslot, ret, args))
+       decl, *gslot, ret, args, reqs))
     return match;
 
   if (DECL_NAME (decl))
@@ -3972,7 +4004,7 @@ mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
 
 tree
 mergeable_class_member (tree decl, tree klass, tree name,
-			tree ret, tree args)
+			tree ret, tree args, tree reqs)
 {
   gcc_checking_assert (COMPLETE_TYPE_P (klass));
   tree found = NULL_TREE;
@@ -4037,7 +4069,7 @@ mergeable_class_member (tree decl, tree klass, tree name,
 	  if (name == conv_op_identifier)
 	    found = OVL_CHAIN (found);
 	  found = check_mergeable_decl
-	    (MM_class_scope, inner, found, ret, args);
+	    (MM_class_scope, inner, found, ret, args, reqs);
 	}
 
       if (found && inner != decl)
@@ -8818,7 +8850,8 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
       /* Merge into global slot.  */
       tree *gslot = get_fixed_binding_slot (slot, DECL_NAME (ns),
 					    MODULE_SLOT_GLOBAL, true);
-      if (!check_mergeable_decl (MM_namespace_scope, ns, *gslot, NULL, NULL))
+      if (!check_mergeable_decl (MM_namespace_scope, ns, *gslot,
+				 NULL, NULL, NULL))
 	*gslot = ns;
     }
 

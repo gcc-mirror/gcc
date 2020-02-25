@@ -1,3 +1,20 @@
+2020-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	Global module constraint merging
+	gcc/cp/
+	* module.cc (trees_out::decl_value): Always stream constraints.
+	(trees_in::decl_value): Likewise, deal with requires in merge key.
+	(trees_{in,out}::key_mergeable): Stream requires.
+	* name-lookup.c (check_mergeable_decl): Add & check requires.
+	(check_module_override): Get requires.
+	(mergeable_namespace_entity): Add requires.
+	(mergeable_class_member): Likewise.
+	(make_namespace_finish): Adjust.
+	* name-lookup.h (mergeable_namespace_entity): Add requires.
+	(mergeable_class_member): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/concept-5{,_[ab]}.[hHC]: New.
+
 2020-02-24  Nathan Sidwell  <nathan@acm.org>
 
 	Implement US033

@@ -2888,7 +2888,7 @@ private:
 
 public:
   bool key_mergeable (merge_kind, tree, tree, tree,
-		      tree *, tree *, tree *, tree *);
+		      tree *, tree *, tree *, tree *, tree *);
   unsigned binfo_mergeable (tree *);
 
 private:
@@ -7326,13 +7326,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	tree_node_vals (stub_decl);
     }
 
-  // FIXME: It'd be nice if there was a flag to tell us to go look for
-  // constraints.  Not a modules-specific problem though.
-  if (flag_concepts)
-    {
-      tree constraints = get_constraints (decl);
-      tree_node (constraints);
-    }
+  tree_node (get_constraints (decl));
 
   if (streaming_p ())
     {
@@ -7507,6 +7501,7 @@ trees_in::decl_value ()
       tree key;
       tree fn_args = NULL_TREE;
       tree r_type = NULL_TREE;
+      tree reqs = NULL_TREE;
       int parm_tag = 0;
 
       tree container = container_1;
@@ -7518,7 +7513,7 @@ trees_in::decl_value ()
 	parm_tag = fn_parms_init (inner);
 
       if (!key_mergeable (mk, decl, inner, type,
-			  &container, &key, &fn_args, &r_type))
+			  &container, &key, &fn_args, &r_type, &reqs))
 	goto bail;
 
       if (mk & MK_template_mask)
@@ -7623,7 +7618,7 @@ trees_in::decl_value ()
 	      else
 		// FIXME: process MK_enum separately here
 		existing = mergeable_namespace_entity
-		  (decl, container, key, is_mod, r_type, fn_args);
+		  (decl, container, key, is_mod, r_type, fn_args, reqs);
 	      break;
 
 	    case FUNCTION_DECL:
@@ -7667,7 +7662,7 @@ trees_in::decl_value ()
 			}
 		      else
 			existing = mergeable_class_member
-			  (decl, ctx, key, r_type, fn_args);
+			  (decl, ctx, key, r_type, fn_args, reqs);
 		    }
 		}
 	      break;
@@ -7723,9 +7718,7 @@ trees_in::decl_value ()
 	       || (stub_decl && !tree_node_vals (stub_decl))))
     goto bail;
 
-  tree constraints = NULL_TREE;
-  if (flag_concepts && DECL_P (decl))
-    constraints  = tree_node ();
+  tree constraints = tree_node ();
 
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
@@ -9541,7 +9534,7 @@ trees_out::tpl_header (tree tpl, unsigned *tpl_levels)
     u (0);
 
   if (*tpl_levels)
-    tree_node (TEMPLATE_PARM_CONSTRAINTS (parms));
+    tree_node (TEMPLATE_PARMS_CONSTRAINTS (parms));
 }
 
 bool
@@ -9554,7 +9547,7 @@ trees_in::tpl_header (tree tpl, unsigned *tpl_levels)
   DECL_TEMPLATE_PARMS (tpl) = parms;
 
   if (*tpl_levels)
-    TEMPLATE_PARM_CONSTRAINTS (parms) = tree_node ();
+    TEMPLATE_PARMS_CONSTRAINTS (parms) = tree_node ();
 
   return true;
 }
@@ -9995,6 +9988,24 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	  tree fn_type = TREE_TYPE (inner);
 	  fn_arg_types (TYPE_ARG_TYPES (fn_type));
 
+	  if (decl != inner)
+	    {
+	      tree reqs = get_constraints (inner);
+
+	      if (reqs)
+		{
+		  if (cxx_dialect < cxx2a)
+		    reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
+		  else
+		    {
+		      reqs = CI_DECLARATOR_REQS (reqs);
+		      if (reqs)
+			reqs = maybe_substitute_reqs_for (reqs, inner);
+		    }
+		}
+	      tree_node (reqs);
+	    }
+
 	  if (decl != inner || name == conv_op_identifier)
 	    /* And a function template, or conversion operator needs
 	       the return type.  */
@@ -10008,13 +10019,14 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 /* DECL, INNER & TYPE are a skeleton set of nodes for a decl.  Only
    the bools have been filled in.  Read its merging key.  Returns
    IS_SPECIALIZATION.  *CONTAINER will be NULL on error.  */
-
+// FIXME: the output parms should be a struct that we return by value
 bool
 trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
-			 tree *container, tree *key, tree *fn_args, tree *r_type)
+			 tree *container, tree *key,
+			 tree *fn_args, tree *r_type, tree *reqs)
 {
   *key = NULL_TREE;
-  *fn_args = *r_type = NULL_TREE;
+  *fn_args = *r_type = *reqs = NULL_TREE;
 
   /* Now read the locating information. */
   if (mk & MK_template_mask)
@@ -10039,6 +10051,8 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
 	  if (TREE_CODE (inner) == FUNCTION_DECL)
 	    {
 	      *fn_args = fn_arg_types ();
+	      if (decl != inner)
+		*reqs = tree_node ();
 	      if (decl != inner || *key == conv_op_identifier)
 		*r_type = tree_node ();
 	    }
