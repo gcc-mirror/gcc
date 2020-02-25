@@ -12398,21 +12398,15 @@ package body Sem_Ch12 is
       procedure Check_Shared_Variable_Control_Aspects is
       begin
          if Ada_Version >= Ada_2020 then
-            if Is_Atomic (A_Gen_T) and then not Is_Atomic (Act_T) then
+            if Is_Atomic (A_Gen_T) /= Is_Atomic (Act_T) then
                Error_Msg_NE
-                  ("actual for& must be an atomic type", Actual, A_Gen_T);
+                  ("actual for& has different Atomic aspect", Actual, A_Gen_T);
             end if;
 
-            if Is_Volatile (A_Gen_T) and then not Is_Volatile (Act_T) then
+            if Is_Volatile (A_Gen_T) /= Is_Volatile (Act_T) then
                Error_Msg_NE
-                  ("actual for& must be a Volatile type", Actual, A_Gen_T);
-            end if;
-
-            if
-              Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
-            then
-               Error_Msg_NE
-                 ("actual for& must be an Independent type", Actual, A_Gen_T);
+                  ("actual for& has different Volatile aspect",
+                    Actual, A_Gen_T);
             end if;
 
             --  We assume that an array type whose atomic component type
@@ -12420,43 +12414,51 @@ package body Sem_Ch12 is
             --  aspect Has_Atomic_Components. This is a reasonable inference
             --  from the intent of AI12-0282, and makes it legal to use an
             --  actual that does not have the identical aspect as the formal.
+            --  Ditto for volatile components.
 
-            if Has_Atomic_Components (A_Gen_T)
-               and then not Has_Atomic_Components (Act_T)
-            then
-               if Is_Array_Type (Act_T)
-                 and then Is_Atomic (Component_Type (Act_T))
-               then
-                  null;
-
-               else
+            declare
+               Actual_Atomic_Comp : constant Boolean :=
+               Has_Atomic_Components (Act_T)
+                      or else (Is_Array_Type (Act_T)
+                                and then Is_Atomic (Component_Type (Act_T)));
+            begin
+               if Has_Atomic_Components (A_Gen_T) /= Actual_Atomic_Comp then
                   Error_Msg_NE
-                    ("actual for& must have atomic components",
+                    ("formal and actual for& must agree on atomic components",
                        Actual, A_Gen_T);
                end if;
-            end if;
+            end;
 
-            if Has_Independent_Components (A_Gen_T)
-               and then not Has_Independent_Components (Act_T)
-            then
-               Error_Msg_NE
-                 ("actual for& must have independent components",
-                    Actual, A_Gen_T);
-            end if;
-
-            if Has_Volatile_Components (A_Gen_T)
-               and then not Has_Volatile_Components (Act_T)
-            then
-               if Is_Array_Type (Act_T)
-                 and then Is_Volatile (Component_Type (Act_T))
+            declare
+               Actual_Volatile_Comp : constant Boolean :=
+                 Has_Volatile_Components (Act_T)
+                   or else (Is_Array_Type (Act_T)
+                             and then Is_Volatile (Component_Type (Act_T)));
+            begin
+               if Has_Volatile_Components (A_Gen_T) /= Actual_Volatile_Comp
                then
-                  null;
-
-               else
                   Error_Msg_NE
                     ("actual for& must have volatile components",
                        Actual, A_Gen_T);
                end if;
+            end;
+
+            --  The following two aspects do not require exact matching,
+            --  but only one-way agreement. See RM C.6.
+
+            if Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have Independent aspect specified",
+                     Actual, A_Gen_T);
+            end if;
+
+            if Has_Independent_Components (A_Gen_T)
+              and then not Has_Independent_Components (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have Independent_Components specified",
+                     Actual, A_Gen_T);
             end if;
          end if;
       end Check_Shared_Variable_Control_Aspects;
