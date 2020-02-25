@@ -950,6 +950,7 @@ void
 pass_manager::dump_passes () const
 {
   push_dummy_function (true);
+  cgraph_node *node = cgraph_node::get_create (current_function_decl);
 
   create_pass_tab ();
 
@@ -959,6 +960,7 @@ pass_manager::dump_passes () const
   dump_pass_list (all_late_ipa_passes, 1);
   dump_pass_list (all_passes, 1);
 
+  node->remove ();
   pop_dummy_function ();
 }
 

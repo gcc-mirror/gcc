@@ -1,5 +1,9 @@
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/93874
+	* passes.c (pass_manager::dump_passes): Create a cgraph node for the
+	dummy function and remove it at the end.
+
 	PR translation/93864
 	* config/lm32/lm32.c (lm32_setup_incoming_varargs): Fix comment typo
 	paramter -> parameter.

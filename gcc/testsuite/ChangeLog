@@ -1,5 +1,8 @@
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/93874
+	* gcc.dg/pr93874.c: New test.
+
 	PR ipa/93763
 	* gcc.dg/ipa/pr93763.c: Adjust the test so that it compiles without
 	warnings and still ICEs before the ipa-cp.c fix.
