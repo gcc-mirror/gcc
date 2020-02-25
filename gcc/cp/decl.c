@@ -7301,8 +7301,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	       && ! (DECL_LANG_SPECIFIC (decl)
 		     && DECL_NOT_REALLY_EXTERN (decl)))
 	{
-	  if (init)
-	    DECL_INITIAL (decl) = init;
+	  /* check_initializer will have done any constant initialization.  */
 	}
       /* A variable definition.  */
       else if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))

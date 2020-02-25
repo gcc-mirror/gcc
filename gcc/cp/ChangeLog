@@ -1,3 +1,8 @@
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87554 - ICE with extern template and reference member.
+	* decl.c (cp_finish_decl): Don't set DECL_INITIAL of external vars.
+
 2020-02-25  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/86747
