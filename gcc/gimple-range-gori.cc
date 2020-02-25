@@ -913,10 +913,9 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
-  bool ret = true;
   const unsigned depth_limit = 6;	// Max depth of logical recursion.
   static unsigned depth = 0;		// Current depth of recursion.
-
+  tree type = TREE_TYPE (name);
   widest_irange op1_true, op1_false, op2_true, op2_false;
 
   // Reaching this point means NAME is not in this stmt, but one of
@@ -950,38 +949,36 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
   // Calulate ranges for true and false on both sides.
   if (op1_in_chain)
     {
-      ret = compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1),
-				   m_bool_one, name, name_range);
-      ret &= compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1),
-				    m_bool_zero, name, name_range);
+      if (!compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1),
+				  m_bool_one, name, name_range))
+	op1_true.set_varying (type);
+      if (!compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1),
+				  m_bool_zero, name, name_range))
+	op1_false.set_varying (type);
     }
   else
     {
-      // Otherwise just get the value for name in operand 1 position
+      // Otherwise just get the value for name in operand 1 position.
       get_tree_range (op1_true, name, name, name_range);
       op1_false = op1_true;
     }
-
-  // If operand1 evaluated OK, move on to operand 2.
-  if (ret)
+  if (op2_in_chain)
     {
-      if (op2_in_chain)
-	{
-	  ret &= compute_operand_range (op2_true, SSA_NAME_DEF_STMT (op2),
-					m_bool_one, name, name_range);
-	  ret &= compute_operand_range (op2_false, SSA_NAME_DEF_STMT (op2),
-					m_bool_zero, name, name_range);
-	}
-      else
-	{
-	  // Otherwise just get the value for name in operand 2
-	  // position.
-	  get_tree_range (op2_true, name, name, name_range);
-	  op2_false = op2_true;
-	}
+      if (!compute_operand_range (op2_true, SSA_NAME_DEF_STMT (op2),
+				  m_bool_one, name, name_range))
+	op2_true.set_varying (type);
+      if (!compute_operand_range (op2_false, SSA_NAME_DEF_STMT (op2),
+				  m_bool_zero, name, name_range))
+	op2_false.set_varying (type);
     }
-  if (!ret || !logical_combine (r, gimple_expr_code (stmt), lhs, op1_true,
-				op1_false, op2_true, op2_false))
+  else
+    {
+      // Otherwise just get the value for name in operand 2 position.
+      get_tree_range (op2_true, name, name, name_range);
+      op2_false = op2_true;
+    }
+  if (!logical_combine (r, gimple_expr_code (stmt), lhs, op1_true, op1_false,
+			op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
 
   depth--;
