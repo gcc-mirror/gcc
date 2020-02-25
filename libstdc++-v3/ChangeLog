@@ -1,3 +1,27 @@
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	P1645R1 constexpr for <numeric> algorithms
+	* include/bits/stl_numeric.h (iota, accumulate, inner_product,
+	partial_sum, adjacent_difference): Make conditionally constexpr for
+	C++20.
+	* include/std/numeric (__cpp_lib_constexpr_numeric): Define this feature
+	test macro.
+	(reduce, transform_reduce, exclusive_scan, inclusive_scan,
+	transform_exclusive_scan, transform_inclusive_scan): Make conditionally
+	constexpr for C++20.
+	* include/std/version (__cpp_lib_constexpr_numeric): Define.
+	* testsuite/26_numerics/accumulate/constexpr.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/constexpr.cc: Likewise.
+	* testsuite/26_numerics/exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inner_product/constexpr.cc: Likewise.
+	* testsuite/26_numerics/iota/constexpr.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/constexpr.cc: Likewise.
+	* testsuite/26_numerics/reduce/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_reduce/constexpr.cc: Likewise.
+
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Declare
