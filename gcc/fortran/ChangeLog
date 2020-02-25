@@ -1,3 +1,7 @@
+2020-02-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (degrees_f): Remove unused code.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/93864

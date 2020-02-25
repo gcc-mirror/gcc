@@ -1775,11 +1775,6 @@ degrees_f (mpfr_t x, mpfr_rnd_t rnd_mode)
   mpfr_t tmp;
   mpfr_init (tmp);
 
-  /* Set x = x % 2pi to avoid offsets with large angles.  */
-  mpfr_const_pi (tmp, rnd_mode);
-  mpfr_mul_ui (tmp, tmp, 2, rnd_mode);
-  mpfr_fmod (tmp, x, tmp, rnd_mode);
-
   /* Set x = x * 180.  */
   mpfr_mul_ui (x, x, 180, rnd_mode);
 
