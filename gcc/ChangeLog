@@ -1,3 +1,18 @@
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93912
+	* config/sh/sh.c (expand_cbranchdi4): Fix comment typo, probablity
+	-> probability.
+	* cfghooks.c (verify_flow_info): Likewise.
+	* predict.c (combine_predictions_for_bb): Likewise.
+	* bb-reorder.c (connect_better_edge_p): Likewise.  Fix comment typo,
+	sucessor -> successor.
+	(find_traces_1_round): Fix comment typo, destinarion -> destination.
+	* omp-expand.c (expand_oacc_for): Fix comment typo, sucessors ->
+	successors.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Fix dump
+	message typo, sucessors -> successors.
+
 2020-02-25  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (attribute access): Correct an example.

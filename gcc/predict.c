@@ -1367,7 +1367,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 
 
   /* If we have only one successor which is unknown, we can compute missing
-     probablity.  */
+     probability.  */
   if (nunknown == 1)
     {
       profile_probability prob = profile_probability::always ();
