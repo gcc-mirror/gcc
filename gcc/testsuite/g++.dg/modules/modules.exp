@@ -79,10 +79,10 @@ proc dg-module-cmi { args } {
 	    if { [string index $cmi 0] == "/" } {
 		set cmi [string range $cmi 1 end]
 	    } else {
-		set cmi "!/$cmi"
+		set cmi ",/$cmi"
 	    }
 	    set path [file split $cmi]
-	    # subst /../ -> /!!/
+	    # subst /../ -> /,,/
 	    set rplac [lmap elt $path {expr {$elt == ".." ? ",," : $elt}}]
 	    set cmi [file join {*}$rplac]
 	} else {

@@ -18276,6 +18276,18 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   return res;
 }
 
+static void
+begin_header_unit (cpp_reader *reader)
+{
+  /* Set the module header name from the main_input_filename.  */
+  const char *main = main_input_filename;
+  size_t len = strlen (main);
+  main = canonicalize_header_name (NULL, 0, true, main, len);
+  module_state *module = get_module (build_string (len, main));
+
+  preprocess_module (module, main_source_loc, false, true, reader);
+}
+
 /* We've just properly entered the main source file.  I.e. after the
    command line, builtins and forced headers.  Record the line map and
    location of this map.  Note we may be called more than once.  The
@@ -18291,18 +18303,11 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
       unsigned n = dump.push (NULL);
       spans.init (lmaps, map);
       dump.pop (n);
-      if (flag_header_unit)
+      if (flag_header_unit && !cpp_get_options (reader)->preprocessed)
 	{
 	  /* Tell the preprocessor this is an include file.  */
 	  cpp_retrofit_as_include (reader);
-
-	  /* Set the module header name from the main_input_filename.  */
-	  const char *main = main_input_filename;
-	  size_t len = strlen (main);
-	  main = canonicalize_header_name (NULL, 0, true, main, len);
-	  module_state *module = get_module (build_string (len, main));
-
-	  preprocess_module (module, main_source_loc, false, true, reader);
+	  begin_header_unit (reader);
 	}
     }
 }
@@ -18685,6 +18690,9 @@ init_module_processing (cpp_reader *reader)
 #if CHECKING_P
   note_defs = new hash_set<tree> (1000);
 #endif
+
+  if (flag_header_unit && cpp_get_options (reader)->preprocessed)
+    begin_header_unit (reader);
 
   /* Collect here to make sure things are tagged correctly (when
      aggressively GC'd).  */
