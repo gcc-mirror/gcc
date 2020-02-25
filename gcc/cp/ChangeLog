@@ -1,3 +1,8 @@
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89917 - ICE with lambda in variadic mem-init.
+	* pt.c (make_pack_expansion): Change type_pack_expansion_p to false.
+
 2020-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90951
