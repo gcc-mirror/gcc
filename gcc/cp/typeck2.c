@@ -1538,12 +1538,15 @@ process_init_constructor_record (tree type, tree init, int nested,
 	      else
 		return PICFLAG_ERRONEOUS;
 	    }
+	  /* Do nothing for flexible array members since they need not have any
+	     elements.  Don't worry about 'skipped' because a flexarray has to
+	     be the last field.  */
+	  else if (TREE_CODE (fldtype) == ARRAY_TYPE && !TYPE_DOMAIN (fldtype))
+	    continue;
 
 	  /* Warn when some struct elements are implicitly initialized
-	     to zero.  However, avoid issuing the warning for flexible
-	     array members since they need not have any elements.  */
-	  if ((TREE_CODE (fldtype) != ARRAY_TYPE || TYPE_DOMAIN (fldtype))
-	      && (complain & tf_warning)
+	     to zero.  */
+	  if ((complain & tf_warning)
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);

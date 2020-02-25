@@ -1,5 +1,10 @@
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88380 - wrong-code with flexible array and NSDMI.
+	* typeck2.c (process_init_constructor_record): Skip flexarrays.
+
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
 	PR c++/87685 - generic lambda 'this' capture error.
 	* lambda.c (lambda_expr_this_capture): Change add_capture_p to int.
 	(maybe_generic_this_capture): Pass -1.
