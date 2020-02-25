@@ -1,5 +1,11 @@
 2020-05-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/93891
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fall back to
+	the original reference tree for assessing access alignment.
+
+2020-05-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/39612
 	* tree-ssa-loop-im.c (im_mem_ref::loaded): New member.
 	(set_ref_loaded_in_loop): New.
