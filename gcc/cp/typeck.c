@@ -1458,6 +1458,11 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       break;
 
+    case TYPE_ARGUMENT_PACK:
+      if (!cp_tree_equal (ARGUMENT_PACK_ARGS (t1), ARGUMENT_PACK_ARGS (t2)))
+	return false;
+      break;
+
     default:
       return false;
     }

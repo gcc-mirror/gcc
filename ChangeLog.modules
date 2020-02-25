@@ -1,5 +1,10 @@
 2020-02-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* typeck.c (structural_comptypes): Deal with TYPE_ARGUMENT_PACK.
+	gcc/testsuite/
+	* g++.dg/concepts/pack-1.C: New.
+
 	PR c++/93761
 	gcc/cp/
 	* module.cc (begin_header_unit): New, broken out of ...
