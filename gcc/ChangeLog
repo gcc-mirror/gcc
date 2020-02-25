@@ -1,3 +1,15 @@
+2020-02-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (VEC_SUBDWORD_MODE): New mode iterator.
+	(<expander><mode>2<exec>): Change modes to VEC_ALL1REG_INT_MODE.
+	(<expander><mode>3<exec>): Likewise.
+	(<expander><mode>3): New.
+	(v<expander><mode>3): New.
+	(<expander><mode>3): New.
+	(<expander><mode>3<exec>): Rename to ...
+	(<expander>v64si3<exec>): ... this, and change modes to V64SI.
+	* config/gcn/gcn.md (mnemonic): Use '%B' for not.
+
 2020-02-27  Alexandre Oliva <oliva@adacore.com>
 
 	* config/vx-common.h (NO_DOLLAR_IN_LABEL, NO_DOT_IN_LABEL): Leave

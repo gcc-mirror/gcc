@@ -319,7 +319,7 @@
    (smax "max%i")
    (umin "min%u")
    (umax "max%u")
-   (not "not%b")
+   (not "not%B")
    (popcount "bcnt_u32%b")])
 
 (define_code_attr bare_mnemonic

@@ -16,6 +16,10 @@
 
 ;; {{{ Vector iterators
 
+; Vector modes for sub-dword modes
+(define_mode_iterator VEC_SUBDWORD_MODE
+		      [V64QI V64HI])
+
 ; Vector modes for one vector register
 (define_mode_iterator VEC_1REG_MODE
 		      [V64SI V64HF V64SF])
@@ -1881,20 +1885,20 @@
 (define_code_iterator minmaxop [smin smax umin umax])
 
 (define_insn "<expander><mode>2<exec>"
-  [(set (match_operand:VEC_1REG_INT_MODE 0 "gcn_valu_dst_operand"    "=  v")
-	(bitunop:VEC_1REG_INT_MODE
-	  (match_operand:VEC_1REG_INT_MODE 1 "gcn_valu_src0_operand" "vSvB")))]
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "gcn_valu_dst_operand"    "=  v")
+	(bitunop:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_valu_src0_operand" "vSvB")))]
   ""
   "v_<mnemonic>0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
 (define_insn "<expander><mode>3<exec>"
-  [(set (match_operand:VEC_1REG_INT_MODE 0 "gcn_valu_dst_operand" "=  v,RD")
-	(bitop:VEC_1REG_INT_MODE
-	  (match_operand:VEC_1REG_INT_MODE 1 "gcn_valu_src0_operand"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "gcn_valu_dst_operand" "=  v,RD")
+	(bitop:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_valu_src0_operand"
 								  "%  v, 0")
-	  (match_operand:VEC_1REG_INT_MODE 2 "gcn_valu_src1com_operand"
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_valu_src1com_operand"
 								  "vSvB, v")))]
   ""
   "@
@@ -1967,6 +1971,27 @@
   [(set_attr "type" "vmult,ds")
    (set_attr "length" "16,8")])
 
+(define_expand "<expander><mode>3"
+  [(set (match_operand:VEC_SUBDWORD_MODE 0 "register_operand"  "= v")
+	(shiftop:VEC_SUBDWORD_MODE
+	  (match_operand:VEC_SUBDWORD_MODE 1 "gcn_alu_operand" "  v")
+	  (vec_duplicate:VEC_SUBDWORD_MODE
+	    (match_operand:SI 2 "gcn_alu_operand"	       "SvB"))))]
+  ""
+  {
+    enum {ashift, lshiftrt, ashiftrt};
+    bool unsignedp = (<code> == lshiftrt);
+    rtx insi1 = gen_reg_rtx (V64SImode);
+    rtx insi2 = gen_reg_rtx (SImode);
+    rtx outsi = gen_reg_rtx (V64SImode);
+
+    convert_move (insi1, operands[1], unsignedp);
+    convert_move (insi2, operands[2], unsignedp);
+    emit_insn (gen_<expander>v64si3 (outsi, insi1, insi2));
+    convert_move (operands[0], outsi, unsignedp);
+    DONE;
+  })
+
 (define_insn "<expander>v64si3<exec>"
   [(set (match_operand:V64SI 0 "register_operand"  "= v")
 	(shiftop:V64SI
@@ -1978,6 +2003,26 @@
   [(set_attr "type" "vop2")
    (set_attr "length" "8")])
 
+(define_expand "v<expander><mode>3"
+  [(set (match_operand:VEC_SUBDWORD_MODE 0 "register_operand"  "=v")
+	(shiftop:VEC_SUBDWORD_MODE
+	  (match_operand:VEC_SUBDWORD_MODE 1 "gcn_alu_operand" " v")
+	  (match_operand:VEC_SUBDWORD_MODE 2 "gcn_alu_operand" "vB")))]
+  ""
+  {
+    enum {ashift, lshiftrt, ashiftrt};
+    bool unsignedp = (<code> == ashift || <code> == ashiftrt);
+    rtx insi1 = gen_reg_rtx (V64SImode);
+    rtx insi2 = gen_reg_rtx (V64SImode);
+    rtx outsi = gen_reg_rtx (V64SImode);
+
+    convert_move (insi1, operands[1], unsignedp);
+    convert_move (insi2, operands[2], unsignedp);
+    emit_insn (gen_v<expander>v64si3 (outsi, insi1, insi2));
+    convert_move (operands[0], outsi, unsignedp);
+    DONE;
+  })
+
 (define_insn "v<expander>v64si3<exec>"
   [(set (match_operand:V64SI 0 "register_operand"  "=v")
 	(shiftop:V64SI
@@ -1988,13 +2033,31 @@
   [(set_attr "type" "vop2")
    (set_attr "length" "8")])
 
-(define_insn "<expander><mode>3<exec>"
-  [(set (match_operand:VEC_1REG_INT_MODE 0 "gcn_valu_dst_operand" "=  v,RD")
-	(minmaxop:VEC_1REG_INT_MODE
-	  (match_operand:VEC_1REG_INT_MODE 1 "gcn_valu_src0_operand"
-								  "%  v, 0")
-	  (match_operand:VEC_1REG_INT_MODE 2 "gcn_valu_src1com_operand"
-								  "vSvB, v")))]
+(define_expand "<expander><mode>3"
+  [(set (match_operand:VEC_SUBDWORD_MODE 0 "gcn_valu_dst_operand")
+	(minmaxop:VEC_SUBDWORD_MODE
+	  (match_operand:VEC_SUBDWORD_MODE 1 "gcn_valu_src0_operand")
+	  (match_operand:VEC_SUBDWORD_MODE 2 "gcn_valu_src1com_operand")))]
+  ""
+  {
+    enum {smin, umin, smax, umax};
+    bool unsignedp = (<code> == umax || <code> == umin);
+    rtx insi1 = gen_reg_rtx (V64SImode);
+    rtx insi2 = gen_reg_rtx (V64SImode);
+    rtx outsi = gen_reg_rtx (V64SImode);
+
+    convert_move (insi1, operands[1], unsignedp);
+    convert_move (insi2, operands[2], unsignedp);
+    emit_insn (gen_<code>v64si3 (outsi, insi1, insi2));
+    convert_move (operands[0], outsi, unsignedp);
+    DONE;
+  })
+
+(define_insn "<expander>v64si3<exec>"
+  [(set (match_operand:V64SI 0 "gcn_valu_dst_operand"	    "=  v,RD")
+	(minmaxop:V64SI
+	  (match_operand:V64SI 1 "gcn_valu_src0_operand"    "%  v, 0")
+	  (match_operand:V64SI 2 "gcn_valu_src1com_operand" "vSvB, v")))]
   ""
   "@
    v_<mnemonic>0\t%0, %2, %1
