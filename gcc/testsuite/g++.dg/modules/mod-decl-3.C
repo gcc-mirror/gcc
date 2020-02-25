@@ -23,4 +23,4 @@ namespace Bink
   ben;
 }
 
-// { dg-warning "not writing module" "" { target *-*-* } 0 }
+// { dg-prune-output "not writing module" }

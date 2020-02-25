@@ -3,4 +3,4 @@ export module thing;
 int i;
 import baz; // { dg-error "must be contiguous" }
 
-// { dg-warning "not writing module" "" { target *-*-* } 0 }
+// { dg-prune-output "not writing module" }

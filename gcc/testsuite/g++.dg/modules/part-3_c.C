@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-alias" }
-// bogus errors until we properly dedup partition entities
-export module foo; // { dg-bogus "not writing" "" }
+
+export module foo;
 // { dg-module-cmi foo }
 
 export import :bar;
@@ -8,7 +8,7 @@ export import :baz;
 
 export inline int frob (int x)
 {
-  return foo (x); // { dg-bogus "ambiguous" "" }
+  return foo (x);
 }
 
 // { dg-final { scan-lang-dump {Read:-[0-9]'s named merge key \(new\) function_decl:'::foo'} module } }

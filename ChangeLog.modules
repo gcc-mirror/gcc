@@ -1,5 +1,12 @@
 2020-02-25  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.dg/modules/atom-decl-2.C: Use dg-prune.
+	* g++.dg/modules/atom-pragma-3.C: Likewise.
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/mod-decl-3.C: Likewise.
+	* g++.dg/modules/indirect-1_c.C: Remove dg-bogii.
+	* g++.dg/modules/part-3_c.C: Likewise.
+
 	Global module constraint merging
 	gcc/cp/
 	* module.cc (trees_out::decl_value): Always stream constraints.

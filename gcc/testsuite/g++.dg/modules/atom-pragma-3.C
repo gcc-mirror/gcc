@@ -9,4 +9,4 @@ import baz; // { dg-error "must be contiguous" }
 
 int i;
 
-// { dg-warning "not writing module" "" { target *-*-* } 0 }
+// { dg-prune-output "not writing module" }
