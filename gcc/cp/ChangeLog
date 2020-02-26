@@ -1,3 +1,18 @@
+2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* class.c (classtype_has_non_deleted_copy_ctor): New.
+	* coroutines.cc (struct param_info): Keep track of params
+	that are references, and cache the original type and whether
+	the DTOR is trivial.
+	(build_actor_fn): Handle param copies always, and adjust the
+	handling for references.
+	(register_param_uses): Only handle uses here.
+	(classtype_has_non_deleted_copy_ctor): New.
+	(morph_fn_to_coro): Adjust param copy handling to match n4849
+	by reordering ahead of the promise CTOR and always making a
+	frame copy, even if the param is unused in the coroutine body.
+	* cp-tree.h (classtype_has_non_deleted_copy_ctor): New.
+
 2020-02-26  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (finish_constraint_binary_op): Set expr's location range
