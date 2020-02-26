@@ -1,6 +1,15 @@
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93205
+	* include/bits/random.h (operator>>): Check stream operation succeeds.
+	* include/bits/random.tcc (operator>>): Likewise.
+	(__extract_params): New function to fill a vector from a stream.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error line.
+
+	Backport from mainline
 	2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92886
