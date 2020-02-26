@@ -4163,8 +4163,29 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
-	return cxx_eval_constant_expression (ctx, DECL_VALUE_EXPR (t),
-					     lval, non_constant_p, overflow_p);
+	{
+	  if (is_normal_capture_proxy (t)
+	      && current_function_decl == DECL_CONTEXT (t))
+	    {
+	      /* Function parms aren't constexpr within the function
+		 definition, so don't try to look at the closure.  But if the
+		 captured variable is constant, try to evaluate it directly. */
+	      r = DECL_CAPTURED_VARIABLE (t);
+	      tree type = TREE_TYPE (t);
+	      if (TYPE_REF_P (type) != TYPE_REF_P (TREE_TYPE (r)))
+		{
+		  /* Adjust r to match the reference-ness of t.  */
+		  if (TYPE_REF_P (type))
+		    r = build_address (r);
+		  else
+		    r = convert_from_reference (r);
+		}
+	    }
+	  else
+	    r = DECL_VALUE_EXPR (t);
+	  return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
+					       overflow_p);
+	}
       /* fall through */
     case CONST_DECL:
       /* We used to not check lval for CONST_DECL, but darwin.c uses
