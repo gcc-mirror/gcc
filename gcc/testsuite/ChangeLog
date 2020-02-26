@@ -1,3 +1,8 @@
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93947
+	* gcc.dg/analyzer/torture/pr93947.c: New test.
+
 2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro1-refs-and-ctors.h: New.
