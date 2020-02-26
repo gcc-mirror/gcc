@@ -1,5 +1,11 @@
 2020-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90951
+	* constexpr.c (cxx_eval_array_reference): {}-initialize missing
+	elements instead of value-initializing them.
+
+2020-02-26  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93140
 	* pt.c (tsubst_decl) [PARM_DECL]: Check cp_unevaluated_operand in
 	handling of TREE_CHAIN for empty pack.
