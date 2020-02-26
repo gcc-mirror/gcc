@@ -278,20 +278,8 @@ is_normal_capture_proxy (tree decl)
     /* It's not a capture proxy.  */
     return false;
 
-  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
-    /* VLA capture.  */
-    return true;
-
-  /* It is a capture proxy, is it a normal capture?  */
-  tree val = DECL_VALUE_EXPR (decl);
-  if (val == error_mark_node)
-    return true;
-
-  if (TREE_CODE (val) == ADDR_EXPR)
-    val = TREE_OPERAND (val, 0);
-  gcc_assert (TREE_CODE (val) == COMPONENT_REF);
-  val = TREE_OPERAND (val, 1);
-  return DECL_NORMAL_CAPTURE_P (val);
+  return (DECL_LANG_SPECIFIC (decl)
+	  && DECL_CAPTURED_VARIABLE (decl));
 }
 
 /* Returns true iff DECL is a capture proxy for a normal capture

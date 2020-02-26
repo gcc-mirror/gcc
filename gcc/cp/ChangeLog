@@ -1,3 +1,8 @@
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88394 - ICE with VLA init-capture.
+	* lambda.c (is_normal_capture_proxy): Check DECL_CAPTURED_VARIABLE.
+
 2019-02-05  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/87770
