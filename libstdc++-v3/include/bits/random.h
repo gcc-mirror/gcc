@@ -3645,8 +3645,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       std::bernoulli_distribution& __x)
     {
       double __p;
-      __is >> __p;
-      __x.param(bernoulli_distribution::param_type(__p));
+      if (__is >> __p)
+	__x.param(bernoulli_distribution::param_type(__p));
       return __is;
     }
 
