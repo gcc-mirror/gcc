@@ -1029,6 +1029,13 @@ namespace views
 namespace __detail
 {
   struct _Empty { };
+
+  template<bool _NonEmpty, typename _Tp>
+    using __maybe_empty_t = conditional_t<_NonEmpty, _Tp, _Empty>;
+
+  template<bool _Const, typename _Tp>
+    using __maybe_const_t = conditional_t<_Const, const _Tp, _Tp>;
+
 } // namespace __detail
 
 namespace views
@@ -1058,8 +1065,8 @@ namespace views
       {
       protected:
 	[[no_unique_address]]
-	  conditional_t<!is_default_constructible_v<_Callable>,
-			_Callable, __detail::_Empty> _M_callable;
+	  __detail::__maybe_empty_t<!is_default_constructible_v<_Callable>,
+				    _Callable> _M_callable;
 
       public:
 	constexpr
@@ -1552,9 +1559,8 @@ namespace views
 	struct _Iterator
 	{
 	private:
-	  using _Parent
-	    = conditional_t<_Const, const transform_view, transform_view>;
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Parent = __detail::__maybe_const_t<_Const, transform_view>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  static constexpr auto
 	  _S_iter_concept()
@@ -1760,9 +1766,8 @@ namespace views
 	struct _Sentinel
 	{
 	private:
-	  using _Parent
-	    = conditional_t<_Const, const transform_view, transform_view>;
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Parent = __detail::__maybe_const_t<_Const, transform_view>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  constexpr range_difference_t<_Base>
 	  __distance_from(const _Iterator<_Const>& __i) const
@@ -1886,7 +1891,7 @@ namespace views
 	struct _Sentinel
 	{
 	private:
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 	  using _CI = counted_iterator<iterator_t<_Base>>;
 
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
@@ -2025,7 +2030,7 @@ namespace views
 	struct _Sentinel
 	{
 	private:
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
 	  const _Pred* _M_pred = nullptr;
@@ -2258,8 +2263,8 @@ namespace views
 	struct _Iterator
 	{
 	private:
-	  using _Parent = conditional_t<_Const, const join_view, join_view>;
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Parent = __detail::__maybe_const_t<_Const, join_view>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  static constexpr bool _S_ref_is_glvalue
 	    = is_reference_v<range_reference_t<_Base>>;
@@ -2450,8 +2455,8 @@ namespace views
 	struct _Sentinel
 	{
 	private:
-	  using _Parent = conditional_t<_Const, const join_view, join_view>;
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Parent = __detail::__maybe_const_t<_Const, join_view>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  constexpr bool
 	  __equal(const _Iterator<_Const>& __i) const
@@ -2482,8 +2487,8 @@ namespace views
 
       // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
       [[no_unique_address]]
-	conditional_t<!is_reference_v<_InnerRange>,
-		      views::all_t<_InnerRange>, __detail::_Empty> _M_inner;
+	__detail::__maybe_empty_t<!is_reference_v<_InnerRange>,
+				  views::all_t<_InnerRange>> _M_inner;
 
     public:
       join_view() = default;
@@ -2585,8 +2590,8 @@ namespace views
 	struct _OuterIter
 	{
 	private:
-	  using _Parent = conditional_t<_Const, const split_view, split_view>;
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Parent = __detail::__maybe_const_t<_Const, split_view>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  constexpr bool
 	  __at_end() const
@@ -2618,8 +2623,8 @@ namespace views
 
 	  // XXX: _M_current is present only if "V models forward_range"
 	  [[no_unique_address]]
-	    conditional_t<forward_range<_Vp>,
-			  iterator_t<_Base>, __detail::_Empty> _M_current;
+	    __detail::__maybe_empty_t<forward_range<_Vp>,
+				      iterator_t<_Base>> _M_current;
 
 	public:
 	  using iterator_concept = conditional_t<forward_range<_Base>,
@@ -2732,7 +2737,7 @@ namespace views
 	struct _InnerIter
 	{
 	private:
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  constexpr bool
 	  __at_end() const
@@ -2858,8 +2863,8 @@ namespace views
 
       // XXX: _M_current is "present only if !forward_range<V>"
       [[no_unique_address]]
-	conditional_t<!forward_range<_Vp>,
-		      iterator_t<_Vp>, __detail::_Empty> _M_current;
+	__detail::__maybe_empty_t<!forward_range<_Vp>, iterator_t<_Vp>>
+	  _M_current;
 
 
     public:
@@ -3223,7 +3228,7 @@ namespace views
       template<bool _Const>
 	struct _Iterator
 	{
-	  using _Base = conditional_t<_Const, const _Vp, _Vp>;
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  iterator_t<_Base> _M_current = iterator_t<_Base>();
 

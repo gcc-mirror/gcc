@@ -1,3 +1,13 @@
+2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__detail::__maybe_empty_t): Define new helper
+	alias.
+	(__detail::__maybe_const_t): Likewise.
+	(__adaptor::_RangeAdaptor): Use __maybe_empty_t.
+	(transform_view, take_view, take_while_view, elements_view): Use
+	__maybe_const_t.
+	(join_view, split_view): Use both.
+
 2020-02-25  Patrick Palka  <ppalka@redhat.com>
 
 	LWG 3397 basic_istream_view::iterator should not provide
