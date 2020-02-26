@@ -1,3 +1,8 @@
+2020-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93905
+	* g++.dg/cpp0x/pr93905.C: New test.
+
 2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstn.c: New test.
