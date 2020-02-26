@@ -1,3 +1,8 @@
+2020-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93905
+	* g++.dg/cpp0x/pr93905.C: New test.
+
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90998 - ICE with copy elision in init by ctor and -Wconversion.

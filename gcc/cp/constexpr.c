@@ -4998,15 +4998,13 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       if (TREE_CODE (t) == TARGET_EXPR
 	  && TARGET_EXPR_INITIAL (t) == r)
 	return t;
-      else
+      else if (TREE_CODE (t) != CONSTRUCTOR)
 	{
 	  r = get_target_expr (r);
 	  TREE_CONSTANT (r) = true;
-	  return r;
 	}
     }
-  else
-    return r;
+  return r;
 }
 
 /* Returns true if T is a valid subexpression of a constant expression,
