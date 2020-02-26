@@ -1,6 +1,12 @@
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92886
+	* include/bits/ios_base.h (std::ios_base::trunc): Fix comment.
+
+	Backport from mainline
 	2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93325
