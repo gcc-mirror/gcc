@@ -2370,8 +2370,9 @@ gather_bswap_load_refs (vec<tree> *refs, tree val)
 /* Check if there are any stores in M_STORE_INFO after index I
    (where M_STORE_INFO must be sorted by sort_by_bitpos) that overlap
    a potential group ending with END that have their order
-   smaller than LAST_ORDER.  RHS_CODE is the kind of store in the
-   group.  Return true if there are no such stores.
+   smaller than LAST_ORDER.  ALL_INTEGER_CST_P is true if
+   all the stores already merged and the one under consideration
+   have rhs_code of INTEGER_CST.  Return true if there are no such stores.
    Consider:
      MEM[(long long int *)p_28] = 0;
      MEM[(long long int *)p_28 + 8B] = 0;
@@ -2394,13 +2395,13 @@ gather_bswap_load_refs (vec<tree> *refs, tree val)
    the MEM[(long long int *)p_28 + 8B] = 0; would now be before it,
    so we need to refuse merging MEM[(long long int *)p_28 + 8B] = 0;
    into the group.  That way it will be its own store group and will
-   not be touched.  If RHS_CODE is INTEGER_CST and there are overlapping
+   not be touched.  If ALL_INTEGER_CST_P and there are overlapping
    INTEGER_CST stores, those are mergeable using merge_overlapping,
    so don't return false for those.  */
 
 static bool
 check_no_overlap (vec<store_immediate_info *> m_store_info, unsigned int i,
-		  enum tree_code rhs_code, unsigned int last_order,
+		  bool all_integer_cst_p, unsigned int last_order,
 		  unsigned HOST_WIDE_INT end)
 {
   unsigned int len = m_store_info.length ();
@@ -2410,7 +2411,7 @@ check_no_overlap (vec<store_immediate_info *> m_store_info, unsigned int i,
       if (info->bitpos >= end)
 	break;
       if (info->order < last_order
-	  && (rhs_code != INTEGER_CST || info->rhs_code != INTEGER_CST))
+	  && (!all_integer_cst_p || info->rhs_code != INTEGER_CST))
 	return false;
     }
   return true;
@@ -2563,7 +2564,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
   if (n.base_addr == NULL_TREE && !is_gimple_val (n.src))
     return false;
 
-  if (!check_no_overlap (m_store_info, last, LROTATE_EXPR, last_order, end))
+  if (!check_no_overlap (m_store_info, last, false, last_order, end))
     return false;
 
   /* Don't handle memory copy this way if normal non-bswap processing
@@ -2713,7 +2714,14 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	       |---store 2---|
 	 Overlapping stores.  */
       else if (IN_RANGE (info->bitpos, merged_store->start,
-			 merged_store->start + merged_store->width - 1))
+			 merged_store->start + merged_store->width - 1)
+	       /* |---store 1---||---store 2---|
+		  Handle also the consecutive INTEGER_CST stores case here,
+		  as we have here the code to deal with overlaps.  */
+	       || (info->bitregion_start <= merged_store->bitregion_end
+		   && info->rhs_code == INTEGER_CST
+		   && merged_store->only_constants
+		   && merged_store->can_be_merged_into (info)))
 	{
 	  /* Only allow overlapping stores of constants.  */
 	  if (info->rhs_code == INTEGER_CST
@@ -2725,8 +2733,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      unsigned HOST_WIDE_INT end
 		= MAX (merged_store->start + merged_store->width,
 		       info->bitpos + info->bitsize);
-	      if (check_no_overlap (m_store_info, i, INTEGER_CST,
-				    last_order, end))
+	      if (check_no_overlap (m_store_info, i, true, last_order, end))
 		{
 		  /* check_no_overlap call above made sure there are no
 		     overlapping stores with non-INTEGER_CST rhs_code
@@ -2879,7 +2886,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      std::swap (info->ops[0], info->ops[1]);
 	      info->ops_swapped_p = true;
 	    }
-	  if (check_no_overlap (m_store_info, i, info->rhs_code,
+	  if (check_no_overlap (m_store_info, i, false,
 				MAX (merged_store->last_order, info->order),
 				MAX (merged_store->start + merged_store->width,
 				     info->bitpos + info->bitsize)))

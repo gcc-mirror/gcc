@@ -1,3 +1,53 @@
+2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* class.c (classtype_has_non_deleted_copy_ctor): New.
+	* coroutines.cc (struct param_info): Keep track of params
+	that are references, and cache the original type and whether
+	the DTOR is trivial.
+	(build_actor_fn): Handle param copies always, and adjust the
+	handling for references.
+	(register_param_uses): Only handle uses here.
+	(classtype_has_non_deleted_copy_ctor): New.
+	(morph_fn_to_coro): Adjust param copy handling to match n4849
+	by reordering ahead of the promise CTOR and always making a
+	frame copy, even if the param is unused in the coroutine body.
+	* cp-tree.h (classtype_has_non_deleted_copy_ctor): New.
+
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (finish_constraint_binary_op): Set expr's location range
+	to the range of its operands.
+	(satisfy_atom): Pass MAP instead of ARGS to diagnose_atomic_constraint.
+	(diagnose_trait_expr): Take the instantiated parameter mapping MAP
+	instead of the corresponding template arguments ARGS and adjust body
+	accordingly.
+	(diagnose_requires_expr): Likewise.
+	(diagnose_atomic_constraint): Likewise.  When printing an atomic
+	constraint expression, print the instantiated parameter mapping
+	alongside it.
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression)
+	[NONTYPE_ARGUMENT_PACK]: Print braces around a NONTYPE_ARGUMENT_PACK.
+	(cxx_pretty_printer::type_id): Handle TYPE_ARGUMENT_PACK.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93676 - value-init crash in template.
+	* init.c (build_new_1): Don't call build_vec_init in a template.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93862 - ICE with static_cast when converting from int[].
+	* call.c (reference_compatible_p): No longer static.
+	* cp-tree.h (reference_compatible_p): Declare.
+	* typeck.c (build_static_cast_1): Use reference_compatible_p instead
+	of reference_related_p.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
+	* constexpr.c (reduced_constant_expression_p): Don't crash on a null
+	field.
+
 2020-02-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/93804

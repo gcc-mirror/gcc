@@ -2603,16 +2603,14 @@ reduced_constant_expression_p (tree t)
 	     element.  */
 	  if (!reduced_constant_expression_p (val))
 	    return false;
+	  /* Empty class field may or may not have an initializer.  */
+	  for (; field && idx != field;
+	       field = next_initializable_field (DECL_CHAIN (field)))
+	    if (!is_really_empty_class (TREE_TYPE (field),
+					/*ignore_vptr*/false))
+	      return false;
 	  if (field)
-	    {
-	      /* Empty class field may or may not have an initializer.  */
-	      for (; idx != field;
-		   field = next_initializable_field (DECL_CHAIN (field)))
-		if (!is_really_empty_class (TREE_TYPE (field),
-					    /*ignore_vptr*/false))
-		  return false;
-	      field = next_initializable_field (DECL_CHAIN (field));
-	    }
+	    field = next_initializable_field (DECL_CHAIN (field));
 	}
       /* There could be a non-empty field at the end.  */
       for (; field; field = next_initializable_field (DECL_CHAIN (field)))

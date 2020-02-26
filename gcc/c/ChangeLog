@@ -1,3 +1,9 @@
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93912
+	* gimple-parser.c (c_parser_gimple_parse_bb_spec_edge_probability):
+	Rename last argument from probablity to probability.
+
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93576

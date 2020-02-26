@@ -1,3 +1,61 @@
+2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-refs-and-ctors.h: New.
+	* g++.dg/coroutines/torture/func-params-07.C: New test.
+	* g++.dg/coroutines/torture/func-params-08.C: New test.
+
+2020-02-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93913
+	* gcc.target/powerpc/fold-vec-st-char.c (scan-assembler-times): Allow
+	stxv and stxvx instructions as well.
+	* gcc.target/powerpc/fold-vec-st-float.c: Likewise.
+	* gcc.target/powerpc/fold-vec-st-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-st-short.c: Likewise.
+
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic2.C: New test.
+	* g++.dg/concepts/diagnostic3.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93676 - value-init crash in template.
+	* g++.dg/cpp0x/nsdmi-template19.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93862 - ICE with static_cast when converting from int[].
+	* g++.dg/cpp0x/rv-cast7.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	DR 1423, Convertibility of nullptr to bool.
+	* g++.dg/DRs/dr1423.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
+	* g++.dg/cpp2a/constexpr-init16.C: New test.
+	* g++.dg/cpp2a/constexpr-init17.C: New test.
+
+2020-02-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/93843
+	* gcc.dg/vect/pr93843-1.c: New test.
+	* gcc.dg/vect/pr93843-2.c: Likewise.
+
+2020-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93820
+	* gcc.dg/pr93820-2.c: New test.
+
+	PR tree-optimization/93820
+	* gcc.dg/pr93820.c: New test.
+
+	PR c++/93905
+	* g++.dg/cpp0x/pr93905.C: New test.
+
 2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstn.c: New test.

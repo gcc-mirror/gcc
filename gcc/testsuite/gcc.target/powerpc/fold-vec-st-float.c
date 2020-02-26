@@ -31,4 +31,4 @@ testst_cst2 (vector float vf1, int i1, float * fp)
 	return vec_st(vf1, 24, fp);
 }
 
-/* { dg-final { scan-assembler-times {\mstvx\M}  4 } } */
+/* { dg-final { scan-assembler-times {\m(?:stvx|stxv|stxvx)\M} 4 } } */

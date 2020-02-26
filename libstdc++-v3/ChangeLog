@@ -1,3 +1,49 @@
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93936
+	* include/std/ranges (split_view::_InnerIter::operator==): Compare
+	the operands' _M_i rather than their _M_i.current().
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+
+	P1645R1 constexpr for <numeric> algorithms
+	* include/bits/stl_numeric.h (iota, accumulate, inner_product,
+	partial_sum, adjacent_difference): Make conditionally constexpr for
+	C++20.
+	* include/std/numeric (__cpp_lib_constexpr_numeric): Define this feature
+	test macro.
+	(reduce, transform_reduce, exclusive_scan, inclusive_scan,
+	transform_exclusive_scan, transform_inclusive_scan): Make conditionally
+	constexpr for C++20.
+	* include/std/version (__cpp_lib_constexpr_numeric): Define.
+	* testsuite/26_numerics/accumulate/constexpr.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/constexpr.cc: Likewise.
+	* testsuite/26_numerics/exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inner_product/constexpr.cc: Likewise.
+	* testsuite/26_numerics/iota/constexpr.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/constexpr.cc: Likewise.
+	* testsuite/26_numerics/reduce/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_reduce/constexpr.cc: Likewise.
+
+2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Declare
+	variables in smaller scope and avoid calling ranges::distance when we
+	know they are pointers. Remove statically-unreachable use of
+	__builtin_unreachable().
+	* include/bits/stl_algobase.h (__lexicographical_compare::__lc):
+	Define inline.
+
+	* include/std/ranges (__detail::__maybe_empty_t): Define new helper
+	alias.
+	(__detail::__maybe_const_t): Likewise.
+	(__adaptor::_RangeAdaptor): Use __maybe_empty_t.
+	(transform_view, take_view, take_while_view, elements_view): Use
+	__maybe_const_t.
+	(join_view, split_view): Use both.
+
 2020-02-25  Patrick Palka  <ppalka@redhat.com>
 
 	LWG 3397 basic_istream_view::iterator should not provide
