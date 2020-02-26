@@ -1105,6 +1105,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  else
 	    log ("considering event %i", idx);
 	}
+      gcc_assert (var == NULL || !CONSTANT_CLASS_P (var));
       switch (base_event->m_kind)
 	{
 	default:
@@ -1164,6 +1165,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    log ("event %i: switching var of interest from %qE to %qE",
 			 idx, var, state_change->m_origin);
 		    var = state_change->m_origin;
+		    if (var && CONSTANT_CLASS_P (var))
+		      {
+			log ("new var is a constant; setting var to NULL");
+			var = NULL_TREE;
+		      }
 		  }
 		log ("event %i: switching state of interest from %qs to %qs",
 		     idx, sm->get_state_name (state_change->m_to),
@@ -1260,6 +1266,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		var = caller_var;
 		if (expr.param_p ())
 		  event->record_critical_state (var, state);
+		if (var && CONSTANT_CLASS_P (var))
+		  {
+		    log ("new var is a constant; setting var to NULL");
+		    var = NULL_TREE;
+		  }
 	      }
 	  }
 	  break;
@@ -1285,6 +1296,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    var = callee_var;
 		    if (expr.return_value_p ())
 		      event->record_critical_state (var, state);
+		    if (var && CONSTANT_CLASS_P (var))
+		      {
+			log ("new var is a constant; setting var to NULL");
+			var = NULL_TREE;
+		      }
 		  }
 	      }
 	  }
