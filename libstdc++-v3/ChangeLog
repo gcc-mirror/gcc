@@ -1,5 +1,16 @@
 2020-02-27  Patrick Palka  <ppalka@redhat.com>
 
+	* include/std/ranges (transform_view::_Iterator<_Const>): Befriend
+	_Iterator<!_Const>.
+	(transform_view::_Sentinel<_Const>): Befriend _Sentinel<!_Const>.
+	(take_view::_Sentinel<_Const>): Likewise.
+	(take_while_view::_Sentinel<_Const>): Likewise.
+	(split_view::_OuterIter<_Const>): Befriend _OuterIter<!_Const>.
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take_while.cc: Augment test.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
 	* testsuite/25_algorithms/copy/constrained.cc: Don't assume that the
 	base() of a vector<>::iterator is a pointer.
 	* testsuite/25_algorithms/copy_backward/constrained.cc: Likewise.
