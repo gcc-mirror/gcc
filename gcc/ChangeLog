@@ -1,3 +1,8 @@
+2020-02-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_print_slp_tree): Also dump ref count
+	and load permutation.
+
 2020-02-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/93843
