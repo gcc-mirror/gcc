@@ -1,5 +1,11 @@
 2020-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93140
+	* pt.c (tsubst_decl) [PARM_DECL]: Check cp_unevaluated_operand in
+	handling of TREE_CHAIN for empty pack.
+
+2020-02-26  Jason Merrill  <jason@redhat.com>
+
 	PR c++/92852
 	* constexpr.c (maybe_constant_value): Don't unshare if the cached
 	value is the same as the argument.
