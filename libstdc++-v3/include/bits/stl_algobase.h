@@ -1254,20 +1254,15 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     {
       template<typename _II1, typename _II2>
 	_GLIBCXX20_CONSTEXPR
-	static bool __lc(_II1, _II1, _II2, _II2);
+	static bool
+	__lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+	{
+	  using __gnu_cxx::__ops::__iter_less_iter;
+	  return std::__lexicographical_compare_impl(__first1, __last1,
+						     __first2, __last2,
+						     __iter_less_iter());
+	}
     };
-
-  template<bool _BoolType>
-    template<typename _II1, typename _II2>
-      _GLIBCXX20_CONSTEXPR
-      bool
-      __lexicographical_compare<_BoolType>::
-      __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
-      {
-	return std::__lexicographical_compare_impl(__first1, __last1,
-						   __first2, __last2,
-					__gnu_cxx::__ops::__iter_less_iter());
-      }
 
   template<>
     struct __lexicographical_compare<true>

@@ -3464,9 +3464,6 @@ namespace ranges
 		 && sized_sentinel_for<_Sent2, _Iter2>);
 	    if constexpr (__sized_iters)
 	      {
-		auto __d1 = ranges::distance(__first1, __last1);
-		auto __d2 = ranges::distance(__first2, __last2);
-
 		using _ValueType1 = iter_value_t<_Iter1>;
 		using _ValueType2 = iter_value_t<_Iter2>;
 		constexpr bool __use_memcmp
@@ -3480,6 +3477,9 @@ namespace ranges
 		     && is_same_v<_Proj2, identity>);
 		if constexpr (__use_memcmp)
 		  {
+		    const auto __d1 = __last1 - __first1;
+		    const auto __d2 = __last2 - __first2;
+
 		    if (const auto __len = std::min(__d1, __d2))
 		      {
 			const auto __c
@@ -3498,10 +3498,8 @@ namespace ranges
 			    if (__c < 0)
 			      return false;
 			  }
-			else
-			  __builtin_unreachable();
 		      }
-		    return (__last1 - __first1 < __last2 - __first2);
+		    return __d1 < __d2;
 		  }
 	      }
 

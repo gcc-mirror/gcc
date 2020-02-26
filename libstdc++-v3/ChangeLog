@@ -1,5 +1,12 @@
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Declare
+	variables in smaller scope and avoid calling ranges::distance when we
+	know they are pointers. Remove statically-unreachable use of
+	__builtin_unreachable().
+	* include/bits/stl_algobase.h (__lexicographical_compare::__lc):
+	Define inline.
+
 	* include/std/ranges (__detail::__maybe_empty_t): Define new helper
 	alias.
 	(__detail::__maybe_const_t): Likewise.
