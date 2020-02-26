@@ -1,3 +1,8 @@
+2020-02-25  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86747
+	* pt.c (tsubst_friend_class): Enter tsubsted class context.
+
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86429 - constexpr variable in lambda.

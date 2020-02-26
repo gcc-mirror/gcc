@@ -1,3 +1,8 @@
+2020-02-25  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/86747
+	* g++.dg/pr86747.C: New.
+
 2019-02-05  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/87770
