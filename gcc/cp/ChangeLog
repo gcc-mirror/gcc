@@ -1,5 +1,11 @@
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87748 - substitution failure error with decltype.
+	* pt.c (most_specialized_partial_spec): Clear
+	processing_template_decl.
+
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
 	PR c++/87480 - decltype of member access in default template arg
 	* pt.c (type_unification_real): Accept a dependent result in
 	template context.
