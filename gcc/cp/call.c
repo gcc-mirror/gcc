@@ -3896,6 +3896,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 						       rettype, totype);
 	    }
 	  else if (TYPE_REF_P (totype) && !ics->rvaluedness_matches_p
+		   /* Limit this to non-templates for now (PR90546).  */
+		   && !cand->template_decl
 		   && TREE_CODE (TREE_TYPE (totype)) != FUNCTION_TYPE)
 	    {
 	      /* If we are called to convert to a reference type, we are trying
