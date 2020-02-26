@@ -4016,11 +4016,15 @@ mergeable_class_member (tree decl, tree klass, tree name,
       break;
 
     case INTEGER_CST:
-      /* An anonymous member type, or unnamed bitfield.  */
+      /* An anonymous member type, or unnamed bitfield, or using_decl  */
       {
 	unsigned ix = TREE_INT_CST_LOW (name);
+	enum tree_code code = TREE_CODE (STRIP_TEMPLATE (decl));
 	for (tree field = TYPE_FIELDS (klass); field; field = DECL_CHAIN (field))
-	  if (!DECL_NAME (field) || IDENTIFIER_ANON_P (DECL_NAME (field)))
+	  if (code == TREE_CODE (STRIP_TEMPLATE (field))
+	      && (code == USING_DECL
+		  || !DECL_NAME (field)
+		  || IDENTIFIER_ANON_P (DECL_NAME (field))))
 	    if (!ix--)
 	      {
 		found = field;
@@ -4331,7 +4335,8 @@ add_module_decl (tree ns, tree name, tree decl)
 unsigned
 get_field_ident (tree ctx, tree decl)
 {
-  gcc_checking_assert (!DECL_NAME (decl)
+  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
+		       || !DECL_NAME (decl)
 		       || IDENTIFIER_ANON_P (DECL_NAME (decl)));
 
   unsigned ix = 0;
@@ -4341,11 +4346,12 @@ get_field_ident (tree ctx, tree decl)
       if (fields == decl)
 	return ix;
 
-      if (TREE_CODE (fields) == FIELD_DECL
-	  && DECL_CONTEXT (fields) == ctx
-	  && (!DECL_NAME (fields)
-	      || IDENTIFIER_ANON_P (DECL_NAME (fields))))
-	/* Count this anon field.  */
+      if (DECL_CONTEXT (fields) == ctx
+	  && (TREE_CODE (fields) == USING_DECL
+	      || (TREE_CODE (fields) == FIELD_DECL
+		  && (!DECL_NAME (fields)
+		      || IDENTIFIER_ANON_P (DECL_NAME (fields))))))
+	/* Count this field.  */
 	ix++;
     }
   gcc_unreachable ();
@@ -4358,10 +4364,11 @@ lookup_field_ident (tree ctx, tree name, unsigned ix)
     {
       for (tree fields = TYPE_FIELDS (ctx);
 	   fields; fields = DECL_CHAIN (fields))
-	if (TREE_CODE (fields) == FIELD_DECL
-	    && DECL_CONTEXT (fields) == ctx
-	    && (!DECL_NAME (fields)
-		|| IDENTIFIER_ANON_P (DECL_NAME (fields))))
+	if (DECL_CONTEXT (fields) == ctx
+	    && (TREE_CODE (fields) == USING_DECL
+		|| (TREE_CODE (fields) == FIELD_DECL
+		    && (!DECL_NAME (fields)
+			|| IDENTIFIER_ANON_P (DECL_NAME (fields))))))
 	  if (!ix--)
 	    return fields;
 

@@ -26,9 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (Incomplete) Design Notes
 
-   The merged modules proposal, p1103r1, allows me to drop support for
-   two different schemes.
-
    A hash table contains all module names.  Imported modules are
    present in a modules array, which by construction places an
    import's dependencies before the import itself.  The single
@@ -53,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    DECL_EXPORT_P, DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The
    first indicates whether it is exported, the second whether it is in
    the module purview (as opposed to the global module fragment), and
-   the third indicates whether it was an import or not.
+   the third indicates whether it was an import into this TU or not.
 
    The more detailed flags are DECL_MODULE_PARTITION_P,
    DECL_MODULE_ENTITY_P & DECL_MODULE_PENDING_SPECIALIZATIONS_P.  The
@@ -105,8 +102,9 @@ along with GCC; see the file COPYING3.  If not see
    etc), and other sections are referenced by number.  Although I
    don't defend against actively hostile CMIs, there is some
    checksumming involved to verify data integrity.  When dumping out
-   an interface, we generate a list of all the namespace-scope DECLS
-   that are needed.  From that we determine the strongly connected
+   an interface, we generate a graph of all the
+   independently-redeclarable DECLS that are needed, and the decls
+   they reference.  From that we determine the strongly connected
    components (SCC) within this TU.  Each SCC is dumped to a separate
    numbered section of the CMI.  We generate a binding table section,
    mapping each namespace&name to a defining section.  This allows
@@ -118,7 +116,10 @@ along with GCC; see the file COPYING3.  If not see
    FILEIO is used.  Also, there's a bespoke ELF reader/writer here,
    which implements just the section table and sections (including
    string sections) of a 32-bit ELF in host byte-order.  You can of
-   course inspect it with readelf.
+   course inspect it with readelf.  I figured 32-bit is sufficient,
+   for a single module.  I detect running out of section numbers, but
+   do not implement the ELF overflow mechanism.  At least you'll get
+   an error if that happens.
 
    We do not separate declarations and definitions.  My guess is that
    if you refer to the declaration, you'll also need the definition
@@ -3758,6 +3759,8 @@ static GTY(()) vec<tree, va_gc> *class_members;
    singleton.  It contains both FILE and fd entities.  The PEX
    interface provides the former, so we need to keep them around.
    the fd entities are used when networking is supported.  */
+// FIXME: module_mapper could be generalized and moved to a separate
+// file, there's commonality with LTO
 
 class module_mapper {
   const char *name;
@@ -4824,9 +4827,8 @@ trees_out::tree_vec (vec<tree, va_gc> *v)
   unsigned len = vec_safe_length (v);
   if (streaming_p ())
     u (len);
-  if (len)
-    for (unsigned ix = 0; ix != len; ix++)
-      tree_node ((*v)[ix]);
+  for (unsigned ix = 0; ix != len; ix++)
+    tree_node ((*v)[ix]);
 }
 
 vec<tree, va_gc> *
@@ -8002,7 +8004,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
     case CONST_DECL:
       {
 	/* If I end up cloning enum decls, implementing C++2a using
-	   E:v, this will need tweaking.   */
+	   E::v, this will need tweaking.   */
 	if (streaming_p ())
 	  i (tt_enum_decl);
 	tree ctx = DECL_CONTEXT (decl);
@@ -8018,6 +8020,11 @@ trees_out::decl_node (tree decl, walk_kind ref)
       }
       break;
 
+    case USING_DECL:
+      if (TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
+	break;
+      /* FALLTHROUGH  */
+
     case FIELD_DECL:
       {
 	if (streaming_p ())
@@ -8025,10 +8032,17 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
 	tree ctx = DECL_CONTEXT (decl);
 	tree_node (ctx);
-	tree name = DECL_NAME (decl);
 
-	if (name && IDENTIFIER_ANON_P (name))
-	  name = NULL_TREE;
+	tree name = NULL_TREE;
+
+	if (TREE_CODE (decl) == USING_DECL)
+	  ;
+	else
+	  {
+	    name = DECL_NAME (decl);
+	    if (name && IDENTIFIER_ANON_P (name))
+	      name = NULL_TREE;
+	  }
 
 	tree_node (name);
 	if (!name && streaming_p ())
@@ -8154,7 +8168,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
     }
 
   /* Everything left should be a thing that is in the entity table.
-     Mostky things that can be defined outside of their (original
+     Mostly things that can be defined outside of their (original
      declaration) context.  */
   gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
 		       || TREE_CODE (decl) == VAR_DECL
@@ -9724,6 +9738,9 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       return MK_via_ctx;
     }
 
+  gcc_checking_assert (TREE_CODE (decl) != FIELD_DECL
+		       && TREE_CODE (decl) != USING_DECL);
+
   gcc_checking_assert (decl == dep->get_entity ());
 
   merge_kind mk = MK_named;
@@ -9947,11 +9964,12 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	  gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
 	  name = TYPE_NAME (TREE_TYPE (decl));
 	}
-      else if (!name || IDENTIFIER_ANON_P (name))
+      else if (!name || IDENTIFIER_ANON_P (name)
+	       || TREE_CODE (inner) == USING_DECL)
 	{
-	  /* An anonymous member type, or anonymous bitfield.  Find
-	     its position in the (filtered) TYPE_FIELDS list and use
-	     that as an INTEGER_CST.  */
+	  /* An anonymous member type, or anonymous bitfield or a
+	     using_decl.  Find its position in the (filtered)
+	     TYPE_FIELDS list and use that as an INTEGER_CST.  */
 	  // FIXME: Perhaps (unmergable) anonymous namespace-scope
 	  // types get here too?  We should have set those to
 	  // MK_unique earlier.
@@ -9960,13 +9978,18 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	  gcc_checking_assert (TYPE_P (CP_DECL_CONTEXT (decl))
 			       && (TREE_CODE (decl) != TEMPLATE_DECL
 				   || !DECL_MEMBER_TEMPLATE_P (decl)));
-	  gcc_checking_assert (name ? TREE_CODE (inner) == TYPE_DECL
-			       : (TREE_CODE (inner) == FIELD_DECL
-				  && DECL_BIT_FIELD_REPRESENTATIVE (inner)));
+	  if (TREE_CODE (inner) != USING_DECL)
+	    gcc_checking_assert (name ? TREE_CODE (inner) == TYPE_DECL
+				 : (TREE_CODE (inner) == FIELD_DECL
+				    && DECL_BIT_FIELD_REPRESENTATIVE (inner)));
 	  unsigned ix = 0;
+	  enum tree_code code = TREE_CODE (inner);
 	  for (tree field = TYPE_FIELDS (CP_DECL_CONTEXT (decl));
 	       field; field = DECL_CHAIN (field))
-	    if (!DECL_NAME (field) || IDENTIFIER_ANON_P (DECL_NAME (field)))
+	    if (code == TREE_CODE (STRIP_TEMPLATE (field))
+		&& (code == USING_DECL
+		    || !DECL_NAME (field)
+		    || IDENTIFIER_ANON_P (DECL_NAME (field))))
 	      {
 		if (field == inner)
 		  {
@@ -9976,10 +9999,11 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 		ix++;
 	      }
 	  /* Make sure we found it.  */
-	  gcc_checking_assert (name != DECL_NAME (decl));
+	  gcc_checking_assert (TREE_CODE (name) == INTEGER_CST);
 	}
       else if (IDENTIFIER_CONV_OP_P (name))
 	name = conv_op_identifier;
+
       tree_node (name);
 
       if (TREE_CODE (inner) == FUNCTION_DECL)
@@ -10234,7 +10258,6 @@ has_definition (tree decl)
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
-
 	if (type == TYPE_MAIN_VARIANT (type)
 	    && decl == TYPE_NAME (type)
 	    && (TREE_CODE (type) == ENUMERAL_TYPE
@@ -10494,7 +10517,22 @@ trees_out::write_class_def (tree defn)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      tree_vec (CLASSTYPE_MEMBER_VEC (type));
+      {
+	vec<tree, va_gc> *v = CLASSTYPE_MEMBER_VEC (type);
+	unsigned len = vec_safe_length (v);
+	if (streaming_p ())
+	  u (len);
+	for (unsigned ix = 0; ix != len; ix++)
+	  {
+	    tree m = (*v)[ix];
+	    if (TREE_CODE (m) == TYPE_DECL
+		&& DECL_ARTIFICIAL (m)
+		&& TYPE_STUB_DECL (TREE_TYPE (m)) == m)
+	      /* This is a using-decl for a type.  Write the type.  */
+	      m = TREE_TYPE (m);
+	    tree_node (m);
+	  }
+      }
       tree_node (CLASSTYPE_LAMBDA_EXPR (type));
 
       /* TYPE_CONTAINS_VPTR_P looks at the vbase vector, which the
@@ -10602,11 +10640,13 @@ trees_out::mark_class_def (tree defn)
   tree type = TREE_TYPE (defn);
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     /* Do not mark enum consts here.  */
-    if (TREE_CODE (member) == FIELD_DECL)
+    if (TREE_CODE (member) == FIELD_DECL
+	|| TREE_CODE (member) == USING_DECL)
       {
 	mark_class_member (member);
-	if (tree repr = DECL_BIT_FIELD_REPRESENTATIVE (member))
-	  mark_declaration (repr, false);
+	if (TREE_CODE (member) == FIELD_DECL)
+	  if (tree repr = DECL_BIT_FIELD_REPRESENTATIVE (member))
+	    mark_declaration (repr, false);
       }
 
   /* Mark the binfo hierarchy.  */
@@ -10663,7 +10703,17 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      member_vec = tree_vec ();
+      if (unsigned len = u ())
+	{
+	  vec_alloc (member_vec, len);
+	  for (unsigned ix = 0; ix != len; ix++)
+	    {
+	      tree m = tree_node ();
+	      if (TYPE_P (m))
+		m = TYPE_NAME (m);
+	      member_vec->quick_push (m);
+	    }
+	}
       lambda = tree_node ();
 
       if (!get_overrun ())
@@ -11126,6 +11176,9 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 		       == (TREE_CODE (decl) == NAMESPACE_DECL
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING && ek != EK_REDIRECT);
+  gcc_checking_assert (TREE_CODE (decl) != FIELD_DECL
+		       && (TREE_CODE (decl) != USING_DECL
+			   || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL));
   if (ek == EK_USING)
     gcc_checking_assert (TREE_CODE (decl) == OVERLOAD);
 

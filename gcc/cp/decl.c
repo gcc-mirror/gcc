@@ -3872,11 +3872,7 @@ tree
 build_typename_type (tree context, tree name, tree fullname,
 		     enum tag_types tag_type)
 {
-  tree t;
-  tree d;
   typename_info ti;
-  tree *e;
-  hashval_t hash;
 
   if (typename_htab == NULL)
     typename_htab = hash_table<typename_hasher>::create_ggc (61);
@@ -3888,11 +3884,12 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.class_p = (tag_type == class_type
 		|| tag_type == record_type
 		|| tag_type == union_type);
-  hash =  (htab_hash_pointer (ti.scope)
-	   ^ htab_hash_pointer (ti.name));
+  hashval_t hash =  (htab_hash_pointer (ti.scope)
+		     ^ htab_hash_pointer (ti.name));
 
   /* See if we already have this type.  */
-  e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
+  tree *e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
+  tree t = *e;
   if (*e)
     t = *e;
   else
@@ -3905,10 +3902,10 @@ build_typename_type (tree context, tree name, tree fullname,
       TYPENAME_IS_CLASS_P (t) = ti.class_p;
 
       /* Build the corresponding TYPE_DECL.  */
-      d = build_decl (input_location, TYPE_DECL, name, t);
-      TYPE_NAME (TREE_TYPE (d)) = d;
-      TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-      DECL_CONTEXT (d) = FROB_CONTEXT (context);
+      tree d = build_decl (input_location, TYPE_DECL, name, t);
+      TYPE_NAME (t) = d;
+      TYPE_STUB_DECL (t) = d;
+      DECL_CONTEXT (d) = ti.scope;
       DECL_ARTIFICIAL (d) = 1;
 
       /* Store it in the hash table.  */

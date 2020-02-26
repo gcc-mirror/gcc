@@ -1,3 +1,22 @@
+2020-02-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (build_typename_type): Refactor.
+	* module.cc (trees_out::decl_value): Class-scope using-decls are
+	like fields.
+	(trees_out::key_mergeable): Using-decls are like anonymous fields.
+	(trees_{in,out}::{read,write}_class_def): Beware of
+	typename_type's TYPE_DECL in the member vec.
+	(trees_out::mark_class_def): Mark using-decls.
+	(depset::hash::make_dependency): Assert not a class-scope
+	using-decl.
+	* name-lookup.c (mergeable_class_member): Using-decls can be
+	indexed.
+	({get,lookup}_field_ident): Using-decls are like fields.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-2_c.C: Adjust scans.
+	* g++.dg/modules/merge-13{,_[ab]}.[hHC]: New.
+
 2020-02-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/
