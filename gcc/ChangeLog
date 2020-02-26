@@ -1,3 +1,13 @@
+2020-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93820
+	* gimple-ssa-store-merging.c (check_no_overlap): Change RHS_CODE
+	argument to ALL_INTEGER_CST_P boolean.
+	(imm_store_chain_info::try_coalesce_bswap): Adjust caller.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.  Handle
+	adjacent INTEGER_CST store into merged_store->only_constants like
+	overlapping one.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/93912

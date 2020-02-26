@@ -1,5 +1,8 @@
 2020-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93820
+	* gcc.dg/pr93820.c: New test.
+
 	PR c++/93905
 	* g++.dg/cpp0x/pr93905.C: New test.
 
