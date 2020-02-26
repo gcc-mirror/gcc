@@ -232,7 +232,11 @@
 #define __cpp_lib_constexpr_memory 201811L
 #define __cpp_lib_constexpr_numeric 201911L
 #ifdef __cpp_lib_is_constant_evaluated
-# define __cpp_lib_constexpr_string 201811L
+# if _GLIBCXX_USE_CXX11_ABI
+#  define __cpp_lib_constexpr_string 201907L
+# else
+#  define __cpp_lib_constexpr_string 201811L
+# endif
 #endif
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple 201811L
