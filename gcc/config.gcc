@@ -2050,7 +2050,7 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2*)
 		esac
 	fi
 	;;
-i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae|i[4567]86-wrs-vxworks7|x86_64-wrs-vxworks7)
+i[4567]86-wrs-vxworks*|x86_64-wrs-vxworks7*)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h"
 	case ${target} in
 	  x86_64-*)
