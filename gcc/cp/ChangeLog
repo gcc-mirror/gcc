@@ -1,5 +1,11 @@
 2020-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86521 - C++17 copy elision in initialization by constructor.
+	* call.c (joust_maybe_elide_copy): New.
+	(joust): Call it.
+
+2020-02-26  Jason Merrill  <jason@redhat.com>
+
 	PR c++/90546
 	* call.c (build_user_type_conversion_1): Allow a template conversion
 	returning an rvalue reference to bind directly to an lvalue.
