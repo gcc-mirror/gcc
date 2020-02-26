@@ -1,5 +1,11 @@
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/87480 - decltype of member access in default template arg
+	* pt.c (type_unification_real): Accept a dependent result in
+	template context.
+
+2020-02-25  Jason Merrill  <jason@redhat.com>
+
 	PR c++/88394 - ICE with VLA init-capture.
 	* lambda.c (is_normal_capture_proxy): Check DECL_CAPTURED_VARIABLE.
 
