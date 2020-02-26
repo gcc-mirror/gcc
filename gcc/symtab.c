@@ -1955,22 +1955,22 @@ symtab_node::nonzero_address ()
      bind to NULL. This is on by default on embedded targets only.
 
      Otherwise all non-WEAK symbols must be defined and thus non-NULL or
-     linking fails.  Important case of WEAK we want to do well are comdats.
-     Those are handled by later check for definition.
+     linking fails.  Important case of WEAK we want to do well are comdats,
+     which also must be defined somewhere.
 
      When parsing, beware the cases when WEAK attribute is added later.  */
-  if (!DECL_WEAK (decl)
+  if ((!DECL_WEAK (decl) || DECL_COMDAT (decl))
       && flag_delete_null_pointer_checks)
     {
       refuse_visibility_changes = true;
       return true;
     }
 
-  /* If target is defined and either comdat or not extern, we know it will be
+  /* If target is defined and not extern, we know it will be
      output and thus it will bind to non-NULL.
      Play safe for flag_delete_null_pointer_checks where weak definition may
      be re-defined by NULL.  */
-  if (definition && (!DECL_EXTERNAL (decl) || DECL_COMDAT (decl))
+  if (definition && !DECL_EXTERNAL (decl)
       && (flag_delete_null_pointer_checks || !DECL_WEAK (decl)))
     {
       if (!DECL_WEAK (decl))
