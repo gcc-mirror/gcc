@@ -1,3 +1,8 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90998 - ICE with copy elision in init by ctor and -Wconversion.
+	* g++.dg/cpp0x/overload-conv-4.C: New test.
+
 2020-02-25  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/86747

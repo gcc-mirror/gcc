@@ -1,3 +1,8 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90998 - ICE with copy elision in init by ctor and -Wconversion.
+	* call.c (joust): Don't attempt to warn if ->second_conv is null.
+
 2020-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86521 - C++17 copy elision in initialization by constructor.
