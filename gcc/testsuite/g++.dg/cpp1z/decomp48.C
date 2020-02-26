@@ -18,7 +18,7 @@ f2 ()
 {
   S v {1, 2};
   auto& [s, t] = v;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
-  return s;		// { dg-warning "reference to local variable 'v' returned" }
+  return s;		// { dg-warning "reference to local variable 'v' returned" "" { target *-*-* } .-1 }
 }
 
 int &
@@ -33,7 +33,7 @@ f4 ()
 {
   int a[3] = {1, 2, 3};
   auto& [s, t, u] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
-  return s;		// { dg-warning "reference to local variable 'a' returned" }
+  return s;		// { dg-warning "reference to local variable 'a' returned" "" { target *-*-* } .-1 }
 }
 
 int &
@@ -78,7 +78,7 @@ f10 ()
 {
   S v {1, 2};
   auto& [s, t] = v;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
-  return &s;		// { dg-warning "address of local variable 'v' returned" }
+  return &s;		// { dg-warning "address of local variable 'v' returned" "" { target *-*-* } .-1 }
 }
 
 int *
@@ -93,7 +93,7 @@ f12 ()
 {
   int a[3] = {1, 2, 3};
   auto& [s, t, u] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
-  return &s;		// { dg-warning "address of local variable 'a' returned" }
+  return &s;		// { dg-warning "address of local variable 'a' returned" "" { target *-*-* } .-1 }
 }
 
 int *
