@@ -2841,7 +2841,7 @@ namespace views
 	  friend constexpr bool
 	  operator==(const _InnerIter& __x, const _InnerIter& __y)
 	    requires forward_range<_Base>
-	  { return __x._M_i.__current() == __y._M_i.__current(); }
+	  { return __x._M_i == __y._M_i; }
 
 	  friend constexpr bool
 	  operator==(const _InnerIter& __x, default_sentinel_t)

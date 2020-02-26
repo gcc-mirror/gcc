@@ -1,5 +1,10 @@
 2020-02-26  Patrick Palka  <ppalka@redhat.com>
 
+	PR libstdc++/93936
+	* include/std/ranges (split_view::_InnerIter::operator==): Compare
+	the operands' _M_i rather than their _M_i.current().
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+
 	P1645R1 constexpr for <numeric> algorithms
 	* include/bits/stl_numeric.h (iota, accumulate, inner_product,
 	partial_sum, adjacent_difference): Make conditionally constexpr for
