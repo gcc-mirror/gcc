@@ -155,6 +155,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Dp&       _M_deleter() { return std::get<1>(_M_t); }
       const _Dp& _M_deleter() const { return std::get<1>(_M_t); }
 
+      void
+      swap(__uniq_ptr_impl& __rhs) noexcept
+      {
+	using std::swap;
+	swap(this->_M_ptr(), __rhs._M_ptr());
+	swap(this->_M_deleter(), __rhs._M_deleter());
+      }
+
     private:
       tuple<pointer, _Dp> _M_t;
     };
@@ -398,8 +406,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(unique_ptr& __u) noexcept
       {
-	using std::swap;
-	swap(_M_t, __u._M_t);
+	static_assert(__is_swappable<_Dp>::value, "deleter must be swappable");
+	_M_t.swap(__u._M_t);
       }
 
       // Disable copy from lvalue.
@@ -673,8 +681,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(unique_ptr& __u) noexcept
       {
-	using std::swap;
-	swap(_M_t, __u._M_t);
+	static_assert(__is_swappable<_Dp>::value, "deleter must be swappable");
+	_M_t.swap(__u._M_t);
       }
 
       // Disable copy from lvalue.
