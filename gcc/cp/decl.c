@@ -10338,9 +10338,14 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 	    pedwarn (loc, OPT_Wpedantic,
 		     "size of array is not an integral constant-expression");
 	}
-      /* Use the folded result for VLAs, too; it will have resolved
-	 SIZEOF_EXPR.  */
-      size = folded;
+      if (TREE_CONSTANT (size) && !TREE_CONSTANT (folded))
+	/* We might have lost the TREE_CONSTANT flag e.g. when we are
+	   folding a conversion from a pointer to integral type.  In that
+	   case issue an error below and don't treat this as a VLA.  */;
+      else
+	/* Use the folded result for VLAs, too; it will have resolved
+	   SIZEOF_EXPR.  */
+	size = folded;
     }
 
   /* Normally, the array-bound will be a constant.  */

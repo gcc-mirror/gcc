@@ -1,3 +1,8 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93789 - ICE with invalid array bounds.
+	* g++.dg/ext/vla22.C: New test.
+
 2020-02-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93950

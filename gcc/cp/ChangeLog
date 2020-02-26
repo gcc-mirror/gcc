@@ -1,3 +1,9 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93789 - ICE with invalid array bounds.
+	* decl.c (compute_array_index_type_loc): Don't use the folded
+	size when folding cleared TREE_CONSTANT.
+
 2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* class.c (classtype_has_non_deleted_copy_ctor): New.
