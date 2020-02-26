@@ -1,6 +1,15 @@
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2020-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92376
+	* libsupc++/new_opa.cc [!_GLIBCXX_HOSTED]: Declare allocation
+	functions if they were detected by configure.
+
+2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78552
