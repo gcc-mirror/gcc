@@ -3386,11 +3386,11 @@ package body Sem_Warn is
 
          if True_Result then
             Error_Msg_N
-              ("condition can only be False if invalid values present??", Op);
+              ("condition can only be False if invalid values present?c?", Op);
 
          elsif False_Result then
             Error_Msg_N
-              ("condition can only be True if invalid values present??", Op);
+              ("condition can only be True if invalid values present?c?", Op);
          end if;
       end if;
    end Warn_On_Constant_Valid_Condition;
