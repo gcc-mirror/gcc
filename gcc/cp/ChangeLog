@@ -1,3 +1,9 @@
+2020-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86521 - wrong overload resolution with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Don't use a conversion to a
+	reference of the wrong rvalueness for direct binding.
+
 2020-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/89831 - error with qualified-id in const member function.
