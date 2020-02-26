@@ -1,6 +1,14 @@
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78552
+	* src/c++98/locale_init.cc (locale::classic()): Do not construct a new
+	locale object for every call.
+	(locale::_S_initialize_once()): Construct C locale here.
+
+	Backport from mainline
 	2020-01-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91947
