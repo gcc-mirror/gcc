@@ -1,3 +1,7 @@
+2020-02-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (mov<mode>): Add transformations for BI subregs.
+
 2020-02-27  Mark Williams  <mwilliams@fb.com>
 
 	* dwarf2out.c (file_name_acquire): Call remap_debug_filename.

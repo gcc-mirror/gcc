@@ -395,6 +395,31 @@
 	(match_operand:MOV_MODE 1 "general_operand"))]
   ""
   {
+    if (SUBREG_P (operands[1])
+	&& GET_MODE (operands[1]) == SImode
+	&& GET_MODE (SUBREG_REG (operands[1])) == BImode)
+    {
+      /* (reg:BI VCC) has nregs==2 to ensure it gets clobbered as a whole,
+	 but (subreg:SI (reg:BI VCC)) doesn't, which causes the LRA liveness
+	 checks to assert.  Transform this:
+	   (set (reg:SI) (subreg:SI (reg:BI)))
+	 to this:
+	   (set (subreg:BI (reg:SI)) (reg:BI))  */
+      operands[0] = gen_rtx_SUBREG (BImode, operands[0], 0);
+      operands[1] = SUBREG_REG (operands[1]);
+    }
+    if (SUBREG_P (operands[0])
+	&& GET_MODE (operands[0]) == SImode
+	&& GET_MODE (SUBREG_REG (operands[0])) == BImode)
+      {
+	/* Likewise, transform this:
+	     (set (subreg:SI (reg:BI)) (reg:SI))
+	   to this:
+	     (set (reg:BI) (subreg:BI (reg:SI))) */
+	operands[0] = SUBREG_REG (operands[0]);
+	operands[1] = gen_rtx_SUBREG (BImode, operands[1], 0);
+      }
+
     if (MEM_P (operands[0]))
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
