@@ -80,4 +80,4 @@ testst_cst7 (vector bool short vbs1, int i1, signed short * vssp)
 	return vec_st(vbs1, 36, vssp);
 }
 
-/* { dg-final { scan-assembler-times {\mstvx\M} 14} } */
+/* { dg-final { scan-assembler-times {\m(?:stvx|stxv|stxvx)\M} 14} } */
