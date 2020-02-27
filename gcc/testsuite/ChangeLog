@@ -1,5 +1,10 @@
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/93949
+	* gcc.c-torture/compile/pr93949.c: New test.
+
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/93945
 	* gcc.c-torture/execute/pr93945.c: New test.
 

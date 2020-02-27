@@ -4831,6 +4831,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    && num_nonzero_elements > 1
 	    && TREE_READONLY (object)
 	    && VAR_P (object)
+	    && !DECL_REGISTER (object)
 	    && (flag_merge_constants >= 2 || !TREE_ADDRESSABLE (object))
 	    /* For ctors that have many repeated nonzero elements
 	       represented through RANGE_EXPRs, prefer initializing

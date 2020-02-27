@@ -1,5 +1,11 @@
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/93949
+	* gimplify.c (gimplify_init_constructor): Don't promote readonly
+	DECL_REGISTER variables to TREE_STATIC.
+
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/93945
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): For memset with non-zero
 	second operand, require ref->size to be a multiple of BITS_PER_UNIT.
