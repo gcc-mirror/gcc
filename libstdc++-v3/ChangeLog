@@ -1,5 +1,11 @@
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/array (operator<=>): Define for C++20.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
 	* testsuite/23_containers/span/back_assert_neg.cc: Add #undef before
 	defining _GLIBCXX_ASSERTIONS.
 	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
