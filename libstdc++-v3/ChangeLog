@@ -1,3 +1,8 @@
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Add
+	-fdiagnostics-urls=never to options.
+
 2020-02-27  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (transform_view::_Iterator<_Const>): Befriend
