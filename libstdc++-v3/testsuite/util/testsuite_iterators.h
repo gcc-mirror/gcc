@@ -337,6 +337,26 @@ namespace __gnu_test
       ++*this;
       return tmp;
     }
+
+#if __cplusplus >= 201402L
+    bool
+    operator==(const forward_iterator_wrapper& it) const noexcept
+    {
+      // Since C++14 value-initialized forward iterators are comparable.
+      if (this->SharedInfo == nullptr || it.SharedInfo == nullptr)
+	return this->SharedInfo == it.SharedInfo && this->ptr == it.ptr;
+
+      const input_iterator_wrapper<T>& base_this = *this;
+      const input_iterator_wrapper<T>& base_that = it;
+      return base_this == base_that;
+    }
+
+    bool
+    operator!=(const forward_iterator_wrapper& it) const noexcept
+    {
+      return !(*this == it);
+    }
+#endif
   };
 
   /**

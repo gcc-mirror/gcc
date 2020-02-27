@@ -1,5 +1,8 @@
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h (forward_iterator_wrapper): Add
+	equality comparisons that support value-initialized iterators.
+
 	* include/bits/boost_concept_check.h (__function_requires): Add
 	_GLIBCXX14_CONSTEXPR.
 	* testsuite/25_algorithms/min/concept_checks.cc: New test.
