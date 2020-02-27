@@ -1,3 +1,14 @@
+2020-02-27  Martin Jambor  <mjambor@suse.cz>
+	    Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93707
+	* ipa-cp.c (same_node_or_its_all_contexts_clone_p): Replaced with
+	new function calls_same_node_or_its_all_contexts_clone_p.
+	(cgraph_edge_brings_value_p): Use it.
+	(cgraph_edge_brings_value_p): Likewise.
+	(self_recursive_pass_through_p): Return false if caller is a clone.
+	(self_recursive_agg_pass_through_p): Likewise.
+
 2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/92152

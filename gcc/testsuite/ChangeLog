@@ -1,3 +1,9 @@
+2020-02-27  Martin Jambor  <mjambor@suse.cz>
+	    Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93707
+	* gcc.dg/ipa/pr93707.c: New test.
+
 2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/92152
