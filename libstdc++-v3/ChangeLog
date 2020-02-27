@@ -1,5 +1,8 @@
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/string (__gnu_debug::basic_string::insert): Fix for
+	C++98 where the member function of the base class returns void.
+
 	* testsuite/util/testsuite_iterators.h (forward_iterator_wrapper): Add
 	equality comparisons that support value-initialized iterators.
 
