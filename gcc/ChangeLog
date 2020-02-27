@@ -1,3 +1,21 @@
+2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93932
+	* config/rs6000/vsx.md (vsx_extract_<mode>_var, VSX_D iterator):
+	Split the insn into two parts.  This insn only does variable
+	extract from a register.
+	(vsx_extract_<mode>_var_load, VSX_D iterator): New insn, do
+	variable extract from memory.
+	(vsx_extract_v4sf_var): Split the insn into two parts.  This insn
+	only does variable extract from a register.
+	(vsx_extract_v4sf_var_load): New insn, do variable extract from
+	memory.
+	(vsx_extract_<mode>_var, VSX_EXTRACT_I iterator): Split the insn
+	into two parts.  This insn only does variable extract from a
+	register.
+	(vsx_extract_<mode>_var_load, VSX_EXTRACT_I iterator): New insn,
+	do variable extract from memory.
+
 2020-02-27  Martin Jambor  <mjambor@suse.cz>
 	    Feng Xue  <fxue@os.amperecomputing.com>
 

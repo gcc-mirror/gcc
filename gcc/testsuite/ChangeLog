@@ -1,3 +1,9 @@
+2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93932
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Adjust
+	instruction counts.
+
 2020-02-27  Martin Jambor  <mjambor@suse.cz>
 	    Feng Xue  <fxue@os.amperecomputing.com>
 
