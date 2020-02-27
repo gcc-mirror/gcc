@@ -1,5 +1,11 @@
 2020-02-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/93508
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle _CHK like
+	non-_CHK variants.  Valueize their length arguments.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/93953
 	* tree-vect-slp.c (slp_copy_subtree): Avoid keeping a reference
 	to the hash-map entry.

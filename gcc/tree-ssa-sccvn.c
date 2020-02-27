@@ -2537,7 +2537,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
      from that definition.
      1) Memset.  */
   if (is_gimple_reg_type (vr->type)
-      && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
+      && (gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
+	  || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET_CHK))
       && (integer_zerop (gimple_call_arg (def_stmt, 1))
 	  || ((TREE_CODE (gimple_call_arg (def_stmt, 1)) == INTEGER_CST
 	       || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
@@ -2548,7 +2549,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      && ref->size.is_constant (&sizei)
 	      && (offseti % BITS_PER_UNIT == 0
 		  || TREE_CODE (gimple_call_arg (def_stmt, 1)) == INTEGER_CST)))
-      && poly_int_tree_p (gimple_call_arg (def_stmt, 2))
+      && (poly_int_tree_p (gimple_call_arg (def_stmt, 2))
+	  || (TREE_CODE (gimple_call_arg (def_stmt, 2)) == SSA_NAME
+	      && poly_int_tree_p (SSA_VAL (gimple_call_arg (def_stmt, 2)))))
       && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
 	  || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME))
     {
@@ -2609,6 +2612,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	return (void *)-1;
       tree len = gimple_call_arg (def_stmt, 2);
       HOST_WIDE_INT leni, offset2i;
+      if (TREE_CODE (len) == SSA_NAME)
+	len = SSA_VAL (len);
       /* Sometimes the above trickery is smarter than alias analysis.  Take
          advantage of that.  */
       if (!ranges_maybe_overlap_p (offset, maxsize, offset2,
@@ -3149,13 +3154,19 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && is_gimple_reg_type (vr->type)
 	   /* ???  Handle BCOPY as well.  */
 	   && (gimple_call_builtin_p (def_stmt, BUILT_IN_MEMCPY)
+	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMCPY_CHK)
 	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMPCPY)
-	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMMOVE))
+	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMPCPY_CHK)
+	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMMOVE)
+	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMMOVE_CHK))
 	   && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
 	       || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME)
 	   && (TREE_CODE (gimple_call_arg (def_stmt, 1)) == ADDR_EXPR
 	       || TREE_CODE (gimple_call_arg (def_stmt, 1)) == SSA_NAME)
-	   && poly_int_tree_p (gimple_call_arg (def_stmt, 2), &copy_size)
+	   && (poly_int_tree_p (gimple_call_arg (def_stmt, 2), &copy_size)
+	       || (TREE_CODE (gimple_call_arg (def_stmt, 2)) == SSA_NAME
+		   && poly_int_tree_p (SSA_VAL (gimple_call_arg (def_stmt, 2)),
+				       &copy_size)))
 	   /* Handling this is more complicated, give up for now.  */
 	   && data->partial_defs.is_empty ())
     {
