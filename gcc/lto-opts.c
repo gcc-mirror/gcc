@@ -131,6 +131,9 @@ lto_write_options (void)
 	case OPT_SPECIAL_input_file:
 	case OPT_dumpdir:
 	case OPT_fresolution_:
+	case OPT_fdebug_prefix_map_:
+	case OPT_ffile_prefix_map_:
+	case OPT_fmacro_prefix_map_:
 	  continue;
 
 	default:

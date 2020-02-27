@@ -1,3 +1,11 @@
+2020-02-27  Mark Williams  <mwilliams@fb.com>
+
+	* dwarf2out.c (file_name_acquire): Call remap_debug_filename.
+	* lto-opts.c (lto_write_options): Drop -fdebug-prefix-map,
+	-ffile-prefix-map and -fmacro-prefix-map.
+	* lto-streamer-out.c: Include file-prefix-map.h.
+	(lto_output_location): Remap the file part of locations.
+
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93949
