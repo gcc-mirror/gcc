@@ -1824,7 +1824,7 @@ package body Bindo.Graphs is
          end case;
 
          if not OK then
-            raise Program_Error;
+            raise Program_Error with Kind'Img & "-->" & Attributes.Kind'Img;
          end if;
       end Add_Edge_Kind_Check;
 
