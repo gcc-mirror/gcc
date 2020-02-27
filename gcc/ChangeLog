@@ -1,3 +1,11 @@
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	PR tree-optimization/93945
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle memset with
+	non-zero INTEGER_CST second argument and ref->offset or ref->size
+	not a multiple of BITS_PER_UNIT.
+
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/install.texi (Binaries): Update description of BullFreeware.
