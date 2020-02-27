@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001-2018 Free Software Foundation.
+# Copyright (c) 2001-2020 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -78,6 +78,7 @@ Options:
   -p previous-tarball  Location of a previous tarball (to generate diff files).
   -t tag               Tag to mark the release in git.
   -u username          Username for upload operations.
+  -b local-git-repo    Local git repository to speed up cloning.
 EOF
     exit 1
 }
@@ -103,8 +104,14 @@ build_sources() {
   changedir "${WORKING_DIRECTORY}"
 
   # Check out the sources.
-  ${GIT} clone -q -b "${GITBRANCH}" "${GITROOT}" "`basename ${SOURCE_DIRECTORY}`" || \
-      error "Could not check out release sources"
+  if [ -n "${GIT_REFERENCE}" ]; then
+    ${GIT} clone -q --dissociate --reference "${GIT_REFERENCE}" \
+		 -b "${GITBRANCH}" "${GITROOT}" "`basename ${SOURCE_DIRECTORY}`" || \
+        error "Could not check out release sources"
+  else
+    ${GIT} clone -q -b "${GITBRANCH}" "${GITROOT}" "`basename ${SOURCE_DIRECTORY}`" || \
+        error "Could not check out release sources"
+  fi
 
   # If this is a final release, make sure that the ChangeLogs
   # and version strings are updated.
@@ -567,6 +574,9 @@ TAG=""
 # The old tarballs from which to generate diffs.
 OLD_TARS=""
 
+# Local gcc git checkout to speed up git cloning.
+GIT_REFERENCE=""
+
 # The directory that will be used to construct the release.  The
 # release itself will be placed in a subdirectory of this directory.
 DESTINATION=${HOME}
@@ -613,7 +623,7 @@ TAR="${TAR:-tar}"
 ########################################################################
 
 # Parse the options.
-while getopts "d:fr:u:t:p:s:l" ARG; do
+while getopts "d:fr:u:t:p:s:lb:" ARG; do
     case $ARG in
     d)    DESTINATION="${OPTARG}";;
     r)    RELEASE="${OPTARG}";;
@@ -631,6 +641,7 @@ while getopts "d:fr:u:t:p:s:l" ARG; do
           if [ ! -f ${OPTARG} ]; then
 	    error "-p argument must name a tarball"
 	  fi;;
+    b)    GIT_REFERENCE="${OPTARG}";;
     \?)   usage;;
     esac
 done

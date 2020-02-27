@@ -1,3 +1,7 @@
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: Add support for -b local-git-repo argument.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.
