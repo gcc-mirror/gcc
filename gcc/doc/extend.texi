@@ -20643,13 +20643,13 @@ vector unsigned long long __builtin_crypto_vpermxor (vector unsigned long long,
 vector unsigned char __builtin_crypto_vpmsumb (vector unsigned char,
                                                vector unsigned char);
 
-vector unsigned short __builtin_crypto_vpmsumb (vector unsigned short,
+vector unsigned short __builtin_crypto_vpmsumh (vector unsigned short,
                                                 vector unsigned short);
 
-vector unsigned int __builtin_crypto_vpmsumb (vector unsigned int,
+vector unsigned int __builtin_crypto_vpmsumw (vector unsigned int,
                                               vector unsigned int);
 
-vector unsigned long long __builtin_crypto_vpmsumb (vector unsigned long long,
+vector unsigned long long __builtin_crypto_vpmsumd (vector unsigned long long,
                                                     vector unsigned long long);
 
 vector unsigned long long __builtin_crypto_vshasigmad (vector unsigned long long,

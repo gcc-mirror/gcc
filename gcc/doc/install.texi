@@ -3274,7 +3274,7 @@ AIX:
 @itemize
 @item
 @uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
-for AIX 5L and AIX 6};
+for AIX 6 and AIX 7};
 
 @item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1

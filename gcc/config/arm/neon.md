@@ -3737,6 +3737,22 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_from_gp_q")]
 )
 
+(define_insn "neon_vdup_nv4bf"
+  [(set (match_operand:V4BF 0 "s_register_operand" "=w")
+        (vec_duplicate:V4BF (match_operand:BF 1 "s_register_operand" "r")))]
+  "TARGET_NEON"
+  "vdup.16\t%P0, %1"
+  [(set_attr "type" "neon_from_gp")]
+)
+
+(define_insn "neon_vdup_nv8bf"
+  [(set (match_operand:V8BF 0 "s_register_operand" "=w")
+        (vec_duplicate:V8BF (match_operand:BF 1 "s_register_operand" "r")))]
+  "TARGET_NEON"
+  "vdup.16\t%q0, %1"
+  [(set_attr "type" "neon_from_gp_q")]
+)
+
 (define_insn "neon_vdup_n<mode>"
   [(set (match_operand:V32 0 "s_register_operand" "=w,w")
         (vec_duplicate:V32 (match_operand:<V_elem> 1 "s_register_operand" "r,t")))]
@@ -3791,12 +3807,12 @@ if (BYTES_BIG_ENDIAN)
 )
 
 (define_insn "neon_vdup_lane<mode>_internal"
- [(set (match_operand:VH 0 "s_register_operand" "=w")
-   (vec_duplicate:VH
+ [(set (match_operand:VHFBF 0 "s_register_operand" "=w")
+   (vec_duplicate:VHFBF
     (vec_select:<V_elem>
      (match_operand:<V_double_vector_mode> 1 "s_register_operand" "w")
      (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
- "TARGET_NEON && TARGET_FP16"
+ "TARGET_NEON && (TARGET_FP16 || TARGET_BF16_SIMD)"
 {
   if (BYTES_BIG_ENDIAN)
     {
@@ -3832,10 +3848,10 @@ if (BYTES_BIG_ENDIAN)
 })
 
 (define_expand "neon_vdup_lane<mode>"
-  [(match_operand:VH 0 "s_register_operand")
+  [(match_operand:VHFBF 0 "s_register_operand")
    (match_operand:<V_double_vector_mode> 1 "s_register_operand")
    (match_operand:SI 2 "immediate_operand")]
-  "TARGET_NEON && TARGET_FP16"
+  "TARGET_NEON && (TARGET_FP16 || TARGET_BF16_SIMD)"
 {
   if (BYTES_BIG_ENDIAN)
     {

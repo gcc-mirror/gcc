@@ -1,3 +1,62 @@
+2020-02-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator<_Const>): Befriend
+	_Iterator<!_Const>.
+	(transform_view::_Sentinel<_Const>): Befriend _Sentinel<!_Const>.
+	(take_view::_Sentinel<_Const>): Likewise.
+	(take_while_view::_Sentinel<_Const>): Likewise.
+	(split_view::_OuterIter<_Const>): Befriend _OuterIter<!_Const>.
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take_while.cc: Augment test.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
+	* testsuite/25_algorithms/copy/constrained.cc: Don't assume that the
+	base() of a vector<>::iterator is a pointer.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: Use foo.data()
+	instead of &foo[0].
+	* testsuite/25_algorithms/partial_sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/constrained.cc: Likewise.
+	* testsuite/25_algorithms/sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: Likewise.
+
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/array (operator<=>): Define for C++20.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
+	* testsuite/23_containers/span/back_assert_neg.cc: Add #undef before
+	defining _GLIBCXX_ASSERTIONS.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+
+	* include/debug/string (__gnu_debug::basic_string::insert): Fix for
+	C++98 where the member function of the base class returns void.
+
+	* testsuite/util/testsuite_iterators.h (forward_iterator_wrapper): Add
+	equality comparisons that support value-initialized iterators.
+
+	* include/bits/boost_concept_check.h (__function_requires): Add
+	_GLIBCXX14_CONSTEXPR.
+	* testsuite/25_algorithms/min/concept_checks.cc: New test.
+
 2020-02-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/93936

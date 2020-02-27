@@ -18,6 +18,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { xfail c++2a } }
 
+#undef _GLIBCXX_ASSERTIONS
 #define _GLIBCXX_ASSERTIONS
 #include <span>
 

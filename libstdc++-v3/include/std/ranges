@@ -1759,6 +1759,7 @@ namespace views
 	    requires indirectly_swappable<_Base_iter>
 	  { return ranges::iter_swap(__x._M_current, __y._M_current); }
 
+	  friend _Iterator<!_Const>;
 	  friend _Sentinel<_Const>;
 	};
 
@@ -1811,6 +1812,8 @@ namespace views
 	  operator-(const _Sentinel& __y, const _Iterator<_Const>& __x)
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
 	  { return __y.__distance_from(__x); }
+
+	  friend _Sentinel<!_Const>;
 	};
 
       _Vp _M_base = _Vp();
@@ -1916,6 +1919,8 @@ namespace views
 
 	  friend constexpr bool operator==(const _CI& __y, const _Sentinel& __x)
 	  { return __y.count() == 0 || __y.base() == __x._M_end; }
+
+	  friend _Sentinel<!_Const>;
 	};
 
       _Vp _M_base = _Vp();
@@ -2055,6 +2060,8 @@ namespace views
 	  friend constexpr bool
 	  operator==(const iterator_t<_Base>& __x, const _Sentinel& __y)
 	  { return __y._M_end == __x || !std::__invoke(*__y._M_pred, *__x); }
+
+	  friend _Sentinel<!_Const>;
 	};
 
       _Vp _M_base = _Vp();
@@ -2730,6 +2737,7 @@ namespace views
 	  operator==(const _OuterIter& __x, default_sentinel_t)
 	  { return __x.__at_end(); };
 
+	  friend _OuterIter<!_Const>;
 	  friend _InnerIter<_Const>;
 	};
 

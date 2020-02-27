@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { *-*-darwin* } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-pcrel" } */
 
 typedef __builtin_va_list va_list;
 #define va_start(ap, arg) __builtin_va_start (ap, arg)

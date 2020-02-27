@@ -108,6 +108,19 @@ test05()
 			str | views::filter(not_space_p)) );
 }
 
+void
+test06()
+{
+  std::string str = "hello world";
+  auto v = str | views::transform(std::identity{}) | views::split(' ');
+
+  // Verify that _Iterator<false> is implicitly convertible to _Iterator<true>.
+  static_assert(!std::same_as<decltype(ranges::begin(v)),
+			      decltype(ranges::cbegin(v))>);
+  auto b = ranges::cbegin(v);
+  b = ranges::begin(v);
+}
+
 int
 main()
 {
@@ -116,4 +129,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

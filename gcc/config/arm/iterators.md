@@ -82,14 +82,14 @@
 (define_mode_iterator VD_RE [V8QI V4HI V2SI V2SF DI])
 
 ;; Double-width vector modes plus 64-bit elements.
-(define_mode_iterator VDX [V8QI V4HI V4HF V2SI V2SF DI])
+(define_mode_iterator VDX [V8QI V4HI V4HF V4BF V2SI V2SF DI])
 
 ;; Double-width vector modes plus 64-bit elements,
 ;; with V4BFmode added, suitable for moves.
 (define_mode_iterator VDXMOV [V8QI V4HI V4HF V4BF V2SI V2SF DI])
 
 ;; Double-width vector modes, with V4HF - for vldN_lane and vstN_lane.
-(define_mode_iterator VD_LANE [V8QI V4HI V4HF V2SI V2SF])
+(define_mode_iterator VD_LANE [V8QI V4HI V4HF V4BF V2SI V2SF])
 
 ;; Double-width vector modes without floating-point elements.
 (define_mode_iterator VDI [V8QI V4HI V2SI])
@@ -104,7 +104,7 @@
 (define_mode_iterator VQ_HS [V8HI V8HF V4SI V4SF])
 
 ;; Quad-width vector modes plus 64-bit elements.
-(define_mode_iterator VQX [V16QI V8HI V8HF V4SI V4SF V2DI])
+(define_mode_iterator VQX [V16QI V8HI V8HF V8BF V4SI V4SF V2DI])
 
 ;; Quad-width vector modes without floating-point elements.
 (define_mode_iterator VQI [V16QI V8HI V4SI])
@@ -153,7 +153,7 @@
 
 ;; Vector modes, including 64-bit integer elements.
 (define_mode_iterator VDQX [V8QI V16QI V4HI V8HI V2SI V4SI
-			    V4HF V8HF V2SF V4SF DI V2DI])
+			    V4HF V8HF V4BF V8BF V2SF V4SF DI V2DI])
 
 ;; Vector modes including 64-bit integer elements, but no floats.
 (define_mode_iterator VDQIX [V8QI V16QI V4HI V8HI V2SI V4SI DI V2DI])
@@ -522,6 +522,7 @@
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
 			  (V4HI "HI") (V8HI "HI")
 			  (V4HF "HF") (V8HF "HF")
+			  (V4BF "BF") (V8BF "BF")
                           (V2SI "SI") (V4SI "SI")
                           (V2SF "SF") (V4SF "SF")
                           (DI "DI")   (V2DI "DI")])
@@ -530,6 +531,7 @@
 (define_mode_attr V_elem_l [(V8QI "qi") (V16QI "qi")
 			    (V4HI "hi") (V8HI "hi")
 			    (V4HF "hf") (V8HF "hf")
+			    (V4BF "bf") (V8BF "bf")
 			    (V2SI "si") (V4SI "si")
 			    (V2SF "sf") (V4SF "sf")
 			    (DI "di")   (V2DI "di")])
@@ -547,6 +549,7 @@
 (define_mode_attr V_two_elem [(V8QI "HI")   (V16QI "HI")
                               (V4HI "SI")   (V8HI "SI")
                               (V4HF "SF")   (V8HF "SF")
+                              (V4BF "BF")   (V8BF "BF")
                               (V2SI "V2SI") (V4SI "V2SI")
                               (V2SF "V2SF") (V4SF "V2SF")
                               (DI "V2DI")   (V2DI "V2DI")])
@@ -567,6 +570,7 @@
 (define_mode_attr V_three_elem [(V8QI "BLK") (V16QI "BLK")
                                 (V4HI "BLK") (V8HI "BLK")
                                 (V4HF "BLK") (V8HF "BLK")
+                                (V4BF "BLK") (V8BF "BLK")
                                 (V2SI "BLK") (V4SI "BLK")
                                 (V2SF "BLK") (V4SF "BLK")
                                 (DI "EI")    (V2DI "EI")])
@@ -575,6 +579,7 @@
 (define_mode_attr V_four_elem [(V8QI "SI")   (V16QI "SI")
                                (V4HI "V4HI") (V8HI "V4HI")
                                (V4HF "V4HF") (V8HF "V4HF")
+                               (V4BF "V4BF") (V8BF "V4BF")
                                (V2SI "V4SI") (V4SI "V4SI")
                                (V2SF "V4SF") (V4SF "V4SF")
                                (DI "OI")     (V2DI "OI")])
@@ -583,6 +588,7 @@
 (define_mode_attr V_reg [(V8QI "P") (V16QI "q")
 			 (V4HI "P") (V8HI  "q")
 			 (V4HF "P") (V8HF  "q")
+			 (V4BF "P") (V8BF  "q")
 			 (V2SI "P") (V4SI  "q")
 			 (V2SF "P") (V4SF  "q")
 			 (DI   "P") (V2DI  "q")
@@ -613,7 +619,8 @@
 (define_mode_attr V_HALF [(V16QI "V8QI") (V8HI "V4HI")
 			  (V8HF "V4HF") (V4SI  "V2SI")
 			  (V4SF "V2SF") (V2DF "DF")
-			  (V2DI "DI") (V4HF "HF")])
+			  (V2DI "DI") (V4HF "HF")
+			  (V4BF "BF") (V8BF  "V4BF")])
 
 ;; Same, but lower-case.
 (define_mode_attr V_half [(V16QI "v8qi") (V8HI "v4hi")
@@ -624,7 +631,7 @@
 (define_mode_attr V_DOUBLE [(V8QI "V16QI") (V4HI "V8HI")
 			    (V2SI "V4SI") (V4HF "V8HF")
 			    (V2SF "V4SF") (DF "V2DF")
-			    (DI "V2DI")])
+			    (DI "V2DI")   (V4BF "V8BF")])
 
 ;; Same, but lower-case.
 (define_mode_attr V_double [(V8QI "v16qi") (V4HI "v8hi")
@@ -643,6 +650,7 @@
 					(V4SI "V2SI") (V4SF "V2SF")
 					(V8QI "V8QI") (V4HI "V4HI")
 					(V2SI "V2SI") (V2SF "V2SF")
+					(V8BF "V4BF") (V4BF "V4BF")
 					(V8HF "V4HF") (V4HF "V4HF")])
 
 ;; Mode of result of comparison operations (and bit-select operand 1).
@@ -650,6 +658,7 @@
 				(V4HI "V4HI") (V8HI  "V8HI")
                                 (V2SI "V2SI") (V4SI  "V4SI")
 				(V4HF "V4HI") (V8HF  "V8HI")
+				(V4BF "V4HI") (V8BF  "V8HI")
                                 (V2SF "V2SI") (V4SF  "V4SI")
                                 (DI   "DI")   (V2DI  "V2DI")])
 
@@ -691,6 +700,7 @@
                  (V4HI "u16") (V8HI "u16")
                              (V2SI "32") (V4SI "32")
                              (V4HF "u16") (V8HF "u16")
+                             (V4BF "u16") (V8BF "u16")
                              (V2SF "32") (V4SF "32")])
 
 (define_mode_attr V_sz_elem [(V8QI "8")  (V16QI "8")
@@ -698,6 +708,7 @@
 			     (V2SI "32") (V4SI  "32")
 			     (DI   "64") (V2DI  "64")
 			     (V4HF "16") (V8HF "16")
+			     (V4BF "16") (V8BF "16")
 			     (V2SF "32") (V4SF  "32")])
 
 (define_mode_attr V_elem_ch [(V8QI "b")  (V16QI "b")
@@ -768,10 +779,12 @@
 			    (V2SI "true") (V4SI  "false")
 			    (V2SF "true") (V4SF  "false")
 			    (DI   "true") (V2DI  "false")
+			    (V4BF "true") (V8BF  "false")
 			    (V4HF "true") (V8HF  "false")])
 
 (define_mode_attr V_mode_nunits [(V8QI "8") (V16QI "16")
 				 (V4HF "4") (V8HF "8")
+				 (V4BF "4") (V8BF "8")
                                  (V4HI "4") (V8HI "8")
                                  (V2SI "2") (V4SI "4")
                                  (V2SF "2") (V4SF "4")

@@ -1,3 +1,84 @@
+2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93932
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Adjust
+	instruction counts.
+
+2020-02-27  Martin Jambor  <mjambor@suse.cz>
+	    Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93707
+	* gcc.dg/ipa/pr93707.c: New test.
+
+2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/92152
+	* gcc.dg/tree-ssa/alias-access-path-12.c: New testcase.
+	* g++.dg/torture/pr92152.C: New testcase.
+	* gcc.dg/torture/pr92152.c: New testcase.
+	* gcc.dg/tree-ssa/20030807-7.c: xfail.
+	* gcc.dg/tree-ssa/alias-access-path-4.c: xfail one case.
+	* gcc.dg/tree-ssa/alias-access-path-5.c: xfail one case.
+
+2020-02-27  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/bf16_dup.c: New test.
+	* gcc.target/arm/bf16_reinterpret.c: Likewise.
+
+2020-02-27  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target_supports.exp (check_effective_target_has_arch_pwr5): New.
+	(check_effective_target_has_arch_pwr6): New.
+	(check_effective_target_has_arch_pwr7): New.
+	(check_effective_target_has_arch_pwr8): New.
+	(check_effective_target_has_arch_pwr9): New.
+	* gcc.target/powerpc/pr92132-fp-1.c: Add target check.
+
+
+2020-02-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-1.c: Compile with -mno-pcrel.
+	* gcc.target/powerpc/ppc64-abi-2.c: Likewise.
+
+2020-02-27  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/aarch64/vect-mull.x (SH): Undefine.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93508
+	* gcc.dg/tree-ssa/ssa-fre-85.c: New testcase.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93953
+	* gcc.dg/pr93953.c: New testcase.
+
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93949
+	* gcc.c-torture/compile/pr93949.c: New test.
+
+	PR tree-optimization/93582
+	PR tree-optimization/93945
+	* gcc.dg/tree-ssa/pr93582-9.c: New test.
+	* gcc.c-torture/execute/pr93945.c: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93789 - ICE with invalid array bounds.
+	* g++.dg/ext/vla22.C: New test.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93950
+	* g++.dg/analyzer/pr93950.C: New test.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93947
+	* gcc.dg/analyzer/torture/pr93947.c: New test.
+
 2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro1-refs-and-ctors.h: New.

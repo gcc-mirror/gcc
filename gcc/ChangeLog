@@ -1,3 +1,187 @@
+2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93932
+	* config/rs6000/vsx.md (vsx_extract_<mode>_var, VSX_D iterator):
+	Split the insn into two parts.  This insn only does variable
+	extract from a register.
+	(vsx_extract_<mode>_var_load, VSX_D iterator): New insn, do
+	variable extract from memory.
+	(vsx_extract_v4sf_var): Split the insn into two parts.  This insn
+	only does variable extract from a register.
+	(vsx_extract_v4sf_var_load): New insn, do variable extract from
+	memory.
+	(vsx_extract_<mode>_var, VSX_EXTRACT_I iterator): Split the insn
+	into two parts.  This insn only does variable extract from a
+	register.
+	(vsx_extract_<mode>_var_load, VSX_EXTRACT_I iterator): New insn,
+	do variable extract from memory.
+
+2020-02-27  Martin Jambor  <mjambor@suse.cz>
+	    Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93707
+	* ipa-cp.c (same_node_or_its_all_contexts_clone_p): Replaced with
+	new function calls_same_node_or_its_all_contexts_clone_p.
+	(cgraph_edge_brings_value_p): Use it.
+	(cgraph_edge_brings_value_p): Likewise.
+	(self_recursive_pass_through_p): Return false if caller is a clone.
+	(self_recursive_agg_pass_through_p): Likewise.
+
+2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/92152
+	* alias.c (ends_tbaa_access_path_p): Break out from ...
+	(component_uses_parent_alias_set_from): ... here.
+	* alias.h (ends_tbaa_access_path_p): Declare.
+	* tree-ssa-alias.c (access_path_may_continue_p): Break out from ...;
+	handle trailing arrays past end of tbaa access path.
+	(aliasing_component_refs_p): ... here; likewise.
+	(nonoverlapping_refs_since_match_p): Track TBAA segment of the access
+	path; disambiguate also past end of it.
+	(nonoverlapping_component_refs_p): Use only TBAA segment of the access
+	path.
+
+2020-02-27  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* (__ARM_NUM_LANES, __arm_lane, __arm_lane_q): Move to the
+	beginning of the file.
+	(vcreate_bf16, vcombine_bf16): New.
+	(vdup_n_bf16, vdupq_n_bf16): New.
+	(vdup_lane_bf16, vdup_laneq_bf16): New.
+	(vdupq_lane_bf16, vdupq_laneq_bf16): New.
+	(vduph_lane_bf16, vduph_laneq_bf16): New.
+	(vset_lane_bf16, vsetq_lane_bf16): New.
+	(vget_lane_bf16, vgetq_lane_bf16): New.
+	(vget_high_bf16, vget_low_bf16): New.
+	(vreinterpret_bf16_u8, vreinterpretq_bf16_u8): New.
+	(vreinterpret_bf16_u16, vreinterpretq_bf16_u16): New.
+	(vreinterpret_bf16_u32, vreinterpretq_bf16_u32): New.
+	(vreinterpret_bf16_u64, vreinterpretq_bf16_u64): New.
+	(vreinterpret_bf16_s8, vreinterpretq_bf16_s8): New.
+	(vreinterpret_bf16_s16, vreinterpretq_bf16_s16): New.
+	(vreinterpret_bf16_s32, vreinterpretq_bf16_s32): New.
+	(vreinterpret_bf16_s64, vreinterpretq_bf16_s64): New.
+	(vreinterpret_bf16_p8, vreinterpretq_bf16_p8): New.
+	(vreinterpret_bf16_p16, vreinterpretq_bf16_p16): New.
+	(vreinterpret_bf16_p64, vreinterpretq_bf16_p64): New.
+	(vreinterpret_bf16_f32, vreinterpretq_bf16_f32): New.
+	(vreinterpret_bf16_f64, vreinterpretq_bf16_f64): New.
+	(vreinterpretq_bf16_p128): New.
+	(vreinterpret_s8_bf16, vreinterpretq_s8_bf16): New.
+	(vreinterpret_s16_bf16, vreinterpretq_s16_bf16): New.
+	(vreinterpret_s32_bf16, vreinterpretq_s32_bf16): New.
+	(vreinterpret_s64_bf16, vreinterpretq_s64_bf16): New.
+	(vreinterpret_u8_bf16, vreinterpretq_u8_bf16): New.
+	(vreinterpret_u16_bf16, vreinterpretq_u16_bf16): New.
+	(vreinterpret_u32_bf16, vreinterpretq_u32_bf16): New.
+	(vreinterpret_u64_bf16, vreinterpretq_u64_bf16): New.
+	(vreinterpret_p8_bf16, vreinterpretq_p8_bf16): New.
+	(vreinterpret_p16_bf16, vreinterpretq_p16_bf16): New.
+	(vreinterpret_p64_bf16, vreinterpretq_p64_bf16): New.
+	(vreinterpret_f32_bf16, vreinterpretq_f32_bf16): New.
+	(vreinterpretq_p128_bf16): New.
+	* config/arm/arm_neon_builtins.def (VDX): Add V4BF.
+	(V_elem): Likewise.
+	(V_elem_l): Likewise.
+	(VD_LANE): Likewise.
+	(VQX) Add V8BF.
+	(V_DOUBLE): Likewise.
+	(VDQX): Add V4BF and V8BF.
+	(V_two_elem, V_three_elem, V_four_elem): Likewise.
+	(V_reg): Likewise.
+	(V_HALF): Likewise.
+	(V_double_vector_mode): Likewise.
+	(V_cmp_result): Likewise.
+	(V_uf_sclr): Likewise.
+	(V_sz_elem): Likewise.
+	(Is_d_reg): Likewise.
+	(V_mode_nunits): Likewise.
+	* config/arm/neon.md (neon_vdup_lane): Enable for BFloat16.
+
+2020-02-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (VEC_SUBDWORD_MODE): New mode iterator.
+	(<expander><mode>2<exec>): Change modes to VEC_ALL1REG_INT_MODE.
+	(<expander><mode>3<exec>): Likewise.
+	(<expander><mode>3): New.
+	(v<expander><mode>3): New.
+	(<expander><mode>3): New.
+	(<expander><mode>3<exec>): Rename to ...
+	(<expander>v64si3<exec>): ... this, and change modes to V64SI.
+	* config/gcn/gcn.md (mnemonic): Use '%B' for not.
+
+2020-02-27  Alexandre Oliva <oliva@adacore.com>
+
+	* config/vx-common.h (NO_DOLLAR_IN_LABEL, NO_DOT_IN_LABEL): Leave
+	them alone on vx7.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93508
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle _CHK like
+	non-_CHK variants.  Valueize their length arguments.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93953
+	* tree-vect-slp.c (slp_copy_subtree): Avoid keeping a reference
+	to the hash-map entry.
+
+2020-02-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (mov<mode>): Add transformations for BI subregs.
+
+2020-02-27  Mark Williams  <mwilliams@fb.com>
+
+	* dwarf2out.c (file_name_acquire): Call remap_debug_filename.
+	* lto-opts.c (lto_write_options): Drop -fdebug-prefix-map,
+	-ffile-prefix-map and -fmacro-prefix-map.
+	* lto-streamer-out.c: Include file-prefix-map.h.
+	(lto_output_location): Remap the file part of locations.
+
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93949
+	* gimplify.c (gimplify_init_constructor): Don't promote readonly
+	DECL_REGISTER variables to TREE_STATIC.
+
+	PR tree-optimization/93582
+	PR tree-optimization/93945
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle memset with
+	non-zero INTEGER_CST second argument and ref->offset or ref->size
+	not a multiple of BITS_PER_UNIT.
+
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/install.texi (Binaries): Update description of BullFreeware.
+
+2020-02-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/90467
+
+	* doc/invoke.texi (Option Summary): Re-alphabetize warnings in
+	C++ Language Options, Warning Options, and Static Analyzer
+	Options lists.  Document negative form of options enabled by
+	default.  Move some things around to more accurately sort
+	warnings by category.
+	(C++ Dialect Options, Warning Options, Static Analyzer
+	Options): Document negative form of options when enabled by
+	default.  Move some things around to more accurately sort
+	warnings by category.  Add some missing index entries.
+	Light copy-editing.
+
+2020-02-26  Carl Love  <cel@us.ibm.com>
+
+	PR target/91276
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions available on
+	ISA 2.07): The builtin-function name __builtin_crypto_vpmsumb is only
+	for the vector unsigned short arguments.  It is also listed as the
+	name of the built-in for arguments vector unsigned short,
+	vector unsigned int and vector unsigned long long built-ins.  The
+	name of the builtins for these arguments should be:
+	__builtin_crypto_vpmsumh, __builtin_crypto_vpmsumw and
+	__builtin_crypto_vpmsumd respectively.
+
 2020-02-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_print_slp_tree): Also dump ref count

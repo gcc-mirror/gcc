@@ -1,3 +1,20 @@
+2020-02-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/93933
+	* pt.c (template_args_equal): Pass ARGUMENT_PACKS through to
+	cp_tree_equal.
+	* tree.c (cp_tree_equal): Compare ARGUMENT_PACKS here,
+	* typeck.c (comptypes): Assert we don't get any argument packs.
+
+	* class.c (adjust_clone_args): Correct arg-checking assert.
+	* typeck.c (comptypes): Assert not nulls.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93789 - ICE with invalid array bounds.
+	* decl.c (compute_array_index_type_loc): Don't use the folded
+	size when folding cleared TREE_CONSTANT.
+
 2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* class.c (classtype_has_non_deleted_copy_ctor): New.

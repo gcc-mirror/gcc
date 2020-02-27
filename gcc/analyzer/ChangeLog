@@ -1,5 +1,19 @@
 2020-02-26  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93950
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Assert that var is
+	either NULL or not a constant.  When updating var, bulletproof
+	against constant values.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93947
+	* region-model.cc (region_model::get_fndecl_for_call): Gracefully
+	fail for fn_decls that don't have a cgraph_node.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* bar-chart.cc: New file.
 	* bar-chart.h: New file.
 	* engine.cc: Include "analyzer/bar-chart.h".

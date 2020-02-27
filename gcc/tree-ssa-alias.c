@@ -995,6 +995,51 @@ aliasing_component_refs_walk (tree ref1, tree type1, tree base1,
   return -1;
 }
 
+/* Consider access path1 base1....ref1 and access path2 base2...ref2.
+   Return true if they can be composed to single access path
+   base1...ref1...base2...ref2.
+
+   REF_TYPE1 if type of REF1.  END_STRUCT_PAST_END1 is true if there is
+   a trailing array access after REF1 in the non-TBAA part of the access.
+   REF1_ALIAS_SET is the alias set of REF1.
+
+   BASE_TYPE2 is type of base2.  END_STRUCT_REF2 is non-NULL if there is
+   a traling array access in the TBAA part of access path2.
+   BASE2_ALIAS_SET is the alias set of base2.  */
+
+bool
+access_path_may_continue_p (tree ref_type1, bool end_struct_past_end1,
+			    alias_set_type ref1_alias_set,
+			    tree base_type2, tree end_struct_ref2,
+			    alias_set_type base2_alias_set)
+{
+  /* Access path can not continue past types with no components.  */
+  if (!type_has_components_p (ref_type1))
+    return false;
+
+  /* If first access path ends by too small type to hold base of
+     the second access path, typically paths can not continue.
+
+     Punt if end_struct_past_end1 is true.  We want to support arbitrary
+     type puning past first COMPONENT_REF to union because redundant store
+     elimination depends on this, see PR92152.  For this reason we can not
+     check size of the reference because types may partially overlap.  */
+  if (!end_struct_past_end1)
+    {
+      if (compare_type_sizes (ref_type1, base_type2) < 0)
+	return false;
+      /* If the path2 contains trailing array access we can strenghten the check
+	 to verify that also the size of element of the trailing array fits.
+	 In fact we could check for offset + type_size, but we do not track
+	 offsets and this is quite side case.  */
+      if (end_struct_ref2
+	  && compare_type_sizes (ref_type1, TREE_TYPE (end_struct_ref2)) < 0)
+	return false;
+    }
+  return (base2_alias_set == ref1_alias_set
+	  || alias_set_subset_of (base2_alias_set, ref1_alias_set));
+}
+
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
    on an indirect reference may alias.  
@@ -1021,8 +1066,30 @@ aliasing_component_refs_p (tree ref1,
   tree type1, type2;
   bool maybe_match = false;
   tree end_struct_ref1 = NULL, end_struct_ref2 = NULL;
+  bool end_struct_past_end1 = false;
+  bool end_struct_past_end2 = false;
 
-  /* Choose bases and base types to search for.  */
+  /* Choose bases and base types to search for.
+     The access path is as follows:
+       base....end_of_tbaa_ref...actual_ref
+     At one place in the access path may be a reference to zero sized or
+     trailing array.
+
+     We generally discard the segment after end_of_tbaa_ref however
+     we need to be careful in case it contains zero sized or traling array.
+     These may happen after refernce to union and in this case we need to
+     not disambiguate type puning scenarios.
+
+     We set:
+	base1 to point to base
+
+	ref1 to point to end_of_tbaa_ref
+
+	end_struct_ref1 to point the trailing reference (if it exists
+ 	in range base....end_of_tbaa_ref
+
+	end_struct_past_end1 is true if this traling refernece occurs in
+	end_of_tbaa_ref...actual_ref.  */
   base1 = ref1;
   while (handled_component_p (base1))
     {
@@ -1042,9 +1109,15 @@ aliasing_component_refs_p (tree ref1,
 	  gcc_checking_assert (!end_struct_ref1);
           end_struct_ref1 = base1;
 	}
-      if (TREE_CODE (base1) == VIEW_CONVERT_EXPR
-	  || TREE_CODE (base1) == BIT_FIELD_REF)
-	ref1 = TREE_OPERAND (base1, 0);
+      if (ends_tbaa_access_path_p (base1))
+	{
+	  ref1 = TREE_OPERAND (base1, 0);
+	  if (end_struct_ref1)
+	    {
+	      end_struct_past_end1 = true;
+	      end_struct_ref1 = NULL;
+	    }
+	}
       base1 = TREE_OPERAND (base1, 0);
     }
   type1 = TREE_TYPE (base1);
@@ -1056,9 +1129,15 @@ aliasing_component_refs_p (tree ref1,
 	  gcc_checking_assert (!end_struct_ref2);
 	  end_struct_ref2 = base2;
 	}
-      if (TREE_CODE (base2) == VIEW_CONVERT_EXPR
-	  || TREE_CODE (base2) == BIT_FIELD_REF)
-	ref2 = TREE_OPERAND (base2, 0);
+      if (ends_tbaa_access_path_p (base2))
+	{
+	  ref2 = TREE_OPERAND (base2, 0);
+	  if (end_struct_ref2)
+	    {
+	      end_struct_past_end2 = true;
+	      end_struct_ref2 = NULL;
+	    }
+	}
       base2 = TREE_OPERAND (base2, 0);
     }
   type2 = TREE_TYPE (base2);
@@ -1070,7 +1149,8 @@ aliasing_component_refs_p (tree ref1,
 
   /* If type2 is big enough to contain type1 walk its access path.
      We also need to care of arrays at the end of structs that may extend
-     beyond the end of structure.  */
+     beyond the end of structure.  If this occurs in the TBAA part of the
+     access path, we need to consider the increased type as well.  */
   if (cmp_outer >= 0
       || (end_struct_ref2
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref2), type1) >= 0))
@@ -1113,31 +1193,14 @@ aliasing_component_refs_p (tree ref1,
       return false;
     }
 
-  /* If we have two type access paths B1.path1 and B2.path2 they may
-     only alias if either B1 is in B2.path2 or B2 is in B1.path1.
-     But we can still have a path that goes B1.path1...B2.path2 with
-     a part that we do not see.  So we can only disambiguate now
-     if there is no B2 in the tail of path1 and no B1 on the
-     tail of path2.  */
-  if (compare_type_sizes (TREE_TYPE (ref2), type1) >= 0
-      && (!end_struct_ref1
-	  || compare_type_sizes (TREE_TYPE (ref2),
-		 		 TREE_TYPE (end_struct_ref1)) >= 0)
-      && type_has_components_p (TREE_TYPE (ref2))
-      && (base1_alias_set == ref2_alias_set
-          || alias_set_subset_of (base1_alias_set, ref2_alias_set)))
-    {
-      ++alias_stats.aliasing_component_refs_p_may_alias;
-      return true;
-    }
-  /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
-  if (compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
-      && (!end_struct_ref2
-	  || compare_type_sizes (TREE_TYPE (ref1),
-		 		 TREE_TYPE (end_struct_ref2)) >= 0)
-      && type_has_components_p (TREE_TYPE (ref1))
-      && (base2_alias_set == ref1_alias_set
-	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
+  if (access_path_may_continue_p (TREE_TYPE (ref1), end_struct_past_end1,
+				  ref1_alias_set,
+				  type2, end_struct_ref2,
+				  base2_alias_set)
+      || access_path_may_continue_p (TREE_TYPE (ref2), end_struct_past_end2,
+				     ref2_alias_set,
+				     type1, end_struct_ref1,
+				     base1_alias_set))
     {
       ++alias_stats.aliasing_component_refs_p_may_alias;
       return true;
@@ -1348,6 +1411,7 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 				   tree match2, tree ref2,
 				   bool partial_overlap)
 {
+  int ntbaa1 = 0, ntbaa2 = 0;
   /* Early return if there are no references to match, we do not need
      to walk the access paths.
 
@@ -1365,23 +1429,31 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
   /* Create the stack of handled components for REF1.  */
   while (handled_component_p (ref1) && ref1 != match1)
     {
-      if (TREE_CODE (ref1) == VIEW_CONVERT_EXPR
-	  || TREE_CODE (ref1) == BIT_FIELD_REF)
-	component_refs1.truncate (0);
+      /* We use TBAA only to re-synchronize after mismatched refs.  So we
+	 do not need to truncate access path after TBAA part ends.  */
+      if (ends_tbaa_access_path_p (ref1))
+	ntbaa1 = 0;
       else
-        component_refs1.safe_push (ref1);
+	ntbaa1++;
+      component_refs1.safe_push (ref1);
       ref1 = TREE_OPERAND (ref1, 0);
     }
 
   /* Create the stack of handled components for REF2.  */
   while (handled_component_p (ref2) && ref2 != match2)
     {
-      if (TREE_CODE (ref2) == VIEW_CONVERT_EXPR
-	  || TREE_CODE (ref2) == BIT_FIELD_REF)
-	component_refs2.truncate (0);
+      if (ends_tbaa_access_path_p (ref2))
+	ntbaa2 = 0;
       else
-        component_refs2.safe_push (ref2);
+	ntbaa2++;
+      component_refs2.safe_push (ref2);
       ref2 = TREE_OPERAND (ref2, 0);
+    }
+
+  if (!flag_strict_aliasing)
+    {
+      ntbaa1 = 0;
+      ntbaa2 = 0;
     }
 
   bool mem_ref1 = TREE_CODE (ref1) == MEM_REF && ref1 != match1;
@@ -1444,6 +1516,7 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	  for (; narray_refs1 > narray_refs2; narray_refs1--)
 	    {
 	      ref1 = component_refs1.pop ();
+	      ntbaa1--;
 
 	      /* If index is non-zero we need to check whether the reference
 		 does not break the main invariant that bases are either
@@ -1471,6 +1544,7 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	  for (; narray_refs2 > narray_refs1; narray_refs2--)
 	    {
 	      ref2 = component_refs2.pop ();
+	      ntbaa2--;
 	      if (!operand_equal_p (TREE_OPERAND (ref2, 1),
 				    cheap_array_ref_low_bound (ref2), 0))
 		return 0;
@@ -1480,6 +1554,8 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	    {
 	      int cmp = nonoverlapping_array_refs_p (component_refs1.pop (),
 						     component_refs2.pop ());
+	      ntbaa1--;
+	      ntbaa2--;
 	      if (cmp == 1 && !partial_overlap)
 		{
 		  ++alias_stats
@@ -1494,7 +1570,7 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 		     from type based alias analysis if we reach referneces to
 		     same sizes.  We do not attempt to match array sizes, so
 		     just finish array walking and look for component refs.  */
-		  if (!flag_strict_aliasing)
+		  if (ntbaa1 < 0 || ntbaa2 < 0)
 		    {
 		      ++alias_stats.nonoverlapping_refs_since_match_p_may_alias;
 		      return -1;
@@ -1503,6 +1579,8 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 		    {
 		      component_refs1.pop ();
 		      component_refs2.pop ();
+		      ntbaa1--;
+		      ntbaa2--;
 		    }
 		  break;
 		}
@@ -1520,10 +1598,11 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	      return 0;
 	    }
 	  ref1 = component_refs1.pop ();
+	  ntbaa1--;
 	  if (TREE_CODE (ref1) != COMPONENT_REF)
 	    {
 	      seen_unmatched_ref_p = true;
-	      if (!flag_strict_aliasing)
+	      if (ntbaa1 < 0 || ntbaa2 < 0)
 		{
 		  ++alias_stats.nonoverlapping_refs_since_match_p_may_alias;
 		  return -1;
@@ -1541,9 +1620,10 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	      return 0;
 	    }
 	  ref2 = component_refs2.pop ();
+	  ntbaa2--;
 	  if (TREE_CODE (ref2) != COMPONENT_REF)
 	    {
-	      if (!flag_strict_aliasing)
+	      if (ntbaa1 < 0 || ntbaa2 < 0)
 		{
 		  ++alias_stats.nonoverlapping_refs_since_match_p_may_alias;
 		  return -1;
@@ -1569,11 +1649,9 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 
       partial_overlap = false;
 
-      gcc_checking_assert (!seen_unmatched_ref_p || flag_strict_aliasing);
-
       /* If we skipped array refs on type of different sizes, we can
 	 no longer be sure that there are not partial overlaps.  */
-      if (seen_unmatched_ref_p
+      if (seen_unmatched_ref_p && ntbaa1 >= 0 && ntbaa2 >= 0
 	  && !operand_equal_p (TYPE_SIZE (type1), TYPE_SIZE (type2), 0))
 	{
 	  ++alias_stats
@@ -1663,8 +1741,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 	  if (TREE_CODE (type) == RECORD_TYPE)
 	    fieldsx.safe_push (field);
 	}
-      else if (TREE_CODE (x) == VIEW_CONVERT_EXPR
-	       || TREE_CODE (x) == BIT_FIELD_REF)
+      else if (ends_tbaa_access_path_p (x))
 	fieldsx.truncate (0);
       x = TREE_OPERAND (x, 0);
     }
@@ -1680,8 +1757,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 	  if (TREE_CODE (type) == RECORD_TYPE)
 	    fieldsy.safe_push (TREE_OPERAND (y, 1));
 	}
-      else if (TREE_CODE (y) == VIEW_CONVERT_EXPR
-	       || TREE_CODE (y) == BIT_FIELD_REF)
+      else if (ends_tbaa_access_path_p (y))
 	fieldsy.truncate (0);
       y = TREE_OPERAND (y, 0);
     }

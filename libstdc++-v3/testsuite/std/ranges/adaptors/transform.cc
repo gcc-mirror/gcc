@@ -100,6 +100,28 @@ test04()
     }
 }
 
+void
+test05()
+{
+  int x[] = {1,2,3,4,5};
+  auto i = std::counted_iterator(x, 5);
+  auto r = ranges::subrange{i, std::default_sentinel};
+  auto v = r | views::transform(std::negate{});
+
+  // Verify that _Iterator<false> is implicitly convertible to _Iterator<true>.
+  static_assert(!std::same_as<decltype(ranges::begin(v)),
+			      decltype(ranges::cbegin(v))>);
+  auto a = ranges::cbegin(v);
+  a = ranges::begin(v);
+
+  // Verify that _Sentinel<false> is implicitly convertible to _Sentinel<true>.
+  static_assert(!ranges::common_range<decltype(v)>);
+  static_assert(!std::same_as<decltype(ranges::end(v)),
+			      decltype(ranges::cend(v))>);
+  auto b = ranges::cend(v);
+  b = ranges::end(v);
+}
+
 int
 main()
 {
@@ -107,4 +129,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

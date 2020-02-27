@@ -9,6 +9,7 @@ typedef unsigned short *__restrict__ pRUINT16;
 typedef unsigned int *__restrict__ pRUINT32;
 typedef unsigned long long *__restrict__ pRUINT64;
 
+#undef SH /* Including limits.h on vxworks defines this.  */
 typedef signed short SH;
 typedef unsigned short UH;
 typedef signed int SS;
