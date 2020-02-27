@@ -1485,6 +1485,10 @@ comptypes (tree t1, tree t2, int strict)
 {
   gcc_checking_assert (t1 && t2);
 
+  /* TYPE_ARGUMENT_PACKS are not really types.  */
+  gcc_checking_assert (TREE_CODE (t1) != TYPE_ARGUMENT_PACK
+		       && TREE_CODE (t2) != TYPE_ARGUMENT_PACK);
+
   if (strict == COMPARE_STRICT && comparing_specializations
       && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
     /* If comparing_specializations, treat dependent aliases as distinct.  */

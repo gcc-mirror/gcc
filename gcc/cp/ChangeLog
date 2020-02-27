@@ -1,5 +1,11 @@
 2020-02-27  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/93933
+	* pt.c (template_args_equal): Pass ARGUMENT_PACKS through to
+	cp_tree_equal.
+	* tree.c (cp_tree_equal): Compare ARGUMENT_PACKS here,
+	* typeck.c (comptypes): Assert we don't get any argument packs.
+
 	* class.c (adjust_clone_args): Correct arg-checking assert.
 	* typeck.c (comptypes): Assert not nulls.
 
