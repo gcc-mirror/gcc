@@ -1,3 +1,9 @@
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h (__function_requires): Add
+	_GLIBCXX14_CONSTEXPR.
+	* testsuite/25_algorithms/min/concept_checks.cc: New test.
+
 2020-02-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/93936
