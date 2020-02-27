@@ -1,3 +1,7 @@
+2020-02-27  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/aarch64/vect-mull.x (SH): Undefine.
+
 2020-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93508
