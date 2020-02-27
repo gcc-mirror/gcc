@@ -1,3 +1,18 @@
+2020-02-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/90467
+
+	* doc/invoke.texi (Option Summary): Re-alphabetize warnings in
+	C++ Language Options, Warning Options, and Static Analyzer
+	Options lists.  Document negative form of options enabled by
+	default.  Move some things around to more accurately sort
+	warnings by category.
+	(C++ Dialect Options, Warning Options, Static Analyzer
+	Options): Document negative form of options when enabled by
+	default.  Move some things around to more accurately sort
+	warnings by category.  Add some missing index entries.
+	Light copy-editing.
+
 2020-02-26  Carl Love  <cel@us.ibm.com>
 
 	PR target/91276
