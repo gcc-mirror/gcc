@@ -1,3 +1,60 @@
+2020-02-27  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* (__ARM_NUM_LANES, __arm_lane, __arm_lane_q): Move to the
+	beginning of the file.
+	(vcreate_bf16, vcombine_bf16): New.
+	(vdup_n_bf16, vdupq_n_bf16): New.
+	(vdup_lane_bf16, vdup_laneq_bf16): New.
+	(vdupq_lane_bf16, vdupq_laneq_bf16): New.
+	(vduph_lane_bf16, vduph_laneq_bf16): New.
+	(vset_lane_bf16, vsetq_lane_bf16): New.
+	(vget_lane_bf16, vgetq_lane_bf16): New.
+	(vget_high_bf16, vget_low_bf16): New.
+	(vreinterpret_bf16_u8, vreinterpretq_bf16_u8): New.
+	(vreinterpret_bf16_u16, vreinterpretq_bf16_u16): New.
+	(vreinterpret_bf16_u32, vreinterpretq_bf16_u32): New.
+	(vreinterpret_bf16_u64, vreinterpretq_bf16_u64): New.
+	(vreinterpret_bf16_s8, vreinterpretq_bf16_s8): New.
+	(vreinterpret_bf16_s16, vreinterpretq_bf16_s16): New.
+	(vreinterpret_bf16_s32, vreinterpretq_bf16_s32): New.
+	(vreinterpret_bf16_s64, vreinterpretq_bf16_s64): New.
+	(vreinterpret_bf16_p8, vreinterpretq_bf16_p8): New.
+	(vreinterpret_bf16_p16, vreinterpretq_bf16_p16): New.
+	(vreinterpret_bf16_p64, vreinterpretq_bf16_p64): New.
+	(vreinterpret_bf16_f32, vreinterpretq_bf16_f32): New.
+	(vreinterpret_bf16_f64, vreinterpretq_bf16_f64): New.
+	(vreinterpretq_bf16_p128): New.
+	(vreinterpret_s8_bf16, vreinterpretq_s8_bf16): New.
+	(vreinterpret_s16_bf16, vreinterpretq_s16_bf16): New.
+	(vreinterpret_s32_bf16, vreinterpretq_s32_bf16): New.
+	(vreinterpret_s64_bf16, vreinterpretq_s64_bf16): New.
+	(vreinterpret_u8_bf16, vreinterpretq_u8_bf16): New.
+	(vreinterpret_u16_bf16, vreinterpretq_u16_bf16): New.
+	(vreinterpret_u32_bf16, vreinterpretq_u32_bf16): New.
+	(vreinterpret_u64_bf16, vreinterpretq_u64_bf16): New.
+	(vreinterpret_p8_bf16, vreinterpretq_p8_bf16): New.
+	(vreinterpret_p16_bf16, vreinterpretq_p16_bf16): New.
+	(vreinterpret_p64_bf16, vreinterpretq_p64_bf16): New.
+	(vreinterpret_f32_bf16, vreinterpretq_f32_bf16): New.
+	(vreinterpretq_p128_bf16): New.
+	* config/arm/arm_neon_builtins.def (VDX): Add V4BF.
+	(V_elem): Likewise.
+	(V_elem_l): Likewise.
+	(VD_LANE): Likewise.
+	(VQX) Add V8BF.
+	(V_DOUBLE): Likewise.
+	(VDQX): Add V4BF and V8BF.
+	(V_two_elem, V_three_elem, V_four_elem): Likewise.
+	(V_reg): Likewise.
+	(V_HALF): Likewise.
+	(V_double_vector_mode): Likewise.
+	(V_cmp_result): Likewise.
+	(V_uf_sclr): Likewise.
+	(V_sz_elem): Likewise.
+	(Is_d_reg): Likewise.
+	(V_mode_nunits): Likewise.
+	* config/arm/neon.md (neon_vdup_lane): Enable for BFloat16.
+
 2020-02-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (VEC_SUBDWORD_MODE): New mode iterator.
