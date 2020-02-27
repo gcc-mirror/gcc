@@ -1,5 +1,20 @@
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/span/back_assert_neg.cc: Add #undef before
+	defining _GLIBCXX_ASSERTIONS.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+
 	* include/debug/string (__gnu_debug::basic_string::insert): Fix for
 	C++98 where the member function of the base class returns void.
 
