@@ -1,5 +1,9 @@
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/93949
+	* gimplify.c (gimplify_init_constructor): Don't promote readonly
+	DECL_REGISTER variables to TREE_STATIC.
+
 	PR tree-optimization/93582
 	PR tree-optimization/93945
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle memset with
