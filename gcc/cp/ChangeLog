@@ -1,3 +1,8 @@
+2020-02-27  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (adjust_clone_args): Correct arg-checking assert.
+	* typeck.c (comptypes): Assert not nulls.
+
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93789 - ICE with invalid array bounds.
