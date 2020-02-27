@@ -1,3 +1,17 @@
+2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/92152
+	* alias.c (ends_tbaa_access_path_p): Break out from ...
+	(component_uses_parent_alias_set_from): ... here.
+	* alias.h (ends_tbaa_access_path_p): Declare.
+	* tree-ssa-alias.c (access_path_may_continue_p): Break out from ...;
+	handle trailing arrays past end of tbaa access path.
+	(aliasing_component_refs_p): ... here; likewise.
+	(nonoverlapping_refs_since_match_p): Track TBAA segment of the access
+	path; disambiguate also past end of it.
+	(nonoverlapping_component_refs_p): Use only TBAA segment of the access
+	path.
+
 2020-02-27  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* (__ARM_NUM_LANES, __arm_lane, __arm_lane_q): Move to the

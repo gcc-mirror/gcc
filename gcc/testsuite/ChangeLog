@@ -1,3 +1,13 @@
+2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/92152
+	* gcc.dg/tree-ssa/alias-access-path-12.c: New testcase.
+	* g++.dg/torture/pr92152.C: New testcase.
+	* gcc.dg/torture/pr92152.c: New testcase.
+	* gcc.dg/tree-ssa/20030807-7.c: xfail.
+	* gcc.dg/tree-ssa/alias-access-path-4.c: xfail one case.
+	* gcc.dg/tree-ssa/alias-access-path-5.c: xfail one case.
+
 2020-02-27  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* gcc.target/arm/bf16_dup.c: New test.
