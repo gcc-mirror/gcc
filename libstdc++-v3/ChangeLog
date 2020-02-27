@@ -1,3 +1,8 @@
+2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/1.cc: Disable
+	-Wstringop-overflow warnings.
+
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (v3_target_compile): Add
