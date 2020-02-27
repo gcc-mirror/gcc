@@ -485,19 +485,6 @@ package body Sem_Aux is
       return Id;
    end Get_Called_Entity;
 
-   -------------------
-   -- Get_Low_Bound --
-   -------------------
-
-   function Get_Low_Bound (E : Entity_Id) return Node_Id is
-   begin
-      if Ekind (E) = E_String_Literal_Subtype then
-         return String_Literal_Low_Bound (E);
-      else
-         return Type_Low_Bound (E);
-      end if;
-   end Get_Low_Bound;
-
    ------------------
    -- Get_Rep_Item --
    ------------------
