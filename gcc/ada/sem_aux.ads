@@ -165,9 +165,6 @@ package Sem_Aux is
    --  Obtain the entity of the entry, operator, or subprogram being invoked
    --  by call Call.
 
-   function Get_Low_Bound (E : Entity_Id) return Node_Id;
-   --  For an index subtype or string literal subtype, returns its low bound
-
    function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
    --  Op must be an entity with an Ekind of E_Operator. This function returns
    --  the Nkind value that would be used to construct a unary operator node
