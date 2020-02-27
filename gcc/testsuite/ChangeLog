@@ -1,3 +1,13 @@
+2020-02-27  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target_supports.exp (check_effective_target_has_arch_pwr5): New.
+	(check_effective_target_has_arch_pwr6): New.
+	(check_effective_target_has_arch_pwr7): New.
+	(check_effective_target_has_arch_pwr8): New.
+	(check_effective_target_has_arch_pwr9): New.
+	* gcc.target/powerpc/pr92132-fp-1.c: Add target check.
+
+
 2020-02-27  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/ppc64-abi-1.c: Compile with -mno-pcrel.

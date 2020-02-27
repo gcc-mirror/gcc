@@ -294,4 +294,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 14 "vect" } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 14 "vect" { target has_arch_pwr8 } } } */
