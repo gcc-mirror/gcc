@@ -1,3 +1,7 @@
+2020-02-27  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wbuiltin-declaration-mismatch): Fix a typo.
+
 2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93932
