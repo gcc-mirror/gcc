@@ -1,3 +1,15 @@
+2020-02-26  Carl Love  <cel@us.ibm.com>
+
+	PR target/91276
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): The
+	builtin-function name __builtin_crypto_vpmsumb is only for the
+	vector unsigned short arguments.  It is also listed as the name of
+	the built-in for arguments vector unsigned short,
+	vector unsigned int and vector unsigned long long built-ins.  The
+	name of the builtins for these arguments should be:
+	__builtin_crypto_vpmsumh, __builtin_crypto_vpmsumw and
+	__builtin_crypto_vpmsumd respectively.
+
 2020-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93820
