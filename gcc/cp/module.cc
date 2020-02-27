@@ -7185,6 +7185,7 @@ trees_out::decl_value (tree decl, depset *dep)
       int use_tpl = -1;
       if (tree ti = node_template_info (decl, use_tpl))
 	gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
+			     || TREE_CODE (TI_TEMPLATE (ti)) == FIELD_DECL
 			     || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
 				 != decl));
     }
@@ -10477,6 +10478,12 @@ member_owned_by_class (tree member)
   /* Clones are owned by their origin.  */
   if (DECL_CLONED_FUNCTION_P (member))
     return NULL;
+
+  if (TREE_CODE (member) == FIELD_DECL)
+    /* FIELD_DECLS can have template info in some cases.  We always
+       want the FIELD_DECL though, as there's never a TEMPLATE_DECL
+       wrapping them.  */
+    return member;
 
   int use_tpl = -1;
   if (tree ti = node_template_info (member, use_tpl))
