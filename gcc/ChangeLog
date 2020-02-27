@@ -1,3 +1,9 @@
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93953
+	* tree-vect-slp.c (slp_copy_subtree): Avoid keeping a reference
+	to the hash-map entry.
+
 2020-02-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.md (mov<mode>): Add transformations for BI subregs.

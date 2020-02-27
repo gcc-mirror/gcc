@@ -1764,11 +1764,12 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   unsigned i;
 
   bool existed_p;
-  slp_tree &copy = map.get_or_insert (node, &existed_p);
+  slp_tree &copy_ref = map.get_or_insert (node, &existed_p);
   if (existed_p)
-    return copy;
+    return copy_ref;
 
-  copy = XNEW (_slp_tree);
+  copy_ref = XNEW (_slp_tree);
+  slp_tree copy = copy_ref;
   memcpy (copy, node, sizeof (_slp_tree));
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     {
