@@ -1,5 +1,10 @@
 2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
+	filesystems that silently truncate timestamps.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+
 	* testsuite/21_strings/basic_string/cons/char/1.cc: Disable
 	-Wstringop-overflow warnings.
 
