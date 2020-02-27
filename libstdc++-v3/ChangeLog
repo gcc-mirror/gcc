@@ -1,3 +1,10 @@
+2020-02-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__find_if, __count_if, __is_permutation, std::is_permutation): Move...
+	* include/bits/stl_algobase.h: ...here.
+	* include/bits/hashtable_policy.h: Remove <bits/stl_algo.h> include.
+
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/30_threads/stop_token/stop_callback.cc: Add libatomic
