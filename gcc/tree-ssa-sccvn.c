@@ -2113,7 +2113,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	       || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
 	      && CHAR_BIT == 8 && BITS_PER_UNIT == 8
 	      && offset.is_constant (&offseti)
-	      && offseti % BITS_PER_UNIT == 0))
+	      && offseti % BITS_PER_UNIT == 0
+	      && multiple_p (ref->size, BITS_PER_UNIT)))
       && poly_int_tree_p (gimple_call_arg (def_stmt, 2))
       && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
 	  || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME))

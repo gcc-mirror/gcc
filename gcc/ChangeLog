@@ -1,3 +1,9 @@
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93945
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): For memset with non-zero
+	second operand, require ref->size to be a multiple of BITS_PER_UNIT.
+
 2020-02-26  Carl Love  <cel@us.ibm.com>
 
 	PR target/91276

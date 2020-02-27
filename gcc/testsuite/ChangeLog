@@ -1,3 +1,8 @@
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93945
+	* gcc.c-torture/execute/pr93945.c: New test.
+
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
