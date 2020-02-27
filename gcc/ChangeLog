@@ -1,3 +1,9 @@
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93949
+	* gimplify.c (gimplify_init_constructor): Don't promote readonly
+	DECL_REGISTER variables to TREE_STATIC.
+
 2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 8.4.1.

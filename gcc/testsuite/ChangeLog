@@ -1,3 +1,8 @@
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93949
+	* gcc.c-torture/compile/pr93949.c: New test.
+
 2020-02-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline
