@@ -1,3 +1,7 @@
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/install.texi (Binaries): Update description of BullFreeware.
+
 2020-02-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c++/90467
