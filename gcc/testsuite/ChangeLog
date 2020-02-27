@@ -1,3 +1,9 @@
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93959
+	* g++.dg/analyzer/cstdlib-2.C: New test.
+	* g++.dg/analyzer/cstdlib.C: New test.
+
 2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jun Ma <JunMa@linux.alibaba.com>
 

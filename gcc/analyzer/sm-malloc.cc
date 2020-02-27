@@ -611,6 +611,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
       {
 	if (is_named_call_p (callee_fndecl, "malloc", call, 1)
 	    || is_named_call_p (callee_fndecl, "calloc", call, 2)
+	    || is_std_named_call_p (callee_fndecl, "malloc", call, 1)
+	    || is_std_named_call_p (callee_fndecl, "calloc", call, 2)
 	    || is_named_call_p (callee_fndecl, "__builtin_malloc", call, 1)
 	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2))
 	  {
@@ -640,6 +642,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  }
 
 	if (is_named_call_p (callee_fndecl, "free", call, 1)
+	    || is_std_named_call_p (callee_fndecl, "free", call, 1)
 	    || is_named_call_p (callee_fndecl, "__builtin_free", call, 1))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
