@@ -44,9 +44,9 @@ test01()
       std::iota(vref.begin(), vref.end(), 0);
       std::vector<int> v1(vref), v2(vref);
       test_container<int, random_access_iterator_wrapper> c
-	= {&v1[0], &v1[0] + size};
+	= {v1.data(), v1.data() + size};
       test_range<int, random_access_iterator_wrapper> r
-	= {&v2[0], &v2[0] + size};
+	= {v2.data(), v2.data() + size};
 
       std::ranlux48_base g1(size), g2(size + 1);
       ranges::shuffle(c, g1);

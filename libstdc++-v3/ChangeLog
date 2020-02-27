@@ -1,3 +1,18 @@
+2020-02-27  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/25_algorithms/copy/constrained.cc: Don't assume that the
+	base() of a vector<>::iterator is a pointer.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: Use foo.data()
+	instead of &foo[0].
+	* testsuite/25_algorithms/partial_sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/constrained.cc: Likewise.
+	* testsuite/25_algorithms/sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: Likewise.
+
 2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/array (operator<=>): Define for C++20.
