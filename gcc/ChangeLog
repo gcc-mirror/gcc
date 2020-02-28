@@ -1,3 +1,9 @@
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wanalyzer-stale-setjmp-buffer to the list of options enabled
+	by -fanalyzer.
+
 2020-03-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93997

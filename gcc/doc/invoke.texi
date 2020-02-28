@@ -8247,6 +8247,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-stale-setjmp-buffer @gol
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
