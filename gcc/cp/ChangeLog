@@ -1,3 +1,9 @@
+2020-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* typeck.c (cp_build_addr_expr_1): Allow taking address of immediate
+	functions in unevaluated contexts.
+
 2020-02-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/93933

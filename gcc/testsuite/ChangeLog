@@ -1,5 +1,10 @@
 2020-02-28  Jakub Jelinek  <jakub@redhat.com>
 
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* g++.dg/cpp2a/consteval3.C: Change dg-error about taking address of
+	immediate function in unevaluated contexts into dg-bogus.
+	* g++.dg/cpp2a/consteval16.C: New test.
+
 	PR middle-end/92152
 	* g++.dg/torture/pr92152.C (size_t): Use decltype (sizeof (0)) instead
 	of hardcoding unsigned long.
