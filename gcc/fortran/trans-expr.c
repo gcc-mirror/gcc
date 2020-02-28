@@ -843,6 +843,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   tree ctree;
   tree var;
   tree tmp;
+  int dim;
 
   /* The intrinsic type needs to be converted to a temporary
      CLASS object.  */
@@ -892,6 +893,16 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	  parmse->ss = ss;
 	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
+
+	  /* Array references with vector subscripts and non-variable expressions
+	     need be converted to a one-based descriptor.  */
+	  if (e->expr_type != EXPR_VARIABLE)
+	    {
+	      for (dim = 0; dim < e->rank; ++dim)
+		gfc_conv_shift_descriptor_lbound (&parmse->pre, parmse->expr,
+						  dim, gfc_index_one_node);
+	    }
+
 	  if (class_ts.u.derived->components->as->rank != e->rank)
 	    {
 	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
