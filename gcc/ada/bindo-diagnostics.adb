@@ -44,22 +44,18 @@ package body Bindo.Diagnostics is
    -- Local subprograms --
    -----------------------
 
-   procedure Diagnose_All_Cycles
-     (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph);
+   procedure Diagnose_All_Cycles (Inv_Graph : Invocation_Graph);
    pragma Inline (Diagnose_All_Cycles);
    --  Emit diagnostics for all cycles of library graph G
 
    procedure Diagnose_Cycle
      (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph;
       Cycle     : Library_Graph_Cycle_Id);
    pragma Inline (Diagnose_Cycle);
    --  Emit diagnostics for cycle Cycle of library graph G
 
    procedure Find_And_Output_Invocation_Paths
      (Inv_Graph   : Invocation_Graph;
-      Lib_Graph   : Library_Graph;
       Source      : Library_Graph_Vertex_Id;
       Destination : Library_Graph_Vertex_Id);
    pragma Inline (Find_And_Output_Invocation_Paths);
@@ -69,7 +65,6 @@ package body Bindo.Diagnostics is
 
    function Find_Elaboration_Root
      (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph;
       Vertex : Library_Graph_Vertex_Id) return Invocation_Graph_Vertex_Id;
    pragma Inline (Find_Elaboration_Root);
    --  Find the elaboration root in invocation graph Inv_Graph that corresponds
@@ -171,7 +166,6 @@ package body Bindo.Diagnostics is
 
    procedure Output_Invocation_Path
      (Inv_Graph         : Invocation_Graph;
-      Lib_Graph         : Library_Graph;
       Elaborated_Vertex : Library_Graph_Vertex_Id;
       Path              : IGE_Lists.Doubly_Linked_List;
       Path_Id           : in out Nat);
@@ -182,11 +176,10 @@ package body Bindo.Diagnostics is
 
    procedure Output_Invocation_Path_Transition
      (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph;
       Edge      : Invocation_Graph_Edge_Id);
    pragma Inline (Output_Invocation_Path_Transition);
    --  Output a transition through edge Edge of invocation graph G, which is
-   --  part of an invocation path. Lib_Graph is the related library graph.
+   --  part of an invocation path.
 
    procedure Output_Invocation_Related_Suggestions
      (G     : Library_Graph;
@@ -197,7 +190,6 @@ package body Bindo.Diagnostics is
 
    procedure Output_Invocation_Transition
      (Inv_Graph   : Invocation_Graph;
-      Lib_Graph   : Library_Graph;
       Source      : Library_Graph_Vertex_Id;
       Destination : Library_Graph_Vertex_Id);
    pragma Inline (Output_Invocation_Transition);
@@ -222,7 +214,6 @@ package body Bindo.Diagnostics is
 
    procedure Output_Transition
      (Inv_Graph            : Invocation_Graph;
-      Lib_Graph            : Library_Graph;
       Current_Edge         : Library_Graph_Edge_Id;
       Next_Edge            : Library_Graph_Edge_Id;
       Elaborate_All_Active : Boolean);
@@ -247,7 +238,6 @@ package body Bindo.Diagnostics is
 
    procedure Visit_Vertex
      (Inv_Graph         : Invocation_Graph;
-      Lib_Graph         : Library_Graph;
       Invoker           : Invocation_Graph_Vertex_Id;
       Invoker_Vertex    : Library_Graph_Vertex_Id;
       Last_Vertex       : Library_Graph_Vertex_Id;
@@ -269,10 +259,9 @@ package body Bindo.Diagnostics is
    -- Diagnose_All_Cycles --
    -------------------------
 
-   procedure Diagnose_All_Cycles
-     (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph)
-   is
+   procedure Diagnose_All_Cycles (Inv_Graph : Invocation_Graph) is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       Cycle : Library_Graph_Cycle_Id;
       Iter  : All_Cycle_Iterator;
 
@@ -284,10 +273,7 @@ package body Bindo.Diagnostics is
       while Has_Next (Iter) loop
          Next (Iter, Cycle);
 
-         Diagnose_Cycle
-           (Inv_Graph => Inv_Graph,
-            Lib_Graph => Lib_Graph,
-            Cycle     => Cycle);
+         Diagnose_Cycle (Inv_Graph => Inv_Graph, Cycle => Cycle);
       end loop;
    end Diagnose_All_Cycles;
 
@@ -295,10 +281,8 @@ package body Bindo.Diagnostics is
    -- Diagnose_Circularities --
    ----------------------------
 
-   procedure Diagnose_Circularities
-     (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph)
-   is
+   procedure Diagnose_Circularities (Inv_Graph : Invocation_Graph) is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
    begin
       pragma Assert (Present (Inv_Graph));
       pragma Assert (Present (Lib_Graph));
@@ -313,14 +297,13 @@ package body Bindo.Diagnostics is
       --  switch -d_C (diagnose all cycles) is in effect.
 
       if Debug_Flag_Underscore_CC then
-         Diagnose_All_Cycles (Inv_Graph, Lib_Graph);
+         Diagnose_All_Cycles (Inv_Graph);
 
       --  Otherwise diagnose the most important cycle in the graph
 
       else
          Diagnose_Cycle
            (Inv_Graph => Inv_Graph,
-            Lib_Graph => Lib_Graph,
             Cycle     => Highest_Precedence_Cycle (Lib_Graph));
       end if;
    end Diagnose_Circularities;
@@ -331,9 +314,10 @@ package body Bindo.Diagnostics is
 
    procedure Diagnose_Cycle
      (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph;
       Cycle     : Library_Graph_Cycle_Id)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       pragma Assert (Present (Inv_Graph));
       pragma Assert (Present (Lib_Graph));
       pragma Assert (Present (Cycle));
@@ -382,7 +366,6 @@ package body Bindo.Diagnostics is
 
          Output_Transition
            (Inv_Graph            => Inv_Graph,
-            Lib_Graph            => Lib_Graph,
             Current_Edge         => Current_Edge,
             Next_Edge            => Next_Edge,
             Elaborate_All_Active => Elaborate_All_Active);
@@ -394,7 +377,6 @@ package body Bindo.Diagnostics is
 
       Output_Transition
         (Inv_Graph            => Inv_Graph,
-         Lib_Graph            => Lib_Graph,
          Current_Edge         => Current_Edge,
          Next_Edge            => First_Edge,
          Elaborate_All_Active => Elaborate_All_Active);
@@ -415,10 +397,11 @@ package body Bindo.Diagnostics is
 
    procedure Find_And_Output_Invocation_Paths
      (Inv_Graph   : Invocation_Graph;
-      Lib_Graph   : Library_Graph;
       Source      : Library_Graph_Vertex_Id;
       Destination : Library_Graph_Vertex_Id)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       Path    : IGE_Lists.Doubly_Linked_List;
       Path_Id : Nat;
       Visited : IGV_Sets.Membership_Set;
@@ -449,11 +432,9 @@ package body Bindo.Diagnostics is
 
       Visit_Vertex
         (Inv_Graph         => Inv_Graph,
-         Lib_Graph         => Lib_Graph,
          Invoker           =>
            Find_Elaboration_Root
              (Inv_Graph => Inv_Graph,
-              Lib_Graph => Lib_Graph,
               Vertex    => Source),
          Invoker_Vertex    => Source,
          Last_Vertex       => Source,
@@ -473,9 +454,10 @@ package body Bindo.Diagnostics is
 
    function Find_Elaboration_Root
      (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph;
       Vertex    : Library_Graph_Vertex_Id) return Invocation_Graph_Vertex_Id
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       Current_Vertex : Invocation_Graph_Vertex_Id;
       Iter           : Elaboration_Root_Iterator;
       Root_Vertex    : Invocation_Graph_Vertex_Id;
@@ -982,11 +964,12 @@ package body Bindo.Diagnostics is
 
    procedure Output_Invocation_Path
      (Inv_Graph         : Invocation_Graph;
-      Lib_Graph         : Library_Graph;
       Elaborated_Vertex : Library_Graph_Vertex_Id;
       Path              : IGE_Lists.Doubly_Linked_List;
       Path_Id           : in out Nat)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       Edge : Invocation_Graph_Edge_Id;
       Iter : IGE_Lists.Iterator;
 
@@ -1007,9 +990,7 @@ package body Bindo.Diagnostics is
          IGE_Lists.Next (Iter, Edge);
 
          Output_Invocation_Path_Transition
-           (Inv_Graph => Inv_Graph,
-            Lib_Graph => Lib_Graph,
-            Edge      => Edge);
+           (Inv_Graph => Inv_Graph, Edge => Edge);
       end loop;
 
       Path_Id := Path_Id + 1;
@@ -1021,9 +1002,10 @@ package body Bindo.Diagnostics is
 
    procedure Output_Invocation_Path_Transition
      (Inv_Graph : Invocation_Graph;
-      Lib_Graph : Library_Graph;
       Edge      : Invocation_Graph_Edge_Id)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       pragma Assert (Present (Inv_Graph));
       pragma Assert (Present (Lib_Graph));
       pragma Assert (Present (Edge));
@@ -1186,10 +1168,10 @@ package body Bindo.Diagnostics is
 
    procedure Output_Invocation_Transition
      (Inv_Graph   : Invocation_Graph;
-      Lib_Graph   : Library_Graph;
       Source      : Library_Graph_Vertex_Id;
       Destination : Library_Graph_Vertex_Id)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
    begin
       pragma Assert (Present (Inv_Graph));
       pragma Assert (Present (Lib_Graph));
@@ -1203,7 +1185,6 @@ package body Bindo.Diagnostics is
 
       Find_And_Output_Invocation_Paths
         (Inv_Graph   => Inv_Graph,
-         Lib_Graph   => Lib_Graph,
          Source      => Source,
          Destination => Destination);
    end Output_Invocation_Transition;
@@ -1302,11 +1283,12 @@ package body Bindo.Diagnostics is
 
    procedure Output_Transition
      (Inv_Graph            : Invocation_Graph;
-      Lib_Graph            : Library_Graph;
       Current_Edge         : Library_Graph_Edge_Id;
       Next_Edge            : Library_Graph_Edge_Id;
       Elaborate_All_Active : Boolean)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       pragma Assert (Present (Inv_Graph));
       pragma Assert (Present (Lib_Graph));
       pragma Assert (Present (Current_Edge));
@@ -1353,7 +1335,6 @@ package body Bindo.Diagnostics is
       elsif Is_Invocation_Edge (Lib_Graph, Current_Edge) then
          Output_Invocation_Transition
            (Inv_Graph   => Inv_Graph,
-            Lib_Graph   => Lib_Graph,
             Source      => Source,
             Destination => Expected_Destination);
 
@@ -1466,7 +1447,6 @@ package body Bindo.Diagnostics is
 
    procedure Visit_Vertex
      (Inv_Graph         : Invocation_Graph;
-      Lib_Graph         : Library_Graph;
       Invoker           : Invocation_Graph_Vertex_Id;
       Invoker_Vertex    : Library_Graph_Vertex_Id;
       Last_Vertex       : Library_Graph_Vertex_Id;
@@ -1476,6 +1456,8 @@ package body Bindo.Diagnostics is
       Path              : IGE_Lists.Doubly_Linked_List;
       Path_Id           : in out Nat)
    is
+      Lib_Graph : constant Library_Graph := Get_Lib_Graph (Inv_Graph);
+
       Edge : Invocation_Graph_Edge_Id;
       Iter : Edges_To_Targets_Iterator;
       Targ : Invocation_Graph_Vertex_Id;
@@ -1500,7 +1482,6 @@ package body Bindo.Diagnostics is
       then
          Output_Invocation_Path
            (Inv_Graph         => Inv_Graph,
-            Lib_Graph         => Lib_Graph,
             Elaborated_Vertex => Elaborated_Vertex,
             Path              => Path,
             Path_Id           => Path_Id);
@@ -1531,7 +1512,6 @@ package body Bindo.Diagnostics is
 
             Visit_Vertex
               (Inv_Graph         => Inv_Graph,
-               Lib_Graph         => Lib_Graph,
                Invoker           => Targ,
                Invoker_Vertex    => Body_Vertex (Inv_Graph, Targ),
                Last_Vertex       => Invoker_Vertex,
