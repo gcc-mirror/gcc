@@ -110,7 +110,8 @@ package body Bindo.Builders is
          Inv_Graph :=
            Create
              (Initial_Vertices => Number_Of_Elaborable_Units,
-              Initial_Edges    => Number_Of_Elaborable_Units);
+              Initial_Edges    => Number_Of_Elaborable_Units,
+              Lib_Graph        => Lib_G);
          Lib_Graph := Lib_G;
 
          For_Each_Elaborable_Unit (Create_Vertices'Access);
