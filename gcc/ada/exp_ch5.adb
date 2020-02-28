@@ -4920,13 +4920,14 @@ package body Exp_Ch5 is
    --  mode, the semantic analyzer may disallow one or both forms.
 
    procedure Expand_Predicated_Loop (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Isc     : constant Node_Id    := Iteration_Scheme (N);
-      LPS     : constant Node_Id    := Loop_Parameter_Specification (Isc);
-      Loop_Id : constant Entity_Id  := Defining_Identifier (LPS);
-      Ltype   : constant Entity_Id  := Etype (Loop_Id);
-      Stat    : constant List_Id    := Static_Discrete_Predicate (Ltype);
-      Stmts   : constant List_Id    := Statements (N);
+      Orig_Loop_Id :          Node_Id    := Empty;
+      Loc          : constant Source_Ptr := Sloc (N);
+      Isc          : constant Node_Id    := Iteration_Scheme (N);
+      LPS          : constant Node_Id    := Loop_Parameter_Specification (Isc);
+      Loop_Id      : constant Entity_Id  := Defining_Identifier (LPS);
+      Ltype        : constant Entity_Id  := Etype (Loop_Id);
+      Stat         : constant List_Id    := Static_Discrete_Predicate (Ltype);
+      Stmts        : constant List_Id    := Statements (N);
 
    begin
       --  Case of iteration over non-static predicate, should not be possible
@@ -5205,7 +5206,13 @@ package body Exp_Ch5 is
                 Alternatives => Alts);
             Append_To (Stmts, Cstm);
 
-            --  Rewrite the loop
+            --  Rewrite the loop preserving the loop identifier in case there
+            --  are exit statements referencing it.
+
+            if Present (Identifier (N)) then
+               Orig_Loop_Id := New_Occurrence_Of
+                                 (Entity (Identifier (N)), Loc);
+            end if;
 
             Set_Suppress_Assignment_Checks (D);
 
@@ -5217,6 +5224,7 @@ package body Exp_Ch5 is
                     Statements => New_List (
                       Make_Loop_Statement (Loc,
                         Statements => Stmts,
+                        Identifier => Orig_Loop_Id,
                         End_Label  => Empty)))));
 
             Analyze (N);
