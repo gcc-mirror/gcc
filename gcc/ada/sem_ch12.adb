@@ -12394,19 +12394,38 @@ package body Sem_Ch12 is
 
       --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for the formal are obeyed by the actual.
+      --  If the fornal is a derived type the aspect specifications must match.
+      --  NOTE: AI12-0282 implies that matching of aspects is required between
+      --  formal and actual in all cases, but this is too restrictive.
+      --  In particular it violates a language design rule: a limited private
+      --  indefinite formal can be matched by any actual. The current code
+      --  reflects an older and more permissve version of RM C.6 (12/5).
 
       procedure Check_Shared_Variable_Control_Aspects is
       begin
          if Ada_Version >= Ada_2020 then
-            if Is_Atomic (A_Gen_T) /= Is_Atomic (Act_T) then
+            if Is_Atomic (A_Gen_T) and then not Is_Atomic (Act_T) then
+               Error_Msg_NE
+                  ("actual for& must have Atomic aspect", Actual, A_Gen_T);
+
+            elsif Is_Derived_Type (A_Gen_T)
+              and then Is_Atomic (A_Gen_T) /= Is_Atomic (Act_T)
+            then
                Error_Msg_NE
                   ("actual for& has different Atomic aspect", Actual, A_Gen_T);
             end if;
 
-            if Is_Volatile (A_Gen_T) /= Is_Volatile (Act_T) then
+            if Is_Volatile (A_Gen_T) and then not Is_Volatile (Act_T) then
                Error_Msg_NE
                   ("actual for& has different Volatile aspect",
                     Actual, A_Gen_T);
+
+            elsif Is_Derived_Type (A_Gen_T)
+              and then Is_Volatile (A_Gen_T) /= Is_Volatile (Act_T)
+            then
+               Error_Msg_NE
+                  ("actual for& has different Volatile aspect",
+                     Actual, A_Gen_T);
             end if;
 
             --  We assume that an array type whose atomic component type
