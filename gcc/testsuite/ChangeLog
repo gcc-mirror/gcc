@@ -1,3 +1,10 @@
+2020-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92152
+	* g++.dg/torture/pr92152.C (size_t): Use decltype (sizeof (0)) instead
+	of hardcoding unsigned long.
+	(uint64_t): Use unsigned long long instead of unsigned long.
+
 2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93932
