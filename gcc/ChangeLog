@@ -1,3 +1,13 @@
+2020-02-28  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR other/93965
+	* configure.ac: Improve detection of ld_date by requiring
+	either two dashes or none.
+	* configure: Regenerate.
+
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93949
