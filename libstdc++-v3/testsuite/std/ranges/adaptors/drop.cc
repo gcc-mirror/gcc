@@ -24,6 +24,7 @@
 #include <testsuite_iterators.h>
 
 using __gnu_test::test_range;
+using __gnu_test::forward_iterator_wrapper;
 using __gnu_test::bidirectional_iterator_wrapper;
 
 namespace ranges = std::ranges;
@@ -95,6 +96,61 @@ test06()
   VERIFY( ranges::empty(x | views::drop(10)) );
 }
 
+// The following tests that drop_view::begin caches its result.
+
+template<typename T>
+struct test_wrapper : forward_iterator_wrapper<T>
+{
+  static inline int increment_count = 0;
+
+  using forward_iterator_wrapper<T>::forward_iterator_wrapper;
+
+  test_wrapper() : forward_iterator_wrapper<T>()
+  { }
+
+  test_wrapper
+  operator++(int)
+  {
+    auto tmp = *this;
+    ++*this;
+    return tmp;
+  }
+
+  test_wrapper&
+  operator++()
+  {
+    ++increment_count;
+    forward_iterator_wrapper<T>::operator++();
+    return *this;
+  }
+
+  test_wrapper
+  operator--(int)
+  {
+    auto tmp = *this;
+    --*this;
+    return tmp;
+  }
+
+  test_wrapper&
+  operator--()
+  {
+    forward_iterator_wrapper<T>::operator--();
+    return *this;
+  }
+};
+
+void
+test07()
+{
+  int x[] = {1,2,3,4,5};
+  test_range<int, test_wrapper> rx(x);
+  auto v = rx | views::drop(3);
+  VERIFY( ranges::equal(v, (int[]){4,5}) );
+  VERIFY( ranges::equal(v, (int[]){4,5}) );
+  VERIFY( test_wrapper<int>::increment_count == 7 );
+}
+
 int
 main()
 {
@@ -104,4 +160,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }

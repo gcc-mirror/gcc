@@ -1,3 +1,25 @@
+2020-02-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/func-params-08.C: Update
+	to suspend for each co_await operation.
+
+2020-02-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92785
+	* gfortran.dg/unlimited_polymorphic_31.f03 : New test.
+
+2020-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* g++.dg/cpp2a/consteval3.C: Change dg-error about taking address of
+	immediate function in unevaluated contexts into dg-bogus.
+	* g++.dg/cpp2a/consteval16.C: New test.
+
+	PR middle-end/92152
+	* g++.dg/torture/pr92152.C (size_t): Use decltype (sizeof (0)) instead
+	of hardcoding unsigned long.
+	(uint64_t): Use unsigned long long instead of unsigned long.
+
 2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93932
@@ -975,7 +997,7 @@
 	PR c++/93559 - ICE with CONSTRUCTOR flags verification.
 	* g++.dg/cpp0x/initlist119.C: New test.
 	* g++.dg/cpp0x/initlist120.C: New test.
-	
+
 2020-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93557

@@ -1,3 +1,32 @@
+2020-02-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93937
+	* config/rs6000/vsx.md (vsx_extract_<mode>_<VS_scalar>mode_var):
+	Delete insn.
+
+2020-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR other/93965
+	* configure.ac: Improve detection of ld_date by requiring
+	either two dashes or none.
+	* configure: Regenerate.
+
+2020-02-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93564
+	* ira-color.c (assign_hard_reg): Prefer smaller hard regno when we
+	do not honor reg alloc order.
+
+2020-02-27  Joel Hutton  <Joel.Hutton@arm.com>
+
+	PR target/87612
+	* config/aarch64/aarch64.c (aarch64_override_options): Fix
+	misleading warning string.
+
+2020-02-27  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wbuiltin-declaration-mismatch): Fix a typo.
+
 2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93932

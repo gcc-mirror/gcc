@@ -46,7 +46,7 @@ struct Foo {
 	{
 	  int v;
 	  awaitable (int _v) : v(_v) {}
-	  bool await_ready() { return true; }
+	  bool await_ready() { return false; }
 	  void await_suspend(coro::coroutine_handle<>) {}
 	  int await_resume() { return v;}
 	};

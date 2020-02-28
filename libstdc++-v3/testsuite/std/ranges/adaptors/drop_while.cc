@@ -25,6 +25,8 @@
 
 using __gnu_test::test_range;
 using __gnu_test::bidirectional_iterator_wrapper;
+using __gnu_test::forward_iterator_wrapper;
+using __gnu_test::random_access_iterator_wrapper;
 
 namespace ranges = std::ranges;
 namespace views = std::ranges::views;
@@ -54,10 +56,44 @@ test02()
   static_assert(ranges::bidirectional_range<R>);
 }
 
+// The following tests that drop_while_view::begin caches its result.
+
+template<template<typename> typename wrapper>
+struct test_view : ranges::view_base
+{
+  bool begin_already_called = false;
+  static inline int x[] = {1,2,3,4,5};
+  test_range<int, wrapper> rx{x};
+
+  auto
+  begin()
+  {
+    if (begin_already_called)
+      x[0] = 10;
+    begin_already_called = true;
+    return rx.begin();
+  }
+
+  auto
+  end()
+  { return rx.end(); }
+};
+
+template<template<typename> typename wrapper>
+void
+test03()
+{
+  auto v
+    = test_view<wrapper>{} | views::drop_while([] (int i) { return i<3; });
+  VERIFY( ranges::equal(v, (int[]){3,4,5}) );
+  VERIFY( ranges::equal(v, (int[]){3,4,5}) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03<forward_iterator_wrapper>();
+  test03<random_access_iterator_wrapper>();
 }
-

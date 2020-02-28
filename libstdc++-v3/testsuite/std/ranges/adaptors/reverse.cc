@@ -76,6 +76,61 @@ test04()
 			(int[]){5,4,3,2,1}) );
 }
 
+// The following tests that reverse_view::begin caches its result.
+
+template<typename T>
+struct test_wrapper : bidirectional_iterator_wrapper<T>
+{
+  static inline int increment_count = 0;
+
+  using bidirectional_iterator_wrapper<T>::bidirectional_iterator_wrapper;
+
+  test_wrapper() : bidirectional_iterator_wrapper<T>()
+  { }
+
+  test_wrapper
+  operator++(int)
+  {
+    auto tmp = *this;
+    ++*this;
+    return tmp;
+  }
+
+  test_wrapper&
+  operator++()
+  {
+    ++increment_count;
+    bidirectional_iterator_wrapper<T>::operator++();
+    return *this;
+  }
+
+  test_wrapper
+  operator--(int)
+  {
+    auto tmp = *this;
+    --*this;
+    return tmp;
+  }
+
+  test_wrapper&
+  operator--()
+  {
+    bidirectional_iterator_wrapper<T>::operator--();
+    return *this;
+  }
+};
+
+void
+test05()
+{
+  int x[] = {1,2,3,4,5};
+  test_range<int, test_wrapper> rx(x);
+  auto v = rx | views::reverse;
+  VERIFY( ranges::equal(v, (int[]){5,4,3,2,1}) );
+  VERIFY( ranges::equal(v, (int[]){5,4,3,2,1}) );
+  VERIFY( test_wrapper<int>::increment_count == 5 );
+}
+
 int
 main()
 {
@@ -83,4 +138,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

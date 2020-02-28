@@ -15,8 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a -D_GLIBCXX_DEBUG" }
-// { dg-do compile { xfail c++2a } }
+// { dg-options "-std=gnu++2a -D_GLIBCXX_ASSERTIONS" }
+// { dg-do run { xfail *-*-* } }
+// { dg-require-effective-target c++2a }
 
 #include <iterator>
 #include <testsuite_iterators.h>
@@ -28,4 +29,9 @@ test01()
   __gnu_test::test_container<int, __gnu_test::forward_iterator_wrapper> c(a);
   auto iter = c.begin();
   std::ranges::advance(iter, -1);
+}
+
+int main()
+{
+  test01();
 }

@@ -1,6 +1,6 @@
 /* { dg-do run } */
-using size_t = unsigned long;
-using uint64_t = unsigned long;
+using size_t = decltype (sizeof (0));
+using uint64_t = unsigned long long;
 
 namespace HPHP {
 

@@ -7683,7 +7683,7 @@ or as a non-function, or when a built-in function declared with a type
 that does not include a prototype is called with arguments whose promoted
 types do not match those expected by the function.  When @option{-Wextra}
 is specified, also warn when a built-in function that takes arguments is
-declared without a prototype.  The @option{-Wno-builtin-declaration-mismatch}
+declared without a prototype.  The @option{-Wbuiltin-declaration-mismatch}
 warning is enabled by default.  To avoid the warning include the appropriate
 header to bring the prototypes of built-in functions into scope.
 
