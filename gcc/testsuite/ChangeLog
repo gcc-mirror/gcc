@@ -1,3 +1,8 @@
+2020-02-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/func-params-08.C: Update
+	to suspend for each co_await operation.
+
 2020-02-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/92785
