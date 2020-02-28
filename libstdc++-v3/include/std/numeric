@@ -226,6 +226,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus > 201703L
+#define __cpp_lib_constexpr_numeric 201911L
+#endif
+
   /// @addtogroup numeric_ops
   /// @{
 
@@ -249,6 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  arithmetic) the result can be different.
    */
   template<typename _InputIterator, typename _Tp, typename _BinaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _Tp
     reduce(_InputIterator __first, _InputIterator __last, _Tp __init,
 	   _BinaryOperation __binary_op)
@@ -284,6 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Equivalent to calling `std::reduce(first, last, init, std::plus<>())`.
    */
   template<typename _InputIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _Tp
     reduce(_InputIterator __first, _InputIterator __last, _Tp __init)
     { return std::reduce(__first, __last, std::move(__init), plus<>()); }
@@ -300,6 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Equivalent to calling `std::reduce(first, last, T{}, std::plus<>())`.
    */
   template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline typename iterator_traits<_InputIterator>::value_type
     reduce(_InputIterator __first, _InputIterator __last)
     {
@@ -327,6 +334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator1, typename _InputIterator2, typename _Tp,
 	   typename _BinaryOperation1, typename _BinaryOperation2>
+    _GLIBCXX20_CONSTEXPR
     _Tp
     transform_reduce(_InputIterator1 __first1, _InputIterator1 __last1,
 		     _InputIterator2 __first2, _Tp __init,
@@ -369,6 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  elements.
    */
   template<typename _InputIterator1, typename _InputIterator2, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _Tp
     transform_reduce(_InputIterator1 __first1, _InputIterator1 __last1,
 		     _InputIterator2 __first2, _Tp __init)
@@ -394,6 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _Tp,
 	   typename _BinaryOperation, typename _UnaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _Tp
     transform_reduce(_InputIterator __first, _InputIterator __last, _Tp __init,
 		     _BinaryOperation __binary_op, _UnaryOperation __unary_op)
@@ -436,6 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _OutputIterator, typename _Tp,
 	   typename _BinaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _OutputIterator
     exclusive_scan(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result, _Tp __init,
@@ -469,6 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  so the Nth input element is not included.
    */
   template<typename _InputIterator, typename _OutputIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     exclusive_scan(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result, _Tp __init)
@@ -497,6 +509,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryOperation, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _OutputIterator
     inclusive_scan(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result, _BinaryOperation __binary_op,
@@ -525,6 +538,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _OutputIterator
     inclusive_scan(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result, _BinaryOperation __binary_op)
@@ -557,6 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  so the Nth input element is included.
    */
   template<typename _InputIterator, typename _OutputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     inclusive_scan(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result)
@@ -584,6 +599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _OutputIterator, typename _Tp,
 	   typename _BinaryOperation, typename _UnaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _OutputIterator
     transform_exclusive_scan(_InputIterator __first, _InputIterator __last,
 			     _OutputIterator __result, _Tp __init,
@@ -622,6 +638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryOperation, typename _UnaryOperation, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _OutputIterator
     transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
 			     _OutputIterator __result,
@@ -655,6 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _InputIterator, typename _OutputIterator,
 	  typename _BinaryOperation, typename _UnaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _OutputIterator
     transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
 			     _OutputIterator __result,

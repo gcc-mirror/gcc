@@ -149,12 +149,13 @@ static bool
 c_parser_gimple_parse_bb_spec_edge_probability (tree val,
 						gimple_parser &parser,
 						int *index,
-						profile_probability *probablity)
+						profile_probability
+						*probability)
 {
   bool return_p = c_parser_gimple_parse_bb_spec (val, index);
   if (return_p)
     {
-      *probablity = profile_probability::uninitialized ();
+      *probability = profile_probability::uninitialized ();
       /* Parse frequency if provided.  */
       if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
 	{
@@ -188,7 +189,7 @@ c_parser_gimple_parse_bb_spec_edge_probability (tree val,
 	    }
 
 	  unsigned int value = TREE_INT_CST_LOW (f);
-	  *probablity = profile_probability (value, quality);
+	  *probability = profile_probability (value, quality);
 
 	  c_parser_consume_token (parser);
 	  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))

@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "print-tree.h"
 #include "tree-dfa.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -200,7 +201,7 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
 
   if (ob->current_file != xloc.file)
     {
-      bp_pack_string (ob, bp, xloc.file, true);
+      bp_pack_string (ob, bp, remap_debug_filename (xloc.file), true);
       bp_pack_value (bp, xloc.sysp, 1);
     }
   ob->current_file = xloc.file;

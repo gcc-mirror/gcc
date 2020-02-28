@@ -4918,8 +4918,8 @@ adjust_clone_args (tree decl)
 	      break;
 	    }
 
-	  gcc_assert (same_type_p (TREE_TYPE (decl_parms),
-				   TREE_TYPE (clone_parms)));
+	  gcc_checking_assert (same_type_p (TREE_VALUE (decl_parms),
+					    TREE_VALUE (clone_parms)));
 
 	  if (TREE_PURPOSE (decl_parms) && !TREE_PURPOSE (clone_parms))
 	    {
@@ -5461,6 +5461,19 @@ classtype_has_non_deleted_move_ctor (tree t)
     lazily_declare_fn (sfk_move_constructor, t);
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     if (move_fn_p (*iter) && !DECL_DELETED_FN (*iter))
+      return true;
+  return false;
+}
+
+/* True iff T has a copy constructor that is not deleted.  */
+
+bool
+classtype_has_non_deleted_copy_ctor (tree t)
+{
+  if (CLASSTYPE_LAZY_COPY_CTOR (t))
+    lazily_declare_fn (sfk_copy_constructor, t);
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (copy_fn_p (*iter) && !DECL_DELETED_FN (*iter))
       return true;
   return false;
 }

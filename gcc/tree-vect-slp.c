@@ -1641,7 +1641,7 @@ static void
 vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		     slp_tree node, hash_set<slp_tree> &visited)
 {
-  unsigned i;
+  unsigned i, j;
   stmt_vec_info stmt_info;
   slp_tree child;
   tree op;
@@ -1651,13 +1651,13 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u)\n",
+  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u, refcnt=%u)\n",
 		   SLP_TREE_DEF_TYPE (node) == vect_external_def
 		   ? " (external)"
 		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
 		      ? " (constant)"
 		      : ""), node,
-		   estimated_poly_value (node->max_nunits));
+		   estimated_poly_value (node->max_nunits), node->refcnt);
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
       dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
@@ -1668,6 +1668,13 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 	dump_printf (metadata, "%T%s ", op,
 		     i < SLP_TREE_SCALAR_OPS (node).length () - 1 ? "," : "");
       dump_printf (metadata, "}\n");
+    }
+  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+    {
+      dump_printf_loc (metadata, user_loc, "\tload permutation {");
+      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (node), i, j)
+	dump_printf (dump_kind, " %u", j);
+      dump_printf (dump_kind, " }\n");
     }
   if (SLP_TREE_CHILDREN (node).is_empty ())
     return;
@@ -1749,6 +1756,45 @@ vect_mark_slp_stmts_relevant (slp_tree node)
   vect_mark_slp_stmts_relevant (node, visited);
 }
 
+/* Copy the SLP subtree rooted at NODE.  */
+
+static slp_tree
+slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
+{
+  unsigned i;
+
+  bool existed_p;
+  slp_tree &copy_ref = map.get_or_insert (node, &existed_p);
+  if (existed_p)
+    return copy_ref;
+
+  copy_ref = XNEW (_slp_tree);
+  slp_tree copy = copy_ref;
+  memcpy (copy, node, sizeof (_slp_tree));
+  if (SLP_TREE_SCALAR_STMTS (node).exists ())
+    {
+      SLP_TREE_SCALAR_STMTS (copy) = SLP_TREE_SCALAR_STMTS (node).copy ();
+      stmt_vec_info stmt_info;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+	STMT_VINFO_NUM_SLP_USES (stmt_info)++;
+    }
+  if (SLP_TREE_SCALAR_OPS (node).exists ())
+    SLP_TREE_SCALAR_OPS (copy) = SLP_TREE_SCALAR_OPS (node).copy ();
+  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+    SLP_TREE_LOAD_PERMUTATION (copy) = SLP_TREE_LOAD_PERMUTATION (node).copy ();
+  if (SLP_TREE_CHILDREN (node).exists ())
+    SLP_TREE_CHILDREN (copy) = SLP_TREE_CHILDREN (node).copy ();
+  gcc_assert (!SLP_TREE_VEC_STMTS (node).exists ());
+  copy->refcnt = 0;
+
+  slp_tree child;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (copy), i, child)
+    {
+      SLP_TREE_CHILDREN (copy)[i] = slp_copy_subtree (child, map);
+      SLP_TREE_CHILDREN (copy)[i]->refcnt++;
+    }
+  return copy;
+}
 
 /* Rearrange the statements of NODE according to PERMUTATION.  */
 
@@ -1840,6 +1886,18 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
      statements in the nodes is not important unless they are memory
      accesses, we can rearrange the statements in all the nodes
      according to the order of the loads.  */
+
+  /* We have to unshare the SLP tree we modify.  */
+  hash_map<slp_tree, slp_tree> map;
+  slp_tree unshared = slp_copy_subtree (SLP_INSTANCE_TREE (slp_instn), map);
+  vect_free_slp_tree (SLP_INSTANCE_TREE (slp_instn), false);
+  unshared->refcnt++;
+  SLP_INSTANCE_TREE (slp_instn) = unshared;
+  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
+    SLP_INSTANCE_LOADS (slp_instn)[i] = *map.get (node);
+  node = SLP_INSTANCE_LOADS (slp_instn)[0];
+
+  /* Do the actual re-arrangement.  */
   hash_set<slp_tree> visited;
   vect_slp_rearrange_stmts (SLP_INSTANCE_TREE (slp_instn), group_size,
 			    node->load_permutation, visited);

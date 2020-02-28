@@ -592,7 +592,7 @@ find_traces_1_round (int branch_th, profile_count count_th,
 	  /* If the best destination has multiple successors or predecessors,
 	     don't allow it to be added when optimizing for size.  This makes
 	     sure predecessors with smaller index are handled before the best
-	     destinarion.  It breaks long trace and reduces long jumps.
+	     destination.  It breaks long trace and reduces long jumps.
 
 	     Take if-then-else as an example.
 		A
@@ -1023,8 +1023,8 @@ connect_better_edge_p (const_edge e, bool src_index_p, int best_len,
       e_index = e->src->index;
 
       /* We are looking for predecessor, so probabilities are not that
-	 informative.  We do not want to connect A to B becuse A has
-	 only one sucessor (probablity is 100%) while there is edge
+	 informative.  We do not want to connect A to B because A has
+	 only one successor (probability is 100%) while there is edge
 	 A' to B where probability is 90% but which is much more frequent.  */
       if (e->count () > cur_best_edge->count ())
 	/* The edge has higher probability than the temporary best edge.  */

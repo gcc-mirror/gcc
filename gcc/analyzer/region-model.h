@@ -978,7 +978,8 @@ public:
 
   region_id get_or_create (region_model *model,
 			   region_id this_rid,
-			   tree expr, tree type);
+			   tree expr, tree type,
+			   region_model_context *ctxt);
   void unbind (tree expr);
   region_id *get (tree expr);
 
@@ -1374,7 +1375,8 @@ public:
 
   region_id get_or_create (region_model *model,
 			   region_id this_rid,
-			   key_t key, tree type);
+			   key_t key, tree type,
+			   region_model_context *ctxt);
 //  void unbind (int expr);
   region_id *get (key_t key);
 
@@ -1719,7 +1721,8 @@ class region_model
 
   region_id add_region (region *r);
 
-  region_id add_region_for_type (region_id parent_rid, tree type);
+  region_id add_region_for_type (region_id parent_rid, tree type,
+				 region_model_context *ctxt);
 
   svalue *get_svalue (svalue_id sval_id) const;
   region *get_region (region_id rid) const;
@@ -1740,16 +1743,19 @@ class region_model
 
   svalue_id get_or_create_ptr_svalue (tree ptr_type, region_id id);
   svalue_id get_or_create_constant_svalue (tree cst_expr);
-  svalue_id get_svalue_for_fndecl (tree ptr_type, tree fndecl);
-  svalue_id get_svalue_for_label (tree ptr_type, tree label);
+  svalue_id get_svalue_for_fndecl (tree ptr_type, tree fndecl,
+				   region_model_context *ctxt);
+  svalue_id get_svalue_for_label (tree ptr_type, tree label,
+				  region_model_context *ctxt);
 
-  region_id get_region_for_fndecl (tree fndecl);
-  region_id get_region_for_label (tree label);
+  region_id get_region_for_fndecl (tree fndecl, region_model_context *ctxt);
+  region_id get_region_for_label (tree label, region_model_context *ctxt);
 
   svalue_id maybe_cast (tree type, svalue_id sid, region_model_context *ctxt);
   svalue_id maybe_cast_1 (tree type, svalue_id sid);
 
-  region_id get_field_region (region_id rid, tree field);
+  region_id get_field_region (region_id rid, tree field,
+			      region_model_context *ctxt);
 
   region_id deref_rvalue (svalue_id ptr_sid, region_model_context *ctxt);
   region_id deref_rvalue (tree ptr, region_model_context *ctxt);
@@ -1826,7 +1832,8 @@ class region_model
 					     svalue_id ptr_sid,
 					     svalue_id offset_sid,
 					     region_model_context *ctxt);
-  region_id get_or_create_view (region_id raw_rid, tree type);
+  region_id get_or_create_view (region_id raw_rid, tree type,
+				region_model_context *ctxt);
 
   tree get_fndecl_for_call (const gcall *call,
 			    region_model_context *ctxt);

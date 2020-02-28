@@ -10731,6 +10731,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
   /* Record default capture mode.  "[&" "[=" "[&," "[=,"  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_AND)
+      && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS)
       && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)
       && !cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_THIS))
     LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) = CPLD_REFERENCE;
@@ -10826,6 +10827,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  continue;
 	}
 
+      /* Remember whether we want to capture as a reference or not.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
+	{
+	  capture_kind = BY_REFERENCE;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+
       bool init_pack_expansion = false;
       location_t ellipsis_loc = UNKNOWN_LOCATION;
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -10838,9 +10846,12 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  init_pack_expansion = true;
 	}
 
-      /* Remember whether we want to capture as a reference or not.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
+      /* Early C++20 drafts had ...& instead of &...; be forgiving.  */
+      if (init_pack_expansion && capture_kind != BY_REFERENCE
+	  && cp_lexer_next_token_is (parser->lexer, CPP_AND))
 	{
+	  pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		   0, "%<&%> should come before %<...%>");
 	  capture_kind = BY_REFERENCE;
 	  cp_lexer_consume_token (parser->lexer);
 	}
@@ -31186,15 +31197,31 @@ cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
   /* The enum-key is redundant for uses of the TYPE that are not
      declarations and for which name lookup returns just the type
      itself.  */
-  if (decl == type_decl)
+  if (decl != type_decl)
+    return;
+
+  if (scoped_key != RID_CLASS
+      && scoped_key != RID_STRUCT
+      && current_lang_name != lang_name_cplusplus
+      && current_namespace == global_namespace)
     {
-      gcc_rich_location richloc (key_loc);
-      richloc.add_fixit_remove (key_loc);
-      warning_at (&richloc, OPT_Wredundant_tags,
-		  "redundant enum-key %<enum%s%> in reference to %q#T",
-		  (scoped_key == RID_CLASS ? " class"
-		   : scoped_key == RID_STRUCT ? " struct" : ""), type);
+      /* Avoid issuing the diagnostic for apparently redundant (unscoped)
+	 enum tag in shared C/C++ code in files (such as headers) included
+	 in the main source file.  */
+      const line_map_ordinary *map = NULL;
+      linemap_resolve_location (line_table, key_loc,
+				LRK_MACRO_DEFINITION_LOCATION,
+				&map);
+      if (!MAIN_FILE_P (map))
+	return;
     }
+
+  gcc_rich_location richloc (key_loc);
+  richloc.add_fixit_remove (key_loc);
+  warning_at (&richloc, OPT_Wredundant_tags,
+	      "redundant enum-key %<enum%s%> in reference to %q#T",
+	      (scoped_key == RID_CLASS ? " class"
+	       : scoped_key == RID_STRUCT ? " struct" : ""), type);
 }
 
 /* Describes the set of declarations of a struct, class, or class template
@@ -31347,6 +31374,13 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   if (!warn_mismatched_tags && !warn_redundant_tags)
     return;
 
+  /* Only consider the true class-keys below and ignore typename_type,
+     etc. that are not C++ class-keys.  */
+  if (class_key != class_type
+      && class_key != record_type
+      && class_key != union_type)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
@@ -31355,26 +31389,36 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
   pop_deferring_access_checks ();
 
-  /* Only consider the true class-keys below and ignore typename_type,
-     etc. that are not C++ class-keys.  */
-  if (class_key != class_type
-      && class_key != record_type
-      && class_key != union_type)
-    return;
-
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name
      lookup returns just the type itself.  */
   bool key_redundant = !def_p && !decl_p && decl == type_decl;
+
+  if (key_redundant
+      && class_key != class_type
+      && current_lang_name != lang_name_cplusplus
+      && current_namespace == global_namespace)
+    {
+      /* Avoid issuing the diagnostic for apparently redundant struct
+	 and union class-keys in shared C/C++ code in files (such as
+	 headers) included in the main source file.  */
+      const line_map_ordinary *map = NULL;
+      linemap_resolve_location (line_table, key_loc,
+				LRK_MACRO_DEFINITION_LOCATION,
+				&map);
+      if (!MAIN_FILE_P (map))
+	key_redundant = false;
+    }
+
   if (key_redundant)
     {
       gcc_rich_location richloc (key_loc);
       richloc.add_fixit_remove (key_loc);
       warning_at (&richloc, OPT_Wredundant_tags,
-		"redundant class-key %qs in reference to %q#T",
-		class_key == union_type ? "union"
-		: class_key == record_type ? "struct" : "class",
-		type);
+		  "redundant class-key %qs in reference to %q#T",
+		  class_key == union_type ? "union"
+		  : class_key == record_type ? "struct" : "class",
+		  type);
     }
 
   if (seen_as_union || !warn_mismatched_tags)

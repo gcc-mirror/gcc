@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fanalyzer-verbosity=3" } */
+
 #include <stdio.h>
 
 /* Verify that we correctly emit CFG events in the face of buffers

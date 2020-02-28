@@ -2526,7 +2526,7 @@ the @code{puts} function, or the second and third arguments to
 the @code{memcpy} function.
 
 @smallexample
-__attribute__ ((access (read_only))) int puts (const char*);
+__attribute__ ((access (read_only, 1))) int puts (const char*);
 __attribute__ ((access (read_only, 1, 2))) void* memcpy (void*, const void*, size_t);
 @end smallexample
 
@@ -20643,13 +20643,13 @@ vector unsigned long long __builtin_crypto_vpermxor (vector unsigned long long,
 vector unsigned char __builtin_crypto_vpmsumb (vector unsigned char,
                                                vector unsigned char);
 
-vector unsigned short __builtin_crypto_vpmsumb (vector unsigned short,
+vector unsigned short __builtin_crypto_vpmsumh (vector unsigned short,
                                                 vector unsigned short);
 
-vector unsigned int __builtin_crypto_vpmsumb (vector unsigned int,
+vector unsigned int __builtin_crypto_vpmsumw (vector unsigned int,
                                               vector unsigned int);
 
-vector unsigned long long __builtin_crypto_vpmsumb (vector unsigned long long,
+vector unsigned long long __builtin_crypto_vpmsumd (vector unsigned long long,
                                                     vector unsigned long long);
 
 vector unsigned long long __builtin_crypto_vshasigmad (vector unsigned long long,

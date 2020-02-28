@@ -91,6 +91,36 @@ test04()
   VERIFY( i == v.end() );
 }
 
+void
+test05()
+{
+  auto as_string = [](ranges::view auto rng) {
+    auto in = rng | views::common;
+    return std::string(in.begin(), in.end());
+  };
+  std::string str
+    = "Now is the time for all good men to come to the aid of their county.";
+  auto rng
+    = str | views::split(' ') | views::transform(as_string) | views::common;
+  std::vector<std::string> words(rng.begin(), rng.end());
+  auto not_space_p = [](char c) { return c != ' '; };
+  VERIFY( ranges::equal(words | views::join,
+			str | views::filter(not_space_p)) );
+}
+
+void
+test06()
+{
+  std::string str = "hello world";
+  auto v = str | views::transform(std::identity{}) | views::split(' ');
+
+  // Verify that _Iterator<false> is implicitly convertible to _Iterator<true>.
+  static_assert(!std::same_as<decltype(ranges::begin(v)),
+			      decltype(ranges::cbegin(v))>);
+  auto b = ranges::cbegin(v);
+  b = ranges::begin(v);
+}
+
 int
 main()
 {
@@ -98,4 +128,6 @@ main()
   test02();
   test03();
   test04();
+  test05();
+  test06();
 }

@@ -2108,7 +2108,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       lsw_taken = EQ;
       if (prob.initialized_p ())
 	{
-	  /* FIXME: This is not optimal.  We do not really know the probablity
+	  /* FIXME: This is not optimal.  We do not really know the probability
 	     that values differ by MCW only, but we should probably distribute
 	     probabilities more evenly.  */
 	  msw_skip_prob = rev_prob;

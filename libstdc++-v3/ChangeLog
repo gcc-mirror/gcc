@@ -1,4 +1,206 @@
+2020-02-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator<_Const>): Befriend
+	_Iterator<!_Const>.
+	(transform_view::_Sentinel<_Const>): Befriend _Sentinel<!_Const>.
+	(take_view::_Sentinel<_Const>): Likewise.
+	(take_while_view::_Sentinel<_Const>): Likewise.
+	(split_view::_OuterIter<_Const>): Befriend _OuterIter<!_Const>.
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take_while.cc: Augment test.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
+	* testsuite/25_algorithms/copy/constrained.cc: Don't assume that the
+	base() of a vector<>::iterator is a pointer.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: Use foo.data()
+	instead of &foo[0].
+	* testsuite/25_algorithms/partial_sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/constrained.cc: Likewise.
+	* testsuite/25_algorithms/sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: Likewise.
+
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/array (operator<=>): Define for C++20.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
+	* testsuite/23_containers/span/back_assert_neg.cc: Add #undef before
+	defining _GLIBCXX_ASSERTIONS.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+
+	* include/debug/string (__gnu_debug::basic_string::insert): Fix for
+	C++98 where the member function of the base class returns void.
+
+	* testsuite/util/testsuite_iterators.h (forward_iterator_wrapper): Add
+	equality comparisons that support value-initialized iterators.
+
+	* include/bits/boost_concept_check.h (__function_requires): Add
+	_GLIBCXX14_CONSTEXPR.
+	* testsuite/25_algorithms/min/concept_checks.cc: New test.
+
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93936
+	* include/std/ranges (split_view::_InnerIter::operator==): Compare
+	the operands' _M_i rather than their _M_i.current().
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+
+	P1645R1 constexpr for <numeric> algorithms
+	* include/bits/stl_numeric.h (iota, accumulate, inner_product,
+	partial_sum, adjacent_difference): Make conditionally constexpr for
+	C++20.
+	* include/std/numeric (__cpp_lib_constexpr_numeric): Define this feature
+	test macro.
+	(reduce, transform_reduce, exclusive_scan, inclusive_scan,
+	transform_exclusive_scan, transform_inclusive_scan): Make conditionally
+	constexpr for C++20.
+	* include/std/version (__cpp_lib_constexpr_numeric): Define.
+	* testsuite/26_numerics/accumulate/constexpr.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/constexpr.cc: Likewise.
+	* testsuite/26_numerics/exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inner_product/constexpr.cc: Likewise.
+	* testsuite/26_numerics/iota/constexpr.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/constexpr.cc: Likewise.
+	* testsuite/26_numerics/reduce/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_reduce/constexpr.cc: Likewise.
+
+2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Declare
+	variables in smaller scope and avoid calling ranges::distance when we
+	know they are pointers. Remove statically-unreachable use of
+	__builtin_unreachable().
+	* include/bits/stl_algobase.h (__lexicographical_compare::__lc):
+	Define inline.
+
+	* include/std/ranges (__detail::__maybe_empty_t): Define new helper
+	alias.
+	(__detail::__maybe_const_t): Likewise.
+	(__adaptor::_RangeAdaptor): Use __maybe_empty_t.
+	(transform_view, take_view, take_while_view, elements_view): Use
+	__maybe_const_t.
+	(join_view, split_view): Use both.
+
+2020-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	LWG 3397 basic_istream_view::iterator should not provide
+	iterator_category
+	* include/std/ranges (basic_istream_view:_Iterator::iterator_category):
+	Rename to ...
+	(basic_istream_view:_Iterator::iterator_concept): ... this.
+	* testsuite/std/ranges/istream_view.cc: Augment test.
+
+	LWG 3325 Constrain return type of transformation function for
+	transform_view
+	* include/std/ranges (transform_view): Constrain the return type of the
+	transformation function as per LWG 3325.
+	* testsuite/std/ranges/adaptors/lwg3325_neg.cc: New test.
+
+	LWG 3313 join_view::_Iterator::operator-- is incorrectly constrained
+	* include/std/ranges (join_view::_Iterator::operator--): Require that
+	range_reference_t<_Base> models common_range.
+	* testsuite/std/ranges/adaptors/lwg3313_neg.cc: New test.
+
+	LWG 3301 transform_view::_Iterator has incorrect iterator_category
+	* include/std/ranges (transform_view::_Iterator::_S_iter_cat): Adjust
+	determination of iterator_category as per LWG 3301.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
+	LWG 3292 iota_view is under-constrained
+	* include/std/ranges (iota_view): Require that _Winc models semiregular
+	  as per LWG 3292.
+	* testsuite/std/ranges/iota/lwg3292_neg.cc: New test.
+
+2020-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__copy_or_move): Do not use memmove
+	during constant evaluation. Call __builtin_memmove directly instead of
+	__memmove.
+	(__copy_or_move_backward): Likewise.
+	* include/bits/stl_algobase.h (__memmove): Remove.
+	(__copy_move<M, true, random_access_iterator_tag>::__copy_m)
+	(__copy_move_backward<M, true, random_access_iterator_tag>::__copy_m):
+	Use __builtin_memmove directly instead of __memmove.
+	(__copy_move_a2): Do not use memmove during constant evaluation.
+	(__copy_move_backward_a2): Use _IsMove constant to select correct
+	__copy_move_backward specialization.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Check for copies
+	begin turned into moves during constant evaluation.
+
+	* testsuite/25_algorithms/move_backward/93872.cc: Add test left out of
+	previous commit.
+
+	PR libstdc++/93872
+	* include/bits/stl_algobase.h (__memmove): Cast away const before
+	doing move assignment.
+	* testsuite/25_algorithms/move/93872.cc: New test.
+	* testsuite/25_algorithms/move_backward/93872.cc: New test.
+
+2020-02-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93884
+	* include/bits/ranges_algobase.h (__copy_or_move,
+	__copy_or_move_backward): Don't inspect the iter_value_t of the output
+	iterator, instead inspect its iterator_traits directly.
+	* include/bits/stl_iterator.h (back_insert_iterator::container):
+	Conditionally initialize.
+	(back_insert_iterator::difference_type): Conditionally define.
+	(back_insert_iterator::back_insert_iterator): Conditionally define this
+	default constructor.
+	(front_insert_iterator::container): Conditionally initialize.
+	(front_insert_iterator::difference_type): Conditionally define.
+	(front_insert_iterator::front_insert_iterator): Conditionally define
+	this default constructor.
+	* 24_iterators/back_insert_iterator/pr93884.cc: New test.
+	* 24_iterators/front_insert_iterator/pr93884.cc: New test.
+
+	P0769R2 Add shift to <algorithm>
+	* include/bits/ranges_algo.h (shift_left, shift_right): New.
+	* testsuite/25_algorithms/shift_left/1.cc: New test.
+	* testsuite/25_algorithms/shift_right/1.cc: New test.
+
 2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
+	Make noexcept-specifier conditional.
+	* testsuite/24_iterators/istream_iterator/cons/sentinel.cc: Check
+	noexcept-specifier.
+
+	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
+	Add constructor.
+	(operator==(istream_iterator, default_sentinel_t)): Add operator.
+	(ostream_iterator::difference_type): Define to ptrdiff_t for C++20.
+	* include/bits/streambuf_iterator.h
+	(istreambuf_iterator(default_sentinel_t)): Add constructor.
+	(operator==(istreambuf_iterator, default_sentinel_t)): Add operator.
+	* testsuite/24_iterators/istream_iterator/cons/sentinel.cc:
+	New test.
+	* testsuite/24_iterators/istream_iterator/sentinel.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/cons/sentinel.cc:
+	New test.
+	* testsuite/24_iterators/istreambuf_iterator/sentinel.cc: New test.
 
 	* include/std/ranges (__deep_const_range, __enable_view_impl): Remove.
 	(ranges::enable_view): Simplify (LWG 3326).

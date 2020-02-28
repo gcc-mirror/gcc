@@ -814,7 +814,7 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       if (hint)
 	warning_at (loc, OPT_Wpragmas,
 		    "unknown option after %<#pragma GCC diagnostic%> kind;"
-		    " did you mean %<-%s%>", hint);
+		    " did you mean %<-%s%>?", hint);
       else
 	warning_at (loc, OPT_Wpragmas,
 		    "unknown option after %<#pragma GCC diagnostic%> kind");

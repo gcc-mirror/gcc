@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <algorithm>
+#include <forward_list>
 #include <ranges>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -85,6 +86,20 @@ test04()
   VERIFY( ranges::equal(v | views::take(5), (int[]){1,2,3}) );
 }
 
+void
+test05()
+{
+  std::forward_list<int> x = {1,2,3,4,5};
+  auto v = x | views::transform(std::negate{}) | views::take(4);
+
+  // Verify that _Sentinel<false> is implicitly convertible to _Sentinel<true>.
+  static_assert(!ranges::common_range<decltype(v)>);
+  static_assert(!std::same_as<decltype(ranges::end(v)),
+			      decltype(ranges::cend(v))>);
+  auto b = ranges::cend(v);
+  b = ranges::end(v);
+}
+
 int
 main()
 {
@@ -92,4 +107,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

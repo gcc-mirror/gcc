@@ -153,7 +153,7 @@ verify_flow_info (void)
 	  err = 1;
 	}
       /* FIXME: Graphite and SLJL and target code still tends to produce
-	 edges with no probablity.  */
+	 edges with no probability.  */
       if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
           && !bb->count.initialized_p () && !flag_graphite && 0)
 	{
@@ -170,7 +170,7 @@ verify_flow_info (void)
 	      err = 1;
 	    }
 	  /* FIXME: Graphite and SLJL and target code still tends to produce
-	     edges with no probablity.  */
+	     edges with no probability.  */
 	  if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
 	      && !e->probability.initialized_p () && !flag_graphite && 0)
 	    {

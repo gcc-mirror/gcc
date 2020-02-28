@@ -5130,10 +5130,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	{
 	  HOST_WIDE_INT pos = INTVAL (XEXP (SET_DEST (x), 2));
 	  unsigned HOST_WIDE_INT len = INTVAL (XEXP (SET_DEST (x), 1));
-	  unsigned HOST_WIDE_INT src = INTVAL (SET_SRC (x));
 	  rtx dest = XEXP (SET_DEST (x), 0);
-	  unsigned HOST_WIDE_INT mask
-	    = (HOST_WIDE_INT_1U << len) - 1;
+	  unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << len) - 1;
+	  unsigned HOST_WIDE_INT src = INTVAL (SET_SRC (x)) & mask;
 	  rtx or_mask;
 
 	  if (BITS_BIG_ENDIAN)

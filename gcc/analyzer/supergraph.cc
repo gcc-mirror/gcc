@@ -624,6 +624,29 @@ supernode::get_stmt_index (const gimple *stmt) const
   gcc_unreachable ();
 }
 
+/* Dump this superedge to PP.  */
+
+void
+superedge::dump (pretty_printer *pp) const
+{
+  pp_printf (pp, "edge: SN: %i -> SN: %i", m_src->m_index, m_dest->m_index);
+  dump_label_to_pp (pp, false);
+  pp_newline (pp);
+}
+
+/* Dump this superedge to stderr.  */
+
+DEBUG_FUNCTION void
+superedge::dump () const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump (&pp);
+  pp_flush (&pp);
+}
+
 /* Implementation of dedge::dump_dot for superedges.
    Write a .dot edge to GV representing this superedge.  */
 

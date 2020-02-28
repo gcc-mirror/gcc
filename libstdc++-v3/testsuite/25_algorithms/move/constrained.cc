@@ -99,8 +99,8 @@ test01()
       std::vector<int> y(3);
       const int z[3] = { 1, 2, 3 };
       auto [in, out] = ranges::move(x, ranges::begin(y));
-      VERIFY( in.base() == x.data()+3 );
-      VERIFY( out.base() == y.data()+3 );
+      VERIFY( in == x.begin()+3 );
+      VERIFY( out == y.begin()+3 );
       VERIFY( ranges::equal(y, z) && ranges::equal(x, z) );
     }
 
@@ -110,8 +110,8 @@ test01()
       std::vector<int> y(3);
       const int z[3] = { 1, 2, 3 };
       auto [in, out] = ranges::move(x, ranges::begin(y));
-      VERIFY( in.base() == x.data()+3 );
-      VERIFY( out.base() == y.data()+3 );
+      VERIFY( in == x.begin()+3 );
+      VERIFY( out == y.begin()+3 );
       VERIFY( ranges::equal(y, z) && ranges::equal(x, z) );
     }
 
@@ -122,8 +122,8 @@ test01()
       auto [in,out] = ranges::move(make_reverse_iterator(x.end()),
 				   make_reverse_iterator(x.begin()),
 				   make_reverse_iterator(y.end()));
-      VERIFY( in.base().base() == x.data()+3 );
-      VERIFY( out.base().base() == y.data() );
+      VERIFY( in.base() == x.begin()+3 );
+      VERIFY( out.base() == y.begin() );
       VERIFY( ranges::equal(y, z) && ranges::equal(x, z) );
     }
 
@@ -134,8 +134,8 @@ test01()
       auto [in,out] = ranges::move(make_reverse_iterator(x.end()),
 				   make_reverse_iterator(x.begin()),
 				   make_reverse_iterator(y.end()));
-      VERIFY( in.base().base() == x.data()+3 );
-      VERIFY( out.base().base() == y.data() );
+      VERIFY( in.base() == x.begin()+3 );
+      VERIFY( out.base() == y.begin() );
       VERIFY( ranges::equal(y, z) && ranges::equal(x, z) );
     }
 }

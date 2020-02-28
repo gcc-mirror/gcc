@@ -716,6 +716,22 @@ gfc_match_data (void)
       new_data->next = gfc_current_ns->data;
       gfc_current_ns->data = new_data;
 
+      /* A BOZ literal constant cannot appear in a structure constructor.
+	 Check for that here for a data statement value.  */
+      if (new_data->value->expr->ts.type == BT_DERIVED
+	  && new_data->value->expr->value.constructor)
+	{
+	  gfc_constructor *c;
+	  c = gfc_constructor_first (new_data->value->expr->value.constructor);
+	  for (; c; c = gfc_constructor_next (c))
+	    if (c->expr->ts.type == BT_BOZ)
+	      {
+		gfc_error ("BOZ literal constant at %L cannot appear in a "
+			   "structure constructor", &c->expr->where);
+		return MATCH_ERROR;
+	      }
+	}
+
       if (gfc_match_eos () == MATCH_YES)
 	break;
 

@@ -587,6 +587,49 @@ objects_must_conflict_p (tree t1, tree t2)
   return alias_sets_must_conflict_p (set1, set2);
 }
 
+/* Return true if T is an end of the access path which can be used
+   by type based alias oracle.  */
+
+bool
+ends_tbaa_access_path_p (const_tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case COMPONENT_REF:
+      if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
+	return true;
+      /* Permit type-punning when accessing a union, provided the access
+	 is directly through the union.  For example, this code does not
+	 permit taking the address of a union member and then storing
+	 through it.  Even the type-punning allowed here is a GCC
+	 extension, albeit a common and useful one; the C standard says
+	 that such accesses have implementation-defined behavior.  */
+      else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+	return true;
+      break;
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
+	return true;
+      break;
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      break;
+
+    case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
+      /* Bitfields and casts are never addressable.  */
+      return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
 /* Return the outermost parent of component present in the chain of
    component references handled by get_inner_reference in T with the
    following property:
@@ -601,40 +644,8 @@ component_uses_parent_alias_set_from (const_tree t)
 
   while (handled_component_p (t))
     {
-      switch (TREE_CODE (t))
-	{
-	case COMPONENT_REF:
-	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
-	    found = t;
-	  /* Permit type-punning when accessing a union, provided the access
-	     is directly through the union.  For example, this code does not
-	     permit taking the address of a union member and then storing
-	     through it.  Even the type-punning allowed here is a GCC
-	     extension, albeit a common and useful one; the C standard says
-	     that such accesses have implementation-defined behavior.  */
-	  else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
-	    found = t;
-	  break;
-
-	case ARRAY_REF:
-	case ARRAY_RANGE_REF:
-	  if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
-	    found = t;
-	  break;
-
-	case REALPART_EXPR:
-	case IMAGPART_EXPR:
-	  break;
-
-	case BIT_FIELD_REF:
-	case VIEW_CONVERT_EXPR:
-	  /* Bitfields and casts are never addressable.  */
-	  found = t;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
+      if (ends_tbaa_access_path_p (t))
+	found = t;
 
       t = TREE_OPERAND (t, 0);
     }

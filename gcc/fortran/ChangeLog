@@ -1,3 +1,31 @@
+2020-02-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (degrees_f): Remove unused code.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/93864
+	* intrinsic.texi (CO_BROADCAST): Fix typo, paramter -> parameter.
+	* trans-array.c (gfc_allocate_pdt_comp, gfc_deallocate_pdt_comp,
+	gfc_check_pdt_dummy): Fix comment typo paramter -> parameter.
+
+2020-02-24  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93835
+	* decl.c (gfc_match_data) : Check whether the data expression
+	is a derived type and is a constructor. If a BOZ constant
+	is encountered in the constructor output an error and return
+	MATCH_ERROR.
+
+2020-02-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93604
+	* decl.c (gfc_match_data) : Check whether the data expression
+	is a derived type and is a constructor. If a BOZ constant
+	is encountered in the constructor output an error and return
+	MATCH_ERROR.
+
 2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93552

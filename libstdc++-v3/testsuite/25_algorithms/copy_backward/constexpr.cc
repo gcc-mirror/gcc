@@ -34,3 +34,21 @@ test()
 }
 
 static_assert(test());
+
+constexpr bool
+test02()
+{
+  struct X
+  {
+    X() = default;
+    X& operator=(const X&) = default;
+    constexpr X& operator=(X&& x) { i = x.i; x.i = 0; return *this; }
+    int i = 1;
+  };
+
+  X from[1], to[1];
+  std::copy_backward(std::begin(from), std::end(from), std::end(to));
+  return from[0].i == 1;
+}
+
+static_assert(test02());

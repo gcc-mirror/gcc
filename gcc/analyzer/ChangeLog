@@ -1,3 +1,138 @@
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93950
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Assert that var is
+	either NULL or not a constant.  When updating var, bulletproof
+	against constant values.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93947
+	* region-model.cc (region_model::get_fndecl_for_call): Gracefully
+	fail for fn_decls that don't have a cgraph_node.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* bar-chart.cc: New file.
+	* bar-chart.h: New file.
+	* engine.cc: Include "analyzer/bar-chart.h".
+	(stats::log): Only log the m_num_nodes kinds that are non-zero.
+	(stats::dump): Likewise when dumping.
+	(stats::get_total_enodes): New.
+	(exploded_graph::get_or_create_node): Increment the per-point-data
+	m_excess_enodes when hitting the per-program-point limit on
+	enodes.
+	(exploded_graph::print_bar_charts): New.
+	(exploded_graph::log_stats): Log the number of unprocessed enodes
+	in the worklist.  Call print_bar_charts.
+	(exploded_graph::dump_stats): Print the number of unprocessed
+	enodes in the worklist.
+	* exploded-graph.h (stats::get_total_enodes): New decl.
+	(struct per_program_point_data): Add field m_excess_enodes.
+	(exploded_graph::print_bar_charts): New decl.
+	* supergraph.cc (superedge::dump): New.
+	(superedge::dump): New.
+	* supergraph.h (supernode::get_function): New.
+	(superedge::dump): New decl.
+	(superedge::dump): New decl.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::get_or_create_node): Dump the
+	program_state to the pp, rather than to stderr.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93032
+	* sm.cc (make_checkers): Require the "taint" checker to be
+	explicitly enabled.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93899
+	* engine.cc
+	(impl_region_model_context::impl_region_model_context): Add logger
+	param.
+	* engine.cc (exploded_graph::add_function_entry): Create an
+	impl_region_model_context and pass it to the push_frame call.
+	Bail if the resulting state is invalid.
+	(exploded_graph::build_initial_worklist): Likewise.
+	(exploded_graph::build_initial_worklist): Handle the case where
+	add_function_entry fails.
+	* exploded-graph.h
+	(impl_region_model_context::impl_region_model_context): Add logger
+	param.
+	* region-model.cc (map_region::get_or_create): Add ctxt param and
+	pass it to add_region_for_type.
+	(map_region::can_merge_p): Pass NULL as a ctxt to call to
+	get_or_create.
+	(array_region::get_element): Pass ctxt to call to get_or_create.
+	(array_region::get_or_create): Add ctxt param and pass it to
+	add_region_for_type.
+	(root_region::push_frame): Pass ctxt to get_or_create calls.
+	(region_model::get_lvalue_1): Likewise.
+	(region_model::make_region_for_unexpected_tree_code): Assert that
+	ctxt is non-NULL.
+	(region_model::get_rvalue_1): Pass ctxt to get_svalue_for_fndecl
+	and get_svalue_for_label calls.
+	(region_model::get_svalue_for_fndecl): Add ctxt param and pass it
+	to get_region_for_fndecl.
+	(region_model::get_region_for_fndecl): Add ctxt param and pass it
+	to get_or_create.
+	(region_model::get_svalue_for_label): Add ctxt param and pass it
+	to get_region_for_label.
+	(region_model::get_region_for_label): Add ctxt param and pass it
+	to get_region_for_fndecl and get_or_create.
+	(region_model::get_field_region): Add ctxt param and pass it to
+	get_or_create_view and get_or_create.
+	(make_region_for_type): Replace gcc_unreachable with return NULL.
+	(region_model::add_region_for_type): Add ctxt param.  Handle a
+	return of NULL from make_region_for_type by calling
+	make_region_for_unexpected_tree_code.
+	(region_model::get_or_create_mem_ref): Pass ctxt to calls to
+	get_or_create_view.
+	(region_model::get_or_create_view): Add ctxt param and pass it to
+	add_region_for_type.
+	(selftest::test_state_merging): Pass ctxt to get_or_create_view.
+	* region-model.h (region_model::get_or_create): Add ctxt param.
+	(region_model::add_region_for_type): Likewise.
+	(region_model::get_svalue_for_fndecl): Likewise.
+	(region_model::get_svalue_for_label): Likewise.
+	(region_model::get_region_for_fndecl): Likewise.
+	(region_model::get_region_for_label): Likewise.
+	(region_model::get_field_region): Likewise.
+	(region_model::get_or_create_view): Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (superedge_event::should_filter_p): Update
+	filter for empty descriptions to cover verbosity level 3 as well
+	as 2.
+	* diagnostic-manager.cc: Include "analyzer/reachability.h".
+	(class path_builder): New class.
+	(diagnostic_manager::emit_saved_diagnostic): Create a path_builder
+	and pass it to build_emission_path, rather passing eg; similarly
+	for add_events_for_eedge and ext_state.
+	(diagnostic_manager::build_emission_path): Replace "eg" param
+	with a path_builder, pass it to add_events_for_eedge.
+	(diagnostic_manager::add_events_for_eedge): Replace ext_state
+	param with path_builder; pass it to add_events_for_superedge.
+	(diagnostic_manager::significant_edge_p): New.
+	(diagnostic_manager::add_events_for_superedge): Add path_builder
+	param.  Reject insignificant edges at verbosity levels below 3.
+	(diagnostic_manager::prune_for_sm_diagnostic): Update highest
+	verbosity level to 4.
+	* diagnostic-manager.h (class path_builder): New forward decl.
+	(diagnostic_manager::build_emission_path): Replace "eg" param
+	with a path_builder.
+	(diagnostic_manager::add_events_for_eedge): Replace ext_state
+	param with path_builder.
+	(diagnostic_manager::significant_edge_p): New.
+	(diagnostic_manager::add_events_for_superedge): Add path_builder
+	param.
+	* reachability.h: New file.
+
 2020-02-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93692

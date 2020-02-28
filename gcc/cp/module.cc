@@ -8995,7 +8995,6 @@ trees_in::tree_node ()
 	    if (!get_overrun ())
 	      {
 		tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
-		SET_TYPE_STRUCTURAL_EQUALITY (pack);
 		SET_ARGUMENT_PACK_ARGS (pack, res);
 		res = pack;
 	      }
@@ -10121,9 +10120,12 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
 {
   // FIXME: We should probably do some duplicate decl-like stuff here
   // (beware, default parms should be the same?)
-  // FIXME: Inhibit TYPENAME_TYPE resolution, all the way down!
-  if (!comptypes (TREE_TYPE (existing), TREE_TYPE (decl),
-		  COMPARE_STRUCTURAL))
+  // Actually, we should just call duplicate_decls and teach it how to
+  // handle the module-specific permitted/required duplications
+  /* Using cp_tree_equal because we can meet TYPE_ARGUMENT_PACKs
+     here. I suspect the entities that directly do that are things
+     that shouldn't go to duoplicate_decls (FIELD_DECLs etc).   */
+  if (!cp_tree_equal (TREE_TYPE (existing), TREE_TYPE (decl)))
     {
       // FIXME: Might be template specialization from a module, not
       // necessarily global module

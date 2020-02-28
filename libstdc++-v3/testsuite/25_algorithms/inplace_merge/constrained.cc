@@ -40,7 +40,7 @@ test01()
 	v.insert(v.end(), x, x+j);
 	ranges::sort(v);
 
-	test_range<int, bidirectional_iterator_wrapper> rz(&v[0], &v[0]+i+j);
+	test_range<int, bidirectional_iterator_wrapper> rz(v.data(), v.data()+i+j);
 	auto result = ranges::inplace_merge(rz, next(ranges::begin(rz), i));
 	VERIFY( result == rz.end() );
 

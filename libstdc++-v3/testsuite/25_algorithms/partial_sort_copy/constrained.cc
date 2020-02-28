@@ -49,15 +49,15 @@ test01()
       for (unsigned middle = 0; middle < 10; ++middle)
 	{
 	  test_container<int, forward_iterator_wrapper> c
-	    = {&v1[0], &v1[0] + size};
+	    = {v1.data(), v1.data() + size};
 	  test_range<int, input_iterator_wrapper> r
-	    = {&v2[0], &v2[0] + size};
+	    = {v2.data(), v2.data() + size};
 
 	  std::vector<int> o1(middle), o2(middle);
 	  test_range<int, random_access_iterator_wrapper> w1
-	    = {&o1[0], &o1[0]+middle};
+	    = {o1.data(), o1.data()+middle};
 	  test_range<int, random_access_iterator_wrapper> w2
-	    = {&o2[0], &o2[0]+middle};
+	    = {o2.data(), o2.data()+middle};
 
 	  auto [in1, out1] = ranges::partial_sort_copy(c.begin(), c.end(),
 						       w1.begin(), w1.end(),

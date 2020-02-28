@@ -4661,7 +4661,6 @@ template_parm_to_arg (tree t)
 	  TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
 
 	  t = cxx_make_type (TYPE_ARGUMENT_PACK);
-	  SET_TYPE_STRUCTURAL_EQUALITY (t);
 	  SET_ARGUMENT_PACK_ARGS (t, vec);
 	}
     }
@@ -8514,10 +8513,7 @@ coerce_template_parameter_pack (tree parms,
 
   if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL
       || TREE_CODE (TREE_VALUE (parm)) == TEMPLATE_DECL)
-    {
-      argument_pack = cxx_make_type (TYPE_ARGUMENT_PACK);
-      SET_TYPE_STRUCTURAL_EQUALITY (argument_pack);
-    }
+    argument_pack = cxx_make_type (TYPE_ARGUMENT_PACK);
   else
     {
       argument_pack = make_node (NONTYPE_ARGUMENT_PACK);
@@ -9016,25 +9012,8 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
 				    PACK_EXPANSION_PATTERN (nt))
 	    && template_args_equal (PACK_EXPANSION_EXTRA_ARGS (ot),
 				    PACK_EXPANSION_EXTRA_ARGS (nt)));
-  else if (ARGUMENT_PACK_P (ot))
-    {
-      int i, len;
-      tree opack, npack;
-
-      if (!ARGUMENT_PACK_P (nt))
-	return 0;
-
-      opack = ARGUMENT_PACK_ARGS (ot);
-      npack = ARGUMENT_PACK_ARGS (nt);
-      len = TREE_VEC_LENGTH (opack);
-      if (TREE_VEC_LENGTH (npack) != len)
-	return 0;
-      for (i = 0; i < len; ++i)
-	if (!template_args_equal (TREE_VEC_ELT (opack, i),
-				  TREE_VEC_ELT (npack, i)))
-	  return 0;
-      return 1;
-    }
+  else if (ARGUMENT_PACK_P (ot) || ARGUMENT_PACK_P (nt))
+    return cp_tree_equal (ot, nt);
   else if (ot && TREE_CODE (ot) == ARGUMENT_PACK_SELECT)
     gcc_unreachable ();
   else if (TYPE_P (nt))
@@ -13038,10 +13017,7 @@ make_argument_pack (tree vec)
   tree pack;
 
   if (TYPE_P (TREE_VEC_ELT (vec, 0)))
-    {
-      pack = cxx_make_type (TYPE_ARGUMENT_PACK);
-      SET_TYPE_STRUCTURAL_EQUALITY (pack);
-    }
+    pack = cxx_make_type (TYPE_ARGUMENT_PACK);
   else
     {
       pack = make_node (NONTYPE_ARGUMENT_PACK);
@@ -15857,10 +15833,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (code == NONTYPE_ARGUMENT_PACK)
 	  r = make_node (code);
 	else
-	  {
-	    r = cxx_make_type (code);
-	    SET_TYPE_STRUCTURAL_EQUALITY (r);
-	  }
+	  r = cxx_make_type (code);
 
 	tree pack_args = ARGUMENT_PACK_ARGS (t);
 	pack_args = tsubst_template_args (pack_args, args, complain, in_decl);
@@ -21855,10 +21828,7 @@ type_unification_real (tree tparms,
 		  TREE_CONSTANT (arg) = 1;
 		}
 	      else
-		{
-		  arg = cxx_make_type (TYPE_ARGUMENT_PACK);
-		  SET_TYPE_STRUCTURAL_EQUALITY (arg);
-		}
+		arg = cxx_make_type (TYPE_ARGUMENT_PACK);
 
 	      SET_ARGUMENT_PACK_ARGS (arg, make_tree_vec (0));
 
@@ -22690,10 +22660,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
               TREE_CONSTANT (result) = 1;
             }
           else
-	    {
-	      result = cxx_make_type (TYPE_ARGUMENT_PACK);
-	      SET_TYPE_STRUCTURAL_EQUALITY (result);
-	    }
+	    result = cxx_make_type (TYPE_ARGUMENT_PACK);
 
           SET_ARGUMENT_PACK_ARGS (result, new_args);
 

@@ -3879,11 +3879,26 @@ cp_tree_equal (tree t1, tree t2)
 			     DEFERRED_NOEXCEPT_PATTERN (t2))
 	      && comp_template_args (DEFERRED_NOEXCEPT_ARGS (t1),
 				     DEFERRED_NOEXCEPT_ARGS (t2)));
-      break;
 
     case LAMBDA_EXPR:
       /* Two lambda-expressions are never considered equivalent.  */
       return false;
+
+    case TYPE_ARGUMENT_PACK:
+    case NONTYPE_ARGUMENT_PACK:
+      {
+	tree p1 = ARGUMENT_PACK_ARGS (t1);
+	tree p2 = ARGUMENT_PACK_ARGS (t2);
+	int len = TREE_VEC_LENGTH (p1);
+	if (TREE_VEC_LENGTH (p2) != len)
+	  return false;
+
+	for (int ix = 0; ix != len; ix++)
+	  if (!template_args_equal (TREE_VEC_ELT (p1, ix),
+				    TREE_VEC_ELT (p2, ix)))
+	    return false;
+	return true;
+      }
 
     default:
       break;

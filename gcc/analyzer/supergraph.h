@@ -216,6 +216,8 @@ class supernode : public dnode<supergraph_traits>
     m_phi_nodes (phi_nodes), m_index (index)
   {}
 
+  function *get_function () const { return m_fun; }
+
   bool entry_p () const
   {
     return m_bb == ENTRY_BLOCK_PTR_FOR_FN (m_fun);
@@ -280,6 +282,8 @@ class superedge : public dedge<supergraph_traits>
  public:
   virtual ~superedge () {}
 
+  void dump (pretty_printer *pp) const;
+  void dump () const;
   void dump_dot (graphviz_out *gv, const dump_args_t &args) const;
 
   virtual void dump_label_to_pp (pretty_printer *pp,

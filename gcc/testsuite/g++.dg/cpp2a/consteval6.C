@@ -3,7 +3,7 @@
 
 struct A {
   constexpr A () {}
-  A (A const&) = delete;	// { dg-message "declared here" }
+  A (A const&) = delete;	// { dg-bogus "declared here" }
 };
 
 template<typename T>
@@ -19,8 +19,8 @@ consteval void
 bar ()
 {
   T t;
-  T u = t;	// { dg-error "use of deleted function" }
+  T u = t;	// { dg-bogus "use of deleted function" }
 }
 
 using B = decltype (foo<A> ());
-using C = decltype (bar<A> ());	// { dg-message "required from here" }
+using C = decltype (bar<A> ());	// { dg-bogus "required from here" }

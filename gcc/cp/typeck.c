@@ -1458,11 +1458,6 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       break;
 
-    case TYPE_ARGUMENT_PACK:
-      if (!cp_tree_equal (ARGUMENT_PACK_ARGS (t1), ARGUMENT_PACK_ARGS (t2)))
-	return false;
-      break;
-
     default:
       return false;
     }
@@ -1493,10 +1488,17 @@ structural_comptypes (tree t1, tree t2, int strict)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
+  gcc_checking_assert (t1 && t2);
+
+  /* TYPE_ARGUMENT_PACKS are not really types.  */
+  gcc_checking_assert (TREE_CODE (t1) != TYPE_ARGUMENT_PACK
+		       && TREE_CODE (t2) != TYPE_ARGUMENT_PACK);
+
   if (strict == COMPARE_STRICT && comparing_specializations
       && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
     /* If comparing_specializations, treat dependent aliases as distinct.  */
     strict = COMPARE_STRUCTURAL;
+
   if (strict == COMPARE_STRICT)
     {
       if (t1 == t2)
@@ -7393,7 +7395,7 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
   if (TYPE_REF_P (type)
       && TYPE_REF_IS_RVALUE (type)
       && (clk = real_lvalue_p (expr))
-      && reference_related_p (TREE_TYPE (type), intype)
+      && reference_compatible_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
       if (processing_template_decl)

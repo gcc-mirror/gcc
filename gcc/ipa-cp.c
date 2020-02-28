@@ -4035,15 +4035,25 @@ edge_clone_summary_t::duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
   src_data->next_clone = dst_edge;
 }
 
-/* Return true is NODE is DEST or its clone for all contexts.  */
+/* Return true is CS calls DEST or its clone for all contexts.  When
+   ALLOW_RECURSION_TO_CLONE is false, also return false for self-recursive
+   edges from/to an all-context clone.  */
 
 static bool
-same_node_or_its_all_contexts_clone_p (cgraph_node *node, cgraph_node *dest)
+calls_same_node_or_its_all_contexts_clone_p (cgraph_edge *cs, cgraph_node *dest,
+					     bool allow_recursion_to_clone)
 {
-  if (node == dest)
-    return true;
+  enum availability availability;
+  cgraph_node *callee = cs->callee->function_symbol (&availability);
 
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  if (availability <= AVAIL_INTERPOSABLE)
+    return false;
+  if (callee == dest)
+    return true;
+  if (!allow_recursion_to_clone && cs->caller == callee)
+    return false;
+
+  class ipa_node_params *info = IPA_NODE_REF (callee);
   return info->is_all_contexts_clone && info->ipcp_orig_node == dest;
 }
 
@@ -4055,11 +4065,8 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
 			    cgraph_node *dest, ipcp_value<tree> *dest_val)
 {
   class ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-  enum availability availability;
-  cgraph_node *real_dest = cs->callee->function_symbol (&availability);
 
-  if (availability <= AVAIL_INTERPOSABLE
-      || !same_node_or_its_all_contexts_clone_p (real_dest, dest)
+  if (!calls_same_node_or_its_all_contexts_clone_p (cs, dest, !src->val)
       || caller_info->node_dead)
     return false;
 
@@ -4078,9 +4085,6 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
     }
   else
     {
-      /* At the moment we do not propagate over arithmetic jump functions in
-	 SCCs, so it is safe to detect self-feeding recursive calls in this
-	 way.  */
       if (src->val == dest_val)
 	return true;
 
@@ -4115,11 +4119,8 @@ cgraph_edge_brings_value_p (cgraph_edge *cs,
 			    ipcp_value<ipa_polymorphic_call_context> *)
 {
   class ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-  enum availability avail;
-  cgraph_node *real_dest = cs->callee->function_symbol (&avail);
 
-  if (avail <= AVAIL_INTERPOSABLE
-      || !same_node_or_its_all_contexts_clone_p (real_dest, dest)
+  if (!calls_same_node_or_its_all_contexts_clone_p (cs, dest, true)
       || caller_info->node_dead)
     return false;
   if (!src->val)
@@ -4619,9 +4620,10 @@ create_specialized_node (struct cgraph_node *node,
   return new_node;
 }
 
-/* Return true, if JFUNC, which describes a i-th parameter of call CS, is a
-   pass-through function to itself.  When SIMPLE is true, further check if
-   JFUNC is a simple no-operation pass-through.  */
+/* Return true if JFUNC, which describes a i-th parameter of call CS, is a
+   pass-through function to itself when the cgraph_node involved is not an
+   IPA-CP clone.  When SIMPLE is true, further check if JFUNC is a simple
+   no-operation pass-through.  */
 
 static bool
 self_recursive_pass_through_p (cgraph_edge *cs, ipa_jump_func *jfunc, int i,
@@ -4632,15 +4634,18 @@ self_recursive_pass_through_p (cgraph_edge *cs, ipa_jump_func *jfunc, int i,
       && availability > AVAIL_INTERPOSABLE
       && jfunc->type == IPA_JF_PASS_THROUGH
       && (!simple || ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
-      && ipa_get_jf_pass_through_formal_id (jfunc) == i)
+      && ipa_get_jf_pass_through_formal_id (jfunc) == i
+      && IPA_NODE_REF (cs->caller)
+      && !IPA_NODE_REF (cs->caller)->ipcp_orig_node)
     return true;
   return false;
 }
 
-/* Return true, if JFUNC, which describes a part of an aggregate represented
-   or pointed to by the i-th parameter of call CS, is a pass-through function
-   to itself.  When SIMPLE is true, further check if JFUNC is a simple
-   no-operation pass-through.  */
+/* Return true if JFUNC, which describes a part of an aggregate represented or
+   pointed to by the i-th parameter of call CS, is a pass-through function to
+   itself when the cgraph_node involved is not an IPA-CP clone..  When
+   SIMPLE is true, further check if JFUNC is a simple no-operation
+   pass-through.  */
 
 static bool
 self_recursive_agg_pass_through_p (cgraph_edge *cs, ipa_agg_jf_item *jfunc,
@@ -4653,7 +4658,9 @@ self_recursive_agg_pass_through_p (cgraph_edge *cs, ipa_agg_jf_item *jfunc,
       && jfunc->offset == jfunc->value.load_agg.offset
       && (!simple || jfunc->value.pass_through.operation == NOP_EXPR)
       && jfunc->value.pass_through.formal_id == i
-      && useless_type_conversion_p (jfunc->value.load_agg.type, jfunc->type))
+      && useless_type_conversion_p (jfunc->value.load_agg.type, jfunc->type)
+      && IPA_NODE_REF (cs->caller)
+      && !IPA_NODE_REF (cs->caller)->ipcp_orig_node)
     return true;
   return false;
 }

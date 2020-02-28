@@ -1,4 +1,5 @@
 /* { dg-do link }  */
+/* { dg-require-effective-target arm_arch_v7a_multilib } */
 /* { dg-options "-march=armv7-a -mthumb -O2 -flto -Wa,-mimplicit-it=always,-mthumb" }  */
 
 int main(int x)
