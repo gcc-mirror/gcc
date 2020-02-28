@@ -1,3 +1,9 @@
+2020-02-27  Joel Hutton  <Joel.Hutton@arm.com>
+
+	PR target/87612
+	* config/aarch64/aarch64.c (aarch64_override_options): Fix
+	misleading warning string.
+
 2020-02-27  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (-Wbuiltin-declaration-mismatch): Fix a typo.
