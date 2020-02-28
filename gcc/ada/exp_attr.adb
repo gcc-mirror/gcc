@@ -4783,27 +4783,31 @@ package body Exp_Attr is
 
       when Attribute_Overlaps_Storage => Overlaps_Storage : declare
          Loc : constant Source_Ptr := Sloc (N);
+         X   : constant Node_Id    := Prefix (N);
+         Y   : constant Node_Id    := First (Expressions (N));
 
-         X   : constant Node_Id := Prefix (N);
-         Y   : constant Node_Id := First (Expressions (N));
          --  The arguments
 
          X_Addr, Y_Addr : Node_Id;
-         --  the expressions for their integer addresses
+
+         --  The expressions for their integer addresses
 
          X_Size, Y_Size : Node_Id;
-         --  the expressions for their sizes
+
+         --  The expressions for their sizes
 
          Cond : Node_Id;
 
       begin
          --  Attribute expands into:
 
-         --    if X'Address < Y'address then
-         --      (X'address + X'Size - 1) >= Y'address
-         --    else
-         --      (Y'address + Y'size - 1) >= X'Address
-         --    end if;
+         --    (if X'Size = 0 or else Y'Size = 0 then
+         --       False
+         --     else
+         --       (if X'Address <= Y'Address then
+         --         (X'Address + X'Size - 1) >= Y'Address
+         --        else
+         --         (Y'Address + Y'Size - 1) >= X'Address))
 
          --  with the proper address operations. We convert addresses to
          --  integer addresses to use predefined arithmetic. The size is
@@ -4846,29 +4850,62 @@ package body Exp_Attr is
               Left_Opnd  => X_Addr,
               Right_Opnd => Y_Addr);
 
+         --  Perform the rewriting
+
          Rewrite (N,
            Make_If_Expression (Loc, New_List (
-             Cond,
 
-             Make_Op_Ge (Loc,
-               Left_Opnd   =>
-                 Make_Op_Add (Loc,
-                   Left_Opnd  => New_Copy_Tree (X_Addr),
-                   Right_Opnd =>
-                     Make_Op_Subtract (Loc,
-                       Left_Opnd  => X_Size,
-                       Right_Opnd => Make_Integer_Literal (Loc, 1))),
-               Right_Opnd => Y_Addr),
+             --  Generate a check for zero sized things like a null record with
+             --  size zero or an array with zero length since they have no
+             --  opportunity of overlapping.
 
-             Make_Op_Ge (Loc,
+             --  Without this check a zero-sized object can trigger a false
+             --  runtime result if its compared against another object
+             --  in its declarative region due to the zero-sized object having
+             --  the same address.
+
+             Make_Or_Else (Loc,
                Left_Opnd  =>
-                 Make_Op_Add (Loc,
-                   Left_Opnd  => New_Copy_Tree (Y_Addr),
-                   Right_Opnd =>
-                     Make_Op_Subtract (Loc,
-                       Left_Opnd  => Y_Size,
-                       Right_Opnd => Make_Integer_Literal (Loc, 1))),
-               Right_Opnd => X_Addr))));
+                 Make_Op_Eq (Loc,
+                   Left_Opnd  =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Size,
+                       Prefix         => New_Copy_Tree (X)),
+                   Right_Opnd => Make_Integer_Literal (Loc, 0)),
+               Right_Opnd =>
+                 Make_Op_Eq (Loc,
+                   Left_Opnd  =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Size,
+                       Prefix         => New_Copy_Tree (Y)),
+                   Right_Opnd => Make_Integer_Literal (Loc, 0))),
+
+             New_Occurrence_Of (Standard_False, Loc),
+
+             --  Non-size zero overlap check
+
+             Make_If_Expression (Loc, New_List (
+               Cond,
+
+               Make_Op_Ge (Loc,
+                 Left_Opnd   =>
+                   Make_Op_Add (Loc,
+                    Left_Opnd  => New_Copy_Tree (X_Addr),
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => X_Size,
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                 Right_Opnd => Y_Addr),
+
+               Make_Op_Ge (Loc,
+                 Left_Opnd   =>
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => New_Copy_Tree (Y_Addr),
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => Y_Size,
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                 Right_Opnd => X_Addr))))));
 
          Analyze_And_Resolve (N, Standard_Boolean);
       end Overlaps_Storage;
