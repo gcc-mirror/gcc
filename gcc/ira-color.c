@@ -1925,7 +1925,9 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	}
       if (min_cost > cost)
 	min_cost = cost;
-      if (min_full_cost > full_cost)
+      if (min_full_cost > full_cost
+	  || (!HONOR_REG_ALLOC_ORDER && min_full_cost == full_cost
+	      && best_hard_regno > hard_regno))
 	{
 	  min_full_cost = full_cost;
 	  best_hard_regno = hard_regno;

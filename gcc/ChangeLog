@@ -1,3 +1,9 @@
+2020-02-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93564
+	* ira-color.c (assign_hard_reg): Prefer smaller hard regno when we
+	do not honor reg alloc order.
+
 2020-02-27  Joel Hutton  <Joel.Hutton@arm.com>
 
 	PR target/87612
