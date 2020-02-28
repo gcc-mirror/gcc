@@ -1,6 +1,13 @@
 2020-02-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (c_parse_final_c_cleanups): Don't complain about
+	unsynthesized defaulted members in a header unit, and pick a
+	privileged clone to complain about when we do.
+	gcc/testsuite/
+	* g++.dg/modules/imp-member-3.H: New.
+
+	gcc/cp/
 	* module.cc (trees_(in,out)::fn_arg_types): Serialize ref
 	parmness.
 	(trees_out::key_mergeable): Adjust.

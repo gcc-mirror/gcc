@@ -5077,6 +5077,7 @@ c_parse_final_cleanups (void)
 	  && wrapup_global_declarations (pending_statics->address (),
 					 pending_statics->length ()))
 	reconsider = true;
+
     skip:;
       retries++;
     }
@@ -5099,6 +5100,14 @@ c_parse_final_cleanups (void)
 	     #pragma interface, etc.) we decided not to emit the
 	     definition here.  */
 	  && !DECL_INITIAL (decl)
+	  /* A defaulted fn in a header module can be synthesized on
+	     demand later.  (In non-header modules we should have
+	     synthesized it above.)  */
+	  && !(DECL_DEFAULTED_FN (decl) && header_module_p ())
+	  && (!IDENTIFIER_CDTOR_P (DECL_NAME (decl))
+	      /* Pick a priviledged clone to complain about.  */
+	      || DECL_NAME (decl) == complete_ctor_identifier
+	      || DECL_NAME (decl) == complete_dtor_identifier)
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
