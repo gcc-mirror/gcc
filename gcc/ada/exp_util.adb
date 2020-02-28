@@ -1961,9 +1961,6 @@ package body Exp_Util is
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
 
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
       Full_Typ : Entity_Id;
       --  The full view of working type
 
@@ -1972,6 +1969,9 @@ package body Exp_Util is
 
       Priv_Typ : Entity_Id;
       --  The partial view of working type
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -2063,13 +2063,13 @@ package body Exp_Util is
 
       --  Obtain all views of the input type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
 
-      --  Associate the DIC procedure and various relevant flags with all views
+      --  Associate the DIC procedure and various flags with all views
 
       Propagate_DIC_Attributes (Priv_Typ,  From_Typ => Work_Typ);
       Propagate_DIC_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_DIC_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_DIC_Attributes (UFull_Typ, From_Typ => Work_Typ);
       Propagate_DIC_Attributes (CRec_Typ,  From_Typ => Work_Typ);
 
       --  The declaration of the DIC procedure must be inserted after the
@@ -3087,11 +3087,18 @@ package body Exp_Util is
    begin
       Work_Typ := Typ;
 
+      --  Do not process the underlying full view of a private type. There is
+      --  no way to get back to the partial view, plus the body will be built
+      --  by the full view or the base type.
+
+      if Is_Underlying_Full_View (Work_Typ) then
+         return;
+
       --  The input type denotes the implementation base type of a constrained
       --  array type. Work with the first subtype as all invariant pragmas are
       --  on its rep item chain.
 
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+      elsif Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
 
       --  The input type denotes the corresponding record type of a protected
@@ -3420,9 +3427,6 @@ package body Exp_Util is
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
 
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
       Full_Typ : Entity_Id;
       --  The full view of working type
 
@@ -3434,6 +3438,9 @@ package body Exp_Util is
 
       Priv_Typ : Entity_Id;
       --  The partial view of working type
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -3520,13 +3527,13 @@ package body Exp_Util is
 
       --  Obtain all views of the input type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
 
-      --  Associate the invariant procedure with all views
+      --  Associate the invariant procedure and various flags with all views
 
       Propagate_Invariant_Attributes (Priv_Typ,  From_Typ => Work_Typ);
       Propagate_Invariant_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_Invariant_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_Invariant_Attributes (UFull_Typ, From_Typ => Work_Typ);
       Propagate_Invariant_Attributes (CRec_Typ,  From_Typ => Work_Typ);
 
       --  The declaration of the invariant procedure is inserted after the

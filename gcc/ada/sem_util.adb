@@ -10289,7 +10289,7 @@ package body Sem_Util is
      (Typ       : Entity_Id;
       Priv_Typ  : out Entity_Id;
       Full_Typ  : out Entity_Id;
-      Full_Base : out Entity_Id;
+      UFull_Typ : out Entity_Id;
       CRec_Typ  : out Entity_Id)
    is
       IP_View : Entity_Id;
@@ -10299,7 +10299,7 @@ package body Sem_Util is
 
       Priv_Typ  := Empty;
       Full_Typ  := Empty;
-      Full_Base := Empty;
+      UFull_Typ := Empty;
       CRec_Typ  := Empty;
 
       --  The input type is the corresponding record type of a protected or a
@@ -10308,10 +10308,9 @@ package body Sem_Util is
       if Ekind (Typ) = E_Record_Type
         and then Is_Concurrent_Record_Type (Typ)
       then
-         CRec_Typ  := Typ;
-         Full_Typ  := Corresponding_Concurrent_Type (CRec_Typ);
-         Full_Base := Base_Type (Full_Typ);
-         Priv_Typ  := Incomplete_Or_Partial_View (Full_Typ);
+         CRec_Typ := Typ;
+         Full_Typ := Corresponding_Concurrent_Type (CRec_Typ);
+         Priv_Typ := Incomplete_Or_Partial_View (Full_Typ);
 
       --  Otherwise the input type denotes an arbitrary type
 
@@ -10336,10 +10335,19 @@ package body Sem_Util is
             Full_Typ := Typ;
          end if;
 
-         if Present (Full_Typ) then
-            Full_Base := Base_Type (Full_Typ);
+         if Present (Full_Typ) and then Is_Private_Type (Full_Typ) then
+            UFull_Typ := Underlying_Full_View (Full_Typ);
 
-            if Ekind_In (Full_Typ, E_Protected_Type, E_Task_Type) then
+            if Present (UFull_Typ)
+              and then Ekind_In (UFull_Typ, E_Protected_Type, E_Task_Type)
+            then
+               CRec_Typ := Corresponding_Record_Type (UFull_Typ);
+            end if;
+
+         else
+            if Present (Full_Typ)
+              and then Ekind_In (Full_Typ, E_Protected_Type, E_Task_Type)
+            then
                CRec_Typ := Corresponding_Record_Type (Full_Typ);
             end if;
          end if;
@@ -23927,13 +23935,11 @@ package body Sem_Util is
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes.
 
-         if Has_Inherited_DIC (From_Typ)
-           and then not Has_Inherited_DIC (Typ)
-         then
+         if Has_Inherited_DIC (From_Typ) then
             Set_Has_Inherited_DIC (Typ);
          end if;
 
-         if Has_Own_DIC (From_Typ) and then not Has_Own_DIC (Typ) then
+         if Has_Own_DIC (From_Typ) then
             Set_Has_Own_DIC (Typ);
          end if;
 
@@ -23971,21 +23977,15 @@ package body Sem_Util is
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes.
 
-         if Has_Inheritable_Invariants (From_Typ)
-           and then not Has_Inheritable_Invariants (Typ)
-         then
+         if Has_Inheritable_Invariants (From_Typ) then
             Set_Has_Inheritable_Invariants (Typ);
          end if;
 
-         if Has_Inherited_Invariants (From_Typ)
-           and then not Has_Inherited_Invariants (Typ)
-         then
+         if Has_Inherited_Invariants (From_Typ) then
             Set_Has_Inherited_Invariants (Typ);
          end if;
 
-         if Has_Own_Invariants (From_Typ)
-           and then not Has_Own_Invariants (Typ)
-         then
+         if Has_Own_Invariants (From_Typ) then
             Set_Has_Own_Invariants (Typ);
          end if;
 
@@ -23999,6 +23999,48 @@ package body Sem_Util is
          end if;
       end if;
    end Propagate_Invariant_Attributes;
+
+   ------------------------------------
+   -- Propagate_Predicate_Attributes --
+   ------------------------------------
+
+   procedure Propagate_Predicate_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id)
+   is
+      Pred_Func   : Entity_Id;
+      Pred_Func_M : Entity_Id;
+
+   begin
+      if Present (Typ) and then Present (From_Typ) then
+         pragma Assert (Is_Type (Typ) and then Is_Type (From_Typ));
+
+         --  Nothing to do if both the source and the destination denote the
+         --  same type.
+
+         if From_Typ = Typ then
+            return;
+         end if;
+
+         Pred_Func   := Predicate_Function (From_Typ);
+         Pred_Func_M := Predicate_Function_M (From_Typ);
+
+         --  The setting of the attributes is intentionally conservative. This
+         --  prevents accidental clobbering of enabled attributes.
+
+         if Has_Predicates (From_Typ) then
+            Set_Has_Predicates (Typ);
+         end if;
+
+         if Present (Pred_Func) and then No (Predicate_Function (Typ)) then
+            Set_Predicate_Function (Typ, Pred_Func);
+         end if;
+
+         if Present (Pred_Func_M) and then No (Predicate_Function_M (Typ)) then
+            Set_Predicate_Function_M (Typ, Pred_Func_M);
+         end if;
+      end if;
+   end Propagate_Predicate_Attributes;
 
    ---------------------------------------
    -- Record_Possible_Part_Of_Reference --

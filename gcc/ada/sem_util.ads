@@ -1171,15 +1171,15 @@ package Sem_Util is
      (Typ       : Entity_Id;
       Priv_Typ  : out Entity_Id;
       Full_Typ  : out Entity_Id;
-      Full_Base : out Entity_Id;
+      UFull_Typ : out Entity_Id;
       CRec_Typ  : out Entity_Id);
-   --  Obtain the partial and full view of type Typ and in addition any extra
-   --  types the full view may have. The return entities are as follows:
+   --  Obtain the partial and full views of type Typ and in addition any extra
+   --  types the full views may have. The return entities are as follows:
    --
    --    Priv_Typ  - the partial view (a private type)
    --    Full_Typ  - the full view
-   --    Full_Base - the base type of the full view
-   --    CRec_Typ  - the corresponding record type of the full view
+   --    UFull_Typ - the underlying full view, if the full view is private
+   --    CRec_Typ  - the corresponding record type of the full views
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a component
@@ -2546,6 +2546,12 @@ package Sem_Util is
       From_Typ : Entity_Id);
    --  Inherit all invariant-related attributes form type From_Typ. Typ is the
    --  destination type.
+
+   procedure Propagate_Predicate_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id);
+   --  Inherit some predicate-related attributes form type From_Typ. Typ is the
+   --  destination type. Probably to be completed with more attributes???
 
    procedure Record_Possible_Part_Of_Reference
      (Var_Id : Entity_Id;

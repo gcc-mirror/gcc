@@ -9077,12 +9077,6 @@ package body Sem_Ch13 is
             Set_Ekind (SIdB, E_Function);
             Set_Is_Predicate_Function (SIdB);
 
-            --  The predicate function is shared between views of a type
-
-            if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-               Set_Predicate_Function (Full_View (Typ), SId);
-            end if;
-
             --  Build function body
 
             Spec :=
@@ -9196,6 +9190,18 @@ package body Sem_Ch13 is
                FDecl : Node_Id;
                BTemp : Entity_Id;
 
+               CRec_Typ : Entity_Id;
+               --  The corresponding record type of Full_Typ
+
+               Full_Typ : Entity_Id;
+               --  The full view of Typ
+
+               Priv_Typ : Entity_Id;
+               --  The partial view of Typ
+
+               UFull_Typ : Entity_Id;
+               --  The underlying full view of Full_Typ
+
             begin
                --  Mark any raise expressions for special expansion
 
@@ -9207,11 +9213,16 @@ package body Sem_Ch13 is
                Set_Is_Predicate_Function_M (SId);
                Set_Predicate_Function_M (Typ, SId);
 
-               --  The predicate function is shared between views of a type
+               --  Obtain all views of the input type
 
-               if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-                  Set_Predicate_Function_M (Full_View (Typ), SId);
-               end if;
+               Get_Views (Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
+
+               --  Associate the predicate function with all views
+
+               Propagate_Predicate_Attributes (Priv_Typ,  From_Typ => Typ);
+               Propagate_Predicate_Attributes (Full_Typ,  From_Typ => Typ);
+               Propagate_Predicate_Attributes (UFull_Typ, From_Typ => Typ);
+               Propagate_Predicate_Attributes (CRec_Typ,  From_Typ => Typ);
 
                Spec :=
                  Make_Function_Specification (Loc,
@@ -9391,6 +9402,18 @@ package body Sem_Ch13 is
       Func_Id   : Entity_Id;
       Spec      : Node_Id;
 
+      CRec_Typ : Entity_Id;
+      --  The corresponding record type of Full_Typ
+
+      Full_Typ : Entity_Id;
+      --  The full view of Typ
+
+      Priv_Typ : Entity_Id;
+      --  The partial view of Typ
+
+      UFull_Typ : Entity_Id;
+      --  The underlying full view of Full_Typ
+
    begin
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the predicate functions are properly marked as Ghost.
@@ -9401,12 +9424,29 @@ package body Sem_Ch13 is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Typ), "Predicate"));
 
+      Set_Ekind (Func_Id, E_Function);
+      Set_Etype (Func_Id, Standard_Boolean);
+      Set_Is_Internal (Func_Id);
+      Set_Is_Predicate_Function (Func_Id);
+      Set_Predicate_Function (Typ, Func_Id);
+
       --  The predicate function requires debug info when the predicates are
       --  subject to Source Coverage Obligations.
 
       if Opt.Generate_SCO then
          Set_Debug_Info_Needed (Func_Id);
       end if;
+
+      --  Obtain all views of the input type
+
+      Get_Views (Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
+
+      --  Associate the predicate function and various flags with all views
+
+      Propagate_Predicate_Attributes (Priv_Typ,  From_Typ => Typ);
+      Propagate_Predicate_Attributes (Full_Typ,  From_Typ => Typ);
+      Propagate_Predicate_Attributes (UFull_Typ, From_Typ => Typ);
+      Propagate_Predicate_Attributes (CRec_Typ,  From_Typ => Typ);
 
       Spec :=
         Make_Function_Specification (Loc,
@@ -9419,12 +9459,6 @@ package body Sem_Ch13 is
             New_Occurrence_Of (Standard_Boolean, Loc));
 
       Func_Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
-
-      Set_Ekind (Func_Id, E_Function);
-      Set_Etype (Func_Id, Standard_Boolean);
-      Set_Is_Internal (Func_Id);
-      Set_Is_Predicate_Function (Func_Id);
-      Set_Predicate_Function (Typ, Func_Id);
 
       Insert_After (Parent (Typ), Func_Decl);
       Analyze (Func_Decl);

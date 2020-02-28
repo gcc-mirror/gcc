@@ -2739,33 +2739,19 @@ package body Sem_Ch7 is
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
          --  Propagate Default_Initial_Condition-related attributes from the
-         --  base type of the full view to the full view and vice versa. This
-         --  may seem strange, but is necessary depending on which type
-         --  triggered the generation of the DIC procedure body. As a result,
-         --  both the full view and its base type carry the same DIC-related
-         --  information.
-
-         Propagate_DIC_Attributes (Full, From_Typ => Full_Base);
-         Propagate_DIC_Attributes (Full_Base, From_Typ => Full);
-
-         --  Propagate Default_Initial_Condition-related attributes from the
          --  full view to the private view.
 
          Propagate_DIC_Attributes (Priv, From_Typ => Full);
-
-         --  Propagate invariant-related attributes from the base type of the
-         --  full view to the full view and vice versa. This may seem strange,
-         --  but is necessary depending on which type triggered the generation
-         --  of the invariant procedure body. As a result, both the full view
-         --  and its base type carry the same invariant-related information.
-
-         Propagate_Invariant_Attributes (Full, From_Typ => Full_Base);
-         Propagate_Invariant_Attributes (Full_Base, From_Typ => Full);
 
          --  Propagate invariant-related attributes from the full view to the
          --  private view.
 
          Propagate_Invariant_Attributes (Priv, From_Typ => Full);
+
+         --  Propagate predicate-related attributes from the full view to the
+         --  private view.
+
+         Propagate_Predicate_Attributes (Priv, From_Typ => Full);
 
          if Is_Tagged_Type (Priv)
            and then Is_Tagged_Type (Full)
