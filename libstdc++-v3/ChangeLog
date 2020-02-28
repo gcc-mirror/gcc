@@ -1,3 +1,9 @@
+2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/26_numerics/headers/numeric/synopsis.cc: Add signatures for
+	functions introduced in C++11, C++17 and C++2a.  Add 'constexpr' to
+	existing signatures for C++2a.
+
 2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: Run
