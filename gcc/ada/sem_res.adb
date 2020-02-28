@@ -10004,8 +10004,10 @@ package body Sem_Res is
       --  check may convert an illegal static expression and result in warning
       --  rather than giving an error (e.g Integer'(Integer'Last + 1)).
 
-      if Nkind (N) = N_Qualified_Expression and then Is_Scalar_Type (Typ) then
-         Apply_Scalar_Range_Check (Expr, Typ);
+      if Nkind (N) = N_Qualified_Expression
+        and then Is_Scalar_Type (Target_Typ)
+      then
+         Apply_Scalar_Range_Check (Expr, Target_Typ);
       end if;
 
       --  AI12-0100: Once the qualified expression is resolved, check whether
