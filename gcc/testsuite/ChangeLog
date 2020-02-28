@@ -1,5 +1,10 @@
 2020-03-02  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Add
+	-fanalyzer-show-duplicate-count.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93959
 	* g++.dg/analyzer/cstdlib-2.C: New test.
 	* g++.dg/analyzer/cstdlib.C: New test.

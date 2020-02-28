@@ -114,6 +114,10 @@ fanalyzer-fine-grained
 Common Var(flag_analyzer_fine_grained) Init(0)
 Avoid combining multiple statements into one exploded edge.
 
+fanalyzer-show-duplicate-count
+Common Var(flag_analyzer_show_duplicate_count) Init(0)
+Issue a note when diagnostics are deduplicated.
+
 fanalyzer-state-purge
 Common Var(flag_analyzer_state_purge) Init(1)
 Purge unneeded state during analysis.

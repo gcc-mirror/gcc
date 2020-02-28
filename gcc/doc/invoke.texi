@@ -8477,6 +8477,14 @@ By default, an edge in this graph can contain the effects of a run
 of multiple statements within a basic block.  With
 @option{-fanalyzer-fine-grained}, each statement gets its own edge.
 
+@item -fanalyzer-show-duplicate-count
+@opindex fanalyzer-show-duplicate-count
+@opindex fno-analyzer-show-duplicate-count
+This option is intended for analyzer developers: if multiple diagnostics
+have been detected as being duplicates of each other, it emits a note when
+reporting the best diagnostic, giving the number of additional diagnostics
+that were suppressed by the deduplication logic.
+
 @item -fno-analyzer-state-merge
 @opindex fanalyzer-state-merge
 @opindex fno-analyzer-state-merge
