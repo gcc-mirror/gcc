@@ -1,3 +1,9 @@
+2020-02-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93937
+	* config/rs6000/vsx.md (vsx_extract_<mode>_<VS_scalar>mode_var):
+	Delete insn.
+
 2020-02-28  Martin Liska  <mliska@suse.cz>
 
 	PR other/93965

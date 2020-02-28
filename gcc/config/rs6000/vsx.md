@@ -3749,28 +3749,6 @@
 }
   [(set_attr "type" "load")])
 
-(define_insn_and_split "*vsx_extract_<mode>_<VS_scalar>mode_var"
-  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
-	(zero_extend:<VS_scalar>
-	 (unspec:<VSX_EXTRACT_I:VS_scalar>
-	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "v,v,Q")
-	   (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
-	  UNSPEC_VSX_EXTRACT)))
-   (clobber (match_scratch:DI 3 "=r,r,&b"))
-   (clobber (match_scratch:V2DI 4 "=X,&v,X"))]
-  "VECTOR_MEM_VSX_P (<VSX_EXTRACT_I:MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  machine_mode smode = <VS_scalar>mode;
-  rs6000_split_vec_extract_var (gen_rtx_REG (smode, REGNO (operands[0])),
-				operands[1], operands[2],
-				operands[3], operands[4]);
-  DONE;
-}
-  [(set_attr "isa" "p9v,*,*")])
-
 ;; VSX_EXTRACT optimizations
 ;; Optimize double d = (double) vec_extract (vi, <n>)
 ;; Get the element into the top position and use XVCVSWDP/XVCVUWDP
