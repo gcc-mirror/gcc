@@ -1064,9 +1064,9 @@ package body Bindo.Graphs is
         (G              : Library_Graph;
          Pred           : Library_Graph_Vertex_Id;
          Succ           : Library_Graph_Vertex_Id;
-         Kind           : Library_Graph_Edge_Kind);
+         New_Kind       : Library_Graph_Edge_Kind);
       --  This is called by Add_Edge in the case where there is already a
-      --  Pred-->Succ edge, to assert that the new Kind is appropriate. Raises
+      --  Pred-->Succ edge, to assert that the New_Kind is appropriate. Raises
       --  Program_Error if a bug is detected. The purpose is to prevent bugs
       --  where calling Add_Edge in different orders produces different output.
 
@@ -1781,50 +1781,45 @@ package body Bindo.Graphs is
         (G              : Library_Graph;
          Pred           : Library_Graph_Vertex_Id;
          Succ           : Library_Graph_Vertex_Id;
-         Kind           : Library_Graph_Edge_Kind)
+         New_Kind       : Library_Graph_Edge_Kind)
       is
          Old_Edge : constant Library_Graph_Edge_Id :=
            Find_Edge (G, Pred, Succ);
-         Attributes : constant Library_Graph_Edge_Attributes :=
-           Get_LGE_Attributes (G, Old_Edge);
+         Old_Kind : constant Library_Graph_Edge_Kind :=
+           Get_LGE_Attributes (G, Old_Edge).Kind;
          OK : Boolean;
       begin
-         case Kind is
-            --  We call Add_Edge with Body_Before_Spec_Edge twice -- once
-            --  for  the spec and once for the body, but no other Kind can
-            --  be spec-->body.
-
-            when Body_Before_Spec_Edge =>
-               if True then
-                  --  ????Disable this part of the assertion for now
-                  OK := True;
-               else
-                  OK := Attributes.Kind = Body_Before_Spec_Edge;
-               end if;
-
-            --  Spec_Before_Body_Edge comes first
-
+         case New_Kind is
             when Spec_Before_Body_Edge =>
                OK := False;
-
-            --  With clauses and forced edges come after Spec_Before_Body_Edge
+               --  Spec_Before_Body_Edge comes first, and there is never more
+               --  than one Spec_Before_Body_Edge for a given unit, so we can't
+               --  have a preexisting edge in the Spec_Before_Body_Edge case.
 
             when With_Edge | Elaborate_Edge | Elaborate_All_Edge
-              | Forced_Edge =>
-               OK := Attributes.Kind <= Kind;
+              | Forced_Edge | Invocation_Edge =>
+               OK := Old_Kind <= New_Kind;
+               --  These edges are created in the order of the enumeration
+               --  type, and there can be duplicates; hence "<=".
 
-            --  Invocation_Edge can come after anything, including another
-            --  Invocation_Edge.
+            when Body_Before_Spec_Edge =>
+               OK := Old_Kind = Body_Before_Spec_Edge
+               --  We call Add_Edge with Body_Before_Spec_Edge twice -- once
+               --  for the spec and once for the body.
 
-            when Invocation_Edge =>
-               OK := True;
+                 or else Old_Kind = Forced_Edge
+                 or else Old_Kind = Invocation_Edge;
+               --  The old one can be Forced_Edge or Invocation_Edge, which
+               --  necessarily results in an elaboration cycle (in the static
+               --  model), but this assertion happens before cycle detection,
+               --  so we need to allow these cases.
 
             when No_Edge =>
                OK := False;
          end case;
 
          if not OK then
-            raise Program_Error with Kind'Img & "-->" & Attributes.Kind'Img;
+            raise Program_Error with Old_Kind'Img & "-->" & New_Kind'Img;
          end if;
       end Add_Edge_Kind_Check;
 

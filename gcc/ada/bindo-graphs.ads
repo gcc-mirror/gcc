@@ -702,28 +702,27 @@ package Bindo.Graphs is
 
          No_Cycle_Kind);
 
-      --  The following type represents the various kinds of library edges.
-      --  The order is important here, and roughly corresponds to the order
-      --  in which edges are added to the graph. See Add_Edge_Kind_Check for
-      --  details.
+      --  The following type represents the various kinds of library edges. The
+      --  order is important here, and corresponds to the order in which edges
+      --  are added to the graph. See Add_Edge_Kind_Check for details. If
+      --  changes are made such that new edge kinds are added or similar, we
+      --  need to make sure this type matches the code in Add_Edge_Kind_Check,
+      --  and Add_Edge_Kind_Check matches the order of edge adding. Likewise,
+      --  if the edge-adding order changes, we need consistency between this
+      --  enumeration type, the edge-adding order, and Add_Edge_Kind_Check.
 
       type Library_Graph_Edge_Kind is
-        (Body_Before_Spec_Edge,
-         --  Successor denotes spec, Predecessor denotes a body. This is a
-         --  special edge kind used only during the discovery of components.
-         --  Note that a body can never be elaborated before its spec.
-
-         Spec_Before_Body_Edge,
+        (Spec_Before_Body_Edge,
          --  Successor denotes a body, Predecessor denotes a spec
-
-         With_Edge,
-         --  Successor withs Predecessor
 
          Elaborate_Edge,
          --  Successor withs Predecessor, and has pragma Elaborate for it
 
          Elaborate_All_Edge,
          --  Successor withs Predecessor, and has pragma Elaborate_All for it
+
+         With_Edge,
+         --  Successor withs Predecessor
 
          Forced_Edge,
          --  Successor is forced to with Predecessor by virtue of an existing
@@ -732,6 +731,11 @@ package Bindo.Graphs is
          Invocation_Edge,
          --  An invocation construct in unit Successor invokes a target in unit
          --  Predecessor.
+
+         Body_Before_Spec_Edge,
+         --  Successor denotes spec, Predecessor denotes a body. This is a
+         --  special edge kind used only during the discovery of components.
+         --  Note that a body can never be elaborated before its spec.
 
          No_Edge);
 
