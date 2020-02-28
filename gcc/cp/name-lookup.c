@@ -3556,6 +3556,10 @@ check_mergeable_decl (merge_match kind, tree decl, tree ovl,
     gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 			 && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
 
+  unsigned ref_q = REF_QUAL_NONE;
+  if (args && TREE_CONSTANT (args))
+    ref_q = TREE_STATIC (args) ? REF_QUAL_RVALUE : REF_QUAL_LVALUE;
+
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
       gcc_assert (kind == MM_class_scope || !iter.using_p ());
@@ -3595,30 +3599,30 @@ check_mergeable_decl (merge_match kind, tree decl, tree ovl,
 
 	case FUNCTION_DECL:
 	  // FIXME: Perhaps simply !null ret?
-	  // FIXME: Compare constraints
-	  if (TREE_TYPE (m_inner)
-	      && ((d_inner == decl
-		   && !IDENTIFIER_CONV_OP_P (DECL_NAME (d_inner)))
-		  || same_type_p (ret, TREE_TYPE (TREE_TYPE (m_inner))))
-	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (m_inner))))
-	    {
-	      tree m_reqs = get_constraints (m_inner);
-	      if (m_reqs)
-		{
-		  if (cxx_dialect < cxx2a)
-		    m_reqs = CI_ASSOCIATED_CONSTRAINTS (m_reqs);
-		  else
-		    {
-		      m_reqs = CI_DECLARATOR_REQS (m_reqs);
-		      if (!m_reqs != !reqs)
-			break;
-		      m_reqs = maybe_substitute_reqs_for (m_reqs, m_inner);
-		    }
-		}
+	  if (tree m_type = TREE_TYPE (m_inner))
+	    if (((d_inner == decl
+		  && !IDENTIFIER_CONV_OP_P (DECL_NAME (d_inner)))
+		 || same_type_p (ret, TREE_TYPE (m_type)))
+		&& type_memfn_rqual (m_type) == ref_q
+		&& compparms (args, TYPE_ARG_TYPES (m_type)))
+	      {
+		tree m_reqs = get_constraints (m_inner);
+		if (m_reqs)
+		  {
+		    if (cxx_dialect < cxx2a)
+		      m_reqs = CI_ASSOCIATED_CONSTRAINTS (m_reqs);
+		    else
+		      {
+			m_reqs = CI_DECLARATOR_REQS (m_reqs);
+			if (!m_reqs != !reqs)
+			  break;
+			m_reqs = maybe_substitute_reqs_for (m_reqs, m_inner);
+		      }
+		  }
 
-	      if (cp_tree_equal (m_reqs, reqs))
-		return match;
-	    }
+		if (cp_tree_equal (m_reqs, reqs))
+		  return match;
+	      }
 	  break;
 
 	case TYPE_DECL:
@@ -4049,7 +4053,16 @@ mergeable_class_member (tree decl, tree klass, tree name,
 	gcc_checking_assert (IDENTIFIER_CONV_OP_P (name)
 			     == (name == conv_op_identifier));
 
-	if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+	if (name == as_base_identifier)
+	  {
+	    // FIXME: Perhaps just push this into the member vector?
+	    found = CLASSTYPE_AS_BASE (klass);
+	    if (!found || found == klass)
+	      found = NULL_TREE;
+	    else
+	      found = TYPE_NAME (found);
+	  }
+	else if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
 	  found = member_vec_binary_search (member_vec, name);
 	else
 	  // FIXME: As mentioned elsewhere, perhaps we should force a member

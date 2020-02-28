@@ -1,5 +1,14 @@
 2020-02-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_(in,out)::fn_arg_types): Serialize ref
+	parmness.
+	(trees_out::key_mergeable): Adjust.
+	* name-lookup.c (check_mergeable_decl): Check ref parmness.
+	(mergeable_class_member): __as_base not found via name lookup.
+	gcc/testsuite/
+	* g++.dg/modules/merge-15{,_[ab]}.[hHC]: New.
+
 	Merge master 9d2d283367a407c1ba9ecdb8590f9295828e25f8
 
 2020-02-27  Nathan Sidwell  <nathan@acm.org>

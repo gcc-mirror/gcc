@@ -8427,10 +8427,6 @@ trees_out::type_node (tree type)
 	  tree_node_bools (type);
       break;
 
-    case FUNCTION_TYPE:
-      tree_node (TYPE_ARG_TYPES (type));
-      break;
-
     case INTEGER_TYPE:
       if (TREE_TYPE (type))
 	{
@@ -8452,8 +8448,18 @@ trees_out::type_node (tree type)
       break;
 
     case METHOD_TYPE:
-      tree_node (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))));
-      tree_node (TREE_CHAIN (TYPE_ARG_TYPES (type)));
+    case FUNCTION_TYPE:
+      {
+	gcc_checking_assert (type_memfn_rqual (type) == REF_QUAL_NONE);
+
+	tree arg_types = TYPE_ARG_TYPES (type);
+	if (TREE_CODE (type) == METHOD_TYPE)
+	  {
+	    tree_node (TREE_TYPE (TREE_VALUE (arg_types)));
+	    arg_types = TREE_CHAIN (arg_types);
+	  }
+	tree_node (arg_types);
+      }
       break;
 
     case OFFSET_TYPE:
@@ -8953,23 +8959,20 @@ trees_in::tree_node ()
 	    break;
 
 	  case FUNCTION_TYPE:
+	  case METHOD_TYPE:
 	    {
+	      tree klass =  code == METHOD_TYPE ? tree_node () : NULL_TREE;
 	      tree args = tree_node ();
 	      if (!get_overrun ())
-		res = build_function_type (res, args);
+		{
+		  if (klass)
+		    res = build_method_type_directly (klass, res, args);
+		  else
+		    res = build_function_type (res, args);
+		}
 	    }
 	    break;
 
-	  case METHOD_TYPE:
-	    {
-	      tree klass = tree_node ();
-	      tree args = tree_node ();
-	      
-	      if (!get_overrun ())
-		res = build_method_type_directly (klass, res, args);
-	    }
-	    break;
-	    
 	  case OFFSET_TYPE:
 	    {
 	      tree base = tree_node ();
@@ -9569,11 +9572,15 @@ trees_in::tpl_header (tree tpl, unsigned *tpl_levels)
 /* PARMS is a LIST whose TREE_VALUE is the type of the parm.  */
 
 void
-trees_out::fn_arg_types (tree arg_types)
+trees_out::fn_arg_types (tree fn_type)
 {
-  for (; arg_types; arg_types = TREE_CHAIN (arg_types))
+  for (tree arg_types = TYPE_ARG_TYPES (fn_type);
+       arg_types; arg_types = TREE_CHAIN (arg_types))
     tree_node (TREE_VALUE (arg_types));
   tree_node (NULL_TREE);
+
+  if (streaming_p ())
+    u (type_memfn_rqual (fn_type));
 }
 
 tree
@@ -9586,6 +9593,19 @@ trees_in::fn_arg_types ()
     {
       *arg_ptr = tree_cons (NULL_TREE, arg, NULL_TREE);
       arg_ptr = &TREE_CHAIN (*arg_ptr);
+    }
+
+  unsigned ref_q = u ();
+  if (ref_q != REF_QUAL_NONE)
+    {
+      if (!arg_types)
+	set_overrun ();
+      else
+	{
+	  TREE_CONSTANT (arg_types) = true;
+	  if (ref_q == REF_QUAL_RVALUE)
+	    TREE_STATIC (arg_types) = true;
+	}
     }
 
   return arg_types;
@@ -10010,7 +10030,8 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	{
 	  /* Functions are distinguished by parameter types.  */
 	  tree fn_type = TREE_TYPE (inner);
-	  fn_arg_types (TYPE_ARG_TYPES (fn_type));
+
+	  fn_arg_types (fn_type);
 
 	  if (decl != inner)
 	    {
