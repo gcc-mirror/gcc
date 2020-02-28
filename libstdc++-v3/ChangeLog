@@ -1,5 +1,8 @@
 2020-02-28  Patrick Palka  <ppalka@redhat.com>
 
+	* include/std/ranges (reverse_view::_S_needs_cached_begin): Set to false
+	whenever the underlying range models common_range.
+
 	* include/std/ranges (__detail::_CachedPosition): New struct.
 	(views::filter_view::_S_needs_cached_begin): New member variable.
 	(views::filter_view::_M_cached_begin): New member variable.

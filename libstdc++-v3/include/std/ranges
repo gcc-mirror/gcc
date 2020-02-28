@@ -3177,7 +3177,8 @@ namespace views
     private:
       _Vp _M_base = _Vp();
 
-      static constexpr bool _S_needs_cached_begin = !random_access_range<_Vp>;
+      static constexpr bool _S_needs_cached_begin
+	= !common_range<_Vp> && !random_access_range<_Vp>;
       [[no_unique_address]]
 	__detail::__maybe_empty_t<_S_needs_cached_begin,
 				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
