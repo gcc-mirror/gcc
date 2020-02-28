@@ -1,3 +1,8 @@
+2020-02-28  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_user_type_conversion_1): Don't look at the second
+	conversion of a non-viable candidate.
+
 2020-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	P1937R2 - Fixing inconsistencies between const{expr,eval} functions

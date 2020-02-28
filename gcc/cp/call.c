@@ -4083,6 +4083,10 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
       for (cand = candidates; cand != old_candidates; cand = cand->next)
 	{
+	  if (cand->viable == 0)
+	    /* Already rejected, don't change to -1.  */
+	    continue;
+
 	  tree rettype = TREE_TYPE (TREE_TYPE (cand->fn));
 	  conversion *ics
 	    = implicit_conversion (totype,
