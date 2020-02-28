@@ -7068,26 +7068,6 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
 	       || cxx_dialect >= cxx17)
 	{
-	  /* Calling build_converted_constant_expr might create a call to
-	     a conversion function with a value-dependent argument, which
-	     could invoke taking the address of a temporary representing
-	     the result of the conversion.  */
-	  if (!same_type_ignoring_top_level_qualifiers_p (type, expr_type)
-	      && ((COMPOUND_LITERAL_P (expr)
-		   && CONSTRUCTOR_IS_DEPENDENT (expr)
-		   && MAYBE_CLASS_TYPE_P (expr_type)
-		   && TYPE_HAS_CONVERSION (expr_type))
-		  /* Similarly, converting e.g. an integer to a class
-		     involves a constructor call.  convert_like would
-		     create a TARGET_EXPR, but in a template we can't
-		     use AGGR_INIT_EXPR, and the TARGET_EXPR would lead
-		     to a bogus error.  */
-		  || (val_dep_p && MAYBE_CLASS_TYPE_P (type))))
-	    {
-	      expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
-	      IMPLICIT_CONV_EXPR_NONTYPE_ARG (expr) = true;
-	      return expr;
-	    }
 	  /* C++17: A template-argument for a non-type template-parameter shall
 	     be a converted constant expression (8.20) of the type of the
 	     template-parameter.  */
@@ -7096,6 +7076,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    /* Make sure we return NULL_TREE only if we have really issued
 	       an error, as described above.  */
 	    return (complain & tf_error) ? NULL_TREE : error_mark_node;
+	  else if (TREE_CODE (expr) == IMPLICIT_CONV_EXPR)
+	    {
+	      IMPLICIT_CONV_EXPR_NONTYPE_ARG (expr) = true;
+	      return expr;
+	    }
 	  expr = maybe_constant_value (expr, NULL_TREE,
 				       /*manifestly_const_eval=*/true);
 	  expr = convert_from_reference (expr);

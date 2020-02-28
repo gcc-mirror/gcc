@@ -1,3 +1,16 @@
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92031 - bogus taking address of rvalue error.
+	PR c++/91465 - ICE with template codes in check_narrowing.
+	PR c++/93870 - wrong error when converting template non-type arg.
+	PR c++/94068 - ICE with template codes in check_narrowing.
+	* g++.dg/cpp0x/conv-tmpl2.C: New test.
+	* g++.dg/cpp0x/conv-tmpl3.C: New test.
+	* g++.dg/cpp0x/conv-tmpl4.C: New test.
+	* g++.dg/cpp0x/conv-tmpl5.C: New test.
+	* g++.dg/cpp0x/conv-tmpl6.C: New test.
+	* g++.dg/cpp1z/conv-tmpl1.C: New test.
+
 2020-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94067

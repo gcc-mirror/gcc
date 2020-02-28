@@ -7377,6 +7377,16 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   if (issue_conversion_warnings && (complain & tf_warning))
     conversion_null_warnings (totype, expr, fn, argnum);
 
+  /* Creating &TARGET_EXPR<> in a template breaks when substituting,
+     and creating a CALL_EXPR in a template breaks in finish_call_expr
+     so use an IMPLICIT_CONV_EXPR for this conversion.  We would have
+     created such codes e.g. when calling a user-defined conversion
+     function.  */
+  if (processing_template_decl
+      && convs->kind != ck_identity
+      && (CLASS_TYPE_P (totype) || CLASS_TYPE_P (TREE_TYPE (expr))))
+    return build1 (IMPLICIT_CONV_EXPR, totype, expr);
+
   switch (convs->kind)
     {
     case ck_user:
@@ -7763,6 +7773,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		expr = convert_bitfield_to_declared_type (expr);
 		expr = fold_convert (type, expr);
 	      }
+
+	    /* Creating &TARGET_EXPR<> in a template would break when
+	       tsubsting the expression, so use an IMPLICIT_CONV_EXPR
+	       instead.  This can happen even when there's no class
+	       involved, e.g., when converting an integer to a reference
+	       type.  */
+	    if (processing_template_decl)
+	      return build1 (IMPLICIT_CONV_EXPR, totype, expr);
 	    expr = build_target_expr_with_type (expr, type, complain);
 	  }
 
