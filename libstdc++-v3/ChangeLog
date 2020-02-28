@@ -1,3 +1,8 @@
+2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: Run
+	test instead of just compiling it.
+
 2020-02-28  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (reverse_view::_S_needs_cached_begin): Set to false
