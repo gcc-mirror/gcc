@@ -2250,6 +2250,11 @@ package body Sem_Ch9 is
 
          Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
+         --  Propagate predicate-related attributes from the private type to
+         --  the protected type.
+
+         Propagate_Predicate_Attributes (T, From_Typ => Def_Id);
+
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.
 
@@ -3245,6 +3250,11 @@ package body Sem_Ch9 is
          --  task type.
 
          Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
+
+         --  Propagate predicate-related attributes from the private type to
+         --  task type.
+
+         Propagate_Predicate_Attributes (T, From_Typ => Def_Id);
 
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.

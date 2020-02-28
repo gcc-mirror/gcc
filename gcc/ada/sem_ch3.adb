@@ -2332,7 +2332,8 @@ package body Sem_Ch3 is
                --  potential errors.
 
                elsif Decls = Private_Declarations (Context)
-                 and then not Is_Private_Type (Typ)
+                 and then (not Is_Private_Type (Typ)
+                            or else Present (Underlying_Full_View (Typ)))
                  and then Has_Private_Declaration (Typ)
                  and then Has_Invariants (Typ)
                then
@@ -7929,7 +7930,7 @@ package body Sem_Ch3 is
          --  completion, the derived private type being built is a full view
          --  and the full derivation can only be its underlying full view.
 
-         --  ??? If the parent is untagged private and its completion is
+         --  ??? If the parent type is untagged private and its completion is
          --  tagged, this mechanism will not work because we cannot derive from
          --  the tagged full view unless we have an extension.
 
@@ -12346,15 +12347,7 @@ package body Sem_Ch3 is
 
          --  Propagate predicates
 
-         if Has_Predicates (Full_Base) then
-            Set_Has_Predicates (Full);
-
-            if Present (Predicate_Function (Full_Base))
-              and then No (Predicate_Function (Full))
-            then
-               Set_Predicate_Function (Full, Predicate_Function (Full_Base));
-            end if;
-         end if;
+         Propagate_Predicate_Attributes (Full, Full_Base);
       end if;
 
       --  It is unsafe to share the bounds of a scalar type, because the Itype
@@ -12499,15 +12492,7 @@ package body Sem_Ch3 is
       --  of the type or at the end of the visible part, and we must avoid
       --  generating them twice.
 
-      if Has_Predicates (Priv) then
-         Set_Has_Predicates (Full);
-
-         if Present (Predicate_Function (Priv))
-           and then No (Predicate_Function (Full))
-         then
-            Set_Predicate_Function (Full, Predicate_Function (Priv));
-         end if;
-      end if;
+      Propagate_Predicate_Attributes (Full, Priv);
 
       if Has_Delayed_Aspects (Priv) then
          Set_Has_Delayed_Aspects (Full);
@@ -20801,16 +20786,32 @@ package body Sem_Ch3 is
       end if;
 
       --  Propagate Default_Initial_Condition-related attributes from the
-      --  partial view to the full view and its base type.
+      --  partial view to the full view.
 
       Propagate_DIC_Attributes (Full_T, From_Typ => Priv_T);
-      Propagate_DIC_Attributes (Base_Type (Full_T), From_Typ => Priv_T);
+
+      --  And to the underlying full view, if any
+
+      if Is_Private_Type (Full_T)
+        and then Present (Underlying_Full_View (Full_T))
+      then
+         Propagate_DIC_Attributes
+           (Underlying_Full_View (Full_T), From_Typ => Priv_T);
+      end if;
 
       --  Propagate invariant-related attributes from the partial view to the
-      --  full view and its base type.
+      --  full view.
 
       Propagate_Invariant_Attributes (Full_T, From_Typ => Priv_T);
-      Propagate_Invariant_Attributes (Base_Type (Full_T), From_Typ => Priv_T);
+
+      --  And to the underlying full view, if any
+
+      if Is_Private_Type (Full_T)
+        and then Present (Underlying_Full_View (Full_T))
+      then
+         Propagate_Invariant_Attributes
+           (Underlying_Full_View (Full_T), From_Typ => Priv_T);
+      end if;
 
       --  AI12-0041: Detect an attempt to inherit a class-wide type invariant
       --  in the full view without advertising the inheritance in the partial
@@ -20841,12 +20842,13 @@ package body Sem_Ch3 is
       --  view cannot be frozen yet, and the predicate function has not been
       --  built. Still it is a cheap check and seems safer to make it.
 
-      if Has_Predicates (Priv_T) then
-         Set_Has_Predicates (Full_T);
+      Propagate_Predicate_Attributes (Full_T, Priv_T);
 
-         if Present (Predicate_Function (Priv_T)) then
-            Set_Predicate_Function (Full_T, Predicate_Function (Priv_T));
-         end if;
+      if Is_Private_Type (Full_T)
+        and then Present (Underlying_Full_View (Full_T))
+      then
+         Propagate_Predicate_Attributes
+           (Underlying_Full_View (Full_T), Priv_T);
       end if;
 
    <<Leave>>

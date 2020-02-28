@@ -1848,12 +1848,16 @@ package Einfo is
 
 --    Has_Own_DIC (Flag3) [base type only]
 --       Defined in all type entities. Set for a private type and its full view
---       when the type is subject to pragma Default_Initial_Condition.
+--       (and its underlying full view, if the full view is itsef private) when
+--       the type is subject to pragma Default_Initial_Condition.
 
 --    Has_Own_Invariants (Flag232) [base type only]
 --       Defined in all type entities. Set on any type that defines at least
---       one invariant of its own. The flag is also set on the full view of a
---       private type for completeness.
+--       one invariant of its own.
+
+--       Note: this flag is set on both partial and full view of types to which
+--       an Invariant pragma or aspect applies, and on the underlying full view
+--       if the full view is private.
 
 --    Has_Partial_Visible_Refinement (Flag296)
 --       Defined in E_Abstract_State entities. Set when a state has at least
@@ -1973,7 +1977,8 @@ package Einfo is
 --       Predicate aspect from its parent or progenitor types.
 --
 --       Note: this flag is set on both partial and full view of types to which
---       a Predicate pragma or aspect applies.
+--       a Predicate pragma or aspect applies, and on the underlying full view
+--       if the full view is private.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Defined in all type entities. Set if at least one primitive operation
