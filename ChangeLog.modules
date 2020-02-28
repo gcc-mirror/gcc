@@ -1,6 +1,13 @@
 2020-02-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct note_def_cache_hasher): New type.
+	(note_defs): Use it, set GTY((cache)).
+	(trees_{in,out}::assert_definition): Adjust.
+	(module_state::write, init_module_processing): Adjust note_defs
+	construction.
+
+	gcc/cp/
 	* module.cc (c_parse_final_c_cleanups): Don't complain about
 	unsynthesized defaulted members in a header unit, and pick a
 	privileged clone to complain about when we do.

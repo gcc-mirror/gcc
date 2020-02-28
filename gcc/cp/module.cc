@@ -3254,50 +3254,6 @@ slurping::~slurping ()
   close ();
 }
 
-#if CHECKING_P
-/* We should stream each definition at most once.  */
-static hash_set<tree> *note_defs;
-#endif
-
-void
-trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
-			     bool installing ATTRIBUTE_UNUSED)
-{
-#if CHECKING_P
-  if (installing)
-    {
-      /* We must be inserting for the first time.  */
-      bool existed = note_defs->add (decl);
-      gcc_assert (!existed);
-    }
-  else
-    /* If this is not the mergeable entity, it should not be in the
-       table.  If it is a non-global-module mergeable entity, it
-       should be in the table.  Global module entities could have been
-       defined textually in the current TU and so might or might not
-       be present.  */
-    gcc_assert (!is_duplicate (decl)
-		? !note_defs->contains (decl)
-		: (!DECL_LANG_SPECIFIC (decl)
-		   || !DECL_MODULE_PURVIEW_P (decl)
-		   || note_defs->contains (decl)));
-
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    gcc_assert (!note_defs->contains (DECL_TEMPLATE_RESULT (decl)));
-#endif
-}
-
-void
-trees_out::assert_definition (tree decl ATTRIBUTE_UNUSED)
-{
-#if CHECKING_P
-  bool existed = note_defs->add (decl);
-  gcc_assert (!existed);
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    gcc_assert (!note_defs->contains (DECL_TEMPLATE_RESULT (decl)));
-#endif
-}
-
 /* Information about location maps used during writing.  */
 
 struct location_map_info {
@@ -4471,6 +4427,73 @@ dumper::operator () (const char *format, ...)
       fputc ('\n', dumps->stream);
     }
   return true;
+}
+
+#if CHECKING_P
+struct note_def_cache_hasher : ggc_cache_ptr_hash<tree_node>
+{
+  static int keep_cache_entry (tree t)
+  {
+    if (ggc_marked_p (t))
+      return -1;
+
+    unsigned n = dump.push (NULL);
+    /* This might or might not be an error.  We should note its
+       dropping whichever.  */
+    dump () && dump ("Dropping %N from note_defs table", t);
+    dump.pop (n);
+
+    return 0;
+  }
+};
+
+/* We should stream each definition at most once.
+   This needs to be a cache because there are cases where a definition
+   ends up being not retained, and we need to drop those so we don't
+   get confused if memory is reallocated.  */
+typedef hash_table<note_def_cache_hasher> note_defs_table_t;
+static GTY((cache)) note_defs_table_t *note_defs;
+#endif
+
+void
+trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
+			     bool installing ATTRIBUTE_UNUSED)
+{
+#if CHECKING_P
+  tree *slot = note_defs->find_slot (decl, installing ? INSERT : NO_INSERT);
+  if (installing)
+    {
+      /* We must be inserting for the first time.  */
+      gcc_assert (!*slot);
+      *slot = decl;
+    }
+  else
+    /* If this is not the mergeable entity, it should not be in the
+       table.  If it is a non-global-module mergeable entity, it
+       should be in the table.  Global module entities could have been
+       defined textually in the current TU and so might or might not
+       be present.  */
+    gcc_assert (!is_duplicate (decl)
+		? !slot
+		: (!DECL_LANG_SPECIFIC (decl)
+		   || !DECL_MODULE_PURVIEW_P (decl)
+		   || slot));
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    gcc_assert (!note_defs->find_slot (DECL_TEMPLATE_RESULT (decl), NO_INSERT));
+#endif
+}
+
+void
+trees_out::assert_definition (tree decl ATTRIBUTE_UNUSED)
+{
+#if CHECKING_P
+  tree *slot = note_defs->find_slot (decl, INSERT);
+  gcc_assert (!*slot);
+  *slot = decl;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    gcc_assert (!note_defs->find_slot (DECL_TEMPLATE_RESULT (decl), NO_INSERT));
+#endif
 }
 
 /********************************************************************/
@@ -16955,12 +16978,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
     }
 
 #if CHECKING_P
-  // FIXME: Do we need to clear this? why would we write out a
-  // definition we read in?
   /* We're done verifying at-most once reading, reset to verify
      at-most once writing.  */
-  delete note_defs;
-  note_defs = new hash_set<tree> (1000);
+  note_defs = note_defs_table_t::create_ggc (1000);
 #endif
 
   /* Determine Strongy Connected Components.  */
@@ -18771,7 +18791,7 @@ init_module_processing (cpp_reader *reader)
     }
 
 #if CHECKING_P
-  note_defs = new hash_set<tree> (1000);
+  note_defs = note_defs_table_t::create_ggc (1000);
 #endif
 
   if (flag_header_unit && cpp_get_options (reader)->preprocessed)
@@ -18921,7 +18941,6 @@ finish_module_processing (cpp_reader *reader)
   module_state_config::release ();
 
 #if CHECKING_P
-  delete note_defs;
   note_defs = NULL;
 #endif
 
