@@ -1,5 +1,11 @@
 2020-02-28  Patrick Palka  <ppalka@redhat.com>
 
+	PR libstdc++/93972
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):
+	Fix condition for when to use memcmp, making it consistent with the
+	corresponding condition used in std::lexicographical_compare.
+	* testsuite/25_algorithms/lexicographical_compare/93972.cc: New test.
+
 	* testsuite/26_numerics/headers/numeric/synopsis.cc: Add signatures for
 	functions introduced in C++11, C++17 and C++2a.  Add 'constexpr' to
 	existing signatures for C++2a.

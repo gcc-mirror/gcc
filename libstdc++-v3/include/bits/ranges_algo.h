@@ -3466,9 +3466,13 @@ namespace ranges
 	      {
 		using _ValueType1 = iter_value_t<_Iter1>;
 		using _ValueType2 = iter_value_t<_Iter2>;
+		// This condition is consistent with the one in
+		// __lexicographical_compare_aux in <bits/stl_algobase.h>.
 		constexpr bool __use_memcmp
-		  = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
-		     && is_same_v<_ValueType1, _ValueType2>
+		  = (__is_byte<_ValueType1>::__value
+		     && __is_byte<_ValueType2>::__value
+		     && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
+		     && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
 		     && is_pointer_v<_Iter1>
 		     && is_pointer_v<_Iter2>
 		     && (is_same_v<_Comp, ranges::less>
