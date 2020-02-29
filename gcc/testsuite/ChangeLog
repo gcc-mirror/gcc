@@ -1,5 +1,7 @@
 2020-02-29  Jeff Law  <law@redhat.com>
 
+	* gcc.target/or1k/return-2.c: Update expected output.
+
 	* gcc.target/xstormy16/sfr/06_sfrw_to_var.c: Update expected output.
 
 2020-02-28  Iain Sandoe  <iain@sandoe.co.uk>
