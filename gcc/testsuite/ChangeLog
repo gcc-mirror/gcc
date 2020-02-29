@@ -1,5 +1,14 @@
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
+	* g++.dg/pr90981.C: Skip on hppa*-*-hpux*.
+	* gcc.dg/gnu2x-attrs-1.c: Add dg-require-alias.
+	* gcc.dg/pr90756.c: Add -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/torture/20190327-1.c: Likewise.
+	* gcc.dg/spellcheck-options-21.c: Skip on 32-bit hppa*-*-hpux*.
+	* gcc.dg/strlenopt-68.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/torture/pr90020.c: Likewise.
+	* gcc.dg/ucnid-16-utf8.c: Add dg-require-iconv "latin1".
+
 	PR ipa/92548
 	* gcc.dg/ipa/ipa-sra-12.c: xfail parameter split test on 32-bit
 	hppa*-*-hpux*.
