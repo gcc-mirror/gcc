@@ -1,5 +1,11 @@
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR ipa/92548
+	* gcc.dg/ipa/ipa-sra-12.c: xfail parameter split test on 32-bit
+	hppa*-*-hpux*.
+	* gcc.dg/ipa/ipa-sra-14.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-12.c: xfail adding extra caller test.
+
 	* g++.dg/ext/visibility/ref-temp1.C: Require visibility.
 	* gfortran.dg/pr90988_4.f: Likewise.
 	* gfortran.dg/pr91372.f90: Likewise.

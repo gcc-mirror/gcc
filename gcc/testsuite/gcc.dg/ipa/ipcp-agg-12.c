@@ -50,4 +50,4 @@ void entry2 (void)
 }
 
 
-/* { dg-final { scan-ipa-dump-times "adding an extra caller" 2 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "adding an extra caller" 2 "cp" { xfail { hppa*-*-hpux* && { ! lp64 } } } } } */
