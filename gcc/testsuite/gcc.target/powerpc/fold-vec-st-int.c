@@ -80,5 +80,5 @@ testst_cst7 (vector bool int vbi1, int i1, signed int * vsip)
 	return vec_st(vbi1, 36, vsip);
 }
 
-/* { dg-final { scan-assembler-times {\m(?:stvx|stxv|stxvx)\M} 14 } } */
+/* { dg-final { scan-assembler-times {\mstvx\M}  14 } } */
 

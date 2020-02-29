@@ -3,15 +3,6 @@
 	PR ada/91100
 	* gnat.dg/socket1.adb: Disable on hppa*-*-hpux*.
 
-2020-02-26  Peter Bergner  <bergner@linux.ibm.com>
-
-	PR target/93913
-	* gcc.target/powerpc/fold-vec-st-char.c (scan-assembler-times): Allow
-	stxv and stxvx instructions as well.
-	* gcc.target/powerpc/fold-vec-st-float.c: Likewise.
-	* gcc.target/powerpc/fold-vec-st-int.c: Likewise.
-	* gcc.target/powerpc/fold-vec-st-short.c: Likewise.
-
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93949

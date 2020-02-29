@@ -91,4 +91,4 @@ testst_cst7 (vector bool char vbc1, int i1, signed char * vscp)
 	return vec_st(vbc1, 36, vscp);
 }
 
-/* { dg-final { scan-assembler-times {\m(?:stvx|stxv|stxvx)\M} 14 } } */
+/* { dg-final { scan-assembler-times {\mstvx\M} 14 } } */
