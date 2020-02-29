@@ -1,3 +1,11 @@
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/17_intro/headers/c++1998/charset.cc: Skip on *-*-hpux*.
+	* testsuite/17_intro/headers/c++2011/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/charset.cc: Likewise.
+
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
