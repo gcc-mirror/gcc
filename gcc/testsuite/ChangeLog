@@ -1,3 +1,9 @@
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* /g++.dg/ext/visibility/ref-temp1.C: Require visibility.
+	* gfortran.dg/pr90988_4.f: Likewise.
+	* gfortran.dg/pr91372.f90: Likewise.
+
 2020-02-29  Jeff Law  <law@redhat.com>
 
 	* gcc.target/or1k/return-2.c: Update expected output.
