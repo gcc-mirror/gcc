@@ -1,5 +1,18 @@
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
+	* testsuite/30_threads/stop_token/stop_callback.cc: Add libatomic
+	option.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock-mt.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/invoke.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source/assign.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token/stop_possible.cc:
+	Likewise.
+
 	PR libstdc++/92906
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
 
