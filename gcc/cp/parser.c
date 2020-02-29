@@ -27716,8 +27716,8 @@ cp_parser_requirement_parameter_list (cp_parser *parser)
   if (!parens.require_open (parser))
     return error_mark_node;
 
-  tree parms
-    = cp_parser_parameter_declaration_clause (parser, CP_PARSER_FLAGS_NONE);
+  tree parms = (cp_parser_parameter_declaration_clause
+		(parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL));
 
   if (!parens.require_close (parser))
     return error_mark_node;

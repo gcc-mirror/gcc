@@ -1,3 +1,9 @@
+2020-02-28  Jeff Law  <law@redhat.com>
+
+	* config/v850/v850.h (STATIC_CHAIN_REGNUM): Change to r19.
+	* config/v850/v850.c (v850_asm_trampoline_template): Update
+	accordingly.
+
 2020-02-28  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/93937

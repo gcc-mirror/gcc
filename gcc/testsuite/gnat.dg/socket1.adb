@@ -1,4 +1,4 @@
--- { dg-do run { target { ! "*-*-solaris2*" } } }
+-- { dg-do run { target { ! { hppa*-*-hpux* *-*-solaris2* } } } }
 
 with GNAT.Sockets; use GNAT.Sockets;
 procedure socket1 is

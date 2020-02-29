@@ -1,4 +1,47 @@
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/17_intro/headers/c++1998/charset.cc: Skip on *-*-hpux*.
+	* testsuite/17_intro/headers/c++2011/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/charset.cc: Likewise.
+
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	Add libatomic option.
+	* testsuite/30_threads/jthread/jthread.cc: Likewise.
+
+2020-02-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__find_if, __count_if, __is_permutation, std::is_permutation): Move...
+	* include/bits/stl_algobase.h: ...here.
+	* include/bits/hashtable_policy.h: Remove <bits/stl_algo.h> include.
+
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/30_threads/stop_token/stop_callback.cc: Add libatomic
+	option.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock-mt.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/invoke.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source/assign.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token/stop_possible.cc:
+	Likewise.
+
+	PR libstdc++/92906
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
 2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93972
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):
+	Fix condition for when to use memcmp, making it consistent with the
+	corresponding condition used in std::lexicographical_compare.
+	* testsuite/25_algorithms/lexicographical_compare/93972.cc: New test.
 
 	* testsuite/26_numerics/headers/numeric/synopsis.cc: Add signatures for
 	functions introduced in C++11, C++17 and C++2a.  Add 'constexpr' to

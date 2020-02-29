@@ -1,5 +1,6 @@
 // PR c++/91476
 // Test that hidden and internal visibility propagates to reference temps.
+// { dg-require-visibility "" }
 
 #define HIDDEN __attribute((visibility("hidden")))
 

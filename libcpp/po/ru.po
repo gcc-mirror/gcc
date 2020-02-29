@@ -2,13 +2,13 @@
 # Copyright (C) 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
-# Yuri Kozlov <yuray@komyakino.ru>, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
+# Yuri Kozlov <yuray@komyakino.ru>, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 9.1-b20190203\n"
+"Project-Id-Version: cpplib 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-02-07 22:33+0000\n"
-"PO-Revision-Date: 2019-02-06 18:46+0300\n"
+"PO-Revision-Date: 2020-02-29 09:20+0300\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
 "Language: ru\n"
@@ -91,7 +91,7 @@ msgstr "универсальный символ %.*s недопустим в н�
 #: charset.c:1149
 #, c-format
 msgid "%.*s is outside the UCS codespace"
-msgstr ""
+msgstr "%.*s находится вне пространства кодов UCS"
 
 #: charset.c:1194 charset.c:2113
 msgid "converting UCN to source character set"
@@ -102,14 +102,12 @@ msgid "converting UCN to execution character set"
 msgstr "преобразование UCN в набор символов среды выполнения"
 
 #: charset.c:1265
-#, fuzzy, c-format
-#| msgid "universal character %.*s is not valid in an identifier"
+#, c-format
 msgid "extended character %.*s is not valid in an identifier"
-msgstr "универсальный символ %.*s недопустим в идентификаторе"
+msgstr "расширенный символ %.*s недопустим в идентификаторе"
 
 #: charset.c:1282
-#, fuzzy, c-format
-#| msgid "universal character %.*s is not valid at the start of an identifier"
+#, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr "универсальный символ %.*s недопустим в начале идентификатора"
 
@@ -216,10 +214,9 @@ msgid "invalid preprocessing directive #%s"
 msgstr "неправильная препроцессорная директива #%s"
 
 #: directives.c:601
-#, fuzzy, c-format
-#| msgid "\"defined\" cannot be used as a macro name"
+#, c-format
 msgid "\"%s\" cannot be used as a macro name"
-msgstr "«defined» не может использоваться как имя макроса"
+msgstr "«%s» не может использоваться как имя макроса"
 
 #: directives.c:608
 #, c-format
@@ -257,7 +254,7 @@ msgstr "пустое имя файла в #%s"
 #: directives.c:838
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
-msgstr ""
+msgstr "глубина вложенности #include, равная %u, превышает максимальное значение %u (чтобы увеличить максимум, укажите -fmax-include-depth=ГЛУБИНА)"
 
 #: directives.c:883
 msgid "#include_next in primary source file"
@@ -482,10 +479,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "неверный суффикс «%.*s» в шестнадцатеричной плавающей константе"
 
 #: expr.c:749 expr.c:753
-#, fuzzy
-#| msgid "decimal float constants are a GCC extension"
 msgid "decimal float constants are a C2X feature"
-msgstr "десятичные плавающие константы являются расширением GCC"
+msgstr "десятичные плавающие константы являются расширением C2X"
 
 #: expr.c:772
 #, c-format
@@ -788,28 +783,24 @@ msgid "'##' cannot appear at either end of __VA_OPT__"
 msgstr "«##» не может указываться в конце __VA_OPT__"
 
 #: macro.c:364
-#, fuzzy, c-format
-#| msgid "%s in preprocessing directive"
+#, c-format
 msgid "\"%s\" used outside of preprocessing directive"
-msgstr "%s в препроцессорной директиве"
+msgstr "«%s» используется вне препроцессорной директивы"
 
 #: macro.c:374
-#, fuzzy, c-format
-#| msgid "missing '(' in expression"
+#, c-format
 msgid "missing '(' before \"%s\" operand"
-msgstr "отсутствующая «(» в выражении"
+msgstr "отсутствующая «(» перед операндом «%s»"
 
 #: macro.c:389
-#, fuzzy, c-format
-#| msgid "operator \"__has_include__\" requires a header string"
+#, c-format
 msgid "operator \"%s\" requires a header-name"
-msgstr "для оператора «__has_include__» требуется строка заголовка"
+msgstr "для оператора «%s» требуется строка заголовка"
 
 #: macro.c:406
-#, fuzzy, c-format
-#| msgid "missing ')' after \"defined\""
+#, c-format
 msgid "missing ')' after \"%s\" operand"
-msgstr "отсутствует «)» после «defined»"
+msgstr "отсутствует «)» после операнда «%s»"
 
 #: macro.c:426
 #, c-format

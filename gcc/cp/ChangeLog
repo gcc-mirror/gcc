@@ -1,5 +1,9 @@
 2020-02-28  Jason Merrill  <jason@redhat.com>
 
+	Implement P2092R0, Disambiguating Nested-Requirements
+	* parser.c (cp_parser_requirement_parameter_list): Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL.
+
 	* call.c (build_user_type_conversion_1): Don't look at the second
 	conversion of a non-viable candidate.
 

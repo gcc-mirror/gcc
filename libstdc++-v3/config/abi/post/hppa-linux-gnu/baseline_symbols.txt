@@ -3005,12 +3005,18 @@ FUNC:_ZNSt3_V214error_categoryD1Ev@@GLIBCXX_3.4.21
 FUNC:_ZNSt3_V214error_categoryD2Ev@@GLIBCXX_3.4.21
 FUNC:_ZNSt3_V215system_categoryEv@@GLIBCXX_3.4.21
 FUNC:_ZNSt3_V216generic_categoryEv@@GLIBCXX_3.4.21
+FUNC:_ZNSt3pmr15memory_resourceD0Ev@@GLIBCXX_3.4.28
+FUNC:_ZNSt3pmr15memory_resourceD1Ev@@GLIBCXX_3.4.28
+FUNC:_ZNSt3pmr15memory_resourceD2Ev@@GLIBCXX_3.4.28
 FUNC:_ZNSt3pmr19new_delete_resourceEv@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr20get_default_resourceEv@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr20null_memory_resourceEv@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr20set_default_resourceEPNS_15memory_resourceE@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr25monotonic_buffer_resource13_M_new_bufferEjj@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr25monotonic_buffer_resource18_M_release_buffersEv@@GLIBCXX_3.4.26
+FUNC:_ZNSt3pmr25monotonic_buffer_resourceD0Ev@@GLIBCXX_3.4.28
+FUNC:_ZNSt3pmr25monotonic_buffer_resourceD1Ev@@GLIBCXX_3.4.28
+FUNC:_ZNSt3pmr25monotonic_buffer_resourceD2Ev@@GLIBCXX_3.4.28
 FUNC:_ZNSt3pmr26synchronized_pool_resource11do_allocateEjj@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr26synchronized_pool_resource13do_deallocateEPvjj@@GLIBCXX_3.4.26
 FUNC:_ZNSt3pmr26synchronized_pool_resource7releaseEv@@GLIBCXX_3.4.26
@@ -4461,6 +4467,7 @@ OBJECT:12:_ZTIN9__gnu_cxx18stdio_sync_filebufIwSt11char_traitsIwEEE@@GLIBCXX_3.4
 OBJECT:12:_ZTINSt10filesystem16filesystem_errorE@@GLIBCXX_3.4.26
 OBJECT:12:_ZTINSt10filesystem7__cxx1116filesystem_errorE@@GLIBCXX_3.4.26
 OBJECT:12:_ZTINSt13__future_base19_Async_state_commonE@@GLIBCXX_3.4.17
+OBJECT:12:_ZTINSt3pmr25monotonic_buffer_resourceE@@GLIBCXX_3.4.28
 OBJECT:12:_ZTINSt3pmr26synchronized_pool_resourceE@@GLIBCXX_3.4.26
 OBJECT:12:_ZTINSt3pmr28unsynchronized_pool_resourceE@@GLIBCXX_3.4.26
 OBJECT:12:_ZTINSt7__cxx1114collate_bynameIcEE@@GLIBCXX_3.4.21
@@ -4617,10 +4624,16 @@ OBJECT:15:_ZTSSt8numpunctIcE@@GLIBCXX_3.4
 OBJECT:15:_ZTSSt8numpunctIwE@@GLIBCXX_3.4
 OBJECT:16:_ZNSbIwSt11char_traitsIwESaIwEE4_Rep20_S_empty_rep_storageE@@GLIBCXX_3.4
 OBJECT:16:_ZNSs4_Rep20_S_empty_rep_storageE@@GLIBCXX_3.4
+OBJECT:16:_ZTIPDd@@CXXABI_1.3.4
+OBJECT:16:_ZTIPDe@@CXXABI_1.3.4
+OBJECT:16:_ZTIPDf@@CXXABI_1.3.4
 OBJECT:16:_ZTIPDi@@CXXABI_1.3.3
 OBJECT:16:_ZTIPDn@@CXXABI_1.3.5
 OBJECT:16:_ZTIPDs@@CXXABI_1.3.3
 OBJECT:16:_ZTIPDu@@CXXABI_1.3.12
+OBJECT:16:_ZTIPKDd@@CXXABI_1.3.4
+OBJECT:16:_ZTIPKDe@@CXXABI_1.3.4
+OBJECT:16:_ZTIPKDf@@CXXABI_1.3.4
 OBJECT:16:_ZTIPKDi@@CXXABI_1.3.3
 OBJECT:16:_ZTIPKDn@@CXXABI_1.3.5
 OBJECT:16:_ZTIPKDs@@CXXABI_1.3.3
@@ -5080,6 +5093,7 @@ OBJECT:25:_ZTSNSt7__cxx118messagesIwEE@@GLIBCXX_3.4.21
 OBJECT:25:_ZTSNSt7__cxx118numpunctIcEE@@GLIBCXX_3.4.21
 OBJECT:25:_ZTSNSt7__cxx118numpunctIwEE@@GLIBCXX_3.4.21
 OBJECT:25:_ZTSSt20bad_array_new_length@@CXXABI_1.3.8
+OBJECT:26:_ZTSNSt3pmr15memory_resourceE@@GLIBCXX_3.4.28
 OBJECT:27:_ZTSSt19__codecvt_utf8_baseIwE@@GLIBCXX_3.4.21
 OBJECT:28:_ZTSSt19__codecvt_utf8_baseIDiE@@GLIBCXX_3.4.21
 OBJECT:28:_ZTSSt19__codecvt_utf8_baseIDsE@@GLIBCXX_3.4.21
@@ -5088,6 +5102,8 @@ OBJECT:28:_ZTSSt7codecvtIcc11__mbstate_tE@@GLIBCXX_3.4
 OBJECT:28:_ZTSSt7codecvtIwc11__mbstate_tE@@GLIBCXX_3.4
 OBJECT:28:_ZTTSd@@GLIBCXX_3.4
 OBJECT:28:_ZTTSt14basic_iostreamIwSt11char_traitsIwEE@@GLIBCXX_3.4
+OBJECT:28:_ZTVNSt3pmr15memory_resourceE@@GLIBCXX_3.4.28
+OBJECT:28:_ZTVNSt3pmr25monotonic_buffer_resourceE@@GLIBCXX_3.4.28
 OBJECT:28:_ZTVNSt7__cxx1114collate_bynameIcEE@@GLIBCXX_3.4.21
 OBJECT:28:_ZTVNSt7__cxx1114collate_bynameIwEE@@GLIBCXX_3.4.21
 OBJECT:28:_ZTVNSt7__cxx1115messages_bynameIcEE@@GLIBCXX_3.4.21
@@ -5194,6 +5210,7 @@ OBJECT:34:_ZTSSt25__codecvt_utf8_utf16_baseIDsE@@GLIBCXX_3.4.21
 OBJECT:34:_ZTSSt9basic_iosIcSt11char_traitsIcEE@@GLIBCXX_3.4
 OBJECT:34:_ZTSSt9basic_iosIwSt11char_traitsIwEE@@GLIBCXX_3.4
 OBJECT:36:_ZTSN10__cxxabiv119__pointer_type_infoE@@CXXABI_1.3
+OBJECT:36:_ZTSNSt3pmr25monotonic_buffer_resourceE@@GLIBCXX_3.4.28
 OBJECT:36:_ZTSSt14codecvt_bynameIcc11__mbstate_tE@@GLIBCXX_3.4
 OBJECT:36:_ZTSSt14codecvt_bynameIwc11__mbstate_tE@@GLIBCXX_3.4
 OBJECT:36:_ZTVN10__cxxabiv117__pbase_type_infoE@@CXXABI_1.3
@@ -5757,6 +5774,9 @@ OBJECT:8:_ZGVNSt9money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE2idE@@G
 OBJECT:8:_ZGVNSt9money_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE@@GLIBCXX_3.4
 OBJECT:8:_ZGVNSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE2idE@@GLIBCXX_3.4
 OBJECT:8:_ZGVNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE2idE@@GLIBCXX_3.4
+OBJECT:8:_ZTIDd@@CXXABI_1.3.4
+OBJECT:8:_ZTIDe@@CXXABI_1.3.4
+OBJECT:8:_ZTIDf@@CXXABI_1.3.4
 OBJECT:8:_ZTIDi@@CXXABI_1.3.3
 OBJECT:8:_ZTIDn@@CXXABI_1.3.5
 OBJECT:8:_ZTIDs@@CXXABI_1.3.3
@@ -5766,6 +5786,7 @@ OBJECT:8:_ZTIN10__cxxabiv119__foreign_exceptionE@@CXXABI_1.3.2
 OBJECT:8:_ZTINSt13__future_base11_State_baseE@@GLIBCXX_3.4.15
 OBJECT:8:_ZTINSt13__future_base12_Result_baseE@@GLIBCXX_3.4.15
 OBJECT:8:_ZTINSt3_V214error_categoryE@@GLIBCXX_3.4.21
+OBJECT:8:_ZTINSt3pmr15memory_resourceE@@GLIBCXX_3.4.28
 OBJECT:8:_ZTINSt6locale5facetE@@GLIBCXX_3.4
 OBJECT:8:_ZTINSt6thread6_StateE@@GLIBCXX_3.4.22
 OBJECT:8:_ZTISt10ctype_base@@GLIBCXX_3.4
