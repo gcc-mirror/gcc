@@ -1,5 +1,8 @@
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR ada/91100
+	* gnat.dg/socket1.adb: Disable on hppa*-*-hpux*.
+
 	* g++.dg/pr90981.C: Skip on hppa*-*-hpux*.
 	* gcc.dg/gnu2x-attrs-1.c: Add dg-require-alias.
 	* gcc.dg/pr90756.c: Add -fno-common option on hppa*-*-hpux*.
