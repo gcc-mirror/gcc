@@ -2149,7 +2149,11 @@ Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu++2a
 C++ ObjC++
-Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++20
+C++ ObjC++ Alias(std=gnu++2a)
+Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC
