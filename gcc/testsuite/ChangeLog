@@ -1,3 +1,9 @@
+2020-02-29 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Add templated
+	awaitable.
+	* g++.dg/coroutines/torture/co-await-15-return-non-triv.C: New test.
+
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR ada/91100
