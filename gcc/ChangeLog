@@ -93,20 +93,6 @@
 	* symtab.c (symtab_node::nonzero_address): A DECL_COMDAT decl has
 	non-zero address even if weak and not yet defined.
 
-2020-02-23  Peter Bergner  <bergner@linux.ibm.com>
-
-	Backport from master
-	2020-01-06  Michael Meissner  <meissner@linux.ibm.com>
-
-	* config/rs6000/vsx.md (vsx_extract_<mode>_var, VSX_D iterator):
-	Use 'Q' for doing vector extract from memory.
-	(vsx_extract_v4sf_var): Use 'Q' for doing vector extract from
-	memory.
-	(vsx_extract_<mode>_var, VSX_EXTRACT_I iterator): Use 'Q' for
-	doing vector extract from memory.
-	(vsx_extract_<mode>_<VS_scalar>mode_var): Use 'Q' for doing vector
-	extract from memory.
-
 2020-02-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc/config/pa/pa.c (pa_function_value): Fix check for word and
