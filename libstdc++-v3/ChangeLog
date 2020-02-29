@@ -1,3 +1,9 @@
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	Add libatomic option.
+	* testsuite/30_threads/jthread/jthread.cc: Likewise.
+
 2020-02-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h
