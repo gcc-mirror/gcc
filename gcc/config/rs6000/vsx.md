@@ -3295,7 +3295,7 @@
 ;; Variable V2DI/V2DF extract
 (define_insn_and_split "vsx_extract_<mode>_var"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=v,<VSa>,r")
-	(unspec:<VS_scalar> [(match_operand:VSX_D 1 "input_operand" "v,Q,Q")
+	(unspec:<VS_scalar> [(match_operand:VSX_D 1 "input_operand" "v,m,m")
 			     (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 			    UNSPEC_VSX_EXTRACT))
    (clobber (match_scratch:DI 3 "=r,&b,&b"))
@@ -3364,7 +3364,7 @@
 ;; Variable V4SF extract
 (define_insn_and_split "vsx_extract_v4sf_var"
   [(set (match_operand:SF 0 "gpc_reg_operand" "=ww,ww,?r")
-	(unspec:SF [(match_operand:V4SF 1 "input_operand" "v,Q,Q")
+	(unspec:SF [(match_operand:V4SF 1 "input_operand" "v,m,m")
 		    (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 		   UNSPEC_VSX_EXTRACT))
    (clobber (match_scratch:DI 3 "=r,&b,&b"))
@@ -3724,7 +3724,7 @@
 (define_insn_and_split "vsx_extract_<mode>_var"
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
 	(unspec:<VS_scalar>
-	 [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,Q")
+	 [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,m")
 	  (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 	 UNSPEC_VSX_EXTRACT))
    (clobber (match_scratch:DI 3 "=r,r,&b"))
@@ -3743,7 +3743,7 @@
   [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=r,r,r")
 	(zero_extend:<VS_scalar>
 	 (unspec:<VSX_EXTRACT_I:VS_scalar>
-	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,Q")
+	  [(match_operand:VSX_EXTRACT_I 1 "input_operand" "wK,v,m")
 	   (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 	  UNSPEC_VSX_EXTRACT)))
    (clobber (match_scratch:DI 3 "=r,r,&b"))
