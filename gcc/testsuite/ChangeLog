@@ -1,5 +1,9 @@
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/pr90756.c: Add -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/torture/20190327-1.c: Likewise.
+	* gcc.dg/torture/pr90020.c: Skip on hppa*-*-hpux*.
+
 	PR ada/91100
 	* gnat.dg/socket1.adb: Disable on hppa*-*-hpux*.
 
