@@ -1,5 +1,8 @@
 2020-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR testsuite/91797
+	* gcc.target/pwoerpc/pr68805.c: Update expected output.
+
 	PR testsuite/91799
 	* gcc.target/powerpc/pr88233.c: Update expected output and
 	add target selector.
