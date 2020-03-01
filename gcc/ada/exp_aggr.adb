@@ -289,19 +289,12 @@ package body Exp_Aggr is
    --  construct the allocated object on the heap.
 
    procedure Convert_To_Positional
-     (N                    : Node_Id;
-      Max_Others_Replicate : Nat     := 32;
-      Handle_Bit_Packed    : Boolean := False);
+     (N                 : Node_Id;
+      Handle_Bit_Packed : Boolean := False);
    --  If possible, convert named notation to positional notation. This
    --  conversion is possible only in some static cases. If the conversion is
    --  possible, then N is rewritten with the analyzed converted aggregate.
-   --  The parameter Max_Others_Replicate controls the maximum number of
-   --  values corresponding to an others choice that will be converted to
-   --  positional notation (the default of 32 is the normal limit, and reflects
-   --  the fact that normally the loop is better than a lot of separate
-   --  assignments). Note that this limit gets overridden in any case if
-   --  either of the restrictions No_Elaboration_Code or No_Implicit_Loops is
-   --  set. The parameter Handle_Bit_Packed is usually set False (since we do
+   --  The parameter Handle_Bit_Packed is usually set False (since we do
    --  not expect the back end to handle bit packed arrays, so the normal case
    --  of conversion is pointless), but in the special case of a call from
    --  Packed_Array_Aggregate_Handled, we set this parameter to True, since
@@ -319,6 +312,12 @@ package body Exp_Aggr is
    --  component assignments. This function determines if the type Typ is for
    --  an array that is suitable for this optimization: it returns True if Typ
    --  is a two dimensional bit packed array with component size 1, 2, or 4.
+
+   function Max_Aggregate_Size
+     (Typ          : Entity_Id;
+      Default_Size : Nat := 5000) return Nat;
+   --  Return the max size for a static aggregate for the given Typ.
+   --  Return Default_Size if no other special criteria triggers.
 
    function Packed_Array_Aggregate_Handled (N : Node_Id) return Boolean;
    --  Given an array aggregate, this function handles the case of a packed
@@ -429,43 +428,15 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Size_OK
 
    begin
-      --  The normal aggregate limit is 500000, but we increase this limit to
-      --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code) or
-      --  Restrictions (No_Implicit_Loops) is specified, since in either case
-      --  we are at risk of declaring the program illegal because of this
-      --  limit. We also increase the limit when Static_Elaboration_Desired,
-      --  given that this means that objects are intended to be placed in data
-      --  memory.
-
-      --  We also increase the limit if the aggregate is for a packed two-
-      --  dimensional array, because if components are static it is much more
-      --  efficient to construct a one-dimensional equivalent array with static
-      --  components.
-
-      --  Conversely, we decrease the maximum size if none of the above
-      --  requirements apply, and if the aggregate has a single component
+      --  We bump the maximum size unless the aggregate has a single component
       --  association, which will be more efficient if implemented with a loop.
 
-      --  Finally, we use a small limit in CodePeer mode where we favor loops
-      --  instead of thousands of single assignments (from large aggregates).
-
-      Max_Aggr_Size := 500000;
-
-      if CodePeer_Mode then
-         Max_Aggr_Size := 100;
-
-      elsif Restriction_Active (No_Elaboration_Code)
-        or else Restriction_Active (No_Implicit_Loops)
-        or else Is_Two_Dim_Packed_Array (Typ)
-        or else (Ekind (Current_Scope) = E_Package
-                   and then Static_Elaboration_Desired (Current_Scope))
-      then
-         Max_Aggr_Size := 2 ** 24;
-
-      elsif No (Expressions (N))
+      if No (Expressions (N))
         and then No (Next (First (Component_Associations (N))))
       then
-         Max_Aggr_Size := 5000;
+         Max_Aggr_Size := Max_Aggregate_Size (Typ);
+      else
+         Max_Aggr_Size := Max_Aggregate_Size (Typ, 500_000);
       end if;
 
       Size := UI_From_Int (Component_Count (Component_Type (Typ)));
@@ -4561,11 +4532,11 @@ package body Exp_Aggr is
    ---------------------------
 
    procedure Convert_To_Positional
-     (N                    : Node_Id;
-      Max_Others_Replicate : Nat     := 32;
-      Handle_Bit_Packed    : Boolean := False)
+     (N                 : Node_Id;
+      Handle_Bit_Packed : Boolean := False)
    is
-      Typ : constant Entity_Id := Etype (N);
+      Typ                  : constant Entity_Id := Etype (N);
+      Max_Others_Replicate : constant Nat := Max_Aggregate_Size (Typ);
 
       Static_Components : Boolean := True;
 
@@ -6179,13 +6150,7 @@ package body Exp_Aggr is
 
       --  At this point we try to convert to positional form
 
-      if Ekind (Current_Scope) = E_Package
-        and then Static_Elaboration_Desired (Current_Scope)
-      then
-         Convert_To_Positional (N, Max_Others_Replicate => 100);
-      else
-         Convert_To_Positional (N);
-      end if;
+      Convert_To_Positional (N);
 
       --  if the result is no longer an aggregate (e.g. it may be a string
       --  literal, or a temporary which has the needed value), then we are
@@ -7895,6 +7860,42 @@ package body Exp_Aggr is
       return Make_Assignment_Statement (Sloc, Name, Expression);
    end Make_OK_Assignment_Statement;
 
+   ------------------------
+   -- Max_Aggregate_Size --
+   ------------------------
+
+   function Max_Aggregate_Size
+     (Typ          : Entity_Id;
+      Default_Size : Nat := 5000) return Nat is
+   begin
+      --  We use a small limit in CodePeer mode where we favor loops
+      --  instead of thousands of single assignments (from large aggregates).
+
+      --  We also increase the limit to 2**24 (about 16 million) if
+      --  Restrictions (No_Elaboration_Code) or Restrictions
+      --  (No_Implicit_Loops) is specified, since in either case we are at risk
+      --  of declaring the program illegal because of this limit. We also
+      --  increase the limit when Static_Elaboration_Desired, given that this
+      --  means that objects are intended to be placed in data memory.
+
+      --  Same if the aggregate is for a packed two-dimensional array, because
+      --  if components are static it is much more efficient to construct a
+      --  one-dimensional equivalent array with static components.
+
+      if CodePeer_Mode then
+         return 100;
+      elsif Restriction_Active (No_Elaboration_Code)
+        or else Restriction_Active (No_Implicit_Loops)
+        or else Is_Two_Dim_Packed_Array (Typ)
+        or else (Ekind (Current_Scope) = E_Package
+                   and then Static_Elaboration_Desired (Current_Scope))
+      then
+         return 2 ** 24;
+      else
+         return Default_Size;
+      end if;
+   end Max_Aggregate_Size;
+
    -----------------------
    -- Number_Of_Choices --
    -----------------------
@@ -8067,8 +8068,7 @@ package body Exp_Aggr is
          --  have failed to create a packed value for it.
 
          if Present (Component_Associations (N)) then
-            Convert_To_Positional
-              (N, Max_Others_Replicate => 64, Handle_Bit_Packed => True);
+            Convert_To_Positional (N, Handle_Bit_Packed => True);
             return Nkind (N) /= N_Aggregate;
          end if;
 
@@ -8763,8 +8763,7 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      Convert_To_Positional
-        (N, Max_Others_Replicate => 64, Handle_Bit_Packed => True);
+      Convert_To_Positional (N, Handle_Bit_Packed => True);
 
       --  Verify that all components are static
 
