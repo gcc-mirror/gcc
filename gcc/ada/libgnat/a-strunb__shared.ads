@@ -708,10 +708,12 @@ private
    type Shared_String_Access is access all Shared_String;
 
    procedure Reference (Item : not null Shared_String_Access);
-   --  Increment reference counter
+   --  Increment reference counter.
+   --  Do nothing if Item points to Empty_Shared_String.
 
    procedure Unreference (Item : not null Shared_String_Access);
-   --  Decrement reference counter, deallocate Item when counter goes to zero
+   --  Decrement reference counter, deallocate Item when counter goes to zero.
+   --  Do nothing if Item points to Empty_Shared_String.
 
    function Can_Be_Reused
      (Item   : not null Shared_String_Access;
