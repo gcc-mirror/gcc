@@ -1,3 +1,8 @@
+2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR target/93694
+	* gcc/config/darwin.opt: Amend options descriptions.
+
 2020-03-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/94052
