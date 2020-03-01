@@ -6092,6 +6092,29 @@ package body Sem_Eval is
 
       elsif Has_Discriminants (T1) or else Has_Discriminants (T2) then
 
+         --  Handle derivations of private subtypes. For example S1 statically
+         --  matches the full view of T1 in the following example:
+
+         --      type T1(<>) is new Root with private;
+         --      subtype S1 is new T1;
+         --      overriding proc P1 (P : S1);
+         --    private
+         --      type T1 (D : Disc) is new Root with ...
+
+         if Ekind (T2) = E_Record_Subtype_With_Private
+           and then not Has_Discriminants (T2)
+           and then Partial_View_Has_Unknown_Discr (T1)
+           and then Etype (T2) = T1
+         then
+            return True;
+
+         elsif Ekind (T1) = E_Record_Subtype_With_Private
+           and then not Has_Discriminants (T1)
+           and then Partial_View_Has_Unknown_Discr (T2)
+           and then Etype (T1) = T2
+         then
+            return True;
+
          --  Because of view exchanges in multiple instantiations, conformance
          --  checking might try to match a partial view of a type with no
          --  discriminants with a full view that has defaulted discriminants.
@@ -6099,7 +6122,7 @@ package body Sem_Eval is
          --  which must exist because we know that the two subtypes have the
          --  same base type.
 
-         if Has_Discriminants (T1) /= Has_Discriminants (T2) then
+         elsif Has_Discriminants (T1) /= Has_Discriminants (T2) then
             if In_Instance then
                if Is_Private_Type (T2)
                  and then Present (Full_View (T2))
