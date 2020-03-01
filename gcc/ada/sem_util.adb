@@ -25142,6 +25142,17 @@ package body Sem_Util is
       end if;
    end Set_Debug_Info_Needed;
 
+   --------------------------------
+   -- Set_Debug_Info_Defining_Id --
+   --------------------------------
+
+   procedure Set_Debug_Info_Defining_Id (N : Node_Id) is
+   begin
+      if Comes_From_Source (Defining_Identifier (N)) then
+         Set_Debug_Info_Needed (Defining_Identifier (N));
+      end if;
+   end Set_Debug_Info_Defining_Id;
+
    ----------------------------
    -- Set_Entity_With_Checks --
    ----------------------------

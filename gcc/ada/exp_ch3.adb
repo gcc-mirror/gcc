@@ -7267,9 +7267,7 @@ package body Exp_Ch3 is
             --  debug information, even though it is defined by a generated
             --  renaming that does not come from source.
 
-            if Comes_From_Source (Defining_Identifier (N)) then
-               Set_Debug_Info_Needed (Defining_Identifier (N));
-            end if;
+            Set_Debug_Info_Defining_Id (N);
 
             --  Now call the routine to generate debug info for the renaming
 

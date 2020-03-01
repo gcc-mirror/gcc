@@ -2721,6 +2721,10 @@ package Sem_Util is
    --  This routine should always be used instead of Set_Needs_Debug_Info to
    --  ensure that subsidiary entities are properly handled.
 
+   procedure Set_Debug_Info_Defining_Id (N : Node_Id);
+   --  Call Set_Debug_Info_Needed on Defining_Identifier (N) if it comes
+   --  from source.
+
    procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id);
    --  This procedure has the same calling sequence as Set_Entity, but it
    --  performs additional checks as follows:
