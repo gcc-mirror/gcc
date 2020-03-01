@@ -1,3 +1,7 @@
+2020-03-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/17_intro/headers/c++1998/charset.cc: Skip on *-*-hpux*.
