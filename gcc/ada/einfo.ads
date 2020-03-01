@@ -4177,9 +4177,10 @@ package Einfo is
 --       for the function case.
 
 --    Returns_By_Ref (Flag90)
---       Defined in function entities. Set if the function returns the result
---       by reference, either because its return type is a by-reference-type
---       or because the function explicitly uses the secondary stack.
+--       Defined in subprogram type entities and functions. Set if a
+--       function (or an access to function type) returns a result by
+--       reference, either because its return type is a by-reference-type or
+--       because said function explicitly uses the secondary stack.
 
 --    Reverse_Bit_Order (Flag164) [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order
@@ -6721,6 +6722,7 @@ package Einfo is
    --    First_Formal_With_Extras            (synth)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
+   --    Returns_By_Ref                      (Flag90)
    --    (plus type attributes)
 
    --  E_Task_Body
