@@ -1,5 +1,11 @@
 2020-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/92976
+	* match.c (select_type_set_tmp): If the selector array spec has
+	explicit bounds, make the temporary's bounds deferred.
+
+2020-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/92959
 	* trans-intrinsic.c (gfc_conv_associated): Eliminate
 	'nonzero_charlen' and move the chunk to evaluate zero character
