@@ -1,3 +1,9 @@
+2020-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR testsuite/91799
+	* gcc.target/powerpc/pr88233.c: Update expected output and
+	add target selector.
+
 2020-03-01 Iain Sandoe <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/class-07-data-member.C: New test.
