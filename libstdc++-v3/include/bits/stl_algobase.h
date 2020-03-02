@@ -84,11 +84,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * A constexpr wrapper for __builtin_memcmp.
    * @param __num The number of elements of type _Tp (not bytes).
    */
-  template<typename _Tp>
+  template<typename _Tp, typename _Up>
     _GLIBCXX14_CONSTEXPR
     inline int
-    __memcmp(const _Tp* __first1, const _Tp* __first2, size_t __num)
+    __memcmp(const _Tp* __first1, const _Up* __first2, size_t __num)
     {
+#if __cplusplus >= 201103L
+      static_assert(sizeof(_Tp) == sizeof(_Up), "can be compared with memcmp");
+#endif
 #ifdef __cpp_lib_is_constant_evaluated
       if (std::is_constant_evaluated())
 	{

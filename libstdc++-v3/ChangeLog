@@ -1,5 +1,10 @@
 2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93972
+	* include/bits/stl_algobase.h (__memcmp): Allow pointer types to
+	differ.
+	* testsuite/25_algorithms/lexicographical_compare/uchar.cc: New test.
+
 	* include/std/ranges (__detail::__maybe_empty_t): Rename to
 	__maybe_present_t.
 	(__adaptor::_RangeAdaptor, join_view, split_view): Use new name.
