@@ -1,3 +1,9 @@
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93812
+	* c-typeck.c (build_functype_attribute_variant): New function.
+	(composite_type): Call it.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/93912
