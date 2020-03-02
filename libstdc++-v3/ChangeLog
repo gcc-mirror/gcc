@@ -1,5 +1,9 @@
 2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges (__detail::__maybe_empty_t): Rename to
+	__maybe_present_t.
+	(__adaptor::_RangeAdaptor, join_view, split_view): Use new name.
+
 	* include/bits/ranges_algo.h (shift_right): Add 'typename' to
 	dependent type.
 
