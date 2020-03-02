@@ -1,5 +1,12 @@
 2020-03-01  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/93926
+	* c-decl.c (types_close_enough_to_match): New function.
+	(match_builtin_function_types):
+	(diagnose_mismatched_decls): Add missing inform call to a warning.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
 	PR c/93812
 	* c-typeck.c (build_functype_attribute_variant): New function.
 	(composite_type): Call it.
