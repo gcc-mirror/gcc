@@ -1,6 +1,14 @@
 2020-03-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.h (mergeable_namespace_entity)
+	(mergeable_class_member): Don't declare.
+	* name-lookup.c (check_mergeable_decl, mergeable_namespace_entity)
+	(mergeable_class_member):  Move to ...
+	* module.cc (check_mergeable_decl, mergeable_namespace_entity)
+	(mergeable_class_member): ... here.
+
+	gcc/cp/
 	* decl2.c (c_parse_final_cleanups): Revert previous change.
 	* name-lookup.h (mergeable_{namespace,class}_entities): Declare.
 	(add_mergeable_namespace_entity): Declare.

@@ -382,20 +382,14 @@ extern tree lookup_all_conversions (tree);
 /* Lower level interface for modules. */
 extern tree *mergeable_namespace_entities (tree ctx, tree name, bool is_global);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
-extern tree mergeable_class_entities (tree ctx, tree name, tree &type);
-
-// FIXME: Use a struct, see trees_in::key_mergeable fixme
-extern tree mergeable_namespace_entity (tree decl, tree ctx, tree name,
-					bool partition,
-					tree ret, tree args, tree reqs);
-extern tree mergeable_class_member (tree decl, tree ctx, tree name,
-				    tree ret, tree args, tree reqs);
+extern tree mergeable_class_entities (tree ctx, tree name);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,
 				tree value, tree type, tree visible);
 extern void add_module_decl (tree ctx, tree name, tree decl);
 extern tree extract_module_binding (tree &binding, tree ns, bitmap partitions);
+// FIXME: These two should be local to module.cc
 extern unsigned get_field_ident (tree ctx, tree decl);
 extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned module,

@@ -2925,6 +2925,14 @@ private:
   void assert_definition (tree, bool installing);
 };
 
+// FIXME: Atrophy and move into trees_in
+static tree
+mergeable_class_member (tree decl, tree klass, tree name,
+			tree ret, tree args, tree reqs);
+static tree
+mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
+			    tree ret, tree args, tree reqs);
+
 trees_in::trees_in (module_state *state)
   :parent (), state (state)
 {
@@ -10128,6 +10136,226 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
     }
 
   return !get_overrun ();
+}
+
+/* DECL is a new declaration that may be duplicated in OVL.  Use RET &
+   ARGS to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this
+   has been found by a proxy.  It will be an enum type located by it's
+   first member.
+
+   We're conservative with matches, so ambiguous decls will be
+   registered as different, then lead to a lookup error if the two
+   modules are both visible.  Perhaps we want to do something similar
+   to duplicate decls to get ODR errors on loading?  We already have
+   some special casing for namespaces.  */
+
+enum merge_match
+  {
+   MM_namespace_scope,
+   MM_anon_enum,
+   MM_class_scope
+  };
+
+static tree
+check_mergeable_decl (merge_match kind, tree decl, tree ovl,
+		      tree ret, tree args, tree reqs)
+{
+  if (kind == MM_anon_enum)
+    gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+			 && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
+
+  unsigned ref_q = REF_QUAL_NONE;
+  if (args && TREE_CONSTANT (args))
+    ref_q = TREE_STATIC (args) ? REF_QUAL_RVALUE : REF_QUAL_LVALUE;
+
+  for (ovl_iterator iter (ovl); iter; ++iter)
+    {
+      gcc_assert (kind == MM_class_scope || !iter.using_p ());
+      tree match = *iter;
+
+      tree d_inner = decl;
+      tree m_inner = match;
+
+    again:
+      if (TREE_CODE (d_inner) != TREE_CODE (m_inner))
+	{
+	  if (TREE_CODE (match) == NAMESPACE_DECL
+	      && !DECL_NAMESPACE_ALIAS (match))
+	    /* Namespaces are never overloaded.  */
+	    return match;
+
+	  if (kind == MM_anon_enum
+	      && TREE_CODE (m_inner) == CONST_DECL
+	      && TREE_CODE (TREE_TYPE (m_inner)) == ENUMERAL_TYPE)
+	    {
+	      tree enum_decl = TYPE_STUB_DECL (TREE_TYPE (m_inner));
+	      return enum_decl;
+	    }
+	  continue;
+	}
+
+      switch (TREE_CODE (d_inner))
+	{
+	case TEMPLATE_DECL:
+	  if (template_heads_equivalent_p (d_inner, m_inner))
+	    {
+	      d_inner = DECL_TEMPLATE_RESULT (d_inner);
+	      m_inner = DECL_TEMPLATE_RESULT (m_inner);
+	      goto again;
+	    }
+	  break;
+
+	case FUNCTION_DECL:
+	  // FIXME: Perhaps simply !null ret?
+	  if (tree m_type = TREE_TYPE (m_inner))
+	    if (((d_inner == decl
+		  && !IDENTIFIER_CONV_OP_P (DECL_NAME (d_inner)))
+		 || same_type_p (ret, TREE_TYPE (m_type)))
+		&& type_memfn_rqual (m_type) == ref_q
+		&& compparms (args, TYPE_ARG_TYPES (m_type)))
+	      {
+		tree m_reqs = get_constraints (m_inner);
+		if (m_reqs)
+		  {
+		    if (cxx_dialect < cxx2a)
+		      m_reqs = CI_ASSOCIATED_CONSTRAINTS (m_reqs);
+		    else
+		      {
+			m_reqs = CI_DECLARATOR_REQS (m_reqs);
+			if (!m_reqs != !reqs)
+			  break;
+			m_reqs = maybe_substitute_reqs_for (m_reqs, m_inner);
+		      }
+		  }
+
+		if (cp_tree_equal (m_reqs, reqs))
+		  return match;
+	      }
+	  break;
+
+	case TYPE_DECL:
+	  if (DECL_IMPLICIT_TYPEDEF_P (d_inner)
+	      == DECL_IMPLICIT_TYPEDEF_P (m_inner))
+	    return match;
+	  break;
+
+	default:
+	  return match;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* DECL is a yet-to-be-loaded mergeable entity in namespace CTX slot
+   NAME.  PARTITION is true if it is from a module partition
+   (otherwise it is a global module entity), RET and ARGS are its
+   distinguishing features (some of which may be NULL).  Look for an
+   existing mergeable that matches and return that if found.
+   Otherwise add this DECL into the mergeable list.  */
+// FIXME: move anonymous enum key scheme elsewhere or pass in flag
+// that that's happening
+tree
+mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
+			    tree ret, tree args, tree reqs)
+{
+  tree *gslot = mergeable_namespace_entities (ctx, name, !partition);
+
+  if (tree match = check_mergeable_decl
+      (DECL_NAME (decl) ? MM_namespace_scope : MM_anon_enum,
+       decl, *gslot, ret, args, reqs))
+    return match;
+
+  if (DECL_NAME (decl))
+    add_mergeable_namespace_entity (gslot, decl);
+
+  return NULL_TREE;
+}
+
+tree
+mergeable_class_member (tree decl, tree klass, tree name,
+			tree ret, tree args, tree reqs)
+{
+  gcc_checking_assert (COMPLETE_TYPE_P (klass));
+  tree found = NULL_TREE;
+
+  switch (TREE_CODE (name))
+    {
+    default:
+      /* The CMI is faulty, but don't explode here.  */
+      break;
+
+    case INTEGER_CST:
+      /* An anonymous member type, or unnamed bitfield, or using_decl  */
+      {
+	unsigned ix = TREE_INT_CST_LOW (name);
+	enum tree_code code = TREE_CODE (STRIP_TEMPLATE (decl));
+	for (tree field = TYPE_FIELDS (klass); field; field = DECL_CHAIN (field))
+	  if (code == TREE_CODE (STRIP_TEMPLATE (field))
+	      && (code == USING_DECL
+		  || !DECL_NAME (field)
+		  || IDENTIFIER_ANON_P (DECL_NAME (field))))
+	    if (!ix--)
+	      {
+		found = field;
+		break;
+	      }
+      }
+      break;
+
+    case TYPE_DECL:
+      /* An anonymous or base field for an anonymous member type.  */
+      for (tree field = TYPE_FIELDS (klass); field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_TYPE (field) == TREE_TYPE (name))
+	  {
+	    found = field;
+	    break;
+	  }
+      break;
+
+    case IDENTIFIER_NODE:
+      {
+	gcc_checking_assert (IDENTIFIER_CONV_OP_P (name)
+			     == (name == conv_op_identifier));
+
+	if (name == as_base_identifier)
+	  {
+	    // FIXME: Perhaps just push this into the member vector?
+	    found = CLASSTYPE_AS_BASE (klass);
+	    if (!found || found == klass)
+	      found = NULL_TREE;
+	    else
+	      found = TYPE_NAME (found);
+	  }
+	else
+	  found = mergeable_class_entities (klass, name);
+      }
+      break;
+    }
+
+  if (found)
+    {
+      tree inner = decl;
+      if (TREE_CODE (inner) == TEMPLATE_DECL
+	  && !DECL_MEMBER_TEMPLATE_P (inner))
+	inner = DECL_TEMPLATE_RESULT (inner);
+
+      if (TREE_CODE (name) == IDENTIFIER_NODE)
+	found = check_mergeable_decl
+	  (MM_class_scope, inner, found, ret, args, reqs);
+
+      if (found && inner != decl)
+	{
+	  tree ti;
+	  if (DECL_IMPLICIT_TYPEDEF_P (found))
+	    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found));
+	  else
+	    ti = DECL_TEMPLATE_INFO (found);
+	  found = TI_TEMPLATE (ti);
+	}
+    }
+  return found;
 }
 
 void
