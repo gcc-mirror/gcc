@@ -22,21 +22,38 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gimple-range-gori.h"
 
-class vr_gori_interface : public gori_compute
+#define DEBUG_VR_GORI 0
+
+#if DEBUG_VR_GORI
+#define VR_GORI_COMPUTE trace_gori_compute
+#define VR_GORI_INTERFACE trace_vr_gori_interface
+#else
+#define VR_GORI_COMPUTE gori_compute
+#define VR_GORI_INTERFACE vr_gori_interface
+#endif
+
+class vr_gori_interface : public VR_GORI_COMPUTE
 {
 public:
   virtual bool outgoing_edge_range_p (irange &, edge, tree name,
 				      const irange *name_range = NULL);
   bool gori_computable_p (tree name, basic_block);
-private:
+protected:
   virtual void range_of_ssa_name (irange &r ATTRIBUTE_UNUSED,
 				  tree op ATTRIBUTE_UNUSED,
 				  gimple *stmt ATTRIBUTE_UNUSED = NULL)
     { gcc_unreachable (); }
-  bool refine_range_with_equivalences_p (irange &, edge, tree name);
+  virtual bool refine_range_with_equivalences (irange &, edge, tree name);
   bool solve_name_at_statement (irange &, tree, gimple *stmt, const irange &);
   bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
 				     const irange &equiv_range);
+};
+
+class trace_vr_gori_interface : public vr_gori_interface
+{
+private:
+  virtual bool refine_range_with_equivalences (irange &, edge, tree name);
+  typedef vr_gori_interface super;
 };
 
 /* The VR_VALUES class holds the current view of range information
@@ -53,7 +70,7 @@ private:
    gets attached to an SSA_NAME.  It's unclear how useful that global
    information will be in a world where we can compute context sensitive
    range information fast or perform on-demand queries.  */
-class vr_values : public vr_gori_interface
+class vr_values : public VR_GORI_INTERFACE
 {
  public:
   vr_values (void);

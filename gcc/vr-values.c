@@ -1973,7 +1973,7 @@ vr_gori_interface::outgoing_edge_range_p (irange &r, edge e, tree name,
 {
   if (!gori_compute::outgoing_edge_range_p (r, e, name))
     r.set_varying (TREE_TYPE (name));
-  refine_range_with_equivalences_p (r, e, name);
+  refine_range_with_equivalences (r, e, name);
   widest_irange tmp;
   range_of_ssa_name (tmp, name);
   r.intersect (tmp);
@@ -1984,8 +1984,8 @@ vr_gori_interface::outgoing_edge_range_p (irange &r, edge e, tree name,
 // equivalences NAME may have.
 
 bool
-vr_gori_interface::refine_range_with_equivalences_p (irange &r,
-						     edge e, tree name)
+vr_gori_interface::refine_range_with_equivalences (irange &r,
+						   edge e, tree name)
 {
   widest_irange branch_range, tmp;
   gimple *branch = gimple_outgoing_edge_range_p (branch_range, e);
@@ -2067,6 +2067,27 @@ vr_gori_interface::solve_name_given_equivalence (irange &r,
     }
   return false;
 }
+
+#if DEBUG_VR_GORI
+bool
+trace_vr_gori_interface::refine_range_with_equivalences (irange &r,
+							   edge e, tree name)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "refine_range_with_equivalences (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d, with range ",
+	       e->src->index, e->dest->index);
+      r.dump (dump_file);
+      fputc ('\n', dump_file);
+      indent += bump;
+    }
+  bool res = super::refine_range_with_equivalences (r, e, name);
+  return trailer (idx, "refine_range_with_equivalences", res, name, r);
+}
+#endif
 
 /* Initialize VRP lattice.  */
 

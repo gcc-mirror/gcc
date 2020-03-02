@@ -1127,3 +1127,147 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
   // low cost.
   return false;
 }
+
+// Tracing wrapper implementation for gori_compute.
+
+trace_gori_compute::trace_gori_compute ()
+{
+  indent = 0;
+  trace_count = 0;
+}
+
+// If dumping, return true and print the prefix for the next output line.
+
+bool
+trace_gori_compute::dumping (unsigned counter, bool trailing)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      // Print counter index as well as INDENT spaces.
+      if (!trailing)
+	fprintf (dump_file, " %-7u ", counter);
+      else
+	fprintf (dump_file, "         ");
+      for (unsigned x = 0; x < indent; x++)
+	fputc (' ', dump_file);
+      return true;
+    }
+  return false;
+}
+
+// After calling a routine, if dumping, print the CALLER, NAME, and RESULT,
+// returning RESULT.
+
+bool
+trace_gori_compute::trailer (unsigned counter, const char *caller, bool result,
+			     tree name, const irange &r)
+{
+  indent -= bump;
+  if (dumping (counter, true))
+    {
+      fputs(result ? "TRUE : " : "FALSE : ", dump_file);
+      fprintf (dump_file, "(%u) ", counter);
+      fputs (caller, dump_file);
+      fputs (" (", dump_file);
+      if (name)
+	print_generic_expr (dump_file, name, TDF_SLIM);
+      fputs (") ", dump_file);
+      if (result)
+	r.dump (dump_file);
+      fputc('\n', dump_file);
+    }
+  // Marks the end of a request.
+  if (indent == 0)
+    fputc ('\n', dump_file);
+  return result;
+}
+
+void
+trace_gori_compute::range_of_ssa_name (irange &r, tree name, gimple *stmt)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "range_of_ssa_name (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") at stmt ");
+      if (stmt)
+	print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      else
+	fprintf (dump_file, " NULL\n");
+      indent += bump;
+    }
+  super::range_of_ssa_name (r, name, stmt);
+  trailer (idx, "range_of_ssa_name", true, name, r);
+}
+
+bool
+trace_gori_compute::range_of_expr (irange &r, tree name, gimple *stmt)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "range_of_expr (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") at stmt ");
+      if (stmt)
+	print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      else
+	fprintf (dump_file, " NULL\n");
+      indent += bump;
+    }
+  bool res = super::range_of_expr (r, name, stmt);
+  return trailer (idx, "range_of_expr", res, name, r);
+}
+
+bool
+trace_gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
+					   const irange *name_range)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "outgoing_edge_range_p (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d, with range ", e->src->index,
+	       e->dest->index);
+      if (name_range)
+	{
+	  name_range->dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+      else
+	fputs ("NULL\n", dump_file);
+      indent += bump;
+    }
+  bool res = super::outgoing_edge_range_p (r, e, name, name_range);
+  return trailer (idx, "outgoing_edge_range_p", res, name, r);
+}
+
+bool
+trace_gori_compute::compute_operand_range (irange &r, gimple *stmt,
+					   const irange &lhs,
+					   tree name,
+					   const irange *name_range)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "compute_operand_range (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") with range ");
+      if (name_range)
+	name_range->dump (dump_file);
+      else
+	fputs ("NULL", dump_file);
+      fprintf (dump_file, " at stmt:\n");
+      dumping (idx, true);
+      fputs ("    ", dump_file);
+      lhs.dump (dump_file);
+      fprintf (dump_file, " <==> ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      indent += bump;
+    }
+  bool res = super::compute_operand_range (r, stmt, lhs, name, name_range);
+  return trailer (idx, "compute_operand_range", res, name, r);
+}

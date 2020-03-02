@@ -147,51 +147,42 @@ public:
       which has non-virtual destructor might cause undefined
       behavior.  */
   virtual ~gori_compute ();
-  bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
-  virtual bool outgoing_edge_range_p
-				(irange &r, edge e, tree name,
-				 const irange *name_range = NULL);
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL);
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
+				      const irange *name_range = NULL);
 protected:
-  virtual void range_of_ssa_name (irange &, tree name,
-				  gimple *s = NULL);
-  bool compute_operand_range (irange &r, gimple *s,
-			      const irange &lhs,
-			      tree name,
-			      const irange *name_range = NULL);
+  virtual void range_of_ssa_name (irange &r, tree name, gimple *stmt = NULL);
+  virtual bool compute_operand_range (irange &r, gimple *stmt,
+				      const irange &lhs,
+				      tree name,
+				      const irange *name_range = NULL);
   bool has_edge_range_p (edge e, tree name);
   gori_map m_gori_map;
 private:
   void get_tree_range (irange &, tree expr, tree name,
 		       const irange *range_of_name);
-  bool compute_operand_range_switch (irange &r, gswitch *s,
+  bool compute_operand_range_switch (irange &r, gswitch *stmt,
 				     const irange &lhs,
-				     tree name,
-				     const irange *name_range);
-  bool compute_name_range_op (irange &r, gimple *s,
+				     tree name, const irange *name_range);
+  bool compute_name_range_op (irange &r, gimple *stmt,
 			      const irange &lhs,
-			      tree name,
-			      const irange *name_range);
+			      tree name, const irange *name_range);
   bool compute_operand_range_op (irange &r, gimple *stmt,
 				 const irange &lhs,
-				 tree name,
-				 const irange *name_range);
-  bool compute_operand1_range (irange &r, gimple *s,
+				 tree name, const irange *name_range);
+  bool compute_operand1_range (irange &r, gimple *stmt,
 			       const irange &lhs,
-			       tree name,
-			       const irange *name_range);
-  bool compute_operand2_range (irange &r, gimple *s,
+			       tree name, const irange *name_range);
+  bool compute_operand2_range (irange &r, gimple *stmt,
 			       const irange &lhs,
-			       tree name,
-			       const irange *name_range);
+			       tree name, const irange *name_range);
   bool compute_operand1_and_operand2_range
-				(irange &r, gimple *s,
+				(irange &r, gimple *stmt,
 				 const irange &lhs,
-				 tree name,
-				 const irange *name_range);
-  bool compute_logical_operands (irange &r, gimple *s,
+				 tree name, const irange *name_range);
+  bool compute_logical_operands (irange &r, gimple *stmt,
 				 const irange &lhs,
-				 tree name,
-				 const irange *name_range);
+				 tree name, const irange *name_range);
   bool logical_combine (irange &r, enum tree_code code,
 			const irange &lhs,
 			const irange &op1_true,
@@ -200,6 +191,31 @@ private:
 			const irange &op2_false);
   int_range<1> m_bool_zero;           /* Boolean zero cached.  */
   int_range<1> m_bool_one;            /* Boolean true cached.  */
+};
+
+class trace_gori_compute : public gori_compute
+{
+public:
+  trace_gori_compute ();
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL);
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
+				      const irange *name_range = NULL);
+protected:
+  virtual void range_of_ssa_name (irange &r, tree name, gimple *stmt = NULL);
+  virtual bool compute_operand_range (irange &r, gimple *stmt,
+				      const irange &lhs,
+				      tree name,
+				      const irange *name_range = NULL);
+private:
+  typedef gori_compute super; 	// Inherited from class for easy changing.
+protected:
+  static const unsigned bump = 2;
+  unsigned indent;
+  unsigned trace_count;		// Current trace index count.
+
+  bool dumping (unsigned counter, bool trailing = false);
+  bool trailer (unsigned counter, const char *caller, bool result, tree name,
+		const irange &r);
 };
 
 #endif // GCC_GIMPLE_RANGE_GORI_H
