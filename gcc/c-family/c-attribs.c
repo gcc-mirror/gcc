@@ -3845,6 +3845,10 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 
   if (tree acs = lookup_attribute ("access", attrs))
     {
+      /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
+	 is the attribute argument's value.  */
+      acs = TREE_VALUE (acs);
+      gcc_assert (TREE_CODE (acs) == TREE_LIST);
       acs = TREE_VALUE (acs);
       gcc_assert (TREE_CODE (acs) == STRING_CST);
 
@@ -3971,11 +3975,20 @@ handle_access_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  tree access_mode = TREE_VALUE (args);
+  if (TREE_CODE (access_mode) == STRING_CST)
+    {
+      /* This must be a recursive call to handle the condensed internal
+	 form of the attribute (see below).  Since all validation has
+	 been done simply return here, accepting the attribute as is.  */
+      *no_add_attrs = false;
+      return NULL_TREE;
+    }
+
   /* Set to true when the access mode has the form of a function call
      as in 'attribute (read_only (1, 2))'.  That's an easy mistake to
      make and so worth a special diagnostic.  */
   bool funcall = false;
-  tree access_mode = TREE_VALUE (args);
   if (TREE_CODE (access_mode) == CALL_EXPR)
     {
       access_mode = CALL_EXPR_FN (access_mode);
@@ -4170,6 +4183,7 @@ handle_access_attribute (tree *node, tree name, tree args,
   /* Replace any existing access attribute specification with
      the concatenation above.  */
   attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
+  new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
   new_attrs = tree_cons (name, new_attrs, attrs);
 
   if (node[1])
@@ -4182,11 +4196,14 @@ handle_access_attribute (tree *node, tree name, tree args,
 	return NULL_TREE;
 
       attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
+      new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
       new_attrs = tree_cons (name, new_attrs, attrs);
       TYPE_ATTRIBUTES (TREE_TYPE (node[1])) = new_attrs;
     }
 
-  TYPE_ATTRIBUTES (*node) = new_attrs;
+  /* Recursively call self to "replace" the documented/external form
+     of the attribute with the condensend internal form.  */
+  decl_attributes (node, new_attrs, flags);
   return NULL_TREE;
 }
 

@@ -1,5 +1,10 @@
 2020-03-01  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/92721
+	* calls.c (init_attr_rdwr_indices): Correctly handle attribute.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/93829
 	* tree-ssa-strlen.c (count_nonzero_bytes): Set the size to that
 	  of a pointer in the outermost ADDR_EXPRs.
