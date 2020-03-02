@@ -1,3 +1,13 @@
+2020-03-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90333
+	PR c++/89640
+	PR c++/60503
+	* parser.c (cp_parser_type_specifier_seq): Don't parse attributes in
+	a trailing return type.
+	(cp_parser_lambda_declarator_opt): Parse C++11 attributes before
+	parens.
+
 2020-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92745 - bogus error when initializing array of vectors.
