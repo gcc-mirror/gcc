@@ -1,3 +1,10 @@
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/torture/class-05-lambda-capture-copy-local.C:
+	* g++.dg/coroutines/torture/lambda-09-init-captures.C: New test.
+	* g++.dg/coroutines/torture/lambda-10-mutable.C: New test.
+
 2020-03-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93997

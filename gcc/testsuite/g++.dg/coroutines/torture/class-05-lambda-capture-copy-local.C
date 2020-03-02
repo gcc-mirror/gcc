@@ -18,7 +18,7 @@ class foo
       auto l = [=](T y) -> coro1
       {
 	T x = y;
-	co_return co_await x + local;
+	co_return co_await x + y + local;
       };
       return l;
     }
@@ -43,7 +43,7 @@ int main ()
 
   /* Now we should have the co_returned value.  */
   int y = x.handle.promise().get_value();
-  if ( y != 20 )
+  if ( y != 37 )
     {
       PRINTF ("main: wrong result (%d).", y);
       abort ();
