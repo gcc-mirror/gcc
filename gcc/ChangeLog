@@ -1,3 +1,9 @@
+2020-03-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92601
+	* tree.c (verify_type_variant): Only verify TYPE_NEEDS_CONSTRUCTING
+	of complete types.
+
 2020-02-29  Peter Bergner <bergner@linux.ibm.com>
 
 	Revert
