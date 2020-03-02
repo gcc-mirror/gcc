@@ -18130,6 +18130,36 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
        cap = TREE_CHAIN (cap))
     {
       tree ofield = TREE_PURPOSE (cap);
+      tree init = TREE_VALUE (cap);
+      if (PACK_EXPANSION_P (init))
+	init = tsubst_pack_expansion (init, args, complain, in_decl);
+      else
+	init = tsubst_copy_and_build (init, args, complain, in_decl,
+				      /*fn*/false, /*constexpr*/false);
+
+      if (init == error_mark_node)
+	return error_mark_node;
+
+      if (init && TREE_CODE (init) == TREE_LIST)
+	init = build_x_compound_expr_from_list (init, ELK_INIT, complain);
+
+      if (!processing_template_decl
+	  && init && TREE_CODE (init) != TREE_VEC
+	  && variably_modified_type_p (TREE_TYPE (init), NULL_TREE))
+	{
+	  /* For a VLA, simply tsubsting the field type won't work, we need to
+	     go through add_capture again.  XXX do we want to do this for all
+	     captures?  */
+	  tree name = (get_identifier
+		       (IDENTIFIER_POINTER (DECL_NAME (ofield)) + 2));
+	  tree ftype = TREE_TYPE (ofield);
+	  bool by_ref = (TYPE_REF_P (ftype)
+			 || (TREE_CODE (ftype) == DECLTYPE_TYPE
+			     && DECLTYPE_FOR_REF_CAPTURE (ftype)));
+	  add_capture (r, name, init, by_ref, !DECL_NORMAL_CAPTURE_P (ofield));
+	  continue;
+	}
+
       if (PACK_EXPANSION_P (ofield))
 	ofield = PACK_EXPANSION_PATTERN (ofield);
       tree field = tsubst_decl (ofield, args, complain);
@@ -18143,13 +18173,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (field == error_mark_node)
 	return error_mark_node;
-
-      tree init = TREE_VALUE (cap);
-      if (PACK_EXPANSION_P (init))
-	init = tsubst_pack_expansion (init, args, complain, in_decl);
-      else
-	init = tsubst_copy_and_build (init, args, complain, in_decl,
-				      /*fn*/false, /*constexpr*/false);
 
       if (TREE_CODE (field) == TREE_VEC)
 	{
