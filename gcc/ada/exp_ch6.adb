@@ -2380,13 +2380,76 @@ package body Exp_Ch6 is
    procedure Expand_Call (N : Node_Id) is
       Post_Call : List_Id;
 
+      --  If this is an indirect call through an Access_To_Subprogram
+      --  with contract specifications, it is rewritten as a call to
+      --  the corresponding Access_Subprogram_Wrapper with the same
+      --  actuals, whose body contains a naked indirect call (which
+      --  itself must not be rewritten, to prevent infinite recursion).
+
+      Must_Rewrite_Indirect_Call : constant Boolean :=
+        Ada_Version >= Ada_2020
+          and then Nkind (Name (N)) = N_Explicit_Dereference
+          and then Ekind (Etype (Name (N))) = E_Subprogram_Type
+          and then Present
+            (Access_Subprogram_Wrapper (Etype (Name (N))));
+
    begin
       pragma Assert (Nkind_In (N, N_Entry_Call_Statement,
                                   N_Function_Call,
                                   N_Procedure_Call_Statement));
 
-      Expand_Call_Helper (N, Post_Call);
-      Insert_Post_Call_Actions (N, Post_Call);
+      --  Check that this is not the call in the body of the wrapper.
+
+      if Must_Rewrite_Indirect_Call
+        and then (not Is_Overloadable (Current_Scope)
+             or else not Is_Access_Subprogram_Wrapper (Current_Scope))
+      then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Wrapper : constant Entity_Id :=
+              Access_Subprogram_Wrapper (Etype (Name (N)));
+            Ptr      : constant Node_Id   := Prefix (Name (N));
+            Ptr_Type : constant Entity_Id := Etype (Ptr);
+            Parms    : constant List_Id   := Parameter_Associations (N);
+            Typ      : constant Entity_Id := Etype (N);
+            New_N    : Node_Id;
+
+         begin
+            --  The last actual in the call is the pointer itself.
+            --  If the aspect is inherited, convert the pointer to the
+            --  parent type that specifies the contract.
+
+            if Is_Derived_Type (Ptr_Type)
+              and then Ptr_Type /= Etype (Last_Formal (Wrapper))
+            then
+               Append
+                (Make_Type_Conversion (Loc,
+                   New_Occurrence_Of
+                    (Etype (Last_Formal (Wrapper)), Loc), Ptr),
+                   Parms);
+
+            else
+               Append (Ptr, Parms);
+            end if;
+
+            if Nkind (N) = N_Procedure_Call_Statement then
+               New_N := Make_Procedure_Call_Statement (Loc,
+                  Name  => New_Occurrence_Of (Wrapper, Loc),
+                  Parameter_Associations => Parms);
+            else
+               New_N := Make_Function_Call (Loc,
+                  Name => New_Occurrence_Of (Wrapper, Loc),
+                  Parameter_Associations => Parms);
+            end if;
+
+            Rewrite (N, New_N);
+            Analyze_And_Resolve (N, Typ);
+         end;
+
+      else
+         Expand_Call_Helper (N, Post_Call);
+         Insert_Post_Call_Actions (N, Post_Call);
+      end if;
    end Expand_Call;
 
    ------------------------

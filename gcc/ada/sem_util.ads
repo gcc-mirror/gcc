@@ -1519,6 +1519,10 @@ package Sem_Util is
    --  pragma Initialize_Scalars or by the binder. Return an expression created
    --  at source location Loc, which denotes the invalid value.
 
+   function Is_Access_Subprogram_Wrapper (E : Entity_Id) return Boolean;
+   --  True if E is the constructed wrapper for an access_to_subprogram
+   --  type with Pre/Postconditions.
+
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
 
