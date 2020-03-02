@@ -1,3 +1,9 @@
+2020-03-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93997
+	* config/i386/i386.md (movstrict<mode>): Allow only
+	registers with VALID_INT_MODE_P modes.
+
 2020-03-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (dpp_move<mode>): New.
