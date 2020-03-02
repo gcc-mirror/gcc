@@ -1,3 +1,11 @@
+2020-03-02  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/scev-8.c: Revise check string.
+	* gcc.dg/tree-ssa/scev-9.c: Ditto.
+	* gcc.dg/tree-ssa/scev-10.c: Ditto.
+	* gcc.dg/tree-ssa/scev-11.c: Ditto.
+	* gcc.dg/tree-ssa/scev-12.c: Ditto.
+
 2020-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/92721
