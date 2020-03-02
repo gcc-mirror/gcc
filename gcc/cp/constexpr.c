@@ -5996,8 +5996,13 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case PARM_DECL:
-      if (now)
+      if (now && want_rval)
 	{
+	  tree type = TREE_TYPE (t);
+	  if (dependent_type_p (type)
+	      || is_really_empty_class (type, /*ignore_vptr*/false))
+	    /* An empty class has no data to read.  */
+	    return true;
 	  if (flags & tf_error)
 	    error ("%qE is not a constant expression", t);
 	  return false;
@@ -6238,10 +6243,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 #endif
       return RECUR (t, any);
 
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
     case COMPONENT_REF:
-    case BIT_FIELD_REF:
     case ARROW_EXPR:
     case OFFSET_REF:
       /* -- a class member access unless its postfix-expression is
@@ -6250,6 +6252,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 postfix-expression being a potential constant expression.  */
       if (type_unknown_p (t))
 	return true;
+      if (is_overloaded_fn (t))
+	/* In a template, a COMPONENT_REF of a function expresses ob.fn(),
+	   which uses ob as an lvalue.  */
+	want_rval = false;
+      gcc_fallthrough ();
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case BIT_FIELD_REF:
       return RECUR (TREE_OPERAND (t, 0), want_rval);
 
     case EXPR_PACK_EXPANSION:

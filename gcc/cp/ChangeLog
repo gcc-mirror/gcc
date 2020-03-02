@@ -1,5 +1,13 @@
 2020-03-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/91953
+	* constexpr.c (potential_constant_expression_1) [PARM_DECL]: Allow
+	empty class type.
+	[COMPONENT_REF]: A member function reference doesn't use the object
+	as an rvalue.
+
+2020-03-02  Jason Merrill  <jason@redhat.com>
+
 	PR c++/88256
 	* cp-gimplify.c (predeclare_vla): New.
 	(cp_genericize_r) [NOP_EXPR]: Call it.
