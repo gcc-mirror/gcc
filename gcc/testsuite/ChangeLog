@@ -1,3 +1,9 @@
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/vect/bb-slp-19.c: The comment
+	does not align with fact that we started
+	to SLP the testcase.
+
 2020-03-02  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/scev-8.c: Revise check string.
