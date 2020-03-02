@@ -1681,9 +1681,10 @@ package Einfo is
 --       rewritten into something else and subsequently reanalyzed/expanded.
 
 --    Has_Foreign_Convention (synthesized)
---       Applies to all entities. Determines if the Convention for the
---       entity is a foreign convention (i.e. is other than Convention_Ada,
---       Convention_Intrinsic, Convention_Entry or Convention_Protected).
+--       Applies to all entities. Determines if the Convention for the entity
+--       is a foreign convention, i.e. non-native: other than Convention_Ada,
+--       Convention_Intrinsic, Convention_Entry, Convention_Protected,
+--       Convention_Stubbed and Convention_Ada_Pass_By_(Copy,Reference).
 
 --    Has_Forward_Instantiation (Flag175)
 --       Defined in package entities. Set for packages that instantiate local
@@ -7091,7 +7092,6 @@ package Einfo is
    function Class_Wide_Clone                    (Id : E) return E;
    function Class_Wide_Type                     (Id : E) return E;
    function Cloned_Subtype                      (Id : E) return E;
-   function Component_Alignment                 (Id : E) return C;
    function Component_Bit_Offset                (Id : E) return U;
    function Component_Clause                    (Id : E) return N;
    function Component_Size                      (Id : E) return U;
@@ -7199,7 +7199,6 @@ package Einfo is
    function Has_Delayed_Aspects                 (Id : E) return B;
    function Has_Delayed_Freeze                  (Id : E) return B;
    function Has_Delayed_Rep_Aspects             (Id : E) return B;
-   function Has_DIC                             (Id : E) return B;
    function Has_Discriminants                   (Id : E) return B;
    function Has_Dispatch_Table                  (Id : E) return B;
    function Has_Dynamic_Predicate_Aspect        (Id : E) return B;
@@ -7216,8 +7215,6 @@ package Einfo is
    function Has_Inherited_DIC                   (Id : E) return B;
    function Has_Inherited_Invariants            (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
-   function Has_Interrupt_Handler               (Id : E) return B;
-   function Has_Invariants                      (Id : E) return B;
    function Has_Loop_Entry_Attributes           (Id : E) return B;
    function Has_Machine_Radix_Clause            (Id : E) return B;
    function Has_Master_Entity                   (Id : E) return B;
@@ -7301,7 +7298,6 @@ package Einfo is
    function Is_Aliased                          (Id : E) return B;
    function Is_Asynchronous                     (Id : E) return B;
    function Is_Atomic                           (Id : E) return B;
-   function Is_Atomic_Or_VFA                    (Id : E) return B;
    function Is_Bit_Packed_Array                 (Id : E) return B;
    function Is_Called                           (Id : E) return B;
    function Is_Character_Type                   (Id : E) return B;
@@ -7624,6 +7620,7 @@ package Einfo is
    function Aft_Value                           (Id : E) return U;
    function Alignment_Clause                    (Id : E) return N;
    function Base_Type                           (Id : E) return E;
+   function Component_Alignment                 (Id : E) return C;
    function Declaration_Node                    (Id : E) return N;
    function Designated_Type                     (Id : E) return E;
    function First_Component                     (Id : E) return E;
@@ -7631,14 +7628,18 @@ package Einfo is
    function First_Formal                        (Id : E) return E;
    function First_Formal_With_Extras            (Id : E) return E;
    function Has_Attach_Handler                  (Id : E) return B;
+   function Has_DIC                             (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
+   function Has_Interrupt_Handler               (Id : E) return B;
+   function Has_Invariants                      (Id : E) return B;
    function Has_Non_Limited_View                (Id : E) return B;
    function Has_Non_Null_Abstract_State         (Id : E) return B;
    function Has_Non_Null_Visible_Refinement     (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
    function Has_Null_Visible_Refinement         (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
+   function Is_Atomic_Or_VFA                    (Id : E) return B;
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
@@ -7677,6 +7678,7 @@ package Einfo is
    function Next_Discriminant                   (Id : E) return E;
    function Next_Formal                         (Id : E) return E;
    function Next_Formal_With_Extras             (Id : E) return E;
+   function Next_Index                          (Id : N) return N;
    function Next_Literal                        (Id : E) return E;
    function Next_Stored_Discriminant            (Id : E) return E;
    function Number_Dimensions                   (Id : E) return Pos;
@@ -7690,6 +7692,7 @@ package Einfo is
    function Safe_Emax_Value                     (Id : E) return U;
    function Safe_First_Value                    (Id : E) return R;
    function Safe_Last_Value                     (Id : E) return R;
+   function Scope_Depth                         (Id : E) return U;
    function Scope_Depth_Set                     (Id : E) return B;
    function Size_Clause                         (Id : E) return N;
    function Stream_Size_Clause                  (Id : E) return N;
@@ -8303,8 +8306,8 @@ package Einfo is
    --  entities whose Ekind has not been set yet).
 
    procedure Init_Alignment                (Id : E; V : Int);
-   procedure Init_Component_Size           (Id : E; V : Int);
    procedure Init_Component_Bit_Offset     (Id : E; V : Int);
+   procedure Init_Component_Size           (Id : E; V : Int);
    procedure Init_Digits_Value             (Id : E; V : Int);
    procedure Init_Esize                    (Id : E; V : Int);
    procedure Init_Normalized_First_Bit     (Id : E; V : Int);
@@ -8313,14 +8316,22 @@ package Einfo is
    procedure Init_RM_Size                  (Id : E; V : Int);
 
    procedure Init_Alignment                (Id : E);
-   procedure Init_Component_Size           (Id : E);
    procedure Init_Component_Bit_Offset     (Id : E);
+   procedure Init_Component_Size           (Id : E);
    procedure Init_Digits_Value             (Id : E);
    procedure Init_Esize                    (Id : E);
    procedure Init_Normalized_First_Bit     (Id : E);
    procedure Init_Normalized_Position      (Id : E);
    procedure Init_Normalized_Position_Max  (Id : E);
    procedure Init_RM_Size                  (Id : E);
+
+   procedure Init_Component_Location (Id : E);
+   --  Initializes all fields describing the location of a component
+   --  (Normalized_Position, Component_Bit_Offset, Normalized_First_Bit,
+   --  Normalized_Position_Max, Esize) to all be Unknown.
+
+   procedure Init_Size (Id : E; V : Int);
+   --  Initialize both the Esize and RM_Size fields of E to V
 
    procedure Init_Size_Align (Id : E);
    --  This procedure initializes both size fields and the alignment
@@ -8329,14 +8340,6 @@ package Einfo is
    procedure Init_Object_Size_Align (Id : E);
    --  Same as Init_Size_Align except RM_Size field (which is only for types)
    --  is unaffected.
-
-   procedure Init_Size (Id : E; V : Int);
-   --  Initialize both the Esize and RM_Size fields of E to V
-
-   procedure Init_Component_Location (Id : E);
-   --  Initializes all fields describing the location of a component
-   --  (Normalized_Position, Component_Bit_Offset, Normalized_First_Bit,
-   --  Normalized_Position_Max, Esize) to all be Unknown.
 
    ---------------
    -- Iterators --
@@ -8524,17 +8527,8 @@ package Einfo is
    --  NOTE: No updates are done to the First_Entity and Last_Entity fields
    --  of the scope.
 
-   function Next_Index (Id : Node_Id) return Node_Id;
-   --  Given an index from a previous call to First_Index or Next_Index,
-   --  returns a node representing the occurrence of the next index subtype,
-   --  or Empty if there are no more index subtypes.
-
    procedure Remove_Entity (Id : Entity_Id);
    --  Remove entity Id from the entity chain of its scope
-
-   function Scope_Depth (Id : Entity_Id) return Uint;
-   --  Returns the scope depth value of the Id, unless the Id is a record
-   --  type, in which case it returns the scope depth of the record scope.
 
    function Subtype_Kind (K : Entity_Kind) return Entity_Kind;
    --  Given an entity_kind K this function returns the entity_kind
@@ -8597,9 +8591,9 @@ package Einfo is
    --  the given field, depending on the Ekind. No blanks or end of lines are
    --  output, just the characters of the field name.
 
-   --------------------
-   -- Inline Pragmas --
-   --------------------
+   ----------------------------------
+   -- Inline Pragmas for functions --
+   ----------------------------------
 
    --  Note that these inline pragmas are referenced by the XEINFO utility
    --  program in preparing the corresponding C header, and only those
@@ -8646,6 +8640,8 @@ package Einfo is
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
    pragma Inline (Corresponding_Equality);
+   pragma Inline (Corresponding_Function);
+   pragma Inline (Corresponding_Procedure);
    pragma Inline (Corresponding_Protected_Entry);
    pragma Inline (Corresponding_Record_Component);
    pragma Inline (Corresponding_Record_Type);
@@ -8694,6 +8690,7 @@ package Einfo is
    pragma Inline (Entry_Formal);
    pragma Inline (Entry_Index_Constant);
    pragma Inline (Entry_Index_Type);
+   pragma Inline (Entry_Max_Queue_Lengths_Array);
    pragma Inline (Entry_Parameters_Type);
    pragma Inline (Enum_Pos_To_Rep);
    pragma Inline (Enumeration_Pos);
@@ -8706,6 +8703,7 @@ package Einfo is
    pragma Inline (Extra_Constrained);
    pragma Inline (Extra_Formal);
    pragma Inline (Extra_Formals);
+   pragma Inline (Finalize_Storage_Only);
    pragma Inline (Finalization_Master);
    pragma Inline (Finalizer);
    pragma Inline (First_Entity);
@@ -8738,6 +8736,7 @@ package Einfo is
    pragma Inline (Has_Delayed_Aspects);
    pragma Inline (Has_Delayed_Freeze);
    pragma Inline (Has_Delayed_Rep_Aspects);
+   pragma Inline (Has_DIC);
    pragma Inline (Has_Discriminants);
    pragma Inline (Has_Dispatch_Table);
    pragma Inline (Has_Dynamic_Predicate_Aspect);
@@ -8754,6 +8753,7 @@ package Einfo is
    pragma Inline (Has_Inherited_DIC);
    pragma Inline (Has_Inherited_Invariants);
    pragma Inline (Has_Initial_Value);
+   pragma Inline (Has_Invariants);
    pragma Inline (Has_Loop_Entry_Attributes);
    pragma Inline (Has_Machine_Radix_Clause);
    pragma Inline (Has_Master_Entity);
@@ -8822,6 +8822,7 @@ package Einfo is
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
+   pragma Inline (Initialization_Statements);
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
@@ -8838,6 +8839,7 @@ package Einfo is
    pragma Inline (Is_Ada_2012_Only);
    pragma Inline (Is_Aggregate_Type);
    pragma Inline (Is_Aliased);
+   pragma Inline (Is_Anonymous_Access_Type);
    pragma Inline (Is_Array_Type);
    pragma Inline (Is_Assignable);
    pragma Inline (Is_Asynchronous);
@@ -9020,6 +9022,7 @@ package Einfo is
    pragma Inline (Next_Index);
    pragma Inline (Next_Inlined_Subprogram);
    pragma Inline (Next_Literal);
+   pragma Inline (Next_Stored_Discriminant);
    pragma Inline (No_Dynamic_Predicate_On_Actual);
    pragma Inline (No_Pool_Assigned);
    pragma Inline (No_Predicate_On_Actual);
@@ -9138,12 +9141,80 @@ package Einfo is
    pragma Inline (Was_Hidden);
    pragma Inline (Wrapped_Entity);
 
-   pragma Inline (Init_Alignment);
-   pragma Inline (Init_Component_Bit_Offset);
-   pragma Inline (Init_Component_Size);
-   pragma Inline (Init_Digits_Value);
-   pragma Inline (Init_Esize);
-   pragma Inline (Init_RM_Size);
+   --  END XEINFO INLINES
+
+   --  The following Inline pragmas are *not* read by XEINFO when building the
+   --  C version of this interface automatically (so the C version will end up
+   --  making out of line calls). The pragma scan in XEINFO will be terminated
+   --  on encountering the END XEINFO INLINES line. We inline things here which
+   --  are small, but not of the canonical attribute access/set format that can
+   --  be handled by XEINFO.
+
+   pragma Inline (Address_Clause);
+   pragma Inline (Alignment_Clause);
+   pragma Inline (Base_Type);
+   pragma Inline (Float_Rep);
+   pragma Inline (Has_Foreign_Convention);
+   pragma Inline (Has_Non_Limited_View);
+   pragma Inline (Is_Base_Type);
+   pragma Inline (Is_Boolean_Type);
+   pragma Inline (Is_Constant_Object);
+   pragma Inline (Is_Controlled);
+   pragma Inline (Is_Discriminal);
+   pragma Inline (Is_Entity_Name);
+   pragma Inline (Is_Finalizer);
+   pragma Inline (Is_Null_State);
+   pragma Inline (Is_Package_Or_Generic_Package);
+   pragma Inline (Is_Packed_Array);
+   pragma Inline (Is_Prival);
+   pragma Inline (Is_Protected_Component);
+   pragma Inline (Is_Protected_Record_Type);
+   pragma Inline (Is_String_Type);
+   pragma Inline (Is_Subprogram_Or_Entry);
+   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
+   pragma Inline (Is_Task_Record_Type);
+   pragma Inline (Is_Volatile);
+   pragma Inline (Is_Wrapper_Package);
+   pragma Inline (Scope_Depth);
+   pragma Inline (Scope_Depth_Set);
+   pragma Inline (Size_Clause);
+   pragma Inline (Stream_Size_Clause);
+   pragma Inline (Type_High_Bound);
+   pragma Inline (Type_Low_Bound);
+
+   pragma Inline (Known_Alignment);
+   pragma Inline (Known_Component_Bit_Offset);
+   pragma Inline (Known_Component_Size);
+   pragma Inline (Known_Esize);
+   pragma Inline (Known_Normalized_First_Bit);
+   pragma Inline (Known_Normalized_Position);
+   pragma Inline (Known_Normalized_Position_Max);
+   pragma Inline (Known_RM_Size);
+
+   pragma Inline (Known_Static_Component_Bit_Offset);
+   pragma Inline (Known_Static_Component_Size);
+   pragma Inline (Known_Static_Esize);
+   pragma Inline (Known_Static_Normalized_First_Bit);
+   pragma Inline (Known_Static_Normalized_Position);
+   pragma Inline (Known_Static_Normalized_Position_Max);
+   pragma Inline (Known_Static_RM_Size);
+
+   pragma Inline (Unknown_Alignment);
+   pragma Inline (Unknown_Component_Bit_Offset);
+   pragma Inline (Unknown_Component_Size);
+   pragma Inline (Unknown_Esize);
+   pragma Inline (Unknown_Normalized_First_Bit);
+   pragma Inline (Unknown_Normalized_Position);
+   pragma Inline (Unknown_Normalized_Position_Max);
+   pragma Inline (Unknown_RM_Size);
+
+   -----------------------------------
+   -- Inline Pragmas for procedures --
+   -----------------------------------
+
+   --  The following inline pragmas are *not* referenced by the XEINFO utility
+   --  program in preparing the corresponding C header, and therefore do *not*
+   --  need to meet the requirements documented in the section on XEINFO.
 
    pragma Inline (Set_Abstract_States);
    pragma Inline (Set_Accept_Address);
@@ -9185,6 +9256,8 @@ package Einfo is
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);
    pragma Inline (Set_Corresponding_Equality);
+   pragma Inline (Set_Corresponding_Function);
+   pragma Inline (Set_Corresponding_Procedure);
    pragma Inline (Set_Corresponding_Protected_Entry);
    pragma Inline (Set_Corresponding_Record_Component);
    pragma Inline (Set_Corresponding_Record_Type);
@@ -9244,6 +9317,7 @@ package Einfo is
    pragma Inline (Set_Extra_Constrained);
    pragma Inline (Set_Extra_Formal);
    pragma Inline (Set_Extra_Formals);
+   pragma Inline (Set_Finalize_Storage_Only);
    pragma Inline (Set_Finalization_Master);
    pragma Inline (Set_Finalizer);
    pragma Inline (Set_First_Entity);
@@ -9252,6 +9326,7 @@ package Einfo is
    pragma Inline (Set_First_Literal);
    pragma Inline (Set_First_Private_Entity);
    pragma Inline (Set_First_Rep_Item);
+   pragma Inline (Set_Float_Rep);
    pragma Inline (Set_Freeze_Node);
    pragma Inline (Set_From_Limited_With);
    pragma Inline (Set_Full_View);
@@ -9359,6 +9434,7 @@ package Einfo is
    pragma Inline (Set_In_Package_Body);
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);
+   pragma Inline (Set_Initialization_Statements);
    pragma Inline (Set_Inner_Instances);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
@@ -9627,31 +9703,14 @@ package Einfo is
    pragma Inline (Set_Was_Hidden);
    pragma Inline (Set_Wrapped_Entity);
 
-   --  END XEINFO INLINES
-
-   --  The following Inline pragmas are *not* read by xeinfo when building the
-   --  C version of this interface automatically (so the C version will end up
-   --  making out of line calls). The pragma scan in xeinfo will be terminated
-   --  on encountering the END XEINFO INLINES line. We inline things here which
-   --  are small, but not of the canonical attribute access/set format that can
-   --  be handled by xeinfo.
-
-   pragma Inline (Base_Type);
-   pragma Inline (Is_Base_Type);
-   pragma Inline (Is_Boolean_Type);
-   pragma Inline (Is_Controlled);
-   pragma Inline (Is_Entity_Name);
-   pragma Inline (Is_Package_Or_Generic_Package);
-   pragma Inline (Is_Packed_Array);
-   pragma Inline (Is_String_Type);
-   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
-   pragma Inline (Is_Volatile);
-   pragma Inline (Is_Wrapper_Package);
-   pragma Inline (Known_RM_Size);
-   pragma Inline (Known_Static_Component_Bit_Offset);
-   pragma Inline (Known_Static_RM_Size);
-   pragma Inline (Scope_Depth);
-   pragma Inline (Scope_Depth_Set);
-   pragma Inline (Unknown_RM_Size);
+   pragma Inline (Init_Alignment);
+   pragma Inline (Init_Component_Bit_Offset);
+   pragma Inline (Init_Component_Size);
+   pragma Inline (Init_Digits_Value);
+   pragma Inline (Init_Esize);
+   pragma Inline (Init_Normalized_First_Bit);
+   pragma Inline (Init_Normalized_Position);
+   pragma Inline (Init_Normalized_Position_Max);
+   pragma Inline (Init_RM_Size);
 
 end Einfo;
