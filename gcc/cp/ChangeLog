@@ -1,5 +1,11 @@
 2020-03-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/88256
+	* cp-gimplify.c (predeclare_vla): New.
+	(cp_genericize_r) [NOP_EXPR]: Call it.
+
+2020-03-02  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93442
 	* parser.c (cp_parser_lambda_expression): Clear in_discarded_stmt.
 
