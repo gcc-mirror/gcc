@@ -13357,6 +13357,12 @@ package body Exp_Util is
          =>
             return True;
 
+         --  An aggregate is side effect free if all its values are compile
+         --  time known.
+
+         when N_Aggregate =>
+            return Compile_Time_Known_Aggregate (N);
+
          --  We consider that anything else has side effects. This is a bit
          --  crude, but we are pretty close for most common cases, and we
          --  are certainly correct (i.e. we never return True when the
