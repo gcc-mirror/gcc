@@ -738,8 +738,21 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   /* To complete the lookups, we need an instance of 'e' which is built from
      'o' according to [expr.await] 3.4.  However, we don't want to materialize
      'e' here (it might need to be placed in the coroutine frame) so we will
-     make a temp placeholder instead.  */
-  tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
+     make a temp placeholder instead.  If 'o' is a parameter or a local var,
+     then we do not need an additional var (parms and local vars are already
+     copied into the frame and will have lifetimes according to their original
+     scope).  */
+  tree e_proxy = STRIP_NOPS (o);
+  if (INDIRECT_REF_P (e_proxy))
+    e_proxy = TREE_OPERAND (e_proxy, 0);
+  if (TREE_CODE (e_proxy) == PARM_DECL
+      || (TREE_CODE (e_proxy) == VAR_DECL && !DECL_ARTIFICIAL (e_proxy)))
+    e_proxy = o;
+  else
+    {
+      e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
+      DECL_ARTIFICIAL (e_proxy) = true;
+    }
 
   /* I suppose we could check that this is contextually convertible to bool.  */
   tree awrd_func = NULL_TREE;
@@ -1452,10 +1465,17 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 				      tf_warning_or_error);
 
   tree stmt_list = NULL;
+  tree t_expr = STRIP_NOPS (expr);
+  tree r;
+  if (t_expr == var)
+    dtor = NULL_TREE;
+  else
+    {
   /* Initialize the var from the provided 'o' expression.  */
-  tree r = build2 (INIT_EXPR, await_type, var, expr);
+    r = build2 (INIT_EXPR, await_type, var, expr);
   r = coro_build_cvt_void_expr_stmt (r, loc);
   append_to_statement_list (r, &stmt_list);
+    }
 
   /* Use the await_ready() call to test if we need to suspend.  */
   tree ready_cond = TREE_VEC_ELT (awaiter_calls, 0); /* await_ready().  */
@@ -1687,20 +1707,26 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
      and an empty pointer for void return.  */
   TREE_OPERAND (await_expr, 0) = ah;
 
-  /* Get a reference to the initial suspend var in the frame.  */
-  tree as_m
-    = lookup_member (coro_frame_type, si->await_field_id,
-		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-  tree as = build_class_member_access_expr (xform->actor_frame, as_m, NULL_TREE,
-					    true, tf_warning_or_error);
+  /* If we have a frame var for the awaitable, get a reference to it.  */
+  proxy_replace data;
+  if (si->await_field_id)
+    {
+      tree as_m
+	 = lookup_member (coro_frame_type, si->await_field_id,
+			  /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+      tree as = build_class_member_access_expr (xform->actor_frame, as_m,
+						NULL_TREE, true,
+						tf_warning_or_error);
 
-  /* Replace references to the instance proxy with the frame entry now
-     computed.  */
-  proxy_replace data = {TREE_OPERAND (await_expr, 1), as};
-  cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
+      /* Replace references to the instance proxy with the frame entry now
+	 computed.  */
+      data.from = TREE_OPERAND (await_expr, 1);
+      data.to = as;
+      cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
 
-  /* .. and replace.  */
-  TREE_OPERAND (await_expr, 1) = as;
+      /* .. and replace.  */
+      TREE_OPERAND (await_expr, 1) = as;
+    }
 
   /* Now do the self_handle.  */
   data.from = xform->self_h_proxy;
@@ -2643,15 +2669,25 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
      as the counter used for the function-wide await point number.  */
   data->saw_awaits++;
 
-  /* The required field has the same type as the proxy stored in the
-      await expr.  */
-  tree aw_field_type = TREE_TYPE (TREE_OPERAND (aw_expr, 1));
-
-  size_t bufsize = sizeof ("__aw_s.") + 10;
-  char *buf = (char *) alloca (bufsize);
-  snprintf (buf, bufsize, "__aw_s.%d", data->count);
-  tree aw_field_nam
-    = coro_make_frame_entry (data->field_list, buf, aw_field_type, aw_loc);
+  /* If the awaitable is a parm or a local variable, then we already have
+     a frame copy, so don't make a new one.  */
+  tree aw = TREE_OPERAND (aw_expr, 1);
+  tree aw_field_type = TREE_TYPE (aw);
+  tree aw_field_nam = NULL_TREE;
+  if (INDIRECT_REF_P (aw))
+    aw = TREE_OPERAND (aw, 0);
+  if (TREE_CODE (aw) == PARM_DECL
+      || (TREE_CODE (aw) == VAR_DECL && !DECL_ARTIFICIAL (aw)))
+    ; /* Don't make an additional copy.  */
+  else
+    {
+      /* The required field has the same type as the proxy stored in the
+	 await expr.  */
+      char *nam = xasprintf ("__aw_s.%d", data->count);
+      aw_field_nam = coro_make_frame_entry (data->field_list, nam,
+					    aw_field_type, aw_loc);
+      free (nam);
+    }
 
   /* Find out what we have to do with the awaiter's suspend method (this
      determines if we need somewhere to stash the suspend method's handle).
@@ -2671,9 +2707,10 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
     handle_field_nam = NULL_TREE; /* no handle is needed.  */
   else
     {
-      snprintf (buf, bufsize, "__aw_h.%u", data->count);
+      char *nam = xasprintf ("__aw_h.%u", data->count);
       handle_field_nam
-	= coro_make_frame_entry (data->field_list, buf, susp_typ, aw_loc);
+	= coro_make_frame_entry (data->field_list, nam, susp_typ, aw_loc);
+      free (nam);
     }
   register_await_info (aw_expr, aw_field_type, aw_field_nam, susp_typ,
 		       handle_field_nam);

@@ -1,3 +1,8 @@
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/func-params-09-awaitable-parms.C: New test.
+	* g++.dg/coroutines/torture/local-var-5-awaitable.C: New test.
+
 2020-03-02  Jeff Law  <law@redhat.com>
 
 	* gcc.target/arm/fuse-caller-save.c: Update expected output.

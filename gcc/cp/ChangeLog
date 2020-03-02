@@ -1,3 +1,15 @@
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Do not build frame
+	awaitable proxy vars when the co_await expression is
+	a function parameter or local var.
+	(co_await_expander): Do not initialise a frame var with
+	itself.
+	(transform_await_expr): Only substitute the awaitable
+	frame var if it's needed.
+	(register_awaits): Do not make frame copies for param
+	or local vars that are awaitables.
+
 2020-02-28  Jason Merrill  <jason@redhat.com>
 
 	Implement P2092R0, Disambiguating Nested-Requirements
