@@ -2391,6 +2391,7 @@ package body Sprint is
 
                   if Present (Expression (Node))
                     and then Expression (Node) /= Error
+                    and then not No_Initialization (Node)
                   then
                      Write_Str (" := ");
                      Sprint_Node (Expression (Node));

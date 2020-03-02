@@ -4418,8 +4418,7 @@ package body Sem_Ch3 is
       --  the predicate still applies.
 
       if not Suppress_Assignment_Checks (N)
-        and then Present (Predicate_Function (T))
-        and then not Predicates_Ignored (T)
+        and then Predicate_Enabled (T)
         and then
           (not No_Initialization (N)
             or else (Present (E) and then Nkind (E) = N_Aggregate))

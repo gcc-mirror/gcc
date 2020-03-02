@@ -8181,6 +8181,10 @@ package body Exp_Aggr is
       --  if components are static it is much more efficient to construct a
       --  one-dimensional equivalent array with static components.
 
+      --  Finally we also use a small limit when we're within a subprogram
+      --  since we want to favor loops (potentially transformed to memset
+      --  calls) in this context.
+
       if CodePeer_Mode then
          return 100;
       elsif Restriction_Active (No_Elaboration_Code)
@@ -8190,6 +8194,8 @@ package body Exp_Aggr is
                    and then Static_Elaboration_Desired (Current_Scope))
       then
          return 2 ** 24;
+      elsif Ekind (Current_Scope) in Subprogram_Kind then
+         return 64;
       else
          return Default_Size;
       end if;

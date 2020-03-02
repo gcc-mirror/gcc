@@ -2472,8 +2472,7 @@ package body Exp_Ch6 is
                   Atyp := Aund;
                end if;
 
-               if Has_Predicates (Atyp)
-                 and then Present (Predicate_Function (Atyp))
+               if Predicate_Enabled (Atyp)
 
                  --  Skip predicate checks for special cases
 

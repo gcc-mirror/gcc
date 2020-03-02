@@ -24807,6 +24807,17 @@ package body Sem_Util is
       return Kind;
    end Policy_In_Effect;
 
+   -----------------------
+   -- Predicate_Enabled --
+   -----------------------
+
+   function Predicate_Enabled (Typ : Entity_Id) return Boolean is
+   begin
+      return Present (Predicate_Function (Typ))
+        and then not Predicates_Ignored (Typ)
+        and then not Predicate_Checks_Suppressed (Empty);
+   end Predicate_Enabled;
+
    ----------------------------------
    -- Predicate_Tests_On_Arguments --
    ----------------------------------

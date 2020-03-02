@@ -1195,12 +1195,10 @@ package Exp_Util is
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
 
-   function Within_Internal_Subprogram return Boolean;
-   --  Indicates that some expansion is taking place within the body of a
-   --  predefined primitive operation. Some expansion activity (e.g. predicate
-   --  checks) is disabled in such. Because we want to detect invalid uses
-   --  of function calls within predicates (which lead to infinite recursion)
-   --  predicate functions themselves are not considered internal here.
+   function Predicate_Check_In_Scope (N : Node_Id) return Boolean;
+   --  Return True if predicate checks should be generated in the current
+   --  scope on the given node. Will return False for example when the current
+   --  scope is a predefined primitive operation.
 
 private
    pragma Inline (Duplicate_Subexpr);
