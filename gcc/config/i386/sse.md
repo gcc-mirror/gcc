@@ -191,6 +191,14 @@
   UNSPEC_VCVTNE2PS2BF16
   UNSPEC_VCVTNEPS2BF16
   UNSPEC_VDPBF16PS
+
+  ;; For AVX512FP16 suppport
+  UNSPEC_COMPLEX_FMA
+  UNSPEC_COMPLEX_FCMA
+  UNSPEC_COMPLEX_FMUL
+  UNSPEC_COMPLEX_FCMUL
+  UNSPEC_COMPLEX_MASK
+
 ])
 
 (define_c_enum "unspecv" [
@@ -938,6 +946,10 @@
    (V32HF "SI") (V16HF "HI") (V8HF  "QI")
    (V16SF "HI") (V8SF  "QI") (V4SF  "QI")
    (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
+
+;; Mapping of vector modes to corresponding complex mask size
+(define_mode_attr avx512fmaskcmode
+  [(V32HF "HI") (V16HF "QI") (V8HF  "QI")])
 
 ;; Mapping of vector modes to corresponding mask size
 (define_mode_attr avx512fmaskmodelower
@@ -5791,6 +5803,92 @@
   "TARGET_FMA4"
   "vfnmsub<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %<iptr>3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Complex type operations
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_int_iterator UNSPEC_COMPLEX_F_C_MA
+	[UNSPEC_COMPLEX_FMA UNSPEC_COMPLEX_FCMA])
+
+(define_int_iterator UNSPEC_COMPLEX_F_C_MUL
+	[UNSPEC_COMPLEX_FMUL UNSPEC_COMPLEX_FCMUL])
+
+(define_int_attr complexopname
+	[(UNSPEC_COMPLEX_FMA "fmaddc")
+	 (UNSPEC_COMPLEX_FCMA "fcmaddc")
+	 (UNSPEC_COMPLEX_FMUL "fmulc")
+	 (UNSPEC_COMPLEX_FCMUL "fcmulc")])
+
+(define_expand "<avx512>_fmaddc_<mode>_maskz<round_expand_name>"
+  [(match_operand:VF_AVX512FP16VL 0 "register_operand")
+   (match_operand:VF_AVX512FP16VL 1 "<round_expand_nimm_predicate>")
+   (match_operand:VF_AVX512FP16VL 2 "<round_expand_nimm_predicate>")
+   (match_operand:VF_AVX512FP16VL 3 "<round_expand_nimm_predicate>")
+   (match_operand:<avx512fmaskcmode> 4 "register_operand")]
+  "TARGET_AVX512FP16 && <round_mode512bit_condition>"
+{
+  emit_insn (gen_fma_fmaddc_<mode>_maskz_1<round_expand_name> (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]<round_expand_operand>));
+  DONE;
+})
+
+(define_expand "<avx512>_fcmaddc_<mode>_maskz<round_expand_name>"
+  [(match_operand:VF_AVX512FP16VL 0 "register_operand")
+   (match_operand:VF_AVX512FP16VL 1 "<round_expand_nimm_predicate>")
+   (match_operand:VF_AVX512FP16VL 2 "<round_expand_nimm_predicate>")
+   (match_operand:VF_AVX512FP16VL 3 "<round_expand_nimm_predicate>")
+   (match_operand:<avx512fmaskcmode> 4 "register_operand")]
+  "TARGET_AVX512FP16 && <round_mode512bit_condition>"
+{
+  emit_insn (gen_fma_fcmaddc_<mode>_maskz_1<round_expand_name> (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]<round_expand_operand>));
+  DONE;
+})
+
+(define_insn "fma_<complexopname>_<mode><sdc_maskz_name><round_name>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
+	(unspec:VF_AVX512FP16VL
+	  [(match_operand:VF_AVX512FP16VL 1 "<round_nimm_predicate>" "%v")
+	   (match_operand:VF_AVX512FP16VL 2 "<round_nimm_predicate>" "<round_constraint>")
+	   (match_operand:VF_AVX512FP16VL 3 "<round_nimm_predicate>" "0")]
+	   UNSPEC_COMPLEX_F_C_MA))]
+  "TARGET_AVX512FP16 && <sdc_mask_mode512bit_condition> && <round_mode512bit_condition>"
+  "v<complexopname><ssemodesuffix>\t{<round_sdc_mask_op4>%2, %1, %0<sdc_mask_op4>|%0<sdc_mask_op4>, %1, %2<round_sdc_mask_op4>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "<avx512>_<complexopname>_<mode>_mask<round_name>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
+	(vec_merge:VF_AVX512FP16VL
+	  (unspec:VF_AVX512FP16VL
+	    [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "%v")
+	     (match_operand:VF_AVX512FP16VL 2 "nonimmediate_operand" "<round_constraint>")
+	     (match_operand:VF_AVX512FP16VL 3 "register_operand" "0")]
+	     UNSPEC_COMPLEX_F_C_MA)
+	  (match_dup 1)
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:<avx512fmaskcmode> 4 "register_operand" "Yk")]
+	    UNSPEC_COMPLEX_MASK)))]
+  "TARGET_AVX512FP16 && <round_mode512bit_condition>"
+  "v<complexopname><ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "<avx512>_<complexopname>_<mode><maskc_name><round_name>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
+	  (unspec:VF_AVX512FP16VL
+	    [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "%v")
+	     (match_operand:VF_AVX512FP16VL 2 "nonimmediate_operand" "<round_constraint>")]
+	     UNSPEC_COMPLEX_F_C_MUL))]
+  "TARGET_AVX512FP16 && <round_mode512bit_condition>"
+  "v<complexopname><ssemodesuffix>\t{<round_maskc_op3>%2, %1, %0<maskc_operand3>|%0<maskc_operand3>, %1, %2<round_maskc_op3>}"
+  [(set_attr "type" "ssemul")
    (set_attr "mode" "<MODE>")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

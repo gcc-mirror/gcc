@@ -2815,6 +2815,270 @@ _mm_maskz_fnmsub_ph (__mmask8 __U, __m128h __A, __m128h __B,
 							__U);
 }
 
+/* Intrinsics vf[,c]maddcph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fmadd_pch (__m128h __A, __m128h __B, __m128h __C)
+{
+  return (__m128h) __builtin_ia32_vfmaddcph128 ((__v8hf) __A,
+						(__v8hf) __B,
+						(__v8hf) __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmadd_pch (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return (__m128h) __builtin_ia32_movaps128_mask
+    ((__v4sf)
+     __builtin_ia32_vfmaddcph128_mask ((__v8hf) __A,
+				       (__v8hf) __C,
+				       (__v8hf) __D, __B),
+     (__v4sf) __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmadd_pch (__m128h __A, __m128h __B, __m128h __C,  __mmask8 __D)
+{
+  return (__m128h) __builtin_ia32_vfmaddcph128_mask ((__v8hf) __A,
+						     (__v8hf) __B,
+						     (__v8hf) __C, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmadd_pch (__mmask8 __A, __m128h __B, __m128h __C, __m128h __D)
+{
+  return (__m128h) __builtin_ia32_vfmaddcph128_maskz ((__v8hf) __B,
+						      (__v8hf) __C,
+						      (__v8hf) __D, __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fmadd_pch (__m256h __A, __m256h __B, __m256h __C)
+{
+  return (__m256h) __builtin_ia32_vfmaddcph256 ((__v16hf) __A,
+						(__v16hf) __B,
+						(__v16hf) __C);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fmadd_pch (__m256h __A, __mmask8 __B, __m256h __C, __m256h __D)
+{
+  return (__m256h) __builtin_ia32_movaps256_mask
+    ((__v8sf)
+     __builtin_ia32_vfmaddcph256_mask ((__v16hf) __A,
+				       (__v16hf) __C,
+				       (__v16hf) __D, __B),
+     (__v8sf) __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask3_fmadd_pch (__m256h __A, __m256h __B, __m256h __C,  __mmask8 __D)
+{
+  return (__m256h) __builtin_ia32_vfmaddcph256_mask ((__v16hf) __A,
+						     (__v16hf) __B,
+						     (__v16hf) __C, __D);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fmadd_pch (__mmask8 __A, __m256h __B, __m256h __C, __m256h __D)
+{
+  return (__m256h)__builtin_ia32_vfmaddcph256_maskz ((__v16hf) __B,
+						     (__v16hf) __C,
+						     (__v16hf) __D, __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fcmadd_pch (__m128h __A, __m128h __B, __m128h __C)
+{
+  return (__m128h) __builtin_ia32_vfcmaddcph128 ((__v8hf) __A,
+						 (__v8hf) __B,
+						 (__v8hf) __C);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fcmadd_pch (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return (__m128h) __builtin_ia32_movaps128_mask
+    ((__v4sf)
+     __builtin_ia32_vfcmaddcph128_mask ((__v8hf) __A,
+					(__v8hf) __C,
+					(__v8hf) __D, __B),
+     (__v4sf) __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fcmadd_pch (__m128h __A, __m128h __B, __m128h __C,  __mmask8 __D)
+{
+  return (__m128h) __builtin_ia32_vfcmaddcph128_mask ((__v8hf) __A,
+						      (__v8hf) __B,
+						      (__v8hf) __C, __D);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fcmadd_pch (__mmask8 __A, __m128h __B, __m128h __C, __m128h __D)
+{
+  return (__m128h)__builtin_ia32_vfcmaddcph128_maskz ((__v8hf) __B,
+						      (__v8hf) __C,
+						      (__v8hf) __D, __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fcmadd_pch (__m256h __A, __m256h __B, __m256h __C)
+{
+  return (__m256h) __builtin_ia32_vfcmaddcph256 ((__v16hf) __A,
+						 (__v16hf) __B,
+						 (__v16hf) __C);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fcmadd_pch (__m256h __A, __mmask8 __B, __m256h __C, __m256h __D)
+{
+  return (__m256h) __builtin_ia32_movaps256_mask
+    ((__v8sf)
+     __builtin_ia32_vfcmaddcph256_mask ((__v16hf) __A,
+					(__v16hf) __C,
+					(__v16hf) __D, __B),
+     (__v8sf) __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask3_fcmadd_pch (__m256h __A, __m256h __B, __m256h __C,  __mmask8 __D)
+{
+  return (__m256h) __builtin_ia32_vfcmaddcph256_mask ((__v16hf) __A,
+						      (__v16hf) __B,
+						      (__v16hf) __C, __D);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fcmadd_pch (__mmask8 __A, __m256h __B, __m256h __C, __m256h __D)
+{
+  return (__m256h) __builtin_ia32_vfcmaddcph256_maskz ((__v16hf) __B,
+						       (__v16hf) __C,
+						       (__v16hf) __D, __A);
+}
+
+/* Intrinsics vf[,c]mulcph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fmul_pch (__m128h __A, __m128h __B)
+{
+  return (__m128h) __builtin_ia32_vfmulcph128 ((__v8hf) __A, (__v8hf) __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmul_pch (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return (__m128h) __builtin_ia32_vfmulcph128_mask ((__v8hf) __C,
+						    (__v8hf) __D,
+						    (__v8hf) __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmul_pch (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return (__m128h) __builtin_ia32_vfmulcph128_mask ((__v8hf) __B,
+						    (__v8hf) __C,
+						    _mm_setzero_ph (),
+						    __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fmul_pch (__m256h __A, __m256h __B)
+{
+  return (__m256h) __builtin_ia32_vfmulcph256 ((__v16hf) __A,
+					       (__v16hf) __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fmul_pch (__m256h __A, __mmask8 __B, __m256h __C, __m256h __D)
+{
+  return (__m256h) __builtin_ia32_vfmulcph256_mask ((__v16hf) __C,
+						    (__v16hf) __D,
+						    (__v16hf) __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fmul_pch (__mmask8 __A, __m256h __B, __m256h __C)
+{
+  return (__m256h) __builtin_ia32_vfmulcph256_mask ((__v16hf) __B,
+						    (__v16hf) __C,
+						    _mm256_setzero_ph (),
+						    __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fcmul_pch (__m128h __A, __m128h __B)
+{
+  return (__m128h) __builtin_ia32_vfcmulcph128 ((__v8hf) __A,
+						(__v8hf) __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fcmul_pch (__m128h __A, __mmask8 __B, __m128h __C, __m128h __D)
+{
+  return (__m128h) __builtin_ia32_vfcmulcph128_mask ((__v8hf) __C,
+						     (__v8hf) __D,
+						     (__v8hf) __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fcmul_pch (__mmask8 __A, __m128h __B, __m128h __C)
+{
+  return (__m128h) __builtin_ia32_vfcmulcph128_mask ((__v8hf) __B,
+						     (__v8hf) __C,
+						     _mm_setzero_ph (),
+						     __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fcmul_pch (__m256h __A, __m256h __B)
+{
+  return (__m256h) __builtin_ia32_vfcmulcph256 ((__v16hf) __A, (__v16hf) __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fcmul_pch (__m256h __A, __mmask8 __B, __m256h __C, __m256h __D)
+{
+  return (__m256h) __builtin_ia32_vfcmulcph256_mask ((__v16hf) __C,
+						     (__v16hf) __D,
+						     (__v16hf) __A, __B);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fcmul_pch (__mmask8 __A, __m256h __B, __m256h __C)
+{
+  return (__m256h) __builtin_ia32_vfcmulcph256_mask ((__v16hf) __B,
+						     (__v16hf) __C,
+						     _mm256_setzero_ph (),
+						     __A);
+}
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options
