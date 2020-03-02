@@ -1,3 +1,14 @@
+2020-03-02  Nick Clifton  <nickc@redhat.com>
+
+	* testsuite/demangle-expected: Update expected demangling of
+	enable_if pattern.
+
+2020-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/93966
+	* simple-object.c (handle_lto_debug_sections): Also copy
+	.note.gnu.property section.
+
 2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libstdc++/79193

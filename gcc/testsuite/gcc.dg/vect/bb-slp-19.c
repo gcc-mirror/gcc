@@ -15,7 +15,6 @@ main1 ()
   unsigned short *pin = &in[0];
   unsigned short *pout = &out[0];
  
-  /* A group of 9 shorts - unsupported for now.  */
   *pout++ = *pin++;
   *pout++ = *pin++;
   *pout++ = *pin++;

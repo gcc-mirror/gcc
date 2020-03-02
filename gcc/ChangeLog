@@ -1,3 +1,43 @@
+2020-03-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93997
+	* config/i386/i386.md (movstrict<mode>): Allow only
+	registers with VALID_INT_MODE_P modes.
+
+2020-03-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (dpp_move<mode>): New.
+	(reduc_insn): Use 'U' and 'B' operand codes.
+	(reduc_<reduc_op>_scal_<mode>): Allow all types.
+	(reduc_<reduc_op>_scal_v64di): Delete.
+	(*<reduc_op>_dpp_shr_<mode>): Allow all 1reg types.
+	(*plus_carry_dpp_shr_v64si): Change to ...
+	(*plus_carry_dpp_shr_<mode>): ... this and allow all 1reg int types.
+	(mov_from_lane63_v64di): Change to ...
+	(mov_from_lane63_<mode>): ... this, and allow all 64-bit modes.
+	* config/gcn/gcn.c (gcn_expand_dpp_shr_insn): Increase buffer size.
+	Support UNSPEC_MOV_DPP_SHR output formats.
+	(gcn_expand_reduc_scalar): Add "use_moves" reductions.
+	Add "use_extends" reductions.
+	(print_operand_address): Add 'I' and 'U' codes.
+	* config/gcn/gcn.md (unspec): Add UNSPEC_MOV_DPP_SHR.
+
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c: Fix typo in comment about
+	C++ standard version.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/92721
+	* calls.c (init_attr_rdwr_indices): Correctly handle attribute.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93829
+	* tree-ssa-strlen.c (count_nonzero_bytes): Set the size to that
+	  of a pointer in the outermost ADDR_EXPRs.
+
 2020-02-28  Jeff Law  <law@redhat.com>
 
 	* config/v850/v850.h (STATIC_CHAIN_REGNUM): Change to r19.

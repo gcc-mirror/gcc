@@ -353,7 +353,28 @@ c_vla_type_p (const_tree t)
     return true;
   return false;
 }
-
+
+/* If NTYPE is a type of a non-variadic function with a prototype
+   and OTYPE is a type of a function without a prototype and ATTRS
+   contains attribute format, diagnosess and removes it from ATTRS.
+   Returns the result of build_type_attribute_variant of NTYPE and
+   the (possibly) modified ATTRS.  */
+
+static tree
+build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
+{
+  if (!prototype_p (otype)
+      && prototype_p (ntype)
+      && lookup_attribute ("format", attrs))
+    {
+      warning_at (input_location, OPT_Wattributes,
+		  "%qs attribute cannot be applied to a function that "
+		  "does not take variable arguments", "format");
+      attrs = remove_attribute ("format", attrs);
+    }
+  return build_type_attribute_variant (ntype, attrs);
+
+}
 /* Return the composite type of two compatible types.
 
    We assume that comptypes has already been done and returned
@@ -504,9 +525,9 @@ composite_type (tree t1, tree t2)
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && !TYPE_ARG_TYPES (t2))
-	  return build_type_attribute_variant (t1, attributes);
+	  return build_functype_attribute_variant (t1, t2, attributes);
 	if (valtype == TREE_TYPE (t2) && !TYPE_ARG_TYPES (t1))
-	  return build_type_attribute_variant (t2, attributes);
+	  return build_functype_attribute_variant (t2, t1, attributes);
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == NULL_TREE)

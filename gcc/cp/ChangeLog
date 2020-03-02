@@ -1,3 +1,30 @@
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct local_var_info): Adjust to remove the
+	reference to the captured var, and just to note that this is a
+	lambda capture proxy.
+	(transform_local_var_uses): Handle lambda captures specially.
+	(struct param_frame_data): Add a visited set.
+	(register_param_uses): Also check for param uses in lambda
+	capture proxies.
+	(struct local_vars_frame_data): Remove captures list.
+	(register_local_var_uses): Handle lambda capture proxies by
+	noting and bypassing them.
+	(morph_fn_to_coro): Update to remove lifetime extension of
+	lambda capture-by-copy vars.
+
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Do not build frame
+	awaitable proxy vars when the co_await expression is
+	a function parameter or local var.
+	(co_await_expander): Do not initialise a frame var with
+	itself.
+	(transform_await_expr): Only substitute the awaitable
+	frame var if it's needed.
+	(register_awaits): Do not make frame copies for param
+	or local vars that are awaitables.
+
 2020-02-28  Jason Merrill  <jason@redhat.com>
 
 	Implement P2092R0, Disambiguating Nested-Requirements

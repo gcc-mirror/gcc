@@ -1,3 +1,21 @@
+2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93972
+	* include/bits/stl_algobase.h (__memcmp): Allow pointer types to
+	differ.
+	* testsuite/25_algorithms/lexicographical_compare/uchar.cc: New test.
+
+	* include/std/ranges (__detail::__maybe_empty_t): Rename to
+	__maybe_present_t.
+	(__adaptor::_RangeAdaptor, join_view, split_view): Use new name.
+
+	* include/bits/ranges_algo.h (shift_right): Add 'typename' to
+	dependent type.
+
+2020-03-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/17_intro/headers/c++1998/charset.cc: Skip on *-*-hpux*.

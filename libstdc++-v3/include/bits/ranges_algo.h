@@ -3710,7 +3710,7 @@ namespace ranges
       if (__n == 0)
 	return __first;
 
-      using _Cat = iterator_traits<ForwardIterator>::iterator_category;
+      using _Cat = typename iterator_traits<ForwardIterator>::iterator_category;
       if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
 	{
 	  auto __mid = ranges::next(__last, -__n, __first);

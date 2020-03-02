@@ -1,3 +1,8 @@
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-interface.c: Remove duplicate
+	declaration of __gcov_flush_mx.
+
 2020-02-18  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/92924

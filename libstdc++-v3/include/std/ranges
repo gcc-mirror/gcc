@@ -1030,9 +1030,14 @@ namespace __detail
 {
   struct _Empty { };
 
-  template<bool _NonEmpty, typename _Tp>
-    using __maybe_empty_t = conditional_t<_NonEmpty, _Tp, _Empty>;
+  // Alias for a type that is conditionally present
+  // (and is an empty type otherwise).
+  // Data members using this alias should use [[no_unique_address]] so that
+  // they take no space when not needed.
+  template<bool _Present, typename _Tp>
+    using __maybe_present_t = conditional_t<_Present, _Tp, _Empty>;
 
+  // Alias for a type that is conditionally const.
   template<bool _Const, typename _Tp>
     using __maybe_const_t = conditional_t<_Const, const _Tp, _Tp>;
 
@@ -1065,8 +1070,8 @@ namespace views
       {
       protected:
 	[[no_unique_address]]
-	  __detail::__maybe_empty_t<!is_default_constructible_v<_Callable>,
-				    _Callable> _M_callable;
+	  __detail::__maybe_present_t<!is_default_constructible_v<_Callable>,
+				      _Callable> _M_callable;
 
       public:
 	constexpr
@@ -2211,8 +2216,9 @@ namespace views
 
       static constexpr bool _S_needs_cached_begin = !random_access_range<_Vp>;
       [[no_unique_address]]
-	__detail::__maybe_empty_t<_S_needs_cached_begin,
-				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
+	__detail::__maybe_present_t<_S_needs_cached_begin,
+				    __detail::_CachedPosition<_Vp>>
+				      _M_cached_begin;
 
     public:
       drop_view() = default;
@@ -2592,8 +2598,8 @@ namespace views
 
       // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
       [[no_unique_address]]
-	__detail::__maybe_empty_t<!is_reference_v<_InnerRange>,
-				  views::all_t<_InnerRange>> _M_inner;
+	__detail::__maybe_present_t<!is_reference_v<_InnerRange>,
+				    views::all_t<_InnerRange>> _M_inner;
 
     public:
       join_view() = default;
@@ -2728,8 +2734,8 @@ namespace views
 
 	  // XXX: _M_current is present only if "V models forward_range"
 	  [[no_unique_address]]
-	    __detail::__maybe_empty_t<forward_range<_Vp>,
-				      iterator_t<_Base>> _M_current;
+	    __detail::__maybe_present_t<forward_range<_Vp>,
+					iterator_t<_Base>> _M_current;
 
 	public:
 	  using iterator_concept = conditional_t<forward_range<_Base>,
@@ -2969,7 +2975,7 @@ namespace views
 
       // XXX: _M_current is "present only if !forward_range<V>"
       [[no_unique_address]]
-	__detail::__maybe_empty_t<!forward_range<_Vp>, iterator_t<_Vp>>
+	__detail::__maybe_present_t<!forward_range<_Vp>, iterator_t<_Vp>>
 	  _M_current;
 
 
@@ -3180,8 +3186,9 @@ namespace views
       static constexpr bool _S_needs_cached_begin
 	= !common_range<_Vp> && !random_access_range<_Vp>;
       [[no_unique_address]]
-	__detail::__maybe_empty_t<_S_needs_cached_begin,
-				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
+	__detail::__maybe_present_t<_S_needs_cached_begin,
+				    __detail::_CachedPosition<_Vp>>
+				      _M_cached_begin;
 
     public:
       reverse_view() = default;
