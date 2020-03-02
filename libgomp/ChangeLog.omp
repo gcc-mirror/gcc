@@ -1,3 +1,12 @@
+2020-03-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c (main): Add
+	dg-warnings for	expected compiler warnings.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c (DoWorkVec):
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-private.f90 (t1, t2):
+	Likewise.
+
 2019-09-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Fix dg-warning
