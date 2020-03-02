@@ -1,3 +1,9 @@
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93829
+	* tree-ssa-strlen.c (count_nonzero_bytes): Set the size to that
+	  of a pointer in the outermost ADDR_EXPRs.
+
 2020-02-28  Jeff Law  <law@redhat.com>
 
 	* config/v850/v850.h (STATIC_CHAIN_REGNUM): Change to r19.

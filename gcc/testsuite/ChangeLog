@@ -1,3 +1,8 @@
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93829
+	* gcc.dg/Wstringop-overflow-32.c: New test.
+
 2020-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR testsuite/91797

@@ -4587,12 +4587,15 @@ int ssa_name_limit_t::next_ssa_name (tree ssa_name)
 
 /* Determines the minimum and maximum number of leading non-zero bytes
    in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
-   to each.  Sets LENRANGE[2] to the total number of bytes in
-   the representation.  Sets *NULTREM if the representation contains
-   a zero byte, and sets *ALLNUL if all the bytes are zero.
+   to each.
+   Sets LENRANGE[2] to the total size of the access (which may be less
+   than LENRANGE[1] when what's being referenced by EXP is a pointer
+   rather than an array).
+   Sets *NULTERM if the representation contains a zero byte, and sets
+   *ALLNUL if all the bytes are zero.
    OFFSET and NBYTES are the offset into the representation and
-   the size of the access to it determined from a MEM_REF or zero
-   for other expressions.
+   the size of the access to it determined from an ADDR_EXPR (i.e.,
+   a pointer) or MEM_REF or zero for other expressions.
    Uses RVALS to determine range information.
    Avoids recursing deeper than the limits in SNLIM allow.
    Returns true on success and false otherwise.  */
@@ -4692,7 +4695,13 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
     }
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    exp = TREE_OPERAND (exp, 0);
+    {
+      /* If the size of the access hasn't been determined yet it's that
+	 of a pointer.  */
+      if (!nbytes)
+	nbytes = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (exp)));
+      exp = TREE_OPERAND (exp, 0);
+    }
 
   if (TREE_CODE (exp) == SSA_NAME)
     {
@@ -4788,9 +4797,10 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	return false;
 
       if (!nbytes)
-	/* If NBYTES hasn't been determined earlier from MEM_REF,
-	   set it here.  It includes all internal nuls, including
-	   the terminating one if the string has one.  */
+	/* If NBYTES hasn't been determined earlier, either from ADDR_EXPR
+	   (i.e., it's the size of a pointer), or from MEM_REF (as the size
+	   of the access), set it here to the size of the string, including
+	   all internal and trailing nuls if the string has any.  */
 	nbytes = nchars - offset;
 
       prep = TREE_STRING_POINTER (exp) + offset;
