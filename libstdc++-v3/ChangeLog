@@ -1,3 +1,8 @@
+2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (shift_right): Add 'typename' to
+	dependent type.
+
 2020-03-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
