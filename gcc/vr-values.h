@@ -34,6 +34,26 @@ private:
   unsigned int m_index;
 };
 
+class vr_gori_interface : public gori_compute
+{
+public:
+  virtual bool outgoing_edge_range_p (irange &, edge, tree name,
+				      const irange *name_range = NULL);
+  bool gori_computable_p (tree name, basic_block);
+  void save_equivalences (equivalence_iterator *);
+private:
+  virtual void range_of_ssa_name (irange &r ATTRIBUTE_UNUSED,
+				  tree op ATTRIBUTE_UNUSED,
+				  gimple *stmt ATTRIBUTE_UNUSED = NULL)
+    { gcc_unreachable (); }
+  bool refine_range_with_equivalences_p (irange &, edge, tree name);
+  bool solve_name_at_statement (irange &, tree, gimple *stmt, const irange &);
+  bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
+				     const irange &equiv_range);
+  void range_for_op2 (irange &, gimple *, tree type);
+  equivalence_iterator *m_equivalences;
+};
+
 /* The VR_VALUES class holds the current view of range information
    for all the SSA_NAMEs in the IL.
 
@@ -48,7 +68,7 @@ private:
    gets attached to an SSA_NAME.  It's unclear how useful that global
    information will be in a world where we can compute context sensitive
    range information fast or perform on-demand queries.  */
-class vr_values : public gori_compute
+class vr_values : public vr_gori_interface
 {
  public:
   vr_values (void);
@@ -91,19 +111,8 @@ class vr_values : public gori_compute
   /* */
   void cleanup_edges_and_switches (void);
 
-  bool outgoing_edge_range_p (irange &, edge, tree name,
-			      const irange *name_range = NULL);
-  bool in_export_list (tree name, basic_block);
-  void save_equivalences (equivalence_iterator *);
  private:
-  void range_of_ssa_name (irange &r, tree op, gimple * = NULL);
-  equivalence_iterator *m_equivalences;
-  bool refine_range_with_equivalences_p (irange &, edge, tree name);
-  bool solve_name_at_statement (irange &,
-				tree, gimple *stmt, const irange &);
-  bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
-				     const irange &equiv_range);
-  void range_for_op2 (irange &, gimple *, tree type);
+  virtual void range_of_ssa_name (irange &r, tree op, gimple * = NULL);
 
   value_range_equiv *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);

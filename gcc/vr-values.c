@@ -173,14 +173,6 @@ vr_values::get_value_range (const_tree var)
   return vr;
 }
 
-void
-vr_values::range_of_ssa_name (irange &r, tree op,
-			      gimple *stmt ATTRIBUTE_UNUSED)
-{
-  r = *(get_value_range (op));
-  r.normalize_symbolics ();
-}
-
 /* Set the lattice entry for DEF to VARYING.  */
 
 void
@@ -1997,15 +1989,23 @@ equivalence_iterator::next (void)
 }
 
 void
-vr_values::save_equivalences (equivalence_iterator *iter)
+vr_values::range_of_ssa_name (irange &r, tree op,
+			      gimple *stmt ATTRIBUTE_UNUSED)
+{
+  r = *(get_value_range (op));
+  r.normalize_symbolics ();
+}
+
+void
+vr_gori_interface::save_equivalences (equivalence_iterator *iter)
 {
   m_equivalences = iter;
 }
 
-// FIXME: Come up with a better name.
+// Return TRUE if NAME is computable by GORI in BB.
 
 bool
-vr_values::in_export_list (tree name, basic_block bb)
+vr_gori_interface::gori_computable_p (tree name, basic_block bb)
 {
   return m_gori_map.is_export_p (name, bb);
 }
@@ -2014,8 +2014,8 @@ vr_values::in_export_list (tree name, basic_block bb)
 // Return FALSE if unable to compute a range.
 
 bool
-vr_values::outgoing_edge_range_p (irange &r, edge e, tree name,
-				  const irange *known_range ATTRIBUTE_UNUSED)
+vr_gori_interface::outgoing_edge_range_p (irange &r, edge e, tree name,
+				const irange *known_range ATTRIBUTE_UNUSED)
 {
   if (!gori_compute::outgoing_edge_range_p (r, e, name))
     r.set_varying (TREE_TYPE (name));
@@ -2030,7 +2030,8 @@ vr_values::outgoing_edge_range_p (irange &r, edge e, tree name,
 // equivalences NAME may have.
 
 bool
-vr_values::refine_range_with_equivalences_p (irange &r, edge e, tree name)
+vr_gori_interface::refine_range_with_equivalences_p (irange &r,
+						     edge e, tree name)
 {
   widest_irange branch_range, tmp;
   gimple *branch = gimple_outgoing_edge_range_p (branch_range, e);
@@ -2066,9 +2067,9 @@ vr_values::refine_range_with_equivalences_p (irange &r, edge e, tree name)
 // in R.  LHS is the known range for STMT.
 
 bool
-vr_values::solve_name_at_statement (irange &r,
-				    tree name, gimple *stmt,
-				    const irange &lhs)
+vr_gori_interface::solve_name_at_statement (irange &r,
+					    tree name, gimple *stmt,
+					    const irange &lhs)
 {
   widest_irange name_range;
   range_of_ssa_name (name_range, name, stmt);
@@ -2076,10 +2077,10 @@ vr_values::solve_name_at_statement (irange &r,
 }
 
 bool
-vr_values::solve_name_given_equivalence (irange &r,
-					 tree name,
-					 tree equiv,
-					 const irange &equiv_range)
+vr_gori_interface::solve_name_given_equivalence (irange &r,
+						 tree name,
+						 tree equiv,
+						 const irange &equiv_range)
 {
   // Solve NAME in EQUIV = USE(NAME).
   gimple *def = SSA_NAME_DEF_STMT (equiv);
@@ -2103,7 +2104,7 @@ vr_values::solve_name_given_equivalence (irange &r,
 }
 
 void
-vr_values::range_for_op2 (irange &res, gimple *stmt, tree type)
+vr_gori_interface::range_for_op2 (irange &res, gimple *stmt, tree type)
 {
   tree op2 = gimple_assign_rhs2 (stmt);
   if (op2)
