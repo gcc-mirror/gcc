@@ -5891,6 +5891,82 @@
   [(set_attr "type" "ssemul")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "avx512fp16_fmaddcsh_v8hf_maskz<round_expand_name>"
+  [(match_operand:V8HF 0 "register_operand")
+   (match_operand:V8HF 1 "<round_expand_nimm_predicate>")
+   (match_operand:V8HF 2 "<round_expand_nimm_predicate>")
+   (match_operand:V8HF 3 "<round_expand_nimm_predicate>")
+   (match_operand:QI 4 "register_operand")]
+  "TARGET_AVX512FP16 && <round_mode512bit_condition>"
+{
+  emit_insn (gen_avx512fp16_fma_fmaddcsh_v8hf_maskz<round_expand_name> (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (V8HFmode), operands[4]<round_expand_operand>));
+  DONE;
+})
+
+(define_expand "avx512fp16_fcmaddcsh_v8hf_maskz<round_expand_name>"
+  [(match_operand:V8HF 0 "register_operand")
+   (match_operand:V8HF 1 "<round_expand_nimm_predicate>")
+   (match_operand:V8HF 2 "<round_expand_nimm_predicate>")
+   (match_operand:V8HF 3 "<round_expand_nimm_predicate>")
+   (match_operand:QI 4 "register_operand")]
+  "TARGET_AVX512FP16 && <round_mode512bit_condition>"
+{
+  emit_insn (gen_avx512fp16_fma_fcmaddcsh_v8hf_maskz<round_expand_name> (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (V8HFmode), operands[4]<round_expand_operand>));
+  DONE;
+})
+
+(define_insn "avx512fp16_fma_<complexopname>sh_v8hf<mask_scalarcz_name><round_scalarcz_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=&v")
+	(vec_merge:V8HF
+	  (unspec:V8HF
+	    [(match_operand:V8HF 1 "<round_scalarcz_nimm_predicate>" "v")
+	     (match_operand:V8HF 2 "<round_scalarcz_nimm_predicate>" "<round_scalarcz_constraint>")
+	     (match_operand:V8HF 3 "<round_scalarcz_nimm_predicate>" "0")]
+	     UNSPEC_COMPLEX_F_C_MA)
+	  (match_dup 2)
+	  (const_int 3)))]
+  "TARGET_AVX512FP16"
+  "v<complexopname>sh\t{<round_scalarcz_mask_op4>%2, %1, %0<mask_scalarcz_operand4>|%0<mask_scalarcz_operand4>, %1, %2<round_scalarcz_maskcz_mask_op4>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "V8HF")])
+
+(define_insn "avx512fp16_<complexopname>sh_v8hf_mask<round_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=&v")
+	(vec_merge:V8HF
+	  (vec_merge:V8HF
+	    (unspec:V8HF
+	      [(match_operand:V8HF 1 "<round_nimm_predicate>" "v")
+	       (match_operand:V8HF 2 "<round_nimm_predicate>" "<round_constraint>")
+	       (match_operand:V8HF 3 "<round_nimm_predicate>" "0")]
+	       UNSPEC_COMPLEX_F_C_MA)
+	    (match_dup 1)
+	    (unspec:QI [(match_operand:QI 4 "register_operand" "Yk")]
+	      UNSPEC_COMPLEX_MASK))
+	  (match_dup 2)
+	  (const_int 3)))]
+  "TARGET_AVX512FP16"
+  "v<complexopname>sh\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "V8HF")])
+
+(define_insn "avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>"
+  [(set (match_operand:V8HF 0 "register_operand" "=&v")
+	  (vec_merge:V8HF
+	    (unspec:V8HF
+	      [(match_operand:V8HF 1 "nonimmediate_operand" "v")
+	       (match_operand:V8HF 2 "<round_scalarcz_nimm_predicate>" "<round_scalarcz_constraint>")]
+	       UNSPEC_COMPLEX_F_C_MUL)
+	    (match_dup 1)
+	    (const_int 3)))]
+  "TARGET_AVX512FP16"
+  "v<complexopname>sh\t{<round_scalarc_mask_op3>%2, %1, %0<mask_scalarc_operand3>|%0<mask_scalarc_operand3>, %1, %2<round_scalarc_mask_op3>}"
+  [(set_attr "type" "ssemul")
+   (set_attr "mode" "V8HF")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel half-precision floating point conversion operations
