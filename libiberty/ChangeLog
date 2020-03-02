@@ -1,3 +1,8 @@
+2020-03-02  Nick Clifton  <nickc@redhat.com>
+
+	* testsuite/demangle-expected: Update expected demangling of
+	enable_if pattern.
+
 2020-03-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/93966
