@@ -1,3 +1,12 @@
+2020-02-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	Revert
+	2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* gcc.target/powerpc/pr93658.c: New test.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Update fragile insn count.
+
 2020-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93820
@@ -68,6 +77,15 @@
 
 	PR middle-end/90313
 	* g++.dg/torture/pr90313.cc: New test.
+
+2020-02-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backport from master
+	2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* gcc.target/powerpc/pr93658.c: New test.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Update fragile insn count.
 
 2020-02-20  H.J. Lu  <hongjiu.lu@intel.com>
 
