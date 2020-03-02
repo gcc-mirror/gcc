@@ -50,7 +50,6 @@ private:
   bool solve_name_at_statement (irange &, tree, gimple *stmt, const irange &);
   bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
 				     const irange &equiv_range);
-  void range_for_op2 (irange &, gimple *, tree type);
   equivalence_iterator *m_equivalences;
 };
 
