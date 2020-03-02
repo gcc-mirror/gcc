@@ -1,3 +1,7 @@
+2020-03-02  Jeff Law  <law@redhat.com>
+
+	* gcc.target/arm/fuse-caller-save.c: Update expected output.
+
 2020-03-02  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/vect/bb-slp-19.c: The comment
