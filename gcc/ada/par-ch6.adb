@@ -959,6 +959,13 @@ package body Ch6 is
          --  the collected aspects, if any, to the body.
 
          if Token = Tok_Is then
+
+            --  If the subprogram declaration already has a specification, we
+            --  can't define another.
+            if Null_Present (Specification (Decl_Node)) then
+               Error_Msg_AP ("null procedure cannot have a body");
+            end if;
+
             Scan;
             goto Subprogram_Body;
 
