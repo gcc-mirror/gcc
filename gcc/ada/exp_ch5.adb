@@ -29,7 +29,6 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
-with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -2664,25 +2663,13 @@ package body Exp_Ch5 is
                          and then
                            not Restriction_Active (No_Dispatching_Calls))
             then
+               --  We should normally not encounter any limited type here,
+               --  except in the corner case where an assignment was not
+               --  intended like the pathological case of a raise expression
+               --  within a return statement.
+
                if Is_Limited_Type (Typ) then
-
-                  --  This can happen in an instance when the formal is an
-                  --  extension of a limited interface, and the actual is
-                  --  limited. This is an error according to AI05-0087, but
-                  --  is not caught at the point of instantiation in earlier
-                  --  versions. We also must verify that the limited type does
-                  --  not come from source as corner cases may exist where
-                  --  an assignment was not intended like the pathological case
-                  --  of a raise expression within a return statement.
-
-                  --  This is wrong, error messages cannot be issued during
-                  --  expansion, since they would be missed in -gnatc mode ???
-
-                  if Comes_From_Source (N) then
-                     Error_Msg_N
-                       ("assignment not available on limited type", N);
-                  end if;
-
+                  pragma Assert (not Comes_From_Source (N));
                   return;
                end if;
 
