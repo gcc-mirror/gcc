@@ -4522,6 +4522,185 @@ package body Sem_Prag is
          --  a class-wide precondition only if one of its ancestors has an
          --  explicit class-wide precondition.
 
+         procedure Build_Access_Subprogram_Wrapper
+           (Decl : Node_Id;
+            Prag : Node_Id);
+         --  When an access_to_subprogram type has pre/postconditions, we
+         --  build a subprogram that includes these contracts and is invoked
+         --  by any indirect call through the corresponding access type.
+
+         procedure Build_Access_Subprogram_Wrapper_Body
+           (Decl : Node_Id;
+            New_Decl : Node_Id);
+         --  Build the wrapper body, which holds the indirect call through
+         --  an access_to_subprogram, and whose expansion incorporates the
+         --  contracts of the access type declaration.
+
+         -------------------------------------
+         -- Build_Access_Subprogram_Wrapper --
+         -------------------------------------
+
+         procedure Build_Access_Subprogram_Wrapper
+           (Decl : Node_Id;
+            Prag : Node_Id)
+         is
+            Loc      : constant Source_Ptr := Sloc (Decl);
+            Id       : constant Entity_Id  := Defining_Identifier (Decl);
+            Type_Def : constant Node_Id := Type_Definition (Decl);
+            Specs   :  constant List_Id := Parameter_Specifications (Type_Def);
+            Profile : constant List_Id  := New_List;
+
+            Form_P   : Node_Id;
+            New_P    : Node_Id;
+            New_Decl : Node_Id;
+            Spec     : Node_Id;
+            Subp     : Entity_Id;
+
+         begin
+            if Ekind_In (Id, E_Access_Subprogram_Type,
+               E_Access_Protected_Subprogram_Type,
+               E_Anonymous_Access_Protected_Subprogram_Type,
+               E_Anonymous_Access_Subprogram_Type)
+            then
+               null;
+
+            else
+               Error_Msg_N
+                 ("illegal pre/postcondition on access type", N);
+               return;
+            end if;
+
+            Subp := Make_Temporary (Loc, 'A');
+            Form_P := First (Specs);
+
+            while Present (Form_P) loop
+               New_P := New_Copy_Tree (Form_P);
+               Set_Defining_Identifier (New_P,
+                 Make_Defining_Identifier
+                  (Loc, Chars (Defining_Identifier (Form_P))));
+               Append (New_P, Profile);
+               Next (Form_P);
+            end loop;
+
+            --  Add to parameter specifications the access parameter that
+            --  is passed from an indirect call.
+
+            Append (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier => Make_Temporary (Loc, 'P'),
+                 Parameter_Type  =>  New_Occurrence_Of (Id, Loc)),
+               Profile);
+
+            if Nkind (Type_Def) = N_Access_Procedure_Definition then
+               Spec :=
+                 Make_Procedure_Specification (Loc,
+                   Defining_Unit_Name       => Subp,
+                   Parameter_Specifications => Profile);
+            else
+               Spec :=
+                 Make_Function_Specification (Loc,
+                   Defining_Unit_Name       => Subp,
+                   Parameter_Specifications => Profile,
+                   Result_Definition        =>
+                     New_Copy_Tree
+                       (Result_Definition (Type_Definition (Decl))));
+            end if;
+
+            New_Decl :=
+              Make_Subprogram_Declaration (Loc, Specification => Spec);
+            Set_Aspect_Specifications (New_Decl,
+              New_Copy_List_Tree (Aspect_Specifications (Decl)));
+
+            declare
+               Asp : Node_Id;
+
+            begin
+               Asp := First (Aspect_Specifications (New_Decl));
+               while Present (Asp) loop
+                  Set_Aspect_Rep_Item (Asp, Empty);
+                  Set_Entity (Asp, Empty);
+                  Set_Analyzed (Asp, False);
+                  Next (Asp);
+               end loop;
+            end;
+
+            Insert_After (Prag, New_Decl);
+            Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+            Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
+         end Build_Access_Subprogram_Wrapper;
+
+         ------------------------------------------
+         -- Build_Access_Subprogram_Wrapper_Body --
+         ------------------------------------------
+
+         procedure Build_Access_Subprogram_Wrapper_Body
+           (Decl : Node_Id;
+            New_Decl : Node_Id)
+         is
+            Loc       : constant Source_Ptr := Sloc (Decl);
+            Actuals   : constant List_Id := New_List;
+            Type_Def  : constant Node_Id := Type_Definition (Decl);
+            Type_Id   : constant Entity_Id := Defining_Identifier (Decl);
+            Spec_Node : constant Node_Id :=
+              New_Copy_Tree (Specification (New_Decl));
+
+            Act       : Node_Id;
+            Body_Node : Node_Id;
+            Call_Stmt : Node_Id;
+            Ptr       : Entity_Id;
+         begin
+            if not Expander_Active then
+               return;
+            end if;
+
+            Set_Defining_Unit_Name (Spec_Node,
+              Make_Defining_Identifier
+                (Loc, Chars (Defining_Unit_Name (Spec_Node))));
+
+            --  Create List of actuals for indirect call. The last
+            --  parameter of the subprogram is the access value itself.
+
+            Act := First (Parameter_Specifications (Spec_Node));
+
+            while Present (Act) loop
+               Append_To (Actuals,
+                 Make_Identifier (Loc, Chars (Defining_Identifier (Act))));
+               Next (Act);
+               exit when Act = Last (Parameter_Specifications (Spec_Node));
+            end loop;
+
+            Ptr :=
+              Defining_Identifier
+                (Last (Parameter_Specifications (Spec_Node)));
+
+            if Nkind (Type_Def) = N_Access_Procedure_Definition then
+               Call_Stmt := Make_Procedure_Call_Statement (Loc,
+                 Name =>
+                    Make_Explicit_Dereference
+                      (Loc, New_Occurrence_Of (Ptr, Loc)),
+                 Parameter_Associations => Actuals);
+            else
+               Call_Stmt := Make_Simple_Return_Statement (Loc,
+                 Expression =>
+                   Make_Function_Call (Loc,
+                 Name => Make_Explicit_Dereference
+                          (Loc, New_Occurrence_Of (Ptr, Loc)),
+                 Parameter_Associations => Actuals));
+            end if;
+
+            Body_Node := Make_Subprogram_Body (Loc,
+              Specification => Spec_Node,
+              Declarations  => New_List,
+              Handled_Statement_Sequence =>
+                Make_Handled_Sequence_Of_Statements (Loc,
+                  Statements    => New_List (Call_Stmt)));
+
+            --  Place body in list of freeze actions for the type.
+
+            Ensure_Freeze_Node (Type_Id);
+            Append_Freeze_Actions (Type_Id, New_List (Body_Node));
+         end Build_Access_Subprogram_Wrapper_Body;
+
          -----------------------------
          -- Inherits_Class_Wide_Pre --
          -----------------------------
@@ -4762,6 +4941,16 @@ package body Sem_Prag is
             and then Ada_Version >= Ada_2020
          then
             null;
+
+         elsif Ada_Version >= Ada_2020
+           and then Nkind (Subp_Decl) = N_Full_Type_Declaration
+         then
+
+            --  Access_To_Subprogram type has pre/postconditions.
+            --  Build wrapper subprogram to carry the contract items.
+
+            Build_Access_Subprogram_Wrapper (Subp_Decl, N);
+            return;
 
          --  Otherwise the placement is illegal
 
@@ -30141,9 +30330,16 @@ package body Sem_Prag is
                elsif Present (Generic_Parent (Specification (Stmt))) then
                   return Stmt;
 
-               --  Ada 2020: contract on formal subprogram
+               --  Ada 2020: contract on formal subprogram or on generated
+               --  Access_Subprogram_Wrapper, which appears after the related
+               --  Access_Subprogram declaration.
 
                elsif Is_Generic_Actual_Subprogram (Defining_Entity (Stmt))
+                 and then Ada_Version >= Ada_2020
+               then
+                  return Stmt;
+
+               elsif Is_Access_Subprogram_Wrapper (Defining_Entity (Stmt))
                  and then Ada_Version >= Ada_2020
                then
                   return Stmt;
