@@ -380,6 +380,10 @@ extern void insert_late_enum_def_bindings (tree, tree);
 extern tree lookup_all_conversions (tree);
 
 /* Lower level interface for modules. */
+extern tree *mergeable_namespace_entities (tree ctx, tree name, bool is_global);
+extern void add_mergeable_namespace_entity (tree *slot, tree decl);
+extern tree mergeable_class_entities (tree ctx, tree name, tree &type);
+
 // FIXME: Use a struct, see trees_in::key_mergeable fixme
 extern tree mergeable_namespace_entity (tree decl, tree ctx, tree name,
 					bool partition,

@@ -1,3 +1,16 @@
+2020-03-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl2.c (c_parse_final_cleanups): Revert previous change.
+	* name-lookup.h (mergeable_{namespace,class}_entities): Declare.
+	(add_mergeable_namespace_entity): Declare.
+	* name-lookup.c (member_vec_dedup): Link stat_hack chain.
+	(check_module_override): Do not use check_mergeable_decl.
+	(mergeable_{namespace,class}_entities): New.
+	(add_mergeable): Rename to ...
+	(add_mergeable_namespace_entitity): ... here.
+	(mergeable_{namespace,class}_entity): Use new accessors.
+
 2020-02-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

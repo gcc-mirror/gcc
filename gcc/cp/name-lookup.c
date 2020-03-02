@@ -57,7 +57,7 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
    stat hack.  */
-
+// FIXME: STAT_DECL should be OVL_CHAIN, STAT_VISIBLE should be OVL_FUNCTION
 #define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
 #define STAT_TYPE_VISIBLE_P(N) TREE_USED (OVERLOAD_CHECK (N))
 #define STAT_TYPE(N) TREE_TYPE (N)
@@ -2123,7 +2123,11 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
 	  if (!current)
 	    current = to_type;
 	  else
-	    current = stat_hack (current, to_type);
+	    {
+	      current = stat_hack (current, to_type);
+	      /* Also point the chain at the decls.  */
+	      OVL_CHAIN (current) = STAT_DECL (current);
+	    }
 	}
 
       if (current)
@@ -3512,12 +3516,6 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
-static void
-add_mergeable_decl (tree *gslot, tree decl)
-{
-  *gslot = ovl_make (decl, *gslot);
-}
-
 /* DECL is a global or module-purview entity.  Record it in the global
    or partition slot.  We have already checked for duplicates.  */
 
@@ -3527,7 +3525,7 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
   bool partition = named_module_p ();
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
-  add_mergeable_decl (gslot, decl);
+  add_mergeable_namespace_entity (gslot, decl);
 }
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use RET &
@@ -3718,40 +3716,12 @@ check_module_override (tree decl, tree mvec, bool is_friend,
       else
 	mergeable = MODULE_VECTOR_CLUSTER (mvec, 0).slots[MODULE_SLOT_GLOBAL];
 
-      if (mergeable)
+      for (ovl_iterator iter (mergeable); iter; ++iter)
 	{
-	  tree ret = NULL_TREE;
-	  tree args = NULL_TREE;
-	  tree reqs = NULL_TREE;
-	  tree inner = decl;
-
-	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    inner = DECL_TEMPLATE_RESULT (decl);
-
-	  if (TREE_CODE (inner) == FUNCTION_DECL)
+	  tree match = *iter;
+	  
+	  if (duplicate_decls (decl, match, is_friend))
 	    {
-	      if (inner != decl)
-		{
-		  ret = TREE_TYPE (TREE_TYPE (inner));
-		  reqs = get_constraints (inner);
-		  if (reqs)
-		    {
-		      if (cxx_dialect < cxx2a)
-			reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
-		      else
-			{
-			  gcc_assert (!DECL_FRIEND_P (inner));
-			  reqs = CI_DECLARATOR_REQS (reqs);
-			}
-		    }
-		}
-	      args = TYPE_ARG_TYPES (TREE_TYPE (inner));
-	    }
-
-	  if (tree match = check_mergeable_decl
-	      (MM_namespace_scope, decl, mergeable, ret, args, reqs))
-	    {
-	      match = duplicate_decls (decl, match, is_friend);
 	      if (TREE_CODE (match) == TYPE_DECL)
 		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
 	      return match;
@@ -3979,6 +3949,63 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
+/* A mergeable entity is being loaded into namespace CTX slot
+   NAME.  Create and return the appropriate slot for that.  Either a
+   GMF slot or a module-specific one.  */
+
+tree *
+mergeable_namespace_entities (tree ctx, tree name, bool is_global)
+{
+  tree *slot = find_namespace_slot (ctx, name, true);
+  tree *gslot = get_fixed_binding_slot
+    (slot, name, is_global ? MODULE_SLOT_GLOBAL : MODULE_SLOT_PARTITION, true);
+
+  return gslot;
+}
+
+/* DECL is a new mergeable namespace-scope decl.  Add it to the
+   mergeable entities on GSLOT.  */
+
+void
+add_mergeable_namespace_entity (tree *gslot, tree decl)
+{
+  *gslot = ovl_make (decl, *gslot);
+}
+
+/* A mergeable entity of KLASS called NAME is being loaded.  Return
+   the set of things it could be.  */
+
+tree
+mergeable_class_entities (tree klass, tree name)
+{
+  tree found = NULL_TREE;
+
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+    {
+      found = member_vec_binary_search (member_vec, name);
+      if (IDENTIFIER_CONV_OP_P (name))
+	{
+	  gcc_checking_assert (name == conv_op_identifier);
+	  if (found)
+	    found = OVL_CHAIN (found);
+	}
+    }
+  else
+    // FIXME: As mentioned elsewhere, we should force a member vector
+    // In this case that could mean lazily creating it for an in-TU
+    // class that is being merged.  Plus what if we have stat struc
+    // going on?
+    {
+      found = fields_linear_search (klass, name, false);
+      if (found && !DECL_DECLARES_TYPE_P (found))
+	if  (tree type = fields_linear_search (klass, name, true))
+	  if (type != found)
+	    found = ovl_make (type, found);
+    }
+
+  return found;
+}
+
 /* DECL is a yet-to-be-loaded mergeable entity in namespace CTX slot
    NAME.  PARTITION is true if it is from a module partition
    (otherwise it is a global module entity), RET and ARGS are its
@@ -3991,9 +4018,7 @@ tree
 mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
 			    tree ret, tree args, tree reqs)
 {
-  tree *slot = find_namespace_slot (ctx, name, true);
-  tree *gslot = get_fixed_binding_slot
-    (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
+  tree *gslot = mergeable_namespace_entities (ctx, name, !partition);
 
   if (tree match = check_mergeable_decl
       (DECL_NAME (decl) ? MM_namespace_scope : MM_anon_enum,
@@ -4001,7 +4026,7 @@ mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
     return match;
 
   if (DECL_NAME (decl))
-    add_mergeable_decl (gslot, decl);
+    add_mergeable_namespace_entity (gslot, decl);
 
   return NULL_TREE;
 }
@@ -4062,14 +4087,8 @@ mergeable_class_member (tree decl, tree klass, tree name,
 	    else
 	      found = TYPE_NAME (found);
 	  }
-	else if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
-	  found = member_vec_binary_search (member_vec, name);
 	else
-	  // FIXME: As mentioned elsewhere, perhaps we should force a member
-	  // vector?  In this case that could mean lazily creating it for an
-	  // in-TU class that is being merged.
-	  found = fields_linear_search (klass, name,
-					TREE_CODE (decl) == TYPE_DECL);
+	  found = mergeable_class_entities (klass, name);
       }
       break;
     }
@@ -4082,12 +4101,8 @@ mergeable_class_member (tree decl, tree klass, tree name,
 	inner = DECL_TEMPLATE_RESULT (inner);
 
       if (TREE_CODE (name) == IDENTIFIER_NODE)
-	{
-	  if (name == conv_op_identifier)
-	    found = OVL_CHAIN (found);
-	  found = check_mergeable_decl
-	    (MM_class_scope, inner, found, ret, args, reqs);
-	}
+	found = check_mergeable_decl
+	  (MM_class_scope, inner, found, ret, args, reqs);
 
       if (found && inner != decl)
 	{
@@ -8870,9 +8885,7 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
       /* Merge into global slot.  */
       tree *gslot = get_fixed_binding_slot (slot, DECL_NAME (ns),
 					    MODULE_SLOT_GLOBAL, true);
-      if (!check_mergeable_decl (MM_namespace_scope, ns, *gslot,
-				 NULL, NULL, NULL))
-	*gslot = ns;
+      *gslot = ns;
     }
 
   /* NS was newly created, finish off making it.  */

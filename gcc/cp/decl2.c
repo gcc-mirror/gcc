@@ -4975,6 +4975,8 @@ c_parse_final_cleanups (void)
       FOR_EACH_VEC_SAFE_ELT (deferred_fns, i, decl)
 	{
 	  /* Does it need synthesizing?  */
+	  // FiXME: We should synthesize upon first ODR use, that's
+	  // what the std says
 	  if (DECL_DEFAULTED_FN (decl) && ! DECL_INITIAL (decl)
 	      && (! DECL_REALLY_EXTERN (decl) || possibly_inlined_p (decl)))
 	    {
@@ -5104,10 +5106,6 @@ c_parse_final_cleanups (void)
 	     demand later.  (In non-header modules we should have
 	     synthesized it above.)  */
 	  && !(DECL_DEFAULTED_FN (decl) && header_module_p ())
-	  && (!IDENTIFIER_CDTOR_P (DECL_NAME (decl))
-	      /* Pick a priviledged clone to complain about.  */
-	      || DECL_NAME (decl) == complete_ctor_identifier
-	      || DECL_NAME (decl) == complete_dtor_identifier)
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
