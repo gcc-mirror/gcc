@@ -674,6 +674,34 @@ namespace __gnu_test
       { return iter -= n; }
     };
 
+  // A move-only input iterator type.
+  template<typename T>
+    struct input_iterator_wrapper_nocopy : input_iterator_wrapper<T>
+    {
+      using input_iterator_wrapper<T>::input_iterator_wrapper;
+
+      input_iterator_wrapper_nocopy()
+	: input_iterator_wrapper<T>(nullptr, nullptr)
+      { }
+
+      input_iterator_wrapper_nocopy(const input_iterator_wrapper_nocopy&) = delete;
+      input_iterator_wrapper_nocopy&
+      operator=(const input_iterator_wrapper_nocopy&) = delete;
+
+      input_iterator_wrapper_nocopy(input_iterator_wrapper_nocopy&&) = default;
+      input_iterator_wrapper_nocopy&
+      operator=(input_iterator_wrapper_nocopy&&) = default;
+
+      using input_iterator_wrapper<T>::operator++;
+
+      input_iterator_wrapper_nocopy&
+      operator++()
+      {
+	input_iterator_wrapper<T>::operator++();
+	return *this;
+      }
+    };
+
   // A type meeting the minimum std::range requirements
   template<typename T, template<typename> class Iter>
     class test_range

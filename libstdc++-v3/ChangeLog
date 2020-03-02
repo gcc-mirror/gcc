@@ -1,5 +1,10 @@
 2020-03-04  Patrick Palka  <ppalka@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper_nocopy):
+	New testsuite iterator.
+	* testsuite/24_iterators/counted_iterator/lwg3389.cc: use it.
+	* testsuite/24_iterators/move_iterator/lwg3390.cc: Likewise.
+
 	* include/bits/ranges_uninitialized.h
 	(uninitialized_copy_fn::operator()): Pass a reference type as the first
 	argument to is_nothrow_assignable_v.

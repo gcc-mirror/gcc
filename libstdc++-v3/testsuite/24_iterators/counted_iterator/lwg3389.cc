@@ -23,44 +23,13 @@
 #include <testsuite_iterators.h>
 
 using __gnu_test::test_range;
-using __gnu_test::input_iterator_wrapper;
-
-template<typename T>
-struct move_only_wrapper : input_iterator_wrapper<T>
-{
-  using input_iterator_wrapper<T>::input_iterator_wrapper;
-
-  move_only_wrapper()
-    : input_iterator_wrapper<T>(nullptr, nullptr)
-  { }
-
-  move_only_wrapper(const move_only_wrapper&) = delete;
-  move_only_wrapper&
-  operator=(const move_only_wrapper&) = delete;
-
-  move_only_wrapper(move_only_wrapper&&) = default;
-  move_only_wrapper&
-  operator=(move_only_wrapper&&) = default;
-
-  using input_iterator_wrapper<T>::operator++;
-
-  move_only_wrapper&
-  operator++()
-  {
-    input_iterator_wrapper<T>::operator++();
-    return *this;
-  }
-};
-
-static_assert(std::input_iterator<move_only_wrapper<int>>);
-static_assert(!std::forward_iterator<move_only_wrapper<int>>);
-static_assert(!std::copyable<move_only_wrapper<int>>);
+using __gnu_test::input_iterator_wrapper_nocopy;
 
 // LWG 3389
 void
 test01()
 {
   int x[] = {1,2,3,4};
-  test_range<int, move_only_wrapper> rx(x);
+  test_range<int, input_iterator_wrapper_nocopy> rx(x);
   auto it = std::counted_iterator(rx.begin(), 2);
 }
