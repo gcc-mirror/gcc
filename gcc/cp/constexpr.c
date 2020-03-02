@@ -3135,6 +3135,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   unsigned HOST_WIDE_INT i;
   tsubst_flags_t complain = ctx->quiet ? tf_none : tf_warning_or_error;
 
+  if (init && TREE_CODE (init) == CONSTRUCTOR)
+    return cxx_eval_bare_aggregate (ctx, init, lval,
+				    non_constant_p, overflow_p);
+
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types
      here, as for a constructor to be constexpr, all members must be

@@ -1,5 +1,10 @@
 2020-03-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86917
+	* constexpr.c (cxx_eval_vec_init_1): Handle CONSTRUCTOR.
+
+2020-03-02  Jason Merrill  <jason@redhat.com>
+
 	PR c++/91953
 	* constexpr.c (potential_constant_expression_1) [PARM_DECL]: Allow
 	empty class type.
