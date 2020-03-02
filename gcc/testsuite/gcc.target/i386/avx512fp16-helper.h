@@ -34,6 +34,7 @@ typedef union
   __m128i	  xmmi[4];
   unsigned short  u16[32];
   unsigned int    u32[16];
+  int		  i32[16];
   long long	  s64[8];
   unsigned long long u64[8];
   float           f32[16];
