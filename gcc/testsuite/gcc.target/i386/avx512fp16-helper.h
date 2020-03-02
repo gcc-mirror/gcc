@@ -29,6 +29,7 @@ typedef union
   __m256h         ymmh[2];
   __m256i         ymmi[2];
   __m128h         xmmh[4];
+  __m128	  xmm[4];
   unsigned short  u16[32];
   unsigned int    u32[16];
   float           f32[16];
