@@ -215,26 +215,6 @@ evrp_range_analyzer::merge_gori_and_evrp_results
   return vr;
 }
 
-void
-evrp_range_analyzer::try_find_new_range_with_gori
-				(irange &res, tree name, edge e,
-				 const vec<assert_info> &asserts)
-{
-  if (!vr_values->gori_computable_p (name, e->src))
-    return;
-
-  const value_range_equiv *known_range = get_value_range (name);
-  // ?? Perhaps it's worth calling normalize_addresses here?
-  if (known_range && !range_has_numeric_bounds_p (known_range))
-    known_range = NULL;
-  equivalence_iterator iter (name, known_range, asserts);
-  vr_values->save_equivalences (&iter);
-
-  if (vr_values->outgoing_edge_range_p (res, e, name))
-    return;
-  res.set_varying (TREE_TYPE (name));
-}
-
 static void
 dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 {
@@ -385,8 +365,12 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 		   && vr_values->gori_computable_p (asserts[i].name,
 						    pred_e->src));
 	      if (gori_can_calculate)
-		try_find_new_range_with_gori (vr_gori, asserts[i].name,
-					      pred_e, asserts);
+		{
+		  if (!vr_values->outgoing_edge_range_p (vr_gori,
+							 pred_e,
+							 asserts[i].name))
+		    vr_gori.set_varying (TREE_TYPE (asserts[i].name));
+		}
 	      value_range_equiv *vr
 		= try_find_new_range (asserts[i].name,
 				      asserts[i].expr,

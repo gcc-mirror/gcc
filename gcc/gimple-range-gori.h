@@ -128,6 +128,8 @@ private:
   void maybe_add_gori (tree name, basic_block bb);
   void calculate_gori (basic_block bb);
   bitmap imports (basic_block bb);
+public:
+  // FIXME: Temporarily set as public.
   bitmap exports (basic_block bb);
 };
 

@@ -70,8 +70,6 @@ class evrp_range_analyzer
   void set_ssa_range_info (tree, value_range_equiv *);
 
   /* GORI support.  */
-  void try_find_new_range_with_gori (irange &, tree, edge,
-				     const vec<assert_info> &);
   void assert_gori_is_as_good (tree, edge,
 			       const irange *,
 			       const irange *,

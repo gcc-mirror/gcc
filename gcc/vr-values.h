@@ -22,25 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gimple-range-gori.h"
 
-class equivalence_iterator
-{
-public:
-  equivalence_iterator (tree name, const value_range_equiv *,
-			const vec<assert_info> &);
-  tree next (void);
-private:
-  bitmap m_bitmap;
-  bitmap_iterator m_bitmap_iter;
-  unsigned int m_index;
-};
-
 class vr_gori_interface : public gori_compute
 {
 public:
   virtual bool outgoing_edge_range_p (irange &, edge, tree name,
 				      const irange *name_range = NULL);
   bool gori_computable_p (tree name, basic_block);
-  void save_equivalences (equivalence_iterator *);
 private:
   virtual void range_of_ssa_name (irange &r ATTRIBUTE_UNUSED,
 				  tree op ATTRIBUTE_UNUSED,
@@ -50,7 +37,6 @@ private:
   bool solve_name_at_statement (irange &, tree, gimple *stmt, const irange &);
   bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
 				     const irange &equiv_range);
-  equivalence_iterator *m_equivalences;
 };
 
 /* The VR_VALUES class holds the current view of range information

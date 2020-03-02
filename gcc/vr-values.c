@@ -1948,58 +1948,12 @@ vr_values::dump_all_value_ranges (FILE *file)
     }
 }
 
-// Register any SSA_NAMEs that may help us determine a range for NAME.
-// The union of all these for a block is conceptually what the GORI
-// exports table is.  At some point, we should remove this and just
-// look at the GORI exports-- or trap when any of these SSA_NAMEs is
-// not in the GORI export table.
-
-equivalence_iterator::equivalence_iterator (tree name,
-					    const value_range_equiv *vr,
-					    const vec<assert_info> &asserts)
-{
-  // ?? Copy known equivalences, though I'm not convinced adding these
-  // makes any difference.
-  m_bitmap = BITMAP_ALLOC (NULL);
-  if (vr && vr->equiv ())
-    bitmap_copy (m_bitmap, vr->equiv ());
-
-  // Add in the assert relationships as equivalences.
-  for (unsigned i = 0; i < asserts.length (); ++i)
-    {
-      tree assert_name = asserts[i].name;
-      bitmap_set_bit (m_bitmap, SSA_NAME_VERSION (assert_name));
-    }
-
-  m_index = 0;
-  bitmap_clear_bit (m_bitmap, SSA_NAME_VERSION (name));
-  bmp_iter_set_init (&m_bitmap_iter, m_bitmap, 0, &m_index);
-}
-
-tree
-equivalence_iterator::next (void)
-{
-  if (bmp_iter_set (&m_bitmap_iter, &m_index))
-    {
-      tree equiv = ssa_name (m_index);
-      bmp_iter_next (&m_bitmap_iter, &m_index);
-      return equiv;
-    }
-  return NULL;
-}
-
 void
 vr_values::range_of_ssa_name (irange &r, tree op,
 			      gimple *stmt ATTRIBUTE_UNUSED)
 {
   r = *(get_value_range (op));
   r.normalize_symbolics ();
-}
-
-void
-vr_gori_interface::save_equivalences (equivalence_iterator *iter)
-{
-  m_equivalences = iter;
 }
 
 // Return TRUE if NAME is computable by GORI in BB.
@@ -2042,11 +1996,12 @@ vr_gori_interface::refine_range_with_equivalences_p (irange &r,
     r.intersect (tmp);
 
   // Solve each equivalence and use them to refine the range.
-  tree equiv;
-  while ((equiv = m_equivalences->next ()) != NULL)
+  bitmap_iterator bi;
+  unsigned i;
+  bitmap gori_exports = m_gori_map.exports (e->src);
+  EXECUTE_IF_SET_IN_BITMAP (gori_exports, 0, i, bi)
     {
-      if (!m_gori_map.is_export_p (equiv, e->src))
-	continue;
+      tree equiv = ssa_name (i);
 
       widest_irange equiv_range;
       if (solve_name_at_statement (equiv_range, equiv, branch, branch_range))
