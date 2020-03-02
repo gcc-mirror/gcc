@@ -12506,8 +12506,7 @@ package body Exp_Ch4 is
       --  guard is necessary to prevent infinite recursions when we generate
       --  internal conversions for the purpose of checking predicates.
 
-      if Present (Predicate_Function (Target_Type))
-        and then not Predicates_Ignored (Target_Type)
+      if Predicate_Enabled (Target_Type)
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then
@@ -12515,14 +12514,14 @@ package body Exp_Ch4 is
             New_Expr : constant Node_Id := Duplicate_Subexpr (N);
 
          begin
-            --  Avoid infinite recursion on the subsequent expansion of
-            --  of the copy of the original type conversion. When needed,
-            --  a range check has already been applied to the expression.
+            --  Avoid infinite recursion on the subsequent expansion of the
+            --  copy of the original type conversion. When needed, a range
+            --  check has already been applied to the expression.
 
             Set_Comes_From_Source (New_Expr, False);
             Insert_Action (N,
-               Make_Predicate_Check (Target_Type, New_Expr),
-               Suppress => Range_Check);
+              Make_Predicate_Check (Target_Type, New_Expr),
+              Suppress => Range_Check);
          end;
       end if;
    end Expand_N_Type_Conversion;

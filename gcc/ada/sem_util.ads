@@ -2601,6 +2601,11 @@ package Sem_Util is
    --  Given a policy, return the policy identifier associated with it. If no
    --  such policy is in effect, the value returned is No_Name.
 
+   function Predicate_Enabled (Typ : Entity_Id) return Boolean;
+   --  Return True if a predicate check should be emitted for the given type
+   --  Typ, taking into account Predicates_Ignored and
+   --  Predicate_Checks_Suppressed.
+
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
    --  predicate tests are required for the arguments in this call (this is the

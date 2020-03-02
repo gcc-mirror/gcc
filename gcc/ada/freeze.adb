@@ -7182,6 +7182,8 @@ package body Freeze is
       Parent_P  : Node_Id;
       Typ       : Entity_Id;
 
+      Allocator_Typ : Entity_Id := Empty;
+
       Freeze_Outside : Boolean := False;
       --  This flag is set true if the entity must be frozen outside the
       --  current subprogram. This happens in the case of expander generated
@@ -7292,6 +7294,10 @@ package body Freeze is
          when N_Allocator =>
             Desig_Typ := Designated_Type (Etype (N));
 
+            if Nkind (Expression (N)) = N_Qualified_Expression then
+               Allocator_Typ := Entity (Subtype_Mark (Expression (N)));
+            end if;
+
          when N_Aggregate =>
             if Is_Array_Type (Etype (N))
               and then Is_Access_Type (Component_Type (Etype (N)))
@@ -7334,6 +7340,7 @@ package body Freeze is
       if No (Typ)
         and then No (Nam)
         and then No (Desig_Typ)
+        and then No (Allocator_Typ)
       then
          return;
       end if;
@@ -7802,6 +7809,14 @@ package body Freeze is
       --  This also means they get properly analyzed and expanded.
 
       In_Spec_Expression := False;
+
+      --  Freeze the subtype mark before a qualified expression on an
+      --  allocator as per AARM 13.14(4.a). This is needed in particular to
+      --  generate predicate functions.
+
+      if Present (Allocator_Typ) then
+         Freeze_Before (P, Allocator_Typ);
+      end if;
 
       --  Freeze the designated type of an allocator (RM 13.14(13))
 

@@ -2746,153 +2746,146 @@ package body Checks is
       S   : Entity_Id;
 
    begin
-      if Predicate_Checks_Suppressed (Empty) then
+      if not Predicate_Enabled (Typ)
+        or else not Predicate_Check_In_Scope (N)
+      then
          return;
+      end if;
 
-      elsif Predicates_Ignored (Typ) then
-         return;
+      S := Current_Scope;
+      while Present (S) and then not Is_Subprogram (S) loop
+         S := Scope (S);
+      end loop;
 
-      elsif Present (Predicate_Function (Typ)) then
-         S := Current_Scope;
-         while Present (S) and then not Is_Subprogram (S) loop
-            S := Scope (S);
-         end loop;
+      --  If the check appears within the predicate function itself, it means
+      --  that the user specified a check whose formal is the predicated
+      --  subtype itself, rather than some covering type. This is likely to be
+      --  a common error, and thus deserves a warning.
 
-         --  A predicate check does not apply within internally generated
-         --  subprograms, such as TSS functions.
+      if Present (S) and then S = Predicate_Function (Typ) then
+         Error_Msg_NE
+           ("predicate check includes a call to& that requires a "
+            & "predicate check??", Parent (N), Fun);
+         Error_Msg_N
+           ("\this will result in infinite recursion??", Parent (N));
 
-         if Within_Internal_Subprogram then
-            return;
-
-         --  If the check appears within the predicate function itself, it
-         --  means that the user specified a check whose formal is the
-         --  predicated subtype itself, rather than some covering type. This
-         --  is likely to be a common error, and thus deserves a warning.
-
-         elsif Present (S) and then S = Predicate_Function (Typ) then
+         if Is_First_Subtype (Typ) then
             Error_Msg_NE
-              ("predicate check includes a call to& that requires a "
-               & "predicate check??", Parent (N), Fun);
-            Error_Msg_N
-              ("\this will result in infinite recursion??", Parent (N));
+              ("\use an explicit subtype of& to carry the predicate",
+               Parent (N), Typ);
+         end if;
 
-            if Is_First_Subtype (Typ) then
-               Error_Msg_NE
-                 ("\use an explicit subtype of& to carry the predicate",
-                  Parent (N), Typ);
-            end if;
+         Insert_Action (N,
+           Make_Raise_Storage_Error (Sloc (N),
+             Reason => SE_Infinite_Recursion));
+         return;
+      end if;
 
-            Insert_Action (N,
-              Make_Raise_Storage_Error (Sloc (N),
-                Reason => SE_Infinite_Recursion));
+      --  Normal case of predicate active
 
-         --  Here for normal case of predicate active
+      --  If the expression is an IN parameter, the predicate will have
+      --  been applied at the point of call. An additional check would
+      --  be redundant, or will lead to out-of-scope references if the
+      --  call appears within an aspect specification for a precondition.
 
-         else
-            --  If the expression is an IN parameter, the predicate will have
-            --  been applied at the point of call. An additional check would
-            --  be redundant, or will lead to out-of-scope references if the
-            --  call appears within an aspect specification for a precondition.
+      --  However, if the reference is within the body of the subprogram
+      --  that declares the formal, the predicate can safely be applied,
+      --  which may be necessary for a nested call whose formal has a
+      --  different predicate.
 
-            --  However, if the reference is within the body of the subprogram
-            --  that declares the formal, the predicate can safely be applied,
-            --  which may be necessary for a nested call whose formal has a
-            --  different predicate.
+      if Is_Entity_Name (N)
+        and then Ekind (Entity (N)) = E_In_Parameter
+      then
+         declare
+            In_Body : Boolean := False;
+            P       : Node_Id := Parent (N);
 
-            if Is_Entity_Name (N)
-              and then Ekind (Entity (N)) = E_In_Parameter
-            then
-               declare
-                  In_Body : Boolean := False;
-                  P       : Node_Id := Parent (N);
+         begin
+            while Present (P) loop
+               if Nkind (P) = N_Subprogram_Body
+                 and then
+                   ((Present (Corresponding_Spec (P))
+                      and then
+                        Corresponding_Spec (P) = Scope (Entity (N)))
+                      or else
+                        Defining_Unit_Name (Specification (P)) =
+                          Scope (Entity (N)))
+               then
+                  In_Body := True;
+                  exit;
+               end if;
 
-               begin
-                  while Present (P) loop
-                     if Nkind (P) = N_Subprogram_Body
-                       and then
-                         ((Present (Corresponding_Spec (P))
-                            and then
-                              Corresponding_Spec (P) = Scope (Entity (N)))
-                            or else
-                              Defining_Unit_Name (Specification (P)) =
-                                Scope (Entity (N)))
-                     then
-                        In_Body := True;
-                        exit;
-                     end if;
+               P := Parent (P);
+            end loop;
 
-                     P := Parent (P);
-                  end loop;
-
-                  if not In_Body then
-                     return;
-                  end if;
-               end;
-            end if;
-
-            --  If the type has a static predicate and the expression is known
-            --  at compile time, see if the expression satisfies the predicate.
-
-            Check_Expression_Against_Static_Predicate (N, Typ);
-
-            if not Expander_Active then
+            if not In_Body then
                return;
             end if;
+         end;
+      end if;
 
-            Par := Parent (N);
-            if Nkind (Par) = N_Qualified_Expression then
-               Par := Parent (Par);
-            end if;
+      --  If the type has a static predicate and the expression is known
+      --  at compile time, see if the expression satisfies the predicate.
 
-            --  For an entity of the type, generate a call to the predicate
-            --  function, unless its type is an actual subtype, which is not
-            --  visible outside of the enclosing subprogram.
+      Check_Expression_Against_Static_Predicate (N, Typ);
 
-            if Is_Entity_Name (N)
-              and then not Is_Actual_Subtype (Typ)
-            then
-               Insert_Action (N,
-                 Make_Predicate_Check
-                   (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
+      if not Expander_Active then
+         return;
+      end if;
 
-            --  If the expression is an aggregate in an assignment, apply the
-            --  check to the LHS after the assignment, rather than create a
-            --  redundant temporary. This is only necessary in rare cases
-            --  of array types (including strings) initialized with an
-            --  aggregate with an "others" clause, either coming from source
-            --  or generated by an Initialize_Scalars pragma.
+      Par := Parent (N);
+      if Nkind (Par) = N_Qualified_Expression then
+         Par := Parent (Par);
+      end if;
 
-            elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate)
-              and then Nkind (Par) = N_Assignment_Statement
-            then
-               Insert_Action_After (Par,
-                 Make_Predicate_Check
-                   (Typ, Duplicate_Subexpr (Name (Par))));
+      --  For an entity of the type, generate a call to the predicate
+      --  function, unless its type is an actual subtype, which is not
+      --  visible outside of the enclosing subprogram.
 
-            --  Similarly, if the expression is an aggregate in an object
-            --  declaration, apply it to the object after the declaration.
-            --  This is only necessary in rare cases of tagged extensions
-            --  initialized with an aggregate with an "others => <>" clause.
+      if Is_Entity_Name (N)
+        and then not Is_Actual_Subtype (Typ)
+      then
+         Insert_Action (N,
+           Make_Predicate_Check
+             (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
+         return;
 
-            elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate)
-              and then Nkind (Par) = N_Object_Declaration
-            then
-               Insert_Action_After (Par,
-                 Make_Predicate_Check (Typ,
-                   New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+      elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate) then
 
-            --  If the expression is not an entity it may have side effects,
-            --  and the following call will create an object declaration for
-            --  it. We disable checks during its analysis, to prevent an
-            --  infinite recursion.
+         --  If the expression is an aggregate in an assignment, apply the
+         --  check to the LHS after the assignment, rather than create a
+         --  redundant temporary. This is only necessary in rare cases
+         --  of array types (including strings) initialized with an
+         --  aggregate with an "others" clause, either coming from source
+         --  or generated by an Initialize_Scalars pragma.
 
-            else
-               Insert_Action (N,
-                 Make_Predicate_Check
-                   (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
-            end if;
+         if Nkind (Par) = N_Assignment_Statement then
+            Insert_Action_After (Par,
+              Make_Predicate_Check
+                (Typ, Duplicate_Subexpr (Name (Par))));
+            return;
+
+         --  Similarly, if the expression is an aggregate in an object
+         --  declaration, apply it to the object after the declaration.
+         --  This is only necessary in rare cases of tagged extensions
+         --  initialized with an aggregate with an "others => <>" clause.
+
+         elsif Nkind (Par) = N_Object_Declaration then
+            Insert_Action_After (Par,
+              Make_Predicate_Check (Typ,
+                New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+            return;
          end if;
       end if;
+
+      --  If the expression is not an entity it may have side effects,
+      --  and the following call will create an object declaration for
+      --  it. We disable checks during its analysis, to prevent an
+      --  infinite recursion.
+
+      Insert_Action (N,
+        Make_Predicate_Check
+          (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
    end Apply_Predicate_Check;
 
    -----------------------
