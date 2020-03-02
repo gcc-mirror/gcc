@@ -107,6 +107,10 @@ display_ps(const void *p, const char *banner, int n_elems)
   check_results ((void*)res, (void*)exp, size,\
 		 NAME_OF(intrin))
 
+#define CHECK_RESULT_MASK(res, exp, size, intrin) \
+  check_results_mask ((__mmask32)res, (__mmask32)exp, size,\
+		 NAME_OF(intrin))
+
 /* To evaluate whether result match _Float16 precision,
    only the last bit of real/emulate result could be
    different.  */
@@ -136,6 +140,18 @@ check_results(void *got, void *exp, int n_elems, char *banner)
     }
 }
 
+void NOINLINE
+check_results_mask(__mmask32 got, __mmask32 exp, int n_elems, char *banner)
+{
+  if (got != exp) {
+#ifdef DEBUG
+      printf("ERROR: %s failed : got mask %x != exp mask %x\n",
+	     banner ? banner : "", got, exp);
+#endif
+      n_errs++;
+  }
+}
+
 /* Functions for src/dest initialization */
 void NOINLINE
 init_src()
@@ -155,6 +171,27 @@ init_src()
     src1 = pack_twops_2ph(v1, v2);
     src2 = pack_twops_2ph(v3, v4);
 }
+
+void NOINLINE
+init_src_nanf()
+{
+  V512 v1, v2, v3, v4;
+  int i;
+
+  for (i = 0; i < 16; i++) {
+    v1.f32[i] = i + 1 + 0.5;
+    v2.f32[i] = i + 17 + 0.5;
+    v3.f32[i] = i * 2 + 2 + 0.5;
+    v4.f32[i] = i * 2 + 34 + 0.5;
+
+    src3.u32[i] = (i + 1) * 10;
+  }
+
+  v1.f32[0] = __builtin_nanf("");
+  src1 = pack_twops_2ph(v1, v2);
+  src2 = pack_twops_2ph(v3, v4);
+}
+
 
 void NOINLINE
 init_dest(V512 * res, V512 * exp)
