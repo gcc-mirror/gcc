@@ -4568,7 +4568,9 @@ static void
 load_operator_interfaces (void)
 {
   const char *p;
-  char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
+  /* "module" must be large enough for the case of submodules in which the name
+     has the form module.submodule */
+  char name[GFC_MAX_SYMBOL_LEN + 1], module[2 * GFC_MAX_SYMBOL_LEN + 2];
   gfc_user_op *uop;
   pointer_info *pi = NULL;
   int n, i;
@@ -4624,7 +4626,9 @@ static void
 load_generic_interfaces (void)
 {
   const char *p;
-  char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
+  /* "module" must be large enough for the case of submodules in which the name
+     has the form module.submodule */
+  char name[GFC_MAX_SYMBOL_LEN + 1], module[2 * GFC_MAX_SYMBOL_LEN + 2];
   gfc_symbol *sym;
   gfc_interface *generic = NULL, *gen = NULL;
   int n, i, renamed;
