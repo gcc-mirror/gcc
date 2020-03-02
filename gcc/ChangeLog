@@ -1,3 +1,8 @@
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c: Fix typo in comment about
+	C++ standard version.
+
 2020-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/92721
