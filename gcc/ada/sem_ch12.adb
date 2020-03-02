@@ -13460,17 +13460,8 @@ package body Sem_Ch12 is
          --  explicitly so. If not declared limited, the actual cannot be
          --  limited (see AI05-0087).
 
-         --  Even though this AI is a binding interpretation, we enable the
-         --  check only in Ada 2012 mode, because this improper construct
-         --  shows up in user code and in existing B-tests.
-
-         if Is_Limited_Type (Act_T)
-           and then not Is_Limited_Type (A_Gen_T)
-           and then Ada_Version >= Ada_2012
-         then
-            if In_Instance then
-               null;
-            else
+         if Is_Limited_Type (Act_T) and then not Is_Limited_Type (A_Gen_T) then
+            if not In_Instance then
                Error_Msg_NE
                  ("actual for non-limited & cannot be a limited type",
                   Actual, Gen_T);
@@ -13479,30 +13470,25 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         --  Don't check Ada_Version here (for now) because AI12-0036 is
-         --  a binding interpretation; this decision may be reversed if
-         --  the situation turns out to be similar to that of the preceding
-         --  Is_Limited_Type test (see preceding comment).
+         --  Check for AI12-0036
 
          declare
             Formal_Is_Private_Extension : constant Boolean :=
               Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration;
 
             Actual_Is_Tagged : constant Boolean := Is_Tagged_Type (Act_T);
+
          begin
             if Actual_Is_Tagged /= Formal_Is_Private_Extension then
-               if In_Instance then
-                  null;
-               else
+               if not In_Instance then
                   if Actual_Is_Tagged then
                      Error_Msg_NE
-                       ("actual for & cannot be a tagged type",
-                        Actual, Gen_T);
+                       ("actual for & cannot be a tagged type", Actual, Gen_T);
                   else
                      Error_Msg_NE
-                       ("actual for & must be a tagged type",
-                        Actual, Gen_T);
+                       ("actual for & must be a tagged type", Actual, Gen_T);
                   end if;
+
                   Abandon_Instantiation (Actual);
                end if;
             end if;
