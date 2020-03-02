@@ -1,3 +1,8 @@
+2020-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92982
+	* gcc.dg/strlenopt-94.c: New test.
+
 2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/func-params-09-awaitable-parms.C: New test.
