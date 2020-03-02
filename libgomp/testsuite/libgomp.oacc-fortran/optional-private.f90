@@ -30,6 +30,8 @@ contains
     end do
 
     !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
+    ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 32 }
+    ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 32 }
     !$acc loop gang private(x)
     do i = 1, 32
        x = i * 2;
@@ -55,6 +57,7 @@ contains
     end do
 
     !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
+    ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 59 }
     !$acc loop gang private(pt)
     do i = 0, 31
        pt%x = i

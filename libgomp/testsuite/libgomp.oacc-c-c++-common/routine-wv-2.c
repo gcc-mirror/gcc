@@ -42,7 +42,8 @@ int DoWorkVec (int nw)
       ary[ix][jx] = 0xdeadbeef;
 
   printf ("spawning %d ...", nw); fflush (stdout);
-  
+
+  /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "vector" { target openacc_amdgcn_accel_selected } 47 } */
 #pragma acc parallel num_workers(nw) vector_length (NUM_VECTORS) copy (ary)
   {
     WorkVec ((int *)ary, WIDTH, HEIGHT, nw, NUM_VECTORS);
