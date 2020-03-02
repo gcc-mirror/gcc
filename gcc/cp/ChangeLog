@@ -1,5 +1,10 @@
 2020-03-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93442
+	* parser.c (cp_parser_lambda_expression): Clear in_discarded_stmt.
+
+2020-03-02  Jason Merrill  <jason@redhat.com>
+
 	PR c++/90732 - ICE with VLA capture and generic lambda.
 	* pt.c (tsubst_lambda_expr): Repeat add_capture for VLAs.
 

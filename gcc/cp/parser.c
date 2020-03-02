@@ -10453,6 +10453,10 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->implicit_template_scope = 0;
     parser->auto_is_implicit_function_template_parm_p = false;
 
+    /* The body of a lambda in a discarded statement is not discarded.  */
+    bool discarded = in_discarded_stmt;
+    in_discarded_stmt = 0;
+
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
@@ -10482,6 +10486,8 @@ cp_parser_lambda_expression (cp_parser* parser)
       maybe_add_lambda_conv_op (type);
 
     type = finish_struct (type, /*attributes=*/NULL_TREE);
+
+    in_discarded_stmt = discarded;
 
     parser->num_template_parameter_lists = saved_num_template_parameter_lists;
     parser->in_statement = in_statement;
