@@ -1,3 +1,9 @@
+2020-03-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93995
+	* config/riscv/riscv.c (riscv_emit_float_compare): Using NE to compare
+	the result of IOR.
+
 2020-03-03  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/arm/arm_bf16.h (vcvtah_f32_bf16, vcvth_bf16_f32): New.

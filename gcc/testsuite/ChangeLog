@@ -1,3 +1,8 @@
+2020-03-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93995
+	* gcc.dg/pr93995.c: New.
+
 2020-03-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90505 - mismatch in template argument deduction.
