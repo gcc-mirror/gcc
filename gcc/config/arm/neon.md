@@ -6660,3 +6660,80 @@ if (BYTES_BIG_ENDIAN)
   }
   [(set_attr "type" "neon_dot<q>")]
 )
+
+(define_insn "neon_vbfcvtv4sf<VBFCVT:mode>"
+  [(set (match_operand:VBFCVT 0 "register_operand" "=w")
+       (unspec:VBFCVT [(match_operand:V4SF 1 "register_operand" "w")]
+	UNSPEC_BFCVT))]
+  "TARGET_BF16_SIMD"
+  "vcvt.bf16.f32\\t%<V_bf_low>0, %q1"
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
+)
+
+(define_insn "neon_vbfcvtv4sf_highv8bf"
+  [(set (match_operand:V8BF 0 "register_operand" "=w")
+       (unspec:V8BF [(match_operand:V8BF 1 "register_operand" "0")
+		     (match_operand:V4SF 2 "register_operand" "w")]
+	UNSPEC_BFCVT_HIGH))]
+  "TARGET_BF16_SIMD"
+  "vcvt.bf16.f32\\t%f0, %q2"
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
+)
+
+(define_insn "neon_vbfcvtsf"
+  [(set (match_operand:BF 0 "register_operand" "=t")
+       (unspec:BF [(match_operand:SF 1 "register_operand" "t")]
+	UNSPEC_BFCVT))]
+  "TARGET_BF16_FP"
+  "vcvtb.bf16.f32\\t%0, %1"
+  [(set_attr "type" "f_cvt")]
+)
+
+(define_insn "neon_vbfcvt<VBFCVT:mode>"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+       (unspec:V4SF [(match_operand:VBFCVT 1 "register_operand" "w")]
+	UNSPEC_BFCVT))]
+  "TARGET_BF16_SIMD"
+  "vshll.u32\\t%q0, %<V_bf_low>1, #16"
+  [(set_attr "type" "neon_shift_imm_q")]
+)
+
+(define_insn "neon_vbfcvt_highv8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+       (unspec:V4SF [(match_operand:V8BF 1 "register_operand" "w")]
+	UNSPEC_BFCVT_HIGH))]
+  "TARGET_BF16_SIMD"
+  "vshll.u32\\t%q0, %f1, #16"
+  [(set_attr "type" "neon_shift_imm_q")]
+)
+
+;; Convert a BF scalar operand to SF via VSHL.
+;; VSHL doesn't accept 32-bit registers where the BF and SF scalar operands
+;; would be allocated, therefore the operands must be converted to intermediate
+;; vectors (i.e. V2SI) in order to apply 64-bit registers.
+(define_expand "neon_vbfcvtbf"
+  [(match_operand:SF 0 "register_operand")
+   (unspec:SF [(match_operand:BF 1 "register_operand")] UNSPEC_BFCVT)]
+  "TARGET_BF16_FP"
+{
+  rtx op0 = gen_reg_rtx (V2SImode);
+  rtx op1 = gen_reg_rtx (V2SImode);
+  emit_insn (gen_neon_vbfcvtbf_cvtmodev2si (op1, operands[1]));
+  emit_insn (gen_neon_vshl_nv2si (op0, op1, gen_int_mode(16, SImode)));
+  emit_insn (gen_neon_vbfcvtbf_cvtmodesf (operands[0], op0));
+  DONE;
+})
+
+;; Convert BF mode to V2SI and V2SI to SF.
+;; Implement this by allocating a 32-bit operand in the low half of a 64-bit
+;; register indexed by a 32-bit sub-register number.
+;; This will generate reloads but compiler can optimize out the moves.
+;; Use 'x' constraint to guarantee the 32-bit sub-registers in an indexable
+;; range so that to avoid extra moves.
+(define_insn "neon_vbfcvtbf_cvtmode<mode>"
+  [(set (match_operand:VBFCVTM 0 "register_operand" "=x")
+       (unspec:VBFCVTM [(match_operand:<V_bf_cvt_m> 1 "register_operand" "0")]
+	UNSPEC_BFCVT))]
+  "TARGET_BF16_FP"
+  ""
+)

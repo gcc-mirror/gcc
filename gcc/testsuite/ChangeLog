@@ -1,3 +1,7 @@
+2020-03-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/bf16_cvt_1.c: New test.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93582

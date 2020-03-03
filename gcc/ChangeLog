@@ -1,3 +1,19 @@
+2020-03-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm_bf16.h (vcvtah_f32_bf16, vcvth_bf16_f32): New.
+	* config/arm/arm_neon.h (vcvt_f32_bf16, vcvtq_low_f32_bf16): New.
+	(vcvtq_high_f32_bf16, vcvt_bf16_f32): New.
+	(vcvtq_low_bf16_f32, vcvtq_high_bf16_f32): New.
+	* config/arm/arm_neon_builtins.def (vbfcvt, vbfcvt_high): New entries.
+	(vbfcvtv4sf, vbfcvtv4sf_high): Likewise.
+	* config/arm/iterators.md (VBFCVT, VBFCVTM): New mode iterators.
+	(V_bf_low, V_bf_cvt_m): New mode attributes.
+	* config/arm/neon.md (neon_vbfcvtv4sf<VBFCVT:mode>): New.
+	(neon_vbfcvtv4sf_highv8bf, neon_vbfcvtsf): New.
+	(neon_vbfcvt<VBFCVT:mode>, neon_vbfcvt_highv8bf): New.
+	(neon_vbfcvtbf_cvtmode<mode>, neon_vbfcvtbf): New
+	* config/arm/unspecs.md (UNSPEC_BFCVT, UNSPEC_BFCVT_HIG): New.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93582
