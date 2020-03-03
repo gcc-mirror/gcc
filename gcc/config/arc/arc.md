@@ -6752,7 +6752,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
     arc_eh_return_address_location (operands[0]);
     DONE;
   }"
-)
+  [(set_attr "length" "8")]
+  )
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

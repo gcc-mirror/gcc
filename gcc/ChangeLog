@@ -1,3 +1,7 @@
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (eh_return): Add length info.
+
 2020-03-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (-fanalyzer-show-duplicate-count): New.
