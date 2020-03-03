@@ -2887,8 +2887,9 @@ private:
   bool read_enum_def (tree decl, tree maybe_template);
 
 public:
-  bool key_mergeable (merge_kind, tree, tree, tree,
-		      tree *, tree *, tree *, tree *, tree *);
+  tree decl_container ();
+  tree key_mergeable (int tag, merge_kind, tree decl, tree inner, tree type,
+		      tree container, bool is_mod);
   unsigned binfo_mergeable (tree *);
 
 private:
@@ -3023,8 +3024,9 @@ public:
 
 public:
   merge_kind get_merge_kind (tree decl, depset *maybe_dep);
-  tree get_container (tree decl);
-  void key_mergeable (merge_kind, tree decl, tree ctx, depset *maybe_dep);
+  tree decl_container (tree decl);
+  void key_mergeable (int tag, merge_kind, tree decl, tree container,
+		      depset *maybe_dep);
   void binfo_mergeable (tree binfo);
 
 private:
@@ -3122,8 +3124,8 @@ struct merge_key {
     args = TYPE_ARG_TYPES (fn_type);
   }
 
-  void write (trees_out &out, merge_kind) const;
-  bool read (trees_in &in, merge_kind);
+  void write (trees_out &out, merge_kind, tree container) const;
+  bool read (trees_in &in, merge_kind, tree container);
 };
 
 /********************************************************************/
@@ -7360,11 +7362,9 @@ trees_out::decl_value (tree decl, depset *dep)
 	type = NULL_TREE;
     }
 
-  tree container = get_container (decl);
-
   /* Stream the container, we want it correctly canonicalized before
      we start emitting keys for this decl.  */
-  tree_node (container);
+  tree container = decl_container (decl);
 
   unsigned tpl_levels = 0;
   if (decl != inner)
@@ -7374,7 +7374,7 @@ trees_out::decl_value (tree decl, depset *dep)
 
   /* Now write out the merging information, and then really
      install the tag values.  */
-  key_mergeable (mk, decl, container, dep);
+  key_mergeable (tag, mk, decl, container, dep);
 
   if (streaming_p ())
     dump (dumper::MERGE)
@@ -7382,7 +7382,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	       merge_kind_name[mk], TREE_CODE (decl), decl);
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
-    // FIXME: Stream in the type here as that's where the default args are
+    // FIXME: Stream in the type here as that's where the default args are?
     fn_parms_fini (inner);
 
   tree_node_vals (decl);
@@ -7566,14 +7566,12 @@ trees_in::decl_value ()
       return NULL_TREE;
     }
 
-  // FIXME: this needs a cleanup
-  tree ct_1 = tree_node (); /* Read the container, to ensure it's
-			       already been streamed in.  */
+  /* Read the container, to ensure it's already been streamed in.  */
+  tree container = decl_container ();
   unsigned tpl_levels = 0;
   if (true)
     {
       /* Figure out if this decl is already known about.  */
-      merge_key key;
       int parm_tag = 0;
 
       if (decl != inner)
@@ -7582,169 +7580,13 @@ trees_in::decl_value ()
       if (TREE_CODE (inner) == FUNCTION_DECL)
 	parm_tag = fn_parms_init (inner);
 
-      if (!key.read (*this, mk))
-	goto bail;
-
-      if (mk & MK_template_mask)
-	{
-	  /* A specialization of some kind.  */
-	  DECL_NAME (decl) = DECL_NAME (key.ctx_or_tmpl);
-	  DECL_CONTEXT (decl) = DECL_CONTEXT (key.ctx_or_tmpl);
-	}
-      else
-	{
-	  if (!(mk & MK_indirect_mask))
-	    DECL_NAME (decl) = key.name_or_spec;
-	  DECL_CONTEXT (decl) = FROB_CONTEXT (key.ctx_or_tmpl);
-	}
-
-      if (inner_tag != 0)
-	{
-	  DECL_NAME (inner) = DECL_NAME (decl);
-	  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
-	}
-
-      const char *kind = "new";
-      tree existing = NULL_TREE;
-
-      if (mk & MK_template_mask)
-	{
-	  tree insert = decl;
-	  if (mk & MK_tmpl_tmpl_mask)
-	    {
-	      if (!inner_tag)
-		goto bail;
-	      insert = inner;
-	    }
-	  bool is_decl = mk & MK_tmpl_decl_mask;
-	  if (!is_decl)
-	    {
-	      if (mk == MK_type_spec && inner_tag)
-		goto bail;
-	      insert = type;
-	    }
-
-	  existing = match_mergeable_specialization (is_decl,
-						     key.ctx_or_tmpl,
-						     key.name_or_spec,
-						     insert);
-
-	  if (!existing)
-	    {
-	      if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
-		{} // FIXME: insert into type table
-	    }
-	  else if (mk & MK_tmpl_decl_mask)
-	    {
-	      /* A declaration specialization.  */
-	      if (mk & MK_tmpl_tmpl_mask)
-		if (tree ti = DECL_TEMPLATE_INFO (existing))
-		  {
-		    tree tmpl = TI_TEMPLATE (ti);
-		    if (DECL_TEMPLATE_RESULT (tmpl) == existing)
-		      existing = tmpl;
-		  }
-
-	      if (mk & MK_tmpl_both_mask)
-		{} // FIXME: check it's in the type table too
-	    }
-	  else
-	    {
-	      /* A type specialization.  */
-	      if (!(mk & MK_tmpl_tmpl_mask))
-		existing = TYPE_NAME (existing);
-	      else if (mk & MK_tmpl_partial_mask)
-		{
-		  /* A partial specialization.  */
-		  for (tree partial
-			 = DECL_TEMPLATE_SPECIALIZATIONS (key.ctx_or_tmpl);
-		       partial; partial = TREE_CHAIN (partial))
-		    if (TREE_TYPE (partial) == existing)
-		      {
-			existing = TREE_VALUE (partial);
-			break;
-		      }
-		  gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
-		}
-	      else
-		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-		  {
-		    tree tmpl = TI_TEMPLATE (ti);
-		    if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
-		      existing = tmpl;
-		  }
-	    }
-	}
-      else if (mk == MK_unique)
-	kind = "unique";
-      else
-	{
-	  switch (TREE_CODE (key.ctx_or_tmpl))
-	    {
-	    default:
-	      gcc_unreachable ();
-
-	    case NAMESPACE_DECL:
-	      if (is_mod && !(state->is_module () || state->is_partition ()))
-		kind = "unique";
-	      else
-		// FIXME: process MK_enum separately here
-		existing = mergeable_namespace_entity
-		  (decl, key.ctx_or_tmpl, key.name_or_spec,
-		   is_mod, key.ret, key.args, key.constraints);
-	      break;
-
-	    case FUNCTION_DECL:
-	      // FIXME: What about a voldemort? how do we find what it
-	      // duplicates? Do we have to number vmorts relative to
-	      // their containing function?  But how would that work
-	      // when matching an in-TU declaration?
-	      kind = "unique";
-	      break;
-
-	    case TYPE_DECL:
-	      if (is_mod && !(state->is_module () || state->is_partition ())
-		  /* Implicit member functions can come from
-		     anywhere.  */
-		  && !(DECL_ARTIFICIAL (decl)
-		       && TREE_CODE (decl) == FUNCTION_DECL
-		       && !DECL_THUNK_P (decl)))
-		kind = "unique";
-	      else
-		{
-		  /* We do not appear to set TYPE_SIZE for templated
-		     enums.  So, they always appear incomplete.
-		     Perhaps we should?  */
-		  tree ctx = TREE_TYPE (key.ctx_or_tmpl);
-		  if (TREE_CODE (ctx) == ENUMERAL_TYPE)
-		    existing = find_enum_member (ctx, key.name_or_spec);
-		  else if (COMPLETE_TYPE_P (ctx))
-		    {
-		      if (mk == MK_local_friend)
-			{
-			  unsigned ix = TREE_INT_CST_LOW (key.index);
-			  for (tree decls = CLASSTYPE_DECL_LIST (ctx);
-			       decls; decls = TREE_CHAIN (decls))
-			    if (!TREE_PURPOSE (decls)
-				&& !ix--)
-			      {
-				existing
-				  = friend_from_decl_list (TREE_VALUE (decls));
-				break;
-			      }
-			}
-		      else
-			existing = mergeable_class_member
-			  (decl, ctx, key.name_or_spec,
-			   key.ret, key.args, key.constraints);
-		    }
-		}
-	      break;
-	    }
-	}
-
+      tree existing = key_mergeable (tag, mk, decl, inner, type,
+				     container, is_mod);
       if (existing)
 	{
+	  if (existing == error_mark_node)
+	    goto bail;
+
 	  /* Install the existing decl into the back ref array.  */
 	  register_duplicate (decl, existing);
 	  back_refs[~tag] = existing;
@@ -7761,17 +7603,12 @@ trees_in::decl_value ()
 	      if (stub_tag != 0)
 		back_refs[~stub_tag] = TYPE_STUB_DECL (existing_type);
 	    }
-
-	  kind = "matched";
 	}
 
       if (parm_tag)
+	// FIXME: Is this comment 100% accurate?
 	/* EXISTING is the template result (or NULL).  */
 	fn_parms_fini (parm_tag, inner, existing, has_defn);
-
-      dump (dumper::MERGE)
-	&& dump ("Read:%d's %s merge key (%s) %C:%N", tag,
-		 merge_kind_name[mk], kind, TREE_CODE (decl), decl);
     }
 
   if (!tree_node_vals (decl))
@@ -9870,7 +9707,7 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 /* Stream a merge key.  */
 
 void
-merge_key::write (trees_out &out, merge_kind kind) const
+merge_key::write (trees_out &out, merge_kind kind, tree) const
 {
   if (kind != MK_unique)
     {
@@ -9881,7 +9718,8 @@ merge_key::write (trees_out &out, merge_kind kind) const
 	}
       out.tree_node (index);
 
-      out.tree_node (ctx_or_tmpl);
+      if (kind & MK_template_mask)
+	out.tree_node (ctx_or_tmpl);
       out.tree_node (name_or_spec);
 
       out.tree_node (ret);
@@ -9898,7 +9736,7 @@ merge_key::write (trees_out &out, merge_kind kind) const
 }
 
 bool
-merge_key::read (trees_in &in, merge_kind kind)
+merge_key::read (trees_in &in, merge_kind kind, tree container)
 {
   if (kind != MK_unique)
     {
@@ -9907,7 +9745,7 @@ merge_key::read (trees_in &in, merge_kind kind)
       //      index = code >> 2;
       index = in.tree_node ();
 
-      ctx_or_tmpl = in.tree_node ();
+      ctx_or_tmpl = kind & MK_template_mask ? in.tree_node () : container;
       name_or_spec = in.tree_node ();
 
       ret = in.tree_node ();
@@ -9939,35 +9777,38 @@ merge_key::read (trees_in &in, merge_kind kind)
   return !in.get_overrun ();
 }
 
-// FIXME: caller has MK available to help this fn
+/* The container of DECL -- not necessarily its context!  */
+
 tree
-trees_out::get_container (tree decl)
+trees_out::decl_container (tree decl)
 {
   tree container = NULL_TREE;
 
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-      container = DECL_CHAIN (decl);
-  if (!container)
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+    container = DECL_CHAIN (decl);
+  else
     container = CP_DECL_CONTEXT (decl);
+
   if (TYPE_P (container))
     container = TYPE_NAME (container);
 
   int use_tpl;
   if (tree template_info = node_template_info (container, use_tpl))
-    {
-      if (use_tpl == 2)
-	{
-	  /* A partial or explicit specialization.  */
-	  if (depset *dep = dep_hash->find_dependency (decl))
-	    if (dep->get_entity_kind () == depset::EK_REDIRECT)
-	      container = dep->deps[0]->get_entity ();
-	}
-      else if (!use_tpl)
-	container = TI_TEMPLATE (template_info);
-    }
+    if (!use_tpl)
+      container = TI_TEMPLATE (template_info);
 
-  return container;
+  tree_node (container);
+
+  return STRIP_TEMPLATE (container);
+}
+
+tree
+trees_in::decl_container ()
+{
+  tree container = tree_node ();
+
+  return STRIP_TEMPLATE (container);
 }
 
 /* Write out key information about a mergeable DEP.  Does not write
@@ -9975,11 +9816,12 @@ trees_out::get_container (tree decl)
    written.  The container has already been streamed.  */
 
 void
-trees_out::key_mergeable (merge_kind mk, tree decl, tree ctx, depset *dep)
+trees_out::key_mergeable (int tag, merge_kind mk, tree decl,
+			  tree container, depset *dep)
 {
   if (streaming_p ())
     dump (dumper::MERGE)
-      && dump ("Writing %s key for mergeable %s %C:%N", merge_kind_name[mk],
+      && dump ("Writing:%d's %s merge key (%s) %C:%N", tag, merge_kind_name[mk],
 	       dep ? dep->entity_kind_name () : "contained",
 	       TREE_CODE (decl), decl);
 
@@ -10070,7 +9912,7 @@ trees_out::key_mergeable (merge_kind mk, tree decl, tree ctx, depset *dep)
       else
 	gcc_unreachable ();
 
-      key.ctx_and_name (STRIP_TEMPLATE (ctx), name);
+      key.ctx_and_name (container, name);
       key.index = index;
     }
   else if (mk != MK_unique)
@@ -10126,7 +9968,7 @@ trees_out::key_mergeable (merge_kind mk, tree decl, tree ctx, depset *dep)
 	name = conv_op_identifier;
 
       // FIXME: We should just be given the non-template?
-      key.ctx_and_name (STRIP_TEMPLATE (ctx), name);
+      key.ctx_and_name (container, name);
 
       if (TREE_CODE (inner) == FUNCTION_DECL)
 	{
@@ -10162,57 +10004,184 @@ trees_out::key_mergeable (merge_kind mk, tree decl, tree ctx, depset *dep)
 	}
     }
 
-  key.write (*this, mk);
+  key.write (*this, mk, container);
 }
 
 /* DECL, INNER & TYPE are a skeleton set of nodes for a decl.  Only
-   the bools have been filled in.  Read its merging key.  Returns
-   IS_SPECIALIZATION.  *CONTAINER will be NULL on error.  */
-// FIXME: the output parms should be a struct that we return by value
-// FIXME: No longer needed, ish
-#if 0
-bool
-trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
-			 tree *container, tree *key,
-			 tree *fn_args, tree *r_type, tree *reqs)
-{
-  gcc_unreachable ();
-  *key = NULL_TREE;
-  *fn_args = *r_type = *reqs = NULL_TREE;
+   the bools have been filled in.  Read its merging key and merge it.
+   Returns the existing decl if there is one.  */
 
-  /* Now read the locating information. */
+tree
+trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
+			 tree type, tree container, bool is_mod)
+{
+  merge_key key;
+
+  if (!key.read (*this, mk, container))
+  bail:
+    return error_mark_node;
+
   if (mk & MK_template_mask)
     {
-      *container = tree_node ();
-      *key = tree_node ();
+      /* A specialization of some kind.  */
+      DECL_NAME (decl) = DECL_NAME (key.ctx_or_tmpl);
+      DECL_CONTEXT (decl) = DECL_CONTEXT (key.ctx_or_tmpl);
     }
   else
     {
-      *container = STRIP_TEMPLATE (*container);
+      if (!(mk & MK_indirect_mask))
+	DECL_NAME (decl) = key.name_or_spec;
+      DECL_CONTEXT (decl) = FROB_CONTEXT (key.ctx_or_tmpl);
+    }
 
-      if (mk & MK_indirect_mask)
+  DECL_NAME (inner) = DECL_NAME (decl);
+  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+
+  const char *kind = "new";
+  tree existing = NULL_TREE;
+
+  if (mk & MK_template_mask)
+    {
+      tree insert = decl;
+      if (mk & MK_tmpl_tmpl_mask)
 	{
-	  *key = tree_node ();
-	  if (mk == MK_local_friend)
-	    *fn_args = tree_node ();
+	  if (inner == decl)
+	    goto bail;
+	  insert = inner;
 	}
-      else if (mk != MK_unique)
+      bool is_decl = mk & MK_tmpl_decl_mask;
+      if (!is_decl)
 	{
-	  *key = tree_node ();
+	  if (mk == MK_type_spec && inner != decl)
+	    goto bail;
+	  insert = type;
+	}
 
-	  if (TREE_CODE (inner) == FUNCTION_DECL)
+      existing = match_mergeable_specialization (is_decl,
+						 key.ctx_or_tmpl,
+						 key.name_or_spec,
+						 insert);
+
+      if (!existing)
+	{
+	  if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
+	    {} // FIXME: insert into type table
+	}
+      else if (mk & MK_tmpl_decl_mask)
+	{
+	  /* A declaration specialization.  */
+	  if (mk & MK_tmpl_tmpl_mask)
+	    if (tree ti = DECL_TEMPLATE_INFO (existing))
+	      {
+		tree tmpl = TI_TEMPLATE (ti);
+		if (DECL_TEMPLATE_RESULT (tmpl) == existing)
+		  existing = tmpl;
+	      }
+
+	  if (mk & MK_tmpl_both_mask)
+	    {} // FIXME: check it's in the type table too
+	}
+      else
+	{
+	  /* A type specialization.  */
+	  if (!(mk & MK_tmpl_tmpl_mask))
+	    existing = TYPE_NAME (existing);
+	  else if (mk & MK_tmpl_partial_mask)
 	    {
-	      *fn_args = fn_arg_types ();
-	      if (decl != inner)
-		*reqs = tree_node ();
-	      if (decl != inner || *key == conv_op_identifier)
-		*r_type = tree_node ();
+	      /* A partial specialization.  */
+	      for (tree partial
+		     = DECL_TEMPLATE_SPECIALIZATIONS (key.ctx_or_tmpl);
+		   partial; partial = TREE_CHAIN (partial))
+		if (TREE_TYPE (partial) == existing)
+		  {
+		    existing = TREE_VALUE (partial);
+		    break;
+		  }
+	      gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
 	    }
+	  else
+	    if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+	      {
+		tree tmpl = TI_TEMPLATE (ti);
+		if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
+		  existing = tmpl;
+	      }
 	}
     }
-  return !get_overrun ();
+  else if (mk == MK_unique)
+    kind = "unique";
+  else
+    {
+      switch (TREE_CODE (key.ctx_or_tmpl))
+	{
+	default:
+	  gcc_unreachable ();
+
+	case NAMESPACE_DECL:
+	  if (is_mod && !(state->is_module () || state->is_partition ()))
+	    kind = "unique";
+	  else
+	    // FIXME: process MK_enum separately here
+	    existing = mergeable_namespace_entity
+	      (decl, key.ctx_or_tmpl, key.name_or_spec,
+	       is_mod, key.ret, key.args, key.constraints);
+	  break;
+
+	case FUNCTION_DECL:
+	  // FIXME: What about a voldemort? how do we find what it
+	  // duplicates? Do we have to number vmorts relative to
+	  // their containing function?  But how would that work
+	  // when matching an in-TU declaration?
+	  kind = "unique";
+	  break;
+
+	case TYPE_DECL:
+	  if (is_mod && !(state->is_module () || state->is_partition ())
+	      /* Implicit member functions can come from
+		 anywhere.  */
+	      && !(DECL_ARTIFICIAL (decl)
+		   && TREE_CODE (decl) == FUNCTION_DECL
+		   && !DECL_THUNK_P (decl)))
+	    kind = "unique";
+	  else
+	    {
+	      /* We do not appear to set TYPE_SIZE for templated
+		 enums.  So, they always appear incomplete.
+		 Perhaps we should?  */
+	      tree ctx = TREE_TYPE (key.ctx_or_tmpl);
+	      if (TREE_CODE (ctx) == ENUMERAL_TYPE)
+		existing = find_enum_member (ctx, key.name_or_spec);
+	      else if (COMPLETE_TYPE_P (ctx))
+		{
+		  if (mk == MK_local_friend)
+		    {
+		      unsigned ix = TREE_INT_CST_LOW (key.index);
+		      for (tree decls = CLASSTYPE_DECL_LIST (ctx);
+			   decls; decls = TREE_CHAIN (decls))
+			if (!TREE_PURPOSE (decls)
+			    && !ix--)
+			  {
+			    existing
+			      = friend_from_decl_list (TREE_VALUE (decls));
+			    break;
+			  }
+		    }
+		  else
+		    existing = mergeable_class_member
+		      (decl, ctx, key.name_or_spec,
+		       key.ret, key.args, key.constraints);
+		}
+	    }
+	  break;
+	}
+    }
+
+  dump (dumper::MERGE)
+    && dump ("Read:%d's %s merge key (%s) %C:%N", tag, merge_kind_name[mk],
+	     existing ? "matched" : kind, TREE_CODE (decl), decl);
+
+  return existing;
 }
-#endif
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use RET &
    ARGS to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this

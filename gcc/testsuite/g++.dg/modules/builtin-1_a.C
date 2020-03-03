@@ -16,4 +16,4 @@ export inline void scalar_del (int *ptr)
 // { dg-final { scan-lang-dump {Wrote GMF:-[0-9]* function_decl:'::operator delete \[\]'@builtin} module } }
 
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::operator delete'\n  \[1\]=binding '::operator delete'} module } }
-// { dg-final { scan-lang-dump {Writing named:-[0-9]* function_decl:'::operator delete'\n *Wrote[^\n]*\n *Writing named key for mergeable decl function_decl:'::operator delete'} module } }
+// { dg-final { scan-lang-dump {Writing named:-[0-9]* function_decl:'::operator delete'\n *Wrote[^\n]*\n *Writing:-[0-9]*'s named merge key \(decl\) function_decl:'::operator delete'} module } }

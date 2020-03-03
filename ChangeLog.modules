@@ -1,6 +1,16 @@
 2020-03-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::decl_container): New.
+	(trees_in::key_mergeable): Reimplement, swallowing the merging
+	logic of ...
+	(trees_in::decl_value): ... this.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-[13]_a.C: Adjust scans.
+	* g++.dg/modules/indirect-[234]_b.C: Likewise.
+	* g++.dg/modules/inst-[23]_a.C: Likewise.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::fn_arg_types): Delete.
 	(struct merge_key): New.
 	(trees_out::key_mergeable): Use merge_key.
