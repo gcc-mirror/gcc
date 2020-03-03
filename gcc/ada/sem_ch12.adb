@@ -1753,7 +1753,7 @@ package body Sem_Ch12 is
 
                      --  Warn when an actual is a fixed-point with user-
                      --  defined promitives. The warning is superfluous
-                     --  if the fornal is private, because there can be
+                     --  if the formal is private, because there can be
                      --  no arithmetic operations in the generic so there
                      --  no danger of confusion.
 
@@ -12394,12 +12394,12 @@ package body Sem_Ch12 is
 
       --  Ada 2020: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for the formal are obeyed by the actual.
-      --  If the fornal is a derived type the aspect specifications must match.
+      --  If the formal is a derived type the aspect specifications must match.
       --  NOTE: AI12-0282 implies that matching of aspects is required between
       --  formal and actual in all cases, but this is too restrictive.
       --  In particular it violates a language design rule: a limited private
       --  indefinite formal can be matched by any actual. The current code
-      --  reflects an older and more permissve version of RM C.6 (12/5).
+      --  reflects an older and more permissive version of RM C.6 (12/5).
 
       procedure Check_Shared_Variable_Control_Aspects is
       begin
