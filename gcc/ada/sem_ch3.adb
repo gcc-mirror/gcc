@@ -2592,11 +2592,9 @@ package body Sem_Ch3 is
       --  Local variables
 
       Context     : Node_Id   := Empty;
+      Ctrl_Typ    : Entity_Id := Empty;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
-
-      Body_Seen : Boolean := False;
-      --  Flag set when the first body [stub] is encountered
 
    --  Start of processing for Analyze_Declarations
 
@@ -2611,6 +2609,16 @@ package body Sem_Ch3 is
 
          if No (Freeze_From) then
             Freeze_From := First_Entity (Current_Scope);
+         end if;
+
+         --  Remember if the declaration we just processed is the full type
+         --  declaration of a controlled type (to handle late overriding of
+         --  initialize, adjust or finalize).
+
+         if Nkind (Decl) = N_Full_Type_Declaration
+           and then Is_Controlled (Defining_Identifier (Decl))
+         then
+            Ctrl_Typ := Defining_Identifier (Decl);
          end if;
 
          --  At the end of a declarative part, freeze remaining entities
@@ -2758,19 +2766,17 @@ package body Sem_Ch3 is
             --  ??? A cleaner approach may be possible and/or this solution
             --  could be extended to general-purpose late primitives, TBD.
 
-            if not Body_Seen and then not Is_Body (Decl) then
-               Body_Seen := True;
+            if Present (Ctrl_Typ) then
 
-               if Nkind (Next_Decl) = N_Subprogram_Body then
+               --  No need to continue searching for late body overriding if
+               --  the controlled type is already frozen.
+
+               if Is_Frozen (Ctrl_Typ) then
+                  Ctrl_Typ := Empty;
+
+               elsif Nkind (Next_Decl) = N_Subprogram_Body then
                   Handle_Late_Controlled_Primitive (Next_Decl);
                end if;
-
-            else
-               --  In ASIS mode, if the next declaration is a body, complete
-               --  the analysis of declarations so far.
-               --  Is this still needed???
-
-               Resolve_Aspects;
             end if;
 
             Adjust_Decl;
