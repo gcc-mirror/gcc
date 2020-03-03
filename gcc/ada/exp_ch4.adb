@@ -4486,7 +4486,7 @@ package body Exp_Ch4 is
                        and then Nkind (Associated_Node_For_Itype (PtrT)) =
                                   N_Object_Declaration)
       then
-         Error_Msg_N ("?use of an anonymous access type allocator", N);
+         Error_Msg_N ("??use of an anonymous access type allocator", N);
       end if;
 
       --  RM E.2.2(17). We enforce that the expected type of an allocator
