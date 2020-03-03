@@ -1,3 +1,30 @@
+2020-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93946
+	* alias.h (refs_same_for_tbaa_p): Declare.
+	* alias.c (refs_same_for_tbaa_p): New function.
+	* tree-ssa-alias.c (ao_ref_alias_set): For a NULL ref return
+	zero.
+	* tree-ssa-scopedtables.h
+	(avail_exprs_stack::lookup_avail_expr): Add output argument
+	giving access to the hashtable entry.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Likewise.
+	* tree-ssa-dom.c: Include alias.h.
+	(dom_opt_dom_walker::optimize_stmt): Validate TBAA state before
+	removing redundant store.
+	* tree-ssa-sccvn.h (vn_reference_s::base_set): New member.
+	(ao_ref_init_from_vn_reference): Adjust prototype.
+	(vn_reference_lookup_pieces): Likewise.
+	(vn_reference_insert_pieces): Likewise.
+	* tree-ssa-sccvn.c: Track base alias set in addition to alias
+	set everywhere.
+	(eliminate_dom_walker::eliminate_stmt): Also check base alias
+	set when removing redundant stores.
+	(visit_reference_op_store): Likewise.
+	* dse.c (record_store): Adjust valdity check for redundant
+	store removal.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/26877

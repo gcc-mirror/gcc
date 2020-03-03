@@ -1,3 +1,9 @@
+2020-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93946
+	* gcc.dg/torture/pr93946-1.c: New testcase.
+	* gcc.dg/torture/pr93946-2.c: Likewise.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94002

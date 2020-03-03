@@ -658,6 +658,17 @@ dse_optimize_redundant_stores (gimple *stmt)
 {
   int cnt = 0;
 
+  /* TBAA state of STMT, if it is a call it is effectively alias-set zero.  */
+  alias_set_type earlier_set = 0;
+  alias_set_type earlier_base_set = 0;
+  if (is_gimple_assign (stmt))
+    {
+      ao_ref lhs_ref;
+      ao_ref_init (&lhs_ref, gimple_assign_lhs (stmt));
+      earlier_set = ao_ref_alias_set (&lhs_ref);
+      earlier_base_set = ao_ref_base_alias_set (&lhs_ref);
+    }
+
   /* We could do something fairly complex and look through PHIs
      like DSE_CLASSIFY_STORE, but it doesn't seem to be worth
      the effort.
@@ -698,10 +709,27 @@ dse_optimize_redundant_stores (gimple *stmt)
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
 	      if (is_gimple_assign (use_stmt))
-		delete_dead_or_redundant_assignment (&gsi, "redundant",
-						     need_eh_cleanup);
+		{
+		  ao_ref lhs_ref;
+		  ao_ref_init (&lhs_ref, gimple_assign_lhs (use_stmt));
+		  if ((earlier_set == ao_ref_alias_set (&lhs_ref)
+		       || alias_set_subset_of (ao_ref_alias_set (&lhs_ref),
+					       earlier_set))
+		      && (earlier_base_set == ao_ref_base_alias_set (&lhs_ref)
+			  || alias_set_subset_of
+			       (ao_ref_base_alias_set (&lhs_ref),
+						  earlier_base_set)))
+		    delete_dead_or_redundant_assignment (&gsi, "redundant",
+							 need_eh_cleanup);
+		}
 	      else if (is_gimple_call (use_stmt))
-		delete_dead_or_redundant_call (&gsi, "redundant");
+		{
+		  if ((earlier_set == 0
+		       || alias_set_subset_of (0, earlier_set))
+		      && (earlier_base_set == 0
+			  || alias_set_subset_of (0, earlier_base_set)))
+		  delete_dead_or_redundant_call (&gsi, "redundant");
+		}
 	      else
 		gcc_unreachable ();
 	    }
