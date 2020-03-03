@@ -2065,7 +2065,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Range_Length:
       prefix_unused = true;
 
-      if (INTEGRAL_TYPE_P (gnu_type) || TREE_CODE (gnu_type) == REAL_TYPE)
+      if (INTEGRAL_TYPE_P (gnu_type) || SCALAR_FLOAT_TYPE_P (gnu_type))
 	{
 	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
@@ -4457,9 +4457,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   tree gnu_after_list = NULL_TREE;
   tree gnu_retval = NULL_TREE;
   tree gnu_call, gnu_result;
-  bool by_descriptor = false;
   bool went_into_elab_proc = false;
   bool pushed_binding_level = false;
+  bool variadic;
+  bool by_descriptor;
   Entity_Id gnat_formal;
   Node_Id gnat_actual;
   atomic_acces_t aa_type;
@@ -4505,20 +4506,32 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
      entity being called.  */
   if (Nkind (Name (gnat_node)) == N_Explicit_Dereference)
     {
+      const Entity_Id gnat_prefix_type
+	= Underlying_Type (Etype (Prefix (Name (gnat_node))));
+
       gnat_formal = First_Formal_With_Extras (Etype (Name (gnat_node)));
+      variadic = IN (Convention (gnat_prefix_type), Convention_C_Variadic);
 
       /* If the access type doesn't require foreign-compatible representation,
 	 be prepared for descriptors.  */
-      if (targetm.calls.custom_function_descriptors > 0
-	  && Can_Use_Internal_Rep
-	     (Underlying_Type (Etype (Prefix (Name (gnat_node))))))
-	by_descriptor = true;
+      by_descriptor
+	= targetm.calls.custom_function_descriptors > 0
+	  && Can_Use_Internal_Rep (gnat_prefix_type);
     }
   else if (Nkind (Name (gnat_node)) == N_Attribute_Reference)
-    /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
-    gnat_formal = Empty;
+    {
+      /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
+      gnat_formal = Empty;
+      variadic = false;
+      by_descriptor = false;
+    }
   else
-    gnat_formal = First_Formal_With_Extras (Entity (Name (gnat_node)));
+    {
+      gnat_formal = First_Formal_With_Extras (Entity (Name (gnat_node)));
+      variadic
+	= IN (Convention (Entity (Name (gnat_node))), Convention_C_Variadic);
+      by_descriptor = false;
+    }
 
   /* The lifetime of the temporaries created for the call ends right after the
      return value is copied, so we can give them the scope of the elaboration
@@ -4853,26 +4866,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
 
-      /* Otherwise the parameter is passed by copy.  */
-      else
+      /* Then see if the parameter is passed by copy.  */
+      else if (is_true_formal_parm)
 	{
 	  if (!in_param)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
-
-	  /* If we didn't create a PARM_DECL for the formal, this means that
-	     it is an Out parameter not passed by reference and that need not
-	     be copied in.  In this case, the value of the actual need not be
-	     read.  However, we still need to make sure that its side-effects
-	     are evaluated before the call, so we evaluate its address.  */
-	  if (!is_true_formal_parm)
-	    {
-	      if (TREE_SIDE_EFFECTS (gnu_name))
-		{
-		  tree addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_name);
-		  append_to_statement_list (addr, &gnu_stmt_list);
-		}
-	      continue;
-	    }
 
 	  gnu_actual = convert (gnu_formal_type, gnu_actual);
 
@@ -4880,6 +4878,98 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	     convert to the type used to pass the argument.  */
 	  if (!frontend_builtin)
 	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
+	}
+
+      /* Then see if this is an unnamed parameter in a variadic C function.  */
+      else if (variadic)
+	{
+	  /* This is based on the processing done in gnat_to_gnu_param, but
+	     we expect the mechanism to be set in (almost) all cases.  */
+	  const Mechanism_Type mech = Mechanism (gnat_formal);
+
+	  /* Strip off possible padding type.  */
+	  if (TYPE_IS_PADDING_P (gnu_formal_type))
+	    gnu_formal_type = TREE_TYPE (TYPE_FIELDS (gnu_formal_type));
+
+	  /* Arrays are passed as pointers to element type.  First check for
+	     unconstrained array and get the underlying array.  */
+	  if (TREE_CODE (gnu_formal_type) == UNCONSTRAINED_ARRAY_TYPE)
+	    gnu_formal_type
+	      = TREE_TYPE
+		(TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_formal_type))));
+
+	  /* Arrays are passed as pointers to element type.  */
+	  if (mech != By_Copy && TREE_CODE (gnu_formal_type) == ARRAY_TYPE)
+	    {
+	      gnu_actual = maybe_implicit_deref (gnu_actual);
+	      gnu_actual = maybe_unconstrained_array (gnu_actual);
+
+	      /* Strip off any multi-dimensional entries, then strip
+		 off the last array to get the component type.  */
+	      while (TREE_CODE (TREE_TYPE (gnu_formal_type)) == ARRAY_TYPE
+		     && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_formal_type)))
+		gnu_formal_type = TREE_TYPE (gnu_formal_type);
+
+	      gnu_formal_type = TREE_TYPE (gnu_formal_type);
+	      gnu_formal_type = build_pointer_type (gnu_formal_type);
+	      gnu_actual
+		= build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
+	    }
+
+	  /* Fat pointers are passed as thin pointers.  */
+	  else if (TYPE_IS_FAT_POINTER_P (gnu_formal_type))
+	    gnu_formal_type
+	      = make_type_from_size (gnu_formal_type,
+				     size_int (POINTER_SIZE), 0);
+
+	  /* If we were requested or muss pass by reference, do so.
+	     If we were requested to pass by copy, do so.
+	     Otherwise, pass In Out or Out parameters or aggregates by
+	     reference.  */
+	  else if (mech == By_Reference
+		   || must_pass_by_ref (gnu_formal_type)
+		   || (mech != By_Copy
+		       && (!in_param || AGGREGATE_TYPE_P (gnu_formal_type))))
+	    {
+	      gnu_formal_type = build_reference_type (gnu_formal_type);
+	      gnu_actual
+		= build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
+	    }
+
+	  /* Otherwise pass by copy after applying default C promotions.  */
+	  else
+	    {
+	      if (INTEGRAL_TYPE_P (gnu_formal_type)
+		  && TYPE_PRECISION (gnu_formal_type)
+		     < TYPE_PRECISION (integer_type_node))
+		gnu_formal_type = integer_type_node;
+
+	      else if (SCALAR_FLOAT_TYPE_P (gnu_formal_type)
+		       && TYPE_PRECISION (gnu_formal_type)
+			  < TYPE_PRECISION (double_type_node))
+		gnu_formal_type = double_type_node;
+	    }
+
+	  gnu_actual = convert (gnu_formal_type, gnu_actual);
+	}
+
+      /* If we didn't create a PARM_DECL for the formal, this means that
+	 it is an Out parameter not passed by reference and that need not
+	 be copied in.  In this case, the value of the actual need not be
+	 read.  However, we still need to make sure that its side-effects
+	 are evaluated before the call, so we evaluate its address.  */
+      else
+	{
+	  if (!in_param)
+	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
+
+	  if (TREE_SIDE_EFFECTS (gnu_name))
+	    {
+	      tree addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_name);
+	      append_to_statement_list (addr, &gnu_stmt_list);
+	    }
+
+	  continue;
 	}
 
       gnu_actual_vec.safe_push (gnu_actual);
