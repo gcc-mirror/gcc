@@ -111,12 +111,14 @@ package Einfo is
 
 --     The function spec must be on a single line
 
---     There can only be a single statement, contained on a single line,
---     not counting any pragma Assert statements.
+--     There can only be a single return statement, not counting any pragma
+--     Assert statements, possibly followed by a comment.
 
---     This single statement must either be a function call with simple,
---     single token arguments, or it must be a membership test of the form
---     a in b, where a and b are single tokens.
+--     This single statement must either contain a function call with simple,
+--     single token arguments, or it must contain a membership test of the form
+--     a in b, where a and b are single tokens, or it must contain an equality
+--     or inequality test of single tokens, or it must contain a disjunction of
+--     the preceding constructs.
 
 --  For functions that are not inlined, there is no restriction on the body,
 --  and XEINFO generates a direct reference in the C header file which allows
@@ -8976,6 +8978,8 @@ package Einfo is
    pragma Inline (Is_Static_Type);
    pragma Inline (Is_Statically_Allocated);
    pragma Inline (Is_Subprogram);
+   pragma Inline (Is_Subprogram_Or_Entry);
+   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
    pragma Inline (Is_Tag);
    pragma Inline (Is_Tagged_Type);
    pragma Inline (Is_Task_Type);
@@ -9170,8 +9174,6 @@ package Einfo is
    pragma Inline (Is_Protected_Component);
    pragma Inline (Is_Protected_Record_Type);
    pragma Inline (Is_String_Type);
-   pragma Inline (Is_Subprogram_Or_Entry);
-   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
    pragma Inline (Is_Task_Record_Type);
    pragma Inline (Is_Volatile);
    pragma Inline (Is_Wrapper_Package);
