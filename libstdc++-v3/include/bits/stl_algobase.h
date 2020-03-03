@@ -1711,15 +1711,16 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 		return __lencmp;
 	      }
 #endif // is_constant_evaluated
-      while (__first1 != __last1 && __first2 != __last2)
+      while (__first1 != __last1)
 	{
+	  if (__first2 == __last2)
+	    return strong_ordering::greater;
 	  if (auto __cmp = __comp(*__first1, *__first2); __cmp != 0)
 	    return __cmp;
 	  ++__first1;
 	  ++__first2;
 	}
-      return __first1 != __last1 ? strong_ordering::greater
-	: __first2 != __last2 ? strong_ordering::less : strong_ordering::equal;
+      return (__first2 == __last2) <=> true; // See PR 94006
     }
 
   template<typename _InputIter1, typename _InputIter2>

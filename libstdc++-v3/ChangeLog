@@ -1,3 +1,8 @@
+2020-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Avoid redundant iterator comparisons (LWG 3410).
+
 2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93972
