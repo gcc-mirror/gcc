@@ -420,6 +420,65 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
     };
 #endif
 
+  template<typename> struct iterator_traits;
+
+  // A type that is safe for use with memcpy, memmove, memcmp etc.
+  template<typename _Tp>
+    struct __is_nonvolatile_trivially_copyable
+    {
+      enum { __value = __is_trivially_copyable(_Tp) };
+    };
+
+  // Cannot use memcpy/memmove/memcmp on volatile types, but before C++20
+  // iterator_traits<volatile T*>::value_type is volatile T and so the
+  // partial specializations below match for volatile-qualified pointers
+  // e.g. __memcpyable<volatile int*, volatile int*, volatile int>.
+  template<typename _Tp>
+    struct __is_nonvolatile_trivially_copyable<volatile _Tp>
+    {
+      enum { __value = 0 };
+    };
+
+  // Whether two iterator types can be used with memcpy/memmove.
+  template<typename _OutputIter, typename _InputIter>
+    struct __memcpyable
+    {
+      enum { __value = 0 };
+    };
+
+  template<typename _Tp>
+    struct __memcpyable<_Tp*, _Tp*>
+    : __is_nonvolatile_trivially_copyable<_Tp>
+    { };
+
+  template<typename _Tp>
+    struct __memcpyable<_Tp*, const _Tp*>
+    : __is_nonvolatile_trivially_copyable<_Tp>
+    { };
+
+  // Whether two iterator types can be used with memcmp.
+  template<typename _Iter1, typename _Iter2>
+    struct __memcmpable
+    {
+      enum { __value = 0 };
+    };
+
+  // OK to use memcmp with pointers to trivially copyable types.
+  template<typename _Tp>
+    struct __memcmpable<_Tp*, _Tp*>
+    : __is_nonvolatile_trivially_copyable<_Tp>
+    { };
+
+  template<typename _Tp>
+    struct __memcmpable<const _Tp*, _Tp*>
+    : __is_nonvolatile_trivially_copyable<_Tp>
+    { };
+
+  template<typename _Tp>
+    struct __memcmpable<_Tp*, const _Tp*>
+    : __is_nonvolatile_trivially_copyable<_Tp>
+    { };
+
   //
   // Move iterator type
   //

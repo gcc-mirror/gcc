@@ -1,5 +1,26 @@
 2020-03-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/94013
+	* include/bits/cpp_type_traits.h (__memcpyable, __memcmpable): New
+	traits to control when to use memmove and memcmp optimizations.
+	(__is_nonvolatile_trivially_copyable): New helper trait.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Do not
+	use memcmp optimization with volatile data.
+	* include/bits/ranges_algobase.h (__equal_fn): Use __memcmpable.
+	(__copy_or_move, __copy_or_move_backward): Use __memcpyable.
+	* include/bits/stl_algobase.h (__copy_move_a2): Use __memcpyable.
+	(__copy_move_backward_a2): Likewise.
+	(__equal_aux1): Use __memcmpable.
+	(__lexicographical_compare_aux): Do not use memcmp optimization with
+	volatile data.
+	* testsuite/25_algorithms/copy/94013.cc: New test.
+	* testsuite/25_algorithms/copy_backward/94013.cc: New test.
+	* testsuite/25_algorithms/equal/94013.cc: New test.
+	* testsuite/25_algorithms/fill/94013.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/94013.cc: New test.
+	* testsuite/25_algorithms/move/94013.cc: New test.
+	* testsuite/25_algorithms/move_backward/94013.cc: New test.
+
 	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
 	Avoid redundant iterator comparisons (LWG 3410).
 

@@ -3473,8 +3473,8 @@ namespace ranges
 		     && __is_byte<_ValueType2>::__value
 		     && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
 		     && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
-		     && is_pointer_v<_Iter1>
-		     && is_pointer_v<_Iter2>
+		     && __ptr_to_nonvolatile<_Iter1>
+		     && __ptr_to_nonvolatile<_Iter2>
 		     && (is_same_v<_Comp, ranges::less>
 			 || is_same_v<_Comp, ranges::greater>)
 		     && is_same_v<_Proj1, identity>
@@ -3537,6 +3537,11 @@ namespace ranges
 		       std::move(__comp),
 		       std::move(__proj1), std::move(__proj2));
       }
+
+  private:
+    template<typename _Iter, typename _Ref = iter_reference_t<_Iter>>
+      static constexpr bool __ptr_to_nonvolatile
+	= is_pointer_v<_Iter> && !is_volatile_v<remove_reference_t<_Ref>>;
   };
 
   inline constexpr __lexicographical_compare_fn lexicographical_compare;

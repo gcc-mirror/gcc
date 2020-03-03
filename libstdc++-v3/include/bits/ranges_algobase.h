@@ -104,9 +104,7 @@ namespace ranges
 	    using _ValueType2 = iter_value_t<_Iter2>;
 	    constexpr bool __use_memcmp
 	      = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
-		 && is_same_v<_ValueType1, _ValueType2>
-		 && is_pointer_v<_Iter1>
-		 && is_pointer_v<_Iter2>
+		 && __memcmpable<_Iter1, _Iter2>::__value
 		 && is_same_v<_Pred, ranges::equal_to>
 		 && is_same_v<_Proj1, identity>
 		 && is_same_v<_Proj2, identity>);
@@ -252,16 +250,9 @@ namespace ranges
 	  if (!std::is_constant_evaluated())
 #endif
 	    {
-	      using _ValueTypeI = iter_value_t<_Iter>;
-	      using _ValueTypeO = typename iterator_traits<_Out>::value_type;
-	      constexpr bool __use_memmove
-		= (is_trivially_copyable_v<_ValueTypeI>
-		    && is_same_v<_ValueTypeI, _ValueTypeO>
-		    && is_pointer_v<_Iter>
-		    && is_pointer_v<_Out>);
-
-	      if constexpr (__use_memmove)
+	      if constexpr (__memcpyable<_Iter, _Out>::__value)
 		{
+		  using _ValueTypeI = iter_value_t<_Iter>;
 		  static_assert(_IsMove
 		      ? is_move_assignable_v<_ValueTypeI>
 		      : is_copy_assignable_v<_ValueTypeI>);
@@ -393,15 +384,9 @@ namespace ranges
 	  if (!std::is_constant_evaluated())
 #endif
 	    {
-	      using _ValueTypeI = iter_value_t<_Iter>;
-	      using _ValueTypeO = typename iterator_traits<_Out>::value_type;
-	      constexpr bool __use_memmove
-		= (is_trivially_copyable_v<_ValueTypeI>
-		    && is_same_v<_ValueTypeI, _ValueTypeO>
-		    && is_pointer_v<_Iter>
-		    && is_pointer_v<_Out>);
-	      if constexpr (__use_memmove)
+	      if constexpr (__memcpyable<_Out, _Iter>::__value)
 		{
+		  using _ValueTypeI = iter_value_t<_Iter>;
 		  static_assert(_IsMove
 		      ? is_move_assignable_v<_ValueTypeI>
 		      : is_copy_assignable_v<_ValueTypeI>);
