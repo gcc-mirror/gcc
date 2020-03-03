@@ -39,21 +39,21 @@ FUNC_START aeabi_lcmp
 	cmp	xxh, yyh
 	beq	1f
 	bgt	2f
-	mov	r0, #1
-	neg	r0, r0
+	movs	r0, #1
+	negs	r0, r0
 	RET
 2:
-	mov	r0, #1
+	movs	r0, #1
 	RET
 1:
-	sub	r0, xxl, yyl
+	subs	r0, xxl, yyl
 	beq	1f
 	bhi	2f
-	mov	r0, #1
-	neg	r0, r0
+	movs	r0, #1
+	negs	r0, r0
 	RET
 2:
-	mov	r0, #1
+	movs	r0, #1
 1:
 	RET
 	FUNC_END aeabi_lcmp
@@ -65,15 +65,15 @@ FUNC_START aeabi_lcmp
 FUNC_START aeabi_ulcmp
 	cmp	xxh, yyh
 	bne	1f
-	sub	r0, xxl, yyl
+	subs	r0, xxl, yyl
 	beq	2f
 1:
 	bcs	1f
-	mov	r0, #1
-	neg	r0, r0
+	movs	r0, #1
+	negs	r0, r0
 	RET
 1:
-	mov	r0, #1
+	movs	r0, #1
 2:
 	RET
 	FUNC_END aeabi_ulcmp
@@ -91,29 +91,29 @@ FUNC_START aeabi_ulcmp
 	cmp	xxl, #0
 2:
 	beq	3f
-	mov	xxh, #0
-	mvn	xxh, xxh		@ 0xffffffff
-	mov	xxl, xxh
+	movs	xxh, #0
+	mvns	xxh, xxh		@ 0xffffffff
+	movs	xxl, xxh
 3:
 	.else
 	blt	6f
 	bgt	4f
 	cmp	xxl, #0
 	beq	5f
-4:	mov	xxl, #0
-	mvn	xxl, xxl		@ 0xffffffff
-	lsr	xxh, xxl, #1		@ 0x7fffffff
+4:	movs	xxl, #0
+	mvns	xxl, xxl		@ 0xffffffff
+	lsrs	xxh, xxl, #1		@ 0x7fffffff
 	b	5f
-6:	mov	xxh, #0x80
-	lsl	xxh, xxh, #24		@ 0x80000000
-	mov	xxl, #0
+6:	movs	xxh, #0x80
+	lsls	xxh, xxh, #24		@ 0x80000000
+	movs	xxl, #0
 5:
 	.endif
 	@ tailcalls are tricky on v6-m.
 	push	{r0, r1, r2}
 	ldr	r0, 1f
 	adr	r1, 1f
-	add	r0, r1
+	adds	r0, r1
 	str	r0, [sp, #8]
 	@ We know we are not on armv4t, so pop pc is safe.
 	pop	{r0, r1, pc}
@@ -128,15 +128,15 @@ FUNC_START aeabi_ulcmp
 FUNC_START aeabi_ldivmod
 	test_div_by_zero signed
 
-	push {r0, r1}
-	mov r0, sp
-	push {r0, lr}
-	ldr r0, [sp, #8]
-	bl SYM(__gnu_ldivmod_helper)
-	ldr r3, [sp, #4]
-	mov lr, r3
-	add sp, sp, #8
-	pop {r2, r3}
+	push	{r0, r1}
+	mov	r0, sp
+	push	{r0, lr}
+	ldr	r0, [sp, #8]
+	bl	SYM(__gnu_ldivmod_helper)
+	ldr	r3, [sp, #4]
+	mov	lr, r3
+	add	sp, sp, #8
+	pop	{r2, r3}
 	RET
 	FUNC_END aeabi_ldivmod
 
@@ -147,15 +147,15 @@ FUNC_START aeabi_ldivmod
 FUNC_START aeabi_uldivmod
 	test_div_by_zero unsigned
 
-	push {r0, r1}
-	mov r0, sp
-	push {r0, lr}
-	ldr r0, [sp, #8]
-	bl SYM(__udivmoddi4)
-	ldr r3, [sp, #4]
-	mov lr, r3
-	add sp, sp, #8
-	pop {r2, r3}
+	push	{r0, r1}
+	mov	r0, sp
+	push	{r0, lr}
+	ldr	r0, [sp, #8]
+	bl	SYM(__udivmoddi4)
+	ldr	r3, [sp, #4]
+	mov	lr, r3
+	add	sp, sp, #8
+	pop	{r2, r3}
 	RET
 	FUNC_END aeabi_uldivmod
 	
@@ -166,9 +166,9 @@ FUNC_START aeabi_uldivmod
 FUNC_START aeabi_frsub
 
       push	{r4, lr}
-      mov	r4, #1
-      lsl	r4, #31
-      eor	r0, r0, r4
+      movs	r4, #1
+      lsls	r4, #31
+      eors	r0, r0, r4
       bl	__aeabi_fadd
       pop	{r4, pc}
 
@@ -181,7 +181,7 @@ FUNC_START aeabi_frsub
 FUNC_START aeabi_cfrcmple
 
 	mov	ip, r0
-	mov	r0, r1
+	movs	r0, r1
 	mov	r1, ip
 	b	6f
 
@@ -196,8 +196,8 @@ FUNC_ALIAS aeabi_cfcmple aeabi_cfcmpeq
 	cmp	r0, #0
 	@ Clear the C flag if the return value was -1, indicating
 	@ that the first operand was smaller than the second.
-	bmi 1f
-	mov	r1, #0
+	bmi	1f
+	movs	r1, #0
 	cmn	r0, r1
 1:
 	pop	{r0, r1, r2, r3, r4, pc}
@@ -210,8 +210,8 @@ FUNC_START	aeabi_fcmpeq
 
 	push	{r4, lr}
 	bl	__eqsf2
-	neg	r0, r0
-	add	r0, r0, #1
+	negs	r0, r0
+	adds	r0, r0, #1
 	pop	{r4, pc}
 
 	FUNC_END aeabi_fcmpeq
@@ -223,10 +223,10 @@ FUNC_START	aeabi_fcmp\cond
 	bl	__\helper\mode
 	cmp	r0, #0
 	b\cond	1f
-	mov	r0, #0
+	movs	r0, #0
 	pop	{r4, pc}
 1:
-	mov	r0, #1
+	movs	r0, #1
 	pop	{r4, pc}
 
 	FUNC_END aeabi_fcmp\cond
@@ -244,9 +244,9 @@ COMPARISON ge, ge
 FUNC_START aeabi_drsub
 
       push	{r4, lr}
-      mov	r4, #1
-      lsl	r4, #31
-      eor	xxh, xxh, r4
+      movs	r4, #1
+      lsls	r4, #31
+      eors	xxh, xxh, r4
       bl	__aeabi_dadd
       pop	{r4, pc}
 
@@ -259,10 +259,10 @@ FUNC_START aeabi_drsub
 FUNC_START aeabi_cdrcmple
 
 	mov	ip, r0
-	mov	r0, r2
+	movs	r0, r2
 	mov	r2, ip
 	mov	ip, r1
-	mov	r1, r3
+	movs	r1, r3
 	mov	r3, ip
 	b	6f
 
@@ -277,8 +277,8 @@ FUNC_ALIAS aeabi_cdcmple aeabi_cdcmpeq
 	cmp	r0, #0
 	@ Clear the C flag if the return value was -1, indicating
 	@ that the first operand was smaller than the second.
-	bmi 1f
-	mov	r1, #0
+	bmi	1f
+	movs	r1, #0
 	cmn	r0, r1
 1:
 	pop	{r0, r1, r2, r3, r4, pc}
@@ -291,8 +291,8 @@ FUNC_START	aeabi_dcmpeq
 
 	push	{r4, lr}
 	bl	__eqdf2
-	neg	r0, r0
-	add	r0, r0, #1
+	negs	r0, r0
+	adds	r0, r0, #1
 	pop	{r4, pc}
 
 	FUNC_END aeabi_dcmpeq
@@ -304,10 +304,10 @@ FUNC_START	aeabi_dcmp\cond
 	bl	__\helper\mode
 	cmp	r0, #0
 	b\cond	1f
-	mov	r0, #0
+	movs	r0, #0
 	pop	{r4, pc}
 1:
-	mov	r0, #1
+	movs	r0, #1
 	pop	{r4, pc}
 
 	FUNC_END aeabi_dcmp\cond
