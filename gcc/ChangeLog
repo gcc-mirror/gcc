@@ -1,5 +1,16 @@
 2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (leigitimate_small_data_address_p): Check if an
+	address has an offset which fits the scalling constraint for a
+	load/store operation.
+	(legitimate_scaled_address_p): Update use
+	leigitimate_small_data_address_p.
+	(arc_print_operand): Likewise.
+	(arc_legitimate_address_p): Likewise.
+	(legitimate_small_data_address_p): Likewise.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (fmasf4_fpu): Use accl_operand predicate.
 	(fnmasf4_fpu): Likewise.
 
