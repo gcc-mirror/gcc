@@ -16,9 +16,9 @@ contains
     type (et(real_kind=za)), allocatable, target :: tm
     type (et(real_kind=za)), pointer :: ce
 
-    allocate (tm) ! { dg-bogus "dereference of possibly-NULL" "" { xfail *-*-* } }
+    allocate (tm) ! { dg-bogus "dereference of possibly-NULL" }
     ce => tm
-  end function hv ! { dg-warning "leak of 'tm'" }
+  end function hv
 
 end module gg
 
@@ -30,4 +30,4 @@ program a5
   type (et(real_kind=za)), pointer :: vt
 
   vt => hv (qb)
-end program a5
+end program a5 ! { dg-warning "leak of '.*qb'" }

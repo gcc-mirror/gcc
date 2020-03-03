@@ -1,6 +1,14 @@
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93993
+	* gcc.dg/analyzer/expect-1.c: New test.
+	* gcc.dg/analyzer/malloc-4.c: New test.
+	* gfortran.dg/analyzer/pr93993.f90: Remove xfail from dg-bogus.
+	Move location of leak warning and update message.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
 	* gfortran.dg/analyzer/pr93993.f90: New test.
 
 2020-03-04  Martin Liska  <mliska@suse.cz>

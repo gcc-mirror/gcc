@@ -4204,6 +4204,19 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	    }
 	  return false;
 	}
+      else if (gimple_call_builtin_p (call, BUILT_IN_EXPECT)
+	       || gimple_call_builtin_p (call, BUILT_IN_EXPECT_WITH_PROBABILITY)
+	       || gimple_call_internal_p (call, IFN_BUILTIN_EXPECT))
+	{
+	  /* __builtin_expect's return value is its initial argument.  */
+	  if (!lhs_rid.null_p ())
+	    {
+	      tree initial_arg = gimple_call_arg (call, 0);
+	      svalue_id sid = get_rvalue (initial_arg, ctxt);
+	      set_value (lhs_rid, sid, ctxt);
+	    }
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1))
 	{
 	  region_id buf_rid = deref_rvalue (gimple_call_arg (call, 0), ctxt);
@@ -5447,21 +5460,32 @@ region_model::add_any_constraints_from_ssa_def_stmt (tree lhs,
   if (TREE_CODE (lhs) != SSA_NAME)
     return;
 
-  if (rhs != boolean_false_node)
+  if (!zerop (rhs))
     return;
 
   if (op != NE_EXPR && op != EQ_EXPR)
     return;
 
+  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
+  if (const gassign *assign = dyn_cast<gassign *> (def_stmt))
+    add_any_constraints_from_gassign (op, rhs, assign, ctxt);
+  else if (gcall *call = dyn_cast<gcall *> (def_stmt))
+    add_any_constraints_from_gcall (op, rhs, call, ctxt);
+}
+
+/* Add any constraints for an SSA_NAME defined by ASSIGN
+   where the result OP RHS.  */
+
+void
+region_model::add_any_constraints_from_gassign (enum tree_code op,
+						tree rhs,
+						const gassign *assign,
+						region_model_context *ctxt)
+{
   /* We have either
      - "LHS != false" (i.e. LHS is true), or
      - "LHS == false" (i.e. LHS is false).  */
   bool is_true = op == NE_EXPR;
-
-  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
-  gassign *assign = dyn_cast<gassign *> (def_stmt);
-  if (!assign)
-    return;
 
   enum tree_code rhs_code = gimple_assign_rhs_code (assign);
 
@@ -5469,6 +5493,13 @@ region_model::add_any_constraints_from_ssa_def_stmt (tree lhs,
     {
     default:
       break;
+
+    case NOP_EXPR:
+      {
+	add_constraint (gimple_assign_rhs1 (assign), op, rhs, ctxt);
+      }
+      break;
+
     case BIT_AND_EXPR:
       {
 	if (is_true)
@@ -5511,6 +5542,24 @@ region_model::add_any_constraints_from_ssa_def_stmt (tree lhs,
 	add_constraint (rhs1, rhs_code, rhs2, ctxt);
       }
       break;
+    }
+}
+
+/* Add any constraints for an SSA_NAME defined by CALL
+   where the result OP RHS.  */
+
+void
+region_model::add_any_constraints_from_gcall (enum tree_code op,
+					      tree rhs,
+					      const gcall *call,
+					      region_model_context *ctxt)
+{
+  if (gimple_call_builtin_p (call, BUILT_IN_EXPECT)
+      || gimple_call_builtin_p (call, BUILT_IN_EXPECT_WITH_PROBABILITY)
+      || gimple_call_internal_p (call, IFN_BUILTIN_EXPECT))
+    {
+      /* __builtin_expect's return value is its initial argument.  */
+      add_constraint (gimple_call_arg (call, 0), op, rhs, ctxt);
     }
 }
 
@@ -5608,6 +5657,16 @@ region_model::get_representative_path_var (region_id rid) const
   region *parent_reg = get_region (parent_rid);
   if (parent_reg)
     {
+      if (reg->is_view_p ())
+	{
+	  path_var parent_pv = get_representative_path_var (parent_rid);
+	  if (parent_pv.m_tree && reg->get_type ())
+	    return path_var (build1 (NOP_EXPR,
+				     TREE_TYPE (reg->get_type ()),
+				     parent_pv.m_tree),
+			     parent_pv.m_stack_depth);
+	}
+
       if (parent_reg->get_kind () == RK_STRUCT)
 	{
 	  map_region *parent_map_region = (map_region *)parent_reg;

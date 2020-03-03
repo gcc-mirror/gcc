@@ -1,6 +1,22 @@
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93993
+	* region-model.cc (region_model::on_call_pre): Handle
+	BUILT_IN_EXPECT and its variants.
+	(region_model::add_any_constraints_from_ssa_def_stmt): Split out
+	gassign handling into add_any_constraints_from_gassign; add gcall
+	handling.
+	(region_model::add_any_constraints_from_gassign): New function,
+	based on the above.  Add handling for NOP_EXPR.
+	(region_model::add_any_constraints_from_gcall): New function.
+	(region_model::get_representative_path_var): Handle views.
+	* region-model.h
+	(region_model::add_any_constraints_from_ssa_def_stmt): New decl.
+	(region_model::add_any_constraints_from_gassign): New decl.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
 	* checker-path.h (state_change_event::get_lvalue): Add ctxt param
 	and pass it to region_model::get_value call.
 	* diagnostic-manager.cc (get_any_origin): Pass a

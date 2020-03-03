@@ -1850,6 +1850,14 @@ class region_model
 					      enum tree_code op,
 					      tree rhs,
 					      region_model_context *ctxt);
+  void add_any_constraints_from_gassign (enum tree_code op,
+					 tree rhs,
+					 const gassign *assign,
+					 region_model_context *ctxt);
+  void add_any_constraints_from_gcall (enum tree_code op,
+				       tree rhs,
+				       const gcall *call,
+				       region_model_context *ctxt);
 
   void update_for_call_superedge (const call_superedge &call_edge,
 				  region_model_context *ctxt);
