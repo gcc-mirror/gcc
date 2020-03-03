@@ -1,3 +1,9 @@
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94002
+	* explow.c (plus_constant): Punt if cst has VOIDmode and
+	get_pool_mode is different from mode.
+
 2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (leigitimate_small_data_address_p): Check if an

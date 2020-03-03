@@ -1,5 +1,8 @@
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/94002
+	* gcc.dg/pr94002.c: New test.
+
 	PR tree-optimization/93927
 	* gcc.c-torture/compile/pr93927-1.c: New test.
 	* gcc.c-torture/compile/pr93927-2.c: New test.
