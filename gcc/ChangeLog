@@ -1,3 +1,22 @@
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* tree-ssa-sccvn.h (vn_reference_lookup): Add mask argument.
+	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add mask and masked_result
+	members, initialize them in the constructor and if mask is non-NULL,
+	artificially push_partial_def {} for the portions of the mask that
+	contain zeros.
+	(vn_walk_cb_data::finish): If mask is non-NULL, set masked_result to
+	val and return (void *)-1.  Formatting fix.
+	(vn_reference_lookup_pieces): Adjust vn_walk_cb_data initialization.
+	Formatting fix.
+	(vn_reference_lookup): Add mask argument.  If non-NULL, don't call
+	fully_constant_vn_reference_p nor vn_reference_lookup_1 and return
+	data.mask_result.
+	(visit_nary_op): Handle BIT_AND_EXPR of a memory load and INTEGER_CST
+	mask.
+	(visit_stmt): Formatting fix.
+
 2020-03-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93946

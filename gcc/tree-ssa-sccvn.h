@@ -257,7 +257,7 @@ tree vn_reference_lookup_pieces (tree, alias_set_type, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
 tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *, bool,
-			  tree * = NULL);
+			  tree * = NULL, tree = NULL_TREE);
 void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, alias_set_type,
 					   tree, vec<vn_reference_op_s>,

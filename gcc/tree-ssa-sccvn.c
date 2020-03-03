@@ -1682,16 +1682,55 @@ struct pd_data
 struct vn_walk_cb_data
 {
   vn_walk_cb_data (vn_reference_t vr_, tree orig_ref_, tree *last_vuse_ptr_,
-		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_)
+		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_)
     : vr (vr_), last_vuse_ptr (last_vuse_ptr_), last_vuse (NULL_TREE),
-      vn_walk_kind (vn_walk_kind_), tbaa_p (tbaa_p_),
-      saved_operands (vNULL), first_set (-2), first_base_set (-2),
-      known_ranges (NULL)
-   {
-     if (!last_vuse_ptr)
-       last_vuse_ptr = &last_vuse;
-     ao_ref_init (&orig_ref, orig_ref_);
-   }
+      mask (mask_), masked_result (NULL_TREE), vn_walk_kind (vn_walk_kind_),
+      tbaa_p (tbaa_p_), saved_operands (vNULL), first_set (-2),
+      first_base_set (-2), known_ranges (NULL)
+  {
+    if (!last_vuse_ptr)
+      last_vuse_ptr = &last_vuse;
+    ao_ref_init (&orig_ref, orig_ref_);
+    if (mask)
+      {
+	wide_int w = wi::to_wide (mask);
+	unsigned int pos = 0, prec = w.get_precision ();
+	pd_data pd;
+	pd.rhs = build_constructor (NULL_TREE, NULL);
+	/* When bitwise and with a constant is done on a memory load,
+	   we don't really need all the bits to be defined or defined
+	   to constants, we don't really care what is in the position
+	   corresponding to 0 bits in the mask.
+	   So, push the ranges of those 0 bits in the mask as artificial
+	   zero stores and let the partial def handling code do the
+	   rest.  */
+	while (pos < prec)
+	  {
+	    int tz = wi::ctz (w);
+	    if (pos + tz > prec)
+	      tz = prec - pos;
+	    if (tz)
+	      {
+		if (BYTES_BIG_ENDIAN)
+		  pd.offset = prec - pos - tz;
+		else
+		  pd.offset = pos;
+		pd.size = tz;
+		void *r = push_partial_def (pd, 0, 0, prec);
+		gcc_assert (r == NULL_TREE);
+	      }
+	    pos += tz;
+	    if (pos == prec)
+	      break;
+	    w = wi::lrshift (w, tz);
+	    tz = wi::ctz (wi::bit_not (w));
+	    if (pos + tz > prec)
+	      tz = prec - pos;
+	    pos += tz;
+	    w = wi::lrshift (w, tz);
+	  }
+      }
+  }
   ~vn_walk_cb_data ();
   void *finish (alias_set_type, alias_set_type, tree);
   void *push_partial_def (const pd_data& pd,
@@ -1701,6 +1740,8 @@ struct vn_walk_cb_data
   ao_ref orig_ref;
   tree *last_vuse_ptr;
   tree last_vuse;
+  tree mask;
+  tree masked_result;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
   vec<vn_reference_op_s> saved_operands;
@@ -1733,9 +1774,15 @@ vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
       set = first_set;
       base_set = first_base_set;
     }
-  return vn_reference_lookup_or_insert_for_pieces
-      (last_vuse, set, base_set, vr->type,
-       saved_operands.exists () ? saved_operands : vr->operands, val);
+  if (mask)
+    {
+      masked_result = val;
+      return (void *) -1;
+    }
+  vec<vn_reference_op_s> &operands
+    = saved_operands.exists () ? saved_operands : vr->operands;
+  return vn_reference_lookup_or_insert_for_pieces (last_vuse, set, base_set,
+						   vr->type, operands, val);
 }
 
 /* pd_range splay-tree helpers.  */
@@ -3382,13 +3429,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
     {
       ao_ref r;
       unsigned limit = param_sccvn_max_alias_queries_per_access;
-      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true);
-      if (ao_ref_init_from_vn_reference (&r, set, base_set, type, vr1.operands))
-	*vnresult =
-	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, true,
-						  vn_reference_lookup_2,
-						  vn_reference_lookup_3,
-						  vuse_valueize, limit, &data);
+      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE);
+      if (ao_ref_init_from_vn_reference (&r, set, base_set, type,
+					 vr1.operands))
+	*vnresult
+	  = ((vn_reference_t)
+	     walk_non_aliased_vuses (&r, vr1.vuse, true, vn_reference_lookup_2,
+				     vn_reference_lookup_3, vuse_valueize,
+				     limit, &data));
       gcc_checking_assert (vr1.operands == shared_lookup_references);
     }
 
@@ -3404,15 +3452,19 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
    was NULL..  VNRESULT will be filled in with the vn_reference_t
    stored in the hashtable if one exists.  When TBAA_P is false assume
    we are looking up a store and treat it as having alias-set zero.
-   *LAST_VUSE_PTR will be updated with the VUSE the value lookup succeeded.  */
+   *LAST_VUSE_PTR will be updated with the VUSE the value lookup succeeded.
+   MASK is either NULL_TREE, or can be an INTEGER_CST if the result of the
+   load is bitwise anded with MASK and so we are only interested in a subset
+   of the bits and can ignore if the other bits are uninitialized or
+   not initialized with constants.  */
 
 tree
 vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
-		     vn_reference_t *vnresult, bool tbaa_p, tree *last_vuse_ptr)
+		     vn_reference_t *vnresult, bool tbaa_p,
+		     tree *last_vuse_ptr, tree mask)
 {
   vec<vn_reference_op_s> operands;
   struct vn_reference_s vr1;
-  tree cst;
   bool valuezied_anything;
 
   if (vnresult)
@@ -3427,11 +3479,11 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.set = ao_ref_alias_set (&op_ref);
   vr1.base_set = ao_ref_base_alias_set (&op_ref);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
-  if ((cst = fully_constant_vn_reference_p (&vr1)))
-    return cst;
+  if (mask == NULL_TREE)
+    if (tree cst = fully_constant_vn_reference_p (&vr1))
+      return cst;
 
-  if (kind != VN_NOWALK
-      && vr1.vuse)
+  if (kind != VN_NOWALK && vr1.vuse)
     {
       vn_reference_t wvnresult;
       ao_ref r;
@@ -3443,25 +3495,31 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 					     vr1.type, vr1.operands))
 	ao_ref_init (&r, op);
       vn_walk_cb_data data (&vr1, r.ref ? NULL_TREE : op,
-			    last_vuse_ptr, kind, tbaa_p);
-      wvnresult =
-	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p,
-						vn_reference_lookup_2,
-						vn_reference_lookup_3,
-						vuse_valueize, limit, &data);
+			    last_vuse_ptr, kind, tbaa_p, mask);
+
+      wvnresult
+	= ((vn_reference_t)
+	   walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p, vn_reference_lookup_2,
+				   vn_reference_lookup_3, vuse_valueize, limit,
+				   &data));
       gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (wvnresult)
 	{
+	  gcc_assert (mask == NULL_TREE);
 	  if (vnresult)
 	    *vnresult = wvnresult;
 	  return wvnresult->result;
 	}
+      else if (mask)
+	return data.masked_result;
 
       return NULL_TREE;
     }
 
   if (last_vuse_ptr)
     *last_vuse_ptr = vr1.vuse;
+  if (mask)
+    return NULL_TREE;
   return vn_reference_lookup_1 (&vr1, vnresult);
 }
 
@@ -4675,7 +4733,39 @@ visit_nary_op (tree lhs, gassign *stmt)
 		}
 	    }
 	}
-    default:;
+      break;
+    case BIT_AND_EXPR:
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (rhs1) == SSA_NAME
+	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)
+	  && default_vn_walk_kind != VN_NOWALK
+	  && CHAR_BIT == 8
+	  && BITS_PER_UNIT == 8
+	  && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+	  && !integer_all_onesp (gimple_assign_rhs2 (stmt))
+	  && !integer_zerop (gimple_assign_rhs2 (stmt)))
+	{
+	  gassign *ass = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (rhs1));
+	  if (ass
+	      && !gimple_has_volatile_ops (ass)
+	      && vn_get_stmt_kind (ass) == VN_REFERENCE)
+	    {
+	      tree last_vuse = gimple_vuse (ass);
+	      tree op = gimple_assign_rhs1 (ass);
+	      tree result = vn_reference_lookup (op, gimple_vuse (ass),
+						 default_vn_walk_kind,
+						 NULL, true, &last_vuse,
+						 gimple_assign_rhs2 (stmt));
+	      if (result
+		  && useless_type_conversion_p (TREE_TYPE (result),
+						TREE_TYPE (op)))
+		return set_ssa_val_to (lhs, result);
+	    }
+	}
+      break;
+    default:
+      break;
     }
 
   bool changed = set_ssa_val_to (lhs, lhs);
@@ -5192,14 +5282,14 @@ visit_stmt (gimple *stmt, bool backedges_varying_p = false)
 	      switch (vn_get_stmt_kind (ass))
 		{
 		case VN_NARY:
-		changed = visit_nary_op (lhs, ass);
-		break;
+		  changed = visit_nary_op (lhs, ass);
+		  break;
 		case VN_REFERENCE:
-		changed = visit_reference_op_load (lhs, rhs1, ass);
-		break;
+		  changed = visit_reference_op_load (lhs, rhs1, ass);
+		  break;
 		default:
-		changed = defs_to_varying (ass);
-		break;
+		  changed = defs_to_varying (ass);
+		  break;
 		}
 	    }
 	}
