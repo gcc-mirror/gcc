@@ -1,3 +1,9 @@
+2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR tree-optimization/90883
+	* g++.dg/tree-ssa/pr90883.c: Add --param max-inline-insns-size=1.
+	Add aarch64-*-* mips*-*-* to XFAIL.
+
 2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229
