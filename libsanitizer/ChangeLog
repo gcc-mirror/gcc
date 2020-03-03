@@ -1,3 +1,9 @@
+2020-03-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt (x86_64-*-darwin*, i?86-*-darwin*): Enable by
+	default only for Darwin versions greater than equal to 11
+	(macOS 10.7).
+
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
