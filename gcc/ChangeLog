@@ -1,5 +1,13 @@
 2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (adddi3): Early expand the 64bit operation into
+	32bit ops.
+	(subdi3): Likewise.
+	(adddi3_i): Remove pattern.
+	(subdi3_i): Likewise.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (eh_return): Add length info.
 
 2020-03-02  David Malcolm  <dmalcolm@redhat.com>

@@ -2746,34 +2746,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   ")
 
 (define_expand "adddi3"
-  [(parallel [(set (match_operand:DI 0 "dest_reg_operand" "")
-		   (plus:DI (match_operand:DI 1 "register_operand" "")
-			    (match_operand:DI 2 "nonmemory_operand" "")))
-	      (clobber (reg:CC CC_REG))])]
-  ""
-{})
-
-; This assumes that there can be no strictly partial overlap between
-; operands[1] and operands[2].
-(define_insn_and_split "*adddi3_i"
-  [(set (match_operand:DI 0 "dest_reg_operand" "=&w,w,w")
-	(plus:DI (match_operand:DI 1 "register_operand" "%c,0,c")
-		 (match_operand:DI 2 "nonmemory_operand" "ci,ci,!i")))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (match_operand:DI 1 "register_operand" "")
+		 (match_operand:DI 2 "nonmemory_operand" "")))
    (clobber (reg:CC CC_REG))]
   ""
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-{
-  int hi = !TARGET_BIG_ENDIAN;
-  int lo = !hi;
-  rtx l0 = operand_subword (operands[0], lo, 0, DImode);
-  rtx h0 = operand_subword (operands[0], hi, 0, DImode);
-  rtx l1 = operand_subword (operands[1], lo, 0, DImode);
-  rtx h1 = operand_subword (operands[1], hi, 0, DImode);
-  rtx l2 = operand_subword (operands[2], lo, 0, DImode);
-  rtx h2 = operand_subword (operands[2], hi, 0, DImode);
-
+  "
+  rtx l0 = gen_lowpart (SImode, operands[0]);
+  rtx h0 = gen_highpart (SImode, operands[0]);
+  rtx l1 = gen_lowpart (SImode, operands[1]);
+  rtx h1 = gen_highpart (SImode, operands[1]);
+  rtx l2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_lowpart_offset (SImode, DImode));
+  rtx h2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_highpart_offset (SImode, DImode));
 
   if (l2 == const0_rtx)
     {
@@ -2782,13 +2768,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
       emit_insn (gen_addsi3 (h0, h1, h2));
       if (!rtx_equal_p (l0, l1) && rtx_equal_p (l0, h1))
 	emit_move_insn (l0, l1);
-      DONE;
-    }
-  if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0
-      && INTVAL (operands[2]) >= -0x7fffffff)
-    {
-      emit_insn (gen_subdi3_i (operands[0], operands[1],
-		 GEN_INT (-INTVAL (operands[2]))));
       DONE;
     }
   if (rtx_equal_p (l0, h1))
@@ -2804,28 +2783,32 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 	   gen_rtx_LTU (VOIDmode, gen_rtx_REG (CC_Cmode, CC_REG), GEN_INT (0)),
 	   gen_rtx_SET (h0, plus_constant (SImode, h0, 1))));
       DONE;
-    }
+      }
   emit_insn (gen_add_f (l0, l1, l2));
   emit_insn (gen_adc (h0, h1, h2));
   DONE;
-}
-  [(set_attr "cond" "clob")
-   (set_attr "type" "binary")
-   (set_attr "length" "16,16,20")])
+")
 
 (define_insn "add_f"
   [(set (reg:CC_C CC_REG)
 	(compare:CC_C
-	  (plus:SI (match_operand:SI 1 "register_operand" "c,0,c")
-		   (match_operand:SI 2 "nonmemory_operand" "cL,I,cCal"))
+	  (plus:SI (match_operand:SI 1 "nonmemory_operand" "%r,L,0,I,Cal,r")
+		   (match_operand:SI 2 "nonmemory_operand" "rL,r,I,0,  r,rCal"))
 	  (match_dup 1)))
-   (set (match_operand:SI 0 "dest_reg_operand" "=w,Rcw,w")
+   (set (match_operand:SI 0 "dest_reg_operand" "=r,r,r,r,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  ""
-  "add.f %0,%1,%2"
+  "register_operand (operands[1], SImode)
+   || register_operand (operands[2], SImode)"
+  "@
+  add.f\\t%0,%1,%2
+  add.f\\t%0,%2,%1
+  add.f\\t%0,%1,%2
+  add.f\\t%0,%2,%1
+  add.f\\t%0,%2,%1
+  add.f\\t%0,%1,%2"
   [(set_attr "cond" "set")
    (set_attr "type" "compare")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4,4,4,4,8,8")])
 
 (define_insn "*add_f_2"
   [(set (reg:CC_C CC_REG)
@@ -2980,35 +2963,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   ])
 
 (define_expand "subdi3"
-  [(parallel [(set (match_operand:DI 0 "dest_reg_operand" "")
-		   (minus:DI (match_operand:DI 1 "nonmemory_operand" "")
-			     (match_operand:DI 2 "nonmemory_operand" "")))
-	      (clobber (reg:CC CC_REG))])]
-  ""
-{
-  if (!register_operand (operands[2], DImode))
-    operands[1] = force_reg (DImode, operands[1]);
-})
-
-(define_insn_and_split "subdi3_i"
-  [(set (match_operand:DI 0 "dest_reg_operand" "=&w,w,w,w,w")
-	(minus:DI (match_operand:DI 1 "nonmemory_operand" "ci,0,ci,c,!i")
-		  (match_operand:DI 2 "nonmemory_operand" "ci,ci,0,!i,c")))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(minus:DI (match_operand:DI 1 "register_operand" "")
+		  (match_operand:DI 2 "nonmemory_operand" "")))
    (clobber (reg:CC CC_REG))]
-  "register_operand (operands[1], DImode)
-   || register_operand (operands[2], DImode)"
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-{
-  int hi = !TARGET_BIG_ENDIAN;
-  int lo = !hi;
-  rtx l0 = operand_subword (operands[0], lo, 0, DImode);
-  rtx h0 = operand_subword (operands[0], hi, 0, DImode);
-  rtx l1 = operand_subword (operands[1], lo, 0, DImode);
-  rtx h1 = operand_subword (operands[1], hi, 0, DImode);
-  rtx l2 = operand_subword (operands[2], lo, 0, DImode);
-  rtx h2 = operand_subword (operands[2], hi, 0, DImode);
+  ""
+  "
+  rtx l0 = gen_lowpart (SImode, operands[0]);
+  rtx h0 = gen_highpart (SImode, operands[0]);
+  rtx l1 = gen_lowpart (SImode, operands[1]);
+  rtx h1 = gen_highpart (SImode, operands[1]);
+  rtx l2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_lowpart_offset (SImode, DImode));
+  rtx h2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_highpart_offset (SImode, DImode));
 
   if (rtx_equal_p (l0, h1) || rtx_equal_p (l0, h2))
     {
@@ -3026,9 +2994,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   emit_insn (gen_sub_f (l0, l1, l2));
   emit_insn (gen_sbc (h0, h1, h2, gen_rtx_REG (CCmode, CC_REG)));
   DONE;
-}
-  [(set_attr "cond" "clob")
-   (set_attr "length" "16,16,16,20,20")])
+  ")
 
 (define_insn "*sbc_0"
   [(set (match_operand:SI 0 "dest_reg_operand" "=w")
