@@ -1,3 +1,16 @@
+2020-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_uninitialized.h
+	(uninitialized_copy_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_copy_fn::operator()): Likewise.
+	(uninitialized_move_fn::operator()): Likewise.  Return an in_out_result
+	with the input iterator stripped of its move_iterator.
+	(uninitialized_move_n_fn::operator()): Likewise.
+	(uninitialized_fill_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_fill_n_fn::operator()): Likewise.
+
 2020-03-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94013

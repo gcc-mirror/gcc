@@ -269,7 +269,7 @@ namespace ranges
 	if constexpr (sized_sentinel_for<_ISent, _Iter>
 		      && sized_sentinel_for<_OSent, _Out>
 		      && is_trivial_v<_OutType>
-		      && is_nothrow_assignable_v<_OutType,
+		      && is_nothrow_assignable_v<_OutType&,
 						 iter_reference_t<_Iter>>)
 	  {
 	    auto __d1 = ranges::distance(__ifirst, __ilast);
@@ -316,7 +316,7 @@ namespace ranges
 	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
 	if constexpr (sized_sentinel_for<_Sent, _Out>
 		      && is_trivial_v<_OutType>
-		      && is_nothrow_assignable_v<_OutType,
+		      && is_nothrow_assignable_v<_OutType&,
 						 iter_reference_t<_Iter>>)
 	  {
 	    auto __d = ranges::distance(__ofirst, __olast);
@@ -354,13 +354,15 @@ namespace ranges
 	if constexpr (sized_sentinel_for<_ISent, _Iter>
 		      && sized_sentinel_for<_OSent, _Out>
 		      && is_trivial_v<_OutType>
-		      && is_nothrow_assignable_v<_OutType,
+		      && is_nothrow_assignable_v<_OutType&,
 						 iter_rvalue_reference_t<_Iter>>)
 	  {
 	    auto __d1 = ranges::distance(__ifirst, __ilast);
 	    auto __d2 = ranges::distance(__ofirst, __olast);
-	    return ranges::copy_n(std::make_move_iterator(__ifirst),
-				  std::min(__d1, __d2), __ofirst);
+	    auto [__in, __out]
+	      = ranges::copy_n(std::make_move_iterator(__ifirst),
+			       std::min(__d1, __d2), __ofirst);
+	    return {std::move(__in).base(), __out};
 	  }
 	else
 	  {
@@ -404,12 +406,14 @@ namespace ranges
 	using _OutType = remove_reference_t<iter_reference_t<_Out>>;
 	if constexpr (sized_sentinel_for<_Sent, _Out>
 		      && is_trivial_v<_OutType>
-		      && is_nothrow_assignable_v<_OutType,
+		      && is_nothrow_assignable_v<_OutType&,
 						 iter_rvalue_reference_t<_Iter>>)
 	  {
 	    auto __d = ranges::distance(__ofirst, __olast);
-	    return ranges::copy_n(std::make_move_iterator(__ifirst),
-				  std::min(__n, __d), __ofirst);
+	    auto [__in, __out]
+	      = ranges::copy_n(std::make_move_iterator(__ifirst),
+			       std::min(__n, __d), __ofirst);
+	    return {std::move(__in).base(), __out};
 	  }
 	else
 	  {
@@ -436,7 +440,7 @@ namespace ranges
       {
 	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
 	if constexpr (is_trivial_v<_ValueType>
-		      && is_nothrow_assignable_v<_ValueType, const _Tp&>)
+		      && is_nothrow_assignable_v<_ValueType&, const _Tp&>)
 	  return ranges::fill(__first, __last, __x);
 	else
 	  {
@@ -469,7 +473,7 @@ namespace ranges
       {
 	using _ValueType = remove_reference_t<iter_reference_t<_Iter>>;
 	if constexpr (is_trivial_v<_ValueType>
-		      && is_nothrow_assignable_v<_ValueType, const _Tp&>)
+		      && is_nothrow_assignable_v<_ValueType&, const _Tp&>)
 	  return ranges::fill_n(__first, __n, __x);
 	else
 	  {
