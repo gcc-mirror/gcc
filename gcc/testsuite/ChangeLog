@@ -1,3 +1,8 @@
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* gfortran.dg/analyzer/pr93993.f90: New test.
+
 2020-03-04  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/pr91623.c: Add -fcommon in order

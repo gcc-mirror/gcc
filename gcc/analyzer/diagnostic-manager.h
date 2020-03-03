@@ -126,6 +126,7 @@ private:
 				const state_machine *sm,
 				tree var,
 				state_machine::state_t state) const;
+  void update_for_unsuitable_sm_exprs (tree *expr) const;
   void prune_interproc_events (checker_path *path) const;
   void finish_pruning (checker_path *path) const;
 

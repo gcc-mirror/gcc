@@ -574,9 +574,14 @@ get_any_origin (const gimple *stmt,
   if (const gassign *assign = dyn_cast <const gassign *> (stmt))
     {
       tree lhs = gimple_assign_lhs (assign);
-      /* Use region IDs to compare lhs with DST_REP.  */
-      if (dst_state.m_region_model->get_lvalue (lhs, NULL)
-	  == dst_state.m_region_model->get_lvalue (dst_rep, NULL))
+      /* Use region IDs to compare lhs with DST_REP, bulletproofing against
+	 cases where they can't have lvalues by using
+	 tentative_region_model_context.  */
+      tentative_region_model_context ctxt;
+      region_id lhs_rid = dst_state.m_region_model->get_lvalue (lhs, &ctxt);
+      region_id dst_rep_rid
+	= dst_state.m_region_model->get_lvalue (dst_rep, &ctxt);
+      if (lhs_rid == dst_rep_rid && !ctxt.had_errors_p ())
 	{
 	  tree rhs1 = gimple_assign_rhs1 (assign);
 	  enum tree_code op = gimple_assign_rhs_code (assign);
@@ -1059,6 +1064,25 @@ diagnostic_manager::prune_path (checker_path *path,
   path->maybe_log (get_logger (), "pruned");
 }
 
+/* A cheap test to determine if EXPR can be the expression of interest in
+   an sm-diagnostic, so that we can reject cases where we have a non-lvalue.
+   We don't have always have a model when calling this, so we can't use
+   tentative_region_model_context, so there can be false positives.  */
+
+static bool
+can_be_expr_of_interest_p (tree expr)
+{
+  if (!expr)
+    return false;
+
+  /* Reject constants.  */
+  if (CONSTANT_CLASS_P (expr))
+    return false;
+
+  /* Otherwise assume that it can be an lvalue.  */
+  return true;
+}
+
 /* First pass of diagnostic_manager::prune_path: apply verbosity level,
    pruning unrelated state change events.
 
@@ -1081,11 +1105,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 					     tree var,
 					     state_machine::state_t state) const
 {
-  /* If we have a constant (such as NULL), assume its state is also
-     constant, so as not to attempt to get its lvalue whilst tracking the
-     origin of the state.  */
-  if (var && CONSTANT_CLASS_P (var))
-    var = NULL_TREE;
+  update_for_unsuitable_sm_exprs (&var);
 
   int idx = path->num_events () - 1;
   while (idx >= 0 && idx < (signed)path->num_events ())
@@ -1105,7 +1125,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  else
 	    log ("considering event %i", idx);
 	}
-      gcc_assert (var == NULL || !CONSTANT_CLASS_P (var));
+      gcc_assert (var == NULL || can_be_expr_of_interest_p (var));
       switch (base_event->m_kind)
 	{
 	default:
@@ -1157,19 +1177,21 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	case EK_STATE_CHANGE:
 	  {
 	    state_change_event *state_change = (state_change_event *)base_event;
-	    if (state_change->get_lvalue (state_change->m_var)
-		== state_change->get_lvalue (var))
+	    /* Use region IDs to compare var with the state_change's m_var,
+	       bulletproofing against cases where they can't have lvalues by
+	       using tentative_region_model_context.  */
+	    tentative_region_model_context ctxt;
+	    region_id state_var_rid
+	      = state_change->get_lvalue (state_change->m_var, &ctxt);
+	    region_id var_rid = state_change->get_lvalue (var, &ctxt);
+	    if (state_var_rid == var_rid && !ctxt.had_errors_p ())
 	      {
 		if (state_change->m_origin)
 		  {
 		    log ("event %i: switching var of interest from %qE to %qE",
 			 idx, var, state_change->m_origin);
 		    var = state_change->m_origin;
-		    if (var && CONSTANT_CLASS_P (var))
-		      {
-			log ("new var is a constant; setting var to NULL");
-			var = NULL_TREE;
-		      }
+		    update_for_unsuitable_sm_exprs (&var);
 		  }
 		log ("event %i: switching state of interest from %qs to %qs",
 		     idx, sm->get_state_name (state_change->m_to),
@@ -1185,6 +1207,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		else
 		  log ("filtering event %i: state change to %qE",
 		       idx, state_change->m_var);
+		if (ctxt.had_errors_p ())
+		  log ("context had errors");
 		path->delete_event (idx);
 	      }
 	  }
@@ -1218,12 +1242,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		      /* If we've chosen a bad exploded_path, then the
 			 phi arg might be a constant.  Fail gracefully for
 			 this case.  */
-		      if (CONSTANT_CLASS_P (var))
-			{
-			  log ("new var is a constant (bad path?);"
-			       " setting var to NULL");
-			  var = NULL;
-			}
+		      update_for_unsuitable_sm_exprs (&var);
 		    }
 		}
 
@@ -1266,11 +1285,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		var = caller_var;
 		if (expr.param_p ())
 		  event->record_critical_state (var, state);
-		if (var && CONSTANT_CLASS_P (var))
-		  {
-		    log ("new var is a constant; setting var to NULL");
-		    var = NULL_TREE;
-		  }
+		update_for_unsuitable_sm_exprs (&var);
 	      }
 	  }
 	  break;
@@ -1296,11 +1311,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    var = callee_var;
 		    if (expr.return_value_p ())
 		      event->record_critical_state (var, state);
-		    if (var && CONSTANT_CLASS_P (var))
-		      {
-			log ("new var is a constant; setting var to NULL");
-			var = NULL_TREE;
-		      }
+		    update_for_unsuitable_sm_exprs (&var);
 		  }
 	      }
 	  }
@@ -1318,6 +1329,21 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  break;
 	}
       idx--;
+    }
+}
+
+/* Subroutine of diagnostic_manager::prune_for_sm_diagnostic.
+   If *EXPR is not suitable to be the expression of interest in
+   an sm-diagnostic, set *EXPR to NULL and log.  */
+
+void
+diagnostic_manager::update_for_unsuitable_sm_exprs (tree *expr) const
+{
+  gcc_assert (expr);
+  if (*expr && !can_be_expr_of_interest_p (*expr))
+    {
+      log ("new var %qE is unsuitable; setting var to NULL", *expr);
+      *expr = NULL_TREE;
     }
 }
 
