@@ -1,3 +1,11 @@
+2020-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90505 - mismatch in template argument deduction.
+	* g++.dg/template/deduce4.C: New test.
+	* g++.dg/template/deduce5.C: New test.
+	* g++.dg/template/deduce6.C: New test.
+	* g++.dg/template/deduce7.C: New test.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93998

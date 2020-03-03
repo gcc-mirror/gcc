@@ -15057,12 +15057,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	int levels;
 	tree arg = NULL_TREE;
 
-	/* Early in template argument deduction substitution, we don't
-	   want to reduce the level of 'auto', or it will be confused
-	   with a normal template parm in subsequent deduction.  */
-	if (is_auto (t) && (complain & tf_partial))
-	  return t;
-
 	r = NULL_TREE;
 
 	gcc_assert (TREE_VEC_LENGTH (args) > 0);
@@ -15191,6 +15185,14 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* This can happen during the attempted tsubst'ing in
 	     unify.  This means that we don't yet have any information
 	     about the template parameter in question.  */
+	  return t;
+
+	/* Early in template argument deduction substitution, we don't
+	   want to reduce the level of 'auto', or it will be confused
+	   with a normal template parm in subsequent deduction.
+	   Similarly, don't reduce the level of template parameters to
+	   avoid mismatches when deducing their types.  */
+	if (complain & tf_partial)
 	  return t;
 
 	/* If we get here, we must have been looking at a parm for a
