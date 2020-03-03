@@ -1,3 +1,11 @@
+2020-03-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (COND_MODE): Delete.
+	(COND_INT_MODE): Delete.
+	(cond_op): Add "mult".
+	(cond_<expander><mode>): Use VEC_ALLREG_MODE.
+	(cond_<expander><mode>): Use VEC_ALLREG_INT_MODE.
+
 2020-03-18   Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94206

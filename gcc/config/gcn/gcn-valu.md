@@ -2903,19 +2903,15 @@
     DONE;
   })
 
-; FIXME this should be VEC_REG_MODE, but not all dependencies are implemented.
-(define_mode_iterator COND_MODE [V64SI V64DI V64SF V64DF])
-(define_mode_iterator COND_INT_MODE [V64SI V64DI])
-
-(define_code_iterator cond_op [plus minus])
+(define_code_iterator cond_op [plus minus mult])
 
 (define_expand "cond_<expander><mode>"
-  [(match_operand:COND_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (cond_op:COND_MODE
-     (match_operand:COND_MODE 2 "gcn_alu_operand")
-     (match_operand:COND_MODE 3 "gcn_alu_operand"))
-   (match_operand:COND_MODE 4 "register_operand")]
+   (cond_op:VEC_ALLREG_MODE
+     (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand")
+     (match_operand:VEC_ALLREG_MODE 3 "gcn_alu_operand"))
+   (match_operand:VEC_ALLREG_MODE 4 "register_operand")]
   ""
   {
     operands[1] = force_reg (DImode, operands[1]);
@@ -2927,15 +2923,16 @@
     DONE;
   })
 
+;; TODO smin umin smax umax
 (define_code_iterator cond_bitop [and ior xor])
 
 (define_expand "cond_<expander><mode>"
-  [(match_operand:COND_INT_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_INT_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (cond_bitop:COND_INT_MODE
-     (match_operand:COND_INT_MODE 2 "gcn_alu_operand")
-     (match_operand:COND_INT_MODE 3 "gcn_alu_operand"))
-   (match_operand:COND_INT_MODE 4 "register_operand")]
+   (cond_bitop:VEC_ALLREG_INT_MODE
+     (match_operand:VEC_ALLREG_INT_MODE 2 "gcn_alu_operand")
+     (match_operand:VEC_ALLREG_INT_MODE 3 "gcn_alu_operand"))
+   (match_operand:VEC_ALLREG_INT_MODE 4 "register_operand")]
   ""
   {
     operands[1] = force_reg (DImode, operands[1]);
