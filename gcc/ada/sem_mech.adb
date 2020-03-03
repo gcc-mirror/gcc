@@ -181,11 +181,10 @@ package body Sem_Mech is
                -- C --
                -------
 
-               --  Note: Assembler, C++, Stdcall also use C conventions
+               --  Note: Assembler and Stdcall also use C conventions
 
                when Convention_Assembler
-                  | Convention_C
-                  | Convention_CPP
+                  | Convention_C_Family
                   | Convention_Stdcall
                =>
                   --  The following values are passed by copy

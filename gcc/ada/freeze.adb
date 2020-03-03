@@ -3674,9 +3674,7 @@ package body Freeze is
 
             if Warn_On_Export_Import
               and then Comes_From_Source (E)
-              and then (Convention (E) = Convention_C
-                          or else
-                        Convention (E) = Convention_CPP)
+              and then Convention (E) in Convention_C_Family
               and then (Is_Imported (E) or else Is_Exported (E))
               and then Convention (E) /= Convention (Formal)
               and then not Has_Warnings_Off (E)
@@ -3823,9 +3821,8 @@ package body Freeze is
             --  Check suspicious return type for C function
 
             if Warn_On_Export_Import
-              and then (Convention (E) = Convention_C
-                          or else
-                        Convention (E) = Convention_CPP)
+              and then Comes_From_Source (E)
+              and then Convention (E) in Convention_C_Family
               and then (Is_Imported (E) or else Is_Exported (E))
             then
                --  Check suspicious return of fat C pointer

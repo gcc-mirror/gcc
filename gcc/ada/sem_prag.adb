@@ -7957,59 +7957,24 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("cannot change convention for overridden dispatching "
                   & "operation", Arg1);
-            end if;
 
-            --  Special checks for Convention_Stdcall
+            --  Special check for convention Stdcall: a dispatching call is not
+            --  allowed. A dispatching subprogram cannot be used to interface
+            --  to the Win32 API, so this check actually does not impose any
+            --  effective restriction.
 
-            if C = Convention_Stdcall then
+            elsif Is_Dispatching_Operation (E)
+              and then C = Convention_Stdcall
+            then
+               --  Note: make this unconditional so that if there is more
+               --  than one call to which the pragma applies, we get a
+               --  message for each call. Also don't use Error_Pragma,
+               --  so that we get multiple messages.
 
-               --  A dispatching call is not allowed. A dispatching subprogram
-               --  cannot be used to interface to the Win32 API, so in fact
-               --  this check does not impose any effective restriction.
-
-               if Is_Dispatching_Operation (E) then
-                  Error_Msg_Sloc := Sloc (E);
-
-                  --  Note: make this unconditional so that if there is more
-                  --  than one call to which the pragma applies, we get a
-                  --  message for each call. Also don't use Error_Pragma,
-                  --  so that we get multiple messages.
-
-                  Error_Msg_N
-                    ("dispatching subprogram# cannot use Stdcall convention!",
-                     Arg1);
-
-               --  Several allowed cases
-
-               elsif Is_Subprogram_Or_Generic_Subprogram (E)
-
-                 --  A variable is OK
-
-                 or else Ekind (E) = E_Variable
-
-                 --  A component as well. The entity does not have its Ekind
-                 --  set until the enclosing record declaration is fully
-                 --  analyzed.
-
-                 or else Nkind (Parent (E)) = N_Component_Declaration
-
-                 --  An access to subprogram is also allowed
-
-                 or else
-                   (Is_Access_Type (E)
-                     and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
-
-                 --  Allow internal call to set convention of subprogram type
-
-                 or else Ekind (E) = E_Subprogram_Type
-               then
-                  null;
-
-               else
-                  Error_Pragma_Arg
-                    ("second argument of pragma% must be subprogram (type)",
-                     Arg2);
-               end if;
+               Error_Msg_Sloc := Sloc (E);
+               Error_Msg_N
+                 ("dispatching subprogram# cannot use Stdcall convention!",
+                  Get_Pragma_Arg (Arg1));
             end if;
 
             --  Set the convention
@@ -8113,6 +8078,7 @@ package body Sem_Prag is
          E         : Entity_Id;
          E1        : Entity_Id;
          Id        : Node_Id;
+         Subp      : Entity_Id;
 
       --  Start of processing for Process_Convention
 
@@ -8284,13 +8250,114 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("second argument of pragma% must be a subprogram", Arg2);
             end if;
+
+         --  Special checks for C_Variadic_n
+
+         elsif C in Convention_C_Variadic then
+
+            --  Several allowed cases
+
+            if Is_Subprogram_Or_Generic_Subprogram (E) then
+               Subp := E;
+
+            --  An access to subprogram is also allowed
+
+            elsif Is_Access_Type (E)
+              and then Ekind (Designated_Type (E)) = E_Subprogram_Type
+            then
+               Subp := Designated_Type (E);
+
+            --  Allow internal call to set convention of subprogram type
+
+            elsif Ekind (E) = E_Subprogram_Type then
+               Subp := E;
+
+            else
+               Error_Pragma_Arg
+                 ("argument of pragma% must be subprogram or access type",
+                  Arg2);
+               Subp := Empty;
+            end if;
+
+            --  ISO C requires a named parameter before the ellipsis, so a
+            --  variadic C function taking 0 fixed parameter cannot exist.
+
+            if C = Convention_C_Variadic_0 then
+
+               Error_Msg_N
+                 ("??C_Variadic_0 cannot be used for an 'I'S'O C function",
+                  Get_Pragma_Arg (Arg2));
+
+            --  Now check the number of parameters of the subprogram
+
+            elsif Present (Subp) then
+               declare
+                  Minimum : constant Nat :=
+                    Convention_Id'Pos (C) -
+                      Convention_Id'Pos (Convention_C_Variadic_0);
+
+                  Count  : Nat;
+                  Formal : Entity_Id;
+
+               begin
+                  Count := 0;
+                  Formal := First_Formal (Subp);
+                  while Present (Formal) loop
+                     Count := Count + 1;
+                     Next_Formal (Formal);
+                  end loop;
+
+                  if Count < Minimum then
+                     Error_Msg_Uint_1 := UI_From_Int (Minimum);
+                     Error_Pragma_Arg
+                       ("argument of pragma% must have at least"
+                        & "^ parameters", Arg2);
+                  end if;
+               end;
+            end if;
+
+         --  Special checks for Stdcall
+
+         elsif C = Convention_Stdcall then
+
+            --  Several allowed cases
+
+            if Is_Subprogram_Or_Generic_Subprogram (E)
+
+              --  A variable is OK
+
+              or else Ekind (E) = E_Variable
+
+              --  A component as well. The entity does not have its Ekind
+              --  set until the enclosing record declaration is fully
+              --  analyzed.
+
+              or else Nkind (Parent (E)) = N_Component_Declaration
+
+              --  An access to subprogram is also allowed
+
+              or else
+                (Is_Access_Type (E)
+                  and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+
+              --  Allow internal call to set convention of subprogram type
+
+              or else Ekind (E) = E_Subprogram_Type
+            then
+               null;
+
+            else
+               Error_Pragma_Arg
+                 ("argument of pragma% must be subprogram or access type",
+                  Arg2);
+            end if;
          end if;
+
+         Set_Convention_From_Pragma (E);
 
          --  Deal with non-subprogram cases
 
          if not Is_Subprogram_Or_Generic_Subprogram (E) then
-            Set_Convention_From_Pragma (E);
-
             if Is_Type (E) then
 
                --  The pragma must apply to a first subtype, but it can also
@@ -8318,9 +8385,6 @@ package body Sem_Prag is
          --  compilation unit.
 
          else
-            Comp_Unit := Get_Source_Unit (E);
-            Set_Convention_From_Pragma (E);
-
             --  Treat a pragma Import as an implicit body, and pragma import
             --  as implicit reference (for navigation in GNAT Studio).
 
@@ -8365,6 +8429,7 @@ package body Sem_Prag is
             --  Otherwise Loop through the homonyms of the pragma argument's
             --  entity, an apply convention to those in the current scope.
 
+            Comp_Unit := Get_Source_Unit (E);
             E1 := Ent;
 
             loop

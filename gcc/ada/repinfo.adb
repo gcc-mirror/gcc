@@ -1935,6 +1935,21 @@ package body Repinfo is
          when Convention_C =>
             Write_Str ("C");
 
+         when Convention_C_Variadic =>
+            declare
+               N : Nat :=
+                 Convention_Id'Pos (Convention (Ent)) -
+                   Convention_Id'Pos (Convention_C_Variadic_0);
+            begin
+               Write_Str ("C_Variadic_");
+               if N >= 10 then
+                  Write_Char ('1');
+                  N := N - 10;
+               end if;
+               pragma Assert (N < 10);
+               Write_Char (Character'Val (Character'Pos ('0') + N));
+            end;
+
          when Convention_COBOL =>
             Write_Str ("COBOL");
 
