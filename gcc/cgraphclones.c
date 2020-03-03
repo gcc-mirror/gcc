@@ -1160,15 +1160,15 @@ symbol_table::materialize_all_clones (void)
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;
-			  fprintf (symtab->dump_file, "   replace map: ");
+			  fprintf (symtab->dump_file, "    replace map:");
 			  for (i = 0;
 			       i < vec_safe_length (node->clone.tree_map);
 			       i++)
 			    {
 			      ipa_replace_map *replace_info;
 			      replace_info = (*node->clone.tree_map)[i];
-			      fprintf (symtab->dump_file, "%i -> ",
-				       (*node->clone.tree_map)[i]->parm_num);
+			      fprintf (symtab->dump_file, "%s %i -> ",
+				       i ? "," : "", replace_info->parm_num);
 			      print_generic_expr (symtab->dump_file,
 						  replace_info->new_tree);
 			    }
