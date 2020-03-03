@@ -1,5 +1,25 @@
 2020-03-04  Patrick Palka  <ppalka@redhat.com>
 
+	LWG 3355 The memory algorithms should support move-only input iterators
+	introduced by P1207
+	* include/bits/ranges_uninitialized.h
+	(__uninitialized_copy_fn::operator()): Use std::move to avoid attempting
+	to copy __ifirst, which could be a move-only input iterator.  Use
+	operator- instead of ranges::distance to compute distance from a sized
+	sentinel.
+	(__uninitialized_copy_n_fn::operator()): Likewise.
+	(__uninitialized_move_fn::operator()): Likewise.
+	(__uninitialized_move_n_fn::operator()): Likewise.
+	(__uninitialized_destroy_fn::operator()): Use std::move to avoid
+	attempting to copy __first.
+	(__uninitialized_destroy_n_fn::operator()): Likewise.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc:
+	Augment test.
+	* .../specialized_algorithms/uninitialized_copy/constrained.cc:
+	Likewise.
+	* .../specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+
 	* testsuite/util/testsuite_iterators.h (test_range::get_iterator): Make
 	protected instead of private.
 	(test_sized_range_sized_sent): New.

@@ -272,9 +272,10 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_reference_t<_Iter>>)
 	  {
-	    auto __d1 = ranges::distance(__ifirst, __ilast);
-	    auto __d2 = ranges::distance(__ofirst, __olast);
-	    return ranges::copy_n(__ifirst, std::min(__d1, __d2), __ofirst);
+	    auto __d1 = __ilast - __ifirst;
+	    auto __d2 = __olast - __ofirst;
+	    return ranges::copy_n(std::move(__ifirst), std::min(__d1, __d2),
+				  __ofirst);
 	  }
 	else
 	  {
@@ -283,7 +284,7 @@ namespace ranges
 		 ++__ofirst, (void)++__ifirst)
 	      ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
 	    __guard.release();
-	    return {__ifirst, __ofirst};
+	    return {std::move(__ifirst), __ofirst};
 	  }
       }
 
@@ -319,8 +320,9 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_reference_t<_Iter>>)
 	  {
-	    auto __d = ranges::distance(__ofirst, __olast);
-	    return ranges::copy_n(__ifirst, std::min(__n, __d), __ofirst);
+	    auto __d = __olast - __ofirst;
+	    return ranges::copy_n(std::move(__ifirst), std::min(__n, __d),
+				  __ofirst);
 	  }
 	else
 	  {
@@ -329,7 +331,7 @@ namespace ranges
 		 ++__ofirst, (void)++__ifirst, (void)--__n)
 	      ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
 	    __guard.release();
-	    return {__ifirst, __ofirst};
+	    return {std::move(__ifirst), __ofirst};
 	  }
       }
   };
@@ -357,10 +359,10 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_rvalue_reference_t<_Iter>>)
 	  {
-	    auto __d1 = ranges::distance(__ifirst, __ilast);
-	    auto __d2 = ranges::distance(__ofirst, __olast);
+	    auto __d1 = __ilast - __ifirst;
+	    auto __d2 = __olast - __ofirst;
 	    auto [__in, __out]
-	      = ranges::copy_n(std::make_move_iterator(__ifirst),
+	      = ranges::copy_n(std::make_move_iterator(std::move(__ifirst)),
 			       std::min(__d1, __d2), __ofirst);
 	    return {std::move(__in).base(), __out};
 	  }
@@ -372,7 +374,7 @@ namespace ranges
 	      ::new (__detail::__voidify(*__ofirst))
 		    _OutType(ranges::iter_move(__ifirst));
 	    __guard.release();
-	    return {__ifirst, __ofirst};
+	    return {std::move(__ifirst), __ofirst};
 	  }
       }
 
@@ -409,9 +411,9 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_rvalue_reference_t<_Iter>>)
 	  {
-	    auto __d = ranges::distance(__ofirst, __olast);
+	    auto __d = __olast - __ofirst;
 	    auto [__in, __out]
-	      = ranges::copy_n(std::make_move_iterator(__ifirst),
+	      = ranges::copy_n(std::make_move_iterator(std::move(__ifirst)),
 			       std::min(__n, __d), __ofirst);
 	    return {std::move(__in).base(), __out};
 	  }
@@ -423,7 +425,7 @@ namespace ranges
 	      ::new (__detail::__voidify(*__ofirst))
 		    _OutType(ranges::iter_move(__ifirst));
 	    __guard.release();
-	    return {__ifirst, __ofirst};
+	    return {std::move(__ifirst), __ofirst};
 	  }
       }
   };
@@ -524,7 +526,7 @@ namespace ranges
     __destroy_fn::operator()(_Iter __first, _Sent __last) const noexcept
     {
       if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
-	return ranges::next(__first, __last);
+	return ranges::next(std::move(__first), __last);
       else
 	{
 	  for (; __first != __last; ++__first)
@@ -549,7 +551,7 @@ namespace ranges
       operator()(_Iter __first, iter_difference_t<_Iter> __n) const noexcept
       {
 	if constexpr (is_trivially_destructible_v<iter_value_t<_Iter>>)
-	  return ranges::next(__first, __n);
+	  return ranges::next(std::move(__first), __n);
 	else
 	  {
 	    for (; __n > 0; ++__first, (void)--__n)
