@@ -50,6 +50,7 @@
 #include "types.h"
 #include "atree.h"
 #include "nlists.h"
+#include "snames.h"
 #include "uintp.h"
 #include "fe.h"
 #include "sinfo.h"
@@ -2561,7 +2562,7 @@ copy_type (tree type)
     }
 
   /* And the contents of the language-specific slot if needed.  */
-  if ((INTEGRAL_TYPE_P (type) || TREE_CODE (type) == REAL_TYPE)
+  if ((INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
       && TYPE_RM_VALUES (type))
     {
       TYPE_RM_VALUES (new_type) = NULL_TREE;
