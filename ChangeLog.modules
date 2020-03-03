@@ -1,6 +1,11 @@
 2020-03-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct merge_key): Remove index as tree hack ...
+	(merge_key::{read,write}): ... here.
+	(trees_{in,out}::key_mergeable): Adjust.
+
+	gcc/cp/
 	* module.cc (merge_key::read): Remove req qualifier hack.
 	(check_mergeable_decl): Use merge_key, not explicit args.
 	(mergeable_namespace_entity, mergeable_class_member): Likewise.

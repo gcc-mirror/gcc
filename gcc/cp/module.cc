@@ -3082,7 +3082,7 @@ trees_out::~trees_out ()
 struct merge_key {
   cp_ref_qualifier ref_q : 2;
 
-  tree /*unsigned*/ index; // FIXME: Replace by unsigned
+  unsigned index;
 
   tree ctx_or_tmpl; /* Containing context, or general template.  */
   tree name_or_spec; /* Identifier or specialization args.  */
@@ -9705,10 +9705,9 @@ merge_key::write (trees_out &out, merge_kind kind, tree) const
     {
       if (out.streaming_p ())
 	{
-	  unsigned code = (ref_q << 0);// || (index << 2);
+	  unsigned code = (ref_q << 0) | (index << 2);
 	  out.u (code);
 	}
-      out.tree_node (index);
 
       if (kind & MK_template_mask)
 	out.tree_node (ctx_or_tmpl);
@@ -9734,8 +9733,7 @@ merge_key::read (trees_in &in, merge_kind kind, tree container)
     {
       unsigned code = in.u ();
       ref_q = cp_ref_qualifier ((code >> 0) & 3);
-      //      index = code >> 2;
-      index = in.tree_node ();
+      index = code >> 2;
 
       ctx_or_tmpl = kind & MK_template_mask ? in.tree_node () : container;
       name_or_spec = in.tree_node ();
@@ -9864,7 +9862,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl,
   else if (mk & MK_indirect_mask)
     {
       tree name = decl;
-      tree index = NULL_TREE;
+      unsigned index = 0;
 
       if (mk == MK_enum)
 	{
@@ -9886,7 +9884,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl,
 		  break;
 		ix++;
 	      }
-	  index = build_int_cst (unsigned_type_node, ix);
+	  index = ix;
 	}
       else
 	gcc_unreachable ();
@@ -9935,6 +9933,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl,
 	      {
 		if (field == inner)
 		  {
+		    // FIXME: use index
 		    name = build_int_cst (unsigned_type_node, ix);
 		    break;
 		  }
@@ -10351,7 +10350,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		{
 		  if (mk == MK_local_friend)
 		    {
-		      unsigned ix = TREE_INT_CST_LOW (key.index);
+		      unsigned ix = key.index;
 		      for (tree decls = CLASSTYPE_DECL_LIST (ctx);
 			   decls; decls = TREE_CHAIN (decls))
 			if (!TREE_PURPOSE (decls)
