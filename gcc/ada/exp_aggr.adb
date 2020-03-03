@@ -316,8 +316,8 @@ package body Exp_Aggr is
    function Max_Aggregate_Size
      (Typ          : Entity_Id;
       Default_Size : Nat := 5000) return Nat;
-   --  Return the max size for a static aggregate for the given Typ.
-   --  Return Default_Size if no other special criteria triggers.
+   --  Return the max size for a static aggregate of the given Typ.
+   --  Return Default_Size if no other special criteria trigger.
 
    function Packed_Array_Aggregate_Handled (N : Node_Id) return Boolean;
    --  Given an array aggregate, this function handles the case of a packed

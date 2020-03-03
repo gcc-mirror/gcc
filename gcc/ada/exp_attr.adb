@@ -4855,13 +4855,13 @@ package body Exp_Attr is
          Rewrite (N,
            Make_If_Expression (Loc, New_List (
 
-             --  Generate a check for zero sized things like a null record with
+             --  Generate a check for zero-sized things like a null record with
              --  size zero or an array with zero length since they have no
              --  opportunity of overlapping.
 
-             --  Without this check a zero-sized object can trigger a false
-             --  runtime result if its compared against another object
-             --  in its declarative region due to the zero-sized object having
+             --  Without this check, a zero-sized object can trigger a false
+             --  runtime result if it's compared against another object in
+             --  its declarative region, due to the zero-sized object having
              --  the same address.
 
              Make_Or_Else (Loc,
@@ -4882,7 +4882,7 @@ package body Exp_Attr is
 
              New_Occurrence_Of (Standard_False, Loc),
 
-             --  Non-size zero overlap check
+             --  Non-zero-size overlap check
 
              Make_If_Expression (Loc, New_List (
                Cond,
