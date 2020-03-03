@@ -1,6 +1,17 @@
 2020-03-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum merge_kind): Add more discriminators.
+	(merge_kind_name): Adjust.
+	(trees_{in,out}::key_mergeable): Partition via new discriminators.
+	(trees_in::decl_value): Remove bad formatting.
+	(trees_out::get_merge_kind): Select new discriminators.
+	(mergeable_namespace_entity, mergeable_class_member): Fold into
+	reimplemented key_mergeable.
+	gcc/testsuite/
+	* g++.dg/modules/merge-[56]_b.C: Adjust scans.
+
+	gcc/cp/
 	* module.cc (struct merge_key): Remove index as tree hack ...
 	(merge_key::{read,write}): ... here.
 	(trees_{in,out}::key_mergeable): Adjust.
