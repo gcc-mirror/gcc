@@ -1,3 +1,10 @@
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (worklist::worklist): Remove unused field m_eg.
+	(class viz_callgraph_edge): Remove unused field m_call_sedge.
+	(class viz_callgraph): Remove unused field m_sg.
+	* exploded-graph.h (worklist::::m_eg): Remove unused field.
+
 2020-03-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.opt (fanalyzer-show-duplicate-count): New option.
