@@ -1,3 +1,8 @@
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94002
+	* gcc.dg/pr94002.c: New test.
+
 2020-02-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	Revert

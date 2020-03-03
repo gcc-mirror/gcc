@@ -128,6 +128,9 @@ plus_constant (machine_mode mode, rtx x, poly_int64 c, bool inplace)
 	      cst = gen_lowpart (mode, cst);
 	      gcc_assert (cst);
 	    }
+	  else if (GET_MODE (cst) == VOIDmode
+		   && get_pool_mode (XEXP (x, 0)) != mode)
+	    break;
 	  if (GET_MODE (cst) == VOIDmode || GET_MODE (cst) == mode)
 	    {
 	      tem = plus_constant (mode, cst, c);
