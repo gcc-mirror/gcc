@@ -33,9 +33,8 @@ test01()
   c = 4;
   std::ranges::fill(a, c);
   VERIFY( a[0] == 4 && a[1] == 4 );
-  // currently fails, see PR 94017
-  // unsigned char c2 = 5;
-  // std::ranges::fill(a, c2);
+  unsigned char c2 = 5;
+  std::ranges::fill(a, c2);
 #endif
 }
 

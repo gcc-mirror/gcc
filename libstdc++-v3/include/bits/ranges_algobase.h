@@ -516,8 +516,11 @@ namespace ranges
 	if (__n <= 0)
 	  return __first;
 
-	// TODO: is __is_byte the best condition?
-	if constexpr (is_pointer_v<_Out> && __is_byte<_Tp>::__value)
+	// TODO: Generalize this optimization to contiguous iterators.
+	if constexpr (is_pointer_v<_Out>
+		      // Note that __is_byte already implies !is_volatile.
+		      && __is_byte<remove_pointer_t<_Out>>::__value
+		      && integral<_Tp>)
 	  {
 	    __builtin_memset(__first, static_cast<unsigned char>(__value), __n);
 	    return __first + __n;

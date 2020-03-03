@@ -1,5 +1,20 @@
 2020-03-04  Patrick Palka  <ppalka@redhat.com>
 
+	PR libstdc++/94017
+	* include/bits/ranges_algobase.h (__fill_n_fn::operator()): Refine
+	condition for when to use memset, making sure to additionally check that
+	the output pointer's value type is a non-volatile byte type.  Instead of
+	requiring that the fill type is a byte type, just require that it's an
+	integral type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/94017.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/94017.cc:
+	New test.
+	* testsuite/25_algorithms/fill/94013.cc: Uncomment part of test that was
+	blocked by PR 94017.
+	* testsuite/25_algorithms/fill/94017.cc: New test.
+	* testsuite/25_algorithms/fill_n/94017.cc: New test.
+
 	LWG 3355 The memory algorithms should support move-only input iterators
 	introduced by P1207
 	* include/bits/ranges_uninitialized.h
