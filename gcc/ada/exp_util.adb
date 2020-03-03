@@ -1296,6 +1296,7 @@ package body Exp_Util is
                --  of the type. In the case of an inherited condition for an
                --  overriding operation, both the operation and the function
                --  are given by primitive wrappers.
+               --  Move this check to sem???
 
                if Ekind (New_E) = E_Function
                  and then Is_Primitive_Wrapper (New_E)
@@ -1326,6 +1327,7 @@ package body Exp_Util is
 
             --  Check that there are no calls left to abstract operations if
             --  the current subprogram is not abstract.
+            --  Move this check to sem???
 
             if Nkind (Parent (N)) = N_Function_Call
               and then N = Name (Parent (N))
@@ -3012,7 +3014,7 @@ package body Exp_Util is
             if Produced_Component_Check and then Has_Unchecked_Union (T) then
                Error_Msg_NE
                  ("invariants cannot be checked on components of "
-                  & "unchecked_union type &?", Comp_Id, T);
+                  & "unchecked_union type &??", Comp_Id, T);
             end if;
          end Process_Record_Component;
 

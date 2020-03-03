@@ -11168,6 +11168,7 @@ package body Exp_Ch9 is
                then
                   null;
                else
+                  --  Move this check to sem???
                   Error_Msg_NE (
                     "& is not a time type (RM 9.6(6))",
                        Expression (Delay_Statement (Alt)), Time_Type);

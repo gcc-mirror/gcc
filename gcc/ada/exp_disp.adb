@@ -3836,6 +3836,7 @@ package body Exp_Disp is
       --  tagged type, when one of its primitive operations has a type in its
       --  profile whose full view has not been analyzed yet. More complex cases
       --  involve composite types that have one private unfrozen subcomponent.
+      --  Move this check to sem???
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -8150,6 +8151,7 @@ package body Exp_Disp is
             --  We exclude Input and Output stream operations because
             --  Limited_Controlled inherits useless Input and Output stream
             --  operations from Root_Controlled, which can never be overridden.
+            --  Move this check to sem???
 
             if not Is_TSS (Prim, TSS_Stream_Input)
                  and then
