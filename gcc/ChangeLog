@@ -1,5 +1,8 @@
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/26877
+	* config/s390/s390.h (OPTION_DEFAULT_SPECS): Reorder.
+
 	PR rtl-optimization/94002
 	* explow.c (plus_constant): Punt if cst has VOIDmode and
 	get_pool_mode is different from mode.
