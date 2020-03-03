@@ -1,3 +1,9 @@
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93927
+	* gcc.c-torture/compile/pr93927-1.c: New test.
+	* gcc.c-torture/compile/pr93927-2.c: New test.
+
 2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
 
 	* g++.dg/coroutines/torture/co-await-14-template-traits.C: New test.
