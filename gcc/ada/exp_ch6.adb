@@ -7716,8 +7716,7 @@ package body Exp_Ch6 is
             --  Build_Inherit_Prims takes care of initializing these slots.
 
             elsif Is_Imported (Subp)
-               and then (Convention (Subp) = Convention_CPP
-                           or else Convention (Subp) = Convention_C)
+               and then Convention (Subp) in Convention_C_Family
             then
                null;
 

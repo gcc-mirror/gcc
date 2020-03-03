@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,6 +155,23 @@ package body Snames is
                                               Convention_Ada_Pass_By_Reference;
          when Name_Assembler             => return Convention_Assembler;
          when Name_C                     => return Convention_C;
+         when Name_C_Variadic_0          => return Convention_C_Variadic_0;
+         when Name_C_Variadic_1          => return Convention_C_Variadic_1;
+         when Name_C_Variadic_2          => return Convention_C_Variadic_2;
+         when Name_C_Variadic_3          => return Convention_C_Variadic_3;
+         when Name_C_Variadic_4          => return Convention_C_Variadic_4;
+         when Name_C_Variadic_5          => return Convention_C_Variadic_5;
+         when Name_C_Variadic_6          => return Convention_C_Variadic_6;
+         when Name_C_Variadic_7          => return Convention_C_Variadic_7;
+         when Name_C_Variadic_8          => return Convention_C_Variadic_8;
+         when Name_C_Variadic_9          => return Convention_C_Variadic_9;
+         when Name_C_Variadic_10         => return Convention_C_Variadic_10;
+         when Name_C_Variadic_11         => return Convention_C_Variadic_11;
+         when Name_C_Variadic_12         => return Convention_C_Variadic_12;
+         when Name_C_Variadic_13         => return Convention_C_Variadic_13;
+         when Name_C_Variadic_14         => return Convention_C_Variadic_14;
+         when Name_C_Variadic_15         => return Convention_C_Variadic_15;
+         when Name_C_Variadic_16         => return Convention_C_Variadic_16;
          when Name_COBOL                 => return Convention_COBOL;
          when Name_CPP                   => return Convention_CPP;
          when Name_Fortran               => return Convention_Fortran;
@@ -189,6 +206,23 @@ package body Snames is
             return Name_Ada_Pass_By_Reference;
          when Convention_Assembler             => return Name_Assembler;
          when Convention_C                     => return Name_C;
+         when Convention_C_Variadic_0          => return Name_C_Variadic_0;
+         when Convention_C_Variadic_1          => return Name_C_Variadic_1;
+         when Convention_C_Variadic_2          => return Name_C_Variadic_2;
+         when Convention_C_Variadic_3          => return Name_C_Variadic_3;
+         when Convention_C_Variadic_4          => return Name_C_Variadic_4;
+         when Convention_C_Variadic_5          => return Name_C_Variadic_5;
+         when Convention_C_Variadic_6          => return Name_C_Variadic_6;
+         when Convention_C_Variadic_7          => return Name_C_Variadic_7;
+         when Convention_C_Variadic_8          => return Name_C_Variadic_8;
+         when Convention_C_Variadic_9          => return Name_C_Variadic_9;
+         when Convention_C_Variadic_10         => return Name_C_Variadic_10;
+         when Convention_C_Variadic_11         => return Name_C_Variadic_11;
+         when Convention_C_Variadic_12         => return Name_C_Variadic_12;
+         when Convention_C_Variadic_13         => return Name_C_Variadic_13;
+         when Convention_C_Variadic_14         => return Name_C_Variadic_14;
+         when Convention_C_Variadic_15         => return Name_C_Variadic_15;
+         when Convention_C_Variadic_16         => return Name_C_Variadic_16;
          when Convention_COBOL                 => return Name_COBOL;
          when Convention_CPP                   => return Name_CPP;
          when Convention_Entry                 => return Name_Entry;
@@ -425,9 +459,9 @@ package body Snames is
       return N in First_Locking_Policy_Name .. Last_Locking_Policy_Name;
    end Is_Locking_Policy_Name;
 
-   -------------------------------------
-   -- Is_Partition_Elaboration_Policy --
-   -------------------------------------
+   ------------------------------------------
+   -- Is_Partition_Elaboration_Policy_Name --
+   ------------------------------------------
 
    function Is_Partition_Elaboration_Policy_Name
      (N : Name_Id) return Boolean
