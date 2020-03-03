@@ -6717,7 +6717,8 @@ proc check_effective_target_vect_unpack { } {
              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+	     || [istarget amdgcn*-*-*] }}]
 }
 
 # Return 1 if the target plus current options does not guarantee

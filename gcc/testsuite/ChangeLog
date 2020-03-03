@@ -1,3 +1,9 @@
+2020-03-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/bb-slp-pr69907.c: Disable the dump scan for amdgcn.
+	* lib/target-supports.exp (check_effective_target_vect_unpack):
+	Add amdgcn.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94292
