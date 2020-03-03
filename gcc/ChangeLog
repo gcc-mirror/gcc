@@ -1,3 +1,112 @@
+2020-03-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm_bf16.h (vcvtah_f32_bf16, vcvth_bf16_f32): New.
+	* config/arm/arm_neon.h (vcvt_f32_bf16, vcvtq_low_f32_bf16): New.
+	(vcvtq_high_f32_bf16, vcvt_bf16_f32): New.
+	(vcvtq_low_bf16_f32, vcvtq_high_bf16_f32): New.
+	* config/arm/arm_neon_builtins.def (vbfcvt, vbfcvt_high): New entries.
+	(vbfcvtv4sf, vbfcvtv4sf_high): Likewise.
+	* config/arm/iterators.md (VBFCVT, VBFCVTM): New mode iterators.
+	(V_bf_low, V_bf_cvt_m): New mode attributes.
+	* config/arm/neon.md (neon_vbfcvtv4sf<VBFCVT:mode>): New.
+	(neon_vbfcvtv4sf_highv8bf, neon_vbfcvtsf): New.
+	(neon_vbfcvt<VBFCVT:mode>, neon_vbfcvt_highv8bf): New.
+	(neon_vbfcvtbf_cvtmode<mode>, neon_vbfcvtbf): New
+	* config/arm/unspecs.md (UNSPEC_BFCVT, UNSPEC_BFCVT_HIG): New.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* tree-ssa-sccvn.h (vn_reference_lookup): Add mask argument.
+	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add mask and masked_result
+	members, initialize them in the constructor and if mask is non-NULL,
+	artificially push_partial_def {} for the portions of the mask that
+	contain zeros.
+	(vn_walk_cb_data::finish): If mask is non-NULL, set masked_result to
+	val and return (void *)-1.  Formatting fix.
+	(vn_reference_lookup_pieces): Adjust vn_walk_cb_data initialization.
+	Formatting fix.
+	(vn_reference_lookup): Add mask argument.  If non-NULL, don't call
+	fully_constant_vn_reference_p nor vn_reference_lookup_1 and return
+	data.mask_result.
+	(visit_nary_op): Handle BIT_AND_EXPR of a memory load and INTEGER_CST
+	mask.
+	(visit_stmt): Formatting fix.
+
+2020-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93946
+	* alias.h (refs_same_for_tbaa_p): Declare.
+	* alias.c (refs_same_for_tbaa_p): New function.
+	* tree-ssa-alias.c (ao_ref_alias_set): For a NULL ref return
+	zero.
+	* tree-ssa-scopedtables.h
+	(avail_exprs_stack::lookup_avail_expr): Add output argument
+	giving access to the hashtable entry.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Likewise.
+	* tree-ssa-dom.c: Include alias.h.
+	(dom_opt_dom_walker::optimize_stmt): Validate TBAA state before
+	removing redundant store.
+	* tree-ssa-sccvn.h (vn_reference_s::base_set): New member.
+	(ao_ref_init_from_vn_reference): Adjust prototype.
+	(vn_reference_lookup_pieces): Likewise.
+	(vn_reference_insert_pieces): Likewise.
+	* tree-ssa-sccvn.c: Track base alias set in addition to alias
+	set everywhere.
+	(eliminate_dom_walker::eliminate_stmt): Also check base alias
+	set when removing redundant stores.
+	(visit_reference_op_store): Likewise.
+	* dse.c (record_store): Adjust valdity check for redundant
+	store removal.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/26877
+	* config/s390/s390.h (OPTION_DEFAULT_SPECS): Reorder.
+
+	PR rtl-optimization/94002
+	* explow.c (plus_constant): Punt if cst has VOIDmode and
+	get_pool_mode is different from mode.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (leigitimate_small_data_address_p): Check if an
+	address has an offset which fits the scalling constraint for a
+	load/store operation.
+	(legitimate_scaled_address_p): Update use
+	leigitimate_small_data_address_p.
+	(arc_print_operand): Likewise.
+	(arc_legitimate_address_p): Likewise.
+	(legitimate_small_data_address_p): Likewise.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (fmasf4_fpu): Use accl_operand predicate.
+	(fnmasf4_fpu): Likewise.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (adddi3): Early expand the 64bit operation into
+	32bit ops.
+	(subdi3): Likewise.
+	(adddi3_i): Remove pattern.
+	(subdi3_i): Likewise.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (eh_return): Add length info.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fanalyzer-show-duplicate-count): New.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wanalyzer-stale-setjmp-buffer to the list of options enabled
+	by -fanalyzer.
+
 2020-03-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93997

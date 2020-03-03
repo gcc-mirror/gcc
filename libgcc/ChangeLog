@@ -1,3 +1,19 @@
+2020-03-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/bpabi-v6m.S (aeabi_lcmp): Convert thumb1 code to unified
+	syntax.
+	(aeabi_ulcmp, aeabi_ldivmod, aeabi_uldivmod): Likewise.
+	(aeabi_frsub, aeabi_cfcmpeq, aeabi_fcmpeq): Likewise.
+	(aeabi_fcmp, aeabi_drsub, aeabi_cdrcmple): Likewise.
+	(aeabi_cdcmpeq, aeabi_dcmpeq, aeabi_dcmp): Likewise.
+	* config/arm/lib1funcs.S (Lend_fde): Convert thumb1 code to unified
+	syntax.
+	(divsi3, modsi3): Likewise.
+	(clzdi2, ctzsi2): Likewise.
+	* config/arm/libunwind.S (restore_core_regs): Convert thumb1 code to
+	unified syntax.
+	(UNWIND_WRAPPER): Likewise.
+
 2020-03-02  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-interface.c: Remove duplicate

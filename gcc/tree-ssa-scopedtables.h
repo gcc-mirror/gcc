@@ -148,7 +148,7 @@ class avail_exprs_stack
 
   /* Lookup and conditionally insert an expression into the table,
      recording enough information to unwind as needed.  */
-  tree lookup_avail_expr (gimple *, bool, bool);
+  tree lookup_avail_expr (gimple *, bool, bool, expr_hash_elt ** = NULL);
 
   void record_cond (cond_equivalence *);
 

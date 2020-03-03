@@ -463,21 +463,37 @@ get_symbol_alignment (rtx x)
 /* Return true if x is ok to be used as a small data address.  */
 
 static bool
-legitimate_small_data_address_p (rtx x)
+legitimate_small_data_address_p (rtx x, machine_mode mode)
 {
   switch (GET_CODE (x))
     {
     case CONST:
-      return legitimate_small_data_address_p (XEXP (x, 0));
+      return legitimate_small_data_address_p (XEXP (x, 0), mode);
     case SYMBOL_REF:
       return SYMBOL_REF_SMALL_P (x);
     case PLUS:
       {
 	bool p0 = (GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
 	  && SYMBOL_REF_SMALL_P (XEXP (x, 0));
-	bool p1 = CONST_INT_P (XEXP (x, 1))
-	  && (INTVAL (XEXP (x, 1)) <= g_switch_value);
-	return p0 && p1;
+
+	/* If no constant then we cannot do small data.  */
+	if (!CONST_INT_P (XEXP (x, 1)))
+	  return false;
+
+	/* Small data relocs works with scalled addresses, check if
+	   the immediate fits the requirements.  */
+	switch (GET_MODE_SIZE (mode))
+	  {
+	  case 1:
+	    return p0;
+	  case 2:
+	    return p0 && ((INTVAL (XEXP (x, 1)) & 0x1) == 0);
+	  case 4:
+	  case 8:
+	    return p0 && ((INTVAL (XEXP (x, 1)) & 0x3) == 0);
+	  default:
+	    return false;
+	  }
       }
     default:
       return false;
@@ -531,7 +547,7 @@ legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
     }
 
   /* Scalled addresses for sdata is done other places.  */
-  if (legitimate_small_data_address_p (op))
+  if (legitimate_small_data_address_p (op, mode))
     return false;
 
   if (CONSTANT_P (XEXP (op, 1)))
@@ -4810,7 +4826,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	      break;
 	    case SYMBOL_REF:
 	    case CONST:
-	      if (legitimate_small_data_address_p (addr)
+	      if (legitimate_small_data_address_p (addr, GET_MODE (x))
 		  && GET_MODE_SIZE (GET_MODE (x)) > 1)
 		{
 		  int align = get_symbol_alignment (addr);
@@ -4943,7 +4959,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	rtx addr = XEXP (x, 0);
 	int size = GET_MODE_SIZE (GET_MODE (x));
 
-	if (legitimate_small_data_address_p (addr))
+	if (legitimate_small_data_address_p (addr, GET_MODE (x)))
 	  output_sdata = 1;
 
 	fputc ('[', file);
@@ -6701,7 +6717,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
      return true;
   if (legitimate_scaled_address_p (mode, x, strict))
     return true;
-  if (legitimate_small_data_address_p (x))
+  if (legitimate_small_data_address_p (x, mode))
      return true;
   if (GET_CODE (x) == CONST_INT && LARGE_INT (INTVAL (x)))
      return true;
@@ -8748,7 +8764,7 @@ compact_sda_memory_operand (rtx op, machine_mode mode, bool short_p)
   /* Decode the address now.  */
   addr = XEXP (op, 0);
 
-  if (!legitimate_small_data_address_p (addr))
+  if (!legitimate_small_data_address_p (addr, mode))
     return false;
 
   if (!short_p || size == 1)

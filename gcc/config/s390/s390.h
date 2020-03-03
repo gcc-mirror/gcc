@@ -227,11 +227,13 @@ enum processor_flags
 #define TARGET_DEFAULT             0
 #endif
 
-/* Support for configure-time defaults.  */
+/* Support for configure-time defaults.
+   The order here is important so that -march doesn't squash the
+   tune values.  */
 #define OPTION_DEFAULT_SPECS					\
   { "mode", "%{!mesa:%{!mzarch:-m%(VALUE)}}" },			\
-  { "arch", "%{!march=*:-march=%(VALUE)}" },			\
-  { "tune", "%{!mtune=*:%{!march=*:-mtune=%(VALUE)}}" }
+  { "tune", "%{!mtune=*:%{!march=*:-mtune=%(VALUE)}}" },	\
+  { "arch", "%{!march=*:-march=%(VALUE)}" }
 
 #ifdef __s390__
 extern const char *s390_host_detect_local_cpu (int argc, const char **argv);

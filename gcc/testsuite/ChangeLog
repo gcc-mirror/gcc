@@ -1,3 +1,49 @@
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93998
+	* g++.dg/ext/pr93998.C: New test.
+
+2020-03-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/bf16_cvt_1.c: New test.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-10.c: New test.
+	* gcc.dg/pr93582.c: New test.
+	* gcc.c-torture/execute/pr93582.c: New test.
+
+2020-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93946
+	* gcc.dg/torture/pr93946-1.c: New testcase.
+	* gcc.dg/torture/pr93946-2.c: Likewise.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94002
+	* gcc.dg/pr94002.c: New test.
+
+	PR tree-optimization/93927
+	* gcc.c-torture/compile/pr93927-1.c: New test.
+	* gcc.c-torture/compile/pr93927-2.c: New test.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/torture/co-await-14-template-traits.C: New test.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Add
+	-fanalyzer-show-duplicate-count.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93959
+	* g++.dg/analyzer/cstdlib-2.C: New test.
+	* g++.dg/analyzer/cstdlib.C: New test.
+
 2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jun Ma <JunMa@linux.alibaba.com>
 

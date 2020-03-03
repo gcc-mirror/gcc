@@ -367,7 +367,8 @@ static void init_vn_nary_op_from_pieces (vn_nary_op_t, unsigned int,
 					 enum tree_code, tree, tree *);
 static tree vn_lookup_simplify_result (gimple_match_op *);
 static vn_reference_t vn_reference_lookup_or_insert_for_pieces
-	  (tree, alias_set_type, tree, vec<vn_reference_op_s, va_heap>, tree);
+	  (tree, alias_set_type, alias_set_type, tree,
+	   vec<vn_reference_op_s, va_heap>, tree);
 
 /* Return whether there is value numbering information for a given SSA name.  */
 
@@ -982,8 +983,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 
 bool
 ao_ref_init_from_vn_reference (ao_ref *ref,
-			       alias_set_type set, tree type,
-			       vec<vn_reference_op_s> ops)
+			       alias_set_type set, alias_set_type base_set,
+			       tree type, vec<vn_reference_op_s> ops)
 {
   vn_reference_op_t op;
   unsigned i;
@@ -993,7 +994,6 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
   poly_offset_int max_size;
   poly_offset_int size = -1;
   tree size_tree = NULL_TREE;
-  alias_set_type base_alias_set = -1;
 
   /* First get the final access size from just the outermost expression.  */
   op = &ops[0];
@@ -1050,7 +1050,6 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	/* Record the base objects.  */
 	case MEM_REF:
-	  base_alias_set = get_deref_alias_set (op->op0);
 	  *op0_p = build2 (MEM_REF, op->type,
 			   NULL_TREE, op->op0);
 	  MR_DEPENDENCE_CLIQUE (*op0_p) = op->clique;
@@ -1140,10 +1139,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
   ref->ref = NULL_TREE;
   ref->base = base;
   ref->ref_alias_set = set;
-  if (base_alias_set != -1)
-    ref->base_alias_set = base_alias_set;
-  else
-    ref->base_alias_set = get_alias_set (base);
+  ref->base_alias_set = base_set;
   /* We discount volatiles from value-numbering elsewhere.  */
   ref->volatile_p = false;
 
@@ -1686,23 +1682,66 @@ struct pd_data
 struct vn_walk_cb_data
 {
   vn_walk_cb_data (vn_reference_t vr_, tree orig_ref_, tree *last_vuse_ptr_,
-		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_)
+		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_)
     : vr (vr_), last_vuse_ptr (last_vuse_ptr_), last_vuse (NULL_TREE),
-      vn_walk_kind (vn_walk_kind_), tbaa_p (tbaa_p_),
-      saved_operands (vNULL), first_set (-2), known_ranges (NULL)
-   {
-     if (!last_vuse_ptr)
-       last_vuse_ptr = &last_vuse;
-     ao_ref_init (&orig_ref, orig_ref_);
-   }
+      mask (mask_), masked_result (NULL_TREE), vn_walk_kind (vn_walk_kind_),
+      tbaa_p (tbaa_p_), saved_operands (vNULL), first_set (-2),
+      first_base_set (-2), known_ranges (NULL)
+  {
+    if (!last_vuse_ptr)
+      last_vuse_ptr = &last_vuse;
+    ao_ref_init (&orig_ref, orig_ref_);
+    if (mask)
+      {
+	wide_int w = wi::to_wide (mask);
+	unsigned int pos = 0, prec = w.get_precision ();
+	pd_data pd;
+	pd.rhs = build_constructor (NULL_TREE, NULL);
+	/* When bitwise and with a constant is done on a memory load,
+	   we don't really need all the bits to be defined or defined
+	   to constants, we don't really care what is in the position
+	   corresponding to 0 bits in the mask.
+	   So, push the ranges of those 0 bits in the mask as artificial
+	   zero stores and let the partial def handling code do the
+	   rest.  */
+	while (pos < prec)
+	  {
+	    int tz = wi::ctz (w);
+	    if (pos + tz > prec)
+	      tz = prec - pos;
+	    if (tz)
+	      {
+		if (BYTES_BIG_ENDIAN)
+		  pd.offset = prec - pos - tz;
+		else
+		  pd.offset = pos;
+		pd.size = tz;
+		void *r = push_partial_def (pd, 0, 0, prec);
+		gcc_assert (r == NULL_TREE);
+	      }
+	    pos += tz;
+	    if (pos == prec)
+	      break;
+	    w = wi::lrshift (w, tz);
+	    tz = wi::ctz (wi::bit_not (w));
+	    if (pos + tz > prec)
+	      tz = prec - pos;
+	    pos += tz;
+	    w = wi::lrshift (w, tz);
+	  }
+      }
+  }
   ~vn_walk_cb_data ();
-  void *finish (alias_set_type, tree);
-  void *push_partial_def (const pd_data& pd, alias_set_type, HOST_WIDE_INT);
+  void *finish (alias_set_type, alias_set_type, tree);
+  void *push_partial_def (const pd_data& pd,
+			  alias_set_type, alias_set_type, HOST_WIDE_INT);
 
   vn_reference_t vr;
   ao_ref orig_ref;
   tree *last_vuse_ptr;
   tree last_vuse;
+  tree mask;
+  tree masked_result;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
   vec<vn_reference_op_s> saved_operands;
@@ -1712,6 +1751,7 @@ struct vn_walk_cb_data
   /* The first defs range to avoid splay tree setup in most cases.  */
   pd_range first_range;
   alias_set_type first_set;
+  alias_set_type first_base_set;
   splay_tree known_ranges;
   obstack ranges_obstack;
 };
@@ -1727,13 +1767,22 @@ vn_walk_cb_data::~vn_walk_cb_data ()
 }
 
 void *
-vn_walk_cb_data::finish (alias_set_type set, tree val)
+vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
 {
   if (first_set != -2)
-    set = first_set;
-  return vn_reference_lookup_or_insert_for_pieces
-      (last_vuse, set, vr->type,
-       saved_operands.exists () ? saved_operands : vr->operands, val);
+    {
+      set = first_set;
+      base_set = first_base_set;
+    }
+  if (mask)
+    {
+      masked_result = val;
+      return (void *) -1;
+    }
+  vec<vn_reference_op_s> &operands
+    = saved_operands.exists () ? saved_operands : vr->operands;
+  return vn_reference_lookup_or_insert_for_pieces (last_vuse, set, base_set,
+						   vr->type, operands, val);
 }
 
 /* pd_range splay-tree helpers.  */
@@ -1769,7 +1818,8 @@ pd_tree_dealloc (void *, void *)
 
 void *
 vn_walk_cb_data::push_partial_def (const pd_data &pd,
-				   alias_set_type set, HOST_WIDE_INT maxsizei)
+				   alias_set_type set, alias_set_type base_set,
+				   HOST_WIDE_INT maxsizei)
 {
   const HOST_WIDE_INT bufsize = 64;
   /* We're using a fixed buffer for encoding so fail early if the object
@@ -1794,6 +1844,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd,
       first_range.offset = pd.offset;
       first_range.size = pd.size;
       first_set = set;
+      first_base_set = base_set;
       last_vuse_ptr = NULL;
       /* Continue looking for partial defs.  */
       return NULL;
@@ -2062,7 +2113,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd,
 		 "Successfully combined %u partial definitions\n", ndefs);
       /* We are using the alias-set of the first store we encounter which
 	 should be appropriate here.  */
-      return finish (first_set, val);
+      return finish (first_set, first_base_set, val);
     }
   else
     {
@@ -2107,7 +2158,7 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *data_)
   if (slot)
     {
       if ((*slot)->result && data->saved_operands.exists ())
-	return data->finish (vr->set, (*slot)->result);
+	return data->finish (vr->set, vr->base_set, (*slot)->result);
       return *slot;
     }
 
@@ -2121,6 +2172,7 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *data_)
 static vn_reference_t
 vn_reference_lookup_or_insert_for_pieces (tree vuse,
 					  alias_set_type set,
+					  alias_set_type base_set,
 					  tree type,
 					  vec<vn_reference_op_s,
 					        va_heap> operands,
@@ -2133,6 +2185,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
   vr1.operands = operands;
   vr1.type = type;
   vr1.set = set;
+  vr1.base_set = base_set;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if (vn_reference_lookup_1 (&vr1, &result))
     return result;
@@ -2140,7 +2193,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
     value_id = VN_INFO (value)->value_id;
   else
     value_id = get_or_alloc_constant_value_id (value);
-  return vn_reference_insert_pieces (vuse, set, type,
+  return vn_reference_insert_pieces (vuse, set, base_set, type,
 				     operands.copy (), value, value_id);
 }
 
@@ -2407,22 +2460,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  lhs_ops = valueize_refs_1 (lhs_ops, &valueized_anything, true);
 	}
       vn_context_bb = saved_rpo_bb;
-      if (valueized_anything)
+      ao_ref_init (&lhs_ref, lhs);
+      lhs_ref_ok = true;
+      if (valueized_anything
+	  && ao_ref_init_from_vn_reference
+	       (&lhs_ref, ao_ref_alias_set (&lhs_ref),
+		ao_ref_base_alias_set (&lhs_ref), TREE_TYPE (lhs), lhs_ops)
+	  && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	{
-	  lhs_ref_ok = ao_ref_init_from_vn_reference (&lhs_ref,
-						      get_alias_set (lhs),
-						      TREE_TYPE (lhs), lhs_ops);
-	  if (lhs_ref_ok
-	      && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
-	    {
-	      *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
-	      return NULL;
-	    }
-	}
-      else
-	{
-	  ao_ref_init (&lhs_ref, lhs);
-	  lhs_ref_ok = true;
+	  *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
+	  return NULL;
 	}
 
       /* Besides valueizing the LHS we can also use access-path based
@@ -2673,7 +2720,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (!val)
 		return (void *)-1;
 	    }
-	  return data->finish (0, val);
+	  return data->finish (0, 0, val);
 	}
       /* For now handle clearing memory with partial defs.  */
       else if (known_eq (ref->size, maxsize)
@@ -2691,7 +2738,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
 	  pd.offset = offset2i - offseti;
 	  pd.size = leni << LOG2_BITS_PER_UNIT;
-	  return data->push_partial_def (pd, 0, maxsizei);
+	  return data->push_partial_def (pd, 0, 0, maxsizei);
 	}
     }
 
@@ -2701,22 +2748,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR
 	   && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (def_stmt)) == 0)
     {
-      tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       poly_int64 offset2, size2, maxsize2;
       HOST_WIDE_INT offset2i, size2i;
-      bool reverse;
-      if (lhs_ref_ok)
-	{
-	  base2 = ao_ref_base (&lhs_ref);
-	  offset2 = lhs_ref.offset;
-	  size2 = lhs_ref.size;
-	  maxsize2 = lhs_ref.max_size;
-	  reverse = reverse_storage_order_for_component_p (lhs);
-	}
-      else
-	base2 = get_ref_base_and_extent (lhs,
-					 &offset2, &size2, &maxsize2, &reverse);
+      gcc_assert (lhs_ref_ok);
+      base2 = ao_ref_base (&lhs_ref);
+      offset2 = lhs_ref.offset;
+      size2 = lhs_ref.size;
+      maxsize2 = lhs_ref.max_size;
       if (known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
 	  && adjust_offsets_for_equal_base_address (base, &offset,
@@ -2730,7 +2769,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (gimple_clobber_p (def_stmt))
 		return (void *)-1;
 	      tree val = build_zero_cst (vr->type);
-	      return data->finish (get_alias_set (lhs), val);
+	      return data->finish (ao_ref_alias_set (&lhs_ref),
+				   ao_ref_base_alias_set (&lhs_ref), val);
 	    }
 	  else if (known_eq (ref->size, maxsize)
 		   && maxsize.is_constant (&maxsizei)
@@ -2747,7 +2787,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = gimple_assign_rhs1 (def_stmt);
 	      pd.offset = offset2i - offseti;
 	      pd.size = size2i;
-	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
+	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
+					     ao_ref_base_alias_set (&lhs_ref),
+					     maxsizei);
 	    }
 	}
     }
@@ -2774,17 +2816,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       poly_int64 offset2, size2, maxsize2;
       HOST_WIDE_INT offset2i, size2i;
       bool reverse;
-      if (lhs_ref_ok)
-	{
-	  base2 = ao_ref_base (&lhs_ref);
-	  offset2 = lhs_ref.offset;
-	  size2 = lhs_ref.size;
-	  maxsize2 = lhs_ref.max_size;
-	  reverse = reverse_storage_order_for_component_p (lhs);
-	}
-      else
-	base2 = get_ref_base_and_extent (lhs,
-					 &offset2, &size2, &maxsize2, &reverse);
+      gcc_assert (lhs_ref_ok);
+      base2 = ao_ref_base (&lhs_ref);
+      offset2 = lhs_ref.offset;
+      size2 = lhs_ref.size;
+      maxsize2 = lhs_ref.max_size;
+      reverse = reverse_storage_order_for_component_p (lhs);
       if (base2
 	  && !reverse
 	  && !storage_order_barrier_p (lhs)
@@ -2887,7 +2924,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		    }
 
 		  if (val)
-		    return data->finish (get_alias_set (lhs), val);
+		    return data->finish (ao_ref_alias_set (&lhs_ref),
+					 ao_ref_base_alias_set (&lhs_ref), val);
 		}
 	    }
 	  else if (ranges_known_overlap_p (offseti, maxsizei, offset2i,
@@ -2900,7 +2938,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = rhs;
 	      pd.offset = offset2i - offseti;
 	      pd.size = size2i;
-	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
+	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
+					     ao_ref_base_alias_set (&lhs_ref),
+					     maxsizei);
 	    }
 	}
     }
@@ -2918,17 +2958,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       poly_int64 offset2, size2, maxsize2;
       HOST_WIDE_INT offset2i, size2i, offseti;
       bool reverse;
-      if (lhs_ref_ok)
-	{
-	  base2 = ao_ref_base (&lhs_ref);
-	  offset2 = lhs_ref.offset;
-	  size2 = lhs_ref.size;
-	  maxsize2 = lhs_ref.max_size;
-	  reverse = reverse_storage_order_for_component_p (lhs);
-	}
-      else
-	base2 = get_ref_base_and_extent (lhs,
-					 &offset2, &size2, &maxsize2, &reverse);
+      gcc_assert (lhs_ref_ok);
+      base2 = ao_ref_base (&lhs_ref);
+      offset2 = lhs_ref.offset;
+      size2 = lhs_ref.size;
+      maxsize2 = lhs_ref.max_size;
+      reverse = reverse_storage_order_for_component_p (lhs);
       tree def_rhs = gimple_assign_rhs1 (def_stmt);
       if (!reverse
 	  && !storage_order_barrier_p (lhs)
@@ -2968,7 +3003,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (val
 		  && (TREE_CODE (val) != SSA_NAME
 		      || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
-		return data->finish (get_alias_set (lhs), val);
+		return data->finish (ao_ref_alias_set (&lhs_ref),
+				     ao_ref_base_alias_set (&lhs_ref), val);
 	    }
 	  else if (maxsize.is_constant (&maxsizei)
 		   && offset.is_constant (&offseti)
@@ -2980,7 +3016,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = SSA_VAL (def_rhs);
 	      pd.offset = offset2i - offseti;
 	      pd.size = size2i;
-	      return data->push_partial_def (pd, get_alias_set (lhs), maxsizei);
+	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
+					     ao_ref_base_alias_set (&lhs_ref),
+					     maxsizei);
 	    }
 	}
     }
@@ -2993,15 +3031,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
-      tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       int i, j, k;
       auto_vec<vn_reference_op_s> rhs;
       vn_reference_op_t vro;
       ao_ref r;
 
-      if (!lhs_ref_ok)
-	return (void *)-1;
+      gcc_assert (lhs_ref_ok);
 
       /* See if the assignment kills REF.  */
       base2 = ao_ref_base (&lhs_ref);
@@ -3104,7 +3140,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (val)
 	{
 	  if (data->partial_defs.is_empty ())
-	    return data->finish (get_alias_set (lhs), val);
+	    return data->finish (ao_ref_alias_set (&lhs_ref),
+				 ao_ref_base_alias_set (&lhs_ref), val);
 	  /* This is the only interesting case for partial-def handling
 	     coming from targets that like to gimplify init-ctors as
 	     aggregate copies from constant data like aarch64 for
@@ -3115,7 +3152,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = val;
 	      pd.offset = 0;
 	      pd.size = maxsizei;
-	      return data->push_partial_def (pd, get_alias_set (lhs),
+	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
+					     ao_ref_base_alias_set (&lhs_ref),
 					     maxsizei);
 	    }
 	}
@@ -3127,7 +3165,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	return (void *)-1;
 
       /* Adjust *ref from the new operands.  */
-      if (!ao_ref_init_from_vn_reference (&r, get_alias_set (rhs1),
+      ao_ref rhs1_ref;
+      ao_ref_init (&rhs1_ref, rhs1);
+      if (!ao_ref_init_from_vn_reference (&r, ao_ref_alias_set (&rhs1_ref),
+					  ao_ref_base_alias_set (&rhs1_ref),
 					  vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
@@ -3142,7 +3183,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       data->orig_ref.ref = NULL_TREE;
       /* Use the alias-set of this LHS for recording an eventual result.  */
       if (data->first_set == -2)
-	data->first_set = get_alias_set (lhs);
+	{
+	  data->first_set = ao_ref_alias_set (&lhs_ref);
+	  data->first_base_set = ao_ref_base_alias_set (&lhs_ref);
+	}
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -3302,10 +3346,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Try folding the new reference to a constant.  */
       tree val = fully_constant_vn_reference_p (vr);
       if (val)
-	return data->finish (0, val);
+	return data->finish (0, 0, val);
 
       /* Adjust *ref from the new operands.  */
-      if (!ao_ref_init_from_vn_reference (&r, 0, vr->type, vr->operands))
+      if (!ao_ref_init_from_vn_reference (&r, 0, 0, vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
       if (maybe_ne (ref->size, r.size))
@@ -3319,7 +3363,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       data->orig_ref.ref = NULL_TREE;
       /* Use the alias-set of this stmt for recording an eventual result.  */
       if (data->first_set == -2)
-	data->first_set = 0;
+	{
+	  data->first_set = 0;
+	  data->first_base_set = 0;
+	}
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -3346,7 +3393,8 @@ vn_reference_operands_for_lookup (tree op)
    vn_reference_t stored in the hashtable if something is found.  */
 
 tree
-vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
+vn_reference_lookup_pieces (tree vuse, alias_set_type set,
+			    alias_set_type base_set, tree type,
 			    vec<vn_reference_op_s> operands,
 			    vn_reference_t *vnresult, vn_lookup_kind kind)
 {
@@ -3369,6 +3417,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     = valueize_refs (shared_lookup_references);
   vr1.type = type;
   vr1.set = set;
+  vr1.set = base_set;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
@@ -3380,13 +3429,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     {
       ao_ref r;
       unsigned limit = param_sccvn_max_alias_queries_per_access;
-      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true);
-      if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
-	*vnresult =
-	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, true,
-						  vn_reference_lookup_2,
-						  vn_reference_lookup_3,
-						  vuse_valueize, limit, &data);
+      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE);
+      if (ao_ref_init_from_vn_reference (&r, set, base_set, type,
+					 vr1.operands))
+	*vnresult
+	  = ((vn_reference_t)
+	     walk_non_aliased_vuses (&r, vr1.vuse, true, vn_reference_lookup_2,
+				     vn_reference_lookup_3, vuse_valueize,
+				     limit, &data));
       gcc_checking_assert (vr1.operands == shared_lookup_references);
     }
 
@@ -3402,15 +3452,19 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
    was NULL..  VNRESULT will be filled in with the vn_reference_t
    stored in the hashtable if one exists.  When TBAA_P is false assume
    we are looking up a store and treat it as having alias-set zero.
-   *LAST_VUSE_PTR will be updated with the VUSE the value lookup succeeded.  */
+   *LAST_VUSE_PTR will be updated with the VUSE the value lookup succeeded.
+   MASK is either NULL_TREE, or can be an INTEGER_CST if the result of the
+   load is bitwise anded with MASK and so we are only interested in a subset
+   of the bits and can ignore if the other bits are uninitialized or
+   not initialized with constants.  */
 
 tree
 vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
-		     vn_reference_t *vnresult, bool tbaa_p, tree *last_vuse_ptr)
+		     vn_reference_t *vnresult, bool tbaa_p,
+		     tree *last_vuse_ptr, tree mask)
 {
   vec<vn_reference_op_s> operands;
   struct vn_reference_s vr1;
-  tree cst;
   bool valuezied_anything;
 
   if (vnresult)
@@ -3420,13 +3474,16 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
-  vr1.set = get_alias_set (op);
+  ao_ref op_ref;
+  ao_ref_init (&op_ref, op);
+  vr1.set = ao_ref_alias_set (&op_ref);
+  vr1.base_set = ao_ref_base_alias_set (&op_ref);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
-  if ((cst = fully_constant_vn_reference_p (&vr1)))
-    return cst;
+  if (mask == NULL_TREE)
+    if (tree cst = fully_constant_vn_reference_p (&vr1))
+      return cst;
 
-  if (kind != VN_NOWALK
-      && vr1.vuse)
+  if (kind != VN_NOWALK && vr1.vuse)
     {
       vn_reference_t wvnresult;
       ao_ref r;
@@ -3434,29 +3491,35 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
       /* Make sure to use a valueized reference if we valueized anything.
          Otherwise preserve the full reference for advanced TBAA.  */
       if (!valuezied_anything
-	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
-					     vr1.operands))
+	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.base_set,
+					     vr1.type, vr1.operands))
 	ao_ref_init (&r, op);
       vn_walk_cb_data data (&vr1, r.ref ? NULL_TREE : op,
-			    last_vuse_ptr, kind, tbaa_p);
-      wvnresult =
-	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p,
-						vn_reference_lookup_2,
-						vn_reference_lookup_3,
-						vuse_valueize, limit, &data);
+			    last_vuse_ptr, kind, tbaa_p, mask);
+
+      wvnresult
+	= ((vn_reference_t)
+	   walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p, vn_reference_lookup_2,
+				   vn_reference_lookup_3, vuse_valueize, limit,
+				   &data));
       gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (wvnresult)
 	{
+	  gcc_assert (mask == NULL_TREE);
 	  if (vnresult)
 	    *vnresult = wvnresult;
 	  return wvnresult->result;
 	}
+      else if (mask)
+	return data.masked_result;
 
       return NULL_TREE;
     }
 
   if (last_vuse_ptr)
     *last_vuse_ptr = vr1.vuse;
+  if (mask)
+    return NULL_TREE;
   return vn_reference_lookup_1 (&vr1, vnresult);
 }
 
@@ -3476,6 +3539,7 @@ vn_reference_lookup_call (gcall *call, vn_reference_t *vnresult,
   vr->operands = valueize_shared_reference_ops_from_call (call);
   vr->type = gimple_expr_type (call);
   vr->set = 0;
+  vr->base_set = 0;
   vr->hashcode = vn_reference_compute_hash (vr);
   vn_reference_lookup_1 (vr, vnresult);
 }
@@ -3497,7 +3561,10 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
   vr1->type = TREE_TYPE (op);
-  vr1->set = get_alias_set (op);
+  ao_ref op_ref;
+  ao_ref_init (&op_ref, op);
+  vr1->set = ao_ref_alias_set (&op_ref);
+  vr1->base_set = ao_ref_base_alias_set (&op_ref);
   vr1->hashcode = vn_reference_compute_hash (vr1);
   vr1->result = TREE_CODE (result) == SSA_NAME ? SSA_VAL (result) : result;
   vr1->result_vdef = vdef;
@@ -3539,7 +3606,8 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
    structure we created.  */
 
 vn_reference_t
-vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
+vn_reference_insert_pieces (tree vuse, alias_set_type set,
+			    alias_set_type base_set, tree type,
 			    vec<vn_reference_op_s> operands,
 			    tree result, unsigned int value_id)
 
@@ -3553,6 +3621,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
   vr1->operands = valueize_refs (operands);
   vr1->type = type;
   vr1->set = set;
+  vr1->base_set = base_set;
   vr1->hashcode = vn_reference_compute_hash (vr1);
   if (result && TREE_CODE (result) == SSA_NAME)
     result = SSA_VAL (result);
@@ -4664,7 +4733,39 @@ visit_nary_op (tree lhs, gassign *stmt)
 		}
 	    }
 	}
-    default:;
+      break;
+    case BIT_AND_EXPR:
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (rhs1) == SSA_NAME
+	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)
+	  && default_vn_walk_kind != VN_NOWALK
+	  && CHAR_BIT == 8
+	  && BITS_PER_UNIT == 8
+	  && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+	  && !integer_all_onesp (gimple_assign_rhs2 (stmt))
+	  && !integer_zerop (gimple_assign_rhs2 (stmt)))
+	{
+	  gassign *ass = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (rhs1));
+	  if (ass
+	      && !gimple_has_volatile_ops (ass)
+	      && vn_get_stmt_kind (ass) == VN_REFERENCE)
+	    {
+	      tree last_vuse = gimple_vuse (ass);
+	      tree op = gimple_assign_rhs1 (ass);
+	      tree result = vn_reference_lookup (op, gimple_vuse (ass),
+						 default_vn_walk_kind,
+						 NULL, true, &last_vuse,
+						 gimple_assign_rhs2 (stmt));
+	      if (result
+		  && useless_type_conversion_p (TREE_TYPE (result),
+						TREE_TYPE (op)))
+		return set_ssa_val_to (lhs, result);
+	    }
+	}
+      break;
+    default:
+      break;
     }
 
   bool changed = set_ssa_val_to (lhs, lhs);
@@ -4735,6 +4836,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
       vr2->operands = vr1.operands.copy ();
       vr2->type = vr1.type;
       vr2->set = vr1.set;
+      vr2->base_set = vr1.base_set;
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
       vr2->result_vdef = vdef_val;
@@ -4839,9 +4941,14 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 	{
 	  /* If the TBAA state isn't compatible for downstream reads
 	     we cannot value-number the VDEFs the same.  */
-	  alias_set_type set = get_alias_set (lhs);
-	  if (vnresult->set != set
-	      && ! alias_set_subset_of (set, vnresult->set))
+	  ao_ref lhs_ref;
+	  ao_ref_init (&lhs_ref, lhs);
+	  alias_set_type set = ao_ref_alias_set (&lhs_ref);
+	  alias_set_type base_set = ao_ref_base_alias_set (&lhs_ref);
+	  if ((vnresult->set != set
+	       && ! alias_set_subset_of (set, vnresult->set))
+	      || (vnresult->base_set != base_set
+		  && ! alias_set_subset_of (base_set, vnresult->base_set)))
 	    resultsame = false;
 	}
     }
@@ -5175,14 +5282,14 @@ visit_stmt (gimple *stmt, bool backedges_varying_p = false)
 	      switch (vn_get_stmt_kind (ass))
 		{
 		case VN_NARY:
-		changed = visit_nary_op (lhs, ass);
-		break;
+		  changed = visit_nary_op (lhs, ass);
+		  break;
 		case VN_REFERENCE:
-		changed = visit_reference_op_load (lhs, rhs1, ass);
-		break;
+		  changed = visit_reference_op_load (lhs, rhs1, ass);
+		  break;
 		default:
-		changed = defs_to_varying (ass);
-		break;
+		  changed = defs_to_varying (ass);
+		  break;
 		}
 	    }
 	}
@@ -5915,10 +6022,15 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  /* We can only remove the later store if the former aliases
 	     at least all accesses the later one does or if the store
 	     was to readonly memory storing the same value.  */
-	  alias_set_type set = get_alias_set (lhs);
+	  ao_ref lhs_ref;
+	  ao_ref_init (&lhs_ref, lhs);
+	  alias_set_type set = ao_ref_alias_set (&lhs_ref);
+	  alias_set_type base_set = ao_ref_base_alias_set (&lhs_ref);
 	  if (! vnresult
-	      || vnresult->set == set
-	      || alias_set_subset_of (set, vnresult->set))
+	      || ((vnresult->set == set
+		   || alias_set_subset_of (set, vnresult->set))
+		  && (vnresult->base_set == base_set
+		      || alias_set_subset_of (base_set, vnresult->base_set))))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

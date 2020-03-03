@@ -1,3 +1,19 @@
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (fanalyzer-show-duplicate-count): New option.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Use the above to
+	guard the printing of the duplicate count.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93959
+	* analyzer.cc (is_std_function_p): New function.
+	(is_std_named_call_p): New functions.
+	* analyzer.h (is_std_named_call_p): New decl.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Check for "std::"
+	variants when checking for malloc, calloc and free.
+
 2020-02-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93950

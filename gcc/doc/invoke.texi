@@ -8247,6 +8247,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-stale-setjmp-buffer @gol
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
@@ -8475,6 +8476,14 @@ control flow graphs with data flow information.
 By default, an edge in this graph can contain the effects of a run
 of multiple statements within a basic block.  With
 @option{-fanalyzer-fine-grained}, each statement gets its own edge.
+
+@item -fanalyzer-show-duplicate-count
+@opindex fanalyzer-show-duplicate-count
+@opindex fno-analyzer-show-duplicate-count
+This option is intended for analyzer developers: if multiple diagnostics
+have been detected as being duplicates of each other, it emits a note when
+reporting the best diagnostic, giving the number of additional diagnostics
+that were suppressed by the deduplication logic.
 
 @item -fno-analyzer-state-merge
 @opindex fanalyzer-state-merge

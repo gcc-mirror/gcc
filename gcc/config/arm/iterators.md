@@ -229,6 +229,10 @@
 ;; Modes for polynomial or float values.
 (define_mode_iterator VPF [V8QI V16QI V2SF V4SF])
 
+;; Modes for BF16 convert instructions.
+(define_mode_iterator VBFCVT [V4BF V8BF])
+(define_mode_iterator VBFCVTM [V2SI SF])
+
 ;;----------------------------------------------------------------------------
 ;; Code iterators
 ;;----------------------------------------------------------------------------
@@ -746,6 +750,12 @@
                            (V2SI "") (V4SI "")
                            (V2SF "") (V4SF "")
                            (DI "_neon") (V2DI "")])
+
+;; To select the low 64 bits of a vector.
+(define_mode_attr V_bf_low [(V4BF "P") (V8BF "e")])
+
+;; To generate intermediate modes for BF16 scalar convert.
+(define_mode_attr V_bf_cvt_m [(V2SI "BF") (SF "V2SI")])
 
 
 ;; Scalars to be presented to scalar multiplication instructions

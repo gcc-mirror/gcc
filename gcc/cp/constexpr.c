@@ -5474,9 +5474,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
 					false,
 					non_constant_p, overflow_p);
-      if (!*non_constant_p)
-	/* Adjust the type of the result to the type of the temporary.  */
-	r = adjust_temp_type (TREE_TYPE (t), r);
+      if (*non_constant_p)
+	break;
+      /* Adjust the type of the result to the type of the temporary.  */
+      r = adjust_temp_type (TREE_TYPE (t), r);
       if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
 	ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
       r = unshare_constructor (r);
@@ -5528,6 +5529,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), false,
 					    non_constant_p, overflow_p);
+	  if (*non_constant_p)
+	    break;
 	  ctx->global->values.put (t, r);
 	  if (ctx->save_exprs)
 	    ctx->save_exprs->safe_push (t);

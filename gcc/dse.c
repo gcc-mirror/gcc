@@ -1540,9 +1540,12 @@ record_store (rtx body, bb_info_t bb_info)
 					 width)
 	      /* We can only remove the later store if the earlier aliases
 		 at least all accesses the later one.  */
-	      && (MEM_ALIAS_SET (mem) == MEM_ALIAS_SET (s_info->mem)
-		  || alias_set_subset_of (MEM_ALIAS_SET (mem),
-					  MEM_ALIAS_SET (s_info->mem))))
+	      && ((MEM_ALIAS_SET (mem) == MEM_ALIAS_SET (s_info->mem)
+		   || alias_set_subset_of (MEM_ALIAS_SET (mem),
+					   MEM_ALIAS_SET (s_info->mem)))
+		  && (!MEM_EXPR (s_info->mem)
+		      || refs_same_for_tbaa_p (MEM_EXPR (s_info->mem),
+					       MEM_EXPR (mem)))))
 	    {
 	      if (GET_MODE (mem) == BLKmode)
 		{
