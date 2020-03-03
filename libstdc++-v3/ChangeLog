@@ -1,5 +1,9 @@
 2020-03-04  Patrick Palka  <ppalka@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h (test_range::get_iterator): Make
+	protected instead of private.
+	(test_sized_range_sized_sent): New.
+
 	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper_nocopy):
 	New testsuite iterator.
 	* testsuite/24_iterators/counted_iterator/lwg3389.cc: use it.
