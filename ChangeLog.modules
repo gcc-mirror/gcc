@@ -1,3 +1,12 @@
+2020-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::fn_arg_types): Delete.
+	(struct merge_key): New.
+	(trees_out::key_mergeable): Use merge_key.
+	(trees_out::key_mergeable): #ifdef out.
+	(trees_in::decl_value): Adjust key handling.
+
 2020-03-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
