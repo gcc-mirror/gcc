@@ -1,5 +1,10 @@
 2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (fmasf4_fpu): Use accl_operand predicate.
+	(fnmasf4_fpu): Likewise.
+
+2020-03-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (adddi3): Early expand the 64bit operation into
 	32bit ops.
 	(subdi3): Likewise.
