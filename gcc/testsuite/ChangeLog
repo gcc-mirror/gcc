@@ -1,3 +1,8 @@
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93964
+	* gcc.dg/graphite/pr93964.c: New testcase.
+
 2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94001
