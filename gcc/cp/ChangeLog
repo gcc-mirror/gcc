@@ -1,3 +1,11 @@
+2020-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90432
+	* init.c (perform_member_init): Don't do aggregate initialization of
+	empty field.
+	* constexpr.c (cx_check_missing_mem_inits): Don't enforce
+	initialization of empty field.
+
 2020-03-04  Martin Liska  <mliska@suse.cz>
 
 	* method.c: Wrap array in ctor with braces in order
