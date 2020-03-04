@@ -1,3 +1,16 @@
+2020-05-06  Hongtao.liu  <hongtao.liu@intel.com>
+	    Wei Xiao  <wei3.xiao@intel.com>
+
+	* gcc/testsuite/gcc.target/i386/serialize-1.c: New test.
+	* gcc/testsuite/g++.dg/other/i386-2.C: Add -mserialize.
+	* gcc/testsuite/g++.dg/other/i386-3.C: Ditto.
+	* gcc/testsuite/gcc.target/i386/funcspec-56.inc: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-12.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-13.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-14.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-22.c: Ditto.
+	* gcc/testsuite/gcc.target/i386/sse-23.c: Ditto.
+
 2020-05-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/84324
