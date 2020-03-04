@@ -1,3 +1,8 @@
+2020-03-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/93962
+	* value-prof.c (dump_histogram_value): Use std::abs.
+
 2020-03-04  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/93986
