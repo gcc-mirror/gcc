@@ -3322,7 +3322,7 @@ package body Sem_Res is
 
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
       --  Emit an error concerning the illegal usage of an effectively volatile
-      --  object in interfering context (SPARK RM 7.13(12)).
+      --  object in interfering context (SPARK RM 7.1.3(12)).
 
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list

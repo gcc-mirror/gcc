@@ -1396,7 +1396,7 @@ package body Sem_Util is
       if Ekind (Desig_Typ) = E_Array_Subtype then
          Id := First_Index (Desig_Typ);
 
-         --  Check whether an index bound is constrained by a discriminant.
+         --  Check whether an index bound is constrained by a discriminant
 
          while Present (Id) loop
             Index_Typ := Underlying_Type (Etype (Id));

@@ -4794,7 +4794,7 @@ package body Exp_Ch4 is
                New_Occurrence_Of (RTE (RE_Check_Standard_Allocator), Loc)));
       end if;
 
-      --  Handle case of qualified expression (other than optimization above)
+      --  Handle case of qualified expression (other than optimization above).
       --  First apply constraint checks, because the bounds or discriminants
       --  in the aggregate might not match the subtype mark in the allocator.
 
