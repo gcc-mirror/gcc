@@ -1,3 +1,7 @@
+2020-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__memcpyable): Fix comment.
+
 2020-03-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/94017

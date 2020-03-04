@@ -429,10 +429,9 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       enum { __value = __is_trivially_copyable(_Tp) };
     };
 
-  // Cannot use memcpy/memmove/memcmp on volatile types, but before C++20
-  // iterator_traits<volatile T*>::value_type is volatile T and so the
-  // partial specializations below match for volatile-qualified pointers
-  // e.g. __memcpyable<volatile int*, volatile int*, volatile int>.
+  // Cannot use memcpy/memmove/memcmp on volatile types even if they are
+  // trivially copyable, so ensure __memcpyable<volatile int*, volatile int*>
+  // and similar will be false.
   template<typename _Tp>
     struct __is_nonvolatile_trivially_copyable<volatile _Tp>
     {
@@ -457,6 +456,10 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
     { };
 
   // Whether two iterator types can be used with memcmp.
+  // This trait only says it's well-formed to use memcmp, not that it
+  // gives the right answer for a given algorithm. So for example, std::equal
+  // needs to add additional checks that the types are integers or pointers,
+  // because other trivially copyable types can overload operator==.
   template<typename _Iter1, typename _Iter2>
     struct __memcmpable
     {
