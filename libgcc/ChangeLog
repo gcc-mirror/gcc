@@ -1,3 +1,7 @@
+2020-03-04  Release Manager
+
+	* GCC 8.4.0 released.
+
 2019-11-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__kernel_cmpxchg): Change argument 1 to

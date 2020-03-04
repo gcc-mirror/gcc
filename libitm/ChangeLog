@@ -1,3 +1,7 @@
+2020-03-04  Release Manager
+
+	* GCC 8.4.0 released.
+
 2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

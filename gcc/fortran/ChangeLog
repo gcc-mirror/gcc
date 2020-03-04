@@ -1,3 +1,7 @@
+2020-03-04  Release Manager
+
+	* GCC 8.4.0 released.
+
 2020-02-19  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from mainline

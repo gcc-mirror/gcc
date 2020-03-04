@@ -1,3 +1,7 @@
+2020-03-04  Release Manager
+
+	* GCC 8.4.0 released.
+
 2019-03-20  Florian Weimer  <fweimer@redhat.com>
 
 	PR libgcc/60790
