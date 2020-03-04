@@ -1,4 +1,11 @@
 2020-03-04  Jason Merrill  <jason@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90505 - mismatch in template argument deduction.
+	* pt.c (tsubst): Don't reduce the template level of template
+	parameters when tf_partial.
+
+2020-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90432
 	* init.c (perform_member_init): Don't do aggregate initialization of

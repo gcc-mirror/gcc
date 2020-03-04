@@ -14630,6 +14630,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     about the template parameter in question.  */
 	  return t;
 
+	/* Like with 'auto', don't reduce the level of template parameters
+	   to avoid mismatches when deducing their types.  */
+	if (complain & tf_partial)
+	  return t;
+
 	/* If we get here, we must have been looking at a parm for a
 	   more deeply nested template.  Make a new version of this
 	   template parameter, but with a lower level.  */
