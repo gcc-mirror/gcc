@@ -1,3 +1,9 @@
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94001
+	* tree-tailcall.c (process_assignment): Before comparing op1 to
+	*ass_var, verify *ass_var is non-NULL.
+
 2020-03-04  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/93995

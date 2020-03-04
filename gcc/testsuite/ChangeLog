@@ -1,3 +1,8 @@
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94001
+	* gcc.dg/pr94001.c: New test.
+
 2020-03-04  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/93995
