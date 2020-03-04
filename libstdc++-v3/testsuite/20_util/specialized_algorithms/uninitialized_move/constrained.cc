@@ -31,6 +31,9 @@
 
 using __gnu_test::test_input_range;
 using __gnu_test::test_forward_range;
+using __gnu_test::test_range;
+using __gnu_test::test_sized_range_sized_sent;
+using __gnu_test::input_iterator_wrapper_nocopy;
 
 namespace ranges = std::ranges;
 
@@ -157,6 +160,28 @@ test02()
     {
       VERIFY( X::move_construct_count == X::limit );
       VERIFY( X::destruct_count == X::limit );
+    }
+}
+
+void
+test03()
+{
+  // LWG 3355
+    {
+      int x[3] = {0};
+      int y[3];
+      test_sized_range_sized_sent<int, input_iterator_wrapper_nocopy> rx(x);
+      ranges::uninitialized_move(rx, y);
+      ranges::uninitialized_move_n(rx.begin(), 3, y, y+3);
+    }
+
+    {
+      int x[3] = {0};
+      int y[3];
+      test_range<int, input_iterator_wrapper_nocopy> rx(x);
+      test_forward_range<int> ry(y);
+      ranges::uninitialized_move(rx, y);
+      ranges::uninitialized_move_n(rx.begin(), 3, ry.begin(), ry.end());
     }
 }
 

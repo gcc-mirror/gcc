@@ -1,3 +1,63 @@
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81401
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-24.c: New test.
+
+2020-03-04  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/20050603-3.c: Remove XFAILS.
+
+2020-03-04  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr93122.c: Add dg-require.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* gcc.dg/analyzer/expect-1.c: New test.
+	* gcc.dg/analyzer/malloc-4.c: New test.
+	* gfortran.dg/analyzer/pr93993.f90: Remove xfail from dg-bogus.
+	Move location of leak warning and update message.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* gfortran.dg/analyzer/pr93993.f90: New test.
+
+2020-03-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr91623.c: Add -fcommon in order
+	to re-trigger the needed code for the test-case which
+	was added in r10-2910-g9151048d854e352a9b83b771c6711b8221c73f7e.
+
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/93888
+	* g++.dg/guality/pr93888.C: New test.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93964
+	* gcc.dg/graphite/pr93964.c: New testcase.
+
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94001
+	* gcc.dg/pr94001.c: New test.
+
+2020-03-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93995
+	* gcc.dg/pr93995.c: New.
+
+2020-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90505 - mismatch in template argument deduction.
+	* g++.dg/template/deduce4.C: New test.
+	* g++.dg/template/deduce5.C: New test.
+	* g++.dg/template/deduce6.C: New test.
+	* g++.dg/template/deduce7.C: New test.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93998
@@ -28,6 +88,10 @@
 	PR tree-optimization/93927
 	* gcc.c-torture/compile/pr93927-1.c: New test.
 	* gcc.c-torture/compile/pr93927-2.c: New test.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/torture/co-await-15-capture-comp-ref.C: New test.
 
 2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
 

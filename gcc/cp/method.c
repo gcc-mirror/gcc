@@ -900,9 +900,9 @@ struct comp_cat_info_t
 };
 static const comp_cat_info_t comp_cat_info[cc_last]
 = {
-   { "partial_ordering", "equivalent", "greater", "less", "unordered" },
-   { "weak_ordering", "equivalent", "greater", "less" },
-   { "strong_ordering", "equal", "greater", "less" }
+   { "partial_ordering", { "equivalent", "greater", "less", "unordered" } },
+   { "weak_ordering", { "equivalent", "greater", "less" } },
+   { "strong_ordering", { "equal", "greater", "less" } }
 };
 
 /* A cache of the category types to speed repeated lookups.  */

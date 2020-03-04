@@ -1,3 +1,15 @@
+2020-03-04  Martin Liska  <mliska@suse.cz>
+
+	* method.c: Wrap array in ctor with braces in order
+	to silent clang warnings.
+
+2020-03-03  Jason Merrill  <jason@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90505 - mismatch in template argument deduction.
+	* pt.c (tsubst): Don't reduce the template level of template
+	parameters when tf_partial.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93998
@@ -6,6 +18,11 @@
 	*non_constant_p is true.
 
 2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (captures_temporary): Strip component_ref
+	to its base object.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (finish_co_await_expr): Build co_await_expr
 	with unknown_type_node.

@@ -1,4 +1,86 @@
+2020-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__memcpyable): Fix comment.
+
+2020-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/94017
+	* include/bits/ranges_algobase.h (__fill_n_fn::operator()): Refine
+	condition for when to use memset, making sure to additionally check that
+	the output pointer's value type is a non-volatile byte type.  Instead of
+	requiring that the fill type is a byte type, just require that it's an
+	integral type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/94017.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/94017.cc:
+	New test.
+	* testsuite/25_algorithms/fill/94013.cc: Uncomment part of test that was
+	blocked by PR 94017.
+	* testsuite/25_algorithms/fill/94017.cc: New test.
+	* testsuite/25_algorithms/fill_n/94017.cc: New test.
+
+	LWG 3355 The memory algorithms should support move-only input iterators
+	introduced by P1207
+	* include/bits/ranges_uninitialized.h
+	(__uninitialized_copy_fn::operator()): Use std::move to avoid attempting
+	to copy __ifirst, which could be a move-only input iterator.  Use
+	operator- instead of ranges::distance to compute distance from a sized
+	sentinel.
+	(__uninitialized_copy_n_fn::operator()): Likewise.
+	(__uninitialized_move_fn::operator()): Likewise.
+	(__uninitialized_move_n_fn::operator()): Likewise.
+	(__uninitialized_destroy_fn::operator()): Use std::move to avoid
+	attempting to copy __first.
+	(__uninitialized_destroy_n_fn::operator()): Likewise.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc:
+	Augment test.
+	* .../specialized_algorithms/uninitialized_copy/constrained.cc:
+	Likewise.
+	* .../specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+
+	* testsuite/util/testsuite_iterators.h (test_range::get_iterator): Make
+	protected instead of private.
+	(test_sized_range_sized_sent): New.
+
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper_nocopy):
+	New testsuite iterator.
+	* testsuite/24_iterators/counted_iterator/lwg3389.cc: use it.
+	* testsuite/24_iterators/move_iterator/lwg3390.cc: Likewise.
+
+	* include/bits/ranges_uninitialized.h
+	(uninitialized_copy_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_copy_fn::operator()): Likewise.
+	(uninitialized_move_fn::operator()): Likewise.  Return an in_out_result
+	with the input iterator stripped of its move_iterator.
+	(uninitialized_move_n_fn::operator()): Likewise.
+	(uninitialized_fill_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_fill_n_fn::operator()): Likewise.
+
 2020-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94013
+	* include/bits/cpp_type_traits.h (__memcpyable, __memcmpable): New
+	traits to control when to use memmove and memcmp optimizations.
+	(__is_nonvolatile_trivially_copyable): New helper trait.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Do not
+	use memcmp optimization with volatile data.
+	* include/bits/ranges_algobase.h (__equal_fn): Use __memcmpable.
+	(__copy_or_move, __copy_or_move_backward): Use __memcpyable.
+	* include/bits/stl_algobase.h (__copy_move_a2): Use __memcpyable.
+	(__copy_move_backward_a2): Likewise.
+	(__equal_aux1): Use __memcmpable.
+	(__lexicographical_compare_aux): Do not use memcmp optimization with
+	volatile data.
+	* testsuite/25_algorithms/copy/94013.cc: New test.
+	* testsuite/25_algorithms/copy_backward/94013.cc: New test.
+	* testsuite/25_algorithms/equal/94013.cc: New test.
+	* testsuite/25_algorithms/fill/94013.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/94013.cc: New test.
+	* testsuite/25_algorithms/move/94013.cc: New test.
+	* testsuite/25_algorithms/move_backward/94013.cc: New test.
 
 	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
 	Avoid redundant iterator comparisons (LWG 3410).

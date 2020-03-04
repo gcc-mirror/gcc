@@ -1654,8 +1654,7 @@ strongly_connected_components::strong_connect (unsigned index)
 /* worklist's ctor.  */
 
 worklist::worklist (const exploded_graph &eg, const analysis_plan &plan)
-: m_eg (eg),
-  m_scc (eg.get_supergraph (), eg.get_logger ()),
+: m_scc (eg.get_supergraph (), eg.get_logger ()),
   m_plan (plan),
   m_queue (key_t (*this, NULL))
 {
@@ -3602,10 +3601,8 @@ private:
 class viz_callgraph_edge : public dedge<viz_callgraph_traits>
 {
 public:
-  viz_callgraph_edge (viz_callgraph_node *src, viz_callgraph_node *dest,
-		     const call_superedge *call_sedge)
-  : dedge<viz_callgraph_traits> (src, dest),
-    m_call_sedge (call_sedge)
+  viz_callgraph_edge (viz_callgraph_node *src, viz_callgraph_node *dest)
+  : dedge<viz_callgraph_traits> (src, dest)
   {}
 
   void dump_dot (graphviz_out *gv, const dump_args_t &) const
@@ -3627,9 +3624,6 @@ public:
 	       style, color, weight, constraint);
     pp_printf (pp, "\"];\n");
   }
-
-private:
-  const call_superedge * const m_call_sedge;
 };
 
 /* Subclass of digraph representing the callgraph.  */
@@ -3650,7 +3644,6 @@ public:
   }
 
 private:
-  const supergraph &m_sg;
   hash_map<function *, viz_callgraph_node *> m_map;
 };
 
@@ -3663,7 +3656,6 @@ class viz_callgraph_cluster : public cluster<viz_callgraph_traits>
 /* viz_callgraph's ctor.  */
 
 viz_callgraph::viz_callgraph (const supergraph &sg)
-: m_sg (sg)
 {
   cgraph_node *node;
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
@@ -3682,11 +3674,11 @@ viz_callgraph::viz_callgraph (const supergraph &sg)
       viz_callgraph_node *vcg_src = get_vcg_node_for_snode (sedge->m_src);
       if (vcg_src->m_fun)
 	get_vcg_node_for_function (vcg_src->m_fun)->m_num_superedges++;
-      if (const call_superedge *call_sedge = sedge->dyn_cast_call_superedge ())
+      if (sedge->dyn_cast_call_superedge ())
 	{
 	  viz_callgraph_node *vcg_dest = get_vcg_node_for_snode (sedge->m_dest);
 	  viz_callgraph_edge *vcg_edge
-	    = new viz_callgraph_edge (vcg_src, vcg_dest, call_sedge);
+	    = new viz_callgraph_edge (vcg_src, vcg_dest);
 	  add_edge (vcg_edge);
 	}
     }

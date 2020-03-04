@@ -131,4 +131,20 @@ along with GCC; see the file COPYING3.  If not see
 /* GAS supports it, but the debuggers don't, so avoid it.  */
 #define SUPPORTS_DISCRIMINATOR 0
 
+/* z/TPF hardcoded values for the -mtpf-trace feature.  */
+
+/* The *_CHECK value specify addresses in the lowcore whose byte
+   values can be used to turn on/off the tracing.  */
+#define TPF_TRACE_PROLOGUE_CHECK 4065
+#define TPF_TRACE_EPILOGUE_CHECK 4071
+
+/* The target addresses for the z/TPF trace facility.  */
+#define TPF_TRACE_PROLOGUE_TARGET 4064
+#define TPF_TRACE_EPILOGUE_TARGET 4070
+
+/* Alternate target addresses for the z/TPF trace facility.  These
+   will be used with the -mtpf-trace-skip switch.  */
+#define TPF_TRACE_PROLOGUE_SKIP_TARGET 4076
+#define TPF_TRACE_EPILOGUE_SKIP_TARGET 4082
+
 #endif /* ! _TPF_H */

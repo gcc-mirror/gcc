@@ -1850,6 +1850,14 @@ class region_model
 					      enum tree_code op,
 					      tree rhs,
 					      region_model_context *ctxt);
+  void add_any_constraints_from_gassign (enum tree_code op,
+					 tree rhs,
+					 const gassign *assign,
+					 region_model_context *ctxt);
+  void add_any_constraints_from_gcall (enum tree_code op,
+				       tree rhs,
+				       const gcall *call,
+				       region_model_context *ctxt);
 
   void update_for_call_superedge (const call_superedge &call_edge,
 				  region_model_context *ctxt);
@@ -1953,6 +1961,54 @@ class region_model_context
      know how to handle the tree code of T at LOC.  */
   virtual void on_unexpected_tree_code (tree t,
 					const dump_location_t &loc) = 0;
+};
+
+/* A subclass of region_model_context for determining if operations fail
+   e.g. "can we generate a region for the lvalue of EXPR?".  */
+
+class tentative_region_model_context : public region_model_context
+{
+public:
+  tentative_region_model_context () : m_num_unexpected_codes (0) {}
+
+  void warn (pending_diagnostic *) FINAL OVERRIDE {}
+  void remap_svalue_ids (const svalue_id_map &) FINAL OVERRIDE {}
+  int on_svalue_purge (svalue_id, const svalue_id_map &) FINAL OVERRIDE
+  {
+    return 0;
+  }
+  logger *get_logger () FINAL OVERRIDE { return NULL; }
+  void on_inherited_svalue (svalue_id parent_sid ATTRIBUTE_UNUSED,
+			    svalue_id child_sid  ATTRIBUTE_UNUSED)
+    FINAL OVERRIDE
+  {
+  }
+  void on_cast (svalue_id src_sid ATTRIBUTE_UNUSED,
+		svalue_id dst_sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+  }
+  void on_condition (tree lhs ATTRIBUTE_UNUSED,
+		     enum tree_code op ATTRIBUTE_UNUSED,
+		     tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+  }
+  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+  }
+  void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
+	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+  }
+  void on_unexpected_tree_code (tree, const dump_location_t &)
+    FINAL OVERRIDE
+  {
+    m_num_unexpected_codes++;
+  }
+
+  bool had_errors_p () const { return m_num_unexpected_codes > 0; }
+
+private:
+  int m_num_unexpected_codes;
 };
 
 /* A bundle of data for use when attempting to merge two region_model

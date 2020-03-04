@@ -468,13 +468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::__copy_move<_IsMove, false, _Category>::
 	  __copy_m(__first, __last, __result);
 #endif
-      typedef typename iterator_traits<_II>::value_type _ValueTypeI;
-      typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
-      const bool __simple = (__is_trivially_copyable(_ValueTypeI)
-			     && __is_pointer<_II>::__value
-			     && __is_pointer<_OI>::__value
-			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
-      return std::__copy_move<_IsMove, __simple,
+      return std::__copy_move<_IsMove, __memcpyable<_OI, _II>::__value,
 			      _Category>::__copy_m(__first, __last, __result);
     }
 
@@ -710,14 +704,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	return std::__copy_move_backward<_IsMove, false, _Category>::
 	  __copy_move_b(__first, __last, __result);
 #endif
-      typedef typename iterator_traits<_BI1>::value_type _ValueType1;
-      typedef typename iterator_traits<_BI2>::value_type _ValueType2;
-      const bool __simple = (__is_trivially_copyable(_ValueType1)
-			     && __is_pointer<_BI1>::__value
-			     && __is_pointer<_BI2>::__value
-			     && __are_same<_ValueType1, _ValueType2>::__value);
-
-      return std::__copy_move_backward<_IsMove, __simple,
+      return std::__copy_move_backward<_IsMove,
+				       __memcpyable<_BI2, _BI1>::__value,
 				       _Category>::__copy_move_b(__first,
 								 __last,
 								 __result);
@@ -1153,13 +1141,9 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __equal_aux1(_II1 __first1, _II1 __last1, _II2 __first2)
     {
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
-      typedef typename iterator_traits<_II2>::value_type _ValueType2;
       const bool __simple = ((__is_integer<_ValueType1>::__value
 			      || __is_pointer<_ValueType1>::__value)
-			     && __is_pointer<_II1>::__value
-			     && __is_pointer<_II2>::__value
-			     && __are_same<_ValueType1, _ValueType2>::__value);
-
+			     && __memcmpable<_II1, _II2>::__value);
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
     }
 
@@ -1298,7 +1282,15 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	 && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
 	 && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
 	 && __is_pointer<_II1>::__value
-	 && __is_pointer<_II2>::__value);
+	 && __is_pointer<_II2>::__value
+#if __cplusplus > 201703L
+	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
+	 // so __is_byte<T> could be true, but we can't use memcmp with
+	 // volatile data.
+	 && !is_volatile_v<remove_reference_t<iter_reference_t<_II1>>>
+	 && !is_volatile_v<remove_reference_t<iter_reference_t<_II2>>>
+#endif
+	 );
 
       return std::__lexicographical_compare<__simple>::__lc(__first1, __last1,
 							    __first2, __last2);
