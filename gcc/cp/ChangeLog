@@ -1,5 +1,13 @@
 2020-03-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90432
+	* init.c (perform_member_init): Don't do aggregate initialization of
+	empty field.
+	* constexpr.c (cx_check_missing_mem_inits): Don't enforce
+	initialization of empty field.
+
+2020-03-04  Jason Merrill  <jason@redhat.com>
+
 	PR c++/90997
 	* semantics.c (finish_call_expr): Don't call
 	instantiate_non_dependent_expr before warn_for_memset.

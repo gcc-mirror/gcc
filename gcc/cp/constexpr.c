@@ -821,6 +821,9 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 		return true;
 	      continue;
 	    }
+	  if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field)))
+	    /* An empty field doesn't need an initializer.  */
+	    continue;
 	  ftype = strip_array_types (TREE_TYPE (field));
 	  if (type_has_constexpr_default_constructor (ftype))
 	    {
