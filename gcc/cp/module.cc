@@ -11554,17 +11554,16 @@ depset::hash::add_dependency (depset *dep)
     current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
 
   if (current->get_entity_kind () == EK_USING
-      && !OVL_USING_P (current->get_entity ())
       && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
       && TREE_CODE (TREE_TYPE (dep->get_entity ())) == ENUMERAL_TYPE)
     {
       /* CURRENT is an unwrapped using-decl and DECL is an enum's
 	 implicit typedef.  Is CURRENT a member of the enum?  */
-      // FIXME: Can't we just handle this when depending the enum?
       tree c_decl = OVL_FUNCTION (current->get_entity ());
 
       if (TREE_CODE (c_decl) == CONST_DECL
-	  && DECL_CONTEXT (c_decl) == TREE_TYPE (dep->get_entity ()))
+	  && (current->deps[0]->get_entity ()
+	      == CP_DECL_CONTEXT (dep->get_entity ())))
 	/* Make DECL depend on CURRENT.  */
 	dep->deps.safe_push (current);
     }
@@ -12395,10 +12394,29 @@ cluster_cmp (const void *a_, const void *b_)
     /* Can occur during testing.  */
     return 0;
 
-  /* Same decl.  They must be bindings.  Order by strcmp for
-     user-meaningful order.  */
-  return strcmp (IDENTIFIER_POINTER (a->get_name ()),
-		 IDENTIFIER_POINTER (b->get_name ()));
+  /* Same decl.  They must be bindings or (rarely) using_decls.  */
+
+  /* Order by strcmp for user-meaningful order.  */
+  if (a_kind == depset::EK_BINDING)
+    return strcmp (IDENTIFIER_POINTER (a->get_name ()),
+		   IDENTIFIER_POINTER (b->get_name ()));
+
+  if (a_kind == depset::EK_USING)
+    {
+      depset *a_binding = a->deps[0];
+      depset *b_binding = b->deps[0];
+
+      gcc_checking_assert (a_binding->is_binding () && b_binding->is_binding ());
+      tree a_ns = a_binding->get_entity ();
+      tree b_ns = b_binding->get_entity ();
+      
+      unsigned uid_a = DECL_UID (a_ns);
+      unsigned uid_b = DECL_UID (b_ns);
+
+      return uid_a < uid_b ? -1 : +1;
+    }
+
+  gcc_unreachable ();
 }
 
 /* Reduce graph to SCCS clusters.  SCCS will be populated with the

@@ -1,6 +1,13 @@
 2020-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): Only unscoped enum
+	usings from the enum itself are mutual dependencies.
+	(cluster_cmp): Cope with using decls for the same entity.
+	gcc/testsuite/
+	* g++.dg/modules/using-7.C: New.
+
+	gcc/cp/
 	* module.cc (trees_out::core_vals): Adjust typedef detection.
 	(trees_{in,out}::decl_value): Likewise.
 	gcc/testsuite/
