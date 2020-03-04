@@ -1,3 +1,12 @@
+2020-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-01-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93462
+	* frontend-passes.c (gfc_code_walker): For EXEC_OACC_ATOMIC, set
+	in_omp_atomic to true prevent front-end optimization.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.

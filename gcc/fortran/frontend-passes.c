@@ -4766,6 +4766,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.dt->extra_comma);
 	      break;
 
+	    case EXEC_OACC_ATOMIC:
 	    case EXEC_OMP_ATOMIC:
 	      in_omp_atomic = true;
 	      break;
