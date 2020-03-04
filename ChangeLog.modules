@@ -1,6 +1,14 @@
 2020-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees__out::key_mergeable): NULL name more often.
+	(enum merge_match): Delete.
+	(check_mergeable_decl): Use merge_kind instead.
+	(trees_in::key_mergeable): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/merge-6_b.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (struct merge_key): simplify.
 	(trees_{in,out}::key_mergeable): Optimize merge_key streaming.
 

@@ -9854,9 +9854,14 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	case MK_field:
 	  // FIXME: Much like tt_data_member -- commonize?
+	  // lookup named FIELD_DECLs by name, not iteration
 	  {
 	    unsigned ix = 0;
-	    
+	    if (TREE_CODE (inner) != FIELD_DECL)
+	      name = NULL_TREE;
+	    else
+	      gcc_checking_assert (!name || !IDENTIFIER_ANON_P (name));
+
 	    for (tree field = TYPE_FIELDS (TREE_TYPE (container));
 		 ; field = DECL_CHAIN (field))
 	      {
@@ -9882,6 +9887,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  key.index = ix;
 		  break;
 		}
+	    name = NULL_TREE;
 	  }
 	  break;
 
@@ -9917,7 +9923,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	}
 
       tree_node (name);
-
       if (streaming_p ())
 	{
 	  unsigned code = (key.ref_q << 0) | (key.index << 2);
@@ -9950,25 +9955,11 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
    to duplicate decls to get ODR errors on loading?  We already have
    some special casing for namespaces.  */
 
-// FIXME: Kill this enum
-enum merge_match
-  {
-   MM_namespace_scope,
-   MM_anon_enum,
-   MM_class_scope
-  };
-
 static tree
-check_mergeable_decl (merge_match kind, tree decl, tree ovl,
-		      merge_key const &key)
+check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 {
-  if (kind == MM_anon_enum)
-    gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-			 && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
-
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
-      gcc_assert (kind == MM_class_scope || !iter.using_p ());
       tree match = *iter;
 
       tree d_inner = decl;
@@ -9982,7 +9973,7 @@ check_mergeable_decl (merge_match kind, tree decl, tree ovl,
 	    /* Namespaces are never overloaded.  */
 	    return match;
 
-	  if (kind == MM_anon_enum
+	  if (mk == MK_enum
 	      && TREE_CODE (m_inner) == CONST_DECL
 	      && TREE_CODE (TREE_TYPE (m_inner)) == ENUMERAL_TYPE)
 	    {
@@ -10156,7 +10147,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
       if (get_overrun ())
 	return error_mark_node;
-      
+
       if (mk < MK_indirect_lwm)
 	{
 	  DECL_NAME (decl) = name;
@@ -10178,11 +10169,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      gcc_checking_assert (mk == MK_named || mk == MK_enum);
 	      tree *gslot = mergeable_namespace_entities
 		(container, name, !is_mod);
-
-	      existing = check_mergeable_decl
-		(mk == MK_named ? MM_namespace_scope : MM_anon_enum,
-		 decl, *gslot, key);
-
+	      existing = check_mergeable_decl (mk, decl, *gslot, key);
 	      if (!existing && mk == MK_named)
 		add_mergeable_namespace_entity (gslot, decl);
 	    }
@@ -10230,7 +10217,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 			    inner = DECL_TEMPLATE_RESULT (inner);
 
 			  existing = check_mergeable_decl
-			    (MM_class_scope, inner, existing, key);
+			    (mk, inner, existing, key);
 			}
 		      break;
 
