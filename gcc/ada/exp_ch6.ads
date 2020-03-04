@@ -247,12 +247,6 @@ package Exp_Ch6 is
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean;
    --  Return True if the function returns an object of a type that has tasks.
 
-   function Needs_Result_Accessibility_Level
-     (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
-   --  parameter to identify the accessibility level of the function result
-   --  "determined by the point of call".
-
    function Unqual_BIP_Iface_Function_Call (Expr : Node_Id) return Node_Id;
    --  Return the inner BIP function call removing any qualification from Expr
    --  including qualified expressions, type conversions, references, unchecked

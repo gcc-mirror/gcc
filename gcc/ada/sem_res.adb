@@ -13086,8 +13086,16 @@ package body Sem_Res is
                   end if;
                end if;
 
+            --  Check if the operand is deeper than the target type, taking
+            --  care to avoid the case where we are converting a result of a
+            --  function returning an anonymous access type since the "master
+            --  of the call" would be target type of the conversion in all
+            --  cases - see RM 10.3/3.
+
             elsif Type_Access_Level (Opnd_Type) >
                     Deepest_Type_Access_Level (Target_Type)
+              and then not (Nkind (Associated_Node_For_Itype (Opnd_Type)) =
+                                     N_Function_Specification)
             then
                --  In an instance, this is a run-time check, but one we know
                --  will fail, so generate an appropriate warning. The raise

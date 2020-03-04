@@ -12326,6 +12326,32 @@ package body Sem_Util is
       end if;
    end Has_Tagged_Component;
 
+   --------------------------------------------
+   -- Has_Unconstrained_Access_Discriminants --
+   --------------------------------------------
+
+   function Has_Unconstrained_Access_Discriminants
+     (Subtyp : Entity_Id) return Boolean
+   is
+      Discr : Entity_Id;
+
+   begin
+      if Has_Discriminants (Subtyp)
+        and then not Is_Constrained (Subtyp)
+      then
+         Discr := First_Discriminant (Subtyp);
+         while Present (Discr) loop
+            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+               return True;
+            end if;
+
+            Next_Discriminant (Discr);
+         end loop;
+      end if;
+
+      return False;
+   end Has_Unconstrained_Access_Discriminants;
+
    -----------------------------
    -- Has_Undefined_Reference --
    -----------------------------
@@ -17804,7 +17830,7 @@ package body Sem_Util is
            and then Ekind_In (Scop, E_Function,
                                     E_Operator,
                                     E_Subprogram_Type)
-           and then Present (Extra_Accessibility_Of_Result (Scop));
+           and then Needs_Result_Accessibility_Level (Scop);
       end;
    end Is_Special_Aliased_Formal_Access;
 
@@ -19902,6 +19928,144 @@ package body Sem_Util is
          return False;
       end if;
    end Needs_One_Actual;
+
+   --------------------------------------
+   -- Needs_Result_Accessibility_Level --
+   --------------------------------------
+
+   function Needs_Result_Accessibility_Level
+     (Func_Id : Entity_Id) return Boolean
+   is
+      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+
+      function Has_Unconstrained_Access_Discriminant_Component
+        (Comp_Typ : Entity_Id) return Boolean;
+      --  Returns True if any component of the type has an unconstrained access
+      --  discriminant.
+
+      -----------------------------------------------------
+      -- Has_Unconstrained_Access_Discriminant_Component --
+      -----------------------------------------------------
+
+      function Has_Unconstrained_Access_Discriminant_Component
+        (Comp_Typ :  Entity_Id) return Boolean
+      is
+      begin
+         if not Is_Limited_Type (Comp_Typ) then
+            return False;
+
+            --  Only limited types can have access discriminants with
+            --  defaults.
+
+         elsif Has_Unconstrained_Access_Discriminants (Comp_Typ) then
+            return True;
+
+         elsif Is_Array_Type (Comp_Typ) then
+            return Has_Unconstrained_Access_Discriminant_Component
+                     (Underlying_Type (Component_Type (Comp_Typ)));
+
+         elsif Is_Record_Type (Comp_Typ) then
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (Comp_Typ);
+               while Present (Comp) loop
+                  if Has_Unconstrained_Access_Discriminant_Component
+                       (Underlying_Type (Etype (Comp)))
+                  then
+                     return True;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Has_Unconstrained_Access_Discriminant_Component;
+
+      Disable_Coextension_Cases : constant Boolean := True;
+      --  Flag used to temporarily disable a "True" result for types with
+      --  access discriminants and related coextension cases.
+
+   --  Start of processing for Needs_Result_Accessibility_Level
+
+   begin
+      --  False if completion unavailable (how does this happen???)
+
+      if not Present (Func_Typ) then
+         return False;
+
+      --  False if not a function, also handle enum-lit renames case
+
+      elsif Func_Typ = Standard_Void_Type
+        or else Is_Scalar_Type (Func_Typ)
+      then
+         return False;
+
+      --  Handle a corner case, a cross-dialect subp renaming. For example,
+      --  an Ada 2012 renaming of an Ada 2005 subprogram. This can occur when
+      --  an Ada 2005 (or earlier) unit references predefined run-time units.
+
+      elsif Present (Alias (Func_Id)) then
+
+         --  Unimplemented: a cross-dialect subp renaming which does not set
+         --  the Alias attribute (e.g., a rename of a dereference of an access
+         --  to subprogram value). ???
+
+         return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
+
+      --  Remaining cases require Ada 2012 mode
+
+      elsif Ada_Version < Ada_2012 then
+         return False;
+
+      --  Handle the situation where a result is an anonymous access type
+      --  RM 3.10.2 (10.3/3).
+
+      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
+         return True;
+
+      --  The following cases are related to coextensions and do not fully
+      --  cover everything mentioned in RM 3.10.2 (12) ???
+
+      --  Temporarily disabled ???
+
+      elsif Disable_Coextension_Cases then
+         return False;
+
+      --  In the case of, say, a null tagged record result type, the need for
+      --  this extra parameter might not be obvious so this function returns
+      --  True for all tagged types for compatibility reasons.
+
+      --  A function with, say, a tagged null controlling result type might
+      --  be overridden by a primitive of an extension having an access
+      --  discriminant and the overrider and overridden must have compatible
+      --  calling conventions (including implicitly declared parameters).
+
+      --  Similarly, values of one access-to-subprogram type might designate
+      --  both a primitive subprogram of a given type and a function which is,
+      --  for example, not a primitive subprogram of any type. Again, this
+      --  requires calling convention compatibility. It might be possible to
+      --  solve these issues by introducing wrappers, but that is not the
+      --  approach that was chosen.
+
+      elsif Is_Tagged_Type (Func_Typ) then
+         return True;
+
+      elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then
+         return True;
+
+      elsif Has_Unconstrained_Access_Discriminant_Component (Func_Typ) then
+         return True;
+
+      --  False for all other cases
+
+      else
+         return False;
+      end if;
+   end Needs_Result_Accessibility_Level;
 
    ---------------------------------
    -- Needs_Simple_Initialization --

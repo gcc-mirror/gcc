@@ -7178,20 +7178,31 @@ package body Exp_Ch3 is
                         Chars =>
                           New_External_Name (Chars (Def_Id), Suffix => "L"));
 
-            Level_Expr : Node_Id;
             Level_Decl : Node_Id;
+            Level_Expr : Node_Id;
 
          begin
             Set_Ekind (Level, Ekind (Def_Id));
             Set_Etype (Level, Standard_Natural);
             Set_Scope (Level, Scope (Def_Id));
 
+            --  Set accessibility level of null
+
             if No (Expr) then
-
-               --  Set accessibility level of null
-
                Level_Expr :=
                  Make_Integer_Literal (Loc, Scope_Depth (Standard_Standard));
+
+            --  When the expression of the object is a function which returns
+            --  an anonymous access type the master of the call is the object
+            --  being initialized instead of the type.
+
+            elsif Nkind (Expr) = N_Function_Call
+              and then Ekind (Etype (Name (Expr))) = E_Anonymous_Access_Type
+            then
+               Level_Expr := Make_Integer_Literal (Loc,
+                               Object_Access_Level (Def_Id));
+
+            --  General case
 
             else
                Level_Expr := Dynamic_Accessibility_Level (Expr);
