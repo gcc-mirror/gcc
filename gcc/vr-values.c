@@ -1992,9 +1992,6 @@ vr_gori_interface::refine_range_with_equivalences (irange &r,
   if (!branch)
     return false;
 
-  if (solve_name_at_statement (tmp, name, branch, branch_range))
-    r.intersect (tmp);
-
   // Solve each equivalence and use them to refine the range.
   bitmap_iterator bi;
   unsigned i;
@@ -2002,7 +1999,8 @@ vr_gori_interface::refine_range_with_equivalences (irange &r,
   EXECUTE_IF_SET_IN_BITMAP (gori_exports, 0, i, bi)
     {
       tree equiv = ssa_name (i);
-
+      if (equiv == name)
+	continue;
       widest_irange equiv_range;
       if (solve_name_at_statement (equiv_range, equiv, branch, branch_range))
 	{
