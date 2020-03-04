@@ -1,3 +1,9 @@
+2020-03-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr91623.c: Add -fcommon in order
+	to re-trigger the needed code for the test-case which
+	was added in r10-2910-g9151048d854e352a9b83b771c6711b8221c73f7e.
+
 2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/93888
