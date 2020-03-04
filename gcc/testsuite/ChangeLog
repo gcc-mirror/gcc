@@ -1,3 +1,8 @@
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/93888
+	* g++.dg/guality/pr93888.C: New test.
+
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93964

@@ -1,5 +1,8 @@
 2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/93888
+	* tree-inline.c (copy_decl_to_var): Copy DECL_BY_REFERENCE flag.
+
 	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Add offseti
 	argument.  Change pd argument so that it can be modified.  Turn
 	constant non-CONSTRUCTOR store into non-constant if it is too large.
