@@ -1,3 +1,8 @@
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94028
+	* g++.dg/analyzer/pr94028.C: New test.
+
 2020-03-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81401
