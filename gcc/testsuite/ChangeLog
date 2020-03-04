@@ -3,6 +3,9 @@
 	Backported from mainline
 	2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/93888
+	* g++.dg/guality/pr93888.C: New test.
+
 	PR tree-optimization/94001
 	* gcc.dg/pr94001.c: New test.
 
