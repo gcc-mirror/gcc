@@ -1,6 +1,12 @@
 2020-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::core_vals): Adjust typedef detection.
+	(trees_{in,out}::decl_value): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-7{,_[ab]}.[hHC]: New.
+
+	gcc/cp/
 	* module.cc (trees__out::key_mergeable): NULL name more often.
 	(enum merge_match): Delete.
 	(check_mergeable_decl): Use merge_kind instead.

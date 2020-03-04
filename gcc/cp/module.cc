@@ -5748,8 +5748,7 @@ trees_out::core_vals (tree t)
 	  break;
 
 	case TYPE_DECL:
-	  if (DECL_ORIGINAL_TYPE (t)
-	      && t != TYPE_NAME (TYPE_MAIN_VARIANT (type)))
+	  if (DECL_ORIGINAL_TYPE (t) && t == TYPE_NAME (type))
 	    /* This is a typedef.  We set its type separately.  */
 	    type = NULL_TREE;
 	  break;
@@ -7395,7 +7394,10 @@ trees_out::decl_value (tree decl, depset *dep)
 	}
     }
 
-  if (!type && TREE_CODE (inner) == TYPE_DECL)
+  if (!type
+      && TREE_CODE (inner) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (inner)
+      && TYPE_NAME (TREE_TYPE (inner)) == inner)
     {
       /* A typedef type.  */
       int type_tag = insert (TREE_TYPE (inner));
@@ -7601,7 +7603,10 @@ trees_in::decl_value ()
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
-  bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !type;
+  bool is_typedef = (!type
+		     && TREE_CODE (inner) == TYPE_DECL
+		     && DECL_ORIGINAL_TYPE (inner)
+		     && !TREE_TYPE (inner));
   if (is_typedef)
     {
       /* Frob it to be ready for cloning.  */
