@@ -960,9 +960,12 @@ package body Ch6 is
 
          if Token = Tok_Is then
 
-            --  If the subprogram declaration already has a specification, we
-            --  can't define another.
-            if Null_Present (Specification (Decl_Node)) then
+            --  If the subprogram is a procedure and already has a
+            --  specification, we can't define another.
+
+            if Nkind (Specification (Decl_Node)) = N_Procedure_Specification
+              and then Null_Present (Specification (Decl_Node))
+            then
                Error_Msg_AP ("null procedure cannot have a body");
             end if;
 
