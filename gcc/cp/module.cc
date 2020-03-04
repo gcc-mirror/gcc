@@ -2759,11 +2759,6 @@ enum walk_kind {
   WK_value,	/* By-value walk.  */
 };
 
-// class - as-base
-// class - vtable index of the vtable
-// class - field/using/anon-member-type/anon-bitfield/bitfield-representative
-// class - field-for-base
-// 
 enum merge_kind
 {
   MK_unique,	/* Known unique.  */
@@ -2802,6 +2797,24 @@ static char const *const merge_kind_name[MK_hwm] =
     "type spec", "type tmpl spec", NULL, "type partial spec", /* 8...11  */
     "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
   };
+
+/* Mergeable entity location data.  */
+struct merge_key {
+  cp_ref_qualifier ref_q : 2;
+  unsigned index;
+
+  tree ret;  /* Return type, if appropriate.  */
+  tree args; /* Arg types, if appropriate.  */
+
+  tree constraints;  /* Constraints.  */
+
+  merge_key ()
+    :ref_q (REF_QUAL_NONE), index (0),
+     ret (NULL_TREE), args (NULL_TREE),
+     constraints (NULL_TREE)
+  {
+  }
+};
 
 struct duplicate_hash : nodel_ptr_hash<tree_node>
 {
@@ -3084,48 +3097,6 @@ trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps,
 trees_out::~trees_out ()
 {
 }
-
-/* Mergeable entity location data.  */
-struct merge_key {
-  cp_ref_qualifier ref_q : 2;
-
-  unsigned index;
-
-  tree ctx_or_tmpl; /* Containing context, or general template.  */
-  tree name_or_spec; /* Identifier or specialization args.  */
-
-  tree ret;  /* Return type, if appropriate.  */
-  tree args; /* Arg types, if appropriate.  */
-
-  tree constraints;  /* Constraints.  */
-
-  merge_key ()
-    :ref_q (REF_QUAL_NONE), index (0),
-     ctx_or_tmpl (NULL_TREE), name_or_spec (NULL_TREE),
-     ret (NULL_TREE), args (NULL_TREE),
-     constraints (NULL_TREE)
-  {
-  }
-
-  void tmpl_and_spec (tree t, tree s)
-  {
-    ctx_or_tmpl = t;
-    name_or_spec = s;
-  }
-  void ctx_and_name (tree ctx, tree n)
-  {
-    ctx_or_tmpl = ctx;
-    name_or_spec = n;
-  }
-  void arg_types (tree fn_type)
-  {
-    ref_q = type_memfn_rqual (fn_type);
-    args = TYPE_ARG_TYPES (fn_type);
-  }
-
-  void write (trees_out &out, merge_kind, tree container) const;
-  bool read (trees_in &in, merge_kind, tree container);
-};
 
 /********************************************************************/
 /* Location.  We're aware of the line-map concept and reproduce it
@@ -9732,64 +9703,6 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 }
 
 
-/* Stream a merge key.  */
-
-void
-merge_key::write (trees_out &out, merge_kind kind, tree) const
-{
-  if (kind != MK_unique)
-    {
-      if (out.streaming_p ())
-	{
-	  unsigned code = (ref_q << 0) | (index << 2);
-	  out.u (code);
-	}
-
-      if (kind & MK_template_mask)
-	out.tree_node (ctx_or_tmpl);
-      out.tree_node (name_or_spec);
-
-      out.tree_node (ret);
-      tree arg = args;
-      while (arg && arg != void_list_node)
-	{
-	  out.tree_node (TREE_VALUE (arg));
-	  arg = TREE_CHAIN (arg);
-	}
-      out.tree_node (arg);
-
-      out.tree_node (constraints);
-    }
-}
-
-bool
-merge_key::read (trees_in &in, merge_kind kind, tree container)
-{
-  if (kind != MK_unique)
-    {
-      unsigned code = in.u ();
-      ref_q = cp_ref_qualifier ((code >> 0) & 3);
-      index = code >> 2;
-
-      ctx_or_tmpl = kind & MK_template_mask ? in.tree_node () : container;
-      name_or_spec = in.tree_node ();
-
-      ret = in.tree_node ();
-      tree arg, *arg_ptr = &args;
-      while ((arg = in.tree_node ())
-	      && arg != void_list_node)
-	{
-	  *arg_ptr = tree_cons (NULL_TREE, arg, NULL_TREE);
-	  arg_ptr = &TREE_CHAIN (*arg_ptr);
-	}
-      *arg_ptr = arg;
-
-      constraints = in.tree_node ();
-    }
-
-  return !in.get_overrun ();
-}
-
 /* The container of DECL -- not necessarily its context!  */
 
 tree
@@ -9838,10 +9751,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	       dep ? dep->entity_kind_name () : "contained",
 	       TREE_CODE (decl), decl);
 
-  merge_key key;
-
-  key.ctx_or_tmpl = container;
-
   /* Now write the locating information. */
   if (mk & MK_template_mask)
     {
@@ -9849,7 +9758,9 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	 and the set of template args they specialize.  */
       gcc_checking_assert (dep && dep->is_special ());
       spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
-      key.tmpl_and_spec (entry->tmpl, entry->args);
+
+      tree_node (entry->tmpl);
+      tree_node (entry->args);
 
       // FIXME:variable templates with concepts need constraints from
       // the specialization -- see spec_hasher::equal
@@ -9892,27 +9803,27 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  gcc_assert (existing == decl);
 	}
     }
-  else
+  else if (mk != MK_unique)
     {
-      key.name_or_spec = DECL_NAME (decl);
+      merge_key key;
+      tree name = DECL_NAME (decl);
+
       switch (mk)
 	{
 	default:
 	  gcc_unreachable ();
 
-	case MK_unique:
-	  break;
-
 	case MK_named:
-	  if (IDENTIFIER_CONV_OP_P (key.name_or_spec))
-	    key.name_or_spec = conv_op_identifier;
+	  if (IDENTIFIER_CONV_OP_P (name))
+	    name = conv_op_identifier;
 
 	  if (TREE_CODE (inner) == FUNCTION_DECL)
 	    {
 	      /* Functions are distinguished by parameter types.  */
 	      tree fn_type = TREE_TYPE (inner);
 
-	      key.arg_types (fn_type);
+	      key.ref_q = type_memfn_rqual (fn_type);
+	      key.args = TYPE_ARG_TYPES (fn_type);
 
 	      if (decl != inner)
 		{
@@ -9932,7 +9843,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  key.constraints = reqs;
 		}
 
-	      if (decl != inner || key.name_or_spec == conv_op_identifier)
+	      if (decl != inner || name == conv_op_identifier)
 		/* And a function template, or conversion operator needs
 		   the return type.  */
 		// FIXME: What if the return type is a voldemort?  We
@@ -9993,7 +9904,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  ix++;
 		}
 	    key.index = ix;
-	    key.name_or_spec = NULL_TREE;
+	    name = NULL_TREE;
 	  }
 	  break;
 
@@ -10001,13 +9912,31 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  /* Anonymous enums are located by their first identifier.  */
 	  gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
 	  if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
-	    key.name_or_spec = DECL_NAME (TREE_VALUE (values));
+	    name = DECL_NAME (TREE_VALUE (values));
 	  break;
 	}
-    }
 
-  // FIXME: Open code and elide some pieces
-  key.write (*this, mk, container);
+      tree_node (name);
+
+      if (streaming_p ())
+	{
+	  unsigned code = (key.ref_q << 0) | (key.index << 2);
+	  u (code);
+	}
+
+      if (mk == MK_named && TREE_CODE (inner) == FUNCTION_DECL)
+	{
+	  tree_node (key.ret);
+	  tree arg = key.args;
+	  while (arg && arg != void_list_node)
+	    {
+	      tree_node (TREE_VALUE (arg));
+	      arg = TREE_CHAIN (arg);
+	    }
+	  tree_node (arg);
+	  tree_node (key.constraints);
+	}
+    }
 }
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use RET &
@@ -10125,50 +10054,35 @@ tree
 trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 			 tree type, tree container, bool is_mod)
 {
-  merge_key key;
-
-  if (!key.read (*this, mk, container))
-  bail:
-    return error_mark_node;
-
-  if (mk & MK_template_mask)
-    {
-      /* A specialization of some kind.  */
-      DECL_NAME (decl) = DECL_NAME (key.ctx_or_tmpl);
-      DECL_CONTEXT (decl) = DECL_CONTEXT (key.ctx_or_tmpl);
-    }
-  else
-    {
-      if (mk < MK_indirect_lwm)
-	DECL_NAME (decl) = key.name_or_spec;
-      DECL_CONTEXT (decl) = FROB_CONTEXT (key.ctx_or_tmpl);
-    }
-
-  DECL_NAME (inner) = DECL_NAME (decl);
-  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
-
   const char *kind = "new";
   tree existing = NULL_TREE;
 
   if (mk & MK_template_mask)
     {
+      tree tmpl = tree_node ();
+      tree spec = tree_node ();
+
+      DECL_NAME (decl) = DECL_NAME (tmpl);
+      DECL_CONTEXT (decl) = DECL_CONTEXT (tmpl);
+      DECL_NAME (inner) = DECL_NAME (decl);
+      DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+
       tree insert = decl;
       if (mk & MK_tmpl_tmpl_mask)
 	{
 	  if (inner == decl)
-	    goto bail;
+	    return error_mark_node;
 	  insert = inner;
 	}
       bool is_decl = mk & MK_tmpl_decl_mask;
       if (!is_decl)
 	{
 	  if (mk == MK_type_spec && inner != decl)
-	    goto bail;
+	    return error_mark_node;
 	  insert = type;
 	}
 
-      existing = match_mergeable_specialization (is_decl, key.ctx_or_tmpl,
-						 key.name_or_spec, insert);
+      existing = match_mergeable_specialization (is_decl, tmpl, spec, insert);
 
       if (!existing)
 	{
@@ -10197,8 +10111,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  else if (mk & MK_tmpl_partial_mask)
 	    {
 	      /* A partial specialization.  */
-	      for (tree partial
-		     = DECL_TEMPLATE_SPECIALIZATIONS (key.ctx_or_tmpl);
+	      for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
 		   partial; partial = TREE_CHAIN (partial))
 		if (TREE_TYPE (partial) == existing)
 		  {
@@ -10219,142 +10132,176 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
   else if (mk == MK_unique)
     kind = "unique";
   else
-    switch (TREE_CODE (key.ctx_or_tmpl))
-      {
-      default:
-	gcc_unreachable ();
+    {
+      tree name = tree_node ();
 
-      case NAMESPACE_DECL:
-	if (is_mod && !(state->is_module () || state->is_partition ()))
+      merge_key key;
+      unsigned code = u ();
+      key.ref_q = cp_ref_qualifier ((code >> 0) & 3);
+      key.index = code >> 2;
+
+      if (mk == MK_named && TREE_CODE (inner) == FUNCTION_DECL)
+	{
+	  key.ret = tree_node ();
+	  tree arg, *arg_ptr = &key.args;
+	  while ((arg = tree_node ())
+		 && arg != void_list_node)
+	    {
+	      *arg_ptr = tree_cons (NULL_TREE, arg, NULL_TREE);
+	      arg_ptr = &TREE_CHAIN (*arg_ptr);
+	    }
+	  *arg_ptr = arg;
+	  key.constraints = tree_node ();
+	}
+
+      if (get_overrun ())
+	return error_mark_node;
+      
+      if (mk < MK_indirect_lwm)
+	{
+	  DECL_NAME (decl) = name;
+	  DECL_CONTEXT (decl) = FROB_CONTEXT (container);
+	}
+      DECL_NAME (inner) = DECL_NAME (decl);
+      DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+
+      switch (TREE_CODE (container))
+	{
+	default:
+	  gcc_unreachable ();
+
+	case NAMESPACE_DECL:
+	  if (is_mod && !(state->is_module () || state->is_partition ()))
+	    kind = "unique";
+	  else
+	    {
+	      gcc_checking_assert (mk == MK_named || mk == MK_enum);
+	      tree *gslot = mergeable_namespace_entities
+		(container, name, !is_mod);
+
+	      existing = check_mergeable_decl
+		(mk == MK_named ? MM_namespace_scope : MM_anon_enum,
+		 decl, *gslot, key);
+
+	      if (!existing && mk == MK_named)
+		add_mergeable_namespace_entity (gslot, decl);
+	    }
+	  break;
+
+	case FUNCTION_DECL:
+	  // FIXME: What about a voldemort? how do we find what it
+	  // duplicates? Do we have to number vmorts relative to
+	  // their containing function?  But how would that work
+	  // when matching an in-TU declaration?
 	  kind = "unique";
-	else
-	  {
-	    gcc_checking_assert (mk == MK_named || mk == MK_enum);
-	    tree *gslot = mergeable_namespace_entities
-	      (key.ctx_or_tmpl, key.name_or_spec, !is_mod);
+	  break;
 
-	    existing = check_mergeable_decl
-	      (mk == MK_named ? MM_namespace_scope : MM_anon_enum,
-	       decl, *gslot, key);
+	case TYPE_DECL:
+	  if (is_mod && !(state->is_module () || state->is_partition ())
+	      /* Implicit member functions can come from
+		 anywhere.  */
+	      && !(DECL_ARTIFICIAL (decl)
+		   && TREE_CODE (decl) == FUNCTION_DECL
+		   && !DECL_THUNK_P (decl)))
+	    kind = "unique";
+	  else
+	    {
+	      tree ctx = TREE_TYPE (container);
 
-	    if (!existing && mk == MK_named)
-	      add_mergeable_namespace_entity (gslot, decl);
-	  }
-	break;
-
-      case FUNCTION_DECL:
-	// FIXME: What about a voldemort? how do we find what it
-	// duplicates? Do we have to number vmorts relative to
-	// their containing function?  But how would that work
-	// when matching an in-TU declaration?
-	kind = "unique";
-	break;
-
-      case TYPE_DECL:
-	if (is_mod && !(state->is_module () || state->is_partition ())
-	    /* Implicit member functions can come from
-	       anywhere.  */
-	    && !(DECL_ARTIFICIAL (decl)
-		 && TREE_CODE (decl) == FUNCTION_DECL
-		 && !DECL_THUNK_P (decl)))
-	  kind = "unique";
-	else
-	  {
-	    tree ctx = TREE_TYPE (key.ctx_or_tmpl);
-
-	    /* For some reason templated enumeral types are not marked
-	       as COMPLETE_TYPE_P, even though they have members.
-	       This may well be a bug elsewhere.  */
-	    if (TREE_CODE (ctx) == ENUMERAL_TYPE)
-	      existing = find_enum_member (ctx, key.name_or_spec);
-	    else if (COMPLETE_TYPE_P (ctx))
-	      {
-		switch (mk)
-		  {
-		  default:
-		    gcc_unreachable ();
-
-		  case MK_named:
-		    existing = mergeable_class_entities (ctx, key.name_or_spec);
-		    if (existing)
-		      {
-			tree inner = decl;
-			if (TREE_CODE (inner) == TEMPLATE_DECL
-			    && !DECL_MEMBER_TEMPLATE_P (inner))
-			  inner = DECL_TEMPLATE_RESULT (inner);
-			
-			existing = check_mergeable_decl
-			  (MM_class_scope, inner, existing, key);
-		      }
-		    break;
-
-		  case MK_field:
+	      /* For some reason templated enumeral types are not marked
+		 as COMPLETE_TYPE_P, even though they have members.
+		 This may well be a bug elsewhere.  */
+	      if (TREE_CODE (ctx) == ENUMERAL_TYPE)
+		existing = find_enum_member (ctx, name);
+	      else if (COMPLETE_TYPE_P (ctx))
+		{
+		  switch (mk)
 		    {
-		      unsigned ix = key.index;
-		      for (tree field = TYPE_FIELDS (ctx);
-			   field; field = DECL_CHAIN (field))
+		    default:
+		      gcc_unreachable ();
+
+		    case MK_named:
+		      existing = mergeable_class_entities (ctx, name);
+		      if (existing)
 			{
-			  tree finner = STRIP_TEMPLATE (field);
-			  if (TREE_CODE (finner) == TREE_CODE (inner))
-			    if (!ix--)
-			      {
-				existing = field;
-				break;
-			      }
+			  tree inner = decl;
+			  if (TREE_CODE (inner) == TEMPLATE_DECL
+			      && !DECL_MEMBER_TEMPLATE_P (inner))
+			    inner = DECL_TEMPLATE_RESULT (inner);
+
+			  existing = check_mergeable_decl
+			    (MM_class_scope, inner, existing, key);
 			}
-		    }
-		    break;
+		      break;
 
-		  case MK_vtable:
-		    {
-		      unsigned ix = key.index;
-		      for (tree vtable = CLASSTYPE_VTABLES (ctx);
-			   vtable; vtable = DECL_CHAIN (vtable))
-			if (!ix--)
+		    case MK_field:
+		      {
+			unsigned ix = key.index;
+			for (tree field = TYPE_FIELDS (ctx);
+			     field; field = DECL_CHAIN (field))
 			  {
-			    existing = vtable;
-			    break;
+			    tree finner = STRIP_TEMPLATE (field);
+			    if (TREE_CODE (finner) == TREE_CODE (inner))
+			      if (!ix--)
+				{
+				  existing = field;
+				  break;
+				}
 			  }
-		    }
-		    break;
+		      }
+		      break;
 
-		  case MK_as_base:
+		    case MK_vtable:
+		      {
+			unsigned ix = key.index;
+			for (tree vtable = CLASSTYPE_VTABLES (ctx);
+			     vtable; vtable = DECL_CHAIN (vtable))
+			  if (!ix--)
+			    {
+			      existing = vtable;
+			      break;
+			    }
+		      }
+		      break;
+
+		    case MK_as_base:
+		      {
+			tree as_base = CLASSTYPE_AS_BASE (ctx);
+			if (as_base && as_base != ctx)
+			  existing = TYPE_NAME (as_base);
+		      }
+		      break;
+
+		    case MK_local_friend:
+		      {
+			unsigned ix = key.index;
+			for (tree decls = CLASSTYPE_DECL_LIST (ctx);
+			     decls; decls = TREE_CHAIN (decls))
+			  if (!TREE_PURPOSE (decls) && !ix--)
+			    {
+			      existing
+				= friend_from_decl_list (TREE_VALUE (decls));
+			      break;
+			    }
+		      }
+		      break;
+		    }
+
+		  if (existing && mk < MK_indirect_lwm
+		      && TREE_CODE (decl) == TEMPLATE_DECL
+		      && !DECL_MEMBER_TEMPLATE_P (decl))
 		    {
-		      tree as_base = CLASSTYPE_AS_BASE (ctx);
-		      if (as_base && as_base != ctx)
-			existing = TYPE_NAME (as_base);
+		      tree ti;
+		      if (DECL_IMPLICIT_TYPEDEF_P (existing))
+			ti = TYPE_TEMPLATE_INFO (TREE_TYPE (existing));
+		      else
+			ti = DECL_TEMPLATE_INFO (existing);
+		      existing = TI_TEMPLATE (ti);
 		    }
-		    break;
-
-		  case MK_local_friend:
-		    {
-		      unsigned ix = key.index;
-		      for (tree decls = CLASSTYPE_DECL_LIST (ctx);
-			   decls; decls = TREE_CHAIN (decls))
-			if (!TREE_PURPOSE (decls) && !ix--)
-			  {
-			    existing
-			      = friend_from_decl_list (TREE_VALUE (decls));
-			    break;
-			  }
-		    }
-		    break;
-		  }
-
-		if (existing && mk < MK_indirect_lwm
-		    && TREE_CODE (decl) == TEMPLATE_DECL
-		    && !DECL_MEMBER_TEMPLATE_P (decl))
-		  {
-		    tree ti;
-		    if (DECL_IMPLICIT_TYPEDEF_P (existing))
-		      ti = TYPE_TEMPLATE_INFO (TREE_TYPE (existing));
-		    else
-		      ti = DECL_TEMPLATE_INFO (existing);
-		    existing = TI_TEMPLATE (ti);
-		  }
-	      }
-	  }
-      }
+		}
+	    }
+	}
+    }
 
   dump (dumper::MERGE)
     && dump ("Read:%d's %s merge key (%s) %C:%N", tag, merge_kind_name[mk],

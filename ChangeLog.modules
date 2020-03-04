@@ -1,3 +1,9 @@
+2020-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (struct merge_key): simplify.
+	(trees_{in,out}::key_mergeable): Optimize merge_key streaming.
+
 2020-03-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
