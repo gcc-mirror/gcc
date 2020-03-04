@@ -3865,13 +3865,20 @@ add_mergeable_namespace_entity (tree *gslot, tree decl)
 
 /* A mergeable entity of KLASS called NAME is being loaded.  Return
    the set of things it could be.  */
+// FIXME: As mentioned elsewhere, we should force a member vector In
+// this case that could mean lazily creating it for an in-TU class
+// that is being merged.  Plus what if we have stat struc going on?
 
 tree
 mergeable_class_entities (tree klass, tree name)
 {
   tree found = NULL_TREE;
+  vec<tree, va_gc> *member_vec = NULL;
 
-  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+  if (TYPE_LANG_SPECIFIC (klass))
+    member_vec = CLASSTYPE_MEMBER_VEC (klass);
+
+  if (member_vec)
     {
       found = member_vec_binary_search (member_vec, name);
       if (IDENTIFIER_CONV_OP_P (name))
@@ -3882,10 +3889,6 @@ mergeable_class_entities (tree klass, tree name)
 	}
     }
   else
-    // FIXME: As mentioned elsewhere, we should force a member vector
-    // In this case that could mean lazily creating it for an in-TU
-    // class that is being merged.  Plus what if we have stat struc
-    // going on?
     {
       found = fields_linear_search (klass, name, false);
       if (found && !DECL_DECLARES_TYPE_P (found))

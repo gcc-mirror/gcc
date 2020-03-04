@@ -1,6 +1,9 @@
 2020-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (mergeable_class_entities): Check TYPE_LANG_SPECIFIC.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_dependency): Only unscoped enum
 	usings from the enum itself are mutual dependencies.
 	(cluster_cmp): Cope with using decls for the same entity.
