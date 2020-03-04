@@ -4091,7 +4091,7 @@ package body Exp_Attr is
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
 
-         --  For scalar type, if low bound is a reference to an entity, just
+         --  For scalar type, if high bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
          --  have already been rewritten.
