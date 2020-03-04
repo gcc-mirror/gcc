@@ -1,3 +1,7 @@
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 8.4.1.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.
