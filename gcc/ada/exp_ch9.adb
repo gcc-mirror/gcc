@@ -8124,7 +8124,7 @@ package body Exp_Ch9 is
          --       <else-statements>
          --    end if;
 
-         N_Stats := New_Copy_List_Tree (Statements (Alt));
+         N_Stats := New_Copy_Separate_List (Statements (Alt));
 
          Prepend_To (N_Stats,
            Make_Implicit_If_Statement (N,
@@ -8168,7 +8168,7 @@ package body Exp_Ch9 is
          --    <dispatching-call>;
          --    <triggering-statements>
 
-         Lim_Typ_Stmts := New_Copy_List_Tree (Statements (Alt));
+         Lim_Typ_Stmts := New_Copy_Separate_List (Statements (Alt));
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Blk));
 
          --  Generate:
