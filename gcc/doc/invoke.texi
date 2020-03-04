@@ -1223,7 +1223,8 @@ See RS/6000 and PowerPC Options.
 -msmall-exec  -mno-small-exec  -mmvcle  -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mhtm  -mvx  -mzvector @gol
--mtpf-trace  -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
+-mtpf-trace  -mno-tpf-trace  -mtpf-trace-skip  -mno-tpf-trace-skip @gol
+-mfused-madd  -mno-fused-madd @gol
 -mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard @gol
 -mhotpatch=@var{halfwords},@var{halfwords}}
 
@@ -26952,6 +26953,16 @@ The default is the value used for @option{-march}.
 Generate code that adds (does not add) in TPF OS specific branches to trace
 routines in the operating system.  This option is off by default, even
 when compiling for the TPF OS@.
+
+@item -mtpf-trace-skip
+@itemx -mno-tpf-trace-skip
+@opindex mtpf-trace-skip
+@opindex mno-tpf-trace-skip
+Generate code that changes (does not change) the default branch
+targets enabled by @option{-mtpf-trace} to point to specialized trace
+routines providing the ability of selectively skipping function trace
+entries for the TPF OS.  This option is off by default, even when
+compiling for the TPF OS and specifying @option{-mtpf-trace}.
 
 @item -mfused-madd
 @itemx -mno-fused-madd

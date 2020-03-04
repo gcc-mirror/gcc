@@ -11363,17 +11363,21 @@ s390_emit_prologue (void)
       emit_insn (insns);
     }
 
+#if TARGET_TPF != 0
   if (TARGET_TPF_PROFILING)
     {
-      /* Generate a BAS instruction to serve as a function
-	 entry intercept to facilitate the use of tracing
-	 algorithms located at the branch target.  */
-      emit_insn (gen_prologue_tpf ());
+      /* Generate a BAS instruction to serve as a function entry
+	 intercept to facilitate the use of tracing algorithms located
+	 at the branch target.  */
+      emit_insn (gen_prologue_tpf (
+		   GEN_INT (s390_tpf_trace_hook_prologue_check),
+		   GEN_INT (s390_tpf_trace_hook_prologue_target)));
 
-      /* Emit a blockage here so that all code
-	 lies between the profiling mechanisms.  */
+      /* Emit a blockage here so that all code lies between the
+	 profiling mechanisms.  */
       emit_insn (gen_blockage ());
     }
+#endif
 }
 
 /* Expand the epilogue into a bunch of separate insns.  */
@@ -11386,19 +11390,22 @@ s390_emit_epilogue (bool sibcall)
   int next_offset;
   int i;
 
+#if TARGET_TPF != 0
   if (TARGET_TPF_PROFILING)
     {
+      /* Generate a BAS instruction to serve as a function entry
+	 intercept to facilitate the use of tracing algorithms located
+	 at the branch target.  */
 
-      /* Generate a BAS instruction to serve as a function
-	 entry intercept to facilitate the use of tracing
-	 algorithms located at the branch target.  */
-
-      /* Emit a blockage here so that all code
-	 lies between the profiling mechanisms.  */
+      /* Emit a blockage here so that all code lies between the
+	 profiling mechanisms.  */
       emit_insn (gen_blockage ());
 
-      emit_insn (gen_epilogue_tpf ());
+      emit_insn (gen_epilogue_tpf (
+		   GEN_INT (s390_tpf_trace_hook_epilogue_check),
+		   GEN_INT (s390_tpf_trace_hook_epilogue_target)));
     }
+#endif
 
   /* Check whether to use frame or stack pointer for restore.  */
 
@@ -15265,6 +15272,26 @@ s390_option_override_internal (struct gcc_options *opts,
      oldest supported machine level z900.  */
   if (!DISP_IN_RANGE ((1 << param_stack_clash_protection_probe_interval)))
     param_stack_clash_protection_probe_interval = 12;
+
+#if TARGET_TPF != 0
+  if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_prologue_check))
+    error ("-mtpf-trace-hook-prologue-check requires integer in range 0..4095");
+
+  if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_prologue_target))
+    error ("-mtpf-trace-hook-prologue-target requires integer in range 0..4095");
+
+  if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_epilogue_check))
+    error ("-mtpf-trace-hook-epilogue-check requires integer in range 0..4095");
+
+  if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_epilogue_target))
+    error ("-mtpf-trace-hook-epilogue-target requires integer in range 0..4095");
+
+  if (s390_tpf_trace_skip)
+    {
+      opts->x_s390_tpf_trace_hook_prologue_target = TPF_TRACE_PROLOGUE_SKIP_TARGET;
+      opts->x_s390_tpf_trace_hook_epilogue_target = TPF_TRACE_EPILOGUE_SKIP_TARGET;
+    }
+#endif
 
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
   if (!TARGET_LONG_DOUBLE_128_P (opts_set->x_target_flags))
