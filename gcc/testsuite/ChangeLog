@@ -1,3 +1,8 @@
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81401
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-24.c: New test.
+
 2020-03-04  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/20050603-3.c: Remove XFAILS.
