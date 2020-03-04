@@ -8098,6 +8098,7 @@ package body Sem_Ch12 is
                      elsif Nkind (Assoc) = N_Identifier
                        and then Nkind (Parent (Assoc)) = N_Type_Conversion
                        and then Subtype_Mark (Parent (Assoc)) = Assoc
+                       and then Present (Etype (Assoc))
                        and then Is_Access_Type (Etype (Assoc))
                        and then Present (Etype (Expression (Parent (Assoc))))
                        and then

@@ -20323,6 +20323,118 @@ package body Sem_Util is
       end if;
    end New_Copy_List_Tree;
 
+   ----------------------------
+   -- New_Copy_Separate_List --
+   ----------------------------
+
+   function New_Copy_Separate_List (List : List_Id) return List_Id is
+   begin
+      if List = No_List then
+         return No_List;
+
+      else
+         declare
+            List_Copy : constant List_Id := New_List;
+            N         : Node_Id := First (List);
+
+         begin
+            while Present (N) loop
+               Append (New_Copy_Separate_Tree (N), List_Copy);
+               Next (N);
+            end loop;
+
+            return List_Copy;
+         end;
+      end if;
+   end New_Copy_Separate_List;
+
+   ----------------------------
+   -- New_Copy_Separate_Tree --
+   ----------------------------
+
+   function New_Copy_Separate_Tree (Source : Node_Id) return Node_Id is
+      function Search_Decl (N : Node_Id) return Traverse_Result;
+      --  Subtree visitor which collects declarations
+
+      procedure Search_Declarations is new Traverse_Proc (Search_Decl);
+      --  Subtree visitor instantiation
+
+      -----------------
+      -- Search_Decl --
+      -----------------
+
+      Decls : Elist_Id;
+
+      function Search_Decl (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) in N_Declaration then
+            if No (Decls) then
+               Decls := New_Elmt_List;
+            end if;
+
+            Append_Elmt (N, Decls);
+         end if;
+
+         return OK;
+      end Search_Decl;
+
+      --  Local variables
+
+      Source_Copy : constant Node_Id := New_Copy_Tree (Source);
+
+   --  Start of processing for New_Copy_Separate_Tree
+
+   begin
+      Decls := No_Elist;
+      Search_Declarations (Source_Copy);
+
+      --  Associate a new Entity with all the subtree declarations (keeping
+      --  their original name).
+
+      if Present (Decls) then
+         declare
+            Elmt  : Elmt_Id;
+            Decl  : Node_Id;
+            New_E : Entity_Id;
+
+         begin
+            Elmt := First_Elmt (Decls);
+            while Present (Elmt) loop
+               Decl  := Node (Elmt);
+               New_E := Make_Defining_Identifier (Sloc (Decl),
+                          New_Internal_Name ('P'));
+
+               if Nkind (Decl) = N_Expression_Function then
+                  Decl := Specification (Decl);
+               end if;
+
+               if Nkind_In (Decl, N_Function_Instantiation,
+                                  N_Function_Specification,
+                                  N_Generic_Function_Renaming_Declaration,
+                                  N_Generic_Package_Renaming_Declaration,
+                                  N_Generic_Procedure_Renaming_Declaration,
+                                  N_Package_Body,
+                                  N_Package_Instantiation,
+                                  N_Package_Renaming_Declaration,
+                                  N_Package_Specification,
+                                  N_Procedure_Instantiation,
+                                  N_Procedure_Specification)
+               then
+                  Set_Chars (New_E, Chars (Defining_Unit_Name (Decl)));
+                  Set_Defining_Unit_Name (Decl, New_E);
+               else
+                  Set_Chars (New_E, Chars (Defining_Identifier (Decl)));
+                  Set_Defining_Identifier (Decl, New_E);
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end;
+      end if;
+
+      return Source_Copy;
+   end New_Copy_Separate_Tree;
+
    -------------------
    -- New_Copy_Tree --
    -------------------
@@ -20751,6 +20863,65 @@ package body Sem_Util is
          New_Par  : Node_Id := Empty;
          Semantic : Boolean := False) return Union_Id
       is
+         function Has_More_Ids (N : Node_Id) return Boolean;
+         --  Return True when N has attribute More_Ids set to True
+
+         function Is_Syntactic_Node return Boolean;
+         --  Return True when Field is a syntactic node
+
+         ------------------
+         -- Has_More_Ids --
+         ------------------
+
+         function Has_More_Ids (N : Node_Id) return Boolean is
+         begin
+            if Nkind_In (N, N_Component_Declaration,
+                            N_Discriminant_Specification,
+                            N_Exception_Declaration,
+                            N_Formal_Object_Declaration,
+                            N_Number_Declaration,
+                            N_Object_Declaration,
+                            N_Parameter_Specification,
+                            N_Use_Package_Clause,
+                            N_Use_Type_Clause)
+            then
+               return More_Ids (N);
+            else
+               return False;
+            end if;
+         end Has_More_Ids;
+
+         -----------------------
+         -- Is_Syntactic_Node --
+         -----------------------
+
+         function Is_Syntactic_Node return Boolean is
+            Old_N : constant Node_Id := Node_Id (Field);
+
+         begin
+            if Parent (Old_N) = Old_Par then
+               return True;
+
+            elsif not Has_More_Ids (Old_Par) then
+               return False;
+
+            --  Perform the check using the last last id in the syntactic chain
+
+            else
+               declare
+                  N : Node_Id := Old_Par;
+
+               begin
+                  while Present (N) and then More_Ids (N) loop
+                     Next (N);
+                  end loop;
+
+                  pragma Assert (Prev_Ids (N));
+                  return Parent (Old_N) = N;
+               end;
+            end if;
+         end Is_Syntactic_Node;
+
       begin
          --  The field is empty
 
@@ -20762,7 +20933,7 @@ package body Sem_Util is
          elsif Field in Node_Range then
             declare
                Old_N     : constant Node_Id := Node_Id (Field);
-               Syntactic : constant Boolean := Parent (Old_N) = Old_Par;
+               Syntactic : constant Boolean := Is_Syntactic_Node;
 
                New_N : Node_Id;
 
@@ -20989,6 +21160,11 @@ package body Sem_Util is
                then
                   Set_Chars (Result, Chars (Entity (Result)));
                end if;
+            end if;
+
+            if Has_Aspects (N) then
+               Set_Aspect_Specifications (Result,
+                 Copy_List_With_Replacement (Aspect_Specifications (N)));
             end if;
          end if;
 
