@@ -7810,12 +7810,15 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      --  Cases where the call is not a member of a statement list. This
-      --  includes the case where the call is an actual in another function
-      --  call or indexing, i.e. an expression context as well.
+      --  Cases where the call is not a member of a statement list. This also
+      --  includes the cases where the call is an actual in another function
+      --  call, or is an index, or is an operand of an if-expression, i.e. is
+      --  in an expression context.
 
       if not Is_List_Member (N)
-        or else Nkind_In (Context, N_Function_Call, N_Indexed_Component)
+        or else Nkind_In (Context, N_Function_Call,
+                                   N_If_Expression,
+                                   N_Indexed_Component)
       then
          --  In Ada 2012 the call may be a function call in an expression
          --  (since OUT and IN OUT parameters are now allowed for such calls).
@@ -7823,7 +7826,9 @@ package body Exp_Ch6 is
          --  but the constraint checks generated when subtypes of formal and
          --  actual don't match must be inserted in the form of assignments.
 
-         if Nkind (Original_Node (N)) = N_Function_Call then
+         if Nkind (N) = N_Function_Call
+           or else Nkind (Original_Node (N)) = N_Function_Call
+         then
             pragma Assert (Ada_Version >= Ada_2012);
             --  Functions with '[in] out' parameters are only allowed in Ada
             --  2012.
