@@ -122,6 +122,7 @@
 #define bit_AVX512VP2INTERSECT	(1 << 8)
 #define bit_IBT	(1 << 20)
 #define bit_PCONFIG	(1 << 18)
+#define bit_SERIALIZE	(1 << 14)
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
 #define bit_BNDCSR      (1 << 4)

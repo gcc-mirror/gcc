@@ -1,3 +1,28 @@
+2020-05-06  Hongtao Liu  <hongtao.liu@intel.com>
+	    Wei Xiao  <wei3.xiao@intel.com>
+
+	* gcc/common/config/i386/i386-common.c (OPTION_MASK_ISA2_SERIALIZE_SET,
+	OPTION_MASK_ISA2_SERIALIZE_UNSET): New macros.
+	(ix86_handle_option): Handle -mserialize.
+	* gcc/config.gcc (serializeintrin.h): New header file.
+	* gcc/config/i386/cpuid.h (bit_SERIALIZE): New bit.
+	* gcc/config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	-mserialize.
+	* gcc/config/i386/i386-builtin.def: Add new builtin.
+	* gcc/config/i386/i386-c.c (__SERIALIZE__): New macro.
+	* gcc/config/i386/i386-options.c (ix86_target_opts_isa2_opts):
+	  Add -mserialize.
+	* (ix86_valid_target_attribute_inner_p): Add target attribute
+	* for serialize.
+	* gcc/config/i386/i386.h (TARGET_SERIALIZE, TARGET_SERIALIZE_P):
+	  New macros.
+	* gcc/config/i386/i386.md (UNSPECV_SERIALIZE): New unspec.
+	  (serialize): New define_insn.
+	* gcc/config/i386/i386.opt (mserialize): New option
+	* gcc/config/i386/immintrin.h: Include serailizeintrin.h.
+	* gcc/config/i386/serializeintrin.h: New header file.
+	* gcc/doc/invoke.texi: Add documents for -mserialize.
+
 2020-05-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_unary): Adjust integer

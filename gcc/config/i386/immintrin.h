@@ -140,6 +140,8 @@
 
 #include <enqcmdintrin.h>
 
+#include <serializeintrin.h>
+
 #include <rdseedintrin.h>
 
 #include <prfchwintrin.h>
