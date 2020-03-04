@@ -1,3 +1,9 @@
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93986
+	* tree-ssa-strlen.c (maybe_warn_overflow): Convert all wide_int
+	operands to the same precision widest_int to avoid ICEs.
+
 2020-03-04  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/87560

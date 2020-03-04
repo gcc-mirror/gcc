@@ -1,3 +1,8 @@
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93986
+        * gcc.dg/pr93986.c: New test.
+
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94028

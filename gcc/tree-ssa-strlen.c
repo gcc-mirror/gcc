@@ -1924,11 +1924,21 @@ maybe_warn_overflow (gimple *stmt, tree len,
   if (TREE_NO_WARNING (dest))
     return;
 
+  /* Use maximum precision to avoid overflow in the addition below.
+     Make sure all operands have the same precision to keep wide_int
+     from ICE'ing.  */
+
+  /* Convenience constants.  */
+  const widest_int diff_min
+    = wi::to_widest (TYPE_MIN_VALUE (ptrdiff_type_node));
+  const widest_int diff_max
+    = wi::to_widest (TYPE_MAX_VALUE (ptrdiff_type_node));
+  const widest_int size_max
+    = wi::to_widest (TYPE_MAX_VALUE (size_type_node));
+
   /* The offset into the destination object computed below and not
      reflected in DESTSIZE.  */
-  wide_int offrng[2];
-  const int off_prec = TYPE_PRECISION (ptrdiff_type_node);
-  offrng[0] = offrng[1] = wi::zero (off_prec);
+  widest_int offrng[2] = { 0, 0 };
 
   if (!si)
     {
@@ -1941,15 +1951,17 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	     ARRAY_REF (MEM_REF (vlaptr, 0), N].  */
 	  tree off = TREE_OPERAND (ref, 1);
 	  ref = TREE_OPERAND (ref, 0);
-	  if (get_range (off, offrng, rvals))
+	  wide_int rng[2];
+	  if (get_range (off, rng, rvals))
 	    {
-	      offrng[0] = offrng[0].from (offrng[0], off_prec, SIGNED);
-	      offrng[1] = offrng[1].from (offrng[1], off_prec, SIGNED);
+	      /* Convert offsets to the maximum precision.  */
+	      offrng[0] = widest_int::from (rng[0], SIGNED);
+	      offrng[1] = widest_int::from (rng[1], SIGNED);
 	    }
 	  else
 	    {
-	      offrng[0] = wi::to_wide (TYPE_MIN_VALUE (ptrdiff_type_node));
-	      offrng[1] = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
+	      offrng[0] = diff_min;
+	      offrng[1] = diff_max;
 	    }
 	}
 
@@ -1957,25 +1969,25 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	{
 	  tree mem_off = TREE_OPERAND (ref, 1);
 	  ref = TREE_OPERAND (ref, 0);
-	  wide_int memoffrng[2];
-	  if (get_range (mem_off, memoffrng, rvals))
+	  wide_int rng[2];
+	  if (get_range (mem_off, rng, rvals))
 	    {
-	      offrng[0] += memoffrng[0];
-	      offrng[1] += memoffrng[1];
+	      offrng[0] += widest_int::from (rng[0], SIGNED);
+	      offrng[1] += widest_int::from (rng[1], SIGNED);
 	    }
 	  else
 	    {
-	      offrng[0] = wi::to_wide (TYPE_MIN_VALUE (ptrdiff_type_node));
-	      offrng[1] = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
+	      offrng[0] = diff_min;
+	      offrng[1] = diff_max;
 	    }
 	}
 
-      wide_int stroffrng[2];
-      if (int idx = get_stridx (ref, stroffrng, rvals))
+      wide_int rng[2];
+      if (int idx = get_stridx (ref, rng, rvals))
 	{
 	  si = get_strinfo (idx);
-	  offrng[0] += stroffrng[0];
-	  offrng[1] += stroffrng[1];
+	  offrng[0] += widest_int::from (rng[0], SIGNED);
+	  offrng[1] += widest_int::from (rng[1], SIGNED);
 	}
     }
 
@@ -1995,15 +2007,20 @@ maybe_warn_overflow (gimple *stmt, tree len,
   /* Compute the range of sizes of the destination object.  The range
      is constant for declared objects but may be a range for allocated
      objects.  */
-  const int siz_prec = TYPE_PRECISION (size_type_node);
-  wide_int sizrng[2];
+  widest_int sizrng[2] = { 0, 0 };
   if (si)
     {
-      destsize = gimple_call_alloc_size (si->alloc, sizrng, rvals);
+      wide_int rng[2];
+      destsize = gimple_call_alloc_size (si->alloc, rng, rvals);
+      if (destsize)
+	{
+	  sizrng[0] = widest_int::from (rng[0], UNSIGNED);
+	  sizrng[1] = widest_int::from (rng[1], UNSIGNED);
+	}
       alloc_call = si->alloc;
     }
   else
-    offrng[0] = offrng[1] = wi::zero (off_prec);
+    offrng[0] = offrng[1] = 0;
 
   if (!destsize)
     {
@@ -2014,7 +2031,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	{
 	  /* Remember OFF but clear OFFRNG that may have been set above.  */
 	  destoff = off;
-	  offrng[0] = offrng[1] = wi::zero (off_prec);
+	  offrng[0] = offrng[1] = 0;
 
 	  if (destdecl && TREE_CODE (destdecl) == SSA_NAME)
 	    {
@@ -2024,26 +2041,29 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	      destdecl = NULL_TREE;
 	    }
 
-	  if (!get_range (destsize, sizrng, rvals))
+	  wide_int rng[2];
+	  if (get_range (destsize, rng, rvals))
+	    {
+	      sizrng[0] = widest_int::from (rng[0], UNSIGNED);
+	      sizrng[1] = widest_int::from (rng[1], UNSIGNED);
+	    }
+	  else
 	    {
 	      /* On failure, rather than failing, set the maximum range
 		 so that overflow in allocated objects whose size depends
 		 on the strlen of the source can still be diagnosed
 		 below.  */
-	      sizrng[0] = wi::zero (siz_prec);
-	      sizrng[1] = wi::to_wide (TYPE_MAX_VALUE (sizetype));
+	      sizrng[0] = 0;
+	      sizrng[1] = size_max;
 	    }
 	}
     }
 
   if (!destsize)
     {
-      sizrng[0] = wi::zero (siz_prec);
-      sizrng[1] = wi::to_wide (TYPE_MAX_VALUE (sizetype));
+      sizrng[0] = 0;
+      sizrng[1] = size_max;
     };
-
-  sizrng[0] = sizrng[0].from (sizrng[0], siz_prec, UNSIGNED);
-  sizrng[1] = sizrng[1].from (sizrng[1], siz_prec, UNSIGNED);
 
   /* Return early if the DESTSIZE size expression is the same as LEN
      and the offset into the destination is zero.  This might happen
@@ -2052,9 +2072,12 @@ maybe_warn_overflow (gimple *stmt, tree len,
   if (destsize == len && !plus_one && offrng[0] == 0 && offrng[0] == offrng[1])
     return;
 
-  wide_int lenrng[2];
-  if (!get_range (len, lenrng, rvals))
+  wide_int rng[2];
+  if (!get_range (len, rng, rvals))
     return;
+
+  widest_int lenrng[2] =
+    { widest_int::from (rng[0], SIGNED), widest_int::from (rng[1], SIGNED) };
 
   if (plus_one)
     {
@@ -2064,7 +2087,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 
   /* The size of the remaining space in the destination computed
      as the size of the latter minus the offset into it.  */
-  wide_int spcrng[2] = { sizrng[0], sizrng[1] };
+  widest_int spcrng[2] = { sizrng[0], sizrng[1] };
   if (wi::neg_p (offrng[0]) && wi::neg_p (offrng[1]))
     {
       /* When the offset is negative and the size of the destination
@@ -2075,7 +2098,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	return;
 
       /* The remaining space is necessarily zero.  */
-      spcrng[0] = spcrng[1] = wi::zero (spcrng->get_precision ());
+      spcrng[0] = spcrng[1] = 0;
     }
   else if (wi::neg_p (offrng[0]))
     {
@@ -2203,7 +2226,16 @@ maybe_warn_overflow (gimple *stmt, tree len,
 
   /* If DESTOFF is not null, use it to format the offset value/range.  */
   if (destoff)
-    get_range (destoff, offrng);
+    {
+      wide_int rng[2];
+      if (get_range (destoff, rng))
+	{
+	  offrng[0] = widest_int::from (rng[0], SIGNED);
+	  offrng[1] = widest_int::from (rng[1], SIGNED);
+	}
+      else
+	offrng[0] = offrng[1] = 0;
+    }
 
   /* Format the offset to keep the number of inform calls from growing
      out of control.  */
@@ -2259,8 +2291,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
       else if (sizrng[0] == 0)
 	{
 	  /* Avoid printing impossible sizes.  */
-	  if (wi::ltu_p (sizrng[1],
-			 wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2))
+	  if (wi::ltu_p (sizrng[1], diff_max - 2))
 	    inform (gimple_location (alloc_call),
 		    "at offset %s to an object with size at most %wu "
 		    "declared here",
@@ -2284,8 +2315,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
   else if (sizrng[0] == 0)
     {
       /* Avoid printing impossible sizes.  */
-      if (wi::ltu_p (sizrng[1],
-		     wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2))
+      if (wi::ltu_p (sizrng[1], diff_max - 2))
 	inform (gimple_location (alloc_call),
 		"at offset %s to an object with size at most %wu allocated "
 		"by %qD here",
