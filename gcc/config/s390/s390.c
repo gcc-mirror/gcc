@@ -4647,7 +4647,8 @@ s390_secondary_memory_needed (machine_mode mode,
 	    && reg_classes_intersect_p (class2, GENERAL_REGS))
 	   || (reg_classes_intersect_p (class1, GENERAL_REGS)
 	       && reg_classes_intersect_p (class2, VEC_REGS)))
-	  && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (mode) != 8)
+	  && (TARGET_TPF || !TARGET_DFP || !TARGET_64BIT
+	      || GET_MODE_SIZE (mode) != 8)
 	  && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (mode)
 			     && GET_MODE_SIZE (mode) > 8)));
 }
@@ -9554,7 +9555,7 @@ s390_register_info_gprtofpr ()
   int save_reg_slot = FPR0_REGNUM;
   int i, j;
 
-  if (!TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
+  if (TARGET_TPF || !TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
     return;
 
   /* builtin_eh_return needs to be able to modify the return address
