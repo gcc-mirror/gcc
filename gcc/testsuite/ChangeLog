@@ -1,3 +1,10 @@
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nobf16.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvtnq2-untied.c: New test.
+
 2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR tree-optimization/90883

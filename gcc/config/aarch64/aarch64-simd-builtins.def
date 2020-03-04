@@ -714,3 +714,9 @@
   VAR1 (TERNOP, simd_smmla, 0, v16qi)
   VAR1 (TERNOPU, simd_ummla, 0, v16qi)
   VAR1 (TERNOP_SSUS, simd_usmmla, 0, v16qi)
+
+  /* Implemented by aarch64_bfcvtn{q}{2}<mode>  */
+  VAR1 (UNOP, bfcvtn, 0, v4bf)
+  VAR1 (UNOP, bfcvtn_q, 0, v8bf)
+  VAR1 (BINOP, bfcvtn2, 0, v8bf)
+  VAR1 (UNOP, bfcvt, 0, bf)

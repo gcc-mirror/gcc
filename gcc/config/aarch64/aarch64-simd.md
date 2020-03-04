@@ -7207,3 +7207,32 @@
   "<sur>mmla\\t%0.4s, %2.16b, %3.16b"
   [(set_attr "type" "neon_mla_s_q")]
 )
+
+;; bfcvtn
+(define_insn "aarch64_bfcvtn<q><mode>"
+  [(set (match_operand:V4SF_TO_BF 0 "register_operand" "=w")
+        (unspec:V4SF_TO_BF [(match_operand:V4SF 1 "register_operand" "w")]
+                            UNSPEC_BFCVTN))]
+  "TARGET_BF16_SIMD"
+  "bfcvtn\\t%0.4h, %1.4s"
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
+)
+
+(define_insn "aarch64_bfcvtn2v8bf"
+  [(set (match_operand:V8BF 0 "register_operand" "=w")
+        (unspec:V8BF [(match_operand:V8BF 1 "register_operand" "0")
+                      (match_operand:V4SF 2 "register_operand" "w")]
+                      UNSPEC_BFCVTN2))]
+  "TARGET_BF16_SIMD"
+  "bfcvtn2\\t%0.8h, %2.4s"
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
+)
+
+(define_insn "aarch64_bfcvtbf"
+  [(set (match_operand:BF 0 "register_operand" "=w")
+        (unspec:BF [(match_operand:SF 1 "register_operand" "w")]
+                    UNSPEC_BFCVT))]
+  "TARGET_BF16_FP"
+  "bfcvt\\t%h0, %s1"
+  [(set_attr "type" "f_cvt")]
+)

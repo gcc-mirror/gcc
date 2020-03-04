@@ -1,3 +1,25 @@
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(bfcvtn): New built-in function.
+	(bfcvtn_q): New built-in function.
+	(bfcvtn2): New built-in function.
+	(bfcvt): New built-in function.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_bfcvtn<q><mode>): New pattern.
+	(aarch64_bfcvtn2v8bf): New pattern.
+	(aarch64_bfcvtbf): New pattern.
+	* config/aarch64/arm_bf16.h (float32_t): New typedef.
+	(vcvth_bf16_f32): New intrinsic.
+	* config/aarch64/arm_bf16.h (vcvt_bf16_f32): New intrinsic.
+	(vcvtq_low_bf16_f32): New intrinsic.
+	(vcvtq_high_bf16_f32): New intrinsic.
+	* config/aarch64/iterators.md (V4SF_TO_BF): New mode iterator.
+	(UNSPEC_BFCVTN): New UNSPEC.
+	(UNSPEC_BFCVTN2): New UNSPEC.
+	(UNSPEC_BFCVT): New UNSPEC.
+	* config/arm/types.md (bf_cvt): New type.
+
 2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229

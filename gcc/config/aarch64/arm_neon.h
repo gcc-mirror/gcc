@@ -35634,6 +35634,27 @@ vbfmlaltq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
   return __builtin_aarch64_bfmlalt_lane_qv4sf (__r, __a, __b, __index);
 }
 
+__extension__ extern __inline bfloat16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcvt_bf16_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_bfcvtnv4bf (__a);
+}
+
+__extension__ extern __inline bfloat16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcvtq_low_bf16_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_bfcvtn_qv8bf (__a);
+}
+
+__extension__ extern __inline bfloat16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcvtq_high_bf16_f32 (bfloat16x8_t __inactive, float32x4_t __a)
+{
+  return __builtin_aarch64_bfcvtn2v8bf (__inactive, __a);
+}
+
 #pragma GCC pop_options
 
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */

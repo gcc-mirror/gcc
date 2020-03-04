@@ -462,6 +462,9 @@
 ;; SVE predicate modes that control 16-bit, 32-bit or 64-bit elements.
 (define_mode_iterator PRED_HSD [VNx8BI VNx4BI VNx2BI])
 
+;; Bfloat16 modes to which V4SF can be converted
+(define_mode_iterator V4SF_TO_BF [V4BF V8BF])
+
 ;; ------------------------------------------------------------------
 ;; Unspec enumerations for Advance SIMD. These could well go into
 ;; aarch64.md but for their use in int_iterators here.
@@ -828,6 +831,9 @@
     UNSPEC_BFMLALB	; Used in aarch64-sve.md.
     UNSPEC_BFMLALT	; Used in aarch64-sve.md.
     UNSPEC_BFMMLA	; Used in aarch64-sve.md.
+    UNSPEC_BFCVTN      ; Used in aarch64-simd.md.
+    UNSPEC_BFCVTN2     ; Used in aarch64-simd.md.
+    UNSPEC_BFCVT       ; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
