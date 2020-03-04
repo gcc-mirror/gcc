@@ -1,3 +1,10 @@
+2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/89433
+	PR middle-end/93465
+	* omp-general.c (oacc_verify_routine_clauses): Diagnose if
+	"#pragma omp declare target" has also been applied.
+
 2020-04-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_expand_epilogue): Use emit_jump_insn
