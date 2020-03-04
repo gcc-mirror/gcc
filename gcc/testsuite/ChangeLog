@@ -1,3 +1,7 @@
+2020-03-04  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr93122.c: Add dg-require.
+
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93993
