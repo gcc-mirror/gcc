@@ -1,3 +1,13 @@
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Add offseti
+	argument.  Change pd argument so that it can be modified.  Turn
+	constant non-CONSTRUCTOR store into non-constant if it is too large.
+	Adjust offset and size of CONSTRUCTOR or non-constant store to avoid
+	overflows.
+	(vn_walk_cb_data::vn_walk_cb_data, vn_reference_lookup_3): Adjust
+	callers.
+
 2020-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93964

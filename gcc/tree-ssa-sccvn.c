@@ -1716,7 +1716,7 @@ struct vn_walk_cb_data
 		else
 		  pd.offset = pos;
 		pd.size = tz;
-		void *r = push_partial_def (pd, 0, 0, prec);
+		void *r = push_partial_def (pd, 0, 0, 0, prec);
 		gcc_assert (r == NULL_TREE);
 	      }
 	    pos += tz;
@@ -1733,8 +1733,9 @@ struct vn_walk_cb_data
   }
   ~vn_walk_cb_data ();
   void *finish (alias_set_type, alias_set_type, tree);
-  void *push_partial_def (const pd_data& pd,
-			  alias_set_type, alias_set_type, HOST_WIDE_INT);
+  void *push_partial_def (pd_data pd,
+			  alias_set_type, alias_set_type, HOST_WIDE_INT,
+			  HOST_WIDE_INT);
 
   vn_reference_t vr;
   ao_ref orig_ref;
@@ -1817,8 +1818,9 @@ pd_tree_dealloc (void *, void *)
    on failure.  */
 
 void *
-vn_walk_cb_data::push_partial_def (const pd_data &pd,
+vn_walk_cb_data::push_partial_def (pd_data pd,
 				   alias_set_type set, alias_set_type base_set,
+				   HOST_WIDE_INT offseti,
 				   HOST_WIDE_INT maxsizei)
 {
   const HOST_WIDE_INT bufsize = 64;
@@ -1830,6 +1832,27 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd,
       /* Not prepared to handle PDP endian.  */
       || BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
     return (void *)-1;
+
+  /* Turn too large constant stores into non-constant stores.  */
+  if (CONSTANT_CLASS_P (pd.rhs) && pd.size > bufsize * BITS_PER_UNIT)
+    pd.rhs = error_mark_node;
+
+  /* And for non-constant or CONSTRUCTOR stores shrink them to only keep at
+     most a partial byte before and/or after the region.  */
+  if (!CONSTANT_CLASS_P (pd.rhs))
+    {
+      if (pd.offset < offseti)
+	{
+	  HOST_WIDE_INT o = ROUND_DOWN (offseti - pd.offset, BITS_PER_UNIT);
+	  gcc_assert (pd.size > o);
+	  pd.size -= o;
+	  pd.offset += o;
+	}
+      if (pd.size > maxsizei)
+	pd.size = maxsizei + ((pd.size - maxsizei) % BITS_PER_UNIT);
+    }
+
+  pd.offset -= offseti;
 
   bool pd_constant_p = (TREE_CODE (pd.rhs) == CONSTRUCTOR
 			|| CONSTANT_CLASS_P (pd.rhs));
@@ -2736,9 +2759,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	{
 	  pd_data pd;
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
-	  pd.offset = offset2i - offseti;
+	  pd.offset = offset2i;
 	  pd.size = leni << LOG2_BITS_PER_UNIT;
-	  return data->push_partial_def (pd, 0, 0, maxsizei);
+	  return data->push_partial_def (pd, 0, 0, offseti, maxsizei);
 	}
     }
 
@@ -2785,11 +2808,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		 by a later def.  */
 	      pd_data pd;
 	      pd.rhs = gimple_assign_rhs1 (def_stmt);
-	      pd.offset = offset2i - offseti;
+	      pd.offset = offset2i;
 	      pd.size = size2i;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
 					     ao_ref_base_alias_set (&lhs_ref),
-					     maxsizei);
+					     offseti, maxsizei);
 	    }
 	}
     }
@@ -2936,11 +2959,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = SSA_VAL (rhs);
 	      pd.rhs = rhs;
-	      pd.offset = offset2i - offseti;
+	      pd.offset = offset2i;
 	      pd.size = size2i;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
 					     ao_ref_base_alias_set (&lhs_ref),
-					     maxsizei);
+					     offseti, maxsizei);
 	    }
 	}
     }
@@ -3014,11 +3037,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    {
 	      pd_data pd;
 	      pd.rhs = SSA_VAL (def_rhs);
-	      pd.offset = offset2i - offseti;
+	      pd.offset = offset2i;
 	      pd.size = size2i;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
 					     ao_ref_base_alias_set (&lhs_ref),
-					     maxsizei);
+					     offseti, maxsizei);
 	    }
 	}
     }
@@ -3154,7 +3177,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.size = maxsizei;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
 					     ao_ref_base_alias_set (&lhs_ref),
-					     maxsizei);
+					     0, maxsizei);
 	    }
 	}
 
