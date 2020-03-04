@@ -1665,7 +1665,8 @@ option.
 @item @var{language}
 Display the options supported for @var{language}, where
 @var{language} is the name of one of the languages supported in this
-version of GCC@.
+version of GCC@.  If an option is supported by all languages, one needs
+to select @samp{common} class.
 
 @item @samp{common}
 Display the options that are common to all languages.
