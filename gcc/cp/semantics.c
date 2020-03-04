@@ -2577,7 +2577,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      tree arg2 = (*orig_args)[2];
 	      int literal_mask = ((literal_integer_zerop (arg1) << 1)
 				  | (literal_integer_zerop (arg2) << 2));
-	      arg2 = instantiate_non_dependent_expr (arg2);
 	      warn_for_memset (input_location, arg0, arg2, literal_mask);
 	    }
 

@@ -1,3 +1,9 @@
+2020-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90997
+	* semantics.c (finish_call_expr): Don't call
+	instantiate_non_dependent_expr before warn_for_memset.
+
 2020-03-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86917
