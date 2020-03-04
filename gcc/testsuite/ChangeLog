@@ -1,3 +1,11 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94001
+	* gcc.dg/pr94001.c: New test.
+
 2020-03-17  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from master

@@ -327,7 +327,8 @@ process_assignment (gassign *stmt,
 	   && (non_ass_var = independent_of_stmt_p (op1, stmt, call,
 						    to_move)))
     ;
-  else if (op1 == *ass_var
+  else if (*ass_var
+	   && op1 == *ass_var
 	   && (non_ass_var = independent_of_stmt_p (op0, stmt, call,
 						    to_move)))
     ;
