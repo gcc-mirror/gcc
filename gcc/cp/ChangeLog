@@ -1,3 +1,8 @@
+2020-03-04  Martin Liska  <mliska@suse.cz>
+
+	* method.c: Wrap array in ctor with braces in order
+	to silent clang warnings.
+
 2020-03-03  Jason Merrill  <jason@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
