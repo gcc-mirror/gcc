@@ -1,3 +1,9 @@
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90938
+	* tree.c (type_initializer_zero_p): Fail for structs initialized
+	with non-structs.
+
 2020-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90432
