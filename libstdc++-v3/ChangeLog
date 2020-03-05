@@ -1,5 +1,9 @@
 2020-03-06  Patrick Palka  <ppalka@redhat.com>
 
+	* include/std/ranges (join_view::_Sentinel<_Const>): Befriend
+	join_view::_Sentinel<!_Const>.
+	* testsuite/std/ranges/adaptors/join.cc: Augment test.
+
 	PR libstdc++/93978
 	* include/bits/range_access.h (__cust_access::_Empty::operator()):
 	Declare return type to be bool instead of auto.
