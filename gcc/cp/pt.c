@@ -15834,6 +15834,14 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		  return op;
 		}
 	    }
+	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
+	  else if (code == VIEW_CONVERT_EXPR && REF_PARENTHESIZED_P (t))
+	    {
+	      op = tsubst_copy (op, args, complain, in_decl);
+	      op = build1 (code, TREE_TYPE (op), op);
+	      REF_PARENTHESIZED_P (op) = true;
+	      return op;
+	    }
 	  /* We shouldn't see any other uses of these in templates.  */
 	  gcc_unreachable ();
 	}

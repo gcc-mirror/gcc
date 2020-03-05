@@ -1,6 +1,14 @@
 2020-03-04  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
+	2020-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93299 - ICE in tsubst_copy with parenthesized expression.
+	* pt.c (tsubst_copy): Handle a REF_PARENTHESIZED_P VIEW_CONVERT_EXPR.
+
+2020-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
 	2020-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93676 - value-init crash in template.
