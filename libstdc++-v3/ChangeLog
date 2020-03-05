@@ -1,6 +1,16 @@
 2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/all.cc: Mark unused variable.
+	* testsuite/27_io/filesystem/operations/copy.cc: Fix typo.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/file_size.cc: Use correct type
+	for return value, and in comparison.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+
+	Backport from mainline
 	2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91910

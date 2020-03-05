@@ -39,7 +39,7 @@ main()
   const std::filesystem::perm_options permopts{};
   std::filesystem::space_info sp;
   std::error_code ec;
-  bool b;
+  bool b [[maybe_unused]];
   std::uintmax_t size;
 
   std::filesystem::absolute(p);

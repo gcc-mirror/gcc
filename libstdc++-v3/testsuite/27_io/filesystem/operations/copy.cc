@@ -57,7 +57,7 @@ test01()
   VERIFY( !exists(to) );
 
   ec.clear();
-  opts != fs::copy_options::recursive;
+  opts |= fs::copy_options::recursive;
   fs::copy("/", to, opts, ec);
   VERIFY( ec == std::make_error_code(std::errc::is_a_directory) );
   VERIFY( !exists(to) );
