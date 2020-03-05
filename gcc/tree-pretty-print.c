@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
-static void pretty_print_string (pretty_printer *, const char*);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, dump_flags_t);
@@ -3842,7 +3841,7 @@ print_call_name (pretty_printer *pp, tree node, dump_flags_t flags)
 
 /* Parses the string STR and replaces new-lines by '\n', tabs by '\t', ...  */
 
-static void
+void
 pretty_print_string (pretty_printer *pp, const char *str)
 {
   if (str == NULL)
