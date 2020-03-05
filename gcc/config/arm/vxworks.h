@@ -44,7 +44,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 							\
     if (arm_arch_xscale)				\
       builtin_define ("_VX_CPU=XSCALE");		\
-    if (arm_arch8)					\
+    else if (arm_arch8)					\
       builtin_define ("_VX_CPU=ARMARCH8A");		\
     else if (arm_arch7)					\
       {							\
