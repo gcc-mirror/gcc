@@ -1,6 +1,10 @@
 // { dg-do compile { target { i?86-*-* x86_64-*-* }  && { ! *-*-solaris* } } }
 // { dg-options "-Ofast -funroll-loops -fopenmp -march=knl" }
 // { dg-final { scan-assembler-not "vmovaps" } }
+// Disabling epilogues until we find a better way to deal with scans.
+// { dg-additional-options "--param vect-epilogues-nomask=0" }
+
+
 
 #include <math.h>
 
