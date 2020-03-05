@@ -1,3 +1,9 @@
+2020-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91607
+	* constexpr.c (constexpr_call_hasher::equal): Use
+	same_type_ignoring_top_level_qualifiers_p.
+
 2020-03-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90938

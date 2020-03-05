@@ -1088,7 +1088,8 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     {
       tree lhs_arg = TREE_VALUE (lhs_bindings);
       tree rhs_arg = TREE_VALUE (rhs_bindings);
-      gcc_assert (same_type_p (TREE_TYPE (lhs_arg), TREE_TYPE (rhs_arg)));
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (lhs_arg), TREE_TYPE (rhs_arg)));
       if (!cp_tree_equal (lhs_arg, rhs_arg))
         return false;
       lhs_bindings = TREE_CHAIN (lhs_bindings);
