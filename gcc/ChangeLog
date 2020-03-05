@@ -1,3 +1,12 @@
+2020-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2020-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/93436
+	* sanopt.c (sanitize_rewrite_addressable_params): Avoid crash on
+	null DECL_NAME.
+
 2020-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94002
