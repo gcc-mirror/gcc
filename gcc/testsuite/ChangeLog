@@ -1,3 +1,9 @@
+2020-03-05  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/arm/simd/bf16_ma_1.c: New test.
+	* gcc.target/arm/simd/bf16_ma_2.c: New test.
+	* gcc.target/arm/simd/bf16_mmla_1.c: New test.
+
 2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93399
