@@ -1,6 +1,12 @@
 2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (for_each_n): Handle negative count.
+	* testsuite/25_algorithms/for_each/for_each_n_debug.cc: New test.
+
+	Backport from mainline
 	2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93470
