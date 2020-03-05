@@ -1,3 +1,12 @@
+2020-03-05  Martin Sebor  <msebor@redhat.com>
+
+	Backport from trunk.
+	2020-02-21  Martin Sebor  <msebor@redhat.com>
+
+	PR gcov-profile/93753
+	* class.c (check_flexarrays): Tighten up a test for potential members
+	of anonymous structs or unions.
+
 2020-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90338
