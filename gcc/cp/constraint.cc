@@ -2390,7 +2390,11 @@ constraints_satisfied_p (tree decl)
       ci = get_constraints (decl);
     }
 
+  if (!push_tinst_level (decl))
+    return true;
   tree eval = satisfy_associated_constraints (ci, args);
+  pop_tinst_level ();
+
   return eval == boolean_true_node;
 }
 
