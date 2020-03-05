@@ -1,3 +1,14 @@
+2020-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (cplus_build_array_type): Add known-dependent default arg.
+	* tree.c (cplus_build_array_type): Only calculate dependent if
+	unknown.  Set TYPE_DEPENDENT_P on dependent arys.
+	* module.cc (trees_{in,out}::type_node): Serialize dependentness
+	of array types.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-ary-1{,_[ab]}.[hHC]: New.
+
 2020-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

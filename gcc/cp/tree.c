@@ -1008,18 +1008,20 @@ set_array_type_canon (tree t, tree elt_type, tree index_type)
 
 /* Like build_array_type, but handle special C++ semantics: an array of a
    variant element type is a variant of the array of the main variant of
-   the element type.  */
+   the element type.  IS_DEPENDENT is -ve if we should determine the
+   dependency.  Otherwise its bool value indicates dependency.  */
 
 tree
-build_cplus_array_type (tree elt_type, tree index_type)
+build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 {
   tree t;
 
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
 
-  bool dependent = (uses_template_parms (elt_type)
-		    || (index_type && uses_template_parms (index_type)));
+  if (dependent < 0)
+    dependent = (uses_template_parms (elt_type)
+		 || (index_type && uses_template_parms (index_type)));
 
   if (elt_type != TYPE_MAIN_VARIANT (elt_type))
     /* Start with an array of the TYPE_MAIN_VARIANT.  */
@@ -1055,6 +1057,10 @@ build_cplus_array_type (tree elt_type, tree index_type)
 
 	  /* Set the canonical type for this new node.  */
 	  set_array_type_canon (t, elt_type, index_type);
+
+	  /* Mark it as dependent now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = true;
 	}
     }
   else

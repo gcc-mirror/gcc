@@ -8290,6 +8290,10 @@ trees_out::type_node (tree type)
 
     case ARRAY_TYPE:
       tree_node (TYPE_DOMAIN (type));
+      if (streaming_p ())
+	/* Dependent arrays are constructed with TYPE_DEPENENT_P
+	   already set.  */
+	u (TYPE_DEPENDENT_P (type));
       break;
 
     case COMPLEX_TYPE:
@@ -8793,8 +8797,9 @@ trees_in::tree_node ()
 	  case ARRAY_TYPE:
 	    {
 	      tree domain = tree_node ();
+	      int dep = u ();
 	      if (!get_overrun ())
-		res = build_cplus_array_type (res, domain);
+		res = build_cplus_array_type (res, domain, dep);
 	    }
 	    break;
 
