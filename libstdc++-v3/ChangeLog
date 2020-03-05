@@ -1,3 +1,10 @@
+2020-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93978
+	* include/bits/range_access.h (__cust_access::_Empty::operator()):
+	Declare return type to be bool instead of auto.
+	* testsuite/std/ranges/adaptors/93978.cc: New test.
+
 2020-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94069

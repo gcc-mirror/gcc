@@ -793,7 +793,7 @@ namespace ranges
       template<typename _Tp>
 	requires __member_empty<_Tp> || __size0_empty<_Tp>
 	|| __eq_iter_empty<_Tp>
-	constexpr auto
+	constexpr bool
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_empty<_Tp>)
