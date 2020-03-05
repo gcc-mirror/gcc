@@ -1,3 +1,9 @@
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94050 - ABI issue with alignas on armv7hl.
+	* class.c (layout_class_type): Don't replace a class's
+	CLASSTYPE_AS_BASE if their TYPE_USER_ALIGN don't match.
+
 2020-03-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* coroutines.cc (build_actor_fn): Factor out code inserting the

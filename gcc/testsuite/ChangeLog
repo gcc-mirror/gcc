@@ -1,3 +1,8 @@
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94050 - ABI issue with alignas on armv7hl.
+	* g++.dg/abi/align3.C: New test.
+
 2020-03-09  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/fuse-caller-save.c: Fix DejaGnu typo.
