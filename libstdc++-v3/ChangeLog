@@ -1,5 +1,12 @@
 2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/operations/all.cc: Mark unused variable.
+	* testsuite/27_io/filesystem/operations/copy.cc: Fix typo.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/file_size.cc: Use correct type
+	for return value, and in comparison.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+
 	PR libstdc++/94051
 	* include/std/string_view: Include <bits/ostream_insert.h>.
 	* testsuite/21_strings/basic_string_view/inserters/94051.cc: New test.
