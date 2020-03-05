@@ -381,10 +381,17 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_detach()
   {
-    if (_M_sequence)
+    // This function can run concurrently with the sequence destructor,
+    // so there is a TOCTTOU race here: the sequence could be destroyed
+    // after we check that _M_sequence is not null. Use the pointer value
+    // to acquire the mutex (rather than via _M_sequence->_M_get_mutex()).
+    // If the sequence destructor runs between loading the pointer and
+    // locking the mutex, it will detach this iterator and set _M_sequence
+    // to null, and then _M_detach_single() will do nothing.
+    if (auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE))
       {
-	_M_sequence->_M_detach(this);
-	_M_reset();
+	__gnu_cxx::__scoped_lock sentry(get_safe_base_mutex(seq));
+	_M_detach_single();
       }
   }
 
@@ -403,7 +410,7 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_reset() throw ()
   {
-    _M_sequence = 0;
+    __atomic_store_n(&_M_sequence, (_Safe_sequence_base*)0, __ATOMIC_RELEASE);
     _M_version = 0;
     _M_prior = 0;
     _M_next = 0;
@@ -466,10 +473,10 @@ namespace __gnu_debug
   _Safe_local_iterator_base::
   _M_detach()
   {
-    if (_M_sequence)
+    if (auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE))
       {
-	_M_get_container()->_M_detach_local(this);
-	_M_reset();
+	__gnu_cxx::__scoped_lock sentry(get_safe_base_mutex(seq));
+	_M_detach_single();
       }
   }
 

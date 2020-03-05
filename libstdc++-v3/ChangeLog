@@ -1,6 +1,15 @@
 2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91910
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_detach()): Load pointer
+	atomically and lock the mutex before accessing the sequence.
+	(_Safe_local_iterator_base::_M_detach()): Likewise.
+	(_Safe_iterator_base::_M_reset()): Clear _M_sequence atomically.
+
+	Backport from mainline
 	2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/c_global/cmath (__lerp, lerp): Add noexcept (LWG 3201).
