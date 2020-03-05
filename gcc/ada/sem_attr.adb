@@ -7719,7 +7719,11 @@ package body Sem_Attr is
       --  purpose, a string literal counts as an object (attributes of string
       --  literals can only appear in generated code).
 
-      if Is_Object_Reference (P) or else Nkind (P) = N_String_Literal then
+      if Is_Object_Reference (P)
+        or else Nkind (P) = N_String_Literal
+        or else (Is_Entity_Name (P)
+                 and then Ekind (Entity (P)) = E_Enumeration_Literal)
+      then
 
          --  For Component_Size, the prefix is an array object, and we apply
          --  the attribute to the type of the object. This is allowed for both
@@ -8533,7 +8537,7 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Enum_Val => Enum_Val : declare
-         Lit : Node_Id;
+         Lit : Entity_Id;
 
       begin
          --  We have something like Enum_Type'Enum_Val (23), so search for a

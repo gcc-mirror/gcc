@@ -3159,17 +3159,8 @@ package body Exp_Attr is
             Expr := Pref;
          end if;
 
-         --  If the expression is an enumeration literal, it is replaced by the
-         --  literal value.
-
-         if Nkind (Expr) in N_Has_Entity
-           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
-
-         --  If not constant-folded above, Enum_Type'Enum_Rep (X) or
-         --  X'Enum_Rep expands to
+         --  If not constant-folded, Enum_Type'Enum_Rep (X) or X'Enum_Rep
+         --  expands to
 
          --    target-type (X)
 
@@ -3185,7 +3176,7 @@ package body Exp_Attr is
          --  first convert to a small signed integer type in order not to lose
          --  the size information.
 
-         elsif Is_Enumeration_Type (Ptyp) then
+         if Is_Enumeration_Type (Ptyp) then
             Psiz := RM_Size (Base_Type (Ptyp));
 
             if Psiz < 8 then

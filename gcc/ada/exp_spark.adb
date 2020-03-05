@@ -199,29 +199,6 @@ package body Exp_SPARK is
              Parameter_Associations => New_List (Expr)));
          Analyze_And_Resolve (N, Typ);
 
-      --  Whenever possible, replace a prefix which is an enumeration literal
-      --  by the corresponding literal value, just like it happens in the GNAT
-      --  expander.
-
-      elsif Attr_Id = Attribute_Enum_Rep then
-         declare
-            Exprs : constant List_Id := Expressions (N);
-         begin
-            if Is_Non_Empty_List (Exprs) then
-               Expr := First (Exprs);
-            else
-               Expr := Prefix (N);
-            end if;
-
-            --  If the argument is a literal, expand it
-
-            if Nkind (Expr) in N_Has_Entity
-              and then Ekind (Entity (Expr)) = E_Enumeration_Literal
-            then
-               Exp_Attr.Expand_N_Attribute_Reference (N);
-            end if;
-         end;
-
       elsif Attr_Id = Attribute_Object_Size
         or else Attr_Id = Attribute_Size
         or else Attr_Id = Attribute_Value_Size
