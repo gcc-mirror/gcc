@@ -1,3 +1,11 @@
+2020-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93577
+	* gcc.dg/pr93577-1.c, gcc.dg/pr93577-2.c, gcc.dg/pr93577-3.c,
+	gcc.dg/pr93577-4.c, gcc.dg/pr93577-5.c, gcc.dg/pr93577-6.c: New
+	tests.
+	* gcc.dg/vla-init-1.c: Expect fewer errors about VLA initializer.
+
 2020-03-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/91890

@@ -1,3 +1,11 @@
+2020-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93577
+	* c-typeck.c (pop_init_level): Do not diagnose initializers as
+	empty when initialized type is error_mark_node.
+	(set_designator, process_init_element): Ignore initializers for
+	elements of a variable-size type or of error_mark_node.
+
 2020-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/93926
