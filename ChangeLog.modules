@@ -1,6 +1,13 @@
 2020-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* tree.c (set_array_type_canon): Add dependent parm.
+	(build_cplus_array_type, cp_build_qualified_type_real)
+	(strip_typedefs): Pass dependent_p on.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-ary-1.h: Try constifying.
+
+	gcc/cp/
 	* cp-tree.h (cplus_build_array_type): Add known-dependent default arg.
 	* tree.c (cplus_build_array_type): Only calculate dependent if
 	unknown.  Set TYPE_DEPENDENT_P on dependent arys.
