@@ -1,3 +1,8 @@
+2020-03-05  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c (main):
+	Allow use of workers on AMD GCN.
+
 2020-03-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c (main): Add
