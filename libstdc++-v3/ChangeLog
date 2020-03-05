@@ -1,3 +1,19 @@
+2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93470
+	* include/bits/refwrap.h (reference_wrapper::operator()): Restrict
+	static assertion to object types.
+
+2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93325
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Use AC_SEARCH_LIBS for
+	clock_gettime instead of explicit glibc version check.
+	* configure: Regenerate.
+
 2020-03-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
