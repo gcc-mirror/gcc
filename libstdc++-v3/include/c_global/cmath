@@ -1891,7 +1891,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Fp>
     constexpr _Fp
-    __lerp(_Fp __a, _Fp __b, _Fp __t)
+    __lerp(_Fp __a, _Fp __b, _Fp __t) noexcept
     {
       if (__a <= 0 && __b >= 0 || __a >= 0 && __b <= 0)
 	return __t * __b + (1 - __t) * __a;
@@ -1908,15 +1908,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   constexpr float
-  lerp(float __a, float __b, float __t)
+  lerp(float __a, float __b, float __t) noexcept
   { return std::__lerp(__a, __b, __t); }
 
   constexpr double
-  lerp(double __a, double __b, double __t)
+  lerp(double __a, double __b, double __t) noexcept
   { return std::__lerp(__a, __b, __t); }
 
   constexpr long double
-  lerp(long double __a, long double __b, long double __t)
+  lerp(long double __a, long double __b, long double __t) noexcept
   { return std::__lerp(__a, __b, __t); }
 #endif // C++20
 
