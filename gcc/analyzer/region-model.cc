@@ -1360,21 +1360,23 @@ region::dump_child_label (const region_model &model,
     }
 }
 
-/* Assert that this object is valid.  */
+/* Base implementation of region::validate vfunc.
+   Assert that the fields of "region" are valid; subclasses should
+   chain up their implementation to this one.  */
 
 void
-region::validate (const region_model *model) const
+region::validate (const region_model &model) const
 {
-  m_parent_rid.validate (*model);
-  m_sval_id.validate (*model);
+  m_parent_rid.validate (model);
+  m_sval_id.validate (model);
   unsigned i;
   region_id *view_rid;
   FOR_EACH_VEC_ELT (m_view_rids, i, view_rid)
     {
       gcc_assert (!view_rid->null_p ());
-      view_rid->validate (*model);
+      view_rid->validate (model);
     }
-  m_active_view_rid.validate (*model);
+  m_active_view_rid.validate (model);
 }
 
 /* Apply MAP to svalue_ids to this region.  This updates the value
@@ -1597,6 +1599,21 @@ map_region::print_fields (const region_model &model,
       child_rid.print (pp);
     }
   pp_string (pp, "}");
+}
+
+/* Implementation of region::validate vfunc for map_region.  */
+
+void
+map_region::validate (const region_model &model) const
+{
+  region::validate (model);
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end ();
+       ++iter)
+    {
+      region_id child_rid = (*iter).second;
+      child_rid.validate (model);
+    }
 }
 
 /* Implementation of region::dump_dot_to_pp vfunc for map_region.  */
@@ -2268,6 +2285,21 @@ array_region::print_fields (const region_model &model,
   pp_string (pp, "}");
 }
 
+/* Implementation of region::validate vfunc for array_region.  */
+
+void
+array_region::validate (const region_model &model) const
+{
+  region::validate (model);
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end ();
+       ++iter)
+    {
+      region_id child_rid = (*iter).second;
+      child_rid.validate (model);
+    }
+}
+
 /* Implementation of region::dump_dot_to_pp vfunc for array_region.  */
 
 void
@@ -2542,6 +2574,18 @@ stack_region::dump_child_label (const region_model &model,
 {
   function *fun = model.get_region<frame_region> (child_rid)->get_function ();
   pp_printf (pp, "frame for %qs: ", function_name (fun));
+}
+
+/* Implementation of region::validate vfunc for stack_region.  */
+
+void
+stack_region::validate (const region_model &model) const
+{
+  region::validate (model);
+  int i;
+  region_id *frame_rid;
+  FOR_EACH_VEC_ELT (m_frame_rids, i, frame_rid)
+    m_frame_rids[i].validate (model);
 }
 
 /* Push FRAME_RID (for a frame_region) onto this stack.  */
@@ -2832,6 +2876,18 @@ root_region::print_fields (const region_model &model,
 {
   region::print_fields (model, this_rid, pp);
   // TODO
+}
+
+/* Implementation of region::validate vfunc for root_region.  */
+
+void
+root_region::validate (const region_model &model) const
+{
+  region::validate (model);
+  m_stack_rid.validate (model);
+  m_globals_rid.validate (model);
+  m_code_rid.validate (model);
+  m_heap_rid.validate (model);
 }
 
 /* Implementation of region::dump_child_label vfunc for root_region.  */
@@ -3714,7 +3770,7 @@ region_model::validate () const
   unsigned i;
   region *r;
   FOR_EACH_VEC_ELT (m_regions, i, r)
-    r->validate (this);
+    r->validate (*this);
 
   // TODO: anything else?
 

@@ -106,6 +106,9 @@
 ;; Quad-width vector modes plus 64-bit elements.
 (define_mode_iterator VQX [V16QI V8HI V8HF V8BF V4SI V4SF V2DI])
 
+;; Quad-width vector modes plus 64-bit elements and V8BF.
+(define_mode_iterator VQXBF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF V2DI])
+
 ;; Quad-width vector modes without floating-point elements.
 (define_mode_iterator VQI [V16QI V8HI V4SI])
 
@@ -492,6 +495,8 @@
 (define_int_iterator VCMLA [UNSPEC_VCMLA UNSPEC_VCMLA90 UNSPEC_VCMLA180 UNSPEC_VCMLA270])
 
 (define_int_iterator MATMUL [UNSPEC_MATMUL_S UNSPEC_MATMUL_U UNSPEC_MATMUL_US])
+
+(define_int_iterator BF_MA [UNSPEC_BFMAB UNSPEC_BFMAT])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
@@ -1209,3 +1214,6 @@
 			   ])
 
 (define_int_attr smlaw_op [(UNSPEC_SMLAWB "smlawb") (UNSPEC_SMLAWT "smlawt")])
+
+;; An iterator for VFMA<bt>
+(define_int_attr bt [(UNSPEC_BFMAB "b") (UNSPEC_BFMAT "t")])

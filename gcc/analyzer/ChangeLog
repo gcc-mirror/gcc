@@ -1,5 +1,22 @@
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
+	* region-model.cc (region::validate): Convert model param from ptr
+	to reference.  Update comment to reflect that it's now a vfunc.
+	(map_region::validate): New vfunc implementation.
+	(array_region::validate): New vfunc implementation.
+	(stack_region::validate): New vfunc implementation.
+	(root_region::validate): New vfunc implementation.
+	(region_model::validate): Pass a reference rather than a pointer
+	to the region::validate vfunc.
+	* region-model.h (region::validate): Make virtual.  Convert model
+	param from ptr to reference.
+	(map_region::validate): New vfunc decl.
+	(array_region::validate): New vfunc decl.
+	(stack_region::validate): New vfunc decl.
+	(root_region::validate): New vfunc decl.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93993
 	* region-model.cc (region_model::on_call_pre): Handle
 	BUILT_IN_EXPECT and its variants.

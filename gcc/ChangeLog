@@ -1,3 +1,91 @@
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/91890
+	* gimple-ssa-warn-restrict.c (maybe_diag_overlap): Remove LOC argument.
+	Use gimple_or_expr_nonartificial_location.
+	(check_bounds_overlap): Drop LOC argument to maybe_diag_access_bounds.
+	Use gimple_or_expr_nonartificial_location.
+	* gimple.c (gimple_or_expr_nonartificial_location): New function.
+	* gimple.h (gimple_or_expr_nonartificial_location): Declare it.
+	* tree-ssa-strlen.c (maybe_warn_overflow): Use
+	gimple_or_expr_nonartificial_location.
+	(maybe_diag_stxncpy_trunc, handle_builtin_stxncpy_strncat): Likewise.
+	(maybe_warn_pointless_strcmp): Likewise.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94046
+	* config/i386/avx2intrin.h (_mm_mask_i32gather_ps): Fix first cast of
+	SRC and MASK arguments to __m128 from __m128d.
+	(_mm256_mask_i32gather_ps): Fix first cast of MASK argument to __m256
+	from __m256d.
+	(_mm_mask_i64gather_ps): Fix first cast of MASK argument to __m128
+	from __m128d.
+	* config/i386/xopintrin.h (_mm_permute2_pd): Fix first cast of C
+	argument to __m128i from __m128d.
+	(_mm256_permute2_pd): Fix first cast of C argument to __m256i from
+	__m256d.
+	(_mm_permute2_ps): Fix first cast of C argument to __m128i from __m128.
+	(_mm256_permute2_ps): Fix first cast of C argument to __m256i from
+	__m256.
+
+2020-03-05  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/arm/arm_neon.h (vbfmmlaq_f32): New.
+	(vbfmlalbq_f32): New.
+	(vbfmlaltq_f32): New.
+	(vbfmlalbq_lane_f32): New.
+	(vbfmlaltq_lane_f32): New.
+	(vbfmlalbq_laneq_f32): New.
+	(vbfmlaltq_laneq_f32): New.
+	* config/arm/arm_neon_builtins.def (vmmla): New.
+	(vfmab): New.
+	(vfmat): New.
+	(vfmab_lane): New.
+	(vfmat_lane): New.
+	(vfmab_laneq): New.
+	(vfmat_laneq): New.
+	* config/arm/iterators.md (BF_MA): New int iterator.
+	(bt): New int attribute.
+	(VQXBF): Copy of VQX with V8BF.
+	* config/arm/neon.md (neon_vmmlav8bf): New insn.
+	(neon_vfma<bt>v8bf): New insn.
+	(neon_vfma<bt>_lanev8bf): New insn.
+	(neon_vfma<bt>_laneqv8bf): New expand.
+	(neon_vget_high<mode>): Changed iterator to VQXBF.
+	* config/arm/unspecs.md (UNSPEC_BFMMLA): New UNSPEC.
+	(UNSPEC_BFMAB): New UNSPEC.
+	(UNSPEC_BFMAT): New UNSPEC.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93399
+	* tree-pretty-print.h (pretty_print_string): Declare.
+	* tree-pretty-print.c (pretty_print_string): Remove forward
+	declaration, no longer static.  Change nbytes parameter type
+	from unsigned to size_t.
+	* print-rtl.c (print_value) <case CONST_STRING>: Use
+	pretty_print_string and for shrink way too long strings.
+
+2020-03-05  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Treat POINTER_PLUS_EXPR
+	last operand as signed when looking for memset offset.  Formatting
+	fix.
+
+2020-03-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/93962
+	* value-prof.c (dump_histogram_value): Use std::abs.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93986
+	* tree-ssa-strlen.c (maybe_warn_overflow): Convert all wide_int
+	operands to the same precision widest_int to avoid ICEs.
+
 2020-03-04  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/87560

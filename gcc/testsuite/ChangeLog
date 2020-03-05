@@ -1,3 +1,64 @@
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/91890
+	* gcc.dg/pragma-diag-8.c: New test.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94046
+	* g++.target/i386/pr94046-1.C: New test.
+	* g++.target/i386/pr94046-2.C: New test.
+
+2020-03-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/asan/asan_test.C (dg-options): Add
+	-Wno-alloc-size-larger-than.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90311
+	* gcc.c-torture/execute/pr90311.c: New test.
+
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	* gcc.target/arm/fuse-caller-save.c: Generalize expected output.
+
+2020-03-05 Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93792
+	* gfortran.dg/pr93792.f90:  New test.
+
+2020-03-05  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/arm/simd/bf16_ma_1.c: New test.
+	* gcc.target/arm/simd/bf16_ma_2.c: New test.
+	* gcc.target/arm/simd/bf16_mmla_1.c: New test.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93399
+	* gcc.dg/pr93399.c: New test.
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-11.c: New test.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90938
+	* g++.dg/init/array55.C: New test.
+	* g++.dg/init/array56.C: New test.
+	* g++.dg/cpp2a/nontype-class33.C: New test.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93986
+        * gcc.dg/pr93986.c: New test.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94028
+	* g++.dg/analyzer/pr94028.C: New test.
+
 2020-03-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81401

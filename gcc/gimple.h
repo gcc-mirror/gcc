@@ -1633,6 +1633,8 @@ extern void gimple_seq_discard (gimple_seq);
 extern void maybe_remove_unused_call_args (struct function *, gimple *);
 extern bool gimple_inexpensive_call_p (gcall *);
 extern bool stmt_can_terminate_bb_p (gimple *);
+extern location_t gimple_or_expr_nonartificial_location (gimple *, tree);
+
 
 /* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */

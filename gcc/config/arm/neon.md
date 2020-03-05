@@ -3924,7 +3924,7 @@ if (BYTES_BIG_ENDIAN)
 
 (define_expand "neon_vget_high<mode>"
   [(match_operand:<V_HALF> 0 "s_register_operand")
-   (match_operand:VQX 1 "s_register_operand")]
+   (match_operand:VQXBF 1 "s_register_operand")]
   "TARGET_NEON"
 {
   emit_move_insn (operands[0],
@@ -6736,4 +6736,65 @@ if (BYTES_BIG_ENDIAN)
 	UNSPEC_BFCVT))]
   "TARGET_BF16_FP"
   ""
+)
+
+(define_insn "neon_vmmlav8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus:V4SF (match_operand:V4SF 1 "register_operand" "0")
+                   (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                 (match_operand:V8BF 3 "register_operand" "w")]
+                    UNSPEC_BFMMLA)))]
+  "TARGET_BF16_SIMD"
+  "vmmla.bf16\\t%q0, %q2, %q3"
+  [(set_attr "type" "neon_fp_mla_s_q")]
+)
+
+(define_insn "neon_vfma<bt>v8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus: V4SF (match_operand:V4SF 1 "register_operand" "0")
+                    (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                  (match_operand:V8BF 3 "register_operand" "w")]
+                     BF_MA)))]
+  "TARGET_BF16_SIMD"
+  "vfma<bt>.bf16\\t%q0, %q2, %q3"
+  [(set_attr "type" "neon_fp_mla_s_q")]
+)
+
+(define_insn "neon_vfma<bt>_lanev8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus: V4SF (match_operand:V4SF 1 "register_operand" "0")
+                    (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                  (match_operand:V4BF 3 "register_operand" "x")
+                                  (match_operand:SI 4 "const_int_operand" "n")]
+                     BF_MA)))]
+  "TARGET_BF16_SIMD"
+  "vfma<bt>.bf16\\t%q0, %q2, %P3[%c4]"
+  [(set_attr "type" "neon_fp_mla_s_scalar_q")]
+)
+
+(define_expand "neon_vfma<bt>_laneqv8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus: V4SF (match_operand:V4SF 1 "register_operand" "0")
+                    (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                  (match_operand:V8BF 3 "register_operand" "x")
+                                  (match_operand:SI 4 "const_int_operand" "n")]
+                     BF_MA)))]
+  "TARGET_BF16_SIMD"
+  {
+    int lane = INTVAL (operands[4]);
+    gcc_assert (IN_RANGE(lane, 0, 7));
+    if (lane < 4)
+    {
+	emit_insn (gen_neon_vfma<bt>_lanev8bf (operands[0], operands[1], operands[2], operands[3], operands[4]));
+    }
+    else
+      {
+	rtx op_highpart = gen_reg_rtx (V4BFmode);
+	emit_insn (gen_neon_vget_highv8bf (op_highpart, operands[3]));
+	operands[4] = GEN_INT (lane - 4);
+	emit_insn (gen_neon_vfma<bt>_lanev8bf (operands[0], operands[1], operands[2], op_highpart, operands[4]));
+      }
+    DONE;
+  }
+  [(set_attr "type" "neon_fp_mla_s_scalar_q")]
 )
