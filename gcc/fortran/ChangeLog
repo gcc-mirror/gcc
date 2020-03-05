@@ -1,3 +1,10 @@
+2020-03-05 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93792
+	* decl.c (variable_decl): If param and initializer check
+	for BOZ, if found,  output an error, set m to MATCH_ERROR
+	and goto cleanup.
+
 2020-03-02  Andrew Benson  <abensonca@gmail.com>
 
 	PR fortran/93486
