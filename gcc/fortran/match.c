@@ -6165,6 +6165,7 @@ select_type_set_tmp (gfc_typespec *ts)
 {
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp = NULL;
+  gfc_symbol *selector = select_type_stack->selector;
 
   if (!ts)
     {
@@ -6186,22 +6187,27 @@ select_type_set_tmp (gfc_typespec *ts)
       gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
       gfc_add_type (tmp->n.sym, ts, NULL);
 
-      if (select_type_stack->selector->ts.type == BT_CLASS
-	&& select_type_stack->selector->attr.class_ok)
+      if (selector->ts.type == BT_CLASS && selector->attr.class_ok)
 	{
-	  tmp->n.sym->attr.pointer
-		= CLASS_DATA (select_type_stack->selector)->attr.class_pointer;
+	  tmp->n.sym->attr.pointer = CLASS_DATA (selector)->attr.class_pointer;
 
 	  /* Copy across the array spec to the selector.  */
-	  if (CLASS_DATA (select_type_stack->selector)->attr.dimension
-	      || CLASS_DATA (select_type_stack->selector)->attr.codimension)
+	  if (CLASS_DATA (selector)->attr.dimension
+	      || CLASS_DATA (selector)->attr.codimension)
 	    {
 	      tmp->n.sym->attr.dimension
-		    = CLASS_DATA (select_type_stack->selector)->attr.dimension;
+		    = CLASS_DATA (selector)->attr.dimension;
 	      tmp->n.sym->attr.codimension
-		    = CLASS_DATA (select_type_stack->selector)->attr.codimension;
-	      tmp->n.sym->as
-	    = gfc_copy_array_spec (CLASS_DATA (select_type_stack->selector)->as);
+		    = CLASS_DATA (selector)->attr.codimension;
+	      if (CLASS_DATA (selector)->as->type != AS_EXPLICIT)
+		tmp->n.sym->as
+			= gfc_copy_array_spec (CLASS_DATA (selector)->as);
+	      else
+		{
+		  tmp->n.sym->as = gfc_get_array_spec();
+		  tmp->n.sym->as->rank = CLASS_DATA (selector)->as->rank;
+		  tmp->n.sym->as->type = AS_DEFERRED;
+		}
 	    }
     }
 

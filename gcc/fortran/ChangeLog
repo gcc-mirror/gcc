@@ -1,3 +1,11 @@
+2020-03-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/92976
+	* match.c (select_type_set_tmp): Variable 'selector' to replace
+	select_type_stack->selector. If the selector array spec has
+	explicit bounds, make the temporary's bounds deferred.
+
 2020-02-19  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from mainline
