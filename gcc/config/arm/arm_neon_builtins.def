@@ -391,3 +391,12 @@ VAR2 (UNOP, vbfcvt, v4bf, v8bf)
 VAR1 (UNOP, vbfcvt_high, v8bf)
 VAR2 (UNOP, vbfcvtv4sf, v4bf, v8bf)
 VAR1 (BINOP, vbfcvtv4sf_high, v8bf)
+
+VAR1 (TERNOP, vmmla, v8bf)
+
+VAR1 (TERNOP, vfmab, v8bf)
+VAR1 (TERNOP, vfmat, v8bf)
+VAR1 (MAC_LANE, vfmab_lane, v8bf)
+VAR1 (MAC_LANE, vfmat_lane, v8bf)
+VAR1 (MAC_LANE, vfmab_laneq, v8bf)
+VAR1 (MAC_LANE, vfmat_laneq, v8bf)

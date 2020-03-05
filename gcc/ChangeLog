@@ -1,3 +1,31 @@
+2020-03-05  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/arm/arm_neon.h (vbfmmlaq_f32): New.
+	(vbfmlalbq_f32): New.
+	(vbfmlaltq_f32): New.
+	(vbfmlalbq_lane_f32): New.
+	(vbfmlaltq_lane_f32): New.
+	(vbfmlalbq_laneq_f32): New.
+	(vbfmlaltq_laneq_f32): New.
+	* config/arm/arm_neon_builtins.def (vmmla): New.
+	(vfmab): New.
+	(vfmat): New.
+	(vfmab_lane): New.
+	(vfmat_lane): New.
+	(vfmab_laneq): New.
+	(vfmat_laneq): New.
+	* config/arm/iterators.md (BF_MA): New int iterator.
+	(bt): New int attribute.
+	(VQXBF): Copy of VQX with V8BF.
+	* config/arm/neon.md (neon_vmmlav8bf): New insn.
+	(neon_vfma<bt>v8bf): New insn.
+	(neon_vfma<bt>_lanev8bf): New insn.
+	(neon_vfma<bt>_laneqv8bf): New expand.
+	(neon_vget_high<mode>): Changed iterator to VQXBF.
+	* config/arm/unspecs.md (UNSPEC_BFMMLA): New UNSPEC.
+	(UNSPEC_BFMAB): New UNSPEC.
+	(UNSPEC_BFMAT): New UNSPEC.
+
 2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93399
