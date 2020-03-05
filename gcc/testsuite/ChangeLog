@@ -1,3 +1,7 @@
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	* gcc.target/arm/fuse-caller-save.c: Generalize expected output.
+
 2020-03-05 Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/93792
