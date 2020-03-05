@@ -214,7 +214,9 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mamx-int8",	OPTION_MASK_ISA2_AMX_INT8 },
   { "-mamx-bf16",	OPTION_MASK_ISA2_AMX_BF16 },
   { "-muintr",		OPTION_MASK_ISA2_UINTR },
-  { "-mhreset",		OPTION_MASK_ISA2_HRESET }
+  { "-mhreset",		OPTION_MASK_ISA2_HRESET },
+  { "-mkl",		OPTION_MASK_ISA2_KL },
+  { "-mwidekl", 	OPTION_MASK_ISA2_WIDEKL }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1035,6 +1037,8 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
     IX86_ATTR_ISA ("uintr", OPT_muintr),
     IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
+    IX86_ATTR_ISA ("kl", OPT_mkl),
+    IX86_ATTR_ISA ("widekl",	OPT_mwidekl),
     IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
     IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
     IX86_ATTR_ISA ("serialize", OPT_mserialize),
@@ -2339,6 +2343,12 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_TSXLDTRK) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_TSXLDTRK))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_TSXLDTRK;
+	if (((processor_alias_table[i].flags & PTA_KL) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_KL))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_KL;
+	if (((processor_alias_table[i].flags & PTA_WIDEKL) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_WIDEKL))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_WIDEKL;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)

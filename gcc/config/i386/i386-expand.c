@@ -11326,6 +11326,226 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       emit_insn (gen_cldemote (op0));
       return 0;
 
+    case IX86_BUILTIN_LOADIWKEY:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	arg1 = CALL_EXPR_ARG (exp, 1);
+	arg2 = CALL_EXPR_ARG (exp, 2);
+	arg3 = CALL_EXPR_ARG (exp, 3);
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!REG_P (op0))
+	  op0 = copy_to_mode_reg (V2DImode, op0);
+	if (!REG_P (op1))
+	  op1 = copy_to_mode_reg (V2DImode, op1);
+	if (!REG_P (op2))
+	  op2 = copy_to_mode_reg (V2DImode, op2);
+	if (!REG_P (op3))
+	  op3 = copy_to_mode_reg (SImode, op3);
+
+	emit_insn (gen_loadiwkey (op0, op1, op2, op3));
+
+	return 0;
+      }
+
+    case IX86_BUILTIN_AESDEC128KLU8:
+      icode = CODE_FOR_aesdec128klu8;
+      goto aesdecenc_expand;
+
+    case IX86_BUILTIN_AESDEC256KLU8:
+      icode = CODE_FOR_aesdec256klu8;
+      goto aesdecenc_expand;
+
+    case IX86_BUILTIN_AESENC128KLU8:
+      icode = CODE_FOR_aesenc128klu8;
+      goto aesdecenc_expand;
+
+    case IX86_BUILTIN_AESENC256KLU8:
+      icode = CODE_FOR_aesenc256klu8;
+
+    aesdecenc_expand:
+
+      arg0 = CALL_EXPR_ARG (exp, 0); // __m128i *odata
+      arg1 = CALL_EXPR_ARG (exp, 1); // __m128i idata
+      arg2 = CALL_EXPR_ARG (exp, 2); // const void *p
+
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+
+      if (!address_operand (op0, V2DImode))
+	{
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
+	}
+      op0 = gen_rtx_MEM (V2DImode, op0);
+
+      if (!REG_P (op1))
+	op1 = copy_to_mode_reg (V2DImode, op1);
+
+      if (!address_operand (op2, VOIDmode))
+	{
+	  op2 = convert_memory_address (Pmode, op2);
+	  op2 = copy_addr_to_reg (op2);
+	}
+      op2 = gen_rtx_MEM (BLKmode, op2);
+
+      emit_insn (GEN_FCN (icode) (op1, op1, op2));
+
+      if (target == 0)
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
+			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      emit_insn (gen_rtx_SET (op0, op1));
+
+      return target;
+
+    case IX86_BUILTIN_AESDECWIDE128KLU8:
+      icode = CODE_FOR_aesdecwide128klu8;
+      goto wideaesdecenc_expand;
+
+    case IX86_BUILTIN_AESDECWIDE256KLU8:
+      icode = CODE_FOR_aesdecwide256klu8;
+      goto wideaesdecenc_expand;
+
+    case IX86_BUILTIN_AESENCWIDE128KLU8:
+      icode = CODE_FOR_aesencwide128klu8;
+      goto wideaesdecenc_expand;
+
+    case IX86_BUILTIN_AESENCWIDE256KLU8:
+      icode = CODE_FOR_aesencwide256klu8;
+
+    wideaesdecenc_expand:
+
+      rtx xmm_regs[8];
+      rtx op;
+
+      arg0 = CALL_EXPR_ARG (exp, 0); // __m128i * odata
+      arg1 = CALL_EXPR_ARG (exp, 1); // const __m128i * idata
+      arg2 = CALL_EXPR_ARG (exp, 2); // const void *p
+
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+
+      if (!address_operand (op2, VOIDmode))
+	{
+	  op2 = convert_memory_address (Pmode, op2);
+	  op2 = copy_addr_to_reg (op2);
+	}
+      op2 = gen_rtx_MEM (BLKmode, op2);
+
+      for (i = 0; i < 8; i++)
+	{
+	  xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+	  op = gen_rtx_MEM (V2DImode,
+			    plus_constant (Pmode, op1, (i * 16)));
+
+	  emit_move_insn (xmm_regs[i], op);
+	}
+
+      emit_insn (GEN_FCN (icode) (op2));
+
+      if (target == 0)
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
+			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      for (i = 0; i < 8; i++)
+	{
+	  op = gen_rtx_MEM (V2DImode,
+			    plus_constant (Pmode, op0, (i * 16)));
+	  emit_move_insn (op, xmm_regs[i]);
+	}
+
+      return target;
+
+    case IX86_BUILTIN_ENCODEKEY128U32:
+      {
+	rtx op, xmm_regs[7];
+
+	arg0 = CALL_EXPR_ARG (exp, 0); // unsigned int htype
+	arg1 = CALL_EXPR_ARG (exp, 1); // __m128i key
+	arg2 = CALL_EXPR_ARG (exp, 2); // void *h
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+
+	if (!REG_P (op0))
+	  op0 = copy_to_mode_reg (SImode, op0);
+
+	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (0));
+	emit_move_insn (op, op1);
+
+	for (i = 0; i < 3; i++)
+	  xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+	if (target == 0)
+	  target = gen_reg_rtx (SImode);
+
+	emit_insn (gen_encodekey128u32 (target, op0));
+
+	for (i = 0; i < 3; i++)
+	  {
+	    op = gen_rtx_MEM (V2DImode,
+			      plus_constant (Pmode, op2, (i * 16)));
+	    emit_move_insn (op, xmm_regs[i]);
+	  }
+
+	return target;
+      }
+    case IX86_BUILTIN_ENCODEKEY256U32:
+      {
+	rtx op, xmm_regs[7];
+
+	arg0 = CALL_EXPR_ARG (exp, 0); // unsigned int htype
+	arg1 = CALL_EXPR_ARG (exp, 1); // __m128i keylow
+	arg2 = CALL_EXPR_ARG (exp, 2); // __m128i keyhi
+	arg3 = CALL_EXPR_ARG (exp, 3); // void *h
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!REG_P (op0))
+	  op0 = copy_to_mode_reg (SImode, op0);
+
+	/* Force to use xmm0, xmm1 for keylow, keyhi*/
+	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (0));
+	emit_move_insn (op, op1);
+	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (1));
+	emit_move_insn (op, op2);
+
+	for (i = 0; i < 4; i++)
+	  xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+	if (target == 0)
+	  target = gen_reg_rtx (SImode);
+
+	emit_insn (gen_encodekey256u32 (target, op0));
+
+	for (i = 0; i < 4; i++)
+	  {
+	    op = gen_rtx_MEM (V2DImode,
+			      plus_constant (Pmode, op3, (i * 16)));
+	    emit_move_insn (op, xmm_regs[i]);
+	  }
+
+	return target;
+      }
+
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
     case IX86_BUILTIN_VEC_INIT_V8QI:
