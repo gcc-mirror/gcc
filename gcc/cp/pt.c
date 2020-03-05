@@ -25341,15 +25341,20 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 	return true;
       if (!literal_type_p (type))
 	{
-	  error ("%qT is not a valid type for a template non-type parameter "
-		 "because it is not literal", type);
-	  explain_non_literal_class (type);
+	  if (complain & tf_error)
+	    {
+	      auto_diagnostic_group d;
+	      error ("%qT is not a valid type for a template non-type parameter "
+		     "because it is not literal", type);
+	      explain_non_literal_class (type);
+	    }
 	  return true;
 	}
       if (cp_has_mutable_p (type))
 	{
-	  error ("%qT is not a valid type for a template non-type parameter "
-		 "because it has a mutable member", type);
+	  if (complain & tf_error)
+	    error ("%qT is not a valid type for a template non-type parameter "
+		   "because it has a mutable member", type);
 	  return true;
 	}
       /* FIXME check op<=> and strong structural equality once spaceship is
