@@ -1,3 +1,17 @@
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/91890
+	* gimple-ssa-warn-restrict.c (maybe_diag_overlap): Remove LOC argument.
+	Use gimple_or_expr_nonartificial_location.
+	(check_bounds_overlap): Drop LOC argument to maybe_diag_access_bounds.
+	Use gimple_or_expr_nonartificial_location.
+	* gimple.c (gimple_or_expr_nonartificial_location): New function.
+	* gimple.h (gimple_or_expr_nonartificial_location): Declare it.
+	* tree-ssa-strlen.c (maybe_warn_overflow): Use
+	gimple_or_expr_nonartificial_location.
+	(maybe_diag_stxncpy_trunc, handle_builtin_stxncpy_strncat): Likewise.
+	(maybe_warn_pointless_strcmp): Likewise.
+
 2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94046

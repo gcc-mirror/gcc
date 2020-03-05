@@ -3285,6 +3285,19 @@ gimple_inexpensive_call_p (gcall *stmt)
   return false;
 }
 
+/* Return a non-artificial location for STMT.  If STMT does not have
+   location information, get the location from EXPR.  */
+
+location_t
+gimple_or_expr_nonartificial_location (gimple *stmt, tree)
+{
+  location_t loc = gimple_nonartificial_location (stmt);
+  if (loc == UNKNOWN_LOCATION && EXPR_HAS_LOCATION (expr))
+    loc = tree_nonartificial_location (expr);
+  return expansion_point_location_if_in_system_header (loc);
+}
+
+
 #if CHECKING_P
 
 namespace selftest {

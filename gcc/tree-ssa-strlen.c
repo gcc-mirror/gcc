@@ -2129,11 +2129,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	  || !si || !is_strlen_related_p (si->ptr, len)))
     return;
 
-  location_t loc = gimple_nonartificial_location (stmt);
-  if (loc == UNKNOWN_LOCATION && dest && EXPR_HAS_LOCATION (dest))
-    loc = tree_nonartificial_location (dest);
-  loc = expansion_point_location_if_in_system_header (loc);
-
+  location_t loc = gimple_or_expr_nonartificial_location (stmt, dest);
   bool warned = false;
   if (wi::leu_p (lenrng[0], spcrng[1]))
     {
@@ -3189,9 +3185,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	}
     }
 
-  location_t callloc = gimple_nonartificial_location (stmt);
-  callloc = expansion_point_location_if_in_system_header (callloc);
-
+  location_t callloc = gimple_or_expr_nonartificial_location (stmt, dst);
   tree func = gimple_call_fndecl (stmt);
 
   if (lenrange[0] != 0 || !wi::neg_p (lenrange[1]))
@@ -3403,8 +3397,7 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
      to strlen(S)).  */
   strinfo *silen = get_strinfo (pss->first);
 
-  location_t callloc = gimple_nonartificial_location (stmt);
-  callloc = expansion_point_location_if_in_system_header (callloc);
+  location_t callloc = gimple_or_expr_nonartificial_location (stmt, dst);
 
   tree func = gimple_call_fndecl (stmt);
 
@@ -4331,10 +4324,7 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
 
   /* FIXME: Include a note pointing to the declaration of the smaller
      array.  */
-  location_t stmt_loc = gimple_nonartificial_location (stmt);
-  if (stmt_loc == UNKNOWN_LOCATION && EXPR_HAS_LOCATION (lhs))
-    stmt_loc = tree_nonartificial_location (lhs);
-  stmt_loc = expansion_point_location_if_in_system_header (stmt_loc);
+  location_t stmt_loc = gimple_or_expr_nonartificial_location (stmt, lhs);
 
   tree callee = gimple_call_fndecl (stmt);
   bool warned = false;
