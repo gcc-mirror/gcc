@@ -174,8 +174,12 @@ __arm_mrrc2 (const unsigned int __coproc, const unsigned int __opc1,
 #endif /* (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4.  */
 
 #pragma GCC push_options
-#if __ARM_ARCH >= 8
+#ifdef __ARM_FEATURE_CRC32
+#ifdef __ARM_FP
+#pragma GCC target ("arch=armv8-a+crc+simd")
+#else
 #pragma GCC target ("arch=armv8-a+crc")
+#endif
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 __crc32b (uint32_t __a, uint8_t __b)
@@ -235,7 +239,7 @@ __crc32cd (uint32_t __a, uint64_t __b)
 }
 #endif
 
-#endif /* __ARM_ARCH >= 8.  */
+#endif /* __ARM_FEATURE_CRC32  */
 #pragma GCC pop_options
 
 #ifdef __cplusplus

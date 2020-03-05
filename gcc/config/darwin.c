@@ -75,14 +75,8 @@ along with GCC; see the file COPYING3.  If not see
    setting the second word in the .non_lazy_symbol_pointer data
    structure to symbol.  See indirect_data for the code that handles
    the extra indirection, and machopic_output_indirection and its use
-   of MACHO_SYMBOL_STATIC for the code that handles @code{static}
+   of MACHO_SYMBOL_FLAG_STATIC for the code that handles @code{static}
    symbol indirection.  */
-
-/* For darwin >= 9  (OSX 10.5) the linker is capable of making the necessary
-   branch islands and we no longer need to emit darwin stubs.
-   However, if we are generating code for earlier systems (or for use in the 
-   kernel) the stubs might still be required, and this will be set true.  */
-int darwin_emit_branch_islands = false;
 
 typedef struct GTY(()) cdtor_record {
   rtx symbol;
@@ -104,6 +98,10 @@ int generating_for_darwin_version ;
 /* For older linkers we need to emit special sections (marked 'coalesced') for
    for weak or single-definition items.  */
 static bool ld_uses_coal_sects = false;
+
+/* Very old (ld_classic) linkers need a symbol to mark the start of
+   each FDE.  */
+static bool ld_needs_eh_markers = false;
 
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
@@ -250,7 +248,7 @@ name_needs_quotes (const char *name)
 int
 machopic_symbol_defined_p (rtx sym_ref)
 {
-  if (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
+  if (MACHO_SYMBOL_DEFINED_P (sym_ref))
     return true;
 
   /* If a symbol references local and is not an extern to this
@@ -259,7 +257,7 @@ machopic_symbol_defined_p (rtx sym_ref)
     {
       /* If the symbol references a variable and the variable is a
 	 common symbol, then this symbol is not defined.  */
-      if (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_VARIABLE)
+      if (MACHO_SYMBOL_VARIABLE_P (sym_ref))
 	{
 	  tree decl = SYMBOL_REF_DECL (sym_ref);
 	  if (!decl)
@@ -455,6 +453,13 @@ typedef struct GTY ((for_user)) machopic_indirection
   bool stub_p;
   /* True iff this stub or pointer has been referenced.  */
   bool used;
+  /* True iff a non-lazy symbol pointer should be emitted into the .data
+     section, rather than the non-lazy symbol pointers section.  The cases
+     for which this occurred seem to have been unintentional, and later
+     toolchains emit all of the indirections to the 'usual' section.  We
+     are keeping this in case it is necessary to preserve compatibility with
+     older toolchains.  */
+  bool nlsp_in_data_section;
 } machopic_indirection;
 
 struct indirection_hasher : ggc_ptr_hash<machopic_indirection>
@@ -489,7 +494,7 @@ indirection_hasher::equal (machopic_indirection *s, const char *k)
 /* Return the name of the non-lazy pointer (if STUB_P is false) or
    stub (if STUB_B is true) corresponding to the given name.
 
-  If we have a situation like:
+  PR71767 - If we have a situation like:
 
 global_weak_symbol:
   ....
@@ -498,36 +503,22 @@ Lnon_weak_local:
 
   ld64 will be unable to split this into two atoms (because the "L" makes
   the second symbol 'invisible').  This means that legitimate direct accesses
-  to the second symbol will appear to be non-allowed direct accesses to an
-  atom of type weak, global which are not allowed.
+  to the second symbol will appear to be direct accesses to an atom of type
+  weak, global which are not allowed.
 
-  To avoid this, we make the indirections have a leading 'l' (lower-case L)
-  which has a special meaning: linker can see this and use it to determine
-  atoms, but it is not placed into the final symbol table.
+  To avoid this, we make any data-section indirections have a leading 'l'
+  (lower-case L) which has a special meaning: linker can see this and use
+  it to determine  atoms, but it is not placed into the final symbol table.
 
-  The implementation here is somewhat heavy-handed in that it will also mark
-  indirections to the __IMPORT,__pointers section the same way which is
-  really unnecessary, since ld64 _can_ split those into atoms as they are
-  fixed size.  FIXME: determine if this is a penalty worth extra code to
-  fix.
-
+  Symbols in the non-lazy symbol pointers section (or stubs) do not have this
+  problem because ld64 already knows the size of each entry.
 */
 
 const char *
 machopic_indirection_name (rtx sym_ref, bool stub_p)
 {
-  char *buffer;
   const char *name = XSTR (sym_ref, 0);
-  size_t namelen = strlen (name);
-  machopic_indirection *p;
-  bool needs_quotes;
-  const char *suffix;
-  char L_or_l = 'L';
-  const char *prefix = user_label_prefix;
-  const char *quote = "";
-  tree id;
-
-  id = maybe_get_identifier (name);
+  tree id = maybe_get_identifier (name);
   if (id)
     {
       tree id_orig = id;
@@ -535,43 +526,47 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
       while (IDENTIFIER_TRANSPARENT_ALIAS (id))
 	id = TREE_CHAIN (id);
       if (id != id_orig)
-	{
-	  name = IDENTIFIER_POINTER (id);
-	  namelen = strlen (name);
-	}
+	name = IDENTIFIER_POINTER (id);
     }
 
+  const char *prefix = user_label_prefix;
+  /* If we are emitting the label 'verbatim' then omit the U_L_P and count
+     the name without the leading '*'.  */
   if (name[0] == '*')
     {
       prefix = "";
       ++name;
-      --namelen;
     }
 
-  needs_quotes = name_needs_quotes (name);
-  if (needs_quotes)
-    {
-      quote = "\"";
-    }
+  /* Here we are undoing a number of causes that placed some indirections
+     (apparently erroneously) into the .data section.  Specifically, some
+     symbols that are ABI mandated indirections and some hidden symbols
+     were being placed there - which cause difficulties with later
+     versions of ld64.  Iff (after these checks) some symbol still gets an
+     indirection in the data section, we want to adjust the indirection
+     name to be linker visible to deal with PR71767 (notes above).  */
+  bool nlsp_in_data_section =
+       ! MACHO_SYMBOL_MUST_INDIRECT_P (sym_ref)
+    && ! MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref)
+    && (machopic_symbol_defined_p (sym_ref) || SYMBOL_REF_LOCAL_P (sym_ref))
+    && ! indirect_data (sym_ref);
 
-  if (stub_p)
-    suffix = STUB_SUFFIX;
-  else
-    {
-      suffix = NON_LAZY_POINTER_SUFFIX;
-      /* Let the linker see this.  */
-      L_or_l = 'l';
-    }
-
-  buffer = XALLOCAVEC (char, 2  /* strlen ("&L") or ("&l") */
-		   + strlen (prefix)
-		   + namelen
-		   + strlen (suffix)
-		   + 2 * strlen (quote)
-		   + 1 /* '\0' */);
+  const char *suffix = stub_p ? STUB_SUFFIX : NON_LAZY_POINTER_SUFFIX;
+  /* If the indirection is in the data section, let the linker see it.  */
+  char L_or_l = (!stub_p && nlsp_in_data_section) ? 'l' : 'L';
+  /* We have mangled symbols with spaces and punctuation which typically
+     need surrounding in quotes for the assembler to consume them.  */
+  const char *quote = name_needs_quotes (name) ? "\"" : "";
+  char *buffer = XALLOCAVEC (char, 2  /* strlen ("&L") or ("&l") */
+			     + strlen (prefix)
+			     + strlen (name)
+			     + strlen (suffix)
+			     + 2 * strlen (quote)
+			     + 1 /* '\0' */);
 
   /* Construct the name of the non-lazy pointer or stub.  */
-  sprintf (buffer, "&%s%c%s%s%s%s", quote, L_or_l, prefix, name, suffix, quote);
+  sprintf (buffer, "&%s%c%s%s%s%s", quote, L_or_l, prefix, name,
+	   suffix, quote);
 
   if (!machopic_indirections)
     machopic_indirections = hash_table<indirection_hasher>::create_ggc (37);
@@ -580,10 +575,9 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
     = machopic_indirections->find_slot_with_hash (buffer,
 						  htab_hash_string (buffer),
 						  INSERT);
+  machopic_indirection *p;
   if (*slot)
-    {
-      p = *slot;
-    }
+    p = *slot;
   else
     {
       p = ggc_alloc<machopic_indirection> ();
@@ -591,6 +585,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
       p->ptr_name = xstrdup (buffer);
       p->stub_p = stub_p;
       p->used = false;
+      p->nlsp_in_data_section = nlsp_in_data_section;
       *slot = p;
     }
 
@@ -666,7 +661,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	   /* some other cpu -- writeme!  */
 	   gcc_unreachable ();
 	}
-      else if (defined)
+      else if (defined && ! MACHO_SYMBOL_MUST_INDIRECT_P (orig))
 	{
 	  rtx offset = NULL;
 	  if (DARWIN_PPC || HAVE_lo_sum)
@@ -708,6 +703,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 		  machopic_indirection_name (orig, /*stub_p=*/false)));
 
       SYMBOL_REF_DATA (ptr_ref) = SYMBOL_REF_DATA (orig);
+      SYMBOL_REF_FLAGS (ptr_ref) |= MACHO_SYMBOL_FLAG_INDIRECTION;
 
       ptr_ref = gen_const_mem (Pmode, ptr_ref);
       machopic_define_symbol (ptr_ref);
@@ -790,7 +786,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 rtx
 machopic_indirect_call_target (rtx target)
 {
-  if (! darwin_emit_branch_islands)
+  if (! darwin_symbol_stubs)
     return target;
 
   if (GET_CODE (target) != MEM)
@@ -798,8 +794,7 @@ machopic_indirect_call_target (rtx target)
 
   if (MACHOPIC_INDIRECT
       && GET_CODE (XEXP (target, 0)) == SYMBOL_REF
-      && !(SYMBOL_REF_FLAGS (XEXP (target, 0))
-	   & MACHO_SYMBOL_FLAG_DEFINED))
+      && ! MACHO_SYMBOL_DEFINED_P (XEXP (target, 0)))
     {
       rtx sym_ref = XEXP (target, 0);
       const char *stub_name = machopic_indirection_name (sym_ref,
@@ -808,6 +803,7 @@ machopic_indirect_call_target (rtx target)
 
       XEXP (target, 0) = gen_rtx_SYMBOL_REF (mode, stub_name);
       SYMBOL_REF_DATA (XEXP (target, 0)) = SYMBOL_REF_DATA (sym_ref);
+      SYMBOL_REF_FLAGS (XEXP (target, 0)) |= MACHO_SYMBOL_FLAG_INDIRECTION;
       MEM_READONLY_P (target) = 1;
       MEM_NOTRAP_P (target) = 1;
     }
@@ -844,7 +840,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	{
 	  if (reg == 0)
 	    {
-	      gcc_assert (!reload_in_progress);
+	      gcc_assert (!lra_in_progress);
 	      reg = gen_reg_rtx (Pmode);
 	    }
 
@@ -928,7 +924,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	      emit_use (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
 #endif
 
-	      if (reload_in_progress)
+	      if (lra_in_progress)
 		df_set_regs_ever_live (REGNO (pic), true);
 	      pic_ref = gen_rtx_PLUS (Pmode, pic,
 				      machopic_gen_offset (XEXP (orig, 0)));
@@ -952,7 +948,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
 	      if (reg == 0)
 		{
-		  gcc_assert (!reload_in_progress);
+		  gcc_assert (!lra_in_progress);
 		  reg = gen_reg_rtx (Pmode);
 		}
 
@@ -998,7 +994,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 #if 0
 		  emit_use (pic_offset_table_rtx);
 #endif
-		  if (reload_in_progress)
+		  if (lra_in_progress)
 		    df_set_regs_ever_live (REGNO (pic), true);
 		  pic_ref = gen_rtx_PLUS (Pmode,
 					  pic,
@@ -1069,129 +1065,160 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
   return pic_ref;
 }
 
-/* Output the stub or non-lazy pointer in *SLOT, if it has been used.
-   DATA is the FILE* for assembly output.  Called from
-   htab_traverse.  */
+/* Callbacks to output the stub or non-lazy pointers.
+   Each works on the item in *SLOT,if it has been used.
+   DATA is the FILE* for assembly output.
+   Called from htab_traverses, invoked from machopic_finish().  */
+
+int
+machopic_output_data_section_indirection (machopic_indirection **slot,
+					  FILE *asm_out_file)
+{
+  machopic_indirection *p = *slot;
+
+  if (!p->used || !p->nlsp_in_data_section)
+    return 1;
+
+  rtx symbol = p->symbol;
+  /* The original symbol name.  */
+  const char *sym_name = XSTR (symbol, 0);
+  /* The name of the indirection symbol.  */
+  const char *ptr_name = p->ptr_name;
+
+  switch_to_section (data_section);
+  assemble_align (GET_MODE_ALIGNMENT (Pmode));
+  assemble_label (asm_out_file, ptr_name);
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
+		    GET_MODE_SIZE (Pmode),
+		    GET_MODE_ALIGNMENT (Pmode), 1);
+
+  return 1;
+}
+
+int
+machopic_output_stub_indirection (machopic_indirection **slot,
+				  FILE *asm_out_file)
+{
+  machopic_indirection *p = *slot;
+
+  if (!p->used || !p->stub_p)
+    return 1;
+
+  rtx symbol = p->symbol;
+  /* The original symbol name.  */
+  const char *sym_name = XSTR (symbol, 0);
+  /* The name of the stub symbol.  */
+  const char *ptr_name = p->ptr_name;
+
+  tree id = maybe_get_identifier (sym_name);
+  if (id)
+    {
+      tree id_orig = id;
+
+      while (IDENTIFIER_TRANSPARENT_ALIAS (id))
+	id = TREE_CHAIN (id);
+      if (id != id_orig)
+	sym_name = IDENTIFIER_POINTER (id);
+    }
+
+  char *sym = XALLOCAVEC (char, strlen (sym_name) + 2);
+  if (sym_name[0] == '*' || sym_name[0] == '&')
+    strcpy (sym, sym_name + 1);
+  else if (sym_name[0] == '-' || sym_name[0] == '+')
+    strcpy (sym, sym_name);
+  else
+    sprintf (sym, "%s%s", user_label_prefix, sym_name);
+
+  char *stub = XALLOCAVEC (char, strlen (ptr_name) + 2);
+  if (ptr_name[0] == '*' || ptr_name[0] == '&')
+    strcpy (stub, ptr_name + 1);
+  else
+    sprintf (stub, "%s%s", user_label_prefix, ptr_name);
+
+  machopic_output_stub (asm_out_file, sym, stub);
+
+  return 1;
+}
 
 int
 machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
 {
   machopic_indirection *p = *slot;
-  rtx symbol;
-  const char *sym_name;
-  const char *ptr_name;
 
-  if (!p->used)
+  if (!p->used || p->stub_p || p->nlsp_in_data_section)
     return 1;
 
-  symbol = p->symbol;
-  sym_name = XSTR (symbol, 0);
-  ptr_name = p->ptr_name;
+  rtx symbol = p->symbol;
+  /* The original symbol name.  */
+  const char *sym_name = XSTR (symbol, 0);
+  /* The nonlazy-stub symbol name.  */
+  const char *ptr_name = p->ptr_name;
 
-  if (p->stub_p)
+  switch_to_section (darwin_sections[machopic_nl_symbol_ptr_section]);
+
+  /* Mach-O symbols are passed around in code through indirect references and
+     the original symbol_ref hasn't passed through the generic handling and
+     reference-catching in output_operand, so we need to manually mark weak
+     references as such.  */
+
+  if (SYMBOL_REF_WEAK (symbol))
     {
-      char *sym;
-      char *stub;
-      tree id;
+      tree decl = SYMBOL_REF_DECL (symbol);
+      gcc_checking_assert (DECL_P (decl));
 
-      id = maybe_get_identifier (sym_name);
-      if (id)
+      if (decl != NULL_TREE
+	  && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)
+	  /* Handle only actual external-only definitions, not
+	     e.g. extern inline code or variables for which
+	     storage has been allocated.  */
+	  && !TREE_STATIC (decl))
 	{
-	  tree id_orig = id;
-
-	  while (IDENTIFIER_TRANSPARENT_ALIAS (id))
-	    id = TREE_CHAIN (id);
-	  if (id != id_orig)
-	    sym_name = IDENTIFIER_POINTER (id);
+	  fputs ("\t.weak_reference ", asm_out_file);
+	  assemble_name (asm_out_file, sym_name);
+	  fputc ('\n', asm_out_file);
 	}
-
-      sym = XALLOCAVEC (char, strlen (sym_name) + 2);
-      if (sym_name[0] == '*' || sym_name[0] == '&')
-	strcpy (sym, sym_name + 1);
-      else if (sym_name[0] == '-' || sym_name[0] == '+')
-	strcpy (sym, sym_name);
-      else
-	sprintf (sym, "%s%s", user_label_prefix, sym_name);
-
-      stub = XALLOCAVEC (char, strlen (ptr_name) + 2);
-      if (ptr_name[0] == '*' || ptr_name[0] == '&')
-	strcpy (stub, ptr_name + 1);
-      else
-	sprintf (stub, "%s%s", user_label_prefix, ptr_name);
-
-      machopic_output_stub (asm_out_file, sym, stub);
     }
-  else if (! indirect_data (symbol)
-	   && (machopic_symbol_defined_p (symbol)
-	       || SYMBOL_REF_LOCAL_P (symbol)))
-    {
-      switch_to_section (data_section);
-      assemble_align (GET_MODE_ALIGNMENT (Pmode));
-      assemble_label (asm_out_file, ptr_name);
-      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
-			GET_MODE_SIZE (Pmode),
-			GET_MODE_ALIGNMENT (Pmode), 1);
-    }
-  else
-    {
-      rtx init = const0_rtx;
 
-      switch_to_section (darwin_sections[machopic_nl_symbol_ptr_section]);
+  assemble_name (asm_out_file, ptr_name);
+  fprintf (asm_out_file, ":\n");
 
-      /* Mach-O symbols are passed around in code through indirect
-	 references and the original symbol_ref hasn't passed through
-	 the generic handling and reference-catching in
-	 output_operand, so we need to manually mark weak references
-	 as such.  */
-      if (SYMBOL_REF_WEAK (symbol))
-	{
-	  tree decl = SYMBOL_REF_DECL (symbol);
-	  gcc_assert (DECL_P (decl));
+  fprintf (asm_out_file, "\t.indirect_symbol ");
+  assemble_name (asm_out_file, sym_name);
+  fprintf (asm_out_file, "\n");
 
-	  if (decl != NULL_TREE
-	      && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)
-	      /* Handle only actual external-only definitions, not
-		 e.g. extern inline code or variables for which
-		 storage has been allocated.  */
-	      && !TREE_STATIC (decl))
-	    {
-	      fputs ("\t.weak_reference ", asm_out_file);
-	      assemble_name (asm_out_file, sym_name);
-	      fputc ('\n', asm_out_file);
-	    }
-	}
+  /* Variables that are marked with MACHO_SYMBOL_FLAG_STATIC need to
+     have their symbol name instead of 0 in the second entry of
+     the non-lazy symbol pointer data structure when they are
+     defined.  This allows the runtime to rebind newer instances
+     of the translation unit with the original instance of the
+     symbol.  */
 
-      assemble_name (asm_out_file, ptr_name);
-      fprintf (asm_out_file, ":\n");
+  rtx init = const0_rtx;
+  if (MACHO_SYMBOL_STATIC_P (symbol) && machopic_symbol_defined_p (symbol))
+    init = gen_rtx_SYMBOL_REF (Pmode, sym_name);
 
-      fprintf (asm_out_file, "\t.indirect_symbol ");
-      assemble_name (asm_out_file, sym_name);
-      fprintf (asm_out_file, "\n");
-
-      /* Variables that are marked with MACHO_SYMBOL_STATIC need to
-	 have their symbol name instead of 0 in the second entry of
-	 the non-lazy symbol pointer data structure when they are
-	 defined.  This allows the runtime to rebind newer instances
-	 of the translation unit with the original instance of the
-	 symbol.  */
-
-      if ((SYMBOL_REF_FLAGS (symbol) & MACHO_SYMBOL_STATIC)
-	  && machopic_symbol_defined_p (symbol))
-	init = gen_rtx_SYMBOL_REF (Pmode, sym_name);
-
-      assemble_integer (init, GET_MODE_SIZE (Pmode),
-			GET_MODE_ALIGNMENT (Pmode), 1);
-    }
+  assemble_integer (init, GET_MODE_SIZE (Pmode),
+		    GET_MODE_ALIGNMENT (Pmode), 1);
 
   return 1;
 }
 
-void
+static void
 machopic_finish (FILE *asm_out_file)
 {
-  if (machopic_indirections)
-    machopic_indirections
-      ->traverse_noresize<FILE *, machopic_output_indirection> (asm_out_file);
+  if (!machopic_indirections)
+    return;
+
+  /* First output an symbol indirections that have been placed into .data
+     (we don't expect these now).  */
+  machopic_indirections->traverse_noresize
+    <FILE *, machopic_output_data_section_indirection> (asm_out_file);
+
+  machopic_indirections->traverse_noresize
+    <FILE *, machopic_output_stub_indirection> (asm_out_file);
+
+  machopic_indirections->traverse_noresize
+    <FILE *, machopic_output_indirection> (asm_out_file);
 }
 
 int
@@ -1206,24 +1233,50 @@ machopic_operand_p (rtx op)
 	    && XINT (XEXP (op, 0), 1) == UNSPEC_MACHOPIC_OFFSET);
 }
 
-/* This function records whether a given name corresponds to a defined
-   or undefined function or variable, for machopic_classify_ident to
-   use later.  */
+/* This function:
+   computes and caches a series of flags that characterise the symbol's
+   properties that affect Mach-O code gen (including accidental cases
+   from older toolchains).
+
+   TODO:
+   Here we also need to do enough analysis to determine if a symbol's
+   name needs to be made linker-visible.  This is more tricky - since
+   it depends on whether we've previously seen a global weak definition
+   in the same section.
+   */
 
 void
-darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
+darwin_encode_section_info (tree decl, rtx rtl, int first)
 {
-  rtx sym_ref;
-
-  /* Do the standard encoding things first.  */
-  default_encode_section_info (decl, rtl, first);
-
-  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+  /* Careful not to prod global register variables.  */
+  if (!MEM_P (rtl))
     return;
 
-  sym_ref = XEXP (rtl, 0);
-  if (TREE_CODE (decl) == VAR_DECL)
+  /* Do the standard encoding things first; this sets:
+     SYMBOL_FLAG_FUNCTION,
+     SYMBOL_FLAG_LOCAL, (binds_local_p)
+     TLS_MODEL, SYMBOL_FLAG_SMALL
+     SYMBOL_FLAG_EXTERNAL.  */
+  default_encode_section_info (decl, rtl, first);
+
+  if (! VAR_OR_FUNCTION_DECL_P (decl))
+    return;
+
+  rtx sym_ref = XEXP (rtl, 0);
+  if (VAR_P (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_VARIABLE;
+
+  /* Only really common if there's no initialiser.  */
+  bool really_common_p = (DECL_COMMON (decl)
+			  && (DECL_INITIAL (decl) == NULL
+			      || (!in_lto_p
+				  && DECL_INITIAL (decl) == error_mark_node)));
+
+  /* For Darwin, if we have specified visibility and it's not the default
+     that's counted 'hidden'.  */
+  if (DECL_VISIBILITY_SPECIFIED (decl)
+      && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT)
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_HIDDEN_VIS;
 
   if (!DECL_EXTERNAL (decl)
       && (!TREE_PUBLIC (decl) || !DECL_WEAK (decl))
@@ -1235,7 +1288,13 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
 
   if (! TREE_PUBLIC (decl))
-    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_STATIC;
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_STATIC;
+
+  /* Short cut check for Darwin 'must indirect' rules.  */
+  if (really_common_p
+      || (DECL_WEAK (decl) && ! MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref))
+      || lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_MUST_INDIRECT;
 }
 
 void
@@ -1252,12 +1311,13 @@ darwin_mark_decl_preserved (const char *name)
 }
 
 static section *
-darwin_rodata_section (int use_coal, bool zsize)
+darwin_rodata_section (int use_coal, bool zsize, int reloc)
 {
   return (use_coal
 	  ? darwin_sections[const_coal_section]
 	  : (zsize ? darwin_sections[zobj_const_section]
-		   : darwin_sections[const_section]));
+		   : reloc ? darwin_sections[const_data_section]
+			   : darwin_sections[const_section]));
 }
 
 static section *
@@ -1550,7 +1610,7 @@ machopic_select_section (tree decl,
 
     case SECCAT_RODATA:
     case SECCAT_SRODATA:
-      base_section = darwin_rodata_section (use_coal, zsize);
+      base_section = darwin_rodata_section (use_coal, zsize, reloc);
       break;
 
     case SECCAT_RODATA_MERGE_STR:
@@ -2086,11 +2146,11 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
   static int invok_count = 0;
   static tree last_fun_decl = NULL_TREE;
   
-  /* We use the linker to emit the .eh labels for Darwin 9 and above.  */
-  if (! for_eh || generating_for_darwin_version >= 9)
+  /* Modern linkers can produce distinct FDEs without compiler support.  */
+  if (! for_eh || ! ld_needs_eh_markers)
     return;
 
-  /* FIXME: This only works when the eh for all sections of a function is 
+  /* FIXME: This only works when the eh for all sections of a function are
      emitted at the same time.  If that changes, we would need to use a lookup
      table of some form to determine what to do.  Also, we should emit the
      unadorned label for the partition containing the public label for a
@@ -3148,17 +3208,19 @@ darwin_override_options (void)
 				: (generating_for_darwin_version >= 9) ? 1
 								       : 0);
 
-  /* Objective-C family ABI 2 is only valid for next/m64 at present.  */
   if (global_options_set.x_flag_objc_abi && flag_next_runtime)
     {
-      if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)
-	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 must be"
-				    " used for %<-m64%> targets with"
-				    " %<-fnext-runtime%>");
-      if (!TARGET_64BIT && global_options.x_flag_objc_abi >= 2)
-	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is not"
-				    " supported on %<-m32%> targets with"
-				    " %<-fnext-runtime%>");
+      if (TARGET_64BIT && global_options.x_flag_objc_abi != 2)
+	/* The Objective-C family ABI 2 is the only valid version NeXT/m64.  */
+	error_at (UNKNOWN_LOCATION,
+		  "%<-fobjc-abi-version%> 2 must be used for 64 bit targets"
+		  " with %<-fnext-runtime%>");
+      else if (!TARGET_64BIT && global_options.x_flag_objc_abi >= 2)
+	/* ABI versions 0 and 1 are the only valid versions NeXT/m32.  */
+	error_at (UNKNOWN_LOCATION,
+		  "%<-fobjc-abi-version%> %d is not supported for 32 bit"
+		  " targets with %<-fnext-runtime%>",
+		  global_options.x_flag_objc_abi);
     }
 
   /* Don't emit DWARF3/4 unless specifically selected.  This is a 
@@ -3261,11 +3323,44 @@ darwin_override_options (void)
       flag_pic = 2;
     }
 
-  /* It is assumed that branch island stubs are needed for earlier systems.  */
-  if (generating_for_darwin_version < 9)
-    darwin_emit_branch_islands = true;
-  else
-    emit_aligned_common = true; /* Later systems can support aligned common.  */
+  /* Linkers >= ld64-62.1 (at least) are capable of making the necessary PIC
+     indirections and we no longer need to emit pic symbol stubs.
+     However, if we are generating code for earlier ones (or for use in the
+     kernel) the stubs might still be required, and this will be set true.
+     If the user sets it on or off - then that takes precedence.
+
+     Linkers that don't need stubs, don't need the EH symbol markers either.
+  */
+
+  if (!global_options_set.x_darwin_symbol_stubs)
+    {
+      if (darwin_target_linker)
+	{
+	  if (strverscmp (darwin_target_linker, MIN_LD64_OMIT_STUBS) < 0)
+	    {
+	      darwin_symbol_stubs = true;
+	      ld_needs_eh_markers = true;
+	    }
+	}
+      else if (generating_for_darwin_version < 9)
+	{
+	  /* If we don't know the linker version and we're targeting an old
+	     system, we know no better than to assume the use of an earlier
+	     linker.  */
+	  darwin_symbol_stubs = true;
+	  ld_needs_eh_markers = true;
+	}
+    }
+  else if (DARWIN_X86 && darwin_symbol_stubs && TARGET_64BIT)
+    {
+      inform (input_location,
+	      "%<-msymbol-stubs%> is not required for 64b code (ignored)");
+      darwin_symbol_stubs = false;
+    }
+
+  if (generating_for_darwin_version >= 9)
+    /* Later systems can support aligned common.  */
+    emit_aligned_common = true;
 
   /* The c_dialect...() macros are not available to us here.  */
   darwin_running_cxx = (strstr (lang_hooks.name, "C++") != 0);

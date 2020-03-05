@@ -265,7 +265,7 @@ static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 
-static tree build_array_type_1 (tree, tree, bool, bool);
+static tree build_array_type_1 (tree, tree, bool, bool, bool);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -5253,8 +5253,9 @@ fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
      = map->get_or_insert (t, &existed);
   if (!existed)
     {
-      array = build_array_type_1 (t2, TYPE_DOMAIN (t),
-				  TYPE_TYPELESS_STORAGE (t), false);
+      array
+	= build_array_type_1 (t2, TYPE_DOMAIN (t), TYPE_TYPELESS_STORAGE (t),
+			      false, false);
       TYPE_CANONICAL (array) = TYPE_CANONICAL (t);
       if (!fld->pset.add (array))
 	add_tree_to_fld_list (array, fld);
@@ -5516,8 +5517,7 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 	  free_lang_data_in_binfo (TYPE_BINFO (type));
 	  /* We need to preserve link to bases and virtual table for all
 	     polymorphic types to make devirtualization machinery working.  */
-	  if (!BINFO_VTABLE (TYPE_BINFO (type))
-	      || !flag_devirtualize)
+	  if (!BINFO_VTABLE (TYPE_BINFO (type)))
 	    TYPE_BINFO (type) = NULL;
 	}
     }
@@ -5780,7 +5780,8 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
       while (*nextp)
 	{
 	  tree var = *nextp;
-	  if (fndecl_built_in_p (var))
+	  if (TREE_CODE (var) == FUNCTION_DECL
+	      && fndecl_built_in_p (var))
 	    *nextp = TREE_CHAIN (var);
 	  else
 	    nextp = &TREE_CHAIN (var);
@@ -5939,8 +5940,9 @@ find_decls_types_r (tree *tp, int *ws, void *data)
     {
       for (tree *tem = &BLOCK_VARS (t); *tem; )
 	{
-	  if (TREE_CODE (*tem) != VAR_DECL
-	      || !auto_var_in_fn_p (*tem, DECL_CONTEXT (*tem)))
+	  if (TREE_CODE (*tem) != LABEL_DECL
+	      && (TREE_CODE (*tem) != VAR_DECL
+		  || !auto_var_in_fn_p (*tem, DECL_CONTEXT (*tem))))
 	    {
 	      gcc_assert (TREE_CODE (*tem) != RESULT_DECL
 			  && TREE_CODE (*tem) != PARM_DECL);
@@ -6109,6 +6111,13 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 	    {
 	      tree arg = gimple_op (stmt, i);
 	      find_decls_types (arg, fld);
+	      /* find_decls_types doesn't walk TREE_PURPOSE of TREE_LISTs,
+		 which we need for asm stmts.  */
+	      if (arg
+		  && TREE_CODE (arg) == TREE_LIST
+		  && TREE_PURPOSE (arg)
+		  && gimple_code (stmt) == GIMPLE_ASM)
+		find_decls_types (TREE_PURPOSE (arg), fld);
 	    }
 	}
     }
@@ -8361,11 +8370,12 @@ subrange_type_for_debug_p (const_tree type, tree *lowval, tree *highval)
 /* Construct, lay out and return the type of arrays of elements with ELT_TYPE
    and number of elements specified by the range of values of INDEX_TYPE.
    If TYPELESS_STORAGE is true, TYPE_TYPELESS_STORAGE flag is set on the type.
-   If SHARED is true, reuse such a type that has already been constructed.  */
+   If SHARED is true, reuse such a type that has already been constructed.
+   If SET_CANONICAL is true, compute TYPE_CANONICAL from the element type.  */
 
 static tree
 build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
-		    bool shared)
+		    bool shared, bool set_canonical)
 {
   tree t;
 
@@ -8382,19 +8392,13 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
   TYPE_TYPELESS_STORAGE (t) = typeless_storage;
   layout_type (t);
 
-  /* If the element type is incomplete at this point we get marked for
-     structural equality.  Do not record these types in the canonical
-     type hashtable.  */
-  if (TYPE_STRUCTURAL_EQUALITY_P (t))
-    return t;
-
   if (shared)
     {
       hashval_t hash = type_hash_canon_hash (t);
       t = type_hash_canon (hash, t);
     }
 
-  if (TYPE_CANONICAL (t) == t)
+  if (TYPE_CANONICAL (t) == t && set_canonical)
     {
       if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
 	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type))
@@ -8406,7 +8410,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
 	  = build_array_type_1 (TYPE_CANONICAL (elt_type),
 				index_type
 				? TYPE_CANONICAL (index_type) : NULL_TREE,
-				typeless_storage, shared);
+				typeless_storage, shared, set_canonical);
     }
 
   return t;
@@ -8417,7 +8421,8 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
 tree
 build_array_type (tree elt_type, tree index_type, bool typeless_storage)
 {
-  return build_array_type_1 (elt_type, index_type, typeless_storage, true);
+  return
+    build_array_type_1 (elt_type, index_type, typeless_storage, true, true);
 }
 
 /* Wrapper around build_array_type_1 with SHARED set to false.  */
@@ -8425,7 +8430,7 @@ build_array_type (tree elt_type, tree index_type, bool typeless_storage)
 tree
 build_nonshared_array_type (tree elt_type, tree index_type)
 {
-  return build_array_type_1 (elt_type, index_type, false, false);
+  return build_array_type_1 (elt_type, index_type, false, false, true);
 }
 
 /* Return a representation of ELT_TYPE[NELTS], using indices of type
@@ -13869,9 +13874,9 @@ verify_type_variant (const_tree t, tree tv)
 	  debug_tree (TYPE_SIZE_UNIT (t));
 	  return false;
 	}
+      verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
     }
   verify_variant_match (TYPE_PRECISION);
-  verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
   if (RECORD_OR_UNION_TYPE_P (t))
     verify_variant_match (TYPE_TRANSPARENT_AGGR);
   else if (TREE_CODE (t) == ARRAY_TYPE)
@@ -14978,6 +14983,41 @@ default_is_empty_record (const_tree type)
     return false;
 
   return default_is_empty_type (TYPE_MAIN_VARIANT (type));
+}
+
+/* Determine whether TYPE is a structure with a flexible array member,
+   or a union containing such a structure (possibly recursively).  */
+
+bool
+flexible_array_type_p (const_tree type)
+{
+  tree x, last;
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+      last = NULL_TREE;
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
+	if (TREE_CODE (x) == FIELD_DECL)
+	  last = x;
+      if (last == NULL_TREE)
+	return false;
+      if (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE
+	  && TYPE_SIZE (TREE_TYPE (last)) == NULL_TREE
+	  && TYPE_DOMAIN (TREE_TYPE (last)) != NULL_TREE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (last))) == NULL_TREE)
+	return true;
+      return false;
+    case UNION_TYPE:
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
+	{
+	  if (TREE_CODE (x) == FIELD_DECL
+	      && flexible_array_type_p (TREE_TYPE (x)))
+	    return true;
+	}
+      return false;
+    default:
+      return false;
+  }
 }
 
 /* Like int_size_in_bytes, but handle empty records specially.  */

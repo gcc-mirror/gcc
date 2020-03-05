@@ -941,7 +941,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	      fold_loop_internal_call (loop_vectorized_call,
 				       boolean_true_node);
 	      loop_vectorized_call = NULL;
-	      ret |= TODO_cleanup_cfg;
+	      ret |= TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
 	    }
 	}
       /* If outer loop vectorization fails for LOOP_VECTORIZED guarded

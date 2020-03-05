@@ -26,6 +26,12 @@
 // ISO C++ 14882:2017 24  Strings library
 //
 
+#ifndef _GLIBCXX_USE_CXX11_ABI
+// Instantiations in this file use the new SSO std::string ABI unless included
+// by another file which defines _GLIBCXX_USE_CXX11_ABI=0.
+# define _GLIBCXX_USE_CXX11_ABI 1
+#endif
+
 #include <string>
 
 namespace std _GLIBCXX_VISIBILITY(default)

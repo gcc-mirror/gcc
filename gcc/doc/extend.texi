@@ -6713,6 +6713,33 @@ attributes.
 The following attributes are supported on most targets.
 
 @table @code
+
+@item alias ("@var{target}")
+@cindex @code{alias} variable attribute
+The @code{alias} variable attribute causes the declaration to be emitted
+as an alias for another symbol known as an @dfn{alias target}.  Except
+for top-level qualifiers the alias target must have the same type as
+the alias.  For instance, the following
+
+@smallexample
+int var_target;
+extern int __attribute__ ((alias ("var_target"))) var_alias;
+@end smallexample
+
+@noindent
+defines @code{var_alias} to be an alias for the @code{var_target} variable.
+
+It is an error if the alias target is not defined in the same translation
+unit as the alias.
+
+Note that in the absence of the attribute GCC assumes that distinct
+declarations with external linkage denote distinct objects.  Using both
+the alias and the alias target to access the same object is undefined
+in a translation unit without a declaration of the alias with the attribute.
+
+This attribute requires assembler and object file support, and may not be
+available on all targets.
+
 @cindex @code{aligned} variable attribute
 @item aligned
 @itemx aligned (@var{alignment})
@@ -20297,13 +20324,13 @@ vector unsigned long long __builtin_crypto_vpermxor (vector unsigned long long,
 vector unsigned char __builtin_crypto_vpmsumb (vector unsigned char,
                                                vector unsigned char);
 
-vector unsigned short __builtin_crypto_vpmsumb (vector unsigned short,
+vector unsigned short __builtin_crypto_vpmsumh (vector unsigned short,
                                                 vector unsigned short);
 
-vector unsigned int __builtin_crypto_vpmsumb (vector unsigned int,
+vector unsigned int __builtin_crypto_vpmsumw (vector unsigned int,
                                               vector unsigned int);
 
-vector unsigned long long __builtin_crypto_vpmsumb (vector unsigned long long,
+vector unsigned long long __builtin_crypto_vpmsumd (vector unsigned long long,
                                                     vector unsigned long long);
 
 vector unsigned long long __builtin_crypto_vshasigmad (vector unsigned long long,

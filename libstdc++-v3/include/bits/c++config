@@ -668,6 +668,8 @@ namespace std
 // PSTL configuration
 
 #if __cplusplus >= 201703L
+// This header is not installed for freestanding:
+#if __has_include(<pstl/pstl_config.h>)
 // Preserved here so we have some idea which version of upstream we've pulled in
 // #define PSTL_VERSION 104
 // #define PSTL_VERSION_MAJOR (PSTL_VERSION/100)
@@ -686,6 +688,7 @@ namespace std
 # define __PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
 
 #include <pstl/pstl_config.h>
+#endif // __has_include
+#endif // C++17
 
-#endif
 // End of prewritten config; the settings discovered at configure time follow.

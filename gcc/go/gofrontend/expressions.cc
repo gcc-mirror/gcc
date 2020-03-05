@@ -2036,7 +2036,11 @@ class Integer_expression : public Expression
 
   int
   do_inlining_cost() const
-  { return 1; }
+  {
+    if (this->type_ != NULL && this->type_->named_type() != NULL)
+      return 0x100000;
+    return 1; 
+  }
 
   void
   do_export(Export_function_body*) const;
@@ -2451,7 +2455,11 @@ class Float_expression : public Expression
 
   int
   do_inlining_cost() const
-  { return 1; }
+  {
+    if (this->type_ != NULL && this->type_->named_type() != NULL)
+      return 0x100000;
+    return 1;
+  }
 
   void
   do_export(Export_function_body*) const;
@@ -2664,7 +2672,11 @@ class Complex_expression : public Expression
 
   int
   do_inlining_cost() const
-  { return 2; }
+  {
+    if (this->type_ != NULL && this->type_->named_type() != NULL)
+      return 0x100000;
+    return 2;
+  }
 
   void
   do_export(Export_function_body*) const;

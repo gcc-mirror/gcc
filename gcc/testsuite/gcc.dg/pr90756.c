@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wno-psabi" } */
 /* { dg-additional-options "-mno-sse" { target ia32 } } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef float B __attribute__((vector_size(4 * sizeof (float))));
 typedef unsigned long long C __attribute__((vector_size(4 * sizeof (long long))));

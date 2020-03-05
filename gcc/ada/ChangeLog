@@ -1,3 +1,57 @@
+2019-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/92489
+	Backport from mainline
+	2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute_Reference, case Invalid_Value):
+	Resolve result of call to Get_Simple_Init_Val, which may be a
+	conversion of a literal.
+
+2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/92362
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Attribute_Definition_Clause>:
+	Use a temporary instead of clobbering the result with a freeze node.
+
+2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/92575
+	* expect.c (__gnat_expect_poll [VMS, HPUX]): Fix typo.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* locales.c (iso_3166): Add missing comma after "United-States".
+
+2019-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/91995
+	* sem_ch8.adb (Chain_Use_Clause): Remove second argument in calls
+	to Defining_Entity.
+	* sem_elab.adb (Find_Unit_Entity): Likewise.  Deal with N_Subunit
+	here in lieu of in Defining_Entity.
+	* sem_spark.adb (Check_Callable_Body): Likewise.
+	(Check_Package_Body): Likewise.
+	* sem_util.ads (Defining_Entity): Remove 2nd and 3th parameters.
+	* sem_util.adb (Defining_Entity): Remove 2nd and 3th parameters,
+	and adjust accordingly.  Deal with N_Compilation_Unit.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Really test the
+	sign of the value when deciding to build a NEGATE_EXPR.
+	<PLUS_EXPR>: Remove redundant line.
+	<BIT_AND_EXPR>: Do the negation here.
+
+2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu): Test Can_Use_Internal_Rep
+	on the underlying type of the node.
+	(Call_to_gnu): Likewise with the type of the prefix.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

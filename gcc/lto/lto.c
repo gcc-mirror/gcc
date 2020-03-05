@@ -2446,6 +2446,15 @@ lto_wpa_write_files (void)
 
   timevar_push (TV_WHOPR_WPA_IO);
 
+  ggc_trim ();
+
+  cgraph_node *node;
+  /* Do body modifications needed for streaming before we fork out
+     worker processes.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    if (!node->clone_of && gimple_has_body_p (node->decl))
+      lto_prepare_function_for_streaming (node);
+
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));

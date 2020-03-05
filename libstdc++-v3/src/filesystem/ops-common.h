@@ -76,7 +76,7 @@ namespace __gnu_posix
   inline int stat(const wchar_t* path, stat_type* buffer)
   { return ::_wstat(path, buffer); }
 
-  inline lstat(const wchar_t* path, stat_type* buffer)
+  inline int lstat(const wchar_t* path, stat_type* buffer)
   {
     // TODO symlinks not currently supported
     return stat(path, buffer);

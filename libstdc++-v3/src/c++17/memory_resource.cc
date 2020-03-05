@@ -37,6 +37,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
+  // This was defined inline in 9.1 and 9.2 so code compiled by those
+  // versions will not use this symbol.
+  memory_resource::~memory_resource() = default;
+
   namespace
   {
     class newdel_res_t final : public memory_resource
@@ -166,6 +170,10 @@ namespace pmr
   { return default_res.obj.load(); }
 
   // Member functions for std::pmr::monotonic_buffer_resource
+
+  // This was defined inline in 9.1 and 9.2 so code compiled by those
+  // versions will not use this symbol.
+  monotonic_buffer_resource::~monotonic_buffer_resource() { release(); }
 
   // Memory allocated by the upstream resource is managed in a linked list
   // of _Chunk objects. A _Chunk object recording the size and alignment of

@@ -612,6 +612,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   size_t hash_value(const path& __p) noexcept;
 
+  /// Exception type thrown by the Filesystem library
+  class filesystem_error : public std::system_error
+  {
+  public:
+    filesystem_error(const string& __what_arg, error_code __ec);
+
+    filesystem_error(const string& __what_arg, const path& __p1,
+		     error_code __ec);
+
+    filesystem_error(const string& __what_arg, const path& __p1,
+		     const path& __p2, error_code __ec);
+
+    filesystem_error(const filesystem_error&) = default;
+    filesystem_error& operator=(const filesystem_error&) = default;
+
+    // No move constructor or assignment operator.
+    // Copy rvalues instead, so that _M_impl is not left empty.
+
+    ~filesystem_error();
+
+    const path& path1() const noexcept;
+    const path& path2() const noexcept;
+    const char* what() const noexcept;
+
+  private:
+    struct _Impl;
+    std::__shared_ptr<const _Impl> _M_impl;
+  };
+
+  /// Create a path from a UTF-8-encoded sequence of char
   template<typename _InputIterator>
     inline auto
     u8path(_InputIterator __first, _InputIterator __last)
@@ -642,6 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     }
 
+  /// Create a path from a UTF-8-encoded sequence of char
   template<typename _Source>
     inline auto
     u8path(const _Source& __source)
@@ -662,34 +693,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       return path{ __source };
 #endif
     }
-
-  class filesystem_error : public std::system_error
-  {
-  public:
-    filesystem_error(const string& __what_arg, error_code __ec);
-
-    filesystem_error(const string& __what_arg, const path& __p1,
-		     error_code __ec);
-
-    filesystem_error(const string& __what_arg, const path& __p1,
-		     const path& __p2, error_code __ec);
-
-    filesystem_error(const filesystem_error&) = default;
-    filesystem_error& operator=(const filesystem_error&) = default;
-
-    // No move constructor or assignment operator.
-    // Copy rvalues instead, so that _M_impl is not left empty.
-
-    ~filesystem_error();
-
-    const path& path1() const noexcept;
-    const path& path2() const noexcept;
-    const char* what() const noexcept;
-
-  private:
-    struct _Impl;
-    std::__shared_ptr<const _Impl> _M_impl;
-  };
 
   struct path::_Cmpt : path
   {

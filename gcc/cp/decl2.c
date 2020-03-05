@@ -5537,8 +5537,11 @@ mark_used (tree decl, tsubst_flags_t complain)
 	vec_safe_push (no_linkage_decls, decl);
     }
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
-      && !DECL_INITIAL (decl) && !DECL_ARTIFICIAL (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && !DECL_INITIAL (decl)
+      && !DECL_ARTIFICIAL (decl)
+      && !DECL_PURE_VIRTUAL_P (decl))
     /* Remember it, so we can check it was defined.  */
     note_vague_linkage_fn (decl);
 

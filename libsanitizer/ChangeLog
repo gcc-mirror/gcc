@@ -1,3 +1,40 @@
+2020-03-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt (x86_64-*-darwin*, i?86-*-darwin*): Enable by
+	default only for Darwin versions greater than equal to 11
+	(macOS 10.7).
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Cherry-pick
+	llvm-project revision 947f9692440836dcb8d88b74b69dd379d85974ce.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Likewise.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.cc:
+	Cherry-pick compiler-rt revision r375220.
+
+2019-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libsanitizer/87880
+	* asan/asan_interceptors.h:
+	(ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION): New.
+	* asan/Makefile.am (DEFS): Add (for Darwin only)
+	ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION, defined to 0.
+	* asan/Makefile.in: Regenerated.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

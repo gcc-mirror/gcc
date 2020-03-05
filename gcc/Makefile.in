@@ -1120,6 +1120,7 @@ endif
 # Support for additional languages (other than C).
 # C can be supported this way too (leave for later).
 
+LANG_CONFIGUREFRAGS  = @all_lang_configurefrags@
 LANG_MAKEFRAGS = @all_lang_makefrags@
 
 # Used by gcc/jit/Make-lang.in
@@ -1896,7 +1897,7 @@ cstamp-h: config.in config.status
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
-config.status: $(srcdir)/configure $(srcdir)/config.gcc
+config.status: $(srcdir)/configure $(srcdir)/config.gcc $(LANG_CONFIGUREFRAGS)
 	@if [ ! -f config.status ] ; then \
 	  echo You must configure gcc.  Look at http://gcc.gnu.org/install/ for details.; \
 	  false; \

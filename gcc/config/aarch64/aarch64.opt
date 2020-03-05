@@ -119,15 +119,15 @@ EnumValue
 Enum(aarch64_tls_size) String(48) Value(48)
 
 march=
-Target RejectNegative ToLower Joined Var(aarch64_arch_string)
+Target RejectNegative Negative(march=) ToLower Joined Var(aarch64_arch_string)
 Use features of architecture ARCH.
 
 mcpu=
-Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
+Target RejectNegative Negative(mcpu=) ToLower Joined Var(aarch64_cpu_string)
 Use features of and optimize for CPU.
 
 mtune=
-Target RejectNegative ToLower Joined Var(aarch64_tune_string)
+Target RejectNegative Negative(mtune=) ToLower Joined Var(aarch64_tune_string)
 Optimize for CPU.
 
 mabi=

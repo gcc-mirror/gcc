@@ -1,3 +1,73 @@
+2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	New.
+
+2019-11-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg): Change argument 1 to
+	volatile void *.  Remove trap check.
+	(__kernel_cmpxchg2): Likewise.
+	(FETCH_AND_OP_2): Adjust operand types.
+	(OP_AND_FETCH_2): Likewise.
+	(FETCH_AND_OP_WORD): Likewise.
+	(OP_AND_FETCH_WORD): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(__sync_val_compare_and_swap_4): Likewise.
+	(__sync_bool_compare_and_swap_4): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(__sync_lock_test_and_set_4): Likewise.
+	(SYNC_LOCK_RELEASE_1): Likewise.  Use __kernel_cmpxchg2 for release.
+	(__sync_lock_release_4): Adjust operand types.  Use __kernel_cmpxchg
+	for release.
+	(__sync_lock_release_8): Remove.
+
+2019-10-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host (powerpc-*-darwin*,powerpc64-*-darwin*): Revise crt
+	list.
+	* config/rs6000/t-darwin: Build crt3_2 for older systems.  Revise
+	mmacosx-version-min for crts to run across all system versions.
+	* config/rs6000/t-darwin64 (LIB2ADD): Remove.
+	* config/t-darwin: Revise mmacosx-version-min for crts to run across
+	system versions >= 10.4.
+
+2019-10-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add libef_ppc.a to the extra files for powerpc-darwin.
+	* config/rs6000/t-darwin: (PPC_ENDFILE_SRC, PPC_ENDFILE_OBJS): New.
+	Build objects for the out of line save/restore register functions
+	so that they can be used for any supported Darwin version.
+	* config/t-darwin: Default the build Darwin version to Darwin8
+	(MacOS 10.4).
+
+2019-10-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (_dl_read_access_allowed): Change argument to
+	unsigned int.  Adjust callers.
+	(__canonicalize_funcptr_for_compare): Change plabel type to volatile
+	unsigned int *.  Load relocation offset before function pointer.
+	Add barrier to ensure ordering.
+
+2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/lib2funcs.S (__gcc_plt_call): Load branch target to %r21.
+	Load PIC register after branch target.  Fix white space.
+	* config/pa/milli64.S ($$dyncall): Separate LINUX and non LINUX
+	implementations.  Load PIC register after branch target.  Don't
+	clobber function pointer when it points to function descriptor.
+	Use nullification instead of branch in LINUX implementation.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

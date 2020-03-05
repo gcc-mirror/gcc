@@ -4180,6 +4180,50 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   if (f == NULL && a == NULL)	/* No arguments */
     return true;
 
+  /* ALLOCATED has two mutually exclusive keywords, but only one
+     can be present at time and neither is optional. */
+  if (strcmp (name, "allocated") == 0)
+    {
+      if (!a)
+	{
+	  gfc_error ("ALLOCATED intrinsic at %L requires an array or scalar "
+		     "allocatable entity", where);
+	  return false;
+	}
+
+      if (a->name)
+	{
+	  if (strcmp (a->name, "scalar") == 0)
+	    {
+	      if (a->next)
+		goto whoops;
+	      if (a->expr->rank != 0)
+		{
+		  gfc_error ("Scalar entity required at %L", &a->expr->where);
+		  return false;
+		}
+	      return true;
+	    }
+	  else if (strcmp (a->name, "array") == 0)
+	    {
+	      if (a->next)
+		goto whoops;
+	      if (a->expr->rank == 0)
+		{
+		  gfc_error ("Array entity required at %L", &a->expr->where);
+		  return false;
+		}
+	      return true;
+	    }
+	  else
+	    {
+	      gfc_error ("Invalid keyword %qs in %qs intrinsic function at %L",
+			 a->name, name, &a->expr->where);
+	      return false;
+	    }
+	}
+    }
+
   for (;;)
     {		/* Put the nonkeyword arguments in a 1:1 correspondence */
       if (f == NULL)
@@ -4199,6 +4243,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   if (a == NULL)
     goto do_sort;
 
+whoops:
   gfc_error ("Too many arguments in call to %qs at %L", name, where);
   return false;
 

@@ -1910,6 +1910,9 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
 	}
     }
 
+  if (!aarch64_plus_operand (y, y_mode))
+    y = force_reg (y_mode, y);
+
   return aarch64_gen_compare_reg (code, x, y);
 }
 
@@ -15343,6 +15346,34 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+
+  cfun->machine->label_is_assembled = true;
+}
+
+/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  Check if the patch area is after
+   the function label and emit a BTI if necessary.  */
+
+void
+aarch64_print_patchable_function_entry (FILE *file,
+					unsigned HOST_WIDE_INT patch_area_size,
+					bool record_p)
+{
+  if (cfun->machine->label_is_assembled
+      && aarch64_bti_enabled ()
+      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+    {
+      /* Remove the BTI that follows the patch area and insert a new BTI
+	 before the patch area right after the function label.  */
+      rtx_insn *insn = next_real_nondebug_insn (get_insns ());
+      if (insn
+	  && INSN_P (insn)
+	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	  && XINT (PATTERN (insn), 1) == UNSPECV_BTI_C)
+	delete_insn (insn);
+      asm_fprintf (file, "\thint\t34 // bti c\n");
+    }
+
+  default_print_patchable_function_entry (file, patch_area_size, record_p);
 }
 
 /* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
@@ -15504,6 +15535,9 @@ aarch64_emit_post_barrier (enum memmodel model)
 void
 aarch64_split_compare_and_swap (rtx operands[])
 {
+  /* Split after prolog/epilog to avoid interactions with shrinkwrapping.  */
+  gcc_assert (epilogue_completed);
+
   rtx rval, mem, oldval, newval, scratch;
   machine_mode mode;
   bool is_weak;
@@ -15620,6 +15654,9 @@ void
 aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 			 rtx value, rtx model_rtx, rtx cond)
 {
+  /* Split after prolog/epilog to avoid interactions with shrinkwrapping.  */
+  gcc_assert (epilogue_completed);
+
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
   const enum memmodel model = memmodel_from_int (INTVAL (model_rtx));
@@ -17247,14 +17284,15 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
     }
   else
     {
-      if (CONST_INT_P (low_in2))
-	{
-	  high_in2 = force_reg (DImode, high_in2);
-	  emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
-					      GEN_INT (-INTVAL (low_in2))));
-	}
+      if (aarch64_plus_immediate (low_in2, DImode))
+	emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
+					    GEN_INT (-INTVAL (low_in2))));
       else
-	emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	{
+	  low_in2 = force_reg (DImode, low_in2);
+	  emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	}
+      high_in2 = force_reg (DImode, high_in2);
 
       if (unsigned_p)
 	emit_insn (gen_usubdi3_carryinC (high_dest, high_in1, high_in2));
@@ -18162,19 +18200,21 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   /* Sort the operands.  */
   qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
 
+  /* Copy the memory operands so that if we have to bail for some
+     reason the original addresses are unchanged.  */
   if (load)
     {
-      mem_1 = temp_operands[1];
-      mem_2 = temp_operands[3];
-      mem_3 = temp_operands[5];
-      mem_4 = temp_operands[7];
+      mem_1 = copy_rtx (temp_operands[1]);
+      mem_2 = copy_rtx (temp_operands[3]);
+      mem_3 = copy_rtx (temp_operands[5]);
+      mem_4 = copy_rtx (temp_operands[7]);
     }
   else
     {
-      mem_1 = temp_operands[0];
-      mem_2 = temp_operands[2];
-      mem_3 = temp_operands[4];
-      mem_4 = temp_operands[6];
+      mem_1 = copy_rtx (temp_operands[0]);
+      mem_2 = copy_rtx (temp_operands[2]);
+      mem_3 = copy_rtx (temp_operands[4]);
+      mem_4 = copy_rtx (temp_operands[6]);
       gcc_assert (code == UNKNOWN);
     }
 
@@ -18943,6 +18983,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE aarch64_asm_trampoline_template
+
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY aarch64_print_patchable_function_entry
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST aarch64_build_builtin_va_list

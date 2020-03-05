@@ -2899,9 +2899,6 @@ gfc_get_namespace (gfc_namespace *parent, int parent_types)
 	}
     }
 
-  if (parent_types && ns->parent != NULL)
-    ns->has_implicit_none_export = ns->parent->has_implicit_none_export;
-
   ns->refs = 1;
 
   return ns;

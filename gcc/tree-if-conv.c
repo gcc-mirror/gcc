@@ -2626,6 +2626,11 @@ combine_blocks (struct loop *loop)
       vphi = get_virtual_phi (bb);
       if (vphi)
 	{
+	  /* When there's just loads inside the loop a stray virtual
+	     PHI merging the uses can appear, update last_vdef from
+	     it.  */
+	  if (!last_vdef)
+	    last_vdef = gimple_phi_arg_def (vphi, 0);
 	  imm_use_iterator iter;
 	  use_operand_p use_p;
 	  gimple *use_stmt;
@@ -2657,6 +2662,10 @@ combine_blocks (struct loop *loop)
 	      if (gimple_vdef (stmt))
 		last_vdef = gimple_vdef (stmt);
 	    }
+	  else
+	    /* If this is the first load we arrive at update last_vdef
+	       so we handle stray PHIs correctly.  */
+	    last_vdef = gimple_vuse (stmt);
 	  if (predicated[i])
 	    {
 	      ssa_op_iter i;

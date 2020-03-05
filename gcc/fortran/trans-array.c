@@ -540,9 +540,10 @@ gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
 
 void
 gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
-				     tree *dtype_off, tree *dim_off,
-				     tree *dim_size, tree *stride_suboff,
-				     tree *lower_suboff, tree *upper_suboff)
+				     tree *dtype_off, tree *span_off,
+				     tree *dim_off, tree *dim_size,
+				     tree *stride_suboff, tree *lower_suboff,
+				     tree *upper_suboff)
 {
   tree field;
   tree type;
@@ -552,6 +553,8 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
   *data_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
   *dtype_off = byte_position (field);
+  field = gfc_advance_chain (TYPE_FIELDS (type), SPAN_FIELD);
+  *span_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
   *dim_off = byte_position (field);
   type = TREE_TYPE (TREE_TYPE (field));
@@ -6117,17 +6120,20 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 		  tree atype = type;
 		  while (TREE_CODE (TREE_TYPE (atype)) == ARRAY_TYPE)
 		    atype = TREE_TYPE (atype);
-		  if (TREE_CODE (TREE_TYPE (atype)) == INTEGER_TYPE
-		      && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
-			 > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
+		  gcc_checking_assert (TREE_CODE (TREE_TYPE (atype))
+				       == INTEGER_TYPE);
+		  gcc_checking_assert (TREE_TYPE (TREE_TYPE (se.expr))
+				       == TREE_TYPE (atype));
+		  if (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
+		      > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
 		    {
 		      unsigned HOST_WIDE_INT size
 			= tree_to_uhwi (TYPE_SIZE_UNIT (atype));
 		      const char *p = TREE_STRING_POINTER (se.expr);
 
 		      se.expr = build_string (size, p);
-		      TREE_TYPE (se.expr) = atype;
 		    }
+		  TREE_TYPE (se.expr) = atype;
 		}
 	      break;
 
@@ -8031,7 +8037,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  /* The components shall be deallocated before their containing entity.  */
 	  gfc_prepend_expr_to_block (&se->post, tmp);
 	}
-      if (expr->ts.type == BT_CHARACTER)
+      if (expr->ts.type == BT_CHARACTER && expr->expr_type != EXPR_FUNCTION)
 	se->string_length = expr->ts.u.cl->backend_decl;
       if (size)
 	array_parameter_size (se->expr, expr, size);

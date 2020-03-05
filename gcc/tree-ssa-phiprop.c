@@ -338,8 +338,15 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	    && (!type
 		|| types_compatible_p
 		     (TREE_TYPE (gimple_assign_lhs (use_stmt)), type))
-	    /* We cannot replace a load that may throw or is volatile.  */
-	    && !stmt_can_throw_internal (cfun, use_stmt)))
+	    /* We cannot replace a load that may throw or is volatile.
+	       For volatiles the transform can change the number of
+	       executions if the load is inside a loop but the address
+	       computations outside (PR91812).  We could relax this
+	       if we guard against that appropriately.  For loads that can
+	       throw we could relax things if the moved loads all are
+	       known to not throw.  */
+	    && !stmt_can_throw_internal (cfun, use_stmt)
+	    && !gimple_has_volatile_ops (use_stmt)))
 	continue;
 
       /* Check if we can move the loads.  The def stmt of the virtual use

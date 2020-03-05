@@ -37,9 +37,25 @@ test02()
   d = std::move(d);
 }
 
+void
+test03()
+{
+  std::filesystem::directory_iterator d;
+  auto d2 = std::move(d);
+}
+
+void
+test04()
+{
+  std::filesystem::recursive_directory_iterator d;
+  auto d2 = std::move(d);
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
+  test04();
 }

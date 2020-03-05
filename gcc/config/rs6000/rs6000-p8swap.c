@@ -791,6 +791,11 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_REDUC_PLUS:
 	  case UNSPEC_REDUC:
 	    return 1;
+	  case UNSPEC_VPMSUM:
+	    /* vpmsumd is not swappable, but vpmsum[bhw] are.  */
+	    if (GET_MODE (op) == V2DImode)
+	      return 0;
+	    break;
 	  }
       }
 

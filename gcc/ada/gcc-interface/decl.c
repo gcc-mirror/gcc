@@ -8255,9 +8255,8 @@ annotate_value (tree gnu_size)
     {
     case INTEGER_CST:
       /* For negative values, build NEGATE_EXPR of the opposite.  Such values
-	 can appear for discriminants in expressions for variants.  Note that,
-	 sizetype being unsigned, we don't directly use tree_int_cst_sgn.  */
-      if (tree_int_cst_sign_bit (gnu_size))
+	 can appear for discriminants in expressions for variants.  */
+      if (tree_int_cst_sgn (gnu_size) < 0)
 	{
 	  tree t = wide_int_to_tree (sizetype, -wi::to_wide (gnu_size));
 	  tcode = Negate_Expr;
@@ -8335,9 +8334,8 @@ annotate_value (tree gnu_size)
 	  && tree_int_cst_sign_bit (TREE_OPERAND (gnu_size, 1)))
 	{
 	  tcode = Minus_Expr;
-	  ops[0] = annotate_value (TREE_OPERAND (gnu_size, 0));
-	  wide_int op1 = -wi::to_wide (TREE_OPERAND (gnu_size, 1));
-	  ops[1] = annotate_value (wide_int_to_tree (sizetype, op1));
+	  wide_int wop1 = -wi::to_wide (TREE_OPERAND (gnu_size, 1));
+	  ops[1] = annotate_value (wide_int_to_tree (sizetype, wop1));
 	  break;
 	}
 
@@ -8378,9 +8376,9 @@ annotate_value (tree gnu_size)
 	 Such values can appear in expressions with aligning patterns.  */
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
-	  wide_int op1 = wi::sext (wi::to_wide (TREE_OPERAND (gnu_size, 1)),
-				   TYPE_PRECISION (sizetype));
-	  ops[1] = annotate_value (wide_int_to_tree (sizetype, op1));
+	  wide_int wop1 = -wi::to_wide (TREE_OPERAND (gnu_size, 1));
+	  tree op1 = wide_int_to_tree (sizetype, wop1);
+	  ops[1] = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
 	}
       break;
 

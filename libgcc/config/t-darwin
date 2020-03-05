@@ -1,21 +1,15 @@
 # Set this as a minimum (unless overriden by arch t-files) since it's a
 # reasonable lowest common denominator that works for all our archs.
-HOST_LIBGCC2_CFLAGS += -mmacosx-version-min=10.5
+HOST_LIBGCC2_CFLAGS += -mmacosx-version-min=10.4
 
 crt3.o: $(srcdir)/config/darwin-crt3.c
-	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
+	$(crt_compile) -mmacosx-version-min=10.4 -c $<
 
 crttms.o: $(srcdir)/config/darwin-crt-tm.c
-	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -DSTART -c $<
+	$(crt_compile) -mmacosx-version-min=10.4 -DSTART -c $<
 
 crttme.o: $(srcdir)/config/darwin-crt-tm.c
-	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -DEND -c $<
-
-# -pipe because there's an assembler bug, 4077127, which causes
-# it to not properly process the first # directive, causing temporary
-# file names to appear in stabs, causing the bootstrap to fail.  Using -pipe
-# works around this by not having any temporary file names.
-HOST_LIBGCC2_CFLAGS += -pipe
+	$(crt_compile) -mmacosx-version-min=10.4 -DEND -c $<
 
 # Use unwind-dw2-fde-darwin
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/config/unwind-dw2-fde-darwin.c \
@@ -23,4 +17,4 @@ LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/config/unwind-dw2-fde-darwin.c \
 
 # Patch to __Unwind_Find_Enclosing_Function for Darwin10.
 d10-uwfef.o: $(srcdir)/config/darwin10-unwind-find-enc-func.c
-	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -mmacosx-version-min=10.6 -c $<
+	$(crt_compile) -mmacosx-version-min=10.6 -c $<

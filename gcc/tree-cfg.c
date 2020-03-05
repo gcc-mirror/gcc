@@ -3215,6 +3215,13 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  debug_generic_stmt (expr);
 	  return true;
 	}
+      if (MR_DEPENDENCE_CLIQUE (expr) != 0
+	  && MR_DEPENDENCE_CLIQUE (expr) > cfun->last_clique)
+	{
+	  error ("invalid clique in MEM_REF");
+	  debug_generic_stmt (expr);
+	  return true;
+	}
     }
   else if (TREE_CODE (expr) == TARGET_MEM_REF)
     {
@@ -3231,6 +3238,13 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  || !POINTER_TYPE_P (TREE_TYPE (TMR_OFFSET (expr))))
 	{
 	  error ("invalid offset operand in TARGET_MEM_REF");
+	  debug_generic_stmt (expr);
+	  return true;
+	}
+      if (MR_DEPENDENCE_CLIQUE (expr) != 0
+	  && MR_DEPENDENCE_CLIQUE (expr) > cfun->last_clique)
+	{
+	  error ("invalid clique in TARGET_MEM_REF");
 	  debug_generic_stmt (expr);
 	  return true;
 	}
@@ -7677,6 +7691,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       after = bb;
     }
 
+  /* Adjust the maximum clique used.  */
+  dest_cfun->last_clique = saved_cfun->last_clique;
+
   loop->aux = NULL;
   loop0->aux = NULL;
   /* Loop sizes are no longer correct, fix them up.  */
@@ -9151,7 +9168,7 @@ generate_range_test (basic_block bb, tree index, tree low, tree high,
 		     tree *lhs, tree *rhs)
 {
   tree type = TREE_TYPE (index);
-  tree utype = unsigned_type_for (type);
+  tree utype = range_check_type (type);
 
   low = fold_convert (utype, low);
   high = fold_convert (utype, high);

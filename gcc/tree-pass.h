@@ -565,6 +565,7 @@ extern rtl_opt_pass *make_pass_stack_ptr_mod (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_initialize_regs (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_combine (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_if_after_combine (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_jump_after_combine (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_ree (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_partition_blocks (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_match_asm_constraints (gcc::context *ctxt);
@@ -582,7 +583,6 @@ extern rtl_opt_pass *make_pass_clean_state (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_branch_prob (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_value_profile_transformations (gcc::context
 							      *ctxt);
-extern rtl_opt_pass *make_pass_postreload_jump (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_postreload_cse (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_gcse2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_after_reload (gcc::context *ctxt);

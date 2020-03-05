@@ -1879,7 +1879,8 @@ Escape_analysis_assign::expression(Expression** pexpr)
             this->context_->track(addr_node);
 
             Node::Escape_state* addr_state = addr_node->state(this->context_, NULL);
-            addr_state->loop_depth = array_state->loop_depth;
+            if (array_state->loop_depth != 0)
+              addr_state->loop_depth = array_state->loop_depth;
           }
       }
       break;

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dce.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "regs.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 
@@ -256,6 +257,10 @@ thread_jump (edge e, basic_block b)
   regset nonequal;
   bool failed = false;
   reg_set_iterator rsi;
+
+  /* Jump threading may cause fixup_partitions to introduce new crossing edges,
+     which is not allowed after reload.  */
+  gcc_checking_assert (!reload_completed || !crtl->has_bb_partition);
 
   if (b->flags & BB_NONTHREADABLE_BLOCK)
     return NULL;
@@ -1224,6 +1229,14 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 		}
 	    }
 	}
+
+      HARD_REG_SET i1_used, i2_used;
+
+      get_call_reg_set_usage (i1, &i1_used, call_used_reg_set);
+      get_call_reg_set_usage (i2, &i2_used, call_used_reg_set);
+
+      if (!hard_reg_set_equal_p (i1_used, i2_used))
+        return dir_none;
     }
 
   /* If both i1 and i2 are frame related, verify all the CFA notes
@@ -3269,10 +3282,10 @@ make_pass_jump (gcc::context *ctxt)
 
 namespace {
 
-const pass_data pass_data_postreload_jump =
+const pass_data pass_data_jump_after_combine =
 {
   RTL_PASS, /* type */
-  "postreload_jump", /* name */
+  "jump_after_combine", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_JUMP, /* tv_id */
   0, /* properties_required */
@@ -3282,31 +3295,34 @@ const pass_data pass_data_postreload_jump =
   0, /* todo_flags_finish */
 };
 
-class pass_postreload_jump : public rtl_opt_pass
+class pass_jump_after_combine : public rtl_opt_pass
 {
 public:
-  pass_postreload_jump (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_postreload_jump, ctxt)
+  pass_jump_after_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_jump_after_combine, ctxt)
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_thread_jumps; }
   virtual unsigned int execute (function *);
 
-}; // class pass_postreload_jump
+}; // class pass_jump_after_combine
 
 unsigned int
-pass_postreload_jump::execute (function *)
+pass_jump_after_combine::execute (function *)
 {
-  cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
+  /* Jump threading does not keep dominators up-to-date.  */
+  free_dominance_info (CDI_DOMINATORS);
+  cleanup_cfg (CLEANUP_THREADING);
   return 0;
 }
 
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_postreload_jump (gcc::context *ctxt)
+make_pass_jump_after_combine (gcc::context *ctxt)
 {
-  return new pass_postreload_jump (ctxt);
+  return new pass_jump_after_combine (ctxt);
 }
 
 namespace {

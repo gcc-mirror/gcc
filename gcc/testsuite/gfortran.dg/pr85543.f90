@@ -6,3 +6,4 @@ contains
    real(z()) function f()  ! { dg-error "in initialization expression at" }
    end
 end
+! { dg-prune-output "Bad kind expression for function" }

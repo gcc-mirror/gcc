@@ -1170,9 +1170,12 @@ sanitize_rewrite_addressable_params (function *fun)
 	    continue;
 
 	  if (dump_file)
-	    fprintf (dump_file,
-		     "Rewriting parameter whose address is taken: %s\n",
-		     IDENTIFIER_POINTER (DECL_NAME (arg)));
+	    {
+	      fprintf (dump_file,
+		       "Rewriting parameter whose address is taken: ");
+	      print_generic_expr (dump_file, arg, dump_flags);
+	      fputc ('\n', dump_file);
+	    }
 
 	  SET_DECL_PT_UID (var, DECL_PT_UID (arg));
 

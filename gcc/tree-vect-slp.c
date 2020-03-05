@@ -129,6 +129,7 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts)
   SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
   node->refcnt = 1;
+  node->max_nunits = 1;
 
   unsigned i;
   FOR_EACH_VEC_ELT (scalar_stmts, i, stmt_info)
@@ -150,8 +151,7 @@ typedef struct _slp_oprnd_info
      stmt.  */
   tree first_op_type;
   enum vect_def_type first_dt;
-  bool first_pattern;
-  bool second_pattern;
+  bool any_pattern;
 } *slp_oprnd_info;
 
 
@@ -171,8 +171,7 @@ vect_create_oprnd_info (int nops, int group_size)
       oprnd_info->def_stmts.create (group_size);
       oprnd_info->first_dt = vect_uninitialized_def;
       oprnd_info->first_op_type = NULL_TREE;
-      oprnd_info->first_pattern = false;
-      oprnd_info->second_pattern = false;
+      oprnd_info->any_pattern = false;
       oprnds_info.quick_push (oprnd_info);
     }
 
@@ -309,13 +308,11 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
   tree oprnd;
   unsigned int i, number_of_oprnds;
   enum vect_def_type dt = vect_uninitialized_def;
-  bool pattern = false;
   slp_oprnd_info oprnd_info;
   int first_op_idx = 1;
   unsigned int commutative_op = -1U;
   bool first_op_cond = false;
   bool first = stmt_num == 0;
-  bool second = stmt_num == 1;
 
   if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
     {
@@ -378,13 +375,12 @@ again:
 	  return -1;
 	}
 
-      if (second)
-	oprnd_info->second_pattern = pattern;
+      if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
+	oprnd_info->any_pattern = true;
 
       if (first)
 	{
 	  oprnd_info->first_dt = dt;
-	  oprnd_info->first_pattern = pattern;
 	  oprnd_info->first_op_type = TREE_TYPE (oprnd);
 	}
       else
@@ -1051,15 +1047,24 @@ vect_build_slp_tree (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location, "re-using %sSLP tree %p\n",
 			 *leader ? "" : "failed ", *leader);
       if (*leader)
-	(*leader)->refcnt++;
+	{
+	  (*leader)->refcnt++;
+	  vect_update_max_nunits (max_nunits, (*leader)->max_nunits);
+	}
       return *leader;
     }
-  slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size, max_nunits,
+  poly_uint64 this_max_nunits = 1;
+  slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size,
+					&this_max_nunits,
 					matches, npermutes, tree_size,
 					max_tree_size, bst_map);
-  /* Keep a reference for the bst_map use.  */
   if (res)
-    res->refcnt++;
+    {
+      res->max_nunits = this_max_nunits;
+      vect_update_max_nunits (max_nunits, this_max_nunits);
+      /* Keep a reference for the bst_map use.  */
+      res->refcnt++;
+    }
   bst_map->put (stmts.copy (), res);
   return res;
 }
@@ -1218,7 +1223,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	      /* ???  Rejecting patterns this way doesn't work.  We'd have to
 		 do extra work to cancel the pattern so the uses see the
 		 scalar version.  */
-	      && !is_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (child)[0]))
+	      && !oprnd_info->any_pattern)
 	    {
 	      slp_tree grandchild;
 
@@ -1262,7 +1267,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  /* ???  Rejecting patterns this way doesn't work.  We'd have to
 	     do extra work to cancel the pattern so the uses see the
 	     scalar version.  */
-	  && !is_pattern_stmt_p (stmt_info))
+	  && !is_pattern_stmt_p (stmt_info)
+	  && !oprnd_info->any_pattern)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1393,7 +1399,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		  /* ???  Rejecting patterns this way doesn't work.  We'd have
 		     to do extra work to cancel the pattern so the uses see the
 		     scalar version.  */
-		  && !is_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (child)[0]))
+		  && !oprnd_info->any_pattern)
 		{
 		  unsigned int j;
 		  slp_tree grandchild;
@@ -1463,9 +1469,10 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p\n",
+  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u)\n",
 		   SLP_TREE_DEF_TYPE (node) != vect_internal_def
-		   ? " (external)" : "", node);
+		   ? " (external)" : "", node,
+		   estimated_poly_value (node->max_nunits));
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     dump_printf_loc (metadata, user_loc, "\tstmt %d %G", i, stmt_info->stmt);
   if (SLP_TREE_CHILDREN (node).is_empty ())

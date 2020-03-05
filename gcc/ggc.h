@@ -243,6 +243,9 @@ extern const char *ggc_alloc_string (const char *contents, int length
    function is called, not during allocations.  */
 extern void ggc_collect	(void);
 
+/* Return unused memory pages to the system.  */
+extern void ggc_trim (void);
+
 /* Assume that all GGC memory is reachable and grow the limits for next collection. */
 extern void ggc_grow (void);
 

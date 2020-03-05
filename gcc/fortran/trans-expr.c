@@ -4993,20 +4993,29 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   tree gfc_desc_ptr;
   tree type;
   tree cond;
+  tree desc_attr;
   int attribute;
+  int cfi_attribute;
   symbol_attribute attr = gfc_expr_attr (e);
-  stmtblock_t block;
 
   /* If this is a full array or a scalar, the allocatable and pointer
      attributes can be passed. Otherwise it is 'CFI_attribute_other'*/
   attribute = 2;
   if (!e->rank || gfc_get_full_arrayspec_from_expr (e))
     {
-      if (fsym->attr.pointer)
+      if (attr.pointer)
 	attribute = 0;
-      else if (fsym->attr.allocatable)
+      else if (attr.allocatable)
 	attribute = 1;
     }
+
+  /* If the formal argument is assumed shape and neither a pointer nor
+     allocatable, it is unconditionally CFI_attribute_other.  */
+  if (fsym->as->type == AS_ASSUMED_SHAPE
+      && !fsym->attr.pointer && !fsym->attr.allocatable)
+   cfi_attribute = 2;
+  else
+   cfi_attribute = attribute;
 
   if (e->rank != 0)
     {
@@ -5021,6 +5030,10 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
+
+      bool is_artificial = (INDIRECT_REF_P (parmse->expr)
+			    ? DECL_ARTIFICIAL (TREE_OPERAND (parmse->expr, 0))
+			    : DECL_ARTIFICIAL (parmse->expr));
 
       /* Unallocated allocatable arrays and unassociated pointer arrays
 	 need their dtype setting if they are argument associated with
@@ -5040,7 +5053,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       type = e->ts.type != BT_ASSUMED ? gfc_typenode_for_spec (&e->ts) :
 					NULL_TREE;
 
-      if (type && DECL_ARTIFICIAL (parmse->expr)
+      if (type && is_artificial
 	  && type != gfc_get_element_type (TREE_TYPE (parmse->expr)))
 	{
 	  /* Obtain the offset to the data.  */
@@ -5052,8 +5065,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 			  gfc_conv_descriptor_dtype (parmse->expr),
 			  gfc_get_dtype_rank_type (e->rank, type));
 	}
-      else if (type == NULL_TREE
-	       || (!is_subref_array (e) && !DECL_ARTIFICIAL (parmse->expr)))
+      else if (type == NULL_TREE || (!is_subref_array (e) && !is_artificial))
 	{
 	  /* Make sure that the span is set for expressions where it
 	     might not have been done already.  */
@@ -5074,41 +5086,40 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 						    parmse->expr, attr);
     }
 
-  /* Set the CFI attribute field.  */
-  tmp = gfc_conv_descriptor_attribute (parmse->expr);
+  /* Set the CFI attribute field through a temporary value for the
+     gfc attribute.  */
+  desc_attr = gfc_conv_descriptor_attribute (parmse->expr);
   tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-			 void_type_node, tmp,
-			 build_int_cst (TREE_TYPE (tmp), attribute));
+			 void_type_node, desc_attr,
+			 build_int_cst (TREE_TYPE (desc_attr), cfi_attribute));
   gfc_add_expr_to_block (&parmse->pre, tmp);
 
   /* Now pass the gfc_descriptor by reference.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
 
-  /* Variables to point to the gfc and CFI descriptors.  */
+  /* Variables to point to the gfc and CFI descriptors; cfi = NULL implies
+     that the CFI descriptor is allocated by the gfor_fndecl_gfc_to_cfi call.  */
   gfc_desc_ptr = parmse->expr;
   cfi_desc_ptr = gfc_create_var (pvoid_type_node, "cfi");
-  gfc_add_modify (&parmse->pre, cfi_desc_ptr,
-		  build_int_cst (pvoid_type_node, 0));
+  gfc_add_modify (&parmse->pre, cfi_desc_ptr, null_pointer_node);
 
-  /* Allocate the CFI descriptor and fill the fields.  */
+  /* Allocate the CFI descriptor itself and fill the fields.  */
   tmp = gfc_build_addr_expr (NULL_TREE, cfi_desc_ptr);
   tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
+  gfc_add_expr_to_block (&parmse->pre, tmp);
+
+  /* Now set the gfc descriptor attribute.  */
+  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+			 void_type_node, desc_attr,
+			 build_int_cst (TREE_TYPE (desc_attr), attribute));
   gfc_add_expr_to_block (&parmse->pre, tmp);
 
   /* The CFI descriptor is passed to the bind_C procedure.  */
   parmse->expr = cfi_desc_ptr;
 
   /* Free the CFI descriptor.  */
-  gfc_init_block (&block);
-  cond = fold_build2_loc (input_location, NE_EXPR,
-			  logical_type_node, cfi_desc_ptr,
-			  build_int_cst (TREE_TYPE (cfi_desc_ptr), 0));
   tmp = gfc_call_free (cfi_desc_ptr);
-  gfc_add_expr_to_block (&block, tmp);
-  tmp = build3_v (COND_EXPR, cond,
-		  gfc_finish_block (&block),
-		  build_empty_stmt (input_location));
   gfc_prepend_expr_to_block (&parmse->post, tmp);
 
   /* Transfer values back to gfc descriptor.  */
@@ -5116,6 +5127,25 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
   gfc_prepend_expr_to_block (&parmse->post, tmp);
+
+  /* Deal with an optional dummy being passed to an optional formal arg
+     by finishing the pre and post blocks and making their execution
+     conditional on the dummy being present.  */
+  if (fsym->attr.optional && e->expr_type == EXPR_VARIABLE
+      && e->symtree->n.sym->attr.optional)
+    {
+      cond = gfc_conv_expr_present (e->symtree->n.sym);
+      tmp = fold_build2 (MODIFY_EXPR, void_type_node,
+			 cfi_desc_ptr,
+			 build_int_cst (pvoid_type_node, 0));
+      tmp = build3_v (COND_EXPR, cond,
+		      gfc_finish_block (&parmse->pre), tmp);
+      gfc_add_expr_to_block (&parmse->pre, tmp);
+      tmp = build3_v (COND_EXPR, cond,
+		      gfc_finish_block (&parmse->post),
+		      build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&parmse->post, tmp);
+    }
 }
 
 
@@ -6005,8 +6035,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      gfc_add_expr_to_block (&se->pre, tmp);
 		  }
 
-		  tmp = build_fold_indirect_ref_loc (input_location,
-						     parmse.expr);
+		  tmp = parmse.expr;
+		  /* With bind(C), the actual argument is replaced by a bind-C
+		     descriptor; in this case, the data component arrives here,
+		     which shall not be dereferenced, but still freed and
+		     nullified.  */
+		  if  (TREE_TYPE(tmp) != pvoid_type_node)
+		    tmp = build_fold_indirect_ref_loc (input_location,
+						       parmse.expr);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 		    tmp = gfc_conv_descriptor_data_get (tmp);
 		  tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE,
@@ -6786,8 +6822,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	gfc_allocate_lang_decl (result);
       GFC_DECL_SAVED_DESCRIPTOR (result) = parmse.expr;
       gfc_free_expr (class_expr);
-      gcc_assert (parmse.pre.head == NULL_TREE
-		  && parmse.post.head == NULL_TREE);
+      /* -fcheck= can add diagnostic code, which has to be placed before
+	 the call. */
+      if (parmse.pre.head != NULL)
+	  gfc_add_expr_to_block (&se->pre, parmse.pre.head);
+      gcc_assert (parmse.post.head == NULL_TREE);
     }
 
   /* Follow the function call with the argument post block.  */
@@ -10607,7 +10646,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       if (expr1->ts.deferred
 	  && gfc_expr_attr (expr1).allocatable
 	  && gfc_check_dependency (expr1, expr2, true))
-	rse.string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+	rse.string_length =
+	  gfc_evaluate_now_function_scope (rse.string_length, &rse.pre);
       string_length = rse.string_length;
     }
   else

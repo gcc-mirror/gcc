@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Define macros for some common variables names that we must not use for
 // naming variables, parameters etc. in the library.
@@ -25,6 +25,9 @@
 #if __has_include(<experimental/filesystem>)
 # include <experimental/filesystem>
 #endif
+
+#if __cplusplus >= 201402L
+
 // Library Fundamentals
 #include <experimental/algorithm>
 #include <experimental/any>
@@ -66,3 +69,5 @@
 # include <experimental/timer>
 # include <experimental/executor>
 #endif
+
+#endif // C++14

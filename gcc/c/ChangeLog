@@ -1,3 +1,83 @@
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93576
+	* c-decl.c (grokdeclarator): If this_size_varies, only push size into
+	*expr if it has side effects.
+
+2020-01-22  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline:
+	2020-01-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93348
+	* c-typeck.c (build_c_cast): Call remove_c_maybe_const_expr on
+	argument with integer operands.
+
+2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline:
+	2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93072
+	* c-decl.c (pushdecl): Use TREE_PUBLIC, not DECL_EXTERNAL, to
+	determine whether to set DECL_CONTEXT.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline:
+	2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93241
+	* c-typeck.c (build_c_cast): Check for expressions with integer
+	operands that can occur in an unevaluated part of an integer
+	constant expression and call note_integer_operands as needed.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* c-decl.c (identifier_global_tag): Define.
+
+2019-12-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Fix bugs relating to flexibly-sized objects in nios2 backend.
+	
+	PR target/92499
+
+	* c-decl.c (flexible_array_type_p): Move to common code.
+
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* c-parser.c (c_parser_predefined_identifier): New function.
+	(c_parser_postfix_expression): Use it.
+	(c_parser_omp_variable_list): Parse predefined identifiers.
+	* c-typeck.c (c_finish_omp_clauses): Allow predefined variables
+	in shared and firstprivate clauses, even when they are predetermined
+	shared.
+
+	2019-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91401
+	* c-parser.c (c_parser_omp_clause_dist_schedule): Fix up typos in the
+	check_no_duplicate_clause call.  Comment it out, instead emit a
+	warning for duplicate dist_schedule clauses.
+
+2019-08-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* c-parser.c (c_parse_file): Call c_common_no_more_pch ()
+	after determining that the first token is not
+	PRAGMA_GCC_PCH_PREPROCESS.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

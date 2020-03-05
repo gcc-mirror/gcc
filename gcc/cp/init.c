@@ -860,6 +860,11 @@ perform_member_init (tree member, tree init)
 	}
       if (init == error_mark_node)
 	return;
+      if (DECL_SIZE (member) && integer_zerop (DECL_SIZE (member))
+	  && !TREE_SIDE_EFFECTS (init))
+	/* Don't add trivial initialization of an empty base/field, as they
+	   might not be ordered the way the back-end expects.  */
+	return;
       /* A FIELD_DECL doesn't really have a suitable lifetime, but
 	 make_temporary_var_for_ref_to_temp will treat it as automatic and
 	 set_up_extended_ref_temp wants to use the decl in a warning.  */
@@ -3443,13 +3448,17 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  explicit_value_init_p = true;
 	}
 
-      if (processing_template_decl && explicit_value_init_p)
+      if (processing_template_decl)
 	{
+	  /* Avoid an ICE when converting to a base in build_simple_base_path.
+	     We'll throw this all away anyway, and build_new will create
+	     a NEW_EXPR.  */
+	  tree t = fold_convert (build_pointer_type (elt_type), data_addr);
 	  /* build_value_init doesn't work in templates, and we don't need
 	     the initializer anyway since we're going to throw it away and
 	     rebuild it at instantiation time, so just build up a single
 	     constructor call to get any appropriate diagnostics.  */
-	  init_expr = cp_build_fold_indirect_ref (data_addr);
+	  init_expr = cp_build_fold_indirect_ref (t);
 	  if (type_build_ctor_call (elt_type))
 	    init_expr = build_special_member_call (init_expr,
 						   complete_ctor_identifier,
@@ -3512,7 +3521,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 						     complete_ctor_identifier,
 						     init, elt_type,
 						     LOOKUP_NORMAL,
-                                                     complain);
+						     complain|tf_no_cleanup);
 	    }
 	  else if (explicit_value_init_p)
 	    {

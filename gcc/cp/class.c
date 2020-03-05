@@ -1907,6 +1907,7 @@ fixup_type_variants (tree t)
 	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
 
       TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
+      CLASSTYPE_FINAL (variants) = CLASSTYPE_FINAL (t);
 
       TYPE_BINFO (variants) = TYPE_BINFO (t);
 
@@ -2149,10 +2150,10 @@ maybe_warn_about_overly_private_class (tree t)
 
       if (!nonprivate_ctor)
 	{
-	  warning (OPT_Wctor_dtor_privacy,
-		   "%q#T only defines private constructors and has no friends",
-		   t);
-	  if (copy_or_move)
+	  bool w = warning (OPT_Wctor_dtor_privacy,
+			    "%q#T only defines private constructors and has "
+			    "no friends", t);
+	  if (w && copy_or_move)
 	    inform (DECL_SOURCE_LOCATION (copy_or_move),
 		    "%q#D is public, but requires an existing %q#T object",
 		    copy_or_move, t);
@@ -3197,6 +3198,60 @@ add_implicitly_declared_members (tree t, tree* access_decls,
     }
 }
 
+/* Cache of enum_min_precision values.  */
+static GTY((deletable)) hash_map<tree, int> *enum_to_min_precision;
+
+/* Return the minimum precision of a bit-field needed to store all
+   enumerators of ENUMERAL_TYPE TYPE.  */
+
+static int
+enum_min_precision (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  /* For unscoped enums without fixed underlying type and without mode
+     attribute we can just use precision of the underlying type.  */
+  if (UNSCOPED_ENUM_P (type)
+      && !ENUM_FIXED_UNDERLYING_TYPE_P (type)
+      && !lookup_attribute ("mode", TYPE_ATTRIBUTES (type)))
+    return TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type));
+
+  if (enum_to_min_precision == NULL)
+    enum_to_min_precision = hash_map<tree, int>::create_ggc (37);
+
+  bool existed;
+  int &prec = enum_to_min_precision->get_or_insert (type, &existed);
+  if (existed)
+    return prec;
+
+  tree minnode, maxnode;
+  if (TYPE_VALUES (type))
+    {
+      minnode = maxnode = NULL_TREE;
+      for (tree values = TYPE_VALUES (type);
+	   values; values = TREE_CHAIN (values))
+	{
+	  tree decl = TREE_VALUE (values);
+	  tree value = DECL_INITIAL (decl);
+	  if (value == error_mark_node)
+	    value = integer_zero_node;
+	  if (!minnode)
+	    minnode = maxnode = value;
+	  else if (tree_int_cst_lt (maxnode, value))
+	    maxnode = value;
+	  else if (tree_int_cst_lt (value, minnode))
+	    minnode = value;
+	}
+    }
+  else
+    minnode = maxnode = integer_zero_node;
+
+  signop sgn = tree_int_cst_sgn (minnode) >= 0 ? UNSIGNED : SIGNED;
+  int lowprec = tree_int_cst_min_precision (minnode, sgn);
+  int highprec = tree_int_cst_min_precision (maxnode, sgn);
+  prec = MAX (lowprec, highprec);
+  return prec;
+}
+
 /* FIELD is a bit-field.  We are finishing the processing for its
    enclosing type.  Issue any appropriate messages and set appropriate
    flags.  Returns false if an error has been diagnosed.  */
@@ -3258,7 +3313,7 @@ check_bitfield_decl (tree field)
 		    "width of %qD exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
-	  int prec = TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type));
+	  int prec = enum_min_precision (type);
 	  if (compare_tree_int (w, prec) < 0)
 	    warning_at (DECL_SOURCE_LOCATION (field), 0,
 			"%qD is too small to hold all values of %q#T",

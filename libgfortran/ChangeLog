@@ -1,3 +1,79 @@
+2020-02-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/93599
+	* io/async.c (destroy_adv_cond): Do not destroy lock.
+	(async_io): Make sure au->lock is locked for finishing of thread.
+	Do not lock/unlock around signalling emptysignal. Unlock au->lock
+	before return.
+	(init_adv_cond): Do not initialize lock.
+	(enqueue_transfer): Unlock after signal.
+	(enqueue_done_id): Likewise.
+	(enqueue_done): Likewise.
+	(enqueue_close): Likewise.
+	(enqueue_data_transfer): Likewise.
+	(async_wait_id): Do not lock/unlock around signalling au->work.
+	(async_wait): Unlock after signal.
+	* io/async.h (SIGNAL): Add comment about needed au->lock.
+	Remove locking/unlocking of advcond->lock.
+	(WAIT_SIGNAL_MUTEX): Add comment. Remove locking/unlocking of
+	advcond->lock.  Unlock mutex only at the end.  Loop on
+	__ghread_cond_wait returning zero.
+	(REVOKE_SIGNAL): Add comment. Remove locking/unlocking of
+	advcond->lock.
+	(struct adv_cond): Remove mutex from struct.
+
+2020-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+        Backport from mainline
+	PR libfortran/93234
+	* io/unit.c (set_internal_unit): Set round and sign flags
+	correctly.
+
+2019-11-26  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+        Backport from mainline
+        PR fortran/92100
+        io/transfer.c (data_transfer_init_worker): Use fbuf_reset
+        instead of fbuf_flush before the seek. Note that fbuf_reset
+        calls fbuf_flush and adjusts fbuf pointers.
+
+2019-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf <anlauf@gmx.de>
+
+	Backport from trunk
+	PR fortran/92569
+	* io/transfer.c (transfer_array_inner):  If position is
+	at AFTER_ENDFILE in current unit, return from data loop.
+
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92470
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Set lower_bound to 0
+	also for CFI_attribute_other.
+
+	2019-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92470
+	* runtime/ISO_Fortran_binding.c (CFI_address): Handle non-zero
+	lower_bound; update error message.
+	(CFI_allocate): Fix comment typo.
+	(CFI_establish): Fix identation, fix typos, don't check values of 'dv'
+	argument.
+
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Partial backport from trunk
+	PR fortran/91414
+	* intrinsics/random.c (lcg_parkmiller): Replace with splitmix64.
+	(splitmix64): New function.
+	(getosrandom): Fix return value, simplify.
+	(init_rand_state): Use getosrandom only to get 8 bytes, splitmix64
+	to fill rest of state.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
@@ -24,12 +100,12 @@
 2019-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from trunk
-        PR libfortran/90038
-        * intrinsics/execute_command_line (sigchld_handler): New function.
-        (execute_command_line): Install handler for SIGCHLD.
-        * configure.ac: Check for presence of sigaction and waitpid.
-        * config.h.in: Regenerated.
-        * configure: Regenerated.
+	PR libfortran/90038
+	* intrinsics/execute_command_line (sigchld_handler): New function.
+	(execute_command_line): Install handler for SIGCHLD.
+	* configure.ac: Check for presence of sigaction and waitpid.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
 
 2019-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
 

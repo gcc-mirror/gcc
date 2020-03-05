@@ -117,12 +117,12 @@ avr_texinfo[] =
 const avr_mcu_t
 avr_mcu_types[] =
 {
-#define AVR_MCU(NAME, ARCH, DEV_ATTRIBUTE, MACRO, DATA_SEC, TEXT_SEC, FLASH_SIZE)\
-  { NAME, ARCH, DEV_ATTRIBUTE, MACRO, DATA_SEC, TEXT_SEC, FLASH_SIZE },
+#define AVR_MCU(NAME, ARCH, DEV_ATTRIBUTE, MACRO, DATA_SEC, TEXT_SEC, FLASH_SIZE, PMOFF) \
+  { NAME, ARCH, DEV_ATTRIBUTE, MACRO, DATA_SEC, TEXT_SEC, FLASH_SIZE, PMOFF },
 #include "avr-mcus.def"
 #undef AVR_MCU
     /* End of list.  */
-  { NULL, ARCH_UNKNOWN, AVR_ISA_NONE, NULL, 0, 0, 0 }
+  { NULL, ARCH_UNKNOWN, AVR_ISA_NONE, NULL, 0, 0, 0, 0 }
 };
 
 

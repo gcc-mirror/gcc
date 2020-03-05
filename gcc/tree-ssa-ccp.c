@@ -2079,8 +2079,6 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
     else if (gimple_assign_ssa_name_copy_p (stmt))
       insert_clobber_before_stack_restore (gimple_assign_lhs (stmt), var,
 					   visited);
-    else
-      gcc_assert (is_gimple_debug (stmt));
 }
 
 /* Advance the iterator to the previous non-debug gimple statement in the same
@@ -2105,9 +2103,9 @@ gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
 /* Find a BUILT_IN_STACK_SAVE dominating gsi_stmt (I), and insert
    a clobber of VAR before each matching BUILT_IN_STACK_RESTORE.
 
-   It is possible that BUILT_IN_STACK_SAVE cannot be find in a dominator when a
-   previous pass (such as DOM) duplicated it along multiple paths to a BB.  In
-   that case the function gives up without inserting the clobbers.  */
+   It is possible that BUILT_IN_STACK_SAVE cannot be found in a dominator when
+   a previous pass (such as DOM) duplicated it along multiple paths to a BB.
+   In that case the function gives up without inserting the clobbers.  */
 
 static void
 insert_clobbers_for_var (gimple_stmt_iterator i, tree var)

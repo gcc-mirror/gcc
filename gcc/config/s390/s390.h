@@ -41,12 +41,12 @@ enum processor_flags
   PF_Z14 = 2048,
   PF_VXE = 4096,
   PF_VXE2 = 8192,
-  PF_ARCH13 = 16384
+  PF_Z15 = 16384
 };
 
 /* This is necessary to avoid a warning about comparing different enum
    types.  */
-#define s390_tune_attr ((enum attr_cpu)(s390_tune > PROCESSOR_8561_ARCH13 ? PROCESSOR_8561_ARCH13 : s390_tune ))
+#define s390_tune_attr ((enum attr_cpu)(s390_tune > PROCESSOR_8561_Z15 ? PROCESSOR_8561_Z15 : s390_tune ))
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility regardless of the
@@ -100,10 +100,10 @@ enum processor_flags
 	(s390_arch_flags & PF_VXE)
 #define TARGET_CPU_VXE_P(opts) \
 	(opts->x_s390_arch_flags & PF_VXE)
-#define TARGET_CPU_ARCH13 \
-	(s390_arch_flags & PF_ARCH13)
-#define TARGET_CPU_ARCH13_P(opts) \
-	(opts->x_s390_arch_flags & PF_ARCH13)
+#define TARGET_CPU_Z15 \
+	(s390_arch_flags & PF_Z15)
+#define TARGET_CPU_Z15_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z15)
 #define TARGET_CPU_VXE2 \
 	(s390_arch_flags & PF_VXE2)
 #define TARGET_CPU_VXE2_P(opts) \
@@ -160,9 +160,9 @@ enum processor_flags
 	(TARGET_VX && TARGET_CPU_VXE)
 #define TARGET_VXE_P(opts)						\
 	(TARGET_VX_P (opts) && TARGET_CPU_VXE_P (opts))
-#define TARGET_ARCH13 (TARGET_ZARCH && TARGET_CPU_ARCH13)
-#define TARGET_ARCH13_P(opts)						\
-	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ARCH13_P (opts))
+#define TARGET_Z15 (TARGET_ZARCH && TARGET_CPU_Z15)
+#define TARGET_Z15_P(opts)						\
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z15_P (opts))
 #define TARGET_VXE2					\
 	(TARGET_VX && TARGET_CPU_VXE2)
 #define TARGET_VXE2_P(opts)						\

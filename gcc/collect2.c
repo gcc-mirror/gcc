@@ -384,6 +384,10 @@ static void scan_prog_file (const char *, scanpass, scanfilter);
 void
 tool_cleanup (bool from_signal)
 {
+  /* maybe_unlink may call notice, which is not signal safe.  */
+  if (from_signal)
+    verbose = false;
+
   if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
 
@@ -743,7 +747,10 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 	      ++num_files;
 	  }
 
-	lto_o_files = XNEWVEC (char *, num_files + 1);
+	/* signal handler may access uninitialized memory
+	   and delete whatever it points to, if lto_o_files
+	   is not allocated with calloc.  */
+	lto_o_files = XCNEWVEC (char *, num_files + 1);
 	lto_o_files[num_files] = NULL;
 	start = XOBFINISH (&temporary_obstack, char *);
 	for (i = 0; i < num_files; ++i)

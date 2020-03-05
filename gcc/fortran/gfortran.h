@@ -2414,6 +2414,9 @@ typedef struct
 {
   gfc_expr *var, *start, *end, *step;
   unsigned short unroll;
+  bool ivdep;
+  bool vector;
+  bool novector;
 }
 gfc_iterator;
 
@@ -2790,6 +2793,9 @@ gfc_finalizer;
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
 extern int directive_unroll;
+extern bool directive_ivdep;
+extern bool directive_vector;
+extern bool directive_novector;
 
 /* SIMD clause enum.  */
 enum gfc_simd_clause
@@ -2967,6 +2973,8 @@ void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
 arith gfc_check_integer_range (mpz_t p, int kind);
 bool gfc_check_character_range (gfc_char_t, int);
+
+extern bool gfc_seen_div0;
 
 /* trans-types.c */
 bool gfc_check_any_c_kind (gfc_typespec *);

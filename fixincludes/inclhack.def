@@ -195,6 +195,33 @@ fix = {
 };
 
 /*
+ *  SDKs for 10.13 and 10.14 omit the definitions for API_AVAILABLE where
+ *  __attribute__((availability)) is not supported.
+ */
+fix = {
+    hackname  = darwin_api_availability;
+    mach      = "*-*-darwin*";
+    files     = os/availability.h;
+    bypass    = "__IPHONE_OS_VERSION_MIN_REQUIRED";
+    select    =
+    " *#define __API_AVAILABLE.*\n"
+    " *#define __API_DEPRECATED.*\n"
+    " *#define __API_DEPRECATED_WITH_REPLACEMENT.*\n"
+    " *#define __API_UNAVAILABLE.*\n";
+    c_fix     = format;
+    c_fix_arg =
+    "    #define API_AVAILABLE(...)\n"
+    "    #define API_DEPRECATED(...)\n"
+    "    #define API_DEPRECATED_WITH_REPLACEMENT(...)\n"
+    "    #define API_UNAVAILABLE(...)\n";
+    test_text =
+    "#define __API_AVAILABLE(...)\n"
+    "#define __API_DEPRECATED(...)\n"
+    "#define __API_DEPRECATED_WITH_REPLACEMENT(...)\n"
+    "#define __API_UNAVAILABLE(...)\n";
+};
+
+/*
  *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
 fix = {
@@ -2558,6 +2585,32 @@ fix = {
                 "#  define      UINT8_C(__c)    ((unsigned char)(__c))\n"
 		"#  define      INT16_C(__c)    ((short)(__c))\n"
 		"#  define	UINT16_C(__c)	((unsigned short)(__c))\n";
+};
+
+/*
+ * Fix broken and missing defines in inttypes.h
+ */
+fix = {
+    hackname  = hpux_c99_inttypes3;
+    mach      = "hppa*-hp-hpux11*";
+    files     = inttypes.h;
+    select    = "#define[ \t]INTPTR_MAX[ \t]*\n"
+		"#define[ \t]UINTPTR_MAX[ \t]*\n";
+    c_fix     = format;
+    c_fix_arg = "#undef SIZE_MAX\n"
+		"#define SIZE_MAX __SIZE_MAX__\n"
+		"#ifdef __INTPTR_MAX__\n"
+		"# undef INTPTR_MAX\n"
+		"# define INTPTR_MAX __INTPTR_MAX__\n"
+		"# undef INTPTR_MIN\n"
+		"# define INTPTR_MIN (-INTPTR_MAX - 1)\n"
+		"#endif\n"
+		"#ifdef __UINTPTR_MAX__\n"
+		"# undef UINTPTR_MAX\n"
+		"# define UINTPTR_MAX __UINTPTR_MAX__\n"
+		"#endif\n";
+    test_text = "#define INTPTR_MAX\n"
+		"#define UINTPTR_MAX\n";
 };
 
 /*

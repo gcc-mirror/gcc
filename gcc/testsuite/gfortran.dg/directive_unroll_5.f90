@@ -31,7 +31,7 @@ subroutine wrong3(a, b, n)
   integer :: a(n), b(n)
   integer (kind=4) :: i
 !GCC$ unroll 8
-  write (*,*) "wrong"! { dg-error "directive does not commence a loop" }
+  write (*,*) "wrong"! { dg-error "directive not at the start of a loop" }
   DO i=n, 1, -1
     call dummy2(a(i), b(i), i)
   ENDDO

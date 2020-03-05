@@ -1050,6 +1050,10 @@ skip_fixed_comments (void)
 	      return;
 	    }
 
+	  if (gfc_current_locus.lb != NULL
+	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
+	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
+
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
 	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments, 
 		but directives
@@ -1057,10 +1061,6 @@ skip_fixed_comments (void)
 		!$|c$|*$ should be treated as 2 spaces if the characters
 		in columns 3 to 6 are valid fixed form label columns
 		characters.  */
-	  if (gfc_current_locus.lb != NULL
-	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
-	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
-
 	  if ((flag_openmp || flag_openmp_simd) && !flag_openacc)
 	    {
 	      if (next_char () == '$')
@@ -1313,6 +1313,14 @@ restart:
       if (flag_openacc)
 	prev_openacc_flag = openacc_flag;
 
+      /* This can happen if the input file changed or via cpp's #line
+	 without getting reset (e.g. via input_stmt). It also happens
+	 when pre-including files via -fpre-include=.  */
+      if (continue_count == 0
+	  && gfc_current_locus.lb
+	  && continue_line > gfc_linebuf_linenum (gfc_current_locus.lb) + 1)
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb) + 1;
+
       continue_flag = 1;
       if (c == '!')
 	skip_comment_line ();
@@ -1474,6 +1482,14 @@ restart:
 	prev_openmp_flag = openmp_flag;
       if (flag_openacc)
 	prev_openacc_flag = openacc_flag;
+
+      /* This can happen if the input file changed or via cpp's #line
+	 without getting reset (e.g. via input_stmt). It also happens
+	 when pre-including files via -fpre-include=.  */
+      if (continue_count == 0
+	  && gfc_current_locus.lb
+	  && continue_line > gfc_linebuf_linenum (gfc_current_locus.lb) + 1)
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb) + 1;
 
       continue_flag = 1;
       old_loc = gfc_current_locus;
@@ -1943,7 +1959,7 @@ next_char:
    the file stack.  */
 
 static gfc_file *
-get_file (const char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
+get_file (const char *name, enum lc_reason reason)
 {
   gfc_file *f;
 

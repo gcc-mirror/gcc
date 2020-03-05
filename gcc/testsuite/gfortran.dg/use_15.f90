@@ -28,8 +28,8 @@ subroutine my_sub2 (a)
 end subroutine
 
 
-subroutine my_sub3 (a)
-  use test_mod2, my_sub3 => my_sub2  ! { dg-error "is also the name of the current program unit" }
+subroutine my_sub3 (a)              ! { dg-error "\(1\)" }
+  use test_mod2, my_sub3 => my_sub2 ! { dg-error "conflicts with the rename" }
   real a
   print *, a
 end subroutine

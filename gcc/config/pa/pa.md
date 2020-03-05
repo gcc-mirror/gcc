@@ -765,7 +765,7 @@
 
 (define_insn "scc"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operator:SI 3 "comparison_operator"
+	(match_operator:SI 3 "ordered_comparison_operator"
 			   [(match_operand:SI 1 "reg_or_0_operand" "rM")
 			    (match_operand:SI 2 "arith11_operand" "rI")]))]
   ""
@@ -775,7 +775,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(match_operator:DI 3 "comparison_operator"
+	(match_operator:DI 3 "ordered_comparison_operator"
 			   [(match_operand:DI 1 "reg_or_0_operand" "rM")
 			    (match_operand:DI 2 "arith11_operand" "rI")]))]
   "TARGET_64BIT"
@@ -785,10 +785,10 @@
 
 (define_insn "iorscc"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(ior:SI (match_operator:SI 3 "comparison_operator"
+	(ior:SI (match_operator:SI 3 "ordered_comparison_operator"
 				   [(match_operand:SI 1 "reg_or_0_operand" "rM")
 				    (match_operand:SI 2 "arith11_operand" "rI")])
-		(match_operator:SI 6 "comparison_operator"
+		(match_operator:SI 6 "ordered_comparison_operator"
 				   [(match_operand:SI 4 "reg_or_0_operand" "rM")
 				    (match_operand:SI 5 "arith11_operand" "rI")])))]
   ""
@@ -798,10 +798,10 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (match_operator:DI 3 "comparison_operator"
+	(ior:DI (match_operator:DI 3 "ordered_comparison_operator"
 				   [(match_operand:DI 1 "reg_or_0_operand" "rM")
 				    (match_operand:DI 2 "arith11_operand" "rI")])
-		(match_operator:DI 6 "comparison_operator"
+		(match_operator:DI 6 "ordered_comparison_operator"
 				   [(match_operand:DI 4 "reg_or_0_operand" "rM")
 				    (match_operand:DI 5 "arith11_operand" "rI")])))]
   "TARGET_64BIT"
@@ -813,7 +813,7 @@
 ;; from an scc insn (negscc and incscc).
 (define_insn "negscc"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(neg:SI (match_operator:SI 3 "comparison_operator"
+	(neg:SI (match_operator:SI 3 "ordered_comparison_operator"
 	       [(match_operand:SI 1 "reg_or_0_operand" "rM")
 		(match_operand:SI 2 "arith11_operand" "rI")])))]
   ""
@@ -823,7 +823,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(neg:DI (match_operator:DI 3 "comparison_operator"
+	(neg:DI (match_operator:DI 3 "ordered_comparison_operator"
 	       [(match_operand:DI 1 "reg_or_0_operand" "rM")
 		(match_operand:DI 2 "arith11_operand" "rI")])))]
   "TARGET_64BIT"
@@ -904,7 +904,7 @@
 
 (define_insn "incscc"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
- 	(plus:SI (match_operator:SI 4 "comparison_operator"
+ 	(plus:SI (match_operator:SI 4 "ordered_comparison_operator"
 		    [(match_operand:SI 2 "register_operand" "r,r")
 		     (match_operand:SI 3 "arith11_operand" "rI,rI")])
 		 (match_operand:SI 1 "register_operand" "0,?r")))]
@@ -917,7 +917,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
- 	(plus:DI (match_operator:DI 4 "comparison_operator"
+ 	(plus:DI (match_operator:DI 4 "ordered_comparison_operator"
 		    [(match_operand:DI 2 "register_operand" "r,r")
 		     (match_operand:DI 3 "arith11_operand" "rI,rI")])
 		 (match_operand:DI 1 "register_operand" "0,?r")))]
@@ -1062,7 +1062,7 @@
 (define_insn "decscc"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(minus:SI (match_operand:SI 1 "register_operand" "0,?r")
-		  (match_operator:SI 4 "comparison_operator"
+		  (match_operator:SI 4 "ordered_comparison_operator"
 		     [(match_operand:SI 2 "register_operand" "r,r")
 		      (match_operand:SI 3 "arith11_operand" "rI,rI")])))]
   ""
@@ -1075,7 +1075,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(minus:DI (match_operand:DI 1 "register_operand" "0,?r")
-		  (match_operator:DI 4 "comparison_operator"
+		  (match_operator:DI 4 "ordered_comparison_operator"
 		     [(match_operand:DI 2 "register_operand" "r,r")
 		      (match_operand:DI 3 "arith11_operand" "rI,rI")])))]
   "TARGET_64BIT"
@@ -1242,7 +1242,7 @@
 (define_expand "movsicc"
   [(set (match_operand:SI 0 "register_operand" "")
 	(if_then_else:SI
-	 (match_operand 1 "comparison_operator" "")
+	 (match_operand 1 "ordered_comparison_operator" "")
 	 (match_operand:SI 2 "reg_or_cint_move_operand" "")
 	 (match_operand:SI 3 "reg_or_cint_move_operand" "")))]
   ""
@@ -1264,7 +1264,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:SI
-	 (match_operator 2 "comparison_operator"
+	 (match_operator 2 "ordered_comparison_operator"
 	    [(match_operand:SI 3 "register_operand" "r,r,r,r")
 	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI")])
 	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,J,N,K")
@@ -1281,7 +1281,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "ordered_comparison_operator"
 	    [(match_operand:SI 3 "register_operand" "r,r,r,r,r,r,r,r")
 	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI,rI,rI,rI,rI")])
 	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,0,0,0,r,J,N,K")
@@ -1302,7 +1302,7 @@
 (define_expand "movdicc"
   [(set (match_operand:DI 0 "register_operand" "")
 	(if_then_else:DI
-	 (match_operand 1 "comparison_operator" "")
+	 (match_operand 1 "ordered_comparison_operator" "")
 	 (match_operand:DI 2 "reg_or_cint_move_operand" "")
 	 (match_operand:DI 3 "reg_or_cint_move_operand" "")))]
   "TARGET_64BIT"
@@ -1318,7 +1318,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r")
 	(if_then_else:DI
-	 (match_operator 2 "comparison_operator"
+	 (match_operator 2 "ordered_comparison_operator"
 	    [(match_operand:DI 3 "register_operand" "r,r,r,r,r")
 	     (match_operand:DI 4 "arith11_operand" "rI,rI,rI,rI,rI")])
 	 (match_operand:DI 1 "reg_or_cint_move_operand" "0,r,J,N,K")
@@ -1336,7 +1336,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r,r,r")
 	(if_then_else:DI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 5 "ordered_comparison_operator"
 	    [(match_operand:DI 3 "register_operand" "r,r,r,r,r,r,r,r")
 	     (match_operand:DI 4 "arith11_operand" "rI,rI,rI,rI,rI,rI,rI,rI")])
 	 (match_operand:DI 1 "reg_or_cint_move_operand" "0,0,0,0,r,J,N,K")
@@ -1413,7 +1413,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "ordered_comparison_operator"
 			 [(match_operand:SI 1 "reg_or_0_operand" "rM")
 			  (match_operand:SI 2 "arith5_operand" "rL")])
 	 (label_ref (match_operand 0 "" ""))
@@ -1442,7 +1442,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "ordered_comparison_operator"
 			 [(match_operand:SI 1 "reg_or_0_operand" "rM")
 			  (match_operand:SI 2 "arith5_operand" "rL")])
 	 (pc)
@@ -1469,7 +1469,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "ordered_comparison_operator"
 			 [(match_operand:DI 1 "reg_or_0_operand" "rM")
 			  (match_operand:DI 2 "reg_or_0_operand" "rM")])
 	 (label_ref (match_operand 0 "" ""))
@@ -1498,7 +1498,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "ordered_comparison_operator"
 			 [(match_operand:DI 1 "reg_or_0_operand" "rM")
 			  (match_operand:DI 2 "reg_or_0_operand" "rM")])
 	 (pc)
@@ -9062,7 +9062,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
 	(if_then_else
-	  (match_operator 2 "comparison_operator"
+	  (match_operator 2 "ordered_comparison_operator"
 	   [(plus:SI
 	      (match_operand:SI 0 "reg_before_reload_operand" "+!r,!*f,*Q")
 	      (match_operand:SI 1 "int5_operand" "L,L,L"))
@@ -10091,23 +10091,55 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (set_attr "length" "4,16")])
 
 ;; PA 2.0 hardware supports out-of-order execution of loads and stores, so
-;; we need a memory barrier to enforce program order for memory references.
-;; Since we want PA 1.x code to be PA 2.0 compatible, we also need the
-;; barrier when generating PA 1.x code.
+;; we need memory barriers to enforce program order for memory references
+;; when the TLB and PSW O bits are not set.  We assume all PA 2.0 systems
+;; are weakly ordered since neither HP-UX or Linux set the PSW O bit.  Since
+;; we want PA 1.x code to be PA 2.0 compatible, we also need barriers when
+;; generating PA 1.x code even though all PA 1.x systems are strongly ordered.
+
+;; When barriers are needed, we use a strongly ordered ldcw instruction as
+;; the barrier.  Most PA 2.0 targets are cache coherent.  In that case, we
+;; can use the coherent cache control hint and avoid aligning the ldcw
+;; address.  In spite of its description, it is not clear that the sync
+;; instruction works as a barrier.
 
 (define_expand "memory_barrier"
-  [(set (match_dup 0)
-        (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
+  [(parallel
+     [(set (match_dup 0) (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
+      (clobber (match_dup 1))])]
   ""
 {
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  /* We don't need a barrier if the target uses ordered memory references.  */
+  if (TARGET_ORDERED)
+    FAIL;
+  operands[1] = gen_reg_rtx (Pmode);
+  operands[0] = gen_rtx_MEM (BLKmode, operands[1]);
   MEM_VOLATILE_P (operands[0]) = 1;
 })
 
-(define_insn "*memory_barrier"
+(define_insn "*memory_barrier_coherent"
   [(set (match_operand:BLK 0 "" "")
-        (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
-  ""
-  "sync"
+        (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
+   (clobber (match_operand 1 "pmode_register_operand" "=r"))]
+  "TARGET_PA_20 && TARGET_COHERENT_LDCW"
+  "ldcw,co 0(%%sp),%1"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
+
+(define_insn "*memory_barrier_64"
+  [(set (match_operand:BLK 0 "" "")
+        (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
+    (clobber (match_operand 1 "pmode_register_operand" "=&r"))]
+  "TARGET_64BIT"
+  "ldo 15(%%sp),%1\n\tdepd %%r0,63,3,%1\n\tldcw 0(%1),%1"
+  [(set_attr "type" "binary")
+   (set_attr "length" "12")])
+
+(define_insn "*memory_barrier_32"
+  [(set (match_operand:BLK 0 "" "")
+        (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
+    (clobber (match_operand 1 "pmode_register_operand" "=&r"))]
+  ""
+  "ldo 15(%%sp),%1\n\t{dep|depw} %%r0,31,3,%1\n\tldcw 0(%1),%1"
+  [(set_attr "type" "binary")
+   (set_attr "length" "12")])

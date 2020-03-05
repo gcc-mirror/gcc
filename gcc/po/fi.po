@@ -33,7 +33,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2019-05-29 18:58+0300\n"
+"PO-Revision-Date: 2019-12-26 00:56+0200\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -42,15 +42,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
+"X-Poedit-Bookmarks: -1,4379,4571,5891,-1,9667,-1,-1,-1,-1\n"
 
 #: cfgrtl.c:2705
 msgid "flow control insn inside a basic block"
 msgstr "vuonohjauskäsky peruslohkon sisällä"
 
 #: cfgrtl.c:2937
+#, fuzzy
 msgid "wrong insn in the fallthru edge"
-msgstr ""
+msgstr "nimettömällä kentällä on vaillinainen tyyppi"
 
 #: cfgrtl.c:2994
 msgid "insn outside basic block"
@@ -67,9 +69,9 @@ msgid "[cannot find %s]"
 msgstr "lähdetiedostoa %s ei löydy"
 
 #: collect2.c:1632
-#, fuzzy, c-format
+#, c-format
 msgid "collect2 version %s\n"
-msgstr "gcc-versio %s %s\n"
+msgstr "collect2-versio %s\n"
 
 #: collect2.c:1737
 #, c-format
@@ -103,6 +105,8 @@ msgid ""
 "\n"
 "write_c_file - output name is %s, prefix is %s\n"
 msgstr ""
+"\n"
+"write_c_file - tuotoksen nimi on %s, etuliite on %s\n"
 
 #: collect2.c:2645
 #, c-format
@@ -118,9 +122,9 @@ msgid "const/copy propagation disabled"
 msgstr "const-/kopioinnin-eteneminen poistettu käytöstä"
 
 #: diagnostic.c:145
-#, fuzzy, c-format
+#, c-format
 msgid "%s: all warnings being treated as errors"
-msgstr "Käsittele kaikki varoitukset virheinä"
+msgstr "%s: kaikki varoitukset käsitellään virheinä"
 
 #: diagnostic.c:150
 #, c-format
@@ -179,7 +183,7 @@ msgstr "%s:%d: hämmentynyt aikaisemmista virheistä, poistutaan\n"
 #: diagnostic.c:1589
 #, c-format
 msgid "Internal compiler error: Error reporting routines re-entered.\n"
-msgstr ""
+msgstr "Sisäinen kääntäjän virhe: virheraportoinnin rutiineihin palattiin uudelleen.\n"
 
 #: final.c:1127
 msgid "negative insn length"
@@ -772,7 +776,7 @@ msgstr ""
 #: gcov-tool.c:528
 #, c-format
 msgid "Copyright %s 2019 Free Software Foundation, Inc.\n"
-msgstr ""
+msgstr "Tekijänoikeus %s 2019 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:531 gcov.c:925
 #, c-format
@@ -955,7 +959,6 @@ msgstr "Tulostiedoston ”%s” avaaminen epäonnistui\n"
 msgid "Removing '%s'\n"
 msgstr "Poistetaan ”%s”\n"
 
-# Hmm...
 #: gcov.c:1399 gcov.c:1467 gcov.c:2804
 #, c-format
 msgid "\n"
@@ -1267,7 +1270,7 @@ msgstr "Virheellinen vähimmäisargumenttimäärä (%d) funktiolle %s"
 #: opts.c:1396
 #, c-format
 msgid "Same as %s.  Use the latter option instead."
-msgstr ""
+msgstr "Sama kuin %s. Käytä tätä valitsinta ensimmäisen sijaan."
 
 #: opts.c:1404
 #, fuzzy, c-format
@@ -1657,9 +1660,8 @@ msgid "note: "
 msgstr "huom: "
 
 #: diagnostic.def:40
-#, fuzzy
 msgid "debug: "
-msgstr "aseta vianjäljityksen tulostetiedoston nimi"
+msgstr "vianjäljitys: "
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
@@ -1814,9 +1816,9 @@ msgid "How much can given compilation unit grow because of the inlining (in perc
 msgstr ""
 
 #: params.def:232
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)."
-msgstr ""
+msgstr "Sähkökatko"
 
 #: params.def:236
 #, no-c-format
@@ -1844,9 +1846,9 @@ msgid "Interval in which to probe the stack expressed as a power of two in bytes
 msgstr ""
 
 #: params.def:262
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "The maximum amount of memory to be allocated by GCSE."
-msgstr ""
+msgstr "Kumoamistoimintojen enimmäismäärä"
 
 #: params.def:269
 #, fuzzy, no-c-format
@@ -2074,9 +2076,9 @@ msgid "The maximum number of insns to duplicate when unfactoring computed gotos.
 msgstr "parametrin %qs maksimiarvo on %u"
 
 #: params.def:542
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "The maximum length of path considered in cse."
-msgstr ""
+msgstr "Kumoamistoimintojen enimmäismäärä"
 
 #: params.def:546
 #, fuzzy, no-c-format
@@ -2099,9 +2101,9 @@ msgid "Bound on number of iv uses in loop optimized in iv optimizations."
 msgstr "moduulienvälisiä optimointeja ei ole toteutettu C++:lle"
 
 #: params.def:578
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization."
-msgstr ""
+msgstr "moduulienvälisiä optimointeja ei ole toteutettu C++:lle"
 
 #: params.def:583
 #, fuzzy, no-c-format
@@ -2199,9 +2201,9 @@ msgid "The maximum conflict delay for an insn to be considered for speculative m
 msgstr "parametrin %qs maksimiarvo on %u"
 
 #: params.def:700
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled."
-msgstr ""
+msgstr "parametrin %qs maksimiarvo on %u"
 
 #: params.def:705
 #, no-c-format
@@ -2249,9 +2251,9 @@ msgid "The upper bound for sharing integer constants."
 msgstr "luetellun tyypin jäsenen %qE arvo ei ole kokonaislukuvakio"
 
 #: params.def:754
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "The lower bound for a buffer to be considered for stack smashing protection."
-msgstr ""
+msgstr "parametrin %qs maksimiarvo on %u"
 
 #: params.def:759
 #, no-c-format
@@ -2334,9 +2336,9 @@ msgid "Maximum length of partial antic set when performing tree pre optimization
 msgstr ""
 
 #: params.def:894
-#, no-c-format
+#, fuzzy, no-c-format
 msgid "Maximum depth of a loop nest to fully value-number optimistically."
-msgstr ""
+msgstr "parametrin %qs maksimiarvo on %u"
 
 #: params.def:905
 #, fuzzy, no-c-format
@@ -6142,9 +6144,8 @@ msgid "gfortran does not support -E without -cpp"
 msgstr "gfortran ei tue valitsinta -E ilman valitsinta -cpp"
 
 #: objc/lang-specs.h:30 objc/lang-specs.h:41
-#, fuzzy
 msgid "GNU Objective C no longer supports traditional compilation"
-msgstr "GCC ei enää tue valitsinta -traditional ilman valitsinta -E"
+msgstr "GNU Objective C ei enää tue perinteistä kääntämistä"
 
 #: objc/lang-specs.h:55
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
@@ -6308,8 +6309,9 @@ msgid "Disable preprocessing."
 msgstr "%s esikääntäjän direktiivissä"
 
 #: fortran/lang.opt:370
+#, fuzzy
 msgid "Eliminate multiple function invocations also for impure functions."
-msgstr ""
+msgstr "indeksoitu arvo on osoitin funktioon"
 
 #: fortran/lang.opt:374
 #, fuzzy
@@ -6424,7 +6426,7 @@ msgstr ""
 #: common.opt:1010 common.opt:1574 common.opt:1630 common.opt:1762
 #: common.opt:1766 common.opt:2000 common.opt:2178 common.opt:2879
 msgid "Does nothing. Preserved for backward compatibility."
-msgstr ""
+msgstr "Ei tee mitään. Säilytetty yhteensopivuuden vuoksi."
 
 #: fortran/lang.opt:493
 #, fuzzy
@@ -6499,8 +6501,9 @@ msgid "-ffree-line-length-<n>\tUse n as character line width in free mode."
 msgstr ""
 
 #: fortran/lang.opt:565
+#, fuzzy
 msgid "Try to interchange loops if profitable."
-msgstr ""
+msgstr "Kumoamistoimintojen enimmäismäärä"
 
 #: fortran/lang.opt:569
 #, fuzzy
@@ -6656,7 +6659,7 @@ msgstr ""
 #: common.opt:2602 common.opt:2703 common.opt:2755 common.opt:2843
 #: common.opt:2980 common.opt:2984 common.opt:2988 common.opt:2992
 msgid "Does nothing.  Preserved for backward compatibility."
-msgstr ""
+msgstr "Ei tee mitään. Säilytetty yhteensopivuuden vuoksi."
 
 #: fortran/lang.opt:803
 msgid "Statically link the GNU Fortran helper library (libgfortran)."
@@ -6688,9 +6691,8 @@ msgid "Conform to the ISO Fortran 95 standard."
 msgstr "Noudata ISO Fortran 95 -standardia"
 
 #: fortran/lang.opt:827
-#, fuzzy
 msgid "Conform to nothing in particular."
-msgstr "Älä noudata mitään erityisesti"
+msgstr "Älä noudata mitään erityisesti."
 
 #: fortran/lang.opt:831
 msgid "Accept extensions to support legacy code."
@@ -6732,24 +6734,20 @@ msgid "-I <dir>\tAdd <dir> to the end of the main include path."
 msgstr "-isystem <hakemisto>\tLisää <hakemisto> järjestelmän include-polun alkuun"
 
 #: c-family/c.opt:217
-#, fuzzy
 msgid "Generate make dependencies."
-msgstr "Luo make-riippuvuudet"
+msgstr "Luo make-riippuvuudet."
 
 #: c-family/c.opt:221
-#, fuzzy
 msgid "Generate make dependencies and compile."
-msgstr "Luo make-riippuvuudet ja käännä"
+msgstr "Luo make-riippuvuudet ja käännä."
 
 #: c-family/c.opt:225
-#, fuzzy
 msgid "-MF <file>\tWrite dependency output to the given file."
-msgstr "Kirjoita riippuvuustuloste annettuun tiedostoon"
+msgstr "-MF <tiedosto>\tKirjoita riippuvuustuloste annettuun tiedostoon."
 
 #: c-family/c.opt:229
-#, fuzzy
 msgid "Treat missing header files as generated files."
-msgstr "Käsittele puuttuvia otsikkotiedostoja luotavina tiedostoina"
+msgstr "Käsittele puuttuvia otsikkotiedostoja luotavina tiedostoina."
 
 #: c-family/c.opt:233
 msgid "Like -M but ignore system header files."
@@ -6773,9 +6771,8 @@ msgid "-MT <target>\tAdd an unquoted target."
 msgstr ""
 
 #: c-family/c.opt:253
-#, fuzzy
 msgid "Do not generate #line directives."
-msgstr "Älä luo #line-direktiivejä"
+msgstr "Älä luo #line-direktiivejä."
 
 #: c-family/c.opt:257
 #, fuzzy
@@ -6817,11 +6814,9 @@ msgstr ""
 msgid "Enable most warning messages."
 msgstr "Subject: Fetchmailin varoitus liian suuresta viestistä"
 
-# vähän fuzzy
 #: c-family/c.opt:308
-#, fuzzy
 msgid "Warn on any use of alloca."
-msgstr "Varoita pragmain väärästä käytöstä."
+msgstr "Varoita kaikesta allocan käytöstä."
 
 #: c-family/c.opt:312
 #, fuzzy
@@ -6931,9 +6926,8 @@ msgstr "Varoita ”char”-tyypillä indeksoinnista."
 #: c-family/c.opt:1369 c-family/c.opt:1373 c-family/c.opt:1377
 #: c-family/c.opt:1381 c-family/c.opt:1385 c-family/c.opt:1389
 #: config/i386/i386.opt:967
-#, fuzzy
 msgid "Deprecated in GCC 9.  This switch has no effect."
-msgstr "Vanhentunut. Tämä valitsin ei vaikuta mihinkään."
+msgstr "Vanhentunut GCC 9:ssä. Tämä valitsin ei vaikuta mihinkään."
 
 #: c-family/c.opt:429
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\"."
@@ -6964,9 +6958,8 @@ msgid "Warn when all constructors and destructors are private."
 msgstr "Varoita kun kaikki muodostimet ja hajottimet ovat yksityisiä."
 
 #: c-family/c.opt:461
-#, fuzzy
 msgid "Warn about dangling else."
-msgstr "Varoita implisiittisistä funktioesittelyistä."
+msgstr "Varoita orvosta elsestä."
 
 #: c-family/c.opt:465
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage."
@@ -7074,8 +7067,9 @@ msgid "Warn about format strings that are not literals."
 msgstr "Varoita muotoilumerkkijonoista, jotka eivät ole literaaleja."
 
 #: c-family/c.opt:575
+#, fuzzy
 msgid "Warn about function calls with format strings that write past the end of the destination region.  Same as -Wformat-overflow=1."
-msgstr ""
+msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: c-family/c.opt:580
 msgid "Warn about possible security problems with format functions."
@@ -7119,9 +7113,8 @@ msgid "Warn whenever type qualifiers are ignored."
 msgstr "Varoita tyyppimääreiden huomiotta jättämisestä."
 
 #: c-family/c.opt:622
-#, fuzzy
 msgid "Warn whenever attributes are ignored."
-msgstr "Varoita tyyppimääreiden huomiotta jättämisestä."
+msgstr "Varoita attribuuttien huomiotta jättämisestä."
 
 #: c-family/c.opt:626
 #, fuzzy
@@ -7196,9 +7189,8 @@ msgid "Warn when a string or character literal is followed by a ud-suffix which 
 msgstr ""
 
 #: c-family/c.opt:701
-#, fuzzy
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false."
-msgstr "Varoita vertailusta, joka on aina tosi tai aina epätosi."
+msgstr "Varoita, kun looginen operaattori on aina tosi tai aina epätosi."
 
 #: c-family/c.opt:705
 msgid "Warn when logical not is used on the left hand side operand of a comparison."
@@ -7429,9 +7421,8 @@ msgid "Warn about packed bit-fields whose offset changed in GCC 4.4."
 msgstr "Varoita pakatuista bittikentistä, joiden siirrososoite vaihtui GCC 4.4:ssä"
 
 #: c-family/c.opt:955
-#, fuzzy
 msgid "Warn about possibly missing parentheses."
-msgstr "Varoita mahdollisesti puuttuvista sulkeista"
+msgstr "Varoita mahdollisesti puuttuvista sulkeista."
 
 #: c-family/c.opt:963
 msgid "Warn about calling std::move on a local object in a return statement preventing copy elision."
@@ -7646,8 +7637,9 @@ msgid "Warn if a variable length array is used."
 msgstr "käytetään muuttuvapituista taulukkoa"
 
 #: c-family/c.opt:1199
+#, fuzzy
 msgid "-Wvla-larger-than=<number>\tWarn on unbounded uses of variable-length arrays, and on bounded uses of variable-length arrays whose bound can be larger than <number> bytes. <number> bytes."
-msgstr ""
+msgstr "muuttuja %qD esitelty %<inline%>:ksi"
 
 #: c-family/c.opt:1206
 msgid "-Wno-vla-larger-than Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger."
@@ -7747,9 +7739,8 @@ msgid "Enable the char8_t fundamental type and use it as the type for UTF-8 stri
 msgstr ""
 
 #: c-family/c.opt:1393
-#, fuzzy
 msgid "Deprecated in GCC 8.  This switch has no effect."
-msgstr "Vanhentunut. Tämä valitsin ei vaikuta mihinkään."
+msgstr "Vanhentunut GCC 8:ssa. Tämä valitsin ei vaikuta mihinkään."
 
 #: c-family/c.opt:1397
 #, fuzzy
@@ -7975,9 +7966,8 @@ msgid "Enable OpenMP's SIMD directives."
 msgstr "Luokittelematon lause IF-lauseessa kohdassa %C"
 
 #: c-family/c.opt:1681
-#, fuzzy
 msgid "Recognize C++ keywords like \"compl\" and \"xor\"."
-msgstr "Tunnista C++:n avainsanat kuten ”compl” ja ”xor”"
+msgstr "Tunnista C++:n avainsanat kuten ”compl” ja ”xor”."
 
 #: c-family/c.opt:1692
 msgid "Look for and use PCH files even when preprocessing."
@@ -8459,9 +8449,8 @@ msgid "Generate code for all template instantiations."
 msgstr "Käytä AltiVec-käskyjä"
 
 #: d/lang.opt:178
-#, fuzzy
 msgid "Generate code for assert contracts."
-msgstr "Tuota koodia GNU-assemblerille (gas)"
+msgstr "Tuota koodia väitesopimuksille."
 
 #: d/lang.opt:186
 msgid "-fbounds-check=[on|safeonly|off]\tTurn array bounds checks on, in @safe code only, or off."
@@ -8732,9 +8721,8 @@ msgid "Set the maximum amount for a single stack increment operation."
 msgstr ""
 
 #: config/mcore/mcore.opt:75
-#, fuzzy
 msgid "Always treat bitfields as int-sized."
-msgstr "Käsittele bittikenttiä aina int-kokoisina"
+msgstr "Käsittele bittikenttiä aina int-kokoisina."
 
 #: config/linux-android.opt:23
 msgid "Generate code for the Android platform."
@@ -9653,8 +9641,9 @@ msgid "Count speculative dependencies while calculating priority of instructions
 msgstr "Tuota koodia, joka käyttää 68881-liukulukukäskyjä"
 
 #: config/ia64/ia64.opt:178
+#, fuzzy
 msgid "Place a stop bit after every cycle when scheduling."
-msgstr ""
+msgstr "Ota käyttöön RX FPU-käskyjen käyttö."
 
 #: config/ia64/ia64.opt:182
 msgid "Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group."
@@ -13439,8 +13428,9 @@ msgstr ""
 "\n"
 
 #: config/rx/rx.opt:105
+#, fuzzy
 msgid "Maximum size in bytes of constant values allowed as operands."
-msgstr ""
+msgstr "parametrin %qs maksimiarvo on %u"
 
 #: config/rx/rx.opt:111
 #, fuzzy
@@ -13512,7 +13502,7 @@ msgstr "Tuota koodia big-endian-tilassa"
 
 #: config/visium/visium.opt:73
 msgid "Only retained for backward compatibility."
-msgstr ""
+msgstr "Säilytetty vain yhteensopivuuden vuoksi."
 
 #: config/sol2.opt:32
 msgid "Clear hardware capabilities when linking."
@@ -17148,8 +17138,9 @@ msgid "Optimize amount of stdarg registers saved to stack at start of function."
 msgstr ""
 
 #: common.opt:2439
+#, fuzzy
 msgid "Apply variable expansion when loops are unrolled."
-msgstr ""
+msgstr "Tuota bittikäskyjä"
 
 #: common.opt:2443
 msgid "-fstack-check=[no|generic|specific]\tInsert stack checking code into the program."
@@ -17398,8 +17389,9 @@ msgid "Perform straight-line strength reduction."
 msgstr ""
 
 #: common.opt:2715
+#, fuzzy
 msgid "Perform scalar replacement of aggregates."
-msgstr ""
+msgstr "Sähkökatko"
 
 #: common.opt:2719
 msgid "Replace temporary expressions in the SSA->normal pass."
@@ -18102,9 +18094,8 @@ msgid "return with value in function with no return type"
 msgstr "funktion paluuarvon tyyppi ei voi olla funktio"
 
 #: go/gofrontend/statements.cc:2797
-#, fuzzy
 msgid "too many values in return statement"
-msgstr "%s: liian monta arvoa"
+msgstr "liikaa arvoja return-lauseessa"
 
 #: go/gofrontend/statements.cc:3214
 #, fuzzy
@@ -19207,9 +19198,9 @@ msgid "size of loop %d should be %d, not %d"
 msgstr "sektorimäärä: %d, sektorikoko: %d\n"
 
 #: cfgloop.c:1458
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "bb %d does not belong to loop %d"
-msgstr ""
+msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1470
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -19237,9 +19228,9 @@ msgid "loop %d%'s latch is not dominated by its header"
 msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1512
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "loop %d%'s latch does not have exactly 1 successor"
-msgstr ""
+msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1517
 #, fuzzy, gcc-internal-format
@@ -19247,9 +19238,9 @@ msgid "loop %d%'s latch does not have header as successor"
 msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1522
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "loop %d%'s latch does not belong directly to it"
-msgstr ""
+msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1528
 #, fuzzy, gcc-internal-format
@@ -19257,9 +19248,9 @@ msgid "loop %d%'s header does not belong directly to it"
 msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1534
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "loop %d%'s latch is marked as part of irreducible region"
-msgstr ""
+msgstr "säiekohtaista muistia ei tueta tälle kohteelle"
 
 #: cfgloop.c:1568
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -19342,9 +19333,9 @@ msgid "verify_flow_info: REG_BR_PROB does not match cfg %i %i"
 msgstr "verify_flow_info: Väärä lohkolukumäärä %i %i"
 
 #: cfgrtl.c:2507
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "EDGE_CROSSING incorrectly set across same section"
-msgstr ""
+msgstr "väärä määrä argumentteja funktiolle %<va_start%>"
 
 #: cfgrtl.c:2512
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -19537,9 +19528,9 @@ msgid "inline clone with address taken"
 msgstr ""
 
 #: cgraph.c:3148
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "inline clone is forced to output"
-msgstr ""
+msgstr "virheellinen sisäinen makro ”%s”"
 
 #: cgraph.c:3155
 #, gcc-internal-format, gfc-internal-format
@@ -19637,9 +19628,9 @@ msgid "Analyzed alias has no reference"
 msgstr ""
 
 #: cgraph.c:3336
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "No edge out of thunk node"
-msgstr ""
+msgstr "bittikentän %qs leveys on negatiivinen"
 
 #: cgraph.c:3341
 #, gcc-internal-format
@@ -19730,7 +19721,7 @@ msgstr "%qs-attribuuttia ei huomioida %qs:lle"
 #: cgraphunit.c:976 c/c-decl.c:11507
 #, fuzzy, gcc-internal-format
 msgid "%q+F used but never defined"
-msgstr "nimike %q+D määritelty mutta käytettämättä"
+msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #: cgraphunit.c:978 c/c-decl.c:11517
 #, fuzzy, gcc-internal-format
@@ -19818,9 +19809,9 @@ msgid "can%'t get program status: %m"
 msgstr "ei voi lukea tiedostoa %s: %m"
 
 #: collect-utils.c:82
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s terminated with signal %d [%s]%s"
-msgstr "%s%sTuntematon signaali %d\n"
+msgstr "%s päätettiin signaalilla %d [%s]%s"
 
 #: collect-utils.c:98
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -20056,9 +20047,9 @@ msgid "profile for function %qD not found in profile data"
 msgstr "”%s” ei ole oikea profiilidatatiedosto ”%s”:lle"
 
 #: coverage.c:358
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "number of counters in profile data for function %qD does not match its profile data (counter %qs, expected %i and have %i)"
-msgstr ""
+msgstr "”%s” ei ole oikea profiilidatatiedosto ”%s”:lle"
 
 #: coverage.c:367
 #, fuzzy, gcc-internal-format
@@ -20126,7 +20117,7 @@ msgid "%<-fdbg-cnt=%s%>"
 msgstr "%s[%s] %s%s%s"
 
 #: dbgcnt.c:188
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "           %s"
 msgstr "          %s"
 
@@ -20503,9 +20494,9 @@ msgstr "nykyisen prosessin ryhmien noutaminen epäonnistui"
 
 #. The inferior failed to catch the signal.
 #: gcc.c:3270 gcc.c:3294
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s signal terminated program %s"
-msgstr "käytä aina numeroita käyttäjän/ryhmän nimissä"
+msgstr "%s-signaali päätti %s-ohjelman"
 
 #: gcc.c:3772 opts-common.c:1326 opts-common.c:1358 opts-global.c:139
 #, gcc-internal-format
@@ -20941,9 +20932,9 @@ msgid "open /dev/zero: %m"
 msgstr "fopen %s: %m"
 
 #: ggc-page.c:2474 ggc-page.c:2480
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t write PCH file"
-msgstr "ei voi kirjoittaa tiedostoon %s: %m"
+msgstr "PCH-tiedostoa ei voi kirjoittaa"
 
 #: gimple-fold.c:1786 gimple-fold.c:2787
 #, fuzzy, gcc-internal-format
@@ -20961,9 +20952,8 @@ msgid "%G%qD destination unchanged after copying no bytes"
 msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-fold.c:2225 tree-ssa-strlen.c:2181
-#, fuzzy
 msgid "%G%qD specified bound %E equals destination size"
-msgstr "%qE esitelty funktion palauttavana funktiona"
+msgstr "%G%qD-määritelty raja %E on yhtäsuuri kuin kohteen kokoon"
 
 #: gimple-fold.c:2227
 #, fuzzy
@@ -21011,35 +21001,35 @@ msgid "%qE output truncated before the last format character"
 msgstr ""
 
 #: gimple-ssa-sprintf.c:2511 gimple-ssa-sprintf.c:2631
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE may write a terminating nul past the end of the destination"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%qE saattaa kirjoittaa päättävän nul-tavun kohteen lopun yli"
 
 #: gimple-ssa-sprintf.c:2513 gimple-ssa-sprintf.c:2633
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE writing a terminating nul past the end of the destination"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%qE kirjoittaa päättävän nul-tavun kohteen lopun yli"
 
 #: gimple-ssa-sprintf.c:2523
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size %wu"
 msgid_plural "%<%.*s%> directive writing %wu bytes into a region of size %wu"
-msgstr[0] "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
-msgstr[1] "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr[0] "%<%.*s%>-direktiivi kirjoittaa %wu tavun %wu tavun kokoiseen alueeseen"
+msgstr[1] "%<%.*s%>-direktiivi kirjoittaa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2530
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size %wu"
 msgid_plural "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size %wu"
-msgstr[0] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
-msgstr[1] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr[0] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa %wu tavu %wu tavun kokoiseen alueeseen"
+msgstr[1] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2537
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
 msgid_plural "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
-msgstr[0] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
-msgstr[1] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr[0] "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa %wu tavu %wu tavun kokoiseen alueeseen"
+msgstr[1] "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2548
 #, gcc-internal-format
@@ -21047,9 +21037,9 @@ msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a
 msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2551
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste katkeaa kirjoitettaessa jopa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2553
 #, gcc-internal-format
@@ -21057,14 +21047,14 @@ msgid "%<%.*s%> directive writing up to %wu bytes into a region of size %wu"
 msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2565
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa kaiketi ainakin %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2568
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa kaiketi ainakin %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2571
 #, gcc-internal-format
@@ -21077,9 +21067,9 @@ msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu by
 msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa %wu–%wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2583
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin katkeaa kirjoittaessa %wu–%wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2586
 #, gcc-internal-format
@@ -21087,40 +21077,40 @@ msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of siz
 msgstr "%<%.*s%>-direktiivi kirjoittaa %wu–%wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2595
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa ainakin %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2598
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin katkeaa kirjoittaessa ainakin %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2600
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size %wu"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivi kirjoittaa vähintään %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2642
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size between %wu and %wu"
 msgid_plural "%<%.*s%> directive writing %wu bytes into a region of size between %wu and %wu"
-msgstr[0] "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
-msgstr[1] "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr[0] "%<%.*s%>-direktiivi kirjoittaa %wu tavun %wu–%wu tavun kokoiseen alueeseen"
+msgstr[1] "%<%.*s%>-direktiivi kirjoittaa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2649
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size between %wu and %wu"
 msgid_plural "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size between %wu and %wu"
-msgstr[0] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
-msgstr[1] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr[0] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa %wu tavu %wu–%wu tavun kokoiseen alueeseen"
+msgstr[1] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2657
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size between %wu and %wu"
 msgid_plural "%<%.*s%> directive output truncated writing %wu bytes into a region of size between %wu and %wu"
-msgstr[0] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
-msgstr[1] "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr[0] "%<%.*s%>-direktiivin katkeaa kirjoittaessa %wu tavu %wu–%wu tavun kokoiseen alueeseen"
+msgstr[1] "%<%.*s%>-direktiivin katkeaa kirjoittaessa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2669
 #, gcc-internal-format
@@ -21128,29 +21118,29 @@ msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a
 msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2672
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2675
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2688
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa kaiketi ainakin %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa kaiketi ainakin %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2694
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivi kirjoittanee ainakin %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2704
 #, gcc-internal-format
@@ -21158,49 +21148,48 @@ msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu by
 msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa %wu–%wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2707
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa %wu–%wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2710
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivi kirjoittaa %wu–%wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2719
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa ainakin %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivin tuloste saattaa katketa kirjoittaessa jopa %wu tavua %wu–%wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tuloste katkeaa kirjoittaessa ainakin %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2725
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size between %wu and %wu"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivi kirjoittaa ainakin %wu tavua %wu–%wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2814
-#, fuzzy
 msgid "%G%<%.*s%> directive argument is null"
-msgstr "Funktion %s argumentti kohdassa %L on negatiivinen"
+msgstr "%G%<%.*s%>-direktiivin argumentti on null"
 
 #: gimple-ssa-sprintf.c:2887
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output of %wu bytes exceeds minimum required size of 4095"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin %wu tavun tuloste ylittää vaaditun vähimmäiskoon 4095"
 
 #: gimple-ssa-sprintf.c:2893
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes exceeds minimum required size of 4095"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin %wu–%wu tavun tuloste ylittää vaaditun vähimmäiskoon 4095"
 
 #: gimple-ssa-sprintf.c:2900
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may exceed minimum required size of 4095"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin %wu–%wu tavun tuloste saattaa ylittää vaaditun vähimmäiskoon 4095"
 
 #: gimple-ssa-sprintf.c:2930
 #, fuzzy, gcc-internal-format
@@ -21228,16 +21217,16 @@ msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to e
 msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
 
 #: gimple-ssa-sprintf.c:2974
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive argument is not a nul-terminated string"
-msgstr "Funktion %s argumentti kohdassa %L on negatiivinen"
+msgstr "%<%.*s%>-direktiivin argumentti ei ole nul-päätteinen merkkijono"
 
 #: gimple-ssa-sprintf.c:2987
 #, gcc-internal-format
 msgid "assuming directive output of %wu byte"
 msgid_plural "assuming directive output of %wu bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "oletetaan direktiivin tuotos %wu-tavuiseksi"
+msgstr[1] "oletetaan direktiivin tuotos %wu-tavuiseksi"
 
 #: gimple-ssa-sprintf.c:2994
 #, fuzzy, gcc-internal-format
@@ -21252,71 +21241,71 @@ msgstr "direktiivin argumentti välillä [%E, %E]"
 #: gimple-ssa-sprintf.c:3000
 #, gcc-internal-format
 msgid "using the range [%E, %E] for directive argument"
-msgstr ""
+msgstr "käytetään väliä [%E, %E] direktiivin argumentille"
 
 #: gimple-ssa-sprintf.c:3020
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE output %wu byte into a destination of size %wu"
 msgid_plural "%qE output %wu bytes into a destination of size %wu"
-msgstr[0] "%qE tulostaa vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
-msgstr[1] "%qE tulostaa vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
+msgstr[0] "%qE tulosti %wu tavun %wu tavun kokoiseen kohteeseen"
+msgstr[1] "%qE tulosti %wu tavua %wu tavun kokoiseen kohteeseen"
 
 #: gimple-ssa-sprintf.c:3025
 #, gcc-internal-format
 msgid "%qE output between %wu and %wu bytes into a destination of size %wu"
-msgstr "%qE tulostaa %wu–%wu tavua %wu tavun kokoiseen kohteeseen"
+msgstr "%qE tulosti %wu–%wu tavua %wu tavun kokoiseen kohteeseen"
 
 #: gimple-ssa-sprintf.c:3030
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes (assuming %wu) into a destination of size %wu"
-msgstr "%qE tulostaa vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
+msgstr "%qE tulosti vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
 
 #: gimple-ssa-sprintf.c:3035
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE output %wu or more bytes into a destination of size %wu"
-msgstr "%qE tulostaa vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
+msgstr "%qE tulosti ainakin %wu tavua %wu tavun kokoiseen kohteeseen"
 
 #: gimple-ssa-sprintf.c:3046
 #, gcc-internal-format
 msgid "%qE output %wu byte"
 msgid_plural "%qE output %wu bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%qE tulosti %wu tavun"
+msgstr[1] "%qE tulosti %wu tavua"
 
 #: gimple-ssa-sprintf.c:3050
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE output between %wu and %wu bytes"
-msgstr "%qE tulostaa %wu–%wu tavua %wu tavun kokoiseen kohteeseen"
+msgstr "%qE tulosti %wu–%wu tavua"
 
 #: gimple-ssa-sprintf.c:3054
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE output %wu or more bytes (assuming %wu)"
-msgstr "%qE tulostaa vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
+msgstr "%qE tulosti ainakin %wu tavua (oletetaan %wu)"
 
 #: gimple-ssa-sprintf.c:3058
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE output %wu or more bytes"
-msgstr "%qE tulostaa vähintään %wu tavua (oletetaan %wu) %wu tavun kokoiseen kohteeseen"
+msgstr "%qE tulosti ainakin %wu tavua"
 
 #: gimple-ssa-sprintf.c:3433
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive width out of range"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin leveys sallitun välin ulkopuolella"
 
 #: gimple-ssa-sprintf.c:3467
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%.*s%> directive precision out of range"
-msgstr "%<%.*s%>-direktiivi kirjoittaa jopa %wu tavua %wu tavun kokoiseen alueeseen"
+msgstr "%<%.*s%>-direktiivin tarkkuus sallitun välin ulkopuolella"
 
 #: gimple-ssa-sprintf.c:4096
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "specified bound %wu exceeds maximum object size %wu"
-msgstr "paikallisten objektien kokonaiskoko on liian suuri"
+msgstr "määritelty raja %wu ylittää olion enimmäiskoon %wu"
 
 #: gimple-ssa-sprintf.c:4107
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "specified bound %wu exceeds %<INT_MAX%>"
-msgstr "paikallisten objektien kokonaiskoko on liian suuri"
+msgstr "määritelty raja %wu ylittää %<INT_MAX%>:in"
 
 #: gimple-ssa-sprintf.c:4128
 #, fuzzy, gcc-internal-format
@@ -21339,44 +21328,44 @@ msgid "%Gnull format string"
 msgstr "%s muotoilumerkkijonossa kohdassa %L"
 
 #: gimple-ssa-warn-alloca.c:531
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %<alloca%>"
-msgstr "virheellinen %<auto%>:n käyttö muunnosoperaattorissa"
+msgstr "%<alloca%>:n käyttö"
 
 #: gimple-ssa-warn-alloca.c:567
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to variable-length array may be too large"
-msgstr "käytetään muuttuvapituista taulukkoa"
+msgstr "muuttuvapituisen taulukon argumentti voi olla liian suuri"
 
 #: gimple-ssa-warn-alloca.c:569
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to %<alloca%> may be too large"
-msgstr "blocks-argumentti on liian suuri, maksimi on %llu"
+msgstr "%<alloca%>:n argumentti voi olla liian suuri"
 
 #: gimple-ssa-warn-alloca.c:574
 #, gcc-internal-format
 msgid "limit is %wu bytes, but argument may be as large as %s"
-msgstr ""
+msgstr "raja on %wu tavua, mutta argumentin koko voi olla jopa %s"
 
 #: gimple-ssa-warn-alloca.c:585
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to variable-length array is too large"
-msgstr "käytetään muuttuvapituista taulukkoa"
+msgstr "muuttuvapituisen taulukon argumentti on liian suuri"
 
 #: gimple-ssa-warn-alloca.c:587
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to %<alloca%> is too large"
-msgstr "blocks-argumentti on liian suuri, maksimi on %llu"
+msgstr "%<alloca%>:n argumentti on liian suuri"
 
 #: gimple-ssa-warn-alloca.c:591
 #, gcc-internal-format
 msgid "limit is %wu bytes, but argument is %s"
-msgstr ""
+msgstr "raja on %wu tavua, mutta argumentti on %s"
 
 #: gimple-ssa-warn-alloca.c:599
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable-length array bound is unknown"
-msgstr "käytetään muuttuvapituista taulukkoa"
+msgstr "muuttuvapituisen taulukon raja on tuntematon"
 
 #: gimple-ssa-warn-alloca.c:600
 #, fuzzy, gcc-internal-format
@@ -21414,9 +21403,9 @@ msgid "argument to variable-length array is zero"
 msgstr "käytetään muuttuvapituista taulukkoa"
 
 #: gimple-ssa-warn-alloca.c:625
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to %<alloca%> is zero"
-msgstr "%<__builtin_prefetch%>-funktion toinen argumentti on epäkelpo; käytetään nollaa"
+msgstr "%<alloca%>-funktion argumentti on nolla"
 
 #: gimple-ssa-warn-restrict.c:1437
 #, fuzzy
@@ -21550,9 +21539,9 @@ msgid "%G%qD pointer overflow between offset %s and size %s accessing array %qD 
 msgstr ""
 
 #: gimple-ssa-warn-restrict.c:1722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array %qD declared here"
-msgstr "%qD esitelty täällä"
+msgstr "taulukko %qD esitelty täällä"
 
 #: gimple-ssa-warn-restrict.c:1727 gimple-ssa-warn-restrict.c:1733
 msgid "%G%qD pointer overflow between offset %s and size %s"
@@ -21870,9 +21859,9 @@ msgid "%<mutexinoutset%> kind in %<depend%> clause on a %<taskwait%> construct"
 msgstr "muuttuja %qD esitelty uudelleen funktiona"
 
 #: gimplify.c:12131 omp-low.c:2926
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<ordered%> construct with %<depend%> clause must be closely nested inside a loop with %<ordered%> clause with a parameter"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: gimplify.c:12149
 #, gcc-internal-format
@@ -22073,9 +22062,9 @@ msgstr "edellinen määrittely täällä"
 
 #: ipa-devirt.c:1027 ipa-devirt.c:1042 ipa-devirt.c:1323 ipa-devirt.c:1399
 #: ipa-devirt.c:1438 ipa-devirt.c:1456
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "a different type is defined in another translation unit"
-msgstr "%J%qD esitelty avoimeksi määrittelyn jälkeen"
+msgstr "erilainen tyyppi määritelty toisessa käännösyksikössä"
 
 #: ipa-devirt.c:1034
 #, gcc-internal-format
@@ -22113,9 +22102,9 @@ msgid "the incompatible type is defined here"
 msgstr "lueteltu tyyppi määritelty täällä"
 
 #: ipa-devirt.c:1213
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array types have different bounds"
-msgstr "?:-lausekkeen operandeilla on eri tyypit, %qT ja %qT"
+msgstr "taulukkotyypeillä on eri rajat"
 
 #: ipa-devirt.c:1228
 #, fuzzy, gcc-internal-format
@@ -22616,14 +22605,14 @@ msgid "multiple %<default%> targets were set"
 msgstr "useita default-nimikkeitä samassa switch-lauseessa"
 
 #: omp-expand.c:2150
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<depend%> clause with %<sink%> modifier waiting for lexically later iteration"
-msgstr ""
+msgstr "argumenttien määrä ei vastaa prototyyppiä"
 
 #: omp-expand.c:2287
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<depend%> clause with %<sink%> modifier refers to iteration never in the iteration space"
-msgstr ""
+msgstr "argumenttien määrä ei vastaa prototyyppiä"
 
 #: omp-general.c:637
 #, fuzzy, gcc-internal-format
@@ -22766,9 +22755,9 @@ msgid "%<ordered%> region must be closely nested inside a loop region with an %<
 msgstr ""
 
 #: omp-low.c:2984
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<ordered%> region without %<depend%> clause may not be closely nested inside a loop region with an %<ordered%> clause with a parameter"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: omp-low.c:3015
 #, gcc-internal-format
@@ -23369,14 +23358,14 @@ msgid "pass %s needs a set_pass_param implementation to handle the extra argumen
 msgstr ""
 
 #: passes.c:1024
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized option %<-fenable%>"
-msgstr "tunnistamaton valitsin"
+msgstr "tunnistamaton valitsin %<-fenable%>"
 
 #: passes.c:1026
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized option %<-fdisable%>"
-msgstr "tunnistamaton valitsin"
+msgstr "tunnistamaton valitsin %<fdisable%>"
 
 #: passes.c:1034
 #, fuzzy, gcc-internal-format
@@ -23515,7 +23504,7 @@ msgstr "luetellun tyypin jäsenen %qE arvo ei ole kokonaislukuvakio"
 #: predict.c:2509
 #, gcc-internal-format
 msgid "probability %qE is outside the range [0.0, 1.0]"
-msgstr ""
+msgstr "todennäköisyys %qE ei ole välillä [0,0; 1.0]"
 
 #: predict.c:3483
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -23756,9 +23745,9 @@ msgid "RTL check: expected code '%s', '%s' or '%s', have '%s' in %s, at %s:%d"
 msgstr "verifiointi epäonnistui kohdassa PC=%d: %s"
 
 #: rtl.c:936
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "RTL check: attempt to treat non-block symbol as a block symbol in %s, at %s:%d"
-msgstr ""
+msgstr "verifiointi epäonnistui kohdassa PC=%d: %s"
 
 #: rtl.c:946
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -24006,9 +23995,9 @@ msgid "mixing different types of symbol in same comdat groups is not supported"
 msgstr ""
 
 #: symtab.c:1126
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "node is alone in a comdat group"
-msgstr ""
+msgstr "virheellinen sisäinen makro ”%s”"
 
 #: symtab.c:1133
 #, gcc-internal-format
@@ -24026,9 +24015,9 @@ msgid "implicit_section flag is set but section isn%'t"
 msgstr "funktio %qE esitelty implisiittisesti"
 
 #: symtab.c:1165
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "Both section and comdat group is set"
-msgstr ""
+msgstr "virheellinen sisäinen makro ”%s”"
 
 #: symtab.c:1177
 #, fuzzy, gcc-internal-format
@@ -25219,9 +25208,9 @@ msgid "BB %i is missing an edge"
 msgstr "fr30_print_operand: tunnistamaton %%b-koodi"
 
 #: tree-eh.c:4856
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "BB %i too many fallthru edges"
-msgstr ""
+msgstr "nimettömällä kentällä on vaillinainen tyyppi"
 
 #: tree-eh.c:4865
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -25913,9 +25902,9 @@ msgid "TYPE_MAIN_VARIANT has different TYPE_MAIN_VARIANT"
 msgstr "tyyppitäsmäämättömyys komponenttiviitteessä"
 
 #: tree.c:14324
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "TYPE_CANONICAL has different TYPE_CANONICAL"
-msgstr ""
+msgstr "tyyppitäsmäämättömyys komponenttiviitteessä"
 
 #: tree.c:14343
 #, fuzzy, gcc-internal-format
@@ -25958,14 +25947,14 @@ msgid "TYPE_BINFO type is not TYPE_MAIN_VARIANT"
 msgstr "tyyppitäsmäämättömyys komponenttiviitteessä"
 
 #: tree.c:14431
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not record nor union"
-msgstr ""
+msgstr "funktiokutsu epäsopivan tyypin läpi"
 
 #: tree.c:14442
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "TYPE_OFFSET_BASETYPE is not record nor union"
-msgstr ""
+msgstr "funktiokutsu epäsopivan tyypin läpi"
 
 #: tree.c:14460
 #, fuzzy, gcc-internal-format
@@ -26767,7 +26756,7 @@ msgstr "%qE-attribuutti pätee vain funktioihin"
 #: c-family/c-attribs.c:2894
 #, gcc-internal-format
 msgid "%qE attribute ignored on a function returning %qT"
-msgstr "%qE-attribuuttia ei huomioida %qT:n palauttavalle funktiolle"
+msgstr "%qE-attribuuttia ei huomioida %qT-tyypin palauttavalle funktiolle"
 
 #: c-family/c-attribs.c:2913
 #, fuzzy, gcc-internal-format
@@ -27042,9 +27031,9 @@ msgid "signed conversion from %qT to %qT changes the value of %qE"
 msgstr "muunnos tyypistä %qT tyyppiin %qT on moniselitteinen"
 
 #: c-family/c-common.c:1530 c-family/c-common.c:1592
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to %qT from %qT may change the sign of the result"
-msgstr "muunnos tyypistä %qT tyyppiin %qT on moniselitteinen"
+msgstr "muunnos tyypistä %qT tyyppiin %qT on saattaa muuttaa tuloksen etumerkin"
 
 #: c-family/c-common.c:1778
 #, gcc-internal-format
@@ -28729,9 +28718,9 @@ msgid "complex floating point overflow in expression of type %qT results in %qE"
 msgstr "kompleksiliukulukuylivuoto lausekkeessa"
 
 #: c-family/c-warn.c:227
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "logical %<or%> applied to non-boolean constant"
-msgstr ""
+msgstr "taulukon %qE koko ei ole kokonaislukutyyppiä"
 
 #: c-family/c-warn.c:231
 #, gcc-internal-format
@@ -29294,7 +29283,7 @@ msgstr "%<X<=Y<=Z%> -tyylisillä vertailuilla on eri merkitys kuin matematiikass
 #: c-family/c-warn.c:2021
 #, gcc-internal-format
 msgid "label %q+D defined but not used"
-msgstr "nimike %q+D määritelty mutta käytettämättä"
+msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #: c-family/c-warn.c:2023
 #, gcc-internal-format
@@ -29539,9 +29528,9 @@ msgid "%<-mcpu=%s%> is not valid"
 msgstr "-mcpu=%s ei ole kelvollinen"
 
 #: common/config/bfin/bfin-common.c:359
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mcpu=%s%> has invalid silicon revision"
-msgstr ""
+msgstr "-mcpu=%s ei ole kelvollinen"
 
 #: common/config/i386/i386-common.c:1340
 #, fuzzy, gcc-internal-format
@@ -29584,9 +29573,9 @@ msgid "%<-fsplit-stack%> currently only supported on GNU/Linux"
 msgstr ""
 
 #: common/config/i386/i386-common.c:1433
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-fsplit-stack%> requires assembler support for CFI directives"
-msgstr ""
+msgstr "ISO C90 ei tue joustavia taulukon jäseniä"
 
 #: common/config/ia64/ia64-common.c:58
 #, fuzzy, gcc-internal-format
@@ -29657,9 +29646,9 @@ msgid "%<-march=%s%>: first ISA subset must be %<e%>, %<i%> or %<g%>"
 msgstr ""
 
 #: common/config/riscv/riscv-common.c:378
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-march=%s%>: unsupported ISA subset %<%c%>"
-msgstr ""
+msgstr "valitsin -mcpu=%s on ristiriidassa valitsimen -march=%s kanssa"
 
 #: common/config/riscv/riscv-common.c:382
 #, gcc-internal-format
@@ -29672,9 +29661,9 @@ msgid "%<-march=%s%>: %s must separate with _"
 msgstr "%s %qs"
 
 #: common/config/riscv/riscv-common.c:486
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-march=%s%>: ISA string must begin with rv32 or rv64"
-msgstr ""
+msgstr "%s %qs"
 
 #: common/config/rx/rx-common.c:61
 #, gcc-internal-format
@@ -31128,24 +31117,24 @@ msgid "unknown core architecture %qs specified with %qs"
 msgstr "Funktio %qs:"
 
 #: config/avr/avr.c:765 config/visium/visium.c:422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fpic%> is not supported"
-msgstr "-fPIC ei ole tuettu"
+msgstr "%<-fPIC%> ei ole tuettu"
 
 #: config/avr/avr.c:767 config/visium/visium.c:424
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fPIC%> is not supported"
-msgstr "-fPIC ei ole tuettu"
+msgstr "%<-fPIC%> ei ole tuettu"
 
 #: config/avr/avr.c:769
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fpie%> is not supported"
-msgstr "Ei ole tuettu"
+msgstr "%<-fpie%> ei ole tuettu"
 
 #: config/avr/avr.c:771
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fPIE%> is not supported"
-msgstr "Ei ole tuettu"
+msgstr "%<-fPIE%> ei ole tuettu"
 
 #: config/avr/avr.c:1047 config/avr/avr.c:1052 config/riscv/riscv.c:4787
 #, fuzzy, gcc-internal-format
@@ -31464,9 +31453,9 @@ msgid "unknown CRIS version specification in %<-march=%> or %<-mcpu=%> : %s"
 msgstr ""
 
 #: config/cris/cris.c:2719
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "unknown CRIS cpu version specification in %<-mtune=%> : %s"
-msgstr ""
+msgstr "Tuntematon argumenttiluettelofunktio kohdassa %L"
 
 #: config/cris/cris.c:2740
 #, fuzzy, gcc-internal-format
@@ -31792,9 +31781,9 @@ msgid "%<-mexr%> is used without %<-ms%> or %<-msx%>"
 msgstr "PROCEDURE-lauseen kohdassa %C on oltava geneerisessä rajapinnassa"
 
 #: config/h8300/h8300.c:381
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mno-exr%> valid only with %<-ms%> or %<-msx%> - Option ignored!"
-msgstr ""
+msgstr "PROCEDURE-lauseen kohdassa %C on oltava geneerisessä rajapinnassa"
 
 #: config/h8300/h8300.c:388
 #, fuzzy, gcc-internal-format
@@ -32102,9 +32091,9 @@ msgid "fixed ebp register requires %<target(\"accumulate-outgoing-args\")%>"
 msgstr ""
 
 #: config/i386/i386.c:4609
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mfentry%> isn%'t supported for 32-bit in combination with %<-fpic%>"
-msgstr ""
+msgstr "%qE-attribuutti pätee vain funktioihin"
 
 #: config/i386/i386.c:4612
 #, fuzzy, gcc-internal-format
@@ -32919,19 +32908,19 @@ msgid "%qs is an invalid argument to %<-mcpu=%>"
 msgstr "%qs-attribuutin virheellinen argumentti"
 
 #: config/microblaze/microblaze.c:1823
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mxl-multiply-high%> can be used only with %<-mcpu=v6.00.a%> or greater"
-msgstr ""
+msgstr "Valitsinta --pax-option voi käyttää vain POSIX-arkistoille"
 
 #: config/microblaze/microblaze.c:1840
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mxl-reorder%> can be used only with %<-mcpu=v8.30.a%> or greater"
-msgstr ""
+msgstr "Valitsinta --pax-option voi käyttää vain POSIX-arkistoille"
 
 #: config/microblaze/microblaze.c:1847
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mxl-reorder%> requires %<-mxl-pattern-compare%> for %<-mcpu=v8.30.a%>"
-msgstr ""
+msgstr "valitsin vaatii argumentin -- %s"
 
 #: config/microblaze/microblaze.c:1853
 #, gcc-internal-format
@@ -33593,9 +33582,9 @@ msgid "Unknown form for stack limit expression"
 msgstr ""
 
 #: config/nios2/nios2.c:1182
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "switch %<-mcustom-%s%> is required for double precision floating point"
-msgstr ""
+msgstr "Älä käytä laitteistoliukulukuja"
 
 #: config/nios2/nios2.c:1195
 #, gcc-internal-format
@@ -33748,14 +33737,14 @@ msgid "%<custom-%s=%> argument should be a non-negative integer"
 msgstr "%q+D:n ensimmäisen argumentin pitäisi olla %<int%>"
 
 #: config/nios2/nios2.c:4293
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<custom-%s=%> is not recognized as FPU instruction"
-msgstr ""
+msgstr "weakref ei ole tuettu tässä konfiguraatiossa"
 
 #: config/nios2/nios2.c:4300
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%s%> is unknown"
-msgstr "%s: tuntematon merkki kentässä ”%s”"
+msgstr "%<%s%> on tuntematon"
 
 #: config/nvptx/mkoffload.c:109
 #, fuzzy, gcc-internal-format
@@ -34005,9 +33994,9 @@ msgid "missing open paren"
 msgstr "Avaa"
 
 #: config/rs6000/rs6000-c.c:67
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing number"
-msgstr "$-operandinumero puuttuu muotoilussa"
+msgstr "puuttuva luku"
 
 #: config/rs6000/rs6000-c.c:69
 #, fuzzy, gcc-internal-format
@@ -34015,9 +34004,9 @@ msgid "missing close paren"
 msgstr "Sulje"
 
 #: config/rs6000/rs6000-c.c:72
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "number must be 0 or 1"
-msgstr "{0} versio {1}"
+msgstr "luvun on oltava 0 tai 1"
 
 #: config/rs6000/rs6000-c.c:75
 #, fuzzy, gcc-internal-format
@@ -34936,9 +34925,9 @@ msgid "%<-mhard-dfp%> can%'t be used in conjunction with %<-msoft-float%>"
 msgstr ""
 
 #: config/s390/s390.c:15141
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mbackchain%> %<-mpacked-stack%> %<-mhard-float%> are not supported in combination"
-msgstr ""
+msgstr "-fPIC ei ole tuettu"
 
 #: config/s390/s390.c:15147
 #, fuzzy, gcc-internal-format
@@ -34972,9 +34961,9 @@ msgid "argument to %qs is too large (max. %d)"
 msgstr "blocks-argumentti on liian suuri, maksimi on %llu"
 
 #: config/s390/s390.c:15314
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<-mno-pic-data-is-text-relative%> cannot be used without %<-fpic%>/%<-fPIC%>"
-msgstr ""
+msgstr "PROCEDURE-lauseen kohdassa %C on oltava geneerisessä rajapinnassa"
 
 #. Value is not allowed for the target attribute.
 #: config/s390/s390.c:15481
@@ -36694,12 +36683,12 @@ msgstr "jäsenen %q+D kaksoiskappale"
 #: c/c-decl.c:8103
 #, gcc-internal-format
 msgid "empty struct has size 0 in C, size 1 in C++"
-msgstr ""
+msgstr "tyhjän structin koko on C:ssä 0, C++:ssa 1"
 
 #: c/c-decl.c:8106
 #, gcc-internal-format
 msgid "empty union has size 0 in C, size 1 in C++"
-msgstr ""
+msgstr "tyhjän unionin koko on C:ssä 0, C++:ssa 1"
 
 #: c/c-decl.c:8211
 #, gcc-internal-format
@@ -38564,9 +38553,9 @@ msgid "expected %<acq_rel%>, %<release%> or %<acquire%>"
 msgstr "  odotettiin luokkamallia, saatiin %qT"
 
 #: c/c-parser.c:16700 cp/parser.c:36276
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<flush%> list specified together with memory order clause"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: c/c-parser.c:16749 cp/parser.c:36876
 #, fuzzy, gcc-internal-format
@@ -40282,9 +40271,9 @@ msgid "variable length element type in array %<reduction%> clause"
 msgstr "käytetään muuttuvapituista taulukkoa"
 
 #: c/c-typeck.c:13943 c/c-typeck.c:14589 cp/semantics.c:7720
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<nowait%> clause must not be used together with %<copyprivate%>"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: c/c-typeck.c:13955 cp/semantics.c:7763
 #, fuzzy, gcc-internal-format
@@ -40478,9 +40467,9 @@ msgid "%<simdlen%> clause value is bigger than %<safelen%> clause value"
 msgstr ""
 
 #: c/c-typeck.c:14754 cp/semantics.c:7696
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<nonmonotonic%> schedule modifier specified together with %<ordered%> clause"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: c/c-typeck.c:14772 cp/semantics.c:7663
 #, fuzzy, gcc-internal-format
@@ -40488,9 +40477,9 @@ msgid "%<linear%> clause step is a parameter %qD not specified in %<uniform%> cl
 msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: c/c-typeck.c:14787 cp/semantics.c:7709
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "%<nogroup%> clause must not be used together with %<reduction%> clause"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: c/c-typeck.c:14953
 #, fuzzy, gcc-internal-format
@@ -41928,9 +41917,9 @@ msgid "assuming pointer to member %qD"
 msgstr "%qD ei ole %qD:n jäsen"
 
 #: cp/class.c:8049
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "(a pointer to member can only be formed with %<&%E%>)"
-msgstr ""
+msgstr "keskeytyskäsittelijät eivät voi olla MIPS16-funktioita"
 
 #: cp/class.c:8125 cp/class.c:8167
 #, fuzzy, gcc-internal-format
@@ -42896,7 +42885,7 @@ msgid "ambiguating new declaration of %q#D"
 msgstr "%q+D:lle ei ole edellistä esittelyä"
 
 #: cp/decl.c:1714
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting declaration %q#D"
 msgstr "ristiriitainen esittely %q#D"
 
@@ -42961,7 +42950,7 @@ msgid "redundant redeclaration of %qD in same scope"
 msgstr "%qD uudelleenesitellään tarpeettomasti samalla näkyvyysalueella"
 
 #: cp/decl.c:1980
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deleted definition of %qD"
 msgstr "%qD:n poistettu määrittely"
 
@@ -44624,9 +44613,9 @@ msgid "member functions are implicitly friends of their class"
 msgstr "staattinen jäsenfunktio %q#D esitelty tyyppimääreillä"
 
 #: cp/decl.c:11871
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "extra qualification %<%T::%> on member %qs"
-msgstr "ylimääräinen %<;%>"
+msgstr "ylimääräinen kvalifiointi %<%T::%> jäsenelle %qs"
 
 #: cp/decl.c:11901
 #, fuzzy, gcc-internal-format
@@ -45788,7 +45777,7 @@ msgstr "ei argumentteja"
 #: cp/error.c:3796
 #, gcc-internal-format
 msgid "[...]"
-msgstr ""
+msgstr "[...]"
 
 #: cp/error.c:4150
 #, fuzzy, gcc-internal-format
@@ -46303,9 +46292,9 @@ msgid "non-constant array new length must be specified directly, not by typedef"
 msgstr ""
 
 #: cp/init.c:3011
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "non-constant array new length must be specified without parentheses around the type-id"
-msgstr ""
+msgstr "taulukkoindeksi ei-taulukkoalustimessa"
 
 #: cp/init.c:3021
 #, fuzzy, gcc-internal-format
@@ -48601,9 +48590,9 @@ msgid "expected class-key"
 msgstr "odotettiin %<class%>"
 
 #: cp/parser.c:24227
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids typename key in template template parameter; use %<-std=c++17%> or %<-std=gnu++17%>"
-msgstr ""
+msgstr "attribuutti %qs pätee vain funktiotyyppeihin"
 
 #: cp/parser.c:24231
 #, fuzzy, gcc-internal-format
@@ -52187,7 +52176,7 @@ msgstr ""
 #: cp/typeck.c:9466 cp/typeck.c:9489
 #, gcc-internal-format
 msgid "remove %<std::move%> call"
-msgstr ""
+msgstr "poista %<std::move%>-kutsu"
 
 #: cp/typeck.c:9488
 #, fuzzy, gcc-internal-format
@@ -54955,9 +54944,9 @@ msgid "Variable %qs at %L may not be a C interoperable kind but it is BIND(C)"
 msgstr "BIND(C)-funktion ”%s” paluutyyppi kohdassa %L ei voi olla taulukko"
 
 #: fortran/decl.c:5708
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "Variable %qs in common block %qs at %L cannot be declared with BIND(C) since it is not a global"
-msgstr ""
+msgstr "BIND(C)-funktion ”%s” paluutyyppi kohdassa %L ei voi olla taulukko"
 
 #: fortran/decl.c:5722
 #, fuzzy, gcc-internal-format
@@ -57221,9 +57210,9 @@ msgid "Assumed-shape actual argument at %L is incompatible with the non-assumed-
 msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/interface.c:3322
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "Array-section actual argument at %L is incompatible with the non-assumed-shape dummy argument %qs due to VOLATILE attribute"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/interface.c:3342
 #, fuzzy, gcc-internal-format
@@ -58091,14 +58080,14 @@ msgid "NAMELIST %qs in READ statement at %L contains the symbol %qs which may no
 msgstr ""
 
 #: fortran/io.c:3387
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "NAMELIST object %qs in namelist %qs at %L is polymorphic and requires a defined input/output procedure"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/io.c:3397 fortran/resolve.c:14545
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "NAMELIST object %qs in namelist %qs at %L with ALLOCATABLE or POINTER components"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/io.c:3405
 #, fuzzy, gcc-internal-format
@@ -58860,9 +58849,9 @@ msgid "MOLD tag at %L conflicts with SOURCE tag at %L"
 msgstr "SAVE-attribuuttia kohdassa %L ei voida määritellä PURE-proseduurissa"
 
 #: fortran/match.c:4462
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L with a deferred type parameter requires either a type-spec or SOURCE tag or a MOLD tag"
-msgstr ""
+msgstr "kolme pistettä sisältävä parametriluettelo ei sovellu tyhjään parametrinimiluettelon esittelyyn"
 
 #: fortran/match.c:4474
 #, gcc-internal-format, gfc-internal-format
@@ -58948,9 +58937,9 @@ msgid "Variable %qs at %L in common block %qs at %C must be declared with a C in
 msgstr "BIND(C)-funktion ”%s” paluutyyppi kohdassa %L ei voi olla taulukko"
 
 #: fortran/match.c:5145
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "Variable %qs in common block %qs at %C cannot be bind(c) since it is not global"
-msgstr ""
+msgstr "BIND(C)-funktion ”%s” paluutyyppi kohdassa %L ei voi olla taulukko"
 
 #: fortran/match.c:5152
 #, fuzzy, gcc-internal-format
@@ -59831,9 +59820,9 @@ msgid "IF clause at %L requires a scalar LOGICAL expression"
 msgstr "decltypen argumentin on oltava lauseke"
 
 #: fortran/openmp.c:4038
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "IF clause without modifier at %L used together with IF clauses with modifiers"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: fortran/openmp.c:4115
 #, gcc-internal-format, gfc-internal-format
@@ -60039,9 +60028,9 @@ msgid "LINEAR clause modifier used on DO or SIMD construct at %L"
 msgstr ""
 
 #: fortran/openmp.c:4722
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "LINEAR clause specified together with ORDERED clause with argument at %L"
-msgstr ""
+msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: fortran/openmp.c:4727
 #, fuzzy, gcc-internal-format
@@ -60084,9 +60073,9 @@ msgid "SOURCE dependence type only allowed on ORDERED directive at %L"
 msgstr ""
 
 #: fortran/openmp.c:4871
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "%s must contain at least one MAP clause at %L"
-msgstr ""
+msgstr "%Hdatamäärittelyllä ei ole tyyppiä eikä tallennusluokkaa"
 
 #: fortran/openmp.c:4968
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -60219,9 +60208,9 @@ msgid "%s iteration variable present on clause other than LINEAR at %L"
 msgstr "”!$OMP DO”-iteraatiomuuttuja on läsnä muussa lauseessa kuin PRIVATE tai LASTPRIVATE kohdassa %L"
 
 #: fortran/openmp.c:5691
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "%s collapsed loops don't form rectangular iteration space at %L"
-msgstr ""
+msgstr "liian vähän argumentteja"
 
 #: fortran/openmp.c:5703
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -60254,9 +60243,9 @@ msgid "!$ACC LOOP iteration variable must be of type integer at %L"
 msgstr "”!$OMP DO”-iteraatiomuuttuja ei saa olla THREADPRIVATE kohdassa %L"
 
 #: fortran/openmp.c:5858
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "!$ACC LOOP %s loops don't form rectangular iteration space at %L"
-msgstr ""
+msgstr "liian vähän argumentteja"
 
 #: fortran/openmp.c:5870
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -60624,14 +60613,14 @@ msgid "Noncoarray component %s at %L of type LOCK_TYPE or with subcomponent of t
 msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/parse.c:3034
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Noncoarray component %s at %L of type LOCK_TYPE or with subcomponent of type LOCK_TYPE must have a codimension or be a subcomponent of a coarray. (Variables of type %s may not have a codimension as %s at %L has a codimension or a coarray subcomponent)"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/parse.c:3044
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Component %s at %L of type EVENT_TYPE must have a codimension or be a subcomponent of a coarray, which is not possible as the component has the pointer attribute"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/parse.c:3050
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -60649,14 +60638,14 @@ msgid "Allocatable component %s at %L must have a codimension as it has a noncoa
 msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/parse.c:3064
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Noncoarray component %s at %L of type EVENT_TYPE or with subcomponent of type EVENT_TYPE must have a codimension or be a subcomponent of a coarray. (Variables of type %s may not have a codimension as already a coarray subcomponent exists)"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/parse.c:3071
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Noncoarray component %s at %L of type EVENT_TYPE or with subcomponent of type EVENT_TYPE must have a codimension or be a subcomponent of a coarray. (Variables of type %s may not have a codimension as %s at %L has a codimension or a coarray subcomponent)"
-msgstr ""
+msgstr "muuttuvakokoista objektia ei voi alustaa"
 
 #: fortran/parse.c:3123
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -61554,9 +61543,9 @@ msgid "ENTRY result %s cannot be an array in FUNCTION %s at %L"
 msgstr "Muuttujatyyppi on UNKNOWN sijoituksessa kohdassa %L"
 
 #: fortran/resolve.c:852
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "FUNCTION result %s cannot be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "Muuttuja %s ei voida liittää PURE-proseduuriin kohdassa %C"
 
 #: fortran/resolve.c:856
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -61564,14 +61553,14 @@ msgid "ENTRY result %s cannot be a POINTER in FUNCTION %s at %L"
 msgstr "Muuttuja %s ei voida liittää PURE-proseduuriin kohdassa %C"
 
 #: fortran/resolve.c:894
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "FUNCTION result %s cannot be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "Muuttujatyyppi on UNKNOWN sijoituksessa kohdassa %L"
 
 #: fortran/resolve.c:899
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "ENTRY result %s cannot be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "Muuttujatyyppi on UNKNOWN sijoituksessa kohdassa %L"
 
 #: fortran/resolve.c:945
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -63120,9 +63109,9 @@ msgid "Procedure pointer result %qs at %L is missing the pointer attribute"
 msgstr "tyhjä esittely"
 
 #: fortran/resolve.c:12873
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Mismatch in ELEMENTAL attribute between MODULE PROCEDURE at %L and its interface in %s"
-msgstr ""
+msgstr "Syntaksivirhe PROCEDURE-lauseessa kohdassa %C"
 
 #: fortran/resolve.c:12881
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -63130,9 +63119,9 @@ msgid "Mismatch in PURE attribute between MODULE PROCEDURE at %L and its interfa
 msgstr "Syntaksivirhe PROCEDURE-lauseessa kohdassa %C"
 
 #: fortran/resolve.c:12889
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Mismatch in RECURSIVE attribute between MODULE PROCEDURE at %L and its interface in %s"
-msgstr ""
+msgstr "Syntaksivirhe PROCEDURE-lauseessa kohdassa %C"
 
 #: fortran/resolve.c:12898
 #, gcc-internal-format
@@ -63450,9 +63439,9 @@ msgid "CLASS variable %qs at %L cannot have the PARAMETER attribute"
 msgstr "Muuttujalla ”%s” kohdassa %L ei voi olla sekä POINTER- että BIND(C)-attribuutit"
 
 #: fortran/resolve.c:14705
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "The object %qs at %L has a deferred LEN parameter %qs and is neither allocatable nor a pointer"
-msgstr ""
+msgstr "kolme pistettä sisältävä parametriluettelo ei sovellu tyhjään parametrinimiluettelon esittelyyn"
 
 #: fortran/resolve.c:14716
 #, gcc-internal-format
@@ -65217,9 +65206,9 @@ msgid "cannot read LTO decls from %s"
 msgstr "tiedoston ”%s” otsaketta ei voi lukea"
 
 #: lto/lto.c:2197
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot open %s"
-msgstr "'%s' ei voi avata"
+msgstr "Tiedostoa %s ei voi avata"
 
 #: lto/lto.c:2218
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -65497,9 +65486,9 @@ msgid "could not find interface for class %qE"
 msgstr "ei löydetä luokkaa %qE"
 
 #: objc/objc-act.c:1685 objc/objc-act.c:6831 objc/objc-act.c:6962
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "class %qE is deprecated"
-msgstr "%qE on vanhentunut"
+msgstr "luokka %qE on vanhentunut"
 
 #: objc/objc-act.c:1714
 #, fuzzy, gcc-internal-format
@@ -66461,6 +66450,9 @@ msgstr "tunnistamaton rekisterinimi %qs"
 #, fuzzy, gcc-internal-format
 msgid "unknown vtable verify initialization priority %qs"
 msgstr "(%qs:n alustuksen lähistöllä)"
+
+#~ msgid "%<-Werror=%> argument %qs is not valid for %s"
+#~ msgstr "%<-Werror=%>-argumentti %qs ei ole kelvollinen %s-kielelle"
 
 #~ msgid "invalid %%t operand '"
 #~ msgstr "virheellinen %%t-operandi"
@@ -68642,7 +68634,7 @@ msgstr "(%qs:n alustuksen lähistöllä)"
 
 #, fuzzy
 #~ msgid "variable %q+D set but not used"
-#~ msgstr "nimike %q+D määritelty mutta käytettämättä"
+#~ msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #~ msgid "jump to label %q+D"
 #~ msgstr "hyppy nimiöön %q+D"
@@ -68659,7 +68651,7 @@ msgstr "(%qs:n alustuksen lähistöllä)"
 
 #, fuzzy
 #~ msgid "parameter %q+D set but not used"
-#~ msgstr "nimike %q+D määritelty mutta käytettämättä"
+#~ msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #~ msgid "%q+D declared here"
 #~ msgstr "%q+D esitelty täällä"
@@ -69486,10 +69478,6 @@ msgstr "(%qs:n alustuksen lähistöllä)"
 #, fuzzy
 #~ msgid "%Hredefinition of %q#T"
 #~ msgstr "%q#T uudelleenmääritelty"
-
-#, fuzzy
-#~ msgid "%H%qs is not valid for %qs"
-#~ msgstr "%qs ei ole kelpo tulostetiedosto"
 
 #, fuzzy
 #~ msgid "%Hiteration variable %qD should not be firstprivate"

@@ -132,8 +132,6 @@ along with GCC; see the file COPYING3.  If not see
 /* There's no BB_EXECUTABLE but we can use BB_VISITED.  */
 #define BB_EXECUTABLE BB_VISITED
 
-static tree *last_vuse_ptr;
-static vn_lookup_kind vn_walk_kind;
 static vn_lookup_kind default_vn_walk_kind;
 
 /* vn_nary_op hashtable helpers.  */
@@ -1678,18 +1676,33 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
   return NULL_TREE;
 }
 
+struct vn_walk_cb_data
+{
+  vn_walk_cb_data (vn_reference_t vr_, tree *last_vuse_ptr_,
+                   vn_lookup_kind vn_walk_kind_, bool tbaa_p_)
+    : vr (vr_), last_vuse_ptr (last_vuse_ptr_), vn_walk_kind (vn_walk_kind_),
+      tbaa_p (tbaa_p_)
+    {}
+
+  vn_reference_t vr;
+  tree *last_vuse_ptr;
+  vn_lookup_kind vn_walk_kind;
+  bool tbaa_p;
+};
+
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
    with the current VUSE and performs the expression lookup.  */
 
 static void *
-vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
+vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *data_)
 {
-  vn_reference_t vr = (vn_reference_t)vr_;
+  vn_walk_cb_data *data = (vn_walk_cb_data *)data_;
+  vn_reference_t vr = data->vr;
   vn_reference_s **slot;
   hashval_t hash;
 
-  if (last_vuse_ptr)
-    *last_vuse_ptr = vuse;
+  if (data->last_vuse_ptr)
+    *data->last_vuse_ptr = vuse;
 
   /* Fixup vuse and hash.  */
   if (vr->vuse)
@@ -1959,10 +1972,11 @@ basic_block vn_context_bb;
    *DISAMBIGUATE_ONLY is set to true.  */
 
 static void *
-vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
+vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		       bool *disambiguate_only)
 {
-  vn_reference_t vr = (vn_reference_t)vr_;
+  vn_walk_cb_data *data = (vn_walk_cb_data *)data_;
+  vn_reference_t vr = data->vr;
   gimple *def_stmt = SSA_NAME_DEF_STMT (vuse);
   tree base = ao_ref_base (ref);
   HOST_WIDE_INT offseti, maxsizei;
@@ -1989,7 +2003,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 						      get_alias_set (lhs),
 						      TREE_TYPE (lhs), lhs_ops);
 	  if (lhs_ref_ok
-	      && !refs_may_alias_p_1 (ref, &lhs_ref, true))
+	      && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	    {
 	      *disambiguate_only = true;
 	      return NULL;
@@ -2005,21 +2019,21 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
          we find a VN result with exactly the same value as the
 	 possible clobber.  In this case we can ignore the clobber
 	 and return the found value.  */
-      if (vn_walk_kind == VN_WALKREWRITE
+      if (data->vn_walk_kind == VN_WALKREWRITE
 	  && is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
 	  && ref->ref)
 	{
-	  tree *saved_last_vuse_ptr = last_vuse_ptr;
+	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;
 	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
-	  last_vuse_ptr = NULL;
+	  data->last_vuse_ptr = NULL;
 	  tree saved_vuse = vr->vuse;
 	  hashval_t saved_hashcode = vr->hashcode;
-	  void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt), vr);
+	  void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt), data);
 	  /* Need to restore vr->vuse and vr->hashcode.  */
 	  vr->vuse = saved_vuse;
 	  vr->hashcode = saved_hashcode;
-	  last_vuse_ptr = saved_last_vuse_ptr;
+	  data->last_vuse_ptr = saved_last_vuse_ptr;
 	  if (res && res != (void *)-1)
 	    {
 	      vn_reference_t vnresult = (vn_reference_t) res;
@@ -2072,7 +2086,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	}
     }
 
-  if (*disambiguate_only)
+  /* If we are looking for redundant stores do not create new hashtable
+     entries from aliasing defs with made up alias-sets.  */
+  if (*disambiguate_only || !data->tbaa_p)
     return (void *)-1;
 
   /* If we cannot constrain the size of the reference we cannot
@@ -2097,7 +2113,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	       || (INTEGRAL_TYPE_P (vr->type) && known_eq (ref->size, 8)))
 	      && CHAR_BIT == 8 && BITS_PER_UNIT == 8
 	      && offset.is_constant (&offseti)
-	      && offseti % BITS_PER_UNIT == 0))
+	      && offseti % BITS_PER_UNIT == 0
+	      && multiple_p (ref->size, BITS_PER_UNIT)))
       && poly_int_tree_p (gimple_call_arg (def_stmt, 2))
       && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
 	  || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME))
@@ -2342,7 +2359,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 
   /* 5) For aggregate copies translate the reference through them if
      the copy kills ref.  */
-  else if (vn_walk_kind == VN_WALKREWRITE
+  else if (data->vn_walk_kind == VN_WALKREWRITE
 	   && gimple_assign_single_p (def_stmt)
 	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
@@ -2462,7 +2479,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       *ref = r;
 
       /* Do not update last seen VUSE after translating.  */
-      last_vuse_ptr = NULL;
+      data->last_vuse_ptr = NULL;
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -2470,7 +2487,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 
   /* 6) For memcpy copies translate the reference through them if
      the copy kills ref.  */
-  else if (vn_walk_kind == VN_WALKREWRITE
+  else if (data->vn_walk_kind == VN_WALKREWRITE
 	   && is_gimple_reg_type (vr->type)
 	   /* ???  Handle BCOPY as well.  */
 	   && (gimple_call_builtin_p (def_stmt, BUILT_IN_MEMCPY)
@@ -2620,7 +2637,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       *ref = r;
 
       /* Do not update last seen VUSE after translating.  */
-      last_vuse_ptr = NULL;
+      data->last_vuse_ptr = NULL;
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -2681,13 +2698,13 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     {
       ao_ref r;
       unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
-      vn_walk_kind = kind;
+      vn_walk_cb_data data (&vr1, NULL, kind, true);
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
-	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
+	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, true,
 						  vn_reference_lookup_2,
 						  vn_reference_lookup_3,
-						  vuse_valueize, limit, &vr1);
+						  vuse_valueize, limit, &data);
       gcc_checking_assert (vr1.operands == shared_lookup_references);
     }
 
@@ -2702,11 +2719,12 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
    not exist in the hash table or if the result field of the structure
    was NULL..  VNRESULT will be filled in with the vn_reference_t
    stored in the hashtable if one exists.  When TBAA_P is false assume
-   we are looking up a store and treat it as having alias-set zero.  */
+   we are looking up a store and treat it as having alias-set zero.
+   *LAST_VUSE_PTR will be updated with the VUSE the value lookup succeeded.  */
 
 tree
 vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
-		     vn_reference_t *vnresult, bool tbaa_p)
+		     vn_reference_t *vnresult, bool tbaa_p, tree *last_vuse_ptr)
 {
   vec<vn_reference_op_s> operands;
   struct vn_reference_s vr1;
@@ -2720,7 +2738,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
-  vr1.set = tbaa_p ? get_alias_set (op) : 0;
+  vr1.set = get_alias_set (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
@@ -2737,14 +2755,12 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
 					     vr1.operands))
 	ao_ref_init (&r, op);
-      if (! tbaa_p)
-	r.ref_alias_set = r.base_alias_set = 0;
-      vn_walk_kind = kind;
+      vn_walk_cb_data data (&vr1, last_vuse_ptr, kind, tbaa_p);
       wvnresult =
-	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
+	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p,
 						vn_reference_lookup_2,
 						vn_reference_lookup_3,
-						vuse_valueize, limit, &vr1);
+						vuse_valueize, limit, &data);
       gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (wvnresult)
 	{
@@ -4099,10 +4115,8 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
   tree result;
 
   last_vuse = gimple_vuse (stmt);
-  last_vuse_ptr = &last_vuse;
   result = vn_reference_lookup (op, gimple_vuse (stmt),
-				default_vn_walk_kind, NULL, true);
-  last_vuse_ptr = NULL;
+				default_vn_walk_kind, NULL, true, &last_vuse);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a

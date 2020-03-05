@@ -924,6 +924,10 @@ gfc_check_all_any (gfc_expr *mask, gfc_expr *dim)
 }
 
 
+/* Limited checking for ALLOCATED intrinsic.  Additional checking
+   is performed in intrinsic.c(sort_actual), because ALLOCATED
+   has two mutually exclusive non-optional arguments.  */
+
 bool
 gfc_check_allocated (gfc_expr *array)
 {
@@ -2781,6 +2785,22 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 
       if (!scalar_check (status, 2))
 	return false;
+
+      if (status->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_error ("STATUS at %L shall be an INTENT(OUT) variable",
+		     &status->where);
+	  return false;
+	}
+
+      if (status->expr_type == EXPR_VARIABLE
+	  && status->symtree && status->symtree->n.sym
+	  && status->symtree->n.sym->attr.intent == INTENT_IN)
+	{
+	  gfc_error ("%qs at %L shall be an INTENT(OUT) variable",
+		     status->symtree->name, &status->where);
+	  return false;
+	}
     }
 
   return true;
@@ -3343,26 +3363,27 @@ bool
 gfc_check_findloc (gfc_actual_arglist *ap)
 {
   gfc_expr *a, *v, *m, *d, *k, *b;
+  bool a1, v1;
 
   a = ap->expr;
   if (!intrinsic_type_check (a, 0) || !array_check (a, 0))
     return false;
 
   v = ap->next->expr;
-  if (!scalar_check (v,1))
+  if (!intrinsic_type_check (v, 1) || !scalar_check (v,1))
     return false;
 
-  /* Check if the type is compatible.  */
+  /* Check if the type are both logical.  */
+  a1 = a->ts.type == BT_LOGICAL;
+  v1 = v->ts.type == BT_LOGICAL;
+  if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
 
-  if ((a->ts.type == BT_LOGICAL && v->ts.type != BT_LOGICAL)
-      || (a->ts.type != BT_LOGICAL && v->ts.type == BT_LOGICAL))
-    {
-      gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
-		 "conformance to argument %qs at %L",
-		 gfc_current_intrinsic_arg[0]->name,
-		 gfc_current_intrinsic, &a->where,
-		 gfc_current_intrinsic_arg[1]->name, &v->where);
-    }
+  /* Check if the type are both character.  */
+  a1 = a->ts.type == BT_CHARACTER;
+  v1 = v->ts.type == BT_CHARACTER;
+  if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
 	 
   d = ap->next->next->expr;
   m = ap->next->next->next->expr;
@@ -3410,6 +3431,14 @@ gfc_check_findloc (gfc_actual_arglist *ap)
     return false;
 
   return true;
+
+incompat:
+  gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
+	     "conformance to argument %qs at %L",
+	     gfc_current_intrinsic_arg[0]->name,
+	     gfc_current_intrinsic, &a->where,
+	     gfc_current_intrinsic_arg[1]->name, &v->where);
+  return false;
 }
 
 
@@ -6549,12 +6578,18 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 bool
 gfc_check_is_contiguous (gfc_expr *array)
 {
+  if (array->expr_type == EXPR_NULL)
+    {
+      gfc_error ("Actual argument at %L of %qs intrinsic shall be an "
+		 "associated pointer", &array->where, gfc_current_intrinsic);
+      return false;
+    }
+
   if (!array_check (array, 0))
     return false;
 
   return true;
 }
-
 
 
 bool

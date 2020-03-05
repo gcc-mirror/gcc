@@ -2023,6 +2023,25 @@ c_omp_declare_simd_clauses_to_decls (tree fndecl, tree clauses)
       }
 }
 
+/* Return true for __func__ and similar function-local predefined
+   variables (which are in OpenMP predetermined shared, allowed in
+   shared/firstprivate clauses).  */
+
+bool
+c_omp_predefined_variable (tree decl)
+{
+  if (VAR_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && TREE_READONLY (decl)
+      && TREE_STATIC (decl)
+      && DECL_NAME (decl)
+      && (DECL_NAME (decl) == ridpointers[RID_C99_FUNCTION_NAME]
+	  || DECL_NAME (decl) == ridpointers[RID_FUNCTION_NAME]
+	  || DECL_NAME (decl) == ridpointers[RID_PRETTY_FUNCTION_NAME]))
+    return true;
+  return false;
+}
+
 /* True if OpenMP sharing attribute of DECL is predetermined.  */
 
 enum omp_clause_default_kind
@@ -2034,6 +2053,9 @@ c_omp_predetermined_sharing (tree decl)
   if (VAR_P (decl)
       && DECL_ARTIFICIAL (decl)
       && INTEGRAL_TYPE_P (TREE_TYPE (decl)))
+    return OMP_CLAUSE_DEFAULT_SHARED;
+
+  if (c_omp_predefined_variable (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;

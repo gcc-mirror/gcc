@@ -1592,7 +1592,8 @@ backtrace_initialize (struct backtrace_state *state,
       if (found_sym)
 	backtrace_atomic_store_pointer (&state->syminfo_fn, xcoff_syminfo);
       else
-	__sync_bool_compare_and_swap (&state->syminfo_fn, NULL, xcoff_nosyms);
+	(void) __sync_bool_compare_and_swap (&state->syminfo_fn, NULL,
+					     xcoff_nosyms);
     }
 
   if (!state->threaded)

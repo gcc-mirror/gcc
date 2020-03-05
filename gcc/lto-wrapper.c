@@ -128,12 +128,11 @@ maybe_unlink (const char *file)
 #define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
 
 /* Create decoded options from the COLLECT_GCC and COLLECT_GCC_OPTIONS
-   environment according to LANG_MASK.  */
+   environment.  */
 
 static void
 get_options_from_collect_gcc_options (const char *collect_gcc,
 				      const char *collect_gcc_options,
-				      unsigned int lang_mask,
 				      struct cl_decoded_option **decoded_options,
 				      unsigned int *decoded_options_count)
 {
@@ -175,8 +174,7 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   argc = obstack_object_size (&argv_obstack) / sizeof (void *) - 1;
   argv = XOBFINISH (&argv_obstack, const char **);
 
-  decode_cmdline_options_to_array (argc, (const char **)argv,
-				   lang_mask,
+  decode_cmdline_options_to_array (argc, (const char **)argv, CL_DRIVER,
 				   decoded_options, decoded_options_count);
   obstack_free (&argv_obstack, NULL);
 }
@@ -1008,8 +1006,7 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
     {
       struct cl_decoded_option *f2decoded_options;
       unsigned int f2decoded_options_count;
-      get_options_from_collect_gcc_options (collect_gcc,
-					    fopts, CL_LANG_ALL,
+      get_options_from_collect_gcc_options (collect_gcc, fopts,
 					    &f2decoded_options,
 					    &f2decoded_options_count);
       if (!fdecoded_options)
@@ -1150,7 +1147,6 @@ run_gcc (unsigned argc, char *argv[])
     fatal_error (input_location,
 		 "environment variable COLLECT_GCC_OPTIONS must be set");
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
-					CL_LANG_ALL,
 					&decoded_options,
 					&decoded_options_count);
 

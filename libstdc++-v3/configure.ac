@@ -83,6 +83,8 @@ AC_PROG_CC
 AC_PROG_CXX
 CXXFLAGS="$save_CXXFLAGS"
 
+AC_SYS_LARGEFILE
+
 # Runs configure.host, and assorted other critical bits.  Sets
 # up critical shell variables.
 GLIBCXX_CONFIGURE

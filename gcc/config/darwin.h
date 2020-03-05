@@ -126,6 +126,24 @@ extern GTY(()) int darwin_ms_struct;
   "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
      %<gsplit-dwarf"
 
+#if LD64_HAS_EXPORT_DYNAMIC
+#define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
+#else
+#define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
+#endif
+
+/* FIXME: we should check that the linker supports the -pie and -no_pie.
+   options.  */
+#define DARWIN_PIE_SPEC \
+"%{pie|fpie|fPIE:\
+   %{mdynamic-no-pic: \
+     %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
+     :%:version-compare(>= 10.5 mmacosx-version-min= -pie) }} "
+
+#define DARWIN_NOPIE_SPEC \
+"%{no-pie|fno-pie|fno-PIE: \
+   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
+
 #define DARWIN_CC1_SPEC							\
   "%{findirect-virtual-calls: -fapple-kext} %<findirect-virtual-calls " \
   "%{fterminated-vtables: -fapple-kext} %<fterminated-vtables "		\
@@ -156,19 +174,30 @@ extern GTY(()) int darwin_ms_struct;
 #define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}" \
 	" %{pthread:-D_REENTRANT}"
 
-/* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
-   precomp, libtool, and fat build additions.
+/* This is a fix for PR41260 by passing -no_compact_unwind on darwin10 and
+   later until the assembler, linker and libunwind are able to deal with the
+   output from GCC.
+
+   FIXME: we should check that the linker supports the option.
+*/
+
+#define DARWIN_NOCOMPACT_UNWIND \
+" %:version-compare(>= 10.6 mmacosx-version-min= -no_compact_unwind) "
+
+/* In Darwin linker specs we can put -lcrt0.o and ld will search the library
+   path for crt0.o or -lcrtx.a and it will search for for libcrtx.a.  As for
+   other ports, we can also put xxx.{o,a}%s and get the appropriate complete
+   startfile absolute directory.  This latter point is important when we want
+   to override ld's rule of .dylib being found ahead of .a and the user wants
+   the convenience library to be linked.  */
+
+/* The LINK_COMMAND spec is mostly a clone of the standard LINK_COMMAND_SPEC,
+   plus precomp, libtool, and fat build additions.
 
    In general, random Darwin linker flags should go into LINK_SPEC
    instead of LINK_COMMAND_SPEC.  The command spec is better for
    specifying the handling of options understood by generic Unix
    linkers, and for positional arguments like libraries.  */
-
-#if LD64_HAS_EXPORT_DYNAMIC
-#define DARWIN_EXPORT_DYNAMIC " %{rdynamic:-export_dynamic}"
-#else
-#define DARWIN_EXPORT_DYNAMIC " %{rdynamic: %nrdynamic is not supported}"
-#endif
 
 #define LINK_COMMAND_SPEC_A \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
@@ -190,10 +219,14 @@ extern GTY(()) int darwin_ms_struct;
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
-      " DARWIN_EXPORT_DYNAMIC " %<rdynamic \
       %(link_gcc_c_sequence) \
     }}}\
-    %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}"
+    %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
+    DARWIN_PIE_SPEC \
+    DARWIN_NOPIE_SPEC \
+    DARWIN_RDYNAMIC \
+    DARWIN_NOCOMPACT_UNWIND \
+    "}}}}}}} %<pie %<no-pie %<rdynamic "
 
 #define DSYMUTIL "\ndsymutil"
 
@@ -229,8 +262,6 @@ extern GTY(()) int darwin_ms_struct;
 /* Suppress the addition of extra prefix paths when a sysroot is in use.  */
 #define STANDARD_STARTFILE_PREFIX_1 ""
 #define STANDARD_STARTFILE_PREFIX_2 ""
-
-#define DARWIN_PIE_SPEC "%{fpie|pie|fPIE:}"
 
 /* Please keep the random linker options in alphabetical order (modulo
    'Z' and 'no' prefixes). Note that options taking arguments may appear
@@ -295,7 +326,6 @@ extern GTY(()) int darwin_ms_struct;
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress)}} \
    %{Zmultiplydefinedunused*:-multiply_defined_unused %*} \
-   " DARWIN_PIE_SPEC " \
    %{prebind} %{noprebind} %{nofixprebinding} %{prebind_all_twolevel_modules} \
    %{read_only_relocs} \
    %{sectcreate*} %{sectorder*} %{seg1addr*} %{segprot*} \
@@ -327,45 +357,42 @@ extern GTY(()) int darwin_ms_struct;
 
 /* Support -mmacosx-version-min by supplying different (stub) libgcc_s.dylib
    libraries to link against, and by not linking against libgcc_s on
-   earlier-than-10.3.9.
+   earlier-than-10.3.9.  If we need exceptions, prior to 10.3.9, then we have
+   to link the static eh lib, since there's no shared version on the system.
 
-   Note that by default, -lgcc_eh is not linked against!  This is
-   because in a future version of Darwin the EH frame information may
-   be in a new format, or the fallback routine might be changed; if
-   you want to explicitly link against the static version of those
-   routines, because you know you don't need to unwind through system
-   libraries, you need to explicitly say -static-libgcc.
+   Note that by default, except as above, -lgcc_eh is not linked against.
+   This is because,in general, we need to unwind through system libraries that
+   are linked with the shared unwinder in libunwind (or libgcc_s for 10.4/5).
 
-   If it is linked against, it has to be before -lgcc, because it may
+   The static version of the current libgcc unwinder (which differs from the
+   implementation in libunwind.dylib on systems Darwin10 [10.6]+) can be used
+   by specifying -static-libgcc.
+
+   If libgcc_eh is linked against, it has to be before -lgcc, because it might
    need symbols from -lgcc.  */
+
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC						   \
    "%{static-libgcc|static: -lgcc_eh -lgcc;				   \
-      shared-libgcc|fexceptions|fgnu-runtime:				   \
-       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
+      shared-libgcc|fexceptions|fobjc-exceptions|fgnu-runtime:		   \
+       %:version-compare(!> 10.3.9 mmacosx-version-min= -lgcc_eh)	   \
+       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
-       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_ext.10.4) \
        %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
        -lgcc ;								   \
       :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
-       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_ext.10.4) \
        %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
        -lgcc }"
 
-/* We specify crt0.o as -lcrt0.o so that ld will search the library path.
-
-   crt3.o provides __cxa_atexit on systems that don't have it.  Since
-   it's only used with C++, which requires passing -shared-libgcc, key
-   off that to avoid unnecessarily adding a destructor to every
-   powerpc program built.  */
+/* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC							    \
-  "%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
-   %{!Zdynamiclib:%{Zbundle:%{!static:					    \
-	%:version-compare(< 10.6 mmacosx-version-min= -lbundle1.o)	    \
-	%{fgnu-tm: -lcrttms.o}}}					    \
+"%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
+ %{!Zdynamiclib:%{Zbundle:%(darwin_bundle1)}				    \
      %{!Zbundle:%{pg:%{static:-lgcrt0.o}				    \
                      %{!static:%{object:-lgcrt0.o}			    \
                                %{!object:%{preload:-lgcrt0.o}		    \
@@ -377,7 +404,7 @@ extern GTY(()) int darwin_ms_struct;
                                 %{!object:%{preload:-lcrt0.o}		    \
                                   %{!preload: %(darwin_crt1)		    \
 					      %(darwin_crt2)}}}}}}	    \
-  %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
+ %(darwin_crt3)"
 
 /* We want a destructor last in the list.  */
 #define TM_DESTRUCTOR "%{fgnu-tm: -lcrttme.o}"
@@ -385,17 +412,34 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
-  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },
-
-#define DARWIN_DYLIB1_SPEC						\
-  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
-   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -ldylib1.10.5.o)"
+  { "darwin_crt2", DARWIN_CRT2_SPEC },					\
+  { "darwin_crt3", DARWIN_CRT3_SPEC },					\
+  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },				\
+  { "darwin_bundle1", DARWIN_BUNDLE1_SPEC },
 
 #define DARWIN_CRT1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
    %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lcrt1.10.5.o)	\
    %:version-compare(>< 10.6 10.8 mmacosx-version-min= -lcrt1.10.6.o)	\
    %{fgnu-tm: -lcrttms.o}"
+
+#define DARWIN_CRT2_SPEC ""
+
+/* crt3.o provides __cxa_atexit on systems that don't have it (and a fix
+   up for faulty versions on 10.4).  Since it's only used with C++, which
+   requires passing -shared-libgcc, key off that to avoid unnecessarily
+   adding a destructor to every program built for 10.4 or earlier.  */
+
+#define DARWIN_CRT3_SPEC \
+"%{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
+
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -ldylib1.10.5.o)"
+
+#define DARWIN_BUNDLE1_SPEC \
+"%{!static:%:version-compare(< 10.6 mmacosx-version-min= -lbundle1.o)	\
+	   %{fgnu-tm: -lcrttms.o}}"
 
 #ifdef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
 /* Emit macosx version (but only major).  */
@@ -762,21 +806,52 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #undef TARGET_ASM_MARK_DECL_PRESERVED
 #define TARGET_ASM_MARK_DECL_PRESERVED darwin_mark_decl_preserved
 
-/* Set on a symbol with SYMBOL_FLAG_FUNCTION or
-   MACHO_SYMBOL_FLAG_VARIABLE to indicate that the function or
-   variable has been defined in this translation unit.
-   When porting Mach-O to new architectures you need to make
-   sure these aren't clobbered by the backend.  */
+/* Any port using this header needs to define the first available
+   subtarget symbol bit: SYMBOL_FLAG_SUBT_DEP.  */
 
-#define MACHO_SYMBOL_FLAG_VARIABLE (SYMBOL_FLAG_MACH_DEP)
-#define MACHO_SYMBOL_FLAG_DEFINED ((SYMBOL_FLAG_MACH_DEP) << 1)
+/* Is a variable. */
+#define MACHO_SYMBOL_FLAG_VARIABLE (SYMBOL_FLAG_SUBT_DEP)
+#define MACHO_SYMBOL_VARIABLE_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_VARIABLE) != 0)
+
+/* Set on a symbol that must be indirected, even when there is a
+   definition in the TU.  The ABI mandates that common symbols are so
+   indirected, as are weak.  If 'fix-and-continue' is operational then
+   data symbols might also be.  */
+
+#define MACHO_SYMBOL_FLAG_MUST_INDIRECT ((SYMBOL_FLAG_SUBT_DEP) << 1)
+#define MACHO_SYMBOL_MUST_INDIRECT_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_MUST_INDIRECT) != 0)
+
+/* Set on a symbol with SYMBOL_FLAG_FUNCTION or MACHO_SYMBOL_FLAG_VARIABLE
+   to indicate that the function or variable is considered defined in this
+   translation unit.  */
+
+#define MACHO_SYMBOL_FLAG_DEFINED ((SYMBOL_FLAG_SUBT_DEP) << 2)
+#define MACHO_SYMBOL_DEFINED_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_DEFINED) != 0)
+
+/* Set on a symbol that has specified non-default visibility.  */
+
+#define MACHO_SYMBOL_FLAG_HIDDEN_VIS ((SYMBOL_FLAG_SUBT_DEP) << 3)
+#define MACHO_SYMBOL_HIDDEN_VIS_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_HIDDEN_VIS) != 0)
+
+/* Set on a symbol that is a pic stub or symbol indirection (i.e. the
+   L_xxxxx${stub,non_lazy_ptr,lazy_ptr}.  */
+
+#define MACHO_SYMBOL_FLAG_INDIRECTION ((SYMBOL_FLAG_SUBT_DEP) << 5)
+#define MACHO_SYMBOL_INDIRECTION_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_INDIRECTION) != 0)
 
 /* Set on a symbol to indicate when fix-and-continue style code
    generation is being used and the symbol refers to a static symbol
    that should be rebound from new instances of a translation unit to
    the original instance of the data.  */
 
-#define MACHO_SYMBOL_STATIC ((SYMBOL_FLAG_MACH_DEP) << 2)
+#define MACHO_SYMBOL_FLAG_STATIC ((SYMBOL_FLAG_SUBT_DEP) << 6)
+#define MACHO_SYMBOL_STATIC_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_STATIC) != 0)
 
 /* Symbolic names for various things we might know about a symbol.  */
 
@@ -969,8 +1044,12 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    _tested_ version known to support this so far.  */
 #define MIN_LD64_NO_COAL_SECTS "236.4"
 
+/* From at least version 62.1, ld64 can build symbol indirection stubs as
+   needed, and there is no need for the compiler to emit them.  */
+#define MIN_LD64_OMIT_STUBS "85.2"
+
 #ifndef LD64_VERSION
-#define LD64_VERSION "85.2"
+#define LD64_VERSION "62.1"
 #else
 #define DEF_LD64 LD64_VERSION
 #endif

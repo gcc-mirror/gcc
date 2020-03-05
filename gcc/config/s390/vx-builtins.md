@@ -2147,7 +2147,7 @@
   "<vw>fmax<sdx>b\t%v0,%v1,%v2,%b3"
   [(set_attr "op_type" "VRR")])
 
-; The element reversal builtins introduced with arch13 have been made
+; The element reversal builtins introduced with z15 have been made
 ; available also for older CPUs down to z13.
 (define_expand "eltswap<mode>"
   [(set (match_operand:VEC_HW                 0 "nonimmediate_operand" "")
@@ -2181,8 +2181,8 @@
    vster<bhfgq>\t%v1,%v0"
   [(set_attr "op_type" "*,VRX,VRX")])
 
-; arch13 has instructions for doing element reversal from mem to reg
-; or the other way around.  For reg to reg or on pre arch13 machines
+; z15 has instructions for doing element reversal from mem to reg
+; or the other way around.  For reg to reg or on pre z15 machines
 ; we have to emulate it with vector permute.
 (define_insn_and_split "*eltswap<mode>_emu"
   [(set (match_operand:VEC_HW                 0 "nonimmediate_operand" "=vR")

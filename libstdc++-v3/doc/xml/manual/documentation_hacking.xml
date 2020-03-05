@@ -805,11 +805,18 @@
       </para>
 
       <para>
-	Generated files are output into separate sub directores of
+	Generated files are output into separate sub-directores of
 	<filename class="directory">doc/docbook/</filename> in the
 	build directory, based on the output format. For instance, the
 	HTML docs will be in <filename
 	class="directory">doc/docbook/html</filename>.
+      </para>
+
+      <para>
+	The <screen>doc-html-docbook-regenerate</screen> target will generate
+	the HTML files and copy them back to the libstdc++ source tree.
+	This can be used to update the HTML files that are checked in to
+	version control.
       </para>
 
       <para>

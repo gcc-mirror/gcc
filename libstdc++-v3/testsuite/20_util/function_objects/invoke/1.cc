@@ -24,7 +24,18 @@ struct abstract {
   void operator()() noexcept;
 };
 
-static_assert( noexcept(std::__invoke(std::declval<abstract>())), "" );
-#if __cpp_lib_invoke
-static_assert( noexcept(std::invoke(std::declval<abstract>())), "" );
-#endif
+static_assert( noexcept(std::__invoke(std::declval<abstract>())),
+    "It should be possible to use abstract types with INVOKE" );
+
+struct F {
+  void operator()() &;
+  void operator()() && noexcept;
+  int operator()(int);
+  double* operator()(int, int) noexcept;
+};
+struct D { D(void*); };
+
+static_assert( !noexcept(std::__invoke(std::declval<F&>())), "" );
+static_assert( noexcept(std::__invoke(std::declval<F>())), "" );
+static_assert( !noexcept(std::__invoke(std::declval<F>(), 1)), "" );
+static_assert( noexcept(std::__invoke(std::declval<F>(), 1, 2)), "" );

@@ -984,7 +984,7 @@ pass_dse::execute (function *fun)
 {
   need_eh_cleanup = BITMAP_ALLOC (NULL);
 
-  renumber_gimple_stmt_uids ();
+  renumber_gimple_stmt_uids (cfun);
 
   /* We might consider making this a property of each pass so that it
      can be [re]computed on an as-needed basis.  Particularly since

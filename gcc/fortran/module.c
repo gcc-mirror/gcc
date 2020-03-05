@@ -525,6 +525,8 @@ gfc_match_use (void)
   gfc_intrinsic_op op;
   match m;
   gfc_use_list *use_list;
+  gfc_symtree *st;
+  locus loc;
 
   use_list = gfc_get_use_list ();
 
@@ -632,6 +634,8 @@ gfc_match_use (void)
 	case INTERFACE_USER_OP:
 	case INTERFACE_GENERIC:
 	case INTERFACE_DTIO:
+	  loc = gfc_current_locus;
+
 	  m = gfc_match (" =>");
 
 	  if (type == INTERFACE_USER_OP && m == MATCH_YES
@@ -641,6 +645,18 @@ gfc_match_use (void)
 
 	  if (type == INTERFACE_USER_OP)
 	    new_use->op = INTRINSIC_USER;
+
+	  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+	  if (st && type != INTERFACE_USER_OP)
+	    {
+	      if (m == MATCH_YES)
+		gfc_error ("Symbol %qs at %L conflicts with the rename symbol "
+			   "at %L", name, &st->n.sym->declared_at, &loc);
+	      else
+		gfc_error ("Symbol %qs at %L conflicts with the symbol "
+			   "at %L", name, &st->n.sym->declared_at, &loc);
+	      goto cleanup;
+	    }
 
 	  if (use_list->only_flag)
 	    {

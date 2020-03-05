@@ -1,3 +1,61 @@
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/93515
+	* testsuite/libgomp.c-c++-common/pr93515.c: New test.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/93219
+	* libgomp.h (gomp_print_string): Change return type from void to int.
+	* affinity-fmt.c (gomp_print_string): Likewise.  Return true if
+	not all characters have been written.
+
+	2019-12-31  Ayush Mittal  <ayush.m@samsung.com>
+
+	PR libgomp/93065
+	* oacc-init.c (goacc_runtime_deinitialize): New function.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92899
+	* testsuite/libgomp.fortran/atomic1.f90: New test.
+
+	2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* testsuite/libgomp.c++/udr-20.C: New test.
+	* testsuite/libgomp.c++/udr-21.C: New test.
+
+2019-12-11  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* target.c (gomp_load_image_to_device, omp_target_associate_ptr):
+	Initialize 'dynamic_refcount' whenever we initialize 'refcount'.
+
+2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.h.in: Fix spelling of function declaration
+	omp_get_cancell(l)ation.
+
+2019-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91422
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Correct array
+	dimension.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

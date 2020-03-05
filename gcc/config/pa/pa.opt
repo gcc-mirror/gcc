@@ -45,6 +45,10 @@ mcaller-copies
 Target Report Mask(CALLER_COPIES)
 Caller copies function arguments passed by hidden reference.
 
+mcoherent-ldcw
+Target Report Var(TARGET_COHERENT_LDCW) Init(1)
+Use ldcw/ldcd coherent cache-control hint.
+
 mdisable-fpregs
 Target Report Mask(DISABLE_FPREGS)
 Disable FP regs.
@@ -89,6 +93,10 @@ Generate PA1.0 code.
 mno-space-regs
 Target RejectNegative Report Mask(NO_SPACE_REGS)
 Disable space regs.
+
+mordered
+Target Report Var(TARGET_ORDERED) Init(0)
+Assume memory references are ordered and barriers are not needed.
 
 mpa-risc-1-0
 Target RejectNegative

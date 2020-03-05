@@ -1,3 +1,37 @@
+2020-01-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-01-16  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Remember
+	best_noreorder_pos and then restore to it
+	when we revert.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92231
+	* lto-lang.c (handle_const_attribute): Don't call fndecl_built_in_p
+	on *node that is not FUNCTION_DECL.
+
+2019-10-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backport from mainline
+
+	2019-10-12  Jan Hubicka  <hubicka@ucw.cz>
+	* lto.c (lto_wpa_write_files): Do not update bodies of clones.
+
+	2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
+	* lto.c (lto_wpa_write_files): Prepare all bodies for streaming.
+
+2019-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backport from mainline
+	* lto-partition.c (add_symbol_to_partition_1): Update.
+	(undo_parittion): Update.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

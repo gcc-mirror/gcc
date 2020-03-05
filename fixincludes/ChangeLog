@@ -1,3 +1,33 @@
+2020-02-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2020-02-13  Matheus Castanho  <msc@linux.ibm.com>
+
+	* fixinc.in: Skip machine_name fix on powerpc*-*-linux*.
+
+2020-01-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2019-12-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/93066
+	* inclhack.def (hpux_c99_inttypes3): Fix defines for INTPTR_MAX
+	and UINTPTR_MAX, and missing define for SIZE_MAX.
+	* fixincl.x: Regenerate.
+	* tests/base/inttypes.h: Update for above fix.
+
+2019-08-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-08-18  C.G. Dogan <gcc+cgdogan.00@gmail.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/83531
+	* inclhack.def (darwin_api_availability): New; strip leading
+	underscores from API_XXXX defines.
+	* fixincl.x: Regenerate.
+	* tests/base/os/availability.h: New file.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

@@ -3123,6 +3123,11 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 	    tree type = TREE_TYPE (*valp);
 	    tree subob = obj;
 
+	    /* Elements with RANGE_EXPR index shouldn't have any
+	       placeholders in them.  */
+	    if (ce->index && TREE_CODE (ce->index) == RANGE_EXPR)
+	      continue;
+
 	    if (TREE_CODE (*valp) == CONSTRUCTOR
 		&& AGGREGATE_TYPE_P (type))
 	      {
@@ -5485,6 +5490,76 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
       return true;
     }
   return false;
+}
+
+/* Given an initializer INIT for a TYPE, return true if INIT is zero
+   so that it can be replaced by value initialization.  This function
+   distinguishes betwen empty strings as initializers for arrays and
+   for pointers (which make it return false).  */
+
+bool
+type_initializer_zero_p (tree type, tree init)
+{
+  if (type == error_mark_node || init == error_mark_node)
+    return false;
+
+  STRIP_NOPS (init);
+
+  if (POINTER_TYPE_P (type))
+    return TREE_CODE (init) != STRING_CST && initializer_zerop (init);
+
+  if (TREE_CODE (init) != CONSTRUCTOR)
+    {
+      /* A class can only be initialized by a non-class type if it has
+	 a ctor that converts from that type.  Such classes are excluded
+	 since their semantics are unknown.  */
+      if (RECORD_OR_UNION_TYPE_P (type)
+	  && !RECORD_OR_UNION_TYPE_P (TREE_TYPE (init)))
+	return false;
+      return initializer_zerop (init);
+    }
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree elt_type = TREE_TYPE (type);
+      elt_type = TYPE_MAIN_VARIANT (elt_type);
+      if (elt_type == char_type_node)
+	return initializer_zerop (init);
+
+      tree elt_init;
+      unsigned HOST_WIDE_INT i;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, elt_init)
+	if (!type_initializer_zero_p (elt_type, elt_init))
+	  return false;
+      return true;
+    }
+
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return initializer_zerop (init);
+
+  if (TYPE_NON_AGGREGATE_CLASS (type))
+    return false;
+
+  tree fld = TYPE_FIELDS (type);
+
+  tree fld_init;
+  unsigned HOST_WIDE_INT i;
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, fld_init)
+    {
+      fld = next_initializable_field (fld);
+      if (!fld)
+	return true;
+
+      tree fldtype = TREE_TYPE (fld);
+      if (!type_initializer_zero_p (fldtype, fld_init))
+	return false;
+
+      fld = DECL_CHAIN (fld);
+      if (!fld)
+	break;
+    }
+
+  return true;
 }
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)

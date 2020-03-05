@@ -4703,14 +4703,12 @@ case "${target}" in
 			 echo "#undef  LINK_OS_EXTRA_SPEC32"
 			 echo "#define LINK_OS_EXTRA_SPEC32" \
 			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib -rpath $at/lib" \
-			      "-L $prefix/lib -L $at/lib\""
+			      "-rpath $prefix/lib -rpath $at/lib\""
 			 echo
 			 echo "#undef  LINK_OS_EXTRA_SPEC64"
 			 echo "#define LINK_OS_EXTRA_SPEC64" \
 			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib64 -rpath $at/lib64" \
-			      "-L $prefix/lib64 -L $at/lib64\""
+			      "-rpath $prefix/lib64 -rpath $at/lib64\""
 			 echo
 			 echo "#undef  LINK_OS_NEW_DTAGS_SPEC"
 			 echo "#define LINK_OS_NEW_DTAGS_SPEC" \
@@ -4723,7 +4721,10 @@ case "${target}" in
 			 echo "#define MD_EXEC_PREFIX \"$at/bin/\""
 			 echo
 			 echo "#undef  MD_STARTFILE_PREFIX"
-			 echo "#define MD_STARTFILE_PREFIX \"$at/lib/\"") \
+			 echo "#define MD_STARTFILE_PREFIX \"$prefix/lib/\""
+			 echo
+			 echo "#undef  MD_STARTFILE_PREFIX_1"
+			 echo "#define MD_STARTFILE_PREFIX_1 \"$at/lib/\"") \
 			    > advance-toolchain.h
 		    else
 			echo "Unknown advance-toolchain $with_advance_toolchain"
@@ -4746,7 +4747,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 )
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | z15 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 )
 				# OK
 				;;
 			*)

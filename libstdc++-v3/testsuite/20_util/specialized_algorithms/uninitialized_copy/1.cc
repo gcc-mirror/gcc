@@ -34,4 +34,4 @@ test01(T* result)
   T t[1];
   std::uninitialized_copy(t, t+1, result); // { dg-error "here" }
 }
-// { dg-prune-output "use of deleted function" }
+// { dg-error "constructible from value" "" { target *-*-* } 0 }

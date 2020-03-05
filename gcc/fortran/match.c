@@ -4220,6 +4220,12 @@ gfc_match_allocate (void)
       if (m == MATCH_ERROR)
 	goto cleanup;
 
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
+
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
 
@@ -4351,6 +4357,12 @@ alloc_opt_list:
 	  stat = tmp;
 	  tmp = NULL;
 	  saw_stat = true;
+
+	  if (stat->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_error ("STAT tag at %L cannot be a constant", &stat->where);
+	      goto cleanup;
+	    }
 
 	  if (gfc_check_do_variable (stat->symtree))
 	    goto cleanup;
@@ -4627,6 +4639,12 @@ gfc_match_deallocate (void)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
+
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
 
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
@@ -5699,7 +5717,29 @@ gfc_match_st_function (void)
   gfc_symbol *sym;
   gfc_expr *expr;
   match m;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  locus old_locus;
+  bool fcn;
+  gfc_formal_arglist *ptr;
 
+  /* Read the possible statement function name, and then check to see if
+     a symbol is already present in the namespace.  Record if it is a
+     function and whether it has been referenced.  */
+  fcn = false;
+  ptr = NULL;
+  old_locus = gfc_current_locus;
+  m = gfc_match_name (name);
+  if (m == MATCH_YES)
+    {
+      gfc_find_symbol (name, NULL, 1, &sym);
+      if (sym && sym->attr.function && !sym->attr.referenced)
+	{
+	  fcn = true;
+	  ptr = sym->formal;
+	}
+    }
+
+  gfc_current_locus = old_locus;
   m = gfc_match_symbol (&sym, 0);
   if (m != MATCH_YES)
     return m;
@@ -5724,6 +5764,13 @@ gfc_match_st_function (void)
   if (recursive_stmt_fcn (expr, sym))
     {
       gfc_error ("Statement function at %L is recursive", &expr->where);
+      return MATCH_ERROR;
+    }
+
+  if (fcn && ptr != sym->formal)
+    {
+      gfc_error ("Statement function %qs at %L conflicts with function name",
+		 sym->name, &expr->where);
       return MATCH_ERROR;
     }
 
@@ -6119,6 +6166,7 @@ select_type_set_tmp (gfc_typespec *ts)
 {
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp = NULL;
+  gfc_symbol *selector = select_type_stack->selector;
 
   if (!ts)
     {
@@ -6140,22 +6188,27 @@ select_type_set_tmp (gfc_typespec *ts)
       gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
       gfc_add_type (tmp->n.sym, ts, NULL);
 
-      if (select_type_stack->selector->ts.type == BT_CLASS
-	&& select_type_stack->selector->attr.class_ok)
+      if (selector->ts.type == BT_CLASS && selector->attr.class_ok)
 	{
-	  tmp->n.sym->attr.pointer
-		= CLASS_DATA (select_type_stack->selector)->attr.class_pointer;
+	  tmp->n.sym->attr.pointer = CLASS_DATA (selector)->attr.class_pointer;
 
 	  /* Copy across the array spec to the selector.  */
-	  if (CLASS_DATA (select_type_stack->selector)->attr.dimension
-	      || CLASS_DATA (select_type_stack->selector)->attr.codimension)
+	  if (CLASS_DATA (selector)->attr.dimension
+	      || CLASS_DATA (selector)->attr.codimension)
 	    {
 	      tmp->n.sym->attr.dimension
-		    = CLASS_DATA (select_type_stack->selector)->attr.dimension;
+		    = CLASS_DATA (selector)->attr.dimension;
 	      tmp->n.sym->attr.codimension
-		    = CLASS_DATA (select_type_stack->selector)->attr.codimension;
-	      tmp->n.sym->as
-	    = gfc_copy_array_spec (CLASS_DATA (select_type_stack->selector)->as);
+		    = CLASS_DATA (selector)->attr.codimension;
+	      if (CLASS_DATA (selector)->as->type != AS_EXPLICIT)
+		tmp->n.sym->as
+			= gfc_copy_array_spec (CLASS_DATA (selector)->as);
+	      else
+		{
+		  tmp->n.sym->as = gfc_get_array_spec();
+		  tmp->n.sym->as->rank = CLASS_DATA (selector)->as->rank;
+		  tmp->n.sym->as->type = AS_DEFERRED;
+		}
 	    }
     }
 

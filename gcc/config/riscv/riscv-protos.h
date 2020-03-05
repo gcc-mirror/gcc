@@ -44,10 +44,10 @@ extern int riscv_const_insns (rtx);
 extern int riscv_split_const_insns (rtx);
 extern int riscv_load_store_insns (rtx, rtx_insn *);
 extern rtx riscv_emit_move (rtx, rtx);
-extern bool riscv_split_symbol (rtx, rtx, machine_mode, rtx *);
+extern bool riscv_split_symbol (rtx, rtx, machine_mode, rtx *, bool);
 extern bool riscv_split_symbol_type (enum riscv_symbol_type);
 extern rtx riscv_unspec_address (rtx, enum riscv_symbol_type);
-extern void riscv_move_integer (rtx, rtx, HOST_WIDE_INT);
+extern void riscv_move_integer (rtx, rtx, HOST_WIDE_INT, bool);
 extern bool riscv_legitimize_move (machine_mode, rtx, rtx);
 extern rtx riscv_subword (rtx, bool);
 extern bool riscv_split_64bit_move_p (rtx, rtx);
@@ -87,5 +87,7 @@ extern void riscv_init_builtins (void);
 
 /* Routines implemented in riscv-common.c.  */
 extern std::string riscv_arch_str ();
+
+extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
 #endif /* ! GCC_RISCV_PROTOS_H */

@@ -4474,13 +4474,27 @@ cp_fname_init (const char* name, tree *type_p)
 static tree
 cp_make_fname_decl (location_t loc, tree id, int type_dep)
 {
-  const char *const name = (type_dep && in_template_function ()
-			    ? NULL : fname_as_string (type_dep));
+  const char * name = NULL;
+  bool release_name = false;
+  if (!(type_dep && in_template_function ()))
+    {
+      if (current_function_decl == NULL_TREE)
+	name = "top level";
+      else if (type_dep == 1) /* __PRETTY_FUNCTION__ */
+	name = cxx_printable_name (current_function_decl, 2);
+      else if (type_dep == 0) /* __FUNCTION__ */
+	{
+	  name = fname_as_string (type_dep);
+	  release_name = true;
+	}
+      else
+	gcc_unreachable ();
+    }
   tree type;
   tree init = cp_fname_init (name, &type);
   tree decl = build_decl (loc, VAR_DECL, id, type);
 
-  if (name)
+  if (release_name)
     free (CONST_CAST (char *, name));
 
   /* As we're using pushdecl_with_scope, we must set the context.  */
@@ -5836,8 +5850,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       /* Pointers initialized to strings must be treated as non-zero
 	 even if the string is empty.  */
       tree init_type = TREE_TYPE (elt_init);
-      if ((POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type))
-	  || !initializer_zerop (elt_init))
+      if (POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type)
+	  || !type_initializer_zero_p (elt_type, elt_init))
 	last_nonzero = index;
 
       /* This can happen with an invalid initializer (c++/54501).  */
@@ -6114,7 +6128,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 			       (CONSTRUCTOR_ELT (stripped_init,0)->value))))
 		{
 		  if (complain & tf_error)
-		    error ("too many braces around scalar initializer"
+		    error ("too many braces around scalar initializer "
 		           "for type %qT", type);
 		  init = error_mark_node;
 		}
@@ -6210,14 +6224,13 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	       by the front end.  Here we have e.g. {.__pfn=0B, .__delta=0},
 	       which is missing outermost braces.  We should warn below, and
 	       one of the routines below will wrap it in additional { }.  */;
-	  /* For a nested compound literal, there is no need to reshape since
-	     we called reshape_init in finish_compound_literal, before calling
-	     digest_init.  */
-	  else if (COMPOUND_LITERAL_P (stripped_init)
-		   /* Similarly, a CONSTRUCTOR of the target's type is a
-		      previously digested initializer.  */
-		   || same_type_ignoring_top_level_qualifiers_p (type,
-								 init_type))
+	  /* For a nested compound literal, proceed to specialized routines,
+	     to handle initialization of arrays and similar.  */
+	  else if (COMPOUND_LITERAL_P (stripped_init))
+	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	  /* A CONSTRUCTOR of the target's type is a previously
+	     digested initializer.  */
+	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
 	    {
 	      ++d->cur;
 	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
@@ -8410,14 +8423,14 @@ expand_static_init (tree decl, tree init)
 	      (acquire_name, build_function_type_list (integer_type_node,
 						       TREE_TYPE (guard_addr),
 						       NULL_TREE),
-	       NULL_TREE, ECF_NOTHROW | ECF_LEAF);
+	       NULL_TREE, ECF_NOTHROW);
 	  if (!release_fn || !abort_fn)
 	    vfntype = build_function_type_list (void_type_node,
 						TREE_TYPE (guard_addr),
 						NULL_TREE);
 	  if (!release_fn)
 	    release_fn = push_library_fn (release_name, vfntype, NULL_TREE,
-					   ECF_NOTHROW | ECF_LEAF);
+					  ECF_NOTHROW);
 	  if (!abort_fn)
 	    abort_fn = push_library_fn (abort_name, vfntype, NULL_TREE,
 					ECF_NOTHROW | ECF_LEAF);
@@ -9542,10 +9555,12 @@ build_ptrmemfunc_type (tree type)
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
 
   field = build_decl (input_location, FIELD_DECL, pfn_identifier, type);
+  DECL_NONADDRESSABLE_P (field) = 1;
   fields = field;
 
   field = build_decl (input_location, FIELD_DECL, delta_identifier, 
 		      delta_type_node);
+  DECL_NONADDRESSABLE_P (field) = 1;
   DECL_CHAIN (field) = fields;
   fields = field;
 
@@ -11438,6 +11453,8 @@ grokdeclarator (const cp_declarator *declarator,
 		else if (late_return_type
 			 && sfk != sfk_conversion)
 		  {
+		    if (late_return_type == error_mark_node)
+		      return error_mark_node;
 		    if (cxx_dialect < cxx11)
 		      /* Not using maybe_warn_cpp0x because this should
 			 always be an error.  */
@@ -12166,6 +12183,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  memfn_quals |= type_memfn_quals (type);
 	  rqual = type_memfn_rqual (type);
 	  type_quals = TYPE_UNQUALIFIED;
+	  raises = TYPE_RAISES_EXCEPTIONS (type);
 	}
     }
 
@@ -13045,7 +13063,9 @@ check_default_argument (tree decl, tree arg, tsubst_flags_t complain)
   /* Avoid redundant -Wzero-as-null-pointer-constant warnings at
      the call sites.  */
   if (TYPE_PTR_OR_PTRMEM_P (decl_type)
-      && null_ptr_cst_p (arg))
+      && null_ptr_cst_p (arg)
+      /* Don't lose side-effects as in PR90473.  */
+      && !TREE_SIDE_EFFECTS (arg))
     return nullptr_node;
 
   /* [dcl.fct.default]
@@ -15615,7 +15635,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && !implicit_default_ctor_p (decl1))
     cp_ubsan_maybe_initialize_vtbl_ptrs (current_class_ptr);
 
-  start_lambda_scope (decl1);
+  if (!DECL_OMP_DECLARE_REDUCTION_P (decl1))
+    start_lambda_scope (decl1);
 
   return true;
 }
@@ -16023,7 +16044,8 @@ finish_function (bool inline_p)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
-  finish_lambda_scope ();
+  if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
+    finish_lambda_scope ();
 
   if (c_dialect_objc ())
     objc_finish_function ();
@@ -16140,7 +16162,7 @@ finish_function (bool inline_p)
     invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
 
   /* Perform delayed folding before NRV transformation.  */
-  if (!processing_template_decl)
+  if (!processing_template_decl && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_fold_function (fndecl);
 
   /* Set up the named return value optimization, if we can.  Candidate
@@ -16263,7 +16285,8 @@ finish_function (bool inline_p)
   if (!processing_template_decl)
     {
       struct language_function *f = DECL_SAVED_FUNCTION_DATA (fndecl);
-      cp_genericize (fndecl);
+      if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
+	cp_genericize (fndecl);
       /* Clear out the bits we don't need.  */
       f->x_current_class_ptr = NULL;
       f->x_current_class_ref = NULL;

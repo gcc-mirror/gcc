@@ -275,29 +275,18 @@ jump (xorshift1024star_state* rs)
 }
 
 
-/* Super-simple LCG generator used in getosrandom () if /dev/urandom
-   doesn't exist.  */
+/* Splitmix64 recommended by xorshift author for initializing.  After
+   getting one uint64_t value from the OS, this is used to fill in the
+   rest of the state.  */
 
-#define M 2147483647 /* 2^31 - 1 (A large prime number) */
-#define A 16807      /* Prime root of M, passes statistical tests and produces a full cycle */
-#define Q 127773 /* M / A (To avoid overflow on A * seed) */
-#define R 2836   /* M % A (To avoid overflow on A * seed) */
-
-__attribute__((unused)) static uint32_t
-lcg_parkmiller(uint32_t seed)
+static uint64_t
+splitmix64 (uint64_t x)
 {
-    uint32_t hi = seed / Q;
-    uint32_t lo = seed % Q;
-    int32_t test = A * lo - R * hi;
-    if (test <= 0)
-        test += M;
-    return test;
+  uint64_t z = (x += 0x9e3779b97f4a7c15);
+  z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+  z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+  return z ^ (z >> 31);
 }
-
-#undef M
-#undef A
-#undef Q
-#undef R
 
 
 /* Get some random bytes from the operating system in order to seed
@@ -315,7 +304,7 @@ getosrandom (void *buf, size_t buflen)
 #else
 #ifdef HAVE_GETENTROPY
   if (getentropy (buf, buflen) == 0)
-    return 0;
+    return buflen;
 #endif
   int flags = O_RDONLY;
 #ifdef O_CLOEXEC
@@ -328,7 +317,7 @@ getosrandom (void *buf, size_t buflen)
       close (fd);
       return res;
     }
-  uint32_t seed = 1234567890;
+  uint64_t seed = 0x047f7684e9fc949dULL;
   time_t secs;
   long usecs;
   if (gf_gettime (&secs, &usecs) == 0)
@@ -340,13 +329,9 @@ getosrandom (void *buf, size_t buflen)
   pid_t pid = getpid();
   seed ^= pid;
 #endif
-  uint32_t* ub = buf;
-  for (size_t i = 0; i < buflen / sizeof (uint32_t); i++)
-    {
-      ub[i] = seed;
-      seed = lcg_parkmiller (seed);
-    }
-  return buflen;
+  size_t size = buflen < sizeof (uint64_t) ? buflen : sizeof (uint64_t);
+  memcpy (buf, &seed, size);
+  return size;
 #endif /* __MINGW64_VERSION_MAJOR  */
 }
 
@@ -361,7 +346,13 @@ init_rand_state (xorshift1024star_state* rs, const bool locked)
     __gthread_mutex_lock (&random_lock);
   if (!master_init)
     {
-      getosrandom (master_state, sizeof (master_state));
+      uint64_t os_seed;
+      getosrandom (&os_seed, sizeof (os_seed));
+      for (uint64_t i = 0; i < sizeof (master_state) / sizeof (uint64_t); i++)
+	{
+	  os_seed = splitmix64 (os_seed);
+	  master_state[i] = os_seed;
+	}
       njumps = 0;
       master_init = true;
     }

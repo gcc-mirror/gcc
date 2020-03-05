@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 --param tree-reassoc-width=2 -fdump-tree-reassoc1" } */
+/* { dg-options "-O2 --param tree-reassoc-width=2 -fdump-tree-reassoc2" } */
 
 unsigned int
 foo (void)
@@ -21,4 +21,4 @@ foo (void)
 
 /* Verify there are two pairs of __asm__ statements with no
    intervening stmts.  */
-/* { dg-final { scan-tree-dump-times "__asm__\[^;\n]*;\n *__asm__" 2 "reassoc1"} } */
+/* { dg-final { scan-tree-dump-times "__asm__\[^;\n]*;\n *__asm__" 2 "reassoc2"} } */

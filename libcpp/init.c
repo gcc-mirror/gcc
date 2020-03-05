@@ -489,6 +489,25 @@ cpp_init_special_builtins (cpp_reader *pfile)
     }
 }
 
+/* Restore macro C to builtin macro definition.  */
+
+void
+_cpp_restore_special_builtin (cpp_reader *pfile, struct def_pragma_macro *c)
+{
+  size_t len = strlen (c->name);
+
+  for (const struct builtin_macro *b = builtin_array;
+       b < builtin_array + ARRAY_SIZE (builtin_array); b++)
+    if (b->len == len && memcmp (c->name, b->name, len + 1) == 0)
+      {
+	cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
+	hp->type = NT_BUILTIN_MACRO;
+	if (b->always_warn_if_redefined)
+	  hp->flags |= NODE_WARN;
+	hp->value.builtin = (enum cpp_builtin_type) b->value;
+      }
+}
+
 /* Read the builtins table above and enter them, and language-specific
    macros, into the hash table.  HOSTED is true if this is a hosted
    environment.  */

@@ -508,8 +508,8 @@ riscv_split_integer (HOST_WIDE_INT val, machine_mode mode)
   unsigned HOST_WIDE_INT hival = sext_hwi ((val - loval) >> 32, 32);
   rtx hi = gen_reg_rtx (mode), lo = gen_reg_rtx (mode);
 
-  riscv_move_integer (hi, hi, hival);
-  riscv_move_integer (lo, lo, loval);
+  riscv_move_integer (hi, hi, hival, FALSE);
+  riscv_move_integer (lo, lo, loval, FALSE);
 
   hi = gen_rtx_fmt_ee (ASHIFT, mode, hi, GEN_INT (32));
   hi = force_reg (mode, hi);
@@ -1021,9 +1021,12 @@ riscv_force_binary (machine_mode mode, enum rtx_code code, rtx x, rtx y)
    are allowed, copy it into a new register, otherwise use DEST.  */
 
 static rtx
-riscv_force_temporary (rtx dest, rtx value)
+riscv_force_temporary (rtx dest, rtx value, bool in_splitter)
 {
-  if (can_create_pseudo_p ())
+  /* We can't call gen_reg_rtx from a splitter, because this might realloc
+     the regno_reg_rtx array, which would invalidate reg rtx pointers in the
+     combine undo buffer.  */
+  if (can_create_pseudo_p () && !in_splitter)
     return force_reg (Pmode, value);
   else
     {
@@ -1082,7 +1085,7 @@ static rtx
 riscv_unspec_offset_high (rtx temp, rtx addr, enum riscv_symbol_type symbol_type)
 {
   addr = gen_rtx_HIGH (Pmode, riscv_unspec_address (addr, symbol_type));
-  return riscv_force_temporary (temp, addr);
+  return riscv_force_temporary (temp, addr, FALSE);
 }
 
 /* Load an entry from the GOT for a TLS GD access.  */
@@ -1130,7 +1133,8 @@ static rtx riscv_tls_add_tp_le (rtx dest, rtx base, rtx sym)
    is guaranteed to be a legitimate address for mode MODE.  */
 
 bool
-riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
+riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out,
+		    bool in_splitter)
 {
   enum riscv_symbol_type symbol_type;
 
@@ -1146,7 +1150,7 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
       case SYMBOL_ABSOLUTE:
 	{
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
-	  high = riscv_force_temporary (temp, high);
+	  high = riscv_force_temporary (temp, high, in_splitter);
 	  *low_out = gen_rtx_LO_SUM (Pmode, high, addr);
 	}
 	break;
@@ -1205,8 +1209,9 @@ riscv_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 	 overflow, so we need to force a sign-extension check.  */
       high = gen_int_mode (CONST_HIGH_PART (offset), Pmode);
       offset = CONST_LOW_PART (offset);
-      high = riscv_force_temporary (temp, high);
-      reg = riscv_force_temporary (temp, gen_rtx_PLUS (Pmode, high, reg));
+      high = riscv_force_temporary (temp, high, FALSE);
+      reg = riscv_force_temporary (temp, gen_rtx_PLUS (Pmode, high, reg),
+				   FALSE);
     }
   return plus_constant (Pmode, reg, offset);
 }
@@ -1315,7 +1320,7 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     return riscv_legitimize_tls_address (x);
 
   /* See if the address can split into a high part and a LO_SUM.  */
-  if (riscv_split_symbol (NULL, x, mode, &addr))
+  if (riscv_split_symbol (NULL, x, mode, &addr, FALSE))
     return riscv_force_address (addr, mode);
 
   /* Handle BASE + OFFSET using riscv_add_offset.  */
@@ -1337,17 +1342,23 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 /* Load VALUE into DEST.  TEMP is as for riscv_force_temporary.  */
 
 void
-riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value)
+riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
+		    bool in_splitter)
 {
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
   machine_mode mode;
   int i, num_ops;
   rtx x;
 
+  /* We can't call gen_reg_rtx from a splitter, because this might realloc
+     the regno_reg_rtx array, which would invalidate reg rtx pointers in the
+     combine undo buffer.  */
+  bool can_create_pseudo = can_create_pseudo_p () && ! in_splitter;
+
   mode = GET_MODE (dest);
   num_ops = riscv_build_integer (codes, value, mode);
 
-  if (can_create_pseudo_p () && num_ops > 2 /* not a simple constant */
+  if (can_create_pseudo && num_ops > 2 /* not a simple constant */
       && num_ops >= riscv_split_integer_cost (value))
     x = riscv_split_integer (value, mode);
   else
@@ -1357,7 +1368,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value)
 
       for (i = 1; i < num_ops; i++)
 	{
-	  if (!can_create_pseudo_p ())
+	  if (!can_create_pseudo)
 	    x = riscv_emit_set (temp, x);
 	  else
 	    x = force_reg (mode, x);
@@ -1381,12 +1392,12 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
   /* Split moves of big integers into smaller pieces.  */
   if (splittable_const_int_operand (src, mode))
     {
-      riscv_move_integer (dest, dest, INTVAL (src));
+      riscv_move_integer (dest, dest, INTVAL (src), FALSE);
       return;
     }
 
   /* Split moves of symbolic constants into high/low pairs.  */
-  if (riscv_split_symbol (dest, src, MAX_MACHINE_MODE, &src))
+  if (riscv_split_symbol (dest, src, MAX_MACHINE_MODE, &src, FALSE))
     {
       riscv_emit_set (dest, src);
       return;
@@ -1407,7 +1418,7 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
   if (offset != const0_rtx
       && (targetm.cannot_force_const_mem (mode, src) || can_create_pseudo_p ()))
     {
-      base = riscv_force_temporary (dest, base);
+      base = riscv_force_temporary (dest, base, FALSE);
       riscv_emit_move (dest, riscv_add_offset (NULL, base, INTVAL (offset)));
       return;
     }
@@ -1416,7 +1427,7 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
 
   /* When using explicit relocs, constant pool references are sometimes
      not legitimate addresses.  */
-  riscv_split_symbol (dest, XEXP (src, 0), mode, &XEXP (src, 0));
+  riscv_split_symbol (dest, XEXP (src, 0), mode, &XEXP (src, 0), FALSE);
   riscv_emit_move (dest, src);
 }
 
@@ -1601,7 +1612,10 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case ZERO_EXTRACT:
       /* This is an SImode shift.  */
-      if (outer_code == SET && (INTVAL (XEXP (x, 2)) > 0)
+      if (outer_code == SET
+	  && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2))
+	  && (INTVAL (XEXP (x, 2)) > 0)
 	  && (INTVAL (XEXP (x, 1)) + INTVAL (XEXP (x, 2)) == 32))
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
@@ -3078,7 +3092,8 @@ riscv_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
 	break;
 
       default:
-	gcc_unreachable ();
+	output_operand_lossage ("invalid use of '%%%c'", hi_reloc ? 'h' : 'R');
+	return;
     }
 
   fprintf (file, "%s(", reloc);
@@ -4890,6 +4905,19 @@ riscv_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   PROMOTE_MODE (mode, unsignedp, type);
   *punsignedp = unsignedp;
   return mode;
+}
+
+/* Return nonzero if register FROM_REGNO can be renamed to register
+   TO_REGNO.  */
+
+bool
+riscv_hard_regno_rename_ok (unsigned from_regno ATTRIBUTE_UNUSED,
+			    unsigned to_regno)
+{
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+  return !cfun->machine->interrupt_handler_p || df_regs_ever_live_p (to_regno);
 }
 
 /* Initialize the GCC target structure.  */

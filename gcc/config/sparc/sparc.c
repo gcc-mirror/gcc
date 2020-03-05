@@ -3972,11 +3972,8 @@ eligible_for_call_delay (rtx_insn *trial)
   if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
     return 0;
 
-  /* Binutils allows
-       call __tls_get_addr, %tgd_call (foo)
-        add %l7, %o0, %o0, %tgd_add (foo)
-     while Sun as/ld does not.  */
-  if (TARGET_GNU_TLS || !TARGET_TLS)
+  /* The only problematic cases are TLS sequences with Sun as/ld.  */
+  if ((TARGET_GNU_TLS && HAVE_GNU_LD) || !TARGET_TLS)
     return 1;
 
   pat = PATTERN (trial);
@@ -4243,9 +4240,11 @@ sparc_cannot_force_const_mem (machine_mode mode, rtx x)
 }
 
 /* Global Offset Table support.  */
-static GTY(()) rtx got_helper_rtx = NULL_RTX;
-static GTY(()) rtx got_register_rtx = NULL_RTX;
 static GTY(()) rtx got_symbol_rtx = NULL_RTX;
+static GTY(()) rtx got_register_rtx = NULL_RTX;
+static GTY(()) rtx got_helper_rtx = NULL_RTX;
+
+static GTY(()) bool got_helper_needed = false;
 
 /* Return the SYMBOL_REF for the Global Offset Table.  */
 
@@ -4256,27 +4255,6 @@ sparc_got (void)
     got_symbol_rtx = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 
   return got_symbol_rtx;
-}
-
-#ifdef HAVE_GAS_HIDDEN
-# define USE_HIDDEN_LINKONCE 1
-#else
-# define USE_HIDDEN_LINKONCE 0
-#endif
-
-static void
-get_pc_thunk_name (char name[32], unsigned int regno)
-{
-  const char *reg_name = reg_names[regno];
-
-  /* Skip the leading '%' as that cannot be used in a
-     symbol name.  */
-  reg_name += 1;
-
-  if (USE_HIDDEN_LINKONCE)
-    sprintf (name, "__sparc_get_pc_thunk.%s", reg_name);
-  else
-    ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC", regno);
 }
 
 /* Wrapper around the load_pcrel_sym{si,di} patterns.  */
@@ -4298,30 +4276,78 @@ gen_load_pcrel_sym (rtx op0, rtx op1, rtx op2)
   return insn;
 }
 
+/* Output the load_pcrel_sym{si,di} patterns.  */
+
+const char *
+output_load_pcrel_sym (rtx *operands)
+{
+  if (flag_delayed_branch)
+    {
+      output_asm_insn ("sethi\t%%hi(%a1-4), %0", operands);
+      output_asm_insn ("call\t%a2", operands);
+      output_asm_insn (" add\t%0, %%lo(%a1+4), %0", operands);
+    }
+  else
+    {
+      output_asm_insn ("sethi\t%%hi(%a1-8), %0", operands);
+      output_asm_insn ("add\t%0, %%lo(%a1-4), %0", operands);
+      output_asm_insn ("call\t%a2", operands);
+      output_asm_insn (" nop", NULL);
+    }
+
+  if (operands[2] == got_helper_rtx)
+    got_helper_needed = true;
+
+  return "";
+}
+
+#ifdef HAVE_GAS_HIDDEN
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
+
 /* Emit code to load the GOT register.  */
 
 void
 load_got_register (void)
 {
-  if (!got_register_rtx)
-    got_register_rtx = gen_rtx_REG (Pmode, GLOBAL_OFFSET_TABLE_REGNUM);
+  rtx insn;
 
   if (TARGET_VXWORKS_RTP)
-    emit_insn (gen_vxworks_load_got ());
+    {
+      if (!got_register_rtx)
+	got_register_rtx = pic_offset_table_rtx;
+
+      insn = gen_vxworks_load_got ();
+    }
   else
     {
+      if (!got_register_rtx)
+	got_register_rtx = gen_rtx_REG (Pmode, GLOBAL_OFFSET_TABLE_REGNUM);
+
       /* The GOT symbol is subject to a PC-relative relocation so we need a
 	 helper function to add the PC value and thus get the final value.  */
       if (!got_helper_rtx)
 	{
 	  char name[32];
-	  get_pc_thunk_name (name, GLOBAL_OFFSET_TABLE_REGNUM);
+
+	  /* Skip the leading '%' as that cannot be used in a symbol name.  */
+	  if (USE_HIDDEN_LINKONCE)
+	    sprintf (name, "__sparc_get_pc_thunk.%s",
+		     reg_names[REGNO (got_register_rtx)] + 1);
+	  else
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC",
+					 REGNO (got_register_rtx));
+
 	  got_helper_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
 	}
 
-      emit_insn (gen_load_pcrel_sym (got_register_rtx, sparc_got (),
-				     got_helper_rtx));
+      insn
+	= gen_load_pcrel_sym (got_register_rtx, sparc_got (), got_helper_rtx);
     }
+
+  emit_insn (insn);
 }
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
@@ -4457,7 +4483,7 @@ sparc_pic_register_p (rtx x)
     return true;
 
   if (!HARD_REGISTER_P (pic_offset_table_rtx)
-      && (HARD_REGISTER_P (x) || lra_in_progress)
+      && (HARD_REGISTER_P (x) || lra_in_progress || reload_in_progress)
       && ORIGINAL_REGNO (x) == REGNO (pic_offset_table_rtx))
     return true;
 
@@ -5486,7 +5512,7 @@ save_local_or_in_reg_p (unsigned int regno, int leaf_function)
     return true;
 
   /* GOT register (%l7) if needed.  */
-  if (regno == GLOBAL_OFFSET_TABLE_REGNUM && got_register_rtx)
+  if (got_register_rtx && regno == REGNO (got_register_rtx))
     return true;
 
   /* If the function accesses prior frames, the frame pointer and the return
@@ -12529,10 +12555,9 @@ static void
 sparc_file_end (void)
 {
   /* If we need to emit the special GOT helper function, do so now.  */
-  if (got_helper_rtx)
+  if (got_helper_needed)
     {
       const char *name = XSTR (got_helper_rtx, 0);
-      const char *reg_name = reg_names[GLOBAL_OFFSET_TABLE_REGNUM];
 #ifdef DWARF2_UNWIND_INFO
       bool do_cfi;
 #endif
@@ -12569,17 +12594,22 @@ sparc_file_end (void)
 #ifdef DWARF2_UNWIND_INFO
       do_cfi = dwarf2out_do_cfi_asm ();
       if (do_cfi)
-	fprintf (asm_out_file, "\t.cfi_startproc\n");
+	output_asm_insn (".cfi_startproc", NULL);
 #endif
       if (flag_delayed_branch)
-	fprintf (asm_out_file, "\tjmp\t%%o7+8\n\t add\t%%o7, %s, %s\n",
-		 reg_name, reg_name);
+	{
+	  output_asm_insn ("jmp\t%%o7+8", NULL);
+	  output_asm_insn (" add\t%%o7, %0, %0", &got_register_rtx);
+	}
       else
-	fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp\t%%o7+8\n\t nop\n",
-		 reg_name, reg_name);
+	{
+	  output_asm_insn ("add\t%%o7, %0, %0", &got_register_rtx);
+	  output_asm_insn ("jmp\t%%o7+8", NULL);
+	  output_asm_insn (" nop", NULL);
+	}
 #ifdef DWARF2_UNWIND_INFO
       if (do_cfi)
-	fprintf (asm_out_file, "\t.cfi_endproc\n");
+	output_asm_insn (".cfi_endproc", NULL);
 #endif
     }
 
@@ -13085,7 +13115,10 @@ sparc_init_pic_reg (void)
   edge entry_edge;
   rtx_insn *seq;
 
-  if (!crtl->uses_pic_offset_table)
+  /* In PIC mode, we need to always initialize the PIC register if optimization
+     is enabled, because we are called from IRA and LRA may later force things
+     to the constant pool for optimization purposes.  */
+  if (!flag_pic || (!crtl->uses_pic_offset_table && !optimize))
     return;
 
   start_sequence ();

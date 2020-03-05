@@ -2172,6 +2172,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->refcount = REFCOUNT_INFINITY;
       k->virtual_refcount = 0;
       k->u.attach_count = NULL;
+      k->u.link_key = NULL;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -2205,6 +2206,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
       k->virtual_refcount = 0;
       k->u.attach_count = NULL;
+      k->u.link_key = NULL;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);

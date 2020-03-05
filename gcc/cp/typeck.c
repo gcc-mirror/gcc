@@ -4309,7 +4309,7 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       || TREE_NO_WARNING (op))
     return;
 
-  tree cop = fold_non_dependent_expr (op, complain);
+  tree cop = fold_for_warn (op);
 
   if (TREE_CODE (cop) == ADDR_EXPR
       && decl_with_nonnull_addr_p (TREE_OPERAND (cop, 0))
@@ -4632,9 +4632,8 @@ cp_build_binary_op (const op_location_t &location,
 	      || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE))
 	{
 	  enum tree_code tcode0 = code0, tcode1 = code1;
-	  tree cop1 = fold_non_dependent_expr (op1, complain);
 	  doing_div_or_mod = true;
-	  warn_for_div_by_zero (location, cop1);
+	  warn_for_div_by_zero (location, fold_for_warn (op1));
 
 	  if (tcode0 == COMPLEX_TYPE || tcode0 == VECTOR_TYPE)
 	    tcode0 = TREE_CODE (TREE_TYPE (TREE_TYPE (op0)));
@@ -4673,11 +4672,8 @@ cp_build_binary_op (const op_location_t &location,
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
-      {
-	tree cop1 = fold_non_dependent_expr (op1, complain);
-	doing_div_or_mod = true;
-	warn_for_div_by_zero (location, cop1);
-      }
+      doing_div_or_mod = true;
+      warn_for_div_by_zero (location, fold_for_warn (op1));
 
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
@@ -4770,7 +4766,7 @@ cp_build_binary_op (const op_location_t &location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  tree const_op1 = fold_non_dependent_expr (op1, complain);
+	  tree const_op1 = fold_for_warn (op1);
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
@@ -4816,10 +4812,10 @@ cp_build_binary_op (const op_location_t &location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  tree const_op0 = fold_non_dependent_expr (op0, complain);
+	  tree const_op0 = fold_for_warn (op0);
 	  if (TREE_CODE (const_op0) != INTEGER_CST)
 	    const_op0 = op0;
-	  tree const_op1 = fold_non_dependent_expr (op1, complain);
+	  tree const_op1 = fold_for_warn (op1);
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
@@ -5516,9 +5512,9 @@ cp_build_binary_op (const op_location_t &location,
   if (! converted)
     {
       warning_sentinel w (warn_sign_conversion, short_compare);
-      if (TREE_TYPE (op0) != result_type)
+      if (!same_type_p (TREE_TYPE (op0), result_type))
 	op0 = cp_convert_and_check (result_type, op0, complain);
-      if (TREE_TYPE (op1) != result_type)
+      if (!same_type_p (TREE_TYPE (op1), result_type))
 	op1 = cp_convert_and_check (result_type, op1, complain);
 
       if (op0 == error_mark_node || op1 == error_mark_node)
@@ -9296,8 +9292,10 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  tree base = DECL_DECOMP_BASE (whats_returned);
 	  if (TYPE_REF_P (TREE_TYPE (base)))
 	    {
-	      tree init = DECL_INITIAL (base);
-	      return maybe_warn_about_returning_address_of_local (init);
+	      if (tree init = DECL_INITIAL (base))
+		return maybe_warn_about_returning_address_of_local (init);
+	      else
+		return false;
 	    }
 	}
       bool w = false;

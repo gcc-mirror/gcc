@@ -689,7 +689,7 @@ extern int may_call_alloca;
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 52)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 64)
 
 /* Alignment required by the trampoline.  */
 
@@ -1293,13 +1293,12 @@ do {									     \
 #endif
 
 /* The maximum offset in bytes for a PA 1.X pc-relative call to the
-   head of the preceding stub table.  The selected offsets have been
-   chosen so that approximately one call stub is allocated for every
-   86.7 instructions.  A long branch stub is two instructions when
-   not generating PIC code.  For HP-UX and ELF targets, PIC stubs are
-   seven and four instructions, respectively.  */  
-#define MAX_PCREL17F_OFFSET \
-  (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
+   head of the preceding stub table.  A long branch stub is two or three
+   instructions for non-PIC and PIC, respectively.  Import stubs are
+   seven and five instructions for HP-UX and ELF targets, respectively.
+   The default stub group size for ELF targets is 217856 bytes.
+   FIXME: We need an option to set the maximum offset.  */  
+#define MAX_PCREL17F_OFFSET (TARGET_HPUX ? 198164 : 217856)
 
 #define NEED_INDICATE_EXEC_STACK 0
 

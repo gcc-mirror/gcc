@@ -37,10 +37,10 @@
 #include <sys/utsname.h>
 #endif
 
-void
+bool
 gomp_write_string (const char *str, size_t len)
 {
-  fwrite (str, 1, len, stderr);
+  return fwrite (str, 1, len, stderr) != len;
 }
 
 void

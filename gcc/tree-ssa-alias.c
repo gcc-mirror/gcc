@@ -2599,8 +2599,8 @@ stmt_kills_ref_p (gimple *stmt, tree ref)
 
 static bool
 maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
-		  ao_ref *ref, tree vuse, unsigned int &limit, bitmap *visited,
-		  bool abort_on_visited,
+		  ao_ref *ref, tree vuse, bool tbaa_p, unsigned int &limit,
+		  bitmap *visited, bool abort_on_visited,
 		  void *(*translate)(ao_ref *, tree, void *, bool *),
 		  void *data)
 {
@@ -2634,7 +2634,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	  /* An already visited PHI node ends the walk successfully.  */
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (def_stmt))))
 	    return !abort_on_visited;
-	  vuse = get_continuation_for_phi (def_stmt, ref, limit,
+	  vuse = get_continuation_for_phi (def_stmt, ref, tbaa_p, limit,
 					   visited, abort_on_visited,
 					   translate, data);
 	  if (!vuse)
@@ -2649,7 +2649,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	  if ((int)limit <= 0)
 	    return false;
 	  --limit;
-	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
+	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref, tbaa_p))
 	    {
 	      bool disambiguate_only = true;
 	      if (translate
@@ -2681,7 +2681,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
    Returns NULL_TREE if no suitable virtual operand can be found.  */
 
 tree
-get_continuation_for_phi (gimple *phi, ao_ref *ref,
+get_continuation_for_phi (gimple *phi, ao_ref *ref, bool tbaa_p,
 			  unsigned int &limit, bitmap *visited,
 			  bool abort_on_visited,
 			  void *(*translate)(ao_ref *, tree, void *, bool *),
@@ -2724,7 +2724,8 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
       arg1 = PHI_ARG_DEF (phi, i);
       if (arg1 == arg0)
 	;
-      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, limit, visited,
+      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, tbaa_p,
+				   limit, visited,
 				   abort_on_visited,
 				   /* Do not translate when walking over
 				      backedges.  */
@@ -2768,7 +2769,7 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
    TODO: Cache the vector of equivalent vuses per ref, vuse pair.  */
 
 void *
-walk_non_aliased_vuses (ao_ref *ref, tree vuse,
+walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 			void *(*walker)(ao_ref *, tree, void *),
 			void *(*translate)(ao_ref *, tree, void *, bool *),
 			tree (*valueize)(tree),
@@ -2809,7 +2810,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
       if (gimple_nop_p (def_stmt))
 	break;
       else if (gimple_code (def_stmt) == GIMPLE_PHI)
-	vuse = get_continuation_for_phi (def_stmt, ref, limit,
+	vuse = get_continuation_for_phi (def_stmt, ref, tbaa_p, limit,
 					 &visited, translated, translate, data);
       else
 	{
@@ -2819,7 +2820,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	      break;
 	    }
 	  --limit;
-	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
+	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref, tbaa_p))
 	    {
 	      if (!translate)
 		break;

@@ -169,8 +169,10 @@ convert_mpz_to_unsigned (mpz_t x, int bitsize)
     }
   else
     {
-      /* Confirm that no bits above the signed range are set.  */
-      gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
+      /* Confirm that no bits above the signed range are set if we
+	 are doing range checking.  */
+      if (flag_range_check != 0)
+	gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
     }
 }
 
@@ -4808,8 +4810,12 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
   gfc_constructor *tsource_ctor, *fsource_ctor, *mask_ctor;
 
   if (mask->expr_type == EXPR_CONSTANT)
-    return gfc_get_parentheses (gfc_copy_expr (mask->value.logical
-					       ? tsource : fsource));
+    {
+      result = gfc_copy_expr (mask->value.logical ? tsource : fsource);
+      result = gfc_get_parentheses (result);
+      gfc_simplify_expr (result, 1);
+      return result;
+    }
 
   if (!mask->rank || !is_constant_array_expr (mask)
       || !is_constant_array_expr (tsource) || !is_constant_array_expr (fsource))
@@ -5533,7 +5539,7 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
   bool continue_loop;
   bool ma;
 
-  for (i = 0; i<array->rank; i++)
+  for (i = 0; i < array->rank; i++)
     res[i] = -1;
 
   /* Shortcut for constant .FALSE. MASK.  */
@@ -5576,7 +5582,7 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
 
 	  if (ma && gfc_compare_expr (a, value, INTRINSIC_EQ) == 0)
 	    {
-	      for (i = 0; i<array->rank; i++)
+	      for (i = 0; i < array->rank; i++)
 		res[i] = count[i];
 	      if (!back_val)
 		goto finish;
@@ -5601,9 +5607,9 @@ simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
 	} while (count[n] == extent[n]);
     }
 
- finish:
+finish:
   result_ctor = gfc_constructor_first (result->value.constructor);
-  for (i = 0; i<array->rank; i++)
+  for (i = 0; i < array->rank; i++)
     {
       gfc_expr *r_expr;
       r_expr = result_ctor->expr;
@@ -6684,6 +6690,9 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   mpz_init (index);
   rank = 0;
 
+  for (i = 0; i < GFC_MAX_DIMENSIONS; i++)
+    x[i] = 0;
+
   for (;;)
     {
       e = gfc_constructor_lookup_expr (shape_exp->value.constructor, rank);
@@ -6708,8 +6717,28 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
     }
   else
     {
-      for (i = 0; i < rank; i++)
-	x[i] = 0;
+      mpz_t size;
+      int order_size, shape_size;
+
+      if (order_exp->rank != shape_exp->rank)
+	{
+	  gfc_error ("Shapes of ORDER at %L and SHAPE at %L are different",
+		     &order_exp->where, &shape_exp->where);
+	  return &gfc_bad_expr;
+	}
+
+      gfc_array_size (shape_exp, &size);
+      shape_size = mpz_get_ui (size);
+      mpz_clear (size);
+      gfc_array_size (order_exp, &size);
+      order_size = mpz_get_ui (size);
+      mpz_clear (size);
+      if (order_size != shape_size)
+	{
+	  gfc_error ("Sizes of ORDER at %L and SHAPE at %L are different",
+		     &order_exp->where, &shape_exp->where);
+	  return &gfc_bad_expr;
+	}
 
       for (i = 0; i < rank; i++)
 	{
@@ -6718,9 +6747,22 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 
 	  gfc_extract_int (e, &order[i]);
 
-	  gcc_assert (order[i] >= 1 && order[i] <= rank);
+	  if (order[i] < 1 || order[i] > rank)
+	    {
+	      gfc_error ("Element with a value of %d in ORDER at %L must be "
+			 "in the range [1, ..., %d] for the RESHAPE intrinsic "
+			 "near %L", order[i], &order_exp->where, rank,
+			 &shape_exp->where);
+	      return &gfc_bad_expr;
+	    }
+
 	  order[i]--;
-	  gcc_assert (x[order[i]] == 0);
+	  if (x[order[i]] != 0)
+	    {
+	      gfc_error ("ORDER at %L is not a permutation of the size of "
+			 "SHAPE at %L", &order_exp->where, &shape_exp->where);
+	      return &gfc_bad_expr;
+	    }
 	  x[order[i]] = 1;
 	}
     }
@@ -7213,6 +7255,8 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
     return NULL;
 
   result = gfc_get_array_expr (BT_INTEGER, k, &source->where);
+  result->shape = gfc_get_shape (1);
+  mpz_init (result->shape[0]);
 
   if (source->rank == 0)
     return result;
@@ -7268,6 +7312,8 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
 
   if (t)
     gfc_clear_shape (shape, source->rank);
+
+  mpz_set_si (result->shape[0], source->rank);
 
   return result;
 }
@@ -7630,7 +7676,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   nelem = mpz_get_si (size) * ncopies;
   if (nelem > flag_max_array_constructor)
     {
-      if (gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER)
+      if (gfc_init_expr_flag)
 	{
 	  gfc_error ("The number of elements (%d) in the array constructor "
 		     "at %L requires an increase of the allowed %d upper "
@@ -8494,6 +8540,12 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	    {
 	      if (c->expr->expr_type == EXPR_ARRAY)
 		tmp = gfc_convert_constant (c->expr, type, kind);
+	      else if (c->expr->expr_type == EXPR_OP
+			&& c->expr->value.op.op == INTRINSIC_PARENTHESES)
+		{
+		  gfc_simplify_expr (c->expr, 1);
+		  tmp = f (c->expr, kind);
+		}
 	      else
 		tmp = f (c->expr, kind);
 	    }

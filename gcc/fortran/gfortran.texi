@@ -3540,6 +3540,9 @@ as this requires the new array descriptor.
 * ATTRIBUTES directive::
 * UNROLL directive::
 * BUILTIN directive::
+* IVDEP directive::
+* VECTOR directive::
+* NOVECTOR directive::
 @end menu
 
 @node ATTRIBUTES directive
@@ -3650,6 +3653,52 @@ for the built-in that should be vectorized.  Example usage:
 
 The purpose of the directive is to provide an API among the GCC compiler and
 the GNU C Library which would define vector implementations of math routines.
+
+
+@node IVDEP directive
+@subsection IVDEP directive
+
+The syntax of the directive is
+
+@code{!GCC$ ivdep}
+
+This directive tells the compiler to ignore vector dependencies in the
+following loop.  It must be placed immediately before a @code{DO} loop
+and applies only to the loop that follows.
+
+Sometimes the compiler may not have sufficient information to decide
+whether a particular loop is vectorizable due to potential
+dependencies between iterations.  The purpose of the directive is to
+tell the compiler that vectorization is safe.
+
+This directive is intended for annotation of existing code.  For new
+code it is recommended to consider OpenMP SIMD directives as potential
+alternative.
+
+
+@node VECTOR directive
+@subsection VECTOR directive
+
+The syntax of the directive is
+
+@code{!GCC$ vector}
+
+This directive tells the compiler to vectorize the following loop.  It
+must be placed immediately before a @code{DO} loop and applies only to
+the loop that follows.
+
+
+@node NOVECTOR directive
+@subsection NOVECTOR directive
+
+The syntax of the directive is
+
+@code{!GCC$ novector}
+
+This directive tells the compiler to not vectorize the following loop.
+It must be placed immediately before a @code{DO} loop and applies only
+to the loop that follows.
+
 
 @node Non-Fortran Main Program
 @section Non-Fortran Main Program

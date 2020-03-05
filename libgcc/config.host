@@ -1072,12 +1072,12 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
-	tmake_file="$tmake_file rs6000/t-ibm-ldouble"
-	extra_parts="$extra_parts crt2.o"
+	tmake_file="$tmake_file rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
+	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc64-*-darwin*)
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
-	extra_parts="$extra_parts crt2.o"
+	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc*-*-freebsd*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-freebsd t-softfp-sfdf t-softfp-excl t-softfp"

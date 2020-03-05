@@ -2248,32 +2248,29 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       /* For other address attributes applied to a nested function,
 	 find an inner ADDR_EXPR and annotate it so that we can issue
 	 a useful warning with -Wtrampolines.  */
-      else if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_prefix)))
+      else if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_prefix))
+	       && (gnu_expr = remove_conversions (gnu_result, false))
+	       && TREE_CODE (gnu_expr) == ADDR_EXPR
+	       && decl_function_context (TREE_OPERAND (gnu_expr, 0)))
 	{
-	  gnu_expr = remove_conversions (gnu_result, false);
+	  set_expr_location_from_node (gnu_expr, gnat_node);
 
-	  if (TREE_CODE (gnu_expr) == ADDR_EXPR
-	      && decl_function_context (TREE_OPERAND (gnu_expr, 0)))
-	    {
-	      set_expr_location_from_node (gnu_expr, gnat_node);
+	  /* Also check the inlining status.  */
+	  check_inlining_for_nested_subprog (TREE_OPERAND (gnu_expr, 0));
 
-	      /* Also check the inlining status.  */
-	      check_inlining_for_nested_subprog (TREE_OPERAND (gnu_expr, 0));
+	  /* Moreover, for 'Access or 'Unrestricted_Access with non-
+	     foreign-compatible representation, mark the ADDR_EXPR so
+	     that we can build a descriptor instead of a trampoline.  */
+	  if ((attribute == Attr_Access
+	       || attribute == Attr_Unrestricted_Access)
+	      && targetm.calls.custom_function_descriptors > 0
+	      && Can_Use_Internal_Rep (Underlying_Type (Etype (gnat_node))))
+	    FUNC_ADDR_BY_DESCRIPTOR (gnu_expr) = 1;
 
-	      /* Moreover, for 'Access or 'Unrestricted_Access with non-
-		 foreign-compatible representation, mark the ADDR_EXPR so
-		 that we can build a descriptor instead of a trampoline.  */
-	      if ((attribute == Attr_Access
-		   || attribute == Attr_Unrestricted_Access)
-		  && targetm.calls.custom_function_descriptors > 0
-		  && Can_Use_Internal_Rep (Etype (gnat_node)))
-		FUNC_ADDR_BY_DESCRIPTOR (gnu_expr) = 1;
-
-	      /* Otherwise, we need to check that we are not violating the
-		 No_Implicit_Dynamic_Code restriction.  */
-	      else if (targetm.calls.custom_function_descriptors != 0)
-	        Check_Implicit_Dynamic_Code_Allowed (gnat_node);
-	    }
+	  /* Otherwise, we need to check that we are not violating the
+	     No_Implicit_Dynamic_Code restriction.  */
+	  else if (targetm.calls.custom_function_descriptors != 0)
+	    Check_Implicit_Dynamic_Code_Allowed (gnat_node);
 	}
       break;
 
@@ -5103,7 +5100,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       /* If the access type doesn't require foreign-compatible representation,
 	 be prepared for descriptors.  */
       if (targetm.calls.custom_function_descriptors > 0
-	  && Can_Use_Internal_Rep (Etype (Prefix (Name (gnat_node)))))
+	  && Can_Use_Internal_Rep
+	     (Underlying_Type (Etype (Prefix (Name (gnat_node))))))
 	by_descriptor = true;
     }
   else if (Nkind (Name (gnat_node)) == N_Attribute_Reference)
@@ -8310,7 +8308,7 @@ gnat_to_gnu (Node_Id gnat_node)
       gnat_temp = Entity (Name (gnat_node));
       if (Freeze_Node (gnat_temp))
 	{
-	  tree gnu_address = gnat_to_gnu (Expression (gnat_node));
+	  tree gnu_address = gnat_to_gnu (Expression (gnat_node)), gnu_temp;
 
 	  /* Get the value to use as the address and save it as the equivalent
 	     for the object; when it is frozen, gnat_to_gnu_entity will do the
@@ -8320,7 +8318,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	     of the object is limited and it is initialized with the result of
 	     a function call.  */
 	  if (Is_Subprogram (gnat_temp))
-	    gnu_result = gnu_address;
+	    gnu_temp = gnu_address;
 	  else
 	    {
 	      tree gnu_type = gnat_to_gnu_type (Etype (gnat_temp));
@@ -8329,11 +8327,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	      gnu_type
 		= build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	      gnu_address = convert (gnu_type, gnu_address);
-	      gnu_result
+	      gnu_temp
 		= build_unary_op (INDIRECT_REF, NULL_TREE, gnu_address);
 	    }
 
-	  save_gnu_tree (gnat_temp, gnu_result, true);
+	  save_gnu_tree (gnat_temp, gnu_temp, true);
 	}
       break;
 

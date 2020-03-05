@@ -335,8 +335,9 @@ and up works.
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
-Used by various scripts to generate some files included in SVN (mainly
-Unicode-related and rarely changing) from source tables.
+Used by various scripts to generate some files included in the source
+repository (mainly Unicode-related and rarely changing) from source
+tables.
 
 Used by @command{automake}.
 
@@ -458,8 +459,8 @@ Necessary to regenerate the top level @file{Makefile.in} file from
 Necessary when modifying @file{*.l} files.
 
 Necessary to build GCC during development because the generated output
-files are not included in the SVN repository.  They are included in
-releases.
+files are not included in the version-controlled source repository.
+They are included in releases.
 
 @item Texinfo version 4.7 (or later)
 
@@ -471,7 +472,7 @@ create printable documentation in DVI or PDF format.  Texinfo version
 4.8 or later is required for @command{make pdf}.
 
 Necessary to build GCC documentation during development because the
-generated output files are not included in the SVN repository.  They are
+generated output files are not included in the repository.  They are
 included in releases.
 
 @item @TeX{} (any working version)
@@ -485,11 +486,11 @@ DVI or PDF files, respectively.
 Necessary to regenerate @file{jit/docs/_build/texinfo} from the @file{.rst}
 files in the directories below @file{jit/docs}.
 
-@item SVN (any version)
+@item git (any version)
 @itemx SSH (any version)
 
-Necessary to access the SVN repository.  Public releases and weekly
-snapshots of the development sources are also available via FTP@.
+Necessary to access the source repository.  Public releases and weekly
+snapshots of the development sources are also available via HTTPS@.
 
 @item GNU diffutils version 2.7 (or later)
 
@@ -523,9 +524,8 @@ own sources.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and FTP
-tarballs compressed with @command{gzip} or
-@command{bzip2}.
+GCC is distributed via @uref{http://gcc.gnu.org/git.html,,git} and via
+HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
@@ -583,9 +583,10 @@ for both native and cross targets.
 We use @var{srcdir} to refer to the toplevel source directory for
 GCC; we use @var{objdir} to refer to the toplevel build/object directory.
 
-If you obtained the sources via SVN, @var{srcdir} must refer to the top
-@file{gcc} directory, the one where the @file{MAINTAINERS} file can be
-found, and not its @file{gcc} subdirectory, otherwise the build will fail.
+If you obtained the sources by cloning the repository, @var{srcdir}
+must refer to the top @file{gcc} directory, the one where the
+@file{MAINTAINERS} file can be found, and not its @file{gcc}
+subdirectory, otherwise the build will fail.
 
 If either @var{srcdir} or @var{objdir} is located on an automounted NFS
 file system, the shell's built-in @command{pwd} command will return
@@ -1512,7 +1513,7 @@ with @option{--enable-bootstrap}.
 @item --enable-generated-files-in-srcdir
 Neither the .c and .h files that are generated from Bison and flex nor the
 info manuals and man pages that are built from the .texi files are present
-in the SVN development tree.  When building GCC from that development tree,
+in the repository development tree.  When building GCC from that development tree,
 or from one of our snapshots, those generated files are placed in your
 build directory, which allows for the source to be in a readonly
 directory.
@@ -1806,41 +1807,50 @@ final releases.  The specific files which get @option{-Werror} are
 controlled by the Makefiles.
 
 @item --enable-checking
+@itemx --disable-checking
 @itemx --enable-checking=@var{list}
-When you specify this option, the compiler is built to perform internal
-consistency checks of the requested complexity.  This does not change the
-generated code, but adds error checking within the compiler.  This will
-slow down the compiler and may only work properly if you are building
-the compiler with GCC@.  This is @samp{yes,extra} by default when building
-from SVN or snapshots, but @samp{release} for releases.  The default
-for building the stage1 compiler is @samp{yes}.  More control
-over the checks may be had by specifying @var{list}.  The categories of
-checks available are @samp{yes} (most common checks
-@samp{assert,misc,tree,gc,rtlflag,runtime}), @samp{no} (no checks at
-all), @samp{all} (all but @samp{valgrind}), @samp{release} (cheapest
-checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
-Individual checks can be enabled with these flags @samp{assert},
-@samp{df}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{misc}, @samp{rtl},
-@samp{rtlflag}, @samp{runtime}, @samp{tree}, @samp{extra} and @samp{valgrind}.
-@samp{extra} adds for @samp{misc} checking extra checks that might affect
-code generation and should therefore not differ between stage1 and later
-stages.
+This option controls performing internal consistency checks in the compiler.
+It does not change the generated code, but adds error checking of the
+requested complexity.  This slows down the compiler and may only work
+properly if you are building the compiler with GCC@.
 
-The @samp{valgrind} check requires the external @command{valgrind}
-simulator, available from @uref{http://valgrind.org/}.  The
-@samp{df}, @samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
-To disable all checking, @samp{--disable-checking} or
-@samp{--enable-checking=none} must be explicitly requested.  Disabling
-assertions will make the compiler and runtime slightly faster but
-increase the risk of undetected internal errors causing wrong code to be
-generated.
+When the option is not specified, the active set of checks depends on context.
+Namely, bootstrap stage 1 defaults to @samp{--enable-checking=yes}, builds
+from release branches or release archives default to
+@samp{--enable-checking=release}, and otherwise
+@samp{--enable-checking=yes,extra} is used.  When the option is
+specified without a @var{list}, the result is the same as
+@samp{--enable-checking=yes}.  Likewise, @samp{--disable-checking} is
+equivalent to @samp{--enable-checking=no}.
+
+The categories of checks available in @var{list} are @samp{yes} (most common
+checks @samp{assert,misc,gc,gimple,rtlflag,runtime,tree,types}), @samp{no}
+(no checks at all), @samp{all} (all but @samp{valgrind}), @samp{release}
+(cheapest checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
+@samp{release} checks are always on and to disable them
+@samp{--disable-checking} or @samp{--enable-checking=no[,<other checks>]}
+must be explicitly requested.  Disabling assertions makes the compiler and
+runtime slightly faster but increases the risk of undetected internal errors
+causing wrong code to be generated.
+
+Individual checks can be enabled with these flags: @samp{assert}, @samp{df},
+@samp{extra}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{gimple},
+@samp{misc}, @samp{rtl}, @samp{rtlflag}, @samp{runtime}, @samp{tree},
+@samp{types} and @samp{valgrind}.  @samp{extra} extends @samp{misc}
+checking with extra checks that might affect code generation and should
+therefore not differ between stage1 and later stages in bootstrap.
+
+The @samp{valgrind} check requires the external @command{valgrind} simulator,
+available from @uref{http://valgrind.org/}.  The @samp{rtl} checks are
+expensive and the @samp{df}, @samp{gcac} and @samp{valgrind} checks are very
+expensive.
 
 @item --disable-stage1-checking
 @itemx --enable-stage1-checking
 @itemx --enable-stage1-checking=@var{list}
-If no @option{--enable-checking} option is specified the stage1
-compiler will be built with @samp{yes} checking enabled, otherwise
-the stage1 checking flags are the same as specified by
+This option affects only bootstrap build.  If no @option{--enable-checking}
+option is specified the stage1 compiler is built with @samp{yes} checking
+enabled, otherwise the stage1 checking flags are the same as specified by
 @option{--enable-checking}.  To build the stage1 compiler with
 different checking options use @option{--enable-stage1-checking}.
 The list of checking options is the same as for @option{--enable-checking}.
@@ -2129,7 +2139,7 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
 
 @smallexample
 % @var{srcdir}/configure \
-    --enable-offload-target=i686-unknown-linux-gnu=/path/to/i686/compiler,x86_64-pc-linux-gnu
+    --enable-offload-targets=x86_64-intelmicemul-linux-gnu=/path/to/x86_64/compiler,nvptx-none,hsa
 @end smallexample
 
 If @samp{hsa} is specified as one of the targets, the compiler will be
@@ -2408,7 +2418,7 @@ that type mismatches occur, this could be the cause.
 
 The solution is not to use such a directory for building GCC@.
 
-Similarly, when building from SVN or snapshots, or if you modify
+Similarly, when building from the source repository or snapshots, or if you modify
 @file{*.l} files, you need the Flex lexical analyzer generator
 installed.  If you do not modify @file{*.l} files, releases contain
 the Flex-generated files and you do not need Flex installed to build
@@ -2416,7 +2426,7 @@ them.  There is still one Flex-based lexical analyzer (part of the
 build machinery, not of GCC itself) that is used even if you only
 build the C front end.
 
-When building from SVN or snapshots, or if you modify Texinfo
+When building from the source repository or snapshots, or if you modify Texinfo
 documentation, you need version 4.7 or later of Texinfo installed if you
 want Info documentation to be regenerated.  Releases contain Info
 documentation pre-built for the unmodified documentation in the release.

@@ -72,3 +72,8 @@ void
 ggc_grow (void)
 {
 }
+
+void
+ggc_trim (void)
+{
+}

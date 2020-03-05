@@ -2784,6 +2784,8 @@ check_alignment_of_packed_member (tree type, tree field, bool rvalue)
   /* Check alignment of the data member.  */
   if (TREE_CODE (field) == FIELD_DECL
       && (DECL_PACKED (field) || TYPE_PACKED (TREE_TYPE (field)))
+      /* Ignore FIELDs not laid out yet.  */
+      && DECL_FIELD_OFFSET (field)
       && (!rvalue || TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE))
     {
       /* Check the expected alignment against the field alignment.  */

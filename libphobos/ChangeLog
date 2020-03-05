@@ -1,3 +1,12 @@
+2019-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from trunk:
+
+	2019-09-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* testsuite/lib/libphobos.exp (libphobos_init): Add multi-lib libgcc
+	dirs to the ld_library_path var.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

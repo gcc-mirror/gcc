@@ -1,3 +1,12 @@
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* quadmath.h (M_Eq, M_LOG2Eq, M_LOG10Eq, M_LN2q, M_LN10q, M_PIq,
+	M_PI_2q, M_PI_4q, M_1_PIq, M_2_PIq, M_2_SQRTPIq, M_SQRT2q,
+	M_SQRT1_2q): Use two more decimal places.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

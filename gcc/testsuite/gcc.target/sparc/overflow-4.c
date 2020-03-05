@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O -mno-vis3 -mno-vis4" } */
+/* { dg-options "-O -fno-pie -mno-vis3 -mno-vis4" } */
 
 #include <stdbool.h>
 #include <stdint.h>

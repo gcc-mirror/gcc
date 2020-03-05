@@ -154,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   /**
-   * @defgroup set_algorithms Set Operation
+   * @defgroup set_algorithms Set Operations
    * @ingroup sorting_algorithms
    *
    * These algorithms are common set operations performed on sequences

@@ -20,8 +20,7 @@ presence of the required flag.
 </para>
 
 <para>
-This section describes the C++20 and library TS support in mainline GCC SVN,
-not in any particular release.
+This section describes the C++20 and library TS support in the GCC 9 series.
 </para>
 
 <para>
@@ -309,15 +308,15 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Constexpr iterator requirements </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0858r0.html">
 	P0858R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_string_view &gt;= 201803L</code>
+      and <code>__cpp_lib_array_constexpr &gt;= 201803L</code> </entry>
     </row>
 
     <row>

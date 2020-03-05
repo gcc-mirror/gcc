@@ -332,7 +332,7 @@ for (i = 0; i < n_opt_string; i++) {
 	print "             indent_to, \"\",";
 	print "             \"" name "\",";
 	print "             ptr1->x_" name " ? ptr1->x_" name " : \"(null)\",";
-	print "             ptr2->x_" name " ? ptr1->x_" name " : \"(null)\");";
+	print "             ptr2->x_" name " ? ptr2->x_" name " : \"(null)\");";
 	print "";
 }
 

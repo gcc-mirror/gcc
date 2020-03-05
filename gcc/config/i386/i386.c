@@ -5423,7 +5423,25 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
 	      ret = false;
 	    }
 	  else
-	    p_strings[opt] = xstrdup (p + opt_len);
+	    {
+	      p_strings[opt] = xstrdup (p + opt_len);
+	      if (opt == IX86_FUNCTION_SPECIFIC_ARCH)
+		{
+		  /* If arch= is set,  clear all bits in x_ix86_isa_flags,
+		     except for ISA_64BIT, ABI_64, ABI_X32, and CODE16
+		     and all bits in x_ix86_isa_flags2.  */
+		  opts->x_ix86_isa_flags &= (OPTION_MASK_ISA_64BIT
+					     | OPTION_MASK_ABI_64
+					     | OPTION_MASK_ABI_X32
+					     | OPTION_MASK_CODE16);
+		  opts->x_ix86_isa_flags_explicit &= (OPTION_MASK_ISA_64BIT
+						      | OPTION_MASK_ABI_64
+						      | OPTION_MASK_ABI_X32
+						      | OPTION_MASK_CODE16);
+		  opts->x_ix86_isa_flags2 = 0;
+		  opts->x_ix86_isa_flags2_explicit = 0;
+		}
+	    }
 	}
 
       else if (type == ix86_opt_enum)
@@ -5498,18 +5516,8 @@ ix86_valid_target_attribute_tree (tree args,
       /* If we are using the default tune= or arch=, undo the string assigned,
 	 and use the default.  */
       if (option_strings[IX86_FUNCTION_SPECIFIC_ARCH])
-	{
-	  opts->x_ix86_arch_string
-	    = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]);
-
-	  /* If arch= is set,  clear all bits in x_ix86_isa_flags,
-	     except for ISA_64BIT, ABI_64, ABI_X32, and CODE16.  */
-	  opts->x_ix86_isa_flags &= (OPTION_MASK_ISA_64BIT
-				     | OPTION_MASK_ABI_64
-				     | OPTION_MASK_ABI_X32
-				     | OPTION_MASK_CODE16);
-	  opts->x_ix86_isa_flags2 = 0;
-	}
+	opts->x_ix86_arch_string
+	  = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]);
       else if (!orig_arch_specified)
 	opts->x_ix86_arch_string = NULL;
 
@@ -8657,7 +8665,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 
 static rtx
 function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
-		    machine_mode orig_mode, bool named,
+		    machine_mode orig_mode, bool named, const_tree type,
 		    HOST_WIDE_INT bytes)
 {
   unsigned int regno;
@@ -8677,7 +8685,10 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
   if (TARGET_SSE && (mode == SFmode || mode == DFmode))
     {
       if (named)
-	regno = cum->regno + FIRST_SSE_REG;
+	{
+	  if (type == NULL_TREE || !AGGREGATE_TYPE_P (type))
+	    regno = cum->regno + FIRST_SSE_REG;
+	}
       else
 	{
 	  rtx t1, t2;
@@ -8765,7 +8776,7 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
       enum calling_abi call_abi = cum ? cum->call_abi : ix86_abi;
 
       if (call_abi == MS_ABI)
-	arg = function_arg_ms_64 (cum, mode, omode, named, bytes);
+	arg = function_arg_ms_64 (cum, mode, omode, named, type, bytes);
       else
 	arg = function_arg_64 (cum, mode, omode, type, named);
     }
@@ -9823,6 +9834,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree ptrtype;
   machine_mode nat_mode;
   unsigned int arg_boundary;
+  unsigned int type_align;
 
   /* Only 64bit target needs something special.  */
   if (is_va_list_char_pointer (TREE_TYPE (valist)))
@@ -9880,6 +9892,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   /* Pull the value out of the saved registers.  */
 
   addr = create_tmp_var (ptr_type_node, "addr");
+  type_align = TYPE_ALIGN (type);
 
   if (container)
     {
@@ -10050,6 +10063,9 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	  t = build2 (PLUS_EXPR, TREE_TYPE (gpr), gpr,
 		      build_int_cst (TREE_TYPE (gpr), needed_intregs * 8));
 	  gimplify_assign (gpr, t, pre_p);
+	  /* The GPR save area guarantees only 8-byte alignment.  */
+	  if (!need_temp)
+	    type_align = MIN (type_align, 64);
 	}
 
       if (needed_sseregs)
@@ -10094,6 +10110,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   if (container)
     gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
 
+  type = build_aligned_type (type, type_align);
   ptrtype = build_pointer_type_for_mode (type, ptr_mode, true);
   addr = fold_convert (ptrtype, addr);
 
@@ -16960,7 +16977,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
-      if (TARGET_64BIT || ! TARGET_MACHO_BRANCH_ISLANDS)
+      if (TARGET_64BIT || ! TARGET_MACHO_SYMBOL_STUBS)
 	output_addr_const (file, x);
       else
 	{
@@ -30272,9 +30289,14 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	 the stack, we need to skip the first insn which pushes the
 	 (call-saved) register static chain; this push is 1 byte.  */
       offset += 5;
+      int skip = MEM_P (chain) ? 1 : 0;
+      /* Skip ENDBR32 at the entry of the target function.  */
+      if (need_endbr
+	  && !cgraph_node::get (fndecl)->only_called_directly_p ())
+	skip += 4;
       disp = expand_binop (SImode, sub_optab, fnaddr,
 			   plus_constant (Pmode, XEXP (m_tramp, 0),
-					  offset - (MEM_P (chain) ? 1 : 0)),
+					  offset - skip),
 			   NULL_RTX, 1, OPTAB_DIRECT);
       emit_move_insn (mem, disp);
     }
@@ -33401,8 +33423,13 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		    countt = build_int_cst (integer_type_node, count);
 		}
 	      tree_vector_builder builder;
-	      builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
-					   false);
+	      if (mask != HOST_WIDE_INT_M1U || is_vshift)
+		builder.new_vector (TREE_TYPE (args[0]),
+				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0])),
+				    1);
+	      else
+		builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
+					     false);
 	      unsigned int cnt = builder.encoded_nelts ();
 	      for (unsigned int i = 0; i < cnt; ++i)
 		{
@@ -44377,11 +44404,15 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	    {
 	      x = force_reg (dest_mode, const0_rtx);
 
-	      emit_insn (gen_movstrictqi
-			 (gen_lowpart (QImode, x), destqi));
+	      emit_insn (gen_movstrictqi (gen_lowpart (QImode, x), destqi));
 	    }
 	  else
-	    x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+	    {
+	      x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+	      if (dest_mode == GET_MODE (dest)
+		  && !register_operand (dest, GET_MODE (dest)))
+		x = force_reg (dest_mode, x);
+	    }
 	}
 
       if (dest_mode != GET_MODE (dest))

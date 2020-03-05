@@ -43,6 +43,21 @@ extern "C" void *memalign(std::size_t boundary, std::size_t size);
 using std::new_handler;
 using std::bad_alloc;
 
+#if ! _GLIBCXX_HOSTED
+extern "C"
+{
+# if _GLIBCXX_HAVE_ALIGNED_ALLOC
+  void *aligned_alloc(size_t alignment, size_t size);
+# elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+  void *_aligned_malloc(size_t size, size_t alignment);
+# elif _GLIBCXX_HAVE_POSIX_MEMALIGN
+  void *posix_memalign(void **, size_t alignment, size_t size);
+# elif _GLIBCXX_HAVE_MEMALIGN
+  void *memalign(size_t alignment, size_t size);
+# endif
+}
+#endif
+
 namespace __gnu_cxx {
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
 using ::aligned_alloc;
@@ -114,9 +129,10 @@ operator new (std::size_t sz, std::align_val_t al)
     sz = 1;
 
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
-# ifdef _AIX
+# if defined _AIX || defined __APPLE__
   /* AIX 7.2.0.0 aligned_alloc incorrectly has posix_memalign's requirement
-   * that alignment is a multiple of sizeof(void*).  */
+   * that alignment is a multiple of sizeof(void*).
+   * OS X 10.15 has the same requirement.  */
   if (align < sizeof(void*))
     align = sizeof(void*);
 # endif

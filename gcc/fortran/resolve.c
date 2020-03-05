@@ -1866,7 +1866,7 @@ resolve_procedure_expression (gfc_expr* expr)
 
 
 /* Check that name is not a derived type.  */
- 
+
 static bool
 is_dt_name (const char *name)
 {
@@ -7059,19 +7059,6 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 				  "Step expression in DO loop"))
     return false;
 
-  if (iter->step->expr_type == EXPR_CONSTANT)
-    {
-      if ((iter->step->ts.type == BT_INTEGER
-	   && mpz_cmp_ui (iter->step->value.integer, 0) == 0)
-	  || (iter->step->ts.type == BT_REAL
-	      && mpfr_sgn (iter->step->value.real) == 0))
-	{
-	  gfc_error ("Step expression in DO loop at %L cannot be zero",
-		     &iter->step->where);
-	  return false;
-	}
-    }
-
   /* Convert start, end, and step to the same type as var.  */
   if (iter->start->ts.kind != iter->var->ts.kind
       || iter->start->ts.type != iter->var->ts.type)
@@ -7084,6 +7071,19 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
   if (iter->step->ts.kind != iter->var->ts.kind
       || iter->step->ts.type != iter->var->ts.type)
     gfc_convert_type (iter->step, &iter->var->ts, 1);
+
+  if (iter->step->expr_type == EXPR_CONSTANT)
+    {
+      if ((iter->step->ts.type == BT_INTEGER
+	   && mpz_cmp_ui (iter->step->value.integer, 0) == 0)
+	  || (iter->step->ts.type == BT_REAL
+	      && mpfr_sgn (iter->step->value.real) == 0))
+	{
+	  gfc_error ("Step expression in DO loop at %L cannot be zero",
+		     &iter->step->where);
+	  return false;
+	}
+    }
 
   if (iter->start->expr_type == EXPR_CONSTANT
       && iter->end->expr_type == EXPR_CONSTANT
@@ -7439,7 +7439,7 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
   for (tail = e2->ref; tail && tail->next; tail = tail->next);
 
   /* First compare rank.  */
-  if ((tail && e1->rank != tail->u.ar.as->rank)
+  if ((tail && (!tail->u.ar.as || e1->rank != tail->u.ar.as->rank))
       || (!tail && e1->rank != e2->rank))
     {
       gfc_error ("Source-expr at %L must be scalar or have the "
@@ -13545,14 +13545,34 @@ resolve_typebound_procedure (gfc_symtree* stree)
     }
   else
     {
+      /* If proc has not been resolved at this point, proc->name may
+	 actually be a USE associated entity. See PR fortran/89647. */
+      if (!proc->resolved
+	  && proc->attr.function == 0 && proc->attr.subroutine == 0)
+	{
+	  gfc_symbol *tmp;
+	  gfc_find_symbol (proc->name, gfc_current_ns->parent, 1, &tmp);
+	  if (tmp && tmp->attr.use_assoc)
+	    {
+	      proc->module = tmp->module;
+	      proc->attr.proc = tmp->attr.proc;
+	      proc->attr.function = tmp->attr.function;
+	      proc->attr.subroutine = tmp->attr.subroutine;
+	      proc->attr.use_assoc = tmp->attr.use_assoc;
+	      proc->ts = tmp->ts;
+	      proc->result = tmp->result;
+	    }
+	}
+
       /* Check for F08:C465.  */
       if ((!proc->attr.subroutine && !proc->attr.function)
 	  || (proc->attr.proc != PROC_MODULE
 	      && proc->attr.if_source != IFSRC_IFBODY)
 	  || proc->attr.abstract)
 	{
-	  gfc_error ("%qs must be a module procedure or an external procedure with"
-		    " an explicit interface at %L", proc->name, &where);
+	  gfc_error ("%qs must be a module procedure or an external "
+		     "procedure with an explicit interface at %L",
+		     proc->name, &where);
 	  goto error;
 	}
     }
@@ -15668,8 +15688,6 @@ check_data_variable (gfc_data_variable *var, locus *where)
       return false;
     }
 
-  has_pointer = sym->attr.pointer;
-
   if (gfc_is_coindexed (e))
     {
       gfc_error ("DATA element %qs at %L cannot have a coindex", sym->name,
@@ -15677,19 +15695,30 @@ check_data_variable (gfc_data_variable *var, locus *where)
       return false;
     }
 
+  has_pointer = sym->attr.pointer;
+
   for (ref = e->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	has_pointer = 1;
 
-      if (has_pointer
-	    && ref->type == REF_ARRAY
-	    && ref->u.ar.type != AR_FULL)
-	  {
-	    gfc_error ("DATA element %qs at %L is a pointer and so must "
-			"be a full array", sym->name, where);
-	    return false;
-	  }
+      if (has_pointer)
+	{
+	  if (ref->type == REF_ARRAY && ref->u.ar.type != AR_FULL)
+	    {
+	      gfc_error ("DATA element %qs at %L is a pointer and so must "
+			 "be a full array", sym->name, where);
+	      return false;
+	    }
+
+	  if (values.vnode->expr->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_error ("DATA object near %L has the pointer attribute "
+			 "and the corresponding DATA value is not a valid "
+			 "initial-data-target", where);
+	      return false;
+	    }
+	}
     }
 
   if (e->rank == 0 || has_pointer)
@@ -16531,8 +16560,8 @@ resolve_equivalence (gfc_equiv *eq)
 }
 
 
-/* Function called by resolve_fntype to flag other symbol used in the
-   length type parameter specification of function resuls.  */
+/* Function called by resolve_fntype to flag other symbols used in the
+   length type parameter specification of function results.  */
 
 static bool
 flag_fn_result_spec (gfc_expr *expr,
@@ -16746,6 +16775,7 @@ resolve_types (gfc_namespace *ns)
   gfc_data *d;
   gfc_equiv *eq;
   gfc_namespace* old_ns = gfc_current_ns;
+  bool recursive = ns->proc_name && ns->proc_name->attr.recursive;
 
   if (ns->types_resolved)
     return;
@@ -16799,7 +16829,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (ns->save_all || !flag_automatic)
+  if (ns->save_all || (!flag_automatic && !recursive))
     gfc_save_all (ns);
 
   iter_stack = NULL;

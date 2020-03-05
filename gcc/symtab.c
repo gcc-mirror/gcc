@@ -1955,22 +1955,22 @@ symtab_node::nonzero_address ()
      bind to NULL. This is on by default on embedded targets only.
 
      Otherwise all non-WEAK symbols must be defined and thus non-NULL or
-     linking fails.  Important case of WEAK we want to do well are comdats.
-     Those are handled by later check for definition.
+     linking fails.  Important case of WEAK we want to do well are comdats,
+     which also must be defined somewhere.
 
      When parsing, beware the cases when WEAK attribute is added later.  */
-  if (!DECL_WEAK (decl)
+  if ((!DECL_WEAK (decl) || DECL_COMDAT (decl))
       && flag_delete_null_pointer_checks)
     {
       refuse_visibility_changes = true;
       return true;
     }
 
-  /* If target is defined and either comdat or not extern, we know it will be
+  /* If target is defined and not extern, we know it will be
      output and thus it will bind to non-NULL.
      Play safe for flag_delete_null_pointer_checks where weak definition may
      be re-defined by NULL.  */
-  if (definition && (!DECL_EXTERNAL (decl) || DECL_COMDAT (decl))
+  if (definition && !DECL_EXTERNAL (decl)
       && (flag_delete_null_pointer_checks || !DECL_WEAK (decl)))
     {
       if (!DECL_WEAK (decl))
@@ -2328,10 +2328,18 @@ symtab_node::output_to_lto_symbol_table_p (void)
      first place.  */
   if (VAR_P (decl) && DECL_HARD_REGISTER (decl))
     return false;
-  /* FIXME: Builtins corresponding to real functions probably should have
-     symbol table entries.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
-    return false;
+  if (TREE_CODE (decl) == FUNCTION_DECL && !definition
+      && fndecl_built_in_p (decl))
+    {
+      /* Builtins like those for most math functions have actual implementations
+	 in libraries so make sure to output references into the symbol table to
+	 make those libraries referenced.  Note this is incomplete handling for
+	 now and only covers math functions.  */
+      if (builtin_with_linkage_p (decl))
+	return true;
+      else
+	return false;
+    }
 
   /* We have real symbol that should be in symbol table.  However try to trim
      down the refernces to libraries bit more because linker will otherwise

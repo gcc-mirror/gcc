@@ -70,7 +70,7 @@
 
 (define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
 
-; 32 bit int<->fp vector conversion instructions are available since VXE2 (arch13).
+; 32 bit int<->fp vector conversion instructions are available since VXE2 (z15).
 (define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
 (define_mode_iterator VX_VEC_CONV_INT [V2DI (V4SI "TARGET_VXE2")])
 
@@ -295,9 +295,9 @@
 ; However, this would probably be slower.
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_8 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  S,  Q,  S,  d,  d,d,d,d,R,T")
-        (match_operand:V_8 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,d,j00,j00,jm1,jm1,j00,jm1,R,T,b,d,d"))]
-  ""
+  [(set (match_operand:V_8 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  S,  Q,  S,  d,  d,d,R,T")
+        (match_operand:V_8 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,d,j00,j00,jm1,jm1,j00,jm1,T,d,d"))]
+  "TARGET_VX"
   "@
    vlr\t%v0,%v1
    vlvgb\t%v0,%1,0
@@ -315,12 +315,10 @@
    mviy\t%0,-1
    lhi\t%0,0
    lhi\t%0,-1
-   lh\t%0,%1
-   lhy\t%0,%1
-   lhrl\t%0,%1
+   llc\t%0,%1
    stc\t%1,%0
    stcy\t%1,%0"
-  [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,RR,SI,SIY,SI,SIY,RI,RI,RX,RXY,RIL,RX,RXY")])
+  [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,RR,SI,SIY,SI,SIY,RI,RI,RXY,RX,RXY")])
 
 (define_insn "mov<mode>"
   [(set (match_operand:V_16 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  Q,  d,  d,d,d,d,R,T,b")

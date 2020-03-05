@@ -303,7 +303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::classic()
   {
     _S_initialize();
-    return *(new (&c_locale) locale(_S_classic));
+    return *(const locale*)c_locale;
   }
 
   void
@@ -313,6 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // One reference for _S_classic, one for _S_global
     _S_classic = new (&c_locale_impl) _Impl(2);
     _S_global = _S_classic;
+    new (&c_locale) locale(_S_classic);
   }
 
   void

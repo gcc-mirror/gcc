@@ -1,3 +1,19 @@
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: Add support for -b local-git-repo argument.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport:
+
+	2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release: Use git instead of SVN.
+
+	2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gcc_release: Use https for gcc.gnu.org.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

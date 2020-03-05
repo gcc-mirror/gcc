@@ -1050,6 +1050,7 @@ allstamped = \
 # catenation.
 allcreated = \
 	${host_builddir}/c++config.h \
+	${host_builddir}/largefile-config.h \
 	${thread_host_headers} \
 	${pch_build}
 
@@ -1283,10 +1284,19 @@ stamp-float128:
 	echo 'undef _GLIBCXX_USE_FLOAT128' > stamp-float128
 endif
 
+# This header is not installed, it's only used to build libstdc++ itself.
+${host_builddir}/largefile-config.h: ${CONFIG_HEADER}
+	@rm -f $@.tmp
+	@-grep 'define _DARWIN_USE_64_BIT_INODE' ${CONFIG_HEADER} >> $@.tmp
+	@-grep 'define _FILE_OFFSET_BITS' ${CONFIG_HEADER} >> $@.tmp
+	@-grep 'define _LARGE_FILES' ${CONFIG_HEADER} >> $@.tmp
+	@mv $@.tmp $@
+
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      ${glibcxx_srcdir}/include/bits/c++config \
+			      ${host_builddir}/largefile-config.h \
 			      stamp-${host_alias} \
 			      ${toplevel_srcdir}/gcc/DATESTAMP \
 			      stamp-namespace-version \
@@ -1324,6 +1334,9 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
 	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
+	    -e 's/_DARWIN_USE_64_BIT_INODE/_GLIBCXX_DARWIN_USE_64_BIT_INODE/g' \
+	    -e 's/_FILE_OFFSET_BITS/_GLIBCXX_FILE_OFFSET_BITS/g' \
+	    -e 's/_LARGE_FILES/_GLIBCXX_LARGE_FILES/g' \
 	    -e 's/ICONV_CONST/_GLIBCXX_ICONV_CONST/g' \
 	    -e '/[	 ]_GLIBCXX_LONG_DOUBLE_COMPAT[	 ]/d' \
 	    < ${CONFIG_HEADER} >> $@ ;\

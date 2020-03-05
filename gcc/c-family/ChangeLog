@@ -1,3 +1,69 @@
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89357
+	* c-attribs.c (check_cxx_fundamental_alignment_constraints): Remove.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61414
+	* c-attribs.c (handle_mode_attribute): Add mode attribute to
+	ENUMERAL_TYPEs.
+
+	2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* c-common.h (identifier_global_tag): Declare.
+	* c-format.c (get_pointer_to_named_type): Renamed to ...
+	(get_named_type): ... this.  Use identifier_global_tag instead of
+	identifier_global_value, handle the return value being a TYPE_P.
+	(init_dynamic_diag_info): Adjust get_pointer_to_named_type callers
+	to call get_named_type instead.  Formatting fixes.
+
+2019-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Do not look through typedefs.
+	(dump_forward_type): Do not generate a declaration for function types.
+	(dump_nested_type) <ARRAY_TYPE>: Do not generate a nested declaration
+	of the component type if it is declared in another file.
+
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91925
+	* c-warn.c (check_alignment_of_packed_member): Ignore FIELD_DECLs
+	with NULL DECL_FIELD_OFFSET.
+
+	2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* c-common.h (c_omp_predefined_variable): Declare.
+	* c-omp.c (c_omp_predefined_variable): New function.
+	(c_omp_predetermined_sharing): Return OMP_CLAUSE_DEFAULT_SHARED
+	for predefined variables.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91155
+	* c-common.c (fname_as_string): Use cxx_printable_name for
+	__PRETTY_FUNCTION__ same as was used before r265711.
+
+2019-08-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* c-lex.c (c_lex_with_flags):  Don't call
+	c_common_no_more_pch () from here.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

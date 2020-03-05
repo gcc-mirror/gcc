@@ -467,10 +467,10 @@ while (0)
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#undef  ASM_OUTPUT_ALIGNED_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)               \
+#undef  ASM_OUTPUT_ALIGNED_DECL_LOCAL
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                    \
-  if ((SIZE) <= nios2_section_threshold)                                \
+ if (targetm.in_small_data_p (DECL))					\
     switch_to_section (sbss_section);					\
   else                                                                  \
     switch_to_section (bss_section);					\

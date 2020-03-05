@@ -1407,7 +1407,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   /* s1 * s2 -> ur  */
   if (!uns0_p && !uns1_p && unsr_p)
     {
-      rtx tem, tem2;
+      rtx tem;
       switch (pos_neg0 | pos_neg1)
 	{
 	case 1: /* Both operands known to be non-negative.  */
@@ -1437,10 +1437,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      ops.op2 = NULL_TREE;
 	      ops.location = loc;
 	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	      tem = expand_binop (mode, and_optab, op0, op1, NULL_RTX, false,
-				  OPTAB_LIB_WIDEN);
-	      do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode,
-				       NULL_RTX, NULL, done_label,
+	      do_compare_rtx_and_jump (pos_neg0 == 1 ? op0 : op1, const0_rtx, EQ,
+				       true, mode, NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	      goto do_error_label;
 	    }
@@ -1471,16 +1469,23 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  arg1 = error_mark_node;
 	  emit_jump (do_main_label);
 	  emit_label (after_negate_label);
-	  tem2 = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
-			       OPTAB_LIB_WIDEN);
-	  do_compare_rtx_and_jump (tem2, const0_rtx, GE, false, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  tem = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
+			      OPTAB_LIB_WIDEN);
+	  do_compare_rtx_and_jump (tem, const0_rtx, GE, false, mode, NULL_RTX,
+				   NULL, do_main_label,
+				   profile_probability::very_likely ());
 	  /* One argument is negative here, the other positive.  This
 	     overflows always, unless one of the arguments is 0.  But
 	     if e.g. s2 is 0, (U) s1 * 0 doesn't overflow, whatever s1
 	     is, thus we can keep do_main code oring in overflow as is.  */
-	  do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  if (pos_neg0 != 2)
+	    do_compare_rtx_and_jump (op0, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
+	  if (pos_neg1 != 2)
+	    do_compare_rtx_and_jump (op1, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
 	  expand_arith_set_overflow (lhs, target);
 	  emit_label (do_main_label);
 	  goto do_main;

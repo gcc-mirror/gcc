@@ -816,6 +816,27 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
     case CALL_EXPR:
       ret = GS_OK;
+      if (flag_strong_eval_order == 2
+	  && CALL_EXPR_FN (*expr_p)
+	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
+	{
+	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
+	  enum gimplify_status t
+	    = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
+			     is_gimple_call_addr, fb_rvalue);
+	  if (t == GS_ERROR)
+	    ret = GS_ERROR;
+	  else if (is_gimple_variable (CALL_EXPR_FN (*expr_p))
+		   && TREE_CODE (CALL_EXPR_FN (*expr_p)) != SSA_NAME)
+	    CALL_EXPR_FN (*expr_p)
+	      = get_initialized_tmp_var (CALL_EXPR_FN (*expr_p), pre_p,
+					 NULL);
+	  /* GIMPLE considers most pointer conversion useless, but for
+	     calls we actually care about the exact function pointer type.  */
+	  if (t != GS_ERROR && TREE_TYPE (CALL_EXPR_FN (*expr_p)) != fnptrtype)
+	    CALL_EXPR_FN (*expr_p)
+	      = build1 (NOP_EXPR, fnptrtype, CALL_EXPR_FN (*expr_p));
+	}
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;
       else if (CALL_EXPR_REVERSE_ARGS (*expr_p))
@@ -1108,6 +1129,36 @@ cp_fold_function (tree fndecl)
 {
   hash_set<tree> pset;
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &pset, NULL);
+}
+
+/* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
+   to trigger gimplify_type_sizes; otherwise a cast to pointer-to-VLA confuses
+   the middle-end (c++/88256).  */
+
+static tree
+predeclare_vla (tree expr)
+{
+  tree type = TREE_TYPE (expr);
+  if (type == error_mark_node)
+    return expr;
+
+  /* We need to strip pointers for gimplify_type_sizes.  */
+  tree vla = type;
+  while (POINTER_TYPE_P (vla))
+    {
+      if (TYPE_NAME (vla))
+	return expr;
+      vla = TREE_TYPE (vla);
+    }
+  if (TYPE_NAME (vla) || !variably_modified_type_p (vla, NULL_TREE))
+    return expr;
+
+  tree decl = build_decl (input_location, TYPE_DECL, NULL_TREE, vla);
+  DECL_ARTIFICIAL (decl) = 1;
+  TYPE_NAME (vla) = decl;
+  tree dexp = build_stmt (input_location, DECL_EXPR, decl);
+  expr = build2 (COMPOUND_EXPR, type, dexp, expr);
+  return expr;
 }
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -1563,6 +1614,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case NOP_EXPR:
+      *stmt_p = predeclare_vla (*stmt_p);
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT)
 	  && TYPE_REF_P (TREE_TYPE (stmt)))
@@ -2050,6 +2102,9 @@ cxx_omp_predetermined_sharing_1 (tree decl)
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
 	return OMP_CLAUSE_DEFAULT_SHARED;
+
+      if (c_omp_predefined_variable (decl))
+	return OMP_CLAUSE_DEFAULT_SHARED;
     }
 
   /* this may not be specified in data-sharing clauses, still we need
@@ -2081,6 +2136,10 @@ cxx_omp_predetermined_sharing (tree decl)
       && INTEGRAL_TYPE_P (TREE_TYPE (decl))
       && !(DECL_LANG_SPECIFIC (decl)
 	   && DECL_OMP_PRIVATIZED_MEMBER (decl)))
+    return OMP_CLAUSE_DEFAULT_SHARED;
+
+  /* Similarly for typeinfo symbols.  */
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl) && DECL_TINFO_P (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;

@@ -125,6 +125,7 @@ gfc_typename (gfc_typespec *ts)
   static char buffer2[GFC_MAX_SYMBOL_LEN + 7];
   static int flag = 0;
   char *buffer;
+  gfc_typespec *ts1;
 
   buffer = flag ? buffer1 : buffer2;
   flag = !flag;
@@ -156,9 +157,8 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_CLASS:
-      if (ts->u.derived->components)
-	ts = &ts->u.derived->components->ts;
-      if (ts->u.derived->attr.unlimited_polymorphic)
+      ts1 = ts->u.derived->components ? &ts->u.derived->components->ts : NULL;
+      if (ts1 && ts1->u.derived && ts1->u.derived->attr.unlimited_polymorphic)
 	sprintf (buffer, "CLASS(*)");
       else
 	sprintf (buffer, "CLASS(%s)", ts->u.derived->name);

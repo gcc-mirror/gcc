@@ -20,8 +20,7 @@ presence of the required flag.
 </para>
 
 <para>
-This section describes the C++17 and library TS support in mainline GCC SVN,
-not in any particular release.
+This section describes the C++17 and library TS support in the GCC 9 series.
 </para>
 
 <para>

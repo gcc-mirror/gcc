@@ -25,8 +25,8 @@
 
 #include "avr-devices.c"
 
-static const char*
-mcu_name[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
+static const avr_mcu_t*
+mcus[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
 
 static int letter (char c)
 {
@@ -39,24 +39,83 @@ static int digit (char c)
 }
 
 static int
+str_prefix_p (const char *str, const char *prefix)
+{
+  return strncmp (str, prefix, strlen (prefix)) == 0;
+}
+
+
+/* Used by string comparator to group MCUs by their
+   name prefix like "attiny" or "atmega".  */
+
+static int
+c_prefix (const char *str)
+{
+  static const char *const prefixes[] =
+    {
+      "attiny", "atmega", "atxmega", "ata", "at90"
+    };
+
+  int i, n = (int) (sizeof (prefixes) / sizeof (*prefixes));
+
+  for (i = 0; i < n; i++)
+    if (str_prefix_p (str, prefixes[i]))
+      return i;
+
+  return n;
+}
+
+
+/* If A starts a group of digits, return their value as a number.  */
+
+static int
+c_number (const char *a)
+{
+  int val = 0;
+
+  if (digit (*a) && ! digit (*(a-1)))
+    {
+      while (digit (*a))
+	val = 10 * val + (*a++) - '0';
+    }
+
+  return val;
+}
+
+
+/* Compare two MCUs and order them for easy lookup.  */
+
+static int
 comparator (const void *va, const void *vb)
 {
-  const char *a = *(const char* const*) va;
-  const char *b = *(const char* const*) vb;
+  const avr_mcu_t *mcu_a = *(const avr_mcu_t* const*) va;
+  const avr_mcu_t *mcu_b = *(const avr_mcu_t* const*) vb;
+  const char *a = mcu_a->name;
+  const char *b = mcu_b->name;
+
+  // First, group MCUs according to their pure-letter prefix.
+
+  int c = c_prefix (a) - c_prefix (b);
+  if (c)
+    return c;
+
+  // Second, if their prefixes are the same, group according to
+  // their flash size.
+
+  c = (int) mcu_a->flash_size - (int) mcu_b->flash_size;
+  if (c)
+    return c;
+
+  // Third, group according to aligned groups of digits.
 
   while (*a && *b)
     {
-      /* Make letters smaller than digits so that `atmega16a' follows
-         `atmega16' without `atmega161' etc. between them.  */
-      
-      if (letter (*a) && digit (*b))
-        return -1;
-
-      if (digit (*a) && letter (*b))
-        return 1;
+      c = c_number (a) - c_number (b);
+      if (c)
+	return c;
 
       if (*a != *b)
-        return *a - *b;
+	return *a - *b;
       
       a++;
       b++;
@@ -74,21 +133,21 @@ print_mcus (size_t n_mcus)
   if (!n_mcus)
     return;
     
-  qsort (mcu_name, n_mcus, sizeof (char*), comparator);
+  qsort (mcus, n_mcus, sizeof (avr_mcu_t*), comparator);
 
   printf ("@*@var{mcu}@tie{}=");
 
   for (i = 0; i < n_mcus; i++)
     {
-      printf (" @code{%s}%s", mcu_name[i], i == n_mcus-1 ? ".\n\n" : ",");
+      printf (" @code{%s}%s", mcus[i]->name, i == n_mcus-1 ? ".\n\n" : ",");
 
-      if (i && !strcmp (mcu_name[i], mcu_name[i-1]))
-        {
-          /* Sanity-check: Fail on devices that are present more than once.  */
+      if (i && !strcmp (mcus[i]->name, mcus[i-1]->name))
+	{
+	  // Sanity-check: Fail on devices that are present more than once.
 
-          duplicate = 1;
-          fprintf (stderr, "error: duplicate device: %s\n", mcu_name[i]);
-        }
+	  duplicate = 1;
+	  fprintf (stderr, "error: duplicate device: %s\n", mcus[i]->name);
+	}
     }
 
   if (duplicate)
@@ -104,13 +163,13 @@ int main (void)
   printf ("@c Copyright (C) 2012-2019 Free Software Foundation, Inc.\n");
   printf ("@c This is part of the GCC manual.\n");
   printf ("@c For copying conditions, see the file "
-          "gcc/doc/include/fdl.texi.\n\n");
+	  "gcc/doc/include/fdl.texi.\n\n");
 
   printf ("@c This file is generated automatically using\n");
   printf ("@c gcc/config/avr/gen-avr-mmcu-texi.c from:\n");
-  printf ("@c    gcc/config/avr/avr-arch.h\n");
-  printf ("@c    gcc/config/avr/avr-devices.c\n");
-  printf ("@c    gcc/config/avr/avr-mcus.def\n\n");
+  printf ("@c	 gcc/config/avr/avr-arch.h\n");
+  printf ("@c	 gcc/config/avr/avr-devices.c\n");
+  printf ("@c	 gcc/config/avr/avr-mcus.def\n\n");
 
   printf ("@c Please do not edit manually.\n\n");
 
@@ -119,22 +178,21 @@ int main (void)
   for (mcu = avr_mcu_types; mcu->name; mcu++)
     {
       if (mcu->macro == NULL)
-        {
-          arch_id = mcu->arch_id;
+	{
+	  arch_id = mcu->arch_id;
 
-          /* Start a new architecture:  Flush the MCUs collected so far.  */
+	  // Start a new architecture:	Flush the MCUs collected so far.
+	  print_mcus (n_mcus);
+	  n_mcus = 0;
 
-          print_mcus (n_mcus);
-          n_mcus = 0;
-
-          for (i = 0; i < sizeof (avr_texinfo) / sizeof (*avr_texinfo); i++)
-            if (arch_id == avr_texinfo[i].arch_id)
-              printf ("@item %s\n%s\n", mcu->name, avr_texinfo[i].texinfo);
-        }
+	  for (i = 0; i < sizeof (avr_texinfo) / sizeof (*avr_texinfo); i++)
+	    if (arch_id == avr_texinfo[i].arch_id)
+	      printf ("@item %s\n%s\n", mcu->name, avr_texinfo[i].texinfo);
+	}
       else if (arch_id == (enum avr_arch_id) mcu->arch_id)
-        {
-          mcu_name[n_mcus++] = mcu->name;
-        }
+	{
+	  mcus[n_mcus++] = mcu;
+	}
     }
 
   print_mcus (n_mcus);

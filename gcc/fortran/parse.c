@@ -1104,12 +1104,20 @@ decode_gcc_attribute (void)
   match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
   match ("unroll", gfc_match_gcc_unroll, ST_NONE);
   match ("builtin", gfc_match_gcc_builtin, ST_NONE);
+  match ("ivdep", gfc_match_gcc_ivdep, ST_NONE);
+  match ("vector", gfc_match_gcc_vector, ST_NONE);
+  match ("novector", gfc_match_gcc_novector, ST_NONE);
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
 
   if (!gfc_error_check ())
-    gfc_error_now ("Unclassifiable GCC directive at %C");
+    {
+      if (pedantic)
+	gfc_error_now ("Unclassifiable GCC directive at %C");
+      else
+	gfc_warning_now (0, "Unclassifiable GCC directive at %C, ignored");
+    }
 
   reject_statement ();
 
@@ -4710,6 +4718,21 @@ parse_do_block (void)
 	  new_st.ext.iterator->unroll = directive_unroll;
 	  directive_unroll = -1;
 	}
+      if (directive_ivdep)
+	{
+	  new_st.ext.iterator->ivdep = directive_ivdep;
+	  directive_ivdep = false;
+	}
+      if (directive_vector)
+	{
+	  new_st.ext.iterator->vector = directive_vector;
+	  directive_vector = false;
+	}
+      if (directive_novector)
+	{
+	  new_st.ext.iterator->novector = directive_novector;
+	  directive_novector = false;
+	}
     }
   else
     stree = NULL;
@@ -5122,6 +5145,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_TARGET_DATA:
       omp_end_st = ST_OMP_END_TARGET_DATA;
       break;
+    case ST_OMP_TARGET_PARALLEL:
+      omp_end_st = ST_OMP_END_TARGET_PARALLEL;
+      break;
     case ST_OMP_TARGET_TEAMS:
       omp_end_st = ST_OMP_END_TARGET_TEAMS;
       break;
@@ -5476,7 +5502,17 @@ parse_executable (gfc_statement st)
 	}
 
       if (directive_unroll != -1)
-	gfc_error ("%<GCC unroll%> directive does not commence a loop at %C");
+	gfc_error ("%<GCC unroll%> directive not at the start of a loop at %C");
+
+      if (directive_ivdep)
+	gfc_error ("%<GCC ivdep%> directive not at the start of a loop at %C");
+
+      if (directive_vector)
+	gfc_error ("%<GCC vector%> directive not at the start of a loop at %C");
+
+      if (directive_novector)
+	gfc_error ("%<GCC novector%> "
+		   "directive not at the start of a loop at %C");
 
       st = next_statement ();
     }

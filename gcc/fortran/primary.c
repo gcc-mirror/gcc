@@ -1990,6 +1990,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   match m;
   bool unknown;
   bool inquiry;
+  bool intrinsic;
   locus old_loc;
   char sep;
 
@@ -2194,11 +2195,35 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
+      intrinsic = false;
       if (primary->ts.type != BT_CLASS && primary->ts.type != BT_DERIVED)
 	{
 	  inquiry = is_inquiry_ref (name, &tmp);
 	  if (inquiry)
 	    sym = NULL;
+
+	  if (sep == '%')
+	    {
+	      if (tmp)
+		{
+		  if ((tmp->u.i == INQUIRY_RE || tmp->u.i == INQUIRY_IM)
+		      && primary->ts.type != BT_COMPLEX)
+		    {
+			gfc_error ("The RE or IM part_ref at %C must be "
+				   "applied to a COMPLEX expression");
+			return MATCH_ERROR;
+		    }
+		  else if (tmp->u.i == INQUIRY_LEN
+			   && primary->ts.type != BT_CHARACTER)
+		    {
+			gfc_error ("The LEN part_ref at %C must be applied "
+				   "to a CHARACTER expression");
+			return MATCH_ERROR;
+		    }
+		}
+	      if (primary->ts.type != BT_UNKNOWN)
+		intrinsic = true;
+	    }
 	}
       else
 	inquiry = false;
@@ -2258,12 +2283,16 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  break;
 	}
 
-      if (!inquiry)
+      if (!inquiry && !intrinsic)
 	component = gfc_find_component (sym, name, false, false, &tmp);
       else
 	component = NULL;
 
-      if (component == NULL && !inquiry)
+      /* In some cases, returning MATCH_NO gives a better error message. Most
+	 cases return "Unclassifiable statement at..."  */
+      if (intrinsic && !inquiry)
+	return MATCH_NO;
+      else if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 
       /* Extend the reference chain determined by gfc_find_component or
@@ -2284,6 +2313,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
       if (tmp && tmp->type == REF_INQUIRY)
 	{
+	  if (!primary->where.lb || !primary->where.nextc)
+	    primary->where = gfc_current_locus;
 	  gfc_simplify_expr (primary, 0);
 
 	  if (primary->expr_type == EXPR_CONSTANT)
@@ -2559,12 +2590,10 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	    break;
 
 	  case AR_UNKNOWN:
-	    /* If any of start, end or stride is not integer, there will
-	       already have been an error issued.  */
-	    int errors;
-	    gfc_get_errors (NULL, &errors);
-	    if (errors == 0)
-	      gfc_internal_error ("gfc_variable_attr(): Bad array reference");
+	    /* For standard conforming code, AR_UNKNOWN should not happen.
+	       For nonconforming code, gfortran can end up here.  Treat it 
+	       as a no-op.  */
+	    break;
 	  }
 
 	break;

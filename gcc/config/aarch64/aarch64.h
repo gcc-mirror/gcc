@@ -731,6 +731,7 @@ typedef struct GTY (()) machine_function
   struct aarch64_frame frame;
   /* One entry for each hard register.  */
   bool reg_is_wrapped_separately[LAST_SAVED_REGNUM];
+  bool label_is_assembled;
 } machine_function;
 #endif
 

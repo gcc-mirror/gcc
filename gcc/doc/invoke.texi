@@ -292,6 +292,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
+-Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts  -Wcatch-value  -Wcatch-value=@var{n} @gol
@@ -712,7 +713,7 @@ Objective-C and Objective-C++ Dialects}.
 -mn_flash=@var{size}  -mno-interrupts @gol
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
 -mfract-convert-truncate @gol
--mshort-calls  -nodevicelib @gol
+-mshort-calls -nodevicelib  -nodevicespecs @gol
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
@@ -6713,6 +6714,14 @@ For instance, warn about use of anonymous structures and unions,
 and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
 
+@item -Wc11-c2x-compat @r{(C and Objective-C only)}
+@opindex Wc11-c2x-compat
+@opindex Wno-c11-c2x-compat
+Warn about features not present in ISO C11, but present in ISO C2X.
+For instance, warn about omitting the string in @code{_Static_assert}.
+This option is independent of the standards mode.  Warnings are
+disabled in the expression that follows @code{__extension__}.
+
 @item -Wc++-compat @r{(C and Objective-C only)}
 @opindex Wc++-compat
 @opindex Wno-c++-compat
@@ -8042,7 +8051,7 @@ consumers are not expected to support this extended format, and they
 would be rendered unable to decode location lists using it.
 
 @item -ginternal-reset-location-views
-@itemx -gnointernal-reset-location-views
+@itemx -gno-internal-reset-location-views
 @opindex ginternal-reset-location-views
 @opindex gno-internal-reset-location-views
 Attempt to determine location views that can be omitted from location
@@ -17933,8 +17942,7 @@ provided for use in debugging the compiler.
 Do not allow constant data to be placed in code sections.
 Additionally, when compiling for ELF object format give all text sections the
 ELF processor-specific section attribute @code{SHF_ARM_PURECODE}.  This option
-is only available when generating non-pic code for M-profile targets with the
-MOVT instruction.
+is only available when generating non-pic code for M-profile targets.
 
 @item -mcmse
 @opindex mcmse
@@ -18104,6 +18112,13 @@ Allow to use truncation instead of rounding towards zero for fractional fixed-po
 @item -nodevicelib
 @opindex nodevicelib
 Don't link against AVR-LibC's device specific library @code{lib<mcu>.a}.
+
+@item -nodevicespecs
+@opindex nodevicespecs
+Don't add @option{-specs=device-specs/specs-<mcu>} to the compiler driver's
+command line.  The user takes responsibility for supplying the sub-processes
+like compiler proper, assembler and linker with appropriate command line
+options.
 
 @item -Waddr-space-convert
 @opindex Waddr-space-convert

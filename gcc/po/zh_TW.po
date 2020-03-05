@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the gcc package.
 # Meng Jie <zuxyhere@eastday.com>, 2005.
 # Wei-Lun Chao <bluebat@member.fsf.org>, 2006.
+# pan93412 <pan93412@gmail.com>, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.8.0\n"
+"Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2013-06-07 23:29+0800\n"
-"Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
-"Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
+"PO-Revision-Date: 2020-01-19 00:41+0800\n"
+"Last-Translator: pan93412 <pan93412@gmail.com>\n"
+"Language-Team: Chinese (traditional) <zh-l10n@lists.linux.org.tw>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -7884,7 +7885,7 @@ msgstr "當多載將無號數提升為有號數時給出警告"
 #, fuzzy
 #| msgid "Warn about uncasted NULL used as sentinel"
 msgid "Warn about uncasted NULL used as sentinel."
-msgstr "將未作轉換的 NULL 做為哨兵時給出警告"
+msgstr "將未作轉換的 NULL 做為哨符時給出警告"
 
 #: c-family/c.opt:1087
 #, fuzzy
@@ -28899,12 +28900,12 @@ msgstr "要求的對齊邊界太大"
 #: c-family/c-common.c:5371
 #, gcc-internal-format
 msgid "not enough variable arguments to fit a sentinel"
-msgstr "變數引數太少，不足以填滿一個哨兵"
+msgstr "變數引數太少，不足以填滿一個哨符"
 
 #: c-family/c-common.c:5385
 #, gcc-internal-format
 msgid "missing sentinel in function call"
-msgstr "函式呼叫中缺少哨兵"
+msgstr "函式呼叫中缺少哨符"
 
 #: c-family/c-common.c:5490
 #, gcc-internal-format, gfc-internal-format
@@ -39571,7 +39572,7 @@ msgstr "對齊指定的用於 typedef %qE"
 #: c/c-parser.c:7307
 #, gcc-internal-format
 msgid "traditional C rejects the unary plus operator"
-msgstr "傳統 C 不接受單位元 + 運算子"
+msgstr "傳統 C 不接受一元 + 運算子"
 
 #: c/c-parser.c:7438
 #, fuzzy, gcc-internal-format

@@ -118,3 +118,7 @@ Assume that all data in static storage can be accessed by LDS / STS.  This optio
 nodevicelib
 Driver Target Report RejectNegative
 Do not link against the device-specific library lib<MCU>.a.
+
+nodevicespecs
+Driver Target Report RejectNegative
+Do not use the device-specific specs file device-specs/specs-<MCU>.

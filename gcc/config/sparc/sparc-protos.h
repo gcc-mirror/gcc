@@ -69,6 +69,7 @@ extern void sparc_split_reg_mem (rtx, rtx, machine_mode);
 extern void sparc_split_mem_reg (rtx, rtx, machine_mode);
 extern int sparc_split_reg_reg_legitimate (rtx, rtx);
 extern void sparc_split_reg_reg (rtx, rtx, machine_mode);
+extern const char *output_load_pcrel_sym (rtx *);
 extern const char *output_ubranch (rtx, rtx_insn *);
 extern const char *output_cbranch (rtx, rtx, int, int, int, rtx_insn *);
 extern const char *output_return (rtx_insn *);

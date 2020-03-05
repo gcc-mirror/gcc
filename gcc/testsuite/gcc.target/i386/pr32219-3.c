@@ -24,4 +24,4 @@ foo ()
 
 /* For Darwin, we need PIC to allow PIE, but also we must indirect weak symbols so that
    they can be indirected.  Again, dyld knows how to deal with this. */
-/* { dg-final { scan-assembler {movl[ \t]l_xxx\$non_lazy_ptr-L1\$pb\(%eax\),[ \t]%eax} { target { ia32 && *-*-darwin* } } } } */
+/* { dg-final { scan-assembler {movl[ \t][Ll]_xxx\$non_lazy_ptr-L1\$pb\(%eax\),[ \t]%eax} { target { ia32 && *-*-darwin* } } } } */

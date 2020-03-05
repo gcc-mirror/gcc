@@ -220,16 +220,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
   tree type;
   bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
 
-  if (!is_this && type_dependent_expression_p (expr))
-    {
-      type = cxx_make_type (DECLTYPE_TYPE);
-      DECLTYPE_TYPE_EXPR (type) = expr;
-      DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
-      DECLTYPE_FOR_INIT_CAPTURE (type) = explicit_init_p;
-      DECLTYPE_FOR_REF_CAPTURE (type) = by_reference_p;
-      SET_TYPE_STRUCTURAL_EQUALITY (type);
-    }
-  else if (!is_this && explicit_init_p)
+  if (!is_this && explicit_init_p)
     {
       tree auto_node = make_auto ();
       
@@ -239,6 +230,14 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
 	   outermost CV qualifiers of EXPR.  */
 	type = build_reference_type (type);
       type = do_auto_deduction (type, expr, auto_node);
+    }
+  else if (!is_this && type_dependent_expression_p (expr))
+    {
+      type = cxx_make_type (DECLTYPE_TYPE);
+      DECLTYPE_TYPE_EXPR (type) = expr;
+      DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
+      DECLTYPE_FOR_REF_CAPTURE (type) = by_reference_p;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
   else
     {
@@ -602,7 +601,16 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   name = get_identifier (buf);
 
   if (variadic)
-    type = make_pack_expansion (type);
+    {
+      type = make_pack_expansion (type);
+      if (explicit_init_p)
+	/* With an explicit initializer 'type' is auto, which isn't really a
+	   parameter pack in this context.  We will want as many fields as we
+	   have elements in the expansion of the initializer, so use its packs
+	   instead.  */
+	PACK_EXPANSION_PARAMETER_PACKS (type)
+	  = uses_parameter_packs (initializer);
+    }
 
   /* Make member variable.  */
   member = build_decl (input_location, FIELD_DECL, name, type);

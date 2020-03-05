@@ -3877,6 +3877,43 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return __f; // N.B. [alg.foreach] says std::move(f) but it's redundant.
     }
 
+#if __cplusplus >= 201703L
+  /**
+   *  @brief Apply a function to every element of a sequence.
+   *  @ingroup non_mutating_algorithms
+   *  @param  __first  An input iterator.
+   *  @param  __n      A value convertible to an integer.
+   *  @param  __f      A unary function object.
+   *  @return   `__first+__n`
+   *
+   *  Applies the function object `__f` to each element in the range
+   *  `[first, first+n)`.  `__f` must not modify the order of the sequence.
+   *  If `__f` has a return value it is ignored.
+  */
+  template<typename _InputIterator, typename _Size, typename _Function>
+    _InputIterator
+    for_each_n(_InputIterator __first, _Size __n, _Function __f)
+    {
+      typename iterator_traits<_InputIterator>::difference_type __n2 = __n;
+      using _Cat = typename iterator_traits<_InputIterator>::iterator_category;
+      if constexpr (is_base_of_v<random_access_iterator_tag, _Cat>)
+	{
+	  auto __last = __first + __n2;
+	  std::for_each(__first, __last, std::move(__f));
+	  return __last;
+	}
+      else
+	{
+	  while (__n2-->0)
+	    {
+	      __f(*__first);
+	      ++__first;
+	    }
+	  return __first;
+	}
+    }
+#endif // C++17
+
   /**
    *  @brief Find the first occurrence of a value in a sequence.
    *  @ingroup non_mutating_algorithms

@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-prune-output "cannot convert" }
 // { dg-prune-output "no matching function .*_M_fill_insert" }
 
 #include <vector>

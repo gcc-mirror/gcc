@@ -5897,6 +5897,81 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_PARALLEL_WORKSHARE;
     case EXEC_OMP_DO:
       return ST_OMP_DO;
+    case EXEC_OMP_ATOMIC:
+      return ST_OMP_ATOMIC;
+    case EXEC_OMP_BARRIER:
+      return ST_OMP_BARRIER;
+    case EXEC_OMP_CANCEL:
+      return ST_OMP_CANCEL;
+    case EXEC_OMP_CANCELLATION_POINT:
+      return ST_OMP_CANCELLATION_POINT;
+    case EXEC_OMP_FLUSH:
+      return ST_OMP_FLUSH;
+    case EXEC_OMP_DISTRIBUTE:
+      return ST_OMP_DISTRIBUTE;
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+      return ST_OMP_DISTRIBUTE_PARALLEL_DO;
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+      return ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD;
+    case EXEC_OMP_DISTRIBUTE_SIMD:
+      return ST_OMP_DISTRIBUTE_SIMD;
+    case EXEC_OMP_DO_SIMD:
+      return ST_OMP_DO_SIMD;
+    case EXEC_OMP_SIMD:
+      return ST_OMP_SIMD;
+    case EXEC_OMP_TARGET:
+      return ST_OMP_TARGET;
+    case EXEC_OMP_TARGET_DATA:
+      return ST_OMP_TARGET_DATA;
+    case EXEC_OMP_TARGET_ENTER_DATA:
+      return ST_OMP_TARGET_ENTER_DATA;
+    case EXEC_OMP_TARGET_EXIT_DATA:
+      return ST_OMP_TARGET_EXIT_DATA;
+    case EXEC_OMP_TARGET_PARALLEL:
+      return ST_OMP_TARGET_PARALLEL;
+    case EXEC_OMP_TARGET_PARALLEL_DO:
+      return ST_OMP_TARGET_PARALLEL_DO;
+    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+      return ST_OMP_TARGET_PARALLEL_DO_SIMD;
+    case EXEC_OMP_TARGET_SIMD:
+      return ST_OMP_TARGET_SIMD;
+    case EXEC_OMP_TARGET_TEAMS:
+      return ST_OMP_TARGET_TEAMS;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+      return ST_OMP_TARGET_TEAMS_DISTRIBUTE;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      return ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      return ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+      return ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD;
+    case EXEC_OMP_TARGET_UPDATE:
+      return ST_OMP_TARGET_UPDATE;
+    case EXEC_OMP_TASKGROUP:
+      return ST_OMP_TASKGROUP;
+    case EXEC_OMP_TASKLOOP:
+      return ST_OMP_TASKLOOP;
+    case EXEC_OMP_TASKLOOP_SIMD:
+      return ST_OMP_TASKLOOP_SIMD;
+    case EXEC_OMP_TASKWAIT:
+      return ST_OMP_TASKWAIT;
+    case EXEC_OMP_TASKYIELD:
+      return ST_OMP_TASKYIELD;
+    case EXEC_OMP_TEAMS:
+      return ST_OMP_TEAMS;
+    case EXEC_OMP_TEAMS_DISTRIBUTE:
+      return ST_OMP_TEAMS_DISTRIBUTE;
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      return ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO;
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      return ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD;
+    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+      return ST_OMP_TEAMS_DISTRIBUTE_SIMD;
+    case EXEC_OMP_PARALLEL_DO:
+      return ST_OMP_PARALLEL_DO;
+    case EXEC_OMP_PARALLEL_DO_SIMD:
+      return ST_OMP_PARALLEL_DO_SIMD;
+
     default:
       gcc_unreachable ();
     }
@@ -5927,6 +6002,20 @@ oacc_code_to_statement (gfc_code *code)
       return ST_OACC_LOOP;
     case EXEC_OACC_ATOMIC:
       return ST_OACC_ATOMIC;
+    case EXEC_OACC_ROUTINE:
+      return ST_OACC_ROUTINE;
+    case EXEC_OACC_UPDATE:
+      return ST_OACC_UPDATE;
+    case EXEC_OACC_WAIT:
+      return ST_OACC_WAIT;
+    case EXEC_OACC_CACHE:
+      return ST_OACC_CACHE;
+    case EXEC_OACC_ENTER_DATA:
+      return ST_OACC_ENTER_DATA;
+    case EXEC_OACC_EXIT_DATA:
+      return ST_OACC_EXIT_DATA;
+    case EXEC_OACC_DECLARE:
+      return ST_OACC_DECLARE;
     default:
       gcc_unreachable ();
     }

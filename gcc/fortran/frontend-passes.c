@@ -94,6 +94,10 @@ static int forall_level;
 
 static bool in_omp_workshare;
 
+/* Keep track of whether we are within an OMP atomic.  */
+
+static bool in_omp_atomic;
+
 /* Keep track of whether we are within a WHERE statement.  */
 
 static bool in_where;
@@ -915,9 +919,9 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
   gfc_expr *newvar;
   gfc_expr **ei, **ej;
 
-  /* Don't do this optimization within OMP workshare or ASSOC lists.  */
+  /* Don't do this optimization within OMP workshare/atomic or ASSOC lists.  */
 
-  if (in_omp_workshare || in_assoc_list)
+  if (in_omp_workshare || in_omp_atomic || in_assoc_list)
     {
       *walk_subtrees = 0;
       return 0;
@@ -1466,6 +1470,7 @@ optimize_namespace (gfc_namespace *ns)
   iterator_level = 0;
   in_assoc_list = false;
   in_omp_workshare = false;
+  in_omp_atomic = false;
 
   if (flag_frontend_optimize)
     {
@@ -2519,7 +2524,12 @@ insert_index (gfc_expr *e, gfc_symbol *sym, mpz_t val, mpz_t ret)
   data.sym = sym;
   mpz_init_set (data.val, val);
   gfc_expr_walker (&n, callback_insert_index, (void *) &data);
+
+  /* Suppress errors here - we could get errors here such as an
+     out of bounds access for arrays, see PR 90563.  */
+  gfc_push_suppress_errors ();
   gfc_simplify_expr (n, 0);
+  gfc_pop_suppress_errors ();
 
   if (n->expr_type == EXPR_CONSTANT)
     {
@@ -2557,6 +2567,12 @@ do_subscript (gfc_expr **e)
   if (in_assoc_list)
     return 0;
 
+  /* We already warned about this.  */
+  if (v->do_not_warn)
+    return 0;
+
+  v->do_not_warn = 1;
+
   for (ref = v->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT)
@@ -2569,6 +2585,7 @@ do_subscript (gfc_expr **e)
 	      bool have_do_start, have_do_end;
 	      bool error_not_proven;
 	      int warn;
+	      int sgn;
 
 	      dl = lp->c;
 	      if (dl == NULL)
@@ -2597,7 +2614,16 @@ do_subscript (gfc_expr **e)
 		 Do not warn in this case.  */
 
 	      if (dl->ext.iterator->step->expr_type == EXPR_CONSTANT)
-		mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
+		{
+		  sgn = mpz_cmp_ui (dl->ext.iterator->step->value.integer, 0);
+		  /* This can happen, but then the error has been
+		     reported previusly.  */
+		  if (sgn == 0)
+		    continue;
+
+		  mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
+		}
+
 	      else
 		continue;
 
@@ -2609,7 +2635,6 @@ do_subscript (gfc_expr **e)
 	      else
 		have_do_start = false;
 
-
 	      if (dl->ext.iterator->end->expr_type == EXPR_CONSTANT)
 		{
 		  have_do_end = true;
@@ -2620,6 +2645,16 @@ do_subscript (gfc_expr **e)
 
 	      if (!have_do_start && !have_do_end)
 		return 0;
+
+	      /* No warning inside a zero-trip loop.  */
+	      if (have_do_start && have_do_end)
+		{
+		  int cmp;
+
+		  cmp = mpz_cmp (do_end, do_start);
+		  if ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0))
+		    break;
+		}
 
 	      /* May have to correct the end value if the step does not equal
 		 one.  */
@@ -2762,6 +2797,12 @@ static void
 doloop_warn (gfc_namespace *ns)
 {
   gfc_code_walker (&ns->code, doloop_code, do_function, NULL);
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	doloop_warn (ns);
+    }
 }
 
 /* This selction deals with inlining calls to MATMUL.  */
@@ -2784,7 +2825,7 @@ matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
-      || in_where || in_assoc_list)
+      || in_omp_atomic || in_where || in_assoc_list)
     return 0;
 
   /* Check if this is already in the form c = matmul(a,b).  */
@@ -2846,7 +2887,7 @@ matmul_temp_args (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
-      || in_where)
+      || in_omp_atomic || in_where)
     return 0;
 
   /* This has some duplication with inline_matmul_assign.  This
@@ -3814,7 +3855,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   /* For now don't do anything in OpenMP workshare, it confuses
      its translation, which expects only the allowed statements in there.
      We should figure out how to parallelize this eventually.  */
-  if (in_omp_workshare)
+  if (in_omp_workshare || in_omp_atomic)
     return 0;
 
   expr1 = co->expr1;
@@ -4351,7 +4392,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   /* For now don't do anything in OpenMP workshare, it confuses
      its translation, which expects only the allowed statements in there. */
 
-  if (in_omp_workshare)
+  if (in_omp_workshare || in_omp_atomic)
     return 0;
 
   expr1 = co->expr1;
@@ -4601,6 +4642,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   call->symtree->n.sym->attr.procedure = 1;
   call->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   call->resolved_sym = call->symtree->n.sym;
+  gfc_commit_symbol (call->resolved_sym);
 
   /* Argument TRANSA.  */
   next = gfc_get_actual_arglist ();
@@ -5012,6 +5054,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  gfc_code *co;
 	  gfc_association_list *alist;
 	  bool saved_in_omp_workshare;
+	  bool saved_in_omp_atomic;
 	  bool saved_in_where;
 
 	  /* There might be statement insertions before the current code,
@@ -5019,6 +5062,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	  co = *c;
 	  saved_in_omp_workshare = in_omp_workshare;
+	  saved_in_omp_atomic = in_omp_atomic;
 	  saved_in_where = in_where;
 
 	  switch (co->op)
@@ -5216,6 +5260,11 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.dt->extra_comma);
 	      break;
 
+	    case EXEC_OACC_ATOMIC:
+	    case EXEC_OMP_ATOMIC:
+	      in_omp_atomic = true;
+	      break;
+
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
@@ -5333,6 +5382,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    select_level --;
 
 	  in_omp_workshare = saved_in_omp_workshare;
+	  in_omp_atomic = saved_in_omp_atomic;
 	  in_where = saved_in_where;
 	}
     }

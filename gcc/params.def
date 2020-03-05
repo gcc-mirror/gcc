@@ -419,7 +419,7 @@ DEFPARAM(PARAM_SMS_MIN_SC,
 DEFPARAM(PARAM_SMS_DFA_HISTORY,
 	 "sms-dfa-history",
 	 "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA.",
-	 0, 0, 0)
+	 0, 0, 16)
 DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
 	 "sms-loop-average-count-threshold",
 	 "A threshold on the average loop count considered by the swing modulo scheduler.",

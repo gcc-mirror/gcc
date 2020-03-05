@@ -229,7 +229,7 @@ select_best_block (basic_block early_bb,
       /* If result of comparsion is unknown, preffer EARLY_BB.
 	 Thus use !(...>=..) rather than (...<...)  */
       && !(best_bb->count.apply_scale (100, 1)
-	   > (early_bb->count.apply_scale (threshold, 1))))
+	   >= early_bb->count.apply_scale (threshold, 1)))
     return best_bb;
 
   /* No better block found, so return EARLY_BB, which happens to be the
@@ -439,7 +439,10 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	  if (sinkbb == frombb)
 	    return false;
 
-	  *togsi = gsi_for_stmt (use);
+	  if (sinkbb == gimple_bb (use))
+	    *togsi = gsi_for_stmt (use);
+	  else
+	    *togsi = gsi_after_labels (sinkbb);
 
 	  return true;
 	}

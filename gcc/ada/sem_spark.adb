@@ -804,7 +804,7 @@ package body Sem_SPARK is
 
       if Present (SPARK_Pragma (Defining_Entity (Body_N))) then
          if Get_SPARK_Mode_From_Annotation
-           (SPARK_Pragma (Defining_Entity (Body_N, False))) /= Opt.On
+           (SPARK_Pragma (Defining_Entity (Body_N))) /= Opt.On
          then
             return;
          end if;
@@ -1914,7 +1914,7 @@ package body Sem_SPARK is
       CorSp : Node_Id;
 
    begin
-      if Present (SPARK_Pragma (Defining_Entity (Pack, False))) then
+      if Present (SPARK_Pragma (Defining_Entity (Pack))) then
          if Get_SPARK_Mode_From_Annotation
            (SPARK_Pragma (Defining_Entity (Pack))) /= Opt.On
          then

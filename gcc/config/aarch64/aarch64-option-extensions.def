@@ -108,7 +108,7 @@ AARCH64_OPT_EXTENSION("sm4", AARCH64_FL_SM4, AARCH64_FL_SIMD, 0, false, "sm3 sm4
 
 /* Enabling "fp16fml" also enables "fp" and "fp16".
    Disabling "fp16fml" just disables "fp16fml".  */
-AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfml")
+AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfhm")
 
 /* Enabling "sve" also enables "fp16", "fp" and "simd".
    Disabling "sve" just disables "sve".  */

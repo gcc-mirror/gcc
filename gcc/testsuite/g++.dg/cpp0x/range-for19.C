@@ -5,6 +5,6 @@
 int main()
 {
   auto a;        // { dg-error "no initializer" }
-  for(auto i: a) // { dg-error "deduce" }
+  for(auto i: a)
     ;
 }

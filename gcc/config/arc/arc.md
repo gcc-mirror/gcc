@@ -3674,7 +3674,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 })
 
 (define_mode_iterator SDF [(SF "TARGET_FP_SP_BASE || TARGET_OPTFPE")
-			   (DF "TARGET_OPTFPE")])
+			   (DF "TARGET_FP_DP_BASE || TARGET_OPTFPE")])
 
 (define_expand "cstore<mode>4"
   [(set (reg:CC CC_REG)
@@ -3684,7 +3684,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 	(match_operator:SI 1 "comparison_operator" [(reg CC_REG)
 						    (const_int 0)]))]
 
-  "TARGET_FP_SP_BASE || TARGET_OPTFPE"
+  "TARGET_HARD_FLOAT || TARGET_OPTFPE"
 {
   gcc_assert (XEXP (operands[1], 0) == operands[2]);
   gcc_assert (XEXP (operands[1], 1) == operands[3]);
@@ -3742,20 +3742,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; cond_exec patterns
 (define_insn "*movsi_ne"
   [(cond_exec
-     (ne (match_operand:CC_Z 2 "cc_use_register"    "Rcc,  Rcc,  Rcc,Rcc,Rcc") (const_int 0))
-     (set (match_operand:SI 0 "dest_reg_operand" "=Rcq#q,Rcq#q,Rcq#q,  w,w")
-	  (match_operand:SI 1 "nonmemory_operand"   "C_0,    h, ?Cal, Lc,?Cal")))]
+    (ne (match_operand:CC_Z 2 "cc_use_register"  "Rcc,Rcc,Rcc,Rcc,Rcc") (const_int 0))
+    (set (match_operand:SI 0 "dest_reg_operand"   "=q,  q,  r,  q,  r")
+	 (match_operand:SI 1 "nonmemory_operand" "C_0,  h, Lr,Cal,Cal")))]
   ""
   "@
-	* current_insn_predicate = 0; return \"sub%?.ne %0,%0,%0%&\";
-	* current_insn_predicate = 0; return \"mov%?.ne %0,%1\";
-	* current_insn_predicate = 0; return \"mov%?.ne %0,%1\";
-	mov.ne %0,%1
-	mov.ne %0,%1"
+	* current_insn_predicate = 0; return \"sub%?.ne\\t%0,%0,%0\";
+	* current_insn_predicate = 0; return \"mov%?.ne\\t%0,%1\";
+	mov.ne\\t%0,%1
+	* current_insn_predicate = 0; return \"mov%?.ne\\t%0,%1\";
+	mov.ne\\t%0,%1"
   [(set_attr "type" "cmove")
-   (set_attr "iscompact" "true,true,true_limm,false,false")
-   (set_attr "length" "2,2,6,4,8")
-   (set_attr "cpu_facility" "*,av2,av2,*,*")])
+   (set_attr "iscompact" "true,true,false,true_limm,false")
+   (set_attr "length" "2,2,4,6,8")
+   (set_attr "cpu_facility" "*,av2,*,av2,*")])
 
 (define_insn "*movsi_cond_exec"
   [(cond_exec

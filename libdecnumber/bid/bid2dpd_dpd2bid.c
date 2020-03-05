@@ -189,6 +189,8 @@ _bid_to_dpd64 (_Decimal64 *pres, _Decimal64 *px) {
   if ((comb & 0xc00) == 0xc00) { /* G0..G1 = 11 -> exp is G2..G11 */
     exp = (comb) & 0x3ff;
     bcoeff = (x & 0x0007ffffffffffffull) | 0x0020000000000000ull;
+    if (bcoeff >= 10000000000000000ull)
+      bcoeff = 0;
   } else {
     exp = (comb >> 2) & 0x3ff;
     bcoeff = (x & 0x001fffffffffffffull);
@@ -298,9 +300,23 @@ _bid_to_dpd128 (_Decimal128 *pres, _Decimal128 *px) {
   if ((comb & 0x1e000) == 0x1e000) {
     res = x;
   } else { /* normal number */
-    exp = ((x.w[1] & 0x7fff000000000000ull) >> 49) & 0x3fff;
-    bcoeff.w[1] = (x.w[1] & 0x0001ffffffffffffull);
-    bcoeff.w[0] = x.w[0];
+    if ((comb & 0x18000) == 0x18000) {
+      /* Noncanonical significand (prepending 8 or 9 to any 110-bit
+	 trailing significand field produces a value above 10^34).  */
+      exp = (comb & 0x7fff) >> 1;
+      bcoeff.w[1] = 0;
+      bcoeff.w[0] = 0;
+    } else {
+      exp = ((x.w[1] & 0x7fff000000000000ull) >> 49) & 0x3fff;
+      bcoeff.w[1] = (x.w[1] & 0x0001ffffffffffffull);
+      bcoeff.w[0] = x.w[0];
+      if (bcoeff.w[1] > 0x1ed09bead87c0ull
+	  || (bcoeff.w[1] == 0x1ed09bead87c0ull
+	      && bcoeff.w[0] >= 0x378d8e6400000000ull)) {
+	bcoeff.w[1] = 0;
+	bcoeff.w[0] = 0;
+      }
+    }
     d1018 = reciprocals10_128[18];
     __mul_128x128_high (BH, bcoeff, d1018);
     amount = recip_scale[18];

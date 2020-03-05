@@ -3566,7 +3566,7 @@ The @code{X} register.
 @table @code
 
 @item f
-A floating-point register (if availiable).
+A floating-point register (if available).
 
 @item I
 An I-type 12-bit signed immediate.

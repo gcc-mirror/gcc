@@ -90,7 +90,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@USING_MAC_INTERPOSE_TRUE@am__append_1 = -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
+@USING_MAC_INTERPOSE_TRUE@am__append_1 = -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT -DASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION=0
 @USING_MAC_INTERPOSE_FALSE@am__append_2 = $(top_builddir)/interception/libinterception.la
 @LIBBACKTRACE_SUPPORTED_TRUE@am__append_3 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 subdir = asan

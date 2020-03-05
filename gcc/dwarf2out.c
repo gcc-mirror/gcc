@@ -15461,7 +15461,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
   if (mode != GET_MODE (rtl) && GET_MODE (rtl) != VOIDmode)
     return NULL;
 
-  scalar_int_mode int_mode, inner_mode, op1_mode;
+  scalar_int_mode int_mode = BImode, inner_mode, op1_mode;
   switch (GET_CODE (rtl))
     {
     case POST_INC:
@@ -22284,19 +22284,18 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
       /* If the contexts differ, we may not be talking about the same
 	 thing.
 	 ???  When in LTO the DIE parent is the "abstract" copy and the
-	 context_die is the specification "copy".  But this whole block
-	 should eventually be no longer needed.  */
-      if (parm_die && parm_die->die_parent != context_die && !in_lto_p)
+	 context_die is the specification "copy".  */
+      if (parm_die
+	  && parm_die->die_parent != context_die
+	  && (parm_die->die_parent->die_tag != DW_TAG_GNU_formal_parameter_pack
+	      || parm_die->die_parent->die_parent != context_die)
+	  && !in_lto_p)
 	{
-	  if (!DECL_ABSTRACT_P (node))
-	    {
-	      /* This can happen when creating an inlined instance, in
-		 which case we need to create a new DIE that will get
-		 annotated with DW_AT_abstract_origin.  */
-	      parm_die = NULL;
-	    }
-	  else
-	    gcc_unreachable ();
+	  gcc_assert (!DECL_ABSTRACT_P (node));
+	  /* This can happen when creating a concrete instance, in
+	     which case we need to create a new DIE that will get
+	     annotated with DW_AT_abstract_origin.  */
+	  parm_die = NULL;
 	}
 
       if (parm_die && parm_die->die_parent == NULL)
@@ -26647,16 +26646,12 @@ dwarf2out_late_global_decl (tree decl)
     {
       dw_die_ref die = lookup_decl_die (decl);
 
-      /* We may have to generate early debug late for LTO in case debug
+      /* We may have to generate full debug late for LTO in case debug
          was not enabled at compile-time or the target doesn't support
 	 the LTO early debug scheme.  */
       if (! die && in_lto_p)
-	{
-	  dwarf2out_decl (decl);
-	  die = lookup_decl_die (decl);
-	}
-
-      if (die)
+	dwarf2out_decl (decl);
+      else if (die)
 	{
 	  /* We get called via the symtab code invoking late_global_decl
 	     for symbols that are optimized out.
@@ -27061,6 +27056,9 @@ lookup_filename (const char *file_name)
 
   if (!file_name)
     return NULL;
+
+  if (!file_name[0])
+    file_name = "<stdin>";
 
   dwarf_file_data **slot
     = file_table->find_slot_with_hash (file_name, htab_hash_string (file_name),
@@ -27687,6 +27685,7 @@ dwarf2out_inline_entry (tree block)
 static void
 dwarf2out_size_function (tree decl)
 {
+  set_early_dwarf s;
   function_to_dwarf_procedure (decl);
 }
 
@@ -29582,9 +29581,9 @@ prune_unused_types (void)
   for (i = 0; base_types.iterate (i, &base_type); i++)
     prune_unused_types_mark (base_type, 1);
 
-  /* For -fvar-tracking-assignments, also set the mark on nodes that could be
-     referenced by DW_TAG_call_site DW_AT_call_origin (i.e. direct call
-     callees).  */
+  /* Also set the mark on nodes that could be referenced by
+     DW_TAG_call_site DW_AT_call_origin (i.e. direct call callees) or
+     by DW_TAG_inlined_subroutine origins.  */
   cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
     if (cnode->referred_to_p (false))
@@ -29593,8 +29592,7 @@ prune_unused_types (void)
 	if (die == NULL || die->die_mark)
 	  continue;
 	for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
-	  if (e->caller != cnode
-	      && opt_for_fn (e->caller->decl, flag_var_tracking_assignments))
+	  if (e->caller != cnode)
 	    {
 	      prune_unused_types_mark (die, 1);
 	      break;

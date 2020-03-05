@@ -50,6 +50,9 @@
 #ifdef _GLIBCXX_HAVE_ARPA_INET_H
 # include <arpa/inet.h>		// inet_ntop
 #endif
+#ifdef _GLIBCXX_HAVE_NETINET_IN_H
+# include <netinet/in.h>	// IPPROTO_IP
+#endif
 #ifdef _GLIBCXX_HAVE_NETINET_TCP_H
 # include <netinet/tcp.h>	// TCP_NODELAY
 #endif
@@ -539,7 +542,7 @@ namespace ip
     const auto& __aa = __a._M_bytes;
     const auto& __bb = __b._M_bytes;
     int __i = 0;
-    for (; __aa[__i] == __bb[__i] && __i < 16; ++__i)
+    for (; __i < 16 && __aa[__i] == __bb[__i]; ++__i)
       ;
     return __i == 16 ? __a.scope_id() == __b.scope_id() : false;
   }
@@ -554,7 +557,7 @@ namespace ip
     const auto& __aa = __a._M_bytes;
     const auto& __bb = __b._M_bytes;
     int __i = 0;
-    for (; __aa[__i] == __bb[__i] && __i < 16; ++__i)
+    for (; __i < 16 && __aa[__i] == __bb[__i]; ++__i)
       ;
     return __i == 16 ? __a.scope_id() < __b.scope_id() : __aa[__i] < __bb[__i];
   }

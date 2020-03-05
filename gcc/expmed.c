@@ -838,6 +838,27 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       if (MEM_P (op0))
 	op0 = adjust_bitfield_address_size (op0, op0_mode.else_blk (),
 					    0, MEM_SIZE (op0));
+      else if (!op0_mode.exists ())
+	{
+	  if (ibitnum == 0
+	      && known_eq (ibitsize, GET_MODE_BITSIZE (GET_MODE (op0)))
+	      && MEM_P (value)
+	      && !reverse)
+	    {
+	      value = adjust_address (value, GET_MODE (op0), 0);
+	      emit_move_insn (op0, value);
+	      return true;
+	    }
+	  if (!fallback_p)
+	    return false;
+	  rtx temp = assign_stack_temp (GET_MODE (op0),
+					GET_MODE_SIZE (GET_MODE (op0)));
+	  emit_move_insn (temp, op0);
+	  store_bit_field_1 (temp, bitsize, bitnum, 0, 0, fieldmode, value,
+			     reverse, fallback_p);
+	  emit_move_insn (op0, temp);
+	  return true;
+	}
       else
 	op0 = gen_lowpart (op0_mode.require (), op0);
     }

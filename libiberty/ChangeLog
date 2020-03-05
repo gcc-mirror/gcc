@@ -1,3 +1,12 @@
+2020-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/93966
+	* simple-object.c (handle_lto_debug_sections): Also copy
+	.note.gnu.property section.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.

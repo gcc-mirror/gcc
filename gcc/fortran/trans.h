@@ -507,6 +507,7 @@ void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
 tree gfc_evaluate_now_loc (location_t, tree, stmtblock_t *);
 tree gfc_evaluate_now (tree, stmtblock_t *);
+tree gfc_evaluate_now_function_scope (tree, stmtblock_t *);
 
 /* Find the appropriate variant of a math intrinsic.  */
 tree gfc_builtin_decl_for_float_kind (enum built_in_function, int);
@@ -973,7 +974,6 @@ struct GTY(())	lang_type	 {
   tree offset;
   tree dtype;
   tree dataptr_type;
-  tree span;
   tree base_decl[2];
   tree nonrestricted_type;
   tree caf_token;
@@ -989,7 +989,6 @@ struct GTY(()) lang_decl {
      address of target label.  */
   tree stringlen;
   tree addr;
-  tree span;
   /* For assumed-shape coarrays.  */
   tree token, caf_offset;
   unsigned int scalar_allocatable : 1;
@@ -999,7 +998,6 @@ struct GTY(()) lang_decl {
 
 #define GFC_DECL_ASSIGN_ADDR(node) DECL_LANG_SPECIFIC(node)->addr
 #define GFC_DECL_STRING_LEN(node) DECL_LANG_SPECIFIC(node)->stringlen
-#define GFC_DECL_SPAN(node) DECL_LANG_SPECIFIC(node)->span
 #define GFC_DECL_TOKEN(node) DECL_LANG_SPECIFIC(node)->token
 #define GFC_DECL_CAF_OFFSET(node) DECL_LANG_SPECIFIC(node)->caf_offset
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
@@ -1048,7 +1046,6 @@ struct GTY(()) lang_decl {
 #define GFC_TYPE_ARRAY_DTYPE(node) (TYPE_LANG_SPECIFIC(node)->dtype)
 #define GFC_TYPE_ARRAY_DATAPTR_TYPE(node) \
   (TYPE_LANG_SPECIFIC(node)->dataptr_type)
-#define GFC_TYPE_ARRAY_SPAN(node) (TYPE_LANG_SPECIFIC(node)->span)
 #define GFC_TYPE_ARRAY_BASE_DECL(node, internal) \
   (TYPE_LANG_SPECIFIC(node)->base_decl[(internal)])
 

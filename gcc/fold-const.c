@@ -2932,6 +2932,11 @@ combine_comparisons (location_t loc,
    If OEP_LEXICOGRAPHIC is set, then also handle expressions with side-effects
    such as MODIFY_EXPR, RETURN_EXPR, as well as STATEMENT_LISTs.
 
+   If OEP_BITWISE is set, then require the values to be bitwise identical
+   rather than simply numerically equal.  Do not take advantage of things
+   like math-related flags or undefined behavior; only return true for
+   values that are provably bitwise identical in all circumstances.
+
    Unless OEP_MATCH_SIDE_EFFECTS is set, the function returns false on
    any operand with side effect.  This is unnecesarily conservative in the
    case we know that arg0 and arg1 are in disjoint code paths (such as in
@@ -2976,6 +2981,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   /* Similar, if either does not have a type (like a template id),
      they aren't equal.  */
   if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
+    return 0;
+
+  /* Bitwise identity makes no sense if the values have different layouts.  */
+  if ((flags & OEP_BITWISE)
+      && !tree_nop_conversion_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
     return 0;
 
   /* We cannot consider pointers to different address space equal.  */
@@ -3110,8 +3120,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	if (real_identical (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1)))
 	  return 1;
 
-
-	if (!HONOR_SIGNED_ZEROS (arg0))
+	if (!(flags & OEP_BITWISE) && !HONOR_SIGNED_ZEROS (arg0))
 	  {
 	    /* If we do not distinguish between signed and unsigned zero,
 	       consider them equal.  */
@@ -3163,7 +3172,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	break;
       }
 
-  if (flags & OEP_ONLY_CONST)
+  /* Don't handle more cases for OEP_BITWISE, since we can't guarantee that
+     two instances of undefined behavior will give identical results.  */
+  if (flags & (OEP_ONLY_CONST | OEP_BITWISE))
     return 0;
 
 /* Define macros to test an operand from arg0 and arg1 for equality and a
@@ -4935,10 +4946,9 @@ range_check_type (tree etype)
   /* First make sure that arithmetics in this type is valid, then make sure
      that it wraps around.  */
   if (TREE_CODE (etype) == ENUMERAL_TYPE || TREE_CODE (etype) == BOOLEAN_TYPE)
-    etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype),
-					    TYPE_UNSIGNED (etype));
+    etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype), 1);
 
-  if (TREE_CODE (etype) == INTEGER_TYPE && !TYPE_OVERFLOW_WRAPS (etype))
+  if (TREE_CODE (etype) == INTEGER_TYPE && !TYPE_UNSIGNED (etype))
     {
       tree utype, minv, maxv;
 
@@ -4956,6 +4966,8 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
+  else if (POINTER_TYPE_P (etype))
+    etype = unsigned_type_for (etype);
   return etype;
 }
 
@@ -5045,9 +5057,6 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
   etype = range_check_type (etype);
   if (etype == NULL_TREE)
     return NULL_TREE;
-
-  if (POINTER_TYPE_P (etype))
-    etype = unsigned_type_for (etype);
 
   high = fold_convert_loc (loc, etype, high);
   low = fold_convert_loc (loc, etype, low);

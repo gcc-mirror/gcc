@@ -1059,8 +1059,8 @@
 	(match_operand:GPI 1 "general_operand" ""))]
   ""
   "
-    if (MEM_P (operands[0]) && CONST_INT_P (operands[1])
-	&& <MODE>mode == DImode
+    if (MEM_P (operands[0]) && !MEM_VOLATILE_P (operands[0])
+	&& CONST_INT_P (operands[1]) && <MODE>mode == DImode
 	&& aarch64_split_dimode_const_store (operands[0], operands[1]))
       DONE;
 
@@ -6304,7 +6304,7 @@
   [(match_operand:GPI 0 "register_operand")
    (match_operand:GPF 1 "register_operand")]
   "TARGET_FLOAT
-   && ((GET_MODE_SIZE (<GPF:MODE>mode) <= GET_MODE_SIZE (<GPI:MODE>mode))
+   && ((GET_MODE_BITSIZE (<GPF:MODE>mode) <= LONG_TYPE_SIZE)
    || !flag_trapping_math || flag_fp_int_builtin_inexact)"
 {
   rtx cvt = gen_reg_rtx (<GPF:MODE>mode);

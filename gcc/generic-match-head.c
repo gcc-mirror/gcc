@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "cgraph.h"
 #include "fold-const.h"
+#include "fold-const-call.h"
 #include "stor-layout.h"
 #include "tree-dfa.h"
 #include "builtins.h"

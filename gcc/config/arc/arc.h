@@ -1530,7 +1530,7 @@ enum arc_function_type {
   (((MODE) == CC_FP_GTmode || (MODE) == CC_FP_GEmode		 \
     || (MODE) == CC_FP_UNEQmode || (MODE) == CC_FP_ORDmode	 \
     || (MODE) == CC_FPXmode || (MODE) == CC_FPU_UNEQmode	 \
-    || (MODE) == CC_FPUmode)					 \
+    || (MODE) == CC_FPUmode || (MODE) == CC_FPUEmode)		 \
    ? reverse_condition_maybe_unordered ((CODE))			 \
    : reverse_condition ((CODE)))
 

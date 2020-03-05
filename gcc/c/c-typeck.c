@@ -5702,10 +5702,14 @@ build_c_cast (location_t loc, tree type, tree expr)
 {
   tree value;
 
+  bool int_operands = EXPR_INT_CONST_OPERANDS (expr);
+
   if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
   value = expr;
+  if (int_operands)
+    value = remove_c_maybe_const_expr (value);
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -5935,6 +5939,14 @@ build_c_cast (location_t loc, tree type, tree expr)
 	       || TREE_CODE (expr) == REAL_CST
 	       || TREE_CODE (expr) == COMPLEX_CST)))
       value = build1 (NOP_EXPR, type, value);
+
+  /* If the expression has integer operands and so can occur in an
+     unevaluated part of an integer constant expression, ensure the
+     return value reflects this.  */
+  if (int_operands
+      && INTEGRAL_TYPE_P (type)
+      && !EXPR_INT_CONST_OPERANDS (value))
+    value = note_integer_operands (value);
 
   protected_set_expr_location (value, loc);
   return value;
@@ -14835,6 +14847,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 		  break;
 		case OMP_CLAUSE_DEFAULT_SHARED:
+		  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+		      && c_omp_predefined_variable (t))
+		    /* The __func__ variable and similar function-local
+		       predefined variables may be listed in a shared or
+		       firstprivate clause.  */
+		    break;
 		  share_name = "shared";
 		  break;
 		case OMP_CLAUSE_DEFAULT_PRIVATE:

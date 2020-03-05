@@ -110,7 +110,10 @@ EnumValue
 Enum(processor_type) String(arch12) Value(PROCESSOR_3906_Z14)
 
 EnumValue
-Enum(processor_type) String(arch13) Value(PROCESSOR_8561_ARCH13)
+Enum(processor_type) String(z15) Value(PROCESSOR_8561_Z15)
+
+EnumValue
+Enum(processor_type) String(arch13) Value(PROCESSOR_8561_Z15)
 
 EnumValue
 Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly

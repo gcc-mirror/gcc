@@ -26,6 +26,7 @@
 # define _GLIBCXX_USE_CXX11_ABI 1
 #endif
 
+#include <bits/largefile-config.h>
 #include <experimental/filesystem>
 
 #ifndef _GLIBCXX_HAVE_DIRENT_H
