@@ -3289,7 +3289,7 @@ gimple_inexpensive_call_p (gcall *stmt)
    location information, get the location from EXPR.  */
 
 location_t
-gimple_or_expr_nonartificial_location (gimple *stmt, tree)
+gimple_or_expr_nonartificial_location (gimple *stmt, tree expr)
 {
   location_t loc = gimple_nonartificial_location (stmt);
   if (loc == UNKNOWN_LOCATION && EXPR_HAS_LOCATION (expr))
