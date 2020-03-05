@@ -1,5 +1,8 @@
 2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/93399
+	* gcc.dg/pr93399.c: New test.
+
 	PR tree-optimization/93582
 	* gcc.dg/tree-ssa/pr93582-11.c: New test.
 
