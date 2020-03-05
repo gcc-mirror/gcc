@@ -21,11 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_ANALYZER_H
 #define GCC_ANALYZER_ANALYZER_H
 
-/* Forward decls of common types, with indentation to show inheritance.  */
-
 class graphviz_out;
 
 namespace ana {
+
+/* Forward decls of common types, with indentation to show inheritance.  */
 
 class supergraph;
 class supernode;
@@ -70,6 +70,10 @@ class state_purge_map;
 class state_purge_per_ssa_name;
 class state_change;
 class rewind_info_t;
+
+/* Forward decls of functions.  */
+
+extern void dump_quoted_tree (pretty_printer *pp, tree t);
 
 } // namespace ana
 

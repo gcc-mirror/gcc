@@ -57,6 +57,8 @@ public:
 
   const char *get_state_name (state_t s) const;
 
+  state_t get_state_by_name (const char *name);
+
   /* Return true if STMT is a function call recognized by this sm.  */
   virtual bool on_stmt (sm_context *sm_ctxt,
 			const supernode *node,

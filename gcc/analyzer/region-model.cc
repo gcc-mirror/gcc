@@ -73,6 +73,17 @@ dump_tree (pretty_printer *pp, tree t)
   dump_generic_node (pp, t, 0, TDF_SLIM, 0);
 }
 
+/* Dump T to PP in language-independent form in quotes, for
+   debugging/logging/dumping purposes.  */
+
+void
+dump_quoted_tree (pretty_printer *pp, tree t)
+{
+  pp_begin_quote (pp, pp_show_color (pp));
+  dump_tree (pp, t);
+  pp_end_quote (pp, pp_show_color (pp));
+}
+
 /* Equivalent to pp_printf (pp, "%qT", t), to avoid nesting pp_printf
    calls within other pp_printf calls.
 
@@ -1595,7 +1606,8 @@ map_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       tree expr = (*iter).first;
       region_id child_rid = (*iter).second;
-      pp_printf (pp, "%qE: ", expr);
+      dump_quoted_tree (pp, expr);
+      pp_string (pp, ": ");
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -1665,10 +1677,8 @@ map_region::dump_child_label (const region_model &model,
       if (child_rid == (*iter).second)
 	{
 	  tree key = (*iter).first;
-	  if (DECL_P (key))
-	    pp_printf (pp, "%qD: ", key);
-	  else
-	    pp_printf (pp, "%qE: ", key);
+	  dump_quoted_tree (pp, key);
+	  pp_string (pp, ": ");
 	}
     }
 }
@@ -3706,17 +3716,16 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	  {
 	    region_svalue *region_sval = as_a <region_svalue *> (sval);
 	    region_id pointee_rid = region_sval->get_pointee ();
+	    gcc_assert (!pointee_rid.null_p ());
 	    tree pointee = get_representative_path_var (pointee_rid).m_tree;
 	    dump_separator (pp, is_first);
 	    dump_tree (pp, key);
 	    pp_string (pp, ": ");
+	    pp_character (pp, '&');
 	    if (pointee)
-	      {
-		pp_character (pp, '&');
-		dump_tree (pp, pointee);
-	      }
+	      dump_tree (pp, pointee);
 	    else
-	      pp_string (pp, "NULL");
+	      pointee_rid.print (pp);
 	  }
 	  break;
 	case SK_CONSTANT:

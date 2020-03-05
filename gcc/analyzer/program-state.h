@@ -146,7 +146,8 @@ public:
   sm_state_map *
   clone_with_remapping (const one_way_svalue_id_map &id_map) const;
 
-  void print (const state_machine &sm, pretty_printer *pp) const;
+  void print (const state_machine &sm, const region_model *model,
+	      pretty_printer *pp) const;
   void dump (const state_machine &sm) const;
 
   bool is_empty_p () const;

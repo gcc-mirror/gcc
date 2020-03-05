@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "diagnostic-core.h"
 #include "diagnostic.h"
 #include "function.h"
 #include "analyzer/analyzer.h"
@@ -147,10 +148,13 @@ sm_state_map::clone_with_remapping (const one_way_svalue_id_map &id_map) const
   return result;
 }
 
-/* Print this sm_state_map (for SM) to PP.  */
+/* Print this sm_state_map (for SM) to PP.
+   If MODEL is non-NULL, print representative tree values where
+   available.  */
 
 void
-sm_state_map::print (const state_machine &sm, pretty_printer *pp) const
+sm_state_map::print (const state_machine &sm, const region_model *model,
+		     pretty_printer *pp) const
 {
   bool first = true;
   pp_string (pp, "{");
@@ -170,10 +174,27 @@ sm_state_map::print (const state_machine &sm, pretty_printer *pp) const
       sid.print (pp);
 
       entry_t e = (*iter).second;
-      pp_printf (pp, ": %s (origin: ",
-		 sm.get_state_name (e.m_state));
-      e.m_origin.print (pp);
-      pp_string (pp, ")");
+      pp_printf (pp, ": %s", sm.get_state_name (e.m_state));
+      if (model)
+	if (tree rep = model->get_representative_tree (sid))
+	  {
+	    pp_string (pp, " (");
+	    dump_quoted_tree (pp, rep);
+	    pp_character (pp, ')');
+	  }
+      if (!e.m_origin.null_p ())
+	{
+	  pp_string (pp, " (origin: ");
+	  e.m_origin.print (pp);
+	  if (model)
+	    if (tree rep = model->get_representative_tree (e.m_origin))
+	      {
+		pp_string (pp, " (");
+		dump_quoted_tree (pp, rep);
+		pp_character (pp, ')');
+	      }
+	  pp_string (pp, ")");
+	}
     }
   pp_string (pp, "}");
 }
@@ -186,7 +207,7 @@ sm_state_map::dump (const state_machine &sm) const
   pretty_printer pp;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
   pp.buffer->stream = stderr;
-  print (sm, &pp);
+  print (sm, NULL, &pp);
   pp_newline (&pp);
   pp_flush (&pp);
 }
@@ -696,7 +717,7 @@ program_state::print (const extrinsic_state &ext_state,
       if (!smap->is_empty_p ())
 	{
 	  pp_printf (pp, "%s: ", ext_state.get_name (i));
-	  smap->print (ext_state.get_sm (i), pp);
+	  smap->print (ext_state.get_sm (i), m_region_model, pp);
 	  pp_newline (pp);
 	}
     }
@@ -707,7 +728,9 @@ program_state::print (const extrinsic_state &ext_state,
     }
 }
 
-/* Dump a multiline representation of this state to PP.  */
+/* Dump a representation of this state to PP.
+   If SUMMARIZE is true, print a one-line summary;
+   if false, print a detailed multiline representation.  */
 
 void
 program_state::dump_to_pp (const extrinsic_state &ext_state,
@@ -723,16 +746,22 @@ program_state::dump_to_pp (const extrinsic_state &ext_state,
     {
       if (!smap->is_empty_p ())
 	{
+	  if (summarize)
+	    pp_space (pp);
 	  pp_printf (pp, "%s: ", ext_state.get_name (i));
-	  smap->print (ext_state.get_sm (i), pp);
-	  pp_newline (pp);
+	  smap->print (ext_state.get_sm (i), m_region_model, pp);
+	  if (!summarize)
+	    pp_newline (pp);
 	}
     }
 
   if (!m_valid)
     {
+      if (summarize)
+	pp_space (pp);
       pp_printf (pp, "invalid state");
-      pp_newline (pp);
+      if (!summarize)
+	pp_newline (pp);
     }
 }
 
@@ -1231,6 +1260,30 @@ state_change::validate (const program_state &new_state,
 
 namespace selftest {
 
+/* Implementation detail of ASSERT_DUMP_EQ.  */
+
+static void
+assert_dump_eq (const location &loc,
+		const program_state &state,
+		const extrinsic_state &ext_state,
+		bool summarize,
+		const char *expected)
+{
+  auto_fix_quotes sentinel;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  state.dump_to_pp (ext_state, summarize, &pp);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected);
+}
+
+/* Assert that STATE.dump_to_pp (SUMMARIZE) is EXPECTED.  */
+
+#define ASSERT_DUMP_EQ(STATE, EXT_STATE, SUMMARIZE, EXPECTED)		\
+  SELFTEST_BEGIN_STMT							\
+  assert_dump_eq ((SELFTEST_LOCATION), (STATE), (EXT_STATE), (SUMMARIZE), \
+		  (EXPECTED));						\
+  SELFTEST_END_STMT
+
 /* Tests for sm_state_map.  */
 
 static void
@@ -1364,6 +1417,56 @@ test_sm_state_map ()
   // TODO: coverage for purging
 }
 
+/* Verify that program_state::dump_to_pp works as expected.  */
+
+static void
+test_program_state_dumping ()
+{
+  /* Create a program_state for a global ptr "p" that has
+     malloc sm-state, pointing to a region on the heap.  */
+  tree p = build_global_decl ("p", ptr_type_node);
+
+  state_machine *sm = make_malloc_state_machine (NULL);
+  const state_machine::state_t UNCHECKED_STATE
+    = sm->get_state_by_name ("unchecked");
+  auto_delete_vec <state_machine> checkers;
+  checkers.safe_push (sm);
+  extrinsic_state ext_state (checkers);
+
+  program_state s (ext_state);
+  region_model *model = s.m_region_model;
+  region_id new_rid = model->add_new_malloc_region ();
+  svalue_id ptr_sid
+      = model->get_or_create_ptr_svalue (ptr_type_node, new_rid);
+  model->set_value (model->get_lvalue (p, NULL),
+		    ptr_sid, NULL);
+  sm_state_map *smap = s.m_checker_states[0];
+
+  smap->impl_set_state (ptr_sid, UNCHECKED_STATE, svalue_id::null ());
+  ASSERT_EQ (smap->get_state (ptr_sid), UNCHECKED_STATE);
+
+  ASSERT_DUMP_EQ
+    (s, ext_state, false,
+     "rmodel: r0: {kind: `root', parent: null, sval: null}\n"
+     "|-heap: r1: {kind: `heap', parent: r0, sval: sv0}\n"
+     "|  |: sval: sv0: {poisoned: uninit}\n"
+     "|  `-r2: {kind: `symbolic', parent: r1, sval: null}\n"
+     "`-globals: r3: {kind: `globals', parent: r0, sval: null, map: {`p': r4}}\n"
+     "  `-`p': r4: {kind: `primitive', parent: r3, sval: sv1, type: `void *'}\n"
+     "    |: sval: sv1: {type: `void *', &r2}\n"
+     "    |: type: `void *'\n"
+     "svalues:\n"
+     "  sv0: {poisoned: uninit}\n"
+     "  sv1: {type: `void *', &r2}\n"
+     "constraint manager:\n"
+     "  equiv classes:\n"
+     "  constraints:\n"
+     "malloc: {sv1: unchecked (`p')}\n");
+
+  ASSERT_DUMP_EQ (s, ext_state, true,
+		  "rmodel: p: &r2 malloc: {sv1: unchecked (`p')}");
+}
+
 /* Verify that program_states with identical sm-state can be merged,
    and that the merged program_state preserves the sm-state.  */
 
@@ -1466,6 +1569,7 @@ void
 analyzer_program_state_cc_tests ()
 {
   test_sm_state_map ();
+  test_program_state_dumping ();
   test_program_state_merging ();
   test_program_state_merging_2 ();
 }
