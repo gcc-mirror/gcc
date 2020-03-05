@@ -1,6 +1,16 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93399
+	* tree-pretty-print.h (pretty_print_string): Declare.
+	* tree-pretty-print.c (pretty_print_string): Remove forward
+	declaration, no longer static.  Change nbytes parameter type
+	from unsigned to size_t.
+	* print-rtl.c (print_value) <case CONST_STRING>: Use
+	pretty_print_string and for shrink way too long strings.
+
 	2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/93888

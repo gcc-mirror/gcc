@@ -1678,7 +1678,9 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       pp_string (pp, tmp);
       break;
     case CONST_STRING:
-      pp_printf (pp, "\"%s\"", XSTR (x, 0));
+      pp_string (pp, "\"");
+      pretty_print_string (pp, XSTR (x, 0), strlen (XSTR (x, 0)));
+      pp_string (pp, "\"");
       break;
     case SYMBOL_REF:
       pp_printf (pp, "`%s'", XSTR (x, 0));
