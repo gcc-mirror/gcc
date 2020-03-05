@@ -30,6 +30,7 @@ namespace test_fs = std::filesystem;
 #include <experimental/filesystem>
 namespace test_fs = std::experimental::filesystem;
 #endif
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <cstdio>
@@ -62,10 +63,15 @@ namespace __gnu_test
     PATH_CHK( p1, p2, is_relative );
     auto d1 = std::distance(p1.begin(), p1.end());
     auto d2 = std::distance(p2.begin(), p2.end());
-    if( d1 != d2 )
+    if (d1 != d2)
       throw test_fs::filesystem_error(
-	  "distance(begin, end)", p1, p2,
+	  "distance(begin1, end1) != distance(begin2, end2)", p1, p2,
 	  std::make_error_code(std::errc::invalid_argument) );
+    if (!std::equal(p1.begin(), p1.end(), p2.begin()))
+      throw test_fs::filesystem_error(
+	  "!equal(begin1, end1, begin2)", p1, p2,
+	  std::make_error_code(std::errc::invalid_argument) );
+
   }
 
   const std::string test_paths[] = {

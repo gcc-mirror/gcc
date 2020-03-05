@@ -5,12 +5,12 @@
 /* { dg-options "-Wstrict-selector-match" } */
 
 #ifdef __NEXT_RUNTIME__
-#include <Foundation/NSObject.h>
-#define OBJECT NSObject
+# include "../objc-obj-c++-shared/F-NSObject.h"
+# define OBJECT NSObject
 #else
-#include <objc/Object.h>
-#include <objc/Protocol.h>
-#define OBJECT Object
+# include <objc/Object.h>
+# include <objc/Protocol.h>
+# define OBJECT Object
 #endif
 
 @interface Base

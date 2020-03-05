@@ -5065,13 +5065,13 @@ proc check_effective_target_powerpc_p8vector_ok { } {
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
+	# Darwin doesn't run on power8, so far.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_p8vector_ok object {
 	    int main (void) {
-#ifdef __MACH__
-		asm volatile ("xxlorc vs0,vs0,vs0");
-#else
 		asm volatile ("xxlorc 0,0,0");
-#endif
 		return 0;
 	    }
 	} "-mpower8-vector"]
@@ -5090,6 +5090,10 @@ proc check_effective_target_powerpc_p9vector_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't run on power9, so far.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_p9vector_ok object {
@@ -5142,6 +5146,10 @@ proc check_effective_target_powerpc_float128_sw_ok { } {
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
+	# Darwin doesn't have VSX, so no soft support for float128.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_float128_sw_ok object {
 		volatile __float128 x = 1.0q;
 		volatile __float128 y = 2.0q;
@@ -5166,6 +5174,10 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't run on any machine with float128 h/w so far.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_float128_hw_ok object {
@@ -5224,13 +5236,14 @@ proc check_effective_target_powerpc_vsx_ok { } {
 	     || [istarget powerpc*-*-aix6*] } {
 	    return 0
 	}
+	# Darwin doesn't have VSX, even if it's used with an assembler
+	# which recognises the insns.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_vsx_ok object {
 	    int main (void) {
-#ifdef __MACH__
-		asm volatile ("xxlor vs0,vs0,vs0");
-#else
 		asm volatile ("xxlor 0,0,0");
-#endif
 		return 0;
 	    }
 	} "-mvsx"]
@@ -8588,6 +8601,17 @@ proc check_effective_target_aarch64_large { } {
     }
 }
 
+# Return 1 if the assembler accepts the aarch64 .variant_pcs directive.
+
+proc check_effective_target_aarch64_variant_pcs { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_variant_pcs object {
+	    __asm__ (".variant_pcs foo");
+	}]
+    } else {
+	return 0
+    }
+}
 
 # Return 1 if this is a reduced AVR Tiny core.  Such cores have different
 # register set, instruction set, addressing capabilities and ABI.
@@ -9344,4 +9368,15 @@ proc check_effective_target_llvm_binutils { } {
     return [check_cached_effective_target llvm_binutils {
 	      expr { [istarget amdgcn*-*-*]
 		     || [check_effective_target_offload_gcn] }}]
+}
+
+# Return 1 if the compiler supports '-mfentry'.
+
+proc check_effective_target_mfentry { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+        return 0
+    }
+    return [check_no_compiler_messages mfentry object {
+	        void foo (void) { }
+    } "-mfentry"]
 }

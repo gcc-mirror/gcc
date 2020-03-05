@@ -1,3 +1,15 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-06-11  Richard Biener  <rguenthe@suse.de>
+
+	d/90778
+	* toir.cc (pop_label): Only queue labels in a vector.
+	(cmp_labels): Label decl comparator.
+	(pop_binding_level): Pop labels in DECL_UID order to avoid
+	debug info differences.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

@@ -54,7 +54,9 @@
   do							\
     {							\
       if (!TARGET_64BIT) builtin_define ("__ppc__");	\
+      if (!TARGET_64BIT) builtin_define ("__PPC__");	\
       if (TARGET_64BIT) builtin_define ("__ppc64__");	\
+      if (TARGET_64BIT) builtin_define ("__PPC64__");	\
       builtin_define ("__POWERPC__");			\
       builtin_define ("__NATURAL_ALIGNMENT__");		\
       darwin_cpp_builtins (pfile);			\
@@ -98,11 +100,10 @@ extern int darwin_emit_branch_islands;
   %<faltivec %<fno-altivec " \
   DARWIN_CC1_SPEC
 
-#define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
+/* Default to PPC for single arch builds.  */
+#define DARWIN_ARCH_SPEC "ppc"
 
 #define DARWIN_SUBARCH_SPEC "			\
- %{m64: ppc64}					\
- %{!m64:					\
  %{mcpu=601:ppc601;				\
    mcpu=603:ppc603;				\
    mcpu=603e:ppc603;				\
@@ -117,7 +118,7 @@ extern int darwin_emit_branch_islands;
    mcpu=970:ppc970;				\
    mcpu=power4:ppc970;				\
    mcpu=G5:ppc970;				\
-   :ppc}}"
+   :ppc}"
 
 /* We need to jam the crt to 10.5 for 10.6 (Rosetta) use.  */
 #undef DARWIN_CRT1_SPEC
@@ -395,6 +396,7 @@ extern int darwin_emit_branch_islands;
   do \
     { \
       DARWIN_REGISTER_TARGET_PRAGMAS(); \
+      targetm.target_option.pragma_parse = rs6000_pragma_target_parse; \
       targetm.resolve_overloaded_builtin = altivec_resolve_overloaded_builtin; \
     } \
   while (0)

@@ -6,7 +6,7 @@
 /* { dg-skip-if "NeXT only" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-mconstant-cfstrings" } */
 
-#include <Foundation/NSObject.h>
+#include "../../objc-obj-c++-shared/F-NSObject.h"
 
 @interface Foo: NSObject {
   char *cString;

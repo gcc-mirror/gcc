@@ -1,3 +1,55 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91301
+	* testsuite/libgomp.c++/for-27.C: New test.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* testsuite/libgomp.c/pr90811.c: New test.
+
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/90641
+	* work.c (gomp_init_work_share): Instead of aligning final ordered
+	value to multiples of long long alignment, align to that the
+	first part (ordered team ids) and if inline_ordered_team_ids
+	is not on a long long alignment boundary within the structure,
+	use __alignof__ (long long) - 1 pad size always.
+	* loop.c (GOMP_loop_start): Fix *mem computation if
+	inline_ordered_team_ids is not aligned on long long alignment boundary
+	within the structure.
+	* loop-ull.c (GOMP_loop_ull_start): Likewise.
+	* sections.c (GOMP_sections2_start): Likewise.
+
+	2019-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/90585
+	* plugin/plugin-hsa.c (print_kernel_dispatch, run_kernel): Use PRIu64
+	macro instead of "lu".
+	(release_kernel_dispatch): Likewise.  Cast shadow->debug to uintptr_t
+	before casting to void *.
+
+2019-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/90527
+	* alloc.c (_GNU_SOURCE): Define.
+
+2019-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/87835
+	* testsuite/libgomp.oacc-c-c++-common/pr87835.c: Update.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

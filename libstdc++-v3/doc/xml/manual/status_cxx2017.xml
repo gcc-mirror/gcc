@@ -25,8 +25,8 @@ not in any particular release.
 </para>
 
 <para>
-The following table lists new library features that have been accepted into
-the C++17 working draft. The "Proposal" column provides a link to the
+The following table lists new library features that are included in
+the C++17 standard. The "Proposal" column provides a link to the
 ISO C++ committee proposal that describes the feature, while the "Status"
 column indicates the first version of GCC that contains an implementation of
 this feature (if it has been implemented).
@@ -392,7 +392,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7.1 </entry>
-      <entry><code> </code></entry>
+      <entry><code>__cpp_lib_raw_memory_algorithms &gt;= 201606L</code></entry>
     </row>
 
     <row>
@@ -1117,7 +1117,7 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
    <para>
       <emphasis>30.10.2.1 [fs.conform.9945]</emphasis>
       The behavior of the filesystem library implementation will depend on
-      the target operating system. Some features will not be not supported
+      the target operating system. Some features will not be supported
       on some targets.
    </para>
 

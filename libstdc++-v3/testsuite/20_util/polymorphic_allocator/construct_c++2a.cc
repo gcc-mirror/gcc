@@ -21,6 +21,8 @@
 #include <memory_resource>
 #include <utility>
 #include <tuple>
+#include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 struct do_not_copy {
   do_not_copy() = default;
@@ -115,6 +117,54 @@ test05()
   a.deallocate(ptr, 1);
 }
 
+// P0591R4 makes uses-allocator construction apply recursively for nested pairs
+void
+test06()
+{
+  struct X
+  {
+    using allocator_type = std::pmr::polymorphic_allocator<int>;
+    X() = default;
+    X(const X&) { throw 1; }
+    X(const X&, const allocator_type& a) : mr(a.resource()) { }
+
+    std::pmr::memory_resource* mr = nullptr;
+  };
+
+  struct Y
+  {
+    using allocator_type = std::pmr::polymorphic_allocator<int>;
+    Y() = default;
+    Y(const Y&) = delete;
+    Y(std::allocator_arg_t, const allocator_type& a, const Y&)
+    : mr(a.resource()) { }
+
+    std::pmr::memory_resource* mr = nullptr;
+  };
+
+  using value_type = std::pair<std::pair<X, int>, std::pair<int, Y>>;
+  __gnu_test::memory_resource mr;
+  std::pmr::polymorphic_allocator<int> a(&mr);
+  std::pmr::vector<value_type> v(a);
+  VERIFY( v.get_allocator().resource() == &mr );
+
+  value_type val;
+  val.first.second = 2;
+  val.second.first = 3;
+  v.push_back(val);
+  X& x = v.back().first.first;
+  VERIFY( x.mr != val.first.first.mr );
+  VERIFY( x.mr == &mr );
+
+  Y& y = v.back().second.second;
+  VERIFY( y.mr != val.second.second.mr );
+  VERIFY( y.mr == &mr );
+
+  // Check other members of the pairs are correctly initialized too:
+  VERIFY( v.back().first.second == val.first.second );
+  VERIFY( v.back().second.first == val.second.first );
+}
+
 int main()
 {
   test01();
@@ -122,4 +172,5 @@ int main()
   test03();
   test04();
   test05();
+  test06();
 }

@@ -2382,6 +2382,10 @@ Target supports compiling @code{aes} instructions.
 @item fma4
 Target supports compiling @code{fma4} instructions.
 
+@item mfentry
+Target supports the @code{-mfentry} option that alters the
+position of profiling calls such that they precede the prologue.
+
 @item ms_hook_prologue
 Target supports attribute @code{ms_hook_prologue}.
 

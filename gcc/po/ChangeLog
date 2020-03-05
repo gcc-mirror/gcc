@@ -1,3 +1,41 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* uk.po: Update.
+
+2019-06-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2019-06-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2019-05-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* fi.po, sv.po: Update.
+
+2019-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po, sv.po: Update.
+
+2019-05-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2019-05-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po, fr.po: Update.
+
+2019-05-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, hr.po, id.po,
+	ja.po, nl.po, ru.po, sr.po, sv.po, tr.po, uk.po, vi.po, zh_CN.po,
+	zh_TW.po: Update.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

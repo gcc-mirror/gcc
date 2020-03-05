@@ -23,6 +23,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #define _GLIBCXX_USE_CXX11_ABI 1
+#define _CRT_RAND_S // define this before including <stdlib.h> to get rand_s
+
 #include <random>
 
 #ifdef  _GLIBCXX_USE_C99_STDINT_TR1
@@ -48,6 +50,10 @@
 
 #ifdef _GLIBCXX_HAVE_LINUX_RANDOM_H
 # include <linux/random.h>
+#endif
+
+#ifdef _GLIBCXX_USE_CRT_RAND_S
+# include <stdlib.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -82,6 +88,18 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	if (--retries == 0)
 	  std::__throw_runtime_error(__N("random_device::__x86_rdrand(void)"));
 
+      return val;
+    }
+#endif
+
+#ifdef _GLIBCXX_USE_CRT_RAND_S
+# pragma GCC poison _M_mt
+    unsigned int
+    __winxp_rand_s()
+    {
+      unsigned int val;
+      if (::rand_s(&val) != 0)
+	std::__throw_runtime_error(__N("random_device: rand_s failed"));
       return val;
     }
 #endif
@@ -122,9 +140,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
   }
 
   void
-  random_device::_M_init_pretr1(const std::string& token)
+  random_device::_M_init_pretr1(const std::string& token [[gnu::unused]])
   {
+#ifndef _GLIBCXX_USE_CRT_RAND_S
     _M_mt.seed(_M_strtoul(token));
+#endif
   }
 
   void
@@ -170,7 +190,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
   random_device::result_type
   random_device::_M_getval_pretr1()
   {
+#ifdef _GLIBCXX_USE_CRT_RAND_S
+    return __winxp_rand_s();
+#else
     return _M_mt();
+#endif
   }
 
   double

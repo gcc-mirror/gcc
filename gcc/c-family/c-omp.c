@@ -305,7 +305,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   if (TREE_CODE (x) == COMPOUND_EXPR)
     {
       pre = TREE_OPERAND (x, 0);
-      gcc_assert (TREE_CODE (pre) == SAVE_EXPR);
+      gcc_assert (TREE_CODE (pre) == SAVE_EXPR || tree_invariant_p (pre));
       x = TREE_OPERAND (x, 1);
     }
   gcc_assert (TREE_CODE (x) == MODIFY_EXPR);
@@ -1648,7 +1648,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		}
 	      else if (code != OMP_SECTIONS
 		       && (mask & (OMP_CLAUSE_MASK_1
-				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0
+				   << PRAGMA_OMP_CLAUSE_NUM_THREADS)) == 0
 		       && (mask & (OMP_CLAUSE_MASK_1
 				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0)
 		{

@@ -4,6 +4,8 @@
 
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-prune-output ".*ld: warning: direct access in.*" } */
+
 #include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 

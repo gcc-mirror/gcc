@@ -5971,130 +5971,47 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
     }
 }
 
-/* Legitimize a pic address reference in ORIG.
-   The return value is the legitimated address.
-   If OLDX is non-zero, it is the target to assign the address to first.  */
+/* Return true if SYMBOL_REF X binds locally.  */
+
+static bool
+arc_symbol_binds_local_p (const_rtx x)
+{
+  return (SYMBOL_REF_DECL (x)
+	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
+	  : SYMBOL_REF_LOCAL_P (x));
+}
+
+/* Legitimize a pic address reference in ADDR.  The return value is
+   the legitimated address.  */
 
 static rtx
-arc_legitimize_pic_address (rtx orig, rtx oldx)
+arc_legitimize_pic_address (rtx addr)
 {
-  rtx addr = orig;
-  rtx pat = orig;
-  rtx base;
+  if (!flag_pic)
+    return addr;
 
-  if (oldx == orig)
-    oldx = NULL;
-
-  if (GET_CODE (addr) == LABEL_REF)
-    ; /* Do nothing.  */
-  else if (GET_CODE (addr) == SYMBOL_REF)
+  switch (GET_CODE (addr))
     {
-      enum tls_model model = SYMBOL_REF_TLS_MODEL (addr);
-      if (model != 0)
-	return arc_legitimize_tls_address (addr, model);
-      else if (!flag_pic)
-	return orig;
-      else if (CONSTANT_POOL_ADDRESS_P (addr) || SYMBOL_REF_LOCAL_P (addr))
-	return arc_unspec_offset (addr, ARC_UNSPEC_GOTOFFPC);
+    case SYMBOL_REF:
+      /* TLS symbols are handled in different place.  */
+      if (SYMBOL_REF_TLS_MODEL (addr))
+	return addr;
 
       /* This symbol must be referenced via a load from the Global
 	 Offset Table (@GOTPC).  */
-      pat = arc_unspec_offset (addr, ARC_UNSPEC_GOT);
-      pat = gen_const_mem (Pmode, pat);
+      if (!arc_symbol_binds_local_p (addr))
+	return gen_const_mem (Pmode, arc_unspec_offset (addr, ARC_UNSPEC_GOT));
 
-      if (oldx == NULL)
-	oldx = gen_reg_rtx (Pmode);
+      /* Local symb: use @pcl to access it.  */
+      /* Fall through.  */
+    case LABEL_REF:
+      return arc_unspec_offset (addr, ARC_UNSPEC_GOTOFFPC);
 
-      emit_move_insn (oldx, pat);
-      pat = oldx;
-    }
-  else
-    {
-      if (GET_CODE (addr) == CONST)
-	{
-	  addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) == UNSPEC)
-	    {
-	      /* Check that the unspec is one of the ones we generate?  */
-	      return orig;
-	    }
-	  /* fwprop is placing in the REG_EQUIV notes constant pic
-	     unspecs expressions.  Then, loop may use these notes for
-	     optimizations resulting in complex patterns that are not
-	     supported by the current implementation. The following
-	     two if-cases are simplifying the complex patters to
-	     simpler ones.  */
-	  else if (GET_CODE (addr) == MINUS)
-	    {
-	      rtx op0 = XEXP (addr, 0);
-	      rtx op1 = XEXP (addr, 1);
-	      gcc_assert (oldx);
-	      gcc_assert (GET_CODE (op1) == UNSPEC);
-
-	      emit_move_insn (oldx,
-			      gen_rtx_CONST (SImode,
-					     arc_legitimize_pic_address (op1,
-									 NULL_RTX)));
-	      emit_insn (gen_rtx_SET (oldx, gen_rtx_MINUS (SImode, op0, oldx)));
-	      return oldx;
-
-	    }
-	  else if (GET_CODE (addr) != PLUS)
-	    {
-	      rtx tmp = XEXP (addr, 0);
-	      enum rtx_code code = GET_CODE (addr);
-
-	      /* It only works for UNARY operations.  */
-	      gcc_assert (UNARY_P (addr));
-	      gcc_assert (GET_CODE (tmp) == UNSPEC);
-	      gcc_assert (oldx);
-
-	      emit_move_insn
-		(oldx,
-		 gen_rtx_CONST (SImode,
-				arc_legitimize_pic_address (tmp,
-							    NULL_RTX)));
-
-	      emit_insn (gen_rtx_SET (oldx,
-				      gen_rtx_fmt_ee (code, SImode,
-						      oldx, const0_rtx)));
-
-	      return oldx;
-	    }
-	  else
-	    {
-	      gcc_assert (GET_CODE (addr) == PLUS);
-	      if (GET_CODE (XEXP (addr, 0)) == UNSPEC)
-		return orig;
-	    }
-	}
-
-      if (GET_CODE (addr) == PLUS)
-	{
-	  rtx op0 = XEXP (addr, 0), op1 = XEXP (addr, 1);
-
-	  base = arc_legitimize_pic_address (op0, oldx);
-	  pat  = arc_legitimize_pic_address (op1,
-					     base == oldx ? NULL_RTX : oldx);
-
-	  if (base == op0 && pat == op1)
-	    return orig;
-
-	  if (GET_CODE (pat) == CONST_INT)
-	    pat = plus_constant (Pmode, base, INTVAL (pat));
-	  else
-	    {
-	      if (GET_CODE (pat) == PLUS && CONSTANT_P (XEXP (pat, 1)))
-		{
-		  base = gen_rtx_PLUS (Pmode, base, XEXP (pat, 0));
-		  pat = XEXP (pat, 1);
-		}
-	      pat = gen_rtx_PLUS (Pmode, base, pat);
-	    }
-	}
+    default:
+      break;
     }
 
- return pat;
+ return addr;
 }
 
 /* Output address constant X to FILE, taking PIC into account.  */
@@ -6255,28 +6172,6 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
       output_operand_lossage ("invalid expression as operand");
     }
 }
-
-#define SYMBOLIC_CONST(X)	\
-(GET_CODE (X) == SYMBOL_REF						\
- || GET_CODE (X) == LABEL_REF						\
- || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
-
-/* Emit insns to move operands[1] into operands[0].  */
-
-static void
-prepare_pic_move (rtx *operands, machine_mode)
-{
-  if (GET_CODE (operands[0]) == MEM && SYMBOLIC_CONST (operands[1])
-      && flag_pic)
-    operands[1] = force_reg (Pmode, operands[1]);
-  else
-    {
-      rtx temp = (reload_in_progress ? operands[0]
-		  : flag_pic? gen_reg_rtx (Pmode) : NULL_RTX);
-      operands[1] = arc_legitimize_pic_address (operands[1], temp);
-    }
-}
-
 
 /* The function returning the number of words, at the beginning of an
    argument, must be put in registers.  The returned value must be
@@ -9053,54 +8948,37 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	}
     }
 
-  if (mode == SImode && SYMBOLIC_CONST (operands[1]))
+  if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
-      prepare_pic_move (operands, SImode);
-
-      /* Disable any REG_EQUALs associated with the symref
-	 otherwise the optimization pass undoes the work done
-	 here and references the variable directly.  */
+      enum tls_model model = SYMBOL_REF_TLS_MODEL (operands[1]);
+      if (MEM_P (operands[0]))
+	operands[1] = force_reg (mode, operands[1]);
+      else if (model)
+	operands[1] = arc_legitimize_tls_address (operands[1], model);
     }
 
+  operands[1] = arc_legitimize_pic_address (operands[1]);
+
+  /* Store instructions are limited, they only accept as address an
+     immediate, a register or a register plus a small immediate.  */
   if (MEM_P (operands[0])
-      && !(reload_in_progress || reload_completed))
+      && !move_dest_operand (operands[0], mode))
     {
-      operands[1] = force_reg (mode, operands[1]);
-      if (!move_dest_operand (operands[0], mode))
-	{
-	  rtx addr = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
-	  /* This is like change_address_1 (operands[0], mode, 0, 1) ,
-	     except that we can't use that function because it is static.  */
-	  rtx pat = change_address (operands[0], mode, addr);
-	  MEM_COPY_ATTRIBUTES (pat, operands[0]);
-	  operands[0] = pat;
-	}
-      if (!cse_not_expected)
-	{
-	  rtx pat = XEXP (operands[0], 0);
-
-	  pat = arc_legitimize_address_0 (pat, pat, mode);
-	  if (pat)
-	    {
-	      pat = change_address (operands[0], mode, pat);
-	      MEM_COPY_ATTRIBUTES (pat, operands[0]);
-	      operands[0] = pat;
-	    }
-	}
+      rtx tmp0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+      rtx tmp1 = change_address (operands[0], mode, tmp0);
+      MEM_COPY_ATTRIBUTES (tmp1, operands[0]);
+      operands[0] = tmp1;
     }
 
-  if (MEM_P (operands[1]) && !cse_not_expected)
-    {
-      rtx pat = XEXP (operands[1], 0);
-
-      pat = arc_legitimize_address_0 (pat, pat, mode);
-      if (pat)
-	{
-	  pat = change_address (operands[1], mode, pat);
-	  MEM_COPY_ATTRIBUTES (pat, operands[1]);
-	  operands[1] = pat;
-	}
-    }
+  /* Check if it is constant but it is not legitimized.  */
+  if (CONSTANT_P (operands[1])
+      && !arc_legitimate_constant_p (mode, operands[1]))
+    operands[1] = force_reg (mode, XEXP (operands[1], 0));
+  else if (MEM_P (operands[0])
+	   && ((CONSTANT_P (operands[1])
+		&& !satisfies_constraint_Cm3 (operands[1]))
+	       || MEM_P (operands[1])))
+    operands[1] = force_reg (mode, operands[1]);
 
   return false;
 }
@@ -9572,11 +9450,10 @@ arc_legitimize_address_0 (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 {
   rtx addr, inner;
 
-  if (flag_pic && SYMBOLIC_CONST (x))
-     (x) =  arc_legitimize_pic_address (x, 0);
   addr = x;
   if (GET_CODE (addr) == CONST)
     addr = XEXP (addr, 0);
+
   if (GET_CODE (addr) == PLUS
       && CONST_INT_P (XEXP (addr, 1))
       && ((GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
@@ -9607,13 +9484,6 @@ arc_legitimize_address_0 (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 static rtx
 arc_legitimize_address (rtx orig_x, rtx oldx, machine_mode mode)
 {
-  if (GET_CODE (orig_x) == SYMBOL_REF)
-    {
-      enum tls_model model = SYMBOL_REF_TLS_MODEL (orig_x);
-      if (model != 0)
-	return arc_legitimize_tls_address (orig_x, model);
-    }
-
   rtx new_x = arc_legitimize_address_0 (orig_x, oldx, mode);
 
   if (new_x)

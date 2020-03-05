@@ -1,6 +1,7 @@
 // PR 84497 mismatch with thread constructor fn weakness
 // { dg-do compile { target c++11 } }
 // { dg-require-weak "" }
+// { dg-require-alias "" }
 // { dg-skip-if "No .weak" { { hppa*-*-hpux* } && { ! lp64 } } }
 
 struct Base

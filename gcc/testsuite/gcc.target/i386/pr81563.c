@@ -10,5 +10,4 @@ fn1 (long long int x)
   return x;
 }
 
-/* { dg-final { scan-assembler-times "movl\[\\t \]*-8\\(%ebp\\),\[\\t \]*%esi" 1 } } */
-/* { dg-final { scan-assembler-times "movl\[\\t \]*-4\\(%ebp\\),\[\\t \]*%edi" 1 } } */
+/* { dg-final { scan-assembler-not "movl\[ \\t\]+\[0-9]*\\(%esp\\)" } } */

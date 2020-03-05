@@ -22,8 +22,18 @@
 
 using std::filesystem::path;
 
+// PR libstdc++/80762.cc
 static_assert( !std::is_constructible_v<path, void> );
 static_assert( !std::is_constructible_v<path, volatile path> );
 static_assert( !std::is_constructible_v<path, volatile path&> );
 static_assert( !std::is_constructible_v<path, const volatile path> );
 static_assert( !std::is_constructible_v<path, const volatile path&> );
+
+// PR libstdc++/90454.cc
+static_assert( !std::is_constructible_v<path, void*> );
+static_assert( !std::is_constructible_v<path, const void*> );
+static_assert( !std::is_constructible_v<path, volatile void*> );
+static_assert( !std::is_constructible_v<path, const volatile void*> );
+static_assert( !std::is_constructible_v<path, void*&> );
+static_assert( !std::is_constructible_v<path, void* const&> );
+static_assert( !std::is_constructible_v<path, const void* const&> );

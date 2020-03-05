@@ -1,3 +1,163 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-02  Martin Sebor  <msebor@redhat.com>
+
+	Backport from mainline
+	2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* typeck.c (maybe_warn_about_returning_address_of_local): Only
+	consider functions returning pointers as candidates for
+	-Wreturn-local-addr.
+
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-08-02  Marek Polacek  <polacek@redhat.com>
+	
+	PR c++/91230 - wrong error with __PRETTY_FUNCTION__ and generic lambda.
+	* pt.c (value_dependent_expression_p): Consider __PRETTY_FUNCTION__
+	inside a template function value-dependent.
+
+2019-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90098 - partial specialization and class non-type parms.
+	PR c++/90099
+	PR c++/90101
+	* call.c (build_converted_constant_expr_internal): Don't copy.
+	* pt.c (process_partial_specialization): Allow VIEW_CONVERT_EXPR
+	around class non-type parameter.
+	(unify) [TEMPLATE_PARM_INDEX]: Ignore cv-quals.
+	(invalid_nontype_parm_type_p): Check for dependent class type.
+
+	PR c++/85552 - wrong instantiation of dtor for DMI.
+	* typeck2.c (digest_nsdmi_init): Set tf_no_cleanup for direct-init.
+
+2019-07-19  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/63149 - Wrong auto deduction from braced-init-list.
+	* pt.c (listify_autos): use non cv qualified auto_node in
+	std::initializer_list<auto>.
+
+2019-07-01  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60223 - ICE with T{} in non-deduced context.
+	* pt.c (unify): Allow COMPOUND_LITERAL_P in a non-deduced context.
+
+	PR c++/90490 - fix decltype issues in noexcept-specifier.
+	* except.c (build_noexcept_spec): Call
+	instantiate_non_dependent_expr_sfinae before
+	build_converted_constant_expr instead of calling
+	instantiate_non_dependent_expr after it.  Add
+	processing_template_decl_sentinel.
+
+2019-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90950
+	* semantics.c (finish_omp_clauses): Don't reject references to
+	incomplete types if processing_template_decl.
+
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90825 - endless recursion when evaluating sizeof.
+	PR c++/90832 - endless recursion when evaluating sizeof.
+	* constexpr.c (cxx_eval_constant_expression): Don't recurse on the
+	result of fold_sizeof_expr if is returns a SIZEOF_EXPR.
+	* typeck.c (cxx_sizeof_expr): Only return a SIZEOF_EXPR if the operand
+	is instantiation-dependent.
+
+	PR c++/90736 - bogus error with alignof.
+	* constexpr.c (adjust_temp_type): Use cv_unqualified type.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90810
+	* init.c (constant_value_1): Handle VECTOR_CST DECL_INITIAL for
+	!DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P decls like CONSTRUCTOR.
+
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90598
+	* tree.c (lvalue_kind): Return clk_none for expressions with
+	with VOID_TYPE_P.
+
+2019-05-28  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90548 - ICE with generic lambda and empty pack.
+	* pt.c (tsubst_copy_and_build): Handle pack expansion properly.
+
+2019-05-25  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90572 - wrong disambiguation in friend declaration.
+	* parser.c (cp_parser_constructor_declarator_p): Don't allow missing
+	typename for friend declarations.
+
+2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from mainline
+	2019-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/90532 Ensure __is_constructible(T[]) is false
+	* method.c (is_xible_helper): Return error_mark_node for construction
+	of an array of unknown bound.
+
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90197
+	* cp-gimplify.c (genericize_cp_loop): Emit a DEBUG_BEGIN_STMT
+	before the condition (or if missing or constant non-zero at the end
+	of the loop.  Emit a DEBUG_BEGIN_STMT before the increment expression
+	if any.  Don't call protected_set_expr_location on incr if it already
+	has a location.
+
+	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/90326
+	* config-lang.in (gtfiles): Remove c-family/c-lex.c, add
+	c-family/c-cppbuiltin.c.
+
+2019-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78010 - bogus -Wsuggest-override warning on final function.
+	* class.c (check_for_override): Don't warn for final functions.
+
+2019-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90265 - ICE with generic lambda.
+	* pt.c (tsubst_copy_and_build): Use a dedicated variable for the last
+	element in the vector.
+
+2019-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90173
+	* decl.c (grokdeclarator): Set type to error_mark_node
+	upon error about template placeholder type non followed
+	by a simple declarator-id.
+
+2019-05-04  Michael Meissner  <meissner@linux.ibm.com>
+
+	* ChangeLog.ibm: Delete unintentional commit on the wrong branch.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

@@ -158,7 +158,8 @@ create_dispatcher_calls (struct cgraph_node *node)
 	    {
 	      symtab_node *source = ref->referring;
 	      source->create_reference (inode, IPA_REF_ALIAS);
-	      source->add_to_same_comdat_group (inode);
+	      if (inode->get_comdat_group ())
+		source->add_to_same_comdat_group (inode);
 	    }
 	  else
 	    gcc_unreachable ();

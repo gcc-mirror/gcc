@@ -503,6 +503,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   // @}
 
+  /// @cond undocumented
   template<typename _Tp>
     void* __any_caster(const any* __any)
     {
@@ -516,8 +517,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Only copy constructible types can be used for contained values:
       else if constexpr (!is_copy_constructible_v<_Up>)
 	return nullptr;
-      // This check is equivalent to __any->type() == typeid(_Tp)
-      else if (__any->_M_manager == &any::_Manager<_Up>::_S_manage)
+      // First try comparing function addresses, which works without RTTI
+      else if (__any->_M_manager == &any::_Manager<_Up>::_S_manage
+#if __cpp_rtti
+	  || __any->type() == typeid(_Tp)
+#endif
+	  )
 	{
 	  any::_Arg __arg;
 	  __any->_M_manager(any::_Op_access, __any, &__arg);
@@ -525,6 +530,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return nullptr;
     }
+  /// @endcond
 
   /**
    * @brief Access the contained object.

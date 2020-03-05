@@ -1,4 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
+/* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-mdejagnu-cpu=power8 " } */
 
 #include <altivec.h>

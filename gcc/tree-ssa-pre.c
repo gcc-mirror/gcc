@@ -1151,6 +1151,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_bb (phi) != phiblock)
     return vuse;
 
+  unsigned int cnt = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
   use_oracle = ao_ref_init_from_vn_reference (&ref, set, type, operands);
 
   /* Use the alias-oracle to find either the PHI node in this block,
@@ -1159,8 +1160,10 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_code (phi) == GIMPLE_PHI)
     e = find_edge (block, phiblock);
   else if (use_oracle)
-    while (!stmt_may_clobber_ref_p_1 (phi, &ref))
+    while (cnt > 0
+	   && !stmt_may_clobber_ref_p_1 (phi, &ref))
       {
+	--cnt;
 	vuse = gimple_vuse (phi);
 	phi = SSA_NAME_DEF_STMT (vuse);
 	if (gimple_bb (phi) != phiblock)
@@ -1179,10 +1182,9 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
       if (use_oracle)
 	{
 	  bitmap visited = NULL;
-	  unsigned int cnt;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, &cnt, &visited, false,
+	  vuse = get_continuation_for_phi (phi, &ref, cnt, &visited, false,
 					   NULL, NULL);
 	  if (visited)
 	    BITMAP_FREE (visited);
@@ -4197,6 +4199,7 @@ pass_pre::execute (function *fun)
   loop_optimizer_init (LOOPS_NORMAL);
   split_critical_edges ();
   scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
 
   run_rpo_vn (VN_WALK);
 

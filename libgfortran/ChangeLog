@@ -1,3 +1,61 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-07-23  Thomas König  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/91030
+	* io/unix.c (BUFFER_SIZE): Delete.
+	(BUFFER_FORMATTED_SIZE_DEFAULT): New variable.
+	(BUFFER_UNFORMATTED_SIZE_DEFAULT): New variable.
+	(unix_stream): Add buffer_size.
+	(buf_read): Use s->buffer_size instead of BUFFER_SIZE.
+	(buf_write): Likewise.
+	(buf_init): Add argument unformatted.  Handle block sizes
+	for unformatted vs. formatted, using defaults if provided.
+	(fd_to_stream): Add argument unformatted in call to buf_init.
+	* libgfortran.h (options_t): Add buffer_size_formatted and
+	buffer_size_unformatted.
+	* runtime/environ.c (variable_table): Add
+	GFORTRAN_UNFORMATTED_BUFFER_SIZE and
+	GFORTRAN_FORMATTED_BUFFER_SIZE.
+
+2019-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk
+        PR libfortran/90038
+        * intrinsics/execute_command_line (sigchld_handler): New function.
+        (execute_command_line): Install handler for SIGCHLD.
+        * configure.ac: Check for presence of sigaction and waitpid.
+        * config.h.in: Regenerated.
+        * configure: Regenerated.
+
+2019-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/90038
+	* configure.ac (AC_CHECK_FUNCS_ONCE): Check for posix_spawn.
+	* intrinsics/execute_command_line (execute_command_line): Use
+	posix_spawn.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): Export _gfortran_{,m,s}findloc{0,1}_r10.
+	* Makefile.am (i_findloc0_c): Add $(srcdir)/generated/findloc0_r10.c.
+	(i_findloc1_c): Add $(srcdir)/generated/findloc1_r10.c.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_r10.c: Generated.
+	* generated/findloc1_r10.c: Generated.
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): New symbol version, export
+	_gfortran_{,m,s}findloc0_i2 in it.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

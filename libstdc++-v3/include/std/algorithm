@@ -73,7 +73,7 @@
 #  endif
 
 // Feature test macro for parallel algorithms
-# define __cpp_lib_parallel_algorithm 201703L
+# define __cpp_lib_parallel_algorithm 201603L
 #endif // C++17
 
 #ifdef _GLIBCXX_PARALLEL

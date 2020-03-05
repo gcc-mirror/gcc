@@ -10627,7 +10627,8 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	      if (DECL_P (inner)
 		  && !DECL_EXTERNAL (inner)
 		  && !TREE_STATIC (inner)
-		  && DECL_CONTEXT (inner) == current_function_decl)
+		  && DECL_CONTEXT (inner) == current_function_decl
+		  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 		{
 		  if (TREE_CODE (inner) == LABEL_DECL)
 		    warning_at (loc, OPT_Wreturn_local_addr,
@@ -10858,11 +10859,14 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
    the beginning of the loop.  COND is the loop condition.  COND_IS_FIRST
    is false for DO loops.  INCR is the FOR increment expression.  BODY is
    the statement controlled by the loop.  BLAB is the break label.  CLAB is
-   the continue label.  Everything is allowed to be NULL.  */
+   the continue label.  Everything is allowed to be NULL.
+   COND_LOCUS is the location of the loop condition, INCR_LOCUS is the
+   location of the FOR increment expression.  */
 
 void
-c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
-	       tree blab, tree clab, bool cond_is_first)
+c_finish_loop (location_t start_locus, location_t cond_locus, tree cond,
+	       location_t incr_locus, tree incr, tree body, tree blab,
+	       tree clab, bool cond_is_first)
 {
   tree entry = NULL, exit = NULL, t;
 
@@ -10904,12 +10908,8 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 	    }
 
 	  t = build_and_jump (&blab);
-	  if (cond_is_first)
-	    exit = fold_build3_loc (start_locus,
-				COND_EXPR, void_type_node, cond, exit, t);
-	  else
-	    exit = fold_build3_loc (input_location,
-				COND_EXPR, void_type_node, cond, exit, t);
+	  exit = fold_build3_loc (cond_is_first ? start_locus : input_location,
+				  COND_EXPR, void_type_node, cond, exit, t);
 	}
       else
 	{
@@ -10930,9 +10930,23 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
   if (clab)
     add_stmt (build1 (LABEL_EXPR, void_type_node, clab));
   if (incr)
-    add_stmt (incr);
+    {
+      if (MAY_HAVE_DEBUG_MARKER_STMTS && incr_locus != UNKNOWN_LOCATION)
+	{
+	  t = build0 (DEBUG_BEGIN_STMT, void_type_node);
+	  SET_EXPR_LOCATION (t, incr_locus);
+	  add_stmt (t);
+	}
+      add_stmt (incr);
+    }
   if (entry)
     add_stmt (entry);
+  if (MAY_HAVE_DEBUG_MARKER_STMTS && cond_locus != UNKNOWN_LOCATION)
+    {
+      t = build0 (DEBUG_BEGIN_STMT, void_type_node);
+      SET_EXPR_LOCATION (t, cond_locus);
+      add_stmt (t);
+    }
   if (exit)
     add_stmt (exit);
   if (blab)

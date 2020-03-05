@@ -1414,6 +1414,12 @@ DEFPARAM(PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS,
 	 " loops.",
 	 100, 0, 0)
 
+DEFPARAM(PARAM_SSA_NAME_DEF_CHAIN_LIMIT,
+	 "ssa-name-def-chain-limit",
+	 "The maximum number of SSA_NAME assignments to follow in determining "
+	 "a value.",
+	 512, 0, 0)
+
 /*
 
 Local variables:

@@ -42,20 +42,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     constexpr _Tp
-    __rotl(_Tp __x, unsigned int __s) noexcept
+    __rotl(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
-      const unsigned __sN = __s % _Nd;
-      return (__x << __sN) | (__x >> ((_Nd - __sN) % _Nd));
+      const int __r = __s % _Nd;
+      if (__r == 0)
+	return __x;
+      else if (__r > 0)
+	return (__x << __r) | (__x >> ((_Nd - __r) % _Nd));
+      else
+	return (__x >> -__r) | (__x << ((_Nd + __r) % _Nd)); // rotr(x, -r)
     }
 
   template<typename _Tp>
     constexpr _Tp
-    __rotr(_Tp __x, unsigned int __s) noexcept
+    __rotr(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
-      const unsigned __sN = __s % _Nd;
-      return (__x >> __sN) | (__x << ((_Nd - __sN) % _Nd));
+      const int __r = __s % _Nd;
+      if (__r == 0)
+	return __x;
+      else if (__r > 0)
+	return (__x >> __r) | (__x << ((_Nd - __r) % _Nd));
+      else
+	return (__x << -__r) | (__x >> ((_Nd + __r) % _Nd)); // rotl(x, -r)
     }
 
   template<typename _Tp>
@@ -197,9 +207,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
       if (__x == 0 || __x == 1)
         return 1;
-      const unsigned __n = _Nd - std::__countl_zero((_Tp)(__x - 1u));
-      const _Tp __y_2 = (_Tp)1u << (__n - 1u);
-      return __y_2 << 1u;
+      auto __shift_exponent = _Nd - std::__countl_zero((_Tp)(__x - 1u));
+      // If the shift exponent equals _Nd then the correct result is not
+      // representable as a value of _Tp, and so the result is undefined.
+      // Want that undefined behaviour to be detected in constant expressions,
+      // by UBSan, and by debug assertions.
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+      if (!__builtin_is_constant_evaluated())
+	__glibcxx_assert( __shift_exponent != numeric_limits<_Tp>::digits );
+#endif
+      using __promoted_type = decltype(__x << 1);
+      if _GLIBCXX17_CONSTEXPR (!is_same<__promoted_type, _Tp>::value)
+	{
+	  // If __x undergoes integral promotion then shifting by _Nd is
+	  // not undefined. In order to make the shift undefined, so that
+	  // it is diagnosed in constant expressions and by UBsan, we also
+	  // need to "promote" the shift exponent to be too large for the
+	  // promoted type.
+	  const int __extra_exp = sizeof(__promoted_type) / sizeof(_Tp) / 2;
+	  __shift_exponent |= (__shift_exponent & _Nd) << __extra_exp;
+	}
+      return (_Tp)1u << __shift_exponent;
     }
 
   template<typename _Tp>
@@ -236,20 +264,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using _If_is_unsigned_integer
       = typename _If_is_unsigned_integer_type<remove_cv_t<_Tp>, _Up>::type;
 
-#if ! __STRICT_ANSI__
-  // [bitops.rot], rotating
+  // [bit.rot], rotating
 
   template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
-    rotl(_Tp __x, unsigned int __s) noexcept
+    [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
+    rotl(_Tp __x, int __s) noexcept
     { return std::__rotl(__x, __s); }
 
   template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
-    rotr(_Tp __x, unsigned int __s) noexcept
+    [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
+    rotr(_Tp __x, int __s) noexcept
     { return std::__rotr(__x, __s); }
 
-  // [bitops.count], counting
+  // [bit.count], counting
 
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
@@ -275,9 +302,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _If_is_unsigned_integer<_Tp, int>
     popcount(_Tp __x) noexcept
     { return std::__popcount(__x); }
-#endif
 
-  // Integral power-of-two operations
+  // [bit.pow.two], integral powers of 2
 
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, bool>
@@ -299,54 +325,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log2p1(_Tp __x) noexcept
     { return std::__log2p1(__x); }
 
-#if ! __STRICT_ANSI__
-  enum class byte : unsigned char;
+#define __cpp_lib_endian 201907L
 
-  constexpr byte
-  rotl(byte __x, unsigned int __s) noexcept
-  { return (byte)std::__rotl((unsigned char)__x, __s); }
-
-  constexpr byte
-  rotr(byte __x, unsigned int __s) noexcept
-  { return (byte)std::__rotr((unsigned char)__x, __s); }
-
-  constexpr int
-  countl_zero(byte __x) noexcept
-  { return std::__countl_zero((unsigned char)__x); }
-
-  constexpr int
-  countl_one(byte __x) noexcept
-  { return std::__countl_one((unsigned char)__x); }
-
-  constexpr int
-  countr_zero(byte __x) noexcept
-  { return std::__countr_zero((unsigned char)__x); }
-
-  constexpr int
-  countr_one(byte __x) noexcept
-  { return std::__countr_one((unsigned char)__x); }
-
-  constexpr int
-  popcount(byte __x) noexcept
-  { return std::__popcount((unsigned char)__x); }
-
-  constexpr bool
-  ispow2(byte __x) noexcept
-  { return std::__ispow2((unsigned char)__x); }
-
-  constexpr byte
-  ceil2(byte __x) noexcept
-  { return (byte)std::__ceil2((unsigned char)__x); }
-
-  constexpr byte
-  floor2(byte __x) noexcept
-  { return (byte)std::__floor2((unsigned char)__x); }
-
-  constexpr byte
-  log2p1(byte __x) noexcept
-  { return (byte)std::__log2p1((unsigned char)__x); }
-#endif
-
+  /// Byte order
+  enum class endian
+  {
+    little = __ORDER_LITTLE_ENDIAN__,
+    big    = __ORDER_BIG_ENDIAN__,
+    native = __BYTE_ORDER__
+  };
 #endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION

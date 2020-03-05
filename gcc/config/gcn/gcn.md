@@ -790,10 +790,10 @@
     if (cfun && cfun->machine && cfun->machine->normal_function)
       return "s_setpc_b64\ts[18:19]";
     else
-      return "s_dcache_wb\;s_endpgm";
+      return "s_waitcnt\tlgkmcnt(0)\;s_dcache_wb\;s_endpgm";
   }
   [(set_attr "type" "sop1")
-   (set_attr "length" "8")])
+   (set_attr "length" "12")])
 
 (define_expand "call"
   [(parallel [(call (match_operand 0 "")
@@ -836,18 +836,36 @@
  [(set_attr "type" "mult")
   (set_attr "length" "32")])
 
-(define_insn_and_split "movdi_symbol_save_scc"
+(define_insn "movdi_symbol_save_scc"
  [(set (match_operand:DI 0 "nonimmediate_operand" "=Sg")
        (match_operand:DI 1 "general_operand" "Y"))
   (clobber (reg:BI CC_SAVE_REG))]
  "(GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == LABEL_REF)
   && (lra_in_progress || reload_completed)"
- "#"
- "reload_completed"
- [(set (reg:BI CC_SAVE_REG) (reg:BI SCC_REG))
-  (parallel [(set (match_dup 0) (match_dup 1))
-	     (clobber (reg:BI SCC_REG))])
-  (set (reg:BI SCC_REG) (reg:BI CC_SAVE_REG))])
+  {
+    /* !!! These sequences clobber CC_SAVE_REG.  */
+
+    if (SYMBOL_REF_P (operands[1])
+	&& SYMBOL_REF_WEAK (operands[1]))
+	return "; s_mov_b32\ts22, scc is not supported by the assembler.\;"
+	       ".long\t0xbe9600fd\;"
+	       "s_getpc_b64\t%0\;"
+	       "s_add_u32\t%L0, %L0, %1@gotpcrel32@lo+4\;"
+	       "s_addc_u32\t%H0, %H0, %1@gotpcrel32@hi+4\;"
+	       "s_load_dwordx2\t%0, %0\;"
+	       "s_cmpk_lg_u32\ts22, 0\;"
+	       "s_waitcnt\tlgkmcnt(0)";
+
+    return "; s_mov_b32\ts22, scc is not supported by the assembler.\;"
+	   ".long\t0xbe9600fd\;"
+	   "s_getpc_b64\t%0\;"
+	   "s_add_u32\t%L0, %L0, %1@rel32@lo+4\;"
+	   "s_addc_u32\t%H0, %H0, %1@rel32@hi+4\;"
+	   "s_cmpk_lg_u32\ts22, 0";
+  }
+ [(set_attr "type" "mult")
+  (set_attr "length" "40")])
+
 
 (define_insn "gcn_indirect_call"
   [(call (mem (match_operand:DI 0 "register_operand" "Sg"))

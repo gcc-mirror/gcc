@@ -2196,7 +2196,7 @@ execute_ipa_summary_passes (ipa_opt_pass_d *ipa_pass)
 
 static void
 execute_one_ipa_transform_pass (struct cgraph_node *node,
-				ipa_opt_pass_d *ipa_pass)
+				ipa_opt_pass_d *ipa_pass, bool do_not_collect)
 {
   opt_pass *pass = ipa_pass;
   unsigned int todo_after = 0;
@@ -2242,14 +2242,14 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   redirect_edge_var_map_empty ();
 
   /* Signal this is a suitable GC collection point.  */
-  if (!(todo_after & TODO_do_not_ggc_collect))
+  if (!do_not_collect && !(todo_after & TODO_do_not_ggc_collect))
     ggc_collect ();
 }
 
 /* For the current function, execute all ipa transforms. */
 
 void
-execute_all_ipa_transforms (void)
+execute_all_ipa_transforms (bool do_not_collect)
 {
   struct cgraph_node *node;
   if (!cfun)
@@ -2261,7 +2261,8 @@ execute_all_ipa_transforms (void)
       unsigned int i;
 
       for (i = 0; i < node->ipa_transforms_to_apply.length (); i++)
-	execute_one_ipa_transform_pass (node, node->ipa_transforms_to_apply[i]);
+	execute_one_ipa_transform_pass (node, node->ipa_transforms_to_apply[i],
+					do_not_collect);
       node->ipa_transforms_to_apply.release ();
     }
 }

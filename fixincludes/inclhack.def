@@ -1298,12 +1298,12 @@ fix = {
 };
 
 /*
- *  For the AAB_darwin7_9_long_double_funcs fix to be useful,
- *  you have to not use "" includes.
+ *  For the AAB_darwin7_9_long_double_funcs fix (and later fixes for long long)
+ *  to be useful, the main math.h must use <> and not "" includes.
  */
 fix = {
     hackname  = darwin_9_long_double_funcs_2;
-    mach      = "*-*-darwin7.9*";
+    mach      = "*-*-darwin*";
     files     = math.h;
     select    = '#include[ \t]+\"';
     c_fix     = format;
@@ -1311,7 +1311,7 @@ fix = {
   
     c_fix_arg = '([ \t]*#[ \t]*include[ \t]+)"([a-z0-9/]+)\.h"';
   
-    test_text = '#include "architecture/ppc/math.h"';
+    test_text = '#include <architecture/ppc/math.h>';
 };
 
 /*
@@ -1352,6 +1352,22 @@ fix = {
   c_fix_arg = "((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))";
   test_text = "#if defined(__GNUC__) && (__GNUC__ >= 3) && "
   	      "(__GNUC_MINOR__ >= 1)\n";
+};
+
+/*
+ * math.h hides the long long functions that are available on the system for
+ * 10.5 and 10.6 SDKs, we expect to use them in G++ without specifying a value
+ * for __STDC_VERSION__, or switching __STRICT_ANSI__ off.
+ */
+fix = {
+  hackname  = darwin_ll_funcs_avail;
+  mach      = "*-*-darwin*";
+  files     = architecture/ppc/math.h, architecture/i386/math.h;
+  select    = "#if[^_]*__STDC_VERSION__[^_]*__STDC_VERSION__[^1]*199901L[^_]*"
+	      "__STRICT_ANSI__[^_]*__GNUC__[^\)]*";
+  sed       = "s/#if[^_]*__STDC_VERSION__[^_]*__STDC_VERSION__[^_]*199901L[^_]*"
+	      "__STRICT_ANSI__[^_]*__GNUC__[^\\)]*\)/#if\ !\(__DARWIN_NO_LONG_LONG\)/";
+  test_text = "#if\ !(__DARWIN_NO_LONG_LONG)";
 };
 
 /*
@@ -1423,6 +1439,49 @@ fix = {
 	void
 	_os_trace_internal(void *dso, uint8_t type, const char *format, const uint8_t *buf, size_t buf_size, os_trace_payload_t payload);
 	_EOText_;
+};
+
+/*
+ *  In macOS 10.10 <os/base.h>, doesn't have __has_extension guarded.
+ */
+fix = {
+  hackname  = darwin_os_base_1;
+  mach      = "*-*-darwin*";
+  files     = os/base.h;
+  select    = <<- OS_BASE_1_SEL
+#define __has_attribute.*
+#endif
+OS_BASE_1_SEL;
+  c_fix     = format;
+  c_fix_arg = <<- OS_BASE_1_FIX
+%0
+#ifndef __has_extension
+#define __has_extension(x) 0
+#endif
+OS_BASE_1_FIX;
+  test_text = <<- OS_BASE_1_TEST
+#define __has_attribute(x) 0
+#endif
+
+#if __GNUC__
+OS_BASE_1_TEST;
+};
+
+/*
+ *  In macOS 10.10 <dispatch/object.h>, has unguarded block syntax.
+ */
+fix = {
+  hackname  = darwin_dispatch_object_1;
+  mach      = "*-*-darwin*";
+  files     = dispatch/object.h;
+  select    = "typedef void.*\\^dispatch_block_t.*";
+  c_fix     = format;
+  c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
+  test_text = <<- DISPATCH_OBJECT_1_TEST
+typedef void (^dispatch_block_t)(void);
+
+__BEGIN_DECLS
+DISPATCH_OBJECT_1_TEST;
 };
 
 /*
@@ -1638,7 +1697,7 @@ fix = {
     c_fix_arg = "#if (__STDC_VERSION__ < 201112L) || defined(__cplusplus)\n"
 		"# undef _Atomic\n"
 		"#endif\n";
-    test_text = "_Atomic";
+    test_text = ""; /* Don't provide this for wrap fixes.  */
 };
 
 /*

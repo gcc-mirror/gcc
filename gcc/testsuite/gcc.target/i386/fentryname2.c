@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target mfentry } */
 /* { dg-options "-pg -mfentry -mrecord-mcount -mfentry-section=foo" } */
 /* { dg-final { scan-assembler "section.*foo" } } */
 /* { dg-final { scan-assembler "section.*bar" } } */

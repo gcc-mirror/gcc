@@ -885,7 +885,10 @@ main (int argc, char *argv[])
 
   unsigned int upper = (return_value & ~0xffff) >> 16;
   if (upper == 0xcafe)
-    printf ("Kernel exit value was never set\n");
+    {
+      printf ("Kernel exit value was never set\n");
+      return_value = 0xff;
+    }
   else if (upper == 0xffff)
     ; /* Set by exit.  */
   else if (upper == 0)

@@ -13712,7 +13712,7 @@ $as_echo "#define USE_LIBFFI 1" >>confdefs.h
 fi
 
 
- if test "$with_liffi" != "no"; then
+ if test "$with_libffi" != "no"; then
   USE_LIBFFI_TRUE=
   USE_LIBFFI_FALSE='#'
 else

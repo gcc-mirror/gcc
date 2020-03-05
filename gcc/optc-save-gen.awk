@@ -253,7 +253,7 @@ for (i = 0; i < n_opt_char; i++) {
 }
 
 for (i = 0; i < n_opt_string; i++) {
-	print "  if (ptr->x_" var_opt_char[i] ")";
+	print "  if (ptr->x_" var_opt_string[i] ")";
 	print "    fprintf (file, \"%*s%s (%s)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" var_opt_string[i] "\",";
@@ -326,13 +326,13 @@ for (i = 0; i < n_opt_char; i++) {
 for (i = 0; i < n_opt_string; i++) {
 	name = var_opt_string[i]
 	print "  if (ptr1->x_" name " != ptr2->x_" name "";
-	print "      || (!ptr1->x_" name" || !ptr2->x_" name
+	print "      && (!ptr1->x_" name" || !ptr2->x_" name
 	print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
 	print "    fprintf (file, \"%*s%s (%s/%s)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" name "\",";
-	print "             ptr1->x_" name ",";
-	print "             ptr2->x_" name ");";
+	print "             ptr1->x_" name " ? ptr1->x_" name " : \"(null)\",";
+	print "             ptr2->x_" name " ? ptr1->x_" name " : \"(null)\");";
 	print "";
 }
 
@@ -349,6 +349,7 @@ n_target_char = 0;
 n_target_short = 0;
 n_target_int = 0;
 n_target_enum = 0;
+n_target_string = 0;
 n_target_other = 0;
 
 if (have_save) {
@@ -381,6 +382,8 @@ if (have_save) {
 				if (otype == var_type(flags[i]))
 					var_target_range[name] = ""
 			}
+			else if (otype ~ "^const char \\**$")
+				var_target_string[n_target_string++] = name;
 			else
 				var_target_other[n_target_other++] = name;
 		}
@@ -429,6 +432,10 @@ for (i = 0; i < n_target_char; i++) {
 	print "  ptr->x_" var_target_char[i] " = opts->x_" var_target_char[i] ";";
 }
 
+for (i = 0; i < n_target_string; i++) {
+	print "  ptr->x_" var_target_string[i] " = opts->x_" var_target_string[i] ";";
+}
+
 print "}";
 
 print "";
@@ -459,6 +466,10 @@ for (i = 0; i < n_target_short; i++) {
 
 for (i = 0; i < n_target_char; i++) {
 	print "  opts->x_" var_target_char[i] " = ptr->x_" var_target_char[i] ";";
+}
+
+for (i = 0; i < n_target_string; i++) {
+	print "  opts->x_" var_target_string[i] " = ptr->x_" var_target_string[i] ";";
 }
 
 # This must occur after the normal variables in case the code depends on those
@@ -527,6 +538,15 @@ for (i = 0; i < n_target_char; i++) {
 	print "             indent, \"\",";
 	print "             \"" var_target_char[i] "\",";
 	print "             ptr->x_" var_target_char[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_string; i++) {
+	print "  if (ptr->x_" var_target_string[i] ")";
+	print "    fprintf (file, \"%*s%s (%s)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_string[i] "\",";
+	print "             ptr->x_" var_target_string[i] ");";
 	print "";
 }
 
@@ -602,6 +622,19 @@ for (i = 0; i < n_target_char; i++) {
 	print "             \"" var_target_char[i] "\",";
 	print "             ptr1->x_" var_target_char[i] ",";
 	print "             ptr2->x_" var_target_char[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_string; i++) {
+	name = var_target_string[i]
+	print "  if (ptr1->x_" name " != ptr2->x_" name "";
+	print "      && (!ptr1->x_" name" || !ptr2->x_" name
+	print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
+	print "    fprintf (file, \"%*s%s (%s/%s)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" name "\",";
+	print "             ptr1->x_" name " ? ptr1->x_" name " : \"(null)\",";
+	print "             ptr2->x_" name " ? ptr1->x_" name " : \"(null)\");";
 	print "";
 }
 

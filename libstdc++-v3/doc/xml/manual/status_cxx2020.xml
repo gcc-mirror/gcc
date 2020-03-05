@@ -227,14 +227,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Treating Unnecessary <code>decay</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0777r1.pdf">
 	P0777R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
@@ -667,7 +666,6 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>  Utility functions to implement uses-allocator construction </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0591r4.pdf">
@@ -675,7 +673,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 9.1 </entry>
-      <entry>Missing changes to <code>std::scoped_allocator_adaptor</code></entry>
+      <entry>
+        <code>std::scoped_allocator_adaptor</code> changes missing in 9.1.0
+      </entry>
     </row>
 
     <row>
@@ -933,16 +933,74 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>  Well-behaved interpolation for numbers and pointers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html">
+	P0811R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_interpolate &gt;= 201902L</code> </entry>
+    </row>
+
+    <row>
       <entry>  Missing feature test macros </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1353r0.html">
 	P1353R0
 	</link>
       </entry>
-      <entry align="center"> Partial </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
+
+    <row>
+      <entry>
+        <classname>polymorphic_allocator&lt;&gt;</classname>
+        as a vocabulary type
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0339r6.pdf">
+        P0339R6
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Making std::underlying_type SFINAE-friendly </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0340r3.html">
+        P0340R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Make <code>create_directory()</code> Intuitive </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1164r1.pdf">
+        P1164R1
+	</link>
+      </entry>
+      <entry align="center"> 8.3 </entry>
+      <entry> Treated as a DR for C++17 </entry>
+    </row>
+
+    <row>
+      <entry> Traits for [Un]bounded Arrays </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1357r1.pdf">
+        P1357R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_bounded_array_traits &gt;= 201902L</code> </entry>
+    </row>
+
   </tbody>
 </tgroup>
 </table>

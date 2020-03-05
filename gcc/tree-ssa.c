@@ -554,20 +554,25 @@ release_defs_bitset (bitmap toremove)
 
   /* Performing a topological sort is probably overkill, this will
      most likely run in slightly superlinear time, rather than the
-     pathological quadratic worst case.  */
+     pathological quadratic worst case.
+     But iterate from max SSA name version to min one because
+     that mimics allocation order during code generation behavior best.
+     Use an array for this which we compact on-the-fly with a NULL
+     marker moving towards the end of the vector.  */
+  auto_vec<tree, 16> names;
+  names.reserve (bitmap_count_bits (toremove) + 1);
+  names.quick_push (NULL_TREE);
+  EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
+    names.quick_push (ssa_name (j));
+
+  bitmap_tree_view (toremove);
   while (!bitmap_empty_p (toremove))
     {
-      unsigned to_remove_bit = -1U;
-      EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
+      j = names.length () - 1;
+      for (unsigned i = names.length () - 1; names[i];)
 	{
-	  if (to_remove_bit != -1U)
-	    {
-	      bitmap_clear_bit (toremove, to_remove_bit);
-	      to_remove_bit = -1U;
-	    }
-
 	  bool remove_now = true;
-	  tree var = ssa_name (j);
+	  tree var = names[i];
 	  gimple *stmt;
 	  imm_use_iterator uit;
 
@@ -612,14 +617,15 @@ release_defs_bitset (bitmap toremove)
 		  gsi_remove (&gsi, true);
 		  release_defs (def);
 		}
-
-	      to_remove_bit = j;
+	      bitmap_clear_bit (toremove, SSA_NAME_VERSION (var));
 	    }
+	  else
+	    --i;
+	  if (--j != i)
+	    names[i] = names[j];
 	}
-      if (to_remove_bit != -1U)
-	bitmap_clear_bit (toremove, to_remove_bit);
     }
-
+  bitmap_list_view (toremove);
 }
 
 /* Verify virtual SSA form.  */

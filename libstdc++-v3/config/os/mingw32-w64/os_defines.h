@@ -88,4 +88,6 @@
 // See libstdc++/59807
 #define _GTHREAD_USE_MUTEX_INIT_FUNC 1
 
+#define _GLIBCXX_USE_CRT_RAND_S 1
+
 #endif

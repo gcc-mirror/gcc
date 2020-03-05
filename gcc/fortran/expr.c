@@ -3305,11 +3305,13 @@ check_restricted (gfc_expr *e)
 	 restricted expression in an elemental procedure, it will have
 	 already been simplified away once we get here.  Therefore we
 	 don't need to jump through hoops to distinguish valid from
-	 invalid cases.  */
-      if (sym->attr.dummy && sym->ns == gfc_current_ns
+	 invalid cases.  Allowed in F2018.  */
+      if (gfc_notification_std (GFC_STD_F2008)
+	  && sym->attr.dummy && sym->ns == gfc_current_ns
 	  && sym->ns->proc_name && sym->ns->proc_name->attr.elemental)
 	{
-	  gfc_error ("Dummy argument %qs not allowed in expression at %L",
+	  gfc_error_now ("Dummy argument %qs not "
+		     "allowed in expression at %L",
 		     sym->name, &e->where);
 	  break;
 	}
@@ -6086,7 +6088,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	    check_intentin = false;
 	}
     }
-  if (check_intentin && sym->attr.intent == INTENT_IN)
+
+  if (check_intentin
+      && (sym->attr.intent == INTENT_IN
+	  || (sym->attr.select_type_temporary && sym->assoc
+	      && sym->assoc->target && sym->assoc->target->symtree
+	      && sym->assoc->target->symtree->n.sym->attr.intent == INTENT_IN)))
     {
       if (pointer && is_pointer)
 	{
@@ -6098,10 +6105,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
       if (!pointer && !is_pointer && !sym->attr.pointer)
 	{
+	  const char *name = sym->attr.select_type_temporary
+			   ? sym->assoc->target->symtree->name : sym->name;
 	  if (context)
 	    gfc_error ("Dummy argument %qs with INTENT(IN) in variable"
 		       " definition context (%s) at %L",
-		       sym->name, context, &e->where);
+		       name, context, &e->where);
 	  return false;
 	}
     }

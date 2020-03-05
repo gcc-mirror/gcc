@@ -15,4 +15,5 @@ const char *foo(void)
   @catch (TestsuiteObject* theException) {
     return [theException name];
   }
+  return (const char *)0;
 }

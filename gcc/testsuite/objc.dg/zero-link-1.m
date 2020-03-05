@@ -5,7 +5,7 @@
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-fzero-link" } */
 
-#include <Foundation/NSObject.h>
+#include "../objc-obj-c++-shared/F-NSObject.h"
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort();

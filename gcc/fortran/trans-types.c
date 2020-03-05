@@ -2997,7 +2997,7 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
       if (a->expr)
 	{
 	  snprintf (name, GFC_MAX_SYMBOL_LEN, "_formal_%d", var_num ++);
-	  gfc_get_symbol (name, NULL, &s);
+	  gfc_get_symbol (name, gfc_current_ns, &s);
 	  if (a->expr->ts.type == BT_PROCEDURE)
 	    {
 	      s->attr.flavor = FL_PROCEDURE;
@@ -3005,6 +3005,13 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
 	  else
 	    {
 	      s->ts = a->expr->ts;
+
+	      if (s->ts.type == BT_CHARACTER)
+		  s->ts.u.cl = gfc_get_charlen ();
+
+	      s->ts.deferred = 0;
+	      s->ts.is_iso_c = 0;
+	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
 	      if (a->expr->rank > 0)
 		{

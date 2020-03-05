@@ -16,9 +16,11 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Exit immediately if this isn't a PowerPC target or if the target is aix.
+# Exit immediately if this isn't a PowerPC target or if the target is
+# aix or Darwin.
 if { (![istarget powerpc*-*-*] && ![istarget rs6000-*-*])
-     || [istarget "powerpc*-*-aix*"] } then {
+     || [istarget "powerpc*-*-aix*"]
+     || [istarget "powerpc*-*-darwin*"]  } then {
   return
 }
 

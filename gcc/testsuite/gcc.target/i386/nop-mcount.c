@@ -1,5 +1,6 @@
 /* Test -mnop-mcount */
 /* { dg-do compile { target { *-*-linux* && nonpic } } } */
+/* { dg-require-effective-target mfentry } */
 /* { dg-options "-pg -mfentry -mrecord-mcount -mnop-mcount" } */
 /* { dg-final { scan-assembler-not "__fentry__" } } */
 /* Origin: Andi Kleen */

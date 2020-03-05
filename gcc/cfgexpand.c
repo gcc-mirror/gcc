@@ -4369,7 +4369,11 @@ expand_debug_expr (tree exp)
       op0 = DECL_RTL_IF_SET (exp);
 
       /* This decl was probably optimized away.  */
-      if (!op0)
+      if (!op0
+	  /* At least label RTXen are sometimes replaced by
+	     NOTE_INSN_DELETED_LABEL.  Any notes here are not
+	     handled by copy_rtx.  */
+	  || NOTE_P (op0))
 	{
 	  if (!VAR_P (exp)
 	      || DECL_EXTERNAL (exp)

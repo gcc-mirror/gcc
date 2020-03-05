@@ -7040,7 +7040,14 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       if (virtual_operand_p (op))
 	{
 	  /* Remove the phi nodes for virtual operands (alias analysis will be
-	     run for the new function, anyway).  */
+	     run for the new function, anyway).  But replace all uses that
+	     might be outside of the region we move.  */
+	  use_operand_p use_p;
+	  imm_use_iterator iter;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	      SET_USE (use_p, SSA_NAME_VAR (op));
           remove_phi_node (&psi, true);
 	  continue;
 	}

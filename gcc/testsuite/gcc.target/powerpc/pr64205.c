@@ -1,4 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
+/* { dg-require-effective-target dfp } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-options "-O2 -mdejagnu-cpu=G5 -maltivec" } */
 

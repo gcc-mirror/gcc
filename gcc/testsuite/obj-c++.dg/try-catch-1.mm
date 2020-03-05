@@ -39,4 +39,5 @@ int foo()
   @finally {
     printf("In @finally block (%d)... ", exc_control);
   }
+  return -1;
 }

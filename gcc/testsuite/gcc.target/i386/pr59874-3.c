@@ -1,7 +1,8 @@
 /* PR target/59874 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mpopcnt -masm=att" } */
-/* { dg-final { scan-assembler "popcntw" } } */
+/* { dg-final { scan-assembler "\tpopcntw" { target { ! *-*-darwin* } } } } */
+/* { dg-final { scan-assembler "\tpopcnt" { target *-*-darwin* } } } */
 
 unsigned int
 foo (unsigned short x)

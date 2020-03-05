@@ -671,7 +671,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:QI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h, w, w,???w,h, w,Rcq,  S,!*x,  r,r, Ucm,m,???m,  m,Usc")
 	(match_operand:QI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1,cL, I,?Rac,i,?i,  T,Rcq,Usd,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
   "register_operand (operands[0], QImode)
-   || register_operand (operands[1], QImode)"
+   || register_operand (operands[1], QImode)
+   || (satisfies_constraint_Cm3 (operands[1])
+       && memory_operand (operands[0], QImode))"
   "@
    mov%? %0,%1%&
    mov%? %0,%1%&
@@ -713,7 +715,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
        /* Don't use a LIMM that we could load with a single insn - we loose
 	  delay-slot filling opportunities.  */
        && !satisfies_constraint_I (operands[1])
-       && satisfies_constraint_Usc (operands[0]))"
+       && satisfies_constraint_Usc (operands[0]))
+   || (satisfies_constraint_Cm3 (operands[1])
+       && memory_operand (operands[0], HImode))"
   "@
    mov%? %0,%1%&
    mov%? %0,%1%&

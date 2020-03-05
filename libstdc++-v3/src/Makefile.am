@@ -325,7 +325,7 @@ endif
 # Take care to fix all possibly-relative paths.
 debugdir = ${glibcxx_builddir}/src/debug
 stamp-debug:
-	if test ! -d ${debugdir}; then \
+	if test ! -d ${debugdir} || test ! -f ${debugdir}/Makefile ; then \
 	  mkdir -p ${debugdir}; \
 	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \
 	  (cd ${debugdir}; \

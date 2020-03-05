@@ -1126,7 +1126,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  FOR_EACH_VEC_ELT (stmts, i, other_info)
 	    {
 	      /* But for reduction chains only check on the first stmt.  */
-	      if (REDUC_GROUP_FIRST_ELEMENT (other_info)
+	      if (!STMT_VINFO_DATA_REF (other_info)
+		  && REDUC_GROUP_FIRST_ELEMENT (other_info)
 		  && REDUC_GROUP_FIRST_ELEMENT (other_info) != stmt_info)
 		continue;
 	      if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
@@ -1284,6 +1285,9 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  && nops == 2
 	  && oprnds_info[1]->first_dt == vect_internal_def
 	  && is_gimple_assign (stmt_info->stmt)
+	  /* Swapping operands for reductions breaks assumptions later on.  */
+	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
+	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_double_reduction_def
 	  /* Do so only if the number of not successful permutes was nor more
 	     than a cut-ff as re-trying the recursive match on
 	     possibly each level of the tree would expose exponential

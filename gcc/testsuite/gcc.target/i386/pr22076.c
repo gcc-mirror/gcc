@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer -flax-vector-conversions -mmmx" } */
 /* { dg-additional-options "-mno-vect8-ret-in-mem" { target *-*-vxworks* } } */
+/* { dg-additional-options "-fno-common" { target *-*-darwin* } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { ia32 && *-*-darwin* } } } */
 
 #include <mmintrin.h>
 

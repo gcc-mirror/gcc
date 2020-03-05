@@ -330,10 +330,10 @@ int main ()
 /* { dg-final { scan-assembler-times "divd" 8  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "divdu" 2  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "mulld" 4  { target lp64 } } } */
-/* check for both .__divdi3 (AIX) and __divdi3 (Linux) */
-/* { dg-final { scan-assembler-times {\mbl \.?__divdi3\M} 2   { target { ilp32 } } } } */
-/* check for both .__udivdi3 (AIX) and __udivdi3 (Linux) */
-/* { dg-final { scan-assembler-times {\mbl \.?__udivdi3\M} 2  { target { ilp32 } } } } */
+/* check for .__divdi3 (AIX), __divdi3 (Linux) and ___divdi3 (Darwin) */
+/* { dg-final { scan-assembler-times {\mbl \.?_?__divdi3\M} 2   { target { ilp32 } } } } */
+/* check for both .__udivdi3 (AIX), __udivdi3 (Linux) and ___udivdi3 (Darwin) */
+/* { dg-final { scan-assembler-times {\mbl \.?_?__udivdi3\M} 2  { target { ilp32 } } } } */
 /* { dg-final { scan-assembler-times "mullw" 12  { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "mulhwu" 4  { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "xxmrgld" 0 } } */

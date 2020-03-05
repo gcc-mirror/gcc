@@ -1279,12 +1279,12 @@ struct processor_costs znver1_cost = {
 static stringop_algs znver2_memcpy[2] = {
   {libcall, {{6, loop, false}, {14, unrolled_loop, false},
 	     {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+  {libcall, {{16, loop, false}, {64, rep_prefix_4_byte, false},
 	     {-1, libcall, false}}}};
 static stringop_algs znver2_memset[2] = {
   {libcall, {{8, loop, false}, {24, unrolled_loop, false},
 	     {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+  {libcall, {{24, rep_prefix_4_byte, false}, {128, rep_prefix_8_byte, false},
 	     {-1, libcall, false}}}};
 
 struct processor_costs znver2_cost = {
@@ -1335,11 +1335,11 @@ struct processor_costs znver2_cost = {
 					   in SImode and DImode.  */
   {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode.  */
-  2, 3, 6,				/* cost of moving XMM,YMM,ZMM
+  2, 2, 3,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
-  {6, 6, 6, 10, 20},			/* cost of loading SSE registers
+  {6, 6, 6, 6, 12},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit.  */
-  {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
+  {6, 6, 6, 6, 12},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
@@ -1372,7 +1372,7 @@ struct processor_costs znver2_cost = {
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
   COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
-  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (3),			/* cost of MULSD instruction.  */
   COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
   COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
   COSTS_N_INSNS (10),			/* cost of DIVSS instruction.  */

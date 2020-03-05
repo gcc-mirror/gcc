@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -fcf-protection" } */
 /* { dg-final { scan-assembler "endbr" } } */
 /* { dg-final { scan-assembler "fn2:" } } */
-/* { dg-final { scan-assembler "set\[ \t]+fn3,fn1" } } */
+/* { dg-final { scan-assembler "set\[ \t]+fn3,fn1" { target { ! *-*-darwin* } } } } */
 
 int (*foo)(int);
 

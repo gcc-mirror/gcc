@@ -1337,7 +1337,9 @@ adjust_temp_type (tree type, tree temp)
   if (TREE_CODE (temp) == EMPTY_CLASS_EXPR)
     return build0 (EMPTY_CLASS_EXPR, type);
   gcc_assert (scalarish_type_p (type));
-  return cp_fold_convert (type, temp);
+  /* Now we know we're dealing with a scalar, and a prvalue of non-class
+     type is cv-unqualified.  */
+  return cp_fold_convert (cv_unqualified (type), temp);
 }
 
 /* Callback for walk_tree used by unshare_constructor.  */
@@ -4763,9 +4765,19 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case SIZEOF_EXPR:
-      r = cxx_eval_constant_expression (ctx, fold_sizeof_expr (t), lval,
-					non_constant_p, overflow_p,
-					jump_target);
+      r = fold_sizeof_expr (t);
+      /* In a template, fold_sizeof_expr may merely create a new SIZEOF_EXPR,
+	 which could lead to an infinite recursion.  */
+      if (TREE_CODE (r) != SIZEOF_EXPR)
+	r = cxx_eval_constant_expression (ctx, r, lval,
+					  non_constant_p, overflow_p,
+					  jump_target);
+      else
+	{
+	  *non_constant_p = true;
+	  gcc_assert (ctx->quiet);
+	}
+
       break;
 
     case COMPOUND_EXPR:

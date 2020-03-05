@@ -298,12 +298,12 @@ There are 4 ways to obtain access to refs:
 
    Artificial defs and uses occur both at the beginning and ends of blocks.
 
-     For blocks that area at the destination of eh edges, the
+     For blocks that are at the destination of eh edges, the
      artificial uses and defs occur at the beginning.  The defs relate
      to the registers specified in EH_RETURN_DATA_REGNO and the uses
-     relate to the registers specified in ED_USES.  Logically these
+     relate to the registers specified in EH_USES.  Logically these
      defs and uses should really occur along the eh edge, but there is
-     no convenient way to do this.  Artificial edges that occur at the
+     no convenient way to do this.  Artificial defs that occur at the
      beginning of the block have the DF_REF_AT_TOP flag set.
 
      Artificial uses occur at the end of all blocks.  These arise from

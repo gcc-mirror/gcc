@@ -4357,6 +4357,19 @@ gfc_get_gsymbol (const char *name, bool bind_c)
   return s;
 }
 
+void
+gfc_traverse_gsymbol (gfc_gsymbol *gsym,
+		      void (*do_something) (gfc_gsymbol *, void *),
+		      void *data)
+{
+  if (gsym->left)
+    gfc_traverse_gsymbol (gsym->left, do_something, data);
+
+  (*do_something) (gsym, data);
+
+  if (gsym->right)
+    gfc_traverse_gsymbol (gsym->right, do_something, data);
+}
 
 static gfc_symbol *
 get_iso_c_binding_dt (int sym_id)
@@ -4528,16 +4541,6 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 
       curr_comp = curr_comp->next;
     } while (curr_comp != NULL);
-
-
-  /* Make sure we don't have conflicts with the attributes.  */
-  if (derived_sym->attr.access == ACCESS_PRIVATE)
-    {
-      gfc_error ("Derived type %qs at %L cannot be declared with both "
-                 "PRIVATE and BIND(C) attributes", derived_sym->name,
-                 &(derived_sym->declared_at));
-      retval = false;
-    }
 
   if (derived_sym->attr.sequence != 0)
     {

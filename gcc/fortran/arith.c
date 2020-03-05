@@ -848,8 +848,6 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	    {
 	    case BT_INTEGER:
 	      {
-		int power;
-
 		/* First, we simplify the cases of op1 == 1, 0 or -1.  */
 		if (mpz_cmp_si (op1->value.integer, 1) == 0)
 		  {
@@ -884,29 +882,36 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 				       "exponent of integer has zero "
 				       "result at %L", &result->where);
 		  }
-		else if (gfc_extract_int (op2, &power))
-		  {
-		    /* If op2 doesn't fit in an int, the exponentiation will
-		       overflow, because op2 > 0 and abs(op1) > 1.  */
-		    mpz_t max;
-		    int i;
-		    i = gfc_validate_kind (BT_INTEGER, result->ts.kind, false);
-
-		    if (flag_range_check)
-		      rc = ARITH_OVERFLOW;
-
-		    /* Still, we want to give the same value as the
-		       processor.  */
-		    mpz_init (max);
-		    mpz_add_ui (max, gfc_integer_kinds[i].huge, 1);
-		    mpz_mul_ui (max, max, 2);
-		    mpz_powm (result->value.integer, op1->value.integer,
-			      op2->value.integer, max);
-		    mpz_clear (max);
-		  }
 		else
-		  mpz_pow_ui (result->value.integer, op1->value.integer,
-			      power);
+		  {
+		    /* We have abs(op1) > 1 and op2 > 1.
+		       If op2 > bit_size(op1), we'll have an out-of-range
+		       result.  */
+		    int k, power;
+
+		    k = gfc_validate_kind (BT_INTEGER, op1->ts.kind, false);
+		    power = gfc_integer_kinds[k].bit_size;
+		    if (mpz_cmp_si (op2->value.integer, power) < 0)
+		      {
+			gfc_extract_int (op2, &power);
+			mpz_pow_ui (result->value.integer, op1->value.integer,
+				    power);
+			rc = gfc_range_check (result);
+			if (rc == ARITH_OVERFLOW)
+			  gfc_error_now ("Result of exponentiation at %L "
+					 "exceeds the range of %s", &op1->where,
+					 gfc_typename (&(op1->ts)));
+		      }
+		    else
+		      {
+			/* Provide a nonsense value to propagate up. */
+			mpz_set (result->value.integer,
+				 gfc_integer_kinds[k].huge);
+			mpz_add_ui (result->value.integer,
+				    result->value.integer, 1);
+			rc = ARITH_OVERFLOW;
+		      }
+		  }
 	      }
 	      break;
 

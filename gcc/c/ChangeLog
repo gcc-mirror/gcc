@@ -1,3 +1,52 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-02  Martin Sebor  <msebor@redhat.com>
+
+	Backport from mainline
+	2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* c-typeck.c (c_finish_return): Only consider functions returning
+	pointers as candidates for -Wreturn-local-addr.
+
+2019-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91192
+	* c-parser.c (c_parser_sizeof_expression): Call set_c_expr_source_range
+	even if finish is UNKNOWN_LOCATION, just use start as finish in that
+	case.
+
+2019-07-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/53633
+	* c-decl.c (finish_function): Check targetm.warn_func_return
+	before issuing a -Wreturn-type warning.
+
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90197
+	* c-tree.h (c_finish_loop): Add 2 further location_t arguments.
+	* c-parser.c (c_parser_while_statement): Adjust c_finish_loop caller.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.  Formatting fixes.
+	* c-typeck.c (c_finish_loop): Add COND_LOCUS and INCR_LOCUS arguments,
+	emit DEBUG_BEGIN_STMTs if needed.
+
+2019-05-04  Michael Meissner  <meissner@linux.ibm.com>
+
+	* ChangeLog.ibm: Delete unintentional commit on the wrong branch.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

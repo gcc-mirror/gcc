@@ -1,3 +1,45 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-07-15  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* c-opts.c (c_common_handle_option): Warn the -frepo
+	will be removed in the future.
+
+2019-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91149
+	* c-omp.c (c_omp_split_clauses): Fix a pasto in
+	OMP_CLAUSE_REDUCTION_TASK handling.
+
+2019-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/90954
+	* c-omp.c (c_finish_omp_atomic): Allow tree_invariant_p in addition
+	to SAVE_EXPR in first operand of a COMPOUND_EXPR.
+
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/90474
+	* c-common.c (c_common_mark_addressable_vec): Also mark
+	a COMPOUND_LITERAL_EXPR_DECL addressable similar to
+	c_mark_addressable.
+
+2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (compare_node): Compare the DECL_UIDs as a last resort.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

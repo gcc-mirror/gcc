@@ -1,3 +1,16 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR lto/90924
+	Backport from mainline
+	2019-07-12  Ren Kimura  <rkx1209dev@gmail.com>
+
+	* simple-object-elf.c (simple_object_elf_match): Check zero value
+	shstrndx.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

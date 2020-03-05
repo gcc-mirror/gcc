@@ -758,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   && _TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
-                    _NonNestedTuple<tuple<_UElements...>&&>(),
+                    _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const tuple<_UElements...>& __in)
@@ -773,7 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   && !_TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
-                    _NonNestedTuple<tuple<_UElements...>&&>(),
+                    _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=false>
 	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const tuple<_UElements...>& __in)
@@ -1709,7 +1709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return __make_from_tuple_impl<_Tp>(
         std::forward<_Tuple>(__t),
-	make_index_sequence<tuple_size_v<decay_t<_Tuple>>>{});
+	make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
     }
 #endif // C++17
 

@@ -13,8 +13,8 @@
    well, we don't implement writable ones at this juncture.  */
 /* { dg-options "-mconstant-cfstrings -framework Cocoa -Wl,-w" { target *-*-darwin[123]* } } */
 
-#import <Foundation/NSString.h>
-#import <CoreFoundation/CFString.h>
+#include "../../../objc-obj-c++-shared/F-NSString.h"
+#include "../../../objc-obj-c++-shared/CF-CFString.h"
 #include <stdlib.h>
 
 void printOut(NSString *str) {
@@ -47,10 +47,10 @@ int main(void) {
   checkNSRange([@"Hello World" rangeOfString:(id)CFSTR("World")]);
   checkNSRange([(id)CFSTR("Hello World") rangeOfString:(id)CFSTR("World")]);
 
-  checkCFRange(CFStringFind((CFStringRef)@"Hello World", (CFStringRef)@"World", 0));
-  checkCFRange(CFStringFind(CFSTR("Hello World"), (CFStringRef)@"World", 0));
-  checkCFRange(CFStringFind((CFStringRef)@"Hello World", CFSTR("World"), 0));
-  checkCFRange(CFStringFind(CFSTR("Hello World"), CFSTR("World"), 0));
+  checkCFRange(CFStringFind((CFStringRef)@"Hello World", (CFStringRef)@"World", (CFStringCompareFlags)0));
+  checkCFRange(CFStringFind(CFSTR("Hello World"), (CFStringRef)@"World", (CFStringCompareFlags)0));
+  checkCFRange(CFStringFind((CFStringRef)@"Hello World", CFSTR("World"), (CFStringCompareFlags)0));
+  checkCFRange(CFStringFind(CFSTR("Hello World"), CFSTR("World"), (CFStringCompareFlags)0));
 
   /* Check for string uniquing.  */
   if (s0a != s0b || s0a != s2 || s1 != (id)s2) {

@@ -12172,6 +12172,13 @@ before the loop versioning pass considers it too big to copy,
 discounting any instructions in inner loops that directly benefit
 from versioning.
 
+@item ssa-name-def-chain-limit
+The maximum number of SSA_NAME assignments to follow in determining
+a property of a variable such as its value.  This limits the number
+of iterations or recursive calls GCC performs when optimizing certain
+statements or when determining their validity prior to issuing
+diagnostics.
+
 @end table
 @end table
 

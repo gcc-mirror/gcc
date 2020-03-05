@@ -8491,7 +8491,7 @@ vt_expand_loc_callback (rtx x, bitmap regs,
 
       /* Invalid SUBREGs are ok in debug info.  ??? We could try
 	 alternate expansions for the VALUE as well.  */
-      if (!result)
+      if (!result && GET_MODE (subreg) != VOIDmode)
 	result = gen_rtx_raw_SUBREG (GET_MODE (x), subreg, SUBREG_BYTE (x));
 
       return result;

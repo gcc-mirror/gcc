@@ -2,6 +2,7 @@
 // { dg-options "-frepo" }
 // { dg-require-host-local "" }
 // { dg-skip-if "dkms are not final links" { vxworks_kernel } }
+// { dg-warning "is deprecated and will be removed in a future release" "" { target *-*-* } 0 }
 
 // Test that we properly generate the vtable and such for C.
 // Contributed by scott snyder <snyder@fnal.gov>

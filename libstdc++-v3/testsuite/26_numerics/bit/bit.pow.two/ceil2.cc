@@ -20,6 +20,21 @@
 
 #include <bit>
 
+template<typename T>
+  constexpr T max = std::numeric_limits<T>::max();
+// Largest representable power of two (i.e. has most significant bit set)
+template<typename T>
+  constexpr T maxpow2 = T(1) << (std::numeric_limits<T>::digits - 1);
+
+// Detect whether std::ceil2(N) is a constant expression.
+template<auto N, typename = void>
+  struct ceil2_valid
+  : std::false_type { };
+
+template<auto N>
+  struct ceil2_valid<N, std::void_t<char[(std::ceil2(N), 1)]>>
+  : std::true_type { };
+
 template<typename UInt>
 constexpr auto
 test(UInt x)
@@ -55,13 +70,18 @@ test(UInt x)
     static_assert( std::ceil2(UInt(3) << 64) == (UInt(4) << 64) );
   }
 
-  constexpr UInt msb = UInt(1) << (std::numeric_limits<UInt>::digits - 1);
+  constexpr UInt msb = maxpow2<UInt>;
+  static_assert( ceil2_valid<msb>() );
   static_assert( std::ceil2( msb ) == msb );
-  // Larger values cannot be represented so the return value is unspecified,
-  // but must still be valid in constant expressions, i.e. not undefined.
-  static_assert( std::ceil2( UInt(msb + 1) ) != 77 );
-  static_assert( std::ceil2( UInt(msb + 2) ) != 77 );
-  static_assert( std::ceil2( UInt(msb + 77) ) != 77 );
+  static_assert( std::ceil2( UInt(msb - 1) ) == msb );
+  static_assert( std::ceil2( UInt(msb - 2) ) == msb );
+  static_assert( std::ceil2( UInt(msb - 3) ) == msb );
+
+  // P1355R2: not a constant expression if the result is not representable
+  static_assert( !ceil2_valid<UInt(msb + 1)>() );
+  static_assert( !ceil2_valid<max<UInt>>() );
+  static_assert( !ceil2_valid<UInt(max<UInt> - 1)>() );
+  static_assert( !ceil2_valid<UInt(max<UInt> - 2)>() );
 
   return true;
 }
@@ -86,18 +106,6 @@ static_assert( test( X{} ).did_not_match() );
 enum E : unsigned { e };
 static_assert( test( e ).did_not_match() );
 
-#ifndef __STRICT_ANSI__
-#include <cstddef>
-static_assert( std::ceil2(std::byte{0}) == std::byte{1} );
-static_assert( std::ceil2(std::byte{1}) == std::byte{1} );
-static_assert( std::ceil2(std::byte{2}) == std::byte{2} );
-static_assert( std::ceil2(std::byte{3}) == std::byte{4} );
-static_assert( std::ceil2(std::byte{100}) == std::byte{128} );
-static_assert( std::ceil2(std::byte{128}) == std::byte{128} );
-#else
-static_assert( test( (std::byte)0 ).did_not_match() );
-#endif
-
 #if !defined(__STRICT_ANSI__) && defined _GLIBCXX_USE_INT128
 static_assert( test( (unsigned __int128)0 ) );
 static_assert( test( (__int128)0 ).did_not_match() );
@@ -114,3 +122,10 @@ static_assert( test( (__GLIBCXX_TYPE_INT_N_1)0 ).did_not_match() );
 static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_2)0 ) );
 static_assert( test( (__GLIBCXX_TYPE_INT_N_2)0 ).did_not_match() );
 #endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_3)0 ) );
+static_assert( test( (__GLIBCXX_TYPE_INT_N_3)0 ).did_not_match() );
+#endif
+
+#include <cstddef>
+static_assert( test( (std::byte)0 ).did_not_match() );

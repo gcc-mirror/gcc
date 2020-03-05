@@ -428,6 +428,13 @@ typedef struct _loop_vec_info : public vec_info {
      loops.  */
   tree mask_compare_type;
 
+  /* For #pragma omp simd if (x) loops the x expression.  If constant 0,
+     the loop should not be vectorized, if constant non-zero, simd_if_cond
+     shouldn't be set and loop vectorized normally, if SSA_NAME, the loop
+     should be versioned on that condition, using scalar loop if the condition
+     is false and vectorized loop otherwise.  */
+  tree simd_if_cond;
+
   /* Unknown DRs according to which loop was peeled.  */
   struct dr_vec_info *unaligned_dr;
 
@@ -591,6 +598,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
 #define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
+#define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L)	\
   ((L)->may_misalign_stmts.length () > 0)
@@ -600,10 +608,13 @@ typedef struct _loop_vec_info : public vec_info {
    || (L)->lower_bounds.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_NITERS(L)		\
   (LOOP_VINFO_NITERS_ASSUMPTIONS (L))
+#define LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND(L)	\
+  (LOOP_VINFO_SIMD_IF_COND (L))
 #define LOOP_REQUIRES_VERSIONING(L)			\
   (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (L)		\
    || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (L)		\
-   || LOOP_REQUIRES_VERSIONING_FOR_NITERS (L))
+   || LOOP_REQUIRES_VERSIONING_FOR_NITERS (L)		\
+   || LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (L))
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
   (tree_fits_shwi_p ((L)->num_iters) && tree_to_shwi ((L)->num_iters) > 0)

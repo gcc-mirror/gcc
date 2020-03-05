@@ -3,6 +3,7 @@
 // { dg-require-host-local "" }
 // { dg-skip-if "dkms are not final links" { vxworks_kernel } }
 // { dg-final cleanup-repo-files }
+// { dg-warning "is deprecated and will be removed in a future release" "" { target *-*-* } 0 }
 
 template <typename H> struct J { J(H) {} };
 template <unsigned long, typename...> struct K;

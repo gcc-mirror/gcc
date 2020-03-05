@@ -1286,7 +1286,11 @@ namespace __detail
 
       __hash_code
       _M_hash_code(const _Key& __k) const
-      { return _M_h1()(__k); }
+      {
+	static_assert(__is_invocable<const _H1&, const _Key&>{},
+	    "hash function must be invocable with an argument of key type");
+	return _M_h1()(__k);
+      }
 
       std::size_t
       _M_bucket_index(const _Key&, __hash_code __c, std::size_t __n) const
@@ -1374,7 +1378,11 @@ namespace __detail
 
       __hash_code
       _M_hash_code(const _Key& __k) const
-      { return _M_h1()(__k); }
+      {
+	static_assert(__is_invocable<const _H1&, const _Key&>{},
+	    "hash function must be invocable with an argument of key type");
+	return _M_h1()(__k);
+      }
 
       std::size_t
       _M_bucket_index(const _Key&, __hash_code __c,
@@ -1820,6 +1828,9 @@ namespace __detail
     bool
     _M_equals(const _Key& __k, __hash_code __c, __node_type* __n) const
     {
+      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
+	  "key equality predicate must be invocable with two arguments of "
+	  "key type");
       return _EqualHelper::_S_equals(_M_eq(), this->_M_extract(),
 				     __k, __c, __n);
     }

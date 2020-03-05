@@ -1,0 +1,30 @@
+# Copyright (C) 2019 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# The 32-bit libraries are found in /usr/lib32
+
+# To support i386 and x86-64, the directory structrue
+# should be:
+#
+# 	/lib has x86-64 libraries.
+# 	/lib32 has i386 libraries.
+#
+
+MULTILIB_OPTIONS    = m32
+MULTILIB_DIRNAMES   = 32
+MULTILIB_OSDIRNAMES = ../lib32

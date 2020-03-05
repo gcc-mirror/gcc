@@ -4704,10 +4704,15 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   tree *counts = NULL;
   int i;
   int safelen_int = INT_MAX;
+  bool dont_vectorize = false;
   tree safelen = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
 				  OMP_CLAUSE_SAFELEN);
   tree simduid = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
 				  OMP_CLAUSE__SIMDUID_);
+  tree ifc = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
+			      OMP_CLAUSE_IF);
+  tree simdlen = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
+				  OMP_CLAUSE_SIMDLEN);
   tree n1, n2;
 
   if (safelen)
@@ -4720,6 +4725,12 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	safelen_int = MIN (constant_lower_bound (val), INT_MAX);
       if (safelen_int == 1)
 	safelen_int = 0;
+    }
+  if ((ifc && integer_zerop (OMP_CLAUSE_IF_EXPR (ifc)))
+      || (simdlen && integer_onep (OMP_CLAUSE_SIMDLEN_EXPR (simdlen))))
+    {
+      safelen_int = 0;
+      dont_vectorize = true;
     }
   type = TREE_TYPE (fd->loop.v);
   entry_bb = region->entry;
@@ -5005,6 +5016,8 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  loop->force_vectorize = true;
 	  cfun->has_force_vectorize_loops = true;
 	}
+      else if (dont_vectorize)
+	loop->dont_vectorize = true;
     }
   else if (simduid)
     cfun->has_simduid_loops = true;

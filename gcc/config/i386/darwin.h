@@ -47,12 +47,13 @@ along with GCC; see the file COPYING3.  If not see
    image.
    Therefore, for 64b exes at least, we must use the libunwind implementation,
    even when static-libgcc is specified.  We put libSystem first so that
-   unwinder symbols are satisfied from there. */
+   unwinder symbols are satisfied from there.
+   We default to 64b for single-arch builds, so apply this unconditionally. */
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC						   \
    "%{static-libgcc|static: 						   \
-      %{m64:%:version-compare(>= 10.6 mmacosx-version-min= -lSystem)}	   \
-        -lgcc_eh -lgcc;							   \
+       %:version-compare(>= 10.6 mmacosx-version-min= -lSystem)		   \
+       -lgcc_eh -lgcc;							   \
       shared-libgcc|fexceptions|fgnu-runtime:				   \
        %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
@@ -131,16 +132,15 @@ extern int darwin_emit_branch_islands;
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
-  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} " \
+  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
+  %{mx32:%eDarwin is not an mx32 platform} \
+  %{mfentry*:%eDarwin does not support -mfentry or associated options}" \
   DARWIN_CC1_SPEC
 
 #undef ASM_SPEC
 #define ASM_SPEC "-arch %(darwin_arch) \
   " ASM_OPTIONS " -force_cpusubtype_ALL \
   %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
-
-#define DARWIN_ARCH_SPEC "%{m64:x86_64;:i386}"
-#define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -149,12 +149,15 @@ extern int darwin_emit_branch_islands;
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s}" TM_DESTRUCTOR
 
+/* We default to x86_64 for single-arch builds, bi-arch overrides.  */
+#define DARWIN_ARCH_SPEC "x86_64"
+
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \
   DARWIN_EXTRA_SPECS                                            \
-  { "darwin_arch", DARWIN_ARCH_SPEC },                          \
+  { "darwin_arch", DARWIN_ARCH_SPEC },				\
   { "darwin_crt2", "" },                                        \
-  { "darwin_subarch", DARWIN_SUBARCH_SPEC },
+  { "darwin_subarch", DARWIN_ARCH_SPEC },
 
 /* The Darwin assembler mostly follows AT&T syntax.  */
 #undef ASSEMBLER_DIALECT
@@ -220,6 +223,18 @@ extern int darwin_emit_branch_islands;
 	  fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG));	   \
       }								   \
   } while (0)
+
+#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)                    \
+  do {                                                                  \
+    if ((LOG) != 0) {                                                   \
+      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)            \
+        fprintf ((FILE), "\t.p2align %d\n", (LOG));                     \
+      else                                                              \
+        fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));     \
+    }                                                                   \
+  } while (0)
+#endif
 
 /* Darwin x86 assemblers support the .ident directive.  */
 

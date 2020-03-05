@@ -609,6 +609,8 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_LIST_SEPARATOR::  Separator for list output
 * GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
+* GFORTRAN_FORMATTED_BUFFER_SIZE:: Buffer size for formatted files.
+* GFORTRAN_UNFORMATTED_BUFFER_SIZE:: Buffer size for unformatted files.
 @end menu
 
 @node TMPDIR
@@ -779,6 +781,20 @@ backtrace is printed when a serious run-time error occurs.  To disable
 the backtracing, set the variable to @samp{n}, @samp{N}, @samp{0}.
 Default is to print a backtrace unless the @option{-fno-backtrace}
 compile option was used.
+
+@node GFORTRAN_FORMATTED_BUFFER_SIZE
+@section @env{GFORTRAN_FORMATTED_BUFFER_SIZE}---Set buffer size for formatted I/O
+
+The @env{GFORTRAN_FORMATTED_BUFFER_SIZE} environment variable
+specifies buffer size in bytes to be used for formatted output.
+The default value is 8192.
+
+@node GFORTRAN_UNFORMATTED_BUFFER_SIZE
+@section @env{GFORTRAN_UNFORMATTED_BUFFER_SIZE}---Set buffer size for unformatted I/O
+
+The @env{GFORTRAN_UNFORMATTED_BUFFER_SIZE} environment variable
+specifies buffer size in bytes to be used for unformatted output.
+The default value is 131072.
 
 @c =====================================================================
 @c PART II: LANGUAGE REFERENCE

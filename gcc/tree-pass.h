@@ -635,7 +635,7 @@ extern bool execute_one_pass (opt_pass *);
 extern void execute_pass_list (function *, opt_pass *);
 extern void execute_ipa_pass_list (opt_pass *);
 extern void execute_ipa_summary_passes (ipa_opt_pass_d *);
-extern void execute_all_ipa_transforms (void);
+extern void execute_all_ipa_transforms (bool);
 extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple **);
 extern bool pass_init_dump_file (opt_pass *);
 extern void pass_fini_dump_file (opt_pass *);

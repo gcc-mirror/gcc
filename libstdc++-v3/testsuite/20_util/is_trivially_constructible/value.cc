@@ -180,4 +180,6 @@ void test01()
 		MoveOnly, const MoveOnly&>(false), "");
   static_assert(test_property<is_trivially_constructible,
 		MoveOnly2>(false), "");
+  static_assert(test_property<is_trivially_constructible,
+		int[]>(false), "PR c++/90532");
 }

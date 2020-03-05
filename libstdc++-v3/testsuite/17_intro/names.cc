@@ -19,7 +19,6 @@
 
 // Define macros for some common variables names that we must not use for
 // naming variables, parameters etc. in the library.
-#define tmp (
 #define A (
 #define B (
 #define C (
@@ -99,6 +98,78 @@
 #define y (
 #define z (
 
+#define tmp (
+
+#if __cplusplus < 201703L
+// <charconv> defines to_chars_result::ptr and to_chars_result::ec
+#define ec (
+#define ptr (
+#endif
+
+// Common template parameter names
+#define OutputIterator		OutputIterator is not a reserved name
+#define InputIterator		InputIterator is not a reserved name
+#define ForwardIterator		ForwardIterator is not a reserved name
+#define BidirectionalIterator	BidirectionalIterator is not a reserved name
+#define RandomAccessIterator	RandomAccessIterator is not a reserved name
+#define RandomAccessOutputIterator	RandomAccessOutputIterator is not a reserved name
+#define RAIter			RAIter is not a reserved name
+#define FwdIter			FwdIter is not a reserved name
+#define OutIter			OutIter is not a reserved name
+#define InIter			InIter is not a reserved name
+
+#define Alloc			Alloc is not a reserved name
+#define BinaryFunction1		BinaryFunction1 is not a reserved name
+#define BinaryFunction2		BinaryFunction2 is not a reserved name
+#define Char			Char is not a reserved name
+#define CharT			CharT is not a reserved name
+#define Cmp			Cmp is not a reserved name
+#define Compare			Compare is not a reserved name
+#define Const_Iterator		Const_Iterator is not a reserved name
+#define Const_Key_Reference	Const_Key_Reference is not a reserved name
+#define Const_Node_Iter		Const_Node_Iter is not a reserved name
+#define Const_Pointer		Const_Pointer is not a reserved name
+#define Const_Reference		Const_Reference is not a reserved name
+#define Data			Data is not a reserved name
+#define DiffType		DiffType is not a reserved name
+#define Eq			Eq is not a reserved name
+#define ExecPolicy		ExecPolicy is not a reserved name
+#define Expected		Expected is not a reserved name
+#define External_Load_Access	External_Load_Access is not a reserved name
+#define External_Size_Access	External_Size_Access is not a reserved name
+#define Fn			Fn is not a reserved name
+#define Function		Function is not a reserved name
+#define Functor			Functor is not a reserved name
+#define Hash			Hash is not a reserved name
+#define H1			H1 is not a reserved name
+#define H2			H2 is not a reserved name
+#define Head			Head is not a reserved name
+#define It			It is not a reserved name
+#define Iter			Iter is not a reserved name
+#define Iterator		Iterator is not a reserved name
+#define Key			Key is not a reserved name
+#define Mapped			Mapped is not a reserved name
+#define Node			Node is not a reserved name
+#define Node_iter		Node_iter is not a reserved name
+#define Node_ptr		Node_ptr is not a reserved name
+#define Overflow		Overflow is not a reserved name
+#define Pointer			Pointer is not a reserved name
+#define Policy			Policy is not a reserved name
+#define Pred			Pred is not a reserved name
+#define Ptr			Ptr is not a reserved name
+#define Reference		Reference is not a reserved name
+#define Seq			Seq is not a reserved name
+#define Seq_RAIter		Seq_RAIter is not a reserved name
+#define Series			Series is not a reserved name
+#define Set			Set is not a reserved name
+#define String			String is not a reserved name
+#define Tp			Tp is not a reserved name
+#define Traits			Traits is not a reserved name
+#define Type			Type is not a reserved name
+#define Value			Value is not a reserved name
+#define ValueT			ValueT is not a reserved name
+#define ValueType		ValueType is not a reserved name
+
 #ifdef _AIX
 // See https://gcc.gnu.org/ml/libstdc++/2017-03/msg00015.html
 #undef f
@@ -114,6 +185,11 @@
 
 #if defined (__linux__) && defined (__sparc__)
 #undef y
+#endif
+
+#ifdef __sun__
+// See https://gcc.gnu.org/ml/libstdc++/2019-05/msg00175.html
+#undef ptr
 #endif
 
 #include <bits/stdc++.h>

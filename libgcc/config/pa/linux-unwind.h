@@ -130,7 +130,7 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   frame = (struct rt_sigframe *)(sp + off);
-  sc = &frame->uc.uc_mcontext;
+  sc = (struct sigcontext *)&frame->uc.uc_mcontext;
 
   new_cfa = sc->sc_gr[30];
   fs->regs.cfa_how = CFA_REG_OFFSET;

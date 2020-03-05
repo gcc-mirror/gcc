@@ -1328,12 +1328,16 @@ eliminate_unnecessary_stmts (void)
 		  update_stmt (stmt);
 		  release_ssa_name (name);
 
-		  /* GOMP_SIMD_LANE or ASAN_POISON without lhs is not
-		     needed.  */
+		  /* GOMP_SIMD_LANE (unless two argument) or ASAN_POISON
+		     without lhs is not needed.  */
 		  if (gimple_call_internal_p (stmt))
 		    switch (gimple_call_internal_fn (stmt))
 		      {
 		      case IFN_GOMP_SIMD_LANE:
+			if (gimple_call_num_args (stmt) >= 2
+			    && !integer_nonzerop (gimple_call_arg (stmt, 1)))
+			  break;
+			/* FALLTHRU */
 		      case IFN_ASAN_POISON:
 			remove_dead_stmt (&gsi, bb, to_remove_edges);
 			break;

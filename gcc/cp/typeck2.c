@@ -1293,7 +1293,10 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
   tree type = TREE_TYPE (decl);
   int flags = LOOKUP_IMPLICIT;
   if (DIRECT_LIST_INIT_P (init))
-    flags = LOOKUP_NORMAL;
+    {
+      flags = LOOKUP_NORMAL;
+      complain |= tf_no_cleanup;
+    }
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
     init = reshape_init (type, init, complain);

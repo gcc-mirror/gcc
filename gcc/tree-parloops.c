@@ -2794,8 +2794,16 @@ try_create_reduction_list (loop_p loop,
       gimple *reduc_phi;
       tree val = PHI_ARG_DEF_FROM_EDGE (phi, exit);
 
-      if (TREE_CODE (val) == SSA_NAME && !virtual_operand_p (val))
+      if (!virtual_operand_p (val))
 	{
+	  if (TREE_CODE (val) != SSA_NAME)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "  FAILED: exit PHI argument invariant.\n");
+	      return false;
+	    }
+
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "phi is ");

@@ -602,7 +602,7 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
       || TREE_CODE (arg1) != INTEGER_CST
       || (tree_int_cst_lt (arg0, arg1)
 	  ? wi::to_widest (arg0) + 1 != wi::to_widest (arg1)
-	  : wi::to_widest (arg1) + 1 != wi::to_widest (arg1)))
+	  : wi::to_widest (arg1) + 1 != wi::to_widest (arg0)))
     return false;
 
   if (!empty_block_p (middle_bb))
@@ -2196,6 +2196,11 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   if (!assign
       || !gimple_assign_single_p (assign)
       || gimple_has_volatile_ops (assign))
+    return false;
+
+  /* And no PHI nodes so all uses in the single stmt are also
+     available where we insert to.  */
+  if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
     return false;
 
   locus = gimple_location (assign);

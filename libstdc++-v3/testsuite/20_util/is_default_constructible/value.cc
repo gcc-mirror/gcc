@@ -138,3 +138,13 @@ static_assert(!std::is_default_constructible<DelCopy>::value, "Error");
 static_assert(!std::is_default_constructible<const DelCopy>::value, "Error");
 static_assert(!std::is_default_constructible<DelDtor>::value, "Error");
 static_assert(!std::is_default_constructible<const DelDtor>::value, "Error");
+
+static_assert(!std::is_default_constructible<int[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Empty[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<B[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<D[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<U[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Ukn[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Ellipsis[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Any[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<nAny[]>::value, "PR c++/90532");

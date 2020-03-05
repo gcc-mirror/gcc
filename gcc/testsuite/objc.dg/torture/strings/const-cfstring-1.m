@@ -13,8 +13,8 @@
    Well, we don't implement writable ones at this juncture.  */
 /* { dg-options "-mconstant-cfstrings -framework Cocoa -Wl,-w" { target *-*-darwin[123]* } } */
 
-#import <Foundation/NSString.h>
-#import <CoreFoundation/CFString.h>
+#include "../../../objc-obj-c++-shared/F-NSString.h"
+#include "../../../objc-obj-c++-shared/CF-CFString.h"
 #include <stdlib.h>
 
 void printOut(NSString *str) {

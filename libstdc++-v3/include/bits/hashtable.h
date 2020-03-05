@@ -1351,12 +1351,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       clear();
       _M_deallocate_buckets();
-
-      static_assert(__is_invocable<const _H1&, const _Key&>{},
-	  "hash function must be invocable with an argument of key type");
-      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
-	  "key equality predicate must be invocable with two arguments of "
-	  "key type");
     }
 
   template<typename _Key, typename _Value,

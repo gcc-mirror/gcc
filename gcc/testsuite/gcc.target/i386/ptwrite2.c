@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mptwrite " } */
-/* { dg-final { scan-assembler "ptwrite\[^\n\r\]+r" } } */
-/* { dg-final { scan-assembler "ptwrite\[^\n\r\]+e" } } */
+/* { dg-final { scan-assembler {ptwrite[^\n\r]+%eax} } } */
+/* { dg-final { scan-assembler {ptwrite[^\n\r]+%rax} { target lp64 } } } */
 
 #include <x86intrin.h>
 

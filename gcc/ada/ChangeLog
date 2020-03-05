@@ -1,3 +1,134 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libgnat/system-darwin-ppc.ads: Set Stack_Check_Probes True for
+	PPC Darwin.
+
+2019-08-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gnatlink.adb (Link_Step): Remove duplicate -static-libgcc switches.
+	Push -shared-libgcc explicitly, when it is the target default (unless
+	overidden by the static flag).
+	When the user has put an instance of shared/static-libgcc do not push
+	a duplicate of this.
+
+2019-07-04  James Clarke <jrtc27@debian.org>
+
+	* libgnarl/s-osinte__kfreebsd-gnu.ads (clockid_t): Make type
+	definition public.
+	(CLOCK_REALTIME): Make value public.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Beep up comment on SAVED,
+	and tweak comment on the assertion about the scopes of Itypes.  Do not
+	skip the regular processing for Itypes that are E_Record_Subtype with
+	a Cloned_Subtype.  Get the Cloned_Subtype for every E_Record_Subtype
+	if the type is dummy and hasn't got its own freeze node.
+	<E_Record_Subtype>: Save again the DECL of the Cloned_Subtype, if any.
+	<E_Access_Subtype>: Save again the DECL of the equivalent type.
+	(Gigi_Equivalent_Type) <E_Access_Subtype>: New case.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (mark_visited_r): Set TYPE_SIZES_GIMPLIFIED on
+	the main variant of a type, if any.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (set_nonaliased_component_on_array_type): Add
+	missing guard for the presence of TYPE_CANONICAL.
+	(set_reverse_storage_order_on_array_type): Likewise.
+
+2019-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/80590
+	* sem_ch5.adb (Analyze_Loop_Statement): Avoid exception propagation
+	during normal processing.
+
+2019-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/80590
+	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Swap the two
+	conditions to avoid a unnecessary exception propagation in the default
+	case.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Return 0
+	for 'Size too.
+	(Identifier_to_gnu): Use the actual subtype for a reference to a
+	packed array in a return statement.
+	(Attribute_to_gnu) <Attr_Size>: Do not strip VIEW_CONVERT_EXPRs from
+	the prefix in every case.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Remove superfluous tests on
+	Backend_Overflow_Checks_On_Target and rework comments.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (walk_nesting_tree): New static function.
+	(finalize_nrv): Use it to walk the entire nesting tree.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Remove
+	obsolete test on Is_For_Access_Subtype.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Set a name on the type
+	created for the REP part, if any.
+	* gcc-interface/utils.c (finish_record_type): Only take the maximum
+	when merging sizes for a variant part at offset 0.
+	(merge_sizes): Rename has_rep parameter into max.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Do not initialize the temporary
+	created out of addressability concerns if it's for the _Init parameter
+	of an initialization procedure.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (maybe_pad_type): Issue the warning for the
+	specific case of component types preferably.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Minor tweaks.
+	(gnat_to_gnu): Do not convert the result if it is a reference to an
+	unconstrained array used as the prefix of an attribute reference that
+	requires an lvalue.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Gigi_Types_Compatible): New predicate.
+	(Identifier_to_gnu): Use it to assert that the type of the identifier
+	and that of its entity are compatible for gigi.  Rename a couple of
+	local variables and separate the processing of the result type.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Use the unpadded type when
+	putting back an intermediate conversion the type of the actuals.
+
+2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
+	Honor DESTDIR.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

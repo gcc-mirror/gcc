@@ -1044,6 +1044,7 @@ debug_objcopy (const char *infile, bool rename)
   int err;
 
   const char *p;
+  const char *orig_infile = infile;
   off_t inoff = 0;
   long loffset;
   int consumed;
@@ -1080,9 +1081,9 @@ debug_objcopy (const char *infile, bool rename)
 
   if (save_temps)
     {
-      outfile = (char *) xmalloc (strlen (infile)
+      outfile = (char *) xmalloc (strlen (orig_infile)
 				  + sizeof (".debug.temp.o") + 1);
-      strcpy (outfile, infile);
+      strcpy (outfile, orig_infile);
       strcat (outfile, ".debug.temp.o");
     }
   else

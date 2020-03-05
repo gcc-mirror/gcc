@@ -5319,8 +5319,8 @@
 
 (define_insn "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=f")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
-		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
+		 (zero_extend:DI (match_operand:SI 2 "register_operand" "f"))))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
@@ -5328,7 +5328,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=f")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && !TARGET_64BIT"
   "xmpyu %1,%R2,%0"
@@ -5337,7 +5337,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=f")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
   "xmpyu %1,%2R,%0"
@@ -6904,20 +6904,23 @@
   rtx stack = operands[2];
   rtx fp = operands[3];
 
-  lab = copy_to_reg (lab);
-
   emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-  /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
-     instead of the hard_frame_pointer_rtx in the save area.  As a
-     result, an extra instruction is needed to adjust for the offset
-     of the virtual stack variables and the hard frame pointer.  */
-  if (GET_CODE (fp) != REG)
-    fp = force_reg (Pmode, fp);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
+  lab = copy_to_reg (lab);
 
+  /* Restore the stack and frame pointers.  The virtual_stack_vars_rtx
+     is saved instead of the hard_frame_pointer_rtx in the save area.
+     As a result, an extra instruction is needed to adjust for the offset
+     of the virtual stack variables and the hard frame pointer.  */
+  fp = copy_to_reg (fp);
   emit_stack_restore (SAVE_NONLOCAL, stack);
+
+  /* Ensure the frame pointer move is not optimized.  */
+  emit_insn (gen_blockage ());
+  emit_clobber (hard_frame_pointer_rtx);
+  emit_clobber (frame_pointer_rtx);
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
@@ -8695,22 +8698,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-  /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
-     instead of the hard_frame_pointer_rtx in the save area.  We need
-     to adjust for the offset between these two values.  */
-  if (GET_CODE (fp) != REG)
-    fp = force_reg (Pmode, fp);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
-
-  /* This bit is the same as expand_builtin_longjmp.  */
-  emit_stack_restore (SAVE_NONLOCAL, stack);
-  emit_use (hard_frame_pointer_rtx);
-  emit_use (stack_pointer_rtx);
-
   /* Load the label we are jumping through into r1 so that we know
      where to look for it when we get back to setjmp's function for
      restoring the gp.  */
   emit_move_insn (pv, lab);
+
+  /* Restore the stack and frame pointers.  The virtual_stack_vars_rtx
+     is saved instead of the hard_frame_pointer_rtx in the save area.
+     We need to adjust for the offset between these two values.  */
+  fp = copy_to_reg (fp);
+  emit_stack_restore (SAVE_NONLOCAL, stack);
+
+  /* Ensure the frame pointer move is not optimized.  */
+  emit_insn (gen_blockage ());
+  emit_clobber (hard_frame_pointer_rtx);
+  emit_clobber (frame_pointer_rtx);
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
+
+  emit_use (hard_frame_pointer_rtx);
+  emit_use (stack_pointer_rtx);
 
   /* Prevent the insns above from being scheduled into the delay slot
      of the interspace jump because the space register could change.  */

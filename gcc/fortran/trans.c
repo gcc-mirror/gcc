@@ -290,6 +290,16 @@ get_array_span (tree type, tree decl)
 {
   tree span;
 
+  /* Component references are guaranteed to have a reliable value for
+     'span'. Likewise indirect references since they emerge from the
+     conversion of a CFI descriptor or the hidden dummy descriptor.  */
+  if (TREE_CODE (decl) == COMPONENT_REF
+      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+    return gfc_conv_descriptor_span_get (decl);
+  else if (TREE_CODE (decl) == INDIRECT_REF
+	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+    return gfc_conv_descriptor_span_get (decl);
+
   /* Return the span for deferred character length array references.  */
   if (type && TREE_CODE (type) == ARRAY_TYPE
       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
@@ -352,9 +362,6 @@ get_array_span (tree type, tree decl)
       else
 	span = NULL_TREE;
     }
-  else if (TREE_CODE (decl) == INDIRECT_REF
-	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
-    span = gfc_conv_descriptor_span_get (decl);
   else
     span = NULL_TREE;
 
@@ -399,12 +406,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
   if (vptr)
     span = gfc_vptr_size_get (vptr);
   else if (decl)
-    {
-      if (TREE_CODE (decl) == COMPONENT_REF)
-	span = gfc_conv_descriptor_span_get (decl);
-      else
-	span = get_array_span (type, decl);
-    }
+    span = get_array_span (type, decl);
 
   /* If a non-null span has been generated reference the element with
      pointer arithmetic.  */

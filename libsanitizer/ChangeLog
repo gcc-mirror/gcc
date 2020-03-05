@@ -1,3 +1,12 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_posix_libcdep.cc: Cherry-pick
+	compiler-rt revision 363778.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

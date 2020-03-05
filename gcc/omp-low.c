@@ -155,6 +155,7 @@ static splay_tree all_contexts;
 static int taskreg_nesting_level;
 static int target_nesting_level;
 static bitmap task_shared_vars;
+static bitmap global_nonaddressable_vars;
 static vec<omp_context *> taskreg_contexts;
 
 static void scan_omp (gimple_seq *, omp_context *);
@@ -449,7 +450,26 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 
       /* Do not use copy-in/copy-out for variables that have their
 	 address taken.  */
-      if (TREE_ADDRESSABLE (decl))
+      if (is_global_var (decl))
+	{
+	  /* For file scope vars, track whether we've seen them as
+	     non-addressable initially and in that case, keep the same
+	     answer for the duration of the pass, even when they are made
+	     addressable later on e.g. through reduction expansion.  Global
+	     variables which weren't addressable before the pass will not
+	     have their privatized copies address taken.  See PR91216.  */
+	  if (!TREE_ADDRESSABLE (decl))
+	    {
+	      if (!global_nonaddressable_vars)
+		global_nonaddressable_vars = BITMAP_ALLOC (NULL);
+	      bitmap_set_bit (global_nonaddressable_vars, DECL_UID (decl));
+	    }
+	  else if (!global_nonaddressable_vars
+		   || !bitmap_bit_p (global_nonaddressable_vars,
+				     DECL_UID (decl)))
+	    return true;
+	}
+      else if (TREE_ADDRESSABLE (decl))
 	return true;
 
       /* lower_send_shared_vars only uses copy-in, but not copy-out
@@ -527,8 +547,10 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
      it's address.  But we don't need to take address of privatizations
      from that var.  */
   if (TREE_ADDRESSABLE (var)
-      && task_shared_vars
-      && bitmap_bit_p (task_shared_vars, DECL_UID (var)))
+      && ((task_shared_vars
+	   && bitmap_bit_p (task_shared_vars, DECL_UID (var)))
+	  || (global_nonaddressable_vars
+	      && bitmap_bit_p (global_nonaddressable_vars, DECL_UID (var)))))
     TREE_ADDRESSABLE (copy) = 0;
   ctx->block_vars = copy;
 
@@ -4356,6 +4378,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   tree simt_lane = NULL_TREE, simtrec = NULL_TREE;
   tree ivar = NULL_TREE, lvar = NULL_TREE, uid = NULL_TREE;
   gimple_seq llist[3] = { };
+  tree nonconst_simd_if = NULL_TREE;
 
   copyin_seq = NULL;
   sctx.is_simt = is_simd && omp_find_clause (clauses, OMP_CLAUSE__SIMT_);
@@ -4382,6 +4405,16 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	case OMP_CLAUSE_IN_REDUCTION:
 	  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF
 	      || is_variable_sized (OMP_CLAUSE_DECL (c)))
+	    sctx.max_vf = 1;
+	  break;
+	case OMP_CLAUSE_IF:
+	  if (integer_zerop (OMP_CLAUSE_IF_EXPR (c)))
+	    sctx.max_vf = 1;
+	  else if (TREE_CODE (OMP_CLAUSE_IF_EXPR (c)) != INTEGER_CST)
+	    nonconst_simd_if = OMP_CLAUSE_IF_EXPR (c);
+	  break;
+        case OMP_CLAUSE_SIMDLEN:
+	  if (integer_onep (OMP_CLAUSE_SIMDLEN_EXPR (c)))
 	    sctx.max_vf = 1;
 	  break;
 	default:
@@ -5755,6 +5788,17 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   if (known_eq (sctx.max_vf, 1U))
     sctx.is_simt = false;
 
+  if (nonconst_simd_if)
+    {
+      if (sctx.lane == NULL_TREE)
+	{
+	  sctx.idx = create_tmp_var (unsigned_type_node);
+	  sctx.lane = create_tmp_var (unsigned_type_node);
+	}
+      /* FIXME: For now.  */
+      sctx.is_simt = false;
+    }
+
   if (sctx.lane || sctx.is_simt)
     {
       uid = create_tmp_var (ptr_type_node, "simduid");
@@ -5784,8 +5828,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
     }
   if (sctx.lane)
     {
-      gimple *g
-	= gimple_build_call_internal (IFN_GOMP_SIMD_LANE, 1, uid);
+      gimple *g = gimple_build_call_internal (IFN_GOMP_SIMD_LANE,
+					      1 + (nonconst_simd_if != NULL),
+					      uid, nonconst_simd_if);
       gimple_call_set_lhs (g, sctx.lane);
       gimple_stmt_iterator gsi = gsi_start_1 (gimple_omp_body_ptr (ctx->stmt));
       gsi_insert_before_without_update (&gsi, g, GSI_SAME_STMT);
@@ -11969,6 +12014,7 @@ execute_lower_omp (void)
       all_contexts = NULL;
     }
   BITMAP_FREE (task_shared_vars);
+  BITMAP_FREE (global_nonaddressable_vars);
 
   /* If current function is a method, remove artificial dummy VAR_DECL created
      for non-static data member privatization, they aren't needed for

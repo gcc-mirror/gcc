@@ -1251,6 +1251,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     _ForwardIterator __last,
 	     forward_iterator_tag)
     {
+      if (__first == __middle)
+	return __last;
+      else if (__last == __middle)
+	return __first;
+
       _ForwardIterator __first2 = __middle;
       do
 	{
@@ -1291,6 +1296,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
 				  _BidirectionalIterator>)
 
+      if (__first == __middle)
+	return __last;
+      else if (__last == __middle)
+	return __first;
+
       std::__reverse(__first,  __middle, bidirectional_iterator_tag());
       std::__reverse(__middle, __last,   bidirectional_iterator_tag());
 
@@ -1323,6 +1333,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 				  _RandomAccessIterator>)
+
+      if (__first == __middle)
+	return __last;
+      else if (__last == __middle)
+	return __first;
 
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
 	_Distance;
@@ -1424,11 +1439,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
-
-      if (__first == __middle)
-	return __last;
-      else if (__last  == __middle)
-	return __first;
 
       return std::__rotate(__first, __middle, __last,
 			   std::__iterator_category(__first));

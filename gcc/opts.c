@@ -2016,14 +2016,7 @@ parse_and_check_align_values (const char *flag,
   free (str);
 
   /* Check that we have a correct number of values.  */
-#ifdef SUBALIGN_LOG
-  unsigned max_valid_values = 4;
-#else
-  unsigned max_valid_values = 2;
-#endif
-
-  if (result_values.is_empty ()
-      || result_values.length () > max_valid_values)
+  if (result_values.is_empty () || result_values.length () > 4)
     {
       if (report_error)
 	error_at (loc, "invalid number of arguments for %<-falign-%s%> "

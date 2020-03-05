@@ -3252,9 +3252,29 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       return;
     }
 
-  /* Pretend to take the address of the base, we'll take care of
-     adding the required subset of sub-fields below.  */
-  get_constraint_for_1 (t, results, true, lhs_p);
+  /* Avoid creating pointer-offset constraints, so handle MEM_REF
+     offsets directly.  Pretend to take the address of the base,
+     we'll take care of adding the required subset of sub-fields below.  */
+  if (TREE_CODE (t) == MEM_REF
+      && !integer_zerop (TREE_OPERAND (t, 0)))
+    {
+      poly_offset_int off = mem_ref_offset (t);
+      off <<= LOG2_BITS_PER_UNIT;
+      off += bitpos;
+      poly_int64 off_hwi;
+      if (off.to_shwi (&off_hwi))
+	bitpos = off_hwi;
+      else
+	{
+	  bitpos = 0;
+	  bitmaxsize = -1;
+	}
+      get_constraint_for_1 (TREE_OPERAND (t, 0), results, false, lhs_p);
+      do_deref (results);
+    }
+  else
+    get_constraint_for_1 (t, results, true, lhs_p);
+
   /* Strip off nothing_id.  */
   if (results->length () == 2)
     {

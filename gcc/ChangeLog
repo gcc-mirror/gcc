@@ -1,3 +1,1104 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_promote_function_mode): New.
+	(TARGET_PROMOTE_FUNCTION_MODE): Use riscv_promote_function_mode.
+
+2019-08-05  Alan Modra  <amodra@gmail.com>
+
+	PR target/91349
+	* config/rs6000/freebsd64.h (CPLUSPLUS_CPP_SPEC),
+	(LINK_GCC_C_SEQUENCE_SPEC): Undef.
+
+2019-08-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2019-05-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_dbx_register_number): Return the
+	correct numbers for TFHAR, TFIAR, TEXASR.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Revert change from r273749.
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move from here...
+	* config/i386/darwin32-biarch.h .. to here.
+	* config/i386/darwin64-biarch.h: Adjust comments.
+	* config/rs6000/darwin32-biarch.h: Likewise.
+	* config/rs6000/darwin64-biarch.h: Likewise.
+	* config.gcc: Missed commit from r273746
+	(*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+
+	Backport from mainline
+	2019-07-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config.gcc (*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+	(x86_64-*-darwin*): Switch to single multilib for Darwin >= 18.
+	(powerpc-*-darwin*): Use biarch files where needed.
+	(powerpc64-*-darwin*): Likewise.
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move to new biarch file.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/i386/darwin32-biarch.h: New.
+	* config/i386/darwin64.h: Rename.
+	* gcc/config/i386/darwin64-biarch.h: To this.
+	* config/i386/t-darwin: Rename.
+	* gcc/config/i386/t-darwin32-biarch: To this.
+	* config/i386/t-darwin64: Rename.
+	* gcc/config/i386/t-darwin64-biarch: To this.
+	* config/rs6000/darwin32-biarch.h: New.
+	* config/rs6000/darwin64.h: Rename.
+	* config/rs6000/darwin64-biarch.h: To this.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/rs6000/t-darwin8: Rename.
+	* config/rs6000/t-darwin32-biarch: To this.
+	* config/rs6000/t-darwin64 Rename.
+	* config/rs6000/t-darwin64-biarch: To this.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Make a final check on PIC
+	options.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+	* config/darwin.c (darwin_override_options): Don't jam symbol stubs
+	on for kernel code.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc (powerpc-*-darwin*, powerpc64-*-darwin*): Remove
+	override on extra_headers.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Honour
+	user-specified float mode choice for kernel mode code.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Do not
+	use longcall for 64b code.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: Handle GCC target pragma.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: (__PPC__, __PPC64__): New.
+
+2019-08-02  Martin Sebor  <msebor@redhat.com>
+
+	Backport from mainline
+	2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90989
+	* tree-ssa-strlen.c (handle_char_store): Constrain a single character
+	optimization to just single character stores.
+
+2019-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_driver_init): Fix off-by-one errors
+	in computing the number of options to be moved.
+
+	Backport from mainline
+	2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): New.
+	(darwin_default_min_version): Cleanup and validate supplied version.
+	(darwin_driver_init): Likewise and push cleaned version into opts.
+
+2019-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
+
+2019-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c (darwin_register_objc_includes): Do not
+	prepend the sysroot when building gnu-runtime header search
+	paths.
+
+2019-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Use switch_to_section ()
+	instead of direct output of the asm.
+
+2019-08-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91280
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Decompose MEM_REF manually for offset handling.
+
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91293
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not swap operands
+	of reduction stmts.
+
+2019-08-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
+	Use tail-recursion.
+
+	2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-ssa.c (release_defs_bitset): Iterate from higher to
+	lower SSA names to avoid quadratic behavior in the common case.
+	* tree-data-ref.c (split_constant_offset): Add limit argument
+	and pass it down.  Initialize it from PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+	(split_constant_offset_1): Add limit argument and use it to
+	limit SSA def walking.  Optimize the common plus/minus case.
+
+	2019-07-12  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (ssa-name-def-chain-limit): Document new --param.
+	* params.def (PARAM_SSA_NAME_DEF_CHAIN_LIMIT): Add new --param.
+	* tree-vrp.c (vrp_prop::check_mem_ref): Use
+	PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+
+2019-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91301
+	* gimplify.c (gimplify_omp_for): If for class iterator on
+	distribute parallel for there is no data sharing clause
+	on inner_for_stmt, look for private clause on combined
+	parallel too and if found, move it to inner_for_stmt.
+
+	2019-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91216
+	* omp-low.c (global_nonaddressable_vars): New variable.
+	(use_pointer_for_field): For global decls, if they are non-addressable,
+	remember it in the global_nonaddressable_vars bitmap, if they are
+	addressable and in the global_nonaddressable_vars bitmap, ignore their
+	TREE_ADDRESSABLE bit.
+	(omp_copy_decl_2): Clear TREE_ADDRESSABLE also on private copies of
+	vars in global_nonaddressable_vars bitmap.
+	(execute_lower_omp): Free global_nonaddressable_vars bitmap.
+
+	PR target/91150
+	* config/i386/i386.c (expand_vec_perm_blend): Change mask type
+	from unsigned to unsigned HOST_WIDE_INT.  For E_V64QImode cast
+	comparison to unsigned HOST_WIDE_INT before shifting it left.
+
+	2019-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91157
+	* tree-vect-generic.c (expand_vector_comparison): Handle lhs being
+	a vector boolean with scalar mode.
+	(expand_vector_condition): Handle first operand being a vector boolean
+	with scalar mode.
+	(expand_vector_operations_1): For comparisons, don't bail out early
+	if the return type is vector boolean with scalar mode, but comparison
+	operand type is not.
+
+2019-08-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/91135
+	* config/rs6000/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Don't
+	define.
+	* config/rs6000/linux64.h (TARGET_OS_CPP_BUILTINS): Invoke
+	GNU_USER_TARGET_OS_CPP_BUILTINS for aixdesc abi.
+	(GNU_USER_TARGET_D_OS_VERSIONS): Don't define.
+
+2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* ginclude/float.h (FLT_DECIMAL_DIG, DBL_DECIMAL_DIG, LDBL_DECIMAL_DIG)
+	(FLT_HAS_SUBNORM, DBL_HAS_SUBNORM, LDBL_HAS_SUBNORM, FLT_TRUE_MIN)
+	(DBL_TRUE_MIN, LDBL_TRUE_MIN): Also define for C++17.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91200
+	* tree-ssa-phiopt.c (cond_store_replacement): Check we have
+	no PHI nodes in middle-bb.
+
+	2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* tree-cfg.c (move_block_to_fn): When releasing a virtual PHI
+	node make sure to replace all uses with something valid.
+
+	2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91145
+	* tree-vect-slp.c (vect_build_slp_tree_2): Fix reduction
+	chain check.
+
+	2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gimplify.c (gimplify_compound_literal_expr): Force a temporary
+	when the object is volatile and we have not cleared it even though
+	there are no nonzero elements.
+
+	2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91126
+	* tree-ssa-sccvn.c (n_walk_cb_data::push_partial_def): Adjust
+	native encoding offset for BYTES_BIG_ENDIAN.
+	(vn_reference_lookup_3): Likewise.
+
+2019-07-30  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
+	2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386-common.c: Use PROCESSOR_ZNVER2 scheduler for znver2.
+	* config/i386/znver1.md: Enable patterns for znver2 and add store
+	variants which use extra AGU unit.
+
+2019-07-30  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
+	2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.c (ix86_option_override_internal): Default
+	PARAM_AVOID_FMA_MAX_BITS to 256 for znver2.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Set
+	for ZNVER2.
+
+2019-07-30  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
+	2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver2_memcpy): Update.
+	(znver2_costs): Update 256 bit SSE costs and multiplication.
+
+2019-07-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from mainline
+	2019-07-18  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/91137
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field.
+	(tree_ssa_iv_optimize_init, alloc_iv, tree_ssa_iv_optimize_finalize):
+	Init, use and fini the above new field.
+	(determine_base_object_1): New function.
+	(determine_base_object): Reimplement using walk_tree.
+
+2019-07-23  Matthew Beliveau  <mbelivea@redhat.com>
+	
+	Backported from mainline
+	2019-07-16  Jeff Law  <law@redhat.com>
+	
+	PR rtl-optimization/91173
+	* tree-ssa-address.c (addr_for_mem_ref): If the base is an
+	SSA_NAME with a constant value, fold its value into the offset
+	and clear the base before calling gen_addr_rtx.
+	* g++.dg/pr91173.C: New test.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91231
+	* lto-streamer-in.c (input_function): Drop inline-entry markers
+	that ended up with an unknown location block.
+
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	Backport from mainline
+	* config/rs6000/smmintrin.h (_mm_blend_epi16): New.
+	(_mm_blendv_epi8): New.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/91172
+	* opts-common.c (decode_cmdline_option): Decode
+	argument of -Werror and check it for a wrong language.
+	* opts-global.c (complain_wrong_lang): Remove such case.
+
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline.
+	* config/arc/arc.c (prepare_move_operands): Always use an
+	intermediate register when storing a TLS symbols.
+
+2019-07-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fold-const.c (fold_relational_const): Fix folding of
+	vector-to-scalar NE_EXPRs.
+	(test_vector_folding): Add more tests.
+
+2019-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82081 - tail call optimization breaks noexcept
+	* tree-tailcall.c (find_tail_calls): Don't turn a call from a
+	nothrow function to a might-throw function into a tail call.
+
+2019-07-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2019-07-08  Andrew Waterman  <andrew@sifive.com>
+		    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (lshrsi3_zero_extend_3+1): Use operands[1]
+	bitsize	instead of BITS_PER_WORD.
+	gcc/testsuite/
+
+2019-07-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_som_asm_init_sections): Don't force all constant
+	data into data section when generating PIC code.
+	(pa_select_section): Use pa_reloc_rw_mask() to qualify relocs.
+	(pa_reloc_rw_mask): Return 3 when generating PIC code and when
+	generating code for SOM targets earlier than HP-UX 11.  Otherwise,
+	return 2 for SOM and 0 for other targets.
+	 
+2019-07-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md: Fix shift count operand printing.
+
+2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	2019-05-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR driver/90684
+	* gcc/opts.c (parse_and_check_align_values): Allow 4 alignment values.
+
+2019-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78884
+	* gimplify.c (struct gimplify_omp_ctx): Add add_safelen1 member.
+	(gimplify_bind_expr): If seeing TREE_ADDRESSABLE VLA inside of simd
+	loop body, set ctx->add_safelen1 instead of making it GOVD_PRIVATE.
+	(gimplify_adjust_omp_clauses): Add safelen (1) clause if
+	ctx->add_safelen1 is set.
+
+	PR rtl-optimization/90756
+	* explow.c (promote_ssa_mode): Always use TYPE_MODE, don't bypass it
+	for VECTOR_TYPE_P.
+
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91063
+	* tree-vect-stmts.c (vect_init_vector): Call gsi_remove to remove
+	stmt from stmts sequence before calling vect_init_vector_1.
+	Formatting fix.
+
+	2019-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/91062
+	* tree-pass.h (execute_all_ipa_transforms): Add a flag
+	parameter whether to disable GC collection.
+	* passes.c (execute_one_ipa_transform_pass): Likewise, and
+	honor it.
+	(execute_all_ipa_transforms): Likewise and pass it down.
+	* cgraph.c (cgraph_node::get_body): Do not invoke garbage
+	collection from applying IPA transforms.
+	* cgraphunit.c (cgraph_node::expand): Allow garbage collection
+	from applying IPA transforms.
+
+	2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/90982
+	* tree-inline.c (remap_ssa_name): Copy SSA range info.
+
+	2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90972
+	* tree-vect-stmts.c (vect_init_vector): Handle CONSTANT_CLASS_P
+	in common code, dealing with STRING_CST properly.
+
+	2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90914
+	* dwarf2out.c (prune_unused_types_walk): Always consider
+	function-local extern declarations as used.
+
+	2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* cfgexpand.c (expand_debug_expr): Treat NOTE_P DECL_RTL
+	as if optimized away.
+
+	2019-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR lto/90369
+	* lto-wrapper.c (debug_objcopy): Use the original filename
+	including archive offset for the filename used for -save-temps.
+
+2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/91136
+	* df-core.c (ACCESSING REFS): Fix typos in comment.
+	* resource.c (mark_target_live_reg): Add artificial defs that occur at
+	the beginning of the block to the initial set of live registers.
+
+2019-07-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/sse.md (*andnot<mode>3_bcst): Fix VI/VI48_AVX512VL typo.
+
+2019-07-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Handle
+	Modula-2.
+
+2019-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91108
+	* tree-ssa-sccvn.c: Include builtins.h.
+	(vn_reference_lookup_3): Use only alignment constraints to
+	verify same-valued store disambiguation.
+
+2019-07-05  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2019-06-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_asm_output_alias): Declare.
+	(aarch64_asm_output_external): Declare.
+	* config/aarch64/aarch64.c (aarch64_asm_output_variant_pcs): New.
+	(aarch64_declare_function_name): Call aarch64_asm_output_variant_pcs.
+	(aarch64_asm_output_alias): New.
+	(aarch64_asm_output_external): New.
+	* config/aarch64/aarch64.h (ASM_OUTPUT_DEF_FROM_DECLS): Define.
+	(ASM_OUTPUT_EXTERNAL): Define.
+
+	2019-06-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_asm_output_external): Remove
+	const.
+	* config/aarch64/aarch64.c (aarch64_asm_output_external): Call
+	default_elf_asm_output_external.
+
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90892
+	* builtins.c (inline_expand_builtin_string_cmp): Handle '\0'
+	in string constants.
+
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90899
+	* multiple_target.c (create_dispatcher_calls): Add to comdat
+	group only if set for ifunc.
+
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (add_scalar_info): Add back refererence to existing DIE
+	if it has the DW_AT_data_member_location attribute.
+
+2019-07-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2019-07-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (movdi_symbol_save_scc): Convert to define_insn
+	with inlined save and restore.
+
+2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/64242
+	* config/sparc/sparc.md (nonlocal_goto): Restore frame pointer last.
+	Add frame clobber and schedule blockage.
+
+2019-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91024
+	* gimplify.c (collect_fallthrough_labels): Ignore GIMPLE_PREDICT
+	statements.
+
+	2019-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* config/i386/sse.md
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): Use vmovupd,
+	vmovups, vmovdqu, vmovdqu32 or vmovdqu64 instead of the aligned
+	insns if operands[2] is misaligned_operand.
+
+	2019-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90760
+	* symtab.c (symtab_node::set_section): Allow being called on aliases
+	as long as they aren't analyzed yet.
+
+2019-06-28  Jeff Law  <law@redhat.com>
+
+	Backport from mainline
+	2019-06-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90949
+	* tree-ssa-copy.c (fini_copy_prop): Use reset_flow_sensitive_info.
+	* tree-ssanames.c (reset_flow_sensitive_info): Reset non-null state.
+
+2019-06-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_trampoline_init): Call "sorry" on GCN5.
+
+2019-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90939
+	* ipa-cp.c (ipcp_bits_lattice::meet_with): Remove assert.
+
+2019-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2019-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ld_vers) <*-*-solaris2*>: Remove support for
+	alternative Solaris 11.4 format.
+	* configure: Regenerate.
+
+2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline
+	2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_symbol_binds_local_p): New function.
+	(arc_legitimize_pic_address): Simplify and cleanup the function.
+	(SYMBOLIC_CONST): Remove.
+	(prepare_pic_move): Likewise.
+	(prepare_move_operands): Handle complex mov cases here.
+	(arc_legitimize_address_0): Remove call to
+	arc_legitimize_pic_address.
+	(arc_legitimize_address): Remove call to
+	arc_legitimize_tls_address.
+	* config/arc/arc.md (movqi_insn): Allow Cm3 match.
+	(movhi_insn): Likewise.
+
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline
+	2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.c (main): Set a non-zero return value if the
+	kernel does not exit cleanly.
+	* config/gcn/gcn.md (gcn_return): Insert s_waitcnt before s_dcache_wb.
+
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline
+	2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_expand_prologue): Use gen_addsi3_scalar_carry
+	for lo-part.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Set visited
+	flag on new stmts to avoid re-processing them.
+
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	PR tree-optimization/90316
+	* tree-ssa-alias.c (walk_non_aliased_vuses): Add missing
+	decrement of limit.
+
+2019-06-16  Jeff Law  <law@redhat.com>
+
+	Backport from mainline
+	2019-06-16  Prachi Godbole  <prachi.godbole@imgtec.com>
+		    Robert Suchanek  <robert.suchanek@mips.com>
+	* config/mips/mips.c (mips_expand_builtin_insn): Swap the 1st
+	and 3rd operands of the fmadd/fmsub/maddv builtin.
+
+2019-06-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/64242
+	* config/pa/pa.md (nonlocal_goto): Restore frame pointer last.  Add
+	frame clobbers and schedule block.
+	(builtin_longjmp): Likewise.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* config/nvptx/nvptx.c (nvptx_output_softstack_switch): Use and.b%d
+	instead of and.u%d.
+
+2019-06-07  John David Anglin  <danglin@gcc.gnu.orig>
+
+	PR target/90751
+	* config/pa/pa-linux.h (ASM_DECLARE_FUNCTION_NAME): Update comment.
+	Call pa_output_function_label.
+	(TARGET_ASM_FUNCTION_PROLOGUE): define.
+	* config/pa/pa-protos.h (pa_output_function_label): Declare.
+	* config/pa/pa.c (pa_output_function_prologue): Add ATTRIBUTE_UNUSED
+	to declaration.
+	(pa_linux_output_function_prologue): Declare.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Delete define.
+	(pa_output_function_label): New.
+	(pa_output_function_prologue): Revise to use pa_output_function_label.
+	(pa_linux_output_function_prologue): New.
+	* config/pa/pa.h (TARGET_ASM_FUNCTION_PROLOGUE): Define.
+
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90450
+	* tree-ssa-loop-im.c (struct im_mem_ref): Add ref_decomposed.
+	(mem_ref_hasher::equal): Check it.
+	(mem_ref_alloc): Initialize it.
+	(gather_mem_refs_stmt): Set it.
+
+	2019-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90402
+	* tree-if-conv.c (tree_if_conversion): Value number only
+	the loop body by making the latch an exit of the region
+	as well.
+	* tree-ssa-sccvn.c (process_bb): Add flag whether to skip
+	processing PHIs.
+	(do_rpo_vn): Deal with multiple edges into the entry block
+	that are not backedges inside the region by skipping PHIs
+	of the entry block.
+
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* tree-data-ref.h (dr_may_alias_p): Pass in the actual loop nest.
+	* tree-data-ref.c (dr_may_alias_p): Check whether the clique
+	is valid in the loop nest before using it.
+	(initialize_data_dependence_relation): Adjust.
+	* graphite-scop-detection.c (build_alias_set): Pass the SCOP enclosing
+	loop as loop-nest to dr_may_alias_p.
+
+2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (extract_muldiv_1) <PLUS_EXPR>: Do not distribute a
+	multiplication by a power-of-two value.
+	(fold_plusminus_mult_expr): Use pow2p_hwi to spot a power-of-two value
+	and turn the modulo operation into a masking operation.
+
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90733
+	* var-tracking.c (vt_expand_loc_callback): Don't create raw subregs
+	with VOIDmode inner operands.
+
+2019-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+	* doc/sourcebuild.texi: Document mfentry target support.
+
+2019-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-predcom.c (is_inv_store_elimination_chain): Fix a typo - lenght
+	to length.
+
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h: Reject -mfentry*.
+
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/82920
+	* config/i386/darwin.h (CC1_SPEC): Report -mx32 as an error for
+	Darwin.
+
+2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/82920
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect): New.
+	(ix86_output_indirect_branch_via_reg): Use output mechanism
+	accounting for __USER_LABEL_PREFIX__.
+	(ix86_output_indirect_branch_via_push): Likewise.
+	(ix86_output_function_return): Likewise.
+	(ix86_output_indirect_function_return): Likewise.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/90329
+	* lto-streamer.h (LTO_minor_version): Bump to 1.
+
+	Backported from mainline
+	2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/90329
+	* tree-core.h (struct tree_decl_common): Document
+	decl_nonshareable_flag for PARM_DECLs.
+	* tree.h (DECL_HIDDEN_STRING_LENGTH): Define.
+	* calls.c (expand_call): Don't try tail call if caller
+	has any DECL_HIDDEN_STRING_LENGTH PARM_DECLs that are or might be
+	passed on the stack and callee needs to pass any arguments on the
+	stack.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Use
+	else if instead of series of mutually exclusive ifs.  Handle
+	DECL_HIDDEN_STRING_LENGTH for PARM_DECLs.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Likewise.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: In cl_optimization_print, use correct condition
+	for var_opt_string printing.  In cl_optimization_print_diff, print
+	(null) instead of invoking undefined behavior if one of the
+	var_opt_string pointers is NULL and use && instead of first || in the
+	guarding condition.  For var_target_other options, handle const char *
+	target variables similarly to const char * optimize node variables.
+
+2019-05-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (hppa_profile_hook): Remove offset adjustment.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (resolve_args_picking_1): Deal with DW_OP_GNU_addr_index
+	and DW_OP_GNU_const_index opcodes.
+
+2019-05-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/90530
+	* config/pa/pa.c (pa_can_change_mode_class): Accept mode changes from
+	DImode to SImode in floating-point registers on 64-bit target.
+	* config/pa/pa.md (umulsidi3): Change nonimmediate_operand to
+	register_operand in xmpyu patterns.
+
+2019-05-24  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90570
+	* gimplify.c (gimplify_target_expr): Skip TREE_STATIC target
+	expression similarly to gimplify_decl_expr.
+
+2019-05-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuid.h (__cpuid): For 32bit targets, zero
+	%ebx and %ecx bafore calling cpuid with leaf 1 or
+	non-constant leaf argument.
+
+	2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/90547
+	* config/i386/i386.md (anddi_1 to andsi_1_zext splitter):
+	Avoid calling gen_lowpart with CONST operand.
+
+2019-05-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2019-05-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Replace ARMv7-M multilibs with Cortex-M
+	multilibs.
+
+2019-05-20  Jeff Law  <law@redhat.com>
+
+	Backported from mainline
+	2019-05-17  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/mips.c (mips_dwarf_frame_reg_mode): Replace
+	TARGET_FLOAT64 with !TARGET_FLOAT32, thus handling both fp64
+	and fpxx modes.
+
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90484
+	* tree-ssa-scopedtables.c (equal_mem_array_ref_p): Don't assert that
+	sz0 is equal to sz1, instead return false in that case.
+
+	* omp-low.c (lower_rec_input_clauses): If OMP_CLAUSE_IF
+	has non-constant expression, force sctx.lane and use two
+	argument IFN_GOMP_SIMD_LANE instead of single argument.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Don't DCE
+	two argument IFN_GOMP_SIMD_LANE without lhs.
+	* tree-vectorizer.h (struct _loop_vec_info): Add simd_if_cond
+	member.
+	(LOOP_VINFO_SIMD_IF_COND, LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND):
+	Define.
+	(LOOP_REQUIRES_VERSIONING): Or in
+	LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	simd_if_cond.
+	(vect_analyze_loop_2): Punt if LOOP_VINFO_SIMD_IF_COND is constant 0.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Add runtime check
+	from simd if clause if needed.
+
+	2019-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): For if (0) or simdlen (1) set
+	max_vf to 1.
+	* omp-expand.c (expand_omp_simd): For if (0) or simdlen (1) clear
+	safelen_int and set loop->dont_vectorize.
+
+	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90385
+	* tree-parloops.c (try_create_reduction_list): Punt on non-SSA_NAME
+	arguments of the exit phis.
+
+	PR c++/90383
+	* tree-inline.h (struct copy_body_data): Add do_not_fold member.
+	* tree-inline.c (remap_gimple_op_r): Avoid folding expressions if
+	id->do_not_fold.
+	(copy_tree_body_r): Likewise.
+	(copy_fn): Set id.do_not_fold to true.
+
+	2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90303
+	* ipa-devirt.c (obj_type_ref_class, get_odr_type): Don't use
+	TYPE_CANONICAL for TYPE_STRUCTURAL_EQUALITY_P types in !in_lto_p mode.
+
+2019-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-alias.h (get_continuation_for_phi): Take walking
+	limit by reference.
+	(walk_non_aliased_vuses): Take walking limit argument.
+	* tree-ssa-alias.c (maybe_skip_until): Take limit and abort
+	walking if it is reached instead of just counting.
+	(get_continuation_for_phi): Likewise.
+	(walk_non_aliased_vuses): Likewise, instead of leaving counter
+	limiting to the callback.
+	* tree-ssa-sccvn.c (vn_reference_lookup_2): Adjust.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.
+	(vn_reference_lookup): Likewise.
+	* tree-ssa-pre.c (translate_vuse_through_block): Limit walking.
+	* tree-ssa-scopedtables.c (vuse_eq): Adjust.
+	(avail_exprs_stack::lookup_avail_expr): Likewise.
+
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-alias.c (maybe_skip_until): Pass in target BB,
+	compute target on demand.
+	(get_continuation_for_phi): Remove code walking stmts to
+	get to a target virtual operand which could end up being
+	quadratic.
+
+2019-05-15  Li Jia He  <helijia@linux.ibm.com>
+
+	Backport from mainline.
+	2019-05-07  Li Jia He  <helijia@linux.ibm.com>
+
+	* tree-ssa-phiopt.c (two_value_replacement): Fix a typo in parameter
+	detection.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90416
+	* tree-vect-stmts.c (vect_check_load_store_mask): Concatenate
+	string instead of passing the second part as va_arg argument.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/90380
+	* gcov.c (handle_cycle): Do not support zero cycle count,
+	it should not be possible.
+	(path_contains_zero_cycle_arc): New function.
+	(circuit): Ignore zero cycle arc counts.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/90380
+	* gcov.c (enum loop_type): Remove the enum and
+	the operator.
+	(handle_cycle): Assert that we should not reach
+	a negative count.
+	(circuit): Use loop_found instead of a tri-state loop_type.
+	(get_cycles_count): Do not handle NEGATIVE_LOOP as it can't
+	happen.
+
+2019-05-14  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	Backport from mainline.
+	2019-05-14  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	PR target/90357
+	* config/mips/mips.c (mips_split_move): Skip forward SRC into
+	next insn when the SRC reg is dead.
+
+2019-05-11  Andreas Tobler <andreast@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-04-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/i386/freebsd64.h: Add bits for 32-bit multilib support.
+	* config/i386/t-freebsd64: New file.
+	* config.gcc: Add the t-freebsd64 for multilib support.
+
+2019-05-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89765
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	In handling of ALTIVEC_BUILTIN_VEC_INSERT, use modular arithmetic
+	to compute vector element selector for both constant and variable
+	operands.
+
+2019-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_reference_op_call): Initialize value-id.
+	(do_rpo_vn): Initialize next_value_id.
+
+2019-05-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cif-code.def (CHKP): Remove.
+
+2019-05-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline.
+	2019-05-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/89424
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Add
+	handling of V1TImode.
+
+2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-05-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/90312
+	* config/i386/i386-options.c (ix86_option_override_internal): Error only
+	when -mabi is selected to a non-default version.
+
+2019-05-04  Michael Meissner  <meissner@linux.ibm.com>
+
+	* ChangeLog.ibm: Delete unintentional commit on the wrong branch.
+	* REVISION: Likewise.
+
+2019-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90316
+	* tree-ssa-pre.c (pass_pre::execute): Re-compute DOM fast queries
+	before running VN.
+
+2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 9.1.1.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.
@@ -8,7 +1109,7 @@
 	2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	PR target/86538
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
-	Define __ARM_FEATURE_ATOMICS
+	Define __ARM_FEATURE_ATOMICS.
 
 2019-04-30  Martin Liska  <mliska@suse.cz>
 

@@ -14,8 +14,8 @@ void f4 (void);
 ALIGN (4)
 void f4 (void) { }
 
-/* { dg-final { scan-assembler ".align 4\n\t.globl\tf4" } } */
-
+/* { dg-final { scan-assembler ".align 4\n\t.globl\tf4" { target { ! *-*-darwin* } } } } */
+/* { dg-final { scan-assembler {.align[ \t]2,0x90\n\t.globl[ \t]_f4} { target *-*-darwin*  } } } */
 
 void g (void) { }
 

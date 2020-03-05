@@ -1688,6 +1688,7 @@ struct GTY(()) tree_decl_common {
   /* In a VAR_DECL and PARM_DECL, this is DECL_READ_P.  */
   unsigned decl_read_flag : 1;
   /* In a VAR_DECL or RESULT_DECL, this is DECL_NONSHAREABLE.  */
+  /* In a PARM_DECL, this is DECL_HIDDEN_STRING_LENGTH.  */
   unsigned decl_nonshareable_flag : 1;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */

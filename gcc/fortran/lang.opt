@@ -428,6 +428,10 @@ fc-prototypes
 Fortran Var(flag_c_prototypes)
 Generate C prototypes from BIND(C) declarations.
 
+fc-prototypes-external
+Fortran Var(flag_c_prototypes_external)
+Generate C prototypes from non-BIND(C) external procedure definitions.
+
 fd-lines-as-code
 Fortran RejectNegative
 Ignore 'D' in column one in fixed form.
@@ -495,6 +499,10 @@ Display the code tree after parsing.
 fdump-fortran-optimized
 Fortran Var(flag_dump_fortran_optimized)
 Display the code tree after front end optimization.
+
+fdump-fortran-global
+Fortran Var(flag_dump_fortran_global)
+Display the global symbol table after parsing.
 
 fdump-parse-tree
 Fortran Alias(fdump-fortran-original)
@@ -757,6 +765,13 @@ Fortran Var(flag_short_enums)
 fsign-zero
 Fortran Var(flag_sign_zero) Init(1)
 Apply negative sign to zero values.
+
+ftail-call-workaround
+Fortran Alias(ftail-call-workaround=,1,0)
+
+ftail-call-workaround=
+Fortran RejectNegative Joined UInteger IntegerRange(0, 2) Var(flag_tail_call_workaround) Init(1)
+Disallow tail call optimization when a calling routine may have omitted character lengths.
 
 funderscoring
 Fortran Var(flag_underscoring) Init(1)

@@ -1713,7 +1713,7 @@ is_inv_store_elimination_chain (struct loop *loop, chain_p chain)
 
   gcc_assert (!chain->has_max_use_after);
 
-  /* If loop iterates for unknown times or fewer times than chain->lenght,
+  /* If loop iterates for unknown times or fewer times than chain->length,
      we still need to setup root variable and propagate it with PHI node.  */
   tree niters = number_of_latch_executions (loop);
   if (TREE_CODE (niters) != INTEGER_CST

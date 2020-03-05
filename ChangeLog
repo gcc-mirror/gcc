@@ -1,3 +1,11 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-05-04  Michael Meissner  <meissner@linux.ibm.com>
+
+	* ChangeLog.ibm: Delete unintentional commit on the wrong branch.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

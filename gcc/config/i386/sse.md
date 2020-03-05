@@ -12481,8 +12481,8 @@
 	      (const_string "<sseinsnmode>")))])
 
 (define_insn "*andnot<mode>3_bcst"
-  [(set (match_operand:VI 0 "register_operand" "=v")
-	(and:VI
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+	(and:VI48_AVX512VL
 	  (not:VI48_AVX512VL
 	     (match_operand:VI48_AVX512VL 1 "register_operand" "v"))
 	  (vec_duplicate:VI48_AVX512VL
@@ -13529,15 +13529,29 @@
   switch (<MODE>mode)
     {
     case E_V8DFmode:
-      return "vmovapd\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return "vmovupd\t{%2, %x0|%x0, %2}";
+      else
+	return "vmovapd\t{%2, %x0|%x0, %2}";
     case E_V16SFmode:
-      return "vmovaps\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return "vmovups\t{%2, %x0|%x0, %2}";
+      else
+	return "vmovaps\t{%2, %x0|%x0, %2}";
     case E_V8DImode:
-      return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
-				    : "vmovdqa\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return which_alternative == 2 ? "vmovdqu64\t{%2, %x0|%x0, %2}"
+				      : "vmovdqu\t{%2, %x0|%x0, %2}";
+      else
+	return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
+				      : "vmovdqa\t{%2, %x0|%x0, %2}";
     case E_V16SImode:
-      return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
-				    : "vmovdqa\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return which_alternative == 2 ? "vmovdqu32\t{%2, %x0|%x0, %2}"
+				      : "vmovdqu\t{%2, %x0|%x0, %2}";
+      else
+	return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
+				      : "vmovdqa\t{%2, %x0|%x0, %2}";
     default:
       gcc_unreachable ();
     }

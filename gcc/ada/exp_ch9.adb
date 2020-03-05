@@ -8258,18 +8258,17 @@ package body Exp_Ch9 is
       Proc : Entity_Id;
 
    begin
-      --  Try to use System.Relative_Delays.Delay_For only if available. This
-      --  is the implementation used on restricted platforms when Ada.Calendar
-      --  is not available.
+      --  Try to use Ada.Calendar.Delays.Delay_For if available.
 
-      if RTE_Available (RO_RD_Delay_For) then
-         Proc := RTE (RO_RD_Delay_For);
+      if RTE_Available (RO_CA_Delay_For) then
+         Proc := RTE (RO_CA_Delay_For);
 
-      --  Otherwise, use Ada.Calendar.Delays.Delay_For and emit an error
-      --  message if not available.
+      --  Otherwise, use System.Relative_Delays.Delay_For and emit an error
+      --  message if not available. This is the implementation used on
+      --  restricted platforms when Ada.Calendar is not available.
 
       else
-         Proc := RTE (RO_CA_Delay_For);
+         Proc := RTE (RO_RD_Delay_For);
       end if;
 
       Rewrite (N,

@@ -115,9 +115,10 @@ struct mem_ref_loc
 
 struct im_mem_ref
 {
-  unsigned id : 31;		/* ID assigned to the memory reference
+  unsigned id : 30;		/* ID assigned to the memory reference
 				   (its index in memory_accesses.refs_list)  */
   unsigned ref_canonical : 1;   /* Whether mem.ref was canonicalized.  */
+  unsigned ref_decomposed : 1;  /* Whether the ref was hashed from mem.  */
   hashval_t hash;		/* Its hash value.  */
 
   /* The memory access itself and associated caching of alias-oracle
@@ -173,7 +174,8 @@ inline bool
 mem_ref_hasher::equal (const im_mem_ref *mem1, const ao_ref *obj2)
 {
   if (obj2->max_size_known_p ())
-    return (operand_equal_p (mem1->mem.base, obj2->base, 0)
+    return (mem1->ref_decomposed
+	    && operand_equal_p (mem1->mem.base, obj2->base, 0)
 	    && known_eq (mem1->mem.offset, obj2->offset)
 	    && known_eq (mem1->mem.size, obj2->size)
 	    && known_eq (mem1->mem.max_size, obj2->max_size)
@@ -1389,6 +1391,7 @@ mem_ref_alloc (ao_ref *mem, unsigned hash, unsigned id)
     ao_ref_init (&ref->mem, error_mark_node);
   ref->id = id;
   ref->ref_canonical = false;
+  ref->ref_decomposed = false;
   ref->hash = hash;
   ref->stored = NULL;
   bitmap_initialize (&ref->indep_loop, &lim_bitmap_obstack);
@@ -1476,6 +1479,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
       HOST_WIDE_INT offset, size, max_size;
       poly_int64 saved_maxsize = aor.max_size, mem_off;
       tree mem_base;
+      bool ref_decomposed;
       if (aor.max_size_known_p ()
 	  && aor.offset.is_constant (&offset)
 	  && aor.size.is_constant (&size)
@@ -1489,12 +1493,14 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
 		       aor.size)
 	  && (mem_base = get_addr_base_and_unit_offset (aor.ref, &mem_off)))
 	{
+	  ref_decomposed = true;
 	  hash = iterative_hash_expr (ao_ref_base (&aor), 0);
 	  hash = iterative_hash_host_wide_int (offset, hash);
 	  hash = iterative_hash_host_wide_int (size, hash);
 	}
       else
 	{
+	  ref_decomposed = false;
 	  hash = iterative_hash_expr (aor.ref, 0);
 	  aor.max_size = -1;
 	}
@@ -1543,6 +1549,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
 	{
 	  id = memory_accesses.refs_list.length ();
 	  ref = mem_ref_alloc (&aor, hash, id);
+	  ref->ref_decomposed = ref_decomposed;
 	  memory_accesses.refs_list.safe_push (ref);
 	  *slot = ref;
 

@@ -108,9 +108,42 @@ test02()
   VERIFY( !exists(dir) );
 }
 
+void
+test03()
+{
+  // PR libstdc++/88881 symlink_status confused by trailing slash on Windows
+  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
+  unsigned removed;
+  std::error_code ec = bad_ec;
+  const auto p = __gnu_test::nonexistent_path() / ""; // with trailing slash
+
+  create_directories(p);
+  removed = remove_all(p, ec);
+  VERIFY( !ec );
+  VERIFY( removed == 1 );
+  VERIFY( !exists(p) );
+  create_directories(p);
+  removed = remove_all(p);
+  VERIFY( removed == 1 );
+  VERIFY( !exists(p) );
+
+  const auto p_subs = p/"foo/bar";
+  ec = bad_ec;
+  create_directories(p_subs);
+  removed = remove_all(p, ec);
+  VERIFY( !ec );
+  VERIFY( removed == 3 );
+  VERIFY( !exists(p) );
+  create_directories(p_subs);
+  remove_all(p);
+  VERIFY( removed == 3 );
+  VERIFY( !exists(p) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

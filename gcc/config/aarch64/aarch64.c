@@ -15276,6 +15276,19 @@ aarch64_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
    return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
 }
 
+/* Output .variant_pcs for aarch64_vector_pcs function symbols.  */
+
+static void
+aarch64_asm_output_variant_pcs (FILE *stream, const tree decl, const char* name)
+{
+  if (aarch64_simd_decl_p (decl))
+    {
+      fprintf (stream, "\t.variant_pcs\t");
+      assemble_name (stream, name);
+      fprintf (stream, "\n");
+    }
+}
+
 /* The last .arch and .tune assembly strings that we printed.  */
 static std::string aarch64_last_printed_arch_string;
 static std::string aarch64_last_printed_tune_string;
@@ -15325,9 +15338,32 @@ aarch64_declare_function_name (FILE *stream, const char* name,
       aarch64_last_printed_tune_string = this_tune->name;
     }
 
+  aarch64_asm_output_variant_pcs (stream, fndecl, name);
+
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+}
+
+/* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
+
+void
+aarch64_asm_output_alias (FILE *stream, const tree decl, const tree target)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char *value = IDENTIFIER_POINTER (target);
+  aarch64_asm_output_variant_pcs (stream, decl, name);
+  ASM_OUTPUT_DEF (stream, name, value);
+}
+
+/* Implement ASM_OUTPUT_EXTERNAL.  Output .variant_pcs for undefined
+   function symbol references.  */
+
+void
+aarch64_asm_output_external (FILE *stream, tree decl, const char* name)
+{
+  default_elf_asm_output_external (stream, decl, name);
+  aarch64_asm_output_variant_pcs (stream, decl, name);
 }
 
 /* Implements TARGET_ASM_FILE_START.  Output the assembly header.  */

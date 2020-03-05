@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -mindirect-branch=thunk-inline -fno-pic -fjump-tables" } */
+/* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -mindirect-branch=thunk-inline -fjump-tables" } */
+/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
 
 void func0 (void);
 void func1 (void);
@@ -37,8 +38,8 @@ bar (int i)
 
 /* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*\.L\[0-9\]+\\(,%" { target *-*-linux* } } } */
 /* { dg-final { scan-assembler-not "pushq\[ \t\]%(r|e)ax" } } */
-/* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
-/* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
+/* { dg-final { scan-assembler {jmp[ \t]*\.?LIND} } } */
+/* { dg-final { scan-assembler {call[ \t]*\.?LIND} } } */
 /* { dg-final { scan-assembler {\tpause} } } */
 /* { dg-final { scan-assembler {\tlfence} } } */
-/* { dg-final { scan-assembler-not "__x86_indirect_thunk" } } */
+/* { dg-final { scan-assembler-not "_?__x86_indirect_thunk" } } */

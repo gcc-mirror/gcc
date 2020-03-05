@@ -25,6 +25,7 @@ test01()
   using namespace std;
   unordered_set<const int, hash<int>> c;	    // { dg-error "here" }
   unordered_set<int, equal_to<int>, hash<int>> c2;
+  c2.find(2);					    // { dg-error "here" }
 }
 
 // { dg-error "non-const, non-volatile value_type" "" { target *-*-* } 0 }
@@ -32,3 +33,4 @@ test01()
 // { dg-error "key equality predicate must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "use of deleted function" }
 // { dg-prune-output "must have the same value_type as its allocator" }
+// { dg-prune-output "no match for call" }

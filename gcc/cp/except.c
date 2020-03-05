@@ -1288,8 +1288,10 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
       && !value_dependent_expression_p (expr))
     {
+      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+      /* Don't let convert_like_real create more template codes.  */
+      processing_template_decl_sentinel s;
       expr = build_converted_constant_bool_expr (expr, complain);
-      expr = instantiate_non_dependent_expr (expr);
       expr = cxx_constant_value (expr);
     }
   if (TREE_CODE (expr) == INTEGER_CST)

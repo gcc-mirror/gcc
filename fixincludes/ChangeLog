@@ -1,3 +1,43 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* inclhack.def: Replace the complex test using __STRICT_ANSI__ and
+	__STDC_VERSION__ with a test using __DARWIN_NO_LONG_LONG.
+	Ensure that the top level math.h uses <> to wrap included headers
+	rather than "".
+	* fixincl.x: Regenerated.
+	* tests/base/architecture/ppc/math.h: Update test to include the
+	__DARWIN_NO_LONG_LONG case.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* inclhack.def: Guard __has_attribute and __has_extension in
+	os/base.h.
+	Guard Apple blocks syntax in dispatch/object.h.
+	* fixincl.x: Regenerate.
+	* tests/base/dispatch/object.h: New file.
+	* tests/base/os/base.h: New file.
+
+2019-05-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/90379
+	PR bootstrap/89864
+	* inclhack.def (darwin_ucred__Atomic): Do not supply test_text
+	for wrap fixes.
+	* fixincl.x: Regenerated.
+
 2019-05-03  Release Manager
 
 	* GCC 9.1.0 released.

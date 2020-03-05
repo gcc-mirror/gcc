@@ -83,6 +83,10 @@ lvalue_kind (const_tree ref)
   if (ref == current_class_ptr)
     return clk_none;
 
+  /* Expressions with cv void type are prvalues.  */
+  if (TREE_TYPE (ref) && VOID_TYPE_P (TREE_TYPE (ref)))
+    return clk_none;
+
   switch (TREE_CODE (ref))
     {
     case SAVE_EXPR:

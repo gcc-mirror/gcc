@@ -2956,13 +2956,16 @@ gfc_match_stopcode (gfc_statement st)
 {
   gfc_expr *e = NULL;
   match m;
-  bool f95, f03;
+  bool f95, f03, f08;
 
   /* Set f95 for -std=f95.  */
   f95 = (gfc_option.allow_std == GFC_STD_OPT_F95);
 
   /* Set f03 for -std=f2003.  */
   f03 = (gfc_option.allow_std == GFC_STD_OPT_F03);
+
+  /* Set f08 for -std=f2008.  */
+  f08 = (gfc_option.allow_std == GFC_STD_OPT_F08);
 
   /* Look for a blank between STOP and the stop-code for F2008 or later.  */
   if (gfc_current_form != FORM_FIXED && !(f95 || f03))
@@ -3052,8 +3055,8 @@ gfc_match_stopcode (gfc_statement st)
       /* Test for F95 and F2003 style STOP stop-code.  */
       if (e->expr_type != EXPR_CONSTANT && (f95 || f03))
 	{
-	  gfc_error ("STOP code at %L must be a scalar CHARACTER constant or "
-		     "digit[digit[digit[digit[digit]]]]", &e->where);
+	  gfc_error ("STOP code at %L must be a scalar CHARACTER constant "
+		     "or digit[digit[digit[digit[digit]]]]", &e->where);
 	  goto cleanup;
 	}
 
@@ -3062,6 +3065,14 @@ gfc_match_stopcode (gfc_statement st)
       gfc_init_expr_flag = true;
       gfc_reduce_init_expr (e);
       gfc_init_expr_flag = false;
+
+      /* Test for F2008 style STOP stop-code.  */
+      if (e->expr_type != EXPR_CONSTANT && f08)
+	{
+	  gfc_error ("STOP code at %L must be a scalar default CHARACTER or "
+		     "INTEGER constant expression", &e->where);
+	  goto cleanup;
+	}
 
       if (!(e->ts.type == BT_CHARACTER || e->ts.type == BT_INTEGER))
 	{
@@ -6186,6 +6197,13 @@ gfc_match_select_type (void)
   m = gfc_match (" select type ( ");
   if (m != MATCH_YES)
     return m;
+
+  if (gfc_current_state() == COMP_MODULE
+      || gfc_current_state() == COMP_SUBMODULE)
+    {
+      gfc_error ("SELECT TYPE at %C cannot appear in this scope");
+      return MATCH_ERROR;
+    }
 
   gfc_current_ns = gfc_build_block_ns (ns);
   m = gfc_match (" %n => %e", name, &expr2);

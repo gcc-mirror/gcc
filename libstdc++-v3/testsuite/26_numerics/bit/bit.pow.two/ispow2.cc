@@ -126,19 +126,6 @@ static_assert( test( X{} ).did_not_match() );
 enum E : unsigned { e };
 static_assert( test( e ).did_not_match() );
 
-#ifndef __STRICT_ANSI__
-#include <cstddef>
-static_assert( std::ispow2(std::byte{0}) == false );
-static_assert( std::ispow2(std::byte{1}) == true );
-static_assert( std::ispow2(std::byte{2}) == true );
-static_assert( std::ispow2(std::byte{3}) == false );
-static_assert( std::ispow2(std::byte{100}) == false );
-static_assert( std::ispow2(std::byte{128}) == true );
-static_assert( std::ispow2(std::byte{255}) == false );
-#else
-static_assert( test( (std::byte)0 ).did_not_match() );
-#endif
-
 #if !defined(__STRICT_ANSI__) && defined _GLIBCXX_USE_INT128
 static_assert( test( (unsigned __int128)0 ) );
 static_assert( test( (__int128)0 ).did_not_match() );
@@ -155,3 +142,6 @@ static_assert( test( (__GLIBCXX_TYPE_INT_N_1)0 ).did_not_match() );
 static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_2)0 ) );
 static_assert( test( (__GLIBCXX_TYPE_INT_N_2)0 ).did_not_match() );
 #endif
+
+#include <cstddef>
+static_assert( test( (std::byte)0 ).did_not_match() );

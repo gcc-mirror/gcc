@@ -1,8 +1,10 @@
 /* Graceful handling of a syntax error.  */
 /* { dg-do compile } */
+/* Suppress warnings that the GNUStep headers introduce.  */
+/* { dg-additional-options "-std=gnu++11 -Wno-expansion-to-defined -Wno-variadic-macros" { target *-*-darwin* } } */
 
 #ifdef __NEXT_RUNTIME__
-#include <Foundation/NSObject.h>
+#include "../objc-obj-c++-shared/F-NSObject.h"
 #define OBJECT NSObject
 #else
 #include <objc/Object.h>

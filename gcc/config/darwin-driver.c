@@ -26,6 +26,91 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "diagnostic-core.h"
 
+/* Validate a version string (either given on the command line or, perhaps
+   as MACOSX_DEPLOYMENT_TARGET).
+
+   The specs %version-compare() function doesn't accept leading '0' on
+   numbers so strip them out.  Do sanity checking here too.
+
+   Return:
+     * original string means it was OK and we didn't want to change it.
+     * new string means it was OK but we rewrote it to avoid possible format
+     problems.
+     * NULL means we didn't like what we saw.
+*/
+
+static const char *
+validate_macosx_version_min (const char *version_str)
+{
+  size_t version_len;
+  unsigned long major, minor, tiny = 0;
+  char *end;
+  const char *old_version = version_str;
+  bool need_rewrite = false;
+
+  version_len = strlen (version_str);
+  if (version_len < 4) /* The minimum would be 10.x  */
+    return NULL;
+
+  /* Version string must consist of digits and periods only.  */
+  if (strspn (version_str, "0123456789.") != version_len)
+    return NULL;
+
+  if (!ISDIGIT (version_str[0]) || !ISDIGIT (version_str[version_len - 1]))
+    return NULL;
+
+  if (version_str[0] == '0')
+    need_rewrite = true;
+
+  major = strtoul (version_str, &end, 10);
+  version_str = end + ((*end == '.') ? 1 : 0);
+
+  if (major != 10) /* So far .. all MacOS 10 ... */
+    return NULL;
+
+  /* Version string components must be present and numeric.  */
+  if (!ISDIGIT (version_str[0]))
+    return NULL;
+
+  /* If we have one or more leading zeros on a component, then rewrite the
+     version string.  */
+  if (version_str[0] == '0' && version_str[1] != '\0'
+      && version_str[1] != '.')
+    need_rewrite = true;
+
+  minor = strtoul (version_str, &end, 10);
+  version_str = end + ((*end == '.') ? 1 : 0);
+  if (minor > 99)
+    return NULL;
+
+  /* If 'tiny' is present it must be numeric.  */
+  if (*end != '\0' && !ISDIGIT (version_str[0]))
+    return NULL;
+
+  /* If we have one or more leading zeros on a component, then rewrite the
+     version string.  */
+  if (*end != '\0' && version_str[0] == '0'
+      && version_str[1] != '\0')
+    need_rewrite = true;
+
+  tiny = strtoul (version_str, &end, 10);
+  if (tiny > 99)
+    return NULL;
+
+  /* Version string must contain no more than three tokens.  */
+  if (*end != '\0')
+    return NULL;
+
+  if (need_rewrite)
+    {
+      char *new_version;
+      asprintf (&new_version, "10.%lu.%lu", minor, tiny);
+      return new_version;
+    }
+
+  return old_version;
+}
+
 #ifndef CROSS_DIRECTORY_STRUCTURE
 #include <sys/sysctl.h>
 #include "xregex.h"
@@ -114,12 +199,13 @@ darwin_default_min_version (void)
 
   if (new_flag != NULL)
     {
-      size_t len = strlen (new_flag);
-      if (len > 128) { /* Arbitrary limit, number should be like xx.yy.zz */
-	warning (0, "couldn%'t understand version %s\n", new_flag);
-	return NULL;
-      }
-      new_flag = xstrndup (new_flag, len);
+      const char *checked = validate_macosx_version_min (new_flag);
+      if (checked == NULL)
+	{
+	  warning (0, "couldn%'t understand version %s\n", new_flag);
+	  return NULL;
+	}
+      new_flag = xstrndup (checked, strlen (checked));
     }
   return new_flag;
 }
@@ -175,7 +261,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  if (*decoded_options_count > i) {
 	    memmove (*decoded_options + i,
 		     *decoded_options + i + 1,
-		     ((*decoded_options_count - i)
+		     ((*decoded_options_count - i - 1)
 		      * sizeof (struct cl_decoded_option)));
 	  }
 	  --i;
@@ -209,7 +295,24 @@ darwin_driver_init (unsigned int *decoded_options_count,
 
 	case OPT_mmacosx_version_min_:
 	  seen_version_min = true;
-	  vers_string = xstrndup ((*decoded_options)[i].arg, 32);
+	  vers_string =
+	    validate_macosx_version_min ((*decoded_options)[i].arg);
+	  if (vers_string == NULL)
+	    warning (0, "%qs is not valid for %<mmacosx-version-min%>\n",
+		     (*decoded_options)[i].arg);
+	  else if (vers_string == (*decoded_options)[i].arg)
+	    vers_string = xstrndup ((*decoded_options)[i].arg, 32);
+	  /* Now we've examined it, and verified/re-written, put it to
+	     one side and append later.  */
+	  if (*decoded_options_count > i) {
+	    memmove (*decoded_options + i,
+		     *decoded_options + i + 1,
+		     ((*decoded_options_count - i - 1)
+		      * sizeof (struct cl_decoded_option)));
+	  }
+	  --i;
+	  --*decoded_options_count;
+	  break;
 
 	default:
 	  break;
@@ -276,22 +379,20 @@ darwin_driver_init (unsigned int *decoded_options_count,
      so that we can figure out the mechanism and source for the sysroot to
      be used.  */
   if (! seen_version_min && *decoded_options_count > 1)
-    {
-      /* Not set by the User, try to figure it out.  */
-      vers_string = darwin_default_min_version ();
-      if (vers_string != NULL)
-	{
-	  ++*decoded_options_count;
-	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
-					 *decoded_options,
-					 *decoded_options_count);
-	  generate_option (OPT_mmacosx_version_min_, vers_string, 1, CL_DRIVER,
-			  &(*decoded_options)[*decoded_options_count - 1]);
-	}
-    }
-  /* Create and push the major version for assemblers that need it.  */
+    /* Not set by the User, try to figure it out.  */
+    vers_string = darwin_default_min_version ();
+
+  /* Create and push a cleaned up version, plus the major version for
+     assemblers and other cases that need it.  */
   if (vers_string != NULL)
     {
+       ++*decoded_options_count;
+       *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+				      *decoded_options,
+				      *decoded_options_count);
+      generate_option (OPT_mmacosx_version_min_, vers_string, 1, CL_DRIVER,
+		       &(*decoded_options)[*decoded_options_count - 1]);
+
       char *asm_major = NULL;
       const char *first_period = strchr(vers_string, '.');
       if (first_period != NULL)

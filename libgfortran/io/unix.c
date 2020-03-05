@@ -193,7 +193,8 @@ fallback_access (const char *path, int mode)
 
 /* Unix and internal stream I/O module */
 
-static const int BUFFER_SIZE = 8192;
+static const int FORMATTED_BUFFER_SIZE_DEFAULT = 8192;
+static const int UNFORMATTED_BUFFER_SIZE_DEFAULT = 128*1024;
 
 typedef struct
 {
@@ -205,6 +206,7 @@ typedef struct
   gfc_offset file_length;	/* Length of the file. */
 
   char *buffer;                 /* Pointer to the buffer.  */
+  ssize_t buffer_size;           /* Length of the buffer.  */
   int fd;                       /* The POSIX file descriptor.  */
 
   int active;			/* Length of valid bytes in the buffer */
@@ -592,9 +594,9 @@ buf_read (unix_stream *s, void *buf, ssize_t nbyte)
           && raw_seek (s, new_logical, SEEK_SET) < 0)
         return -1;
       s->buffer_offset = s->physical_offset = new_logical;
-      if (to_read <= BUFFER_SIZE/2)
+      if (to_read <= s->buffer_size/2)
         {
-          did_read = raw_read (s, s->buffer, BUFFER_SIZE);
+          did_read = raw_read (s, s->buffer, s->buffer_size);
 	  if (likely (did_read >= 0))
 	    {
 	      s->physical_offset += did_read;
@@ -632,11 +634,11 @@ buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
     s->buffer_offset = s->logical_offset;
 
   /* Does the data fit into the buffer?  As a special case, if the
-     buffer is empty and the request is bigger than BUFFER_SIZE/2,
+     buffer is empty and the request is bigger than s->buffer_size/2,
      write directly. This avoids the case where the buffer would have
      to be flushed at every write.  */
-  if (!(s->ndirty == 0 && nbyte > BUFFER_SIZE/2)
-      && s->logical_offset + nbyte <= s->buffer_offset + BUFFER_SIZE
+  if (!(s->ndirty == 0 && nbyte > s->buffer_size/2)
+      && s->logical_offset + nbyte <= s->buffer_offset + s->buffer_size
       && s->buffer_offset <= s->logical_offset
       && s->buffer_offset + s->ndirty >= s->logical_offset)
     {
@@ -651,7 +653,7 @@ buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
          the request is bigger than the buffer size, write directly
          bypassing the buffer.  */
       buf_flush (s);
-      if (nbyte <= BUFFER_SIZE/2)
+      if (nbyte <= s->buffer_size/2)
         {
           memcpy (s->buffer, buf, nbyte);
           s->buffer_offset = s->logical_offset;
@@ -688,7 +690,7 @@ buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
 static int
 buf_markeor (unix_stream *s)
 {
-  if (s->unbuffered || s->ndirty >= BUFFER_SIZE / 2)
+  if (s->unbuffered || s->ndirty >= s->buffer_size / 2)
     return buf_flush (s);
   return 0;
 }
@@ -765,11 +767,32 @@ static const struct stream_vtable buf_vtable = {
 };
 
 static int
-buf_init (unix_stream *s)
+buf_init (unix_stream *s, bool unformatted)
 {
   s->st.vptr = &buf_vtable;
 
-  s->buffer = xmalloc (BUFFER_SIZE);
+  /* Try to guess a good value for the buffer size.  For formatted
+     I/O, we use so many CPU cycles converting the data that there is
+     more sense in converving memory and especially cache.  For
+     unformatted, a bigger block can have a large impact in some
+     environments.  */
+
+  if (unformatted)
+    {
+      if (options.unformatted_buffer_size > 0)
+	s->buffer_size = options.unformatted_buffer_size;
+      else
+	s->buffer_size = UNFORMATTED_BUFFER_SIZE_DEFAULT;
+    }
+  else
+    {
+      if (options.formatted_buffer_size > 0)
+	s->buffer_size = options.formatted_buffer_size;
+      else
+	s->buffer_size = FORMATTED_BUFFER_SIZE_DEFAULT;
+    }
+
+  s->buffer = xmalloc (s->buffer_size);
   return 0;
 }
 
@@ -1120,13 +1143,13 @@ fd_to_stream (int fd, bool unformatted)
 	   (s->fd == STDIN_FILENO 
 	    || s->fd == STDOUT_FILENO 
 	    || s->fd == STDERR_FILENO)))
-    buf_init (s);
+    buf_init (s, unformatted);
   else
     {
       if (unformatted)
 	{
 	  s->unbuffered = true;
-	  buf_init (s);
+	  buf_init (s, unformatted);
 	}
       else
 	raw_init (s);
