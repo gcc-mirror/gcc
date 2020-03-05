@@ -2656,7 +2656,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	{
 	  poly_int64 soff;
 	  if (TREE_CODE (base) != MEM_REF
-	      || !(mem_ref_offset (base) << LOG2_BITS_PER_UNIT).to_shwi (&soff))
+	      || !(mem_ref_offset (base)
+		   << LOG2_BITS_PER_UNIT).to_shwi (&soff))
 	    return (void *)-1;
 	  offset += soff;
 	  offset2 = 0;
@@ -2666,10 +2667,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (is_gimple_assign (def)
 		  && gimple_assign_rhs_code (def) == POINTER_PLUS_EXPR
 		  && gimple_assign_rhs1 (def) == TREE_OPERAND (base, 0)
-		  && poly_int_tree_p (gimple_assign_rhs2 (def))
-		  && (wi::to_poly_offset (gimple_assign_rhs2 (def))
-		      << LOG2_BITS_PER_UNIT).to_shwi (&offset2))
+		  && poly_int_tree_p (gimple_assign_rhs2 (def)))
 		{
+		  tree rhs2 = gimple_assign_rhs2 (def);
+		  if (!(poly_offset_int::from (wi::to_poly_wide (rhs2),
+					       SIGNED)
+			<< LOG2_BITS_PER_UNIT).to_shwi (&offset2))
+		    return (void *)-1;
 		  ref2 = gimple_assign_rhs1 (def);
 		  if (TREE_CODE (ref2) == SSA_NAME)
 		    ref2 = SSA_VAL (ref2);

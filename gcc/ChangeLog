@@ -1,3 +1,11 @@
+2020-03-05  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Treat POINTER_PLUS_EXPR
+	last operand as signed when looking for memset offset.  Formatting
+	fix.
+
 2020-03-04  Andrew Pinski  <apinski@marvell.com>
 
 	PR bootstrap/93962
