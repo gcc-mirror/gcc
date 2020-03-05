@@ -737,12 +737,12 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
    intialization as a proxy for the full array initialization to get things
    marked as used and any appropriate diagnostics.
 
-   Since we're deferring building the actual constructor calls until
-   gimplification time, we need to build one now and throw it away so
-   that the relevant constructor gets mark_used before cgraph decides
-   what functions are needed.  Here we assume that init is either
-   NULL_TREE, void_type_node (indicating value-initialization), or
-   another array to copy.  */
+   This used to be necessary because we were deferring building the actual
+   constructor calls until gimplification time; now we only do it to set
+   VEC_INIT_EXPR_IS_CONSTEXPR.
+
+   We assume that init is either NULL_TREE, void_type_node (indicating
+   value-initialization), or another array to copy.  */
 
 static tree
 build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
@@ -858,7 +858,8 @@ diagnose_non_constexpr_vec_init (tree expr)
 tree
 build_array_copy (tree init)
 {
-  return build_vec_init_expr (TREE_TYPE (init), init, tf_warning_or_error);
+  return get_target_expr (build_vec_init_expr
+			  (TREE_TYPE (init), init, tf_warning_or_error));
 }
 
 /* Build a TARGET_EXPR using INIT to initialize a new temporary of the

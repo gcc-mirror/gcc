@@ -239,12 +239,21 @@ cp_gimplify_init_expr (tree *expr_p)
   tree to = TREE_OPERAND (*expr_p, 0);
   tree t;
 
-  /* What about code that pulls out the temp and uses it elsewhere?  I
-     think that such code never uses the TARGET_EXPR as an initializer.  If
-     I'm wrong, we'll abort because the temp won't have any RTL.  In that
-     case, I guess we'll need to replace references somehow.  */
-  if (TREE_CODE (from) == TARGET_EXPR && TARGET_EXPR_INITIAL (from))
-    from = TARGET_EXPR_INITIAL (from);
+  if (TREE_CODE (from) == TARGET_EXPR)
+    if (tree init = TARGET_EXPR_INITIAL (from))
+      {
+	if (VOID_TYPE_P (TREE_TYPE (init))
+	    && TREE_CODE (init) != AGGR_INIT_EXPR)
+	  {
+	    /* If this was changed by cp_genericize_target_expr, we need to
+	       walk into it to replace uses of the slot.  */
+	    replace_decl (&init, TARGET_EXPR_SLOT (from), to);
+	    *expr_p = init;
+	    return;
+	  }
+	else
+	  from = init;
+      }
 
   /* Look through any COMPOUND_EXPRs, since build_compound_expr pushes them
      inside the TARGET_EXPR.  */
@@ -458,19 +467,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case AGGR_INIT_EXPR:
       simplify_aggr_init_expr (expr_p);
       ret = GS_OK;
-      break;
-
-    case VEC_INIT_EXPR:
-      {
-	*expr_p = expand_vec_init_expr (NULL_TREE, *expr_p,
-					tf_warning_or_error);
-
-	hash_set<tree> pset;
-	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
-	cp_genericize_tree (expr_p, false);
-	copy_if_shared (expr_p);
-	ret = GS_OK;
-      }
       break;
 
     case THROW_EXPR:
@@ -868,6 +864,57 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
     }
 }
 
+/* If we might need to clean up a partially constructed object, break down the
+   CONSTRUCTOR with split_nonconstant_init.  Also expand VEC_INIT_EXPR at this
+   point.  If initializing TO with FROM is non-trivial, overwrite *REPLACE with
+   the result.  */
+
+static void
+cp_genericize_init (tree *replace, tree from, tree to)
+{
+  if (TREE_CODE (from) == VEC_INIT_EXPR)
+    {
+      tree init = expand_vec_init_expr (to, from, tf_warning_or_error);
+
+      /* Make cp_gimplify_init_expr call replace_decl.  */
+      *replace = fold_convert (void_type_node, init);
+    }
+  else if (flag_exceptions
+	   && TREE_CODE (from) == CONSTRUCTOR
+	   && TREE_SIDE_EFFECTS (from)
+	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (from)))
+    {
+      to = cp_stabilize_reference (to);
+      replace_placeholders (from, to);
+      *replace = split_nonconstant_init (to, from);
+    }
+}
+
+/* For an INIT_EXPR, replace the INIT_EXPR itself.  */
+
+static void
+cp_genericize_init_expr (tree *stmt_p)
+{
+  tree to = TREE_OPERAND (*stmt_p, 0);
+  tree from = TREE_OPERAND (*stmt_p, 1);
+  if (SIMPLE_TARGET_EXPR_P (from)
+      /* Return gets confused if we clobber its INIT_EXPR this soon.  */
+      && TREE_CODE (to) != RESULT_DECL)
+    from = TARGET_EXPR_INITIAL (from);
+  cp_genericize_init (stmt_p, from, to);
+}
+
+/* For a TARGET_EXPR, change the TARGET_EXPR_INITIAL.  We will need to use
+   replace_decl later when we know what we're initializing.  */
+
+static void
+cp_genericize_target_expr (tree *stmt_p)
+{
+  cp_genericize_init (&TARGET_EXPR_INITIAL (*stmt_p),
+		      TARGET_EXPR_INITIAL (*stmt_p),
+		      TARGET_EXPR_SLOT (*stmt_p));
+}
+
 /* Genericization context.  */
 
 struct cp_genericize_data
@@ -1005,6 +1052,14 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
+      break;
+
+    case INIT_EXPR:
+      cp_genericize_init_expr (stmt_p);
+      break;
+
+    case TARGET_EXPR:
+      cp_genericize_target_expr (stmt_p);
       break;
 
     default:

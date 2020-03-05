@@ -2251,24 +2251,26 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
   return cp_build_addr_expr (obj, complain);
 }
 
-/* Data structure used by replace_result_decl and replace_result_decl_r.  */
+/* Data structure used by replace_decl and replace_decl_r.  */
 
-struct replace_result_decl_data
+struct replace_decl_data
 {
-  /* The RESULT_DECL we want to replace.  */
+  /* The _DECL we want to replace.  */
   tree decl;
   /* The replacement for DECL.  */
   tree replacement;
+  /* Trees we've visited.  */
+  hash_set<tree> *pset;
   /* Whether we've performed any replacements.  */
   bool changed;
 };
 
-/* Helper function for replace_result_decl, called through cp_walk_tree.  */
+/* Helper function for replace_decl, called through cp_walk_tree.  */
 
 static tree
-replace_result_decl_r (tree *tp, int *walk_subtrees, void *data)
+replace_decl_r (tree *tp, int *walk_subtrees, void *data)
 {
-  replace_result_decl_data *d = (replace_result_decl_data *) data;
+  replace_decl_data *d = (replace_decl_data *) data;
 
   if (*tp == d->decl)
     {
@@ -2276,24 +2278,25 @@ replace_result_decl_r (tree *tp, int *walk_subtrees, void *data)
       d->changed = true;
       *walk_subtrees = 0;
     }
-  else if (TYPE_P (*tp))
+  else if (TYPE_P (*tp)
+	   || d->pset->add (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
 }
 
-/* Replace every occurrence of DECL, a RESULT_DECL, with (an unshared copy of)
-   REPLACEMENT within the reduced constant expression *TP.  Returns true iff a
+/* Replace every occurrence of DECL with (an unshared copy of)
+   REPLACEMENT within the expression *TP.  Returns true iff a
    replacement was performed.  */
 
-static bool
-replace_result_decl (tree *tp, tree decl, tree replacement)
+bool
+replace_decl (tree *tp, tree decl, tree replacement)
 {
-  gcc_checking_assert (TREE_CODE (decl) == RESULT_DECL
-		       && (same_type_ignoring_top_level_qualifiers_p
-			   (TREE_TYPE (decl), TREE_TYPE (replacement))));
-  replace_result_decl_data data = { decl, replacement, false };
-  cp_walk_tree_without_duplicates (tp, replace_result_decl_r, &data);
+  gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
+		       (TREE_TYPE (decl), TREE_TYPE (replacement)));
+  hash_set<tree> pset;
+  replace_decl_data data = { decl, replacement, &pset, false };
+  cp_walk_tree (tp, replace_decl_r, &data, NULL);
   return data.changed;
 }
 
@@ -2962,7 +2965,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    if (!*non_constant_p && ctx->object
 		&& CLASS_TYPE_P (TREE_TYPE (res))
 		&& !is_empty_class (TREE_TYPE (res)))
-	      if (replace_result_decl (&result, res, ctx->object))
+	      if (replace_decl (&result, res, ctx->object))
 		cacheable = false;
 	}
       else

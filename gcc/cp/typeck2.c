@@ -1282,6 +1282,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	}
     }
 
+  if (SIMPLE_TARGET_EXPR_P (stripped_init))
+    stripped_init = TARGET_EXPR_INITIAL (stripped_init);
+
   if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && !TYPE_NON_AGGREGATE_CLASS (type))
     return process_init_constructor (type, stripped_init, nested, flags,
