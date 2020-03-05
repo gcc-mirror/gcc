@@ -1,3 +1,9 @@
+2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94051
+	* include/std/string_view: Include <bits/ostream_insert.h>.
+	* testsuite/21_strings/basic_string_view/inserters/94051.cc: New test.
+
 2020-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/cpp_type_traits.h (__memcpyable): Fix comment.
