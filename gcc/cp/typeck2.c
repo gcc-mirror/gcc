@@ -459,13 +459,34 @@ cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 }
 
 
+/* We've just initialized subobject SUB; also insert a TARGET_EXPR with an
+   EH-only cleanup for SUB.  Because of EH region nesting issues, we need to
+   make the cleanup conditional on a flag that we will clear once the object is
+   fully initialized, so push a new flag onto FLAGS.  */
+
+static void
+maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
+{
+  if (tree cleanup
+      = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
+    {
+      tree tx = get_target_expr (boolean_true_node);
+      tree flag = TARGET_EXPR_SLOT (tx);
+      CLEANUP_EH_ONLY (tx) = true;
+      TARGET_EXPR_CLEANUP (tx) = build3 (COND_EXPR, void_type_node,
+					 flag, cleanup, void_node);
+      add_stmt (tx);
+      vec_safe_push (*flags, flag);
+    }
+}
+
 /* The recursive part of split_nonconstant_init.  DEST is an lvalue
    expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.
    Return true if the whole of the value was initialized by the
    generated statements.  */
 
 static bool
-split_nonconstant_init_1 (tree dest, tree init, bool nested)
+split_nonconstant_init_1 (tree dest, tree init, bool nested, vec<tree,va_gc> **flags)
 {
   unsigned HOST_WIDE_INT idx, tidx = HOST_WIDE_INT_M1U;
   tree field_index, value;
@@ -501,9 +522,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 	  if (nested)
 	    /* Also clean up the whole array if something later in an enclosing
 	       init-list throws.  */
-	    if (tree cleanup = cxx_maybe_build_cleanup (dest,
-							tf_warning_or_error))
-	    finish_eh_cleanup (cleanup);
+	    maybe_push_temp_cleanup (dest, flags);
 	  return true;
 	}
       /* FALLTHRU */
@@ -533,7 +552,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			      NULL_TREE);
 
-	      if (!split_nonconstant_init_1 (sub, value, true)
+	      if (!split_nonconstant_init_1 (sub, value, true, flags)
 		      /* For flexible array member with initializer we
 			 can't remove the initializer, because only the
 			 initializer determines how many elements the
@@ -616,11 +635,8 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		      code = build2 (INIT_EXPR, inner_type, sub, value);
 		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
-		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
-		  if (tree cleanup
-		      = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
-		    finish_eh_cleanup (cleanup);
+		  maybe_push_temp_cleanup (sub, flags);
 		}
 
 	      num_split_elts++;
@@ -687,10 +703,29 @@ split_nonconstant_init (tree dest, tree init)
     init = TARGET_EXPR_INITIAL (init);
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
+      /* Subobject initializers are not full-expressions.  */
+      auto fe = (make_temp_override
+		 (current_stmt_tree ()->stmts_are_full_exprs_p, 0));
+
       init = cp_fully_fold_init (init);
       code = push_stmt_list ();
-      if (split_nonconstant_init_1 (dest, init, false))
+
+      /* Collect flags for disabling subobject cleanups once the complete
+	 object is fully constructed.  */
+      vec<tree, va_gc> *flags = make_tree_vector ();
+
+      if (split_nonconstant_init_1 (dest, init, false, &flags))
 	init = NULL_TREE;
+
+      for (tree f : flags)
+	{
+	  /* See maybe_push_temp_cleanup.  */
+	  tree d = f;
+	  tree i = boolean_false_node;
+	  add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (d), d, i));
+	}
+      release_tree_vector (flags);
+
       code = pop_stmt_list (code);
       if (VAR_P (dest) && !is_local_temp (dest))
 	{

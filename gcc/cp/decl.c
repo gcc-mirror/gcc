@@ -7257,11 +7257,6 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
       if (init && TREE_CODE (init) != TREE_VEC)
 	{
-	  /* In aggregate initialization of a variable, each element
-	     initialization is a full-expression because there is no
-	     enclosing expression.  */
-	  gcc_assert (stmts_are_full_exprs_p ());
-
 	  init_code = store_init_value (decl, init, cleanups, flags);
 
 	  if (DECL_INITIAL (decl)
@@ -7428,7 +7423,8 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
       tree guard = (tree)data;
       tree tcleanup = TARGET_EXPR_CLEANUP (*stmt_p);
 
-      if (tcleanup && !expr_noexcept_p (tcleanup, tf_none))
+      if (tcleanup && !CLEANUP_EH_ONLY (*stmt_p)
+	  && !expr_noexcept_p (tcleanup, tf_none))
 	{
 	  tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
 	  /* Tell honor_protect_cleanup_actions to handle this as a separate
@@ -7500,11 +7496,11 @@ initialize_local_var (tree decl, tree init)
     {
       tree rinit = (TREE_CODE (init) == INIT_EXPR
 		    ? TREE_OPERAND (init, 1) : NULL_TREE);
-      if (rinit && !TREE_SIDE_EFFECTS (rinit))
+      if (rinit && !TREE_SIDE_EFFECTS (rinit)
+	  && TREE_OPERAND (init, 0) == decl)
 	{
 	  /* Stick simple initializers in DECL_INITIAL so that
 	     -Wno-init-self works (c++/34772).  */
-	  gcc_assert (TREE_OPERAND (init, 0) == decl);
 	  DECL_INITIAL (decl) = rinit;
 
 	  if (warn_init_self && TYPE_REF_P (type))
