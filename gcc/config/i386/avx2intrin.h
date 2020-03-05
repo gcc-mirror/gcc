@@ -1736,10 +1736,10 @@ _mm256_mask_i64gather_epi32 (__m128i __src, int const *__base,
 					(int)SCALE)
 
 #define _mm_mask_i32gather_ps(SRC, BASE, INDEX, MASK, SCALE)	 \
-  (__m128) __builtin_ia32_gathersiv4sf ((__v4sf)(__m128d)SRC,	 \
+  (__m128) __builtin_ia32_gathersiv4sf ((__v4sf)(__m128)SRC,	 \
 					(float const *)BASE,	 \
 					(__v4si)(__m128i)INDEX,	 \
-					(__v4sf)(__m128d)MASK,	 \
+					(__v4sf)(__m128)MASK,	 \
 					(int)SCALE)
 
 #define _mm256_i32gather_ps(BASE, INDEX, SCALE)			       \
@@ -1754,7 +1754,7 @@ _mm256_mask_i64gather_epi32 (__m128i __src, int const *__base,
   (__m256) __builtin_ia32_gathersiv8sf ((__v8sf)(__m256)SRC,	\
 					(float const *)BASE,	\
 					(__v8si)(__m256i)INDEX, \
-					(__v8sf)(__m256d)MASK,	\
+					(__v8sf)(__m256)MASK,	\
 					(int)SCALE)
 
 #define _mm_i64gather_ps(BASE, INDEX, SCALE)				\
@@ -1769,7 +1769,7 @@ _mm256_mask_i64gather_epi32 (__m128i __src, int const *__base,
   (__m128) __builtin_ia32_gatherdiv4sf ((__v4sf)(__m128)SRC,	 \
 					(float const *)BASE,	 \
 					(__v2di)(__m128i)INDEX,	 \
-					(__v4sf)(__m128d)MASK,	 \
+					(__v4sf)(__m128)MASK,	 \
 					(int)SCALE)
 
 #define _mm256_i64gather_ps(BASE, INDEX, SCALE)				\
