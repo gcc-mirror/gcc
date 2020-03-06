@@ -13021,7 +13021,8 @@ convert_from_firstprivate_int (tree var, tree orig_type, bool is_ref,
     {
       tree_code code = NOP_EXPR;
 
-      if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == COMPLEX_TYPE)
+      if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == COMPLEX_TYPE
+	  || VECTOR_TYPE_P (type))
 	code = VIEW_CONVERT_EXPR;
 
       if (code == VIEW_CONVERT_EXPR

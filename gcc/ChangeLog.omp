@@ -1,3 +1,8 @@
+2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (convert_from_firstprivate_int):
+	Use VIEW_CONVERT also for vectors.
+
 2020-02-19  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (gimplify_scan_omp_clauses): Handle
