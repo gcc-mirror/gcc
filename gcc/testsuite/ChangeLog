@@ -1,3 +1,7 @@
+2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr93304.c: Update expected output and comment.
+
 2020-03-06  Delia Burduv  <delia.burduv@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c: New test.
