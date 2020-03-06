@@ -4224,14 +4224,6 @@ package body Freeze is
                      elsif CodePeer_Mode then
                         null;
 
-                     --  Omit check if component has a generic type. This can
-                     --  happen in an instantiation within a generic in ASIS
-                     --  mode, where we force freeze actions without full
-                     --  expansion.
-
-                     elsif Is_Generic_Type (Etype (Comp)) then
-                        null;
-
                      --  Do the check
 
                      elsif not

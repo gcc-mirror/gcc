@@ -575,7 +575,7 @@ package body Contracts is
       elsif Present (Items) then
 
          --  Do not analyze the pre/postconditions of an entry declaration
-         --  unless annotating the original tree for ASIS or GNATprove. The
+         --  unless annotating the original tree for GNATprove. The
          --  real analysis occurs when the pre/postconditons are relocated to
          --  the contract wrapper procedure (see Build_Contract_Wrapper).
 
@@ -635,7 +635,7 @@ package body Contracts is
             if Prag_Nam = Name_Contract_Cases then
 
                --  Do not analyze the contract cases of an entry declaration
-               --  unless annotating the original tree for ASIS or GNATprove.
+               --  unless annotating the original tree for GNATprove.
                --  The real analysis occurs when the contract cases are moved
                --  to the contract wrapper procedure (Build_Contract_Wrapper).
 

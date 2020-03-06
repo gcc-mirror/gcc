@@ -6854,8 +6854,7 @@ package body Sem_Ch10 is
             --  as a small optimization to subsequent handling of private_with
             --  clauses in other nested packages. We replace the clause with
             --  a null statement, which is otherwise ignored by the rest of
-            --  the compiler, so that ASIS tools can reconstruct the source.
-            --  Is this still needed now that ASIS mode is removed???
+            --  the compiler.
 
             if In_Regular_With_Clause (Entity (Name (Item))) then
                declare

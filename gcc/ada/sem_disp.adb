@@ -1482,22 +1482,6 @@ package body Sem_Disp is
             end if;
          end if;
 
-      --  If the tagged type is a concurrent type then we must be compiling
-      --  with no code generation (we are either compiling a generic unit or
-      --  compiling under -gnatc mode) because we have previously tested that
-      --  no serious errors has been reported. In this case we do not add the
-      --  primitive to the list of primitives of Tagged_Type but we leave the
-      --  primitive decorated as a dispatching operation to be able to analyze
-      --  and report errors associated with the Object.Operation notation.
-
-      elsif Is_Concurrent_Type (Tagged_Type) then
-         pragma Assert (not Expander_Active);
-
-         --  Attach operation to list of primitives of the synchronized type
-         --  itself, for ASIS use.
-
-         Add_Dispatching_Operation (Tagged_Type, Subp);
-
       --  If no old subprogram, then we add this as a dispatching operation,
       --  but we avoid doing this if an error was posted, to prevent annoying
       --  cascaded errors.

@@ -2226,10 +2226,10 @@ package body Sem_Ch5 is
         and then (Nkind (Parent (N)) /= N_Quantified_Expression
                    or else Operating_Mode = Check_Semantics)
 
-        --  Do not perform this expansion for ASIS and when expansion is
-        --  disabled, where the temporary may hide the transformation of a
-        --  selected component into a prefixed function call, and references
-        --  need to see the original expression.
+        --  Do not perform this expansion when expansion is disabled, where the
+        --  temporary may hide the transformation of a selected component into
+        --  a prefixed function call, and references need to see the original
+        --  expression.
 
         and then Expander_Active
       then
@@ -4108,8 +4108,8 @@ package body Sem_Ch5 is
                   --  This is the one case where we remove dead code in the
                   --  semantics as opposed to the expander, and we do not want
                   --  to remove code if we are not in code generation mode,
-                  --  since this messes up the ASIS trees or loses useful
-                  --  information in the CodePeer tree.
+                  --  since this messes up the tree or loses useful information
+                  --  for CodePeer.
 
                   --  Note that one might react by moving the whole circuit to
                   --  exp_ch5, but then we lose the warning in -gnatc mode.

@@ -36,13 +36,12 @@ with Namet;    use Namet;
 with Output;   use Output;
 with Snames;   use Snames;
 with Table;
+with Ttypes;
 
 package body Repinfo.Input is
 
-   SSU : constant := 8;
-   --  Value for Storage_Unit, we do not want to get this from TTypes, since
-   --  this introduces problematic dependencies in ASIS, and in any case this
-   --  value is assumed to be 8 for the implementation of the DDA.
+   SSU : Pos renames Ttypes.System_Storage_Unit;
+   --  Value for Storage_Unit
 
    type JSON_Entity_Kind is (JE_Record_Type, JE_Array_Type, JE_Other);
    --  Kind of an entiy
