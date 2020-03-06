@@ -690,6 +690,7 @@
   "@
    <sve_int_op>\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
    movprfx\t%0, %1\;<sve_int_op>\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 (define_insn "@aarch64_sve_<sve_int_op>_lane_<mode>"
@@ -706,6 +707,7 @@
   "@
    <sve_int_op>\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>[%4]
    movprfx\t%0, %1\;<sve_int_op>\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>[%4]"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------

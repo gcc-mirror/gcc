@@ -1,3 +1,9 @@
+2020-03-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_<sve_int_op><mode>:
+	Specify movprfx attribute.
+	(@aarch64_sve_<sve_int_op>_lane_<mode>): Likewise.
+
 2020-03-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/94065
