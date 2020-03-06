@@ -628,6 +628,8 @@ find_substitution (tree node)
 	    {
 	      tree args = CLASSTYPE_TI_ARGS (type);
 	      if (TREE_VEC_LENGTH (args) == 3
+		  && (TREE_CODE (TREE_VEC_ELT (args, 0))
+		      == TREE_CODE (char_type_node))
 		  && same_type_p (TREE_VEC_ELT (args, 0), char_type_node)
 		  && is_std_substitution_char (TREE_VEC_ELT (args, 1),
 					       SUBID_CHAR_TRAITS)
@@ -652,7 +654,7 @@ find_substitution (tree node)
 	 args <char, std::char_traits<char> > .  */
       tree args = CLASSTYPE_TI_ARGS (type);
       if (TREE_VEC_LENGTH (args) == 2
-	  && TYPE_P (TREE_VEC_ELT (args, 0))
+	  && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_CODE (char_type_node)
 	  && same_type_p (TREE_VEC_ELT (args, 0), char_type_node)
 	  && is_std_substitution_char (TREE_VEC_ELT (args, 1),
 				       SUBID_CHAR_TRAITS))
