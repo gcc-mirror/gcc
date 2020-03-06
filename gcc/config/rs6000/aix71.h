@@ -49,8 +49,8 @@ do {									\
     }									\
   if (rs6000_current_cmodel != CMODEL_SMALL)				\
     {									\
-      TARGET_NO_FP_IN_TOC = 0;						\
-      TARGET_NO_SUM_IN_TOC = 0;						\
+      TARGET_NO_FP_IN_TOC = 1;						\
+      TARGET_NO_SUM_IN_TOC = 1;						\
     }									\
   if (rs6000_current_cmodel == CMODEL_MEDIUM)				\
     {									\
