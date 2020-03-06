@@ -5428,7 +5428,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld2<mode>"
   [(set (match_operand:TI 0 "s_register_operand" "=w")
         (unspec:TI [(match_operand:TI 1 "neon_struct_operand" "Um")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD2))]
   "TARGET_NEON"
 {
@@ -5453,7 +5453,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld2<mode>"
   [(set (match_operand:OI 0 "s_register_operand" "=w")
         (unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD2))]
   "TARGET_NEON"
   "vld2.<V_sz_elem>\t%h0, %A1"
@@ -5516,7 +5516,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld2_dup<mode>"
   [(set (match_operand:TI 0 "s_register_operand" "=w")
         (unspec:TI [(match_operand:<V_two_elem> 1 "neon_struct_operand" "Um")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD2_DUP))]
   "TARGET_NEON"
 {
@@ -5529,6 +5529,27 @@ if (BYTES_BIG_ENDIAN)
       (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
                     (const_string "neon_load2_all_lanes<q>")
                     (const_string "neon_load1_1reg<q>")))]
+)
+
+(define_insn "neon_vld2_dupv8bf"
+  [(set (match_operand:OI 0 "s_register_operand" "=w")
+        (unspec:OI [(match_operand:V2BF 1 "neon_struct_operand" "Um")
+                    (unspec:V8BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD2_DUP))]
+  "TARGET_BF16_SIMD"
+  {
+    rtx ops[5];
+    int tabbase = REGNO (operands[0]);
+
+    ops[4] = operands[1];
+    ops[0] = gen_rtx_REG (V4BFmode, tabbase);
+    ops[1] = gen_rtx_REG (V4BFmode, tabbase + 2);
+    ops[2] = gen_rtx_REG (V4BFmode, tabbase + 4);
+    ops[3] = gen_rtx_REG (V4BFmode, tabbase + 6);
+    output_asm_insn ("vld2.16\t{%P0, %P1, %P2, %P3}, %A4", ops);
+    return "";
+  }
+  [(set_attr "type" "neon_load2_all_lanes_q")]
 )
 
 (define_expand "vec_store_lanesti<mode>"
@@ -5637,7 +5658,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld3<mode>"
   [(set (match_operand:EI 0 "s_register_operand" "=w")
         (unspec:EI [(match_operand:EI 1 "neon_struct_operand" "Um")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD3))]
   "TARGET_NEON"
 {
@@ -5665,7 +5686,7 @@ if (BYTES_BIG_ENDIAN)
 (define_expand "neon_vld3<mode>"
   [(match_operand:CI 0 "s_register_operand")
    (match_operand:CI 1 "neon_struct_operand")
-   (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_NEON"
 {
   rtx mem;
@@ -5680,7 +5701,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld3qa<mode>"
   [(set (match_operand:CI 0 "s_register_operand" "=w")
         (unspec:CI [(match_operand:EI 1 "neon_struct_operand" "Um")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD3A))]
   "TARGET_NEON"
 {
@@ -5700,7 +5721,7 @@ if (BYTES_BIG_ENDIAN)
   [(set (match_operand:CI 0 "s_register_operand" "=w")
         (unspec:CI [(match_operand:EI 1 "neon_struct_operand" "Um")
                     (match_operand:CI 2 "s_register_operand" "0")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD3B))]
   "TARGET_NEON"
 {
@@ -5777,7 +5798,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld3_dup<mode>"
   [(set (match_operand:EI 0 "s_register_operand" "=w")
         (unspec:EI [(match_operand:<V_three_elem> 1 "neon_struct_operand" "Um")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD3_DUP))]
   "TARGET_NEON"
 {
@@ -5799,6 +5820,26 @@ if (BYTES_BIG_ENDIAN)
       (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
                     (const_string "neon_load3_all_lanes<q>")
                     (const_string "neon_load1_1reg<q>")))])
+
+(define_insn "neon_vld3_dupv8bf"
+  [(set (match_operand:CI 0 "s_register_operand" "=w")
+        (unspec:CI [(match_operand:V2BF 1 "neon_struct_operand" "Um")
+                    (unspec:V8BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD2_DUP))]
+  "TARGET_BF16_SIMD"
+  {
+    rtx ops[4];
+    int tabbase = REGNO (operands[0]);
+
+    ops[3] = operands[1];
+    ops[0] = gen_rtx_REG (V4BFmode, tabbase);
+    ops[1] = gen_rtx_REG (V4BFmode, tabbase + 2);
+    ops[2] = gen_rtx_REG (V4BFmode, tabbase + 4);
+    output_asm_insn ("vld3.16\t{%P0[], %P1[], %P2[]}, %A3", ops);
+    return "";
+  }
+  [(set_attr "type" "neon_load3_all_lanes_q")]
+)
 
 (define_expand "vec_store_lanesei<mode>"
   [(set (match_operand:EI 0 "neon_struct_operand")
@@ -5955,7 +5996,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld4<mode>"
   [(set (match_operand:OI 0 "s_register_operand" "=w")
         (unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD4))]
   "TARGET_NEON"
 {
@@ -5983,7 +6024,7 @@ if (BYTES_BIG_ENDIAN)
 (define_expand "neon_vld4<mode>"
   [(match_operand:XI 0 "s_register_operand")
    (match_operand:XI 1 "neon_struct_operand")
-   (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_NEON"
 {
   rtx mem;
@@ -5998,7 +6039,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld4qa<mode>"
   [(set (match_operand:XI 0 "s_register_operand" "=w")
         (unspec:XI [(match_operand:OI 1 "neon_struct_operand" "Um")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD4A))]
   "TARGET_NEON"
 {
@@ -6019,7 +6060,7 @@ if (BYTES_BIG_ENDIAN)
   [(set (match_operand:XI 0 "s_register_operand" "=w")
         (unspec:XI [(match_operand:OI 1 "neon_struct_operand" "Um")
                     (match_operand:XI 2 "s_register_operand" "0")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD4B))]
   "TARGET_NEON"
 {
@@ -6099,7 +6140,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vld4_dup<mode>"
   [(set (match_operand:OI 0 "s_register_operand" "=w")
         (unspec:OI [(match_operand:<V_four_elem> 1 "neon_struct_operand" "Um")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD4_DUP))]
   "TARGET_NEON"
 {
@@ -6123,6 +6164,27 @@ if (BYTES_BIG_ENDIAN)
       (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
                     (const_string "neon_load4_all_lanes<q>")
                     (const_string "neon_load1_1reg<q>")))]
+)
+
+(define_insn "neon_vld4_dupv8bf"
+  [(set (match_operand:XI 0 "s_register_operand" "=w")
+        (unspec:XI [(match_operand:V2BF 1 "neon_struct_operand" "Um")
+                    (unspec:V8BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD2_DUP))]
+  "TARGET_BF16_SIMD"
+  {
+    rtx ops[5];
+    int tabbase = REGNO (operands[0]);
+
+    ops[4] = operands[1];
+    ops[0] = gen_rtx_REG (V4BFmode, tabbase);
+    ops[1] = gen_rtx_REG (V4BFmode, tabbase + 2);
+    ops[2] = gen_rtx_REG (V4BFmode, tabbase + 4);
+    ops[3] = gen_rtx_REG (V4BFmode, tabbase + 6);
+    output_asm_insn ("vld4.16\t{%P0[], %P1[], %P2[], %P3[]}, %A4", ops);
+    return "";
+  }
+  [(set_attr "type" "neon_load4_all_lanes_q")]
 )
 
 (define_expand "vec_store_lanesoi<mode>"

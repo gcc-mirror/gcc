@@ -1,5 +1,41 @@
 2020-03-06  Delia Burduv  <delia.burduv@arm.com>
 
+	* config/arm/arm_neon.h (vld2_bf16): New.
+	(vld2q_bf16): New.
+	(vld3_bf16): New.
+	(vld3q_bf16): New.
+	(vld4_bf16): New.
+	(vld4q_bf16): New.
+	(vld2_dup_bf16): New.
+	(vld2q_dup_bf16): New.
+	(vld3_dup_bf16): New.
+	(vld3q_dup_bf16): New.
+	(vld4_dup_bf16): New.
+	(vld4q_dup_bf16): New.
+	* config/arm/arm_neon_builtins.def
+	(vld2): Changed to VAR13 and added v4bf, v8bf
+	(vld2_dup): Changed to VAR8 and added v4bf, v8bf
+	(vld3): Changed to VAR13 and added v4bf, v8bf
+	(vld3_dup): Changed to VAR8 and added v4bf, v8bf
+	(vld4): Changed to VAR13 and added v4bf, v8bf
+	(vld4_dup): Changed to VAR8 and added v4bf, v8bf
+	* config/arm/iterators.md (VDXBF2): New iterator.
+	*config/arm/neon.md (neon_vld2): Use new iterators.
+	(neon_vld2_dup<mode): Use new iterators.
+	(neon_vld3<mode>): Likewise.
+	(neon_vld3qa<mode>): Likewise.
+	(neon_vld3qb<mode>): Likewise.
+	(neon_vld3_dup<mode>): Likewise.
+	(neon_vld4<mode>): Likewise.
+	(neon_vld4qa<mode>): Likewise.
+	(neon_vld4qb<mode>): Likewise.
+	(neon_vld4_dup<mode>): Likewise.
+	(neon_vld2_dupv8bf): New.
+	(neon_vld3_dupv8bf): Likewise.
+	(neon_vld4_dupv8bf): Likewise.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
 	* config/arm/arm_neon.h (bfloat16x4x2_t): New typedef.
 	(bfloat16x8x2_t): New typedef.
 	(bfloat16x4x3_t): New typedef.

@@ -1,5 +1,9 @@
 2020-03-06  Delia Burduv  <delia.burduv@arm.com>
 
+	* gcc.target/arm/simd/bf16_vldn_1.c: New test.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
 	* gcc.target/arm/simd/bf16_vstn_1.c: New test.
 
 2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
