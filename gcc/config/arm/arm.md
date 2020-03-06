@@ -6312,16 +6312,21 @@
 
 (define_insn "*movsi_compare0"
   [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI 1 "s_register_operand" "0,r")
+	(compare:CC (match_operand:SI 1 "s_register_operand" "0,0,l,rk,rk")
 		    (const_int 0)))
-   (set (match_operand:SI 0 "s_register_operand" "=r,r")
+   (set (match_operand:SI 0 "s_register_operand" "=l,rk,l,r,rk")
 	(match_dup 1))]
   "TARGET_32BIT"
   "@
    cmp%?\\t%0, #0
+   cmp%?\\t%0, #0
+   subs%?\\t%0, %1, #0
+   subs%?\\t%0, %1, #0
    subs%?\\t%0, %1, #0"
   [(set_attr "conds" "set")
-   (set_attr "type" "alus_imm,alus_imm")]
+   (set_attr "arch" "t2,*,t2,t2,a")
+   (set_attr "type" "alus_imm")
+   (set_attr "length" "2,4,2,4,4")]
 )
 
 ;; Subroutine to store a half word from a register into memory.
