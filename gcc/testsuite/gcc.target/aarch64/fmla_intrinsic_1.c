@@ -98,11 +98,11 @@ main (int argc, char **argv)
 
 /* vfma_laneq_f32.
    vfma_lane_f32.  */
-/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s, v\[0-9\]+\.2s\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
 
 /* vfmaq_lane_f32.
    vfmaq_laneq_f32.  */
-/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.4s\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
 
 /* vfma_lane_f64.  */
 /* { dg-final { scan-assembler-times "fmadd\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 1 } } */
@@ -110,6 +110,6 @@ main (int argc, char **argv)
 /* vfmaq_lane_f64.
    vfma_laneq_f64.
    vfmaq_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.2?d\\\[\[0-9\]+\\\]" 3 } } */
+/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 } } */
 
 

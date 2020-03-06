@@ -2592,6 +2592,8 @@ namespace views
 	  friend constexpr bool
 	  operator==(const _Iterator<_Const>& __x, const _Sentinel& __y)
 	  { return __y.__equal(__x); }
+
+	  friend _Sentinel<!_Const>;
 	};
 
       _Vp _M_base = _Vp();

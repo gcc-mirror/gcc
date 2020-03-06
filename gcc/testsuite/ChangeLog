@@ -1,3 +1,64 @@
+2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.	
+	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mla_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mls_intrinsic_1.c: Likewise.
+
+2020-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tumaddsidi4.c: Step-up optimization level.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/arm/simd/bf16_vldn_1.c: New test.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/arm/simd/bf16_vstn_1.c: New test.
+
+2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr93304.c: Update expected output and comment.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nobf16.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvtnq2-untied.c: New test.
+
+2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR tree-optimization/90883
+	* g++.dg/tree-ssa/pr90883.c: Add --param max-inline-insns-size=1.
+	Add aarch64-*-* mips*-*-* to XFAIL.
+
+2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	PR target/89346
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Updated.
+	* gcc.target/i386/pr89229-2a.c: New test.
+	* gcc.target/i386/pr89229-2b.c: Likewise.
+	* gcc.target/i386/pr89229-2c.c: Likewise.
+	* gcc.target/i386/pr89229-3a.c: Likewise.
+	* gcc.target/i386/pr89229-3b.c: Likewise.
+	* gcc.target/i386/pr89229-3c.c: Likewise.
+	* gcc.target/i386/pr89346.c: Likewise.
+
+2020-03-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* g++.dg/pr80481.C: Disable epilogue vectorization.
+
+2020-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93577
+	* gcc.dg/pr93577-1.c, gcc.dg/pr93577-2.c, gcc.dg/pr93577-3.c,
+	gcc.dg/pr93577-4.c, gcc.dg/pr93577-5.c, gcc.dg/pr93577-6.c: New
+	tests.
+	* gcc.dg/vla-init-1.c: Expect fewer errors about VLA initializer.
+
 2020-03-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/91890

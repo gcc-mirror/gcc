@@ -8759,7 +8759,7 @@ pop_init_level (location_t loc, int implicit,
 	 the element, after verifying there is just one.  */
       if (vec_safe_is_empty (constructor_elements))
 	{
-	  if (!constructor_erroneous)
+	  if (!constructor_erroneous && constructor_type != error_mark_node)
 	    error_init (loc, "empty scalar initializer");
 	  ret.value = error_mark_node;
 	}
@@ -8836,13 +8836,19 @@ set_designator (location_t loc, bool array,
   enum tree_code subcode;
 
   /* Don't die if an entire brace-pair level is superfluous
-     in the containing level.  */
-  if (constructor_type == NULL_TREE)
+     in the containing level, or for an erroneous type.  */
+  if (constructor_type == NULL_TREE || constructor_type == error_mark_node)
     return true;
 
   /* If there were errors in this designator list already, bail out
      silently.  */
   if (designator_erroneous)
+    return true;
+
+  /* Likewise for an initializer for a variable-size type.  Those are
+     diagnosed in digest_init.  */
+  if (COMPLETE_TYPE_P (constructor_type)
+      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
     return true;
 
   if (!designator_depth)
@@ -9955,8 +9961,14 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     }
 
   /* Ignore elements of a brace group if it is entirely superfluous
-     and has already been diagnosed.  */
-  if (constructor_type == NULL_TREE)
+     and has already been diagnosed, or if the type is erroneous.  */
+  if (constructor_type == NULL_TREE || constructor_type == error_mark_node)
+    return;
+
+  /* Ignore elements of an initializer for a variable-size type.
+     Those are diagnosed in digest_init.  */
+  if (COMPLETE_TYPE_P (constructor_type)
+      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
     return;
 
   if (!implicit && warn_designated_init && !was_designated

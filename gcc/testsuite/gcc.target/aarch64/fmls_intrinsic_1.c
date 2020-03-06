@@ -99,11 +99,11 @@ main (int argc, char **argv)
 
 /* vfms_laneq_f32.
    vfms_lane_f32.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s, v\[0-9\]+\.2s\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
 
 /* vfmsq_lane_f32.
    vfmsq_laneq_f32.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.4s\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
 
 /* vfms_lane_f64.  */
 /* { dg-final { scan-assembler-times "fmsub\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 1 } } */
@@ -111,6 +111,6 @@ main (int argc, char **argv)
 /* vfmsq_lane_f64.
    vfms_laneq_f64.
    vfmsq_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.2?d\\\[\[0-9\]+\\\]" 3 } } */
+/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 } } */
 
 
