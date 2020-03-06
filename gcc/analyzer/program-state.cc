@@ -1467,6 +1467,51 @@ test_program_state_dumping ()
 		  "rmodel: p: &r2 malloc: {sv1: unchecked (`p')}");
 }
 
+/* Verify that program_state::dump_to_pp works for string literals.  */
+
+static void
+test_program_state_dumping_2 ()
+{
+    /* Create a program_state for a global ptr "p" that points to
+       a string constant.  */
+  tree p = build_global_decl ("p", ptr_type_node);
+
+  tree string_cst_ptr = build_string_literal (4, "foo");
+
+  auto_delete_vec <state_machine> checkers;
+  extrinsic_state ext_state (checkers);
+
+  program_state s (ext_state);
+  region_model *model = s.m_region_model;
+  region_id p_rid = model->get_lvalue (p, NULL);
+  svalue_id str_sid = model->get_rvalue (string_cst_ptr, NULL);
+  model->set_value (p_rid, str_sid, NULL);
+
+  ASSERT_DUMP_EQ
+    (s, ext_state, false,
+     "rmodel: r0: {kind: `root', parent: null, sval: null}\n"
+     "|-globals: r1: {kind: `globals', parent: r0, sval: null, map: {`p': r2}}\n"
+     "|  `-`p': r2: {kind: `primitive', parent: r1, sval: sv3, type: `void *'}\n"
+     "|    |: sval: sv3: {type: `void *', &r4}\n"
+     "|    |: type: `void *'\n"
+     "`-r3: {kind: `array', parent: r0, sval: sv0, type: `const char[4]', array: {[0]: r4}}\n"
+     "  |: sval: sv0: {type: `const char[4]', `\"foo\"'}\n"
+     "  |: type: `const char[4]'\n"
+     "  `-[0]: r4: {kind: `primitive', parent: r3, sval: null, type: `const char'}\n"
+     "    |: type: `const char'\n"
+     "svalues:\n"
+     "  sv0: {type: `const char[4]', `\"foo\"'}\n"
+     "  sv1: {type: `int', `0'}\n"
+     "  sv2: {type: `const char *', &r4}\n"
+     "  sv3: {type: `void *', &r4}\n"
+     "constraint manager:\n"
+     "  equiv classes:\n"
+     "  constraints:\n");
+
+  ASSERT_DUMP_EQ (s, ext_state, true,
+		  "rmodel: p: &\"foo\"[0]");
+}
+
 /* Verify that program_states with identical sm-state can be merged,
    and that the merged program_state preserves the sm-state.  */
 
@@ -1570,6 +1615,7 @@ analyzer_program_state_cc_tests ()
 {
   test_sm_state_map ();
   test_program_state_dumping ();
+  test_program_state_dumping_2 ();
   test_program_state_merging ();
   test_program_state_merging_2 ();
 }

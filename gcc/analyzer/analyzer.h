@@ -43,6 +43,7 @@ class svalue;
   class setjmp_svalue;
 class region;
   class map_region;
+  class array_region;
   class symbolic_region;
 class region_model;
 class region_model_context;

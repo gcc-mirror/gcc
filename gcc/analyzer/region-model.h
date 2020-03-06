@@ -844,6 +844,7 @@ public:
 
   virtual enum region_kind get_kind () const = 0;
   virtual map_region *dyn_cast_map_region () { return NULL; }
+  virtual array_region *dyn_cast_array_region () { return NULL; }
   virtual const symbolic_region *dyn_cast_symbolic_region () const
   { return NULL; }
 
@@ -1354,6 +1355,7 @@ public:
   /* region vfuncs.  */
   region *clone () const FINAL OVERRIDE;
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_ARRAY; }
+  array_region *dyn_cast_array_region () { return this; }
 
   region_id get_element (region_model *model,
 			 region_id this_rid,
@@ -1400,6 +1402,7 @@ public:
   void validate (const region_model &model) const FINAL OVERRIDE;
 
   static key_t key_from_constant (tree cst);
+  tree constant_from_key (key_t key);
 
  private:
   static int key_cmp (const void *, const void *);

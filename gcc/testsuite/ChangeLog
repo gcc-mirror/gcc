@@ -1,3 +1,9 @@
+2020-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-4.c: Update expected output of leak to
+	reflect fix to region_model::get_representative_path_var, adding
+	the missing "*" from the cast.
+
 2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.	
