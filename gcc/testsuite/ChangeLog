@@ -1,3 +1,13 @@
+2020-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94074 - wrong modifying const object error for COMPONENT_REF.
+	* g++.dg/cpp1y/constexpr-tracking-const17.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const18.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const19.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const20.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const21.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const22.C: New test.
+
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94134

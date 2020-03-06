@@ -1,3 +1,13 @@
+2020-03-11  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/94074 - wrong modifying const object error for COMPONENT_REF.
+	* constexpr.c (cref_has_const_field): New function.
+	(modifying_const_object_p): Consider a COMPONENT_REF
+	const only if any of its fields are const.
+	(cxx_eval_store_expression): Mark a CONSTRUCTOR of a const type
+	as readonly after its initialization has been done.
+
 2020-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94124 - wrong conversion error with non-viable overload.
