@@ -1,3 +1,8 @@
+2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (convert_from_firstprivate_int):
+	Use VIEW_CONVERT also for vectors.
+
 2020-02-20  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-general.c (oacc_verify_routine_clauses): Handle
