@@ -1,3 +1,11 @@
+2020-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93244
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Adjust
+	test to not fail due to PR 94063.
+	* testsuite/27_io/filesystem/path/generic/utf.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/wchar_t.cc: Likewise.
+
 2020-03-06  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* src/c++11/system_error.cc: Omit the ENOTSUP case statement if it
