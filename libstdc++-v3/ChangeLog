@@ -1,3 +1,8 @@
+2020-03-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* src/c++11/system_error.cc: Omit the ENOTSUP case statement if it
+	would match ENOSYS.
+
 2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/operations/all.cc: Mark unused variable.
