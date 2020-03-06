@@ -1,6 +1,6 @@
 2020-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
-	PR libstdc++/93244
+	PR libstdc++/94069
 	* include/std/shared_mutex [!PTHREAD_RWLOCK_INITIALIZER]
 	(__shared_mutex_pthread::__shared_mutex_pthread()): Remove incorrect
 	second argument to __glibcxx_rwlock_init.
