@@ -1,6 +1,12 @@
 2020-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93244
+	* include/std/shared_mutex [!PTHREAD_RWLOCK_INITIALIZER]
+	(__shared_mutex_pthread::__shared_mutex_pthread()): Remove incorrect
+	second argument to __glibcxx_rwlock_init.
+	* testsuite/30_threads/shared_timed_mutex/94069.cc: New test.
+
+	PR libstdc++/93244
 	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Adjust
 	test to not fail due to PR 94063.
 	* testsuite/27_io/filesystem/path/generic/utf.cc: Likewise.

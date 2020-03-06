@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     __shared_mutex_pthread()
     {
-      int __ret = __glibcxx_rwlock_init(&_M_rwlock, NULL);
+      int __ret = __glibcxx_rwlock_init(&_M_rwlock);
       if (__ret == ENOMEM)
 	__throw_bad_alloc();
       else if (__ret == EAGAIN)
