@@ -1,3 +1,7 @@
+2020-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tumaddsidi4.c: Step-up optimization level.
+
 2020-03-06  Delia Burduv  <delia.burduv@arm.com>
 
 	* gcc.target/arm/simd/bf16_vldn_1.c: New test.
