@@ -4640,8 +4640,8 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  If we are folding a named number, retain the entity in the literal,
-      --  for ASIS use.
+      --  If we are folding a named number, retain the entity in the literal
+      --  in the original tree.
 
       if Is_Entity_Name (N) and then Ekind (Entity (N)) = E_Named_Integer then
          Ent := Entity (N);
@@ -4655,8 +4655,8 @@ package body Sem_Eval is
 
       --  For a result of type integer, substitute an N_Integer_Literal node
       --  for the result of the compile time evaluation of the expression.
-      --  For ASIS use, set a link to the original named number when not in
-      --  a generic context.
+      --  Set a link to the original named number when not in a generic context
+      --  for reference in the original tree.
 
       if Is_Integer_Type (Typ) then
          Rewrite (N, Make_Integer_Literal (Loc, Val));
@@ -4702,8 +4702,8 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  If we are folding a named number, retain the entity in the literal,
-      --  for ASIS use.
+      --  If we are folding a named number, retain the entity in the literal
+      --  in the original tree.
 
       if Is_Entity_Name (N) and then Ekind (Entity (N)) = E_Named_Real then
          Ent := Entity (N);
@@ -4713,7 +4713,7 @@ package body Sem_Eval is
 
       Rewrite (N, Make_Real_Literal (Loc, Realval => Val));
 
-      --  Set link to original named number, for ASIS use
+      --  Set link to original named number
 
       Set_Original_Entity (N, Ent);
 

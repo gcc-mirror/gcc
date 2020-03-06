@@ -3624,7 +3624,6 @@ package body Sem_Ch13 is
                   Args      : List_Id;
                   Comp_Expr : Node_Id;
                   Comp_Assn : Node_Id;
-                  New_Expr  : Node_Id;
 
                begin
                   Args := New_List;
@@ -3642,18 +3641,14 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  --  Make pragma expressions refer to the original aspect
-                  --  expressions through the Original_Node link. This is used
-                  --  in semantic analysis for ASIS mode, so that the original
-                  --  expression also gets analyzed.
-                  --  Is this still needed???
+                  --  Create the list of arguments for building the Test_Case
+                  --  pragma.
 
                   Comp_Expr := First (Expressions (Expr));
                   while Present (Comp_Expr) loop
-                     New_Expr := Relocate_Node (Comp_Expr);
                      Append_To (Args,
                        Make_Pragma_Argument_Association (Sloc (Comp_Expr),
-                         Expression => New_Expr));
+                         Expression => Relocate_Node (Comp_Expr)));
                      Next (Comp_Expr);
                   end loop;
 
@@ -11481,12 +11476,9 @@ package body Sem_Ch13 is
       --  the primitives of the interfaces with the primitives that cover them.
       --  Note: These entities were originally generated only when generating
       --  code because their main purpose was to provide support to initialize
-      --  the secondary dispatch tables. They are now generated also when
-      --  compiling with no code generation to provide ASIS the relationship
-      --  between interface primitives and tagged type primitives. They are
-      --  also used to locate primitives covering interfaces when processing
-      --  generics (see Derive_Subprograms).
-      --  ??? Revisit now that ASIS mode is gone.
+      --  the secondary dispatch tables. They are also used to locate
+      --  primitives covering interfaces when processing generics (see
+      --  Derive_Subprograms).
 
       --  This is not needed in the generic case
 
@@ -11771,8 +11763,6 @@ package body Sem_Ch13 is
                   --  the list since it would invalidate the tree.
                   --  So we have to rewrite the variant part with a Rewrite
                   --  call that replaces it with a copy and clobber the copy.
-                  --  This is no longer needed for ASIS, but possibly for
-                  --  GNATprove???
 
                   if not Expander_Active then
                      declare
@@ -11842,8 +11832,6 @@ package body Sem_Ch13 is
 
                --  We only want to do this if the expander is active, since
                --  we do not want to clobber the tree.
-               --  This is no longer needed for ASIS, is this needed for
-               --  GNATprove_Mode???
 
                if Expander_Active then
                   declare

@@ -30510,8 +30510,7 @@ package body Sem_Prag is
    begin
       --  Use the expression of the original aspect when analyzing the template
       --  of a generic unit. In both cases the aspect's tree must be decorated
-      --  to allow for ASIS queries or to save the global references in the
-      --  generic context.
+      --  to save the global references in the generic context.
 
       if From_Aspect_Specification (Prag)
         and then (Present (Context_Id) and then Is_Generic_Unit (Context_Id))

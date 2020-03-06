@@ -11287,29 +11287,6 @@ package body Sem_Ch3 is
 
             if Present (Acc_Def) then
                Create_Extra_Formals (Designated_Type (Anon_Access));
-
-            --  If an access to object, preserve entity of designated type,
-            --  for ASIS use, before rewriting the component definition.
-            --  Is this still needed???
-
-            else
-               declare
-                  Desig : Entity_Id;
-
-               begin
-                  Desig := Entity (Subtype_Indication (Type_Def));
-
-                  --  If the access definition is to the current record,
-                  --  the visible entity at this point is an incomplete
-                  --  type. Retrieve the full view to simplify ASIS queries
-
-                  if Ekind (Desig) = E_Incomplete_Type then
-                     Desig := Full_View (Desig);
-                  end if;
-
-                  Set_Entity
-                    (Subtype_Mark (Access_Definition (Comp_Def)), Desig);
-               end;
             end if;
 
             Rewrite (Comp_Def,
