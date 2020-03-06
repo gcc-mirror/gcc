@@ -788,6 +788,10 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 			       const irange &op2_true,
 			       const irange &op2_false)
 {
+  if (op1_true.varying_p () && op1_false.varying_p ()
+      && op2_true.varying_p () && op2_false.varying_p ())
+    return false;
+
   // This is not a simple fold of a logical expression, rather it
   // determines ranges which flow through the logical expression.
   //
@@ -835,7 +839,6 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	  return true;
 	}
       return false;
-
     }
 
   switch (code)
@@ -976,8 +979,8 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
       get_tree_range (op2_true, name, name, name_range);
       op2_false = op2_true;
     }
-  if (!logical_combine (r, gimple_expr_code (stmt), lhs, op1_true, op1_false,
-			op2_true, op2_false))
+  if (!logical_combine (r, gimple_expr_code (stmt), lhs,
+			op1_true, op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
 
   depth--;
