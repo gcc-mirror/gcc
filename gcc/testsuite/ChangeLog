@@ -1,3 +1,10 @@
+2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.	
+	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mla_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mls_intrinsic_1.c: Likewise.
+
 2020-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/tumaddsidi4.c: Step-up optimization level.

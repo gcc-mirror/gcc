@@ -1350,7 +1350,7 @@
  "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
-    return "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
@@ -1368,7 +1368,7 @@
  "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
-    return "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
@@ -1408,7 +1408,7 @@
  "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
-    return "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
@@ -1426,7 +1426,7 @@
  "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
-    return "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
@@ -2003,7 +2003,7 @@
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
-    return "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
@@ -2020,7 +2020,7 @@
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
-    return "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
@@ -2048,7 +2048,7 @@
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (V2DFmode, INTVAL (operands[2]));
-    return "fmla\\t%0.2d, %3.2d, %1.2d[%2]";
+    return "fmla\\t%0.2d, %3.2d, %1.d[%2]";
   }
   [(set_attr "type" "neon_fp_mla_d_scalar_q")]
 )
@@ -2077,7 +2077,7 @@
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
-    return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
@@ -2095,7 +2095,7 @@
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
-    return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
+    return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
@@ -2125,7 +2125,7 @@
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (V2DFmode, INTVAL (operands[2]));
-    return "fmls\\t%0.2d, %3.2d, %1.2d[%2]";
+    return "fmls\\t%0.2d, %3.2d, %1.d[%2]";
   }
   [(set_attr "type" "neon_fp_mla_d_scalar_q")]
 )

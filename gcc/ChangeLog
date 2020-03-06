@@ -1,3 +1,16 @@
+2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* aarch64/aarch64-simd.md (aarch64_mla_elt<mode>): Correct lane syntax.
+	(aarch64_mla_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_mls_elt<mode>): Likewise.
+	(aarch64_mls_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fma4_elt<mode>): Likewise.
+	(aarch64_fma4_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fma4_elt_to_64v2df): Likewise.
+	(aarch64_fnma4_elt<mode>): Likewise.
+	(aarch64_fnma4_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fnma4_elt_to_64v2df): Likewise.
+
 2020-03-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-sve2.md (@aarch64_sve_<sve_int_op><mode>:
