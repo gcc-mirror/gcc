@@ -84,6 +84,9 @@
 ;; Double-width vector modes plus 64-bit elements.
 (define_mode_iterator VDX [V8QI V4HI V4HF V4BF V2SI V2SF DI])
 
+;; Double-width vector modes plus 64-bit elements, including V4BF.
+(define_mode_iterator VDXBF [V8QI V4HI V4HF (V4BF "TARGET_BF16_SIMD") V2SI V2SF DI])
+
 ;; Double-width vector modes plus 64-bit elements,
 ;; with V4BFmode added, suitable for moves.
 (define_mode_iterator VDXMOV [V8QI V4HI V4HF V4BF V2SI V2SF DI])
@@ -99,6 +102,9 @@
 
 ;; Quad-width vector modes, including V8HF.
 (define_mode_iterator VQ2 [V16QI V8HI V8HF V4SI V4SF])
+
+;; Quad-width vector modes, including V8BF.
+(define_mode_iterator VQ2BF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF])
 
 ;; Quad-width vector modes with 16- or 32-bit elements
 (define_mode_iterator VQ_HS [V8HI V8HF V4SI V4SF])

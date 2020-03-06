@@ -1,5 +1,42 @@
 2020-03-06  Delia Burduv  <delia.burduv@arm.com>
 
+	* config/arm/arm_neon.h (bfloat16x4x2_t): New typedef.
+	(bfloat16x8x2_t): New typedef.
+	(bfloat16x4x3_t): New typedef.
+	(bfloat16x8x3_t): New typedef.
+	(bfloat16x4x4_t): New typedef.
+	(bfloat16x8x4_t): New typedef.
+	(vst2_bf16): New.
+	(vst2q_bf16): New.
+	(vst3_bf16): New.
+	(vst3q_bf16): New.
+	(vst4_bf16): New.
+	(vst4q_bf16): New.
+	* config/arm/arm-builtins.c (v2bf_UP): Define.
+	(VAR13): New.
+	(arm_init_simd_builtin_types): Init Bfloat16x2_t eltype.
+	* config/arm/arm-modes.def (V2BF): New mode.
+	* config/arm/arm-simd-builtin-types.def
+	(Bfloat16x2_t): New entry.
+	* config/arm/arm_neon_builtins.def
+	(vst2): Changed to VAR13 and added v4bf, v8bf
+	(vst3): Changed to VAR13 and added v4bf, v8bf
+	(vst4): Changed to VAR13 and added v4bf, v8bf
+	* config/arm/iterators.md (VDXBF): New iterator.
+	(VQ2BF): New iterator.
+	*config/arm/neon.md (neon_vst2<mode>): Used new iterators.
+	(neon_vst2<mode>): Used new iterators.
+	(neon_vst3<mode>): Used new iterators.
+	(neon_vst3<mode>): Used new iterators.
+	(neon_vst3qa<mode>): Used new iterators.
+	(neon_vst3qb<mode>): Used new iterators.
+	(neon_vst4<mode>): Used new iterators.
+	(neon_vst4<mode>): Used new iterators.
+	(neon_vst4qa<mode>): Used new iterators.
+	(neon_vst4qb<mode>): Used new iterators.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
 	* config/aarch64/aarch64-simd-builtins.def
 	(bfcvtn): New built-in function.
 	(bfcvtn_q): New built-in function.

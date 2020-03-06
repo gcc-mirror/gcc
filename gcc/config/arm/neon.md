@@ -5541,7 +5541,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst2<mode>"
   [(set (match_operand:TI 0 "neon_struct_operand" "=Um")
         (unspec:TI [(match_operand:TI 1 "s_register_operand" "w")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST2))]
   "TARGET_NEON"
 {
@@ -5566,7 +5566,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst2<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
 	(unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
-		    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 		   UNSPEC_VST2))]
   "TARGET_NEON"
   "vst2.<V_sz_elem>\t%h1, %A0"
@@ -5810,7 +5810,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst3<mode>"
   [(set (match_operand:EI 0 "neon_struct_operand" "=Um")
         (unspec:EI [(match_operand:EI 1 "s_register_operand" "w")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST3))]
   "TARGET_NEON"
 {
@@ -5837,7 +5837,7 @@ if (BYTES_BIG_ENDIAN)
 (define_expand "neon_vst3<mode>"
   [(match_operand:CI 0 "neon_struct_operand")
    (match_operand:CI 1 "s_register_operand")
-   (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_NEON"
 {
   rtx mem;
@@ -5852,7 +5852,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst3qa<mode>"
   [(set (match_operand:EI 0 "neon_struct_operand" "=Um")
         (unspec:EI [(match_operand:CI 1 "s_register_operand" "w")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST3A))]
   "TARGET_NEON"
 {
@@ -5871,7 +5871,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst3qb<mode>"
   [(set (match_operand:EI 0 "neon_struct_operand" "=Um")
         (unspec:EI [(match_operand:CI 1 "s_register_operand" "w")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST3B))]
   "TARGET_NEON"
 {
@@ -6135,7 +6135,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst4<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
         (unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
-                    (unspec:VDX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VDXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST4))]
   "TARGET_NEON"
 {
@@ -6163,7 +6163,7 @@ if (BYTES_BIG_ENDIAN)
 (define_expand "neon_vst4<mode>"
   [(match_operand:XI 0 "neon_struct_operand")
    (match_operand:XI 1 "s_register_operand")
-   (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_NEON"
 {
   rtx mem;
@@ -6178,7 +6178,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst4qa<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
         (unspec:OI [(match_operand:XI 1 "s_register_operand" "w")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST4A))]
   "TARGET_NEON"
 {
@@ -6198,7 +6198,7 @@ if (BYTES_BIG_ENDIAN)
 (define_insn "neon_vst4qb<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
         (unspec:OI [(match_operand:XI 1 "s_register_operand" "w")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                    (unspec:VQ2BF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST4B))]
   "TARGET_NEON"
 {

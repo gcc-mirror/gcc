@@ -80,6 +80,7 @@ VECTOR_MODE (FLOAT, HF, 2);   /*                 V2HF */
 
 FLOAT_MODE (BF, 2, 0);
 ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
+VECTOR_MODE (FLOAT, BF, 2);   /*                 V2BF.  */
 VECTOR_MODE (FLOAT, BF, 4);   /*		 V4BF.  */
 VECTOR_MODE (FLOAT, BF, 8);   /*		 V8BF.  */
 
