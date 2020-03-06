@@ -93,6 +93,11 @@
 	(UNSPEC_BFCVT): New UNSPEC.
 	* config/arm/types.md (bf_cvt): New type.
 
+2020-03-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md ("tabort"): Get rid of two consecutive
+	blanks in format string.
+
 2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229
@@ -203,6 +208,39 @@
 	* rs6000-cpus.def (OTHER_ALTIVEC_MASKS): New #define.
 	* rs6000.c (rs6000_disable_incompatible_switches): Add table entry
 	for OPTION_MASK_ALTIVEC.
+
+2020-03-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config.gcc: Include the glibc-stdint.h header for zTPF.
+
+2020-03-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_secondary_memory_needed): Disallow
+	direct FPR-GPR copies.
+	(s390_register_info_gprtofpr): Disallow GPR content to be saved in
+	FPRs.
+
+2020-03-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Specify the 2 new
+	operands to the prologue_tpf expander.
+	(s390_emit_epilogue): Likewise.
+	(s390_option_override_internal): Do error checking and setup for
+	the new options.
+	* config/s390/tpf.h (TPF_TRACE_PROLOGUE_CHECK)
+	(TPF_TRACE_EPILOGUE_CHECK, TPF_TRACE_PROLOGUE_TARGET)
+	(TPF_TRACE_EPILOGUE_TARGET, TPF_TRACE_PROLOGUE_SKIP_TARGET)
+	(TPF_TRACE_EPILOGUE_SKIP_TARGET): New macro definitions.
+	* config/s390/tpf.md ("prologue_tpf", "epilogue_tpf"): Add two new
+	operands for the check flag and the branch target.
+	* config/s390/tpf.opt ("mtpf-trace-hook-prologue-check")
+	("mtpf-trace-hook-prologue-target")
+	("mtpf-trace-hook-epilogue-check")
+	("mtpf-trace-hook-epilogue-target", "mtpf-trace-skip"): New
+	options.
+	* doc/invoke.texi: Document -mtpf-trace-skip option. The other
+	options are for debugging purposes and will not be documented
+	here.
 
 2020-03-04  Jakub Jelinek  <jakub@redhat.com>
 

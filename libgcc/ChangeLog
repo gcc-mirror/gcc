@@ -1,3 +1,8 @@
+2020-03-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config.host: Include the new makefile fragment.
+	* config/s390/t-tpf: New file.
+
 2020-03-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/bpabi-v6m.S (aeabi_lcmp): Convert thumb1 code to unified
