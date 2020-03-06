@@ -3561,7 +3561,7 @@ package body Ch4 is
    -- P_Membership_Test --
    -----------------------
 
-   --  MEMBERSHIP_CHOICE_LIST ::= MEMBERHIP_CHOICE {'|' MEMBERSHIP_CHOICE}
+   --  MEMBERSHIP_CHOICE_LIST ::= MEMBERSHIP_CHOICE {'|' MEMBERSHIP_CHOICE}
    --  MEMBERSHIP_CHOICE      ::= CHOICE_EXPRESSION | range | subtype_mark
 
    procedure P_Membership_Test (N : Node_Id) is
