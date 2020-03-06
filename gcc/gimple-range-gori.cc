@@ -915,7 +915,6 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
   bool op1_in_chain, op2_in_chain;
   const unsigned depth_limit = 6;	// Max depth of logical recursion.
   static unsigned depth = 0;		// Current depth of recursion.
-  tree type = TREE_TYPE (name);
   widest_irange op1_true, op1_false, op2_true, op2_false;
 
   // Reaching this point means NAME is not in this stmt, but one of
@@ -951,10 +950,10 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
     {
       if (!compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1),
 				  m_bool_one, name, name_range))
-	op1_true.set_varying (type);
+	get_tree_range (op1_true, name, name, name_range);
       if (!compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1),
 				  m_bool_zero, name, name_range))
-	op1_false.set_varying (type);
+	get_tree_range (op1_false, name, name, name_range);
     }
   else
     {
@@ -966,10 +965,10 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
     {
       if (!compute_operand_range (op2_true, SSA_NAME_DEF_STMT (op2),
 				  m_bool_one, name, name_range))
-	op2_true.set_varying (type);
+	get_tree_range (op2_true, name, name, name_range);
       if (!compute_operand_range (op2_false, SSA_NAME_DEF_STMT (op2),
 				  m_bool_zero, name, name_range))
-	op2_false.set_varying (type);
+	get_tree_range (op2_false, name, name, name_range);
     }
   else
     {
