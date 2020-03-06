@@ -1,3 +1,19 @@
+2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	PR target/89346
+	* config/i386/i386-protos.h (ix86_output_ssemov): New prototype.
+	* config/i386/i386.c (ix86_get_ssemov): New function.
+	(ix86_output_ssemov): Likewise.
+	* config/i386/sse.md (VMOVE:mov<mode>_internal): Call
+	ix86_output_ssemov for TYPE_SSEMOV.  Remove TARGET_AVX512VL
+	check.
+	(*movxi_internal_avx512f): Call ix86_output_ssemov for TYPE_SSEMOV.
+	(*movoi_internal_avx): Call ix86_output_ssemov for TYPE_SSEMOV.
+	Remove ext_sse_reg_operand and TARGET_AVX512VL check.
+	(*movti_internal): Likewise.
+	(*movtf_internal): Call ix86_output_ssemov for TYPE_SSEMOV.
+
 2020-03-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/91890

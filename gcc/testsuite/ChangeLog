@@ -1,3 +1,16 @@
+2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	PR target/89346
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Updated.
+	* gcc.target/i386/pr89229-2a.c: New test.
+	* gcc.target/i386/pr89229-2b.c: Likewise.
+	* gcc.target/i386/pr89229-2c.c: Likewise.
+	* gcc.target/i386/pr89229-3a.c: Likewise.
+	* gcc.target/i386/pr89229-3b.c: Likewise.
+	* gcc.target/i386/pr89229-3c.c: Likewise.
+	* gcc.target/i386/pr89346.c: Likewise.
+
 2020-03-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* g++.dg/pr80481.C: Disable epilogue vectorization.

@@ -4915,6 +4915,214 @@ ix86_pre_reload_split (void)
 	  && !(cfun->curr_properties & PROP_rtl_split_insns));
 }
 
+/* Return the opcode of the TYPE_SSEMOV instruction.  To move from
+   or to xmm16-xmm31/ymm16-ymm31 registers, we either require
+   TARGET_AVX512VL or it is a register to register move which can
+   be done with zmm register move. */
+
+static const char *
+ix86_get_ssemov (rtx *operands, unsigned size,
+		 enum attr_mode insn_mode, machine_mode mode)
+{
+  char buf[128];
+  bool misaligned_p = (misaligned_operand (operands[0], mode)
+		       || misaligned_operand (operands[1], mode));
+  bool evex_reg_p = (size == 64
+		     || EXT_REX_SSE_REG_P (operands[0])
+		     || EXT_REX_SSE_REG_P (operands[1]));
+  machine_mode scalar_mode;
+
+  const char *opcode = NULL;
+  enum
+    {
+      opcode_int,
+      opcode_float,
+      opcode_double
+    } type = opcode_int;
+
+  switch (insn_mode)
+    {
+    case MODE_V16SF:
+    case MODE_V8SF:
+    case MODE_V4SF:
+      scalar_mode = E_SFmode;
+      type = opcode_float;
+      break;
+    case MODE_V8DF:
+    case MODE_V4DF:
+    case MODE_V2DF:
+      scalar_mode = E_DFmode;
+      type = opcode_double;
+      break;
+    case MODE_XI:
+    case MODE_OI:
+    case MODE_TI:
+      scalar_mode = GET_MODE_INNER (mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* NB: To move xmm16-xmm31/ymm16-ymm31 registers without AVX512VL,
+     we can only use zmm register move without memory operand.  */
+  if (evex_reg_p
+      && !TARGET_AVX512VL
+      && GET_MODE_SIZE (mode) < 64)
+    {
+      /* NB: Since ix86_hard_regno_mode_ok only allows xmm16-xmm31 or
+	 ymm16-ymm31 in 128/256 bit modes when AVX512VL is enabled,
+	 we get here only for xmm16-xmm31 or ymm16-ymm31 in 32/64 bit
+	 modes.  */
+      if (GET_MODE_SIZE (mode) >= 16
+	  || memory_operand (operands[0], mode)
+	  || memory_operand (operands[1], mode))
+	gcc_unreachable ();
+      size = 64;
+      switch (type)
+	{
+	case opcode_int:
+	  opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  break;
+	case opcode_float:
+	  opcode = misaligned_p ? "vmovups" : "vmovaps";
+	  break;
+	case opcode_double:
+	  opcode = misaligned_p ? "vmovupd" : "vmovapd";
+	  break;
+	}
+    }
+  else if (SCALAR_FLOAT_MODE_P (scalar_mode))
+    {
+      switch (scalar_mode)
+	{
+	case E_SFmode:
+	  opcode = misaligned_p ? "%vmovups" : "%vmovaps";
+	  break;
+	case E_DFmode:
+	  opcode = misaligned_p ? "%vmovupd" : "%vmovapd";
+	  break;
+	case E_TFmode:
+	  if (evex_reg_p)
+	    opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  else
+	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else if (SCALAR_INT_MODE_P (scalar_mode))
+    {
+      switch (scalar_mode)
+	{
+	case E_QImode:
+	  if (evex_reg_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu8"
+			 : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu8"
+			 : "%vmovdqu")
+		      : "%vmovdqa");
+	  break;
+	case E_HImode:
+	  if (evex_reg_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "%vmovdqu")
+		      : "%vmovdqa");
+	  break;
+	case E_SImode:
+	  if (evex_reg_p)
+	    opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  else
+	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
+	  break;
+	case E_DImode:
+	case E_TImode:
+	case E_OImode:
+	  if (evex_reg_p)
+	    opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  else
+	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
+	  break;
+	case E_XImode:
+	  opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  switch (size)
+    {
+    case 64:
+      snprintf (buf, sizeof (buf), "%s\t{%%g1, %%g0|%%g0, %%g1}",
+		opcode);
+      break;
+    case 32:
+      snprintf (buf, sizeof (buf), "%s\t{%%t1, %%t0|%%t0, %%t1}",
+		opcode);
+      break;
+    case 16:
+      snprintf (buf, sizeof (buf), "%s\t{%%x1, %%x0|%%x0, %%x1}",
+		opcode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  output_asm_insn (buf, operands);
+  return "";
+}
+
+/* Return the template of the TYPE_SSEMOV instruction to move
+   operands[1] into operands[0].  */
+
+const char *
+ix86_output_ssemov (rtx_insn *insn, rtx *operands)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  if (get_attr_type (insn) != TYPE_SSEMOV
+      || mode != GET_MODE (operands[1]))
+    gcc_unreachable ();
+
+  enum attr_mode insn_mode = get_attr_mode (insn);
+
+  switch (insn_mode)
+    {
+    case MODE_XI:
+    case MODE_V8DF:
+    case MODE_V16SF:
+      return ix86_get_ssemov (operands, 64, insn_mode, mode);
+
+    case MODE_OI:
+    case MODE_V4DF:
+    case MODE_V8SF:
+      return ix86_get_ssemov (operands, 32, insn_mode, mode);
+
+    case MODE_TI:
+    case MODE_V2DF:
+    case MODE_V4SF:
+      return ix86_get_ssemov (operands, 16, insn_mode, mode);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Returns true if OP contains a symbol reference */
 
 bool
