@@ -1,3 +1,7 @@
+2020-03-08  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic4.C: New test.
+
 2020-03-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229
