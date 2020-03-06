@@ -1,5 +1,33 @@
 2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	PR target/91598
+	* config/aarch64/aarch64-builtins.c (TYPES_TERNOPU_LANE): Add define.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_vec_<su>mult_lane<Qlane>): Add new insn for widening lane mul.
+	(aarch64_vec_<su>mlal_lane<Qlane>): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def: Add intrinsics.
+	* config/aarch64/arm_neon.h:
+	(vmlal_lane_s16): Expand using intrinsics rather than inline asm.
+	(vmlal_lane_u16): Likewise.
+	(vmlal_lane_s32): Likewise.
+	(vmlal_lane_u32): Likewise.
+	(vmlal_laneq_s16): Likewise.
+	(vmlal_laneq_u16): Likewise.
+	(vmlal_laneq_s32): Likewise.
+	(vmlal_laneq_u32): Likewise.
+	(vmull_lane_s16): Likewise.
+	(vmull_lane_u16): Likewise.
+	(vmull_lane_s32): Likewise.
+	(vmull_lane_u32): Likewise.
+	(vmull_laneq_s16): Likewise.
+	(vmull_laneq_u16): Likewise.
+	(vmull_laneq_s32): Likewise.
+	(vmull_laneq_u32): Likewise.
+	* config/aarch64/iterators.md (Vcondtype): New iterator for lane mul.
+	(Qlane): Likewise.
+
+2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* aarch64/aarch64-simd.md (aarch64_mla_elt<mode>): Correct lane syntax.
 	(aarch64_mla_elt_<vswap_width_name><mode>): Likewise.
 	(aarch64_mls_elt<mode>): Likewise.
