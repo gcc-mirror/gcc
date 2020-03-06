@@ -1,3 +1,12 @@
+2020-03-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/94065
+	* config/rs6000/aix61.h (TARGET_NO_SUM_IN_TOC): Set to 1 for
+	cmodel=large.
+	(TARGET_NO_FP_IN_TOC): Same.
+	* config/rs6000/aix71.h: Same.
+	* config/rs6000/aix72.h: Same.
+
 2020-03-06  Andrew Pinski  <apinski@marvell.com>
 	    Jeff Law  <law@redhat.com>
 
