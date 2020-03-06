@@ -573,7 +573,7 @@ package body System.Secondary_Stack is
          --  Treat this case as secondary-stack depletion.
 
          if Memory_Size'Last - Algn_MS < Size_MS then
-            raise Storage_Error with "secondary stack exhaused";
+            raise Storage_Error with "secondary stack exhausted";
          end if;
 
          return ((Size_MS + Algn_MS - 1) / Algn_MS) * Algn_MS;
