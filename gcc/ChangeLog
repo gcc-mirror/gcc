@@ -1,3 +1,13 @@
+2020-03-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backport from master
+	2020-02-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/91913
+	* config/arm/arm.md (movsi_compare0): Allow SP as a source register
+	in Thumb state and also as a destination in Arm state.  Add T16
+	variants.
+
 2020-03-12  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
