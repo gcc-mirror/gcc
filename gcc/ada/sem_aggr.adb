@@ -3315,6 +3315,29 @@ package body Sem_Aggr is
       --  part of the enclosing aggregate. Assoc_List provides the discriminant
       --  associations of the current type or of some enclosing record.
 
+      procedure Build_Constrained_Itype
+        (N              : Node_Id;
+         Typ            : Entity_Id;
+         New_Assoc_List : List_Id);
+      --  Build a constrained itype for the newly created record aggregate N
+      --  and set it as a type of N. The itype will have Typ as its base type
+      --  and will be constrained by the values of discriminants from the
+      --  component association list New_Assoc_List.
+
+      --  ??? This code used to be pretty much a copy of Sem_Ch3.Build_Subtype,
+      --  but now those two routines behave differently for types with unknown
+      --  discriminants. They should really be exported in sem_util or some
+      --  such and used in sem_ch3 and here rather than have a copy of the
+      --  code which is a maintenance nightmare.
+
+      --  ??? Performance WARNING. The current implementation creates a new
+      --  itype for all aggregates whose base type is discriminated. This means
+      --  that for record aggregates nested inside an array aggregate we will
+      --  create a new itype for each record aggregate if the array component
+      --  type has discriminants. For large aggregates this may be a problem.
+      --  What should be done in this case is to reuse itypes as much as
+      --  possible.
+
       function Discriminant_Present (Input_Discr : Entity_Id) return Boolean;
       --  If aggregate N is a regular aggregate this routine will return True.
       --  Otherwise, if N is an extension aggregate, then Input_Discr denotes
@@ -3473,6 +3496,78 @@ package body Sem_Aggr is
             Next_Discriminant (Discr);
          end loop;
       end Add_Discriminant_Values;
+
+      -----------------------------
+      -- Build_Constrained_Itype --
+      -----------------------------
+
+      procedure Build_Constrained_Itype
+        (N              : Node_Id;
+         Typ            : Entity_Id;
+         New_Assoc_List : List_Id)
+      is
+         Constrs     : constant List_Id    := New_List;
+         Loc         : constant Source_Ptr := Sloc (N);
+         Def_Id      : Entity_Id;
+         Indic       : Node_Id;
+         New_Assoc   : Node_Id;
+         Subtyp_Decl : Node_Id;
+
+      begin
+         New_Assoc := First (New_Assoc_List);
+         while Present (New_Assoc) loop
+
+            --  There is exactly one choice in the component association (and
+            --  it is either a discriminant, a component or the others clause).
+            pragma Assert (List_Length (Choices (New_Assoc)) = 1);
+
+            --  Duplicate expression for the discriminant and put it on the
+            --  list of constraints for the itype declaration.
+
+            if Is_Entity_Name (First (Choices (New_Assoc)))
+              and then
+                Ekind (Entity (First (Choices (New_Assoc)))) = E_Discriminant
+            then
+               Append_To (Constrs, Duplicate_Subexpr (Expression (New_Assoc)));
+            end if;
+
+            Next (New_Assoc);
+         end loop;
+
+         if Has_Unknown_Discriminants (Typ)
+           and then Present (Underlying_Record_View (Typ))
+         then
+            Indic :=
+              Make_Subtype_Indication (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
+                Constraint   =>
+                  Make_Index_Or_Discriminant_Constraint (Loc,
+                    Constraints => Constrs));
+         else
+            Indic :=
+              Make_Subtype_Indication (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of (Base_Type (Typ), Loc),
+                Constraint   =>
+                  Make_Index_Or_Discriminant_Constraint (Loc,
+                    Constraints => Constrs));
+         end if;
+
+         Def_Id := Create_Itype (Ekind (Typ), N);
+
+         Subtyp_Decl :=
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => Def_Id,
+             Subtype_Indication  => Indic);
+         Set_Parent (Subtyp_Decl, Parent (N));
+
+         --  Itypes must be analyzed with checks off (see itypes.ads)
+
+         Analyze (Subtyp_Decl, Suppress => All_Checks);
+
+         Set_Etype (N, Def_Id);
+      end Build_Constrained_Itype;
 
       --------------------------
       -- Discriminant_Present --
@@ -3833,6 +3928,8 @@ package body Sem_Aggr is
                Add_Discriminant_Values (New_Aggr, Assoc_List);
                Propagate_Discriminants (New_Aggr, Assoc_List);
 
+               Build_Constrained_Itype
+                 (New_Aggr, T, Component_Associations (New_Aggr));
             else
                Needs_Box := True;
             end if;
@@ -4378,73 +4475,11 @@ package body Sem_Aggr is
 
       --  STEP 4: Set the Etype of the record aggregate
 
-      --  ??? This code is pretty much a copy of Sem_Ch3.Build_Subtype. That
-      --  routine should really be exported in sem_util or some such and used
-      --  in sem_ch3 and here rather than have a copy of the code which is a
-      --  maintenance nightmare.
-
-      --  ??? Performance WARNING. The current implementation creates a new
-      --  itype for all aggregates whose base type is discriminated. This means
-      --  that for record aggregates nested inside an array aggregate we will
-      --  create a new itype for each record aggregate if the array component
-      --  type has discriminants. For large aggregates this may be a problem.
-      --  What should be done in this case is to reuse itypes as much as
-      --  possible.
-
       if Has_Discriminants (Typ)
         or else (Has_Unknown_Discriminants (Typ)
                   and then Present (Underlying_Record_View (Typ)))
       then
-         Build_Constrained_Itype : declare
-            Constrs     : constant List_Id    := New_List;
-            Loc         : constant Source_Ptr := Sloc (N);
-            Def_Id      : Entity_Id;
-            Indic       : Node_Id;
-            New_Assoc   : Node_Id;
-            Subtyp_Decl : Node_Id;
-
-         begin
-            New_Assoc := First (New_Assoc_List);
-            while Present (New_Assoc) loop
-               Append_To (Constrs, Duplicate_Subexpr (Expression (New_Assoc)));
-               Next (New_Assoc);
-            end loop;
-
-            if Has_Unknown_Discriminants (Typ)
-              and then Present (Underlying_Record_View (Typ))
-            then
-               Indic :=
-                 Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
-                   Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc,
-                       Constraints => Constrs));
-            else
-               Indic :=
-                 Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Base_Type (Typ), Loc),
-                   Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc,
-                       Constraints => Constrs));
-            end if;
-
-            Def_Id := Create_Itype (Ekind (Typ), N);
-
-            Subtyp_Decl :=
-              Make_Subtype_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Subtype_Indication  => Indic);
-            Set_Parent (Subtyp_Decl, Parent (N));
-
-            --  Itypes must be analyzed with checks off (see itypes.ads)
-
-            Analyze (Subtyp_Decl, Suppress => All_Checks);
-
-            Set_Etype (N, Def_Id);
-         end Build_Constrained_Itype;
-
+         Build_Constrained_Itype (N, Typ, New_Assoc_List);
       else
          Set_Etype (N, Typ);
       end if;
@@ -4874,6 +4909,9 @@ package body Sem_Aggr is
                              (Expr, Component_Associations (Expr));
                            Propagate_Discriminants
                              (Expr, Component_Associations (Expr));
+
+                           Build_Constrained_Itype
+                             (Expr, Ctyp, Component_Associations (Expr));
 
                         else
                            declare
