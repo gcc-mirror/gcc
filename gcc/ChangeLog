@@ -1,5 +1,79 @@
 2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/sourcebuild.texi (aarch64_sve_hw, aarch64_sve128_hw)
+	(aarch64_sve256_hw, aarch64_sve512_hw, aarch64_sve1024_hw)
+	(aarch64_sve2048_hw): Document.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve::handle_arm_sve_vector_bits_attribute): Declare.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS when SVE is enabled.
+	* config/aarch64/aarch64-sve-builtins.cc (matches_type_p): New
+	function.
+	(find_type_suffix_for_scalar_type): Use it instead of comparing
+	TYPE_MAIN_VARIANTs.
+	(function_resolver::infer_vector_or_tuple_type): Likewise.
+	(function_resolver::require_vector_type): Likewise.
+	(handle_arm_sve_vector_bits_attribute): New function.
+	* config/aarch64/aarch64.c (pure_scalable_type_info): New class.
+	(aarch64_attribute_table): Add arm_sve_vector_bits.
+	(aarch64_return_in_memory_1):
+	(pure_scalable_type_info::piece::get_rtx): New function.
+	(pure_scalable_type_info::num_zr): Likewise.
+	(pure_scalable_type_info::num_pr): Likewise.
+	(pure_scalable_type_info::get_rtx): Likewise.
+	(pure_scalable_type_info::analyze): Likewise.
+	(pure_scalable_type_info::analyze_registers): Likewise.
+	(pure_scalable_type_info::analyze_array): Likewise.
+	(pure_scalable_type_info::analyze_record): Likewise.
+	(pure_scalable_type_info::add_piece): Likewise.
+	(aarch64_some_values_include_pst_objects_p): Likewise.
+	(aarch64_returns_value_in_sve_regs_p): Use pure_scalable_type_info
+	to analyze whether the type is returned in SVE registers.
+	(aarch64_takes_arguments_in_sve_regs_p): Likwise whether the type
+	is passed in SVE registers.
+	(aarch64_pass_by_reference_1): New function, extracted from...
+	(aarch64_pass_by_reference): ...here.  Use pure_scalable_type_info
+	to analyze whether the type is a pure scalable type and, if so,
+	whether it should be passed by reference.
+	(aarch64_return_in_msb): Return false for pure scalable types.
+	(aarch64_function_value_1): Fold back into...
+	(aarch64_function_value): ...this function.  Use
+	pure_scalable_type_info to analyze whether the type is a pure
+	scalable type and, if so, which registers it should use.  Handle
+	types that include pure scalable types but are not themselves
+	pure scalable types.
+	(aarch64_return_in_memory_1): New function, split out from...
+	(aarch64_return_in_memory): ...here.  Use pure_scalable_type_info
+	to analyze whether the type is a pure scalable type and, if so,
+	whether it should be returned by reference.
+	(aarch64_layout_arg): Remove orig_mode argument.  Use
+	pure_scalable_type_info to analyze whether the type is a pure
+	scalable type and, if so, which registers it should use.  Handle
+	types that include pure scalable types but are not themselves
+	pure scalable types.
+	(aarch64_function_arg): Update call accordingly.
+	(aarch64_function_arg_advance): Likewise.
+	(aarch64_pad_reg_upward): On big-endian targets, return false for
+	pure scalable types that are smaller than 16 bytes.
+	(aarch64_member_type_forces_blk): New function.
+	(aapcs_vfp_sub_candidate): Exit early for built-in SVE types.
+	(aarch64_short_vector_p): Return false for VECTOR_TYPEs that
+	correspond to built-in SVE types.  Do not rely on a vector mode
+	if the type includes an pure scalable type.  When returning true,
+	assert that the mode is not an SVE mode.
+	(aarch64_vfp_is_call_or_return_candidate): Do not check for SVE
+	built-in types here.  When returning true, assert that the type
+	does not have an SVE mode.
+	(aarch64_can_change_mode_class): Don't allow anything to change
+	between a predicate mode and a non-predicate mode.  Also don't
+	allow changes between SVE vector modes and other modes that
+	might be bigger than 128 bits.
+	(aarch64_invalid_binary_op): Reject binary operations that mix
+	SVE and GNU vector types.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): Define.
+
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_attribute_table): Add
 	"SVE sizeless type".
 	* config/aarch64/aarch64-sve-builtins.cc (make_type_sizeless)

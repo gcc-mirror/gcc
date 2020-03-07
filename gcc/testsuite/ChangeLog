@@ -1,3 +1,31 @@
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/attributes_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/attributes_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct.h: New file.
+	* gcc.target/aarch64/sve/pcs/struct_1_128.c: New test.
+	* gcc.target/aarch64/sve/pcs/struct_1_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_1_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_1_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_1_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_512.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_aarch64_sve128_hw)
+	(check_effective_target_aarch64_sve512_hw)
+	(check_effective_target_aarch64_sve1024_hw)
+	(check_effective_target_aarch64_sve2048_hw): New procedures.
+
 2020-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* g++.target/arm/cde_mve.C: New test.
