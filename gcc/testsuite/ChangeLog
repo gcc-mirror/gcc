@@ -1,3 +1,8 @@
+2020-03-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-long-string-literal.c.
+	* jit.dg/test-long-string-literal.c: New testcase.
+
 2020-03-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: Remove dg-do.
