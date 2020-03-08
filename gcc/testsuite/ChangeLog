@@ -1,3 +1,8 @@
+2020-03-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93581
+	* gfortran.dg/inquiry_type_ref_6.f90 : New test.
+
 2020-03-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93729
@@ -20,7 +25,7 @@
 
 2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.	
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.
 	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
 	* gcc.target/aarch64/mla_intrinsic_1.c: Likewise.
 	* gcc.target/aarch64/mls_intrinsic_1.c: Likewise.
