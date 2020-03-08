@@ -1,3 +1,16 @@
+2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_13): New ABI tag
+	plus add version paragraph.
+	* libgccjit++.h (namespace gccjit::version): Add new namespace.
+	* libgccjit.c (gcc_jit_version_major, gcc_jit_version_minor)
+	(gcc_jit_version_patchlevel): New functions.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_version): New macro.
+	(gcc_jit_version_major, gcc_jit_version_minor)
+	(gcc_jit_version_patchlevel): New functions.
+	* libgccjit.map (LIBGCCJIT_ABI_13) New ABI tag.
+
 2020-03-23  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* jit-playback.h
