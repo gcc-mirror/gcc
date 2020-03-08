@@ -5199,8 +5199,8 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 bool
 gfc_resolve_ref (gfc_expr *expr)
 {
-  int current_part_dimension, n_components, seen_part_dimension;
-  gfc_ref *ref, **prev;
+  int current_part_dimension, n_components, seen_part_dimension, dim;
+  gfc_ref *ref, **prev, *array_ref;
   bool equal_length;
 
   for (ref = expr->ref; ref; ref = ref->next)
@@ -5246,12 +5246,14 @@ gfc_resolve_ref (gfc_expr *expr)
   current_part_dimension = 0;
   seen_part_dimension = 0;
   n_components = 0;
+  array_ref = NULL;
 
   for (ref = expr->ref; ref; ref = ref->next)
     {
       switch (ref->type)
 	{
 	case REF_ARRAY:
+	  array_ref = ref;
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_FULL:
@@ -5267,6 +5269,7 @@ gfc_resolve_ref (gfc_expr *expr)
 	      break;
 
 	    case AR_ELEMENT:
+	      array_ref = NULL;
 	      current_part_dimension = 0;
 	      break;
 
@@ -5306,7 +5309,33 @@ gfc_resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
+	  break;
+
 	case REF_INQUIRY:
+	  /* Implement requirement in note 9.7 of F2018 that the result of the
+	     LEN inquiry be a scalar.  */
+	  if (ref->u.i == INQUIRY_LEN && array_ref)
+	    {
+	      array_ref->u.ar.type = AR_ELEMENT;
+	      expr->rank = 0;
+	      /* INQUIRY_LEN is not evaluated from the the rest of the expr
+		 but directly from the string length. This means that setting
+		 the array indices to one does not matter but might trigger
+		 a runtime bounds error. Suppress the check.  */
+	      expr->no_bounds_check = 1;
+	      for (dim = 0; dim < array_ref->u.ar.dimen; dim++)
+		{
+		  array_ref->u.ar.dimen_type[dim] = DIMEN_ELEMENT;
+		  if (array_ref->u.ar.start[dim])
+		    gfc_free_expr (array_ref->u.ar.start[dim]);
+		  array_ref->u.ar.start[dim]
+			= gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+		  if (array_ref->u.ar.end[dim])
+		    gfc_free_expr (array_ref->u.ar.end[dim]);
+		  if (array_ref->u.ar.stride[dim])
+		    gfc_free_expr (array_ref->u.ar.stride[dim]);
+		}
+	    }
 	  break;
 	}
 

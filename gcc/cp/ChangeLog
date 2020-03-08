@@ -1,3 +1,13 @@
+2020-03-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93729
+	* call.c (convert_like_real): Check complain before emitting an error
+	about binding a bit-field to a reference.
+
+	* cxx-pretty-print.c (cxx_pretty_printer::simple_type_specifier)
+	[TYPENAME_TYPE]: Print the TYPENAME_TYPE_FULLNAME instead of the
+	TYPE_NAME.
+
 2020-03-06  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94027

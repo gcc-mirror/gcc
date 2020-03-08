@@ -869,7 +869,7 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 	if (!smap->is_empty_p ())
 	  {
 	    pp_printf (pp, "%s: ", ext_state.get_name (i));
-	    smap->print (ext_state.get_sm (i), pp);
+	    smap->print (ext_state.get_sm (i), state.m_region_model, pp);
 	    pp_newline (pp);
 	  }
       }

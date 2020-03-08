@@ -7730,15 +7730,18 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	      {
 		/* If the reference is volatile or non-const, we
 		   cannot create a temporary.  */
-		if (lvalue & clk_bitfield)
-		  error_at (loc, "cannot bind bit-field %qE to %qT",
-			    expr, ref_type);
-		else if (lvalue & clk_packed)
-		  error_at (loc, "cannot bind packed field %qE to %qT",
-			    expr, ref_type);
-		else
-		  error_at (loc, "cannot bind rvalue %qE to %qT",
-			    expr, ref_type);
+		if (complain & tf_error)
+		  {
+		    if (lvalue & clk_bitfield)
+		      error_at (loc, "cannot bind bit-field %qE to %qT",
+				expr, ref_type);
+		    else if (lvalue & clk_packed)
+		      error_at (loc, "cannot bind packed field %qE to %qT",
+				expr, ref_type);
+		    else
+		      error_at (loc, "cannot bind rvalue %qE to %qT",
+				expr, ref_type);
+		  }
 		return error_mark_node;
 	      }
 	    /* If the source is a packed field, and we must use a copy

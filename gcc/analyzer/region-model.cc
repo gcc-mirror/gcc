@@ -73,6 +73,17 @@ dump_tree (pretty_printer *pp, tree t)
   dump_generic_node (pp, t, 0, TDF_SLIM, 0);
 }
 
+/* Dump T to PP in language-independent form in quotes, for
+   debugging/logging/dumping purposes.  */
+
+void
+dump_quoted_tree (pretty_printer *pp, tree t)
+{
+  pp_begin_quote (pp, pp_show_color (pp));
+  dump_tree (pp, t);
+  pp_end_quote (pp, pp_show_color (pp));
+}
+
 /* Equivalent to pp_printf (pp, "%qT", t), to avoid nesting pp_printf
    calls within other pp_printf calls.
 
@@ -1595,7 +1606,8 @@ map_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       tree expr = (*iter).first;
       region_id child_rid = (*iter).second;
-      pp_printf (pp, "%qE: ", expr);
+      dump_quoted_tree (pp, expr);
+      pp_string (pp, ": ");
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -1665,10 +1677,8 @@ map_region::dump_child_label (const region_model &model,
       if (child_rid == (*iter).second)
 	{
 	  tree key = (*iter).first;
-	  if (DECL_P (key))
-	    pp_printf (pp, "%qD: ", key);
-	  else
-	    pp_printf (pp, "%qE: ", key);
+	  dump_quoted_tree (pp, key);
+	  pp_string (pp, ": ");
 	}
     }
 }
@@ -2482,6 +2492,16 @@ array_region::key_from_constant (tree cst)
   wide_int w = wi::to_wide (cst);
   key_t result = w.to_shwi ();
   return result;
+}
+
+/* Convert array_region::key_t KEY into a tree constant.  */
+
+tree
+array_region::constant_from_key (key_t key)
+{
+  tree array_type = get_type ();
+  tree index_type = TYPE_DOMAIN (array_type);
+  return build_int_cst (index_type, key);
 }
 
 /* class function_region : public map_region.  */
@@ -3706,17 +3726,16 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	  {
 	    region_svalue *region_sval = as_a <region_svalue *> (sval);
 	    region_id pointee_rid = region_sval->get_pointee ();
+	    gcc_assert (!pointee_rid.null_p ());
 	    tree pointee = get_representative_path_var (pointee_rid).m_tree;
 	    dump_separator (pp, is_first);
 	    dump_tree (pp, key);
 	    pp_string (pp, ": ");
+	    pp_character (pp, '&');
 	    if (pointee)
-	      {
-		pp_character (pp, '&');
-		dump_tree (pp, pointee);
-	      }
+	      dump_tree (pp, pointee);
 	    else
-	      pp_string (pp, "NULL");
+	      pointee_rid.print (pp);
 	  }
 	  break;
 	case SK_CONSTANT:
@@ -5660,9 +5679,7 @@ region_model::add_new_malloc_region ()
   return add_region (new symbolic_region (heap_rid, NULL_TREE, true));
 }
 
-/* Attempt to return a tree that represents SID, or return NULL_TREE.
-   Find the first region that stores the value (e.g. a local) and
-   generate a representative tree for it.  */
+/* Attempt to return a tree that represents SID, or return NULL_TREE.  */
 
 tree
 region_model::get_representative_tree (svalue_id sid) const
@@ -5670,6 +5687,8 @@ region_model::get_representative_tree (svalue_id sid) const
   if (sid.null_p ())
     return NULL_TREE;
 
+  /* Find the first region that stores the value (e.g. a local) and
+     generate a representative tree for it.  */
   unsigned i;
   region *region;
   FOR_EACH_VEC_ELT (m_regions, i, region)
@@ -5679,6 +5698,18 @@ region_model::get_representative_tree (svalue_id sid) const
 	if (pv.m_tree)
 	  return pv.m_tree;
       }
+
+  /* Handle string literals and various other pointers.  */
+  svalue *sval = get_svalue (sid);
+  if (region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
+    {
+      region_id rid = ptr_sval->get_pointee ();
+      path_var pv = get_representative_path_var (rid);
+      if (pv.m_tree)
+	return build1 (ADDR_EXPR,
+		       TREE_TYPE (sval->get_type ()),
+		       pv.m_tree);
+    }
 
   return maybe_get_constant (sid);
 }
@@ -5718,7 +5749,7 @@ region_model::get_representative_path_var (region_id rid) const
 	  path_var parent_pv = get_representative_path_var (parent_rid);
 	  if (parent_pv.m_tree && reg->get_type ())
 	    return path_var (build1 (NOP_EXPR,
-				     TREE_TYPE (reg->get_type ()),
+				     reg->get_type (),
 				     parent_pv.m_tree),
 			     parent_pv.m_stack_depth);
 	}
@@ -5740,6 +5771,32 @@ region_model::get_representative_path_var (region_id rid) const
 	    }
 	}
     }
+
+  /* Handle elements within an array.  */
+  if (array_region *array_reg = parent_region->dyn_cast_array_region ())
+    {
+      array_region::key_t key;
+      if (array_reg->get_key_for_child_region (rid, &key))
+	{
+	  path_var parent_pv = get_representative_path_var (parent_rid);
+	  if (parent_pv.m_tree && reg->get_type ())
+	    {
+	      tree index = array_reg->constant_from_key (key);
+	      return path_var (build4 (ARRAY_REF,
+				       reg->get_type (),
+				       parent_pv.m_tree, index,
+				       NULL_TREE, NULL_TREE),
+			       parent_pv.m_stack_depth);
+	    }
+	}
+    }
+
+  /* Handle string literals.  */
+  svalue_id sid = reg->get_value_direct ();
+  if (svalue *sval = get_svalue (sid))
+    if (tree cst = sval->maybe_get_constant ())
+      if (TREE_CODE (cst) == STRING_CST)
+	return path_var (cst, 0);
 
   return path_var (NULL_TREE, 0);
 }
@@ -7264,6 +7321,25 @@ assert_condition (const location &loc,
   ASSERT_EQ_AT (loc, actual, expected);
 }
 
+/* Implementation detail of ASSERT_DUMP_TREE_EQ.  */
+
+static void
+assert_dump_tree_eq (const location &loc, tree t, const char *expected)
+{
+  auto_fix_quotes sentinel;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  dump_tree (&pp, t);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected);
+}
+
+/* Assert that dump_tree (T) is EXPECTED.  */
+
+#define ASSERT_DUMP_TREE_EQ(T, EXPECTED) \
+  SELFTEST_BEGIN_STMT							\
+  assert_dump_tree_eq ((SELFTEST_LOCATION), (T), (EXPECTED)); \
+  SELFTEST_END_STMT
+
 /* Implementation detail of ASSERT_DUMP_EQ.  */
 
 static void
@@ -7310,6 +7386,30 @@ test_dump ()
 		  "  equiv classes:\n"
 		  "  constraints:\n");
   ASSERT_DUMP_EQ (model, true, "");
+}
+
+/* Verify that region_model::get_representative_tree works as expected.  */
+
+static void
+test_get_representative_tree ()
+{
+  /* STRING_CST.  */
+  {
+    tree string_cst = build_string (4, "foo");
+    region_model m;
+    svalue_id str_sid = m.get_rvalue (string_cst, NULL);
+    tree rep = m.get_representative_tree (str_sid);
+    ASSERT_EQ (rep, string_cst);
+  }
+
+  /* String literal.  */
+  {
+    tree string_cst_ptr = build_string_literal (4, "foo");
+    region_model m;
+    svalue_id str_sid = m.get_rvalue (string_cst_ptr, NULL);
+    tree rep = m.get_representative_tree (str_sid);
+    ASSERT_DUMP_TREE_EQ (rep, "&\"foo\"[0]");
+  }
 }
 
 /* Verify that calling region_model::get_rvalue repeatedly on the same
@@ -8363,6 +8463,7 @@ analyzer_region_model_cc_tests ()
 {
   test_tree_cmp_on_constants ();
   test_dump ();
+  test_get_representative_tree ();
   test_unique_constants ();
   test_svalue_equality ();
   test_region_equality ();

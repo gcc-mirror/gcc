@@ -1,3 +1,49 @@
+2020-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class array_region): New forward decl.
+	* program-state.cc (selftest::test_program_state_dumping_2): New.
+	(selftest::analyzer_program_state_cc_tests): Call it.
+	* region-model.cc (array_region::constant_from_key): New.
+	(region_model::get_representative_tree): Handle region_svalue by
+	generating an ADDR_EXPR.
+	(region_model::get_representative_path_var): In view handling,
+	remove erroneous TREE_TYPE when determining the type of the tree.
+	Handle array regions and STRING_CST.
+	(selftest::assert_dump_tree_eq): New.
+	(ASSERT_DUMP_TREE_EQ): New macro.
+	(selftest::test_get_representative_tree): New selftest.
+	(selftest::analyzer_region_model_cc_tests): Call it.
+	* region-model.h (region::dyn_cast_array_region): New vfunc.
+	(array_region::dyn_cast_array_region): New vfunc implementation.
+	(array_region::constant_from_key): New decl.
+
+2020-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (dump_quoted_tree): New decl.
+	* engine.cc (exploded_node::dump_dot): Pass region model to
+	sm_state_map::print.
+	* program-state.cc: Include diagnostic-core.h.
+	(sm_state_map::print): Add "model" param and use it to print
+	representative trees.  Only print origin information if non-null.
+	(sm_state_map::dump): Pass NULL for model to print call.
+	(program_state::print): Pass region model to sm_state_map::print.
+	(program_state::dump_to_pp): Use spaces rather than newlines when
+	summarizing.  Pass region_model to sm_state_map::print.
+	(ana::selftest::assert_dump_eq): New function.
+	(ASSERT_DUMP_EQ): New macro.
+	(ana::selftest::test_program_state_dumping): New function.
+	(ana::selftest::analyzer_program_state_cc_tests): Call it.
+	* program-state.h (program_state::print): Add model param.
+	* region-model.cc (dump_quoted_tree): New function.
+	(map_region::print_fields): Use dump_quoted_tree rather than
+	%qE to avoid lang-dependent output.
+	(map_region::dump_child_label): Likewise.
+	(region_model::dump_summary_of_map): For SK_REGION, when
+	get_representative_path_var fails, print the region id rather than
+	erroneously printing NULL.
+	* sm.cc (state_machine::get_state_by_name): New function.
+	* sm.h (state_machine::get_state_by_name): New decl.
+
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region::validate): Convert model param from ptr

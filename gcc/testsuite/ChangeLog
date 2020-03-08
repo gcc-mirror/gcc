@@ -1,6 +1,31 @@
+2020-03-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93581
+	* gfortran.dg/inquiry_type_ref_6.f90 : New test.
+
+2020-03-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93729
+	* g++.dg/concepts/pr93729.C: New test.
+
+	* g++.dg/concepts/diagnostic4.C: New test.
+
+2020-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	PR target/89346
+	* gcc.target/i386/pr89229-3c.c: Include "pr89229-3a.c", instead
+	of "pr89229-5a.c".
+
+2020-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-4.c: Update expected output of leak to
+	reflect fix to region_model::get_representative_path_var, adding
+	the missing "*" from the cast.
+
 2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.	
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Check for correct lane syntax.
 	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
 	* gcc.target/aarch64/mla_intrinsic_1.c: Likewise.
 	* gcc.target/aarch64/mls_intrinsic_1.c: Likewise.
