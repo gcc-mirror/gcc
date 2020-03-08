@@ -18607,20 +18607,6 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  If invariants should be ignored, delete the pragma and then
-            --  return. We do this here, after checking for errors, and before
-            --  generating anything that has a run-time effect.
-
-            if Present (Check_Policy_List)
-              and then
-                (Policy_In_Effect (Name_Invariant) = Name_Ignore
-                   and then
-                 Policy_In_Effect (Name_Type_Invariant) = Name_Ignore)
-            then
-               Rewrite (N, Make_Null_Statement (Loc));
-               return;
-            end if;
-
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
