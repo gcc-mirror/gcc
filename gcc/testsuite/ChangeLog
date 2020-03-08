@@ -1,3 +1,10 @@
+2020-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	PR target/89346
+	* gcc.target/i386/pr89229-3c.c: Include "pr89229-3a.c", instead
+	of "pr89229-5a.c".
+
 2020-03-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/malloc-4.c: Update expected output of leak to
