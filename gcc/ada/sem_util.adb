@@ -1218,6 +1218,10 @@ package body Sem_Util is
       --  Similar to previous one, for discriminated components constrained
       --  by the discriminant of the enclosing object.
 
+      function Copy_And_Maybe_Dereference (N : Node_Id) return Node_Id;
+      --  Copy the subtree rooted at N and insert an explicit dereference if it
+      --  is of an access type.
+
       -----------------------------------
       -- Build_Actual_Array_Constraint --
       -----------------------------------
@@ -1239,7 +1243,7 @@ package body Sem_Util is
             if Denotes_Discriminant (Old_Lo) then
                Lo :=
                  Make_Selected_Component (Loc,
-                   Prefix => New_Copy_Tree (P),
+                   Prefix => Copy_And_Maybe_Dereference (P),
                    Selector_Name => New_Occurrence_Of (Entity (Old_Lo), Loc));
 
             else
@@ -1257,7 +1261,7 @@ package body Sem_Util is
             if Denotes_Discriminant (Old_Hi) then
                Hi :=
                  Make_Selected_Component (Loc,
-                   Prefix => New_Copy_Tree (P),
+                   Prefix => Copy_And_Maybe_Dereference (P),
                    Selector_Name => New_Occurrence_Of (Entity (Old_Hi), Loc));
 
             else
@@ -1286,7 +1290,7 @@ package body Sem_Util is
          while Present (D) loop
             if Denotes_Discriminant (Node (D)) then
                D_Val := Make_Selected_Component (Loc,
-                 Prefix => New_Copy_Tree (P),
+                 Prefix => Copy_And_Maybe_Dereference (P),
                 Selector_Name => New_Occurrence_Of (Entity (Node (D)), Loc));
 
             else
@@ -1322,13 +1326,13 @@ package body Sem_Util is
                D_Val := New_Copy_Tree (D);
                Set_Expression (D_Val,
                  Make_Selected_Component (Loc,
-                   Prefix => New_Copy_Tree (P),
+                   Prefix => Copy_And_Maybe_Dereference (P),
                    Selector_Name =>
                      New_Occurrence_Of (Entity (Expression (D)), Loc)));
 
             elsif Denotes_Discriminant (D) then
                D_Val := Make_Selected_Component (Loc,
-                 Prefix => New_Copy_Tree (P),
+                 Prefix => Copy_And_Maybe_Dereference (P),
                  Selector_Name => New_Occurrence_Of (Entity (D), Loc));
 
             else
@@ -1341,6 +1345,21 @@ package body Sem_Util is
 
          return Constraints;
       end Build_Access_Record_Constraint;
+
+      --------------------------------
+      -- Copy_And_Maybe_Dereference --
+      --------------------------------
+
+      function Copy_And_Maybe_Dereference (N : Node_Id) return Node_Id is
+         New_N : constant Node_Id := New_Copy_Tree (N);
+
+      begin
+         if Is_Access_Type (Etype (New_N)) then
+            Insert_Explicit_Dereference (New_N);
+         end if;
+
+         return New_N;
+      end Copy_And_Maybe_Dereference;
 
    --  Start of processing for Build_Actual_Subtype_Of_Component
 
