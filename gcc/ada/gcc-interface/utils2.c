@@ -1997,6 +1997,8 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (record));
   tree ref;
 
+  /* The failure of this assertion will very likely come from a missing
+     insertion of an explicit dereference.  */
   gcc_assert (RECORD_OR_UNION_TYPE_P (type) && COMPLETE_TYPE_P (type));
 
   /* Try to fold a conversion from another record or union type unless the type
