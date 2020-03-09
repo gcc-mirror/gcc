@@ -627,6 +627,7 @@ extern gimple_opt_pass *make_pass_local_fn_summary (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_update_address_taken (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_convert_switch (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_vaarg (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_gimple_isel (gcc::context *ctxt);
 
 /* Current optimization pass.  */
 extern opt_pass *current_pass;

@@ -4155,7 +4155,7 @@ verify_gimple_assign_ternary (gassign *stmt)
       return true;
     }
 
-  if (((rhs_code == VEC_COND_EXPR || rhs_code == COND_EXPR)
+  if ((rhs_code == COND_EXPR
        ? !is_gimple_condexpr (rhs1) : !is_gimple_val (rhs1))
       || !is_gimple_val (rhs2)
       || !is_gimple_val (rhs3))
