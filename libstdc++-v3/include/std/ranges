@@ -281,12 +281,18 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires (!_S_store_size || sized_range<_Rng>)
+	subrange(_Rng&& __r) requires _S_store_size && sized_range<_Rng>
+	: subrange{__r, ranges::size(__r)}
+	{ }
+
+      template<__detail::__not_same_as<subrange> _Rng>
+	requires borrowed_range<_Rng>
+	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
+	  && convertible_to<sentinel_t<_Rng>, _Sent>
+	constexpr
+	subrange(_Rng&& __r) requires (!_S_store_size)
 	: subrange{ranges::begin(__r), ranges::end(__r)}
-	{
-	  if constexpr (_S_store_size)
-	    _M_size._M_size = ranges::size(__r);
-	}
+	{ }
 
       template<borrowed_range _Rng>
 	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
@@ -2032,7 +2038,10 @@ namespace views
 	    if constexpr (random_access_range<_Vp>)
 	      return ranges::begin(_M_base);
 	    else
-	      return counted_iterator{ranges::begin(_M_base), size()};
+	      {
+		auto __sz = size();
+		return counted_iterator{ranges::begin(_M_base), __sz};
+	      }
 	  }
 	else
 	  return counted_iterator{ranges::begin(_M_base), _M_count};
@@ -2046,7 +2055,10 @@ namespace views
 	    if constexpr (random_access_range<const _Vp>)
 	      return ranges::begin(_M_base);
 	    else
-	      return counted_iterator{ranges::begin(_M_base), size()};
+	      {
+		auto __sz = size();
+		return counted_iterator{ranges::begin(_M_base), __sz};
+	      }
 	  }
 	else
 	  return counted_iterator{ranges::begin(_M_base), _M_count};

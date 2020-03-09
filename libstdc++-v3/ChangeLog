@@ -1,3 +1,14 @@
+2020-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	LWG 3286 ranges::size is not required to be valid after a call to
+	ranges::begin on an input range
+	* include/std/ranges (subrange::subrange): Split single-argument
+	constructor into two, one constrained by _S_store_size and another by
+	!_S_store_size.
+	(take_view::begin): Call size() before calling ranges::begin(_M_base).
+	* testsuite/std/ranges/adaptors/lwg3286.cc: New test.
+	* testsuite/std/ranges/subrange/lwg3286.cc: New test.
+
 2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (split_view::_OuterIter::__at_end): Use __current
