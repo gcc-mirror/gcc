@@ -1,3 +1,13 @@
+2020-03-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Revert:
+
+	2020-02-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93564
+	* ira-color.c (assign_hard_reg): Prefer smaller hard regno when we
+	do not honor reg alloc order.
+
 2020-03-09  Andrew Pinski  <apinski@marvell.com>
 
 	PR inline-asm/94095
