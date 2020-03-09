@@ -1,3 +1,8 @@
+2020-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/93800
+	* gcc.target/powerpc/pr93800.c: New test.
+
 2020-03-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* g++.dg/coroutines/torture/co-ret-15-default-return_void.C: New.
