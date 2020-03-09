@@ -1,3 +1,11 @@
+2020-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94063
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Add kluge to
+	handle concatenations that change the type of the first component.
+	(path::operator+=(basic_string_view<value_type>)): Likewise.
+	* testsuite/27_io/filesystem/path/concat/94063.cc: New test.
+
 2020-03-06  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (join_view::_Sentinel<_Const>): Befriend
