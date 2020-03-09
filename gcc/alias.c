@@ -2005,6 +2005,9 @@ find_base_term (rtx x, vec<std::pair<cselib_val *,
       if (cselib_sp_based_value_p (val))
 	return static_reg_base_value[STACK_POINTER_REGNUM];
 
+      if (visited_vals.length () > (unsigned) param_max_find_base_term_values)
+	return ret;
+
       f = val->locs;
       /* Reset val->locs to avoid infinite recursion.  */
       if (f)
