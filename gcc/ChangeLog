@@ -1,3 +1,10 @@
+2020-03-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94052
+	* lra-constraints.c (simplify_operand_subreg): Reload the inner
+	register of a paradoxical subreg if simplify_subreg_regno fails
+	to give a valid hard register for the outer mode.
+
 2020-03-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/93435
