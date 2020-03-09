@@ -29304,9 +29304,9 @@ check_mergeable_specialization (bool decl_p, spec_entry *elt)
   return slot ? (*slot)->spec : NULL_TREE;
 }
 
-// FIXME: do we need to register the specialization on
-// DECL_TEMPLATE_SPECIALIZATIONS & DECL_TEMPLATE_INSTANTIATIONS?
-// Yes.  Yes we do.
+/* Lookup the specialization of TMPL,ARGS in the decl or type
+   specialization table.  Return what's there, or add SPEC and return
+   NULL.  */
 
 tree
 match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
@@ -29327,6 +29327,49 @@ match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
   *slot = entry;
 
   return NULL_TREE;
+}
+
+/* Return flags encoding whether SPEC is on the instantiation and/or
+   specialization lists of TMPL.  */
+
+unsigned
+get_mergeable_specialization_flags (tree tmpl, tree decl)
+{
+  unsigned flags = 0;
+
+  for (tree inst = DECL_TEMPLATE_INSTANTIATIONS (tmpl);
+       inst; inst = TREE_CHAIN (inst))
+    if (TREE_VALUE (inst) == decl)
+      {
+	flags |= 1;
+	break;
+      }
+  // FIXME: Only need to search if DECL is a partial specialization
+  for (tree part = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+       part; part = TREE_CHAIN (part))
+    if (TREE_VALUE (part) == decl)
+      {
+	flags |= 2;
+	break;
+      }
+
+  return flags;
+}
+
+void
+add_mergeable_specialization (tree tmpl, tree args, tree decl, unsigned flags)
+{
+  if (flags & 1)
+    DECL_TEMPLATE_INSTANTIATIONS (tmpl)
+      = tree_cons (args, decl, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
+
+  if (flags & 2)
+    {
+      DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
+	= tree_cons (args, decl, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+      TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (tmpl))
+	= TREE_TYPE (DECL_TEMPLATE_RESULT (decl));
+    }
 }
 
 /* Set up the hash tables for template instantiations.  */

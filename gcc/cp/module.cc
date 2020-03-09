@@ -9771,6 +9771,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
       tree_node (entry->tmpl);
       tree_node (entry->args);
+      if (streaming_p ())
+	u (get_mergeable_specialization_flags (entry->tmpl, decl));
 
       // FIXME:variable templates with concepts need constraints from
       // the specialization -- see spec_hasher::equal
@@ -10061,7 +10063,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
   if (mk & MK_template_mask)
     {
       tree tmpl = tree_node ();
-      tree spec = tree_node ();
+      tree args = tree_node ();
+      unsigned flags = u ();
 
       DECL_NAME (decl) = DECL_NAME (tmpl);
       DECL_CONTEXT (decl) = DECL_CONTEXT (tmpl);
@@ -10083,12 +10086,13 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  insert = type;
 	}
 
-      existing = match_mergeable_specialization (is_decl, tmpl, spec, insert);
+      existing = match_mergeable_specialization (is_decl, tmpl, args, insert);
 
       if (!existing)
 	{
 	  if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
 	    {} // FIXME: insert into type table
+	  add_mergeable_specialization (tmpl, args, decl, flags);
 	}
       else if (mk & MK_tmpl_decl_mask)
 	{
@@ -14205,14 +14209,6 @@ enum cluster_tag {
   ct_hwm
 };
 
-/* Declaration modifiers.  */
-enum ct_decl_flags 
-{
-  cdf_is_defn = 0x1,		/* Has a definition.  */
-  cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
-  cdf_is_partial = 0x4		/* A partial specialization.  */
-};
-
 /* Binding modifiers.  */
 enum ct_bind_flags
 {
@@ -14298,7 +14294,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     {
       depset *b = scc[ix];
       tree decl = b->get_entity ();
-      int flags = 0;
       switch (b->get_entity_kind ())
 	{
 	default:
@@ -14358,11 +14353,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
-	  flags |= cdf_is_specialization;
-	  if (b->is_partial ())
-	    flags |= cdf_is_partial;
-	  /* FALLTHROUGH.  */
-
 	case depset::EK_DECL:
 	  dump () && dump ("Depset:%u %s entity:%u %C:%N", ix,
 			   b->entity_kind_name (), b->cluster,
@@ -14370,7 +14360,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  sec.u (ct_decl);
 	  sec.tree_node (decl);
-	  sec.u (flags);
 
 	  dump () && dump ("Wrote declaration entity:%u %C:%N",
 			   b->cluster, TREE_CODE (decl), decl);
@@ -14420,39 +14409,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump () && dump ("Wrote section:%u named-by:%N", table.section, naming_decl);
 
   return bytes;
-}
-
-// FIXME: when DECL didn't go via match_mergeable_specialization we'll
-// need to add it to the hash table too.  */
-
-static void
-install_specialization (tree decl, bool is_partial)
-{
-  // FIXME: see note about most_general_template.  Perhaps we should
-  // be explicitly writing it?
-  int use;
-  tree args = NULL_TREE;
-  tree tpl = decl;
-  while (tree ti = node_template_info (tpl, use))
-    {
-      if (!args)
-	args = TI_ARGS (ti);
-      tpl = TI_TEMPLATE (ti);
-    }
-
-  if (is_partial)
-    {
-      /* Add onto DECL_TEMPLATE_SPECIALIZATIONS.  */
-      tree specs = tree_cons (args, decl, DECL_TEMPLATE_SPECIALIZATIONS (tpl));
-      TREE_TYPE (specs) = TREE_TYPE (DECL_TEMPLATE_RESULT (decl));
-      DECL_TEMPLATE_SPECIALIZATIONS (tpl) = specs;
-      dump (dumper::MERGE) &&
-	dump ("Adding partial specialization %N to %N", decl,
-	      TREE_TYPE (DECL_TEMPLATE_RESULT (tpl)));
-    }
-
-  /* Add onto DECL_TEMPLATE_INSTANTIATIONS.  */
-  // FIXME:do it
 }
 
 /* Read a cluster from section SNUM.  */
@@ -14578,15 +14534,6 @@ module_state::read_cluster (unsigned snum)
 	  {
 	    tree decl = sec.tree_node ();
 	    dump () && dump ("Read declaration of %N", decl);
-
-	    unsigned flags = sec.u ();
-
-	    if (sec.get_overrun ())
-	      break;
-	    // FIXME:Perhaps this also needs doing earlier -- see
-	    // entity_index handling in trees_in::decl_value
-	    if (flags & cdf_is_specialization)
-	      install_specialization (decl, flags & cdf_is_partial);
 	  }
 	  break;
 

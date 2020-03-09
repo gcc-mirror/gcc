@@ -1,3 +1,19 @@
+2020-03-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (get_mergeable_specialization_flags)
+	(add_mergeable_specialization): Declare.
+	* module.cc (trees_{in,out}::key_mergeable): Stream specialization
+	flags and add them as necessary.
+	(enum ct_decl_flags): Delete.
+	(module_state::{read,write}_cluster): No decl flags.
+	(install_specialization): Delete.
+	* pt.c (get_mergeable_specialization_flags): New.
+	(add_mergeable_specialization): New.
+	gcc/testsuite/
+	* g++.dg/modules/partial-1{,_[ab]}.[hHC]: New.
+	* g++.dg/modules/tpl-spec-5_b.C: Adjust scan.
+
 2020-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

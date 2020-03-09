@@ -15,4 +15,3 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to TPL\[0\] '::template X@TPL:.'} module } }
-// { dg-final { scan-lang-dump {Adding partial specialization '::template X@TPL:.<T,0x1>' to '::template X@TPL:.<T,#unnamed#>'} module } }
