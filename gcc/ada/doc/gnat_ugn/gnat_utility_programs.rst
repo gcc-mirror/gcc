@@ -2338,11 +2338,11 @@ Alternatively, you may run the script using the following command line:
     Do not report the number of public subprograms with complete contracts
 
 
-  :switch:`--contract-all`
+  :switch:`--contract-cyclomatic`
     Report the McCabe complexity of public subprograms
 
 
-  :switch:`--no-contract-all`
+  :switch:`--no-contract-cyclomatic`
     Do not report the McCabe complexity of public subprograms
 
 
