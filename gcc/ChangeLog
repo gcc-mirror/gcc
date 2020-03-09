@@ -1,3 +1,9 @@
+2020-03-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR inline-asm/94095
+	* doc/extend.texi (x86 Operand Modifiers): Fix column
+	for 'A' modifier.
+
 2020-03-09  Martin Liska  <mliska@suse.cz>
 
 	PR target/93800

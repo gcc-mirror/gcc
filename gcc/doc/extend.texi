@@ -10437,7 +10437,7 @@ The table below shows the list of supported modifiers and their effects.
 
 @multitable {Modifier} {Print the opcode suffix for the size of th} {Operand} {@samp{att}} {@samp{intel}}
 @headitem Modifier @tab Description @tab Operand @tab @samp{att} @tab @samp{intel}
-@item @code{a}
+@item @code{A}
 @tab Print an absolute memory reference.
 @tab @code{%A0}
 @tab @code{*%rax}
