@@ -1,3 +1,7 @@
+2020-03-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/fuse-caller-save.c: Fix DejaGnu typo.
+
 2020-03-09  Martin Liska  <mliska@suse.cz>
 
 	PR target/93800

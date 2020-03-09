@@ -22,4 +22,4 @@ main (void)
 
 /* For thumb1, r3 is considered likely spilled, and treated differently in
    ira_build_conflicts, which inhibits the fipa-ra optimization.  */
-/* { dg-final { scan-assembler-times "mov\tr[123], r0" 1 { target { ! arm_thumb1 } } } } */
+/* { dg-final { scan-assembler-times "mov\tr\[123\], r0" 1 { target { ! arm_thumb1 } } } } */
