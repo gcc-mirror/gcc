@@ -1,3 +1,12 @@
+2020-03-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from master
+	2020-03-09  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR testsuite/94023
+	* gcc.dg/vect/slp-perm-12.c: Expect loop vectorized messages only on
+	vect_hw_misalign targets.
+
 2020-03-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backport from master
