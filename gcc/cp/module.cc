@@ -6791,7 +6791,8 @@ trees_out::tree_node_bools (tree t)
   gcc_checking_assert (streaming_p ());
 
   /* We should never stream a namespace.  */
-  gcc_checking_assert (TREE_CODE (t) != NAMESPACE_DECL);
+  gcc_checking_assert (TREE_CODE (t) != NAMESPACE_DECL
+		       || DECL_NAMESPACE_ALIAS (t));
 
   core_bools (t);
 
@@ -11564,10 +11565,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  if (!TREE_PUBLIC (ctx))
 	    /* Member of internal namespace.  */
 	    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-	  else if (TREE_CODE (not_tmpl) != TYPE_DECL
-		   && TREE_CODE (not_tmpl) != CONST_DECL
-		   // FIXME:Should CONCEPT_DECL allow DECL_THIS_STATIC?
-		   && TREE_CODE (not_tmpl) != CONCEPT_DECL
+	  else if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
+		    || TREE_CODE (not_tmpl) == VAR_DECL)
 		   && DECL_THIS_STATIC (not_tmpl))
 	    {
 	      /* An internal decl.  In global module permit
@@ -11834,14 +11833,12 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
   while (bindings.length ())
     {
       tree value = bindings.pop ();
-      if (TREE_CODE (value) != NAMESPACE_DECL)
+      if (TREE_CODE (value) != NAMESPACE_DECL
+	  || DECL_NAMESPACE_ALIAS (value))
 	{
 	  if (add_binding (ns, value))
 	    count++;
 	}
-      else if (DECL_NAMESPACE_ALIAS (value))
-	// FIXME: Not sure what to do with namespace aliases
-	gcc_unreachable ();
       else if (DECL_NAME (value))
 	{
 	  gcc_checking_assert (TREE_PUBLIC (value));
@@ -17928,7 +17925,9 @@ set_instantiating_module (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      || TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == TYPE_DECL
-	      || TREE_CODE (decl) == CONCEPT_DECL);
+	      || TREE_CODE (decl) == CONCEPT_DECL
+	      || (TREE_CODE (decl) == NAMESPACE_DECL
+		  && DECL_NAMESPACE_ALIAS (decl)));
 
   if (!modules_p ())
     return;
