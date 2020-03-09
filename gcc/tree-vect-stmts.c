@@ -9937,8 +9937,12 @@ vectorizable_condition (vec_info *vinfo,
 	{
 	  vec_cond_rhs = vec_oprnds1[i];
 	  if (bitop1 == NOP_EXPR)
-	    vec_compare = build2 (cond_code, vec_cmp_type,
-				  vec_cond_lhs, vec_cond_rhs);
+	    {
+	      gimple_seq stmts = NULL;
+	      vec_compare = gimple_build (&stmts, cond_code, vec_cmp_type,
+					   vec_cond_lhs, vec_cond_rhs);
+	      gsi_insert_before (gsi, stmts, GSI_SAME_STMT);
+	    }
 	  else
 	    {
 	      new_temp = make_ssa_name (vec_cmp_type);

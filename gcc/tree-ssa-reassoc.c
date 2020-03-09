@@ -3831,7 +3831,8 @@ optimize_range_tests (enum tree_code opcode,
    to type of comparison.  */
 
 static tree_code
-ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
+ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type,
+		  tree *lhs, tree *rhs, gassign **vcond)
 {
   if (TREE_CODE (var) != SSA_NAME)
     return ERROR_MARK;
@@ -3839,6 +3840,8 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
   gassign *stmt = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (var));
   if (stmt == NULL)
     return ERROR_MARK;
+  if (*vcond)
+    *vcond = stmt;
 
   /* ??? If we start creating more COND_EXPR, we could perform
      this same optimization with them.	For now, simplify.  */
@@ -3847,8 +3850,19 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
 
   tree cond = gimple_assign_rhs1 (stmt);
   tree_code cmp = TREE_CODE (cond);
-  if (TREE_CODE_CLASS (cmp) != tcc_comparison)
+  if (cmp != SSA_NAME)
     return ERROR_MARK;
+
+  gassign *assign = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (cond));
+  if (stmt == NULL
+      || TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) != tcc_comparison)
+    return ERROR_MARK;
+
+  cmp = gimple_assign_rhs_code (assign);
+  if (lhs)
+    *lhs = gimple_assign_rhs1 (assign);
+  if (rhs)
+    *rhs = gimple_assign_rhs2 (assign);
 
   /* ??? For now, allow only canonical true and false result vectors.
      We could expand this to other constants should the need arise,
@@ -3870,7 +3884,7 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
 
   /* Success!  */
   if (rets)
-    *rets = stmt;
+    *rets = assign;
   if (reti)
     *reti = inv;
   if (type)
@@ -3894,10 +3908,11 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
     {
       tree elt0 = (*ops)[i]->op;
 
-      gassign *stmt0;
+      gassign *stmt0, *vcond0;
       bool invert;
-      tree type;
-      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert, &type);
+      tree type, lhs0, rhs0;
+      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert, &type, &lhs0,
+					 &rhs0, &vcond0);
       if (cmp0 == ERROR_MARK)
 	continue;
 
@@ -3905,26 +3920,20 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	{
 	  tree &elt1 = (*ops)[j]->op;
 
-	  gassign *stmt1;
-	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL, NULL);
+	  gassign *stmt1, *vcond1;
+	  tree lhs1, rhs1;
+	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL, NULL, &lhs1,
+					     &rhs1, &vcond1);
 	  if (cmp1 == ERROR_MARK)
 	    continue;
 
-	  tree cond0 = gimple_assign_rhs1 (stmt0);
-	  tree x0 = TREE_OPERAND (cond0, 0);
-	  tree y0 = TREE_OPERAND (cond0, 1);
-
-	  tree cond1 = gimple_assign_rhs1 (stmt1);
-	  tree x1 = TREE_OPERAND (cond1, 0);
-	  tree y1 = TREE_OPERAND (cond1, 1);
-
 	  tree comb;
 	  if (opcode == BIT_AND_EXPR)
-	    comb = maybe_fold_and_comparisons (type, cmp0, x0, y0, cmp1, x1,
-					       y1);
+	    comb = maybe_fold_and_comparisons (type, cmp0, lhs0, rhs0,
+					       cmp1, lhs1, rhs1);
 	  else if (opcode == BIT_IOR_EXPR)
-	    comb = maybe_fold_or_comparisons (type, cmp0, x0, y0, cmp1, x1,
-					      y1);
+	    comb = maybe_fold_or_comparisons (type, cmp0, lhs0, rhs0,
+					      cmp1, lhs1, rhs1);
 	  else
 	    gcc_unreachable ();
 	  if (comb == NULL)
@@ -3934,19 +3943,22 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Transforming ");
-	      print_generic_expr (dump_file, cond0);
+	      print_generic_expr (dump_file, gimple_assign_lhs (stmt0));
 	      fprintf (dump_file, " %c ", opcode == BIT_AND_EXPR ? '&' : '|');
-	      print_generic_expr (dump_file, cond1);
+	      print_generic_expr (dump_file, gimple_assign_lhs (stmt1));
 	      fprintf (dump_file, " into ");
 	      print_generic_expr (dump_file, comb);
 	      fputc ('\n', dump_file);
 	    }
 
-	  gimple_assign_set_rhs1 (stmt0, comb);
+	  gimple_stmt_iterator gsi = gsi_for_stmt (vcond0);
+	  tree exp = force_gimple_operand_gsi (&gsi, comb, true, NULL_TREE,
+					       true, GSI_SAME_STMT);
 	  if (invert)
-	    std::swap (*gimple_assign_rhs2_ptr (stmt0),
-		       *gimple_assign_rhs3_ptr (stmt0));
-	  update_stmt (stmt0);
+	    swap_ssa_operands (vcond0, gimple_assign_rhs2_ptr (vcond0),
+			       gimple_assign_rhs3_ptr (vcond0));
+	  gimple_assign_set_rhs1 (vcond0, exp);
+	  update_stmt (vcond0);
 
 	  elt1 = error_mark_node;
 	  any_changes = true;
