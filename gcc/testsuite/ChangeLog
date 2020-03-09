@@ -1,3 +1,8 @@
+2020-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94067
+	* g++.dg/warn/Wconversion-pr94067.C: New test.
+
 2020-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94050 - ABI issue with alignas on armv7hl.
