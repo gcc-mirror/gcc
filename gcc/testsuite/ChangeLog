@@ -3,6 +3,15 @@
 	Backport from master
 	2020-03-09  Kewen Lin  <linkw@gcc.gnu.org>
 
+	PR testsuite/94019
+	* gcc.dg/vect/vect-over-widen-17.c: Don't expect vector char if it's
+	without misaligned vector access support.
+
+2020-03-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from master
+	2020-03-09  Kewen Lin  <linkw@gcc.gnu.org>
+
 	PR testsuite/94023
 	* gcc.dg/vect/slp-perm-12.c: Expect loop vectorized messages only on
 	vect_hw_misalign targets.

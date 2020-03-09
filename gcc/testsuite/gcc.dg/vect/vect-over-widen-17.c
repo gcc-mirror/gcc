@@ -41,6 +41,9 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-not {vect_recog_over_widening_pattern: detected} "vect" } } */
-/* { dg-final { scan-tree-dump-not {vector[^\n]*char} "vect" } } */
+/* On Power, if there is no vect_hw_misalign support, unaligned vector access
+   adopts realign_load scheme.  It requires rs6000_builtin_mask_for_load to
+   generate mask whose return type is vector char.  */
+/* { dg-final { scan-tree-dump-not {vector[^\n]*char} "vect" { target vect_hw_misalign } } } */
 /* { dg-final { scan-tree-dump-not {vector[^ ]* int} "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loop" 1 "vect" } } */
