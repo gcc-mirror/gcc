@@ -1,3 +1,9 @@
+2020-03-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (build_actor_fn): Factor out code inserting the
+	default return_void call to...
+	(morph_fn_to_coro): ...here, also hoist local var declarations.
+
 2020-03-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93729

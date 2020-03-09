@@ -2161,21 +2161,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   r = coro_build_expr_stmt (initial_await, loc);
   add_stmt (r);
 
-  /* Now we've built the promise etc, process fnbody for co_returns.
-     We want the call to return_void () below and it has no params so
-     we can create it once here.
-     Calls to return_value () will have to be checked and created as
-     required.  */
-
-  tree return_void = NULL_TREE;
-  tree rvm
-    = lookup_promise_method (orig, coro_return_void_identifier, loc,
-			     /*musthave=*/false);
-  if (rvm && rvm != error_mark_node)
-    return_void
-      = build_new_method_call (ap, rvm, NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
-			       tf_warning_or_error);
-
   /* co_return branches to the final_suspend label, so declare that now.  */
   tree fs_label = create_named_label_with_ctx (loc, "final.suspend", actor);
 
@@ -2189,15 +2174,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* Add in our function body with the co_returns rewritten to final form.  */
   add_stmt (fnbody);
-
-  /* [stmt.return.coroutine] (2.2 : 3) if p.return_void() is a valid
-     expression, flowing off the end of a coroutine is equivalent to
-     co_return; otherwise UB.
-     We just inject the call to p.return_void() here, and fall through to
-     the final_suspend: label (eliding the goto).  If the function body has
-     a co_return, then this statement will be unreachable and DCEd.  */
-  if (return_void != NULL_TREE)
-    add_stmt (return_void);
 
   /* Final suspend starts here.  */
   r = build_stmt (loc, LABEL_EXPR, fs_label);
@@ -3815,18 +3791,48 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       BIND_EXPR_BLOCK (first) = replace_blk;
     }
 
+  /* actor's version of the promise.  */
+  tree actor_frame = build1_loc (fn_start, INDIRECT_REF, coro_frame_type,
+				 DECL_ARGUMENTS (actor));
+  tree ap_m = lookup_member (coro_frame_type, get_identifier ("__p"), 1, 0,
+			     tf_warning_or_error);
+  tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE,
+					    false, tf_warning_or_error);
+
+  /* Now we've built the promise etc, process fnbody for co_returns.
+     We want the call to return_void () below and it has no params so
+     we can create it once here.
+     Calls to return_value () will have to be checked and created as
+     required.  */
+
+  tree return_void = NULL_TREE;
+  tree rvm
+    = lookup_promise_method (orig, coro_return_void_identifier, fn_start,
+			     /*musthave=*/false);
+  if (rvm && rvm != error_mark_node)
+    return_void
+      = build_new_method_call (ap, rvm, NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
+			       tf_warning_or_error);
+
+  /* [stmt.return.coroutine] (2.2 : 3) if p.return_void() is a valid
+     expression, flowing off the end of a coroutine is equivalent to
+     co_return; otherwise UB.
+     We just inject the call to p.return_void() here, and fall through to
+     the final_suspend: label (eliding the goto).  If the function body has
+     a co_return, then this statement will be unreachable and DCEd.  */
+  if (return_void != NULL_TREE)
+    {
+      tree append = push_stmt_list ();
+      add_stmt (fnbody);
+      add_stmt (return_void);
+      fnbody = pop_stmt_list(append);
+    }
+
   if (flag_exceptions)
     {
       tree ueh_meth
 	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
 				 fn_start, /*musthave=*/true);
-      /* actor's version of the promise.  */
-      tree actor_frame = build1_loc (fn_start, INDIRECT_REF, coro_frame_type,
-				     DECL_ARGUMENTS (actor));
-      tree ap_m = lookup_member (coro_frame_type, get_identifier ("__p"), 1, 0,
-				 tf_warning_or_error);
-      tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE,
-						false, tf_warning_or_error);
       /* Build promise.unhandled_exception();  */
       tree ueh
 	= build_new_method_call (ap, ueh_meth, NULL, NULL_TREE, LOOKUP_NORMAL,
