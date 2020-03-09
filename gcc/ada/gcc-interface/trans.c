@@ -242,8 +242,6 @@ static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree pos_to_constructor (Node_Id, tree);
 static void validate_unchecked_conversion (Node_Id);
-static Node_Id adjust_for_implicit_deref (Node_Id);
-static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id, bool = false);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
 static bool set_end_locus_from_node (tree, Node_Id);
@@ -2089,8 +2087,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	Entity_Id gnat_param = Empty;
 	bool unconstrained_ptr_deref = false;
 
-	/* Make sure any implicit dereference gets done.  */
-	gnu_prefix = maybe_implicit_deref (gnu_prefix);
+	gnu_prefix = maybe_padded_object (gnu_prefix);
 	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
 
 	/* We treat unconstrained array In parameters specially.  We also note
@@ -2455,7 +2452,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       break;
 
     case Attr_Component_Size:
-      gnu_prefix = maybe_implicit_deref (gnu_prefix);
+      gnu_prefix = maybe_padded_object (gnu_prefix);
       gnu_type = TREE_TYPE (gnu_prefix);
 
       if (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
@@ -4853,7 +4850,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 subprogram.  */
       else if (is_true_formal_parm && DECL_BY_COMPONENT_PTR_P (gnu_formal))
 	{
-	  gnu_actual = maybe_implicit_deref (gnu_actual);
+	  gnu_actual = maybe_padded_object (gnu_actual);
 	  gnu_actual = maybe_unconstrained_array (gnu_actual);
 
 	  /* Take the address of the object and convert to the proper pointer
@@ -4901,7 +4898,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* Arrays are passed as pointers to element type.  */
 	  if (mech != By_Copy && TREE_CODE (gnu_formal_type) == ARRAY_TYPE)
 	    {
-	      gnu_actual = maybe_implicit_deref (gnu_actual);
+	      gnu_actual = maybe_padded_object (gnu_actual);
 	      gnu_actual = maybe_unconstrained_array (gnu_actual);
 
 	      /* Strip off any multi-dimensional entries, then strip
@@ -6644,14 +6641,12 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Indexed_Component:
       {
-	tree gnu_array_object
-	  = gnat_to_gnu (adjust_for_implicit_deref (Prefix (gnat_node)));
+	tree gnu_array_object = gnat_to_gnu ((Prefix (gnat_node)));
 	tree gnu_type;
-	int ndim;
-	int i;
+	int ndim, i;
 	Node_Id *gnat_expr_array;
 
-	gnu_array_object = maybe_implicit_deref (gnu_array_object);
+	gnu_array_object = maybe_padded_object (gnu_array_object);
 	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 
 	/* Convert vector inputs to their representative array type, to fit
@@ -6715,12 +6710,11 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Slice:
       {
-	tree gnu_array_object
-	  = gnat_to_gnu (adjust_for_implicit_deref (Prefix (gnat_node)));
+	tree gnu_array_object = gnat_to_gnu (Prefix (gnat_node));
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-	gnu_array_object = maybe_implicit_deref (gnu_array_object);
+	gnu_array_object = maybe_padded_object (gnu_array_object);
 	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 
 	gnu_expr = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_result_type));
@@ -6740,12 +6734,11 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Selected_Component:
       {
-	Entity_Id gnat_prefix
-	  = adjust_for_implicit_deref (Prefix (gnat_node));
+	const Entity_Id gnat_prefix = Prefix (gnat_node);
 	Entity_Id gnat_field = Entity (Selector_Name (gnat_node));
 	tree gnu_prefix = gnat_to_gnu (gnat_prefix);
 
-	gnu_prefix = maybe_implicit_deref (gnu_prefix);
+	gnu_prefix = maybe_padded_object (gnu_prefix);
 
 	/* gnat_to_gnu_entity does not save the GNU tree made for renamed
 	   discriminants so avoid making recursive calls on each reference
@@ -7209,7 +7202,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_type = gnat_to_gnu_type (Entity (gnat_temp));
 	else if (Nkind (gnat_temp) == N_Qualified_Expression)
 	  {
-	    Entity_Id gnat_desig_type
+	    const Entity_Id gnat_desig_type
 	      = Designated_Type (Underlying_Type (Etype (gnat_node)));
 
 	    ignore_init_type = Has_Constrained_Partial_View (gnat_desig_type);
@@ -8063,12 +8056,21 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Free_Statement:
+      gnat_temp = Expression (gnat_node);
+
       if (!type_annotate_only)
 	{
-	  tree gnu_ptr
-	    = gnat_to_gnu (adjust_for_implicit_deref (Expression (gnat_node)));
-	  tree gnu_ptr_type = TREE_TYPE (gnu_ptr);
-	  tree gnu_obj_type, gnu_actual_obj_type;
+	  tree gnu_ptr, gnu_ptr_type, gnu_obj_type, gnu_actual_obj_type;
+
+	  const Entity_Id gnat_desig_type
+	    = Designated_Type (Underlying_Type (Etype (gnat_temp)));
+
+	  /* Make sure the designated type is complete before dereferencing,
+	     in case it is a Taft Amendment type.  */
+	  (void) gnat_to_gnu_entity (gnat_desig_type, NULL_TREE, false);
+
+	  gnu_ptr = gnat_to_gnu (gnat_temp);
+	  gnu_ptr_type = TREE_TYPE (gnu_ptr);
 
 	  /* If this is a thin pointer, we must first dereference it to create
 	     a fat pointer, then go back below to a thin pointer.  The reason
@@ -10233,38 +10235,6 @@ validate_unchecked_conversion (Node_Id gnat_node)
 		      gnat_node);
 	}
     }
-}
-
-/* EXP is to be used in a context where access objects are implicitly
-   dereferenced.  Handle the cases when it is an access object.  */
-
-static Node_Id
-adjust_for_implicit_deref (Node_Id exp)
-{
-  Entity_Id type = Underlying_Type (Etype (exp));
-
-  /* Make sure the designated type is complete before dereferencing.  */
-  if (Is_Access_Type (type))
-    gnat_to_gnu_entity (Designated_Type (type), NULL_TREE, false);
-
-  return exp;
-}
-
-/* EXP is to be treated as an array or record.  Handle the cases when it is
-   an access object and perform the required dereferences.  */
-
-static tree
-maybe_implicit_deref (tree exp)
-{
-  /* If the object is a pointer, dereference it.  */
-  if (POINTER_TYPE_P (TREE_TYPE (exp))
-      || TYPE_IS_FAT_POINTER_P (TREE_TYPE (exp)))
-    exp = build_unary_op (INDIRECT_REF, NULL_TREE, exp);
-
-  /* If the object is padded, remove the padding.  */
-  exp = maybe_padded_object (exp);
-
-  return exp;
 }
 
 /* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a
