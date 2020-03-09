@@ -1,3 +1,8 @@
+2020-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac: Build libgomp by default for amdgcn.
+	* configure: Regenerate.
+
 2020-03-05  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

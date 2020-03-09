@@ -512,7 +512,7 @@ if test x$enable_libgomp = x ; then
 	;;
     *-*-darwin* | *-*-aix*)
 	;;
-    nvptx*-*-*)
+    nvptx*-*-* | amdgcn*-*-*)
 	;;
     *)
 	noconfigdirs="$noconfigdirs target-libgomp"
