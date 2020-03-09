@@ -1,3 +1,10 @@
+2020-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94045
+	* params.opt (-param=max-find-base-term-values=): New option.
+	* alias.c (find_base_term): Add cut-off for number of visited VALUEs
+	in a single toplevel find_base_term call.
+
 2020-03-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/91598
