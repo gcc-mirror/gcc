@@ -1,3 +1,7 @@
+2020-03-09  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in (pgs): Fix typo in documentation.
+
 2020-03-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Revert:
