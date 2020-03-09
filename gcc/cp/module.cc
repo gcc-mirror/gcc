@@ -2877,6 +2877,7 @@ private:
 
 private:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
+  vec<tree, va_heap> *vec_chained_decls ();
   vec<tree, va_gc> *tree_vec (); /* vec of tree.  */
   vec<tree_pair_s, va_gc> *tree_pair_vec (); /* vec of tree_pair.  */
 
@@ -3014,6 +3015,7 @@ private:
 
 private:
   void chained_decls (tree);
+  void vec_chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
 
@@ -3989,6 +3991,7 @@ import_entity_module (unsigned index)
   gcc_unreachable ();
 }
 
+
 /********************************************************************/
 /* A dumping machinery.  */
 
@@ -4860,6 +4863,54 @@ trees_in::chained_decls ()
       }
 
   return decls;
+}
+
+/* A vector of decls following DECL_CHAIN.  */
+
+void
+trees_out::vec_chained_decls (tree decls)
+{
+  if (streaming_p ())
+    {
+      unsigned len = 0;
+
+      for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
+	len++;
+      u (len);
+    }
+
+  for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
+    tree_node (decl);
+}
+
+vec<tree, va_heap> *
+trees_in::vec_chained_decls ()
+{
+  vec<tree, va_heap> *v = NULL;
+
+  if (unsigned len = u ())
+    {
+      vec_alloc (v, len);
+
+      for (unsigned ix = 0; ix < len; ix++)
+	{
+	  tree decl = tree_node ();
+	  if (!decl || !DECL_P (decl))
+	    {
+	      set_overrun ();
+	      break;
+	    }
+	  v->quick_push (decl);
+	}
+
+      if (get_overrun ())
+	{
+	  vec_free (v);
+	  v = NULL;
+	}
+    }
+
+  return v;
 }
 
 /* A vector of trees.  */
@@ -5796,6 +5847,9 @@ trees_out::core_vals (tree t)
 	}
 
       WT (t->decl_common.attributes);
+      // FIXME: Check this doesn't introduce cross-decl links,  for
+      // instance from instantiation to the template.  If so, we'll
+      // need more deduplication logic
       WT (t->decl_common.abstract_origin);
     }
 
@@ -5964,6 +6018,7 @@ trees_out::core_vals (tree t)
       /* nonlocalized_vars is a middle-end thing.  */
       WT (t->block.subblocks);
       WT (t->block.supercontext);
+      // FIXME: Same as for decl's abstract_origin
       WT (t->block.abstract_origin);
       /* fragment_origin, fragment_chain are middle-end things.  */
       WT (t->block.chain);
@@ -9867,6 +9922,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	case MK_field:
 	  // FIXME: Much like tt_data_member -- commonize?
 	  // lookup named FIELD_DECLs by name, not iteration
+	  // FIXME: Probably need to ignore implicit member fns as
+	  // their presence and location is unstable
 	  {
 	    unsigned ix = 0;
 	    if (TREE_CODE (inner) != FIELD_DECL)
@@ -10744,10 +10801,7 @@ trees_out::write_class_def (tree defn)
   tree_node (TYPE_VFIELD (type));
   tree_node (TYPE_BINFO (type));
 
-  /* Write the fields.  */
-  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-    tree_node (field);
-  tree_node (NULL_TREE);
+  vec_chained_decls (TYPE_FIELDS (type));
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -10796,9 +10850,10 @@ trees_out::write_class_def (tree defn)
       if (as_base)
 	as_base = TYPE_NAME (as_base);
       tree_node (as_base);
+
+      /* Write the vtables.  */
       tree vtables = CLASSTYPE_VTABLES (type);
-      chained_decls (vtables);
-      /* Write the vtable initializers.  */
+      vec_chained_decls (vtables);
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	write_definition (vtables);
 
@@ -10847,7 +10902,7 @@ trees_out::write_class_def (tree defn)
 		&& DECL_THUNKS (decls))
 	      {
 		tree_node (decls);
-		// FIXME: perhaps not chained here?
+		/* Thunks are always unique, so chaining is ok.  */
 		chained_decls (DECL_THUNKS (decls));
 	      }
 	  tree_node (NULL_TREE);
@@ -10930,10 +10985,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   tree lambda = NULL_TREE;
 
   /* Read the fields.  */
-  vec<tree> fields;
-  fields.create (50);
-  while (tree field = tree_node ())
-    fields.safe_push (field);
+  vec<tree, va_heap> *fields = vec_chained_decls ();
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -10942,6 +10994,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  vec_alloc (member_vec, len);
 	  for (unsigned ix = 0; ix != len; ix++)
 	    {
+if (get_overrun ())
+break;
 	      tree m = tree_node ();
 	      if (TYPE_P (m))
 		m = TYPE_NAME (m);
@@ -11021,17 +11075,18 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       TYPE_SIZE (type) = size;
       TYPE_SIZE_UNIT (type) = size_unit;
 
-      tree *chain = &TYPE_FIELDS (type);
-      for (unsigned ix = 0; ix != fields.length (); ix++)
+      if (fields)
 	{
-	  tree field = fields[ix];
+	  tree *chain = &TYPE_FIELDS (type);
+	  unsigned len = fields->length ();
+	  for (unsigned ix = 0; ix != len; ix++)
+	    {
+	      tree decl = (*fields)[ix];
 
-	  gcc_checking_assert (DECL_CHAIN (field)
-			       == (ix + 1 < fields.length ()
-				   && DECL_CLONED_FUNCTION_P (fields[ix+1])
-				   ? fields[ix+1] : NULL_TREE));
-	  *chain = field;
-	  chain = &DECL_CHAIN (field);
+	      gcc_checking_assert (!*chain == !DECL_CLONED_FUNCTION_P (decl));
+	      *chain = decl;
+	      chain = &DECL_CHAIN (decl);
+	    }
 	}
 
       TYPE_VFIELD (type) = vfield;
@@ -11068,9 +11123,16 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	as_base = TREE_TYPE (as_base);
 
       /* Read the vtables.  */
-      tree vtables = chained_decls ();
-      for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
-	read_var_def (vt, vt);
+      vec<tree, va_heap> *vtables = vec_chained_decls ();
+      if (vtables)
+	{
+	  unsigned len = vtables->length ();
+	  for (unsigned ix = 0; ix != len; ix++)
+	    {
+	      tree vtable = (*vtables)[ix];
+	      read_var_def (vtable, vtable);
+	    }
+	}
 
       // FIXME: We should be able to reverse the lists in the writer
       tree friend_classes = NULL_TREE;
@@ -11101,9 +11163,21 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	{
 	  CLASSTYPE_PRIMARY_BINFO (type) = primary;
 	  CLASSTYPE_AS_BASE (type) = as_base;
-	  if (!CLASSTYPE_KEY_METHOD (type) && vtables)
-	    vec_safe_push (keyed_classes, type);
-	  CLASSTYPE_VTABLES (type) = vtables;
+
+	  if (vtables)
+	    {
+	      if (!CLASSTYPE_KEY_METHOD (type))
+		vec_safe_push (keyed_classes, type);
+	      unsigned len = vtables->length ();
+	      tree *chain = &CLASSTYPE_VTABLES (type);
+	      for (unsigned ix = 0; ix != len; ix++)
+		{
+		  tree vtable = (*vtables)[ix];
+		  gcc_checking_assert (!*chain);
+		  *chain = vtable;
+		  chain = &DECL_CHAIN (vtable);
+		}
+	    }
 	  CLASSTYPE_FRIEND_CLASSES (type) = friend_classes;
 	  DECL_FRIENDLIST (defn) = friend_functions;
 	  CLASSTYPE_DECL_LIST (type) = decl_list;
@@ -11144,6 +11218,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	    if (installing)
 	      SET_DECL_THUNKS (vfunc, thunks);
 	  }
+
+      vec_free (vtables);
     }
 
   /* Propagate to all variants.  */
@@ -11161,7 +11237,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
        already emitted this.  */
     rest_of_type_compilation (type, !LOCAL_CLASS_P (type));
 
-  fields.release ();
+  vec_free (fields);
 
   return !get_overrun ();
 }

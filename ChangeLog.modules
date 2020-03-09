@@ -1,6 +1,12 @@
 2020-03-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::vec_chained_decls): New.
+	(trees_{in,out}::{read,write}_class_def): Use for fields and vtables.
+	gcc/testsuite/
+	* g++.dg/modules/vtt-2{,_[ab]}.[hHC]: New.
+
+	gcc/cp/
 	* cp-tree.h (get_mergeable_specialization_flags)
 	(add_mergeable_specialization): Declare.
 	* module.cc (trees_{in,out}::key_mergeable): Stream specialization
