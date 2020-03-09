@@ -1,5 +1,14 @@
 2020-03-09  Nathan Sidwell  <nathan@acm.org>
 
+	Function-scope using directives
+	gcc/cp/
+	* cp-gimplify.c (cp_genericize_r): Set DECL_CONTEXT of
+	IMPORTED_DECL.
+	* module.cc (trees_{in.out}::core_vals): Stream IMPORTED_DECL's
+	initial.
+	(trees_out::decl_node): IMPORTED_DECLs are always by value.
+
+	Namespace aliases
 	gcc/cp/
 	* name-lookup.c (do_namespace_alias): Set originating module.
 	* module.cc (trees_out::tree_node_bools): Allow namespace aliases.

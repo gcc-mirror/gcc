@@ -5969,6 +5969,7 @@ trees_out::core_vals (tree t)
       /* FALLTHROUGH  */
 
     case CONST_DECL:
+    case IMPORTED_DECL:
       WT (t->decl_common.initial);
       break;
 
@@ -6404,6 +6405,7 @@ trees_in::core_vals (tree t)
       /* FALLTHROUGH  */
 
     case CONST_DECL:
+    case IMPORTED_DECL:
       RT (t->decl_common.initial);
       break;
 
@@ -7934,6 +7936,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  }
       }
       return false;
+
+    case IMPORTED_DECL:
+      return true;
 
     case LABEL_DECL:
       return true;

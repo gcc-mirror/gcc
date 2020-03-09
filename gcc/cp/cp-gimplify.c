@@ -1488,6 +1488,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      {
 		tree using_directive = make_node (IMPORTED_DECL);
 		TREE_TYPE (using_directive) = void_type_node;
+		DECL_CONTEXT (using_directive) = current_function_decl;
 
 		IMPORTED_DECL_ASSOCIATED_DECL (using_directive) = decl;
 		DECL_CHAIN (using_directive) = BLOCK_VARS (block);
