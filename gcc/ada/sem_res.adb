@@ -6141,26 +6141,6 @@ package body Sem_Res is
          end loop;
       end if;
 
-      if Is_Access_Subprogram_Type (Base_Type (Etype (Nam)))
-        and then not Is_Access_Subprogram_Type (Base_Type (Typ))
-        and then Nkind (Subp) /= N_Explicit_Dereference
-        and then Present (Parameter_Associations (N))
-      then
-         --  The prefix is a parameterless function call that returns an access
-         --  to subprogram. If parameters are present in the current call, add
-         --  add an explicit dereference. We use the base type here because
-         --  within an instance these may be subtypes.
-
-         --  The dereference is added either in Analyze_Call or here. Should
-         --  be consolidated ???
-
-         Set_Is_Overloaded (Subp, False);
-         Set_Etype (Subp, Etype (Nam));
-         Insert_Explicit_Dereference (Subp);
-         Nam := Designated_Type (Etype (Nam));
-         Resolve (Subp, Nam);
-      end if;
-
       --  Check that a call to Current_Task does not occur in an entry body
 
       if Is_RTE (Nam, RE_Current_Task) then

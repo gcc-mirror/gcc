@@ -1176,8 +1176,7 @@ package body Sem_Ch4 is
          --  type is an array, F (X) cannot be interpreted as an indirect call
          --  through the result of the call to F.
 
-         elsif Is_Access_Type (Etype (Nam))
-           and then Ekind (Designated_Type (Etype (Nam))) = E_Subprogram_Type
+         elsif Is_Access_Subprogram_Type (Base_Type (Etype (Nam)))
            and then
              (not Name_Denotes_Function
                or else Nkind (N) = N_Procedure_Call_Statement
