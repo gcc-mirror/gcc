@@ -1,3 +1,8 @@
+2020-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94088
+	* gcc.target/i386/pr94088.c: New test.
+
 2020-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92031 - bogus taking address of rvalue error.
