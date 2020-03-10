@@ -1,3 +1,12 @@
+2020-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93922
+	PR c++/94041
+	PR c++/52320
+	PR c++/66139
+	* cp-gimplify.c (cp_gimplify_init_expr): Partially revert patch for
+	66139: Don't split_nonconstant_init.  Remove pre_p parameter.
+
 2020-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92031 - bogus taking address of rvalue error.
