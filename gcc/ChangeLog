@@ -1,3 +1,9 @@
+2020-03-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93709
+	* gcc/config/rs6000/rs6000.c (rs6000_emit_p9_fp_minmax): Check
+	NAN and SIGNED_ZEROR for smax/smin.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94189

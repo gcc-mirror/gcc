@@ -1,3 +1,8 @@
+2020-03-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93709
+	* gcc.target/powerpc/p9-minmax-3.c: New test.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94189
