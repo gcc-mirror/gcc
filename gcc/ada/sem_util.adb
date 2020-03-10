@@ -1355,6 +1355,9 @@ package body Sem_Util is
 
       begin
          if Is_Access_Type (Etype (New_N)) then
+            --  Copy the parent to have a proper Sloc on the dereference
+
+            Set_Parent (New_N, Parent (N));
             Insert_Explicit_Dereference (New_N);
          end if;
 
