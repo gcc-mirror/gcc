@@ -1,3 +1,9 @@
+2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/90763
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	clause to handle P9V_BUILTIN_VEC_LXVL with const arguments.
+
 2020-03-10  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* loop-iv.c (find_simple_exit): Make it static.
