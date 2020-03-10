@@ -1,3 +1,37 @@
+2020-03-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/pr80481.C (dg-final): Scan for SSE reg-reg moves only.
+
+2020-03-10  Jeff Law  <law@redhat.com>
+
+	Revert:
+	2020-02-29  Jeff Law  <law@redhat.com>
+
+	* gcc.target/xstormy16/sfr/06_sfrw_to_var.c: Update expected output.
+
+2020-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94088
+	* gcc.target/i386/pr94088.c: New test.
+
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92031 - bogus taking address of rvalue error.
+	PR c++/91465 - ICE with template codes in check_narrowing.
+	PR c++/93870 - wrong error when converting template non-type arg.
+	PR c++/94068 - ICE with template codes in check_narrowing.
+	* g++.dg/cpp0x/conv-tmpl2.C: New test.
+	* g++.dg/cpp0x/conv-tmpl3.C: New test.
+	* g++.dg/cpp0x/conv-tmpl4.C: New test.
+	* g++.dg/cpp0x/conv-tmpl5.C: New test.
+	* g++.dg/cpp0x/conv-tmpl6.C: New test.
+	* g++.dg/cpp1z/conv-tmpl1.C: New test.
+
+2020-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94067
+	* g++.dg/warn/Wconversion-pr94067.C: New test.
+
 2020-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94050 - ABI issue with alignas on armv7hl.

@@ -1,5 +1,36 @@
 2020-03-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92031 - bogus taking address of rvalue error.
+	PR c++/91465 - ICE with template codes in check_narrowing.
+	PR c++/93870 - wrong error when converting template non-type arg.
+	PR c++/94068 - ICE with template codes in check_narrowing.
+	* call.c (convert_like_real): Return IMPLICIT_CONV_EXPR
+	in a template when not ck_identity and we're dealing with a class.
+	(convert_like_real) <case ck_ref_bind>: Return IMPLICIT_CONV_EXPR
+	in a template if we need a temporary.
+	* decl.c (compute_array_index_type_loc): Remove
+	instantiate_non_dependent_expr_sfinae call.  Call
+	fold_non_dependent_expr instead of maybe_constant_value.
+	(build_explicit_specifier): Don't instantiate or create a sentinel
+	before converting the expression.
+	* except.c (build_noexcept_spec): Likewise.
+	* pt.c (convert_nontype_argument): Don't build IMPLICIT_CONV_EXPR.
+	Set IMPLICIT_CONV_EXPR_NONTYPE_ARG if that's what
+	build_converted_constant_expr returned.
+	* typeck2.c (check_narrowing): Call fold_non_dependent_expr instead
+	of maybe_constant_value.
+
+2020-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94067
+	Revert
+	2019-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Do not handle
+	RROTATE_EXPR and LROTATE_EXPR.
+
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/94050 - ABI issue with alignas on armv7hl.
 	* class.c (layout_class_type): Don't replace a class's
 	CLASSTYPE_AS_BASE if their TYPE_USER_ALIGN don't match.

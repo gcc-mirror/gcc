@@ -5730,6 +5730,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case MAX_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
@@ -7853,6 +7855,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case MAX_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:

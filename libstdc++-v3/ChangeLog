@@ -1,3 +1,37 @@
+2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator::__iter_move): Remove.
+	(transform_view::_Iterator::operator*): Add noexcept-specifier.
+	(transform_view::_Iterator::iter_move): Inline __iter_move body here.
+	(split_view::_OuterIter::__current): Add noexcept.
+	(split_view::_InnerIter::__iter_swap): Remove.
+	(split_view::_InnerIter::__iter_move): Remove.
+	(split_view::_InnerIter::_M_i_current): New accessors.
+	(split_view::_InnerIter::__at_end): Use _M_i_current().
+	(split_view::_InnerIter::operator*): Likewise.
+	(split_view::_InnerIter::operator++): Likewise.
+	(iter_move(const _InnerIter&)): Likewise.
+	(iter_swap(const _InnerIter&, const _InnerIter&)): Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Check noexcept-specifier
+	for iter_move and iter_swap on split_view's inner iterator.
+
+	PR c++/94117
+	* include/std/ranges (ranges::transform_view::_Iterator::iter_move):
+	Change expression in noexcept-specifier to match function body.
+
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Add
+	comment explaining multiple dg-do directives.
+	* testsuite/24_iterators/ostream_iterator/1.cc: Fix do-do directive
+	so test is run as well as compiled.
+
+2020-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94063
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Add kluge to
+	handle concatenations that change the type of the first component.
+	(path::operator+=(basic_string_view<value_type>)): Likewise.
+	* testsuite/27_io/filesystem/path/concat/94063.cc: New test.
+
 2020-03-06  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (join_view::_Sentinel<_Const>): Befriend

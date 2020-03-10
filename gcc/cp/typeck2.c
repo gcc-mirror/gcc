@@ -981,7 +981,11 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
       return ok;
     }
 
-  init = maybe_constant_value (init);
+  /* Even non-dependent expressions can still have template
+     codes like CAST_EXPR, so use *_non_dependent_expr to cope.  */
+  init = fold_non_dependent_expr (init, complain);
+  if (init == error_mark_node)
+    return ok;
 
   /* If we were asked to only check constants, return early.  */
   if (const_only && !TREE_CONSTANT (init))
