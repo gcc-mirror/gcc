@@ -84,6 +84,12 @@
 ;; Double-width vector modes plus 64-bit elements.
 (define_mode_iterator VDX [V8QI V4HI V4HF V4BF V2SI V2SF DI])
 
+;; Double-width vector modes plus 64-bit elements, including V4BF.
+(define_mode_iterator VDXBF [V8QI V4HI V4HF (V4BF "TARGET_BF16_SIMD") V2SI V2SF DI])
+
+;; Double-width vector modes plus 64-bit elements, V4BF and V8BF.
+(define_mode_iterator VDXBF2 [V8QI V4HI V4HF V2SI V2SF DI (V4BF "TARGET_BF16_SIMD") (V8BF ("TARGET_BF16_SIMD"))])
+
 ;; Double-width vector modes plus 64-bit elements,
 ;; with V4BFmode added, suitable for moves.
 (define_mode_iterator VDXMOV [V8QI V4HI V4HF V4BF V2SI V2SF DI])
@@ -100,11 +106,17 @@
 ;; Quad-width vector modes, including V8HF.
 (define_mode_iterator VQ2 [V16QI V8HI V8HF V4SI V4SF])
 
+;; Quad-width vector modes, including V8BF.
+(define_mode_iterator VQ2BF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF])
+
 ;; Quad-width vector modes with 16- or 32-bit elements
 (define_mode_iterator VQ_HS [V8HI V8HF V4SI V4SF])
 
 ;; Quad-width vector modes plus 64-bit elements.
 (define_mode_iterator VQX [V16QI V8HI V8HF V8BF V4SI V4SF V2DI])
+
+;; Quad-width vector modes plus 64-bit elements and V8BF.
+(define_mode_iterator VQXBF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF V2DI])
 
 ;; Quad-width vector modes without floating-point elements.
 (define_mode_iterator VQI [V16QI V8HI V4SI])
@@ -228,6 +240,10 @@
 
 ;; Modes for polynomial or float values.
 (define_mode_iterator VPF [V8QI V16QI V2SF V4SF])
+
+;; Modes for BF16 convert instructions.
+(define_mode_iterator VBFCVT [V4BF V8BF])
+(define_mode_iterator VBFCVTM [V2SI SF])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -489,6 +505,8 @@
 
 (define_int_iterator MATMUL [UNSPEC_MATMUL_S UNSPEC_MATMUL_U UNSPEC_MATMUL_US])
 
+(define_int_iterator BF_MA [UNSPEC_BFMAB UNSPEC_BFMAT])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -746,6 +764,12 @@
                            (V2SI "") (V4SI "")
                            (V2SF "") (V4SF "")
                            (DI "_neon") (V2DI "")])
+
+;; To select the low 64 bits of a vector.
+(define_mode_attr V_bf_low [(V4BF "P") (V8BF "e")])
+
+;; To generate intermediate modes for BF16 scalar convert.
+(define_mode_attr V_bf_cvt_m [(V2SI "BF") (SF "V2SI")])
 
 
 ;; Scalars to be presented to scalar multiplication instructions
@@ -1199,3 +1223,6 @@
 			   ])
 
 (define_int_attr smlaw_op [(UNSPEC_SMLAWB "smlawb") (UNSPEC_SMLAWT "smlawt")])
+
+;; An iterator for VFMA<bt>
+(define_int_attr bt [(UNSPEC_BFMAB "b") (UNSPEC_BFMAT "t")])

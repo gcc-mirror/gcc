@@ -1,6 +1,7 @@
 /* Test C2x attribute syntax.  Test GNU attributes appertain to
    appropriate constructs.  */
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 /* { dg-options "-std=gnu2x" } */
 
 void f (void) {};

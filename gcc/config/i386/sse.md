@@ -1013,98 +1013,7 @@
       return standard_sse_constant_opcode (insn, operands);
 
     case TYPE_SSEMOV:
-      /* There is no evex-encoded vmov* for sizes smaller than 64-bytes
-	 in avx512f, so we need to use workarounds, to access sse registers
-	 16-31, which are evex-only. In avx512vl we don't need workarounds.  */
-      if (TARGET_AVX512F && <MODE_SIZE> < 64 && !TARGET_AVX512VL
-	  && (EXT_REX_SSE_REG_P (operands[0])
-	      || EXT_REX_SSE_REG_P (operands[1])))
-	{
-	  if (memory_operand (operands[0], <MODE>mode))
-	    {
-	      if (<MODE_SIZE> == 32)
-		return "vextract<shuffletype>64x4\t{$0x0, %g1, %0|%0, %g1, 0x0}";
-	      else if (<MODE_SIZE> == 16)
-		return "vextract<shuffletype>32x4\t{$0x0, %g1, %0|%0, %g1, 0x0}";
-	      else
-		gcc_unreachable ();
-	    }
-	  else if (memory_operand (operands[1], <MODE>mode))
-	    {
-	      if (<MODE_SIZE> == 32)
-		return "vbroadcast<shuffletype>64x4\t{%1, %g0|%g0, %1}";
-	      else if (<MODE_SIZE> == 16)
-		return "vbroadcast<shuffletype>32x4\t{%1, %g0|%g0, %1}";
-	      else
-		gcc_unreachable ();
-	    }
-	  else
-	    /* Reg -> reg move is always aligned.  Just use wider move.  */
-	    switch (get_attr_mode (insn))
-	      {
-	      case MODE_V8SF:
-	      case MODE_V4SF:
-		return "vmovaps\t{%g1, %g0|%g0, %g1}";
-	      case MODE_V4DF:
-	      case MODE_V2DF:
-		return "vmovapd\t{%g1, %g0|%g0, %g1}";
-	      case MODE_OI:
-	      case MODE_TI:
-		return "vmovdqa64\t{%g1, %g0|%g0, %g1}";
-	      default:
-		gcc_unreachable ();
-	      }
-	}
-
-      switch (get_attr_mode (insn))
-	{
-	case MODE_V16SF:
-	case MODE_V8SF:
-	case MODE_V4SF:
-	  if (misaligned_operand (operands[0], <MODE>mode)
-	      || misaligned_operand (operands[1], <MODE>mode))
-	    return "%vmovups\t{%1, %0|%0, %1}";
-	  else
-	    return "%vmovaps\t{%1, %0|%0, %1}";
-
-	case MODE_V8DF:
-	case MODE_V4DF:
-	case MODE_V2DF:
-	  if (misaligned_operand (operands[0], <MODE>mode)
-	      || misaligned_operand (operands[1], <MODE>mode))
-	    return "%vmovupd\t{%1, %0|%0, %1}";
-	  else
-	    return "%vmovapd\t{%1, %0|%0, %1}";
-
-	case MODE_OI:
-	case MODE_TI:
-	  if (misaligned_operand (operands[0], <MODE>mode)
-	      || misaligned_operand (operands[1], <MODE>mode))
-	    return TARGET_AVX512VL
-		   && (<MODE>mode == V4SImode
-		       || <MODE>mode == V2DImode
-		       || <MODE>mode == V8SImode
-		       || <MODE>mode == V4DImode
-		       || TARGET_AVX512BW)
-		   ? "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}"
-		   : "%vmovdqu\t{%1, %0|%0, %1}";
-	  else
-	    return TARGET_AVX512VL ? "vmovdqa64\t{%1, %0|%0, %1}"
-				   : "%vmovdqa\t{%1, %0|%0, %1}";
-	case MODE_XI:
-	  if (misaligned_operand (operands[0], <MODE>mode)
-	      || misaligned_operand (operands[1], <MODE>mode))
-	    return (<MODE>mode == V16SImode
-		    || <MODE>mode == V8DImode
-		    || TARGET_AVX512BW)
-		   ? "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}"
-		   : "vmovdqu64\t{%1, %0|%0, %1}";
-	  else
-	    return "vmovdqa64\t{%1, %0|%0, %1}";
-
-	default:
-	  gcc_unreachable ();
-	}
+      return ix86_output_ssemov (insn, operands);
 
     default:
       gcc_unreachable ();
@@ -1113,10 +1022,7 @@
   [(set_attr "type" "sselog1,sselog1,ssemov,ssemov")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(and (eq_attr "alternative" "1")
-		    (match_test "TARGET_AVX512VL"))
-		 (const_string "<sseinsnmode>")
-	       (match_test "TARGET_AVX")
+	(cond [(match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
 	       (ior (not (match_test "TARGET_SSE2"))
 		    (match_test "optimize_function_for_size_p (cfun)"))

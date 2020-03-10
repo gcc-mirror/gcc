@@ -29,6 +29,9 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+using __gnu_test::test_range;
+using __gnu_test::input_iterator_wrapper_nocopy;
+
 namespace ranges = std::ranges;
 
 struct X
@@ -66,6 +69,18 @@ test01()
 
       VERIFY( i == rx.end() );
       VERIFY( X::count == 0 );
+    }
+}
+
+void
+test02()
+{
+  // LWG 3355
+    {
+      int x[3] = {0};
+      test_range<int, input_iterator_wrapper_nocopy> rx(x);
+      ranges::destroy(rx);
+      ranges::destroy_n(rx.begin(), 3);
     }
 }
 

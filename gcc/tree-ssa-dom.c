@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
+#include "alias.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -2155,9 +2156,14 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 	  else
 	    new_stmt = gimple_build_assign (rhs, lhs);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	  expr_hash_elt *elt = NULL;
 	  cached_lhs = m_avail_exprs_stack->lookup_avail_expr (new_stmt, false,
-							       false);
-	  if (cached_lhs && operand_equal_p (rhs, cached_lhs, 0))
+							       false, &elt);
+	  if (cached_lhs
+	      && operand_equal_p (rhs, cached_lhs, 0)
+	      && refs_same_for_tbaa_p (elt->expr ()->kind == EXPR_SINGLE
+				       ? elt->expr ()->ops.single.rhs
+				       : NULL_TREE, lhs))
 	    {
 	      basic_block bb = gimple_bb (stmt);
 	      unlink_stmt_vdef (stmt);

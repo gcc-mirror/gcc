@@ -1,3 +1,16 @@
+2020-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac: Build libgomp by default for amdgcn.
+	* configure: Regenerate.
+
+2020-03-05  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-02-28  Joel Hutton  <joel.hutton@arm.com>
+
+	* MAINTAINERS (Write After Approval) : Add myself.
+
 2020-02-20  Palmer Dabbelt  <palmer@sifive.com>
 
 	* MAINTAINERS: Change palmer@sifive.com to palmer@dabbelt.com.

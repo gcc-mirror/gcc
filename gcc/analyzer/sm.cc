@@ -84,6 +84,21 @@ state_machine::get_state_name (state_t s) const
   return m_state_names[s];
 }
 
+/* Get the state with name NAME, which must exist.
+   This is purely intended for use in selftests.  */
+
+state_machine::state_t
+state_machine::get_state_by_name (const char *name)
+{
+  unsigned i;
+  const char *iter_name;
+  FOR_EACH_VEC_ELT (m_state_names, i, iter_name)
+    if (!strcmp (name, iter_name))
+      return i;
+  /* Name not found.  */
+  gcc_unreachable ();
+}
+
 /* Assert that S is a valid state for this state_machine.  */
 
 void

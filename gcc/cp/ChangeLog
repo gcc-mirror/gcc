@@ -1,3 +1,150 @@
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92031 - bogus taking address of rvalue error.
+	PR c++/91465 - ICE with template codes in check_narrowing.
+	PR c++/93870 - wrong error when converting template non-type arg.
+	PR c++/94068 - ICE with template codes in check_narrowing.
+	* call.c (convert_like_real): Return IMPLICIT_CONV_EXPR
+	in a template when not ck_identity and we're dealing with a class.
+	(convert_like_real) <case ck_ref_bind>: Return IMPLICIT_CONV_EXPR
+	in a template if we need a temporary.
+	* decl.c (compute_array_index_type_loc): Remove
+	instantiate_non_dependent_expr_sfinae call.  Call
+	fold_non_dependent_expr instead of maybe_constant_value.
+	(build_explicit_specifier): Don't instantiate or create a sentinel
+	before converting the expression.
+	* except.c (build_noexcept_spec): Likewise.
+	* pt.c (convert_nontype_argument): Don't build IMPLICIT_CONV_EXPR.
+	Set IMPLICIT_CONV_EXPR_NONTYPE_ARG if that's what
+	build_converted_constant_expr returned.
+	* typeck2.c (check_narrowing): Call fold_non_dependent_expr instead
+	of maybe_constant_value.
+
+2020-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94067
+	Revert
+	2019-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Do not handle
+	RROTATE_EXPR and LROTATE_EXPR.
+
+2020-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94050 - ABI issue with alignas on armv7hl.
+	* class.c (layout_class_type): Don't replace a class's
+	CLASSTYPE_AS_BASE if their TYPE_USER_ALIGN don't match.
+
+2020-03-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (build_actor_fn): Factor out code inserting the
+	default return_void call to...
+	(morph_fn_to_coro): ...here, also hoist local var declarations.
+
+2020-03-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93729
+	* call.c (convert_like_real): Check complain before emitting an error
+	about binding a bit-field to a reference.
+
+	* cxx-pretty-print.c (cxx_pretty_printer::simple_type_specifier)
+	[TYPENAME_TYPE]: Print the TYPENAME_TYPE_FULLNAME instead of the
+	TYPE_NAME.
+
+2020-03-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94027
+	* mangle.c (find_substitution): Don't call same_type_p on template
+	args that cannot match.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90938
+	* tree.c (type_initializer_zero_p): Fail for structs initialized
+	with non-structs.
+
+2020-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90432
+	* init.c (perform_member_init): Don't do aggregate initialization of
+	empty field.
+	* constexpr.c (cx_check_missing_mem_inits): Don't enforce
+	initialization of empty field.
+
+2020-03-04  Martin Liska  <mliska@suse.cz>
+
+	* method.c: Wrap array in ctor with braces in order
+	to silent clang warnings.
+
+2020-03-03  Jason Merrill  <jason@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90505 - mismatch in template argument deduction.
+	* pt.c (tsubst): Don't reduce the template level of template
+	parameters when tf_partial.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93998
+	* constexpr.c (cxx_eval_constant_expression)
+	<case TARGET_EXPR, case SAVE_EXPR>: Don't record anything if
+	*non_constant_p is true.
+
+2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (captures_temporary): Strip component_ref
+	to its base object.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (finish_co_await_expr): Build co_await_expr
+	with unknown_type_node.
+	(finish_co_yield_expr): Ditto.
+	*pt.c (type_dependent_expression_p): Set co_await/yield_expr
+	with unknown type as dependent.
+
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct local_var_info): Adjust to remove the
+	reference to the captured var, and just to note that this is a
+	lambda capture proxy.
+	(transform_local_var_uses): Handle lambda captures specially.
+	(struct param_frame_data): Add a visited set.
+	(register_param_uses): Also check for param uses in lambda
+	capture proxies.
+	(struct local_vars_frame_data): Remove captures list.
+	(register_local_var_uses): Handle lambda capture proxies by
+	noting and bypassing them.
+	(morph_fn_to_coro): Update to remove lifetime extension of
+	lambda capture-by-copy vars.
+
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Do not build frame
+	awaitable proxy vars when the co_await expression is
+	a function parameter or local var.
+	(co_await_expander): Do not initialise a frame var with
+	itself.
+	(transform_await_expr): Only substitute the awaitable
+	frame var if it's needed.
+	(register_awaits): Do not make frame copies for param
+	or local vars that are awaitables.
+
+2020-02-28  Jason Merrill  <jason@redhat.com>
+
+	Implement P2092R0, Disambiguating Nested-Requirements
+	* parser.c (cp_parser_requirement_parameter_list): Pass
+	CP_PARSER_FLAGS_TYPENAME_OPTIONAL.
+
+	* call.c (build_user_type_conversion_1): Don't look at the second
+	conversion of a non-viable candidate.
+
+2020-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* typeck.c (cp_build_addr_expr_1): Allow taking address of immediate
+	functions in unevaluated contexts.
+
 2020-02-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/93933

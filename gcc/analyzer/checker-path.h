@@ -201,9 +201,9 @@ public:
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
-  region_id get_lvalue (tree expr) const
+  region_id get_lvalue (tree expr, region_model_context *ctxt) const
   {
-    return m_dst_state.m_region_model->get_lvalue (expr, NULL);
+    return m_dst_state.m_region_model->get_lvalue (expr, ctxt);
   }
 
   const supernode *m_node;

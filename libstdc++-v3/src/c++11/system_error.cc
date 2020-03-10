@@ -251,7 +251,8 @@ namespace
 #ifdef ENOTSOCK
       case ENOTSOCK:
 #endif
-#ifdef ENOTSUP
+#if defined ENOTSUP && (!defined ENOSYS || ENOTSUP != ENOSYS)
+      // zTPF uses the same value for ENOSYS and ENOTSUP
       case ENOTSUP:
 #endif
 #ifdef ENOTTY

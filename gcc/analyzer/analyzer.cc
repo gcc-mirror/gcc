@@ -86,6 +86,49 @@ is_named_call_p (tree fndecl, const char *funcname)
   return 0 == strcmp (tname, funcname);
 }
 
+/* Return true if FNDECL is within the namespace "std".
+   Compare with cp/typeck.c: decl_in_std_namespace_p, but this doesn't
+   rely on being the C++ FE (or handle inline namespaces inside of std).  */
+
+static inline bool
+is_std_function_p (const_tree fndecl)
+{
+  tree name_decl = DECL_NAME (fndecl);
+  if (!name_decl)
+    return false;
+  if (!DECL_CONTEXT (fndecl))
+    return false;
+  if (TREE_CODE (DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
+    return false;
+  tree ns = DECL_CONTEXT (fndecl);
+  if (!(DECL_CONTEXT (ns) == NULL_TREE
+	|| TREE_CODE (DECL_CONTEXT (ns)) == TRANSLATION_UNIT_DECL))
+    return false;
+  if (!DECL_NAME (ns))
+    return false;
+  return id_equal ("std", DECL_NAME (ns));
+}
+
+/* Like is_named_call_p, but look for std::FUNCNAME.  */
+
+bool
+is_std_named_call_p (tree fndecl, const char *funcname)
+{
+  gcc_assert (fndecl);
+  gcc_assert (funcname);
+
+  if (!is_std_function_p (fndecl))
+    return false;
+
+  tree identifier = DECL_NAME (fndecl);
+  const char *name = IDENTIFIER_POINTER (identifier);
+  const char *tname = name;
+
+  /* Don't disregard prefix _ or __ in FNDECL's name.  */
+
+  return 0 == strcmp (tname, funcname);
+}
+
 /* Helper function for checkers.  Is FNDECL an extern fndecl at file scope
    that has the given FUNCNAME, and does CALL have the given number of
    arguments?  */
@@ -98,6 +141,24 @@ is_named_call_p (tree fndecl, const char *funcname,
   gcc_assert (funcname);
 
   if (!is_named_call_p (fndecl, funcname))
+    return false;
+
+  if (gimple_call_num_args (call) != num_args)
+    return false;
+
+  return true;
+}
+
+/* Like is_named_call_p, but check for std::FUNCNAME.  */
+
+bool
+is_std_named_call_p (tree fndecl, const char *funcname,
+		     const gcall *call, unsigned int num_args)
+{
+  gcc_assert (fndecl);
+  gcc_assert (funcname);
+
+  if (!is_std_named_call_p (fndecl, funcname))
     return false;
 
   if (gimple_call_num_args (call) != num_args)

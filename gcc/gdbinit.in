@@ -129,7 +129,7 @@ call debug_generic_stmt ($debug_arg)
 end
 
 document pgs
-GCC hook: pgq [tree]
+GCC hook: pgs [tree]
 Print given GENERIC statement in C syntax.
 See also 'help-gcc-hooks'.
 end

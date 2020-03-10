@@ -223,7 +223,8 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
    we finish processing this block and its children.  */
 
 tree
-avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
+avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p,
+				      expr_hash_elt **elt)
 {
   expr_hash_elt **slot;
   tree lhs;
@@ -317,6 +318,8 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
   /* Extract the LHS of the assignment so that it can be used as the current
      definition of another variable.  */
   lhs = (*slot)->lhs ();
+  if (elt)
+    *elt = *slot;
 
   /* Valueize the result.  */
   if (TREE_CODE (lhs) == SSA_NAME)

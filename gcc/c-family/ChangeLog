@@ -1,3 +1,14 @@
+2020-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93958 - add missing -std=gnu++20.
+	* c.opt: Add -std=gnu++20.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/92721
+	* c-attribs.c (append_access_attrs): Correctly handle attribute.
+	(handle_access_attribute): Same.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93858

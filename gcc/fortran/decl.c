@@ -2929,7 +2929,16 @@ variable_decl (int elem)
 	  goto cleanup;
 	}
       else if (param && initializer)
-	param->value = gfc_copy_expr (initializer);
+	{
+	  if (initializer->ts.type == BT_BOZ)
+	    {
+	      gfc_error ("BOZ literal constant at %L cannot appear as an "
+			 "initializer", &initializer->where);
+	      m = MATCH_ERROR;
+      	      goto cleanup;
+	    }
+	  param->value = gfc_copy_expr (initializer);
+	}
     }
 
   /* Before adding a possible initilizer, do a simple check for compatibility

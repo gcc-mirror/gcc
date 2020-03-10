@@ -5757,7 +5757,15 @@ type_initializer_zero_p (tree type, tree init)
     return TREE_CODE (init) != STRING_CST && initializer_zerop (init);
 
   if (TREE_CODE (init) != CONSTRUCTOR)
-    return initializer_zerop (init);
+    {
+      /* A class can only be initialized by a non-class type if it has
+	 a ctor that converts from that type.  Such classes are excluded
+	 since their semantics are unknown.  */
+      if (RECORD_OR_UNION_TYPE_P (type)
+	  && !RECORD_OR_UNION_TYPE_P (TREE_TYPE (init)))
+	return false;
+      return initializer_zerop (init);
+    }
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {

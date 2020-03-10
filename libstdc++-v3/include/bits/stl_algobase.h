@@ -84,11 +84,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * A constexpr wrapper for __builtin_memcmp.
    * @param __num The number of elements of type _Tp (not bytes).
    */
-  template<typename _Tp>
+  template<typename _Tp, typename _Up>
     _GLIBCXX14_CONSTEXPR
     inline int
-    __memcmp(const _Tp* __first1, const _Tp* __first2, size_t __num)
+    __memcmp(const _Tp* __first1, const _Up* __first2, size_t __num)
     {
+#if __cplusplus >= 201103L
+      static_assert(sizeof(_Tp) == sizeof(_Up), "can be compared with memcmp");
+#endif
 #ifdef __cpp_lib_is_constant_evaluated
       if (std::is_constant_evaluated())
 	{
@@ -465,13 +468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::__copy_move<_IsMove, false, _Category>::
 	  __copy_m(__first, __last, __result);
 #endif
-      typedef typename iterator_traits<_II>::value_type _ValueTypeI;
-      typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
-      const bool __simple = (__is_trivially_copyable(_ValueTypeI)
-			     && __is_pointer<_II>::__value
-			     && __is_pointer<_OI>::__value
-			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
-      return std::__copy_move<_IsMove, __simple,
+      return std::__copy_move<_IsMove, __memcpyable<_OI, _II>::__value,
 			      _Category>::__copy_m(__first, __last, __result);
     }
 
@@ -707,14 +704,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	return std::__copy_move_backward<_IsMove, false, _Category>::
 	  __copy_move_b(__first, __last, __result);
 #endif
-      typedef typename iterator_traits<_BI1>::value_type _ValueType1;
-      typedef typename iterator_traits<_BI2>::value_type _ValueType2;
-      const bool __simple = (__is_trivially_copyable(_ValueType1)
-			     && __is_pointer<_BI1>::__value
-			     && __is_pointer<_BI2>::__value
-			     && __are_same<_ValueType1, _ValueType2>::__value);
-
-      return std::__copy_move_backward<_IsMove, __simple,
+      return std::__copy_move_backward<_IsMove,
+				       __memcpyable<_BI2, _BI1>::__value,
 				       _Category>::__copy_move_b(__first,
 								 __last,
 								 __result);
@@ -1150,13 +1141,9 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __equal_aux1(_II1 __first1, _II1 __last1, _II2 __first2)
     {
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
-      typedef typename iterator_traits<_II2>::value_type _ValueType2;
       const bool __simple = ((__is_integer<_ValueType1>::__value
 			      || __is_pointer<_ValueType1>::__value)
-			     && __is_pointer<_II1>::__value
-			     && __is_pointer<_II2>::__value
-			     && __are_same<_ValueType1, _ValueType2>::__value);
-
+			     && __memcmpable<_II1, _II2>::__value);
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
     }
 
@@ -1295,7 +1282,15 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	 && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
 	 && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
 	 && __is_pointer<_II1>::__value
-	 && __is_pointer<_II2>::__value);
+	 && __is_pointer<_II2>::__value
+#if __cplusplus > 201703L
+	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
+	 // so __is_byte<T> could be true, but we can't use memcmp with
+	 // volatile data.
+	 && !is_volatile_v<remove_reference_t<iter_reference_t<_II1>>>
+	 && !is_volatile_v<remove_reference_t<iter_reference_t<_II2>>>
+#endif
+	 );
 
       return std::__lexicographical_compare<__simple>::__lc(__first1, __last1,
 							    __first2, __last2);
@@ -1708,15 +1703,16 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 		return __lencmp;
 	      }
 #endif // is_constant_evaluated
-      while (__first1 != __last1 && __first2 != __last2)
+      while (__first1 != __last1)
 	{
+	  if (__first2 == __last2)
+	    return strong_ordering::greater;
 	  if (auto __cmp = __comp(*__first1, *__first2); __cmp != 0)
 	    return __cmp;
 	  ++__first1;
 	  ++__first2;
 	}
-      return __first1 != __last1 ? strong_ordering::greater
-	: __first2 != __last2 ? strong_ordering::less : strong_ordering::equal;
+      return (__first2 == __last2) <=> true; // See PR 94006
     }
 
   template<typename _InputIter1, typename _InputIter2>
@@ -1899,6 +1895,159 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #endif
 
 _GLIBCXX_END_NAMESPACE_ALGO
+
+  /// This is an overload used by find algos for the Input Iterator case.
+  template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    inline _InputIterator
+    __find_if(_InputIterator __first, _InputIterator __last,
+	      _Predicate __pred, input_iterator_tag)
+    {
+      while (__first != __last && !__pred(__first))
+	++__first;
+      return __first;
+    }
+
+  /// This is an overload used by find algos for the RAI case.
+  template<typename _RandomAccessIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    _RandomAccessIterator
+    __find_if(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	      _Predicate __pred, random_access_iterator_tag)
+    {
+      typename iterator_traits<_RandomAccessIterator>::difference_type
+	__trip_count = (__last - __first) >> 2;
+
+      for (; __trip_count > 0; --__trip_count)
+	{
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+	}
+
+      switch (__last - __first)
+	{
+	case 3:
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+	case 2:
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+	case 1:
+	  if (__pred(__first))
+	    return __first;
+	  ++__first;
+	case 0:
+	default:
+	  return __last;
+	}
+    }
+
+  template<typename _Iterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    inline _Iterator
+    __find_if(_Iterator __first, _Iterator __last, _Predicate __pred)
+    {
+      return __find_if(__first, __last, __pred,
+		       std::__iterator_category(__first));
+    }
+
+  template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    typename iterator_traits<_InputIterator>::difference_type
+    __count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+    {
+      typename iterator_traits<_InputIterator>::difference_type __n = 0;
+      for (; __first != __last; ++__first)
+	if (__pred(__first))
+	  ++__n;
+      return __n;
+    }
+
+#if __cplusplus >= 201103L
+  template<typename _ForwardIterator1, typename _ForwardIterator2,
+	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
+    bool
+    __is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+		     _ForwardIterator2 __first2, _BinaryPredicate __pred)
+    {
+      // Efficiently compare identical prefixes:  O(N) if sequences
+      // have the same elements in the same order.
+      for (; __first1 != __last1; ++__first1, (void)++__first2)
+	if (!__pred(__first1, __first2))
+	  break;
+
+      if (__first1 == __last1)
+	return true;
+
+      // Establish __last2 assuming equal ranges by iterating over the
+      // rest of the list.
+      _ForwardIterator2 __last2 = __first2;
+      std::advance(__last2, std::distance(__first1, __last1));
+      for (_ForwardIterator1 __scan = __first1; __scan != __last1; ++__scan)
+	{
+	  if (__scan != std::__find_if(__first1, __scan,
+			  __gnu_cxx::__ops::__iter_comp_iter(__pred, __scan)))
+	    continue; // We've seen this one before.
+
+	  auto __matches
+	    = std::__count_if(__first2, __last2,
+			__gnu_cxx::__ops::__iter_comp_iter(__pred, __scan));
+	  if (0 == __matches ||
+	      std::__count_if(__scan, __last1,
+			__gnu_cxx::__ops::__iter_comp_iter(__pred, __scan))
+	      != __matches)
+	    return false;
+	}
+      return true;
+    }
+
+  /**
+   *  @brief  Checks whether a permutation of the second sequence is equal
+   *          to the first sequence.
+   *  @ingroup non_mutating_algorithms
+   *  @param  __first1  Start of first range.
+   *  @param  __last1   End of first range.
+   *  @param  __first2  Start of second range.
+   *  @return true if there exists a permutation of the elements in the range
+   *          [__first2, __first2 + (__last1 - __first1)), beginning with
+   *          ForwardIterator2 begin, such that equal(__first1, __last1, begin)
+   *          returns true; otherwise, returns false.
+  */
+  template<typename _ForwardIterator1, typename _ForwardIterator2>
+    _GLIBCXX20_CONSTEXPR
+    inline bool
+    is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+		   _ForwardIterator2 __first2)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator1>)
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator2>)
+      __glibcxx_function_requires(_EqualOpConcept<
+		typename iterator_traits<_ForwardIterator1>::value_type,
+		typename iterator_traits<_ForwardIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+
+      return std::__is_permutation(__first1, __last1, __first2,
+				   __gnu_cxx::__ops::__iter_equal_to_iter());
+    }
+#endif // C++11
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

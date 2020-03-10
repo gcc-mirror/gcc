@@ -78,6 +78,16 @@ struct coro1 {
     int& await_resume() const noexcept { PRINT ("susp-always-resume-intprt"); return x;}
   };
 
+  template <typename _AwaitType>
+  struct suspend_always_tmpl_awaiter {
+    _AwaitType x;
+    suspend_always_tmpl_awaiter(_AwaitType __x) : x(__x) {}
+    ~suspend_always_tmpl_awaiter() {}
+    bool await_ready() const noexcept { return false; }
+    void await_suspend(coro::coroutine_handle<>) const noexcept { PRINT ("suspend_always_tmpl_awaiter");}
+    _AwaitType await_resume() const noexcept { PRINT ("suspend_always_tmpl_awaiter"); return x;}
+  };
+
   struct promise_type {
 
   promise_type() : vv(-1) {  PRINT ("Created Promise"); }

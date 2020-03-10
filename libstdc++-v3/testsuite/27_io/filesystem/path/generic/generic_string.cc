@@ -49,11 +49,12 @@ test01()
 void
 test02()
 {
-  // PR libstdc++/93244
-  path p("C:");
-  p += path::preferred_separator;
-  p += "foo/bar";
-  VERIFY( p.generic_string() == "C:/foo/bar" );
+  if constexpr (path::preferred_separator == L'\\')
+  {
+    // PR libstdc++/93244
+    VERIFY( path("C:\\foo\\bar").generic_string() == "C:/foo/bar" );
+    VERIFY( path("C://foo//bar").generic_string() == "C:/foo/bar" );
+  }
 }
 
 int

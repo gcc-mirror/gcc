@@ -1234,7 +1234,7 @@ init_num_threads (void)
 #endif
 }
 
-/* FIXME: once using -std=c11, we can use std::thread::hardware_concurrency.  */
+/* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
 
 /* Return true when a jobserver is running and can accept a job.  */
 

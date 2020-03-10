@@ -710,7 +710,6 @@ private:
   /* The order is important here: m_scc needs to stick around
      until after m_queue has finished being cleaned up (the dtor
      calls the ordering fns).  */
-  const exploded_graph &m_eg;
   strongly_connected_components m_scc;
   const analysis_plan &m_plan;
 

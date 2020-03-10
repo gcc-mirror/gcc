@@ -2299,9 +2299,10 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 
     case LTGT:
       /* (a < b) | (a > b) */
-      *code = IOR;
-      *op0 = riscv_force_binary (word_mode, LT, cmp_op0, cmp_op1);
-      *op1 = riscv_force_binary (word_mode, GT, cmp_op0, cmp_op1);
+      tmp0 = riscv_force_binary (word_mode, LT, cmp_op0, cmp_op1);
+      tmp1 = riscv_force_binary (word_mode, GT, cmp_op0, cmp_op1);
+      *op0 = riscv_force_binary (word_mode, IOR, tmp0, tmp1);
+      *op1 = const0_rtx;
       break;
 
     default:

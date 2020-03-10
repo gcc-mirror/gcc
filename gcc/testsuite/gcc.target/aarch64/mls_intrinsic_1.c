@@ -83,6 +83,6 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "mls\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.4s\\\[\[0-9\]+\\\]" 4 } } */
-/* { dg-final { scan-assembler-times "mls\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.8h\\\[\[0-9\]+\\\]" 4 } } */
+/* { dg-final { scan-assembler-times "mls\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 4 } } */
+/* { dg-final { scan-assembler-times "mls\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.h\\\[\[0-9\]+\\\]" 4 } } */
 

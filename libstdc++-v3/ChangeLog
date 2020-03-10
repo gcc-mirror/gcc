@@ -1,3 +1,266 @@
+2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Add
+	comment explaining multiple dg-do directives.
+	* testsuite/24_iterators/ostream_iterator/1.cc: Fix do-do directive
+	so test is run as well as compiled.
+
+2020-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94063
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Add kluge to
+	handle concatenations that change the type of the first component.
+	(path::operator+=(basic_string_view<value_type>)): Likewise.
+	* testsuite/27_io/filesystem/path/concat/94063.cc: New test.
+
+2020-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::_Sentinel<_Const>): Befriend
+	join_view::_Sentinel<!_Const>.
+	* testsuite/std/ranges/adaptors/join.cc: Augment test.
+
+	PR libstdc++/93978
+	* include/bits/range_access.h (__cust_access::_Empty::operator()):
+	Declare return type to be bool instead of auto.
+	* testsuite/std/ranges/adaptors/93978.cc: New test.
+
+2020-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94069
+	* include/std/shared_mutex [!PTHREAD_RWLOCK_INITIALIZER]
+	(__shared_mutex_pthread::__shared_mutex_pthread()): Remove incorrect
+	second argument to __glibcxx_rwlock_init.
+	* testsuite/30_threads/shared_timed_mutex/94069.cc: New test.
+
+	PR libstdc++/93244
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Adjust
+	test to not fail due to PR 94063.
+	* testsuite/27_io/filesystem/path/generic/utf.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/wchar_t.cc: Likewise.
+
+2020-03-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* src/c++11/system_error.cc: Omit the ENOTSUP case statement if it
+	would match ENOSYS.
+
+2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/all.cc: Mark unused variable.
+	* testsuite/27_io/filesystem/operations/copy.cc: Fix typo.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/file_size.cc: Use correct type
+	for return value, and in comparison.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+
+	PR libstdc++/94051
+	* include/std/string_view: Include <bits/ostream_insert.h>.
+	* testsuite/21_strings/basic_string_view/inserters/94051.cc: New test.
+
+2020-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__memcpyable): Fix comment.
+
+2020-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/94017
+	* include/bits/ranges_algobase.h (__fill_n_fn::operator()): Refine
+	condition for when to use memset, making sure to additionally check that
+	the output pointer's value type is a non-volatile byte type.  Instead of
+	requiring that the fill type is a byte type, just require that it's an
+	integral type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/94017.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/94017.cc:
+	New test.
+	* testsuite/25_algorithms/fill/94013.cc: Uncomment part of test that was
+	blocked by PR 94017.
+	* testsuite/25_algorithms/fill/94017.cc: New test.
+	* testsuite/25_algorithms/fill_n/94017.cc: New test.
+
+	LWG 3355 The memory algorithms should support move-only input iterators
+	introduced by P1207
+	* include/bits/ranges_uninitialized.h
+	(__uninitialized_copy_fn::operator()): Use std::move to avoid attempting
+	to copy __ifirst, which could be a move-only input iterator.  Use
+	operator- instead of ranges::distance to compute distance from a sized
+	sentinel.
+	(__uninitialized_copy_n_fn::operator()): Likewise.
+	(__uninitialized_move_fn::operator()): Likewise.
+	(__uninitialized_move_n_fn::operator()): Likewise.
+	(__uninitialized_destroy_fn::operator()): Use std::move to avoid
+	attempting to copy __first.
+	(__uninitialized_destroy_n_fn::operator()): Likewise.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc:
+	Augment test.
+	* .../specialized_algorithms/uninitialized_copy/constrained.cc:
+	Likewise.
+	* .../specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+
+	* testsuite/util/testsuite_iterators.h (test_range::get_iterator): Make
+	protected instead of private.
+	(test_sized_range_sized_sent): New.
+
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper_nocopy):
+	New testsuite iterator.
+	* testsuite/24_iterators/counted_iterator/lwg3389.cc: use it.
+	* testsuite/24_iterators/move_iterator/lwg3390.cc: Likewise.
+
+	* include/bits/ranges_uninitialized.h
+	(uninitialized_copy_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_copy_fn::operator()): Likewise.
+	(uninitialized_move_fn::operator()): Likewise.  Return an in_out_result
+	with the input iterator stripped of its move_iterator.
+	(uninitialized_move_n_fn::operator()): Likewise.
+	(uninitialized_fill_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_fill_n_fn::operator()): Likewise.
+
+2020-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94013
+	* include/bits/cpp_type_traits.h (__memcpyable, __memcmpable): New
+	traits to control when to use memmove and memcmp optimizations.
+	(__is_nonvolatile_trivially_copyable): New helper trait.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Do not
+	use memcmp optimization with volatile data.
+	* include/bits/ranges_algobase.h (__equal_fn): Use __memcmpable.
+	(__copy_or_move, __copy_or_move_backward): Use __memcpyable.
+	* include/bits/stl_algobase.h (__copy_move_a2): Use __memcpyable.
+	(__copy_move_backward_a2): Likewise.
+	(__equal_aux1): Use __memcmpable.
+	(__lexicographical_compare_aux): Do not use memcmp optimization with
+	volatile data.
+	* testsuite/25_algorithms/copy/94013.cc: New test.
+	* testsuite/25_algorithms/copy_backward/94013.cc: New test.
+	* testsuite/25_algorithms/equal/94013.cc: New test.
+	* testsuite/25_algorithms/fill/94013.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/94013.cc: New test.
+	* testsuite/25_algorithms/move/94013.cc: New test.
+	* testsuite/25_algorithms/move_backward/94013.cc: New test.
+
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Avoid redundant iterator comparisons (LWG 3410).
+
+2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93972
+	* include/bits/stl_algobase.h (__memcmp): Allow pointer types to
+	differ.
+	* testsuite/25_algorithms/lexicographical_compare/uchar.cc: New test.
+
+	* include/std/ranges (__detail::__maybe_empty_t): Rename to
+	__maybe_present_t.
+	(__adaptor::_RangeAdaptor, join_view, split_view): Use new name.
+
+	* include/bits/ranges_algo.h (shift_right): Add 'typename' to
+	dependent type.
+
+2020-03-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/17_intro/headers/c++1998/charset.cc: Skip on *-*-hpux*.
+	* testsuite/17_intro/headers/c++2011/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/charset.cc: Likewise.
+
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	Add libatomic option.
+	* testsuite/30_threads/jthread/jthread.cc: Likewise.
+
+2020-02-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__find_if, __count_if, __is_permutation, std::is_permutation): Move...
+	* include/bits/stl_algobase.h: ...here.
+	* include/bits/hashtable_policy.h: Remove <bits/stl_algo.h> include.
+
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/30_threads/stop_token/stop_callback.cc: Add libatomic
+	option.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock-mt.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/invoke.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source/assign.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token/stop_possible.cc:
+	Likewise.
+
+	PR libstdc++/92906
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93972
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):
+	Fix condition for when to use memcmp, making it consistent with the
+	corresponding condition used in std::lexicographical_compare.
+	* testsuite/25_algorithms/lexicographical_compare/93972.cc: New test.
+
+	* testsuite/26_numerics/headers/numeric/synopsis.cc: Add signatures for
+	functions introduced in C++11, C++17 and C++2a.  Add 'constexpr' to
+	existing signatures for C++2a.
+
+2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: Run
+	test instead of just compiling it.
+
+2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (reverse_view::_S_needs_cached_begin): Set to false
+	whenever the underlying range models common_range.
+
+	* include/std/ranges (__detail::_CachedPosition): New struct.
+	(views::filter_view::_S_needs_cached_begin): New member variable.
+	(views::filter_view::_M_cached_begin): New member variable.
+	(views::filter_view::begin): Use _M_cached_begin to cache its
+	result.
+	(views::drop_view::_S_needs_cached_begin): New static member variable.
+	(views::drop_view::_M_cached_begin): New member variable.
+	(views::drop_view::begin): Use _M_cached_begin to cache its result
+	when _S_needs_cached_begin.
+	(views::drop_while_view::_M_cached_begin): New member variable.
+	(views::drop_while_view::begin): Use _M_cached_begin to cache its
+	result.
+	(views::reverse_view::_S_needs_cached_begin): New static member
+	variable.
+	(views::reverse_view::_M_cached_begin): New member variable.
+	(views::reverse_view::begin): Use _M_cached_begin to cache its result
+	when _S_needs_cached_begin.
+	* testsuite/std/ranges/adaptors/drop.cc: Augment test to check that
+	drop_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/drop_while.cc: Augment test to check
+	that drop_while_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/filter.cc: Augment test to check that
+	filter_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/reverse.cc: Augment test to check that
+	reverse_view::begin caches its result.
+
+2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
+	filesystems that silently truncate timestamps.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+
+	* testsuite/21_strings/basic_string/cons/char/1.cc: Disable
+	-Wstringop-overflow warnings.
+
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Add
+	-fdiagnostics-urls=never to options.
+
 2020-02-27  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (transform_view::_Iterator<_Const>): Befriend

@@ -674,6 +674,34 @@ namespace __gnu_test
       { return iter -= n; }
     };
 
+  // A move-only input iterator type.
+  template<typename T>
+    struct input_iterator_wrapper_nocopy : input_iterator_wrapper<T>
+    {
+      using input_iterator_wrapper<T>::input_iterator_wrapper;
+
+      input_iterator_wrapper_nocopy()
+	: input_iterator_wrapper<T>(nullptr, nullptr)
+      { }
+
+      input_iterator_wrapper_nocopy(const input_iterator_wrapper_nocopy&) = delete;
+      input_iterator_wrapper_nocopy&
+      operator=(const input_iterator_wrapper_nocopy&) = delete;
+
+      input_iterator_wrapper_nocopy(input_iterator_wrapper_nocopy&&) = default;
+      input_iterator_wrapper_nocopy&
+      operator=(input_iterator_wrapper_nocopy&&) = default;
+
+      using input_iterator_wrapper<T>::operator++;
+
+      input_iterator_wrapper_nocopy&
+      operator++()
+      {
+	input_iterator_wrapper<T>::operator++();
+	return *this;
+      }
+    };
+
   // A type meeting the minimum std::range requirements
   template<typename T, template<typename> class Iter>
     class test_range
@@ -707,6 +735,7 @@ namespace __gnu_test
 	  { return i.ptr - s.end; }
 	};
 
+    protected:
       auto
       get_iterator(T* p)
       {
@@ -783,6 +812,37 @@ namespace __gnu_test
   template<typename T>
     using test_output_sized_range
       = test_sized_range<T, output_iterator_wrapper>;
+
+  // A type meeting the minimum std::sized_range requirements, and whose end()
+  // returns a sized sentinel.
+  template<typename T, template<typename> class Iter>
+    struct test_sized_range_sized_sent : test_sized_range<T, Iter>
+    {
+      using test_sized_range<T, Iter>::test_sized_range;
+
+      template<typename I>
+	struct sentinel
+	{
+	  T* end;
+
+	  friend bool operator==(const sentinel& s, const I& i) noexcept
+	  { return s.end == i.ptr; }
+
+	  friend std::iter_difference_t<I>
+	  operator-(const sentinel& s, const I& i) noexcept
+	  { return s.end - i.ptr; }
+
+	  friend std::iter_difference_t<I>
+	  operator-(const I& i, const sentinel& s) noexcept
+	  { return i.ptr - s.end; }
+	};
+
+      auto end() &
+      {
+	using I = decltype(this->get_iterator(this->bounds.last));
+	return sentinel<I>{this->bounds.last};
+      }
+    };
 
 // test_range and test_sized_range do not own their elements, so they model
 // std::ranges::borrowed_range.  This file does not define specializations of

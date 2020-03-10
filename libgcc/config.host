@@ -1301,7 +1301,7 @@ s390x-*-linux*)
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)
-	tmake_file="${tmake_file} s390/t-crtstuff t-libgcc-pic t-eh-dw2-dip"
+	tmake_file="${tmake_file} s390/t-crtstuff t-libgcc-pic t-eh-dw2-dip s390/t-tpf"
 	extra_parts="crtbeginS.o crtendS.o"
 	md_unwind_header=s390/tpf-unwind.h
 	;;

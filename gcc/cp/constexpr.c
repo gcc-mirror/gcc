@@ -823,6 +823,9 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 	    /* A flexible array can't be intialized here, so don't complain
 	       that it isn't.  */
 	    continue;
+	  if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field)))
+	    /* An empty field doesn't need an initializer.  */
+	    continue;
 	  ftype = strip_array_types (ftype);
 	  if (type_has_constexpr_default_constructor (ftype))
 	    {
@@ -5473,9 +5476,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
 					false,
 					non_constant_p, overflow_p);
-      if (!*non_constant_p)
-	/* Adjust the type of the result to the type of the temporary.  */
-	r = adjust_temp_type (TREE_TYPE (t), r);
+      if (*non_constant_p)
+	break;
+      /* Adjust the type of the result to the type of the temporary.  */
+      r = adjust_temp_type (TREE_TYPE (t), r);
       if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
 	ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
       r = unshare_constructor (r);
@@ -5527,6 +5531,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), false,
 					    non_constant_p, overflow_p);
+	  if (*non_constant_p)
+	    break;
 	  ctx->global->values.put (t, r);
 	  if (ctx->save_exprs)
 	    ctx->save_exprs->safe_push (t);
@@ -5723,6 +5729,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case MAX_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
@@ -7846,6 +7854,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case MAX_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:

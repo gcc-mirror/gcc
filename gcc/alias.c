@@ -368,6 +368,26 @@ rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
 			     && MEM_ALIAS_SET (mem) != 0);
 }
 
+/* Return true if the ref EARLIER behaves the same as LATER with respect
+   to TBAA for every memory reference that might follow LATER.  */
+
+bool
+refs_same_for_tbaa_p (tree earlier, tree later)
+{
+  ao_ref earlier_ref, later_ref;
+  ao_ref_init (&earlier_ref, earlier);
+  ao_ref_init (&later_ref, later);
+  alias_set_type earlier_set = ao_ref_alias_set (&earlier_ref);
+  alias_set_type later_set = ao_ref_alias_set (&later_ref);
+  if (!(earlier_set == later_set
+	|| alias_set_subset_of (later_set, earlier_set)))
+    return false;
+  alias_set_type later_base_set = ao_ref_base_alias_set (&later_ref);
+  alias_set_type earlier_base_set = ao_ref_base_alias_set (&earlier_ref);
+  return (earlier_base_set == later_base_set
+	  || alias_set_subset_of (later_base_set, earlier_base_set));
+}
+
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 
@@ -1984,6 +2004,9 @@ find_base_term (rtx x, vec<std::pair<cselib_val *,
 
       if (cselib_sp_based_value_p (val))
 	return static_reg_base_value[STACK_POINTER_REGNUM];
+
+      if (visited_vals.length () > (unsigned) param_max_find_base_term_values)
+	return ret;
 
       f = val->locs;
       /* Reset val->locs to avoid infinite recursion.  */

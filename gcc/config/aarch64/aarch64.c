@@ -14131,8 +14131,8 @@ aarch64_override_options (void)
       if (selected_arch->arch != selected_cpu->arch)
 	{
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
-		       all_architectures[selected_cpu->arch].name,
-		       selected_arch->name);
+		       aarch64_cpu_string,
+		       aarch64_arch_string);
 	}
       aarch64_isa_flags = arch_isa;
       explicit_arch = selected_arch->arch;

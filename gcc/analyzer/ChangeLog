@@ -1,3 +1,124 @@
+2020-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class array_region): New forward decl.
+	* program-state.cc (selftest::test_program_state_dumping_2): New.
+	(selftest::analyzer_program_state_cc_tests): Call it.
+	* region-model.cc (array_region::constant_from_key): New.
+	(region_model::get_representative_tree): Handle region_svalue by
+	generating an ADDR_EXPR.
+	(region_model::get_representative_path_var): In view handling,
+	remove erroneous TREE_TYPE when determining the type of the tree.
+	Handle array regions and STRING_CST.
+	(selftest::assert_dump_tree_eq): New.
+	(ASSERT_DUMP_TREE_EQ): New macro.
+	(selftest::test_get_representative_tree): New selftest.
+	(selftest::analyzer_region_model_cc_tests): Call it.
+	* region-model.h (region::dyn_cast_array_region): New vfunc.
+	(array_region::dyn_cast_array_region): New vfunc implementation.
+	(array_region::constant_from_key): New decl.
+
+2020-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (dump_quoted_tree): New decl.
+	* engine.cc (exploded_node::dump_dot): Pass region model to
+	sm_state_map::print.
+	* program-state.cc: Include diagnostic-core.h.
+	(sm_state_map::print): Add "model" param and use it to print
+	representative trees.  Only print origin information if non-null.
+	(sm_state_map::dump): Pass NULL for model to print call.
+	(program_state::print): Pass region model to sm_state_map::print.
+	(program_state::dump_to_pp): Use spaces rather than newlines when
+	summarizing.  Pass region_model to sm_state_map::print.
+	(ana::selftest::assert_dump_eq): New function.
+	(ASSERT_DUMP_EQ): New macro.
+	(ana::selftest::test_program_state_dumping): New function.
+	(ana::selftest::analyzer_program_state_cc_tests): Call it.
+	* program-state.h (program_state::print): Add model param.
+	* region-model.cc (dump_quoted_tree): New function.
+	(map_region::print_fields): Use dump_quoted_tree rather than
+	%qE to avoid lang-dependent output.
+	(map_region::dump_child_label): Likewise.
+	(region_model::dump_summary_of_map): For SK_REGION, when
+	get_representative_path_var fails, print the region id rather than
+	erroneously printing NULL.
+	* sm.cc (state_machine::get_state_by_name): New function.
+	* sm.h (state_machine::get_state_by_name): New decl.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region::validate): Convert model param from ptr
+	to reference.  Update comment to reflect that it's now a vfunc.
+	(map_region::validate): New vfunc implementation.
+	(array_region::validate): New vfunc implementation.
+	(stack_region::validate): New vfunc implementation.
+	(root_region::validate): New vfunc implementation.
+	(region_model::validate): Pass a reference rather than a pointer
+	to the region::validate vfunc.
+	* region-model.h (region::validate): Make virtual.  Convert model
+	param from ptr to reference.
+	(map_region::validate): New vfunc decl.
+	(array_region::validate): New vfunc decl.
+	(stack_region::validate): New vfunc decl.
+	(root_region::validate): New vfunc decl.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* region-model.cc (region_model::on_call_pre): Handle
+	BUILT_IN_EXPECT and its variants.
+	(region_model::add_any_constraints_from_ssa_def_stmt): Split out
+	gassign handling into add_any_constraints_from_gassign; add gcall
+	handling.
+	(region_model::add_any_constraints_from_gassign): New function,
+	based on the above.  Add handling for NOP_EXPR.
+	(region_model::add_any_constraints_from_gcall): New function.
+	(region_model::get_representative_path_var): Handle views.
+	* region-model.h
+	(region_model::add_any_constraints_from_ssa_def_stmt): New decl.
+	(region_model::add_any_constraints_from_gassign): New decl.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* checker-path.h (state_change_event::get_lvalue): Add ctxt param
+	and pass it to region_model::get_value call.
+	* diagnostic-manager.cc (get_any_origin): Pass a
+	tentative_region_model_context to the calls to get_lvalue and reject
+	the comparison if errors occur.
+	(can_be_expr_of_interest_p): New function.
+	(diagnostic_manager::prune_for_sm_diagnostic): Replace checks for
+	CONSTANT_CLASS_P with calls to update_for_unsuitable_sm_exprs.
+	Pass a tentative_region_model_context to the calls to
+	state_change_event::get_lvalue and reject the comparison if errors
+	occur.
+	(diagnostic_manager::update_for_unsuitable_sm_exprs): New.
+	* diagnostic-manager.h
+	(diagnostic_manager::update_for_unsuitable_sm_exprs): New decl.
+	* region-model.h (class tentative_region_model_context): New class.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (worklist::worklist): Remove unused field m_eg.
+	(class viz_callgraph_edge): Remove unused field m_call_sedge.
+	(class viz_callgraph): Remove unused field m_sg.
+	* exploded-graph.h (worklist::::m_eg): Remove unused field.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (fanalyzer-show-duplicate-count): New option.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Use the above to
+	guard the printing of the duplicate count.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93959
+	* analyzer.cc (is_std_function_p): New function.
+	(is_std_named_call_p): New functions.
+	* analyzer.h (is_std_named_call_p): New decl.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Check for "std::"
+	variants when checking for malloc, calloc and free.
+
 2020-02-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93950

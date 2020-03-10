@@ -16,4 +16,4 @@ struct a getstruct (long aa) {
 /* Ensure our return value is returned on stack.  */
 /* { dg-final { scan-assembler-not "r12," } } */
 /* { dg-final { scan-assembler "l.or\\s+r11, r3, r3" } } */
-/* { dg-final { scan-assembler-times "l.sw\\s+\\d+.r3.," 3 } } */
+/* { dg-final { scan-assembler-times "l.sw\\s+\\d+.r11.," 3 } } */

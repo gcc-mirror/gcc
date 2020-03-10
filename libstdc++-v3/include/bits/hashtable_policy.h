@@ -33,8 +33,7 @@
 
 #include <tuple>		// for std::tuple, std::forward_as_tuple
 #include <limits>		// for std::numeric_limits
-#include <bits/stl_algobase.h>	// for std::min.
-#include <bits/stl_algo.h>	// for std::is_permutation.
+#include <bits/stl_algobase.h>	// for std::min, std::is_permutation.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

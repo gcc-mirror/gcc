@@ -697,6 +697,8 @@ ao_ref_alias_set (ao_ref *ref)
 {
   if (ref->ref_alias_set != -1)
     return ref->ref_alias_set;
+  if (!ref->ref)
+    return 0;
   ref->ref_alias_set = get_alias_set (ref->ref);
   return ref->ref_alias_set;
 }

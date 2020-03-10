@@ -1,3 +1,7 @@
+2020-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	Merge master 3654d49d0ff651b2a78401bc2430428711e7d2eb
+
 2020-03-09  Nathan Sidwell  <nathan@acm.org>
 
 	Function-scope using directives

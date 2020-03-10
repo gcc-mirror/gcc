@@ -38,6 +38,8 @@ extern void ix86_expand_split_stack_prologue (void);
 extern void ix86_output_addr_vec_elt (FILE *, int);
 extern void ix86_output_addr_diff_elt (FILE *, int, int);
 
+extern const char *ix86_output_ssemov (rtx_insn *, rtx *);
+
 extern enum calling_abi ix86_cfun_abi (void);
 extern enum calling_abi ix86_function_type_abi (const_tree);
 

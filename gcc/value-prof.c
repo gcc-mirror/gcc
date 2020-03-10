@@ -266,7 +266,7 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	  if (hist->hvalue.counters)
 	    {
 	      fprintf (dump_file, " all: %" PRId64 "%s, values: ",
-		       abs ((int64_t) hist->hvalue.counters[0]),
+		       std::abs ((int64_t) hist->hvalue.counters[0]),
 		       hist->hvalue.counters[0] < 0
 		       ? " (values missing)": "");
 	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)

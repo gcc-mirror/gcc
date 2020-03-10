@@ -6729,6 +6729,10 @@ layout_class_type (tree t, tree *virtuals_p)
 
   /* If we didn't end up needing an as-base type, don't use it.  */
   if (CLASSTYPE_AS_BASE (t) != t
+      /* If T's CLASSTYPE_AS_BASE is TYPE_USER_ALIGN, but T is not,
+	 replacing the as-base type would change CLASSTYPE_USER_ALIGN,
+	 causing us to lose the user-specified alignment as in PR94050.  */
+      && TYPE_USER_ALIGN (t) == TYPE_USER_ALIGN (CLASSTYPE_AS_BASE (t))
       && tree_int_cst_equal (TYPE_SIZE (t),
 			     TYPE_SIZE (CLASSTYPE_AS_BASE (t))))
     CLASSTYPE_AS_BASE (t) = t;

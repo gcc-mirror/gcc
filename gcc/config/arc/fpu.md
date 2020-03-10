@@ -89,7 +89,7 @@
   [(set (match_operand:SF 0 "register_operand"          "=r,r,r,r,r")
 	(fma:SF (match_operand:SF 1 "nonmemory_operand" "%0,r,0,r,F")
 		(match_operand:SF 2 "nonmemory_operand"  "r,r,F,F,r")
-		(match_operand:SF 3 "mlo_operand" "")))]
+		(match_operand:SF 3 "accl_operand" "")))]
   "TARGET_FP_SP_FUSED
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"
@@ -104,7 +104,7 @@
   [(set (match_operand:SF 0 "register_operand"                  "=r,r,r,r,r")
 	(fma:SF (neg:SF (match_operand:SF 1 "nonmemory_operand" "%0,r,0,r,F"))
 		(match_operand:SF 2 "nonmemory_operand"          "r,r,F,F,r")
-		(match_operand:SF 3 "mlo_operand" "")))]
+		(match_operand:SF 3 "accl_operand" "")))]
   "TARGET_FP_SP_FUSED
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"

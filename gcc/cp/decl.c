@@ -10328,13 +10328,12 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 	   NOP_EXPR with TREE_SIDE_EFFECTS; don't fold in that case.  */;
       else
 	{
-	  size = instantiate_non_dependent_expr_sfinae (size, complain);
 	  size = build_converted_constant_expr (size_type_node, size, complain);
 	  /* Pedantically a constant expression is required here and so
 	     __builtin_is_constant_evaluated () should fold to true if it
 	     is successfully folded into a constant.  */
-	  size = maybe_constant_value (size, NULL_TREE,
-				       /*manifestly_const_eval=*/true);
+	  size = fold_non_dependent_expr (size, complain,
+					  /*manifestly_const_eval=*/true);
 
 	  if (!TREE_CONSTANT (size))
 	    size = origsize;
@@ -17698,10 +17697,8 @@ build_explicit_specifier (tree expr, tsubst_flags_t complain)
     /* Wait for instantiation, tsubst_function_decl will handle it.  */
     return expr;
 
-  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-  /* Don't let convert_like_real create more template codes.  */
-  processing_template_decl_sentinel s;
   expr = build_converted_constant_bool_expr (expr, complain);
+  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
   expr = cxx_constant_value (expr);
   return expr;
 }

@@ -1,3 +1,46 @@
+2020-03-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93581
+	* resolve.c (gfc_resolve_ref): Modify array refs to be elements
+	if the ref chain ends in INQUIRY_LEN.
+	* trans-array.c (gfc_get_dataptr_offset): Provide the offsets
+	for INQUIRY_RE and INQUIRY_IM.
+
+2020-03-05 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93792
+	* decl.c (variable_decl): If param and initializer check
+	for BOZ, if found,  output an error, set m to MATCH_ERROR
+	and goto cleanup.
+
+2020-03-02  Andrew Benson  <abensonca@gmail.com>
+
+	PR fortran/93486
+	* module.c: Increase size of variables used to read module names
+	when loading interfaces from module files to permit cases where
+	the name is the concatenation of a module and submodule name.
+	* gfortran.dg/pr93486.f90: New test.
+
+2020-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92976
+	* match.c (select_type_set_tmp): If the selector array spec has
+	explicit bounds, make the temporary's bounds deferred.
+
+2020-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92959
+	* trans-intrinsic.c (gfc_conv_associated): Eliminate
+	'nonzero_charlen' and move the chunk to evaluate zero character
+	length until after the argument evaluation so that the string
+	length can be used.
+
+2020-02-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92785
+	* trans-expr.c (gfc_conv_intrinsic_to_class): Renormalise non-
+	variable expressions to be unity lbound based.
+
 2020-02-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* simplify.c (degrees_f): Remove unused code.

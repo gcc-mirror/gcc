@@ -852,6 +852,26 @@ path::operator+=(const path& p)
       return *this;
     }
 
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  if (_M_type() == _Type::_Root_name
+      || (_M_type() == _Type::_Filename && _M_pathname.size() == 1))
+    {
+      // Handle path("C") += path(":") and path("C:") += path("/x")
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + p._M_pathname);
+      return *this;
+    }
+#endif
+#if SLASHSLASH_IS_ROOTNAME
+  if (_M_type() == _Type::_Root_dir)
+    {
+      // Handle path("/") += path("/x") and path("//") += path("x")
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + p._M_pathname);
+      return *this;
+    }
+#endif
+
   const auto orig_pathlen = _M_pathname.length();
   const auto orig_type = _M_type();
   const auto orig_size = _M_cmpts.size();
@@ -1037,6 +1057,26 @@ path::_M_concat(basic_string_view<value_type> s)
       operator=(s);
       return;
     }
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  if (_M_type() == _Type::_Root_name
+      || (_M_type() == _Type::_Filename && _M_pathname.size() == 1))
+    {
+      // Handle path("C") += ":" and path("C:") += "/x"
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + string_type(s));
+      return;
+    }
+#endif
+#if SLASHSLASH_IS_ROOTNAME
+  if (_M_type() == _Type::_Root_dir)
+    {
+      // Handle path("/") += "/x" and path("//") += "x"
+      // FIXME: do this more efficiently
+      *this = path(_M_pathname + string_type(s));
+      return;
+    }
+#endif
 
   const auto orig_pathlen = _M_pathname.length();
   const auto orig_type = _M_type();

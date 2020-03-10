@@ -6327,8 +6327,14 @@ select_type_set_tmp (gfc_typespec *ts)
 		    = CLASS_DATA (selector)->attr.dimension;
 	      sym->attr.codimension
 		    = CLASS_DATA (selector)->attr.codimension;
-	      sym->as
-		    = gfc_copy_array_spec (CLASS_DATA (selector)->as);
+	      if (CLASS_DATA (selector)->as->type != AS_EXPLICIT)
+		sym->as = gfc_copy_array_spec (CLASS_DATA (selector)->as);
+	      else
+		{
+		  sym->as = gfc_get_array_spec();
+		  sym->as->rank = CLASS_DATA (selector)->as->rank;
+		  sym->as->type = AS_DEFERRED;
+		}
 	    }
 	}
 

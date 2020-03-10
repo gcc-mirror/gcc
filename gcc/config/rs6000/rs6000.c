@@ -4363,11 +4363,6 @@ rs6000_option_override_internal (bool global_init_p)
 		  str_align_loops = "16";
 		}
 	    }
-
-	  if (flag_align_jumps && !str_align_jumps)
-	    str_align_jumps = "16";
-	  if (flag_align_loops && !str_align_loops)
-	    str_align_loops = "16";
 	}
 
       /* Arrange to save and restore machine status around nested functions.  */
@@ -23632,6 +23627,7 @@ rs6000_disable_incompatible_switches (void)
     { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
     { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
     { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},
+    { OPTION_MASK_ALTIVEC,	OTHER_ALTIVEC_MASKS,	"altivec"	},
   };
 
   for (i = 0; i < ARRAY_SIZE (flags); i++)

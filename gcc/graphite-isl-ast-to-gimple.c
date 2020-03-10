@@ -265,6 +265,9 @@ gcc_expression_from_isl_ast_expr_id (tree type,
   tree t = res->second;
   if (useless_type_conversion_p (type, TREE_TYPE (t)))
     return t;
+  if (POINTER_TYPE_P (TREE_TYPE (t))
+      && !POINTER_TYPE_P (type) && !ptrofftype_p (type))
+    t = fold_convert (sizetype, t);
   return fold_convert (type, t);
 }
 

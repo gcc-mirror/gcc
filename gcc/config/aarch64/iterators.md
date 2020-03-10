@@ -462,6 +462,9 @@
 ;; SVE predicate modes that control 16-bit, 32-bit or 64-bit elements.
 (define_mode_iterator PRED_HSD [VNx8BI VNx4BI VNx2BI])
 
+;; Bfloat16 modes to which V4SF can be converted
+(define_mode_iterator V4SF_TO_BF [V4BF V8BF])
+
 ;; ------------------------------------------------------------------
 ;; Unspec enumerations for Advance SIMD. These could well go into
 ;; aarch64.md but for their use in int_iterators here.
@@ -828,6 +831,9 @@
     UNSPEC_BFMLALB	; Used in aarch64-sve.md.
     UNSPEC_BFMLALT	; Used in aarch64-sve.md.
     UNSPEC_BFMMLA	; Used in aarch64-sve.md.
+    UNSPEC_BFCVTN      ; Used in aarch64-simd.md.
+    UNSPEC_BFCVTN2     ; Used in aarch64-simd.md.
+    UNSPEC_BFCVT       ; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -979,6 +985,13 @@
                          (V2DI "2d") (V2SF "2s")
 			 (V4SF "4s") (V2DF "2d")
 			 (V4HF "4h") (V8HF "8h")])
+
+;; Map mode to type used in widening multiplies.
+(define_mode_attr Vcondtype [(V4HI "4h") (V8HI "4h") (V2SI "2s") (V4SI "2s")])
+
+;; Map lane mode to name
+(define_mode_attr Qlane [(V4HI "_v4hi") (V8HI  "q_v4hi")
+			 (V2SI "_v2si") (V4SI  "q_v2si")])
 
 (define_mode_attr Vrevsuff [(V4HI "16") (V8HI "16") (V2SI "32")
                             (V4SI "32") (V2DI "64")])

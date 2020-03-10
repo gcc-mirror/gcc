@@ -1924,11 +1924,21 @@ maybe_warn_overflow (gimple *stmt, tree len,
   if (TREE_NO_WARNING (dest))
     return;
 
+  /* Use maximum precision to avoid overflow in the addition below.
+     Make sure all operands have the same precision to keep wide_int
+     from ICE'ing.  */
+
+  /* Convenience constants.  */
+  const widest_int diff_min
+    = wi::to_widest (TYPE_MIN_VALUE (ptrdiff_type_node));
+  const widest_int diff_max
+    = wi::to_widest (TYPE_MAX_VALUE (ptrdiff_type_node));
+  const widest_int size_max
+    = wi::to_widest (TYPE_MAX_VALUE (size_type_node));
+
   /* The offset into the destination object computed below and not
      reflected in DESTSIZE.  */
-  wide_int offrng[2];
-  const int off_prec = TYPE_PRECISION (ptrdiff_type_node);
-  offrng[0] = offrng[1] = wi::zero (off_prec);
+  widest_int offrng[2] = { 0, 0 };
 
   if (!si)
     {
@@ -1941,15 +1951,17 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	     ARRAY_REF (MEM_REF (vlaptr, 0), N].  */
 	  tree off = TREE_OPERAND (ref, 1);
 	  ref = TREE_OPERAND (ref, 0);
-	  if (get_range (off, offrng, rvals))
+	  wide_int rng[2];
+	  if (get_range (off, rng, rvals))
 	    {
-	      offrng[0] = offrng[0].from (offrng[0], off_prec, SIGNED);
-	      offrng[1] = offrng[1].from (offrng[1], off_prec, SIGNED);
+	      /* Convert offsets to the maximum precision.  */
+	      offrng[0] = widest_int::from (rng[0], SIGNED);
+	      offrng[1] = widest_int::from (rng[1], SIGNED);
 	    }
 	  else
 	    {
-	      offrng[0] = wi::to_wide (TYPE_MIN_VALUE (ptrdiff_type_node));
-	      offrng[1] = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
+	      offrng[0] = diff_min;
+	      offrng[1] = diff_max;
 	    }
 	}
 
@@ -1957,25 +1969,25 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	{
 	  tree mem_off = TREE_OPERAND (ref, 1);
 	  ref = TREE_OPERAND (ref, 0);
-	  wide_int memoffrng[2];
-	  if (get_range (mem_off, memoffrng, rvals))
+	  wide_int rng[2];
+	  if (get_range (mem_off, rng, rvals))
 	    {
-	      offrng[0] += memoffrng[0];
-	      offrng[1] += memoffrng[1];
+	      offrng[0] += widest_int::from (rng[0], SIGNED);
+	      offrng[1] += widest_int::from (rng[1], SIGNED);
 	    }
 	  else
 	    {
-	      offrng[0] = wi::to_wide (TYPE_MIN_VALUE (ptrdiff_type_node));
-	      offrng[1] = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
+	      offrng[0] = diff_min;
+	      offrng[1] = diff_max;
 	    }
 	}
 
-      wide_int stroffrng[2];
-      if (int idx = get_stridx (ref, stroffrng, rvals))
+      wide_int rng[2];
+      if (int idx = get_stridx (ref, rng, rvals))
 	{
 	  si = get_strinfo (idx);
-	  offrng[0] += stroffrng[0];
-	  offrng[1] += stroffrng[1];
+	  offrng[0] += widest_int::from (rng[0], SIGNED);
+	  offrng[1] += widest_int::from (rng[1], SIGNED);
 	}
     }
 
@@ -1995,15 +2007,20 @@ maybe_warn_overflow (gimple *stmt, tree len,
   /* Compute the range of sizes of the destination object.  The range
      is constant for declared objects but may be a range for allocated
      objects.  */
-  const int siz_prec = TYPE_PRECISION (size_type_node);
-  wide_int sizrng[2];
+  widest_int sizrng[2] = { 0, 0 };
   if (si)
     {
-      destsize = gimple_call_alloc_size (si->alloc, sizrng, rvals);
+      wide_int rng[2];
+      destsize = gimple_call_alloc_size (si->alloc, rng, rvals);
+      if (destsize)
+	{
+	  sizrng[0] = widest_int::from (rng[0], UNSIGNED);
+	  sizrng[1] = widest_int::from (rng[1], UNSIGNED);
+	}
       alloc_call = si->alloc;
     }
   else
-    offrng[0] = offrng[1] = wi::zero (off_prec);
+    offrng[0] = offrng[1] = 0;
 
   if (!destsize)
     {
@@ -2014,7 +2031,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	{
 	  /* Remember OFF but clear OFFRNG that may have been set above.  */
 	  destoff = off;
-	  offrng[0] = offrng[1] = wi::zero (off_prec);
+	  offrng[0] = offrng[1] = 0;
 
 	  if (destdecl && TREE_CODE (destdecl) == SSA_NAME)
 	    {
@@ -2024,26 +2041,29 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	      destdecl = NULL_TREE;
 	    }
 
-	  if (!get_range (destsize, sizrng, rvals))
+	  wide_int rng[2];
+	  if (get_range (destsize, rng, rvals))
+	    {
+	      sizrng[0] = widest_int::from (rng[0], UNSIGNED);
+	      sizrng[1] = widest_int::from (rng[1], UNSIGNED);
+	    }
+	  else
 	    {
 	      /* On failure, rather than failing, set the maximum range
 		 so that overflow in allocated objects whose size depends
 		 on the strlen of the source can still be diagnosed
 		 below.  */
-	      sizrng[0] = wi::zero (siz_prec);
-	      sizrng[1] = wi::to_wide (TYPE_MAX_VALUE (sizetype));
+	      sizrng[0] = 0;
+	      sizrng[1] = size_max;
 	    }
 	}
     }
 
   if (!destsize)
     {
-      sizrng[0] = wi::zero (siz_prec);
-      sizrng[1] = wi::to_wide (TYPE_MAX_VALUE (sizetype));
+      sizrng[0] = 0;
+      sizrng[1] = size_max;
     };
-
-  sizrng[0] = sizrng[0].from (sizrng[0], siz_prec, UNSIGNED);
-  sizrng[1] = sizrng[1].from (sizrng[1], siz_prec, UNSIGNED);
 
   /* Return early if the DESTSIZE size expression is the same as LEN
      and the offset into the destination is zero.  This might happen
@@ -2052,9 +2072,12 @@ maybe_warn_overflow (gimple *stmt, tree len,
   if (destsize == len && !plus_one && offrng[0] == 0 && offrng[0] == offrng[1])
     return;
 
-  wide_int lenrng[2];
-  if (!get_range (len, lenrng, rvals))
+  wide_int rng[2];
+  if (!get_range (len, rng, rvals))
     return;
+
+  widest_int lenrng[2] =
+    { widest_int::from (rng[0], SIGNED), widest_int::from (rng[1], SIGNED) };
 
   if (plus_one)
     {
@@ -2064,7 +2087,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 
   /* The size of the remaining space in the destination computed
      as the size of the latter minus the offset into it.  */
-  wide_int spcrng[2] = { sizrng[0], sizrng[1] };
+  widest_int spcrng[2] = { sizrng[0], sizrng[1] };
   if (wi::neg_p (offrng[0]) && wi::neg_p (offrng[1]))
     {
       /* When the offset is negative and the size of the destination
@@ -2075,7 +2098,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	return;
 
       /* The remaining space is necessarily zero.  */
-      spcrng[0] = spcrng[1] = wi::zero (spcrng->get_precision ());
+      spcrng[0] = spcrng[1] = 0;
     }
   else if (wi::neg_p (offrng[0]))
     {
@@ -2106,11 +2129,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 	  || !si || !is_strlen_related_p (si->ptr, len)))
     return;
 
-  location_t loc = gimple_nonartificial_location (stmt);
-  if (loc == UNKNOWN_LOCATION && dest && EXPR_HAS_LOCATION (dest))
-    loc = tree_nonartificial_location (dest);
-  loc = expansion_point_location_if_in_system_header (loc);
-
+  location_t loc = gimple_or_expr_nonartificial_location (stmt, dest);
   bool warned = false;
   if (wi::leu_p (lenrng[0], spcrng[1]))
     {
@@ -2203,7 +2222,16 @@ maybe_warn_overflow (gimple *stmt, tree len,
 
   /* If DESTOFF is not null, use it to format the offset value/range.  */
   if (destoff)
-    get_range (destoff, offrng);
+    {
+      wide_int rng[2];
+      if (get_range (destoff, rng))
+	{
+	  offrng[0] = widest_int::from (rng[0], SIGNED);
+	  offrng[1] = widest_int::from (rng[1], SIGNED);
+	}
+      else
+	offrng[0] = offrng[1] = 0;
+    }
 
   /* Format the offset to keep the number of inform calls from growing
      out of control.  */
@@ -2259,8 +2287,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
       else if (sizrng[0] == 0)
 	{
 	  /* Avoid printing impossible sizes.  */
-	  if (wi::ltu_p (sizrng[1],
-			 wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2))
+	  if (wi::ltu_p (sizrng[1], diff_max - 2))
 	    inform (gimple_location (alloc_call),
 		    "at offset %s to an object with size at most %wu "
 		    "declared here",
@@ -2284,8 +2311,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
   else if (sizrng[0] == 0)
     {
       /* Avoid printing impossible sizes.  */
-      if (wi::ltu_p (sizrng[1],
-		     wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2))
+      if (wi::ltu_p (sizrng[1], diff_max - 2))
 	inform (gimple_location (alloc_call),
 		"at offset %s to an object with size at most %wu allocated "
 		"by %qD here",
@@ -3159,9 +3185,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	}
     }
 
-  location_t callloc = gimple_nonartificial_location (stmt);
-  callloc = expansion_point_location_if_in_system_header (callloc);
-
+  location_t callloc = gimple_or_expr_nonartificial_location (stmt, dst);
   tree func = gimple_call_fndecl (stmt);
 
   if (lenrange[0] != 0 || !wi::neg_p (lenrange[1]))
@@ -3373,8 +3397,7 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
      to strlen(S)).  */
   strinfo *silen = get_strinfo (pss->first);
 
-  location_t callloc = gimple_nonartificial_location (stmt);
-  callloc = expansion_point_location_if_in_system_header (callloc);
+  location_t callloc = gimple_or_expr_nonartificial_location (stmt, dst);
 
   tree func = gimple_call_fndecl (stmt);
 
@@ -4301,10 +4324,7 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
 
   /* FIXME: Include a note pointing to the declaration of the smaller
      array.  */
-  location_t stmt_loc = gimple_nonartificial_location (stmt);
-  if (stmt_loc == UNKNOWN_LOCATION && EXPR_HAS_LOCATION (lhs))
-    stmt_loc = tree_nonartificial_location (lhs);
-  stmt_loc = expansion_point_location_if_in_system_header (stmt_loc);
+  location_t stmt_loc = gimple_or_expr_nonartificial_location (stmt, lhs);
 
   tree callee = gimple_call_fndecl (stmt);
   bool warned = false;
@@ -4587,12 +4607,15 @@ int ssa_name_limit_t::next_ssa_name (tree ssa_name)
 
 /* Determines the minimum and maximum number of leading non-zero bytes
    in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
-   to each.  Sets LENRANGE[2] to the total number of bytes in
-   the representation.  Sets *NULTREM if the representation contains
-   a zero byte, and sets *ALLNUL if all the bytes are zero.
+   to each.
+   Sets LENRANGE[2] to the total size of the access (which may be less
+   than LENRANGE[1] when what's being referenced by EXP is a pointer
+   rather than an array).
+   Sets *NULTERM if the representation contains a zero byte, and sets
+   *ALLNUL if all the bytes are zero.
    OFFSET and NBYTES are the offset into the representation and
-   the size of the access to it determined from a MEM_REF or zero
-   for other expressions.
+   the size of the access to it determined from an ADDR_EXPR (i.e.,
+   a pointer) or MEM_REF or zero for other expressions.
    Uses RVALS to determine range information.
    Avoids recursing deeper than the limits in SNLIM allow.
    Returns true on success and false otherwise.  */
@@ -4692,7 +4715,13 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
     }
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    exp = TREE_OPERAND (exp, 0);
+    {
+      /* If the size of the access hasn't been determined yet it's that
+	 of a pointer.  */
+      if (!nbytes)
+	nbytes = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (exp)));
+      exp = TREE_OPERAND (exp, 0);
+    }
 
   if (TREE_CODE (exp) == SSA_NAME)
     {
@@ -4788,9 +4817,10 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	return false;
 
       if (!nbytes)
-	/* If NBYTES hasn't been determined earlier from MEM_REF,
-	   set it here.  It includes all internal nuls, including
-	   the terminating one if the string has one.  */
+	/* If NBYTES hasn't been determined earlier, either from ADDR_EXPR
+	   (i.e., it's the size of a pointer), or from MEM_REF (as the size
+	   of the access), set it here to the size of the string, including
+	   all internal and trailing nuls if the string has any.  */
 	nbytes = nchars - offset;
 
       prep = TREE_STRING_POINTER (exp) + offset;
