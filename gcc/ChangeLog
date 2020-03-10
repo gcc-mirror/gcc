@@ -1,3 +1,9 @@
+2020-03-10  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* ddg.c (create_ddg): Fix intendation.
+	(set_recurrence_length): Likewise.
+	(create_ddg_all_sccs): Likewise.
+
 2020-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94088

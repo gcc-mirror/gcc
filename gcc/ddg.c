@@ -633,7 +633,7 @@ create_ddg (basic_block bb, int closing_branch_deps)
       g->nodes[i].aux.count = -1;
       g->nodes[i].max_dist = XCNEWVEC (int, num_nodes);
       for (j = 0; j < num_nodes; j++)
-         g->nodes[i].max_dist[j] = -1;
+	g->nodes[i].max_dist[j] = -1;
 
       g->nodes[i++].insn = insn;
       first_note = NULL;
@@ -838,7 +838,7 @@ set_recurrence_length (ddg_scc_ptr scc)
       int length = src->max_dist[dest->cuid];
 
       if (length < 0)
-        continue;
+	continue;
 
       length += backarc->latency;
       result = MAX (result, (length / distance));
@@ -1069,8 +1069,8 @@ create_ddg_all_sccs (ddg_ptr g)
 
       n->max_dist[k] = 0;
       for (e = n->out; e; e = e->next_out)
-        if (e->distance == 0 && g->nodes[e->dest->cuid].aux.count == n->aux.count)
-          n->max_dist[e->dest->cuid] = e->latency;
+	if (e->distance == 0 && g->nodes[e->dest->cuid].aux.count == n->aux.count)
+	  n->max_dist[e->dest->cuid] = e->latency;
     }
 
   /* Run main Floid-Warshall loop.  We use only non-backarc edges
@@ -1079,19 +1079,19 @@ create_ddg_all_sccs (ddg_ptr g)
     {
       scc = g->nodes[k].aux.count;
       if (scc != -1)
-        {
-          for (i = 0; i < num_nodes; i++)
-            if (g->nodes[i].aux.count == scc)
-              for (j = 0; j < num_nodes; j++)
-                if (g->nodes[j].aux.count == scc
-                    && g->nodes[i].max_dist[k] >= 0
-                    && g->nodes[k].max_dist[j] >= 0)
-                  {
-                    way = g->nodes[i].max_dist[k] + g->nodes[k].max_dist[j];
-                    if (g->nodes[i].max_dist[j] < way)
-                      g->nodes[i].max_dist[j] = way;
-                  }
-        }
+	{
+	  for (i = 0; i < num_nodes; i++)
+	    if (g->nodes[i].aux.count == scc)
+	      for (j = 0; j < num_nodes; j++)
+		if (g->nodes[j].aux.count == scc
+		    && g->nodes[i].max_dist[k] >= 0
+		    && g->nodes[k].max_dist[j] >= 0)
+		  {
+		    way = g->nodes[i].max_dist[k] + g->nodes[k].max_dist[j];
+		    if (g->nodes[i].max_dist[j] < way)
+		      g->nodes[i].max_dist[j] = way;
+		  }
+	}
     }
 
   /* Calculate recurrence_length using max_dist info.  */
