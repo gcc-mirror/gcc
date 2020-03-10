@@ -1,3 +1,8 @@
+2020-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94047
+	* gcc.dg/analyzer/pr94047.c: New test.
+
 2020-03-18   Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94206
