@@ -6062,6 +6062,13 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       else if (last_nonzero < nelts - 1)
 	nelts = last_nonzero + 1;
 
+      /* Sharing a stripped constructor can get in the way of
+	 overload resolution.  E.g., initializing a class from
+	 {{0}} might be invalid while initializing the same class
+	 from {{}} might be valid.  */
+      if (reuse)
+	new_init = unshare_constructor (new_init);
+
       vec_safe_truncate (CONSTRUCTOR_ELTS (new_init), nelts);
     }
 

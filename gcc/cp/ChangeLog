@@ -1,3 +1,9 @@
+2020-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94124 - wrong conversion error with non-viable overload.
+	* decl.c (reshape_init_array_1): Unshare a constructor if we
+	stripped trailing zero-initializers.
+
 2020-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93901

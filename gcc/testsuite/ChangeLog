@@ -1,3 +1,8 @@
+2020-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94124 - wrong conversion error with non-viable overload.
+	* g++.dg/cpp0x/initlist-overload1.C: New test.
+
 2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93709
