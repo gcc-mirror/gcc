@@ -1,5 +1,9 @@
 2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR c++/94117
+	* include/std/ranges (ranges::transform_view::_Iterator::iter_move):
+	Change expression in noexcept-specifier to match function body.
+
 	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Add
 	comment explaining multiple dg-do directives.
 	* testsuite/24_iterators/ostream_iterator/1.cc: Fix do-do directive

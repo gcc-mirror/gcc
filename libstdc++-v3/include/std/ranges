@@ -1837,7 +1837,7 @@ namespace views
 	  { return __x._M_current - __y._M_current; }
 
 	  friend constexpr decltype(auto)
-	  iter_move(const _Iterator& __i) noexcept(noexcept(__iter_move()))
+	  iter_move(const _Iterator& __i) noexcept(noexcept(__iter_move(__i)))
 	  { return __iter_move(__i); }
 
 	  friend constexpr void
