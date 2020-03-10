@@ -1,3 +1,10 @@
+2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Add
+	comment explaining multiple dg-do directives.
+	* testsuite/24_iterators/ostream_iterator/1.cc: Fix do-do directive
+	so test is run as well as compiled.
+
 2020-03-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94063
