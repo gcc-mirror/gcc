@@ -2915,7 +2915,7 @@ check_simple_exit (class loop *loop, edge e, class niter_desc *desc)
 
 /* Finds a simple exit of LOOP and stores its description into DESC.  */
 
-void
+static void
 find_simple_exit (class loop *loop, class niter_desc *desc)
 {
   unsigned i;

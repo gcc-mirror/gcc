@@ -1,5 +1,10 @@
 2020-03-10  Roman Zhuykov  <zhroma@ispras.ru>
 
+	* loop-iv.c (find_simple_exit): Make it static.
+	* cfgloop.h: Remove the corresponding prototype.
+
+2020-03-10  Roman Zhuykov  <zhroma@ispras.ru>
+
 	* ddg.c (create_ddg): Fix intendation.
 	(set_recurrence_length): Likewise.
 	(create_ddg_all_sccs): Likewise.
