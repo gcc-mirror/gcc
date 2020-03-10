@@ -1,5 +1,20 @@
 2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges (transform_view::_Iterator::__iter_move): Remove.
+	(transform_view::_Iterator::operator*): Add noexcept-specifier.
+	(transform_view::_Iterator::iter_move): Inline __iter_move body here.
+	(split_view::_OuterIter::__current): Add noexcept.
+	(split_view::_InnerIter::__iter_swap): Remove.
+	(split_view::_InnerIter::__iter_move): Remove.
+	(split_view::_InnerIter::_M_i_current): New accessors.
+	(split_view::_InnerIter::__at_end): Use _M_i_current().
+	(split_view::_InnerIter::operator*): Likewise.
+	(split_view::_InnerIter::operator++): Likewise.
+	(iter_move(const _InnerIter&)): Likewise.
+	(iter_swap(const _InnerIter&, const _InnerIter&)): Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Check noexcept-specifier
+	for iter_move and iter_swap on split_view's inner iterator.
+
 	PR c++/94117
 	* include/std/ranges (ranges::transform_view::_Iterator::iter_move):
 	Change expression in noexcept-specifier to match function body.

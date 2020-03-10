@@ -1679,17 +1679,6 @@ namespace views
 	      return input_iterator_tag{};
 	  }
 
-	  static constexpr decltype(auto)
-	  __iter_move(const _Iterator& __i = {})
-	    noexcept(noexcept(std::__invoke(*__i._M_parent->_M_fun,
-					    *__i._M_current)))
-	  {
-	    if constexpr (is_lvalue_reference_v<decltype(*__i)>)
-	      return std::move(*__i);
-	    else
-	      return *__i;
-	  }
-
 	  using _Base_iter = iterator_t<_Base>;
 
 	  _Base_iter _M_current = _Base_iter();
@@ -1728,6 +1717,7 @@ namespace views
 
 	  constexpr decltype(auto)
 	  operator*() const
+	    noexcept(noexcept(std::__invoke(*_M_parent->_M_fun, *_M_current)))
 	  { return std::__invoke(*_M_parent->_M_fun, *_M_current); }
 
 	  constexpr _Iterator&
@@ -1837,8 +1827,13 @@ namespace views
 	  { return __x._M_current - __y._M_current; }
 
 	  friend constexpr decltype(auto)
-	  iter_move(const _Iterator& __i) noexcept(noexcept(__iter_move(__i)))
-	  { return __iter_move(__i); }
+	  iter_move(const _Iterator& __i) noexcept(noexcept(*__i))
+	  {
+	    if constexpr (is_lvalue_reference_v<decltype(*__i)>)
+	      return std::move(*__i);
+	    else
+	      return *__i;
+	  }
 
 	  friend constexpr void
 	  iter_swap(const _Iterator& __x, const _Iterator& __y)
@@ -2715,7 +2710,7 @@ namespace views
 	  //  current of outer-iterator.  current is equivalent to current_ if
 	  //  V models forward_range, and parent_->current_ otherwise.
 	  constexpr auto&
-	  __current()
+	  __current() noexcept
 	  {
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
@@ -2724,7 +2719,7 @@ namespace views
 	  }
 
 	  constexpr auto&
-	  __current() const
+	  __current() const noexcept
 	  {
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
@@ -2860,7 +2855,7 @@ namespace views
 	    auto __end = ranges::end(_M_i._M_parent->_M_base);
 	    if constexpr (__detail::__tiny_range<_Pattern>)
 	      {
-		const auto& __cur = _M_i.__current();
+		const auto& __cur = _M_i_current();
 		if (__cur == __end)
 		  return true;
 		if (__pcur == __pend)
@@ -2869,7 +2864,7 @@ namespace views
 	      }
 	    else
 	      {
-		auto __cur = _M_i.__current();
+		auto __cur = _M_i_current();
 		if (__cur == __end)
 		  return true;
 		if (__pcur == __pend)
@@ -2896,16 +2891,13 @@ namespace views
 	      return _Cat{};
 	  }
 
-	  static constexpr decltype(auto)
-	  __iter_move(const _InnerIter& __i = {})
-	  noexcept(noexcept(ranges::iter_move(__i._M_i.__current())))
-	  { return ranges::iter_move(__i._M_i.__current()); }
+	  constexpr auto&
+	  _M_i_current() noexcept
+	  { return _M_i.__current(); }
 
-	  static constexpr void
-	  __iter_swap(const _InnerIter& __x = {}, const _InnerIter& __y = {})
-	    noexcept(noexcept(ranges::iter_swap(__x._M_i.__current(),
-						__y._M_i.__current())))
-	  { ranges::iter_swap(__x._M_i.__current(), __y._M_i.__current()); }
+	  constexpr auto&
+	  _M_i_current() const noexcept
+	  { return _M_i.__current(); }
 
 	  _OuterIter<_Const> _M_i = _OuterIter<_Const>();
 	  bool _M_incremented = false;
@@ -2926,7 +2918,7 @@ namespace views
 
 	  constexpr decltype(auto)
 	  operator*() const
-	  { return *_M_i._M_current; }
+	  { return *_M_i_current(); }
 
 	  constexpr _InnerIter&
 	  operator++()
@@ -2935,7 +2927,7 @@ namespace views
 	    if constexpr (!forward_range<_Base>)
 	      if constexpr (_Pattern::size() == 0)
 		return *this;
-	    ++_M_i.__current();
+	    ++_M_i_current();
 	    return *this;
 	  }
 
@@ -2962,14 +2954,16 @@ namespace views
 	  { return __x.__at_end(); }
 
 	  friend constexpr decltype(auto)
-	  iter_move(const _InnerIter& __i) noexcept(noexcept(__iter_move()))
-	  { return __iter_move(__i); }
+	  iter_move(const _InnerIter& __i)
+	    noexcept(noexcept(ranges::iter_move(__i._M_i_current())))
+	  { return ranges::iter_move(__i._M_i_current()); }
 
 	  friend constexpr void
 	  iter_swap(const _InnerIter& __x, const _InnerIter& __y)
-	    noexcept(noexcept(__iter_swap()))
+	    noexcept(noexcept(ranges::iter_swap(__x._M_i_current(),
+						__y._M_i_current())))
 	    requires indirectly_swappable<iterator_t<_Base>>
-	  { __iter_swap(__x, __y); }
+	  { ranges::iter_swap(__x._M_i_current(), __y._M_i_current()); }
 	};
 
       _Vp _M_base = _Vp();
@@ -3010,8 +3004,8 @@ namespace views
       begin()
       {
 	if constexpr (forward_range<_Vp>)
-	  return _OuterIter<__detail::__simple_view<_Vp>>{*this,
-							ranges::begin(_M_base)};
+	  return _OuterIter<__detail::__simple_view<_Vp>>{
+	      *this, ranges::begin(_M_base)};
 	else
 	  {
 	    _M_current = ranges::begin(_M_base);
@@ -3028,7 +3022,8 @@ namespace views
       constexpr auto
       end() requires forward_range<_Vp> && common_range<_Vp>
       {
-	return _OuterIter<__detail::__simple_view<_Vp>>{*this, ranges::end(_M_base)};
+	return _OuterIter<__detail::__simple_view<_Vp>>{
+	    *this, ranges::end(_M_base)};
       }
 
       constexpr auto

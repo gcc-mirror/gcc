@@ -121,6 +121,18 @@ test06()
   b = ranges::begin(v);
 }
 
+void
+test07()
+{
+  char str[] = "banana split";
+  auto split = str | views::split(' ');
+  auto val = *split.begin();
+  auto b = val.begin();
+  auto b2 = b++;
+  static_assert( noexcept(iter_move(b)) );
+  static_assert( noexcept(iter_swap(b, b2)) );
+}
+
 int
 main()
 {
@@ -130,4 +142,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }
