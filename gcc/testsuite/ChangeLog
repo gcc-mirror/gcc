@@ -1,3 +1,10 @@
+2020-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94099
+	PR analyzer/94105
+	* gcc.dg/analyzer/pr94099.c: New test.
+	* gcc.dg/analyzer/pr94105.c: New test.
+
 2020-03-13  Vasee Vinayagamoorthy  <vaseeharan.vinayagamoorthy@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: Fix DejaGnu
