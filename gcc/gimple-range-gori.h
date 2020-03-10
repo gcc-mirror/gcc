@@ -189,8 +189,14 @@ private:
 			const irange &op1_false,
 			const irange &op2_true,
 			const irange &op2_false);
+  bool logical_operation_is_linear (const gimple *, const irange &);
   int_range<1> m_bool_zero;           /* Boolean zero cached.  */
   int_range<1> m_bool_one;            /* Boolean true cached.  */
+  const unsigned m_default_depth_limit = 6;
+  // Max depth of logical recursion.
+  unsigned m_depth_limit;
+  // Current depth of logical recursion.
+  unsigned m_depth;
 };
 
 class trace_gori_compute : public gori_compute
