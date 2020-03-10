@@ -1271,3 +1271,31 @@ trace_gori_compute::compute_operand_range (irange &r, gimple *stmt,
   bool res = super::compute_operand_range (r, stmt, lhs, name, name_range);
   return trailer (idx, "compute_operand_range", res, name, r);
 }
+
+bool
+trace_gori_compute::compute_logical_operands (irange &r, gimple *stmt,
+					      const irange &lhs,
+					      tree name,
+					      const irange *name_range)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "compute_logical_operands (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") with range ");
+      if (name_range)
+	name_range->dump (dump_file);
+      else
+	fputs ("NULL", dump_file);
+      fprintf (dump_file, " at stmt:\n");
+      dumping (idx, true);
+      fputs ("    ", dump_file);
+      lhs.dump (dump_file);
+      fprintf (dump_file, " <==> ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      indent += bump;
+    }
+  bool res = super::compute_logical_operands (r, stmt, lhs, name, name_range);
+  return trailer (idx, "compute_logical_operands", res, name, r);
+}

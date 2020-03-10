@@ -157,6 +157,9 @@ protected:
 				      tree name,
 				      const irange *name_range = NULL);
   bool has_edge_range_p (edge e, tree name);
+  virtual bool compute_logical_operands (irange &r, gimple *stmt,
+					 const irange &lhs,
+					 tree name, const irange *name_range);
   gori_map m_gori_map;
 private:
   void get_tree_range (irange &, tree expr, tree name,
@@ -178,9 +181,6 @@ private:
 			       tree name, const irange *name_range);
   bool compute_operand1_and_operand2_range
 				(irange &r, gimple *stmt,
-				 const irange &lhs,
-				 tree name, const irange *name_range);
-  bool compute_logical_operands (irange &r, gimple *stmt,
 				 const irange &lhs,
 				 tree name, const irange *name_range);
   bool logical_combine (irange &r, enum tree_code code,
@@ -206,6 +206,9 @@ protected:
 				      const irange &lhs,
 				      tree name,
 				      const irange *name_range = NULL);
+  virtual bool compute_logical_operands (irange &r, gimple *stmt,
+					 const irange &lhs,
+					 tree name, const irange *name_range);
 private:
   typedef gori_compute super; 	// Inherited from class for easy changing.
 protected:
