@@ -1,13 +1,14 @@
 # Swedish messages for GCCs.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.
 #
 # Reminder to translator: GCC team does not want RCS keywords in the header!
 #
 # Dictionary:
 # assumed type		antagen typ
+# bundle		bunt
 # cast			typkonvertering
 # chunk			stycke
 # kind			sort
@@ -22,10 +23,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 9.1.0\n"
+"Project-Id-Version: gcc 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-02-07 22:33+0000\n"
-"PO-Revision-Date: 2019-06-04 10:48+0200\n"
+"PO-Revision-Date: 2020-03-09 17:35+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -536,12 +537,12 @@ msgstr "Trådmodell: %s\n"
 #: gcc.c:6797
 #, c-format
 msgid "Supported LTO compression algorithms: zlib"
-msgstr ""
+msgstr "Stödda LTO-komprimeringsalgoritmer: zlib"
 
 #: gcc.c:6799
 #, c-format
 msgid " zstd"
-msgstr ""
+msgstr " zstd"
 
 #: gcc.c:6801 gcov.c:1408 gcov.c:1476 gcov.c:2813
 #, c-format
@@ -788,10 +789,9 @@ msgstr ""
 "Fel på översättningen rapporteras till <tp-sv@listor.tp-sv.se>\n"
 
 #: gcov-tool.c:528
-#, fuzzy, c-format
-#| msgid "Copyright %s 2019 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2020 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2019 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2020 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:531 gcov.c:929
 #, c-format
@@ -1266,10 +1266,8 @@ msgid "%s  Same as %s."
 msgstr "%s  Samma som %s."
 
 #: opts.c:1395
-#, fuzzy
-#| msgid "variable"
 msgid "[available in "
-msgstr "variabel"
+msgstr "[tillgänglig i "
 
 #: opts.c:1427
 msgid "[default]"
@@ -1278,7 +1276,7 @@ msgstr "[standard]"
 #: opts.c:1436
 #, c-format
 msgid "%llu bytes"
-msgstr ""
+msgstr "%llu byte"
 
 #: opts.c:1473
 msgid "[enabled]"
@@ -1329,10 +1327,8 @@ msgid "The following options are language-independent"
 msgstr "Följande flaggor är språkoberoende"
 
 #: opts.c:1633
-#, fuzzy
-#| msgid "The following options control optimizations"
 msgid "The following options control parameters"
-msgstr "Följande flaggor styr optimeringar"
+msgstr "Följande flaggor styr parametrar"
 
 #: opts.c:1639
 msgid "The following options are specific to just the language "
@@ -1382,10 +1378,8 @@ msgid "*** WARNING *** there are active plugins, do not report this as a bug unl
 msgstr "*** VARNING *** det finns aktiva insticksmoduler, rapportera inte detta som ett fel med mindre än att du kan reproducera det utan att aktivera några insticksmoduler.\n"
 
 #: postreload-gcse.c:1354
-#, fuzzy
-#| msgid "Reschedule instructions after register allocation."
 msgid "using simple load CSE after register allocation"
-msgstr "Schemalägg om instruktioner efter registertilldelning."
+msgstr "användning av enkel laddning av CSE efter registertilldelning."
 
 #. It's the compiler's fault.
 #: reload1.c:5997
@@ -1528,10 +1522,8 @@ msgid "call is unlikely and code size would grow"
 msgstr "anrop är osannolikt och kodstorleken skulle växa"
 
 #: cif-code.def:88
-#, fuzzy
-#| msgid "call is unlikely and code size would grow"
 msgid "call is considered never executed and code size would grow"
-msgstr "anrop är osannolikt och kodstorleken skulle växa"
+msgstr "anropet anses aldrig kört och kodstorleken skulle växa"
 
 #: cif-code.def:92
 msgid "function not declared inline and code size would grow"
@@ -1626,7 +1618,7 @@ msgstr "felsökning: "
 #. a range of events within a path.
 #: diagnostic.def:44
 msgid "path: "
-msgstr ""
+msgstr "sökväg: "
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
@@ -1985,7 +1977,7 @@ msgstr "ogiltig konvertering till typ %qT från typ %qT"
 #: config/aarch64/aarch64.c:21894 config/aarch64/aarch64.c:21910
 #: config/arm/arm.c:32849 config/arm/arm.c:32865
 msgid "operation not permitted on type %<bfloat16_t%>"
-msgstr ""
+msgstr "operationen är inte tillåten på typen %<bfloat16_t%>"
 
 #: config/alpha/alpha.c:5076 config/i386/i386.c:12789
 #: config/rs6000/rs6000.c:13261 config/sparc/sparc.c:9354
@@ -3995,6 +3987,12 @@ msgid ""
 "   BIND(C) feature of standard Fortran instead.  */\n"
 "\n"
 msgstr ""
+"/* Prototyper för externa procedurer genererade från %s\n"
+"   av GNU Fortran %s%s.\n"
+"\n"
+"   Användning av detta gränssnitt avrådes ifrån, överväg att använda\n"
+"   funktionaliteten BIND(C) i standard Fortran istället.  */\n"
+"\n"
 
 #: fortran/error.c:876
 msgid "Fortran 2018 deleted feature:"
@@ -4423,7 +4421,7 @@ msgstr "Olika teckenlängder (%ld/%ld) i %s"
 #: fortran/trans-intrinsic.c:6181
 #, c-format
 msgid "POS argument (%ld) out of range 0:%ld in intrinsic BTEST"
-msgstr ""
+msgstr "POS-argumentet (%ld) är utanför intervallet 0:%ld i inbyggd BTEST"
 
 #: fortran/trans-intrinsic.c:6276
 #, fuzzy, c-format
@@ -4434,17 +4432,17 @@ msgstr "argument ”a%d” och ”a%d” för inbyggd ”%s”"
 #: fortran/trans-intrinsic.c:6323
 #, c-format
 msgid "POS argument (%ld) out of range 0:%ld in intrinsic IBITS"
-msgstr ""
+msgstr "POS-argumentet (%ld) är utanför intervallet 0:%ld i inbyggd IBITS"
 
 #: fortran/trans-intrinsic.c:6333
 #, c-format
 msgid "LEN argument (%ld) out of range 0:%ld in intrinsic IBITS"
-msgstr ""
+msgstr "LEN-argumentet (%ld) är utanför intervallet 0:%ld i inbyggd IBITS"
 
 #: fortran/trans-intrinsic.c:6340
 #, c-format
 msgid "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) in intrinsic IBITS"
-msgstr ""
+msgstr "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) i inbyggd IBITS"
 
 #: fortran/trans-intrinsic.c:6484
 #, fuzzy, c-format
@@ -4455,17 +4453,17 @@ msgstr "argument ”a%d” och ”a%d” för inbyggd ”%s”"
 #: fortran/trans-intrinsic.c:6552
 #, c-format
 msgid "SHIFT argument (%ld) out of range -%ld:%ld in intrinsic ISHFT"
-msgstr ""
+msgstr "SHIFT-argumentet (%ld) är utanför intervallet -%ld:%ld i inbyggd ISHFT"
 
 #: fortran/trans-intrinsic.c:6618
 #, c-format
 msgid "SIZE argument (%ld) out of range 1:%ld in intrinsic ISHFTC"
-msgstr ""
+msgstr "SIZE-argumentet (%ld) är utanför intervallet 1:%ld i inbyggd ISHFTC"
 
 #: fortran/trans-intrinsic.c:6626 fortran/trans-intrinsic.c:6671
 #, c-format
 msgid "SHIFT argument (%ld) out of range -%ld:%ld in intrinsic ISHFTC"
-msgstr ""
+msgstr "SHIFT-argumentet (%ld) är utanför intervallet -%ld:%ld i inbyggd ISHFTC"
 
 #: fortran/trans-intrinsic.c:8943
 #, c-format
@@ -4536,7 +4534,7 @@ msgstr "Försök att DEALLOCATE oallokerad ”%s”"
 #: fortran/trans.c:1716
 #, c-format
 msgid "Error reallocating to %lu bytes"
-msgstr ""
+msgstr "Fel vid reallokering till %lu byte"
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
@@ -4655,7 +4653,7 @@ msgstr " kodgenereringsflaggor som står i konflikt används"
 
 #: config/darwin.h:137
 msgid "the y option is obsolete and ignored"
-msgstr ""
+msgstr "flaggan y är föråldrad och ignoreras"
 
 #: config/darwin.h:143
 msgid "rdynamic is not supported"
@@ -4761,7 +4759,7 @@ msgstr "%qD är inte en mall"
 
 #: config/i386/darwin.h:135
 msgid "Darwin does not support -mfentry or associated options"
-msgstr ""
+msgstr "Darwin stödjer inte -mfentry eller tillhörande flaggor"
 
 #: config/i386/sol2.h:59
 #, fuzzy
@@ -4787,11 +4785,11 @@ msgstr "detta mål har omvänd byteordning"
 
 #: config/msp430/msp430.h:92
 msgid "-mcode-region requires the large memory model (-mlarge)"
-msgstr ""
+msgstr "-mcode-region kräver den stora minnesmodellen (-mlarge)"
 
 #: config/msp430/msp430.h:94
 msgid "-mdata-region requires the large memory model (-mlarge)"
-msgstr ""
+msgstr "-mdata-region kräver den stora minnesmodellen (-mlarge)"
 
 #: config/nios2/elf.h:44
 msgid "You need a C startup file for -msys-crt0="
@@ -4969,7 +4967,7 @@ msgstr "Varna för USE-satser som inte har någon ONLY-kvalificerare."
 
 #: fortran/lang.opt:294
 msgid "Warn that -fno-automatic may break recursion."
-msgstr ""
+msgstr "Varna för att -fno-automatic kan göra sönder rekursion."
 
 #: fortran/lang.opt:302
 msgid "Warn about real-literal-constants with 'q' exponent-letter."
@@ -5043,7 +5041,7 @@ msgstr "Alla inbyggda procedurer är tillgängliga oavsett av vald standard."
 
 #: fortran/lang.opt:390
 msgid "Allow a BOZ literal constant to appear in an invalid context and with X instead of Z."
-msgstr ""
+msgstr "Tillåt en BOZ-litteralkonstant att finnas i en ogiltig kontext och med X istället för Z."
 
 #: fortran/lang.opt:398
 msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements."
@@ -5103,7 +5101,7 @@ msgstr "Möjliggör användning av de korta laddinstruktionerna."
 
 #: fortran/lang.opt:465
 msgid "Enable the use of character literals in assignments and data statements for non-character variables."
-msgstr ""
+msgstr "Aktivera användningen av teckenlitteraler i tilldelningar och datasatser för icke-teckenvariabler."
 
 #: fortran/lang.opt:470
 msgid "Enable legacy parsing of INCLUDE as statement."
@@ -5111,7 +5109,7 @@ msgstr "Aktivera gammaldags tolkning av INCLUDE som en sats."
 
 #: fortran/lang.opt:474
 msgid "Enable default widths for i, f and g format specifiers."
-msgstr ""
+msgstr "Aktivera standardbredder för i-, f- och g-formatspecificerarna."
 
 #: fortran/lang.opt:478
 msgid "Enable kind-specific variants of integer intrinsic functions."
@@ -5265,7 +5263,7 @@ msgstr "-finit-real=<zero|snan|nan|inf|-inf>\tInitiera lokala reella variabler."
 
 #: fortran/lang.opt:652
 msgid "-finline-arg-packing\tPerform argument packing inline."
-msgstr ""
+msgstr "-finline-arg-packing\tUtför argumentpackning inline:at."
 
 #: fortran/lang.opt:656
 msgid "-finline-matmul-limit=<n>\tSpecify the size of the largest matrix for which matmul will be inlined."
@@ -5373,7 +5371,7 @@ msgstr "Använd negativt tecken på nollvärden."
 
 #: fortran/lang.opt:799
 msgid "Disallow tail call optimization when a calling routine may have omitted character lengths."
-msgstr ""
+msgstr "Tillåt inte svansanrposoptimering när en anropande rutin kan ha utelämnat teckenlängder."
 
 #: fortran/lang.opt:803
 msgid "Append underscores to externally visible names."
@@ -5946,7 +5944,7 @@ msgstr "Varna när indenteringen av koden inte avspeglar blockstrukturen."
 
 #: c-family/c.opt:760
 msgid "Warn when a class is redeclared or referenced using a mismatched class-key."
-msgstr ""
+msgstr "Varna när en klass är om deklarerad eller refereras med en klassnyckel som inte stämmer."
 
 #: c-family/c.opt:764
 msgid "Warn about possibly missing braces around initializers."
@@ -5978,7 +5976,7 @@ msgstr "Varna när fält i en post med attributet packed är feljusterade."
 
 #: c-family/c.opt:792
 msgid "Warn when a class or enumerated type is referenced using a redundant class-key."
-msgstr ""
+msgstr "Varna när en klass eller uppräkningstyp refereras med en överflödig klassnyckel."
 
 #: c-family/c.opt:796
 msgid "Warn about missing sized deallocation functions."
@@ -5998,7 +5996,7 @@ msgstr "Varna när sizeof används på en parameter som är deklarerad som en ve
 
 #: c-family/c.opt:812
 msgid "Warn about calls to strcmp and strncmp used in equality expressions that are necessarily true or false due to the length of one and size of the other argument."
-msgstr ""
+msgstr "Varna för anrop till strcmp och strncmp som används i likhetsuttryck som nödvändigtvis är sanna eller falska på grund av längden på det ena och storleken på det andra argumentet."
 
 #: c-family/c.opt:818
 msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
@@ -6038,7 +6036,7 @@ msgstr "Varna för hopptabeller med booleska styruttryck."
 
 #: c-family/c.opt:857
 msgid "Warn about switch values that are outside of the switch's type range."
-msgstr ""
+msgstr "Varna för switch-värden som är utanför switch:ens typintervall."
 
 #: c-family/c.opt:861
 msgid "Warn on primary template declaration."
@@ -6242,7 +6240,7 @@ msgstr "Varna vid vänsterskift med ett negativt värde."
 
 #: c-family/c.opt:1112
 msgid "Warn if conversion of the result of arithmetic might change the value even though converting the operands cannot."
-msgstr ""
+msgstr "Varna om konverteringar av resultatet av aritmetik kan ändra värdet även om konvertering av operanderna inte kan det."
 
 #: c-family/c.opt:1116
 msgid "Warn about signed-unsigned comparisons."
@@ -6589,7 +6587,7 @@ msgstr "Tillåt implicit konvertering mellan vektorer med olika antal underdelar
 
 #: c-family/c.opt:1629
 msgid "fmax-include-depth=<number> Set the maximum depth of the nested #include."
-msgstr ""
+msgstr "fmax-include-depth=<antal> Ange meximalt djup på nästade #include."
 
 #: c-family/c.opt:1633
 msgid "Don't warn about uses of Microsoft extensions."
@@ -7028,7 +7026,7 @@ msgstr "Anta att vi avslutar för phsa och dess libhsail-rt.  Aktiverar ytterlig
 
 #: ada/gcc-interface/lang.opt:61
 msgid "Dump Source Coverage Obligations."
-msgstr ""
+msgstr "Dumpa källkodstäckningskrav."
 
 #: ada/gcc-interface/lang.opt:65
 msgid "Synonym of -gnatk8."
@@ -7290,27 +7288,27 @@ msgstr "Dumpa optimeringspass."
 
 #: analyzer/analyzer.opt:27
 msgid "The maximum number of 'after supernode' exploded nodes within the analyzer per supernode, before terminating analysis."
-msgstr ""
+msgstr "Maximala antalet ”efter supernod”-exploderade noder inom analyseraren per supernod, före analysen avslutas."
 
 #: analyzer/analyzer.opt:31
 msgid "The maximum number of exploded nodes per program point within the analyzer, before terminating analysis of that point."
-msgstr ""
+msgstr "Det maximala antalet exploderade noder per programpunkt inom analyseraren, före analysen avslutas vid den punkten."
 
 #: analyzer/analyzer.opt:35
 msgid "The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call tha would recurse deeper."
-msgstr ""
+msgstr "Det maximala antalet gånger en anropssajt kan förekomma i en anropsstack inom analyseraren, före analysen avslutas av ett anrop som skulle göra en djupare rekursion."
 
 #: analyzer/analyzer.opt:39
 msgid "The minimum number of supernodes within a function for the analyzer to consider summarizing its effects at call sites."
-msgstr ""
+msgstr "Det minsta antalet supernoder inom en funktion för att analyseraren skall överväga att summera dess effekter vid anropssajter."
 
 #: analyzer/analyzer.opt:43
 msgid "Warn about code paths in which a stdio FILE can be closed more than once."
-msgstr ""
+msgstr "Varna för kodvägar i vilka en stdio FILE kan stängas mer än en gång."
 
 #: analyzer/analyzer.opt:47
 msgid "Warn about code paths in which a pointer can be freed more than once."
-msgstr ""
+msgstr "Varna för kodvägar i vilka en pekare kan frigöras mer än en gång."
 
 #: analyzer/analyzer.opt:51
 #, fuzzy
@@ -7338,19 +7336,19 @@ msgstr "Varna för anrop med implicit gränssnitt."
 
 #: analyzer/analyzer.opt:67
 msgid "Warn about code paths in which a possibly-NULL value is passed to a must-not-be-NULL function argument."
-msgstr ""
+msgstr "Varna för kodvägar i vilka ett möjligt NULL-värde skickas till ett får-inte-vara-NULL-funktionsargument."
 
 #: analyzer/analyzer.opt:71
 msgid "Warn about code paths in which a possibly-NULL pointer is dereferenced."
-msgstr ""
+msgstr "Varna för kodvägar i vilka en möjlig NULL-pekare derefereras."
 
 #: analyzer/analyzer.opt:75
 msgid "Warn about code paths in which an async-signal-unsafe function is called from a signal handler."
-msgstr ""
+msgstr "Varna för kodvägar i vilka en async-signal-unsafe-funktion anropas från en signalhanterare."
 
 #: analyzer/analyzer.opt:79
 msgid "Warn about code paths in which NULL is passed to a must-not-be-NULL function argument."
-msgstr ""
+msgstr "Varna för kodvägar i vilka NULL skickas till ett får-inte-vara-NULL-funktionsargument"
 
 #: analyzer/analyzer.opt:83
 #, fuzzy
@@ -7360,11 +7358,11 @@ msgstr "Varna för fångsthanterare av icke-referenstyper."
 
 #: analyzer/analyzer.opt:87
 msgid "Warn about code paths in which a longjmp rewinds to a jmp_buf saved in a stack frame that has returned."
-msgstr ""
+msgstr "Varna för kodvägar i vilka en longjmp hoppar tillbaka till en jmp_buf som sparades i en stackram som har returnerat."
 
 #: analyzer/analyzer.opt:91
 msgid "Warn about code paths in which an unsanitized value is used as an array index."
-msgstr ""
+msgstr "Varna för kodvägar i vilka ett osanerat värde används som ett vektorindex."
 
 #: analyzer/analyzer.opt:95
 #, fuzzy
@@ -7386,79 +7384,79 @@ msgstr "Varna för variabler som initieras till sig själva."
 
 #: analyzer/analyzer.opt:107
 msgid "Warn if the code is too complicated for the analyzer to fully explore."
-msgstr ""
+msgstr "Varna om koden är för komplicerad för att analyseraren skall kunna utforska den fullständigt."
 
 #: analyzer/analyzer.opt:111
 msgid "Restrict the analyzer to run just the named checker."
-msgstr ""
+msgstr "Begränsa analyseraren till att köra just den namngivna kontrollen."
 
 #: analyzer/analyzer.opt:115
 msgid "Avoid combining multiple statements into one exploded edge."
-msgstr ""
+msgstr "Undvik att kombinera flera satser till en exploderad båge."
 
 #: analyzer/analyzer.opt:119
 msgid "Purge unneeded state during analysis."
-msgstr ""
+msgstr "Rensa ut tillstånd som inte behövs under analysen."
 
 #: analyzer/analyzer.opt:123
 msgid "Merge similar-enough states during analysis."
-msgstr ""
+msgstr "Slå samman tillräckligt lika tillstånd under analysen."
 
 #: analyzer/analyzer.opt:127
 msgid "Enable transitivity of constraints during analysis."
-msgstr ""
+msgstr "Aktivera transitivtet av begränsningar under analysen."
 
 #: analyzer/analyzer.opt:131
 msgid "Approximate the effect of function calls to simplify analysis."
-msgstr ""
+msgstr "Approximera effekten av funktionsanrop för att förenkla analysen."
 
 #: analyzer/analyzer.opt:135
 msgid "Emit more verbose descriptions of control flow in diagnostics."
-msgstr ""
+msgstr "Mata ut mer utförliga beskrivningar av styrflödet i felmeddelanden."
 
 #: analyzer/analyzer.opt:139
 msgid "Emit more verbose descriptions of state changes in diagnostics."
-msgstr ""
+msgstr "Mata ut mer utförliga beskrivningar av tillståndsändringar i felmeddelanden."
 
 #: analyzer/analyzer.opt:143
 msgid "Control which events are displayed in diagnostic paths."
-msgstr ""
+msgstr "Styr vilka händelser som visas i diagnostikvägar."
 
 #: analyzer/analyzer.opt:147
 msgid "Dump internal details about what the analyzer is doing to SRCFILE.analyzer.txt."
-msgstr ""
+msgstr "Dumpa interna detaljer om vad analyseraren gör till KÄLLFIL.analyzer.txt."
 
 #: analyzer/analyzer.opt:151
 msgid "Dump internal details about what the analyzer is doing to stderr."
-msgstr ""
+msgstr "Dumpa interna detaljer om vad analyseraren gör till standard fel."
 
 #: analyzer/analyzer.opt:155
 msgid "Dump the analyzer supergraph to a SRCFILE.callgraph.dot file."
-msgstr ""
+msgstr "Dumpa analyserarens supergraf till en fil KÄLLFIL.callgraph.dot."
 
 #: analyzer/analyzer.opt:159
 msgid "Dump the analyzer exploded graph to a SRCFILE.eg.dot file."
-msgstr ""
+msgstr "Dumpa analyserarens exploderade graf till en fil KÄLLFIL.eg.dot."
 
 #: analyzer/analyzer.opt:163
 msgid "Emit diagnostics showing the location of nodes in the exploded graph."
-msgstr ""
+msgstr "Mata ut meddelanden som visar platsen för noder i den exploderade grafen."
 
 #: analyzer/analyzer.opt:167
 msgid "Dump a textual representation of the exploded graph to SRCFILE.eg.txt."
-msgstr ""
+msgstr "Dumpa en textuell representation av den exploderade grafen till KÄLLFIL.eg.txt."
 
 #: analyzer/analyzer.opt:171
 msgid "Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt."
-msgstr ""
+msgstr "Dumpa en textuell representation av den exploderade grafen till KÄLLFIL.eg-ID.txt."
 
 #: analyzer/analyzer.opt:175
 msgid "Dump state-purging information to a SRCFILE.state-purge.dot file."
-msgstr ""
+msgstr "Dumpa tillståndsrensningsinformation till en fil KÄLLFIL.state-purge.dot."
 
 #: analyzer/analyzer.opt:179
 msgid "Dump the analyzer supergraph to a SRCFILE.supergraph.dot file."
-msgstr ""
+msgstr "Dumpa analyserarens supergraf till en fil KÄLLFIL.supergraph.dot."
 
 #: config/vms/vms.opt:27
 msgid "Malloc data into P2 space."
@@ -7652,19 +7650,19 @@ msgstr "Versionen av ld64 som används för denna verktygskedja."
 
 #: config/darwin.opt:94
 msgid "Loads all members of archive libraries"
-msgstr ""
+msgstr "Läser in alla medlemmar av arkivbibliotek"
 
 #: config/darwin.opt:98
 msgid "-allowable_client <name>\tThe output dylib is private to the client(s) named"
-msgstr ""
+msgstr "-allowable_client <namn>\tDylib-utdata är privat till de namngivna klienterna"
 
 #: config/darwin.opt:102
 msgid "-arch <name>\tSpecify that the output file should be generated for architecture  \"name\""
-msgstr ""
+msgstr "-arch <namn>\tAnge att utdatafilen skall genereras för arkitekturen ”namn”"
 
 #: config/darwin.opt:106
 msgid "Mismatches between file architecture and the \"-arch\" are errors instead of warnings"
-msgstr ""
+msgstr "Brist på överensstämmelse mellan filarkitekturen och ”-arch” är fel istället för varningar"
 
 #: config/darwin.opt:110
 #, fuzzy
@@ -7674,55 +7672,55 @@ msgstr "Den tidigaste MacOS X-versionen som detta program kommer köra på."
 
 #: config/darwin.opt:114
 msgid "Produce an output file that will bind symbols on load, rather than lazily."
-msgstr ""
+msgstr "Producera en utdatafil som kommer binda symboler vid laddning, snarare än lat."
 
 #: config/darwin.opt:118
 msgid "Produce a Mach-O bundle (file type MH_BUNDLE)"
-msgstr ""
+msgstr "Producera en Mach-O-bunt (filtyp MH_BUNDLE)"
 
 #: config/darwin.opt:122
 msgid "-bundle_loader <executable>\tTreat \"executable\" (that will be loading this bundle) as if it was one of the dynamic libraries the bundle is linked against for symbol resolution"
-msgstr ""
+msgstr "-bundle_loader <körbar> \tBehandla ”körbar” (som kommer att ladda denna bunt) som om den vore en av de dynamiska bibliotek bunten länkas mot vid symbolupplösning"
 
 #: config/darwin.opt:126
 msgid "-client_name <name>\tEnable the executable being built to link against a private dylib (using allowable_client)"
-msgstr ""
+msgstr "-client_name <namn>\tAktivera tt den körbara byggs för att länka mot ett privat dylib (användande allowable_client)"
 
 #: config/darwin.opt:130
 msgid "-compatibility_version <number>\tSet the minimum version for the client interface.  Clients must record a greater number than this or the binding will fail at runtime"
-msgstr ""
+msgstr "-compatibility_version <nummer>\tSätt den minsta versionen för klientgränssnittet.  Klienter måste registrera ett högre nummer än detta eller så kommer bindningen misslyckas vid körtillfället"
 
 #: config/darwin.opt:134
 msgid "-current_version <number>\tSet the current version for the library."
-msgstr ""
+msgstr "-current_version <nummer>\tSätt den aktuella versionen på bibliteket."
 
 #: config/darwin.opt:138
 msgid "Remove code and data that is unreachable from any exported symbol (including the entry point)"
-msgstr ""
+msgstr "Ta bort kod och data som är onåbar från exporterade symboler (inklusive ingångspunkten)"
 
 #: config/darwin.opt:145
 msgid "Produce a Mach-O dylinker (file type MH_DYLINKER), only used for building dyld."
-msgstr ""
+msgstr "Producera en Mach-O-dylinker (filtyp MH_DYLINKER), endast använd för att bygga dyld."
 
 #: config/darwin.opt:149
 msgid "-dylinker_install_name <path>\tOnly used for building dyld."
-msgstr ""
+msgstr "-dylinker_install_name <sökväg>\tAnvänds endast för att bygga dyld."
 
 #: config/darwin.opt:153
 msgid "The default (and opposite of -static), implied by user mode executables, shared libraries and bundles."
-msgstr ""
+msgstr "Standard (och motsats till -static), implicerat av användarläges körbara, delade bibliotek och buntar."
 
 #: config/darwin.opt:157
 msgid "Produce a Mach-O shared library (file type MH_DYLIB), synonym for -shared"
-msgstr ""
+msgstr "Producera ett Mach-O delat bibliotek (filtyp MH_DYLIB), synonym till -shared"
 
 #: config/darwin.opt:161
 msgid "-exported_symbols_list <filename>\tGlobal symbols in \"filename\" will be exported from the linked output file, any symbols not mentioned will be treated as hidden."
-msgstr ""
+msgstr "-exported_symbols_list <filenamn>\tBlobala symboler i ”filenamn” kommer att exporteras från den länkade utdatafilen, alla symboler som inte näns kommer hanteras som dolda."
 
 #: config/darwin.opt:165
 msgid "Supply a list of objects to be linked from a file, rather than the command line"
-msgstr ""
+msgstr "Ge en lista av objekt att länkas från en fil, istället för kommandoraden"
 
 #: config/darwin.opt:169 config/darwin.opt:189
 #, fuzzy
@@ -7732,71 +7730,71 @@ msgstr "Generera kod för darwin laddbara kärnutvidgningar."
 
 #: config/darwin.opt:173
 msgid "Ignore the normal two-level namespace; resolve symbols in command line order and do not record which library provided the resolved symbol."
-msgstr ""
+msgstr "Ignorera den normala tvånivånamnrymden; slå upp symboler i kommandoradsordning och notera inte vilket bibliotek som tillhandahäll den upplösta symbolen."
 
 #: config/darwin.opt:177
 msgid "For the assembler (and linker) permit any architecture sub-variant to be used without error."
-msgstr ""
+msgstr "För assemblern (och länkaren) tillåt alla arkitekturundervarienter att användas utan fel."
 
 #: config/darwin.opt:181
 msgid "Set the output object such that, on loading, dyld  will ignore any two-level information and resolve symbols in the discovery order for loaded libs."
-msgstr ""
+msgstr "Sätt utdataobjektet så att, vid laddning, dyld kommer ignorera tvånivåinformation och lösa upp symboler i upptäcktsordning från de laddade biblioteken."
 
 #: config/darwin.opt:185
 msgid "-framework <name>\tThe linker should search for the named framework in the framework search path."
-msgstr ""
+msgstr "-framework <namn>\tLäkaren skall söka efter det namngivna ramverket i sökvägen för ramverk."
 
 #: config/darwin.opt:193
 msgid "Abbreviation for \"-g -fno-eliminate-unused-debug-symbols\""
-msgstr ""
+msgstr "Förkortning för ”-g -fno-eliminate-unused-debug-symbols”"
 
 #: config/darwin.opt:197
 msgid "Abbreviation for \"-g -feliminate-unused-debug-symbols\""
-msgstr ""
+msgstr "Förkortning för ”-g -feliminate-unused-debug-symbols”"
 
 #: config/darwin.opt:201
 msgid "Automatically adds space for longer path names in load commands (up to MAXPATHLEN)"
-msgstr ""
+msgstr "Lägger automatiskt till mellanslag för längre sökvägsnamn i laddkommandon (upp till MAXPATHLEN)"
 
 #: config/darwin.opt:205
 msgid "-image_base <address>\tChoose a base address for a dylib or bundle."
-msgstr ""
+msgstr "-image_base <adress>\tVälj en basadress för ett dylib eller en bunt."
 
 #: config/darwin.opt:209
 msgid "-init <symbol_name>\tThe symbol \"symbol_name\" will be used as the first initialiser for a dylib."
-msgstr ""
+msgstr "-init <symbolnamn>\tSymbolen ”symbolnamn” kommer användas som den första initieraren för ett dylib."
 
 #: config/darwin.opt:213
 msgid "-install_name <name>\tSet the install name for a dylib."
-msgstr ""
+msgstr "-install_name <namn>\tAnge installationsnamnet för ett dylib."
 
 #: config/darwin.opt:217
 msgid "Usually \"private extern\" (hidden) symbols are made local when linking, this command suppresses that such that they remain exported."
-msgstr ""
+msgstr "Vanligen görs ”private extern” (dolda) symboler lokala vid länkning, detta kommando undertrycker det så att de behålls exporterade."
 
 #: config/darwin.opt:221
 msgid "(Obsolete after 10.4) Multi modules are ignored at runtime since MacOS 10.4"
-msgstr ""
+msgstr "(Föråldrat efter 10.4) Multimoduler ignoreras vid körtillfället sedan MacOS 10.4"
 
 #: config/darwin.opt:225
 msgid "(Obsolete after 10.4) -multiply_defined <treatment> Provided a mechanism for warning about symbols defined in multiple dylibs."
-msgstr ""
+msgstr "(Föråldrat efter 10.4) -multiply_defined <hantering> Tillhandahåller en mekanism för varningar för symboler definierade i flera dylib.\""
 
 #: config/darwin.opt:229
 msgid "(Obsolete after 10.4) -multiply_defined_unused <treatment>\tProvided a mechanism for warning about symbols defined in the current executable also being defined in linked dylibs."
-msgstr ""
+msgstr "(Föråldrat efter 10.4) -multiply_defined_unused <hantering>\tTillhandahåller en mekansism för varningar för symboler definierade i den aktuella körbara som också är definierade i inlänkade dylib."
 
 #: config/darwin.opt:233
 msgid "(Obsolete) The linker never dead strips these items, so the option is not needed."
-msgstr ""
+msgstr "(Föråldrat) Länkaren dödrensar aldrig dessa poster, så flaggan behövs inte."
 
 #: config/darwin.opt:237
 msgid "(Obsolete after 10.3.9) Set MH_NOPREFIXBINDING, in an exectuable."
-msgstr ""
+msgstr "(Föråldrat efter 10.3.9) Sätt MH_NOPREFIXBINDING i en körbar."
 
 #: config/darwin.opt:241
 msgid "(Obsolete after 10.4)\tSet MH_NOMULTIDEFS in an umbrella framework."
-msgstr ""
+msgstr "(Föråldrat efter 10.4)\tSätt MH_NOMULTIDEFS i ett paraplyramverk."
 
 #: config/darwin.opt:245 config/darwin.opt:260 config/darwin.opt:264
 #, fuzzy
@@ -7812,47 +7810,47 @@ msgstr "Lagrar dubbla i 32 bitar.  Detta är standard."
 
 #: config/darwin.opt:256
 msgid "-pagezero_size size\tAllows setting the page 0 size to 4kb for certain special cases."
-msgstr ""
+msgstr "-pagezero_size storlek\tTillåter att sätta storleken på sida 0 till 4 kb för vissa specialfall."
 
 #: config/darwin.opt:268
 msgid "Produces a Mach-O file suitable for embedded/ROM use."
-msgstr ""
+msgstr "Producerar en Mach-O-fil lämplig för inbäddad/ROM-användning."
 
 #: config/darwin.opt:272
 msgid "(Obsolete) Allowed linking to proceed with \"-flat_namespace\" when a linked bundle contained a symbol also exported from the main executable."
-msgstr ""
+msgstr "(Föråldrat) Tillåt läkningen att gå vidare med ”-flat_namespace” när en läkad bunt innehåller en symbol som också exporteras från huvudprogrammet."
 
 #: config/darwin.opt:279
 msgid "Synonym for \"-export-dynamic\" for linker versions that support it."
-msgstr ""
+msgstr "Synonym för ”-export-dynamic” för läkarversioner som stödjer det."
 
 #: config/darwin.opt:283
 msgid "-read_only_relocs <treatment>\tThis will allow relocs in read-only pages (not advisable)."
-msgstr ""
+msgstr "-read_only_relocs <hantering>\tDetta kommer tillåta omlokaliseringar i endast läsbara sidor (inte att rekommendera)."
 
 #: config/darwin.opt:287
 msgid "-sectalign <segname> <sectname> <value>\tSet section \"sectname\" in segment \"segname\" to have alignment \"value\" which must be an integral power of two expressed in hexadecimal form."
-msgstr ""
+msgstr "-sectalign <segnamn> <sektnamn> <värde>\tSätt sektionen ”sektnamn” i segment ”segnamn” till att ha justeringen ”värde” vilket måste vara en heltalspotens av två uttryckt på hexadecimal form."
 
 #: config/darwin.opt:291
 msgid "-sectcreate <segname> <sectname> <file>\tCreate section \"sectname\" in segment \"segname\" from the contents of \"file\"."
-msgstr ""
+msgstr "-sectcreate <segnamn> <sektnamn> <fil>\tSkapa sektionen ”sektname” i segmentet ”segnamn” från innehållet i ”file”."
 
 #: config/darwin.opt:295
 msgid "(Obsolete) -sectobjectsymbols <segname> <sectname>\tSetting a local symbol at the start of a section is no longer supported."
-msgstr ""
+msgstr "(Föråldrat) -sectobjectsymbols <segnamn> <sektnamn>\tAtt sätta en lokal symbol vid början av en sektion stödjs inte längre."
 
 #: config/darwin.opt:299
 msgid "(Obsolete) -sectorder <segname> <sectname> orderfile\tReplaced by a more general option \"-order_file\"."
-msgstr ""
+msgstr "(Föråldrat) -sectorder <segnamn> <sektnamn> ordningsfil\tErsatt av en mer generell flagga ”-order_file”."
 
 #: config/darwin.opt:303
 msgid "-seg_addr_table <file>\tSpecify the base addresses for dynamic libraries, \"file\" contains a line for each library."
-msgstr ""
+msgstr "-seg_addr_table <fil>\tAnge basadresserna för dynamiska bibliotek, ”fil” innehåller en rad för varje bibliotek."
 
 #: config/darwin.opt:308
 msgid "(Obsolete, ld_classic only) -seg_addr_table_filename <path>"
-msgstr ""
+msgstr "(Föråldrat, endast ld_classic) -seg_addr_table_filename <sökväg>"
 
 #: config/darwin.opt:312
 #, fuzzy
@@ -7862,27 +7860,27 @@ msgstr "Synonym för -Wcomment."
 
 #: config/darwin.opt:316
 msgid "-segaddr <name> <address>\tSet the base address of segment \"name\" to \"address\" which must be aligned to a page boundary (currently 4kb)."
-msgstr ""
+msgstr "-segaddr <namn> <adress>\tSätt basadressen för segment ”namn” till ”adress” som måste vara justerad till en sidgräns (för närvarande 4 kB)."
 
 #: config/darwin.opt:321
 msgid "(Obsolete, ld_classic only) -sectcreate segname sectname file"
-msgstr ""
+msgstr "(Föråldrat, endast ld_classic) -sectcreate segnamn sektnamn fil"
 
 #: config/darwin.opt:325
 msgid "(Obsolete) Object files with LINKEDIT sections are no longer supported."
-msgstr ""
+msgstr "(Föråldrat) Objektfiler med LINKEDIT-sektioner stödjs inte längre."
 
 #: config/darwin.opt:329
 msgid "-segprot <segname> max_prot init_prot\tThe protection values are \"r\", \"w\", \"x\" or \"-\" the latter meaning \"no access\"."
-msgstr ""
+msgstr "-segprot <segnamn> max_skydd init_skydd\tSkyddsvärden är ”r”, ”w”, ”x” eller ”-” det sistnmända betyder ”ingen åtkomst”."
 
 #: config/darwin.opt:333
 msgid "-segs_read_only_addr address \tAllows specifying the address of the read only portion of a dylib."
-msgstr ""
+msgstr "-segs_read_only_addr adress \tMöjliggör att ange adressen till den endast läsbara delen av ett dylib."
 
 #: config/darwin.opt:337
 msgid "-segs_read_write_addr address \tAllows specifying the address of the read/write portion of a dylib."
-msgstr ""
+msgstr "-segs_read_write_addr adress \tMöjliggör att ange adressen till den läs-/skrivbara delen av ett dylib."
 
 #: config/darwin.opt:341
 #, fuzzy
@@ -7892,11 +7890,11 @@ msgstr "Lagrar dubbla i 32 bitar.  Detta är standard."
 
 #: config/darwin.opt:345
 msgid "-sub_library <name>\tLibrary named \"name\" will be re-exported (only useful for dylibs)."
-msgstr ""
+msgstr "-sub_library <namn>\tBiblioteket med namnet ”namn” kommer omexporteras (endast meningsfullt för dylib:ar)."
 
 #: config/darwin.opt:349
 msgid "-sub_umbrella <name>\tFramework named \"name\" will be re-exported (only useful for dylibs)."
-msgstr ""
+msgstr "-sub_umbrella <namn>\tRamverket med namnet ”namn” kommer omexporteras (endast meningsfullt för dylib:ar)."
 
 #: config/darwin.opt:353
 #, fuzzy
@@ -7906,39 +7904,39 @@ msgstr "detta är den första default-etiketten"
 
 #: config/darwin.opt:357
 msgid "Specifies content that can speed up dynamic loading when the binaries are unchanged."
-msgstr ""
+msgstr "Anger innehåll som kan snabba upp den dynamiska laddningen när binärer är oförändrade."
 
 #: config/darwin.opt:361
 msgid "-umbrella <framework>\tThe specified framework will be re-exported."
-msgstr ""
+msgstr "-umbrella <ramverk>\tDet angivna ramverket kommer omexporteras."
 
 #: config/darwin.opt:365
 msgid "-undefined <treatment>\tSpecify the handling for undefined symbols (default is error)."
-msgstr ""
+msgstr "-undefined <hantering>\tAnge hanteringen av odefinierade symboler (standard är fel)."
 
 #: config/darwin.opt:369
 msgid "-unexported_symbols_list <filename>\tDon't export global symbols listed in filename."
-msgstr ""
+msgstr "-unexported_symbols_list <filnamn>\tExportera inte globala symboler uppräknade i filnamn."
 
 #: config/darwin.opt:373
 msgid "-weak_reference_mismatches <treatment>\tSpecifies what to do if a symbol import conflicts between file (weak in one and not in another) the default is to treat the symbol as non-weak."
-msgstr ""
+msgstr "-weak_reference_mismatches <hantering>\tAnger vad som skall göras om en symbolimport orsakar en konflikt mellan filer (svag i en och inte i en annan) standard är att hantera symbolen som icke svag."
 
 #: config/darwin.opt:377
 msgid "Logs the object files the linker loads"
-msgstr ""
+msgstr "Loggar objektfiler och länkarladdningar"
 
 #: config/darwin.opt:381
 msgid "Logs which symbol(s) caused an object to be loaded."
-msgstr ""
+msgstr "Loggar vilka symboler som orsakade att ett objekt laddades."
 
 #: config/darwin.opt:389
 msgid "(Obsolete, ignored)\tOld support similar to whyload."
-msgstr ""
+msgstr "(Föråldrat, ignoreras)\tGammalt stöd liknande whyload."
 
 #: config/darwin.opt:393
 msgid "(Obsolete and unhandled by ld64, ignored)\tld should produce an executable (only handled by ld_classic)."
-msgstr ""
+msgstr "(Föråldrat och ohanterat av ld64, ignoreras)\tld skall skapa en körbar (endast hanterat av ld_classic)."
 
 #: config/bfin/bfin.opt:40 config/msp430/msp430.opt:3 config/c6x/c6x.opt:38
 msgid "Use simulator runtime."
@@ -8297,7 +8295,7 @@ msgstr "-memregs=\tAntal memreg-byte (standard: 16, intervall: 0..16)."
 
 #: config/msp430/msp430.opt:7
 msgid "Use a lightweight configuration of printf and puts to reduce code size. For single-threaded applications, not requiring reentrant I/O only. Requires Newlib Nano IO."
-msgstr ""
+msgstr "Använd en lättviktig konfiguration av printf och puts för att reducera kodstorlek.  För enkeltrådade program kräver ej återanropsbar I/O.  Kräver Newlib Nano IO."
 
 #: config/msp430/msp430.opt:11
 msgid "Force assembly output to always use hex constants."
@@ -8313,7 +8311,7 @@ msgstr "Varna om ett MCU-namn inte känns igen eller står i konflikt med andra 
 
 #: config/msp430/msp430.opt:23
 msgid "Warn if devices.csv is not found or there are problem parsing it (default: on)."
-msgstr ""
+msgstr "Varna om  devices.csv inte finns eller det är problem med att tolkan den (standard: på)."
 
 #: config/msp430/msp430.opt:27
 msgid "Specify the ISA to build for: msp430, msp430x, msp430xv2."
@@ -8341,15 +8339,15 @@ msgstr "Ange typen av hårdvarumultiplikation att stödja."
 
 #: config/msp430/msp430.opt:75
 msgid "Specify whether functions should be placed into the lower or upper memory regions, or if they should be shuffled between the regions (either) for best fit (default: lower)."
-msgstr ""
+msgstr "Ange huruvida funktioner skall placeras i de lägre eller övre minnesregionerna, eller om de skall blandas mellan regionerna (endera) för bästa passning (standard: nedre)."
 
 #: config/msp430/msp430.opt:79
 msgid "Specify whether variables should be placed into the lower or upper memory regions, or if they should be shuffled between the regions (either) for best fit (default: lower)."
-msgstr ""
+msgstr "Ange huruvida variabler skall placeras i de lägre eller övre minnesregionerna, eller om de skall blandas mellan regionerna (endera) för bästa passning (standard: nedre)."
 
 #: config/msp430/msp430.opt:83
 msgid "Add the .lower prefix to section names when compiling with -m{code,data}-region=lower (disabled by default)."
-msgstr ""
+msgstr "Lägg till prefixet .lower till sektionsnamn vid kompilering med -m{code,data}-region=lower (avaktiverat som standard)."
 
 #: config/msp430/msp430.opt:102
 msgid "Passes on a request to the assembler to enable fixes for various silicon errata."
@@ -8361,7 +8359,7 @@ msgstr "Skickar vidare en begäran till assemblern att varna för diverse kisele
 
 #: config/msp430/msp430.opt:110
 msgid "The path to devices.csv.  The GCC driver can normally locate devices.csv itself and pass this option to the compiler, so the user shouldn't need to pass this."
-msgstr ""
+msgstr "Söktvägen till devices.csv.  GCC drivrutinen kan normalt hitta devices.csv själv och skicka denna flagga till kompilatorn, så skall inte behöva skicka denna."
 
 #: config/aarch64/aarch64.opt:43
 msgid "The possible TLS dialects:"
@@ -8502,7 +8500,7 @@ msgstr "Generera ett anrop till abort om en noreturn-funktion returnerar."
 
 #: config/aarch64/aarch64.opt:264
 msgid "When vectorizing for SVE, consider using unpacked vectors for smaller elements and use the cost model to pick the cheapest approach.  Also use the cost model to choose between SVE and Advanced SIMD vectorization."
-msgstr ""
+msgstr "Vid vektorisering för SVE, överväg att använda opackade vektorer för mindre element och använd kostnadsmodellen för att välja den billigaste metoden.  Använd även kostnadsmodellen för att välja mellan SVE- och avanserad SIMD-vektorisering."
 
 #: config/linux.opt:24
 msgid "Use Bionic C library."
@@ -8832,11 +8830,11 @@ msgstr "Skicka inte ut utökade register på stacken i övervakningsfunktioner."
 
 #: config/pru/pru.opt:31
 msgid "-mmcu=MCU\tSelect the target System-On-Chip variant that embeds this PRU."
-msgstr ""
+msgstr "-mmcu=MCU\tVälj målsystemkretsvariant (SoC) som bäddar in denna PRU."
 
 #: config/pru/pru.opt:35
 msgid "Make GCC pass the --no-relax command-line option to the linker instead of the --relax option."
-msgstr ""
+msgstr "Låt GCC skicka kommandoradsflaggan --no-relax till länkaren istället för flaggan --relax."
 
 #: config/pru/pru.opt:40
 #, fuzzy
@@ -9726,7 +9724,7 @@ msgstr "Anroparen kopierar funktionsargument som skickas via dold referens."
 
 #: config/pa/pa.opt:50
 msgid "Use ldcw/ldcd coherent cache-control hint."
-msgstr ""
+msgstr "Använd koherent cache-styrningstipsen ldcw/ldcd."
 
 #: config/pa/pa.opt:54
 msgid "Disable FP regs."
@@ -9762,7 +9760,7 @@ msgstr "Avaktivera utrymmesregister."
 
 #: config/pa/pa.opt:99
 msgid "Assume memory references are ordered and barriers are not needed."
-msgstr ""
+msgstr "Anta att minnesreferenser är ordnade och att barriärer inte behövs."
 
 #: config/pa/pa.opt:115
 msgid "Use portable calling conventions."
@@ -10074,11 +10072,11 @@ msgstr "Anta att all data i statisk lagring kan kommas åt med LDS/STS.  Denna f
 
 #: config/avr/avr.opt:120
 msgid "-mdouble=<BITS>\tUse <BITS> bits wide double type."
-msgstr ""
+msgstr "-mdouble=<BITAR>\tAnvänd <BITAR> bitar bred double-typ."
 
 #: config/avr/avr.opt:124
 msgid "-mlong-double=<BITS>\tUse <BITS> bits wide long double type."
-msgstr ""
+msgstr "-mlong-double=<BITAR>\tAnvänd <BITAR> bitar bred long double-typ."
 
 #: config/avr/avr.opt:128
 msgid "Do not link against the device-specific library lib<MCU>.a."
@@ -10092,7 +10090,7 @@ msgstr "Länka inte mot det enhetsspecifika biblioteket lib<MCU>.a."
 
 #: config/avr/avr.opt:136
 msgid "Available BITS selections:"
-msgstr ""
+msgstr "Tillgängliga val av BITAR:"
 
 #: config/m32r/m32r.opt:34
 msgid "Compile for the m32rx."
@@ -11257,23 +11255,23 @@ msgstr "Konfigurera kortspecifik körtid."
 
 #: config/or1k/elf.opt:32
 msgid "This option is ignored; it is provided for compatibility purposes only.  This used to select linker and preprocessor options for use with newlib."
-msgstr ""
+msgstr "Denna flagga ignoreras; den tillhandahålls endast för kompatibilitetsskäl.  Detta brukade välja flaggor till länkare och preprocessor för användning med newlib."
 
 #: config/or1k/or1k.opt:26
 msgid "Enable generation of hardware divide (l.div, l.divu) instructions.  This is the default; use -msoft-div to override."
-msgstr ""
+msgstr "Aktivera generering av hårdvarudivisionsinstruktioner (l.div, l.divu).  Detta är standard; använd -msoft-div för att åsidosätta."
 
 #: config/or1k/or1k.opt:31
 msgid "Enable generation of binaries which use functions from libgcc to perform divide operations.  The default is -mhard-div."
-msgstr ""
+msgstr "Aktivera generering av binärer som använder funktioner från libgcc för att utföra divisionsoperationer.  Standard är -mhard-div."
 
 #: config/or1k/or1k.opt:36
 msgid "Enable generation of hardware multiply instructions (l.mul, l.muli) instructions. This is the default; use -msoft-mul to override."
-msgstr ""
+msgstr "Aktivera generering av hårdvarumultiplikationsinstruktioner (l.mul, l.muli). Detta är standard; använd -msoft-mul för att åsidosätta."
 
 #: config/or1k/or1k.opt:41
 msgid "Enable generation of binaries which use functions from libgcc to perform multiply operations. The default is -mhard-mul."
-msgstr ""
+msgstr "Aktivera generering av binärer som använder funktioner från libgcc för att utföra multiplikationsoperationer.  Standard är -mhard-mul."
 
 #: config/or1k/or1k.opt:46
 msgid "Enable generation of binaries which use functions from libgcc to perform floating point operations.  This is the default; use -mhard-float to override."
