@@ -28182,7 +28182,7 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   tsubst_flags_t complain = tf_none;
 
   tree parms = NULL_TREE;
-  if (TREE_CODE (init) == CONSTRUCTOR)
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
       init = reshape_init (type, init, complain);
       if (init == error_mark_node)
