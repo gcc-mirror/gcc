@@ -34,7 +34,7 @@ int __attribute__ ((target ("soft-float"))) test2 (int a)
 
 /* Inlining needs to be rejected.  foo3 performs HW FP operation.  */
 
-int __attribute__ ((always_inline)) foo3 (int a) /* { dg-error "inlining failed in call to always_inline" } */
+int __attribute__ ((always_inline)) foo3 (int a) /* { dg-error "inlining failed in call to 'always_inline'" } */
 {
   g = (double) a / 2.0;
   return 0;
