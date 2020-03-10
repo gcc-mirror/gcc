@@ -1,3 +1,8 @@
+2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93709
+	* gcc.target/powerpc/p9-minmax-3.c: New test.
+
 2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR target/90763
