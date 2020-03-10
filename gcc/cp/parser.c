@@ -24389,24 +24389,9 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  if (spec == error_mark_node)
 	    spec = NULL_TREE;
 
-	  {
-	    /* Update the fn's type.  */
-	    tree orig_type = TREE_TYPE (decl);
-	    tree new_type = build_exception_variant (orig_type, spec);
-	    gcc_checking_assert (new_type != orig_type);
-	    TREE_TYPE (decl) = new_type;
-
-	    /* If this is a primary template, update the
-	       template_decl too.  (We never encounter the
-	       template_decl itself in this code path.)  */
-	    if (DECL_TEMPLATE_INFO (decl)
-		&& DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) == decl)
-	      TREE_TYPE (DECL_TI_TEMPLATE (decl)) = new_type;
-
-	    // FIXME: Via decltype &| noexcept tricks, the unparsed
-	    // spec could have escaped into the type system.  The
-	    // general case might be hard to clean up
-	  }
+	  /* Update the fn's type directly -- it might have escaped
+	     beyond this decl :(  */
+	  fixup_deferred_exception_variants (TREE_TYPE (decl), spec);
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;
@@ -25440,6 +25425,9 @@ cp_parser_member_declaration (cp_parser* parser)
 	      int ctor_dtor_or_conv_p;
 	      bool static_p = (decl_specifiers.storage_class == sc_static);
 	      cp_parser_flags flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+	      /* We can't delay parsing for friends,
+		 alias-declarations, and typedefs, even though the
+		 standard seems to require it.  */
 	      if (!friend_p
 		  && !decl_spec_seq_has_spec_p (&decl_specifiers, ds_typedef))
 		flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
@@ -26133,19 +26121,14 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	 a class.  So, if the noexcept-specifier has the optional expression,
 	 just save the tokens, and reparse this after we're done with the
 	 class.  */
-      const bool literal_p
-	= ((cp_lexer_nth_token_is (parser->lexer, 3, CPP_NUMBER)
-	    || cp_lexer_nth_token_is (parser->lexer, 3, CPP_KEYWORD))
-	   && cp_lexer_nth_token_is (parser->lexer, 4, CPP_CLOSE_PAREN));
 
-      if (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN)
+      if ((flags & CP_PARSER_FLAGS_DELAY_NOEXCEPT)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN)
 	  /* No need to delay parsing for a number literal or true/false.  */
-	  && !literal_p
+	  && !((cp_lexer_nth_token_is (parser->lexer, 3, CPP_NUMBER)
+		|| cp_lexer_nth_token_is (parser->lexer, 3, CPP_KEYWORD))
+	       && cp_lexer_nth_token_is (parser->lexer, 4, CPP_CLOSE_PAREN))
 	  && at_class_scope_p ()
-	  /* We don't delay parsing for friend member functions,
-	     alias-declarations, and typedefs, even though the standard seems
-	     to require it.  */
-	  && (flags & CP_PARSER_FLAGS_DELAY_NOEXCEPT)
 	  && TYPE_BEING_DEFINED (current_class_type)
 	  && !LAMBDA_TYPE_P (current_class_type))
 	return cp_parser_save_noexcept (parser);

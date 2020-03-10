@@ -2708,6 +2708,52 @@ build_cp_fntype_variant (tree type, cp_ref_qualifier rqual,
   return v;
 }
 
+/* TYPE is a function or method type with a deferred exception
+   specification that has been parsed to RAISES.  Fixup all the type
+   variants that are affected in place.  Via decltype &| noexcept
+   tricks, the unparsed spec could have escaped into the type system.
+   The general case is hard to fixup canonical types for.  */
+
+void
+fixup_deferred_exception_variants (tree type, tree raises)
+{
+  tree original = TYPE_RAISES_EXCEPTIONS (type);
+  tree cr = flag_noexcept_type ? canonical_eh_spec (raises) : NULL_TREE;
+
+  gcc_checking_assert (TREE_CODE (TREE_PURPOSE (original))
+		       == DEFERRED_PARSE);
+
+  /* Though sucky, this walk will process the canonical variants
+     first.  */
+  for (tree variant = TYPE_MAIN_VARIANT (type);
+       variant; variant = TYPE_NEXT_VARIANT (variant))
+    if (TYPE_RAISES_EXCEPTIONS (variant) == original)
+      {
+	gcc_checking_assert (variant != TYPE_MAIN_VARIANT (type));
+
+	if (!TYPE_STRUCTURAL_EQUALITY_P (variant))
+	  {
+	    cp_cv_quals var_quals = TYPE_QUALS (variant);
+	    cp_ref_qualifier rqual = type_memfn_rqual (variant);
+
+	    tree v = TYPE_MAIN_VARIANT (type);
+	    for (; v; v = TYPE_NEXT_VARIANT (v))
+	      if (TYPE_CANONICAL (v) == v
+		  && cp_check_qualified_type (v, variant, var_quals,
+					      rqual, cr, false))
+		break;
+	    TYPE_RAISES_EXCEPTIONS (variant) = raises;
+
+	    if (!v)
+	      v = build_cp_fntype_variant (TYPE_CANONICAL (variant),
+					   rqual, cr, false);
+	    TYPE_CANONICAL (variant) = v;
+	  }
+	else
+	  TYPE_RAISES_EXCEPTIONS (variant) = raises;
+      }
+}
+
 /* Build the FUNCTION_TYPE or METHOD_TYPE which may throw exceptions
    listed in RAISES.  */
 

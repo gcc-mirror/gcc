@@ -1,5 +1,15 @@
 2020-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Reconstruct deferred exception spec types
+	gcc/cp/
+	* cp-tree.h (fixup_deferred_exception_variants): Declare.
+	* tree.c (fixup_deferred_exception_variants): New.
+	* parser.c (cp_parser_member_declaration): Comment about friends.
+	(cp_parser_class_specifier_1): Call it, don't generate a new type.
+	(cp_parser_noexcept_specification_opt): Reorder if conditional.
+	gcc/testsuite/
+	* g++.dg/modules/deferred-1{,_[ab]}.[hHC]: New.
+
 	Merge master 3654d49d0ff651b2a78401bc2430428711e7d2eb
 
 2020-03-09  Nathan Sidwell  <nathan@acm.org>

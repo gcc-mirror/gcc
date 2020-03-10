@@ -7695,6 +7695,7 @@ extern const char *cxx_printable_name_translate	(tree, int);
 extern tree canonical_eh_spec			(tree);
 extern tree build_cp_fntype_variant		(tree, cp_ref_qualifier, tree, bool);
 extern tree build_exception_variant		(tree, tree);
+extern void fixup_deferred_exception_variants   (tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
