@@ -1973,7 +1973,8 @@ vr_gori_interface::outgoing_edge_range_p (irange &r, edge e, tree name,
 {
   if (!gori_compute::outgoing_edge_range_p (r, e, name))
     r.set_varying (TREE_TYPE (name));
-  refine_range_with_equivalences (r, e, name);
+  if (!r.singleton_p ())
+    refine_range_with_equivalences (r, e, name);
   widest_irange tmp;
   range_of_ssa_name (tmp, name);
   r.intersect (tmp);
