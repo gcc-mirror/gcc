@@ -1,5 +1,9 @@
 2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges (split_view::_OuterIter::__at_end): Use __current
+	instead of _M_current.
+	(split_view::_OuterIter::operator++): Likewise.
+
 	* include/std/ranges (transform_view::_Iterator::__iter_move): Remove.
 	(transform_view::_Iterator::operator*): Add noexcept-specifier.
 	(transform_view::_Iterator::iter_move): Inline __iter_move body here.
