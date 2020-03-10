@@ -1,5 +1,10 @@
 2020-03-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93901
+	* pt.c (maybe_instantiate_noexcept): Always update clones.
+
+2020-03-10  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93956
 	* pt.c (maybe_aggr_guide): Check BRACE_ENCLOSED_INITIALIZER_P.
 

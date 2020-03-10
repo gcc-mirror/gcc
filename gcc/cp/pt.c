@@ -25097,14 +25097,14 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
       if (orig_fn)
 	TREE_TYPE (orig_fn) = TREE_TYPE (fn);
+    }
 
-      FOR_EACH_CLONE (clone, fn)
-	{
-	  if (TREE_TYPE (clone) == fntype)
-	    TREE_TYPE (clone) = TREE_TYPE (fn);
-	  else
-	    TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
-	}
+  FOR_EACH_CLONE (clone, fn)
+    {
+      if (TREE_TYPE (clone) == fntype)
+	TREE_TYPE (clone) = TREE_TYPE (fn);
+      else
+	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
     }
 
   return true;
