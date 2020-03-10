@@ -6527,23 +6527,24 @@ package body Exp_Ch4 is
 
                goto Leave;
 
-            --  Ada 2005 (AI-216): Program_Error is raised when evaluating
-            --  a membership test if the subtype mark denotes a constrained
-            --  Unchecked_Union subtype and the expression lacks inferable
-            --  discriminants.
+            --  Ada 2005 (AI95-0216 amended by AI12-0162): Program_Error is
+            --  raised when evaluating an individual membership test if the
+            --  subtype mark denotes a constrained Unchecked_Union subtype
+            --  and the expression lacks inferable discriminants.
 
             elsif Is_Unchecked_Union (Base_Type (Typ))
               and then Is_Constrained (Typ)
               and then not Has_Inferable_Discriminants (Lop)
             then
-               Insert_Action (N,
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Unchecked_Union_Restriction));
+               Rewrite (N,
+                 Make_Expression_With_Actions (Loc,
+                   Actions    =>
+                     New_List (Make_Raise_Program_Error (Loc,
+                       Reason => PE_Unchecked_Union_Restriction)),
+                   Expression =>
+                     New_Occurrence_Of (Standard_False, Loc)));
+               Analyze_And_Resolve (N, Restyp);
 
-               --  Prevent Gigi from generating incorrect code by rewriting the
-               --  test as False. What is this undocumented thing about ???
-
-               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                goto Leave;
             end if;
 
