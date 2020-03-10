@@ -2555,6 +2555,26 @@ proc check_effective_target_le { } {
     }]
 }
 
+# Return 1 if we're generating code for only power8 platforms.
+
+proc check_effective_target_p8 {  } {
+  return [check_no_compiler_messages_nocache p8 assembly {
+	#if !(!defined(_ARCH_PWR9) && defined(_ARCH_PWR8))
+	#error NO
+	#endif
+  } ""]
+}
+
+# Return 1 if we're generating code for power9 and future platforms.
+
+proc check_effective_target_p9+ {  } {
+  return [check_no_compiler_messages_nocache p9+ assembly {
+	#if !(defined(_ARCH_PWR9))
+	#error NO
+	#endif
+  } ""]
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 

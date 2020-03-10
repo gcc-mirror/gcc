@@ -1,3 +1,18 @@
+2020-03-10  Luo Xiong Hu  <luoxhu@linux.ibm.com>
+
+	backport from master.
+	PR testsuite/94036
+
+	2019-12-02  Luo Xiong Hu  <luoxhu@linux.ibm.com>
+
+	PR testsuite/92398
+	* gcc.target/powerpc/pr72804.c: Split the store function to...
+	* gcc.target/powerpc/pr92398.h: ... this one.  New.
+	* gcc.target/powerpc/pr92398.p9+.c: New.
+	* gcc.target/powerpc/pr92398.p9-.c: New.
+	* lib/target-supports.exp (check_effective_target_p8): New.
+	(check_effective_target_p9+): New.
+
 2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94046
