@@ -1,5 +1,8 @@
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94121
+	* gcc.dg/pr94121.c: New test.
+
 	PR middle-end/94111
 	* gcc.dg/dfp/pr94111.c: New test.
 
