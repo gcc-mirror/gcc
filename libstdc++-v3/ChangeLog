@@ -1,5 +1,17 @@
 2020-03-11  Patrick Palka  <ppalka@redhat.com>
 
+	* include/std/ranges (split_view::_OuterIter::_OuterIter): Typo fix,
+	'address' -> 'std::__addressof'.
+	* testsuite/std/ranges/adaptors/split.cc: Test taking the split_view of
+	a non-forward input_range.
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper): Make
+	default constructor protected instead of deleted, like with
+	input_iterator_wrapper.
+	(test_range::iterator): Add comment explaining that this type is used
+	only when the underlying wrapper is input_iterator_wrapper or
+	output_iterator_wrapper.  Remove delegating defaulted constructor so
+	that the inherited default constructor is used instead.
+
 	LWG 3286 ranges::size is not required to be valid after a call to
 	ranges::begin on an input range
 	* include/std/ranges (subrange::subrange): Split single-argument

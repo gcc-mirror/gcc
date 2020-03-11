@@ -2785,7 +2785,7 @@ namespace views
 
 	  constexpr explicit
 	  _OuterIter(_Parent& __parent) requires (!forward_range<_Base>)
-	    : _M_parent(address(__parent))
+	    : _M_parent(std::__addressof(__parent))
 	  { }
 
 	  constexpr

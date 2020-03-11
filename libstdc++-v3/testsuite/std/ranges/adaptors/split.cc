@@ -27,6 +27,7 @@
 
 using __gnu_test::test_range;
 using __gnu_test::forward_iterator_wrapper;
+using __gnu_test::input_iterator_wrapper;
 
 namespace ranges = std::ranges;
 namespace views = std::ranges::views;
@@ -133,6 +134,24 @@ test07()
   static_assert( noexcept(iter_swap(b, b2)) );
 }
 
+void
+test08()
+{
+  char x[] = "the quick brown fox";
+  test_range<char, input_iterator_wrapper> rx(x, x+sizeof(x)-1);
+  auto v = rx | views::split(' ');
+  auto i = v.begin();
+  VERIFY( ranges::equal(*i, "the"sv) );
+  ++i;
+  VERIFY( ranges::equal(*i, "quick"sv) );
+  ++i;
+  VERIFY( ranges::equal(*i, "brown"sv) );
+  ++i;
+  VERIFY( ranges::equal(*i, "fox"sv) );
+  ++i;
+  VERIFY( i == v.end() );
+}
+
 int
 main()
 {
@@ -143,4 +162,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }
