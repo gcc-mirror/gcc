@@ -1,3 +1,9 @@
+2020-03-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/93961
+	* tree.c (variably_modified_type_p) <RECORD_TYPE>: Recurse into fields
+	whose type is a qualified union.
+
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94121
