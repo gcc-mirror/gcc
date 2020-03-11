@@ -1,3 +1,8 @@
+2020-03-11  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* lib/scanasm.exp (parse_function_bodies): Lines starting with '@' also
+	counted as fluff.
+
 2020-03-11  Richard Wai  <richard@annexi-strayline.com>
 
 	* gnat.dg/subpools1.adb: New test.
