@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/analyzer-selftests.h"
+#include "stor-layout.h"
 
 #if ENABLE_ANALYZER
 
@@ -3538,7 +3539,7 @@ region_model::dump_dot (const char *path) const
 /* Dump a multiline representation of this model to PP, showing the
    region hierarchy, the svalues, and any constraints.
 
-   If SUMMARIZE is true, show only the most pertient information,
+   If SUMMARIZE is true, show only the most pertinent information,
    in a form that attempts to be less verbose.
    Otherwise, show all information.  */
 
@@ -3547,18 +3548,23 @@ region_model::dump_to_pp (pretty_printer *pp, bool summarize) const
 {
   if (summarize)
     {
-      bool is_first = true;
-      region_id frame_id = get_current_frame_id ();
-      frame_region *frame = get_region <frame_region> (frame_id);
-      if (frame)
-	dump_summary_of_map (pp, frame, &is_first);
-
-      region_id globals_id = get_globals_region_id ();
-      map_region *globals = get_region <map_region> (globals_id);
-      if (globals)
-	dump_summary_of_map (pp, globals, &is_first);
+      auto_vec<path_var> rep_path_vars;
 
       unsigned i;
+      region *reg;
+      FOR_EACH_VEC_ELT (m_regions, i, reg)
+	{
+	  region_id rid = region_id::from_int (i);
+	  path_var pv = get_representative_path_var (rid);
+	  if (pv.m_tree)
+	    rep_path_vars.safe_push (pv);
+	}
+      bool is_first = true;
+
+      /* Work with a copy in case the get_lvalue calls change anything
+	 (they shouldn't).  */
+      region_model copy (*this);
+      copy.dump_summary_of_rep_path_vars (pp, &rep_path_vars, &is_first);
 
       equiv_class *ec;
       FOR_EACH_VEC_ELT (m_constraints->m_equiv_classes, i, ec)
@@ -3680,37 +3686,28 @@ dump_vec_of_tree (pretty_printer *pp,
   pp_printf (pp, "}: %s", label);
 }
 
-/* Dump *MAP_REGION to PP in compact form, updating *IS_FIRST.
-   Subroutine of region_model::dump_to_pp for use on stack frames and for
-   the "globals" region.  */
+/* Dump all *REP_PATH_VARS to PP in compact form, updating *IS_FIRST.
+   Subroutine of region_model::dump_to_pp.  */
 
 void
-region_model::dump_summary_of_map (pretty_printer *pp,
-				   map_region *map_region,
-				   bool *is_first) const
+region_model::dump_summary_of_rep_path_vars (pretty_printer *pp,
+					     auto_vec<path_var> *rep_path_vars,
+					     bool *is_first)
 {
-  /* Get the keys, sorted by tree_cmp.  In particular, this ought
-     to alphabetize any decls.  */
-  auto_vec<tree> keys (map_region->elements ());
-  for (map_region::iterator_t iter = map_region->begin ();
-       iter != map_region->end ();
-       ++iter)
-    {
-      tree key_a = (*iter).first;
-      keys.quick_push (key_a);
-    }
-  keys.qsort (tree_cmp);
-
   /* Print pointers, constants, and poisoned values that aren't "uninit";
      gather keys for unknown and uninit values.  */
   unsigned i;
-  tree key;
-  auto_vec<tree> unknown_keys;
-  auto_vec<tree> uninit_keys;
-  FOR_EACH_VEC_ELT (keys, i, key)
+  path_var *pv;
+  auto_vec<tree> unknown_trees;
+  auto_vec<tree> uninit_trees;
+  FOR_EACH_VEC_ELT (*rep_path_vars, i, pv)
     {
-      region_id child_rid = *map_region->get (key);
-
+      if (TREE_CODE (pv->m_tree) == STRING_CST)
+	continue;
+      tentative_region_model_context ctxt;
+      region_id child_rid = get_lvalue (*pv, &ctxt);
+      if (ctxt.had_errors_p ())
+	continue;
       region *child_region = get_region (child_rid);
       if (!child_region)
 	continue;
@@ -3729,7 +3726,7 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	    gcc_assert (!pointee_rid.null_p ());
 	    tree pointee = get_representative_path_var (pointee_rid).m_tree;
 	    dump_separator (pp, is_first);
-	    dump_tree (pp, key);
+	    dump_tree (pp, pv->m_tree);
 	    pp_string (pp, ": ");
 	    pp_character (pp, '&');
 	    if (pointee)
@@ -3740,23 +3737,23 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	  break;
 	case SK_CONSTANT:
 	  dump_separator (pp, is_first);
-	  dump_tree (pp, key);
+	  dump_tree (pp, pv->m_tree);
 	  pp_string (pp, ": ");
 	  dump_tree (pp, sval->dyn_cast_constant_svalue ()->get_constant ());
 	  break;
 	case SK_UNKNOWN:
-	  unknown_keys.safe_push (key);
+	  unknown_trees.safe_push (pv->m_tree);
 	  break;
 	case SK_POISONED:
 	  {
 	    poisoned_svalue *poisoned_sval = as_a <poisoned_svalue *> (sval);
 	    enum poison_kind pkind = poisoned_sval->get_poison_kind ();
 	    if (pkind == POISON_KIND_UNINIT)
-	      uninit_keys.safe_push (key);
+	      uninit_trees.safe_push (pv->m_tree);
 	    else
 	      {
 		dump_separator (pp, is_first);
-		dump_tree (pp, key);
+		dump_tree (pp, pv->m_tree);
 		pp_printf (pp, ": %s", poison_kind_to_str (pkind));
 	      }
 	  }
@@ -3770,8 +3767,8 @@ region_model::dump_summary_of_map (pretty_printer *pp,
     }
 
   /* Print unknown and uninitialized values in consolidated form.  */
-  dump_vec_of_tree (pp, is_first, unknown_keys, "unknown");
-  dump_vec_of_tree (pp, is_first, uninit_keys, "uninit");
+  dump_vec_of_tree (pp, is_first, unknown_trees, "unknown");
+  dump_vec_of_tree (pp, is_first, uninit_trees, "uninit");
 }
 
 /* Assert that this object is valid.  */
@@ -5355,6 +5352,19 @@ region_model::set_value (region_id lhs_rid, svalue_id rhs_sid,
   get_region (lhs_rid)->set_value (*this, lhs_rid, rhs_sid, ctxt);
 }
 
+/* Set the value of the region given by LHS to the value given
+   by RHS.  */
+
+void
+region_model::set_value (tree lhs, tree rhs, region_model_context *ctxt)
+{
+  region_id lhs_rid = get_lvalue (lhs, ctxt);
+  svalue_id rhs_sid = get_rvalue (rhs, ctxt);
+  gcc_assert (!lhs_rid.null_p ());
+  gcc_assert (!rhs_sid.null_p ());
+  set_value (lhs_rid, rhs_sid, ctxt);
+}
+
 /* Determine what is known about the condition "LHS_SID OP RHS_SID" within
    this model.  */
 
@@ -5735,12 +5745,12 @@ path_var
 region_model::get_representative_path_var (region_id rid) const
 {
   region *reg = get_region (rid);
-  region *parent_region = get_region (reg->get_parent ());
+  region *parent_reg = get_region (reg->get_parent ());
   region_id stack_rid = get_stack_region_id ();
   if (!stack_rid.null_p ())
-    if (parent_region->get_parent () == stack_rid)
+    if (parent_reg && parent_reg->get_parent () == stack_rid)
       {
-	frame_region *parent_frame = (frame_region *)parent_region;
+	frame_region *parent_frame = (frame_region *)parent_reg;
 	tree t = parent_frame->get_tree_for_child_region (rid);
 	return path_var (t, parent_frame->get_depth ());
     }
@@ -5753,7 +5763,6 @@ region_model::get_representative_path_var (region_id rid) const
 
   /* Handle e.g. fields of a local by recursing.  */
   region_id parent_rid = reg->get_parent ();
-  region *parent_reg = get_region (parent_rid);
   if (parent_reg)
     {
       if (reg->is_view_p ())
@@ -5782,25 +5791,25 @@ region_model::get_representative_path_var (region_id rid) const
 				 parent_pv.m_stack_depth);
 	    }
 	}
-    }
 
-  /* Handle elements within an array.  */
-  if (array_region *array_reg = parent_region->dyn_cast_array_region ())
-    {
-      array_region::key_t key;
-      if (array_reg->get_key_for_child_region (rid, &key))
-	{
-	  path_var parent_pv = get_representative_path_var (parent_rid);
-	  if (parent_pv.m_tree && reg->get_type ())
-	    {
-	      tree index = array_reg->constant_from_key (key);
-	      return path_var (build4 (ARRAY_REF,
-				       reg->get_type (),
-				       parent_pv.m_tree, index,
-				       NULL_TREE, NULL_TREE),
-			       parent_pv.m_stack_depth);
-	    }
-	}
+      /* Handle elements within an array.  */
+      if (array_region *array_reg = parent_reg->dyn_cast_array_region ())
+      {
+	array_region::key_t key;
+	if (array_reg->get_key_for_child_region (rid, &key))
+	  {
+	    path_var parent_pv = get_representative_path_var (parent_rid);
+	    if (parent_pv.m_tree && reg->get_type ())
+	      {
+		tree index = array_reg->constant_from_key (key);
+		return path_var (build4 (ARRAY_REF,
+					 reg->get_type (),
+					 parent_pv.m_tree, index,
+					 NULL_TREE, NULL_TREE),
+				 parent_pv.m_stack_depth);
+	      }
+	  }
+      }
     }
 
   /* Handle string literals.  */
@@ -7400,6 +7409,124 @@ test_dump ()
   ASSERT_DUMP_EQ (model, true, "");
 }
 
+/* Helper function for selftests.  Create a struct or union type named NAME,
+   with the fields given by the FIELD_DECLS in FIELDS.
+   If IS_STRUCT is true create a RECORD_TYPE (aka a struct), otherwise
+   create a UNION_TYPE.  */
+
+static tree
+make_test_compound_type (const char *name, bool is_struct,
+			 const auto_vec<tree> *fields)
+{
+  tree t = make_node (is_struct ? RECORD_TYPE : UNION_TYPE);
+  TYPE_NAME (t) = get_identifier (name);
+  TYPE_SIZE (t) = 0;
+
+  tree fieldlist = NULL;
+  int i;
+  tree field;
+  FOR_EACH_VEC_ELT (*fields, i, field)
+    {
+      gcc_assert (TREE_CODE (field) == FIELD_DECL);
+      DECL_CONTEXT (field) = t;
+      fieldlist = chainon (field, fieldlist);
+    }
+  fieldlist = nreverse (fieldlist);
+  TYPE_FIELDS (t) = fieldlist;
+
+  layout_type (t);
+  return t;
+}
+
+/* Verify that dumps can show struct fields.  */
+
+static void
+test_dump_2 ()
+{
+  auto_vec<tree> fields;
+  tree x_field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			     get_identifier ("x"), integer_type_node);
+  fields.safe_push (x_field);
+  tree y_field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			     get_identifier ("y"), integer_type_node);
+  fields.safe_push (y_field);
+  tree coord_type = make_test_compound_type ("coord", true, &fields);
+
+  tree c = build_global_decl ("c", coord_type);
+  tree c_x = build3 (COMPONENT_REF, TREE_TYPE (x_field),
+		     c, x_field, NULL_TREE);
+  tree c_y = build3 (COMPONENT_REF, TREE_TYPE (y_field),
+		     c, y_field, NULL_TREE);
+
+  tree int_17 = build_int_cst (integer_type_node, 17);
+  tree int_m3 = build_int_cst (integer_type_node, -3);
+
+  region_model model;
+  model.set_value (c_x, int_17, NULL);
+  model.set_value (c_y, int_m3, NULL);
+
+  /* Simplified dump.  */
+  ASSERT_DUMP_EQ (model, true, "c.x: 17, c.y: -3");
+
+  /* Full dump.  */
+  ASSERT_DUMP_EQ
+    (model, false,
+     "r0: {kind: `root', parent: null, sval: null}\n"
+     "`-globals: r1: {kind: `globals', parent: r0, sval: null, map: {`c': r2}}\n"
+     "  `-`c': r2: {kind: `struct', parent: r1, sval: null, type: `struct coord', map: {`x': r3, `y': r4}}\n"
+     "    |: type: `struct coord'\n"
+     "    |-`x': r3: {kind: `primitive', parent: r2, sval: sv0, type: `int'}\n"
+     "    |  |: sval: sv0: {type: `int', `17'}\n"
+     "    |  |: type: `int'\n"
+     "    `-`y': r4: {kind: `primitive', parent: r2, sval: sv1, type: `int'}\n"
+     "      |: sval: sv1: {type: `int', `-3'}\n"
+     "      |: type: `int'\n"
+     "svalues:\n"
+     "  sv0: {type: `int', `17'}\n"
+     "  sv1: {type: `int', `-3'}\n"
+     "constraint manager:\n"
+     "  equiv classes:\n"
+     "  constraints:\n");
+}
+
+/* Verify that dumps can show array elements.  */
+
+static void
+test_dump_3 ()
+{
+  tree tlen = size_int (10);
+  tree arr_type = build_array_type (char_type_node, build_index_type (tlen));
+
+  tree a = build_global_decl ("a", arr_type);
+
+  region_model model;
+  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree a_0 = build4 (ARRAY_REF, char_type_node,
+		     a, int_0, NULL_TREE, NULL_TREE);
+  tree char_A = build_int_cst (char_type_node, 'A');
+  model.set_value (a_0, char_A, NULL);
+
+  /* Simplified dump.  */
+  ASSERT_DUMP_EQ (model, true, "a[0]: 65");
+
+  /* Full dump.  */
+  ASSERT_DUMP_EQ
+    (model, false,
+     "r0: {kind: `root', parent: null, sval: null}\n"
+     "`-globals: r1: {kind: `globals', parent: r0, sval: null, map: {`a': r2}}\n"
+     "  `-`a': r2: {kind: `array', parent: r1, sval: null, type: `char[11]', array: {[0]: r3}}\n"
+     "    |: type: `char[11]'\n"
+     "    `-[0]: r3: {kind: `primitive', parent: r2, sval: sv1, type: `char'}\n"
+     "      |: sval: sv1: {type: `char', `65'}\n"
+     "      |: type: `char'\n"
+     "svalues:\n"
+     "  sv0: {type: `int', `0'}\n"
+     "  sv1: {type: `char', `65'}\n"
+     "constraint manager:\n"
+     "  equiv classes:\n"
+     "  constraints:\n");
+}
+
 /* Verify that region_model::get_representative_tree works as expected.  */
 
 static void
@@ -7834,7 +7961,7 @@ test_stack_frames ()
 #endif
 
   ASSERT_DUMP_EQ (model, true,
-		  "x: 0, {y}: unknown, p: &x, q: &p, b < 10, y != 5");
+		  "a: 42, x: 0, p: &x, q: &p, {b, y}: unknown, b < 10, y != 5");
 
   /* Pop the "child_fn" frame from the stack.  */
   purge_stats purged;
@@ -8475,6 +8602,8 @@ analyzer_region_model_cc_tests ()
 {
   test_tree_cmp_on_constants ();
   test_dump ();
+  test_dump_2 ();
+  test_dump_3 ();
   test_get_representative_tree ();
   test_unique_constants ();
   test_svalue_equality ();

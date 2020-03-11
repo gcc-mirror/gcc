@@ -1771,6 +1771,7 @@ class region_model
 
   void set_value (region_id lhs_rid, svalue_id rhs_sid,
 		  region_model_context *ctxt);
+  void set_value (tree lhs, tree rhs, region_model_context *ctxt);
   svalue_id set_to_new_unknown_value (region_id dst_rid, tree type,
 				      region_model_context *ctxt);
 
@@ -1884,8 +1885,9 @@ class region_model
   void poison_any_pointers_to_bad_regions (const region_id_set &bad_regions,
 					   enum poison_kind pkind);
 
-  void dump_summary_of_map (pretty_printer *pp, map_region *map_region,
-			    bool *is_first) const;
+  void dump_summary_of_rep_path_vars (pretty_printer *pp,
+				      auto_vec<path_var> *rep_path_vars,
+				      bool *is_first);
 
   auto_delete_vec<svalue> m_svalues;
   auto_delete_vec<region> m_regions;

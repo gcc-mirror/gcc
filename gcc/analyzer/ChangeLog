@@ -1,5 +1,33 @@
 2020-03-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* region-model.cc: Include "stor-layout.h".
+	(region_model::dump_to_pp): Rather than calling
+	dump_summary_of_map on each of the current frame and the globals,
+	instead get a vec of representative path_vars for all regions,
+	and then dump a summary of all of them.
+	(region_model::dump_summary_of_map): Delete, rewriting into...
+	(region_model::dump_summary_of_rep_path_vars): ...this new
+	function, working on a vec of path_vars.
+	(region_model::set_value): New overload.
+	(region_model::get_representative_path_var): Rename
+	"parent_region" local to "parent_reg" and consolidate with other
+	local.  Guard test for grandparent being stack on parent_reg being
+	non-NULL.  Move handling for parent being an array_region to
+	within guard for parent_reg being non-NULL.
+	(selftest::make_test_compound_type): New function.
+	(selftest::test_dump_2): New selftest.
+	(selftest::test_dump_3): New selftest.
+	(selftest::test_stack_frames): Update expected output from
+	simplified dump to show "a" and "b" from parent frame and "y" in
+	child frame.
+	(selftest::analyzer_region_model_cc_tests): Call test_dump_2 and
+	test_dump_3.
+	* region-model.h (region_model::set_value): New overload decl.
+	(region_model::dump_summary_of_map): Delete.
+	(region_model::dump_summary_of_rep_path_vars): New.
+
+2020-03-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* region-model.h (class noop_region_model_context): New subclass
 	of region_model_context.
 	(class tentative_region_model_context): Inherit from
