@@ -1,3 +1,8 @@
+2020-03-11  Richard Biener  <rguenther@suse.de>
+
+	* match.pd ((T *)(ptr - ptr-cst) -> &MEM[ptr + -ptr-cst]):
+	New pattern.
+
 2020-03-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/93961
