@@ -1,3 +1,15 @@
+2020-05-01  Alan Modra	 <amodra@gmail.com>
+
+	PR target/94145
+	Backport from master
+	2020-03-27  Alan Modra	 <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_longcall_ref): Use unspec_volatile
+	for PLT16_LO.
+	* config/rs6000/rs6000.md (UNSPEC_PLT16_LO): Remove.
+	(UNSPECV_PLT16_LO): Define.
+	(pltseq_plt16_lo_): Use unspec_volatile.
+
 2020-04-30  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/emmintrin.h (_mm_movemask_epi8): Fix comment.
@@ -169,7 +181,7 @@
 
 2020-04-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
-Backport from mainline.
+	Backport from mainline.
 	2020-03-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000-call.c altivec_init_builtins(): Remove

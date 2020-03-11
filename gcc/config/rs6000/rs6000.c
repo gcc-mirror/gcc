@@ -33049,8 +33049,9 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       rtx reg = gen_rtx_REG (Pmode, regno);
       rtx hi = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
 			       UNSPEC_PLT16_HA);
-      rtx lo = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, reg, call_ref, arg),
-			       UNSPEC_PLT16_LO);
+      rtx lo = gen_rtx_UNSPEC_VOLATILE (Pmode,
+					gen_rtvec (3, reg, call_ref, arg),
+					UNSPECV_PLT16_LO);
       emit_insn (gen_rtx_SET (reg, hi));
       emit_insn (gen_rtx_SET (reg, lo));
       return reg;
