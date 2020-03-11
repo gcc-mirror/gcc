@@ -154,13 +154,16 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
   return true;
 }
 
+// Class to assert that gori/ranger provide ranges that are at least
+// as good as evrp.
+
 class vr_gori_comparison
 {
 public:
   vr_gori_comparison (const value_range *r_evrp, const irange *r_gori);
-  void dump_comparison (tree name, edge, vr_values *vr);
+  void compare (tree name, edge, vr_values *vr);
 private:
-  void dump_differences_and_maybe_trap () const;
+  void dump_differences_and_trap () const;
   void dump_differences (FILE *) const;
   void dump_improvements (FILE *) const;
   bool gori_range_is_same () const;
@@ -180,7 +183,7 @@ vr_gori_comparison::vr_gori_comparison (const value_range *r_evrp,
 }
 
 void
-vr_gori_comparison::dump_comparison (tree name, edge e, vr_values *vr)
+vr_gori_comparison::compare (tree name, edge e, vr_values *vr)
 {
   m_name = name;
   m_edge = e;
@@ -223,7 +226,7 @@ vr_gori_comparison::dump_comparison (tree name, edge e, vr_values *vr)
 	    return;
 	}
     }
-  dump_differences_and_maybe_trap ();
+  dump_differences_and_trap ();
 }
 
 bool
@@ -262,25 +265,20 @@ vr_gori_comparison::gori_range_is_better () const
 }
 
 void
-vr_gori_comparison::dump_differences_and_maybe_trap () const
+vr_gori_comparison::dump_differences_and_trap () const
 {
-  if (!getenv("GORIME"))
-    return;
-
-  FILE *out = stderr;
-  bool dumping = false;
-  if (!strcmp (getenv ("GORIME"), "dump"))
+  bool dumping = getenv("GORIME") && !strcmp (getenv ("GORIME"), "dump");
+  if (dumping)
     {
-      dumping = true;
-      out = fopen ("/tmp/gori-differences", "a");
+      FILE *out = fopen ("/tmp/gori-differences", "a");
       fprintf (out, "=========FILE: %s ========\n",
 	       main_input_filename ? main_input_filename : "UNKNOWN");
+      dump_differences (out);
+      fclose (out);
+      return;
     }
-  dump_differences (out);
-  if (dumping)
-    fclose (out);
-  else
-    gcc_unreachable ();
+  dump_differences (stderr);
+  gcc_unreachable ();
 }
 
 void
@@ -341,7 +339,7 @@ evrp_range_analyzer::try_find_new_range_for_assert (const assert_info &assert,
       if (CHECKING_P && dbg_cnt (evrp_find_range))
 	{
 	  vr_gori_comparison comp (vr, &vr_gori);
-	  comp.dump_comparison (name, e, vr_values);
+	  comp.compare (name, e, vr_values);
 	}
       if (!vr)
 	{
