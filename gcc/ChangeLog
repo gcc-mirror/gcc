@@ -1,3 +1,12 @@
+2020-03-27  Alan Modra  <amodra@gmail.com>
+
+	PR target/94145
+	* config/rs6000/rs6000.c (rs6000_longcall_ref): Use unspec_volatile
+	for PLT16_LO and PLT_PCREL.
+	* config/rs6000/rs6000.md (UNSPEC_PLT16_LO, UNSPEC_PLT_PCREL): Remove.
+	(UNSPECV_PLT16_LO, UNSPECV_PLT_PCREL): Define.
+	(pltseq_plt16_lo_, pltseq_plt_pcrel): Use unspec_volatile.
+
 2020-03-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/94098
