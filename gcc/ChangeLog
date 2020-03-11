@@ -1,3 +1,10 @@
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94134
+	* config/pdp11/pdp11.c (pdp11_asm_output_var): Call switch_to_section
+	at the start to switch to data section.  Don't print extra newline if
+	.globl directive has not been emitted.
+
 2020-03-11  Richard Biener  <rguenther@suse.de>
 
 	* match.pd ((T *)(ptr - ptr-cst) -> &MEM[ptr + -ptr-cst]):

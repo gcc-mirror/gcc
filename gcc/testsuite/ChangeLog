@@ -1,3 +1,8 @@
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94134
+	* gcc.c-torture/execute/pr94134.c: New test.
+
 2020-03-11  Kito Cheng  <kito.cheng@sifive.com>
 
 	* gcc.target/riscv/interrupt-2.c: Update testcase and expected output.
