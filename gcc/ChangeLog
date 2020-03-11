@@ -1,3 +1,20 @@
+2020-03-11  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/arm/arm-builtins.c
+	(arm_init_simd_builtin_scalar_types): New.
+	* config/arm/arm_neon.h (vld2_bf16): Used new builtin type.
+	(vld2q_bf16): Used new builtin type.
+	(vld3_bf16): Used new builtin type.
+	(vld3q_bf16): Used new builtin type.
+	(vld4_bf16): Used new builtin type.
+	(vld4q_bf16): Used new builtin type.
+	(vld2_dup_bf16): Used new builtin type.
+	(vld2q_dup_bf16): Used new builtin type.
+	(vld3_dup_bf16): Used new builtin type.
+	(vld3q_dup_bf16): Used new builtin type.
+	(vld4_dup_bf16): Used new builtin type.
+	(vld4q_dup_bf16): Used new builtin type.
+
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94134
