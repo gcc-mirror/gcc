@@ -1,3 +1,9 @@
+2020-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	Bad ranges, no biscuit!
+	gcc/testsuite/
+	* g++.dg/modules/odr-1{,_[ab]}.[hHC]: New.
+
 2020-03-10  Nathan Sidwell  <nathan@acm.org>
 
 	Reconstruct deferred exception spec types
