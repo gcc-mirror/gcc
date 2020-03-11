@@ -1,3 +1,11 @@
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94114
+	* tree-loop-distribution.c (generate_memset_builtin): Call
+	rewrite_to_non_trapping_overflow even on mem.
+	(generate_memcpy_builtin): Call rewrite_to_non_trapping_overflow even
+	on dest and src.
+
 2020-03-10  Jeff Law  <law@redhat.com>
 
 	* config/bfin/bfin.md (movsi_insv): Add length attribute.

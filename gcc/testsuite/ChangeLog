@@ -1,3 +1,8 @@
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94114
+	* gcc.dg/pr94114.c: New test.
+
 2020-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94124 - wrong conversion error with non-viable overload.
