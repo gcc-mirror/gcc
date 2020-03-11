@@ -893,6 +893,16 @@
     DONE;
   })
 
+(define_expand "vec_init<V_ALL:mode><V_ALL_ALT:mode>"
+  [(match_operand:V_ALL 0 "register_operand")
+   (match_operand:V_ALL_ALT 1)]
+  "<V_ALL:SCALAR_MODE>mode == <V_ALL_ALT:SCALAR_MODE>mode
+   && MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)"
+  {
+    gcn_expand_vector_init (operands[0], operands[1]);
+    DONE;
+  })
+
 ;; }}}
 ;; {{{ Scatter / Gather
 
