@@ -1211,6 +1211,17 @@ package body Exp_Ch3 is
             then
                Initialization_Warning (T);
                return Empty;
+
+               --  We need to return empty if the type has predicates because
+               --  this would otherwise duplicate calls to the predicate
+               --  function. If the type hasn't been frozen before being
+               --  referenced in the current record, the extraneous call to
+               --  the predicate function would be inserted somewhere before
+               --  the predicate function is elaborated, which would result in
+               --  an invalid tree.
+
+            elsif Has_Predicates (Etype (Comp)) then
+               return Empty;
             end if;
 
          elsif Is_Scalar_Type (Etype (Comp)) then
