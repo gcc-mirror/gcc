@@ -1,6 +1,11 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94114
+	* gcc.dg/pr94114.c: New test.
+
 	2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93399

@@ -1,6 +1,14 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94114
+	* tree-loop-distribution.c (generate_memset_builtin): Call
+	rewrite_to_non_trapping_overflow even on mem.
+	(generate_memcpy_builtin): Call rewrite_to_non_trapping_overflow even
+	on dest and src.
+
 	2020-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93399
