@@ -1,5 +1,10 @@
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/93962
+	* value-prof.c (dump_histogram_value): Use abs_hwi instead of
+	std::abs.
+	(get_nth_most_common_value): Use abs_hwi instead of abs.
+
 	PR middle-end/94111
 	* dfp.c (decimal_to_binary): Only use decimal128ToString if from->cl
 	is rvc_normal, otherwise use real_to_decimal to print the number to
