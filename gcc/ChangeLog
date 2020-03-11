@@ -1,5 +1,10 @@
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/94111
+	* dfp.c (decimal_to_binary): Only use decimal128ToString if from->cl
+	is rvc_normal, otherwise use real_to_decimal to print the number to
+	string.
+
 	PR tree-optimization/94114
 	* tree-loop-distribution.c (generate_memset_builtin): Call
 	rewrite_to_non_trapping_overflow even on mem.

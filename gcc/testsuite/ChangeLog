@@ -1,5 +1,8 @@
 2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/94111
+	* gcc.dg/dfp/pr94111.c: New test.
+
 	PR tree-optimization/94114
 	* gcc.dg/pr94114.c: New test.
 
