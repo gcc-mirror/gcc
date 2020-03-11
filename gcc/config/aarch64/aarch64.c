@@ -2818,7 +2818,7 @@ aarch64_add_offset_1 (scalar_int_mode mode, rtx dest,
   gcc_assert (emit_move_imm || temp1 != NULL_RTX);
   gcc_assert (temp1 == NULL_RTX || !reg_overlap_mentioned_p (temp1, src));
 
-  HOST_WIDE_INT moffset = abs_hwi (offset);
+  unsigned HOST_WIDE_INT moffset = absu_hwi (offset);
   rtx_insn *insn;
 
   if (!moffset)

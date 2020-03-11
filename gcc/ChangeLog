@@ -3,6 +3,10 @@
 	Backported from mainline
 	2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94121
+	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use absu_hwi
+	instead of abs_hwi, change moffset type to unsigned HOST_WIDE_INT.
+
 	PR middle-end/94111
 	* dfp.c (decimal_to_binary): Only use decimal128ToString if from->cl
 	is rvc_normal, otherwise use real_to_decimal to print the number to
