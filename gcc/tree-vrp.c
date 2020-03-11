@@ -2134,6 +2134,18 @@ register_edge_assert_for_2 (tree name, edge e,
          simply register the same assert for it.  */
       if (CONVERT_EXPR_CODE_P (rhs_code))
 	{
+	  // This disables narrowing casts:
+	  //
+	  // long unsigned int _2;
+	  // char _3;
+	  // _3 = (char) _2;
+	  // if (_3 == 0)
+	  //   goto <bb 6>;
+	  //
+	  // evrp gets [0,0]
+	  // gori gets [0,0][256, 18446744073709551360]
+	  //
+	  // See: See tree-ssa/ivopts-lower_base.c
 	  gori_computable set_gori_computable (false);
 	  wide_int rmin, rmax;
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
