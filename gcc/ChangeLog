@@ -1,3 +1,7 @@
+2020-03-10  Jeff Law  <law@redhat.com>
+
+	* config/bfin/bfin.md (movsi_insv): Add length attribute.
+
 2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93709
