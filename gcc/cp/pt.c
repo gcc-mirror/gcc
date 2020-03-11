@@ -7943,7 +7943,7 @@ template_template_parm_bindings_ok_p (tree tparms, tree targs)
 /* Since type attributes aren't mangled, we need to strip them from
    template type arguments.  */
 
-static tree
+tree
 canonicalize_type_argument (tree arg, tsubst_flags_t complain)
 {
   if (!arg || arg == error_mark_node || arg == TYPE_CANONICAL (arg))

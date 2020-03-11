@@ -1,3 +1,9 @@
+2020-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93907
+	* constraint.cc (tsubst_parameter_mapping): Canonicalize type
+	argument.
+
 2020-03-11  Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

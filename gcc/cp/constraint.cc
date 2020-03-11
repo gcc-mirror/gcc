@@ -2232,7 +2232,11 @@ tsubst_parameter_mapping (tree map, tree args, subst_info info)
       else if (ARGUMENT_PACK_P (arg))
 	new_arg = tsubst_argument_pack (arg, args, complain, in_decl);
       if (!new_arg)
-	new_arg = tsubst_template_arg (arg, args, complain, in_decl);
+	{
+	  new_arg = tsubst_template_arg (arg, args, complain, in_decl);
+	  if (TYPE_P (new_arg))
+	    new_arg = canonicalize_type_argument (new_arg, complain);
+	}
       if (new_arg == error_mark_node)
 	return error_mark_node;
 
