@@ -3,6 +3,18 @@
 	Backport from mainline:
 	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (vec_init<V_ALL:mode><V_ALL_ALT:mode>): New.
+	* config/gcn/gcn.cc (GEN_VN): Add andvNsi3, subvNsi3.
+	(GEN_VNM): Add gathervNm_expr.
+	(GEN_VN_NOEXEC): Add vec_seriesvNsi.
+	(gcn_expand_vector_init): Add initialization of vectors from smaller
+	vectors.
+
+2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-protos.h (get_exec): Add prototypes for two variants.
 	* config/gcn/gcn-valu.md
 	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): New define_expand.

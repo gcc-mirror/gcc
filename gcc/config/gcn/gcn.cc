@@ -1375,12 +1375,17 @@ GEN_VN (add,di3_vcc_zext_dup2, A(rtx dest, rtx src1, rtx src2, rtx vcc),
 	A(dest, src1, src2, vcc))
 GEN_VN (addc,si3, A(rtx dest, rtx src1, rtx src2, rtx vccout, rtx vccin),
 	A(dest, src1, src2, vccout, vccin))
+GEN_VN (and,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (ashl,si3, A(rtx dest, rtx src, rtx shift), A(dest, src, shift))
 GEN_VNM_NOEXEC (ds_bpermute,, A(rtx dest, rtx addr, rtx src, rtx exec),
 		A(dest, addr, src, exec))
+GEN_VNM (gather,_expr, A(rtx dest, rtx addr, rtx as, rtx vol),
+	 A(dest, addr, as, vol))
 GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
 GEN_VN (mul,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (sub,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
+GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
 
 #undef GEN_VNM
 #undef GEN_VN
@@ -2003,44 +2008,146 @@ regno_ok_for_index_p (int regno)
 void
 gcn_expand_vector_init (rtx op0, rtx vec)
 {
-  int64_t initialized_mask = 0;
-  int64_t curr_mask = 1;
+  rtx val[64];
   machine_mode mode = GET_MODE (op0);
   int vf = GET_MODE_NUNITS (mode);
+  machine_mode addrmode = VnMODE (vf, DImode);
+  machine_mode offsetmode = VnMODE (vf, SImode);
 
-  rtx val = XVECEXP (vec, 0, 0);
+  int64_t mem_mask = 0;
+  int64_t item_mask[64];
+  rtx ramp = gen_reg_rtx (offsetmode);
+  rtx addr = gen_reg_rtx (addrmode);
 
-  for (int i = 1; i < vf; i++)
-    if (rtx_equal_p (val, XVECEXP (vec, 0, i)))
-      curr_mask |= (int64_t) 1 << i;
+  int unit_size = GET_MODE_SIZE (GET_MODE_INNER (GET_MODE (op0)));
+  emit_insn (gen_mulvNsi3_dup (ramp, gen_rtx_REG (offsetmode, VGPR_REGNO (1)),
+			       GEN_INT (unit_size)));
 
-  if (gcn_constant_p (val))
-    emit_move_insn (op0, gcn_vec_constant (mode, val));
-  else
+  bool simple_repeat = true;
+
+  /* Expand nested vectors into one vector.  */
+  int item_count = XVECLEN (vec, 0);
+  for (int i = 0, j = 0; i < item_count; i++)
     {
-      val = force_reg (GET_MODE_INNER (mode), val);
-      emit_insn (gen_vec_duplicatevNm (op0, val));
+      rtx item = XVECEXP (vec, 0, i);
+      machine_mode mode = GET_MODE (item);
+      int units = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
+      item_mask[j] = (((uint64_t)-1)>>(64-units)) << j;
+
+      if (simple_repeat && i != 0)
+	simple_repeat = item == XVECEXP (vec, 0, i-1);
+
+      /* If its a vector of values then copy them into the final location.  */
+      if (GET_CODE (item) == CONST_VECTOR)
+	{
+	  for (int k = 0; k < units; k++)
+	    val[j++] = XVECEXP (item, 0, k);
+	  continue;
+	}
+      /* Otherwise, we have a scalar or an expression that expands...  */
+
+      if (MEM_P (item))
+	{
+	  rtx base = XEXP (item, 0);
+	  if (MEM_ADDR_SPACE (item) == DEFAULT_ADDR_SPACE
+	      && REG_P (base))
+	    {
+	      /* We have a simple vector load.  We can put the addresses in
+		 the vector, combine it with any other such MEMs, and load it
+		 all with a single gather at the end.  */
+	      int64_t mask = ((0xffffffffffffffffUL
+			       >> (64-GET_MODE_NUNITS (mode)))
+			      << j);
+	      rtx exec = get_exec (mask);
+	      emit_insn (gen_subvNsi3
+			 (ramp, ramp,
+			  gcn_vec_constant (offsetmode, j*unit_size),
+			  ramp, exec));
+	      emit_insn (gen_addvNdi3_zext_dup2
+			 (addr, ramp, base,
+			  (mem_mask ? addr : gcn_gen_undef (addrmode)),
+			  exec));
+	      mem_mask |= mask;
+	    }
+	  else
+	    /* The MEM is non-trivial, so let's load it independently.  */
+	    item = force_reg (mode, item);
+	}
+      else if (!CONST_INT_P (item) && !CONST_DOUBLE_P (item))
+	/* The item may be a symbol_ref, or something else non-trivial.  */
+	item = force_reg (mode, item);
+
+      /* Duplicate the vector across each item.
+	 It is either a smaller vector register that needs shifting,
+	 or a MEM that needs loading.  */
+      val[j] = item;
+      j += units;
     }
-  initialized_mask |= curr_mask;
-  for (int i = 1; i < vf; i++)
+
+  int64_t initialized_mask = 0;
+  rtx prev = NULL;
+
+  if (mem_mask)
+    {
+      emit_insn (gen_gathervNm_expr
+		 (op0, gen_rtx_PLUS (addrmode, addr,
+				     gen_rtx_VEC_DUPLICATE (addrmode,
+							    const0_rtx)),
+		  GEN_INT (DEFAULT_ADDR_SPACE), GEN_INT (0),
+		  NULL, get_exec (mem_mask)));
+      prev = op0;
+      initialized_mask = mem_mask;
+    }
+
+  if (simple_repeat && item_count > 1 && !prev)
+    {
+      /* Special case for instances of {A, B, A, B, A, B, ....}, etc.  */
+      rtx src = gen_rtx_SUBREG (mode, val[0], 0);
+      rtx input_vf_mask = GEN_INT (GET_MODE_NUNITS (GET_MODE (val[0]))-1);
+
+      rtx permutation = gen_reg_rtx (VnMODE (vf, SImode));
+      emit_insn (gen_vec_seriesvNsi (permutation, GEN_INT (0), GEN_INT (1)));
+      rtx mask_dup = gen_reg_rtx (VnMODE (vf, SImode));
+      emit_insn (gen_vec_duplicatevNsi (mask_dup, input_vf_mask));
+      emit_insn (gen_andvNsi3 (permutation, permutation, mask_dup));
+      emit_insn (gen_ashlvNsi3 (permutation, permutation, GEN_INT (2)));
+      emit_insn (gen_ds_bpermutevNm (op0, permutation, src, get_exec (mode)));
+      return;
+    }
+
+  /* Write each value, elementwise, but coalesce matching values into one
+     instruction, where possible.  */
+  for (int i = 0; i < vf; i++)
     if (!(initialized_mask & ((int64_t) 1 << i)))
       {
-	curr_mask = (int64_t) 1 << i;
-	rtx val = XVECEXP (vec, 0, i);
-
-	for (int j = i + 1; j < vf; j++)
-	  if (rtx_equal_p (val, XVECEXP (vec, 0, j)))
-	    curr_mask |= (int64_t) 1 << j;
-	if (gcn_constant_p (val))
-	  emit_insn (gen_movvNm (op0, gcn_vec_constant (mode, val), op0,
-				 get_exec (curr_mask)));
+	if (gcn_constant_p (val[i]))
+	  emit_insn (gen_movvNm (op0, gcn_vec_constant (mode, val[i]), prev,
+				 get_exec (item_mask[i])));
+	else if (VECTOR_MODE_P (GET_MODE (val[i]))
+		 && (GET_MODE_NUNITS (GET_MODE (val[i])) == vf
+		     || i == 0))
+	  emit_insn (gen_movvNm (op0, gen_rtx_SUBREG (mode, val[i], 0), prev,
+				 get_exec (item_mask[i])));
+	else if (VECTOR_MODE_P (GET_MODE (val[i])))
+	  {
+	    rtx permutation = gen_reg_rtx (VnMODE (vf, SImode));
+	    emit_insn (gen_vec_seriesvNsi (permutation, GEN_INT (-i*4),
+					   GEN_INT (4)));
+	    rtx tmp = gen_reg_rtx (mode);
+	    emit_insn (gen_ds_bpermutevNm (tmp, permutation,
+					   gen_rtx_SUBREG (mode, val[i], 0),
+					   get_exec (-1)));
+	    emit_insn (gen_movvNm (op0, tmp, prev, get_exec (item_mask[i])));
+	  }
 	else
 	  {
-	    val = force_reg (GET_MODE_INNER (mode), val);
-	    emit_insn (gen_vec_duplicatevNm (op0, val, op0,
-					     get_exec (curr_mask)));
+	    rtx reg = force_reg (GET_MODE_INNER (mode), val[i]);
+	    emit_insn (gen_vec_duplicatevNm (op0, reg, prev,
+					     get_exec (item_mask[i])));
 	  }
-	initialized_mask |= curr_mask;
+
+	initialized_mask |= item_mask[i];
+	prev = op0;
       }
 }
 
