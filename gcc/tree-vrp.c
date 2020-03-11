@@ -2188,6 +2188,7 @@ register_edge_assert_for_2 (tree name, edge e,
       names[0] = NULL_TREE;
       names[1] = NULL_TREE;
       cst2 = NULL_TREE;
+      bool problematic_cast = false;
       if (rhs_code == BIT_AND_EXPR
 	  || (CONVERT_EXPR_CODE_P (rhs_code)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (val))
@@ -2195,6 +2196,13 @@ register_edge_assert_for_2 (tree name, edge e,
 	      && TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
 		 > prec))
 	{
+	  // This catches problematic truncating casts.
+	  //
+	  // Trigger is c-c++-common/torture/builtin-arith-overflow-p-19.c
+	  // and gimple.c.
+	  if (CONVERT_EXPR_CODE_P (rhs_code))
+	    problematic_cast = true;
+
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  if (rhs_code == BIT_AND_EXPR)
 	    cst2 = gimple_assign_rhs2 (def_stmt);
@@ -2381,6 +2389,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	  if (valid_p
 	      && (maxv - minv) != -1)
 	    {
+	      gori_computable set_gori_computable (!problematic_cast);
 	      tree tmp, new_val, type;
 	      int i;
 

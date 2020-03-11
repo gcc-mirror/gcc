@@ -197,29 +197,6 @@ vr_gori_comparison::compare (tree name, edge e, vr_values *vr)
 	dump_improvements (dump_file);
       return;
     }
-  // Ignore known discrepancies.
-  widest_irange tmp;
-  gimple *stmt = gimple_outgoing_edge_range_p (tmp, m_edge);
-  if (stmt && is_a<gcond *> (stmt))
-    {
-      gcond *gc = as_a<gcond *> (stmt);
-      tree lhs = gimple_cond_lhs (gc);
-      if (TREE_CODE (lhs) == SSA_NAME)
-	{
-	  // Ignore problematic casts for which evrp lies and ignores
-	  // the upper bits.
-	  //
-	  // SMALLER = (cast) NAME
-	  // if (SMALLER == 0)
-	  gimple *def = SSA_NAME_DEF_STMT (lhs);
-	  if (def
-	      && gimple_assign_cast_p (def)
-	      && gimple_assign_rhs1 (def) == name
-	      && (TYPE_PRECISION (TREE_TYPE (name))
-		  > TYPE_PRECISION (TREE_TYPE (lhs))))
-	    return;
-	}
-    }
   dump_differences_and_trap ();
 }
 
