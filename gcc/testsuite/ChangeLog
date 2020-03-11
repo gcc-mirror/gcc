@@ -1,3 +1,7 @@
+2020-03-11  Richard Wai  <richard@annexi-strayline.com>
+
+	* gnat.dg/subpools1.adb: New test.
+
 2020-03-10  Luo Xiong Hu  <luoxhu@linux.ibm.com>
 
 	backport from master.

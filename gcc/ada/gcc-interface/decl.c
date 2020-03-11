@@ -445,15 +445,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
   /* If we get here, it means we have not yet done anything with this entity.
      If we are not defining it, it must be a type or an entity that is defined
-     elsewhere or externally, otherwise we should have defined it already.  */
+     elsewhere or externally, otherwise we should have defined it already.
+
+     One exception is for an entity, typically an inherited operation, which is
+     a local alias for the parent's operation.  It is neither defined, since it
+     is an inherited operation, nor public, since it is declared in the current
+     compilation unit, so we test Is_Public on the Alias entity instead.  */
   gcc_assert (definition
-	      || type_annotate_only
 	      || is_type
 	      || kind == E_Discriminant
 	      || kind == E_Component
 	      || kind == E_Label
 	      || (kind == E_Constant && Present (Full_View (gnat_entity)))
-	      || Is_Public (gnat_entity));
+	      || Is_Public (gnat_entity)
+	      || (Present (Alias (gnat_entity))
+		  && Is_Public (Alias (gnat_entity)))
+	      || type_annotate_only);
 
   /* Get the name of the entity and set up the line number and filename of
      the original definition for use in any decl we make.  Make sure we do

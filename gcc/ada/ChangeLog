@@ -1,3 +1,8 @@
+2020-03-11  Richard Wai  <richard@annexi-strayline.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Also test Is_Public on
+	the Alias of the entitiy, if it is present, in the main assertion.
+
 2019-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/92489
