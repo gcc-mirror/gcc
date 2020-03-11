@@ -720,14 +720,15 @@ void
 pdp11_asm_output_var (FILE *file, const char *name, int size,
 		      int align, bool global)
 {
+  switch_to_section (data_section);
   if (align > 8)
     fprintf (file, "\n\t.even\n");
   if (global)
     {
       fprintf (file, ".globl ");
       assemble_name (file, name);
+      fprintf (file, "\n");
     }
-  fprintf (file, "\n");
   assemble_name (file, name);
   fprintf (file, ": .=.+ %#ho\n", (unsigned short)size);
 }
