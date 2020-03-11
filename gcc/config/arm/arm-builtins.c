@@ -784,6 +784,7 @@ const char *arm_scalar_builtin_types[] = {
   "__builtin_neon_oi",
   "__builtin_neon_ci",
   "__builtin_neon_xi",
+  "__builtin_neon_bf",
   NULL
 };
 
@@ -1101,7 +1102,8 @@ arm_init_simd_builtin_scalar_types (void)
 					     "__builtin_neon_df");
   (*lang_hooks.types.register_builtin_type) (intTI_type_node,
 					     "__builtin_neon_ti");
-
+  (*lang_hooks.types.register_builtin_type) (arm_bf16_type_node,
+                                             "__builtin_neon_bf");
   /* Unsigned integer types for various mode sizes.  */
   (*lang_hooks.types.register_builtin_type) (unsigned_intQI_type_node,
 					     "__builtin_neon_uqi");

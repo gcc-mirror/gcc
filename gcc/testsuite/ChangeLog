@@ -1,3 +1,61 @@
+2020-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94074 - wrong modifying const object error for COMPONENT_REF.
+	* g++.dg/cpp1y/constexpr-tracking-const17.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const18.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const19.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const20.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const21.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const22.C: New test.
+
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94134
+	* gcc.c-torture/execute/pr94134.c: New test.
+
+2020-03-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/interrupt-2.c: Update testcase and expected output.
+
+2020-03-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20200311-1.c: New testcase.
+
+2020-03-11  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* lib/scanasm.exp (parse_function_bodies): Lines starting with '@' also
+	counted as fluff.
+
+2020-03-11  Richard Wai  <richard@annexi-strayline.com>
+
+	* gnat.dg/subpools1.adb: New test.
+
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94121
+	* gcc.dg/pr94121.c: New test.
+
+	PR middle-end/94111
+	* gcc.dg/dfp/pr94111.c: New test.
+
+	PR tree-optimization/94114
+	* gcc.dg/pr94114.c: New test.
+
+2020-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94124 - wrong conversion error with non-viable overload.
+	* g++.dg/cpp0x/initlist-overload1.C: New test.
+
+2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93709
+	* gcc.target/powerpc/p9-minmax-3.c: New test.
+
+2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/90763
+	* gcc.target/powerpc/pr90763.c: New.
+
 2020-03-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/pr80481.C (dg-final): Scan for SSE reg-reg moves only.

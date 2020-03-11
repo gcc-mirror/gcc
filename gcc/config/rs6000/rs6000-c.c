@@ -1638,6 +1638,19 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  arg = fold_convert (type, arg);
 	}
 
+      /* For P9V_BUILTIN_VEC_LXVL, convert any const * to its non constant
+	 equivalent to simplify the overload matching below.  */
+      if (fcode == P9V_BUILTIN_VEC_LXVL)
+	{
+	  if (POINTER_TYPE_P (type)
+	      && TYPE_READONLY (TREE_TYPE (type)))
+	    {
+	      type = build_pointer_type (build_qualified_type (
+						TREE_TYPE (type),0));
+	      arg = fold_convert (type, arg);
+	    }
+	}
+
       args[n] = arg;
       types[n] = type;
     }

@@ -1,3 +1,76 @@
+2020-03-11  Delia Burduv  <delia.burduv@arm.com>
+
+	* config/arm/arm-builtins.c
+	(arm_init_simd_builtin_scalar_types): New.
+	* config/arm/arm_neon.h (vld2_bf16): Used new builtin type.
+	(vld2q_bf16): Used new builtin type.
+	(vld3_bf16): Used new builtin type.
+	(vld3q_bf16): Used new builtin type.
+	(vld4_bf16): Used new builtin type.
+	(vld4q_bf16): Used new builtin type.
+	(vld2_dup_bf16): Used new builtin type.
+	(vld2q_dup_bf16): Used new builtin type.
+	(vld3_dup_bf16): Used new builtin type.
+	(vld3q_dup_bf16): Used new builtin type.
+	(vld4_dup_bf16): Used new builtin type.
+	(vld4q_dup_bf16): Used new builtin type.
+
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94134
+	* config/pdp11/pdp11.c (pdp11_asm_output_var): Call switch_to_section
+	at the start to switch to data section.  Don't print extra newline if
+	.globl directive has not been emitted.
+
+2020-03-11  Richard Biener  <rguenther@suse.de>
+
+	* match.pd ((T *)(ptr - ptr-cst) -> &MEM[ptr + -ptr-cst]):
+	New pattern.
+
+2020-03-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/93961
+	* tree.c (variably_modified_type_p) <RECORD_TYPE>: Recurse into fields
+	whose type is a qualified union.
+
+2020-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94121
+	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use absu_hwi
+	instead of abs_hwi, change moffset type to unsigned HOST_WIDE_INT.
+
+	PR bootstrap/93962
+	* value-prof.c (dump_histogram_value): Use abs_hwi instead of
+	std::abs.
+	(get_nth_most_common_value): Use abs_hwi instead of abs.
+
+	PR middle-end/94111
+	* dfp.c (decimal_to_binary): Only use decimal128ToString if from->cl
+	is rvc_normal, otherwise use real_to_decimal to print the number to
+	string.
+
+	PR tree-optimization/94114
+	* tree-loop-distribution.c (generate_memset_builtin): Call
+	rewrite_to_non_trapping_overflow even on mem.
+	(generate_memcpy_builtin): Call rewrite_to_non_trapping_overflow even
+	on dest and src.
+
+2020-03-10  Jeff Law  <law@redhat.com>
+
+	* config/bfin/bfin.md (movsi_insv): Add length attribute.
+
+2020-03-10  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93709
+	* gcc/config/rs6000/rs6000.c (rs6000_emit_p9_fp_minmax): Check
+	NAN and SIGNED_ZEROR for smax/smin.
+
+2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/90763
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	clause to handle P9V_BUILTIN_VEC_LXVL with const arguments.
+
 2020-03-10  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* loop-iv.c (find_simple_exit): Make it static.

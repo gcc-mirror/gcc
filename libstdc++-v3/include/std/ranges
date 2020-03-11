@@ -281,12 +281,18 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires (!_S_store_size || sized_range<_Rng>)
+	subrange(_Rng&& __r) requires _S_store_size && sized_range<_Rng>
+	: subrange{__r, ranges::size(__r)}
+	{ }
+
+      template<__detail::__not_same_as<subrange> _Rng>
+	requires borrowed_range<_Rng>
+	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
+	  && convertible_to<sentinel_t<_Rng>, _Sent>
+	constexpr
+	subrange(_Rng&& __r) requires (!_S_store_size)
 	: subrange{ranges::begin(__r), ranges::end(__r)}
-	{
-	  if constexpr (_S_store_size)
-	    _M_size._M_size = ranges::size(__r);
-	}
+	{ }
 
       template<borrowed_range _Rng>
 	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
@@ -2032,7 +2038,10 @@ namespace views
 	    if constexpr (random_access_range<_Vp>)
 	      return ranges::begin(_M_base);
 	    else
-	      return counted_iterator{ranges::begin(_M_base), size()};
+	      {
+		auto __sz = size();
+		return counted_iterator{ranges::begin(_M_base), __sz};
+	      }
 	  }
 	else
 	  return counted_iterator{ranges::begin(_M_base), _M_count};
@@ -2046,7 +2055,10 @@ namespace views
 	    if constexpr (random_access_range<const _Vp>)
 	      return ranges::begin(_M_base);
 	    else
-	      return counted_iterator{ranges::begin(_M_base), size()};
+	      {
+		auto __sz = size();
+		return counted_iterator{ranges::begin(_M_base), __sz};
+	      }
 	  }
 	else
 	  return counted_iterator{ranges::begin(_M_base), _M_count};
@@ -2703,9 +2715,9 @@ namespace views
 
 	  constexpr bool
 	  __at_end() const
-	  { return _M_current == ranges::end(_M_parent->_M_base); }
+	  { return __current() == ranges::end(_M_parent->_M_base); }
 
-	  // XXX: [24.7.11.3.1]
+	  // [range.split.outer] p1
 	  //  Many of the following specifications refer to the notional member
 	  //  current of outer-iterator.  current is equivalent to current_ if
 	  //  V models forward_range, and parent_->current_ otherwise.
@@ -2773,7 +2785,7 @@ namespace views
 
 	  constexpr explicit
 	  _OuterIter(_Parent& __parent) requires (!forward_range<_Base>)
-	    : _M_parent(address(__parent))
+	    : _M_parent(std::__addressof(__parent))
 	  { }
 
 	  constexpr
@@ -2798,21 +2810,21 @@ namespace views
 	  operator++()
 	  {
 	    const auto __end = ranges::end(_M_parent->_M_base);
-	    if (_M_current == __end)
+	    if (__current() == __end)
 	      return *this;
 	    const auto [__pbegin, __pend] = subrange{_M_parent->_M_pattern};
 	    if (__pbegin == __pend)
-	      ++_M_current;
+	      ++__current();
 	    else
 	      do
 		{
 		  auto [__b, __p]
-		    = __detail::mismatch(std::move(_M_current), __end,
+		    = __detail::mismatch(std::move(__current()), __end,
 					 __pbegin, __pend);
-		  _M_current = std::move(__b);
+		  __current() = std::move(__b);
 		  if (__p == __pend)
 		    break;
-		} while (++_M_current != __end);
+		} while (++__current() != __end);
 	    return *this;
 	  }
 

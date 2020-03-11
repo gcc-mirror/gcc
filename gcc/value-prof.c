@@ -266,7 +266,7 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	  if (hist->hvalue.counters)
 	    {
 	      fprintf (dump_file, " all: %" PRId64 "%s, values: ",
-		       std::abs ((int64_t) hist->hvalue.counters[0]),
+		       (int64_t) abs_hwi (hist->hvalue.counters[0]),
 		       hist->hvalue.counters[0] < 0
 		       ? " (values missing)": "");
 	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
@@ -743,7 +743,7 @@ get_nth_most_common_value (gimple *stmt, const char *counter_type,
   *count = 0;
   *value = 0;
 
-  gcov_type read_all = abs (hist->hvalue.counters[0]);
+  gcov_type read_all = abs_hwi (hist->hvalue.counters[0]);
 
   gcov_type v = hist->hvalue.counters[2 * n + 1];
   gcov_type c = hist->hvalue.counters[2 * n + 2];

@@ -7943,7 +7943,7 @@ template_template_parm_bindings_ok_p (tree tparms, tree targs)
 /* Since type attributes aren't mangled, we need to strip them from
    template type arguments.  */
 
-static tree
+tree
 canonicalize_type_argument (tree arg, tsubst_flags_t complain)
 {
   if (!arg || arg == error_mark_node || arg == TYPE_CANONICAL (arg))
@@ -25097,14 +25097,14 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
       if (orig_fn)
 	TREE_TYPE (orig_fn) = TREE_TYPE (fn);
+    }
 
-      FOR_EACH_CLONE (clone, fn)
-	{
-	  if (TREE_TYPE (clone) == fntype)
-	    TREE_TYPE (clone) = TREE_TYPE (fn);
-	  else
-	    TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
-	}
+  FOR_EACH_CLONE (clone, fn)
+    {
+      if (TREE_TYPE (clone) == fntype)
+	TREE_TYPE (clone) = TREE_TYPE (fn);
+      else
+	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
     }
 
   return true;
@@ -28182,7 +28182,7 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   tsubst_flags_t complain = tf_none;
 
   tree parms = NULL_TREE;
-  if (TREE_CODE (init) == CONSTRUCTOR)
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
       init = reshape_init (type, init, complain);
       if (init == error_mark_node)
