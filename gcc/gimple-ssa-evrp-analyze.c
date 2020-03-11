@@ -204,14 +204,8 @@ vr_gori_comparison::compare (tree name, edge e, vr_values *vr)
     {
       gcond *gc = as_a<gcond *> (stmt);
       tree lhs = gimple_cond_lhs (gc);
-      tree rhs = gimple_cond_rhs (gc);
       if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  // Comparison between two SSA_NAMEs are equivalences which the
-	  // ranger will handle.
-	  if (TREE_CODE (rhs) == SSA_NAME)
-	    return;
-
 	  // Ignore problematic casts for which evrp lies and ignores
 	  // the upper bits.
 	  //

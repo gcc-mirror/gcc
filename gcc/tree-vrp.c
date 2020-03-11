@@ -1863,6 +1863,15 @@ register_edge_assert_for_2 (tree name, edge e,
     {
       enum tree_code new_code = ((comp_code == GT_EXPR || comp_code == GE_EXPR)
 				 ? GT_EXPR : LE_EXPR);
+
+      // When noticing an overflow check:
+      //
+      //   unsigned_sum = unsigned_a + 1
+      //   if (unsigned_sum > unsigned_a)
+      //
+      // ...evrp registers that unsigned_a < MAXINT.
+      // This is technically an equivalence, so keep gori from checking this.
+      gori_computable set_gori_computable (false);
       add_assert_info (asserts, name, name, new_code, x);
     }
   add_assert_info (asserts, name, name, comp_code, val);
