@@ -3,6 +3,11 @@
 	Backported from mainline
 	2020-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94134
+	* config/pdp11/pdp11.c (pdp11_asm_output_var): Call switch_to_section
+	at the start to switch to data section.  Don't print extra newline if
+	.globl directive has not been emitted.
+
 	PR target/94121
 	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use absu_hwi
 	instead of abs_hwi, change moffset type to unsigned HOST_WIDE_INT.
