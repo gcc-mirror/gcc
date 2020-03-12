@@ -23175,18 +23175,20 @@ package body Sem_Util is
 
       --  Local variables
 
-      E : Entity_Id;
+      E        : Entity_Id;
+      Orig_Obj : constant Node_Id := Original_Node (Obj);
+      Orig_Pre : Node_Id;
 
    --  Start of processing for Object_Access_Level
 
    begin
-      if Nkind (Obj) = N_Defining_Identifier
-        or else Is_Entity_Name (Obj)
+      if Nkind (Orig_Obj) = N_Defining_Identifier
+        or else Is_Entity_Name (Orig_Obj)
       then
-         if Nkind (Obj) = N_Defining_Identifier then
-            E := Obj;
+         if Nkind (Orig_Obj) = N_Defining_Identifier then
+            E := Orig_Obj;
          else
-            E := Entity (Obj);
+            E := Entity (Orig_Obj);
          end if;
 
          if Is_Prival (E) then
@@ -23220,14 +23222,17 @@ package body Sem_Util is
             return Scope_Depth (Enclosing_Dynamic_Scope (E));
          end if;
 
-      elsif Nkind_In (Obj, N_Indexed_Component, N_Selected_Component) then
-         if Is_Access_Type (Etype (Prefix (Obj))) then
-            return Type_Access_Level (Etype (Prefix (Obj)));
+      elsif Nkind_In (Orig_Obj, N_Indexed_Component, N_Selected_Component) then
+         Orig_Pre := Original_Node (Prefix (Orig_Obj));
+
+         if Is_Access_Type (Etype (Orig_Pre)) then
+            return Type_Access_Level (Etype (Prefix (Orig_Obj)));
          else
-            return Object_Access_Level (Prefix (Obj));
+            return Object_Access_Level (Prefix (Orig_Obj));
          end if;
 
-      elsif Nkind (Obj) = N_Explicit_Dereference then
+      elsif Nkind (Orig_Obj) = N_Explicit_Dereference then
+         Orig_Pre := Original_Node (Prefix (Orig_Obj));
 
          --  If the prefix is a selected access discriminant then we make a
          --  recursive call on the prefix, which will in turn check the level
@@ -23239,46 +23244,48 @@ package body Sem_Util is
          --  otherwise expansion will already have transformed the prefix into
          --  a temporary.
 
-         if Nkind (Prefix (Obj)) = N_Selected_Component
-           and then Ekind (Etype (Prefix (Obj))) = E_Anonymous_Access_Type
+         if Nkind (Orig_Pre) = N_Selected_Component
+           and then Ekind (Etype (Orig_Pre)) = E_Anonymous_Access_Type
            and then
-             Ekind (Entity (Selector_Name (Prefix (Obj)))) = E_Discriminant
+             Ekind (Entity (Selector_Name (Orig_Pre))) = E_Discriminant
            and then
              (not Has_Implicit_Dereference
-                    (Entity (Selector_Name (Prefix (Obj))))
+                    (Entity (Selector_Name (Orig_Pre)))
                or else Nkind (Parent (Obj)) /= N_Selected_Component)
          then
-            return Object_Access_Level (Prefix (Obj));
+            return Object_Access_Level (Prefix (Orig_Obj));
 
          --  Detect an interface conversion in the context of a dispatching
          --  call. Use the original form of the conversion to find the access
          --  level of the operand.
 
-         elsif Is_Interface (Etype (Obj))
-           and then Is_Interface_Conversion (Prefix (Obj))
-           and then Nkind (Original_Node (Obj)) = N_Type_Conversion
+         elsif Is_Interface (Etype (Orig_Obj))
+           and then Is_Interface_Conversion (Orig_Pre)
+           and then Nkind (Orig_Obj) = N_Type_Conversion
          then
-            return Object_Access_Level (Original_Node (Obj));
+            return Object_Access_Level (Orig_Obj);
 
-         elsif not Comes_From_Source (Obj) then
+         elsif not Comes_From_Source (Orig_Obj) then
             declare
-               Ref : constant Node_Id := Reference_To (Obj);
+               Ref : constant Node_Id := Reference_To (Orig_Obj);
             begin
                if Present (Ref) then
                   return Object_Access_Level (Ref);
                else
-                  return Type_Access_Level (Etype (Prefix (Obj)));
+                  return Type_Access_Level (Etype (Prefix (Orig_Obj)));
                end if;
             end;
 
          else
-            return Type_Access_Level (Etype (Prefix (Obj)));
+            return Type_Access_Level (Etype (Prefix (Orig_Obj)));
          end if;
 
-      elsif Nkind_In (Obj, N_Type_Conversion, N_Unchecked_Type_Conversion) then
-         return Object_Access_Level (Expression (Obj));
+      elsif Nkind_In (Orig_Obj, N_Type_Conversion,
+                                N_Unchecked_Type_Conversion)
+      then
+         return Object_Access_Level (Expression (Orig_Obj));
 
-      elsif Nkind (Obj) = N_Function_Call then
+      elsif Nkind (Orig_Obj) = N_Function_Call then
 
          --  Function results are objects, so we get either the access level of
          --  the function or, in the case of an indirect call, the level of the
@@ -23289,10 +23296,10 @@ package body Sem_Util is
          --  compiled with -gnat95. ???)
 
          if Ada_Version < Ada_2005 then
-            if Is_Entity_Name (Name (Obj)) then
-               return Subprogram_Access_Level (Entity (Name (Obj)));
+            if Is_Entity_Name (Name (Orig_Obj)) then
+               return Subprogram_Access_Level (Entity (Name (Orig_Obj)));
             else
-               return Type_Access_Level (Etype (Prefix (Name (Obj))));
+               return Type_Access_Level (Etype (Prefix (Name (Orig_Obj))));
             end if;
 
          --  For Ada 2005, the level of the result object of a function call is
@@ -23392,6 +23399,9 @@ package body Sem_Util is
             --  Start of processing for Return_Master_Scope_Depth_Of_Call
 
             begin
+               --  Expanded code may have clobbered the scoping data from the
+               --  original object node - so use the expanded one.
+
                return Innermost_Master_Scope_Depth (Obj);
             end Return_Master_Scope_Depth_Of_Call;
          end if;
@@ -23399,13 +23409,13 @@ package body Sem_Util is
       --  For convenience we handle qualified expressions, even though they
       --  aren't technically object names.
 
-      elsif Nkind (Obj) = N_Qualified_Expression then
-         return Object_Access_Level (Expression (Obj));
+      elsif Nkind (Orig_Obj) = N_Qualified_Expression then
+         return Object_Access_Level (Expression (Orig_Obj));
 
       --  Ditto for aggregates. They have the level of the temporary that
       --  will hold their value.
 
-      elsif Nkind (Obj) = N_Aggregate then
+      elsif Nkind (Orig_Obj) = N_Aggregate then
          return Object_Access_Level (Current_Scope);
 
       --  Otherwise return the scope level of Standard. (If there are cases
