@@ -1,6 +1,12 @@
 2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Do not pass
+	a null pointer to functions with nonnull(1) attribute.
+
+	Backport from mainline
 	2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
