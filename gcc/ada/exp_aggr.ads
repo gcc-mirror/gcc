@@ -61,7 +61,7 @@ package Exp_Aggr is
    --  N is an array aggregate that may have a component association with
    --  an others clause and a range. If bounds are static and the expressions
    --  are compile-time known constants, rewrite N as a purely positional
-   --  aggregate, to be use to initialize variables and components of the type
+   --  aggregate, to be used to initialize variables and components of the type
    --  without generating elaboration code.
 
 end Exp_Aggr;
