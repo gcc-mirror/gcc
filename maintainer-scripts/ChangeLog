@@ -1,3 +1,11 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release (upload_files): Without -l, pass -m 755 to the mkdir
+	command invoked through ssh.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.

@@ -398,7 +398,7 @@ upload_files() {
   # Make sure the directory exists on the server.
   if [ $LOCAL -eq 0 ]; then
     ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} \
-      mkdir -p "${FTP_PATH}/diffs"
+      mkdir -m 755 -p "${FTP_PATH}/diffs"
     UPLOAD_PATH="${GCC_USERNAME}@${GCC_HOSTNAME}:${FTP_PATH}"
   else
     mkdir -p "${FTP_PATH}/diffs" \
