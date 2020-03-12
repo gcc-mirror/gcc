@@ -1,3 +1,10 @@
+2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94124
+	* decl.c (reshape_init_array_1): Don't unshare constructor if there
+	aren't any trailing zero elts, otherwise only unshare the first
+	nelts.
+
 2020-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93907
@@ -27,7 +34,7 @@
 
 2020-03-10  Jason Merrill  <jason@redhat.com>
 
-	PR c++/93956
+	PR c++/93596
 	* pt.c (maybe_aggr_guide): Check BRACE_ENCLOSED_INITIALIZER_P.
 
 2020-03-10  Jason Merrill  <jason@redhat.com>
