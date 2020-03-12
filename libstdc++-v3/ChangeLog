@@ -1,6 +1,12 @@
 2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2020-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_GLIBCXX_NOT_FN_CALL_OP): Un-define after
+	use.
+
+	Backport from mainline
 	2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Do not pass
