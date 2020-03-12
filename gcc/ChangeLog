@@ -1,3 +1,9 @@
+2020-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94103
+	* tree-ssa-sccvn.c (visit_reference_op_load): Avoid type
+	punning when the mode precision is not sufficient.
+
 2020-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229
