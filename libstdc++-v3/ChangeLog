@@ -1,3 +1,8 @@
+2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Do not pass
+	a null pointer to functions with nonnull(1) attribute.
+
 2020-03-11  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (split_view::_OuterIter::_OuterIter): Typo fix,
