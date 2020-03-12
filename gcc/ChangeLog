@@ -1,5 +1,10 @@
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/tm.texi.in (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Change
+	ASM_OUTPUT_ALIGNED_DECL in description to ASM_OUTPUT_ALIGNED_LOCAL
+	and ASM_OUTPUT_DECL to ASM_OUTPUT_LOCAL.
+	* doc/tm.texi: Regenerated.
+
 	PR tree-optimization/94130
 	* tree-ssa-dse.c: Include gimplify.h.
 	(increment_start_addr): If stmt has lhs, drop the lhs from call and
