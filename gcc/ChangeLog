@@ -1,3 +1,8 @@
+2020-03-12  Darius Galis  <darius.galis@cyberthorstudios.com>
+
+	* config/rx/rx.md (CTRLREG_CPEN): Remove.
+	* config/rx/rx.c (rx_print_operand): Remove CTRLREG_CPEN support.
+
 2020-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94103
