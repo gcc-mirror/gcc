@@ -1,3 +1,13 @@
+2020-03-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	Backport from master
+	2020-03-02  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/87560
+	* rs6000-cpus.def (OTHER_ALTIVEC_MASKS): New #define.
+	* rs6000.c (rs6000_disable_incompatible_switches): Add table entry
+	for OPTION_MASK_ALTIVEC.
+
 2020-03-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backport from master
