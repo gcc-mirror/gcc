@@ -13179,6 +13179,17 @@ Also use the cost model to choose between SVE and Advanced SIMD vectorization.
 Using unpacked vectors includes storing smaller elements in larger
 containers and accessing elements with extending loads and truncating
 stores.
+
+@item aarch64-float-recp-precision
+The number of Newton iterations for calculating the reciprocal for float type.
+The precision of division is proportional to this param when division
+approximation is enabled.  The default value is 1.
+
+@item aarch64-double-recp-precision
+The number of Newton iterations for calculating the reciprocal for double type.
+The precision of division is propotional to this param when division
+approximation is enabled.  The default value is 2.
+
 @end table
 
 @end table
