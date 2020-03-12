@@ -1,3 +1,7 @@
+2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_web_docs_git: Drop SPHINXBUILD=/usr/bin/sphinx-1.0-build.
+
 2020-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc_release: Add support for -b local-git-repo argument.
