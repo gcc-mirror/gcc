@@ -28,22 +28,22 @@ using std::filesystem::path;
 void
 test01()
 {
-  VERIFY( path().generic_string() == "" );
-  VERIFY( path("/").generic_string() == "/" );
-  VERIFY( path("////").generic_string() == "/" );
+  VERIFY( path().generic_u32string() == U"" );
+  VERIFY( path("/").generic_u32string() == U"/" );
+  VERIFY( path("////").generic_u32string() == U"/" );
 #ifdef __CYGWIN__
-  VERIFY( path("//a").generic_string() == "//a" );
-  VERIFY( path("//a/").generic_string() == "//a/" );
-  VERIFY( path("//a/b").generic_string() == "//a/b" );
+  VERIFY( path("//a").generic_u32string() == U"//a" );
+  VERIFY( path("//a/").generic_u32string() == U"//a/" );
+  VERIFY( path("//a/b").generic_u32string() == U"//a/b" );
 #else
-  VERIFY( path("//a").generic_string() == "/a" );
-  VERIFY( path("//a/").generic_string() == "/a/" );
-  VERIFY( path("//a/b").generic_string() == "/a/b" );
+  VERIFY( path("//a").generic_u32string() == U"/a" );
+  VERIFY( path("//a/").generic_u32string() == U"/a/" );
+  VERIFY( path("//a/b").generic_u32string() == U"/a/b" );
 #endif
-  VERIFY( path("/a//b").generic_string() == "/a/b" );
-  VERIFY( path("/a//b/").generic_string() == "/a/b/" );
-  VERIFY( path("/a//b//").generic_string() == "/a/b/" );
-  VERIFY( path("/a//b//.").generic_string() == "/a/b/." );
+  VERIFY( path("/a//b").generic_u32string() == U"/a/b" );
+  VERIFY( path("/a//b/").generic_u32string() == U"/a/b/" );
+  VERIFY( path("/a//b//").generic_u32string() == U"/a/b/" );
+  VERIFY( path("/a//b//.").generic_u32string() == U"/a/b/." );
 }
 
 void
@@ -52,8 +52,8 @@ test02()
   if constexpr (path::preferred_separator == L'\\')
   {
     // PR libstdc++/93244
-    VERIFY( path("C:\\foo\\bar").generic_string() == "C:/foo/bar" );
-    VERIFY( path("C://foo//bar").generic_string() == "C:/foo/bar" );
+    VERIFY( path("C:\\foo\\bar").generic_u32string() == U"C:/foo/bar" );
+    VERIFY( path("C://foo//bar").generic_u32string() == U"C:/foo/bar" );
   }
 }
 

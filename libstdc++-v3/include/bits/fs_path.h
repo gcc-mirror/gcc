@@ -1073,6 +1073,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  bool __add_slash = false;
 	  for (auto& __elem : *this)
 	    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+	      if (__elem._M_type() == _Type::_Root_dir)
+		{
+		  __str += __slash;
+		  continue;
+		}
+#endif
 	      if (__add_slash)
 		__str += __slash;
 	      __str += __elem._M_pathname;
