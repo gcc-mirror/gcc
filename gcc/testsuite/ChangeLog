@@ -1,3 +1,9 @@
+2020-03-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Add a test
+	name to .-1 dg-error tests.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
 2020-03-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_libcall1.c: New test.
