@@ -1,3 +1,7 @@
+2020-03-12  Release Manager
+
+	* GCC 9.3.0 released.
+
 2020-03-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure.tgt (x86_64-*-darwin*, i?86-*-darwin*): Enable by

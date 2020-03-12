@@ -1,3 +1,7 @@
+2020-03-12  Release Manager
+
+	* GCC 9.3.0 released.
+
 2019-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* test_summary: Do not escape "=".

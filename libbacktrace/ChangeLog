@@ -1,3 +1,7 @@
+2020-03-12  Release Manager
+
+	* GCC 9.3.0 released.
+
 2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
