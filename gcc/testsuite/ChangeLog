@@ -1,3 +1,11 @@
+2020-03-12  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/93800
+	* gcc.target/powerpc/pr93800.c: New test.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.

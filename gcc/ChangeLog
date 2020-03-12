@@ -1,3 +1,13 @@
+2020-03-12  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/93800
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Remove set of str_align_loops and str_align_jumps as these
+	should be set in previous 2 conditions in the function.
+
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 9.3.1.
