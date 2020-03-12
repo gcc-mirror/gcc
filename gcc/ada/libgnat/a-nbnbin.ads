@@ -23,7 +23,6 @@ private with System;
 
 package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
---  Nonblocking
 is
    type Big_Integer is private;
    --  with Integer_Literal => From_String,

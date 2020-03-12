@@ -39,7 +39,6 @@ generic
    type Atomic_Type is mod <> with Atomic;
 package System.Atomic_Operations.Modular_Arithmetic
   with Pure
---  Nonblocking
 is
    procedure Atomic_Add
      (Item  : aliased in out Atomic_Type;

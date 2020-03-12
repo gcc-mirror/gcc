@@ -38,7 +38,6 @@ with System.Storage_Elements;
 
 package System.Storage_Pools
   with Pure
---  Nonblocking => False
 is
    type Root_Storage_Pool is abstract
      new Ada.Finalization.Limited_Controlled with private;

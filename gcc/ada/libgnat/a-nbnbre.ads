@@ -21,7 +21,6 @@ with Ada.Streams;
 
 package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
---  Nonblocking, Global => in out synchronized Big_Reals
 is
    type Big_Real is private;
 --   with Real_Literal => From_String,

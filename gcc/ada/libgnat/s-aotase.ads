@@ -35,7 +35,6 @@
 
 package System.Atomic_Operations.Test_And_Set
   with Pure
---  Nonblocking
 is
    type Test_And_Set_Flag is mod 2 ** 8
      with Atomic, Default_Value => 0, Size => 8;
