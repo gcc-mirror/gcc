@@ -1,6 +1,14 @@
 2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
+	filesystems that silently truncate timestamps.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+
+	Backport from mainline
 	2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93244
