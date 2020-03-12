@@ -1,3 +1,12 @@
+2020-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.c (ix86_output_ssemov): Handle MODE_DI,
+	MODE_V1DF and MODE_V2SF.
+	* config/i386/mmx.md (MMXMODE:*mov<mode>_internal): Call
+	ix86_output_ssemov for TYPE_SSEMOV.  Remove ext_sse_reg_operand
+	check.
+
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/tm.texi.in (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Change
