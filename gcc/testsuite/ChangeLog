@@ -1,3 +1,9 @@
+2020-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67960
+	* g++.dg/diagnostic/pr67960.C: New test.
+	* g++.dg/diagnostic/pr67960-2.C: New test.
+
 2020-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR lto/94157

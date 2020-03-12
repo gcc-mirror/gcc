@@ -1,3 +1,9 @@
+2020-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67960
+	* call.c (build_over_call): Use a warning_sentinel to disable
+	warn_deprecated_decl before calling build_addr_func.
+
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94124
