@@ -1,3 +1,13 @@
+2020-03-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/94148
+	PR rtl-optimization/94042
+	* df-core.c (BB_LAST_CHANGE_AGE): Delete.
+	(df_worklist_propagate_forward): New parameter last_change_age, use
+	that instead of bb->aux.
+	(df_worklist_propagate_backward): Ditto.
+	(df_worklist_dataflow_doublequeue): Use a local array last_change_age.
+
 2020-03-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94163
