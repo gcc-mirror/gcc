@@ -39,7 +39,6 @@ generic
    type Atomic_Type is range <> with Atomic;
 package System.Atomic_Operations.Integer_Arithmetic
   with Pure
---  Nonblocking
 is
    procedure Atomic_Add
      (Item  : aliased in out Atomic_Type;

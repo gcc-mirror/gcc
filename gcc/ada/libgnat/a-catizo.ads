@@ -16,9 +16,7 @@
 --  This package provides routines to determine the offset of dates to GMT.
 --  It is defined in the Ada 2005 RM (9.6.1).
 
-package Ada.Calendar.Time_Zones
---  with Nonblocking
-is
+package Ada.Calendar.Time_Zones is
 
    --  Time zone manipulation
 

@@ -13,11 +13,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note that some Ada 2020 aspects are commented out since they are not
---  supported yet.
-
 package Ada.Numerics.Big_Numbers
-  --  with Pure, Nonblocking, Global => null
   with Pure
 is
    subtype Field is Integer range 0 .. 255;
