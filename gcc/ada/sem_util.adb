@@ -14170,6 +14170,28 @@ package body Sem_Util is
       end if;
    end Invalid_Scalar_Value;
 
+   --------------------------------
+   -- Is_Anonymous_Access_Actual --
+   --------------------------------
+
+   function Is_Anonymous_Access_Actual (N : Node_Id) return Boolean is
+      Par : Node_Id;
+   begin
+      if Ekind (Etype (N)) /= E_Anonymous_Access_Type then
+         return False;
+      end if;
+
+      Par := Parent (N);
+      while Present (Par)
+        and then Nkind_In (Par, N_Case_Expression,
+                                N_If_Expression,
+                                N_Parameter_Association)
+      loop
+         Par := Parent (Par);
+      end loop;
+      return Nkind (Par) in N_Subprogram_Call;
+   end Is_Anonymous_Access_Actual;
+
    -----------------------------
    -- Is_Actual_Out_Parameter --
    -----------------------------
