@@ -1,3 +1,16 @@
+2020-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* gfortran.dg/goacc/pr78260-2.f90: Correct scan-tree-dump-times.
+	Extend test case to result variables.
+	* gfortran.dg/goacc/declare-2.f95: Actually check module-declaration
+	restriction of OpenACC.
+	* gfortran.dg/goacc/declare-3.f95: Remove case where this
+	restriction is violated.
+	* gfortran.dg/goacc/pr94120-1.f90: New.
+	* gfortran.dg/goacc/pr94120-2.f90: New.
+	* gfortran.dg/goacc/pr94120-3.f90: New.
+
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94130

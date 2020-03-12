@@ -1,3 +1,9 @@
+2020-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* openmp.c (gfc_match_oacc_declare): Accept function-result
+	variables; reject variables declared in a different scoping unit.
+
 2020-03-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/93581
