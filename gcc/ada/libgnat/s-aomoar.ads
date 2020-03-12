@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                   System.Atomic_Operations.Arithmetic                    --
+--               System.Atomic_Operations.Modular_Arithmetic                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -36,8 +36,8 @@
 pragma Ada_2020;
 
 generic
-   type Atomic_Type is range <> with Atomic;
-package System.Atomic_Operations.Arithmetic
+   type Atomic_Type is mod <> with Atomic;
+package System.Atomic_Operations.Modular_Arithmetic
   with Pure
 --  Nonblocking
 is
@@ -66,4 +66,4 @@ private
    pragma Inline_Always (Atomic_Fetch_And_Add);
    pragma Inline_Always (Atomic_Fetch_And_Subtract);
    pragma Inline_Always (Is_Lock_Free);
-end System.Atomic_Operations.Arithmetic;
+end System.Atomic_Operations.Modular_Arithmetic;
