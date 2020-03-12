@@ -1,3 +1,8 @@
+2020-03-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-sese.c (install_var_field): Generate a field name for a VAR_DECL
+	using the DECL_UID if it does not have a DECL_NAME.
+
 2019-10-21  Julian Brown  <julian@codesourcery.com>
 
 	* omp-oacc-kernels.c (decompose_kernels_region_body): Add

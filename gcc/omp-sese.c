@@ -544,19 +544,27 @@ install_var_field (tree var, tree record_type)
   char tmp[20];
 
   if (TREE_CODE (var) == SSA_NAME)
-    name = SSA_NAME_IDENTIFIER (var);
+    {
+      name = SSA_NAME_IDENTIFIER (var);
+      if (!name)
+	{
+	  sprintf (tmp, "_%u", (unsigned) SSA_NAME_VERSION (var));
+	  name = get_identifier (tmp);
+	}
+    }
   else if (TREE_CODE (var) == VAR_DECL)
-    name = DECL_NAME (var);
+    {
+      name = DECL_NAME (var);
+      if (!name)
+	{
+	  sprintf (tmp, "D_%u", (unsigned) DECL_UID (var));
+	  name = get_identifier (tmp);
+	}
+    }
   else
     gcc_unreachable ();
 
   gcc_assert (!fields->get (var));
-
-  if (!name)
-    {
-      sprintf (tmp, "_%u", (unsigned) SSA_NAME_VERSION (var));
-      name = get_identifier (tmp);
-    }
 
   tree type = TREE_TYPE (var);
 
