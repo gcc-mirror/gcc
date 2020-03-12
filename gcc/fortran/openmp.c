@@ -2155,7 +2155,8 @@ gfc_match_oacc_declare (void)
     {
       gfc_symbol *s = n->sym;
 
-      if (s->ns->proc_name && s->ns->proc_name->attr.proc == PROC_MODULE)
+      if (gfc_current_ns->proc_name
+	  && gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
 	{
 	  if (n->u.map_op != OMP_MAP_ALLOC && n->u.map_op != OMP_MAP_TO)
 	    {
@@ -2171,6 +2172,15 @@ gfc_match_oacc_declare (void)
 	{
 	  gfc_error ("Variable is USE-associated with !$ACC DECLARE at %L",
 		     &where);
+	  return MATCH_ERROR;
+	}
+
+      if ((s->result == s && s->ns->contained != gfc_current_ns)
+	  || ((s->attr.flavor == FL_UNKNOWN || s->attr.flavor == FL_VARIABLE)
+	      && s->ns != gfc_current_ns))
+	{
+	  gfc_error ("Variable %qs shall be declared in the same scoping unit "
+		     "as !$ACC DECLARE at %L", s->name, &where);
 	  return MATCH_ERROR;
 	}
 

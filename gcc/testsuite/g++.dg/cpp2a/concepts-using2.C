@@ -15,7 +15,11 @@ template <typename b> using an = typename n<b>::e;
 template <typename> constexpr bool ao = c<true>::d;
 template <typename> constexpr bool i = c<1>::d;
 template <typename> concept bb = i<b>;
+#ifdef __SIZEOF_INT128__
 using cc = __int128;
+#else
+using cc = long long;
+#endif
 template <typename> concept cd = bb<cc>;
 template <typename bt> concept ce = requires { requires cd<bt>; };
 template <typename bt> concept h = ce<bt>;

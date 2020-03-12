@@ -1,3 +1,37 @@
+2020-03-12  Darius Galis  <darius.galis@cyberthorstudios.com>
+
+	* config/rx/rx.md (CTRLREG_CPEN): Remove.
+	* config/rx/rx.c (rx_print_operand): Remove CTRLREG_CPEN support.
+
+2020-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94103
+	* tree-ssa-sccvn.c (visit_reference_op_load): Avoid type
+	punning when the mode precision is not sufficient.
+
+2020-03-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.c (ix86_output_ssemov): Handle MODE_DI,
+	MODE_V1DF and MODE_V2SF.
+	* config/i386/mmx.md (MMXMODE:*mov<mode>_internal): Call
+	ix86_output_ssemov for TYPE_SSEMOV.  Remove ext_sse_reg_operand
+	check.
+
+2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/tm.texi.in (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Change
+	ASM_OUTPUT_ALIGNED_DECL in description to ASM_OUTPUT_ALIGNED_LOCAL
+	and ASM_OUTPUT_DECL to ASM_OUTPUT_LOCAL.
+	* doc/tm.texi: Regenerated.
+
+	PR tree-optimization/94130
+	* tree-ssa-dse.c: Include gimplify.h.
+	(increment_start_addr): If stmt has lhs, drop the lhs from call and
+	set it after the call to the original value of the first argument.
+	Formatting fixes.
+	(decrement_count): Formatting fix.
+
 2020-03-11  Delia Burduv  <delia.burduv@arm.com>
 
 	* config/arm/arm-builtins.c
