@@ -5314,7 +5314,7 @@ package body Exp_Ch4 is
       Case_Stmt  : Node_Id;
       Decl       : Node_Id;
       Expr       : Node_Id;
-      Target     : Entity_Id;
+      Target     : Entity_Id := Empty;
       Target_Typ : Entity_Id;
 
       In_Predicate : Boolean := False;
@@ -5771,11 +5771,21 @@ package body Exp_Ch4 is
       Elsex : constant Node_Id    := Next (Thenx);
       Typ   : constant Entity_Id  := Etype (N);
 
-      Actions : List_Id;
-      Decl    : Node_Id;
-      Expr    : Node_Id;
-      New_If  : Node_Id;
-      New_N   : Node_Id;
+      Actions      : List_Id;
+      Decl         : Node_Id;
+      Expr         : Node_Id;
+      New_If       : Node_Id;
+      New_N        : Node_Id;
+
+      --  Determine if we are dealing with a special case of a conditional
+      --  expression used as an actual for an anonymous access type which
+      --  forces us to transform the if expression into an expression with
+      --  actions in order to create a temporary to capture the level of the
+      --  expression in each branch.
+
+      Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
+
+   --  Start of processing for Expand_N_If_Expression
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -5975,9 +5985,13 @@ package body Exp_Ch4 is
          end;
 
       --  For other types, we only need to expand if there are other actions
-      --  associated with either branch.
+      --  associated with either branch or we need to force expansion to deal
+      --  with if expressions used as an actual of an anonymous access type.
 
-      elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
+      elsif Present (Then_Actions (N))
+        or else Present (Else_Actions (N))
+        or else Force_Expand
+      then
 
          --  We now wrap the actions into the appropriate expression
 
@@ -6049,6 +6063,62 @@ package body Exp_Ch4 is
 
                Set_Else_Actions (N, No_List);
                Analyze_And_Resolve (Elsex, Typ);
+            end if;
+
+            --  We must force expansion into an expression with actions when
+            --  an if expression gets used directly as an actual for an
+            --  anonymous access type.
+
+            if Force_Expand then
+               declare
+                  Cnn  : constant Entity_Id := Make_Temporary (Loc, 'C');
+                  Acts : List_Id;
+               begin
+                  Acts := New_List;
+
+                  --  Generate:
+                  --    Cnn : Ann;
+
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Cnn,
+                      Object_Definition   => New_Occurrence_Of (Typ, Loc));
+                  Append_To (Acts, Decl);
+
+                  Set_No_Initialization (Decl);
+
+                  --  Generate:
+                  --    if Cond then
+                  --       Cnn := <Thenx>;
+                  --    else
+                  --       Cnn := <Elsex>;
+                  --    end if;
+
+                  New_If :=
+                    Make_Implicit_If_Statement (N,
+                      Condition       => Relocate_Node (Cond),
+                      Then_Statements => New_List (
+                        Make_Assignment_Statement (Sloc (Thenx),
+                          Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                          Expression => Relocate_Node (Thenx))),
+
+                      Else_Statements => New_List (
+                        Make_Assignment_Statement (Sloc (Elsex),
+                          Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                          Expression => Relocate_Node (Elsex))));
+                  Append_To (Acts, New_If);
+
+                  --  Generate:
+                  --    do
+                  --       ...
+                  --    in Cnn end;
+
+                  Rewrite (N,
+                    Make_Expression_With_Actions (Loc,
+                      Expression => New_Occurrence_Of (Cnn, Loc),
+                      Actions    => Acts));
+                  Analyze_And_Resolve (N, Typ);
+               end;
             end if;
 
             return;

@@ -1579,6 +1579,10 @@ package Sem_Util is
    --  pragma Initialize_Scalars or by the binder. Return an expression created
    --  at source location Loc, which denotes the invalid value.
 
+   function Is_Anonymous_Access_Actual (N : Node_Id) return Boolean;
+   --  Determine if N is used as an actual for a call whose corresponding
+   --  formal is of an anonymous access type.
+
    function Is_Access_Subprogram_Wrapper (E : Entity_Id) return Boolean;
    --  True if E is the constructed wrapper for an access_to_subprogram
    --  type with Pre/Postconditions.

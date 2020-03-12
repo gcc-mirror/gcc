@@ -2645,7 +2645,7 @@ package body Exp_Ch6 is
          end loop;
 
          if not Is_Empty_List (Inv_Checks) then
-            Insert_Actions_After (N, Inv_Checks);
+            Insert_Actions_After (Call_Node, Inv_Checks);
          end if;
       end Add_View_Conversion_Invariants;
 
@@ -2919,7 +2919,7 @@ package body Exp_Ch6 is
                Formal : Node_Id;
 
             begin
-               Actual := First (Parameter_Associations (N));
+               Actual := First (Parameter_Associations (Call_Node));
                Formal := First_Formal (Subp);
                while Present (Actual)
                  and then Present (Formal)
@@ -3610,10 +3610,215 @@ package body Exp_Ch6 is
                   --  Prev_Orig denotes an original expression that has
                   --  not been analyzed.
 
+                  --  However, when the actual is wrapped in a conditional
+                  --  expression we must add a local temporary to store the
+                  --  level at each branch, and, possibly, expand the call
+                  --  into an expression with actions.
+
                   when others =>
-                     Add_Extra_Actual
-                       (Expr => Dynamic_Accessibility_Level (Prev),
-                        EF   => Get_Accessibility (Formal));
+                     if Nkind (Prev) = N_Expression_With_Actions
+                       and then Nkind_In (Original_Node (Prev),
+                                           N_If_Expression,
+                                           N_Case_Expression)
+                     then
+                        declare
+                           Decl : Node_Id;
+                           Lvl  : Entity_Id;
+                           Res  : Entity_Id;
+                           Temp : Node_Id;
+                           Typ  : Node_Id;
+
+                           procedure Insert_Level_Assign (Branch : Node_Id);
+                           --  Recursivly add assignment of the level temporary
+                           --  on each branch while moving through nested
+                           --  conditional expressions.
+
+                           -------------------------
+                           -- Insert_Level_Assign --
+                           -------------------------
+
+                           procedure Insert_Level_Assign (Branch : Node_Id) is
+
+                              procedure Expand_Branch (Assn : Node_Id);
+                              --  Perform expansion or iterate further within
+                              --  nested conditionals.
+
+                              -------------------
+                              -- Expand_Branch --
+                              -------------------
+
+                              procedure Expand_Branch (Assn : Node_Id) is
+                              begin
+                                 pragma Assert (Nkind (Assn) =
+                                                 N_Assignment_Statement);
+
+                                 --  There are more nested conditional
+                                 --  expressions so we must go deeper.
+
+                                 if Nkind (Expression (Assn)) =
+                                      N_Expression_With_Actions
+                                 then
+                                    Insert_Level_Assign (Expression (Assn));
+
+                                 --  Add the level assignment
+
+                                 else
+                                    Insert_Before_And_Analyze (Assn,
+                                      Make_Assignment_Statement (Loc,
+                                        Name       =>
+                                          New_Occurrence_Of
+                                            (Lvl, Loc),
+                                        Expression =>
+                                          Dynamic_Accessibility_Level
+                                            (Expression (Assn))));
+                                 end if;
+                              end Expand_Branch;
+
+                              Cond : Node_Id;
+                              Alt  : Node_Id;
+
+                           --  Start of processing for Insert_Level_Assign
+
+                           begin
+                              --  Examine further nested condtionals
+
+                              pragma Assert (Nkind (Branch) =
+                                              N_Expression_With_Actions);
+
+                              --  Find the relevant statement in the actions
+
+                              Cond := First (Actions (Branch));
+                              loop
+                                 exit when Nkind_In (Cond, N_Case_Statement,
+                                                           N_If_Statement);
+
+                                 Next (Cond);
+                                 pragma Assert (Present (Cond));
+                              end loop;
+
+                              --  Iterate through if expression branches
+
+                              if Nkind (Cond) = N_If_Statement then
+                                 Expand_Branch (Last (Then_Statements (Cond)));
+                                 Expand_Branch (Last (Else_Statements (Cond)));
+
+                              --  Iterate through case alternatives
+
+                              elsif Nkind (Cond) = N_Case_Statement then
+
+                                 Alt := First (Alternatives (Cond));
+                                 while Present (Alt) loop
+                                    Expand_Branch (Last (Statements (Alt)));
+
+                                    Next (Alt);
+                                 end loop;
+                              end if;
+                           end Insert_Level_Assign;
+
+                        --  Start of processing for cond expression case
+
+                        begin
+                           --  Create declaration of a temporary to store the
+                           --  accessibility level of each branch of the
+                           --  conditional expression.
+
+                           Lvl  := Make_Temporary (Loc, 'L');
+                           Decl :=
+                              Make_Object_Declaration (Loc,
+                                Defining_Identifier => Lvl,
+                                Object_Definition   =>
+                                  New_Occurrence_Of (Standard_Natural, Loc));
+
+                           --  Install the declaration and perform necessary
+                           --  expansion if we are dealing with a function
+                           --  call.
+
+                           if Nkind (Call_Node) =
+                                N_Procedure_Call_Statement
+                           then
+                              --  Generate:
+                              --    Lvl : Natural;
+                              --    Call (
+                              --     {do
+                              --        If_Exp_Res : Typ;
+                              --        if Cond then
+                              --           Lvl        := 0; --  Access level
+                              --           If_Exp_Res := Exp;
+                              --        ...
+                              --      in If_Exp_Res end;},
+                              --      Lvl,
+                              --      ...
+                              --    )
+
+                              Insert_Before_And_Analyze (Call_Node, Decl);
+
+                           --  A function call must be transformed into an
+                           --  expression with actions.
+
+                           else
+                              --  Generate:
+                              --    do
+                              --      Lvl : Natural;
+                              --    in Call (do{
+                              --               If_Exp_Res : Typ
+                              --               if Cond then
+                              --                 Lvl := 0; --  Access level
+                              --                 If_Exp_Res := Exp;
+                              --               in If_Exp_Res end;},
+                              --             Lvl,
+                              --             ...
+                              --             )
+                              --    end;
+
+                              Res  := Make_Temporary (Loc, 'R');
+                              Typ  := Etype (Call_Node);
+                              Temp := Relocate_Node (Call_Node);
+
+                              --  Perform the rewrite with the dummy
+
+                              Rewrite (Call_Node,
+
+                                Make_Expression_With_Actions (Loc,
+                                  Expression => New_Occurrence_Of (Res, Loc),
+                                  Actions    => New_List (
+                                    Decl,
+
+                                    Make_Object_Declaration (Loc,
+                                      Defining_Identifier => Res,
+                                      Object_Definition   =>
+                                        New_Occurrence_Of (Typ, Loc)))));
+
+                              --  Analyze the expression with the dummy
+
+                              Analyze_And_Resolve (Call_Node, Typ);
+
+                              --  Properly set the expression and move our view
+                              --  of the call node
+
+                              Set_Expression (Call_Node, Relocate_Node (Temp));
+                              Call_Node := Expression (Call_Node);
+                              Remove (Next (Decl));
+                           end if;
+
+                           --  Decorate the conditional expression with
+                           --  assignments to our level temporary.
+
+                           Insert_Level_Assign (Prev);
+
+                           --  Make our level temporary the passed actual
+
+                           Add_Extra_Actual
+                             (Expr => New_Occurrence_Of (Lvl, Loc),
+                              EF   => Get_Accessibility (Formal));
+                        end;
+
+                     --  General case uncomplicated by conditional expressions
+
+                     else
+                        Add_Extra_Actual
+                          (Expr => Dynamic_Accessibility_Level (Prev),
+                           EF   => Get_Accessibility (Formal));
+                     end if;
                end case;
             end if;
          end if;
@@ -3801,7 +4006,7 @@ package body Exp_Ch6 is
          --  generating spurious checks on complex expansion such as object
          --  initialization through an extension aggregate.
 
-         if Comes_From_Source (N)
+         if Comes_From_Source (Call_Node)
            and then Ekind (Formal) /= E_In_Parameter
            and then Nkind (Actual) = N_Type_Conversion
          then
@@ -4313,7 +4518,7 @@ package body Exp_Ch6 is
 
       if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
 
-      --  Handle case of access to protected subprogram type
+         --  Handle case of access to protected subprogram type
 
          if Is_Access_Protected_Subprogram_Type
               (Base_Type (Etype (Prefix (Name (Call_Node)))))
@@ -4461,8 +4666,9 @@ package body Exp_Ch6 is
          --  back-end inlining is enabled).
 
          elsif Is_Inlinable_Expression_Function (Subp) then
-            Rewrite (N, New_Copy (Expression_Of_Expression_Function (Subp)));
-            Analyze (N);
+            Rewrite
+              (Call_Node, New_Copy (Expression_Of_Expression_Function (Subp)));
+            Analyze (Call_Node);
             return;
 
          --  Handle front-end inlining
@@ -4533,7 +4739,7 @@ package body Exp_Ch6 is
 
                   elsif Modify_Tree_For_C
                     and then In_Same_Extended_Unit (Sloc (Bod), Loc)
-                    and then Chars (Name (N)) = Name_uPostconditions
+                    and then Chars (Name (Call_Node)) = Name_uPostconditions
                   then
                      Must_Inline := True;
                   end if;
@@ -4641,8 +4847,9 @@ package body Exp_Ch6 is
                               N_Slice)
            and then
              (Ekind (Current_Scope) /= E_Loop
-               or else Nkind (Parent (N)) /= N_Function_Call
-               or else not Is_Build_In_Place_Function_Call (Parent (N)))
+               or else Nkind (Parent (Call_Node)) /= N_Function_Call
+               or else not Is_Build_In_Place_Function_Call
+                             (Parent (Call_Node)))
          then
             Establish_Transient_Scope (Call_Node, Manage_Sec_Stack => True);
          end if;
