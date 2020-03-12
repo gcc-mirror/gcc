@@ -30,9 +30,12 @@
 ------------------------------------------------------------------------------
 
 with System.Atomic_Primitives; use System.Atomic_Primitives;
+with System.Atomic_Operations.Exchange;
 with Interfaces.C;
 
 package body System.Atomic_Operations.Integer_Arithmetic is
+
+   package Exchange is new System.Atomic_Operations.Exchange (Atomic_Type);
 
    ----------------
    -- Atomic_Add --
@@ -88,13 +91,42 @@ package body System.Atomic_Operations.Integer_Arithmetic is
       pragma Warnings (On);
 
    begin
-      case Atomic_Type'Object_Size is
-         when 8      => return Atomic_Fetch_Add_1 (Item'Address, Value);
-         when 16     => return Atomic_Fetch_Add_2 (Item'Address, Value);
-         when 32     => return Atomic_Fetch_Add_4 (Item'Address, Value);
-         when 64     => return Atomic_Fetch_Add_8 (Item'Address, Value);
-         when others => raise Program_Error;
-      end case;
+      --  Use the direct intrinsics when possible, and fallback to
+      --  compare-and-exchange otherwise.
+
+      if Atomic_Type'Base'Last = Atomic_Type'Last
+        and then Atomic_Type'Base'First = Atomic_Type'First
+        and then Atomic_Type'Last
+                  in 2 ** 7 - 1 | 2 ** 15 - 1 | 2 ** 31 - 1 | 2 ** 63 - 1
+      then
+         case Long_Long_Integer (Atomic_Type'Last) is
+            when 2 ** 7 - 1  =>
+               return Atomic_Fetch_Add_1 (Item'Address, Value);
+            when 2 ** 15 - 1 =>
+               return Atomic_Fetch_Add_2 (Item'Address, Value);
+            when 2 ** 31 - 1 =>
+               return Atomic_Fetch_Add_4 (Item'Address, Value);
+            when 2 ** 63 - 1 =>
+               return Atomic_Fetch_Add_8 (Item'Address, Value);
+            when others      =>
+               raise Program_Error;
+         end case;
+      else
+         declare
+            Old_Value : aliased Atomic_Type := Item;
+            New_Value : Atomic_Type := Old_Value + Value;
+         begin
+            --  Keep iterating until the exchange succeeds
+
+            while not Exchange.Atomic_Compare_And_Exchange
+                        (Item, Old_Value, New_Value)
+            loop
+               New_Value := Old_Value + Value;
+            end loop;
+
+            return Old_Value;
+         end;
+      end if;
    end Atomic_Fetch_And_Add;
 
    -------------------------------
@@ -125,13 +157,42 @@ package body System.Atomic_Operations.Integer_Arithmetic is
       pragma Warnings (On);
 
    begin
-      case Atomic_Type'Object_Size is
-         when 8      => return Atomic_Fetch_Sub_1 (Item'Address, Value);
-         when 16     => return Atomic_Fetch_Sub_2 (Item'Address, Value);
-         when 32     => return Atomic_Fetch_Sub_4 (Item'Address, Value);
-         when 64     => return Atomic_Fetch_Sub_8 (Item'Address, Value);
-         when others => raise Program_Error;
-      end case;
+      --  Use the direct intrinsics when possible, and fallback to
+      --  compare-and-exchange otherwise.
+
+      if Atomic_Type'Base'Last = Atomic_Type'Last
+        and then Atomic_Type'Base'First = Atomic_Type'First
+        and then Atomic_Type'Last
+                  in 2 ** 7 - 1 | 2 ** 15 - 1 | 2 ** 31 - 1 | 2 ** 63 - 1
+      then
+         case Long_Long_Integer (Atomic_Type'Last) is
+            when 2 ** 7 - 1  =>
+               return Atomic_Fetch_Sub_1 (Item'Address, Value);
+            when 2 ** 15 - 1 =>
+               return Atomic_Fetch_Sub_2 (Item'Address, Value);
+            when 2 ** 31 - 1 =>
+               return Atomic_Fetch_Sub_4 (Item'Address, Value);
+            when 2 ** 63 - 1 =>
+               return Atomic_Fetch_Sub_8 (Item'Address, Value);
+            when others      =>
+               raise Program_Error;
+         end case;
+      else
+         declare
+            Old_Value : aliased Atomic_Type := Item;
+            New_Value : Atomic_Type := Old_Value - Value;
+         begin
+            --  Keep iterating until the exchange succeeds
+
+            while not Exchange.Atomic_Compare_And_Exchange
+                        (Item, Old_Value, New_Value)
+            loop
+               New_Value := Old_Value - Value;
+            end loop;
+
+            return Old_Value;
+         end;
+      end if;
    end Atomic_Fetch_And_Subtract;
 
    ------------------
