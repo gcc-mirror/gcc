@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-dse.h"
 #include "builtins.h"
 #include "gimple-fold.h"
+#include "gimplify.h"
 
 /* This file implements dead store elimination.
 
@@ -422,29 +423,38 @@ decrement_count (gimple *stmt, int decrement)
   gcc_assert (TREE_CODE (*countp) == INTEGER_CST);
   *countp = wide_int_to_tree (TREE_TYPE (*countp), (TREE_INT_CST_LOW (*countp)
 						    - decrement));
-
 }
 
 static void
 increment_start_addr (gimple *stmt, tree *where, int increment)
 {
+  if (tree lhs = gimple_call_lhs (stmt))
+    if (where == gimple_call_arg_ptr (stmt, 0))
+      {
+	gassign *newop = gimple_build_assign (lhs, unshare_expr (*where));
+	gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	gsi_insert_after (&gsi, newop, GSI_SAME_STMT);
+	gimple_call_set_lhs (stmt, NULL_TREE);
+	update_stmt (stmt);
+      }
+
   if (TREE_CODE (*where) == SSA_NAME)
     {
       tree tem = make_ssa_name (TREE_TYPE (*where));
       gassign *newop
-        = gimple_build_assign (tem, POINTER_PLUS_EXPR, *where,
+	= gimple_build_assign (tem, POINTER_PLUS_EXPR, *where,
 			       build_int_cst (sizetype, increment));
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
       gsi_insert_before (&gsi, newop, GSI_SAME_STMT);
       *where = tem;
-      update_stmt (gsi_stmt (gsi));
+      update_stmt (stmt);
       return;
     }
 
   *where = build_fold_addr_expr (fold_build2 (MEM_REF, char_type_node,
-                                             *where,
-                                             build_int_cst (ptr_type_node,
-                                                            increment)));
+					      *where,
+					      build_int_cst (ptr_type_node,
+							     increment)));
 }
 
 /* STMT is builtin call that writes bytes in bitmap ORIG, some bytes are dead

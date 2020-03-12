@@ -1,5 +1,8 @@
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94130
+	* gcc.c-torture/execute/pr94130.c: New test.
+
 	PR c++/93907
 	* g++.dg/cpp2a/concepts-using2.C (cc): Use long long instead of
 	__int128 if __SIZEOF_INT128__ isn't defined.

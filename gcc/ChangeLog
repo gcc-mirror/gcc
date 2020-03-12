@@ -1,3 +1,12 @@
+2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94130
+	* tree-ssa-dse.c: Include gimplify.h.
+	(increment_start_addr): If stmt has lhs, drop the lhs from call and
+	set it after the call to the original value of the first argument.
+	Formatting fixes.
+	(decrement_count): Formatting fix.
+
 2020-03-11  Delia Burduv  <delia.burduv@arm.com>
 
 	* config/arm/arm-builtins.c
