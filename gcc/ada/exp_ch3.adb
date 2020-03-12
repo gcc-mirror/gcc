@@ -1998,6 +1998,20 @@ package body Exp_Ch3 is
             Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
+         if Nkind (Exp) = N_Allocator
+            and then Nkind (Expression (Exp)) = N_Qualified_Expression
+         then
+            declare
+               Subtype_Entity : constant Entity_Id
+                  := Entity (Subtype_Mark (Expression (Exp)));
+            begin
+               if Has_Predicates (Subtype_Entity) then
+                  Append (Make_Predicate_Check
+                     (Subtype_Entity, Expression (Expression (Exp))), Res);
+               end if;
+            end;
+         end if;
+
          return Res;
 
       exception
