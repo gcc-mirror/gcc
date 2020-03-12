@@ -187,7 +187,5 @@ extern bool rs6000_passes_long_double;
 extern bool rs6000_passes_vector;
 extern bool rs6000_returns_struct;
 extern bool cpu_builtin_p;
-extern GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
-extern GTY(()) tree altivec_builtin_mask_for_load;
 
 #endif

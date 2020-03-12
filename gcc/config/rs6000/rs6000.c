@@ -99,7 +99,7 @@
 #endif
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
-GTY(()) tree altivec_builtin_mask_for_load;
+tree altivec_builtin_mask_for_load;
 
 #ifdef USING_ELFOS_H
 /* Counter for labels which are to be placed in .fixup.  */
@@ -196,7 +196,7 @@ enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 int rs6000_vector_align[NUM_MACHINE_MODES];
 
 /* Map selected modes to types for builtins.  */
-GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
+tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
 
 /* What modes to automatically generate reciprocal divide estimate (fre) and
    reciprocal sqrt (frsqrte) for.  */
