@@ -1,6 +1,11 @@
 2020-04-02  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2020-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94103
+	* gcc.target/i386/pr94103.c: New testcase.
+
 	2020-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94206
