@@ -1,3 +1,9 @@
+2020-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93907
+	* g++.dg/cpp2a/concepts-using2.C (cc): Use long long instead of
+	__int128 if __SIZEOF_INT128__ isn't defined.
+
 2020-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94074 - wrong modifying const object error for COMPONENT_REF.
