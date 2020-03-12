@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                   System.Atomic_Operations.Arithmetic                    --
+--               System.Atomic_Operations.Integer_Arithmetic                --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -32,7 +32,7 @@
 with System.Atomic_Primitives; use System.Atomic_Primitives;
 with Interfaces.C;
 
-package body System.Atomic_Operations.Arithmetic is
+package body System.Atomic_Operations.Integer_Arithmetic is
 
    ----------------
    -- Atomic_Add --
@@ -145,4 +145,4 @@ package body System.Atomic_Operations.Arithmetic is
       return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
    end Is_Lock_Free;
 
-end System.Atomic_Operations.Arithmetic;
+end System.Atomic_Operations.Integer_Arithmetic;
