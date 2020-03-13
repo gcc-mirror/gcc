@@ -2862,7 +2862,8 @@ aarch64_add_offset_1 (scalar_int_mode mode, rtx dest,
   if (emit_move_imm)
     {
       gcc_assert (temp1 != NULL_RTX || can_create_pseudo_p ());
-      temp1 = aarch64_force_temporary (mode, temp1, GEN_INT (moffset));
+      temp1 = aarch64_force_temporary (mode, temp1,
+				       gen_int_mode (moffset, mode));
     }
   insn = emit_insn (offset < 0
 		    ? gen_sub3_insn (dest, src, temp1)

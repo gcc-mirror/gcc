@@ -1,6 +1,12 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94121
+	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use gen_int_mode
+	instead of GEN_INT.
+
 	2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/tm.texi.in (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Change
