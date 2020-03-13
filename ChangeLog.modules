@@ -1,6 +1,14 @@
 2020-03-13  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::decl_value): Set and reset constraints on
+	duplicate decl.
+	(trees_in::is_matching_decl): Use decls_match to compare decls.
+	gcc/testsuite/
+	* g++.dg/modules/except-2{,_[ab]}.[hHC]: New.
+	* g++.dg/modules/builtin-4_[ab].[HC]: New.
+
+	gcc/cp/
 	* mangle.c (find_substitution): Cleanup for c++/94027 fix.
 
 	gcc/cp/

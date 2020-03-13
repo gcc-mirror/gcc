@@ -7816,8 +7816,16 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
+      if (constraints)
+	/* We need to set the new decl's constraints so
+	   is_matching_decl can match them.  */
+	set_constraints (decl, constraints);
+
       if (!is_matching_decl (existing, decl, inner))
 	unmatched_duplicate (existing);
+
+      if (constraints)
+	remove_constraints (decl);
 
       /* And our result is the existing node.  */
       decl = existing;
@@ -10410,10 +10418,7 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
   // (beware, default parms should be the same?)
   // Actually, we should just call duplicate_decls and teach it how to
   // handle the module-specific permitted/required duplications
-  /* Using cp_tree_equal because we can meet TYPE_ARGUMENT_PACKs
-     here. I suspect the entities that directly do that are things
-     that shouldn't go to duoplicate_decls (FIELD_DECLs etc).   */
-  if (!cp_tree_equal (TREE_TYPE (existing), TREE_TYPE (decl)))
+  if (!decls_match (decl, existing))
     {
       // FIXME: Might be template specialization from a module, not
       // necessarily global module
@@ -10422,6 +10427,19 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
       inform (DECL_SOURCE_LOCATION (existing),
 	      "existing declaration %#qD", existing);
       return false;
+    }
+
+  if (DECL_IS_BUILTIN (existing) && DECL_ANTICIPATED (existing))
+    {
+      // FIXME: Take the type from decl, see duplicate decls.  FIXME: Our
+      // DECL_ANTICIPATED_P machinery is broken for modules --
+      // HIDDENness is a property of the symbol table, distinct.  from
+      // DECL_ANTICIPATED_P which should just be for expected builtins
+      // I think I can fix that up when we convert the single
+      // symbol-table slot to a module-vector: Wrap the anticipated
+      // decl left behind in a hidden overload.  Then the decl itself
+      // need not be noted as anticipated, kind of.  Hm, not sure if
+      // that works right.
     }
 
   if ((TREE_CODE (decl) == VAR_DECL
