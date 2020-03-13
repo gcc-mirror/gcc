@@ -1659,6 +1659,10 @@ fmodule-lazy
 C++ ObjC++ Var(flag_module_lazy) Init(1)
 Enable lazy module importing.
 
+fmodule-version-ignore
+C++ ObjC Var(flag_module_version_ignore) Integer
+; undocumented, Very dangerous, but occasionally useful
+
 Winvalid-imported-macros
 C++ ObjC++ Var(warn_imported_macros)
 Warn about macros that have conflicting header units definitions.

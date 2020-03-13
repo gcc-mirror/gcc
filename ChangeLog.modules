@@ -1,3 +1,11 @@
+2020-03-13  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::read_config): Allow overriding the
+	version check.
+	gcc/c-family/
+	* c.opt (fmodule-version-ignore): New undocumented option.
+
 2020-03-11  Nathan Sidwell  <nathan@acm.org>
 
 	Bad ranges, no biscuit!

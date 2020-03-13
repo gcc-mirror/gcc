@@ -16959,37 +16959,45 @@ module_state::read_config (module_state_config &config)
 		    : "Expecting %V found %V", my_ver, their_ver);
   if (their_ver != my_ver)
     {
+      /* The compiler versions differ.  Close enough? */
       verstr_t my_string, their_string;
 
       version2string (my_ver, my_string);
       version2string (their_ver, their_string);
 
-      if (!IS_EXPERIMENTAL (my_ver)
-	  || !IS_EXPERIMENTAL (their_ver)
-	  || MODULE_MAJOR (my_ver) != MODULE_MAJOR (their_ver))
+      /* Reject when either is non-experimental or when experimental
+	 major versions differ.  */
+      bool reject_p = ((!IS_EXPERIMENTAL (my_ver)
+			|| !IS_EXPERIMENTAL (their_ver)
+			|| MODULE_MAJOR (my_ver) != MODULE_MAJOR (their_ver))
+		       /* The 'I know what I'm doing' switch.  */
+		       && !flag_module_version_ignore);
+      bool inform_p = true;
+      if (reject_p)
 	{
-	  /* Non-experimental or majors differ, decline.  */
+	  cfg.set_overrun ();
 	  error_at (loc, "compiled module is %sversion %s",
 		    IS_EXPERIMENTAL (their_ver) ? "experimental " : "",
 		    their_string);
-	  inform (loc, "compiler is %sversion %s",
-		  IS_EXPERIMENTAL (my_ver) ? "experimental " : "",
-		  my_string);
-	  cfg.set_overrun ();
-	  goto done;
 	}
       else
-	/* Minors differ, give it a go.  */
-	if (warning_at (loc, 0, "compiled module is experimental version %s",
-			their_string))
-	  {
-	    inform (loc, "compiler is experimental version %s,"
-		    " close enough? %c%c\\%c(%c%c%c)%c/%c%c",
-		    my_string, 0xc2, 0xaf, '_',
-		    0xe3, 0x83, 0x84,
-		    '_', 0xc2, 0xaf);
-	    note_cmi_name ();
-	  }
+	inform_p = warning_at (loc, 0, "compiled module is %sversion %s",
+			     IS_EXPERIMENTAL (their_ver) ? "experimental " : "",
+			     their_string);
+
+      if (inform_p)
+	{
+	  inform (loc, "compiler is %sversion %s%s%s",
+		  IS_EXPERIMENTAL (my_ver) ? "experimental " : "",
+		  my_string,
+		  reject_p ? "" : flag_module_version_ignore
+		  ? ", be it on your own head!" : ", close enough?",
+		  reject_p ? "" : " \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf");
+	  note_cmi_name ();
+	}
+
+      if (reject_p)
+	goto done;
     }
 
   /*  We wrote the inner crc merely to merge it, so simply read it
