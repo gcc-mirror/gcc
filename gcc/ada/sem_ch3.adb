@@ -13093,7 +13093,7 @@ package body Sem_Ch3 is
          Scop          : Entity_Id;
 
       begin
-         --  if the original access type was not embedded in the enclosing
+         --  If the original access type was not embedded in the enclosing
          --  type definition, there is no need to produce a new access
          --  subtype. In fact every access type with an explicit constraint
          --  generates an itype whose scope is the enclosing record.
@@ -13192,6 +13192,7 @@ package body Sem_Ch3 is
                Is_Discriminant (Hi_Expr)
             then
                Need_To_Create_Itype := True;
+               exit;
             end if;
 
             Next_Index (Old_Index);
@@ -13248,6 +13249,7 @@ package body Sem_Ch3 is
 
             if Is_Discriminant (Expr) then
                Need_To_Create_Itype := True;
+               exit;
 
             --  After expansion of discriminated task types, the value
             --  of the discriminant may be converted to a run-time type
@@ -13259,6 +13261,7 @@ package body Sem_Ch3 is
               and then Is_Discriminant (Expression (Expr))
             then
                Need_To_Create_Itype := True;
+               exit;
             end if;
 
             Next_Elmt (Old_Constraint);
