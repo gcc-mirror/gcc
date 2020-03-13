@@ -1,6 +1,9 @@
 2020-03-13  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* mangle.c (find_substitution): Cleanup for c++/94027 fix.
+
+	gcc/cp/
 	* module.cc (module_state::read_config): Allow overriding the
 	version check.
 	gcc/c-family/
