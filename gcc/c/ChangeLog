@@ -1,3 +1,11 @@
+2020-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/94040
+	* c-decl.c (builtin_structptr_type_count): New constant.
+	(match_builtin_function_types): Reject decls that are incompatible
+	in types pointed to by pointers.
+	(diagnose_mismatched_decls): Adjust comments.
+
 2020-03-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93577

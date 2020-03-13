@@ -1641,13 +1641,17 @@ c_bind (location_t loc, tree decl, bool is_global)
 }
 
 
-/* Stores the first FILE*, const struct tm* etc. argument type (whatever it
-   is) seen in a declaration of a file I/O etc. built-in.  Subsequent
-   declarations of such built-ins are expected to refer to it rather than to
-   fileptr_type_node etc. which is just void* (or to any other type).
+/* Stores the first FILE*, const struct tm* etc. argument type (whatever
+   it is) seen in a declaration of a file I/O etc. built-in, corresponding
+   to the builtin_structptr_types array.  Subsequent declarations of such
+   built-ins are expected to refer to it rather than to fileptr_type_node,
+   etc. which is just void* (or to any other type).
    Used only by match_builtin_function_types.  */
 
-static GTY(()) tree last_structptr_types[6];
+static const unsigned builtin_structptr_type_count
+  = sizeof builtin_structptr_types / sizeof builtin_structptr_types[0];
+
+static GTY(()) tree last_structptr_types[builtin_structptr_type_count];
 
 /* Returns true if types T1 and T2 representing return types or types
    of function arguments are close enough to be considered interchangeable
@@ -1692,10 +1696,13 @@ match_builtin_function_types (tree newtype, tree oldtype,
   tree newargs = TYPE_ARG_TYPES (newtype);
   tree tryargs = newargs;
 
-  gcc_checking_assert ((sizeof (last_structptr_types)
-			/ sizeof (last_structptr_types[0]))
-		       == (sizeof (builtin_structptr_types)
-			   / sizeof (builtin_structptr_types[0])));
+  const unsigned nlst
+    = sizeof last_structptr_types / sizeof last_structptr_types[0];
+  const unsigned nbst
+    = sizeof builtin_structptr_types / sizeof builtin_structptr_types[0];
+
+  gcc_checking_assert (nlst == nbst);
+
   for (unsigned i = 1; oldargs || newargs; ++i)
     {
       if (!oldargs
@@ -1710,11 +1717,12 @@ match_builtin_function_types (tree newtype, tree oldtype,
       if (!types_close_enough_to_match (oldtype, newtype))
 	return NULL_TREE;
 
-      unsigned j = (sizeof (builtin_structptr_types)
-		    / sizeof (builtin_structptr_types[0]));
+      unsigned j = nbst;
       if (POINTER_TYPE_P (oldtype))
-	for (j = 0; j < (sizeof (builtin_structptr_types)
-			 / sizeof (builtin_structptr_types[0])); ++j)
+	/* Iterate over well-known struct types like FILE (whose types
+	   aren't known to us) and compare the pointer to each to
+	   the pointer argument.  */
+	for (j = 0; j < nbst; ++j)
 	  {
 	    if (TREE_VALUE (oldargs) != builtin_structptr_types[j].node)
 	      continue;
@@ -1734,13 +1742,26 @@ match_builtin_function_types (tree newtype, tree oldtype,
 	      last_structptr_types[j] = newtype;
 	    break;
 	  }
-      if (j == (sizeof (builtin_structptr_types)
-		/ sizeof (builtin_structptr_types[0]))
-	  && !*strict
-	  && !comptypes (oldtype, newtype))
+
+      if (j == nbst && !comptypes (oldtype, newtype))
 	{
-	  *argno = i;
-	  *strict = oldtype;
+	  if (POINTER_TYPE_P (oldtype))
+	    {
+	      /* For incompatible pointers, only reject differences in
+		 the unqualified variants of the referenced types but
+		 consider differences in qualifiers as benign (report
+		 those to caller via *STRICT below).  */
+	      tree oldref = TYPE_MAIN_VARIANT (TREE_TYPE (oldtype));
+	      tree newref = TYPE_MAIN_VARIANT (TREE_TYPE (newtype));
+	      if (!comptypes (oldref, newref))
+		return NULL_TREE;
+	    }
+
+	  if (!*strict)
+	    {
+	      *argno = i;
+	      *strict = oldtype;
+	    }
 	}
 
       oldargs = TREE_CHAIN (oldargs);
@@ -1965,9 +1986,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	{
 	  /* Accept "harmless" mismatches in function types such
 	     as missing qualifiers or int vs long when they're the same
-	     size.  However, with -Wextra in effect, diagnose return and
-	     argument types that are incompatible according to language
-	     rules.  */
+	     size.  However, diagnose return and argument types that are
+	     incompatible according to language rules.  */
 	  tree mismatch_expect;
 	  unsigned mismatch_argno;
 
@@ -2002,8 +2022,6 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
 	  if (mismatch_expect && extra_warnings)
 	    {
-	      /* If types match only loosely, print a warning but accept
-		 the redeclaration.  */
 	      location_t newloc = DECL_SOURCE_LOCATION (newdecl);
 	      bool warned = false;
 	      if (mismatch_argno)

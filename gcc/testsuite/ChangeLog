@@ -1,3 +1,13 @@
+2020-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/94040
+	* gcc.dg/Wbuiltin-declaration-mismatch-12.c: Relax test to look
+	for warning name rather than the exact text.
+	* gcc.dg/Wbuiltin-declaration-mismatch-14.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-15.c: New test.
+	* gcc.dg/pr62090.c: Prune expected warning.
+	* gcc.dg/pr89314.c: Look for warning name rather than text.
+
 2020-03-13  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr64409.c: Do not limit compilation to x32 targets.
