@@ -5127,6 +5127,12 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
       else
 	return "%vmovq\t{%1, %0|%0, %1}";
 
+    case MODE_DF:
+      if (TARGET_AVX && REG_P (operands[0]) && REG_P (operands[1]))
+	return "vmovsd\t{%d1, %0|%0, %d1}";
+      else
+	return "%vmovsd\t{%1, %0|%0, %1}";
+
     case MODE_V1DF:
       gcc_assert (!TARGET_AVX);
       return "movlpd\t{%1, %0|%0, %1}";

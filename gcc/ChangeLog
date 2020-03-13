@@ -1,3 +1,74 @@
+2020-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92303
+	* lra-spills.c (remove_pseudos): Try to simplify memory subreg.
+
+2020-03-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/94148
+	PR rtl-optimization/94042
+	* df-core.c (BB_LAST_CHANGE_AGE): Delete.
+	(df_worklist_propagate_forward): New parameter last_change_age, use
+	that instead of bb->aux.
+	(df_worklist_propagate_backward): Ditto.
+	(df_worklist_dataflow_doublequeue): Use a local array last_change_age.
+
+2020-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94163
+	* tree-ssa-pre.c (create_expression_by_pieces): Check
+	whether alignment would be zero.
+
+2020-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94157
+	* lto-wrapper.c (run_gcc): Use concat for appending
+	to collect_gcc_options.
+
+2020-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94121
+	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use gen_int_mode
+	instead of GEN_INT.
+
+2020-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.c (ix86_output_ssemov): Handle MODE_DF.
+	* config/i386/i386.md (*movdf_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove TARGET_AVX512F, TARGET_PREFER_AVX256,
+	TARGET_AVX512VL and ext_sse_reg_operand check.
+
+2020-03-13  Bu Le  <bule1@huawei.com>
+
+	PR target/94154
+	* config/aarch64/aarch64.opt (-param=aarch64-float-recp-precision=)
+	(-param=aarch64-double-recp-precision=): New options.
+	* doc/invoke.texi: Document them.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_div): Use them
+	instead of hard-coding the choice of 1 for float and 2 for double.
+
+2020-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/94119
+	* resource.h (clear_hashed_info_until_next_barrier): Declare.
+	* resource.c (clear_hashed_info_until_next_barrier): New function.
+	* reorg.c (add_to_delay_list): Fix formatting.
+	(relax_delay_slots): Call clear_hashed_info_until_next_barrier on
+	the next instruction after removing a BARRIER.
+
+2020-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/92071
+	* expmed.c (store_integral_bit_field): For fields larger than a word,
+	call extract_bit_field on the value if the mode is BLKmode.  Remove
+	specific path for big-endian targets and tidy things up a little bit.
+
+2020-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/90275
+	* cse.c (cse_insn): Delete no-op register moves too.
+
 2020-03-12  Darius Galis  <darius.galis@cyberthorstudios.com>
 
 	* config/rx/rx.md (CTRLREG_CPEN): Remove.

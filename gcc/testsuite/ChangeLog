@@ -1,3 +1,58 @@
+2020-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/94040
+	* gcc.dg/Wbuiltin-declaration-mismatch-12.c: Relax test to look
+	for warning name rather than the exact text.
+	* gcc.dg/Wbuiltin-declaration-mismatch-14.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-15.c: New test.
+	* gcc.dg/pr62090.c: Prune expected warning.
+	* gcc.dg/pr89314.c: Look for warning name rather than text.
+	* gcc.dg/torture/pr54261-1.c: Correct built-in declartion.
+
+2020-03-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr64409.c: Do not limit compilation to x32 targets.
+	(dg-error): Quote 'ms_abi' attribute.
+	* gcc.target/i386/pr71958.c: Do not limit compilation to x32 targets.
+	Require maybe_x32 effective target.
+	(dg-options): Add -mx32.
+	(dg-error): Quote 'ms_abi' attribute.
+	* gcc.target/i386/pr90096.c (dg-error): Update relative
+	location of target x32 error.
+
+2020-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67960
+	* g++.dg/diagnostic/pr67960.C: New test.
+	* g++.dg/diagnostic/pr67960-2.C: New test.
+
+2020-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94157
+	* gcc.dg/lto/pr94157_0.c: New test.
+
+2020-03-13  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR testsuite/93935
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Expect basic block vectorized
+	messages only on vect_hw_misalign targets.
+
+2020-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-4a.c: New test.
+	* gcc.target/i386/pr89229-4b.c: Likewise.
+	* gcc.target/i386/pr89229-4c.c: Likewise.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20200313-1.c: New test.
+
+2020-03-12  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* gcc.c-torture/compile/pr90275.c: New test.
+
 2020-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94103

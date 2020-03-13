@@ -421,7 +421,16 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
   if (*loc == NULL_RTX)
     return res;
   code = GET_CODE (*loc);
-  if (code == REG && (i = REGNO (*loc)) >= FIRST_PSEUDO_REGISTER
+  if (code == SUBREG && REG_P (SUBREG_REG (*loc)))
+    {
+      /* Try to remove memory subregs to simplify LRA job
+         and avoid LRA cycling in case of subreg memory reload.  */
+      res = remove_pseudos (&SUBREG_REG (*loc), insn);
+      if (GET_CODE (SUBREG_REG (*loc)) == MEM)
+	alter_subreg (loc, false);
+      return res;
+    }
+  else if (code == REG && (i = REGNO (*loc)) >= FIRST_PSEUDO_REGISTER
       && lra_get_regno_hard_regno (i) < 0
       /* We do not want to assign memory for former scratches because
 	 it might result in an address reload for some targets.	 In

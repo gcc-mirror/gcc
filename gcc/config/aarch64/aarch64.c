@@ -3757,7 +3757,8 @@ aarch64_add_offset_1 (scalar_int_mode mode, rtx dest,
   if (emit_move_imm)
     {
       gcc_assert (temp1 != NULL_RTX || can_create_pseudo_p ());
-      temp1 = aarch64_force_temporary (mode, temp1, GEN_INT (moffset));
+      temp1 = aarch64_force_temporary (mode, temp1,
+				       gen_int_mode (moffset, mode));
     }
   insn = emit_insn (offset < 0
 		    ? gen_sub3_insn (dest, src, temp1)
@@ -12911,10 +12912,12 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
   /* Iterate over the series twice for SF and thrice for DF.  */
   int iterations = (GET_MODE_INNER (mode) == DFmode) ? 3 : 2;
 
-  /* Optionally iterate over the series once less for faster performance,
-     while sacrificing the accuracy.  */
+  /* Optionally iterate over the series less for faster performance,
+     while sacrificing the accuracy.  The default is 2 for DF and 1 for SF.  */
   if (flag_mlow_precision_div)
-    iterations--;
+    iterations = (GET_MODE_INNER (mode) == DFmode
+		  ? aarch64_double_recp_precision
+		  : aarch64_float_recp_precision);
 
   /* Iterate over the series to calculate the approximate reciprocal.  */
   rtx xtmp = gen_reg_rtx (mode);

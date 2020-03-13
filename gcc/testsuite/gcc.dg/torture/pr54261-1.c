@@ -8,23 +8,23 @@
    a PASS.  Where the bug trigs (at the time this test-case was added),
    cas_int is also false but the fallback isn't used.  */
 __attribute__((__noinline__, __noclone__))
-int
+unsigned
 # if __INT_MAX__ == 0x7fff
  __sync_fetch_and_add_2
 # else
  __sync_fetch_and_add_4
 # endif
- (int *at, int val)
+ (volatile void *at, unsigned val)
 {
-  int tmp = *at;
+  unsigned tmp = *(volatile unsigned*)at;
   asm ("");
-  *at = tmp + val;
+  *(volatile unsigned*)at = tmp + val;
   return tmp;
 }
 #endif
 
 __attribute__((__noinline__, __noclone__))
-void g (int *at, int val)
+void g (unsigned *at, unsigned val)
 {
   asm ("");
   __sync_fetch_and_add (at, val);
@@ -35,8 +35,8 @@ int main(void)
   /* On PTX it is not valid to perform atomic operations on auto
      variables, which end up in .local.  Making this static places it
      in .global.  */
-  static int x = 41;
-  int a = 1;
+  static unsigned x = 41;
+  unsigned a = 1;
   g (&x, a);
 
   if (x != 42)
