@@ -1,5 +1,10 @@
 2020-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Ranges, you were right, have a biscuit!
+	gcc/testsuite/
+	* g++.dg/modules/odr-1{,_[ab]}.[hHC]: Moved to ..
+	* g++.dg/modules/lambda-2{,_[ab]}.[hHC]: ... here.  Xfailed
+
 	gcc/cp/
 	* module.cc (trees_in::decl_value): Set and reset constraints on
 	duplicate decl.
