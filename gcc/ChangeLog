@@ -4,7 +4,7 @@
 	* tree-ssa-pre.c (create_expression_by_pieces): Check
 	whether alignment would be zero.
 
-2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+2020-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/94119
 	* resource.h (clear_hashed_info_until_next_barrier): Declare.
