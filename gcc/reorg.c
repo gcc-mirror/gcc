@@ -563,8 +563,9 @@ add_to_delay_list (rtx_insn *insn, vec<rtx_insn *> *delay_list)
 {
   /* If INSN has its block number recorded, clear it since we may
      be moving the insn to a new block.  */
-      clear_hashed_info_for_insn (insn);
-      delay_list->safe_push (insn);
+  clear_hashed_info_for_insn (insn);
+
+  delay_list->safe_push (insn);
 }
 
 /* Delete INSN from the delay slot of the insn that it is in, which may
@@ -3200,7 +3201,14 @@ relax_delay_slots (rtx_insn *first)
 
 	      if (invert_jump (jump_insn, label, 1))
 		{
-		  delete_related_insns (next);
+		  rtx_insn *from = delete_related_insns (next);
+
+		  /* We have just removed a BARRIER, which means that the block
+		     number of the next insns has effectively been changed (see
+		     find_basic_block in resource.c), so clear it.  */
+		  if (from)
+		    clear_hashed_info_until_next_barrier (from);
+
 		  next = jump_insn;
 		}
 
@@ -3473,18 +3481,22 @@ relax_delay_slots (rtx_insn *first)
 
 	      if (invert_jump (delay_jump_insn, label, 1))
 		{
-		  int i;
-
 		  /* Must update the INSN_FROM_TARGET_P bits now that
 		     the branch is reversed, so that mark_target_live_regs
 		     will handle the delay slot insn correctly.  */
-		  for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
+		  for (int i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
 		    {
 		      rtx slot = XVECEXP (PATTERN (insn), 0, i);
 		      INSN_FROM_TARGET_P (slot) = ! INSN_FROM_TARGET_P (slot);
 		    }
 
-		  delete_related_insns (next);
+		  /* We have just removed a BARRIER, which means that the block
+		     number of the next insns has effectively been changed (see
+		     find_basic_block in resource.c), so clear it.  */
+		  rtx_insn *from = delete_related_insns (next);
+		  if (from)
+		    clear_hashed_info_until_next_barrier (from);
+
 		  next = insn;
 		}
 

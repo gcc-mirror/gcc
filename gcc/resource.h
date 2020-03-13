@@ -46,6 +46,7 @@ extern void mark_set_resources (rtx, struct resources *, int,
 				enum mark_resource_type);
 extern void mark_referenced_resources (rtx, struct resources *, bool);
 extern void clear_hashed_info_for_insn (rtx_insn *);
+extern void clear_hashed_info_until_next_barrier (rtx_insn *);
 extern void incr_ticks_for_insn (rtx_insn *);
 extern void mark_end_of_function_resources (rtx, bool);
 extern void init_resource_info (rtx_insn *);
