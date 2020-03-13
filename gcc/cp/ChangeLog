@@ -1,3 +1,9 @@
+2020-03-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93805
+	* except.c (maybe_noexcept_warning): Add TODO.
+	* method.c (walk_field_subobs): Pass tf_none to expr_noexcept_p.
+
 2020-03-23  nathans  <nathan@acm.org>
 
 	PR c++/94044

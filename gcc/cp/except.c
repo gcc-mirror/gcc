@@ -1160,7 +1160,10 @@ struct GTY(()) pending_noexcept {
 static GTY(()) vec<pending_noexcept, va_gc> *pending_noexcept_checks;
 
 /* FN is a FUNCTION_DECL that caused a noexcept-expr to be false.  Warn if
-   it can't throw.  */
+   it can't throw.
+
+   TODO: Consider extending -Wnoexcept to do something like walk_subtrees in the
+   case of a defaulted function that obtained a noexcept(false) spec.  */
 
 static void
 maybe_noexcept_warning (tree fn)
