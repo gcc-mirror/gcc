@@ -1,3 +1,8 @@
+2020-03-13  Vasee Vinayagamoorthy  <vaseeharan.vinayagamoorthy@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: Fix DejaGnu
+	typo.
+
 2020-03-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c/94040
