@@ -1,3 +1,10 @@
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/92071
+	* expmed.c (store_integral_bit_field): For fields larger than a word,
+	call extract_bit_field on the value if the mode is BLKmode.  Remove
+	specific path for big-endian targets and tidy things up a little bit.
+
 2020-03-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/90275

@@ -1,3 +1,7 @@
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20200313-1.c: New test.
+
 2020-03-12  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/90275
