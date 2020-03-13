@@ -1,3 +1,10 @@
+2020-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-4a.c: New test.
+	* gcc.target/i386/pr89229-4b.c: Likewise.
+	* gcc.target/i386/pr89229-4c.c: Likewise.
+
 2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20200313-1.c: New test.
