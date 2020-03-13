@@ -1372,6 +1372,7 @@ structural_comptypes (tree t1, tree t2, int strict)
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
+      /* Exception specs and memfn_rquals were checked above.  */
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       if (!compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)))
