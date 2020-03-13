@@ -13112,8 +13112,8 @@ package body Sem_Ch3 is
       function Is_Discriminant (Expr : Node_Id) return Boolean;
       --  Returns True if Expr is a discriminant
 
-      function Get_Discr_Value (Discrim : Entity_Id) return Node_Id;
-      --  Find the value of discriminant Discrim in Constraint
+      function Get_Discr_Value (Discr_Expr : Node_Id) return Node_Id;
+      --  Find the value of a discriminant named by Discr_Expr in Constraints
 
       -----------------------------------
       -- Build_Constrained_Access_Type --
@@ -13335,7 +13335,11 @@ package body Sem_Ch3 is
       -- Get_Discr_Value --
       ---------------------
 
-      function Get_Discr_Value (Discrim : Entity_Id) return Node_Id is
+      function Get_Discr_Value (Discr_Expr : Node_Id) return Node_Id is
+         Discr_Id : constant Entity_Id := Entity (Discr_Expr);
+         --  Entity of a discriminant that appear as a standalone expression in
+         --  the constraint of a component.
+
          D : Entity_Id;
          E : Elmt_Id;
 
@@ -13351,9 +13355,9 @@ package body Sem_Ch3 is
          E := First_Elmt (Constraints);
 
          while Present (D) loop
-            if D = Entity (Discrim)
-              or else D = CR_Discriminant (Entity (Discrim))
-              or else Corresponding_Discriminant (D) = Entity (Discrim)
+            if D = Discr_Id
+              or else D = CR_Discriminant (Discr_Id)
+              or else Corresponding_Discriminant (D) = Discr_Id
             then
                return Node (E);
             end if;
@@ -13373,12 +13377,12 @@ package body Sem_Ch3 is
          --  be present when the component is a discriminated task type?
 
          if Is_Derived_Type (Typ)
-           and then Scope (Entity (Discrim)) = Etype (Typ)
+           and then Scope (Discr_Id) = Etype (Typ)
          then
             D := First_Discriminant (Etype (Typ));
             E := First_Elmt (Constraints);
             while Present (D) loop
-               if D = Entity (Discrim) then
+               if D = Discr_Id then
                   return Node (E);
                end if;
 
