@@ -747,7 +747,7 @@ package body Exp_Imgv is
 
    --    btyp (Value_xx (X))
 
-   --  where btyp is he base type of the prefix
+   --  where btyp is the base type of the prefix
 
    --    For types whose root type is Character
    --      xx = Character

@@ -373,9 +373,9 @@ package Opt is
    Configurable_Run_Time_Mode : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if the compiler is operating in configurable run-time mode.
-   --  This happens if the flag Targparm.Configurable_Run_TimeMode_On_Target
-   --  is set True, or if pragma No_Run_Time is used. See the spec of Rtsfind
-   --  for details on the handling of the latter pragma.
+   --  This happens if the flag Targparm.Configurable_Run_Time_On_Target is
+   --  True, or if pragma No_Run_Time is used. See the spec of Rtsfind for
+   --  details on the handling of the latter pragma.
 
    Constant_Condition_Warnings : Boolean := False;
    --  GNAT
