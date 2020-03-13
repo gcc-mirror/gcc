@@ -1,5 +1,14 @@
 2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR rtl-optimization/94119
+	* resource.h (clear_hashed_info_until_next_barrier): Declare.
+	* resource.c (clear_hashed_info_until_next_barrier): New function.
+	* reorg.c (add_to_delay_list): Fix formatting.
+	(relax_delay_slots): Call clear_hashed_info_until_next_barrier on
+	the next instruction after removing a BARRIER.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR middle-end/92071
 	* expmed.c (store_integral_bit_field): For fields larger than a word,
 	call extract_bit_field on the value if the mode is BLKmode.  Remove
