@@ -1835,7 +1835,7 @@ package body Sem_Warn is
          elsif Nkind (Pref) = N_Explicit_Dereference then
             return True;
 
-            --  If prefix is itself a component reference or slice check prefix
+         --  If prefix is itself a component reference or slice check prefix
 
          elsif Nkind (Pref) = N_Slice
            or else Nkind (Pref) = N_Indexed_Component
@@ -3707,7 +3707,7 @@ package body Sem_Warn is
 
       Warn_Only := True;
       Form1 := First_Formal (Subp);
-      while Present (Form1) loop
+      Set_Warn_Only : while Present (Form1) loop
          Form2 := Next_Formal (Form1);
          while Present (Form2) loop
             if Is_Elementary_Type (Etype (Form1))
@@ -3716,14 +3716,14 @@ package body Sem_Warn is
               and then Ekind (Form2) /= E_In_Parameter
             then
                Warn_Only := False;
-               exit;
+               exit Set_Warn_Only;
             end if;
 
             Next_Formal (Form2);
          end loop;
 
          Next_Formal (Form1);
-      end loop;
+      end loop Set_Warn_Only;
 
       --  Exclude calls rewritten as enumeration literals
 
