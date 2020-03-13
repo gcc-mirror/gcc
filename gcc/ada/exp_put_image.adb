@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Exp_Tss;  use Exp_Tss;
 with Lib;      use Lib;
@@ -323,9 +324,14 @@ package body Exp_Put_Image is
          --
          --     Put_Wide_Wide_String (Sink, U_Type'Wide_Wide_Image (Item));
          --
-         --  This is a bit of a cheat; we should probably do it the other way
-         --  around (define '[[Wide_]Wide_]Image in terms of 'Put_Image). But
-         --  this is expedient for now. We can't do this:
+         --  It would be more elegant to do it the other way around (define
+         --  '[[Wide_]Wide_]Image in terms of 'Put_Image). But this is easier
+         --  to implement, because we already have support for
+         --  'Wide_Wide_Image. Furthermore, we don't want to remove the
+         --  existing support for '[[Wide_]Wide_]Image, because we don't
+         --  currently plan to support 'Put_Image on restricted runtimes.
+
+         --  We can't do this:
          --
          --     Put_UTF_8 (Sink, U_Type'Image (Item));
          --
@@ -689,22 +695,12 @@ package body Exp_Put_Image is
 
       Stms : constant List_Id := New_List;
       Rdef : Node_Id;
-      Typt : Entity_Id;
-      Type_Decl : Node_Id;
+      Type_Decl : constant Node_Id :=
+        Declaration_Node (Base_Type (Underlying_Type (Typ)));
 
    --  Start of processing for Build_Record_Put_Image_Procedure
 
    begin
-      --  For the protected type case, use corresponding record
-
-      if Is_Protected_Type (Typ) then
-         Typt := Corresponding_Record_Type (Typ);
-      else
-         Typt := Typ;
-      end if;
-
-      Type_Decl := Declaration_Node (Base_Type (Underlying_Type (Typt)));
-
       Append_To (Stms,
         Make_Procedure_Call_Statement (Loc,
           Name => New_Occurrence_Of (RTE (RE_Record_Before), Loc),
@@ -813,7 +809,7 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (T : Entity_Id) return Boolean is
    begin
-      if True then -- ????True to disable for all types.
+      if not Debug_Flag_Underscore_Z then -- ????True to disable for all types
          return False;
       end if;
 
@@ -831,6 +827,15 @@ package body Exp_Put_Image is
       --  types are OK, even if predefined, because calls to Put_Image of
       --  scalar types are expanded inline. We certainly want to be able to use
       --  Integer'Put_Image, for example.
+
+      --  ???Work around a bug: Put_Image does not work for Remote_Types.
+      --  We check the containing package, rather than the type itself, because
+      --  we want to include types in the private part of a Remote_Types
+      --  package.
+
+      if Is_Remote_Types (Scope (T)) then
+         return False;
+      end if;
 
       --  ???Disable Put_Image on type Sink declared in
       --  Ada.Strings.Text_Output. Note that we can't call Is_RTU on
