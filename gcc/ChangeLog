@@ -1,3 +1,9 @@
+2020-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94163
+	* tree-ssa-pre.c (create_expression_by_pieces): Check
+	whether alignment would be zero.
+
 2020-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR lto/94157
