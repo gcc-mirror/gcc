@@ -1,3 +1,9 @@
+2020-03-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* openmp.c (oacc_is_serial, oacc_is_parallel_or_serial): New.
+	(resolve_oacc_loop_blocks): Use oacc_is_parallel_or_serial instead of
+	oacc_is_parallel.
+
 2020-02-19  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.c (gfc_omp_check_optional_argument): Handle non-decl
