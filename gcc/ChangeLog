@@ -1,3 +1,8 @@
+2020-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92303
+	* lra-spills.c (remove_pseudos): Try to simplify memory subreg.
+
 2020-03-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/94148
