@@ -1,3 +1,9 @@
+2020-03-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/92379
+	* config/rs6000/rs6000.c (num_insns_constant_multi) Don't shift a
+	64-bit value by 64 bits (UB).
+
 2020-03-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/92303
