@@ -1,3 +1,13 @@
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_attribute_table): Add
+	"SVE sizeless type".
+	* config/aarch64/aarch64-sve-builtins.cc (make_type_sizeless)
+	(sizeless_type_p): New functions.
+	(register_builtin_types): Apply make_type_sizeless to the type.
+	(register_tuple_type): Likewise.
+	(verify_type_context): Use sizeless_type_p instead of builin_type_p.
+
 2020-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/arm/arm_cde.h: Remove `extern "C"` when compiling for

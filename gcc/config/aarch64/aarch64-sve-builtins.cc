@@ -585,6 +585,23 @@ lookup_sve_type_attribute (const_tree type)
   return lookup_attribute ("SVE type", TYPE_ATTRIBUTES (type));
 }
 
+/* Force TYPE to be a sizeless type.  */
+static void
+make_type_sizeless (tree type)
+{
+  TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("SVE sizeless type"),
+				      NULL_TREE, TYPE_ATTRIBUTES (type));
+}
+
+/* Return true if TYPE is a sizeless type.  */
+static bool
+sizeless_type_p (const_tree type)
+{
+  if (type == error_mark_node)
+    return NULL_TREE;
+  return lookup_attribute ("SVE sizeless type", TYPE_ATTRIBUTES (type));
+}
+
 /* If TYPE is a valid SVE element type, return the corresponding type
    suffix, otherwise return NUM_TYPE_SUFFIXES.  */
 static type_suffix_index
@@ -3293,6 +3310,7 @@ register_builtin_types ()
       TYPE_INDIVISIBLE_P (vectype) = 1;
       add_sve_type_attribute (vectype, num_zr, num_pr,
 			      vector_types[i].mangled_name);
+      make_type_sizeless (vectype);
       abi_vector_types[i] = vectype;
       lang_hooks.types.register_builtin_type (vectype,
 					      vector_types[i].abi_name);
@@ -3361,6 +3379,7 @@ register_tuple_type (unsigned int num_vectors, vector_type_index type)
   DECL_FIELD_CONTEXT (field) = tuple_type;
   TYPE_FIELDS (tuple_type) = field;
   add_sve_type_attribute (tuple_type, num_vectors, 0, NULL);
+  make_type_sizeless (tuple_type);
   layout_type (tuple_type);
   gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
 	      && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
@@ -3578,7 +3597,7 @@ bool
 verify_type_context (location_t loc, type_context_kind context,
 		     const_tree type, bool silent_p)
 {
-  if (!builtin_type_p (type))
+  if (!sizeless_type_p (type))
     return true;
 
   switch (context)

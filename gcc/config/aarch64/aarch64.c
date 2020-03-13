@@ -1247,6 +1247,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { "aarch64_vector_pcs", 0, 0, false, true,  true,  true,
 			  handle_aarch64_vector_pcs_attribute, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
+  { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
