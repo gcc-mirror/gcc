@@ -43,7 +43,7 @@
 	* config/aarch64/aarch64.c (aarch64_emit_approx_div): Use them
 	instead of hard-coding the choice of 1 for float and 2 for double.
 
-2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+2020-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/94119
 	* resource.h (clear_hashed_info_until_next_barrier): Declare.
@@ -52,7 +52,7 @@
 	(relax_delay_slots): Call clear_hashed_info_until_next_barrier on
 	the next instruction after removing a BARRIER.
 
-2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+2020-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/92071
 	* expmed.c (store_integral_bit_field): For fields larger than a word,
