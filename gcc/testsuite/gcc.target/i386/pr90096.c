@@ -19,6 +19,6 @@ bar (__m128 *p)
 {
   return _mm_cvtt_roundss_u64 (*p, _MM_FROUND_TO_ZERO |_MM_FROUND_NO_EXC);
   /* { dg-error "needs isa option -m64 -mavx512f" "" { target lp64 } .-1 } */
-  /* { dg-error "needs isa option -mx32 -mavx512f" "" { target x32 } .-1 } */
+  /* { dg-error "needs isa option -mx32 -mavx512f" "" { target x32 } .-2 } */
 }
 #endif

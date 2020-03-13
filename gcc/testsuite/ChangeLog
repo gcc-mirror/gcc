@@ -1,3 +1,14 @@
+2020-03-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr64409.c: Do not limit compilation to x32 targets.
+	(dg-error): Quote 'ms_abi' attribute.
+	* gcc.target/i386/pr71958.c: Do not limit compilation to x32 targets.
+	Require maybe_x32 effective target.
+	(dg-options): Add -mx32.
+	(dg-error): Quote 'ms_abi' attribute.
+	* gcc.target/i386/pr90096.c (dg-error): Update relative
+	location of target x32 error.
+
 2020-03-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/67960
