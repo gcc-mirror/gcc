@@ -3332,10 +3332,14 @@ widest_irange_tests ()
 static void
 multi_precision_range_tests ()
 {
-  // Test truncating copy.
+  // Test truncating copy to int_range<1>.
   int_range<3> big = build_range3 (10, 20, 30, 40, 50, 60);
   int_range<1> small = big;
   ASSERT_TRUE (small == int_range<1> (INT (10), INT (60)));
+
+  // Test truncating copy to int_range<2>.
+  int_range<2> medium = big;
+  ASSERT_TRUE (!medium.undefined_p ());
 
   // Test that a truncating copy of [MIN,20][22,40][80,MAX]
   // ends up as a conservative anti-range of ~[21,21].

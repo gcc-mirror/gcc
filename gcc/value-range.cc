@@ -1798,12 +1798,7 @@ irange::intersect (const vrange &vr)
 void
 irange::multi_range_union (const irange &r)
 {
-  if (undefined_p ())
-    {
-      *this = r;
-      return;
-    }
-  else if (r.undefined_p ())
+  if (r.undefined_p ())
     return;
 
   // Do not worry about merging and such by reserving twice as many
@@ -1818,7 +1813,8 @@ irange::multi_range_union (const irange &r)
   // the merge is performed.
   //
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
-  signop sign = TYPE_SIGN (type ());
+  tree ttype = r.type ();
+  signop sign = TYPE_SIGN (ttype);
   // ?? We may need something faster than vectors here, not sure.
   auto_vec<wide_int, 8> res;
   wide_int u1 ;
@@ -1858,7 +1854,7 @@ irange::multi_range_union (const irange &r)
 
   // Now normalize the vector removing any overlaps.
   i = 2;
-  int prec = TYPE_PRECISION (type ());
+  int prec = TYPE_PRECISION (ttype);
   wide_int max_val = wi::max_value (prec, sign);
   for (j = 2; j < k ; j += 2)
     {
@@ -1905,8 +1901,9 @@ irange::multi_range_union (const irange &r)
     }
 
   for (j = 0; j < i ; j++)
-    m_base[j] = wide_int_to_tree (type (), res [j]);
+    m_base[j] = wide_int_to_tree (ttype, res [j]);
   m_num_ranges = i / 2;
+  m_kind = VR_RANGE;
 
   if (flag_checking)
     check ();
