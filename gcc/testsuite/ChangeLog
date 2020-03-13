@@ -7,6 +7,7 @@
 	* gcc.dg/Wbuiltin-declaration-mismatch-15.c: New test.
 	* gcc.dg/pr62090.c: Prune expected warning.
 	* gcc.dg/pr89314.c: Look for warning name rather than text.
+	* gcc.dg/torture/pr54261-1.c: Correct built-in declartion.
 
 2020-03-13  Uroš Bizjak  <ubizjak@gmail.com>
 
