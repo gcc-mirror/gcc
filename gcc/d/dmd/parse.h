@@ -120,6 +120,9 @@ public:
     FuncDeclaration *parseContracts(FuncDeclaration *f);
     void checkDanglingElse(Loc elseloc);
     void checkCstyleTypeSyntax(Loc loc, Type *t, int alt, Identifier *ident);
+    Statement *parseForeach(Loc loc, bool *isRange, bool isDecl);
+    Dsymbol *parseForeachStaticDecl(Loc loc, Dsymbol **pLastDecl);
+    Statement *parseForeachStatic(Loc loc);
     /** endPtr used for documented unittests */
     Statement *parseStatement(int flags, const utf8_t** endPtr = NULL, Loc *pEndloc = NULL);
     Initializer *parseInitializer();

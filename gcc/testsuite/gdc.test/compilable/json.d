@@ -111,3 +111,24 @@ enum Numbers
 }
 
 template IncludeConstraint(T) if (T == string) {}
+
+static foreach(enum i; 0..3)
+{
+    mixin("int a" ~ i.stringof ~ " = 1;");
+}
+
+alias Seq(T...) = T;
+
+static foreach(int i, alias a; Seq!(a0, a1, a2))
+{
+       mixin("alias b" ~ i.stringof ~ " = a;");
+}
+
+mixin template test18211(int n)
+{
+    static foreach (i; 0 .. n>10 ? 10 : n)
+    {
+        mixin("enum x" ~ cast(char)('0' + i));
+    }
+    static if (true) {}
+}

@@ -2,8 +2,6 @@
 /*
 TEST_OUTPUT:
 ---
-X: tuple("x")
-fail_compilation/fail7815.d(47): Error: no property 'flags' for type 'Move'
 ---
 */
 
@@ -47,7 +45,7 @@ struct Move
 enum a7815 = Move.init.flags;
 
 /+
-This is an invalid case.
+This originally was an invalid case:
 When the Move struct member is analyzed:
 1. mixin Helpers!() is instantiated.
 2. In Helpers!(), static if and its condition is(Flags!Move)) evaluated.
@@ -62,4 +60,6 @@ When the Move struct member is analyzed:
    Flags!Move is instantiated to a new struct Flags.
 7. Finally Move struct does not have flags member, then the `enum a7815`
    definition will fail in its initializer.
+
+Now, static if will behave like a string mixin: it is invisible during its own expansion.
 +/
