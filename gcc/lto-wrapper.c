@@ -1317,7 +1317,8 @@ run_gcc (unsigned argc, char *argv[])
 
       char *xassembler_opts_string
 	= XOBFINISH (&temporary_obstack, char *);
-      strcat (collect_gcc_options, xassembler_opts_string);
+      collect_gcc_options = concat (collect_gcc_options, xassembler_opts_string,
+				    NULL);
     }
 
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,

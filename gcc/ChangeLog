@@ -1,3 +1,9 @@
+2020-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94157
+	* lto-wrapper.c (run_gcc): Use concat for appending
+	to collect_gcc_options.
+
 2020-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94121
