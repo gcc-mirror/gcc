@@ -4187,10 +4187,16 @@ lookup_field_ident (tree ctx, tree name, unsigned ix)
     }
 
   tree val = NULL_TREE;
-  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
+  vec<tree, va_gc> *member_vec = NULL;
+  if (TYPE_LANG_SPECIFIC (ctx))
+    member_vec = CLASSTYPE_MEMBER_VEC (ctx);
+
+  if (member_vec)
     val = member_vec_binary_search (member_vec, name);
   else
     // FIXME: Force streamed structs to have a member vec?
+    // Doesn't help for ptr-to-member-fn classes.  But we know what
+    // they smell like
     val = fields_linear_search (ctx, name, false);
 
   if (!val)

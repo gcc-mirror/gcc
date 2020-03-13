@@ -1,6 +1,12 @@
 2020-03-13  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (lookup_field_ident): Check TYPE_LANG_SPECIFIC
+	before getting the member vector.
+	gcc/testsuite/
+	* g++.dg/modules/pmf-1{,_[ab]}.[hHC]: New.
+
+	gcc/cp/
 	* pt.c (template_args_equal): Slight refactor to clarify control
 	flow.
 	* tree.c (cp_tree_equal): Use comp_template_args for TREE_VEC.
