@@ -238,7 +238,7 @@ struct formula
 
   formula (tree t)
   {
-    /* This should call emplace_back(). There's a an extra copy being
+    /* This should call emplace_back(). There's an extra copy being
        invoked by using push_back().  */
     m_clauses.push_back (t);
     m_current = m_clauses.begin ();

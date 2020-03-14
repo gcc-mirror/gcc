@@ -9353,7 +9353,7 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
 	  continue;
 	}
       rtx dest = XEXP (x, 0);
-      /* Check if this sets a an extension register.  N.B. we use 61 for the
+      /* Check if this sets an extension register.  N.B. we use 61 for the
 	 condition codes, which is definitely not an extension register.  */
       if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61
 	  /* Check if the same register is used by the PAT.  */

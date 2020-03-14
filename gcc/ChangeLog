@@ -1,3 +1,12 @@
+2020-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.c (gimple_fold_builtin_strncpy): Change
+	"a an" to "an" in a comment.
+	* hsa-common.h (is_a_helper): Likewise.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Likewise.
+	* config/arc/arc.c (arc600_corereg_hazard): Likewise.
+	* config/s390/s390.c (s390_indirect_branch_via_thunk): Likewise.
+
 2020-03-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/92379

@@ -3081,7 +3081,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	return false;
     }
 
-  /* Likewise, if the destination refers to a an array/pointer declared
+  /* Likewise, if the destination refers to an array/pointer declared
      nonstring return early.  */
   if (get_attr_nonstring_decl (dstdecl, &ref))
     return false;

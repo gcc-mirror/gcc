@@ -1857,7 +1857,7 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
     {
-      /* Avoid warning if the destination refers to a an array/pointer
+      /* Avoid warning if the destination refers to an array/pointer
 	 decorate with attribute nonstring.  */
       if (!nonstring)
 	{
