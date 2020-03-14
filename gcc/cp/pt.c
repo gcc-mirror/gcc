@@ -4919,6 +4919,14 @@ process_partial_specialization (tree decl)
       return decl;
     }
 
+  else if (nargs > DECL_NTPARMS (maintmpl))
+    {
+      error ("too many arguments for partial specialization %qT", type);
+      inform (DECL_SOURCE_LOCATION (maintmpl), "primary template here");
+      /* Avoid crash below.  */
+      return decl;
+    }
+
   /* If we aren't in a dependent class, we can actually try deduction.  */
   else if (tpd.level == 1
 	   /* FIXME we should be able to handle a partial specialization of a
@@ -4944,7 +4952,6 @@ process_partial_specialization (tree decl)
 
      Also, we verify that pack expansions only occur at the
      end of the argument list.  */
-  gcc_assert (nargs == DECL_NTPARMS (maintmpl));
   tpd2.parms = 0;
   for (i = 0; i < nargs; ++i)
     {
