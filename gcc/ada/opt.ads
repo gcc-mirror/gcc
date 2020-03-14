@@ -2161,12 +2161,12 @@ package Opt is
    --  allocated dispatch tables. If it is True, then the front end will
    --  generate static aggregates for dispatch tables that contain forward
    --  references to addresses of subprograms not seen yet, and the back end
-   --  must be prepared to handle this case. If it is False, then the front
-   --  end generates assignments to initialize the dispatch table, and there
-   --  are no such forward references. By default we build statically allocated
-   --  dispatch tables for all library level tagged types in all platforms.This
-   --  behavior can be disabled using switch -gnatd.t which will set this flag
-   --  to False and revert to the previous dynamic behavior.
+   --  must be prepared to handle this case. If it is False, then the front end
+   --  generates assignments to initialize the dispatch table, and there are
+   --  no such forward references. By default we build statically allocated
+   --  dispatch tables for all library-level tagged types in all platforms.
+   --  This behavior can be disabled using switch -gnatd.t which will set
+   --  this flag to False and revert to the previous dynamic behavior.
 
    Expander_Active : Boolean := False;
    --  A flag that indicates if expansion is active (True) or deactivated
