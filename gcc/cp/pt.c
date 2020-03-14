@@ -26520,10 +26520,13 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 				     complain, ctor);
 	  if (fparms == error_mark_node)
 	    ok = false;
-	  fargs = tsubst (fargs, tsubst_args, complain, ctor);
 	  if (ci)
 	    ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
 
+	  /* Parms are to have DECL_CHAIN tsubsted, which would be skipped if
+	     cp_unevaluated_operand.  */
+	  temp_override<int> ev (cp_unevaluated_operand, 0);
+	  fargs = tsubst (fargs, tsubst_args, complain, ctor);
 	  current_template_parms = save_parms;
 	}
 
