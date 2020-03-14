@@ -743,7 +743,6 @@ package body Exp_Aggr is
 
       --  Backend processing is possible
 
-      Set_Size_Known_At_Compile_Time (Etype (N), True);
       return True;
    end Backend_Processing_Possible;
 
