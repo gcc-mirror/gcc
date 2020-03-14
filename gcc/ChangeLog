@@ -1,3 +1,10 @@
+2020-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movdi_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove ext_sse_reg_operand and TARGET_AVX512VL
+	check.
+
 2020-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-fold.c (gimple_fold_builtin_strncpy): Change

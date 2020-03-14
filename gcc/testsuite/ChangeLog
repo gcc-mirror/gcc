@@ -1,3 +1,10 @@
+2020-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-5a.c: New test.
+	* gcc.target/i386/pr89229-5b.c: Likewise.
+	* gcc.target/i386/pr89229-5c.c: Likewise.
+
 2020-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/94176
