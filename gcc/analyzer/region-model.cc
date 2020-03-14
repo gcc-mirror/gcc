@@ -4749,7 +4749,18 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 
 	region_id array_rid = get_lvalue (array, ctxt);
 	svalue_id index_sid = get_rvalue (index, ctxt);
-	array_region *array_reg = get_region<array_region> (array_rid);
+	region *base_array_reg = get_region (array_rid);
+	array_region *array_reg  = base_array_reg->dyn_cast_array_region ();
+	if (!array_reg)
+	  {
+	    /* Normally, array_rid ought to refer to an array_region, since
+	       array's type will be ARRAY_TYPE.  However, if we have an
+	       unexpected tree code for array, we could have a
+	       symbolic_region here.  If so, we're in error-handling. */
+	    gcc_assert (base_array_reg->get_type () == NULL_TREE);
+	    return make_region_for_unexpected_tree_code (ctxt, expr,
+							 dump_location_t ());
+	  }
 	return array_reg->get_element (this, array_rid, index_sid, ctxt);
       }
       break;
@@ -4849,6 +4860,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
       }
       break;
 
+    case NOP_EXPR:
     case VIEW_CONVERT_EXPR:
       {
 	tree obj = TREE_OPERAND (expr, 0);

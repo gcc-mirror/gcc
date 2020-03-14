@@ -610,7 +610,7 @@ IntRange IntRange::operator/(const IntRange& rhs) const
     {
         r.imax.value--;
     }
-    else if(r.imin.value == 0)
+    else if (r.imin.value == 0)
     {
         r.imin.value++;
     }

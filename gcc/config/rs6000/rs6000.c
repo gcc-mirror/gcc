@@ -5612,7 +5612,10 @@ num_insns_constant_multi (HOST_WIDE_INT value, machine_mode mode)
 	  && rs6000_is_valid_and_mask (GEN_INT (low), DImode))
 	insns = 2;
       total += insns;
-      value >>= BITS_PER_WORD;
+      /* If BITS_PER_WORD is the number of bits in HOST_WIDE_INT, doing
+	 it all at once would be UB. */
+      value >>= (BITS_PER_WORD - 1);
+      value >>= 1;
     }
   return total;
 }

@@ -556,7 +556,7 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 			      parser->in_statement & IN_SWITCH_STMT);
   cp_debug_print_flag (file, "Parsing a structured OpenMP block",
 			      parser->in_statement & IN_OMP_BLOCK);
-  cp_debug_print_flag (file, "Parsing a an OpenMP loop",
+  cp_debug_print_flag (file, "Parsing an OpenMP loop",
 			      parser->in_statement & IN_OMP_FOR);
   cp_debug_print_flag (file, "Parsing an if statement",
 			      parser->in_statement & IN_IF_STMT);

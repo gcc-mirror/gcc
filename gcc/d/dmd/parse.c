@@ -351,6 +351,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
             case TOKunion:
             case TOKclass:
             case TOKinterface:
+            case TOKtraits:
             Ldeclaration:
                 a = parseDeclarations(false, pAttrs, pAttrs->comment);
                 if (a && a->dim)
@@ -484,6 +485,10 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 {
                     a = parseImport();
                     // keep pLastDecl
+                }
+                else if (next == TOKforeach || next == TOKforeach_reverse)
+                {
+                    s = parseForeachStaticDecl(token.loc, pLastDecl);
                 }
                 else
                 {
@@ -3144,6 +3149,18 @@ Type *Parser::parseBasicType(bool dontLookDotIdents)
             t = parseVector();
             break;
 
+        case TOKtraits:
+            if (TraitsExp *te = (TraitsExp *) parsePrimaryExp())
+            {
+                if (te->ident && te->args)
+                {
+                    t = new TypeTraits(token.loc, te);
+                    break;
+                }
+            }
+            t = new TypeError();
+            break;
+
         case TOKconst:
             // const(type)
             nextToken();
@@ -4700,6 +4717,161 @@ void Parser::checkCstyleTypeSyntax(Loc loc, Type *t, int alt, Identifier *ident)
 }
 
 /*****************************************
+ * Parses `foreach` statements, `static foreach` statements and
+ * `static foreach` declarations.  The template parameter
+ * `isStatic` is true, iff a `static foreach` should be parsed.
+ * If `isStatic` is true, `isDecl` can be true to indicate that a
+ * `static foreach` declaration should be parsed.
+ */
+Statement *Parser::parseForeach(Loc loc, bool *isRange, bool isDecl)
+{
+    TOK op = token.value;
+
+    nextToken();
+    check(TOKlparen);
+
+    Parameters *parameters = new Parameters();
+
+    while (1)
+    {
+        Identifier *ai = NULL;
+        Type *at;
+
+        StorageClass storageClass = 0;
+        StorageClass stc = 0;
+    Lagain:
+        if (stc)
+        {
+            storageClass = appendStorageClass(storageClass, stc);
+            nextToken();
+        }
+        switch (token.value)
+        {
+            case TOKref:
+                stc = STCref;
+                goto Lagain;
+
+            case TOKenum:
+                stc = STCmanifest;
+                goto Lagain;
+
+            case TOKalias:
+                storageClass = appendStorageClass(storageClass, STCalias);
+                nextToken();
+                break;
+
+            case TOKconst:
+                if (peekNext() != TOKlparen)
+                {
+                    stc = STCconst;
+                    goto Lagain;
+                }
+                break;
+
+            case TOKimmutable:
+                if (peekNext() != TOKlparen)
+                {
+                    stc = STCimmutable;
+                    goto Lagain;
+                }
+                break;
+
+            case TOKshared:
+                if (peekNext() != TOKlparen)
+                {
+                    stc = STCshared;
+                    goto Lagain;
+                }
+                break;
+
+            case TOKwild:
+                if (peekNext() != TOKlparen)
+                {
+                    stc = STCwild;
+                    goto Lagain;
+                }
+                break;
+
+            default:
+                break;
+        }
+        if (token.value == TOKidentifier)
+        {
+            Token *t = peek(&token);
+            if (t->value == TOKcomma || t->value == TOKsemicolon)
+            {   ai = token.ident;
+                at = NULL;              // infer argument type
+                nextToken();
+                goto Larg;
+            }
+        }
+        at = parseType(&ai);
+        if (!ai)
+            error("no identifier for declarator %s", at->toChars());
+      Larg:
+        Parameter *p = new Parameter(storageClass, at, ai, NULL);
+        parameters->push(p);
+        if (token.value == TOKcomma)
+        {   nextToken();
+            continue;
+        }
+        break;
+    }
+    check(TOKsemicolon);
+
+    Expression *aggr = parseExpression();
+    if (token.value == TOKslice && parameters->dim == 1)
+    {
+        Parameter *p = (*parameters)[0];
+        delete parameters;
+        nextToken();
+        Expression *upr = parseExpression();
+        check(TOKrparen);
+        Loc endloc;
+        Statement *body = (!isDecl) ? parseStatement(0, NULL, &endloc) : NULL;
+        if (isRange)
+            *isRange = true;
+        return new ForeachRangeStatement(loc, op, p, aggr, upr, body, endloc);
+    }
+    else
+    {
+        check(TOKrparen);
+        Loc endloc;
+        Statement *body = (!isDecl) ? parseStatement(0, NULL, &endloc) : NULL;
+        if (isRange) 
+            *isRange = false;
+        return new ForeachStatement(loc, op, parameters, aggr, body, endloc);
+    }
+}
+
+Dsymbol *Parser::parseForeachStaticDecl(Loc loc, Dsymbol **pLastDecl)
+{
+    nextToken();
+
+    bool isRange = false;
+    Statement *s = parseForeach(loc, &isRange, true);
+
+    return new StaticForeachDeclaration(
+        new StaticForeach(loc, isRange ? NULL : (ForeachStatement *)s,
+                          isRange ? (ForeachRangeStatement *)s : NULL),
+        parseBlock(pLastDecl)
+    );
+}
+
+Statement *Parser::parseForeachStatic(Loc loc)
+{
+    nextToken();
+
+    bool isRange = false;
+    Statement *s = parseForeach(loc, &isRange, false);
+
+    return new StaticForeachStatement(loc,
+        new StaticForeach(loc, isRange ? NULL : (ForeachStatement *)s,
+                          isRange ? (ForeachRangeStatement *)s : NULL)
+    );
+}
+
+/*****************************************
  * Input:
  *      flags   PSxxxx
  * Output:
@@ -4757,6 +4929,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
         case TOKdot:
         case TOKtypeof:
         case TOKvector:
+        case TOKtraits:
             /* Bugzilla 15163: If tokens can be handled as
              * old C-style declaration or D expression, prefer the latter.
              */
@@ -4805,7 +4978,6 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
         case TOKtypeid:
         case TOKis:
         case TOKlbracket:
-        case TOKtraits:
         case TOKfile:
         case TOKfilefullpath:
         case TOKline:
@@ -4833,6 +5005,13 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
             {
                 cond = parseStaticIfCondition();
                 goto Lcondition;
+            }
+            else if (t->value == TOKforeach || t->value == TOKforeach_reverse)
+            {
+                s = parseForeachStatic(loc);
+                if (flags & PSscope)
+                    s = new ScopeStatement(loc, s, token.loc);
+                break;
             }
             if (t->value == TOKimport)
             {
@@ -5086,106 +5265,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
         case TOKforeach:
         case TOKforeach_reverse:
         {
-            TOK op = token.value;
-
-            nextToken();
-            check(TOKlparen);
-
-            Parameters *parameters = new Parameters();
-
-            while (1)
-            {
-                Identifier *ai = NULL;
-                Type *at;
-
-                StorageClass storageClass = 0;
-                StorageClass stc = 0;
-            Lagain:
-                if (stc)
-                {
-                    storageClass = appendStorageClass(storageClass, stc);
-                    nextToken();
-                }
-                switch (token.value)
-                {
-                    case TOKref:
-                        stc = STCref;
-                        goto Lagain;
-
-                    case TOKconst:
-                        if (peekNext() != TOKlparen)
-                        {
-                            stc = STCconst;
-                            goto Lagain;
-                        }
-                        break;
-                    case TOKimmutable:
-                        if (peekNext() != TOKlparen)
-                        {
-                            stc = STCimmutable;
-                            goto Lagain;
-                        }
-                        break;
-                    case TOKshared:
-                        if (peekNext() != TOKlparen)
-                        {
-                            stc = STCshared;
-                            goto Lagain;
-                        }
-                        break;
-                    case TOKwild:
-                        if (peekNext() != TOKlparen)
-                        {
-                            stc = STCwild;
-                            goto Lagain;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                if (token.value == TOKidentifier)
-                {
-                    Token *t = peek(&token);
-                    if (t->value == TOKcomma || t->value == TOKsemicolon)
-                    {   ai = token.ident;
-                        at = NULL;              // infer argument type
-                        nextToken();
-                        goto Larg;
-                    }
-                }
-                at = parseType(&ai);
-                if (!ai)
-                    error("no identifier for declarator %s", at->toChars());
-              Larg:
-                Parameter *p = new Parameter(storageClass, at, ai, NULL);
-                parameters->push(p);
-                if (token.value == TOKcomma)
-                {   nextToken();
-                    continue;
-                }
-                break;
-            }
-            check(TOKsemicolon);
-
-            Expression *aggr = parseExpression();
-            if (token.value == TOKslice && parameters->dim == 1)
-            {
-                Parameter *p = (*parameters)[0];
-                delete parameters;
-                nextToken();
-                Expression *upr = parseExpression();
-                check(TOKrparen);
-                Loc endloc;
-                Statement *body = parseStatement(0, NULL, &endloc);
-                s = new ForeachRangeStatement(loc, op, p, aggr, upr, body, endloc);
-            }
-            else
-            {
-                check(TOKrparen);
-                Loc endloc;
-                Statement *body = parseStatement(0, NULL, &endloc);
-                s = new ForeachStatement(loc, op, parameters, aggr, body, endloc);
-            }
+            s = parseForeach(loc, NULL, false);
             break;
         }
 
@@ -6000,6 +6080,27 @@ bool Parser::isBasicType(Token **pt)
             if (!skipParens(t, &t))
                 goto Lfalse;
             goto L3;
+
+        case TOKtraits:
+        {
+            // __traits(getMember
+            t = peek(t);
+            if (t->value != TOKlparen)
+                goto Lfalse;
+            Token *lp = t;
+            t = peek(t);
+            if (t->value != TOKidentifier || t->ident != Id::getMember)
+                goto Lfalse;
+            if (!skipParens(lp, &lp))
+                goto Lfalse;
+            // we are in a lookup for decl VS statement
+            // so we expect a declarator following __trait if it's a type.
+            // other usages wont be ambiguous (alias, template instance, type qual, etc.)
+            if (lp->value != TOKidentifier)
+                goto Lfalse;
+
+            break;
+        }
 
         case TOKconst:
         case TOKimmutable:
@@ -7390,6 +7491,7 @@ Expression *Parser::parseUnaryExp()
                     case TOKfunction:
                     case TOKdelegate:
                     case TOKtypeof:
+                    case TOKtraits:
                     case TOKvector:
                     case TOKfile:
                     case TOKfilefullpath:

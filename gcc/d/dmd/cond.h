@@ -53,8 +53,12 @@ public:
 
     bool needExpansion;
 
+    StaticForeach(Loc loc, ForeachStatement *aggrfe, ForeachRangeStatement *rangefe);
     StaticForeach *syntaxCopy();
 };
+
+void staticForeachPrepare(StaticForeach *sfe, Scope *sc);
+bool staticForeachReady(StaticForeach *sfe);
 
 class DVCondition : public Condition
 {
@@ -100,7 +104,6 @@ class StaticIfCondition : public Condition
 {
 public:
     Expression *exp;
-    int nest;         // limit circular dependencies
 
     StaticIfCondition(Loc loc, Expression *exp);
     Condition *syntaxCopy();

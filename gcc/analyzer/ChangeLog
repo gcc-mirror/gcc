@@ -1,3 +1,13 @@
+2020-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94099
+	PR analyzer/94105
+	* diagnostic-manager.cc (for_each_state_change): Bulletproof
+	against errors in get_rvalue by passing a
+	tentative_region_model_context and rejecting if there's an error.
+	* region-model.cc (region_model::get_lvalue_1): When handling
+	ARRAY_REF, handle results of error-handling.  Handle NOP_EXPR.
+
 2020-03-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (class array_region): New forward decl.
