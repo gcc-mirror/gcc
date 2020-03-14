@@ -1,5 +1,11 @@
 2020-03-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92068
+	* pt.c (process_partial_specialization): Error rather than crash on
+	extra pack expansion.
+
+2020-03-14  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93248
 	* pt.c (build_deduction_guide): Clear cp_unevaluated_operand for
 	substituting DECL_ARGUMENTS.
