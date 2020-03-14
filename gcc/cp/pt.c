@@ -3916,10 +3916,18 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       return NULL_TREE;
 
     case DECL_EXPR:
-      /* Ignore the declaration of a capture proxy for a parameter pack.  */
-      if (is_capture_proxy (DECL_EXPR_DECL (t)))
-	*walk_subtrees = 0;
-      return NULL_TREE;
+      {
+	tree decl = DECL_EXPR_DECL (t);
+	/* Ignore the declaration of a capture proxy for a parameter pack.  */
+	if (is_capture_proxy (decl))
+	  *walk_subtrees = 0;
+	if (is_typedef_decl (decl))
+	  /* Since we stop at typedefs above, we need to look through them at
+	     the point of the DECL_EXPR.  */
+	  cp_walk_tree (&DECL_ORIGINAL_TYPE (decl),
+			&find_parameter_packs_r, ppd, ppd->visited);
+	return NULL_TREE;
+      }
 
     case TEMPLATE_DECL:
       if (!DECL_TEMPLATE_TEMPLATE_PARM_P (t))
