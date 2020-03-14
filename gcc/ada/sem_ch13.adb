@@ -2540,8 +2540,6 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name => Name_Predicate_Failure);
 
-                  Set_Has_Predicates (E);
-
                   --  If the type is private, indicate that its completion
                   --  has a freeze node, because that is the one that will
                   --  be visible at freeze time.
