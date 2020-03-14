@@ -1,3 +1,9 @@
+2020-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93248
+	* pt.c (build_deduction_guide): Clear cp_unevaluated_operand for
+	substituting DECL_ARGUMENTS.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
