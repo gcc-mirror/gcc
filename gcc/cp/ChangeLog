@@ -1,5 +1,11 @@
 2020-03-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92909
+	* pt.c (find_parameter_packs_r): [DECL_EXPR]: Walk
+	DECL_ORIGINAL_TYPE of a typedef.
+
+2020-03-14  Jason Merrill  <jason@redhat.com>
+
 	PR c++/92068
 	* pt.c (process_partial_specialization): Error rather than crash on
 	extra pack expansion.
