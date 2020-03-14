@@ -67,15 +67,21 @@ version (CRuntime_Glibc)
 }
 else version (CRuntime_Musl)
 {
+    // off_t is always 64 bits on Musl
     enum _FILE_OFFSET_BITS   = 64;
 
+    // Not present in Musl sources
     enum __REDIRECT          = false;
 
+    // Those three are irrelevant for Musl as it always uses 64 bits off_t
     enum __USE_FILE_OFFSET64 = _FILE_OFFSET_BITS == 64;
     enum __USE_LARGEFILE     = __USE_FILE_OFFSET64 && !__REDIRECT;
     enum __USE_LARGEFILE64   = __USE_FILE_OFFSET64 && !__REDIRECT;
 
-    enum __WORDSIZE=64;
+    version (D_LP64)
+        enum __WORDSIZE = 64;
+    else
+        enum __WORDSIZE = 32;
 }
 else version (CRuntime_UClibc)
 {
