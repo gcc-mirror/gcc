@@ -1,3 +1,7 @@
+2020-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (co_await_expander): Fix indentation.
+
 2020-03-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92068
