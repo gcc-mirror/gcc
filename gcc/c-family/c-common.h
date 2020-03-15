@@ -1239,6 +1239,7 @@ extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
+extern void c_oacc_annotate_loops_in_kernels_regions (tree, tree (*) (tree));
 extern const char *c_omp_map_clause_name (tree, bool);
 extern void c_omp_adjust_map_clauses (tree, bool);
 

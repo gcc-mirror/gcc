@@ -1037,6 +1037,10 @@ Wold-style-definition
 C ObjC Var(warn_old_style_definition) Init(-1) Warning
 Warn if an old-style parameter definition is used.
 
+Wopenacc-kernels-annotate-loops
+C ObjC C++ ObjC++ Warning Var(warn_openacc_kernels_annotate_loops) Init(0)
+Warn about loops in OpenACC kernels regions that cannot be parallelized.
+
 Wopenmp-simd
 C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)
 Warn if a simd directive is overridden by the vectorizer cost model.
@@ -1872,6 +1876,10 @@ Enable OpenACC.
 fopenacc-dim=
 C ObjC C++ ObjC++ LTO Joined Var(flag_openacc_dims)
 Specify default OpenACC compute dimensions.
+
+fopenacc-kernels-annotate-loops
+C ObjC C++ ObjC++ LTO Optimization Var(flag_openacc_kernels_annotate_loops) Init(1)
+Automatically parallelize unannotated loops in OpenACC kernels regions.
 
 fopenmp
 C ObjC C++ ObjC++ LTO Var(flag_openmp)
