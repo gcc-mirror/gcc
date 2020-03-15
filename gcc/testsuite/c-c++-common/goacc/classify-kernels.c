@@ -1,7 +1,8 @@
 /* Check offloaded function's attributes and classification for OpenACC
-   'kernels'.  */
+   'kernels' (parloops version).  */
 
 /* { dg-additional-options "-O2" }
+   { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
    { dg-additional-options "-fopt-info-optimized-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-parloops1-all" }

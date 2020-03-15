@@ -1,5 +1,13 @@
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi (Option Summary): Add entries for
+	-Wopenacc-kernels-annotate-loops and
+	-fno-openacc-kernels-annotate-loops.
+	(Warning Options): Document -Wopenacc-kernels-annotate-loops.
+	(Optimization Options): Document -fno-openacc-kernels-annotate-loops.
+
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/generic.texi (Basic Statements): Document SWITCH_EXPR here,
 	not SWITCH_STMT.
 	(Statements for C and C++): Rename node to reflect what

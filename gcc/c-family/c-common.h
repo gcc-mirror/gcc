@@ -1217,6 +1217,7 @@ extern bool c_omp_predefined_variable (tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
+extern void c_oacc_annotate_loops_in_kernels_regions (tree, tree (*) (tree));
 extern const char *c_omp_map_clause_name (tree, bool);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */

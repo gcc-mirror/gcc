@@ -1,5 +1,10 @@
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* decl.c (cp_unwrap_for_init): New.
+	(finish_function): Call c_oacc_annotate_loops_in_kernels_regions.
+
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* cp-gimplify.c (enum bc_t, bc_label): Move to c-family.
 	(begin_bc_block, finish_bc_block, get_bc_label): Likewise.
 	(genericize_cp_loop): Likewise.

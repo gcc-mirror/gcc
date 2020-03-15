@@ -2,6 +2,7 @@
    specifically testing "parloops" handling.  */
 /* { dg-additional-options "-O2" } */
 /* { dg-additional-options "-g" } */
+/* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */
 /* { dg-additional-options "-fdump-tree-parloops1-all" } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
 

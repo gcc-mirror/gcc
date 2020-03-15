@@ -1,3 +1,8 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-decl.c (c_unwrap_for_init): New.
+	(finish_function): Call c_oacc_annotate_loops_in_kernels_regions.
+
 2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
             Nathan Sidwell  <nathan@acm.org>
             Julian Brown  <julian@codesourcery.com>

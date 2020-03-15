@@ -343,7 +343,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wmissing-include-dirs  -Wmissing-noreturn  -Wno-missing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
--Wnull-dereference  -Wno-odr  -Wopenmp-simd  @gol
+-Wnull-dereference  -Wno-odr @gol
+-Wopenacc-kernels-annotate-loops  -Wopenmp-simd @gol
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects @gol
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded @gol
 -Wparentheses  -Wno-pedantic-ms-format @gol
@@ -494,7 +495,8 @@ Objective-C and Objective-C++ Dialects}.
 -fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants  -fno-branch-count-reg @gol
 -fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse @gol
--fno-guess-branch-probability  -fno-inline  -fno-math-errno  -fno-peephole @gol
+-fno-guess-branch-probability  -fno-inline  -fno-math-errno @gol
+-fno-openacc-kernels-annotate-loops  -fno-peephole @gol
 -fno-peephole2  -fno-printf-return-value  -fno-sched-interblock @gol
 -fno-sched-spec  -fno-signed-zeros @gol
 -fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss @gol
@@ -7917,6 +7919,13 @@ Do not warn about compile-time overflow in constant expressions.
 Warn about One Definition Rule violations during link-time optimization.
 Enabled by default.
 
+@item -Wopenacc-kernels-annotate-loops
+@opindex Wopenacc-kernels-annotate-loops
+@opindex Wno-Wopenacc-kernels-annotate-loops
+Warn about @code{for} (C/C++) or @code{DO} (Fortran) loops in OpenACC
+kernels regions that cannot be automatically annotated for
+parallelization with @option{-fopenacc-kernels-annotate-loops}.
+
 @item -Wopenmp-simd
 @opindex Wopenmp-simd
 @opindex Wno-openmp-simd
@@ -13214,6 +13223,27 @@ The precision of division is propotional to this param when division
 approximation is enabled.  The default value is 2.
 
 @end table
+
+@item -fno-openacc-kernels-annotate-loops
+@opindex fno-openacc-kernels-annotate-loops
+@opindex fopenacc-kernels-annotate-loops
+@cindex kernels regions, OpenACC
+Disable automatic parallelization of unannotated loops in OpenACC
+kernels regions.  The default is to attempt to add implicit
+@code{acc loop auto} annotations to loops in kernels regions if
+@option{-fopenacc} is enabled.
+
+Note that you can use @option{-Wopenacc-kernels-annotate-loops} to
+diagnose @code{for} loops that cannot be automatically annotated
+(@pxref{Warning Options}).  Reasons why automatic loop annotations
+cannot be applied include premature exits, calls to functions without
+an @code{openacc routine} annotation, or unstructured control flow in
+the loop body.  In C and C++, the loop variable initialization, end
+test, and increment expressions must additionally conform to
+restrictions similar to those for explicitly-annotated loops, and the
+loop variable must not be otherwise modified in the body of the loop.
+An explicit @code{acc loop} annotation disables automatic annotations
+on any nested or containing loops.
 
 @end table
 
