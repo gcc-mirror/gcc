@@ -1,3 +1,11 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93566
+	* testsuite/libgomp.c/pr93566.c: New test.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.

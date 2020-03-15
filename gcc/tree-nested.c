@@ -1178,7 +1178,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 {
   struct nesting_info *const info = (struct nesting_info *) wi->info;
   bool need_chain = false, need_stmts = false;
-  tree clause, decl;
+  tree clause, decl, *pdecl;
   int dummy;
   bitmap new_suppress;
 
@@ -1187,6 +1187,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 
   for (clause = *pclauses; clause ; clause = OMP_CLAUSE_CHAIN (clause))
     {
+      pdecl = NULL;
       switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_REDUCTION:
@@ -1194,6 +1195,15 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 	    need_stmts = true;
+	  if (TREE_CODE (OMP_CLAUSE_DECL (clause)) == MEM_REF)
+	    {
+	      pdecl = &TREE_OPERAND (OMP_CLAUSE_DECL (clause), 0);
+	      if (TREE_CODE (*pdecl) == POINTER_PLUS_EXPR)
+		pdecl = &TREE_OPERAND (*pdecl, 0);
+	      if (TREE_CODE (*pdecl) == INDIRECT_REF
+		  || TREE_CODE (*pdecl) == ADDR_EXPR)
+		pdecl = &TREE_OPERAND (*pdecl, 0);
+	    }
 	  goto do_decl_clause;
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -1219,7 +1229,9 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	do_decl_clause:
-	  decl = OMP_CLAUSE_DECL (clause);
+	  if (pdecl == NULL)
+	    pdecl = &OMP_CLAUSE_DECL (clause);
+	  decl = *pdecl;
 	  if (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    break;
@@ -1228,7 +1240,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_SHARED)
 		OMP_CLAUSE_SHARED_READONLY (clause) = 0;
 	      bitmap_set_bit (new_suppress, DECL_UID (decl));
-	      OMP_CLAUSE_DECL (clause) = get_nonlocal_debug_decl (info, decl);
+	      *pdecl = get_nonlocal_debug_decl (info, decl);
 	      if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_PRIVATE)
 		need_chain = true;
 	    }
@@ -1894,7 +1906,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 {
   struct nesting_info *const info = (struct nesting_info *) wi->info;
   bool need_frame = false, need_stmts = false;
-  tree clause, decl;
+  tree clause, decl, *pdecl;
   int dummy;
   bitmap new_suppress;
 
@@ -1903,6 +1915,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 
   for (clause = *pclauses; clause ; clause = OMP_CLAUSE_CHAIN (clause))
     {
+      pdecl = NULL;
       switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_REDUCTION:
@@ -1910,6 +1923,15 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 	    need_stmts = true;
+	  if (TREE_CODE (OMP_CLAUSE_DECL (clause)) == MEM_REF)
+	    {
+	      pdecl = &TREE_OPERAND (OMP_CLAUSE_DECL (clause), 0);
+	      if (TREE_CODE (*pdecl) == POINTER_PLUS_EXPR)
+		pdecl = &TREE_OPERAND (*pdecl, 0);
+	      if (TREE_CODE (*pdecl) == INDIRECT_REF
+		  || TREE_CODE (*pdecl) == ADDR_EXPR)
+		pdecl = &TREE_OPERAND (*pdecl, 0);
+	    }
 	  goto do_decl_clause;
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -1935,7 +1957,9 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	do_decl_clause:
-	  decl = OMP_CLAUSE_DECL (clause);
+	  if (pdecl == NULL)
+	    pdecl = &OMP_CLAUSE_DECL (clause);
+	  decl = *pdecl;
 	  if (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    break;
@@ -1948,8 +1972,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 		  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_SHARED)
 		    OMP_CLAUSE_SHARED_READONLY (clause) = 0;
 		  bitmap_set_bit (new_suppress, DECL_UID (decl));
-		  OMP_CLAUSE_DECL (clause)
-		    = get_local_debug_decl (info, decl, field);
+		  *pdecl = get_local_debug_decl (info, decl, field);
 		  need_frame = true;
 		}
 	    }
