@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "bitmap.h"
-
+#include "tree-iterator.h"
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
    the #pragma.  */
@@ -928,6 +928,110 @@ c_omp_for_incr_canonicalize_ptr (location_t loc, tree decl, tree incr)
   return incr;
 }
 
+/* State of annotation traversal for FOR loops in kernels regions,
+   used to control processing and diagnostic messages that are deferred until
+   the entire loop has been scanned.  */
+enum annotation_state {
+  as_outer,
+  as_in_kernels_region,
+  as_in_kernels_loop,
+  /* The remaining state values represent conversion failures caught
+     while in as_in_kernels_loop state.  To test whether the traversal is
+     in the body of a kernels loop, use (state >= as_in_kernels_loop).  */
+  as_invalid_variable_type,
+  as_missing_initializer,
+  as_invalid_initializer,
+  as_missing_predicate,
+  as_invalid_predicate,
+  as_missing_increment,
+  as_invalid_increment,
+  as_explicit_annotation,
+  as_invalid_control_flow,
+  as_invalid_break,
+  as_invalid_return,
+  as_invalid_call,
+  as_invalid_modification
+};
+
+/* Structure used to hold state for automatic annotation of FOR loops
+   in kernels regions.  LOOP is the nearest enclosing loop, or
+   NULL_TREE if outside of a loop context.  VARS is a tree_list
+   containing the variables controlling LOOP's termination (the
+   induction variable and a possible limit variable).  STATE keeps
+   track of whether loop satisfies all criteria making it legal to
+   parallelize.  Otherwise, REASON is a statement that blocks
+   automatic parallelization, such as an unstructured jump or an
+   assignment to a variable in VARS, used for printing diagnostics.
+
+   These structures are chained through NEXT, which points to the
+   next-closest enclosing loop's or the kernels region's annotation info, if
+   any.  */
+
+struct annotation_info
+{
+  tree loop;
+  tree vars;
+  bool break_ok;
+  enum annotation_state state;
+  tree reason;
+  struct annotation_info *next;
+};
+
+/* Mark the current loop's INFO as not OK to annotate, recording STATE
+   and REASON for producing diagnostics later.  */
+
+static void
+do_not_annotate_loop (struct annotation_info *info,
+		      enum annotation_state state, tree reason)
+{
+  if (info->state == as_in_kernels_loop)
+    {
+      info->state = state;
+      info->reason = reason;
+    }
+}
+
+/* Mark the current loop identified by INFO and all of its ancestors (i.e.,
+   enclosing loops) as not OK to annotate.  Arguments are the same as
+   for do_not_annotate_loop.  */
+
+static void
+do_not_annotate_loop_nest (struct annotation_info *info,
+			   enum annotation_state state, tree reason)
+{
+  while (info != NULL)
+    {
+      do_not_annotate_loop (info, state, reason);
+      info = info->next;
+    }
+}
+
+/* If INFO is non-null, call do_not_annotate_loop with STATE and REASON
+   to record info for diagnosing an error later.  Otherwise emit an error now
+   at ELOCUS with message MSG and the optional arguments.  */
+
+static void annotation_error (struct annotation_info *,
+			      enum annotation_state, tree, location_t,
+			      const char *, ...) ATTRIBUTE_GCC_DIAG(5,6);
+static
+void annotation_error (struct annotation_info *info,
+			      enum annotation_state state,
+			      tree reason,
+			      location_t elocus,
+			      const char *msg, ...)
+{
+  if (info)
+    do_not_annotate_loop (info, state, reason);
+  else
+    {
+      auto_diagnostic_group d;
+      va_list ap;
+      va_start (ap, msg);
+      emit_diagnostic_valist (DK_ERROR, elocus, -1, msg, &ap);
+      va_end (ap);
+    }
+}
+
 /* Validate and generate OMP_FOR.
    DECLV is a vector of iteration variables, for each collapsed loop.
 
@@ -937,12 +1041,19 @@ c_omp_for_incr_canonicalize_ptr (location_t loc, tree decl, tree incr)
    INITV, CONDV and INCRV are vectors containing initialization
    expressions, controlling predicates and increment expressions.
    BODY is the body of the loop and PRE_BODY statements that go before
-   the loop.  */
+   the loop.  FINAL_P is true if not inside a C++ template.
 
-tree
-c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
-		  tree orig_declv, tree initv, tree condv, tree incrv,
-		  tree body, tree pre_body, bool final_p)
+   INFO is null if called to parse an explicitly-annotated OMP for
+   loop, otherwise it holds state information for automatically
+   annotating a regular FOR loop in a kernels region.  In the former case,
+   malformed loops are hard errors; otherwise we just record the annotation
+   failure in INFO.  */
+
+static tree
+c_finish_omp_for_internal (location_t locus, enum tree_code code, tree declv,
+			   tree orig_declv, tree initv, tree condv, tree incrv,
+			   tree body, tree pre_body, bool final_p,
+			   struct annotation_info *info)
 {
   location_t elocus;
   bool fail = false;
@@ -966,12 +1077,14 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
       if (!INTEGRAL_TYPE_P (TREE_TYPE (decl))
 	  && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE)
 	{
-	  error_at (elocus, "invalid type for iteration variable %qE", decl);
+	  annotation_error (info, as_invalid_variable_type, decl, elocus,
+			    "invalid type for iteration variable %qE", decl);
 	  fail = true;
 	}
       else if (TYPE_ATOMIC (TREE_TYPE (decl)))
 	{
-	  error_at (elocus, "%<_Atomic%> iteration variable %qE", decl);
+	  annotation_error (info, as_invalid_variable_type, decl, elocus,
+			    "%<_Atomic%> iteration variable %qE", decl);
 	  fail = true;
 	  /* _Atomic iterator confuses stuff too much, so we risk ICE
 	     trying to diagnose it further.  */
@@ -987,7 +1100,8 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	  init = DECL_INITIAL (decl);
 	  if (init == NULL)
 	    {
-	      error_at (elocus, "%qE is not initialized", decl);
+	      annotation_error (info, as_missing_initializer, decl, elocus,
+				"%qE is not initialized", decl);
 	      init = integer_zero_node;
 	      fail = true;
 	    }
@@ -1008,7 +1122,8 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 
       if (cond == NULL_TREE)
 	{
-	  error_at (elocus, "missing controlling predicate");
+	  annotation_error (info, as_missing_predicate, NULL_TREE, elocus,
+			    "missing controlling predicate");
 	  fail = true;
 	}
       else
@@ -1024,12 +1139,14 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	  if (EXPR_HAS_LOCATION (cond))
 	    elocus = EXPR_LOCATION (cond);
 
-	  if (TREE_CODE (cond) == LT_EXPR
-	      || TREE_CODE (cond) == LE_EXPR
-	      || TREE_CODE (cond) == GT_EXPR
-	      || TREE_CODE (cond) == GE_EXPR
-	      || TREE_CODE (cond) == NE_EXPR
-	      || TREE_CODE (cond) == EQ_EXPR)
+	  enum tree_code condcode = TREE_CODE (cond);
+
+	  if (condcode == LT_EXPR
+	      || condcode == LE_EXPR
+	      || condcode == GT_EXPR
+	      || condcode == GE_EXPR
+	      || condcode == NE_EXPR
+	      || condcode == EQ_EXPR)
 	    {
 	      tree op0 = TREE_OPERAND (cond, 0);
 	      tree op1 = TREE_OPERAND (cond, 1);
@@ -1049,79 +1166,88 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	      if (TREE_CODE (op0) == NOP_EXPR
 		  && decl == TREE_OPERAND (op0, 0))
 		{
-		  TREE_OPERAND (cond, 0) = TREE_OPERAND (op0, 0);
-		  TREE_OPERAND (cond, 1)
-		    = fold_build1_loc (elocus, NOP_EXPR, TREE_TYPE (decl),
-				   TREE_OPERAND (cond, 1));
+		  op0 = TREE_OPERAND (op0, 0);
+		  op1 = fold_build1_loc (elocus, NOP_EXPR, TREE_TYPE (decl),
+					 op1);
 		}
 	      else if (TREE_CODE (op1) == NOP_EXPR
 		       && decl == TREE_OPERAND (op1, 0))
 		{
-		  TREE_OPERAND (cond, 1) = TREE_OPERAND (op1, 0);
-		  TREE_OPERAND (cond, 0)
-		    = fold_build1_loc (elocus, NOP_EXPR, TREE_TYPE (decl),
-				   TREE_OPERAND (cond, 0));
+		  op1 = TREE_OPERAND (op1, 0);
+		  op0 = fold_build1_loc (elocus, NOP_EXPR, TREE_TYPE (decl),
+					 op0);
 		}
 
-	      if (decl == TREE_OPERAND (cond, 0))
+	      if (decl == op0)
 		cond_ok = true;
-	      else if (decl == TREE_OPERAND (cond, 1))
+	      else if (decl == op1)
 		{
-		  TREE_SET_CODE (cond,
-				 swap_tree_comparison (TREE_CODE (cond)));
-		  TREE_OPERAND (cond, 1) = TREE_OPERAND (cond, 0);
-		  TREE_OPERAND (cond, 0) = decl;
+		  condcode = swap_tree_comparison (condcode);
+		  op1 = op0;
+		  op0 = decl;
 		  cond_ok = true;
 		}
 
-	      if (TREE_CODE (cond) == NE_EXPR
-		  || TREE_CODE (cond) == EQ_EXPR)
+	      if (condcode == NE_EXPR || condcode == EQ_EXPR)
 		{
 		  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
 		    {
-		      if (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR)
+		      if (code == OACC_LOOP || condcode == EQ_EXPR)
 			cond_ok = false;
 		    }
-		  else if (operand_equal_p (TREE_OPERAND (cond, 1),
+		  else if (operand_equal_p (op1,
 					    TYPE_MIN_VALUE (TREE_TYPE (decl)),
 					    0))
-		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
-					 ? GT_EXPR : LE_EXPR);
-		  else if (operand_equal_p (TREE_OPERAND (cond, 1),
+		    condcode = (condcode == NE_EXPR ? GT_EXPR : LE_EXPR);
+		  else if (operand_equal_p (op1,
 					    TYPE_MAX_VALUE (TREE_TYPE (decl)),
 					    0))
-		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
-					 ? LT_EXPR : GE_EXPR);
-		  else if (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR)
+		    condcode = (condcode == NE_EXPR ? LT_EXPR : GE_EXPR);
+		  else if (code == OACC_LOOP || condcode == EQ_EXPR)
 		    cond_ok = false;
 		}
 
-	      if (cond_ok && TREE_VEC_ELT (condv, i) != cond)
+	      if (cond_ok)
 		{
-		  tree ce = NULL_TREE, *pce = &ce;
-		  tree type = TREE_TYPE (TREE_OPERAND (cond, 1));
-		  for (tree c = TREE_VEC_ELT (condv, i); c != cond;
-		       c = TREE_OPERAND (c, 1))
+		  /* We postponed destructive changes to canonicalize
+		     cond until we're sure it is OK.  In the !error_p
+		     case where we are trying to transform a regular FOR_STMT
+		     to OMP_FOR, we don't want to destroy the original
+		     condition if we aren't going to be able to do the
+		     transformation anyway.  */
+		  TREE_SET_CODE (cond, condcode);
+		  TREE_OPERAND (cond, 0) = op0;
+		  TREE_OPERAND (cond, 1) = op1;
+
+		  if (TREE_VEC_ELT (condv, i) != cond)
 		    {
-		      *pce = build2 (COMPOUND_EXPR, type, TREE_OPERAND (c, 0),
-				     TREE_OPERAND (cond, 1));
-		      pce = &TREE_OPERAND (*pce, 1);
+		      tree ce = NULL_TREE, *pce = &ce;
+		      tree type = TREE_TYPE (op1);
+		      for (tree c = TREE_VEC_ELT (condv, i); c != cond;
+			   c = TREE_OPERAND (c, 1))
+			{
+			  *pce = build2 (COMPOUND_EXPR, type,
+					 TREE_OPERAND (c, 0), op1);
+			  pce = &TREE_OPERAND (*pce, 1);
+			}
+		      op1 = ce;
+		      TREE_VEC_ELT (condv, i) = cond;
 		    }
-		  TREE_OPERAND (cond, 1) = ce;
-		  TREE_VEC_ELT (condv, i) = cond;
 		}
 	    }
 
 	  if (!cond_ok)
 	    {
-	      error_at (elocus, "invalid controlling predicate");
+	      annotation_error (info, as_invalid_predicate, cond, elocus,
+				"invalid controlling predicate");
 	      fail = true;
 	    }
 	}
 
       if (incr == NULL_TREE)
 	{
-	  error_at (elocus, "missing increment expression");
+	  annotation_error (info, as_missing_increment, NULL_TREE, elocus,
+			    "missing increment expression");
 	  fail = true;
 	}
       else
@@ -1220,9 +1346,11 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 			      if (i == NULL_TREE
 				  || !operand_equal_p (unit, i, 0))
 				{
-				  error_at (elocus,
-					    "increment is not constant 1 or "
-					    "-1 for %<!=%> condition");
+				  annotation_error (info,
+						    as_invalid_increment,
+						    incr, elocus,
+						    "increment is not constant 1 or "
+						    "-1 for %<!=%> condition");
 				  fail = true;
 				}
 			    }
@@ -1238,9 +1366,10 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		    {
 		      if (!integer_onep (i) && !integer_minus_onep (i))
 			{
-			  error_at (elocus,
-				    "increment is not constant 1 or -1 for"
-				    " %<!=%> condition");
+			  annotation_error (info, as_invalid_increment,
+					    incr, elocus,
+					    "increment is not constant 1 or -1 for"
+					    " %<!=%> condition");
 			  fail = true;
 			}
 		    }
@@ -1252,7 +1381,8 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	    }
 	  if (!incr_ok)
 	    {
-	      error_at (elocus, "invalid increment expression");
+	      annotation_error (info, as_invalid_increment, incr,
+				elocus, "invalid increment expression");
 	      fail = true;
 	    }
 	}
@@ -1279,6 +1409,20 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
       return t;
     }
 }
+
+/* External entry point to c_finish_omp_for_internal, called from the
+   parsers.  See above for description of the arguments.  */
+
+tree
+c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
+		  tree orig_declv, tree initv, tree condv, tree incrv,
+		  tree body, tree pre_body, bool final_p)
+{
+  return c_finish_omp_for_internal (locus, code, declv,
+				    orig_declv, initv, condv, incrv,
+				    body, pre_body, final_p, NULL);
+}
+
 
 /* Type for passing data in between c_omp_check_loop_iv and
    c_omp_check_loop_iv_r.  */
@@ -3007,6 +3151,542 @@ c_omp_predetermined_mapping (tree decl)
   return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
+/* The following functions implement automatic recognition and annotation of
+   for loops in OpenACC kernels regions.  Inside a kernels region, a nest of
+   for loops that does not contain any annotated OpenACC loops, nor break
+   or goto statements or assignments to the variables controlling loop
+   termination, is converted to an OMP_FOR node with an "acc loop auto"
+   annotation on each loop.  This feature is controlled by
+   flag_openacc_kernels_annotate_loops.  */
+
+/* Check whether DECL is the declaration of a local variable (or function
+   parameter) of integral type that does not have its address taken.  */
+
+static bool
+is_local_var (tree decl)
+{
+  return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+	  && DECL_CONTEXT (decl) != NULL
+	  && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
+	  && INTEGRAL_TYPE_P (TREE_TYPE (decl))
+	  && !TREE_ADDRESSABLE (decl));
+}
+
+/* The initializer for a FOR_STMT is sometimes wrapped in various other
+   language-specific tree structures.  We need a hook to unwrap them.
+   This function takes a tree argument and should return either a
+   MODIFY_EXPR, VAR_DECL, or NULL_TREE.  */
+
+static tree (*lang_specific_unwrap_initializer) (tree);
+
+/* Try to annotate the given NODE, which must be a FOR_STMT, with a
+   "#pragma acc loop auto" annotation.  In practice, this means
+   building an OMP_FOR node for it.  PREV_STMT is the statement
+   immediately before the loop, which may be used as the loop's
+   initialization statement.  Annotating the loop may fail, in which
+   case INFO is used to record the cause of the failure and the
+   original loop remains unchanged.  This function returns the
+   transformed loop if the transformation succeeded, the original node
+   otherwise.  */
+
+static tree
+annotate_for_loop (tree node, tree_stmt_iterator *prev_tsi,
+		   struct annotation_info *info)
+{
+  gcc_checking_assert (TREE_CODE (node) == FOR_STMT);
+
+  location_t loc = EXPR_LOCATION (node);
+  tree cond = FOR_COND (node);
+  gcc_assert (cond);
+  tree decl = TREE_OPERAND (cond, 0);
+  gcc_assert (decl && TREE_CODE (decl) == VAR_DECL);
+  tree init = FOR_INIT_STMT (node);
+  tree prev_stmt = NULL_TREE;
+  bool unlink_prev = false;
+  bool fix_decl = false;
+
+
+  /* Both the C and C++ front ends normally put the initializer in the
+     statement list just before the FOR_STMT instead of in FOR_INIT_STMT.
+     If FOR_INIT_STMT happens to exist but isn't a MODIFY_EXPR, bail out
+     because the code below won't handle it.  */
+  if (init != NULL_TREE && TREE_CODE (init) != MODIFY_EXPR)
+    {
+      do_not_annotate_loop (info, as_invalid_initializer, NULL_TREE);
+      return node;
+    }
+
+  /* Examine the statement before the loop to see if it is a
+     valid initializer.  It must be either a MODIFY_EXPR or VAR_DECL,
+     possibly wrapped in language-specific structure.  */
+  if (init == NULL_TREE && prev_tsi != NULL)
+    {
+      prev_stmt = tsi_stmt (*prev_tsi);
+
+      /* Call the language-specific hook to unwrap prev_stmt.  */
+      if (prev_stmt)
+	prev_stmt = (*lang_specific_unwrap_initializer) (prev_stmt);
+
+      /* See if we have a valid MODIFY_EXPR.  */
+      if (prev_stmt
+	  && TREE_CODE (prev_stmt) == MODIFY_EXPR
+	  && TREE_OPERAND (prev_stmt, 0) == decl
+	  && !TREE_SIDE_EFFECTS (TREE_OPERAND (prev_stmt, 1)))
+	{
+	  init = prev_stmt;
+	  unlink_prev = true;
+	}
+      else if (prev_stmt == decl
+	       && !TREE_SIDE_EFFECTS (DECL_INITIAL (decl)))
+	{
+	  /* If the preceding statement is the declaration of the loop
+	     variable with its initialization, build an assignment
+	     expression for the loop's initializer.  */
+	  init = build2 (MODIFY_EXPR, TREE_TYPE (decl), decl,
+			 DECL_INITIAL (decl));
+	  /* We need to remove the initializer from the decl if we
+	     end up using the init we just built instead.  */
+	  fix_decl = true;
+	}
+    }
+
+  if (init == NULL_TREE)
+    /* There is nothing we can do to find the correct init statement for
+       this loop, but c_finish_omp_for insists on having one and would fail
+       otherwise.  In that case, we would just return node.  Do that
+       directly, here.  */
+    {
+      do_not_annotate_loop (info, as_missing_initializer, NULL_TREE);
+      return node;
+    }
+
+  tree incr = FOR_EXPR (node);
+
+  /* The C++ frontend can wrap the increment two levels deep inside a
+     cleanup expression, but c_finish_omp_for does not care about that.  */
+  if (incr != NULL_TREE && TREE_CODE (incr) == CLEANUP_POINT_EXPR)
+    incr = TREE_OPERAND (TREE_OPERAND (incr, 0), 0);
+  tree body = FOR_BODY (node);
+
+  tree declv = make_tree_vec (1);
+  tree initv = make_tree_vec (1);
+  tree condv = make_tree_vec (1);
+  tree incrv = make_tree_vec (1);
+  TREE_VEC_ELT (declv, 0) = decl;
+  TREE_VEC_ELT (initv, 0) = init;
+  TREE_VEC_ELT (condv, 0) = cond;
+  TREE_VEC_ELT (incrv, 0) = incr;
+
+  /* Do the actual transformation.  This can still fail because
+     c_finish_omp_for has some stricter checks than we have performed up to
+     this point.  */
+  tree omp_for = c_finish_omp_for_internal (loc, OACC_LOOP, declv, NULL_TREE,
+					    initv, condv, incrv, body,
+					    NULL_TREE, false, info);
+  if (omp_for != NULL_TREE)
+    {
+      if (unlink_prev)
+	/* We don't need the previous statement that we consumed as an
+	   initializer in the new OMP_FOR any more.  */
+	tsi_delink (prev_tsi);
+
+      if (fix_decl)
+	/* We no longer need the initializer expression on the decl of
+	   the loop variable and don't want to duplicate it.  The
+	   kernels conversion pass would interpret it as a stray
+	   assignment in a gang-single region.  */
+	DECL_INITIAL (prev_stmt) = NULL_TREE;
+
+      /* Add an auto clause, then return the new loop.  */
+      tree auto_clause = build_omp_clause (loc, OMP_CLAUSE_AUTO);
+      OMP_CLAUSE_CHAIN (auto_clause) = OMP_FOR_CLAUSES (omp_for);
+      OMP_FOR_CLAUSES (omp_for) = auto_clause;
+      return omp_for;
+    }
+
+  return node;
+}
+
+/* Forward declaration.  */
+static tree annotate_loops_in_kernels_regions (tree *, int *, void *);
+
+/* Given a FOR_STMT NODE that is a candidate for parallelization, check its
+   body for validity, then try to annotate it with
+   "#pragma oacc loop auto", possibly modifying the current node in place.
+   The INFO argument contains the traversal state at the point the loop
+   appears.  */
+
+static void
+check_and_annotate_for_loop (tree *nodeptr, tree_stmt_iterator *prev_tsi,
+			     struct annotation_info *info)
+{
+  tree node = *nodeptr;
+  gcc_assert (TREE_CODE (node) == FOR_STMT);
+
+  /* This structure describes the current loop statement.  */
+  struct annotation_info loop_info
+    = { node, NULL_TREE, false, as_in_kernels_loop, NULL_TREE, info };
+  tree cond = FOR_COND (node);
+
+  /* If we are in the body of an explicitly-annotated loop, do not add
+     annotations to this loop or any other nested loops.  */
+  if (info->state == as_explicit_annotation)
+    do_not_annotate_loop (&loop_info, as_explicit_annotation, info->reason);
+
+  /* We need to find the controlling variable for the loop in order
+     to detect whether it is modified in the body of the loop.
+     That is why we are doing some checks on the loop condition
+     that duplicate what c_finish_omp_for is doing.  */
+
+  /* The loop condition must be a comparison.  */
+  else if (cond == NULL_TREE)
+    do_not_annotate_loop (&loop_info, as_missing_predicate, NULL_TREE);
+  else if (TREE_CODE_CLASS (TREE_CODE (cond)) != tcc_comparison)
+    do_not_annotate_loop (&loop_info, as_invalid_predicate, cond);
+  else
+    {
+      /* The condition's LHS must be a local variable that does not
+	 have its address taken.  Its RHS must also be such a local
+	 variable or a constant.  */
+      tree induction_var = TREE_OPERAND (cond, 0);
+      tree limit_var = TREE_OPERAND (cond, 1);
+      if (!is_local_var (induction_var)
+	  || (!is_local_var (limit_var)
+	      && (TREE_CODE_CLASS (TREE_CODE (limit_var))
+		  != tcc_constant)))
+	do_not_annotate_loop (&loop_info, as_invalid_predicate, cond);
+      else
+	{
+	  /* These variables must not be assigned to in the loop.  */
+	  loop_info.vars = tree_cons (NULL_TREE, induction_var,
+				      loop_info.vars);
+	  if (TREE_CODE_CLASS (TREE_CODE (limit_var)) != tcc_constant)
+	    loop_info.vars = tree_cons (NULL_TREE, limit_var, loop_info.vars);
+	}
+    }
+
+  /* Walk the body.  This will process any nested loops, so we have to do it
+     even if we have already rejected this loop as a candidate for
+     annotation.  */
+  walk_tree (&FOR_BODY (node), annotate_loops_in_kernels_regions,
+	     (void *) &loop_info, NULL);
+
+  if (loop_info.state == as_in_kernels_loop)
+    {
+      /* If the traversal of the loop and all nested loops didn't hit
+	 any problems, attempt the actual transformation.  If it
+	 succeeds, replace this node with the annotated loop.  */
+      tree result = annotate_for_loop (node, prev_tsi, &loop_info);
+      if (result != node)
+	{
+	  /* Success!  */
+	  *nodeptr = result;
+	  return;
+	}
+    }
+
+  /* If we got here, we have a FOR_STMT we could not convert to an
+     OMP loop.  */
+
+  if (loop_info.state == as_invalid_return)
+    /* This is diagnosed elsewhere as a hard error, so no warning is
+       needed here.  */
+    return;
+
+  /* Issue warnings about other problems.  */
+  auto_diagnostic_group d;
+  if (warning_at (EXPR_LOCATION (node),
+		  OPT_Wopenacc_kernels_annotate_loops,
+		  "loop cannot be annotated for OpenACC parallelization"))
+    {
+      location_t locus;
+      if (loop_info.reason && EXPR_HAS_LOCATION (loop_info.reason))
+	locus = EXPR_LOCATION (loop_info.reason);
+      else
+	locus = EXPR_LOCATION (node);
+      switch (loop_info.state)
+	{
+	case as_invalid_variable_type:
+	  inform (locus, "invalid type for iteration variable %qE",
+		  loop_info.reason);
+	  break;
+	case as_missing_initializer:
+	  inform (locus, "missing iteration variable initializer");
+	  break;
+	case as_invalid_initializer:
+	  inform (locus, "unrecognized initializer");
+	  break;
+	case as_missing_predicate:
+	  inform (locus, "missing controlling predicate");
+	  break;
+	case as_invalid_predicate:
+	  inform (locus, "invalid controlling predicate");
+	  break;
+	case as_missing_increment:
+	  inform (locus, "missing increment expression");
+	  break;
+	case as_invalid_increment:
+	  inform (locus, "invalid increment expression");
+	  break;
+	case as_explicit_annotation:
+	  inform (locus, "explicit OpenACC annotation in loop nest");
+	  break;
+	case as_invalid_control_flow:
+	  inform (locus, "loop contains unstructured control flow");
+	  break;
+	case as_invalid_break:
+	  inform (locus, "loop contains %<break%> statement");
+	  break;
+	case as_invalid_call:
+	  inform (locus, "loop contains call to non-oacc function");
+	  break;
+	case as_invalid_modification:
+	  inform (locus, "invalid modification of controlling variable");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+}
+
+/* Traversal function for walk_tree.  Visit the tree, finding OpenACC
+   kernels regions.  DATA is NULL if we are outside of a kernels region,
+   otherwise it is a pointer to the enclosing kernels region's
+   annotation_info struct.  If the traversal encounters a for loop inside a
+   kernels region that is a candidate for parallelization, annotate it
+   with OpenACC loop directives.  */
+
+static tree
+annotate_loops_in_kernels_regions (tree *nodeptr, int *walk_subtrees,
+				   void *data)
+{
+  tree node = *nodeptr;
+  struct annotation_info *info = (struct annotation_info *) data;
+  gcc_assert (info);
+
+  switch (TREE_CODE (node))
+    {
+    case OACC_KERNELS:
+      /* Recursively process the body of the kernels region in a new info
+	 scope.  */
+      if (info->state == as_outer)
+	{
+	  struct annotation_info nested_info
+	    = { NULL_TREE, NULL_TREE, true,
+		as_in_kernels_region, NULL_TREE, info };
+	  walk_tree (&OMP_BODY (node), annotate_loops_in_kernels_regions,
+		     (void *) &nested_info, NULL);
+	  *walk_subtrees = 0;
+	}
+      break;
+
+    case OACC_LOOP:
+      /* Do not try to add automatic OpenACC annotations inside manually
+	 annotated loops.  Presumably, the user avoided doing it on
+	 purpose; for example, all available levels of parallelism may
+	 have been used up.  */
+      {
+	struct annotation_info nested_info
+	  = { NULL_TREE, NULL_TREE, false, as_explicit_annotation,
+	      node, info };
+	if (info->state >= as_in_kernels_region)
+	  do_not_annotate_loop_nest (info, as_explicit_annotation,
+				     node);
+	walk_tree (&OMP_BODY (node), annotate_loops_in_kernels_regions,
+		   (void *) &nested_info, NULL);
+	*walk_subtrees = 0;
+      }
+      break;
+
+    case FOR_STMT:
+      /* Try to annotate the loop if we are in a kernels region.
+	 This will do a recursive traversal of the loop body in a new
+	 info scope.  */
+      if (info->state >= as_in_kernels_region)
+	{
+	  check_and_annotate_for_loop (nodeptr, NULL, info);
+	  *walk_subtrees = 0;
+	}
+      break;
+
+    case LABEL_EXPR:
+      /* Possibly unstructured control flow.  Unless we perform further
+	 analyses, we must assume that such control flow may enter the
+	 current loop.  In this case, we must not parallelize the loop.  */
+      if (info->state >= as_in_kernels_loop
+	  && TREE_USED (LABEL_EXPR_LABEL (node)))
+	do_not_annotate_loop_nest (info, as_invalid_control_flow, node);
+      break;
+
+    case GOTO_EXPR:
+      /* Possibly unstructured control flow.  Unless we perform further
+	 analyses, we must assume that such control flow may leave the
+	 current loop.  In this case, we must not parallelize the loop.  */
+      if (info->state >= as_in_kernels_loop)
+	do_not_annotate_loop_nest (info, as_invalid_control_flow, node);
+      break;
+
+    case BREAK_STMT:
+      /* A break statement.  Whether or not this is valid depends on the
+	 enclosing context.  */
+      if (info->state >= as_in_kernels_loop && !info->break_ok)
+	do_not_annotate_loop (info, as_invalid_break, node);
+      break;
+
+    case RETURN_EXPR:
+      /* A return leaves the entire loop nest.  */
+      if (info->state >= as_in_kernels_loop)
+	do_not_annotate_loop_nest (info, as_invalid_return, node);
+      break;
+
+    case CALL_EXPR:
+      /* Direct function calls to functions marked as OpenACC routines are
+	 allowed.  Reject indirect calls or calls to non-routines.  */
+      if (info->state >= as_in_kernels_loop)
+	{
+	  tree fn = CALL_EXPR_FN (node), fn_decl = NULL_TREE;
+	  if (fn != NULL_TREE && TREE_CODE (fn) == FUNCTION_DECL)
+	    fn_decl = fn;
+	  else if (fn != NULL_TREE && TREE_CODE (fn) == ADDR_EXPR)
+	    {
+	      tree fn_op = TREE_OPERAND (fn, 0);
+	      if (fn_op != NULL_TREE && TREE_CODE (fn_op) == FUNCTION_DECL)
+		fn_decl = fn_op;
+	    }
+	  if (fn_decl == NULL_TREE)
+	    do_not_annotate_loop_nest (info, as_invalid_call, node);
+	  else if (!lookup_attribute ("oacc function",
+				      DECL_ATTRIBUTES (fn_decl)))
+	    do_not_annotate_loop_nest (info, as_invalid_call, node);
+	}
+      break;
+
+    case MODIFY_EXPR:
+      /* See if this assignment's LHS is one of the variables that must
+	 not be modified in the loop body because they control termination
+	 of the loop (or an enclosing loop in the nest).  */
+      if (info->state >= as_in_kernels_loop)
+	{
+	  tree lhs = TREE_OPERAND (node, 0);
+	  if (!is_local_var (lhs))
+	    /* Early exit: This cannot be a variable we care about.  */
+	    break;
+	  /* Walk up the loop stack.  Invalidate the ones controlled by this
+	     variable.  There may be several, if this variable is the common
+	     iteration limit for several nested loops.  */
+	  for (struct annotation_info *outer_loop = info; outer_loop != NULL;
+	       outer_loop = outer_loop->next)
+	    for (tree t = outer_loop->vars; t != NULL_TREE; t = TREE_CHAIN (t))
+	      if (TREE_VALUE (t) == lhs)
+		{
+		  do_not_annotate_loop (outer_loop,
+					as_invalid_modification,
+					node);
+		  break;
+		}
+	}
+      break;
+
+    case SWITCH_STMT:
+      /* Needs special handling to allow break in the body.  */
+      if (info->state >= as_in_kernels_loop)
+	{
+	  bool save_break_ok = info->break_ok;
+
+	  walk_tree (&SWITCH_STMT_COND (node),
+		     annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  info->break_ok = true;
+	  walk_tree (&SWITCH_STMT_BODY (node),
+		     annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  info->break_ok = save_break_ok;
+	  *walk_subtrees = 0;
+	}
+      break;
+
+    case WHILE_STMT:
+      /* Needs special handling to allow break in the body.  */
+      if (info->state >= as_in_kernels_loop)
+	{
+	  bool save_break_ok = info->break_ok;
+
+	  walk_tree (&WHILE_COND (node), annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  info->break_ok = true;
+	  walk_tree (&WHILE_BODY (node), annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  info->break_ok = save_break_ok;
+	  *walk_subtrees = 0;
+	}
+      break;
+
+    case DO_STMT:
+      /* Needs special handling to allow break in the body.  */
+      if (info->state >= as_in_kernels_loop)
+	{
+	  bool save_break_ok = info->break_ok;
+
+	  walk_tree (&DO_COND (node), annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  info->break_ok = true;
+	  walk_tree (&DO_BODY (node), annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  info->break_ok = save_break_ok;
+	  *walk_subtrees = 0;
+	}
+      break;
+
+    case STATEMENT_LIST:
+      /* We iterate over these explicitly so that we can track the previous
+	 statement in the chain.  It may be the initializer for a following
+	 FOR_STMT node.  */
+      if (info->state >= as_in_kernels_region)
+	{
+	  tree_stmt_iterator i = tsi_start (node);
+	  tree_stmt_iterator prev, *prev_tsi = NULL;
+	  while (!tsi_end_p (i))
+	    {
+	      tree *stmtptr = tsi_stmt_ptr (i);
+	      if (TREE_CODE (*stmtptr) == FOR_STMT)
+		{
+		  check_and_annotate_for_loop (stmtptr, prev_tsi, info);
+		  *walk_subtrees = 0;
+		}
+	      else
+		walk_tree (stmtptr, annotate_loops_in_kernels_regions,
+			   (void *) info, NULL);
+	      prev = i;
+	      prev_tsi = &prev;
+	      tsi_next (&i);
+	    }
+	  *walk_subtrees = 0;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* Find for loops in OpenACC kernels regions that do not have OpenACC
+   annotations but look like they might benefit from automatic
+   parallelization.  Convert them from FOR_STMT to OMP_FOR nodes and
+   add the equivalent of "#pragma acc loop auto" annotations for them.
+   Assumes flag_openacc_kernels_annotate_loops is set.  */
+
+void
+c_oacc_annotate_loops_in_kernels_regions (tree decl,
+					  tree (*unwrap_fn) (tree))
+{
+  struct annotation_info info
+    = { NULL_TREE, NULL_TREE, true, as_outer, NULL_TREE, NULL };
+  lang_specific_unwrap_initializer = unwrap_fn;
+  walk_tree (&DECL_SAVED_TREE (decl), annotate_loops_in_kernels_regions,
+	     (void *) &info, NULL);
+}
 
 /* Used to merge map clause information in c_omp_adjust_map_clauses.  */
 struct map_clause

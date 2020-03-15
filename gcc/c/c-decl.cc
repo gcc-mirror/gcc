@@ -10807,6 +10807,29 @@ temp_pop_parm_decls (void)
   pop_scope ();
 }
 
+/* Function passed to c_oacc_annotate_loop_in_kernels_regions to do
+   language-specific unwrapping of an initializer expression.  */
+static tree
+c_unwrap_for_init (tree x)
+{
+  if (!x)
+    return NULL_TREE;
+
+  while (true)
+    switch (TREE_CODE (x))
+      {
+      case MODIFY_EXPR:
+      case VAR_DECL:
+	return x;
+
+      case DECL_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      default:
+	return NULL_TREE;
+      }
+}
 
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  Then free the storage
@@ -10908,6 +10931,11 @@ finish_function (location_t end_loc)
   /* Possibly warn about unused parameters.  */
   if (warn_unused_parameter)
     do_warn_unused_parameter (fndecl);
+
+  /* If requested, automatically annotate suitable loops in OpenACC kernels
+     regions with OpenACC loop annotations to allow auto-parallelization.  */
+  if (flag_openacc && flag_openacc_kernels_annotate_loops)
+    c_oacc_annotate_loops_in_kernels_regions (fndecl, c_unwrap_for_init);
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */

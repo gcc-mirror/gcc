@@ -1,0 +1,20 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-common.h (c_oacc_annotate_loops_in_kernels_regions): Declare.
+	* c-omp.cc: Include tree-iterator.h
+	(enum annotation_state): New.
+	(struct annotation_info): New.
+	(do_not_annotate_loop): New.
+	(do_not_annotate_loop_nest): New.
+	(annotation_error): New.
+	(c_finish_omp_for_internal): Split from c_finish_omp_for.  Use
+	annotation_error function.  Code refactoring to avoid destructive
+	changes that cannot be undone in case of error.
+	(is_local_var): New.
+	(lang_specific_unwrap_initializer): New.
+	(annotate_for_loop): New.
+	(check_and_annotate_for_loop): New.
+	(annotate_loops_in_kernels_regions): New.
+	(c_oacc_annotate_loops_in_kernels_regions): New.
+	* c.opt (Wopenacc-kernels-annotate-loops): New.
+	(fopenacc-kernels-annotate-loops): New.

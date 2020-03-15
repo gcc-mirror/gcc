@@ -18031,6 +18031,45 @@ emit_coro_helper (tree helper)
   expand_or_defer_fn (helper);
 }
 
+
+/* Function passed to c_oacc_annotate_loop_in_kernels_regions to do
+   language-specific unwrapping of an initializer expression.  */
+static tree
+cp_unwrap_for_init (tree x)
+{
+  if (!x)
+    return NULL_TREE;
+
+  while (true)
+    switch (TREE_CODE (x))
+      {
+      case MODIFY_EXPR:
+      case VAR_DECL:
+	return x;
+
+      case CLEANUP_POINT_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case EXPR_STMT:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case DECL_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case CONVERT_EXPR:
+	if (TREE_TYPE (x) != void_type_node)
+	  return NULL_TREE;
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      default:
+	return NULL_TREE;
+      }
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition. INLINE_P is TRUE if we just
@@ -18328,6 +18367,11 @@ finish_function (bool inline_p)
       && !processing_template_decl 
       && !DECL_CLONED_FUNCTION_P (fndecl))
     do_warn_unused_parameter (fndecl);
+
+  /* If requested, automatically annotate suitable loops in OpenACC kernels
+     regions with OpenACC loop annotations to allow auto-parallelization.  */
+  if (flag_openacc && flag_openacc_kernels_annotate_loops)
+    c_oacc_annotate_loops_in_kernels_regions (fndecl, cp_unwrap_for_init);
 
   /* Genericize before inlining.  */
   if (!processing_template_decl

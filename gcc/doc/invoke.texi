@@ -379,6 +379,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 -Wnull-dereference  -Wno-odr
 -Wopenacc-parallelism
+-Wopenacc-kernels-annotate-loops
 -Wopenmp-simd
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
@@ -568,7 +569,8 @@ Objective-C and Objective-C++ Dialects}.
 -fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves
 -fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg
 -fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse
--fno-guess-branch-probability  -fno-inline  -fno-math-errno  -fno-peephole
+-fno-guess-branch-probability  -fno-inline  -fno-math-errno
+-fno-openacc-kernels-annotate-loops  -fno-peephole
 -fno-peephole2  -fno-printf-return-value  -fno-sched-interblock
 -fno-sched-spec  -fno-signed-zeros
 -fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss
@@ -9692,6 +9694,13 @@ Enabled by default.
 @item -Wopenacc-parallelism
 Warn about potentially suboptimal choices related to OpenACC parallelism.
 
+@opindex Wopenacc-kernels-annotate-loops
+@opindex Wno-Wopenacc-kernels-annotate-loops
+@item -Wopenacc-kernels-annotate-loops
+Warn about @code{for} (C/C++) or @code{DO} (Fortran) loops in OpenACC
+kernels regions that cannot be automatically annotated for
+parallelization with @option{-fopenacc-kernels-annotate-loops}.
+
 @opindex Wopenmp-simd
 @opindex Wno-openmp-simd
 @item -Wopenmp-simd
@@ -16270,6 +16279,27 @@ The maximum number of use and def visits when discovering a STV chain before
 the discovery is aborted.
 
 @end table
+
+@item -fno-openacc-kernels-annotate-loops
+@opindex fno-openacc-kernels-annotate-loops
+@opindex fopenacc-kernels-annotate-loops
+@cindex kernels regions, OpenACC
+Disable automatic parallelization of unannotated loops in OpenACC
+kernels regions.  The default is to attempt to add implicit
+@code{acc loop auto} annotations to loops in kernels regions if
+@option{-fopenacc} is enabled.
+
+Note that you can use @option{-Wopenacc-kernels-annotate-loops} to
+diagnose @code{for} loops that cannot be automatically annotated
+(@pxref{Warning Options}).  Reasons why automatic loop annotations
+cannot be applied include premature exits, calls to functions without
+an @code{openacc routine} annotation, or unstructured control flow in
+the loop body.  In C and C++, the loop variable initialization, end
+test, and increment expressions must additionally conform to
+restrictions similar to those for explicitly-annotated loops, and the
+loop variable must not be otherwise modified in the body of the loop.
+An explicit @code{acc loop} annotation disables automatic annotations
+on any nested or containing loops.
 
 @end table
 

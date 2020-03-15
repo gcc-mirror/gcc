@@ -3,6 +3,7 @@
 /* { dg-additional-options "-O2" } */
 /* { dg-additional-options "-g" } */
 /*TODO PR100400 { dg-additional-options -fcompare-debug } */
+/* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */
 /* { dg-additional-options "-fdump-tree-parloops1-all" } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
 
