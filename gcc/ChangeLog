@@ -1,3 +1,9 @@
+2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* common.opt: Avoid redundancy in the help text.
+	* config/arc/arc.opt: Likewise.
+	* config/cr16/cr16.opt: Likewise.
+
 2020-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93566

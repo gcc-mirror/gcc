@@ -20,7 +20,7 @@
 
 msim
 Target
--msim   Use simulator runtime.
+Use simulator runtime.
 
 mbit-ops
 Target Report Mask(BIT_OPS)

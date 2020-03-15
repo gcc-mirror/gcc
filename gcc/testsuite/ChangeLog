@@ -1,3 +1,8 @@
+2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* gcc.misc-tests/help.exp: Adapt to new output for
+	-Walloc-size-larger-than= option.
+
 2020-03-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229

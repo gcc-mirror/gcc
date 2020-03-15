@@ -115,7 +115,7 @@ check_for_options c "-Q --help=warnings" {
 # Verify that an option that expects a byte-size argument is shown with
 # a meaningful byte-size argument as the value.
 check_for_options c "-Q --help=warnings" {
--Walloc-size-larger-than=[ \t]+[1-9][0-9]+ bytes
+-Walloc-size-larger-than=<bytes>[ \t]+[1-9][0-9]+ bytes
 -Wlarger-than=[^\n\r]+[1-9][0-9]+ bytes
 } "" ""
 
