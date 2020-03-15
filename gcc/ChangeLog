@@ -1,3 +1,13 @@
+2020-03-17  Alexey Neyman  <stilor@att.net>
+
+	PR debug/93751
+	* dwarf2out.c (gen_decl_die): Proceed to generating the DIE if
+	the debug level is terse and the declaration is public. Do not
+	generate type info.
+	(dwarf2out_decl): Same.
+	(add_type_attribute): Return immediately if debug level is
+	terse.
+
 2020-03-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/iterators.md (Vmtype): Handle V4BF and V8BF.
