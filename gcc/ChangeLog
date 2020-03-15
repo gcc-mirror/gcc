@@ -1,3 +1,12 @@
+2020-03-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.c (ix86_output_ssemov): Handle MODE_SI and
+	MODE_SF.
+	* config/i386/i386.md (*movsf_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove TARGET_PREFER_AVX256, TARGET_AVX512VL
+	and ext_sse_reg_operand check.
+
 2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* common.opt: Avoid redundancy in the help text.

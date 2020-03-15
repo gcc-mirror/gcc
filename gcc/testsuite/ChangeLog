@@ -1,3 +1,10 @@
+2020-03-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-6a.c: New test.
+	* gcc.target/i386/pr89229-6b.c: Likewise.
+	* gcc.target/i386/pr89229-6c.c: Likewise.
+
 2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* gcc.misc-tests/help.exp: Adapt to new output for
