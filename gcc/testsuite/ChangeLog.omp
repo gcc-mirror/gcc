@@ -1,3 +1,46 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Add
+	-fno-openacc-kernels-annotate-loops option.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-counter-var-redundant-load.c: Likewise.
+	* c-c++-common/goacc/kernels-counter-vars-function-scope.c: Likewise.
+	* c-c++-common/goacc/kernels-double-reduction-n.c: Likewise.
+	* c-c++-common/goacc/kernels-double-reduction.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-3.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-update.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-g.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-mod-not-zero.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-n.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-nest.c: Likewise.
+	* c-c++-common/goacc/kernels-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-one-counter-var.c: Likewise.
+	* c-c++-common/goacc/kernels-parallel-loop-data-enter-exit.c:
+	Likewise.
+	* c-c++-common/goacc/kernels-reduction.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-annotation-1.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-2.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-3.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-4.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-5.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-6.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-7.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-8.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-9.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-10.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-11.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-12.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-13.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-14.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-15.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-16.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-17.c: New.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

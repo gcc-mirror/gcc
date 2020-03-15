@@ -1,3 +1,11 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary): Add entries for
+	-Wopenacc-kernels-annotate-loops and
+	-fno-openacc-kernels-annotate-loops.
+	(Warning Options): Document -Wopenacc-kernels-annotate-loops.
+	(Optimization Options): Document -fno-openacc-kernels-annotate-loops.
+
 2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-low.c (convert_from_firstprivate_int):

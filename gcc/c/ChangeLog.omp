@@ -1,3 +1,8 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-decl.cc (c_unwrap_for_init): New.
+	(finish_function): Call c_oacc_annotate_loops_in_kernels_regions.
+
 2022-02-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-parser.ccc (c_parser_omp_clause_map): Update call to

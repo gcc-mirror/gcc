@@ -1,9 +1,10 @@
 /* Check offloaded function's attributes and classification for OpenACC
-   'kernels'.  */
+   'kernels' (parloops version).  */
 
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
 /* { dg-additional-options "-O2" }
+   { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
    { dg-additional-options "-fopt-info-all-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-parloops1-all" }
