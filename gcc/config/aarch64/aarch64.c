@@ -13639,7 +13639,7 @@ aarch64_advsimd_ldp_stp_p (enum vect_cost_for_stmt kind,
 
 /* Return true if STMT_INFO extends the result of a load.  */
 static bool
-aarch64_extending_load_p (stmt_vec_info stmt_info)
+aarch64_extending_load_p (class vec_info *vinfo, stmt_vec_info stmt_info)
 {
   gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
   if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
@@ -13653,7 +13653,7 @@ aarch64_extending_load_p (stmt_vec_info stmt_info)
       || TYPE_PRECISION (lhs_type) <= TYPE_PRECISION (rhs_type))
     return false;
 
-  stmt_vec_info def_stmt_info = stmt_info->vinfo->lookup_def (rhs);
+  stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
   return (def_stmt_info
 	  && STMT_VINFO_DATA_REF (def_stmt_info)
 	  && DR_IS_READ (STMT_VINFO_DATA_REF (def_stmt_info)));
@@ -13679,7 +13679,7 @@ aarch64_integer_truncation_p (stmt_vec_info stmt_info)
    operate on vector type VECTYPE.  Adjust the cost as necessary for SVE
    targets.  */
 static unsigned int
-aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind,
+aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
 			      stmt_vec_info stmt_info, tree vectype,
 			      unsigned int stmt_cost)
 {
@@ -13691,7 +13691,7 @@ aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind,
      on the fly.  Optimistically assume that a load followed by an extension
      will fold to this form during combine, and that the extension therefore
      comes for free.  */
-  if (kind == vector_stmt && aarch64_extending_load_p (stmt_info))
+  if (kind == vector_stmt && aarch64_extending_load_p (vinfo, stmt_info))
     stmt_cost = 0;
 
   /* For similar reasons, vector_stmt integer truncations are a no-op,
@@ -13744,7 +13744,8 @@ aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind,
 
 /* Implement targetm.vectorize.add_stmt_cost.  */
 static unsigned
-aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+		       enum vect_cost_for_stmt kind,
 		       struct _stmt_vec_info *stmt_info, int misalign,
 		       enum vect_cost_model_location where)
 {
@@ -13758,13 +13759,14 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
 
       if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
-	stmt_cost = aarch64_sve_adjust_stmt_cost (kind, stmt_info, vectype,
-						  stmt_cost);
+	stmt_cost = aarch64_sve_adjust_stmt_cost (vinfo, kind, stmt_info,
+						  vectype, stmt_cost);
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+      if (where == vect_body && stmt_info
+	  && stmt_in_inner_loop_p (vinfo, stmt_info))
 	count *= 50; /*  FIXME  */
 
       retval = (unsigned) (count * stmt_cost);

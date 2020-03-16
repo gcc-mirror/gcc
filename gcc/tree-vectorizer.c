@@ -631,7 +631,6 @@ stmt_vec_info
 vec_info::new_stmt_vec_info (gimple *stmt)
 {
   stmt_vec_info res = XCNEW (class _stmt_vec_info);
-  res->vinfo = this;
   res->stmt = stmt;
 
   STMT_VINFO_TYPE (res) = undef_vec_info_type;

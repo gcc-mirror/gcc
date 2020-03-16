@@ -12131,7 +12131,8 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
-arm_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+arm_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+		   enum vect_cost_for_stmt kind,
 		   struct _stmt_vec_info *stmt_info, int misalign,
 		   enum vect_cost_model_location where)
 {
@@ -12146,7 +12147,8 @@ arm_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+      if (where == vect_body && stmt_info
+	  && stmt_in_inner_loop_p (vinfo, stmt_info))
 	count *= 50;  /* FIXME.  */
 
       retval = (unsigned) (count * stmt_cost);

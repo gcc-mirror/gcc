@@ -1568,7 +1568,8 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
   tree offset = (negative
 		 ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1)
 		 : size_zero_node);
-  tree start_addr = vect_create_addr_base_for_vector_ref (stmt_info, seq,
+  tree start_addr = vect_create_addr_base_for_vector_ref (loop_vinfo,
+							  stmt_info, seq,
 							  offset);
   tree type = unsigned_type_for (TREE_TYPE (start_addr));
   if (target_align.is_constant (&target_align_c))
@@ -3057,7 +3058,8 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
-	vect_create_addr_base_for_vector_ref (stmt_info, &new_stmt_list,
+	vect_create_addr_base_for_vector_ref (loop_vinfo,
+					      stmt_info, &new_stmt_list,
 					      offset);
       if (new_stmt_list != NULL)
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);
