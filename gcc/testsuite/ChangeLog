@@ -1,5 +1,10 @@
 2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/92309
+	* gdc.dg/pr92309.d: New test.
+
+2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/92216
 	* gdc.dg/imports/pr92216.d: New.
 	* gdc.dg/pr92216.d: New test.
