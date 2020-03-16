@@ -5754,9 +5754,25 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
       /* Values from double-precision helper functions are returned in core
 	 registers if the selected core only supports single-precision
 	 arithmetic, even if we are using the hard-float ABI.  The same is
-	 true for single-precision helpers, but we will never be using the
-	 hard-float ABI on a CPU which doesn't support single-precision
-	 operations in hardware.  */
+	 true for single-precision helpers except in case of MVE, because in
+	 MVE we will be using the hard-float ABI on a CPU which doesn't support
+	 single-precision operations in hardware.  In MVE the following check
+	 enables use of emulation for the single-precision arithmetic
+	 operations.  */
+      if (TARGET_HAVE_MVE)
+	{
+	  add_libcall (libcall_htab, optab_libfunc (add_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (sdiv_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (smul_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (neg_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (sub_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (eq_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (lt_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (le_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (ge_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (gt_optab, SFmode));
+	  add_libcall (libcall_htab, optab_libfunc (unord_optab, SFmode));
+	}
       add_libcall (libcall_htab, optab_libfunc (add_optab, DFmode));
       add_libcall (libcall_htab, optab_libfunc (sdiv_optab, DFmode));
       add_libcall (libcall_htab, optab_libfunc (smul_optab, DFmode));

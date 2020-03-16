@@ -1,5 +1,10 @@
 2020-03-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/mve_libcall1.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_libcall2.c: Likewise.
+
+2020-03-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: New test.
 	* gcc.target/arm/mve/intrinsics/mve_fp_fpu2.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/mve_fpu1.c: Likewise.
