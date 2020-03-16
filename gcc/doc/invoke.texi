@@ -172,7 +172,7 @@ listing and explanation of the binary and decimal byte size prefixes.
 * Spec Files::          How to pass switches to sub-processes.
 * Environment Variables:: Env vars that affect GCC.
 * Precompiled Headers:: Compiling a header once, and using it many times.
-* C++ Modules::		Experimental module system for C++.
+* C++ Modules::		Experimental C++20 module system.
 @end menu
 
 @c man begin OPTIONS
@@ -31319,27 +31319,35 @@ not get debugging information for routines in the precompiled header.
 @cindex C++ Modules
 @cindex Speed of Compilation
 
-Modules are a new C++ language feature coming in C++2a.  As the name
-suggests, it provides a modular compilation system, intending to
-provide both faster builds and better library isolation.  The
-``Merging Modules'' paper @uref{http//wg21.link/p1103}, provides the
-easiest to read set of changes to the standard, although it does not
-capture later changes.  That specification is now in the C++ Working
-Draft, @uref{git@@github.com:cplusplus/draft.git}, but this has not
-completed the final comments and voting.  @emph{Modules support is a
-work in progress.  The implementation is not complete, and the
-specification is still a moving target.  Syntax, semantics and
-command-line options are not stable.}
+Modules are a C++ 20 language feature.  As the name suggests, it
+provides a modular compilation system, intending to provide both
+faster builds and better library isolation.  The ``Merging Modules''
+paper @uref{http//wg21.link/p1103}, provides the easiest to read set
+of changes to the standard, although it does not capture later
+changes.  That specification is now in the C++ Working Draft,
+@uref{git@@github.com:cplusplus/draft.git}, as of 2020-03-14, it is
+considered complete (there may be defect reports to come).
+@emph{Modules support is a work in progress.  The implementation is
+not complete.  Command-line options are not stable.}
 
-Modular compilation is @emph{not} enabled with the @option{-std=c++2a}
-option.  You must explicitly enable it with the @option{-fmodules-ts}
-option to enable.  It is independent of the language version selected.
+Modular compilation is @emph{not} enabled with just the
+@option{-std=c++2a} option.  You must explicitly enable it with the
+@option{-fmodules-ts} option.  It is independent of the language
+version selected.
+
+No new source file suffixes are required or supported.  If you wish to
+use a non-standard suffix (@xref{Overall Options}), you will also need
+to provide a @option{-x c++} option too.@footnote{Some users like to
+distinguish module interface files with a new suffix, such as naming
+the source @code{module.cppm}, which involves
+teaching all tools about the new suffix.  A different scheme, such as
+naming @code{module-m.cpp} would be less invasive.}
 
 Compiling a module interface unit produces an additional output (to
 the assembly or object file), called a Compiled Module Interface
 (CMI).  This encodes the exported declarations of the module.
-Importing a module reads in the CMI.  The dependency graph of imports
-is a Directed Acyclic Graph (DAG).
+Importing a module reads in the CMI.  The import graph is a Directed
+Acyclic Graph (DAG).  You must build imports before the importer.
 
 Header files may themselves be compiled to header units, which are a
 transitional ability aiming at faster compilation.  The
