@@ -1,3 +1,8 @@
+2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Add new test for ICE in asm parser.
+	* gdc.dg/asm5.d: New test.
+
 2020-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94167
