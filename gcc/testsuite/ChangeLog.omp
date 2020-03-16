@@ -1,5 +1,12 @@
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* c-c++-common/goacc/kernels-decompose-2.c: Add
+	-fno-openacc-kernels-annotate-loops.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loops.c: Likewise.
+
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* c-c++-common/goacc/classify-kernels-unparallelized.c: Add
 	-fno-openacc-kernels-annotate-loops option.
 	* c-c++-common/goacc/classify-kernels.c: Likewise.
