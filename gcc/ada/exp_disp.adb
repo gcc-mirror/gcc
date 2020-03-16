@@ -4310,6 +4310,7 @@ package body Exp_Disp is
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => OSD,
+                Constant_Present    => True,
                 Object_Definition   =>
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>
