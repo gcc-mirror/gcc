@@ -4295,7 +4295,7 @@ use_return_insn (int iscond, rtx sibling)
 
   /* Can't be done if any of the VFP regs are pushed,
      since this also requires an insn.  */
-  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
+  if (TARGET_VFP_BASE)
     for (regno = FIRST_VFP_REGNUM; regno <= LAST_VFP_REGNUM; regno++)
       if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	return 0;
@@ -6289,7 +6289,7 @@ use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
     return false;
 
   return (TARGET_32BIT && TARGET_HARD_FLOAT &&
-	  (TARGET_VFP_DOUBLE || !is_double));
+	 (TARGET_VFP_DOUBLE || !is_double));
 }
 
 /* Return true if an argument whose type is TYPE, or mode is MODE, is
@@ -8512,7 +8512,7 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
 
   /* ??? Combine arm and thumb2 coprocessor addressing modes.  */
   /* Standard coprocessor addressing modes.  */
-  if (TARGET_HARD_FLOAT
+  if (TARGET_VFP_BASE
       && (mode == SFmode || mode == DFmode))
     return (code == CONST_INT && INTVAL (index) < 1024
 	    /* Thumb-2 allows only > -256 index range for it's core register
@@ -9905,7 +9905,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  /* Assume that most copies can be done with a single insn,
 	     unless we don't have HW FP, in which case everything
 	     larger than word mode will require two insns.  */
-	  *cost = COSTS_N_INSNS (((!(TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
+	  *cost = COSTS_N_INSNS (((!TARGET_VFP_BASE
 				   && GET_MODE_SIZE (mode) > 4)
 				  || mode == DImode)
 				 ? 2 : 1);
@@ -20821,7 +20821,7 @@ arm_get_vfp_saved_size (void)
 
   saved = 0;
   /* Space for saved VFP registers.  */
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_VFP_BASE)
     {
       count = 0;
       for (regno = FIRST_VFP_REGNUM;
@@ -22364,7 +22364,7 @@ arm_compute_frame_layout (void)
       func_type = arm_current_func_type ();
       /* Space for saved VFP registers.  */
       if (! IS_VOLATILE (func_type)
-	  && (TARGET_HARD_FLOAT || TARGET_HAVE_MVE))
+	  && TARGET_VFP_BASE)
 	saved += arm_get_vfp_saved_size ();
 
       /* Allocate space for saving/restoring FPCXTNS in Armv8.1-M Mainline
@@ -22588,7 +22588,7 @@ arm_save_coproc_regs(void)
 	saved_size += 8;
       }
 
-  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
+  if (TARGET_VFP_BASE)
     {
       start_reg = FIRST_VFP_REGNUM;
 
@@ -24546,7 +24546,7 @@ arm_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
     return false;
 
   *p1 = CC_REGNUM;
-  *p2 = TARGET_HARD_FLOAT ? VFPCC_REGNUM : INVALID_REGNUM;
+  *p2 = TARGET_VFP_BASE ? VFPCC_REGNUM : INVALID_REGNUM;
   return true;
 }
 
@@ -24965,7 +24965,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
     return (regno == CC_REGNUM
-	    || ((TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
+	    || (TARGET_VFP_BASE
 		&& regno == VFPCC_REGNUM));
 
   if (regno == CC_REGNUM && GET_MODE_CLASS (mode) != MODE_CC)
@@ -24982,7 +24982,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
        start of an even numbered register pair.  */
     return (ARM_NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
-  if ((TARGET_HARD_FLOAT || TARGET_HAVE_MVE) && IS_VFP_REGNUM (regno))
+  if (TARGET_VFP_BASE && IS_VFP_REGNUM (regno))
     {
       if (mode == DFmode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
@@ -26933,7 +26933,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
         floats_from_frame += 4;
       }
 
-  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
+  if (TARGET_VFP_BASE)
     {
       int start_reg;
       rtx ip_rtx = gen_rtx_REG (SImode, IP_REGNUM);
@@ -27179,7 +27179,7 @@ arm_expand_epilogue (bool really_return)
         }
     }
 
-  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
+  if (TARGET_VFP_BASE)
     {
       /* Generate VFP register multi-pop.  */
       int end_reg = LAST_VFP_REGNUM + 1;
@@ -29699,7 +29699,7 @@ arm_conditional_register_usage (void)
   if (TARGET_THUMB1)
     fixed_regs[LR_REGNUM] = call_used_regs[LR_REGNUM] = 1;
 
-  if (TARGET_32BIT && (TARGET_HARD_FLOAT || TARGET_HAVE_MVE))
+  if (TARGET_32BIT && TARGET_VFP_BASE)
     {
       /* VFPv3 registers are disabled when earlier VFP
 	 versions are selected due to the definition of
@@ -32478,7 +32478,8 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
     = TARGET_SOFT_FLOAT
 	? "softvfp" : arm_identify_fpu_from_isa (arm_active_target.isa);
 
-  if (fpu_to_print != arm_last_printed_arch_string)
+  if (!(!strcmp (fpu_to_print.c_str (), "softvfp") && TARGET_VFP_BASE)
+      && (fpu_to_print != arm_last_printed_arch_string))
     {
       asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_to_print.c_str ());
       arm_last_printed_fpu_string = fpu_to_print;

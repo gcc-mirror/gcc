@@ -334,6 +334,19 @@ emission of floating point pcs attributes.  */
 						isa_bit_mve_float) \
 			       && !TARGET_GENERAL_REGS_ONLY)
 
+/* MVE have few common instructions as VFP, like VLDM alias VPOP, VLDR, VSTM
+   alia VPUSH, VSTR and VMOV, VMSR and VMRS.  In the same manner it updates few
+   registers such as FPCAR, FPCCR, FPDSCR, FPSCR, MVFR0, MVFR1 and MVFR2.  All
+   the VFP instructions, RTL patterns and register are guarded by
+   TARGET_HARD_FLOAT.  But the common instructions, RTL pattern and registers
+   between MVE and VFP will be guarded by the following macro TARGET_VFP_BASE
+   hereafter.  */
+
+#define TARGET_VFP_BASE (arm_float_abi != ARM_FLOAT_ABI_SOFT \
+			 && bitmap_bit_p (arm_active_target.isa, \
+					  isa_bit_vfp_base) \
+			 && !TARGET_GENERAL_REGS_ONLY)
+
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV	((TARGET_ARM && arm_arch_arm_hwdiv)	\
 			 || (TARGET_THUMB && arm_arch_thumb_hwdiv))

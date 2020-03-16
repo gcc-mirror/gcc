@@ -2,6 +2,83 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* common/config/arm/arm-common.c (arm_asm_auto_mfpu): When vfp_base
+	feature bit is on and -mfpu=auto is passed as compiler option, do not
+	generate error on not finding any matching fpu. Because in this case
+	fpu is not required.
+	* config/arm/arm-cpus.in (vfp_base): Define feature bit, this bit is
+	enabled for MVE and also for all VFP extensions.
+	(VFPv2): Modify fgroup to enable vfp_base feature bit when ever VFPv2
+	is enabled.
+	(MVE): Define fgroup to enable feature bits mve, vfp_base and armv7em.
+	(MVE_FP): Define fgroup to enable feature bits is fgroup MVE and FPv5
+	along with feature bits mve_float.
+	(mve): Modify add options in armv8.1-m.main arch for MVE.
+	(mve.fp): Modify add options in armv8.1-m.main arch for MVE with
+	floating point.
+	* config/arm/arm.c (use_return_insn): Replace the
+	check with TARGET_VFP_BASE.
+	(thumb2_legitimate_index_p): Replace TARGET_HARD_FLOAT with
+	TARGET_VFP_BASE.
+	(arm_rtx_costs_internal): Replace "TARGET_HARD_FLOAT || TARGET_HAVE_MVE"
+	with TARGET_VFP_BASE, to allow cost calculations for copies in MVE as
+	well.
+	(arm_get_vfp_saved_size): Replace TARGET_HARD_FLOAT with
+	TARGET_VFP_BASE, to allow space calculation for VFP registers in MVE
+	as well.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_fixed_condition_code_regs): Modify to enable using VFPCC_REGNUM
+	in MVE as well.
+	(arm_hard_regno_mode_ok): Replace "TARGET_HARD_FLOAT || TARGET_HAVE_MVE"
+	with equivalent macro TARGET_VFP_BASE.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_conditional_register_usage): Likewise.
+	(arm_declare_function_name): Add check to skip printing .fpu directive
+	in assembly file when TARGET_VFP_BASE is enabled and fpu_to_print is
+	"softvfp".
+	* config/arm/arm.h (TARGET_VFP_BASE): Define.
+	* config/arm/arm.md (arch): Add "mve" to arch.
+	(eq_attr "arch" "mve"): Enable on TARGET_HAVE_MVE is true.
+	(vfp_pop_multiple_with_writeback): Replace "TARGET_HARD_FLOAT
+	|| TARGET_HAVE_MVE" with equivalent macro TARGET_VFP_BASE.
+	* config/arm/constraints.md (Uf): Define to allow modification to FPCCR
+	in MVE.
+	* config/arm/thumb2.md (thumb2_movsfcc_soft_insn): Modify target guard
+	to not allow for MVE.
+	* config/arm/unspecs.md (UNSPEC_GET_FPSCR): Move to volatile unspecs
+	enum.
+	(VUNSPEC_GET_FPSCR): Define.
+	* config/arm/vfp.md (thumb2_movhi_vfp): Add support for VMSR and VMRS
+	instructions which move to general-purpose Register from Floating-point
+	Special register and vice-versa.
+	(thumb2_movhi_fp16): Likewise.
+	(thumb2_movsi_vfp): Add support for VMSR and VMRS instructions along
+	with MCR and MRC instructions which set and get Floating-point Status
+	and Control Register (FPSCR).
+	(movdi_vfp): Modify pattern to enable Single-precision scalar float move
+	in MVE.
+	(thumb2_movdf_vfp): Modify pattern to enable Double-precision scalar
+	float move patterns in MVE.
+	(thumb2_movsfcc_vfp): Modify pattern to enable single float conditional
+	code move patterns of VFP also in MVE by adding TARGET_VFP_BASE check.
+	(thumb2_movdfcc_vfp): Modify pattern to enable double float conditional
+	code move patterns of VFP also in MVE by adding TARGET_VFP_BASE check.
+	(push_multi_vfp): Add support to use VFP VPUSH pattern for MVE by adding
+	TARGET_VFP_BASE check.
+	(set_fpscr): Add support to set FPSCR register for MVE. Modify pattern
+	using VFPCC_REGNUM as few MVE intrinsics use carry bit of FPSCR
+	register.
+	(get_fpscr): Add support to get FPSCR register for MVE. Modify pattern
+	using VFPCC_REGNUM as few MVE intrinsics use carry bit of FPSCR
+	register.
+
+
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config.gcc (arm_mve.h): Include mve intrinsics header file.
 	* config/arm/aout.h (p0): Add new register name for MVE predicated
 	cases.

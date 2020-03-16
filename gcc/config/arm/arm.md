@@ -134,7 +134,7 @@
 ; arm_arch6.  "v6t2" for Thumb-2 with arm_arch6 and "v8mb" for ARMv8-M
 ; Baseline.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,v6t2,v8mb,iwmmxt,iwmmxt2,armv6_or_vfpv3,neon"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,v6t2,v8mb,iwmmxt,iwmmxt2,armv6_or_vfpv3,neon,mve"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -187,6 +187,10 @@
 
 	 (and (eq_attr "arch" "neon")
 	      (match_test "TARGET_NEON"))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "mve")
+	      (match_test "TARGET_HAVE_MVE"))
 	 (const_string "yes")
 	]
 
@@ -11758,7 +11762,7 @@
                    (match_operand:SI 2 "const_int_I_operand" "I")))
      (set (match_operand:DF 3 "vfp_hard_register_operand" "")
           (mem:DF (match_dup 1)))])]
-  "TARGET_32BIT && (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)"
+  "TARGET_32BIT && TARGET_VFP_BASE"
   "*
   {
     int num_regs = XVECLEN (operands[0], 0);

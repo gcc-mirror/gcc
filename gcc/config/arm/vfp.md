@@ -74,10 +74,10 @@
 (define_insn "*thumb2_movhi_vfp"
  [(set
    (match_operand:HI 0 "nonimmediate_operand"
-    "=rk, r, l, r, m, r, *t, r, *t")
+    "=rk, r, l, r, m, r, *t, r, *t, Up, r")
    (match_operand:HI 1 "general_operand"
-    "rk, I, Py, n, r, m, r, *t, *t"))]
- "TARGET_THUMB2 && TARGET_HARD_FLOAT
+    "rk, I, Py, n, r, m, r, *t, *t, r, Up"))]
+ "TARGET_THUMB2 && TARGET_VFP_BASE
   && !TARGET_VFP_FP16INST
   && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
@@ -99,20 +99,24 @@
       return "vmov%?\t%0, %1\t%@ int";
     case 8:
       return "vmov%?.f32\t%0, %1\t%@ int";
+    case 9:
+      return "vmsr%?\t P0, %1\t@ movhi";
+    case 10:
+      return "vmrs%?\t %0, P0\t@ movhi";
     default:
       gcc_unreachable ();
     }
 }
  [(set_attr "predicable" "yes")
   (set_attr "predicable_short_it"
-   "yes, no, yes, no, no, no, no, no, no")
+   "yes, no, yes, no, no, no, no, no, no, no, no")
   (set_attr "type"
    "mov_reg, mov_imm, mov_imm, mov_imm, store_4, load_4,\
-    f_mcr, f_mrc, fmov")
-  (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *")
-  (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
-  (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *")
-  (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4")]
+    f_mcr, f_mrc, fmov, mve_move, mve_move")
+  (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *, mve, mve")
+  (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *, *, *")
+  (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *, *, *")
+  (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4")]
 )
 
 ;; Patterns for HI moves which provide more data transfer instructions when FP16
@@ -170,10 +174,10 @@
 (define_insn "*thumb2_movhi_fp16"
  [(set
    (match_operand:HI 0 "nonimmediate_operand"
-    "=rk, r, l, r, m, r, *t, r, *t")
+    "=rk, r, l, r, m, r, *t, r, *t, Up, r")
    (match_operand:HI 1 "general_operand"
-    "rk, I, Py, n, r, m, r, *t, *t"))]
- "TARGET_THUMB2 && TARGET_VFP_FP16INST
+    "rk, I, Py, n, r, m, r, *t, *t, r, Up"))]
+ "TARGET_THUMB2 && (TARGET_VFP_FP16INST || TARGET_HAVE_MVE)
   && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
 {
@@ -194,21 +198,25 @@
       return "vmov.f16\t%0, %1\t%@ int";
     case 8:
       return "vmov%?.f32\t%0, %1\t%@ int";
+    case 9:
+      return "vmsr%?\tP0, %1\t%@ movhi";
+    case 10:
+      return "vmrs%?\t%0, P0\t%@ movhi";
     default:
       gcc_unreachable ();
     }
 }
  [(set_attr "predicable"
-   "yes, yes, yes, yes, yes, yes, no, no, yes")
+   "yes, yes, yes, yes, yes, yes, no, no, yes, yes, yes")
   (set_attr "predicable_short_it"
-   "yes, no, yes, no, no, no, no, no, no")
+   "yes, no, yes, no, no, no, no, no, no, no, no")
   (set_attr "type"
    "mov_reg, mov_imm, mov_imm, mov_imm, store_4, load_4,\
-    f_mcr, f_mrc, fmov")
-  (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *")
-  (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
-  (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *")
-  (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4")]
+    f_mcr, f_mrc, fmov, mve_move, mve_move")
+  (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *, mve, mve")
+  (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *, *, *")
+  (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *, *, *")
+  (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4")]
 )
 
 ;; SImode moves
@@ -258,9 +266,11 @@
 ;; is chosen with length 2 when the instruction is predicated for
 ;; arm_restrict_it.
 (define_insn "*thumb2_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r,lk*r,m,*t, r,*t,*t,  *Uv")
-	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,lk*r, r,*t,*t,*UvTu,*t"))]
-  "TARGET_THUMB2 && TARGET_HARD_FLOAT
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r,l,*hk,m,*m,*t,\
+						    r,*t,*t,*Uv, Up, r,Uf,r")
+	(match_operand:SI 1 "general_operand" "rk,I,Py,K,j,mi,*mi,l,*hk,r,*t,\
+					       *t,*UvTu,*t, r, Up,r,Uf"))]
+  "TARGET_THUMB2 && TARGET_VFP_BASE
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
   "*
@@ -275,30 +285,44 @@
     case 4:
       return \"movw%?\\t%0, %1\";
     case 5:
+    case 6:
       /* Cannot load it directly, split to load it via MOV / MOVT.  */
       if (!MEM_P (operands[1]) && arm_disable_literal_pool)
 	return \"#\";
       return \"ldr%?\\t%0, %1\";
-    case 6:
-      return \"str%?\\t%1, %0\";
     case 7:
-      return \"vmov%?\\t%0, %1\\t%@ int\";
     case 8:
-      return \"vmov%?\\t%0, %1\\t%@ int\";
+      return \"str%?\\t%1, %0\";
     case 9:
+      return \"vmov%?\\t%0, %1\\t%@ int\";
+    case 10:
+      return \"vmov%?\\t%0, %1\\t%@ int\";
+    case 11:
       return \"vmov%?.f32\\t%0, %1\\t%@ int\";
-    case 10: case 11:
+    case 12: case 13:
       return output_move_vfp (operands);
+    case 14:
+      return \"vmsr\\t P0, %1\";
+    case 15:
+      return \"vmrs\\t %0, P0\";
+    case 16:
+      return \"mcr\\tp10, 7, %1, cr1, cr0, 0\\t @SET_FPSCR\";
+    case 17:
+      return \"mrc\\tp10, 7, %0, cr1, cr0, 0\\t @GET_FPSCR\";
     default:
       gcc_unreachable ();
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_imm,load_4,store_4,f_mcr,f_mrc,fmov,f_loads,f_stores")
-   (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4")
-   (set_attr "pool_range"     "*,*,*,*,*,1018,*,*,*,*,1018,*")
-   (set_attr "neg_pool_range" "*,*,*,*,*,   0,*,*,*,*,1008,*")]
+   (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,\
+	      no,no,no,no,no")
+   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_imm,load_4,load_4,\
+	     store_4,store_4,f_mcr,f_mrc,fmov,f_loads,f_stores,mve_move,\
+	     mve_move,mrs,mrs")
+   (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4")
+   (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*,*,*,*,*")
+   (set_attr "arch" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,mve,mve,mve,mve")
+   (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*,*,*,*,*")]
 )
 
 
@@ -306,12 +330,12 @@
 
 (define_insn "*movdi_vfp"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,r,r,m,w,!r,w,w, Uv")
-	(match_operand:DI 1 "di_operand"	      "r,rDa,Db,Dc,mi,mi,r,r,w,w,UvTu,w"))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT
+	(match_operand:DI 1 "di_operand"       "r,rDa,Db,Dc,mi,mi,r,r,w,w,UvTu,w"))]
+  "TARGET_32BIT && TARGET_VFP_BASE
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))
-   && !(TARGET_NEON && CONST_INT_P (operands[1])
-	&& simd_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
+   && !((TARGET_NEON || TARGET_HAVE_MVE) && CONST_INT_P (operands[1])
+       && simd_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
   "*
   switch (which_alternative)
     {
@@ -333,7 +357,7 @@
     case 8:
       return \"vmov%?\\t%Q0, %R0, %P1\\t%@ int\";
     case 9:
-      if (TARGET_VFP_SINGLE)
+      if (TARGET_VFP_SINGLE || TARGET_HAVE_MVE)
 	return \"vmov%?.f32\\t%0, %1\\t%@ int\;vmov%?.f32\\t%p0, %p1\\t%@ int\";
       else
 	return \"vmov%?.f64\\t%P0, %P1\\t%@ int\";
@@ -390,9 +414,15 @@
     case 6: /* S register from immediate.  */
       return \"vmov.f16\\t%0, %1\t%@ __<fporbf>\";
     case 7: /* S register from memory.  */
-      return \"vld1.16\\t{%z0}, %A1\";
+      if (TARGET_HAVE_MVE)
+	return \"vldr.16\\t%0, %A1\";
+      else
+	return \"vld1.16\\t{%z0}, %A1\";
     case 8: /* Memory from S register.  */
-      return \"vst1.16\\t{%z1}, %A0\";
+      if (TARGET_HAVE_MVE)
+	return \"vstr.16\\t%1, %A0\";
+      else
+	return \"vst1.16\\t{%z1}, %A0\";
     case 9: /* ARM register from constant.  */
       {
 	long bits;
@@ -593,7 +623,7 @@
 (define_insn "*thumb2_movsf_vfp"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=t,?r,t, t  ,Uv,r ,m,t,r")
 	(match_operand:SF 1 "hard_sf_operand"	   " ?r,t,Dv,UvHa,t, mHa,r,t,r"))]
-  "TARGET_THUMB2 && TARGET_HARD_FLOAT
+  "TARGET_THUMB2 && TARGET_VFP_BASE
    && (   s_register_operand (operands[0], SFmode)
        || s_register_operand (operands[1], SFmode))"
   "*
@@ -682,7 +712,7 @@
 (define_insn "*thumb2_movdf_vfp"
   [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w,w  ,Uv,r ,m,w,r")
 	(match_operand:DF 1 "hard_df_operand"		   " ?r,w,Dy,G,UvHa,w, mHa,r, w,r"))]
-  "TARGET_THUMB2 && TARGET_HARD_FLOAT
+  "TARGET_THUMB2 && TARGET_VFP_BASE
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
   "*
@@ -760,7 +790,7 @@
 	    [(match_operand 4 "cc_register" "") (const_int 0)])
 	  (match_operand:SF 1 "s_register_operand" "0,t,t,0,?r,?r,0,t,t")
 	  (match_operand:SF 2 "s_register_operand" "t,0,t,?r,0,?r,t,0,t")))]
-  "TARGET_THUMB2 && TARGET_HARD_FLOAT && !arm_restrict_it"
+  "TARGET_THUMB2 && TARGET_VFP_BASE && !arm_restrict_it"
   "@
    it\\t%D3\;vmov%D3.f32\\t%0, %2
    it\\t%d3\;vmov%d3.f32\\t%0, %1
@@ -806,7 +836,8 @@
 	    [(match_operand 4 "cc_register" "") (const_int 0)])
 	  (match_operand:DF 1 "s_register_operand" "0,w,w,0,?r,?r,0,w,w")
 	  (match_operand:DF 2 "s_register_operand" "w,0,w,?r,0,?r,w,0,w")))]
-  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE && !arm_restrict_it"
+  "TARGET_THUMB2 && TARGET_VFP_BASE && TARGET_VFP_DOUBLE
+   && !arm_restrict_it"
   "@
    it\\t%D3\;vmov%D3.f64\\t%P0, %P2
    it\\t%d3\;vmov%d3.f64\\t%P0, %P1
@@ -1977,7 +2008,7 @@
     [(set (match_operand:BLK 0 "memory_operand" "=m")
 	  (unspec:BLK [(match_operand:DF 1 "vfp_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
-  "TARGET_32BIT && TARGET_HARD_FLOAT"
+  "TARGET_32BIT && TARGET_VFP_BASE"
   "* return vfp_output_vstmd (operands);"
   [(set_attr "type" "f_stored")]
 )
@@ -2065,16 +2096,18 @@
 
 ;; Write Floating-point Status and Control Register.
 (define_insn "set_fpscr"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] VUNSPEC_SET_FPSCR)]
-  "TARGET_HARD_FLOAT"
+  [(set (reg:SI VFPCC_REGNUM)
+	(unspec_volatile:SI
+	 [(match_operand:SI 0 "register_operand" "r")] VUNSPEC_SET_FPSCR))]
+  "TARGET_VFP_BASE"
   "mcr\\tp10, 7, %0, cr1, cr0, 0\\t @SET_FPSCR"
   [(set_attr "type" "mrs")])
 
 ;; Read Floating-point Status and Control Register.
 (define_insn "get_fpscr"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec_volatile:SI [(const_int 0)] VUNSPEC_GET_FPSCR))]
-  "TARGET_HARD_FLOAT"
+	(unspec:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR))]
+  "TARGET_VFP_BASE"
   "mrc\\tp10, 7, %0, cr1, cr0, 0\\t @GET_FPSCR"
   [(set_attr "type" "mrs")])
 
