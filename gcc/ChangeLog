@@ -1,5 +1,9 @@
 2020-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94167
+	* tree-inline.c (insert_init_stmt): Don't gimple_regimplify_operands
+	DEBUG_STMTs.
+
 	PR tree-optimization/94166
 	* tree-ssa-reassoc.c (sort_by_mach_mode): Use SSA_NAME_VERSION
 	as secondary comparison key.

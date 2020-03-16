@@ -1,5 +1,8 @@
 2020-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94167
+	* gcc.dg/pr94167.c: New test.
+
 	PR tree-optimization/94166
 	* gcc.dg/pr94166.c: New test.
 
