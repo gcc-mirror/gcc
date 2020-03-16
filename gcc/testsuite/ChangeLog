@@ -1,3 +1,8 @@
+2020-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94190 - wrong no post-decrement operator error in template.
+	* g++.dg/conversion/op7.C: New test.
+
 2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc/arm/vfp-1.c: Use arm_fp__ok effective-target.
