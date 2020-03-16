@@ -1335,7 +1335,7 @@ public:
     return fd >= 0 && hdr.pos;
   }
   void freeze ();
-  void defrost (const char *);
+  bool defrost (const char *);
 
   /* If BYTES is in the mmapped area, allocate a new buffer for it.  */
   void preserve (bytes_in &bytes)
@@ -1614,7 +1614,7 @@ elf_in::freeze ()
   fd = -1;
 }
 
-void
+bool
 elf_in::defrost (const char *name)
 {
   gcc_checking_assert (is_frozen ());
@@ -1654,6 +1654,8 @@ elf_in::defrost (const char *name)
 	}
 #endif
     }
+
+  return !get_error ();
 }
 
 /* Read at current position into BUFFER.  Return true on success.  */
@@ -2654,7 +2656,7 @@ public:
     if (from->num)
       allocp2++;
   }
-  void lazy_load ();
+  bool lazy_load ();
 
 public:
   struct traits : delete_ptr_hash<pendset> {
@@ -2900,7 +2902,7 @@ public:
   bool read_definition (tree decl);
   
 private:
-  static bool is_matching_decl (tree existing, tree node, tree inner);
+  bool is_matching_decl (tree existing, tree node, tree inner);
   static bool install_implicit_member (tree decl);
   bool read_function_def (tree decl, tree maybe_template);
   bool read_var_def (tree decl, tree maybe_template);
@@ -3368,9 +3370,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   elf_in *from () const
   {
-    elf_in *from = slurp->from;
-    gcc_checking_assert (from);
-    return from;
+    return slurp->from;
   }
 
  public:
@@ -3426,24 +3426,24 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to, cpp_reader *);
-  bool read_initial (int fd, int e, cpp_reader *);
-  bool read_preprocessor ();
-  bool read_language ();
+  bool read_initial (cpp_reader *);
+  bool read_preprocessor (bool);
+  bool read_language (bool);
 
  public:
   /* Read a section.  */
-  void load_section (unsigned snum);
+  bool load_section (unsigned snum, mc_slot *mslot);
   /* Lazily read a section.  */
-  bool lazy_load (unsigned index, mc_slot *mslot, unsigned diags = 0);
+  bool lazy_load (unsigned index, mc_slot *mslot);
 
  public:
   /* Juggle a limited number of file numbers.  */
   static void freeze_an_elf ();
-  void maybe_defrost ();
+  bool maybe_defrost ();
 
  public:
-  /* Check or complete a read.  */
-  bool check_read (unsigned count, tree ns = NULL_TREE, tree id = NULL_TREE);
+  void maybe_completed_reading ();
+  bool check_read (bool outermost, bool ok);
 
  private:
   /* The README, for human consumption.  */
@@ -3537,7 +3537,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   location_t imported_from () const;
 
  public:
-  bool do_import (const char *filename, cpp_reader *);
+  bool do_import (const char *filename, cpp_reader *, bool outermost);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -9290,7 +9290,8 @@ trees_in::tree_node ()
 	  {
 	    mc_slot *slot = &(*entity_ary)[from->entity_lwm + ident];
 	    if (slot->is_lazy ())
-	      from->lazy_load (ident, slot);
+	      if (!from->lazy_load (ident, slot))
+		set_overrun ();
 	    res = *slot;
 	  }
 
@@ -12623,33 +12624,39 @@ pendset::hash::extract (unsigned key)
 
 /* Load the entities referred to by this pendset.  */
 
-void pendset::lazy_load ()
+bool
+pendset::lazy_load ()
 {
-  for (unsigned ix = 0; ix != num; ix++)
+  bool ok = true;
+
+  for (unsigned ix = 0; ok && ix != num; ix++)
     {
       unsigned index = pending[ix];
       if (index & ~(~0u >> 1))
 	{
 	  /* An indirection.  */
 	  pendset *other = table->extract (~index);
-	  other->lazy_load ();
+	  if (!other->lazy_load ())
+	    ok = false;
 	}
       else
 	{
 	  module_state *module = import_entity_module (index);
 	  mc_slot *slot = &(*entity_ary)[index];
-	  if (slot->is_lazy ())
-	    module->lazy_load (index - module->entity_lwm, slot, errorcount + 1);
-	  else
+	  if (!slot->is_lazy ())
 	    dump () && dump ("Specialiation %M[%u[ already loaded",
 			     module, index - module->entity_lwm);
+	  else if (!module->lazy_load (index - module->entity_lwm, slot))
+	    ok = false;
 	}
     }
 
   /* We own set, so delete it now.  */
   delete this;
+
+  return ok;
 }
-      
+
 /* Initialize location spans.  */
 
 void
@@ -14084,7 +14091,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      if (imp->is_partition ())
 		dump () && dump ("Importing elided partition %M", imp);
 
-	      if (!imp->do_import (fname, reader))
+	      if (!imp->do_import (fname, reader, false))
 		imp = NULL;
 	      dump.pop (n);
 	      if (!imp)
@@ -15150,7 +15157,7 @@ module_state::read_pendings (unsigned count)
       if (sec.get_overrun ())
 	break;
 
-      bool not_loaded = true;
+      bool loaded = false;
       dump () && dump ("%s keyed to %M[%u] entity:%u",
 		       ns ? "Specialization" : "Member",
 		       from, key_index, ent_index);
@@ -15165,7 +15172,7 @@ module_state::read_pendings (unsigned count)
 	    {
 	      tree key = slot;
 
-	      not_loaded = false;
+	      loaded = true;
 	      if (ns)
 		{
 		  if (key && TREE_CODE (key) == TEMPLATE_DECL)
@@ -15175,7 +15182,7 @@ module_state::read_pendings (unsigned count)
 		}
 	      else
 		{
-		  if (key && TREE_CODE (key) != TYPE_DECL)
+		  if (key && TREE_CODE (key) == TYPE_DECL)
 		    DECL_MODULE_PENDING_MEMBERS_P (key) = true;
 		  else
 		    sec.set_overrun ();
@@ -15196,7 +15203,7 @@ module_state::read_pendings (unsigned count)
 	    break;
 
 	  module_state *origin_from = (*modules)[origin];
-	  if (not_loaded
+	  if (!loaded
 	      && (origin_from->is_header ()
 		  || (origin_from->is_partition ()
 		      || origin_from->is_module ())))
@@ -17157,7 +17164,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
   if (!is_header () && !is_partition ())
     partitions = BITMAP_GGC_ALLOC ();
 
-  function_depth++;
   unsigned mod_hwm = 1;
   for (unsigned ix = 1; ix != modules->length (); ix++)
     {
@@ -17184,18 +17190,16 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      bitmap_set_bit (exports, imp->mod);
 	    }
 
-	  /* Load all the entities of this partition.  */
-	  // FIXME: Perhaps do this when loading the partition itself?
-	  // hook into the no-lazy loading
-	  for (unsigned jx = 0; jx != imp->entity_num; jx++)
-	    {
-	      mc_slot *slot = &(*entity_ary)[imp->entity_lwm + jx];
-	      if (slot->is_lazy ())
-		imp->lazy_load (jx, slot);
-	    }
+	  /* All the partition entities should have been loaded when
+	     loading the partition.  */
+	  if (CHECKING_P)
+	    for (unsigned jx = 0; jx != imp->entity_num; jx++)
+	      {
+		mc_slot *slot = &(*entity_ary)[imp->entity_lwm + jx];
+		gcc_checking_assert (!slot->is_lazy ());
+	      }
 	}
     }
-  function_depth--;
 
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
@@ -17391,17 +17395,14 @@ module_state::write (elf_out *to, cpp_reader *reader)
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
-/* Initial read of a CMI from FD. E is errno from its fopen.  Checks
-   config, loads up imports and line maps.  */
+/* Initial read of a CMI.  Checks config, loads up imports and line
+   maps.  */
 
 bool
-module_state::read_initial (int fd, int e, cpp_reader *reader)
+module_state::read_initial (cpp_reader *reader)
 {
   module_state_config config;
   bool ok = true;
-
-  gcc_checking_assert (!slurp);
-  slurp = new slurping (new elf_in (fd, e));
 
   if (ok && !from ()->begin (loc))
     ok = false;
@@ -17464,235 +17465,218 @@ module_state::read_initial (int fd, int e, cpp_reader *reader)
 /* Read a preprocessor state.  */
 
 bool
-module_state::read_preprocessor ()
+module_state::read_preprocessor (bool outermost)
 {
+  gcc_checking_assert (is_header () && slurp
+		       && slurp->remap_module (0) == mod);
+
+  if (load_state == 2)
+    return !(from () && from ()->get_error ());
+
   bool ok = true;
 
-  gcc_checking_assert (is_header ());
-
-  if (load_state != 2)
+  /* Read direct header imports.  */
+  unsigned len = slurp->remap->length ();
+  for (unsigned ix = 1; ok && ix != len; ix++)
     {
-      gcc_checking_assert (slurp->remap_module (0) == mod);
-
-      /* Read direct header imports.  */
-      unsigned len = slurp->remap->length ();
-      for (unsigned ix = 1; ok && ix != len; ix++)
+      unsigned map = (*slurp->remap)[ix];
+      if (map & 1)
 	{
-	  unsigned map = (*slurp->remap)[ix];
-	  if (map & 1)
+	  module_state *import = (*modules)[map >> 1];
+	  if (import->is_header ())
 	    {
-	      module_state *import = (*modules)[map >> 1];
-	      if (import->is_header ())
-		{
-		  ok = import->read_preprocessor ();
-		  bitmap_ior_into (slurp->headers, import->slurp->headers);
-		}
+	      ok = import->read_preprocessor (false);
+	      bitmap_ior_into (slurp->headers, import->slurp->headers);
 	    }
 	}
-
-      /* Record as a direct header.  */
-      if (ok)
-	bitmap_set_bit (slurp->headers, mod);
-
-      if (ok && !read_macros ())
-	ok = false;
-
-      load_state = 2;
-
-      if (flag_preprocess_only)
-	/* We're done with the string table.  */
-	from ()->release ();
-      bool rok = check_read (0);
-      gcc_checking_assert (rok == ok);
     }
 
-  return ok;
+  /* Record as a direct header.  */
+  if (ok)
+    bitmap_set_bit (slurp->headers, mod);
+
+  if (ok && !read_macros ())
+    ok = false;
+
+  load_state = 2;
+  announce ("macros");
+
+  if (flag_preprocess_only)
+    /* We're done with the string table.  */
+    from ()->release ();
+
+  return check_read (outermost, ok);
 }
 
 /* Read language state.  */
 
 bool
-module_state::read_language ()
+module_state::read_language (bool outermost)
 {
+  if (load_state == 3)
+    return !(slurp && from () && from ()->get_error ());
+
+  gcc_checking_assert (slurp && slurp->current == ~0u
+		       && slurp->remap_module (0) == mod);
+
   bool ok = true;
 
-  if (load_state != 3)
+  /* Read direct imports.  */
+  unsigned len = slurp->remap->length ();
+  for (unsigned ix = 1; ok && ix != len; ix++)
     {
-      gcc_checking_assert (slurp && slurp->current == ~0u
-			   && slurp->remap_module (0) == mod);
-
-      /* Read direct imports.  */
-      unsigned len = slurp->remap->length ();
-      for (unsigned ix = 1; ok && ix != len; ix++)
+      unsigned map = (*slurp->remap)[ix];
+      if (map & 1)
 	{
-	  unsigned map = (*slurp->remap)[ix];
-	  if (map & 1)
-	    {
-	      module_state *import = (*modules)[map >> 1];
-	      ok = import->read_language ();
-	    }
+	  module_state *import = (*modules)[map >> 1];
+	  if (!import->read_language (false))
+	    ok = false;
 	}
-
-      unsigned counts[MSC_HWM];
-
-      if (ok && !read_counts (counts))
-	ok = false;
-
-      function_depth++; /* Prevent unexpected GCs.  */
-
-      /* Read the entity table.  */
-      entity_lwm = vec_safe_length (entity_ary);
-      if (ok && counts[MSC_entities]
-	  && !read_entities (counts[MSC_entities],
-			     counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
-	ok = false;
-
-      /* Read the namespace hierarchy. */
-      if (ok && counts[MSC_namespaces]
-	  && !read_namespaces (counts[MSC_namespaces]))
-	ok = false;
-
-      if (ok && !read_bindings (counts[MSC_bindings],
-				counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
-	ok = false;
-
-      /* And unnamed.  */
-      if (ok && counts[MSC_pendings] && !read_pendings (counts[MSC_pendings]))
-	ok = false;
-
-      if (ok)
-	{
-	  slurp->remaining = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
-	  available_clusters += counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
-	}
-
-      if (ok && !flag_module_lazy)
-	{
-	  /* Read the sections in forward order, so that dependencies are read
-	     first.  See note about tarjan_connect.  */
-	  ggc_collect ();
-
-	  unsigned hwm = counts[MSC_sec_hwm];
-	  for (unsigned ix = counts[MSC_sec_lwm]; ix != hwm; ix++)
-	    {
-	      load_section (ix);
-	      if (from ()->get_error ())
-		{
-		  ok = false;
-		  break;
-		}
-	      ggc_collect ();
-	    }
-
-	  if (CHECKING_P)
-	    for (unsigned ix = 0; ix != entity_num; ix++)
-	      gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
-	}
-
-      // FIXME: Belfast order-of-initialization means this may be inadequate.
-      if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
-	ok = false;
-
-      function_depth--;
-
-      load_state = 3;
-
-      gcc_assert (slurp->current == ~0u);
-
-      /* We're done with the string table.  */
-      from ()->release ();
-      bool rok = check_read (0);
-      // FIXME: This suggests simplifying check_read's behaviour
-      gcc_checking_assert (rok == ok);
     }
 
-  return ok;
+  unsigned counts[MSC_HWM];
+
+  if (ok && !read_counts (counts))
+    ok = false;
+
+  function_depth++; /* Prevent unexpected GCs.  */
+
+  /* Read the entity table.  */
+  entity_lwm = vec_safe_length (entity_ary);
+  if (ok && counts[MSC_entities]
+      && !read_entities (counts[MSC_entities],
+			 counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
+    ok = false;
+
+  /* Read the namespace hierarchy. */
+  if (ok && counts[MSC_namespaces]
+      && !read_namespaces (counts[MSC_namespaces]))
+    ok = false;
+
+  if (ok && !read_bindings (counts[MSC_bindings],
+			    counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
+    ok = false;
+
+  /* And unnamed.  */
+  if (ok && counts[MSC_pendings] && !read_pendings (counts[MSC_pendings]))
+    ok = false;
+
+  if (ok)
+    {
+      slurp->remaining = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
+      available_clusters += counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
+    }
+
+  if (!flag_module_lazy
+      || (is_partition ()
+	  && module_interface_p ()
+	  && !module_partition_p ()))
+    {
+      /* Read the sections in forward order, so that dependencies are read
+	 first.  See note about tarjan_connect.  */
+      ggc_collect ();
+
+      unsigned hwm = counts[MSC_sec_hwm];
+      for (unsigned ix = counts[MSC_sec_lwm]; ok && ix != hwm; ix++)
+	{
+	  if (!load_section (ix, NULL))
+	    {
+	      ok = false;
+	      break;
+	    }
+	  ggc_collect ();
+	}
+      
+      if (ok && CHECKING_P)
+	for (unsigned ix = 0; ix != entity_num; ix++)
+	  gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
+    }
+
+  // FIXME: Belfast order-of-initialization means this may be inadequate.
+  if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
+    ok = false;
+
+  function_depth--;
+  
+  announce (flag_module_lazy ? "lazy" : "imported");
+  load_state = 3;
+
+  gcc_assert (slurp->current == ~0u);
+
+  /* We're done with the string table.  */
+  from ()->release ();
+
+  return check_read (outermost, ok);
 }
 
-void
+bool
 module_state::maybe_defrost ()
 {
+  bool ok = true;
   if (from ()->is_frozen ())
     {
       if (lazy_open >= lazy_limit)
 	freeze_an_elf ();
       dump () && dump ("Defrosting '%s'", filename);
-      from ()->defrost (maybe_add_cmi_prefix (filename));
+      ok = from ()->defrost (maybe_add_cmi_prefix (filename));
       lazy_open++;
     }
+
+  return ok;
 }
 
 /* Load section SNUM, dealing with laziness.  It doesn't matter if we
    have multiple concurrent loads, because we do not use TREE_VISITED
    when reading back in.  */
 
-void
-module_state::load_section (unsigned snum)
+bool
+module_state::load_section (unsigned snum, mc_slot *mslot)
 {
-  maybe_defrost ();
+  if (from ()->get_error ())
+    return false;
 
-  unsigned old_current = slurp->current;
-  slurp->current = snum;
-  slurp->lru = 0;  /* Do not swap out.  */
-  slurp->remaining--;
-  read_cluster (snum);
-  slurp->lru = ++lazy_lru;
-  slurp->current = old_current;
+  if (snum >= slurp->current)
+    from ()->set_error (elf::E_BAD_LAZY);
+  else if (maybe_defrost ())
+    {
+      unsigned old_current = slurp->current;
+      slurp->current = snum;
+      slurp->lru = 0;  /* Do not swap out.  */
+      slurp->remaining--;
+      read_cluster (snum);
+      slurp->lru = ++lazy_lru;
+      slurp->current = old_current;
+    }
+  
+  if (mslot && mslot->is_lazy ())
+    {
+      /* Oops, the section didn't set this slot.  */
+      from ()->set_error (elf::E_BAD_DATA);
+      *mslot = NULL_TREE;
+    }
+
+  bool ok = !from ()->get_error ();
+  if (!ok)
+    {
+      error_at (loc, "failed to read compiled module cluster %u: %s",
+		snum, from ()->get_error (filename));
+      note_cmi_name ();
+    }
+
+  maybe_completed_reading ();
+
+  return ok;
 }
 
-/* After a reading operation, make sure things are still ok.  If not,
-   emit an error and clean up.  */
-
-bool
-module_state::check_read (unsigned diag_count, tree ns, tree id)
+void
+module_state::maybe_completed_reading ()
 {
-  gcc_checking_assert (!id || slurp->current == ~0u);
-
-  bool ok = true;
-  if (int e = from ()->get_error ())
-    {
-      if (slurp->current == ~0u)
-	{
-	  const char *err = from ()->get_error (filename);
-	  if (id)
-	    error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
-		      ns, &"::"[ns == global_namespace ? 2 : 0], id,
-		      get_flatname (), err);
-	  else
-	    error_at (loc, "failed to read compiled module: %s", err);
-	  note_cmi_name ();
-
-	  if (e == EMFILE
-	      || e == ENFILE
-#if MAPPED_READING
-	      || e == ENOMEM
-#endif
-	      || false)
-	    inform (loc, "consider using %<-fno-module-lazy%>,"
-		    " reducing %<--param %s%> value,"
-		    " or increasing the per-process file descriptor limit",
-		    "?");
-	}
-
-      if (diag_count)
-	fatal_error (loc, "jumping off the crazy train to crashville");
-
-      ok = false;
-    }
-  else if (id && diag_count <= unsigned (errorcount))
-    inform (input_location,
-	    is_header () ? G_("during lazy loading of %<%E%s%E%>")
-	    : G_("during lazy loading of %<%E%s%E@%s%>"),
-	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
-
-  if (load_state == 3
-      && slurp->current == ~0u && !slurp->remaining)
+  if (load_state == 3 && slurp->current == ~0u && !slurp->remaining)
     {
       lazy_open--;
       // FIXME: Can we just keep the file mapped until after
       // preprocessing?  I think that's what the above load_state == 3
       // is ensuring?
-      // Should this fn set load_state to 3 on error?
       if (slurp->macro_defs.size)
 	from ()->preserve (slurp->macro_defs);
       if (slurp->macro_tbl.size)
@@ -17702,6 +17686,45 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
       if (!is_header ())
 	slurped ();
     }
+}
+
+/* After a reading operation, make sure things are still ok.  If not,
+   emit an error and clean up.  */
+
+bool
+module_state::check_read (bool outermost, bool ok)
+{
+  gcc_checking_assert (!outermost || slurp->current == ~0u);
+
+  if (!ok)
+    from ()->set_error ();
+
+  if (int e = from ()->get_error ())
+    {
+      error_at (loc, "failed to read compiled module: %s",
+		from ()->get_error (filename));
+      note_cmi_name ();
+
+      if (e == EMFILE
+	  || e == ENFILE
+#if MAPPED_READING
+	  || e == ENOMEM
+#endif
+	  || false)
+	inform (loc, "consider using %<-fno-module-lazy%>,"
+		" increasing %<-param-lazy-modules=%u%> value,"
+		" or increasing the per-process file descriptor limit",
+		param_lazy_modules);
+      else if (e == ENOENT)
+	inform (loc, "imports must be built before being imported");
+
+      if (outermost)
+	fatal_error (loc, "returning to the gate for a mechanical issue");
+
+      ok = false;
+    }
+
+  maybe_completed_reading ();
 
   return ok;
 }
@@ -18088,10 +18111,9 @@ module_state::set_flatname ()
    know it as.  */
 
 bool
-module_state::do_import (char const *fname, cpp_reader *reader)
+module_state::do_import (char const *fname, cpp_reader *reader, bool outermost)
 {
   gcc_assert (global_namespace == current_scope () && !load_state);
-  unsigned diags = is_direct () ? errorcount + 1 : 0;
 
   loc = linemap_module_loc (line_table, loc, get_flatname ());
 
@@ -18114,17 +18136,22 @@ module_state::do_import (char const *fname, cpp_reader *reader)
       e = errno;
     }
 
-  announce ("importing");
-  load_state = 1;
-  lazy_open++;
-  read_initial (fd, e, reader);
-  slurp->lru = ++lazy_lru;
+  gcc_checking_assert (!slurp);
+  slurp = new slurping (new elf_in (fd, e));
+
+  bool ok = true;
+  if (!from ()->get_error ())
+    {
+      announce ("importing");
+      load_state = 1;
+      lazy_open++;
+      ok = read_initial (reader);
+      slurp->lru = ++lazy_lru;
+    }
+
   gcc_assert (slurp->current == ~0u);
 
-  bool ok = check_read (diags);
-  announce (flag_module_lazy ? "lazy" : "imported");
-
-  return ok;
+  return check_read (outermost, ok);
 }
 
 /* Attempt to increase the file descriptor limit.  */
@@ -18194,7 +18221,7 @@ module_state::freeze_an_elf ()
 /* Load the lazy slot *MSLOT, INDEX'th slot of the module.  */
 
 bool
-module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
+module_state::lazy_load (unsigned index, mc_slot *mslot)
 {
   unsigned n = dump.push (this);
 
@@ -18204,21 +18231,7 @@ module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
   unsigned snum = cookie >> 2;
   dump () && dump ("Loading entity %M[%u] section:%u", this, index, snum);
 
-  int e = elf::E_BAD_LAZY;
-  if (snum < slurp->current)
-    {
-      load_section (snum);
-      e = elf::E_BAD_DATA;
-    }
-
-  if (mslot->is_lazy ())
-    {
-      /* Oops, the section didn't set this slot.  */
-      from ()->set_error (e);
-      *mslot = NULL_TREE;
-    }
-
-  bool ok = check_read (diags);
+  bool ok = load_section (snum, mslot);
  
   dump.pop (n);
 
@@ -18232,6 +18245,8 @@ module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
 void
 lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
 {
+  int count = errorcount + warningcount;
+
   timevar_start (TV_MODULE_IMPORT);
 
   /* Stop GC happening, even in outermost loads (because our caller
@@ -18245,21 +18260,30 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id,
 		   module->name, snum);
-  unsigned diags = errorcount + 1;
-  module->load_section (snum);
 
-  if (mslot->is_lazy ())
-    {
-      /* Oops, the section didn't set this slot.  */
-      module->from ()->set_error (elf::E_BAD_DATA);
-      *mslot = NULL_TREE;
-    }
-  module->check_read (diags, ns, id);
+  bool ok = module->load_section (snum, mslot);
+
   dump.pop (n);
 
   function_depth--;
 
   timevar_stop (TV_MODULE_IMPORT);
+
+  if (!ok)
+    fatal_error (input_location,
+		 module->is_header ()
+		 ? G_("failed to load binding %<%E%s%E%>")
+		 : G_("failed to load binding %<%E%s%E@%s%>"),
+		 ns, &"::"[ns == global_namespace ? 2 : 0], id,
+		 module->get_flatname ());
+
+  if (count != errorcount + warningcount)
+    inform (input_location,
+	    module->is_header ()
+	    ? G_("during load of binding %<%E%s%E%>")
+	    : G_("during load of binding %<%E%s%E@%s%>"),
+	    ns, &"::"[ns == global_namespace ? 2 : 0], id,
+	    module->get_flatname ());
 }
 
 /* Load any pending specializations of TMPL.  Called just before
@@ -18271,7 +18295,10 @@ lazy_load_specializations (tree tmpl)
   gcc_checking_assert (DECL_MODULE_PENDING_SPECIALIZATIONS_P (tmpl)
 		       && DECL_MODULE_ENTITY_P (tmpl));
 
+  int count = errorcount + warningcount;
+
   timevar_start (TV_MODULE_IMPORT);
+  bool ok = true;
   unsigned ident = import_entity_index (tmpl);
   if (pendset *set = pendset::table->extract (ident))
     {
@@ -18280,12 +18307,21 @@ lazy_load_specializations (tree tmpl)
       dump () && dump ("Reading %u pending specializations keyed to %M[%u] %N",
 		       set->num, import_entity_module (ident),
 		       ident - import_entity_module (ident)->entity_lwm, tmpl);
-      set->lazy_load ();
+      if (!set->lazy_load ())
+	ok = false;
       dump.pop (n);
 
       function_depth--;
     }
   timevar_stop (TV_MODULE_IMPORT);
+
+  if (!ok)
+    fatal_error (input_location, "failed to load specializations keyed to %qD",
+		 tmpl);
+
+  if (count != errorcount + warningcount)
+    inform (input_location,
+	    "during load of specializations keyed to %qD", tmpl);
 }
 
 void
@@ -18331,12 +18367,11 @@ direct_import (module_state *import, cpp_reader *reader)
 
   gcc_checking_assert (import->direct_p && import->is_rooted ());
   if (!import->load_state)
-    if (!import->do_import (NULL, reader))
-      fatal_error (import->loc,
-		   "returning to the gate for a mechanical issue");
+    if (!import->do_import (NULL, reader, true))
+      gcc_unreachable ();
 
   if (import->load_state < 3)
-    import->read_language ();
+    import->read_language (true);
 
   (*modules)[0]->set_import (import, import->exported_p);
 
@@ -18723,9 +18758,8 @@ preprocess_module (module_state *module, location_t from_loc,
 	  spans.close ();
 
 	  char *fname = module_mapper::import_export (module, false);
-	  if (!module->do_import (fname, reader))
-	    fatal_error (module->loc,
-			 "returning to gate for a mechanical issue");
+	  if (!module->do_import (fname, reader, true))
+	    gcc_unreachable ();
 
 	  /* Restore the line-map state.  */
 	  linemap_module_restore (line_table, pre_hwm);
@@ -18733,7 +18767,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	}
 
       if (module->load_state < 2)
-	if (module->read_preprocessor ())
+	if (module->read_preprocessor (true))
 	  module->import_macros ();
 
       dump.pop (n);

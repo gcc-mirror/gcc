@@ -1,6 +1,29 @@
 2020-03-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (elf_in::defrost): Return bool.
+	(module_state::from): May return NULL.
+	(module_state::maybe_completed_reading): New, broken out of
+	check_read.
+	(pendset::lazy_load): Likewise.
+	(module_state::write): Do not read partitions here.
+	(module_state::read_initial): Do not create slurp or elf_in here.
+	(module_state::load_{preprocessor,language}): Return bool, add
+	outermost flag.  Adjust check_read calls.
+	(module_state::load_section): Reimplement, check mc_slot, issue
+	errors here.
+	(module_state::check_read): Reimplement for use by config loaders.
+	(module_state::do_import): Add outermost flag, alloc slurping
+	here.  Adjust check_read call.
+	(module_state::lazy_load): Thin wrapper on load_section.
+	(module_state::lazy_load_binding): Check error emission here and
+	diagnose.
+	(module_state::lazy_load_specializations): Likewise.
+	(direct_import, preprocess_module): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-4_c.C: Adjust regexp matching
+
+	gcc/cp/
 	* doc/invoke.texi (C++ Modules): Clarify a couple of things.
 
 2020-03-13  Nathan Sidwell  <nathan@acm.org>
