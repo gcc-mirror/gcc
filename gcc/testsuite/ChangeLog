@@ -1,6 +1,11 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94167
+	* gcc.dg/pr94167.c: New test.
+
 	2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94130
