@@ -127,7 +127,14 @@ inline namespace v1
   /// An extensible, type-safe, polymorphic set of services.
   class execution_context;
 
-  class service_already_exists : public logic_error { };
+  class service_already_exists : public logic_error
+  {
+    template<typename _Service, typename... _Args>
+      friend _Service&
+      make_service(execution_context&, _Args&&...);
+
+    service_already_exists() : logic_error("service already exists") { }
+  };
 
   template<typename _Tp> struct is_executor;
 
