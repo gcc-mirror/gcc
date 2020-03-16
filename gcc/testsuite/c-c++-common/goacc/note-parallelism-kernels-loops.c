@@ -1,6 +1,7 @@
 /* Test the output of "-fopt-info-optimized-omp" for an OpenACC 'kernels'
    construct containing loops.  */
 
+/* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */
 /* { dg-additional-options "-fopt-info-optimized-omp" } */
 
 //TODO update accordingly
