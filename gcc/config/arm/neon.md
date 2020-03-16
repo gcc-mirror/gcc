@@ -47,7 +47,7 @@
       int width, is_valid;
       static char templ[40];
 
-      is_valid = neon_immediate_valid_for_move (operands[1], <MODE>mode,
+      is_valid = simd_immediate_valid_for_move (operands[1], <MODE>mode,
         &operands[1], &width);
 
       gcc_assert (is_valid != 0);
@@ -94,7 +94,7 @@
       int width, is_valid;
       static char templ[40];
 
-      is_valid = neon_immediate_valid_for_move (operands[1], <MODE>mode,
+      is_valid = simd_immediate_valid_for_move (operands[1], <MODE>mode,
         &operands[1], &width);
 
       gcc_assert (is_valid != 0);
@@ -160,9 +160,13 @@
     }
 })
 
+;; The pattern mov<mode> where mode is v8hf, v4hf, v4bf and v8bf are split into
+;; two groups.  The pattern movv8hf is common for MVE and NEON, so it is moved
+;; into vec-common.md file.  Remaining mov expand patterns with half float and
+;; bfloats are implemented below.
 (define_expand "mov<mode>"
-  [(set (match_operand:VHFBF 0 "s_register_operand")
-	(match_operand:VHFBF 1 "s_register_operand"))]
+  [(set (match_operand:VHFBF_split 0 "s_register_operand")
+	(match_operand:VHFBF_split 1 "s_register_operand"))]
   "TARGET_NEON"
 {
   gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
@@ -489,7 +493,7 @@
 (define_expand "vec_init<mode><V_elem_l>"
   [(match_operand:VDQ 0 "s_register_operand")
    (match_operand 1 "" "")]
-  "TARGET_NEON"
+  "TARGET_NEON || TARGET_HAVE_MVE"
 {
   neon_expand_vector_init (operands[0], operands[1]);
   DONE;

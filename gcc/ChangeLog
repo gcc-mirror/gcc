@@ -1,3 +1,134 @@
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config.gcc (arm_mve.h): Include mve intrinsics header file.
+	* config/arm/aout.h (p0): Add new register name for MVE predicated
+	cases.
+	* config/arm-builtins.c (ARM_BUILTIN_SIMD_LANE_CHECK): Define macro
+	common to Neon and MVE.
+	(ARM_BUILTIN_NEON_LANE_CHECK): Renamed to ARM_BUILTIN_SIMD_LANE_CHECK.
+	(arm_init_simd_builtin_types): Disable poly types for MVE.
+	(arm_init_neon_builtins): Move a check to arm_init_builtins function.
+	(arm_init_builtins): Use ARM_BUILTIN_SIMD_LANE_CHECK instead of
+	ARM_BUILTIN_NEON_LANE_CHECK.
+	(mve_dereference_pointer): Add function.
+	(arm_expand_builtin_args): Call to mve_dereference_pointer when MVE is
+	enabled.
+	(arm_expand_neon_builtin): Moved to arm_expand_builtin function.
+	(arm_expand_builtin): Moved from arm_expand_neon_builtin function.
+	* config/arm/arm-c.c (__ARM_FEATURE_MVE): Define macro for MVE and MVE
+	with floating point enabled.
+	* config/arm/arm-protos.h (neon_immediate_valid_for_move): Renamed to
+	simd_immediate_valid_for_move.
+	(simd_immediate_valid_for_move): Renamed from
+	neon_immediate_valid_for_move function.
+	* config/arm/arm.c (arm_options_perform_arch_sanity_checks): Generate
+	error if vfpv2 feature bit is disabled and mve feature bit is also
+	disabled for HARD_FLOAT_ABI.
+	(use_return_insn): Check to not push VFP regs for MVE.
+	(aapcs_vfp_allocate): Add MVE check to have same Procedure Call Standard
+	as Neon.
+	(aapcs_vfp_allocate_return_reg): Likewise.
+	(thumb2_legitimate_address_p): Check to return 0 on valid Thumb-2
+	address operand for MVE.
+	(arm_rtx_costs_internal): MVE check to determine cost of rtx.
+	(neon_valid_immediate): Rename to simd_valid_immediate.
+	(simd_valid_immediate): Rename from neon_valid_immediate.
+	(simd_valid_immediate): MVE check on size of vector is 128 bits.
+	(neon_immediate_valid_for_move): Rename to
+	simd_immediate_valid_for_move.
+	(simd_immediate_valid_for_move): Rename from
+	neon_immediate_valid_for_move.
+	(neon_immediate_valid_for_logic): Modify call to neon_valid_immediate
+	function.
+	(neon_make_constant): Modify call to neon_valid_immediate function.
+	(neon_vector_mem_operand): Return VFP register for POST_INC or PRE_DEC
+	for MVE.
+	(output_move_neon): Add MVE check to generate vldm/vstm instrcutions.
+	(arm_compute_frame_layout): Calculate space for saved VFP registers for
+	MVE.
+	(arm_save_coproc_regs): Save coproc registers for MVE.
+	(arm_print_operand): Add case 'E' to print memory operands for MVE.
+	(arm_print_operand_address): Check to print register number for MVE.
+	(arm_hard_regno_mode_ok): Check for arm hard regno mode ok for MVE.
+	(arm_modes_tieable_p): Check to allow structure mode for MVE.
+	(arm_regno_class): Add VPR_REGNUM check.
+	(arm_expand_epilogue_apcs_frame): MVE check to calculate epilogue code
+	for APCS frame.
+	(arm_expand_epilogue): MVE check for enabling pop instructions in
+	epilogue.
+	(arm_print_asm_arch_directives): Modify function to disable print of
+	.arch_extension "mve" and "fp" for cases where MVE is enabled with
+	"SOFT FLOAT ABI".
+	(arm_vector_mode_supported_p): Check for modes available in MVE interger
+	and MVE floating point.
+	(arm_array_mode_supported_p): Add TARGET_HAVE_MVE check for array mode
+	pointer support.
+	(arm_conditional_register_usage): Enable usage of conditional regsiter
+	for MVE.
+	(fixed_regs[VPR_REGNUM]): Enable VPR_REG for MVE.
+	(arm_declare_function_name): Modify function to disable print of
+	.arch_extension "mve" and "fp" for cases where MVE is enabled with
+	"SOFT FLOAT ABI".
+	* config/arm/arm.h (TARGET_HAVE_MVE): Disable for soft float abi and
+	when target general registers are required.
+	(TARGET_HAVE_MVE_FLOAT): Likewise.
+	(FIXED_REGISTERS): Add bit for VFP_REG class which is enabled in arm.c
+	for MVE.
+	(CALL_USED_REGISTERS): Set bit for VFP_REG class in CALL_USED_REGISTERS
+	which indicate this is not available for across function calls.
+	(FIRST_PSEUDO_REGISTER): Modify.
+	(VALID_MVE_MODE): Define valid MVE mode.
+	(VALID_MVE_SI_MODE): Define valid MVE SI mode.
+	(VALID_MVE_SF_MODE): Define valid MVE SF mode.
+	(VALID_MVE_STRUCT_MODE): Define valid MVE struct mode.
+	(VPR_REGNUM): Add Vector Predication Register in arm_regs_in_sequence
+	for MVE.
+	(IS_VPR_REGNUM): Macro to check for VPR_REG register.
+	(REG_ALLOC_ORDER): Add VPR_REGNUM entry.
+	(enum reg_class): Add VPR_REG entry.
+	(REG_CLASS_NAMES): Add VPR_REG entry.
+	* config/arm/arm.md (VPR_REGNUM): Define.
+	(conds): Check is_mve_type attrbiute to differentiate "conditional" and
+	"unconditional" instructions.
+	(arm_movsf_soft_insn): Modify RTL to not allow for MVE.
+	(movdf_soft_insn): Modify RTL to not allow for MVE.
+	(vfp_pop_multiple_with_writeback): Enable for MVE.
+	(include "mve.md"): Include mve.md file.
+	* config/arm/arm_mve.h: Add MVE intrinsics head file.
+	* config/arm/constraints.md (Up): Constraint to enable "p0" register in MVE
+	for vector predicated operands.
+	* config/arm/iterators.md (VNIM1): Define.
+	(VNINOTM1): Define.
+	(VHFBF_split): Define
+	* config/arm/mve.md: New file.
+	(mve_mov<mode>): Define RTL for move, store and load in MVE.
+	(mve_mov<mode>): Define move RTL pattern with vec_duplicate operator for
+	second operand.
+	* config/arm/neon.md (neon_immediate_valid_for_move): Rename with
+	simd_immediate_valid_for_move.
+	(neon_mov<mode>): Split pattern and move expand pattern "movv8hf" which
+	is common to MVE and  NEON to vec-common.md file.
+	(vec_init<mode><V_elem_l>): Add TARGET_HAVE_MVE check.
+	* config/arm/predicates.md (vpr_register_operand): Define.
+	* config/arm/t-arm: Add mve.md file.
+	* config/arm/types.md (mve_move): Add MVE instructions mve_move to
+	attribute "type".
+	(mve_store): Add MVE instructions mve_store to attribute "type".
+	(mve_load): Add MVE instructions mve_load to attribute "type".
+	(is_mve_type): Define attribute.
+	* config/arm/vec-common.md (mov<mode>): Modify RTL expand to support
+	standard move patterns in MVE along with NEON and IWMMXT with mode
+	iterator VNIM1.
+	(mov<mode>): Modify RTL expand to support standard move patterns in NEON
+	and IWMMXT with mode iterator V8HF.
+	(movv8hf): Define RTL expand to support standard "movv8hf" pattern in
+	NEON and MVE.
+	* config/arm/vfp.md (neon_immediate_valid_for_move): Rename to
+	simd_immediate_valid_for_move.
+
+
 2020-03-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/89229

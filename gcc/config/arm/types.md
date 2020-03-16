@@ -550,6 +550,11 @@
 ; The classification below is for TME instructions
 ;
 ; tme
+; The classification below is for M-profile Vector Extension instructions
+;
+; mve_move
+; mve_store
+; mve_load
 
 (define_attr "type"
  "adc_imm,\
@@ -1097,7 +1102,10 @@
   crypto_sm4,\
   coproc,\
   tme,\
-  memtag"
+  memtag,\
+  mve_move,\
+  mve_store,\
+  mve_load"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
@@ -1219,6 +1227,14 @@
           neon_fp_div_s, neon_fp_div_s_q, neon_fp_div_d, neon_fp_div_d_q, crypto_aese,\
           crypto_aesmc, crypto_sha1_xor, crypto_sha1_fast, crypto_sha1_slow,\
           crypto_sha256_fast, crypto_sha256_slow")
+        (const_string "yes")
+        (const_string "no")))
+
+;; YES if the "type" attribute assigned to the insn denotes an MVE instruction,
+;; No otherwise.
+(define_attr "is_mve_type" "yes,no"
+        (if_then_else (eq_attr "type"
+        "mve_move, mve_load, mve_store, mrs")
         (const_string "yes")
         (const_string "no")))
 

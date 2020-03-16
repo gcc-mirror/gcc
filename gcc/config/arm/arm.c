@@ -3823,7 +3823,8 @@ arm_options_perform_arch_sanity_checks (void)
       else if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
-	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2))
+	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2)
+	      && !bitmap_bit_p (arm_active_target.isa, isa_bit_mve))
 	    error ("%<-mfloat-abi=hard%>: selected processor lacks an FPU");
 	}
       else
@@ -4294,7 +4295,7 @@ use_return_insn (int iscond, rtx sibling)
 
   /* Can't be done if any of the VFP regs are pushed,
      since this also requires an insn.  */
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
     for (regno = FIRST_VFP_REGNUM; regno <= LAST_VFP_REGNUM; regno++)
       if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	return 0;
@@ -6385,7 +6386,7 @@ aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, machine_mode mode,
       {
 	pcum->aapcs_vfp_reg_alloc = mask << regno;
 	if (mode == BLKmode
-	    || (mode == TImode && ! TARGET_NEON)
+	    || (mode == TImode && ! (TARGET_NEON || TARGET_HAVE_MVE))
 	    || ! arm_hard_regno_mode_ok (FIRST_VFP_REGNUM + regno, mode))
 	  {
 	    int i;
@@ -6393,7 +6394,7 @@ aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, machine_mode mode,
 	    int rshift = shift;
 	    machine_mode rmode = pcum->aapcs_vfp_rmode;
 	    rtx par;
-	    if (!TARGET_NEON)
+	    if (!(TARGET_NEON || TARGET_HAVE_MVE))
 	      {
 		/* Avoid using unsupported vector modes.  */
 		if (rmode == V2SImode)
@@ -6439,7 +6440,7 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
   if (mode == BLKmode
       || (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) >= GET_MODE_SIZE (TImode)
-	  && !TARGET_NEON))
+	  && !(TARGET_NEON || TARGET_HAVE_MVE)))
     {
       int count;
       machine_mode ag_mode;
@@ -6450,7 +6451,7 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
       aapcs_vfp_is_call_or_return_candidate (pcs_variant, mode, type,
 					     &ag_mode, &count);
 
-      if (!TARGET_NEON)
+      if (!(TARGET_NEON || TARGET_HAVE_MVE))
 	{
 	  if (ag_mode == V2SImode)
 	    ag_mode = DImode;
@@ -8349,7 +8350,9 @@ thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
 		   && CONST_INT_P (XEXP (XEXP (x, 0), 1)))))
     return 1;
 
-  else if (mode == TImode || (TARGET_NEON && VALID_NEON_STRUCT_MODE (mode)))
+  else if (mode == TImode
+	   || (TARGET_NEON && VALID_NEON_STRUCT_MODE (mode))
+	   || (TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (mode)))
     return 0;
 
   else if (code == PLUS)
@@ -9902,7 +9905,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  /* Assume that most copies can be done with a single insn,
 	     unless we don't have HW FP, in which case everything
 	     larger than word mode will require two insns.  */
-	  *cost = COSTS_N_INSNS (((!TARGET_HARD_FLOAT
+	  *cost = COSTS_N_INSNS (((!(TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
 				   && GET_MODE_SIZE (mode) > 4)
 				  || mode == DImode)
 				 ? 2 : 1);
@@ -11383,10 +11386,10 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
     case CONST_VECTOR:
       /* Fixme.  */
-      if (TARGET_NEON
-	  && TARGET_HARD_FLOAT
-	  && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
-	  && neon_immediate_valid_for_move (x, mode, NULL, NULL))
+      if (((TARGET_NEON && TARGET_HARD_FLOAT
+	    && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode)))
+	   || TARGET_HAVE_MVE)
+	  && simd_immediate_valid_for_move (x, mode, NULL, NULL))
 	*cost = COSTS_N_INSNS (1);
       else
 	*cost = COSTS_N_INSNS (4);
@@ -12430,8 +12433,8 @@ vfp3_const_double_rtx (rtx x)
   return vfp3_const_double_index (x) != -1;
 }
 
-/* Recognize immediates which can be used in various Neon instructions. Legal
-   immediates are described by the following table (for VMVN variants, the
+/* Recognize immediates which can be used in various Neon and MVE instructions.
+   Legal immediates are described by the following table (for VMVN variants, the
    bitwise inverse of the constant shown is recognized. In either case, VMOV
    is output and the correct instruction to use for a given constant is chosen
    by the assembler). The constant shown is replicated across all elements of
@@ -12482,7 +12485,7 @@ vfp3_const_double_rtx (rtx x)
    -1 if the given value doesn't match any of the listed patterns.
 */
 static int
-neon_valid_immediate (rtx op, machine_mode mode, int inverse,
+simd_valid_immediate (rtx op, machine_mode mode, int inverse,
 		      rtx *modconst, int *elementwidth)
 {
 #define CHECK(STRIDE, ELSIZE, CLASS, TEST)	\
@@ -12513,6 +12516,10 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
     }
 
   innersize = GET_MODE_UNIT_SIZE (mode);
+
+  /* Only support 128-bit vectors for MVE.  */
+  if (TARGET_HAVE_MVE && (!vector || n_elts * innersize != 16))
+    return -1;
 
   /* Vectors of float constants.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
@@ -12662,18 +12669,19 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
 #undef CHECK
 }
 
-/* Return TRUE if rtx X is legal for use as either a Neon VMOV (or, implicitly,
-   VMVN) immediate. Write back width per element to *ELEMENTWIDTH (or zero for
-   float elements), and a modified constant (whatever should be output for a
-   VMOV) in *MODCONST.  */
-
+/* Return TRUE if rtx X is legal for use as either a Neon or MVE VMOV (or,
+   implicitly, VMVN) immediate.  Write back width per element to *ELEMENTWIDTH
+   (or zero for float elements), and a modified constant (whatever should be
+   output for a VMOV) in *MODCONST.  "neon_immediate_valid_for_move" function is
+   modified to "simd_immediate_valid_for_move" as this function will be used
+   both by neon and mve.  */
 int
-neon_immediate_valid_for_move (rtx op, machine_mode mode,
+simd_immediate_valid_for_move (rtx op, machine_mode mode,
 			       rtx *modconst, int *elementwidth)
 {
   rtx tmpconst;
   int tmpwidth;
-  int retval = neon_valid_immediate (op, mode, 0, &tmpconst, &tmpwidth);
+  int retval = simd_valid_immediate (op, mode, 0, &tmpconst, &tmpwidth);
 
   if (retval == -1)
     return 0;
@@ -12690,7 +12698,7 @@ neon_immediate_valid_for_move (rtx op, machine_mode mode,
 /* Return TRUE if rtx X is legal for use in a VORR or VBIC instruction.  If
    the immediate is valid, write a constant suitable for using as an operand
    to VORR/VBIC/VAND/VORN to *MODCONST and the corresponding element width to
-   *ELEMENTWIDTH. See neon_valid_immediate for description of INVERSE.  */
+   *ELEMENTWIDTH.  See simd_valid_immediate for description of INVERSE.  */
 
 int
 neon_immediate_valid_for_logic (rtx op, machine_mode mode, int inverse,
@@ -12698,7 +12706,7 @@ neon_immediate_valid_for_logic (rtx op, machine_mode mode, int inverse,
 {
   rtx tmpconst;
   int tmpwidth;
-  int retval = neon_valid_immediate (op, mode, inverse, &tmpconst, &tmpwidth);
+  int retval = simd_valid_immediate (op, mode, inverse, &tmpconst, &tmpwidth);
 
   if (retval < 0 || retval > 5)
     return 0;
@@ -12905,7 +12913,7 @@ neon_make_constant (rtx vals)
     gcc_unreachable ();
 
   if (const_vec != NULL
-      && neon_immediate_valid_for_move (const_vec, mode, NULL, NULL))
+      && simd_immediate_valid_for_move (const_vec, mode, NULL, NULL))
     /* Load using VMOV.  On Cortex-A8 this takes one cycle.  */
     return const_vec;
   else if ((target = neon_vdup_constant (vals)) != NULL_RTX)
@@ -13181,6 +13189,15 @@ neon_vector_mem_operand (rtx op, int type, bool strict)
 	  < (VALID_NEON_QREG_MODE (GET_MODE (op))? 1016 : 1024))
       && (INTVAL (XEXP (ind, 1)) & 3) == 0)
     return TRUE;
+
+  if (type == 1 && TARGET_HAVE_MVE
+      && (GET_CODE (ind) == POST_INC || GET_CODE (ind) == PRE_DEC))
+    {
+      rtx ind1 = XEXP (ind, 0);
+      if (!REG_P (ind1))
+	return 0;
+      return VFP_REGNO_OK_FOR_SINGLE (REGNO (ind1));
+    }
 
   return FALSE;
 }
@@ -20050,7 +20067,7 @@ output_move_neon (rtx *operands)
     {
     case POST_INC:
       /* We have to use vldm / vstm for too-large modes.  */
-      if (nregs > 4)
+      if (nregs > 4 || (TARGET_HAVE_MVE && nregs >= 2))
 	{
 	  templ = "v%smia%%?\t%%0!, %%h1";
 	  ops[0] = XEXP (addr, 0);
@@ -20079,7 +20096,7 @@ output_move_neon (rtx *operands)
       /* We have to use vldm / vstm for too-large modes.  */
       if (nregs > 1)
 	{
-	  if (nregs > 4)
+	  if (nregs > 4 || (TARGET_HAVE_MVE && nregs >= 2))
 	    templ = "v%smia%%?\t%%m0, %%h1";
 	  else
 	    templ = "v%s1.64\t%%h1, %%A0";
@@ -20094,28 +20111,46 @@ output_move_neon (rtx *operands)
       {
 	int i;
 	int overlap = -1;
-	for (i = 0; i < nregs; i++)
+	if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
+	    && GET_CODE (addr) != LABEL_REF)
 	  {
-	    /* We're only using DImode here because it's a convenient size.  */
-	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
-	    ops[1] = adjust_address (mem, DImode, 8 * i);
-	    if (reg_overlap_mentioned_p (ops[0], mem))
+	    sprintf (buff, "v%srw.32\t%%q0, %%1", load ? "ld" : "st");
+	    ops[0] = reg;
+	    ops[1] = mem;
+	    output_asm_insn (buff, ops);
+	  }
+	else
+	  {
+	    for (i = 0; i < nregs; i++)
 	      {
-		gcc_assert (overlap == -1);
-		overlap = i;
+		/* We're only using DImode here because it's a convenient
+		   size.  */
+		ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
+		ops[1] = adjust_address (mem, DImode, 8 * i);
+		if (reg_overlap_mentioned_p (ops[0], mem))
+		  {
+		    gcc_assert (overlap == -1);
+		    overlap = i;
+		  }
+		else
+		  {
+		    if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
+		      sprintf (buff, "v%sr.64\t%%P0, %%1", load ? "ld" : "st");
+		    else
+		      sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
+		    output_asm_insn (buff, ops);
+		  }
 	      }
-	    else
+	    if (overlap != -1)
 	      {
-		sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
+		ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
+		ops[1] = adjust_address (mem, SImode, 8 * overlap);
+		if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
+		  sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
+		else
+		  sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
 		output_asm_insn (buff, ops);
 	      }
-	  }
-	if (overlap != -1)
-	  {
-	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
-	    ops[1] = adjust_address (mem, SImode, 8 * overlap);
-	    sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
-	    output_asm_insn (buff, ops);
 	  }
 
         return "";
@@ -22329,7 +22364,7 @@ arm_compute_frame_layout (void)
       func_type = arm_current_func_type ();
       /* Space for saved VFP registers.  */
       if (! IS_VOLATILE (func_type)
-	  && TARGET_HARD_FLOAT)
+	  && (TARGET_HARD_FLOAT || TARGET_HAVE_MVE))
 	saved += arm_get_vfp_saved_size ();
 
       /* Allocate space for saving/restoring FPCXTNS in Armv8.1-M Mainline
@@ -22553,7 +22588,7 @@ arm_save_coproc_regs(void)
 	saved_size += 8;
       }
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
     {
       start_reg = FIRST_VFP_REGNUM;
 
@@ -23858,6 +23893,53 @@ arm_print_operand (FILE *stream, rtx x, int code)
       }
       return;
 
+    /* To print the memory operand with "Us" constraint.  Based on the rtx_code
+       the memory operands output looks like following.
+       1. [Rn], #+/-<imm>
+       2. [Rn, #+/-<imm>]!
+       3. [Rn].  */
+    case 'E':
+      {
+	rtx addr;
+	rtx postinc_reg = NULL;
+	unsigned inc_val = 0;
+	enum rtx_code code;
+
+	gcc_assert (MEM_P (x));
+	addr = XEXP (x, 0);
+	code = GET_CODE (addr);
+	if (code == POST_INC || code == POST_DEC || code == PRE_INC
+	    || code  == PRE_DEC)
+	  {
+	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
+	    inc_val = GET_MODE_SIZE (GET_MODE (x));
+	    if (code == POST_INC || code == POST_DEC)
+	      asm_fprintf (stream, "], #%s%d",(code == POST_INC)
+					      ? "": "-", inc_val);
+	    else
+	      asm_fprintf (stream, ", #%s%d]!",(code == PRE_INC)
+					       ? "": "-", inc_val);
+	  }
+	else if (code == POST_MODIFY || code == PRE_MODIFY)
+	  {
+	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
+	    postinc_reg = XEXP ( XEXP (x, 1), 1);
+	    if (postinc_reg && CONST_INT_P (postinc_reg))
+	      {
+		if (code == POST_MODIFY)
+		  asm_fprintf (stream, "], #%wd",INTVAL (postinc_reg));
+		else
+		  asm_fprintf (stream, ", #%wd]!",INTVAL (postinc_reg));
+	      }
+	  }
+	else
+	  {
+	    gcc_assert (REG_P (addr));
+	    asm_fprintf (stream, "[%r]",REGNO (addr));
+	  }
+      }
+      return;
+
     case 'C':
       {
 	rtx addr;
@@ -24035,9 +24117,10 @@ arm_print_operand_address (FILE *stream, machine_mode mode, rtx x)
 			 REGNO (XEXP (x, 0)),
 			 GET_CODE (x) == PRE_DEC ? "-" : "",
 			 GET_MODE_SIZE (mode));
+	  else if (TARGET_HAVE_MVE && (mode == OImode || mode == XImode))
+	    asm_fprintf (stream, "[%r]!", REGNO (XEXP (x,0)));
 	  else
-	    asm_fprintf (stream, "[%r], #%s%d",
-			 REGNO (XEXP (x, 0)),
+	    asm_fprintf (stream, "[%r], #%s%d", REGNO (XEXP (x, 0)),
 			 GET_CODE (x) == POST_DEC ? "-" : "",
 			 GET_MODE_SIZE (mode));
 	}
@@ -24882,11 +24965,14 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
     return (regno == CC_REGNUM
-	    || (TARGET_HARD_FLOAT
+	    || ((TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
 		&& regno == VFPCC_REGNUM));
 
   if (regno == CC_REGNUM && GET_MODE_CLASS (mode) != MODE_CC)
     return false;
+
+  if (IS_VPR_REGNUM (regno))
+    return true;
 
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
@@ -24896,7 +24982,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
        start of an even numbered register pair.  */
     return (ARM_NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
-  if (TARGET_HARD_FLOAT && IS_VFP_REGNUM (regno))
+  if ((TARGET_HARD_FLOAT || TARGET_HAVE_MVE) && IS_VFP_REGNUM (regno))
     {
       if (mode == DFmode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
@@ -24914,6 +25000,10 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	       || (mode == OImode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
 	       || (mode == CImode && NEON_REGNO_OK_FOR_NREGS (regno, 6))
 	       || (mode == XImode && NEON_REGNO_OK_FOR_NREGS (regno, 8));
+     if (TARGET_HAVE_MVE)
+       return ((VALID_MVE_MODE (mode) && NEON_REGNO_OK_FOR_QUAD (regno))
+	       || (mode == OImode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
+	       || (mode == XImode && NEON_REGNO_OK_FOR_NREGS (regno, 8)));
 
       return false;
     }
@@ -24963,13 +25053,18 @@ arm_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   /* We specifically want to allow elements of "structure" modes to
      be tieable to the structure.  This more general condition allows
      other rarer situations too.  */
-  if (TARGET_NEON
-      && (VALID_NEON_DREG_MODE (mode1)
-	  || VALID_NEON_QREG_MODE (mode1)
-	  || VALID_NEON_STRUCT_MODE (mode1))
-      && (VALID_NEON_DREG_MODE (mode2)
-	  || VALID_NEON_QREG_MODE (mode2)
-	  || VALID_NEON_STRUCT_MODE (mode2)))
+  if ((TARGET_NEON
+       && (VALID_NEON_DREG_MODE (mode1)
+	   || VALID_NEON_QREG_MODE (mode1)
+	   || VALID_NEON_STRUCT_MODE (mode1))
+       && (VALID_NEON_DREG_MODE (mode2)
+	   || VALID_NEON_QREG_MODE (mode2)
+	   || VALID_NEON_STRUCT_MODE (mode2)))
+      || (TARGET_HAVE_MVE
+	  && (VALID_MVE_MODE (mode1)
+	      || VALID_MVE_STRUCT_MODE (mode1))
+	  && (VALID_MVE_MODE (mode2)
+	      || VALID_MVE_STRUCT_MODE (mode2))))
     return true;
 
   return false;
@@ -24983,6 +25078,9 @@ arm_regno_class (int regno)
 {
   if (regno == PC_REGNUM)
     return NO_REGS;
+
+  if (IS_VPR_REGNUM (regno))
+    return VPR_REG;
 
   if (TARGET_THUMB1)
     {
@@ -26835,7 +26933,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
         floats_from_frame += 4;
       }
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
     {
       int start_reg;
       rtx ip_rtx = gen_rtx_REG (SImode, IP_REGNUM);
@@ -27081,7 +27179,7 @@ arm_expand_epilogue (bool really_return)
         }
     }
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_HARD_FLOAT || TARGET_HAVE_MVE)
     {
       /* Generate VFP register multi-pop.  */
       int end_reg = LAST_VFP_REGNUM + 1;
@@ -27255,7 +27353,7 @@ arm_expand_epilogue (bool really_return)
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      }
+    }
 
   if (!really_return)
     return;
@@ -27695,6 +27793,20 @@ arm_print_asm_arch_directives ()
       if (!opt->remove)
 	{
 	  arm_initialize_isa (opt_bits, opt->isa_bits);
+
+	  /* For the cases "-march=armv8.1-m.main+mve -mfloat-abi=soft" and
+	     "-march=armv8.1-m.main+mve.fp -mfloat-abi=soft" MVE and MVE with
+	     floating point instructions is disabled.  So the following check
+	     restricts the printing of ".arch_extension mve" and
+	     ".arch_extension fp" (for mve.fp) in the assembly file.  MVE needs
+	     this special behaviour because the feature bit "mve" and
+	     "mve_float" are not part of "fpu bits", so they are not cleared
+	     when -mfloat-abi=soft (i.e nofp) but the marco TARGET_HAVE_MVE and
+	     TARGET_HAVE_MVE_FLOAT are disabled.  */
+	  if ((bitmap_bit_p (opt_bits, isa_bit_mve) && !TARGET_HAVE_MVE)
+	      || (bitmap_bit_p (opt_bits, isa_bit_mve_float)
+		  && !TARGET_HAVE_MVE_FLOAT))
+	    continue;
 
 	  /* If every feature bit of this option is set in the target
 	     ISA specification, print out the option name.  However,
@@ -28505,6 +28617,15 @@ arm_vector_mode_supported_p (machine_mode mode)
       || mode == V2HAmode))
     return true;
 
+  if (TARGET_HAVE_MVE
+      && (mode == V2DImode || mode == V4SImode || mode == V8HImode
+	  || mode == V16QImode))
+      return true;
+
+  if (TARGET_HAVE_MVE_FLOAT
+      && (mode == V2DFmode || mode == V4SFmode || mode == V8HFmode))
+      return true;
+
   return false;
 }
 
@@ -28520,6 +28641,10 @@ arm_array_mode_supported_p (machine_mode mode,
   if (TARGET_NEON && !BYTES_BIG_ENDIAN
       && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
       && (nelems >= 2 && nelems <= 4))
+    return true;
+
+  if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
+      && VALID_MVE_MODE (mode) && (nelems == 2 || nelems == 4))
     return true;
 
   return false;
@@ -29574,7 +29699,7 @@ arm_conditional_register_usage (void)
   if (TARGET_THUMB1)
     fixed_regs[LR_REGNUM] = call_used_regs[LR_REGNUM] = 1;
 
-  if (TARGET_32BIT && TARGET_HARD_FLOAT)
+  if (TARGET_32BIT && (TARGET_HARD_FLOAT || TARGET_HAVE_MVE))
     {
       /* VFPv3 registers are disabled when earlier VFP
 	 versions are selected due to the definition of
@@ -29586,6 +29711,8 @@ arm_conditional_register_usage (void)
 	  call_used_regs[regno] = regno < FIRST_VFP_REGNUM + 16
 	    || regno >= FIRST_VFP_REGNUM + 32;
 	}
+      if (TARGET_HAVE_MVE)
+	fixed_regs[VPR_REGNUM] = 0;
     }
 
   if (TARGET_REALLY_IWMMXT && !TARGET_GENERAL_REGS_ONLY)
@@ -32306,6 +32433,20 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
 	      if (!opt->remove)
 		{
 		  arm_initialize_isa (opt_bits, opt->isa_bits);
+		  /* For the cases "-march=armv8.1-m.main+mve -mfloat-abi=soft"
+		     and "-march=armv8.1-m.main+mve.fp -mfloat-abi=soft" MVE and
+		     MVE with floating point instructions is disabled.  So the
+		     following check restricts the printing of ".arch_extension
+		     mve" and ".arch_extension fp" (for mve.fp) in the assembly
+		     file.    MVE needs this special behaviour because the
+		     feature bit "mve" and "mve_float" are not part of
+		     "fpu bits", so they are not cleared when -mfloat-abi=soft
+		     (i.e nofp) but the marco TARGET_HAVE_MVE and
+		     TARGET_HAVE_MVE_FLOAT are disabled.  */
+		  if ((bitmap_bit_p (opt_bits, isa_bit_mve) && !TARGET_HAVE_MVE)
+		      || (bitmap_bit_p (opt_bits, isa_bit_mve_float)
+			  && !TARGET_HAVE_MVE_FLOAT))
+		    continue;
 		  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
 		      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
 		    asm_fprintf (asm_out_file, "\t.arch_extension %s\n",

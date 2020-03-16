@@ -66,6 +66,12 @@
 ;; Integer and float modes supported by Neon and IWMMXT.
 (define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
+;; Integer and float modes supported by Neon, IWMMXT and MVE.
+(define_mode_iterator VNIM1 [V16QI V8HI V4SI V4SF V2DI])
+
+;; Integer and float modes supported by Neon and IWMMXT but not MVE.
+(define_mode_iterator VNINOTM1 [V2SI V4HI V8QI V2SF])
+
 ;; Integer and float modes supported by Neon and IWMMXT, except V2DI.
 (define_mode_iterator VALLW [V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
@@ -223,6 +229,10 @@
 
 ;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
 (define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
+
+;; 16-bit floating-point vector modes suitable for moving (includes BFmode,
+;; without V8HF ).
+(define_mode_iterator VHFBF_split [V4HF V4BF V8BF])
 
 ;; 16-bit floating-point scalar modes suitable for moving (includes BFmode).
 (define_mode_iterator HFBF [HF BF])

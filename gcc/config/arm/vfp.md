@@ -311,7 +311,7 @@
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))
    && !(TARGET_NEON && CONST_INT_P (operands[1])
-        && neon_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
+	&& simd_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
   "*
   switch (which_alternative)
     {
