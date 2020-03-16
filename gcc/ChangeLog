@@ -1,3 +1,10 @@
+2020-03-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_sve_abi): Treat p12-p15 as
+	call-preserved for SVE PCS functions.
+	(aarch64_layout_frame): Cope with up to 12 predicate save slots.
+	Optimize the case in which there are no following vector save slots.
+
 2020-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94188

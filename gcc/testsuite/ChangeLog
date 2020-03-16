@@ -1,3 +1,61 @@
+2020-03-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cpy_1.c: Leave gaps for in the
+	check-function-bodies patterns for p15 to be saved.
+	* gcc.target/aarch64/sve/pcs/args_1.c (callee_pred): Expect two
+	predicates to be saved.
+	* gcc.target/aarch64/sve/pcs/saves_1_be_nowrap.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	* gcc.target/aarch64/sve/pcs/saves_1_be_wrap.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	* gcc.target/aarch64/sve/pcs/saves_1_le_nowrap.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	* gcc.target/aarch64/sve/pcs/saves_1_le_wrap.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	* gcc.target/aarch64/sve/pcs/saves_2_be_nowrap.c: Expect p12-p15
+	to be saved and restored.
+	* gcc.target/aarch64/sve/pcs/saves_2_be_wrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_le_nowrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_le_wrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_4_be.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_4_le.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_5_be.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_5_le.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1.c (test_1): Likewise.
+	(test_2): Remove p12-p15 from the clobber list.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_128.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_256.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	(test_4): Expect only 16 bytes of stack to be allocated for the
+	predicate save slot.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_512.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	(test_4): Expect only 16 bytes of stack to be allocated for the
+	predicate save slot.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_1024.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	(test_4): Expect only 16 bytes of stack to be allocated for the
+	predicate save slot.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_2048.c (test_1): Expect
+	p12-p15 to be saved and restored.
+	(test_2): Remove p12-p15 from the clobber list.
+	(test_4): Expect only 32 bytes of stack to be allocated for the
+	predicate save slot.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_256.c: Use z16 rather
+	than p4 to create a vector-sized save slot.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_2048.c: Likewise.
+
 2020-03-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* g++.dg/goacc/firstprivate-mappings-1.C: Only set DO_LONG_DOUBLE if

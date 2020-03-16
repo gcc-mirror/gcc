@@ -6,7 +6,7 @@
 
 /*
 ** test_1:
-**	mov	x12, #?4352
+**	mov	x12, #?4608
 **	sub	sp, sp, x12
 **	str	p4, \[sp\]
 **	str	p5, \[sp, #1, mul vl\]
@@ -16,39 +16,43 @@
 **	str	p9, \[sp, #5, mul vl\]
 **	str	p10, \[sp, #6, mul vl\]
 **	str	p11, \[sp, #7, mul vl\]
-**	str	z8, \[sp, #1, mul vl\]
-**	str	z9, \[sp, #2, mul vl\]
-**	str	z10, \[sp, #3, mul vl\]
-**	str	z11, \[sp, #4, mul vl\]
-**	str	z12, \[sp, #5, mul vl\]
-**	str	z13, \[sp, #6, mul vl\]
-**	str	z14, \[sp, #7, mul vl\]
-**	str	z15, \[sp, #8, mul vl\]
-**	str	z16, \[sp, #9, mul vl\]
-**	str	z17, \[sp, #10, mul vl\]
-**	str	z18, \[sp, #11, mul vl\]
-**	str	z19, \[sp, #12, mul vl\]
-**	str	z20, \[sp, #13, mul vl\]
-**	str	z21, \[sp, #14, mul vl\]
-**	str	z22, \[sp, #15, mul vl\]
-**	str	z23, \[sp, #16, mul vl\]
+**	str	p12, \[sp, #8, mul vl\]
+**	str	p13, \[sp, #9, mul vl\]
+**	str	p14, \[sp, #10, mul vl\]
+**	str	p15, \[sp, #11, mul vl\]
+**	str	z8, \[sp, #2, mul vl\]
+**	str	z9, \[sp, #3, mul vl\]
+**	str	z10, \[sp, #4, mul vl\]
+**	str	z11, \[sp, #5, mul vl\]
+**	str	z12, \[sp, #6, mul vl\]
+**	str	z13, \[sp, #7, mul vl\]
+**	str	z14, \[sp, #8, mul vl\]
+**	str	z15, \[sp, #9, mul vl\]
+**	str	z16, \[sp, #10, mul vl\]
+**	str	z17, \[sp, #11, mul vl\]
+**	str	z18, \[sp, #12, mul vl\]
+**	str	z19, \[sp, #13, mul vl\]
+**	str	z20, \[sp, #14, mul vl\]
+**	str	z21, \[sp, #15, mul vl\]
+**	str	z22, \[sp, #16, mul vl\]
+**	str	z23, \[sp, #17, mul vl\]
 **	ptrue	p0\.b, vl256
-**	ldr	z8, \[sp, #1, mul vl\]
-**	ldr	z9, \[sp, #2, mul vl\]
-**	ldr	z10, \[sp, #3, mul vl\]
-**	ldr	z11, \[sp, #4, mul vl\]
-**	ldr	z12, \[sp, #5, mul vl\]
-**	ldr	z13, \[sp, #6, mul vl\]
-**	ldr	z14, \[sp, #7, mul vl\]
-**	ldr	z15, \[sp, #8, mul vl\]
-**	ldr	z16, \[sp, #9, mul vl\]
-**	ldr	z17, \[sp, #10, mul vl\]
-**	ldr	z18, \[sp, #11, mul vl\]
-**	ldr	z19, \[sp, #12, mul vl\]
-**	ldr	z20, \[sp, #13, mul vl\]
-**	ldr	z21, \[sp, #14, mul vl\]
-**	ldr	z22, \[sp, #15, mul vl\]
-**	ldr	z23, \[sp, #16, mul vl\]
+**	ldr	z8, \[sp, #2, mul vl\]
+**	ldr	z9, \[sp, #3, mul vl\]
+**	ldr	z10, \[sp, #4, mul vl\]
+**	ldr	z11, \[sp, #5, mul vl\]
+**	ldr	z12, \[sp, #6, mul vl\]
+**	ldr	z13, \[sp, #7, mul vl\]
+**	ldr	z14, \[sp, #8, mul vl\]
+**	ldr	z15, \[sp, #9, mul vl\]
+**	ldr	z16, \[sp, #10, mul vl\]
+**	ldr	z17, \[sp, #11, mul vl\]
+**	ldr	z18, \[sp, #12, mul vl\]
+**	ldr	z19, \[sp, #13, mul vl\]
+**	ldr	z20, \[sp, #14, mul vl\]
+**	ldr	z21, \[sp, #15, mul vl\]
+**	ldr	z22, \[sp, #16, mul vl\]
+**	ldr	z23, \[sp, #17, mul vl\]
 **	ldr	p4, \[sp\]
 **	ldr	p5, \[sp, #1, mul vl\]
 **	ldr	p6, \[sp, #2, mul vl\]
@@ -57,6 +61,10 @@
 **	ldr	p9, \[sp, #5, mul vl\]
 **	ldr	p10, \[sp, #6, mul vl\]
 **	ldr	p11, \[sp, #7, mul vl\]
+**	ldr	p12, \[sp, #8, mul vl\]
+**	ldr	p13, \[sp, #9, mul vl\]
+**	ldr	p14, \[sp, #10, mul vl\]
+**	ldr	p15, \[sp, #11, mul vl\]
 **	add	sp, sp, x12
 **	ret
 */
@@ -84,7 +92,7 @@ test_2 (void)
   asm volatile ("" :::
 		"z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
 		"z24", "z25", "z26", "z27", "z28", "z29", "z30", "z31",
-		"p0", "p1", "p2", "p3", "p12", "p13", "p14", "p15");
+		"p0", "p1", "p2", "p3");
   return svptrue_b8 ();
 }
 
@@ -122,11 +130,11 @@ test_3 (void)
 
 /*
 ** test_4:
-**	sub	sp, sp, #256
+**	sub	sp, sp, #32
 **	str	p4, \[sp\]
 **	ptrue	p0\.b, vl256
 **	ldr	p4, \[sp\]
-**	add	sp, sp, #?256
+**	add	sp, sp, #?32
 **	ret
 */
 svbool_t
