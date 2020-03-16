@@ -1,3 +1,11 @@
+2020-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movsi_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove ext_sse_reg_operand and TARGET_AVX512VL
+	check.
+	* config/i386/predicates.md (ext_sse_reg_operand): Removed.
+
 2020-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94167

@@ -1,3 +1,10 @@
+2020-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-7a.c: New test.
+	* gcc.target/i386/pr89229-7b.c: Likewise.
+	* gcc.target/i386/pr89229-7c.c: Likewise.
+
 2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/asm1.d: Add new test for ICE in asm parser.
