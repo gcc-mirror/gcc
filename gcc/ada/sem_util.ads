@@ -1391,6 +1391,11 @@ package Sem_Util is
       Exclude_Parents : Boolean := False) return Boolean;
    --  Returns true if the Typ_Ent implements interface Iface_Ent
 
+   function Implicitly_Designated_Type (Typ : Entity_Id) return Entity_Id;
+   --  Called when Typ is the type of the prefix of an implicit dereference.
+   --  Return the designated type of Typ, taking into account that this type
+   --  may be a limited view, when the nonlimited view is visible.
+
    function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
    --  Returns True if node N appears within a pragma that acts as an assertion
    --  expression. See Sem_Prag for the list of qualifying pragmas.

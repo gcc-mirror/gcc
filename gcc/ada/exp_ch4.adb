@@ -1073,7 +1073,9 @@ package body Exp_Ch4 is
 
          elsif Is_Tagged_Type (T) and then not Is_Class_Wide_Type (T) then
             TagT := T;
-            TagR := New_Occurrence_Of (Temp, Loc);
+            TagR :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Temp, Loc));
 
          elsif Is_Private_Type (T)
            and then Is_Tagged_Type (Underlying_Type (T))
@@ -6868,7 +6870,6 @@ package body Exp_Ch4 is
       Typ : constant Entity_Id  := Etype (N);
       P   : constant Node_Id    := Prefix (N);
       T   : constant Entity_Id  := Etype (P);
-      Atp : Entity_Id;
 
    begin
       --  A special optimization, if we have an indexed component that is
@@ -6917,20 +6918,6 @@ package body Exp_Ch4 is
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
-      --  If the prefix is an access type, then we unconditionally rewrite if
-      --  as an explicit dereference. This simplifies processing for several
-      --  cases, including packed array cases and certain cases in which checks
-      --  must be generated. We used to try to do this only when it was
-      --  necessary, but it cleans up the code to do it all the time.
-
-      if Is_Access_Type (T) then
-         Insert_Explicit_Dereference (P);
-         Analyze_And_Resolve (P, Designated_Type (T));
-         Atp := Designated_Type (T);
-      else
-         Atp := T;
-      end if;
-
       --  Generate index and validity checks
 
       Generate_Index_Checks (N);
@@ -6942,8 +6929,8 @@ package body Exp_Ch4 is
       --  If selecting from an array with atomic components, and atomic sync
       --  is not suppressed for this array type, set atomic sync flag.
 
-      if (Has_Atomic_Components (Atp)
-           and then not Atomic_Synchronization_Disabled (Atp))
+      if (Has_Atomic_Components (T)
+           and then not Atomic_Synchronization_Disabled (T))
         or else (Is_Atomic (Typ)
                   and then not Atomic_Synchronization_Disabled (Typ))
         or else (Is_Entity_Name (P)
@@ -10580,7 +10567,7 @@ package body Exp_Ch4 is
       Par   : constant Node_Id    := Parent (N);
       P     : constant Node_Id    := Prefix (N);
       S     : constant Node_Id    := Selector_Name (N);
-      Ptyp  : Entity_Id           := Underlying_Type (Etype (P));
+      Ptyp  : constant Entity_Id  := Underlying_Type (Etype (P));
       Disc  : Entity_Id;
       New_N : Node_Id;
       Dcon  : Elmt_Id;
@@ -10631,21 +10618,6 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_Selected_Component
 
    begin
-      --  Insert explicit dereference if required
-
-      if Is_Access_Type (Ptyp) then
-
-         --  First set prefix type to proper access type, in case it currently
-         --  has a private (non-access) view of this type.
-
-         Set_Etype (P, Ptyp);
-
-         Insert_Explicit_Dereference (P);
-         Analyze_And_Resolve (P, Designated_Type (Ptyp));
-
-         Ptyp := Etype (P);
-      end if;
-
       --  Deal with discriminant check required
 
       if Do_Discriminant_Check (N) then
@@ -11018,23 +10990,10 @@ package body Exp_Ch4 is
       --  Local variables
 
       Pref     : constant Node_Id := Prefix (N);
-      Pref_Typ : Entity_Id        := Etype (Pref);
 
    --  Start of processing for Expand_N_Slice
 
    begin
-      --  Special handling for access types
-
-      if Is_Access_Type (Pref_Typ) then
-         Pref_Typ := Designated_Type (Pref_Typ);
-
-         Rewrite (Pref,
-           Make_Explicit_Dereference (Sloc (N),
-            Prefix => Relocate_Node (Pref)));
-
-         Analyze_And_Resolve (Pref, Pref_Typ);
-      end if;
-
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 

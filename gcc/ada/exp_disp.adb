@@ -1114,6 +1114,14 @@ package body Exp_Disp is
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
 
+      elsif Is_Access_Type (Ctrl_Typ) then
+         Controlling_Tag :=
+           Make_Selected_Component (Loc,
+             Prefix        =>
+               Make_Explicit_Dereference (Loc,
+                 Duplicate_Subexpr_Move_Checks (Ctrl_Arg)),
+             Selector_Name => New_Occurrence_Of (DTC_Entity (Subp), Loc));
+
       else
          Controlling_Tag :=
            Make_Selected_Component (Loc,

@@ -1872,7 +1872,7 @@ package body Sem_Warn is
       --  have a reference from generated code, it is bogus (e.g. calls to init
       --  procs to set default discriminant values).
 
-      if not Comes_From_Source (N) then
+      if not Comes_From_Source (Original_Node (N)) then
          return;
       end if;
 

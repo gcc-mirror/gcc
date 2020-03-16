@@ -2257,8 +2257,9 @@ package body Exp_Ch3 is
                           Prefix         =>
                             Make_Selected_Component (Loc,
                               Prefix        =>
-                                Unchecked_Convert_To (Acc_Type,
-                                  Make_Identifier (Loc, Name_uO)),
+                                Make_Explicit_Dereference (Loc,
+                                  Unchecked_Convert_To (Acc_Type,
+                                    Make_Identifier (Loc, Name_uO))),
                               Selector_Name =>
                                 New_Occurrence_Of (Iface_Comp, Loc)),
                           Attribute_Name => Name_Position))))));
