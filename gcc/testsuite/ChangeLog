@@ -1,3 +1,8 @@
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94166
+	* gcc.dg/pr94166.c: New test.
+
 2020-03-16  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/94125
