@@ -226,12 +226,6 @@ package body Sem_Aggr is
    --  misspelling of one of the components of the Assoc_List. This is called
    --  by Resolve_Aggr_Expr after producing an invalid component error message.
 
-   procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id);
-   --  An optimization: determine whether a discriminated subtype has a static
-   --  constraint, and contains array components whose length is also static,
-   --  either because they are constrained by the discriminant, or because the
-   --  original component bounds are static.
-
    -----------------------------------------------------
    -- Subprograms used for ARRAY AGGREGATE Processing --
    -----------------------------------------------------
@@ -721,66 +715,6 @@ package body Sem_Aggr is
          end if;
       end if;
    end Check_Expr_OK_In_Limited_Aggregate;
-
-   ----------------------------------------
-   -- Check_Static_Discriminated_Subtype --
-   ----------------------------------------
-
-   procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id) is
-      Disc : constant Entity_Id := First_Discriminant (T);
-      Comp : Entity_Id;
-      Ind  : Entity_Id;
-
-   begin
-      if Has_Record_Rep_Clause (T) then
-         return;
-
-      elsif Present (Next_Discriminant (Disc)) then
-         return;
-
-      elsif Nkind (V) /= N_Integer_Literal then
-         return;
-      end if;
-
-      Comp := First_Component (T);
-      while Present (Comp) loop
-         if Is_Scalar_Type (Etype (Comp)) then
-            null;
-
-         elsif Is_Private_Type (Etype (Comp))
-           and then Present (Full_View (Etype (Comp)))
-           and then Is_Scalar_Type (Full_View (Etype (Comp)))
-         then
-            null;
-
-         elsif Is_Array_Type (Etype (Comp)) then
-            if Is_Bit_Packed_Array (Etype (Comp)) then
-               return;
-            end if;
-
-            Ind := First_Index (Etype (Comp));
-            while Present (Ind) loop
-               if Nkind (Ind) /= N_Range
-                 or else Nkind (Low_Bound (Ind))  /= N_Integer_Literal
-                 or else Nkind (High_Bound (Ind)) /= N_Integer_Literal
-               then
-                  return;
-               end if;
-
-               Next_Index (Ind);
-            end loop;
-
-         else
-            return;
-         end if;
-
-         Next_Component (Comp);
-      end loop;
-
-      --  On exit, all components have statically known sizes
-
-      Set_Size_Known_At_Compile_Time (T);
-   end Check_Static_Discriminated_Subtype;
 
    -------------------------
    -- Is_Others_Aggregate --
@@ -4509,8 +4443,6 @@ package body Sem_Aggr is
             Analyze (Subtyp_Decl, Suppress => All_Checks);
 
             Set_Etype (N, Def_Id);
-            Check_Static_Discriminated_Subtype
-              (Def_Id, Expression (First (New_Assoc_List)));
          end Build_Constrained_Itype;
 
       else

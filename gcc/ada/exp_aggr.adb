@@ -7790,6 +7790,9 @@ package body Exp_Aggr is
                     or else
                   Typ = RTE (RE_Tag_Table)
                     or else
+                  (RTE_Available (RE_Object_Specific_Data)
+                     and then Typ = RTE (RE_Object_Specific_Data))
+                    or else
                   (RTE_Available (RE_Interface_Data)
                      and then Typ = RTE (RE_Interface_Data))
                     or else

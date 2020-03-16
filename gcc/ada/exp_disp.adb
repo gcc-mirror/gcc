@@ -4348,7 +4348,7 @@ package body Exp_Disp is
                     Attribute_Name => Name_Alignment)));
 
             --  In secondary dispatch tables the Typeinfo component contains
-            --  the address of the Object Specific Data (see a-tags.ads)
+            --  the address of the Object Specific Data (see a-tags.ads).
 
             Append_To (DT_Aggr_List,
               Make_Attribute_Reference (Loc,
