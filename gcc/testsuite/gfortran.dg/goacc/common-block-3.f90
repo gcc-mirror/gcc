@@ -30,9 +30,11 @@ end program main
 ! { dg-final { scan-tree-dump-times "omp target oacc_parallel .*map\\(tofrom:b \\\[len: 400\\\]\\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "omp target oacc_parallel .*map\\(tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 
+! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(tofrom:x \\\[len: 400\\\]\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(tofrom:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:x \\\[len: 400\\\]\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_tofrom:i \\\[len: 4\\\]\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(tofrom:x \\\[len: 400\\\]\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(tofrom:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 
 ! Expecting no mapping of un-referenced common-blocks variables

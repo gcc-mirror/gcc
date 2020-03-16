@@ -1,5 +1,10 @@
+2020-03-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/common-block-3.f90: Update scan-tree-dump-times.
+	* gfortran.dg/goacc/declare-3.f95: Update scan-tree-dump-times.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	* gfortran.dg/goacc/declare-allocatable-1.f90: New test.
 
