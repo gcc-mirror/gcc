@@ -1,3 +1,9 @@
+2020-03-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c (main): Add
+	expected warnings.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90 (main): Likewise.
+
 2020-03-05  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c (main):
