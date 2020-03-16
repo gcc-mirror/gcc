@@ -1,3 +1,11 @@
+2020-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94199
+	* include/experimental/executor (service_already_exists): Add default
+	constructor. Declare make_service to be a friend.
+	* testsuite/experimental/net/execution_context/make_service.cc: New
+	test.
+
 2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Do not pass
