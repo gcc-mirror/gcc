@@ -1,3 +1,8 @@
+2020-03-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/94185
+	* g++.target/i386/pr94185.C: New test.
+
 2020-03-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Add a test

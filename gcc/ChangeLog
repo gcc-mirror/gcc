@@ -1,3 +1,9 @@
+2020-03-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/94185
+	* lra-spills.c (remove_pseudos): Do not reuse insn alternative
+	after changing memory subreg.
+
 2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
