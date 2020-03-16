@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Exp_Tss;  use Exp_Tss;
+with Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -340,26 +341,34 @@ package body Exp_Put_Image is
          --
          --  Note that this is putting a leading space for reals.
 
+         --  ???Work around the fact that Put_Image doesn't work for private
+         --  types whose full type is real.
+
+         if Is_Real_Type (U_Type) then
+            return Build_Unknown_Put_Image_Call (N);
+         end if;
+
          declare
             Image : constant Node_Id :=
               Make_Attribute_Reference (Loc,
                 Prefix => New_Occurrence_Of (U_Type, Loc),
                 Attribute_Name => Name_Wide_Wide_Image,
                 Expressions => New_List (Relocate_Node (Item)));
-         begin
-            return
+            Put_Call : constant Node_Id :=
               Make_Procedure_Call_Statement (Loc,
                 Name =>
                   New_Occurrence_Of (RTE (RE_Put_Wide_Wide_String), Loc),
                 Parameter_Associations => New_List
                   (Relocate_Node (Sink), Image));
+         begin
+            return Put_Call;
          end;
       end if;
 
       --  Unchecked-convert parameter to the required type (i.e. the type of
       --  the corresponding parameter), and call the appropriate routine.
       --  We could use a normal type conversion for scalars, but the
-      --  "unchecked" is needed for access types.
+      --  "unchecked" is needed for access and private types.
 
       declare
          Libent : constant Entity_Id := RTE (Lib_RE);
@@ -800,7 +809,10 @@ package body Exp_Put_Image is
         Make_Procedure_Call_Statement (Loc,
           Name => New_Occurrence_Of (Libent, Loc),
           Parameter_Associations => New_List (
-            Relocate_Node (Sink)));
+            Relocate_Node (Sink),
+            Make_String_Literal (Loc,
+              Exp_Util.Fully_Qualified_Name_String (
+                Entity (Prefix (N)), Append_NUL => False))));
    end Build_Unknown_Put_Image_Call;
 
    ----------------------
