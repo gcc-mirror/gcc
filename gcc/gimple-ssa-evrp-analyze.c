@@ -267,7 +267,11 @@ vr_gori_comparison::dump_differences (FILE *out) const
   fprintf (out, "\n");
   fprintf (out, "==============================================\n");
   dump_function_to_file (current_function_decl, out, TDF_NONE);
+
+  dump_flags_t save = dump_flags;
+  dump_flags |= TDF_GORI;
   m_vr_values->dump_all_value_ranges (out);
+  dump_flags = save;
 }
 
 void

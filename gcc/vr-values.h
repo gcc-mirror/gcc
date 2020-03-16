@@ -22,17 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gimple-range-gori.h"
 
-#define DEBUG_VR_GORI 0
-
-#if DEBUG_VR_GORI
-#define VR_GORI_COMPUTE trace_gori_compute
-#define VR_GORI_INTERFACE trace_vr_gori_interface
-#else
-#define VR_GORI_COMPUTE gori_compute
-#define VR_GORI_INTERFACE vr_gori_interface
-#endif
-
-class vr_gori_interface : public VR_GORI_COMPUTE
+class vr_gori_interface : public trace_gori_compute
 {
 public:
   virtual bool outgoing_edge_range_p (irange &, edge, tree name,
@@ -70,7 +60,7 @@ private:
    gets attached to an SSA_NAME.  It's unclear how useful that global
    information will be in a world where we can compute context sensitive
    range information fast or perform on-demand queries.  */
-class vr_values : public VR_GORI_INTERFACE
+class vr_values : public trace_vr_gori_interface
 {
  public:
   vr_values (void);

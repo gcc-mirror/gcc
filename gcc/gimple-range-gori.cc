@@ -1182,7 +1182,7 @@ trace_gori_compute::trace_gori_compute ()
 bool
 trace_gori_compute::dumping (unsigned counter, bool trailing)
 {
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_GORI))
     {
       // Print counter index as well as INDENT spaces.
       if (!trailing)

@@ -196,8 +196,11 @@ enum dump_flag
   /* For error.  */
   TDF_ERROR = (1 << 26),
 
+  /* Trace GORI as it calculates ranges.  */
+  TDF_GORI = (1 << 29),
+
   /* All values.  */
-  TDF_ALL_VALUES = (1 << 29) - 1
+  TDF_ALL_VALUES = (1 << 30) - 1
 };
 
 /* Dump flags type.  */

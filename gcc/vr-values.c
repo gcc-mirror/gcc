@@ -1932,9 +1932,12 @@ vr_values::dump_all_value_ranges (FILE *file)
 {
   size_t i;
 
-  fprintf (file, "GORI map:\n");
-  m_gori_map.dump (file);
-  fprintf (file, "-----------------\n");
+  if (dump_flags & TDF_GORI)
+    {
+      fprintf (file, "GORI map:\n");
+      m_gori_map.dump (file);
+      fprintf (file, "-----------------\n");
+    }
 
   for (i = 0; i < num_vr_values; i++)
     {
@@ -2067,7 +2070,6 @@ vr_gori_interface::solve_name_given_equivalence (irange &r,
   return false;
 }
 
-#if DEBUG_VR_GORI
 bool
 trace_vr_gori_interface::refine_range_with_equivalences (irange &r,
 							   edge e, tree name)
@@ -2086,7 +2088,6 @@ trace_vr_gori_interface::refine_range_with_equivalences (irange &r,
   bool res = super::refine_range_with_equivalences (r, e, name);
   return trailer (idx, "refine_range_with_equivalences", res, name, r);
 }
-#endif
 
 /* Initialize VRP lattice.  */
 
