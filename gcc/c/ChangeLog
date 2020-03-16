@@ -1,3 +1,8 @@
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94179
+	* c-fold.c (c_fully_fold_internal): Handle MEM_REF.
+
 2020-03-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c/94040
