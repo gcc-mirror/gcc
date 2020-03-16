@@ -2489,14 +2489,11 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	      if (cbdata.vertices_component[k] != i)
 		continue;
 
-	      /* Update postorder number so that merged reduction partition is
-		 sorted after other partitions.  */
-	      if (!partition_reduction_p (first)
-		  && partition_reduction_p (partition))
-		{
-		  gcc_assert (pg->vertices[k].post < pg->vertices[j].post);
-		  pg->vertices[j].post = pg->vertices[k].post;
-		}
+	      /* Update to the minimal postordeer number of vertices in scc so
+		 that merged partition is sorted correctly against others.  */
+	      if (pg->vertices[j].post > pg->vertices[k].post)
+		pg->vertices[j].post = pg->vertices[k].post;
+
 	      partition_merge_into (NULL, first, partition, FUSE_SAME_SCC);
 	      (*partitions)[k] = NULL;
 	      partition_free (partition);

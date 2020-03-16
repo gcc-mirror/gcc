@@ -698,6 +698,7 @@ enum arm_builtins
   ARM_BUILTIN_SET_FPSCR,
 
   ARM_BUILTIN_CMSE_NONSECURE_CALLER,
+  ARM_BUILTIN_SIMD_LANE_CHECK,
 
 #undef CRYPTO1
 #undef CRYPTO2
@@ -723,7 +724,6 @@ enum arm_builtins
 #include "arm_vfp_builtins.def"
 
   ARM_BUILTIN_NEON_BASE,
-  ARM_BUILTIN_NEON_LANE_CHECK = ARM_BUILTIN_NEON_BASE,
 
 #include "arm_neon_builtins.def"
 
@@ -987,28 +987,37 @@ arm_init_simd_builtin_types (void)
      an entry in our mangling table, consequently, they get default
      mangling.  As a further gotcha, poly8_t and poly16_t are signed
      types, poly64_t and poly128_t are unsigned types.  */
-  arm_simd_polyQI_type_node
-    = build_distinct_type_copy (intQI_type_node);
-  (*lang_hooks.types.register_builtin_type) (arm_simd_polyQI_type_node,
-					     "__builtin_neon_poly8");
-  arm_simd_polyHI_type_node
-    = build_distinct_type_copy (intHI_type_node);
-  (*lang_hooks.types.register_builtin_type) (arm_simd_polyHI_type_node,
-					     "__builtin_neon_poly16");
-  arm_simd_polyDI_type_node
-    = build_distinct_type_copy (unsigned_intDI_type_node);
-  (*lang_hooks.types.register_builtin_type) (arm_simd_polyDI_type_node,
-					     "__builtin_neon_poly64");
-  arm_simd_polyTI_type_node
-    = build_distinct_type_copy (unsigned_intTI_type_node);
-  (*lang_hooks.types.register_builtin_type) (arm_simd_polyTI_type_node,
-					     "__builtin_neon_poly128");
+  if (!TARGET_HAVE_MVE)
+    {
+      arm_simd_polyQI_type_node
+	= build_distinct_type_copy (intQI_type_node);
+      (*lang_hooks.types.register_builtin_type) (arm_simd_polyQI_type_node,
+						 "__builtin_neon_poly8");
+      arm_simd_polyHI_type_node
+	= build_distinct_type_copy (intHI_type_node);
+      (*lang_hooks.types.register_builtin_type) (arm_simd_polyHI_type_node,
+						 "__builtin_neon_poly16");
+      arm_simd_polyDI_type_node
+	= build_distinct_type_copy (unsigned_intDI_type_node);
+      (*lang_hooks.types.register_builtin_type) (arm_simd_polyDI_type_node,
+						 "__builtin_neon_poly64");
+      arm_simd_polyTI_type_node
+	= build_distinct_type_copy (unsigned_intTI_type_node);
+      (*lang_hooks.types.register_builtin_type) (arm_simd_polyTI_type_node,
+						 "__builtin_neon_poly128");
+      /* Init poly vector element types with scalar poly types.  */
+      arm_simd_types[Poly8x8_t].eltype = arm_simd_polyQI_type_node;
+      arm_simd_types[Poly8x16_t].eltype = arm_simd_polyQI_type_node;
+      arm_simd_types[Poly16x4_t].eltype = arm_simd_polyHI_type_node;
+      arm_simd_types[Poly16x8_t].eltype = arm_simd_polyHI_type_node;
+      /* Note: poly64x2_t is defined in arm_neon.h, to ensure it gets default
+	 mangling.  */
 
-  /* Prevent front-ends from transforming poly vectors into string
-     literals.  */
-  TYPE_STRING_FLAG (arm_simd_polyQI_type_node) = false;
-  TYPE_STRING_FLAG (arm_simd_polyHI_type_node) = false;
-
+      /* Prevent front-ends from transforming poly vectors into string
+	 literals.  */
+      TYPE_STRING_FLAG (arm_simd_polyQI_type_node) = false;
+      TYPE_STRING_FLAG (arm_simd_polyHI_type_node) = false;
+    }
   /* Init all the element types built by the front-end.  */
   arm_simd_types[Int8x8_t].eltype = intQI_type_node;
   arm_simd_types[Int8x16_t].eltype = intQI_type_node;
@@ -1025,11 +1034,6 @@ arm_init_simd_builtin_types (void)
   arm_simd_types[Uint32x4_t].eltype = unsigned_intSI_type_node;
   arm_simd_types[Uint64x2_t].eltype = unsigned_intDI_type_node;
 
-  /* Init poly vector element types with scalar poly types.  */
-  arm_simd_types[Poly8x8_t].eltype = arm_simd_polyQI_type_node;
-  arm_simd_types[Poly8x16_t].eltype = arm_simd_polyQI_type_node;
-  arm_simd_types[Poly16x4_t].eltype = arm_simd_polyHI_type_node;
-  arm_simd_types[Poly16x8_t].eltype = arm_simd_polyHI_type_node;
   /* Note: poly64x2_t is defined in arm_neon.h, to ensure it gets default
      mangling.  */
 
@@ -1051,6 +1055,8 @@ arm_init_simd_builtin_types (void)
       tree eltype = arm_simd_types[i].eltype;
       machine_mode mode = arm_simd_types[i].mode;
 
+      if (eltype == NULL)
+	continue;
       if (arm_simd_types[i].itype == NULL)
 	arm_simd_types[i].itype =
 	  build_distinct_type_copy
@@ -1289,15 +1295,6 @@ arm_init_neon_builtins (void)
      removed once all the intrinsics become strongly typed using the qualifier
      system.  */
   arm_init_simd_builtin_scalar_types ();
-
-  tree lane_check_fpr = build_function_type_list (void_type_node,
-						  intSI_type_node,
-						  intSI_type_node,
-						  NULL);
-  arm_builtin_decls[ARM_BUILTIN_NEON_LANE_CHECK] =
-      add_builtin_function ("__builtin_arm_lane_check", lane_check_fpr,
-			    ARM_BUILTIN_NEON_LANE_CHECK, BUILT_IN_MD,
-			    NULL, NULL_TREE);
 
   for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
@@ -2017,6 +2014,15 @@ arm_init_builtins (void)
 
   if (TARGET_MAYBE_HARD_FLOAT)
     {
+      tree lane_check_fpr = build_function_type_list (void_type_node,
+						      intSI_type_node,
+						      intSI_type_node,
+						      NULL);
+      arm_builtin_decls[ARM_BUILTIN_SIMD_LANE_CHECK]
+      = add_builtin_function ("__builtin_arm_lane_check", lane_check_fpr,
+			      ARM_BUILTIN_SIMD_LANE_CHECK, BUILT_IN_MD,
+			      NULL, NULL_TREE);
+
       arm_init_neon_builtins ();
       arm_init_vfp_builtins ();
       arm_init_crypto_builtins ();
@@ -2263,6 +2269,47 @@ neon_dereference_pointer (tree exp, tree type, machine_mode mem_mode,
 		      build_int_cst (build_pointer_type (array_type), 0));
 }
 
+/* EXP is a pointer argument to a vector scatter store intrinsics.
+
+   Consider the following example:
+	VSTRW<v>.<dt> Qd, [Qm{, #+/-<imm>}]!
+   When <Qm> used as the base register for the target address,
+   this function is used to derive and return an expression for the
+   accessed memory.
+
+   The intrinsic function operates on a block of registers that has mode
+   REG_MODE.  This block contains vectors of type TYPE_MODE.  The function
+   references the memory at EXP of type TYPE and in mode MEM_MODE.  This
+   mode may be BLKmode if no more suitable mode is available.  */
+
+static tree
+mve_dereference_pointer (tree exp, tree type, machine_mode reg_mode,
+			 machine_mode vector_mode)
+{
+  HOST_WIDE_INT reg_size, vector_size, nelems;
+  tree elem_type, upper_bound, array_type;
+
+  /* Work out the size of each vector in bytes.  */
+  vector_size = GET_MODE_SIZE (vector_mode);
+
+  /* Work out the size of the register block in bytes.  */
+  reg_size = GET_MODE_SIZE (reg_mode);
+
+  /* Work out the type of each element.  */
+  gcc_assert (POINTER_TYPE_P (type));
+  elem_type = TREE_TYPE (type);
+
+  nelems = reg_size / vector_size;
+
+  /* Create a type that describes the full access.  */
+  upper_bound = build_int_cst (size_type_node, nelems - 1);
+  array_type = build_array_type (elem_type, build_index_type (upper_bound));
+
+  /* Dereference EXP using that type.  */
+  return fold_build2 (MEM_REF, array_type, exp,
+		      build_int_cst (build_pointer_type (array_type), 0));
+}
+
 /* Expand a builtin.  */
 static rtx
 arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
@@ -2301,10 +2348,17 @@ arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
             {
               machine_mode other_mode
 		= insn_data[icode].operand[1 - opno].mode;
-              arg[argc] = neon_dereference_pointer (arg[argc],
+	      if (TARGET_HAVE_MVE && mode[argc] != other_mode)
+		{
+		  arg[argc] = mve_dereference_pointer (arg[argc],
 						    TREE_VALUE (formals),
-						    mode[argc], other_mode,
-						    map_mode);
+						    other_mode, map_mode);
+		}
+	      else
+		arg[argc] = neon_dereference_pointer (arg[argc],
+						      TREE_VALUE (formals),
+						      mode[argc], other_mode,
+						      map_mode);
             }
 
 	  /* Use EXPAND_MEMORY for ARG_BUILTIN_MEMORY and
@@ -2625,22 +2679,6 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       return const0_rtx;
     }
 
-  if (fcode == ARM_BUILTIN_NEON_LANE_CHECK)
-    {
-      /* Builtin is only to check bounds of the lane passed to some intrinsics
-	 that are implemented with gcc vector extensions in arm_neon.h.  */
-
-      tree nlanes = CALL_EXPR_ARG (exp, 0);
-      gcc_assert (TREE_CODE (nlanes) == INTEGER_CST);
-      rtx lane_idx = expand_normal (CALL_EXPR_ARG (exp, 1));
-      if (CONST_INT_P (lane_idx))
-	neon_lane_bounds (lane_idx, 0, TREE_INT_CST_LOW (nlanes), exp);
-      else
-	error ("%Klane index must be a constant immediate", exp);
-      /* Don't generate any RTL.  */
-      return const0_rtx;
-    }
-
   arm_builtin_datum *d
     = &neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
 
@@ -2701,6 +2739,22 @@ arm_expand_builtin (tree exp,
   int selector;
   int mask;
   int imm;
+
+  if (fcode == ARM_BUILTIN_SIMD_LANE_CHECK)
+    {
+      /* Builtin is only to check bounds of the lane passed to some intrinsics
+	 that are implemented with gcc vector extensions in arm_neon.h.  */
+
+      tree nlanes = CALL_EXPR_ARG (exp, 0);
+      gcc_assert (TREE_CODE (nlanes) == INTEGER_CST);
+      rtx lane_idx = expand_normal (CALL_EXPR_ARG (exp, 1));
+      if (CONST_INT_P (lane_idx))
+	neon_lane_bounds (lane_idx, 0, TREE_INT_CST_LOW (nlanes), exp);
+      else
+	error ("%Klane index must be a constant immediate", exp);
+      /* Don't generate any RTL.  */
+      return const0_rtx;
+    }
 
   if (fcode >= ARM_BUILTIN_ACLE_BASE)
     return arm_expand_acle_builtin (fcode, exp, target);

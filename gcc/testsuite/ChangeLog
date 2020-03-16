@@ -1,3 +1,93 @@
+2020-03-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Add a test
+	name to .-1 dg-error tests.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
+2020-03-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_libcall1.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_libcall2.c: Likewise.
+
+2020-03-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_fp_fpu2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu3.c: Likewise.
+
+
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+	* gcc.target/arm/mve/mve.exp: New file.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_fp_ok_nocache): Proc to check
+	armv8.1-m.main+mve.fp and returning corresponding options.
+	(check_effective_target_arm_v8_1m_mve_fp_ok): Proc to call
+	check_effective_target_arm_v8_1m_mve_fp_ok_nocache to check support of
+	MVE with floating point on the current target.
+	(add_options_for_arm_v8_1m_mve_fp): Proc to call
+	check_effective_target_arm_v8_1m_mve_fp_ok to return corresponding
+	compiler options for MVE with floating point.
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): Modify to test and
+	return hard float-abi on success.
+
+2020-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-7a.c: New test.
+	* gcc.target/i386/pr89229-7b.c: Likewise.
+	* gcc.target/i386/pr89229-7c.c: Likewise.
+
+2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Add new test for ICE in asm parser.
+	* gdc.dg/asm5.d: New test.
+
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94167
+	* gcc.dg/pr94167.c: New test.
+
+	PR tree-optimization/94166
+	* gcc.dg/pr94166.c: New test.
+
+2020-03-16  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94125
+	* gcc.dg/tree-ssa/pr94125.c: New test.
+
+2020-03-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-6a.c: New test.
+	* gcc.target/i386/pr89229-6b.c: Likewise.
+	* gcc.target/i386/pr89229-6c.c: Likewise.
+
+2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* gcc.misc-tests/help.exp: Adapt to new output for
+	-Walloc-size-larger-than= option.
+
+2020-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* gcc.target/i386/pr89229-5a.c: New test.
+	* gcc.target/i386/pr89229-5b.c: Likewise.
+	* gcc.target/i386/pr89229-5c.c: Likewise.
+
 2020-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/94176

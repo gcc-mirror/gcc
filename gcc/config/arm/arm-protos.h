@@ -86,7 +86,7 @@ extern bool ldm_stm_operation_p (rtx, bool, machine_mode mode,
 extern bool clear_operation_p (rtx, bool);
 extern int arm_const_double_rtx (rtx);
 extern int vfp3_const_double_rtx (rtx);
-extern int neon_immediate_valid_for_move (rtx, machine_mode, rtx *, int *);
+extern int simd_immediate_valid_for_move (rtx, machine_mode, rtx *, int *);
 extern int neon_immediate_valid_for_logic (rtx, machine_mode, int, rtx *,
 					   int *);
 extern int neon_immediate_valid_for_shift (rtx, machine_mode, rtx *,

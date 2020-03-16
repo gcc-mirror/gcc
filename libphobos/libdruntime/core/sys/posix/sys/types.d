@@ -112,8 +112,26 @@ version (CRuntime_Glibc)
 }
 else version (CRuntime_Musl)
 {
-    alias c_long     blksize_t;
-    alias c_ulong    nlink_t;
+    version (AArch64)
+    {
+        alias int    blksize_t;
+        alias uint   nlink_t;
+    }
+    else version (MIPS64)
+    {
+        alias c_long blksize_t;
+        alias uint   nlink_t;
+    }
+    else version (RISCV64)
+    {
+        alias int    blksize_t;
+        alias uint   nlink_t;
+    }
+    else
+    {
+        alias c_long blksize_t;
+        alias c_ulong nlink_t;
+    }
     alias long       dev_t;
     alias long       blkcnt_t;
     alias ulong      ino_t;

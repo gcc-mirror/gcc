@@ -1471,10 +1471,10 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     dtor = NULL_TREE;
   else
     {
-  /* Initialize the var from the provided 'o' expression.  */
-    r = build2 (INIT_EXPR, await_type, var, expr);
-  r = coro_build_cvt_void_expr_stmt (r, loc);
-  append_to_statement_list (r, &stmt_list);
+      /* Initialize the var from the provided 'o' expression.  */
+      r = build2 (INIT_EXPR, await_type, var, expr);
+      r = coro_build_cvt_void_expr_stmt (r, loc);
+      append_to_statement_list (r, &stmt_list);
     }
 
   /* Use the await_ready() call to test if we need to suspend.  */

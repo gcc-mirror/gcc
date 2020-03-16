@@ -143,8 +143,10 @@ else version (CRuntime_Bionic)
 else version (CRuntime_Musl)
 {
     struct sem_t {
-        int[4*long.sizeof/int.sizeof] __val;
+        int[4*c_long.sizeof/int.sizeof] __val;
     }
+
+    enum SEM_FAILED = (sem_t*).init;
 }
 else version (CRuntime_UClibc)
 {

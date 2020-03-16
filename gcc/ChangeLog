@@ -1,3 +1,271 @@
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Modify function to add
+	emulator calls for dobule precision arithmetic operations for MVE.
+
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* common/config/arm/arm-common.c (arm_asm_auto_mfpu): When vfp_base
+	feature bit is on and -mfpu=auto is passed as compiler option, do not
+	generate error on not finding any matching fpu. Because in this case
+	fpu is not required.
+	* config/arm/arm-cpus.in (vfp_base): Define feature bit, this bit is
+	enabled for MVE and also for all VFP extensions.
+	(VFPv2): Modify fgroup to enable vfp_base feature bit when ever VFPv2
+	is enabled.
+	(MVE): Define fgroup to enable feature bits mve, vfp_base and armv7em.
+	(MVE_FP): Define fgroup to enable feature bits is fgroup MVE and FPv5
+	along with feature bits mve_float.
+	(mve): Modify add options in armv8.1-m.main arch for MVE.
+	(mve.fp): Modify add options in armv8.1-m.main arch for MVE with
+	floating point.
+	* config/arm/arm.c (use_return_insn): Replace the
+	check with TARGET_VFP_BASE.
+	(thumb2_legitimate_index_p): Replace TARGET_HARD_FLOAT with
+	TARGET_VFP_BASE.
+	(arm_rtx_costs_internal): Replace "TARGET_HARD_FLOAT || TARGET_HAVE_MVE"
+	with TARGET_VFP_BASE, to allow cost calculations for copies in MVE as
+	well.
+	(arm_get_vfp_saved_size): Replace TARGET_HARD_FLOAT with
+	TARGET_VFP_BASE, to allow space calculation for VFP registers in MVE
+	as well.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_fixed_condition_code_regs): Modify to enable using VFPCC_REGNUM
+	in MVE as well.
+	(arm_hard_regno_mode_ok): Replace "TARGET_HARD_FLOAT || TARGET_HAVE_MVE"
+	with equivalent macro TARGET_VFP_BASE.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_conditional_register_usage): Likewise.
+	(arm_declare_function_name): Add check to skip printing .fpu directive
+	in assembly file when TARGET_VFP_BASE is enabled and fpu_to_print is
+	"softvfp".
+	* config/arm/arm.h (TARGET_VFP_BASE): Define.
+	* config/arm/arm.md (arch): Add "mve" to arch.
+	(eq_attr "arch" "mve"): Enable on TARGET_HAVE_MVE is true.
+	(vfp_pop_multiple_with_writeback): Replace "TARGET_HARD_FLOAT
+	|| TARGET_HAVE_MVE" with equivalent macro TARGET_VFP_BASE.
+	* config/arm/constraints.md (Uf): Define to allow modification to FPCCR
+	in MVE.
+	* config/arm/thumb2.md (thumb2_movsfcc_soft_insn): Modify target guard
+	to not allow for MVE.
+	* config/arm/unspecs.md (UNSPEC_GET_FPSCR): Move to volatile unspecs
+	enum.
+	(VUNSPEC_GET_FPSCR): Define.
+	* config/arm/vfp.md (thumb2_movhi_vfp): Add support for VMSR and VMRS
+	instructions which move to general-purpose Register from Floating-point
+	Special register and vice-versa.
+	(thumb2_movhi_fp16): Likewise.
+	(thumb2_movsi_vfp): Add support for VMSR and VMRS instructions along
+	with MCR and MRC instructions which set and get Floating-point Status
+	and Control Register (FPSCR).
+	(movdi_vfp): Modify pattern to enable Single-precision scalar float move
+	in MVE.
+	(thumb2_movdf_vfp): Modify pattern to enable Double-precision scalar
+	float move patterns in MVE.
+	(thumb2_movsfcc_vfp): Modify pattern to enable single float conditional
+	code move patterns of VFP also in MVE by adding TARGET_VFP_BASE check.
+	(thumb2_movdfcc_vfp): Modify pattern to enable double float conditional
+	code move patterns of VFP also in MVE by adding TARGET_VFP_BASE check.
+	(push_multi_vfp): Add support to use VFP VPUSH pattern for MVE by adding
+	TARGET_VFP_BASE check.
+	(set_fpscr): Add support to set FPSCR register for MVE. Modify pattern
+	using VFPCC_REGNUM as few MVE intrinsics use carry bit of FPSCR
+	register.
+	(get_fpscr): Add support to get FPSCR register for MVE. Modify pattern
+	using VFPCC_REGNUM as few MVE intrinsics use carry bit of FPSCR
+	register.
+
+
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config.gcc (arm_mve.h): Include mve intrinsics header file.
+	* config/arm/aout.h (p0): Add new register name for MVE predicated
+	cases.
+	* config/arm-builtins.c (ARM_BUILTIN_SIMD_LANE_CHECK): Define macro
+	common to Neon and MVE.
+	(ARM_BUILTIN_NEON_LANE_CHECK): Renamed to ARM_BUILTIN_SIMD_LANE_CHECK.
+	(arm_init_simd_builtin_types): Disable poly types for MVE.
+	(arm_init_neon_builtins): Move a check to arm_init_builtins function.
+	(arm_init_builtins): Use ARM_BUILTIN_SIMD_LANE_CHECK instead of
+	ARM_BUILTIN_NEON_LANE_CHECK.
+	(mve_dereference_pointer): Add function.
+	(arm_expand_builtin_args): Call to mve_dereference_pointer when MVE is
+	enabled.
+	(arm_expand_neon_builtin): Moved to arm_expand_builtin function.
+	(arm_expand_builtin): Moved from arm_expand_neon_builtin function.
+	* config/arm/arm-c.c (__ARM_FEATURE_MVE): Define macro for MVE and MVE
+	with floating point enabled.
+	* config/arm/arm-protos.h (neon_immediate_valid_for_move): Renamed to
+	simd_immediate_valid_for_move.
+	(simd_immediate_valid_for_move): Renamed from
+	neon_immediate_valid_for_move function.
+	* config/arm/arm.c (arm_options_perform_arch_sanity_checks): Generate
+	error if vfpv2 feature bit is disabled and mve feature bit is also
+	disabled for HARD_FLOAT_ABI.
+	(use_return_insn): Check to not push VFP regs for MVE.
+	(aapcs_vfp_allocate): Add MVE check to have same Procedure Call Standard
+	as Neon.
+	(aapcs_vfp_allocate_return_reg): Likewise.
+	(thumb2_legitimate_address_p): Check to return 0 on valid Thumb-2
+	address operand for MVE.
+	(arm_rtx_costs_internal): MVE check to determine cost of rtx.
+	(neon_valid_immediate): Rename to simd_valid_immediate.
+	(simd_valid_immediate): Rename from neon_valid_immediate.
+	(simd_valid_immediate): MVE check on size of vector is 128 bits.
+	(neon_immediate_valid_for_move): Rename to
+	simd_immediate_valid_for_move.
+	(simd_immediate_valid_for_move): Rename from
+	neon_immediate_valid_for_move.
+	(neon_immediate_valid_for_logic): Modify call to neon_valid_immediate
+	function.
+	(neon_make_constant): Modify call to neon_valid_immediate function.
+	(neon_vector_mem_operand): Return VFP register for POST_INC or PRE_DEC
+	for MVE.
+	(output_move_neon): Add MVE check to generate vldm/vstm instrcutions.
+	(arm_compute_frame_layout): Calculate space for saved VFP registers for
+	MVE.
+	(arm_save_coproc_regs): Save coproc registers for MVE.
+	(arm_print_operand): Add case 'E' to print memory operands for MVE.
+	(arm_print_operand_address): Check to print register number for MVE.
+	(arm_hard_regno_mode_ok): Check for arm hard regno mode ok for MVE.
+	(arm_modes_tieable_p): Check to allow structure mode for MVE.
+	(arm_regno_class): Add VPR_REGNUM check.
+	(arm_expand_epilogue_apcs_frame): MVE check to calculate epilogue code
+	for APCS frame.
+	(arm_expand_epilogue): MVE check for enabling pop instructions in
+	epilogue.
+	(arm_print_asm_arch_directives): Modify function to disable print of
+	.arch_extension "mve" and "fp" for cases where MVE is enabled with
+	"SOFT FLOAT ABI".
+	(arm_vector_mode_supported_p): Check for modes available in MVE interger
+	and MVE floating point.
+	(arm_array_mode_supported_p): Add TARGET_HAVE_MVE check for array mode
+	pointer support.
+	(arm_conditional_register_usage): Enable usage of conditional regsiter
+	for MVE.
+	(fixed_regs[VPR_REGNUM]): Enable VPR_REG for MVE.
+	(arm_declare_function_name): Modify function to disable print of
+	.arch_extension "mve" and "fp" for cases where MVE is enabled with
+	"SOFT FLOAT ABI".
+	* config/arm/arm.h (TARGET_HAVE_MVE): Disable for soft float abi and
+	when target general registers are required.
+	(TARGET_HAVE_MVE_FLOAT): Likewise.
+	(FIXED_REGISTERS): Add bit for VFP_REG class which is enabled in arm.c
+	for MVE.
+	(CALL_USED_REGISTERS): Set bit for VFP_REG class in CALL_USED_REGISTERS
+	which indicate this is not available for across function calls.
+	(FIRST_PSEUDO_REGISTER): Modify.
+	(VALID_MVE_MODE): Define valid MVE mode.
+	(VALID_MVE_SI_MODE): Define valid MVE SI mode.
+	(VALID_MVE_SF_MODE): Define valid MVE SF mode.
+	(VALID_MVE_STRUCT_MODE): Define valid MVE struct mode.
+	(VPR_REGNUM): Add Vector Predication Register in arm_regs_in_sequence
+	for MVE.
+	(IS_VPR_REGNUM): Macro to check for VPR_REG register.
+	(REG_ALLOC_ORDER): Add VPR_REGNUM entry.
+	(enum reg_class): Add VPR_REG entry.
+	(REG_CLASS_NAMES): Add VPR_REG entry.
+	* config/arm/arm.md (VPR_REGNUM): Define.
+	(conds): Check is_mve_type attrbiute to differentiate "conditional" and
+	"unconditional" instructions.
+	(arm_movsf_soft_insn): Modify RTL to not allow for MVE.
+	(movdf_soft_insn): Modify RTL to not allow for MVE.
+	(vfp_pop_multiple_with_writeback): Enable for MVE.
+	(include "mve.md"): Include mve.md file.
+	* config/arm/arm_mve.h: Add MVE intrinsics head file.
+	* config/arm/constraints.md (Up): Constraint to enable "p0" register in MVE
+	for vector predicated operands.
+	* config/arm/iterators.md (VNIM1): Define.
+	(VNINOTM1): Define.
+	(VHFBF_split): Define
+	* config/arm/mve.md: New file.
+	(mve_mov<mode>): Define RTL for move, store and load in MVE.
+	(mve_mov<mode>): Define move RTL pattern with vec_duplicate operator for
+	second operand.
+	* config/arm/neon.md (neon_immediate_valid_for_move): Rename with
+	simd_immediate_valid_for_move.
+	(neon_mov<mode>): Split pattern and move expand pattern "movv8hf" which
+	is common to MVE and  NEON to vec-common.md file.
+	(vec_init<mode><V_elem_l>): Add TARGET_HAVE_MVE check.
+	* config/arm/predicates.md (vpr_register_operand): Define.
+	* config/arm/t-arm: Add mve.md file.
+	* config/arm/types.md (mve_move): Add MVE instructions mve_move to
+	attribute "type".
+	(mve_store): Add MVE instructions mve_store to attribute "type".
+	(mve_load): Add MVE instructions mve_load to attribute "type".
+	(is_mve_type): Define attribute.
+	* config/arm/vec-common.md (mov<mode>): Modify RTL expand to support
+	standard move patterns in MVE along with NEON and IWMMXT with mode
+	iterator VNIM1.
+	(mov<mode>): Modify RTL expand to support standard move patterns in NEON
+	and IWMMXT with mode iterator V8HF.
+	(movv8hf): Define RTL expand to support standard "movv8hf" pattern in
+	NEON and MVE.
+	* config/arm/vfp.md (neon_immediate_valid_for_move): Rename to
+	simd_immediate_valid_for_move.
+
+
+2020-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movsi_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove ext_sse_reg_operand and TARGET_AVX512VL
+	check.
+	* config/i386/predicates.md (ext_sse_reg_operand): Removed.
+
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94167
+	* tree-inline.c (insert_init_stmt): Don't gimple_regimplify_operands
+	DEBUG_STMTs.
+
+	PR tree-optimization/94166
+	* tree-ssa-reassoc.c (sort_by_mach_mode): Use SSA_NAME_VERSION
+	as secondary comparison key.
+
+2020-03-16  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94125
+	* tree-loop-distribution.c
+	(loop_distribution::break_alias_scc_partitions): Update post order
+	number for merged scc.
+
+2020-03-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.c (ix86_output_ssemov): Handle MODE_SI and
+	MODE_SF.
+	* config/i386/i386.md (*movsf_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove TARGET_PREFER_AVX256, TARGET_AVX512VL
+	and ext_sse_reg_operand check.
+
+2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* common.opt: Avoid redundancy in the help text.
+	* config/arc/arc.opt: Likewise.
+	* config/cr16/cr16.opt: Likewise.
+
+2020-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93566
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle {,in_,task_}reduction clauses
+	with C/C++ array sections.
+
+2020-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	* config/i386/i386.md (*movdi_internal): Call ix86_output_ssemov
+	for TYPE_SSEMOV.  Remove ext_sse_reg_operand and TARGET_AVX512VL
+	check.
+
 2020-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-fold.c (gimple_fold_builtin_strncpy): Change
@@ -10,7 +278,7 @@
 2020-03-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/92379
-	* config/rs6000/rs6000.c (num_insns_constant_multi) Don't shift a
+	* config/rs6000/rs6000.c (num_insns_constant_multi): Don't shift a
 	64-bit value by 64 bits (UB).
 
 2020-03-13  Vladimir Makarov  <vmakarov@redhat.com>

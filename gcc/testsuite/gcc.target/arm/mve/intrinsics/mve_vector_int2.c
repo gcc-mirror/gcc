@@ -1,0 +1,49 @@
+/* { dg-do compile  } */
+/* { dg-require-effective-target arm_v8_1m_mve_ok } */
+/* { dg-add-options arm_v8_1m_mve } */
+
+#include "arm_mve.h"
+
+int8x16_t
+foo8 ()
+{
+  int8x16_t b = {1, 2, 3, 4};
+  return b;
+}
+
+/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
+/* { dg-final { scan-assembler "vstrb.*" }  } */
+/* { dg-final { scan-assembler "vldr.64.*" }  } */
+
+int16x8_t
+foo16 (int16x8_t value)
+{
+  int16x8_t b = {1, 2, 3};
+  return b;
+}
+
+/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
+/* { dg-final { scan-assembler "vstrb.*" }  } */
+/* { dg-final { scan-assembler "vldr.64.*" }  } */
+
+int32x4_t
+foo32 (int32x4_t value)
+{
+  int32x4_t b = {1, 2};
+  return b;
+}
+
+/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
+/* { dg-final { scan-assembler "vstrb.*" }  } */
+/* { dg-final { scan-assembler "vldr.64.*" }  } */
+
+int64x2_t
+foo64 (int64x2_t value)
+{
+  int64x2_t b = {1};
+  return b;
+}
+
+/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
+/* { dg-final { scan-assembler "vstrb.*" }  } */
+/* { dg-final { scan-assembler "vldr.64.*" }  } */

@@ -4691,6 +4691,49 @@ proc check_effective_target_default_branch_protection { } {
     return [check_configured_with "enable-standard-branch-protection"]
 }
 
+# Return 1 if the target supports ARMv8.1-M MVE with floating point
+# instructions, 0 otherwise.  The test is valid for ARM.
+# Record the command line options needed.
+
+proc check_effective_target_arm_v8_1m_mve_fp_ok_nocache { } {
+    global et_arm_v8_1m_mve_fp_flags
+    set et_arm_v8_1m_mve_fp_flags ""
+
+    if { ![istarget arm*-*-*] } {
+	return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfloat-abi=hard -mfpu=auto -march=armv8.1-m.main+mve.fp" "-mfloat-abi=softfp -mfpu=auto -march=armv8.1-m.main+mve.fp"} {
+	if { [check_no_compiler_messages_nocache \
+		  arm_v8_1m_mve_fp_ok object {
+	    #include <arm_mve.h>
+	    #if !(__ARM_FEATURE_MVE & 2)
+	    #error "__ARM_FEATURE_MVE for floating point not defined"
+	    #endif
+	} "$flags -mthumb"] } {
+	    set et_arm_v8_1m_mve_fp_flags "$flags -mthumb"
+	    return 1
+	}
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_1m_mve_fp_ok { } {
+    return [check_cached_effective_target arm_v8_1m_mve_fp_ok \
+		check_effective_target_arm_v8_1m_mve_fp_ok_nocache]
+}
+
+proc add_options_for_arm_v8_1m_mve_fp { flags } {
+    if { ! [check_effective_target_arm_v8_1m_mve_fp_ok] } {
+	return "$flags"
+    }
+    global et_arm_v8_1m_mve_fp_flags
+    return "$flags $et_arm_v8_1m_mve_fp_flags"
+}
+
 # Return 1 if the target supports the ARMv8.1 Adv.SIMD extension, 0
 # otherwise.  The test is valid for AArch64 and ARM.  Record the command
 # line options needed.
@@ -4842,7 +4885,7 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
 
     # Iterate through sets of options to find the compiler flags that
     # need to be added to the -march option.
-    foreach flags {"" "-mfloat-abi=softfp -mfpu=auto" "-mfloat-abi=hard -mfpu=auto"} {
+    foreach flags {"" "-mfloat-abi=hard -mfpu=auto -march=armv8.1-m.main+mve" "-mfloat-abi=softfp -mfpu=auto -march=armv8.1-m.main+mve"} {
         if { [check_no_compiler_messages_nocache \
                   arm_v8_1m_mve_ok object {
             #if !defined (__ARM_FEATURE_MVE)

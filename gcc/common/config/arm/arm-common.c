@@ -1009,7 +1009,8 @@ arm_asm_auto_mfpu (int argc, const char **argv)
 	    }
 	}
 
-      gcc_assert (i != TARGET_FPU_auto);
+      gcc_assert (i != TARGET_FPU_auto
+		  || bitmap_bit_p (target_isa, isa_bit_vfp_base));
     }
 
   auto_fpu = (char *) xmalloc (strlen (fpuname) + sizeof ("-mfpu="));

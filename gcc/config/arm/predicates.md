@@ -48,6 +48,14 @@
   return guard_addr_operand (XEXP (op, 0), mode);
 })
 
+(define_predicate "vpr_register_operand"
+  (match_code "reg")
+{
+  return REG_P (op)
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || IS_VPR_REGNUM (REGNO (op)));
+})
+
 (define_predicate "imm_for_neon_inv_logic_operand"
   (match_code "const_vector")
 {
@@ -688,7 +696,7 @@
 (define_predicate "imm_for_neon_mov_operand"
   (match_code "const_vector,const_int")
 {
-  return neon_immediate_valid_for_move (op, mode, NULL, NULL);
+  return simd_immediate_valid_for_move (op, mode, NULL, NULL);
 })
 
 (define_predicate "imm_for_neon_lshift_operand"

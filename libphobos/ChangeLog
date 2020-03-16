@@ -1,3 +1,11 @@
+2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/92792
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Reset to 1:0:0.
+	* libdruntime/Makefile.in: Regenerate.
+
 2020-02-17  Martin Liska  <mliska@suse.cz>
 
 	PR other/93756

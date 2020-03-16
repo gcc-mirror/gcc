@@ -1793,8 +1793,11 @@ sort_by_mach_mode (const void *p_i, const void *p_j)
     return 1;
   else if (mode1 < mode2)
     return -1;
-  else
-    return 0;
+  if (SSA_NAME_VERSION (tr1) < SSA_NAME_VERSION (tr2))
+    return -1;
+  else if (SSA_NAME_VERSION (tr1) > SSA_NAME_VERSION (tr2))
+    return 1;
+  return 0;
 }
 
 /* Cleanup hash map for VECTOR information.  */

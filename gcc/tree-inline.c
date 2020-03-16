@@ -3361,10 +3361,10 @@ insert_init_stmt (copy_body_data *id, basic_block bb, gimple *init_stmt)
 	  gimple_assign_set_rhs1 (init_stmt, rhs);
 	}
       gsi_insert_after (&si, init_stmt, GSI_NEW_STMT);
-      gimple_regimplify_operands (init_stmt, &si);
-
       if (!is_gimple_debug (init_stmt))
 	{
+	  gimple_regimplify_operands (init_stmt, &si);
+
 	  tree def = gimple_assign_lhs (init_stmt);
 	  insert_init_debug_bind (id, bb, def, def, init_stmt);
 	}

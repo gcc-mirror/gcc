@@ -1895,22 +1895,52 @@ else version (CRuntime_Musl)
 
     enum
     {
-        SO_DEBUG        = 1,
-        SO_REUSEADDR    = 2,
-        SO_TYPE         = 3,
-        SO_ERROR        = 4,
-        SO_DONTROUTE    = 5,
-        SO_BROADCAST    = 6,
-        SO_SNDBUF       = 7,
-        SO_RCVBUF       = 8,
-        SO_KEEPALIVE    = 9,
-        SO_OOBINLINE    = 10,
-        SO_LINGER       = 13,
-        SO_RCVLOWAT     = 18,
-        SO_SNDLOWAT     = 19,
-        SO_RCVTIMEO     = 20,
-        SO_SNDTIMEO     = 21,
-        SO_ACCEPTCONN   = 30
+        SO_DEBUG        = 1
+    }
+
+    version (MIPS_Any)
+    {
+        enum
+        {
+            SO_REUSEADDR    = 0x0004,
+            SO_TYPE         = 0x1008,
+            SO_ERROR        = 0x1007,
+            SO_DONTROUTE    = 0x0010,
+            SO_BROADCAST    = 0x0020,
+            SO_SNDBUF       = 0x1001,
+            SO_RCVBUF       = 0x1002,
+            SO_KEEPALIVE    = 0x0008,
+            SO_OOBINLINE    = 0x0100,
+            SO_LINGER       = 0x0080,
+            SO_REUSEPORT    = 0x0200,
+            SO_RCVLOWAT     = 0x1004,
+            SO_SNDLOWAT     = 0x1003,
+            SO_RCVTIMEO     = 0x1006,
+            SO_SNDTIMEO     = 0x1005,
+            SO_ACCEPTCONN   = 0x1009
+        }
+    }
+    else
+    {
+        enum
+        {
+            SO_REUSEADDR    = 2,
+            SO_TYPE         = 3,
+            SO_ERROR        = 4,
+            SO_DONTROUTE    = 5,
+            SO_BROADCAST    = 6,
+            SO_SNDBUF       = 7,
+            SO_RCVBUF       = 8,
+            SO_KEEPALIVE    = 9,
+            SO_OOBINLINE    = 10,
+            SO_LINGER       = 13,
+            SO_REUSEPORT    = 15,
+            SO_RCVLOWAT     = 18,
+            SO_SNDLOWAT     = 19,
+            SO_RCVTIMEO     = 20,
+            SO_SNDTIMEO     = 21,
+            SO_ACCEPTCONN   = 30
+        }
     }
 
     enum : uint

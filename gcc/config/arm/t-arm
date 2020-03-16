@@ -55,6 +55,7 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/ldmstm.md \
 		$(srcdir)/config/arm/ldrdstrd.md \
 		$(srcdir)/config/arm/marvell-f-iwmmxt.md \
+		$(srcdir)/config/arm/mve.md \
 		$(srcdir)/config/arm/neon.md \
 		$(srcdir)/config/arm/predicates.md \
 		$(srcdir)/config/arm/sync.md \
