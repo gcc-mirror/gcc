@@ -229,14 +229,18 @@ package body Exp_Atag is
             Make_Op_Subtract (Loc,
               Left_Opnd =>
                 Make_Selected_Component (Loc,
-                  Prefix        => New_Occurrence_Of (Obj_TSD, Loc),
+                  Prefix        =>
+                    Make_Explicit_Dereference (Loc,
+                      New_Occurrence_Of (Obj_TSD, Loc)),
                   Selector_Name =>
                      New_Occurrence_Of
                        (RTE_Record_Component (RE_Idepth), Loc)),
 
                Right_Opnd =>
                  Make_Selected_Component (Loc,
-                   Prefix        => New_Occurrence_Of (Typ_TSD, Loc),
+                   Prefix        =>
+                     Make_Explicit_Dereference (Loc,
+                       New_Occurrence_Of (Typ_TSD, Loc)),
                    Selector_Name =>
                      New_Occurrence_Of
                        (RTE_Record_Component (RE_Idepth), Loc)))),
@@ -255,7 +259,9 @@ package body Exp_Atag is
                 Make_Indexed_Component (Loc,
                   Prefix      =>
                     Make_Selected_Component (Loc,
-                      Prefix        => New_Occurrence_Of (Obj_TSD, Loc),
+                      Prefix        =>
+                        Make_Explicit_Dereference (Loc,
+                          New_Occurrence_Of (Obj_TSD, Loc)),
                       Selector_Name =>
                         New_Occurrence_Of
                           (RTE_Record_Component (RE_Tags_Table), Loc)),
@@ -293,8 +299,9 @@ package body Exp_Atag is
       return
         Make_Selected_Component (Loc,
           Prefix =>
-            Build_TSD (Loc,
-              Unchecked_Convert_To (RTE (RE_Address), Tag_Node)),
+            Make_Explicit_Dereference (Loc,
+              Build_TSD (Loc,
+                Unchecked_Convert_To (RTE (RE_Address), Tag_Node))),
           Selector_Name =>
             New_Occurrence_Of
               (RTE_Record_Component (RE_Access_Level), Loc));
@@ -311,8 +318,10 @@ package body Exp_Atag is
    begin
       return
         Make_Selected_Component (Loc,
-          Prefix        =>
-            Build_TSD (Loc, Unchecked_Convert_To (RTE (RE_Address), Tag_Node)),
+          Prefix =>
+            Make_Explicit_Dereference (Loc,
+              Build_TSD (Loc,
+                Unchecked_Convert_To (RTE (RE_Address), Tag_Node))),
           Selector_Name =>
             New_Occurrence_Of (RTE_Record_Component (RE_Alignment), Loc));
    end Build_Get_Alignment;
@@ -639,7 +648,8 @@ package body Exp_Atag is
                  Prefix =>
                    Make_Selected_Component (Loc,
                      Prefix =>
-                       Build_DT (Loc, New_Tag_Node),
+                       Make_Explicit_Dereference (Loc,
+                         Build_DT (Loc, New_Tag_Node)),
                      Selector_Name =>
                        New_Occurrence_Of
                          (RTE_Record_Component (RE_Prims_Ptr), Loc)),
@@ -651,7 +661,8 @@ package body Exp_Atag is
                  Prefix =>
                    Make_Selected_Component (Loc,
                      Prefix =>
-                       Build_DT (Loc, Old_Tag_Node),
+                       Make_Explicit_Dereference (Loc,
+                         Build_DT (Loc, Old_Tag_Node)),
                      Selector_Name =>
                        New_Occurrence_Of
                          (RTE_Record_Component (RE_Prims_Ptr), Loc)),
@@ -728,8 +739,9 @@ package body Exp_Atag is
       return
         Make_Selected_Component (Loc,
           Prefix =>
-            Build_TSD (Loc,
-              Unchecked_Convert_To (RTE (RE_Address), Tag_Node)),
+            Make_Explicit_Dereference (Loc,
+              Build_TSD (Loc,
+                Unchecked_Convert_To (RTE (RE_Address), Tag_Node))),
           Selector_Name =>
             New_Occurrence_Of
               (RTE_Record_Component (RE_Transportable), Loc));
@@ -884,8 +896,9 @@ package body Exp_Atag is
           Name =>
             Make_Selected_Component (Loc,
               Prefix =>
-                Build_TSD (Loc,
-                  Unchecked_Convert_To (RTE (RE_Address), Tag_Node)),
+                Make_Explicit_Dereference (Loc,
+                  Build_TSD (Loc,
+                    Unchecked_Convert_To (RTE (RE_Address), Tag_Node))),
               Selector_Name =>
                 New_Occurrence_Of
                   (RTE_Record_Component (RE_Size_Func), Loc)),

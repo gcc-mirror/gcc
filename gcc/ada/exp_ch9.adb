@@ -737,8 +737,9 @@ package body Exp_Ch9 is
          Renamed_Formal :=
            Make_Selected_Component (Loc,
              Prefix        =>
-               Unchecked_Convert_To (Entry_Parameters_Type (Ent),
-                 Make_Identifier (Loc, Chars (Ptr))),
+               Make_Explicit_Dereference (Loc,
+                 Unchecked_Convert_To (Entry_Parameters_Type (Ent),
+                   Make_Identifier (Loc, Chars (Ptr)))),
              Selector_Name => New_Occurrence_Of (Comp, Loc));
 
          Decl :=
@@ -4523,12 +4524,6 @@ package body Exp_Ch9 is
          Ent_Acc := Entry_Parameters_Type (Ent);
          Conctyp := Etype (Concval);
 
-         --  If prefix is an access type, dereference to obtain the task type
-
-         if Is_Access_Type (Conctyp) then
-            Conctyp := Designated_Type (Conctyp);
-         end if;
-
          --  Special case for protected subprogram calls
 
          if Is_Protected_Type (Conctyp)
@@ -6015,9 +6010,10 @@ package body Exp_Ch9 is
                   Renamed_Formal :=
                      Make_Selected_Component (Loc,
                        Prefix        =>
-                         Unchecked_Convert_To (
-                           Entry_Parameters_Type (Ent),
-                           New_Occurrence_Of (Ann, Loc)),
+                         Make_Explicit_Dereference (Loc,
+                           Unchecked_Convert_To (
+                             Entry_Parameters_Type (Ent),
+                             New_Occurrence_Of (Ann, Loc))),
                        Selector_Name =>
                          New_Occurrence_Of (Comp, Loc));
 
@@ -10532,16 +10528,6 @@ package body Exp_Ch9 is
 
       Extract_Entry (N, Concval, Ename, Index);
       Conc_Typ := Etype (Concval);
-
-      --  If the prefix is an access to class-wide type, dereference to get
-      --  object and entry type.
-
-      if Is_Access_Type (Conc_Typ) then
-         Conc_Typ := Designated_Type (Conc_Typ);
-         Rewrite (Concval,
-           Make_Explicit_Dereference (Loc, Relocate_Node (Concval)));
-         Analyze_And_Resolve (Concval, Conc_Typ);
-      end if;
 
       --  Examine the scope stack in order to find nearest enclosing protected
       --  or task type. This will constitute our invocation source.

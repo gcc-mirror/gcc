@@ -1354,14 +1354,12 @@ package body Sem_Util is
          New_N : constant Node_Id := New_Copy_Tree (N);
 
       begin
-         if Is_Access_Type (Etype (New_N)) then
-            --  Copy the parent to have a proper Sloc on the dereference
+         if Is_Access_Type (Etype (N)) then
+            return Make_Explicit_Dereference (Sloc (Parent (N)), New_N);
 
-            Set_Parent (New_N, Parent (N));
-            Insert_Explicit_Dereference (New_N);
+         else
+            return New_N;
          end if;
-
-         return New_N;
       end Copy_And_Maybe_Dereference;
 
    --  Start of processing for Build_Actual_Subtype_Of_Component
@@ -12515,6 +12513,32 @@ package body Sem_Util is
       return False;
    end Implements_Interface;
 
+   --------------------------------
+   -- Implicitly_Designated_Type --
+   --------------------------------
+
+   function Implicitly_Designated_Type (Typ : Entity_Id) return Entity_Id is
+      Desig : constant Entity_Id := Designated_Type (Typ);
+
+   begin
+      --  An implicit dereference is a legal occurrence of an incomplete type
+      --  imported through a limited_with clause, if the full view is visible.
+
+      if Is_Incomplete_Type (Desig)
+        and then From_Limited_With (Desig)
+        and then not From_Limited_With (Scope (Desig))
+        and then
+          (Is_Immediately_Visible (Scope (Desig))
+            or else
+              (Is_Child_Unit (Scope (Desig))
+                and then Is_Visible_Lib_Unit (Scope (Desig))))
+      then
+         return Available_View (Desig);
+      else
+         return Desig;
+      end if;
+   end Implicitly_Designated_Type;
+
    ------------------------------------
    -- In_Assertion_Expression_Pragma --
    ------------------------------------
@@ -23402,7 +23426,7 @@ package body Sem_Util is
          Orig_Pre := Original_Node (Prefix (Orig_Obj));
 
          if Is_Access_Type (Etype (Orig_Pre)) then
-            return Type_Access_Level (Etype (Prefix (Orig_Obj)));
+            return Type_Access_Level (Etype (Orig_Pre));
          else
             return Object_Access_Level (Prefix (Orig_Obj));
          end if;
