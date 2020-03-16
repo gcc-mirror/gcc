@@ -856,7 +856,7 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  else
 	    inner_bind_vars = next;
 	}
-      else if (!idx_vars->contains (v))
+      else if (!idx_vars->contains (v) && !is_gimple_reg (v))
 	{
 	  /* Otherwise, build the map clause.  */
 	  tree new_clause = build_omp_clause (loc, OMP_CLAUSE_MAP);
@@ -1217,7 +1217,9 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses,
 	  && !idx_vars.contains (var))
 	{
 	  tree present_clause = build_omp_clause (loc, OMP_CLAUSE_MAP);
-	  OMP_CLAUSE_SET_MAP_KIND (present_clause, GOMP_MAP_FORCE_PRESENT);
+	  OMP_CLAUSE_SET_MAP_KIND (present_clause,
+				   is_gimple_reg (var)
+				   ? GOMP_MAP_TOFROM : GOMP_MAP_FORCE_PRESENT);
 	  OMP_CLAUSE_DECL (present_clause) = var;
 	  OMP_CLAUSE_SIZE (present_clause) = DECL_SIZE_UNIT (var);
 	  OMP_CLAUSE_CHAIN (present_clause) = present_clauses;
@@ -1485,6 +1487,9 @@ transform_kernels_region (gimple *kernels_region)
 		   target is already mapped.  We leave these on the inner
 		   parallel regions because moving them to the outer data
 		   region causes runtime errors.  */
+		break;
+
+	      if (is_gimple_reg (decl))
 		break;
 
 	      /* For non-artificial variables, and for non-declaration

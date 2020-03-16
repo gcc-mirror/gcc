@@ -1,3 +1,12 @@
+2020-03-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-oacc-kernels.c (maybe_build_inner_data_region): is_gimple_reg vars
+	are not yet mapped, fall through to map is as before the transformation.
+	(transform_kernels_region): Don't map is_gimple_reg vars.
+	(decompose_kernels_region_body): Use tofrom for is_gimple_reg vars.
+	(transform_kernels_region): Handle is_gimple_reg vars as without
+	data kernels.
+
 2020-03-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-sese.c (install_var_field): Generate a field name for a VAR_DECL
