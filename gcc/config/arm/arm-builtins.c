@@ -433,6 +433,96 @@ arm_binop_unone_unone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define BINOP_UNONE_UNONE_NONE_QUALIFIERS \
   (arm_binop_unone_unone_none_qualifiers)
 
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+    qualifier_immediate };
+#define TERNOP_UNONE_UNONE_UNONE_IMM_QUALIFIERS \
+  (arm_ternop_unone_unone_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none, qualifier_none };
+#define TERNOP_UNONE_UNONE_NONE_NONE_QUALIFIERS \
+  (arm_ternop_unone_unone_none_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_unsigned,
+      qualifier_immediate };
+#define TERNOP_UNONE_NONE_UNONE_IMM_QUALIFIERS \
+  (arm_ternop_unone_none_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_immediate };
+#define TERNOP_NONE_NONE_UNONE_IMM_QUALIFIERS \
+  (arm_ternop_none_none_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
+    qualifier_immediate };
+#define TERNOP_UNONE_UNONE_NONE_IMM_QUALIFIERS \
+  (arm_ternop_unone_unone_none_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
+      qualifier_unsigned };
+#define TERNOP_UNONE_UNONE_NONE_UNONE_QUALIFIERS \
+  (arm_ternop_unone_unone_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
+    qualifier_unsigned };
+#define TERNOP_UNONE_UNONE_IMM_UNONE_QUALIFIERS \
+  (arm_ternop_unone_unone_imm_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_none, qualifier_unsigned };
+#define TERNOP_UNONE_NONE_NONE_UNONE_QUALIFIERS \
+  (arm_ternop_unone_none_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
+#define TERNOP_NONE_NONE_NONE_IMM_QUALIFIERS \
+  (arm_ternop_none_none_none_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_unsigned };
+#define TERNOP_NONE_NONE_NONE_UNONE_QUALIFIERS \
+  (arm_ternop_none_none_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_immediate, qualifier_unsigned };
+#define TERNOP_NONE_NONE_IMM_UNONE_QUALIFIERS \
+  (arm_ternop_none_none_imm_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_unsigned };
+#define TERNOP_NONE_NONE_UNONE_UNONE_QUALIFIERS \
+  (arm_ternop_none_none_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+    qualifier_unsigned };
+#define TERNOP_UNONE_UNONE_UNONE_UNONE_QUALIFIERS \
+  (arm_ternop_unone_unone_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
+#define TERNOP_NONE_NONE_NONE_NONE_QUALIFIERS \
+  (arm_ternop_none_none_none_none_qualifiers)
+
 /* End of Qualifier for MVE builtins.  */
 
    /* void ([T element type] *, T, immediate).  */
