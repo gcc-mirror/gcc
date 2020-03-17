@@ -1,3 +1,28 @@
+2020-03-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md:
+	(VEC_SUBDWORD_MODE): Rename to V_QIHI throughout.
+	(VEC_1REG_MODE): Delete.
+	(VEC_1REG_ALT): Delete.
+	(VEC_ALL1REG_MODE): Rename to V_1REG throughout.
+	(VEC_1REG_INT_MODE): Delete.
+	(VEC_ALL1REG_INT_MODE): Rename to V_INT_1REG throughout.
+	(VEC_ALL1REG_INT_ALT): Rename to V_INT_1REG_ALT throughout.
+	(VEC_2REG_MODE): Rename to V_2REG throughout.
+	(VEC_REG_MODE): Rename to V_noHI throughout.
+	(VEC_ALLREG_MODE): Rename to V_ALL throughout.
+	(VEC_ALLREG_ALT):  Rename to V_ALL_ALT throughout.
+	(VEC_ALLREG_INT_MODE): Rename to V_INT throughout.
+	(VEC_INT_MODE): Delete.
+	(VEC_FP_MODE): Rename to V_FP throughout and move to top.
+	(VEC_FP_1REG_MODE): Rename to V_FP_1REG throughout and move to top.
+	(FP_MODE): Delete and replace with FP throughout.
+	(FP_1REG_MODE): Delete and replace with FP_1REG throughout.
+	(VCMP_MODE): Rename to V_noQI throughout and move to top.
+	(VCMP_MODE_INT): Rename to V_INT_noQI throughout and move to top.
+	* config/gcn/gcn.md (FP): New mode iterator.
+	(FP_1REG): New mode iterator.
+
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (-fdump-analyzer-supergraph): Document that this
