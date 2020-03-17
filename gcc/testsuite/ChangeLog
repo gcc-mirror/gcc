@@ -1,5 +1,9 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/94172
+	* gcc.dg/pr94172-1.c: New test.
+	* gcc.dg/pr94172-2.c: New test.
+
 	PR c++/90995
 	* g++.dg/cpp0x/enum40.C: New test.
 
