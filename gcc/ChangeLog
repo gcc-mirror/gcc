@@ -1,3 +1,9 @@
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Treat the third
+	parameter as a list of option regexps and require each regexp
+	to match.
+
 2020-04-09  Andrea Corallo  <andrea.corallo@arm.com>
 
 	PR target/94530
