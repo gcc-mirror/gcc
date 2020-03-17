@@ -1,3 +1,8 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94189
+	* gcc.dg/pr94189.c: New test.
+
 2020-03-17  Martin Liska  <mliska@suse.cz>
 
 	PR lto/94157

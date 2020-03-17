@@ -1,3 +1,10 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94189
+	* builtins.c (expand_builtin_strnlen): Do return NULL_RTX if we would
+	emit a warning if it was enabled and don't depend on TREE_NO_WARNING
+	for code-generation.
+
 2020-03-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/94185
