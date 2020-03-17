@@ -1,16 +1,9 @@
 2020-03-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
-	gcc/
-
 	PR c++/94197
-	* cp/method.c (assignable_expr): Use cp_unevaluated.
+	* method.c (assignable_expr): Use cp_unevaluated.
 	(is_xible_helper): Push a non-deferred access check for
 	the stub objects created by assignable_expr and constructible_expr.
-
-	testsuite/
-
-	PR c++/94197
-	* g++.dg/ext/pr94197.C: New.
 
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
