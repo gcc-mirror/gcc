@@ -1,3 +1,7 @@
+2020-03-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/debug/dwarf2/const2b.C (dg-do): Fix target selector.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94172
