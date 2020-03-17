@@ -3328,7 +3328,7 @@ package body Sem_Res is
 
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
       --  Emit an error concerning the illegal usage of an effectively volatile
-      --  object in interfering context (SPARK RM 7.1.3(12)).
+      --  object in interfering context (SPARK RM 7.1.3(10)).
 
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list
@@ -3613,7 +3613,7 @@ package body Sem_Res is
                then
                   Error_Msg_N
                     ("volatile object cannot appear in this context (SPARK "
-                     & "RM 7.1.3(11))", N);
+                     & "RM 7.1.3(10))", N);
                   return Skip;
                end if;
             end if;
@@ -4739,7 +4739,7 @@ package body Sem_Res is
 
                --  An effectively volatile object may act as an actual when the
                --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(11)).
+               --  type (SPARK RM 7.1.3(10)).
 
                if not Is_Scalar_Type (Etype (F))
                  and then Is_Effectively_Volatile (Etype (F))
@@ -4748,7 +4748,7 @@ package body Sem_Res is
 
                --  An effectively volatile object may act as an actual in a
                --  call to an instance of Unchecked_Conversion.
-               --  (SPARK RM 7.1.3(11)).
+               --  (SPARK RM 7.1.3(10)).
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
                   null;
@@ -4758,7 +4758,7 @@ package body Sem_Res is
                elsif Is_Effectively_Volatile_Object (A) then
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
-                     & "RM 7.1.3(11))", A);
+                     & "RM 7.1.3(10))", A);
 
                --  Otherwise the actual denotes an expression. Inspect the
                --  expression and flag each effectively volatile object with
@@ -7544,7 +7544,7 @@ package body Sem_Res is
 
             --  An effectively volatile object subject to enabled properties
             --  Async_Writers or Effective_Reads must appear in non-interfering
-            --  context (SPARK RM 7.1.3(12)).
+            --  context (SPARK RM 7.1.3(10)).
 
             if Is_Object (E)
               and then Is_Effectively_Volatile (E)
@@ -7554,7 +7554,7 @@ package body Sem_Res is
             then
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
-                  & "(SPARK RM 7.1.3(12))", N);
+                  & "(SPARK RM 7.1.3(10))", N);
             end if;
 
             --  Check for possible elaboration issues with respect to reads of
