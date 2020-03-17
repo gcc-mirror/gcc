@@ -86,9 +86,7 @@ program main
   end do
   !$acc end kernels
 
-  !$acc kernels
-  !TODO What does this mean?
-  !TODO { dg-optimized "assigned OpenACC worker vector loop parallelism" "" { target *-*-* } .-2 }
+  !$acc kernels ! { dg-optimized "assigned OpenACC worker vector loop parallelism" }
   !$acc loop independent ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
