@@ -10430,6 +10430,39 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
       return false;
     }
 
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      /* If EXISTING has an undeduced or uninstantiated exception
+	 specification, but DECL does not, propagate the exception
+	 specification.  */
+      // FIXME: I don't think this can happen for a template
+      tree e_type = TREE_TYPE (existing);
+      tree e_spec = TYPE_RAISES_EXCEPTIONS (e_type);
+      if (DEFERRED_NOEXCEPT_SPEC_P (e_spec))
+	{
+	  tree d_type = TREE_TYPE (decl);
+	  tree d_spec = TYPE_RAISES_EXCEPTIONS (d_type);
+	  if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
+	      || (UNEVALUATED_NOEXCEPT_SPEC_P (e_spec)
+		  && !UNEVALUATED_NOEXCEPT_SPEC_P (d_spec)))
+	    {
+	      dump (dumper::MERGE)
+		&& dump ("Propagating instantiated noexcept to %N", existing);
+	      TREE_TYPE (existing) = d_type;
+	      /* Propagate to existing clones.  */
+	      tree clone;
+	      FOR_EACH_CLONE (clone, existing)
+		{
+		  if (TREE_TYPE (clone) == e_type)
+		    TREE_TYPE (clone) = d_type;
+		  else
+		    TREE_TYPE (clone)
+		      = build_exception_variant (TREE_TYPE (clone), d_spec);
+		}
+	    }
+	}
+    }
+
   if (DECL_IS_BUILTIN (existing) && DECL_ANTICIPATED (existing))
     {
       // FIXME: Take the type from decl, see duplicate decls.  FIXME: Our
