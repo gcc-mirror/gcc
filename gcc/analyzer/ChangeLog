@@ -1,5 +1,14 @@
 2020-03-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* region-model.h (class noop_region_model_context): New subclass
+	of region_model_context.
+	(class tentative_region_model_context): Inherit from
+	noop_region_model_context rather than from region_model_context;
+	drop redundant vfunc implementations.
+	(class test_region_model_context): Likewise.
+
+2020-03-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* engine.cc (exploded_node::exploded_node): Move implementation
 	here from header; accept point_and_state by const reference rather
 	than by value.
