@@ -2536,7 +2536,7 @@ satisfy_atom (tree t, tree args, subst_info info)
 
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
-  /* [17.4.1.2] ... lvalue-to-value conversion is performed as necessary,
+  /* [17.4.1.2] ... lvalue-to-rvalue conversion is performed as necessary,
      and EXPR shall be a constant expression of type bool.  */
   result = force_rvalue (result, info.complain);
   if (result == error_mark_node)
