@@ -1,3 +1,8 @@
+2020-03-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* c-typeck.c (process_init_element): Handle constructor_type with
+	type size represented by POLY_INT_CST.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94187

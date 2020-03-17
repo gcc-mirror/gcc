@@ -83,7 +83,6 @@ statements (int n)
   svint8_t array[2]; /* { dg-error {array elements cannot have SVE type 'svint8_t'} } */
   svint8_t zero_length_array[0]; /* { dg-error {array elements cannot have SVE type 'svint8_t'} } */
   svint8_t empty_init_array[] = {}; /* { dg-error {array elements cannot have SVE type 'svint8_t'} } */
-  				    /* { dg-error {empty scalar initializer} "" { target *-*-* } .-1 } */
   typedef svint8_t vla_type[n]; /* { dg-error {array elements cannot have SVE type 'svint8_t'} } */
 
   /* Assignment.  */

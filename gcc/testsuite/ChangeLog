@@ -1,3 +1,9 @@
+2020-03-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Remove
+	superfluous dg-error.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94189
