@@ -1,3 +1,9 @@
+2020-03-17  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/t-rmprofile: create new multilib for
+	armv8.1-m.main+mve hard float and reuse v8-m.main ones for
+	v8.1-m.main+mve.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94015

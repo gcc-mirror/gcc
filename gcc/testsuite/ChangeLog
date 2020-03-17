@@ -1,3 +1,7 @@
+2020-03-17  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add new v8.1-M entry.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94015
