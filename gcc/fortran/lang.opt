@@ -285,6 +285,10 @@ Wuse-without-only
 Fortran Var(warn_use_without_only) Warning
 Warn about USE statements that have no ONLY qualifier.
 
+Wopenacc-kernels-annotate-loops
+Fortran
+; Documented in C
+
 Wopenmp-simd
 Fortran
 ; Documented in C
@@ -689,6 +693,10 @@ Fortran LTO Joined Var(flag_openacc_dims)
 
 fopenacc-kernels=
 Fortran RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_SPLIT)
+; Documented in C
+
+fopenacc-kernels-annotate-loops
+Fortran LTO Optimization
 ; Documented in C
 
 fopenmp
