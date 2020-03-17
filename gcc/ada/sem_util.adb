@@ -36,6 +36,7 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet.Sp; use Namet.Sp;
@@ -1683,6 +1684,78 @@ package body Sem_Util is
       return Decl;
    end Build_Component_Subtype;
 
+   -----------------------------
+   -- Build_Constrained_Itype --
+   -----------------------------
+
+   procedure Build_Constrained_Itype
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      New_Assoc_List : List_Id)
+   is
+      Constrs     : constant List_Id    := New_List;
+      Loc         : constant Source_Ptr := Sloc (N);
+      Def_Id      : Entity_Id;
+      Indic       : Node_Id;
+      New_Assoc   : Node_Id;
+      Subtyp_Decl : Node_Id;
+
+   begin
+      New_Assoc := First (New_Assoc_List);
+      while Present (New_Assoc) loop
+
+         --  There is exactly one choice in the component association (and
+         --  it is either a discriminant, a component or the others clause).
+         pragma Assert (List_Length (Choices (New_Assoc)) = 1);
+
+         --  Duplicate expression for the discriminant and put it on the
+         --  list of constraints for the itype declaration.
+
+         if Is_Entity_Name (First (Choices (New_Assoc)))
+           and then
+             Ekind (Entity (First (Choices (New_Assoc)))) = E_Discriminant
+         then
+            Append_To (Constrs, Duplicate_Subexpr (Expression (New_Assoc)));
+         end if;
+
+         Next (New_Assoc);
+      end loop;
+
+      if Has_Unknown_Discriminants (Typ)
+        and then Present (Underlying_Record_View (Typ))
+      then
+         Indic :=
+           Make_Subtype_Indication (Loc,
+             Subtype_Mark =>
+               New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
+             Constraint   =>
+               Make_Index_Or_Discriminant_Constraint (Loc,
+                 Constraints => Constrs));
+      else
+         Indic :=
+           Make_Subtype_Indication (Loc,
+             Subtype_Mark =>
+               New_Occurrence_Of (Base_Type (Typ), Loc),
+             Constraint   =>
+               Make_Index_Or_Discriminant_Constraint (Loc,
+                 Constraints => Constrs));
+      end if;
+
+      Def_Id := Create_Itype (Ekind (Typ), N);
+
+      Subtyp_Decl :=
+        Make_Subtype_Declaration (Loc,
+          Defining_Identifier => Def_Id,
+          Subtype_Indication  => Indic);
+      Set_Parent (Subtyp_Decl, Parent (N));
+
+      --  Itypes must be analyzed with checks off (see itypes.ads)
+
+      Analyze (Subtyp_Decl, Suppress => All_Checks);
+
+      Set_Etype (N, Def_Id);
+   end Build_Constrained_Itype;
+
    ---------------------------
    -- Build_Default_Subtype --
    ---------------------------
@@ -2119,6 +2192,81 @@ package body Sem_Util is
 
       return New_Spec;
    end Build_Overriding_Spec;
+
+   -------------------
+   -- Build_Subtype --
+   -------------------
+
+   function Build_Subtype
+     (Related_Node : Node_Id;
+      Loc          : Source_Ptr;
+      Typ          : Entity_Id;
+      Constraints  : List_Id)
+      return Entity_Id
+   is
+      Indic       : Node_Id;
+      Subtyp_Decl : Node_Id;
+      Def_Id      : Entity_Id;
+      Btyp        : Entity_Id := Base_Type (Typ);
+
+   begin
+      --  The Related_Node better be here or else we won't be able to
+      --  attach new itypes to a node in the tree.
+
+      pragma Assert (Present (Related_Node));
+
+      --  If the view of the component's type is incomplete or private
+      --  with unknown discriminants, then the constraint must be applied
+      --  to the full type.
+
+      if Has_Unknown_Discriminants (Btyp)
+        and then Present (Underlying_Type (Btyp))
+      then
+         Btyp := Underlying_Type (Btyp);
+      end if;
+
+      Indic :=
+        Make_Subtype_Indication (Loc,
+          Subtype_Mark => New_Occurrence_Of (Btyp, Loc),
+          Constraint   =>
+            Make_Index_Or_Discriminant_Constraint (Loc, Constraints));
+
+      Def_Id := Create_Itype (Ekind (Typ), Related_Node);
+
+      Subtyp_Decl :=
+        Make_Subtype_Declaration (Loc,
+          Defining_Identifier => Def_Id,
+          Subtype_Indication  => Indic);
+
+      Set_Parent (Subtyp_Decl, Parent (Related_Node));
+
+      --  Itypes must be analyzed with checks off (see package Itypes)
+
+      Analyze (Subtyp_Decl, Suppress => All_Checks);
+
+      if Is_Itype (Def_Id) and then Has_Predicates (Typ) then
+         Inherit_Predicate_Flags (Def_Id, Typ);
+
+         --  Indicate where the predicate function may be found
+
+         if Is_Itype (Typ) then
+            if Present (Predicate_Function (Def_Id)) then
+               null;
+
+            elsif Present (Predicate_Function (Typ)) then
+               Set_Predicate_Function (Def_Id, Predicate_Function (Typ));
+
+            else
+               Set_Predicated_Parent (Def_Id, Predicated_Parent (Typ));
+            end if;
+
+         elsif No (Predicate_Function (Def_Id)) then
+            Set_Predicated_Parent (Def_Id, Typ);
+         end if;
+      end if;
+
+      return Def_Id;
+   end Build_Subtype;
 
    -----------------------------------
    -- Cannot_Raise_Constraint_Error --
@@ -13235,6 +13383,38 @@ package body Sem_Util is
 
       return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound ((Ind))));
    end Indexed_Component_Bit_Offset;
+
+   -----------------------------
+   -- Inherit_Predicate_Flags --
+   -----------------------------
+
+   procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id) is
+   begin
+      if Present (Predicate_Function (Subt)) then
+         return;
+      end if;
+
+      Set_Has_Predicates (Subt, Has_Predicates (Par));
+      Set_Has_Static_Predicate_Aspect
+        (Subt, Has_Static_Predicate_Aspect (Par));
+      Set_Has_Dynamic_Predicate_Aspect
+        (Subt, Has_Dynamic_Predicate_Aspect (Par));
+
+      --  A named subtype does not inherit the predicate function of its
+      --  parent but an itype declared for a loop index needs the discrete
+      --  predicate information of its parent to execute the loop properly.
+      --  A non-discrete type may has a static predicate (for example True)
+      --  but has no static_discrete_predicate.
+
+      if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
+         Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
+
+         if Has_Static_Predicate (Par) and then Is_Discrete_Type (Par) then
+            Set_Static_Discrete_Predicate
+              (Subt, Static_Discrete_Predicate (Par));
+         end if;
+      end if;
+   end Inherit_Predicate_Flags;
 
    ----------------------------
    -- Inherit_Rep_Item_Chain --

@@ -273,6 +273,27 @@ package Sem_Util is
    --  through a type-specific wrapper for all inherited subprograms that
    --  may have a modified condition.
 
+   procedure Build_Constrained_Itype
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      New_Assoc_List : List_Id);
+   --  Build a constrained itype for the newly created record aggregate N and
+   --  set it as a type of N. The itype will have Typ as its base type and
+   --  will be constrained by the values of discriminants from the component
+   --  association list New_Assoc_List.
+
+   --  ??? This code used to be pretty much a copy of Build_Subtype, but now
+   --  those two routines behave differently for types with unknown
+   --  discriminants. They are both exported in from this package in the hope
+   --  to eventually unify them (a not duplicate them even more until then).
+
+   --  ??? Performance WARNING. The current implementation creates a new itype
+   --  for all aggregates whose base type is discriminated. This means that
+   --  for record aggregates nested inside an array aggregate we will create
+   --  a new itype for each record aggregate if the array component type has
+   --  discriminants. For large aggregates this may be a problem. What should
+   --  be done in this case is to reuse itypes as much as possible.
+
    function Build_Default_Subtype
      (T : Entity_Id;
       N : Node_Id) return Entity_Id;
@@ -291,14 +312,6 @@ package Sem_Util is
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 
-   function Build_Overriding_Spec
-     (Op  : Node_Id;
-      Typ : Entity_Id) return Node_Id;
-   --  Build a subprogram specification for the wrapper of an inherited
-   --  operation with a modified pre- or postcondition (See AI12-0113).
-   --  Op is the parent operation, and Typ is the descendant type that
-   --  inherits the operation.
-
    procedure Build_Explicit_Dereference
      (Expr : Node_Id;
       Disc : Entity_Id);
@@ -307,6 +320,30 @@ package Sem_Util is
    --  type, convert N into N.Disc.all. Such expressions are always over-
    --  loaded with both interpretations, and the dereference interpretation
    --  carries the name of the reference discriminant.
+
+   function Build_Overriding_Spec
+     (Op  : Node_Id;
+      Typ : Entity_Id) return Node_Id;
+   --  Build a subprogram specification for the wrapper of an inherited
+   --  operation with a modified pre- or postcondition (See AI12-0113).
+   --  Op is the parent operation, and Typ is the descendant type that
+   --  inherits the operation.
+
+   function Build_Subtype
+     (Related_Node : Node_Id;
+      Loc          : Source_Ptr;
+      Typ          : Entity_Id;
+      Constraints  : List_Id)
+      return Entity_Id;
+   --  Typ is an array or discriminated type, Constraints is a list of
+   --  constraints that apply to Typ. This routine builds the constrained
+   --  subtype using Loc as the source location and attached this subtype
+   --  declaration to Related_Node. The returned subtype inherits predicates
+   --  from Typ.
+
+   --  ??? The routine is mostly a duplicate of Build_Constrained_Itype, so be
+   --  careful which of the two better suits your needs (and certainly do not
+   --  duplicate their code).
 
    function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean;
    --  Returns True if the expression cannot possibly raise Constraint_Error.
@@ -1484,6 +1521,10 @@ package Sem_Util is
    --  component if it is known at compile time. A value of No_Uint means that
    --  either the value is not yet known before back-end processing or it is
    --  not known at compile time after back-end processing.
+
+   procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id);
+   --  Propagate static and dynamic predicate flags from a parent to the
+   --  subtype in a subtype declaration with and without constraints.
 
    procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id);
    --  Inherit the rep item chain of type From_Typ without clobbering any
