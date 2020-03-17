@@ -1,5 +1,11 @@
 2020-03-18  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (vec_cmp<mode>di): Set operand 1 to DImode.
+	(vec_cmp<mode>di_dup): Likewise.
+	* config/gcn/gcn.h (STORE_FLAG_VALUE): Set to -1.
+
+2020-03-18  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (COND_MODE): Delete.
 	(COND_INT_MODE): Delete.
 	(cond_op): Add "mult".
