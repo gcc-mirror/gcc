@@ -1,4 +1,5 @@
 ! { dg-options "-fopenacc -fdump-tree-omplower" }
+! { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
 
 module consts
   integer, parameter :: n = 100

@@ -1,4 +1,38 @@
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+	    Gergö Barany <gergo@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Add
+	-fno-openacc-kernels-annotate-loops option.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+	* gfortran.dg/goacc/kernels-loop-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-update.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-n.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop.f95: Likewise.
+	* gfortran.dg/goacc/kernels-parallel-loop-data-enter-exit.f95:
+	Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-1.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-2.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-3.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-4.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-5.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-6.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-7.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-8.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-9.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-10.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-11.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-12.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-13.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-14.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-15.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-16.f95: New.
+
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-decompose-2.c: Add
 	-fno-openacc-kernels-annotate-loops.
