@@ -2370,6 +2370,7 @@ public:
             return setError();
         }
 
+        sc->_module->contentImportedFiles.push(name);
         if (global.params.verbose)
             message("file      %.*s\t(%s)", (int)se->len, (char *)se->string, name);
         if (global.params.moduleDeps != NULL)

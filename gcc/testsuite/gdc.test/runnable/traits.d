@@ -1253,7 +1253,7 @@ struct S10096X
     this(this) {}
     ~this() {}
 
-    string getStr() in(str) out(r; r == str) { return str; }
+    string getStr() in { assert(str); } out(r) { assert(r == str); } body { return str; }
 }
 static assert(
     [__traits(allMembers, S10096X)] ==
@@ -1271,7 +1271,7 @@ class C10096X
     this(int) {}
     ~this() {}
 
-    string getStr() in(str) out(r; r == str) { return str;
+    string getStr() in { assert(str); } out(r) { assert(r == str); } body { return str; }
 }
 static assert(
     [__traits(allMembers, C10096X)] ==
