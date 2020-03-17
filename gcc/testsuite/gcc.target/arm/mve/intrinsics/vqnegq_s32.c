@@ -8,15 +8,15 @@
 int32x4_t
 foo (int32x4_t a)
 {
-  return vrev64q_s32 (a);
+  return vqnegq_s32 (a);
 }
 
-/* { dg-final { scan-assembler "vrev64.32"  }  } */
+/* { dg-final { scan-assembler "vqneg.s32"  }  } */
 
 int32x4_t
 foo1 (int32x4_t a)
 {
-  return vrev64q (a);
+  return vqnegq (a);
 }
 
-/* { dg-final { scan-assembler "vrev64.32"  }  } */
+/* { dg-final { scan-assembler "vqneg.s32"  }  } */

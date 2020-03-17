@@ -6,17 +6,17 @@
 #include "arm_mve.h"
 
 int16x8_t
-foo (int16x8_t a)
+foo (int8x16_t a)
 {
-  return vrev64q_s16 (a);
+  return vmovlbq_s8 (a);
 }
 
-/* { dg-final { scan-assembler "vrev64.16"  }  } */
+/* { dg-final { scan-assembler "vmovlb.s8"  }  } */
 
 int16x8_t
-foo1 (int16x8_t a)
+foo1 (int8x16_t a)
 {
-  return vrev64q (a);
+  return vmovlbq (a);
 }
 
-/* { dg-final { scan-assembler "vrev64.16"  }  } */
+/* { dg-final { scan-assembler "vmovlb.s8"  }  } */
