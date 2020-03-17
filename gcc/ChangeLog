@@ -2,6 +2,53 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (BINOP_NONE_NONE_UNONE_QUALIFIERS): Define
+	qualifier for binary operands.
+	(BINOP_UNONE_NONE_NONE_QUALIFIERS): Likewise.
+	(BINOP_UNONE_UNONE_NONE_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vaddlvq_p_s32): Define macro.
+	(vaddlvq_p_u32): Likewise.
+	(vcmpneq_s8): Likewise.
+	(vcmpneq_s16): Likewise.
+	(vcmpneq_s32): Likewise.
+	(vcmpneq_u8): Likewise.
+	(vcmpneq_u16): Likewise.
+	(vcmpneq_u32): Likewise.
+	(vshlq_s8): Likewise.
+	(vshlq_s16): Likewise.
+	(vshlq_s32): Likewise.
+	(vshlq_u8): Likewise.
+	(vshlq_u16): Likewise.
+	(vshlq_u32): Likewise.
+	(__arm_vaddlvq_p_s32): Define intrinsic.
+	(__arm_vaddlvq_p_u32): Likewise.
+	(__arm_vcmpneq_s8): Likewise.
+	(__arm_vcmpneq_s16): Likewise.
+	(__arm_vcmpneq_s32): Likewise.
+	(__arm_vcmpneq_u8): Likewise.
+	(__arm_vcmpneq_u16): Likewise.
+	(__arm_vcmpneq_u32): Likewise.
+	(__arm_vshlq_s8): Likewise.
+	(__arm_vshlq_s16): Likewise.
+	(__arm_vshlq_s32): Likewise.
+	(__arm_vshlq_u8): Likewise.
+	(__arm_vshlq_u16): Likewise.
+	(__arm_vshlq_u32): Likewise.
+	(vaddlvq_p): Define polymorphic variant.
+	(vcmpneq): Likewise.
+	(vshlq): Likewise.
+	* config/arm/arm_mve_builtins.def (BINOP_NONE_NONE_UNONE_QUALIFIERS):
+	Use it.
+	(BINOP_UNONE_NONE_NONE_QUALIFIERS): Likewise.
+	(BINOP_UNONE_UNONE_NONE_QUALIFIERS): Likewise.
+	* config/arm/mve.md (mve_vaddlvq_p_<supf>v4si): Define RTL pattern.
+	(mve_vcmpneq_<supf><mode>): Likewise.
+	(mve_vshlq_<supf><mode>): Likewise.
+
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm-builtins.c (BINOP_UNONE_UNONE_IMM_QUALIFIERS): Define
 	qualifier for binary operands.
 	(BINOP_UNONE_UNONE_UNONE_QUALIFIERS): Likewise.

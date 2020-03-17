@@ -2,6 +2,25 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vaddlvq_p_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vaddlvq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlq_u8.c: Likewise.
+
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vcreateq_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vcreateq_s32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vcreateq_s64.c: Likewise.
