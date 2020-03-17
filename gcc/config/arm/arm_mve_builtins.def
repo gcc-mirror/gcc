@@ -6,7 +6,7 @@
 
     GCC is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published
-    by the Free Software Foundation; either version 3, or  (at your
+    by the Free Software Foundation; either version 3, or   (at your
     option) any later version.
 
     GCC is distributed in the hope that it will be useful, but WITHOUT
@@ -81,3 +81,9 @@ VAR2 (BINOP_NONE_NONE_NONE, vbrsrq_n_f, v8hf, v4sf)
 VAR2 (BINOP_NONE_NONE_IMM, vcvtq_n_to_f_s, v8hf, v4sf)
 VAR2 (BINOP_NONE_UNONE_IMM, vcvtq_n_to_f_u, v8hf, v4sf)
 VAR2 (BINOP_NONE_UNONE_UNONE, vcreateq_f, v8hf, v4sf)
+VAR2 (BINOP_UNONE_NONE_IMM, vcvtq_n_from_f_u, v8hi, v4si)
+VAR2 (BINOP_NONE_NONE_IMM, vcvtq_n_from_f_s, v8hi, v4si)
+VAR4 (BINOP_UNONE_UNONE_UNONE, vcreateq_u, v16qi, v8hi, v4si, v2di)
+VAR4 (BINOP_NONE_UNONE_UNONE, vcreateq_s, v16qi, v8hi, v4si, v2di)
+VAR3 (BINOP_UNONE_UNONE_IMM, vshrq_n_u, v16qi, v8hi, v4si)
+VAR3 (BINOP_NONE_NONE_IMM, vshrq_n_s, v16qi, v8hi, v4si)

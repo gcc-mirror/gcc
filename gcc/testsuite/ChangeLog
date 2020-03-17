@@ -2,6 +2,29 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vcreateq_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_n_s16_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_n_s32_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_n_u16_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_n_u32_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrq_n_u8.c: Likewise.
+
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vbrsrq_n_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vbrsrq_n_f32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vcreateq_f16.c: Likewise.
