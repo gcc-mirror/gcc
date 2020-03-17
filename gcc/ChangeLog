@@ -2,6 +2,55 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (UNOP_SNONE_SNONE_QUALIFIERS): Define.
+	(UNOP_SNONE_NONE_QUALIFIERS): Likewise.
+	(UNOP_SNONE_IMM_QUALIFIERS): Likewise.
+	(UNOP_UNONE_NONE_QUALIFIERS): Likewise.
+	(UNOP_UNONE_UNONE_QUALIFIERS): Likewise.
+	(UNOP_UNONE_IMM_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vmvnq_n_s16): Define macro.
+	(vmvnq_n_s32): Likewise.
+	(vrev64q_s8): Likewise.
+	(vrev64q_s16): Likewise.
+	(vrev64q_s32): Likewise.
+	(vcvtq_s16_f16): Likewise.
+	(vcvtq_s32_f32): Likewise.
+	(vrev64q_u8): Likewise.
+	(vrev64q_u16): Likewise.
+	(vrev64q_u32): Likewise.
+	(vmvnq_n_u16): Likewise.
+	(vmvnq_n_u32): Likewise.
+	(vcvtq_u16_f16): Likewise.
+	(vcvtq_u32_f32): Likewise.
+	(__arm_vmvnq_n_s16): Define intrinsic.
+	(__arm_vmvnq_n_s32): Likewise.
+	(__arm_vrev64q_s8): Likewise.
+	(__arm_vrev64q_s16): Likewise.
+	(__arm_vrev64q_s32): Likewise.
+	(__arm_vrev64q_u8): Likewise.
+	(__arm_vrev64q_u16): Likewise.
+	(__arm_vrev64q_u32): Likewise.
+	(__arm_vmvnq_n_u16): Likewise.
+	(__arm_vmvnq_n_u32): Likewise.
+	(__arm_vcvtq_s16_f16): Likewise.
+	(__arm_vcvtq_s32_f32): Likewise.
+	(__arm_vcvtq_u16_f16): Likewise.
+	(__arm_vcvtq_u32_f32): Likewise.
+	(vrev64q): Define polymorphic variant.
+	* config/arm/arm_mve_builtins.def (UNOP_SNONE_SNONE): Use it.
+	(UNOP_SNONE_NONE): Likewise.
+	(UNOP_SNONE_IMM): Likewise.
+	(UNOP_UNONE_UNONE): Likewise.
+	(UNOP_UNONE_NONE): Likewise.
+	(UNOP_UNONE_IMM): Likewise.
+	* config/arm/mve.md (mve_vrev64q_<supf><mode>): Define RTL pattern.
+	(mve_vcvtq_from_f_<supf><mode>): Likewise.
+	(mve_vmvnq_n_<supf><mode>): Likewise.
+
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm-builtins.c (UNOP_NONE_NONE_QUALIFIERS): Define macro.
 	(UNOP_NONE_SNONE_QUALIFIERS): Likewise.
 	(UNOP_NONE_UNONE_QUALIFIERS): Likewise.

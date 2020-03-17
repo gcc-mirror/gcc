@@ -337,6 +337,42 @@ arm_unop_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define UNOP_NONE_UNONE_QUALIFIERS \
   (arm_unop_none_unone_qualifiers)
 
+static enum arm_type_qualifiers
+arm_unop_snone_snone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_SNONE_SNONE_QUALIFIERS \
+  (arm_unop_snone_snone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_snone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_SNONE_NONE_QUALIFIERS \
+  (arm_unop_snone_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_snone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_immediate };
+#define UNOP_SNONE_IMM_QUALIFIERS \
+  (arm_unop_snone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_unone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none };
+#define UNOP_UNONE_NONE_QUALIFIERS \
+  (arm_unop_unone_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned };
+#define UNOP_UNONE_UNONE_QUALIFIERS \
+  (arm_unop_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_immediate };
+#define UNOP_UNONE_IMM_QUALIFIERS \
+  (arm_unop_unone_imm_qualifiers)
+
 /* End of Qualifier for MVE builtins.  */
 
    /* void ([T element type] *, T, immediate).  */

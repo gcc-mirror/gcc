@@ -22,17 +22,26 @@
 (define_mode_iterator MVE_types [V16QI V8HI V4SI V2DI TI V8HF V4SF V2DF])
 (define_mode_iterator MVE_VLD_ST [V16QI V8HI V4SI V8HF V4SF])
 (define_mode_iterator MVE_0 [V8HF V4SF])
+(define_mode_iterator MVE_2 [V16QI V8HI V4SI])
+(define_mode_iterator MVE_5 [V8HI V4SI])
 
 (define_c_enum "unspec" [VST4Q VRNDXQ_F VRNDQ_F VRNDPQ_F VRNDNQ_F VRNDMQ_F
 			 VRNDAQ_F VREV64Q_F VNEGQ_F VDUPQ_N_F VABSQ_F VREV32Q_F
 			 VCVTTQ_F32_F16 VCVTBQ_F32_F16 VCVTQ_TO_F_S
-			 VCVTQ_TO_F_U])
+			 VCVTQ_TO_F_U VMVNQ_N_S VMVNQ_N_U VREV64Q_S VREV64Q_U
+			 VCVTQ_FROM_F_S VCVTQ_FROM_F_U])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
 			    (V8HF "V8HI") (V4SF "V4SI")])
 
-(define_int_attr supf [(VCVTQ_TO_F_S "s") (VCVTQ_TO_F_U "u")])
+(define_int_attr supf [(VCVTQ_TO_F_S "s") (VCVTQ_TO_F_U "u") (VMVNQ_N_S "s")
+		       (VMVNQ_N_U "u") (VREV64Q_U "u") (VREV64Q_S "s")
+		       (VCVTQ_FROM_F_S "s") (VCVTQ_FROM_F_U "u")])
+
 (define_int_iterator VCVTQ_TO_F [VCVTQ_TO_F_S VCVTQ_TO_F_U])
+(define_int_iterator VMVNQ_N [VMVNQ_N_U VMVNQ_N_S])
+(define_int_iterator VREV64Q [VREV64Q_S VREV64Q_U])
+(define_int_iterator VCVTQ_FROM_F [VCVTQ_FROM_F_S VCVTQ_FROM_F_U])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -323,5 +332,47 @@
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vcvt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>       %q0, %q1"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vrev64q_u, vrev64q_s])
+;;
+(define_insn "mve_vrev64q_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")]
+	 VREV64Q))
+  ]
+  "TARGET_HAVE_MVE"
+  "vrev64.%#<V_sz_elem> %q0, %q1"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vcvtq_from_f_s, vcvtq_from_f_u])
+;;
+(define_insn "mve_vcvtq_from_f_<supf><mode>"
+  [
+   (set (match_operand:MVE_5 0 "s_register_operand" "=w")
+	(unspec:MVE_5 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")]
+	 VCVTQ_FROM_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vcvt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>       %q0, %q1"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vmvnq_n_u, vmvnq_n_s])
+;;
+(define_insn "mve_vmvnq_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_5 0 "s_register_operand" "=w")
+	(unspec:MVE_5 [(match_operand:HI 1 "immediate_operand" "i")]
+	 VMVNQ_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vmvn.i%#<V_sz_elem>  %q0, %1"
   [(set_attr "type" "mve_move")
 ])
