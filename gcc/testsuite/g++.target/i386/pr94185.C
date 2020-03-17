@@ -22,7 +22,7 @@ int d;
 void l(char *, ar m, long n) {
   switch (m.au[d])
   case 0:
-    n &= 4294967295;
+    n &= 4294967295U;
   bb.h(0).g(n);
 }
 void o() {

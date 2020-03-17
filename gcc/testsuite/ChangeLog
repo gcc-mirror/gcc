@@ -1,3 +1,9 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94185
+	* g++.target/i386/pr94185.C (l): Use 4294967295U instead of 4294967295
+	to avoid FAIL with -m32 -std=c++98.
+
 2020-03-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Remove
