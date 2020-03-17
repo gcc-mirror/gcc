@@ -3393,6 +3393,8 @@ package body Sem_Aggr is
          --  If this is a box association the expression is missing, so use the
          --  Sloc of the aggregate itself for the new association.
 
+         pragma Assert (Present (Expr) xor Is_Box_Present);
+
          if Present (Expr) then
             Loc := Sloc (Expr);
          else
@@ -3804,8 +3806,6 @@ package body Sem_Aggr is
       is
          Loc : constant Source_Ptr := Sloc (N);
 
-         Needs_Box : Boolean := False;
-
          procedure Process_Component (Comp : Entity_Id);
          --  Add one component with a box association to the inner aggregate,
          --  and recurse if component is itself composite.
@@ -3834,7 +3834,9 @@ package body Sem_Aggr is
                Build_Constrained_Itype
                  (New_Aggr, T, Component_Associations (New_Aggr));
             else
-               Needs_Box := True;
+               Add_Association
+                 (Comp, Empty, Component_Associations (Aggr),
+                  Is_Box_Present => True);
             end if;
          end Process_Component;
 
@@ -3884,14 +3886,6 @@ package body Sem_Aggr is
                Process_Component (Comp);
                Next_Component (Comp);
             end loop;
-         end if;
-
-         if Needs_Box then
-            Append_To (Component_Associations (Aggr),
-              Make_Component_Association (Loc,
-                Choices     => New_List (Make_Others_Choice (Loc)),
-                Expression  => Empty,
-                Box_Present => True));
          end if;
       end Propagate_Discriminants;
 
