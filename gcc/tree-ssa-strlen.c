@@ -4822,6 +4822,8 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	   of the access), set it here to the size of the string, including
 	   all internal and trailing nuls if the string has any.  */
 	nbytes = nchars - offset;
+      else if (nchars - offset < nbytes)
+	return false;
 
       prep = TREE_STRING_POINTER (exp) + offset;
     }

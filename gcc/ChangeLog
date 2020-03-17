@@ -1,5 +1,9 @@
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94187
+	* tree-ssa-strlen.c (count_nonzero_bytes): Punt if
+	nchars - offset < nbytes.
+
 	PR middle-end/94189
 	* builtins.c (expand_builtin_strnlen): Do return NULL_RTX if we would
 	emit a warning if it was enabled and don't depend on TREE_NO_WARNING
