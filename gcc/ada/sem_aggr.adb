@@ -85,9 +85,8 @@ package body Sem_Aggr is
       --  The node of the choice
    end record;
 
-   type Case_Table_Type is array (Nat range <>) of Case_Bounds;
-   --  Table type used by Check_Case_Choices procedure. Entry zero is not
-   --  used (reserved for the sort). Real entries start at one.
+   type Case_Table_Type is array (Pos range <>) of Case_Bounds;
+   --  Table type used by Check_Case_Choices procedure
 
    -----------------------
    -- Local Subprograms --
@@ -1827,9 +1826,8 @@ package body Sem_Aggr is
             --  if a choice in an aggregate is a subtype indication these
             --  denote the lowest and highest values of the subtype
 
-            Table : Case_Table_Type (0 .. Case_Table_Size);
-            --  Used to sort all the different choice values. Entry zero is
-            --  reserved for sorting purposes.
+            Table : Case_Table_Type (1 .. Case_Table_Size);
+            --  Used to sort all the different choice values
 
             Single_Choice : Boolean;
             --  Set to true every time there is a single discrete choice in a
