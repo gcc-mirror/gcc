@@ -16,7 +16,7 @@ foo (int32x4_t a, int32_t b)
 int32x4_t
 foo1 (int32x4_t a, int32_t b)
 {
-  return vqdmulhq_n (a, b);
+  return vqdmulhq (a, b);
 }
 
 /* { dg-final { scan-assembler "vqdmulh.s32"  }  } */

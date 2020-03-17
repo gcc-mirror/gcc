@@ -16,7 +16,7 @@ foo (uint32x4_t a, uint32_t b)
 uint32x4_t
 foo1 (uint32x4_t a, uint32_t b)
 {
-  return vqaddq_n (a, b);
+  return vqaddq (a, b);
 }
 
 /* { dg-final { scan-assembler "vqadd.u32"  }  } */

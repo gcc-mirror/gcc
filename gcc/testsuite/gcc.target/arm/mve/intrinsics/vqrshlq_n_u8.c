@@ -16,7 +16,7 @@ foo (uint8x16_t a, int32_t b)
 uint8x16_t
 foo1 (uint8x16_t a, int32_t b)
 {
-  return vqrshlq_n (a, b);
+  return vqrshlq (a, b);
 }
 
 /* { dg-final { scan-assembler "vqrshl.u8"  }  } */

@@ -16,7 +16,7 @@ foo (int8x16_t a, int8_t b)
 int8x16_t
 foo1 (int8x16_t a, int8_t b)
 {
-  return vhaddq_n (a, b);
+  return vhaddq (a, b);
 }
 
 /* { dg-final { scan-assembler "vhadd.s8"  }  } */

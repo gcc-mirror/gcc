@@ -16,7 +16,7 @@ foo (int16x8_t a, int16_t b)
 int16x8_t
 foo1 (int16x8_t a, int16_t b)
 {
-  return vqaddq_n (a, b);
+  return vqaddq (a, b);
 }
 
 /* { dg-final { scan-assembler "vqadd.s16"  }  } */

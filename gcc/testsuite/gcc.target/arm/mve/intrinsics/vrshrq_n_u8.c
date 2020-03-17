@@ -16,7 +16,7 @@ foo (uint8x16_t a)
 uint8x16_t
 foo1 (uint8x16_t a)
 {
-  return vrshrq_n (a, 8);
+  return vrshrq (a, 8);
 }
 
 /* { dg-final { scan-assembler "vrshr.u8"  }  } */

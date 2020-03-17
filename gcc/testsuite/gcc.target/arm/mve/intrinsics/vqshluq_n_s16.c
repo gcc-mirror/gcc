@@ -16,7 +16,7 @@ foo (int16x8_t a)
 uint16x8_t
 foo1 (int16x8_t a)
 {
-  return vqshluq_n (a, 7);
+  return vqshluq (a, 7);
 }
 
 /* { dg-final { scan-assembler "vqshlu.s16"  }  } */

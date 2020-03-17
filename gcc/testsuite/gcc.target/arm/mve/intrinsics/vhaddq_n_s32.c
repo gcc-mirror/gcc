@@ -16,7 +16,7 @@ foo (int32x4_t a, int32_t b)
 int32x4_t
 foo1 (int32x4_t a, int32_t b)
 {
-  return vhaddq_n (a, b);
+  return vhaddq (a, b);
 }
 
 /* { dg-final { scan-assembler "vhadd.s32"  }  } */

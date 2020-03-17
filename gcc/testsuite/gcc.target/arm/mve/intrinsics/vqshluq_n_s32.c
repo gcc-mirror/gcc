@@ -16,7 +16,7 @@ foo (int32x4_t a)
 uint32x4_t
 foo1 (int32x4_t a)
 {
-  return vqshluq_n (a, 7);
+  return vqshluq (a, 7);
 }
 
 /* { dg-final { scan-assembler "vqshlu.s32"  }  } */

@@ -16,7 +16,7 @@ foo (uint16x8_t a, uint16_t b)
 uint16x8_t
 foo1 (uint16x8_t a, uint16_t b)
 {
-  return vqsubq_n (a, b);
+  return vqsubq (a, b);
 }
 
 /* { dg-final { scan-assembler "vqsub.u16"  }  } */

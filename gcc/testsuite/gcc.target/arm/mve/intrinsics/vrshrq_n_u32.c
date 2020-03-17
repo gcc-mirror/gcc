@@ -16,7 +16,7 @@ foo (uint32x4_t a)
 uint32x4_t
 foo1 (uint32x4_t a)
 {
-  return vrshrq_n (a, 32);
+  return vrshrq (a, 32);
 }
 
 /* { dg-final { scan-assembler "vrshr.u32"  }  } */

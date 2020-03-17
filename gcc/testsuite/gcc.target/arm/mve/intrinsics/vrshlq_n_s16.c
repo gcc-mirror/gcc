@@ -16,7 +16,7 @@ foo (int16x8_t a, int32_t b)
 int16x8_t
 foo1 (int16x8_t a, int32_t b)
 {
-  return vrshlq_n (a, b);
+  return vrshlq (a, b);
 }
 
 /* { dg-final { scan-assembler "vrshl.s16"  }  } */

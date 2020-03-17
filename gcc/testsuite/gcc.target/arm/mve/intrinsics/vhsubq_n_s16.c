@@ -16,7 +16,7 @@ foo (int16x8_t a, int16_t b)
 int16x8_t
 foo1 (int16x8_t a, int16_t b)
 {
-  return vhsubq_n (a, b);
+  return vhsubq (a, b);
 }
 
 /* { dg-final { scan-assembler "vhsub.s16"  }  } */
