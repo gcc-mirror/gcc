@@ -289,6 +289,10 @@ Wopenacc-parallelism
 Fortran
 ; Documented in C
 
+Wopenacc-kernels-annotate-loops
+Fortran
+; Documented in C
+
 Wopenmp-simd
 Fortran
 ; Documented in C
@@ -702,6 +706,10 @@ Fortran LTO
 
 fopenacc-dim=
 Fortran LTO Joined Var(flag_openacc_dims)
+; Documented in C
+
+fopenacc-kernels-annotate-loops
+Fortran LTO Optimization
 ; Documented in C
 
 fopenmp

@@ -7022,6 +7022,15 @@ done:
   if (flag_c_prototypes || flag_c_prototypes_external)
     fprintf (stdout, "\n#ifdef __cplusplus\n}\n#endif\n");
 
+  /* Add annotations on loops in OpenACC kernels regions if requested.  This
+     is most easily done on this representation close to the source code.  */
+  if (flag_openacc && flag_openacc_kernels_annotate_loops)
+    {
+      gfc_current_ns = gfc_global_ns_list;
+      for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
+	gfc_oacc_annotate_loops_in_kernels_regions (gfc_current_ns);
+    }
+
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list);
 

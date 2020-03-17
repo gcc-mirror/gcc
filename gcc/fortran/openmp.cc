@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "target-memory.h"  /* For gfc_encode_character.  */
 #include "bitmap.h"
+#include "options.h"
 
 
 static gfc_statement omp_code_to_statement (gfc_code *);
@@ -10379,4 +10380,367 @@ gfc_resolve_omp_udrs (gfc_symtree *st)
   gfc_resolve_omp_udrs (st->right);
   for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
     gfc_resolve_omp_udr (omp_udr);
+}
+
+
+/* The following functions implement automatic recognition and annotation of
+   DO loops in OpenACC kernels regions.  Inside a kernels region, a nest of
+   DO loops that does not contain any annotated OpenACC loops, nor EXIT
+   or GOTO statements, gets an automatic "acc loop auto" annotation
+   on each loop.
+   This feature is controlled by flag_openacc_kernels_annotate_loops.  */
+
+
+/* State of annotation state traversal for DO loops in kernels regions.  */
+enum annotation_state {
+  as_outer,
+  as_in_kernels_region,
+  as_in_kernels_loop,
+  as_in_kernels_inner_loop
+};
+
+/* Return status of annotation traversal.  */
+enum annotation_result {
+  ar_ok,
+  ar_invalid_loop,
+  ar_invalid_nest
+};
+
+/* Code walk function for check_for_invalid_calls.  */
+
+static int
+check_code_for_invalid_calls (gfc_code **codep, int *walk_subtrees,
+			      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *code = *codep;
+  switch (code->op)
+    {
+    case EXEC_CALL:
+      /* Calls to openacc routines are permitted.  */
+      if (code->resolved_sym
+	  && (code->resolved_sym->attr.oacc_routine_lop
+	      != OACC_ROUTINE_LOP_NONE))
+	return 0;
+      /* Else fall through.  */
+
+    case EXEC_CALL_PPC:
+    case EXEC_ASSIGN_CALL:
+      gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+		   "Subroutine call at %L prevents annotation of loop nest",
+		   &code->loc);
+      *walk_subtrees = 0;
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
+/* Expr walk function for check_for_invalid_calls.  */
+
+static int
+check_expr_for_invalid_calls (gfc_expr **exprp, int *walk_subtrees,
+			      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *expr = *exprp;
+  switch (expr->expr_type)
+    {
+    case EXPR_FUNCTION:
+      if (expr->value.function.esym
+	  && (expr->value.function.esym->attr.oacc_routine_lop
+	      != OACC_ROUTINE_LOP_NONE))
+	return 0;
+      /* Else fall through.  */
+
+    case EXPR_COMPCALL:
+      gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+		   "Function call at %L prevents annotation of loop nest",
+		   &expr->where);
+      *walk_subtrees = 0;
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
+/* Return TRUE if the DO loop CODE contains function or procedure
+   calls that ought to prohibit annotation.  This traversal is
+   separate from the main annotation tree walk because we need to walk
+   expressions as well as executable statements.  */
+
+static bool
+check_for_invalid_calls (gfc_code *code)
+{
+  gcc_assert (code->op == EXEC_DO);
+  return gfc_code_walker (&code, check_code_for_invalid_calls,
+			  check_expr_for_invalid_calls, NULL);
+}
+
+/* Annotate DO loop CODE with OpenACC "loop auto".  */
+
+static void
+annotate_do_loop (gfc_code *code, gfc_code *parent)
+{
+
+  /* A DO loop's body is another phony DO node whose next pointer starts
+     the actual body.  */
+  gcc_assert (code->op == EXEC_DO);
+  gcc_assert (code->block->op == EXEC_DO);
+
+  /* Build the "acc loop auto" annotation and add the loop as its
+     body.  */
+  gfc_omp_clauses *clauses = gfc_get_omp_clauses ();
+  clauses->par_auto = 1;
+  gfc_code *oacc_loop = gfc_get_code (EXEC_OACC_LOOP);
+  oacc_loop->block = gfc_get_code (EXEC_OACC_LOOP);
+  oacc_loop->block->next = code;
+  oacc_loop->ext.omp_clauses = clauses;
+  oacc_loop->loc = code->loc;
+  oacc_loop->block->loc = code->loc;
+
+  /* Splice the annotation into the place of the original loop.  */
+  if (parent->block == code)
+    parent->block = oacc_loop;
+  else
+    {
+      gfc_code *prev = parent->block;
+      while (prev != code && prev->next != code)
+	{
+	  prev = prev->next;
+	  gcc_assert (prev != NULL);
+	}
+      prev->next = oacc_loop;
+    }
+  oacc_loop->next = code->next;
+  code->next = NULL;
+}
+
+/* Recursively traverse CODE in block PARENT, finding OpenACC kernels
+   regions.  GOTO_TARGETS keeps track of statement labels that are
+   targets of gotos in the current function, while STATE keeps track
+   of the current context of the traversal.  If the traversal
+   encounters a DO loop inside a kernels region, annotate it with
+   OpenACC loop directives if appropriate.  Return the status of the
+   traversal.  */
+
+static enum annotation_result
+annotate_do_loops_in_kernels (gfc_code *code, gfc_code *parent,
+			      hash_set <gfc_st_label *> *goto_targets,
+			      annotation_state state)
+{
+  gfc_code *next_code = NULL;
+  enum annotation_result retval = ar_ok;
+
+  for ( ; code; code = next_code)
+    {
+      bool walk_block = true;
+      next_code = code->next;
+
+      if (state >= as_in_kernels_loop
+	  && code->here && goto_targets->contains (code->here))
+	/* This statement has a label that is the target of a GOTO or some
+	   other jump.  Do not try to sort out the details, just reject
+	   this loop nest.  */
+	{
+	  gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+		       "Possible control transfer to label at %L "
+		       "prevents annotation of loop nest",
+		       &code->loc);
+	  return ar_invalid_nest;
+	}
+
+      switch (code->op)
+	{
+	case EXEC_OACC_KERNELS:
+	  /* Enter kernels region.  */
+	  annotate_do_loops_in_kernels (code->block->next, code,
+					goto_targets,
+					as_in_kernels_region);
+	  walk_block = false;
+	  break;
+
+	case EXEC_OACC_PARALLEL_LOOP:
+	case EXEC_OACC_PARALLEL:
+	case EXEC_OACC_KERNELS_LOOP:
+	case EXEC_OACC_LOOP:
+	  /* Do not try to add automatic OpenACC annotations inside manually
+	     annotated loops.  Presumably, the user avoided doing it on
+	     purpose; for example, all available levels of parallelism may
+	     have been used up.  */
+	  if (state >= as_in_kernels_region)
+	    {
+	      gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+			   "Explicit loop annotation at %L "
+			   "prevents annotation of loop nest",
+			   &code->loc);
+	      return ar_invalid_nest;
+	    }
+	  walk_block = false;
+	  break;
+
+	case EXEC_DO:
+	  if (state >= as_in_kernels_region)
+	    {
+	      /* A DO loop's body is another phony DO node whose next
+		 pointer starts the actual body.  Skip the phony node.  */
+	      gcc_assert (code->block->op == EXEC_DO);
+	      enum annotation_result result
+		= annotate_do_loops_in_kernels (code->block->next, code,
+						goto_targets,
+						as_in_kernels_loop);
+	      /* Check for function/procedure calls in the body of the
+		 loop that would prevent parallelization.  Unlike in C/C++,
+		 we do not have to check that there is no modification of
+		 the loop variable or loop count since they are already
+		 handled by the semantics of DO loops in the FORTRAN
+		 language.  */
+	      if (result != ar_invalid_nest && check_for_invalid_calls (code))
+		result = ar_invalid_nest;
+	      if (result == ar_ok)
+		annotate_do_loop (code, parent);
+	      else if (result == ar_invalid_nest
+		       && state >= as_in_kernels_loop)
+		/* The outer loop is invalid, too, so stop traversal.  */
+		return result;
+	      walk_block = false;
+	    }
+	  break;
+
+	case EXEC_DO_WHILE:
+	case EXEC_DO_CONCURRENT:
+	  /* Traverse the body in a special state to allow EXIT statements
+	     from these loops.  */
+	  if (state >= as_in_kernels_loop)
+	    {
+	      enum annotation_result result
+		= annotate_do_loops_in_kernels (code->block, code,
+						goto_targets,
+						as_in_kernels_inner_loop);
+	      if (result == ar_invalid_nest)
+		return result;
+	      else if (result != ar_ok)
+		retval = result;
+	      walk_block = false;
+	    }
+	  break;
+
+	case EXEC_GOTO:
+	case EXEC_ARITHMETIC_IF:
+	case EXEC_STOP:
+	case EXEC_ERROR_STOP:
+	  /* A jump that may leave this loop.  */
+	  if (state >= as_in_kernels_loop)
+	    {
+	      gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+			   "Possible unstructured control flow at %L "
+			   "prevents annotation of loop nest",
+			   &code->loc);
+	      return ar_invalid_nest;
+	    }
+	  break;
+
+	case EXEC_RETURN:
+	  /* A return from a kernels region is diagnosed elsewhere as a
+	     hard error, so no warning is needed here.  */
+	  if (state >= as_in_kernels_loop)
+	    return ar_invalid_nest;
+	  break;
+
+	case EXEC_EXIT:
+	  if (state == as_in_kernels_loop)
+	    {
+	      gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+			   "Exit at %L prevents annotation of loop",
+			   &code->loc);
+	      retval = ar_invalid_loop;
+	    }
+	  break;
+
+	case EXEC_BACKSPACE:
+	case EXEC_CLOSE:
+	case EXEC_ENDFILE:
+	case EXEC_FLUSH:
+	case EXEC_INQUIRE:
+	case EXEC_OPEN:
+	case EXEC_READ:
+	case EXEC_REWIND:
+	case EXEC_WRITE:
+	  /* Executing side-effecting I/O statements in parallel doesn't
+	     make much sense.  If this is what users want, they can always
+	     add explicit annotations on the loop nest.  */
+	  if (state >= as_in_kernels_loop)
+	    {
+	      gfc_warning (OPT_Wopenacc_kernels_annotate_loops,
+			   "I/O statement at %L prevents annotation of loop",
+			   &code->loc);
+	      return ar_invalid_nest;
+	    }
+	  break;
+
+	default:
+	  break;
+	}
+
+      /* Visit nested statements, if any, returning early if we hit
+	 any problems.  */
+      if (walk_block)
+	{
+	  enum annotation_result result
+	    = annotate_do_loops_in_kernels (code->block, code,
+					    goto_targets, state);
+	  if (result == ar_invalid_nest)
+	    return result;
+	  else if (result != ar_ok)
+	    retval = result;
+	}
+    }
+  return retval;
+}
+
+/* Traverse CODE to find all the labels referenced by GOTO and similar
+   statements and store them in GOTO_TARGETS.  */
+
+static void
+compute_goto_targets (gfc_code *code, hash_set <gfc_st_label *> *goto_targets)
+{
+  for ( ; code; code = code->next)
+    {
+      switch (code->op)
+	{
+	case EXEC_GOTO:
+	case EXEC_LABEL_ASSIGN:
+	  goto_targets->add (code->label1);
+	  gcc_fallthrough ();
+
+	case EXEC_ARITHMETIC_IF:
+	  goto_targets->add (code->label2);
+	  goto_targets->add (code->label3);
+	  gcc_fallthrough ();
+
+	default:
+	  /* Visit nested statements, if any.  */
+	  if (code->block != NULL)
+	    compute_goto_targets (code->block, goto_targets);
+	}
+    }
+}
+
+/* Find DO loops in OpenACC kernels regions that do not have OpenACC
+   annotations but look like they might benefit from automatic
+   parallelization.  Add "acc loop auto" annotations for them.  Assumes
+   flag_openacc_kernels_annotate_loops is set.  */
+
+void
+gfc_oacc_annotate_loops_in_kernels_regions (gfc_namespace *ns)
+{
+  if (ns->proc_name)
+    {
+      hash_set <gfc_st_label *> goto_targets;
+      compute_goto_targets (ns->code, &goto_targets);
+      annotate_do_loops_in_kernels (ns->code, NULL, &goto_targets, as_outer);
+    }
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    gfc_oacc_annotate_loops_in_kernels_regions (ns);
 }

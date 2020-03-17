@@ -3630,6 +3630,7 @@ void gfc_resolve_oacc_directive (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_declare (gfc_namespace *);
 void gfc_resolve_oacc_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_routines (gfc_namespace *);
+void gfc_oacc_annotate_loops_in_kernels_regions (gfc_namespace *);
 
 /* expr.cc */
 void gfc_free_actual_arglist (gfc_actual_arglist *);
