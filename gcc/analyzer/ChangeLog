@@ -1,3 +1,12 @@
+2020-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::exploded_node): Move implementation
+	here from header; accept point_and_state by const reference rather
+	than by value.
+	* exploded-graph.h (exploded_node::exploded_node): Pass
+	point_and_state by const reference rather than by value.  Move
+	body to engine.cc.
+
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* sm-malloc.cc (malloc_state_machine::on_stmt): Fix up duplicated word
