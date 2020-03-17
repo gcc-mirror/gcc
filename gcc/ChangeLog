@@ -1,3 +1,15 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94015
+	* tree-ssa-strlen.c (count_nonzero_bytes): Split portions of the
+	function where EXP is address of the bytes being stored rather than
+	the bytes themselves into count_nonzero_bytes_addr.  Punt on zero
+	sized MEM_REF.  Use VAR_P macro and handle CONST_DECL like VAR_DECLs.
+	Use ctor_for_folding instead of looking at DECL_INITIAL.  Punt before
+	calling native_encode_expr if host or target doesn't have 8-bit
+	chars.  Formatting fixes.
+	(count_nonzero_bytes_addr): New function.
+
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
