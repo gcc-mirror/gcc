@@ -1,3 +1,16 @@
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90995
+	* parser.c (cp_parser_enum_specifier): Use temp_override for
+	parser->colon_corrects_to_scope_p, replace goto out with return.
+	If scoped enum or enum with underlying type is not followed by
+	{ or ;, call cp_parser_commit_to_tentative_parse before calling
+	cp_parser_error and make sure to return error_mark_node instead of
+	NULL_TREE.  Formatting fixes.
+
 2020-04-05  Marek Polacek  <polacek@redhat.com>
 
 	2020-02-06  Marek Polacek  <polacek@redhat.com>

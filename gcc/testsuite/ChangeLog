@@ -1,5 +1,13 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90995
+	* g++.dg/cpp0x/enum40.C: New test.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/94500
 	* gcc.target/i386/avx512bw-pr94500.c: New test.
 
