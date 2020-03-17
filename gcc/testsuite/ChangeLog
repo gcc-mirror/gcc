@@ -1,3 +1,16 @@
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vst4q_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst4q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_u8.c: Likewise.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94185

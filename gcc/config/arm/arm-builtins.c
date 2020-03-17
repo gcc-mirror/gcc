@@ -432,6 +432,13 @@ static arm_builtin_datum neon_builtin_data[] =
 };
 
 #undef CF
+#define CF(N,X) CODE_FOR_mve_##N##X
+static arm_builtin_datum mve_builtin_data[] =
+{
+#include "arm_mve_builtins.def"
+};
+
+#undef CF
 #undef VAR1
 #define VAR1(T, N, A) \
   {#N, UP (A), CODE_FOR_arm_##N, 0, T##_QUALIFIERS},
@@ -736,6 +743,13 @@ enum arm_builtins
 
 #include "arm_acle_builtins.def"
 
+  ARM_BUILTIN_MVE_BASE,
+
+#undef VAR1
+#define VAR1(T, N, X) \
+  ARM_BUILTIN_MVE_##N##X,
+#include "arm_mve_builtins.def"
+
   ARM_BUILTIN_MAX
 };
 
@@ -744,6 +758,9 @@ enum arm_builtins
 
 #define ARM_BUILTIN_NEON_PATTERN_START \
   (ARM_BUILTIN_NEON_BASE + 1)
+
+#define ARM_BUILTIN_MVE_PATTERN_START \
+  (ARM_BUILTIN_MVE_BASE + 1)
 
 #define ARM_BUILTIN_ACLE_PATTERN_START \
   (ARM_BUILTIN_ACLE_BASE + 1)
@@ -1275,6 +1292,22 @@ arm_init_acle_builtins (void)
     {
       arm_builtin_datum *d = &acle_builtin_data[i];
       arm_init_builtin (fcode, d, "__builtin_arm");
+    }
+}
+
+/* Set up all the MVE builtins mentioned in arm_mve_builtins.def file.  */
+static void
+arm_init_mve_builtins (void)
+{
+  volatile unsigned int i, fcode = ARM_BUILTIN_MVE_PATTERN_START;
+
+  arm_init_simd_builtin_scalar_types ();
+  arm_init_simd_builtin_types ();
+
+  for (i = 0; i < ARRAY_SIZE (mve_builtin_data); i++, fcode++)
+    {
+      arm_builtin_datum *d = &mve_builtin_data[i];
+      arm_init_builtin (fcode, d, "__builtin_mve");
     }
 }
 
@@ -2022,8 +2055,10 @@ arm_init_builtins (void)
       = add_builtin_function ("__builtin_arm_lane_check", lane_check_fpr,
 			      ARM_BUILTIN_SIMD_LANE_CHECK, BUILT_IN_MD,
 			      NULL, NULL_TREE);
-
-      arm_init_neon_builtins ();
+      if (TARGET_HAVE_MVE)
+	arm_init_mve_builtins ();
+      else
+	arm_init_neon_builtins ();
       arm_init_vfp_builtins ();
       arm_init_crypto_builtins ();
     }
@@ -2567,9 +2602,13 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
   int is_void = 0;
   int k;
   bool neon = false;
+  bool mve = false;
 
   if (IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_ACLE_BASE - 1))
     neon = true;
+
+  if (IN_RANGE (fcode, ARM_BUILTIN_MVE_BASE, ARM_BUILTIN_MAX - 1))
+    mve = true;
 
   is_void = !!(d->qualifiers[0] & qualifier_void);
 
@@ -2612,7 +2651,7 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
 	}
       else if (d->qualifiers[qualifiers_k] & qualifier_pointer)
 	{
-	  if (neon)
+	  if (neon || mve)
 	    args[k] = ARG_BUILTIN_NEON_MEMORY;
 	  else
 	    args[k] = ARG_BUILTIN_MEMORY;
@@ -2658,6 +2697,26 @@ arm_expand_acle_builtin (int fcode, tree exp, rtx target)
     }
   arm_builtin_datum *d
     = &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START];
+
+  return arm_expand_builtin_1 (fcode, exp, target, d);
+}
+
+/* Expand an MVE builtin, i.e. those registered only if their respective target
+   constraints are met.  This check happens within arm_expand_builtin.  */
+
+static rtx
+arm_expand_mve_builtin (int fcode, tree exp, rtx target)
+{
+  if (fcode >= ARM_BUILTIN_MVE_BASE && !TARGET_HAVE_MVE)
+  {
+    fatal_error (input_location,
+		"You must enable MVE instructions"
+		" to use these intrinsics");
+    return const0_rtx;
+  }
+
+  arm_builtin_datum *d
+    = &mve_builtin_data[fcode - ARM_BUILTIN_MVE_PATTERN_START];
 
   return arm_expand_builtin_1 (fcode, exp, target, d);
 }
@@ -2755,6 +2814,8 @@ arm_expand_builtin (tree exp,
       /* Don't generate any RTL.  */
       return const0_rtx;
     }
+  if (fcode >= ARM_BUILTIN_MVE_BASE)
+    return arm_expand_mve_builtin (fcode, exp, target);
 
   if (fcode >= ARM_BUILTIN_ACLE_BASE)
     return arm_expand_acle_builtin (fcode, exp, target);

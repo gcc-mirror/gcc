@@ -149,7 +149,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:VSTRUCT 0 "nonimmediate_operand")
 	(match_operand:VSTRUCT 1 "general_operand"))]
-  "TARGET_NEON"
+  "TARGET_NEON || TARGET_HAVE_MVE"
 {
   gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
   gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
@@ -181,7 +181,7 @@
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VSTRUCT 0 "nonimmediate_operand"	"=w,Ut,w")
 	(match_operand:VSTRUCT 1 "general_operand"	" w,w, Ut"))]
-  "TARGET_NEON
+  "(TARGET_NEON || TARGET_HAVE_MVE)
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
 {
@@ -217,7 +217,7 @@
 (define_split
   [(set (match_operand:OI 0 "s_register_operand" "")
 	(match_operand:OI 1 "s_register_operand" ""))]
-  "TARGET_NEON && reload_completed"
+  "(TARGET_NEON || TARGET_HAVE_MVE)&& reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
 {
@@ -258,7 +258,7 @@
 (define_split
   [(set (match_operand:XI 0 "s_register_operand" "")
 	(match_operand:XI 1 "s_register_operand" ""))]
-  "TARGET_NEON && reload_completed"
+  "(TARGET_NEON || TARGET_HAVE_MVE) && reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))

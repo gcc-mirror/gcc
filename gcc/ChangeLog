@@ -1,3 +1,52 @@
+2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm-builtins.c (CF): Define mve_builtin_data.
+	(VAR1): Define.
+	(ARM_BUILTIN_MVE_PATTERN_START): Define.
+	(arm_init_mve_builtins): Define function.
+	(arm_init_builtins): Add TARGET_HAVE_MVE check.
+	(arm_expand_builtin_1): Check the range of fcode.
+	(arm_expand_mve_builtin): Define function to expand MVE builtins.
+	(arm_expand_builtin): Check the range of fcode.
+	* config/arm/arm_mve.h (__ARM_FEATURE_MVE): Define MVE floating point
+	types.
+	(__ARM_MVE_PRESERVE_USER_NAMESPACE): Define to protect user namespace.
+	(vst4q_s8): Define macro.
+	(vst4q_s16): Likewise.
+	(vst4q_s32): Likewise.
+	(vst4q_u8): Likewise.
+	(vst4q_u16): Likewise.
+	(vst4q_u32): Likewise.
+	(vst4q_f16): Likewise.
+	(vst4q_f32): Likewise.
+	(__arm_vst4q_s8): Define inline builtin.
+	(__arm_vst4q_s16): Likewise.
+	(__arm_vst4q_s32): Likewise.
+	(__arm_vst4q_u8): Likewise.
+	(__arm_vst4q_u16): Likewise.
+	(__arm_vst4q_u32): Likewise.
+	(__arm_vst4q_f16): Likewise.
+	(__arm_vst4q_f32): Likewise.
+	(__ARM_mve_typeid): Define macro with MVE types.
+	(__ARM_mve_coerce): Define macro with _Generic feature.
+	(vst4q): Define polymorphic variant for different vst4q builtins.
+	* config/arm/arm_mve_builtins.def: New file.
+	* config/arm/iterators.md (VSTRUCT): Modify to allow XI and OI
+	modes in MVE.
+	* config/arm/mve.md (MVE_VLD_ST): Define iterator.
+	(unspec): Define unspec.
+	(mve_vst4q<mode>): Define RTL pattern.
+	* config/arm/neon.md (mov<mode>): Modify expand to allow XI and OI
+	modes in MVE.
+	(neon_mov<mode>): Modify RTL define_insn to allow XI and OI modes
+	in MVE.
+	(define_split): Allow OI mode split for MVE after reload.
+	(define_split): Allow XI mode split for MVE after reload.
+	* config/arm/t-arm (arm.o): Add entry for arm_mve_builtins.def.
+	(arm-builtins.o): Likewise.
+
 2020-03-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* c-typeck.c (process_init_element): Handle constructor_type with

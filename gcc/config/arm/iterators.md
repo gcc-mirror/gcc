@@ -131,7 +131,8 @@
 (define_mode_iterator VQXMOV [V16QI V8HI V8HF V8BF V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
-(define_mode_iterator VSTRUCT [EI OI CI XI])
+(define_mode_iterator VSTRUCT [(EI "!TARGET_HAVE_MVE") OI
+			       (CI "!TARGET_HAVE_MVE") XI])
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
