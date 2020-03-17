@@ -1,3 +1,8 @@
+2020-03-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/coro-torture.exp: Ensure that
+	DEFAULT_CXXFLAGS has a value, even if unset by a higher level.
+
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
