@@ -1,3 +1,8 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90995
+	* g++.dg/cpp0x/enum40.C: New test.
+
 2020-03-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: Skip for
