@@ -34,7 +34,7 @@
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
 ;;			 Dt, Dp, Dz, Tu
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
-;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz
+;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd
 ;; in all states: Pf, Pg
 
 ;; The following memory constraints have been used:
@@ -52,6 +52,11 @@
 (define_register_constraint "e" "TARGET_HAVE_MVE ? EVEN_REG : NO_REGS"
   "MVE EVEN registers @code{r0}, @code{r2}, @code{r4}, @code{r6}, @code{r8},
    @code{r10}, @code{r12}, @code{r14}")
+
+(define_constraint "Rd"
+  "@internal In Thumb-2 state a constant in range 1 to 16"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 16")))
 
 (define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
  "The VFP registers @code{s0}-@code{s31}.")

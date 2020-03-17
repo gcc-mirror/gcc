@@ -31,6 +31,10 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+;; True for immediates in the range of 1 to 16 for MVE.
+(define_predicate "mve_imm_16"
+  (match_test "satisfies_constraint_Rd (op)"))
+
 ; Predicate for stack protector guard's address in
 ; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns
 (define_predicate "guard_addr_operand"
