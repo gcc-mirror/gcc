@@ -1,3 +1,10 @@
+2020-03-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (lazy_snum, recursive_lazy): New.
+	(module_state::read_language): Set lazy_snum.
+	(lazy_load_{binding,specializations}): Call recursive_lazy.
+
 2020-03-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

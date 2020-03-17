@@ -17508,11 +17508,28 @@ module_state::read_preprocessor (bool outermost)
   return check_read (outermost, ok);
 }
 
+static unsigned lazy_snum;
+
+static bool
+recursive_lazy (unsigned snum = ~0u)
+{
+  if (lazy_snum)
+    {
+      error_at (input_location, "recursive lazy load");
+      return true;
+    }
+
+  lazy_snum = snum;
+  return false;
+}
+
 /* Read language state.  */
 
 bool
 module_state::read_language (bool outermost)
 {
+  gcc_checking_assert (!lazy_snum);
+
   if (load_state == 3)
     return !(slurp && from () && from ()->get_error ());
 
@@ -17576,6 +17593,8 @@ module_state::read_language (bool outermost)
 	 first.  See note about tarjan_connect.  */
       ggc_collect ();
 
+      lazy_snum = ~0u;
+
       unsigned hwm = counts[MSC_sec_hwm];
       for (unsigned ix = counts[MSC_sec_lwm]; ok && ix != hwm; ix++)
 	{
@@ -17586,7 +17605,9 @@ module_state::read_language (bool outermost)
 	    }
 	  ggc_collect ();
 	}
-      
+
+      lazy_snum = 0;
+
       if (ok && CHECKING_P)
 	for (unsigned ix = 0; ix != entity_num; ix++)
 	  gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
@@ -18261,7 +18282,12 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id,
 		   module->name, snum);
 
-  bool ok = module->load_section (snum, mslot);
+  bool ok = !recursive_lazy (snum);
+  if (ok)
+    {
+      ok = module->load_section (snum, mslot);
+      lazy_snum = 0;
+    }
 
   dump.pop (n);
 
@@ -18298,21 +18324,27 @@ lazy_load_specializations (tree tmpl)
   int count = errorcount + warningcount;
 
   timevar_start (TV_MODULE_IMPORT);
-  bool ok = true;
-  unsigned ident = import_entity_index (tmpl);
-  if (pendset *set = pendset::table->extract (ident))
+  bool ok = !recursive_lazy ();
+  if (ok)
     {
-      function_depth++; /* Prevent GC */
-      unsigned n = dump.push (NULL);
-      dump () && dump ("Reading %u pending specializations keyed to %M[%u] %N",
-		       set->num, import_entity_module (ident),
-		       ident - import_entity_module (ident)->entity_lwm, tmpl);
-      if (!set->lazy_load ())
-	ok = false;
-      dump.pop (n);
+      unsigned ident = import_entity_index (tmpl);
+      if (pendset *set = pendset::table->extract (ident))
+	{
+	  function_depth++; /* Prevent GC */
+	  unsigned n = dump.push (NULL);
+	  dump ()
+	    && dump ("Reading %u pending specializations keyed to %M[%u] %N",
+		     set->num, import_entity_module (ident),
+		     ident - import_entity_module (ident)->entity_lwm, tmpl);
+	  if (!set->lazy_load ())
+	    ok = false;
+	  dump.pop (n);
 
-      function_depth--;
+	  function_depth--;
+	}
+      lazy_snum = 0;
     }
+
   timevar_stop (TV_MODULE_IMPORT);
 
   if (!ok)
