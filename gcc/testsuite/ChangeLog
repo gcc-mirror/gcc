@@ -1,3 +1,8 @@
+2020-03-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94072
+	* gcc.target/aarch64/pr94072.c: New test.
+
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
