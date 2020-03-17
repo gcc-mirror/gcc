@@ -1,3 +1,20 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+	    Gergö Barany <gergo@codesourcery.com>
+
+	* gfortran.h (gfc_oacc_annotate_loops_in_kernels_regions): Declare.
+	* lang.opt (Wopenacc-kernels-annotate-loops): New.
+	(fopenacc-kernels-annotate-loops): New.
+	* openmp.cc: Include options.h.
+	(enum annotation_state, enum annotation_result): New.
+	(check_code_for_invalid_calls): New.
+	(check_expr_for_invalid_calls): New.
+	(check_for_invalid_calls): New.
+	(annotate_do_loop): New.
+	(annotate_do_loops_in_kernels): New.
+	(compute_goto_targets): New.
+	(gfc_oacc_annotate_loops_in_kernels_regions): New.
+	* parse.cc (gfc_parse_file): Handle -fopenacc-kernels-annotate-loops.
+
 2020-02-19  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.ccc (gfc_omp_check_optional_argument): Handle non-decl

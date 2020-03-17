@@ -1,4 +1,5 @@
 ! { dg-options "-fopenacc -fdump-tree-omplower" }
+! { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
 
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
 
