@@ -1919,7 +1919,7 @@ package Sem_Util is
      (Context : Node_Id;
       Obj_Ref : Node_Id) return Boolean;
    --  Determine whether node Context denotes a "non-interfering context" (as
-   --  defined in SPARK RM 7.1.3(12)) where volatile reference Obj_Ref can
+   --  defined in SPARK RM 7.1.3(10)) where volatile reference Obj_Ref can
    --  safely reside.
 
    function Is_Package_Contract_Annotation (Item : Node_Id) return Boolean;

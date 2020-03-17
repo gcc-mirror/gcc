@@ -665,7 +665,7 @@ package body Sem_Ch4 is
                --  that outside of spec expressions, otherwise the declaration
                --  cannot be inserted and analyzed. In such a case, GNATprove
                --  later rejects the allocator as it is not used here in
-               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(12)).
+               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(10)).
 
                if Expander_Active
                  or else (GNATprove_Mode and then not In_Spec_Expression)
