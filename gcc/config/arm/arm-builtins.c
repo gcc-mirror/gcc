@@ -317,6 +317,28 @@ arm_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
 #define STORE1_QUALIFIERS (arm_store1_qualifiers)
 
+/* Qualifiers for MVE builtins.  */
+
+static enum arm_type_qualifiers
+arm_unop_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_NONE_NONE_QUALIFIERS \
+  (arm_unop_none_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_none_snone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_NONE_SNONE_QUALIFIERS \
+  (arm_unop_none_snone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned };
+#define UNOP_NONE_UNONE_QUALIFIERS \
+  (arm_unop_none_unone_qualifiers)
+
+/* End of Qualifier for MVE builtins.  */
+
    /* void ([T element type] *, T, immediate).  */
 static enum arm_type_qualifiers
 arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]

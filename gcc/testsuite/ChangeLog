@@ -1,3 +1,35 @@
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vabsq_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vabsq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtbq_f32_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_f16_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_f16_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_f32_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvtq_f32_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcvttq_f32_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrev32q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrev64q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrev64q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndaq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndaq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndmq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndmq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndnq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndnq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndpq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndpq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndxq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vrndxq_f32.c: Likewise.
+
 2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>

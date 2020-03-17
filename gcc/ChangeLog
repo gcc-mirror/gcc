@@ -1,3 +1,94 @@
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm-builtins.c (UNOP_NONE_NONE_QUALIFIERS): Define macro.
+	(UNOP_NONE_SNONE_QUALIFIERS): Likewise.
+	(UNOP_NONE_UNONE_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vrndxq_f16): Define macro.
+	(vrndxq_f32): Likewise.
+	(vrndq_f16) Likewise.
+	(vrndq_f32): Likewise.
+	(vrndpq_f16): Likewise.
+	(vrndpq_f32): Likewise.
+	(vrndnq_f16): Likewise.
+	(vrndnq_f32): Likewise.
+	(vrndmq_f16): Likewise.
+	(vrndmq_f32): Likewise. 
+	(vrndaq_f16): Likewise.
+	(vrndaq_f32): Likewise.
+	(vrev64q_f16): Likewise.
+	(vrev64q_f32): Likewise.
+	(vnegq_f16): Likewise.
+	(vnegq_f32): Likewise.
+	(vdupq_n_f16): Likewise.
+	(vdupq_n_f32): Likewise.
+	(vabsq_f16): Likewise.
+	(vabsq_f32): Likewise.
+	(vrev32q_f16): Likewise.
+	(vcvttq_f32_f16): Likewise.
+	(vcvtbq_f32_f16): Likewise.
+	(vcvtq_f16_s16): Likewise.
+	(vcvtq_f32_s32): Likewise.
+	(vcvtq_f16_u16): Likewise.
+	(vcvtq_f32_u32): Likewise.
+	(__arm_vrndxq_f16): Define intrinsic.
+	(__arm_vrndxq_f32): Likewise.
+	(__arm_vrndq_f16): Likewise.
+	(__arm_vrndq_f32): Likewise.
+	(__arm_vrndpq_f16): Likewise.
+	(__arm_vrndpq_f32): Likewise.
+	(__arm_vrndnq_f16): Likewise.
+	(__arm_vrndnq_f32): Likewise.
+	(__arm_vrndmq_f16): Likewise.
+	(__arm_vrndmq_f32): Likewise.
+	(__arm_vrndaq_f16): Likewise.
+	(__arm_vrndaq_f32): Likewise.
+	(__arm_vrev64q_f16): Likewise.
+	(__arm_vrev64q_f32): Likewise.
+	(__arm_vnegq_f16): Likewise.
+	(__arm_vnegq_f32): Likewise.
+	(__arm_vdupq_n_f16): Likewise.
+	(__arm_vdupq_n_f32): Likewise.
+	(__arm_vabsq_f16): Likewise.
+	(__arm_vabsq_f32): Likewise.
+	(__arm_vrev32q_f16): Likewise.
+	(__arm_vcvttq_f32_f16): Likewise.
+	(__arm_vcvtbq_f32_f16): Likewise.
+	(__arm_vcvtq_f16_s16): Likewise.
+	(__arm_vcvtq_f32_s32): Likewise.
+	(__arm_vcvtq_f16_u16): Likewise.
+	(__arm_vcvtq_f32_u32): Likewise.
+	(vrndxq): Define polymorphic variants.
+	(vrndq): Likewise.
+	(vrndpq): Likewise.
+	(vrndnq): Likewise.
+	(vrndmq): Likewise.
+	(vrndaq): Likewise.
+	(vrev64q): Likewise.
+	(vnegq): Likewise.
+	(vabsq): Likewise.
+	(vrev32q): Likewise.
+	(vcvtbq_f32): Likewise.
+	(vcvttq_f32): Likewise.
+	(vcvtq): Likewise.
+	* config/arm/arm_mve_builtins.def (VAR2): Define.
+	(VAR1): Define.
+	* config/arm/mve.md (mve_vrndxq_f<mode>): Add RTL pattern.
+	(mve_vrndq_f<mode>): Likewise.
+	(mve_vrndpq_f<mode>): Likewise.
+	(mve_vrndnq_f<mode>): Likewise.
+	(mve_vrndmq_f<mode>): Likewise.
+	(mve_vrndaq_f<mode>): Likewise.
+	(mve_vrev64q_f<mode>): Likewise.
+	(mve_vnegq_f<mode>): Likewise.
+	(mve_vdupq_n_f<mode>): Likewise.
+	(mve_vabsq_f<mode>): Likewise.
+	(mve_vrev32q_fv8hf): Likewise.
+	(mve_vcvttq_f32_f16v4sf): Likewise.
+	(mve_vcvtbq_f32_f16v4sf): Likewise.
+	(mve_vcvtq_to_f_<supf><mode>): Likewise.
+
 2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>

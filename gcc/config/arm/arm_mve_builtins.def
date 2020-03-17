@@ -19,3 +19,18 @@
     <http://www.gnu.org/licenses/>.  */
 
 VAR5 (STORE1, vst4q, v16qi, v8hi, v4si, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrndxq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrndq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrndpq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrndnq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrndmq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrndaq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vrev64q_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vnegq_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vdupq_n_f, v8hf, v4sf)
+VAR2 (UNOP_NONE_NONE, vabsq_f, v8hf, v4sf)
+VAR1 (UNOP_NONE_NONE, vrev32q_f, v8hf)
+VAR1 (UNOP_NONE_NONE, vcvttq_f32_f16, v4sf)
+VAR1 (UNOP_NONE_NONE, vcvtbq_f32_f16, v4sf)
+VAR2 (UNOP_NONE_SNONE, vcvtq_to_f_s, v8hf, v4sf)
+VAR2 (UNOP_NONE_UNONE, vcvtq_to_f_u, v8hf, v4sf)
