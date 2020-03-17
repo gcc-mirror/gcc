@@ -427,7 +427,17 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
          and avoid LRA cycling in case of subreg memory reload.  */
       res = remove_pseudos (&SUBREG_REG (*loc), insn);
       if (GET_CODE (SUBREG_REG (*loc)) == MEM)
-	alter_subreg (loc, false);
+	{
+	  alter_subreg (loc, false);
+	  if (GET_CODE (*loc) == MEM)
+	    {
+	      lra_get_insn_recog_data (insn)->used_insn_alternative = -1;
+	      if (lra_dump_file != NULL)
+		fprintf (lra_dump_file,
+			 "Memory subreg was simplified in insn #%u\n",
+			 INSN_UID (insn));
+	    }
+	}
       return res;
     }
   else if (code == REG && (i = REGNO (*loc)) >= FIRST_PSEUDO_REGISTER

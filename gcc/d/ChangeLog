@@ -1,3 +1,15 @@
+2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/92309
+	* types.cc (fixup_anonymous_offset): Don't set DECL_FIELD_OFFSET on
+	anonymous fields.
+
+2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/92216
+	* decl.cc (make_thunk): Don't set TREE_PUBLIC on thunks if the target
+	function is external to the current compilation.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

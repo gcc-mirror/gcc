@@ -1803,8 +1803,11 @@ make_thunk (FuncDeclaration *decl, int offset)
 
   DECL_CONTEXT (thunk) = d_decl_context (decl);
 
-  /* Thunks inherit the public access of the function they are targetting.  */
-  TREE_PUBLIC (thunk) = TREE_PUBLIC (function);
+  /* Thunks inherit the public access of the function they are targetting.
+     When the function is outside the current compilation unit however, then the
+     thunk must be kept private to not conflict.  */
+  TREE_PUBLIC (thunk) = TREE_PUBLIC (function) && !DECL_EXTERNAL (function);
+
   DECL_EXTERNAL (thunk) = 0;
 
   /* Thunks are always addressable.  */

@@ -1519,7 +1519,7 @@ in its second parameter.",
 void, (rtx_insn *insn, int x),
 hook_void_rtx_insn_int)
 
-/* The following member value is a a function that returns true is
+/* The following member value is a function that returns true is
    dispatch schedling is supported in hardware and condition passed
    as the second parameter is true.  */
 DEFHOOK
@@ -1694,7 +1694,7 @@ DEFHOOK
 "This hook should check the launch dimensions provided for an OpenACC\n\
 compute region, or routine.  Defaulted values are represented as -1\n\
 and non-constant values as 0.  The @var{fn_level} is negative for the\n\
-function corresponding to the compute region.  For a routine is is the\n\
+function corresponding to the compute region.  For a routine it is the\n\
 outermost level at which partitioned execution may be spawned.  The hook\n\
 should verify non-default values.  If DECL is NULL, global defaults\n\
 are being validated and unspecified defaults should be filled in.\n\
@@ -2675,7 +2675,7 @@ DEFHOOK
  with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
  The insns to prepare the compare are saved in @var{prep_seq} and the compare\n\
  insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
- compares in the the conditional comparision are generated without error.\n\
+ compares in the conditional comparision are generated without error.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
  rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, int code, tree op0, tree op1),
  NULL)

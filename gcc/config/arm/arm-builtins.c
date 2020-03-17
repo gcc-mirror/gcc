@@ -317,6 +317,214 @@ arm_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
 #define STORE1_QUALIFIERS (arm_store1_qualifiers)
 
+/* Qualifiers for MVE builtins.  */
+
+static enum arm_type_qualifiers
+arm_unop_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_NONE_NONE_QUALIFIERS \
+  (arm_unop_none_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_none_snone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_NONE_SNONE_QUALIFIERS \
+  (arm_unop_none_snone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned };
+#define UNOP_NONE_UNONE_QUALIFIERS \
+  (arm_unop_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_snone_snone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_SNONE_SNONE_QUALIFIERS \
+  (arm_unop_snone_snone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_snone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none };
+#define UNOP_SNONE_NONE_QUALIFIERS \
+  (arm_unop_snone_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_snone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_immediate };
+#define UNOP_SNONE_IMM_QUALIFIERS \
+  (arm_unop_snone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_unone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none };
+#define UNOP_UNONE_NONE_QUALIFIERS \
+  (arm_unop_unone_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned };
+#define UNOP_UNONE_UNONE_QUALIFIERS \
+  (arm_unop_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_immediate };
+#define UNOP_UNONE_IMM_QUALIFIERS \
+  (arm_unop_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_none_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none };
+#define BINOP_NONE_NONE_NONE_QUALIFIERS \
+  (arm_binop_none_none_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_none_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_immediate };
+#define BINOP_NONE_NONE_IMM_QUALIFIERS \
+  (arm_binop_none_none_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned, qualifier_immediate };
+#define BINOP_NONE_UNONE_IMM_QUALIFIERS \
+  (arm_binop_none_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_none_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned, qualifier_unsigned };
+#define BINOP_NONE_UNONE_UNONE_QUALIFIERS \
+  (arm_binop_none_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_unone_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate };
+#define BINOP_UNONE_UNONE_IMM_QUALIFIERS \
+  (arm_binop_unone_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned };
+#define BINOP_UNONE_UNONE_UNONE_QUALIFIERS \
+  (arm_binop_unone_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_immediate };
+#define BINOP_UNONE_NONE_IMM_QUALIFIERS \
+  (arm_binop_unone_none_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned };
+#define BINOP_NONE_NONE_UNONE_QUALIFIERS \
+  (arm_binop_none_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_unone_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_none };
+#define BINOP_UNONE_NONE_NONE_QUALIFIERS \
+  (arm_binop_unone_none_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_unone_unone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none };
+#define BINOP_UNONE_UNONE_NONE_QUALIFIERS \
+  (arm_binop_unone_unone_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+    qualifier_immediate };
+#define TERNOP_UNONE_UNONE_UNONE_IMM_QUALIFIERS \
+  (arm_ternop_unone_unone_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none, qualifier_none };
+#define TERNOP_UNONE_UNONE_NONE_NONE_QUALIFIERS \
+  (arm_ternop_unone_unone_none_none_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_unsigned,
+      qualifier_immediate };
+#define TERNOP_UNONE_NONE_UNONE_IMM_QUALIFIERS \
+  (arm_ternop_unone_none_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_immediate };
+#define TERNOP_NONE_NONE_UNONE_IMM_QUALIFIERS \
+  (arm_ternop_none_none_unone_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
+    qualifier_immediate };
+#define TERNOP_UNONE_UNONE_NONE_IMM_QUALIFIERS \
+  (arm_ternop_unone_unone_none_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
+      qualifier_unsigned };
+#define TERNOP_UNONE_UNONE_NONE_UNONE_QUALIFIERS \
+  (arm_ternop_unone_unone_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
+    qualifier_unsigned };
+#define TERNOP_UNONE_UNONE_IMM_UNONE_QUALIFIERS \
+  (arm_ternop_unone_unone_imm_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_none, qualifier_unsigned };
+#define TERNOP_UNONE_NONE_NONE_UNONE_QUALIFIERS \
+  (arm_ternop_unone_none_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
+#define TERNOP_NONE_NONE_NONE_IMM_QUALIFIERS \
+  (arm_ternop_none_none_none_imm_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_unsigned };
+#define TERNOP_NONE_NONE_NONE_UNONE_QUALIFIERS \
+  (arm_ternop_none_none_none_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_immediate, qualifier_unsigned };
+#define TERNOP_NONE_NONE_IMM_UNONE_QUALIFIERS \
+  (arm_ternop_none_none_imm_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_unsigned };
+#define TERNOP_NONE_NONE_UNONE_UNONE_QUALIFIERS \
+  (arm_ternop_none_none_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_unone_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+    qualifier_unsigned };
+#define TERNOP_UNONE_UNONE_UNONE_UNONE_QUALIFIERS \
+  (arm_ternop_unone_unone_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_none_none_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
+#define TERNOP_NONE_NONE_NONE_NONE_QUALIFIERS \
+  (arm_ternop_none_none_none_none_qualifiers)
+
+/* End of Qualifier for MVE builtins.  */
+
    /* void ([T element type] *, T, immediate).  */
 static enum arm_type_qualifiers
 arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -357,6 +565,7 @@ arm_set_sat_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define hf_UP	 E_HFmode
 #define bf_UP    E_BFmode
 #define si_UP	 E_SImode
+#define hi_UP    E_HImode
 #define void_UP	 E_VOIDmode
 #define sf_UP	 E_SFmode
 #define UP(X) X##_UP
@@ -429,6 +638,13 @@ static arm_builtin_datum vfp_builtin_data[] =
 static arm_builtin_datum neon_builtin_data[] =
 {
 #include "arm_neon_builtins.def"
+};
+
+#undef CF
+#define CF(N,X) CODE_FOR_mve_##N##X
+static arm_builtin_datum mve_builtin_data[] =
+{
+#include "arm_mve_builtins.def"
 };
 
 #undef CF
@@ -736,6 +952,13 @@ enum arm_builtins
 
 #include "arm_acle_builtins.def"
 
+  ARM_BUILTIN_MVE_BASE,
+
+#undef VAR1
+#define VAR1(T, N, X) \
+  ARM_BUILTIN_MVE_##N##X,
+#include "arm_mve_builtins.def"
+
   ARM_BUILTIN_MAX
 };
 
@@ -744,6 +967,9 @@ enum arm_builtins
 
 #define ARM_BUILTIN_NEON_PATTERN_START \
   (ARM_BUILTIN_NEON_BASE + 1)
+
+#define ARM_BUILTIN_MVE_PATTERN_START \
+  (ARM_BUILTIN_MVE_BASE + 1)
 
 #define ARM_BUILTIN_ACLE_PATTERN_START \
   (ARM_BUILTIN_ACLE_BASE + 1)
@@ -1275,6 +1501,22 @@ arm_init_acle_builtins (void)
     {
       arm_builtin_datum *d = &acle_builtin_data[i];
       arm_init_builtin (fcode, d, "__builtin_arm");
+    }
+}
+
+/* Set up all the MVE builtins mentioned in arm_mve_builtins.def file.  */
+static void
+arm_init_mve_builtins (void)
+{
+  volatile unsigned int i, fcode = ARM_BUILTIN_MVE_PATTERN_START;
+
+  arm_init_simd_builtin_scalar_types ();
+  arm_init_simd_builtin_types ();
+
+  for (i = 0; i < ARRAY_SIZE (mve_builtin_data); i++, fcode++)
+    {
+      arm_builtin_datum *d = &mve_builtin_data[i];
+      arm_init_builtin (fcode, d, "__builtin_mve");
     }
 }
 
@@ -2022,8 +2264,10 @@ arm_init_builtins (void)
       = add_builtin_function ("__builtin_arm_lane_check", lane_check_fpr,
 			      ARM_BUILTIN_SIMD_LANE_CHECK, BUILT_IN_MD,
 			      NULL, NULL_TREE);
-
-      arm_init_neon_builtins ();
+      if (TARGET_HAVE_MVE)
+	arm_init_mve_builtins ();
+      else
+	arm_init_neon_builtins ();
       arm_init_vfp_builtins ();
       arm_init_crypto_builtins ();
     }
@@ -2567,9 +2811,13 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
   int is_void = 0;
   int k;
   bool neon = false;
+  bool mve = false;
 
   if (IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_ACLE_BASE - 1))
     neon = true;
+
+  if (IN_RANGE (fcode, ARM_BUILTIN_MVE_BASE, ARM_BUILTIN_MAX - 1))
+    mve = true;
 
   is_void = !!(d->qualifiers[0] & qualifier_void);
 
@@ -2612,7 +2860,7 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
 	}
       else if (d->qualifiers[qualifiers_k] & qualifier_pointer)
 	{
-	  if (neon)
+	  if (neon || mve)
 	    args[k] = ARG_BUILTIN_NEON_MEMORY;
 	  else
 	    args[k] = ARG_BUILTIN_MEMORY;
@@ -2658,6 +2906,26 @@ arm_expand_acle_builtin (int fcode, tree exp, rtx target)
     }
   arm_builtin_datum *d
     = &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START];
+
+  return arm_expand_builtin_1 (fcode, exp, target, d);
+}
+
+/* Expand an MVE builtin, i.e. those registered only if their respective target
+   constraints are met.  This check happens within arm_expand_builtin.  */
+
+static rtx
+arm_expand_mve_builtin (int fcode, tree exp, rtx target)
+{
+  if (fcode >= ARM_BUILTIN_MVE_BASE && !TARGET_HAVE_MVE)
+  {
+    fatal_error (input_location,
+		"You must enable MVE instructions"
+		" to use these intrinsics");
+    return const0_rtx;
+  }
+
+  arm_builtin_datum *d
+    = &mve_builtin_data[fcode - ARM_BUILTIN_MVE_PATTERN_START];
 
   return arm_expand_builtin_1 (fcode, exp, target, d);
 }
@@ -2755,6 +3023,8 @@ arm_expand_builtin (tree exp,
       /* Don't generate any RTL.  */
       return const0_rtx;
     }
+  if (fcode >= ARM_BUILTIN_MVE_BASE)
+    return arm_expand_mve_builtin (fcode, exp, target);
 
   if (fcode >= ARM_BUILTIN_ACLE_BASE)
     return arm_expand_acle_builtin (fcode, exp, target);

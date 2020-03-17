@@ -21296,7 +21296,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
     {
       base_off = 0x1000 - 1;
       /* We must still make sure that the base offset is aligned with respect
-	 to the address.  But it may may not be made any bigger.  */
+	 to the address.  But it may not be made any bigger.  */
       base_off -= (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
     }
 

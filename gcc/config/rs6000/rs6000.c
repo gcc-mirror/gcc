@@ -3956,7 +3956,7 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* Enable the default support for IEEE 128-bit floating point on Linux VSX
-     sytems.  In GCC 7, we would enable the the IEEE 128-bit floating point
+     sytems.  In GCC 7, we would enable the IEEE 128-bit floating point
      infrastructure (-mfloat128-type) but not enable the actual __float128 type
      unless the user used the explicit -mfloat128.  In GCC 8, we enable both
      the keyword as well as the type.  */

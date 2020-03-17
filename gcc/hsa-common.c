@@ -95,7 +95,7 @@ hsa_callable_function_p (tree fndecl)
 	  && !lookup_attribute ("oacc function", DECL_ATTRIBUTES (fndecl)));
 }
 
-/* Allocate HSA structures that are are used when dealing with different
+/* Allocate HSA structures that are used when dealing with different
    functions.  */
 
 void

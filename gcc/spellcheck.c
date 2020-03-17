@@ -166,7 +166,7 @@ find_closest_string (const char *target,
    to be meaningful, given a goal of length GOAL_LEN and a candidate of
    length CANDIDATE_LEN.
 
-   This is a third of the the length of the candidate or of the goal,
+   This is a third of the length of the candidate or of the goal,
    whichever is bigger.  */
 
 edit_distance_t

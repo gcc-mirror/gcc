@@ -13663,7 +13663,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
     }
 
   /* BASE is the declared object of which MEMBER is either a member
-     or that is is cast to REFTYPE (e.g., a char buffer used to store
+     or that is cast to REFTYPE (e.g., a char buffer used to store
      a REFTYPE object).  */
   tree reftype = TREE_TYPE (TREE_OPERAND (ref, 0));
   tree basetype = TREE_TYPE (base);

@@ -1,3 +1,8 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (resolve_overloaded_builtin): Fix up duplicated word
+	issue in a diagnostic message.
+
 2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* c.opt: Avoid redundancy in the help text.

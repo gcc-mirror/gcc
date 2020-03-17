@@ -61,7 +61,7 @@
    record the surrounding bit region, i.e. bits that could be stored in
    a read-modify-write operation when storing the bit-field.  Record store
    chains to different bases in a hash_map (m_stores) and make sure to
-   terminate such chains when appropriate (for example when when the stored
+   terminate such chains when appropriate (for example when the stored
    values get used subsequently).
    These stores can be a result of structure element initializers, array stores
    etc.  A store_immediate_info object is recorded for every such store.

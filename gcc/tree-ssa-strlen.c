@@ -4381,7 +4381,7 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi, const vr_values *rvals)
   int idx1 = get_stridx (arg1);
   int idx2 = get_stridx (arg2);
 
-  /* For strncmp set to the the value of the third argument if known.  */
+  /* For strncmp set to the value of the third argument if known.  */
   HOST_WIDE_INT bound = -1;
   tree len = NULL_TREE;
   /* Extract the strncmp bound.  */
@@ -4605,6 +4605,11 @@ int ssa_name_limit_t::next_ssa_name (tree ssa_name)
   return 0;
 }
 
+static bool
+count_nonzero_bytes_addr (tree, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+			  unsigned [3], bool *, bool *, bool *,
+			  const vr_values *, ssa_name_limit_t &);
+
 /* Determines the minimum and maximum number of leading non-zero bytes
    in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
    to each.
@@ -4627,102 +4632,6 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 		     bool *allnul, bool *allnonnul, const vr_values *rvals,
 		     ssa_name_limit_t &snlim)
 {
-  int idx = get_stridx (exp);
-  if (idx > 0)
-    {
-      strinfo *si = get_strinfo (idx);
-      if (!si)
-	return false;
-
-      /* Handle both constant lengths as well non-constant lengths
-	 in some range.  */
-      unsigned HOST_WIDE_INT minlen, maxlen;
-      if (tree_fits_shwi_p (si->nonzero_chars))
-	minlen = maxlen = tree_to_shwi (si->nonzero_chars);
-      else if (nbytes
-	       && si->nonzero_chars
-	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
-	{
-	  const value_range_equiv *vr
-	    = CONST_CAST (class vr_values *, rvals)
-	    ->get_value_range (si->nonzero_chars);
-	  if (vr->kind () != VR_RANGE
-	      || !range_int_cst_p (vr))
-	    return false;
-
-	 minlen = tree_to_uhwi (vr->min ());
-	 maxlen = tree_to_uhwi (vr->max ());
-	}
-      else
-	return false;
-
-      if (maxlen < offset)
-	return false;
-
-      minlen = minlen < offset ? 0 : minlen - offset;
-      maxlen -= offset;
-      if (maxlen + 1 < nbytes)
-	return false;
-
-      if (!nbytes
-	  && TREE_CODE (si->ptr) == SSA_NAME
-	  && !POINTER_TYPE_P (TREE_TYPE (si->ptr)))
-	{
-	  /* SI->PTR is an SSA_NAME with a DEF_STMT like
-	       _1 = MEM <unsigned int> [(char * {ref-all})s_4(D)];  */
-	  gimple *stmt = SSA_NAME_DEF_STMT (exp);
-	  if (gimple_assign_single_p (stmt)
-	      && gimple_assign_rhs_code (stmt) == MEM_REF)
-	    {
-	      tree rhs = gimple_assign_rhs1 (stmt);
-	      if (tree refsize = TYPE_SIZE_UNIT (TREE_TYPE (rhs)))
-		if (tree_fits_uhwi_p (refsize))
-		  {
-		    nbytes = tree_to_uhwi (refsize);
-		    maxlen = nbytes;
-		  }
-	    }
-
-	  if (!nbytes)
-	    return false;
-	}
-
-      if (nbytes <= minlen)
-	*nulterm = false;
-
-      if (nbytes < minlen)
-	{
-	  minlen = nbytes;
-	  if (nbytes < maxlen)
-	    maxlen = nbytes;
-	}
-
-      if (minlen < lenrange[0])
-	lenrange[0] = minlen;
-      if (lenrange[1] < maxlen)
-	lenrange[1] = maxlen;
-
-      if (lenrange[2] < nbytes)
-	lenrange[2] = nbytes;
-
-      /* Since only the length of the string are known and not its contents,
-	 clear ALLNUL and ALLNONNUL purely on the basis of the length.  */
-      *allnul = false;
-      if (minlen < nbytes)
-	*allnonnul = false;
-
-      return true;
-    }
-
-  if (TREE_CODE (exp) == ADDR_EXPR)
-    {
-      /* If the size of the access hasn't been determined yet it's that
-	 of a pointer.  */
-      if (!nbytes)
-	nbytes = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (exp)));
-      exp = TREE_OPERAND (exp, 0);
-    }
-
   if (TREE_CODE (exp) == SSA_NAME)
     {
       /* Handle non-zero single-character stores specially.  */
@@ -4778,8 +4687,7 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
       tree arg = TREE_OPERAND (exp, 0);
       tree off = TREE_OPERAND (exp, 1);
 
-      if (TREE_CODE (off) != INTEGER_CST
-	  || !tree_fits_uhwi_p (off))
+      if (TREE_CODE (off) != INTEGER_CST || !tree_fits_uhwi_p (off))
 	return false;
 
       unsigned HOST_WIDE_INT wioff = tree_to_uhwi (off);
@@ -4796,15 +4704,17 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
       if (!typesize || !tree_fits_uhwi_p (typesize))
 	return false;
       nbytes = tree_to_uhwi (typesize);
+      if (!nbytes)
+	return false;
 
       /* Handle MEM_REF = SSA_NAME types of assignments.  */
-      return count_nonzero_bytes (arg, offset, nbytes, lenrange, nulterm,
-				  allnul, allnonnul, rvals, snlim);
+      return count_nonzero_bytes_addr (arg, offset, nbytes, lenrange, nulterm,
+				       allnul, allnonnul, rvals, snlim);
     }
 
-  if (TREE_CODE (exp) == VAR_DECL && TREE_READONLY (exp))
+  if (VAR_P (exp) || TREE_CODE (exp) == CONST_DECL)
     {
-      exp = DECL_INITIAL (exp);
+      exp = ctor_for_folding (exp);
       if (!exp)
 	return false;
     }
@@ -4822,6 +4732,8 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	   of the access), set it here to the size of the string, including
 	   all internal and trailing nuls if the string has any.  */
 	nbytes = nchars - offset;
+      else if (nchars - offset < nbytes)
+	return false;
 
       prep = TREE_STRING_POINTER (exp) + offset;
     }
@@ -4829,6 +4741,8 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
   unsigned char buf[256];
   if (!prep)
     {
+      if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+	return false;
       /* If the pointer to representation hasn't been set above
 	 for STRING_CST point it at the buffer.  */
       prep = reinterpret_cast <char *>(buf);
@@ -4872,8 +4786,8 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
   if (n)
     {
       /* When the initial number of non-zero bytes N is non-zero, reset
-       *ALLNUL; if N is less than that the size of the representation
-       also clear *ALLNONNUL.  */
+	 *ALLNUL; if N is less than that the size of the representation
+	 also clear *ALLNONNUL.  */
       *allnul = false;
       if (n < nbytes)
 	*allnonnul = false;
@@ -4896,6 +4810,120 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	}
     }
 
+  return true;
+}
+
+/* Like count_nonzero_bytes, but instead of counting bytes in EXP, count
+   bytes that are pointed to by EXP, which should be a pointer.  */
+
+static bool
+count_nonzero_bytes_addr (tree exp, unsigned HOST_WIDE_INT offset,
+			  unsigned HOST_WIDE_INT nbytes,
+			  unsigned lenrange[3], bool *nulterm,
+			  bool *allnul, bool *allnonnul,
+			  const vr_values *rvals, ssa_name_limit_t &snlim)
+{
+  int idx = get_stridx (exp);
+  if (idx > 0)
+    {
+      strinfo *si = get_strinfo (idx);
+      if (!si)
+	return false;
+
+      /* Handle both constant lengths as well non-constant lengths
+	 in some range.  */
+      unsigned HOST_WIDE_INT minlen, maxlen;
+      if (tree_fits_shwi_p (si->nonzero_chars))
+	minlen = maxlen = tree_to_shwi (si->nonzero_chars);
+      else if (si->nonzero_chars
+	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
+	{
+	  vr_values *v = CONST_CAST (vr_values *, rvals);
+	  const value_range_equiv *vr = v->get_value_range (si->nonzero_chars);
+	  if (vr->kind () != VR_RANGE || !range_int_cst_p (vr))
+	    return false;
+
+	  minlen = tree_to_uhwi (vr->min ());
+	  maxlen = tree_to_uhwi (vr->max ());
+	}
+      else
+	return false;
+
+      if (maxlen < offset)
+	return false;
+
+      minlen = minlen < offset ? 0 : minlen - offset;
+      maxlen -= offset;
+      if (maxlen + 1 < nbytes)
+	return false;
+
+      if (nbytes <= minlen)
+	*nulterm = false;
+
+      if (nbytes < minlen)
+	{
+	  minlen = nbytes;
+	  if (nbytes < maxlen)
+	    maxlen = nbytes;
+	}
+
+      if (minlen < lenrange[0])
+	lenrange[0] = minlen;
+      if (lenrange[1] < maxlen)
+	lenrange[1] = maxlen;
+
+      if (lenrange[2] < nbytes)
+	lenrange[2] = nbytes;
+
+      /* Since only the length of the string are known and not its contents,
+	 clear ALLNUL and ALLNONNUL purely on the basis of the length.  */
+      *allnul = false;
+      if (minlen < nbytes)
+	*allnonnul = false;
+
+      return true;
+    }
+
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    return count_nonzero_bytes (TREE_OPERAND (exp, 0), offset, nbytes,
+				lenrange, nulterm, allnul, allnonnul, rvals,
+				snlim);
+
+  if (TREE_CODE (exp) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (exp);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	{
+	  /* Avoid processing an SSA_NAME that has already been visited
+	     or if an SSA_NAME limit has been reached.  Indicate success
+	     if the former and failure if the latter.  */
+	  if (int res = snlim.next_ssa_name (exp))
+	    return res > 0;
+
+	  /* Determine the minimum and maximum from the PHI arguments.  */
+	  unsigned int n = gimple_phi_num_args (stmt);
+	  for (unsigned i = 0; i != n; i++)
+	    {
+	      tree def = gimple_phi_arg_def (stmt, i);
+	      if (!count_nonzero_bytes_addr (def, offset, nbytes, lenrange,
+					     nulterm, allnul, allnonnul, rvals,
+					     snlim))
+		return false;
+	    }
+
+	  return true;
+	}
+    }
+
+  /* Otherwise we don't know anything.  */
+  lenrange[0] = 0;
+  if (lenrange[1] < nbytes)
+    lenrange[1] = nbytes;
+  if (lenrange[2] < nbytes)
+    lenrange[2] = nbytes;
+  *nulterm = false;
+  *allnul = false;
+  *allnonnul = false;
   return true;
 }
 
@@ -4937,7 +4965,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
   tree ssaname = NULL_TREE, lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
 
-  /* The offset of the first byte in LHS modified by the the store.  */
+  /* The offset of the first byte in LHS modified by the store.  */
   unsigned HOST_WIDE_INT offset = 0;
 
   if (TREE_CODE (lhs) == MEM_REF

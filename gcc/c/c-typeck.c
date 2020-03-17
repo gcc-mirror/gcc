@@ -9968,7 +9968,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
   /* Ignore elements of an initializer for a variable-size type.
      Those are diagnosed in digest_init.  */
   if (COMPLETE_TYPE_P (constructor_type)
-      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
+      && !poly_int_tree_p (TYPE_SIZE (constructor_type)))
     return;
 
   if (!implicit && warn_designated_init && !was_designated

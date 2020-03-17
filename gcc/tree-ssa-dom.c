@@ -875,7 +875,7 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 				  class avail_exprs_stack *avail_exprs_stack,
 				  basic_block bb ATTRIBUTE_UNUSED)
 {
-  /* First query our hash table to see if the the expression is available
+  /* First query our hash table to see if the expression is available
      there.  A non-NULL return value will be either a constant or another
      SSA_NAME.  */
   tree cached_lhs =  avail_exprs_stack->lookup_avail_expr (stmt, false, true);

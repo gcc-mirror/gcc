@@ -1,3 +1,13 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* array.c (gfc_check_iter_variable): Fix up duplicated word issue
+	in a comment.
+	* arith.c (gfc_arith_concat): Likewise.
+	* resolve.c (gfc_resolve_ref): Likewise.
+	* frontend-passes.c (matmul_lhs_realloc): Likewise.
+	* module.c (gfc_match_submodule, load_needed): Likewise.
+	* trans-expr.c (gfc_init_se): Likewise.
+
 2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* lang.opt: Avoid redundancy in the help text.

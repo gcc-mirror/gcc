@@ -9682,7 +9682,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       if (entry)
 	return entry->spec;
 
-      /* If the the template's constraints are not satisfied,
+      /* If the template's constraints are not satisfied,
          then we cannot form a valid type.
 
          Note that the check is deferred until after the hash
@@ -15688,7 +15688,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    else if (TYPENAME_IS_CLASS_P (t) && !CLASS_TYPE_P (f))
 	      {
 		if (complain & tf_error)
-		  error ("%qT resolves to %qT, which is is not a class type",
+		  error ("%qT resolves to %qT, which is not a class type",
 			 t, f);
 		else
 		  return error_mark_node;
@@ -17855,7 +17855,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case RANGE_FOR_STMT:
       {
 	/* Construct another range_for, if this is not a final
-	   substitution (for inside inside a generic lambda of a
+	   substitution (for inside a generic lambda of a
 	   template).  Otherwise convert to a regular for.  */
         tree decl, expr;
         stmt = (processing_template_decl

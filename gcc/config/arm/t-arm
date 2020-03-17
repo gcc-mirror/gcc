@@ -137,7 +137,8 @@ arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   arm-cpu-data.h \
   $(srcdir)/config/arm/arm-protos.h \
   $(srcdir)/config/arm/arm_neon_builtins.def \
-  $(srcdir)/config/arm/arm_vfp_builtins.def
+  $(srcdir)/config/arm/arm_vfp_builtins.def \
+  $(srcdir)/config/arm/arm_mve_builtins.def
 
 arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -147,6 +148,7 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(srcdir)/config/arm/arm_acle_builtins.def \
   $(srcdir)/config/arm/arm_neon_builtins.def \
   $(srcdir)/config/arm/arm_vfp_builtins.def \
+  $(srcdir)/config/arm/arm_mve_builtins.def \
   $(srcdir)/config/arm/arm-simd-builtin-types.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-builtins.c

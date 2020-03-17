@@ -679,7 +679,7 @@ expand_cmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 	 bnl 6,.Lmismatch
 
 	 For the P8 LE case, we use lxvd2x and compare full 16 bytes
-	 but then use use vgbbd and a shift to get two bytes with the
+	 but then use vgbbd and a shift to get two bytes with the
 	 information we need in the correct order.
 
 	 VEC/VSX compare sequence if TARGET_P9_VECTOR:

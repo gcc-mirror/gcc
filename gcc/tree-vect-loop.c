@@ -6541,7 +6541,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	}
       /* The epilogue code relies on the number of elements being a multiple
 	 of the group size.  The duplicate-and-interleave approach to setting
-	 up the the initial vector does too.  */
+	 up the initial vector does too.  */
       if (!multiple_p (nunits_out, group_size))
 	{
 	  if (dump_enabled_p ())
