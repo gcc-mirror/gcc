@@ -35,6 +35,10 @@
 (define_predicate "mve_imm_16"
   (match_test "satisfies_constraint_Rd (op)"))
 
+;; True for immediates in the range of 0 to 7 for MVE.
+(define_predicate "mve_imm_7"
+  (match_test "satisfies_constraint_Ra (op)"))
+
 ;; True for immediates in the range of 1 to 8 for MVE.
 (define_predicate "mve_imm_8"
   (match_test "satisfies_constraint_Rb (op)"))
@@ -42,6 +46,10 @@
 ;; True for immediates in the range of 1 to 32 for MVE.
 (define_predicate "mve_imm_32"
   (match_test "satisfies_constraint_Rf (op)"))
+
+;; True if the immediate is one among 1, 2, 4 or 8 for MVE.
+(define_predicate "mve_imm_selective_upto_8"
+  (match_test "satisfies_constraint_Rg (op)"))
 
 ; Predicate for stack protector guard's address in
 ; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns
