@@ -1,5 +1,10 @@
 2020-03-17  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Remove some
+	xfails as the tests now pass.
+
+2020-03-17  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/goacc/common-block-3.f90: Update scan-tree-dump-times.
 	* gfortran.dg/goacc/declare-3.f95: Update scan-tree-dump-times.
 

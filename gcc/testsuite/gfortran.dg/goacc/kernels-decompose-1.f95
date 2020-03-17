@@ -72,7 +72,7 @@ program main
   end do
   !$acc end kernels
 
-  !$acc kernels ! { dg-bogus "optimized: assigned OpenACC seq loop parallelism" "TODO" { xfail *-*-* } }
+  !$acc kernels ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
   !$acc loop independent ! { dg-message "optimized: assigned OpenACC gang loop parallelism" }
   ! { dg-message "optimized: parallelized loop nest in OpenACC .kernels. construct" "" { target *-*-* } .-1 }
   do i = 1, N
@@ -84,7 +84,7 @@ program main
         do k = 1, N
            a(1 + mod(i + j + k, N)) &
                 = b(j) &
-                + f_v (c(k)) ! { dg-message "optimized: assigned OpenACC vector loop parallelism" "TODO" { xfail *-*-* } .-1 }
+                + f_v (c(k)) ! { dg-message "optimized: assigned OpenACC vector loop parallelism" }
         end do
      end do
   end do
@@ -103,24 +103,24 @@ program main
   !TODO This refers to the "gang-single" "f_g" call.
   ! { dg-warning "region contains gang partitoned code but is not gang partitioned" "TODO" { xfail *-*-* } .-2 }
   ! { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" "" { target *-*-* } .+1 }
-  y = f_g (a(5)) ! { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" "TODO" { xfail *-*-* } }
+  y = f_g (a(5)) ! { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" }
 
-  !$acc loop independent ! { dg-message "optimized: assigned OpenACC gang loop parallelism" "TODO" { xfail *-*-* } }
+  !$acc loop independent ! { dg-message "optimized: assigned OpenACC gang loop parallelism" }
   ! { dg-message "optimized: parallelized loop nest in OpenACC .kernels. construct" "" { target *-*-* } .-1 }
-  ! { dg-bogus "optimized: assigned OpenACC gang vector loop parallelism" "TODO" { xfail *-*-* } .-2 }
+  ! { dg-bogus "optimized: assigned OpenACC gang vector loop parallelism" "" { target *-*-* } .-2 }
   do j = 1, N
-     b(j) = y + f_w (c(j)) ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" "TODO" { xfail *-*-* } }
+     b(j) = y + f_w (c(j)) ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
   end do
   !$acc end kernels
 
   !$acc kernels
   y = 3 ! { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" }
 
-  !$acc loop independent ! { dg-message "optimized: assigned OpenACC gang worker loop parallelism" "TODO" { xfail *-*-* } }
+  !$acc loop independent ! { dg-message "optimized: assigned OpenACC gang worker loop parallelism" }
   ! { dg-message "optimized: parallelized loop nest in OpenACC .kernels. construct" "" { target *-*-* } .-1 }
-  ! { dg-bogus "optimized: assigned OpenACC gang vector loop parallelism" "TODO" { xfail *-*-* } .-2 }
+  ! { dg-bogus "optimized: assigned OpenACC gang vector loop parallelism" "" { target *-*-* } .-2 }
   do j = 1, N
-     b(j) = y + f_v (c(j)) ! { dg-message "optimized: assigned OpenACC vector loop parallelism" "TODO" { xfail *-*-* } }
+     b(j) = y + f_v (c(j)) ! { dg-message "optimized: assigned OpenACC vector loop parallelism" }
   end do
 
   z = 2 ! { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" }
