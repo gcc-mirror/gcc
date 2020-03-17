@@ -1,3 +1,9 @@
+2020-03-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: Skip for
+	-fno-fat-lto-objects.  Use tabs rather than spaces in the
+	check-function-bodies code.
+
 2020-03-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/coro-torture.exp: Ensure that
