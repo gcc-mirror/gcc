@@ -2,6 +2,30 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (hi_UP): Define mode.
+	* config/arm/arm.h (IS_VPR_REGNUM): Move.
+	* config/arm/arm.md (VPR_REGNUM): Define before APSRQ_REGNUM.
+	(APSRQ_REGNUM): Modify.
+	(APSRGE_REGNUM): Modify.
+	* config/arm/arm_mve.h (vctp16q): Define macro.
+	(vctp32q): Likewise.
+	(vctp64q): Likewise.
+	(vctp8q): Likewise.
+	(vpnot): Likewise.
+	(__arm_vctp16q): Define intrinsic.
+	(__arm_vctp32q): Likewise.
+	(__arm_vctp64q): Likewise.
+	(__arm_vctp8q): Likewise.
+	(__arm_vpnot): Likewise.
+	* config/arm/arm_mve_builtins.def (UNOP_UNONE_UNONE): Use builtin
+	qualifier.
+	* config/arm/mve.md (mve_vctp<mode1>qhi): Define RTL pattern.
+	(mve_vpnothi): Likewise.
+
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm.h (enum reg_class): Define new class EVEN_REGS.
 	* config/arm/arm_mve.h (vdupq_n_s8): Define macro.
 	(vdupq_n_s16): Likewise.

@@ -415,6 +415,7 @@ arm_set_sat_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define hf_UP	 E_HFmode
 #define bf_UP    E_BFmode
 #define si_UP	 E_SImode
+#define hi_UP    E_HImode
 #define void_UP	 E_VOIDmode
 #define sf_UP	 E_SFmode
 #define UP(X) X##_UP

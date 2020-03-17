@@ -2,6 +2,16 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vctp16q.c: New test.
+	* gcc.target/arm/mve/intrinsics/vctp32q.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vctp64q.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vctp8q.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vpnot.c: Likewise.
+
+2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vabsq_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vabsq_s32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vabsq_s8.c: Likewise.

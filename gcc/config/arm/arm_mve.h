@@ -192,6 +192,11 @@ typedef struct { uint8x16_t val[4]; } uint8x16x4_t;
 #define vcvtmq_u32_f32(__a) __arm_vcvtmq_u32_f32(__a)
 #define vcvtaq_u16_f16(__a) __arm_vcvtaq_u16_f16(__a)
 #define vcvtaq_u32_f32(__a) __arm_vcvtaq_u32_f32(__a)
+#define vctp16q(__a) __arm_vctp16q(__a)
+#define vctp32q(__a) __arm_vctp32q(__a)
+#define vctp64q(__a) __arm_vctp64q(__a)
+#define vctp8q(__a) __arm_vctp8q(__a)
+#define vpnot(__a) __arm_vpnot(__a)
 #endif
 
 __extension__ extern __inline void
@@ -701,6 +706,41 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vaddlvq_u32 (uint32x4_t __a)
 {
   return __builtin_mve_vaddlvq_uv4si (__a);
+}
+
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vctp16q (uint32_t __a)
+{
+  return __builtin_mve_vctp16qhi (__a);
+}
+
+__extension__ extern __inline mve_pred16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vctp32q (uint32_t __a)
+{
+  return __builtin_mve_vctp32qhi (__a);
+}
+
+__extension__ extern __inline mve_pred16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vctp64q (uint32_t __a)
+{
+  return __builtin_mve_vctp64qhi (__a);
+}
+
+__extension__ extern __inline mve_pred16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vctp8q (uint32_t __a)
+{
+  return __builtin_mve_vctp8qhi (__a);
+}
+
+__extension__ extern __inline mve_pred16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vpnot (mve_pred16_t __a)
+{
+  return __builtin_mve_vpnothi (__a);
 }
 
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
