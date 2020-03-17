@@ -1,3 +1,9 @@
+2020-03-17  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94157
+	* gcc.dg/lto/pr94157_0.c: Add gas effective
+	target filter.
+
 2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/92309
