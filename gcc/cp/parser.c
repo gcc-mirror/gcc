@@ -11346,8 +11346,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  /* This must be a namespace alias definition.  */
 	  if (std_attrs != NULL_TREE)
 	    {
-	      /*  Attributes should be parsed as part of the the
-		  declaration, so let's un-parse them.  */
+	      /* Attributes should be parsed as part of the
+		 declaration, so let's un-parse them.  */
 	      saved_tokens.rollback();
 	      std_attrs = NULL_TREE;
 	    }
@@ -14554,7 +14554,7 @@ cp_parser_linkage_specification (cp_parser* parser)
   /* We're now using the new linkage.  */
   push_lang_context (linkage);
 
-  /* Preserve the location of the the innermost linkage specification,
+  /* Preserve the location of the innermost linkage specification,
      tracking the locations of nested specifications via a local.  */
   location_t saved_location
     = parser->innermost_linkage_specification_location;
@@ -18316,7 +18316,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
     }
 
   /* A type constraint constrains a contextually determined type or type
-     parameter pack. However, the the Concepts TS does allow concepts
+     parameter pack. However, the Concepts TS does allow concepts
      to introduce non-type and template template parameters.  */
   if (TREE_CODE (proto) != TYPE_DECL)
     {
@@ -27339,7 +27339,7 @@ cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
 
       case CPP_EQ:
 	{
-	  /* An equal sign may be part of the the definition of a function,
+	  /* An equal sign may be part of the definition of a function,
 	     and not an assignment operator, when parsing the expression
 	     for a trailing requires-clause. For example:
 

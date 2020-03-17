@@ -1639,7 +1639,7 @@ gfc_copy_se_loopvars (gfc_se * dest, gfc_se * src)
 
    Care must be taken when multiple se are created with the same parent.
    The child se must be kept in sync.  The easiest way is to delay creation
-   of a child se until after after the previous se has been translated.  */
+   of a child se until after the previous se has been translated.  */
 
 void
 gfc_init_se (gfc_se * se, gfc_se * parent)

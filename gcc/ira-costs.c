@@ -1319,7 +1319,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  hard_reg_class = REGNO_REG_CLASS (other_regno);
 	  bigger_hard_reg_class = ira_pressure_class_translate[hard_reg_class];
 	  /* Target code may return any cost for mode which does not
-	     fit the the hard reg class (e.g. DImode for AREG on
+	     fit the hard reg class (e.g. DImode for AREG on
 	     i386).  Check this and use a bigger class to get the
 	     right cost.  */
 	  if (bigger_hard_reg_class != NO_REGS

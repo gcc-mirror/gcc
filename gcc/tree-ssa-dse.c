@@ -88,7 +88,7 @@ static bitmap need_eh_cleanup;
 /* STMT is a statement that may write into memory.  Analyze it and
    initialize WRITE to describe how STMT affects memory.
 
-   Return TRUE if the the statement was analyzed, FALSE otherwise.
+   Return TRUE if the statement was analyzed, FALSE otherwise.
 
    It is always safe to return FALSE.  But typically better optimziation
    can be achieved by analyzing more statements.  */
@@ -147,7 +147,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
   return false;
 }
 
-/* Given REF from the the alias oracle, return TRUE if it is a valid
+/* Given REF from the alias oracle, return TRUE if it is a valid
    memory reference for dead store elimination, false otherwise.
 
    In particular, the reference must have a known base, known maximum

@@ -434,7 +434,7 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 	      lra_get_insn_recog_data (insn)->used_insn_alternative = -1;
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
-			 "Memory subreg was simplified in in insn #%u\n",
+			 "Memory subreg was simplified in insn #%u\n",
 			 INSN_UID (insn));
 	    }
 	}

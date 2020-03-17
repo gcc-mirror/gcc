@@ -22928,7 +22928,7 @@ ix86_test_loading_unspec ()
   /* Verify that the two mems are thus treated as equal.  */
   ASSERT_TRUE (rtx_equal_p (dst, v0));
 
-  /* Verify the the insn is recognized.  */
+  /* Verify that the insn is recognized.  */
   ASSERT_NE(-1, recog_memoized (insn));
 
   /* Test of an UNSPEC_VOLATILE, which has its own enum values.  */

@@ -1475,7 +1475,7 @@ static cons_stack *base;
 static bool check_constructor (gfc_constructor_base, bool (*) (gfc_expr *));
 
 /* Check an EXPR_VARIABLE expression in a constructor to make sure
-   that that variable is an iteration variables.  */
+   that that variable is an iteration variable.  */
 
 bool
 gfc_check_iter_variable (gfc_expr *expr)

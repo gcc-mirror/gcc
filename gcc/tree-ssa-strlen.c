@@ -4381,7 +4381,7 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi, const vr_values *rvals)
   int idx1 = get_stridx (arg1);
   int idx2 = get_stridx (arg2);
 
-  /* For strncmp set to the the value of the third argument if known.  */
+  /* For strncmp set to the value of the third argument if known.  */
   HOST_WIDE_INT bound = -1;
   tree len = NULL_TREE;
   /* Extract the strncmp bound.  */
@@ -4965,7 +4965,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
   tree ssaname = NULL_TREE, lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
 
-  /* The offset of the first byte in LHS modified by the the store.  */
+  /* The offset of the first byte in LHS modified by the store.  */
   unsigned HOST_WIDE_INT offset = 0;
 
   if (TREE_CODE (lhs) == MEM_REF

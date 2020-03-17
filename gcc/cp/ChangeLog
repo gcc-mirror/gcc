@@ -1,3 +1,13 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.c (tsubst): Fix up duplicated word issue in a diagnostic message.
+	(lookup_template_class_1, tsubst_expr): Fix up duplicated word issue
+	in a comment.
+	* parser.c (cp_parser_statement, cp_parser_linkage_specification,
+	cp_parser_placeholder_type_specifier,
+	cp_parser_constraint_requires_parens): Likewise.
+	* name-lookup.c (suggest_alternative_in_explicit_scope): Likewise.
+
 2020-03-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (co_await_expander): Fix indentation.

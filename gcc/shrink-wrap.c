@@ -1380,7 +1380,7 @@ spread_components (sbitmap components)
 
   todo.release ();
 
-  /* Finally, mark everything not not needed both forwards and backwards.  */
+  /* Finally, mark everything not needed both forwards and backwards.  */
 
   bool did_changes = false;
 

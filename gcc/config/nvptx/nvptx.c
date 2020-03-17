@@ -975,7 +975,7 @@ write_fn_proto_from_insn (std::stringstream &s, const char *name,
 }
 
 /* DECL is an external FUNCTION_DECL, make sure its in the fndecl hash
-   table and and write a ptx prototype.  These are emitted at end of
+   table and write a ptx prototype.  These are emitted at end of
    compilation.  */
 
 static void

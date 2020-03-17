@@ -1547,7 +1547,7 @@ rs6000_emit_probe_stack_range_stack_clash (HOST_WIDE_INT orig_size,
 
   /* If explicitly requested,
        or the rounded size is not the same as the original size
-       or the the rounded size is greater than a page,
+       or the rounded size is greater than a page,
      then we will need a copy of the original stack pointer.  */
   if (rounded_size != orig_size
       || rounded_size > probe_interval

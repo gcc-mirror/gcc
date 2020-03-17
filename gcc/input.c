@@ -1296,7 +1296,7 @@ string_concat_db::record_string_concatenation (int num, location_t *locs)
   m_table->put (key_loc, concat);
 }
 
-/* Determine if LOC was the location of the the initial token of a
+/* Determine if LOC was the location of the initial token of a
    concatenation of string literal tokens.
    If so, *OUT_NUM is written to with the number of tokens, and
    *OUT_LOCS with the location of an array of locations of the
@@ -2701,7 +2701,7 @@ test_lexer_string_locations_ucn4 (const line_table_case &case_)
 
   /* Verify that cpp_interpret_string works.
      The string should be encoded in the execution character
-     set.  Assuming that that is UTF-8, we should have the following:
+     set.  Assuming that is UTF-8, we should have the following:
      -----------  ----  -----  -------  ----------------
      Byte offset  Byte  Octal  Unicode  Source Column(s)
      -----------  ----  -----  -------  ----------------

@@ -2142,7 +2142,7 @@ sort_and_splice_var_accesses (tree var)
 /* Create a variable for the given ACCESS which determines the type, name and a
    few other properties.  Return the variable declaration and store it also to
    ACCESS->replacement.  REG_TREE is used when creating a declaration to base a
-   default-definition SSA name on on in order to facilitate an uninitialized
+   default-definition SSA name on in order to facilitate an uninitialized
    warning.  It is used instead of the actual ACCESS type if that is not of a
    gimple register type.  */
 

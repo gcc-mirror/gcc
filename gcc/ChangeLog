@@ -1,3 +1,73 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* lra-spills.c (remove_pseudos): Fix up duplicated word issue in
+	a dump message.
+	* tree-sra.c (create_access_replacement): Fix up duplicated word issue
+	in a comment.
+	* read-rtl-function.c (find_param_by_name,
+	function_reader::parse_enum_value, function_reader::get_insn_by_uid):
+	Likewise.
+	* spellcheck.c (get_edit_distance_cutoff): Likewise.
+	* tree-data-ref.c (create_ifn_alias_checks): Likewise.
+	* tree.def (SWITCH_EXPR): Likewise.
+	* selftest.c (assert_str_contains): Likewise.
+	* ipa-param-manipulation.h (class ipa_param_body_adjustments):
+	Likewise.
+	* tree-ssa-math-opts.c (convert_expand_mult_copysign): Likewise.
+	* tree-ssa-loop-split.c (find_vdef_in_loop): Likewise.
+	* langhooks.h (struct lang_hooks_for_decls): Likewise.
+	* ipa-prop.h (struct ipa_param_descriptor): Likewise.
+	* tree-ssa-strlen.c (handle_builtin_string_cmp, handle_store):
+	Likewise.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Likewise.
+	* tree-ssa-reassoc.c (reassociate_bb): Likewise.
+	* tree.c (component_ref_size): Likewise.
+	* hsa-common.c (hsa_init_compilation_unit_data): Likewise.
+	* gimple-ssa-sprintf.c (get_string_length, format_string,
+	format_directive): Likewise.
+	* omp-grid.c (grid_process_kernel_body_copy): Likewise.
+	* input.c (string_concat_db::get_string_concatenation,
+	test_lexer_string_locations_ucn4): Likewise.
+	* cfgexpand.c (pass_expand::execute): Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_memref::offset_out_of_bounds,
+	maybe_diag_overlap): Likewise.
+	* rtl.c (RTX_CODE_HWINT_P_1): Likewise.
+	* shrink-wrap.c (spread_components): Likewise.
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse, valid_ao_ref_for_dse):
+	Likewise.
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
+	Likewise.
+	* dwarf2out.c (dwarf2out_early_finish): Likewise.
+	* gimple-ssa-store-merging.c: Likewise.
+	* ira-costs.c (record_operand_costs): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* target.def (dispatch): Likewise.
+	(validate_dims, gen_ccmp_first): Fix up duplicated word issue
+	in documentation text.
+	* doc/tm.texi: Regenerated.
+	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_FLAG_REG_STALL): Fix up
+	duplicated word issue in a comment.
+	* config/i386/i386.c (ix86_test_loading_unspec): Likewise.
+	* config/i386/i386-features.c (remove_partial_avx_dependency):
+	Likewise.
+	* config/msp430/msp430.c (msp430_select_section): Likewise.
+	* config/gcn/gcn-run.c (load_image): Likewise.
+	* config/aarch64/aarch64-sve.md (sve_ld1r<mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_gen_adjusted_ldpstp): Likewise.
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(single_dest_per_chain): Likewise.
+	* config/nvptx/nvptx.c (nvptx_record_fndecl): Likewise.
+	* config/fr30/fr30.c (fr30_arg_partial_bytes): Likewise.
+	* config/rs6000/rs6000-string.c (expand_cmp_vec_sequence): Likewise.
+	* config/rs6000/rs6000-p8swap.c (replace_swapped_load_constant):
+	Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Likewise.
+	* config/rs6000/rs6000-logue.c
+	(rs6000_emit_probe_stack_range_stack_clash): Likewise.
+	* config/nds32/nds32-md-auxiliary.c (nds32_split_ashiftdi3): Likewise.
+	Fix various other issues in the comment.
+
 2020-03-17  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* config/arm/t-rmprofile: create new multilib for

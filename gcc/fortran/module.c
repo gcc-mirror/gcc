@@ -743,7 +743,7 @@ cleanup:
    ordered pair whose first element is the ancestor module name and
    whose second element is the submodule name. 'Submodule_name' is
    used for the submodule filename and uses '@' as a separator, whilst
-   the name of the symbol for the module uses '.' as a a separator.
+   the name of the symbol for the module uses '.' as a separator.
    The reasons for these choices are:
    (i) To follow another leading brand in the submodule filenames;
    (ii) Since '.' is not particularly visible in the filenames; and
@@ -5044,7 +5044,7 @@ load_needed (pointer_info *p)
   sym->attr.use_assoc = 1;
 
   /* Unliked derived types, a STRUCTURE may share names with other symbols.
-     We greedily converted the the symbol name to lowercase before we knew its
+     We greedily converted the symbol name to lowercase before we knew its
      type, so now we must fix it. */
   if (sym->attr.flavor == FL_STRUCT)
     sym->name = gfc_dt_upper_string (sym->name);
