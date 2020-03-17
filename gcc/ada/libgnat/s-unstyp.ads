@@ -51,8 +51,8 @@ package System.Unsigned_Types is
    --  Used in the implementation of Is_Negative intrinsic (see Exp_Intr)
 
    type Packed_Byte is mod 2 ** 8;
-   pragma Universal_Aliasing (Packed_Byte);
    for Packed_Byte'Size use 8;
+   pragma Universal_Aliasing (Packed_Byte);
    --  Component type for Packed_Bytes1, Packed_Bytes2 and Packed_Byte4 arrays.
    --  As this type is used by the compiler to implement operations on user
    --  packed array, it needs to be able to alias any type.
@@ -88,6 +88,24 @@ package System.Unsigned_Types is
    --  are either handled by direct masking or not packed at all). In such
    --  cases the clusters can be assumed to be 4-byte aligned if the array
    --  is aligned (see System.Pack_12 in file s-pack12 as an example).
+
+   type Rev_Packed_Bytes1 is new Packed_Bytes1;
+   pragma Suppress_Initialization (Rev_Packed_Bytes1);
+   --  This is equivalent to Packed_Bytes1, but for packed arrays with reverse
+   --  scalar storage order. But the Scalar_Storage_Order attribute cannot be
+   --  set directly here, see Exp_Pakd for more details.
+
+   type Rev_Packed_Bytes2 is new Packed_Bytes2;
+   pragma Suppress_Initialization (Rev_Packed_Bytes2);
+   --  This is equivalent to Packed_Bytes2, but for packed arrays with reverse
+   --  scalar storage order. But the Scalar_Storage_Order attribute cannot be
+   --  set directly here, see Exp_Pakd for more details.
+
+   type Rev_Packed_Bytes4 is new Packed_Bytes4;
+   pragma Suppress_Initialization (Rev_Packed_Bytes4);
+   --  This is equivalent to Packed_Bytes4, but for packed arrays with reverse
+   --  scalar storage order. But the Scalar_Storage_Order attribute cannot be
+   --  set directly here, see Exp_Pakd for more details.
 
    type Bits_1 is mod 2**1;
    type Bits_2 is mod 2**2;
