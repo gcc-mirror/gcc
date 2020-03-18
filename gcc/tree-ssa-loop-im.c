@@ -1527,7 +1527,8 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
 		  tree ref_alias_type = reference_alias_ptr_type (*mem);
 		  unsigned int ref_align = get_object_alignment (*mem);
 		  tree ref_type = TREE_TYPE (*mem);
-		  tree tmp = build_fold_addr_expr (unshare_expr (mem_base));
+		  tree tmp = build1 (ADDR_EXPR, ptr_type_node,
+				     unshare_expr (mem_base));
 		  if (TYPE_ALIGN (ref_type) != ref_align)
 		    ref_type = build_aligned_type (ref_type, ref_align);
 		  (*slot)->mem.ref

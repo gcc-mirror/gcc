@@ -43,6 +43,14 @@
 (define_predicate "mve_imm_8"
   (match_test "satisfies_constraint_Rb (op)"))
 
+;; True for immediates in the range of 0 to 15 for MVE.
+(define_predicate "mve_imm_15"
+  (match_test "satisfies_constraint_Rc (op)"))
+
+;; True for immediates in the range of 0 to 31 for MVE.
+(define_predicate "mve_imm_31"
+  (match_test "satisfies_constraint_Re (op)"))
+
 ;; True for immediates in the range of 1 to 32 for MVE.
 (define_predicate "mve_imm_32"
   (match_test "satisfies_constraint_Rf (op)"))
@@ -50,6 +58,14 @@
 ;; True if the immediate is one among 1, 2, 4 or 8 for MVE.
 (define_predicate "mve_imm_selective_upto_8"
   (match_test "satisfies_constraint_Rg (op)"))
+
+;; True if the immediate is the range +/- 1016 and multiple of 8 for MVE.
+(define_constraint "Ri"
+  "@internal In Thumb-2 state a constant is multiple of 8 and in range
+   of -/+ 1016 for MVE"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && (-1016 <= ival) && (ival <= 1016)
+		    && ((ival % 8) == 0)")))
 
 ; Predicate for stack protector guard's address in
 ; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns

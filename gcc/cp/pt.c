@@ -29078,7 +29078,7 @@ append_type_to_template_for_access_check_1 (tree t,
 }
 
 /* Append TYPE_DECL to the template TEMPL.
-   TEMPL is either a class type, a FUNCTION_DECL or a a TEMPLATE_DECL.
+   TEMPL is either a class type, a FUNCTION_DECL or a TEMPLATE_DECL.
    At TEMPL instanciation time, TYPE_DECL will be checked to see
    if it can be accessed through SCOPE.
    LOCATION is the location of the usage point of TYPE_DECL.

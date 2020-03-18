@@ -2607,7 +2607,7 @@ frame_stack_add (HOST_WIDE_INT offset)
    register.
 
    During compilation of a function the frame size is evaluated
-   multiple times, it is not until the reload pass is complete the the
+   multiple times, it is not until the reload pass is complete the
    frame size is considered fixed (it is at this point that space for
    all spills has been allocated).  However the frame_pointer_needed
    variable is not set true until the register allocation pass, as a

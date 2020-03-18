@@ -655,7 +655,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    sm_ctxt->on_transition (node, stmt, arg, m_nonnull, m_freed);
 
 	    /* Keep state "null" as-is, rather than transitioning to "free";
-	       we don't want want to complain about double-free of NULL.  */
+	       we don't want to complain about double-free of NULL.  */
 
 	    /* freed -> stop, with warning.  */
 	    sm_ctxt->warn_for_state (node, stmt, arg, m_freed,

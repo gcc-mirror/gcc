@@ -3312,7 +3312,8 @@ pushdecl (tree x)
 	element = TREE_TYPE (element);
       element = TYPE_MAIN_VARIANT (element);
 
-      if (RECORD_OR_UNION_TYPE_P (element)
+      if ((RECORD_OR_UNION_TYPE_P (element)
+	   || TREE_CODE (element) == ENUMERAL_TYPE)
 	  && (TREE_CODE (x) != TYPE_DECL
 	      || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
 	  && !COMPLETE_TYPE_P (element))
@@ -8354,6 +8355,26 @@ field_decl_cmp (const void *x_p, const void *y_p)
   return 1;
 }
 
+/* If this structure or union completes the type of any previous
+   variable declaration, lay it out and output its rtl.  */
+static void
+finish_incomplete_vars (tree incomplete_vars, bool toplevel)
+{
+  for (tree x = incomplete_vars; x; x = TREE_CHAIN (x))
+    {
+      tree decl = TREE_VALUE (x);
+      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	layout_array_type (TREE_TYPE (decl));
+      if (TREE_CODE (decl) != TYPE_DECL)
+	{
+	  relayout_decl (decl);
+	  if (c_dialect_objc ())
+	    objc_check_decl (decl);
+	  rest_of_decl_compilation (decl, toplevel, 0);
+	}
+    }
+}
+
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    LOC is the location of the RECORD_TYPE or UNION_TYPE's definition.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
@@ -8612,13 +8633,6 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       warning_at (loc, 0, "union cannot be made transparent");
     }
 
-  /* Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
-     in dwarf2out via rest_of_decl_compilation below and means
-     something totally different.  Since we will be clearing
-     C_TYPE_INCOMPLETE_VARS shortly after we iterate through them,
-     clear it ahead of time and avoid problems in dwarf2out.  Ideally,
-     C_TYPE_INCOMPLETE_VARS should use some language specific
-     node.  */
   tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
@@ -8639,21 +8653,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel);
 
-  /* If this structure or union completes the type of any previous
-     variable declaration, lay it out and output its rtl.  */
-  for (x = incomplete_vars; x; x = TREE_CHAIN (x))
-    {
-      tree decl = TREE_VALUE (x);
-      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	layout_array_type (TREE_TYPE (decl));
-      if (TREE_CODE (decl) != TYPE_DECL)
-	{
-	  layout_decl (decl, 0);
-	  if (c_dialect_objc ())
-	    objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, toplevel, 0);
-	}
-    }
+  finish_incomplete_vars (incomplete_vars, toplevel);
 
   /* If we're inside a function proper, i.e. not file-scope and not still
      parsing parameters, then arrange for the size of a variable sized type
@@ -8932,8 +8932,10 @@ finish_enum (tree enumtype, tree values, tree attributes)
   TYPE_LANG_SPECIFIC (enumtype) = lt;
 
   /* Fix up all variant types of this enum type.  */
+  tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (enumtype));
   for (tem = TYPE_MAIN_VARIANT (enumtype); tem; tem = TYPE_NEXT_VARIANT (tem))
     {
+      C_TYPE_INCOMPLETE_VARS (tem) = NULL_TREE;
       if (tem == enumtype)
 	continue;
       TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
@@ -8951,6 +8953,8 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, toplevel);
+
+  finish_incomplete_vars (incomplete_vars, toplevel);
 
   /* If this enum is defined inside a struct, add it to
      struct_types.  */

@@ -10,10 +10,10 @@ svbool_t take_stack_args (volatile void *, void *, int, int, int,
 /*
 ** test_1:
 **	sub	sp, sp, #272
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	...
 **	ptrue	p0\.b, vl256
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?272
 **	ret
 */
@@ -21,7 +21,7 @@ svbool_t
 test_1 (void)
 {
   volatile int x = 1;
-  asm volatile ("" ::: "p4");
+  asm volatile ("" ::: "z16");
   return svptrue_b8 ();
 }
 
@@ -30,10 +30,10 @@ test_1 (void)
 **	sub	sp, sp, #304
 **	stp	x24, x25, \[sp, 256\]
 **	str	x26, \[sp, 272\]
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	...
 **	ptrue	p0\.b, vl256
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	ldp	x24, x25, \[sp, 256\]
 **	ldr	x26, \[sp, 272\]
 **	add	sp, sp, #?304
@@ -43,7 +43,7 @@ svbool_t
 test_2 (void)
 {
   volatile int x = 1;
-  asm volatile ("" ::: "p4", "x24", "x25", "x26");
+  asm volatile ("" ::: "z16", "x24", "x25", "x26");
   return svptrue_b8 ();
 }
 
@@ -53,10 +53,10 @@ test_2 (void)
 **	sub	sp, sp, x12
 **	stp	x24, x25, \[sp, 256\]
 **	str	x26, \[sp, 272\]
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	...
 **	ptrue	p0\.b, vl256
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	ldp	x24, x25, \[sp, 256\]
 **	ldr	x26, \[sp, 272\]
 **	add	sp, sp, x12
@@ -66,17 +66,17 @@ svbool_t
 test_3 (void)
 {
   volatile int x[1024];
-  asm volatile ("" :: "r" (x) : "p4", "x24", "x25", "x26");
+  asm volatile ("" :: "r" (x) : "z16", "x24", "x25", "x26");
   return svptrue_b8 ();
 }
 
 /*
 ** test_4:
 **	sub	sp, sp, #512
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	...
 **	ptrue	p0\.h, vl128
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?512
 **	ret
 */
@@ -85,7 +85,7 @@ test_4 (void)
 {
   volatile svint32_t b;
   b = svdup_s32 (1);
-  asm volatile ("" ::: "p4");
+  asm volatile ("" ::: "z16");
   return svptrue_b16 ();
 }
 
@@ -94,10 +94,10 @@ test_4 (void)
 **	sub	sp, sp, #544
 **	stp	x24, x25, \[sp, 256\]
 **	str	x26, \[sp, 272\]
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	...
 **	ptrue	p0\.h, vl128
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	ldp	x24, x25, \[sp, 256\]
 **	ldr	x26, \[sp, 272\]
 **	add	sp, sp, #?544
@@ -108,7 +108,7 @@ test_5 (void)
 {
   volatile svint32_t b;
   b = svdup_s32 (1);
-  asm volatile ("" ::: "p4", "x24", "x25", "x26");
+  asm volatile ("" ::: "z16", "x24", "x25", "x26");
   return svptrue_b16 ();
 }
 
@@ -117,11 +117,11 @@ test_5 (void)
 **	stp	x29, x30, \[sp, -16\]!
 **	mov	x29, sp
 **	sub	sp, sp, #256
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	...
 **	ptrue	p0\.b, vl256
 **	add	sp, sp, #?16
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?256
 **	ldp	x29, x30, \[sp\], 16
 **	ret
@@ -130,7 +130,7 @@ svbool_t
 test_6 (void)
 {
   take_stack_args (0, 0, 1, 2, 3, 4, 5, 6, 7);
-  asm volatile ("" ::: "p4");
+  asm volatile ("" ::: "z16");
   return svptrue_b8 ();
 }
 
@@ -140,12 +140,12 @@ test_6 (void)
 **	sub	sp, sp, x12
 **	stp	x29, x30, \[sp, 256\]
 **	add	x29, sp, #?256
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	sub	sp, sp, #16
 **	...
 **	ptrue	p0\.b, vl256
 **	add	sp, sp, #?16
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?256
 **	ldp	x29, x30, \[sp\]
 **	mov	x12, #?4112
@@ -157,7 +157,7 @@ test_7 (void)
 {
   volatile int x[1024];
   take_stack_args (x, 0, 1, 2, 3, 4, 5, 6, 7);
-  asm volatile ("" ::: "p4");
+  asm volatile ("" ::: "z16");
   return svptrue_b8 ();
 }
 
@@ -169,12 +169,12 @@ test_7 (void)
 **	add	x29, sp, #?256
 **	stp	x24, x25, \[sp, 272\]
 **	str	x26, \[sp, 288\]
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	sub	sp, sp, #16
 **	...
 **	ptrue	p0\.b, vl256
 **	add	sp, sp, #?16
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?256
 **	ldp	x24, x25, \[sp, 16\]
 **	ldr	x26, \[sp, 32\]
@@ -188,7 +188,7 @@ test_8 (void)
 {
   volatile int x[1024];
   take_stack_args (x, 0, 1, 2, 3, 4, 5, 6, 7);
-  asm volatile ("" ::: "p4", "x24", "x25", "x26");
+  asm volatile ("" ::: "z16", "x24", "x25", "x26");
   return svptrue_b8 ();
 }
 
@@ -198,12 +198,12 @@ test_8 (void)
 **	sub	sp, sp, x12
 **	stp	x29, x30, \[sp, 256\]
 **	add	x29, sp, #?256
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	sub	sp, sp, #16
 **	...
 **	ptrue	p0\.b, vl256
 **	sub	sp, x29, #256
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?256
 **	ldp	x29, x30, \[sp\]
 **	mov	x12, #?4112
@@ -215,7 +215,7 @@ test_9 (int n)
 {
   volatile int x[1024];
   take_stack_args (x, __builtin_alloca (n), 1, 2, 3, 4, 5, 6, 7);
-  asm volatile ("" ::: "p4");
+  asm volatile ("" ::: "z16");
   return svptrue_b8 ();
 }
 
@@ -227,12 +227,12 @@ test_9 (int n)
 **	add	x29, sp, #?256
 **	stp	x24, x25, \[sp, 272\]
 **	str	x26, \[sp, 288\]
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	sub	sp, sp, #16
 **	...
 **	ptrue	p0\.b, vl256
 **	sub	sp, x29, #256
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?256
 **	ldp	x24, x25, \[sp, 16\]
 **	ldr	x26, \[sp, 32\]
@@ -246,7 +246,7 @@ test_10 (int n)
 {
   volatile int x[1024];
   take_stack_args (x, __builtin_alloca (n), 1, 2, 3, 4, 5, 6, 7);
-  asm volatile ("" ::: "p4", "x24", "x25", "x26");
+  asm volatile ("" ::: "z16", "x24", "x25", "x26");
   return svptrue_b8 ();
 }
 
@@ -261,12 +261,12 @@ test_10 (int n)
 **	add	x29, sp, #?256
 **	stp	x24, x25, \[sp, 272\]
 **	str	x26, \[sp, 288\]
-**	str	p4, \[sp\]
+**	str	z16, \[sp\]
 **	sub	sp, sp, #16
 **	...
 **	ptrue	p0\.b, vl256
 **	sub	sp, x29, #256
-**	ldr	p4, \[sp\]
+**	ldr	z16, \[sp\]
 **	add	sp, sp, #?256
 **	ldp	x24, x25, \[sp, 16\]
 **	ldr	x26, \[sp, 32\]
@@ -280,6 +280,6 @@ test_11 (int n)
 {
   volatile int x[0x7ee4];
   take_stack_args (x, __builtin_alloca (n), 1, 2, 3, 4, 5, 6, 7);
-  asm volatile ("" ::: "p4", "x24", "x25", "x26");
+  asm volatile ("" ::: "z16", "x24", "x25", "x26");
   return svptrue_b8 ();
 }

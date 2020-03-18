@@ -795,6 +795,17 @@ print_enode_indices (pretty_printer *pp,
     }
 }
 
+/* class exploded_node : public dnode<eg_traits>.  */
+
+/* exploded_node's ctor.  */
+
+exploded_node::exploded_node (const point_and_state &ps,
+			      int index)
+: m_ps (ps), m_status (STATUS_WORKLIST), m_index (index)
+{
+  gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
+}
+
 /* For use by dump_dot, get a value for the .dot "fillcolor" attribute.
    Colorize by sm-state, to make it easier to see how sm-state propagates
    through the exploded_graph.  */
@@ -2988,7 +2999,7 @@ exploded_path::dump () const
    cluster, each supernode gets its own cluster.
 
    Hence all enodes relating to a particular function with a particular
-   callstring will be be in a cluster together; all enodes for the same
+   callstring will be in a cluster together; all enodes for the same
    function but with a different callstring will be in a different
    cluster.  */
 

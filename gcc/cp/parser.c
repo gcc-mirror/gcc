@@ -19001,9 +19001,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   bool is_unnamed = false;
   tree underlying_type = NULL_TREE;
   cp_token *type_start_token = NULL;
-  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
-
-  parser->colon_corrects_to_scope_p = false;
+  temp_override<bool> cleanup (parser->colon_corrects_to_scope_p, false);
 
   /* Parse tentatively so that we can back up if we don't find a
      enum-specifier.  */
@@ -19043,24 +19041,24 @@ cp_parser_enum_specifier (cp_parser* parser)
 
   push_deferring_access_checks (dk_no_check);
   nested_name_specifier
-      = cp_parser_nested_name_specifier_opt (parser,
-					     /*typename_keyword_p=*/true,
-					     /*check_dependency_p=*/false,
-					     /*type_p=*/false,
-					     /*is_declaration=*/false);
+    = cp_parser_nested_name_specifier_opt (parser,
+					   /*typename_keyword_p=*/true,
+					   /*check_dependency_p=*/false,
+					   /*type_p=*/false,
+					   /*is_declaration=*/false);
 
   if (nested_name_specifier)
     {
       tree name;
 
       identifier = cp_parser_identifier (parser);
-      name =  cp_parser_lookup_name (parser, identifier,
-				     enum_type,
-				     /*is_template=*/false,
-				     /*is_namespace=*/false,
-				     /*check_dependency=*/true,
-				     /*ambiguous_decls=*/NULL,
-				     input_location);
+      name = cp_parser_lookup_name (parser, identifier,
+				    enum_type,
+				    /*is_template=*/false,
+				    /*is_namespace=*/false,
+				    /*check_dependency=*/true,
+				    /*ambiguous_decls=*/NULL,
+				    input_location);
       if (name && name != error_mark_node)
 	{
 	  type = TREE_TYPE (name);
@@ -19140,23 +19138,21 @@ cp_parser_enum_specifier (cp_parser* parser)
     {
       if (cxx_dialect < cxx11 || (!scoped_enum_p && !underlying_type))
 	{
+	  if (has_underlying_type)
+	    cp_parser_commit_to_tentative_parse (parser);
 	  cp_parser_error (parser, "expected %<{%>");
 	  if (has_underlying_type)
-	    {
-	      type = NULL_TREE;
-	      goto out;
-	    }
+	    return error_mark_node;
 	}
       /* An opaque-enum-specifier must have a ';' here.  */
       if ((scoped_enum_p || underlying_type)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	{
+	  if (has_underlying_type)
+	    cp_parser_commit_to_tentative_parse (parser);
 	  cp_parser_error (parser, "expected %<;%> or %<{%>");
 	  if (has_underlying_type)
-	    {
-	      type = NULL_TREE;
-	      goto out;
-	    }
+	    return error_mark_node;
 	}
     }
 
@@ -19172,9 +19168,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 	  push_scope (nested_name_specifier);
 	}
       else if (TREE_CODE (nested_name_specifier) == NAMESPACE_DECL)
-	{
-	  push_nested_namespace (nested_name_specifier);
-	}
+	push_nested_namespace (nested_name_specifier);
     }
 
   /* Issue an error message if type-definitions are forbidden here.  */
@@ -19334,12 +19328,8 @@ cp_parser_enum_specifier (cp_parser* parser)
 	  pop_scope (nested_name_specifier);
 	}
       else if (TREE_CODE (nested_name_specifier) == NAMESPACE_DECL)
-	{
-	  pop_nested_namespace (nested_name_specifier);
-	}
+	pop_nested_namespace (nested_name_specifier);
     }
- out:
-  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return type;
 }
 
@@ -20771,16 +20761,24 @@ cp_parser_init_declarator (cp_parser* parser,
       else
 	{
 	  /* We want to record the extra mangling scope for in-class
-	     initializers of class members and initializers of static data
-	     member templates.  The former involves deferring
-	     parsing of the initializer until end of class as with default
-	     arguments.  So right here we only handle the latter.  */
-	  if (!member_p && processing_template_decl && decl != error_mark_node)
+	     initializers of class members and initializers of static
+	     data member templates and namespace-scope initializers.
+	     The former involves deferring parsing of the initializer
+	     until end of class as with default arguments.  So right
+	     here we only handle the latter two.  */
+	  bool has_lambda_scope = false;
+
+	  if (decl != error_mark_node
+	      && !member_p
+	      && (processing_template_decl || DECL_NAMESPACE_SCOPE_P (decl)))
+	    has_lambda_scope = true;
+
+	  if (has_lambda_scope)
 	    start_lambda_scope (decl);
 	  initializer = cp_parser_initializer (parser,
 					       &is_direct_init,
 					       &is_non_constant_init);
-	  if (!member_p && processing_template_decl && decl != error_mark_node)
+	  if (has_lambda_scope)
 	    finish_lambda_scope ();
 	  if (initializer == error_mark_node)
 	    cp_parser_skip_to_end_of_statement (parser);

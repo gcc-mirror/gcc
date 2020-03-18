@@ -57,9 +57,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
-
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
+#include "tree-ssa.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -679,6 +679,7 @@ new_strinfo (tree ptr, int idx, tree nonzero_chars, bool full_string_p)
 {
   strinfo *si = strinfo_pool.allocate ();
   si->nonzero_chars = nonzero_chars;
+  STRIP_USELESS_TYPE_CONVERSION (ptr);
   si->ptr = ptr;
   si->stmt = NULL;
   si->alloc = NULL;
@@ -2910,7 +2911,7 @@ handle_builtin_strncat (built_in_function, gimple_stmt_iterator *gsi)
 
 /* Return true if LEN depends on a call to strlen(SRC) in an interesting
    way.  LEN can either be an integer expression, or a pointer (to char).
-   When it is the latter (such as in recursive calls to self) is is
+   When it is the latter (such as in recursive calls to self) it is
    assumed to be the argument in some call to strlen() whose relationship
    to SRC is being ascertained.  */
 

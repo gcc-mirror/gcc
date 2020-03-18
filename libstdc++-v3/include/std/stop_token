@@ -456,8 +456,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Stop_state_t* operator->() const noexcept { return _M_ptr; }
 
+#if __cpp_impl_three_way_comparison >= 201907L
       friend bool
       operator==(const _Stop_state_ref&, const _Stop_state_ref&) = default;
+#else
+      friend bool
+      operator==(const _Stop_state_ref& __lhs, const _Stop_state_ref& __rhs)
+      noexcept
+      { return __lhs._M_ptr == __rhs._M_ptr; }
+
+      friend bool
+      operator!=(const _Stop_state_ref& __lhs, const _Stop_state_ref& __rhs)
+      noexcept
+      { return __lhs._M_ptr != __rhs._M_ptr; }
+#endif
 
     private:
       _Stop_state_t* _M_ptr = nullptr;

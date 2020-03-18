@@ -1,3 +1,34 @@
+2020-03-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94147 - mangling of lambdas assigned to globals
+	* parser.c (cp_parser_init_declarator): Namespace-scope variables
+	provide a lambda scope.
+	* tree.c (no_linkage_check): Lambdas with a variable for extra
+	scope have a linkage from the variable.
+
+2020-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* constraint.cc (resolve_function_concept_check, subsumes_constraints,
+	strictly_subsumes): Fix up duplicated word issue in a comment.
+	* coroutines.cc (build_init_or_final_await, captures_temporary):
+	Likewise.
+	* logic.cc (dnf_size_r, cnf_size_r): Likewise.
+	* pt.c (append_type_to_template_for_access_check): Likewise.
+
+	PR c++/91759
+	* decl.c (grokfndecl): Restore old diagnostics about deduction
+	guide declared in different scope if in_namespace is NULL_TREE.
+
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90995
+	* parser.c (cp_parser_enum_specifier): Use temp_override for
+	parser->colon_corrects_to_scope_p, replace goto out with return.
+	If scoped enum or enum with underlying type is not followed by
+	{ or ;, call cp_parser_commit_to_tentative_parse before calling
+	cp_parser_error and make sure to return error_mark_node instead of
+	NULL_TREE.  Formatting fixes.
+
 2020-03-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/94197

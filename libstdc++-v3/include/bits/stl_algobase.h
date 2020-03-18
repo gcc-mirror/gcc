@@ -1283,7 +1283,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	 && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
 	 && __is_pointer<_II1>::__value
 	 && __is_pointer<_II2>::__value
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && __cpp_lib_concepts
 	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
 	 // so __is_byte<T> could be true, but we can't use memcmp with
 	 // volatile data.

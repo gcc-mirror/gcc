@@ -1,3 +1,9 @@
+2020-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* class.c (generate_finalization_wrapper): Fix up duplicated word
+	issue in a comment.
+	* trans-types.c (gfc_get_nodesc_array_type): Likewise.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* array.c (gfc_check_iter_variable): Fix up duplicated word issue

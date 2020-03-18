@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _M_ok(__obj._M_ok)
       { }
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && __cpp_lib_concepts
       constexpr
       istream_iterator(default_sentinel_t)
       noexcept(is_nothrow_default_constructible_v<_Tp>)
@@ -153,7 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator!=(const istream_iterator& __x, const istream_iterator& __y)
       { return !__x._M_equal(__y); }
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && __cpp_lib_concepts
       friend bool
       operator==(const istream_iterator& __i, default_sentinel_t)
       { return !__i._M_stream; }
