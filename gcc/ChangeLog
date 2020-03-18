@@ -1,3 +1,8 @@
+2020-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/90275
+	* cse.c (cse_insn): Delete no-op register moves too.
+
 2020-03-18  Martin Sebor  <msebor@redhat.com>
 
 	PR ipa/92799
