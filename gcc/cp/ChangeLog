@@ -1,3 +1,11 @@
+2020-03-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94147 - mangling of lambdas assigned to globals
+	* parser.c (cp_parser_init_declarator): Namespace-scope variables
+	provide a lambda scope.
+	* tree.c (no_linkage_check): Lambdas with a variable for extra
+	scope have a linkage from the variable.
+
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* constraint.cc (resolve_function_concept_check, subsumes_constraints,
