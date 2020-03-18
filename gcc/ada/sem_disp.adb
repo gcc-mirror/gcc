@@ -2548,14 +2548,6 @@ package body Sem_Disp is
       Prim : Node_Id;
 
    begin
-      --  Diagnose failure to match No_Return in parent (Ada-2005, AI-414, but
-      --  we do it unconditionally in Ada 95 now, since this is our pragma).
-
-      if No_Return (Prev_Op) and then not No_Return (New_Op) then
-         Error_Msg_N ("procedure & must have No_Return pragma", New_Op);
-         Error_Msg_N ("\since overridden procedure has No_Return", New_Op);
-      end if;
-
       --  If there is no previous operation to override, the type declaration
       --  was malformed, and an error must have been emitted already.
 
@@ -2666,7 +2658,6 @@ package body Sem_Disp is
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
          Set_Has_Controlling_Result (New_Op, Has_Controlling_Result (Prev_Op));
-         return;
       end if;
    end Override_Dispatching_Operation;
 
