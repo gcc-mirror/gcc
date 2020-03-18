@@ -2,6 +2,62 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (STRS_QUALIFIERS): Define builtin qualifier.
+	(STRU_QUALIFIERS): Likewise.
+	(STRSS_QUALIFIERS): Likewise.
+	(STRSU_QUALIFIERS): Likewise.
+	(STRSBS_QUALIFIERS): Likewise.
+	(STRSBU_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vstrbq_s8): Define macro.
+	(vstrbq_u8): Likewise.
+	(vstrbq_u16): Likewise.
+	(vstrbq_scatter_offset_s8): Likewise.
+	(vstrbq_scatter_offset_u8): Likewise.
+	(vstrbq_scatter_offset_u16): Likewise.
+	(vstrbq_s16): Likewise.
+	(vstrbq_u32): Likewise.
+	(vstrbq_scatter_offset_s16): Likewise.
+	(vstrbq_scatter_offset_u32): Likewise.
+	(vstrbq_s32): Likewise.
+	(vstrbq_scatter_offset_s32): Likewise.
+	(vstrwq_scatter_base_s32): Likewise.
+	(vstrwq_scatter_base_u32): Likewise.
+	(__arm_vstrbq_scatter_offset_s8): Define intrinsic.
+	(__arm_vstrbq_scatter_offset_s32): Likewise.
+	(__arm_vstrbq_scatter_offset_s16): Likewise.
+	(__arm_vstrbq_scatter_offset_u8): Likewise.
+	(__arm_vstrbq_scatter_offset_u32): Likewise.
+	(__arm_vstrbq_scatter_offset_u16): Likewise.
+	(__arm_vstrbq_s8): Likewise.
+	(__arm_vstrbq_s32): Likewise.
+	(__arm_vstrbq_s16): Likewise.
+	(__arm_vstrbq_u8): Likewise.
+	(__arm_vstrbq_u32): Likewise.
+	(__arm_vstrbq_u16): Likewise.
+	(__arm_vstrwq_scatter_base_s32): Likewise.
+	(__arm_vstrwq_scatter_base_u32): Likewise.
+	(vstrbq): Define polymorphic variant.
+	(vstrbq_scatter_offset): Likewise.
+	(vstrwq_scatter_base): Likewise.
+	* config/arm/arm_mve_builtins.def (STRS_QUALIFIERS): Use builtin
+	qualifier.
+	(STRU_QUALIFIERS): Likewise.
+	(STRSS_QUALIFIERS): Likewise.
+	(STRSU_QUALIFIERS): Likewise.
+	(STRSBS_QUALIFIERS): Likewise.
+	(STRSBU_QUALIFIERS): Likewise.
+	* config/arm/mve.md (MVE_B_ELEM): Define mode attribute iterator.
+	(VSTRWSBQ): Define iterators.
+	(VSTRBSOQ): Likewise. 
+	(VSTRBQ): Likewise.
+	(mve_vstrbq_<supf><mode>): Define RTL pattern.
+	(mve_vstrbq_scatter_offset_<supf><mode>): Likewise.
+	(mve_vstrwq_scatter_base_<supf>v4si): Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm_mve.h (vabdq_m_f32): Define macro.
 	(vabdq_m_f16): Likewise.
 	(vaddq_m_f32): Likewise.

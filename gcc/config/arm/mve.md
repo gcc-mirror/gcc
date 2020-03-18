@@ -191,7 +191,8 @@
 			 VCMLAQ_ROT90_M_F VCMULQ_M_F VCMULQ_ROT180_M_F
 			 VCMULQ_ROT270_M_F VCMULQ_ROT90_M_F VFMAQ_M_F
 			 VFMAQ_M_N_F VFMASQ_M_N_F VFMSQ_M_F VMAXNMQ_M_F
-			 VMINNMQ_M_F VSUBQ_M_F])
+			 VMINNMQ_M_F VSUBQ_M_F VSTRWQSB_S VSTRWQSB_U
+			 VSTRBQSO_S VSTRBQSO_U VSTRBQ_S VSTRBQ_U])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
 			    (V8HF "V8HI") (V4SF "V4SI")])
@@ -342,7 +343,9 @@
 		       (VQRSHRNTQ_M_N_S "s") (VQRSHRNTQ_M_N_U "u")
 		       (VQRSHRNBQ_M_N_S "s") (VQRSHRNBQ_M_N_U "u")
 		       (VMLALDAVAXQ_P_S "s") (VMLALDAVAXQ_P_U "u")
-		       (VMLALDAVAQ_P_S "s") (VMLALDAVAQ_P_U "u")])
+		       (VMLALDAVAQ_P_S "s") (VMLALDAVAQ_P_U "u")
+		       (VSTRWQSB_S "s") (VSTRWQSB_U "u") (VSTRBQSO_S "s")
+		       (VSTRBQSO_U "u") (VSTRBQ_S "s") (VSTRBQ_U "u")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -359,6 +362,7 @@
 
 (define_mode_attr MVE_constraint1 [ (V8HI "Ra") (V4SI "Rc")])
 (define_mode_attr MVE_pred1 [ (V8HI "mve_imm_7") (V4SI "mve_imm_15")])
+(define_mode_attr MVE_B_ELEM [ (V16QI "V16QI") (V8HI "V8QI") (V4SI "V4QI")])
 
 (define_int_iterator VCVTQ_TO_F [VCVTQ_TO_F_S VCVTQ_TO_F_U])
 (define_int_iterator VMVNQ_N [VMVNQ_N_U VMVNQ_N_S])
@@ -562,6 +566,9 @@
 (define_int_iterator VSHLLTQ_M_N [VSHLLTQ_M_N_U VSHLLTQ_M_N_S])
 (define_int_iterator VSHRNBQ_M_N [VSHRNBQ_M_N_S VSHRNBQ_M_N_U])
 (define_int_iterator VSHRNTQ_M_N [VSHRNTQ_M_N_S VSHRNTQ_M_N_U])
+(define_int_iterator VSTRWSBQ [VSTRWQSB_S VSTRWQSB_U])
+(define_int_iterator VSTRBSOQ [VSTRBQSO_S VSTRBQSO_U])
+(define_int_iterator VSTRBQ [VSTRBQ_S VSTRBQ_U])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -7940,3 +7947,65 @@
   "vpst\;vsubt.f%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
+
+;;
+;; [vstrbq_s vstrbq_u]
+;;
+(define_insn "mve_vstrbq_<supf><mode>"
+  [(set (match_operand:<MVE_B_ELEM> 0 "memory_operand" "=Us")
+	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")]
+	 VSTRBQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[1]);
+   ops[1] = gen_rtx_REG (TImode, regno);
+   ops[0]  = operands[0];
+   output_asm_insn("vstrb.<V_sz_elem>\t%q1, %E0",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vstrbq_scatter_offset_s vstrbq_scatter_offset_u]
+;;
+(define_insn "mve_vstrbq_scatter_offset_<supf><mode>"
+  [(set (match_operand:<MVE_B_ELEM> 0 "memory_operand" "=Us")
+	(unspec:<MVE_B_ELEM>
+		[(match_operand:MVE_2 1 "s_register_operand" "w")
+		 (match_operand:MVE_2 2 "s_register_operand" "w")]
+	 VSTRBSOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   output_asm_insn("vstrb.<V_sz_elem>\t%q2, [%m0, %q1]",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vstrwq_scatter_base_s vstrwq_scatter_base_u]
+;;
+(define_insn "mve_vstrwq_scatter_base_<supf>v4si"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+		[(match_operand:V4SI 0 "s_register_operand" "w")
+		 (match_operand:SI 1 "immediate_operand" "i")
+		 (match_operand:V4SI 2 "s_register_operand" "w")]
+	 VSTRWSBQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   output_asm_insn("vstrw.u32\t%q2, [%q0, %1]",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
