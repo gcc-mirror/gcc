@@ -3531,7 +3531,7 @@ package body Checks is
 
          --  Move to next subscript
 
-         Sub := Next (Sub);
+         Next (Sub);
       end loop;
    end Apply_Subscript_Validity_Checks;
 

@@ -4960,7 +4960,7 @@ package body Sem_Res is
             Expr := Next (First (Expressions (Disc_Exp)));
             if Present (Expr) then
                Check_Allocator_Discrim_Accessibility_Exprs (Expr, Alloc_Typ);
-               Expr := Next (Expr);
+               Next (Expr);
                if Present (Expr) then
                   Check_Allocator_Discrim_Accessibility_Exprs
                     (Expr, Alloc_Typ);
@@ -9276,7 +9276,7 @@ package body Sem_Res is
                      end loop;
                   end if;
 
-                  Alt := Next (Alt);
+                  Next (Alt);
                end loop;
             end;
          end if;

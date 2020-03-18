@@ -4170,7 +4170,7 @@ package body Sem_Aggr is
                   raise Unrecoverable_Error;
                end if;
 
-               Assoc := Next (Assoc);
+               Next (Assoc);
             end loop;
          end;
       end if;

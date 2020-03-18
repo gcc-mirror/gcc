@@ -2377,7 +2377,7 @@ package body Sem is
             Action (Lib_Unit);
          end if;
 
-         Context_Item := Next (Context_Item);
+         Next (Context_Item);
       end loop;
    end Walk_Withs_Immediate;
 
