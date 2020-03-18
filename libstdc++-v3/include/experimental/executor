@@ -295,26 +295,22 @@ inline namespace v1
   class executor;
 
   bool
-  operator==(const executor& __a, const executor& __b) noexcept;
+  operator==(const executor&, const executor&) noexcept;
 
   bool
-  operator==(const executor& __e, nullptr_t) noexcept;
+  operator==(const executor&, nullptr_t) noexcept;
 
-  inline bool
-  operator==(nullptr_t, const executor& __e) noexcept
-  { return __e == nullptr; }
+  bool
+  operator==(nullptr_t, const executor&) noexcept;
 
-  inline bool
-  operator!=(const executor& __a, const executor& __b) noexcept
-  { return !(__a == __b); }
+  bool
+  operator!=(const executor&, const executor&) noexcept;
 
-  inline bool
-  operator!=(const executor& __e, nullptr_t) noexcept
-  { return !(__e == nullptr); }
+  bool
+  operator!=(const executor&, nullptr_t) noexcept;
 
-  inline bool
-  operator!=(nullptr_t, const executor& __e) noexcept
-  { return !(__e == nullptr); }
+  bool
+  operator!=(nullptr_t, const executor&) noexcept;
 
   void swap(executor&, executor&) noexcept;
 
@@ -999,12 +995,13 @@ inline namespace v1
 
     template<typename _Executor>
       executor(_Executor __e)
-      : _M_target(_M_create(std::move(__e)))
+      : _M_target(make_shared<_Tgt1<_Executor>>(std::move(__e)))
       { }
 
     template<typename _Executor, typename _ProtoAlloc>
       executor(allocator_arg_t, const _ProtoAlloc& __a, _Executor __e)
-      : _M_target(_M_create(std::move(__e), __a))
+      : _M_target(allocate_shared<_Tgt2<_Executor, _ProtoAlloc>>(__a,
+	    std::move(__e), __a))
       { }
 
     executor& operator=(const executor&) noexcept = default;
@@ -1101,28 +1098,46 @@ inline namespace v1
 #if __cpp_rtti
     const type_info&
     target_type() const noexcept
-    { return _M_target ? _M_target->target_type() : typeid(void); }
+    {
+      if (_M_target)
+	return *static_cast<const type_info*>(_M_target->target_type());
+      return typeid(void);
+    }
+#endif
 
     template<typename _Executor>
       _Executor*
       target() noexcept
       {
+	void* __p = nullptr;
 	if (_M_target)
-	  if (const auto* __p = _M_target->target(typeid(_Executor)))
-	    return const_cast<_Executor*>(static_cast<const _Executor>(__p));
-	return nullptr;
+	  {
+	    if (_M_target->_M_func == &_Tgt1<remove_cv_t<_Executor>>::_S_func)
+	      __p = _M_target->_M_func(_M_target.get(), nullptr);
+#if __cpp_rtti
+	    else
+	      __p = _M_target->target(&typeid(_Executor));
+#endif
+	  }
+	return static_cast<_Executor*>(__p);
       }
 
     template<typename _Executor>
       const _Executor*
       target() const noexcept
       {
+	const void* __p = nullptr;
 	if (_M_target)
-	  if (const auto* __p = _M_target->target(typeid(_Executor)))
-	    return static_cast<const _Executor*>(__p);
-	return nullptr;
-      }
+	  {
+	    if (_M_target->_M_func == &_Tgt1<remove_cv_t<_Executor>>::_S_func)
+	      return (_Executor*)_M_target->_M_func(_M_target.get(), nullptr);
+#if __cpp_rtti
+	    else
+	      __p = _M_target->target(&typeid(_Executor));
 #endif
+	  }
+	return static_cast<const _Executor*>(__p);
+      }
 
   private:
     struct _Tgt
@@ -1133,85 +1148,134 @@ inline namespace v1
       virtual void dispatch(std::function<void()>) const = 0;
       virtual void post(std::function<void()>) const = 0;
       virtual void defer(std::function<void()>) const = 0;
-#if __cpp_rtti
-      virtual const type_info& target_type() const = 0;
-      virtual void* target(const std::type_info&) const = 0;
+      virtual const void* target_type() const noexcept = 0;
+      virtual void* target(const void*) noexcept = 0;
       virtual bool _M_equals(_Tgt*) const noexcept = 0;
-      virtual const void* _M_get_executor() const noexcept = 0;
-#endif
+
+      using _Func = void* (_Tgt*, const _Tgt*);
+      _Func* _M_func; // Provides access to target without RTTI
     };
 
-    template<typename _Ex, typename _Alloc>
-      struct _TgtImpl : _Tgt
+    template<typename _Ex>
+      struct _Tgt1 : _Tgt
       {
 	explicit
-	_TgtImpl(_Ex&& __ex, const _Alloc& __a)
-	: _M_impl(std::move(__ex), __a) { }
+	_Tgt1(_Ex&& __ex)
+	: _M_ex(std::move(__ex))
+	{ this->_M_func = &_S_func; }
 
-	void on_work_started() const noexcept { _M_ex().on_work_started(); }
-	void on_work_finished() const noexcept { _M_ex().on_work_finished(); }
-	execution_context& context() const noexcept { return _M_ex().context(); }
 	void
-	dispatch(std::function<void()> __f) const
-	{ _M_ex().dispatch(std::move(__f), _M_alloc()); }
-	void
-	post(std::function<void()> __f) const
-	{ _M_ex().post(std::move(__f), _M_alloc()); }
-	void
-	defer(std::function<void()> __f) const
-	{ _M_ex().defer(std::move(__f), _M_alloc()); }
+	on_work_started() const noexcept override
+	{ _M_ex.on_work_started(); }
 
-#if __cpp_rtti
-	virtual const type_info&
-	target_type() const
-	{ return typeid(_Ex); }
+	void
+	on_work_finished() const noexcept override
+	{ _M_ex.on_work_finished(); }
 
-	virtual const void*
-	target(const std::type_info& __ti) const
+	execution_context&
+	context() const noexcept override
+	{ return _M_ex.context(); }
+
+	void
+	dispatch(std::function<void()> __f) const override
+	{ _M_ex.dispatch(std::move(__f), allocator<void>()); }
+
+	void
+	post(std::function<void()> __f) const override
+	{ _M_ex.post(std::move(__f), allocator<void>()); }
+
+	void
+	defer(std::function<void()> __f) const override
+	{ _M_ex.defer(std::move(__f), allocator<void>()); }
+
+	const void*
+	target_type() const noexcept override
 	{
-	  if (__ti == typeid(_Ex))
-	    return std::addressof(_M_ex());
+#if __cpp_rtti
+	  return &typeid(_Ex);
+#else
+	  return nullptr;
+#endif
+	}
+
+	void*
+	target(const void* __ti) noexcept override
+	{
+#if __cpp_rtti
+	  if (*static_cast<const type_info*>(__ti) == typeid(_Ex))
+	    return std::__addressof(_M_ex);
+#endif
 	  return nullptr;
 	}
 
-	virtual bool
-	_M_equals(const _Tgt* __tgt) const noexcept
+	bool
+	_M_equals(_Tgt* __tgt) const noexcept override
 	{
-	  if (__tgt->target_type() == typeid(_Ex))
-	    *static_cast<const _Ex*>(__tgt->_M_get_executor()) == _M_ex();
+#if __cpp_rtti
+	  if (const void* __p = __tgt->target(&typeid(_Ex)))
+	    return *static_cast<const _Ex*>(__p) == _M_ex;
+#endif
 	  return false;
 	}
 
-	virtual const void*
-	_M_get_executor() const noexcept
-	{ return std::addressof(_M_ex()); }
-#endif
+	_Ex _M_ex [[__no_unique_address__]];
 
-	_Ex& _M_ex() { return std::get<0>(_M_impl); }
-	_Alloc& _M_alloc() { return std::get<1>(_M_impl); }
-	std::tuple<_Ex, _Alloc> _M_impl;
+	static void*
+	_S_func(_Tgt* __p, const _Tgt* __q) noexcept
+	{
+	  auto& __ex = static_cast<_Tgt1*>(__p)->_M_ex;
+	  if (__q)
+	    {
+	      if (__ex == static_cast<const _Tgt1*>(__q)->_M_ex)
+		return __p;
+	      else
+		return nullptr;
+	    }
+	  else
+	    return std::__addressof(__ex);
+	}
       };
 
-    template<typename _Ex, typename _Alloc = std::allocator<void>>
-      shared_ptr<_Tgt>
-      _M_create(_Ex&& __ex, const _Alloc& __a = _Alloc())
+    template<typename _Ex, typename _Alloc>
+      struct _Tgt2 : _Tgt1<_Ex>
       {
-	return allocate_shared<_TgtImpl<_Ex, _Alloc>>(__a, std::move(__ex),
-						      __a);
-      }
+	explicit
+	_Tgt2(_Ex&& __ex, const _Alloc& __a)
+	: _Tgt1<_Ex>(std::move(__ex)), _M_alloc(__a) { }
+
+	void
+	dispatch(std::function<void()> __f) const override
+	{ this->_M_ex.dispatch(std::move(__f), _M_alloc); }
+
+	void
+	post(std::function<void()> __f) const override
+	{ this->_M_ex.post(std::move(__f), _M_alloc); }
+
+	void
+	defer(std::function<void()> __f) const override
+	{ this->_M_ex.defer(std::move(__f), _M_alloc); }
+
+	_Alloc _M_alloc [[__no_unique_address__]];
+      };
+
+    // Partial specialization for std::allocator<T>.
+    // Don't store the allocator.
+    template<typename _Ex, typename _Tp>
+      struct _Tgt2<_Ex, std::allocator<_Tp>> : _Tgt1<_Ex>
+      { };
 
     friend bool
     operator==(const executor& __a, const executor& __b) noexcept
     {
-      if (__a._M_target == __b._M_target)
+      _Tgt* __ta = __a._M_target.get();
+      _Tgt* __tb = __b._M_target.get();
+      if (__ta == __tb)
 	return true;
-      if (!__a._M_target || !__b._M_target)
+      if (!__ta || !__tb)
 	return false;
-#if __cpp_rtti
-      return __a._M_target->_M_equals(__b._M_target.get());
-#else
-      return false; // XXX can we do better?
-#endif
+      if (__ta->_M_func == __tb->_M_func)
+	return __ta->_M_func(__ta, __tb);
+      return __ta->_M_equals(__tb);
     }
 
     shared_ptr<_Tgt> _M_target;
@@ -1223,6 +1287,22 @@ inline namespace v1
   inline bool
   operator==(const executor& __e, nullptr_t) noexcept
   { return !__e; }
+
+  inline bool
+  operator==(nullptr_t, const executor& __e) noexcept
+  { return !__e; }
+
+  inline bool
+  operator!=(const executor& __a, const executor& __b) noexcept
+  { return !(__a == __b); }
+
+  inline bool
+  operator!=(const executor& __e, nullptr_t) noexcept
+  { return (bool)__e; }
+
+  inline bool
+  operator!=(nullptr_t, const executor& __e) noexcept
+  { return (bool)__e; }
 
   /// Swap two executor objects.
   inline void swap(executor& __a, executor& __b) noexcept { __a.swap(__b); }

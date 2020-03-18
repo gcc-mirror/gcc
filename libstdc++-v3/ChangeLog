@@ -1,3 +1,27 @@
+2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94203
+	* include/experimental/executor (executor::executor(Executor)): Call
+	make_shared directly instead of _M_create. Create _Tgt1 object.
+	(executor::executor(allocator_arg_t, const ProtoAlloc&, Executor)):
+	Call allocate_shared directly instead of _M_create. Create _Tgt2
+	object.
+	(executor::target_type): Add cast needed for new _Tgt interface.
+	(executor::target): Define when RTTI is disabled. Use _Tgt::_M_func.
+	(executor::_Tgt): Define the same interface whether RTTI is enabled or
+	not.
+	(executor::_Tgt::target_type, executor::_Tgt::target): Do not use
+	std::type_info in the interface.
+	(executor::_Tgt::_M_func): Add data member.
+	(executor::_TgtImpl): Replace with _Tgt1 and _Tgt2 class templates.
+	(executor::_Tgt1::_S_func): Define function to access target without
+	depending on RTTI.
+	(executor::_M_create): Remove.
+	(operator==, operator!=): Simplify comparisons for executor.
+	* include/experimental/socket (is_error_code_enum<socket_errc>):
+	Define specialization before use.
+	* testsuite/experimental/net/executor/1.cc: New test.
+
 2020-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94199
