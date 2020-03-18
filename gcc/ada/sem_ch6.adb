@@ -676,6 +676,10 @@ package body Sem_Ch6 is
       R_Type : constant Entity_Id := Etype (Scope_Id);
       --  Function result subtype
 
+      procedure Check_No_Return_Expression (Return_Expr : Node_Id);
+      --  Ada 2020: Check that the return expression in a No_Return function
+      --  meets the conditions specified by RM 6.5.1(5.1/5).
+
       procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id);
       --  Apply legality rule of 6.5 (5.9) to the access discriminants of an
       --  aggregate in a return statement.
@@ -683,6 +687,34 @@ package body Sem_Ch6 is
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
+
+      --------------------------------
+      -- Check_No_Return_Expression --
+      --------------------------------
+
+      procedure Check_No_Return_Expression (Return_Expr : Node_Id) is
+         Kind : constant Node_Kind := Nkind (Return_Expr);
+
+      begin
+         if Kind = N_Raise_Expression then
+            return;
+
+         elsif Kind = N_Function_Call
+           and then Is_Entity_Name (Name (Return_Expr))
+           and then Ekind_In (Entity (Name (Return_Expr)), E_Function,
+                                                           E_Generic_Function)
+           and then No_Return (Entity (Name (Return_Expr)))
+         then
+            return;
+         end if;
+
+         Error_Msg_N
+           ("illegal expression in RETURN statement of No_Return function",
+            Return_Expr);
+         Error_Msg_N
+           ("\must be raise expression or call to No_Return (RM 6.5.1(5.1/5))",
+            Return_Expr);
+      end Check_No_Return_Expression;
 
       ------------------------------------------
       -- Check_Return_Construct_Accessibility --
@@ -1101,6 +1133,19 @@ package body Sem_Ch6 is
             Check_Limited_Return (N, Expr, R_Type);
 
             Check_Return_Construct_Accessibility (N);
+
+            --  Ada 2020 (AI12-0269): Any return statement that applies to a
+            --  nonreturning function shall be a simple_return_statement with
+            --  an expression that is a raise_expression, or else a call on a
+            --  nonreturning function, or else a parenthesized expression of
+            --  one of these.
+
+            if Ada_Version >= Ada_2020
+              and then No_Return (Scope_Id)
+              and then Comes_From_Source (N)
+            then
+               Check_No_Return_Expression (Original_Node (Expr));
+            end if;
          end if;
       else
          Obj_Decl := Last (Return_Object_Declarations (N));
@@ -1161,6 +1206,18 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("aliased only allowed for limited return objects", N);
                end if;
+            end if;
+
+            --  Ada 2020 (AI12-0269): Any return statement that applies to a
+            --  nonreturning function shall be a simple_return_statement.
+
+            if Ada_Version >= Ada_2020
+              and then No_Return (Scope_Id)
+              and then Comes_From_Source (N)
+            then
+               Error_Msg_N
+                 ("extended RETURN statement not allowed in No_Return "
+                  & "function", N);
             end if;
          end;
       end if;
@@ -2091,8 +2148,12 @@ package body Sem_Ch6 is
       --  Check that pragma No_Return is obeyed. Don't complain about the
       --  implicitly-generated return that is placed at the end.
 
-      if No_Return (Scope_Id) and then Comes_From_Source (N) then
-         Error_Msg_N ("RETURN statement not allowed (No_Return)", N);
+      if No_Return (Scope_Id)
+        and then Ekind_In (Kind, E_Procedure, E_Generic_Procedure)
+        and then Comes_From_Source (N)
+      then
+         Error_Msg_N
+           ("RETURN statement not allowed in No_Return procedure", N);
       end if;
 
       --  Warn on any unassigned OUT parameters if in procedure
@@ -2103,17 +2164,17 @@ package body Sem_Ch6 is
 
       --  Check that functions return objects, and other things do not
 
-      if Kind = E_Function or else Kind = E_Generic_Function then
+      if Ekind_In (Kind, E_Function, E_Generic_Function) then
          if not Returns_Object then
             Error_Msg_N ("missing expression in return from function", N);
          end if;
 
-      elsif Kind = E_Procedure or else Kind = E_Generic_Procedure then
+      elsif Ekind_In (Kind, E_Procedure, E_Generic_Procedure) then
          if Returns_Object then
             Error_Msg_N ("procedure cannot return value (use function)", N);
          end if;
 
-      elsif Kind = E_Entry or else Kind = E_Entry_Family then
+      elsif Ekind_In (Kind, E_Entry, E_Entry_Family) then
          if Returns_Object then
             if Is_Protected_Type (Scope (Scope_Id)) then
                Error_Msg_N ("entry body cannot return value", N);

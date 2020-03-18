@@ -6180,8 +6180,7 @@ package body Einfo is
 
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (V = False or else Ekind_In (Id, E_Procedure, E_Generic_Procedure));
+      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
       Set_Flag113 (Id, V);
    end Set_No_Return;
 

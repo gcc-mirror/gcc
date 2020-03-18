@@ -10868,6 +10868,20 @@ package body Sem_Ch3 is
             end if;
          end if;
 
+         --  Ada 2005 (AI95-0414) and Ada 2020 (AI12-0269): Diagnose failure to
+         --  match No_Return in parent, but do it unconditionally in Ada 95 too
+         --  for procedures, since this is our pragma.
+
+         if Present (Overridden_Operation (Subp))
+           and then No_Return (Overridden_Operation (Subp))
+           and then not No_Return (Subp)
+         then
+            Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
+            Error_Msg_N
+              ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
+               Subp);
+         end if;
+
          --  If the operation is a wrapper for a synchronized primitive, it
          --  may be called indirectly through a dispatching select. We assume
          --  that it will be referenced elsewhere indirectly, and suppress
@@ -15450,9 +15464,9 @@ package body Sem_Ch3 is
       end if;
 
       --  No_Return must be inherited properly. If this is overridden in the
-      --  case of a dispatching operation, then a check is made in Sem_Disp
-      --  that the overriding operation is also No_Return (no such check is
-      --  required for the case of non-dispatching operation.
+      --  case of a dispatching operation, then the check is made later in
+      --  Check_Abstract_Overriding that the overriding operation is also
+      --  No_Return (no such check is required for the nondispatching case).
 
       Set_No_Return (New_Subp, No_Return (Parent_Subp));
 

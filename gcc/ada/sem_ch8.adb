@@ -3106,9 +3106,10 @@ package body Sem_Ch8 is
          if No_Return (Rename_Spec)
            and then not No_Return (Entity (Nam))
          then
-            Error_Msg_N ("renaming completes a No_Return procedure", N);
+            Error_Msg_NE
+              ("renamed subprogram & must be No_Return", N, Entity (Nam));
             Error_Msg_N
-              ("\renamed procedure must be nonreturning (RM 6.5.1 (7/2))", N);
+              ("\since renaming subprogram is No_Return (RM 6.5.1(7/2))", N);
          end if;
 
          --  The specification does not introduce new formals, but only

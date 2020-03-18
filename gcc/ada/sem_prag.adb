@@ -19814,7 +19814,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-               --  Loop to find matching procedures
+               --  Loop to find matching procedures or functions (Ada 2020)
 
                E := Entity (Id);
 
@@ -19822,8 +19822,13 @@ package body Sem_Prag is
                while Present (E)
                  and then Scope (E) = Current_Scope
                loop
-                  if Ekind_In (E, E_Generic_Procedure, E_Procedure) then
+                  --  Ada 2020 (AI12-0269): A function can be No_Return
 
+                  if Ekind_In (E, E_Generic_Procedure, E_Procedure)
+                    or else (Ada_Version >= Ada_2020
+                              and then
+                             Ekind_In (E, E_Generic_Function, E_Function))
+                  then
                      --  Check that the pragma is not applied to a body.
                      --  First check the specless body case, to give a
                      --  different error message. These checks do not apply
@@ -19905,6 +19910,11 @@ package body Sem_Prag is
                     and then From_Aspect_Specification (N)
                   then
                      Set_No_Return (Entity (Id));
+
+                  elsif Ada_Version >= Ada_2020 then
+                     Error_Pragma_Arg
+                       ("no subprogram& found for pragma%", Arg);
+
                   else
                      Error_Pragma_Arg ("no procedure& found for pragma%", Arg);
                   end if;
