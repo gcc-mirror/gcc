@@ -1,5 +1,8 @@
 2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/stop_token (stop_token::_Stop_state_ref): Define
+	comparison operators explicitly if the compiler won't synthesize them.
+
 	* include/bits/stl_algobase.h (__lexicographical_compare_aux): Check
 	__cpp_lib_concepts before using iter_reference_t.
 	* include/bits/stream_iterator.h (istream_iterator): Check
