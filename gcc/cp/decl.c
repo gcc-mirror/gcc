@@ -9644,6 +9644,15 @@ grokfndecl (tree ctype,
 		    "namespace scope", decl);
 	  return NULL_TREE;
 	}
+      tree type = TREE_TYPE (DECL_NAME (decl));
+      if (in_namespace == NULL_TREE
+	  && CP_DECL_CONTEXT (decl) != CP_TYPE_CONTEXT (type))
+	{
+	  error_at (location, "deduction guide %qD must be declared in the "
+			      "same scope as %qT", decl, type);
+	  inform (location_of (type), "  declared here");
+	  return NULL_TREE;
+	}
       if (funcdef_flag)
 	error_at (location,
 		  "deduction guide %qD must not have a function body", decl);
