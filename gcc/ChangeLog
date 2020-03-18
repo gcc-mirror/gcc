@@ -1,3 +1,10 @@
+2020-03-18   Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94206
+	* gimple-fold.c (gimple_fold_builtin_memset): Avoid using
+	partial int modes or not mode-precision integer types for
+	the store.
+
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (get_mem_refs_of_builtin_call): Fix up duplicated word issue

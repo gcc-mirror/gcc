@@ -1,3 +1,8 @@
+2020-03-18   Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94206
+	* gcc.dg/torture/pr94206.c: New testcase.
+
 2020-03-18  Duan bo  <duanbo3@huawei.com>
 
 	PR target/94201
