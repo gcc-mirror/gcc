@@ -971,12 +971,6 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      tree f1 = TREE_TYPE (newdecl);
-      tree f2 = TREE_TYPE (olddecl);
-      tree p1 = TYPE_ARG_TYPES (f1);
-      tree p2 = TYPE_ARG_TYPES (f2);
-      tree r2;
-
       /* Specializations of different templates are different functions
 	 even if they have the same type.  */
       tree t1 = (DECL_USE_TEMPLATE (newdecl)
@@ -999,14 +993,20 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 	  && DECL_EXTERN_C_P (olddecl) && !DECL_EXTERN_C_P (newdecl))
 	return 0;
 
+      tree f1 = TREE_TYPE (newdecl);
+      tree f2 = TREE_TYPE (olddecl);
       if (TREE_CODE (f1) != TREE_CODE (f2))
 	return 0;
 
       /* A declaration with deduced return type should use its pre-deduction
 	 type for declaration matching.  */
-      r2 = fndecl_declared_return_type (olddecl);
+      tree r2 = fndecl_declared_return_type (olddecl);
+      tree r1 = fndecl_declared_return_type (newdecl);
 
-      if (same_type_p (TREE_TYPE (f1), r2))
+      tree p1 = TYPE_ARG_TYPES (f1);
+      tree p2 = TYPE_ARG_TYPES (f2);
+
+      if (same_type_p (r1, r2))
 	{
 	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
 	      && fndecl_built_in_p (olddecl))

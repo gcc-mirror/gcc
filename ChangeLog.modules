@@ -1,3 +1,14 @@
+2020-03-18  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (decls_match): Use fndecl_declared_return_type for
+	newdecl too.
+	* module.cc (trees_out::key_mergeable): Use
+	fndecl_declared_return_type.
+	(check_mergeable_decl): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/auto-1{,_[ab]}.[hHC]: New.
+
 2020-03-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -9928,9 +9928,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      if (decl != inner || name == conv_op_identifier)
 		/* And a function template, or conversion operator needs
 		   the return type.  */
-		// FIXME: What if the return type is a voldemort?  We
-		// should be using the declared return type.
-		key.ret = TREE_TYPE (fn_type);
+		// FIXME: What if the return type is a voldemort?
+		key.ret = fndecl_declared_return_type (inner);
 	    }
 	  break;
 
@@ -10079,12 +10078,9 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	  break;
 
 	case FUNCTION_DECL:
-	  // FIXME: Perhaps simply !null ret?
 	  if (tree m_type = TREE_TYPE (m_inner))
-	    if (((d_inner == decl
-		  // FIXME: Just test if key.ret != NULL
-		  && !IDENTIFIER_CONV_OP_P (DECL_NAME (d_inner)))
-		 || same_type_p (key.ret, TREE_TYPE (m_type)))
+	    if ((!key.ret
+		 || same_type_p (key.ret, fndecl_declared_return_type (m_inner)))
 		&& type_memfn_rqual (m_type) == key.ref_q
 		&& compparms (key.args, TYPE_ARG_TYPES (m_type)))
 	      {
