@@ -1242,11 +1242,17 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 
   length = tree_to_uhwi (len);
   if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (etype)) != length
+      || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (etype))
+	  != GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (etype)))
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
     return NULL_TREE;
+
+  if (!type_has_mode_precision_p (etype))
+    etype = lang_hooks.types.type_for_mode (SCALAR_INT_TYPE_MODE (etype),
+					    TYPE_UNSIGNED (etype));
 
   if (integer_zerop (c))
     cval = 0;
