@@ -1,3 +1,12 @@
+2020-03-18  Duan bo  <duanbo3@huawei.com>
+
+	PR target/94201
+	* config/aarch64/aarch64.md (ldr_got_tiny): Delete.
+	(@ldr_got_tiny_<mode>): New pattern.
+	(ldr_got_tiny_sidi): Likewise.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Use
+	them to handle SYMBOL_TINY_GOT for ILP32.
+
 2020-03-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_sve_abi): Treat p12-p15 as

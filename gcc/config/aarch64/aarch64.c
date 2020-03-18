@@ -2739,8 +2739,21 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       }
 
     case SYMBOL_TINY_GOT:
-      emit_insn (gen_ldr_got_tiny (dest, imm));
-      return;
+      {
+	rtx insn;
+	machine_mode mode = GET_MODE (dest);
+
+	if (mode == ptr_mode)
+	  insn = gen_ldr_got_tiny (mode, dest, imm);
+	else
+	  {
+	    gcc_assert (mode == Pmode);
+	    insn = gen_ldr_got_tiny_sidi (dest, imm);
+	  }
+
+	emit_insn (insn);
+	return;
+      }
 
     case SYMBOL_TINY_TLSIE:
       {

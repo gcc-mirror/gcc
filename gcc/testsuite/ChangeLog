@@ -1,3 +1,8 @@
+2020-03-18  Duan bo  <duanbo3@huawei.com>
+
+	PR target/94201
+	* gcc.target/aarch64/pr94201.c：New test.
+
 2020-03-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/cpy_1.c: Leave gaps for in the

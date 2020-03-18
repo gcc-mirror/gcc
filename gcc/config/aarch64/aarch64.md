@@ -6766,13 +6766,23 @@
   [(set_attr "type" "load_4")]
 )
 
-(define_insn "ldr_got_tiny"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "aarch64_valid_symref" "S")]
-		   UNSPEC_GOTTINYPIC))]
+(define_insn "@ldr_got_tiny_<mode>"
+  [(set (match_operand:PTR 0 "register_operand" "=r")
+	(unspec:PTR [(match_operand:PTR 1 "aarch64_valid_symref" "S")]
+		    UNSPEC_GOTTINYPIC))]
   ""
-  "ldr\\t%0, %L1"
-  [(set_attr "type" "load_8")]
+  "ldr\t%<w>0, %L1"
+  [(set_attr "type" "load_<ldst_sz>")]
+)
+
+(define_insn "ldr_got_tiny_sidi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (unspec:SI [(match_operand:DI 1 "aarch64_valid_symref" "S")]
+		     UNSPEC_GOTTINYPIC)))]
+  "TARGET_ILP32"
+  "ldr\t%w0, %L1"
+  [(set_attr "type" "load_4")]
 )
 
 (define_insn "aarch64_load_tp_hard"
