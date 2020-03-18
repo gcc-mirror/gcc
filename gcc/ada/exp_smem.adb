@@ -454,7 +454,7 @@ package body Exp_Smem is
 
       begin
          while Next (Nod) /= After loop
-            Nod := Next (Nod);
+            Next (Nod);
          end loop;
 
          return Nod;

@@ -10169,7 +10169,7 @@ package body Sem_Util is
                return Entity (Expression (Assoc));
             end if;
 
-            Assoc := Next (Assoc);
+            Next (Assoc);
          end loop;
 
          return Empty;
@@ -13824,7 +13824,7 @@ package body Sem_Util is
               Defining_Identifier (Decl));
          end if;
 
-         Decl := Next (Decl);
+         Next (Decl);
       end loop;
    end Inspect_Deferred_Constant_Completion;
 
@@ -20661,7 +20661,7 @@ package body Sem_Util is
 
          while Present (E) loop
             Append (New_Copy_Tree (E), NL);
-            E := Next (E);
+            Next (E);
          end loop;
 
          return NL;
@@ -28309,7 +28309,7 @@ package body Sem_Util is
             begin
                for Idx in Result'Range loop
                   Result (Idx) := Chosen_Interval (Range_Or_Expr);
-                  Range_Or_Expr := Next (Range_Or_Expr);
+                  Next (Range_Or_Expr);
                end loop;
                pragma Assert (not Present (Range_Or_Expr));
                Check_Consistency (Result);
@@ -28492,7 +28492,7 @@ package body Sem_Util is
                   Count := Count + 1;  -- an ordinary expression or range
                end if;
 
-               Choice := Next (Choice);
+               Next (Choice);
             end loop;
             return Count;
          end Unmerged_Choice_Count;
@@ -28510,14 +28510,14 @@ package body Sem_Util is
                   while Present (Others_Choice) loop
                      Count := Count + 1;
                      Result (Count) := Chosen_Interval (Others_Choice);
-                     Others_Choice := Next (Others_Choice);
+                     Next (Others_Choice);
                   end loop;
                end;
             else
                Count := Count + 1;
                Result (Count) := Chosen_Interval (Choice);
             end if;
-            Choice := Next (Choice);
+            Next (Choice);
          end loop;
          pragma Assert (Count = Result'Last);
          Normalize_Interval_List (Result, Count);

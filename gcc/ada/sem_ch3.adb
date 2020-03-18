@@ -1032,7 +1032,7 @@ package body Sem_Ch3 is
                Param := First (Parameter_Specifications (Def));
                while Present (Param) loop
                   Check_For_Premature_Usage (Parameter_Type (Param));
-                  Param := Next (Param);
+                  Next (Param);
                end loop;
             end if;
 

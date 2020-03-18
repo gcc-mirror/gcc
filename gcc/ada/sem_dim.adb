@@ -681,7 +681,7 @@ package body Sem_Dim is
       --  Skip the symbol expression when present
 
       if Present (Symbol_Expr) and then Num_Choices = 0 then
-         Expr := Next (Expr);
+         Next (Expr);
       end if;
 
       Position := Low_Position_Bound;

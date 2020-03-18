@@ -7230,7 +7230,7 @@ package body Sem_Ch8 is
                return True;
             end if;
 
-            Clause := Next (Clause);
+            Next (Clause);
          end loop;
 
          return False;

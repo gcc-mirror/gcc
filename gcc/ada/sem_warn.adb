@@ -4734,7 +4734,7 @@ package body Sem_Warn is
                               return;
                            end if;
 
-                           X := Next (X);
+                           Next (X);
                         end loop;
                      end if;
                   end if;

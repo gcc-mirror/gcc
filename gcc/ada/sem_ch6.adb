@@ -7340,10 +7340,10 @@ package body Sem_Ch6 is
          --  rest of the parameters.
 
          if not In_Scope then
-            Prim_Param := Next (Prim_Param);
+            Next (Prim_Param);
          end if;
 
-         Iface_Param := Next (Iface_Param);
+         Next (Iface_Param);
          while Present (Iface_Param) and then Present (Prim_Param) loop
             Iface_Id  := Defining_Identifier (Iface_Param);
             Iface_Typ := Find_Parameter_Type (Iface_Param);
