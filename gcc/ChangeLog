@@ -2,6 +2,127 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm_mve.h (vst1q_f32): Define macro.
+	(vst1q_f16): Likewise.
+	(vst1q_s8): Likewise.
+	(vst1q_s32): Likewise.
+	(vst1q_s16): Likewise.
+	(vst1q_u8): Likewise.
+	(vst1q_u32): Likewise.
+	(vst1q_u16): Likewise.
+	(vstrhq_f16): Likewise.
+	(vstrhq_scatter_offset_s32): Likewise.
+	(vstrhq_scatter_offset_s16): Likewise.
+	(vstrhq_scatter_offset_u32): Likewise.
+	(vstrhq_scatter_offset_u16): Likewise.
+	(vstrhq_scatter_offset_p_s32): Likewise.
+	(vstrhq_scatter_offset_p_s16): Likewise.
+	(vstrhq_scatter_offset_p_u32): Likewise.
+	(vstrhq_scatter_offset_p_u16): Likewise.
+	(vstrhq_scatter_shifted_offset_s32): Likewise.
+	(vstrhq_scatter_shifted_offset_s16): Likewise.
+	(vstrhq_scatter_shifted_offset_u32): Likewise.
+	(vstrhq_scatter_shifted_offset_u16): Likewise.
+	(vstrhq_scatter_shifted_offset_p_s32): Likewise.
+	(vstrhq_scatter_shifted_offset_p_s16): Likewise.
+	(vstrhq_scatter_shifted_offset_p_u32): Likewise.
+	(vstrhq_scatter_shifted_offset_p_u16): Likewise.
+	(vstrhq_s32): Likewise.
+	(vstrhq_s16): Likewise.
+	(vstrhq_u32): Likewise.
+	(vstrhq_u16): Likewise.
+	(vstrhq_p_f16): Likewise.
+	(vstrhq_p_s32): Likewise.
+	(vstrhq_p_s16): Likewise.
+	(vstrhq_p_u32): Likewise.
+	(vstrhq_p_u16): Likewise.
+	(vstrwq_f32): Likewise.
+	(vstrwq_s32): Likewise.
+	(vstrwq_u32): Likewise.
+	(vstrwq_p_f32): Likewise.
+	(vstrwq_p_s32): Likewise.
+	(vstrwq_p_u32): Likewise.
+	(__arm_vst1q_s8): Define intrinsic.
+	(__arm_vst1q_s32): Likewise.
+	(__arm_vst1q_s16): Likewise.
+	(__arm_vst1q_u8): Likewise.
+	(__arm_vst1q_u32): Likewise.
+	(__arm_vst1q_u16): Likewise.
+	(__arm_vstrhq_scatter_offset_s32): Likewise.
+	(__arm_vstrhq_scatter_offset_s16): Likewise.
+	(__arm_vstrhq_scatter_offset_u32): Likewise.
+	(__arm_vstrhq_scatter_offset_u16): Likewise.
+	(__arm_vstrhq_scatter_offset_p_s32): Likewise.
+	(__arm_vstrhq_scatter_offset_p_s16): Likewise.
+	(__arm_vstrhq_scatter_offset_p_u32): Likewise.
+	(__arm_vstrhq_scatter_offset_p_u16): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_s32): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_s16): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_u32): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_u16): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_p_s32): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_p_s16): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_p_u32): Likewise.
+	(__arm_vstrhq_scatter_shifted_offset_p_u16): Likewise.
+	(__arm_vstrhq_s32): Likewise.
+	(__arm_vstrhq_s16): Likewise.
+	(__arm_vstrhq_u32): Likewise.
+	(__arm_vstrhq_u16): Likewise.
+	(__arm_vstrhq_p_s32): Likewise.
+	(__arm_vstrhq_p_s16): Likewise.
+	(__arm_vstrhq_p_u32): Likewise.
+	(__arm_vstrhq_p_u16): Likewise.
+	(__arm_vstrwq_s32): Likewise.
+	(__arm_vstrwq_u32): Likewise.
+	(__arm_vstrwq_p_s32): Likewise.
+	(__arm_vstrwq_p_u32): Likewise.
+	(__arm_vstrwq_p_f32): Likewise.
+	(__arm_vstrwq_f32): Likewise.
+	(__arm_vst1q_f32): Likewise.
+	(__arm_vst1q_f16): Likewise.
+	(__arm_vstrhq_f16): Likewise.
+	(__arm_vstrhq_p_f16): Likewise.
+	(vst1q): Define polymorphic variant.
+	(vstrhq): Likewise.
+	(vstrhq_p): Likewise.
+	(vstrhq_scatter_offset_p): Likewise.
+	(vstrhq_scatter_offset): Likewise.
+	(vstrhq_scatter_shifted_offset_p): Likewise.
+	(vstrhq_scatter_shifted_offset): Likewise.
+	(vstrwq_p): Likewise.
+	(vstrwq): Likewise.
+	* config/arm/arm_mve_builtins.def (STRS): Use builtin qualifier.
+	(STRS_P): Likewise.
+	(STRSS): Likewise.
+	(STRSS_P): Likewise.
+	(STRSU): Likewise.
+	(STRSU_P): Likewise.
+	(STRU): Likewise.
+	(STRU_P): Likewise.
+	* config/arm/mve.md (VST1Q): Define iterator.
+	(VSTRHSOQ): Likewise.
+	(VSTRHSSOQ): Likewise.
+	(VSTRHQ): Likewise.
+	(VSTRWQ): Likewise.
+	(mve_vstrhq_fv8hf): Define RTL pattern.
+	(mve_vstrhq_p_fv8hf): Likewise.
+	(mve_vstrhq_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_offset_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_offset_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_p_<supf><mode>): Likewise.
+	(mve_vstrhq_scatter_shifted_offset_<supf><mode>): Likewise.
+	(mve_vstrhq_<supf><mode>): Likewise.
+	(mve_vstrwq_fv4sf): Likewise.
+	(mve_vstrwq_p_fv4sf): Likewise.
+	(mve_vstrwq_p_<supf>v4si): Likewise.
+	(mve_vstrwq_<supf>v4si): Likewise.
+	(mve_vst1q_f<mode>): Define expand.
+	(mve_vst1q_<supf><mode>): Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm_mve.h (vld1q_s8): Define macro.
 	(vld1q_s32): Likewise.
 	(vld1q_s16): Likewise.
