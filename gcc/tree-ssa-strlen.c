@@ -2911,7 +2911,7 @@ handle_builtin_strncat (built_in_function, gimple_stmt_iterator *gsi)
 
 /* Return true if LEN depends on a call to strlen(SRC) in an interesting
    way.  LEN can either be an integer expression, or a pointer (to char).
-   When it is the latter (such as in recursive calls to self) is is
+   When it is the latter (such as in recursive calls to self) it is
    assumed to be the argument in some call to strlen() whose relationship
    to SRC is being ascertained.  */
 

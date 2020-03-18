@@ -4871,7 +4871,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
     }
 }
 
-/* If we see a tree code we we don't know how to handle, rather than
+/* If we see a tree code we don't know how to handle, rather than
    ICE or generate bogus results, create a dummy region, and notify
    CTXT so that it can mark the new state as being not properly
    modelled.  The exploded graph can then stop exploring that path,
@@ -6607,7 +6607,7 @@ region_model::get_descendents (region_id rid, region_id_set *out,
 }
 
 /* Delete RID and all descendent regions.
-   Find any pointers to such regions; convert convert them to
+   Find any pointers to such regions; convert them to
    poisoned values of kind PKIND.
    Accumulate stats on purged entities into STATS.  */
 

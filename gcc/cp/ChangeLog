@@ -1,5 +1,12 @@
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* constraint.cc (resolve_function_concept_check, subsumes_constraints,
+	strictly_subsumes): Fix up duplicated word issue in a comment.
+	* coroutines.cc (build_init_or_final_await, captures_temporary):
+	Likewise.
+	* logic.cc (dnf_size_r, cnf_size_r): Likewise.
+	* pt.c (append_type_to_template_for_access_check): Likewise.
+
 	PR c++/91759
 	* decl.c (grokfndecl): Restore old diagnostics about deduction
 	guide declared in different scope if in_namespace is NULL_TREE.

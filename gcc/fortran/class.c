@@ -1574,7 +1574,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
     }
 
   /* No wrapper of the ancestor and no own FINAL subroutines and allocatable
-     components: Return a NULL() expression; we defer this a bit to have have
+     components: Return a NULL() expression; we defer this a bit to have
      an interface declaration.  */
   if ((!ancestor_wrapper || ancestor_wrapper->expr_type == EXPR_NULL)
       && !derived->attr.alloc_comp

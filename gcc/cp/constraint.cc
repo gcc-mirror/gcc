@@ -316,7 +316,7 @@ resolve_function_concept_overload (tree ovl, tree args)
   return cands;
 }
 
-/* Determine if the the call expression CALL is a constraint check, and
+/* Determine if the call expression CALL is a constraint check, and
    return the concept declaration and arguments being checked. If CALL
    does not denote a constraint check, return NULL.  */
 
@@ -2958,7 +2958,7 @@ equivalently_constrained (tree d1, tree d2)
                      Partial ordering of constraints
 ---------------------------------------------------------------------------*/
 
-/* Returns true when the the constraints in A subsume those in B.  */
+/* Returns true when the constraints in A subsume those in B.  */
 
 bool
 subsumes_constraints (tree a, tree b)
@@ -2968,7 +2968,7 @@ subsumes_constraints (tree a, tree b)
   return subsumes (a, b);
 }
 
-/* Returns true when the the constraints in CI (with arguments
+/* Returns true when the constraints in CI (with arguments
    ARGS) strictly subsume the associated constraints of TMPL.  */
 
 bool

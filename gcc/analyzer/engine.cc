@@ -2988,7 +2988,7 @@ exploded_path::dump () const
    cluster, each supernode gets its own cluster.
 
    Hence all enodes relating to a particular function with a particular
-   callstring will be be in a cluster together; all enodes for the same
+   callstring will be in a cluster together; all enodes for the same
    function but with a different callstring will be in a different
    cluster.  */
 

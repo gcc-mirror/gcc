@@ -110,7 +110,7 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
-   source enodes for which a a path be found to the diagnostic enode.  */
+   source enodes for which a path be found to the diagnostic enode.  */
 
 class path_builder
 {

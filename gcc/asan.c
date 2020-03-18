@@ -795,7 +795,7 @@ get_mem_refs_of_builtin_call (gcall *call,
       handle_builtin_alloca (call, iter);
       break;
     /* And now the __atomic* and __sync builtins.
-       These are handled differently from the classical memory memory
+       These are handled differently from the classical memory
        access builtins above.  */
 
     case BUILT_IN_ATOMIC_LOAD_1:

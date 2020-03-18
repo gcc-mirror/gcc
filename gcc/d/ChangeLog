@@ -1,3 +1,9 @@
+2020-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Fix up duplicated
+	word issue in a comment.
+	* d-target.cc (Target::FPTypeProperties<T>::max): Likewise.
+
 2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/92309

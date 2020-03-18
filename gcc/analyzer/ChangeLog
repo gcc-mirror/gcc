@@ -1,3 +1,12 @@
+2020-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Fix up duplicated word
+	issue in a comment.
+	* region-model.cc (region_model::make_region_for_unexpected_tree_code,
+	region_model::delete_region_and_descendents): Likewise.
+	* engine.cc (class exploded_cluster): Likewise.
+	* diagnostic-manager.cc (class path_builder): Likewise.
+
 2020-03-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94099

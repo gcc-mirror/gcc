@@ -1,3 +1,15 @@
+2020-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (get_mem_refs_of_builtin_call): Fix up duplicated word issue
+	in a comment.
+	* config/arc/arc.c (frame_stack_add): Likewise.
+	* gimple-loop-versioning.cc (loop_versioning::analyze_arbitrary_term):
+	Likewise.
+	* ipa-predicate.c (predicate::remap_after_inlining): Likewise.
+	* tree-ssa-strlen.h (handle_printf_call): Likewise.
+	* tree-ssa-strlen.c (is_strlen_related_p): Likewise.
+	* optinfo-emit-json.cc (optrecord_json_writer::add_record): Likewise.
+
 2020-03-18  Duan bo  <duanbo3@huawei.com>
 
 	PR target/94201

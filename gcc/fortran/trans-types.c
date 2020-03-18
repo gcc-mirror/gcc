@@ -1595,7 +1595,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   mpz_init_set_ui (stride, 1);
   mpz_init (delta);
 
-  /* We don't use build_array_type because this does not include include
+  /* We don't use build_array_type because this does not include
      lang-specific information (i.e. the bounds of the array) when checking
      for duplicates.  */
   if (as->rank)
