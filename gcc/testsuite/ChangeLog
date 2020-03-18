@@ -1,3 +1,7 @@
+2020-03-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic6.C: New test.
+
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vabdq_x_f16.c: New test.

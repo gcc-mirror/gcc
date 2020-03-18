@@ -112,5 +112,6 @@ void pp_cxx_conjunction (cxx_pretty_printer *, tree);
 void pp_cxx_disjunction (cxx_pretty_printer *, tree);
 void pp_cxx_constraint (cxx_pretty_printer *, tree);
 void pp_cxx_constrained_type_spec (cxx_pretty_printer *, tree);
+void pp_cxx_parameter_mapping (cxx_pretty_printer *, tree);
 
 #endif /* GCC_CXX_PRETTY_PRINT_H */

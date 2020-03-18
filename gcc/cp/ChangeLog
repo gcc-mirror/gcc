@@ -1,3 +1,13 @@
+2020-03-20  Patrick Palka  <ppalka@redhat.com>
+
+	* cxx-pretty-print.c (pp_cxx_parameter_mapping): Make extern.  Move
+	the "[with ]" bits to here from ...
+	(pp_cxx_atomic_constraint): ... here.
+	* cxx-pretty-print.h (pp_cxx_parameter_mapping): Declare.
+	* error.c (rebuild_concept_check): Delete.
+	(print_concept_check_info): Print the dependent form of the constraint and the
+	preferably substituted parameter mapping alongside it.
+
 2020-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94175

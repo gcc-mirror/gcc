@@ -3680,27 +3680,6 @@ print_location (diagnostic_context *context, location_t loc)
                  "locus", xloc.file, xloc.line);
 }
 
-/* Instantiate the concept check for the purpose of diagnosing an error.  */
-
-static tree
-rebuild_concept_check (tree expr, tree map, tree args)
-{
-  /* Instantiate the parameter mapping for the template-id.  */
-  map = tsubst_parameter_mapping (map, args, tf_none, NULL_TREE);
-  if (map == error_mark_node)
-    return error_mark_node;
-  args = get_mapped_args (map);
-
-  /* Rebuild the template id using substituted arguments. Substituting
-     directly through the expression will trigger recursive satisfaction,
-     so don't do that.  */
-  tree id = unpack_concept_check (expr);
-  args = tsubst_template_args (TREE_OPERAND (id, 1), args, tf_none, NULL_TREE);
-  if (args == error_mark_node)
-    return error_mark_node;
-  return build_nt (TEMPLATE_ID_EXPR, TREE_OPERAND (id, 0), args);
-}
-
 static void
 print_constrained_decl_info (diagnostic_context *context, tree decl)
 {
@@ -3717,12 +3696,18 @@ print_concept_check_info (diagnostic_context *context, tree expr, tree map, tree
   tree tmpl = TREE_OPERAND (id, 0);
   if (OVL_P (tmpl))
     tmpl = OVL_FIRST (tmpl);
-  tree check = rebuild_concept_check (expr, map, args);
-  if (check == error_mark_node)
-    check = expr;
 
   print_location (context, DECL_SOURCE_LOCATION (tmpl));
-  pp_verbatim (context->printer, "required for the satisfaction of %qE\n", check);
+
+  cxx_pretty_printer *pp = (cxx_pretty_printer *)context->printer;
+  pp_verbatim (pp, "required for the satisfaction of %qE", expr);
+  if (map && map != error_mark_node)
+    {
+      tree subst_map = tsubst_parameter_mapping (map, args, tf_none, NULL_TREE);
+      pp_cxx_parameter_mapping (pp, (subst_map != error_mark_node
+				     ? subst_map : map));
+    }
+  pp_newline (pp);
 }
 
 /* Diagnose the entry point into the satisfaction error. Returns the next
