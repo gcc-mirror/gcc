@@ -1,3 +1,10 @@
+2020-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR ipa/92799
+	* cgraphunit.c (process_function_and_variable_attributes): Also
+	complain about weakref function definitions and drop all effects
+	of the attribute.
+
 2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
