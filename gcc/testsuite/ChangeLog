@@ -2,6 +2,53 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_p_s64.c: New test.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_p_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_p_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_p_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_p_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_f16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_p_f16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_u32.c:
+	Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vst1q_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vst1q_f32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vst1q_s16.c: Likewise.

@@ -35,7 +35,7 @@
 ;;			 Dt, Dp, Dz, Tu
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
-;;		     Rg
+;;		     Rg, Ri
 ;; in all states: Pf, Pg
 
 ;; The following memory constraints have been used:
@@ -89,6 +89,10 @@
   (and (match_code "const_int")
        (match_test "TARGET_HAVE_MVE && ((ival == 1) || (ival == 2)
 				       || (ival == 4) || (ival == 8))")))
+
+;; True if the immediate is multiple of 8 and in range of -/+ 1016 for MVE.
+(define_predicate "mve_vldrd_immediate"
+  (match_test "satisfies_constraint_Ri (op)"))
 
 (define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
  "The VFP registers @code{s0}-@code{s31}.")
