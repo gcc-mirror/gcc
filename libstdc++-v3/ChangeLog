@@ -1,5 +1,11 @@
 2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_algobase.h (__lexicographical_compare_aux): Check
+	__cpp_lib_concepts before using iter_reference_t.
+	* include/bits/stream_iterator.h (istream_iterator): Check
+	__cpp_lib_concepts before using default_sentinel_t.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Likewise.
+
 	PR libstdc++/94203
 	* include/experimental/executor (executor::executor(Executor)): Call
 	make_shared directly instead of _M_create. Create _Tgt1 object.
