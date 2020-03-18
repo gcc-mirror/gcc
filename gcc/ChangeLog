@@ -2,6 +2,108 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (QUADOP_UNONE_UNONE_NONE_NONE_UNONE_QUALIFIERS):
+	Define builtin qualifier.
+	(QUADOP_NONE_NONE_NONE_NONE_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_NONE_NONE_NONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_NONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_NONE_NONE_UNONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_NONE_UNONE_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vsriq_m_n_s8): Define macro.
+	(vsubq_m_s8): Likewise.
+	(vcvtq_m_n_f16_u16): Likewise.
+	(vqshluq_m_n_s8): Likewise.
+	(vabavq_p_s8): Likewise.
+	(vsriq_m_n_u8): Likewise.
+	(vshlq_m_u8): Likewise.
+	(vsubq_m_u8): Likewise.
+	(vabavq_p_u8): Likewise.
+	(vshlq_m_s8): Likewise.
+	(vcvtq_m_n_f16_s16): Likewise.
+	(vsriq_m_n_s16): Likewise.
+	(vsubq_m_s16): Likewise.
+	(vcvtq_m_n_f32_u32): Likewise.
+	(vqshluq_m_n_s16): Likewise.
+	(vabavq_p_s16): Likewise.
+	(vsriq_m_n_u16): Likewise.
+	(vshlq_m_u16): Likewise.
+	(vsubq_m_u16): Likewise.
+	(vabavq_p_u16): Likewise.
+	(vshlq_m_s16): Likewise.
+	(vcvtq_m_n_f32_s32): Likewise.
+	(vsriq_m_n_s32): Likewise.
+	(vsubq_m_s32): Likewise.
+	(vqshluq_m_n_s32): Likewise.
+	(vabavq_p_s32): Likewise.
+	(vsriq_m_n_u32): Likewise.
+	(vshlq_m_u32): Likewise.
+	(vsubq_m_u32): Likewise.
+	(vabavq_p_u32): Likewise.
+	(vshlq_m_s32): Likewise.
+	(__arm_vsriq_m_n_s8): Define intrinsic.
+	(__arm_vsubq_m_s8): Likewise.
+	(__arm_vqshluq_m_n_s8): Likewise.
+	(__arm_vabavq_p_s8): Likewise.
+	(__arm_vsriq_m_n_u8): Likewise.
+	(__arm_vshlq_m_u8): Likewise.
+	(__arm_vsubq_m_u8): Likewise.
+	(__arm_vabavq_p_u8): Likewise.
+	(__arm_vshlq_m_s8): Likewise.
+	(__arm_vsriq_m_n_s16): Likewise.
+	(__arm_vsubq_m_s16): Likewise.
+	(__arm_vqshluq_m_n_s16): Likewise.
+	(__arm_vabavq_p_s16): Likewise.
+	(__arm_vsriq_m_n_u16): Likewise.
+	(__arm_vshlq_m_u16): Likewise.
+	(__arm_vsubq_m_u16): Likewise.
+	(__arm_vabavq_p_u16): Likewise.
+	(__arm_vshlq_m_s16): Likewise.
+	(__arm_vsriq_m_n_s32): Likewise.
+	(__arm_vsubq_m_s32): Likewise.
+	(__arm_vqshluq_m_n_s32): Likewise.
+	(__arm_vabavq_p_s32): Likewise.
+	(__arm_vsriq_m_n_u32): Likewise.
+	(__arm_vshlq_m_u32): Likewise.
+	(__arm_vsubq_m_u32): Likewise.
+	(__arm_vabavq_p_u32): Likewise.
+	(__arm_vshlq_m_s32): Likewise.
+	(__arm_vcvtq_m_n_f16_u16): Likewise.
+	(__arm_vcvtq_m_n_f16_s16): Likewise.
+	(__arm_vcvtq_m_n_f32_u32): Likewise.
+	(__arm_vcvtq_m_n_f32_s32): Likewise.
+	(vcvtq_m_n): Define polymorphic variant.
+	(vqshluq_m_n): Likewise.
+	(vshlq_m): Likewise.
+	(vsriq_m_n): Likewise.
+	(vsubq_m): Likewise.
+	(vabavq_p): Likewise.
+	* config/arm/arm_mve_builtins.def
+	(QUADOP_UNONE_UNONE_NONE_NONE_UNONE_QUALIFIERS): Use builtin qualifier.
+	(QUADOP_NONE_NONE_NONE_NONE_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_NONE_NONE_NONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_NONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_NONE_NONE_UNONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_NONE_UNONE_QUALIFIERS): Likewise.
+	* config/arm/mve.md (VABAVQ_P): Define iterator.
+	(VSHLQ_M): Likewise.
+	(VSRIQ_M_N): Likewise.
+	(VSUBQ_M): Likewise.
+	(VCVTQ_M_N_TO_F): Likewise.
+	(mve_vabavq_p_<supf><mode>): Define RTL pattern.
+	(mve_vqshluq_m_n_s<mode>): Likewise.
+	(mve_vshlq_m_<supf><mode>): Likewise.
+	(mve_vsriq_m_n_<supf><mode>): Likewise.
+	(mve_vsubq_m_<supf><mode>): Likewise.
+	(mve_vcvtq_m_n_to_f_<supf><mode>): Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm_mve.h (vrmlaldavhaxq_s32): Define macro.
 	(vrmlsldavhaq_s32): Likewise.
 	(vrmlsldavhaxq_s32): Likewise.

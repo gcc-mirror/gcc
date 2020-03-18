@@ -140,7 +140,10 @@
 			 VCVTPQ_M_S VCVTPQ_M_U VCVTQ_M_N_FROM_F_S VCVTNQ_M_U
 			 VREV16Q_M_S VREV16Q_M_U VREV32Q_M VCVTQ_M_FROM_F_U
 			 VCVTQ_M_FROM_F_S VRMLALDAVHQ_P_U VADDLVAQ_P_U
-			 VCVTQ_M_N_FROM_F_U])
+			 VCVTQ_M_N_FROM_F_U VQSHLUQ_M_N_S VABAVQ_P_S
+			 VABAVQ_P_U VSHLQ_M_S VSHLQ_M_U VSRIQ_M_N_S
+			 VSRIQ_M_N_U VSUBQ_M_U VSUBQ_M_S VCVTQ_M_N_TO_F_U
+			 VCVTQ_M_N_TO_F_S])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
 			    (V8HF "V8HI") (V4SF "V4SI")])
@@ -244,7 +247,11 @@
 		       (VCVTQ_M_N_FROM_F_U "u") (VCVTQ_M_FROM_F_S "s")
 		       (VCVTQ_M_FROM_F_U "u") (VRMLALDAVHQ_P_U "u")
 		       (VRMLALDAVHQ_P_S "s") (VADDLVAQ_P_U "u")
-		       (VCVTQ_M_N_FROM_F_S "s")])
+		       (VCVTQ_M_N_FROM_F_S "s") (VABAVQ_P_U "u")
+		       (VABAVQ_P_S "s") (VSHLQ_M_S "s") (VSHLQ_M_U "u")
+		       (VSRIQ_M_N_S "s") (VSRIQ_M_N_U "u") (VSUBQ_M_S "s")
+		       (VSUBQ_M_U "u") (VCVTQ_M_N_TO_F_S "s")
+		       (VCVTQ_M_N_TO_F_U "u")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -407,6 +414,11 @@
 (define_int_iterator VCVTQ_M_FROM_F [VCVTQ_M_FROM_F_U VCVTQ_M_FROM_F_S])
 (define_int_iterator VRMLALDAVHQ_P [VRMLALDAVHQ_P_S VRMLALDAVHQ_P_U])
 (define_int_iterator VADDLVAQ_P [VADDLVAQ_P_U VADDLVAQ_P_S])
+(define_int_iterator VABAVQ_P [VABAVQ_P_S VABAVQ_P_U])
+(define_int_iterator VSHLQ_M [VSHLQ_M_S VSHLQ_M_U])
+(define_int_iterator VSRIQ_M_N [VSRIQ_M_N_S VSRIQ_M_N_U])
+(define_int_iterator VSUBQ_M [VSUBQ_M_U VSUBQ_M_S])
+(define_int_iterator VCVTQ_M_N_TO_F [VCVTQ_M_N_TO_F_U VCVTQ_M_N_TO_F_S])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -5551,7 +5563,7 @@
 	 VSHRNTQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vshrnt.i%#<V_sz_elem>	%q0, %q2, %3"
+  "vshrnt.i%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -5567,7 +5579,7 @@
 	 VCVTMQ_M))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtmt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>       %q0, %q2"
+  "vpst\;vcvtmt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -5583,7 +5595,7 @@
 	 VCVTPQ_M))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtpt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>       %q0, %q2"
+  "vpst\;vcvtpt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -5599,7 +5611,7 @@
 	 VCVTNQ_M))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtnt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>       %q0, %q2"
+  "vpst\;vcvtnt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -5616,7 +5628,7 @@
 	 VCVTQ_M_N_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>	%q0, %q2, %3"
+  "vpst\;vcvtt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -5648,7 +5660,7 @@
 	 VCVTQ_M_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>	%q0, %q2"
+  "vpst\;vcvtt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -5683,3 +5695,101 @@
   "vrmlsldavha.s32 %Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
+
+;;
+;; [vabavq_p_s, vabavq_p_u])
+;;
+(define_insn "mve_vabavq_p_<supf><mode>"
+  [
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")
+		    (match_operand:MVE_2 3 "s_register_operand" "w")
+		    (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VABAVQ_P))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vabavt.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vqshluq_m_n_s])
+;;
+(define_insn "mve_vqshluq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "mve_imm_7" "Ra")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQSHLUQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\n\tvqshlut.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")])
+
+;;
+;; [vshlq_m_s, vshlq_m_u])
+;;
+(define_insn "mve_vshlq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSHLQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")])
+
+;;
+;; [vsriq_m_n_s, vsriq_m_n_u])
+;;
+(define_insn "mve_vsriq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "mve_imm_selective_upto_8" "Rg")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSRIQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vsrit.%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")])
+
+;;
+;; [vsubq_m_u, vsubq_m_s])
+;;
+(define_insn "mve_vsubq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSUBQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vsubt.i%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")])
+
+;;
+;; [vcvtq_m_n_to_f_u, vcvtq_m_n_to_f_s])
+;;
+(define_insn "mve_vcvtq_m_n_to_f_<supf><mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:<MVE_CNVT> 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "mve_imm_16" "Rd")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCVTQ_M_N_TO_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcvtt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
