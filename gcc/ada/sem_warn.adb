@@ -3727,18 +3727,12 @@ package body Sem_Warn is
       --  overlapping parameters that are record types or array types.
 
       --  It is also worthwhile to warn on overlaps of composite objects when
-      --  only one of the formals is (in)-out.  Note that the RM rule above is
+      --  only one of the formals is (in)-out. Note that the RM rule above is
       --  a legality rule. We choose to implement this check as a warning to
-      --  avoid major incompatibilities with legacy code. We exclude internal
-      --  sources from the warning, because subprograms in Container libraries
-      --  would be affected by the warning.
+      --  avoid major incompatibilities with legacy code.
 
       --  Note also that the rule in 6.4.1 (6.17/3), introduced by AI12-0324,
       --  is potentially more expensive to verify, and is not yet implemented.
-
-      if Is_Internal_Unit (Current_Sem_Unit) then
-         return;
-      end if;
 
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
