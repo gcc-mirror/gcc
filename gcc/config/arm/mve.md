@@ -143,7 +143,37 @@
 			 VCVTQ_M_N_FROM_F_U VQSHLUQ_M_N_S VABAVQ_P_S
 			 VABAVQ_P_U VSHLQ_M_S VSHLQ_M_U VSRIQ_M_N_S
 			 VSRIQ_M_N_U VSUBQ_M_U VSUBQ_M_S VCVTQ_M_N_TO_F_U
-			 VCVTQ_M_N_TO_F_S])
+			 VCVTQ_M_N_TO_F_S VQADDQ_M_U VQADDQ_M_S
+			 VRSHRQ_M_N_S VSUBQ_M_N_S VSUBQ_M_N_U VBRSRQ_M_N_S
+			 VSUBQ_M_N_F VBICQ_M_F VHADDQ_M_U VBICQ_M_U VBICQ_M_S
+			 VMULQ_M_N_U VHADDQ_M_S VORNQ_M_F VMLAQ_M_N_S VQSUBQ_M_U
+			 VQSUBQ_M_S VMLAQ_M_N_U VQSUBQ_M_N_U VQSUBQ_M_N_S
+			 VMULLTQ_INT_M_S VMULLTQ_INT_M_U VMULQ_M_N_S VMULQ_M_N_F
+			 VMLASQ_M_N_U VMLASQ_M_N_S VMAXQ_M_U VQRDMLAHQ_M_N_U
+			 VCADDQ_ROT270_M_F VCADDQ_ROT270_M_U VCADDQ_ROT270_M_S
+			 VQRSHLQ_M_S VMULQ_M_F VRHADDQ_M_U VSHRQ_M_N_U
+			 VRHADDQ_M_S VMULQ_M_S VMULQ_M_U VQRDMLASHQ_M_N_S
+			 VRSHLQ_M_S VRSHLQ_M_U VRSHRQ_M_N_U VADDQ_M_N_F
+			 VADDQ_M_N_S VADDQ_M_N_U VQRDMLASHQ_M_N_U VMAXQ_M_S
+			 VQRDMLAHQ_M_N_S VORRQ_M_S VORRQ_M_U VORRQ_M_F
+			 VQRSHLQ_M_U VRMULHQ_M_U VRMULHQ_M_S VMINQ_M_S VMINQ_M_U
+			 VANDQ_M_F VANDQ_M_U VANDQ_M_S VHSUBQ_M_N_S VHSUBQ_M_N_U
+			 VMULHQ_M_S VMULHQ_M_U VMULLBQ_INT_M_U
+			 VMULLBQ_INT_M_S VCADDQ_ROT90_M_F
+			 VSHRQ_M_N_S VADDQ_M_U VSLIQ_M_N_U
+			 VQADDQ_M_N_S VBRSRQ_M_N_F VABDQ_M_F VBRSRQ_M_N_U
+			 VEORQ_M_F VSHLQ_M_N_S VQDMLAHQ_M_N_U VQDMLAHQ_M_N_S
+			 VSHLQ_M_N_U VMLADAVAQ_P_U VMLADAVAQ_P_S VSLIQ_M_N_S
+			 VQSHLQ_M_U VQSHLQ_M_S VCADDQ_ROT90_M_U VCADDQ_ROT90_M_S
+			 VORNQ_M_U VORNQ_M_S VQSHLQ_M_N_S VQSHLQ_M_N_U VADDQ_M_S
+			 VHADDQ_M_N_S VADDQ_M_F VQADDQ_M_N_U VEORQ_M_S VEORQ_M_U
+			 VHSUBQ_M_S VHSUBQ_M_U VHADDQ_M_N_U VHCADDQ_ROT90_M_S
+			 VQRDMLSDHQ_M_S VQRDMLSDHXQ_M_S VQRDMLADHXQ_M_S
+			 VQDMULHQ_M_S VMLADAVAXQ_P_S VQDMLADHXQ_M_S
+			 VQRDMULHQ_M_S VMLSDAVAXQ_P_S VQDMULHQ_M_N_S
+			 VHCADDQ_ROT270_M_S VQDMLSDHQ_M_S VQDMLSDHXQ_M_S
+			 VMLSDAVAQ_P_S VQRDMLADHQ_M_S VQDMLADHQ_M_S
+			 VQRDMULHQ_M_N_S])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
 			    (V8HF "V8HI") (V4SF "V4SI")])
@@ -251,7 +281,37 @@
 		       (VABAVQ_P_S "s") (VSHLQ_M_S "s") (VSHLQ_M_U "u")
 		       (VSRIQ_M_N_S "s") (VSRIQ_M_N_U "u") (VSUBQ_M_S "s")
 		       (VSUBQ_M_U "u") (VCVTQ_M_N_TO_F_S "s")
-		       (VCVTQ_M_N_TO_F_U "u")])
+		       (VCVTQ_M_N_TO_F_U "u") (VADDQ_M_N_U "u")
+		       (VSHLQ_M_N_S "s") (VMAXQ_M_U "u") (VHSUBQ_M_N_U "u")
+		       (VMULQ_M_N_S "s") (VQSHLQ_M_U "u") (VRHADDQ_M_S "s")
+		       (VEORQ_M_U "u") (VSHRQ_M_N_U "u") (VCADDQ_ROT90_M_U "u")
+		       (VMLADAVAQ_P_U "u") (VEORQ_M_S "s") (VBRSRQ_M_N_S "s")
+		       (VMULQ_M_U "u") (VQRDMLAHQ_M_N_S "s") (VHSUBQ_M_N_S "s")
+		       (VQRSHLQ_M_S "s") (VMULQ_M_N_U "u")
+		       (VMULQ_M_S "s") (VQSHLQ_M_N_U "u") (VSLIQ_M_N_U "u")
+		       (VMLADAVAQ_P_S "s") (VQRSHLQ_M_U "u")
+		       (VMULLBQ_INT_M_U "u") (VSHLQ_M_N_U "u") (VQSUBQ_M_U "u")
+		       (VQRDMLASHQ_M_N_U "u") (VRSHRQ_M_N_S "s")
+		       (VORNQ_M_S "s") (VCADDQ_ROT270_M_S "s") (VRHADDQ_M_U "u")
+		       (VRSHRQ_M_N_U "u") (VMLASQ_M_N_U "u") (VHSUBQ_M_U "u")
+		       (VQSUBQ_M_N_S "s") (VMULLTQ_INT_M_S "s")
+		       (VORRQ_M_S "s") (VQDMLAHQ_M_N_U "u") (VRSHLQ_M_S "s")
+		       (VHADDQ_M_U "u") (VHADDQ_M_N_S "s") (VMULLTQ_INT_M_U "u")
+		       (VORRQ_M_U "u") (VHADDQ_M_S "s") (VHADDQ_M_N_U "u")
+		       (VQDMLAHQ_M_N_S "s") (VMAXQ_M_S "s") (VORNQ_M_U "u")
+		       (VCADDQ_ROT270_M_U "u") (VQADDQ_M_U "u")
+		       (VQRDMLASHQ_M_N_S "s") (VBICQ_M_U "u") (VMINQ_M_U "u")
+		       (VSUBQ_M_N_S "s") (VMULLBQ_INT_M_S "s") (VQSUBQ_M_S "s")
+		       (VCADDQ_ROT90_M_S "s") (VRMULHQ_M_S "s") (VANDQ_M_U "u")
+		       (VMULHQ_M_S "s") (VADDQ_M_S "s") (VQRDMLAHQ_M_N_U "u")
+		       (VMLASQ_M_N_S "s") (VHSUBQ_M_S "s") (VRMULHQ_M_U "u")
+		       (VQADDQ_M_N_S "s") (VSHRQ_M_N_S "s") (VANDQ_M_S "s")
+		       (VABDQ_M_U "u") (VQSHLQ_M_S "s") (VABDQ_M_S "s")
+		       (VSUBQ_M_N_U "u") (VMLAQ_M_N_S "s") (VBRSRQ_M_N_U "u")
+		       (VADDQ_M_U "u") (VRSHLQ_M_U "u") (VSLIQ_M_N_S "s")
+		       (VQADDQ_M_N_U "u") (VADDQ_M_N_S "s") (VQSUBQ_M_N_U "u")
+		       (VMLAQ_M_N_U "u") (VMINQ_M_S "s") (VMULHQ_M_U "u")
+		       (VQADDQ_M_S "s") (VBICQ_M_S "s") (VQSHLQ_M_N_S "s")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -419,6 +479,47 @@
 (define_int_iterator VSRIQ_M_N [VSRIQ_M_N_S VSRIQ_M_N_U])
 (define_int_iterator VSUBQ_M [VSUBQ_M_U VSUBQ_M_S])
 (define_int_iterator VCVTQ_M_N_TO_F [VCVTQ_M_N_TO_F_U VCVTQ_M_N_TO_F_S])
+(define_int_iterator VHSUBQ_M [VHSUBQ_M_S VHSUBQ_M_U])
+(define_int_iterator VSLIQ_M_N [VSLIQ_M_N_U VSLIQ_M_N_S])
+(define_int_iterator VRSHLQ_M [VRSHLQ_M_S VRSHLQ_M_U])
+(define_int_iterator VMINQ_M [VMINQ_M_S VMINQ_M_U])
+(define_int_iterator VMULLBQ_INT_M [VMULLBQ_INT_M_U VMULLBQ_INT_M_S])
+(define_int_iterator VMULHQ_M [VMULHQ_M_S VMULHQ_M_U])
+(define_int_iterator VMULQ_M [VMULQ_M_S VMULQ_M_U])
+(define_int_iterator VHSUBQ_M_N [VHSUBQ_M_N_S VHSUBQ_M_N_U])
+(define_int_iterator VHADDQ_M_N [VHADDQ_M_N_S VHADDQ_M_N_U])
+(define_int_iterator VORRQ_M [VORRQ_M_S VORRQ_M_U])
+(define_int_iterator VRMULHQ_M [VRMULHQ_M_U VRMULHQ_M_S])
+(define_int_iterator VQADDQ_M [VQADDQ_M_U VQADDQ_M_S])
+(define_int_iterator VRSHRQ_M_N [VRSHRQ_M_N_S VRSHRQ_M_N_U])
+(define_int_iterator VQSUBQ_M_N [VQSUBQ_M_N_U VQSUBQ_M_N_S])
+(define_int_iterator VADDQ_M [VADDQ_M_U VADDQ_M_S])
+(define_int_iterator VORNQ_M [VORNQ_M_U VORNQ_M_S])
+(define_int_iterator VRHADDQ_M [VRHADDQ_M_U VRHADDQ_M_S])
+(define_int_iterator VQSHLQ_M [VQSHLQ_M_U VQSHLQ_M_S])
+(define_int_iterator VANDQ_M [VANDQ_M_U VANDQ_M_S])
+(define_int_iterator VBICQ_M [VBICQ_M_U VBICQ_M_S])
+(define_int_iterator VSHLQ_M_N [VSHLQ_M_N_S VSHLQ_M_N_U])
+(define_int_iterator VCADDQ_ROT270_M [VCADDQ_ROT270_M_U VCADDQ_ROT270_M_S])
+(define_int_iterator VQRSHLQ_M [VQRSHLQ_M_U VQRSHLQ_M_S])
+(define_int_iterator VQADDQ_M_N [VQADDQ_M_N_U VQADDQ_M_N_S])
+(define_int_iterator VADDQ_M_N [VADDQ_M_N_S VADDQ_M_N_U])
+(define_int_iterator VMAXQ_M [VMAXQ_M_S VMAXQ_M_U])
+(define_int_iterator VQSUBQ_M [VQSUBQ_M_U VQSUBQ_M_S])
+(define_int_iterator VMLASQ_M_N [VMLASQ_M_N_U VMLASQ_M_N_S])
+(define_int_iterator VMLADAVAQ_P [VMLADAVAQ_P_U VMLADAVAQ_P_S])
+(define_int_iterator VBRSRQ_M_N [VBRSRQ_M_N_U VBRSRQ_M_N_S])
+(define_int_iterator VMULQ_M_N [VMULQ_M_N_U VMULQ_M_N_S])
+(define_int_iterator VCADDQ_ROT90_M [VCADDQ_ROT90_M_U VCADDQ_ROT90_M_S])
+(define_int_iterator VMULLTQ_INT_M [VMULLTQ_INT_M_S VMULLTQ_INT_M_U])
+(define_int_iterator VEORQ_M [VEORQ_M_S VEORQ_M_U])
+(define_int_iterator VSHRQ_M_N [VSHRQ_M_N_S VSHRQ_M_N_U])
+(define_int_iterator VSUBQ_M_N [VSUBQ_M_N_S VSUBQ_M_N_U])
+(define_int_iterator VHADDQ_M [VHADDQ_M_S VHADDQ_M_U])
+(define_int_iterator VABDQ_M [VABDQ_M_S VABDQ_M_U])
+(define_int_iterator VMLAQ_M_N [VMLAQ_M_N_S VMLAQ_M_N_U])
+(define_int_iterator VQSHLQ_M_N [VQSHLQ_M_N_S VQSHLQ_M_N_U])
+
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -5793,3 +5894,1023 @@
   "vpst\;vcvtt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
+;;
+;; [vabdq_m_s, vabdq_m_u])
+;;
+(define_insn "mve_vabdq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VABDQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vabdt.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vaddq_m_n_s, vaddq_m_n_u])
+;;
+(define_insn "mve_vaddq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VADDQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vaddt.i%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vaddq_m_u, vaddq_m_s])
+;;
+(define_insn "mve_vaddq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VADDQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vaddt.i%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vandq_m_u, vandq_m_s])
+;;
+(define_insn "mve_vandq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VANDQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vandt %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vbicq_m_u, vbicq_m_s])
+;;
+(define_insn "mve_vbicq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VBICQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vbict %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vbrsrq_m_n_u, vbrsrq_m_n_s])
+;;
+(define_insn "mve_vbrsrq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VBRSRQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vbrsrt.%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcaddq_rot270_m_u, vcaddq_rot270_m_s])
+;;
+(define_insn "mve_vcaddq_rot270_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCADDQ_ROT270_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vcaddt.i%#<V_sz_elem>	%q0, %q2, %q3, #270"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcaddq_rot90_m_u, vcaddq_rot90_m_s])
+;;
+(define_insn "mve_vcaddq_rot90_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCADDQ_ROT90_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vcaddt.i%#<V_sz_elem>	%q0, %q2, %q3, #90"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [veorq_m_s, veorq_m_u])
+;;
+(define_insn "mve_veorq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VEORQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;veort %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vhaddq_m_n_s, vhaddq_m_n_u])
+;;
+(define_insn "mve_vhaddq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VHADDQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vhaddt.<supf>%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vhaddq_m_s, vhaddq_m_u])
+;;
+(define_insn "mve_vhaddq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VHADDQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vhaddt.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vhsubq_m_n_s, vhsubq_m_n_u])
+;;
+(define_insn "mve_vhsubq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VHSUBQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vhsubt.<supf>%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vhsubq_m_s, vhsubq_m_u])
+;;
+(define_insn "mve_vhsubq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VHSUBQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vhsubt.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmaxq_m_s, vmaxq_m_u])
+;;
+(define_insn "mve_vmaxq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMAXQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmaxt.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vminq_m_s, vminq_m_u])
+;;
+(define_insn "mve_vminq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMINQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmint.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmladavaq_p_u, vmladavaq_p_s])
+;;
+(define_insn "mve_vmladavaq_p_<supf><mode>"
+  [
+   (set (match_operand:SI 0 "s_register_operand" "=e")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")
+		    (match_operand:MVE_2 3 "s_register_operand" "w")
+		    (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMLADAVAQ_P))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmladavat.<supf>%#<V_sz_elem>	%0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmlaq_m_n_s, vmlaq_m_n_u])
+;;
+(define_insn "mve_vmlaq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMLAQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmlat.<supf>%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmlasq_m_n_u, vmlasq_m_n_s])
+;;
+(define_insn "mve_vmlasq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMLASQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmlast.<supf>%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmulhq_m_s, vmulhq_m_u])
+;;
+(define_insn "mve_vmulhq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULHQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmulht.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmullbq_int_m_u, vmullbq_int_m_s])
+;;
+(define_insn "mve_vmullbq_int_m_<supf><mode>"
+  [
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
+				  (match_operand:MVE_2 2 "s_register_operand" "w")
+				  (match_operand:MVE_2 3 "s_register_operand" "w")
+				  (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULLBQ_INT_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmullbt.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmulltq_int_m_s, vmulltq_int_m_u])
+;;
+(define_insn "mve_vmulltq_int_m_<supf><mode>"
+  [
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
+				  (match_operand:MVE_2 2 "s_register_operand" "w")
+				  (match_operand:MVE_2 3 "s_register_operand" "w")
+				  (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULLTQ_INT_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmulltt.<supf>%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmulq_m_n_u, vmulq_m_n_s])
+;;
+(define_insn "mve_vmulq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmult.i%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmulq_m_s, vmulq_m_u])
+;;
+(define_insn "mve_vmulq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmult.i%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vornq_m_u, vornq_m_s])
+;;
+(define_insn "mve_vornq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VORNQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vornt %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vorrq_m_s, vorrq_m_u])
+;;
+(define_insn "mve_vorrq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VORRQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vorrt %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqaddq_m_n_u, vqaddq_m_n_s])
+;;
+(define_insn "mve_vqaddq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQADDQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqaddt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqaddq_m_u, vqaddq_m_s])
+;;
+(define_insn "mve_vqaddq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQADDQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqaddt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmlahq_m_n_s])
+;;
+(define_insn "mve_vqdmlahq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMLAHQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmlaht.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmlahq_m_n_s])
+;;
+(define_insn "mve_vqrdmlahq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMLAHQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmlaht.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmlashq_m_n_s])
+;;
+(define_insn "mve_vqrdmlashq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMLASHQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmlasht.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrshlq_m_u, vqrshlq_m_s])
+;;
+(define_insn "mve_vqrshlq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRSHLQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqshlq_m_n_s, vqshlq_m_n_u])
+;;
+(define_insn "mve_vqshlq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "immediate_operand" "i")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQSHLQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqshlq_m_u, vqshlq_m_s])
+;;
+(define_insn "mve_vqshlq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQSHLQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqsubq_m_n_u, vqsubq_m_n_s])
+;;
+(define_insn "mve_vqsubq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQSUBQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqsubt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqsubq_m_u, vqsubq_m_s])
+;;
+(define_insn "mve_vqsubq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQSUBQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqsubt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vrhaddq_m_u, vrhaddq_m_s])
+;;
+(define_insn "mve_vrhaddq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VRHADDQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vrhaddt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vrmulhq_m_u, vrmulhq_m_s])
+;;
+(define_insn "mve_vrmulhq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VRMULHQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vrmulht.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vrshlq_m_s, vrshlq_m_u])
+;;
+(define_insn "mve_vrshlq_m_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VRSHLQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vrshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vrshrq_m_n_s, vrshrq_m_n_u])
+;;
+(define_insn "mve_vrshrq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VRSHRQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vrshrt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vshlq_m_n_s, vshlq_m_n_u])
+;;
+(define_insn "mve_vshlq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "immediate_operand" "i")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSHLQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vshrq_m_n_s, vshrq_m_n_u])
+;;
+(define_insn "mve_vshrq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSHRQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vshrt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vsliq_m_n_u, vsliq_m_n_s])
+;;
+(define_insn "mve_vsliq_m_n_<supf><mode>"
+   [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+       (unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "<MVE_pred>" "<MVE_constraint>")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSLIQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vslit.%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vsubq_m_n_s, vsubq_m_n_u])
+;;
+(define_insn "mve_vsubq_m_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSUBQ_M_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vsubt.i%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vhcaddq_rot270_m_s])
+;;
+(define_insn "mve_vhcaddq_rot270_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VHCADDQ_ROT270_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vhcaddt.s%#<V_sz_elem>\t%q0, %q2, %q3, #270"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vhcaddq_rot90_m_s])
+;;
+(define_insn "mve_vhcaddq_rot90_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VHCADDQ_ROT90_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vhcaddt.s%#<V_sz_elem>\t%q0, %q2, %q3, #90"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmladavaxq_p_s])
+;;
+(define_insn "mve_vmladavaxq_p_s<mode>"
+  [
+   (set (match_operand:SI 0 "s_register_operand" "=e")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMLADAVAXQ_P_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmladavaxt.s%#<V_sz_elem>\t%0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmlsdavaq_p_s])
+;;
+(define_insn "mve_vmlsdavaq_p_s<mode>"
+  [
+   (set (match_operand:SI 0 "s_register_operand" "=e")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMLSDAVAQ_P_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmlsdavat.s%#<V_sz_elem>\t%0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmlsdavaxq_p_s])
+;;
+(define_insn "mve_vmlsdavaxq_p_s<mode>"
+  [
+   (set (match_operand:SI 0 "s_register_operand" "=e")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMLSDAVAXQ_P_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vmlsdavaxt.s%#<V_sz_elem>\t%0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmladhq_m_s])
+;;
+(define_insn "mve_vqdmladhq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMLADHQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmladht.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmladhxq_m_s])
+;;
+(define_insn "mve_vqdmladhxq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMLADHXQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmladhxt.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmlsdhq_m_s])
+;;
+(define_insn "mve_vqdmlsdhq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMLSDHQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmlsdht.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmlsdhxq_m_s])
+;;
+(define_insn "mve_vqdmlsdhxq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMLSDHXQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmlsdhxt.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmulhq_m_n_s])
+;;
+(define_insn "mve_vqdmulhq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMULHQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmulht.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqdmulhq_m_s])
+;;
+(define_insn "mve_vqdmulhq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMULHQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmulht.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmladhq_m_s])
+;;
+(define_insn "mve_vqrdmladhq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMLADHQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmladht.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmladhxq_m_s])
+;;
+(define_insn "mve_vqrdmladhxq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMLADHXQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmladhxt.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmlsdhq_m_s])
+;;
+(define_insn "mve_vqrdmlsdhq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMLSDHQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmlsdht.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmlsdhxq_m_s])
+;;
+(define_insn "mve_vqrdmlsdhxq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMLSDHXQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmlsdhxt.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmulhq_m_n_s])
+;;
+(define_insn "mve_vqrdmulhq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMULHQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmulht.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vqrdmulhq_m_s])
+;;
+(define_insn "mve_vqrdmulhq_m_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:MVE_2 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQRDMULHQ_M_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqrdmulht.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
