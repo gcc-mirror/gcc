@@ -3336,7 +3336,7 @@ package body Sem_Aggr is
       --  of the ancestor.
 
       function Get_Value
-        (Compon                 : Node_Id;
+        (Compon                 : Entity_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False) return Node_Id;
       --  Given a record component stored in parameter Compon, this function
@@ -3614,7 +3614,7 @@ package body Sem_Aggr is
       ---------------
 
       function Get_Value
-        (Compon                 : Node_Id;
+        (Compon                 : Entity_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False) return Node_Id
       is
