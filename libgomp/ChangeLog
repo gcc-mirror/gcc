@@ -1,3 +1,9 @@
+2020-03-18  Julian Brown <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90: Really make
+	it work concurrently.
+
 2020-03-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/firstprivate-mappings-1.C: Add
