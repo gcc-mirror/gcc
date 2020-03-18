@@ -2,6 +2,125 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm_mve.h (vld1q_s8): Define macro.
+	(vld1q_s32): Likewise.
+	(vld1q_s16): Likewise.
+	(vld1q_u8): Likewise.
+	(vld1q_u32): Likewise.
+	(vld1q_u16): Likewise.
+	(vldrhq_gather_offset_s32): Likewise.
+	(vldrhq_gather_offset_s16): Likewise.
+	(vldrhq_gather_offset_u32): Likewise.
+	(vldrhq_gather_offset_u16): Likewise.
+	(vldrhq_gather_offset_z_s32): Likewise.
+	(vldrhq_gather_offset_z_s16): Likewise.
+	(vldrhq_gather_offset_z_u32): Likewise.
+	(vldrhq_gather_offset_z_u16): Likewise.
+	(vldrhq_gather_shifted_offset_s32): Likewise.
+	(vldrhq_gather_shifted_offset_s16): Likewise.
+	(vldrhq_gather_shifted_offset_u32): Likewise.
+	(vldrhq_gather_shifted_offset_u16): Likewise.
+	(vldrhq_gather_shifted_offset_z_s32): Likewise.
+	(vldrhq_gather_shifted_offset_z_s16): Likewise.
+	(vldrhq_gather_shifted_offset_z_u32): Likewise.
+	(vldrhq_gather_shifted_offset_z_u16): Likewise.
+	(vldrhq_s32): Likewise.
+	(vldrhq_s16): Likewise.
+	(vldrhq_u32): Likewise.
+	(vldrhq_u16): Likewise.
+	(vldrhq_z_s32): Likewise.
+	(vldrhq_z_s16): Likewise.
+	(vldrhq_z_u32): Likewise.
+	(vldrhq_z_u16): Likewise.
+	(vldrwq_s32): Likewise.
+	(vldrwq_u32): Likewise.
+	(vldrwq_z_s32): Likewise.
+	(vldrwq_z_u32): Likewise.
+	(vld1q_f32): Likewise.
+	(vld1q_f16): Likewise.
+	(vldrhq_f16): Likewise.
+	(vldrhq_z_f16): Likewise.
+	(vldrwq_f32): Likewise.
+	(vldrwq_z_f32): Likewise.
+	(__arm_vld1q_s8): Define intrinsic.
+	(__arm_vld1q_s32): Likewise.
+	(__arm_vld1q_s16): Likewise.
+	(__arm_vld1q_u8): Likewise.
+	(__arm_vld1q_u32): Likewise.
+	(__arm_vld1q_u16): Likewise.
+	(__arm_vldrhq_gather_offset_s32): Likewise.
+	(__arm_vldrhq_gather_offset_s16): Likewise.
+	(__arm_vldrhq_gather_offset_u32): Likewise.
+	(__arm_vldrhq_gather_offset_u16): Likewise.
+	(__arm_vldrhq_gather_offset_z_s32): Likewise.
+	(__arm_vldrhq_gather_offset_z_s16): Likewise.
+	(__arm_vldrhq_gather_offset_z_u32): Likewise.
+	(__arm_vldrhq_gather_offset_z_u16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_s32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_s16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_u32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_u16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_s32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_s16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_u32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_u16): Likewise.
+	(__arm_vldrhq_s32): Likewise.
+	(__arm_vldrhq_s16): Likewise.
+	(__arm_vldrhq_u32): Likewise.
+	(__arm_vldrhq_u16): Likewise.
+	(__arm_vldrhq_z_s32): Likewise.
+	(__arm_vldrhq_z_s16): Likewise.
+	(__arm_vldrhq_z_u32): Likewise.
+	(__arm_vldrhq_z_u16): Likewise.
+	(__arm_vldrwq_s32): Likewise.
+	(__arm_vldrwq_u32): Likewise.
+	(__arm_vldrwq_z_s32): Likewise.
+	(__arm_vldrwq_z_u32): Likewise.
+	(__arm_vld1q_f32): Likewise.
+	(__arm_vld1q_f16): Likewise.
+	(__arm_vldrwq_f32): Likewise.
+	(__arm_vldrwq_z_f32): Likewise.
+	(__arm_vldrhq_z_f16): Likewise.
+	(__arm_vldrhq_f16): Likewise.
+	(vld1q): Define polymorphic variant.
+	(vldrhq_gather_offset): Likewise.
+	(vldrhq_gather_offset_z): Likewise.
+	(vldrhq_gather_shifted_offset): Likewise.
+	(vldrhq_gather_shifted_offset_z): Likewise.
+	* config/arm/arm_mve_builtins.def (LDRU): Use builtin qualifier.
+	(LDRS): Likewise.
+	(LDRU_Z): Likewise.
+	(LDRS_Z): Likewise.
+	(LDRGU_Z): Likewise.
+	(LDRGU): Likewise.
+	(LDRGS_Z): Likewise.
+	(LDRGS): Likewise.
+	* config/arm/mve.md (MVE_H_ELEM): Define mode iterator.
+	(V_sz_elem1): Likewise.
+	(VLD1Q): Define iterator.
+	(VLDRHGOQ): Likewise.
+	(VLDRHGSOQ): Likewise.
+	(VLDRHQ): Likewise.
+	(VLDRWQ): Likewise.
+	(mve_vldrhq_fv8hf): Define RTL pattern.
+	(mve_vldrhq_gather_offset_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_offset_z_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_shifted_offset_<supf><mode>): Likewise.
+	(mve_vldrhq_gather_shifted_offset_z_<supf><mode>): Likewise.
+	(mve_vldrhq_<supf><mode>): Likewise.
+	(mve_vldrhq_z_fv8hf): Likewise.
+	(mve_vldrhq_z_<supf><mode>): Likewise.
+	(mve_vldrwq_fv4sf): Likewise.
+	(mve_vldrwq_<supf>v4si): Likewise.
+	(mve_vldrwq_z_fv4sf): Likewise.
+	(mve_vldrwq_z_<supf>v4si): Likewise.
+	(mve_vld1q_f<mode>): Define RTL expand pattern.
+	(mve_vld1q_<supf><mode>): Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm-builtins.c (LDRGBS_Z_QUALIFIERS): Define builtin
 	qualifier.
 	(LDRGBU_Z_QUALIFIERS): Likewise.

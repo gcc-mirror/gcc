@@ -2,6 +2,51 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vld1q_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vld1q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_z_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_z_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_offset_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_z_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_z_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_gather_shifted_offset_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrhq_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_z_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_z_u32.c: Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vldrbq_gather_offset_z_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vldrbq_gather_offset_z_s32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vldrbq_gather_offset_z_s8.c: Likewise.

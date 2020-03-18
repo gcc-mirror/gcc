@@ -26,6 +26,7 @@
 (define_mode_iterator MVE_3 [V16QI V8HI])
 (define_mode_iterator MVE_2 [V16QI V8HI V4SI])
 (define_mode_iterator MVE_5 [V8HI V4SI])
+(define_mode_iterator MVE_6 [V8HI V4SI])
 
 (define_c_enum "unspec" [VST4Q VRNDXQ_F VRNDQ_F VRNDPQ_F VRNDNQ_F VRNDMQ_F
 			 VRNDAQ_F VREV64Q_F VNEGQ_F VDUPQ_N_F VABSQ_F VREV32Q_F
@@ -193,10 +194,13 @@
 			 VFMAQ_M_N_F VFMASQ_M_N_F VFMSQ_M_F VMAXNMQ_M_F
 			 VMINNMQ_M_F VSUBQ_M_F VSTRWQSB_S VSTRWQSB_U
 			 VSTRBQSO_S VSTRBQSO_U VSTRBQ_S VSTRBQ_U VLDRBQGO_S
-			 VLDRBQGO_U VLDRBQ_S VLDRBQ_U VLDRWQGB_S VLDRWQGB_U])
+			 VLDRBQGO_U VLDRBQ_S VLDRBQ_U VLDRWQGB_S VLDRWQGB_U
+			 VLD1Q_F VLD1Q_S VLD1Q_U VLDRHQ_F VLDRHQGO_S
+			 VLDRHQGO_U VLDRHQGSO_S VLDRHQGSO_U VLDRHQ_S VLDRHQ_U
+			 VLDRWQ_F VLDRWQ_S VLDRWQ_U])
 
-(define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
-			    (V8HF "V8HI") (V4SF "V4SI")])
+(define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF") (V8HF "V8HI")
+			    (V4SF "V4SI")])
 
 (define_int_attr supf [(VCVTQ_TO_F_S "s") (VCVTQ_TO_F_U "u") (VREV16Q_S "s")
 		       (VREV16Q_U "u") (VMVNQ_N_S "s") (VMVNQ_N_U "u")
@@ -348,7 +352,11 @@
 		       (VSTRWQSB_S "s") (VSTRWQSB_U "u") (VSTRBQSO_S "s")
 		       (VSTRBQSO_U "u") (VSTRBQ_S "s") (VSTRBQ_U "u")
 		       (VLDRBQGO_S "s") (VLDRBQGO_U "u") (VLDRBQ_S "s")
-		       (VLDRBQ_U "u") (VLDRWQGB_S "s") (VLDRWQGB_U "u")])
+		       (VLDRBQ_U "u") (VLDRWQGB_S "s") (VLDRWQGB_U "u")
+		       (VLD1Q_S "s") (VLD1Q_U "u") (VLDRHQGO_S "s")
+		       (VLDRHQGO_U "u") (VLDRHQGSO_S "s") (VLDRHQGSO_U "u")
+		       (VLDRHQ_S "s") (VLDRHQ_U "u") (VLDRWQ_S "s")
+		       (VLDRWQ_U "u")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -362,10 +370,12 @@
 				   (V4SI "mve_imm_31")])
 (define_mode_attr MVE_constraint3 [ (V8HI "Rb") (V4SI "Rd")])
 (define_mode_attr MVE_pred3 [ (V8HI "mve_imm_8") (V4SI "mve_imm_16")])
-
 (define_mode_attr MVE_constraint1 [ (V8HI "Ra") (V4SI "Rc")])
 (define_mode_attr MVE_pred1 [ (V8HI "mve_imm_7") (V4SI "mve_imm_15")])
 (define_mode_attr MVE_B_ELEM [ (V16QI "V16QI") (V8HI "V8QI") (V4SI "V4QI")])
+(define_mode_attr MVE_H_ELEM [ (V8HI "V8HI") (V4SI "V4HI")])
+(define_mode_attr V_sz_elem1 [(V16QI "b") (V8HI  "h") (V4SI "w") (V8HF "h")
+			      (V4SF "w")])
 
 (define_int_iterator VCVTQ_TO_F [VCVTQ_TO_F_S VCVTQ_TO_F_U])
 (define_int_iterator VMVNQ_N [VMVNQ_N_U VMVNQ_N_S])
@@ -575,6 +585,11 @@
 (define_int_iterator VLDRBGOQ [VLDRBQGO_S VLDRBQGO_U])
 (define_int_iterator VLDRBQ [VLDRBQ_S VLDRBQ_U])
 (define_int_iterator VLDRWGBQ [VLDRWQGB_S VLDRWQGB_U])
+(define_int_iterator VLD1Q [VLD1Q_S VLD1Q_U])
+(define_int_iterator VLDRHGOQ [VLDRHQGO_S VLDRHQGO_U])
+(define_int_iterator VLDRHGSOQ [VLDRHQGSO_S VLDRHQGSO_U])
+(define_int_iterator VLDRHQ [VLDRHQ_S VLDRHQ_U])
+(define_int_iterator VLDRWQ [VLDRWQ_S VLDRWQ_U])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -8208,3 +8223,276 @@
    return "";
 }
   [(set_attr "length" "8")])
+
+;;
+;; [vldrhq_f]
+;;
+(define_insn "mve_vldrhq_fv8hf"
+  [(set (match_operand:V8HF 0 "s_register_operand" "=w")
+	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")]
+	 VLDRHQ_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vldrh.f16\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrhq_gather_offset_s vldrhq_gather_offset_u]
+;;
+(define_insn "mve_vldrhq_gather_offset_<supf><mode>"
+  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_6 2 "s_register_operand" "w")]
+	VLDRHGOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
+     output_asm_insn ("vldrh.u16\t%q0, [%m1, %q2]",ops);
+   else
+     output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrhq_gather_offset_z_s vldrhq_gather_offset_z_u]
+;;
+(define_insn "mve_vldrhq_gather_offset_z_<supf><mode>"
+  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_6 2 "s_register_operand" "w")
+		       (match_operand:HI 3 "vpr_register_operand" "Up")
+	]VLDRHGOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[4];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   ops[3] = operands[3];
+   if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
+     output_asm_insn ("vpst\n\tvldrht.u16\t%q0, [%m1, %q2]",ops);
+   else
+     output_asm_insn ("vpst\n\tvldrht.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
+   return "";
+}
+ [(set_attr "length" "8")])
+
+;;
+;; [vldrhq_gather_shifted_offset_s vldrhq_gather_shifted_offset_u]
+;;
+(define_insn "mve_vldrhq_gather_shifted_offset_<supf><mode>"
+  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_6 2 "s_register_operand" "w")]
+	VLDRHGSOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+      if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
+     output_asm_insn ("vldrh.u16\t%q0, [%m1, %q2, uxtw #1]",ops);
+   else
+     output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, [%m1, %q2, uxtw #1]",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrhq_gather_shifted_offset_z_s vldrhq_gather_shited_offset_z_u]
+;;
+(define_insn "mve_vldrhq_gather_shifted_offset_z_<supf><mode>"
+  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_6 2 "s_register_operand" "w")
+		       (match_operand:HI 3 "vpr_register_operand" "Up")
+	]VLDRHGSOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[4];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   ops[3] = operands[3];
+   if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
+     output_asm_insn ("vpst\n\tvldrht.u16\t%q0, [%m1, %q2, uxtw #1]",ops);
+   else
+     output_asm_insn ("vpst\n\tvldrht.<supf><V_sz_elem>\t%q0, [%m1, %q2, uxtw #1]",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;;
+;; [vldrhq_s, vldrhq_u]
+;;
+(define_insn "mve_vldrhq_<supf><mode>"
+  [(set (match_operand:MVE_6 0 "s_register_operand" "=w")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")]
+	 VLDRHQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrhq_z_f]
+;;
+(define_insn "mve_vldrhq_z_fv8hf"
+  [(set (match_operand:V8HF 0 "s_register_operand" "=w")
+	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
+	(match_operand:HI 2 "vpr_register_operand" "Up")]
+	 VLDRHQ_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vpst\n\tvldrht.f16\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vldrhq_z_s vldrhq_z_u]
+;;
+(define_insn "mve_vldrhq_z_<supf><mode>"
+  [(set (match_operand:MVE_6 0 "s_register_operand" "=w")
+	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+	(match_operand:HI 2 "vpr_register_operand" "Up")]
+	 VLDRHQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vpst\n\tvldrht.<supf><V_sz_elem>\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vldrwq_f]
+;;
+(define_insn "mve_vldrwq_fv4sf"
+  [(set (match_operand:V4SF 0 "s_register_operand" "=w")
+	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")]
+	 VLDRWQ_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vldrw.f32\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrwq_s vldrwq_u]
+;;
+(define_insn "mve_vldrwq_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")]
+	 VLDRWQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vldrw.<supf>32\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrwq_z_f]
+;;
+(define_insn "mve_vldrwq_z_fv4sf"
+  [(set (match_operand:V4SF 0 "s_register_operand" "=w")
+	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
+	(match_operand:HI 2 "vpr_register_operand" "Up")]
+	 VLDRWQ_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vpst\n\tvldrwt.f32\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vldrwq_z_s vldrwq_z_u]
+;;
+(define_insn "mve_vldrwq_z_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
+	(match_operand:HI 2 "vpr_register_operand" "Up")]
+	 VLDRWQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vpst\n\tvldrwt.<supf>32\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+(define_expand "mve_vld1q_f<mode>"
+  [(match_operand:MVE_0 0 "s_register_operand")
+   (unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "memory_operand")] VLD1Q_F)
+  ]
+  "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
+{
+  emit_insn (gen_mve_vldr<V_sz_elem1>q_f<mode>(operands[0],operands[1]));
+  DONE;
+})
+
+(define_expand "mve_vld1q_<supf><mode>"
+  [(match_operand:MVE_2 0 "s_register_operand")
+   (unspec:MVE_2 [(match_operand:MVE_2 1 "memory_operand")] VLD1Q)
+  ]
+  "TARGET_HAVE_MVE"
+{
+  emit_insn (gen_mve_vldr<V_sz_elem1>q_<supf><mode>(operands[0],operands[1]));
+  DONE;
+})
