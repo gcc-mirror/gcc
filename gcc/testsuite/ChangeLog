@@ -1,3 +1,9 @@
+2020-03-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/goacc/firstprivate-mappings-1.C: Only set DO_LONG_DOUBLE if
+	not defined; update comments.
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Likewise.
+
 2020-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94188
@@ -33,8 +39,8 @@
 	DEFAULT_CXXFLAGS has a value, even if unset by a higher level.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vabavq_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vabavq_s32.c: Likewise.
@@ -72,8 +78,8 @@
 	* gcc.target/arm/mve/intrinsics/vshlcq_u8.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vabdq_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vabdq_f32.c: Likewise.
@@ -222,8 +228,8 @@
 	* gcc.target/arm/mve/intrinsics/vsubq_f32.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vabdq_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vabdq_s32.c: Likewise.
@@ -587,8 +593,8 @@
 	* gcc.target/arm/mve/intrinsics/vsubq_u8.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vaddlvq_p_s32.c: New test.
 	* gcc.target/arm/mve/intrinsics/vaddlvq_p_u32.c: Likewise.
@@ -606,8 +612,8 @@
 	* gcc.target/arm/mve/intrinsics/vshlq_u8.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vcreateq_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vcreateq_s32.c: Likewise.
@@ -629,8 +635,8 @@
 	* gcc.target/arm/mve/intrinsics/vshrq_n_u8.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vbrsrq_n_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vbrsrq_n_f32.c: Likewise.
@@ -644,8 +650,8 @@
 	* gcc.target/arm/mve/intrinsics/vsubq_n_f32.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vctp16q.c: New test.
 	* gcc.target/arm/mve/intrinsics/vctp32q.c: Likewise.
@@ -654,8 +660,8 @@
 	* gcc.target/arm/mve/intrinsics/vpnot.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vabsq_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vabsq_s32.c: Likewise.
@@ -738,8 +744,8 @@
 	* gcc.dg/pr94015.c: New test.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vcvtq_s16_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vcvtq_s32_f32.c: Likewise.
@@ -757,8 +763,8 @@
 	* gcc.target/arm/mve/intrinsics/vrev64q_u8.c: Likewise.
 
 2020-03-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vabsq_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vabsq_f32.c: Likewise.
@@ -789,8 +795,8 @@
 	* gcc.target/arm/mve/intrinsics/vrndxq_f32.c: Likewise.
 
 2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vst4q_f16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vst4q_f32.c: Likewise.
@@ -866,8 +872,8 @@
 
 
 2020-03-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
-            Mihail Ionescu  <mihail.ionescu@arm.com>
-            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: New test.
 	* gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
@@ -1296,7 +1302,7 @@
 2020-03-04  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/93986
-        * gcc.dg/pr93986.c: New test.
+	* gcc.dg/pr93986.c: New test.
 
 2020-03-04  David Malcolm  <dmalcolm@redhat.com>
 
