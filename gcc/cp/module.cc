@@ -8303,19 +8303,6 @@ trees_out::type_node (tree type)
       return;
     }
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    {
-      /* This is a distinct type node, masquerading as a structure. */ 
-      tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-      if (streaming_p ())
-	i (tt_ptrmem_type);
-      tree_node (fn_type);
-      int tag = insert (type);
-      if (streaming_p ())
-	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
-      return;
-    }
-
   if (tree name = TYPE_NAME (type))
     if (DECL_TEMPLATE_PARM_P (name)
 	|| (TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
@@ -8342,6 +8329,19 @@ trees_out::type_node (tree type)
 	gcc_checking_assert (TREE_VISITED (type));
 	return;
       }
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    {
+      /* This is a distinct type node, masquerading as a structure. */
+      tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+      if (streaming_p ())
+	i (tt_ptrmem_type);
+      tree_node (fn_type);
+      int tag = insert (type);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Written:%d ptrmem type", tag);
+      return;
+    }
 
   if (streaming_p ())
     {

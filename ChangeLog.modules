@@ -1,6 +1,12 @@
 2020-03-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::type_node): Do ptr-mem-fns after typedef
+	detection.
+	gcc/testsuite/
+	* g++.dg/modules/pmf-2{,_[ab]}.[hHC]: New.
+
+	gcc/cp/
 	* module.cc (trees_out::key_mergeable): Do not perform
 	requirements stubstutition.
 	(check_mergeable_decl): Likewise.
