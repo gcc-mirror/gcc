@@ -13,7 +13,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Streams;
+pragma Ada_2020;
+
+with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
 
 private with Ada.Finalization;
 private with System;
@@ -24,9 +26,9 @@ private with System;
 package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
 is
-   type Big_Integer is private;
-   --  with Integer_Literal => From_String,
-   --       Put_Image => Put_Image;
+   type Big_Integer is private with
+   --  Integer_Literal => From_String,
+     Put_Image => Put_Image;
 
    function Is_Valid (Arg : Big_Integer) return Boolean
      with Convention => Intrinsic;
@@ -95,9 +97,7 @@ is
 
    function From_String (Arg : String) return Big_Integer;
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Integer);
+   procedure Put_Image (S : in out Sink'Class; V : Big_Integer);
 
    function "+" (L : Big_Integer) return Big_Integer;
 
