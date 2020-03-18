@@ -1,3 +1,8 @@
+2020-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (wd, wf, wi, ws, ww): New undocumented
+	aliases for "wa".
+
 2020-03-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/90275
