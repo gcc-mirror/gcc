@@ -9916,11 +9916,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		      if (cxx_dialect < cxx2a)
 			reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
 		      else
-			{
-			  reqs = CI_DECLARATOR_REQS (reqs);
-			  if (reqs)
-			    reqs = maybe_substitute_reqs_for (reqs, inner);
-			}
+			reqs = CI_DECLARATOR_REQS (reqs);
 		    }
 		  key.constraints = reqs;
 		}
@@ -10090,12 +10086,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		    if (cxx_dialect < cxx2a)
 		      m_reqs = CI_ASSOCIATED_CONSTRAINTS (m_reqs);
 		    else
-		      {
-			m_reqs = CI_DECLARATOR_REQS (m_reqs);
-			if (!m_reqs != !key.constraints)
-			  break;
-			m_reqs = maybe_substitute_reqs_for (m_reqs, m_inner);
-		      }
+		      m_reqs = CI_DECLARATOR_REQS (m_reqs);
 		  }
 
 		if (cp_tree_equal (m_reqs, key.constraints))
@@ -10415,6 +10406,11 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
   // (beware, default parms should be the same?)
   // Actually, we should just call duplicate_decls and teach it how to
   // handle the module-specific permitted/required duplications
+
+  // FIXME: decls_match does too much, for instance instantiating
+  // templates on function requirements.  We know at this point that
+  // the decls have matched by key, so we could elide some of the
+  // checking -- if we knew what the key specified
   if (!decls_match (decl, existing))
     {
       // FIXME: Might be template specialization from a module, not

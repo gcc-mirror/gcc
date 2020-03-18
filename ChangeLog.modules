@@ -1,6 +1,11 @@
 2020-03-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::key_mergeable): Do not perform
+	requirements stubstutition.
+	(check_mergeable_decl): Likewise.
+
+	gcc/cp/
 	* decl.c (decls_match): Use fndecl_declared_return_type for
 	newdecl too.
 	* module.cc (trees_out::key_mergeable): Use

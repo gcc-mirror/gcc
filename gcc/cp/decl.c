@@ -942,8 +942,11 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
   tree reqs2 = get_trailing_function_requirements (oldfn);
   if ((reqs1 != NULL_TREE) != (reqs2 != NULL_TREE))
     return false;
+
+  /* Substitution is needed when friends are involved.  */
   reqs1 = maybe_substitute_reqs_for (reqs1, newfn);
   reqs2 = maybe_substitute_reqs_for (reqs2, oldfn);
+
   return cp_tree_equal (reqs1, reqs2);
 }
 
