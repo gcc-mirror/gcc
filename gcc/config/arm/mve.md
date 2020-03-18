@@ -186,7 +186,12 @@
 			 VQDMULLTQ_M_N_S VQDMULLTQ_M_S VQRSHRUNBQ_M_N_S
 			 VQRSHRUNTQ_M_N_SVQSHRUNBQ_M_N_S VQSHRUNTQ_M_N_S
 			 VRMLALDAVHAQ_P_U VRMLALDAVHAXQ_P_S VRMLSLDAVHAQ_P_S
-			 VRMLSLDAVHAXQ_P_S VQRSHRUNTQ_M_N_S VQSHRUNBQ_M_N_S])
+			 VRMLSLDAVHAXQ_P_S VQRSHRUNTQ_M_N_S VQSHRUNBQ_M_N_S
+			 VCMLAQ_M_F VCMLAQ_ROT180_M_F VCMLAQ_ROT270_M_F
+			 VCMLAQ_ROT90_M_F VCMULQ_M_F VCMULQ_ROT180_M_F
+			 VCMULQ_ROT270_M_F VCMULQ_ROT90_M_F VFMAQ_M_F
+			 VFMAQ_M_N_F VFMASQ_M_N_F VFMSQ_M_F VMAXNMQ_M_F
+			 VMINNMQ_M_F VSUBQ_M_F])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
 			    (V8HF "V8HI") (V4SF "V4SI")])
@@ -7441,5 +7446,497 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\;vrmlsldavhaxt.s32\t%Q0, %R0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+;;
+;; [vabdq_m_f])
+;;
+(define_insn "mve_vabdq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VABDQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vabdt.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vaddq_m_f])
+;;
+(define_insn "mve_vaddq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VADDQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vaddt.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vaddq_m_n_f])
+;;
+(define_insn "mve_vaddq_m_n_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VADDQ_M_N_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vaddt.f%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vandq_m_f])
+;;
+(define_insn "mve_vandq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VANDQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vandt %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vbicq_m_f])
+;;
+(define_insn "mve_vbicq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VBICQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vbict %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vbrsrq_m_n_f])
+;;
+(define_insn "mve_vbrsrq_m_n_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:SI 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VBRSRQ_M_N_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vbrsrt.%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcaddq_rot270_m_f])
+;;
+(define_insn "mve_vcaddq_rot270_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCADDQ_ROT270_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcaddt.f%#<V_sz_elem>	%q0, %q2, %q3, #270"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcaddq_rot90_m_f])
+;;
+(define_insn "mve_vcaddq_rot90_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCADDQ_ROT90_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcaddt.f%#<V_sz_elem>	%q0, %q2, %q3, #90"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmlaq_m_f])
+;;
+(define_insn "mve_vcmlaq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMLAQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmlat.f%#<V_sz_elem>	%q0, %q2, %q3, #0"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmlaq_rot180_m_f])
+;;
+(define_insn "mve_vcmlaq_rot180_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMLAQ_ROT180_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmlat.f%#<V_sz_elem>	%q0, %q2, %q3, #180"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmlaq_rot270_m_f])
+;;
+(define_insn "mve_vcmlaq_rot270_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMLAQ_ROT270_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmlat.f%#<V_sz_elem>	%q0, %q2, %q3, #270"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmlaq_rot90_m_f])
+;;
+(define_insn "mve_vcmlaq_rot90_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMLAQ_ROT90_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmlat.f%#<V_sz_elem>	%q0, %q2, %q3, #90"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmulq_m_f])
+;;
+(define_insn "mve_vcmulq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMULQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmult.f%#<V_sz_elem>	%q0, %q2, %q3, #0"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmulq_rot180_m_f])
+;;
+(define_insn "mve_vcmulq_rot180_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMULQ_ROT180_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmult.f%#<V_sz_elem>	%q0, %q2, %q3, #180"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmulq_rot270_m_f])
+;;
+(define_insn "mve_vcmulq_rot270_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMULQ_ROT270_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmult.f%#<V_sz_elem>	%q0, %q2, %q3, #270"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vcmulq_rot90_m_f])
+;;
+(define_insn "mve_vcmulq_rot90_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VCMULQ_ROT90_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vcmult.f%#<V_sz_elem>	%q0, %q2, %q3, #90"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [veorq_m_f])
+;;
+(define_insn "mve_veorq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VEORQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;veort %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vfmaq_m_f])
+;;
+(define_insn "mve_vfmaq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VFMAQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vfmat.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vfmaq_m_n_f])
+;;
+(define_insn "mve_vfmaq_m_n_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VFMAQ_M_N_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vfmat.f%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vfmasq_m_n_f])
+;;
+(define_insn "mve_vfmasq_m_n_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VFMASQ_M_N_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vfmast.f%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vfmsq_m_f])
+;;
+(define_insn "mve_vfmsq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VFMSQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vfmst.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmaxnmq_m_f])
+;;
+(define_insn "mve_vmaxnmq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMAXNMQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vmaxnmt.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vminnmq_m_f])
+;;
+(define_insn "mve_vminnmq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMINNMQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vminnmt.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmulq_m_f])
+;;
+(define_insn "mve_vmulq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vmult.f%#<V_sz_elem>	%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vmulq_m_n_f])
+;;
+(define_insn "mve_vmulq_m_n_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VMULQ_M_N_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vmult.f%#<V_sz_elem>	%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vornq_m_f])
+;;
+(define_insn "mve_vornq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VORNQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vornt %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vorrq_m_f])
+;;
+(define_insn "mve_vorrq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VORRQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vorrt %q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vsubq_m_f])
+;;
+(define_insn "mve_vsubq_m_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSUBQ_M_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vsubt.f%#<V_sz_elem>\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
+;; [vsubq_m_n_f])
+;;
+(define_insn "mve_vsubq_m_n_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
+		       (match_operand:MVE_0 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSUBQ_M_N_F))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vpst\;vsubt.f%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
