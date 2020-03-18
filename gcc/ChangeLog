@@ -2,6 +2,60 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (STRS_P_QUALIFIERS): Define builtin
+	qualifier.
+	(STRU_P_QUALIFIERS): Likewise.
+	(STRSU_P_QUALIFIERS): Likewise.
+	(STRSS_P_QUALIFIERS): Likewise.
+	(STRSBS_P_QUALIFIERS): Likewise.
+	(STRSBU_P_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vstrbq_p_s8): Define macro.
+	(vstrbq_p_s32): Likewise.
+	(vstrbq_p_s16): Likewise.
+	(vstrbq_p_u8): Likewise.
+	(vstrbq_p_u32): Likewise.
+	(vstrbq_p_u16): Likewise.
+	(vstrbq_scatter_offset_p_s8): Likewise.
+	(vstrbq_scatter_offset_p_s32): Likewise.
+	(vstrbq_scatter_offset_p_s16): Likewise.
+	(vstrbq_scatter_offset_p_u8): Likewise.
+	(vstrbq_scatter_offset_p_u32): Likewise.
+	(vstrbq_scatter_offset_p_u16): Likewise.
+	(vstrwq_scatter_base_p_s32): Likewise.
+	(vstrwq_scatter_base_p_u32): Likewise.
+	(__arm_vstrbq_p_s8): Define intrinsic.
+	(__arm_vstrbq_p_s32): Likewise.
+	(__arm_vstrbq_p_s16): Likewise.
+	(__arm_vstrbq_p_u8): Likewise.
+	(__arm_vstrbq_p_u32): Likewise.
+	(__arm_vstrbq_p_u16): Likewise.
+	(__arm_vstrbq_scatter_offset_p_s8): Likewise.
+	(__arm_vstrbq_scatter_offset_p_s32): Likewise.
+	(__arm_vstrbq_scatter_offset_p_s16): Likewise.
+	(__arm_vstrbq_scatter_offset_p_u8): Likewise.
+	(__arm_vstrbq_scatter_offset_p_u32): Likewise.
+	(__arm_vstrbq_scatter_offset_p_u16): Likewise.
+	(__arm_vstrwq_scatter_base_p_s32): Likewise.
+	(__arm_vstrwq_scatter_base_p_u32): Likewise.
+	(vstrbq_p): Define polymorphic variant.
+	(vstrbq_scatter_offset_p): Likewise.
+	(vstrwq_scatter_base_p): Likewise.
+	* config/arm/arm_mve_builtins.def (STRS_P_QUALIFIERS): Use builtin
+	qualifier.
+	(STRU_P_QUALIFIERS): Likewise.
+	(STRSU_P_QUALIFIERS): Likewise.
+	(STRSS_P_QUALIFIERS): Likewise.
+	(STRSBS_P_QUALIFIERS): Likewise.
+	(STRSBU_P_QUALIFIERS): Likewise.
+	* config/arm/mve.md (mve_vstrbq_scatter_offset_p_<supf><mode>): Define
+	RTL pattern.
+	(mve_vstrwq_scatter_base_p_<supf>v4si): Likewise.
+	(mve_vstrbq_p_<supf><mode>): Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm-builtins.c (LDRGU_QUALIFIERS): Define builtin
 	qualifier.
 	(LDRGS_QUALIFIERS): Likewise.

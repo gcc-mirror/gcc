@@ -2,6 +2,25 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_p_u32.c: Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vldrbq_gather_offset_s16.c: New test.
 	* gcc.target/arm/mve/intrinsics/vldrbq_gather_offset_s32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vldrbq_gather_offset_s8.c: Likewise.

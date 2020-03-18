@@ -1730,6 +1730,20 @@ typedef struct { uint8x16_t val[4]; } uint8x16x4_t;
 #define vldrbq_u32(__base) __arm_vldrbq_u32(__base)
 #define vldrwq_gather_base_s32(__addr,  __offset) __arm_vldrwq_gather_base_s32(__addr,  __offset)
 #define vldrwq_gather_base_u32(__addr,  __offset) __arm_vldrwq_gather_base_u32(__addr,  __offset)
+#define vstrbq_p_s8( __addr, __value, __p) __arm_vstrbq_p_s8( __addr, __value, __p)
+#define vstrbq_p_s32( __addr, __value, __p) __arm_vstrbq_p_s32( __addr, __value, __p)
+#define vstrbq_p_s16( __addr, __value, __p) __arm_vstrbq_p_s16( __addr, __value, __p)
+#define vstrbq_p_u8( __addr, __value, __p) __arm_vstrbq_p_u8( __addr, __value, __p)
+#define vstrbq_p_u32( __addr, __value, __p) __arm_vstrbq_p_u32( __addr, __value, __p)
+#define vstrbq_p_u16( __addr, __value, __p) __arm_vstrbq_p_u16( __addr, __value, __p)
+#define vstrbq_scatter_offset_p_s8( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_s8( __base, __offset, __value, __p)
+#define vstrbq_scatter_offset_p_s32( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_s32( __base, __offset, __value, __p)
+#define vstrbq_scatter_offset_p_s16( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_s16( __base, __offset, __value, __p)
+#define vstrbq_scatter_offset_p_u8( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_u8( __base, __offset, __value, __p)
+#define vstrbq_scatter_offset_p_u32( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_u32( __base, __offset, __value, __p)
+#define vstrbq_scatter_offset_p_u16( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_u16( __base, __offset, __value, __p)
+#define vstrwq_scatter_base_p_s32(__addr,  __offset, __value, __p) __arm_vstrwq_scatter_base_p_s32(__addr,  __offset, __value, __p)
+#define vstrwq_scatter_base_p_u32(__addr,  __offset, __value, __p) __arm_vstrwq_scatter_base_p_u32(__addr,  __offset, __value, __p)
 #endif
 
 __extension__ extern __inline void
@@ -11219,6 +11233,103 @@ __arm_vldrwq_gather_base_u32 (uint32x4_t __addr, const int __offset)
   return __builtin_mve_vldrwq_gather_base_uv4si (__addr, __offset);
 }
 
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_p_s8 (int8_t * __addr, int8x16_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_p_sv16qi ((__builtin_neon_qi *) __addr, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_p_s32 (int8_t * __addr, int32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_p_sv4si ((__builtin_neon_qi *) __addr, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_p_s16 (int8_t * __addr, int16x8_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_p_sv8hi ((__builtin_neon_qi *) __addr, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_p_u8 (uint8_t * __addr, uint8x16_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_p_uv16qi ((__builtin_neon_qi *) __addr, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_p_u32 (uint8_t * __addr, uint32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_p_uv4si ((__builtin_neon_qi *) __addr, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_p_u16 (uint8_t * __addr, uint16x8_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_p_uv8hi ((__builtin_neon_qi *) __addr, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_scatter_offset_p_s8 (int8_t * __base, uint8x16_t __offset, int8x16_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_scatter_offset_p_sv16qi ((__builtin_neon_qi *) __base, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_scatter_offset_p_s32 (int8_t * __base, uint32x4_t __offset, int32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_scatter_offset_p_sv4si ((__builtin_neon_qi *) __base, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_scatter_offset_p_s16 (int8_t * __base, uint16x8_t __offset, int16x8_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_scatter_offset_p_sv8hi ((__builtin_neon_qi *) __base, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_scatter_offset_p_u8 (uint8_t * __base, uint8x16_t __offset, uint8x16_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_scatter_offset_p_uv16qi ((__builtin_neon_qi *) __base, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_scatter_offset_p_u32 (uint8_t * __base, uint32x4_t __offset, uint32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_scatter_offset_p_uv4si ((__builtin_neon_qi *) __base, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrbq_scatter_offset_p_u16 (uint8_t * __base, uint16x8_t __offset, uint16x8_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrbq_scatter_offset_p_uv8hi ((__builtin_neon_qi *) __base, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_p_s32 (uint32x4_t __addr, const int __offset, int32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrwq_scatter_base_p_sv4si (__addr, __offset, __value, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_p_u32 (uint32x4_t __addr, const int __offset, uint32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrwq_scatter_base_p_uv4si (__addr, __offset, __value, __p);
+}
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 
 __extension__ extern __inline void

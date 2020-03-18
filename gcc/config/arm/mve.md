@@ -8077,3 +8077,68 @@
    return "";
 }
   [(set_attr "length" "4")])
+
+;;
+;; [vstrbq_scatter_offset_p_s vstrbq_scatter_offset_p_u]
+;;
+(define_insn "mve_vstrbq_scatter_offset_p_<supf><mode>"
+  [(set (match_operand:<MVE_B_ELEM> 0 "memory_operand" "=Us")
+	(unspec:<MVE_B_ELEM>
+		[(match_operand:MVE_2 1 "s_register_operand" "w")
+		 (match_operand:MVE_2 2 "s_register_operand" "w")
+		 (match_operand:HI 3 "vpr_register_operand" "Up")]
+	 VSTRBSOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   output_asm_insn ("vpst\n\tvstrbt.<V_sz_elem>\t%q2, [%m0, %q1]",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vstrwq_scatter_base_p_s vstrwq_scatter_base_p_u]
+;;
+(define_insn "mve_vstrwq_scatter_base_p_<supf>v4si"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+		[(match_operand:V4SI 0 "s_register_operand" "w")
+		 (match_operand:SI 1 "immediate_operand" "i")
+		 (match_operand:V4SI 2 "s_register_operand" "w")
+		 (match_operand:HI 3 "vpr_register_operand" "Up")]
+	 VSTRWSBQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   output_asm_insn ("vpst\n\tvstrwt.u32\t%q2, [%q0, %1]",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vstrbq_p_s vstrbq_p_u]
+;;
+(define_insn "mve_vstrbq_p_<supf><mode>"
+  [(set (match_operand:<MVE_B_ELEM> 0 "memory_operand" "=Us")
+	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")
+			      (match_operand:HI 2 "vpr_register_operand" "Up")]
+	 VSTRBQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[1]);
+   ops[1] = gen_rtx_REG (TImode, regno);
+   ops[0]  = operands[0];
+   output_asm_insn ("vpst\n\tvstrbt.<V_sz_elem>\t%q1, %E0",ops);
+   return "";
+}
+  [(set_attr "length" "8")])
