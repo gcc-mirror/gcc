@@ -13,7 +13,4 @@ struct X : Outer<b>::template Inner<T>
 {};
 
 template <bool b, typename T>
-struct Y : Outer<b>::Inner<T> {}; // { dg-error "used as template" "temp" }
-// { dg-error "expected" "exp" { target *-*-* } .-1 }
-// { dg-message "note" "note" { target *-*-* } .-2 }
-
+struct Y : Outer<b>::Inner<T> {};

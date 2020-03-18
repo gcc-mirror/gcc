@@ -22,9 +22,7 @@ struct A
 
   typedef N<int>       type6;
   typedef A::N<int>    type7;
-// { dg-error "" "" { target c++2a } .-1 }
   typedef A<T>::N<int> type8;
-// { dg-error "" "" { target c++2a } .-1 }
   typedef A<T*>::template N<int> type9;  // { dg-error "" "" { target c++17_down } }
   typedef typename A<T*>::template N<int> type10;
 

@@ -14,8 +14,6 @@ struct A : typename O<T>::template I<int> {   // { dg-error "keyword 'typename' 
 
 template <typename T> 
 struct B : O<T>::template I<int> {
-  B() :    O<T>::I<int>()   // { dg-error "used as template|it is a template" }
+  B() :    O<T>::I<int>()
   {}
 };
-
-// { dg-bogus "end of input" "bogus token skipping in the parser" { xfail *-*-* } 17 }

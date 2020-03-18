@@ -1,3 +1,14 @@
+2020-03-26  Marek Polacek  <polacek@redhat.com>
+
+	DR 1710
+	PR c++/94057 - template keyword in a typename-specifier.
+	* parser.c (check_template_keyword_in_nested_name_spec): New.
+	(cp_parser_nested_name_specifier_opt): Implement DR1710, optional
+	'template'.  Call check_template_keyword_in_nested_name_spec.
+	(cp_parser_simple_type_specifier): Assume that a <
+	following a qualified-id in a typename-specifier begins
+	a template argument list.
+
 2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (coro_init_identifiers): Initialize an identifier
