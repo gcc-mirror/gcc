@@ -192,7 +192,8 @@
 			 VCMULQ_ROT270_M_F VCMULQ_ROT90_M_F VFMAQ_M_F
 			 VFMAQ_M_N_F VFMASQ_M_N_F VFMSQ_M_F VMAXNMQ_M_F
 			 VMINNMQ_M_F VSUBQ_M_F VSTRWQSB_S VSTRWQSB_U
-			 VSTRBQSO_S VSTRBQSO_U VSTRBQ_S VSTRBQ_U])
+			 VSTRBQSO_S VSTRBQSO_U VSTRBQ_S VSTRBQ_U VLDRBQGO_S
+			 VLDRBQGO_U VLDRBQ_S VLDRBQ_U VLDRWQGB_S VLDRWQGB_U])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF")
 			    (V8HF "V8HI") (V4SF "V4SI")])
@@ -345,7 +346,9 @@
 		       (VMLALDAVAXQ_P_S "s") (VMLALDAVAXQ_P_U "u")
 		       (VMLALDAVAQ_P_S "s") (VMLALDAVAQ_P_U "u")
 		       (VSTRWQSB_S "s") (VSTRWQSB_U "u") (VSTRBQSO_S "s")
-		       (VSTRBQSO_U "u") (VSTRBQ_S "s") (VSTRBQ_U "u")])
+		       (VSTRBQSO_U "u") (VSTRBQ_S "s") (VSTRBQ_U "u")
+		       (VLDRBQGO_S "s") (VLDRBQGO_U "u") (VLDRBQ_S "s")
+		       (VLDRBQ_U "u") (VLDRWQGB_S "s") (VLDRWQGB_U "u")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -569,6 +572,9 @@
 (define_int_iterator VSTRWSBQ [VSTRWQSB_S VSTRWQSB_U])
 (define_int_iterator VSTRBSOQ [VSTRBQSO_S VSTRBQSO_U])
 (define_int_iterator VSTRBQ [VSTRBQ_S VSTRBQ_U])
+(define_int_iterator VLDRBGOQ [VLDRBQGO_S VLDRBQGO_U])
+(define_int_iterator VLDRBQ [VLDRBQ_S VLDRBQ_U])
+(define_int_iterator VLDRWGBQ [VLDRWQGB_S VLDRWQGB_U])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -8006,6 +8012,68 @@
    ops[1] = operands[1];
    ops[2] = operands[2];
    output_asm_insn("vstrw.u32\t%q2, [%q0, %1]",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrbq_gather_offset_s vldrbq_gather_offset_u]
+;;
+(define_insn "mve_vldrbq_gather_offset_<supf><mode>"
+  [(set (match_operand:MVE_2 0 "s_register_operand" "=&w")
+	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")]
+	 VLDRBGOQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   if (!strcmp ("<supf>","s") && <V_sz_elem> == 8)
+     output_asm_insn ("vldrb.u8\t%q0, [%m1, %q2]",ops);
+   else
+     output_asm_insn ("vldrb.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrbq_s vldrbq_u]
+;;
+(define_insn "mve_vldrbq_<supf><mode>"
+  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "memory_operand" "Us")]
+	 VLDRBQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[2];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1]  = operands[1];
+   output_asm_insn ("vldrb.<supf><V_sz_elem>\t%q0, %E1",ops);
+   return "";
+}
+  [(set_attr "length" "4")])
+
+;;
+;; [vldrwq_gather_base_s vldrwq_gather_base_u]
+;;
+(define_insn "mve_vldrwq_gather_base_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		      (match_operand:SI 2 "immediate_operand" "i")]
+	 VLDRWGBQ))
+  ]
+  "TARGET_HAVE_MVE"
+{
+   rtx ops[3];
+   ops[0] = operands[0];
+   ops[1] = operands[1];
+   ops[2] = operands[2];
+   output_asm_insn ("vldrw.u32\t%q0, [%q1, %2]",ops);
    return "";
 }
   [(set_attr "length" "4")])

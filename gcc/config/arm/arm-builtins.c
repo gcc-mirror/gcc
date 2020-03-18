@@ -612,6 +612,36 @@ arm_strsbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned};
 #define STRSBU_QUALIFIERS (arm_strsbu_qualifiers)
 
+static enum arm_type_qualifiers
+arm_ldrgu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_pointer, qualifier_unsigned};
+#define LDRGU_QUALIFIERS (arm_ldrgu_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ldrgs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_pointer, qualifier_unsigned};
+#define LDRGS_QUALIFIERS (arm_ldrgs_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ldrs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_pointer};
+#define LDRS_QUALIFIERS (arm_ldrs_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ldru_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_pointer};
+#define LDRU_QUALIFIERS (arm_ldru_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ldrgbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned, qualifier_immediate};
+#define LDRGBS_QUALIFIERS (arm_ldrgbs_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ldrgbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
+#define LDRGBU_QUALIFIERS (arm_ldrgbu_qualifiers)
+
 /* End of Qualifier for MVE builtins.  */
 
    /* void ([T element type] *, T, immediate).  */
