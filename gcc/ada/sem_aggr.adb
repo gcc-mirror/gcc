@@ -3283,7 +3283,7 @@ package body Sem_Aggr is
 
       Box_Node       : Node_Id := Empty;
       Is_Box_Present : Boolean := False;
-      Others_Box     : Integer := 0;
+      Others_Box     : Natural := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
