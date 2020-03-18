@@ -2,6 +2,58 @@
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* config/arm/arm-builtins.c (LDRGBS_Z_QUALIFIERS): Define builtin
+	qualifier.
+	(LDRGBU_Z_QUALIFIERS): Likewise.
+	(LDRGS_Z_QUALIFIERS): Likewise.
+	(LDRGU_Z_QUALIFIERS): Likewise.
+	(LDRS_Z_QUALIFIERS): Likewise.
+	(LDRU_Z_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vldrbq_gather_offset_z_s16): Define macro.
+	(vldrbq_gather_offset_z_u8): Likewise.
+	(vldrbq_gather_offset_z_s32): Likewise.
+	(vldrbq_gather_offset_z_u16): Likewise.
+	(vldrbq_gather_offset_z_u32): Likewise.
+	(vldrbq_gather_offset_z_s8): Likewise.
+	(vldrbq_z_s16): Likewise.
+	(vldrbq_z_u8): Likewise.
+	(vldrbq_z_s8): Likewise.
+	(vldrbq_z_s32): Likewise.
+	(vldrbq_z_u16): Likewise.
+	(vldrbq_z_u32): Likewise.
+	(vldrwq_gather_base_z_u32): Likewise.
+	(vldrwq_gather_base_z_s32): Likewise.
+	(__arm_vldrbq_gather_offset_z_s8): Define intrinsic.
+	(__arm_vldrbq_gather_offset_z_s32): Likewise.
+	(__arm_vldrbq_gather_offset_z_s16): Likewise.
+	(__arm_vldrbq_gather_offset_z_u8): Likewise.
+	(__arm_vldrbq_gather_offset_z_u32): Likewise.
+	(__arm_vldrbq_gather_offset_z_u16): Likewise.
+	(__arm_vldrbq_z_s8): Likewise.
+	(__arm_vldrbq_z_s32): Likewise.
+	(__arm_vldrbq_z_s16): Likewise.
+	(__arm_vldrbq_z_u8): Likewise.
+	(__arm_vldrbq_z_u32): Likewise.
+	(__arm_vldrbq_z_u16): Likewise.
+	(__arm_vldrwq_gather_base_z_s32): Likewise.
+	(__arm_vldrwq_gather_base_z_u32): Likewise.
+	(vldrbq_gather_offset_z): Define polymorphic variant.
+	* config/arm/arm_mve_builtins.def (LDRGBS_Z_QUALIFIERS): Use builtin
+	qualifier.
+	(LDRGBU_Z_QUALIFIERS): Likewise.
+	(LDRGS_Z_QUALIFIERS): Likewise.
+	(LDRGU_Z_QUALIFIERS): Likewise.
+	(LDRS_Z_QUALIFIERS): Likewise.
+	(LDRU_Z_QUALIFIERS): Likewise.
+	* config/arm/mve.md (mve_vldrbq_gather_offset_z_<supf><mode>): Define
+	RTL pattern.
+	(mve_vldrbq_z_<supf><mode>): Likewise.
+	(mve_vldrwq_gather_base_z_<supf>v4si): Likewise.
+
+2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* config/arm/arm-builtins.c (STRS_P_QUALIFIERS): Define builtin
 	qualifier.
 	(STRU_P_QUALIFIERS): Likewise.
