@@ -1,3 +1,17 @@
+2020-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94188
+	* fold-const.c (build_fold_addr_expr): Convert address to
+	correct type.
+	* asan.c (maybe_create_ssa_name): Strip useless type conversions.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Use build1
+	to build the ADDR_EXPR which we don't really want to simplify.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Likewise.
+	* tree-ssa-loop-im.c (gather_mem_refs_stmt): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	(simplify_builtin_call): Strip useless type conversions.
+	* tree-ssa-strlen.c (new_strinfo): Likewise.
+
 2020-03-17  Alexey Neyman  <stilor@att.net>
 
 	PR debug/93751

@@ -6413,8 +6413,8 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		    && TREE_CODE (op1) == INTEGER_CST)
 		  {
 		    tree off = fold_convert (ptr_type_node, op1);
-		    return build_fold_addr_expr_loc
-			(loc,
+		    return build1_loc
+			(loc, ADDR_EXPR, TREE_TYPE (op0),
 			 fold_build2 (MEM_REF,
 				      TREE_TYPE (TREE_TYPE (op0)),
 				      unshare_expr (op0), off));

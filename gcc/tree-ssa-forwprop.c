@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "internal-fn.h"
 #include "cgraph.h"
+#include "tree-ssa.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -732,16 +733,15 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       if (TREE_CODE (new_def_rhs) == MEM_REF
 	  && !is_gimple_mem_ref_addr (TREE_OPERAND (new_def_rhs, 0)))
 	return false;
-      new_def_rhs = build_fold_addr_expr_with_type (new_def_rhs,
-						    TREE_TYPE (rhs));
+      new_def_rhs = build1 (ADDR_EXPR, TREE_TYPE (rhs), new_def_rhs);
 
       /* Recurse.  If we could propagate into all uses of lhs do not
 	 bother to replace into the current use but just pretend we did.  */
-      if (TREE_CODE (new_def_rhs) == ADDR_EXPR
-	  && forward_propagate_addr_expr (lhs, new_def_rhs, single_use_p))
+      if (forward_propagate_addr_expr (lhs, new_def_rhs, single_use_p))
 	return true;
 
-      if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (new_def_rhs)))
+      if (useless_type_conversion_p (TREE_TYPE (lhs),
+				     TREE_TYPE (new_def_rhs)))
 	gimple_assign_set_rhs_with_ops (use_stmt_gsi, TREE_CODE (new_def_rhs),
 					new_def_rhs);
       else if (is_gimple_min_invariant (new_def_rhs))
@@ -1319,6 +1319,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 		  || !tree_fits_shwi_p (src1))
 		break;
 	      ptr1 = build_fold_addr_expr (ptr1);
+	      STRIP_USELESS_TYPE_CONVERSION (ptr1);
 	      callee1 = NULL_TREE;
 	      len1 = size_one_node;
 	      lhs1 = NULL_TREE;

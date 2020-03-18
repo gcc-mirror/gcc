@@ -57,9 +57,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
-
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
+#include "tree-ssa.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -679,6 +679,7 @@ new_strinfo (tree ptr, int idx, tree nonzero_chars, bool full_string_p)
 {
   strinfo *si = strinfo_pool.allocate ();
   si->nonzero_chars = nonzero_chars;
+  STRIP_USELESS_TYPE_CONVERSION (ptr);
   si->ptr = ptr;
   si->stmt = NULL;
   si->alloc = NULL;
