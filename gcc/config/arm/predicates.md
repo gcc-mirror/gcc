@@ -43,6 +43,14 @@
 (define_predicate "mve_imm_8"
   (match_test "satisfies_constraint_Rb (op)"))
 
+;; True for immediates in the range of 0 to 15 for MVE.
+(define_predicate "mve_imm_15"
+  (match_test "satisfies_constraint_Rc (op)"))
+
+;; True for immediates in the range of 0 to 31 for MVE.
+(define_predicate "mve_imm_31"
+  (match_test "satisfies_constraint_Re (op)"))
+
 ;; True for immediates in the range of 1 to 32 for MVE.
 (define_predicate "mve_imm_32"
   (match_test "satisfies_constraint_Rf (op)"))

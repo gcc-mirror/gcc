@@ -69,6 +69,16 @@
   (and (match_code "const_int")
        (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 8")))
 
+(define_constraint "Rc"
+  "@internal In Thumb-2 state a constant in range 0 to 15"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 15")))
+
+(define_constraint "Re"
+  "@internal In Thumb-2 state a constant in range 0 to 31"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 31")))
+
 (define_constraint "Rf"
   "@internal In Thumb-2 state a constant in range 1 to 32"
   (and (match_code "const_int")

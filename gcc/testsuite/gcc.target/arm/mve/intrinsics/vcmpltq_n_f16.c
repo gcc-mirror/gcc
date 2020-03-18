@@ -16,7 +16,7 @@ foo (float16x8_t a, float16_t b)
 mve_pred16_t
 foo1 (float16x8_t a, float16_t b)
 {
-  return vcmpltq_n (a, b);
+  return vcmpltq (a, b);
 }
 
 /* { dg-final { scan-assembler "vcmp.f16"  }  } */
