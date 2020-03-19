@@ -24,10 +24,10 @@ program main
   !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-line l_compute1 }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute1 } */
   !   { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute1 } */
-  ! { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute1 }
-  ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
-  do i = 0, n - 1
-     c(i) = a(i) + b(i)
+  do i = 0, n - 1 ! { dg-line l_loop1 }
+    ! { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_loop1 }
+    ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } l_loop1 }
+    c(i) = a(i) + b(i)
   end do
   !$acc end kernels
 end program main

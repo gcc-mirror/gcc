@@ -25,11 +25,11 @@ program main
 
   call setup(a, b)
 
-  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-line l_compute1 }
-  ! { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute1 }
-  ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
-  do i = 0, n - 1
-     c(i) = a(f (i)) + b(f (i))
+  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) 
+  do i = 0, n - 1 ! { dg-line l_loop1 }
+    ! { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop1 }
+    ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } l_loop1 }
+    c(i) = a(f (i)) + b(f (i))
   end do
   !$acc end kernels
 end program main
