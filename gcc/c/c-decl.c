@@ -9851,7 +9851,7 @@ temp_pop_parm_decls (void)
    This is called after parsing the body of the function definition.  */
 
 void
-finish_function (void)
+finish_function (location_t end_loc)
 {
   tree fndecl = current_function_decl;
   
@@ -9947,7 +9947,7 @@ finish_function (void)
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
-  cfun->function_end_locus = input_location;
+  cfun->function_end_locus = end_loc;
 
   /* Finalize the ELF visibility for the function.  */
   c_determine_visibility (fndecl);

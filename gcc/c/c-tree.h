@@ -580,7 +580,7 @@ extern bool c_check_switch_jump_warnings (struct c_spot_bindings *,
 					  location_t, location_t);
 extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
-extern void finish_function (void);
+extern void finish_function (location_t = input_location);
 extern tree finish_struct (location_t, tree, tree, tree,
 			   class c_struct_parse_info *);
 extern tree c_simulate_enum_decl (location_t, const char *,

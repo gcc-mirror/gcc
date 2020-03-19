@@ -1,3 +1,8 @@
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	* gcc.misc-tests/gcov-pr94029.c: New test.
+
 2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/92372
