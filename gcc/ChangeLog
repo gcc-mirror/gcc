@@ -1,3 +1,10 @@
+2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92372
+	* cgraphunit.c (process_function_and_variable_attributes): warn
+	for flatten attribute on alias.
+	* ipa-inline.c (ipa_inline): Do not ICE on flatten attribute on alias.
+
 2020-03-19  Martin Liska  <mliska@suse.cz>
 
 	* lto-section-in.c: Add ext_symtab.

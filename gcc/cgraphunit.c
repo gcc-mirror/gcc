@@ -851,6 +851,14 @@ process_function_and_variable_attributes (cgraph_node *first,
        node = symtab->next_function (node))
     {
       tree decl = node->decl;
+
+      if (node->alias
+	  && lookup_attribute ("flatten", DECL_ATTRIBUTES (decl)))
+	{
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+		      "%<flatten%>"
+		      " attribute attribute is ignored on aliases");
+	}
       if (DECL_PRESERVE_P (decl))
 	node->mark_force_output ();
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
