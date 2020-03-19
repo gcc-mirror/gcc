@@ -1,3 +1,7 @@
+2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (*mov<mode>_insn): Only split post-reload.
+
 2020-04-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/arm_sve.h: Add a comment.
