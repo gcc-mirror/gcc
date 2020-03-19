@@ -1,3 +1,8 @@
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* supergraph.cc (superedge::dump): Add space before description;
+	move newline to non-pretty_printer overload.
+
 2020-03-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc: Include "stor-layout.h".

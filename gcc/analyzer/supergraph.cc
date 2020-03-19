@@ -630,8 +630,13 @@ void
 superedge::dump (pretty_printer *pp) const
 {
   pp_printf (pp, "edge: SN: %i -> SN: %i", m_src->m_index, m_dest->m_index);
-  dump_label_to_pp (pp, false);
-  pp_newline (pp);
+  char *desc = get_description (false);
+  if (strlen (desc) > 0)
+    {
+      pp_space (pp);
+      pp_string (pp, desc);
+    }
+  free (desc);
 }
 
 /* Dump this superedge to stderr.  */
@@ -644,6 +649,7 @@ superedge::dump () const
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
   pp.buffer->stream = stderr;
   dump (&pp);
+  pp_newline (&pp);
   pp_flush (&pp);
 }
 
