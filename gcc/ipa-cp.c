@@ -1352,11 +1352,13 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
   gcc_checking_assert (TREE_CODE (input) != TREE_BINFO);
   if (TREE_CODE (input) == ADDR_EXPR)
     {
-      tree t = TREE_OPERAND (input, 0);
-      t = build_ref_for_offset (EXPR_LOCATION (t), t,
-				ipa_get_jf_ancestor_offset (jfunc), false,
-				ptr_type_node, NULL, false);
-      return build_fold_addr_expr (t);
+      gcc_checking_assert (is_gimple_ip_invariant_address (input));
+      poly_int64 off = ipa_get_jf_ancestor_offset (jfunc);
+      if (known_eq (off, 0))
+	return input;
+      return build1 (ADDR_EXPR, TREE_TYPE (input),
+		     fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (input)),
+				  input, build_int_cst (ptr_type_node, off)));
     }
   else
     return NULL_TREE;

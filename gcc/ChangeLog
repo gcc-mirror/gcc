@@ -1,5 +1,11 @@
 2020-03-19  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/94217
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Avoid build_fold_addr_expr
+	and build_ref_for_offset.
+
+2020-03-19  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/94216
 	* fold-const.c (fold_binary_loc): Avoid using
 	build_fold_addr_expr when we really want an ADDR_EXPR.
