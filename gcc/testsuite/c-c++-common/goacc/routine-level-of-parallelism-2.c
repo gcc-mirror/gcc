@@ -3,8 +3,10 @@
    '../../gfortran.dg/goacc/routine-level-of-parallelism-1.f90'.  */
 
 #pragma acc routine gang
-void g_1 (void)
+void g_1 (void) /* { dg-warning "region is gang partitioned but does not contain gang partitioned code" } */
 {
+  /* { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "" { xfail *-*-* } .-2 } */
+  /* { dg-bogus "region is vector partitioned but does not contain vector partitioned code" "" { xfail *-*-* } .-3 } */
 }
 #pragma acc routine (g_1) gang
 #pragma acc routine (g_1) gang
