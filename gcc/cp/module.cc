@@ -10685,14 +10685,26 @@ trees_out::write_function_def (tree decl)
   tree_node (DECL_FRIEND_CONTEXT (decl));
 
   constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl);
-  if (streaming_p ())
-    u (cexpr != NULL);
+  int tag = 0;
   if (cexpr)
     {
-      int tag = insert (cexpr->result);
-      if (streaming_p ())
+      if (cexpr->result == error_mark_node)
+	/* We'll stream the RESULT_DECL naturally during the
+	   serialization.  We never need to fish it back again, so
+	   that's ok.  */
+	tag = 0;
+      else
+	tag = insert (cexpr->result);
+    }
+  if (streaming_p ())
+    {
+      i (tag);
+      if (tag)
 	dump (dumper::TREE)
 	  && dump ("Constexpr:%d result %N", tag, cexpr->result);
+    }
+  if (tag)
+    {
       unsigned ix = 0;
       for (tree parm = cexpr->parms; parm; parm = DECL_CHAIN (parm), ix++)
 	{
@@ -10720,12 +10732,21 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree context = tree_node ();
   constexpr_fundef cexpr;
 
-  if (u ())
+  if (int wtag = i ())
     {
-      cexpr.result = copy_decl (result);
-      int tag = insert (cexpr.result);
+      int tag = 1;
+      cexpr.result = error_mark_node;
+
+      if (wtag)
+	{
+	  cexpr.result = copy_decl (result);
+	  tag = insert (cexpr.result);
+	}
+      if (wtag != tag)
+	set_overrun ();
       dump (dumper::TREE)
-	  && dump ("Constexpr:%d result %N", tag, cexpr.result);
+	&& dump ("Constexpr:%d result %N", tag, cexpr.result);
+
       cexpr.parms = NULL_TREE;
       tree *chain = &cexpr.parms;
       unsigned ix = 0;
