@@ -1,3 +1,8 @@
+2020-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94216
+	* g++.dg/torture/pr94216.C: New testcase.
+
 2020-03-18  Martin Sebor  <msebor@redhat.com>
 
 	PR ipa/92799

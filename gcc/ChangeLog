@@ -1,3 +1,9 @@
+2020-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94216
+	* fold-const.c (fold_binary_loc): Avoid using
+	build_fold_addr_expr when we really want an ADDR_EXPR.
+
 2020-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md (wd, wf, wi, ws, ww): New undocumented
