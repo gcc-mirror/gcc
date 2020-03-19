@@ -1,3 +1,11 @@
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93931
+	* testsuite/libgomp.c++/pr93931.C: New test.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
