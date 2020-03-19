@@ -87,7 +87,19 @@ struct ld_plugin_symbol
 {
   char *name;
   char *version;
-  int def;
+  /* This is for compatibility with older ABIs.  The older ABI defined
+     only 'def' field.  */
+#ifdef __BIG_ENDIAN__
+  char unused;
+  char section_kind;
+  char symbol_type;
+  char def;
+#else
+  char def;
+  char symbol_type;
+  char section_kind;
+  char unused;
+#endif
   int visibility;
   uint64_t size;
   char *comdat_key;
@@ -121,6 +133,21 @@ enum ld_plugin_symbol_visibility
   LDPV_PROTECTED,
   LDPV_INTERNAL,
   LDPV_HIDDEN
+};
+
+/* The type of the symbol.  */
+
+enum ld_plugin_symbol_type
+{
+  LDST_UNKNOWN,
+  LDST_FUNCTION,
+  LDST_VARIABLE,
+};
+
+enum ld_plugin_symbol_section_kind
+{
+  LDSSK_DEFAULT,
+  LDSSK_BSS
 };
 
 /* How a symbol is resolved.  */
@@ -431,7 +458,8 @@ enum ld_plugin_tag
   LDPT_GET_INPUT_SECTION_ALIGNMENT = 29,
   LDPT_GET_INPUT_SECTION_SIZE = 30,
   LDPT_REGISTER_NEW_INPUT_HOOK = 31,
-  LDPT_GET_WRAP_SYMBOLS = 32
+  LDPT_GET_WRAP_SYMBOLS = 32,
+  LDPT_ADD_SYMBOLS_V2 = 33
 };
 
 /* The plugin transfer vector.  */

@@ -1,3 +1,11 @@
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (struct ld_plugin_symbol): Split
+	int def into 4 char fields.
+	(enum ld_plugin_symbol_type): New.
+	(enum ld_plugin_symbol_section_kind): New.
+	(enum ld_plugin_tag): Add LDPT_ADD_SYMBOLS_V2.
+
 2020-02-05  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* hashtab.h (htab_remove_elt): Make a parameter const.
