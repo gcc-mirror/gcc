@@ -1,3 +1,8 @@
+2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/94202
+	* g++.dg/torture/pr94202.C: New test.
+
 2020-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/94029

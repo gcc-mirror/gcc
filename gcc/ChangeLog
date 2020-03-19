@@ -1,5 +1,11 @@
 2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/94202
+	* cgraph.c (cgraph_node::function_symbol): Fix availability computation.
+	(cgraph_node::function_or_virtual_thunk_symbol): Likewise.
+
+2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/92372
 	* cgraphunit.c (process_function_and_variable_attributes): warn
 	for flatten attribute on alias.
