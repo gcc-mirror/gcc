@@ -275,8 +275,9 @@ program main
   if (ltmp .neqv. .not. lexp) STOP 33
   if (lgot .neqv. lexp) STOP 34
 
-  igot = 1
+  igot = 0
   iexp = N
+  iarr = -42
 
   !$acc parallel loop copy (igot, itmp)
     do i = 1, N
@@ -287,13 +288,24 @@ program main
     end do
   !$acc end parallel loop
 
+  if (igot /= N) stop 107
+  itmp = 0
   do i = 1, N
-     if (.not. (1 <= iarr(i) .and. iarr(i) < iexp)) STOP 35
+     if (iarr(i) == 0) then
+       itmp = i
+       exit
+     end if
+  end do
+  ! At most one iarr element can be 0.
+  do i = 1, N
+     if ((iarr(i) == 0 .and. i /= itmp) &
+         .or. iarr(i) < 0 .or. iarr(i) >= N) STOP 35
   end do
   if (igot /= iexp) STOP 36
 
-  igot = N
+  igot = N + 1
   iexp = 1
+  iarr = -42
 
   !$acc parallel loop copy (igot, itmp)
     do i = 1, N
@@ -304,8 +316,18 @@ program main
     end do
   !$acc end parallel loop
 
+  if (igot /= 1) stop 108
+  itmp = N + 1
+  ! At most one iarr element can be N+1.
   do i = 1, N
-     if (.not. (iarr(i) == 1 .or. iarr(i) == N)) STOP 37
+     if (iarr(i) == N + 1) then
+       itmp = i
+       exit
+     end if
+  end do
+  do i = 1, N
+     if ((iarr(i) == N + 1 .and. i /= itmp) &
+         .or. iarr(i) <= 0 .or. iarr(i) > N + 1) STOP 37
   end do
   if (igot /= iexp) STOP 38
 

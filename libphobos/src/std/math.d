@@ -4760,7 +4760,7 @@ private:
                     uint result = void;
                     asm pure nothrow @nogc
                     {
-                        "vmrs %0, FPSCR; and %0, %0, #0x1F;" : "=r" result;
+                        "vmrs %0, FPSCR; and %0, %0, #0x1F;" : "=r" (result);
                     }
                     return result;
                 }
@@ -4774,7 +4774,7 @@ private:
                     uint result = void;
                     asm pure nothrow @nogc
                     {
-                        "frflags %0" : "=r" result;
+                        "frflags %0" : "=r" (result);
                     }
                     return result;
                 }
@@ -4862,7 +4862,7 @@ private:
                     uint newValues = 0x0;
                     asm pure nothrow @nogc
                     {
-                        "fsflags %0" : : "r" newValues;
+                        "fsflags %0" : : "r" (newValues);
                     }
                 }
             }
@@ -5431,7 +5431,7 @@ private:
                 ControlState cont;
                 asm pure nothrow @nogc
                 {
-                    "fstcw %0" : "=m" cont;
+                    "fstcw %0" : "=m" (cont);
                 }
                 return cont;
             }
@@ -5440,7 +5440,7 @@ private:
                 ControlState cont;
                 asm pure nothrow @nogc
                 {
-                    "mrs %0, FPCR;" : "=r" cont;
+                    "mrs %0, FPCR;" : "=r" (cont);
                 }
                 return cont;
             }
@@ -5453,7 +5453,7 @@ private:
                 {
                     asm pure nothrow @nogc
                     {
-                        "vmrs %0, FPSCR" : "=r" cont;
+                        "vmrs %0, FPSCR" : "=r" (cont);
                     }
                 }
                 return cont;
@@ -5467,7 +5467,7 @@ private:
                     ControlState cont;
                     asm pure nothrow @nogc
                     {
-                        "frcsr %0" : "=r" cont;
+                        "frcsr %0" : "=r" (cont);
                     }
                     return cont;
                 }
@@ -5510,7 +5510,7 @@ private:
             {
                 asm pure nothrow @nogc
                 {
-                    "fclex; fldcw %0" : : "m" newState;
+                    "fclex; fldcw %0" : : "m" (newState);
                 }
 
                 // Also update MXCSR, SSE's control register.
@@ -5519,7 +5519,7 @@ private:
                     uint mxcsr;
                     asm pure nothrow @nogc
                     {
-                        "stmxcsr %0" : "=m" mxcsr;
+                        "stmxcsr %0" : "=m" (mxcsr);
                     }
 
                     /* In the FPU control register, rounding mode is in bits 10 and
@@ -5534,7 +5534,7 @@ private:
 
                     asm pure nothrow @nogc
                     {
-                        "ldmxcsr %0" : : "m" mxcsr;
+                        "ldmxcsr %0" : : "m" (mxcsr);
                     }
                 }
             }

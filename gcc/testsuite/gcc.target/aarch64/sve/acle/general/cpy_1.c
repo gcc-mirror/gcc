@@ -10,9 +10,11 @@ extern "C" {
 
 /*
 ** dup_x0_m:
+**	...
 **	add	(x[0-9]+), x0, #?1
 **	mov	(p[0-7])\.b, p15\.b
 **	mov	z0\.d, \2/m, \1
+**	...
 **	ret
 */
 svuint64_t
@@ -25,8 +27,10 @@ dup_x0_m (svuint64_t z0, uint64_t x0)
 
 /*
 ** dup_d1_z:
+**	...
 **	mov	(p[0-7])\.b, p15\.b
 **	mov	z0\.d, \1/m, d1
+**	...
 **	ret
 */
 svfloat64_t

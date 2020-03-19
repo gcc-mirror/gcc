@@ -1,4 +1,96 @@
+2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token (stop_token::_Stop_state_ref): Define
+	comparison operators explicitly if the compiler won't synthesize them.
+
+	* include/bits/stl_algobase.h (__lexicographical_compare_aux): Check
+	__cpp_lib_concepts before using iter_reference_t.
+	* include/bits/stream_iterator.h (istream_iterator): Check
+	__cpp_lib_concepts before using default_sentinel_t.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Likewise.
+
+	PR libstdc++/94203
+	* include/experimental/executor (executor::executor(Executor)): Call
+	make_shared directly instead of _M_create. Create _Tgt1 object.
+	(executor::executor(allocator_arg_t, const ProtoAlloc&, Executor)):
+	Call allocate_shared directly instead of _M_create. Create _Tgt2
+	object.
+	(executor::target_type): Add cast needed for new _Tgt interface.
+	(executor::target): Define when RTTI is disabled. Use _Tgt::_M_func.
+	(executor::_Tgt): Define the same interface whether RTTI is enabled or
+	not.
+	(executor::_Tgt::target_type, executor::_Tgt::target): Do not use
+	std::type_info in the interface.
+	(executor::_Tgt::_M_func): Add data member.
+	(executor::_TgtImpl): Replace with _Tgt1 and _Tgt2 class templates.
+	(executor::_Tgt1::_S_func): Define function to access target without
+	depending on RTTI.
+	(executor::_M_create): Remove.
+	(operator==, operator!=): Simplify comparisons for executor.
+	* include/experimental/socket (is_error_code_enum<socket_errc>):
+	Define specialization before use.
+	* testsuite/experimental/net/executor/1.cc: New test.
+
+2020-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94199
+	* include/experimental/executor (service_already_exists): Add default
+	constructor. Declare make_service to be a friend.
+	* testsuite/experimental/net/execution_context/make_service.cc: New
+	test.
+
+2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Do not pass
+	a null pointer to functions with nonnull(1) attribute.
+
+2020-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_OuterIter::_OuterIter): Typo fix,
+	'address' -> 'std::__addressof'.
+	* testsuite/std/ranges/adaptors/split.cc: Test taking the split_view of
+	a non-forward input_range.
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper): Make
+	default constructor protected instead of deleted, like with
+	input_iterator_wrapper.
+	(test_range::iterator): Add comment explaining that this type is used
+	only when the underlying wrapper is input_iterator_wrapper or
+	output_iterator_wrapper.  Remove delegating defaulted constructor so
+	that the inherited default constructor is used instead.
+
+	LWG 3286 ranges::size is not required to be valid after a call to
+	ranges::begin on an input range
+	* include/std/ranges (subrange::subrange): Split single-argument
+	constructor into two, one constrained by _S_store_size and another by
+	!_S_store_size.
+	(take_view::begin): Call size() before calling ranges::begin(_M_base).
+	* testsuite/std/ranges/adaptors/lwg3286.cc: New test.
+	* testsuite/std/ranges/subrange/lwg3286.cc: New test.
+
 2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (split_view::_OuterIter::__at_end): Use __current
+	instead of _M_current.
+	(split_view::_OuterIter::operator++): Likewise.
+
+	* include/std/ranges (transform_view::_Iterator::__iter_move): Remove.
+	(transform_view::_Iterator::operator*): Add noexcept-specifier.
+	(transform_view::_Iterator::iter_move): Inline __iter_move body here.
+	(split_view::_OuterIter::__current): Add noexcept.
+	(split_view::_InnerIter::__iter_swap): Remove.
+	(split_view::_InnerIter::__iter_move): Remove.
+	(split_view::_InnerIter::_M_i_current): New accessors.
+	(split_view::_InnerIter::__at_end): Use _M_i_current().
+	(split_view::_InnerIter::operator*): Likewise.
+	(split_view::_InnerIter::operator++): Likewise.
+	(iter_move(const _InnerIter&)): Likewise.
+	(iter_swap(const _InnerIter&, const _InnerIter&)): Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Check noexcept-specifier
+	for iter_move and iter_swap on split_view's inner iterator.
+
+	PR c++/94117
+	* include/std/ranges (ranges::transform_view::_Iterator::iter_move):
+	Change expression in noexcept-specifier to match function body.
 
 	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Add
 	comment explaining multiple dg-do directives.

@@ -153,7 +153,7 @@ optrecord_json_writer::add_record (const optinfo *optinfo)
 
 /* Private methods of optrecord_json_writer.  */
 
-/* Add record OBJ to the the innermost scope.  */
+/* Add record OBJ to the innermost scope.  */
 
 void
 optrecord_json_writer::add_record (json::object *obj)

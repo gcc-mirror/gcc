@@ -34,15 +34,65 @@
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
 ;;			 Dt, Dp, Dz, Tu
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
-;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz
+;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
+;;		     Rg, Ri
 ;; in all states: Pf, Pg
 
 ;; The following memory constraints have been used:
-;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us
+;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us, Up, Uf
 ;; in ARM state: Uq
 ;; in Thumb state: Uu, Uw
 ;; in all states: Q
 
+(define_register_constraint "Up" "TARGET_HAVE_MVE ? VPR_REG : NO_REGS"
+  "MVE VPR register")
+
+(define_register_constraint "Uf" "TARGET_HAVE_MVE ? VFPCC_REG : NO_REGS"
+  "MVE FPCCR register")
+
+(define_register_constraint "e" "TARGET_HAVE_MVE ? EVEN_REG : NO_REGS"
+  "MVE EVEN registers @code{r0}, @code{r2}, @code{r4}, @code{r6}, @code{r8},
+   @code{r10}, @code{r12}, @code{r14}")
+
+(define_constraint "Rd"
+  "@internal In Thumb-2 state a constant in range 1 to 16"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 16")))
+
+(define_constraint "Ra"
+  "@internal In Thumb-2 state a constant in range 0 to 7"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 7")))
+
+(define_constraint "Rb"
+  "@internal In Thumb-2 state a constant in range 1 to 8"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 8")))
+
+(define_constraint "Rc"
+  "@internal In Thumb-2 state a constant in range 0 to 15"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 15")))
+
+(define_constraint "Re"
+  "@internal In Thumb-2 state a constant in range 0 to 31"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 0 && ival <= 31")))
+
+(define_constraint "Rf"
+  "@internal In Thumb-2 state a constant in range 1 to 32"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ival >= 1 && ival <= 32")))
+
+(define_constraint "Rg"
+  "@internal In Thumb-2 state a constant is one among 1, 2, 4 and 8"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && ((ival == 1) || (ival == 2)
+				       || (ival == 4) || (ival == 8))")))
+
+;; True if the immediate is multiple of 8 and in range of -/+ 1016 for MVE.
+(define_predicate "mve_vldrd_immediate"
+  (match_test "satisfies_constraint_Ri (op)"))
 
 (define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
  "The VFP registers @code{s0}-@code{s31}.")

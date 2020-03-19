@@ -6,11 +6,17 @@
 
 /*
 ** callee_pred:
+**	addvl	sp, sp, #-1
+**	str	p[0-9]+, \[sp\]
+**	str	p[0-9]+, \[sp, #1, mul vl\]
 **	ldr	(p[0-9]+), \[x0\]
 **	ldr	(p[0-9]+), \[x1\]
 **	brkpa	(p[0-7])\.b, p0/z, p1\.b, p2\.b
 **	brkpb	(p[0-7])\.b, \3/z, p3\.b, \1\.b
 **	brka	p0\.b, \4/z, \2\.b
+**	ldr	p[0-9]+, \[sp\]
+**	ldr	p[0-9]+, \[sp, #1, mul vl\]
+**	addvl	sp, sp, #1
 **	ret
 */
 __SVBool_t __attribute__((noipa))

@@ -31,6 +31,7 @@
 bool definitelyValueParameter(Expression *e);
 Expression *semantic(Expression *e, Scope *sc);
 StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
+Dsymbols *makeTupleForeachStaticDecl(Scope *sc, ForeachStatement *fs, Dsymbols *dbody, bool needExpansion);
 
 /********************************* AttribDeclaration ****************************/
 
@@ -42,6 +43,9 @@ AttribDeclaration::AttribDeclaration(Dsymbols *decl)
 
 Dsymbols *AttribDeclaration::include(Scope *, ScopeDsymbol *)
 {
+    if (errors)
+        return NULL;
+
     return decl;
 }
 
@@ -752,6 +756,7 @@ void AnonDeclaration::semantic(Scope *sc)
     {
         ::error(loc, "%s can only be a part of an aggregate, not %s %s",
             kind(), p->kind(), p->toChars());
+        errors = true;
         return;
     }
 
@@ -1219,6 +1224,10 @@ bool ConditionalDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
 Dsymbols *ConditionalDeclaration::include(Scope *sc, ScopeDsymbol *sds)
 {
     //printf("ConditionalDeclaration::include(sc = %p) _scope = %p\n", sc, _scope);
+
+    if (errors)
+        return NULL;
+
     assert(condition);
     return condition->include(_scope ? _scope : sc, sds) ? decl : elsedecl;
 }
@@ -1275,6 +1284,7 @@ StaticIfDeclaration::StaticIfDeclaration(Condition *condition,
     //printf("StaticIfDeclaration::StaticIfDeclaration()\n");
     scopesym = NULL;
     addisdone = false;
+    onStack = false;
 }
 
 Dsymbol *StaticIfDeclaration::syntaxCopy(Dsymbol *s)
@@ -1293,12 +1303,17 @@ Dsymbols *StaticIfDeclaration::include(Scope *sc, ScopeDsymbol *)
 {
     //printf("StaticIfDeclaration::include(sc = %p) _scope = %p\n", sc, _scope);
 
+    if (errors || onStack)
+        return NULL;
+    onStack = true;
+    Dsymbols *d;
+
     if (condition->inc == 0)
     {
         assert(scopesym);   // addMember is already done
         assert(_scope);      // setScope is already done
 
-        Dsymbols *d = ConditionalDeclaration::include(_scope, scopesym);
+        d = ConditionalDeclaration::include(_scope, scopesym);
 
         if (d && !addisdone)
         {
@@ -1318,11 +1333,14 @@ Dsymbols *StaticIfDeclaration::include(Scope *sc, ScopeDsymbol *)
 
             addisdone = true;
         }
+        onStack = false;
         return d;
     }
     else
     {
-        return ConditionalDeclaration::include(sc, scopesym);
+        d = ConditionalDeclaration::include(sc, scopesym);
+        onStack = false;
+        return d;
     }
 }
 
@@ -1364,6 +1382,173 @@ void StaticIfDeclaration::semantic(Scope *sc)
 const char *StaticIfDeclaration::kind() const
 {
     return "static if";
+}
+
+/***************************** StaticForeachDeclaration ***********************/
+
+/* Static foreach at declaration scope, like:
+ *     static foreach (i; [0, 1, 2]){ }
+ */
+
+StaticForeachDeclaration::StaticForeachDeclaration(StaticForeach *sfe, Dsymbols *decl)
+        : AttribDeclaration(decl)
+{
+    this->sfe = sfe;
+    this->scopesym = NULL;
+    this->onStack = false;
+    this->cached = false;
+    this->cache = NULL;
+}
+
+Dsymbol *StaticForeachDeclaration::syntaxCopy(Dsymbol *s)
+{
+    assert(!s);
+    return new StaticForeachDeclaration(
+        sfe->syntaxCopy(),
+        Dsymbol::arraySyntaxCopy(decl));
+}
+
+bool StaticForeachDeclaration::oneMember(Dsymbol **ps, Identifier *ident)
+{
+    // Required to support IFTI on a template that contains a
+    // `static foreach` declaration.  `super.oneMember` calls
+    // include with a `null` scope.  As `static foreach` requires
+    // the scope for expansion, `oneMember` can only return a
+    // precise result once `static foreach` has been expanded.
+    if (cached)
+    {
+        return AttribDeclaration::oneMember(ps, ident);
+    }
+    *ps = NULL; // a `static foreach` declaration may in general expand to multiple symbols
+    return false;
+}
+
+Dsymbols *StaticForeachDeclaration::include(Scope *, ScopeDsymbol *)
+{
+    if (errors || onStack)
+        return NULL;
+    if (cached)
+    {
+        assert(!onStack);
+        return cache;
+    }
+    onStack = true;
+
+    if (_scope)
+    {
+        staticForeachPrepare(sfe, _scope); // lower static foreach aggregate
+    }
+    if (!staticForeachReady(sfe))
+    {
+        onStack = false;
+        return NULL; // TODO: ok?
+    }
+
+    // expand static foreach
+    Dsymbols *d = makeTupleForeachStaticDecl(_scope, sfe->aggrfe, decl, sfe->needExpansion);
+    if (d) // process generated declarations
+    {
+        // Add members lazily.
+        for (size_t i = 0; i < d->dim; i++)
+        {
+            Dsymbol *s = (*d)[i];
+            s->addMember(_scope, scopesym);
+        }
+        // Set the member scopes lazily.
+        for (size_t i = 0; i < d->dim; i++)
+        {
+            Dsymbol *s = (*d)[i];
+            s->setScope(_scope);
+        }
+    }
+    onStack = false;
+    cached = true;
+    cache = d;
+    return d;
+}
+
+void StaticForeachDeclaration::addMember(Scope *, ScopeDsymbol *sds)
+{
+    // used only for caching the enclosing symbol
+    this->scopesym = sds;
+}
+
+void StaticForeachDeclaration::addComment(const utf8_t *)
+{
+    // do nothing
+    // change this to give semantics to documentation comments on static foreach declarations
+}
+
+void StaticForeachDeclaration::setScope(Scope *sc)
+{
+    // do not evaluate condition before semantic pass
+    // But do set the scope, in case we need it for forward referencing
+    Dsymbol::setScope(sc);
+}
+
+void StaticForeachDeclaration::importAll(Scope *)
+{
+    // do not evaluate aggregate before semantic pass
+}
+
+void StaticForeachDeclaration::semantic(Scope *sc)
+{
+    AttribDeclaration::semantic(sc);
+}
+
+const char *StaticForeachDeclaration::kind() const
+{
+    return "static foreach";
+}
+
+/***********************************************************
+ * Collection of declarations that stores foreach index variables in a
+ * local symbol table.  Other symbols declared within are forwarded to
+ * another scope, like:
+ *
+ *      static foreach (i; 0 .. 10) // loop variables for different indices do not conflict.
+ *      { // this body is expanded into 10 ForwardingAttribDeclarations, where `i` has storage class STClocal
+ *          mixin("enum x" ~ to!string(i) ~ " = i"); // ok, can access current loop variable
+ *      }
+ *
+ *      static foreach (i; 0.. 10)
+ *      {
+ *          pragma(msg, mixin("x" ~ to!string(i))); // ok, all 10 symbols are visible as they were forwarded to the global scope
+ *      }
+ *
+ *      static assert (!is(typeof(i))); // loop index variable is not visible outside of the static foreach loop
+ *
+ * A StaticForeachDeclaration generates one
+ * ForwardingAttribDeclaration for each expansion of its body.  The
+ * AST of the ForwardingAttribDeclaration contains both the `static
+ * foreach` variables and the respective copy of the `static foreach`
+ * body.  The functionality is achieved by using a
+ * ForwardingScopeDsymbol as the parent symbol for the generated
+ * declarations.
+ */
+
+ForwardingAttribDeclaration::ForwardingAttribDeclaration(Dsymbols *decl)
+        : AttribDeclaration(decl)
+{
+    sym = new ForwardingScopeDsymbol(NULL);
+    sym->symtab = new DsymbolTable();
+}
+
+/**************************************
+ * Use the ForwardingScopeDsymbol as the parent symbol for members.
+ */
+Scope *ForwardingAttribDeclaration::newScope(Scope *sc)
+{
+    return sc->push(sym);
+}
+
+/***************************************
+ * Lazily initializes the scope to forward to.
+ */
+void ForwardingAttribDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
+{
+    parent = sym->parent = sym->forward = sds;
+    return AttribDeclaration::addMember(sc, sym);
 }
 
 /***************************** CompileDeclaration *****************************/

@@ -7089,7 +7089,7 @@ maybe_suggest_missing_header (location_t location, tree name, tree scope)
 /* Generate a name_hint at LOCATION for NAME, an IDENTIFIER_NODE for which name
    lookup failed within the explicitly provided SCOPE.
 
-   Suggest the the best meaningful candidates (if any), otherwise
+   Suggest the best meaningful candidates (if any), otherwise
    an empty name_hint is returned.  */
 
 name_hint

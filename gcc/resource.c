@@ -1282,7 +1282,26 @@ clear_hashed_info_for_insn (rtx_insn *insn)
 	tinfo->block = -1;
     }
 }
-
+
+/* Clear any hashed information that we have stored for instructions
+   between INSN and the next BARRIER that follow a JUMP or a LABEL.  */
+
+void
+clear_hashed_info_until_next_barrier (rtx_insn *insn)
+{
+  while (insn && !BARRIER_P (insn))
+    {
+      if (JUMP_P (insn) || LABEL_P (insn))
+	{
+	  rtx_insn *next = next_active_insn (insn);
+	  if (next)
+	    clear_hashed_info_for_insn (next);
+	}
+
+      insn = next_nonnote_insn (insn);
+    }
+}
+
 /* Increment the tick count for the basic block that contains INSN.  */
 
 void

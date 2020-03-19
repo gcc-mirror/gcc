@@ -47,7 +47,7 @@
       int width, is_valid;
       static char templ[40];
 
-      is_valid = neon_immediate_valid_for_move (operands[1], <MODE>mode,
+      is_valid = simd_immediate_valid_for_move (operands[1], <MODE>mode,
         &operands[1], &width);
 
       gcc_assert (is_valid != 0);
@@ -94,7 +94,7 @@
       int width, is_valid;
       static char templ[40];
 
-      is_valid = neon_immediate_valid_for_move (operands[1], <MODE>mode,
+      is_valid = simd_immediate_valid_for_move (operands[1], <MODE>mode,
         &operands[1], &width);
 
       gcc_assert (is_valid != 0);
@@ -149,7 +149,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:VSTRUCT 0 "nonimmediate_operand")
 	(match_operand:VSTRUCT 1 "general_operand"))]
-  "TARGET_NEON"
+  "TARGET_NEON || TARGET_HAVE_MVE"
 {
   gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
   gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
@@ -160,9 +160,13 @@
     }
 })
 
+;; The pattern mov<mode> where mode is v8hf, v4hf, v4bf and v8bf are split into
+;; two groups.  The pattern movv8hf is common for MVE and NEON, so it is moved
+;; into vec-common.md file.  Remaining mov expand patterns with half float and
+;; bfloats are implemented below.
 (define_expand "mov<mode>"
-  [(set (match_operand:VHFBF 0 "s_register_operand")
-	(match_operand:VHFBF 1 "s_register_operand"))]
+  [(set (match_operand:VHFBF_split 0 "s_register_operand")
+	(match_operand:VHFBF_split 1 "s_register_operand"))]
   "TARGET_NEON"
 {
   gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
@@ -177,7 +181,7 @@
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VSTRUCT 0 "nonimmediate_operand"	"=w,Ut,w")
 	(match_operand:VSTRUCT 1 "general_operand"	" w,w, Ut"))]
-  "TARGET_NEON
+  "(TARGET_NEON || TARGET_HAVE_MVE)
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
 {
@@ -213,7 +217,7 @@
 (define_split
   [(set (match_operand:OI 0 "s_register_operand" "")
 	(match_operand:OI 1 "s_register_operand" ""))]
-  "TARGET_NEON && reload_completed"
+  "(TARGET_NEON || TARGET_HAVE_MVE)&& reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
 {
@@ -254,7 +258,7 @@
 (define_split
   [(set (match_operand:XI 0 "s_register_operand" "")
 	(match_operand:XI 1 "s_register_operand" ""))]
-  "TARGET_NEON && reload_completed"
+  "(TARGET_NEON || TARGET_HAVE_MVE) && reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))
@@ -489,7 +493,7 @@
 (define_expand "vec_init<mode><V_elem_l>"
   [(match_operand:VDQ 0 "s_register_operand")
    (match_operand 1 "" "")]
-  "TARGET_NEON"
+  "TARGET_NEON || TARGET_HAVE_MVE"
 {
   neon_expand_vector_init (operands[0], operands[1]);
   DONE;

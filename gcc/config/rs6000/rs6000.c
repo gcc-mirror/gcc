@@ -99,7 +99,7 @@
 #endif
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
-GTY(()) tree altivec_builtin_mask_for_load;
+tree altivec_builtin_mask_for_load;
 
 #ifdef USING_ELFOS_H
 /* Counter for labels which are to be placed in .fixup.  */
@@ -196,7 +196,7 @@ enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 int rs6000_vector_align[NUM_MACHINE_MODES];
 
 /* Map selected modes to types for builtins.  */
-GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
+tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
 
 /* What modes to automatically generate reciprocal divide estimate (fre) and
    reciprocal sqrt (frsqrte) for.  */
@@ -3956,7 +3956,7 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* Enable the default support for IEEE 128-bit floating point on Linux VSX
-     sytems.  In GCC 7, we would enable the the IEEE 128-bit floating point
+     sytems.  In GCC 7, we would enable the IEEE 128-bit floating point
      infrastructure (-mfloat128-type) but not enable the actual __float128 type
      unless the user used the explicit -mfloat128.  In GCC 8, we enable both
      the keyword as well as the type.  */
@@ -5612,7 +5612,10 @@ num_insns_constant_multi (HOST_WIDE_INT value, machine_mode mode)
 	  && rs6000_is_valid_and_mask (GEN_INT (low), DImode))
 	insns = 2;
       total += insns;
-      value >>= BITS_PER_WORD;
+      /* If BITS_PER_WORD is the number of bits in HOST_WIDE_INT, doing
+	 it all at once would be UB. */
+      value >>= (BITS_PER_WORD - 1);
+      value >>= 1;
     }
   return total;
 }
@@ -14831,7 +14834,11 @@ rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (rtx_equal_p (op0, true_cond) && rtx_equal_p (op1, false_cond))
     ;
 
-  else if (rtx_equal_p (op1, true_cond) && rtx_equal_p (op0, false_cond))
+  /* Only when NaNs and signed-zeros are not in effect, smax could be
+     used for `op0 < op1 ? op1 : op0`, and smin could be used for
+     `op0 > op1 ? op1 : op0`.  */
+  else if (rtx_equal_p (op1, true_cond) && rtx_equal_p (op0, false_cond)
+	   && !HONOR_NANS (compare_mode) && !HONOR_SIGNED_ZEROS (compare_mode))
     max_p = !max_p;
 
   else

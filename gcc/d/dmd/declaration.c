@@ -340,6 +340,9 @@ void AliasDeclaration::semantic(Scope *sc)
 void AliasDeclaration::aliasSemantic(Scope *sc)
 {
     //printf("AliasDeclaration::semantic() %s\n", toChars());
+    // TypeTraits needs to know if it's located in an AliasDeclaration
+    sc->flags |= SCOPEalias;
+
     if (aliassym)
     {
         FuncDeclaration *fd = aliassym->isFuncLiteralDeclaration();
@@ -347,7 +350,10 @@ void AliasDeclaration::aliasSemantic(Scope *sc)
         if (fd || (td && td->literal))
         {
             if (fd && fd->semanticRun >= PASSsemanticdone)
+            {
+                sc->flags &= ~SCOPEalias;
                 return;
+            }
 
             Expression *e = new FuncExp(loc, aliassym);
             e = ::semantic(e, sc);
@@ -361,11 +367,13 @@ void AliasDeclaration::aliasSemantic(Scope *sc)
                 aliassym = NULL;
                 type = Type::terror;
             }
+            sc->flags &= ~SCOPEalias;
             return;
         }
 
         if (aliassym->isTemplateInstance())
             aliassym->semantic(sc);
+        sc->flags &= ~SCOPEalias;
         return;
     }
     inuse = 1;
@@ -470,6 +478,7 @@ void AliasDeclaration::aliasSemantic(Scope *sc)
         if (!overloadInsert(sx))
             ScopeDsymbol::multiplyDefined(Loc(), sx, this);
     }
+    sc->flags &= ~SCOPEalias;
 }
 
 bool AliasDeclaration::overloadInsert(Dsymbol *s)

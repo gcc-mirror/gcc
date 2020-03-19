@@ -832,7 +832,7 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
      4. [guard m]: [guard m+1] for 0 <= m <= n-2
      5. [join]: [guard n-1]
 
-     We punt for the more complex case case of [join] being old and
+     We punt for the more complex case of [join] being old and
      simply free the dominance info.  We also punt on postdominators,
      which aren't expected to be available at this point anyway.  */
   bi_call_bb = gimple_bb (bi_call);

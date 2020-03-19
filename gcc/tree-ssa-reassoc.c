@@ -1793,8 +1793,11 @@ sort_by_mach_mode (const void *p_i, const void *p_j)
     return 1;
   else if (mode1 < mode2)
     return -1;
-  else
-    return 0;
+  if (SSA_NAME_VERSION (tr1) < SSA_NAME_VERSION (tr2))
+    return -1;
+  else if (SSA_NAME_VERSION (tr1) > SSA_NAME_VERSION (tr2))
+    return 1;
+  return 0;
 }
 
 /* Cleanup hash map for VECTOR information.  */
@@ -6370,7 +6373,7 @@ reassociate_bb (basic_block bb)
 		  int width;
 
 		  /* For binary bit operations, if there are at least 3
-		     operands and the last last operand in OPS is a constant,
+		     operands and the last operand in OPS is a constant,
 		     move it to the front.  This helps ensure that we generate
 		     (X & Y) & C rather than (X & C) & Y.  The former will
 		     often match a canonical bit test when we get to RTL.  */

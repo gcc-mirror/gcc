@@ -70,7 +70,7 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
    upper part undefined.  */
 DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs", m_ATHLON_K8)
 
-/* X86_TUNE_PARTIAL_FLAG_REG_STALL: this flag disables use of of flags
+/* X86_TUNE_PARTIAL_FLAG_REG_STALL: this flag disables use of flags
    set by instructions affecting just some flags (in particular shifts).
    This is because Core2 resolves dependencies on whole flags register
    and such sequences introduce false dependency on previous instruction

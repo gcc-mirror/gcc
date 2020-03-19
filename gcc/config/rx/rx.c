@@ -641,7 +641,6 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case CTRLREG_PSW:   fprintf (file, "psw"); break;
 	case CTRLREG_USP:   fprintf (file, "usp"); break;
 	case CTRLREG_FPSW:  fprintf (file, "fpsw"); break;
-	case CTRLREG_CPEN:  fprintf (file, "cpen"); break;
 	case CTRLREG_BPSW:  fprintf (file, "bpsw"); break;
 	case CTRLREG_BPC:   fprintf (file, "bpc"); break;
 	case CTRLREG_ISP:   fprintf (file, "isp"); break;

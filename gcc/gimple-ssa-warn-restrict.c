@@ -577,7 +577,7 @@ builtin_memref::offset_out_of_bounds (int strict, offset_int ooboff[3]) const
   bool hib = wi::les_p (offrng[0], offrng[1]);
   bool lob = !hib;
 
-  /* Set to the size remaining in the object object after subtracting
+  /* Set to the size remaining in the object after subtracting
      REFOFF.  It may become negative as a result of negative indices
      into the enclosing object, such as in:
        extern struct S { char a[4], b[3], c[1]; } *p;
@@ -1430,7 +1430,7 @@ builtin_access::overlap ()
 }
 
 /* Attempt to detect and diagnose an overlapping copy in a call expression
-   EXPR involving an an access ACS to a built-in memory or string function.
+   EXPR involving an access ACS to a built-in memory or string function.
    Return true when one has been detected, false otherwise.  */
 
 static bool

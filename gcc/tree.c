@@ -9215,8 +9215,18 @@ variably_modified_type_p (tree type, tree fn)
 	    RETURN_TRUE_IF_VAR (DECL_SIZE (t));
 	    RETURN_TRUE_IF_VAR (DECL_SIZE_UNIT (t));
 
+	    /* If the type is a qualified union, then the DECL_QUALIFIER
+	       of fields can also be an expression containing a variable.  */
 	    if (TREE_CODE (type) == QUAL_UNION_TYPE)
 	      RETURN_TRUE_IF_VAR (DECL_QUALIFIER (t));
+
+	    /* If the field is a qualified union, then it's only a container
+	       for what's inside so we look into it.  That's necessary in LTO
+	       mode because the sizes of the field tested above have been set
+	       to PLACEHOLDER_EXPRs by free_lang_data.  */
+	    if (TREE_CODE (TREE_TYPE (t)) == QUAL_UNION_TYPE
+		&& variably_modified_type_p (TREE_TYPE (t), fn))
+	      return true;
 	  }
       break;
 
@@ -13664,7 +13674,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
     }
 
   /* BASE is the declared object of which MEMBER is either a member
-     or that is is cast to REFTYPE (e.g., a char buffer used to store
+     or that is cast to REFTYPE (e.g., a char buffer used to store
      a REFTYPE object).  */
   tree reftype = TREE_TYPE (TREE_OPERAND (ref, 0));
   tree basetype = TREE_TYPE (base);

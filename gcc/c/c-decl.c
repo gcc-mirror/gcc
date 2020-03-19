@@ -1641,13 +1641,17 @@ c_bind (location_t loc, tree decl, bool is_global)
 }
 
 
-/* Stores the first FILE*, const struct tm* etc. argument type (whatever it
-   is) seen in a declaration of a file I/O etc. built-in.  Subsequent
-   declarations of such built-ins are expected to refer to it rather than to
-   fileptr_type_node etc. which is just void* (or to any other type).
+/* Stores the first FILE*, const struct tm* etc. argument type (whatever
+   it is) seen in a declaration of a file I/O etc. built-in, corresponding
+   to the builtin_structptr_types array.  Subsequent declarations of such
+   built-ins are expected to refer to it rather than to fileptr_type_node,
+   etc. which is just void* (or to any other type).
    Used only by match_builtin_function_types.  */
 
-static GTY(()) tree last_structptr_types[6];
+static const unsigned builtin_structptr_type_count
+  = sizeof builtin_structptr_types / sizeof builtin_structptr_types[0];
+
+static GTY(()) tree last_structptr_types[builtin_structptr_type_count];
 
 /* Returns true if types T1 and T2 representing return types or types
    of function arguments are close enough to be considered interchangeable
@@ -1692,10 +1696,13 @@ match_builtin_function_types (tree newtype, tree oldtype,
   tree newargs = TYPE_ARG_TYPES (newtype);
   tree tryargs = newargs;
 
-  gcc_checking_assert ((sizeof (last_structptr_types)
-			/ sizeof (last_structptr_types[0]))
-		       == (sizeof (builtin_structptr_types)
-			   / sizeof (builtin_structptr_types[0])));
+  const unsigned nlst
+    = sizeof last_structptr_types / sizeof last_structptr_types[0];
+  const unsigned nbst
+    = sizeof builtin_structptr_types / sizeof builtin_structptr_types[0];
+
+  gcc_checking_assert (nlst == nbst);
+
   for (unsigned i = 1; oldargs || newargs; ++i)
     {
       if (!oldargs
@@ -1710,11 +1717,12 @@ match_builtin_function_types (tree newtype, tree oldtype,
       if (!types_close_enough_to_match (oldtype, newtype))
 	return NULL_TREE;
 
-      unsigned j = (sizeof (builtin_structptr_types)
-		    / sizeof (builtin_structptr_types[0]));
+      unsigned j = nbst;
       if (POINTER_TYPE_P (oldtype))
-	for (j = 0; j < (sizeof (builtin_structptr_types)
-			 / sizeof (builtin_structptr_types[0])); ++j)
+	/* Iterate over well-known struct types like FILE (whose types
+	   aren't known to us) and compare the pointer to each to
+	   the pointer argument.  */
+	for (j = 0; j < nbst; ++j)
 	  {
 	    if (TREE_VALUE (oldargs) != builtin_structptr_types[j].node)
 	      continue;
@@ -1734,13 +1742,26 @@ match_builtin_function_types (tree newtype, tree oldtype,
 	      last_structptr_types[j] = newtype;
 	    break;
 	  }
-      if (j == (sizeof (builtin_structptr_types)
-		/ sizeof (builtin_structptr_types[0]))
-	  && !*strict
-	  && !comptypes (oldtype, newtype))
+
+      if (j == nbst && !comptypes (oldtype, newtype))
 	{
-	  *argno = i;
-	  *strict = oldtype;
+	  if (POINTER_TYPE_P (oldtype))
+	    {
+	      /* For incompatible pointers, only reject differences in
+		 the unqualified variants of the referenced types but
+		 consider differences in qualifiers as benign (report
+		 those to caller via *STRICT below).  */
+	      tree oldref = TYPE_MAIN_VARIANT (TREE_TYPE (oldtype));
+	      tree newref = TYPE_MAIN_VARIANT (TREE_TYPE (newtype));
+	      if (!comptypes (oldref, newref))
+		return NULL_TREE;
+	    }
+
+	  if (!*strict)
+	    {
+	      *argno = i;
+	      *strict = oldtype;
+	    }
 	}
 
       oldargs = TREE_CHAIN (oldargs);
@@ -1965,9 +1986,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	{
 	  /* Accept "harmless" mismatches in function types such
 	     as missing qualifiers or int vs long when they're the same
-	     size.  However, with -Wextra in effect, diagnose return and
-	     argument types that are incompatible according to language
-	     rules.  */
+	     size.  However, diagnose return and argument types that are
+	     incompatible according to language rules.  */
 	  tree mismatch_expect;
 	  unsigned mismatch_argno;
 
@@ -2002,8 +2022,6 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
 	  if (mismatch_expect && extra_warnings)
 	    {
-	      /* If types match only loosely, print a warning but accept
-		 the redeclaration.  */
 	      location_t newloc = DECL_SOURCE_LOCATION (newdecl);
 	      bool warned = false;
 	      if (mismatch_argno)
@@ -3294,7 +3312,8 @@ pushdecl (tree x)
 	element = TREE_TYPE (element);
       element = TYPE_MAIN_VARIANT (element);
 
-      if (RECORD_OR_UNION_TYPE_P (element)
+      if ((RECORD_OR_UNION_TYPE_P (element)
+	   || TREE_CODE (element) == ENUMERAL_TYPE)
 	  && (TREE_CODE (x) != TYPE_DECL
 	      || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
 	  && !COMPLETE_TYPE_P (element))
@@ -8336,6 +8355,26 @@ field_decl_cmp (const void *x_p, const void *y_p)
   return 1;
 }
 
+/* If this structure or union completes the type of any previous
+   variable declaration, lay it out and output its rtl.  */
+static void
+finish_incomplete_vars (tree incomplete_vars, bool toplevel)
+{
+  for (tree x = incomplete_vars; x; x = TREE_CHAIN (x))
+    {
+      tree decl = TREE_VALUE (x);
+      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	layout_array_type (TREE_TYPE (decl));
+      if (TREE_CODE (decl) != TYPE_DECL)
+	{
+	  relayout_decl (decl);
+	  if (c_dialect_objc ())
+	    objc_check_decl (decl);
+	  rest_of_decl_compilation (decl, toplevel, 0);
+	}
+    }
+}
+
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    LOC is the location of the RECORD_TYPE or UNION_TYPE's definition.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
@@ -8594,13 +8633,6 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       warning_at (loc, 0, "union cannot be made transparent");
     }
 
-  /* Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
-     in dwarf2out via rest_of_decl_compilation below and means
-     something totally different.  Since we will be clearing
-     C_TYPE_INCOMPLETE_VARS shortly after we iterate through them,
-     clear it ahead of time and avoid problems in dwarf2out.  Ideally,
-     C_TYPE_INCOMPLETE_VARS should use some language specific
-     node.  */
   tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
@@ -8621,21 +8653,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel);
 
-  /* If this structure or union completes the type of any previous
-     variable declaration, lay it out and output its rtl.  */
-  for (x = incomplete_vars; x; x = TREE_CHAIN (x))
-    {
-      tree decl = TREE_VALUE (x);
-      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	layout_array_type (TREE_TYPE (decl));
-      if (TREE_CODE (decl) != TYPE_DECL)
-	{
-	  layout_decl (decl, 0);
-	  if (c_dialect_objc ())
-	    objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, toplevel, 0);
-	}
-    }
+  finish_incomplete_vars (incomplete_vars, toplevel);
 
   /* If we're inside a function proper, i.e. not file-scope and not still
      parsing parameters, then arrange for the size of a variable sized type
@@ -8914,8 +8932,10 @@ finish_enum (tree enumtype, tree values, tree attributes)
   TYPE_LANG_SPECIFIC (enumtype) = lt;
 
   /* Fix up all variant types of this enum type.  */
+  tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (enumtype));
   for (tem = TYPE_MAIN_VARIANT (enumtype); tem; tem = TYPE_NEXT_VARIANT (tem))
     {
+      C_TYPE_INCOMPLETE_VARS (tem) = NULL_TREE;
       if (tem == enumtype)
 	continue;
       TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
@@ -8933,6 +8953,8 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, toplevel);
+
+  finish_incomplete_vars (incomplete_vars, toplevel);
 
   /* If this enum is defined inside a struct, add it to
      struct_types.  */

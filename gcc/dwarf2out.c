@@ -21563,6 +21563,9 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
   enum tree_code code  = TREE_CODE (type);
   dw_die_ref type_die  = NULL;
 
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return;
+
   /* ??? If this type is an unnamed subrange type of an integral, floating-point
      or fixed-point type, use the inner type.  This is because we have no
      support for unnamed types in base_type_die.  This can happen if this is
@@ -26355,39 +26358,44 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
     case VAR_DECL:
     case RESULT_DECL:
       /* If we are in terse mode, don't generate any DIEs to represent any
-	 variable declarations or definitions.  */
-      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	 variable declarations or definitions unless it is external.  */
+      if (debug_info_level < DINFO_LEVEL_TERSE
+	  || (debug_info_level == DINFO_LEVEL_TERSE
+	      && !TREE_PUBLIC (decl_or_origin)))
 	break;
 
-      /* Avoid generating stray type DIEs during late dwarf dumping.
-         All types have been dumped early.  */
-      if (early_dwarf
-	  /* ???  But in LTRANS we cannot annotate early created variably
-	     modified type DIEs without copying them and adjusting all
-	     references to them.  Dump them again as happens for inlining
-	     which copies both the decl and the types.  */
-	  /* ???  And even non-LTO needs to re-visit type DIEs to fill
-	     in VLA bound information for example.  */
-	  || (decl && variably_modified_type_p (TREE_TYPE (decl),
-						current_function_decl)))
+      if (debug_info_level > DINFO_LEVEL_TERSE)
 	{
-	  /* Output any DIEs that are needed to specify the type of this data
-	     object.  */
-	  if (decl_by_reference_p (decl_or_origin))
-	    gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
-	  else
-	    gen_type_die (TREE_TYPE (decl_or_origin), context_die);
-	}
+	  /* Avoid generating stray type DIEs during late dwarf dumping.
+	     All types have been dumped early.  */
+	  if (early_dwarf
+	      /* ???  But in LTRANS we cannot annotate early created variably
+		 modified type DIEs without copying them and adjusting all
+		 references to them.  Dump them again as happens for inlining
+		 which copies both the decl and the types.  */
+	      /* ???  And even non-LTO needs to re-visit type DIEs to fill
+		 in VLA bound information for example.  */
+	      || (decl && variably_modified_type_p (TREE_TYPE (decl),
+						    current_function_decl)))
+	    {
+	      /* Output any DIEs that are needed to specify the type of this data
+		 object.  */
+	      if (decl_by_reference_p (decl_or_origin))
+		gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
+	      else
+		gen_type_die (TREE_TYPE (decl_or_origin), context_die);
+	    }
 
-      if (early_dwarf)
-	{
-	  /* And its containing type.  */
-	  class_origin = decl_class_context (decl_or_origin);
-	  if (class_origin != NULL_TREE)
-	    gen_type_die_for_member (class_origin, decl_or_origin, context_die);
+	  if (early_dwarf)
+	    {
+	      /* And its containing type.  */
+	      class_origin = decl_class_context (decl_or_origin);
+	      if (class_origin != NULL_TREE)
+		gen_type_die_for_member (class_origin, decl_or_origin, context_die);
 
-	  /* And its containing namespace.  */
-	  context_die = declare_in_namespace (decl_or_origin, context_die);
+	      /* And its containing namespace.  */
+	      context_die = declare_in_namespace (decl_or_origin, context_die);
+	    }
 	}
 
       /* Now output the DIE to represent the data object itself.  This gets
@@ -26832,8 +26840,10 @@ dwarf2out_decl (tree decl)
 	context_die = lookup_decl_die (DECL_CONTEXT (decl));
 
       /* If we are in terse mode, don't generate any DIEs to represent any
-	 variable declarations or definitions.  */
-      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	 variable declarations or definitions unless it is external.  */
+      if (debug_info_level < DINFO_LEVEL_TERSE
+	  || (debug_info_level == DINFO_LEVEL_TERSE
+	      && !TREE_PUBLIC (decl)))
 	return;
       break;
 
@@ -32152,7 +32162,7 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
-  /* Traverse the DIE's and add add sibling attributes to those DIE's
+  /* Traverse the DIE's and add sibling attributes to those DIE's
      that have children.  */
   add_sibling_attributes (comp_unit_die ());
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)

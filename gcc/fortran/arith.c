@@ -994,7 +994,7 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   size_t len;
 
-  /* By cleverly playing around with constructors, is is possible
+  /* By cleverly playing around with constructors, it is possible
      to get mismaching types here.  */
   if (op1->ts.type != BT_CHARACTER || op2->ts.type != BT_CHARACTER
       || op1->ts.kind != op2->ts.kind)

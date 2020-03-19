@@ -124,6 +124,11 @@ namespace __gnu_test
   struct output_iterator_wrapper
   : public std::iterator<std::output_iterator_tag, T, std::ptrdiff_t, T*, T&>
   {
+  protected:
+    output_iterator_wrapper() : ptr(0), SharedInfo(0)
+    { }
+
+  public:
     typedef OutputContainer<T> ContainerType;
     T* ptr;
     ContainerType* SharedInfo;
@@ -135,8 +140,6 @@ namespace __gnu_test
     }
 
 #if __cplusplus >= 201103L
-    output_iterator_wrapper() = delete;
-
     output_iterator_wrapper(const output_iterator_wrapper&) = default;
 
     output_iterator_wrapper&
@@ -706,12 +709,13 @@ namespace __gnu_test
   template<typename T, template<typename> class Iter>
     class test_range
     {
-      // Adds default constructor to Iter<T> if needed
+      // Exposes the protected default constructor of Iter<T> if needed.  This
+      // is needed only when Iter is input_iterator_wrapper or
+      // output_iterator_wrapper, because legacy forward iterators and beyond
+      // are already default constructible.
       struct iterator : Iter<T>
       {
 	using Iter<T>::Iter;
-
-	iterator() : Iter<T>(nullptr, nullptr) { }
 
 	using Iter<T>::operator++;
 

@@ -110,7 +110,7 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
-   source enodes for which a a path be found to the diagnostic enode.  */
+   source enodes for which a path be found to the diagnostic enode.  */
 
 class path_builder
 {
@@ -768,9 +768,10 @@ for_each_state_change (const program_state &src_state,
 	      if (dst_pv->m_stack_depth
 		  >= src_state.m_region_model->get_stack_depth ())
 		continue;
+	      tentative_region_model_context ctxt;
 	      svalue_id src_sid
-		= src_state.m_region_model->get_rvalue (*dst_pv, NULL);
-	      if (src_sid.null_p ())
+		= src_state.m_region_model->get_rvalue (*dst_pv, &ctxt);
+	      if (src_sid.null_p () || ctxt.had_errors_p ())
 		continue;
 	      state_machine::state_t src_sm_val = src_smap.get_state (src_sid);
 	      if (dst_sm_val != src_sm_val)

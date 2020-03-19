@@ -30,7 +30,7 @@ void test01()
 #if _GLIBCXX_USE_C99_STDLIB
 
   long long i = 0;
-  const char* s = 0;
+  const char* s = "";
   char** endptr = 0;
   int base = 0;
 

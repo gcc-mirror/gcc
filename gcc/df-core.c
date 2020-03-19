@@ -871,9 +871,6 @@ make_pass_df_finish (gcc::context *ctxt)
    The general data flow analysis engine.
 ----------------------------------------------------------------------------*/
 
-/* Return time BB when it was visited for last time.  */
-#define BB_LAST_CHANGE_AGE(bb) ((ptrdiff_t)(bb)->aux)
-
 /* Helper function for df_worklist_dataflow.
    Propagate the dataflow forward.
    Given a BB_INDEX, do the dataflow propagation
@@ -897,7 +894,8 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
                                unsigned *bbindex_to_postorder,
                                bitmap pending,
                                sbitmap considered,
-			       ptrdiff_t age)
+			       vec<int> &last_change_age,
+			       int age)
 {
   edge e;
   edge_iterator ei;
@@ -908,7 +906,8 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
   if (EDGE_COUNT (bb->preds) > 0)
     FOR_EACH_EDGE (e, ei, bb->preds)
       {
-        if (age <= BB_LAST_CHANGE_AGE (e->src)
+	if (bbindex_to_postorder[e->src->index] < last_change_age.length ()
+	    && age <= last_change_age[bbindex_to_postorder[e->src->index]]
 	    && bitmap_bit_p (considered, e->src->index))
           changed |= dataflow->problem->con_fun_n (e);
       }
@@ -942,7 +941,8 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
                                 unsigned *bbindex_to_postorder,
                                 bitmap pending,
                                 sbitmap considered,
-			        ptrdiff_t age)
+				vec<int> &last_change_age,
+				int age)
 {
   edge e;
   edge_iterator ei;
@@ -953,7 +953,8 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
   if (EDGE_COUNT (bb->succs) > 0)
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
-        if (age <= BB_LAST_CHANGE_AGE (e->dest)
+	if (bbindex_to_postorder[e->dest->index] < last_change_age.length ()
+	    && age <= last_change_age[bbindex_to_postorder[e->dest->index]]
 	    && bitmap_bit_p (considered, e->dest->index))
           changed |= dataflow->problem->con_fun_n (e);
       }
@@ -991,10 +992,10 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
    worklists (we are processing WORKLIST and storing new BBs to visit in
    PENDING).
 
-   As an optimization we maintain ages when BB was changed (stored in bb->aux)
-   and when it was last visited (stored in last_visit_age).  This avoids need
-   to re-do confluence function for edges to basic blocks whose source
-   did not change since destination was visited last time.  */
+   As an optimization we maintain ages when BB was changed (stored in
+   last_change_age) and when it was last visited (stored in last_visit_age).
+   This avoids need to re-do confluence function for edges to basic blocks
+   whose source did not change since destination was visited last time.  */
 
 static void
 df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
@@ -1010,11 +1011,11 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
   int age = 0;
   bool changed;
   vec<int> last_visit_age = vNULL;
+  vec<int> last_change_age = vNULL;
   int prev_age;
-  basic_block bb;
-  int i;
 
   last_visit_age.safe_grow_cleared (n_blocks);
+  last_change_age.safe_grow_cleared (n_blocks);
 
   /* Double-queueing. Worklist is for the current iteration,
      and pending is for the next. */
@@ -1032,30 +1033,30 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 
 	  bitmap_clear_bit (pending, index);
 	  bb_index = blocks_in_postorder[index];
-	  bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 	  prev_age = last_visit_age[index];
 	  if (dir == DF_FORWARD)
 	    changed = df_worklist_propagate_forward (dataflow, bb_index,
 						     bbindex_to_postorder,
 						     pending, considered,
+						     last_change_age,
 						     prev_age);
 	  else
 	    changed = df_worklist_propagate_backward (dataflow, bb_index,
 						      bbindex_to_postorder,
 						      pending, considered,
+						      last_change_age,
 						      prev_age);
 	  last_visit_age[index] = ++age;
 	  if (changed)
-	    bb->aux = (void *)(ptrdiff_t)age;
+	    last_change_age[index] = age;
 	}
       bitmap_clear (worklist);
     }
-  for (i = 0; i < n_blocks; i++)
-    BASIC_BLOCK_FOR_FN (cfun, blocks_in_postorder[i])->aux = NULL;
 
   BITMAP_FREE (worklist);
   BITMAP_FREE (pending);
   last_visit_age.release ();
+  last_change_age.release ();
 
   /* Dump statistics. */
   if (dump_file)

@@ -234,16 +234,20 @@ insert_aggregate_field (tree type, tree field, size_t offset)
 static void
 fixup_anonymous_offset (tree fields, tree offset)
 {
+  /* No adjustment in field offset required.  */
+  if (integer_zerop (offset))
+    return;
+
   while (fields != NULL_TREE)
     {
-      /* Traverse all nested anonymous aggregates to update their offset.
-	 Set the anonymous decl offset to its first member.  */
+      /* Traverse all nested anonymous aggregates to update the offset of their
+	 fields.  Note that the anonymous field itself is not adjusted, as it
+	 already has an offset relative to its outer aggregate.  */
       tree ftype = TREE_TYPE (fields);
       if (TYPE_NAME (ftype) && IDENTIFIER_ANON_P (TYPE_IDENTIFIER (ftype)))
 	{
 	  tree vfields = TYPE_FIELDS (ftype);
 	  fixup_anonymous_offset (vfields, offset);
-	  DECL_FIELD_OFFSET (fields) = DECL_FIELD_OFFSET (vfields);
 	}
       else
 	{

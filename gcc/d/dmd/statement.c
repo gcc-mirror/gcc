@@ -32,6 +32,7 @@ bool checkEscapeRef(Scope *sc, Expression *e, bool gag);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Expression *semantic(Expression *e, Scope *sc);
 StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
+Statement *makeTupleForeachStatic(Scope *sc, ForeachStatement *fs, bool needExpansion);
 
 Identifier *fixupLabelName(Scope *sc, Identifier *ident)
 {
@@ -410,6 +411,7 @@ Statement *toStatement(Dsymbol *s)
         void visit(ProtDeclaration *d)          { result = visitMembers(d->loc, d->decl); }
         void visit(AlignDeclaration *d)         { result = visitMembers(d->loc, d->decl); }
         void visit(UserAttributeDeclaration *d) { result = visitMembers(d->loc, d->decl); }
+        void visit(ForwardingAttribDeclaration *d) { result = visitMembers(d->loc, d->decl); }
 
         void visit(StaticAssert *) {}
         void visit(Import *) {}
@@ -417,6 +419,12 @@ Statement *toStatement(Dsymbol *s)
 
         void visit(ConditionalDeclaration *d)
         {
+            result = visitMembers(d->loc, d->include(NULL, NULL));
+        }
+
+        void visit(StaticForeachDeclaration *d)
+        {
+            assert(d->sfe && !!d->sfe->aggrfe ^ !!d->sfe->rangefe);
             result = visitMembers(d->loc, d->include(NULL, NULL));
         }
 
@@ -682,6 +690,72 @@ bool ScopeStatement::hasContinue()
     return statement ? statement->hasContinue() : false;
 }
 
+/******************************** ForwardingStatement **********************/
+
+/* Statement whose symbol table contains foreach index variables in a
+ * local scope and forwards other members to the parent scope.  This
+ * wraps a statement.
+ *
+ * Also see: `ddmd.attrib.ForwardingAttribDeclaration`
+ */
+
+ForwardingStatement::ForwardingStatement(Loc loc, ForwardingScopeDsymbol *sym, Statement *s)
+    : Statement(loc)
+{
+    this->sym = sym;
+    assert(s);
+    this->statement = s;
+}
+
+ForwardingStatement::ForwardingStatement(Loc loc, Statement *s)
+    : Statement(loc)
+{
+    this->sym = new ForwardingScopeDsymbol(NULL);
+    this->sym->symtab = new DsymbolTable();
+    assert(s);
+    this->statement = s;
+}
+
+Statement *ForwardingStatement::syntaxCopy()
+{
+    return new ForwardingStatement(loc, statement->syntaxCopy());
+}
+
+/***********************
+ * ForwardingStatements are distributed over the flattened
+ * sequence of statements. This prevents flattening to be
+ * "blocked" by a ForwardingStatement and is necessary, for
+ * example, to support generating scope guards with `static
+ * foreach`:
+ *
+ *     static foreach(i; 0 .. 10) scope(exit) writeln(i);
+ *     writeln("this is printed first");
+ *     // then, it prints 10, 9, 8, 7, ...
+ */
+
+Statements *ForwardingStatement::flatten(Scope *sc)
+{
+    if (!statement)
+    {
+        return NULL;
+    }
+    sc = sc->push(sym);
+    Statements *a = statement->flatten(sc);
+    sc = sc->pop();
+    if (!a)
+    {
+        return a;
+    }
+    Statements *b = new Statements();
+    b->setDim(a->dim);
+    for (size_t i = 0; i < a->dim; i++)
+    {
+        Statement *s = (*a)[i];
+        (*b)[i] = s ? new ForwardingStatement(s->loc, sym, s) : NULL;
+    }
+    return b;
+}
+
 /******************************** WhileStatement ***************************/
 
 WhileStatement::WhileStatement(Loc loc, Expression *c, Statement *b, Loc endloc)
@@ -933,6 +1007,52 @@ Statements *ConditionalStatement::flatten(Scope *sc)
     Statements *a = new Statements();
     a->push(s);
     return a;
+}
+
+/******************************** StaticForeachStatement ********************/
+
+/* Static foreach statements, like:
+ *      void main()
+ *      {
+ *           static foreach(i; 0 .. 10)
+ *           {
+ *               pragma(msg, i);
+ *           }
+ *      }
+ */
+
+StaticForeachStatement::StaticForeachStatement(Loc loc, StaticForeach *sfe)
+    : Statement(loc)
+{
+    this->sfe = sfe;
+}
+
+Statement *StaticForeachStatement::syntaxCopy()
+{
+    return new StaticForeachStatement(loc, sfe->syntaxCopy());
+}
+
+Statements *StaticForeachStatement::flatten(Scope *sc)
+{
+    staticForeachPrepare(sfe, sc);
+    if (staticForeachReady(sfe))
+    {
+        Statement *s = makeTupleForeachStatic(sc, sfe->aggrfe, sfe->needExpansion);
+        Statements *result = s->flatten(sc);
+        if (result)
+        {
+            return result;
+        }
+        result = new Statements();
+        result->push(s);
+        return result;
+    }
+    else
+    {
+        Statements *result = new Statements();
+        result->push(new ErrorStatement());
+        return result;
+    }
 }
 
 /******************************** PragmaStatement ***************************/

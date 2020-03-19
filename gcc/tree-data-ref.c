@@ -1751,7 +1751,7 @@ create_ifn_alias_checks (tree *cond_expr,
     return false;
 
   /* Make sure that both DRs access the same pattern of bytes,
-     with a constant length and and step.  */
+     with a constant length and step.  */
   poly_uint64 seg_len;
   if (!operand_equal_p (dr_a.seg_len, dr_b.seg_len, 0)
       || !poly_int_tree_p (dr_a.seg_len, &seg_len)

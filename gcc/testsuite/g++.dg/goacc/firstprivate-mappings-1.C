@@ -2,7 +2,9 @@
 
 /* This file is also sourced from
    '../../../../libgomp/testsuite/libgomp.oacc-c++/firstprivate-mappings-1.C'
-   as an execution test.  */
+   as an execution test.
+
+   'long double' tests are compiled/used unless DO_LONG_DOUBLE is set to 0.  */
 
 /* See also '../../c-c++-common/goacc/firstprivate-mappings-1.c'.  */
 
@@ -21,13 +23,7 @@
 # define HAVE_INT128 0
 #endif
 
-
-/* The one is only relevant for offloading compilation; will always be enabled
-   when doing tree scanning.  */
-#ifdef ACC_DEVICE_TYPE_nvidia
-/* PR71064.  */
-# define DO_LONG_DOUBLE 0
-#else
+#ifndef DO_LONG_DOUBLE
 # define DO_LONG_DOUBLE 1
 #endif
 

@@ -321,12 +321,12 @@ Dsymbol *Dsymbol::toAlias2()
  */
 Dsymbol *Dsymbol::pastMixin()
 {
-    Dsymbol *s = this;
-
     //printf("Dsymbol::pastMixin() %s\n", toChars());
-    while (s && s->isTemplateMixin())
-        s = s->parent;
-    return s;
+    if (!isTemplateMixin() && !isForwardingAttribDeclaration() && !isForwardingScopeDsymbol())
+        return this;
+    if (!parent)
+        return NULL;
+    return parent->pastMixin();
 }
 
 /// ditto
@@ -334,7 +334,8 @@ Dsymbol *Dsymbol::pastMixinAndNspace()
 {
     //printf("Dsymbol::pastMixinAndNspace() %s\n", toChars());
     Nspace *ns = isNspace();
-    if (!(ns && ns->mangleOnly) && !isTemplateMixin() && !isForwardingAttribDeclaration())
+    if (!(ns && ns->mangleOnly) &&
+        !isTemplateMixin() && !isForwardingAttribDeclaration() && !isForwardingScopeDsymbol())
         return this;
     if (!parent)
         return NULL;
@@ -382,10 +383,12 @@ Dsymbol *Dsymbol::toParent()
 /// ditto
 Dsymbol *Dsymbol::toParent2()
 {
-    Dsymbol *s = parent;
-    while (s && s->isTemplateInstance())
-        s = s->parent;
-    return s;
+    if (!parent ||
+        (!parent->isTemplateInstance() &&
+         !parent->isForwardingAttribDeclaration() &&
+         !parent->isForwardingScopeDsymbol()))
+        return parent;
+    return parent->toParent2();
 }
 
 /// ditto
@@ -950,6 +953,83 @@ const char *OverloadSet::kind() const
     return "overloadset";
 }
 
+
+/********************************* ForwardingScopeDsymbol ******************/
+
+ForwardingScopeDsymbol::ForwardingScopeDsymbol(ScopeDsymbol *forward)
+    : ScopeDsymbol()
+{
+    this->forward = forward;
+}
+
+Dsymbol *ForwardingScopeDsymbol::symtabInsert(Dsymbol *s)
+{
+    assert(forward);
+    if (Declaration *d = s->isDeclaration())
+    {
+        if (d->storage_class & STClocal)
+        {
+            // Symbols with storage class STClocal are not
+            // forwarded, but stored in the local symbol
+            // table. (Those are the `static foreach` variables.)
+            if (!symtab)
+            {
+                symtab = new DsymbolTable();
+            }
+            return ScopeDsymbol::symtabInsert(s); // insert locally
+        }
+    }
+    if (!forward->symtab)
+    {
+        forward->symtab = new DsymbolTable();
+    }
+    // Non-STClocal symbols are forwarded to `forward`.
+    return forward->symtabInsert(s);
+}
+
+/************************
+ * This override handles the following two cases:
+ *     static foreach (i, i; [0]) { ... }
+ * and
+ *     static foreach (i; [0]) { enum i = 2; }
+ */
+Dsymbol *ForwardingScopeDsymbol::symtabLookup(Dsymbol *s, Identifier *id)
+{
+    assert(forward);
+    // correctly diagnose clashing foreach loop variables.
+    if (Declaration *d = s->isDeclaration())
+    {
+        if (d->storage_class & STClocal)
+        {
+            if (!symtab)
+            {
+                symtab = new DsymbolTable();
+            }
+            return ScopeDsymbol::symtabLookup(s,id);
+        }
+    }
+    // Declarations within `static foreach` do not clash with
+    // `static foreach` loop variables.
+    if (!forward->symtab)
+    {
+        forward->symtab = new DsymbolTable();
+    }
+    return forward->symtabLookup(s,id);
+}
+
+void ForwardingScopeDsymbol::importScope(Dsymbol *s, Prot protection)
+{
+    forward->importScope(s, protection);
+}
+
+void ForwardingScopeDsymbol::semantic(Scope *)
+{
+}
+
+const char *ForwardingScopeDsymbol::kind() const
+{
+    return "local scope";
+}
 
 /********************************* ScopeDsymbol ****************************/
 

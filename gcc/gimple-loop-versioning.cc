@@ -1070,7 +1070,7 @@ loop_versioning::analyze_arbitrary_term (address_info &address,
 
      where nothing in the way "x" and "y" are set gives a hint as to
      whether "i" iterates over the innermost dimension of the array.
-     In these situations it seems reasonable to assume the the
+     In these situations it seems reasonable to assume the
      programmer has nested the loops appropriately (although of course
      there are examples like GEMM in which this assumption doesn't hold
      for all accesses in the loop).

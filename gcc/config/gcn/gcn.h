@@ -607,6 +607,10 @@ enum gcn_builtin_codes
 #define SLOW_BYTE_ACCESS 0
 #define WORD_REGISTER_OPERATIONS 1
 
+/* Flag values are either BImode or DImode, but either way the compiler
+   should assume that all the bits are live.  */
+#define STORE_FLAG_VALUE -1
+
 /* Definitions for register eliminations.
 
    This is an array of structures.  Each structure initializes one pair

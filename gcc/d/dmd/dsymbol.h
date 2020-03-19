@@ -376,8 +376,10 @@ public:
 
 class ForwardingScopeDsymbol : public ScopeDsymbol
 {
+public:
     ScopeDsymbol *forward;
 
+    ForwardingScopeDsymbol(ScopeDsymbol *forward);
     Dsymbol *symtabInsert(Dsymbol *s);
     Dsymbol *symtabLookup(Dsymbol *s, Identifier *id);
     void importScope(Dsymbol *s, Prot protection);

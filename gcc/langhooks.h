@@ -227,7 +227,7 @@ struct lang_hooks_for_decls
   bool (*ok_for_sibcall) (const_tree);
 
   /* Return a tree for the actual data of an array descriptor - or NULL_TREE
-     if original tree is not an array descriptor.  If the the second argument
+     if original tree is not an array descriptor.  If the second argument
      is true, only the TREE_TYPE is returned without generating a new tree.  */
   tree (*omp_array_data) (tree, bool);
 

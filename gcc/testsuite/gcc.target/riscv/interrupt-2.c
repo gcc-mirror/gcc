@@ -8,10 +8,6 @@ foo2 (void)
   INTERRUPT_FLAG = 0;
 
   extern volatile int COUNTER;
-#ifdef __riscv_atomic
-  __atomic_fetch_add (&COUNTER, 1, __ATOMIC_RELAXED);
-#else
   COUNTER++;
-#endif
 }
 /* { dg-final { scan-assembler-times "s\[wd\]\ta\[0-7\],\[0-9\]+\\(sp\\)" 2 } } */

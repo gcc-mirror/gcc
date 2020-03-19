@@ -9062,6 +9062,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
   else
     {
+      /* If FN is marked deprecated, then we've already issued a deprecated-use
+	 warning from mark_used above, so avoid redundantly issuing another one
+	 from build_addr_func.  */
+      warning_sentinel w (warn_deprecated_decl);
+
       fn = build_addr_func (fn, complain);
       if (fn == error_mark_node)
 	return error_mark_node;

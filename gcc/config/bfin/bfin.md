@@ -752,7 +752,8 @@
   "@
    %d0 = %h1 << 0%!
    %d0 = %1;"
-  [(set_attr "type" "dsp32shiftimm,mvi")])
+  [(set_attr "type" "dsp32shiftimm,mvi")
+   (set_attr "length" "*,4")])
 
 (define_expand "insv"
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "")

@@ -3190,7 +3190,7 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
   gcc_assert (ar && ar->type == AR_FULL);
 
   /* c comes in as a full ref.  Change it into a copy and make it into an
-     element ref so it has the right form for for ALLOCATE.  In the same
+     element ref so it has the right form for ALLOCATE.  In the same
      switch statement, also generate the size comparison for the secod IF
      statement.  */
 

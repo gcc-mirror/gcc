@@ -191,6 +191,7 @@ class StaticIfDeclaration : public ConditionalDeclaration
 public:
     ScopeDsymbol *scopesym;
     bool addisdone;
+    bool onStack;
 
     StaticIfDeclaration(Condition *condition, Dsymbols *decl, Dsymbols *elsedecl);
     Dsymbol *syntaxCopy(Dsymbol *s);
@@ -203,14 +204,16 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 };
 
-class StaticForeachDeclaration : public ConditionalDeclaration
+class StaticForeachDeclaration : public AttribDeclaration
 {
 public:
     StaticForeach *sfe;
     ScopeDsymbol *scopesym;
+    bool onStack;
     bool cached;
     Dsymbols *cache;
 
+    StaticForeachDeclaration(StaticForeach *sfe, Dsymbols *decl);
     Dsymbol *syntaxCopy(Dsymbol *s);
     bool oneMember(Dsymbol **ps, Identifier *ident);
     Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
@@ -223,14 +226,16 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 };
 
-class ForwardingAttribDeclaration : AttribDeclaration
+class ForwardingAttribDeclaration : public AttribDeclaration
 {
 public:
     ForwardingScopeDsymbol *sym;
 
+    ForwardingAttribDeclaration(Dsymbols *decl);
     Scope *newScope(Scope *sc);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     ForwardingAttribDeclaration *isForwardingAttribDeclaration() { return this; }
+    void accept(Visitor *v) { v->visit(this); }
 };
 
 // Mixin declarations

@@ -4383,6 +4383,22 @@ maybe_simplify_trivial_copy (tree &target, tree &init)
     }
 }
 
+/* Returns true if REF, which is a COMPONENT_REF, has any fields
+   of constant type.  This does not check for 'mutable', so the
+   caller is expected to be mindful of that.  */
+
+static bool
+cref_has_const_field (tree ref)
+{
+  while (TREE_CODE (ref) == COMPONENT_REF)
+    {
+      if (CP_TYPE_CONST_P (TREE_TYPE (TREE_OPERAND (ref, 1))))
+       return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+  return false;
+}
+
 /* Return true if we are modifying something that is const during constant
    expression evaluation.  CODE is the code of the statement, OBJ is the
    object in question, MUTABLE_P is true if one of the subobjects were
@@ -4400,7 +4416,23 @@ modifying_const_object_p (tree_code code, tree obj, bool mutable_p)
   if (mutable_p)
     return false;
 
-  return (TREE_READONLY (obj) || CP_TYPE_CONST_P (TREE_TYPE (obj)));
+  if (TREE_READONLY (obj))
+    return true;
+
+  if (CP_TYPE_CONST_P (TREE_TYPE (obj)))
+    {
+      /* Although a COMPONENT_REF may have a const type, we should
+	 only consider it modifying a const object when any of the
+	 field components is const.  This can happen when using
+	 constructs such as const_cast<const T &>(m), making something
+	 const even though it wasn't declared const.  */
+      if (TREE_CODE (obj) == COMPONENT_REF)
+	return cref_has_const_field (obj);
+      else
+	return true;
+    }
+
+  return false;
 }
 
 /* Evaluate an INIT_EXPR or MODIFY_EXPR.  */
@@ -4757,6 +4789,14 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     }
   else
     *valp = init;
+
+  /* After initialization, 'const' semantics apply to the value of the
+     object.  Make a note of this fact by marking the CONSTRUCTOR
+     TREE_READONLY.  */
+  if (TREE_CODE (t) == INIT_EXPR
+      && TREE_CODE (*valp) == CONSTRUCTOR
+      && TYPE_READONLY (type))
+    TREE_READONLY (*valp) = true;
 
   /* Update TREE_CONSTANT and TREE_SIDE_EFFECTS on enclosing
      CONSTRUCTORs, if any.  */

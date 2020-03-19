@@ -2224,7 +2224,7 @@ remove_partial_avx_dependency (void)
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
       /* Generate a vxorps at entry of the nearest dominator for basic
-	 blocks with conversions, which is in the the fake loop that
+	 blocks with conversions, which is in the fake loop that
 	 contains the whole function, so that there is only a single
 	 vxorps in the whole function.   */
       bb = nearest_common_dominator_for_set (CDI_DOMINATORS,

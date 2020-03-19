@@ -1,3 +1,33 @@
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94172
+	* c-tree.h (C_TYPE_INCOMPLETE_VARS): Define to TYPE_LANG_SLOT_1
+	instead of TYPE_VFIELD, and support it on {RECORD,UNION,ENUMERAL}_TYPE.
+	(TYPE_ACTUAL_ARG_TYPES): Check that it is only used on FUNCTION_TYPEs.
+	* c-decl.c (pushdecl): Push C_TYPE_INCOMPLETE_VARS also to
+	ENUMERAL_TYPEs.
+	(finish_incomplete_vars): New function, moved from finish_struct.  Use
+	relayout_decl instead of layout_decl.
+	(finish_struct): Remove obsolete comment about C_TYPE_INCOMPLETE_VARS
+	being TYPE_VFIELD.  Use finish_incomplete_vars.
+	(finish_enum): Clear C_TYPE_INCOMPLETE_VARS.  Call
+	finish_incomplete_vars.
+	* c-typeck.c (c_build_qualified_type): Clear C_TYPE_INCOMPLETE_VARS
+	also on ENUMERAL_TYPEs.
+
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94179
+	* c-fold.c (c_fully_fold_internal): Handle MEM_REF.
+
+2020-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/94040
+	* c-decl.c (builtin_structptr_type_count): New constant.
+	(match_builtin_function_types): Reject decls that are incompatible
+	in types pointed to by pointers.
+	(diagnose_mismatched_decls): Adjust comments.
+
 2020-03-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93577

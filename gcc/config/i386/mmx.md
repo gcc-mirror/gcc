@@ -118,29 +118,7 @@
       return standard_sse_constant_opcode (insn, operands);
 
     case TYPE_SSEMOV:
-      switch (get_attr_mode (insn))
-	{
-	case MODE_DI:
-	  /* Handle broken assemblers that require movd instead of movq.  */
-	  if (!HAVE_AS_IX86_INTERUNIT_MOVQ
-	      && (GENERAL_REG_P (operands[0]) || GENERAL_REG_P (operands[1])))
-	    return "%vmovd\t{%1, %0|%0, %1}";
-	  return "%vmovq\t{%1, %0|%0, %1}";
-	case MODE_TI:
-	  return "%vmovdqa\t{%1, %0|%0, %1}";
-	case MODE_XI:
-	  return "vmovdqa64\t{%g1, %g0|%g0, %g1}";
-
-	case MODE_V2SF:
-	  if (TARGET_AVX && REG_P (operands[0]))
-	    return "vmovlps\t{%1, %0, %0|%0, %0, %1}";
-	  return "%vmovlps\t{%1, %0|%0, %1}";
-	case MODE_V4SF:
-	  return "%vmovaps\t{%1, %0|%0, %1}";
-
-	default:
-	  gcc_unreachable ();
-	}
+      return ix86_output_ssemov (insn, operands);
 
     default:
       gcc_unreachable ();
@@ -189,10 +167,7 @@
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
 	    (eq_attr "alternative" "11,12")
-	      (cond [(ior (match_operand 0 "ext_sse_reg_operand")
-			  (match_operand 1 "ext_sse_reg_operand"))
-			(const_string "XI")
-		     (match_test "<MODE>mode == V2SFmode")
+	      (cond [(match_test "<MODE>mode == V2SFmode")
 		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
 			  (match_test "optimize_function_for_size_p (cfun)"))

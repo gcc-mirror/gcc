@@ -1182,16 +1182,27 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             {
                 if (!sm)
                     return 1;
+
+                // skip local symbols, such as static foreach loop variables
+                if (Declaration *decl = sm->isDeclaration())
+                {
+                    if (decl->storage_class & STClocal)
+                    {
+                        return 0;
+                    }
+                }
+
                 //printf("\t[%i] %s %s\n", i, sm->kind(), sm->toChars());
                 if (sm->ident)
                 {
-                    const char *idx = sm->ident->toChars();
-                    if (idx[0] == '_' && idx[1] == '_' &&
-                        sm->ident != Id::ctor &&
-                        sm->ident != Id::dtor &&
-                        sm->ident != Id::__xdtor &&
-                        sm->ident != Id::postblit &&
-                        sm->ident != Id::__xpostblit)
+                    // https://issues.dlang.org/show_bug.cgi?id=10096
+                    // https://issues.dlang.org/show_bug.cgi?id=10100
+                    // Skip over internal members in __traits(allMembers)
+                    if ((sm->isCtorDeclaration() && sm->ident != Id::ctor) ||
+                        (sm->isDtorDeclaration() && sm->ident != Id::dtor) ||
+                        (sm->isPostBlitDeclaration() && sm->ident != Id::postblit) ||
+                        sm->isInvariantDeclaration() ||
+                        sm->isUnitTestDeclaration())
                     {
                         return 0;
                     }
@@ -1352,6 +1363,13 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
 
         RootObject *o1 = (*e->args)[0];
         RootObject *o2 = (*e->args)[1];
+
+        // issue 12001, allow isSame, <BasicType>, <BasicType>
+        Type *t1 = isType(o1);
+        Type *t2 = isType(o2);
+        if (t1 && t2 && t1->equals(t2))
+            return True(e);
+
         Dsymbol *s1 = getDsymbol(o1);
         Dsymbol *s2 = getDsymbol(o2);
         //printf("isSame: %s, %s\n", o1->toChars(), o2->toChars());
@@ -1411,7 +1429,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         TupleExp *te= new TupleExp(e->loc, exps);
         return semantic(te, sc);
     }
-    else if(e->ident == Id::getVirtualIndex)
+    else if (e->ident == Id::getVirtualIndex)
     {
         if (dim != 1)
             return dimError(e, 1, dim);
