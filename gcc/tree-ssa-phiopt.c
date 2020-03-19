@@ -890,7 +890,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple *cond;
   edge true_edge, false_edge;
   enum tree_code code;
-  bool emtpy_or_with_defined_p = true;
+  bool empty_or_with_defined_p = true;
 
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
@@ -907,7 +907,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       gsi_next_nondebug (&gsi);
       if (!is_gimple_assign (stmt))
 	{
-	  emtpy_or_with_defined_p = false;
+	  empty_or_with_defined_p = false;
 	  continue;
 	}
       /* Now try to adjust arg0 or arg1 according to the computation
@@ -917,7 +917,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	     && jump_function_from_stmt (&arg0, stmt))
 	    || (lhs == arg1
 		&& jump_function_from_stmt (&arg1, stmt)))
-	emtpy_or_with_defined_p = false;
+	empty_or_with_defined_p = false;
     }
 
   cond = last_stmt (cond_bb);
@@ -969,7 +969,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       /* If the middle basic block was empty or is defining the
 	 PHI arguments and this is a single phi where the args are different
 	 for the edges e0 and e1 then we can remove the middle basic block. */
-      if (emtpy_or_with_defined_p
+      if (empty_or_with_defined_p
 	  && single_non_singleton_phi_for_edges (phi_nodes (gimple_bb (phi)),
 						 e0, e1) == phi)
 	{
@@ -1087,7 +1087,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       && profile_status_for_fn (cfun) != PROFILE_ABSENT
       && EDGE_PRED (middle_bb, 0)->probability < profile_probability::even ()
       /* If assign is cheap, there is no point avoiding it.  */
-      && estimate_num_insns (bb_seq (middle_bb), &eni_time_weights)
+      && estimate_num_insns_seq (bb_seq (middle_bb), &eni_time_weights)
 	 >= 3 * estimate_num_insns (cond, &eni_time_weights))
     return 0;
 
