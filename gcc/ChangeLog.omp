@@ -1,3 +1,8 @@
+2020-03-19  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-offload.c (oacc_loop_auto_partitions): Check for 'omp declare
+	target' attributes with a gang clause attached.
+
 2020-03-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-oacc-kernels.c (maybe_build_inner_data_region): is_gimple_reg vars

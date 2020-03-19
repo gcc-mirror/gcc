@@ -1386,14 +1386,32 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
 
       /* Gang partitioning is not available in a gang-single region.  */
       if (is_oacc_gang_single)
-        this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
+	this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
 
       /* Orphan reductions cannot have gang partitioning.  */
       if ((loop->flags & OLF_REDUCTION)
-	  && oacc_get_fn_attrib (current_function_decl)
-	  && !lookup_attribute ("omp target entrypoint",
+	  && oacc_get_fn_attrib (current_function_decl))
+	{
+	  bool gang_p = false;
+	  tree attr
+	      = lookup_attribute ("omp declare target",
+				  DECL_ATTRIBUTES (current_function_decl));
+
+	  if (attr)
+	    for (tree c = TREE_VALUE (attr); c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_GANG)
+		{
+		  gang_p = true;
+		  break;
+		}
+
+	  if (lookup_attribute ("omp target entrypoint",
 				DECL_ATTRIBUTES (current_function_decl)))
-	this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
+	    gang_p = true;
+
+	  if (!gang_p)
+	    this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
+	}
 
       /* Find the first outermost available partition. */
       while (this_mask <= outer_mask)
