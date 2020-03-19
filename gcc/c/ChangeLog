@@ -1,6 +1,20 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	* c-tree.h (finish_function): Add location_t argument defaulted to
+	input_location.
+	* c-parser.c (c_parser_compound_statement): Add endlocp argument and
+	set it to the locus of closing } if non-NULL.
+	(c_parser_compound_statement_nostart): Return locus of closing }.
+	(c_parser_parse_rtl_body): Likewise.
+	(c_parser_declaration_or_fndef): Propagate locus of closing } to
+	finish_function.
+	* c-decl.c (finish_function): Add end_loc argument, use it instead of
+	input_location to set function_end_locus.
+
 	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94172

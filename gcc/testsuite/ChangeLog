@@ -3,6 +3,9 @@
 	Backported from mainline
 	2020-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR gcov-profile/94029
+	* gcc.misc-tests/gcov-pr94029.c: New test.
+
 	PR tree-optimization/94211
 	* gcc.dg/pr94211.c: New test.
 
