@@ -22,7 +22,7 @@ program main
 
   !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1))
   do i = 0, n - 1 ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
-                  ! { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" "" { target *-*-* } 23 }
+                  ! { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" "" { target *-*-* } 24 }
      c(i) = a(f (i)) + b(f (i))
   end do
   !$acc end kernels
