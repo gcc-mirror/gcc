@@ -1,3 +1,21 @@
+2020-03-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94066
+	* constexpr.c (reduced_constant_expression_p) [CONSTRUCTOR]: Properly
+	handle unions without an initializer.
+	(cxx_eval_component_reference): Emit a different diagnostic when the
+	constructor element corresponding to a union member is NULL.
+	(cxx_eval_bare_aggregate): When constructing a union, always set the
+	active union member before evaluating the initializer.  Relax assertion
+	that verifies the index of the constructor element we're initializing
+	hasn't been changed.
+	(cxx_eval_store_expression): Diagnose changing the active union member
+	while the union is in the process of being initialized.  After setting
+	an active union member, clear CONSTRUCTOR_NO_CLEARING on the underlying
+	CONSTRUCTOR.
+	(cxx_eval_constant_expression) [PLACEHOLDER_EXPR]: Don't re-reduce a
+	CONSTRUCTOR returned by lookup_placeholder.
+
 2020-03-20  Patrick Palka  <ppalka@redhat.com>
 
 	* cxx-pretty-print.c (pp_cxx_parameter_mapping): Make extern.  Move
