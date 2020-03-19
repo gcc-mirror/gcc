@@ -1,3 +1,8 @@
+2020-03-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Add
+	dg-allow-blank-lines-in-output.
+
 2020-03-18  Julian Brown <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
