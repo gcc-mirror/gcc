@@ -1,3 +1,8 @@
+2020-03-19  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/routine-level-of-parallelism-2.c (g_1): Add
+	missing test directives.
+
 2020-03-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/kernels-decompose-1.f95: Remove some
