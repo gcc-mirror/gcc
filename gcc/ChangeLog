@@ -1,3 +1,11 @@
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94211
+	* tree-ssa-phiopt.c (value_replacement): Use estimate_num_insns_seq
+	instead of estimate_num_insns for bb_seq (middle_bb).  Rename
+	emtpy_or_with_defined_p variable to empty_or_with_defined_p, adjust
+	all uses.
+
 2020-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/94217

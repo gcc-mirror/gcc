@@ -1,3 +1,8 @@
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94211
+	* gcc.dg/pr94211.c: New test.
+
 2020-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94216
