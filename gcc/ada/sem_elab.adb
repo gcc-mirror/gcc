@@ -75,8 +75,8 @@ package body Sem_Elab is
    --  The access-before-elaboration (ABE) mechanism implemented in this unit
    --  has the following objectives:
    --
-   --    * Diagnose at compile-time or install run-time checks to prevent ABE
-   --      access to data and behaviour.
+   --    * Diagnose at compile time or install run-time checks to prevent ABE
+   --      access to data and behavior.
    --
    --      The high-level idea is to accurately diagnose ABE issues within a
    --      single unit because the ABE mechanism can inspect the whole unit.
@@ -111,7 +111,7 @@ package body Sem_Elab is
    --    * Dynamic model - This is the most permissive of the three models.
    --      When the dynamic model is in effect, the mechanism diagnoses and
    --      installs run-time checks to detect ABE issues in the main unit.
-   --      The behaviour of this model is identical to that specified by the
+   --      The behavior of this model is identical to that specified by the
    --      Ada RM. This model is enabled with switch -gnatE.
    --
    --    Static model - This is the middle ground of the three models. When
@@ -122,7 +122,7 @@ package body Sem_Elab is
    --      the prior elaboration of withed units. This is the default model.
    --
    --    * SPARK model - This is the most conservative of the three models and
-   --      impelements the semantics defined in SPARK RM 7.7. The SPARK model
+   --      implements the semantics defined in SPARK RM 7.7. The SPARK model
    --      is in effect only when a context resides in a SPARK_Mode On region,
    --      otherwise the mechanism falls back to one of the previous models.
    --
@@ -186,7 +186,7 @@ package body Sem_Elab is
    --
    --  * Library level - A type of enclosing level. A scenario or target is at
    --    the library level if it appears in a package library unit, ignoring
-   --    enclosng packages.
+   --    enclosing packages.
    --
    --  * Non-library-level encapsulator - A construct that cannot be elaborated
    --    on its own and requires elaboration by a top-level scenario.
@@ -400,7 +400,7 @@ package body Sem_Elab is
    --  capture the target and relevant attributes of the original call.
    --
    --  The diagnostics of the ABE mechanism depend on accurate source locations
-   --  to determine the spacial relation of nodes.
+   --  to determine the spatial relation of nodes.
 
    -----------------------------------------
    -- Suppression of elaboration warnings --
@@ -590,7 +590,7 @@ package body Sem_Elab is
    --  -gnatH   legacy elaboration checking mode enabled
    --
    --           When this switch is in effect, the pre-18.x ABE model becomes
-   --           the defacto ABE model. This ammounts to cutting off all entry
+   --           the de facto ABE model. This amounts to cutting off all entry
    --           points into the new ABE mechanism, and giving full control to
    --           the old ABE mechanism.
    --
@@ -5671,7 +5671,7 @@ package body Sem_Elab is
 
          --  Ensure that the unit with the target body is elaborated prior to
          --  the main unit. The implicit Elaborate[_All] is generated only when
-         --  the call has elaboration checks enabled. This behaviour parallels
+         --  the call has elaboration checks enabled. This behavior parallels
          --  that of the old ABE mechanism.
 
          if Elaboration_Checks_OK (Call_Rep) then
@@ -6071,7 +6071,7 @@ package body Sem_Elab is
 
          --  Ensure that the unit with the generic body is elaborated prior
          --  to the main unit. No implicit pragma has to be generated if the
-         --  instantiation has elaboration checks suppressed. This behaviour
+         --  instantiation has elaboration checks suppressed. This behavior
          --  parallels that of the old ABE mechanism.
 
          if Elaboration_Checks_OK (Inst_Rep) then
@@ -8095,7 +8095,7 @@ package body Sem_Elab is
       begin
          --  Nothing to do when the need for prior elaboration came from a
          --  partial finalization routine which occurs in an initialization
-         --  context. This behaviour parallels that of the old ABE mechanism.
+         --  context. This behavior parallels that of the old ABE mechanism.
 
          if In_State.Within_Partial_Finalization then
             return;
@@ -9206,7 +9206,7 @@ package body Sem_Elab is
       begin
          --  Avoid cascaded errors if there were previous serious infractions.
          --  As a result the scenario will not be treated as a guaranteed ABE.
-         --  This behaviour parallels that of the old ABE mechanism.
+         --  This behavior parallels that of the old ABE mechanism.
 
          if Serious_Errors_Detected > 0 then
             return False;
@@ -14907,7 +14907,7 @@ package body Sem_Elab is
             return False;
 
          --  Assignments are ignored in GNAT mode on the assumption that
-         --  they are ABE-safe. This behaviour parallels that of the old
+         --  they are ABE-safe. This behavior parallels that of the old
          --  ABE mechanism.
 
          elsif GNAT_Mode then
