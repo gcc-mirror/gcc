@@ -1,3 +1,14 @@
+2020-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94175
+	* cp-gimplify.c (simple_empty_class_p): Look through
+	SIMPLE_TARGET_EXPR_P.
+	(cp_gimplify_expr) [MODIFY_EXPR]: Likewise.
+	[RETURN_EXPR]: Avoid producing 'return *retval;'.
+	* call.c (build_call_a): Strip TARGET_EXPR from empty class arg.
+	* cp-tree.h (SIMPLE_TARGET_EXPR_P): Check that TARGET_EXPR_INITIAL
+	is non-null.
+
 2020-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93931

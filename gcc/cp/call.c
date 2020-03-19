@@ -392,6 +392,10 @@ build_call_a (tree function, int n, tree *argarray)
 	if (is_empty_class (TREE_TYPE (arg))
 	    && simple_empty_class_p (TREE_TYPE (arg), arg, INIT_EXPR))
 	  {
+	    while (TREE_CODE (arg) == TARGET_EXPR)
+	      /* We're disconnecting the initializer from its target,
+		 don't create a temporary.  */
+	      arg = TARGET_EXPR_INITIAL (arg);
 	    tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (arg));
 	    arg = build2 (COMPOUND_EXPR, TREE_TYPE (t), arg, t);
 	    CALL_EXPR_ARG (function, i) = arg;
