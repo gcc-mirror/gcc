@@ -5463,7 +5463,9 @@ package body Exp_Attr is
             return;
          end if;
 
-         --  If there is a TSS for Put_Image, just call it
+         --  If there is a TSS for Put_Image, just call it. This is true for
+         --  tagged types (if enabled) and if there is a user-specified
+         --  Put_Image.
 
          Pname := TSS (U_Type, TSS_Put_Image);
          if No (Pname) then
@@ -5478,10 +5480,17 @@ package body Exp_Attr is
          end if;
 
          if No (Pname) then
+            --  If Put_Image is disabled, call the "unknown" version
+
+            if not Enable_Put_Image (U_Type) then
+               Rewrite (N, Build_Unknown_Put_Image_Call (N));
+               Analyze (N);
+               return;
+
             --  For elementary types, we call the routine in System.Put_Images
             --  directly.
 
-            if Is_Elementary_Type (U_Type) then
+            elsif Is_Elementary_Type (U_Type) then
                Rewrite (N, Build_Elementary_Put_Image_Call (N));
                Analyze (N);
                return;
@@ -5535,7 +5544,7 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
-            --  All other record type cases, including protected records
+            --  All other record type cases
 
             else
                pragma Assert (Is_Record_Type (U_Type));
