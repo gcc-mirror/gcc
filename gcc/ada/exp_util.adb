@@ -12551,13 +12551,10 @@ package body Exp_Util is
       elsif Nkind (Pexp) = N_Selected_Component
         and then Prefix (Pexp) = Exp
       then
-         if No (Etype (Pexp)) then
-            return True;
-         else
-            return
-              not Has_Discriminants (Etype (Pexp))
-                or else Is_Constrained (Etype (Pexp));
-         end if;
+         return No (Etype (Pexp))
+           or else not Is_Type (Etype (Pexp))
+           or else not Has_Discriminants (Etype (Pexp))
+           or else Is_Constrained (Etype (Pexp));
       end if;
 
       --  Set the output type, this comes from Etype if it is set, otherwise we
