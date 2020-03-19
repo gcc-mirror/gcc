@@ -1,5 +1,10 @@
 2020-03-19  Martin Liska  <mliska@suse.cz>
 
+	* lto-symtab.h (enum gcc_plugin_symbol_type): New.
+	(enum gcc_plugin_symbol_section_kind): Likewise.
+
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
 	* plugin-api.h (struct ld_plugin_symbol): Split
 	int def into 4 char fields.
 	(enum ld_plugin_symbol_type): New.

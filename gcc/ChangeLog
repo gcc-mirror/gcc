@@ -1,3 +1,11 @@
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-section-in.c: Add ext_symtab.
+	* lto-streamer-out.c (write_symbol_extension_info): New.
+	(produce_symtab_extension): New.
+	(produce_asm_for_decls): Stream also produce_symtab_extension.
+	* lto-streamer.h (enum lto_section_type): New section.
+
 2020-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94211
