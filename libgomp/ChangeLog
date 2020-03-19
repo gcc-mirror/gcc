@@ -1,3 +1,8 @@
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93931
+	* testsuite/libgomp.c++/pr93931.C: New test.
+
 2020-03-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Add

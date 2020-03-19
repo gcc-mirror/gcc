@@ -1,3 +1,11 @@
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93931
+	* parser.c (cp_parser_omp_var_list_no_open): Call process_outer_var_ref
+	on outer_automatic_var_p decls.
+	* cp-gimplify.c (cxx_omp_disregard_value_expr): Return true also for
+	capture proxy decls.
+
 2020-03-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94147 - mangling of lambdas assigned to globals
