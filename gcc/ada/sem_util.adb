@@ -23697,12 +23697,23 @@ package body Sem_Util is
       --  Local variables
 
       E        : Entity_Id;
-      Orig_Obj : constant Node_Id := Original_Node (Obj);
+      Orig_Obj : Node_Id := Original_Node (Obj);
       Orig_Pre : Node_Id;
 
    --  Start of processing for Object_Access_Level
 
    begin
+      --  In the case of an expanded implicit dereference we swap the original
+      --  object to be the expanded conversion.
+
+      if Nkind (Obj) = N_Explicit_Dereference
+        and then Nkind (Orig_Obj) /= N_Explicit_Dereference
+      then
+         Orig_Obj := Obj;
+      end if;
+
+      --  Calculate the object node's accessibility level
+
       if Nkind (Orig_Obj) = N_Defining_Identifier
         or else Is_Entity_Name (Orig_Obj)
       then
