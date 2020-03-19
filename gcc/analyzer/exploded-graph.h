@@ -175,12 +175,7 @@ class exploded_node : public dnode<eg_traits>
     STATUS_MERGER
   };
 
-  exploded_node (point_and_state ps,
-		 int index)
-  : m_ps (ps), m_status (STATUS_WORKLIST), m_index (index)
-  {
-    gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
-  }
+  exploded_node (const point_and_state &ps, int index);
 
   hashval_t hash () const { return m_ps.hash (); }
 

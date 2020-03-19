@@ -29,6 +29,15 @@ void parse3()
     // { dg-error "found 'EOF' when expecting ';'" "" { target *-*-* } .-4 }
 }
 
+void parse4()
+{
+    int expr;
+    asm
+    {
+        "%name" : [name] string (expr); // { dg-error "expected constant string constraint for operand, not 'string'" }
+    }
+}
+
 void semantic1()
 {
     {

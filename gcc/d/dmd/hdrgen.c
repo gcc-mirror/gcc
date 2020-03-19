@@ -249,7 +249,7 @@ public:
         buf->writenl();
     }
 
-    void visit(ForeachStatement *s)
+    void foreachWithoutBody(ForeachStatement *s)
     {
         buf->writestring(Token::toChars(s->op));
         buf->writestring(" (");
@@ -269,6 +269,11 @@ public:
         s->aggr->accept(this);
         buf->writeByte(')');
         buf->writenl();
+    }
+
+    void visit(ForeachStatement *s)
+    {
+        foreachWithoutBody(s);
         buf->writeByte('{');
         buf->writenl();
         buf->level++;
@@ -279,7 +284,7 @@ public:
         buf->writenl();
     }
 
-    void visit(ForeachRangeStatement *s)
+    void foreachRangeWithoutBody(ForeachRangeStatement *s)
     {
         buf->writestring(Token::toChars(s->op));
         buf->writestring(" (");
@@ -297,12 +302,31 @@ public:
         buf->writenl();
         buf->writeByte('{');
         buf->writenl();
+    }
+
+    void visit(ForeachRangeStatement *s)
+    {
+        foreachRangeWithoutBody(s);
         buf->level++;
         if (s->_body)
             s->_body->accept(this);
         buf->level--;
         buf->writeByte('}');
         buf->writenl();
+    }
+
+    void visit(StaticForeachStatement *s)
+    {
+        buf->writestring("static ");
+        if (s->sfe->aggrfe)
+        {
+            visit(s->sfe->aggrfe);
+        }
+        else
+        {
+            assert(s->sfe->rangefe);
+            visit(s->sfe->rangefe);
+        }
     }
 
     void visit(IfStatement *s)
@@ -765,6 +789,12 @@ public:
     {
         //printf("TypeBasic::toCBuffer2(t->mod = %d)\n", t->mod);
         buf->writestring(t->dstring);
+    }
+
+    void visit(TypeTraits *t)
+    {
+        //printf("TypeBasic::toCBuffer2(t.mod = %d)\n", t.mod);
+        t->exp->accept(this);
     }
 
     void visit(TypeVector *t)
@@ -1360,6 +1390,32 @@ public:
         buf->writenl();
     }
 
+    void visit(ForwardingStatement *s)
+    {
+        s->statement->accept(this);
+    }
+
+    void visit(StaticForeachDeclaration *s)
+    {
+        buf->writestring("static ");
+        if (s->sfe->aggrfe)
+        {
+            foreachWithoutBody(s->sfe->aggrfe);
+        }
+        else
+        {
+            assert(s->sfe->rangefe);
+            foreachRangeWithoutBody(s->sfe->rangefe);
+        }
+        buf->writeByte('{');
+        buf->writenl();
+        buf->level++;
+        visit((AttribDeclaration *)s);
+        buf->level--;
+        buf->writeByte('}');
+        buf->writenl();
+    }
+
     void visit(CompileDeclaration *d)
     {
         buf->writestring("mixin(");
@@ -1787,6 +1843,8 @@ public:
 
     void visit(AliasDeclaration *d)
     {
+        if (d->storage_class & STClocal)
+            return;
         buf->writestring("alias ");
         if (d->aliassym)
         {
@@ -1818,6 +1876,8 @@ public:
 
     void visit(VarDeclaration *d)
     {
+        if (d->storage_class & STClocal)
+            return;
         visitVarDecl(d, false);
         buf->writeByte(';');
         buf->writenl();
@@ -2653,7 +2713,8 @@ public:
     void visit(TraitsExp *e)
     {
         buf->writestring("__traits(");
-        buf->writestring(e->ident->toChars());
+        if (e->ident)
+            buf->writestring(e->ident->toChars());
         if (e->args)
         {
             for (size_t i = 0; i < e->args->dim; i++)
@@ -3241,6 +3302,7 @@ const char *stcToChars(StorageClass& stc)
         { STCsystem,       TOKat,       "@system" },
         { STCdisable,      TOKat,       "@disable" },
         { STCfuture,       TOKat,       "@__future" },
+        { STClocal,        TOKat,       "__local" },
         { 0,               TOKreserved, NULL }
     };
 

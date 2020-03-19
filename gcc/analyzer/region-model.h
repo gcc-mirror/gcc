@@ -1771,6 +1771,7 @@ class region_model
 
   void set_value (region_id lhs_rid, svalue_id rhs_sid,
 		  region_model_context *ctxt);
+  void set_value (tree lhs, tree rhs, region_model_context *ctxt);
   svalue_id set_to_new_unknown_value (region_id dst_rid, tree type,
 				      region_model_context *ctxt);
 
@@ -1884,8 +1885,9 @@ class region_model
   void poison_any_pointers_to_bad_regions (const region_id_set &bad_regions,
 					   enum poison_kind pkind);
 
-  void dump_summary_of_map (pretty_printer *pp, map_region *map_region,
-			    bool *is_first) const;
+  void dump_summary_of_rep_path_vars (pretty_printer *pp,
+				      auto_vec<path_var> *rep_path_vars,
+				      bool *is_first);
 
   auto_delete_vec<svalue> m_svalues;
   auto_delete_vec<region> m_regions;
@@ -1972,42 +1974,50 @@ class region_model_context
 					const dump_location_t &loc) = 0;
 };
 
-/* A subclass of region_model_context for determining if operations fail
-   e.g. "can we generate a region for the lvalue of EXPR?".  */
+/* A "do nothing" subclass of region_model_context.  */
 
-class tentative_region_model_context : public region_model_context
+class noop_region_model_context : public region_model_context
 {
 public:
-  tentative_region_model_context () : m_num_unexpected_codes (0) {}
-
-  void warn (pending_diagnostic *) FINAL OVERRIDE {}
-  void remap_svalue_ids (const svalue_id_map &) FINAL OVERRIDE {}
-  int on_svalue_purge (svalue_id, const svalue_id_map &) FINAL OVERRIDE
+  void warn (pending_diagnostic *) OVERRIDE {}
+  void remap_svalue_ids (const svalue_id_map &) OVERRIDE {}
+  int on_svalue_purge (svalue_id, const svalue_id_map &) OVERRIDE
   {
     return 0;
   }
-  logger *get_logger () FINAL OVERRIDE { return NULL; }
+  logger *get_logger () OVERRIDE { return NULL; }
   void on_inherited_svalue (svalue_id parent_sid ATTRIBUTE_UNUSED,
 			    svalue_id child_sid  ATTRIBUTE_UNUSED)
-    FINAL OVERRIDE
+    OVERRIDE
   {
   }
   void on_cast (svalue_id src_sid ATTRIBUTE_UNUSED,
-		svalue_id dst_sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		svalue_id dst_sid ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
   void on_condition (tree lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
-		     tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		     tree rhs ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
-  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
   void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
-	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+	       tree rhs ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
+  void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
+};
+
+/* A subclass of region_model_context for determining if operations fail
+   e.g. "can we generate a region for the lvalue of EXPR?".  */
+
+class tentative_region_model_context : public noop_region_model_context
+{
+public:
+  tentative_region_model_context () : m_num_unexpected_codes (0) {}
+
   void on_unexpected_tree_code (tree, const dump_location_t &)
     FINAL OVERRIDE
   {
@@ -2143,7 +2153,7 @@ using namespace ::selftest;
 /* An implementation of region_model_context for use in selftests, which
    stores any pending_diagnostic instances passed to it.  */
 
-class test_region_model_context : public region_model_context
+class test_region_model_context : public noop_region_model_context
 {
 public:
   void warn (pending_diagnostic *d) FINAL OVERRIDE
@@ -2151,53 +2161,7 @@ public:
     m_diagnostics.safe_push (d);
   }
 
-  void remap_svalue_ids (const svalue_id_map &) FINAL OVERRIDE
-  {
-    /* Empty.  */
-  }
-
-#if 0
-  bool can_purge_p (svalue_id) FINAL OVERRIDE
-  {
-    return true;
-  }
-#endif
-
-  int on_svalue_purge (svalue_id, const svalue_id_map &) FINAL OVERRIDE
-  {
-    /* Empty.  */
-    return 0;
-  }
-
-  logger *get_logger () FINAL OVERRIDE { return NULL; }
-
-  void on_inherited_svalue (svalue_id parent_sid ATTRIBUTE_UNUSED,
-			    svalue_id child_sid  ATTRIBUTE_UNUSED)
-    FINAL OVERRIDE
-  {
-  }
-
-  void on_cast (svalue_id src_sid ATTRIBUTE_UNUSED,
-		svalue_id dst_sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
-
   unsigned get_num_diagnostics () const { return m_diagnostics.length (); }
-
-  void on_condition (tree lhs ATTRIBUTE_UNUSED,
-		     enum tree_code op ATTRIBUTE_UNUSED,
-		     tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
-
-  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
-
-  void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
-	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
 
   void on_unexpected_tree_code (tree t, const dump_location_t &)
     FINAL OVERRIDE

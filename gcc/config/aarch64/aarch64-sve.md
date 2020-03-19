@@ -2477,7 +2477,7 @@
 )
 
 ;; This is used for vec_duplicate<mode>s from memory, but can also
-;; be used by combine to optimize selects of a a vec_duplicate<mode>
+;; be used by combine to optimize selects of a vec_duplicate<mode>
 ;; with zero.
 (define_insn "sve_ld1r<mode>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")

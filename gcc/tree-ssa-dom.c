@@ -875,7 +875,7 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 				  class avail_exprs_stack *avail_exprs_stack,
 				  basic_block bb ATTRIBUTE_UNUSED)
 {
-  /* First query our hash table to see if the the expression is available
+  /* First query our hash table to see if the expression is available
      there.  A non-NULL return value will be either a constant or another
      SSA_NAME.  */
   tree cached_lhs =  avail_exprs_stack->lookup_avail_expr (stmt, false, true);
@@ -1725,11 +1725,10 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
       tree op0 = gimple_assign_rhs1 (stmt);
       tree op1 = gimple_assign_rhs2 (stmt);
       tree new_rhs
-	= build_fold_addr_expr (fold_build2 (MEM_REF,
-					     TREE_TYPE (TREE_TYPE (op0)),
-					     unshare_expr (op0),
-					     fold_convert (ptr_type_node,
-							   op1)));
+	= build1 (ADDR_EXPR, TREE_TYPE (op0),
+		  fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (op0)),
+			       unshare_expr (op0), fold_convert (ptr_type_node,
+								 op1)));
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "==== ASGN ");

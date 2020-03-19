@@ -2870,9 +2870,23 @@ no_linkage_check (tree t, bool relaxed_p)
      fix it up later if not.  We need to check this even in templates so
      that we properly handle a lambda-expression in the signature.  */
   if (LAMBDA_TYPE_P (t)
-      && CLASSTYPE_LAMBDA_EXPR (t) != error_mark_node
-      && LAMBDA_TYPE_EXTRA_SCOPE (t) == NULL_TREE)
-    return t;
+      && CLASSTYPE_LAMBDA_EXPR (t) != error_mark_node)
+    {
+      tree extra = LAMBDA_TYPE_EXTRA_SCOPE (t);
+      if (!extra)
+	return t;
+
+      /* If the mangling scope is internal-linkage or not repeatable
+	 elsewhere, the lambda effectively has no linkage.  (Sadly
+	 we're not very careful with the linkages of types.)  */
+      if (TREE_CODE (extra) == VAR_DECL
+	  && !(TREE_PUBLIC (extra)
+	       && (processing_template_decl
+		   || (DECL_LANG_SPECIFIC (extra) && DECL_USE_TEMPLATE (extra))
+		   /* DECL_COMDAT is set too late for us to check.  */
+		   || DECL_VAR_DECLARED_INLINE_P (extra))))
+	return t;
+    }
 
   /* Otherwise there's no point in checking linkage on template functions; we
      can't know their complete types.  */

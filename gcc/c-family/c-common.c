@@ -7433,7 +7433,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	      warning_at (input_location, 0,
 			  "this target does not define a speculation barrier; "
 			  "your program will still execute correctly, "
-			  "but incorrect speculation may not be be "
+			  "but incorrect speculation may not be "
 			  "restricted");
 
 	    /* If the optional second argument is present, handle any side

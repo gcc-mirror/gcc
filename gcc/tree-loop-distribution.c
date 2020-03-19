@@ -1151,7 +1151,7 @@ generate_memset_builtin (class loop *loop, partition *partition)
   nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
-  mem = builtin->dst_base;
+  mem = rewrite_to_non_trapping_overflow (builtin->dst_base);
   mem = force_gimple_operand_gsi (&gsi, mem, true, NULL_TREE,
 				  false, GSI_CONTINUE_LINKING);
 
@@ -1205,8 +1205,8 @@ generate_memcpy_builtin (class loop *loop, partition *partition)
   nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
-  dest = builtin->dst_base;
-  src = builtin->src_base;
+  dest = rewrite_to_non_trapping_overflow (builtin->dst_base);
+  src = rewrite_to_non_trapping_overflow (builtin->src_base);
   if (partition->kind == PKIND_MEMCPY
       || ! ptr_derefs_may_alias_p (dest, src))
     kind = BUILT_IN_MEMCPY;
@@ -2489,14 +2489,11 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	      if (cbdata.vertices_component[k] != i)
 		continue;
 
-	      /* Update postorder number so that merged reduction partition is
-		 sorted after other partitions.  */
-	      if (!partition_reduction_p (first)
-		  && partition_reduction_p (partition))
-		{
-		  gcc_assert (pg->vertices[k].post < pg->vertices[j].post);
-		  pg->vertices[j].post = pg->vertices[k].post;
-		}
+	      /* Update to the minimal postordeer number of vertices in scc so
+		 that merged partition is sorted correctly against others.  */
+	      if (pg->vertices[j].post > pg->vertices[k].post)
+		pg->vertices[j].post = pg->vertices[k].post;
+
 	      partition_merge_into (NULL, first, partition, FUSE_SAME_SCC);
 	      (*partitions)[k] = NULL;
 	      partition_free (partition);

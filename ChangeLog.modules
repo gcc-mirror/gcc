@@ -1,5 +1,7 @@
 2020-03-18  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 3512dc0108afbed3bece2e9fa1719fb3ce1d73d9
+
 	gcc/cp/
 	* module.cc (trees_out::type_node): Do ptr-mem-fns after typedef
 	detection.

@@ -53,7 +53,7 @@ bool Target::cppExceptions;
 int Target::classinfosize;
 unsigned long long Target::maxStaticDataSize;
 
-/* Floating-point constants for for .max, .min, and other properties.  */
+/* Floating-point constants for .max, .min, and other properties.  */
 template <typename T> real_t Target::FPTypeProperties<T>::max;
 template <typename T> real_t Target::FPTypeProperties<T>::min_normal;
 template <typename T> real_t Target::FPTypeProperties<T>::nan;

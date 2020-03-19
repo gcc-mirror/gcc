@@ -262,3 +262,12 @@ Generate local calls to out-of-line atomic operations.
 -param=aarch64-sve-compare-costs=
 Target Joined UInteger Var(aarch64_sve_compare_costs) Init(1) IntegerRange(0, 1) Param
 When vectorizing for SVE, consider using unpacked vectors for smaller elements and use the cost model to pick the cheapest approach.  Also use the cost model to choose between SVE and Advanced SIMD vectorization.
+
+-param=aarch64-float-recp-precision=
+Target Joined UInteger Var(aarch64_float_recp_precision) Init(1) IntegerRange(1, 5) Param
+The number of Newton iterations for calculating the reciprocal for float type.  The precision of division is proportional to this param when division approximation is enabled.  The default value is 1.
+
+-param=aarch64-double-recp-precision=
+Target Joined UInteger Var(aarch64_double_recp_precision) Init(2) IntegerRange(1, 5) Param
+The number of Newton iterations for calculating the reciprocal for double type.  The precision of division is proportional to this param when division approximation is enabled.  The default value is 2.
+

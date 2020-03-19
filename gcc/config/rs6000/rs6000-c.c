@@ -397,7 +397,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	(e.g. ISA_2_1_MASKS, ISA_3_0_MASKS_SERVER) and for a list of
 	the specific flags that are associated with each of the cpu
 	choices that can be specified as the target of a -mcpu=target
-	compile option, or as the the target of a --with-cpu=target
+	compile option, or as the target of a --with-cpu=target
 	configure option.  Target flags that are specified in either
 	of these two ways are considered "implicit" since the flags
 	are not mentioned specifically by name.
@@ -1636,6 +1636,19 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  type = build_pointer_type (build_qualified_type (TREE_TYPE (type),
 							   0));
 	  arg = fold_convert (type, arg);
+	}
+
+      /* For P9V_BUILTIN_VEC_LXVL, convert any const * to its non constant
+	 equivalent to simplify the overload matching below.  */
+      if (fcode == P9V_BUILTIN_VEC_LXVL)
+	{
+	  if (POINTER_TYPE_P (type)
+	      && TYPE_READONLY (TREE_TYPE (type)))
+	    {
+	      type = build_pointer_type (build_qualified_type (
+						TREE_TYPE (type),0));
+	      arg = fold_convert (type, arg);
+	    }
 	}
 
       args[n] = arg;

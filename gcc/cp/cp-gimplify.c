@@ -513,7 +513,7 @@ gimplify_expr_stmt (tree *stmt_p)
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
 
 static void
-cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p)
+cp_gimplify_init_expr (tree *expr_p)
 {
   tree from = TREE_OPERAND (*expr_p, 1);
   tree to = TREE_OPERAND (*expr_p, 0);
@@ -525,22 +525,6 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p)
      case, I guess we'll need to replace references somehow.  */
   if (TREE_CODE (from) == TARGET_EXPR && TARGET_EXPR_INITIAL (from))
     from = TARGET_EXPR_INITIAL (from);
-
-  /* If we might need to clean up a partially constructed object, break down
-     the CONSTRUCTOR with split_nonconstant_init.  */
-  if (TREE_CODE (from) == CONSTRUCTOR
-      && flag_exceptions
-      && TREE_SIDE_EFFECTS (from)
-      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (to)))
-    {
-      gimplify_expr (&to, pre_p, NULL, is_gimple_lvalue, fb_lvalue);
-      replace_placeholders (from, to);
-      from = split_nonconstant_init (to, from);
-      cp_genericize_tree (&from, false);
-      copy_if_shared (&from);
-      *expr_p = from;
-      return;
-    }
 
   /* Look through any COMPOUND_EXPRs, since build_compound_expr pushes them
      inside the TARGET_EXPR.  */
@@ -734,7 +718,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 LHS of an assignment might also be involved in the RHS, as in bug
 	 25979.  */
     case INIT_EXPR:
-      cp_gimplify_init_expr (expr_p, pre_p);
+      cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
       /* Fall through.  */

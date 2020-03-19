@@ -232,15 +232,13 @@ public:
 
 class ForwardingStatement : public Statement
 {
+public:
     ForwardingScopeDsymbol *sym;
     Statement *statement;
 
+    ForwardingStatement(Loc loc, ForwardingScopeDsymbol *sym, Statement *s);
+    ForwardingStatement(Loc loc, Statement *s);
     Statement *syntaxCopy();
-    Statement *getRelatedLabeled();
-    bool hasBreak();
-    bool hasContinue();
-    Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexception, Statement **sfinally);
-    Statement *last();
     Statements *flatten(Scope *sc);
     ForwardingStatement *isForwardingStatement() { return this; }
     void accept(Visitor *v) { v->visit(this); }
@@ -384,6 +382,7 @@ class StaticForeachStatement : public Statement
 public:
     StaticForeach *sfe;
 
+    StaticForeachStatement(Loc loc, StaticForeach *sfe);
     Statement *syntaxCopy();
     Statements *flatten(Scope *sc);
 

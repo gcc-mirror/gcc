@@ -261,7 +261,7 @@ class CppMangleVisitor : public Visitor
                     fatal();
                 }
             }
-            else if(tp->isTemplateThisParameter())
+            else if (tp->isTemplateThisParameter())
             {
                 ti->error("Internal Compiler Error: C++ `%s` template this parameter is not supported", o->toChars());
                 fatal();

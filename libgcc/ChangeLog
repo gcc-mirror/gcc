@@ -1,3 +1,7 @@
+2020-03-17  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/t-arm: Do not compile cmse_nonsecure_call.S for v8.1-m.
+
 2020-03-04  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config.host: Include the new makefile fragment.

@@ -199,7 +199,7 @@ private:
   void operator delete (void *) {}
 };
 
-/* Report whether or not P is a an immediate operand.  */
+/* Report whether or not P is an immediate operand.  */
 
 template <>
 template <>

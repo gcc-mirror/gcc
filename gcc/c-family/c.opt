@@ -317,16 +317,16 @@ Warn on any use of alloca.
 
 Walloc-size-larger-than=
 C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Joined Host_Wide_Int ByteSize Warning Init(HOST_WIDE_INT_MAX)
--Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
+-Walloc-size-larger-than=<bytes>	Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
 Wno-alloc-size-larger-than
 C ObjC C++ LTO ObjC++ Alias(Walloc-size-larger-than=,18446744073709551615EiB,none) Warning
--Wno-alloc-size-larger-than Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger.
+Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger.
 
 Walloc-zero
 C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
--Walloc-zero Warn for calls to allocation functions that specify zero bytes.
+Warn for calls to allocation functions that specify zero bytes.
 
 Walloca-larger-than=
 C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined Host_Wide_Int ByteSize Init(HOST_WIDE_INT_MAX)
@@ -336,7 +336,7 @@ alloca, and on bounded uses of alloca whose bound can be larger than
 
 Wno-alloca-larger-than
 C ObjC C++ LTO ObjC++ Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
--Wno-alloca-larger-than Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
+Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
 
 Warray-bounds
 LangEnabledBy(C ObjC C++ LTO ObjC++)
@@ -1260,7 +1260,7 @@ larger than <number> bytes.
 
 Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
--Wno-vla-larger-than Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
+Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
 
 Wvolatile
 C++ ObjC++ Var(warn_volatile) Warning
@@ -1321,7 +1321,7 @@ Enforce class member access control semantics.
 
 fada-spec-parent=
 C ObjC C++ ObjC++ RejectNegative Joined Var(ada_specs_parent)
--fada-spec-parent=unit  Dump Ada specs as child units of given parent.
+-fada-spec-parent=unit	Dump Ada specs as child units of given parent.
 
 faligned-new
 C++ ObjC++ Alias(faligned-new=,1,0)
@@ -1329,7 +1329,7 @@ Support C++17 allocation of over-aligned types.
 
 faligned-new=
 C++ ObjC++ Joined RejectNegative Var(aligned_new_threshold) UInteger Init(-1)
--faligned-new=<N> Use C++17 over-aligned type allocation for alignments greater than N.
+-faligned-new=<N>	Use C++17 over-aligned type allocation for alignments greater than N.
 
 fall-virtual
 C++ ObjC++ WarnRemoved
@@ -1523,7 +1523,7 @@ Permit '$' as an identifier character.
 
 fmacro-prefix-map=
 C ObjC C++ ObjC++ Joined RejectNegative
--fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE().
+-fmacro-prefix-map=<old>=<new>	Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE().
 
 fdump-ada-spec
 C ObjC C++ ObjC++ RejectNegative Var(flag_dump_ada_spec)
@@ -1538,7 +1538,7 @@ C++ ObjC++ Var(flag_elide_constructors) Init(1)
 
 felide-type
 C++ ObjC++ Var(flag_elide_type) Init(1)
--fno-elide-type Do not elide common elements in template comparisons.
+Do not elide common elements in template comparisons.
 
 fenforce-eh-specs
 C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)
@@ -1837,11 +1837,11 @@ C ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
 
 ftrack-macro-expansion=
 C ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
--ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages.
+-ftrack-macro-expansion=<0|1|2>	Track locations of tokens coming from macro expansion and display them in error messages.
 
 fpretty-templates
 C++ ObjC++ Var(flag_pretty_templates) Init(1)
--fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments.
+Do not pretty-print template specializations as the template signature followed by the arguments.
 
 fprintf-return-value
 C ObjC C++ ObjC++ LTO Optimization Var(flag_printf_return_value) Init(1)

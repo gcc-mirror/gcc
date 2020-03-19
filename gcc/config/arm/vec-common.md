@@ -21,8 +21,31 @@
 ;; Vector Moves
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VALL 0 "nonimmediate_operand")
-	(match_operand:VALL 1 "general_operand"))]
+  [(set (match_operand:VNIM1 0 "nonimmediate_operand")
+	(match_operand:VNIM1 1 "general_operand"))]
+  "TARGET_NEON
+   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+   {
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
+  if (can_create_pseudo_p ())
+    {
+      if (!REG_P (operands[0]))
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+      else if ((TARGET_NEON || TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
+	       && (CONSTANT_P (operands[1])))
+	{
+	  operands[1] = neon_make_constant (operands[1]);
+	  gcc_assert (operands[1] != NULL_RTX);
+	}
+    }
+})
+
+(define_expand "mov<mode>"
+  [(set (match_operand:VNINOTM1 0 "nonimmediate_operand")
+	(match_operand:VNINOTM1 1 "general_operand"))]
   "TARGET_NEON
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
@@ -38,6 +61,20 @@
 	  gcc_assert (operands[1] != NULL_RTX);
 	}
     }
+})
+
+(define_expand "movv8hf"
+  [(set (match_operand:V8HF 0 "s_register_operand")
+       (match_operand:V8HF 1 "s_register_operand"))]
+   "TARGET_NEON || TARGET_HAVE_MVE_FLOAT"
+{
+  gcc_checking_assert (aligned_operand (operands[0], E_V8HFmode));
+  gcc_checking_assert (aligned_operand (operands[1], E_V8HFmode));
+   if (can_create_pseudo_p ())
+     {
+       if (!REG_P (operands[0]))
+	 operands[1] = force_reg (E_V8HFmode, operands[1]);
+     }
 })
 
 ;; Vector arithmetic. Expanders are blank, then unnamed insns implement

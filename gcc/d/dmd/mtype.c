@@ -202,6 +202,7 @@ void Type::_init()
     sizeTy[Terror] = sizeof(TypeError);
     sizeTy[Tnull] = sizeof(TypeNull);
     sizeTy[Tvector] = sizeof(TypeVector);
+    sizeTy[Ttraits] = sizeof(TypeTraits);
 
     initTypeMangle();
 
@@ -6459,7 +6460,7 @@ Type *TypeDelegate::addStorageClass(StorageClass stc)
      *  alias dg_t = void* delegate();
      *  scope dg_t dg = ...;
      */
-    if(stc & STCscope)
+    if (stc & STCscope)
     {
         Type *n = t->next->addStorageClass(STCscope | STCscopeinferred);
         if (n != t->next)
@@ -6554,7 +6555,156 @@ bool TypeDelegate::hasPointers()
     return true;
 }
 
+/***************************** TypeTraits ********************************/
 
+TypeTraits::TypeTraits(const Loc &loc, TraitsExp *exp)
+     : Type(Ttraits)
+{
+    this->loc = loc;
+    this->exp = exp;
+    this->sym = NULL;
+}
+
+Type *TypeTraits::syntaxCopy()
+{
+    TraitsExp *te = (TraitsExp *) exp->syntaxCopy();
+    TypeTraits *tt = new TypeTraits(loc, te);
+    tt->mod = mod;
+    return tt;
+}
+
+Type *TypeTraits::semantic(Loc, Scope *sc)
+{
+    if (ty == Terror)
+        return this;
+
+    const int inAlias = (sc->flags & SCOPEalias) != 0;
+    if (exp->ident != Id::allMembers &&
+        exp->ident != Id::derivedMembers &&
+        exp->ident != Id::getMember &&
+        exp->ident != Id::parent &&
+        exp->ident != Id::getOverloads &&
+        exp->ident != Id::getVirtualFunctions &&
+        exp->ident != Id::getVirtualMethods &&
+        exp->ident != Id::getAttributes &&
+        exp->ident != Id::getUnitTests &&
+        exp->ident != Id::getAliasThis)
+    {
+        static const char *ctxt[2] = {"as type", "in alias"};
+        ::error(loc, "trait `%s` is either invalid or not supported %s",
+                exp->ident->toChars(), ctxt[inAlias]);
+        ty = Terror;
+        return this;
+    }
+
+    Type *result = NULL;
+
+    if (Expression *e = semanticTraits(exp, sc))
+    {
+        switch (e->op)
+        {
+        case TOKdotvar:
+            sym = ((DotVarExp *)e)->var;
+            break;
+        case TOKvar:
+            sym = ((VarExp *)e)->var;
+            break;
+        case TOKfunction:
+        {
+            FuncExp *fe = (FuncExp *)e;
+            if (fe->td)
+                sym = fe->td;
+            else
+                sym = fe->fd;
+            break;
+        }
+        case TOKdottd:
+            sym = ((DotTemplateExp*)e)->td;
+            break;
+        case TOKdsymbol:
+            sym = ((DsymbolExp *)e)->s;
+            break;
+        case TOKtemplate:
+            sym = ((TemplateExp *)e)->td;
+            break;
+        case TOKscope:
+            sym = ((ScopeExp *)e)->sds;
+            break;
+        case TOKtuple:
+        {
+            TupleExp *te = e->toTupleExp();
+            Objects *elems = new Objects;
+            elems->setDim(te->exps->dim);
+            for (size_t i = 0; i < elems->dim; i++)
+            {
+                Expression *src = (*te->exps)[i];
+                switch (src->op)
+                {
+                case TOKtype:
+                    (*elems)[i] = ((TypeExp *)src)->type;
+                    break;
+                case TOKdottype:
+                    (*elems)[i] = ((DotTypeExp *)src)->type;
+                    break;
+                case TOKoverloadset:
+                    (*elems)[i] = ((OverExp *)src)->type;
+                    break;
+                default:
+                    if (Dsymbol *sym = isDsymbol(src))
+                        (*elems)[i] = sym;
+                    else
+                        (*elems)[i] = src;
+                }
+            }
+            TupleDeclaration *td = new TupleDeclaration(e->loc,
+                Identifier::generateId("__aliastup"), elems);
+            sym = td;
+            break;
+        }
+        case TOKdottype:
+            result = isType(((DotTypeExp *)e)->sym);
+            break;
+        case TOKtype:
+            result = ((TypeExp *)e)->type;
+            break;
+        case TOKoverloadset:
+            result = ((OverExp *)e)->type;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (result)
+        result = result->addMod(mod);
+    if (!inAlias && !result)
+    {
+        if (!global.errors)
+            ::error(loc, "`%s` does not give a valid type", toChars());
+        return Type::terror;
+    }
+
+    return result;
+}
+
+void TypeTraits::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool)
+{
+    *pt = NULL;
+    *pe = NULL;
+    *ps = NULL;
+
+    if (Type *t = semantic(loc, sc))
+        *pt = t;
+    else if (sym)
+        *ps = sym;
+    else
+        *pt = Type::terror;
+}
+
+d_uns64 TypeTraits::size(Loc)
+{
+    return SIZE_INVALID;
+}
 
 /***************************** TypeQualified *****************************/
 

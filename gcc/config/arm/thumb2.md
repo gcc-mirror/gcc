@@ -517,7 +517,7 @@
 			  [(match_operand 4 "cc_register" "") (const_int 0)])
 			 (match_operand:SF 1 "s_register_operand" "0,r")
 			 (match_operand:SF 2 "s_register_operand" "r,0")))]
-  "TARGET_THUMB2 && TARGET_SOFT_FLOAT"
+  "TARGET_THUMB2 && TARGET_SOFT_FLOAT && !TARGET_HAVE_MVE"
   "@
    it\\t%D3\;mov%D3\\t%0, %2
    it\\t%d3\;mov%d3\\t%0, %1"

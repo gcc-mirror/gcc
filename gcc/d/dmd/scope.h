@@ -61,9 +61,10 @@ enum PINLINE;
 #define SCOPEctfe           0x0080  // inside a ctfe-only expression
 #define SCOPEcompile        0x0100  // inside __traits(compile)
 #define SCOPEignoresymbolvisibility 0x0200  // ignore symbol visibility (Bugzilla 15907)
-#define SCOPEfullinst       0x1000  // fully instantiate templates
 
 #define SCOPEfree           0x8000  // is on free list
+#define SCOPEfullinst       0x10000 // fully instantiate templates
+#define SCOPEalias          0x20000 // inside alias declaration
 
 struct Scope
 {

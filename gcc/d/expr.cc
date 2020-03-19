@@ -836,7 +836,7 @@ public:
   }
 
   /* Build a concat assignment expression.  The right operand is appended
-     to the the left operand.  */
+     to the left operand.  */
 
   void visit (CatAssignExp *e)
   {

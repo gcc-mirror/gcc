@@ -14,12 +14,6 @@ module mod_b
   !$acc declare copyin (b)
 end module
 
-module mod_c
-  implicit none
-  integer :: c
-  !$acc declare deviceptr (c)
-end module
-
 module mod_d
   implicit none
   integer :: d
@@ -35,7 +29,6 @@ end module
 subroutine sub1
   use mod_a
   use mod_b
-  use mod_c
   use mod_d
   use mod_e
 end subroutine sub1
@@ -43,11 +36,10 @@ end subroutine sub1
 program test
   use mod_a
   use mod_b
-  use mod_c
   use mod_d
   use mod_e
 
-  ! { dg-final { scan-tree-dump {(?n)#pragma acc data map\(force_alloc:d\) map\(force_deviceptr:c\) map\(force_to:b\) map\(force_alloc:a\)$} original } }
+  ! { dg-final { scan-tree-dump {(?n)#pragma acc data map\(force_alloc:d\) map\(force_to:b\) map\(force_alloc:a\)$} original } }
 end program test
 
 ! { dg-final { scan-tree-dump-times {#pragma acc data} 1 original } }

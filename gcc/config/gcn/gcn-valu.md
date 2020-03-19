@@ -2549,7 +2549,7 @@
 
 (define_insn "vec_cmp<mode>di"
   [(set (match_operand:DI 0 "register_operand"	      "=cV,cV,  e, e,Sg,Sg")
-	(match_operator 1 "gcn_fp_compare_operator"
+	(match_operator:DI 1 "gcn_fp_compare_operator"
 	  [(match_operand:VCMP_MODE 2 "gcn_alu_operand"
 						      "vSv, B,vSv, B, v,vA")
 	   (match_operand:VCMP_MODE 3 "gcn_vop3_operand"
@@ -2658,7 +2658,7 @@
 
 (define_insn "vec_cmp<mode>di_dup"
   [(set (match_operand:DI 0 "register_operand"		   "=cV,cV, e,e,Sg")
-	(match_operator 1 "gcn_fp_compare_operator"
+	(match_operator:DI 1 "gcn_fp_compare_operator"
 	  [(vec_duplicate:VCMP_MODE
 	     (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"
 							   " Sv, B,Sv,B, A"))
@@ -2903,19 +2903,15 @@
     DONE;
   })
 
-; FIXME this should be VEC_REG_MODE, but not all dependencies are implemented.
-(define_mode_iterator COND_MODE [V64SI V64DI V64SF V64DF])
-(define_mode_iterator COND_INT_MODE [V64SI V64DI])
-
-(define_code_iterator cond_op [plus minus])
+(define_code_iterator cond_op [plus minus mult])
 
 (define_expand "cond_<expander><mode>"
-  [(match_operand:COND_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (cond_op:COND_MODE
-     (match_operand:COND_MODE 2 "gcn_alu_operand")
-     (match_operand:COND_MODE 3 "gcn_alu_operand"))
-   (match_operand:COND_MODE 4 "register_operand")]
+   (cond_op:VEC_ALLREG_MODE
+     (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand")
+     (match_operand:VEC_ALLREG_MODE 3 "gcn_alu_operand"))
+   (match_operand:VEC_ALLREG_MODE 4 "register_operand")]
   ""
   {
     operands[1] = force_reg (DImode, operands[1]);
@@ -2927,15 +2923,16 @@
     DONE;
   })
 
+;; TODO smin umin smax umax
 (define_code_iterator cond_bitop [and ior xor])
 
 (define_expand "cond_<expander><mode>"
-  [(match_operand:COND_INT_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_INT_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
-   (cond_bitop:COND_INT_MODE
-     (match_operand:COND_INT_MODE 2 "gcn_alu_operand")
-     (match_operand:COND_INT_MODE 3 "gcn_alu_operand"))
-   (match_operand:COND_INT_MODE 4 "register_operand")]
+   (cond_bitop:VEC_ALLREG_INT_MODE
+     (match_operand:VEC_ALLREG_INT_MODE 2 "gcn_alu_operand")
+     (match_operand:VEC_ALLREG_INT_MODE 3 "gcn_alu_operand"))
+   (match_operand:VEC_ALLREG_INT_MODE 4 "register_operand")]
   ""
   {
     operands[1] = force_reg (DImode, operands[1]);

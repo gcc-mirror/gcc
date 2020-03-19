@@ -9968,7 +9968,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
   /* Ignore elements of an initializer for a variable-size type.
      Those are diagnosed in digest_init.  */
   if (COMPLETE_TYPE_P (constructor_type)
-      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
+      && !poly_int_tree_p (TYPE_SIZE (constructor_type)))
     return;
 
   if (!implicit && warn_designated_init && !was_designated
@@ -15207,7 +15207,8 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
 		   : build_qualified_type (type, type_quals));
   /* A variant type does not inherit the list of incomplete vars from the
      type main variant.  */
-  if (RECORD_OR_UNION_TYPE_P (var_type)
+  if ((RECORD_OR_UNION_TYPE_P (var_type)
+       || TREE_CODE (var_type) == ENUMERAL_TYPE)
       && TYPE_MAIN_VARIANT (var_type) != var_type)
     C_TYPE_INCOMPLETE_VARS (var_type) = 0;
   return var_type;

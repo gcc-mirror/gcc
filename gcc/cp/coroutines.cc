@@ -1471,10 +1471,10 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     dtor = NULL_TREE;
   else
     {
-  /* Initialize the var from the provided 'o' expression.  */
-    r = build2 (INIT_EXPR, await_type, var, expr);
-  r = coro_build_cvt_void_expr_stmt (r, loc);
-  append_to_statement_list (r, &stmt_list);
+      /* Initialize the var from the provided 'o' expression.  */
+      r = build2 (INIT_EXPR, await_type, var, expr);
+      r = coro_build_cvt_void_expr_stmt (r, loc);
+      append_to_statement_list (r, &stmt_list);
     }
 
   /* Use the await_ready() call to test if we need to suspend.  */
@@ -2466,7 +2466,7 @@ build_init_or_final_await (location_t loc, bool is_final)
     return error_mark_node;
 
   /* So build the co_await for this */
-  /* For initial/final suspends the call is is "a" per [expr.await] 3.2.  */
+  /* For initial/final suspends the call is "a" per [expr.await] 3.2.  */
   return build_co_await (loc, setup_call, (is_final ? FINAL_SUSPEND_POINT
 						    : INITIAL_SUSPEND_POINT));
 }
@@ -2547,7 +2547,7 @@ static tree
 captures_temporary (tree *stmt, int *do_subtree, void *d)
 {
   /* Stop recursing if we see an await expression, the subtrees
-     of that will be handled when it it processed.  */
+     of that will be handled when it is processed.  */
   if (TREE_CODE (*stmt) == CO_AWAIT_EXPR || TREE_CODE (*stmt) == CO_YIELD_EXPR)
     {
       *do_subtree = 0;

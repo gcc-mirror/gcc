@@ -386,6 +386,8 @@ else version (CRuntime_Musl)
     }
     else version (ARM)
     {
+        import core.stdc.config : c_ulong;
+
         struct fenv_t
         {
             c_ulong __cw;

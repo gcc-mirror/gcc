@@ -31,6 +31,42 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+;; True for immediates in the range of 1 to 16 for MVE.
+(define_predicate "mve_imm_16"
+  (match_test "satisfies_constraint_Rd (op)"))
+
+;; True for immediates in the range of 0 to 7 for MVE.
+(define_predicate "mve_imm_7"
+  (match_test "satisfies_constraint_Ra (op)"))
+
+;; True for immediates in the range of 1 to 8 for MVE.
+(define_predicate "mve_imm_8"
+  (match_test "satisfies_constraint_Rb (op)"))
+
+;; True for immediates in the range of 0 to 15 for MVE.
+(define_predicate "mve_imm_15"
+  (match_test "satisfies_constraint_Rc (op)"))
+
+;; True for immediates in the range of 0 to 31 for MVE.
+(define_predicate "mve_imm_31"
+  (match_test "satisfies_constraint_Re (op)"))
+
+;; True for immediates in the range of 1 to 32 for MVE.
+(define_predicate "mve_imm_32"
+  (match_test "satisfies_constraint_Rf (op)"))
+
+;; True if the immediate is one among 1, 2, 4 or 8 for MVE.
+(define_predicate "mve_imm_selective_upto_8"
+  (match_test "satisfies_constraint_Rg (op)"))
+
+;; True if the immediate is the range +/- 1016 and multiple of 8 for MVE.
+(define_constraint "Ri"
+  "@internal In Thumb-2 state a constant is multiple of 8 and in range
+   of -/+ 1016 for MVE"
+  (and (match_code "const_int")
+       (match_test "TARGET_HAVE_MVE && (-1016 <= ival) && (ival <= 1016)
+		    && ((ival % 8) == 0)")))
+
 ; Predicate for stack protector guard's address in
 ; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns
 (define_predicate "guard_addr_operand"
@@ -46,6 +82,14 @@
   (match_code "mem")
 {
   return guard_addr_operand (XEXP (op, 0), mode);
+})
+
+(define_predicate "vpr_register_operand"
+  (match_code "reg")
+{
+  return REG_P (op)
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || IS_VPR_REGNUM (REGNO (op)));
 })
 
 (define_predicate "imm_for_neon_inv_logic_operand"
@@ -688,7 +732,7 @@
 (define_predicate "imm_for_neon_mov_operand"
   (match_code "const_vector,const_int")
 {
-  return neon_immediate_valid_for_move (op, mode, NULL, NULL);
+  return simd_immediate_valid_for_move (op, mode, NULL, NULL);
 })
 
 (define_predicate "imm_for_neon_lshift_operand"

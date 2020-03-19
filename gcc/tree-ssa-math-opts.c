@@ -2477,7 +2477,7 @@ is_copysign_call_with_1 (gimple *call)
 }
 
 /* Try to expand the pattern x * copysign (1, y) into xorsign (x, y).
-   This only happens when the the xorsign optab is defined, if the
+   This only happens when the xorsign optab is defined, if the
    pattern is not a xorsign pattern or if expansion fails FALSE is
    returned, otherwise TRUE is returned.  */
 static bool

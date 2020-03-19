@@ -3304,12 +3304,12 @@ nds32_split_ashiftdi3 (rtx dst, rtx src, rtx shiftamount)
       ext_start = gen_reg_rtx (SImode);
 
       /*
-	 # In fact, we want to check shift amonut is great than or equal 32,
-	 # but in some corner case, the shift amount might be very large value,
-	 # however we've defined SHIFT_COUNT_TRUNCATED, so GCC think we've
-	 # handle that correctly without any truncate.
-	 # so check the the condition of (shiftamount & 32) is most
-	 # safe way to do.
+	 # In fact, we want to check shift amount is greater than or equal to
+	 # 32, but in some corner case, the shift amount might be very large
+	 # value, however we've defined SHIFT_COUNT_TRUNCATED, so GCC thinks
+	 # we've handled that correctly without any truncate.
+	 # So checking the condition of (shiftamount & 32) is the safest
+	 # way to do it.
 	 if (shiftamount & 32)
 	   dst_low_part = 0
 	   dst_high_part = src_low_part << shiftamount & 0x1f

@@ -532,7 +532,7 @@ function_reader::create_function ()
 
 }
 
-/* Look within the the params of FNDECL for a param named NAME.
+/* Look within the params of FNDECL for a param named NAME.
    Return NULL_TREE if one isn't found.  */
 
 static tree
@@ -969,7 +969,7 @@ function_reader::read_rtx_operand_u (rtx x, int idx)
 
 /* Read a name, looking for a match against a string found in array
    STRINGS of size NUM_VALUES.
-   Return the index of the the matched string, or emit an error.  */
+   Return the index of the matched string, or emit an error.  */
 
 int
 function_reader::parse_enum_value (int num_values, const char *const *strings)
@@ -1611,7 +1611,7 @@ function_reader::apply_fixups ()
 }
 
 /* Given a UID value, try to locate a pointer to the corresponding
-   rtx_insn *, or NULL if if can't be found.  */
+   rtx_insn *, or NULL if it can't be found.  */
 
 rtx_insn **
 function_reader::get_insn_by_uid (int uid)

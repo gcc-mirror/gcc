@@ -95,7 +95,7 @@ assert_streq (const location &loc,
 }
 
 /* Implementation detail of ASSERT_STR_CONTAINS.
-   Use strstr to determine if val_needle is is within val_haystack.
+   Use strstr to determine if val_needle is within val_haystack.
    ::selftest::pass if it is found.
    ::selftest::fail if it is not found.  */
 

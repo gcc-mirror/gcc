@@ -2815,7 +2815,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      unsigned HOST_WIDE_INT hmisalign
 		= args.length () == 3 ? tree_to_uhwi (args[2]) : 0;
 	      if ((halign & (halign - 1)) == 0
-		  && (hmisalign & ~(halign - 1)) == 0)
+		  && (hmisalign & ~(halign - 1)) == 0
+		  && (unsigned int)halign != 0)
 		set_ptr_info_alignment (get_ptr_info (forcedname),
 					halign, hmisalign);
 	    }

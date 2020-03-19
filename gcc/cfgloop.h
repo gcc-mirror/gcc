@@ -499,7 +499,6 @@ extern bool iv_analyze_expr (rtx_insn *, scalar_int_mode, rtx,
 			     class rtx_iv *);
 extern rtx get_iv_value (class rtx_iv *, rtx);
 extern bool biv_p (rtx_insn *, scalar_int_mode, rtx);
-extern void find_simple_exit (class loop *, class niter_desc *);
 extern void iv_analysis_done (void);
 
 extern class niter_desc *get_simple_loop_desc (class loop *loop);

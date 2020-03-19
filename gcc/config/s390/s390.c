@@ -13252,7 +13252,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   assemble_end_function (thunk, fnname);
 }
 
-/* Output either an indirect jump or a an indirect call
+/* Output either an indirect jump or an indirect call
    (RETURN_ADDR_REGNO != INVALID_REGNUM) with target register REGNO
    using a branch trampoline disabling branch target prediction.  */
 

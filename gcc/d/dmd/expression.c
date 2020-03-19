@@ -2185,6 +2185,11 @@ StringExp *Expression::toStringExp()
     return NULL;
 }
 
+TupleExp *Expression::toTupleExp()
+{
+    return NULL;
+}
+
 /***************************************
  * Return !=0 if expression is an lvalue.
  */
@@ -4540,6 +4545,11 @@ bool TupleExp::equals(RootObject *o)
 Expression *TupleExp::syntaxCopy()
 {
     return new TupleExp(loc, e0 ? e0->syntaxCopy() : NULL, arraySyntaxCopy(exps));
+}
+
+TupleExp *TupleExp::toTupleExp()
+{
+    return this;
 }
 
 /******************************** FuncExp *********************************/

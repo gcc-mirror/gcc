@@ -1,3 +1,20 @@
+2020-03-18  Julian Brown <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90: Really make
+	it work concurrently.
+
+2020-03-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/firstprivate-mappings-1.C: Add
+	#define DO_LONG_DOUBLE; set to 1, except for nvidia + gcn.
+	* libgomp.oacc-c-c++-common/firstprivate-mappings-1.c: Likewise.
+
+2020-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93566
+	* testsuite/libgomp.c/pr93566.c: New test.
+
 2020-02-21  Frederik Harwath  <frederik@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Adapt to

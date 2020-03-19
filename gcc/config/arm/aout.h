@@ -53,7 +53,9 @@
 /* The assembler's names for the registers.  Note that the ?xx registers are
    there so that VFPv3/NEON registers D16-D31 have the same spacing as D0-D15
    (each of which is overlaid on two S registers), although there are no
-   actual single-precision registers which correspond to D16-D31.  */
+   actual single-precision registers which correspond to D16-D31.  New register
+   p0 is added which is used for MVE predicated cases.  */
+
 #ifndef REGISTER_NAMES
 #define REGISTER_NAMES						\
 {								\
@@ -72,7 +74,7 @@
   "wr8",   "wr9",   "wr10",  "wr11",				\
   "wr12",  "wr13",  "wr14",  "wr15",				\
   "wcgr0", "wcgr1", "wcgr2", "wcgr3",				\
-  "cc", "vfpcc", "sfp", "afp", "apsrq", "apsrge"		\
+  "cc", "vfpcc", "sfp", "afp", "apsrq", "apsrge", "p0"		\
 }
 #endif
 

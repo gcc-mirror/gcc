@@ -79,7 +79,6 @@
    (CTRLREG_PSW		    0)
    (CTRLREG_USP		    2)
    (CTRLREG_FPSW	    3)
-   (CTRLREG_CPEN	    4)
    (CTRLREG_BPSW	    8)
    (CTRLREG_BPC		    9)
    (CTRLREG_ISP		   10)
