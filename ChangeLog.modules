@@ -1,5 +1,13 @@
 2020-03-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::decl_value): Template instantiations are
+	never implicit member fns.
+	(module_state_config::get_dialect): Check exceptions, rtti,
+	inheriting ctors.
+	gcc/testsuite/
+	* g++.dg/modules/inh-tmpl-ctor-1{,_[ab]}.[hHC]: New.
+
 	Merge master 3512dc0108afbed3bece2e9fa1719fb3ce1d73d9
 
 2020-03-18  Nathan Sidwell  <nathan@acm.org>

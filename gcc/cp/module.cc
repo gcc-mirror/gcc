@@ -7778,16 +7778,19 @@ trees_in::decl_value ()
       // solution is to preseed the imported decls needed by the
       // cluster, before reading any trees of the cluster.  We know
       // that set because they are in the dependencies of the depsets
-      // -- hey, horcruxes are back!
+      // -- hey, horcruxes would be back! (I suppose that's their point?)
       if (DECL_ARTIFICIAL (decl)
+	  && TREE_CODE (decl) == FUNCTION_DECL
+	  && !DECL_TEMPLATE_INFO (decl)
 	  && DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl))
 	  && TYPE_SIZE (DECL_CONTEXT (decl))
-	  && TREE_CODE (decl) == FUNCTION_DECL
 	  && !DECL_THUNK_P (decl))
 	/* A new implicit member function, when the class is
-	   complete.  This means the importee instantiated it, and
-	   we must now add it to the class.  */
-	if (!install_implicit_member (decl))
+	   complete.  This means the importee declared it, and
+	   we must now add it to the class.  Note that implicit
+	   member fns of template instantiations do not themselves
+	   look like templates.  */
+	if (!install_implicit_member (inner))
 	  set_overrun ();
     }
   else
@@ -14322,7 +14325,12 @@ module_state_config::get_dialect ()
 {
   if (!dialect)
     dialect = concat (get_cxx_dialect_name (cxx_dialect),
-		      flag_concepts ? "/concepts" : "",
+		      /* C++ implies these, only show if disabled.  */
+		      flag_exceptions ? "" : "/no-exceptions",
+		      flag_rtti ? "" : "/no-rtti",
+		      flag_new_inheriting_ctors ? "" : "/old-inheriting-ctors",
+		      /* C++ 20 implies concepts.  */
+		      cxx_dialect < cxx2a && flag_concepts ? "/concepts" : "",
 		      flag_coroutines ? "/coroutines" : "",
 		      NULL);
 
