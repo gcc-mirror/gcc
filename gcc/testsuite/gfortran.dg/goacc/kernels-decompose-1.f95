@@ -1,5 +1,6 @@
 ! Test OpenACC 'kernels' construct decomposition.
 
+! { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
 ! { dg-additional-options "-fopt-info-optimized-omp" }
 ! { dg-additional-options "-O2" } for "parloops".
 
