@@ -1,4 +1,12 @@
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Adjust
+	line numbering.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Add
+	-fno-openacc-kernels-annotate-loops.
+
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 	    Gergö Barany <gergo@codesourcery.com>
 
 	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Add

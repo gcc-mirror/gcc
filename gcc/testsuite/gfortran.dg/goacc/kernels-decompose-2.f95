@@ -1,5 +1,6 @@
 ! Test OpenACC 'kernels' construct decomposition.
 
+! { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
 ! { dg-additional-options "-fopt-info-omp-all" }
 
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
