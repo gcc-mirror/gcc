@@ -1,3 +1,12 @@
+2020-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR driver/92757
+	* doc/invoke.texi (Warning Options): Add caveat about some warnings
+	depending on optimization settings.
+
 2020-03-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94163

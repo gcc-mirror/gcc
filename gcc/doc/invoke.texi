@@ -3859,6 +3859,11 @@ are being produced.  This allows the use of new @option{-Wno-} options
 with old compilers, but if something goes wrong, the compiler
 warns that an unrecognized option is present.
 
+The effectiveness of some warnings depends on optimizations also being
+enabled. For example @option{-Wsuggest-final-types} is more effective
+with link-time optimization and @option{-Wmaybe-uninitialized} will not
+warn at all unless optimization is enabled.
+
 @table @gcctabopt
 @item -Wpedantic
 @itemx -pedantic
