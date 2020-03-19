@@ -1497,7 +1497,8 @@
     rtx dsthi = gcn_operand_part (<MODE>mode, operands[0], 1);
     emit_insn (gen_vec_duplicate<vnsi>_exec
 		(dsthi, gcn_operand_part (DImode, operands[2], 1),
-		 gcn_gen_undef (<VnSI>mode), operands[4]));
+		 gcn_operand_part (<MODE>mode, operands[3], 1),
+		 operands[4]));
     emit_insn (gen_addc<vnsi>3_exec
 		(dsthi, dsthi, const0_rtx, vcc, vcc,
 		 gcn_operand_part (<MODE>mode, operands[3], 1),
@@ -1564,7 +1565,8 @@
     rtx dsthi = gcn_operand_part (<MODE>mode, operands[0], 1);
     emit_insn (gen_vec_duplicate<vnsi>_exec
 		(dsthi, gcn_operand_part (DImode, operands[2], 1),
-		 gcn_gen_undef (<VnSI>mode), operands[4]));
+		gcn_operand_part (<MODE>mode, operands[3], 1),
+		operands[4]));
     emit_insn (gen_addc<vnsi>3_exec
 		(dsthi, dsthi, operands[5], vcc, vcc,
 		 gcn_operand_part (<MODE>mode, operands[3], 1),

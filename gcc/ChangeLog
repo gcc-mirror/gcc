@@ -1,3 +1,9 @@
+2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>_zext_dup2_exec): Fix merge
+	of high-part.
+	(add<mode>_sext_dup2_exec): Likewise.
+
 2020-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/94710
