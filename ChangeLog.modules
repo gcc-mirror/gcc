@@ -1,6 +1,12 @@
 2020-03-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::decl_value): No need to install constraints
+	for duplicate.
+	(trees_in::is_matching_decl): Open code comparison, don't use
+	decls_match.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::{read,write}_function_def): Potential
 	cexprs have result == error_mark_node.
 

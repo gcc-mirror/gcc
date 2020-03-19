@@ -7819,16 +7819,8 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
-      if (constraints)
-	/* We need to set the new decl's constraints so
-	   is_matching_decl can match them.  */
-	set_constraints (decl, constraints);
-
       if (!is_matching_decl (existing, decl, inner))
 	unmatched_duplicate (existing);
-
-      if (constraints)
-	remove_constraints (decl);
 
       /* And our result is the existing node.  */
       decl = existing;
@@ -10400,43 +10392,57 @@ trees_in::binfo_mergeable (tree *type)
 
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
    it does and issue an appropriate diagnostic if not.  Merge any
-   bits from DECL to EXISTING.  */
+   bits from DECL to EXISTING.  This is stricter matching than
+   decls_match, because we can rely on ODR-sameness, and we cannot use
+   decls_match because it can cause instantiations of constraints.  */
 
 bool
 trees_in::is_matching_decl (tree existing, tree decl, tree inner)
 {
   // FIXME: We should probably do some duplicate decl-like stuff here
-  // (beware, default parms should be the same?)
-  // Actually, we should just call duplicate_decls and teach it how to
-  // handle the module-specific permitted/required duplications
+  // (beware, default parms should be the same?)  Can we just call
+  // duplicate_decls and teach it how to handle the module-specific
+  // permitted/required duplications?
 
-  // FIXME: decls_match does too much, for instance instantiating
-  // templates on function requirements.  We know at this point that
-  // the decls have matched by key, so we could elide some of the
-  // checking -- if we knew what the key specified
-  if (!decls_match (decl, existing))
+  // We know at this point that the decls have matched by key, so we
+  // can elide some of the checking
+  gcc_checking_assert (TREE_CODE (existing) == TREE_CODE (decl)
+		       && (decl == inner
+			   || (TREE_CODE (DECL_TEMPLATE_RESULT (existing))
+			       == TREE_CODE (inner))));
+  
+  if (TREE_CODE (inner) == FUNCTION_DECL)
     {
-      // FIXME: Might be template specialization from a module, not
-      // necessarily global module
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"conflicting global module declaration %#qD", decl);
-      inform (DECL_SOURCE_LOCATION (existing),
-	      "existing declaration %#qD", existing);
-      return false;
-    }
+      tree e_ret = fndecl_declared_return_type (existing);
+      tree d_ret = fndecl_declared_return_type (decl);
+      if (!same_type_p (e_ret, d_ret))
+	goto mismatch;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
+      tree e_type = TREE_TYPE (existing);
+      tree d_type = TREE_TYPE (decl);
+
+      for (tree e_args = TYPE_ARG_TYPES (e_type),
+	     d_args = TYPE_ARG_TYPES (d_type);
+	   e_args != d_args && (e_args || d_args);
+	   e_args = TREE_CHAIN (e_args), d_args = TREE_CHAIN (d_args))
+	{
+	  if (!(e_args && d_args))
+	    goto mismatch;
+
+	  if (!same_type_p (TREE_VALUE (e_args), TREE_VALUE (d_args)))
+	    goto mismatch;
+	  
+	  // FIXME: Check default values
+	}
+
       /* If EXISTING has an undeduced or uninstantiated exception
 	 specification, but DECL does not, propagate the exception
-	 specification.  */
-      // FIXME: I don't think this can happen for a template
-      tree e_type = TREE_TYPE (existing);
+	 specification.  Otherwise we end up asserting or trying to
+	 instantiate it in the middle of loading.   */
       tree e_spec = TYPE_RAISES_EXCEPTIONS (e_type);
+      tree d_spec = TYPE_RAISES_EXCEPTIONS (d_type);
       if (DEFERRED_NOEXCEPT_SPEC_P (e_spec))
 	{
-	  tree d_type = TREE_TYPE (decl);
-	  tree d_spec = TYPE_RAISES_EXCEPTIONS (d_type);
 	  if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	      || (UNEVALUATED_NOEXCEPT_SPEC_P (e_spec)
 		  && !UNEVALUATED_NOEXCEPT_SPEC_P (d_spec)))
@@ -10444,6 +10450,7 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
 	      dump (dumper::MERGE)
 		&& dump ("Propagating instantiated noexcept to %N", existing);
 	      TREE_TYPE (existing) = d_type;
+
 	      /* Propagate to existing clones.  */
 	      tree clone;
 	      FOR_EACH_CLONE (clone, existing)
@@ -10456,6 +10463,23 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
 		}
 	    }
 	}
+      else if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
+	       && !comp_except_specs (e_spec, d_spec, ce_type))
+	goto mismatch;
+    }
+  /* Using cp_tree_equal because we can meet TYPE_ARGUMENT_PACKs
+     here. I suspect the entities that directly do that are things
+     that shouldn't go to duplicate_decls (FIELD_DECLs etc).   */
+  else if (!cp_tree_equal (TREE_TYPE (existing), TREE_TYPE (decl)))
+    {
+      // FIXME: Might be template specialization from a module, not
+      // necessarily global module
+    mismatch:
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"conflicting global module declaration %#qD", decl);
+      inform (DECL_SOURCE_LOCATION (existing),
+	      "existing declaration %#qD", existing);
+      return false;
     }
 
   if (DECL_IS_BUILTIN (existing) && DECL_ANTICIPATED (existing))
