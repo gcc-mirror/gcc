@@ -982,7 +982,10 @@ public:
     }
 
     virtual edge before_dom_children (basic_block);
-    virtual void after_dom_children (basic_block) {}
+    virtual void after_dom_children (basic_block bb)
+    {
+      substitute_and_fold_engine->post_fold_bb (bb);
+    }
 
     bool something_changed;
     vec<gimple *> stmts_to_remove;
@@ -990,11 +993,58 @@ public:
     bitmap need_eh_cleanup;
 
     class substitute_and_fold_engine *substitute_and_fold_engine;
+private:
+    void massage_new_statments (gimple_stmt_iterator old_gsi,
+				gimple_stmt_iterator new_gsi);
 };
+
+void
+substitute_and_fold_dom_walker::massage_new_statments
+				(gimple_stmt_iterator old_gsi,
+				 gimple_stmt_iterator new_gsi)
+{
+  basic_block bb = gsi_bb (new_gsi);
+  if (gsi_end_p (old_gsi))
+    old_gsi = gsi_start_bb (bb);
+  else
+    gsi_next (&old_gsi);
+  while (gsi_stmt (old_gsi) != gsi_stmt (new_gsi))
+    {
+      gimple *stmt = gsi_stmt (old_gsi);
+      substitute_and_fold_engine->post_fold_stmt (stmt);
+      gsi_next (&old_gsi);
+    }
+}
+
+void
+substitute_and_fold_engine::propagate_into_phi_args (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  /* Visit BB successor PHI nodes and replace PHI args.  */
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      for (gphi_iterator gpi = gsi_start_phis (e->dest);
+	   !gsi_end_p (gpi); gsi_next (&gpi))
+	{
+	  gphi *phi = gpi.phi ();
+	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  tree arg = USE_FROM_PTR (use_p);
+	  if (TREE_CODE (arg) != SSA_NAME
+	      || virtual_operand_p (arg))
+	    continue;
+	  tree val = get_value (arg);
+	  if (val && may_propagate_copy (arg, val))
+	    propagate_value (use_p, val);
+	}
+    }
+}
 
 edge
 substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 {
+  substitute_and_fold_engine->pre_fold_bb (bb);
+
   /* Propagate known values into PHI nodes.  */
   for (gphi_iterator i = gsi_start_phis (bb);
        !gsi_end_p (i);
@@ -1026,6 +1076,8 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
     {
       bool did_replace;
       gimple *stmt = gsi_stmt (i);
+
+      substitute_and_fold_engine->pre_fold_stmt (stmt);
 
       /* No point propagating into a stmt we have a value for we
          can propagate into all uses.  Mark it for removal instead.  */
@@ -1063,6 +1115,9 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Replace real uses in the statement.  */
       did_replace |= substitute_and_fold_engine->replace_uses_in (stmt);
 
+      gimple_stmt_iterator prev_gsi = i;
+      gsi_prev (&prev_gsi);
+
       /* If we made a replacement, fold the statement.  */
       if (did_replace)
 	{
@@ -1083,7 +1138,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	 specific information.  Do this before propagating
 	 into the stmt to not disturb pass specific information.  */
       update_stmt_if_modified (stmt);
-      if (substitute_and_fold_engine->fold_stmt(&i))
+      if (substitute_and_fold_engine->fold_stmt (&i))
 	{
 	  did_replace = true;
 	  prop_stats.num_stmts_folded++;
@@ -1114,6 +1169,8 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Now cleanup.  */
       if (did_replace)
 	{
+	  massage_new_statments (prev_gsi, i);
+
 	  /* If we cleaned up EH information from the statement,
 	     remove EH edges.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
@@ -1152,6 +1209,9 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	    fprintf (dump_file, "Not folded\n");
 	}
     }
+
+  substitute_and_fold_engine->propagate_into_phi_args (bb);
+
   return NULL;
 }
 

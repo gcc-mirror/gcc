@@ -310,6 +310,68 @@ evrp_dom_walker::cleanup (void)
   evrp_folder.vr_values->cleanup_edges_and_switches ();
 }
 
+class xevrp_folder : public substitute_and_fold_engine
+{
+public:
+  xevrp_folder () : range_analyzer (true)
+  {
+    vr_values = range_analyzer.get_vr_values ();
+  }
+
+  ~xevrp_folder ()
+  {
+    if (dump_file)
+      {
+	fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
+	range_analyzer.dump_all_value_ranges (dump_file);
+	fprintf (dump_file, "\n");
+      }
+    vr_values->cleanup_edges_and_switches ();
+  }
+
+  tree get_value (tree op)
+  {
+    return vr_values->op_with_constant_singleton_value_range (op);
+  }
+
+  void pre_fold_bb (basic_block bb)
+  {
+    if (dump_file && (dump_flags & TDF_DETAILS))
+      fprintf (dump_file, "Visiting BB%d\n", bb->index);
+    range_analyzer.enter (bb);
+  }
+
+  void pre_fold_stmt (gimple *stmt)
+  {
+    if (dump_file && (dump_flags & TDF_DETAILS))
+      {
+	fprintf (dump_file, "Visiting stmt ");
+	print_gimple_stmt (dump_file, stmt, 0);
+      }
+    range_analyzer.record_ranges_from_stmt (stmt, false);
+  }
+
+  bool fold_stmt (gimple_stmt_iterator *gsi)
+  {
+    return vr_values->simplify_stmt_using_ranges (gsi);
+  }
+
+  void post_fold_bb (basic_block bb)
+  {
+    range_analyzer.leave (bb);
+  }
+
+  void post_fold_stmt (gimple *stmt)
+  {
+    range_analyzer.get_vr_values ()->set_defs_to_varying (stmt);
+  }
+
+private:
+  DISABLE_COPY_AND_ASSIGN (xevrp_folder);
+  class vr_values *vr_values;
+  class evrp_range_analyzer range_analyzer;
+};
+
 /* Main entry point for the early vrp pass which is a simplified non-iterative
    version of vrp where basic blocks are visited in dominance order.  Value
    ranges discovered in early vrp will also be used by ipa-vrp.  */
@@ -326,10 +388,16 @@ execute_early_vrp ()
   scev_initialize ();
   calculate_dominance_info (CDI_DOMINATORS);
 
+  xevrp_folder folder;
+  folder.substitute_and_fold ();
+
+  if (0)
+    {
   /* Walk stmts in dominance order and propagate VRP.  */
   evrp_dom_walker walker;
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   walker.cleanup ();
+    }
 
   scev_finalize ();
   loop_optimizer_finalize ();

@@ -3698,6 +3698,27 @@ range_fits_type_p (const value_range_equiv *vr,
   return true;
 }
 
+bool
+vr_values::simplify_cond_using_ranges_when_edge_is_known (gcond *cond)
+{
+  /* ?? vrp_folder::fold_predicate_in() is a superset of this.  At
+     some point we should merge all variants of this code.  */
+  edge taken_edge;
+  vrp_visit_cond_stmt (cond, &taken_edge);
+  if (taken_edge)
+    {
+      if (taken_edge->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_true (cond);
+      else if (taken_edge->flags & EDGE_FALSE_VALUE)
+	gimple_cond_make_false (cond);
+      else
+	gcc_unreachable ();
+      update_stmt (cond);
+      return true;
+    }
+  return false;
+}
+
 /* Simplify a conditional using a relational operator to an equality
    test if the range information indicates only one value can satisfy
    the original conditional.  */
@@ -3708,6 +3729,9 @@ vr_values::simplify_cond_using_ranges_1 (gcond *stmt)
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
   enum tree_code cond_code = gimple_cond_code (stmt);
+
+  if (simplify_cond_using_ranges_when_edge_is_known (stmt))
+    return true;
 
   if (cond_code != NE_EXPR
       && cond_code != EQ_EXPR
