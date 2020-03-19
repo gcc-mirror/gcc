@@ -1,5 +1,18 @@
 2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/94033
+	* include/std/type_traits (__is_nt_default_constructible_atom): Remove.
+	(__is_nt_default_constructible_impl): Remove.
+	(__is_nothrow_default_constructible_impl): Remove.
+	(__is_nt_constructible_impl): Add bool template parameter. Adjust
+	partial specializations.
+	(__is_nothrow_constructible_impl): Replace class template with alias
+	template.
+	(is_nothrow_default_constructible): Derive from alias template
+	__is_nothrow_constructible_impl instead of
+	__is_nothrow_default_constructible_impl.
+	* testsuite/20_util/is_nothrow_constructible/94003.cc: New test.
+
 	* include/std/stop_token (stop_token::_Stop_state_ref): Define
 	comparison operators explicitly if the compiler won't synthesize them.
 

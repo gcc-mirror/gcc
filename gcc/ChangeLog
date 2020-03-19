@@ -1,3 +1,55 @@
+2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92372
+	* cgraphunit.c (process_function_and_variable_attributes): warn
+	for flatten attribute on alias.
+	* ipa-inline.c (ipa_inline): Do not ICE on flatten attribute on alias.
+
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-section-in.c: Add ext_symtab.
+	* lto-streamer-out.c (write_symbol_extension_info): New.
+	(produce_symtab_extension): New.
+	(produce_asm_for_decls): Stream also produce_symtab_extension.
+	* lto-streamer.h (enum lto_section_type): New section.
+
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94211
+	* tree-ssa-phiopt.c (value_replacement): Use estimate_num_insns_seq
+	instead of estimate_num_insns for bb_seq (middle_bb).  Rename
+	emtpy_or_with_defined_p variable to empty_or_with_defined_p, adjust
+	all uses.
+
+2020-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94217
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Avoid build_fold_addr_expr
+	and build_ref_for_offset.
+
+2020-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94216
+	* fold-const.c (fold_binary_loc): Avoid using
+	build_fold_addr_expr when we really want an ADDR_EXPR.
+
+2020-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (wd, wf, wi, ws, ww): New undocumented
+	aliases for "wa".
+
+2020-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/90275
+	* cse.c (cse_insn): Delete no-op register moves too.
+
+2020-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR ipa/92799
+	* cgraphunit.c (process_function_and_variable_attributes): Also
+	complain about weakref function definitions and drop all effects
+	of the attribute.
+
 2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>

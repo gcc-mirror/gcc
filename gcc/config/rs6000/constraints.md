@@ -45,6 +45,17 @@
   FPR (@code{vs0}@dots{}@code{vs31} are @code{f0}@dots{}@code{f31}) or a VR
   (@code{vs32}@dots{}@code{vs63} are @code{v0}@dots{}@code{v31}).")
 
+(define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
+  "@internal A compatibility alias for @code{wa}.")
+(define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
+  "@internal A compatibility alias for @code{wa}.")
+(define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
+  "@internal A compatibility alias for @code{wa}.")
+(define_register_constraint "ws" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
+  "@internal A compatibility alias for @code{wa}.")
+(define_register_constraint "ww" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
+  "@internal A compatibility alias for @code{wa}.")
+
 (define_register_constraint "h" "SPECIAL_REGS"
   "@internal A special register (@code{vrsave}, @code{ctr}, or @code{lr}).")
 

@@ -5329,7 +5329,6 @@ cse_insn (rtx_insn *insn)
 	  else if (n_sets == 1
 		   && !CALL_P (insn)
 		   && (MEM_P (trial) || REG_P (trial))
-		   && MEM_P (dest)
 		   && rtx_equal_p (trial, dest)
 		   && !side_effects_p (dest)
 		   && (cfun->can_delete_dead_exceptions

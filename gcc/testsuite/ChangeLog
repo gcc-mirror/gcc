@@ -1,3 +1,24 @@
+2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92372
+	* gcc.c-torture/pr92372.c: New test.
+	* gcc.dg/attr-flatten-1.c: New test.
+
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94211
+	* gcc.dg/pr94211.c: New test.
+
+2020-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94216
+	* g++.dg/torture/pr94216.C: New testcase.
+
+2020-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR ipa/92799
+	* gcc.dg/attr-weakref-5.c: New test.
+
 2020-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
             Srinath Parvathaneni  <srinath.parvathaneni@arm.com>

@@ -961,61 +961,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  template<typename _Tp>
-    struct __is_nt_default_constructible_atom
-    : public integral_constant<bool, noexcept(_Tp())>
+  template<bool, typename _Tp, typename... _Args>
+    struct __is_nt_constructible_impl
+    : public false_type
     { };
-
-  template<typename _Tp, bool = is_array<_Tp>::value>
-    struct __is_nt_default_constructible_impl;
-
-  template<typename _Tp>
-    struct __is_nt_default_constructible_impl<_Tp, true>
-    : public __and_<__is_array_known_bounds<_Tp>,
-		    __is_nt_default_constructible_atom<typename
-                      remove_all_extents<_Tp>::type>>
-    { };
-
-  template<typename _Tp>
-    struct __is_nt_default_constructible_impl<_Tp, false>
-    : public __is_nt_default_constructible_atom<_Tp>
-    { };
-
-  template<typename _Tp>
-    using __is_nothrow_default_constructible_impl
-      = __and_<__is_constructible_impl<_Tp>,
-	       __is_nt_default_constructible_impl<_Tp>>;
-
-  /// is_nothrow_default_constructible
-  template<typename _Tp>
-    struct is_nothrow_default_constructible
-    : public __is_nothrow_default_constructible_impl<_Tp>::type
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
 
   template<typename _Tp, typename... _Args>
-    struct __is_nt_constructible_impl
-    : public integral_constant<bool, noexcept(_Tp(declval<_Args>()...))>
+    struct __is_nt_constructible_impl<true, _Tp, _Args...>
+    : public __bool_constant<noexcept(_Tp(std::declval<_Args>()...))>
     { };
 
   template<typename _Tp, typename _Arg>
-    struct __is_nt_constructible_impl<_Tp, _Arg>
-    : public integral_constant<bool,
-                               noexcept(static_cast<_Tp>(declval<_Arg>()))>
+    struct __is_nt_constructible_impl<true, _Tp, _Arg>
+    : public __bool_constant<noexcept(static_cast<_Tp>(std::declval<_Arg>()))>
     { };
 
   template<typename _Tp>
-    struct __is_nt_constructible_impl<_Tp>
-    : public __is_nothrow_default_constructible_impl<_Tp>
+    struct __is_nt_constructible_impl<true, _Tp>
+    : public __bool_constant<noexcept(_Tp())>
+    { };
+
+  template<typename _Tp, size_t _Num>
+    struct __is_nt_constructible_impl<true, _Tp[_Num]>
+    : public __bool_constant<noexcept(typename remove_all_extents<_Tp>::type())>
     { };
 
   template<typename _Tp, typename... _Args>
-    struct __is_nothrow_constructible_impl
-    : public __and_<__is_constructible_impl<_Tp, _Args...>,
-		    __is_nt_constructible_impl<_Tp, _Args...>>
-    { };
+    using __is_nothrow_constructible_impl
+      = __is_nt_constructible_impl<__is_constructible(_Tp, _Args...),
+				   _Tp, _Args...>;
 
   /// is_nothrow_constructible
   template<typename _Tp, typename... _Args>
@@ -1025,6 +999,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
+
+  /// is_nothrow_default_constructible
+  template<typename _Tp>
+    struct is_nothrow_default_constructible
+    : public __is_nothrow_constructible_impl<_Tp>::type
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
+	"template argument must be a complete class or an unbounded array");
+    };
+
 
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nothrow_copy_constructible_impl;

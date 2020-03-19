@@ -219,6 +219,7 @@ enum lto_section_type
   LTO_section_function_body,
   LTO_section_static_initializer,
   LTO_section_symtab,
+  LTO_section_symtab_extension,
   LTO_section_refs,
   LTO_section_asm,
   LTO_section_jump_functions,
