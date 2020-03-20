@@ -1356,9 +1356,10 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
       poly_int64 off = ipa_get_jf_ancestor_offset (jfunc);
       if (known_eq (off, 0))
 	return input;
+      poly_int64 byte_offset = exact_div (off, BITS_PER_UNIT);
       return build1 (ADDR_EXPR, TREE_TYPE (input),
-		     fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (input)),
-				  input, build_int_cst (ptr_type_node, off)));
+		     fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (input)), input,
+				  build_int_cst (ptr_type_node, byte_offset)));
     }
   else
     return NULL_TREE;

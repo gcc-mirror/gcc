@@ -3788,16 +3788,13 @@ cgraph_node::function_symbol (enum availability *availability,
 
   while (node->thunk.thunk_p)
     {
+      enum availability a;
+
       ref = node;
       node = node->callees->callee;
-      if (availability)
-	{
-	  enum availability a;
-	  a = node->get_availability (ref);
-	  if (a < *availability)
-	    *availability = a;
-	}
-      node = node->ultimate_alias_target (availability, ref);
+      node = node->ultimate_alias_target (availability ? &a : NULL, ref);
+      if (availability && a < *availability)
+	*availability = a;
     }
   return node;
 }
@@ -3818,16 +3815,13 @@ cgraph_node::function_or_virtual_thunk_symbol
 
   while (node->thunk.thunk_p && !node->thunk.virtual_offset_p)
     {
+      enum availability a;
+
       ref = node;
       node = node->callees->callee;
-      if (availability)
-	{
-	  enum availability a;
-	  a = node->get_availability (ref);
-	  if (a < *availability)
-	    *availability = a;
-	}
-      node = node->ultimate_alias_target (availability, ref);
+      node = node->ultimate_alias_target (availability ? &a : NULL, ref);
+      if (availability && a < *availability)
+	*availability = a;
     }
   return node;
 }

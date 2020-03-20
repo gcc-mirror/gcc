@@ -181,7 +181,6 @@ static GTY(()) section *tls_private_data_section;
 static GTY(()) section *read_only_private_data_section;
 static GTY(()) section *sdata2_section;
 
-extern GTY(()) section *toc_section;
 section *toc_section = 0;
 
 /* Describe the vector unit used for modes.  */

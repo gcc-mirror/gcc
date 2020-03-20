@@ -64,7 +64,6 @@ typedef struct rs6000_stack {
 extern int need_toc_init;
 extern char toc_label_name[10];
 extern int rs6000_pic_labelno;
-extern section *toc_section;
 
 #ifdef USING_ELFOS_H
 extern const char *rs6000_machine;

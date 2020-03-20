@@ -2096,9 +2096,8 @@
 
 ;; Write Floating-point Status and Control Register.
 (define_insn "set_fpscr"
-  [(set (reg:SI VFPCC_REGNUM)
-	(unspec_volatile:SI
-	 [(match_operand:SI 0 "register_operand" "r")] VUNSPEC_SET_FPSCR))]
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+    VUNSPEC_SET_FPSCR)]
   "TARGET_VFP_BASE"
   "mcr\\tp10, 7, %0, cr1, cr0, 0\\t @SET_FPSCR"
   [(set_attr "type" "mrs")])
@@ -2106,7 +2105,7 @@
 ;; Read Floating-point Status and Control Register.
 (define_insn "get_fpscr"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR))]
+    (unspec_volatile:SI [(const_int 0)] VUNSPEC_GET_FPSCR))]
   "TARGET_VFP_BASE"
   "mrc\\tp10, 7, %0, cr1, cr0, 0\\t @GET_FPSCR"
   [(set_attr "type" "mrs")])

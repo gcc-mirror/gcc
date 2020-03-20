@@ -1,3 +1,16 @@
+2020-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR lto/91027
+	* d-tree.h (struct GTY): Add daggregate field.
+	(IDENTIFIER_DAGGREGATE): Define.
+	(d_mangle_decl): Add declaration.
+	* decl.cc (mangle_decl): Remove static linkage, rename to...
+	(d_mangle_decl): ...this, update all callers.
+	* types.cc (merge_aggregate_types): New function.
+	(TypeVisitor::visit (TypeStruct *)): Call merge_aggregate_types, set
+	IDENTIFIER_DAGGREGATE and TYPE_CXX_ODR_P.
+	(TypeVisitor::visit (TypeClass *)): Likewise.
+
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Fix up duplicated

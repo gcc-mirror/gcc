@@ -1,3 +1,10 @@
+2020-03-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94072
+	* c-common.c (c_common_type_for_mode): Before using a registered
+	built-in type, check that the vectorness of the type matches
+	the vectorness of the mode.
+
 2020-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (resolve_overloaded_builtin): Fix up duplicated word
