@@ -1,3 +1,10 @@
+2020-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94266
+	* gimple-ssa-sprintf.c (get_origin_and_offset): Use the
+	type of the underlying object to adjust for the containing
+	field if available.
+
 2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/unspecs.md (UNSPEC_GET_FPSCR): Rename this to ...
