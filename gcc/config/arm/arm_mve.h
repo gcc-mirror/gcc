@@ -2054,6 +2054,26 @@ typedef struct { uint8x16_t val[4]; } uint8x16x4_t;
 #define viwdupq_wb_u8( __a, __b,  __imm) __arm_viwdupq_wb_u8( __a, __b,  __imm)
 #define viwdupq_wb_u32( __a, __b,  __imm) __arm_viwdupq_wb_u32( __a, __b,  __imm)
 #define viwdupq_wb_u16( __a, __b,  __imm) __arm_viwdupq_wb_u16( __a, __b,  __imm)
+#define vldrdq_gather_base_wb_s64(__addr, __offset) __arm_vldrdq_gather_base_wb_s64(__addr, __offset)
+#define vldrdq_gather_base_wb_u64(__addr, __offset) __arm_vldrdq_gather_base_wb_u64(__addr, __offset)
+#define vldrdq_gather_base_wb_z_s64(__addr, __offset, __p) __arm_vldrdq_gather_base_wb_z_s64(__addr, __offset, __p)
+#define vldrdq_gather_base_wb_z_u64(__addr, __offset, __p) __arm_vldrdq_gather_base_wb_z_u64(__addr, __offset, __p)
+#define vldrwq_gather_base_wb_f32(__addr, __offset) __arm_vldrwq_gather_base_wb_f32(__addr, __offset)
+#define vldrwq_gather_base_wb_s32(__addr, __offset) __arm_vldrwq_gather_base_wb_s32(__addr, __offset)
+#define vldrwq_gather_base_wb_u32(__addr, __offset) __arm_vldrwq_gather_base_wb_u32(__addr, __offset)
+#define vldrwq_gather_base_wb_z_f32(__addr, __offset, __p) __arm_vldrwq_gather_base_wb_z_f32(__addr, __offset, __p)
+#define vldrwq_gather_base_wb_z_s32(__addr, __offset, __p) __arm_vldrwq_gather_base_wb_z_s32(__addr, __offset, __p)
+#define vldrwq_gather_base_wb_z_u32(__addr, __offset, __p) __arm_vldrwq_gather_base_wb_z_u32(__addr, __offset, __p)
+#define vstrdq_scatter_base_wb_p_s64(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_wb_p_s64(__addr, __offset, __value, __p)
+#define vstrdq_scatter_base_wb_p_u64(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_wb_p_u64(__addr, __offset, __value, __p)
+#define vstrdq_scatter_base_wb_s64(__addr, __offset, __value) __arm_vstrdq_scatter_base_wb_s64(__addr, __offset, __value)
+#define vstrdq_scatter_base_wb_u64(__addr, __offset, __value) __arm_vstrdq_scatter_base_wb_u64(__addr, __offset, __value)
+#define vstrwq_scatter_base_wb_p_s32(__addr, __offset, __value, __p) __arm_vstrwq_scatter_base_wb_p_s32(__addr, __offset, __value, __p)
+#define vstrwq_scatter_base_wb_p_f32(__addr, __offset, __value, __p) __arm_vstrwq_scatter_base_wb_p_f32(__addr, __offset, __value, __p)
+#define vstrwq_scatter_base_wb_p_u32(__addr, __offset, __value, __p) __arm_vstrwq_scatter_base_wb_p_u32(__addr, __offset, __value, __p)
+#define vstrwq_scatter_base_wb_s32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_s32(__addr, __offset, __value)
+#define vstrwq_scatter_base_wb_u32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_u32(__addr, __offset, __value)
+#define vstrwq_scatter_base_wb_f32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_f32(__addr, __offset, __value)
 #endif
 
 __extension__ extern __inline void
@@ -13388,6 +13408,150 @@ __arm_viwdupq_wb_u16 (uint32_t * __a, uint32_t __b, const int __imm)
   return __res;
 }
 
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrdq_gather_base_wb_s64 (uint64x2_t * __addr, const int __offset)
+{
+  int64x2_t
+  result = __builtin_mve_vldrdq_gather_base_wb_sv2di (*__addr, __offset);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrdq_gather_base_wb_u64 (uint64x2_t * __addr, const int __offset)
+{
+  uint64x2_t
+  result = __builtin_mve_vldrdq_gather_base_wb_uv2di (*__addr, __offset);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrdq_gather_base_wb_z_s64 (uint64x2_t * __addr, const int __offset, mve_pred16_t __p)
+{
+  int64x2_t
+  result = __builtin_mve_vldrdq_gather_base_wb_z_sv2di (*__addr, __offset, __p);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrdq_gather_base_wb_z_u64 (uint64x2_t * __addr, const int __offset, mve_pred16_t __p)
+{
+  uint64x2_t
+  result = __builtin_mve_vldrdq_gather_base_wb_z_uv2di (*__addr, __offset, __p);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrwq_gather_base_wb_s32 (uint32x4_t * __addr, const int __offset)
+{
+  int32x4_t
+  result = __builtin_mve_vldrwq_gather_base_wb_sv4si (*__addr, __offset);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrwq_gather_base_wb_u32 (uint32x4_t * __addr, const int __offset)
+{
+  uint32x4_t
+  result = __builtin_mve_vldrwq_gather_base_wb_uv4si (*__addr, __offset);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrwq_gather_base_wb_z_s32 (uint32x4_t * __addr, const int __offset, mve_pred16_t __p)
+{
+  int32x4_t
+  result = __builtin_mve_vldrwq_gather_base_wb_z_sv4si (*__addr, __offset, __p);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrwq_gather_base_wb_z_u32 (uint32x4_t * __addr, const int __offset, mve_pred16_t __p)
+{
+  uint32x4_t
+  result = __builtin_mve_vldrwq_gather_base_wb_z_uv4si (*__addr, __offset, __p);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrdq_scatter_base_wb_s64 (uint64x2_t * __addr, const int __offset, int64x2_t __value)
+{
+  __builtin_mve_vstrdq_scatter_base_wb_sv2di (*__addr, __offset, __value);
+  __builtin_mve_vstrdq_scatter_base_wb_add_sv2di (*__addr, __offset, *__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrdq_scatter_base_wb_u64 (uint64x2_t * __addr, const int __offset, uint64x2_t __value)
+{
+  __builtin_mve_vstrdq_scatter_base_wb_uv2di (*__addr, __offset, __value);
+  __builtin_mve_vstrdq_scatter_base_wb_add_uv2di (*__addr, __offset, *__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrdq_scatter_base_wb_p_s64 (uint64x2_t * __addr, const int __offset, int64x2_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrdq_scatter_base_wb_p_sv2di (*__addr, __offset, __value, __p);
+  __builtin_mve_vstrdq_scatter_base_wb_p_add_sv2di (*__addr, __offset, *__addr, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrdq_scatter_base_wb_p_u64 (uint64x2_t * __addr, const int __offset, uint64x2_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrdq_scatter_base_wb_p_uv2di (*__addr, __offset, __value, __p);
+  __builtin_mve_vstrdq_scatter_base_wb_p_add_uv2di (*__addr, __offset, *__addr, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_wb_p_s32 (uint32x4_t * __addr, const int __offset, int32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrwq_scatter_base_wb_p_sv4si (*__addr, __offset, __value, __p);
+  __builtin_mve_vstrwq_scatter_base_wb_p_add_sv4si (*__addr, __offset, *__addr, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_wb_p_u32 (uint32x4_t * __addr, const int __offset, uint32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrwq_scatter_base_wb_p_uv4si (*__addr, __offset, __value, __p);
+  __builtin_mve_vstrwq_scatter_base_wb_p_add_uv4si (*__addr, __offset, *__addr, __p);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_wb_s32 (uint32x4_t * __addr, const int __offset, int32x4_t __value)
+{
+  __builtin_mve_vstrwq_scatter_base_wb_sv4si (*__addr, __offset, __value);
+  __builtin_mve_vstrwq_scatter_base_wb_add_sv4si (*__addr, __offset, *__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_wb_u32 (uint32x4_t * __addr, const int __offset, uint32x4_t __value)
+{
+  __builtin_mve_vstrwq_scatter_base_wb_uv4si (*__addr, __offset, __value);
+  __builtin_mve_vstrwq_scatter_base_wb_add_uv4si (*__addr, __offset, *__addr);
+}
+
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 
 __extension__ extern __inline void
@@ -16022,6 +16186,42 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vreinterpretq_f32_u8 (uint8x16_t __a)
 {
   return (float32x4_t)  __a;
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrwq_gather_base_wb_f32 (uint32x4_t * __addr, const int __offset)
+{
+  float32x4_t
+  result = __builtin_mve_vldrwq_gather_base_wb_fv4sf (*__addr, __offset);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vldrwq_gather_base_wb_z_f32 (uint32x4_t * __addr, const int __offset, mve_pred16_t __p)
+{
+  float32x4_t
+  result = __builtin_mve_vldrwq_gather_base_wb_z_fv4sf (*__addr, __offset, __p);
+  __addr += __offset;
+  return result;
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_wb_f32 (uint32x4_t * __addr, const int __offset, float32x4_t __value)
+{
+  __builtin_mve_vstrwq_scatter_base_wb_fv4sf (*__addr, __offset, __value);
+  __builtin_mve_vstrwq_scatter_base_wb_add_fv4sf (*__addr, __offset, *__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vstrwq_scatter_base_wb_p_f32 (uint32x4_t * __addr, const int __offset, float32x4_t __value, mve_pred16_t __p)
+{
+  __builtin_mve_vstrwq_scatter_base_wb_p_fv4sf (*__addr, __offset, __value, __p);
+  __builtin_mve_vstrwq_scatter_base_wb_p_add_fv4sf (*__addr, __offset, *__addr, __p);
 }
 
 #endif
@@ -18940,7 +19140,33 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint64x2_t]: __arm_vreinterpretq_u8_u64 (__ARM_mve_coerce(__p0, uint64x2_t)), \
   int (*)[__ARM_mve_type_float32x4_t]: __arm_vreinterpretq_u8_f32 (__ARM_mve_coerce(__p0, float32x4_t)));})
 
+#define vstrwq_scatter_base_wb(p0,p1,p2) __arm_vstrwq_scatter_base_wb(p0,p1,p2)
+#define __arm_vstrwq_scatter_base_wb(p0,p1,p2) ({ __typeof(p2) __p2 = (p2); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
+  int (*)[__ARM_mve_type_int32x4_t]: __arm_vstrwq_scatter_base_wb_s32 (p0, p1, __ARM_mve_coerce(__p2, int32x4_t)), \
+  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vstrwq_scatter_base_wb_u32 (p0, p1, __ARM_mve_coerce(__p2, uint32x4_t)), \
+  int (*)[__ARM_mve_type_float32x4_t]: __arm_vstrwq_scatter_base_wb_f32 (p0, p1, __ARM_mve_coerce(__p2, float32x4_t)));})
+
+#define vstrwq_scatter_base_wb_p(p0,p1,p2,p3) __arm_vstrwq_scatter_base_wb_p(p0,p1,p2,p3)
+#define __arm_vstrwq_scatter_base_wb_p(p0,p1,p2,p3) ({ __typeof(p2) __p2 = (p2); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
+  int (*)[__ARM_mve_type_int32x4_t]: __arm_vstrwq_scatter_base_wb_p_s32 (p0, p1, __ARM_mve_coerce(__p2, int32x4_t), p3), \
+  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vstrwq_scatter_base_wb_p_u32 (p0, p1, __ARM_mve_coerce(__p2, uint32x4_t), p3), \
+  int (*)[__ARM_mve_type_float32x4_t]: __arm_vstrwq_scatter_base_wb_p_f32 (p0, p1, __ARM_mve_coerce(__p2, float32x4_t), p3));})
+
 #else /* MVE Integer.  */
+
+#define vstrwq_scatter_base_wb(p0,p1,p2) __arm_vstrwq_scatter_base_wb(p0,p1,p2)
+#define __arm_vstrwq_scatter_base_wb(p0,p1,p2) ({ __typeof(p2) __p2 = (p2); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
+  int (*)[__ARM_mve_type_int32x4_t]: __arm_vstrwq_scatter_base_wb_s32 (p0, p1, __ARM_mve_coerce(__p2, int32x4_t)), \
+  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vstrwq_scatter_base_wb_u32 (p0, p1, __ARM_mve_coerce(__p2, uint32x4_t)));})
+
+#define vstrwq_scatter_base_wb_p(p0,p1,p2,p3) __arm_vstrwq_scatter_base_wb_p(p0,p1,p2,p3)
+#define __arm_vstrwq_scatter_base_wb_p(p0,p1,p2,p3) ({ __typeof(p2) __p2 = (p2); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
+  int (*)[__ARM_mve_type_int32x4_t]: __arm_vstrwq_scatter_base_wb_p_s32 (p0, p1, __ARM_mve_coerce(__p2, int32x4_t), p3), \
+  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vstrwq_scatter_base_wb_p_u32 (p0, p1, __ARM_mve_coerce(__p2, uint32x4_t), p3));})
 
 #define vst4q(p0,p1) __arm_vst4q(p0,p1)
 #define __arm_vst4q(p0,p1) ({ __typeof(p0) __p0 = (p0); \
@@ -21423,6 +21649,18 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint64x2_t]: __arm_vreinterpretq_u8_u64 (__ARM_mve_coerce(__p0, uint64x2_t)));})
 
 #endif /* MVE Integer.  */
+
+#define vstrdq_scatter_base_wb_p(p0,p1,p2,p3) __arm_vstrdq_scatter_base_wb_p(p0,p1,p2,p3)
+#define __arm_vstrdq_scatter_base_wb_p(p0,p1,p2,p3) ({ __typeof(p2) __p2 = (p2); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
+  int (*)[__ARM_mve_type_int64x2_t]: __arm_vstrdq_scatter_base_wb_p_s64 (p0, p1, __ARM_mve_coerce(__p2, int64x2_t), p3), \
+  int (*)[__ARM_mve_type_uint64x2_t]: __arm_vstrdq_scatter_base_wb_p_u64 (p0, p1, __ARM_mve_coerce(__p2, uint64x2_t), p3));})
+
+#define vstrdq_scatter_base_wb(p0,p1,p2) __arm_vstrdq_scatter_base_wb(p0,p1,p2)
+#define __arm_vstrdq_scatter_base_wb(p0,p1,p2) ({ __typeof(p2) __p2 = (p2); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
+  int (*)[__ARM_mve_type_int64x2_t]: __arm_vstrdq_scatter_base_wb_s64 (p0, p1, __ARM_mve_coerce(__p2, int64x2_t)), \
+  int (*)[__ARM_mve_type_uint64x2_t]: __arm_vstrdq_scatter_base_wb_u64 (p0, p1, __ARM_mve_coerce(__p2, uint64x2_t)));})
 
 #define vldrdq_gather_offset(p0,p1) __arm_vldrdq_gather_offset(p0,p1)
 #define __arm_vldrdq_gather_offset(p0,p1) ({ __typeof(p0) __p0 = (p0); \

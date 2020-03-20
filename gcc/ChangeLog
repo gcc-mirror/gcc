@@ -2,6 +2,97 @@
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
 
+	* config/arm/arm-builtins.c (LDRGBWBS_QUALIFIERS): Define builtin
+	qualifier.
+	(LDRGBWBU_QUALIFIERS): Likewise.
+	(LDRGBWBS_Z_QUALIFIERS): Likewise.
+	(LDRGBWBU_Z_QUALIFIERS): Likewise.
+	(STRSBWBS_QUALIFIERS): Likewise.
+	(STRSBWBU_QUALIFIERS): Likewise.
+	(STRSBWBS_P_QUALIFIERS): Likewise.
+	(STRSBWBU_P_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (vldrdq_gather_base_wb_s64): Define macro.
+	(vldrdq_gather_base_wb_u64): Likewise.
+	(vldrdq_gather_base_wb_z_s64): Likewise.
+	(vldrdq_gather_base_wb_z_u64): Likewise.
+	(vldrwq_gather_base_wb_f32): Likewise.
+	(vldrwq_gather_base_wb_s32): Likewise.
+	(vldrwq_gather_base_wb_u32): Likewise.
+	(vldrwq_gather_base_wb_z_f32): Likewise.
+	(vldrwq_gather_base_wb_z_s32): Likewise.
+	(vldrwq_gather_base_wb_z_u32): Likewise.
+	(vstrdq_scatter_base_wb_p_s64): Likewise.
+	(vstrdq_scatter_base_wb_p_u64): Likewise.
+	(vstrdq_scatter_base_wb_s64): Likewise.
+	(vstrdq_scatter_base_wb_u64): Likewise.
+	(vstrwq_scatter_base_wb_p_s32): Likewise.
+	(vstrwq_scatter_base_wb_p_f32): Likewise.
+	(vstrwq_scatter_base_wb_p_u32): Likewise.
+	(vstrwq_scatter_base_wb_s32): Likewise.
+	(vstrwq_scatter_base_wb_u32): Likewise.
+	(vstrwq_scatter_base_wb_f32): Likewise.
+	(__arm_vldrdq_gather_base_wb_s64): Define intrinsic.
+	(__arm_vldrdq_gather_base_wb_u64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_s64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_u64): Likewise.
+	(__arm_vldrwq_gather_base_wb_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_u32): Likewise.
+	(__arm_vstrdq_scatter_base_wb_s64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_u64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_p_s64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_p_u64): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_s32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_u32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_s32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_f32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_f32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_f32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_f32): Likewise.
+	(vstrwq_scatter_base_wb): Define polymorphic variant.
+	(vstrwq_scatter_base_wb_p): Likewise.
+	(vstrdq_scatter_base_wb_p): Likewise.
+	(vstrdq_scatter_base_wb): Likewise.
+	* config/arm/arm_mve_builtins.def (LDRGBWBS_QUALIFIERS): Use builtin
+	qualifier.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_<supf>v4si): Define RTL
+	pattern.
+	(mve_vstrwq_scatter_base_wb_add_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_add_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si_insn): Likewise.
+	(mve_vstrwq_scatter_base_wb_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_add_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_fv4sf_insn): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_add_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf_insn): Likewise.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_add_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di_insn): Likewise.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_p_add_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_base_wb_<supf>v4si_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si): Likewise.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_fv4sf): Likewise.
+	(mve_vldrwq_gather_base_wb_fv4sf_insn): Likewise.
+	(mve_vldrwq_gather_base_wb_z_fv4sf): Likewise.
+	(mve_vldrwq_gather_base_wb_z_fv4sf_insn): Likewise.
+	(mve_vldrdq_gather_base_wb_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_base_wb_<supf>v2di_insn): Likewise.
+	(mve_vldrdq_gather_base_wb_z_<supf>v2di): Likewise.
+	(mve_vldrdq_gather_base_wb_z_<supf>v2di_insn): Likewise.
+
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
 	* config/arm/arm-builtins.c
 	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Define quinary
 	builtin qualifier.
