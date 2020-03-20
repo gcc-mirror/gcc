@@ -1,3 +1,9 @@
+2020-03-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/69694
+	* g++.dg/cpp0x/decltype74.C: New test.
+	* g++.dg/cpp0x/decltype75.C: New test.
+
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
