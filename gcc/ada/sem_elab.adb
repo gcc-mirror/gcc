@@ -1952,6 +1952,18 @@ package body Sem_Elab is
    pragma Inline (Compilation_Unit);
    --  Return the N_Compilation_Unit node of unit Unit_Id
 
+   function Elaboration_Phase_Active return Boolean;
+   pragma Inline (Elaboration_Phase_Active);
+   --  Determine whether the elaboration phase of the compilation has started
+
+   procedure Error_Preelaborated_Call (N : Node_Id);
+   --  Give an error or warning for a non-static/non-preelaborable call in a
+   --  preelaborated unit.
+
+   procedure Finalize_All_Data_Structures;
+   pragma Inline (Finalize_All_Data_Structures);
+   --  Destroy all internal data structures
+
    function Find_Enclosing_Instance (N : Node_Id) return Node_Id;
    pragma Inline (Find_Enclosing_Instance);
    --  Find the declaration or body of the nearest expanded instance which
@@ -1971,14 +1983,6 @@ package body Sem_Elab is
    pragma Inline (First_Formal_Type);
    --  Return the type of subprogram Subp_Id's first formal parameter. If the
    --  subprogram lacks formal parameters, return Empty.
-
-   function Elaboration_Phase_Active return Boolean;
-   pragma Inline (Elaboration_Phase_Active);
-   --  Determine whether the elaboration phase of the compilation has started
-
-   procedure Finalize_All_Data_Structures;
-   pragma Inline (Finalize_All_Data_Structures);
-   --  Destroy all internal data structures
 
    function Has_Body (Pack_Decl : Node_Id) return Boolean;
    pragma Inline (Has_Body);
@@ -3745,6 +3749,15 @@ package body Sem_Elab is
       Set_Is_SPARK_Mode_On_Node (Marker, Is_SPARK_Mode_On_Node (N));
       Set_Target                (Marker, Subp_Id);
 
+      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  unchecked conversions are preelaborable.
+
+      if Ada_Version >= Ada_2020 then
+         Set_Is_Preelaborable_Call (Marker, Is_Preelaborable_Construct (N));
+      else
+         Set_Is_Preelaborable_Call (Marker, False);
+      end if;
+
       --  The marker is inserted prior to the original call. This placement has
       --  several desirable effects:
 
@@ -4878,6 +4891,8 @@ package body Sem_Elab is
                        (Marker, Elaboration_Checks_OK (Attr_Rep));
             Set_Is_Elaboration_Warnings_OK_Node
                        (Marker, Elaboration_Warnings_OK (Attr_Rep));
+            Set_Is_Preelaborable_Call
+                       (Marker, False);
             Set_Is_Source_Call
                        (Marker, Comes_From_Source (Attr));
             Set_Is_SPARK_Mode_On_Node
@@ -8838,6 +8853,29 @@ package body Sem_Elab is
       return Elaboration_Phase = Active;
    end Elaboration_Phase_Active;
 
+   ------------------------------
+   -- Error_Preelaborated_Call --
+   ------------------------------
+
+   procedure Error_Preelaborated_Call (N : Node_Id) is
+   begin
+      --  This is a warning in GNAT mode allowing such calls to be used in the
+      --  predefined library units with appropriate care.
+
+      Error_Msg_Warn := GNAT_Mode;
+
+      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  unchecked conversions are preelaborable.
+
+      if Ada_Version >= Ada_2020 then
+         Error_Msg_N
+           ("<<non-preelaborable call not allowed in preelaborated unit", N);
+      else
+         Error_Msg_N
+           ("<<non-static call not allowed in preelaborated unit", N);
+      end if;
+   end Error_Preelaborated_Call;
+
    ----------------------------------
    -- Finalize_All_Data_Structures --
    ----------------------------------
@@ -11894,6 +11932,7 @@ package body Sem_Elab is
          Set_Is_Elaboration_Checks_OK_Node   (Marker, False);
          Set_Is_Elaboration_Warnings_OK_Node (Marker, False);
          Set_Is_Ignored_Ghost_Node           (Marker, False);
+         Set_Is_Preelaborable_Call           (Marker, False);
          Set_Is_Source_Call                  (Marker, False);
          Set_Is_SPARK_Mode_On_Node           (Marker, False);
 
@@ -11933,6 +11972,7 @@ package body Sem_Elab is
          Set_Is_Elaboration_Checks_OK_Node   (Marker, False);
          Set_Is_Elaboration_Warnings_OK_Node (Marker, False);
          Set_Is_Ignored_Ghost_Node           (Marker, False);
+         Set_Is_Preelaborable_Call           (Marker, False);
          Set_Is_Source_Call                  (Marker, False);
          Set_Is_SPARK_Mode_On_Node           (Marker, False);
 
@@ -13758,6 +13798,11 @@ package body Sem_Elab is
          if not Is_Source_Call (Call) then
             return;
 
+         --  Nothing to do when the call is preelaborable by definition
+
+         elsif Is_Preelaborable_Call (Call) then
+            return;
+
          --  Library-level calls are always considered because they are part of
          --  the associated unit's elaboration actions.
 
@@ -13779,13 +13824,10 @@ package body Sem_Elab is
             return;
          end if;
 
-         --  The call appears within a preelaborated unit. Emit a warning only
-         --  for internal uses, otherwise this is an error.
+         --  If the call appears within a preelaborated unit, give an error
 
          if In_Preelaborated_Context (Call) then
-            Error_Msg_Warn := GNAT_Mode;
-            Error_Msg_N
-              ("<<non-static call not allowed in preelaborated unit", Call);
+            Error_Preelaborated_Call (Call);
          end if;
       end Check_Preelaborated_Call;
 
@@ -17506,17 +17548,17 @@ package body Sem_Elab is
             --  Complain if ref that comes from source in preelaborated unit
             --  and we are not inside a subprogram (i.e. we are in elab code).
 
+            --  Ada 2020 (AI12-0175): Calls to certain functions that are
+            --  essentially unchecked conversions are preelaborable.
+
             if Comes_From_Source (N)
               and then In_Preelaborated_Unit
               and then not In_Inlined_Body
               and then Nkind (N) /= N_Attribute_Reference
+              and then not (Ada_Version >= Ada_2020
+                             and then Is_Preelaborable_Construct (N))
             then
-               --  This is a warning in GNAT mode allowing such calls to be
-               --  used in the predefined library with appropriate care.
-
-               Error_Msg_Warn := GNAT_Mode;
-               Error_Msg_N
-                 ("<<non-static call not allowed in preelaborated unit", N);
+               Error_Preelaborated_Call (N);
                return;
             end if;
 
