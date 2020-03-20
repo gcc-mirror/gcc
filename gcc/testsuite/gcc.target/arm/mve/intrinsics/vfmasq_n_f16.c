@@ -16,7 +16,7 @@ foo (float16x8_t a, float16x8_t b, float16_t c)
 float16x8_t
 foo1 (float16x8_t a, float16x8_t b, float16_t c)
 {
-  return vfmasq_n (a, b, c);
+  return vfmasq (a, b, c);
 }
 
 /* { dg-final { scan-assembler "vfmas.f16"  }  } */
