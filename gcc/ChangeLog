@@ -2,6 +2,101 @@
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
 
+	* config/arm/arm_mve.h (vst1q_p_u8): Define macro.
+	(vst1q_p_s8): Likewise.
+	(vst2q_s8): Likewise.
+	(vst2q_u8): Likewise.
+	(vld1q_z_u8): Likewise.
+	(vld1q_z_s8): Likewise.
+	(vld2q_s8): Likewise.
+	(vld2q_u8): Likewise.
+	(vld4q_s8): Likewise.
+	(vld4q_u8): Likewise.
+	(vst1q_p_u16): Likewise.
+	(vst1q_p_s16): Likewise.
+	(vst2q_s16): Likewise.
+	(vst2q_u16): Likewise.
+	(vld1q_z_u16): Likewise.
+	(vld1q_z_s16): Likewise.
+	(vld2q_s16): Likewise.
+	(vld2q_u16): Likewise.
+	(vld4q_s16): Likewise.
+	(vld4q_u16): Likewise.
+	(vst1q_p_u32): Likewise.
+	(vst1q_p_s32): Likewise.
+	(vst2q_s32): Likewise.
+	(vst2q_u32): Likewise.
+	(vld1q_z_u32): Likewise.
+	(vld1q_z_s32): Likewise.
+	(vld2q_s32): Likewise.
+	(vld2q_u32): Likewise.
+	(vld4q_s32): Likewise.
+	(vld4q_u32): Likewise.
+	(vld4q_f16): Likewise.
+	(vld2q_f16): Likewise.
+	(vld1q_z_f16): Likewise.
+	(vst2q_f16): Likewise.
+	(vst1q_p_f16): Likewise.
+	(vld4q_f32): Likewise.
+	(vld2q_f32): Likewise.
+	(vld1q_z_f32): Likewise.
+	(vst2q_f32): Likewise.
+	(vst1q_p_f32): Likewise.
+	(__arm_vst1q_p_u8): Define intrinsic.
+	(__arm_vst1q_p_s8): Likewise.
+	(__arm_vst2q_s8): Likewise.
+	(__arm_vst2q_u8): Likewise.
+	(__arm_vld1q_z_u8): Likewise.
+	(__arm_vld1q_z_s8): Likewise.
+	(__arm_vld2q_s8): Likewise.
+	(__arm_vld2q_u8): Likewise.
+	(__arm_vld4q_s8): Likewise.
+	(__arm_vld4q_u8): Likewise.
+	(__arm_vst1q_p_u16): Likewise.
+	(__arm_vst1q_p_s16): Likewise.
+	(__arm_vst2q_s16): Likewise.
+	(__arm_vst2q_u16): Likewise.
+	(__arm_vld1q_z_u16): Likewise.
+	(__arm_vld1q_z_s16): Likewise.
+	(__arm_vld2q_s16): Likewise.
+	(__arm_vld2q_u16): Likewise.
+	(__arm_vld4q_s16): Likewise.
+	(__arm_vld4q_u16): Likewise.
+	(__arm_vst1q_p_u32): Likewise.
+	(__arm_vst1q_p_s32): Likewise.
+	(__arm_vst2q_s32): Likewise.
+	(__arm_vst2q_u32): Likewise.
+	(__arm_vld1q_z_u32): Likewise.
+	(__arm_vld1q_z_s32): Likewise.
+	(__arm_vld2q_s32): Likewise.
+	(__arm_vld2q_u32): Likewise.
+	(__arm_vld4q_s32): Likewise.
+	(__arm_vld4q_u32): Likewise.
+	(__arm_vld4q_f16): Likewise.
+	(__arm_vld2q_f16): Likewise.
+	(__arm_vld1q_z_f16): Likewise.
+	(__arm_vst2q_f16): Likewise.
+	(__arm_vst1q_p_f16): Likewise.
+	(__arm_vld4q_f32): Likewise.
+	(__arm_vld2q_f32): Likewise.
+	(__arm_vld1q_z_f32): Likewise.
+	(__arm_vst2q_f32): Likewise.
+	(__arm_vst1q_p_f32): Likewise.
+	(vld1q_z): Define polymorphic variant.
+	(vld2q): Likewise.
+	(vld4q): Likewise.
+	(vst1q_p): Likewise.
+	(vst2q): Likewise.
+	* config/arm/arm_mve_builtins.def (STORE1): Use builtin qualifier.
+	(LOAD1): Likewise.
+	* config/arm/mve.md (mve_vst2q<mode>): Define RTL pattern.
+	(mve_vld2q<mode>): Likewise.
+	(mve_vld4q<mode>): Likewise.
+
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
 	* config/arm/arm-builtins.c (ARM_BUILTIN_GET_FPSCR_NZCVQC): Define.
 	(ARM_BUILTIN_SET_FPSCR_NZCVQC): Likewise.	
 	(arm_init_mve_builtins): Add "__builtin_arm_get_fpscr_nzcvqc" and

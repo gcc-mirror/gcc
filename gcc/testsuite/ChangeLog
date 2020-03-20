@@ -1,3 +1,48 @@
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vld1q_z_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld1q_z_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld4q_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_u8.c: Likewise.
+
 2020-03-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/94072

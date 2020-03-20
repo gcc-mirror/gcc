@@ -214,7 +214,7 @@
 			 VLDRDQGBWB_S VLDRDQGBWB_U VADCQ_U VADCQ_M_U VADCQ_S
 			 VADCQ_M_S VSBCIQ_U VSBCIQ_S VSBCIQ_M_U VSBCIQ_M_S
 			 VSBCQ_U VSBCQ_S VSBCQ_M_U VSBCQ_M_S VADCIQ_U VADCIQ_M_U
-			 VADCIQ_S VADCIQ_M_S])
+			 VADCIQ_S VADCIQ_M_S VLD2Q VLD4Q VST2Q])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF") (V8HF "V8HI")
 			    (V4SF "V4SI")])
@@ -10797,3 +10797,91 @@
   "vsbc.i32\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length" "4")])
+
+;;
+;; [vst2q])
+;;
+(define_insn "mve_vst2q<mode>"
+  [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
+	(unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
+		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+	 VST2Q))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+   rtx ops[4];
+   int regno = REGNO (operands[1]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1] = gen_rtx_REG (TImode, regno + 4);
+   rtx reg  = operands[0];
+   while (reg && !REG_P (reg))
+    reg = XEXP (reg, 0);
+   gcc_assert (REG_P (reg));
+   ops[2] = reg;
+   ops[3] = operands[0];
+   output_asm_insn ("vst20.<V_sz_elem>\t{%q0, %q1}, [%2]\n\t"
+		    "vst21.<V_sz_elem>\t{%q0, %q1}, %3", ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vld2q])
+;;
+(define_insn "mve_vld2q<mode>"
+  [(set (match_operand:OI 0 "s_register_operand" "=w")
+	(unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
+		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+	 VLD2Q))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+   rtx ops[4];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1] = gen_rtx_REG (TImode, regno + 4);
+   rtx reg  = operands[1];
+   while (reg && !REG_P (reg))
+    reg = XEXP (reg, 0);
+   gcc_assert (REG_P (reg));
+   ops[2] = reg;
+   ops[3] = operands[1];
+   output_asm_insn ("vld20.<V_sz_elem>\t{%q0, %q1}, [%2]\n\t"
+		    "vld21.<V_sz_elem>\t{%q0, %q1}, %3", ops);
+   return "";
+}
+  [(set_attr "length" "8")])
+
+;;
+;; [vld4q])
+;;
+(define_insn "mve_vld4q<mode>"
+  [(set (match_operand:XI 0 "s_register_operand" "=w")
+	(unspec:XI [(match_operand:XI 1 "neon_struct_operand" "Um")
+		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+	 VLD4Q))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+   rtx ops[6];
+   int regno = REGNO (operands[0]);
+   ops[0] = gen_rtx_REG (TImode, regno);
+   ops[1] = gen_rtx_REG (TImode, regno+4);
+   ops[2] = gen_rtx_REG (TImode, regno+8);
+   ops[3] = gen_rtx_REG (TImode, regno + 12);
+   rtx reg  = operands[1];
+   while (reg && !REG_P (reg))
+    reg = XEXP (reg, 0);
+   gcc_assert (REG_P (reg));
+   ops[4] = reg;
+   ops[5] = operands[1];
+   output_asm_insn ("vld40.<V_sz_elem>\t{%q0, %q1, %q2, %q3}, [%4]\n\t"
+		    "vld41.<V_sz_elem>\t{%q0, %q1, %q2, %q3}, [%4]\n\t"
+		    "vld42.<V_sz_elem>\t{%q0, %q1, %q2, %q3}, [%4]\n\t"
+		    "vld43.<V_sz_elem>\t{%q0, %q1, %q2, %q3}, %5", ops);
+   return "";
+}
+  [(set_attr "length" "16")])
