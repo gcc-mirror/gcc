@@ -204,6 +204,7 @@ struct GTY(()) lang_identifier
 
   /* The frontend Declaration associated with this identifier.  */
   Declaration * GTY((skip)) dsymbol;
+  AggregateDeclaration * GTY((skip)) daggregate;
 };
 
 #define IDENTIFIER_LANG_SPECIFIC(NODE) \
@@ -217,6 +218,9 @@ struct GTY(()) lang_identifier
 
 #define IDENTIFIER_DSYMBOL(NODE) \
   (IDENTIFIER_LANG_SPECIFIC (NODE)->dsymbol)
+
+#define IDENTIFIER_DAGGREGATE(NODE) \
+  (IDENTIFIER_LANG_SPECIFIC (NODE)->daggregate)
 
 /* Global state pertinent to the current function.  */
 
@@ -600,6 +604,7 @@ extern tree d_signed_type (tree);
 extern void d_keep (tree);
 
 /* In decl.cc.  */
+extern const char *d_mangle_decl (Dsymbol *);
 extern tree mangle_internal_decl (Dsymbol *, const char *, const char *);
 extern void build_decl_tree (Dsymbol *);
 extern tree get_symbol_decl (Declaration *);
