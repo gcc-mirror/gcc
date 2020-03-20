@@ -1,3 +1,11 @@
+2020-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94224
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::coalesce_immediate): Don't consider overlapping
+	or adjacent INTEGER_CST rhs_code stores as mergeable if they have
+	different lp_nr.
+
 2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm.md (define_attr "conds"): Fix logic for neon and mve.

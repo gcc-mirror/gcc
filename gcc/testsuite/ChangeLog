@@ -1,3 +1,8 @@
+2020-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94224
+	* g++.dg/tree-ssa/pr94224.C: New test.
+
 2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/94202
