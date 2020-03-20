@@ -1,3 +1,9 @@
+2020-03-20  Carl Love  <cel@us.ibm.com>
+
+	PR/target 87583
+	* gcc/config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Add check for TARGET_FPRND for Power 7 or newer.
+
 2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/93347
