@@ -1,3 +1,24 @@
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vadciq_m_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vadciq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadciq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadciq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadcq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadcq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadcq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadcq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbciq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbciq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbciq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbciq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_u32.c: Likewise.
+
 2020-03-20  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/concepts/diagnostic6.C: New test.

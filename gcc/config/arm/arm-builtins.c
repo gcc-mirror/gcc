@@ -1151,6 +1151,8 @@ enum arm_builtins
 
   ARM_BUILTIN_GET_FPSCR,
   ARM_BUILTIN_SET_FPSCR,
+  ARM_BUILTIN_GET_FPSCR_NZCVQC,
+  ARM_BUILTIN_SET_FPSCR_NZCVQC,
 
   ARM_BUILTIN_CMSE_NONSECURE_CALLER,
   ARM_BUILTIN_SIMD_LANE_CHECK,
@@ -1751,6 +1753,22 @@ arm_init_mve_builtins (void)
 
   arm_init_simd_builtin_scalar_types ();
   arm_init_simd_builtin_types ();
+
+  /* Add support for __builtin_{get,set}_fpscr_nzcvqc, used by MVE intrinsics
+     that read and/or write the carry bit.  */
+  tree get_fpscr_nzcvqc = build_function_type_list (intSI_type_node,
+						    NULL);
+  tree set_fpscr_nzcvqc = build_function_type_list (void_type_node,
+						    intSI_type_node,
+						    NULL);
+  arm_builtin_decls[ARM_BUILTIN_GET_FPSCR_NZCVQC]
+    = add_builtin_function ("__builtin_arm_get_fpscr_nzcvqc", get_fpscr_nzcvqc,
+			    ARM_BUILTIN_GET_FPSCR_NZCVQC, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+  arm_builtin_decls[ARM_BUILTIN_SET_FPSCR_NZCVQC]
+    = add_builtin_function ("__builtin_arm_set_fpscr_nzcvqc", set_fpscr_nzcvqc,
+			    ARM_BUILTIN_SET_FPSCR_NZCVQC, BUILT_IN_MD, NULL,
+			    NULL_TREE);
 
   for (i = 0; i < ARRAY_SIZE (mve_builtin_data); i++, fcode++)
     {
@@ -3289,6 +3307,23 @@ arm_expand_builtin (tree exp,
 
   switch (fcode)
     {
+    case ARM_BUILTIN_GET_FPSCR_NZCVQC:
+    case ARM_BUILTIN_SET_FPSCR_NZCVQC:
+      if (fcode == ARM_BUILTIN_GET_FPSCR_NZCVQC)
+	{
+	  icode = CODE_FOR_get_fpscr_nzcvqc;
+	  target = gen_reg_rtx (SImode);
+	  emit_insn (GEN_FCN (icode) (target));
+	  return target;
+	}
+      else
+	{
+	  icode = CODE_FOR_set_fpscr_nzcvqc;
+	  op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	  emit_insn (GEN_FCN (icode) (force_reg (SImode, op0)));
+	  return NULL_RTX;
+	}
+
     case ARM_BUILTIN_GET_FPSCR:
     case ARM_BUILTIN_SET_FPSCR:
       if (fcode == ARM_BUILTIN_GET_FPSCR)

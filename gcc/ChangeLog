@@ -1,4 +1,80 @@
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm-builtins.c (ARM_BUILTIN_GET_FPSCR_NZCVQC): Define.
+	(ARM_BUILTIN_SET_FPSCR_NZCVQC): Likewise.	
+	(arm_init_mve_builtins): Add "__builtin_arm_get_fpscr_nzcvqc" and
+	"__builtin_arm_set_fpscr_nzcvqc" to arm_builtin_decls array. 
+	(arm_expand_builtin): Define case ARM_BUILTIN_GET_FPSCR_NZCVQC
+	and ARM_BUILTIN_SET_FPSCR_NZCVQC.
+	* config/arm/arm_mve.h (vadciq_s32): Define macro.
+	(vadciq_u32): Likewise.
+	(vadciq_m_s32): Likewise.
+	(vadciq_m_u32): Likewise.
+	(vadcq_s32): Likewise.
+	(vadcq_u32): Likewise.
+	(vadcq_m_s32): Likewise.
+	(vadcq_m_u32): Likewise.
+	(vsbciq_s32): Likewise.
+	(vsbciq_u32): Likewise.
+	(vsbciq_m_s32): Likewise.
+	(vsbciq_m_u32): Likewise.
+	(vsbcq_s32): Likewise.
+	(vsbcq_u32): Likewise.
+	(vsbcq_m_s32): Likewise.
+	(vsbcq_m_u32): Likewise.
+	(__arm_vadciq_s32): Define intrinsic.
+	(__arm_vadciq_u32): Likewise.
+	(__arm_vadciq_m_s32): Likewise.
+	(__arm_vadciq_m_u32): Likewise.
+	(__arm_vadcq_s32): Likewise.
+	(__arm_vadcq_u32): Likewise.
+	(__arm_vadcq_m_s32): Likewise.
+	(__arm_vadcq_m_u32): Likewise.
+	(__arm_vsbciq_s32): Likewise.
+	(__arm_vsbciq_u32): Likewise.
+	(__arm_vsbciq_m_s32): Likewise.
+	(__arm_vsbciq_m_u32): Likewise.
+	(__arm_vsbcq_s32): Likewise.
+	(__arm_vsbcq_u32): Likewise.
+	(__arm_vsbcq_m_s32): Likewise.
+	(__arm_vsbcq_m_u32): Likewise.
+	(vadciq_m): Define polymorphic variant.
+	(vadciq): Likewise.
+	(vadcq_m): Likewise.
+	(vadcq): Likewise.
+	(vsbciq_m): Likewise.
+	(vsbciq): Likewise.
+	(vsbcq_m): Likewise.
+	(vsbcq): Likewise.
+	* config/arm/arm_mve_builtins.def (BINOP_NONE_NONE_NONE): Use builtin
+	qualifier.
+	(BINOP_UNONE_UNONE_UNONE): Likewise.
+	(QUADOP_NONE_NONE_NONE_NONE_UNONE): Likewise.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_UNONE): Likewise.
+	* config/arm/mve.md (VADCIQ): Define iterator.
+	(VADCIQ_M): Likewise.
+	(VSBCQ): Likewise.
+	(VSBCQ_M): Likewise.
+	(VSBCIQ): Likewise.
+	(VSBCIQ_M): Likewise.
+	(VADCQ): Likewise.
+	(VADCQ_M): Likewise.
+	(mve_vadciq_m_<supf>v4si): Define RTL pattern.
+	(mve_vadciq_<supf>v4si): Likewise.
+	(mve_vadcq_m_<supf>v4si): Likewise.
+	(mve_vadcq_<supf>v4si): Likewise.
+	(mve_vsbciq_m_<supf>v4si): Likewise.
+	(mve_vsbciq_<supf>v4si): Likewise.
+	(mve_vsbcq_m_<supf>v4si): Likewise.
+	(mve_vsbcq_<supf>v4si): Likewise.
+	(get_fpscr_nzcvqc): Define isns.
+	(set_fpscr_nzcvqc): Define isns.
+	* config/arm/unspecs.md (UNSPEC_GET_FPSCR_NZCVQC): Define.
+	(UNSPEC_SET_FPSCR_NZCVQC): Define.
+
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* config/arm/arm_mve.h (vddupq_x_n_u8): Define macro.
 	(vddupq_x_n_u16): Likewise.

@@ -211,7 +211,10 @@
 			 VDWDUPQ_M VIDUPQ VIDUPQ_M VIWDUPQ VIWDUPQ_M
 			 VSTRWQSBWB_S VSTRWQSBWB_U VLDRWQGBWB_S VLDRWQGBWB_U
 			 VSTRWQSBWB_F VLDRWQGBWB_F VSTRDQSBWB_S VSTRDQSBWB_U
-			 VLDRDQGBWB_S VLDRDQGBWB_U])
+			 VLDRDQGBWB_S VLDRDQGBWB_U VADCQ_U VADCQ_M_U VADCQ_S
+			 VADCQ_M_S VSBCIQ_U VSBCIQ_S VSBCIQ_M_U VSBCIQ_M_S
+			 VSBCQ_U VSBCQ_S VSBCQ_M_U VSBCQ_M_S VADCIQ_U VADCIQ_M_U
+			 VADCIQ_S VADCIQ_M_S])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF") (V8HF "V8HI")
 			    (V4SF "V4SI")])
@@ -382,8 +385,13 @@
 		       (VSTRWQSO_U "u") (VSTRWQSO_S "s") (VSTRWQSSO_U "u")
 		       (VSTRWQSSO_S "s") (VSTRWQSBWB_S "s") (VSTRWQSBWB_U "u")
 		       (VLDRWQGBWB_S "s") (VLDRWQGBWB_U "u") (VLDRDQGBWB_S "s")
-		       (VLDRDQGBWB_U "u") (VSTRDQSBWB_S "s")
-		       (VSTRDQSBWB_U "u")])
+		       (VLDRDQGBWB_U "u") (VSTRDQSBWB_S "s") (VADCQ_M_S "s")
+		       (VSTRDQSBWB_U "u") (VSBCQ_U "u")  (VSBCQ_M_U "u")
+		       (VSBCQ_S "s")  (VSBCQ_M_S "s") (VSBCIQ_U "u")
+		       (VSBCIQ_M_U "u") (VSBCIQ_S "s") (VSBCIQ_M_S "s")
+		       (VADCQ_U "u")  (VADCQ_M_U "u") (VADCQ_S "s")
+		       (VADCIQ_U "u") (VADCIQ_M_U "u") (VADCIQ_S "s")
+		       (VADCIQ_M_S "s")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -636,6 +644,15 @@
 (define_int_iterator VLDRWGBWBQ [VLDRWQGBWB_S VLDRWQGBWB_U])
 (define_int_iterator VSTRDSBWBQ [VSTRDQSBWB_S VSTRDQSBWB_U])
 (define_int_iterator VLDRDGBWBQ [VLDRDQGBWB_S VLDRDQGBWB_U])
+(define_int_iterator VADCIQ [VADCIQ_U VADCIQ_S])
+(define_int_iterator VADCIQ_M [VADCIQ_M_U VADCIQ_M_S])
+(define_int_iterator VSBCQ [VSBCQ_U VSBCQ_S])
+(define_int_iterator VSBCQ_M [VSBCQ_M_U VSBCQ_M_S])
+(define_int_iterator VSBCIQ [VSBCIQ_U VSBCIQ_S])
+(define_int_iterator VSBCIQ_M [VSBCIQ_M_U VSBCIQ_M_S])
+(define_int_iterator VADCQ [VADCQ_U VADCQ_S])
+(define_int_iterator VADCQ_M [VADCQ_M_U VADCQ_M_S])
+
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -10597,6 +10614,21 @@
   DONE;
 })
 
+(define_insn "get_fpscr_nzcvqc"
+ [(set (match_operand:SI 0 "register_operand" "=r")
+   (unspec:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR_NZCVQC))]
+ "TARGET_HAVE_MVE"
+ "vmrs\\t%0, FPSCR_nzcvqc"
+  [(set_attr "type" "mve_move")])
+
+(define_insn "set_fpscr_nzcvqc"
+ [(set (reg:SI VFPCC_REGNUM)
+   (unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+    VUNSPEC_SET_FPSCR_NZCVQC))]
+ "TARGET_HAVE_MVE"
+ "vmsr\\tFPSCR_nzcvqc, %0"
+  [(set_attr "type" "mve_move")])
+
 ;;
 ;; [vldrdq_gather_base_wb_z_s vldrdq_gather_base_wb_z_u]
 ;;
@@ -10621,3 +10653,147 @@
    return "";
 }
   [(set_attr "length" "8")])
+;;
+;; [vadciq_m_s, vadciq_m_u])
+;;
+(define_insn "mve_vadciq_m_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "0")
+		      (match_operand:V4SI 2 "s_register_operand" "w")
+		      (match_operand:V4SI 3 "s_register_operand" "w")
+		      (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VADCIQ_M))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(const_int 0)]
+	 VADCIQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vadcit.i32\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
+
+;;
+;; [vadciq_u, vadciq_s])
+;;
+(define_insn "mve_vadciq_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		      (match_operand:V4SI 2 "s_register_operand" "w")]
+	 VADCIQ))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(const_int 0)]
+	 VADCIQ))
+  ]
+  "TARGET_HAVE_MVE"
+  "vadci.i32\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "4")])
+
+;;
+;; [vadcq_m_s, vadcq_m_u])
+;;
+(define_insn "mve_vadcq_m_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "0")
+		      (match_operand:V4SI 2 "s_register_operand" "w")
+		      (match_operand:V4SI 3 "s_register_operand" "w")
+		      (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VADCQ_M))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(reg:SI VFPCC_REGNUM)]
+	 VADCQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vadct.i32\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
+
+;;
+;; [vadcq_u, vadcq_s])
+;;
+(define_insn "mve_vadcq_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		       (match_operand:V4SI 2 "s_register_operand" "w")]
+	 VADCQ))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(reg:SI VFPCC_REGNUM)]
+	 VADCQ))
+  ]
+  "TARGET_HAVE_MVE"
+  "vadc.i32\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "4")
+   (set_attr "conds" "set")])
+
+;;
+;; [vsbciq_m_u, vsbciq_m_s])
+;;
+(define_insn "mve_vsbciq_m_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		      (match_operand:V4SI 2 "s_register_operand" "w")
+		      (match_operand:V4SI 3 "s_register_operand" "w")
+		      (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSBCIQ_M))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(const_int 0)]
+	 VSBCIQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vsbcit.i32\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
+
+;;
+;; [vsbciq_s, vsbciq_u])
+;;
+(define_insn "mve_vsbciq_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		      (match_operand:V4SI 2 "s_register_operand" "w")]
+	 VSBCIQ))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(const_int 0)]
+	 VSBCIQ))
+  ]
+  "TARGET_HAVE_MVE"
+  "vsbci.i32\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "4")])
+
+;;
+;; [vsbcq_m_u, vsbcq_m_s])
+;;
+(define_insn "mve_vsbcq_m_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		      (match_operand:V4SI 2 "s_register_operand" "w")
+		      (match_operand:V4SI 3 "s_register_operand" "w")
+		      (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VSBCQ_M))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(reg:SI VFPCC_REGNUM)]
+	 VSBCQ_M))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vsbct.i32\t%q0, %q2, %q3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
+
+;;
+;; [vsbcq_s, vsbcq_u])
+;;
+(define_insn "mve_vsbcq_<supf>v4si"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+		      (match_operand:V4SI 2 "s_register_operand" "w")]
+	 VSBCQ))
+   (set (reg:SI VFPCC_REGNUM)
+	(unspec:SI [(reg:SI VFPCC_REGNUM)]
+	 VSBCQ))
+  ]
+  "TARGET_HAVE_MVE"
+  "vsbc.i32\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "4")])
