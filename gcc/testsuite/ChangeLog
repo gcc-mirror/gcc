@@ -1,3 +1,8 @@
+2020-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/abi/lambda-vis.C: Amend assembler match
+	strings for targets using a USER_LABEL_PREFIX.
+
 2020-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/93038
