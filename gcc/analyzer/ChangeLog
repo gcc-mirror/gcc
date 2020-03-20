@@ -1,5 +1,12 @@
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-manager.cc (dedupe_winners::add): Show the
+	exploded_node index in the log messages.
+	(diagnostic_manager::emit_saved_diagnostics): Log a summary of
+	m_saved_diagnostics at entry.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* supergraph.cc (superedge::dump): Add space before description;
 	move newline to non-pretty_printer overload.
 

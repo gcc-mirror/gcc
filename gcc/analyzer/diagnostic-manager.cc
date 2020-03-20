@@ -358,21 +358,25 @@ public:
        This could introduce false negatives, as there could be longer
        feasible paths within the egraph.  */
     if (logger)
-      logger->log ("considering %qs at SN: %i",
-		   sd.m_d->get_kind (), sd.m_snode->m_index);
+      logger->log ("considering %qs at EN: %i, SN: %i",
+		   sd.m_d->get_kind (), sd.m_enode->m_index,
+		   sd.m_snode->m_index);
+
     if (!dc->get_path ().feasible_p (logger))
       {
 	if (logger)
-	  logger->log ("rejecting %qs at SN: %i"
+	  logger->log ("rejecting %qs at EN: %i, SN: %i"
 		       " due to infeasible path",
-		       sd.m_d->get_kind (), sd.m_snode->m_index);
+		       sd.m_d->get_kind (), sd.m_enode->m_index,
+		       sd.m_snode->m_index);
 	delete dc;
 	return;
       }
     else
       if (logger)
-	logger->log ("accepting %qs at SN: %i with feasible path",
-		     sd.m_d->get_kind (), sd.m_snode->m_index);
+	logger->log ("accepting %qs at EN: %i, SN: %i with feasible path",
+		     sd.m_d->get_kind (), sd.m_enode->m_index,
+		     sd.m_snode->m_index);
 
     dedupe_key *key = new dedupe_key (sd, dc->get_path ());
     if (dedupe_candidate **slot = m_map.get (key))
@@ -466,6 +470,15 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   LOG_SCOPE (get_logger ());
   auto_timevar tv (TV_ANALYZER_DIAGNOSTICS);
   log ("# saved diagnostics: %i", m_saved_diagnostics.length ());
+  if (get_logger ())
+    {
+      unsigned i;
+      saved_diagnostic *sd;
+      FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
+	log ("[%i] sd: %qs at EN: %i, SN: %i",
+	     i, sd->m_d->get_kind (), sd->m_enode->m_index,
+	     sd->m_snode->m_index);
+    }
 
   if (m_saved_diagnostics.length () == 0)
     return;
