@@ -1,5 +1,25 @@
 2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: Fix testisms.
+	* gcc.target/arm/mve/intrinsics/mve_fp_fpu2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu3.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_libcall1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_libcall2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshrntq_m_n_u32.c: Likewise.
+
+2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/mve_move_gpr_to_gpr.c: New test.
 
 2020-03-20  Jakub Jelinek  <jakub@redhat.com>
