@@ -1,3 +1,10 @@
+2020-03-20  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94232
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Use offset in bytes. Previously
+	build_ref_for_offset function was used and it transforms off to bytes
+	from bits.
+
 2020-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94266
