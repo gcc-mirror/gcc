@@ -1,3 +1,13 @@
+2020-03-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93435
+	* params.opt (sra-max-propagations): New parameter.
+	* tree-sra.c (propagation_budget): New variable.
+	(budget_for_propagation_access): New function.
+	(propagate_subaccesses_from_rhs): Use it.
+	(propagate_subaccesses_from_lhs): Likewise.
+	(propagate_all_subaccesses): Set up and destroy propagation_budget.
+
 2020-03-20  Carl Love  <cel@us.ibm.com>
 
 	PR/target 87583

@@ -1,3 +1,8 @@
+2020-03-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93435
+	* gcc.dg/tree-ssa/pr93435.c: New test.
+
 2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/93347
