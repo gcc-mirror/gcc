@@ -133,6 +133,10 @@ package body Sem_Util is
    --  components in the selected variant to determine whether all of them
    --  have a default.
 
+   function Is_Preelaborable_Function (Id : Entity_Id) return Boolean;
+   --  Ada 2020: Determine whether the specified function is suitable as the
+   --  name of a call in a preelaborable construct (RM 10.2.1(7/5)).
+
    type Null_Status_Kind is
      (Is_Null,
       --  This value indicates that a subexpression is known to have a null
@@ -16485,6 +16489,9 @@ package body Sem_Util is
 
                Visit (Discrete_Subtype_Definition (Nod));
 
+            when N_Parameter_Association =>
+               Visit (Explicit_Actual_Parameter (N));
+
             when N_Protected_Definition =>
 
                --  End_Label is left out because it is not relevant for
@@ -16649,6 +16656,21 @@ package body Sem_Util is
             when N_Expression_With_Actions =>
                Visit_List (Actions (Expr));
                Visit (Expression (Expr));
+
+            when N_Function_Call =>
+
+               --  Ada 2020 (AI12-0175): Calls to certain functions that are
+               --  essentially unchecked conversions are preelaborable.
+
+               if Ada_Version >= Ada_2020
+                 and then Nkind (Expr) = N_Function_Call
+                 and then Is_Entity_Name (Name (Expr))
+                 and then Is_Preelaborable_Function (Entity (Name (Expr)))
+               then
+                  Visit_List (Parameter_Associations (Expr));
+               else
+                  raise Non_Preelaborable;
+               end if;
 
             when N_If_Expression =>
                Visit_List (Expressions (Expr));
@@ -17781,12 +17803,80 @@ package body Sem_Util is
       elsif Nkind (N) = N_Null then
          return True;
 
+      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  unchecked conversions are preelaborable.
+
+      elsif Ada_Version >= Ada_2020
+        and then Nkind (N) = N_Function_Call
+        and then Is_Entity_Name (Name (N))
+        and then Is_Preelaborable_Function (Entity (Name (N)))
+      then
+         declare
+            A : Node_Id;
+         begin
+            A := First_Actual (N);
+
+            while Present (A) loop
+               if not Is_Preelaborable_Construct (A) then
+                  return False;
+               end if;
+
+               Next_Actual (A);
+            end loop;
+         end;
+
+         return True;
+
       --  Otherwise the construct is not preelaborable
 
       else
          return False;
       end if;
    end Is_Preelaborable_Construct;
+
+   -------------------------------
+   -- Is_Preelaborable_Function --
+   -------------------------------
+
+   function Is_Preelaborable_Function (Id : Entity_Id) return Boolean is
+      SATAC : constant Rtsfind.RTU_Id := System_Address_To_Access_Conversions;
+      Scop  : constant Entity_Id := Scope (Id);
+
+   begin
+      --  Small optimization: every allowed function has convention Intrinsic
+      --  (see Analyze_Subprogram_Instantiation for the subtlety in the test).
+
+      if not Is_Intrinsic_Subprogram (Id)
+        and then Convention (Id) /= Convention_Intrinsic
+      then
+         return False;
+      end if;
+
+      --  An instance of Unchecked_Conversion
+
+      if Is_Unchecked_Conversion_Instance (Id) then
+         return True;
+      end if;
+
+      --  A function declared in System.Storage_Elements
+
+      if Is_RTU (Scop, System_Storage_Elements) then
+         return True;
+      end if;
+
+      --  The functions To_Pointer and To_Address declared in an instance of
+      --  System.Address_To_Access_Conversions (they are the only ones).
+
+      if Ekind (Scop) = E_Package
+        and then Nkind (Parent (Scop)) = N_Package_Specification
+        and then Present (Generic_Parent (Parent (Scop)))
+        and then Is_RTU (Generic_Parent (Parent (Scop)), SATAC)
+      then
+         return True;
+      end if;
+
+      return False;
+   end Is_Preelaborable_Function;
 
    ---------------------------------
    -- Is_Protected_Self_Reference --

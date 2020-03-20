@@ -173,6 +173,7 @@ package Rtsfind is
       --  Children of System
 
       System_Address_Image,
+      System_Address_To_Access_Conversions,
       System_Arith_64,
       System_AST_Handling,
       System_Assertions,
