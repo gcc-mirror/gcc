@@ -64,6 +64,7 @@ class program_state;
 class exploded_graph;
 class exploded_node;
 class exploded_edge;
+class feasibility_problem;
 class exploded_cluster;
 class exploded_path;
 class analysis_plan;

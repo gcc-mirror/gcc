@@ -458,7 +458,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pretty_printer *pp = gv->get_pp ();
 
   if (args.m_node_annotator)
-    args.m_node_annotator->add_node_annotations (gv, *this);
+    args.m_node_annotator->add_node_annotations (gv, *this, false);
 
   gv->write_indent ();
   dump_dot_id (pp);
@@ -470,19 +470,33 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 
   bool had_row = false;
 
+  /* Give any annotator the chance to add its own per-node TR elements. */
+  if (args.m_node_annotator)
+    if (args.m_node_annotator->add_node_annotations (gv, *this, true))
+      had_row = true;
+
   if (m_returning_call)
     {
-      gv->begin_tr ();
+      gv->begin_trtd ();
       pp_string (pp, "returning call: ");
-      gv->end_tr ();
+      gv->end_tdtr ();
 
       gv->begin_tr ();
+      gv->begin_td ();
       pp_gimple_stmt_1 (pp, m_returning_call, 0, (dump_flags_t)0);
       pp_write_text_as_html_like_dot_to_stream (pp);
+      gv->end_td ();
+      /* Give any annotator the chance to add per-stmt TD elements to
+	 this row.  */
+      if (args.m_node_annotator)
+	args.m_node_annotator->add_stmt_annotations (gv, m_returning_call,
+						     true);
       gv->end_tr ();
 
+      /* Give any annotator the chance to add per-stmt TR elements.  */
       if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, m_returning_call);
+	args.m_node_annotator->add_stmt_annotations (gv, m_returning_call,
+						     false);
       pp_newline (pp);
 
       had_row = true;
@@ -508,12 +522,19 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
     {
       const gimple *stmt = gsi_stmt (gpi);
       gv->begin_tr ();
+      gv->begin_td ();
       pp_gimple_stmt_1 (pp, stmt, 0, (dump_flags_t)0);
       pp_write_text_as_html_like_dot_to_stream (pp);
+      gv->end_td ();
+      /* Give any annotator the chance to add per-phi TD elements to
+	 this row.  */
+      if (args.m_node_annotator)
+	args.m_node_annotator->add_stmt_annotations (gv, stmt, true);
       gv->end_tr ();
 
+      /* Give any annotator the chance to add per-phi TR elements.  */
       if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, stmt);
+	args.m_node_annotator->add_stmt_annotations (gv, stmt, false);
 
       pp_newline (pp);
       had_row = true;
@@ -525,16 +546,29 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   FOR_EACH_VEC_ELT (m_stmts, i, stmt)
     {
       gv->begin_tr ();
+      gv->begin_td ();
       pp_gimple_stmt_1 (pp, stmt, 0, (dump_flags_t)0);
       pp_write_text_as_html_like_dot_to_stream (pp);
+      gv->end_td ();
+      /* Give any annotator the chance to add per-stmt TD elements to
+	 this row.  */
+      if (args.m_node_annotator)
+	args.m_node_annotator->add_stmt_annotations (gv, stmt, true);
       gv->end_tr ();
 
+      /* Give any annotator the chance to add per-stmt TR elements.  */
       if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, stmt);
+	args.m_node_annotator->add_stmt_annotations (gv, stmt, false);
 
       pp_newline (pp);
       had_row = true;
     }
+
+  /* Give any annotator the chance to add additional per-node TR elements
+     to the end of the TABLE. */
+  if (args.m_node_annotator)
+    if (args.m_node_annotator->add_after_node_annotations (gv, *this))
+      had_row = true;
 
   /* Graphviz requires a TABLE element to have at least one TR
      (and each TR to have at least one TD).  */

@@ -1,3 +1,8 @@
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/dot-output.c: Check that
+	dot-output.c.supergraph-eg.dot is valid.
+
 2020-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR debug/94273

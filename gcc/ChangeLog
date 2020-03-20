@@ -1,3 +1,20 @@
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-supergraph): Document that this
+	now emits two .dot files.
+	* graphviz.cc (graphviz_out::begin_tr): Only emit a TR, not a TD.
+	(graphviz_out::end_tr): Only close a TR, not a TD.
+	(graphviz_out::begin_td): New.
+	(graphviz_out::end_td): New.
+	(graphviz_out::begin_trtd): New, replacing the old implementation
+	of graphviz_out::begin_tr.
+	(graphviz_out::end_tdtr): New, replacing the old implementation
+	of graphviz_out::end_tr.
+	* graphviz.h (graphviz_out::begin_td): New decl.
+	(graphviz_out::end_td): New decl.
+	(graphviz_out::begin_trtd): New decl.
+	(graphviz_out::end_tdtr): New decl.
+
 2020-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR debug/94273

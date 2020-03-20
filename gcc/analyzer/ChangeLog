@@ -1,5 +1,62 @@
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* analyzer.h (class feasibility_problem): New forward decl.
+	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic):
+	Initialize new fields m_status, m_epath_length, and m_problem.
+	(saved_diagnostic::~saved_diagnostic): Delete m_problem.
+	(dedupe_candidate::dedupe_candidate): Convert "sd" param from a
+	const ref to a mutable ptr.
+	(dedupe_winners::add): Convert "sd" param from a const ref to a
+	mutable ptr.  Record the length of the exploded_path.  Record the
+	feasibility/infeasibility of sd into sd, capturing a
+	feasibility_problem when feasible_p fails, and storing it in sd.
+	(diagnostic_manager::emit_saved_diagnostics): Update for pass by
+	ptr rather than by const ref.
+	* diagnostic-manager.h (class saved_diagnostic): Add new enum
+	status.  Add fields m_status, m_epath_length and m_problem.
+	(saved_diagnostic::set_feasible): New member function.
+	(saved_diagnostic::set_infeasible): New member function.
+	(saved_diagnostic::get_feasibility_problem): New accessor.
+	(saved_diagnostic::get_status): New accessor.
+	(saved_diagnostic::set_epath_length): New member function.
+	(saved_diagnostic::get_epath_length): New accessor.
+	* engine.cc: Include "gimple-pretty-print.h".
+	(exploded_path::feasible_p): Add OUT param and, if non-NULL, write
+	a new feasibility_problem to it on failure.
+	(viz_callgraph_node::dump_dot): Convert begin_tr calls to
+	begin_trtd.  Convert end_tr calls to end_tdtr.
+	(class exploded_graph_annotator): New subclass of dot_annotator.
+	(impl_run_checkers): Add a second -fdump-analyzer-supergraph dump
+	after the analysis runs, using exploded_graph_annotator. dumping
+	to DUMP_BASE_NAME.supergraph-eg.dot.
+	* exploded-graph.h (exploded_node::get_dot_fillcolor): Make
+	public.
+	(exploded_path::feasible_p): Add OUT param.
+	(class feasibility_problem): New class.
+	* state-purge.cc (state_purge_annotator::add_node_annotations):
+	Return a bool, add a "within_table" param.
+	(print_vec_of_names): Convert begin_tr calls to begin_trtd.
+	Convert end_tr calls to end_tdtr.
+	(state_purge_annotator::add_stmt_annotations): Add "within_row"
+	param.
+	* state-purge.h ((state_purge_annotator::add_node_annotations):
+	Return a bool, add a "within_table" param.
+	(state_purge_annotator::add_stmt_annotations): Add "within_row"
+	param.
+	* supergraph.cc (supernode::dump_dot): Call add_node_annotations
+	twice: as before, passing false for "within_table", then again
+	with true when within the TABLE element.  Convert some begin_tr
+	calls to begin_trtd, and some end_tr calls to end_tdtr.
+	Repeat each add_stmt_annotations call, distinguishing between
+	calls that add TRs and those that add TDs to an existing TR.
+	Add a call to add_after_node_annotations.
+	* supergraph.h (dot_annotator::add_node_annotations): Add a
+	"within_table" param.
+	(dot_annotator::add_stmt_annotations): Add a "within_row" param.
+	(dot_annotator::add_after_node_annotations): New vfunc.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-manager.cc (dedupe_winners::add): Show the
 	exploded_node index in the log messages.
 	(diagnostic_manager::emit_saved_diagnostics): Log a summary of

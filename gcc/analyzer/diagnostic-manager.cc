@@ -77,7 +77,8 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
     outlive that.  */
   m_stmt_finder (stmt_finder ? stmt_finder->clone () : NULL),
   m_var (var), m_state (state),
-  m_d (d), m_trailing_eedge (NULL)
+  m_d (d), m_trailing_eedge (NULL),
+  m_status (STATUS_NEW), m_epath_length (0), m_problem (NULL)
 {
   gcc_assert (m_stmt || m_stmt_finder);
 
@@ -92,6 +93,7 @@ saved_diagnostic::~saved_diagnostic ()
 {
   delete m_stmt_finder;
   delete m_d;
+  delete m_problem;
 }
 
 bool
@@ -257,8 +259,8 @@ class dedupe_candidate
 public:
   // has the exploded_path
   dedupe_candidate (const shortest_exploded_paths &sp,
-		    const saved_diagnostic &sd)
-  : m_epath (sp.get_shortest_path (sd.m_enode)),
+		    saved_diagnostic *sd)
+  : m_epath (sp.get_shortest_path (sd->m_enode)),
     m_num_dupes (0)
   {
   }
@@ -344,11 +346,13 @@ public:
 
   void add (logger *logger,
 	    const shortest_exploded_paths &sp,
-	    const saved_diagnostic &sd)
+	    saved_diagnostic *sd)
   {
     /* Build a dedupe_candidate for SD.
        This uses SP to build an exploded_path.  */
     dedupe_candidate *dc = new dedupe_candidate (sp, sd);
+
+    sd->set_epath_length (dc->length ());
 
     /* Verify that the epath is feasible.
        State-merging means that not every path in the epath corresponds
@@ -359,26 +363,30 @@ public:
        feasible paths within the egraph.  */
     if (logger)
       logger->log ("considering %qs at EN: %i, SN: %i",
-		   sd.m_d->get_kind (), sd.m_enode->m_index,
-		   sd.m_snode->m_index);
+		   sd->m_d->get_kind (), sd->m_enode->m_index,
+		   sd->m_snode->m_index);
 
-    if (!dc->get_path ().feasible_p (logger))
+    feasibility_problem *p = NULL;
+    if (!dc->get_path ().feasible_p (logger, &p))
       {
 	if (logger)
 	  logger->log ("rejecting %qs at EN: %i, SN: %i"
 		       " due to infeasible path",
-		       sd.m_d->get_kind (), sd.m_enode->m_index,
-		       sd.m_snode->m_index);
+		       sd->m_d->get_kind (), sd->m_enode->m_index,
+		       sd->m_snode->m_index);
+	sd->set_infeasible (p);
 	delete dc;
 	return;
       }
     else
       if (logger)
 	logger->log ("accepting %qs at EN: %i, SN: %i with feasible path",
-		     sd.m_d->get_kind (), sd.m_enode->m_index,
-		     sd.m_snode->m_index);
+		     sd->m_d->get_kind (), sd->m_enode->m_index,
+		     sd->m_snode->m_index);
 
-    dedupe_key *key = new dedupe_key (sd, dc->get_path ());
+    sd->set_feasible ();
+
+    dedupe_key *key = new dedupe_key (*sd, dc->get_path ());
     if (dedupe_candidate **slot = m_map.get (key))
       {
 	if (logger)
@@ -495,7 +503,7 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   int i;
   saved_diagnostic *sd;
   FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
-    best_candidates.add (get_logger (), sp, *sd);
+    best_candidates.add (get_logger (), sp, sd);
 
   /* For each dedupe-key, call emit_saved_diagnostic on the "best"
      saved_diagnostic.  */
