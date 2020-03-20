@@ -1,3 +1,7 @@
+2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.md (define_attr "conds"): Fix logic for neon and mve.
+
 2020-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/94202
