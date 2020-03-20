@@ -2257,6 +2257,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      /* Value is defined in another basic block.  */
 	      if (!def_info)
 		return false;
+	      def_info = vect_stmt_to_vectorize (def_info);
 	      scalar_stmts.safe_push (def_info);
 	    }
 	  else
