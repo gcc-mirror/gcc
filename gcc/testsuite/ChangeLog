@@ -1,3 +1,16 @@
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vaddq_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vaddq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_u8.c: Likewise.
+
 2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: Fix testisms.

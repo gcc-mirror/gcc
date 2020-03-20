@@ -66,6 +66,14 @@
 ;; Integer and float modes supported by Neon and IWMMXT.
 (define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
+;; Integer and float modes supported by Neon, IWMMXT and MVE, used by
+;; arithmetic epxand patterns.
+(define_mode_iterator VNIM [V16QI V8HI V4SI V4SF])
+
+;; Integer and float modes supported by Neon and IWMMXT but not MVE, used by
+;; arithmetic epxand patterns.
+(define_mode_iterator VNINOTM [V2SI V4HI V8QI V2SF V2DI])
+
 ;; Integer and float modes supported by Neon, IWMMXT and MVE.
 (define_mode_iterator VNIM1 [V16QI V8HI V4SI V4SF V2DI])
 

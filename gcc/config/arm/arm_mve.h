@@ -1898,6 +1898,14 @@ typedef struct { uint8x16_t val[4]; } uint8x16x4_t;
 #define vstrwq_scatter_shifted_offset_p_u32(__base, __offset, __value, __p) __arm_vstrwq_scatter_shifted_offset_p_u32(__base, __offset, __value, __p)
 #define vstrwq_scatter_shifted_offset_s32(__base, __offset, __value) __arm_vstrwq_scatter_shifted_offset_s32(__base, __offset, __value)
 #define vstrwq_scatter_shifted_offset_u32(__base, __offset, __value) __arm_vstrwq_scatter_shifted_offset_u32(__base, __offset, __value)
+#define vaddq_s8(__a, __b) __arm_vaddq_s8(__a, __b)
+#define vaddq_s16(__a, __b) __arm_vaddq_s16(__a, __b)
+#define vaddq_s32(__a, __b) __arm_vaddq_s32(__a, __b)
+#define vaddq_u8(__a, __b) __arm_vaddq_u8(__a, __b)
+#define vaddq_u16(__a, __b) __arm_vaddq_u16(__a, __b)
+#define vaddq_u32(__a, __b) __arm_vaddq_u32(__a, __b)
+#define vaddq_f16(__a, __b) __arm_vaddq_f16(__a, __b)
+#define vaddq_f32(__a, __b) __arm_vaddq_f32(__a, __b)
 #endif
 
 __extension__ extern __inline void
@@ -12341,6 +12349,48 @@ __arm_vstrwq_scatter_shifted_offset_u32 (uint32_t * __base, uint32x4_t __offset,
   __builtin_mve_vstrwq_scatter_shifted_offset_uv4si ((__builtin_neon_si *) __base, __offset, __value);
 }
 
+__extension__ extern __inline int8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_s8 (int8x16_t __a, int8x16_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_s16 (int16x8_t __a, int16x8_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_s32 (int32x4_t __a, int32x4_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ extern __inline uint8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_u8 (uint8x16_t __a, uint8x16_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ extern __inline uint16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_u16 (uint16x8_t __a, uint16x8_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_u32 (uint32x4_t __a, uint32x4_t __b)
+{
+  return __a + __b;
+}
+
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 
 __extension__ extern __inline void
@@ -14707,6 +14757,20 @@ __arm_vstrwq_scatter_shifted_offset_p_f32 (float32_t * __base, uint32x4_t __offs
   __builtin_mve_vstrwq_scatter_shifted_offset_p_fv4sf (__base, __offset, __value, __p);
 }
 
+__extension__ extern __inline float16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vaddq_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __a + __b;
+}
+
 #endif
 
 enum {
@@ -15186,6 +15250,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_uint8x16_t]: __arm_vaddq_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8x16_t)), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t]: __arm_vaddq_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16x8_t)), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vaddq_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vaddq_f16 (__ARM_mve_coerce(p0, float16x8_t), __ARM_mve_coerce(p1, float16x8_t)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vaddq_f32 (__ARM_mve_coerce(p0, float32x4_t), __ARM_mve_coerce(p1, float32x4_t)), \
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_uint8_t]: __arm_vaddq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t)), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16_t]: __arm_vaddq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t)), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32_t]: __arm_vaddq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t)), \

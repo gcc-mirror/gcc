@@ -9643,3 +9643,31 @@
    return "";
 }
   [(set_attr "length" "4")])
+
+;;
+;; [vaddq_s, vaddq_u])
+;;
+(define_insn "mve_vaddq<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(plus:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
+  ]
+  "TARGET_HAVE_MVE"
+  "vadd.i%#<V_sz_elem>  %q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vaddq_f])
+;;
+(define_insn "mve_vaddq_f<mode>"
+  [
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+	(plus:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		    (match_operand:MVE_0 2 "s_register_operand" "w")))
+  ]
+  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
+  "vadd.f%#<V_sz_elem> %q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])

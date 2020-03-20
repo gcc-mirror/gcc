@@ -1,3 +1,36 @@
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm_mve.h (vaddq_s8): Define macro.
+	(vaddq_s16): Likewise.
+	(vaddq_s32): Likewise.
+	(vaddq_u8): Likewise.
+	(vaddq_u16): Likewise.
+	(vaddq_u32): Likewise.
+	(vaddq_f16): Likewise.
+	(vaddq_f32): Likewise.
+	(__arm_vaddq_s8): Define intrinsic.
+	(__arm_vaddq_s16): Likewise.
+	(__arm_vaddq_s32): Likewise.
+	(__arm_vaddq_u8): Likewise.
+	(__arm_vaddq_u16): Likewise.
+	(__arm_vaddq_u32): Likewise.
+	(__arm_vaddq_f16): Likewise.
+	(__arm_vaddq_f32): Likewise.
+	(vaddq): Define polymorphic variant.
+	* config/arm/iterators.md (VNIM): Define mode iterator for common types
+	Neon, IWMMXT and MVE.
+	(VNINOTM): Likewise.
+	* config/arm/mve.md (mve_vaddq<mode>): Define RTL pattern.
+	(mve_vaddq_f<mode>): Define RTL pattern.
+	* config/arm/neon.md (add<mode>3): Rename to addv4hf3 RTL pattern.
+	(addv8hf3_neon): Define RTL pattern.
+	* config/arm/vec-common.md (add<mode>3): Modify standard add RTL pattern
+	to support MVE.
+	(addv8hf3): Define standard RTL pattern for MVE and Neon.
+	(add<mode>3): Modify existing standard add RTL pattern for Neon and IWMMXT.
+
 2020-03-20  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/94232

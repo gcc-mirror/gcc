@@ -519,18 +519,30 @@
 ;; As with SFmode, full support for HFmode vector arithmetic is only available
 ;; when flag-unsafe-math-optimizations is enabled.
 
-(define_insn "add<mode>3"
+;; Add pattern with modes V8HF and V4HF is split into separate patterns to add
+;; support for standard pattern addv8hf3 in MVE.  Following pattern is called
+;; from "addv8hf3" standard pattern inside vec-common.md file.
+
+(define_insn "addv8hf3_neon"
   [(set
-    (match_operand:VH 0 "s_register_operand" "=w")
-    (plus:VH
-     (match_operand:VH 1 "s_register_operand" "w")
-     (match_operand:VH 2 "s_register_operand" "w")))]
+    (match_operand:V8HF 0 "s_register_operand" "=w")
+    (plus:V8HF
+     (match_operand:V8HF 1 "s_register_operand" "w")
+     (match_operand:V8HF 2 "s_register_operand" "w")))]
  "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
- "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set (attr "type")
-   (if_then_else (match_test "<Is_float_mode>")
-    (const_string "neon_fp_addsub_s<q>")
-    (const_string "neon_add<q>")))]
+ "vadd.f16\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set_attr "type" "neon_fp_addsub_s_q")]
+)
+
+(define_insn "addv4hf3"
+  [(set
+    (match_operand:V4HF 0 "s_register_operand" "=w")
+    (plus:V4HF
+     (match_operand:V4HF 1 "s_register_operand" "w")
+     (match_operand:V4HF 2 "s_register_operand" "w")))]
+ "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+ "vadd.f16\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set_attr "type" "neon_fp_addsub_s_q")]
 )
 
 (define_insn "add<mode>3_fp16"
