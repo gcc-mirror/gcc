@@ -496,8 +496,7 @@ package body Sem_Ch12 is
    --  On return, the node N has been rewritten with the actual body.
 
    function Build_Subprogram_Decl_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id;
+     (Formal_Subp : Entity_Id) return Node_Id;
    --  Ada 2020 allows formal subprograms to carry pre/postconditions.
    --  At the point of instantiation these contracts apply to uses of
    --  the actual subprogram. This is implemented by creating wrapper
@@ -508,7 +507,7 @@ package body Sem_Ch12 is
 
    function Build_Subprogram_Body_Wrapper
      (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id;
+      Actual_Name : Node_Id) return Node_Id;
    --  The body of the wrapper is a call to the actual, with the generated
    --  pre/postconditon checks added.
 
@@ -667,6 +666,10 @@ package body Sem_Ch12 is
    function Has_Been_Exchanged (E : Entity_Id) return Boolean;
    --  Traverse the Exchanged_Views list to see if a type was private
    --  and has already been flipped during this phase of instantiation.
+
+   function Has_Contracts (Decl : Node_Id) return Boolean;
+   --  Determine whether a formal subprogram has a Pre- or Postcondition,
+   --  in which case a subprogram wrapper has to be built for the actual.
 
    procedure Hide_Current_Scope;
    --  When instantiating a generic child unit, the parent context must be
@@ -1165,18 +1168,38 @@ package body Sem_Ch12 is
            Defining_Unit_Name (Specification (Analyzed_Formal));
          Aspect_Spec : Node_Id;
          Decl_Node   : Node_Id;
-         Ent         : Entity_Id;
+         Actual_Name : Node_Id;
 
       begin
          --  Create declaration for wrapper subprogram
+         --  The actual can be overloaded, in which case it will be
+         --  resolved when the call in the wrapper body is analyzed.
+         --  We attach the possible interpretations of the actual to
+         --  the name to be used in the call in the wrapper body.
 
          if Is_Entity_Name (Match) then
-            Ent := Entity (Match);
+            Actual_Name := New_Occurrence_Of (Entity (Match), Sloc (Match));
+
+            if Is_Overloaded (Match) then
+               Save_Interps (Match, Actual_Name);
+            end if;
+
          else
-            Ent := Defining_Entity (Last (Assoc_List));
+            --  Use renaming declaration created when analyzing actual.
+            --  This may be incomplete if there are several formal
+            --  subprograms whose actual is an attribute ???
+
+            declare
+               Renaming_Decl : constant Node_Id := Last (Assoc_List);
+
+            begin
+               Actual_Name := New_Occurrence_Of
+                     (Defining_Entity (Renaming_Decl), Sloc (Match));
+               Set_Etype (Actual_Name, Get_Instance_Of (Etype (Formal)));
+            end;
          end if;
 
-         Decl_Node := Build_Subprogram_Decl_Wrapper (Formal, Ent);
+         Decl_Node := Build_Subprogram_Decl_Wrapper (Formal);
 
          --  Transfer aspect specifications from formal subprogram to wrapper
 
@@ -1196,7 +1219,8 @@ package body Sem_Ch12 is
          --  The subprogram may be called in the analysis of subsequent
          --  actuals.
 
-         Append_To (Assoc_List, Build_Subprogram_Body_Wrapper (Formal, Ent));
+         Append_To (Assoc_List,
+            Build_Subprogram_Body_Wrapper (Formal, Actual_Name));
       end Build_Subprogram_Wrappers;
 
       ----------------------------------------
@@ -1865,7 +1889,7 @@ package body Sem_Ch12 is
                      --  for it. This is an expansion activity that cannot
                      --  take place e.g. within an enclosing generic unit.
 
-                     if Present (Aspect_Specifications (Analyzed_Formal))
+                     if Has_Contracts (Analyzed_Formal)
                        and then Expander_Active
                      then
                         Build_Subprogram_Wrappers;
@@ -6196,8 +6220,7 @@ package body Sem_Ch12 is
    -----------------------------------
 
    function Build_Subprogram_Decl_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id
+     (Formal_Subp : Entity_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Current_Scope);
       Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
@@ -6217,16 +6240,19 @@ package body Sem_Ch12 is
 
       Profile := Parameter_Specifications (
                    New_Copy_Tree
-                    (Specification (Unit_Declaration_Node (Actual_Subp))));
+                    (Specification (Unit_Declaration_Node (Formal_Subp))));
 
       Form_F := First_Formal (Formal_Subp);
       Parm_Spec := First (Profile);
 
-      --  Create new entities for the formals.
+      --  Create new entities for the formals. Reset entities so that
+      --  parameter types are properly resolved when wrapper declaration
+      --  is analyzed.
 
       while Present (Parm_Spec) loop
          New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
          Set_Defining_Identifier (Parm_Spec, New_F);
+         Set_Entity (Parameter_Type (Parm_Spec), Empty);
          Next (Parm_Spec);
          Next_Formal (Form_F);
       end loop;
@@ -6256,13 +6282,13 @@ package body Sem_Ch12 is
 
    function Build_Subprogram_Body_Wrapper
      (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id
+      Actual_Name : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Current_Scope);
       Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
       Spec_Node : constant Node_Id :=
         Specification
-          (Build_Subprogram_Decl_Wrapper (Formal_Subp, Actual_Subp));
+          (Build_Subprogram_Decl_Wrapper (Formal_Subp));
       Act       : Node_Id;
       Actuals   : List_Id;
       Body_Node : Node_Id;
@@ -6279,15 +6305,14 @@ package body Sem_Ch12 is
 
       if Ret_Type = Standard_Void_Type then
          Stmt := Make_Procedure_Call_Statement (Loc,
-          Name                   => New_Occurrence_Of (Actual_Subp, Loc),
+          Name                   => Actual_Name,
           Parameter_Associations => Actuals);
 
       else
          Stmt := Make_Simple_Return_Statement (Loc,
             Expression =>
               Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (Actual_Subp, Loc),
+                Name                   => Actual_Name,
                 Parameter_Associations => Actuals));
       end if;
 
@@ -9224,6 +9249,32 @@ package body Sem_Ch12 is
 
       return False;
    end Has_Been_Exchanged;
+
+   -------------------
+   -- Has_Contracts --
+   -------------------
+
+   function Has_Contracts (Decl : Node_Id) return Boolean is
+      A_List : constant List_Id := Aspect_Specifications (Decl);
+      A_Spec : Node_Id;
+      A_Id   : Aspect_Id;
+   begin
+      if No (A_List) then
+         return False;
+      else
+         A_Spec := First (A_List);
+         while Present (A_Spec) loop
+            A_Id := Get_Aspect_Id (A_Spec);
+            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+               return True;
+            end if;
+
+            Next (A_Spec);
+         end loop;
+
+         return False;
+      end if;
+   end Has_Contracts;
 
    ----------
    -- Hash --
