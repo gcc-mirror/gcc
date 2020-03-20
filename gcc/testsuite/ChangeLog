@@ -1,4 +1,25 @@
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: New test.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c: Likewise.
+
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
 
