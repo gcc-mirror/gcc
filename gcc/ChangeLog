@@ -1,5 +1,11 @@
 2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/unspecs.md (UNSPEC_GET_FPSCR): Rename this to ...
+	(VUNSPEC_GET_FPSCR): ... this, and move it to vunspec.
+	* config/arm/vfp.md: (get_fpscr, set_fpscr): Revert to old patterns.
+
+2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/mve.md (mve_mov<mode>): Fix R->R case.
 
 2020-03-20  Jakub Jelinek  <jakub@redhat.com>
