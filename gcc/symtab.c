@@ -473,6 +473,17 @@ symtab_node::add_to_same_comdat_group (symtab_node *old_node)
 	;
       n->same_comdat_group = this;
     }
+
+  cgraph_node *n;
+  if (comdat_local_p ()
+      && (n = dyn_cast <cgraph_node *> (this)) != NULL)
+    {
+      for (cgraph_edge *e = n->callers; e; e = e->next_caller)
+	if (e->caller->inlined_to)
+	  e->caller->inlined_to->calls_comdat_local = true;
+	else
+	  e->caller->calls_comdat_local = true;
+    }
 }
 
 /* Dissolve the same_comdat_group list in which NODE resides.  */

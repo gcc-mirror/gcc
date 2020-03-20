@@ -557,7 +557,8 @@ cgraph_node::get_create (tree decl)
 }
 
 /* Mark ALIAS as an alias to DECL.  DECL_NODE is cgraph node representing
-   the function body is associated with (not necessarily cgraph_node (DECL).  */
+   the function body is associated with
+   (not necessarily cgraph_node (DECL)).  */
 
 cgraph_node *
 cgraph_node::create_alias (tree alias, tree target)
@@ -913,6 +914,10 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
+
+  if (callee && symtab->state != LTO_STREAMING
+      && edge->callee->comdat_local_p ())
+    edge->caller->calls_comdat_local = true;
 
   return edge;
 }
@@ -1341,6 +1346,34 @@ cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
   return edge;
 }
 
+/* Redirect callee of the edge to N.  The function does not update underlying
+   call expression.  */
+
+void
+cgraph_edge::redirect_callee (cgraph_node *n)
+{
+  bool loc = callee->comdat_local_p ();
+  /* Remove from callers list of the current callee.  */
+  remove_callee ();
+
+  /* Insert to callers list of the new callee.  */
+  set_callee (n);
+
+  if (!inline_failed)
+    return;
+  if (!loc && n->comdat_local_p ())
+    {
+      cgraph_node *to = caller->inlined_to ? caller->inlined_to : caller;
+      to->calls_comdat_local = true;
+    }
+  else if (loc && !n->comdat_local_p ())
+    {
+      cgraph_node *to = caller->inlined_to ? caller->inlined_to : caller;
+      gcc_checking_assert (to->calls_comdat_local);
+      to->calls_comdat_local = to->check_calls_comdat_local_p ();
+    }
+}
+
 /* If necessary, change the function declaration in the call statement
    associated with E so that it corresponds to the edge callee.  Speculations
    can be resolved in the process and EDGE can be removed and deallocated.
@@ -1673,6 +1706,8 @@ void
 cgraph_node::remove_callees (void)
 {
   cgraph_edge *e, *f;
+
+  calls_comdat_local = false;
 
   /* It is sufficient to remove the edges from the lists of callers of
      the callees.  The callee list of the node can be zapped with one
@@ -3369,10 +3404,18 @@ cgraph_node::verify_node (void)
       error ("inline clone is forced to output");
       error_found = true;
     }
-  if (calls_comdat_local && !same_comdat_group)
+  if (symtab->state != LTO_STREAMING)
     {
-      error ("calls_comdat_local is set outside of a comdat group");
-      error_found = true;
+      if (calls_comdat_local && !same_comdat_group)
+	{
+	  error ("calls_comdat_local is set outside of a comdat group");
+	  error_found = true;
+	}
+      if (!inlined_to && calls_comdat_local != check_calls_comdat_local_p ())
+	{
+	  error ("invalid calls_comdat_local flag");
+	  error_found = true;
+	}
     }
   if (DECL_IS_MALLOC (decl)
       && !POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
@@ -4042,6 +4085,19 @@ int
 cgraph_edge::num_speculative_call_targets_p (void)
 {
   return indirect_info ? indirect_info->num_speculative_call_targets : 0;
+}
+
+/* Check if function calls comdat local.  This is used to recompute
+   calls_comdat_local flag after function transformations.  */
+bool
+cgraph_node::check_calls_comdat_local_p ()
+{
+  for (cgraph_edge *e = callees; e; e = e->next_callee)
+    if (e->inline_failed
+	? e->callee->comdat_local_p ()
+	: e->callee->check_calls_comdat_local_p ())
+      return true;
+  return false;
 }
 
 /* A stashed copy of "symtab" for use by selftest::symbol_table_test.

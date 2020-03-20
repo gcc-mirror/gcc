@@ -1,3 +1,22 @@
+2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/93347
+	* cgraph.c (symbol_table::create_edge): Update calls_comdat_local flag.
+	(cgraph_edge::redirect_callee): Move here; likewise.
+	(cgraph_node::remove_callees): Update calls_comdat_local flag.
+	(cgraph_node::verify_node): Verify that calls_comdat_local flag match
+	reality.
+	(cgraph_node::check_calls_comdat_local_p): New member function.
+	* cgraph.h (cgraph_node::check_calls_comdat_local_p): Declare.
+	(cgraph_edge::redirect_callee): Move offline.
+	* ipa-fnsummary.c (compute_fn_summary): Do not compute
+	calls_comdat_local flag here.
+	* ipa-inline-transform.c (inline_call): Fix updating of
+	calls_comdat_local flag.
+	* ipa-split.c (split_function): Use true instead of 1 to set the flag.
+	* symtab.c (symtab_node::add_to_same_comdat_group): Update
+	calls_comdat_local flag.
+
 2020-03-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_analyze_slp_instance): Dump SLP tree

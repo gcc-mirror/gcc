@@ -1,3 +1,8 @@
+2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/93347
+	* g++.dg/torture/pr93347.C: New test.
+
 2020-03-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69694

@@ -1363,7 +1363,7 @@ split_function (basic_block return_bb, class split_point *split_point,
     {
       /* TODO: call is versionable if we make sure that all
 	 callers are inside of a comdat group.  */
-      cur_node->calls_comdat_local = 1;
+      cur_node->calls_comdat_local = true;
       node->add_to_same_comdat_group (cur_node);
     }
 
