@@ -1,4 +1,147 @@
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm-builtins.c
+	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Define quinary
+	builtin qualifier.
+	* config/arm/arm_mve.h (vddupq_m_n_u8): Define macro.
+	(vddupq_m_n_u32): Likewise.
+	(vddupq_m_n_u16): Likewise.
+	(vddupq_m_wb_u8): Likewise.
+	(vddupq_m_wb_u16): Likewise.
+	(vddupq_m_wb_u32): Likewise.
+	(vddupq_n_u8): Likewise.
+	(vddupq_n_u32): Likewise.
+	(vddupq_n_u16): Likewise.
+	(vddupq_wb_u8): Likewise.
+	(vddupq_wb_u16): Likewise.
+	(vddupq_wb_u32): Likewise.
+	(vdwdupq_m_n_u8): Likewise.
+	(vdwdupq_m_n_u32): Likewise.
+	(vdwdupq_m_n_u16): Likewise.
+	(vdwdupq_m_wb_u8): Likewise.
+	(vdwdupq_m_wb_u32): Likewise.
+	(vdwdupq_m_wb_u16): Likewise.
+	(vdwdupq_n_u8): Likewise.
+	(vdwdupq_n_u32): Likewise.
+	(vdwdupq_n_u16): Likewise.
+	(vdwdupq_wb_u8): Likewise.
+	(vdwdupq_wb_u32): Likewise.
+	(vdwdupq_wb_u16): Likewise.
+	(vidupq_m_n_u8): Likewise.
+	(vidupq_m_n_u32): Likewise.
+	(vidupq_m_n_u16): Likewise.
+	(vidupq_m_wb_u8): Likewise.
+	(vidupq_m_wb_u16): Likewise.
+	(vidupq_m_wb_u32): Likewise.
+	(vidupq_n_u8): Likewise.
+	(vidupq_n_u32): Likewise.
+	(vidupq_n_u16): Likewise.
+	(vidupq_wb_u8): Likewise.
+	(vidupq_wb_u16): Likewise.
+	(vidupq_wb_u32): Likewise.
+	(viwdupq_m_n_u8): Likewise.
+	(viwdupq_m_n_u32): Likewise.
+	(viwdupq_m_n_u16): Likewise.
+	(viwdupq_m_wb_u8): Likewise.
+	(viwdupq_m_wb_u32): Likewise.
+	(viwdupq_m_wb_u16): Likewise.
+	(viwdupq_n_u8): Likewise.
+	(viwdupq_n_u32): Likewise.
+	(viwdupq_n_u16): Likewise.
+	(viwdupq_wb_u8): Likewise.
+	(viwdupq_wb_u32): Likewise.
+	(viwdupq_wb_u16): Likewise.
+	(__arm_vddupq_m_n_u8): Define intrinsic.
+	(__arm_vddupq_m_n_u32): Likewise.
+	(__arm_vddupq_m_n_u16): Likewise.
+	(__arm_vddupq_m_wb_u8): Likewise.
+	(__arm_vddupq_m_wb_u16): Likewise.
+	(__arm_vddupq_m_wb_u32): Likewise.
+	(__arm_vddupq_n_u8): Likewise.
+	(__arm_vddupq_n_u32): Likewise.
+	(__arm_vddupq_n_u16): Likewise.
+	(__arm_vdwdupq_m_n_u8): Likewise.
+	(__arm_vdwdupq_m_n_u32): Likewise.
+	(__arm_vdwdupq_m_n_u16): Likewise.
+	(__arm_vdwdupq_m_wb_u8): Likewise.
+	(__arm_vdwdupq_m_wb_u32): Likewise.
+	(__arm_vdwdupq_m_wb_u16): Likewise.
+	(__arm_vdwdupq_n_u8): Likewise.
+	(__arm_vdwdupq_n_u32): Likewise.
+	(__arm_vdwdupq_n_u16): Likewise.
+	(__arm_vdwdupq_wb_u8): Likewise.
+	(__arm_vdwdupq_wb_u32): Likewise.
+	(__arm_vdwdupq_wb_u16): Likewise.
+	(__arm_vidupq_m_n_u8): Likewise.
+	(__arm_vidupq_m_n_u32): Likewise.
+	(__arm_vidupq_m_n_u16): Likewise.
+	(__arm_vidupq_n_u8): Likewise.
+	(__arm_vidupq_m_wb_u8): Likewise.
+	(__arm_vidupq_m_wb_u16): Likewise.
+	(__arm_vidupq_m_wb_u32): Likewise.
+	(__arm_vidupq_n_u32): Likewise.
+	(__arm_vidupq_n_u16): Likewise.
+	(__arm_vidupq_wb_u8): Likewise.
+	(__arm_vidupq_wb_u16): Likewise.
+	(__arm_vidupq_wb_u32): Likewise.
+	(__arm_vddupq_wb_u8): Likewise.
+	(__arm_vddupq_wb_u16): Likewise.
+	(__arm_vddupq_wb_u32): Likewise.
+	(__arm_viwdupq_m_n_u8): Likewise.
+	(__arm_viwdupq_m_n_u32): Likewise.
+	(__arm_viwdupq_m_n_u16): Likewise.
+	(__arm_viwdupq_m_wb_u8): Likewise.
+	(__arm_viwdupq_m_wb_u32): Likewise.
+	(__arm_viwdupq_m_wb_u16): Likewise.
+	(__arm_viwdupq_n_u8): Likewise.
+	(__arm_viwdupq_n_u32): Likewise.
+	(__arm_viwdupq_n_u16): Likewise.
+	(__arm_viwdupq_wb_u8): Likewise.
+	(__arm_viwdupq_wb_u32): Likewise.
+	(__arm_viwdupq_wb_u16): Likewise.
+	(vidupq_m): Define polymorphic variant.
+	(vddupq_m): Likewise.
+	(vidupq_u16): Likewise.
+	(vidupq_u32): Likewise.
+	(vidupq_u8): Likewise.
+	(vddupq_u16): Likewise.
+	(vddupq_u32): Likewise.
+	(vddupq_u8): Likewise.
+	(viwdupq_m): Likewise.
+	(viwdupq_u16): Likewise.
+	(viwdupq_u32): Likewise.
+	(viwdupq_u8): Likewise.
+	(vdwdupq_m): Likewise.
+	(vdwdupq_u16): Likewise.
+	(vdwdupq_u32): Likewise.
+	(vdwdupq_u8): Likewise.
+	* config/arm/arm_mve_builtins.def
+	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Use builtin
+	qualifier.
+	* config/arm/mve.md (mve_vidupq_n_u<mode>): Define RTL pattern.
+	(mve_vidupq_u<mode>_insn): Likewise.
+	(mve_vidupq_m_n_u<mode>): Likewise.
+	(mve_vidupq_m_wb_u<mode>_insn): Likewise.
+	(mve_vddupq_n_u<mode>): Likewise.
+	(mve_vddupq_u<mode>_insn): Likewise.
+	(mve_vddupq_m_n_u<mode>): Likewise.
+	(mve_vddupq_m_wb_u<mode>_insn): Likewise.
+	(mve_vdwdupq_n_u<mode>): Likewise.
+	(mve_vdwdupq_wb_u<mode>): Likewise.
+	(mve_vdwdupq_wb_u<mode>_insn): Likewise.
+	(mve_vdwdupq_m_n_u<mode>): Likewise.
+	(mve_vdwdupq_m_wb_u<mode>): Likewise.
+	(mve_vdwdupq_m_wb_u<mode>_insn): Likewise.
+	(mve_viwdupq_n_u<mode>): Likewise.
+	(mve_viwdupq_wb_u<mode>): Likewise.
+	(mve_viwdupq_wb_u<mode>_insn): Likewise.
+	(mve_viwdupq_m_n_u<mode>): Likewise.
+	(mve_viwdupq_m_wb_u<mode>): Likewise.
+	(mve_viwdupq_m_wb_u<mode>_insn): Likewise.
+
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* config/arm/arm_mve.h (vreinterpretq_s16_s32): Define macro.
 	(vreinterpretq_s16_s64): Likewise.

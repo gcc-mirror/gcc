@@ -1,4 +1,57 @@
 2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vddupq_m_n_u16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vddupq_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vidupq_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_wb_u8.c: Likewise.
+
+2020-03-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: New test.
 	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.

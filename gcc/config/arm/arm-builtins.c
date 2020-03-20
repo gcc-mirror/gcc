@@ -711,6 +711,13 @@ arm_ldru_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_pointer, qualifier_unsigned};
 #define LDRU_Z_QUALIFIERS (arm_ldru_z_qualifiers)
 
+static enum arm_type_qualifiers
+arm_quinop_unone_unone_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_immediate, qualifier_unsigned };
+#define QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS \
+  (arm_quinop_unone_unone_unone_unone_imm_unone_qualifiers)
+
 /* End of Qualifier for MVE builtins.  */
 
    /* void ([T element type] *, T, immediate).  */
