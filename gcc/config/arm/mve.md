@@ -663,7 +663,7 @@
       else
 	return "vldrb.8 %q0, %E1";
     case 5:
-      return output_move_neon (operands);
+      return output_move_quad (operands);
     case 7:
       return "vstrb.8 %q1, %E0";
     default:
@@ -671,7 +671,7 @@
       return "";
     }
 }
-  [(set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,mve_move,mve_move,mve_store")
+  [(set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,multiple,mve_move,mve_store")
    (set_attr "length" "4,8,8,4,8,8,4,4")
    (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*")])

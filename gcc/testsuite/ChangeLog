@@ -1,3 +1,7 @@
+2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_move_gpr_to_gpr.c: New test.
+
 2020-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94224

@@ -1,3 +1,7 @@
+2020-03-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (mve_mov<mode>): Fix R->R case.
+
 2020-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94224
