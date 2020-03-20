@@ -9448,9 +9448,22 @@ trees_out::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 	      tree_node (dflt);
 	    }
 
-	  tree decl = TREE_VALUE (parm);
-	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    gcc_checking_assert (DECL_CONTEXT (decl) == tmpl);
+	  if (streaming_p ())
+	    {
+	      tree decl = TREE_VALUE (parm);
+	      if (TREE_CODE (decl) == TEMPLATE_DECL)
+		{
+		  tree ctx = DECL_CONTEXT (decl);
+
+		  if (ctx)
+		    gcc_checking_assert (ctx == tmpl);
+		  /* Only primary templates set their template parms'
+	  	     context to themselves.  We don't have sufficient
+	  	     information at the point we read back to
+	  	     determine that.  */
+		  u (ctx != NULL_TREE);
+		}
+	    }
 	}
     }
 }
@@ -9478,7 +9491,8 @@ trees_in::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 
 	  tree decl = TREE_VALUE (parm);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    DECL_CONTEXT (decl) = tmpl;
+	    if (u ())
+	      DECL_CONTEXT (decl) = tmpl;
 	}
     }
   return true;

@@ -1,3 +1,9 @@
+2020-03-20  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parms_fini): Flag whether
+	tpl-tpl-parm context is non-null.
+
 2020-03-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
