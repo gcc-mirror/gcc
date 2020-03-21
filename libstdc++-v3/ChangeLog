@@ -1,5 +1,10 @@
 2020-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93245
+	* include/experimental/bits/fs_path.h (path::generic_string<C,T,A>()):
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Improve test coverage.
+
 	PR libstdc++/94242
 	* include/bits/fs_path.h (path::_S_str_convert): Replace first
 	parameter with basic_string_view so that strings with different
