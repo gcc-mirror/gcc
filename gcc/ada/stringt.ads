@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Namet;  use Namet;
-with System; use System;
+with System;
 with Types;  use Types;
 
 package Stringt is
