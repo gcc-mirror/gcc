@@ -2270,6 +2270,17 @@ package body Sem_Ch13 is
                   end if;
             end case;
 
+            --  Check 13.1(9.2/5): A representation aspect of a subtype or type
+            --  shall not be specified (whether by a representation item or an
+            --  aspect_specification) before the type is completely defined
+            --  (see 3.11.1).
+
+            if Is_Representation_Aspect (A_Id)
+              and then Rep_Item_Too_Early (E, N)
+            then
+               goto Continue;
+            end if;
+
             --  Processing based on specific aspect
 
             case A_Id is
