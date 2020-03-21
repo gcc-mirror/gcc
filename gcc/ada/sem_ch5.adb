@@ -4375,21 +4375,8 @@ package body Sem_Ch5 is
          --  visible in the loop.
 
          elsif Has_Implicit_Dereference (Etype (R_Copy)) then
-            declare
-               Disc : Entity_Id;
-
-            begin
-               Disc := First_Discriminant (Typ);
-               while Present (Disc) loop
-                  if Has_Implicit_Dereference (Disc) then
-                     Build_Explicit_Dereference (R_Copy, Disc);
-                     exit;
-                  end if;
-
-                  Next_Discriminant (Disc);
-               end loop;
-            end;
-
+            Build_Explicit_Dereference
+              (R_Copy, Get_Reference_Discriminant (Etype (R_Copy)));
          end if;
       end if;
 

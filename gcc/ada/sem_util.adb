@@ -16915,10 +16915,9 @@ package body Sem_Util is
       --  check whether the context requires an access_to_variable type.
 
       elsif Nkind (AV) = N_Explicit_Dereference
-        and then Ada_Version >= Ada_2012
-        and then Nkind (Original_Node (AV)) = N_Indexed_Component
         and then Present (Etype (Original_Node (AV)))
         and then Has_Implicit_Dereference (Etype (Original_Node (AV)))
+        and then Ada_Version >= Ada_2012
       then
          return not Is_Access_Constant (Etype (Prefix (AV)));
 
@@ -16976,28 +16975,7 @@ package body Sem_Util is
       --  but we still want to allow the conversion if it converts a variable).
 
       elsif Is_Rewrite_Substitution (AV) then
-
-         --  In Ada 2012, the explicit dereference may be a rewritten call to a
-         --  Reference function.
-
-         if Ada_Version >= Ada_2012
-           and then Nkind (Original_Node (AV)) = N_Function_Call
-           and then
-             Has_Implicit_Dereference (Etype (Name (Original_Node (AV))))
-         then
-
-            --  Check that this is not a constant reference.
-
-            return not Is_Access_Constant (Etype (Prefix (AV)));
-
-         elsif Has_Implicit_Dereference (Etype (Original_Node (AV))) then
-            return
-              not Is_Access_Constant (Etype
-                (Get_Reference_Discriminant (Etype (Original_Node (AV)))));
-
-         else
-            return Is_OK_Variable_For_Out_Formal (Original_Node (AV));
-         end if;
+         return Is_OK_Variable_For_Out_Formal (Original_Node (AV));
 
       --  All other non-variables are rejected
 
@@ -18792,14 +18770,14 @@ package body Sem_Util is
            or else
              Is_Variable_Prefix (Original_Node (Prefix (N)));
 
-      --  in Ada 2012, the dereference may have been added for a type with
-      --  a declared implicit dereference aspect. Check that it is not an
-      --  access to constant.
+      --  Generalized indexing operations are rewritten as explicit
+      --  dereferences, and it is only during resolution that we can
+      --  check whether the context requires an access_to_variable type.
 
       elsif Nkind (N) = N_Explicit_Dereference
         and then Present (Etype (Orig_Node))
-        and then Ada_Version >= Ada_2012
         and then Has_Implicit_Dereference (Etype (Orig_Node))
+        and then Ada_Version >= Ada_2012
       then
          return not Is_Access_Constant (Etype (Prefix (N)));
 

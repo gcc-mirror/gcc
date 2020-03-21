@@ -8097,7 +8097,8 @@ package body Sem_Ch4 is
          --  as such and retry.
 
          if Has_Implicit_Dereference (Pref_Typ) then
-            Build_Explicit_Dereference (Prefix, First_Discriminant (Pref_Typ));
+            Build_Explicit_Dereference
+              (Prefix, Get_Reference_Discriminant (Pref_Typ));
             return Try_Container_Indexing (N, Prefix, Exprs);
 
          --  Otherwise this is definitely not container indexing

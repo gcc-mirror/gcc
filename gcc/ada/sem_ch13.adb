@@ -4759,9 +4759,10 @@ package body Sem_Ch13 is
                end if;
 
             else
-               if  Has_Implicit_Dereference (Ret_Type)
+               if Has_Implicit_Dereference (Ret_Type)
                  and then not
-                   Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
+                   Is_Access_Constant
+                     (Etype (Get_Reference_Discriminant (Ret_Type)))
                then
                   Illegal_Indexing
                     ("constant indexing must return an access to constant");
