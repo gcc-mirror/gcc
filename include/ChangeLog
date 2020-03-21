@@ -1,3 +1,9 @@
+2020-03-21  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum ld_plugin_symbol_type): Remove
+	comma after last value of an enum.
+	* lto-symtab.h (enum gcc_plugin_symbol_type): Likewise.
+
 2020-03-19  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.h (enum gcc_plugin_symbol_type): New.

@@ -141,7 +141,7 @@ enum ld_plugin_symbol_type
 {
   LDST_UNKNOWN,
   LDST_FUNCTION,
-  LDST_VARIABLE,
+  LDST_VARIABLE
 };
 
 enum ld_plugin_symbol_section_kind
