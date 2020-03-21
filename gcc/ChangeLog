@@ -1,5 +1,14 @@
 2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
 
+	* config/darwin.c (darwin_mergeable_constant_section): Collect
+	section anchor checks into the caller.
+	(machopic_select_section): Collect section anchor checks into
+	the determination of 'effective zero-size' objects. When the
+	size is unknown, assume it is non-zero, and thus return the
+	'generic' section for the DECL.
+
+2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
+
 	PR target/93694
 	* gcc/config/darwin.opt: Amend options descriptions.
 
