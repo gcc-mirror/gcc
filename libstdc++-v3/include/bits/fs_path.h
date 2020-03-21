@@ -545,7 +545,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     template<typename _CharT, typename _Traits, typename _Allocator>
       static basic_string<_CharT, _Traits, _Allocator>
-      _S_str_convert(const string_type&, const _Allocator& __a);
+      _S_str_convert(basic_string_view<value_type>, const _Allocator&);
 
     void _M_split_cmpts();
 
@@ -953,7 +953,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   template<typename _CharT, typename _Traits, typename _Allocator>
     std::basic_string<_CharT, _Traits, _Allocator>
-    path::_S_str_convert(const string_type& __str, const _Allocator& __a)
+    path::_S_str_convert(basic_string_view<value_type> __str,
+			 const _Allocator& __a)
     {
       static_assert(!is_same_v<_CharT, value_type>);
 
@@ -1063,7 +1064,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #else
       const value_type __slash = '/';
 #endif
-      string_type __str(__a);
+      using _Alloc2 = typename allocator_traits<_Allocator>::template
+	rebind_alloc<value_type>;
+      basic_string<value_type, char_traits<value_type>, _Alloc2> __str(__a);
 
       if (_M_type() == _Type::_Root_dir)
 	__str.assign(1, __slash);
@@ -1082,7 +1085,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 	      if (__add_slash)
 		__str += __slash;
-	      __str += __elem._M_pathname;
+	      __str += basic_string_view<value_type>(__elem._M_pathname);
 	      __add_slash = __elem._M_type() == _Type::_Filename;
 	    }
 	}

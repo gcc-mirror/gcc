@@ -21,6 +21,7 @@
 // C++17 30.10.7.4.7 path generic format observers [fs.path.generic.obs]
 
 #include <filesystem>
+#include <testsuite_fs.h>
 #include <testsuite_hooks.h>
 
 using std::filesystem::path;
@@ -34,11 +35,15 @@ test01()
 #ifdef __CYGWIN__
   VERIFY( path("//a").generic_string() == "//a" );
   VERIFY( path("//a/").generic_string() == "//a/" );
+  VERIFY( path("//a//").generic_string() == "//a/" );
   VERIFY( path("//a/b").generic_string() == "//a/b" );
+  VERIFY( path("//a//b").generic_string() == "//a/b" );
 #else
   VERIFY( path("//a").generic_string() == "/a" );
   VERIFY( path("//a/").generic_string() == "/a/" );
+  VERIFY( path("//a//").generic_string() == "/a/" );
   VERIFY( path("//a/b").generic_string() == "/a/b" );
+  VERIFY( path("//a//b").generic_string() == "/a/b" );
 #endif
   VERIFY( path("/a//b").generic_string() == "/a/b" );
   VERIFY( path("/a//b/").generic_string() == "/a/b/" );
@@ -57,9 +62,36 @@ test02()
   }
 }
 
+void
+test03()
+{
+  for (path p : __gnu_test::test_paths)
+  {
+    // A path constructed from the generic format string should compare equal
+    // to the original, because they represent the same path.
+    VERIFY( path(p.generic_string()) == p );
+    VERIFY( path(p.generic_wstring()) == p );
+    VERIFY( path(p.generic_u8string()) == p );
+    VERIFY( path(p.generic_u16string()) == p );
+    VERIFY( path(p.generic_u32string()) == p );
+  }
+
+  for (path p : { "a///b//c", "///a//b//c", "a:b//c", "a://b///c" })
+  {
+    // A path constructed from the generic format string should compare equal
+    // to the original, because they represent the same path.
+    VERIFY( path(p.generic_string()) == p );
+    VERIFY( path(p.generic_wstring()) == p );
+    VERIFY( path(p.generic_u8string()) == p );
+    VERIFY( path(p.generic_u16string()) == p );
+    VERIFY( path(p.generic_u32string()) == p );
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }
