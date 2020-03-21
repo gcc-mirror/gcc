@@ -569,6 +569,9 @@ package body Exp_Strm is
          elsif P_Size <= Standard_Short_Integer_Size then
             Lib_RE := RE_I_SI;
 
+         elsif P_Size = 24 then
+            Lib_RE := RE_I_I24;
+
          elsif P_Size <= Standard_Integer_Size then
             Lib_RE := RE_I_I;
 
@@ -596,6 +599,9 @@ package body Exp_Strm is
 
          elsif P_Size <= Standard_Short_Integer_Size then
             Lib_RE := RE_I_SU;
+
+         elsif P_Size = 24 then
+            Lib_RE := RE_I_U24;
 
          elsif P_Size <= Standard_Integer_Size then
             Lib_RE := RE_I_U;
@@ -798,6 +804,8 @@ package body Exp_Strm is
             Lib_RE := RE_W_SSI;
          elsif P_Size <= Standard_Short_Integer_Size then
             Lib_RE := RE_W_SI;
+         elsif P_Size = 24 then
+            Lib_RE := RE_W_I24;
          elsif P_Size <= Standard_Integer_Size then
             Lib_RE := RE_W_I;
          elsif P_Size <= Standard_Long_Integer_Size then
@@ -822,6 +830,8 @@ package body Exp_Strm is
             Lib_RE := RE_W_SSU;
          elsif P_Size <= Standard_Short_Integer_Size then
             Lib_RE := RE_W_SU;
+         elsif P_Size = 24 then
+            Lib_RE := RE_W_U24;
          elsif P_Size <= Standard_Integer_Size then
             Lib_RE := RE_W_U;
          elsif P_Size <= Standard_Long_Integer_Size then
