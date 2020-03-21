@@ -1,3 +1,59 @@
+2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_mergeable_constant_section): Collect
+	section anchor checks into the caller.
+	(machopic_select_section): Collect section anchor checks into
+	the determination of 'effective zero-size' objects. When the
+	size is unknown, assume it is non-zero, and thus return the
+	'generic' section for the DECL.
+
+2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR target/93694
+	* gcc/config/darwin.opt: Amend options descriptions.
+
+2020-03-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94052
+	* lra-constraints.c (simplify_operand_subreg): Reload the inner
+	register of a paradoxical subreg if simplify_subreg_regno fails
+	to give a valid hard register for the outer mode.
+
+2020-03-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93435
+	* params.opt (sra-max-propagations): New parameter.
+	* tree-sra.c (propagation_budget): New variable.
+	(budget_for_propagation_access): New function.
+	(propagate_subaccesses_from_rhs): Use it.
+	(propagate_subaccesses_from_lhs): Likewise.
+	(propagate_all_subaccesses): Set up and destroy propagation_budget.
+
+2020-03-20  Carl Love  <cel@us.ibm.com>
+
+	PR/target 87583
+	* gcc/config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Add check for TARGET_FPRND for Power 7 or newer.
+
+2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/93347
+	* cgraph.c (symbol_table::create_edge): Update calls_comdat_local flag.
+	(cgraph_edge::redirect_callee): Move here; likewise.
+	(cgraph_node::remove_callees): Update calls_comdat_local flag.
+	(cgraph_node::verify_node): Verify that calls_comdat_local flag match
+	reality.
+	(cgraph_node::check_calls_comdat_local_p): New member function.
+	* cgraph.h (cgraph_node::check_calls_comdat_local_p): Declare.
+	(cgraph_edge::redirect_callee): Move offline.
+	* ipa-fnsummary.c (compute_fn_summary): Do not compute
+	calls_comdat_local flag here.
+	* ipa-inline-transform.c (inline_call): Fix updating of
+	calls_comdat_local flag.
+	* ipa-split.c (split_function): Use true instead of 1 to set the flag.
+	* symtab.c (symtab_node::add_to_same_comdat_group): Update
+	calls_comdat_local flag.
+
 2020-03-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_analyze_slp_instance): Dump SLP tree

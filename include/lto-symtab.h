@@ -42,7 +42,7 @@ enum gcc_plugin_symbol_type
 {
   GCCST_UNKNOWN,
   GCCST_FUNCTION,
-  GCCST_VARIABLE,
+  GCCST_VARIABLE
 };
 
 enum gcc_plugin_symbol_section_kind

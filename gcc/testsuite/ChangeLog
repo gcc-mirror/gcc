@@ -1,3 +1,30 @@
+2020-03-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94066
+	* g++.dg/cpp1y/constexpr-union2.C: New test.
+	* g++.dg/cpp1y/constexpr-union3.C: New test.
+	* g++.dg/cpp1y/constexpr-union4.C: New test.
+	* g++.dg/cpp1y/constexpr-union5.C: New test.
+	* g++.dg/cpp1y/pr94066.C: New test.
+	* g++.dg/cpp1y/pr94066-2.C: New test.
+	* g++.dg/cpp1y/pr94066-3.C: New test.
+	* g++.dg/cpp2a/constexpr-union1.C: New test.
+
+2020-03-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94052
+	* gcc.target/aarch64/pr94052.C: New test.
+
+2020-03-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93435
+	* gcc.dg/tree-ssa/pr93435.c: New test.
+
+2020-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/93347
+	* g++.dg/torture/pr93347.C: New test.
+
 2020-03-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/69694
