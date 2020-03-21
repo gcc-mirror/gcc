@@ -1,6 +1,6 @@
 2020-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
-	PR d/94290
+	PR d/94240
 	* typeinfo.cc (class TypeInfoVisitor): Replace type_ field with decl_.
 	(TypeInfoVisitor::TypeInfoVisitor): Set decl_.
 	(TypeInfoVisitor::result): Update.
