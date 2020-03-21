@@ -1,3 +1,9 @@
+2020-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/93038
+	* gdc.dg/fileimports/pr93038.txt: New test.
+	* gdc.dg/pr93038.d: New test.
+
 2020-03-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94066
