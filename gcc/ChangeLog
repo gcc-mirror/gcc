@@ -1,5 +1,9 @@
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94248
+	* config/gcn/gcn.md (*mov<mode>_insn): Use
+	'reg_overlap_mentioned_p' to check for overlap.
+
 	PR target/94706
 	* config/ia64/ia64.c (hfa_element_mode): Use DECL_FIELD_ABI_IGNORED
 	instead of cxx17_empty_base_field_p.
