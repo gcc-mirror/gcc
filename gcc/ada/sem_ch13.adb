@@ -6593,19 +6593,19 @@ package body Sem_Ch13 is
             elsif Is_Elementary_Type (U_Ent) then
                if Size /= System_Storage_Unit
                  and then Size /= System_Storage_Unit * 2
+                 and then Size /= System_Storage_Unit * 3
                  and then Size /= System_Storage_Unit * 4
                  and then Size /= System_Storage_Unit * 8
                then
-                  Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
                   Error_Msg_N
-                    ("stream size for elementary type must be a power of 2 "
-                     & "and at least ^", N);
+                    ("stream size for elementary type must be 8, 16, 24, " &
+                     "32 or 64", N);
 
                elsif RM_Size (U_Ent) > Size then
                   Error_Msg_Uint_1 := RM_Size (U_Ent);
                   Error_Msg_N
-                    ("stream size for elementary type must be a power of 2 "
-                     & "and at least ^", N);
+                    ("stream size for elementary type must be 8, 16, 24, " &
+                     "32 or 64 and at least ^", N);
                end if;
 
                Set_Has_Stream_Size_Clause (U_Ent);
