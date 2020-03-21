@@ -23,27 +23,55 @@
 
 #include <experimental/filesystem>
 #include <testsuite_fs.h>
-#include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 using std::experimental::filesystem::path;
 
 void
 test01()
 {
-  for (const path& p : __gnu_test::test_paths)
+  __gnu_test::compare_paths( path("///a//b///").generic_string(), "/a/b/." );
+  __gnu_test::compare_paths( path("///a//b").generic_u16string(), "/a/b" );
+  __gnu_test::compare_paths( path("//a//b").generic_u16string(), "//a/b" );
+}
+
+using __gnu_test::SimpleAllocator;
+
+void
+test02()
+{
+  path p = "//foo//bar//.";
+  using C = char16_t;
+  auto g = p.generic_string<C, std::char_traits<C>, SimpleAllocator<C>>();
+  VERIFY( g == u"//foo/bar/." );
+}
+
+
+void
+test03()
+{
+  for (path p : { "/a///b//c", "///a//b//c", "a:b//c", "a://b///c" })
   {
-    path p2(p), p3;
-    p2.swap(p3);
-    VERIFY( p2 == path() );
-    VERIFY( p3 == p );
-    p2.swap(p3);
-    VERIFY( p2 == p );
-    VERIFY( p3 == path() );
+    // A path constructed from the generic format string should compare equal
+    // to the original, because they represent the same path.
+    VERIFY( path(p.generic_string()) == p );
+    VERIFY( path(p.generic_wstring()) == p );
+    VERIFY( path(p.generic_u8string()) == p );
+    VERIFY( path(p.generic_u16string()) == p );
+    VERIFY( path(p.generic_u32string()) == p );
   }
+
+  // Except when the original consists entirely of a root-directory with
+  // multiple slashes, because path("///").native() is "///" but the
+  // generic format string is "/". In the Filesystem TS path::compare just
+  // compares native strings, so path("///") != path("/").
+  VERIFY( path("///").generic_string() == "/" );
 }
 
 int
 main()
 {
   test01();
+  test02();
+  test03();
 }
