@@ -1,3 +1,10 @@
+2020-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (JUMP_TABLES_IN_TEXT_SECTION): Remove
+	references to Darwin.
+	* config/i386/i386.h (JUMP_TABLES_IN_TEXT_SECTION): Define this
+	unconditionally and comment on why.
+
 2020-03-21 Iain Sandoe <iain@sandoe.co.uk>
 
 	* config/darwin.c (darwin_mergeable_constant_section): Collect
