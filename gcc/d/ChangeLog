@@ -1,6 +1,12 @@
 2020-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/93038
+	* d-lang.cc (deps_write): Generate phony targets for content imported
+	files.
+
+2020-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/93038
 	* d-lang.cc (deps_write): Add content imported files to the make
 	dependency list.
 
