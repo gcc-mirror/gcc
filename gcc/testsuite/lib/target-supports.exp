@@ -9562,7 +9562,7 @@ proc check_effective_target_offload_hsa { } {
 proc check_effective_target_offload_gcn { } {
     return [check_no_compiler_messages offload_gcn assembly {
 	int main () {return 0;}
-    } "-foffload=amdgcn-unknown-amdhsa" ]
+    } "-foffload=amdgcn-amdhsa" ]
 }
 
 # Return 1 if the target support -fprofile-update=atomic

@@ -1,3 +1,9 @@
+2020-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (amdgcn-*-amdhsa): Renamed
+	from amdgcn-unknown-amdhsa; change
+	amdgcn-unknown-amdhsa to amdgcn-amdhsa.
+
 2020-03-23  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/94245
