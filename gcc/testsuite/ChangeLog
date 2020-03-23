@@ -1,3 +1,11 @@
+2020-03-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backport from mainline
+	2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/90763
+	* gcc.target/powerpc/pr90763.c: New.
+
 2020-03-19  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93709

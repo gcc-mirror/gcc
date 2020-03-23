@@ -1,3 +1,12 @@
+2020-03-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backport from mainline
+	2020-03-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/90763
+	    * config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	    Add clause to handle P9V_BUILTIN_VEC_LXVL with const arguments.
+
 2020-03-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from master.
