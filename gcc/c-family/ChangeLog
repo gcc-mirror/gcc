@@ -1,3 +1,9 @@
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91993
+	* c-warn.c (warnings_for_convert_and_check): For expr and/or
+	result being COMPOUND_EXPRs, skip to ultimate rhs.
+
 2020-03-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/94072

@@ -1,3 +1,10 @@
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91993
+	* tree.c (get_narrower): Handle COMPOUND_EXPR by recursing on
+	ultimate rhs and if returned something different, reconstructing
+	the COMPOUND_EXPRs.
+
 2020-03-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* opts.c (print_filtered_help): Improve the help text for alias options.

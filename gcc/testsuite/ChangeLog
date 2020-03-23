@@ -1,3 +1,13 @@
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91993
+	* g++.dg/warn/Wconversion-pr91993.C: New test.
+	* g++.dg/ubsan/pr91993.C: New test.
+	* c-c++-common/ubsan/float-cast-overflow-1.c: Add -Wno-overflow
+	to dg-options.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: Likewise.
+
 2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
