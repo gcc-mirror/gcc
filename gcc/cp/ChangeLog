@@ -1,3 +1,9 @@
+2020-03-23  nathans  <nathan@acm.org>
+
+	PR c++/94044
+	* tree.c (cp_tree_equal) [SIZEOF_EXPR]: Detect argument pack
+	operand.
+
 2020-03-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94066
