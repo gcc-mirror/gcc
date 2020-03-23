@@ -1,3 +1,9 @@
+2020-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94266
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Do not propagate
+	addresses of TARGET_MEM_REFs.
+
 2020-03-23  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/94250

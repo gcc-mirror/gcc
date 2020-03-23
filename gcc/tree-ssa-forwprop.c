@@ -2712,6 +2712,7 @@ pass_forwprop::execute (function *fun)
 	      if ((!base
 		   || !DECL_P (base)
 		   || decl_address_invariant_p (base))
+		  && TREE_CODE (base) != TARGET_MEM_REF
 		  && !stmt_references_abnormal_ssa_name (stmt)
 		  && forward_propagate_addr_expr (lhs, rhs, true))
 		{
