@@ -1,5 +1,11 @@
 2020-03-23  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/94245
+	* ipa-prop.c (ipa_read_jump_function): Build the ADDR_EXRP
+	directly rather than also folding it via build_fold_addr_expr.
+
+2020-03-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/94266
 	* tree-ssa-forwprop.c (pass_forwprop::execute): Do not propagate
 	addresses of TARGET_MEM_REFs.
