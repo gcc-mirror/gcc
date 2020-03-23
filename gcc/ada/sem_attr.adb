@@ -220,15 +220,6 @@ package body Sem_Attr is
    --  Standard_True, depending on the value of the parameter B. The
    --  result is marked as a static expression.
 
-   function Statically_Denotes_Object (N : Node_Id) return Boolean;
-   --  Predicate used to check the legality of the prefix to 'Loop_Entry and
-   --  'Old, when the prefix is not an entity name. Current RM specfies that
-   --  the prefix must be a direct or expanded name, but it has been proposed
-   --  that the prefix be allowed to be a selected component that does not
-   --  depend on a discriminant, or an indexed component with static indices.
-   --  Current code for this predicate implements this more permissive
-   --  implementation.
-
    -----------------------
    -- Analyze_Attribute --
    -----------------------
@@ -2790,7 +2781,7 @@ package body Sem_Attr is
             when 'E' =>
                Error_Attr_P
                  ("prefix of attribute % that is potentially "
-                  & "unevaluated must denote an entity");
+                  & "unevaluated must statically name an entity");
 
             when 'W' =>
                Error_Msg_Name_1 := Aname;
@@ -5056,7 +5047,7 @@ package body Sem_Attr is
             --  is potentially unevaluated (6.1.1 (27/3)).
 
             if Is_Potentially_Unevaluated (N)
-              and then not Statically_Denotes_Object (P)
+              and then not Statically_Names_Object (P)
             then
                Uneval_Old_Msg;
 
@@ -7324,10 +7315,6 @@ package body Sem_Attr is
       --  Static is reset to False if the type or index type is not statically
       --  constrained.
 
-      function Statically_Denotes_Entity (N : Node_Id) return Boolean;
-      --  Verify that the prefix of a potentially static array attribute
-      --  satisfies the conditions of 4.9 (14).
-
       -----------------------------------
       -- Check_Concurrent_Discriminant --
       -----------------------------------
@@ -7603,25 +7590,6 @@ package body Sem_Attr is
             Set_Raises_Constraint_Error (N);
          end if;
       end Set_Bounds;
-
-      -------------------------------
-      -- Statically_Denotes_Entity --
-      -------------------------------
-
-      function Statically_Denotes_Entity (N : Node_Id) return Boolean is
-         E : Entity_Id;
-
-      begin
-         if not Is_Entity_Name (N) then
-            return False;
-         else
-            E := Entity (N);
-         end if;
-
-         return
-           Nkind (Parent (E)) /= N_Object_Renaming_Declaration
-             or else Statically_Denotes_Entity (Renamed_Object (E));
-      end Statically_Denotes_Entity;
 
    --  Start of processing for Eval_Attribute
 
@@ -12065,59 +12033,6 @@ package body Sem_Attr is
          Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
       end if;
    end Set_Boolean_Result;
-
-   -------------------------------
-   -- Statically_Denotes_Object --
-   -------------------------------
-
-   function Statically_Denotes_Object (N : Node_Id) return Boolean is
-      Indx : Node_Id;
-
-   begin
-      if Is_Entity_Name (N) then
-         return True;
-
-      elsif Nkind (N) = N_Selected_Component
-        and then Statically_Denotes_Object (Prefix (N))
-        and then Present (Entity (Selector_Name (N)))
-      then
-         declare
-            Sel_Id    : constant Entity_Id := Entity (Selector_Name (N));
-            Comp_Decl : constant Node_Id   := Parent (Sel_Id);
-
-         begin
-            if Depends_On_Discriminant (Sel_Id) then
-               return False;
-
-            elsif Nkind (Parent (Parent (Comp_Decl))) = N_Variant then
-               return False;
-
-            else
-               return True;
-            end if;
-         end;
-
-      elsif Nkind (N) = N_Indexed_Component
-        and then Statically_Denotes_Object (Prefix (N))
-        and then Is_Constrained (Etype (Prefix (N)))
-      then
-         Indx := First (Expressions (N));
-         while Present (Indx) loop
-            if not Compile_Time_Known_Value (Indx)
-              or else Do_Range_Check (Indx)
-            then
-               return False;
-            end if;
-
-            Next (Indx);
-         end loop;
-
-         return True;
-
-      else
-         return False;
-      end if;
-   end Statically_Denotes_Object;
 
    --------------------------------
    -- Stream_Attribute_Available --

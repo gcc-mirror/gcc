@@ -2909,9 +2909,18 @@ package Sem_Util is
    --  universal expression is returned, otherwise an error message is output
    --  and a value of No_Uint is returned.
 
+   function Statically_Denotes_Entity (N : Node_Id) return Boolean;
+   --  Return True iff N is a name that "statically denotes" an entity.
+
+   function Statically_Denotes_Object (N : Node_Id) return Boolean;
+   --  Return True iff N is a name that "statically denotes" an object.
+
    function Statically_Different (E1, E2 : Node_Id) return Boolean;
    --  Return True if it can be statically determined that the Expressions
    --  E1 and E2 refer to different objects
+
+   function Statically_Names_Object (N : Node_Id) return Boolean;
+   --  Return True iff N is a name that "statically names" an object.
 
    function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean;
    --  Determine whether node N is a loop statement subject to at least one

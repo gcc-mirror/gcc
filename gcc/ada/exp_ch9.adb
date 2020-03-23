@@ -5961,12 +5961,12 @@ package body Exp_Ch9 is
       --  If so, barrier may not be properly synchronized.
 
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result;
-      --  Check whether N follows the Pure_Barriers restriction. Return OK if
+      --  Check whether N meets the Pure_Barriers restriction. Return OK if
       --  so.
 
-      function Is_Simple_Barrier_Name (N : Node_Id) return Boolean;
-      --  Check whether entity name N denotes a component of the protected
-      --  object. This is used to check the Simple_Barrier restriction.
+      function Is_Simple_Barrier (N : Node_Id) return Boolean;
+      --  Check whether N meets the Simple_Barriers restriction. Return OK if
+      --  so.
 
       ----------------------
       -- Is_Global_Entity --
@@ -6018,14 +6018,25 @@ package body Exp_Ch9 is
       procedure Check_Unprotected_Barrier is
         new Traverse_Proc (Is_Global_Entity);
 
-      ----------------------------
-      -- Is_Simple_Barrier_Name --
-      ----------------------------
+      -----------------------
+      -- Is_Simple_Barrier --
+      -----------------------
 
-      function Is_Simple_Barrier_Name (N : Node_Id) return Boolean is
+      function Is_Simple_Barrier (N : Node_Id) return Boolean is
          Renamed : Node_Id;
 
       begin
+         if Is_Static_Expression (N) then
+            return True;
+         elsif Ada_Version >= Ada_2020
+           and then Nkind_In (N, N_Selected_Component, N_Indexed_Component)
+           and then Statically_Names_Object (N)
+         then
+            --  Restriction relaxed in Ada2020 to allow statically named
+            --  subcomponents.
+            return Is_Simple_Barrier (Prefix (N));
+         end if;
+
          --  Check if the name is a component of the protected object. If
          --  the expander is active, the component has been transformed into a
          --  renaming of _object.all.component. Original_Node is needed in case
@@ -6048,10 +6059,12 @@ package body Exp_Ch9 is
               Present (Renamed)
                 and then Nkind (Renamed) = N_Selected_Component
                 and then Chars (Prefix (Prefix (Renamed))) = Name_uObject;
+         elsif not Is_Entity_Name (N) then
+            return False;
          else
             return Is_Protected_Component (Entity (N));
          end if;
-      end Is_Simple_Barrier_Name;
+      end Is_Simple_Barrier;
 
       ---------------------
       -- Is_Pure_Barrier --
@@ -6092,7 +6105,7 @@ package body Exp_Ch9 is
                      return Skip;
 
                   when E_Variable =>
-                     if Is_Simple_Barrier_Name (N) then
+                     if Is_Simple_Barrier (N) then
                         return Skip;
                      end if;
 
@@ -6136,6 +6149,13 @@ package body Exp_Ch9 is
               | N_Case_Expression
             =>
                return OK;
+
+            when N_Indexed_Component | N_Selected_Component =>
+               if Statically_Names_Object (N) then
+                  return Is_Pure_Barrier (Prefix (N));
+               else
+                  return Abandon;
+               end if;
 
             when N_Case_Expression_Alternative =>
                --  do not traverse Discrete_Choices subtree
@@ -6195,6 +6215,12 @@ package body Exp_Ch9 is
          return;
       end if;
 
+      --  Prevent cascaded errors
+
+      if Nkind (Cond) = N_Error then
+         return;
+      end if;
+
       --  The body of the entry barrier must be analyzed in the context of the
       --  protected object, but its scope is external to it, just as any other
       --  unprotected version of a protected operation. The specification has
@@ -6224,22 +6250,25 @@ package body Exp_Ch9 is
          Analyze_And_Resolve (Cond, Any_Boolean);
       end if;
 
-      --  Check Pure_Barriers restriction
+      --  Check Simple_Barriers and Pure_Barriers restrictions.
+      --  Note that it is safe to be calling Check_Restriction from here, even
+      --  though this is part of the expander, since Expand_Entry_Barrier is
+      --  called from Sem_Ch9 even in -gnatc mode.
 
-      if Check_Pure_Barriers (Cond) = Abandon then
-         Check_Restriction (Pure_Barriers, Cond);
+      if not Is_Simple_Barrier (Cond) then
+         --  flag restriction violation
+         Check_Restriction (Simple_Barriers, Cond);
       end if;
 
-      --  The Ravenscar profile restricts barriers to simple variables declared
-      --  within the protected object. We also allow Boolean constants, since
-      --  these appear in several published examples and are also allowed by
-      --  other compilers.
+      if Check_Pure_Barriers (Cond) = Abandon then
+         --  flag restriction violation
+         Check_Restriction (Pure_Barriers, Cond);
 
-      --  Note that after analysis variables in this context will be replaced
-      --  by the corresponding prival, that is to say a renaming of a selected
-      --  component of the form _Object.Var. If expansion is disabled, as
-      --  within a generic, we check that the entity appears in the current
-      --  scope.
+         --  Emit warning if barrier contains global entities and is thus
+         --  potentially unsynchronized (if Pure_Barriers restrictions
+         --  are met then no need to check for this).
+         Check_Unprotected_Barrier (Cond);
+      end if;
 
       if Is_Entity_Name (Cond) then
          Cond_Id := Entity (Cond);
@@ -6260,25 +6289,12 @@ package body Exp_Ch9 is
             Set_Declarations (Func_Body, Empty_List);
          end if;
 
-         if Cond_Id = Standard_False or else Cond_Id = Standard_True then
-            return;
-
-         elsif Is_Simple_Barrier_Name (Cond) then
-            return;
-         end if;
+         --  Note that after analysis variables in this context will be
+         --  replaced by the corresponding prival, that is to say a renaming
+         --  of a selected component of the form _Object.Var. If expansion is
+         --  disabled, as within a generic, we check that the entity appears in
+         --  the current scope.
       end if;
-
-      --  It is not a boolean variable or literal, so check the restriction.
-      --  Note that it is safe to be calling Check_Restriction from here, even
-      --  though this is part of the expander, since Expand_Entry_Barrier is
-      --  called from Sem_Ch9 even in -gnatc mode.
-
-      Check_Restriction (Simple_Barriers, Cond);
-
-      --  Emit warning if barrier contains global entities and is thus
-      --  potentially unsynchronized.
-
-      Check_Unprotected_Barrier (Cond);
    end Expand_Entry_Barrier;
 
    ------------------------------
