@@ -1,4 +1,62 @@
 2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm-builtins.c (LSLL_QUALIFIERS): Define builtin qualifier.
+	(UQSHL_QUALIFIERS): Likewise.
+	(ASRL_QUALIFIERS): Likewise.
+	(SQSHL_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (__ARM_BIG_ENDIAN): Check to not support MVE in
+	Big-Endian Mode.
+	(sqrshr): Define macro.
+	(sqrshrl): Likewise.
+	(sqrshrl_sat48): Likewise.
+	(sqshl): Likewise.
+	(sqshll): Likewise.
+	(srshr): Likewise.
+	(srshrl): Likewise.
+	(uqrshl): Likewise.
+	(uqrshll): Likewise.
+	(uqrshll_sat48): Likewise.
+	(uqshl): Likewise.
+	(uqshll): Likewise.
+	(urshr): Likewise.
+	(urshrl): Likewise.
+	(lsll): Likewise.
+	(asrl): Likewise.
+	(__arm_lsll): Define intrinsic.
+	(__arm_asrl): Likewise.
+	(__arm_uqrshll): Likewise.
+	(__arm_uqrshll_sat48): Likewise.
+	(__arm_sqrshrl): Likewise.
+	(__arm_sqrshrl_sat48): Likewise.
+	(__arm_uqshll): Likewise.
+	(__arm_urshrl): Likewise.
+	(__arm_srshrl): Likewise.
+	(__arm_sqshll): Likewise.
+	(__arm_uqrshl): Likewise.
+	(__arm_sqrshr): Likewise.
+	(__arm_uqshl): Likewise.
+	(__arm_urshr): Likewise.
+	(__arm_sqshl): Likewise.
+	(__arm_srshr): Likewise.
+	* config/arm/arm_mve_builtins.def (LSLL_QUALIFIERS): Use builtin
+	qualifier.
+	(UQSHL_QUALIFIERS): Likewise.
+	(ASRL_QUALIFIERS): Likewise.
+	(SQSHL_QUALIFIERS): Likewise.
+	* config/arm/mve.md (mve_uqrshll_sat<supf>_di): Define RTL pattern.
+	(mve_sqrshrl_sat<supf>_di): Likewise.
+	(mve_uqrshl_si): Likewise.
+	(mve_sqrshr_si): Likewise.
+	(mve_uqshll_di): Likewise.
+	(mve_urshrl_di): Likewise.
+	(mve_uqshl_si): Likewise.
+	(mve_urshr_si): Likewise.
+	(mve_sqshl_si): Likewise.
+	(mve_srshr_si): Likewise.
+	(mve_srshrl_di): Likewise.
+	(mve_sqshll_di): Likewise.
+
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
 

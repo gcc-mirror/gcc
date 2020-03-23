@@ -214,7 +214,9 @@
 			 VLDRDQGBWB_S VLDRDQGBWB_U VADCQ_U VADCQ_M_U VADCQ_S
 			 VADCQ_M_S VSBCIQ_U VSBCIQ_S VSBCIQ_M_U VSBCIQ_M_S
 			 VSBCQ_U VSBCQ_S VSBCQ_M_U VSBCQ_M_S VADCIQ_U VADCIQ_M_U
-			 VADCIQ_S VADCIQ_M_S VLD2Q VLD4Q VST2Q])
+			 VADCIQ_S VADCIQ_M_S VLD2Q VLD4Q VST2Q SRSHRL SRSHR
+			 URSHR URSHRL SQRSHR UQRSHL UQRSHLL_64
+			 UQRSHLL_48 SQRSHRL_64 SQRSHRL_48])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF") (V8HF "V8HI")
 			    (V4SF "V4SI")])
@@ -391,7 +393,8 @@
 		       (VSBCIQ_M_U "u") (VSBCIQ_S "s") (VSBCIQ_M_S "s")
 		       (VADCQ_U "u")  (VADCQ_M_U "u") (VADCQ_S "s")
 		       (VADCIQ_U "u") (VADCIQ_M_U "u") (VADCIQ_S "s")
-		       (VADCIQ_M_S "s")])
+		       (VADCIQ_M_S "s") (SQRSHRL_64 "64") (SQRSHRL_48 "48")
+		       (UQRSHLL_64 "64") (UQRSHLL_48 "48")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -657,7 +660,8 @@
 (define_int_iterator VSBCIQ_M [VSBCIQ_M_U VSBCIQ_M_S])
 (define_int_iterator VADCQ [VADCQ_U VADCQ_S])
 (define_int_iterator VADCQ_M [VADCQ_M_U VADCQ_M_S])
-
+(define_int_iterator UQRSHLLQ [UQRSHLL_64 UQRSHLL_48])
+(define_int_iterator SQRSHRLQ [SQRSHRL_64 SQRSHRL_48])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -11008,3 +11012,143 @@
    return "vmov\t%f0, %J1, %K1";
 }
  [(set_attr "type" "mve_move")])
+
+;;
+;; [uqrshll_di]
+;;
+(define_insn "mve_uqrshll_sat<supf>_di"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "s_register_operand" "r")]
+	 UQRSHLLQ))]
+  "TARGET_HAVE_MVE"
+  "uqrshll%?\\t%Q1, %R1, #<supf>, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [sqrshrl_di]
+;;
+(define_insn "mve_sqrshrl_sat<supf>_di"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "s_register_operand" "r")]
+	 SQRSHRLQ))]
+  "TARGET_HAVE_MVE"
+  "sqrshrl%?\\t%Q1, %R1, #<supf>, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [uqrshl_si]
+;;
+(define_insn "mve_uqrshl_si"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "s_register_operand" "r")]
+	 UQRSHL))]
+  "TARGET_HAVE_MVE"
+  "uqrshl%?\\t%1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [sqrshr_si]
+;;
+(define_insn "mve_sqrshr_si"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "s_register_operand" "r")]
+	 SQRSHR))]
+  "TARGET_HAVE_MVE"
+  "sqrshr%?\\t%1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [uqshll_di]
+;;
+(define_insn "mve_uqshll_di"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(us_ashift:DI (match_operand:DI 1 "arm_general_register_operand" "r")
+		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "uqshll%?\\t%Q1, %R1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [urshrl_di]
+;;
+(define_insn "mve_urshrl_di"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+	 URSHRL))]
+  "TARGET_HAVE_MVE"
+  "urshrl%?\\t%Q1, %R1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [uqshl_si]
+;;
+(define_insn "mve_uqshl_si"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
+	(us_ashift:SI (match_operand:SI 1 "arm_general_register_operand" "r")
+		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "uqshl%?\\t%1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [urshr_si]
+;;
+(define_insn "mve_urshr_si"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
+	(unspec:SI [(match_operand:SI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+	 URSHR))]
+  "TARGET_HAVE_MVE"
+  "urshr%?\\t%1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [sqshl_si]
+;;
+(define_insn "mve_sqshl_si"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
+	(ss_ashift:SI (match_operand:DI 1 "arm_general_register_operand" "r")
+		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "sqshl%?\\t%1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [srshr_si]
+;;
+(define_insn "mve_srshr_si"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "+r")
+	(unspec:SI [(match_operand:DI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+	 SRSHR))]
+  "TARGET_HAVE_MVE"
+  "srshr%?\\t%1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [srshrl_di]
+;;
+(define_insn "mve_srshrl_di"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(unspec:DI [(match_operand:DI 1 "arm_general_register_operand" "r")
+		    (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")]
+	 SRSHRL))]
+  "TARGET_HAVE_MVE"
+  "srshrl%?\\t%Q1, %R1, %2"
+  [(set_attr "predicable" "yes")])
+
+;;
+;; [sqshll_di]
+;;
+(define_insn "mve_sqshll_di"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(ss_ashift:DI (match_operand:DI 1 "arm_general_register_operand" "r")
+		      (match_operand:SI 2 "arm_reg_or_long_shift_imm" "rPg")))]
+  "TARGET_HAVE_MVE"
+  "sqshll%?\\t%Q1, %R1, %2"
+  [(set_attr "predicable" "yes")])

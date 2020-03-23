@@ -4712,6 +4712,9 @@ proc check_effective_target_arm_v8_1m_mve_fp_ok_nocache { } {
 	    #if !(__ARM_FEATURE_MVE & 2)
 	    #error "__ARM_FEATURE_MVE for floating point not defined"
 	    #endif
+	    #if __ARM_BIG_ENDIAN
+	    #error "MVE intrinsics are not supported in Big-Endian mode."
+	    #endif
 	} "$flags -mthumb"] } {
 	    set et_arm_v8_1m_mve_fp_flags "$flags -mthumb --save-temps"
 	    return 1
@@ -4891,6 +4894,9 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
             #if !defined (__ARM_FEATURE_MVE)
             #error "__ARM_FEATURE_MVE not defined"
             #endif
+	    #if __ARM_BIG_ENDIAN
+	    #error "MVE intrinsics are not supported in Big-Endian mode."
+	    #endif
         } "$flags -mthumb"] } {
             set et_arm_v8_1m_mve_flags "$flags -mthumb --save-temps"
             return 1
