@@ -8090,6 +8090,13 @@ package body Sem_Res is
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => True);
       end if;
+
+      --  Now we know that this is not a call to a function that returns an
+      --  array type; moreover, we know the name of the called entry. Detect
+      --  overlapping actuals, just like for a subprogram call.
+
+      Warn_On_Overlapping_Actuals (Nam, N);
+
    end Resolve_Entry_Call;
 
    -------------------------
