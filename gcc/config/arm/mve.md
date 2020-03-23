@@ -411,6 +411,8 @@
 (define_mode_attr MVE_H_ELEM [ (V8HI "V8HI") (V4SI "V4HI")])
 (define_mode_attr V_sz_elem1 [(V16QI "b") (V8HI  "h") (V4SI "w") (V8HF "h")
 			      (V4SF "w")])
+(define_mode_attr earlyclobber_32 [(V16QI "=w") (V8HI "=w") (V4SI "=&w")
+						(V8HF "=w") (V4SF "=&w")])
 
 (define_int_iterator VCVTQ_TO_F [VCVTQ_TO_F_S VCVTQ_TO_F_U])
 (define_int_iterator VMVNQ_N [VMVNQ_N_U VMVNQ_N_S])
@@ -856,7 +858,7 @@
 ;;
 (define_insn "mve_vrev64q_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "=&w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")]
 	 VREV64Q_F))
   ]
@@ -967,7 +969,7 @@
 ;;
 (define_insn "mve_vrev64q_<supf><mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "=&w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")]
 	 VREV64Q))
   ]
@@ -1541,7 +1543,7 @@
 ;;
 (define_insn "mve_vcaddq_rot270_<supf><mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VCADDQ_ROT270))
@@ -1556,7 +1558,7 @@
 ;;
 (define_insn "mve_vcaddq_rot90_<supf><mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VCADDQ_ROT90))
@@ -1841,7 +1843,7 @@
 ;;
 (define_insn "mve_vhcaddq_rot270_s<mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VHCADDQ_ROT270_S))
@@ -1856,7 +1858,7 @@
 ;;
 (define_insn "mve_vhcaddq_rot90_s<mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VHCADDQ_ROT90_S))
@@ -2096,7 +2098,7 @@
 ;;
 (define_insn "mve_vmullbq_int_<supf><mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_2 1 "s_register_operand" "w")
 				  (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VMULLBQ_INT))
@@ -2111,7 +2113,7 @@
 ;;
 (define_insn "mve_vmulltq_int_<supf><mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_2 1 "s_register_operand" "w")
 				  (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VMULLTQ_INT))
@@ -2621,7 +2623,7 @@
 ;;
 (define_insn "mve_vcaddq_rot270_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
 	 VCADDQ_ROT270_F))
@@ -2636,7 +2638,7 @@
 ;;
 (define_insn "mve_vcaddq_rot90_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
 	 VCADDQ_ROT90_F))
@@ -2831,7 +2833,7 @@
 ;;
 (define_insn "mve_vcmulq_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
 	 VCMULQ_F))
@@ -2846,7 +2848,7 @@
 ;;
 (define_insn "mve_vcmulq_rot180_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
 	 VCMULQ_ROT180_F))
@@ -2861,7 +2863,7 @@
 ;;
 (define_insn "mve_vcmulq_rot270_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
 	 VCMULQ_ROT270_F))
@@ -2876,7 +2878,7 @@
 ;;
 (define_insn "mve_vcmulq_rot90_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
 	 VCMULQ_ROT90_F))
@@ -3236,7 +3238,7 @@
 ;;
 (define_insn "mve_vqdmullbq_n_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
 				  (match_operand:<V_elem> 2 "s_register_operand" "r")]
 	 VQDMULLBQ_N_S))
@@ -3251,7 +3253,7 @@
 ;;
 (define_insn "mve_vqdmullbq_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
 				  (match_operand:MVE_5 2 "s_register_operand" "w")]
 	 VQDMULLBQ_S))
@@ -3266,7 +3268,7 @@
 ;;
 (define_insn "mve_vqdmulltq_n_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
 				  (match_operand:<V_elem> 2 "s_register_operand" "r")]
 	 VQDMULLTQ_N_S))
@@ -3281,7 +3283,7 @@
 ;;
 (define_insn "mve_vqdmulltq_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
 				  (match_operand:MVE_5 2 "s_register_operand" "w")]
 	 VQDMULLTQ_S))
@@ -6134,7 +6136,7 @@
 ;;
 (define_insn "mve_vcaddq_rot270_m_<supf><mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:MVE_2 3 "s_register_operand" "w")
@@ -6151,7 +6153,7 @@
 ;;
 (define_insn "mve_vcaddq_rot90_m_<supf><mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:MVE_2 3 "s_register_operand" "w")
@@ -6355,7 +6357,7 @@
 ;;
 (define_insn "mve_vmullbq_int_m_<supf><mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 				  (match_operand:MVE_2 2 "s_register_operand" "w")
 				  (match_operand:MVE_2 3 "s_register_operand" "w")
@@ -6372,7 +6374,7 @@
 ;;
 (define_insn "mve_vmulltq_int_m_<supf><mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 				  (match_operand:MVE_2 2 "s_register_operand" "w")
 				  (match_operand:MVE_2 3 "s_register_operand" "w")
@@ -6763,7 +6765,7 @@
 ;;
 (define_insn "mve_vhcaddq_rot270_m_s<mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:MVE_2 3 "s_register_operand" "w")
@@ -6780,7 +6782,7 @@
 ;;
 (define_insn "mve_vhcaddq_rot90_m_s<mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:MVE_2 3 "s_register_operand" "w")
@@ -7341,7 +7343,7 @@
 ;;
 (define_insn "mve_vqdmullbq_m_n_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:<V_elem> 3 "s_register_operand" "r")
@@ -7358,7 +7360,7 @@
 ;;
 (define_insn "mve_vqdmullbq_m_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:MVE_5 3 "s_register_operand" "w")
@@ -7375,7 +7377,7 @@
 ;;
 (define_insn "mve_vqdmulltq_m_n_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:<V_elem> 3 "s_register_operand" "r")
@@ -7392,7 +7394,7 @@
 ;;
 (define_insn "mve_vqdmulltq_m_s<mode>"
   [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:MVE_5 3 "s_register_operand" "w")
@@ -7646,7 +7648,7 @@
 ;;
 (define_insn "mve_vcaddq_rot270_m_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:MVE_0 3 "s_register_operand" "w")
@@ -7663,7 +7665,7 @@
 ;;
 (define_insn "mve_vcaddq_rot90_m_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:MVE_0 3 "s_register_operand" "w")
@@ -7748,7 +7750,7 @@
 ;;
 (define_insn "mve_vcmulq_m_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:MVE_0 3 "s_register_operand" "w")
@@ -7765,7 +7767,7 @@
 ;;
 (define_insn "mve_vcmulq_rot180_m_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:MVE_0 3 "s_register_operand" "w")
@@ -7782,7 +7784,7 @@
 ;;
 (define_insn "mve_vcmulq_rot270_m_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:MVE_0 3 "s_register_operand" "w")
@@ -7799,7 +7801,7 @@
 ;;
 (define_insn "mve_vcmulq_rot90_m_f<mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
+   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:MVE_0 3 "s_register_operand" "w")

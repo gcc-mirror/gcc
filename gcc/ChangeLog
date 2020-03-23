@@ -1,3 +1,9 @@
+2020-03-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (earlyclobber_32): New mode attribute.
+	(mve_vrev64q_*, mve_vcaddq*, mve_vhcaddq_*, mve_vcmulq_*,
+	 mve_vmull[bt]q_*, mve_vqdmull[bt]q_*): Add appropriate early clobbers.
+
 2020-03-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/94261
