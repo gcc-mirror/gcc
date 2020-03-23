@@ -24,11 +24,7 @@ class evrp_range_analyzer
 {
  public:
   evrp_range_analyzer (bool update_global_ranges);
-  ~evrp_range_analyzer (void)
-  {
-    delete vr_values;
-    stack.release ();
-  }
+  ~evrp_range_analyzer (void);
 
   void enter (basic_block);
   void push_marker (void);
@@ -75,6 +71,8 @@ class evrp_range_analyzer
 
   /* True if we are updating global ranges, false otherwise.  */
   bool m_update_global_ranges;
+
+  class gimple_ranger *ranger;
 };
 
 #endif /* GCC_GIMPLE_SSA_EVRP_ANALYZE_H */

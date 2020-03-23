@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa-evrp-analyze.h"
 #include "dbgcnt.h"
 #include "gimple-range.h"
+#include "ssa-range.h"
 
 evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
   : stack (10), m_update_global_ranges (update_global_ranges)
@@ -57,6 +58,14 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
         e->flags |= EDGE_EXECUTABLE;
     }
   vr_values = new class vr_values;
+  ranger = new global_ranger;
+}
+
+evrp_range_analyzer::~evrp_range_analyzer (void)
+{
+  delete vr_values;
+  stack.release ();
+  delete ranger;
 }
 
 /* Push an unwinding marker onto the unwinding stack.  */
@@ -300,15 +309,41 @@ evrp_range_analyzer::try_find_new_range_for_assert (const assert_info &assert,
 {
   tree name = assert.name;
   widest_irange vr_gori;
+  widest_irange vr_ranger;
+  widest_irange tmp;
+  bitmap_iterator bi;
   bool gori_can_calculate = (assert.gori_computable_p
 			     && vr_values->gori_computable_p (name, e->src));
+
   if (gori_can_calculate)
     {
       if (!vr_values->outgoing_edge_range_p (vr_gori, e, name))
 	vr_gori.set_varying (TREE_TYPE (name));
     }
+
   value_range_equiv *vr
     = try_find_new_range (name, assert.expr, assert.comp_code, assert.val);
+
+  ranger->range_on_edge (vr_ranger, e, name);
+  if (vr && vr->equiv() && !bitmap_empty_p (vr->equiv ()))
+    {
+      unsigned x;
+      EXECUTE_IF_SET_IN_BITMAP (vr->equiv (), 0, x, bi)
+	{
+	  if (ssa_name (x) == name)
+	    continue;
+	  ranger->range_on_edge (tmp, e, ssa_name (x));
+	  vr_ranger.intersect (tmp);
+	}
+    }
+
+//  if (vr && gori_can_calculate)
+//    {
+//      tmp = vr_ranger;
+//      tmp.union_ (*vr);
+//      gcc_assert (tmp == *vr);
+//    }
+
   if (gori_can_calculate)
     {
       if (CHECKING_P && dbg_cnt (evrp_find_range))
