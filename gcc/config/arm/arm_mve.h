@@ -2546,6 +2546,12 @@ typedef struct { uint8x16_t val[4]; } uint8x16x4_t;
 #define urshrl(__p0, __p1) __arm_urshrl(__p0, __p1)
 #define lsll(__p0, __p1) __arm_lsll(__p0, __p1)
 #define asrl(__p0, __p1) __arm_asrl(__p0, __p1)
+#define vshlcq_m_s8(__a,  __b,  __imm, __p) __arm_vshlcq_m_s8(__a,  __b,  __imm, __p)
+#define vshlcq_m_u8(__a,  __b,  __imm, __p) __arm_vshlcq_m_u8(__a,  __b,  __imm, __p)
+#define vshlcq_m_s16(__a,  __b,  __imm, __p) __arm_vshlcq_m_s16(__a,  __b,  __imm, __p)
+#define vshlcq_m_u16(__a,  __b,  __imm, __p) __arm_vshlcq_m_u16(__a,  __b,  __imm, __p)
+#define vshlcq_m_s32(__a,  __b,  __imm, __p) __arm_vshlcq_m_s32(__a,  __b,  __imm, __p)
+#define vshlcq_m_u32(__a,  __b,  __imm, __p) __arm_vshlcq_m_u32(__a,  __b,  __imm, __p)
 #endif
 
 /* For big-endian, GCC's vector indices are reversed within each 64 bits
@@ -16671,6 +16677,60 @@ __arm_srshr (int32_t value, const int shift)
   return __builtin_mve_srshr_si (value, shift);
 }
 
+__extension__ extern __inline int8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vshlcq_m_s8 (int8x16_t __a, uint32_t * __b, const int __imm, mve_pred16_t __p)
+{
+  int8x16_t __res = __builtin_mve_vshlcq_m_vec_sv16qi (__a, *__b, __imm, __p);
+  *__b = __builtin_mve_vshlcq_m_carry_sv16qi (__a, *__b, __imm, __p);
+  return __res;
+}
+
+__extension__ extern __inline uint8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vshlcq_m_u8 (uint8x16_t __a, uint32_t * __b, const int __imm, mve_pred16_t __p)
+{
+  uint8x16_t __res = __builtin_mve_vshlcq_m_vec_uv16qi (__a, *__b, __imm, __p);
+  *__b = __builtin_mve_vshlcq_m_carry_uv16qi (__a, *__b, __imm, __p);
+  return __res;
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vshlcq_m_s16 (int16x8_t __a, uint32_t * __b, const int __imm, mve_pred16_t __p)
+{
+  int16x8_t __res = __builtin_mve_vshlcq_m_vec_sv8hi (__a, *__b, __imm, __p);
+  *__b = __builtin_mve_vshlcq_m_carry_sv8hi (__a, *__b, __imm, __p);
+  return __res;
+}
+
+__extension__ extern __inline uint16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vshlcq_m_u16 (uint16x8_t __a, uint32_t * __b, const int __imm, mve_pred16_t __p)
+{
+  uint16x8_t __res = __builtin_mve_vshlcq_m_vec_uv8hi (__a, *__b, __imm, __p);
+  *__b = __builtin_mve_vshlcq_m_carry_uv8hi (__a, *__b, __imm, __p);
+  return __res;
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vshlcq_m_s32 (int32x4_t __a, uint32_t * __b, const int __imm, mve_pred16_t __p)
+{
+  int32x4_t __res = __builtin_mve_vshlcq_m_vec_sv4si (__a, *__b, __imm, __p);
+  *__b = __builtin_mve_vshlcq_m_carry_sv4si (__a, *__b, __imm, __p);
+  return __res;
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_vshlcq_m_u32 (uint32x4_t __a, uint32_t * __b, const int __imm, mve_pred16_t __p)
+{
+  uint32x4_t __res = __builtin_mve_vshlcq_m_vec_uv4si (__a, *__b, __imm, __p);
+  *__b = __builtin_mve_vshlcq_m_carry_uv4si (__a, *__b, __imm, __p);
+  return __res;
+}
+
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 
 __extension__ extern __inline void
@@ -27484,6 +27544,16 @@ extern void *__ARM_undef;
   _Generic( (int (*)[__ARM_mve_typeid(__p0)])0, \
   int (*)[__ARM_mve_type_uint32_t]: __arm_vdwdupq_n_u8 (__ARM_mve_coerce(__p0, uint32_t), p1, p2), \
   int (*)[__ARM_mve_type_uint32_t_ptr]: __arm_vdwdupq_wb_u8 (__ARM_mve_coerce(__p0, uint32_t *), p1, p2));})
+
+#define vshlcq_m(p0,p1,p2,p3) __arm_vshlcq_m(p0,p1,p2,p3)
+#define __arm_vshlcq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
+  _Generic( (int (*)[__ARM_mve_typeid(__p0)])0, \
+  int (*)[__ARM_mve_type_int8x16_t]: __arm_vshlcq_m_s8 (__ARM_mve_coerce(__p0, int8x16_t), p1, p2, p3), \
+  int (*)[__ARM_mve_type_int16x8_t]: __arm_vshlcq_m_s16 (__ARM_mve_coerce(__p0, int16x8_t), p1, p2, p3), \
+  int (*)[__ARM_mve_type_int32x4_t]: __arm_vshlcq_m_s32 (__ARM_mve_coerce(__p0, int32x4_t), p1, p2, p3), \
+  int (*)[__ARM_mve_type_uint8x16_t]: __arm_vshlcq_m_u8 (__ARM_mve_coerce(__p0, uint8x16_t), p1, p2, p3), \
+  int (*)[__ARM_mve_type_uint16x8_t]: __arm_vshlcq_m_u16 (__ARM_mve_coerce(__p0, uint16x8_t), p1, p2, p3), \
+  int (*)[__ARM_mve_type_uint32x4_t]: __arm_vshlcq_m_u32 (__ARM_mve_coerce(__p0, uint32x4_t), p1, p2, p3));})
 
 #ifdef __cplusplus
 }

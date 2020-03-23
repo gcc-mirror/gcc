@@ -1,4 +1,15 @@
 2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vshlcq_m_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vshlcq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlcq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlcq_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlcq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vshlcq_m_u8.c: Likewise.
+
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/asrl.c: New test.
 	* gcc.target/arm/mve/intrinsics/lsll.c: Likewise.

@@ -215,8 +215,8 @@
 			 VADCQ_M_S VSBCIQ_U VSBCIQ_S VSBCIQ_M_U VSBCIQ_M_S
 			 VSBCQ_U VSBCQ_S VSBCQ_M_U VSBCQ_M_S VADCIQ_U VADCIQ_M_U
 			 VADCIQ_S VADCIQ_M_S VLD2Q VLD4Q VST2Q SRSHRL SRSHR
-			 URSHR URSHRL SQRSHR UQRSHL UQRSHLL_64
-			 UQRSHLL_48 SQRSHRL_64 SQRSHRL_48])
+			 URSHR URSHRL SQRSHR UQRSHL UQRSHLL_64 VSHLCQ_M_U
+			 UQRSHLL_48 SQRSHRL_64 SQRSHRL_48 VSHLCQ_M_S])
 
 (define_mode_attr MVE_CNVT [(V8HI "V8HF") (V4SI "V4SF") (V8HF "V8HI")
 			    (V4SF "V4SI")])
@@ -394,7 +394,8 @@
 		       (VADCQ_U "u")  (VADCQ_M_U "u") (VADCQ_S "s")
 		       (VADCIQ_U "u") (VADCIQ_M_U "u") (VADCIQ_S "s")
 		       (VADCIQ_M_S "s") (SQRSHRL_64 "64") (SQRSHRL_48 "48")
-		       (UQRSHLL_64 "64") (UQRSHLL_48 "48")])
+		       (UQRSHLL_64 "64") (UQRSHLL_48 "48") (VSHLCQ_M_S "s")
+		       (VSHLCQ_M_U "u")])
 
 (define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
@@ -662,6 +663,7 @@
 (define_int_iterator VADCQ_M [VADCQ_M_U VADCQ_M_S])
 (define_int_iterator UQRSHLLQ [UQRSHLL_64 UQRSHLL_48])
 (define_int_iterator SQRSHRLQ [SQRSHRL_64 SQRSHRL_48])
+(define_int_iterator VSHLCQ_M [VSHLCQ_M_S VSHLCQ_M_U])
 
 (define_insn "*mve_mov<mode>"
   [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Us")
@@ -11152,3 +11154,57 @@
   "TARGET_HAVE_MVE"
   "sqshll%?\\t%Q1, %R1, %2"
   [(set_attr "predicable" "yes")])
+
+;;
+;; [vshlcq_m_u vshlcq_m_s]
+;;
+(define_expand "mve_vshlcq_m_vec_<supf><mode>"
+ [(match_operand:MVE_2 0 "s_register_operand")
+  (match_operand:MVE_2 1 "s_register_operand")
+  (match_operand:SI 2 "s_register_operand")
+  (match_operand:SI 3 "mve_imm_32")
+  (match_operand:HI 4 "vpr_register_operand")
+  (unspec:MVE_2 [(const_int 0)] VSHLCQ_M)]
+ "TARGET_HAVE_MVE"
+{
+  rtx ignore_wb = gen_reg_rtx (SImode);
+  emit_insn (gen_mve_vshlcq_m_<supf><mode> (operands[0], ignore_wb, operands[1],
+					    operands[2], operands[3],
+					    operands[4]));
+  DONE;
+})
+
+(define_expand "mve_vshlcq_m_carry_<supf><mode>"
+ [(match_operand:SI 0 "s_register_operand")
+  (match_operand:MVE_2 1 "s_register_operand")
+  (match_operand:SI 2 "s_register_operand")
+  (match_operand:SI 3 "mve_imm_32")
+  (match_operand:HI 4 "vpr_register_operand")
+  (unspec:MVE_2 [(const_int 0)] VSHLCQ_M)]
+ "TARGET_HAVE_MVE"
+{
+  rtx ignore_vec = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_mve_vshlcq_m_<supf><mode> (ignore_vec, operands[0],
+					    operands[1], operands[2],
+					    operands[3], operands[4]));
+  DONE;
+})
+
+(define_insn "mve_vshlcq_m_<supf><mode>"
+ [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
+       (unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
+		      (match_operand:SI 3 "s_register_operand" "1")
+		      (match_operand:SI 4 "mve_imm_32" "Rf")
+		      (match_operand:HI 5 "vpr_register_operand" "Up")]
+	VSHLCQ_M))
+  (set (match_operand:SI  1 "s_register_operand" "=r")
+       (unspec:SI [(match_dup 2)
+		   (match_dup 3)
+		   (match_dup 4)
+		   (match_dup 5)]
+	VSHLCQ_M))
+ ]
+ "TARGET_HAVE_MVE"
+ "vpst\;vshlct\t%q0, %1, %4"
+ [(set_attr "type" "mve_move")
+  (set_attr "length" "8")])

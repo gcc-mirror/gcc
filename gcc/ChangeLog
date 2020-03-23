@@ -1,4 +1,28 @@
 2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm_mve.h (vshlcq_m_s8): Define macro.
+	(vshlcq_m_u8): Likewise.
+	(vshlcq_m_s16): Likewise.
+	(vshlcq_m_u16): Likewise.
+	(vshlcq_m_s32): Likewise.
+	(vshlcq_m_u32): Likewise.
+	(__arm_vshlcq_m_s8): Define intrinsic.
+	(__arm_vshlcq_m_u8): Likewise.
+	(__arm_vshlcq_m_s16): Likewise.
+	(__arm_vshlcq_m_u16): Likewise.
+	(__arm_vshlcq_m_s32): Likewise.
+	(__arm_vshlcq_m_u32): Likewise.
+	(vshlcq_m): Define polymorphic variant.
+	* config/arm/arm_mve_builtins.def (QUADOP_NONE_NONE_UNONE_IMM_UNONE):
+	Use builtin qualifier.
+	(QUADOP_UNONE_UNONE_UNONE_IMM_UNONE): Likewise.
+	* config/arm/mve.md (mve_vshlcq_m_vec_<supf><mode>): Define RTL pattern.
+	(mve_vshlcq_m_carry_<supf><mode>): Likewise.
+	(mve_vshlcq_m_<supf><mode>): Likewise.
+
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* config/arm/arm-builtins.c (LSLL_QUALIFIERS): Define builtin qualifier.
 	(UQSHL_QUALIFIERS): Likewise.
