@@ -9139,7 +9139,7 @@ package body Sem_Util is
          if Msg_Index <= Msg_Last - 10
            and then Msg (Msg_Index .. Msg_Index + 9) = "subprogram"
          then
-            if Ekind_In (Id, E_Entry, E_Entry_Family) then
+            if Is_Entry (Id) then
                Res (Res_Index .. Res_Index + 4) := "entry";
                Res_Index := Res_Index + 5;
 
@@ -15417,7 +15417,7 @@ package body Sem_Util is
    function Is_Entry_Body (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind_In (Id, E_Entry, E_Entry_Family)
+        Is_Entry (Id)
           and then Nkind (Unit_Declaration_Node (Id)) = N_Entry_Body;
    end Is_Entry_Body;
 
@@ -15428,7 +15428,7 @@ package body Sem_Util is
    function Is_Entry_Declaration (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind_In (Id, E_Entry, E_Entry_Family)
+        Is_Entry (Id)
           and then Nkind (Unit_Declaration_Node (Id)) = N_Entry_Declaration;
    end Is_Entry_Declaration;
 

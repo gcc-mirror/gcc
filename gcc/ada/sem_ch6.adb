@@ -12259,7 +12259,7 @@ package body Sem_Ch6 is
       --  point of the call.
 
       if Out_Present (Spec) then
-         if Ekind_In (Id, E_Entry, E_Entry_Family)
+         if Is_Entry (Id)
            or else Is_Subprogram_Or_Generic_Subprogram (Id)
          then
             Set_Has_Out_Or_In_Out_Parameter (Id, True);

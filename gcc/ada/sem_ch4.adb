@@ -4989,7 +4989,7 @@ package body Sem_Ch4 is
          then
             if Is_Task_Type (Prefix_Type)
               and then Present (Entity (Sel))
-              and then Ekind_In (Entity (Sel), E_Entry, E_Entry_Family)
+              and then Is_Entry (Entity (Sel))
             then
                null;
 

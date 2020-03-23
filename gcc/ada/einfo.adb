@@ -1299,7 +1299,7 @@ package body Einfo is
 
    function Contract_Wrapper (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      pragma Assert (Is_Entry (Id));
       return Node25 (Id);
    end Contract_Wrapper;
 
@@ -1709,8 +1709,7 @@ package body Einfo is
    function Has_Out_Or_In_Out_Parameter (Id : E) return B is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family)
-          or else Is_Subprogram_Or_Generic_Subprogram (Id));
+        (Is_Entry (Id) or else Is_Subprogram_Or_Generic_Subprogram (Id));
       return Flag110 (Id);
    end Has_Out_Or_In_Out_Parameter;
 
@@ -4159,7 +4158,7 @@ package body Einfo is
 
    procedure Set_Contract_Wrapper (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      pragma Assert (Is_Entry (Id));
       Set_Node25 (Id, V);
    end Set_Contract_Wrapper;
 
