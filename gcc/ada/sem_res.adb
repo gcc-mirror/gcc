@@ -6098,8 +6098,7 @@ package body Sem_Res is
       --  can be an arbitrary expression with special resolution rules.
 
       elsif Nkind_In (Subp, N_Selected_Component, N_Indexed_Component)
-        or else (Is_Entity_Name (Subp)
-                  and then Ekind_In (Entity (Subp), E_Entry, E_Entry_Family))
+        or else (Is_Entity_Name (Subp) and then Is_Entry (Entity (Subp)))
       then
          Resolve_Entry_Call (N, Typ);
 
@@ -7937,7 +7936,7 @@ package body Sem_Res is
          end;
       end if;
 
-      if Ekind_In (Nam, E_Entry, E_Entry_Family)
+      if Is_Entry (Nam)
         and then Present (Contract_Wrapper (Nam))
         and then Current_Scope /= Contract_Wrapper (Nam)
       then
@@ -8008,7 +8007,7 @@ package body Sem_Res is
 
       Generate_Reference (Nam, Entry_Name, 's');
 
-      if Ekind_In (Nam, E_Entry, E_Entry_Family) then
+      if Is_Entry (Nam) then
          Check_Potentially_Blocking_Operation (N);
       end if;
 

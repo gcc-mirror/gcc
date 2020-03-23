@@ -562,8 +562,7 @@ package body Contracts is
       --  Save the SPARK_Mode-related data to restore on exit
 
       Skip_Assert_Exprs : constant Boolean :=
-                            Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
-                              and then not GNATprove_Mode;
+                            Is_Entry (Subp_Id) and then not GNATprove_Mode;
 
       Depends  : Node_Id := Empty;
       Global   : Node_Id := Empty;
