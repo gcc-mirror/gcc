@@ -4128,8 +4128,7 @@ package body Exp_Ch6 is
       --  and reanalyzed (see Expand_Protected_Subprogram_Call).
 
       elsif Is_Protected_Type (Scope (Subp))
-         and then (Ekind (Subp) = E_Procedure
-                    or else Ekind (Subp) = E_Function)
+         and then Ekind_In (Subp, E_Procedure, E_Function)
       then
          null;
 
