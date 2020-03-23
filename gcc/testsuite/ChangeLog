@@ -1,5 +1,10 @@
 2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/arm/cmp-2.c: Move double-precision tests to...
+	* gcc.target/arm/cmp-3.c: ...here (new file)
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* lib/target-supports.exp
 	(check_effective_target_arm_fp_dp_ok_nocache): New.
 	(check_effective_target_arm_fp_dp_ok): New.

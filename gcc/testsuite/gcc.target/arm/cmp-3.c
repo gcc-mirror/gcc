@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-require-effective-target arm_fp_dp_ok } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 /* { dg-options "-O" } */
-/* { dg-add-options arm_fp } */
+/* { dg-add-options arm_fp_dp } */
 /* { dg-final { scan-assembler-not "\tbl\t" } } */
 /* { dg-final { scan-assembler-not "__aeabi" } } */
 int x, y;
@@ -30,7 +30,8 @@ int x, y;
   TEST_EXPR (NAME##_cr, (TYPE a1), OPERATOR (100, a1))
 
 #define TEST_OP(NAME, OPERATOR) \
-  TEST (f_##NAME, float, OPERATOR)
+  TEST (d_##NAME, double, OPERATOR)		\
+  TEST (ld_##NAME, long double, OPERATOR)
 
 TEST_OP (eq, EQ)
 TEST_OP (ne, NE)
