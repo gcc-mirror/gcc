@@ -670,11 +670,12 @@ symtab_node::clone_references (symtab_node *node)
     {
       bool speculative = ref->speculative;
       unsigned int stmt_uid = ref->lto_stmt_uid;
+      unsigned int spec_id = ref->speculative_id;
 
       ref2 = create_reference (ref->referred, ref->use, ref->stmt);
       ref2->speculative = speculative;
       ref2->lto_stmt_uid = stmt_uid;
-      ref2->speculative_id = ref->speculative_id;
+      ref2->speculative_id = spec_id;
     }
 }
 
@@ -689,11 +690,12 @@ symtab_node::clone_referring (symtab_node *node)
     {
       bool speculative = ref->speculative;
       unsigned int stmt_uid = ref->lto_stmt_uid;
+      unsigned int spec_id = ref->speculative_id;
 
       ref2 = ref->referring->create_reference (this, ref->use, ref->stmt);
       ref2->speculative = speculative;
       ref2->lto_stmt_uid = stmt_uid;
-      ref2->speculative_id = ref->speculative_id;
+      ref2->speculative_id = spec_id;
     }
 }
 
@@ -704,12 +706,13 @@ symtab_node::clone_reference (ipa_ref *ref, gimple *stmt)
 {
   bool speculative = ref->speculative;
   unsigned int stmt_uid = ref->lto_stmt_uid;
+  unsigned int spec_id = ref->speculative_id;
   ipa_ref *ref2;
 
   ref2 = create_reference (ref->referred, ref->use, stmt);
   ref2->speculative = speculative;
   ref2->lto_stmt_uid = stmt_uid;
-  ref2->speculative_id = ref->speculative_id;
+  ref2->speculative_id = spec_id;
   return ref2;
 }
 

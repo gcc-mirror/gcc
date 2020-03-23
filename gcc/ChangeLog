@@ -1,3 +1,11 @@
+2020-03-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94250
+	* symtab.c (symtab_node::clone_references): Save speculative_id
+	as ref may be overwritten by create_reference.
+	(symtab_node::clone_referring): Likewise.
+	(symtab_node::clone_reference): Likewise.
+
 2020-03-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h (JUMP_TABLES_IN_TEXT_SECTION): Remove
