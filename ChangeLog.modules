@@ -1,5 +1,9 @@
 2020-03-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parms_fini): Determine
+	contextness requirement from TPI.
+
 	Merge master a3586eeb88414e77c7cccb69362b8d04562536b6.
 
 2020-03-20  Nathan Sidwell  <nathan@acm.org>

@@ -9454,14 +9454,15 @@ trees_out::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 	      if (TREE_CODE (decl) == TEMPLATE_DECL)
 		{
 		  tree ctx = DECL_CONTEXT (decl);
-
-		  if (ctx)
-		    gcc_checking_assert (ctx == tmpl);
-		  /* Only primary templates set their template parms'
-	  	     context to themselves.  We don't have sufficient
-	  	     information at the point we read back to
-	  	     determine that.  */
-		  u (ctx != NULL_TREE);
+		  tree inner = DECL_TEMPLATE_RESULT (decl);
+		  tree tpi = (TREE_CODE (inner) == TYPE_DECL
+			      ? TEMPLATE_TYPE_PARM_INDEX (TREE_TYPE (decl))
+			      : DECL_INITIAL (inner));
+		  bool original = (TEMPLATE_PARM_LEVEL (tpi)
+				   == TEMPLATE_PARM_ORIG_LEVEL (tpi));
+		  /* Original template template parms have a context
+		     of their owning template.  Reduced ones do not.  */
+		  gcc_checking_assert (original ? ctx == tmpl : !ctx);
 		}
 	    }
 	}
@@ -9491,8 +9492,18 @@ trees_in::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 
 	  tree decl = TREE_VALUE (parm);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    if (u ())
-	      DECL_CONTEXT (decl) = tmpl;
+	    {
+	      tree inner = DECL_TEMPLATE_RESULT (decl);
+	      tree tpi = (TREE_CODE (inner) == TYPE_DECL
+			  ? TEMPLATE_TYPE_PARM_INDEX (TREE_TYPE (decl))
+			  : DECL_INITIAL (inner));
+	      bool original = (TEMPLATE_PARM_LEVEL (tpi)
+			       == TEMPLATE_PARM_ORIG_LEVEL (tpi));
+	      /* Original template template parms have a context
+		 of their owning template.  Reduced ones do not.  */
+	      if (original)
+		DECL_CONTEXT (decl) = tmpl;
+	    }
 	}
     }
   return true;
