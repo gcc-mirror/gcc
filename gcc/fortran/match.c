@@ -1373,6 +1373,14 @@ gfc_match_assignment (void)
       return m;
     }
 
+  if (!lvalue->symtree)
+    {
+      gfc_free_expr (lvalue);
+      gfc_free_expr (rvalue);
+      return MATCH_ERROR;
+    }
+
+
   gfc_set_sym_referenced (lvalue->symtree->n.sym);
 
   new_st.op = EXEC_ASSIGN;

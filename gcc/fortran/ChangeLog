@@ -1,3 +1,20 @@
+2020-03-23  Mark Eggleston  <mark.eggleston@codethink.com>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93600
+	* expr.c (simplify_parameter_variable): Check whether the ref
+	chain contains INQUIRY_LEN or INQUIRY_KIND and set inquiry
+	boolean. When an empty array has been identified and a new
+	new EXPR_ARRAY expression has been created only return that
+	expression if inquiry is not set. This allows the new
+	expression to drop through to be simplified into a
+	EXPR_CONSTANT representing %kind or %len.
+	* matc.c (gfc_match_assignment): If lvalue doesn't have a
+	symtree free both lvalue and rvalue expressions and return
+	an error.
+	* resolv.c (gfc_resolve_ref): Ensure that code to handle
+	INQUIRY_LEN is only performed for arrays with deferred types.
+
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* class.c (generate_finalization_wrapper): Fix up duplicated word
