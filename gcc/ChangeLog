@@ -1,3 +1,69 @@
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm_mve.h (vsetq_lane_f16): Define macro.
+	(vsetq_lane_f32): Likewise.
+	(vsetq_lane_s16): Likewise.
+	(vsetq_lane_s32): Likewise.
+	(vsetq_lane_s8): Likewise.
+	(vsetq_lane_s64): Likewise.
+	(vsetq_lane_u8): Likewise.
+	(vsetq_lane_u16): Likewise.
+	(vsetq_lane_u32): Likewise.
+	(vsetq_lane_u64): Likewise.
+	(vgetq_lane_f16): Likewise.
+	(vgetq_lane_f32): Likewise.
+	(vgetq_lane_s16): Likewise.
+	(vgetq_lane_s32): Likewise.
+	(vgetq_lane_s8): Likewise.
+	(vgetq_lane_s64): Likewise.
+	(vgetq_lane_u8): Likewise.
+	(vgetq_lane_u16): Likewise.
+	(vgetq_lane_u32): Likewise.
+	(vgetq_lane_u64): Likewise.
+	(__ARM_NUM_LANES): Likewise.
+	(__ARM_LANEQ): Likewise.
+	(__ARM_CHECK_LANEQ): Likewise.
+	(__arm_vsetq_lane_s16): Define intrinsic.
+	(__arm_vsetq_lane_s32): Likewise.
+	(__arm_vsetq_lane_s8): Likewise.
+	(__arm_vsetq_lane_s64): Likewise.
+	(__arm_vsetq_lane_u8): Likewise.
+	(__arm_vsetq_lane_u16): Likewise.
+	(__arm_vsetq_lane_u32): Likewise.
+	(__arm_vsetq_lane_u64): Likewise.
+	(__arm_vgetq_lane_s16): Likewise.
+	(__arm_vgetq_lane_s32): Likewise.
+	(__arm_vgetq_lane_s8): Likewise.
+	(__arm_vgetq_lane_s64): Likewise.
+	(__arm_vgetq_lane_u8): Likewise.
+	(__arm_vgetq_lane_u16): Likewise.
+	(__arm_vgetq_lane_u32): Likewise.
+	(__arm_vgetq_lane_u64): Likewise.
+	(__arm_vsetq_lane_f16): Likewise.
+	(__arm_vsetq_lane_f32): Likewise.
+	(__arm_vgetq_lane_f16): Likewise.
+	(__arm_vgetq_lane_f32): Likewise.
+	(vgetq_lane): Define polymorphic variant.
+	(vsetq_lane): Likewise.
+	* config/arm/mve.md (mve_vec_extract<mode><V_elem_l>): Define RTL
+	pattern.
+	(mve_vec_extractv2didi): Likewise.
+	(mve_vec_extract_sext_internal<mode>): Likewise.
+	(mve_vec_extract_zext_internal<mode>): Likewise.
+	(mve_vec_set<mode>_internal): Likewise.
+	(mve_vec_setv2di_internal): Likewise.
+	* config/arm/neon.md (vec_set<mode>): Move RTL pattern to vec-common.md
+	file.
+	(vec_extract<mode><V_elem_l>): Rename to
+	"neon_vec_extract<mode><V_elem_l>".
+	(vec_extractv2didi): Rename to "neon_vec_extractv2didi".
+	* config/arm/vec-common.md (vec_extract<mode><V_elem_l>): Define RTL
+	pattern common for MVE and NEON.
+	(vec_set<mode>): Move RTL pattern from neon.md and modify to accept both
+	MVE and NEON.
+
 2020-03-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/mve.md (earlyclobber_32): New mode attribute.

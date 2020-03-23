@@ -411,6 +411,9 @@
 (define_mode_attr MVE_H_ELEM [ (V8HI "V8HI") (V4SI "V4HI")])
 (define_mode_attr V_sz_elem1 [(V16QI "b") (V8HI  "h") (V4SI "w") (V8HF "h")
 			      (V4SF "w")])
+(define_mode_attr V_extr_elem [(V16QI "u8") (V8HI "u16") (V4SI "32")
+                              (V8HF "u16") (V4SF "32")])
+
 (define_mode_attr earlyclobber_32 [(V16QI "=w") (V8HI "=w") (V4SI "=&w")
 						(V8HF "=w") (V4SF "=&w")])
 
@@ -10887,3 +10890,121 @@
    return "";
 }
   [(set_attr "length" "16")])
+;;
+;; [vgetq_lane_u, vgetq_lane_s, vgetq_lane_f])
+;;
+(define_insn "mve_vec_extract<mode><V_elem_l>"
+ [(set (match_operand:<V_elem> 0 "s_register_operand" "=r")
+   (vec_select:<V_elem>
+    (match_operand:MVE_VLD_ST 1 "s_register_operand" "w")
+    (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  return "vmov.<V_extr_elem>\t%0, %q1[%c2]";
+}
+ [(set_attr "type" "mve_move")])
+
+(define_insn "mve_vec_extractv2didi"
+ [(set (match_operand:DI 0 "s_register_operand" "=r")
+   (vec_select:DI
+    (match_operand:V2DI 1 "s_register_operand" "w")
+    (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
+  "TARGET_HAVE_MVE"
+{
+  int elt = INTVAL (operands[2]);
+  if (BYTES_BIG_ENDIAN)
+    elt = 1 - elt;
+
+  if (elt == 0)
+   return "vmov\t%Q0, %R0, %e1";
+  else
+   return "vmov\t%J0, %K0, %f1";
+}
+ [(set_attr "type" "mve_move")])
+
+(define_insn "*mve_vec_extract_sext_internal<mode>"
+ [(set (match_operand:SI 0 "s_register_operand" "=r")
+   (sign_extend:SI
+    (vec_select:<V_elem>
+     (match_operand:MVE_2 1 "s_register_operand" "w")
+     (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  return "vmov.s<V_sz_elem>\t%0, %q1[%c2]";
+}
+ [(set_attr "type" "mve_move")])
+
+(define_insn "*mve_vec_extract_zext_internal<mode>"
+ [(set (match_operand:SI 0 "s_register_operand" "=r")
+   (zero_extend:SI
+    (vec_select:<V_elem>
+     (match_operand:MVE_2 1 "s_register_operand" "w")
+     (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  return "vmov.u<V_sz_elem>\t%0, %q1[%c2]";
+}
+ [(set_attr "type" "mve_move")])
+
+;;
+;; [vsetq_lane_u, vsetq_lane_s, vsetq_lane_f])
+;;
+(define_insn "mve_vec_set<mode>_internal"
+ [(set (match_operand:VQ2 0 "s_register_operand" "=w")
+       (vec_merge:VQ2
+	(vec_duplicate:VQ2
+	  (match_operand:<V_elem> 1 "nonimmediate_operand" "r"))
+	(match_operand:VQ2 3 "s_register_operand" "0")
+	(match_operand:SI 2 "immediate_operand" "i")))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  int elt = ffs ((int) INTVAL (operands[2])) - 1;
+  if (BYTES_BIG_ENDIAN)
+    elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
+  operands[2] = GEN_INT (elt);
+
+  return "vmov.<V_sz_elem>\t%q0[%c2], %1";
+}
+ [(set_attr "type" "mve_move")])
+
+(define_insn "mve_vec_setv2di_internal"
+ [(set (match_operand:V2DI 0 "s_register_operand" "=w")
+       (vec_merge:V2DI
+	(vec_duplicate:V2DI
+	  (match_operand:DI 1 "nonimmediate_operand" "r"))
+	(match_operand:V2DI 3 "s_register_operand" "0")
+	(match_operand:SI 2 "immediate_operand" "i")))]
+ "TARGET_HAVE_MVE"
+{
+  int elt = ffs ((int) INTVAL (operands[2])) - 1;
+  if (BYTES_BIG_ENDIAN)
+    elt = 1 - elt;
+
+  if (elt == 0)
+   return "vmov\t%e0, %Q1, %R1";
+  else
+   return "vmov\t%f0, %J1, %K1";
+}
+ [(set_attr "type" "mve_move")])
