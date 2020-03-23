@@ -1,4 +1,34 @@
+2020-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93245
+	* include/experimental/bits/fs_path.h (path::generic_string<C,T,A>()):
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Improve test coverage.
+
+	PR libstdc++/94242
+	* include/bits/fs_path.h (path::_S_str_convert): Replace first
+	parameter with basic_string_view so that strings with different
+	allocators can be accepted.
+	(path::generic_string<C,T,A>()): Use basic_string object that uses the
+	right allocator type.
+	* testsuite/27_io/filesystem/path/generic/94242.cc: New test.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Improve
+	test coverage.
+
 2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94033
+	* include/std/type_traits (__is_nt_default_constructible_atom): Remove.
+	(__is_nt_default_constructible_impl): Remove.
+	(__is_nothrow_default_constructible_impl): Remove.
+	(__is_nt_constructible_impl): Add bool template parameter. Adjust
+	partial specializations.
+	(__is_nothrow_constructible_impl): Replace class template with alias
+	template.
+	(is_nothrow_default_constructible): Derive from alias template
+	__is_nothrow_constructible_impl instead of
+	__is_nothrow_default_constructible_impl.
+	* testsuite/20_util/is_nothrow_constructible/94003.cc: New test.
 
 	* include/std/stop_token (stop_token::_Stop_state_ref): Define
 	comparison operators explicitly if the compiler won't synthesize them.

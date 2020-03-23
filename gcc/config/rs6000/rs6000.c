@@ -181,7 +181,6 @@ static GTY(()) section *tls_private_data_section;
 static GTY(()) section *read_only_private_data_section;
 static GTY(()) section *sdata2_section;
 
-extern GTY(()) section *toc_section;
 section *toc_section = 0;
 
 /* Describe the vector unit used for modes.  */
@@ -3713,6 +3712,14 @@ rs6000_option_override_internal (bool global_init_p)
       if (rs6000_isa_flags_explicit & OPTION_MASK_CRYPTO)
 	error ("%qs requires %qs", "-mcrypto", "-maltivec");
       rs6000_isa_flags &= ~OPTION_MASK_CRYPTO;
+    }
+
+  if (!TARGET_FPRND && TARGET_VSX)
+    {
+      if (rs6000_isa_flags_explicit & OPTION_MASK_FPRND)
+	/* TARGET_VSX = 1 implies Power 7 and newer */
+	error ("%qs requires %qs", "-mvsx", "-mfprnd");
+      rs6000_isa_flags &= ~OPTION_MASK_FPRND;
     }
 
   if (TARGET_DIRECT_MOVE && !TARGET_VSX)

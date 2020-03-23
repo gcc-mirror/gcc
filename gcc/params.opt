@@ -848,6 +848,10 @@ Maximum size, in storage units, of an aggregate which should be considered for s
 Common Joined UInteger Var(param_sra_max_scalarization_size_speed) Param Optimization
 Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed.
 
+-param=sra-max-propagations=
+Common Joined UInteger Var(param_sra_max_propagations) Param Optimization Init(32)
+Maximum number of artificial accesses to enable forward propagation that Scalar Replacement of Aggregates will keep for one local variable.
+
 -param=ssa-name-def-chain-limit=
 Common Joined UInteger Var(param_ssa_name_def_chain_limit) Init(512) Param Optimization
 The maximum number of SSA_NAME assignments to follow in determining a value.

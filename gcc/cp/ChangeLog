@@ -1,3 +1,56 @@
+2020-03-23  nathans  <nathan@acm.org>
+
+	PR c++/94044
+	* tree.c (cp_tree_equal) [SIZEOF_EXPR]: Detect argument pack
+	operand.
+
+2020-03-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94066
+	* constexpr.c (reduced_constant_expression_p) [CONSTRUCTOR]: Properly
+	handle unions without an initializer.
+	(cxx_eval_component_reference): Emit a different diagnostic when the
+	constructor element corresponding to a union member is NULL.
+	(cxx_eval_bare_aggregate): When constructing a union, always set the
+	active union member before evaluating the initializer.  Relax assertion
+	that verifies the index of the constructor element we're initializing
+	hasn't been changed.
+	(cxx_eval_store_expression): Diagnose changing the active union member
+	while the union is in the process of being initialized.  After setting
+	an active union member, clear CONSTRUCTOR_NO_CLEARING on the underlying
+	CONSTRUCTOR.
+	(cxx_eval_constant_expression) [PLACEHOLDER_EXPR]: Don't re-reduce a
+	CONSTRUCTOR returned by lookup_placeholder.
+
+2020-03-20  Patrick Palka  <ppalka@redhat.com>
+
+	* cxx-pretty-print.c (pp_cxx_parameter_mapping): Make extern.  Move
+	the "[with ]" bits to here from ...
+	(pp_cxx_atomic_constraint): ... here.
+	* cxx-pretty-print.h (pp_cxx_parameter_mapping): Declare.
+	* error.c (rebuild_concept_check): Delete.
+	(print_concept_check_info): Print the dependent form of the constraint and the
+	preferably substituted parameter mapping alongside it.
+
+2020-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94175
+	* cp-gimplify.c (simple_empty_class_p): Look through
+	SIMPLE_TARGET_EXPR_P.
+	(cp_gimplify_expr) [MODIFY_EXPR]: Likewise.
+	[RETURN_EXPR]: Avoid producing 'return *retval;'.
+	* call.c (build_call_a): Strip TARGET_EXPR from empty class arg.
+	* cp-tree.h (SIMPLE_TARGET_EXPR_P): Check that TARGET_EXPR_INITIAL
+	is non-null.
+
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93931
+	* parser.c (cp_parser_omp_var_list_no_open): Call process_outer_var_ref
+	on outer_automatic_var_p decls.
+	* cp-gimplify.c (cxx_omp_disregard_value_expr): Return true also for
+	capture proxy decls.
+
 2020-03-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94147 - mangling of lambdas assigned to globals

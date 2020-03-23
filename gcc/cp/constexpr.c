@@ -2590,10 +2590,17 @@ reduced_constant_expression_p (tree t)
 	    return false;
 	  else if (cxx_dialect >= cxx2a
 		   /* An ARRAY_TYPE doesn't have any TYPE_FIELDS.  */
-		   && (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
-		       /* A union only initializes one member.  */
-		       || TREE_CODE (TREE_TYPE (t)) == UNION_TYPE))
+		   && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	    field = NULL_TREE;
+	  else if (cxx_dialect >= cxx2a
+		   && TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
+	    {
+	      if (CONSTRUCTOR_NELTS (t) == 0)
+		/* An initialized union has a constructor element.  */
+		return false;
+	      /* And it only initializes one member.  */
+	      field = NULL_TREE;
+	    }
 	  else
 	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
 	}
@@ -3445,8 +3452,14 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
     {
       /* DR 1188 says we don't have to deal with this.  */
       if (!ctx->quiet)
-	error ("accessing %qD member instead of initialized %qD member in "
-	       "constant expression", part, CONSTRUCTOR_ELT (whole, 0)->index);
+	{
+	  constructor_elt *cep = CONSTRUCTOR_ELT (whole, 0);
+	  if (cep->value == NULL_TREE)
+	    error ("accessing uninitialized member %qD", part);
+	  else
+	    error ("accessing %qD member instead of initialized %qD member in "
+		   "constant expression", part, cep->index);
+	}
       *non_constant_p = true;
       return t;
     }
@@ -3750,6 +3763,11 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	/* If we built a new CONSTRUCTOR, attach it now so that other
 	   initializers can refer to it.  */
 	CONSTRUCTOR_APPEND_ELT (*p, index, new_ctx.ctor);
+      else if (TREE_CODE (type) == UNION_TYPE)
+	/* Otherwise if we're constructing a union, set the active union member
+	   anyway so that we can later detect if the initializer attempts to
+	   activate another member.  */
+	CONSTRUCTOR_APPEND_ELT (*p, index, NULL_TREE);
       tree elt = cxx_eval_constant_expression (&new_ctx, value,
 					       lval,
 					       non_constant_p, overflow_p);
@@ -3783,7 +3801,13 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	}
       else
 	{
-	  if (new_ctx.ctor != ctx->ctor)
+	  if (TREE_CODE (type) == UNION_TYPE
+	      && (*p)->last().index != index)
+	    /* The initializer may have erroneously changed the active union
+	       member that we're initializing.  */
+	    gcc_assert (*non_constant_p);
+	  else if (new_ctx.ctor != ctx->ctor
+		   || TREE_CODE (type) == UNION_TYPE)
 	    {
 	      /* We appended this element above; update the value.  */
 	      gcc_assert ((*p)->last().index == index);
@@ -4566,6 +4590,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool no_zero_init = true;
 
   releasing_vec ctors;
+  bool changed_active_union_member_p = false;
   while (!refs->is_empty ())
     {
       if (*valp == NULL_TREE)
@@ -4646,6 +4671,19 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 			      index);
 		  *non_constant_p = true;
 		}
+	      else if (TREE_CODE (t) == MODIFY_EXPR
+		       && CONSTRUCTOR_NO_CLEARING (*valp))
+		{
+		  /* Diagnose changing the active union member while the union
+		     is in the process of being initialized.  */
+		  if (!ctx->quiet)
+		    error_at (cp_expr_loc_or_input_loc (t),
+			      "change of the active member of a union "
+			      "from %qD to %qD during initialization",
+			      CONSTRUCTOR_ELT (*valp, 0)->index,
+			      index);
+		  *non_constant_p = true;
+		}
 	      /* Changing active member.  */
 	      vec_safe_truncate (CONSTRUCTOR_ELTS (*valp), 0);
 	      no_zero_init = true;
@@ -4674,6 +4712,10 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
 	    vec_safe_insert (CONSTRUCTOR_ELTS (*valp), idx, ce);
 	    cep = CONSTRUCTOR_ELT (*valp, idx);
+
+	    if (code == UNION_TYPE)
+	      /* Record that we've changed an active union member.  */
+	      changed_active_union_member_p = true;
 	  }
 	found:;
 	}
@@ -4804,13 +4846,17 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   unsigned i;
   bool c = TREE_CONSTANT (init);
   bool s = TREE_SIDE_EFFECTS (init);
-  if (!c || s)
+  if (!c || s || changed_active_union_member_p)
     FOR_EACH_VEC_ELT (*ctors, i, elt)
       {
 	if (!c)
 	  TREE_CONSTANT (elt) = false;
 	if (s)
 	  TREE_SIDE_EFFECTS (elt) = true;
+	/* Clear CONSTRUCTOR_NO_CLEARING since we've activated a member of
+	   this union.  */
+	if (TREE_CODE (TREE_TYPE (elt)) == UNION_TYPE)
+	  CONSTRUCTOR_NO_CLEARING (elt) = false;
       }
 
   if (*non_constant_p)
@@ -6132,8 +6178,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case PLACEHOLDER_EXPR:
       /* Use of the value or address of the current object.  */
       if (tree ctor = lookup_placeholder (ctx, lval, TREE_TYPE (t)))
-	return cxx_eval_constant_expression (ctx, ctor, lval,
-					     non_constant_p, overflow_p);
+	{
+	  if (TREE_CODE (ctor) == CONSTRUCTOR)
+	    return ctor;
+	  else
+	    return cxx_eval_constant_expression (ctx, ctor, lval,
+						 non_constant_p, overflow_p);
+	}
       /* A placeholder without a referent.  We can get here when
 	 checking whether NSDMIs are noexcept, or in massage_init_elt;
 	 just say it's non-constant for now.  */

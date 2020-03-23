@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "tree-dfa.h"
 #include "file-prefix-map.h" /* remap_debug_filename()  */
+#include "output.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -2777,12 +2778,32 @@ write_symbol (struct streamer_tree_cache_d *cache,
   lto_write_data (&slot_num, 4);
 }
 
+/* Write extension information for symbols (symbol type, section flags).  */
+
+static void
+write_symbol_extension_info (tree t)
+{
+  unsigned char c;
+  c = ((unsigned char) TREE_CODE (t) == VAR_DECL
+       ? GCCST_VARIABLE : GCCST_FUNCTION);
+  lto_write_data (&c, 1);
+  unsigned char section_kind = 0;
+  if (TREE_CODE (t) == VAR_DECL)
+    {
+      section *s = get_variable_section (t, false);
+      if (s->common.flags & SECTION_BSS)
+	section_kind |= GCCSSK_BSS;
+    }
+  lto_write_data (&section_kind, 1);
+}
+
 /* Write an IL symbol table to OB.
    SET and VSET are cgraph/varpool node sets we are outputting.  */
 
-static void
+static unsigned int
 produce_symtab (struct output_block *ob)
 {
+  unsigned int streamed_symbols = 0;
   struct streamer_tree_cache_d *cache = ob->writer_cache;
   char *section_name = lto_get_section_name (LTO_section_symtab, NULL, 0, NULL);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
@@ -2804,6 +2825,7 @@ produce_symtab (struct output_block *ob)
       if (DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
       write_symbol (cache, node->decl, &seen, false);
+      ++streamed_symbols;
     }
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
@@ -2813,8 +2835,61 @@ produce_symtab (struct output_block *ob)
       if (!DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
       write_symbol (cache, node->decl, &seen, false);
+      ++streamed_symbols;
     }
 
+  lto_end_section ();
+
+  return streamed_symbols;
+}
+
+/* Symtab extension version.  */
+#define LTO_SYMTAB_EXTENSION_VERSION 1
+
+/* Write an IL symbol table extension to OB.
+   SET and VSET are cgraph/varpool node sets we are outputting.  */
+
+static void
+produce_symtab_extension (struct output_block *ob,
+			  unsigned int previous_streamed_symbols)
+{
+  unsigned int streamed_symbols = 0;
+  char *section_name = lto_get_section_name (LTO_section_symtab_extension,
+					     NULL, 0, NULL);
+  lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
+  lto_symtab_encoder_iterator lsei;
+
+  lto_begin_section (section_name, false);
+  free (section_name);
+
+  unsigned char version = LTO_SYMTAB_EXTENSION_VERSION;
+  lto_write_data (&version, 1);
+
+  /* Write the symbol table.
+     First write everything defined and then all declarations.
+     This is necessary to handle cases where we have duplicated symbols.  */
+  for (lsei = lsei_start (encoder);
+       !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+
+      if (DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
+	continue;
+      write_symbol_extension_info (node->decl);
+      ++streamed_symbols;
+    }
+  for (lsei = lsei_start (encoder);
+       !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+
+      if (!DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
+	continue;
+      write_symbol_extension_info (node->decl);
+      ++streamed_symbols;
+    }
+
+  gcc_assert (previous_streamed_symbols == streamed_symbols);
   lto_end_section ();
 }
 
@@ -3001,7 +3076,10 @@ produce_asm_for_decls (void)
   /* Write the symbol table.  It is used by linker to determine dependencies
      and thus we can skip it for WPA.  */
   if (!flag_wpa)
-    produce_symtab (ob);
+    {
+      unsigned int streamed_symbols = produce_symtab (ob);
+      produce_symtab_extension (ob, streamed_symbols);
+    }
 
   /* Write command line opts.  */
   lto_write_options ();

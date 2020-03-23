@@ -88,10 +88,14 @@ along with this program; see the file COPYING3.  If not see
 
 /* LTO magic section name.  */
 
-#define LTO_SECTION_PREFIX	".gnu.lto_.symtab"
-#define LTO_SECTION_PREFIX_LEN	(sizeof (LTO_SECTION_PREFIX) - 1)
-#define OFFLOAD_SECTION		".gnu.offload_lto_.opts"
-#define OFFLOAD_SECTION_LEN	(sizeof (OFFLOAD_SECTION) - 1)
+#define LTO_SYMTAB_PREFIX	    ".gnu.lto_.symtab"
+#define LTO_SYMTAB_PREFIX_LEN	    (sizeof (LTO_SYMTAB_PREFIX) - 1)
+#define LTO_SYMTAB_EXT_PREFIX	    ".gnu.lto_.ext_symtab"
+#define LTO_SYMTAB_EXT_PREFIX_LEN   (sizeof (LTO_SYMTAB_EXT_PREFIX) - 1)
+#define LTO_LTO_PREFIX		    ".gnu.lto_.lto"
+#define LTO_LTO_PREFIX_LEN	    (sizeof (LTO_LTO_PREFIX) - 1)
+#define OFFLOAD_SECTION		    ".gnu.offload_lto_.opts"
+#define OFFLOAD_SECTION_LEN	    (sizeof (OFFLOAD_SECTION) - 1)
 
 /* The part of the symbol table the plugin has to keep track of. Note that we
    must keep SYMS until all_symbols_read is called to give the linker time to
@@ -159,7 +163,7 @@ static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
 static ld_plugin_message message;
-static ld_plugin_add_symbols add_symbols;
+static ld_plugin_add_symbols add_symbols, add_symbols_v2;
 
 static struct plugin_file_info *claimed_files = NULL;
 static unsigned int num_claimed_files = 0;
@@ -286,6 +290,8 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
   else
     entry->comdat_key = xstrdup (entry->comdat_key);
 
+  entry->unused = entry->section_kind = entry->symbol_type = 0;
+
   t = *p;
   check (t <= 4, LDPL_FATAL, "invalid symbol kind found");
   entry->def = translate_kind[t];
@@ -308,6 +314,32 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
 
   return p;
 }
+
+/* Parse an entry of the IL symbol table. The data to be parsed is pointed
+   by P and the result is written in ENTRY. The slot number is stored in SLOT.
+   Returns the address of the next entry. */
+
+static char *
+parse_table_entry_extension (char *p, struct ld_plugin_symbol *entry)
+{
+  unsigned char t;
+  enum ld_plugin_symbol_type symbol_types[] =
+    {
+      LDST_UNKNOWN,
+      LDST_FUNCTION,
+      LDST_VARIABLE,
+    };
+
+  t = *p;
+  check (t <= 2, LDPL_FATAL, "invalid symbol type found");
+  entry->symbol_type = symbol_types[t];
+  p++;
+  entry->section_kind = *p;
+  p++;
+
+  return p;
+}
+
 
 /* Translate the IL symbol table located between DATA and END. Append the
    slots and symbols to OUT. */
@@ -337,6 +369,24 @@ translate (char *data, char *end, struct plugin_symtab *out)
   out->nsyms = n;
   out->syms = syms;
   out->aux = aux;
+}
+
+static void
+parse_symtab_extension (char *data, char *end, struct plugin_symtab *out)
+{
+  unsigned i;
+
+  unsigned char version = *data;
+  data++;
+
+  /* Version 1 contains the following data per entry:
+     - symbol_type
+     - section_kind
+     .  */
+
+  if (version == 1)
+    for (i = 0; i < out->nsyms; i++)
+      data = parse_table_entry_extension (data, &out->syms[i]);
 }
 
 /* Free all memory that is no longer needed after writing the symbol
@@ -431,7 +481,7 @@ finish_conflict_resolution (struct plugin_symtab *symtab,
 
   for (i = 0; i < symtab->nsyms; i++)
     { 
-      int resolution = LDPR_UNKNOWN;
+      char resolution = LDPR_UNKNOWN;
 
       if (symtab->aux[i].next_conflict == -1)
 	continue;
@@ -953,7 +1003,7 @@ process_symtab (void *data, const char *name, off_t offset, off_t length)
   char *s;
   char *secdatastart, *secdata;
 
-  if (strncmp (name, LTO_SECTION_PREFIX, LTO_SECTION_PREFIX_LEN) != 0)
+  if (strncmp (name, LTO_SYMTAB_PREFIX, LTO_SYMTAB_PREFIX_LEN) != 0)
     return 1;
 
   s = strrchr (name, '.');
@@ -994,6 +1044,59 @@ err:
   free (secdatastart);
   return 0;
 }
+
+/* Process one section of an object file.  */
+
+static int
+process_symtab_extension (void *data, const char *name, off_t offset,
+			  off_t length)
+{
+  struct plugin_objfile *obj = (struct plugin_objfile *)data;
+  char *s;
+  char *secdatastart, *secdata;
+
+  if (strncmp (name, LTO_SYMTAB_EXT_PREFIX, LTO_SYMTAB_EXT_PREFIX_LEN) != 0)
+    return 1;
+
+  s = strrchr (name, '.');
+  if (s)
+    sscanf (s, ".%" PRI_LL "x", &obj->out->id);
+  secdata = secdatastart = xmalloc (length);
+  offset += obj->file->offset;
+  if (offset != lseek (obj->file->fd, offset, SEEK_SET))
+    goto err;
+
+  do
+    {
+      ssize_t got = read (obj->file->fd, secdata, length);
+      if (got == 0)
+	break;
+      else if (got > 0)
+	{
+	  secdata += got;
+	  length -= got;
+	}
+      else if (errno != EINTR)
+	goto err;
+    }
+  while (length > 0);
+  if (length > 0)
+    goto err;
+
+  parse_symtab_extension (secdatastart, secdata, obj->out);
+  obj->found++;
+  free (secdatastart);
+  return 1;
+
+err:
+  if (message)
+    message (LDPL_FATAL, "%s: corrupt object file", obj->file->name);
+  /* Force claim_file_handler to abandon this file.  */
+  obj->found = 0;
+  free (secdatastart);
+  return 0;
+}
+
 
 /* Find an offload section of an object file.  */
 
@@ -1055,8 +1158,17 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   if (!obj.objfile && !err)
     goto err;
 
-  if (obj.objfile)
-    errmsg = simple_object_find_sections (obj.objfile, process_symtab, &obj, &err);
+   if (obj.objfile)
+    {
+      errmsg = simple_object_find_sections (obj.objfile, process_symtab, &obj,
+					    &err);
+      /*  Parsing symtab extension should be done only for add_symbols_v2 and
+	  later versions.  */
+      if (!errmsg && add_symbols_v2 != NULL)
+	errmsg = simple_object_find_sections (obj.objfile,
+					      process_symtab_extension,
+					      &obj, &err);
+    }
 
   if (!obj.objfile || errmsg)
     {
@@ -1080,8 +1192,12 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 
   if (obj.found > 0)
     {
-      status = add_symbols (file->handle, lto_file.symtab.nsyms,
-			    lto_file.symtab.syms);
+      if (add_symbols_v2)
+	status = add_symbols_v2 (file->handle, lto_file.symtab.nsyms,
+				 lto_file.symtab.syms);
+      else
+	status = add_symbols (file->handle, lto_file.symtab.nsyms,
+			      lto_file.symtab.syms);
       check (status == LDPS_OK, LDPL_FATAL, "could not add symbols");
 
       num_claimed_files++;
@@ -1241,6 +1357,9 @@ onload (struct ld_plugin_tv *tv)
           break;
 	case LDPT_REGISTER_CLAIM_FILE_HOOK:
 	  register_claim_file = p->tv_u.tv_register_claim_file;
+	  break;
+	case LDPT_ADD_SYMBOLS_V2:
+	  add_symbols_v2 = p->tv_u.tv_add_symbols;
 	  break;
 	case LDPT_ADD_SYMBOLS:
 	  add_symbols = p->tv_u.tv_add_symbols;

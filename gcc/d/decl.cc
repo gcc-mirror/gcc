@@ -59,8 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Return identifier for the external mangled name of DECL.  */
 
-static const char *
-mangle_decl (Dsymbol *decl)
+const char *
+d_mangle_decl (Dsymbol *decl)
 {
   if (decl->isFuncDeclaration ())
     return mangleExact ((FuncDeclaration *)decl);
@@ -78,7 +78,7 @@ mangle_decl (Dsymbol *decl)
 tree
 mangle_internal_decl (Dsymbol *decl, const char *name, const char *suffix)
 {
-  const char *prefix = mangle_decl (decl);
+  const char *prefix = d_mangle_decl (decl);
   unsigned namelen = strlen (name);
   unsigned buflen = (2 + strlen (prefix) + namelen + strlen (suffix)) * 2;
   char *buf = (char *) alloca (buflen);
@@ -1145,7 +1145,7 @@ get_symbol_decl (Declaration *decl)
       if (decl->mangleOverride)
 	mangled_name = get_identifier (decl->mangleOverride);
       else
-	mangled_name = get_identifier (mangle_decl (decl));
+	mangled_name = get_identifier (d_mangle_decl (decl));
 
       mangled_name = targetm.mangle_decl_assembler_name (decl->csym,
 							 mangled_name);
@@ -2333,7 +2333,7 @@ build_type_decl (tree type, Dsymbol *dsym)
 
   tree decl = build_decl (make_location_t (dsym->loc), TYPE_DECL,
 			  get_identifier (name), type);
-  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (mangle_decl (dsym)));
+  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (d_mangle_decl (dsym)));
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_CONTEXT (decl) = d_decl_context (dsym);

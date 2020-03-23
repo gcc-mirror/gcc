@@ -4625,7 +4625,7 @@ ipa_read_jump_function (class lto_input_block *ib,
       {
 	tree t = stream_read_tree (ib, data_in);
 	if (flag && prevails)
-	  t = build_fold_addr_expr (t);
+	  t = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (t)), t);
 	ipa_set_jf_constant (jump_func, t, cs);
       }
       break;

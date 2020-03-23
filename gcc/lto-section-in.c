@@ -38,6 +38,7 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "function_body",
   "statics",
   "symtab",
+  "ext_symtab",
   "refs",
   "asm",
   "jmpfuncs",

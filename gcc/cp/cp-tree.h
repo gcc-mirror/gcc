@@ -5291,6 +5291,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    the initializer has void type, it's doing something more complicated.  */
 #define SIMPLE_TARGET_EXPR_P(NODE)				\
   (TREE_CODE (NODE) == TARGET_EXPR				\
+   && TARGET_EXPR_INITIAL (NODE)				\
    && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (NODE))))
 
 /* True if EXPR expresses direct-initialization of a TYPE.  */

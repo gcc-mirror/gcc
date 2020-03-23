@@ -2944,10 +2944,6 @@ compute_fn_summary (struct cgraph_node *node, bool early)
        analyze_function_body (node, early);
        pop_cfun ();
      }
-  for (e = node->callees; e; e = e->next_callee)
-    if (e->callee->comdat_local_p ())
-      break;
-  node->calls_comdat_local = (e != NULL);
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   size_info->size = size_info->self_size;

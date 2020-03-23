@@ -2257,6 +2257,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      /* Value is defined in another basic block.  */
 	      if (!def_info)
 		return false;
+	      def_info = vect_stmt_to_vectorize (def_info);
 	      scalar_stmts.safe_push (def_info);
 	    }
 	  else
@@ -2434,7 +2435,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "Final SLP tree for instance:\n");
-	      vect_print_slp_tree (MSG_NOTE, vect_location, node);
+	      vect_print_slp_tree (MSG_NOTE, vect_location,
+				   SLP_INSTANCE_TREE (new_instance));
 	    }
 
 	  return true;

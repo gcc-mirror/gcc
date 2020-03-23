@@ -2634,6 +2634,9 @@ ipa_inline (void)
     {
       node = order[i];
       if (node->definition
+	  /* Do not try to flatten aliases.  These may happen for example when
+	     creating local aliases.  */
+	  && !node->alias
 	  && lookup_attribute ("flatten",
 			       DECL_ATTRIBUTES (node->decl)) != NULL)
 	order[j--] = order[i];

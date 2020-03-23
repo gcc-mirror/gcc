@@ -603,6 +603,10 @@ simple_empty_class_p (tree type, tree op, tree_code code)
 {
   if (TREE_CODE (op) == COMPOUND_EXPR)
     return simple_empty_class_p (type, TREE_OPERAND (op, 1), code);
+  if (SIMPLE_TARGET_EXPR_P (op)
+      && TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+    /* The TARGET_EXPR is itself a simple copy, look through it.  */
+    return simple_empty_class_p (type, TARGET_EXPR_INITIAL (op), code);
   return
     (TREE_CODE (op) == EMPTY_CLASS_EXPR
      || code == MODIFY_EXPR
@@ -740,6 +744,11 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
 	else if (simple_empty_class_p (TREE_TYPE (op0), op1, code))
 	  {
+	    while (TREE_CODE (op1) == TARGET_EXPR)
+	      /* We're disconnecting the initializer from its target,
+		 don't create a temporary.  */
+	      op1 = TARGET_EXPR_INITIAL (op1);
+
 	    /* Remove any copies of empty classes.  Also drop volatile
 	       variables on the RHS to avoid infinite recursion from
 	       gimplify_expr trying to load the value.  */
@@ -754,6 +763,9 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			   is_gimple_lvalue, fb_lvalue);
 	    *expr_p = TREE_OPERAND (*expr_p, 0);
+	    if (code == RETURN_EXPR && REFERENCE_CLASS_P (*expr_p))
+	      /* Avoid 'return *<retval>;'  */
+	      *expr_p = TREE_OPERAND (*expr_p, 0);
 	  }
 	/* P0145 says that the RHS is sequenced before the LHS.
 	   gimplify_modify_expr gimplifies the RHS before the LHS, but that
@@ -924,7 +936,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      || TREE_CODE (TREE_OPERAND (*expr_p, 0)) == MODIFY_EXPR))
 	{
 	  expr_p = &TREE_OPERAND (*expr_p, 0);
-	  code = TREE_CODE (*expr_p);
 	  /* Avoid going through the INIT_EXPR case, which can
 	     degrade INIT_EXPRs into AGGR_INIT_EXPRs.  */
 	  goto modify_expr_case;
@@ -2261,12 +2272,17 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
 bool
 cxx_omp_disregard_value_expr (tree decl, bool shared)
 {
-  return !shared
-	 && VAR_P (decl)
-	 && DECL_HAS_VALUE_EXPR_P (decl)
-	 && DECL_ARTIFICIAL (decl)
-	 && DECL_LANG_SPECIFIC (decl)
-	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
+  if (shared)
+    return false;
+  if (VAR_P (decl)
+      && DECL_HAS_VALUE_EXPR_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && DECL_OMP_PRIVATIZED_MEMBER (decl))
+    return true;
+  if (VAR_P (decl) && DECL_CONTEXT (decl) && is_capture_proxy (decl))
+    return true;
+  return false;
 }
 
 /* Fold expression X which is used as an rvalue if RVAL is true.  */

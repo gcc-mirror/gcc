@@ -3881,9 +3881,13 @@ cp_tree_equal (tree t1, tree t2)
 	    if (SIZEOF_EXPR_TYPE_P (t2))
 	      o2 = TREE_TYPE (o2);
 	  }
+
 	if (TREE_CODE (o1) != TREE_CODE (o2))
 	  return false;
-	if (TYPE_P (o1))
+
+	if (ARGUMENT_PACK_P (o1))
+	  return template_args_equal (o1, o2);
+	else if (TYPE_P (o1))
 	  return same_type_p (o1, o2);
 	else
 	  return cp_tree_equal (o1, o2);

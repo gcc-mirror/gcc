@@ -1,3 +1,23 @@
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (LTO_SECTION_PREFIX): Rename to ...
+	(LTO_SYMTAB_PREFIX): ... this.
+	(LTO_SECTION_PREFIX_LEN): Rename to ...
+	(LTO_SYMTAB_PREFIX_LEN): ... this.
+	(LTO_SYMTAB_EXT_PREFIX): New.
+	(LTO_SYMTAB_EXT_PREFIX_LEN): New.
+	(LTO_LTO_PREFIX): New.
+	(LTO_LTO_PREFIX_LEN): New.
+	(parse_table_entry): Fill up unused to zero.
+	(parse_table_entry_extension): New.
+	(parse_symtab_extension): New.
+	(finish_conflict_resolution): Change type
+	for resolution.
+	(process_symtab): Use new macro name.
+	(process_symtab_extension): New.
+	(claim_file_handler): Parse also process_symtab_extension.
+	(onload): Call new add_symbols_v2.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

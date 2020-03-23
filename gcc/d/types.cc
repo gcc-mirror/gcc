@@ -498,6 +498,40 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize,
     }
 }
 
+/* Returns true if the class or struct type TYPE has already been layed out by
+   the lowering of another front-end AST type.  In which case, there will either
+   be a reuse of the back-end type, or a multiple definition error.
+   DECO is the uniquely mangled decoration for the type.  */
+
+static bool
+merge_aggregate_types (Type *type, tree deco)
+{
+  AggregateDeclaration *sym;
+
+  if (type->ty == Tstruct)
+    sym = ((TypeStruct *) type)->sym;
+  else if (type->ty == Tclass)
+    sym = ((TypeClass *) type)->sym;
+  else
+    gcc_unreachable ();
+
+  if (IDENTIFIER_DAGGREGATE (deco))
+    {
+      AggregateDeclaration *ad = IDENTIFIER_DAGGREGATE (deco);
+      /* There should never be a class/struct mismatch in mangled names.  */
+      gcc_assert ((sym->isStructDeclaration () && ad->isStructDeclaration ())
+		  || (sym->isClassDeclaration () && ad->isClassDeclaration ()));
+
+      /* Non-templated variables shouldn't be defined twice.  */
+      if (!sym->isInstantiated ())
+	ScopeDsymbol::multiplyDefined (sym->loc, sym, ad);
+
+      type->ctype = build_ctype (ad->type);
+      return true;
+    }
+
+  return false;
+}
 
 /* Implements the visitor interface to build the GCC trees of all
    Type AST classes emitted from the D Front-end, where CTYPE holds
@@ -857,12 +891,19 @@ public:
 
   void visit (TypeStruct *t)
   {
+    /* Merge types in the back-end if the front-end did not itself do so.  */
+    tree deco = get_identifier (d_mangle_decl (t->sym));
+    if (merge_aggregate_types (t, deco))
+      return;
+
     /* Need to set this right away in case of self-references.  */
     t->ctype = make_node (t->sym->isUnionDeclaration ()
 			  ? UNION_TYPE : RECORD_TYPE);
     d_keep (t->ctype);
+    IDENTIFIER_DAGGREGATE (deco) = t->sym;
 
     TYPE_LANG_SPECIFIC (t->ctype) = build_lang_type (t);
+    TYPE_CXX_ODR_P (t->ctype) = 1;
 
     if (t->sym->members)
       {
@@ -903,17 +944,24 @@ public:
 
   void visit (TypeClass *t)
   {
+    /* Merge types in the back-end if the front-end did not itself do so.  */
+    tree deco = get_identifier (d_mangle_decl (t->sym));
+    if (merge_aggregate_types (t, deco))
+      return;
+
     /* Need to set ctype right away in case of self-references to
        the type during this call.  */
     tree basetype = make_node (RECORD_TYPE);
     t->ctype = build_pointer_type (basetype);
     d_keep (t->ctype);
+    IDENTIFIER_DAGGREGATE (deco) = t->sym;
 
     /* Note that lang_specific data is assigned to both the reference
        and the underlying record type.  */
     TYPE_LANG_SPECIFIC (t->ctype) = build_lang_type (t);
     TYPE_LANG_SPECIFIC (basetype) = TYPE_LANG_SPECIFIC (t->ctype);
     CLASS_TYPE_P (basetype) = 1;
+    TYPE_CXX_ODR_P (basetype) = 1;
 
     /* Put out all fields, including from each base class.  */
     layout_aggregate_type (t->sym, basetype, t->sym);

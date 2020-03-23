@@ -2773,7 +2773,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 			    break;
 			  if (info2->order < try_order)
 			    {
-			      if (info2->rhs_code != INTEGER_CST)
+			      if (info2->rhs_code != INTEGER_CST
+				  || info2->lp_nr != merged_store->lp_nr)
 				{
 				  /* Normally check_no_overlap makes sure this
 				     doesn't happen, but if end grows below,
@@ -2791,6 +2792,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 					      info2->bitpos + info2->bitsize);
 			    }
 			  else if (info2->rhs_code == INTEGER_CST
+				   && info2->lp_nr == merged_store->lp_nr
 				   && !last_iter)
 			    {
 			      max_order = MAX (max_order, info2->order + 1);

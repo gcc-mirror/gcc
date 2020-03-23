@@ -16,7 +16,7 @@ foo (float32x4_t a, float32x4_t b, float32_t c)
 float32x4_t
 foo1 (float32x4_t a, float32x4_t b, float32_t c)
 {
-  return vfmasq_n (a, b, c);
+  return vfmasq (a, b, c);
 }
 
 /* { dg-final { scan-assembler "vfmas.f32"  }  } */
