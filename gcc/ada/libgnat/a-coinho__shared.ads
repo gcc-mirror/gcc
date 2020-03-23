@@ -96,6 +96,8 @@ package Ada.Containers.Indefinite_Holders is
 
    procedure Move (Target : in out Holder; Source : in out Holder);
 
+   procedure Swap (Left, Right : in out Holder);
+
 private
 
    use Ada.Finalization;
