@@ -6515,6 +6515,19 @@ package body Sem_Ch6 is
          return;
       end if;
 
+      --  An overriding indication is illegal on a subprogram declared
+      --  in a protected body, where there is no operation to override.
+
+      if (Must_Override (Spec) or else Must_Not_Override (Spec))
+        and then Is_List_Member (Decl)
+        and then Present (Parent (List_Containing (Decl)))
+        and then Nkind (Parent (List_Containing (Decl))) = N_Protected_Body
+      then
+         Error_Msg_N
+           ("illegal overriding indication in protected body", Decl);
+         return;
+      end if;
+
       --  The overriding operation is type conformant with the overridden one,
       --  but the names of the formals are not required to match. If the names
       --  appear permuted in the overriding operation, this is a possible
