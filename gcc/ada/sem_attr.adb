@@ -2359,7 +2359,6 @@ package body Sem_Attr is
 
          Analyze (E2);
          Resolve (E2, P_Type);
-         Check_Not_CPP_Type;
       end Check_Put_Image_Attribute;
 
       ----------------------------

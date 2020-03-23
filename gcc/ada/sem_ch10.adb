@@ -29,6 +29,7 @@ with Contracts; use Contracts;
 with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Errout;    use Errout;
+with Exp_Put_Image;
 with Exp_Util;  use Exp_Util;
 with Elists;    use Elists;
 with Fname;     use Fname;
@@ -621,6 +622,17 @@ package body Sem_Ch10 is
    --  Start of processing for Analyze_Compilation_Unit
 
    begin
+      --  We can't call Preload_Sink for at least some predefined units,
+      --  because it would introduce cyclic dependences. The package where Sink
+      --  is declared, for example, and things it depends on. See Exp_Put_Image
+      --  for documentation. We don't call Preload_Sink in pre-2020 Ada
+      --  versions, because the default Put_Image is disabled in those
+      --  versions, at least for now.
+
+      if Ada_Version >= Ada_2020 and then not In_Predefined_Unit (N) then
+         Exp_Put_Image.Preload_Sink;
+      end if;
+
       Process_Compilation_Unit_Pragmas (N);
 
       --  If the unit is a subunit whose parent has not been analyzed (which
