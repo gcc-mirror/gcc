@@ -1,3 +1,10 @@
+2020-03-23  Jeff Law  <law@redhat.com>
+
+	PR target/94144
+	PR target/94238
+	* gcc.c-torture/compile/pr94144.c: New test.
+	* gcc.c-torture/compile/pr94238.c: New test.
+	
 2020-03-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93805
