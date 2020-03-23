@@ -2722,7 +2722,7 @@ package body GNAT.Sockets is
                --  Old windows versions actual timeout is 500 ms + the given
                --  value (unless it is 0).
 
-               if Minus_500ms_Windows_Timeout /= 0 then
+               if Minus_500ms_Windows_Timeout then
                   if U4 > 500 then
                      U4 := U4 - 500;
 
