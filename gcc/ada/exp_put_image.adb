@@ -31,6 +31,7 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -815,6 +816,12 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (Typ : Entity_Id) return Boolean is
    begin
+      --  Disable in pre-2020 versions for now???
+
+      if Ada_Version < Ada_2020 then
+         return False;
+      end if;
+
       --  There's a bit of a chicken&egg problem. The compiler is likely to
       --  have trouble if we refer to the Put_Image of Sink itself, because
       --  Sink is part of the parameter profile:
@@ -841,7 +848,7 @@ package body Exp_Put_Image is
       --  Put_Image doesn't work for private types whose full type is real.
 
       if Is_Remote_Types (Scope (Typ))
-        or else Is_Tagged_Type (Typ)
+        or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
         or else Is_Real_Type (Typ)
       then
          return False;
@@ -863,6 +870,16 @@ package body Exp_Put_Image is
             return False;
          end if;
       end;
+
+      --  Disable for CPP types, because the components are unavailable on the
+      --  Ada side.
+
+      if Is_Tagged_Type (Typ)
+        and then Convention (Typ) = Convention_CPP
+        and then Is_CPP_Class (Root_Type (Typ))
+      then
+         return False;
+      end if;
 
       return Is_Scalar_Type (Typ) or else not In_Predefined_Unit (Typ);
    end Enable_Put_Image;
@@ -890,9 +907,24 @@ package body Exp_Put_Image is
       return Make_Defining_Identifier (Loc, Sname);
    end Make_Put_Image_Name;
 
-   ----------------------
+   ------------------
+   -- Preload_Sink --
+   ------------------
+
+   procedure Preload_Sink is
+   begin
+      if RTE_Available (RE_Sink) then
+         declare
+            Ignore : constant Entity_Id := RTE (RE_Sink);
+         begin
+            null;
+         end;
+      end if;
+   end Preload_Sink;
+
+   -------------------------
    -- Put_Image_Base_Type --
-   ----------------------
+   -------------------------
 
    function Put_Image_Base_Type (E : Entity_Id) return Entity_Id is
    begin
