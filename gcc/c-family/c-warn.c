@@ -1359,6 +1359,11 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 {
   loc = expansion_point_location_if_in_system_header (loc);
 
+  while (TREE_CODE (expr) == COMPOUND_EXPR)
+    expr = TREE_OPERAND (expr, 1);
+  while (TREE_CODE (result) == COMPOUND_EXPR)
+    result = TREE_OPERAND (result, 1);
+
   bool cst = TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant;
 
   tree exprtype = TREE_TYPE (expr);

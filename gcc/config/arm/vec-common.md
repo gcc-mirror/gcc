@@ -190,3 +190,36 @@
   arm_expand_vec_perm (operands[0], operands[1], operands[2], operands[3]);
   DONE;
 })
+
+(define_expand "vec_extract<mode><V_elem_l>"
+ [(match_operand:<V_elem> 0 "nonimmediate_operand")
+  (match_operand:VQX_NOBF 1 "s_register_operand")
+  (match_operand:SI 2 "immediate_operand")]
+ "TARGET_NEON || TARGET_HAVE_MVE"
+{
+  if (TARGET_NEON)
+    emit_insn (gen_neon_vec_extract<mode><V_elem_l> (operands[0], operands[1],
+						     operands[2]));
+  else if (TARGET_HAVE_MVE)
+    emit_insn (gen_mve_vec_extract<mode><V_elem_l> (operands[0], operands[1],
+						     operands[2]));
+  else
+    gcc_unreachable ();
+  DONE;
+})
+
+(define_expand "vec_set<mode>"
+  [(match_operand:VQX_NOBF 0 "s_register_operand" "")
+   (match_operand:<V_elem> 1 "s_register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  "TARGET_NEON || TARGET_HAVE_MVE"
+{
+  HOST_WIDE_INT elem = HOST_WIDE_INT_1 << INTVAL (operands[2]);
+  if (TARGET_NEON)
+    emit_insn (gen_vec_set<mode>_internal (operands[0], operands[1],
+					   GEN_INT (elem), operands[0]));
+  else
+    emit_insn (gen_mve_vec_set<mode>_internal (operands[0], operands[1],
+					       GEN_INT (elem), operands[0]));
+  DONE;
+})

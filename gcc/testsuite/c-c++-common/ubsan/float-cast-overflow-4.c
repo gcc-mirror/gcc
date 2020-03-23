@@ -1,5 +1,5 @@
 /* { dg-do run { target { lp64 } } } */
-/* { dg-options "-fsanitize=float-cast-overflow" } */
+/* { dg-options "-fsanitize=float-cast-overflow -Wno-overflow" } */
 
 #include <limits.h>
 #include "float-cast.h"

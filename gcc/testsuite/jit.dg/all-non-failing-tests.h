@@ -178,6 +178,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-long-string-literal.c */
+#define create_code create_code_long_string_literal
+#define verify_code verify_code_long_string_literal
+#include "test-long-string-literal.c"
+#undef create_code
+#undef verify_code
+
 /* test-quadratic.c */
 #define create_code create_code_quadratic
 #define verify_code verify_code_quadratic
@@ -342,6 +349,9 @@ const struct testcase testcases[] = {
   {"long_names",
    create_code_long_names,
    verify_code_long_names},
+  {"long_string_literal",
+   create_code_long_string_literal,
+   verify_code_long_string_literal},
   {"quadratic",
    create_code_quadratic,
    verify_code_quadratic},

@@ -1,3 +1,14 @@
+2020-03-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit-playback.h
+	(gcc::jit::playback::context m_recording_ctxt): Remove
+	m_char_array_type_node field.
+	* jit-playback.c
+	(playback::context::context) Remove m_char_array_type_node from member
+	initializer list.
+	(playback::context::new_string_literal) Fix logic to handle string
+	length > 200.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

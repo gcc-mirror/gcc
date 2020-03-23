@@ -2057,6 +2057,18 @@ simplify_parameter_variable (gfc_expr *p, int type)
     }
   gfc_expression_rank (p);
 
+  /* Is this an inquiry?  */
+  bool inquiry = false;
+  gfc_ref* ref = p->ref;
+  while (ref)
+    {
+      if (ref->type == REF_INQUIRY)
+	break;
+      ref = ref->next;
+    }
+  if (ref && ref->type == REF_INQUIRY)
+    inquiry = ref->u.i == INQUIRY_LEN || ref->u.i == INQUIRY_KIND;
+
   if (gfc_is_size_zero_array (p))
     {
       if (p->expr_type == EXPR_ARRAY)
@@ -2069,15 +2081,22 @@ simplify_parameter_variable (gfc_expr *p, int type)
       e->value.constructor = NULL;
       e->shape = gfc_copy_shape (p->shape, p->rank);
       e->where = p->where;
-      gfc_replace_expr (p, e);
-      return true;
+      /* If %kind and %len are not used then we're done, otherwise
+	 drop through for simplification.  */
+      if (!inquiry)
+	{
+	  gfc_replace_expr (p, e);
+	  return true;
+	}
     }
+  else
+    {
+      e = gfc_copy_expr (p->symtree->n.sym->value);
+      if (e == NULL)
+	return false;
 
-  e = gfc_copy_expr (p->symtree->n.sym->value);
-  if (e == NULL)
-    return false;
-
-  e->rank = p->rank;
+      e->rank = p->rank;
+    }
 
   if (e->ts.type == BT_CHARACTER && e->ts.u.cl == NULL)
     e->ts.u.cl = gfc_new_charlen (gfc_current_ns, p->ts.u.cl);
@@ -2125,7 +2144,6 @@ gfc_simplify_expr (gfc_expr *p, int type)
 {
   gfc_actual_arglist *ap;
   gfc_intrinsic_sym* isym = NULL;
-
 
   if (p == NULL)
     return true;

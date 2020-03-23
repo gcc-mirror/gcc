@@ -88,7 +88,6 @@ playback::context::context (recording::context *ctxt)
   : log_user (ctxt->get_logger ()),
     m_recording_ctxt (ctxt),
     m_tempdir (NULL),
-    m_char_array_type_node (NULL),
     m_const_char_ptr (NULL)
 {
   JIT_LOG_SCOPE (get_logger ());
@@ -670,9 +669,14 @@ playback::rvalue *
 playback::context::
 new_string_literal (const char *value)
 {
-  tree t_str = build_string (strlen (value), value);
-  gcc_assert (m_char_array_type_node);
-  TREE_TYPE (t_str) = m_char_array_type_node;
+  /* Compare with c-family/c-common.c: fix_string_type.  */
+  size_t len = strlen (value);
+  tree i_type = build_index_type (size_int (len));
+  tree a_type = build_array_type (char_type_node, i_type);
+  /* build_string len parameter must include NUL terminator when
+     building C strings.  */
+  tree t_str = build_string (len + 1, value);
+  TREE_TYPE (t_str) = a_type;
 
   /* Convert to (const char*), loosely based on
      c/c-typeck.c: array_to_pointer_conversion,
@@ -2701,10 +2705,6 @@ playback::context::
 replay ()
 {
   JIT_LOG_SCOPE (get_logger ());
-  /* Adapted from c-common.c:c_common_nodes_and_builtins.  */
-  tree array_domain_type = build_index_type (size_int (200));
-  m_char_array_type_node
-    = build_array_type (char_type_node, array_domain_type);
 
   m_const_char_ptr
     = build_pointer_type (build_qualified_type (char_type_node,

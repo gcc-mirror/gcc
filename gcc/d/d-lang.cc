@@ -151,66 +151,56 @@ deps_add_target (const char *target, bool quoted)
 static void
 deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
 {
-  hash_set <const char *> dependencies;
+  hash_set <const char *> seen_modules;
+  vec <const char *> dependencies = vNULL;
 
   Modules modlist;
   modlist.push (module);
 
-  Modules phonylist;
-
-  const char *str;
-  unsigned size;
+  vec <const char *> phonylist = vNULL;
   unsigned column = 0;
 
   /* Write out make target module name.  */
   if (d_option.deps_target)
     {
-      size = d_option.deps_target->offset;
-      str = d_option.deps_target->extractString ();
+      buffer->writestring (d_option.deps_target->extractString ());
+      column = d_option.deps_target->offset;
     }
   else
     {
-      str = module->objfile->name->str;
-      size = strlen (str);
+      buffer->writestring (module->objfile->name->str);
+      column = buffer->offset;
     }
 
-  buffer->writestring (str);
-  column = size;
   buffer->writestring (":");
   column++;
 
-  /* Write out all make dependencies.  */
+  /* Search all modules for file dependencies.  */
   while (modlist.dim > 0)
     {
       Module *depmod = modlist.pop ();
 
-      str = depmod->srcfile->name->str;
-      size = strlen (str);
+      const char *modstr = depmod->srcfile->name->str;
 
-      /* Skip dependencies that have already been written.  */
-      if (dependencies.add (str))
+      /* Skip modules that have already been looked at.  */
+      if (seen_modules.add (modstr))
 	continue;
 
-      column += size;
-
-      if (colmax && column > colmax)
-	{
-	  buffer->writestring (" \\\n ");
-	  column = size + 1;
-	}
-      else
-	{
-	  buffer->writestring (" ");
-	  column++;
-	}
-
-      buffer->writestring (str);
+      dependencies.safe_push (modstr);
 
       /* Add to list of phony targets if is not being compile.  */
       if (d_option.deps_phony && !depmod->isRoot ())
-	phonylist.push (depmod);
+	phonylist.safe_push (modstr);
 
-      /* Search all imports of the written dependency.  */
+      /* Add imported files to dependency list.  */
+      for (size_t i = 0; i < depmod->contentImportedFiles.dim; i++)
+	{
+	  const char *impstr = depmod->contentImportedFiles[i];
+	  dependencies.safe_push (impstr);
+	  phonylist.safe_push (impstr);
+	}
+
+      /* Search all imports of the module.  */
       for (size_t i = 0; i < depmod->aimports.dim; i++)
 	{
 	  Module *m = depmod->aimports[i];
@@ -244,15 +234,34 @@ deps_write (Module *module, OutBuffer *buffer, unsigned colmax = 72)
 	}
     }
 
+  /* Write out all make dependencies.  */
+  for (size_t i = 0; i < dependencies.length (); i++)
+    {
+      const char *str = dependencies[i];
+      unsigned size = strlen (str);
+      column += size;
+
+      if (colmax && column > colmax)
+	{
+	  buffer->writestring (" \\\n ");
+	  column = size + 1;
+	}
+      else
+	{
+	  buffer->writestring (" ");
+	  column++;
+	}
+
+      buffer->writestring (str);
+    }
+
   buffer->writenl ();
 
   /* Write out all phony targets.  */
-  for (size_t i = 0; i < phonylist.dim; i++)
+  for (size_t i = 0; i < phonylist.length (); i++)
     {
-      Module *m = phonylist[i];
-
       buffer->writenl ();
-      buffer->writestring (m->srcfile->name->str);
+      buffer->writestring (phonylist[i]);
       buffer->writestring (":\n");
     }
 }

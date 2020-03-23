@@ -1648,8 +1648,9 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
     {
       struct addr_pair *target_var = &target_table[num_funcs + i];
       uintptr_t target_size = target_var->end - target_var->start;
+      bool is_link_var = link_bit & (uintptr_t) host_var_table[i * 2 + 1];
 
-      if ((uintptr_t) host_var_table[i * 2 + 1] != target_size)
+      if (!is_link_var && (uintptr_t) host_var_table[i * 2 + 1] != target_size)
 	{
 	  gomp_mutex_unlock (&devicep->lock);
 	  if (is_register_lock)
@@ -1663,7 +1664,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 	= k->host_start + (size_mask & (uintptr_t) host_var_table[i * 2 + 1]);
       k->tgt = tgt;
       k->tgt_offset = target_var->start;
-      k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
+      k->refcount = is_link_var ? REFCOUNT_LINK : REFCOUNT_INFINITY;
       k->virtual_refcount = 0;
       k->aux = NULL;
       array->left = NULL;

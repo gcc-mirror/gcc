@@ -1315,14 +1315,31 @@ print_filtered_help (unsigned int include_flags,
       if (option->alias_target < N_OPTS
 	  && cl_options [option->alias_target].help)
 	{
+	  const struct cl_option *target = cl_options + option->alias_target;
 	  if (option->help == NULL)
 	    {
-	      /* For undocumented options that are aliases for other options
-		 that are documented, point the reader to the other option in
-		 preference of the former.  */
-	      snprintf (new_help, sizeof new_help,
-			_("Same as %s.  Use the latter option instead."),
-			cl_options [option->alias_target].opt_text);
+	      /* The option is undocumented but is an alias for an option that
+		 is documented.  If the option has alias arguments, then its
+		 purpose is to provide certain arguments to the other option, so
+		 inform the reader of this.  Otherwise, point the reader to the
+		 other option in preference to the former.  */
+
+	      if (option->alias_arg)
+		{
+		  if (option->neg_alias_arg)
+		    snprintf (new_help, sizeof new_help,
+			      _("Same as %s%s (or, in negated form, %s%s)."),
+			      target->opt_text, option->alias_arg,
+			      target->opt_text, option->neg_alias_arg);
+		  else
+		    snprintf (new_help, sizeof new_help,
+			      _("Same as %s%s."),
+			      target->opt_text, option->alias_arg);
+		}
+	      else
+		snprintf (new_help, sizeof new_help,
+			  _("Same as %s."),
+			  target->opt_text);
 	    }
 	  else
 	    {

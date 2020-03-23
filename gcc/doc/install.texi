@@ -3572,22 +3572,22 @@ This is a synonym for @samp{x86_64-*-solaris2*}.
 @html
 <hr />
 @end html
-@anchor{amdgcn-unknown-amdhsa}
-@heading amdgcn-unknown-amdhsa
+@anchor{amdgcn-x-amdhsa}
+@heading amdgcn-*-amdhsa
 AMD GCN GPU target.
 
 Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
-@file{bin/llvm-mc} to @file{amdgcn-unknown-amdhsa/bin/as},
-@file{bin/lld} to @file{amdgcn-unknown-amdhsa/bin/ld},
-@file{bin/llvm-nm} to @file{amdgcn-unknown-amdhsa/bin/nm}, and
-@file{bin/llvm-ar} to both @file{bin/amdgcn-unknown-amdhsa-ar} and
-@file{bin/amdgcn-unknown-amdhsa-ranlib}.
+@file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
+@file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
+@file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
+@file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
+@file{bin/amdgcn-amdhsa-ranlib}.
 
 Use Newlib (2019-01-16, or newer).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.github.io,,ROCm Platform}, and use
-@file{libexec/gcc/amdhsa-unknown-amdhsa/@var{version}/gcn-run} to launch them
+@file{libexec/gcc/amdhsa-amdhsa/@var{version}/gcn-run} to launch them
 on the GPU.
 
 @html

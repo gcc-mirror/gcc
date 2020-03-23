@@ -762,6 +762,26 @@ arm_strsbwbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned, qualifier_unsigned};
 #define STRSBWBU_P_QUALIFIERS (arm_strsbwbu_p_qualifiers)
 
+static enum arm_type_qualifiers
+arm_lsll_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none};
+#define LSLL_QUALIFIERS (arm_lsll_qualifiers)
+
+static enum arm_type_qualifiers
+arm_uqshl_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_const};
+#define UQSHL_QUALIFIERS (arm_uqshl_qualifiers)
+
+static enum arm_type_qualifiers
+arm_asrl_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none};
+#define ASRL_QUALIFIERS (arm_asrl_qualifiers)
+
+static enum arm_type_qualifiers
+arm_sqshl_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_const};
+#define SQSHL_QUALIFIERS (arm_sqshl_qualifiers)
+
 /* End of Qualifier for MVE builtins.  */
 
    /* void ([T element type] *, T, immediate).  */
