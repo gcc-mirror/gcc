@@ -1,3 +1,10 @@
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp_dp_ok_nocache): New.
+	(check_effective_target_arm_fp_dp_ok): New.
+	(add_options_for_arm_fp_dp): New.
+
 2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94286
@@ -18,7 +25,7 @@
 	PR target/94238
 	* gcc.c-torture/compile/pr94144.c: New test.
 	* gcc.c-torture/compile/pr94238.c: New test.
-	
+
 2020-03-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93805

@@ -1,3 +1,9 @@
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (ARM-specific attributes): Add
+	arm_fp_dp_ok.
+	(Features for dg-add-options): Add arm_fp_dp.
+
 2020-03-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR lto/94249
