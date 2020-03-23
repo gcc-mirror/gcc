@@ -1,5 +1,10 @@
 2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
 
+	* lto.c (offload_handle_link_vars): Reduce chance of
+	naming clashes of generated linkptr variable.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR middle-end/94233
 	* lto.c (offload_handle_link_vars): Cleanup; call
 	build_decl to ensure alignment is set.
