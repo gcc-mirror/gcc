@@ -1,3 +1,7 @@
+2020-03-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* opts.c (print_filtered_help): Improve the help text for alias options.
+
 2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
             Andre Vieira  <andre.simoesdiasvieira@arm.com>
             Mihail Ionescu  <mihail.ionescu@arm.com>
