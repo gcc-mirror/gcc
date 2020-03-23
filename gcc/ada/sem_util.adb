@@ -26439,6 +26439,34 @@ package body Sem_Util is
       end if;
    end Static_Integer;
 
+   -------------------------------
+   -- Statically_Denotes_Entity --
+   -------------------------------
+   function Statically_Denotes_Entity (N : Node_Id) return Boolean is
+      E : Entity_Id;
+   begin
+      if not Is_Entity_Name (N) then
+         return False;
+      else
+         E := Entity (N);
+      end if;
+
+      return
+        Nkind (Parent (E)) /= N_Object_Renaming_Declaration
+          or else Is_Prival (E)
+          or else Statically_Denotes_Entity (Renamed_Object (E));
+   end Statically_Denotes_Entity;
+
+   -------------------------------
+   -- Statically_Denotes_Object --
+   -------------------------------
+
+   function Statically_Denotes_Object (N : Node_Id) return Boolean is
+   begin
+      return Statically_Denotes_Entity (N)
+         and then Is_Object_Reference (N);
+   end Statically_Denotes_Object;
+
    --------------------------
    -- Statically_Different --
    --------------------------
@@ -26453,6 +26481,116 @@ package body Sem_Util is
         and then not Is_Formal (Entity (R1))
         and then not Is_Formal (Entity (R2));
    end Statically_Different;
+
+   -----------------------------
+   -- Statically_Names_Object --
+   -----------------------------
+   function Statically_Names_Object (N : Node_Id) return Boolean is
+   begin
+      if Statically_Denotes_Object (N) then
+         return True;
+      elsif Is_Entity_Name (N) then
+         declare
+            E : constant Entity_Id := Entity (N);
+         begin
+            return Nkind (Parent (E)) = N_Object_Renaming_Declaration
+              and then Statically_Names_Object (Renamed_Object (E));
+         end;
+      end if;
+
+      case Nkind (N) is
+         when N_Indexed_Component =>
+            if Is_Access_Type (Etype (Prefix (N))) then
+               --  treat implicit dereference same as explicit
+               return False;
+            end if;
+
+            if not Is_Constrained (Etype (Prefix (N))) then
+               return False;
+            end if;
+
+            declare
+               Indx : Node_Id := First_Index (Etype (Prefix (N)));
+               Expr : Node_Id := First (Expressions (N));
+               Index_Subtype : Node_Id;
+            begin
+               loop
+                  Index_Subtype := Etype (Indx);
+
+                  if not Is_Static_Subtype (Index_Subtype) then
+                     return False;
+                  end if;
+                  if not Is_OK_Static_Expression (Expr) then
+                     return False;
+                  end if;
+
+                  declare
+                     Index_Value : constant Uint := Expr_Value (Expr);
+                     Low_Value   : constant Uint :=
+                       Expr_Value (Type_Low_Bound (Index_Subtype));
+                     High_Value   : constant Uint :=
+                       Expr_Value (Type_High_Bound (Index_Subtype));
+                  begin
+                     if (Index_Value < Low_Value)
+                       or (Index_Value > High_Value)
+                     then
+                        return False;
+                     end if;
+                  end;
+
+                  Next_Index (Indx);
+                  Expr := Next (Expr);
+                  pragma Assert ((Present (Indx) = Present (Expr))
+                    or else (Serious_Errors_Detected > 0));
+                  exit when not (Present (Indx) and Present (Expr));
+               end loop;
+            end;
+
+         when N_Selected_Component =>
+            if Is_Access_Type (Etype (Prefix (N))) then
+               --  treat implicit dereference same as explicit
+               return False;
+            end if;
+
+            if not Ekind_In (Entity (Selector_Name (N)), E_Component,
+                                                         E_Discriminant)
+            then
+               return False;
+            end if;
+            declare
+               Comp : constant Entity_Id :=
+                 Original_Record_Component (Entity (Selector_Name (N)));
+            begin
+              --  In not calling Has_Discriminant_Dependent_Constraint here,
+              --  we are anticipating a language definition fixup. The
+              --  current definition of "statically names" includes the
+              --  wording "the selector_name names a component that does
+              --  not depend on a discriminant", which suggests that this
+              --  call should not be commented out. But it appears likely
+              --  that this wording will be updated to only apply to a
+              --  component declared in a variant part. There is no need
+              --  to disallow something like
+              --    with Post => ... and then
+              --       Some_Record.Some_Discrim_Dep_Array_Component'Old (I)
+              --  since the evaluation of the 'Old prefix cannot raise an
+              --  exception. If the language is not updated, then the call
+              --  below to H_D_C_C will need to be uncommented.
+
+               if Is_Declared_Within_Variant (Comp)
+                  --  or else Has_Discriminant_Dependent_Constraint (Comp)
+               then
+                  return False;
+               end if;
+            end;
+
+         when others => -- includes N_Slice, N_Explicit_Dereference
+            return False;
+      end case;
+
+      pragma Assert (Present (Prefix (N)));
+
+      return Statically_Names_Object (Prefix (N));
+   end Statically_Names_Object;
 
    --------------------------------------
    -- Subject_To_Loop_Entry_Attributes --
