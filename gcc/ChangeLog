@@ -1,3 +1,11 @@
+2020-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94261
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove
+	IL operand swapping code.
+	(vect_slp_rearrange_stmts): Do not arrange isomorphic
+	nodes that would need operation code adjustments.
+
 2020-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/install.texi (amdgcn-*-amdhsa): Renamed
