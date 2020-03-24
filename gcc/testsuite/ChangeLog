@@ -1,5 +1,16 @@
 2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc/arm/vfp-1.c: Use arm_fp__ok effective-target.
+	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
+	* gcc.target/arm/vfp-ldmiad.c: Likewise.
+	* gcc.target/arm/vfp-stmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmiad.c: Likewise.
+	* gcc.target/arm/vnmul-1.c: Likewise.
+	* gcc.target/arm/vnmul-3.c: Likewise.
+	* gcc.target/arm/vnmul-4.c: Likewise.
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/arm/cmp-2.c: Move double-precision tests to...
 	* gcc.target/arm/cmp-3.c: ...here (new file)
 
