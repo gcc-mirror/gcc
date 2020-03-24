@@ -16150,7 +16150,7 @@ package body Sem_Util is
         and then not Is_Dispatching_Operation (Subp)
         and then Needs_Finalization (Etype (Subp))
         and then not Is_Class_Wide_Type (Etype (Subp))
-        and then not (Has_Invariants (Etype (Subp)))
+        and then not Has_Invariants (Etype (Subp))
         and then Present (Subprogram_Body (Subp))
         and then Was_Expression_Function (Subprogram_Body (Subp))
       then
