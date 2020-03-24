@@ -37,6 +37,60 @@
 #error cannot find uint64_t type
 #endif
 
+/* Detect endianess based on __BYTE_ORDER__ macro.  */
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_PDP_ENDIAN__)
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define PLUGIN_LITTLE_ENDIAN 1
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define PLUGIN_BIG_ENDIAN 1
+#elif __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
+#define PLUGIN_PDP_ENDIAN 1
+#endif
+#else
+/* Older GCC releases (<4.6.0) can make detection from glibc macros.  */
+#if defined(__GLIBC__) || defined(__GNU_LIBRARY__) || defined(__ANDROID__)
+#include <endian.h>
+#ifdef _BYTE_ORDER
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define PLUGIN_LITTLE_ENDIAN 1
+#elif __BYTE_ORDER == __BIG_ENDIAN
+#define PLUGIN_BIG_ENDIAN 1
+#endif
+#endif
+#endif
+/* Include all necessary header files based on target.  */
+#if defined(__SVR4) && defined(__sun)
+#include <sys/byteorder.h>
+#endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || \
+    defined(__DragonFly__) || defined(__minix)
+#include <sys/endian.h>
+#endif
+#if defined(__OpenBSD__)
+#include <machine/endian.h>
+#endif
+/* Detect endianess based on _BYTE_ORDER.  */
+#ifdef _BYTE_ORDER
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+#define PLUGIN_LITTLE_ENDIAN 1
+#elif _BYTE_ORDER == _BIG_ENDIAN
+#define PLUGIN_BIG_ENDIAN 1
+#endif
+#endif
+/* Detect based on _WIN32.  */
+#if defined(_WIN32)
+#define PLUGIN_LITTLE_ENDIAN 1
+#endif
+/* Detect based on __BIG_ENDIAN__ and __LITTLE_ENDIAN__ */
+#ifdef __LITTLE_ENDIAN__
+#define PLUGIN_LITTLE_ENDIAN 1
+#endif
+#ifdef __BIG_ENDIAN__
+#define PLUGIN_BIG_ENDIAN 1
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -89,16 +143,23 @@ struct ld_plugin_symbol
   char *version;
   /* This is for compatibility with older ABIs.  The older ABI defined
      only 'def' field.  */
-#ifdef __BIG_ENDIAN__
+#if PLUGIN_BIG_ENDIAN == 1
   char unused;
   char section_kind;
   char symbol_type;
   char def;
+#elif PLUGIN_LITTLE_ENDIAN == 1
+  char def;
+  char symbol_type;
+  char section_kind;
+  char unused;
+#elif PLUGIN_PDP_ENDIAN == 1
+  char symbol_type;
+  char def;
+  char unused;
+  char section_kind;
 #else
-  char def;
-  char symbol_type;
-  char section_kind;
-  char unused;
+#error "Could not detect architecture endianess"
 #endif
   int visibility;
   uint64_t size;
