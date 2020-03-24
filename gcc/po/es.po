@@ -1,8 +1,8 @@
 # Mensajes en español para gcc-8.1.0.
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017, 2018, 2019, 2020 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-# Antonio Ceballos Roa <aceballos@gmail.com>, 2016, 2017, 2018, 2019
+# Antonio Ceballos Roa <aceballos@gmail.com>, 2016, 2017, 2018, 2019, 2020
 #
 # Agradezco a Juan Cuquejo Mira por sus comentarios sobre esta traducción
 #
@@ -40,10 +40,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 9.1.0\n"
+"Project-Id-Version: gcc 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-02-07 22:33+0000\n"
-"PO-Revision-Date: 2019-09-30 17:16+0200\n"
+"PO-Revision-Date: 2020-03-22 16:48+0100\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -554,7 +554,7 @@ msgstr "Modelo de hilos: %s\n"
 #: gcc.c:6797
 #, c-format
 msgid "Supported LTO compression algorithms: zlib"
-msgstr ""
+msgstr "Algoritmos de compresión LTO admitidos: zlib"
 
 #: gcc.c:6799
 #, c-format
@@ -1642,7 +1642,7 @@ msgstr "depuración: "
 #. a range of events within a path.
 #: diagnostic.def:44
 msgid "path: "
-msgstr ""
+msgstr "ruta: "
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
@@ -1987,21 +1987,17 @@ msgid "invalid address mode"
 msgstr "modo de direccionamiento no válido"
 
 #: config/aarch64/aarch64.c:21877 config/arm/arm.c:32832
-#, fuzzy
-#| msgid "invalid conversion from %<__fpreg%>"
 msgid "invalid conversion from type %<bfloat16_t%>"
-msgstr "conversión no válida de %<__fpreg%>"
+msgstr "conversión no válida desde el tipo %<bfloat16_t%>"
 
 #: config/aarch64/aarch64.c:21879 config/arm/arm.c:32834
-#, fuzzy
-#| msgid "invalid conversion to type %qT from type %qT"
 msgid "invalid conversion to type %<bfloat16_t%>"
-msgstr "conversión no válida del tipo %qT a partir del tipo %qT"
+msgstr "conversión no válida al tipo %<bfloat16_t%>"
 
 #: config/aarch64/aarch64.c:21894 config/aarch64/aarch64.c:21910
 #: config/arm/arm.c:32849 config/arm/arm.c:32865
 msgid "operation not permitted on type %<bfloat16_t%>"
-msgstr ""
+msgstr "operación no permitida con el tipo %<bfloat16_t%>"
 
 #: config/alpha/alpha.c:5076 config/i386/i386.c:12789
 #: config/rs6000/rs6000.c:13261 config/sparc/sparc.c:9354
@@ -4012,6 +4008,12 @@ msgid ""
 "   BIND(C) feature of standard Fortran instead.  */\n"
 "\n"
 msgstr ""
+"/* Prototipos de los procedimientos externos generados desde %s\n"
+"   mediante GNU Fortran %s%s.\n"
+"\n"
+"   El uso de esta interfaz está desaconsejado; valore usar\n"
+"   BIND(C) de Fortran estándar en su lugar.  */\n"
+"\n"
 
 #: fortran/error.c:876
 msgid "Fortran 2018 deleted feature:"
@@ -4133,7 +4135,7 @@ msgstr "find_enum(): No se encontró el enumerador"
 
 #: fortran/module.c:2175
 msgid "Unsupported: multiple OpenACC 'routine' levels of parallelism"
-msgstr ""
+msgstr "No admitido: niveles múltiples de paralelismo 'de rutina' OpenACC"
 
 #: fortran/module.c:2378
 msgid "Expected attribute bit name"
@@ -4553,7 +4555,7 @@ msgstr "Se intentó DEALLOCATE en '%s' sin alojar."
 #: fortran/trans.c:1716
 #, c-format
 msgid "Error reallocating to %lu bytes"
-msgstr ""
+msgstr "Error reasignando a %lu bytes"
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
@@ -4773,20 +4775,16 @@ msgid "shared and mdll are not compatible"
 msgstr "shared y mdll no son compatibles"
 
 #: config/i386/darwin.h:134
-#, fuzzy
-#| msgid "%qD is not a template"
 msgid "Darwin is not an mx32 platform"
-msgstr "%qD no es una plantilla"
+msgstr "Darwin no es una plataforma mx32"
 
 #: config/i386/darwin.h:135
 msgid "Darwin does not support -mfentry or associated options"
-msgstr ""
+msgstr "Darwin no admite -mfentry ni opciones asociadas"
 
 #: config/i386/sol2.h:59
-#, fuzzy
-#| msgid "-msx is not supported in coff"
 msgid "-mx32 is not supported on Solaris"
-msgstr "no se admite -msx en coff"
+msgstr "no se admite -mx32 en Solaris"
 
 #: config/mcore/mcore.h:53
 msgid "the m210 does not have little endian support"
@@ -4992,7 +4990,7 @@ msgstr "Avisa sobre sentencias USE sin cualificador ONLY."
 
 #: fortran/lang.opt:294
 msgid "Warn that -fno-automatic may break recursion."
-msgstr ""
+msgstr "Advierte de que -fno-automatic puede romper recursividad."
 
 #: fortran/lang.opt:302
 msgid "Warn about real-literal-constants with 'q' exponent-letter."
@@ -5116,7 +5114,7 @@ msgstr "Trata las líneas con 'D' en la columna uno como comentarios."
 
 #: fortran/lang.opt:457
 msgid "Enable all DEC language extensions."
-msgstr "Activa todas las extensiones del lenguaje DEC."
+msgstr "Permite todas las extensiones del lenguaje DEC."
 
 #: fortran/lang.opt:461
 #, fuzzy
@@ -5126,15 +5124,15 @@ msgstr "Activa el uso de las instrucciones short load."
 
 #: fortran/lang.opt:465
 msgid "Enable the use of character literals in assignments and data statements for non-character variables."
-msgstr ""
+msgstr "Permite el uso de literales de caracteres en asignaciones y sentencias de datos para variables que no son de caracteres."
 
 #: fortran/lang.opt:470
 msgid "Enable legacy parsing of INCLUDE as statement."
-msgstr ""
+msgstr "Permite el análisis antiguo de INCLUDE como sentencia"
 
 #: fortran/lang.opt:474
 msgid "Enable default widths for i, f and g format specifiers."
-msgstr ""
+msgstr "Permite tamaños predefinidos para los especificadore de formato i, f y g."
 
 #: fortran/lang.opt:478
 msgid "Enable kind-specific variants of integer intrinsic functions."
@@ -5146,11 +5144,11 @@ msgstr ""
 
 #: fortran/lang.opt:486
 msgid "Enable support for DEC STRUCTURE/RECORD."
-msgstr "Activa el soporte para STRUCTURE/RECORD de DEC."
+msgstr "Permite el soporte para STRUCTURE/RECORD de DEC."
 
 #: fortran/lang.opt:490
 msgid "Enable DEC-style STATIC and AUTOMATIC attributes."
-msgstr "Activa los atributos de estilo DEC STATIC y AUTOMATIC."
+msgstr "Permite los atributos de estilo DEC STATIC y AUTOMATIC."
 
 #: fortran/lang.opt:494
 msgid "Set the default double precision kind to an 8 byte wide type."
@@ -5288,7 +5286,7 @@ msgstr "-finit-real=<zero|nan|inf|-inf>\tInicializa las variables reales locales
 
 #: fortran/lang.opt:652
 msgid "-finline-arg-packing\tPerform argument packing inline."
-msgstr ""
+msgstr "-finline-arg-packing\tRealiza enpaquetado de argumento en línea."
 
 #: fortran/lang.opt:656
 msgid "-finline-matmul-limit=<n>\tSpecify the size of the largest matrix for which matmul will be inlined."
@@ -6021,7 +6019,7 @@ msgstr "Avisa cuando se aplica sizeof a parámetros declarados como array."
 
 #: c-family/c.opt:812
 msgid "Warn about calls to strcmp and strncmp used in equality expressions that are necessarily true or false due to the length of one and size of the other argument."
-msgstr ""
+msgstr "Advierte de llamadas a strcmp y strncmp utilizadas en expresiones de igualdad que son necesariamente verdaderas o falsas en virtud de la longitud de uno de los argumentos y del tamaño del otro."
 
 #: c-family/c.opt:818
 msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
@@ -6069,7 +6067,7 @@ msgstr "Avisa en la declaración de la plantilla primeraria."
 
 #: c-family/c.opt:865
 msgid "Warn about declarations of entities that may be missing attributes that related entities have been declared with."
-msgstr ""
+msgstr "Avisa sobre declaraciones de entidades a las que les pueden faltar atributos que están presentes en declaraciones de entidades relacionadas."
 
 #: c-family/c.opt:874
 msgid "Warn about user-specified include directories that do not exist."
@@ -6169,7 +6167,7 @@ msgstr "Avisa sobre posibles paréntesis ausentes."
 
 #: c-family/c.opt:1008
 msgid "Warn about calling std::move on a local object in a return statement preventing copy elision."
-msgstr ""
+msgstr "Avisa sobre llamadas a std::move a un objeto local en una sentencia return que evita elisión de copia."
 
 #: c-family/c.opt:1012
 msgid "Warn when converting the type of pointers to member functions."
@@ -6506,7 +6504,7 @@ msgstr "-fconstexpr-ops-limit=<número>\tEspecifica el número máximo de operac
 
 #: c-family/c.opt:1486
 msgid "Enable C++ coroutines (experimental)."
-msgstr ""
+msgstr "Permite corrutinas C++ (experimental)."
 
 #: c-family/c.opt:1490
 msgid "Emit debug annotations during preprocessing."
