@@ -171,6 +171,7 @@ do {								\
      builtin_assert("machine=hppa");				\
      builtin_define("__hppa");					\
      builtin_define("__hppa__");				\
+     builtin_define("__BIG_ENDIAN__");				\
      if (TARGET_PA_20)						\
        builtin_define("_PA_RISC2_0");				\
      else if (TARGET_PA_11)					\

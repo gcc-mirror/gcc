@@ -1,3 +1,8 @@
+2020-03-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR lto/94249
+	* config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Define __BIG_ENDIAN__.
+
 2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libgomp/81689
