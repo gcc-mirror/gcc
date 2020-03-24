@@ -1,3 +1,8 @@
+2020-03-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-firstprivate-1.c: XFAIL
+	execution test.
+
 2019-09-17  Julian Brown  <julian@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
