@@ -1,5 +1,11 @@
 2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): For gimple debug stmts, just set
+	GF_PLF_2, but don't add them to worklist.  Don't add an assigment to
+	worklist or set GF_PLF_2 just because it is used in a debug stmt in
+	another bb.  Formatting improvements.
+
 	PR debug/94277
 	* cgraphunit.c (check_global_declaration): For DECL_EXTERNAL and
 	non-TREE_PUBLIC non-DECL_ARTIFICIAL FUNCTION_DECLs, set TREE_PUBLIC

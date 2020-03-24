@@ -1,5 +1,8 @@
 2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94283
+	* gcc.target/i386/pr94283.c: New test.
+
 	PR debug/94277
 	* gcc.dg/pr94277.c: New test.
 
