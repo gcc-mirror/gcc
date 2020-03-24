@@ -1,6 +1,16 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94277
+	* cgraphunit.c (check_global_declaration): For DECL_EXTERNAL and
+	non-TREE_PUBLIC non-DECL_ARTIFICIAL FUNCTION_DECLs, set TREE_PUBLIC
+	regardless of whether TREE_NO_WARNING is set on it or whether
+	warn_unused_function is true or not.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
 	2020-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94211

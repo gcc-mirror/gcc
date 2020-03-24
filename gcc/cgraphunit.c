@@ -967,15 +967,15 @@ check_global_declaration (symtab_node *snode)
       && DECL_INITIAL (decl) == 0
       && DECL_EXTERNAL (decl)
       && ! DECL_ARTIFICIAL (decl)
-      && ! TREE_NO_WARNING (decl)
-      && ! TREE_PUBLIC (decl)
-      && (warn_unused_function
-	  || snode->referred_to_p (/*include_self=*/false)))
+      && ! TREE_PUBLIC (decl))
     {
-      if (snode->referred_to_p (/*include_self=*/false))
+      if (TREE_NO_WARNING (decl))
+	;
+      else if (snode->referred_to_p (/*include_self=*/false))
 	pedwarn (input_location, 0, "%q+F used but never defined", decl);
       else
-	warning (OPT_Wunused_function, "%q+F declared %<static%> but never defined", decl);
+	warning (OPT_Wunused_function, "%q+F declared %<static%> but never "
+				       "defined", decl);
       /* This symbol is effectively an "extern" declaration now.  */
       TREE_PUBLIC (decl) = 1;
     }
