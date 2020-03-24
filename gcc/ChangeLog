@@ -1,5 +1,9 @@
 2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94286
+	* config/arm/arm.md (subvdi4, usubvsi4, usubvdi4): Use gen_int_mode
+	instead of GEN_INT.
+
 	PR debug/94285
 	* tree-ssa-loop-manip.c (create_iv): If after, set stmt location to
 	e->goto_locus even if gsi_bb (*incr_pos) contains only debug stmts.
