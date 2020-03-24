@@ -1,3 +1,8 @@
+2020-03-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.target/aarch64/aarch64.exp: New file.
+	* g++.target/aarch64/pr94052.C: New test.
+
 2020-03-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backport from master

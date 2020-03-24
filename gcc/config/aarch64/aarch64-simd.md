@@ -5060,6 +5060,26 @@
       if (GET_CODE (operands[0]) != REG)
 	operands[1] = force_reg (<MODE>mode, operands[1]);
     }
+
+  /* If we have a paradoxical subreg trying to write to <MODE> from and the
+     registers don't overlap then we need to break it apart.  What it's trying
+     to do is give two kind of information at the same time.  It's trying to
+     convey liveness information by saying that the entire register will be
+     written to eventually, but it also only wants to write a single part of the
+     register.  Hence the paradoxical subreg.
+
+     Instead of allowing this we will split the two concerns.  The liveness
+     information will be conveyed using a clobber and then we break apart the
+     paradoxical subreg into just a normal write of the part that it wanted to
+     write originally.  */
+
+  if (REG_P (operands[0]) && paradoxical_subreg_p (operands[1]))
+    {
+      if (!reg_overlap_mentioned_p (operands[0], operands[1]))
+	emit_clobber (operands[0]);
+      operands[1] = SUBREG_REG (operands[1]);
+      operands[0] = gen_lowpart (GET_MODE (operands[1]), operands[0]);
+    }
 })
 
 (define_insn "*aarch64_mov<mode>"
