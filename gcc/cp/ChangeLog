@@ -1,5 +1,15 @@
 2020-03-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/94186
+	* constraint.cc (constraint_satisfaction_value): Repeat noisily on
+	error.
+	(tsubst_nested_requirement): Likewise.
+	(get_constraint_error_location): Allow missing context.
+	(diagnose_atomic_constraint): Diagnose non-bool constraint here.
+	(satisfy_atom): Not here.  Only diagnose non-constant when noisy.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
 	* pt.c (any_template_parm_r): Look into the type of a non-type
 	template parm.
 
