@@ -564,7 +564,7 @@ package body System.Secondary_Stack is
       --------------
 
       function Round_Up (Size : Storage_Count) return Memory_Size is
-         Algn_MS : constant Memory_Size := Standard'Maximum_Alignment;
+         Algn_MS : constant Memory_Size := Memory_Alignment;
          Size_MS : constant Memory_Size := Memory_Size (Size);
 
       begin
