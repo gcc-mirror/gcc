@@ -1,3 +1,8 @@
+2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/81689
+	* testsuite/libgomp.c/target-link-1.c: Remove xfail.
+
 2020-03-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libgomp/94251
