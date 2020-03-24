@@ -1,3 +1,13 @@
+2020-03-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backport from mainline
+	2020-03-16  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/94125
+	* tree-loop-distribution.c
+	(loop_distribution::break_alias_scc_partitions): Update post order
+	number for merged scc.
+
 2020-03-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	Backport from mainline
