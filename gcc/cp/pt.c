@@ -10431,6 +10431,7 @@ any_template_parm_r (tree t, void *data)
       WALK_SUBTREE (TREE_OPERAND (t, 1));
       break;
 
+    case TEMPLATE_PARM_INDEX:
     case PARM_DECL:
       /* A parameter or constraint variable may also depend on a template
 	 parameter without explicitly naming it.  */
