@@ -1,3 +1,12 @@
+2020-03-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (SET_TYPE_TEMPLATE_INFO): Only expand VAL once.
+	* pt.c (perform_typedefs_access_check)
+	(append_type_to_template_for_access_check): Move G_T_N_A_C call
+	out of loop.
+	(get_types_needing_access_check): Simplify.
+
 2020-03-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

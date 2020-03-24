@@ -11441,26 +11441,28 @@ perform_typedefs_access_check (tree tmpl, tree targs)
 	  && TREE_CODE (tmpl) != FUNCTION_DECL))
     return;
 
-  FOR_EACH_VEC_SAFE_ELT (get_types_needing_access_check (tmpl), i, iter)
-    {
-      tree type_decl = iter->typedef_decl;
-      tree type_scope = iter->context;
+  if (vec<qualified_typedef_usage_t, va_gc> *tdefs
+      = get_types_needing_access_check (tmpl))
+    FOR_EACH_VEC_ELT (*tdefs, i, iter)
+      {
+	tree type_decl = iter->typedef_decl;
+	tree type_scope = iter->context;
 
-      if (!type_decl || !type_scope || !CLASS_TYPE_P (type_scope))
-	continue;
+	if (!type_decl || !type_scope || !CLASS_TYPE_P (type_scope))
+	  continue;
 
-      if (uses_template_parms (type_decl))
-	type_decl = tsubst (type_decl, targs, tf_error, NULL_TREE);
-      if (uses_template_parms (type_scope))
-	type_scope = tsubst (type_scope, targs, tf_error, NULL_TREE);
+	if (uses_template_parms (type_decl))
+	  type_decl = tsubst (type_decl, targs, tf_error, NULL_TREE);
+	if (uses_template_parms (type_scope))
+	  type_scope = tsubst (type_scope, targs, tf_error, NULL_TREE);
 
-      /* Make access check error messages point to the location
-         of the use of the typedef.  */
-      iloc_sentinel ils (iter->locus);
-      perform_or_defer_access_check (TYPE_BINFO (type_scope),
-				     type_decl, type_decl,
-				     tf_warning_or_error);
-    }
+	/* Make access check error messages point to the location
+	   of the use of the typedef.  */
+	iloc_sentinel ils (iter->locus);
+	perform_or_defer_access_check (TYPE_BINFO (type_scope),
+				       type_decl, type_decl,
+				       tf_warning_or_error);
+      }
 }
 
 static tree
@@ -29074,25 +29076,13 @@ check_auto_in_tmpl_args (tree tmpl, tree args)
 vec<qualified_typedef_usage_t, va_gc> *
 get_types_needing_access_check (tree t)
 {
-  tree ti;
-  vec<qualified_typedef_usage_t, va_gc> *result = NULL;
+  gcc_checking_assert ((CLASS_TYPE_P (t) || TREE_CODE (t) == FUNCTION_DECL));
+  
+  if (tree ti = get_template_info (t))
+    if (TI_TEMPLATE (ti))
+      return TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti);
 
-  if (!t || t == error_mark_node)
-    return NULL;
-
-  if (!(ti = get_template_info (t)))
-    return NULL;
-
-  if (CLASS_TYPE_P (t)
-      || TREE_CODE (t) == FUNCTION_DECL)
-    {
-      if (!TI_TEMPLATE (ti))
-	return NULL;
-
-      result = TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti);
-    }
-
-  return result;
+  return NULL;
 }
 
 /* Append the typedef TYPE_DECL used in template T to a list of typedefs
@@ -29177,9 +29167,11 @@ append_type_to_template_for_access_check (tree templ,
   gcc_assert (type_decl && (TREE_CODE (type_decl) == TYPE_DECL));
 
   /* Make sure we don't append the type to the template twice.  */
-  FOR_EACH_VEC_SAFE_ELT (get_types_needing_access_check (templ), i, iter)
-    if (iter->typedef_decl == type_decl && scope == iter->context)
-      return;
+  if (vec<qualified_typedef_usage_t, va_gc> *tdefs
+      = get_types_needing_access_check (templ))
+    FOR_EACH_VEC_ELT (*tdefs, i, iter)
+      if (iter->typedef_decl == type_decl && scope == iter->context)
+	return;
 
   append_type_to_template_for_access_check_1 (templ, type_decl,
 					      scope, location);
