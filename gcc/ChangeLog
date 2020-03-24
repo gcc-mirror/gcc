@@ -1,3 +1,9 @@
+2020-03-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94052
+	* config/aarch64/aarch64-simd.md (mov<mode>): Remove paradoxical
+	subregs of VSTRUCT modes.
+
 2020-03-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	Backport from mainline

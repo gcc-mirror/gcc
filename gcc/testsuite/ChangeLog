@@ -1,3 +1,8 @@
+2020-03-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94052
+        * g++.target/aarch64/pr94052.C: New test.
+
 2020-03-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	Backport from mainline
