@@ -1,6 +1,12 @@
 /* Test behavior of 'firstprivate' lexically vs. dynamically nested inside a
    'data' region.  */
 
+/* The firstprivate_int optimization changes the semantics of firstprivate
+   in dynamically_nested_compute_2 to copy-by-value when not using shared
+   memory, leading to the behaviour suggested in PR92036 for this case.  */
+
+/* { dg-xfail-run-if "firstprivate_int" { *-*-* } { "-DACC_MEM_SHARED=0" } } */
+
 #include <stdlib.h>
 
 
