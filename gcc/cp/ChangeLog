@@ -1,3 +1,8 @@
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_expr): When constructing from an expr and a
+	location, call protected_set_expr_location.
+
 2020-03-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93805
