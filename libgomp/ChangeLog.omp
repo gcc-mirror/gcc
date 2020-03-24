@@ -1,3 +1,8 @@
+2020-03-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-firstprivate-1.c: XFAIL
+	execution test.
+
 2020-03-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c (main): Add
