@@ -1481,7 +1481,7 @@
     lo_op2 = force_reg (SImode, lo_op2);
   if (CONST_INT_P (lo_op2))
     emit_insn (gen_cmpsi2_addneg (lo_result, lo_op1, lo_op2,
-				  GEN_INT (-INTVAL (lo_op2))));
+				  gen_int_mode (-INTVAL (lo_op2), SImode)));
   else
     emit_insn (gen_subsi3_compare1 (lo_result, lo_op1, lo_op2));
 
@@ -1525,7 +1525,8 @@
     }
   else if (CONST_INT_P (operands[2]))
     emit_insn (gen_cmpsi2_addneg (operands[0], operands[1], operands[2],
-				  GEN_INT (-INTVAL (operands[2]))));
+				  gen_int_mode (-INTVAL (operands[2]),
+						SImode)));
   else if (CONST_INT_P (operands[1]))
     {
       mode = CC_RSBmode;
@@ -1597,7 +1598,7 @@
     lo_op2 = force_reg (SImode, lo_op2);
   if (CONST_INT_P (lo_op2))
     emit_insn (gen_cmpsi2_addneg (lo_result, lo_op1, lo_op2,
-				  GEN_INT (-INTVAL (lo_op2))));
+				  gen_int_mode (-INTVAL (lo_op2), SImode)));
   else
     emit_insn (gen_subsi3_compare1 (lo_result, lo_op1, lo_op2));
 

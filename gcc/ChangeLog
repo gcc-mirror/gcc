@@ -1,3 +1,46 @@
+2020-03-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR lto/94249
+	* config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Define __BIG_ENDIAN__.
+
+2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/81689
+	* omp-offload.c (omp_finish_file): Fix target-link handling if
+	targetm_common.have_named_sections is false.
+
+2020-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94286
+	* config/arm/arm.md (subvdi4, usubvsi4, usubvdi4): Use gen_int_mode
+	instead of GEN_INT.
+
+	PR debug/94285
+	* tree-ssa-loop-manip.c (create_iv): If after, set stmt location to
+	e->goto_locus even if gsi_bb (*incr_pos) contains only debug stmts.
+	If not after and at *incr_pos is a debug stmt, set stmt location to
+	location of next non-debug stmt after it if any.
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): For gimple debug stmts, just set
+	GF_PLF_2, but don't add them to worklist.  Don't add an assigment to
+	worklist or set GF_PLF_2 just because it is used in a debug stmt in
+	another bb.  Formatting improvements.
+
+	PR debug/94277
+	* cgraphunit.c (check_global_declaration): For DECL_EXTERNAL and
+	non-TREE_PUBLIC non-DECL_ARTIFICIAL FUNCTION_DECLs, set TREE_PUBLIC
+	regardless of whether TREE_NO_WARNING is set on it or whether
+	warn_unused_function is true or not.
+
+2020-03-23  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	PR target/94238
+	PR target/94144
+	* simplify-rtx.c (comparison_code_valid_for_mode): New function.
+	(simplify_logical_relational_operation): Use it.
+
 2020-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91993

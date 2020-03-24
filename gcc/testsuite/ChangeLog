@@ -1,3 +1,29 @@
+2020-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94286
+	* gcc.dg/pr94286.c: New test.
+
+	PR debug/94285
+	* gfortran.dg/pr94285.f90: New test.
+
+	PR debug/94283
+	* gcc.target/i386/pr94283.c: New test.
+
+	PR debug/94277
+	* gcc.dg/pr94277.c: New test.
+
+2020-03-23  Jeff Law  <law@redhat.com>
+
+	PR target/94144
+	PR target/94238
+	* gcc.c-torture/compile/pr94144.c: New test.
+	* gcc.c-torture/compile/pr94238.c: New test.
+	
+2020-03-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93805
+	* g++.dg/warn/Wnoexcept2.C: New test.
+
 2020-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91993

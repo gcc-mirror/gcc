@@ -1,3 +1,8 @@
+2020-03-24  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94249
+	* plugin-api.h: Add more robust endianess detection.
+
 2020-03-21  Martin Liska  <mliska@suse.cz>
 
 	* plugin-api.h (enum ld_plugin_symbol_type): Remove

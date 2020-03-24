@@ -566,6 +566,7 @@ offload_handle_link_vars (void)
 							     "linkptr"), type);
 	TREE_USED (link_ptr_var) = 1;
 	TREE_STATIC (link_ptr_var) = 1;
+	TREE_PUBLIC (link_ptr_var) = TREE_PUBLIC (var->decl);
 	DECL_ARTIFICIAL (link_ptr_var) = 1;
 	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
 	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
