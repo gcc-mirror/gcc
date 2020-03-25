@@ -1,5 +1,9 @@
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94296
+	* gcc.dg/cleanup-13.c: Add a comment that the test is not
+	-fcompare-debug compatible with certain other options.
+
 	PR target/94308
 	* gcc.target/i386/pr94308.c: New test.
 
