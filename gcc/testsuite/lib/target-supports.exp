@@ -9034,6 +9034,12 @@ proc check_effective_target_stpcpy {} {
     return [check_function_available "stpcpy"]
 }
 
+# Returns 1 if "sigsetjmp" is available on the target system.
+
+proc check_effective_target_sigsetjmp {} {
+    return [check_function_available "sigsetjmp"]
+}
+
 # Check whether the vectorizer tests are supported by the target and
 # append additional target-dependent compile flags to DEFAULT_VECTCFLAGS.
 # If a port wants to execute the tests more than once it should append
