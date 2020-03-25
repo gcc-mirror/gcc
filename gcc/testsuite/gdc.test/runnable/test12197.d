@@ -10,3 +10,4 @@ void main()
     foo(a);
     assert(a[0] == 10000);
 }
+// RUNNABLE_PHOBOS_TEST

@@ -5,3 +5,4 @@ void map(real function(real) f) { }
 int main() { map(&sqrt); return 0; }
 
 
+// RUNNABLE_PHOBOS_TEST

@@ -725,3 +725,4 @@ void CLASS()
         }
     }
 }
+// RUNNABLE_PHOBOS_TEST

@@ -638,6 +638,8 @@ GDCFLAGSX
 libtool_VERSION
 SPEC_PHOBOS_DEPS
 CHECKING_DFLAGS
+ENABLE_LIBDRUNTIME_ONLY_FALSE
+ENABLE_LIBDRUNTIME_ONLY_TRUE
 ENABLE_LIBPHOBOS_FALSE
 ENABLE_LIBPHOBOS_TRUE
 gdc_include_dir
@@ -840,6 +842,7 @@ with_cross_host
 enable_version_specific_runtime_libs
 with_toolexeclibdir
 enable_libphobos
+with_libdruntime_only
 enable_libphobos_checking
 '
       ac_precious_vars='build_alias
@@ -1509,6 +1512,8 @@ Optional Packages:
   --with-toolexeclibdir=DIR
                           install libraries built with a cross compiler within
                           DIR
+  --with-libphobos-druntime-only={yes,no,auto}
+                          build only the druntime library (default: auto)
 
 Some influential environment variables:
   CC          C compiler command
@@ -11645,7 +11650,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11648 "configure"
+#line 11653 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11751,7 +11756,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11754 "configure"
+#line 11759 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15230,8 +15235,27 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libphobos" >&5
 $as_echo "$enable_libphobos" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for --with-libphobos-druntime-only" >&5
+$as_echo_n "checking for --with-libphobos-druntime-only... " >&6; }
+
+# Check whether --with-libdruntime-only was given.
+if test "${with_libdruntime_only+set}" = set; then :
+  withval=$with_libdruntime_only;
+else
+  with_libdruntime_only=auto
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_libdruntime_only" >&5
+$as_echo "$with_libdruntime_only" >&6; }
+
+case "$with_libdruntime_only" in
+  yes|no|auto) ;;
+  *) as_fn_error $? "Invalid argument for --with-libphobos-druntime-only" "$LINENO" 5 ;;
+esac
+
 # See if supported.
 unset LIBPHOBOS_SUPPORTED
+unset LIBDRUNTIME_ONLY
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for host support for libphobos" >&5
 $as_echo_n "checking for host support for libphobos... " >&6; }
 . ${srcdir}/configure.tgt
@@ -15271,6 +15295,22 @@ esac
 else
   ENABLE_LIBPHOBOS_TRUE='#'
   ENABLE_LIBPHOBOS_FALSE=
+fi
+
+
+# Decide if only libdruntime should be built.
+case $LIBDRUNTIME_ONLY:$with_libdruntime_only in
+*:no)  only_libdruntime=no  ;;
+*:yes) only_libdruntime=yes ;;
+yes:*) only_libdruntime=yes ;;
+*:*)   only_libdruntime=no  ;;
+esac
+ if test x$only_libdruntime = xyes; then
+  ENABLE_LIBDRUNTIME_ONLY_TRUE=
+  ENABLE_LIBDRUNTIME_ONLY_FALSE='#'
+else
+  ENABLE_LIBDRUNTIME_ONLY_TRUE='#'
+  ENABLE_LIBDRUNTIME_ONLY_FALSE=
 fi
 
 
@@ -15575,6 +15615,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_LIBPHOBOS_TRUE}" && test -z "${ENABLE_LIBPHOBOS_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_LIBPHOBOS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_LIBDRUNTIME_ONLY_TRUE}" && test -z "${ENABLE_LIBDRUNTIME_ONLY_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_LIBDRUNTIME_ONLY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -11,3 +11,4 @@ void main()
     // imports in a subdirectory of the -J path
     writefln(import("std14198/uni.d"));
 }
+// RUNNABLE_PHOBOS_TEST
