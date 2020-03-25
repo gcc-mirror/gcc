@@ -12307,6 +12307,15 @@ rs6000_can_change_mode_class (machine_mode from,
 	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
 	    return false;
 
+	  /* Allow SD<->DD changes, since SDmode values are stored in
+	     the low half of the DDmode, just like target-independent
+	     code expects.  We need to allow at least SD->DD since
+	     rs6000_secondary_memory_needed_mode asks for that change
+	     to be made for SD reloads.  */
+	  if ((to == DDmode && from == SDmode)
+	      || (to == SDmode && from == DDmode))
+	    return true;
+
 	  if (from_size < 8 || to_size < 8)
 	    return false;
 

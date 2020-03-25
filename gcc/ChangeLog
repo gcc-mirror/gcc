@@ -1,3 +1,9 @@
+2020-03-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94254
+	* config/rs6000/rs6000.c (rs6000_can_change_mode_class): Allow
+	FPRs to change between SDmode and DDmode.
+
 2020-03-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/94131
