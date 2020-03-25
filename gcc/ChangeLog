@@ -1,3 +1,11 @@
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/94131
+	* gimple-fold.c (get_range_strlen_tree): Fail for variable-length
+	types and decls.
+	* tree-ssa-strlen.c (get_range_strlen_dynamic): Avoid assuming
+	types have constant sizes.
+
 2020-03-25  Martin Liska  <mliska@suse.cz>
 
 	PR lto/94259

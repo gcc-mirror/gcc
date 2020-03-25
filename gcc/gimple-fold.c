@@ -1378,7 +1378,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 
 	  /* Fail when the array bound is unknown or zero.  */
 	  val = TYPE_SIZE_UNIT (optype);
-	  if (!val || integer_zerop (val))
+	  if (!val
+	      || TREE_CODE (val) != INTEGER_CST
+	      || integer_zerop (val))
 	    return false;
 
 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
@@ -1412,7 +1414,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 
 	  /* Fail when the array bound is unknown or zero.  */
 	  val = TYPE_SIZE_UNIT (optype);
-	  if (!val || integer_zerop (val))
+	  if (!val
+	      || TREE_CODE (val) != INTEGER_CST
+	      || integer_zerop (val))
 	    return false;
 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
 			     integer_one_node);
@@ -1448,7 +1452,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	      /* Fail if the offset is out of bounds.  Such accesses
 		 should be diagnosed at some point.  */
 	      val = DECL_SIZE_UNIT (ref);
-	      if (!val || integer_zerop (val))
+	      if (!val
+		  || TREE_CODE (val) != INTEGER_CST
+		  || integer_zerop (val))
 		return false;
 
 	      poly_offset_int psiz = wi::to_offset (val);

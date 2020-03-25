@@ -1140,10 +1140,16 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	    {
 	      tree basetype = TREE_TYPE (base);
 	      tree size = TYPE_SIZE_UNIT (basetype);
-	      ++off;   /* Increment for the terminating nul.  */
-	      pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node, size,
-					   build_int_cst (size_type_node, off));
-	      pdata->maxbound = pdata->maxlen;
+	      if (TREE_CODE (size) == INTEGER_CST)
+		{
+		  ++off;   /* Increment for the terminating nul.  */
+		  tree toffset = build_int_cst (size_type_node, off);
+		  pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node, size,
+					       toffset);
+		  pdata->maxbound = pdata->maxlen;
+		}
+	      else	
+		pdata->maxlen = build_all_ones_cst (size_type_node);
 	    }
 	  else
 	    pdata->maxlen = build_all_ones_cst (size_type_node);

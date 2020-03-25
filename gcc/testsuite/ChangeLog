@@ -1,3 +1,8 @@
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/94131
+	* gcc.dg/pr94131.c: New test.
+
 2020-03-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/pr92301.c (main): Allow argc to be 0 to support
