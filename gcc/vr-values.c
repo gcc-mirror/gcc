@@ -3380,42 +3380,45 @@ vr_values::simplify_min_or_max_using_ranges (gimple_stmt_iterator *gsi,
 					     gimple *stmt)
 {
   tree op0 = gimple_assign_rhs1 (stmt);
+  if (!irange::supports_type_p (TREE_TYPE (op0)))
+    return false;
   tree op1 = gimple_assign_rhs2 (stmt);
-  bool sop = false;
-  tree val;
+  value_range vr0, vr1;
+  if (TREE_CODE (op0) == SSA_NAME)
+    vr0 = *get_value_range (op0);
+  else if (TREE_CODE (op0) == INTEGER_CST)
+    vr0.set (op0);
+  else
+    vr0.set_varying (TREE_TYPE (op0));
+  if (TREE_CODE (op1) == SSA_NAME)
+    vr1 = *get_value_range (op1);
+  else if (TREE_CODE (op1) == INTEGER_CST)
+    vr1.set (op1);
+  else
+    vr1.set_varying (TREE_TYPE (op1));
 
-  val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	 (LE_EXPR, op0, op1, &sop));
-  if (!val)
+  if (vr0.varying_p () || vr1.varying_p ())
+    return false;
+
+  value_range tmp (vr0);
+  tmp.intersect (vr1);
+  if (!tmp.undefined_p ())
+    return false;
+
+  value_range res;
+  range_operator *handler = range_op_handler (gimple_assign_rhs_code (stmt),
+					      TREE_TYPE (op0));
+  handler->fold_range (res, TREE_TYPE (op0), vr0, vr1);
+  if (res == vr0)
     {
-      sop = false;
-      val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	     (LT_EXPR, op0, op1, &sop));
-    }
-
-  if (val)
-    {
-      if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
-	{
-	  location_t location;
-
-	  if (!gimple_has_location (stmt))
-	    location = input_location;
-	  else
-	    location = gimple_location (stmt);
-	  warning_at (location, OPT_Wstrict_overflow,
-		      "assuming signed overflow does not occur when "
-		      "simplifying %<min/max (X,Y)%> to %<X%> or %<Y%>");
-	}
-
-      /* VAL == TRUE -> OP0 < or <= op1
-	 VAL == FALSE -> OP0 > or >= op1.  */
-      tree res = ((gimple_assign_rhs_code (stmt) == MAX_EXPR)
-		  == integer_zerop (val)) ? op0 : op1;
-      gimple_assign_set_rhs_from_tree (gsi, res);
+      gimple_assign_set_rhs_from_tree (gsi, op0);
       return true;
     }
-
+  if (res == vr1)
+    {
+      gimple_assign_set_rhs_from_tree (gsi, op1);
+      return true;
+    }
   return false;
 }
 
