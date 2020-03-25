@@ -2058,6 +2058,8 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 		shift_bytes_in_array_left (this_buffer, len + 1, amnt);
 	      unsigned int off = pd.offset / BITS_PER_UNIT;
 	      gcc_assert (off < needed_len);
+	      size = MIN (size,
+			  (HOST_WIDE_INT) (needed_len - off) * BITS_PER_UNIT);
 	      p = buffer + off;
 	      if (amnt + size < BITS_PER_UNIT)
 		{

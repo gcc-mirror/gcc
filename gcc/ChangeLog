@@ -1,3 +1,9 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94300
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): If pd.offset
+	is positive, make sure that off + size isn't larger than needed_len.
+
 2020-03-25  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
