@@ -1371,7 +1371,7 @@ AC_MSG_RESULT($gcc_cv_header_zstd_h)
 if test $gcc_cv_header_zstd_h = yes; then
   AC_DEFINE(HAVE_ZSTD_H, 1,
 	[Define if you have a working <zstd.h> header file.])
-else
+elif test "x$with_zstd" != x; then
     as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
 

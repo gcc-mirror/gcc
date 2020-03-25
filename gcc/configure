@@ -10019,7 +10019,7 @@ if test $gcc_cv_header_zstd_h = yes; then
 
 $as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
 
-else
+elif test "x$with_zstd" != x; then
     as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
 

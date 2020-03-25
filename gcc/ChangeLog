@@ -1,3 +1,10 @@
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94259
+	* configure.ac: Report error only when --with-zstd
+	is used.
+	* configure: Regenerate.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94308
