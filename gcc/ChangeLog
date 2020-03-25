@@ -1,5 +1,17 @@
 2020-03-25  Martin Liska  <mliska@suse.cz>
 
+	PR target/93274
+	PR ipa/94271
+	* config/i386/i386-features.c (make_resolver_func): Drop
+	public flag for resolver.
+	* config/rs6000/rs6000.c (make_resolver_func): Add comdat
+	group for resolver and drop public flag if possible.
+	* multiple_target.c (create_dispatcher_calls): Drop unique_name
+	and resolution as we want to enable LTO privatization of the default
+	symbol.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
 	PR lto/94259
 	* configure.ac: Respect --without-zstd and report
 	error when we can't find header file with --with-zstd.

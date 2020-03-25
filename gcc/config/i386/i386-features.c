@@ -2777,6 +2777,9 @@ make_resolver_func (const tree default_decl,
       DECL_COMDAT (decl) = 1;
       make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
     }
+  else
+    TREE_PUBLIC (ifunc_alias_decl) = 0;
+
   /* Build result decl and add to function_decl. */
   t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
   DECL_CONTEXT (t) = decl;

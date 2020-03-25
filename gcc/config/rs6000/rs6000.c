@@ -23894,6 +23894,18 @@ make_resolver_func (const tree default_decl,
   DECL_INITIAL (decl) = make_node (BLOCK);
   DECL_STATIC_CONSTRUCTOR (decl) = 0;
 
+  if (DECL_COMDAT_GROUP (default_decl)
+      || TREE_PUBLIC (default_decl))
+    {
+      /* In this case, each translation unit with a call to this
+	 versioned function will put out a resolver.  Ensure it
+	 is comdat to keep just one copy.  */
+      DECL_COMDAT (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+  else
+    TREE_PUBLIC (dispatch_decl) = 0;
+
   /* Build result decl and add to function_decl.  */
   tree t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
   DECL_CONTEXT (t) = decl;

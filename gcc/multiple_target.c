@@ -178,10 +178,6 @@ create_dispatcher_calls (struct cgraph_node *node)
   node->externally_visible = false;
   node->forced_by_abi = false;
   node->set_section (NULL);
-  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
-			|| node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-		       && !flag_incremental_link);
-  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
 
   DECL_ARTIFICIAL (node->decl) = 1;
   node->force_output = true;

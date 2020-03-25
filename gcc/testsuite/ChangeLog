@@ -1,3 +1,12 @@
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	PR ipa/94271
+	* gcc.target/i386/pr81213-2.c: New test.
+	* gcc.target/i386/pr81213.c: Add additional source.
+	* gcc.dg/lto/pr94271_0.c: New test.
+	* gcc.dg/lto/pr94271_1.c: New test.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94280
