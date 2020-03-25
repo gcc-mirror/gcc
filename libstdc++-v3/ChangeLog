@@ -1,9 +1,11 @@
-2020-03-25  Jonathan Wakely  <jwakely@redhat.com>
+2020-03-25  Mike Crowe  <mac@mcrowe.com>
 
 	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
 	test.
 	* testsuite/30_threads/shared_timed_mutex/try_lock_until/2.cc: New
 	test.
+
+2020-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_fwd.h (filesystem::__file_clock): Move to ...
 	* include/std/chrono (filesystem::__file_clock): Here.
