@@ -1,3 +1,9 @@
+2020-03-25  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): Delete dead statements backwards.
+
 2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/sourcebuild.texi (ARM-specific attributes): Add

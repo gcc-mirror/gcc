@@ -1,3 +1,8 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* gcc.dg/pr94283.c: New test.
+
 2020-03-24  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/analyzer/sigsetjmp-5.c: Require sigsetjmp support.
