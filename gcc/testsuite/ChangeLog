@@ -1,3 +1,8 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94308
+	* gcc.target/i386/pr94308.c: New test.
+
 2020-03-25  Martin Liska  <mliska@suse.cz>
 
 	PR target/93274

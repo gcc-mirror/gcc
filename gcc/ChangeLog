@@ -1,3 +1,9 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94308
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper): Set
+	INSN_CODE (insn) to -1 when changing the pattern.
+
 2020-03-25  Martin Liska  <mliska@suse.cz>
 
 	PR target/93274

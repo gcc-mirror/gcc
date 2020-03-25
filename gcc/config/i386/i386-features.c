@@ -1792,6 +1792,7 @@ ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
       RTVEC_ELT (vec, j) = gen_rtx_SET (reg, reg);
     }
   XVEC (pattern, 0) = vec;
+  INSN_CODE (insn) = -1;
   df_insn_rescan (insn);
 }
 
