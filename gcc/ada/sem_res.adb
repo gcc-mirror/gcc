@@ -7370,6 +7370,10 @@ package body Sem_Res is
       --  Determine whether node Context denotes an assignment statement or an
       --  object declaration whose expression is node Expr.
 
+      function Is_Attribute_Expression (Expr : Node_Id) return Boolean;
+      --  Determine whether Expr is part of an N_Attribute_Reference
+      --  expression.
+
       ----------------------------------------
       -- Is_Assignment_Or_Object_Expression --
       ----------------------------------------
@@ -7411,6 +7415,24 @@ package body Sem_Res is
             return False;
          end if;
       end Is_Assignment_Or_Object_Expression;
+
+      -----------------------------
+      -- Is_Attribute_Expression --
+      -----------------------------
+
+      function Is_Attribute_Expression (Expr : Node_Id) return Boolean is
+         N : Node_Id := Expr;
+      begin
+         while Present (N) loop
+            if Nkind (N) = N_Attribute_Reference then
+               return True;
+            end if;
+
+            N := Parent (N);
+         end loop;
+
+         return False;
+      end Is_Attribute_Expression;
 
       --  Local variables
 
@@ -7482,8 +7504,8 @@ package body Sem_Res is
       --  array types (i.e. bounds and length) are legal.
 
       elsif Ekind (E) = E_Out_Parameter
-        and then (Nkind (Parent (N)) /= N_Attribute_Reference
-                   or else Is_Scalar_Type (Etype (E)))
+        and then (Is_Scalar_Type (Etype (E))
+                   or else not Is_Attribute_Expression (Parent (N)))
 
         and then (Nkind (Parent (N)) in N_Op
                    or else Nkind (Parent (N)) = N_Explicit_Dereference
