@@ -160,16 +160,17 @@ lhd_set_decl_assembler_name (tree decl)
 
      Can't use just the variable's own name for a variable whose scope
      is less than the whole compilation.  Concatenate a distinguishing
-     number - we use the DECL_UID.  */
+     number.  */
 
   if (TREE_PUBLIC (decl) || DECL_FILE_SCOPE_P (decl))
     id = targetm.mangle_decl_assembler_name (decl, DECL_NAME (decl));
   else
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      static unsigned long num;
       char *label;
 
-      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      ASM_FORMAT_PRIVATE_NAME (label, name, num++);
       id = get_identifier (label);
     }
 

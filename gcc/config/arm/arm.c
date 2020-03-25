@@ -15763,7 +15763,7 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	cc_reg = gen_rtx_REG (mode, CC_REGNUM);
 
 	emit_insn (gen_rtx_SET (cc_reg,
-				gen_rtx_COMPARE (VOIDmode, conjunction,
+				gen_rtx_COMPARE (mode, conjunction,
 						 const0_rtx)));
 	return cc_reg;
       }

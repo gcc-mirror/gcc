@@ -7389,7 +7389,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   if (processing_template_decl
       && convs->kind != ck_identity
       && (CLASS_TYPE_P (totype) || CLASS_TYPE_P (TREE_TYPE (expr))))
-    return build1 (IMPLICIT_CONV_EXPR, totype, expr);
+    {
+      expr = build1 (IMPLICIT_CONV_EXPR, totype, expr);
+      return convs->kind == ck_ref_bind ? expr : convert_from_reference (expr);
+    }
 
   switch (convs->kind)
     {

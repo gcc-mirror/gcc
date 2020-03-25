@@ -1,3 +1,9 @@
+2020-03-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93484
+	* match.c (gfc_match_type_spec): Replace gfc_match_init_expr with
+	gfc_match_expr. Return m if m is MATCH_NO or MATCH_ERROR.
+
 2020-03-23  Mark Eggleston  <mark.eggleston@codethink.com>
 	Steven G. Kargl  <kargl@gcc.gnu.org>
 

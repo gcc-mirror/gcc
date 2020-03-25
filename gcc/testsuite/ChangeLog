@@ -1,3 +1,110 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94292
+	* gcc.dg/pr94292.c: New test.
+
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94004
+	* gcc.dg/Walloca-larger-than-3.c: New test.
+	* gcc.dg/Walloca-larger-than-3.h: New test header.
+	* gcc.dg/Wvla-larger-than-4.c: New test.
+
+2020-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94265
+	* g++.dg/warn/Wduplicated-cond1.C: New test.
+
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/94131
+	* gcc.dg/pr94131.c: New test.
+
+2020-03-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/pr92301.c (main): Allow argc to be 0 to support
+	embedded targets.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94296
+	* gcc.dg/cleanup-13.c: Add a comment that the test is not
+	-fcompare-debug compatible with certain other options.
+
+	PR target/94308
+	* gcc.target/i386/pr94308.c: New test.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	PR ipa/94271
+	* gcc.target/i386/pr81213-2.c: New test.
+	* gcc.target/i386/pr81213.c: Add additional source.
+	* gcc.dg/lto/pr94271_0.c: New test.
+	* gcc.dg/lto/pr94271_1.c: New test.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94280
+	* gfortran.dg/iso_c_binding_compiler_1.f90: Add dg-skip-if for
+	-fcompare-debug.
+	* gfortran.dg/iso_c_binding_compiler_3.f90: Likewise.
+	* gfortran.dg/unlimited_polymorphic_31.f03: Likewise.
+
+2020-03-25  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93484
+	* gfortran.dg/pr93484_1.f90: New test.
+	* gfortran.dg/pr93484_2.f90: New test.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94303
+	* g++.dg/torture/pr94303.C: New test.
+
+	PR c++/94223
+	* g++.dg/opt/pr94223.C: New test.
+
+	PR tree-optimization/94300
+	* gcc.target/i386/avx512f-pr94300.c: New test.
+
+	PR debug/94283
+	* gcc.dg/pr94283.c: New test.
+
+2020-03-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/analyzer/sigsetjmp-5.c: Require sigsetjmp support.
+	* gcc.dg/analyzer/sigsetjmp-6.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_sigsetjmp): New.
+
+2020-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94190 - wrong no post-decrement operator error in template.
+	* g++.dg/conversion/op7.C: New test.
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc/arm/vfp-1.c: Use arm_fp__ok effective-target.
+	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
+	* gcc.target/arm/vfp-ldmiad.c: Likewise.
+	* gcc.target/arm/vfp-stmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmiad.c: Likewise.
+	* gcc.target/arm/vnmul-1.c: Likewise.
+	* gcc.target/arm/vnmul-3.c: Likewise.
+	* gcc.target/arm/vnmul-4.c: Likewise.
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmp-2.c: Move double-precision tests to...
+	* gcc.target/arm/cmp-3.c: ...here (new file)
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp_dp_ok_nocache): New.
+	(check_effective_target_arm_fp_dp_ok): New.
+	(add_options_for_arm_fp_dp): New.
+
 2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94286
@@ -18,7 +125,7 @@
 	PR target/94238
 	* gcc.c-torture/compile/pr94144.c: New test.
 	* gcc.c-torture/compile/pr94238.c: New test.
-	
+
 2020-03-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93805

@@ -1,3 +1,40 @@
+2020-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94265
+	* parser.c (cp_parser_selection_statement) <case RID_IF>: Invalidate the
+	current condition chain when the if-statement has a non-empty
+	init-statement.
+
+2020-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94319
+	* coroutines.cc (captures_temporary): Fix a missing dereference.
+
+2020-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94190 - wrong no post-decrement operator error in template.
+	* call.c (convert_like_real): Use convert_from_reference on the result.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94186
+	* constraint.cc (constraint_satisfaction_value): Repeat noisily on
+	error.
+	(tsubst_nested_requirement): Likewise.
+	(get_constraint_error_location): Allow missing context.
+	(diagnose_atomic_constraint): Diagnose non-bool constraint here.
+	(satisfy_atom): Not here.  Only diagnose non-constant when noisy.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (any_template_parm_r): Look into the type of a non-type
+	template parm.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_expr): When constructing from an expr and a
+	location, call protected_set_expr_location.
+
 2020-03-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93805

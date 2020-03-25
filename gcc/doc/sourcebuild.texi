@@ -1733,6 +1733,12 @@ ARM target defines @code{__ARM_FP} using @code{-mfloat-abi=softfp} or
 equivalent options.  Some multilibs may be incompatible with these
 options.
 
+@item arm_fp_dp_ok
+@anchor{arm_fp_dp_ok}
+ARM target defines @code{__ARM_FP} with double-precision support using
+@code{-mfloat-abi=softfp} or equivalent options.  Some multilibs may
+be incompatible with these options.
+
 @item arm_hf_eabi
 ARM target adheres to the VFP and Advanced SIMD Register Arguments
 variant of the ABI for the ARM Architecture (as selected with
@@ -2503,6 +2509,11 @@ are:
 @code{__ARM_FP} definition.  Only ARM targets support this feature, and only then
 in certain modes; see the @ref{arm_fp_ok,,arm_fp_ok effective target
 keyword}.
+
+@item arm_fp_dp
+@code{__ARM_FP} definition with double-precision support.  Only ARM
+targets support this feature, and only then in certain modes; see the
+@ref{arm_fp_dp_ok,,arm_fp_dp_ok effective target keyword}.
 
 @item arm_neon
 NEON support.  Only ARM targets support this feature, and only then

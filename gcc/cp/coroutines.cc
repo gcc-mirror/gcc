@@ -2651,7 +2651,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
     }
   /* As far as it's necessary, we've walked the subtrees of the call
      expr.  */
-  do_subtree = 0;
+  *do_subtree = 0;
   return NULL_TREE;
 }
 

@@ -11934,6 +11934,13 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
 		       "init-statement in selection statements only available "
 		       "with %<-std=c++17%> or %<-std=gnu++17%>");
+	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+	      {
+		/* A non-empty init-statement can have arbitrary side
+		   effects.  */
+		delete chain;
+		chain = NULL;
+	      }
 	    cp_parser_init_statement (parser, &decl);
 	  }
 

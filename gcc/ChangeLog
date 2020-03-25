@@ -1,3 +1,90 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94292
+	* config/arm/arm.c (arm_gen_dicompare_reg): Set mode of COMPARE to
+	mode rather than VOIDmode.
+
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94004
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Issue warnings
+	even for alloca calls resulting from system macro expansion.
+	Include inlining context in all warnings.
+
+2020-03-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94254
+	* config/rs6000/rs6000.c (rs6000_can_change_mode_class): Allow
+	FPRs to change between SDmode and DDmode.
+
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/94131
+	* gimple-fold.c (get_range_strlen_tree): Fail for variable-length
+	types and decls.
+	* tree-ssa-strlen.c (get_range_strlen_dynamic): Avoid assuming
+	types have constant sizes.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94259
+	* configure.ac: Report error only when --with-zstd
+	is used.
+	* configure: Regenerate.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94308
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper): Set
+	INSN_CODE (insn) to -1 when changing the pattern.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	PR ipa/94271
+	* config/i386/i386-features.c (make_resolver_func): Drop
+	public flag for resolver.
+	* config/rs6000/rs6000.c (make_resolver_func): Add comdat
+	group for resolver and drop public flag if possible.
+	* multiple_target.c (create_dispatcher_calls): Drop unique_name
+	and resolution as we want to enable LTO privatization of the default
+	symbol.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94259
+	* configure.ac: Respect --without-zstd and report
+	error when we can't find header file with --with-zstd.
+	* configure: Regenerate.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94303
+	* varasm.c (output_constructor_array_range): If local->index
+	RANGE_EXPR doesn't start at the current location in the constructor,
+	skip needed number of bytes using assemble_zeros or assert we don't
+	go backwards.
+
+	PR c++/94223
+	* langhooks.c (lhd_set_decl_assembler_name): Use a static ulong
+	counter instead of DECL_UID.
+
+	PR tree-optimization/94300
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): If pd.offset
+	is positive, make sure that off + size isn't larger than needed_len.
+
+2020-03-25  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): Delete dead statements backwards.
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (ARM-specific attributes): Add
+	arm_fp_dp_ok.
+	(Features for dg-add-options): Add arm_fp_dp.
+
 2020-03-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR lto/94249

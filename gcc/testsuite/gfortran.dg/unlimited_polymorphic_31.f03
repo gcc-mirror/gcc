@@ -1,4 +1,7 @@
 ! { dg-do run }
+! The compiler_options() function is dependent on the
+! command line options and thus incompatible with -fcompare-debug.
+! { dg-skip-if "-fcompare-debug incompatible test" { *-*-* } { "-fcompare-debug" } { "" } } */
 !
 ! Test the fix for PR92785, where the array passed to 'write scalar' was not
 ! normalised to LBOUND = 1.
