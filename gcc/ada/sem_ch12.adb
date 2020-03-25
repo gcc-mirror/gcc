@@ -10403,7 +10403,9 @@ package body Sem_Ch12 is
             =>
                Formal_Ent := Defining_Identifier (F);
 
-               while Chars (Act) /= Chars (Formal_Ent) loop
+               while Present (Act)
+                 and then Chars (Act) /= Chars (Formal_Ent)
+               loop
                   Next_Entity (Act);
                end loop;
 
@@ -10414,7 +10416,9 @@ package body Sem_Ch12 is
             =>
                Formal_Ent := Defining_Entity (F);
 
-               while Chars (Act) /= Chars (Formal_Ent) loop
+               while Present (Act)
+                 and then Chars (Act) /= Chars (Formal_Ent)
+               loop
                   Next_Entity (Act);
                end loop;
 
@@ -10934,13 +10938,16 @@ package body Sem_Ch12 is
       --  Create new entity for the actual (New_Copy_Tree does not), and
       --  indicate that it is an actual.
 
-      --  If the actual is not an entity and the formal includes aspect
-      --  specifications for contracts, we create an internal name for
-      --  the renaming declaration. The constructed wrapper contains a
-      --  call to the entity in the renaming.
+      --  If the actual is not an entity (i.e. an attribute reference)
+      --  and the formal includes aspect specifications for contracts,
+      --  we create an internal name for the renaming declaration. The
+      --  constructed wrapper contains a call to the entity in the renaming.
+      --  This is an expansion activity, as is the wrapper creation.
 
       if Ada_Version >= Ada_2020
-        and then Present (Aspect_Specifications (Analyzed_Formal))
+        and then Has_Contracts (Analyzed_Formal)
+        and then not Is_Entity_Name (Actual)
+        and then Expander_Active
       then
          New_Subp := Make_Temporary (Sloc (Actual), 'S');
          Set_Defining_Unit_Name (New_Spec, New_Subp);
