@@ -1,3 +1,8 @@
+2020-03-25  Thomas Schwinge <thomas@codesourcery.com>
+
+	* oacc-init.c (acc_init_1): Move 'acc_init_state' logic to where
+	it belongs.
+
 2019-11-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/lib-16.f90: Fix async-safety issue.

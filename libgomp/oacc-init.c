@@ -231,6 +231,11 @@ acc_dev_num_out_of_range (acc_device_t d, int ord, int ndevs)
 static struct gomp_device_descr *
 acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
 {
+  gomp_mutex_lock (&acc_init_state_lock);
+  acc_init_state = initializing;
+  acc_init_thread = pthread_self ();
+  gomp_mutex_unlock (&acc_init_state_lock);
+
   bool check_not_nested_p;
   if (implicit)
     {
@@ -292,11 +297,6 @@ acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
 
   struct gomp_device_descr *base_dev, *acc_dev;
   int ndevs;
-
-  gomp_mutex_lock (&acc_init_state_lock);
-  acc_init_state = initializing;
-  acc_init_thread = pthread_self ();
-  gomp_mutex_unlock (&acc_init_state_lock);
 
   base_dev = resolve_device (d, true);
 
