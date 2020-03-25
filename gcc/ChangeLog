@@ -1,3 +1,9 @@
+2020-03-25  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* config/sh/sh.md (mov_neg_si_t): Clobber the T register in the
+	pattern.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94292
