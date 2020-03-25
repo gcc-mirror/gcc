@@ -1,3 +1,10 @@
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94259
+	* configure.ac: Respect --without-zstd and report
+	error when we can't find header file with --with-zstd.
+	* configure: Regenerate.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94303

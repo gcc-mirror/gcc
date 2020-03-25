@@ -1334,13 +1334,15 @@ AC_ARG_WITH(zstd-lib,
 case "x$with_zstd" in
   x) ;;
   xno)
-    ZSTD_INCLUDE=no
-    ZSTD_LIB=no
+    ZSTD_INCLUDE=
+    ZSTD_LIB=
     ;;
   *) ZSTD_INCLUDE=$with_zstd/include
      ZSTD_LIB=$with_zstd/lib
      ;;
 esac
+
+if test "x$with_zstd" != xno; then
 if test "x$with_zstd_include" != x; then
   ZSTD_INCLUDE=$with_zstd_include
 fi
@@ -1369,6 +1371,8 @@ AC_MSG_RESULT($gcc_cv_header_zstd_h)
 if test $gcc_cv_header_zstd_h = yes; then
   AC_DEFINE(HAVE_ZSTD_H, 1,
 	[Define if you have a working <zstd.h> header file.])
+else
+    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
 
 # LTO can use zstd compression algorithm
@@ -1378,6 +1382,7 @@ AC_SEARCH_LIBS(ZSTD_compress, zstd)
 ZSTD_LIB="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(ZSTD_LIB)
+fi
 
 dnl Disabled until we have a complete test for buggy enum bitfields.
 dnl gcc_AC_C_ENUM_BF_UNSIGNED
