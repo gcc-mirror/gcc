@@ -2000,9 +2000,6 @@ package Sem_Util is
    function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean;
    --  Return True if Proc_Nam is a procedure renaming of an entry
 
-   function Is_Renaming_Declaration (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a renaming declaration
-
    function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is derived from the predefined interface
    --  Ada.Iterator_Interfaces.Reversible_Iterator.

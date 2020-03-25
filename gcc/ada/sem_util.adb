@@ -18081,28 +18081,6 @@ package body Sem_Util is
       return False;
    end Is_Renamed_Entry;
 
-   -----------------------------
-   -- Is_Renaming_Declaration --
-   -----------------------------
-
-   function Is_Renaming_Declaration (N : Node_Id) return Boolean is
-   begin
-      case Nkind (N) is
-         when N_Exception_Renaming_Declaration
-            | N_Generic_Function_Renaming_Declaration
-            | N_Generic_Package_Renaming_Declaration
-            | N_Generic_Procedure_Renaming_Declaration
-            | N_Object_Renaming_Declaration
-            | N_Package_Renaming_Declaration
-            | N_Subprogram_Renaming_Declaration
-          =>
-            return True;
-
-         when others =>
-            return False;
-      end case;
-   end Is_Renaming_Declaration;
-
    ----------------------------
    -- Is_Reversible_Iterator --
    ----------------------------
