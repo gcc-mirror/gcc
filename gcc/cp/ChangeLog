@@ -1,3 +1,12 @@
+2020-03-27  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.c (compute_array_index_type_loc): Remove redundant
+	type_dependent_expression_p check that is subsumed by
+	value_dependent_expression_p.
+	* decl2.c (is_late_template_attribute): Likewise.
+	* pt.c (uses_template_parms): Likewise.
+	(dependent_template_arg_p): Likewise.
+
 2020-03-26  Marek Polacek  <polacek@redhat.com>
 
 	DR 1710
