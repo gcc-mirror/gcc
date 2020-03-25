@@ -1,3 +1,8 @@
+2020-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94265
+	* g++.dg/warn/Wduplicated-cond1.C: New test.
+
 2020-03-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/94131

@@ -1,3 +1,10 @@
+2020-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94265
+	* parser.c (cp_parser_selection_statement) <case RID_IF>: Invalidate the
+	current condition chain when the if-statement has a non-empty
+	init-statement.
+
 2020-03-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94319
