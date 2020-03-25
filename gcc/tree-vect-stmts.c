@@ -820,14 +820,6 @@ vect_model_simple_cost (vec_info *,
 	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
 					   stmt_info, 0, vect_prologue);
 
-  /* Adjust for two-operator SLP nodes.  */
-  if (node && SLP_TREE_TWO_OPERATORS (node))
-    {
-      ncopies *= 2;
-      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_perm,
-				       stmt_info, 0, vect_body);
-    }
-
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
   inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
 				   stmt_info, 0, vect_body);

@@ -135,6 +135,10 @@ struct _slp_tree {
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
   vec<unsigned> load_permutation;
+  /* Lane permutation of the operands scalar lanes encoded as pairs
+     of { operand number, lane number }.  The number of elements
+     denotes the number of output lanes.  */
+  vec<std::pair<unsigned, unsigned> > lane_permutation;
 
   tree vectype;
   /* Vectorized stmt/s.  */
@@ -151,12 +155,12 @@ struct _slp_tree {
   /* The maximum number of vector elements for the subtree rooted
      at this node.  */
   poly_uint64 max_nunits;
-  /* Whether the scalar computations use two different operators.  */
-  bool two_operators;
   /* The DEF type of this node.  */
   enum vect_def_type def_type;
   /* The number of scalar lanes produced by this node.  */
   unsigned int lanes;
+  /* The operation of this node.  */
+  enum tree_code code;
 };
 
 
@@ -195,11 +199,12 @@ public:
 #define SLP_TREE_VEC_DEFS(S)                     (S)->vec_defs
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
-#define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
+#define SLP_TREE_LANE_PERMUTATION(S)             (S)->lane_permutation
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 #define SLP_TREE_VECTYPE(S)			 (S)->vectype
 #define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
 #define SLP_TREE_LANES(S)			 (S)->lanes
+#define SLP_TREE_CODE(S)			 (S)->code
 
 /* Key for map that records association between
    scalar conditions and corresponding loop mask, and
@@ -1932,6 +1937,6 @@ void vect_pattern_recog (vec_info *);
 unsigned vectorize_loops (void);
 void vect_free_loop_info_assumptions (class loop *);
 gimple *vect_loop_vectorized_call (class loop *, gcond **cond = NULL);
-
+bool vect_stmt_dominates_stmt_p (gimple *, gimple *);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

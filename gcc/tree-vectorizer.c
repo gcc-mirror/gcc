@@ -711,6 +711,63 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
   free (stmt_info);
 }
 
+/* Returns true if S1 dominates S2.  */
+
+bool
+vect_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
+{
+  basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
+
+  /* If bb1 is NULL, it should be a GIMPLE_NOP def stmt of an (D)
+     SSA_NAME.  Assume it lives at the beginning of function and
+     thus dominates everything.  */
+  if (!bb1 || s1 == s2)
+    return true;
+
+  /* If bb2 is NULL, it doesn't dominate any stmt with a bb.  */
+  if (!bb2)
+    return false;
+
+  if (bb1 != bb2)
+    return dominated_by_p (CDI_DOMINATORS, bb2, bb1);
+
+  /* PHIs in the same basic block are assumed to be
+     executed all in parallel, if only one stmt is a PHI,
+     it dominates the other stmt in the same basic block.  */
+  if (gimple_code (s1) == GIMPLE_PHI)
+    return true;
+
+  if (gimple_code (s2) == GIMPLE_PHI)
+    return false;
+
+  /* Inserted vectorized stmts all have UID 0 while the original stmts
+     in the IL have UID increasing within a BB.  Walk from both sides
+     until we find the other stmt or a stmt with UID != 0.  */
+  gimple_stmt_iterator gsi1 = gsi_for_stmt (s1);
+  while (gimple_uid (gsi_stmt (gsi1)) == 0)
+    {
+      gsi_next (&gsi1);
+      if (gsi_end_p (gsi1))
+	return false;
+      if (gsi_stmt (gsi1) == s2)
+	return true;
+    }
+
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (s2);
+  while (gimple_uid (gsi_stmt (gsi2)) == 0)
+    {
+      gsi_prev (&gsi2);
+      if (gsi_end_p (gsi2))
+	return false;
+      if (gsi_stmt (gsi2) == s1)
+	return true;
+    }
+
+  if (gimple_uid (gsi_stmt (gsi1)) <= gimple_uid (gsi_stmt (gsi2)))
+    return true;
+  return false;
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 
