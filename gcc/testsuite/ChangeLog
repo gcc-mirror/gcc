@@ -1,3 +1,11 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94280
+	* gfortran.dg/iso_c_binding_compiler_1.f90: Add dg-skip-if for
+	-fcompare-debug.
+	* gfortran.dg/iso_c_binding_compiler_3.f90: Likewise.
+	* gfortran.dg/unlimited_polymorphic_31.f03: Likewise.
+
 2020-03-25  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/93484
