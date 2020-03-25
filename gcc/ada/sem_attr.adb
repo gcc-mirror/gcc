@@ -7269,12 +7269,18 @@ package body Sem_Attr is
 
    procedure Eval_Attribute (N : Node_Id) is
       Loc   : constant Source_Ptr   := Sloc (N);
-      Aname : constant Name_Id      := Attribute_Name (N);
-      Id    : constant Attribute_Id := Get_Attribute_Id (Aname);
-      P     : constant Node_Id      := Prefix (N);
 
       C_Type : constant Entity_Id := Etype (N);
       --  The type imposed by the context
+
+      Aname : Name_Id;
+      --  Attribute_Name (N) after verification of validity of N
+
+      Id : Attribute_Id;
+      --  Get_Attribute_Id (Aname) after Aname is set
+
+      P : Node_Id;
+      --  Prefix (N) after verification of validity of N
 
       E1 : Node_Id;
       --  First expression, or Empty if none
@@ -7632,6 +7638,17 @@ package body Sem_Attr is
    --  Start of processing for Eval_Attribute
 
    begin
+      --  Return immediately if e.g. N has been rewritten or is malformed due
+      --  to previous errors.
+
+      if Nkind (N) /= N_Attribute_Reference then
+         return;
+      end if;
+
+      Aname := Attribute_Name (N);
+      Id    := Get_Attribute_Id (Aname);
+      P     := Prefix (N);
+
       --  The To_Address attribute can be static, but it cannot be evaluated at
       --  compile time, so just return.
 
