@@ -1,5 +1,9 @@
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94223
+	* langhooks.c (lhd_set_decl_assembler_name): Use a static ulong
+	counter instead of DECL_UID.
+
 	PR tree-optimization/94300
 	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): If pd.offset
 	is positive, make sure that off + size isn't larger than needed_len.

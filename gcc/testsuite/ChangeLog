@@ -1,5 +1,8 @@
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94223
+	* g++.dg/opt/pr94223.C: New test.
+
 	PR tree-optimization/94300
 	* gcc.target/i386/avx512f-pr94300.c: New test.
 
