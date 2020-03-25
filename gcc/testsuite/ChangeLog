@@ -1,3 +1,12 @@
+2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	Backport from master
+	2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93484
+	* gfortran.dg/pr93484_1.f90: New test.
+	* gfortran.dg/pr93484_2.f90: New test.
+
 2020-03-25  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from master

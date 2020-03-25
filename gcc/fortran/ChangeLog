@@ -1,3 +1,12 @@
+2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	Backport from master
+	2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93484
+	* match.c (gfc_match_type_spec): Replace gfc_match_init_expr with
+	gfc_match_expr. Return m if m is MATCH_NO or MATCH_ERROR.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
