@@ -1,6 +1,11 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* gcc.dg/pr94283.c: New test.
+
 	2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94283

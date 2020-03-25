@@ -2969,13 +2969,15 @@ ifcvt_local_dce (basic_block bb)
 	}
     }
   /* Delete dead statements.  */
-  gsi = gsi_start_bb (bb);
+  gsi = gsi_last_bb (bb);
   while (!gsi_end_p (gsi))
     {
+      gimple_stmt_iterator gsiprev = gsi;
+      gsi_prev (&gsiprev);
       stmt = gsi_stmt (gsi);
       if (gimple_plf (stmt, GF_PLF_2))
 	{
-	  gsi_next (&gsi);
+	  gsi = gsiprev;
 	  continue;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2985,6 +2987,7 @@ ifcvt_local_dce (basic_block bb)
 	}
       gsi_remove (&gsi, true);
       release_defs (stmt);
+      gsi = gsiprev;
     }
 }
 
