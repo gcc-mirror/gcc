@@ -1,5 +1,11 @@
 2020-05-05  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (struct vdhs_data): New.
+	(vect_detect_hybrid_slp): New walker.
+	(vect_detect_hybrid_slp): Rewrite.
+
+2020-05-05  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/94947
 	* tree-ssa-structalias.c (ipa_pta_execute): Use
 	varpool_node::externally_visible_p ().
