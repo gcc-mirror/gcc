@@ -22,6 +22,8 @@
 
 #include <chrono>
 
+namespace __gnu_test
+{
 struct slow_clock
 {
   using rep = std::chrono::system_clock::rep;
@@ -36,3 +38,4 @@ struct slow_clock
     return time_point{real.time_since_epoch() / 3};
   }
 };
+}

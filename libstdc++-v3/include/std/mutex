@@ -189,6 +189,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool
 	_M_try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
 	{
+#if __cplusplus > 201703L
+	  static_assert(chrono::is_clock_v<_Clock>);
+#endif
 	  // The user-supplied clock may not tick at the same rate as
 	  // steady_clock, so we must loop in order to guarantee that
 	  // the timeout has expired before returning false.

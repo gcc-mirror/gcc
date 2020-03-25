@@ -1,3 +1,43 @@
+2020-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (filesystem::__file_clock): Move to ...
+	* include/std/chrono (filesystem::__file_clock): Here.
+	(filesystem::__file_clock::from_sys, filesystem::__file_clock::to_sys):
+	Define public member functions for C++20.
+	(is_clock, is_clock_v): Define traits for C++20.
+	* include/std/condition_variable (condition_variable::wait_until): Add
+	check for valid clock.
+	* include/std/future (_State_baseV2::wait_until): Likewise.
+	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Likewise.
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_shared_until):
+	Likewise.
+	* include/std/thread (this_thread::sleep_until): Likewise.
+	* testsuite/30_threads/condition_variable/members/2.cc: Qualify
+	slow_clock with new namespace.
+	* testsuite/30_threads/condition_variable/members/clock_neg.cc: New
+	test.
+	* testsuite/30_threads/condition_variable_any/members/clock_neg.cc:
+	New test.
+	* testsuite/30_threads/future/members/clock_neg.cc: New test.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	Qualify slow_clock with new namespace.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/
+	clock_neg.cc: New test.
+	* testsuite/30_threads/shared_future/members/clock_neg.cc: New
+	test.
+	* testsuite/30_threads/shared_lock/locking/clock_neg.cc: New test.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/clock_neg.cc:
+	New test.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: Qualify
+	slow_clock with new namespace.
+	* testsuite/30_threads/timed_mutex/try_lock_until/4.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/clock_neg.cc: New
+	test.
+	* testsuite/30_threads/unique_lock/locking/clock_neg.cc: New test.
+	* testsuite/std/time/traits/is_clock.cc: New test.
+	* testsuite/util/slow_clock.h (slow_clock): Move to __gnu_test
+	namespace.
+
 2020-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93245

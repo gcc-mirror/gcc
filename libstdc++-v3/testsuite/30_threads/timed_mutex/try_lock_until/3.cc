@@ -72,5 +72,5 @@ int main()
 {
   test<std::chrono::system_clock>();
   test<std::chrono::steady_clock>();
-  test<slow_clock>();
+  test<__gnu_test::slow_clock>();
 }

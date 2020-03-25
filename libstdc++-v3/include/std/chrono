@@ -41,10 +41,17 @@
 #include <limits>
 #include <ctime>
 #include <bits/parse_numbers.h> // for literals support.
+#if __cplusplus > 201703L
+# include <concepts>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __cplusplus >= 201703L
+  namespace filesystem { struct __file_clock; };
+#endif
 
   /**
    * @defgroup chrono Time
@@ -236,6 +243,60 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline constexpr bool treat_as_floating_point_v =
         treat_as_floating_point<_Rep>::value;
 #endif // C++17
+
+#if __cplusplus > 201703L
+    template<typename _Tp>
+      struct is_clock;
+
+    template<typename _Tp>
+      inline constexpr bool is_clock_v = is_clock<_Tp>::value;
+
+#if __cpp_lib_concepts
+    template<typename _Tp>
+      struct is_clock : false_type
+      { };
+
+    template<typename _Tp>
+      requires requires {
+	typename _Tp::rep;
+	typename _Tp::period;
+	typename _Tp::duration;
+	typename _Tp::time_point::clock;
+	typename _Tp::time_point::duration;
+	{ &_Tp::is_steady } -> same_as<const bool*>;
+	{ _Tp::now() } -> same_as<typename _Tp::time_point>;
+	requires same_as<typename _Tp::duration,
+			 duration<typename _Tp::rep, typename _Tp::period>>;
+	requires same_as<typename _Tp::time_point::duration,
+			 typename _Tp::duration>;
+      }
+      struct is_clock<_Tp> : true_type
+      { };
+#else
+    template<typename _Tp, typename = void>
+      struct __is_clock_impl : false_type
+      { };
+
+    template<typename _Tp>
+      struct __is_clock_impl<_Tp,
+			     void_t<typename _Tp::rep, typename _Tp::period,
+				    typename _Tp::duration,
+				    typename _Tp::time_point::duration,
+				    decltype(_Tp::is_steady),
+				    decltype(_Tp::now())>>
+      : __and_<is_same<typename _Tp::duration,
+		       duration<typename _Tp::rep, typename _Tp::period>>,
+	       is_same<typename _Tp::time_point::duration,
+		       typename _Tp::duration>,
+	       is_same<decltype(&_Tp::is_steady), const bool*>,
+	       is_same<decltype(_Tp::now()), typename _Tp::time_point>>::type
+      { };
+
+    template<typename _Tp>
+      struct is_clock : __is_clock_impl<_Tp>::type
+      { };
+#endif
+#endif // C++20
 
 #if __cplusplus >= 201703L
 # define __cpp_lib_chrono 201611
@@ -948,6 +1009,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using high_resolution_clock = system_clock;
 
     } // end inline namespace _V2
+
+#if __cplusplus > 201703L
+    template<typename _Duration>
+      using sys_time = time_point<system_clock, _Duration>;
+    using sys_seconds = sys_time<seconds>;
+
+    using file_clock = ::std::filesystem::__file_clock;
+
+    template<typename _Duration>
+      using file_time = time_point<file_clock, _Duration>;
+
+    template<> struct is_clock<system_clock> : true_type { };
+    template<> struct is_clock<steady_clock> : true_type { };
+    template<> struct is_clock<file_clock> : true_type { };
+
+    template<> inline constexpr bool is_clock_v<system_clock> = true;
+    template<> inline constexpr bool is_clock_v<steady_clock> = true;
+    template<> inline constexpr bool is_clock_v<file_clock> = true;
+#endif // C++20
+
     // @}
   } // namespace chrono
 
@@ -1071,6 +1152,67 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using namespace literals::chrono_literals;
   } // namespace chrono
 
+#if __cplusplus >= 201703L
+  namespace filesystem
+  {
+    struct __file_clock
+    {
+      using duration                  = chrono::nanoseconds;
+      using rep                       = duration::rep;
+      using period                    = duration::period;
+      using time_point                = chrono::time_point<__file_clock>;
+      static constexpr bool is_steady = false;
+
+      static time_point
+      now() noexcept
+      { return _S_from_sys(chrono::system_clock::now()); }
+
+#if __cplusplus > 201703L
+      template<typename _Dur>
+	static
+	chrono::file_time<_Dur>
+	from_sys(const chrono::sys_time<_Dur>& __t) noexcept
+	{ return _S_from_sys(__t); }
+
+      // For internal use only
+      template<typename _Dur>
+	static
+	chrono::sys_time<_Dur>
+	to_sys(const chrono::file_time<_Dur>& __t) noexcept
+	{ return _S_to_sys(__t); }
+#endif // C++20
+
+    private:
+      using __sys_clock = chrono::system_clock;
+
+      // This clock's (unspecified) epoch is 2174-01-01 00:00:00 UTC.
+      // A signed 64-bit duration with nanosecond resolution gives roughly
+      // +/- 292 years, which covers the 1901-2446 date range for ext4.
+      static constexpr chrono::seconds _S_epoch_diff{6437664000};
+
+    protected:
+      // For internal use only
+      template<typename _Dur>
+	static
+	chrono::time_point<__file_clock, _Dur>
+	_S_from_sys(const chrono::time_point<__sys_clock, _Dur>& __t) noexcept
+	{
+	  using __file_time = chrono::time_point<__file_clock, _Dur>;
+	  return __file_time{__t.time_since_epoch()} - _S_epoch_diff;
+	}
+
+      // For internal use only
+      template<typename _Dur>
+	static
+	chrono::time_point<__sys_clock, _Dur>
+	_S_to_sys(const chrono::time_point<__file_clock, _Dur>& __t) noexcept
+	{
+	  using __sys_time = chrono::time_point<__sys_clock, _Dur>;
+	  return __sys_time{__t.time_since_epoch()} + _S_epoch_diff;
+	}
+    };
+  } // namespace filesystem
+#endif // C++17
 #endif // C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
