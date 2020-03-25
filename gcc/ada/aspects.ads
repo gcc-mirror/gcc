@@ -450,7 +450,7 @@ package Aspects is
       Aspect_Default_Initial_Condition    => False,
       Aspect_Default_Iterator             => False,
       Aspect_Default_Storage_Pool         => True,
-      Aspect_Default_Value                => False,
+      Aspect_Default_Value                => True,
       Aspect_Depends                      => False,
       Aspect_Dimension                    => False,
       Aspect_Dimension_System             => False,
