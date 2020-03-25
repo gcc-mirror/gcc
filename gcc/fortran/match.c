@@ -2183,9 +2183,9 @@ gfc_match_type_spec (gfc_typespec *ts)
 
 found:
 
-      m = gfc_match_init_expr (&e);
+      m = gfc_match_expr (&e);
       if (m == MATCH_NO || m == MATCH_ERROR)
-	return MATCH_NO;
+	return m;
 
       /* If a comma appears, it is an intrinsic subprogram. */
       gfc_gobble_whitespace ();
