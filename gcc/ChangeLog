@@ -1,3 +1,10 @@
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94004
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Issue warnings
+	even for alloca calls resulting from system macro expansion.
+	Include inlining context in all warnings.
+
 2020-03-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/94254

@@ -510,10 +510,11 @@ pass_walloca::execute (function *fun)
 	   gsi_next (&si))
 	{
 	  gimple *stmt = gsi_stmt (si);
-	  location_t loc = gimple_location (stmt);
-
 	  if (!gimple_alloca_call_p (stmt))
 	    continue;
+
+	  location_t loc = gimple_nonartificial_location (stmt);
+	  loc = expansion_point_location_if_in_system_header (loc);
 
 	  const bool is_vla
 	    = gimple_call_alloca_for_var_p (as_a <gcall *> (stmt));
@@ -528,7 +529,7 @@ pass_walloca::execute (function *fun)
 	    }
 	  else if (warn_alloca)
 	    {
-	      warning_at (loc, OPT_Walloca, "use of %<alloca%>");
+	      warning_at (loc, OPT_Walloca, "%Guse of %<alloca%>", stmt);
 	      continue;
 	    }
 	  else if (warn_alloca_limit < 0)
@@ -564,10 +565,12 @@ pass_walloca::execute (function *fun)
 	      {
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
-				is_vla ? G_("argument to variable-length "
-					    "array may be too large")
-				: G_("argument to %<alloca%> may be too "
-				     "large"))
+				(is_vla
+				 ? G_("%Gargument to variable-length "
+				      "array may be too large")
+				 : G_("%Gargument to %<alloca%> may be too "
+				      "large")),
+				stmt)
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
@@ -582,47 +585,57 @@ pass_walloca::execute (function *fun)
 	      {
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
-				is_vla ? G_("argument to variable-length"
-					    " array is too large")
-				: G_("argument to %<alloca%> is too large"))
+				(is_vla
+				 ? G_("%Gargument to variable-length"
+				      " array is too large")
+				 : G_("%Gargument to %<alloca%> is too large")),
+				stmt)
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
 		    inform (loc, "limit is %wu bytes, but argument is %s",
-			      is_vla ? warn_vla_limit : adjusted_alloca_limit,
-			      buff);
+			    is_vla ? warn_vla_limit : adjusted_alloca_limit,
+			    buff);
 		  }
 	      }
 	      break;
 	    case ALLOCA_BOUND_UNKNOWN:
 	      warning_at (loc, wcode,
-			  is_vla ? G_("variable-length array bound is unknown")
-			  : G_("%<alloca%> bound is unknown"));
+			  (is_vla
+			   ? G_("%Gvariable-length array bound is unknown")
+			   : G_("%G%<alloca%> bound is unknown")),
+			  stmt);
 	      break;
 	    case ALLOCA_UNBOUNDED:
 	      warning_at (loc, wcode,
-			  is_vla ? G_("unbounded use of variable-length array")
-			  : G_("unbounded use of %<alloca%>"));
+			  (is_vla
+			   ? G_("%Gunbounded use of variable-length array")
+			   : G_("%Gunbounded use of %<alloca%>")),
+			  stmt);
 	      break;
 	    case ALLOCA_IN_LOOP:
 	      gcc_assert (!is_vla);
-	      warning_at (loc, wcode, "use of %<alloca%> within a loop");
+	      warning_at (loc, wcode,
+			  "%Guse of %<alloca%> within a loop", stmt);
 	      break;
 	    case ALLOCA_CAST_FROM_SIGNED:
 	      gcc_assert (invalid_casted_type != NULL_TREE);
 	      warning_at (loc, wcode,
-			  is_vla ? G_("argument to variable-length array "
-				      "may be too large due to "
-				      "conversion from %qT to %qT")
-			  : G_("argument to %<alloca%> may be too large "
-			       "due to conversion from %qT to %qT"),
-			  invalid_casted_type, size_type_node);
+			  (is_vla
+			   ? G_("%Gargument to variable-length array "
+				"may be too large due to "
+				"conversion from %qT to %qT")
+			   : G_("%Gargument to %<alloca%> may be too large "
+				"due to conversion from %qT to %qT")),
+			  stmt, invalid_casted_type, size_type_node);
 	      break;
 	    case ALLOCA_ARG_IS_ZERO:
 	      warning_at (loc, wcode,
-			  is_vla ? G_("argument to variable-length array "
-				      "is zero")
-			  : G_("argument to %<alloca%> is zero"));
+			  (is_vla
+			   ? G_("%Gargument to variable-length array "
+				"is zero")
+			   : G_("%Gargument to %<alloca%> is zero")),
+			  stmt);
 	      break;
 	    default:
 	      gcc_unreachable ();
