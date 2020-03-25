@@ -3641,13 +3641,12 @@ struct GTY(()) lang_decl {
    ? TYPE_ALIAS_TEMPLATE_INFO (NODE)					\
    : TYPE_TEMPLATE_INFO (NODE))
 
-/* Set the template information for an ENUMERAL_, RECORD_, or
-   UNION_TYPE to VAL.  */
+/* Set the template information for a non-alias n ENUMERAL_, RECORD_,
+   or UNION_TYPE to VAL.  ALIAS's are dealt with separately.  */
 #define SET_TYPE_TEMPLATE_INFO(NODE, VAL)				\
-  ((TREE_CODE (NODE) == ENUMERAL_TYPE					\
-    || (CLASS_TYPE_P (NODE) && !TYPE_ALIAS_P (NODE))			\
-    ? TYPE_LANG_SLOT_1 (NODE)						\
-    : DECL_TEMPLATE_INFO (TYPE_NAME (NODE))) = (VAL))
+  (gcc_checking_assert (TREE_CODE (NODE) == ENUMERAL_TYPE		\
+			|| (CLASS_TYPE_P (NODE) && !TYPE_ALIAS_P (NODE))), \
+   (TYPE_LANG_SLOT_1 (NODE) = (VAL)))					\
 
 #define TI_TEMPLATE(NODE) \
   ((struct tree_template_info*)TEMPLATE_INFO_CHECK (NODE))->tmpl

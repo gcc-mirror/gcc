@@ -1,3 +1,13 @@
+2020-03-25  Nathan Sidwell  <nathan@acm.org>
+
+	WARNING: This breaks lots of modules tests because an inconsistent
+	invariant is now consistently different.  This is intended.
+	gcc/cp/
+	* cp-tree.h (SET_TYPE_TEMPLATE_INFO): Not for aliases.
+	* pt.c (lookup_template_class_1): Type alias's template info
+	should already be correct.
+	(tsubst_template_decl): Don't reset TI_TEMPLATE of an alias.
+
 2020-03-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

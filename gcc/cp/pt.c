@@ -9996,8 +9996,21 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    }
 	}
 
-      // Build template info for the new specialization.
-      SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
+      /* Build template info for the new specialization.  This can
+	 overwrite the existing TEMPLATE_INFO for T (that points to
+	 its instantiated TEMPLATE_DECL), with this one that points to
+	 the most general template, but that's what we want.  */
+
+      if (TYPE_ALIAS_P (t))
+	{
+	  /* This should already have been constructed during
+	     instantiation of the alias decl.  */
+	  tree ti = DECL_TEMPLATE_INFO (TYPE_NAME (t));
+	  gcc_checking_assert (template_args_equal (TI_ARGS (ti), arglist)
+			       && TI_TEMPLATE (ti) == found);
+	}
+      else
+	SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
       slot = type_specializations->find_slot_with_hash (&elt, hash, INSERT);
@@ -13919,7 +13932,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     }
   else
     {
-      DECL_TI_TEMPLATE (inner) = r;
+      if (TREE_CODE (decl) != TYPE_DECL || !TYPE_DECL_ALIAS_P (decl))
+	DECL_TI_TEMPLATE (inner) = r;
       DECL_TI_ARGS (r) = DECL_TI_ARGS (inner);
     }
 
