@@ -1,3 +1,9 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94292
+	* config/arm/arm.c (arm_gen_dicompare_reg): Set mode of COMPARE to
+	mode rather than VOIDmode.
+
 2020-03-25  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/94004
