@@ -1,3 +1,10 @@
+2020-03-26  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/94334
+	* gcc.dg/lto/pr94271_0.c: Skip for non-x86 targets
+	and add ifunc effective target.
+	* gcc.target/i386/pr81213-2.c: Add ifunc effective target.
+
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94281
