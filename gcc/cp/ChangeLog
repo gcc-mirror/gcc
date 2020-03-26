@@ -1,3 +1,17 @@
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (co_await_expander): If we are expanding the
+	initial await expression, set a boolean flag to show that we
+	have now reached the initial await_resume() method call.
+	(expand_co_awaits): Handle the 'initial await resume called' flag.
+	(build_actor_fn): Insert the initial await expression into the
+	start of the user-authored function-body. Handle the 'initial await
+	resume called' flag.
+	(morph_fn_to_coro): Initialise the 'initial await resume called'
+	flag.  Modify the unhandled exception catch clause to recognise
+	exceptions that occur before the initial await_resume() and re-
+	throw them.
+
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81349
