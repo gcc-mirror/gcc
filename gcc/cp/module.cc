@@ -7380,13 +7380,16 @@ trees_out::decl_value (tree decl, depset *dep)
 
       if (mk != MK_unique)
 	{
-	  if (!state->is_header ())
+	  if (!state->is_header () && !(mk & MK_template_mask))
 	    {
 	      /* Tell the importer whether this is a global module entity,
 		 or a module entity.  This bool merges into the next block
 		 of bools.  Sneaky.  */
 	      tree o = get_originating_module_decl (decl);
-	      bool is_mod = DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o);
+	      bool is_mod = false;
+
+	      if (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o))
+		is_mod = true;
 	      b (is_mod);
 	    }
 	  b (dep && dep->has_defn ());
@@ -7572,7 +7575,7 @@ trees_in::decl_value ()
     {
       if (mk != MK_unique)
 	{
-	  if (!state->is_header ())
+	  if (!(mk & MK_template_mask) && !state->is_header ())
 	    /* See note in trees_out about where this bool is sequenced.  */
 	    is_mod = b ();
 

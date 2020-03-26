@@ -1,6 +1,10 @@
 2020-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::decl_value): Instantiations are
+	merged things too.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::install_entity): New, broken out of ...
 	(trees_{in,out}::decl_value): ... here.  Call them.
 
