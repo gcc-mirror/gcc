@@ -232,16 +232,16 @@
   [(set (match_operand:V_1REG 0 "nonimmediate_operand"	 "=v, v, v, v, v, m")
 	(vec_merge:V_1REG
 	  (match_operand:V_1REG 1 "general_operand"	 "vA, B, v,vA, m, v")
-	  (match_operand:V_1REG 3 "gcn_alu_or_unspec_operand"
+	  (match_operand:V_1REG 2 "gcn_alu_or_unspec_operand"
 							 "U0,U0,vA,vA,U0,U0")
-	  (match_operand:DI 2 "register_operand"	 " e, e,cV,Sv, e, e")))
+	  (match_operand:DI 3 "register_operand"	 " e, e,cV,Sv, e, e")))
    (clobber (match_scratch:<VnDI> 4			 "=X, X, X, X,&v,&v"))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
   "@
    v_mov_b32\t%0, %1
    v_mov_b32\t%0, %1
-   v_cndmask_b32\t%0, %3, %1, vcc
-   v_cndmask_b32\t%0, %3, %1, %2
+   v_cndmask_b32\t%0, %2, %1, vcc
+   v_cndmask_b32\t%0, %2, %1, %3
    #
    #"
   [(set_attr "type" "vop1,vop1,vop2,vop3a,*,*")
@@ -283,9 +283,9 @@
   [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
 	(vec_merge:V_2REG
 	  (match_operand:V_2REG 1 "general_operand"    "vDB,  v0,  v0, m, v")
-	  (match_operand:V_2REG 3 "gcn_alu_or_unspec_operand"
+	  (match_operand:V_2REG 2 "gcn_alu_or_unspec_operand"
 						       " U0,vDA0,vDA0,U0,U0")
-	  (match_operand:DI 2 "register_operand"       "  e,  cV,  Sv, e, e")))
+	  (match_operand:DI 3 "register_operand"       "  e,  cV,  Sv, e, e")))
    (clobber (match_scratch:<VnDI> 4		       "= X,   X,   X,&v,&v"))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
   {
@@ -295,11 +295,11 @@
 	case 0:
 	  return "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1";
 	case 1:
-	  return "v_cndmask_b32\t%L0, %L3, %L1, vcc\;"
-		 "v_cndmask_b32\t%H0, %H3, %H1, vcc";
+	  return "v_cndmask_b32\t%L0, %L2, %L1, vcc\;"
+		 "v_cndmask_b32\t%H0, %H2, %H1, vcc";
 	case 2:
-	  return "v_cndmask_b32\t%L0, %L3, %L1, %2\;"
-		 "v_cndmask_b32\t%H0, %H3, %H1, %2";
+	  return "v_cndmask_b32\t%L0, %L2, %L1, %3\;"
+		 "v_cndmask_b32\t%H0, %H2, %H1, %3";
 	}
     else
       switch (which_alternative)
@@ -307,11 +307,11 @@
 	case 0:
 	  return "v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1";
 	case 1:
-	  return "v_cndmask_b32\t%H0, %H3, %H1, vcc\;"
-		 "v_cndmask_b32\t%L0, %L3, %L1, vcc";
+	  return "v_cndmask_b32\t%H0, %H2, %H1, vcc\;"
+		 "v_cndmask_b32\t%L0, %L2, %L1, vcc";
 	case 2:
-	  return "v_cndmask_b32\t%H0, %H3, %H1, %2\;"
-		 "v_cndmask_b32\t%L0, %L3, %L1, %2";
+	  return "v_cndmask_b32\t%H0, %H2, %H1, %3\;"
+		 "v_cndmask_b32\t%L0, %L2, %L1, %3";
 	}
 
     return "#";
@@ -2487,7 +2487,7 @@
     if (<MODE>mode != <VnSI>mode)
       emit_insn (gen_trunc<vnsi><mode>2_exec (out, inlo, merge, exec));
     else
-      emit_insn (gen_mov<mode>_exec (out, inlo, exec, merge));
+      emit_insn (gen_mov<mode>_exec (out, inlo, merge, exec));
   }
   [(set_attr "type" "vop2")
    (set_attr "length" "4")])
@@ -2539,7 +2539,7 @@
     if (<MODE>mode != <VnSI>mode)
       emit_insn (gen_<convop><mode><vnsi>2_exec (outlo, in, mergelo, exec));
     else
-      emit_insn (gen_mov<mode>_exec (outlo, in, exec, mergelo));
+      emit_insn (gen_mov<mode>_exec (outlo, in, mergelo, exec));
     if ('<su>' == 's')
       emit_insn (gen_ashr<vnsi>3_exec (outhi, outlo, GEN_INT (31), mergehi,
 				       exec));

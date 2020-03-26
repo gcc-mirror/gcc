@@ -1,3 +1,11 @@
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (mov<mode>_exec): Swap the numbers on operands
+	2 and 3.
+	(mov<mode>_exec): Likewise.
+	(trunc<vndi><mode>2_exec): Swap parameters to gen_mov<mode>_exec.
+	(<convop><mode><vndi>2_exec): Likewise.
+
 2019-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/94717
