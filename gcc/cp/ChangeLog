@@ -1,5 +1,9 @@
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81349
+	* class.c (user_provided_p): Use STRIP_TEMPLATE instead of returning
+	true for all TEMPLATE_DECLs.
+
 	PR c++/94272
 	* cp-gimplify.c (cp_genericize_r): Handle STATEMENT_LIST.
 
