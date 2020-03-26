@@ -1,5 +1,24 @@
 2020-03-26  Nathan Sidwell  <nathan@acm.org>
 
+	Alias templates working (properly)
+	gcc/cp/
+	* modules.cc (enum depset::disc_bits): Add DB_ALIAS_TMPL_INST_BIT,
+	Replace DB_BOTH_SPEC_BIT with DB_ALIAS_SPEC_BIT.
+	(enum merge_kind): Replace MK_tmpl_both_mask with
+	MK_tmpl_alias_mask.  Add MK_alias_spec.
+	(merge_kind_name): Adjust.
+	(trees_out::core_vals): DECL_TEMPLATE_RESULT might not be visited.
+	(trees_{in,out}::decl_value): Cope with alias template
+	instantiations.
+	(trees_out::get_merge_kind): Add alias support.
+	(trees_{in,out}::ket_mergeable): Add alias support.
+	(check_mergeable_decl): Likewise.
+	(trees_in::is_matching_decl): Drop inner parm, adjust.
+	(depset::hash::make_dependency): Add alias suport.
+	(depset::hash::add_specializations): Detect and mark aliases.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-alias-1{,_[ab]}.[hHC]: New.
+
 	gcc/cp/
 	* module.cc (trees_{in,out}::decl_value): Instantiations are
 	merged things too.
@@ -11,8 +30,8 @@
 2020-03-25  Nathan Sidwell  <nathan@acm.org>
 
 	WARNING: This breaks lots of modules tests because an inconsistent
-	invariant is now consistently different.  This is intended.
-	gcc/cp/
+	invariant wrt alias templates is now consistently different.  This
+	is intended.  gcc/cp/
 	* cp-tree.h (SET_TYPE_TEMPLATE_INFO): Not for aliases.
 	* pt.c (lookup_template_class_1): Type alias's template info
 	should already be correct.

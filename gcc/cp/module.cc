@@ -2298,12 +2298,16 @@ private:
 				   entity. */
     DB_GLOBAL_BIT,		/* Global module entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
-    DB_PARTIAL_BIT,		/* A partial instantiation or
-				   specialization.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
-    DB_TYPE_SPEC_BIT,		/* Specialization from the type table.  */
-    DB_BOTH_SPEC_BIT,		/* Specialization in both spec tables.  */
+    /* The following bits are not independent, but enumerating them is
+       awkward.  */
+    DB_ALIAS_TMPL_INST_BIT,	/* An alias template instantiation. */
+    DB_PARTIAL_BIT,		/* A partial instantiation or
+				   specialization.  */
+    DB_ALIAS_SPEC_BIT,		/* Specialization of an alias template
+				   (in both spec tables).  */
+    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.  */
   };
 
 public:
@@ -2398,6 +2402,14 @@ public:
   bool is_partial () const
   {
     return get_flag_bit<DB_PARTIAL_BIT> ();
+  }
+  bool is_alias_tmpl_inst () const
+  {
+    return get_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
+  }
+  bool is_alias () const
+  {
+    return get_flag_bit<DB_ALIAS_SPEC_BIT> ();
   }
   bool is_hidden () const
   {
@@ -2776,9 +2788,13 @@ enum merge_kind
   /* Template specialization kinds below. These are all found via
      primary template and specialization args.  */
   MK_template_mask = 0x8,  /* A template specialization.  */
-  MK_tmpl_decl_mask = 0x4, /* In the decl table (not the type table).  */
-  MK_tmpl_both_mask = 0x2, /* ... but also in the type table.  */
-  MK_tmpl_partial_mask = 0x2,  /* Partial type specialization.  */
+
+  MK_tmpl_decl_mask = 0x4, /* In decl table (not a type specialization).  */
+
+  /* Following bit has meaning dependent on MK_tmpl_decl_mask. */
+  MK_tmpl_alias_mask = 0x2, /* An alias specialization (in both).  */
+  MK_tmpl_partial_mask = 0x2, /* A partial type specialization.  */
+  
   MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
 
   MK_type_spec = MK_template_mask,
@@ -2788,6 +2804,8 @@ enum merge_kind
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
   MK_decl_tmpl_spec = MK_decl_spec | MK_tmpl_tmpl_mask,
 
+  MK_alias_spec = MK_decl_spec | MK_tmpl_alias_mask,
+
   MK_hwm = 16
 };
 /* This is more than a debugging array.  NULLs are used to determine
@@ -2796,8 +2814,10 @@ static char const *const merge_kind_name[MK_hwm] =
   {
     "unique", "named", "field", "vtable",  /* 0...3  */
     "asbase", NULL, "local friend", "enum",       /* 4...7  */
-    "type spec", "type tmpl spec", NULL, "type partial spec", /* 8...11  */
-    "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
+    "type spec", "type tmpl spec", /* 8,9 type (template).  */
+    NULL, "type partial spec", /* 10,11  partial template. */
+    "decl spec", "decl tmpl spec", /* 12,13 decl (template).  */
+    "alias spec", NULL /* 14,15 alias. */
   };
 
 /* Mergeable entity location data.  */
@@ -2903,7 +2923,7 @@ public:
   bool read_definition (tree decl);
   
 private:
-  bool is_matching_decl (tree existing, tree node, tree inner);
+  bool is_matching_decl (tree existing, tree decl);
   static bool install_implicit_member (tree decl);
   bool read_function_def (tree decl, tree maybe_template);
   bool read_var_def (tree decl, tree maybe_template);
@@ -6166,7 +6186,8 @@ trees_out::core_vals (tree t)
       gcc_checking_assert
       	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
       gcc_checking_assert
-	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
+	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result)
+	 || dep_hash->find_dependency (t)->is_alias_tmpl_inst ());
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
 	WT (DECL_CHAIN (t));
       break;
@@ -7380,7 +7401,7 @@ trees_out::decl_value (tree decl, depset *dep)
 
       if (mk != MK_unique)
 	{
-	  if (!state->is_header () && !(mk & MK_template_mask))
+	  if (!(mk & MK_template_mask) && !state->is_header ())
 	    {
 	      /* Tell the importer whether this is a global module entity,
 		 or a module entity.  This bool merges into the next block
@@ -7388,7 +7409,11 @@ trees_out::decl_value (tree decl, depset *dep)
 	      tree o = get_originating_module_decl (decl);
 	      bool is_mod = false;
 
-	      if (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o))
+	      if (dep && dep->is_alias_tmpl_inst ())
+		/* Alias template instantiations are templatey, but
+		   found by name.  */
+		is_mod = false;
+	      else if (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o))
 		is_mod = true;
 	      b (is_mod);
 	    }
@@ -7410,16 +7435,26 @@ trees_out::decl_value (tree decl, depset *dep)
   int inner_tag = 0;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      inner = DECL_TEMPLATE_RESULT (decl);
+      if (dep && dep->is_alias_tmpl_inst ())
+	inner = NULL_TREE;
+      else
+	{
+	  inner = DECL_TEMPLATE_RESULT (decl);
+	  inner_tag = insert (inner, WK_value);
+	}
 
-      inner_tag = insert (inner, WK_value);
       if (streaming_p ())
 	{
-	  start (inner);
-	  tree_node_bools (inner);
-	  dump (dumper::TREE)
-	    && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], inner_tag,
-		     TREE_CODE (inner), inner, inner);
+	  int code = inner ? TREE_CODE (inner) : 0;
+	  u (code);
+	  if (inner)
+	    {
+	      start (inner, true);
+	      tree_node_bools (inner);
+	      dump (dumper::TREE)
+		&& dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], inner_tag,
+			 TREE_CODE (inner), inner, inner);
+	    }
 	}
     }
 
@@ -7427,7 +7462,7 @@ trees_out::decl_value (tree decl, depset *dep)
   int type_tag = 0;
   tree stub_decl = NULL_TREE;
   int stub_tag = 0;
-  if (TREE_CODE (inner) == TYPE_DECL)
+  if (inner && TREE_CODE (inner) == TYPE_DECL)
     {
       type = TREE_TYPE (inner);
       bool has_type = (type == TYPE_MAIN_VARIANT (type)
@@ -7479,7 +7514,7 @@ trees_out::decl_value (tree decl, depset *dep)
   unsigned tpl_levels = 0;
   if (decl != inner)
     tpl_header (decl, &tpl_levels);
-  if (TREE_CODE (inner) == FUNCTION_DECL)
+  if (inner && TREE_CODE (inner) == FUNCTION_DECL)
     fn_parms_init (inner);
 
   /* Now write out the merging information, and then really
@@ -7491,16 +7526,27 @@ trees_out::decl_value (tree decl, depset *dep)
       && dump ("Wrote:%d's %s merge key %C:%N", tag,
 	       merge_kind_name[mk], TREE_CODE (decl), decl);
 
-  if (TREE_CODE (inner) == FUNCTION_DECL)
+  if (inner && TREE_CODE (inner) == FUNCTION_DECL)
     // FIXME: Stream in the type here as that's where the default args are?
     fn_parms_fini (inner);
 
   tree_node_vals (decl);
 
-  if (inner_tag != 0)
+  if (inner_tag)
     {
       tree_node_vals (inner);
       tpl_parms_fini (decl, tpl_levels);
+    }
+  else if (!inner)
+    {
+      /* A template alias instantiation.  */
+      inner = DECL_TEMPLATE_RESULT (decl);
+      tree_node (inner);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote(%d) alias template %C:%N",
+		   *tree_map.get (inner), TREE_CODE (inner), inner);
+      inner = NULL_TREE;
     }
 
   if (type)
@@ -7522,7 +7568,7 @@ trees_out::decl_value (tree decl, depset *dep)
       install_entity (decl, dep);
     }
 
-  if (!type
+  if (!type && inner
       && TREE_CODE (inner) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (inner)
       && TYPE_NAME (TREE_TYPE (inner)) == inner)
@@ -7535,14 +7581,14 @@ trees_out::decl_value (tree decl, depset *dep)
 		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
     }
 
-  if (streaming_p () && DECL_MAYBE_IN_CHARGE_CDTOR_P (inner))
+  if (streaming_p () && DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       bool cloned_p
-	= (DECL_CHAIN (inner) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (inner)));
+	= (DECL_CHAIN (decl) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)));
       bool needs_vtt_parm_p
-	= (cloned_p && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (inner)));
+	= (cloned_p && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (decl)));
       bool omit_inherited_parms_p
-	= (cloned_p && ctor_omit_inherited_parms (inner, false));
+	= (cloned_p && ctor_omit_inherited_parms (decl, false));
       unsigned flags = (int (cloned_p) << 0
 			| int (needs_vtt_parm_p) << 1
 			| int (omit_inherited_parms_p) << 2);
@@ -7596,23 +7642,32 @@ trees_in::decl_value ()
   int inner_tag = 0;
   if (decl && TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      inner = start ();
-      if (inner && tree_node_bools (inner))
-	DECL_TEMPLATE_RESULT (decl) = inner;
+      int code = u ();
+      if (!code)
+	{
+	  inner = NULL_TREE;
+	  DECL_TEMPLATE_RESULT (decl) = error_mark_node;
+	}
       else
-	decl = NULL_TREE;
+	{
+	  inner = start (code);
+	  if (inner && tree_node_bools (inner))
+	    DECL_TEMPLATE_RESULT (decl) = inner;
+	  else
+	    decl = NULL_TREE;
 
-      inner_tag = insert (inner);
-      if (decl)
-	dump (dumper::TREE)
-	  && dump ("Reading:%d %C", inner_tag, TREE_CODE (inner));
+	  inner_tag = insert (inner);
+	  if (decl)
+	    dump (dumper::TREE)
+	      && dump ("Reading:%d %C", inner_tag, TREE_CODE (inner));
+	}
     }
 
   tree type = NULL_TREE;
   int type_tag = 0;
   tree stub_decl = NULL_TREE;
   int stub_tag = 0;
-  if (decl && TREE_CODE (inner) == TYPE_DECL)
+  if (decl && inner && TREE_CODE (inner) == TYPE_DECL)
     {
       if (unsigned type_code = u ())
 	{
@@ -7676,7 +7731,7 @@ trees_in::decl_value ()
   if (decl != inner)
     if (!tpl_header (decl, &tpl_levels))
       goto bail;
-  if (TREE_CODE (inner) == FUNCTION_DECL)
+  if (inner && TREE_CODE (inner) == FUNCTION_DECL)
     parm_tag = fn_parms_init (inner);
 
   tree existing = key_mergeable (tag, mk, decl, inner, type, container, is_mod);
@@ -7711,7 +7766,7 @@ trees_in::decl_value ()
   if (!tree_node_vals (decl))
     goto bail;
 
-  if (inner_tag != 0)
+  if (inner_tag)
     {
       gcc_checking_assert (DECL_TEMPLATE_RESULT (decl) == inner);
 
@@ -7720,6 +7775,15 @@ trees_in::decl_value ()
 
       if (!tpl_parms_fini (decl, tpl_levels))
 	goto bail;
+    }
+  else if (!inner)
+    {
+      inner = tree_node ();
+      DECL_TEMPLATE_RESULT (decl) = inner;
+      TREE_TYPE (decl) = TREE_TYPE (inner);
+      dump (dumper::TREE)
+	&& dump ("Read alias template %C:%N", TREE_CODE (inner), inner);
+      inner = NULL_TREE;
     }
 
   if (type && (!tree_node_vals (type)
@@ -7731,7 +7795,7 @@ trees_in::decl_value ()
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
-  bool is_typedef = (!type
+  bool is_typedef = (!type && inner
 		     && TREE_CODE (inner) == TYPE_DECL
 		     && DECL_ORIGINAL_TYPE (inner)
 		     && !TREE_TYPE (inner));
@@ -7789,6 +7853,18 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
+      if (mk == MK_alias_spec)
+	{
+	  /* Insert into type table.  */
+	  tree ti = DECL_TEMPLATE_INFO (inner);
+	  // FIXME: I am concerned about this late insertion for the
+	  // same reasons as the next FIXME
+	  tree texist = match_mergeable_specialization
+	    (false, TI_TEMPLATE (ti), TI_ARGS (ti), TREE_TYPE (inner));
+	  if (texist)
+	    set_overrun ();
+	}
+
       // FIXME: I am concerned we can get issues here where reading in
       // this cluster caused us to read some other module's cluster
       // that also instantiated this implicit member.  That loading
@@ -7820,7 +7896,7 @@ trees_in::decl_value ()
 	 it, and not the existing decl.  */
       dump (dumper::MERGE) && dump ("Deduping %N", existing);
 
-      if (inner_tag != 0)
+      if (inner_tag)
 	DECL_TEMPLATE_RESULT (decl) = inner;
 
       if (type)
@@ -7838,7 +7914,7 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
-      if (!is_matching_decl (existing, decl, inner))
+      if (!is_matching_decl (existing, decl))
 	unmatched_duplicate (existing);
 
       /* And our result is the existing node.  */
@@ -9795,25 +9871,24 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	gcc_checking_assert (dep->is_special ());
 	spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
 
-	if (!dep->is_type_spec ())
-	  mk = MK_decl_spec;
-	else if (dep->is_partial ())
-	  mk = MK_type_partial_spec;
+	if (dep->is_type_spec ())
+	  mk = dep->is_partial () ? MK_type_partial_spec : MK_type_spec;
 	else
-	  mk = MK_type_spec;
+	  mk = dep->is_alias () ? MK_alias_spec : MK_decl_spec;
 
 	if (TREE_CODE (decl) == TEMPLATE_DECL)
 	  {
 	    tree res = DECL_TEMPLATE_RESULT (decl);
 	    if (!(mk & MK_tmpl_decl_mask))
 	      res = TREE_TYPE (res);
+
 	    if (res == entry->spec)
+	      /* We check we can get back to the template during
+		 streaming.  */
 	      mk = merge_kind (mk | MK_tmpl_tmpl_mask);
 	  }
-
-	// FIXME: check if BOTH_SPEC_BIT
-	if (false)
-	  mk = merge_kind (mk | MK_tmpl_both_mask);
+	else
+	  gcc_checking_assert (mk != MK_type_partial_spec);
       }
       break;
     }
@@ -9894,11 +9969,13 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
 	    {
-	      if (mk & MK_tmpl_tmpl_mask)
+	      if (mk & MK_tmpl_alias_mask)
+		/* It should be in both tables.  */
+		gcc_assert (check_mergeable_specialization (false, entry)
+			    == TREE_TYPE (existing));
+	      else if (mk & MK_tmpl_tmpl_mask)
 		if (tree ti = DECL_TEMPLATE_INFO (existing))
 		  existing = TI_TEMPLATE (ti);
-	      if (mk & MK_tmpl_both_mask)
-		{} // FIXME: check it's in the type table too
 	    }
 	  else
 	    {
@@ -9938,7 +10015,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  if (IDENTIFIER_CONV_OP_P (name))
 	    name = conv_op_identifier;
 
-	  if (TREE_CODE (inner) == FUNCTION_DECL)
+	  if (inner && TREE_CODE (inner) == FUNCTION_DECL)
 	    {
 	      /* Functions are distinguished by parameter types.  */
 	      tree fn_type = TREE_TYPE (inner);
@@ -10047,7 +10124,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  u (code);
 	}
 
-      if (mk == MK_named && TREE_CODE (inner) == FUNCTION_DECL)
+      if (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL)
 	{
 	  tree_node (key.ret);
 	  tree arg = key.args;
@@ -10108,6 +10185,9 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	    {
 	      d_inner = DECL_TEMPLATE_RESULT (d_inner);
 	      m_inner = DECL_TEMPLATE_RESULT (m_inner);
+	      if (d_inner == error_mark_node
+		  && TYPE_DECL_ALIAS_P (m_inner))
+		return match;
 	      goto again;
 	    }
 	  break;
@@ -10187,11 +10267,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       existing = match_mergeable_specialization (is_decl, tmpl, args, insert);
 
       if (!existing)
-	{
-	  if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
-	    {} // FIXME: insert into type table
-	  add_mergeable_specialization (tmpl, args, decl, flags);
-	}
+	add_mergeable_specialization (tmpl, args, decl, flags);
       else if (mk & MK_tmpl_decl_mask)
 	{
 	  /* A declaration specialization.  */
@@ -10202,9 +10278,6 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		if (DECL_TEMPLATE_RESULT (tmpl) == existing)
 		  existing = tmpl;
 	      }
-
-	  if (mk & MK_tmpl_both_mask)
-	    {} // FIXME: check it's in the type table too
 	}
       else
 	{
@@ -10243,7 +10316,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       key.ref_q = cp_ref_qualifier ((code >> 0) & 3);
       key.index = code >> 2;
 
-      if (mk == MK_named && TREE_CODE (inner) == FUNCTION_DECL)
+      if (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL)
 	{
 	  key.ret = tree_node ();
 	  tree arg, *arg_ptr = &key.args;
@@ -10265,8 +10338,11 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  DECL_NAME (decl) = name;
 	  DECL_CONTEXT (decl) = FROB_CONTEXT (container);
 	}
-      DECL_NAME (inner) = DECL_NAME (decl);
-      DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+      if (inner)
+	{
+	  DECL_NAME (inner) = DECL_NAME (decl);
+	  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+	}
 
       switch (TREE_CODE (container))
 	{
@@ -10330,6 +10406,10 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 			  existing = check_mergeable_decl
 			    (mk, inner, existing, key);
+
+			  if (!existing && DECL_ALIAS_TEMPLATE_P (decl))
+			    {} // FIXME: Insert into specialization
+			      // tables, we'll need the arguments for that!
 			}
 		      break;
 
@@ -10441,7 +10521,7 @@ trees_in::binfo_mergeable (tree *type)
    decls_match because it can cause instantiations of constraints.  */
 
 bool
-trees_in::is_matching_decl (tree existing, tree decl, tree inner)
+trees_in::is_matching_decl (tree existing, tree decl)
 {
   // FIXME: We should probably do some duplicate decl-like stuff here
   // (beware, default parms should be the same?)  Can we just call
@@ -10450,10 +10530,15 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
 
   // We know at this point that the decls have matched by key, so we
   // can elide some of the checking
-  gcc_checking_assert (TREE_CODE (existing) == TREE_CODE (decl)
-		       && (decl == inner
-			   || (TREE_CODE (DECL_TEMPLATE_RESULT (existing))
-			       == TREE_CODE (inner))));
+  gcc_checking_assert (TREE_CODE (existing) == TREE_CODE (decl));
+
+  tree inner = decl;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      inner = DECL_TEMPLATE_RESULT (decl);
+      gcc_checking_assert (TREE_CODE (DECL_TEMPLATE_RESULT (existing))
+			   == TREE_CODE (inner));
+    }
   
   if (TREE_CODE (inner) == FUNCTION_DECL)
     {
@@ -11671,10 +11756,15 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       *slot = dep = make_entity (decl, ek, has_def);
 
       if (TREE_CODE (decl) == TEMPLATE_DECL)
-	/* If we add a template, its result better not also be
-	   present.  */
-	gcc_checking_assert
-	  (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
+	{
+	  if (DECL_ALIAS_TEMPLATE_P (decl) && DECL_TEMPLATE_INFO (decl))
+	    dep->set_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
+	  else 
+	    /* The template_result should otherwise not be in the
+	       table.  */
+	    gcc_checking_assert
+	      (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
+	}
 
       if (ek == EK_USING)
 	;
@@ -12223,20 +12313,25 @@ depset::hash::add_specializations (bool decl_p)
       depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
 	{
-	  /* An already located specialization, this must be a friend
-	     with a different entry->tmpl.  */
+	  /* An already located specialization, this is a friend
+	     with a different entry->tmpl, or the type of a type-alias.  */
 	  spec_entry *other = reinterpret_cast <spec_entry *> (dep->deps[0]);
 	  if (other->tmpl != entry->tmpl)
-	    gcc_checking_assert (!is_partial
+	    gcc_checking_assert (!is_partial && !is_alias
 				 && needs_reaching == dep->is_unreached ());
 	  else
 	    {
-	      gcc_checking_assert (!decl_p && !dep->is_type_spec ());
-	      // dep->set_flag_bit<DB_BOTH_SPEC_BIT> ();
+	      gcc_checking_assert (!decl_p && !dep->is_type_spec ()
+				   && is_alias
+				   && TREE_TYPE (other->spec) == entry->spec
+				   && template_args_equal (other->args,
+							   entry->args));
+	      dep->set_flag_bit<DB_ALIAS_SPEC_BIT> ();
 	    }
 	}
       else
 	{
+	  gcc_checking_assert (decl_p || !is_alias);
 	  dep->set_special ();
 	  dep->deps.safe_push (reinterpret_cast<depset *> (entry));
 	  if (needs_reaching)
