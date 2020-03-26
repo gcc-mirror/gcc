@@ -1,5 +1,16 @@
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94281
+	* gimple.h (gimple_seq_first_nondebug_stmt): New function.
+	(gimple_seq_last_nondebug_stmt): Don't return NULL if seq contains
+	a single non-debug stmt followed by one or more debug stmts.
+	* gimplify.c (gimplify_body): Use gimple_seq_first_nondebug_stmt
+	instead of gimple_seq_first_stmt, use gimple_seq_first_nondebug_stmt
+	and gimple_seq_last_nondebug_stmt instead of gimple_seq_first and
+	gimple_seq_last to check if outer_stmt gbind could be reused and
+	if yes and it is surrounded by any debug stmts, move them into the
+	gbind body.
+
 	PR rtl-optimization/92264
 	* var-tracking.c (add_stores): Call cselib_set_value_sp_based even
 	for sp based values in !frame_pointer_needed

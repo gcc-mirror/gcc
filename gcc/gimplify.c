@@ -14849,7 +14849,7 @@ gimplify_body (tree fndecl, bool do_parms)
   /* Gimplify the function's body.  */
   seq = NULL;
   gimplify_stmt (&DECL_SAVED_TREE (fndecl), &seq);
-  outer_stmt = gimple_seq_first_stmt (seq);
+  outer_stmt = gimple_seq_first_nondebug_stmt (seq);
   if (!outer_stmt)
     {
       outer_stmt = gimple_build_nop ();
@@ -14859,8 +14859,37 @@ gimplify_body (tree fndecl, bool do_parms)
   /* The body must contain exactly one statement, a GIMPLE_BIND.  If this is
      not the case, wrap everything in a GIMPLE_BIND to make it so.  */
   if (gimple_code (outer_stmt) == GIMPLE_BIND
-      && gimple_seq_first (seq) == gimple_seq_last (seq))
-    outer_bind = as_a <gbind *> (outer_stmt);
+      && (gimple_seq_first_nondebug_stmt (seq)
+	  == gimple_seq_last_nondebug_stmt (seq)))
+    {
+      outer_bind = as_a <gbind *> (outer_stmt);
+      if (gimple_seq_first_stmt (seq) != outer_stmt
+	  || gimple_seq_last_stmt (seq) != outer_stmt)
+	{
+	  /* If there are debug stmts before or after outer_stmt, move them
+	     inside of outer_bind body.  */
+	  gimple_stmt_iterator gsi = gsi_for_stmt (outer_stmt, &seq);
+	  gimple_seq second_seq = NULL;
+	  if (gimple_seq_first_stmt (seq) != outer_stmt
+	      && gimple_seq_last_stmt (seq) != outer_stmt)
+	    {
+	      second_seq = gsi_split_seq_after (gsi);
+	      gsi_remove (&gsi, false);
+	    }
+	  else if (gimple_seq_first_stmt (seq) != outer_stmt)
+	    gsi_remove (&gsi, false);
+	  else
+	    {
+	      gsi_remove (&gsi, false);
+	      second_seq = seq;
+	      seq = NULL;
+	    }
+	  gimple_seq_add_seq_without_update (&seq,
+					     gimple_bind_body (outer_bind));
+	  gimple_seq_add_seq_without_update (&seq, second_seq);
+	  gimple_bind_set_body (outer_bind, seq);
+	}
+    }
   else
     outer_bind = gimple_build_bind (NULL_TREE, seq, NULL);
 
