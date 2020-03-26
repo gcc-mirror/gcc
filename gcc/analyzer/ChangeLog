@@ -1,5 +1,20 @@
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* program-state.cc (selftest::test_program_state_dumping): Update
+	expected dump to include symbolic_region's possibly_null field.
+	* region-model.cc (symbolic_region::print_fields): New vfunc
+	implementation.
+	(region_model::add_constraint): Clear m_possibly_null from
+	symbolic_regions now known to be non-NULL.
+	(selftest::test_malloc_constraints): New selftest.
+	(selftest::analyzer_region_model_cc_tests): Call it.
+	* region-model.h (region::dyn_cast_symbolic_region): Add non-const
+	overload.
+	(symbolic_region::dyn_cast_symbolic_region): Implement it.
+	(symbolic_region::print_fields): New vfunc override decl.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* analyzer.h (class feasibility_problem): New forward decl.
 	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic):
 	Initialize new fields m_status, m_epath_length, and m_problem.

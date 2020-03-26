@@ -1,5 +1,12 @@
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/analyzer/data-model-5b.c: Add xfail for new false
+	positive leak.
+	* gcc.dg/analyzer/data-model-5c.c: Likewise.
+	* gcc.dg/analyzer/malloc-5.c: New test.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/analyzer/dot-output.c: Check that
 	dot-output.c.supergraph-eg.dot is valid.
 
