@@ -1,5 +1,9 @@
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94323
+	* tree.c (protected_set_expr_location): Recurse on STATEMENT_LIST
+	that contains exactly one non-DEBUG_BEGIN_STMT statement.
+
 	PR debug/94281
 	* gimple.h (gimple_seq_first_nondebug_stmt): New function.
 	(gimple_seq_last_nondebug_stmt): Don't return NULL if seq contains

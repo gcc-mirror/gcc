@@ -1,3 +1,8 @@
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94323
+	* g++.dg/debug/pr94323.C: New test.
+
 2020-03-26  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/94334
