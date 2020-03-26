@@ -317,10 +317,6 @@ acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
   gomp_init_device (acc_dev);
   gomp_mutex_unlock (&acc_dev->lock);
 
-  gomp_mutex_lock (&acc_init_state_lock);
-  acc_init_state = initialized;
-  gomp_mutex_unlock (&acc_init_state_lock);
-
   if (profiling_p)
     {
       prof_info.event_type = acc_ev_device_init_end;
@@ -328,6 +324,14 @@ acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
       goacc_profiling_dispatch (&prof_info, &device_init_event_info,
 				&api_info);
     }
+
+  /* We're setting 'initialized' *after* 'goacc_profiling_dispatch', so that a
+     nested 'acc_get_device_type' called from a profiling callback still sees
+     'initializing', so that we don't deadlock when it then again tries to lock
+     'goacc_prof_lock'.  See also the discussion in 'acc_get_device_type'.  */
+  gomp_mutex_lock (&acc_init_state_lock);
+  acc_init_state = initialized;
+  gomp_mutex_unlock (&acc_init_state_lock);
 
   return base_dev;
 }
