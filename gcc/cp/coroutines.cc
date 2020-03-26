@@ -199,6 +199,7 @@ static GTY(()) tree coro_return_void_identifier;
 static GTY(()) tree coro_return_value_identifier;
 static GTY(()) tree coro_yield_value_identifier;
 static GTY(()) tree coro_resume_identifier;
+static GTY(()) tree coro_address_identifier;
 static GTY(()) tree coro_from_address_identifier;
 static GTY(()) tree coro_get_return_object_identifier;
 static GTY(()) tree coro_gro_on_allocation_fail_identifier;
@@ -226,6 +227,7 @@ coro_init_identifiers ()
   coro_return_value_identifier = get_identifier ("return_value");
   coro_yield_value_identifier = get_identifier ("yield_value");
   coro_resume_identifier = get_identifier ("resume");
+  coro_address_identifier = get_identifier ("address");
   coro_from_address_identifier = get_identifier ("from_address");
   coro_get_return_object_identifier = get_identifier ("get_return_object");
   coro_gro_on_allocation_fail_identifier =
@@ -1352,6 +1354,8 @@ struct coro_aw_data
   tree self_h;     /* This is a handle to the current coro (frame var).  */
   tree cleanup;    /* This is where to go once we complete local destroy.  */
   tree cororet;    /* This is where to go if we suspend.  */
+  tree corocont;   /* This is where to go if we continue.  */
+  tree conthand;   /* This is the handle for a continuation.  */
   unsigned index;  /* This is our current resume index.  */
 };
 
@@ -1440,7 +1444,6 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 
   tree actor = data->actor_fn;
   location_t loc = EXPR_LOCATION (*stmt);
-  tree sv_handle = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1);  /* frame slot. */
   tree expr = TREE_OPERAND (saved_co_await, 2); /* initializer.  */
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
@@ -1493,15 +1496,29 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   r = coro_build_cvt_void_expr_stmt (r, loc);
   append_to_statement_list (r, &body_list);
 
-  tree suspend = TREE_VEC_ELT (awaiter_calls, 1); /* await_suspend().  */
+  /* Find out what we have to do with the awaiter's suspend method.
+     [expr.await]
+     (5.1) If the result of await-ready is false, the coroutine is considered
+	   suspended. Then:
+     (5.1.1) If the type of await-suspend is std::coroutine_handle<Z>,
+	     await-suspend.resume() is evaluated.
+     (5.1.2) if the type of await-suspend is bool, await-suspend is evaluated,
+	     and the coroutine is resumed if the result is false.
+     (5.1.3) Otherwise, await-suspend is evaluated.  */
 
-  if (sv_handle == NULL_TREE)
+  tree suspend = TREE_VEC_ELT (awaiter_calls, 1); /* await_suspend().  */
+  tree susp_type = TREE_TYPE (suspend);
+
+  bool is_cont = false;
+  /* NOTE: final suspend can't resume; the "resume" label in that case
+     corresponds to implicit destruction.  */
+  if (VOID_TYPE_P (susp_type))
     {
-      /* void return, we just call it and hit the yield.  */
+      /* We just call await_suspend() and hit the yield.  */
       suspend = coro_build_cvt_void_expr_stmt (suspend, loc);
       append_to_statement_list (suspend, &body_list);
     }
-  else if (sv_handle == boolean_type_node)
+  else if (TREE_CODE (susp_type) == BOOLEAN_TYPE)
     {
       /* Boolean return, continue if the call returns false.  */
       suspend = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, suspend);
@@ -1514,24 +1531,17 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     }
   else
     {
-      r = build2_loc (loc, INIT_EXPR, TREE_TYPE (sv_handle), sv_handle,
-		      suspend);
+      r = build1_loc (loc, CONVERT_EXPR, void_coro_handle_type, suspend);
+      r = build2_loc (loc, INIT_EXPR, void_coro_handle_type, data->conthand, r);
+      r = build1 (CONVERT_EXPR, void_type_node, r);
       append_to_statement_list (r, &body_list);
-      tree resume
-	= lookup_member (TREE_TYPE (sv_handle), coro_resume_identifier, 1, 0,
-			 tf_warning_or_error);
-      resume = build_new_method_call (sv_handle, resume, NULL, NULL_TREE,
-				      LOOKUP_NORMAL, NULL, tf_warning_or_error);
-      resume = coro_build_cvt_void_expr_stmt (resume, loc);
-      append_to_statement_list (resume, &body_list);
+      is_cont = true;
     }
 
-  tree d_l
-    = build1 (ADDR_EXPR, build_reference_type (void_type_node), destroy_label);
-  tree r_l
-    = build1 (ADDR_EXPR, build_reference_type (void_type_node), resume_label);
-  tree susp
-    = build1 (ADDR_EXPR, build_reference_type (void_type_node), data->cororet);
+  tree d_l = build_address (destroy_label);
+  tree r_l = build_address (resume_label);
+  tree susp = build_address (data->cororet);
+  tree cont = build_address (data->corocont);
   tree final_susp = build_int_cst (integer_type_node, is_final ? 1 : 0);
 
   susp_idx = build_int_cst (integer_type_node, data->index);
@@ -1551,7 +1561,8 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 			create_anon_label_with_ctx (loc, actor));
   add_stmt (r); /* case 0: */
   /* Implement the suspend, a scope exit without clean ups.  */
-  r = build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1, susp);
+  r = build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1,
+				    is_cont ? cont : susp);
   r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r); /*   goto ret;  */
   r = build_case_label (build_int_cst (integer_type_node, 1), NULL_TREE,
@@ -1645,16 +1656,6 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   return NULL_TREE;
 }
 
-static tree
-expand_co_awaits (tree fn, tree *fnbody, tree coro_fp, tree resume_idx,
-		  tree i_a_r_c, tree cleanup, tree cororet, tree self_h)
-{
-  coro_aw_data data
-    = {fn, coro_fp, resume_idx, i_a_r_c, self_h, cleanup, cororet, 2};
-  cp_walk_tree (fnbody, co_await_expander, &data, NULL);
-  return *fnbody;
-}
-
 /* Suspend point hash_map.  */
 
 struct suspend_point_info
@@ -1663,10 +1664,6 @@ struct suspend_point_info
   tree awaitable_type;
   /* coro frame field name.  */
   tree await_field_id;
-  /* suspend method return type.  */
-  tree suspend_type;
-  /* suspend handle field name, NULL_TREE if not needed.  */
-  tree susp_handle_id;
 };
 
 static hash_map<tree, suspend_point_info> *suspend_points;
@@ -1703,22 +1700,6 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
 	  We need to replace the e_proxy in the awr_call.  */
 
   tree coro_frame_type = TREE_TYPE (xform->actor_frame);
-  tree ah = NULL_TREE;
-  if (si->susp_handle_id)
-    {
-      tree ah_m
-	= lookup_member (coro_frame_type, si->susp_handle_id,
-			 /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-      ah = build_class_member_access_expr (xform->actor_frame, ah_m, NULL_TREE,
-					   true, tf_warning_or_error);
-    }
-  else if (TREE_CODE (si->suspend_type) == BOOLEAN_TYPE)
-    ah = boolean_type_node;
-
-  /* Replace Op 0 with the frame slot for the temporary handle, if it's needed.
-     If there's no frame type to be stored we flag boolean_type for that case
-     and an empty pointer for void return.  */
-  TREE_OPERAND (await_expr, 0) = ah;
 
   /* If we have a frame var for the awaitable, get a reference to it.  */
   proxy_replace data;
@@ -1988,6 +1969,14 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (actor_bind) = top_block;
 
+  tree continuation = build_lang_decl (VAR_DECL,
+				       get_identifier ("actor.continue"),
+				       void_coro_handle_type);
+  DECL_ARTIFICIAL (continuation) = 1;
+  DECL_IGNORED_P (continuation) = 1;
+  DECL_CONTEXT (continuation) = actor;
+  BIND_EXPR_VARS (actor_bind) = continuation;
+
   /* Update the block associated with the outer scope of the orig fn.  */
   tree first = expr_first (fnbody);
   if (first && TREE_CODE (first) == BIND_EXPR)
@@ -2011,6 +2000,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree actor_begin_label
     = create_named_label_with_ctx (loc, "actor.begin", actor);
   tree actor_frame = build1_loc (loc, INDIRECT_REF, coro_frame_type, actor_fp);
+
+  /* Declare the continuation handle.  */
+  add_decl_expr (continuation);
 
   /* Re-write param references in the body, no code should be generated
      here.  */
@@ -2061,6 +2053,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   tree ret_label
     = create_named_label_with_ctx (loc, "actor.suspend.ret", actor);
+
+  tree continue_label
+    = create_named_label_with_ctx (loc, "actor.continue.ret", actor);
 
   tree lsb_if = begin_if_stmt ();
   tree chkb0 = build2 (BIT_AND_EXPR, short_unsigned_type_node, rat,
@@ -2368,11 +2363,41 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
-  /* We need the resume index to work with.  */
+  /* This is the 'continuation' return point.  For such a case we have a coro
+     handle (from the await_suspend() call) and we want handle.resume() to
+     execute as a tailcall allowing arbitrary chaining of coroutines.  */
+  r = build_stmt (loc, LABEL_EXPR, continue_label);
+  add_stmt (r);
+
+  /* We want to force a tail-call even for O0/1, so this expands the resume
+     call into its underlying implementation.  */
+  tree addr = lookup_member (void_coro_handle_type, coro_address_identifier,
+			       1, 0, tf_warning_or_error);
+  addr = build_new_method_call (continuation, addr, NULL, NULL_TREE,
+				  LOOKUP_NORMAL, NULL, tf_warning_or_error);
+  tree resume = build_call_expr_loc
+    (loc, builtin_decl_explicit (BUILT_IN_CORO_RESUME), 1, addr);
+
+  /* Now we have the actual call, and we can mark it as a tail.  */
+  CALL_EXPR_TAILCALL (resume) = true;
+  /* ... and for optimisation levels 0..1, mark it as requiring a tail-call
+     for correctness.  It seems that doing this for optimisation levels that
+     normally perform tail-calling, confuses the ME (or it would be logical
+     to put this on unilaterally).  */
+  if (optimize < 2)
+    CALL_EXPR_MUST_TAIL_CALL (resume) = true;
+  resume = coro_build_cvt_void_expr_stmt (resume, loc);
+  add_stmt (resume);
+
+  r = build_stmt (loc, RETURN_EXPR, NULL);
+  gcc_checking_assert (maybe_cleanup_point_expr_void (r) == r);
+  add_stmt (r);
+
+  /* We will need to know which resume point number should be encoded.  */
   tree res_idx_m
     = lookup_member (coro_frame_type, resume_idx_name,
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-  tree res_idx
+  tree resume_pt_number
     = build_class_member_access_expr (actor_frame, res_idx_m, NULL_TREE, false,
 				      tf_warning_or_error);
 
@@ -2388,8 +2413,11 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* We've now rewritten the tree and added the initial and final
      co_awaits.  Now pass over the tree and expand the co_awaits.  */
-  actor_body = expand_co_awaits (actor, &actor_body, actor_fp, res_idx,
-				 i_a_r_c, del_promise_label, ret_label, ash);
+
+  coro_aw_data data = {actor, actor_fp, resume_pt_number, i_a_r_c,
+		       ash, del_promise_label, ret_label,
+		       continue_label, continuation, 2};
+  cp_walk_tree (&actor_body, co_await_expander, &data, NULL);
 
   actor_body = pop_stmt_list (actor_body);
   BIND_EXPR_BODY (actor_bind) = actor_body;
@@ -2525,8 +2553,7 @@ build_init_or_final_await (location_t loc, bool is_final)
    function.  */
 
 static bool
-register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree susp_type,
-		     tree susp_handle_nam)
+register_await_info (tree await_expr, tree aw_type, tree aw_nam)
 {
   bool seen;
   suspend_point_info &s
@@ -2539,8 +2566,6 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree susp_type,
     }
   s.awaitable_type = aw_type;
   s.await_field_id = aw_nam;
-  s.suspend_type = susp_type;
-  s.susp_handle_id = susp_handle_nam;
   return true;
 }
 
@@ -2569,26 +2594,6 @@ struct susp_frame_data
   unsigned saw_awaits;
   bool captures_temporary;
 };
-
-/* Helper to return the type of an awaiter's await_suspend() method.
-   We start with the result of the build method call, which will be either
-   a call expression (void, bool) or a target expressions (handle).  */
-
-static tree
-get_await_suspend_return_type (tree aw_expr)
-{
-  tree susp_fn = TREE_VEC_ELT (TREE_OPERAND (aw_expr, 3), 1);
-  if (TREE_CODE (susp_fn) == CALL_EXPR)
-    {
-      susp_fn = CALL_EXPR_FN (susp_fn);
-      if (TREE_CODE (susp_fn) == ADDR_EXPR)
-	susp_fn = TREE_OPERAND (susp_fn, 0);
-      return TREE_TYPE (TREE_TYPE (susp_fn));
-    }
-  else if (TREE_CODE (susp_fn) == TARGET_EXPR)
-    return TREE_TYPE (susp_fn);
-  return TREE_TYPE (susp_fn);
-}
 
 /* Walk the sub-tree looking for call expressions that both capture
    references and have compiler-temporaries as parms.  */
@@ -2751,31 +2756,7 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       free (nam);
     }
 
-  /* Find out what we have to do with the awaiter's suspend method (this
-     determines if we need somewhere to stash the suspend method's handle).
-     Cache the result of this in the suspend point info.
-     [expr.await]
-     (5.1) If the result of await-ready is false, the coroutine is considered
-	   suspended. Then:
-     (5.1.1) If the type of await-suspend is std::coroutine_handle<Z>,
-	     await-suspend.resume() is evaluated.
-     (5.1.2) if the type of await-suspend is bool, await-suspend is evaluated,
-	     and the coroutine is resumed if the result is false.
-     (5.1.3) Otherwise, await-suspend is evaluated.  */
-
-  tree susp_typ = get_await_suspend_return_type (aw_expr);
-  tree handle_field_nam;
-  if (VOID_TYPE_P (susp_typ) || TREE_CODE (susp_typ) == BOOLEAN_TYPE)
-    handle_field_nam = NULL_TREE; /* no handle is needed.  */
-  else
-    {
-      char *nam = xasprintf ("__aw_h.%u", data->count);
-      handle_field_nam
-	= coro_make_frame_entry (data->field_list, nam, susp_typ, aw_loc);
-      free (nam);
-    }
-  register_await_info (aw_expr, aw_field_type, aw_field_nam, susp_typ,
-		       handle_field_nam);
+  register_await_info (aw_expr, aw_field_type, aw_field_nam);
 
   data->count++; /* Each await suspend context is unique.  */
 
@@ -3095,9 +3076,7 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   handle_type self_handle;
   (maybe) parameter copies.
   coro1::suspend_never_prt __is;
-  (maybe) handle_type i_hand;
   coro1::suspend_always_prt __fs;
-  (maybe) handle_type f_hand;
   (maybe) local variables saved
   (maybe) trailing space.
  };  */
@@ -3299,19 +3278,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree init_susp_name = coro_make_frame_entry (&field_list, "__aw_s.is",
 					       initial_suspend_type, fn_start);
 
-  /* Figure out if we need a saved handle from the awaiter type.  */
-  tree ret_typ = get_await_suspend_return_type (initial_await);
-  tree init_hand_name;
-  if (VOID_TYPE_P (ret_typ) || TREE_CODE (ret_typ) == BOOLEAN_TYPE)
-    init_hand_name = NULL_TREE; /* no handle is needed.  */
-  else
-    {
-      init_hand_name
-	= coro_make_frame_entry (&field_list, "__ih", ret_typ, fn_start);
-    }
-
-  register_await_info (initial_await, initial_suspend_type, init_susp_name,
-		       ret_typ, init_hand_name);
+  register_await_info (initial_await, initial_suspend_type, init_susp_name);
 
   /* Now insert the data for any body await points, at this time we also need
      to promote any temporaries that are captured by reference (to regular
@@ -3326,18 +3293,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree fin_susp_name = coro_make_frame_entry (&field_list, "__aw_s.fs",
 					      final_suspend_type, fn_start);
 
-  ret_typ = get_await_suspend_return_type (final_await);
-  tree fin_hand_name;
-  if (VOID_TYPE_P (ret_typ) || TREE_CODE (ret_typ) == BOOLEAN_TYPE)
-    fin_hand_name = NULL_TREE; /* no handle is needed.  */
-  else
-    {
-      fin_hand_name
-	= coro_make_frame_entry (&field_list, "__fh", ret_typ, fn_start);
-    }
-
-  register_await_info (final_await, final_suspend_type, fin_susp_name,
-		       void_type_node, fin_hand_name);
+  register_await_info (final_await, final_suspend_type, fin_susp_name);
 
   /* 4. Now make space for local vars, this is conservative again, and we
      would expect to delete unused entries later.  */
