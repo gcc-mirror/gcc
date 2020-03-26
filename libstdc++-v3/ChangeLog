@@ -1,3 +1,15 @@
+2020-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (chrono::days, chrono::weeks, chrono::years)
+	(chrono::months, chrono::sys_days, chrono::local_t)
+	(chrono::local_time, chrono::local_seconds, chrono::local_days):
+	Define for C++20.
+	(chrono::time_point): Add missing static assert.
+	* testsuite/20_util/time_point/requirements/duration_neg.cc: New test.
+	* testsuite/std/time/clock/file/overview.cc: New test.
+	* testsuite/std/time/clock/file/members.cc: New test.
+	* testsuite/std/time/syn_c++20.cc: New test.
+
 2020-03-25  Mike Crowe  <mac@mcrowe.com>
 
 	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New

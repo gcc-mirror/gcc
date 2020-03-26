@@ -709,22 +709,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     /// nanoseconds
-    typedef duration<_GLIBCXX_CHRONO_INT64_T, nano> 	    nanoseconds;
+    using nanoseconds	= duration<_GLIBCXX_CHRONO_INT64_T, nano>;
 
     /// microseconds
-    typedef duration<_GLIBCXX_CHRONO_INT64_T, micro> 	    microseconds;
+    using microseconds	= duration<_GLIBCXX_CHRONO_INT64_T, micro>;
 
     /// milliseconds
-    typedef duration<_GLIBCXX_CHRONO_INT64_T, milli> 	    milliseconds;
+    using milliseconds	= duration<_GLIBCXX_CHRONO_INT64_T, milli>;
 
     /// seconds
-    typedef duration<_GLIBCXX_CHRONO_INT64_T> 		    seconds;
+    using seconds	= duration<_GLIBCXX_CHRONO_INT64_T>;
 
     /// minutes
-    typedef duration<_GLIBCXX_CHRONO_INT64_T, ratio< 60>>   minutes;
+    using minutes	= duration<_GLIBCXX_CHRONO_INT64_T, ratio< 60>>;
 
     /// hours
-    typedef duration<_GLIBCXX_CHRONO_INT64_T, ratio<3600>>  hours;
+    using hours		= duration<_GLIBCXX_CHRONO_INT64_T, ratio<3600>>;
+
+#if __cplusplus > 201703L
+    /// days
+    using days		= duration<_GLIBCXX_CHRONO_INT64_T, ratio<86400>>;
+
+    /// weeks
+    using weeks		= duration<_GLIBCXX_CHRONO_INT64_T, ratio<604800>>;
+
+    /// years
+    using years		= duration<_GLIBCXX_CHRONO_INT64_T, ratio<31556952>>;
+
+    /// months
+    using months	= duration<_GLIBCXX_CHRONO_INT64_T, ratio<2629746>>;
+#endif // C++20
 
 #undef _GLIBCXX_CHRONO_INT64_T
 
@@ -732,9 +746,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Clock, typename _Dur>
       struct time_point
       {
-	typedef _Clock			  			clock;
-	typedef _Dur		  				duration;
-	typedef typename duration::rep	  			rep;
+	static_assert(__is_duration<_Dur>::value,
+	    "duration must be a specialization of std::chrono::duration");
+
+	typedef _Clock						clock;
+	typedef _Dur						duration;
+	typedef typename duration::rep				rep;
 	typedef typename duration::period			period;
 
 	constexpr time_point() : __d(duration::zero())
@@ -790,7 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   time_point<_Clock, _ToDur>>::type
       time_point_cast(const time_point<_Clock, _Dur>& __t)
       {
-	typedef time_point<_Clock, _ToDur> 			__time_point;
+	typedef time_point<_Clock, _ToDur>			__time_point;
 	return __time_point(duration_cast<_ToDur>(__t.time_since_epoch()));
       }
 
@@ -837,7 +854,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef duration<_Rep2, _Period2>			__dur2;
 	typedef typename common_type<_Dur1,__dur2>::type	__ct;
-	typedef time_point<_Clock, __ct> 			__time_point;
+	typedef time_point<_Clock, __ct>			__time_point;
 	return __time_point(__lhs.time_since_epoch() + __rhs);
       }
 
@@ -851,7 +868,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef duration<_Rep1, _Period1>			__dur1;
 	typedef typename common_type<__dur1,_Dur2>::type	__ct;
-	typedef time_point<_Clock, __ct> 			__time_point;
+	typedef time_point<_Clock, __ct>			__time_point;
 	return __time_point(__rhs.time_since_epoch() + __lhs);
       }
 
@@ -865,7 +882,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef duration<_Rep2, _Period2>			__dur2;
 	typedef typename common_type<_Dur1,__dur2>::type	__ct;
-	typedef time_point<_Clock, __ct> 			__time_point;
+	typedef time_point<_Clock, __ct>			__time_point;
 	return __time_point(__lhs.time_since_epoch() -__rhs);
       }
 
@@ -946,9 +963,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     */
     struct system_clock
     {
-      typedef chrono::nanoseconds     				duration;
-      typedef duration::rep    					rep;
-      typedef duration::period 					period;
+      typedef chrono::nanoseconds				duration;
+      typedef duration::rep					rep;
+      typedef duration::period					period;
       typedef chrono::time_point<system_clock, duration> 	time_point;
 
       static_assert(system_clock::duration::min()
@@ -986,10 +1003,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     */
     struct steady_clock
     {
-      typedef chrono::nanoseconds 				duration;
-      typedef duration::rep	  				rep;
-      typedef duration::period	  				period;
-      typedef chrono::time_point<steady_clock, duration> 	time_point;
+      typedef chrono::nanoseconds				duration;
+      typedef duration::rep					rep;
+      typedef duration::period					period;
+      typedef chrono::time_point<steady_clock, duration>	time_point;
 
       static constexpr bool is_steady = true;
 
@@ -1014,6 +1031,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Duration>
       using sys_time = time_point<system_clock, _Duration>;
     using sys_seconds = sys_time<seconds>;
+    using sys_days = sys_time<days>;
 
     using file_clock = ::std::filesystem::__file_clock;
 
@@ -1027,6 +1045,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<> inline constexpr bool is_clock_v<system_clock> = true;
     template<> inline constexpr bool is_clock_v<steady_clock> = true;
     template<> inline constexpr bool is_clock_v<file_clock> = true;
+
+    struct local_t { };
+    template<typename _Duration>
+      using local_time = time_point<local_t, _Duration>;
+    using local_seconds = local_time<seconds>;
+    using local_days = local_time<days>;
 #endif // C++20
 
     // @}

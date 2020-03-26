@@ -35,8 +35,25 @@ static_assert( chrono::is_clock_v<chrono::steady_clock> );
 static_assert(chrono::is_clock<chrono::file_clock>::value);
 static_assert(chrono::is_clock_v<chrono::file_clock>);
 
+// Clock<xxx_clock> will not use the specialization of is_clock<xxx_clock>
+template<typename C> struct Clock : C { };
+
+static_assert( chrono::is_clock<Clock<chrono::system_clock>>::value );
+static_assert( chrono::is_clock_v<Clock<chrono::system_clock>> );
+
+static_assert( chrono::is_clock<Clock<chrono::high_resolution_clock>>::value );
+static_assert( chrono::is_clock_v<Clock<chrono::high_resolution_clock>> );
+
+static_assert( chrono::is_clock<Clock<chrono::steady_clock>>::value );
+static_assert( chrono::is_clock_v<Clock<chrono::steady_clock>> );
+
+static_assert(chrono::is_clock<Clock<chrono::file_clock>>::value);
+static_assert(chrono::is_clock_v<Clock<chrono::file_clock>>);
+
 static_assert( chrono::is_clock<__gnu_test::slow_clock>::value );
 static_assert( chrono::is_clock_v<__gnu_test::slow_clock> );
+
+// Negative tests
 
 static_assert( ! chrono::is_clock<int>::value );
 static_assert( ! chrono::is_clock_v<int> );
