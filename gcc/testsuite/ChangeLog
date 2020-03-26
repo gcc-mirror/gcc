@@ -1,3 +1,8 @@
+2020-03-26  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94269
+	* gcc.dg/pr94269.c: New test.
+
 2020-03-25  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/vect/bb-slp-pr69907.c: Disable the dump scan for amdgcn.

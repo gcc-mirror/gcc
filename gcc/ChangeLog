@@ -1,3 +1,10 @@
+2020-03-26  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94269
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Restrict
+	this
+	operation to single basic block.
+
 2020-03-25  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/90275
