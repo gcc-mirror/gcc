@@ -45,6 +45,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "ssa-range.h"
 
+class vr_gori_interface : public trace_gori_compute
+{
+public:
+  vr_gori_interface (range_store *store) : store (store) { }
+  virtual bool outgoing_edge_range_p (irange &, edge, tree name,
+				      const irange *name_range = NULL);
+  bool gori_computable_p (tree name, basic_block);
+protected:
+  virtual bool refine_range_with_equivalences (irange &, edge, tree name);
+private:
+  virtual void range_of_ssa_name (irange &r, tree op, gimple * = NULL);
+  bool solve_name_at_statement (irange &, tree, gimple *stmt, const irange &);
+  bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
+				     const irange &equiv_range);
+  range_store *store;
+};
+
+class trace_vr_gori_interface : public vr_gori_interface
+{
+public:
+  trace_vr_gori_interface (range_store *store) : vr_gori_interface (store) { }
+private:
+  virtual bool refine_range_with_equivalences (irange &, edge, tree name);
+  typedef vr_gori_interface super;
+};
+
 evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
   : stack (10), m_update_global_ranges (update_global_ranges)
 {
@@ -59,6 +85,7 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
     }
   vr_values = new class vr_values;
   ranger = new global_ranger;
+  gori = new trace_vr_gori_interface (vr_values);
 }
 
 evrp_range_analyzer::~evrp_range_analyzer (void)
@@ -66,6 +93,7 @@ evrp_range_analyzer::~evrp_range_analyzer (void)
   delete vr_values;
   stack.release ();
   delete ranger;
+  delete gori;
 }
 
 /* Push an unwinding marker onto the unwinding stack.  */
@@ -161,6 +189,144 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
 	return false;
     }
   return true;
+}
+
+void
+vr_gori_interface::range_of_ssa_name (irange &r, tree op,
+				      gimple *stmt ATTRIBUTE_UNUSED)
+{
+  r = *store->get_value_range (op);
+  r.normalize_symbolics ();
+}
+
+// Return TRUE if NAME is computable by GORI in BB.
+
+bool
+vr_gori_interface::gori_computable_p (tree name, basic_block bb)
+{
+  return m_gori_map.is_export_p (name, bb);
+}
+
+// Calculate the range for NAME on edge E and return it in R.
+// Return FALSE if unable to compute a range.
+
+bool
+vr_gori_interface::outgoing_edge_range_p (irange &r, edge e, tree name,
+				const irange *known_range ATTRIBUTE_UNUSED)
+{
+  if (!gori_compute::outgoing_edge_range_p (r, e, name))
+    r.set_varying (TREE_TYPE (name));
+  if (!r.singleton_p ())
+    refine_range_with_equivalences (r, e, name);
+  widest_irange tmp;
+  range_of_ssa_name (tmp, name);
+  r.intersect (tmp);
+  return !r.varying_p ();
+}
+
+// R is a known range for NAME on edge E.  Refine it with any
+// equivalences NAME may have.
+
+bool
+vr_gori_interface::refine_range_with_equivalences (irange &r,
+						   edge e, tree name)
+{
+  widest_irange branch_range, tmp;
+  gimple *branch = gimple_outgoing_edge_range_p (branch_range, e);
+  if (!branch)
+    return false;
+
+  // Solve each equivalence and use them to refine the range.
+  bitmap_iterator bi;
+  unsigned i;
+  bitmap gori_exports = m_gori_map.exports (e->src);
+  EXECUTE_IF_SET_IN_BITMAP (gori_exports, 0, i, bi)
+    {
+      tree equiv = ssa_name (i);
+      if (equiv == name)
+	continue;
+      widest_irange equiv_range;
+      if (solve_name_at_statement (equiv_range, equiv, branch, branch_range))
+	{
+	  gimple *equiv_def = SSA_NAME_DEF_STMT (equiv);
+	  if (!equiv_def->bb
+	      || !dominated_by_p (CDI_DOMINATORS, e->src, equiv_def->bb))
+	    continue;
+
+	  if (solve_name_given_equivalence (tmp, name, equiv, equiv_range))
+	    r.intersect (tmp);
+	}
+    }
+  return !r.varying_p ();
+}
+
+// Compute a range for NAME as it would appear in STMT and return it
+// in R.  LHS is the known range for STMT.
+
+bool
+vr_gori_interface::solve_name_at_statement (irange &r,
+					    tree name, gimple *stmt,
+					    const irange &lhs)
+{
+  widest_irange name_range;
+  range_of_ssa_name (name_range, name, stmt);
+  return compute_operand_range (r, stmt, lhs, name, &name_range);
+}
+
+bool
+vr_gori_interface::solve_name_given_equivalence (irange &r,
+						 tree name,
+						 tree equiv,
+						 const irange &equiv_range)
+{
+  // Solve NAME in EQUIV = USE(NAME).
+  gimple *def = SSA_NAME_DEF_STMT (equiv);
+  if (gimple_range_handler (def) && gimple_range_operand1 (def) == name)
+    {
+      widest_irange op2_range;
+      if (tree op2 = gimple_range_operand2 (def))
+	range_of_expr (op2_range, op2, def);
+      else
+	{
+	  tree type = TREE_TYPE (gimple_range_operand1 (def));
+	  op2_range.set_varying (type);
+	}
+      return gimple_range_calc_op1 (def, r, equiv_range, op2_range);
+    }
+  // Solve NAME in NAME = USE(EQUIV).
+  def =  SSA_NAME_DEF_STMT (name);
+  if (gimple_range_handler (def) && gimple_range_operand1 (def) == equiv)
+    {
+      widest_irange op2_range;
+      if (tree op2 = gimple_range_operand2 (def))
+	range_of_expr (op2_range, op2, def);
+      else
+	{
+	  tree type = gimple_expr_type (def);
+	  op2_range.set_varying (type);
+	}
+      return gimple_range_fold (def, r, equiv_range, op2_range);
+    }
+  return false;
+}
+
+bool
+trace_vr_gori_interface::refine_range_with_equivalences (irange &r,
+							   edge e, tree name)
+{
+  unsigned idx = ++trace_count;
+  if (dumping (idx))
+    {
+      fprintf (dump_file, "refine_range_with_equivalences (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d, with range ",
+	       e->src->index, e->dest->index);
+      r.dump (dump_file);
+      fputc ('\n', dump_file);
+      indent += bump;
+    }
+  bool res = super::refine_range_with_equivalences (r, e, name);
+  return trailer (idx, "refine_range_with_equivalences", res, name, r);
 }
 
 // Class to assert that gori/ranger provide ranges that are at least
@@ -313,11 +479,11 @@ evrp_range_analyzer::try_find_new_range_for_assert (const assert_info &assert,
   widest_irange tmp;
   bitmap_iterator bi;
   bool gori_can_calculate = (assert.gori_computable_p
-			     && vr_values->gori_computable_p (name, e->src));
+			     && gori->gori_computable_p (name, e->src));
 
   if (gori_can_calculate)
     {
-      if (!vr_values->outgoing_edge_range_p (vr_gori, e, name))
+      if (!gori->outgoing_edge_range_p (vr_gori, e, name))
 	vr_gori.set_varying (TREE_TYPE (name));
     }
 

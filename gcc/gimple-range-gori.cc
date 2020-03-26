@@ -481,6 +481,13 @@ debug (gori_map &g)
   g.dump (stderr);
 }
 
+const value_range_equiv *
+range_store::get_value_range (const_tree expr ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+  return NULL;
+}
+
 // Return the legacy global known value for NAME in R.
 
 void

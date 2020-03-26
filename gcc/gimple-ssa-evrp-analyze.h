@@ -46,7 +46,10 @@ class evrp_range_analyzer
 
   /* A bit of a wart.  This should ideally go away.  */
   void vrp_visit_cond_stmt (gcond *cond, edge *e)
-    { return vr_values->vrp_visit_cond_stmt (cond, e); }
+  {
+    simplify_using_ranges simpl (vr_values);
+    simpl.vrp_visit_cond_stmt (cond, e);
+  }
 
   /* Get the underlying vr_values class instance.  If TRANSFER is
      true, then we are transferring ownership.  Else we keep ownership.
@@ -72,6 +75,7 @@ class evrp_range_analyzer
   /* True if we are updating global ranges, false otherwise.  */
   bool m_update_global_ranges;
 
+  class trace_vr_gori_interface *gori;
   class gimple_ranger *ranger;
 };
 

@@ -46,13 +46,18 @@ class evrp_folder : public substitute_and_fold_engine
 {
  public:
   tree get_value (tree) FINAL OVERRIDE;
-  evrp_folder (class vr_values *vr_values_) : vr_values (vr_values_) { }
+  evrp_folder (class vr_values *vr_values_)
+    : vr_values (vr_values_),
+    simplifier (vr_values_) { }
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
-    { return vr_values->simplify_stmt_using_ranges (gsi); }
+    {
+      return simplifier.simplify (gsi);
+    }
   class vr_values *vr_values;
 
  private:
   DISABLE_COPY_AND_ASSIGN (evrp_folder);
+  simplify_using_ranges simplifier;
 };
 
 tree
@@ -306,16 +311,15 @@ evrp_dom_walker::cleanup (void)
       gimple *stmt = stmts_to_fixup.pop ();
       fixup_noreturn_call (stmt);
     }
-
-  evrp_folder.vr_values->cleanup_edges_and_switches ();
 }
 
 class xevrp_folder : public substitute_and_fold_engine
 {
 public:
-  xevrp_folder () : range_analyzer (true)
+  xevrp_folder () : range_analyzer (true),
+    vr_values (range_analyzer.get_vr_values ()),
+    simplifier (vr_values)
   {
-    vr_values = range_analyzer.get_vr_values ();
   }
 
   ~xevrp_folder ()
@@ -326,7 +330,6 @@ public:
 	range_analyzer.dump_all_value_ranges (dump_file);
 	fprintf (dump_file, "\n");
       }
-    vr_values->cleanup_edges_and_switches ();
   }
 
   tree get_value (tree op)
@@ -353,7 +356,7 @@ public:
 
   bool fold_stmt (gimple_stmt_iterator *gsi)
   {
-    return vr_values->simplify_stmt_using_ranges (gsi);
+    return simplifier.simplify (gsi);
   }
 
   void post_fold_bb (basic_block bb)
@@ -368,8 +371,9 @@ public:
 
 private:
   DISABLE_COPY_AND_ASSIGN (xevrp_folder);
-  class vr_values *vr_values;
   class evrp_range_analyzer range_analyzer;
+  class vr_values *vr_values;
+  simplify_using_ranges simplifier;
 };
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative

@@ -133,11 +133,19 @@ public:
   bitmap exports (basic_block bb);
 };
 
+// Generic object to return a range for an SSA.
+class range_store
+{
+public:
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL) = 0;
+  virtual const value_range_equiv *get_value_range (const_tree expr);
+};
+
 // This class utilizes a GORI map to determine which SSA_NAMES can
 // have ranges calculated for them on outgoing edges from basic
 // blocks.
 
-class gori_compute
+class gori_compute : public range_store
 {
 public:
   gori_compute ();
