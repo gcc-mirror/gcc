@@ -4010,69 +4010,94 @@ package body Sem_Res is
               and then not Is_Class_Wide_Type (Etype (Expression (A)))
               and then not Is_Interface (Etype (A))
             then
-               if Ekind (F) = E_In_Out_Parameter
-                 and then Is_Array_Type (Etype (F))
-               then
-                  --  In a view conversion, the conversion must be legal in
-                  --  both directions, and thus both component types must be
-                  --  aliased, or neither (4.6 (8)).
-
-                  --  The extra rule in 4.6 (24.9.2) seems unduly restrictive:
-                  --  the privacy requirement should not apply to generic
-                  --  types, and should be checked in an instance. ARG query
-                  --  is in order ???
-
-                  if Has_Aliased_Components (Etype (Expression (A))) /=
-                     Has_Aliased_Components (Etype (F))
+               declare
+                  Expr_Typ : constant Entity_Id := Etype (Expression (A));
+               begin
+                  if Ekind (F) = E_In_Out_Parameter
+                    and then Is_Array_Type (Etype (F))
                   then
-                     Error_Msg_N
-                       ("both component types in a view conversion must be"
-                         & " aliased, or neither", A);
+                     --  In a view conversion, the conversion must be legal in
+                     --  both directions, and thus both component types must be
+                     --  aliased, or neither (4.6 (8)).
 
-                  --  Comment here??? what set of cases???
+                     --  The extra rule in 4.6 (24.9.2) seems unduly
+                     --  restrictive: the privacy requirement should not apply
+                     --  to generic types, and should be checked in an
+                     --  instance. ARG query is in order ???
 
-                  elsif
-                     not Same_Ancestor (Etype (F), Etype (Expression (A)))
-                  then
-                     --  Check view conv between unrelated by ref array types
-
-                     if Is_By_Reference_Type (Etype (F))
-                        or else Is_By_Reference_Type (Etype (Expression (A)))
+                     if Has_Aliased_Components (Expr_Typ) /=
+                        Has_Aliased_Components (Etype (F))
                      then
                         Error_Msg_N
-                          ("view conversion between unrelated by reference "
-                           & "array types not allowed (\'A'I-00246)", A);
+                          ("both component types in a view conversion must be"
+                            & " aliased, or neither", A);
 
-                     --  In Ada 2005 mode, check view conversion component
-                     --  type cannot be private, tagged, or volatile. Note
-                     --  that we only apply this to source conversions. The
-                     --  generated code can contain conversions which are
-                     --  not subject to this test, and we cannot extract the
-                     --  component type in such cases since it is not present.
+                     --  Comment here??? what set of cases???
 
-                     elsif Comes_From_Source (A)
-                       and then Ada_Version >= Ada_2005
-                     then
-                        declare
-                           Comp_Type : constant Entity_Id :=
-                                         Component_Type
-                                           (Etype (Expression (A)));
-                        begin
-                           if (Is_Private_Type (Comp_Type)
-                                 and then not Is_Generic_Type (Comp_Type))
-                             or else Is_Tagged_Type (Comp_Type)
-                             or else Is_Volatile (Comp_Type)
-                           then
-                              Error_Msg_N
-                                ("component type of a view conversion cannot"
-                                   & " be private, tagged, or volatile"
-                                   & " (RM 4.6 (24))",
-                                   Expression (A));
-                           end if;
-                        end;
+                     elsif not Same_Ancestor (Etype (F), Expr_Typ) then
+                        --  Check view conv between unrelated by ref array
+                        --  types.
+
+                        if Is_By_Reference_Type (Etype (F))
+                           or else Is_By_Reference_Type (Expr_Typ)
+                        then
+                           Error_Msg_N
+                             ("view conversion between unrelated by reference "
+                              & "array types not allowed (\'A'I-00246)", A);
+
+                        --  In Ada 2005 mode, check view conversion component
+                        --  type cannot be private, tagged, or volatile. Note
+                        --  that we only apply this to source conversions. The
+                        --  generated code can contain conversions which are
+                        --  not subject to this test, and we cannot extract the
+                        --  component type in such cases since it is not
+                        --  present.
+
+                        elsif Comes_From_Source (A)
+                          and then Ada_Version >= Ada_2005
+                        then
+                           declare
+                              Comp_Type : constant Entity_Id :=
+                                            Component_Type (Expr_Typ);
+                           begin
+                              if (Is_Private_Type (Comp_Type)
+                                    and then not Is_Generic_Type (Comp_Type))
+                                or else Is_Tagged_Type (Comp_Type)
+                                or else Is_Volatile (Comp_Type)
+                              then
+                                 Error_Msg_N
+                                   ("component type of a view conversion " &
+                                    "cannot be private, tagged, or volatile" &
+                                    " (RM 4.6 (24))",
+                                    Expression (A));
+                              end if;
+                           end;
+                        end if;
                      end if;
+
+                  --  AI12-0074
+                  --  Check 6.4.1: If the mode is out, the actual parameter is
+                  --  a view conversion, and the type of the formal parameter
+                  --  is a scalar type that has the Default_Value aspect
+                  --  specified, then
+                  --    - there shall exist a type (other than a root numeric
+                  --      type) that is an ancestor of both the target type and
+                  --      the operand type; and
+                  --    - the type of the operand of the conversion shall have
+                  --      the Default_Value aspect specified.
+
+                  elsif Ekind (F) = E_Out_Parameter
+                    and then Is_Scalar_Type (Etype (F))
+                    and then Present (Default_Aspect_Value (Etype (F)))
+                    and then
+                      (not Same_Ancestor (Etype (F), Expr_Typ)
+                         or else No (Default_Aspect_Value (Expr_Typ)))
+                  then
+                     Error_Msg_N
+                       ("view conversion between unrelated types with "
+                        & "Default_Value not allowed (RM 6.4.1)", A);
                   end if;
-               end if;
+               end;
 
                --  Resolve expression if conversion is all OK
 
