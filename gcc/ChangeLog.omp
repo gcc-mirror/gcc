@@ -3,6 +3,16 @@
 	Backport from mainline:
 	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md
+	(<cvt_name><VCVT_MODE:mode><VCVT_FMODE:mode>2<exec>): Use MODE_VF.
+	(<cvt_name><VCVT_FMODE:mode><VCVT_IMODE:mode>2<exec>): Likewise.
+	* config/gcn/gcn.h (MODE_VF): New macro.
+
+2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-modes.def (VECTOR_MODE): Add new modes
 	V32QI, V32HI, V32SI, V32DI, V32TI, V32HF, V32SF, V32DF,
 	V16QI, V16HI, V16SI, V16DI, V16TI, V16HF, V16SF, V16DF,
