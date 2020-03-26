@@ -1,3 +1,10 @@
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92264
+	* var-tracking.c (add_stores): Call cselib_set_value_sp_based even
+	for sp based values in !frame_pointer_needed
+	&& !ACCUMULATE_OUTGOING_ARGS functions.
+
 2020-03-26  Felix Yang  <felix.yang@huawei.com>
 
 	PR tree-optimization/94269
