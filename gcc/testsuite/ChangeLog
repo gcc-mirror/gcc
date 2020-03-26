@@ -1,3 +1,8 @@
+2020-03-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94336 - template keyword accepted before destructor names.
+	* g++.dg/template/template-keyword2.C: New test.
+
 2020-03-27 Iain Sandoe <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:

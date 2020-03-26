@@ -1,3 +1,9 @@
+2020-03-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94336 - template keyword accepted before destructor names.
+	* parser.c (cp_parser_unqualified_id): Give an error when 'template'
+	is followed by a destructor name.
+
 2020-03-27  Patrick Palka  <ppalka@redhat.com>
 
 	* decl.c (compute_array_index_type_loc): Remove redundant

@@ -6068,6 +6068,15 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      cp_lexer_consume_token (parser->lexer);
 	    return error_mark_node;
 	  }
+	if (template_keyword_p)
+	  {
+	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+	      error_at (tilde_loc, "%<template%> keyword not permitted in "
+			"destructor name");
+	    cp_parser_simulate_error (parser);
+	    return error_mark_node;
+	  }
+
 	gcc_assert (!scope || TYPE_P (scope));
 
 	token = cp_lexer_peek_token (parser->lexer);
