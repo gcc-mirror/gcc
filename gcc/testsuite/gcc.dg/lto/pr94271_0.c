@@ -1,5 +1,7 @@
 /* PR lto/94271 */
+/* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } } */
 /* { dg-lto-do link } */
+/* { dg-require-ifunc "" } */
 
 int a;
 

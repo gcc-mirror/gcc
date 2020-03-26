@@ -6112,7 +6112,8 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
     }
 
   if (loc == stack_pointer_rtx
-      && maybe_ne (hard_frame_pointer_adjustment, -1)
+      && (maybe_ne (hard_frame_pointer_adjustment, -1)
+	  || (!frame_pointer_needed && !ACCUMULATE_OUTGOING_ARGS))
       && preserve)
     cselib_set_value_sp_based (v);
 

@@ -1,3 +1,48 @@
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_init_identifiers): Initialize an identifier
+	for the cororoutine handle 'address' method name.
+	(struct coro_aw_data): Add fields to cover the continuations.
+	(co_await_expander): Determine the kind of await_suspend in use.
+	If we have the case that returns a continuation handle, then save
+	this and make the target for 'scope exit without cleanup' be the
+	continuation resume label.
+	(expand_co_awaits): Remove.
+	(struct suspend_point_info): Remove fields that kept the returned
+	await_suspend handle type.
+	(transform_await_expr): Remove code tracking continuation handles.
+	(build_actor_fn): Add the continuation handle as an actor-function
+	scope var.  Build the symmetric transfer continuation point. Call
+	the tree walk for co_await expansion directly, rather than via a 
+	trivial shim function.
+	(register_await_info): Remove fields tracking continuation handles.
+	(get_await_suspend_return_type): Remove.
+	(register_awaits): Remove code tracking continuation handles.
+	(morph_fn_to_coro): Remove code tracking continuation handles.
+
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (co_await_expander): If we are expanding the
+	initial await expression, set a boolean flag to show that we
+	have now reached the initial await_resume() method call.
+	(expand_co_awaits): Handle the 'initial await resume called' flag.
+	(build_actor_fn): Insert the initial await expression into the
+	start of the user-authored function-body. Handle the 'initial await
+	resume called' flag.
+	(morph_fn_to_coro): Initialise the 'initial await resume called'
+	flag.  Modify the unhandled exception catch clause to recognise
+	exceptions that occur before the initial await_resume() and re-
+	throw them.
+
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81349
+	* class.c (user_provided_p): Use STRIP_TEMPLATE instead of returning
+	true for all TEMPLATE_DECLs.
+
+	PR c++/94272
+	* cp-gimplify.c (cp_genericize_r): Handle STATEMENT_LIST.
+
 2020-03-25  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94265

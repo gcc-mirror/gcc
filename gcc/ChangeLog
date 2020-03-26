@@ -1,3 +1,47 @@
+2020-03-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/94220
+	* config/arm/lib1funcs.asm (COND): Use a single definition for
+	unified syntax.
+	(aeabi_uidivmod): Unified syntax when optimizing Thumb for size.
+	(aeabi_idivmod): Likewise.
+	(divsi3_skip_div0_test): Likewise.
+
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94323
+	* tree.c (protected_set_expr_location): Recurse on STATEMENT_LIST
+	that contains exactly one non-DEBUG_BEGIN_STMT statement.
+
+	PR debug/94281
+	* gimple.h (gimple_seq_first_nondebug_stmt): New function.
+	(gimple_seq_last_nondebug_stmt): Don't return NULL if seq contains
+	a single non-debug stmt followed by one or more debug stmts.
+	* gimplify.c (gimplify_body): Use gimple_seq_first_nondebug_stmt
+	instead of gimple_seq_first_stmt, use gimple_seq_first_nondebug_stmt
+	and gimple_seq_last_nondebug_stmt instead of gimple_seq_first and
+	gimple_seq_last to check if outer_stmt gbind could be reused and
+	if yes and it is surrounded by any debug stmts, move them into the
+	gbind body.
+
+	PR rtl-optimization/92264
+	* var-tracking.c (add_stores): Call cselib_set_value_sp_based even
+	for sp based values in !frame_pointer_needed
+	&& !ACCUMULATE_OUTGOING_ARGS functions.
+
+2020-03-26  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94269
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Restrict
+	this
+	operation to single basic block.
+
+2020-03-25  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* config/sh/sh.md (mov_neg_si_t): Clobber the T register in the
+	pattern.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94292

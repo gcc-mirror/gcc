@@ -226,7 +226,6 @@ LSYM(Lend_fde):
 .endm
 #define do_push	push
 #define do_pop	pop
-#define COND(op1, op2, cond) op1 ## op2 ## cond
 /* Perform an arithmetic operation with a variable shift operand.  This
    requires two instructions and a scratch register on Thumb-2.  */
 .macro shiftop name, dest, src1, src2, shiftop, shiftreg, tmp
@@ -241,11 +240,12 @@ LSYM(Lend_fde):
 .endm
 #define do_push	stmfd sp!,
 #define do_pop	ldmfd sp!,
-#define COND(op1, op2, cond) op1 ## cond ## op2
 .macro shiftop name, dest, src1, src2, shiftop, shiftreg, tmp
 	\name \dest, \src1, \src2, \shiftop \shiftreg
 .endm
 #endif
+
+#define COND(op1, op2, cond) op1 ## op2 ## cond
 
 #ifdef __ARM_EABI__
 .macro ARM_LDIV0 name signed
@@ -494,7 +494,8 @@ pc		.req	r15
 
 /* ------------------------------------------------------------------------ */
 /*		Bodies of the division and modulo routines.		    */
-/* ------------------------------------------------------------------------ */	
+/* ------------------------------------------------------------------------ */
+
 .macro ARM_DIV_BODY dividend, divisor, result, curbit
 
 #if defined (__ARM_FEATURE_CLZ) && ! defined (__OPTIMIZE_SIZE__)
@@ -1136,8 +1137,8 @@ FUNC_START aeabi_uidivmod
 	push	{r0, r1, lr}
 	bl	LSYM(udivsi3_skip_div0_test)
 	POP	{r1, r2, r3}
-	mul	r2, r0
-	sub	r1, r1, r2
+	muls	r2, r0
+	subs	r1, r1, r2
 	bx	r3
 # else
 	/* Both the quotient and remainder are calculated simultaneously
@@ -1151,7 +1152,7 @@ FUNC_START aeabi_uidivmod
 ARM_FUNC_START aeabi_uidivmod
 	cmp	r1, #0
 	beq	LSYM(Ldiv0)
-	mov     r2, r0 
+	mov     r2, r0
 	udiv	r0, r0, r1
 	mls     r1, r0, r1, r2
 	RET
@@ -1235,29 +1236,29 @@ LSYM(Lover10):
 	beq	LSYM(Ldiv0)
 LSYM(divsi3_skip_div0_test):
 	push	{ work }
-	mov	work, dividend
-	eor	work, divisor		@ Save the sign of the result.
+	movs	work, dividend
+	eors	work, divisor		@ Save the sign of the result.
 	mov	ip, work
-	mov	curbit, #1
-	mov	result, #0
+	movs	curbit, #1
+	movs	result, #0
 	cmp	divisor, #0
 	bpl	LSYM(Lover10)
-	neg	divisor, divisor	@ Loops below use unsigned.
+	negs	divisor, divisor	@ Loops below use unsigned.
 LSYM(Lover10):
 	cmp	dividend, #0
 	bpl	LSYM(Lover11)
-	neg	dividend, dividend
+	negs	dividend, dividend
 LSYM(Lover11):
 	cmp	dividend, divisor
 	blo	LSYM(Lgot_result)
 
 	THUMB_DIV_MOD_BODY 0
 
-	mov	r0, result
+	movs	r0, result
 	mov	work, ip
 	cmp	work, #0
 	bpl	LSYM(Lover12)
-	neg	r0, r0
+	negs	r0, r0
 LSYM(Lover12):
 	pop	{ work }
 	RET
@@ -1348,8 +1349,8 @@ FUNC_START aeabi_idivmod
 	push	{r0, r1, lr}
 	bl	LSYM(divsi3_skip_div0_test)
 	POP	{r1, r2, r3}
-	mul	r2, r0
-	sub	r1, r1, r2
+	muls	r2, r0
+	subs	r1, r1, r2
 	bx	r3
 # else
 	/* Both the quotient and remainder are calculated simultaneously

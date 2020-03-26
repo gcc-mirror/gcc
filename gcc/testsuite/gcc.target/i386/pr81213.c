@@ -1,3 +1,4 @@
+/* PR ipa/81213.  */
 /* PR ipa/81214.  */
 /* { dg-do run } */
 /* { dg-require-ifunc "" } */
@@ -16,7 +17,3 @@ int main()
 {
   return foo() + bar();
 }
-
-/* { dg-final { scan-assembler "\t.globl\tfoo" } } */
-/* { dg-final { scan-assembler "foo.resolver:" } } */
-/* { dg-final { scan-assembler "foo\\, @gnu_indirect_function" } } */

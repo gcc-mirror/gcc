@@ -5159,12 +5159,10 @@ in_class_defaulted_default_constructor (tree t)
 bool
 user_provided_p (tree fn)
 {
-  if (TREE_CODE (fn) == TEMPLATE_DECL)
-    return true;
-  else
-    return (!DECL_ARTIFICIAL (fn)
-	    && !(DECL_INITIALIZED_IN_CLASS_P (fn)
-		 && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
+  fn = STRIP_TEMPLATE (fn);
+  return (!DECL_ARTIFICIAL (fn)
+	  && !(DECL_INITIALIZED_IN_CLASS_P (fn)
+	       && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
 }
 
 /* Returns true iff class T has a user-provided constructor.  */

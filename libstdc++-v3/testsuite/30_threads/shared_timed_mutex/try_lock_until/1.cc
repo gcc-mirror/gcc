@@ -22,7 +22,7 @@
 // <http://www.gnu.org/licenses/>.
 
 
-#include <mutex>
+#include <shared_mutex>
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
@@ -31,7 +31,7 @@
 template <typename clock_type>
 void test()
 {
-  typedef std::recursive_timed_mutex mutex_type;
+  typedef std::shared_timed_mutex mutex_type;
 
   try
     {
@@ -44,11 +44,22 @@ void test()
 	  {
 	    using namespace std::chrono;
 	    const auto timeout = 100ms;
-	    const auto start = clock_type::now();
-	    const auto b = m.try_lock_until(start + timeout);
-	    const auto t = clock_type::now() - start;
-	    VERIFY( !b );
-	    VERIFY( t >= timeout );
+
+	    {
+	      const auto start = clock_type::now();
+	      const auto b = m.try_lock_until(start + timeout);
+	      const auto t = clock_type::now() - start;
+	      VERIFY( !b );
+	      VERIFY( t >= timeout );
+	    }
+
+	    {
+	      const auto start = clock_type::now();
+	      const auto b = m.try_lock_shared_until(start + timeout);
+	      const auto t = clock_type::now() - start;
+	      VERIFY( !b );
+	      VERIFY( t >= timeout );
+	    }
 	  }
 	catch (const std::system_error& e)
 	  {

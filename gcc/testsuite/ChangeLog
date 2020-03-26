@@ -1,3 +1,53 @@
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/co-ret-09-bool-await-susp.C: Amend
+	to n4849 behaviour.
+	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C: New
+	test.
+
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/exceptions-test-01-n4849-a.C: New test.
+
+2020-03-26  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr81213.c: Do not scan assembler
+	and add one missing PR entry.
+
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94323
+	* g++.dg/debug/pr94323.C: New test.
+
+2020-03-26  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/94334
+	* gcc.dg/lto/pr94271_0.c: Skip for non-x86 targets
+	and add ifunc effective target.
+	* gcc.target/i386/pr81213-2.c: Add ifunc effective target.
+
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94281
+	* g++.dg/debug/pr94281.C: New test.
+
+	PR c++/81349
+	* g++.dg/cpp1z/pr81349.C: New test.
+
+	PR c++/94272
+	* g++.dg/debug/pr94272.C: New test.
+
+2020-03-26  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94269
+	* gcc.dg/pr94269.c: New test.
+
+2020-03-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/bb-slp-pr69907.c: Disable the dump scan for amdgcn.
+	* lib/target-supports.exp (check_effective_target_vect_unpack):
+	Add amdgcn.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94292
