@@ -2873,8 +2873,9 @@
   [(set (match_operand:VCVT_FMODE 0 "register_operand" "=  v")
 	(cvt_op:VCVT_FMODE
 	  (match_operand:VCVT_MODE 1 "gcn_alu_operand" "vSvB")))]
-  "gcn_valid_cvt_p (<VCVT_MODE:MODE>mode, <VCVT_FMODE:MODE>mode,
-		    <cvt_name>_cvt)"
+  "MODE_VF (<VCVT_MODE:MODE>mode) == MODE_VF (<VCVT_FMODE:MODE>mode)
+   && gcn_valid_cvt_p (<VCVT_MODE:MODE>mode, <VCVT_FMODE:MODE>mode,
+		       <cvt_name>_cvt)"
   "v_cvt<cvt_operands>\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
@@ -2883,8 +2884,9 @@
   [(set (match_operand:VCVT_IMODE 0 "register_operand"  "=  v")
 	(cvt_op:VCVT_IMODE
 	  (match_operand:VCVT_FMODE 1 "gcn_alu_operand" "vSvB")))]
-  "gcn_valid_cvt_p (<VCVT_FMODE:MODE>mode, <VCVT_IMODE:MODE>mode,
-		    <cvt_name>_cvt)"
+  "MODE_VF (<VCVT_IMODE:MODE>mode) == MODE_VF (<VCVT_FMODE:MODE>mode)
+   && gcn_valid_cvt_p (<VCVT_FMODE:MODE>mode, <VCVT_IMODE:MODE>mode,
+		       <cvt_name>_cvt)"
   "v_cvt<cvt_operands>\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
