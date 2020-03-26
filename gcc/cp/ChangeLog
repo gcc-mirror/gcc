@@ -1,3 +1,8 @@
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94272
+	* cp-gimplify.c (cp_genericize_r): Handle STATEMENT_LIST.
+
 2020-03-25  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94265
