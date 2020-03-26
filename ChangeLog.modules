@@ -1,3 +1,9 @@
+2020-03-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::install_entity): New, broken out of ...
+	(trees_{in,out}::decl_value): ... here.  Call them.
+
 2020-03-25  Nathan Sidwell  <nathan@acm.org>
 
 	WARNING: This breaks lots of modules tests because an inconsistent

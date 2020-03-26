@@ -2888,6 +2888,7 @@ public:
   tree tree_node ();
 
 private:
+  bool install_entity (tree decl);
   tree tpl_parms (unsigned &tpl_levels);
   bool tpl_parms_fini (tree decl, unsigned tpl_levels);
   bool tpl_header (tree decl, unsigned *tpl_levels);
@@ -3029,6 +3030,7 @@ public:
   void tree_node (tree);
 
 private:
+  void install_entity (tree decl, depset *);
   void tpl_parms (tree parms, unsigned &tpl_levels);
   void tpl_parms_fini (tree decl, unsigned tpl_levels);
   void fn_parms_fini (tree) {}
@@ -7268,6 +7270,84 @@ trees_in::tpl_parm_value ()
   return parm;
 }
 
+void
+trees_out::install_entity (tree decl, depset *dep)
+{
+  gcc_checking_assert (streaming_p ());
+  
+  /* Write the entity index, so we can insert it as soon as we
+     know this is new.  */
+  u (dep ? dep->cluster + 1 : 0);
+  if (CHECKING_P && dep)
+    {
+      /* Add it to the entity map, such that we can tell it is
+	 part of us.  */
+      bool existed;
+      unsigned *slot = &entity_map->get_or_insert
+	(DECL_UID (decl), &existed);
+      if (existed)
+	/* If it existed, it should match.  */
+	gcc_checking_assert (decl == (*entity_ary)[*slot]);
+      *slot = ~dep->cluster;
+    }
+}
+
+bool
+trees_in::install_entity (tree decl)
+{
+  unsigned entity_index = u ();
+  if (!entity_index)
+    return false;
+
+  if (entity_index > state->entity_num)
+    {
+      set_overrun ();
+      return false;
+    }
+
+  /* Insert the real decl into the entity ary.  */
+  unsigned ident = state->entity_lwm + entity_index - 1;
+  mc_slot &elt = (*entity_ary)[ident];
+
+  /* See module_state::read_pendings for how this got set, at most
+     one bit will be set.  */
+  int pending = elt.get_lazy () & 3;
+
+  elt = decl;
+
+  /* And into the entity map, if it's not already there.  */
+  if (!DECL_LANG_SPECIFIC (decl)
+      || !DECL_MODULE_ENTITY_P (decl))
+    {
+      retrofit_lang_decl (decl);
+      DECL_MODULE_ENTITY_P (decl) = true;
+
+      /* Insert into the entity hash (it cannot already be there).  */
+      bool existed;
+      unsigned &slot
+	= entity_map->get_or_insert (DECL_UID (decl), &existed);
+      gcc_checking_assert (!existed);
+      slot = ident;
+    }
+  else if (pending != 0)
+    {
+      unsigned key_ident = import_entity_index (decl);
+      if (!pendset::table->add (pending & 1 ? key_ident : ~key_ident, ~ident))
+	pending = 0;
+    }
+
+  if (pending & 1)
+    DECL_MODULE_PENDING_SPECIALIZATIONS_P (decl) = true;
+  else if (pending & 2)
+    {
+      DECL_MODULE_PENDING_MEMBERS_P (decl) = true;
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	DECL_MODULE_PENDING_MEMBERS_P (DECL_TEMPLATE_RESULT (decl)) = true;
+    }
+
+  return true;
+}
+
 /* DECL is a decl node that must be written by value.  DEP is the
    decl's depset.  */
 
@@ -7436,20 +7516,7 @@ trees_out::decl_value (tree decl, depset *dep)
 
       /* Write the entity index, so we can insert it as soon as we
 	 know this is new.  */
-      u (dep ? dep->cluster + 1 : 0);
-
-      if (CHECKING_P && dep)
-	{
-	  /* Add it to the entity map, such that we can tell it is
-	     part of us.  */
-	  bool existed;
-	  unsigned *slot = &entity_map->get_or_insert
-	    (DECL_UID (decl), &existed);
-	  if (existed)
-	    /* If it existed, it should match.  */
-	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
-	  *slot = ~dep->cluster;
-	}
+      install_entity (decl, dep);
     }
 
   if (!type
@@ -7672,60 +7739,9 @@ trees_in::decl_value ()
       DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
     }
 
+  bool installed = install_entity (back_refs[~tag]);
+
   existing = back_refs[~tag];
-  unsigned entity_index = u ();
-  if (!entity_index)
-    ;
-  else if (entity_index > state->entity_num)
-    {
-      entity_index = 0;
-      set_overrun ();
-    }
-  else
-    {
-      /* Insert the real decl into the entity ary.  */
-      unsigned ident = state->entity_lwm + entity_index - 1;
-      mc_slot &elt = (*entity_ary)[ident];
-
-      /* See module_state::read_pendings for how this got set, at most
-	 one bit will be set.  */
-      int pending = elt.get_lazy () & 3;
-
-      elt = existing;
-
-      /* And into the entity map, if it's not already there.  */
-      if (!DECL_LANG_SPECIFIC (existing)
-	  || !DECL_MODULE_ENTITY_P (existing))
-	{
-	  retrofit_lang_decl (existing);
-	  DECL_MODULE_ENTITY_P (existing) = true;
-
-	  /* Insert into the entity hash (it cannot already be there).  */
-	  bool existed;
-	  unsigned &slot
-	    = entity_map->get_or_insert (DECL_UID (existing), &existed);
-	  gcc_checking_assert (!existed);
-	  slot = ident;
-	}
-      else if (pending != 0)
-	{
-	  unsigned key_ident = import_entity_index (existing);
-	  if (!pendset::table->add (pending & 1 ? key_ident : ~key_ident,
-				    ~ident))
-	    pending = 0;
-	}
-
-      if (pending & 1)
-	DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
-      else if (pending & 2)
-	{
-	  DECL_MODULE_PENDING_MEMBERS_P (existing) = true;
-	  if (TREE_CODE (existing) == TEMPLATE_DECL)
-	    DECL_MODULE_PENDING_MEMBERS_P (DECL_TEMPLATE_RESULT (existing))
-	      = true;
-	}
-    }
-
   bool is_new = existing == decl;
   if (is_new)
     {
@@ -7735,7 +7751,7 @@ trees_in::decl_value ()
 	   lookup_overrides relies on this optimization.  */
 	IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = true;
 
-      if (entity_index)
+      if (installed)
 	{
 	  /* Mark the entity as imported and add it to the entity
 	     array and map.  */
