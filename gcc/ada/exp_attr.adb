@@ -5471,9 +5471,6 @@ package body Exp_Attr is
          if No (Pname) then
             if Is_Tagged_Type (U_Type) and then Is_Derived_Type (U_Type) then
                Pname := Find_Optional_Prim_Op (U_Type, TSS_Put_Image);
-               pragma Assert
-                 (Has_Interfaces (U_Type) -- ????interfaces not yet supported
-                    or else Enable_Put_Image (U_Type) = Present (Pname));
             else
                Pname := Find_Inherited_TSS (U_Type, TSS_Put_Image);
             end if;
