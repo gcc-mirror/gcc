@@ -44,6 +44,9 @@ with Uintp;    use Uintp;
 
 package body Exp_Put_Image is
 
+   Tagged_Put_Image_Enabled : constant Boolean := False;
+   --  ???Set True to enable Put_Image for at least some tagged types
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -816,12 +819,6 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (Typ : Entity_Id) return Boolean is
    begin
-      --  Disable in pre-2020 versions for now???
-
-      if Ada_Version < Ada_2020 then
-         return False;
-      end if;
-
       --  There's a bit of a chicken&egg problem. The compiler is likely to
       --  have trouble if we refer to the Put_Image of Sink itself, because
       --  Sink is part of the parameter profile:
@@ -846,11 +843,34 @@ package body Exp_Put_Image is
       --  Put_Image on tagged types triggers some bugs.
       --
       --  Put_Image doesn't work for private types whose full type is real.
+      --  Disable for all real types, for simplicity.
+      --
+      --  Put_Image doesn't work for access-to-protected types, because of
+      --  confusion over their size. Disable for all access-to-subprogram
+      --  types, just in case.
 
       if Is_Remote_Types (Scope (Typ))
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
+        or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
         or else Is_Real_Type (Typ)
+        or else Is_Access_Subprogram_Type (Typ)
       then
+         return False;
+      end if;
+
+      --  End of workarounds.
+
+      --  No sense in generating code for Put_Image if there are errors. This
+      --  avoids certain cascade errors.
+
+      if Total_Errors_Detected > 0 then
+         return False;
+      end if;
+
+      --  If type Sink is unavailable in this runtime, disable Put_Image
+      --  altogether.
+
+      if No_Run_Time_Mode or else not RTE_Available (RE_Sink) then
          return False;
       end if;
 
@@ -911,9 +931,25 @@ package body Exp_Put_Image is
    -- Preload_Sink --
    ------------------
 
-   procedure Preload_Sink is
+   procedure Preload_Sink (Compilation_Unit : Node_Id) is
    begin
-      if RTE_Available (RE_Sink) then
+      --  We can't call RTE (RE_Sink) for at least some predefined units,
+      --  because it would introduce cyclic dependences. The package where Sink
+      --  is declared, for example, and things it depends on.
+      --
+      --  It's only needed for tagged types, so don't do it unless Put_Image is
+      --  enabled for tagged types, and we've seen a tagged type. Note that
+      --  Tagged_Seen is set True by the parser if the "tagged" reserved word
+      --  is seen; this flag tells us whether we have any tagged types.
+      --
+      --  Don't do it if type Sink is unavailable in the runtime.
+
+      if not In_Predefined_Unit (Compilation_Unit)
+        and then Tagged_Put_Image_Enabled
+        and then Tagged_Seen
+        and then not No_Run_Time_Mode
+        and then RTE_Available (RE_Sink)
+      then
          declare
             Ignore : constant Entity_Id := RTE (RE_Sink);
          begin

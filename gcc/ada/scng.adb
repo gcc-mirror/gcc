@@ -2568,6 +2568,12 @@ package body Scng is
             Accumulate_Token_Checksum;
             Token := Token_Type'Val (Get_Name_Table_Byte (Token_Name));
 
+            --  See Exp_Put_Image for documentation of Tagged_Seen
+
+            if Token = Tok_Tagged then
+               Tagged_Seen := True;
+            end if;
+
             --  Keyword style checks
 
             if Style_Check then
