@@ -1380,6 +1380,11 @@ package Sem_Util is
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
 
+   function Has_Relaxed_Initialization (E : Entity_Id) return Boolean;
+   --  Returns True iff entity E, which can be either a type, a variable, an
+   --  abstract state or a function, is subject to the Relaxed_Initialization
+   --  aspect.
+
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
    --  Returns False if E is not a floating-point type.

@@ -3737,6 +3737,25 @@ package body Exp_Attr is
       when Attribute_Img =>
          Exp_Imgv.Expand_Image_Attribute (N);
 
+      -----------------
+      -- Initialized --
+      -----------------
+
+      --  For execution, we could either implement an approximation of this
+      --  aspect, or use Valid_Scalars as a first approximation. For now we do
+      --  the latter.
+
+      when Attribute_Initialized =>
+         Rewrite
+           (N,
+            Make_Attribute_Reference
+              (Sloc           => Loc,
+               Prefix         => Pref,
+               Attribute_Name => Name_Valid_Scalars,
+               Expressions    => Exprs));
+
+         Analyze_And_Resolve (N);
+
       -----------
       -- Input --
       -----------

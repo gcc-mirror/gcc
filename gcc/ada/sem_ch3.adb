@@ -2814,7 +2814,7 @@ package body Sem_Ch3 is
       if Present (L) then
          Context := Parent (L);
 
-         --  Certain contract annocations have forward visibility semantics and
+         --  Certain contract annotations have forward visibility semantics and
          --  must be analyzed after all declarative items have been processed.
          --  This timing ensures that entities referenced by such contracts are
          --  visible.

@@ -1324,6 +1324,15 @@ package body Sem_Attr is
             then
                null;
 
+            --  Attribute 'Result is allowed to appear in aspect
+            --  Relaxed_Initialization (??? add reference to SPARK RM once this
+            --  attribute is described there).
+
+            elsif Prag_Nam = Name_Relaxed_Initialization
+              and then Aname = Name_Result
+            then
+               null;
+
             elsif Nam_In (Prag_Nam, Name_Post,
                                     Name_Post_Class,
                                     Name_Postcondition,
@@ -4145,6 +4154,26 @@ package body Sem_Attr is
 
       when Attribute_Img =>
          Analyze_Image_Attribute (Standard_String);
+
+      -----------------
+      -- Initialized --
+      -----------------
+
+      when Attribute_Initialized =>
+         Check_E0;
+
+         if Comes_From_Source (N) then
+
+            --  A similar attribute Valid_Scalars can be prefixed with
+            --  references to both functions and objects, but this attribute
+            --  can be only prefixed with references to objects.
+
+            if not Is_Object_Reference (P) then
+               Error_Attr_P ("prefix of % attribute must be object");
+            end if;
+         end if;
+
+         Set_Etype (N, Standard_Boolean);
 
       -----------
       -- Input --
@@ -10231,6 +10260,7 @@ package body Sem_Attr is
          | Attribute_First_Bit
          | Attribute_Img
          | Attribute_Input
+         | Attribute_Initialized
          | Attribute_Last_Bit
          | Attribute_Library_Level
          | Attribute_Maximum_Alignment
