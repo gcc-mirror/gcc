@@ -1,3 +1,16 @@
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94078
+	PR c++/93824
+	PR c++/93810
+	* g++.dg/warn/Wmismatched-tags-3.C: New test.
+	* g++.dg/warn/Wmismatched-tags-4.C: New test.
+	* g++.dg/warn/Wmismatched-tags-5.C: New test.
+	* g++.dg/warn/Wmismatched-tags-6.C: New test.
+	* g++.dg/warn/Wredundant-tags-3.C: Remove xfails.
+	* g++.dg/warn/Wredundant-tags-6.C: New test.
+	* g++.dg/warn/Wredundant-tags-7.C: New test.
+
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/data-model-5b.c: Add xfail for new false

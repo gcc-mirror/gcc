@@ -1,3 +1,21 @@
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94078
+	PR c++/93824
+	PR c++/93810
+	* cp-tree.h (most_specialized_partial_spec): Declare.
+	* parser.c (cp_parser_elaborated_type_specifier): Distinguish alias
+	from declarations.
+	(specialization_of): New function.
+	(cp_parser_check_class_key): Move code...
+	(class_decl_loc_t::add): ...to here.  Add parameters.  Avoid issuing
+	-Wredundant-tags on first-time declarations in other declarators.
+	Correct handling of template specializations.
+	(class_decl_loc_t::diag_mismatched_tags): Also expect to be called
+	when -Wredundant-tags is enabled.  Use primary template or partial
+	specialization as the guide for uses of implicit instantiations.
+	* pt.c (most_specialized_partial_spec): Declare extern.
+
 2020-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94257

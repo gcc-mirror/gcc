@@ -19006,9 +19006,12 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
     cp_parser_maybe_warn_enum_key (parser, key_loc, type, scoped_key);
   else
     {
-      /* Diagnose class/struct/union mismatches.  */
+      /* Diagnose class/struct/union mismatches.  IS_DECLARATION is false
+	 for alias definition.  */
+      bool decl_class = (is_declaration
+			 && cp_parser_declares_only_class_p (parser));
       cp_parser_check_class_key (parser, key_loc, tag_type, type, false,
-				 cp_parser_declares_only_class_p (parser));
+				 decl_class);
 
       /* Indicate whether this class was declared as a `class' or as a
 	 `struct'.  */
@@ -30991,8 +30994,9 @@ class class_decl_loc_t
   /* Issues -Wmismatched-tags for all classes.  */
   static void diag_mismatched_tags ();
 
-  /* Adds TYPE_DECL to the collection of class decls.  */
-  static void add (tree, tag_types, bool, bool);
+  /* Adds TYPE_DECL to the collection of class decls and diagnoses
+     redundant tags (if -Wredundant-tags is enabled).  */
+  static void add (cp_parser *, location_t, tag_types, tree, bool, bool);
 
   /* Either adds this decl to the collection of class decls
      or diagnoses it, whichever is appropriate.  */
@@ -31020,12 +31024,19 @@ private:
     return locvec[i].class_key;
   }
 
+  /* True if a definition for the class has been seen.  */
+  bool def_p () const
+  {
+    return idxdef < locvec.length ();
+  }
+
   /* The location of a single mention of a class type with the given
      class-key.  */
   struct class_key_loc_t
   {
     class_key_loc_t (tree func, location_t loc, tag_types key, bool redundant)
-      : func (func), loc (loc), class_key (key), key_redundant (redundant) { }
+      : func (func), loc (loc), class_key (key), key_redundant (redundant)
+    { }
 
     /* The function the type is mentioned in.  */
     tree func;
@@ -31088,6 +31099,40 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
       && class_key != union_type)
     return;
 
+  class_decl_loc_t::add (parser, key_loc, class_key, type, def_p, decl_p);
+}
+
+/* Returns the template or specialization of one to which the RECORD_TYPE
+   TYPE corresponds.  */
+
+static tree
+specialization_of (tree type)
+{
+  tree ret = type;
+
+  /* Determine the template or its partial specialization to which TYPE
+     corresponds.  */
+  if (tree spec = most_specialized_partial_spec (type, tf_none))
+    if (spec != error_mark_node)
+      ret = TREE_TYPE (TREE_VALUE (spec));
+
+  if (ret == type)
+    ret = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (type);
+
+  return TYPE_MAIN_DECL (ret);
+}
+
+
+/* Adds the class TYPE to the collection of class decls and diagnoses
+   redundant tags (if -Wredundant-tags is enabled).
+   DEF_P is expected to be set for a definition of class TYPE.  DECL_P
+   is set for a (likely, based on syntactic context) declaration of class
+   TYPE and clear for a reference to it that is not a declaration of it.  */
+
+void
+class_decl_loc_t::add (cp_parser *parser, location_t key_loc,
+		       tag_types class_key, tree type, bool def_p, bool decl_p)
+{
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
@@ -31099,7 +31144,10 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name
      lookup returns just the type itself.  */
-  bool key_redundant = !def_p && !decl_p && decl == type_decl;
+  bool key_redundant = (!def_p && !decl_p
+			&& (decl == type_decl
+			    || TREE_CODE (decl) == TEMPLATE_DECL
+			    || TYPE_BEING_DEFINED (type)));
 
   if (key_redundant
       && class_key != class_type
@@ -31117,6 +31165,41 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
 	key_redundant = false;
     }
 
+  /* Set if a declaration of TYPE has previously been seen or if it must
+     exist in a precompiled header.  */
+  bool exist;
+  class_decl_loc_t *rdl = &class2loc.get_or_insert (type_decl, &exist);
+  if (!exist)
+    {
+      tree type = TREE_TYPE (type_decl);
+      if (def_p || !COMPLETE_TYPE_P (type))
+	{
+	  /* TYPE_DECL is the first declaration or definition of the type
+	     (outside precompiled headers -- see below).  Just create
+	     a new entry for it and return unless it's a declaration
+	     involving a template that may need to be diagnosed by
+	     -Wredundant-tags.  */
+	  *rdl = class_decl_loc_t (class_key, false, def_p);
+	  if (TREE_CODE (decl) != TEMPLATE_DECL)
+	    return;
+	}
+      else
+	{
+	  /* TYPE was previously defined in some unknown precompiled hdeader.
+	     Simply add a record of its definition at an unknown location and
+	     proceed below to add a reference to it at the current location.
+	     (Declarations in precompiled headers that are not definitions
+	     are ignored.)  */
+	  tag_types def_key
+	    = CLASSTYPE_DECLARED_CLASS (type) ? class_type : record_type;
+	  location_t def_loc = DECL_SOURCE_LOCATION (type_decl);
+	  *rdl = class_decl_loc_t (def_key, false, true, def_loc);
+	  exist = true;
+	}
+    }
+
+  /* A prior declaration of TYPE_DECL has been seen.  */
+
   if (key_redundant)
     {
       gcc_rich_location richloc (key_loc);
@@ -31128,51 +31211,17 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
 		  type);
     }
 
-  if (seen_as_union || !warn_mismatched_tags)
-    return;
-
-  class_decl_loc_t::add (type_decl, class_key, key_redundant, def_p);
-}
-
-/* Adds TYPE_DECL to the collection of class decls.  */
-
-void
-class_decl_loc_t::add (tree type_decl, tag_types class_key, bool redundant,
-		       bool def_p)
-{
-  bool exist;
-  class_decl_loc_t *rdl = &class2loc.get_or_insert (type_decl, &exist);
   if (!exist)
-    {
-      tree type = TREE_TYPE (type_decl);
-      if (def_p || !COMPLETE_TYPE_P (type))
-	{
-	  /* TYPE_DECL is the first declaration or definition of the type
-	     (outside precompiled headers -- see below).  Just create
-	     a new entry for it.  */
-	  *rdl = class_decl_loc_t (class_key, false, def_p);
-	  return;
-	}
-
-      /* TYPE was previously defined in some unknown precompiled hdeader.
-	 Simply add a record of its definition at an unknown location and
-	 proceed below to add a reference to it at the current location.
-	 (Declarations in precompiled headers that are not definitions
-	 are ignored.)  */
-      tag_types def_key
-	= CLASSTYPE_DECLARED_CLASS (type) ? class_type : record_type;
-      location_t def_loc = DECL_SOURCE_LOCATION (type_decl);
-      *rdl = class_decl_loc_t (def_key, false, true, def_loc);
-    }
-
-  /* A prior declaration of TYPE_DECL has been seen.  */
+    /* Do nothing if this is the first declaration of the type.  */
+    return;
 
   if (rdl->idxdef != UINT_MAX && rdl->def_class_key == class_key)
     /* Do nothing if the class-key in this declaration matches
        the definition.  */
     return;
 
-  rdl->add_or_diag_mismatched_tag (type_decl, class_key, redundant, def_p);
+  rdl->add_or_diag_mismatched_tag (type_decl, class_key, key_redundant,
+				   def_p);
 }
 
 /* Either adds this DECL corresponding to the TYPE_DECL to the collection
@@ -31225,34 +31274,69 @@ class_decl_loc_t::add_or_diag_mismatched_tag (tree type_decl,
 void
 class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 {
-  unsigned ndecls = locvec.length ();
-
-  /* Skip a declaration that consistently uses the same class-key
-     or one with just a solitary declaration (i.e., TYPE_DECL).  */
-  if (def_class_key != none_type || ndecls < 2)
+  if (!warn_mismatched_tags)
     return;
 
-  /* Save the current function before changing it below.  */
-  tree save_func = current_function_decl;
-  /* Set if a class definition for RECLOC has been seen.  */
-  bool def_p = idxdef < ndecls;
-  unsigned idxguide = def_p ? idxdef : 0;
+  /* Number of uses of the class.  */
+  const unsigned ndecls = locvec.length ();
+
+  /* The class (or template) declaration guiding the decisions about
+     the diagnostic.  For ordinary classes it's the same as THIS.  For
+     uses of instantiations of templates other than their declarations
+     it points to the record for the declaration of the corresponding
+     primary template or partial specialization.  */
+  class_decl_loc_t *cdlguide = this;
+
+  tree type = TREE_TYPE (type_decl);
+  if (CLASSTYPE_IMPLICIT_INSTANTIATION (type))
+    {
+      /* For implicit instantiations of a primary template look up
+	 the primary or partial specialization and use it as
+	 the expected class-key rather than using the class-key of
+	 the first reference to the instantiation.  The primary must
+	 be (and inevitably is) at index zero.  */
+      tree spec = specialization_of (type);
+      cdlguide = class2loc.get (spec);
+      gcc_assert (cdlguide != NULL);
+    }
+  else
+    {
+      /* Skip declarations that consistently use the same class-key.  */
+      if (def_class_key != none_type)
+	return;
+    }
+
+  /* Set if a definition for the class has been seen.  */
+  const bool def_p = cdlguide->def_p ();
+
+  /* The index of the declaration whose class-key this declaration
+     is expected to match.  It's either the class-key of the class
+     definition if one exists or the first declaration otherwise.  */
+  const unsigned idxguide = def_p ? cdlguide->idxdef : 0;
+
+  /* The class-key the class is expected to be declared with: it's
+     either the key used in its definition or the first declaration
+     if no definition has been provided.
+     For implicit instantiations of a primary template it's
+     the class-key used to declare the primary with.  The primary
+     must be at index zero.  */
+  const tag_types xpect_key = cdlguide->class_key (idxguide);
+
   unsigned idx = 0;
   /* Advance IDX to the first declaration that either is not
      a definition or that doesn't match the first declaration
      if no definition is provided.  */
-  while (class_key (idx) == class_key (idxguide))
+  while (class_key (idx) == xpect_key)
     if (++idx == ndecls)
       return;
 
-  /* The class-key the class is expected to be declared with: it's
-     either the key used in its definition or the first declaration
-     if no definition has been provided.  */
-  tag_types xpect_key = class_key (def_p ? idxguide : 0);
-  const char *xmatchkstr = xpect_key == record_type ? "class" : "struct";
-  const char *xpectkstr = xpect_key == record_type ? "struct" : "class";
+  /* Save the current function before changing it below.  */
+  tree save_func = current_function_decl;
   /* Set the function declaration to print in diagnostic context.  */
   current_function_decl = function (idx);
+
+  const char *xmatchkstr = xpect_key == record_type ? "class" : "struct";
+  const char *xpectkstr = xpect_key == record_type ? "struct" : "class";
 
   location_t loc = location (idx);
   bool key_redundant_p = key_redundant (idx);
@@ -31274,7 +31358,7 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 
   /* Also point to the first declaration or definition that guided
      the decision to issue the warning above.  */
-  inform (location (idxguide),
+  inform (cdlguide->location (idxguide),
 	  (def_p
 	   ? G_("%qT defined as %qs here")
 	   : G_("%qT first declared as %qs here")),
@@ -31316,25 +31400,29 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 void
 class_decl_loc_t::diag_mismatched_tags ()
 {
-  /* CLASS2LOC should be empty if -Wmismatched-tags is disabled.  */
-  gcc_assert (warn_mismatched_tags || class2loc.is_empty ());
+  /* CLASS2LOC should be empty if both -Wmismatched-tags and
+     -Wredundant-tags are disabled.  */
+  gcc_assert (warn_mismatched_tags
+	      || warn_redundant_tags
+	      || class2loc.is_empty ());
 
-  /* Save the current function before changing it below.  It should
+  /* Save the current function before changing on return.  It should
      be null at this point.  */
-  tree save_func = current_function_decl;
+  temp_override<tree> cleanup (current_function_decl);
 
-  /* Iterate over the collected class/struct declarations.  */
-  typedef class_to_loc_map_t::iterator iter_t;
-  for (iter_t it = class2loc.begin (); it != class2loc.end (); ++it)
+  if (warn_mismatched_tags)
     {
-      tree type_decl = (*it).first;
-      class_decl_loc_t &recloc = (*it).second;
-      recloc.diag_mismatched_tags (type_decl);
+      /* Iterate over the collected class/struct/template declarations.  */
+      typedef class_to_loc_map_t::iterator iter_t;
+      for (iter_t it = class2loc.begin (); it != class2loc.end (); ++it)
+	{
+	  tree type_decl = (*it).first;
+	  class_decl_loc_t &recloc = (*it).second;
+	  recloc.diag_mismatched_tags (type_decl);
+	}
     }
 
   class2loc.empty ();
-  /* Restore the current function.  */
-  current_function_decl = save_func;
 }
 
 /* Issue an error message if DECL is redeclared with different

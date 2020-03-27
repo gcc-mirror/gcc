@@ -185,7 +185,7 @@ static int unify_pack_expansion (tree, tree, tree,
 				 tree, unification_kind_t, bool, bool);
 static tree copy_template_args (tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
-static tree most_specialized_partial_spec (tree, tsubst_flags_t);
+tree most_specialized_partial_spec (tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
@@ -24332,7 +24332,7 @@ most_general_template (tree decl)
    partial specializations matching TARGET, then NULL_TREE is
    returned, indicating that the primary template should be used.  */
 
-static tree
+tree
 most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 {
   tree list = NULL_TREE;
