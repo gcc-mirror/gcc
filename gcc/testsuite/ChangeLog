@@ -1,3 +1,33 @@
+2020-03-27 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:
+	Add <cstdio>.
+
+2020-03-26  Marek Polacek  <polacek@redhat.com>
+
+	DR 1710
+	PR c++/94057 - template keyword in a typename-specifier.
+	* g++.dg/cpp1y/alias-decl1.C: New test.
+	* g++.dg/cpp1y/alias-decl2.C: New test.
+	* g++.dg/cpp1y/alias-decl3.C: New test.
+	* g++.dg/parse/missing-template1.C: Update dg-error.
+	* g++.dg/parse/template3.C: Likewise.
+	* g++.dg/template/error4.C: Likewise.
+	* g++.dg/template/meminit2.C: Likewise.
+	* g++.dg/template/dependent-name5.C: Likewise.
+	* g++.dg/template/dependent-name7.C: New test.
+	* g++.dg/template/dependent-name8.C: New test.
+	* g++.dg/template/dependent-name9.C: New test.
+	* g++.dg/template/dependent-name10.C: New test.
+	* g++.dg/template/dependent-name11.C: New test.
+	* g++.dg/template/dependent-name12.C: New test.
+	* g++.dg/template/dependent-name13.C: New test.
+	* g++.dg/template/dr1794.C: New test.
+	* g++.dg/template/dr314.C: New test.
+	* g++.dg/template/dr1710.C: New test.
+	* g++.dg/template/dr1710-2.C: New test.
+	* g++.old-deja/g++.pt/crash38.C: Update dg-error.
+
 2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/co-ret-09-bool-await-susp.C: Amend

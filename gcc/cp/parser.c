@@ -6266,6 +6266,32 @@ cp_parser_unqualified_id (cp_parser* parser,
     }
 }
 
+/* Check [temp.names]/5: A name prefixed by the keyword template shall
+   be a template-id or the name shall refer to a class template or an
+   alias template.  */
+
+static void
+check_template_keyword_in_nested_name_spec (tree name)
+{
+  if (CLASS_TYPE_P (name)
+      && ((CLASSTYPE_USE_TEMPLATE (name)
+	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (name)))
+	  || CLASSTYPE_IS_TEMPLATE (name)))
+    return;
+
+  if (TREE_CODE (name) == TYPENAME_TYPE
+      && TREE_CODE (TYPENAME_TYPE_FULLNAME (name)) == TEMPLATE_ID_EXPR)
+    return;
+  /* Alias templates are also OK.  */
+  else if (alias_template_specialization_p (name, nt_opaque))
+    return;
+
+  permerror (input_location, TYPE_P (name)
+	     ? G_("%qT is not a template")
+	     : G_("%qD is not a template"),
+	     name);
+}
+
 /* Parse an (optional) nested-name-specifier.
 
    nested-name-specifier: [C++98]
@@ -6389,7 +6415,17 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       /* Look for the optional `template' keyword, if this isn't the
 	 first time through the loop.  */
       if (success)
-	template_keyword_p = cp_parser_optional_template_keyword (parser);
+	{
+	  template_keyword_p = cp_parser_optional_template_keyword (parser);
+	  /* DR1710: "In a qualified-id used as the name in
+	     a typename-specifier, elaborated-type-specifier, using-declaration,
+	     or class-or-decltype, an optional keyword template appearing at
+	     the top level is ignored."  */
+	  if (!template_keyword_p
+	      && typename_keyword_p
+	      && cp_parser_nth_token_starts_template_argument_list_p (parser, 2))
+	    template_keyword_p = true;
+	}
 
       /* Save the old scope since the name lookup we are about to do
 	 might destroy it.  */
@@ -6580,18 +6616,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       if (TREE_CODE (new_scope) == TYPE_DECL)
 	new_scope = TREE_TYPE (new_scope);
       /* Uses of "template" must be followed by actual templates.  */
-      if (template_keyword_p
-	  && !(CLASS_TYPE_P (new_scope)
-	       && ((CLASSTYPE_USE_TEMPLATE (new_scope)
-		    && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (new_scope)))
-		   || CLASSTYPE_IS_TEMPLATE (new_scope)))
-	  && !(TREE_CODE (new_scope) == TYPENAME_TYPE
-	       && (TREE_CODE (TYPENAME_TYPE_FULLNAME (new_scope))
-		   == TEMPLATE_ID_EXPR)))
-	permerror (input_location, TYPE_P (new_scope)
-		   ? G_("%qT is not a template")
-		   : G_("%qD is not a template"),
-		   new_scope);
+      if (template_keyword_p)
+	check_template_keyword_in_nested_name_spec (new_scope);
       /* If it is a class scope, try to complete it; we are about to
 	 be looking up names inside the class.  */
       if (TYPE_P (new_scope)
@@ -18119,6 +18145,33 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 		  type = error_mark_node;
 		}
 	    }
+	}
+      /* DR 1812: A < following a qualified-id in a typename-specifier
+	 could safely be assumed to begin a template argument list, so
+	 the template keyword should be optional.  */
+      else if (parser->scope
+	       && qualified_p
+	       && typename_p
+	       && cp_lexer_next_token_is (parser->lexer, CPP_TEMPLATE_ID))
+	{
+	  cp_parser_parse_tentatively (parser);
+
+	  type = cp_parser_template_id (parser,
+					/*template_keyword_p=*/true,
+					/*check_dependency_p=*/true,
+					none_type,
+					/*is_declaration=*/false);
+	  /* This is handled below, so back off.  */
+	  if (type && concept_check_p (type))
+	    cp_parser_simulate_error (parser);
+
+	  if (!cp_parser_parse_definitely (parser))
+	    type = NULL_TREE;
+	  else if (TREE_CODE (type) == TEMPLATE_ID_EXPR)
+	    type = make_typename_type (parser->scope, type, typename_type,
+				       /*complain=*/tf_error);
+	  else if (TREE_CODE (type) != TYPE_DECL)
+	    type = NULL_TREE;
 	}
 
       /* Otherwise, look for a type-name.  */

@@ -18,7 +18,8 @@ namespace coro = std::experimental;
 
 #include <chrono>
 #include <thread>
- 
+#include <cstdio>
+
 template <typename T> 
 struct Loopy {
   struct promise_type;
@@ -84,7 +85,7 @@ pingpong (const char *id)
       v = co_await aw;
       //fprintf (stderr, "%s = %d\n", id, v);
     }
- fprintf (stderr, "%s = %d\n", id, v);
+ //fprintf (stderr, "%s = %d\n", id, v);
 }
 
 int main ()
