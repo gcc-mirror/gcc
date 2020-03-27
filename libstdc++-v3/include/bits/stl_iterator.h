@@ -931,13 +931,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inserter(_Container& __x, std::__detail::__range_iter_t<_Container> __i)
     { return insert_iterator<_Container>(__x, __i); }
 #else
-  template<typename _Container, typename _Iterator>
+  template<typename _Container>
     inline insert_iterator<_Container>
-    inserter(_Container& __x, _Iterator __i)
-    {
-      return insert_iterator<_Container>(__x,
-					 typename _Container::iterator(__i));
-    }
+    inserter(_Container& __x, typename _Container::iterator __i)
+    { return insert_iterator<_Container>(__x, __i); }
 #endif
 
   // @} group iterators
