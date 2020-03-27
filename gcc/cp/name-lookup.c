@@ -2988,7 +2988,8 @@ do_pushdecl (tree decl, bool is_friend)
   /* The binding level we will be pushing into.  During local class
      pushing, we want to push to the containing scope.  */
   cp_binding_level *level = current_binding_level;
-  while (level->kind == sk_class)
+  while (level->kind == sk_class
+	 || level->kind == sk_cleanup)
     level = level->level_chain;
 
   /* An anonymous namespace has a NULL DECL_NAME, but we still want to

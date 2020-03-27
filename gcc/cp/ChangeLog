@@ -1,3 +1,8 @@
+2020-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84733
+	* name-lookup.c (do_pushdecl): Look through cleanp levels.
+
 2020-03-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92909
