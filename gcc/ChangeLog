@@ -1,3 +1,12 @@
+2020-03-27  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/90332
+	* tree-vect-stmts.c (vector_vector_composition_type): New function.
+	(get_group_load_store_type): Adjust to call
+	vector_vector_composition_type, extend it to construct with scalar
+	types.
+	(vectorizable_load): Likewise.
+
 2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* ddg.c (create_ddg_dep_from_intra_loop_link): Remove assertions.
