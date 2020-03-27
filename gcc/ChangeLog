@@ -14,15 +14,6 @@
 	(sms_schedule_by_order): Use assertion against debug insns.
 	(ps_has_conflicts): Drop debug insn check.
 
-2020-03-26  Richard Earnshaw  <rearnsha@arm.com>
-
-	PR target/94220
-	* config/arm/lib1funcs.asm (COND): Use a single definition for
-	unified syntax.
-	(aeabi_uidivmod): Unified syntax when optimizing Thumb for size.
-	(aeabi_idivmod): Likewise.
-	(divsi3_skip_div0_test): Likewise.
-
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94323
