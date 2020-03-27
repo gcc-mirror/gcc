@@ -1,5 +1,10 @@
 2020-03-27  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/94346
+	* c-c++-common/attr-copy.c: New test.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/94098
 	* g++.dg/ext/attr-access-2.C: New test.
 
