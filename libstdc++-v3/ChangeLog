@@ -1,3 +1,8 @@
+2020-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_array_convertible): Move definition
+	to immediately after is_convertible.
+
 2020-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (chrono::days, chrono::weeks, chrono::years)
