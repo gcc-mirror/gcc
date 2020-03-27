@@ -1,5 +1,18 @@
 2020-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (reverse_iterator::iterator_concept)
+	(reverse_iterator::iterator_category): Define for C++20.
+	(reverse_iterator): Define comparison operators correctly for C++20.
+	(__normal_iterator): Add constraints to comparison operators for C++20.
+	(move_iterator::operator++(int)) [__cpp_lib_concepts]: Define new
+	overload for input iterators.
+	(move_iterator): Add constraints to comparison operators for C++20.
+	Define operator<=> for C++20.
+	* testsuite/24_iterators/move_iterator/input_iterator.cc: New test.
+	* testsuite/24_iterators/move_iterator/move_only.cc: New test.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc: New test.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc: New test.
+
 	* include/bits/iterator_concepts.h (__detail::__decay_copy)
 	(__detail::__member_begin, __detail::__adl_begin): Move here from
 	<bits/range_access.h>.
