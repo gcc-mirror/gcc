@@ -1,5 +1,24 @@
 2020-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/iterator_concepts.h (__detail::__decay_copy)
+	(__detail::__member_begin, __detail::__adl_begin): Move here from
+	<bits/range_access.h>.
+	(__detail::__ranges_begin, __detail::__range_iter_t): Define.
+	* bits/range_access.h (__cust_access::__decay_copy)
+	(__cust_access::__member_begin, __cust_access::__adl_begin): Move to
+	<bits/iterator_concepts.h>.
+	(ranges::iterator_t): Use __detail::__range_iter_t.
+	* include/bits/stl_iterator.h (back_insert_iterator): Simplify
+	conditional compilation. Add _GLIBCXX20_CONSTEXPR to all members.
+	(front_insert_iterator): Likewise.
+	(insert_iterator): Implement changes from P0896R4 for C++20.
+	* testsuite/24_iterators/back_insert_iterator/constexpr.cc: New test.
+	* testsuite/24_iterators/front_insert_iterator/constexpr.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc: Adjust
+	for inclusion in synopsis_c++20.cc which expects different signatures
+	for some function templates.
+	* testsuite/24_iterators/insert_iterator/constexpr.cc: New test.
+
 	* include/std/type_traits (__is_array_convertible): Move definition
 	to immediately after is_convertible.
 

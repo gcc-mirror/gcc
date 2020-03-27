@@ -76,6 +76,7 @@
 #if __cplusplus > 201703L
 # include <compare>
 # include <new>
+# include <bits/iterator_concepts.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -496,25 +497,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-#if __cplusplus <= 201703L
       _Container* container;
-#else
-      _Container* container = nullptr;
-#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
-#endif
 
-#if __cplusplus > 201703L
-      constexpr back_insert_iterator() noexcept = default;
+      constexpr back_insert_iterator() noexcept : container(nullptr) { }
 #endif
 
       /// The only way to create this %iterator is with a container.
-      explicit
+      explicit _GLIBCXX20_CONSTEXPR
       back_insert_iterator(_Container& __x)
       : container(std::__addressof(__x)) { }
 
@@ -537,6 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 #else
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator=(const typename _Container::value_type& __value)
       {
@@ -544,6 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -553,16 +550,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       /// Simply returns *this.
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       back_insert_iterator
       operator++(int)
       { return *this; }
@@ -580,6 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  types for you.
   */
   template<typename _Container>
+    _GLIBCXX20_CONSTEXPR
     inline back_insert_iterator<_Container>
     back_inserter(_Container& __x)
     { return back_insert_iterator<_Container>(__x); }
@@ -599,25 +600,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-#if __cplusplus <= 201703L
       _Container* container;
-#else
-      _Container* container = nullptr;
-#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
-#endif
 
-#if __cplusplus > 201703L
-      constexpr front_insert_iterator() noexcept = default;
+      constexpr front_insert_iterator() noexcept : container(nullptr) { }
 #endif
 
       /// The only way to create this %iterator is with a container.
-      explicit front_insert_iterator(_Container& __x)
+      explicit _GLIBCXX20_CONSTEXPR
+      front_insert_iterator(_Container& __x)
       : container(std::__addressof(__x)) { }
 
       /**
@@ -639,6 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 #else
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator=(const typename _Container::value_type& __value)
       {
@@ -646,6 +643,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -655,16 +653,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       /// Simply returns *this.
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       front_insert_iterator
       operator++(int)
       { return *this; }
@@ -682,6 +683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  types for you.
   */
   template<typename _Container>
+    _GLIBCXX20_CONSTEXPR
     inline front_insert_iterator<_Container>
     front_inserter(_Container& __x)
     { return front_insert_iterator<_Container>(__x); }
@@ -704,19 +706,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class insert_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
+#if __cplusplus > 201703L && defined __cpp_lib_concepts
+      using _Iter = std::__detail::__range_iter_t<_Container>;
+
+    protected:
+      _Container* container = nullptr;
+      _Iter iter = _Iter();
+#else
+      typedef typename _Container::iterator		_Iter;
+
     protected:
       _Container* container;
-      typename _Container::iterator iter;
+      _Iter iter;
+#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
 
+#if __cplusplus > 201703L && defined __cpp_lib_concepts
+      using difference_type = ptrdiff_t;
+
+      insert_iterator() = default;
+#endif
+
       /**
        *  The only way to create this %iterator is with a container and an
        *  initial position (a normal %iterator into the container).
       */
-      insert_iterator(_Container& __x, typename _Container::iterator __i)
+      _GLIBCXX20_CONSTEXPR
+      insert_iterator(_Container& __x, _Iter __i)
       : container(std::__addressof(__x)), iter(__i) {}
 
       /**
@@ -751,6 +770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 #else
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator=(const typename _Container::value_type& __value)
       {
@@ -759,6 +779,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -769,16 +790,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       /// Simply returns *this.
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
+      _GLIBCXX20_CONSTEXPR
       insert_iterator&
       operator++(int)
       { return *this; }
@@ -796,6 +820,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  template parameter deduction, making the compiler match the correct
    *  types for you.
   */
+#if __cplusplus > 201703L && defined __cpp_lib_concepts
+  template<typename _Container>
+    constexpr insert_iterator<_Container>
+    inserter(_Container& __x, std::__detail::__range_iter_t<_Container> __i)
+    { return insert_iterator<_Container>(__x, __i); }
+#else
   template<typename _Container, typename _Iterator>
     inline insert_iterator<_Container>
     inserter(_Container& __x, _Iterator __i)
@@ -803,6 +833,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return insert_iterator<_Container>(__x,
 					 typename _Container::iterator(__i));
     }
+#endif
 
   // @} group iterators
 
