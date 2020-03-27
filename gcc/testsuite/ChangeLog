@@ -1,3 +1,8 @@
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94339
+	* g++.dg/ext/attr-copy-2.C: Revert the last changes.
+
 2020-03-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/94346

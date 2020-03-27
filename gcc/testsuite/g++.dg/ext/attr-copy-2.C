@@ -36,8 +36,8 @@ typedef struct C
   ATTR (copy (*(struct A *)(0, 1))) long m_xpa_0_1;
 
   ATTR (copy (((struct A *)0)[0])) short m_arpa_0;
-//  ATTR (copy (((struct A *)(1, 0))[0])) int m_arpa_1_0;
-//  ATTR (copy (((struct A *)(0, 1))[0])) long m_arpa_0_1;
+  ATTR (copy (((struct A *)(1, 0))[0])) int m_arpa_1_0;
+  ATTR (copy (((struct A *)(0, 1))[0])) long m_arpa_0_1;
 
   ATTR (copy (a)) short m_a;
   ATTR (copy (b.a)) int m_b_a;
@@ -86,8 +86,8 @@ static_assert (__builtin_has_attribute (((C*)0)->m_xpa_0_1, packed));
 static_assert (__builtin_has_attribute (((C*)0)->m_ra, packed));
 
 static_assert (__builtin_has_attribute (((C*)0)->m_arpa_0, packed));
-//static_assert (__builtin_has_attribute (((C*)0)->m_arpa_1_0, packed));
-//static_assert (__builtin_has_attribute (((C*)0)->m_arpa_0_1, packed));
+static_assert (__builtin_has_attribute (((C*)0)->m_arpa_1_0, packed));
+static_assert (__builtin_has_attribute (((C*)0)->m_arpa_0_1, packed));
 
 static_assert (__builtin_has_attribute (((C*)0)->m_a, packed));
 static_assert (__builtin_has_attribute (((C*)0)->m_b_a, packed));
