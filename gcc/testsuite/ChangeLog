@@ -1,4 +1,9 @@
-2020-03-26  Marek Polacek  <polacek@redhat.com>
+2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.c-torture/execute/pr70127-debug-sms.c: New test.
+	* gcc.dg/torture/pr87197-debug-sms.c: New test.
+
+2020-03-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94336 - template keyword accepted before destructor names.
 	* g++.dg/template/template-keyword2.C: New test.

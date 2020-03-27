@@ -1,3 +1,19 @@
+2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Remove assertions.
+	(create_ddg_dep_no_link): Likewise.
+	(add_cross_iteration_register_deps): Move debug instruction check.
+	Other minor refactoring.
+	(add_intra_loop_mem_dep): Do not check for debug instructions.
+	(add_inter_loop_mem_dep): Likewise.
+	(build_intra_loop_deps): Likewise.
+	(create_ddg): Do not include debug insns into the graph.
+	* ddg.h (struct ddg): Remove num_debug field.
+	* modulo-sched.c (doloop_register_get): Adjust condition.
+	(res_MII): Remove DDG num_debug field usage.
+	(sms_schedule_by_order): Use assertion against debug insns.
+	(ps_has_conflicts): Drop debug insn check.
+
 2020-03-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/94220
