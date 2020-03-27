@@ -333,11 +333,14 @@ set_flags_from_callee (tree call)
 	   && internal_fn_flags (CALL_EXPR_IFN (call)) & ECF_NOTHROW)
     nothrow = true;
 
-  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
-    cp_function_chain->can_throw = 1;
+  if (cfun && cp_function_chain && !cp_unevaluated_operand)
+    {
+      if (!nothrow && at_function_scope_p ())
+	cp_function_chain->can_throw = 1;
 
-  if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
-    current_function_returns_abnormally = 1;
+      if (decl && TREE_THIS_VOLATILE (decl))
+	current_function_returns_abnormally = 1;
+    }
 
   TREE_NOTHROW (call) = nothrow;
 }

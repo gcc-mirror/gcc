@@ -1,5 +1,8 @@
 2020-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94326
+	* g++.dg/other/pr94326.C: New test.
+
 	PR c++/94339
 	* g++.dg/other/pr94339.C: New test.
 	* g++.dg/ext/attr-copy-2.C: Comment out failing tests due to PR94346.
