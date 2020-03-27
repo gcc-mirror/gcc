@@ -8249,6 +8249,21 @@ package body Einfo is
           and then Is_Protected_Type (Corresponding_Concurrent_Type (Id));
    end Is_Protected_Record_Type;
 
+   -------------------------------------
+   -- Is_Relaxed_Initialization_State --
+   -------------------------------------
+
+   function Is_Relaxed_Initialization_State (Id : E) return B is
+   begin
+      --  To qualify, the abstract state must appear with simple option
+      --  "Relaxed_Initialization" (??? add reference to SPARK RM once the
+      --  Relaxed_Initialization aspect is described there).
+
+      return
+        Ekind (Id) = E_Abstract_State
+          and then Has_Option (Id, Name_Relaxed_Initialization);
+   end Is_Relaxed_Initialization_State;
+
    --------------------------------
    -- Is_Standard_Character_Type --
    --------------------------------

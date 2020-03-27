@@ -11798,7 +11798,7 @@ package body Sem_Prag is
          --    SIMPLE_OPTION
          --  | NAME_VALUE_OPTION
 
-         --  SIMPLE_OPTION ::= Ghost | Synchronous
+         --  SIMPLE_OPTION ::= Ghost | Relaxed_Initialization | Synchronous
 
          --  NAME_VALUE_OPTION ::=
          --    Part_Of => ABSTRACT_STATE
@@ -11868,15 +11868,16 @@ package body Sem_Prag is
             is
                --  Flags used to verify the consistency of options
 
-               AR_Seen          : Boolean := False;
-               AW_Seen          : Boolean := False;
-               ER_Seen          : Boolean := False;
-               EW_Seen          : Boolean := False;
-               External_Seen    : Boolean := False;
-               Ghost_Seen       : Boolean := False;
-               Others_Seen      : Boolean := False;
-               Part_Of_Seen     : Boolean := False;
-               Synchronous_Seen : Boolean := False;
+               AR_Seen                     : Boolean := False;
+               AW_Seen                     : Boolean := False;
+               ER_Seen                     : Boolean := False;
+               EW_Seen                     : Boolean := False;
+               External_Seen               : Boolean := False;
+               Ghost_Seen                  : Boolean := False;
+               Others_Seen                 : Boolean := False;
+               Part_Of_Seen                : Boolean := False;
+               Relaxed_Initialization_Seen : Boolean := False;
+               Synchronous_Seen            : Boolean := False;
 
                --  Flags used to store the static value of all external states'
                --  expressions.
@@ -12356,6 +12357,12 @@ package body Sem_Prag is
                         elsif Chars (Opt) = Name_Synchronous then
                            Check_Duplicate_Option (Opt, Synchronous_Seen);
                            Check_Ghost_Synchronous;
+
+                        --  Relaxed_Initialization
+
+                        elsif Chars (Opt) = Name_Relaxed_Initialization then
+                           Check_Duplicate_Option
+                             (Opt, Relaxed_Initialization_Seen);
 
                         --  Option Part_Of without an encapsulating state is
                         --  illegal (SPARK RM 7.1.4(8)).

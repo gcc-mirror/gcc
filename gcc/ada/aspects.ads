@@ -138,6 +138,7 @@ package Aspects is
       Aspect_Refined_Post,                  -- GNAT
       Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
+      Aspect_Relaxed_Initialization,        -- GNAT
       Aspect_Scalar_Storage_Order,          -- GNAT
       Aspect_Secondary_Stack_Size,          -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
@@ -261,6 +262,7 @@ package Aspects is
       Aspect_Persistent_BSS             => True,
       Aspect_Predicate                  => True,
       Aspect_Pure_Function              => True,
+      Aspect_Relaxed_Initialization     => True,
       Aspect_Remote_Access_Type         => True,
       Aspect_Scalar_Storage_Order       => True,
       Aspect_Secondary_Stack_Size       => True,
@@ -400,6 +402,7 @@ package Aspects is
       Aspect_Refined_Post               => Expression,
       Aspect_Refined_State              => Expression,
       Aspect_Relative_Deadline          => Expression,
+      Aspect_Relaxed_Initialization     => Optional_Expression,
       Aspect_Scalar_Storage_Order       => Expression,
       Aspect_Secondary_Stack_Size       => Expression,
       Aspect_Simple_Storage_Pool        => Name,
@@ -493,6 +496,7 @@ package Aspects is
       Aspect_Refined_Post                 => False,
       Aspect_Refined_State                => False,
       Aspect_Relative_Deadline            => False,
+      Aspect_Relaxed_Initialization       => False,
       Aspect_Scalar_Storage_Order         => True,
       Aspect_Secondary_Stack_Size         => True,
       Aspect_Simple_Storage_Pool          => True,
@@ -651,6 +655,7 @@ package Aspects is
       Aspect_Refined_Post                 => Name_Refined_Post,
       Aspect_Refined_State                => Name_Refined_State,
       Aspect_Relative_Deadline            => Name_Relative_Deadline,
+      Aspect_Relaxed_Initialization       => Name_Relaxed_Initialization,
       Aspect_Remote_Access_Type           => Name_Remote_Access_Type,
       Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
       Aspect_Remote_Types                 => Name_Remote_Types,
@@ -912,6 +917,7 @@ package Aspects is
       Aspect_Refined_Global               => Never_Delay,
       Aspect_Refined_Post                 => Never_Delay,
       Aspect_Refined_State                => Never_Delay,
+      Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
