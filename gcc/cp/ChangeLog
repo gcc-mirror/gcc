@@ -1,3 +1,9 @@
+2020-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94257
+	* name-lookup.c (push_namespace): Triage ambiguous lookups that
+	contain namespaces.
+
 2020-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94326
