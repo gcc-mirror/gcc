@@ -1,3 +1,9 @@
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93363
+	* resolve.c (resolve_assoc_var): Reject association to DT and
+	function name.
+
 2020-03-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/93484

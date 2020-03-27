@@ -29,7 +29,7 @@ subroutine p2
   type t
   end type
   type(t) :: z = t()
-  associate (y => t)
+  associate (y => t())
   end associate
 end
 
