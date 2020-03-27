@@ -214,7 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX17_CONSTEXPR pointer
       operator->() const
-#if __cplusplus > 201703L && defined __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts >= 201907L
       requires is_pointer_v<_Iterator>
 	|| requires(const _Iterator __i) { __i.operator->(); }
 #endif

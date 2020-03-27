@@ -48,14 +48,9 @@ struct Iter
   template<int N> friend Iter operator-(Iter<N>, difference_type);
   template<int N> friend difference_type operator-(Iter<N>, Iter<N>);
 
-  // Define the full set of operators for same-type comparisons
-  template<int N> friend bool operator==(Iter<N>, Iter<N>); // synthesizes !=
-  template<int N> friend bool operator<(Iter<N>, Iter<N>);
-  template<int N> friend bool operator>(Iter<N>, Iter<N>);
-  template<int N> friend bool operator<=(Iter<N>, Iter<N>);
-  template<int N> friend bool operator>=(Iter<N>, Iter<N>);
+  template<int N> friend bool operator==(Iter<N>, Iter<N>);
+  template<int N> friend std::weak_ordering operator<=>(Iter<N>, Iter<N>);
 };
-
 
 static_assert( std::random_access_iterator<Iter<0>> );
 

@@ -45,16 +45,17 @@ static_assert(std::input_iterator<move_only_iterator>);
 template<typename T>
   concept has_member_base = requires (T t) { std::forward<T>(t).base(); };
 
-static_assert( ! has_member_base<std::move_iterator<move_iterator>&> );
-static_assert( ! has_member_base<const std::move_iterator<move_iterator>&> );
-static_assert( has_member_base<std::move_iterator<move_iterator>> );
-static_assert( ! has_member_base<const std::move_iterator<move_iterator>> );
+using move_only_move_iterator = std::move_iterator<move_only_iterator>;
+
+static_assert( ! has_member_base<move_only_move_iterator&> );
+static_assert( ! has_member_base<const move_only_move_iterator&> );
+static_assert( has_member_base<move_only_move_iterator> );
+static_assert( ! has_member_base<const move_only_move_iterator> );
 
 void
 test01()
 {
-  std::move_iterator<move_only_iterator> m1, m2;
-  m1 = std::make_move_iterator(move_only_iterator{});
+  move_only_move_iterator m1 = std::make_move_iterator(move_only_iterator{});
+  move_only_move_iterator m2;
   m2 = std::move(m1);
-  m1.swap(m2);
 }

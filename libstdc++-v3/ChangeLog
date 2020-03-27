@@ -1,5 +1,14 @@
 2020-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_cmp.h (__cpp_lib_ranges): Define.
+	* include/bits/stl_iterator.h: Check value of __cpp_concepts so that
+	C++20 concepts are required.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/std/concepts: Likewise.
+	* include/std/version: Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: Check feature test
+	macro.
+
 	* include/bits/stl_iterator.h (reverse_iterator::iterator_concept)
 	(reverse_iterator::iterator_category): Define for C++20.
 	(reverse_iterator): Define comparison operators correctly for C++20.
