@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 10.1-b20200209\n"
+"Project-Id-Version: gcc 10.1-b20200322\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-03-20 23:17+0000\n"
-"PO-Revision-Date: 2020-02-23 00:01+0100\n"
+"PO-Revision-Date: 2020-03-27 21:02+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -5072,10 +5072,9 @@ msgid "Produce a warning at runtime if a array temporary has been created for a 
 msgstr "Warnung zur Laufzeit erzeugen, wenn ein temporäres Feld für Prozedurargument erzeugt wurde."
 
 #: fortran/lang.opt:418
-#, fuzzy, no-c-format
-#| msgid "-fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files."
+#, no-c-format
 msgid "-fconvert=<big-endian|little-endian|native|swap>\tThe endianness used for unformatted files."
-msgstr "-fconvert=<big-endian|little-endian|native|swap> Die Endianess, die für unformatierte Dateien verwendet wird."
+msgstr "-fconvert=<big-endian|little-endian|native|swap>\tDie Endianess, die für unformatierte Dateien verwendet wird."
 
 #: fortran/lang.opt:437
 #, no-c-format
@@ -5651,22 +5650,19 @@ msgid "Warn on any use of alloca."
 msgstr "Bei jeglicher Verwendung von alloca warnen."
 
 #: c-family/c.opt:312
-#, fuzzy, no-c-format
-#| msgid "-Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that attempt to allocate objects larger than the specified number of bytes."
+#, no-c-format
 msgid "-Walloc-size-larger-than=<bytes>\tWarn for calls to allocation functions that attempt to allocate objects larger than the specified number of bytes."
-msgstr "-Walloc-size-larger-than=<Bytes> Bei Aufrufen von Allozierungsfunktionen warnen, mit denen Objekte erzeugt werden, die größer als »Bytes« sind."
+msgstr "-Walloc-size-larger-than=<Bytes>\tBei Aufrufen von Allozierungsfunktionen warnen, mit denen Objekte erzeugt werden, die größer als »Bytes« sind."
 
 #: c-family/c.opt:317
-#, fuzzy, no-c-format
-#| msgid "-Wno-alloc-size-larger-than Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger."
+#, no-c-format
 msgid "Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger."
-msgstr "-Wno-alloc-size-larger-than Walloc-size-larger-than=-Warning ausschalten. Entspricht Walloc-size-larger-than=<SIZE_MAX> oder größer."
+msgstr "Die Warnung Walloc-size-larger-than= ausschalten. Entspricht Walloc-size-larger-than=<SIZE_MAX> oder größer."
 
 #: c-family/c.opt:321
-#, fuzzy, no-c-format
-#| msgid "-Walloc-zero Warn for calls to allocation functions that specify zero bytes."
+#, no-c-format
 msgid "Warn for calls to allocation functions that specify zero bytes."
-msgstr "-Walloc-zero Bei Aufrufen von Allozierungsfunktionen warnen, bei denen als Größe 0 angegeben ist."
+msgstr "Bei Aufrufen von Allozierungsfunktionen warnen, bei denen als Größe 0 angegeben ist."
 
 #: c-family/c.opt:325
 #, no-c-format
@@ -5674,10 +5670,9 @@ msgid "-Walloca-larger-than=<number>\tWarn on unbounded uses of alloca, and on b
 msgstr "-Walloca-larger-than=<Anzahl>\tBei Aufrufen von alloca warnen, deren Größe unbeschränkt ist oder deren Größe zwar beschränkt ist, aber mehr als <Anzahl> Bytes betragen kann."
 
 #: c-family/c.opt:331
-#, fuzzy, no-c-format
-#| msgid "-Wno-alloca-larger-than Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger."
+#, no-c-format
 msgid "Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger."
-msgstr "-Wno-alloca-larger-than Walloca-larger-than=-Warnung ausschalten. Entspricht Walloca-larger-than=<SIZE_MAX> oder größer."
+msgstr "Die Warnung Walloca-larger-than= ausschalten. Entspricht Walloca-larger-than=<SIZE_MAX> oder größer."
 
 #: c-family/c.opt:343
 #, no-c-format
@@ -6647,10 +6642,9 @@ msgid "-Wvla-larger-than=<number>\tWarn on unbounded uses of variable-length arr
 msgstr "-Wvla-larger-than=<Anzahl>\tBei unbeschränkten Verwendungen von Arrays variabler Länge warnen, und bei Verwendung von Arrays variabler Länge, wenn die Länge <Anzahl> überschreiten kann."
 
 #: c-family/c.opt:1255
-#, fuzzy, no-c-format
-#| msgid "-Wno-vla-larger-than Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger."
+#, no-c-format
 msgid "Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger."
-msgstr "-Wno-vla-larger-than Warnung Wvla-larger-than= ausschalten.  Entspricht Wvla-larger-than=<SIZE_MAX> oder größer."
+msgstr "Die Warnung Wvla-larger-than= ausschalten. Entspricht Wvla-larger-than=<SIZE_MAX> oder größer."
 
 #: c-family/c.opt:1259
 #, no-c-format
@@ -6718,10 +6712,9 @@ msgid "Enforce class member access control semantics."
 msgstr "Semantik der Zugriffskontrolle für Klassenelemente erzwingen."
 
 #: c-family/c.opt:1316
-#, fuzzy, no-c-format
-#| msgid "-fada-spec-parent=unit  Dump Ada specs as child units of given parent."
+#, no-c-format
 msgid "-fada-spec-parent=unit\tDump Ada specs as child units of given parent."
-msgstr "-fada-spec-parent=Einheit Ada-Spezifikationen als Kind-Einheiten der angegebenen Elterneinheit ausgeben."
+msgstr "-fada-spec-parent=Einheit\tAda-Spezifikationen als Kind-Einheiten der angegebenen Elterneinheit ausgeben."
 
 #: c-family/c.opt:1320
 #, no-c-format
@@ -6729,10 +6722,9 @@ msgid "Support C++17 allocation of over-aligned types."
 msgstr "C++17-Allozierung von überausgerichteten Typen unterstützen."
 
 #: c-family/c.opt:1324
-#, fuzzy, no-c-format
-#| msgid "-faligned-new=<N> Use C++17 over-aligned type allocation for alignments greater than N."
+#, no-c-format
 msgid "-faligned-new=<N>\tUse C++17 over-aligned type allocation for alignments greater than N."
-msgstr "-faligned-new=<N> Überausgerichtete Typallozierung aus C++17 für Typen mit Ausrichtung größer N verwenden."
+msgstr "-faligned-new=<N>\tÜberausgerichtete Typallozierung aus C++17 für Typen mit Ausrichtung größer N verwenden."
 
 #: c-family/c.opt:1331
 #, no-c-format
@@ -6841,10 +6833,9 @@ msgid "Permit '$' as an identifier character."
 msgstr "»$« als Bezeichnerzeichen zulassen."
 
 #: c-family/c.opt:1518
-#, fuzzy, no-c-format
-#| msgid "-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE()."
+#, no-c-format
 msgid "-fmacro-prefix-map=<old>=<new>\tMap one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE()."
-msgstr "-fmacro-prefix-map=<alt>=<neu> Einen Verzeichnisnamen auf einen anderen umschreiben in __FILE__, __BASE_FILE__ und __builtin_FILE()."
+msgstr "-fmacro-prefix-map=<alt>=<neu>\tEinen Verzeichnisnamen auf einen anderen umschreiben in __FILE__, __BASE_FILE__ und __builtin_FILE()."
 
 #: c-family/c.opt:1522
 #, no-c-format
@@ -6857,10 +6848,9 @@ msgid "Write all declarations as Ada code for the given file only."
 msgstr "Alle Deklarationen in Ada-Code nur für angegebene Datei schreiben."
 
 #: c-family/c.opt:1533
-#, fuzzy, no-c-format
-#| msgid "-fno-elide-type Do not elide common elements in template comparisons."
+#, no-c-format
 msgid "Do not elide common elements in template comparisons."
-msgstr "-fno-elide-type Gleiche Elemente in Templatevergleichen nicht weglassen."
+msgstr "Gemeinsame Elemente in Templatevergleichen nicht weglassen."
 
 #: c-family/c.opt:1537
 #, no-c-format
@@ -7068,16 +7058,14 @@ msgid "Treat the input file as already preprocessed."
 msgstr "Die Eingabedatei als bereits vorverarbeitet behandeln."
 
 #: c-family/c.opt:1781
-#, fuzzy, no-c-format
-#| msgid "-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages."
+#, no-c-format
 msgid "-ftrack-macro-expansion=<0|1|2>\tTrack locations of tokens coming from macro expansion and display them in error messages."
-msgstr "-ftrack-macro-expansion=<0|1|2>  Orte der aus Makroersetzung entstehenden Zeichen verfolgen und in Fehlermeldungen anzeigen."
+msgstr "-ftrack-macro-expansion=<0|1|2>\tOrte der aus der Makroersetzung entstehenden Token verfolgen und sie in Fehlermeldungen anzeigen."
 
 #: c-family/c.opt:1785
-#, fuzzy, no-c-format
-#| msgid "-fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments."
+#, no-c-format
 msgid "Do not pretty-print template specializations as the template signature followed by the arguments."
-msgstr "-fno-pretty-templates Template-Spezialisierungen nicht für die Ausgabe umformatieren als Template-Signatur gefolgt von den Argumenten."
+msgstr "Template-Spezialisierungen für die Ausgabe nicht als Template-Signatur gefolgt von den Argumenten umformatieren."
 
 #: c-family/c.opt:1789
 #, no-c-format
@@ -7345,10 +7333,9 @@ msgid "Conform to the ISO 2017 C++ standard."
 msgstr "Mit dem ISO-C++-Standard von 2017 übereinstimmen."
 
 #: c-family/c.opt:2074 c-family/c.opt:2078
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2020(?) C++ draft standard (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2020 C++ draft standard (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf 2020(?) übereinstimmen (experimentelle und unvollständige Unterstützung)."
+msgstr "Mit dem ISO-C++-Standardentwurf 2020 übereinstimmen (experimentelle und unvollständige Unterstützung)."
 
 #: c-family/c.opt:2082 c-family/c.opt:2212
 #, no-c-format
@@ -7422,10 +7409,9 @@ msgid "Conform to the ISO 2017 C++ standard with GNU extensions."
 msgstr "Mit dem ISO-C++-Standard von 2017 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2152 c-family/c.opt:2156
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf für 2020(?) mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standardentwurf für 2020 mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
 
 #: c-family/c.opt:2160
 #, no-c-format
@@ -7828,8 +7814,7 @@ msgid "The maximum number of exploded nodes per program point within the analyze
 msgstr "Die maximale Anzahl von expandierten Knoten pro Programmpunkt innerhalb des Analysierers, bevor die Analyse dieses Punkts abbricht."
 
 #: analyzer/analyzer.opt:35
-#, fuzzy, no-c-format
-#| msgid "The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call tha would recurse deeper."
+#, no-c-format
 msgid "The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper."
 msgstr "Die Höchstzahl, die eine Aufrufstelle in einem Aufrufstapel innerhalb des Analysierers vorkommen darf, bevor die Analyse abgebrochen wird, um zu tiefe Rekursion zu vermeiden."
 
@@ -7914,8 +7899,7 @@ msgid "Warn about code paths in which a pointer to a stale stack frame is used."
 msgstr "Bei Codepfaden warnen, in denen ein Zeiger auf einen bereits verschwundenen Stapelrahmen verwendet wird."
 
 #: analyzer/analyzer.opt:103
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in which an initialized value is used."
+#, no-c-format
 msgid "Warn about code paths in which an uninitialized value is used."
 msgstr "Bei Codepfaden warnen, in denen ein uninitialisierter Wert verwendet wird."
 
@@ -7937,7 +7921,7 @@ msgstr "Vermeiden, dass mehrere Anweisungen zu einer expandierten Kante zusammen
 #: analyzer/analyzer.opt:119
 #, no-c-format
 msgid "Issue a note when diagnostics are deduplicated."
-msgstr ""
+msgstr "Einen Hinweis ausgeben, wenn doppelte Diagnosemeldungen zusammengefasst werden."
 
 #: analyzer/analyzer.opt:123
 #, no-c-format
@@ -7975,20 +7959,17 @@ msgid "Control which events are displayed in diagnostic paths."
 msgstr "Steuern, welche Ereignisse in den Diagnosepfaden angegeben werden."
 
 #: analyzer/analyzer.opt:151
-#, fuzzy, no-c-format
-#| msgid "Dump internal details about what the analyzer is doing to SRCFILE.analyzer.txt."
+#, no-c-format
 msgid "Dump various analyzer internals to SRCFILE.analyzer.txt."
-msgstr "Internes Arbeitsprotokoll des Analysierers nach SRCFILE.analyzer.txt wegschreiben."
+msgstr "Diverse Interna des Analysierers nach SRCFILE.analyzer.txt wegschreiben."
 
 #: analyzer/analyzer.opt:155
-#, fuzzy, no-c-format
-#| msgid "-fdump-<type>\tDump various compiler internals to a file."
+#, no-c-format
 msgid "Dump various analyzer internals to stderr."
-msgstr "-fdump-<type>\tVerschiedene compilerinterne Informationen in eine Datei abziehen."
+msgstr "Diverse Interna des Analysierers auf die Standardfehlerausgabe wegschreiben."
 
 #: analyzer/analyzer.opt:159
-#, fuzzy, no-c-format
-#| msgid "Dump the analyzer supergraph to a SRCFILE.callgraph.dot file."
+#, no-c-format
 msgid "Dump analyzer-specific call graph information to a SRCFILE.callgraph.dot file."
 msgstr "Aufrufgraphen des Analysierers nach SRCFILE.callgraph.dot wegschreiben."
 
@@ -9307,12 +9288,12 @@ msgstr "Bei der Vektorisierung für SVE ungepackte Vektoren für kleinere Elemen
 #: config/aarch64/aarch64.opt:268
 #, no-c-format
 msgid "The number of Newton iterations for calculating the reciprocal for float type.  The precision of division is proportional to this param when division approximation is enabled.  The default value is 1."
-msgstr ""
+msgstr "Die Anzahl der Newton-Iterationen, um den reziproken Wert einer float-Gleitkommazahl zu berechnen. Die Genauigkeit der Division ist proportional zu diesem Parameter, wenn die angenäherte Division angeschaltet ist. Standardwert ist 1."
 
 #: config/aarch64/aarch64.opt:272
 #, no-c-format
 msgid "The number of Newton iterations for calculating the reciprocal for double type.  The precision of division is proportional to this param when division approximation is enabled.  The default value is 2."
-msgstr ""
+msgstr "Die Anzahl der Newton-Iterationen, um den reziproken Wert einer double-Gleitkommazahl zu berechnen. Die Genauigkeit der Division ist proportional zu diesem Parameter, wenn die angenäherte Division angeschaltet ist. Standardwert ist 2."
 
 #: config/linux.opt:24
 #, no-c-format
@@ -11358,27 +11339,27 @@ msgstr "TPF-OS-Tracing-Code einschalten."
 #: config/s390/tpf.opt:27
 #, no-c-format
 msgid "Set the trace check address for prologue tpf hook"
-msgstr ""
+msgstr "Adresse der Verfolgungsprüfung für TPF-Einhängpunkt im Prolog festlegen"
 
 #: config/s390/tpf.opt:31
 #, no-c-format
 msgid "Set the trace jump address for prologue tpf hook"
-msgstr ""
+msgstr "Adresse des Verfolgungssprungs für TPF-Einhängpunkt im Prolog festlegen"
 
 #: config/s390/tpf.opt:35
 #, no-c-format
 msgid "Set the trace check address for epilogue tpf hook"
-msgstr ""
+msgstr "Adresse der Verfolgungsprüfung für TPF-Einhängpunkt im Epilog festlegen"
 
 #: config/s390/tpf.opt:39
 #, no-c-format
 msgid "Set the trace jump address for epilogue tpf hook"
-msgstr ""
+msgstr "Adresse des Verfolgungssprungs für TPF-Einhängpunkt im Epilog festlegen"
 
 #: config/s390/tpf.opt:43
 #, no-c-format
 msgid "Set the prologue and epilogue hook addresses to TPF_TRACE_PROLOGUE_SKIP_TARGET and TPF_TRACE_EPILOGUE_SKIP_TARGET. Equivalent to using -mtpf-trace-hook-prologue-target=TPF_TRACE_PROLOGUE_SKIP_TARGET and -mtpf-trace-hook-epilogue-target=TPF_TRACE_EPILOGUE_SKIP_TARGET"
-msgstr ""
+msgstr "Adressen des Einhängpunkts im Prolog und Epilog auf TPF_TRACE_PROLOGUE_SKIP_TARGET und TPF_TRACE_EPILOGUE_SKIP_TARGET festlegen. Gleichbedeutend mit »-mtpf-trace-hook-prologue-target=TPF_TRACE_PROLOGUE_SKIP_TARGET« und »-mtpf-trace-hook-epilogue-target=TPF_TRACE_EPILOGUE_SKIP_TARGET«"
 
 #: config/s390/tpf.opt:47
 #, no-c-format
@@ -12324,7 +12305,7 @@ msgstr "Vor der Verwendung des veralteten AltiVec-Typen »vector long ...« warn
 #: config/rs6000/rs6000.opt:417
 #, no-c-format
 msgid "Use -mlong-double-64 for 64-bit IEEE floating point format.  Use -mlong-double-128 for 128-bit floating point format (either IEEE or IBM)."
-msgstr ""
+msgstr "Verwenden Sie »-mlong-double-64« für das 64-Bit-IEEE-Gleitkommazahlen-Format. Verwenden Sie »-mlong-double-128« für das 128-Bit-Gleitkommazahlen-Format (entweder IEEE oder IBM)."
 
 #: config/rs6000/rs6000.opt:426
 #, no-c-format
@@ -12784,8 +12765,7 @@ msgid "When -mhard-float is selected, enables generation of unordered floating p
 msgstr "Wenn »-mhard-float« ausgewählt ist, werden ungeordnete Fließkomma-Vergleichs- und Set-Flag-Befehle (lf.sfun*) erzeugt. Standardmäßig werden Funktionen von libgcc verwendet, um ungeordnete Fließkomma-Vergleichs- und Flag-Operationen durchzuführen."
 
 #: config/or1k/or1k.opt:68
-#, fuzzy, no-c-format
-#| msgid "Enable generation of conditional move (l.cmov) instructions.  By default the equivalent will be generated using using set and branch."
+#, no-c-format
 msgid "Enable generation of conditional move (l.cmov) instructions.  By default the equivalent will be generated using set and branch."
 msgstr "Befehle für bedingte Zuweisungen (l.cmov) erlauben. Standardverhalten ist, stattdessen äquivalente set- und branch-Befehle zu verwenden."
 
@@ -13512,8 +13492,7 @@ msgid "Regular expression matching section names for r0-relative addressing."
 msgstr "Regulärer Ausdruck, um relativ zu r0 adressierbare Abschnittsnamen anzugeben."
 
 #: config/rx/elf.opt:32
-#, fuzzy, no-c-format
-#| msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatable syntax."
+#, no-c-format
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax."
 msgstr "Assemblerausgabe erzeugen, die mit Renesas AS100-Assembler verträglich ist. Dies schränkt einige Compilerfähigkeiten ein. Voreinstellung ist GAS-verträgliche Syntax."
 
@@ -15468,10 +15447,9 @@ msgid "Force all calls to be made via a jli instruction."
 msgstr "Erzwingen, dass alle Aufrufe mittels des jli-Befehls erfolgen."
 
 #: config/arc/arc.opt:62
-#, fuzzy, no-c-format
-#| msgid "-mmpy-option=MPY Compile ARCv2 code with a multiplier design option."
+#, no-c-format
 msgid "-mmpy-option=MPY\tCompile ARCv2 code with a multiplier design option."
-msgstr "-mmpy-option=MPY ARCv2-Code mit einer Option für das Multiplizierer-Design kompilieren."
+msgstr "-mmpy-option=MPY\tARCv2-Code mit einer Option für das Multiplizierer-Design kompilieren."
 
 #: config/arc/arc.opt:132
 #, no-c-format
@@ -15604,10 +15582,9 @@ msgid "Cost to assume for a multiply instruction, with 4 being equal to a normal
 msgstr "Für einen Multiplikationsbefehl anzunehmende Kosten; 4 entspricht einem normalen Befehl."
 
 #: config/arc/arc.opt:254
-#, fuzzy, no-c-format
-#| msgid "-mcpu=TUNE Tune code for given ARC variant."
+#, no-c-format
 msgid "-mtune=TUNE\tTune code for given ARC variant."
-msgstr "-mcpu=TUNING\tCode für angegebene ARC-Variante feintunen."
+msgstr "-mcpu=TUNE\tCode für angegebene ARC-Variante feintunen."
 
 #: config/arc/arc.opt:285
 #, no-c-format
@@ -16525,16 +16502,14 @@ msgid "-fdbg-cnt=<counter>[:<lower_limit1>-]<upper_limit1>[:<lower_limit2>-<uppe
 msgstr "-fdbg-cnt=<Zähler>[:<Untere Grenze 1>-]<Obere Grenze 1>[:<Untere Grenze 2>-<Obere Grenze 2>:...][,<Zähler>:...]\tObergrenze für Debug-Zähler festlegen."
 
 #: common.opt:1199
-#, fuzzy, no-c-format
-#| msgid "-fdebug-prefix-map=<old>=<new> Map one directory name to another in debug information."
+#, no-c-format
 msgid "-fdebug-prefix-map=<old>=<new>\tMap one directory name to another in debug information."
-msgstr "-fdebug-prefix-map=<alt>=<neu> In Fehlersuchinfo einen Verzeichnisnamen auf einen anderen abbilden."
+msgstr "-fdebug-prefix-map=<alt>=<neu>\tIn Fehlersuchinfo einen Verzeichnisnamen auf einen anderen abbilden."
 
 #: common.opt:1203
-#, fuzzy, no-c-format
-#| msgid "-ffile-prefix-map=<old>=<new> Map one directory name to another in compilation result."
+#, no-c-format
 msgid "-ffile-prefix-map=<old>=<new>\tMap one directory name to another in compilation result."
-msgstr "-ffile-prefix-map=<alt>=<neu> In Übersetzungsergebnis einen Verzeichnisnamen auf einen anderen abbilden."
+msgstr "-ffile-prefix-map=<alt>=<neu>\tIn Übersetzungsergebnis einen Verzeichnisnamen auf einen anderen abbilden."
 
 #: common.opt:1207
 #, no-c-format
@@ -16607,10 +16582,9 @@ msgid "-fdiagnostics-urls=[never|always|auto]\tEmbed URLs in diagnostics."
 msgstr "-fdiagnostics-urls=[never|always|auto]\tURLs in Diagnosemeldungen einbetten."
 
 #: common.opt:1314
-#, fuzzy, no-c-format
-#| msgid "-fdiagnostics-format=[text|json] Select output format."
+#, no-c-format
 msgid "-fdiagnostics-format=[text|json]\tSelect output format."
-msgstr "-fdiagnostics-format=[text|json] Ausgabeformat auswählen."
+msgstr "-fdiagnostics-format=[text|json]\tAusgabeformat auswählen."
 
 #: common.opt:1331
 #, no-c-format
@@ -16648,16 +16622,14 @@ msgid "Set minimum width of left margin of source code when showing source."
 msgstr "Mindestbreite des linken Randes des Quellcodes angeben, für das Ausgeben des Quellcodes."
 
 #: common.opt:1371
-#, fuzzy, no-c-format
-#| msgid "-fdisable-[tree|rtl|ipa]-<pass>=range1+range2 disables an optimization pass."
+#, no-c-format
 msgid "-fdisable-[tree|rtl|ipa]-<pass>=range1+range2\tDisable an optimization pass."
-msgstr "-fdisable-[tree|rtl|ipa]-<Durchgang>=range1+range2 schaltet einen Optimierungsdurchgang aus."
+msgstr "-fdisable-[tree|rtl|ipa]-<Durchgang>=range1+range2\tEinen Optimierungsdurchgang ausschalten."
 
 #: common.opt:1375
-#, fuzzy, no-c-format
-#| msgid "-fenable-[tree|rtl|ipa]-<pass>=range1+range2 enables an optimization pass."
+#, no-c-format
 msgid "-fenable-[tree|rtl|ipa]-<pass>=range1+range2\tEnable an optimization pass."
-msgstr "-fenable-[tree|rtl|ipa]-<Durchgang>=range1+range2 schaltet einen Optimierungsdurchgang ein."
+msgstr "-fenable-[tree|rtl|ipa]-<Durchgang>=range1+range2\tEinen Optimierungsdurchgang einschalten."
 
 #: common.opt:1379
 #, no-c-format
@@ -16975,16 +16947,14 @@ msgid "Instrument function entry and exit with profiling calls."
 msgstr "Ein- und Austritte von Funktionen beim Profilieren von Aufrufen verwenden."
 
 #: common.opt:1758
-#, fuzzy, no-c-format
-#| msgid "-finstrument-functions-exclude-function-list=name,...  Do not instrument listed functions."
+#, no-c-format
 msgid "-finstrument-functions-exclude-function-list=name,...\tDo not instrument listed functions."
-msgstr "-finstrument-functions-exclude-function-list=name,...  Aufgezählte Funktionen nicht instrumentieren."
+msgstr "-finstrument-functions-exclude-function-list=name,…\tAufgezählte Funktionen nicht instrumentieren."
 
 #: common.opt:1762
-#, fuzzy, no-c-format
-#| msgid "-finstrument-functions-exclude-file-list=filename,...  Do not instrument functions listed in files."
+#, no-c-format
 msgid "-finstrument-functions-exclude-file-list=filename,...\tDo not instrument functions listed in files."
-msgstr "-finstrument-functions-exclude-file-list=filename,...  In Dateien aufgezählte Funktionen nicht instrumentieren."
+msgstr "-finstrument-functions-exclude-file-list=filename,…\tIn den Dateien aufgezählte Funktionen nicht instrumentieren."
 
 #: common.opt:1766
 #, no-c-format
@@ -17227,16 +17197,14 @@ msgid "Support synchronous non-call exceptions."
 msgstr "Synchrone Nicht-Aufruf-Ausnahmen unterstützen."
 
 #: common.opt:2023
-#, fuzzy, no-c-format
-#| msgid "-foffload=<targets>=<options>  Specify offloading targets and options for them."
+#, no-c-format
 msgid "-foffload=<targets>=<options>\tSpecify offloading targets and options for them."
-msgstr "-foffload=<Ziele>=<Optionen>  Offloading-Ziele und deren Optionen angeben."
+msgstr "-foffload=<Ziele>=<Optionen>\tOffloading-Ziele und deren Optionen angeben."
 
 #: common.opt:2027
-#, fuzzy, no-c-format
-#| msgid "-foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler."
+#, no-c-format
 msgid "-foffload-abi=[lp64|ilp32]\tSet the ABI to use in an offload compiler."
-msgstr "-foffload-abi=[lp64|ilp32]     Festlegen, welche ABI in einem Offload-Compiler verwendet wird."
+msgstr "-foffload-abi=[lp64|ilp32]\tFestlegen, welche ABI in einem Offload-Compiler verwendet wird."
 
 #: common.opt:2040
 #, no-c-format
@@ -17396,7 +17364,7 @@ msgstr "Funktionen nur aus Dateien instrumentieren, deren Namen nicht zu allen d
 #: common.opt:2185
 #, no-c-format
 msgid "-fprofile-reproducible=[serial|parallel-runs|multithreaded]\tControl level of reproducibility of profile gathered by -fprofile-generate."
-msgstr ""
+msgstr "-fprofile-reproducible=[serial|parallel-runs|multithreaded]\tStufe für die Reproduzierbarkeit des mit »-fprofile-generate« generierten Profils festlegen."
 
 #: common.opt:2201
 #, no-c-format
@@ -18670,8 +18638,7 @@ msgid "Maximum number of operations in a parameter expression that can be handle
 msgstr "Maximale Anzahl von Operationen in einem Parameterausdruck, die von der IPA-Analyse behandelt werden können."
 
 #: params.opt:239
-#, fuzzy, no-c-format
-#| msgid "Maximal number of boundary endpoints of case ranges of switch statement used during IPA functoin summary generation."
+#, no-c-format
 msgid "Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation."
 msgstr "Maximale Anzahl der Grenzendpunkte der Fallbereiche der Switch-Anweisung, die bei der Generierung der IPA-Funktionszusammenfassung verwendet werden."
 
@@ -19198,7 +19165,7 @@ msgstr "Maximale Größe variablenverfolgender Hash-Tabellen."
 #: params.opt:667
 #, no-c-format
 msgid "Maximum number of VALUEs handled during a single find_base_term call."
-msgstr ""
+msgstr "Maximale Anzahl der VALUEs, die während eines einzelnen Aufrufs von »find_base_term« verarbeitet werden."
 
 #: params.opt:671
 #, no-c-format
@@ -21336,26 +21303,22 @@ msgid "direct call to %s in speculative call sequence has no speculative flag"
 msgstr "der direkte Aufruf von %s in der Folge der spekulativen Aufrufe hat kein Spekulationsflag"
 
 #: cgraph.c:3267 cgraph.c:3297
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "direct call to %s in speculative call sequence has speculative_uid %i out of range"
+#, gcc-internal-format, gfc-internal-format
 msgid "direct call to %s in speculative call sequence has speculative_id %i out of range"
 msgstr "der direkte Aufruf von %s in der Folge der spekulativen Aufrufe hat speculative_id %i außerhalb des Bereichs"
 
 #: cgraph.c:3274
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "duplicate direct call to %s in speculative call sequence with speculative_uid %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "duplicate direct call to %s in speculative call sequence with speculative_id %i"
 msgstr "doppelter direkter Aufruf von %s in der Folge der spekulativen Aufrufe mit speculative_id %i"
 
 #: cgraph.c:3285
-#, fuzzy, gcc-internal-format
-#| msgid "call stmt hash does not point to first direct edge of speculative call sequence "
+#, gcc-internal-format
 msgid "call stmt hash does not point to first direct edge of speculative call sequence"
 msgstr "der Hash der Aufrufanweisung zeigt nicht auf die erste direkte Kante der Folge von spekulativen Aufrufen"
 
 #: cgraph.c:3304
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "duplicate reference %s in speculative call sequence with speculative_uid %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "duplicate reference %s in speculative call sequence with speculative_id %i"
 msgstr "doppelter Verweis %s in der Folge der spekulativen Aufrufe mit speculative_id %i"
 
@@ -21370,10 +21333,9 @@ msgid "missing ref for speculation %i"
 msgstr "missing ref for speculation %i"
 
 #: cgraph.c:3331
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "number of speculative targets %i mismatched with num_speculative_targets %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "number of speculative targets %i mismatched with num_speculative_call_targets %i"
-msgstr "Anzahl der spekulativen Ziele %i stimmt nicht mit num_targets %i überein"
+msgstr "Anzahl der spekulativen Ziele %i stimmt nicht mit num_speculative_call_targets %i überein"
 
 #: cgraph.c:3360
 #, gcc-internal-format, gfc-internal-format
@@ -21428,13 +21390,12 @@ msgstr "calls_comdat_local wird außerhalb einer comdat-Gruppe gesetzt"
 #: cgraph.c:3416
 #, gcc-internal-format
 msgid "invalid calls_comdat_local flag"
-msgstr ""
+msgstr "ungültiger Schalter »calls_comdat_local«"
 
 #: cgraph.c:3423
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute on a function not returning a pointer"
+#, gcc-internal-format
 msgid "malloc attribute should be used for a function that returns a pointer"
-msgstr "Attribut %qE an einer Funktion, die keinen Zeiger zurückgibt"
+msgstr "Attribut %<malloc%> ist nur an Funktionen sinnvoll, die einen Zeiger zurückgeben"
 
 #: cgraph.c:3431
 #, gcc-internal-format, gfc-internal-format
@@ -21452,8 +21413,7 @@ msgid "An indirect edge from %s is not marked as indirect or has associated indi
 msgstr "Interner Fehler: An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
 
 #: cgraph.c:3453 cgraph.c:3524
-#, fuzzy, gcc-internal-format
-#| msgid "edge has both cal_stmt and lto_stmt_uid set"
+#, gcc-internal-format
 msgid "edge has both call_stmt and lto_stmt_uid set"
 msgstr "Kante hat sowohl call_stmt als auch lto_stmt_uid gesetzt"
 
@@ -21488,10 +21448,9 @@ msgid "indirect call count does not match BB count"
 msgstr "Interner Fehler: indirect call count does not match BB count"
 
 #: cgraph.c:3562
-#, fuzzy, gcc-internal-format
-#| msgid "reference has both cal_stmt and lto_stmt_uid set"
+#, gcc-internal-format
 msgid "reference has both stmt and lto_stmt_uid set"
-msgstr "Verweis hat sowohl call_stmt als auch lto_stmt_uid gesetzt"
+msgstr "Verweis hat sowohl stmt als auch lto_stmt_uid gesetzt"
 
 #: cgraph.c:3573
 #, gcc-internal-format
@@ -21668,11 +21627,11 @@ msgstr "versioniertes Symbol muss standardmäßige Sichtbarkeit haben"
 msgid "%<weakref%> attribute should be accompanied with an %<alias%> attribute"
 msgstr "Attribut %<weakref%> sollte von Attribut %<alias%> begleitet werden"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94363
 #: cgraphunit.c:859
-#, fuzzy, gcc-internal-format
-#| msgid "%<fast_interrupt%> attribute directive ignored"
+#, gcc-internal-format
 msgid "%<flatten%> attribute attribute is ignored on aliases"
-msgstr "Direktive des Attributes %<fast_interrupt%> ignoriert"
+msgstr "Attribut %<flatten%> wird an Aliasen ignoriert"
 
 #: cgraphunit.c:868 cgraphunit.c:919
 #, gcc-internal-format
@@ -24268,12 +24227,10 @@ msgstr "ein Typ mit unterschiedlicher Anzahl von Feldern ist in einer anderen Ü
 msgid "a type with different size is defined in another translation unit"
 msgstr "ein Typ mit unterschiedlicher Größe ist in einer anderer Übersetzungseinheit definiert"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93760
 #: ipa-devirt.c:1551
-#, fuzzy, gcc-internal-format
-#| msgid "one type needs to be constructed while other not"
+#, gcc-internal-format
 msgid "one type needs to be constructed while the other does not"
-msgstr "ein Typ muss konstruiert werden, alle anderen nicht"
+msgstr "ein Typ muss konstruiert sein, der andere nicht"
 
 #: ipa-devirt.c:1564
 #, gcc-internal-format
@@ -24621,12 +24578,12 @@ msgstr "Option %s nicht konsistent in allen LTO-Eingabedateien verwendet"
 #: lto-wrapper.c:504 lto-wrapper.c:512
 #, gcc-internal-format, gfc-internal-format
 msgid "Extra option to -Xassembler: %s, dropping all -Xassembler and -Wa options."
-msgstr ""
+msgstr "Überflüssige Option »%s« für »-Xassembler«; alle Optionen der Form »-Xassembler« und »-Wa« werden verworfen."
 
 #: lto-wrapper.c:520
 #, gcc-internal-format, gfc-internal-format
 msgid "Options to Xassembler do not match: %s, %s, dropping all -Xassembler and -Wa options."
-msgstr ""
+msgstr "Optionen für Xassembler passen nicht zueinander: %s, %s; alle Optionen der Form »-Xassembler« und »-Wa« werden verworfen."
 
 #: lto-wrapper.c:846
 #, gcc-internal-format
@@ -25150,7 +25107,7 @@ msgstr "Argument %qs für %<-Werror=%> ist für %s nicht gültig"
 #: opts-global.c:144
 #, gcc-internal-format
 msgid "unrecognized command-line option %qs may have been intended to silence earlier diagnostics"
-msgstr ""
+msgstr "Unbekannte Kommandozeilenoption %qs könnte den Zweck haben, bisherige Diagnosemeldungen zu unterdrücken"
 
 #: opts-global.c:389
 #, gcc-internal-format
@@ -29872,8 +29829,7 @@ msgid "invalid memory model argument %d of %qE"
 msgstr "ungültiges Argument %d für Speichermodell von %qE"
 
 #: c-family/c-common.c:7431
-#, fuzzy, gcc-internal-format
-#| msgid "this target does not define a speculation barrier; your program will still execute correctly, but incorrect speculation may not be be restricted"
+#, gcc-internal-format
 msgid "this target does not define a speculation barrier; your program will still execute correctly, but incorrect speculation may not be restricted"
 msgstr "dieses Ziel definiert keine Spekulationsbarriere; das erzeugte Programm wird trotzdem korrekt laufen, aber irrige Spekulationen sind möglicherweise nicht eingeschränkt"
 
@@ -31102,10 +31058,8 @@ msgstr "[error|warning|ignored|push|pop] nach %<#pragma GCC diagnostic%> erwarte
 msgid "missing option after %<#pragma GCC diagnostic%> kind"
 msgstr "Option hinter %<#pragma GCC diagnostic%>-Variante fehlt"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93858
 #: c-family/c-pragma.c:816
-#, fuzzy, gcc-internal-format
-#| msgid "unknown option after %<#pragma GCC diagnostic%> kind; did you mean %<-%s%>"
+#, gcc-internal-format
 msgid "unknown option after %<#pragma GCC diagnostic%> kind; did you mean %<-%s%>?"
 msgstr "unbekannte Option hinter %<#pragma GCC diagnostic%>; meinten Sie %<-%s%>?"
 
@@ -32167,10 +32121,8 @@ msgstr "unbekannter Operand für %%:asm_auto_mfpu"
 msgid "option %<-mdouble=64%> is only available if configured %<--with-double={64|64,32|32,64}%>"
 msgstr "die Option %<-mdouble=64%> ist nur verfügbar, wenn %<--with-double={64|64,32|32,64}%> konfiguriert ist"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93830
 #: common/config/avr/avr-common.c:98
-#, fuzzy, gcc-internal-format
-#| msgid "option %<-mdouble=32%> is only available if configured %<--with-double={|32|32,64|64,32}%>"
+#, gcc-internal-format
 msgid "option %<-mdouble=32%> is only available if configured %<--with-double={32|32,64|64,32}%>"
 msgstr "die Option %<-mdouble=32%> ist nur verfügbar, wenn %<--with-double={32|32,64|64,32}%> konfiguriert ist"
 
@@ -32180,8 +32132,7 @@ msgid "option %<-mlong-double=64%> is only available if configured %<--with-long
 msgstr "die Option %<-mlong-double=64%> ist nur verfügbar, wenn %<--with-long-double={64|64,32|32,64}%>, oder %<--with-long-double=double%> zusammen mit %<--with-double={64|64,32|32,64}%> konfiguriert ist"
 
 #: common/config/avr/avr-common.c:123
-#, fuzzy, gcc-internal-format
-#| msgid "option %<-mlong-double=32%> is only available if configured %<--with-long-double={|32|32,64|64,32}%>, or %<--with-long-double=double%> together with %<--with-double={|32|32,64|64,32}%>"
+#, gcc-internal-format
 msgid "option %<-mlong-double=32%> is only available if configured %<--with-long-double={32|32,64|64,32}%>, or %<--with-long-double=double%> together with %<--with-double={32|32,64|64,32}%>"
 msgstr "die Option %<-mlong-double=32%> ist nur verfügbar, wenn %<--with-long-double={32|32,64|64,32}%>, oder %<--with-long-double=double%> zusammen mit %<--with-double={32|32,64|64,32}%> konfiguriert ist"
 
@@ -32350,10 +32301,8 @@ msgstr "Stapelgröße muss eine exakte Zweierpotenz sein"
 msgid "value passed in %qs is too large"
 msgstr "in %qs übergebener Wert ist zu groß"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93860
 #: config/darwin-c.c:82
-#, fuzzy, gcc-internal-format
-#| msgid "too many %<#pragma options%> align=reset"
+#, gcc-internal-format
 msgid "too many %<#pragma options align=reset%>"
 msgstr "zu viele %<#pragma options align=reset%>"
 
@@ -32516,8 +32465,7 @@ msgstr "%<-mdynamic-no-pic%> übersteuert %<-fpic%>, %<-fPIC%>, %<-fpie%> oder %
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93831
 #: config/darwin.c:3305
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mpic-symbol-stubs%> is not required for 64b code (ignored)"
+#, gcc-internal-format
 msgid "%<-mpic-symbol-stubs%> is not required for 64-bit code (ignored)"
 msgstr "%<-mpic-symbol-stubs%> ist für 64-Bit-Code nicht erforderlich (ignoriert)"
 
@@ -33378,10 +33326,9 @@ msgid "%Ksaturation bit range must be a constant immediate"
 msgstr "%KBitbereich der Sättigung muss eine direkt angegebene Konstante sein"
 
 #: config/arm/arm-builtins.c:3179
-#, fuzzy, gcc-internal-format
-#| msgid "You must enable VFP instructions to use these intrinsics."
+#, gcc-internal-format
 msgid "You must enable MVE instructions to use these intrinsics"
-msgstr "Um diese intrinsischen Funktionen zu verwenden, müssen Sie VFP-Befehle einschalten."
+msgstr "Um diese intrinsischen Funktionen zu verwenden, müssen Sie MVE-Befehle einschalten."
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90148
 #: config/arm/arm-builtins.c:3201
@@ -38007,22 +37954,22 @@ msgstr "%<-mstack-guard%> bringt %<-mstack-size%> mit sich"
 #: config/s390/s390.c:15279
 #, gcc-internal-format
 msgid "-mtpf-trace-hook-prologue-check requires integer in range 0..4095"
-msgstr ""
+msgstr "»-mtpf-trace-hook-prologue-check« erfordert eine Ganzzahl im Bereich 0..4095"
 
 #: config/s390/s390.c:15282
 #, gcc-internal-format
 msgid "-mtpf-trace-hook-prologue-target requires integer in range 0..4095"
-msgstr ""
+msgstr "»-mtpf-trace-hook-prologue-target« erfordert eine Ganzzahl im Bereich 0..4095"
 
 #: config/s390/s390.c:15285
 #, gcc-internal-format
 msgid "-mtpf-trace-hook-epilogue-check requires integer in range 0..4095"
-msgstr ""
+msgstr "»-mtpf-trace-hook-epilogue-check« erfordert eine Ganzzahl im Bereich 0..4095"
 
 #: config/s390/s390.c:15288
 #, gcc-internal-format
 msgid "-mtpf-trace-hook-epilogue-target requires integer in range 0..4095"
-msgstr ""
+msgstr "»-mtpf-trace-hook-epilogue-target« erfordert eine Ganzzahl im Bereich 0..4095"
 
 #: config/s390/s390.c:15348
 #, gcc-internal-format
@@ -42049,11 +41996,11 @@ msgstr "falsche Verwendung des unvollständigen typedef %qT"
 msgid "%qT and %qT are in disjoint named address spaces"
 msgstr "%qT und %qT sind in disjunkt benannten Adressräumen"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94370
 #: c/c-typeck.c:371
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute not available to functions with variable number of arguments"
+#, gcc-internal-format
 msgid "%qs attribute cannot be applied to a function that does not take variable arguments"
-msgstr "Attribut %qE ist nicht auf Funktionen anwendbar, die variable Anzahl von Argumenten haben"
+msgstr "Attribut %qs ist nur auf Funktionen anwendbar, die eine variable Anzahl von Argumenten haben"
 
 #: c/c-typeck.c:598 c/c-typeck.c:623
 #, gcc-internal-format
@@ -47348,10 +47295,9 @@ msgid "deduction guide %qD must be declared at namespace scope"
 msgstr "Herleitungshinweis %qD muss im Gültigkeitsbereich des Namensbereiches auftreten"
 
 #: cp/decl.c:9651
-#, fuzzy, gcc-internal-format
-#| msgid "deduction guide %qD must be declared at namespace scope"
+#, gcc-internal-format
 msgid "deduction guide %qD must be declared in the same scope as %qT"
-msgstr "Herleitungshinweis %qD muss im Gültigkeitsbereich des Namensbereiches auftreten"
+msgstr "Herleitungshinweis %qD muss im selben Gültigkeitsbereich wie %qT deklariert sein"
 
 #: cp/decl.c:9658
 #, gcc-internal-format
@@ -51137,7 +51083,7 @@ msgstr "Lambda-Templates sind nur mit %<-std=c++2a%> oder %<-std=gnu++2a%> verf�
 #: cp/parser.c:10743
 #, gcc-internal-format
 msgid "%<&%> should come before %<...%>"
-msgstr ""
+msgstr "%<&%> sollte vor %<...%> kommen"
 
 #: cp/parser.c:10774
 #, gcc-internal-format
@@ -51376,10 +51322,8 @@ msgstr "%<friend%> außerhalb einer Klasse verwendet"
 msgid "the %<bool%> keyword is not allowed in a C++20 concept definition"
 msgstr "das Schlüsselwort %<bool%> ist in einer Konzeptdefinition in C++20 nicht erlaubt"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93838
 #: cp/parser.c:14177
-#, fuzzy, gcc-internal-format
-#| msgid "C++20 concept definition syntax is %<concept <name> = <expr>%> "
+#, gcc-internal-format
 msgid "C++20 concept definition syntax is %<concept <name> = <expr>%>"
 msgstr "Die Schreibweise der C++20-Konzeptdefinition ist %<concept <Name> = <Ausdruck>%>"
 
@@ -53229,10 +53173,9 @@ msgid "partial specialization is not more specialized than the primary template 
 msgstr "partielle Spezialisierung ist nicht näher spezialisiert als das ursprüngliche Template, da es mehrere Parameter mit einer »pack«-Erweiterung ersetzt"
 
 #: cp/pt.c:5043
-#, fuzzy, gcc-internal-format
-#| msgid "too many arguments to function %qE"
+#, gcc-internal-format
 msgid "too many arguments for partial specialization %qT"
-msgstr "zu viele Argumente für Funktion %qE"
+msgstr "zu viele Argumente für teilweise Spezialisierung %qT"
 
 #: cp/pt.c:5057
 #, gcc-internal-format
@@ -53919,10 +53862,9 @@ msgid "%qT resolves to %qT, which is not an enumeration type"
 msgstr "%qT wird in %qT aufgelöst, was kein Aufzählungstyp ist"
 
 #: cp/pt.c:15691
-#, fuzzy, gcc-internal-format
-#| msgid "%qT resolves to %qT, which is is not a class type"
+#, gcc-internal-format
 msgid "%qT resolves to %qT, which is not a class type"
-msgstr "%qT wird in %qT aufgelöst, was kein Klassentyp ist"
+msgstr "%qT wird in %qT aufgelöst, aber das ist kein Klassentyp"
 
 #: cp/pt.c:15818
 #, gcc-internal-format
@@ -57963,10 +57905,9 @@ msgid "Allocatable component or deferred-shaped array near %C in DATA statement"
 msgstr "Allozierbare Komponente oder deferred-shaped-Feld bei %C in DATA-Anweisung"
 
 #: fortran/decl.c:729
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "BOZ literal constant at %L cannot appear in an array constructor"
+#, gcc-internal-format, gfc-internal-format
 msgid "BOZ literal constant at %L cannot appear in a structure constructor"
-msgstr "Die BOZ-Literalkonstante bei %L darf nicht in einem Feldkonstruktor vorkommen"
+msgstr "Die BOZ-Literalkonstante bei %L darf nicht in einem Strukturkonstruktor vorkommen"
 
 #: fortran/decl.c:745
 #, gcc-internal-format, gfc-internal-format
@@ -58376,10 +58317,9 @@ msgid "The component at %C which is a type parameter must be a scalar"
 msgstr "Die Komponente bei %C, die ein Typparameter ist, muss ein Skalar sein"
 
 #: fortran/decl.c:2935
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "BOZ literal constant at %L cannot appear in an array constructor"
+#, gcc-internal-format, gfc-internal-format
 msgid "BOZ literal constant at %L cannot appear as an initializer"
-msgstr "Die BOZ-Literalkonstante bei %L darf nicht in einem Feldkonstruktor vorkommen"
+msgstr "Die BOZ-Literalkonstante bei %L darf nicht als Initialisierer vorkommen"
 
 #: fortran/decl.c:2952
 #, gcc-internal-format
@@ -60804,10 +60744,8 @@ msgstr "Unverträgliche Ränge zwischen Argument bei %L und Argument bei %L (ska
 msgid "Rank mismatch between actual argument at %L and actual argument at %L (rank-%d and scalar)"
 msgstr "Unverträgliche Ränge zwischen Argument bei %L und Argument bei %L (Rang-%d und skalar)"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93889
 #: fortran/interface.c:2225
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Rank mismatch between actual argument at %L and actual argument at %L (rank-%d and rank-%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "Rank mismatch between actual argument at %L and actual argument at %L (rank-%d and rank-%d)"
 msgstr "Unverträgliche Ränge zwischen Argument bei %L und Argument bei %L (Rang-%d und Rang-%d)"
 
@@ -60901,10 +60839,8 @@ msgstr "Koarray bei %L wird an reservierbares, Nicht-Coarray-Scheinargument %qs 
 msgid "Polymorphic scalar passed to array dummy argument %qs at %L"
 msgstr "Polymorphes Skalar wird an Feld-Scheinargument %qs bei %L übergeben"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93890
 #: fortran/interface.c:2662
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Element of assumed-shape or pointer array as actual argument at %L can not correspond to actual argument at %L "
+#, gcc-internal-format, gfc-internal-format
 msgid "Element of assumed-shape or pointer array as actual argument at %L cannot correspond to actual argument at %L"
 msgstr "Element des Feldes mit vermuteter Form oder von Zeigern bei %L kann nicht zum Argument bei %L passen"
 
@@ -62346,10 +62282,9 @@ msgid "Invalid form of PROGRAM statement at %C"
 msgstr "Ungültige Form der PROGRAM-Anweisung bei %C"
 
 #: fortran/match.c:1356
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "BOZ literal at %L outside a DATA statement and outside INT/REAL/DBLE/CMPLX"
+#, gcc-internal-format, gfc-internal-format
 msgid "BOZ literal constant at %L is neither a DATA statement value nor an actual argument of INT/REAL/DBLE/CMPLX intrinsic subprogram"
-msgstr "BOZ-Literal bei %L außerhalb einer DATA-Anweisung und außerhalb von INT/REAL/DBLE/CMPLX"
+msgstr "BOZ-Literal bei %L darf nur als Wert einer DATA-Anweisung oder als Argument des intrinsischen Unterprogramms INT/REAL/DBLE/CMPLX vorkommen"
 
 #: fortran/match.c:1365
 #, gcc-internal-format, gfc-internal-format
@@ -62467,10 +62402,9 @@ msgid "Association target at %C must not be coindexed"
 msgstr "Verknüpfungsziel bei %C darf nicht koindiziert sein"
 
 #: fortran/match.c:1973
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "STAT tag at %L cannot be a constant"
+#, gcc-internal-format, gfc-internal-format
 msgid "Association target at %L cannot be a BOZ literal constant"
-msgstr "STAT-Angabe bei %L darf keine Konstante sein"
+msgstr "Zuordnungsziel bei %L darf kein BOZ-Literal sein"
 
 #: fortran/match.c:1992
 #, gcc-internal-format
@@ -62564,10 +62498,9 @@ msgid "EXIT statement at %C terminating !$ACC LOOP loop"
 msgstr "EXIT-Anweisung bei %C beendet »!$ACC LOOP«-Schleife"
 
 #: fortran/match.c:2913
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "CYCLE statement at %C to non-innermost collapsed !$ACC LOOP loop"
+#, gcc-internal-format, gfc-internal-format
 msgid "CYCLE statement at %C to non-innermost tiled !$ACC LOOP loop"
-msgstr "CYCLE-Anweisung bei %C für nicht-innerste eingeklappte »!$ACC LOOP«-Schleife"
+msgstr "CYCLE-Anweisung bei %C für nicht-innerste gekachelte »!$ACC LOOP«-Schleife"
 
 #: fortran/match.c:2915
 #, gcc-internal-format, gfc-internal-format
@@ -63646,10 +63579,9 @@ msgid "Variable is USE-associated with !$ACC DECLARE at %L"
 msgstr "Variable ist USE-verknüpft mit »!$ACC DECLARE« bei %L"
 
 #: fortran/openmp.c:2182
-#, fuzzy, gcc-internal-format
-#| msgid "Variable is USE-associated with !$ACC DECLARE at %L"
+#, gcc-internal-format
 msgid "Variable %qs shall be declared in the same scoping unit as !$ACC DECLARE at %L"
-msgstr "Variable ist USE-verknüpft mit »!$ACC DECLARE« bei %L"
+msgstr "Variable %qs muss in derselben Gültigkeitsbereichseinheit wie »!$ACC DECLARE« bei %L sein"
 
 #: fortran/openmp.c:2190
 #, gcc-internal-format, gfc-internal-format
@@ -70725,10 +70657,9 @@ msgid "unknown offload ABI %qs"
 msgstr "Unbekannte Offload-ABI %qs"
 
 #: common.opt:2172
-#, fuzzy, gcc-internal-format
-#| msgid "unknown profile update method %qs"
+#, gcc-internal-format
 msgid "unknown profile reproducibility method %qs"
-msgstr "Unbekannte Profil-Aktualisierungs-Methode %qs"
+msgstr "Unbekannte Profil-Reproduzierbarkeitsstufe %qs"
 
 #: common.opt:2188
 #, gcc-internal-format
