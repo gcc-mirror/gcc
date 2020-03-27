@@ -1,3 +1,8 @@
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94098
+	* calls.c (init_attr_rdwr_indices): Iterate over all access attributes.
+
 2020-03-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md:

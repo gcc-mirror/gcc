@@ -4182,7 +4182,6 @@ handle_access_attribute (tree *node, tree name, tree args,
 
   /* Replace any existing access attribute specification with
      the concatenation above.  */
-  attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
   new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
   new_attrs = tree_cons (name, new_attrs, attrs);
 
@@ -4190,15 +4189,12 @@ handle_access_attribute (tree *node, tree name, tree args,
     {
       /* Repeat for the previously declared type.  */
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (node[1]));
-      tree new_attrs
-	= append_access_attrs (node[1], attrs, attrstr, code, idxs);
-      if (!new_attrs)
+      tree attrs1 = append_access_attrs (node[1], attrs, attrstr, code, idxs);
+      if (!attrs1)
 	return NULL_TREE;
 
-      attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
-      new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
-      new_attrs = tree_cons (name, new_attrs, attrs);
-      TYPE_ATTRIBUTES (TREE_TYPE (node[1])) = new_attrs;
+      attrs1 = tree_cons (NULL_TREE, attrs1, NULL_TREE);
+      new_attrs = tree_cons (name, attrs1, attrs);
     }
 
   /* Recursively call self to "replace" the documented/external form

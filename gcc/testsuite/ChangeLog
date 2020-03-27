@@ -1,5 +1,10 @@
 2020-03-27  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/94098
+	* g++.dg/ext/attr-access-2.C: New test.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/94078
 	PR c++/93824
 	PR c++/93810
