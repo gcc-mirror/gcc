@@ -12482,6 +12482,18 @@ package body Sem_Res is
       --  are not rechecked because type visbility may lead to spurious errors,
       --  but conversions in an actual for a formal object must be checked.
 
+      function Is_Discrim_Of_Bad_Access_Conversion_Argument
+        (Expr : Node_Id) return Boolean;
+      --  Implicit anonymous-to-named access type conversions are not allowed
+      --  if the "statically deeper than" relationship does not apply to the
+      --  type of the conversion operand. See RM 8.6(28.1) and AARM 8.6(28.d).
+      --  We deal with most such cases elsewhere so that we can emit more
+      --  specific error messages (e.g., if the operand is an access parameter
+      --  or a saooaaat (stand-alone object of an anonymous access type)), but
+      --  here is where we catch the case where the operand is an access
+      --  discriminant selected from a dereference of another such "bad"
+      --  conversion argument.
+
       function Valid_Tagged_Conversion
         (Target_Type : Entity_Id;
          Opnd_Type   : Entity_Id) return Boolean;
@@ -12583,6 +12595,74 @@ package body Sem_Res is
             return True;
          end if;
       end In_Instance_Code;
+
+      --------------------------------------------------
+      -- Is_Discrim_Of_Bad_Access_Conversion_Argument --
+      --------------------------------------------------
+
+      function Is_Discrim_Of_Bad_Access_Conversion_Argument
+        (Expr : Node_Id) return Boolean
+      is
+         Exp_Type : Entity_Id := Base_Type (Etype (Expr));
+         pragma Assert (Is_Access_Type (Exp_Type));
+
+         Associated_Node : Node_Id;
+         Deref_Prefix : Node_Id;
+      begin
+         if not Is_Anonymous_Access_Type (Exp_Type) then
+            return False;
+         end if;
+
+         pragma Assert (Is_Itype (Exp_Type));
+         Associated_Node := Associated_Node_For_Itype (Exp_Type);
+
+         if Nkind (Associated_Node) /= N_Discriminant_Specification then
+            return False; -- not the type of an access discriminant
+         end if;
+
+         --  return False if Expr not of form <prefix>.all.Some_Component
+
+         if (Nkind (Expr) /= N_Selected_Component)
+           or else (Nkind (Prefix (Expr)) /= N_Explicit_Dereference)
+         then
+            --  conditional expressions, declare expressions ???
+            return False;
+         end if;
+
+         Deref_Prefix := Prefix (Prefix (Expr));
+         Exp_Type := Base_Type (Etype (Deref_Prefix));
+
+         --  The "statically deeper relationship" does not apply
+         --  to generic formal access types, so a prefix of such
+         --  a type is a "bad" prefix.
+
+         if Is_Generic_Formal (Exp_Type) then
+            return True;
+
+         --  The "statically deeper relationship" does apply to
+         --  any other named access type.
+
+         elsif not Is_Anonymous_Access_Type (Exp_Type) then
+            return False;
+         end if;
+
+         pragma Assert (Is_Itype (Exp_Type));
+         Associated_Node := Associated_Node_For_Itype (Exp_Type);
+
+         --  The "statically deeper relationship" applies to some
+         --  anonymous access types and not to others. Return
+         --  True for the cases where it does not apply. Also check
+         --  recursively for the
+         --     <prefix>.all.Access_Discrim.all.Access_Discrim case,
+         --  where the correct result depends on <prefix>.
+
+         return Nkind_In (Associated_Node,
+           N_Procedure_Specification, -- access parameter
+           N_Function_Specification,  -- access parameter
+           N_Object_Declaration       -- saooaaat
+           )
+           or else Is_Discrim_Of_Bad_Access_Conversion_Argument (Deref_Prefix);
+      end Is_Discrim_Of_Bad_Access_Conversion_Argument;
 
       ----------------------------
       -- Valid_Array_Conversion --
@@ -13133,13 +13213,10 @@ package body Sem_Res is
                         & "not allowed", Operand);
                      return False;
 
-                  --  This is a case where there's an enclosing object whose
-                  --  to which the "statically deeper than" relationship does
-                  --  not apply (such as an access discriminant selected from
-                  --  a dereference of an access parameter).
+                  --  Detect access discriminant values that are illegal
+                  --  implicit anonymous-to-named access conversion operands.
 
-                  elsif Object_Access_Level (Operand)
-                          = Scope_Depth (Standard_Standard)
+                  elsif Is_Discrim_Of_Bad_Access_Conversion_Argument (Operand)
                   then
                      Conversion_Error_N
                        ("implicit conversion of anonymous access value "
