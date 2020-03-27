@@ -1,4 +1,7 @@
 ! { dg-do link }
+! The compiler_options() function is dependent on the
+! command line options and thus incompatible with -fcompare-debug.
+! { dg-skip-if "-fcompare-debug incompatible test" { *-*-* } { "-fcompare-debug" } { "" } } */
 !
 ! PR fortran/40569
 !

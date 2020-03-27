@@ -1792,6 +1792,7 @@ ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
       RTVEC_ELT (vec, j) = gen_rtx_SET (reg, reg);
     }
   XVEC (pattern, 0) = vec;
+  INSN_CODE (insn) = -1;
   df_insn_rescan (insn);
 }
 
@@ -2777,6 +2778,9 @@ make_resolver_func (const tree default_decl,
       DECL_COMDAT (decl) = 1;
       make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
     }
+  else
+    TREE_PUBLIC (ifunc_alias_decl) = 0;
+
   /* Build result decl and add to function_decl. */
   t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
   DECL_CONTEXT (t) = decl;

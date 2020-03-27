@@ -1,3 +1,7 @@
+/* This test is expected to FAIL to compile with
+   -fcompare-debug -fno-asynchronous-unwind-tables -fno-exceptions
+   because in that case, the __GCC_HAVE_DWARF2_CFI_ASM macro is only
+   defined during -g compilation and not defined with -g0.  */
 /* HP-UX libunwind.so doesn't provide _UA_END_OF_STACK */
 /* { dg-do run } */
 /* { dg-options "-fexceptions" } */

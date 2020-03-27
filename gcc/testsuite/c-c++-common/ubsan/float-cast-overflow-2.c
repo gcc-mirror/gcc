@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
-/* { dg-options "-fsanitize=float-cast-overflow" } */
+/* { dg-options "-fsanitize=float-cast-overflow -Wno-overflow" } */
 
 #include "float-cast.h"
 

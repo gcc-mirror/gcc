@@ -1,6 +1,3 @@
-/* { dg-xfail-if "#pragma omp target link not implemented" { offload_target_nvptx } }
-   Cf. https://gcc.gnu.org/PR81689.  */
-
 struct S { int s, t; };
 
 int a = 1, b = 1;

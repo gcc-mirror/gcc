@@ -2004,6 +2004,11 @@ tsubst_nested_requirement (tree t, tree args, subst_info info)
   /* Ensure that we're in an evaluation context prior to satisfaction.  */
   tree norm = TREE_VALUE (TREE_TYPE (t));
   tree result = satisfy_constraint (norm, args, info);
+  if (result == error_mark_node && info.quiet ())
+    {
+      subst_info noisy (tf_warning_or_error, info.in_decl);
+      satisfy_constraint (norm, args, noisy);
+    }
   if (result != boolean_true_node)
     return error_mark_node;
   return result;
@@ -2489,7 +2494,7 @@ get_mapped_args (tree map)
   return args;
 }
 
-static void diagnose_atomic_constraint (tree, tree, subst_info);
+static void diagnose_atomic_constraint (tree, tree, tree, subst_info);
 
 /* Compute the satisfaction of an atomic constraint.  */
 
@@ -2534,8 +2539,6 @@ satisfy_atom (tree t, tree args, subst_info info)
       return cache.save (boolean_false_node);
     }
 
-  location_t loc = cp_expr_loc_or_input_loc (expr);
-
   /* [17.4.1.2] ... lvalue-to-rvalue conversion is performed as necessary,
      and EXPR shall be a constant expression of type bool.  */
   result = force_rvalue (result, info.complain);
@@ -2544,14 +2547,22 @@ satisfy_atom (tree t, tree args, subst_info info)
   if (!same_type_p (TREE_TYPE (result), boolean_type_node))
     {
       if (info.noisy ())
-	error_at (loc, "constraint does not have type %<bool%>");
+	diagnose_atomic_constraint (t, map, result, info);
       return cache.save (error_mark_node);
     }
 
   /* Compute the value of the constraint.  */
-  result = satisfaction_value (cxx_constant_value (result));
+  if (info.noisy ())
+    result = cxx_constant_value (result);
+  else
+    {
+      result = maybe_constant_value (result);
+      if (!TREE_CONSTANT (result))
+	result = error_mark_node;
+    }
+  result = satisfaction_value (result);
   if (result == boolean_false_node && info.noisy ())
-    diagnose_atomic_constraint (t, map, info);
+    diagnose_atomic_constraint (t, map, result, info);
 
   return cache.save (result);
 }
@@ -2733,20 +2744,34 @@ static tree
 constraint_satisfaction_value (tree t, tsubst_flags_t complain)
 {
   subst_info info (complain, NULL_TREE);
+  tree r;
   if (DECL_P (t))
-    return satisfy_declaration_constraints (t, info);
+    r = satisfy_declaration_constraints (t, info);
   else
-    return satisfy_constraint_expression (t, NULL_TREE, info);
+    r = satisfy_constraint_expression (t, NULL_TREE, info);
+  if (r == error_mark_node && info.quiet ()
+      && !(DECL_P (t) && TREE_NO_WARNING (t)))
+      {
+	constraint_satisfaction_value (t, tf_warning_or_error);
+	if (DECL_P (t))
+	  /* Avoid giving these errors again.  */
+	  TREE_NO_WARNING (t) = true;
+      }
+  return r;
 }
 
 static tree
 constraint_satisfaction_value (tree t, tree args, tsubst_flags_t complain)
 {
   subst_info info (complain, NULL_TREE);
+  tree r;
   if (DECL_P (t))
-    return satisfy_declaration_constraints (t, args, info);
+    r = satisfy_declaration_constraints (t, args, info);
   else
-    return satisfy_constraint_expression (t, args, info);
+    r = satisfy_constraint_expression (t, args, info);
+  if (r == error_mark_node && info.quiet ())
+    constraint_satisfaction_value (t, args, tf_warning_or_error);
+  return r;
 }
 
 /* True iff the result of satisfying T is BOOLEAN_TRUE_NODE and false
@@ -3033,6 +3058,9 @@ at_least_as_constrained (tree d1, tree d2)
 static location_t
 get_constraint_error_location (tree t)
 {
+  if (location_t loc = cp_expr_location (t))
+    return loc;
+
   /* If we have a specific location give it.  */
   tree expr = CONSTR_EXPR (t);
   if (location_t loc = cp_expr_location (expr))
@@ -3041,20 +3069,23 @@ get_constraint_error_location (tree t)
   /* If the constraint is normalized from a requires-clause, give
      the location as that of the constrained declaration.  */
   tree cxt = CONSTR_CONTEXT (t);
-  tree src = TREE_VALUE (cxt);
+  tree src = cxt ? TREE_VALUE (cxt) : NULL_TREE;
   if (!src)
     /* TODO: This only happens for constrained non-template declarations.  */
-    return input_location;
-  if (DECL_P (src))
+    ;
+  else if (DECL_P (src))
     return DECL_SOURCE_LOCATION (src);
-
   /* Otherwise, give the location as the defining concept.  */
-  gcc_assert (concept_check_p (src));
-  tree id = unpack_concept_check (src);
-  tree tmpl = TREE_OPERAND (id, 0);
-  if (OVL_P (tmpl))
-    tmpl = OVL_FIRST (tmpl);
-  return DECL_SOURCE_LOCATION (tmpl);
+  else if (concept_check_p (src))
+    {
+      tree id = unpack_concept_check (src);
+      tree tmpl = TREE_OPERAND (id, 0);
+      if (OVL_P (tmpl))
+	tmpl = OVL_FIRST (tmpl);
+      return DECL_SOURCE_LOCATION (tmpl);
+    }
+
+  return input_location;
 }
 
 /* Emit a diagnostic for a failed trait.  */
@@ -3302,7 +3333,7 @@ diagnose_requires_expr (tree expr, tree map, tree in_decl)
    with the instantiated parameter mapping MAP.  */
 
 static void
-diagnose_atomic_constraint (tree t, tree map, subst_info info)
+diagnose_atomic_constraint (tree t, tree map, tree result, subst_info info)
 {
   /* If the constraint is already ill-formed, we've previously diagnosed
      the reason. We should still say why the constraints aren't satisfied.  */
@@ -3338,7 +3369,11 @@ diagnose_atomic_constraint (tree t, tree map, subst_info info)
     default:
       tree a = copy_node (t);
       ATOMIC_CONSTR_MAP (a) = map;
-      inform (loc, "the expression %qE evaluated to %<false%>", a);
+      if (!same_type_p (TREE_TYPE (result), boolean_type_node))
+	error_at (loc, "constraint %qE has type %qT, not %<bool%>",
+		  a, TREE_TYPE (result));
+      else
+	inform (loc, "the expression %qE evaluated to %<false%>", a);
       ggc_free (a);
     }
 }

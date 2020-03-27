@@ -220,7 +220,19 @@ omp_finish_file (void)
       for (unsigned i = 0; i < num_vars; i++)
 	{
 	  tree it = (*offload_vars)[i];
-	  targetm.record_offload_symbol (it);
+#ifdef ACCEL_COMPILER
+	  if (DECL_HAS_VALUE_EXPR_P (it)
+	      && lookup_attribute ("omp declare target link",
+				   DECL_ATTRIBUTES (it)))
+	    {
+	      tree value_expr = DECL_VALUE_EXPR (it);
+	      tree link_ptr_decl = TREE_OPERAND (value_expr, 0);
+	      targetm.record_offload_symbol (link_ptr_decl);
+	      varpool_node::finalize_decl (link_ptr_decl);
+	    }
+	  else
+#endif
+	    targetm.record_offload_symbol (it);
 	}
     }
 }

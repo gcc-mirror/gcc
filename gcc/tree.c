@@ -5155,6 +5155,33 @@ protected_set_expr_location (tree t, location_t loc)
 {
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, loc);
+  else if (t && TREE_CODE (t) == STATEMENT_LIST)
+    {
+      /* With -gstatement-frontiers we could have a STATEMENT_LIST with
+	 DEBUG_BEGIN_STMT(s) and only a single other stmt, which with
+	 -g wouldn't be present and we'd have that single other stmt
+	 directly instead.  */
+      struct tree_statement_list_node *n = STATEMENT_LIST_HEAD (t);
+      if (!n)
+	return;
+      while (TREE_CODE (n->stmt) == DEBUG_BEGIN_STMT)
+	{
+	  n = n->next;
+	  if (!n)
+	    return;
+	}
+      tree t2 = n->stmt;
+      do
+	{
+	  n = n->next;
+	  if (!n)
+	    {
+	      protected_set_expr_location (t2, loc);
+	      return;
+	    }
+	}
+      while (TREE_CODE (n->stmt) == DEBUG_BEGIN_STMT);
+    }
 }
 
 /* Data used when collecting DECLs and TYPEs for language data removal.  */
@@ -8871,6 +8898,21 @@ get_narrower (tree op, int *unsignedp_ptr)
   tree win = op;
   bool integral_p = INTEGRAL_TYPE_P (TREE_TYPE (op));
 
+  if (TREE_CODE (op) == COMPOUND_EXPR)
+    {
+      while (TREE_CODE (op) == COMPOUND_EXPR)
+	op = TREE_OPERAND (op, 1);
+      tree ret = get_narrower (op, unsignedp_ptr);
+      if (ret == op)
+	return win;
+      op = win;
+      for (tree *p = &win; TREE_CODE (op) == COMPOUND_EXPR;
+	   op = TREE_OPERAND (op, 1), p = &TREE_OPERAND (*p, 1))
+	*p = build2_loc (EXPR_LOCATION (op), COMPOUND_EXPR,
+			 TREE_TYPE (ret), TREE_OPERAND (op, 0),
+			 ret);
+      return win;
+    }
   while (TREE_CODE (op) == NOP_EXPR)
     {
       int bitschange

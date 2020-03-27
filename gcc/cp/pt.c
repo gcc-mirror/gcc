@@ -10473,6 +10473,7 @@ any_template_parm_r (tree t, void *data)
       WALK_SUBTREE (TREE_OPERAND (t, 1));
       break;
 
+    case TEMPLATE_PARM_INDEX:
     case PARM_DECL:
       /* A parameter or constraint variable may also depend on a template
 	 parameter without explicitly naming it.  */
@@ -10566,8 +10567,7 @@ uses_template_parms (tree t)
   else if (t == error_mark_node)
     dependent_p = false;
   else
-    dependent_p = (type_dependent_expression_p (t)
-		   || value_dependent_expression_p (t));
+    dependent_p = value_dependent_expression_p (t);
 
   processing_template_decl = saved_processing_template_decl;
 
@@ -27090,8 +27090,7 @@ dependent_template_arg_p (tree arg)
   else if (TYPE_P (arg))
     return dependent_type_p (arg);
   else
-    return (type_dependent_expression_p (arg)
-	    || value_dependent_expression_p (arg));
+    return value_dependent_expression_p (arg);
 }
 
 /* Returns true if ARGS (a collection of template arguments) contains

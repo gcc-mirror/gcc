@@ -322,7 +322,6 @@ private:
 
   auto_vec<function *> m_functions;
   auto_vec<tree> m_globals;
-  tree m_char_array_type_node;
   tree m_const_char_ptr;
 
   /* Source location handling.  */

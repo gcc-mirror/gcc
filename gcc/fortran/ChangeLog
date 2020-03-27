@@ -1,3 +1,38 @@
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93957
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Accept
+	nonallocatable, nonpointer deferred-rank arrays.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93363
+	* resolve.c (resolve_assoc_var): Reject association to DT and
+	function name.
+
+2020-03-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93484
+	* match.c (gfc_match_type_spec): Replace gfc_match_init_expr with
+	gfc_match_expr. Return m if m is MATCH_NO or MATCH_ERROR.
+
+2020-03-23  Mark Eggleston  <mark.eggleston@codethink.com>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93600
+	* expr.c (simplify_parameter_variable): Check whether the ref
+	chain contains INQUIRY_LEN or INQUIRY_KIND and set inquiry
+	boolean. When an empty array has been identified and a new
+	new EXPR_ARRAY expression has been created only return that
+	expression if inquiry is not set. This allows the new
+	expression to drop through to be simplified into a
+	EXPR_CONSTANT representing %kind or %len.
+	* matc.c (gfc_match_assignment): If lvalue doesn't have a
+	symtree free both lvalue and rvalue expressions and return
+	an error.
+	* resolv.c (gfc_resolve_ref): Ensure that code to handle
+	INQUIRY_LEN is only performed for arrays with deferred types.
+
 2020-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* class.c (generate_finalization_wrapper): Fix up duplicated word

@@ -1,3 +1,7 @@
+2020-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	Merge master 62ede14d30f5d083f1ab23bcab6e0e3c9c649006
+
 2020-03-26  Nathan Sidwell  <nathan@acm.org>
 
 	STL headers header-unity (except C++ 20 ranges)

@@ -12307,6 +12307,15 @@ rs6000_can_change_mode_class (machine_mode from,
 	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
 	    return false;
 
+	  /* Allow SD<->DD changes, since SDmode values are stored in
+	     the low half of the DDmode, just like target-independent
+	     code expects.  We need to allow at least SD->DD since
+	     rs6000_secondary_memory_needed_mode asks for that change
+	     to be made for SD reloads.  */
+	  if ((to == DDmode && from == SDmode)
+	      || (to == SDmode && from == DDmode))
+	    return true;
+
 	  if (from_size < 8 || to_size < 8)
 	    return false;
 
@@ -23893,6 +23902,18 @@ make_resolver_func (const tree default_decl,
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
   DECL_STATIC_CONSTRUCTOR (decl) = 0;
+
+  if (DECL_COMDAT_GROUP (default_decl)
+      || TREE_PUBLIC (default_decl))
+    {
+      /* In this case, each translation unit with a call to this
+	 versioned function will put out a resolver.  Ensure it
+	 is comdat to keep just one copy.  */
+      DECL_COMDAT (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+  else
+    TREE_PUBLIC (dispatch_decl) = 0;
 
   /* Build result decl and add to function_decl.  */
   tree t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);

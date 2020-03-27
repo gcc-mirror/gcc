@@ -411,18 +411,6 @@
   [(set_attr "type" "neon_load1_all_lanes_q,neon_from_gp_q")]
 )
 
-(define_expand "vec_set<mode>"
-  [(match_operand:VDQ 0 "s_register_operand")
-   (match_operand:<V_elem> 1 "s_register_operand")
-   (match_operand:SI 2 "immediate_operand")]
-  "TARGET_NEON"
-{
-  HOST_WIDE_INT elem = HOST_WIDE_INT_1 << INTVAL (operands[2]);
-  emit_insn (gen_vec_set<mode>_internal (operands[0], operands[1],
-					 GEN_INT (elem), operands[0]));
-  DONE;
-})
-
 (define_insn "vec_extract<mode><V_elem_l>"
   [(set (match_operand:<V_elem> 0 "nonimmediate_operand" "=Um,r")
         (vec_select:<V_elem>
@@ -445,7 +433,10 @@
   [(set_attr "type" "neon_store1_one_lane<q>,neon_to_gp<q>")]
 )
 
-(define_insn "vec_extract<mode><V_elem_l>"
+;; This pattern is renamed from "vec_extract<mode><V_elem_l>" to
+;; "neon_vec_extract<mode><V_elem_l>" and this pattern is called
+;; by define_expand in vec-common.md file.
+(define_insn "neon_vec_extract<mode><V_elem_l>"
   [(set (match_operand:<V_elem> 0 "nonimmediate_operand" "=Um,r")
 	(vec_select:<V_elem>
           (match_operand:VQ2 1 "s_register_operand" "w,w")
@@ -471,7 +462,9 @@
   [(set_attr "type" "neon_store1_one_lane<q>,neon_to_gp<q>")]
 )
 
-(define_insn "vec_extractv2didi"
+;; This pattern is renamed from "vec_extractv2didi" to "neon_vec_extractv2didi"
+;; and this pattern is called by define_expand in vec-common.md file.
+(define_insn "neon_vec_extractv2didi"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=Um,r")
 	(vec_select:DI
           (match_operand:V2DI 1 "s_register_operand" "w,w")

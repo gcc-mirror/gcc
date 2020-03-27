@@ -4,6 +4,9 @@
 
 #include "../coro.h"
 
+int coro1_dtor_ran = 0;
+int promise_dtor_ran = 0;
+
 struct coro1 {
   struct promise_type;
   using handle_type = coro::coroutine_handle<coro1::promise_type>;
@@ -24,10 +27,13 @@ struct coro1 {
 	PRINT("coro1 op=  ");
 	return *this;
   }
+
   ~coro1() {
         PRINT("Destroyed coro1");
-        if ( handle )
-          handle.destroy();
+        coro1_dtor_ran++;
+        // The coro handle will point to an invalid frame by this stage,
+        // the coroutine will already have self-destroyed the frame and
+        // promise.
   }
 
   struct suspend_never_prt {
@@ -51,7 +57,10 @@ struct coro1 {
 
   struct promise_type {
   promise_type() {  PRINT ("Created Promise"); }
-  ~promise_type() { PRINT ("Destroyed Promise"); }
+  ~promise_type() {
+     PRINT ("Destroyed Promise"); 
+     promise_dtor_ran++;
+   }
 
   coro1 get_return_object () {
     PRINT ("get_return_object: from handle from promise");
@@ -73,7 +82,7 @@ struct coro1 {
 };
 
 struct coro1
-f () noexcept
+my_coro () noexcept
 {
   PRINT ("coro1: about to return");
   co_return;
@@ -81,15 +90,26 @@ f () noexcept
 
 int main ()
 {
-  PRINT ("main: create coro1");
-  struct coro1 x = f ();
-  auto p = x.handle.promise ();
-  auto aw = p.initial_suspend();
-  auto f = aw.await_suspend(coro::coroutine_handle<coro1::promise_type>::from_address ((void *)&x));
-  PRINT ("main: got coro1 - should be done");
-  if (!x.handle.done())
+  { // scope so that we can examine the coro dtor marker.
+    PRINT ("main: creating coro");
+
+    // This should just run through to completion/destruction.
+    // In both the initial and final await expressions, the await_suspend()
+    // method will return 'false' and prevent the suspension.
+    struct coro1 x = my_coro ();
+
+    PRINT ("main: the coro frame should be already destroyed");
+    // We will take the running of the promise DTOR as evidence that the
+    // frame was destroyed as expected.
+    if (promise_dtor_ran != 1)
+      {
+	PRINT ("main: apparently we didn't destroy the frame");
+	abort ();
+      }
+  }
+  if (coro1_dtor_ran != 1 || promise_dtor_ran != 1)
     {
-      PRINT ("main: apparently was not done...");
+      PRINT ("main: bad DTOR counts");
       abort ();
     }
   PRINT ("main: returning");

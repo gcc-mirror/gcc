@@ -1191,8 +1191,7 @@ is_late_template_attribute (tree attr, tree decl)
 	  && identifier_p (t))
 	continue;
 
-      if (value_dependent_expression_p (t)
-	  || type_dependent_expression_p (t))
+      if (value_dependent_expression_p (t))
 	return true;
     }
 

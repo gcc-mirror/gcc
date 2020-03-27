@@ -2215,6 +2215,53 @@ mask_to_comparison (int mask)
     }
 }
 
+/* Return true if CODE is valid for comparisons of mode MODE, false
+   otherwise.
+
+   It is always safe to return false, even if the code was valid for the
+   given mode as that will merely suppress optimizations.  */
+
+static bool
+comparison_code_valid_for_mode (enum rtx_code code, enum machine_mode mode)
+{
+  switch (code)
+    {
+      /* These are valid for integral, floating and vector modes.  */
+      case NE:
+      case EQ:
+      case GE:
+      case GT:
+      case LE:
+      case LT:
+	return (INTEGRAL_MODE_P (mode)
+		|| FLOAT_MODE_P (mode)
+		|| VECTOR_MODE_P (mode));
+
+      /* These are valid for floating point modes.  */
+      case LTGT:
+      case UNORDERED:
+      case ORDERED:
+      case UNEQ:
+      case UNGE:
+      case UNGT:
+      case UNLE:
+      case UNLT:
+	return FLOAT_MODE_P (mode);
+
+      /* These are filtered out in simplify_logical_operation, but
+	 we check for them too as a matter of safety.   They are valid
+	 for integral and vector modes.  */
+      case GEU:
+      case GTU:
+      case LEU:
+      case LTU:
+	return INTEGRAL_MODE_P (mode) || VECTOR_MODE_P (mode);
+
+      default:
+	gcc_unreachable ();
+    }
+}
+				       
 /* Simplify a logical operation CODE with result mode MODE, operating on OP0
    and OP1, which should be both relational operations.  Return 0 if no such
    simplification is possible.  */
@@ -2251,6 +2298,10 @@ simplify_logical_relational_operation (enum rtx_code code, machine_mode mode,
     return const_true_rtx;
 
   code = mask_to_comparison (mask);
+
+  /* Many comparison codes are only valid for certain mode classes.  */
+  if (!comparison_code_valid_for_mode (code, mode))
+    return 0;
 
   op0 = XEXP (op1, 0);
   op1 = XEXP (op1, 1);

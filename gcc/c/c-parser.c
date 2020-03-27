@@ -2469,9 +2469,10 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 				   omp_declare_simd_clauses);
       if (oacc_routine_data)
 	c_finish_oacc_routine (oacc_routine_data, current_function_decl, true);
+      location_t startloc = c_parser_peek_token (parser)->location;
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
-	= c_parser_peek_token (parser)->location;
-      location_t endloc;
+	= startloc;
+      location_t endloc = startloc;
 
       /* If the definition was marked with __RTL, use the RTL parser now,
 	 consuming the function body.  */
@@ -2499,8 +2500,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 				      specs->declspec_il,
 				      specs->entry_bb_count);
 	  in_late_binary_op = saved;
-	  struct function *fun = DECL_STRUCT_FUNCTION (current_function_decl);
-	  endloc = fun->function_start_locus;
 	}
       else
 	fnbody = c_parser_compound_statement (parser, &endloc);

@@ -1,3 +1,128 @@
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94326
+	* call.c (set_flags_from_callee): Don't update
+	cp_function_chain->can_throw or current_function_returns_abnormally
+	if cp_unevaluated_operand.
+
+	PR c++/94339
+	* cvt.c (ocp_convert): Handle COMPOUND_EXPR by recursion on the second
+	operand and creating a new COMPOUND_EXPR if anything changed.
+
+2020-03-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94336 - template keyword accepted before destructor names.
+	* parser.c (cp_parser_unqualified_id): Give an error when 'template'
+	is followed by a destructor name.
+
+2020-03-27  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.c (compute_array_index_type_loc): Remove redundant
+	type_dependent_expression_p check that is subsumed by
+	value_dependent_expression_p.
+	* decl2.c (is_late_template_attribute): Likewise.
+	* pt.c (uses_template_parms): Likewise.
+	(dependent_template_arg_p): Likewise.
+
+2020-03-26  Marek Polacek  <polacek@redhat.com>
+
+	DR 1710
+	PR c++/94057 - template keyword in a typename-specifier.
+	* parser.c (check_template_keyword_in_nested_name_spec): New.
+	(cp_parser_nested_name_specifier_opt): Implement DR1710, optional
+	'template'.  Call check_template_keyword_in_nested_name_spec.
+	(cp_parser_simple_type_specifier): Assume that a <
+	following a qualified-id in a typename-specifier begins
+	a template argument list.
+
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_init_identifiers): Initialize an identifier
+	for the cororoutine handle 'address' method name.
+	(struct coro_aw_data): Add fields to cover the continuations.
+	(co_await_expander): Determine the kind of await_suspend in use.
+	If we have the case that returns a continuation handle, then save
+	this and make the target for 'scope exit without cleanup' be the
+	continuation resume label.
+	(expand_co_awaits): Remove.
+	(struct suspend_point_info): Remove fields that kept the returned
+	await_suspend handle type.
+	(transform_await_expr): Remove code tracking continuation handles.
+	(build_actor_fn): Add the continuation handle as an actor-function
+	scope var.  Build the symmetric transfer continuation point. Call
+	the tree walk for co_await expansion directly, rather than via a 
+	trivial shim function.
+	(register_await_info): Remove fields tracking continuation handles.
+	(get_await_suspend_return_type): Remove.
+	(register_awaits): Remove code tracking continuation handles.
+	(morph_fn_to_coro): Remove code tracking continuation handles.
+
+2020-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (co_await_expander): If we are expanding the
+	initial await expression, set a boolean flag to show that we
+	have now reached the initial await_resume() method call.
+	(expand_co_awaits): Handle the 'initial await resume called' flag.
+	(build_actor_fn): Insert the initial await expression into the
+	start of the user-authored function-body. Handle the 'initial await
+	resume called' flag.
+	(morph_fn_to_coro): Initialise the 'initial await resume called'
+	flag.  Modify the unhandled exception catch clause to recognise
+	exceptions that occur before the initial await_resume() and re-
+	throw them.
+
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81349
+	* class.c (user_provided_p): Use STRIP_TEMPLATE instead of returning
+	true for all TEMPLATE_DECLs.
+
+	PR c++/94272
+	* cp-gimplify.c (cp_genericize_r): Handle STATEMENT_LIST.
+
+2020-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94265
+	* parser.c (cp_parser_selection_statement) <case RID_IF>: Invalidate the
+	current condition chain when the if-statement has a non-empty
+	init-statement.
+
+2020-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94319
+	* coroutines.cc (captures_temporary): Fix a missing dereference.
+
+2020-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94190 - wrong no post-decrement operator error in template.
+	* call.c (convert_like_real): Use convert_from_reference on the result.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94186
+	* constraint.cc (constraint_satisfaction_value): Repeat noisily on
+	error.
+	(tsubst_nested_requirement): Likewise.
+	(get_constraint_error_location): Allow missing context.
+	(diagnose_atomic_constraint): Diagnose non-bool constraint here.
+	(satisfy_atom): Not here.  Only diagnose non-constant when noisy.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (any_template_parm_r): Look into the type of a non-type
+	template parm.
+
+2020-03-24  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_expr): When constructing from an expr and a
+	location, call protected_set_expr_location.
+
+2020-03-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93805
+	* except.c (maybe_noexcept_warning): Add TODO.
+	* method.c (walk_field_subobs): Pass tf_none to expr_noexcept_p.
+
 2020-03-23  nathans  <nathan@acm.org>
 
 	PR c++/94044

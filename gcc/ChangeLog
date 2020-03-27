@@ -1,3 +1,366 @@
+2020-03-27  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/90332
+	* tree-vect-stmts.c (vector_vector_composition_type): New function.
+	(get_group_load_store_type): Adjust to call
+	vector_vector_composition_type, extend it to construct with scalar
+	types.
+	(vectorizable_load): Likewise.
+
+2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Remove assertions.
+	(create_ddg_dep_no_link): Likewise.
+	(add_cross_iteration_register_deps): Move debug instruction check.
+	Other minor refactoring.
+	(add_intra_loop_mem_dep): Do not check for debug instructions.
+	(add_inter_loop_mem_dep): Likewise.
+	(build_intra_loop_deps): Likewise.
+	(create_ddg): Do not include debug insns into the graph.
+	* ddg.h (struct ddg): Remove num_debug field.
+	* modulo-sched.c (doloop_register_get): Adjust condition.
+	(res_MII): Remove DDG num_debug field usage.
+	(sms_schedule_by_order): Use assertion against debug insns.
+	(ps_has_conflicts): Drop debug insn check.
+
+2020-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94323
+	* tree.c (protected_set_expr_location): Recurse on STATEMENT_LIST
+	that contains exactly one non-DEBUG_BEGIN_STMT statement.
+
+	PR debug/94281
+	* gimple.h (gimple_seq_first_nondebug_stmt): New function.
+	(gimple_seq_last_nondebug_stmt): Don't return NULL if seq contains
+	a single non-debug stmt followed by one or more debug stmts.
+	* gimplify.c (gimplify_body): Use gimple_seq_first_nondebug_stmt
+	instead of gimple_seq_first_stmt, use gimple_seq_first_nondebug_stmt
+	and gimple_seq_last_nondebug_stmt instead of gimple_seq_first and
+	gimple_seq_last to check if outer_stmt gbind could be reused and
+	if yes and it is surrounded by any debug stmts, move them into the
+	gbind body.
+
+	PR rtl-optimization/92264
+	* var-tracking.c (add_stores): Call cselib_set_value_sp_based even
+	for sp based values in !frame_pointer_needed
+	&& !ACCUMULATE_OUTGOING_ARGS functions.
+
+2020-03-26  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94269
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Restrict
+	this
+	operation to single basic block.
+
+2020-03-25  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* config/sh/sh.md (mov_neg_si_t): Clobber the T register in the
+	pattern.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94292
+	* config/arm/arm.c (arm_gen_dicompare_reg): Set mode of COMPARE to
+	mode rather than VOIDmode.
+
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94004
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Issue warnings
+	even for alloca calls resulting from system macro expansion.
+	Include inlining context in all warnings.
+
+2020-03-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94254
+	* config/rs6000/rs6000.c (rs6000_can_change_mode_class): Allow
+	FPRs to change between SDmode and DDmode.
+
+2020-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/94131
+	* gimple-fold.c (get_range_strlen_tree): Fail for variable-length
+	types and decls.
+	* tree-ssa-strlen.c (get_range_strlen_dynamic): Avoid assuming
+	types have constant sizes.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94259
+	* configure.ac: Report error only when --with-zstd
+	is used.
+	* configure: Regenerate.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94308
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper): Set
+	INSN_CODE (insn) to -1 when changing the pattern.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	PR ipa/94271
+	* config/i386/i386-features.c (make_resolver_func): Drop
+	public flag for resolver.
+	* config/rs6000/rs6000.c (make_resolver_func): Add comdat
+	group for resolver and drop public flag if possible.
+	* multiple_target.c (create_dispatcher_calls): Drop unique_name
+	and resolution as we want to enable LTO privatization of the default
+	symbol.
+
+2020-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94259
+	* configure.ac: Respect --without-zstd and report
+	error when we can't find header file with --with-zstd.
+	* configure: Regenerate.
+
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94303
+	* varasm.c (output_constructor_array_range): If local->index
+	RANGE_EXPR doesn't start at the current location in the constructor,
+	skip needed number of bytes using assemble_zeros or assert we don't
+	go backwards.
+
+	PR c++/94223
+	* langhooks.c (lhd_set_decl_assembler_name): Use a static ulong
+	counter instead of DECL_UID.
+
+	PR tree-optimization/94300
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): If pd.offset
+	is positive, make sure that off + size isn't larger than needed_len.
+
+2020-03-25  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): Delete dead statements backwards.
+
+2020-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (ARM-specific attributes): Add
+	arm_fp_dp_ok.
+	(Features for dg-add-options): Add arm_fp_dp.
+
+2020-03-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR lto/94249
+	* config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Define __BIG_ENDIAN__.
+
+2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/81689
+	* omp-offload.c (omp_finish_file): Fix target-link handling if
+	targetm_common.have_named_sections is false.
+
+2020-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94286
+	* config/arm/arm.md (subvdi4, usubvsi4, usubvdi4): Use gen_int_mode
+	instead of GEN_INT.
+
+	PR debug/94285
+	* tree-ssa-loop-manip.c (create_iv): If after, set stmt location to
+	e->goto_locus even if gsi_bb (*incr_pos) contains only debug stmts.
+	If not after and at *incr_pos is a debug stmt, set stmt location to
+	location of next non-debug stmt after it if any.
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): For gimple debug stmts, just set
+	GF_PLF_2, but don't add them to worklist.  Don't add an assigment to
+	worklist or set GF_PLF_2 just because it is used in a debug stmt in
+	another bb.  Formatting improvements.
+
+	PR debug/94277
+	* cgraphunit.c (check_global_declaration): For DECL_EXTERNAL and
+	non-TREE_PUBLIC non-DECL_ARTIFICIAL FUNCTION_DECLs, set TREE_PUBLIC
+	regardless of whether TREE_NO_WARNING is set on it or whether
+	warn_unused_function is true or not.
+
+2020-03-23  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	PR target/94238
+	PR target/94144
+	* simplify-rtx.c (comparison_code_valid_for_mode): New function.
+	(simplify_logical_relational_operation): Use it.
+
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91993
+	* tree.c (get_narrower): Handle COMPOUND_EXPR by recursing on
+	ultimate rhs and if returned something different, reconstructing
+	the COMPOUND_EXPRs.
+
+2020-03-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* opts.c (print_filtered_help): Improve the help text for alias options.
+
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm_mve.h (vshlcq_m_s8): Define macro.
+	(vshlcq_m_u8): Likewise.
+	(vshlcq_m_s16): Likewise.
+	(vshlcq_m_u16): Likewise.
+	(vshlcq_m_s32): Likewise.
+	(vshlcq_m_u32): Likewise.
+	(__arm_vshlcq_m_s8): Define intrinsic.
+	(__arm_vshlcq_m_u8): Likewise.
+	(__arm_vshlcq_m_s16): Likewise.
+	(__arm_vshlcq_m_u16): Likewise.
+	(__arm_vshlcq_m_s32): Likewise.
+	(__arm_vshlcq_m_u32): Likewise.
+	(vshlcq_m): Define polymorphic variant.
+	* config/arm/arm_mve_builtins.def (QUADOP_NONE_NONE_UNONE_IMM_UNONE):
+	Use builtin qualifier.
+	(QUADOP_UNONE_UNONE_UNONE_IMM_UNONE): Likewise.
+	* config/arm/mve.md (mve_vshlcq_m_vec_<supf><mode>): Define RTL pattern.
+	(mve_vshlcq_m_carry_<supf><mode>): Likewise.
+	(mve_vshlcq_m_<supf><mode>): Likewise.
+
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm-builtins.c (LSLL_QUALIFIERS): Define builtin qualifier.
+	(UQSHL_QUALIFIERS): Likewise.
+	(ASRL_QUALIFIERS): Likewise.
+	(SQSHL_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (__ARM_BIG_ENDIAN): Check to not support MVE in
+	Big-Endian Mode.
+	(sqrshr): Define macro.
+	(sqrshrl): Likewise.
+	(sqrshrl_sat48): Likewise.
+	(sqshl): Likewise.
+	(sqshll): Likewise.
+	(srshr): Likewise.
+	(srshrl): Likewise.
+	(uqrshl): Likewise.
+	(uqrshll): Likewise.
+	(uqrshll_sat48): Likewise.
+	(uqshl): Likewise.
+	(uqshll): Likewise.
+	(urshr): Likewise.
+	(urshrl): Likewise.
+	(lsll): Likewise.
+	(asrl): Likewise.
+	(__arm_lsll): Define intrinsic.
+	(__arm_asrl): Likewise.
+	(__arm_uqrshll): Likewise.
+	(__arm_uqrshll_sat48): Likewise.
+	(__arm_sqrshrl): Likewise.
+	(__arm_sqrshrl_sat48): Likewise.
+	(__arm_uqshll): Likewise.
+	(__arm_urshrl): Likewise.
+	(__arm_srshrl): Likewise.
+	(__arm_sqshll): Likewise.
+	(__arm_uqrshl): Likewise.
+	(__arm_sqrshr): Likewise.
+	(__arm_uqshl): Likewise.
+	(__arm_urshr): Likewise.
+	(__arm_sqshl): Likewise.
+	(__arm_srshr): Likewise.
+	* config/arm/arm_mve_builtins.def (LSLL_QUALIFIERS): Use builtin
+	qualifier.
+	(UQSHL_QUALIFIERS): Likewise.
+	(ASRL_QUALIFIERS): Likewise.
+	(SQSHL_QUALIFIERS): Likewise.
+	* config/arm/mve.md (mve_uqrshll_sat<supf>_di): Define RTL pattern.
+	(mve_sqrshrl_sat<supf>_di): Likewise.
+	(mve_uqrshl_si): Likewise.
+	(mve_sqrshr_si): Likewise.
+	(mve_uqshll_di): Likewise.
+	(mve_urshrl_di): Likewise.
+	(mve_uqshl_si): Likewise.
+	(mve_urshr_si): Likewise.
+	(mve_sqshl_si): Likewise.
+	(mve_srshr_si): Likewise.
+	(mve_srshrl_di): Likewise.
+	(mve_sqshll_di): Likewise.
+
+2020-03-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm_mve.h (vsetq_lane_f16): Define macro.
+	(vsetq_lane_f32): Likewise.
+	(vsetq_lane_s16): Likewise.
+	(vsetq_lane_s32): Likewise.
+	(vsetq_lane_s8): Likewise.
+	(vsetq_lane_s64): Likewise.
+	(vsetq_lane_u8): Likewise.
+	(vsetq_lane_u16): Likewise.
+	(vsetq_lane_u32): Likewise.
+	(vsetq_lane_u64): Likewise.
+	(vgetq_lane_f16): Likewise.
+	(vgetq_lane_f32): Likewise.
+	(vgetq_lane_s16): Likewise.
+	(vgetq_lane_s32): Likewise.
+	(vgetq_lane_s8): Likewise.
+	(vgetq_lane_s64): Likewise.
+	(vgetq_lane_u8): Likewise.
+	(vgetq_lane_u16): Likewise.
+	(vgetq_lane_u32): Likewise.
+	(vgetq_lane_u64): Likewise.
+	(__ARM_NUM_LANES): Likewise.
+	(__ARM_LANEQ): Likewise.
+	(__ARM_CHECK_LANEQ): Likewise.
+	(__arm_vsetq_lane_s16): Define intrinsic.
+	(__arm_vsetq_lane_s32): Likewise.
+	(__arm_vsetq_lane_s8): Likewise.
+	(__arm_vsetq_lane_s64): Likewise.
+	(__arm_vsetq_lane_u8): Likewise.
+	(__arm_vsetq_lane_u16): Likewise.
+	(__arm_vsetq_lane_u32): Likewise.
+	(__arm_vsetq_lane_u64): Likewise.
+	(__arm_vgetq_lane_s16): Likewise.
+	(__arm_vgetq_lane_s32): Likewise.
+	(__arm_vgetq_lane_s8): Likewise.
+	(__arm_vgetq_lane_s64): Likewise.
+	(__arm_vgetq_lane_u8): Likewise.
+	(__arm_vgetq_lane_u16): Likewise.
+	(__arm_vgetq_lane_u32): Likewise.
+	(__arm_vgetq_lane_u64): Likewise.
+	(__arm_vsetq_lane_f16): Likewise.
+	(__arm_vsetq_lane_f32): Likewise.
+	(__arm_vgetq_lane_f16): Likewise.
+	(__arm_vgetq_lane_f32): Likewise.
+	(vgetq_lane): Define polymorphic variant.
+	(vsetq_lane): Likewise.
+	* config/arm/mve.md (mve_vec_extract<mode><V_elem_l>): Define RTL
+	pattern.
+	(mve_vec_extractv2didi): Likewise.
+	(mve_vec_extract_sext_internal<mode>): Likewise.
+	(mve_vec_extract_zext_internal<mode>): Likewise.
+	(mve_vec_set<mode>_internal): Likewise.
+	(mve_vec_setv2di_internal): Likewise.
+	* config/arm/neon.md (vec_set<mode>): Move RTL pattern to vec-common.md
+	file.
+	(vec_extract<mode><V_elem_l>): Rename to
+	"neon_vec_extract<mode><V_elem_l>".
+	(vec_extractv2didi): Rename to "neon_vec_extractv2didi".
+	* config/arm/vec-common.md (vec_extract<mode><V_elem_l>): Define RTL
+	pattern common for MVE and NEON.
+	(vec_set<mode>): Move RTL pattern from neon.md and modify to accept both
+	MVE and NEON.
+
+2020-03-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (earlyclobber_32): New mode attribute.
+	(mve_vrev64q_*, mve_vcaddq*, mve_vhcaddq_*, mve_vcmulq_*,
+	 mve_vmull[bt]q_*, mve_vqdmull[bt]q_*): Add appropriate early clobbers.
+
+2020-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94261
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove
+	IL operand swapping code.
+	(vect_slp_rearrange_stmts): Do not arrange isomorphic
+	nodes that would need operation code adjustments.
+
 2020-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/install.texi (amdgcn-*-amdhsa): Renamed

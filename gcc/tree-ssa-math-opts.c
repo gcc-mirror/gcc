@@ -2715,11 +2715,14 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
      multiply-and-accumulate instructions.
 
      If the widened-multiplication result has more than one uses, it is
-     probably wiser not to do the conversion.  */
+     probably wiser not to do the conversion.  Also restrict this operation
+     to single basic block to avoid moving the multiply to a different block
+     with a higher execution frequency.  */
   if (code == PLUS_EXPR
       && (rhs1_code == MULT_EXPR || rhs1_code == WIDEN_MULT_EXPR))
     {
       if (!has_single_use (rhs1)
+	  || gimple_bb (rhs1_stmt) != gimple_bb (stmt)
 	  || !is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
 				  &type2, &mult_rhs2))
 	return false;
@@ -2729,6 +2732,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   else if (rhs2_code == MULT_EXPR || rhs2_code == WIDEN_MULT_EXPR)
     {
       if (!has_single_use (rhs2)
+	  || gimple_bb (rhs2_stmt) != gimple_bb (stmt)
 	  || !is_widening_mult_p (rhs2_stmt, &type1, &mult_rhs1,
 				  &type2, &mult_rhs2))
 	return false;

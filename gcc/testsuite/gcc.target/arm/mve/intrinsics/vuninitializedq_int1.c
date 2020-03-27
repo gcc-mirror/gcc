@@ -1,4 +1,3 @@
-/* { dg-do compile  } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O0" } */

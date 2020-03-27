@@ -1,3 +1,11 @@
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	PR c/94239
+	* c-parser.c (c_parser_declaration_or_fndef): Initialize endloc to
+	the function_start_locus location.  Don't do that afterwards for the
+	__GIMPLE body parsing.
+
 2020-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/94029

@@ -1993,7 +1993,7 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 		  if (nsdmi == error_mark_node)
 		    *spec_p = error_mark_node;
 		  else if (*spec_p != error_mark_node
-			   && !expr_noexcept_p (nsdmi, complain))
+			   && !expr_noexcept_p (nsdmi, tf_none))
 		    *spec_p = noexcept_false_spec;
 		}
 	      /* Don't do the normal processing.  */

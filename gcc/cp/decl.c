@@ -10393,8 +10393,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
   /* We can only call value_dependent_expression_p on integral constant
      expressions; treat non-constant expressions as dependent, too.  */
   if (processing_template_decl
-      && (type_dependent_expression_p (size)
-	  || !TREE_CONSTANT (size) || value_dependent_expression_p (size)))
+      && (!TREE_CONSTANT (size) || value_dependent_expression_p (size)))
     {
       /* We cannot do any checking for a SIZE that isn't known to be
 	 constant. Just build the index type and mark that it requires

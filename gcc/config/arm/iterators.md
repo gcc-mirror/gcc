@@ -129,6 +129,9 @@
 ;; Quad-width vector modes plus 64-bit elements.
 (define_mode_iterator VQX [V16QI V8HI V8HF V8BF V4SI V4SF V2DI])
 
+;; Quad-width vector modes plus 64-bit elements.
+(define_mode_iterator VQX_NOBF [V16QI V8HI V8HF V4SI V4SF V2DI])
+
 ;; Quad-width vector modes plus 64-bit elements and V8BF.
 (define_mode_iterator VQXBF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF V2DI])
 
