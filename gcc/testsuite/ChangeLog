@@ -1,3 +1,9 @@
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94339
+	* g++.dg/other/pr94339.C: New test.
+	* g++.dg/ext/attr-copy-2.C: Comment out failing tests due to PR94346.
+
 2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* gcc.c-torture/execute/pr70127-debug-sms.c: New test.

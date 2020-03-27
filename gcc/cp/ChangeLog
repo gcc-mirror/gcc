@@ -1,3 +1,9 @@
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94339
+	* cvt.c (ocp_convert): Handle COMPOUND_EXPR by recursion on the second
+	operand and creating a new COMPOUND_EXPR if anything changed.
+
 2020-03-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94336 - template keyword accepted before destructor names.
