@@ -1,3 +1,16 @@
+2020-03-30  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_aix): Emit cookie to pattern.
+	(rs6000_indirect_call_template_1): Adjust to suit.
+	* config/rs6000/rs6000.md (call_local): Merge call_local32,
+	call_local64, and call_local_aix.
+	(call_value_local): Simlarly.
+	(call_nonlocal_aix, call_value_nonlocal_aix): Adjust rtl to suit,
+	and disable pattern when CALL_LONG.
+	(call_indirect_aix, call_value_indirect_aix): Adjust rtl.
+	(call_indirect_elfv2, call_indirect_pcrel): Likewise.
+	(call_value_indirect_elfv2, call_value_indirect_pcrel): Likewise.
+
 2020-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/94381
