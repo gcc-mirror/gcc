@@ -1,5 +1,11 @@
 2020-03-27  Richard Biener  <rguenther@suse.de>
 
+	PR debug/94273
+	* dwarf2out.c (should_emit_struct_debug): Return false for
+	DINFO_LEVEL_TERSE.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/94352
 	* tree-ssa-propagate.c (ssa_prop_init): Move seeding of the
 	worklist ...

@@ -399,6 +399,9 @@ get_full_len (const wide_int &op)
 static bool
 should_emit_struct_debug (tree type, enum debug_info_usage usage)
 {
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return false;
+
   enum debug_struct_file criterion;
   tree type_decl;
   bool generic = lang_hooks.types.generic_p (type);

@@ -1,3 +1,8 @@
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94273
+	* g++.dg/debug/pr94273.C: New testcase.
+
 2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93957
