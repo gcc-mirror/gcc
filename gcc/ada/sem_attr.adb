@@ -4541,13 +4541,13 @@ package body Sem_Attr is
 
          Check_References_In_Prefix (Loop_Id);
 
-         --  The prefix must denote a static entity if the pragma does not
+         --  The prefix must statically name an object if the pragma does not
          --  apply to the innermost enclosing loop statement, or if it appears
-         --  within a potentially unevaluated epxression.
+         --  within a potentially unevaluated expression.
 
          if Is_Entity_Name (P)
            or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
-           or else Statically_Denotes_Object (P)
+           or else Statically_Names_Object (P)
          then
             null;
 
