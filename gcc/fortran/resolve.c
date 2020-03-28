@@ -8868,25 +8868,43 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* For variable targets, we get some attributes from the target.  */
   if (target->expr_type == EXPR_VARIABLE)
     {
-      gfc_symbol* tsym;
+      gfc_symbol *tsym, *dsym;
 
       gcc_assert (target->symtree);
       tsym = target->symtree->n.sym;
-
-      if (tsym->attr.subroutine
-	  || tsym->attr.external
-	  || (tsym->attr.function && tsym->result != tsym))
-	{
-	  gfc_error ("Associating entity %qs at %L is a procedure name",
-		     tsym->name, &target->where);
-	  return;
-	}
 
       if (gfc_expr_attr (target).proc_pointer)
 	{
 	  gfc_error ("Associating entity %qs at %L is a procedure pointer",
 		     tsym->name, &target->where);
 	  return;
+	}
+
+      if (tsym->attr.flavor == FL_PROCEDURE && tsym->generic
+	  && (dsym = gfc_find_dt_in_generic (tsym)) != NULL
+	  && dsym->attr.flavor == FL_DERIVED)
+	{
+	  gfc_error ("Derived type %qs cannot be used as a variable at %L",
+		     tsym->name, &target->where);
+	  return;
+	}
+
+      if (tsym->attr.flavor == FL_PROCEDURE)
+	{
+	  bool is_error = true;
+	  if (tsym->attr.function && tsym->result == tsym)
+	    for (gfc_namespace *ns = sym->ns; ns; ns = ns->parent)
+	      if (tsym == ns->proc_name)
+		{
+		  is_error = false;
+		  break;
+		}
+	  if (is_error)
+	    {
+	      gfc_error ("Associating entity %qs at %L is a procedure name",
+			 tsym->name, &target->where);
+	      return;
+	    }
 	}
 
       sym->attr.asynchronous = tsym->attr.asynchronous;

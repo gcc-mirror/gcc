@@ -372,28 +372,9 @@ namespace ranges
   {
     using std::ranges::__detail::__maybe_borrowed_range;
     using std::__detail::__class_or_enum;
-
-    template<typename _Tp>
-      constexpr decay_t<_Tp>
-      __decay_copy(_Tp&& __t)
-      noexcept(is_nothrow_convertible_v<_Tp, decay_t<_Tp>>)
-      { return std::forward<_Tp>(__t); }
-
-    template<typename _Tp>
-      concept __member_begin = requires(_Tp& __t)
-	{
-	  { __decay_copy(__t.begin()) } -> input_or_output_iterator;
-	};
-
-    void begin(auto&) = delete;
-    void begin(const auto&) = delete;
-
-    template<typename _Tp>
-      concept __adl_begin = __class_or_enum<remove_reference_t<_Tp>>
-	&& requires(_Tp& __t)
-	{
-	  { __decay_copy(begin(__t)) } -> input_or_output_iterator;
-	};
+    using std::__detail::__decay_copy;
+    using std::__detail::__member_begin;
+    using std::__detail::__adl_begin;
 
     struct _Begin
     {
@@ -889,7 +870,7 @@ namespace ranges
       = range<_Tp> && __detail::__maybe_borrowed_range<_Tp>;
 
   template<typename _Tp>
-    using iterator_t = decltype(ranges::begin(std::declval<_Tp&>()));
+    using iterator_t = std::__detail::__range_iter_t<_Tp>;
 
   template<range _Range>
     using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));

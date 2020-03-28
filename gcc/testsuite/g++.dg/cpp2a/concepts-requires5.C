@@ -1,5 +1,5 @@
 // { dg-do compile { target c++2a } }
-// { dg-additional-options -fconcepts-ts }
+// { dg-additional-options "-fconcepts-ts -fconcepts-diagnostics-depth=2" }
 
 // Test conversion requirements (not in C++20)
 

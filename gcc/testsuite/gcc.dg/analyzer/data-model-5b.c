@@ -87,4 +87,8 @@ void test_1 (const char *str)
   //__analyzer_dump();
   if (obj)
     unref (obj);
-}
+} /* { dg-bogus "leak of 'obj'" "" { xfail *-*-* } } */
+/* TODO(xfail): the false leak report involves the base_obj.ob_refcnt
+   being 1, but the string_obj.str_base.ob_refcnt being unknown (when
+   they ought to be the same region), thus allowing for a path in which
+   the object is allocated but not freed.  */

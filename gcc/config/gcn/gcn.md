@@ -299,6 +299,8 @@
 (define_mode_iterator SISF [SI SF])
 (define_mode_iterator QIHI [QI HI])
 (define_mode_iterator DIDF [DI DF])
+(define_mode_iterator FP [HF SF DF])
+(define_mode_iterator FP_1REG [HF SF])
 
 ;; }}}
 ;; {{{ Attributes.

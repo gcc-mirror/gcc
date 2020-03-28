@@ -34,12 +34,12 @@ union N::U u3;        // { dg-warning "-Wredundant-tags" }
 
 typedef N::TC<0> TC0;
 typedef typename N::TC<0> TC0;
-typedef class N::TC<0> TC0;   // { dg-warning "-Wredundant-tags" "pr93809" { xfail *-*-*} .-1 }
+typedef class N::TC<0> TC0;   // { dg-warning "-Wredundant-tags" }
 
 typedef N::TS<0> TS0;
 typedef typename N::TS<0> TS0;
-typedef struct N::TS<0> TS0;  // { dg-warning "-Wredundant-tags" "pr93809" { xfail *-*-*} .-1 }
+typedef struct N::TS<0> TS0;  // { dg-warning "-Wredundant-tags" }
 
 typedef N::TS<0> TS0;
 typedef typename N::TS<0> TS0;
-typedef struct N::TS<0> TS0;  // { dg-warning "-Wredundant-tags" "pr93809" { xfail *-*-*} .-1 }
+typedef struct N::TS<0> TS0;  // { dg-warning "-Wredundant-tags" }

@@ -1,3 +1,112 @@
+2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94348
+	* gfortran.dg/module_procedure_3.f90: New.
+
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94306
+	* g++.dg/concepts/diagnostic8.C: New test.
+
+	PR c++/94252
+	* g++.dg/concepts/diagnostic7.C: New test.
+	* g++.dg/concepts/pr94252.C: New test.
+	* g++.dg/cpp2a/concepts-requires18.C: Adjust to expect an additional
+	diagnostic.
+
+	* g++.dg/concepts/diagnostic1.C: Pass -fconcepts-diagnostics-depth=2.
+	* g++.dg/concepts/diagnostic5.C: Adjust expected diagnostics.
+	* g++.dg/cpp2a/concepts-iconv1.C: Pass -fconcepts-diagnostics-depth=2.
+	* g++.dg/cpp2a/concepts-requires5.C: Likewise.
+
+	* g++.dg/concepts/diagnostic2.C: Expect "no operand" instead of
+	"neither operand".
+	* g++.dg/concepts/diagnostic5.C: New test.
+
+2020-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93573
+	* gcc.dg/pr93573-1.c: New test.
+	* gcc.dg/pr93573-2.c: New test.
+
+	PR tree-optimization/94329
+	* gfortran.dg/pr94329.f90: New test.
+
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94339
+	* g++.dg/ext/attr-copy-2.C: Revert the last changes.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94346
+	* c-c++-common/attr-copy.c: New test.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94098
+	* g++.dg/ext/attr-access-2.C: New test.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94078
+	PR c++/93824
+	PR c++/93810
+	* g++.dg/warn/Wmismatched-tags-3.C: New test.
+	* g++.dg/warn/Wmismatched-tags-4.C: New test.
+	* g++.dg/warn/Wmismatched-tags-5.C: New test.
+	* g++.dg/warn/Wmismatched-tags-6.C: New test.
+	* g++.dg/warn/Wredundant-tags-3.C: Remove xfails.
+	* g++.dg/warn/Wredundant-tags-6.C: New test.
+	* g++.dg/warn/Wredundant-tags-7.C: New test.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-5b.c: Add xfail for new false
+	positive leak.
+	* gcc.dg/analyzer/data-model-5c.c: Likewise.
+	* gcc.dg/analyzer/malloc-5.c: New test.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/dot-output.c: Check that
+	dot-output.c.supergraph-eg.dot is valid.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94273
+	* g++.dg/debug/pr94273.C: New testcase.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93957
+	* gfortran.dg/assumed_rank_19.f90: New.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93363
+	* gfortran.dg/associate_51.f90: Fix test case.
+	* gfortran.dg/associate_53.f90: New.
+
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94326
+	* g++.dg/other/pr94326.C: New test.
+
+	PR c++/94339
+	* g++.dg/other/pr94339.C: New test.
+	* g++.dg/ext/attr-copy-2.C: Comment out failing tests due to PR94346.
+
+2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.c-torture/execute/pr70127-debug-sms.c: New test.
+	* gcc.dg/torture/pr87197-debug-sms.c: New test.
+
+2020-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94336 - template keyword accepted before destructor names.
+	* g++.dg/template/template-keyword2.C: New test.
+
 2020-03-27 Iain Sandoe <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:

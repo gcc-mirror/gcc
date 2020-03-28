@@ -9687,8 +9687,10 @@ finish_static_assert (tree condition, tree message, location_t location,
             error ("static assertion failed: %s",
 		   TREE_STRING_POINTER (message));
 
-	  /* Actually explain the failure if this is a concept check.  */
-	  if (concept_check_p (orig_condition))
+	  /* Actually explain the failure if this is a concept check or a
+	     requires-expression.  */
+	  if (concept_check_p (orig_condition)
+	      || TREE_CODE (orig_condition) == REQUIRES_EXPR)
 	    diagnose_constraints (location, orig_condition, NULL_TREE);
 	}
       else if (condition && condition != error_mark_node)

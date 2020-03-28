@@ -151,10 +151,11 @@ class state_purge_annotator : public dot_annotator
 public:
   state_purge_annotator (const state_purge_map *map) : m_map (map) {}
 
-  void add_node_annotations (graphviz_out *gv, const supernode &n)
+  bool add_node_annotations (graphviz_out *gv, const supernode &n, bool)
     const FINAL OVERRIDE;
 
-  void add_stmt_annotations (graphviz_out *gv, const gimple *stmt)
+  void add_stmt_annotations (graphviz_out *gv, const gimple *stmt,
+			     bool within_row)
     const FINAL OVERRIDE;
 
 private:

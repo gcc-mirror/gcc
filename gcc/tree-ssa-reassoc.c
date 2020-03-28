@@ -6224,8 +6224,11 @@ reassociate_bb (basic_block bb)
   if (stmt && !gimple_visited_p (stmt))
     cfg_cleanup_needed |= maybe_optimize_range_tests (stmt);
 
-  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+  bool do_prev = false;
+  for (gsi = gsi_last_bb (bb);
+       !gsi_end_p (gsi); do_prev ? gsi_prev (&gsi) : (void) 0)
     {
+      do_prev = true;
       stmt = gsi_stmt (gsi);
 
       if (is_gimple_assign (stmt)
@@ -6246,15 +6249,12 @@ reassociate_bb (basic_block bb)
 		  release_defs (stmt);
 		  /* We might end up removing the last stmt above which
 		     places the iterator to the end of the sequence.
-		     Reset it to the last stmt in this case which might
-		     be the end of the sequence as well if we removed
-		     the last statement of the sequence.  In which case
-		     we need to bail out.  */
+		     Reset it to the last stmt in this case and make sure
+		     we don't do gsi_prev in that case.  */
 		  if (gsi_end_p (gsi))
 		    {
 		      gsi = gsi_last_bb (bb);
-		      if (gsi_end_p (gsi))
-			break;
+		      do_prev = false;
 		    }
 		}
 	      continue;

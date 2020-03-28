@@ -1,3 +1,21 @@
+2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94348
+	* decl.c (gfc_match_submod_proc): Add result var to the
+	proc's namespace.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93957
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Accept
+	nonallocatable, nonpointer deferred-rank arrays.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93363
+	* resolve.c (resolve_assoc_var): Reject association to DT and
+	function name.
+
 2020-03-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/93484

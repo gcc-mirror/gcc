@@ -1,11 +1,108 @@
-2020-03-26  Richard Earnshaw  <rearnsha@arm.com>
+2020-03-28  Jakub Jelinek  <jakub@redhat.com>
 
-	PR target/94220
-	* config/arm/lib1funcs.asm (COND): Use a single definition for
-	unified syntax.
-	(aeabi_uidivmod): Unified syntax when optimizing Thumb for size.
-	(aeabi_idivmod): Likewise.
-	(divsi3_skip_div0_test): Likewise.
+	PR c/93573
+	* c-decl.c (grokdeclarator): After issuing errors, set size_int_const
+	to true after setting size to integer_one_node.
+
+	PR tree-optimization/94329
+	* tree-ssa-reassoc.c (reassociate_bb): When calling reassoc_remove_stmt
+	on the last stmt in a bb, make sure gsi_prev isn't done immediately
+	after gsi_last_bb.
+
+2020-03-27  Alan Modra  <amodra@gmail.com>
+
+	PR target/94145
+	* config/rs6000/rs6000.c (rs6000_longcall_ref): Use unspec_volatile
+	for PLT16_LO and PLT_PCREL.
+	* config/rs6000/rs6000.md (UNSPEC_PLT16_LO, UNSPEC_PLT_PCREL): Remove.
+	(UNSPECV_PLT16_LO, UNSPECV_PLT_PCREL): Define.
+	(pltseq_plt16_lo_, pltseq_plt_pcrel): Use unspec_volatile.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94098
+	* calls.c (init_attr_rdwr_indices): Iterate over all access attributes.
+
+2020-03-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md:
+	(VEC_SUBDWORD_MODE): Rename to V_QIHI throughout.
+	(VEC_1REG_MODE): Delete.
+	(VEC_1REG_ALT): Delete.
+	(VEC_ALL1REG_MODE): Rename to V_1REG throughout.
+	(VEC_1REG_INT_MODE): Delete.
+	(VEC_ALL1REG_INT_MODE): Rename to V_INT_1REG throughout.
+	(VEC_ALL1REG_INT_ALT): Rename to V_INT_1REG_ALT throughout.
+	(VEC_2REG_MODE): Rename to V_2REG throughout.
+	(VEC_REG_MODE): Rename to V_noHI throughout.
+	(VEC_ALLREG_MODE): Rename to V_ALL throughout.
+	(VEC_ALLREG_ALT):  Rename to V_ALL_ALT throughout.
+	(VEC_ALLREG_INT_MODE): Rename to V_INT throughout.
+	(VEC_INT_MODE): Delete.
+	(VEC_FP_MODE): Rename to V_FP throughout and move to top.
+	(VEC_FP_1REG_MODE): Rename to V_FP_1REG throughout and move to top.
+	(FP_MODE): Delete and replace with FP throughout.
+	(FP_1REG_MODE): Delete and replace with FP_1REG throughout.
+	(VCMP_MODE): Rename to V_noQI throughout and move to top.
+	(VCMP_MODE_INT): Rename to V_INT_noQI throughout and move to top.
+	* config/gcn/gcn.md (FP): New mode iterator.
+	(FP_1REG): New mode iterator.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-supergraph): Document that this
+	now emits two .dot files.
+	* graphviz.cc (graphviz_out::begin_tr): Only emit a TR, not a TD.
+	(graphviz_out::end_tr): Only close a TR, not a TD.
+	(graphviz_out::begin_td): New.
+	(graphviz_out::end_td): New.
+	(graphviz_out::begin_trtd): New, replacing the old implementation
+	of graphviz_out::begin_tr.
+	(graphviz_out::end_tdtr): New, replacing the old implementation
+	of graphviz_out::end_tr.
+	* graphviz.h (graphviz_out::begin_td): New decl.
+	(graphviz_out::end_td): New decl.
+	(graphviz_out::begin_trtd): New decl.
+	(graphviz_out::end_tdtr): New decl.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94273
+	* dwarf2out.c (should_emit_struct_debug): Return false for
+	DINFO_LEVEL_TERSE.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94352
+	* tree-ssa-propagate.c (ssa_prop_init): Move seeding of the
+	worklist ...
+	(ssa_propagation_engine::ssa_propagate): ... here after
+	initializing curr_order.
+
+2020-03-27  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/90332
+	* tree-vect-stmts.c (vector_vector_composition_type): New function.
+	(get_group_load_store_type): Adjust to call
+	vector_vector_composition_type, extend it to construct with scalar
+	types.
+	(vectorizable_load): Likewise.
+
+2020-03-27  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Remove assertions.
+	(create_ddg_dep_no_link): Likewise.
+	(add_cross_iteration_register_deps): Move debug instruction check.
+	Other minor refactoring.
+	(add_intra_loop_mem_dep): Do not check for debug instructions.
+	(add_inter_loop_mem_dep): Likewise.
+	(build_intra_loop_deps): Likewise.
+	(create_ddg): Do not include debug insns into the graph.
+	* ddg.h (struct ddg): Remove num_debug field.
+	* modulo-sched.c (doloop_register_get): Adjust condition.
+	(res_MII): Remove DDG num_debug field usage.
+	(sms_schedule_by_order): Use assertion against debug insns.
+	(ps_has_conflicts): Drop debug insn check.
 
 2020-03-26  Jakub Jelinek  <jakub@redhat.com>
 

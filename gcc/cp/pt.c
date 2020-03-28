@@ -185,7 +185,7 @@ static int unify_pack_expansion (tree, tree, tree,
 				 tree, unification_kind_t, bool, bool);
 static tree copy_template_args (tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
-static tree most_specialized_partial_spec (tree, tsubst_flags_t);
+tree most_specialized_partial_spec (tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
@@ -10525,8 +10525,7 @@ uses_template_parms (tree t)
   else if (t == error_mark_node)
     dependent_p = false;
   else
-    dependent_p = (type_dependent_expression_p (t)
-		   || value_dependent_expression_p (t));
+    dependent_p = value_dependent_expression_p (t);
 
   processing_template_decl = saved_processing_template_decl;
 
@@ -20320,8 +20319,6 @@ tsubst_copy_and_build (tree t,
     case REQUIRES_EXPR:
       {
 	tree r = tsubst_requires_expr (t, args, tf_none, in_decl);
-	if (r == error_mark_node && (complain & tf_error))
-	  tsubst_requires_expr (t, args, complain, in_decl);
 	RETURN (r);
       }
 
@@ -24333,7 +24330,7 @@ most_general_template (tree decl)
    partial specializations matching TARGET, then NULL_TREE is
    returned, indicating that the primary template should be used.  */
 
-static tree
+tree
 most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 {
   tree list = NULL_TREE;
@@ -27016,8 +27013,7 @@ dependent_template_arg_p (tree arg)
   else if (TYPE_P (arg))
     return dependent_type_p (arg);
   else
-    return (type_dependent_expression_p (arg)
-	    || value_dependent_expression_p (arg));
+    return value_dependent_expression_p (arg);
 }
 
 /* Returns true if ARGS (a collection of template arguments) contains

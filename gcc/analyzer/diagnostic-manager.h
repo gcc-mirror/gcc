@@ -28,6 +28,13 @@ namespace ana {
 class saved_diagnostic
 {
 public:
+  enum status
+  {
+   STATUS_NEW,
+   STATUS_INFEASIBLE_PATH,
+   STATUS_FEASIBLE_PATH
+  };
+
   saved_diagnostic (const state_machine *sm,
 		    const exploded_node *enode,
 		    const supernode *snode, const gimple *stmt,
@@ -37,6 +44,27 @@ public:
   ~saved_diagnostic ();
 
   bool operator== (const saved_diagnostic &other) const;
+
+  void set_feasible ()
+  {
+    gcc_assert (m_status == STATUS_NEW);
+    m_status = STATUS_FEASIBLE_PATH;
+  }
+  void set_infeasible (feasibility_problem *p)
+  {
+    gcc_assert (m_status == STATUS_NEW);
+    m_status = STATUS_INFEASIBLE_PATH;
+    m_problem = p; // take ownership
+  }
+  const feasibility_problem *get_feasibility_problem () const
+  {
+    return m_problem;
+  }
+
+  enum status get_status () const { return m_status; }
+
+  void set_epath_length (unsigned length) { m_epath_length = length; }
+  unsigned get_epath_length () const { return m_epath_length; }
 
   //private:
   const state_machine *m_sm;
@@ -51,6 +79,10 @@ public:
 
 private:
   DISABLE_COPY_AND_ASSIGN (saved_diagnostic);
+
+  enum status m_status;
+  unsigned m_epath_length;
+  feasibility_problem *m_problem;
 };
 
 class path_builder;

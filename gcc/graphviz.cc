@@ -79,11 +79,51 @@ graphviz_out::write_indent ()
     pp_space (m_pp);
 }
 
-/* Write the start of an HTML-like row via <TR><TD>, writing to the stream
+/* Write the start of an HTML-like row via <TR>, writing to the stream
    so that followup text can be escaped.  */
 
 void
 graphviz_out::begin_tr ()
+{
+  pp_string (m_pp, "<TR>");
+  pp_write_text_to_stream (m_pp);
+}
+
+/* Write the end of an HTML-like row via </TR>, writing to the stream
+   so that followup text can be escaped.  */
+
+void
+graphviz_out::end_tr ()
+{
+  pp_string (m_pp, "</TR>");
+  pp_write_text_to_stream (m_pp);
+}
+
+/* Write the start of an HTML-like <TD>, writing to the stream
+   so that followup text can be escaped.  */
+
+void
+graphviz_out::begin_td ()
+{
+  pp_string (m_pp, "<TD ALIGN=\"LEFT\">");
+  pp_write_text_to_stream (m_pp);
+}
+
+/* Write the end of an HTML-like </TD>, writing to the stream
+   so that followup text can be escaped.  */
+
+void
+graphviz_out::end_td ()
+{
+  pp_string (m_pp, "</TD>");
+  pp_write_text_to_stream (m_pp);
+}
+
+/* Write the start of an HTML-like row via <TR><TD>, writing to the stream
+   so that followup text can be escaped.  */
+
+void
+graphviz_out::begin_trtd ()
 {
   pp_string (m_pp, "<TR><TD ALIGN=\"LEFT\">");
   pp_write_text_to_stream (m_pp);
@@ -93,7 +133,7 @@ graphviz_out::begin_tr ()
    so that followup text can be escaped.  */
 
 void
-graphviz_out::end_tr ()
+graphviz_out::end_tdtr ()
 {
   pp_string (m_pp, "</TD></TR>");
   pp_write_text_to_stream (m_pp);

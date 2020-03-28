@@ -845,8 +845,8 @@ public:
   virtual enum region_kind get_kind () const = 0;
   virtual map_region *dyn_cast_map_region () { return NULL; }
   virtual array_region *dyn_cast_array_region () { return NULL; }
-  virtual const symbolic_region *dyn_cast_symbolic_region () const
-  { return NULL; }
+  virtual symbolic_region *dyn_cast_symbolic_region () { return NULL; }
+  virtual const symbolic_region *dyn_cast_symbolic_region () const { return NULL; }
 
   region_id get_parent () const { return m_parent_rid; }
   region *get_parent_region (const region_model &model) const;
@@ -1625,6 +1625,8 @@ public:
 
   const symbolic_region *dyn_cast_symbolic_region () const FINAL OVERRIDE
   { return this; }
+  symbolic_region *dyn_cast_symbolic_region () FINAL OVERRIDE
+  { return this; }
 
   bool compare_fields (const symbolic_region &other) const;
 
@@ -1633,6 +1635,10 @@ public:
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_SYMBOLIC; }
 
   void walk_for_canonicalization (canonicalization *c) const FINAL OVERRIDE;
+
+  void print_fields (const region_model &model,
+		     region_id this_rid,
+		     pretty_printer *pp) const FINAL OVERRIDE;
 
   bool m_possibly_null;
 };

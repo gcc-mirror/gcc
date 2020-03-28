@@ -419,12 +419,16 @@ state_purge_per_ssa_name::process_point (const function_point &point,
    Add an additional record showing which names are purged on entry
    to the supernode N.  */
 
-void
+bool
 state_purge_annotator::add_node_annotations (graphviz_out *gv,
-					     const supernode &n) const
+					     const supernode &n,
+					     bool within_table) const
 {
   if (m_map == NULL)
-    return;
+    return false;
+
+  if (within_table)
+    return false;
 
   pretty_printer *pp = gv->get_pp ();
 
@@ -455,6 +459,7 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
 
    pp_string (pp, "\"];\n\n");
    pp_flush (pp);
+   return false;
 }
 
 /* Print V to GV as a comma-separated list in braces within a <TR>,
@@ -469,7 +474,7 @@ print_vec_of_names (graphviz_out *gv, const char *title,
   pretty_printer *pp = gv->get_pp ();
   tree name;
   unsigned i;
-  gv->begin_tr ();
+  gv->begin_trtd ();
   pp_printf (pp, "%s: {", title);
   FOR_EACH_VEC_ELT (v, i, name)
     {
@@ -479,7 +484,7 @@ print_vec_of_names (graphviz_out *gv, const char *title,
     }
   pp_printf (pp, "}");
   pp_write_text_as_html_like_dot_to_stream (pp);
-  gv->end_tr ();
+  gv->end_tdtr ();
   pp_newline (pp);
 }
 
@@ -490,8 +495,12 @@ print_vec_of_names (graphviz_out *gv, const char *title,
 
 void
 state_purge_annotator::add_stmt_annotations (graphviz_out *gv,
-					     const gimple *stmt) const
+					     const gimple *stmt,
+					     bool within_row) const
 {
+  if (within_row)
+    return;
+
   if (m_map == NULL)
     return;
 

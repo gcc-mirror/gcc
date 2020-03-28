@@ -1873,7 +1873,7 @@ struct rdwr_access_hash: int_hash<int, -1> { };
 typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
 
 /* Initialize a mapping for a call to function FNDECL declared with
-   attribute access.  Each attribute poisitional operand inserts one
+   attribute access.  Each attribute positional operand inserts one
    entry into the mapping with the operand number as the key.  */
 
 static void
@@ -1882,54 +1882,50 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
   if (!fntype)
     return;
 
-  tree access = TYPE_ATTRIBUTES (fntype);
-  /* If the function's type has no attributes there's nothing to do.  */
-  if (!access)
-    return;
-
-  access = lookup_attribute ("access", access);
-  if (!access)
-    return;
-
-  /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
-     is the attribute argument's value.  */
-  tree mode = TREE_VALUE (access);
-  gcc_assert (TREE_CODE (mode) == TREE_LIST);
-  mode = TREE_VALUE (mode);
-  gcc_assert (TREE_CODE (mode) == STRING_CST);
-
-  const char *modestr = TREE_STRING_POINTER (mode);
-  for (const char *m = modestr; *m; )
+  for (tree access = TYPE_ATTRIBUTES (fntype);
+       (access = lookup_attribute ("access", access));
+       access = TREE_CHAIN (access))
     {
-      attr_access acc = { };
+      /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
+	 is the attribute argument's value.  */
+      tree mode = TREE_VALUE (access);
+      gcc_assert (TREE_CODE (mode) == TREE_LIST);
+      mode = TREE_VALUE (mode);
+      gcc_assert (TREE_CODE (mode) == STRING_CST);
 
-      switch (*m)
+      const char *modestr = TREE_STRING_POINTER (mode);
+      for (const char *m = modestr; *m; )
 	{
-	case 'r': acc.mode = acc.read_only; break;
-	case 'w': acc.mode = acc.write_only; break;
-	default: acc.mode = acc.read_write; break;
-	}
+	  attr_access acc = { };
 
-      char *end;
-      acc.ptrarg = strtoul (++m, &end, 10);
-      m = end;
-      if (*m == ',')
-	{
-	  acc.sizarg = strtoul (++m, &end, 10);
+	  switch (*m)
+	    {
+	    case 'r': acc.mode = acc.read_only; break;
+	    case 'w': acc.mode = acc.write_only; break;
+	    default: acc.mode = acc.read_write; break;
+	    }
+
+	  char *end;
+	  acc.ptrarg = strtoul (++m, &end, 10);
 	  m = end;
+	  if (*m == ',')
+	    {
+	      acc.sizarg = strtoul (++m, &end, 10);
+	      m = end;
+	    }
+	  else
+	    acc.sizarg = UINT_MAX;
+
+	  acc.ptr = NULL_TREE;
+	  acc.size = NULL_TREE;
+
+	  /* Unconditionally add an entry for the required pointer
+	     operand of the attribute, and one for the optional size
+	     operand when it's specified.  */
+	  rwm->put (acc.ptrarg, acc);
+	  if (acc.sizarg != UINT_MAX)
+	    rwm->put (acc.sizarg, acc);
 	}
-      else
-	acc.sizarg = UINT_MAX;
-
-      acc.ptr = NULL_TREE;
-      acc.size = NULL_TREE;
-
-      /* Unconditionally add an entry for the required pointer
-	 operand of the attribute, and one for the optional size
-	 operand when it's specified.  */
-      rwm->put (acc.ptrarg, acc);
-      if (acc.sizarg != UINT_MAX)
-	rwm->put (acc.sizarg, acc);
     }
 }
 

@@ -45,6 +45,10 @@ namespace std {
   // C++17 24.5, iterator adaptors:
   template <class Iterator> class reverse_iterator;
 
+#if __cplusplus == 201703L
+  // These operators are constrained in C++20 mode and so don't match
+  // these signatures.
+
   template <class Iterator1, class Iterator2>
   constexpr
   bool operator==(const reverse_iterator<Iterator1>& x,
@@ -74,6 +78,7 @@ namespace std {
   constexpr
   bool operator<=(const reverse_iterator<Iterator1>& x,
 		  const reverse_iterator<Iterator2>& y);
+#endif // C++17
 
   template <class Iterator1, class Iterator2>
   constexpr auto
@@ -92,17 +97,29 @@ namespace std {
   template <class Container> class back_insert_iterator;
 
   template <class Container>
+#if __cplusplus > 201703L
+  constexpr
+#endif
   back_insert_iterator<Container> back_inserter(Container& x);
 
   template <class Container> class front_insert_iterator;
 
   template <class Container>
+#if __cplusplus > 201703L
+  constexpr
+#endif
   front_insert_iterator<Container> front_inserter(Container& x);
 
   template <class Container> class insert_iterator;
 
+#if __cplusplus == 201703L
+  // This function template is defined differently  in C++20 mode and so
+  // doesn't match this signature.
   template <class Container, class Iterator>
   insert_iterator<Container> inserter(Container& x, Iterator i);
+
+  // These operators are constrained in C++20 mode and so don't match
+  // these signatures.
 
   template <class Iterator> class move_iterator;
 
@@ -135,6 +152,7 @@ namespace std {
   constexpr
   bool operator>=(const move_iterator<Iterator1>& x,
 		  const move_iterator<Iterator2>& y);
+#endif // C++17
 
   template <class Iterator1, class Iterator2>
   constexpr

@@ -3305,6 +3305,17 @@ symbolic_region::walk_for_canonicalization (canonicalization *) const
   /* Empty.  */
 }
 
+/* Implementation of region::print_fields vfunc for symbolic_region.  */
+
+void
+symbolic_region::print_fields (const region_model &model,
+			       region_id this_rid,
+			       pretty_printer *pp) const
+{
+  region::print_fields (model, this_rid, pp);
+  pp_printf (pp, ", possibly_null: %s", m_possibly_null ? "true" : "false");
+}
+
 /* class region_model.  */
 
 /* region_model's default ctor.  */
@@ -5519,6 +5530,16 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   m_constraints->add_constraint (lhs_sid, op, rhs_sid);
 
   add_any_constraints_from_ssa_def_stmt (lhs, op, rhs, ctxt);
+
+  /* If we now know a symbolic_region is non-NULL, clear its
+     m_possibly_null.  */
+  if (zerop (rhs) && op == NE_EXPR)
+    if (region_svalue *ptr = get_svalue (lhs_sid)->dyn_cast_region_svalue ())
+      {
+	region *pointee = get_region (ptr->get_pointee ());
+	if (symbolic_region *sym_reg = pointee->dyn_cast_symbolic_region ())
+	  sym_reg->m_possibly_null = false;
+      }
 
   /* Notify the context, if any.  This exists so that the state machines
      in a program_state can be notified about the condition, and so can
@@ -8595,6 +8616,45 @@ test_constraint_merging ()
 	     tristate (tristate::TS_UNKNOWN));
 }
 
+/* Verify that if we mark a pointer to a malloc-ed region as non-NULL,
+   all cast pointers to that region are also known to be non-NULL.  */
+
+static void
+test_malloc_constraints ()
+{
+  region_model model;
+  tree p = build_global_decl ("p", ptr_type_node);
+  tree char_star = build_pointer_type (char_type_node);
+  tree q = build_global_decl ("q", char_star);
+  tree null_ptr = build_int_cst (ptr_type_node, 0);
+
+  region_id rid = model.add_new_malloc_region ();
+  svalue_id sid = model.get_or_create_ptr_svalue (ptr_type_node, rid);
+  model.set_value (model.get_lvalue (p, NULL), sid, NULL);
+  model.set_value (q, p, NULL);
+
+  /* We should have a symbolic_region with m_possibly_null: true.  */
+  region *pointee = model.get_region (rid);
+  symbolic_region *sym_reg = pointee->dyn_cast_symbolic_region ();
+  ASSERT_NE (sym_reg, NULL);
+  ASSERT_TRUE (sym_reg->m_possibly_null);
+
+  ASSERT_CONDITION_UNKNOWN (model, p, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_UNKNOWN (model, p, EQ_EXPR, null_ptr);
+  ASSERT_CONDITION_UNKNOWN (model, q, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_UNKNOWN (model, q, EQ_EXPR, null_ptr);
+
+  model.add_constraint (p, NE_EXPR, null_ptr, NULL);
+
+  /* Adding the constraint should have cleared m_possibly_null.  */
+  ASSERT_FALSE (sym_reg->m_possibly_null);
+
+  ASSERT_CONDITION_TRUE (model, p, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_FALSE (model, p, EQ_EXPR, null_ptr);
+  ASSERT_CONDITION_TRUE (model, q, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_FALSE (model, q, EQ_EXPR, null_ptr);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -8619,6 +8679,7 @@ analyzer_region_model_cc_tests ()
   test_canonicalization_4 ();
   test_state_merging ();
   test_constraint_merging ();
+  test_malloc_constraints ();
 }
 
 } // namespace selftest
