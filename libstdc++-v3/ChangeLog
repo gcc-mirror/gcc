@@ -1,5 +1,10 @@
 2020-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/is_constructible/value-2.cc: Fix test to account
+	for changes due to parenthesized aggregate-initialization in C++20.
+	* testsuite/20_util/time_point/cons/81468.cc: Fix test to not clash
+	with std::chrono::sys_time in C++20.
+
 	* include/bits/stl_iterator.h (reverse_iterator): Use requires-clause
 	to constrain C++20 versions of comparison operators. Fix backwards
 	logic of relational operators.
