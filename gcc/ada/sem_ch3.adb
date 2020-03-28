@@ -924,7 +924,6 @@ package body Sem_Ch3 is
       then
          if Is_Limited_Record (Desig_Type)
            and then Is_Class_Wide_Type (Desig_Type)
-           and then Tasking_Allowed
          then
             Build_Class_Wide_Master (Anon_Type);
 
@@ -5418,6 +5417,7 @@ package body Sem_Ch3 is
                Set_Class_Wide_Type      (Id, Class_Wide_Type    (T));
                Set_Cloned_Subtype       (Id, T);
                Set_Is_Tagged_Type       (Id, True);
+               Set_Is_Limited_Record    (Id, Is_Limited_Record  (T));
                Set_Has_Unknown_Discriminants
                                         (Id, True);
                Set_No_Tagged_Streams_Pragma
@@ -5701,6 +5701,7 @@ package body Sem_Ch3 is
 
       if Is_Interface (T) then
          Set_Is_Interface (Id);
+         Set_Is_Limited_Interface (Id, Is_Limited_Interface (T));
       end if;
 
       if Present (Generic_Parent_Type (N))
@@ -12358,6 +12359,7 @@ package body Sem_Ch3 is
          --  Show Full is simply a renaming of Full_Base
 
          Set_Cloned_Subtype (Full, Full_Base);
+         Set_Is_Limited_Record (Full, Is_Limited_Record (Full_Base));
 
          --  Propagate predicates
 
@@ -12393,10 +12395,17 @@ package body Sem_Ch3 is
 
       if Is_Tagged_Type (Full_Base) then
          Set_Is_Tagged_Type (Full);
+         Set_Is_Limited_Record (Full, Is_Limited_Record (Full_Base));
+
          Set_Direct_Primitive_Operations
            (Full, Direct_Primitive_Operations (Full_Base));
          Set_No_Tagged_Streams_Pragma
            (Full, No_Tagged_Streams_Pragma (Full_Base));
+
+         if Is_Interface (Full_Base) then
+            Set_Is_Interface (Full);
+            Set_Is_Limited_Interface (Full, Is_Limited_Interface (Full_Base));
+         end if;
 
          --  Inherit class_wide type of full_base in case the partial view was
          --  not tagged. Otherwise it has already been created when the private

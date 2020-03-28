@@ -234,6 +234,10 @@ package Exp_Ch6 is
    --  the constructor, and the allocator is rewritten to refer to that access
    --  object. Function_Call must denote a call to a CPP_Constructor function.
 
+   function Might_Have_Tasks (Typ : Entity_Id) return Boolean;
+   --  Return True if Typ is a limited class-wide type (or subtype), since it
+   --  might have task components.
+
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).

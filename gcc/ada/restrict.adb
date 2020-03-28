@@ -39,6 +39,10 @@ with Uname;    use Uname;
 
 package body Restrict is
 
+   Global_Restriction_No_Tasking : Boolean := False;
+   --  Set to True when No_Tasking is set in the run-time package System
+   --  or in a configuration pragmas file (for example, gnat.adc).
+
    --------------------------------
    -- Package Local Declarations --
    --------------------------------
@@ -898,6 +902,15 @@ package body Restrict is
       return Not_A_Restriction_Id;
    end Get_Restriction_Id;
 
+   -----------------------
+   -- Global_No_Tasking --
+   -----------------------
+
+   function Global_No_Tasking return Boolean is
+   begin
+      return Global_Restriction_No_Tasking;
+   end Global_No_Tasking;
+
    -------------------------------
    -- No_Exception_Handlers_Set --
    -------------------------------
@@ -1573,6 +1586,15 @@ package body Restrict is
       No_Use_Of_Pragma (A_Id) := System_Location;
       No_Use_Of_Pragma_Warning (A_Id) := False;
    end Set_Restriction_No_Use_Of_Pragma;
+
+   ---------------------------
+   -- Set_Global_No_Tasking --
+   ---------------------------
+
+   procedure Set_Global_No_Tasking is
+   begin
+      Global_Restriction_No_Tasking := True;
+   end Set_Global_No_Tasking;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

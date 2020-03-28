@@ -574,9 +574,10 @@ package Sem_Util is
    --  Find the currently visible definition for a given identifier, that is to
    --  say the first entry in the visibility chain for the Chars of N.
 
+   function Current_Entity_In_Scope (N : Name_Id) return Entity_Id;
    function Current_Entity_In_Scope (N : Node_Id) return Entity_Id;
-   --  Find whether there is a previous definition for identifier N in the
-   --  current scope. Because declarations for a scope are not necessarily
+   --  Find whether there is a previous definition for name or identifier N in
+   --  the current scope. Because declarations for a scope are not necessarily
    --  contiguous (e.g. for packages) the first entry on the visibility chain
    --  for N is not necessarily in the current scope.
 

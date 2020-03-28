@@ -51,7 +51,6 @@ with Nmake;     use Nmake;
 with Opt;       use Opt;
 with Output;    use Output;
 with Restrict;  use Restrict;
-with Rident;    use Rident;
 with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
@@ -2928,22 +2927,8 @@ package body Sem_Ch6 is
                            and then
                          Is_Limited_Record (Designated_Type (Etype (Scop)))))
            and then Expander_Active
-
-           --  Avoid cases with no tasking support
-
-           and then RTE_Available (RE_Current_Master)
-           and then not Restriction_Active (No_Task_Hierarchy)
          then
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uMaster),
-                Constant_Present => True,
-                Object_Definition =>
-                  New_Occurrence_Of (RTE (RE_Master_Id), Loc),
-                Expression =>
-                  Make_Explicit_Dereference (Loc,
-                    New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
+            Decl := Build_Master_Declaration (Loc);
 
             if Present (Declarations (N)) then
                Prepend (Decl, Declarations (N));
@@ -8566,6 +8551,9 @@ package body Sem_Ch6 is
                  Add_Extra_Formal
                    (E, RTE (RE_Master_Id),
                     E, BIP_Formal_Suffix (BIP_Task_Master));
+
+               Set_Has_Master_Entity (E);
+
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Activation_Chain_Access),
