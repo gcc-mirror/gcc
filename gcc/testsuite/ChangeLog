@@ -1,3 +1,14 @@
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/compilable/compilable.exp: New file.
+	* gdc.test/fail_compilation/fail_compilation.exp: New file.
+	* gdc.test/runnable/runnable.exp: New file.
+	* gdc.test/gdc-test.exp: Move and rename to...
+	* lib/gdc-utils.exp: ...this.  Remove load_lib gdc-dg.exp.
+	(dmd2dg): Rename to...
+	(gdc-convert-test): ...this.
+	(gdc-do-test): Add testcases parameter and remove subdir handling.
+
 2020-03-28  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* gcc.dg/torture/pr87197-debug-sms.c: Move to ...

@@ -15,8 +15,6 @@
 # <http://www.gnu.org/licenses/>.
 
 # Test using the DMD testsuite.
-# Load support procs.
-load_lib gdc-dg.exp
 
 #
 # Convert DMD arguments to GDC equivalent
@@ -183,7 +181,7 @@ proc gdc-copy-extra { base extra } {
 #   DISABLED:		Not handled.
 #
 
-proc dmd2dg { base test } {
+proc gdc-convert-test { base test } {
     global DEFAULT_DFLAGS
     global PERMUTE_ARGS
     global GDC_EXECUTE_ARGS
@@ -353,9 +351,11 @@ proc gdc-permute-options { options } {
     return $result
 }
 
+#
+# Main loop for running all tests for the subdirectory in gdc.test
+#
 
-proc gdc-do-test { } {
-    global srcdir subdir
+proc gdc-do-test { testcases } {
     global dg-do-what-default
     global verbose
 
@@ -375,9 +375,6 @@ proc gdc-do-test { } {
     # Additional arguments for gdc_load
     global GDC_EXECUTE_ARGS
 
-    # Initialize `dg'.
-    dg-init
-
     # Allow blank linkes in output for all of gdc.test.
     global allow_blank_lines
     set save_allow_blank_lines $allow_blank_lines
@@ -385,36 +382,25 @@ proc gdc-do-test { } {
 	set allow_blank_lines 2
     }
 
-    # Create gdc.test link so test names include that subdir.
-    catch { file link $subdir . }
+    set saved-dg-do-what-default ${dg-do-what-default}
 
     # Main loop.
 
     # set verbose 1
     # set dg-final-code ""
     # Find all tests and pass to routine.
-    foreach test [lsort [find $srcdir/$subdir *]] {
+    foreach test $testcases {
 	regexp -- "(.*)/(.+)/(.+)\.(.+)$" $test match base dir name ext
-
-	# Skip invalid test directory
-	if { [lsearch "runnable compilable fail_compilation" $dir] == -1 } {
-	    continue
-	}
-
-	# Skip invalid test extensions
-	if { [lsearch "d" $ext] == -1 } {
-	    continue
-	}
 
 	# Convert to DG test.
 	set imports [format "-I%s/%s" $base $dir]
 	set cleanup_extra_files ""
-	# Include $subdir prefix so test names follow DejaGnu conventions.
-	set filename "$subdir/[dmd2dg $base $dir/$name.$ext]"
+	set filename "[gdc-convert-test $base $dir/$name.$ext]"
 
 	if { $dir == "runnable" } {
 	    append PERMUTE_ARGS " $SHARED_OPTION"
 	}
+
 	set options [gdc-permute-options [lsort -unique $PERMUTE_ARGS]]
 
 	switch $dir {
@@ -454,16 +440,11 @@ proc gdc-do-test { } {
 
 	# Cleanup test directory.
 	foreach srcfile $cleanup_extra_files {
-	    file delete $subdir/$srcfile
+	    file delete $srcfile
 	}
 	file delete $filename
     }
 
+    set dg-do-what-default ${saved-dg-do-what-default}
     set allow_blank_lines $save_allow_blank_lines
-
-    # All done.
-    dg-finish
 }
-
-gdc-do-test
-
