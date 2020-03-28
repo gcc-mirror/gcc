@@ -1,5 +1,9 @@
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94306
+	* parser.c (cp_parser_requires_clause_opt): Diagnose and recover from
+	"requires {" when "requires requires {" was probably intended.
+
 	PR c++/94252
 	* constraint.cc (tsubst_compound_requirement): Always suppress errors
 	from type_deducible_p and expression_convertible_p, as they're not

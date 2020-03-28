@@ -1,5 +1,8 @@
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94306
+	* g++.dg/concepts/diagnostic8.C: New test.
+
 	PR c++/94252
 	* g++.dg/concepts/diagnostic7.C: New test.
 	* g++.dg/concepts/pr94252.C: New test.

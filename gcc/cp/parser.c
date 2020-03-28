@@ -27704,7 +27704,22 @@ cp_parser_requires_clause_opt (cp_parser *parser, bool lambda_p)
 	}
       return NULL_TREE;
     }
-  cp_lexer_consume_token (parser->lexer);
+
+  cp_token *tok2 = cp_lexer_peek_nth_token (parser->lexer, 2);
+  if (tok2->type == CPP_OPEN_BRACE)
+    {
+      /* An opening brace following the start of a requires-clause is
+	 ill-formed; the user likely forgot the second `requires' that
+	 would start a requires-expression.  */
+      gcc_rich_location richloc (tok2->location);
+      richloc.add_fixit_insert_after (tok->location, " requires");
+      error_at (&richloc, "missing additional %<requires%> to start "
+		"a requires-expression");
+      /* Don't consume the `requires', so that it's reused as the start of a
+	 requires-expression.  */
+    }
+  else
+    cp_lexer_consume_token (parser->lexer);
 
   if (!flag_concepts_ts)
     return cp_parser_requires_clause_expression (parser, lambda_p);
