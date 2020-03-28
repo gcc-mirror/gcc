@@ -1,5 +1,9 @@
 2020-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/93573
+	* c-decl.c (grokdeclarator): After issuing errors, set size_int_const
+	to true after setting size to integer_one_node.
+
 	PR tree-optimization/94329
 	* tree-ssa-reassoc.c (reassociate_bb): When calling reassoc_remove_stmt
 	on the last stmt in a bb, make sure gsi_prev isn't done immediately
