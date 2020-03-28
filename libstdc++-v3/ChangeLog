@@ -1,3 +1,17 @@
+2020-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (reverse_iterator): Use requires-clause
+	to constrain C++20 versions of comparison operators. Fix backwards
+	logic of relational operators.
+	(move_iterator): Use requires-clause to constrain comparison operators
+	in C++20. Do not declare non-standard same-type overloads for C++20.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc: Check result
+	of comparisons and check using greedy_ops type.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: Remove redundant
+	main function from compile-only test.
+	* testsuite/24_iterators/reverse_iterator/greedy_ops.cc: Likewise.
+
 2020-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_cmp.h (__cpp_lib_ranges): Define.

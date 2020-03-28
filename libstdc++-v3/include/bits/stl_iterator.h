@@ -341,9 +341,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { return __t.operator->(); }
     };
 
-  // Used in unevaluated expressions to test for implicit conversion to bool.
-  namespace __detail { bool __convbool(bool); }
-
   //@{
   /**
    *  @param  __x  A %reverse_iterator.
@@ -354,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  iterators.
    *
   */
-#if __cplusplus <= 201703L
+#if __cplusplus <= 201703L || ! defined __cpp_lib_concepts
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const reverse_iterator<_Iterator>& __x,
@@ -430,46 +427,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__x < __y); }
 #else // C++20
   template<typename _IteratorL, typename _IteratorR>
-    constexpr auto
+    constexpr bool
     operator==(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    -> decltype(__detail::__convbool(__x.base() == __y.base()))
+    requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
     { return __x.base() == __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
-    constexpr auto
+    constexpr bool
     operator!=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    -> decltype(__detail::__convbool(__x.base() != __y.base()))
+    requires requires { { __x.base() != __y.base() } -> convertible_to<bool>; }
     { return __x.base() != __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
-    constexpr auto
+    constexpr bool
     operator<(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
-    -> decltype(__detail::__convbool(__x.base() < __y.base()))
-    { return __x.base() < __y.base(); }
-
-  template<typename _IteratorL, typename _IteratorR>
-    constexpr auto
-    operator>(const reverse_iterator<_IteratorL>& __x,
-	      const reverse_iterator<_IteratorR>& __y)
-    -> decltype(__detail::__convbool(__x.base() > __y.base()))
+    requires requires { { __x.base() > __y.base() } -> convertible_to<bool>; }
     { return __x.base() > __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
-    constexpr auto
-    operator<=(const reverse_iterator<_IteratorL>& __x,
-	       const reverse_iterator<_IteratorR>& __y)
-    -> decltype(__detail::__convbool(__x.base() <= __y.base()))
-    { return __x.base() <= __y.base(); }
+    constexpr bool
+    operator>(const reverse_iterator<_IteratorL>& __x,
+	      const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
+    { return __x.base() < __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
-    constexpr auto
+    constexpr bool
+    operator<=(const reverse_iterator<_IteratorL>& __x,
+	       const reverse_iterator<_IteratorR>& __y)
+    requires requires { { __x.base() >= __y.base() } -> convertible_to<bool>; }
+    { return __x.base() >= __y.base(); }
+
+  template<typename _IteratorL, typename _IteratorR>
+    constexpr bool
     operator>=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
-    -> decltype(__detail::__convbool(__x.base() >= __y.base()))
-    { return __x.base() >= __y.base(); }
+    requires requires { { __x.base() <= __y.base() } -> convertible_to<bool>; }
+    { return __x.base() <= __y.base(); }
+
+  template<typename _IteratorL,
+	   three_way_comparable_with<_IteratorL> _IteratorR>
+    constexpr compare_three_way_result_t<_IteratorL, _IteratorR>
+    operator<=>(const reverse_iterator<_IteratorL>& __x,
+		const reverse_iterator<_IteratorR>& __y)
+    { return __y.base() <=> __x.base(); }
 #endif // C++20
   //@}
 
@@ -1413,22 +1417,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
     };
 
-  // Note: See __normal_iterator operators note from Gaby to understand
-  // why there are always 2 versions for most of the move_iterator
-  // operators.
   template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
 #if __cplusplus > 201703L && __cpp_lib_concepts
-    requires requires { __detail::__convbool(__x.base() == __y.base()); }
+    requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
 #endif
-    { return __x.base() == __y.base(); }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator==(const move_iterator<_Iterator>& __x,
-	       const move_iterator<_Iterator>& __y)
     { return __x.base() == __y.base(); }
 
 #if __cpp_lib_three_way_comparison
@@ -1444,12 +1439,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
     { return !(__x == __y); }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator!=(const move_iterator<_Iterator>& __x,
-	       const move_iterator<_Iterator>& __y)
-    { return !(__x == __y); }
 #endif
 
   template<typename _IteratorL, typename _IteratorR>
@@ -1457,14 +1446,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
 #if __cplusplus > 201703L && __cpp_lib_concepts
-    requires requires { __detail::__convbool(__x.base() < __y.base()); }
+    requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
 #endif
-    { return __x.base() < __y.base(); }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator<(const move_iterator<_Iterator>& __x,
-	      const move_iterator<_Iterator>& __y)
     { return __x.base() < __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
@@ -1472,14 +1455,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<=(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
 #if __cplusplus > 201703L && __cpp_lib_concepts
-    requires requires { __detail::__convbool(__y.base() < __x.base()); }
+    requires requires { { __y.base() < __x.base() } -> convertible_to<bool>; }
 #endif
-    { return !(__y < __x); }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator<=(const move_iterator<_Iterator>& __x,
-	       const move_iterator<_Iterator>& __y)
     { return !(__y < __x); }
 
   template<typename _IteratorL, typename _IteratorR>
@@ -1487,14 +1464,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
 #if __cplusplus > 201703L && __cpp_lib_concepts
-    requires requires { __detail::__convbool(__y.base() < __x.base()); }
+    requires requires { { __y.base() < __x.base() } -> convertible_to<bool>; }
 #endif
-    { return __y < __x; }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR bool
-    operator>(const move_iterator<_Iterator>& __x,
-	      const move_iterator<_Iterator>& __y)
     { return __y < __x; }
 
   template<typename _IteratorL, typename _IteratorR>
@@ -1502,15 +1473,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
 #if __cplusplus > 201703L && __cpp_lib_concepts
-    requires requires { __detail::__convbool(__x.base() < __y.base()); }
+    requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
 #endif
     { return !(__x < __y); }
+
+#if ! (__cplusplus > 201703L && __cpp_lib_concepts)
+  // Note: See __normal_iterator operators note from Gaby to understand
+  // why we have these extra overloads for some move_iterator operators.
+
+  // These extra overloads are not needed in C++20, because the ones above
+  // are constrained with a requires-clause and so overload resolution will
+  // prefer them to greedy unconstrained function templates.
+
+  template<typename _Iterator>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator==(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
+    { return __x.base() == __y.base(); }
+
+  template<typename _Iterator>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator!=(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
+    { return !(__x == __y); }
+
+  template<typename _Iterator>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator<(const move_iterator<_Iterator>& __x,
+	      const move_iterator<_Iterator>& __y)
+    { return __x.base() < __y.base(); }
+
+  template<typename _Iterator>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator<=(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
+    { return !(__y < __x); }
+
+  template<typename _Iterator>
+    inline _GLIBCXX17_CONSTEXPR bool
+    operator>(const move_iterator<_Iterator>& __x,
+	      const move_iterator<_Iterator>& __y)
+    { return __y < __x; }
 
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator>=(const move_iterator<_Iterator>& __x,
 	       const move_iterator<_Iterator>& __y)
     { return !(__x < __y); }
+#endif // ! C++20
 
   // DR 685.
   template<typename _IteratorL, typename _IteratorR>

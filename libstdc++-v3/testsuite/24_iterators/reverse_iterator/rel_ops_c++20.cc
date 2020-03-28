@@ -78,10 +78,10 @@ reverse_iterator<long*> r{nullptr};
 
 bool b0 = l0 == r;
 bool b1 = l1 != r;
-bool b2 = l2 < r;
-bool b3 = l3 > r;
-bool b4 = l4 <= r;
-bool b5 = l5 >= r;
+bool b2 = l2 > r;
+bool b3 = l3 < r;
+bool b4 = l4 >= r;
+bool b5 = l5 <= r;
 
 template<int N>
   concept has_eq
@@ -129,15 +129,15 @@ static_assert( ! has_ne<5> );
 
 static_assert( ! has_lt<0> );
 static_assert( ! has_lt<1> );
-static_assert( has_lt<2> );
-static_assert( ! has_lt<3> );
+static_assert( ! has_lt<2> );
+static_assert( has_lt<3> );
 static_assert( ! has_lt<4> );
 static_assert( ! has_lt<5> );
 
 static_assert( ! has_gt<0> );
 static_assert( ! has_gt<1> );
-static_assert( ! has_gt<2> );
-static_assert( has_gt<3> );
+static_assert( has_gt<2> );
+static_assert( ! has_gt<3> );
 static_assert( ! has_gt<4> );
 static_assert( ! has_gt<5> );
 
@@ -145,12 +145,49 @@ static_assert( ! has_le<0> );
 static_assert( ! has_le<1> );
 static_assert( ! has_le<2> );
 static_assert( ! has_le<3> );
-static_assert( has_le<4> );
-static_assert( ! has_le<5> );
+static_assert( ! has_le<4> );
+static_assert( has_le<5> );
 
 static_assert( ! has_ge<0> );
 static_assert( ! has_ge<1> );
 static_assert( ! has_ge<2> );
 static_assert( ! has_ge<3> );
-static_assert( ! has_ge<4> );
-static_assert( has_ge<5> );
+static_assert( has_ge<4> );
+static_assert( ! has_ge<5> );
+
+int arr[3] = { 1, 2, 3 };
+constexpr std::reverse_iterator<int*> rbeg = std::rbegin(arr);
+constexpr std::reverse_iterator<const int*> crbeg = std::crbegin(arr);
+static_assert( rbeg == crbeg );
+static_assert( rbeg <= crbeg );
+static_assert( rbeg >= crbeg );
+static_assert( std::is_eq(rbeg <=> crbeg) );
+constexpr std::reverse_iterator<const int*> crend = std::crend(arr);
+static_assert( rbeg != crend );
+static_assert( rbeg < crend );
+static_assert( crend > rbeg );
+static_assert( rbeg <= crend );
+static_assert( crend >= rbeg );
+static_assert( std::is_lt(rbeg <=> crend) );
+
+#include <testsuite_greedy_ops.h>
+
+// copied from 24_iterators/reverse_iterator/greedy_ops.cc
+void test01()
+{
+  typedef std::reverse_iterator<greedy_ops::X*> iterator_type;
+
+  iterator_type it;
+
+  it == it;
+  it != it;
+  it < it;
+  it <= it;
+  it > it;
+  it >= it;
+#if __cplusplus < 201103L
+  it - it; // See PR libstdc++/71771
+#endif
+  1 + it;
+  it + 1;
+}
