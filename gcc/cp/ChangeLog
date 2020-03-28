@@ -1,5 +1,23 @@
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94252
+	* constraint.cc (tsubst_compound_requirement): Always suppress errors
+	from type_deducible_p and expression_convertible_p, as they're not
+	substitution errors.
+	(diagnose_atomic_constraint) <case INTEGER_CST>: Remove this case so
+	that we diagnose INTEGER_CST expressions of non-bool type via the
+	default case.
+	* cp-gimplify.c (cp_genericize_r) <case REQUIRES_EXPR>: New case.
+	* parser.c (cp_parser_requires_expression): Always parse the requirement
+	body as if we're processing a template, by temporarily incrementing
+	processing_template_decl.  Afterwards, if we're not actually in a
+	template context, perform semantic processing to diagnose any invalid
+	types and expressions.
+	* pt.c (tsubst_copy_and_build) <case REQUIRES_EXPR>: Remove dead code.
+	* semantics.c (finish_static_assert): Explain an assertion failure
+	when the condition is a REQUIRES_EXPR like we do when it is a concept
+	check.
+
 	* constraint.cc (diagnose_compound_requirement): When diagnosing a
 	compound requirement, maybe replay the satisfaction failure, subject to
 	the current diagnosis depth.

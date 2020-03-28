@@ -27762,7 +27762,9 @@ cp_parser_requires_expression (cp_parser *parser)
       parms = NULL_TREE;
 
     /* Parse the requirement body. */
+    ++processing_template_decl;
     reqs = cp_parser_requirement_body (parser);
+    --processing_template_decl;
     if (reqs == error_mark_node)
       return error_mark_node;
   }
@@ -27771,7 +27773,17 @@ cp_parser_requires_expression (cp_parser *parser)
      the parm chain.  */
   grokparms (parms, &parms);
   loc = make_location (loc, loc, parser->lexer);
-  return finish_requires_expr (loc, parms, reqs);
+  tree expr = finish_requires_expr (loc, parms, reqs);
+  if (!processing_template_decl)
+    {
+      /* Perform semantic processing now to diagnose any invalid types and
+	 expressions.  */
+      int saved_errorcount = errorcount;
+      tsubst_requires_expr (expr, NULL_TREE, tf_warning_or_error, NULL_TREE);
+      if (errorcount > saved_errorcount)
+	return error_mark_node;
+    }
+  return expr;
 }
 
 /* Parse a parameterized requirement.

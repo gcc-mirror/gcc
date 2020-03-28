@@ -1,5 +1,11 @@
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94252
+	* g++.dg/concepts/diagnostic7.C: New test.
+	* g++.dg/concepts/pr94252.C: New test.
+	* g++.dg/cpp2a/concepts-requires18.C: Adjust to expect an additional
+	diagnostic.
+
 	* g++.dg/concepts/diagnostic1.C: Pass -fconcepts-diagnostics-depth=2.
 	* g++.dg/concepts/diagnostic5.C: Adjust expected diagnostics.
 	* g++.dg/cpp2a/concepts-iconv1.C: Pass -fconcepts-diagnostics-depth=2.

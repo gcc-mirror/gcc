@@ -1981,15 +1981,17 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
   if (type == error_mark_node)
     return error_mark_node;
 
+  subst_info quiet (tf_none, info.in_decl);
+
   /* Check expression against the result type.  */
   if (type)
     {
       if (tree placeholder = type_uses_auto (type))
 	{
-	  if (!type_deducible_p (expr, type, placeholder, args, info))
+	  if (!type_deducible_p (expr, type, placeholder, args, quiet))
 	    return error_mark_node;
 	}
-      else if (!expression_convertible_p (expr, type, info))
+      else if (!expression_convertible_p (expr, type, quiet))
 	return error_mark_node;
     }
 
@@ -3442,10 +3444,6 @@ diagnose_atomic_constraint (tree t, tree map, tree result, subst_info info)
       break;
     case REQUIRES_EXPR:
       diagnose_requires_expr (expr, map, info.in_decl);
-      break;
-    case INTEGER_CST:
-      /* This must be either 0 or false.  */
-      inform (loc, "%qE is never satisfied", expr);
       break;
     default:
       tree a = copy_node (t);
