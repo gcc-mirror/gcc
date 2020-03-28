@@ -1,3 +1,29 @@
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (finish_constraint_binary_op): Set the location of EXPR
+	as well as its range, because build_x_binary_op doesn't always do so.
+	(current_constraint_diagnosis_depth): New.
+	(concepts_diagnostics_max_depth_exceeded_p): New.
+	(collect_operands_of_disjunction): New.
+	(satisfy_disjunction): When diagnosing a satisfaction failure, maybe
+	replay each branch of the disjunction, subject to the current diagnosis
+	depth.
+	(diagnose_valid_expression): When diagnosing a satisfaction failure,
+	maybe replay the substitution error, subject to the current diagnosis
+	recursion.
+	(diagnose_valid_type): Likewise.
+	(diagnose_nested_requiremnet): Likewise.
+	(diagnosing_failed_constraint::diagnosing_failed_constraint): Increment
+	current_constraint_diagnosis_depth when diagnosing.
+	(diagnosing_failed_constraint::~diagnosing_failed_constraint): Decrement
+	current_constraint_diagnosis_depth when diagnosing.
+	(diagnosing_failed_constraint::replay_errors_p): New static member
+	function.
+	(diagnose_constraints): Don't diagnose if concepts_diagnostics_max_depth
+	is 0.  Emit a one-off note to increase -fconcepts-diagnostics-depth if
+	the limit was exceeded.
+	* cp-tree.h (diagnosing_failed_constraint::replay_errors_p): Declare.
+
 2020-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84733

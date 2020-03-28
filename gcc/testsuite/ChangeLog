@@ -1,3 +1,9 @@
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic2.C: Expect "no operand" instead of
+	"neither operand".
+	* g++.dg/concepts/diagnostic5.C: New test.
+
 2020-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93573

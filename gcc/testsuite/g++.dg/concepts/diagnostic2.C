@@ -5,7 +5,7 @@ template<typename T>
   inline constexpr bool foo_v = false;
 
 template<typename T>
-  concept foo = foo_v<T> || foo_v<T&>; // { dg-message "neither operand" }
+  concept foo = foo_v<T> || foo_v<T&>; // { dg-message "no operand" }
 /* { dg-begin-multiline-output "" }
    concept foo = foo_v<T> || foo_v<T&>;
                  ~~~~~~~~~^~~~~~~~~~~~

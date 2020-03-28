@@ -1,3 +1,7 @@
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	* c.opt: Add -fconcepts-diagnostics-depth.
+
 2020-03-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/94346

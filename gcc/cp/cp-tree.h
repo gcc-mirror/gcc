@@ -7834,6 +7834,7 @@ struct diagnosing_failed_constraint
 {
   diagnosing_failed_constraint (tree, tree, bool);
   ~diagnosing_failed_constraint ();
+  static bool replay_errors_p ();
 
   bool diagnosing_error;
 };
