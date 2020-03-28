@@ -1,3 +1,8 @@
+2020-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94329
+	* gfortran.dg/pr94329.f90: New test.
+
 2020-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94339

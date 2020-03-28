@@ -1,3 +1,10 @@
+2020-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94329
+	* tree-ssa-reassoc.c (reassociate_bb): When calling reassoc_remove_stmt
+	on the last stmt in a bb, make sure gsi_prev isn't done immediately
+	after gsi_last_bb.
+
 2020-03-27  Alan Modra  <amodra@gmail.com>
 
 	PR target/94145
