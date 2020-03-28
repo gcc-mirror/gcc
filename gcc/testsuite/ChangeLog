@@ -1,3 +1,10 @@
+2020-03-28  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.dg/torture/pr87197-debug-sms.c: Move to ...
+	* gcc.dg/sms-compare-debug-1.c: ... this.  Add -O2.
+	* gcc.c-torture/execute/pr70127-debug-sms.c: Move to ...
+	* gcc.dg/sms-compare-debug-2.c: ... this.  Add -O2.
+
 2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94348
