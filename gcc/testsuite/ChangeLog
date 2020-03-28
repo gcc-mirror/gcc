@@ -1,5 +1,10 @@
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
+	* g++.dg/concepts/diagnostic1.C: Pass -fconcepts-diagnostics-depth=2.
+	* g++.dg/concepts/diagnostic5.C: Adjust expected diagnostics.
+	* g++.dg/cpp2a/concepts-iconv1.C: Pass -fconcepts-diagnostics-depth=2.
+	* g++.dg/cpp2a/concepts-requires5.C: Likewise.
+
 	* g++.dg/concepts/diagnostic2.C: Expect "no operand" instead of
 	"neither operand".
 	* g++.dg/concepts/diagnostic5.C: New test.

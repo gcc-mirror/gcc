@@ -4,8 +4,7 @@
 template<typename T>
   concept c1 = requires { typename T::blah; };
 // { dg-message "satisfaction of .c1<T>. .with T = char." "" { target *-*-* } .-1 }
-// { dg-message "satisfaction of .c1<char\\*>." "" { target *-*-* } .-2 }
-// { dg-message ".typename T::blah. is invalid" "" { target *-*-* } .-3 }
+// { dg-message ".typename T::blah. is invalid" "" { target *-*-* } .-2 }
 
 template<typename T>
   concept c2 = requires (T x) { *x; };
@@ -27,8 +26,6 @@ template<typename T>
   concept c5 = requires (T x) { { &x } -> c1; };
 // { dg-message "satisfaction of .c5<T>. .with T = char." "" { target *-*-* } .-1 }
 // { dg-message "in requirements with .char x." "" { target *-*-* } .-2 }
-// { dg-message "does not satisfy return-type-requirement" "" { target *-*-* } .-3 }
-// { dg-error "deduced expression type does not satisfy" "" { target *-*-* } .-4 }
 
 template<typename T>
   requires (c1<T> || c2<T>) || (c3<T> || c4<T>) || c5<T> // { dg-message "49: no operand" }

@@ -1,5 +1,9 @@
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
+	* constraint.cc (diagnose_compound_requirement): When diagnosing a
+	compound requirement, maybe replay the satisfaction failure, subject to
+	the current diagnosis depth.
+
 	* constraint.cc (finish_constraint_binary_op): Set the location of EXPR
 	as well as its range, because build_x_binary_op doesn't always do so.
 	(current_constraint_diagnosis_depth): New.

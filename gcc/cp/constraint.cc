@@ -3308,20 +3308,30 @@ diagnose_compound_requirement (tree req, tree args, tree in_decl)
 	  if (!type_deducible_p (expr, type, placeholder, args, quiet))
 	    {
 	      tree orig_expr = TREE_OPERAND (req, 0);
-	      inform (loc, "%qE does not satisfy return-type-requirement",
-		      orig_expr);
-
-	      /* Further explain the reason for the error.  */
-	      type_deducible_p (expr, type, placeholder, args, noisy);
+	      if (diagnosing_failed_constraint::replay_errors_p ())
+		{
+		  inform (loc,
+			  "%qE does not satisfy return-type-requirement, "
+			  "because", orig_expr);
+		  /* Further explain the reason for the error.  */
+		  type_deducible_p (expr, type, placeholder, args, noisy);
+		}
+	      else
+		inform (loc, "%qE does not satisfy return-type-requirement",
+			orig_expr);
 	    }
 	}
       else if (!expression_convertible_p (expr, type, quiet))
 	{
 	  tree orig_expr = TREE_OPERAND (req, 0);
-	  inform (loc, "cannot convert %qE to %qT", orig_expr, type);
-
-	  /* Further explain the reason for the error.  */
-	  expression_convertible_p (expr, type, noisy);
+	  if (diagnosing_failed_constraint::replay_errors_p ())
+	    {
+	      inform (loc, "cannot convert %qE to %qT because", orig_expr, type);
+	      /* Further explain the reason for the error.  */
+	      expression_convertible_p (expr, type, noisy);
+	    }
+	  else
+	    inform (loc, "cannot convert %qE to %qT", orig_expr, type);
 	}
     }
 }
