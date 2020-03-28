@@ -422,6 +422,10 @@ package Restrict is
    --  of individual Restrictions pragmas). Returns True only if all the
    --  required restrictions are set.
 
+   procedure Set_Global_No_Tasking;
+   --  Used in call from Sem_Prag when restriction No_Tasking is set in the
+   --  run-time package System or in a configuration pragmas file.
+
    procedure Set_Profile_Restrictions
      (P    : Profile_Name;
       N    : Node_Id;
@@ -504,6 +508,10 @@ package Restrict is
    pragma Inline (Tasking_Allowed);
    --  Tests if tasking operations are allowed by the current restrictions
    --  settings. For tasking to be allowed Max_Tasks must be non-zero.
+
+   function Global_No_Tasking return Boolean;
+   --  Returns True if the restriction No_Tasking is set in the run-time
+   --  package System or in a configuration pragmas file.
 
    ----------------------------------------------
    -- Handling of Boolean Compilation Switches --

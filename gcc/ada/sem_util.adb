@@ -6119,14 +6119,14 @@ package body Sem_Util is
    -- Current_Entity_In_Scope --
    -----------------------------
 
-   function Current_Entity_In_Scope (N : Node_Id) return Entity_Id is
+   function Current_Entity_In_Scope (N : Name_Id) return Entity_Id is
       E  : Entity_Id;
       CS : constant Entity_Id := Current_Scope;
 
       Transient_Case : constant Boolean := Scope_Is_Transient;
 
    begin
-      E := Get_Name_Entity_Id (Chars (N));
+      E := Get_Name_Entity_Id (N);
       while Present (E)
         and then Scope (E) /= CS
         and then (not Transient_Case or else Scope (E) /= Scope (CS))
@@ -6135,6 +6135,15 @@ package body Sem_Util is
       end loop;
 
       return E;
+   end Current_Entity_In_Scope;
+
+   -----------------------------
+   -- Current_Entity_In_Scope --
+   -----------------------------
+
+   function Current_Entity_In_Scope (N : Node_Id) return Entity_Id is
+   begin
+      return Current_Entity_In_Scope (Chars (N));
    end Current_Entity_In_Scope;
 
    -------------------

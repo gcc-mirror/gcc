@@ -55,6 +55,12 @@ package Exp_Ch9 is
    --  interface, ensure that the designated type has a _master and generate
    --  a renaming of the said master to service the access type.
 
+   function Build_Master_Declaration (Loc : Source_Ptr) return Node_Id;
+   --  For targets supporting tasks generate:
+   --      _Master : constant Integer := Current_Master.all;
+   --  For targets where tasks or tasking hierarchies are prohibited generate:
+   --      _Master : constant Master_Id := 3;
+
    procedure Build_Master_Entity (Obj_Or_Typ : Entity_Id);
    --  Given the name of an object or a type which is either a task, contains
    --  tasks or designates tasks, create a _master in the appropriate scope

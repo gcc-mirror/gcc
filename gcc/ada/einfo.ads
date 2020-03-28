@@ -1813,8 +1813,8 @@ package Einfo is
 --       See documentation in backend for further details.
 
 --    Has_Nested_Subprogram (Flag282)
---      Defined in subprogram entities. Set for a subprogram which contains at
---      least one nested subprogram.
+--       Defined in subprogram entities. Set for a subprogram which contains at
+--       least one nested subprogram.
 
 --    Has_Non_Limited_View (synth)
 --       Defined in E_Incomplete_Type, E_Incomplete_Subtype, E_Class_Wide_Type,

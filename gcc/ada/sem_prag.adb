@@ -10679,6 +10679,55 @@ package body Sem_Prag is
                   else
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
+
+               --  Special processing for No_Tasking restriction
+
+               elsif R_Id = No_Tasking then
+
+                  --  Handle global configuration pragmas
+
+                  if No (Cunit (Main_Unit)) then
+                     Set_Global_No_Tasking;
+
+                  --  Handle package System, which may be loaded by rtsfind as
+                  --  a consequence of loading some other run-time unit.
+
+                  else
+                     declare
+                        C_Node : constant Entity_Id :=
+                                   Cunit (Current_Sem_Unit);
+                        C_Ent  : constant Entity_Id :=
+                                   Cunit_Entity (Current_Sem_Unit);
+                        Loc_Str : constant String :=
+                                    Build_Location_String (Sloc (C_Ent));
+                        Ref_Str : constant String := "system.ads";
+                        Ref_Len : constant Positive := Ref_Str'Length;
+
+                     begin
+                        pragma Assert (Loc_Str'First = 1);
+                        pragma Assert (Loc_Str'First = Ref_Str'First);
+
+                        if Nkind (Unit (C_Node)) = N_Package_Declaration
+                          and then Chars (C_Ent) = Name_System
+
+                           --  Handle child packages named foo-system.ads
+
+                          and then Loc_Str'Length > Ref_Str'Length
+                          and then Loc_Str (Loc_Str'First .. Ref_Len)
+                                     = Ref_Str (Ref_Str'First .. Ref_Len)
+
+                           --  ... and ensure that package System has not
+                           --  been previously loaded. Done to ensure that
+                           --  the above checks do not have any corner case
+                           --  (since they are performed without semantic
+                           --  information).
+
+                          and then not RTU_Loaded (Rtsfind.System)
+                        then
+                           Set_Global_No_Tasking;
+                        end if;
+                     end;
+                  end if;
                end if;
 
                --  If this is a warning, then set the warning unless we already

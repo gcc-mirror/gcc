@@ -184,11 +184,11 @@ package body Exp_Ch3 is
    --  E is a type, it has components that have no static initialization.
    --  if E is an entity, its initial expression is not compile-time known.
 
-   function Init_Formals (Typ : Entity_Id) return List_Id;
+   function Init_Formals (Typ : Entity_Id; Proc_Id : Entity_Id) return List_Id;
    --  This function builds the list of formals for an initialization routine.
    --  The first formal is always _Init with the given type. For task value
    --  record types and types containing tasks, three additional formals are
-   --  added:
+   --  added and Proc_Id is decorated with attribute Has_Master_Entity:
    --
    --    _Master    : Master_Id
    --    _Chain     : in out Activation_Chain
@@ -730,7 +730,7 @@ package body Exp_Ch3 is
          end if;
 
          Body_Stmts := Init_One_Dimension (1);
-         Parameters := Init_Formals (A_Type);
+         Parameters := Init_Formals (A_Type, Proc_Id);
 
          Discard_Node (
            Make_Subprogram_Body (Loc,
@@ -2438,7 +2438,7 @@ package body Exp_Ch3 is
          Proc_Spec_Node := New_Node (N_Procedure_Specification, Loc);
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
 
-         Parameters := Init_Formals (Rec_Type);
+         Parameters := Init_Formals (Rec_Type, Proc_Id);
          Append_List_To (Parameters,
            Build_Discriminant_Formals (Rec_Type, True));
 
@@ -5720,7 +5720,7 @@ package body Exp_Ch3 is
          --  record parameter for an entry declaration. No master is created
          --  for such a type.
 
-         if Comes_From_Source (N) and then Has_Task (Desig_Typ) then
+         if Has_Task (Desig_Typ) then
             Build_Master_Entity (Ptr_Typ);
             Build_Master_Renaming (Ptr_Typ);
 
@@ -5734,12 +5734,11 @@ package body Exp_Ch3 is
          --  Suppress the master creation for access types created for entry
          --  formal parameters (parameter block component types). Seems like
          --  suppression should be more general for compiler-generated types,
-         --  but testing Comes_From_Source, like the code above does, may be
-         --  too general in this case (affects some test output)???
+         --  but testing Comes_From_Source may be too general in this case
+         --  (affects some test output)???
 
          elsif not Is_Param_Block_Component_Type (Ptr_Typ)
            and then Is_Limited_Class_Wide_Type (Desig_Typ)
-           and then Tasking_Allowed
          then
             Build_Class_Wide_Master (Ptr_Typ);
          end if;
@@ -6666,14 +6665,39 @@ package body Exp_Ch3 is
          Init_After := Make_Shared_Var_Procs (N);
       end if;
 
-      --  If tasks being declared, make sure we have an activation chain
+      --  If tasks are being declared, make sure we have an activation chain
       --  defined for the tasks (has no effect if we already have one), and
-      --  also that a Master variable is established and that the appropriate
-      --  enclosing construct is established as a task master.
+      --  also that a Master variable is established (and that the appropriate
+      --  enclosing construct is established as a task master).
 
-      if Has_Task (Typ) then
+      if Has_Task (Typ) or else Might_Have_Tasks (Typ) then
          Build_Activation_Chain_Entity (N);
-         Build_Master_Entity (Def_Id);
+
+         if Has_Task (Typ) then
+            Build_Master_Entity (Def_Id);
+
+         --  Handle objects initialized with BIP function calls
+
+         elsif Present (Expr) then
+            declare
+               Expr_Q : Node_Id := Expr;
+
+            begin
+               if Nkind (Expr) = N_Qualified_Expression then
+                  Expr_Q := Expression (Expr);
+               end if;
+
+               if Is_Build_In_Place_Function_Call (Expr_Q)
+                 or else Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
+                 or else
+                   (Nkind (Expr_Q) = N_Reference
+                      and then
+                    Is_Build_In_Place_Function_Call (Prefix (Expr_Q)))
+               then
+                  Build_Master_Entity (Def_Id);
+               end if;
+            end;
+         end if;
       end if;
 
       --  If No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
@@ -6691,7 +6715,7 @@ package body Exp_Ch3 is
       --  of the stacks in this scenario, the stacks of the first array are
       --  not counted.
 
-      if Has_Task (Typ)
+      if (Has_Task (Typ) or else Might_Have_Tasks (Typ))
         and then not Restriction_Active (No_Secondary_Stack)
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
@@ -8862,7 +8886,8 @@ package body Exp_Ch3 is
    -- Init_Formals --
    ------------------
 
-   function Init_Formals (Typ : Entity_Id) return List_Id is
+   function Init_Formals (Typ : Entity_Id; Proc_Id : Entity_Id) return List_Id
+   is
       Loc        : constant Source_Ptr := Sloc (Typ);
       Unc_Arr    : constant Boolean :=
                      Is_Array_Type (Typ) and then not Is_Constrained (Typ);
@@ -8871,9 +8896,11 @@ package body Exp_Ch3 is
                        or else (Is_Record_Type (Typ)
                                  and then Is_Protected_Record_Type (Typ));
       With_Task  : constant Boolean :=
-                     Has_Task (Typ)
-                       or else (Is_Record_Type (Typ)
-                                 and then Is_Task_Record_Type (Typ));
+                     not Global_No_Tasking
+                       and then
+                     (Has_Task (Typ)
+                        or else (Is_Record_Type (Typ)
+                                   and then Is_Task_Record_Type (Typ)));
       Formals : List_Id;
 
    begin
@@ -8901,6 +8928,8 @@ package body Exp_Ch3 is
                Make_Defining_Identifier (Loc, Name_uMaster),
              Parameter_Type      =>
                New_Occurrence_Of (RTE (RE_Master_Id), Loc)));
+
+         Set_Has_Master_Entity (Proc_Id);
 
          --  Add _Chain (not done for sequential elaboration policy, see
          --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).

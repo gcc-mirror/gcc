@@ -8616,7 +8616,7 @@ package body Exp_Ch6 is
          --  rather than some outer chain.
 
       begin
-         if Has_Task (Result_Subt) then
+         if Has_Task (Result_Subt) or else Might_Have_Tasks (Result_Subt) then
             Actions := New_List;
             Build_Task_Allocate_Block_With_Init_Stmts
               (Actions, Allocator, Init_Stmts => New_List (Assign));
@@ -9393,6 +9393,7 @@ package body Exp_Ch6 is
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Function_Call);
       Set_Directly_Designated_Type (Anon_Type, Etype (BIP_Func_Call));
       Set_Etype (Anon_Type, Anon_Type);
+      Build_Class_Wide_Master (Anon_Type);
 
       Tmp_Decl :=
         Make_Object_Declaration (Loc,
@@ -9627,6 +9628,18 @@ package body Exp_Ch6 is
       Analyze_And_Resolve (Allocator, Acc_Type);
    end Make_CPP_Constructor_Call_In_Allocator;
 
+   ----------------------
+   -- Might_Have_Tasks --
+   ----------------------
+
+   function Might_Have_Tasks (Typ : Entity_Id) return Boolean is
+   begin
+      return not Global_No_Tasking
+        and then not No_Run_Time_Mode
+        and then Is_Class_Wide_Type (Typ)
+        and then Is_Limited_Record (Typ);
+   end Might_Have_Tasks;
+
    ----------------------------
    -- Needs_BIP_Task_Actuals --
    ----------------------------
@@ -9635,7 +9648,8 @@ package body Exp_Ch6 is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
    begin
-      return Has_Task (Func_Typ);
+      return not Global_No_Tasking
+        and then (Has_Task (Func_Typ) or else Might_Have_Tasks (Func_Typ));
    end Needs_BIP_Task_Actuals;
 
    -----------------------------------
