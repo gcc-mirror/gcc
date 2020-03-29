@@ -1,5 +1,14 @@
 2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* lib/gdc-utils.exp: (gdc-convert-args): Handle compilation test
+	arguments -D, -H, -X, and set compilable_output_file_ext.
+	(gdc-convert-test): Document and add cases DFLAGS and
+	EXTRA_CPP_SOURCES.  Add dg-final entry for output generation tests,
+	and set compilable_do_what to compile.
+	(gdc-do-test): Define compilable_do_what, default to assemble.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* gdc.test/runnable_cxx/runnable_cxx.exp: New file.
 	* lib/gdc-utils.exp (gdc-do-test): Add case for runnable_cxx.
 	* lib/gdc.exp (gdc_include_flags): Only add flags for libstdc++-v3 if
