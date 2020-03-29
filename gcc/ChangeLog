@@ -1,3 +1,8 @@
+2020-03-29  John David Anglin  <dave.anglin@bell.net>
+
+	* gcc/config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
+	.align output.
+
 2020-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93573
