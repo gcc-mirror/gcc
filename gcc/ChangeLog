@@ -1,3 +1,9 @@
+2020-03-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94363
+	* cgraphunit.c (process_function_and_variable_attributes): Remove
+	double 'attribute' words.
+
 2020-03-29  John David Anglin  <dave.anglin@bell.net>
 
 	* gcc/config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
