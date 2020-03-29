@@ -1,3 +1,15 @@
+2020-03-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/91601
+	* gcov.c (path_contains_zero_cycle_arc): Rename to ...
+	(path_contains_zero_or_negative_cycle_arc): ... this and handle
+	also negative edges.
+	(circuit): Handle also negative edges as they can happen
+	in some situations.
+
 2020-03-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from master.
