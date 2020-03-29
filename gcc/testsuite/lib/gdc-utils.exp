@@ -404,6 +404,7 @@ proc gdc-do-test { testcases } {
 	set options [gdc-permute-options [lsort -unique $PERMUTE_ARGS]]
 
 	switch $dir {
+	    runnable_cxx -
 	    runnable {
 		for { set i 0 } { $i<[llength $options] } { incr i } {
 		    set flags [lindex $options $i]

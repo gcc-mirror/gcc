@@ -1,5 +1,15 @@
 2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* gdc.test/runnable_cxx/runnable_cxx.exp: New file.
+	* lib/gdc-utils.exp (gdc-do-test): Add case for runnable_cxx.
+	* lib/gdc.exp (gdc_include_flags): Only add flags for libstdc++-v3 if
+	GDC_INCLUDE_CXX_FLAGS is true.
+	(gdc_link_flags): Likewise.
+	(gdc_init): Move setting of default gdc test flags to...
+	(gdc_target_compile): ...here.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* gdc.test/compilable/compilable.exp: New file.
 	* gdc.test/fail_compilation/fail_compilation.exp: New file.
 	* gdc.test/runnable/runnable.exp: New file.
