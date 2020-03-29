@@ -10939,9 +10939,9 @@ The @option{-fstrict-aliasing} option is enabled at levels
 @itemx -falign-functions=@var{n}:@var{m}:@var{n2}
 @itemx -falign-functions=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-functions
-Align the start of functions to the next power-of-two greater than
-@var{n}, skipping up to @var{m}-1 bytes.  This ensures that at least
-the first @var{m} bytes of the function can be fetched by the CPU
+Align the start of functions to the next power-of-two greater than or
+equal to @var{n}, skipping up to @var{m}-1 bytes.  This ensures that at
+least the first @var{m} bytes of the function can be fetched by the CPU
 without crossing an @var{n}-byte alignment boundary.
 
 If @var{m} is not specified, it defaults to @var{n}.
@@ -11007,6 +11007,9 @@ Align loops to a power-of-two boundary.  If the loops are executed
 many times, this makes up for any execution of the dummy padding
 instructions.
 
+If @option{-falign-labels} is greater than this value, then its value
+is used instead.
+
 Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-loops} and @option{-falign-loops=1} are
 equivalent and mean that loops are not aligned.
@@ -11025,6 +11028,9 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align branch targets to a power-of-two boundary, for branch targets
 where the targets can only be reached by jumping.  In this case,
 no dummy operations need be executed.
+
+If @option{-falign-labels} is greater than this value, then its value
+is used instead.
 
 Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-jumps} and @option{-falign-jumps=1} are

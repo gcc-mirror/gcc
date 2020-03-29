@@ -1,3 +1,9 @@
+2020-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/94381
+	* doc/invoke.texi: Update -falign-functions, -falign-loops and
+	-falign-jumps documentation.
+
 2020-03-29  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/94363
