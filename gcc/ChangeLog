@@ -1,3 +1,8 @@
+2020-03-30  Andreas Schwab  <schwab@suse.de>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE) [__riscv && __LP64__]:
+	Define.
+
 2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000-call.c altivec_init_builtins(): Remove code
