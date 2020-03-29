@@ -28,7 +28,7 @@ case ${query} in
       ;;
     --gdcflags)
       GDCFLAGS_default="-fmessage-length=0 -fno-show-column"
-      GDCFLAGS_config="@GDCFLAGSX@"
+      GDCFLAGS_config="@WARN_DFLAGS@ @GDCFLAGSX@"
       echo ${GDCFLAGS_default} ${GDCFLAGS_config}
       ;;
     --gdcpaths)

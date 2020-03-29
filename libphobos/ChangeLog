@@ -1,3 +1,15 @@
+2020-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Substite WARN_DFLAGS independently of GDCFLAGS.
+	* libdruntime/Makefile.am: Add WARN_DFLAGS to AM_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Add WARN_DFLAGS to AM_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add WARN_DFLAGS to --gdcflags.
+
 2020-04-07  Robin Dapp  <rdapp@linux.ibm.com>
 	    Stefan Liebler  <stli@linux.ibm.com>
 

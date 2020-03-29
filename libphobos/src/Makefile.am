@@ -23,7 +23,9 @@ D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
 	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
 
 # D flags for compilation
-AM_DFLAGS=$(phobos_compiler_pic_flag)
+AM_DFLAGS= \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS)
 
 # Install all D files
 ALL_PHOBOS_INSTALL_DSOURCES = $(PHOBOS_DSOURCES)

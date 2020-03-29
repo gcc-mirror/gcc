@@ -620,6 +620,7 @@ SHELL = @SHELL@
 SPEC_PHOBOS_DEPS = @SPEC_PHOBOS_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WARN_DFLAGS = @WARN_DFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -712,7 +713,10 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) -I .
 
 # D flags for compilation
-AM_DFLAGS = $(phobos_compiler_pic_flag)
+AM_DFLAGS = \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS)
+
 
 # Install all D and DI files
 ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \

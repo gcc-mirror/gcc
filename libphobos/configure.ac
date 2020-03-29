@@ -206,14 +206,17 @@ AC_SUBST(libtool_VERSION)
 
 # Set default flags (after DRUNTIME_WERROR!)
 if test -z "$GDCFLAGS"; then
-    GDCFLAGS="-Wall $WERROR_FLAG -g -frelease -O2"
+    GDCFLAGS="-g -frelease -O2"
 fi
 AC_SUBST(GDCFLAGS)
 
 if test -z "$GDCFLAGSX"; then
-    GDCFLAGSX="-Wall $WERROR_FLAG -g -fno-release -funittest"
+    GDCFLAGSX="-g -fno-release -funittest"
 fi
 AC_SUBST(GDCFLAGSX)
+
+WARN_DFLAGS="-Wall $WERROR_FLAG"
+AC_SUBST(WARN_DFLAGS)
 
 # Sanity check for the cross-compilation case:
 AC_CHECK_HEADER(stdio.h,:,
