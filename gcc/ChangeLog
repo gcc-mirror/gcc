@@ -1,3 +1,19 @@
+2020-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from master.
+	2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/i386.c (ix86_output_addr_diff_elt): Move the MACH-O
+	specific test before the one for HAVE_AS_GOTOFF_IN_DATA.
+
+	Backport from master.
+	2020-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (JUMP_TABLES_IN_TEXT_SECTION): Remove
+	references to Darwin.
+	* config/i386/i386.h (JUMP_TABLES_IN_TEXT_SECTION): Define this
+	unconditionally and comment on why.
+
 2020-03-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR lto/94249

@@ -236,6 +236,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_OUTPUT_IDENT
 #define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
 
+/* We always want jump tables in the text section:
+   * for PIC code, we need the subtracted symbol to be defined at
+     assembly-time.
+   * for mdynamic-no-pic, we cannot support jump tables in the .const
+     section for weak functions, this looks to ld64 like direct access
+     to the weak symbol from an anonymous atom.  */
+
+#undef JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
 /* Darwin profiling -- call mcount.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\

@@ -2254,11 +2254,10 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
-   sections.  This is the case for x86_64 on Mach-O for example.  */
+   sections.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION \
-  (flag_pic && ((TARGET_MACHO && TARGET_64BIT) \
-   || (!TARGET_64BIT && !HAVE_AS_GOTOFF_IN_DATA)))
+  (flag_pic && !(TARGET_64BIT || HAVE_AS_GOTOFF_IN_DATA))
 
 /* Switch to init or fini section via SECTION_OP, emit a call to FUNC,
    and switch back.  For x86 we do this only to save a few bytes that
