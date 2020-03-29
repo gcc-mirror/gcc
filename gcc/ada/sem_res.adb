@@ -9250,8 +9250,8 @@ package body Sem_Res is
       T : Entity_Id;
 
       procedure Resolve_Set_Membership;
-      --  Analysis has determined a unique type for the left operand. Use it to
-      --  resolve the disjuncts.
+      --  Analysis has determined a unique type for the left operand. Use it as
+      --  the basis to resolve the disjuncts.
 
       ----------------------------
       -- Resolve_Set_Membership --
@@ -9259,18 +9259,17 @@ package body Sem_Res is
 
       procedure Resolve_Set_Membership is
          Alt  : Node_Id;
-         Ltyp : Entity_Id;
 
       begin
          --  If the left operand is overloaded, find type compatible with not
          --  overloaded alternative of the right operand.
 
+         Alt := First (Alternatives (N));
          if Is_Overloaded (L) then
-            Ltyp := Empty;
-            Alt := First (Alternatives (N));
+            T := Empty;
             while Present (Alt) loop
                if not Is_Overloaded (Alt) then
-                  Ltyp := Intersect_Types (L, Alt);
+                  T := Intersect_Types (L, Alt);
                   exit;
                else
                   Next (Alt);
@@ -9280,15 +9279,15 @@ package body Sem_Res is
             --  Unclear how to resolve expression if all alternatives are also
             --  overloaded.
 
-            if No (Ltyp) then
+            if No (T) then
                Error_Msg_N ("ambiguous expression", N);
             end if;
 
          else
-            Ltyp := Etype (L);
+            T := Intersect_Types (L, Alt);
          end if;
 
-         Resolve (L, Ltyp);
+         Resolve (L, T);
 
          Alt := First (Alternatives (N));
          while Present (Alt) loop
@@ -9299,7 +9298,7 @@ package body Sem_Res is
             if not Is_Entity_Name (Alt)
               or else not Is_Type (Entity (Alt))
             then
-               Resolve (Alt, Ltyp);
+               Resolve (Alt, T);
             end if;
 
             Next (Alt);
@@ -9307,7 +9306,7 @@ package body Sem_Res is
 
          --  Check for duplicates for discrete case
 
-         if Is_Discrete_Type (Ltyp) then
+         if Is_Discrete_Type (T) then
             declare
                type Ent is record
                   Alt : Node_Id;
@@ -9350,11 +9349,11 @@ package body Sem_Res is
          --  equality for the type. This may be confusing to users, and the
          --  following warning appears useful for the most common case.
 
-         if Is_Scalar_Type (Ltyp)
-           and then Present (Get_User_Defined_Eq (Ltyp))
+         if Is_Scalar_Type (Etype (L))
+           and then Present (Get_User_Defined_Eq (Etype (L)))
          then
             Error_Msg_NE
-              ("membership test on& uses predefined equality?", N, Ltyp);
+              ("membership test on& uses predefined equality?", N, Etype (L));
             Error_Msg_N
               ("\even if user-defined equality exists (RM 4.5.2 (28.1/3)?", N);
          end if;
