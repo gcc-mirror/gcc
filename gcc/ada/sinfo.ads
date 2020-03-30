@@ -1029,7 +1029,7 @@ package Sinfo is
    --    Present in N_Raise_Expression nodes that appear in the body of the
    --    special predicateM function used to test a predicate in the context
    --    of a membership test, where raise expression results in returning a
-   --    value of False rather than raising an exception.
+   --    value of False rather than raising an exception.???obsolete flag
 
    --  Corresponding_Aspect (Node3-Sem)
    --    Present in N_Pragma node. Used to point back to the source aspect from

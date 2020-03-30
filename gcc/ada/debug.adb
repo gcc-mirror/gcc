@@ -170,7 +170,7 @@ package body Debug is
    --  d_w
    --  d_x
    --  d_y
-   --  d_z
+   --  d_z  Enable Put_Image on tagged types
 
    --  d_A  Stop generation of ALI file
    --  d_B
@@ -992,6 +992,9 @@ package body Debug is
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_z  Enable the default Put_Image on tagged types that are not
+   --       predefined.
 
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
 
