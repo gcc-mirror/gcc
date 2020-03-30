@@ -1,3 +1,9 @@
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94385
+	* semantics.c (add_stmt): Only set STMT_IS_FULL_EXPR_P on trees with
+	STATEMENT_CODE_P code.
+
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94306

@@ -1,3 +1,8 @@
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94385
+	* c-c++-common/pr94385.c: New test.
+
 2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/pragma_power6.c: New.

@@ -380,7 +380,8 @@ add_stmt (tree t)
 
       /* When we expand a statement-tree, we must know whether or not the
 	 statements are full-expressions.  We record that fact here.  */
-      STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
+      if (STATEMENT_CODE_P (TREE_CODE (t)))
+	STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
     }
 
   if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
