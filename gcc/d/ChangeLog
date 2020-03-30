@@ -1,3 +1,9 @@
+2020-04-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94425
+	* toir.cc (IRVisitor::visit (GccAsmStatement *)): Set ASM_VOLATILE_P
+	on all asm statements.
+
 2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/90136
