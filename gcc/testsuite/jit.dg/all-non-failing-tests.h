@@ -116,6 +116,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-empty.c */
+#define create_code create_code_empty
+#define verify_code verify_code_empty
+#include "test-empty.c"
+#undef create_code
+#undef verify_code
+
 /* test-error-*.c: We don't use these test cases, since they deliberately
    introduce errors, which we don't want here.  */
 
@@ -328,6 +335,9 @@ const struct testcase testcases[] = {
   {"expressions",
    create_code_expressions,
    verify_code_expressions},
+  {"empty",
+   create_code_empty,
+   verify_code_empty},
   {"factorial",
    create_code_factorial,
    verify_code_factorial},

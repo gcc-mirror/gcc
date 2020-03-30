@@ -1,3 +1,7 @@
+2020-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-empty.c
+
 2020-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94385

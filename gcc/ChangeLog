@@ -1,3 +1,8 @@
+2020-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* lra.c (finish_insn_code_data_once): Set the array elements
+	to NULL after freeing them.
+
 2020-03-30  Andreas Schwab  <schwab@suse.de>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE) [__riscv && __LP64__]:
