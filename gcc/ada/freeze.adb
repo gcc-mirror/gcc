@@ -7379,10 +7379,16 @@ package body Freeze is
                return;
             end if;
 
-            exit when
-              Nkind (Parent_P) = N_Subprogram_Body
+            --  If the parent is a subprogram body, the candidate insertion
+            --  point is just ahead of it.
+
+            if  Nkind (Parent_P) = N_Subprogram_Body
                 and then Unique_Defining_Entity (Parent_P) =
-                           Freeze_Outside_Subp;
+                           Freeze_Outside_Subp
+            then
+               P := Parent_P;
+               exit;
+            end if;
 
             P := Parent_P;
          end loop;
