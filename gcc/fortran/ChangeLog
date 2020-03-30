@@ -1,3 +1,12 @@
+2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94348
+	* decl.c (gfc_match_submod_proc): Add result var to the
+	proc's namespace.
+
 2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master

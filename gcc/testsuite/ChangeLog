@@ -1,3 +1,11 @@
+2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94348
+	* gfortran.dg/module_procedure_3.f90: New.
+
 2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master
@@ -19,7 +27,7 @@
 2020-03-24  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/94052
-        * g++.target/aarch64/pr94052.C: New test.
+	* g++.target/aarch64/pr94052.C: New test.
 
 2020-03-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
