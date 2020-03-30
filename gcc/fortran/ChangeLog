@@ -1,3 +1,11 @@
+2020-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/94246
+	* arith.c : Remove trailing white space.
+	* expr.c (scalarize_intrinsic_call): Remove the error checking.
+	Make a copy of the expression to be simplified and only replace
+	the original if the simplification succeeds.
+
 2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94348

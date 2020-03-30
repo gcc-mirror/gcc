@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fcompare-debug -fmodulo-sched --param sms-min-sc=1" } */
+/* { dg-options "-O2 -fcompare-debug -fmodulo-sched --param sms-min-sc=1" } */
 
 int a, c, e, f, g;
 void

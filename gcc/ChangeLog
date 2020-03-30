@@ -1,3 +1,56 @@
+2020-03-30  Andreas Schwab  <schwab@suse.de>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE) [__riscv && __LP64__]:
+	Define.
+
+2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c altivec_init_builtins(): Remove code
+	to skip defining builtins based on builtin_mask.
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94343
+	* config/i386/sse.md (<mask_codefor>one_cmpl<mode>2<mask_name>): If
+	!TARGET_AVX512VL, use 512-bit vpternlog and make sure the input
+	operand is a register.  Don't enable masked variants for V*[QH]Imode.
+
+	PR target/93069
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Use
+	<store_mask_constraint> instead of m in output operand constraint.
+	(vec_extract_hi_<mode><mask_name>): Use <mask_operand2> instead of
+	%{%3%}.
+
+2020-03-30  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_aix): Emit cookie to pattern.
+	(rs6000_indirect_call_template_1): Adjust to suit.
+	* config/rs6000/rs6000.md (call_local): Merge call_local32,
+	call_local64, and call_local_aix.
+	(call_value_local): Simlarly.
+	(call_nonlocal_aix, call_value_nonlocal_aix): Adjust rtl to suit,
+	and disable pattern when CALL_LONG.
+	(call_indirect_aix, call_value_indirect_aix): Adjust rtl.
+	(call_indirect_elfv2, call_indirect_pcrel): Likewise.
+	(call_value_indirect_elfv2, call_value_indirect_pcrel): Likewise.
+
+2020-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/94381
+	* doc/invoke.texi: Update -falign-functions, -falign-loops and
+	-falign-jumps documentation.
+
+2020-03-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94363
+	* cgraphunit.c (process_function_and_variable_attributes): Remove
+	double 'attribute' words.
+
+2020-03-29  John David Anglin  <dave.anglin@bell.net>
+
+	* gcc/config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
+	.align output.
+
 2020-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/93573

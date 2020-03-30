@@ -8726,7 +8726,6 @@ pa_asm_output_aligned_bss (FILE *stream,
 			   unsigned int align)
 {
   switch_to_section (bss_section);
-  fprintf (stream, "\t.align %u\n", align / BITS_PER_UNIT);
 
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");

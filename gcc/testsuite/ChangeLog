@@ -1,3 +1,78 @@
+2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pragma_power6.c: New.
+	* gcc.target/powerpc/pragma_power7.c: New.
+	* gcc.target/powerpc/pragma_power8.c: New.
+	* gcc.target/powerpc/pragma_power9.c: New.
+	* gcc.target/powerpc/pragma_misc9.c: New.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c: Update error message.
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c: Update error message.
+
+2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/bswap64-4.c: Update scan-assembler
+	expected results.
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94343
+	* gcc.target/i386/avx512f-pr94343.c: New test.
+	* gcc.target/i386/avx512vl-pr94343.c: New test.
+
+2020-03-30  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/87716
+	* gcc.target/i386/pr57193.c: XFAIL a test-case.
+
+2020-03-30  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/94402
+	* gfortran.dg/vect/vect-8.f90: Allow 22 or 23 loops
+	to be vectorized (based on libmvec presence).
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* gcc.target/i386/avx512vl-pr93069.c: New test.
+	* gcc.dg/vect/pr93069.c: New test.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc-utils.exp: (gdc-convert-args): Handle compilation test
+	arguments -D, -H, -X, and set compilable_output_file_ext.
+	(gdc-convert-test): Document and add cases DFLAGS and
+	EXTRA_CPP_SOURCES.  Add dg-final entry for output generation tests,
+	and set compilable_do_what to compile.
+	(gdc-do-test): Define compilable_do_what, default to assemble.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/runnable_cxx/runnable_cxx.exp: New file.
+	* lib/gdc-utils.exp (gdc-do-test): Add case for runnable_cxx.
+	* lib/gdc.exp (gdc_include_flags): Only add flags for libstdc++-v3 if
+	GDC_INCLUDE_CXX_FLAGS is true.
+	(gdc_link_flags): Likewise.
+	(gdc_init): Move setting of default gdc test flags to...
+	(gdc_target_compile): ...here.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/compilable/compilable.exp: New file.
+	* gdc.test/fail_compilation/fail_compilation.exp: New file.
+	* gdc.test/runnable/runnable.exp: New file.
+	* gdc.test/gdc-test.exp: Move and rename to...
+	* lib/gdc-utils.exp: ...this.  Remove load_lib gdc-dg.exp.
+	(dmd2dg): Rename to...
+	(gdc-convert-test): ...this.
+	(gdc-do-test): Add testcases parameter and remove subdir handling.
+
+2020-03-28  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.dg/torture/pr87197-debug-sms.c: Move to ...
+	* gcc.dg/sms-compare-debug-1.c: ... this.  Add -O2.
+	* gcc.c-torture/execute/pr70127-debug-sms.c: Move to ...
+	* gcc.dg/sms-compare-debug-2.c: ... this.  Add -O2.
+
 2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94348
