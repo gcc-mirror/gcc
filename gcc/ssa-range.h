@@ -88,9 +88,6 @@ private:
 };
 
 
-// FIXME: Forward declaration for loop_ranger.
-class vr_values;
-
 // A global ranger that uses SCEV/loop (if available) to refine PHI results.
 
 class loop_ranger : public global_ranger
@@ -102,7 +99,7 @@ public:
 private:
   void adjust_phi_with_loop_info (irange &r, gphi *phi);
 
-  vr_values *m_vr_values;
+  class vr_values *m_vr_values;
 };
 
 class trace_ranger : public loop_ranger
