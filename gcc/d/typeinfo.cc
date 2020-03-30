@@ -358,7 +358,7 @@ class TypeInfoVisitor : public Visitor
     DECL_EXTERNAL (decl) = 0;
     TREE_PUBLIC (decl) = 1;
     DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
-    DECL_COMDAT (decl) = 1;
+    d_comdat_linkage (decl);
     d_pushdecl (decl);
 
     return decl;

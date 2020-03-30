@@ -1,3 +1,8 @@
+2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (TypeInfoVisitor::internal_reference): Call
+	d_comdat_linkage on generated decl.
+
 2020-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/93038
