@@ -16797,13 +16797,6 @@ package body Sem_Util is
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean is
    begin
-      --  When the type of the prefix is not scalar, then the prefix is not
-      --  valid in any scenario.
-
-      if not Is_Scalar_Type (Etype (Prefix)) then
-         return False;
-      end if;
-
       --  Here we test for the case that the prefix is not a type and assume
       --  if it is not then it must be a named value or an object reference.
       --  This is because the parser always checks that prefixes of attributes
