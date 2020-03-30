@@ -345,10 +345,6 @@ package body Exp_Put_Image is
          --
          --  Note that this is putting a leading space for reals.
 
-         if Is_Real_Type (U_Type) then
-            return Build_Unknown_Put_Image_Call (N);
-         end if;
-
          declare
             Image : constant Node_Id :=
               Make_Attribute_Reference (Loc,
@@ -831,9 +827,6 @@ package body Exp_Put_Image is
       --
       --  Put_Image on tagged types triggers some bugs.
       --
-      --  Put_Image doesn't work for private types whose full type is real.
-      --  Disable for all real types, for simplicity.
-      --
       --  Put_Image doesn't work for access-to-protected types, because of
       --  confusion over their size. Disable for all access-to-subprogram
       --  types, just in case.
@@ -841,7 +834,6 @@ package body Exp_Put_Image is
       if Is_Remote_Types (Scope (Typ))
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
         or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
-        or else Is_Real_Type (Typ)
         or else Is_Access_Subprogram_Type (Typ)
       then
          return False;

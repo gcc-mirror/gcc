@@ -640,8 +640,31 @@ package body Exp_Imgv is
              Prefix         => New_Occurrence_Of (Ptyp, Loc),
              Expressions    => New_List (Expr)));
 
+      --  AI12-0020: Ada 2020 allows 'Image for all types, including private
+      --  types. If the full type is not a fixed-point type, then it is enough
+      --  to set the Conversion_OK flag. However, that would not work for
+      --  fixed-point types, because that flag changes the run-time semantics
+      --  of fixed-point type conversions; therefore, we must first convert to
+      --  Rtyp, and then to Tent.
+
       else
-         Arg_List := New_List (Convert_To (Tent, Expr));
+         declare
+            Conv : Node_Id;
+         begin
+            if Ada_Version >= Ada_2020
+              and then Is_Private_Type (Etype (Expr))
+            then
+               if Is_Fixed_Point_Type (Rtyp) then
+                  Conv := Convert_To (Tent, OK_Convert_To (Rtyp, Expr));
+               else
+                  Conv := OK_Convert_To (Tent, Expr);
+               end if;
+            else
+               Conv := Convert_To (Tent, Expr);
+            end if;
+
+            Arg_List := New_List (Conv);
+         end;
       end if;
 
       --  Append Snn, Pnn arguments
