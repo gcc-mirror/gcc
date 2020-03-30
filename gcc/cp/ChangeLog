@@ -1,3 +1,9 @@
+2020-04-04  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/94155 - crash in gimplifier with paren init of aggregates.
+	* init.c (build_vec_init): Fill in indexes.
+
 2020-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91377

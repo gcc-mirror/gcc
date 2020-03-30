@@ -1,3 +1,8 @@
+2020-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94155 - crash in gimplifier with paren init of aggregates.
+	* g++.dg/cpp2a/paren-init22.C: New test.
+
 2020-04-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/co-await-14-template-traits.C: Rename...
