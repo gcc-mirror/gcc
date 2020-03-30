@@ -158,10 +158,12 @@ package body System.Put_Images is
       Thin_Instance (S, X, "access subprogram");
    end Put_Image_Access_Subp;
 
-   procedure Put_Image_Access_Prot (S : in out Sink'Class; X : Thin_Pointer) is
+   procedure Put_Image_Access_Prot_Subp
+     (S : in out Sink'Class; X : Thin_Pointer)
+   is
    begin
       Thin_Instance (S, X, "access protected subprogram");
-   end Put_Image_Access_Prot;
+   end Put_Image_Access_Prot_Subp;
 
    procedure Put_Image_String (S : in out Sink'Class; X : String) is
    begin

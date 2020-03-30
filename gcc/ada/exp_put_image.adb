@@ -315,7 +315,7 @@ package body Exp_Put_Image is
 
       elsif Is_Access_Type (U_Type) then
          if Is_Access_Protected_Subprogram_Type (U_Type) then
-            Lib_RE := RE_Put_Image_Access_Prot;
+            Lib_RE := RE_Put_Image_Access_Prot_Subp;
          elsif Is_Access_Subprogram_Type (U_Type) then
             Lib_RE := RE_Put_Image_Access_Subp;
          elsif P_Size = System_Address_Size then
@@ -830,15 +830,10 @@ package body Exp_Put_Image is
       --  types in the private part of a Remote_Types package.
       --
       --  Put_Image on tagged types triggers some bugs.
-      --
-      --  Put_Image doesn't work for access-to-protected types, because of
-      --  confusion over their size. Disable for all access-to-subprogram
-      --  types, just in case.
 
       if Is_Remote_Types (Scope (Typ))
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
         or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
-        or else Is_Access_Subprogram_Type (Typ)
       then
          return False;
       end if;
