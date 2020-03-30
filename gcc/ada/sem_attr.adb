@@ -1414,56 +1414,65 @@ package body Sem_Attr is
       -----------------------------
 
       procedure Analyze_Image_Attribute (Str_Typ : Entity_Id) is
+         procedure Check_Image_Type (Image_Type : Entity_Id);
+         --  Check that Image_Type is legal as the type of a prefix of 'Image.
+         --  Legality depends on the Ada language version.
+
+         procedure Check_Image_Type (Image_Type : Entity_Id) is
+         begin
+            if False -- ???Disable 2020 feature until expander work is done
+              and then Ada_Version >= Ada_2020
+            then
+               null; -- all types are OK
+            elsif not Is_Scalar_Type (Image_Type) then
+               if Ada_Version >= Ada_2012 then
+                  Error_Attr_P
+                    ("prefix of % attribute must be a scalar type or a scalar "
+                       & "object name");
+               else
+                  Error_Attr_P ("prefix of % attribute must be a scalar type");
+               end if;
+            end if;
+         end Check_Image_Type;
+
+      --  Start of processing for Analyze_Image_Attribute
+
       begin
          --  AI12-0124: The ARG has adopted the GNAT semantics of 'Img for
          --  scalar types, so that the prefix can be an object, a named value,
          --  or a type. If the prefix is an object, there is no argument.
 
-         if Attr_Id = Attribute_Img
-           or else (Ada_Version >= Ada_2012 and then Is_Object_Image (P))
-         then
+         if Is_Object_Image (P) then
             Check_E0;
             Set_Etype (N, Str_Typ);
+            Check_Image_Type (Etype (P));
 
-            if Attr_Id = Attribute_Img and then not Is_Object_Image (P) then
-               Error_Attr_P
-                 ("prefix of % attribute must be a scalar object name");
+            if Attr_Id /= Attribute_Img and then Ada_Version < Ada_2012 then
+               Error_Attr_P ("prefix of % attribute must be a scalar type");
             end if;
          else
             Check_E1;
             Set_Etype (N, Str_Typ);
 
-            --  Check that the prefix type is scalar - much in the same way as
-            --  Check_Scalar_Type but with custom error messages to denote the
-            --  variants of 'Image attributes.
+            --  ???It's not clear why 'Img should behave any differently than
+            --  'Image.
 
-            if Is_Entity_Name (P)
-              and then Is_Type (Entity (P))
-              and then Ekind (Entity (P)) = E_Incomplete_Type
+            if Attr_Id = Attribute_Img then
+               Error_Attr_P
+                 ("prefix of % attribute must be a scalar object name");
+            end if;
+
+            pragma Assert (Is_Entity_Name (P) and then Is_Type (Entity (P)));
+
+            if Ekind (Entity (P)) = E_Incomplete_Type
               and then Present (Full_View (Entity (P)))
             then
                P_Type := Full_View (Entity (P));
+               P_Base_Type := Base_Type (P_Type);
                Set_Entity (P, P_Type);
             end if;
 
-            if not Is_Entity_Name (P)
-              or else not Is_Type (Entity (P))
-              or else not Is_Scalar_Type (P_Type)
-            then
-               if Ada_Version >= Ada_2012 then
-                  Error_Attr_P
-                    ("prefix of % attribute must be a scalar type or a scalar "
-                     & "object name");
-               else
-                  Error_Attr_P ("prefix of % attribute must be a scalar type");
-               end if;
-
-            elsif Is_Protected_Self_Reference (P) then
-               Error_Attr_P
-                 ("prefix of % attribute denotes current instance "
-                  & "(RM 9.4(21/2))");
-            end if;
-
+            Check_Image_Type (P_Type);
             Resolve (E1, P_Base_Type);
             Validate_Non_Static_Attribute_Function_Call;
          end if;
