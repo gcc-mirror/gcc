@@ -1,3 +1,11 @@
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Use
+	<store_mask_constraint> instead of m in output operand constraint.
+	(vec_extract_hi_<mode><mask_name>): Use <mask_operand2> instead of
+	%{%3%}.
+
 2020-03-30  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_call_aix): Emit cookie to pattern.

@@ -8693,7 +8693,8 @@
 })
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,v,m")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
+					  "=v,v,<store_mask_constraint>")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:V16FI 1 "<store_mask_predicate>"
 				 "v,<store_mask_constraint>,v")
@@ -8750,7 +8751,8 @@
 })
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,v,m")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
+					  "=v,v,<store_mask_constraint>")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:VI8F_256 1 "<store_mask_predicate>"
 				    "v,<store_mask_constraint>,v")
@@ -8760,7 +8762,7 @@
    && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>)
-    return "vextract<shuffletype>64x2\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}";
+    return "vextract<shuffletype>64x2\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
   else
     return "#";
 }
