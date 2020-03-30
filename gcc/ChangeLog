@@ -1,5 +1,10 @@
 2020-03-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94343
+	* config/i386/sse.md (<mask_codefor>one_cmpl<mode>2<mask_name>): If
+	!TARGET_AVX512VL, use 512-bit vpternlog and make sure the input
+	operand is a register.  Don't enable masked variants for V*[QH]Imode.
+
 	PR target/93069
 	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Use
 	<store_mask_constraint> instead of m in output operand constraint.

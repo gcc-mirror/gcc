@@ -1,3 +1,9 @@
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94343
+	* gcc.target/i386/avx512f-pr94343.c: New test.
+	* gcc.target/i386/avx512vl-pr94343.c: New test.
+
 2020-03-30  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/87716
