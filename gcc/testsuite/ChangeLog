@@ -1,3 +1,9 @@
+2020-03-30  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/94402
+	* gfortran.dg/vect/vect-8.f90: Allow 22 or 23 loops
+	to be vectorized (based on libmvec presence).
+
 2020-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93069
