@@ -142,17 +142,25 @@ package body System.Put_Images is
 
    procedure Put_Image_String (S : in out Sink'Class; X : String) is
    begin
-      --  ????We should double double quotes, and maybe do something nice with
-      --  control characters.
       Put_UTF_8 (S, """");
-      Put_String (S, X);
+      for C of X loop
+         if C = '"' then
+            Put_UTF_8 (S, """");
+         end if;
+         Put_Character (S, C);
+      end loop;
       Put_UTF_8 (S, """");
    end Put_Image_String;
 
    procedure Put_Image_Wide_String (S : in out Sink'Class; X : Wide_String) is
    begin
       Put_UTF_8 (S, """");
-      Put_Wide_String (S, X);
+      for C of X loop
+         if C = '"' then
+            Put_UTF_8 (S, """");
+         end if;
+         Put_Wide_Character (S, C);
+      end loop;
       Put_UTF_8 (S, """");
    end Put_Image_Wide_String;
 
@@ -160,7 +168,12 @@ package body System.Put_Images is
      (S : in out Sink'Class; X : Wide_Wide_String) is
    begin
       Put_UTF_8 (S, """");
-      Put_Wide_Wide_String (S, X);
+      for C of X loop
+         if C = '"' then
+            Put_UTF_8 (S, """");
+         end if;
+         Put_Wide_Wide_Character (S, C);
+      end loop;
       Put_UTF_8 (S, """");
    end Put_Image_Wide_Wide_String;
 

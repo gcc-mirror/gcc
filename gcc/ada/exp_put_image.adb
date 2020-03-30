@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util;
+with Debug;    use Debug;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -44,7 +45,7 @@ with Uintp;    use Uintp;
 
 package body Exp_Put_Image is
 
-   Tagged_Put_Image_Enabled : constant Boolean := False;
+   Tagged_Put_Image_Enabled : Boolean renames Debug_Flag_Underscore_Z;
    --  ???Set True to enable Put_Image for at least some tagged types
 
    -----------------------
@@ -410,18 +411,21 @@ package body Exp_Put_Image is
 
       --  Convert parameter to the required type (i.e. the type of the
       --  corresponding parameter), and call the appropriate routine.
+      --  We set the Conversion_OK flag in case the type is private.
 
       declare
          Libent : constant Entity_Id := RTE (Lib_RE);
+         Conv   : constant Node_Id :=
+           OK_Convert_To
+            (Etype (Next_Formal (First_Formal (Libent))),
+             Relocate_Node (Item));
       begin
          return
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (Libent, Loc),
              Parameter_Associations => New_List (
                Relocate_Node (Sink),
-               Convert_To
-                (Etype (Next_Formal (First_Formal (Libent))),
-                 Relocate_Node (Item))));
+               Conv));
       end;
    end Build_String_Put_Image_Call;
 
@@ -585,24 +589,11 @@ package body Exp_Put_Image is
             --  selector, since there are cases in which we make a reference
             --  to a hidden discriminant that is not visible.
 
-            --  If the enclosing record is an unchecked_union, we use the
-            --  default expressions for the discriminant (it must exist)
-            --  because we cannot generate a reference to it, given that it is
-            --  not stored. ????This seems unfriendly. It should just print
-            --  "(unchecked union)" instead. (Note that this code is
-            --  unreachable -- see exp_attr.)
-
-            if Is_Unchecked_Union (Scope (Entity (Name (VP)))) then
-               D_Ref :=
-                 New_Copy_Tree
-                   (Discriminant_Default_Value (Entity (Name (VP))));
-            else
-               D_Ref :=
-                  Make_Selected_Component (Loc,
-                    Prefix        => Make_Identifier (Loc, Name_V),
-                    Selector_Name =>
-                      New_Occurrence_Of (Entity (Name (VP)), Loc));
-            end if;
+            D_Ref :=
+               Make_Selected_Component (Loc,
+                 Prefix        => Make_Identifier (Loc, Name_V),
+                 Selector_Name =>
+                   New_Occurrence_Of (Entity (Name (VP)), Loc));
 
             Append_To (Result,
               Make_Case_Statement (Loc,
@@ -715,8 +706,6 @@ package body Exp_Put_Image is
             (Make_Identifier (Loc, Name_S))));
 
       --  Generate Put_Images for the discriminants of the type
-      --  If the type is an unchecked union, use the default values of
-      --  the discriminants, because they are not stored.
 
       Append_List_To (Stms,
         Make_Component_Attributes (Discriminant_Specifications (Type_Decl)));
@@ -901,7 +890,15 @@ package body Exp_Put_Image is
          return False;
       end if;
 
-      return Is_Scalar_Type (Typ) or else not In_Predefined_Unit (Typ);
+      --  Disable for unchecked unions, because there is no way to know the
+      --  discriminant value, and therefore no way to know which components
+      --  should be printed.
+
+      if Is_Unchecked_Union (Typ) then
+         return False;
+      end if;
+
+      return True;
    end Enable_Put_Image;
 
    ---------------------------------
@@ -941,6 +938,12 @@ package body Exp_Put_Image is
       --  enabled for tagged types, and we've seen a tagged type. Note that
       --  Tagged_Seen is set True by the parser if the "tagged" reserved word
       --  is seen; this flag tells us whether we have any tagged types.
+      --  It's unfortunate to have this Tagged_Seen processing so scattered
+      --  about, but we need to know if there are tagged types where this is
+      --  called in Analyze_Compilation_Unit, before we have analyzed any type
+      --  declarations. This mechanism also prevents doing RTE (RE_Sink) when
+      --  compiling the compiler itself. Packages Ada.Strings.Text_Output and
+      --  friends are not included in the compiler.
       --
       --  Don't do it if type Sink is unavailable in the runtime.
 
