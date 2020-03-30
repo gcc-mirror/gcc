@@ -1,3 +1,9 @@
+2020-03-30  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (template<T> uintset): New template created from ...
+	(pendset): ... this.  Use it.  Adjust all uses.
+
 2020-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master 62ede14d30f5d083f1ab23bcab6e0e3c9c649006
