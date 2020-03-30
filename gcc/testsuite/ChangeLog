@@ -1,3 +1,10 @@
+2020-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94378
+	* gcc.dg/analyzer/compound-assignment-1.c: New test.
+	* gcc.dg/analyzer/compound-assignment-2.c: New test.
+	* gcc.dg/analyzer/compound-assignment-3.c: New test.
+
 2020-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94436

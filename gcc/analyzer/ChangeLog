@@ -1,3 +1,60 @@
+2020-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94378
+	* checker-path.cc: Include "bitmap.h".
+	* constraint-manager.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	(exploded_node::detect_leaks): Pass null region_id to pop_frame.
+	* program-point.cc: Include "bitmap.h".
+	* program-state.cc: Likewise.
+	* region-model.cc (id_set<region_id>::id_set): Convert to...
+	(region_id_set::region_id_set): ...this.
+	(svalue_id_set::svalue_id_set): New ctor.
+	(region_model::copy_region): New function.
+	(region_model::copy_struct_region): New function.
+	(region_model::copy_union_region): New function.
+	(region_model::copy_array_region): New function.
+	(stack_region::pop_frame): Drop return value.  Add
+	"result_dst_rid" param; if it is non-null, use copy_region to copy
+	the result to it.  Rather than capture and pass a single "known
+	used" return value to be used by purge_unused_values, instead
+	gather and pass a set of known used return values.
+	(root_region::pop_frame): Drop return value.  Add "result_dst_rid"
+	param.
+	(region_model::on_assignment): Use copy_region.
+	(region_model::on_return): Likewise for the result.
+	(region_model::on_longjmp): Pass null for pop_frame's
+	result_dst_rid.
+	(region_model::update_for_return_superedge): Pass the region for the
+	return value of the call, if any, to pop_frame, rather than setting
+	the lvalue for the lhs of the result.
+	(region_model::pop_frame): Drop return value.  Add
+	"result_dst_rid" param.
+	(region_model::purge_unused_svalues): Convert third param from an
+	svalue_id * to an svalue_id_set *, updating the initial populating
+	of the "used" bitmap accordingly.  Don't remap it when done.
+	(struct selftest::coord_test): New selftest fixture, extracted from...
+	(selftest::test_dump_2): ...here.
+	(selftest::test_compound_assignment): New selftest.
+	(selftest::test_stack_frames): Pass null to new param of pop_frame.
+	(selftest::analyzer_region_model_cc_tests): Call the new selftest.
+	* region-model.h (class id_set): Delete template.
+	(class region_id_set): Reimplement, using old id_set implementation.
+	(class svalue_id_set): Likewise.  Convert from auto_sbitmap to
+	auto_bitmap.
+	(region::get_active_view): New accessor.
+	(stack_region::pop_frame): Drop return value.  Add
+	"result_dst_rid" param.
+	(root_region::pop_frame): Likewise.
+	(region_model::pop_frame): Likewise.
+	(region_model::copy_region): New decl.
+	(region_model::purge_unused_svalues): Convert third param from an
+	svalue_id * to an svalue_id_set *.
+	(region_model::copy_struct_region): New decl.
+	(region_model::copy_union_region): New decl.
+	(region_model::copy_array_region): New decl.
+
 2020-03-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* program-state.cc (selftest::test_program_state_dumping): Update

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fibonacci_heap.h"
 #include "shortest-paths.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "tristate.h"
 #include "selftest.h"
 #include "ordered-hash-map.h"
