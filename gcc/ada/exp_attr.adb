@@ -3603,6 +3603,7 @@ package body Exp_Attr is
 
          --    (X'address = Y'address)
          --      and then (X'Size = Y'Size)
+         --      and then (X'Size /= 0)      (AI12-0077)
 
          --  If both arguments have the same Etype the second conjunct can be
          --  omitted.
@@ -3622,27 +3623,39 @@ package body Exp_Attr is
              Attribute_Name => Name_Size,
              Prefix         => New_Copy_Tree (X));
 
-         Y_Size :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Size,
-             Prefix         => New_Copy_Tree (Y));
-
          if Etype (X) = Etype (Y) then
             Rewrite (N,
-              Make_Op_Eq (Loc,
-                Left_Opnd  => X_Addr,
-                Right_Opnd => Y_Addr));
-         else
-            Rewrite (N,
-              Make_Op_And (Loc,
+              Make_And_Then (Loc,
                 Left_Opnd  =>
                   Make_Op_Eq (Loc,
                     Left_Opnd  => X_Addr,
                     Right_Opnd => Y_Addr),
                 Right_Opnd =>
-                  Make_Op_Eq (Loc,
+                  Make_Op_Ne (Loc,
                     Left_Opnd  => X_Size,
-                    Right_Opnd => Y_Size)));
+                    Right_Opnd => Make_Integer_Literal (Loc, 0))));
+         else
+            Y_Size :=
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Size,
+                Prefix         => New_Copy_Tree (Y));
+
+            Rewrite (N,
+              Make_And_Then (Loc,
+                Left_Opnd  =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => X_Addr,
+                    Right_Opnd => Y_Addr),
+                Right_Opnd =>
+                  Make_And_Then (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd  => X_Size,
+                        Right_Opnd => Y_Size),
+                    Right_Opnd =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd  => New_Copy_Tree (X_Size),
+                        Right_Opnd => Make_Integer_Literal (Loc, 0)))));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
