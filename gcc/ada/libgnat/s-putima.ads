@@ -72,7 +72,8 @@ package System.Put_Images is
    procedure Put_Image_Access_Subp (S : in out Sink'Class; X : Thin_Pointer);
    --  For access-to-subprogram types
 
-   procedure Put_Image_Access_Prot (S : in out Sink'Class; X : Thin_Pointer);
+   procedure Put_Image_Access_Prot_Subp
+     (S : in out Sink'Class; X : Thin_Pointer);
    --  For access-to-protected-subprogram types
 
    procedure Put_Image_String (S : in out Sink'Class; X : String);
