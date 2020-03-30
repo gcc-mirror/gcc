@@ -1,3 +1,12 @@
+2020-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Core issues 1001 and 1322
+	PR c++/92010
+	* pt.c (rebuild_function_or_method_type): Split function out from ...
+	(tsubst_function_type): ... here.
+	(maybe_rebuild_function_decl_type): New function.
+	(tsubst_function_decl): Use it.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94325
