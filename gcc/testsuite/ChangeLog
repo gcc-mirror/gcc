@@ -3,6 +3,9 @@
 	Backported from mainline
 	2020-03-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94385
+	* c-c++-common/pr94385.c: New test.
+
 	PR target/93069
 	* gcc.target/i386/avx512vl-pr93069.c: New test.
 	* gcc.dg/vect/pr93069.c: New test.
