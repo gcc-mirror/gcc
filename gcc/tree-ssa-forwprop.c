@@ -1562,18 +1562,33 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   for (i = 0; i < 2; i++)
     defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
 
-  /* Look through narrowing conversions.  */
+  /* Look through narrowing (or same precision) conversions.  */
   if (CONVERT_EXPR_CODE_P (def_code[0])
       && CONVERT_EXPR_CODE_P (def_code[1])
       && INTEGRAL_TYPE_P (TREE_TYPE (def_arg1[0]))
       && INTEGRAL_TYPE_P (TREE_TYPE (def_arg1[1]))
       && TYPE_PRECISION (TREE_TYPE (def_arg1[0]))
 	 == TYPE_PRECISION (TREE_TYPE (def_arg1[1]))
-      && TYPE_PRECISION (TREE_TYPE (def_arg1[0])) > TYPE_PRECISION (rtype)
+      && TYPE_PRECISION (TREE_TYPE (def_arg1[0])) >= TYPE_PRECISION (rtype)
       && has_single_use (arg[0])
       && has_single_use (arg[1]))
     {
       for (i = 0; i < 2; i++)
+	{
+	  arg[i] = def_arg1[i];
+	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+	}
+    }
+  else
+    {
+      /* Handle signed rotate; the RSHIFT_EXPR has to be done
+	 in unsigned type but LSHIFT_EXPR could be signed.  */
+      i = (def_code[0] == LSHIFT_EXPR || def_code[0] == RSHIFT_EXPR);
+      if (CONVERT_EXPR_CODE_P (def_code[i])
+	  && (def_code[1 - i] == LSHIFT_EXPR || def_code[1 - i] == RSHIFT_EXPR)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (def_arg1[i]))
+	  && TYPE_PRECISION (rtype) == TYPE_PRECISION (TREE_TYPE (def_arg1[i]))
+	  && has_single_use (arg[i]))
 	{
 	  arg[i] = def_arg1[i];
 	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
@@ -1608,8 +1623,33 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   if (!operand_equal_for_phi_arg_p (def_arg1[0], def_arg1[1])
       || !types_compatible_p (TREE_TYPE (def_arg1[0]),
 			      TREE_TYPE (def_arg1[1])))
-    return false;
-  if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[0])))
+    {
+      if ((TYPE_PRECISION (TREE_TYPE (def_arg1[0]))
+	   != TYPE_PRECISION (TREE_TYPE (def_arg1[1])))
+	  || (TYPE_UNSIGNED (TREE_TYPE (def_arg1[0]))
+	      == TYPE_UNSIGNED (TREE_TYPE (def_arg1[1]))))
+	return false;
+
+      /* Handle signed rotate; the RSHIFT_EXPR has to be done
+	 in unsigned type but LSHIFT_EXPR could be signed.  */
+      i = def_code[0] != RSHIFT_EXPR;
+      if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[i])))
+	return false;
+
+      tree tem;
+      enum tree_code code;
+      defcodefor_name (def_arg1[i], &code, &tem, NULL);
+      if (!CONVERT_EXPR_CODE_P (code)
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (tem))
+	  || TYPE_PRECISION (TREE_TYPE (tem)) != TYPE_PRECISION (rtype))
+	return false;
+      def_arg1[i] = tem;
+      if (!operand_equal_for_phi_arg_p (def_arg1[0], def_arg1[1])
+	  || !types_compatible_p (TREE_TYPE (def_arg1[0]),
+				  TREE_TYPE (def_arg1[1])))
+	return false;
+    }
+  else if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[0])))
     return false;
 
   /* CNT1 + CNT2 == B case above.  */

@@ -1,3 +1,8 @@
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94344
+	* gcc.dg/pr94344.c: New test.
+
 2020-03-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/all-non-failing-tests.h: Add test-empty.c

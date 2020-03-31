@@ -1,3 +1,11 @@
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94344
+	* tree-ssa-forwprop.c (simplify_rotate): Handle also same precision
+	conversions, either on both operands of |^+ or just one.  Handle
+	also extra same precision conversion on RSHIFT_EXPR first operand
+	provided RSHIFT_EXPR is performed in unsigned type.
+
 2020-03-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* lra.c (finish_insn_code_data_once): Set the array elements
