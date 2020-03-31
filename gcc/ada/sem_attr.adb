@@ -1429,9 +1429,7 @@ package body Sem_Attr is
 
          procedure Check_Image_Type (Image_Type : Entity_Id) is
          begin
-            if False -- ???Disable 2020 feature until expander work is done
-              and then Ada_Version >= Ada_2020
-            then
+            if Ada_Version >= Ada_2020 then
                null; -- all types are OK
             elsif not Is_Scalar_Type (Image_Type) then
                if Ada_Version >= Ada_2012 then

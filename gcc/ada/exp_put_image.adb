@@ -915,6 +915,79 @@ package body Exp_Put_Image is
       return Make_Defining_Identifier (Loc, Sname);
    end Make_Put_Image_Name;
 
+   function Image_Should_Call_Put_Image (N : Node_Id) return Boolean is
+   begin
+      if Ada_Version < Ada_2020 then
+         return False;
+      end if;
+
+      --  In Ada 2020, T'Image calls T'Put_Image if there is an explicit
+      --  aspect_specification for Put_Image, or if U_Type'Image is illegal
+      --  in pre-2020 versions of Ada.
+
+      declare
+         U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
+      begin
+         if Present (TSS (U_Type, TSS_Put_Image)) then
+            return True;
+         end if;
+
+         return not Is_Scalar_Type (U_Type);
+      end;
+   end Image_Should_Call_Put_Image;
+
+   function Build_Image_Call (N : Node_Id) return Node_Id is
+      --  For T'Image (X) Generate an Expression_With_Actions node:
+      --
+      --     do
+      --        S : Buffer := New_Buffer;
+      --        U_Type'Put_Image (S, X);
+      --        Result : constant String := Get (S);
+      --        Destroy (S);
+      --     in Result end
+      --
+      --  where U_Type is the underlying type, as needed to bypass privacy.
+
+      Loc : constant Source_Ptr := Sloc (N);
+      U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
+      Sink_Entity : constant Entity_Id :=
+        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('S'));
+      Sink_Decl : constant Node_Id :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Sink_Entity,
+          Object_Definition =>
+            New_Occurrence_Of (RTE (RE_Buffer), Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_New_Buffer), Loc),
+              Parameter_Associations => Empty_List));
+      Put_Im : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (U_Type, Loc),
+          Attribute_Name => Name_Put_Image,
+          Expressions    => New_List (
+            New_Occurrence_Of (Sink_Entity, Loc),
+            New_Copy_Tree (First (Expressions (N)))));
+      Result_Entity : constant Entity_Id :=
+        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('R'));
+      Result_Decl : constant Node_Id :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Result_Entity,
+          Object_Definition =>
+            New_Occurrence_Of (Stand.Standard_String, Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_Get), Loc),
+              Parameter_Associations => New_List (
+                New_Occurrence_Of (Sink_Entity, Loc))));
+      Image : constant Node_Id :=
+        Make_Expression_With_Actions (Loc,
+          Actions => New_List (Sink_Decl, Put_Im, Result_Decl),
+          Expression => New_Occurrence_Of (Result_Entity, Loc));
+   begin
+      return Image;
+   end Build_Image_Call;
+
    ------------------
    -- Preload_Sink --
    ------------------
