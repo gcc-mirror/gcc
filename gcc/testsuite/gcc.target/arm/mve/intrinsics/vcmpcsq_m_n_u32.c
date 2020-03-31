@@ -16,7 +16,7 @@ foo (uint32x4_t a, uint32_t b, mve_pred16_t p)
 mve_pred16_t
 foo1 (uint32x4_t a, uint32_t b, mve_pred16_t p)
 {
-  return vcmpcsq_m_n (a, b, p);
+  return vcmpcsq_m (a, b, p);
 }
 
 /* { dg-final { scan-assembler "vpst" } } */

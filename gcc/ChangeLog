@@ -1,3 +1,86 @@
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (vaddlvq): Move the polymorphic variant to the
+	common section of both MVE Integer and MVE Floating Point.
+	(vaddvq): Likewise.
+	(vaddlvq_p): Likewise.
+	(vaddvaq): Likewise.
+	(vaddvq_p): Likewise.
+	(vcmpcsq): Likewise.
+	(vmlsdavxq): Likewise.
+	(vmlsdavq): Likewise.
+	(vmladavxq): Likewise.
+	(vmladavq): Likewise.
+	(vminvq): Likewise.
+	(vminavq): Likewise.
+	(vmaxvq): Likewise.
+	(vmaxavq): Likewise.
+	(vmlaldavq): Likewise.
+	(vcmphiq): Likewise.
+	(vaddlvaq): Likewise.
+	(vrmlaldavhq): Likewise.
+	(vrmlaldavhxq): Likewise.
+	(vrmlsldavhq): Likewise.
+	(vrmlsldavhxq): Likewise.
+	(vmlsldavxq): Likewise.
+	(vmlsldavq): Likewise.
+	(vabavq): Likewise.
+	(vrmlaldavhaq): Likewise.
+	(vcmpgeq_m_n): Likewise.
+	(vmlsdavxq_p): Likewise.
+	(vmlsdavq_p): Likewise.
+	(vmlsdavaxq): Likewise.
+	(vmlsdavaq): Likewise.
+	(vaddvaq_p): Likewise.
+	(vcmpcsq_m_n): Likewise.
+	(vcmpcsq_m): Likewise.
+	(vmladavxq_p): Likewise.
+	(vmladavq_p): Likewise.
+	(vmladavaxq): Likewise.
+	(vmladavaq): Likewise.
+	(vminvq_p): Likewise.
+	(vminavq_p): Likewise.
+	(vmaxvq_p): Likewise.
+	(vmaxavq_p): Likewise.
+	(vcmphiq_m): Likewise.
+	(vaddlvaq_p): Likewise.
+	(vmlaldavaq): Likewise.
+	(vmlaldavaxq): Likewise.
+	(vmlaldavq_p): Likewise.
+	(vmlaldavxq_p): Likewise.
+	(vmlsldavaq): Likewise.
+	(vmlsldavaxq): Likewise.
+	(vmlsldavq_p): Likewise.
+	(vmlsldavxq_p): Likewise.
+	(vrmlaldavhaxq): Likewise.
+	(vrmlaldavhq_p): Likewise.
+	(vrmlaldavhxq_p): Likewise.
+	(vrmlsldavhaq): Likewise.
+	(vrmlsldavhaxq): Likewise.
+	(vrmlsldavhq_p): Likewise.
+	(vrmlsldavhxq_p): Likewise.
+	(vabavq_p): Likewise.
+	(vmladavaq_p): Likewise.
+	(vstrbq_scatter_offset): Likewise.
+	(vstrbq_p): Likewise.
+	(vstrbq_scatter_offset_p): Likewise.
+	(vstrdq_scatter_base_p): Likewise.
+	(vstrdq_scatter_base): Likewise.
+	(vstrdq_scatter_offset_p): Likewise.
+	(vstrdq_scatter_offset): Likewise.
+	(vstrdq_scatter_shifted_offset_p): Likewise.
+	(vstrdq_scatter_shifted_offset): Likewise.
+	(vmaxq_x): Likewise.
+	(vminq_x): Likewise.
+	(vmovlbq_x): Likewise.
+	(vmovltq_x): Likewise.
+	(vmulhq_x): Likewise.
+	(vmullbq_int_x): Likewise.
+	(vmullbq_poly_x): Likewise.
+	(vmulltq_int_x): Likewise.
+	(vmulltq_poly_x): Likewise.
+	(vstrbq): Likewise.
+
 2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94368

@@ -16,7 +16,7 @@ foo (int16x8_t a, int16_t b, mve_pred16_t p)
 mve_pred16_t
 foo1 (int16x8_t a, int16_t b, mve_pred16_t p)
 {
-  return vcmpgeq_m_n (a, b, p);
+  return vcmpgeq_m (a, b, p);
 }
 
 /* { dg-final { scan-assembler "vpst" } } */
