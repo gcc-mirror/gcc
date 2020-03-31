@@ -1,3 +1,8 @@
+2020-03-31  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression) [TARGET_EXPR]: Use
+	local variables.
+
 2020-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90711
