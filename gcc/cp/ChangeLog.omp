@@ -1,3 +1,9 @@
+2020-03-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* semantics.cc (handle_omp_array_sections_1): Call STRIP_NOPS
+	on length and low_bound;
+	(handle_omp_array_sections): Likewise.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* decl.cc (cp_unwrap_for_init): New.
