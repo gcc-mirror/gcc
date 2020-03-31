@@ -32,11 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 // functionality at the statement level.  Ie, it can calculate ranges on
 // statements, but does no additonal lookup.
 //
-// All the range_of_* methods will return a range if the types is supported
-// by the range engine. It may be the full range for the type, AKA varying_p
-// or it may be a refined range.
-// If the range type is not supported, then false is returned.
-// non-statement related dwmethods return whatever the current global value is.
+// All the range_of_* methods will return a range if the types is
+// supported by the range engine.  It may be the full range for the
+// type, AKA varying_p or it may be a refined range.  If the range
+// type is not supported, then false is returned.  Non-statement
+// related methods return whatever the current global value is.
 
 class gimple_ranger : public gori_compute
 {
@@ -64,9 +64,9 @@ public:
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
   void export_global_ranges ();
-  
+
   void dump (FILE *f);
-  void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
+  void calculate_and_dump (FILE *f);
 protected:
   virtual void range_of_ssa_name (irange &r, tree name, gimple *s = NULL);
   bool range_from_import (irange &r, tree name, irange &import_range);
@@ -128,16 +128,15 @@ private:
 		const irange &r);
 };
 
-  
 
-// Like global_ranger::range_of_expr (), but make an on-the-fly ranger.
-// Return TRUE if SSA as seen from within STMT has a known range the is not
-// varying.  Set this range in R.
+
+// Like global_ranger::range_of_expr (), but make an on-the-fly
+// ranger.  If SSA, as seen from STMT, has a known range, set it in R
+// and return TRUE.
 //
-// NOTE: There is overhead involved with this function, so it
-// should only be used for very lightweight or unrelated range
-// queries.  This function is mostly meant for range queries that
-// don't need caching in subsequent calls.  */
+// NOTE: There is overhead involved with this function, so it should
+// only be used for lightweight queries.  It is mostly meant for range
+// queries that don't need caching in subsequent calls.
 
 static inline bool
 on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)

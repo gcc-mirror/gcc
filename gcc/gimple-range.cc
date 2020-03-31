@@ -224,8 +224,8 @@ gimple_range_fold (const gimple *stmt, irange &res, const irange &r1)
   gcc_checking_assert (gimple_range_handler (stmt));
 
   tree type = gimple_expr_type (stmt);
+  // Unary SSA operations require the LHS type as the second range.
   int_range<1> r2 (type);
-  // Single ssa operations require the LHS type as the second range.
 
   return gimple_range_fold (stmt, res, r1, r2);
 }
@@ -261,9 +261,9 @@ gimple_range_operand1 (const gimple *stmt)
   switch (gimple_code (stmt))
     {
       case GIMPLE_COND:
-        return gimple_cond_lhs (stmt);
+	return gimple_cond_lhs (stmt);
       case GIMPLE_ASSIGN:
-        {
+	{
 	  tree expr = gimple_assign_rhs1 (stmt);
 	  if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
 	    {
@@ -274,7 +274,7 @@ gimple_range_operand1 (const gimple *stmt)
 	      // ADDR_EXPR and do the right thing.
 	      tree base = get_base_address (TREE_OPERAND (expr, 0));
 	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
-	        {
+		{
 		  // If the base address is an SSA_NAME, return it.
 		  tree b = TREE_OPERAND (base, 0);
 		  if (TREE_CODE (b) == SSA_NAME)
@@ -284,7 +284,7 @@ gimple_range_operand1 (const gimple *stmt)
 	  return expr;
 	}
       default:
-        break;
+	break;
     }
   return NULL;
 }

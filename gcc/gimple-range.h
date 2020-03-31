@@ -85,7 +85,7 @@ gimple_range_global (tree name)
   tree type = TREE_TYPE (name);
   if (!POINTER_TYPE_P (type) && SSA_NAME_RANGE_INFO (name))
     {
-      // Return a range from an SSA_NAME's available range.  
+      // Return a range from an SSA_NAME's available range.
       wide_int min, max;
       enum value_range_kind kind = get_range_info (name, &min, &max);
       return value_range (type, min, max, kind);

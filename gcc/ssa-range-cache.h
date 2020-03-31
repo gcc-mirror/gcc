@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 // This global cache is used with the range engine as markers for what
 // has been visited during this incarnation.  Once the ranger evaluates
-// a name, it is typically not re-evaluated again.   
+// a name, it is typically not re-evaluated again.
 
 typedef int_range<3> irange_storage;
 
@@ -42,7 +42,7 @@ private:
 };
 
 // Class used to track non-null references of an ssa-name
-// A vector of bitmaps indexed by ssa-name is maintained. When indexed by 
+// A vector of bitmaps indexed by ssa-name is maintained. When indexed by
 // Basic Block, an on-bit indicates there is a non-null dereference for
 // that ssa_name in that basic block.
 

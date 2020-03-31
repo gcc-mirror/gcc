@@ -61,7 +61,7 @@ bool
 gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 {
   bool res = false;
-  // If name is specified, make sure it a LHS of S.
+  // If name is specified, make sure it is a LHS of S.
   gcc_checking_assert (name ? SSA_NAME_DEF_STMT (name) == s : true);
 
   if (gimple_range_handler (s))
@@ -92,14 +92,14 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
       if (r.undefined_p ())
 	return true;
       if (name && TREE_TYPE (name) != r.type ())
-        range_cast (r, TREE_TYPE (name));
+	range_cast (r, TREE_TYPE (name));
       return true;
     }
   return false;
 }
 
 
-// Calculate a range for NAME on edge E and return it in R.  
+// Calculate a range for NAME on edge E and return it in R.
 // Return false if no range can be determined.
 
 void
@@ -107,7 +107,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 {
   widest_irange edge_range;
   gcc_checking_assert (irange::supports_type_p (TREE_TYPE (name)));
-  
+
   // PHI arguments can be constants, catch these here.
   if (!gimple_range_ssa_p (name))
     {
@@ -147,7 +147,7 @@ gimple_ranger::range_on_exit (irange &r, basic_block bb ATTRIBUTE_UNUSED,
 
 
 // Calculate a range for range_op statement S and return it in R.  If any
-// If a range cannot be calculated, return false.  
+// If a range cannot be calculated, return false.
 
 bool
 gimple_ranger::range_of_range_op (irange &r, gimple *s)
@@ -172,8 +172,8 @@ gimple_ranger::range_of_range_op (irange &r, gimple *s)
 }
 
 
-// Calculate a range for phi statement S and return it in R. 
-// If a range cannot be calculated, return false.  
+// Calculate a range for phi statement S and return it in R.
+// If a range cannot be calculated, return false.
 
 bool
 gimple_ranger::range_of_phi (irange &r, gphi *phi)
@@ -205,8 +205,8 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
 }
 
 
-// Calculate a range for call statement S and return it in R.  
-// If a range cannot be calculated, return false.  
+// Calculate a range for call statement S and return it in R.
+// If a range cannot be calculated, return false.
 
 bool
 gimple_ranger::range_of_call (irange &r, gcall *call)
@@ -225,8 +225,8 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 }
 
 
-// Calculate a range for COND_EXPR statement S and return it in R.  
-// If a range cannot be calculated, return false.  
+// Calculate a range for COND_EXPR statement S and return it in R.
+// If a range cannot be calculated, return false.
 
 bool
 gimple_ranger::range_of_cond_expr  (irange &r, gassign *s)
@@ -251,9 +251,9 @@ gimple_ranger::range_of_cond_expr  (irange &r, gassign *s)
     {
       // False, pick second operand
       if (cond_range.zero_p ())
-        r = range2;
+	r = range2;
       else
-        r = range1;
+	r = range1;
     }
   else
     {
@@ -267,7 +267,7 @@ gimple_ranger::range_of_cond_expr  (irange &r, gassign *s)
 // ------------------------------------------------------------------------
 
 
-// COnstruct a global_ranger object.
+// Construct a global_ranger object.
 
 global_ranger::global_ranger ()
 {
@@ -361,7 +361,7 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME &&
 		       irange::supports_type_p (TREE_TYPE (name)));
 
-  // If this STMT has already been processed, return that value. 
+  // If this STMT has already been processed, return that value.
   if (m_globals.get_global_range (r, name))
     return true;
  
@@ -393,8 +393,8 @@ global_ranger::range_of_ssa_name (irange &r, tree name, gimple *s)
 
   basic_block bb = gimple_bb (s);
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-    
-  // if name is defined in this block, try to get an range from S.
+
+  // If name is defined in this block, try to get an range from S.
   if (def_stmt && gimple_bb (def_stmt) == bb)
     gcc_assert (range_of_stmt (r, def_stmt, name));
   else
@@ -405,9 +405,9 @@ global_ranger::range_of_ssa_name (irange &r, tree name, gimple *s)
   // We don't care if it's between the def and a use within a block
   // because the entire block must be executed anyway.
   // FIXME:?? For non-call exceptions we could have a statement throw
-  // which causes an early block exit. 
+  // which causes an early block exit.
   // in which case we may need to walk from S back to the def/top of block
-  // to make sure the deref happens between S and there before claiming 
+  // to make sure the deref happens between S and there before claiming
   // there is a deref.   Punt for now.
   if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
       non_null_deref_p (name, bb))
@@ -426,8 +426,8 @@ global_ranger::range_from_import (irange &r, tree name, irange &import_range)
   // This probably means the IL has changed underneath... just return false
   // until we have a more comprehensive solution
   if (!import || (import_range.undefined_p () ||
-                  useless_type_conversion_p (TREE_TYPE (import),
-                                             import_range.type ())))
+		  useless_type_conversion_p (TREE_TYPE (import),
+					     import_range.type ())))
     return false;
 
   // Only handling range_ops until we find a cond-expr that matters.
@@ -442,7 +442,7 @@ global_ranger::range_from_import (irange &r, tree name, irange &import_range)
   // its possible 2 different chains occur in one stmt, ie:
   // if (b_4 < d_6), but there is no DEF for this stmt, so it can't happen.
   // f_5 = b_4 + d_6 would have no import since there are 2 symbolics.
-  
+
   gimple *s = SSA_NAME_DEF_STMT (name);
   if (!s || !gimple_range_handler (s))
     return false;
@@ -555,7 +555,7 @@ global_ranger::dump (FILE *f)
 
       dump_bb (f, bb, 4, TDF_NONE);
 
-      // Now find any globals defined in this block 
+      // Now find any globals defined in this block
       for (x = 1; x < num_ssa_names; x++)
 	{
 	  tree name = ssa_name (x);
@@ -623,7 +623,7 @@ global_ranger::dump (FILE *f)
     }
 }
 
-// Calculate all ranges by visiting every block and asking for the range of 
+// Calculate all ranges by visiting every block and asking for the range of
 // each ssa_name on each statement, and then dump those ranges to OUTPUT.
 
 void
@@ -631,7 +631,7 @@ global_ranger::calculate_and_dump (FILE *output)
 {
   basic_block bb;
   widest_irange r;
-  
+
   //  Walk every statement asking for a range.
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -659,7 +659,7 @@ global_ranger::calculate_and_dump (FILE *output)
 	    {
 	      tree use = gimple_range_ssa_p (USE_FROM_PTR (use_p));
 	      if (use)
-	        range_of_expr (r, use, stmt);
+		range_of_expr (r, use, stmt);
 	    }
 	}
     }
@@ -669,7 +669,7 @@ global_ranger::calculate_and_dump (FILE *output)
 }
 
 // Return a static range for NAME on entry to basic block BB in R.
-// If calc is true, Fill any cache entries required between BB and the def 
+// If calc is true, Fill any cache entries required between BB and the def
 // block for NAME.  Otherwise, return false if the cache is empty.
 
 bool
@@ -686,14 +686,14 @@ global_ranger::block_range (irange &r, basic_block bb, tree name, bool calc)
       if (def_stmt)
 	def_bb = gimple_bb (def_stmt);;
       if (!def_bb)
-        {
+	{
 	  // IF we get to the entry block, this better be a default def
-	  // or range_on_entry was called fo a block not dominated by 
+	  // or range_on_entry was called fo a block not dominated by
 	  // the def.  This would be a bug.
 	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
 	  def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 	}
-      
+
       // There is no range on entry for the defintion block.
       if (def_bb == bb)
 	return false;
@@ -710,7 +710,7 @@ global_ranger::block_range (irange &r, basic_block bb, tree name, bool calc)
 // range-on-entry cache for E->src, then return false.
 // If this is the def block, then see if the DEF can be evaluated with them
 // import name, otherwise use varying as the range.
-// If there is any outgoing range information on edge E, incorporate it 
+// If there is any outgoing range information on edge E, incorporate it
 // into the results.
 
 bool
@@ -728,12 +728,12 @@ global_ranger::edge_range (irange &r, edge e, tree name)
       // in an evaluation to get a static starting value.
       // The import should have a range if the global range is requested
       // before any other lookups.
-      tree term = has_edge_range_p (e, name) ? m_gori_map.terminal_name (name)
-      					     : NULL_TREE;
+      tree term = (has_edge_range_p (e, name) ? m_gori_map.terminal_name (name)
+		   : NULL_TREE);
       if (!term || !(m_on_entry.get_bb_range (tmp, term, src) &&
 		     range_from_import (r, name, tmp)))
 	{
-	  // Try to pick up any known value first. 
+	  // Try to pick up any known value first.
 	  if (!m_globals.get_global_range (r, name))
 	    r = gimple_range_global (name);
 	}
@@ -764,7 +764,7 @@ global_ranger::add_to_update (basic_block bb)
 #define DEBUG_CACHE (0 && dump_file)
 
 // If there is anything in the iterative update_list, continue processing NAME
-// until the list of blocks is empty.  
+// until the list of blocks is empty.
 
 void
 global_ranger::iterative_cache_update (tree name)
@@ -777,10 +777,10 @@ global_ranger::iterative_cache_update (tree name)
   widest_irange e_range;
 
   // Process each block by seeing if it's calculated range on entry is the same
-  // as it's cached value. IF there is a difference, update the cache to 
-  // reflect the new value, and check to see if any successors have cache 
+  // as it's cached value. IF there is a difference, update the cache to
+  // reflect the new value, and check to see if any successors have cache
   // entries which may need to be checked for updates.
-  
+
   while (m_update_list.length () > 0)
     {
       bb = m_update_list.pop ();
@@ -801,7 +801,7 @@ if (DEBUG_CACHE) fprintf (dump_file, "FWD visiting block %d\n", bb->index);
 	{
 if (DEBUG_CACHE) { fprintf (dump_file, "updating range from/to "); current_range.dump (dump_file); new_range.dump (dump_file); }
 	  m_on_entry.set_bb_range (name, bb, new_range);
-	  // Mark each successor that has a range to re-check it's range 
+	  // Mark each successor that has a range to re-check it's range
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (m_on_entry.bb_range_p (name, e->dest))
 	      add_to_update (e->dest);
@@ -811,7 +811,7 @@ if (DEBUG_CACHE) fprintf (dump_file, "DONE visiting blocks \n\n");
 }
 
 // Make sure that the range-on-entry cache for NAME is set for block BB.
-// Work back thourgh the CFG to DEF_BB ensuring the range is calculated 
+// Work back thourgh the CFG to DEF_BB ensuring the range is calculated
 // on the block/edges leading back to that point.
 
 void
@@ -851,7 +851,7 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 	  basic_block pred = e->src;
 	  widest_irange r;
 	  // If the pred block is the def block add this BB to update list.
-	  if (pred == def_bb) 
+	  if (pred == def_bb)
 	    {
 	      add_to_update (node);
 	      continue;
@@ -875,7 +875,7 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 		add_to_update (node);
 	      continue;
 	    }
-	    
+
 	  // If the pred hasn't been visited (has no range), add it to the list.
 	  gcc_checking_assert (!m_on_entry.bb_range_p (name, pred));
 	  m_on_entry.set_bb_range (name, pred, undefined);
@@ -962,7 +962,7 @@ trace_ranger::dumping (unsigned counter, bool trailing)
 	fprintf (dump_file, "         ");
       unsigned x;
       for (x = 0; x< indent; x++)
-        fputc (' ', dump_file);
+	fputc (' ', dump_file);
       return true;
     }
   return false;
@@ -1013,7 +1013,7 @@ trace_ranger::range_of_ssa_name (irange &r, tree name, gimple *s)
       if (s)
 	print_gimple_stmt (dump_file, s , 0, TDF_SLIM);
       else
-        fprintf (dump_file, " NULL\n");
+	fprintf (dump_file, " NULL\n");
       indent += bump;
     }
 
@@ -1121,7 +1121,7 @@ trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
 	  fprintf (dump_file, "\n");
 	}
       else
-        fputs ("NULL\n", dump_file);
+	fputs ("NULL\n", dump_file);
       indent += bump;
     }
 

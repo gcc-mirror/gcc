@@ -469,7 +469,7 @@ simplify_using_ranges::op_with_boolean_value_range_p (tree op, gimple *stmt)
     return false;
 
   widest_irange r;
-  gcc_checking_assert (store->range_of_expr (r, op, stmt));
+  gcc_assert (store->range_of_expr (r, op, stmt));
   return (r.kind () == VR_RANGE
 	  && integer_zerop (r.min ())
 	  && integer_onep (r.max ()));
@@ -1029,7 +1029,7 @@ check_for_binary_op_overflow (range_store *store,
 {
   value_range vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
-    gcc_checking_assert (store->range_of_expr (vr0, op0));
+    gcc_assert (store->range_of_expr (vr0, op0));
   else if (TREE_CODE (op0) == INTEGER_CST)
     vr0.set (op0);
   else
@@ -2649,7 +2649,7 @@ find_case_label_ranges (gswitch *stmt, const irange *vr,
   tree case_low, case_high;
   tree min = vr->min (), max = vr->max ();
 
-  gcc_checking_assert (!vr->varying_p () && !vr->undefined_p ());
+  gcc_assert (!vr->varying_p () && !vr->undefined_p ());
 
   take_default = !find_case_label_range (stmt, min, max, &i, &j);
 
@@ -3145,7 +3145,7 @@ simplify_using_ranges::simplify_div_or_mod_using_ranges
     }
   else
     {
-      gcc_checking_assert (store->range_of_expr (vr, op0, stmt));
+      gcc_assert (store->range_of_expr (vr, op0, stmt));
       if (range_int_cst_p (&vr))
 	{
 	  op0min = vr.min ();
@@ -3157,7 +3157,7 @@ simplify_using_ranges::simplify_div_or_mod_using_ranges
       && TREE_CODE (op1) == SSA_NAME)
     {
       value_range vr1;
-      gcc_checking_assert (store->range_of_expr (vr1, op1, stmt));
+      gcc_assert (store->range_of_expr (vr1, op1, stmt));
       if (range_int_cst_p (&vr1))
 	op1min = vr1.min ();
     }
@@ -3263,13 +3263,13 @@ simplify_using_ranges::simplify_min_or_max_using_ranges
   tree op1 = gimple_assign_rhs2 (stmt);
   value_range vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
-    gcc_checking_assert (store->range_of_expr (vr0, op0, stmt));
+    gcc_assert (store->range_of_expr (vr0, op0, stmt));
   else if (TREE_CODE (op0) == INTEGER_CST)
     vr0.set (op0);
   else
     vr0.set_varying (TREE_TYPE (op0));
   if (TREE_CODE (op1) == SSA_NAME)
-    gcc_checking_assert (store->range_of_expr (vr1, op1, stmt));
+    gcc_assert (store->range_of_expr (vr1, op1, stmt));
   else if (TREE_CODE (op1) == INTEGER_CST)
     vr1.set (op1);
   else
@@ -3310,7 +3310,7 @@ simplify_using_ranges::simplify_abs_using_ranges (gimple_stmt_iterator *gsi,
 {
   tree op = gimple_assign_rhs1 (stmt);
   value_range vr;
-  gcc_checking_assert (store->range_of_expr (vr, op, stmt));
+  gcc_assert (store->range_of_expr (vr, op, stmt));
 
   if (!vr.varying_p () && !vr.undefined_p ())
     {
@@ -3400,14 +3400,14 @@ simplify_using_ranges::simplify_bit_ops_using_ranges
   wide_int mask;
 
   if (TREE_CODE (op0) == SSA_NAME)
-    gcc_checking_assert (store->range_of_expr (vr0, op0, stmt));
+    gcc_assert (store->range_of_expr (vr0, op0, stmt));
   else if (is_gimple_min_invariant (op0))
     vr0.set (op0);
   else
     return false;
 
   if (TREE_CODE (op1) == SSA_NAME)
-    gcc_checking_assert (store->range_of_expr (vr1, op1, stmt));
+    gcc_assert (store->range_of_expr (vr1, op1, stmt));
   else if (is_gimple_min_invariant (op1))
     vr1.set (op1);
   else
@@ -3622,7 +3622,7 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
       && is_gimple_min_invariant (op1))
     {
       value_range vr;
-      gcc_checking_assert (store->range_of_expr (vr, op0, stmt));
+      gcc_assert (store->range_of_expr (vr, op0, stmt));
 
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
@@ -3726,7 +3726,7 @@ simplify_cond_using_ranges_2 (range_store *store, gcond *stmt)
 	  && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
 	{
 	  value_range vr;
-	  gcc_checking_assert (store->range_of_expr (vr, innerop, stmt));
+	  gcc_assert (store->range_of_expr (vr, innerop, stmt));
 
 	  if (range_int_cst_p (&vr)
 	      && range_fits_type_p (&vr,
@@ -3767,7 +3767,7 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
 
   if (TREE_CODE (op) == SSA_NAME)
     {
-      gcc_checking_assert (store->range_of_expr (vr, op, stmt));
+      gcc_assert (store->range_of_expr (vr, op, stmt));
 
       /* We can only handle integer ranges.  */
       if (vr.varying_p ()
@@ -4058,7 +4058,7 @@ simplify_using_ranges::simplify_float_conversion_using_ranges
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range vr;
-  gcc_checking_assert (store->range_of_expr (vr, rhs1, stmt));
+  gcc_assert (store->range_of_expr (vr, rhs1, stmt));
   scalar_float_mode fltmode
     = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
   scalar_int_mode mode;
@@ -4223,7 +4223,7 @@ bool
 simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 {
   value_range vr;
-  gcc_checking_assert (store->range_of_expr (vr, var));
+  gcc_assert (store->range_of_expr (vr, var));
   if (vr.varying_p ()
       || vr.undefined_p ()
       || TREE_CODE (vr.min ()) != INTEGER_CST

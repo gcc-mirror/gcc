@@ -115,11 +115,11 @@ non_null_ref::process_name (tree name)
 
       // If bit is already set for this block, dont bother looking again.
       if (bitmap_bit_p (b, index))
-        continue;
+	continue;
 
       // If we can infer a != 0 range, then set the bit for this BB
       if (infer_value_range (s, name, &comp_code, &value))
-        {
+	{
 	  if (comp_code == NE_EXPR && integer_zerop (value))
 	    bitmap_set_bit (b, index);
 	}
@@ -309,7 +309,7 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
 
 // Return the range for NAME on entry to BB in R.  Return true if here is one.
 
-bool 
+bool
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 {
   gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -318,7 +318,7 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 
 // Return true if NAME has a range set in block BB.
 
-bool 
+bool
 block_range_cache::bb_range_p (tree name, const basic_block bb)
 {
   gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -333,7 +333,7 @@ block_range_cache::dump (FILE *f)
   for (x = 0; x < m_ssa_ranges.length (); ++x)
     {
       if (m_ssa_ranges[x])
-        {
+	{
 	  fprintf (f, " Ranges for ");
 	  print_generic_expr (f, ssa_name (x), TDF_NONE);
 	  fprintf (f, ":\n");
@@ -341,7 +341,6 @@ block_range_cache::dump (FILE *f)
 	  fprintf (f, "\n");
 	}
     }
-  
 }
 
 // Print all known ranges on entry to blobk BB to file F.
@@ -354,9 +353,9 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
   for (x = 1; x < m_ssa_ranges.length (); ++x)
     {
       if (!gimple_range_ssa_p (ssa_name (x)))
-        continue;
+	continue;
       if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
-        {
+	{
 	  if (!print_varying && r.varying_p ())
 	    {
 	      summarize_varying = true;
@@ -382,7 +381,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 		{
 		  print_generic_expr (f, ssa_name (x), TDF_NONE);
 		  fprintf (f, "  ");
-	        }
+		}
 	    }
 	}
       fprintf (f, "\n");
@@ -414,7 +413,7 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_tab.length ())
     return false;
-   
+
   irange_storage *stow = m_tab[v];
   if (!stow)
     return false;
@@ -462,7 +461,7 @@ ssa_global_cache::clear ()
   memset (m_tab.address(), 0, m_tab.length () * sizeof (irange_storage *));
 }
 
-// Dump the contents of the global cache to F. 
+// Dump the contents of the global cache to F.
 
 void
 ssa_global_cache::dump (FILE *f)
@@ -475,9 +474,9 @@ ssa_global_cache::dump (FILE *f)
     if (gimple_range_ssa_p (ssa_name (x)) &&
 	get_global_range (r, ssa_name (x))  && !r.varying_p ())
       {
-        print_generic_expr (f, ssa_name (x), TDF_NONE);
+	print_generic_expr (f, ssa_name (x), TDF_NONE);
 	fprintf (f, "  : ");
-        r.dump (f);
+	r.dump (f);
 	fprintf (f, "\n");
       }
   fputc ('\n', f);
