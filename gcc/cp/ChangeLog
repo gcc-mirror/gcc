@@ -1,5 +1,13 @@
 2020-03-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/94205
+	* constexpr.c (cxx_eval_constant_expression) [TARGET_EXPR]: Call
+	replace_placeholders.
+	* typeck2.c (store_init_value): Fix arguments to
+	fold_non_dependent_expr.
+
+2020-03-31  Jason Merrill  <jason@redhat.com>
+
 	* constexpr.c (cxx_eval_constant_expression) [TARGET_EXPR]: Use
 	local variables.
 

@@ -5553,6 +5553,12 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	tree init = TARGET_EXPR_INITIAL (t);
 	if ((AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type)))
 	  {
+	    if (ctx->object)
+	      /* If the initializer contains any PLACEHOLDER_EXPR, we need to
+		 resolve them before we create a new CONSTRUCTOR for the
+		 temporary.  */
+	      init = replace_placeholders (init, ctx->object);
+
 	    /* We're being expanded without an explicit target, so start
 	       initializing a new object; expansion with an explicit target
 	       strips the TARGET_EXPR before we get here.  */
