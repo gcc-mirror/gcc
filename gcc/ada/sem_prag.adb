@@ -2001,9 +2001,7 @@ package body Sem_Prag is
                Push_Scope (Spec_Id);
 
                if Ekind (Spec_Id) = E_Task_Type then
-                  if Has_Discriminants (Spec_Id) then
-                     Install_Discriminants (Spec_Id);
-                  end if;
+                  null;
 
                elsif Is_Generic_Subprogram (Spec_Id) then
                   Install_Generic_Formals (Spec_Id);
@@ -2791,9 +2789,7 @@ package body Sem_Prag is
             Push_Scope (Spec_Id);
 
             if Ekind (Spec_Id) = E_Task_Type then
-               if Has_Discriminants (Spec_Id) then
-                  Install_Discriminants (Spec_Id);
-               end if;
+               null;
 
             elsif Is_Generic_Subprogram (Spec_Id) then
                Install_Generic_Formals (Spec_Id);
