@@ -83,7 +83,7 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
       FOR_EACH_EDGE (e, ei, bb->preds)
         e->flags |= EDGE_EXECUTABLE;
     }
-  vr_values = new class vr_values;
+  vr_values = new class vr_values_tester;
   ranger = new global_ranger;
   gori = new trace_vr_gori_interface (vr_values);
 }
@@ -196,6 +196,8 @@ vr_gori_interface::range_of_ssa_name (irange &r, tree op,
 				      gimple *stmt ATTRIBUTE_UNUSED)
 {
   r = *store->get_value_range (op);
+  if (r.undefined_p ())
+    r.set_varying (TREE_TYPE (op));
   r.normalize_symbolics ();
 }
 
@@ -329,44 +331,45 @@ trace_vr_gori_interface::refine_range_with_equivalences (irange &r,
   return trailer (idx, "refine_range_with_equivalences", res, name, r);
 }
 
-// Class to assert that gori/ranger provide ranges that are at least
-// as good as evrp.
+// Class to assert that the new range is at least as good as the old
+// one.
 
-class vr_gori_comparison
+class vr_comparison
 {
 public:
-  vr_gori_comparison (const value_range *r_evrp, const irange *r_gori);
-  void compare (tree name, edge, vr_values *vr);
+  vr_comparison (const irange *, const irange *, vr_values *);
+  void compare (tree name, edge);
+  void compare (gimple *);
 private:
+  void compare ();
   void dump_differences_and_trap () const;
   void dump_differences (FILE *) const;
   void dump_improvements (FILE *) const;
-  bool gori_range_is_same () const;
-  bool gori_range_is_better () const;
+  bool new_range_is_same () const;
+  bool new_range_is_better () const;
   tree m_name;
   edge m_edge;
-  const irange *m_range_evrp;
-  const irange *m_range_gori;
+  gimple *m_stmt;
+  const irange *m_old_range;
+  const irange *m_new_range;
   vr_values *m_vr_values;
 };
 
-vr_gori_comparison::vr_gori_comparison (const value_range *r_evrp,
-					const irange *r_gori)
+vr_comparison::vr_comparison (const irange *old_range,
+			      const irange *new_range,
+			      vr_values *vr)
 {
-  m_range_evrp = r_evrp;
-  m_range_gori = r_gori;
+  m_old_range = old_range;
+  m_new_range = new_range;
+  m_vr_values = vr;
 }
 
 void
-vr_gori_comparison::compare (tree name, edge e, vr_values *vr)
+vr_comparison::compare ()
 {
-  m_name = name;
-  m_edge = e;
-  m_vr_values = vr;
-
-  if (gori_range_is_same ())
+  if (new_range_is_same ())
     return;
-  if (gori_range_is_better ())
+  if (new_range_is_better ())
     {
       if (dump_file)
 	dump_improvements (dump_file);
@@ -375,48 +378,72 @@ vr_gori_comparison::compare (tree name, edge e, vr_values *vr)
   dump_differences_and_trap ();
 }
 
-bool
-vr_gori_comparison::gori_range_is_same () const
+void
+vr_comparison::compare (tree name, edge e)
 {
-  // We may be able to normalize a symbolic to a [MIN,MAX] plus
-  // or minus the end-points.  Don't count that as a win just yet.
-  if (m_range_evrp && m_range_evrp->symbolic_p ())
-    return true;
-  // Treat UNDEFINED and VARYING as interchangeable.
-  widest_irange evrp;
-  if (m_range_evrp)
-    evrp = *m_range_evrp;
-  if (evrp.undefined_p () && m_range_gori->varying_p ())
-    return true;
-  if (evrp.varying_p () && m_range_gori->undefined_p ())
-    return true;
-  return evrp == *m_range_gori;
-}
-
-bool
-vr_gori_comparison::gori_range_is_better () const
-{
-  if (gori_range_is_same ())
-    return false;
-  if (!m_range_evrp)
-    return true;
-  if (!range_has_numeric_bounds_p (m_range_evrp))
-    {
-      gcc_checking_assert (range_has_numeric_bounds_p (m_range_gori));
-      return true;
-    }
-  widest_irange inter (*m_range_gori);
-  inter.intersect (*m_range_evrp);
-  return inter == *m_range_gori;
+  m_name = name;
+  m_edge = e;
+  m_stmt = NULL;
+  compare ();
 }
 
 void
-vr_gori_comparison::dump_differences_and_trap () const
+vr_comparison::compare (gimple *stmt)
 {
-  bool dumping = getenv("GORIME") && !strcmp (getenv ("GORIME"), "dump");
+  m_name = get_output_for_vrp (stmt);
+  m_edge = NULL;
+  m_stmt = stmt;
+  compare ();
+}
+
+bool
+vr_comparison::new_range_is_same () const
+{
+  // We may be able to normalize a symbolic to a [MIN,MAX] plus
+  // or minus the end-points.  Don't count that as a win just yet.
+  if (m_old_range && m_old_range->symbolic_p ())
+    return true;
+  widest_irange old;
+  if (m_old_range)
+    old = *m_old_range;
+  // Treat UNDEFINED and VARYING as interchangeable.
+  if (old.undefined_p () && m_new_range->varying_p ())
+    return true;
+  if (old.varying_p () && m_new_range->undefined_p ())
+    return true;
+  return old == *m_new_range;
+}
+
+bool
+vr_comparison::new_range_is_better () const
+{
+  if (new_range_is_same ())
+    return false;
+  if (!m_old_range)
+    return true;
+  // ?? Sometimes we get an undefined because the ranger determined a
+  // path was unexecutable.  Verify this is actually the case by
+  // turning this off and analyzing all failures.
+  if (m_new_range->undefined_p ())
+    return true;
+  if (!range_has_numeric_bounds_p (m_old_range))
+    {
+      gcc_checking_assert (range_has_numeric_bounds_p (m_new_range));
+      return true;
+    }
+  widest_irange inter (*m_new_range);
+  inter.intersect (*m_old_range);
+  return inter == *m_new_range;
+}
+
+void
+vr_comparison::dump_differences_and_trap () const
+{
+  bool dumping = getenv("GORI_DUMP_FILE") != NULL;
   if (dumping)
     {
-      FILE *out = fopen ("/tmp/gori-differences", "a");
+      const char *filename = getenv("GORI_DUMP_FILE");
+      FILE *out = fopen (filename, "a");
       fprintf (out, "=========FILE: %s ========\n",
 	       main_input_filename ? main_input_filename : "UNKNOWN");
       dump_differences (out);
@@ -428,17 +455,29 @@ vr_gori_comparison::dump_differences_and_trap () const
 }
 
 void
-vr_gori_comparison::dump_differences (FILE *out) const
+vr_comparison::dump_differences (FILE *out) const
 {
-  fprintf (out, "Different ranges on edge (%d -> %d) for SSA: ",
-	   m_edge->src->index, m_edge->dest->index);
-  print_generic_stmt (out, m_name, TDF_VOPS|TDF_MEMSYMS);
-  fprintf (out, "\tevrp: ");
-  m_range_evrp->dump (out);
-  fprintf (out, "\n\tgori: ");
-  m_range_gori->dump (out);
-  fprintf (out, "\n\n");
-  dump_bb (out, m_edge->src, 0, TDF_NONE);
+  dump_flags_t flags = TDF_NONE;
+  if (m_stmt)
+    {
+      fprintf (out, "Different ranges for stmt: ");
+      print_gimple_stmt (out, m_stmt, 0, flags);
+    }
+  else
+    {
+      fprintf (out, "Different ranges on edge (%d -> %d) for SSA: ",
+	       m_edge->src->index, m_edge->dest->index);
+      print_generic_stmt (out, m_name, flags);
+    }
+  fprintf (out, "\told range: ");
+  m_old_range->dump (out);
+  fprintf (out, "\n\tnew range: ");
+  m_new_range->dump (out);
+  if (m_edge)
+    {
+      fprintf (out, "\n\n");
+      dump_bb (out, m_edge->src, 0, TDF_NONE);
+    }
   fprintf (out, "\n");
   fprintf (out, "==============================================\n");
   dump_function_to_file (current_function_decl, out, TDF_NONE);
@@ -450,23 +489,54 @@ vr_gori_comparison::dump_differences (FILE *out) const
 }
 
 void
-vr_gori_comparison::dump_improvements (FILE *out) const
+vr_comparison::dump_improvements (FILE *out) const
 {
-  if (m_range_evrp && !range_has_numeric_bounds_p (m_range_evrp))
+  if (m_old_range && !range_has_numeric_bounds_p (m_old_range))
     return;
-  if (gori_range_is_better ())
+  if (new_range_is_better ())
     {
-      fprintf (out, "GORI improved: ");
-      print_generic_expr (out, m_name);
+      fprintf (out, "New range improved: ");
+      if (m_name)
+	print_generic_expr (out, m_name);
       fprintf (out, " from: ");
-      if (m_range_evrp)
-	m_range_evrp->dump (out);
+      if (m_old_range)
+	m_old_range->dump (out);
       else
 	fprintf (out, "UNDEFINED");
       fprintf (out, " to: ");
-      m_range_gori->dump (out);
+      m_new_range->dump (out);
       fprintf (out, "\n");
     }
+}
+
+// ?? Eventually overload extract_range_from_stmt instead, since it is
+// higher level and more comparable to gimple_ranger::range_of_stmt.
+
+void
+vr_values_tester::extract_range_basic (value_range_equiv *vr, gimple *stmt)
+{
+  vr_values::extract_range_basic (vr, stmt);
+
+  if (gimple_code (stmt) != GIMPLE_CALL)
+    return;
+
+  class ranger_using_vrvalues : public gimple_ranger
+  {
+  public:
+    ranger_using_vrvalues (range_store *super) : super (super) { }
+    // Use the vr_values version of range_of_expr while the ranger
+    // comes up to par.
+    virtual bool range_of_expr (irange &r, tree expr, gimple *stmt)
+    { return super->range_of_expr (r, expr, stmt); }
+  private:
+    range_store *super;
+  } ranger (this);
+
+  value_range ranger_vr;
+  ranger.range_of_stmt (ranger_vr, stmt);
+
+  vr_comparison comp (vr, &ranger_vr, this);
+  comp.compare (stmt);
 }
 
 value_range_equiv *
@@ -514,8 +584,8 @@ evrp_range_analyzer::try_find_new_range_for_assert (const assert_info &assert,
     {
       if (CHECKING_P && dbg_cnt (evrp_find_range))
 	{
-	  vr_gori_comparison comp (vr, &vr_gori);
-	  comp.compare (name, e, vr_values);
+	  vr_comparison comp (vr, &vr_gori, vr_values);
+	  comp.compare (name, e);
 	}
       if (!vr)
 	{

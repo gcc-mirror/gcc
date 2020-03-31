@@ -3506,7 +3506,7 @@ class vrp_prop : public ssa_propagation_engine
   bool check_mem_ref (location_t, tree, bool);
   void search_for_addr_array (tree, location_t);
 
-  class vr_values vr_values;
+  class vr_values_tester vr_values;
   /* Temporary delegator to minimize code churn.  */
   const value_range_equiv *get_value_range (const_tree op)
     { return vr_values.get_value_range (op); }

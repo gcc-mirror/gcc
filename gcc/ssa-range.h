@@ -51,6 +51,8 @@ protected:
   bool range_of_phi (irange &r, gphi *phi);
   bool range_of_call (irange &r, gcall *call);
   bool range_of_cond_expr (irange &r, gassign* cond);
+private:
+  void range_of_ubsan_call (irange &r, gcall *call, tree_code code);
 };
 
 

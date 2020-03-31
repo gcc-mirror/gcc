@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "vr-values.h"
 #include "dbgcnt.h"
+#include "case-cfn-macros.h"
+#include "omp-general.h"
 
 // Calculate a range for statement S and return it in R. If NAME is provided it
 // represents the SSA_NAME on the LHS of the statement. It is only required
@@ -205,6 +207,35 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
 }
 
 
+void
+gimple_ranger::range_of_ubsan_call (irange &r, gcall *call, tree_code code)
+{
+  tree type = gimple_call_return_type (call);
+  range_operator *op = range_op_handler (code, type);
+  gcc_checking_assert (op);
+  widest_irange ir0, ir1;
+  tree arg0 = gimple_call_arg (call, 0);
+  tree arg1 = gimple_call_arg (call, 1);
+  gcc_assert (range_of_expr (ir0, arg0, call));
+  gcc_assert (range_of_expr (ir1, arg1, call));
+
+  bool saved_flag_wrapv = flag_wrapv;
+  /* Pretend the arithmetics is wrapping.  If there is
+     any overflow, we'll complain, but will actually do
+     wrapping operation.  */
+  flag_wrapv = 1;
+  op->fold_range (r, type, ir0, ir1);
+  flag_wrapv = saved_flag_wrapv;
+
+  /* If for both arguments vrp_valueize returned non-NULL,
+     this should have been already folded and if not, it
+     wasn't folded because of overflow.  Avoid removing the
+     UBSAN_CHECK_* calls in that case.  */
+  if (r.singleton_p ())
+    r.set_varying (type);
+}
+
+
 // Calculate a range for call statement S and return it in R.
 // If a range cannot be calculated, return false.
 
@@ -213,14 +244,226 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 {
   tree type = gimple_call_return_type (call);
   tree lhs = gimple_call_lhs (call);
+  tree arg;
+  int mini, maxi, zerov, prec;
+  scalar_int_mode mode;
 
   if (!irange::supports_type_p (type))
     return false;
 
-  if (gimple_call_nonnull_result_p (call))
-    r = range_nonzero (type);
-  else
-    r.set_varying (type);
+  combined_fn func = gimple_call_combined_fn (call);
+  switch (func)
+    {
+    case CFN_BUILT_IN_CONSTANT_P:
+      if (cfun->after_inlining)
+	{
+	  r.set_zero (type);
+	  // r.equiv_clean ();
+	}
+      break;
+      /* __builtin_ffs* and __builtin_popcount* return [0, prec].  */
+    CASE_CFN_FFS:
+    CASE_CFN_POPCOUNT:
+      arg = gimple_call_arg (call, 0);
+      prec = TYPE_PRECISION (TREE_TYPE (arg));
+      mini = 0;
+      maxi = prec;
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  widest_irange vr0;
+	  gcc_assert (range_of_expr (vr0, arg, call));
+	  /* If arg is non-zero, then ffs or popcount are non-zero.  */
+	  if (range_includes_zero_p (&vr0) == 0)
+	    mini = 1;
+	  /* If some high bits are known to be zero, we can decrease
+	     the maximum.  */
+	  if (vr0.kind () == VR_RANGE
+	      && TREE_CODE (vr0.max ()) == INTEGER_CST
+	      && !operand_less_p (vr0.min (),
+				  build_zero_cst (TREE_TYPE (vr0.min ()))))
+	    maxi = tree_floor_log2 (vr0.max ()) + 1;
+	}
+      r.set (build_int_cst (type, mini),
+	     build_int_cst (type, maxi));
+      break;
+      /* __builtin_parity* returns [0, 1].  */
+    CASE_CFN_PARITY:
+      r.set (build_int_cst (type, 0),
+	     build_int_cst (type, 1));
+      break;
+      /* __builtin_c[lt]z* return [0, prec-1], except for
+	 when the argument is 0, but that is undefined behavior.
+	 On many targets where the CLZ RTL or optab value is defined
+	 for 0 the value is prec, so include that in the range
+	 by default.  */
+    CASE_CFN_CLZ:
+      arg = gimple_call_arg (call, 0);
+      prec = TYPE_PRECISION (TREE_TYPE (arg));
+      mini = 0;
+      maxi = prec;
+      mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+      if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
+	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov)
+	  /* Handle only the single common value.  */
+	  && zerov != prec)
+	/* Magic value to give up, unless vr0 proves
+	   arg is non-zero.  */
+	mini = -2;
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  widest_irange vr0;
+	  gcc_assert (range_of_expr (vr0, arg, call));
+	  /* From clz of VR_RANGE minimum we can compute
+	     result maximum.  */
+	  if (vr0.kind () == VR_RANGE
+	      && TREE_CODE (vr0.min ()) == INTEGER_CST)
+	    {
+	      maxi = prec - 1 - tree_floor_log2 (vr0.min ());
+	      if (maxi != prec)
+		mini = 0;
+	    }
+	  else if (!range_includes_zero_p (&vr0))
+	    {
+	      maxi = prec - 1;
+	      mini = 0;
+	    }
+	  if (mini == -2)
+	    break;
+	  /* From clz of VR_RANGE maximum we can compute
+	     result minimum.  */
+	  if (vr0.kind () == VR_RANGE
+	      && TREE_CODE (vr0.max ()) == INTEGER_CST)
+	    {
+	      mini = prec - 1 - tree_floor_log2 (vr0.max ());
+	      if (mini == prec)
+		break;
+	    }
+	}
+      if (mini == -2)
+	break;
+      r.set (build_int_cst (type, mini),
+	     build_int_cst (type, maxi));
+      break;
+	  /* __builtin_ctz* return [0, prec-1], except for
+	     when the argument is 0, but that is undefined behavior.
+	     If there is a ctz optab for this mode and
+	     CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
+	     otherwise just assume 0 won't be seen.  */
+    CASE_CFN_CTZ:
+      arg = gimple_call_arg (call, 0);
+      prec = TYPE_PRECISION (TREE_TYPE (arg));
+      mini = 0;
+      maxi = prec - 1;
+      mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+      if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
+	  && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov))
+	{
+	  /* Handle only the two common values.  */
+	  if (zerov == -1)
+	    mini = -1;
+	  else if (zerov == prec)
+	    maxi = prec;
+	  else
+	    /* Magic value to give up, unless vr0 proves
+	       arg is non-zero.  */
+	    mini = -2;
+	}
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  widest_irange vr0;
+	  gcc_assert (range_of_expr (vr0, arg, call));
+	  /* If arg is non-zero, then use [0, prec - 1].  */
+	  if (vr0.kind () == VR_RANGE
+	      && integer_nonzerop (vr0.min ()))
+	    {
+	      mini = 0;
+	      maxi = prec - 1;
+	    }
+	  /* If some high bits are known to be zero,
+	     we can decrease the result maximum.  */
+	  if (vr0.kind () == VR_RANGE
+	      && TREE_CODE (vr0.max ()) == INTEGER_CST)
+	    {
+	      maxi = tree_floor_log2 (vr0.max ());
+	      /* For vr0 [0, 0] give up.  */
+	      if (maxi == -1)
+		break;
+	    }
+	}
+      if (mini == -2)
+	break;
+      r.set (build_int_cst (type, mini),
+	     build_int_cst (type, maxi));
+      break;
+      /* __builtin_clrsb* returns [0, prec-1].  */
+    CASE_CFN_CLRSB:
+      arg = gimple_call_arg (call, 0);
+      prec = TYPE_PRECISION (TREE_TYPE (arg));
+      r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
+      break;
+    case CFN_UBSAN_CHECK_ADD:
+      range_of_ubsan_call (r, call, PLUS_EXPR);
+      break;
+    case CFN_UBSAN_CHECK_SUB:
+      range_of_ubsan_call (r, call, MINUS_EXPR);
+      break;
+    case CFN_UBSAN_CHECK_MUL:
+      range_of_ubsan_call (r, call, MULT_EXPR);
+      break;
+    case CFN_GOACC_DIM_SIZE:
+    case CFN_GOACC_DIM_POS:
+      /* Optimizing these two internal functions helps the loop
+	 optimizer eliminate outer comparisons.  Size is [1,N]
+	 and pos is [0,N-1].  */
+      {
+	bool is_pos = func == CFN_GOACC_DIM_POS;
+	int axis = oacc_get_ifn_dim_arg (call);
+	int size = oacc_get_fn_dim_size (current_function_decl, axis);
+
+	if (!size)
+	  /* If it's dynamic, the backend might know a hardware
+	     limitation.  */
+	  size = targetm.goacc.dim_limit (axis);
+
+	tree type = TREE_TYPE (gimple_call_lhs (call));
+	r.set (build_int_cst (type, is_pos ? 0 : 1),
+	       size
+	       ? build_int_cst (type, size - is_pos) : vrp_val_max (type));
+      }
+      break;
+    case CFN_BUILT_IN_STRLEN:
+      if (tree lhs = gimple_call_lhs (call))
+	if (ptrdiff_type_node
+	    && (TYPE_PRECISION (ptrdiff_type_node)
+		== TYPE_PRECISION (TREE_TYPE (lhs))))
+	  {
+	    tree type = TREE_TYPE (lhs);
+	    tree max = vrp_val_max (ptrdiff_type_node);
+	    wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+	    tree range_min = build_zero_cst (type);
+	    /* To account for the terminating NULL, the maximum length
+	       is one less than the maximum array size, which in turn
+	       is one  less than PTRDIFF_MAX (or SIZE_MAX where it's
+	       smaller than the former type).
+	       FIXME: Use max_object_size() - 1 here.  */
+	    tree range_max = wide_int_to_tree (type, wmax - 2);
+	    r.set (range_min, range_max);
+	    break;
+	  }
+      break;
+    default:
+      {
+	bool ignore;
+	if (gimple_stmt_nonnegative_warnv_p (call, &ignore))
+	  r.set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
+	else if (gimple_call_nonnull_result_p (call)
+		 || gimple_call_nonnull_arg (call))
+	  r = range_nonzero (type);
+	else
+	  r.set_varying (type);
+	break;
+      }
+    }
 
   // If there is a lHS, intersect that with what is known.
   if (lhs)
@@ -896,7 +1139,7 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 
 loop_ranger::loop_ranger ()
 {
-  m_vr_values = new vr_values;
+  m_vr_values = new vr_values_tester;
 }
 
 loop_ranger::~loop_ranger ()

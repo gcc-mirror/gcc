@@ -95,8 +95,9 @@ private:
    range information fast or perform on-demand queries.  */
 class vr_values : public range_store
 {
+ protected:
+  vr_values (void); // FIXME: temporary for vr_values_tester.
  public:
-  vr_values (void);
   virtual ~vr_values (void);
 
   const value_range_equiv *get_value_range (const_tree);
@@ -116,6 +117,7 @@ class vr_values : public range_store
 						   tree, tree,
 						   value_range_equiv *);
   void extract_range_from_phi_node (gphi *, value_range_equiv *);
+  virtual // FIXME: temporary tester for vr_values_tester.
   void extract_range_basic (value_range_equiv *, gimple *);
   void extract_range_from_stmt (gimple *, edge *, tree *, value_range_equiv *);
 
@@ -169,5 +171,11 @@ extern tree get_output_for_vrp (gimple *);
 
 // FIXME: Move this to tree-vrp.c.
 void simplify_cond_using_ranges_2 (range_store *, gcond *);
+
+class vr_values_tester : public vr_values
+{
+public:
+  void extract_range_basic (value_range_equiv *, gimple *);
+};
 
 #endif /* GCC_VR_VALUES_H */
