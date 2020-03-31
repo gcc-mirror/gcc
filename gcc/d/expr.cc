@@ -1054,14 +1054,13 @@ public:
 	tree t1 = build_expr (e->e1);
 	tree t2 = convert_for_assignment (build_expr (e->e2),
 					  e->e2->type, e->e1->type);
+	StructDeclaration *sd = ((TypeStruct *) tb1)->sym;
 
 	/* Look for struct = 0.  */
 	if (e->e2->op == TOKint64)
 	  {
 	    /* Use memset to fill struct.  */
 	    gcc_assert (e->op == TOKblit);
-	    StructDeclaration *sd = ((TypeStruct *) tb1)->sym;
-
 	    tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
 	    tree result = build_call_expr (tmemset, 3, build_address (t1),
 					   t2, size_int (sd->structsize));
@@ -1079,7 +1078,22 @@ public:
 	    this->result_ = compound_expr (result, t1);
 	  }
 	else
-	  this->result_ = build_assign (modifycode, t1, t2);
+	  {
+	    /* Simple struct literal assignment.  */
+	    tree init = NULL_TREE;
+
+	    /* Fill any alignment holes in the struct using memset.  */
+	    if (e->op == TOKconstruct && !identity_compare_p (sd))
+	      {
+		tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
+		init = build_call_expr (tmemset, 3, build_address (t1),
+					integer_zero_node,
+					size_int (sd->structsize));
+	      }
+
+	    tree result = build_assign (modifycode, t1, t2);
+	    this->result_ = compound_expr (init, result);
+	  }
 
 	return;
       }

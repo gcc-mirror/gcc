@@ -1,3 +1,8 @@
+2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94424
+	* gdc.dg/pr94424.d: New test.
+
 2020-03-31  Felix Yang  <felix.yang@huawei.com>
 
 	PR tree-optimization/94398
