@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Exp_Put_Image;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
@@ -477,7 +478,15 @@ package body Exp_Imgv is
       end if;
 
       Ptyp := Entity (Pref);
-      Rtyp := Root_Type (Ptyp);
+
+      --  Ada 2020 allows 'Image on private types, so we need to fetch the
+      --  underlying type.
+
+      if Ada_Version >= Ada_2020 then
+         Rtyp := Underlying_Type (Ptyp);
+      else
+         Rtyp := Root_Type (Ptyp);
+      end if;
 
       --  Enable speed-optimized expansion of user-defined enumeration types
       --  if we are compiling with optimizations enabled and enumeration type
@@ -524,7 +533,15 @@ package body Exp_Imgv is
 
       Enum_Case := False;
 
-      if Rtyp = Standard_Boolean then
+      --  If this is a case where Image should be transformed using Put_Image,
+      --  then do so. See Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
+         return;
+
+      elsif Rtyp = Standard_Boolean then
          Imid := RE_Image_Boolean;
          Tent := Rtyp;
 
@@ -587,8 +604,10 @@ package body Exp_Imgv is
       --  Only other possibility is user-defined enumeration type
 
       else
+         pragma Assert (Is_Enumeration_Type (Rtyp));
+
          if Discard_Names (First_Subtype (Ptyp))
-           or else No (Lit_Strings (Root_Type (Ptyp)))
+           or else No (Lit_Strings (Rtyp))
          then
             --  When pragma Discard_Names applies to the first subtype, build
             --  (Pref'Pos (Expr))'Img.
@@ -634,11 +653,24 @@ package body Exp_Imgv is
       --  Build first argument for call
 
       if Enum_Case then
-         Arg_List := New_List (
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Pos,
-             Prefix         => New_Occurrence_Of (Ptyp, Loc),
-             Expressions    => New_List (Expr)));
+         declare
+            T : Entity_Id;
+         begin
+            --  In Ada 2020 we need the underlying type here, because 'Image is
+            --  allowed on private types.
+
+            if Ada_Version >= Ada_2020 then
+               T := Rtyp;
+            else
+               T := Ptyp;
+            end if;
+
+            Arg_List := New_List (
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Pos,
+                Prefix         => New_Occurrence_Of (T, Loc),
+                Expressions    => New_List (Expr)));
+         end;
 
       --  AI12-0020: Ada 2020 allows 'Image for all types, including private
       --  types. If the full type is not a fixed-point type, then it is enough

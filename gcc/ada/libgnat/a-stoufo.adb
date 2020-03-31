@@ -38,7 +38,7 @@ package body Ada.Strings.Text_Output.Formatting is
 
    procedure Put
      (S : in out Sink'Class; T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "")
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "")
    is
       J : Positive := T'First;
       Used : array (1 .. 6) of Boolean := (others => False);
@@ -62,22 +62,22 @@ package body Ada.Strings.Text_Output.Formatting is
 
                when '1' =>
                   Used (1) := True;
-                  Put_UTF_8 (S, X1);
+                  Put_UTF_8_Lines (S, X1);
                when '2' =>
                   Used (2) := True;
-                  Put_UTF_8 (S, X2);
+                  Put_UTF_8_Lines (S, X2);
                when '3' =>
                   Used (3) := True;
-                  Put_UTF_8 (S, X3);
+                  Put_UTF_8_Lines (S, X3);
                when '4' =>
                   Used (4) := True;
-                  Put_UTF_8 (S, X4);
+                  Put_UTF_8_Lines (S, X4);
                when '5' =>
                   Used (5) := True;
-                  Put_UTF_8 (S, X5);
+                  Put_UTF_8_Lines (S, X5);
                when '6' =>
                   Used (6) := True;
-                  Put_UTF_8 (S, X6);
+                  Put_UTF_8_Lines (S, X6);
 
                when others =>
                   raise Program_Error;
@@ -113,21 +113,21 @@ package body Ada.Strings.Text_Output.Formatting is
 
    procedure Put
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "") is
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "") is
    begin
       Put (Files.Standard_Output.all, T, X1, X2, X3, X4, X5, X6);
    end Put;
 
    procedure Err
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "") is
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "") is
    begin
       Put (Files.Standard_Error.all, T, X1, X2, X3, X4, X5, X6);
    end Err;
 
    function Format
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8 := "")
+      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "")
      return UTF_8_Lines
    is
       Buf : Buffer := New_Buffer;

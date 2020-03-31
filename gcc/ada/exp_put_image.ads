@@ -85,6 +85,15 @@ package Exp_Put_Image is
    function Build_Unknown_Put_Image_Call (N : Node_Id) return Node_Id;
    --  Build a call to Put_Image_Unknown
 
+   function Image_Should_Call_Put_Image (N : Node_Id) return Boolean;
+   --  True if T'Image should call T'Put_Image. N is the attribute_reference
+   --  T'Image.
+
+   function Build_Image_Call (N : Node_Id) return Node_Id;
+   --  N is a call to T'Image, and this translates it into the appropriate code
+   --  to call T'Put_Image into a buffer and then extract the string from the
+   --  buffer.
+
    procedure Preload_Sink (Compilation_Unit : Node_Id);
    --  Call RTE (RE_Sink) if necessary, to load the packages involved in
    --  Put_Image. We need to do this explicitly, fairly early during
