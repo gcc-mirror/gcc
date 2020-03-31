@@ -1,3 +1,9 @@
+2020-03-31  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* pt.c (tsubst_lambda_expr): Set extra scope after creating the
+	lambda struct.
+
 2020-03-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
