@@ -1446,6 +1446,25 @@ package body Exp_Ch6 is
          then
             Init := New_Occurrence_Of (Var, Loc);
 
+         --  View conversions when the formal type has the Default_Value aspect
+         --  require passing in the value of the conversion's operand. The type
+         --  of that operand also has Default_Value, as required by AI12-0074
+         --  (RM 6.4.1(5.3/4)). The subtype denoted by the subtype_indication
+         --  is changed to the base type of the formal subtype, to ensure that
+         --  the actual's value can be assigned without a constraint check
+         --  (note that no check is done on passing to an out parameter). Also
+         --  note that the two types necessarily share the same ancestor type,
+         --  as required by 6.4.1(5.2/4), so underlying base types will match.
+
+         elsif Ekind (Formal) = E_Out_Parameter
+           and then Is_Scalar_Type (Etype (F_Typ))
+           and then Nkind (Actual) = N_Type_Conversion
+           and then Present (Default_Aspect_Value (Etype (F_Typ)))
+         then
+            Indic := New_Occurrence_Of (Base_Type (F_Typ), Loc);
+            Init  := Convert_To
+                       (Base_Type (F_Typ), New_Occurrence_Of (Var, Loc));
+
          else
             Init := Empty;
          end if;
