@@ -52,6 +52,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
+static tree handle_always_inline_attribute (tree *, tree, tree, int, bool *);
 
 /* D attribute handlers for user defined attributes.  */
 static tree d_handle_noinline_attribute (tree *, tree, tree, int, bool *);
@@ -137,6 +138,8 @@ const attribute_spec d_langhook_common_attribute_table[] =
 	     handle_type_generic_attribute, NULL),
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false,
 	     handle_fnspec_attribute, NULL),
+  ATTR_SPEC ("always_inline", 0, 0, true,  false, false, false,
+	     handle_always_inline_attribute, NULL),
   ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
@@ -562,6 +565,19 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
+  return NULL_TREE;
+}
+
+/* Handle a "always_inline" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_always_inline_attribute (tree *node, tree ARG_UNUSED (name),
+				tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+				bool *no_add_attrs ATTRIBUTE_UNUSED)
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+
   return NULL_TREE;
 }
 

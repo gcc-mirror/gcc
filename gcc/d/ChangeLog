@@ -1,5 +1,10 @@
 2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-attribs.cc (d_langhook_common_attribute_table): Add always_inline.
+	(handle_always_inline_attribute): New function.
+
+2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/94424
 	* d-codegen.cc (build_alignment_field): Remove.
 	(build_struct_literal): Don't insert alignment padding.
