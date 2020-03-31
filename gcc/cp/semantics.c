@@ -5057,6 +5057,10 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     length = mark_rvalue_use (length);
   /* We need to reduce to real constant-values for checks below.  */
   if (length)
+    STRIP_NOPS (length);
+  if (low_bound)
+    STRIP_NOPS (low_bound);
+  if (length)
     length = fold_simple (length);
   if (low_bound)
     low_bound = fold_simple (low_bound);
@@ -5369,6 +5373,11 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	{
 	  tree low_bound = TREE_PURPOSE (t);
 	  tree length = TREE_VALUE (t);
+
+	  if (length)
+	    STRIP_NOPS (length);
+	  if (low_bound)
+	    STRIP_NOPS (low_bound);
 
 	  i--;
 	  if (low_bound
