@@ -1,5 +1,9 @@
 2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94403
+	* gimple-ssa-store-merging.c (verify_symbolic_number_p): Allow also
+	ENUMERAL_TYPE lhs_type.
+
 	PR rtl-optimization/94344
 	* tree-ssa-forwprop.c (simplify_rotate): Handle also same precision
 	conversions, either on both operands of |^+ or just one.  Handle

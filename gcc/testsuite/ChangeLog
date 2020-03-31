@@ -1,5 +1,8 @@
 2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94403
+	* g++.dg/tree-ssa/pr94403.C: New test.
+
 	PR rtl-optimization/94344
 	* gcc.dg/pr94344.c: New test.
 
