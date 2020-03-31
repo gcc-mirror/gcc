@@ -1,3 +1,8 @@
+2020-03-31  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94398
+	* gcc.target/aarch64/pr94398.c: New test.
+
 2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vbicq_n_s16.c: Modify.

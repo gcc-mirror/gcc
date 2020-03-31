@@ -1,3 +1,11 @@
+2020-03-31  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94398
+	* tree-vect-stmts.c (vectorizable_store): Instead of calling
+	vect_supportable_dr_alignment, set alignment_support_scheme to
+	dr_unaligned_supported for gather-scatter accesses.
+	(vectorizable_load): Likewise.
+
 2020-03-31  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (V_QI, V_HI, V_HF, V_SI, V_SF, V_DI, V_DF):
