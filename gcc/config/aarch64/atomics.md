@@ -38,6 +38,8 @@
 
 (define_mode_attr cas_short_expected_pred
   [(QI "aarch64_reg_or_imm") (HI "aarch64_plushi_operand")])
+(define_mode_attr cas_short_expected_imm
+  [(QI "n") (HI "Uph")])
 
 (define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
@@ -47,7 +49,8 @@
       (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q"))) ;; memory
    (set (match_dup 1)
     (unspec_volatile:SHORT
-      [(match_operand:SHORT 2 "<cas_short_expected_pred>" "rn")	;; expected
+      [(match_operand:SHORT 2 "<cas_short_expected_pred>"
+			      "r<cas_short_expected_imm>")	;; expected
        (match_operand:SHORT 3 "aarch64_reg_or_zero" "rZ")	;; desired
        (match_operand:SI 4 "const_int_operand")			;; is_weak
        (match_operand:SI 5 "const_int_operand")			;; mod_s

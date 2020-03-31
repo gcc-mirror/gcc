@@ -1,5 +1,8 @@
 2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94368
+	* gcc.dg/pr94368.c: New test.
+
 	PR middle-end/94412
 	* gcc.c-torture/execute/pr94412.c: New test.
 
