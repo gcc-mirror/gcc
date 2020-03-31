@@ -1,3 +1,10 @@
+2020-03-31  Marc Glisse  <marc.glisse@inria.fr>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94412
+	* fold-const.c (fold_binary_loc) <case TRUNC_DIV_EXPR>: Use
+	ANY_INTEGRAL_TYPE_P instead of INTEGRAL_TYPE_P.
+
 2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94403
