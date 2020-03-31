@@ -43,6 +43,15 @@ package body Ada.Wide_Characters.Unicode is
    end Get_Category;
 
    --------------
+   -- Is_Basic --
+   --------------
+
+   function Is_Basic (U : Wide_Character) return Boolean is
+   begin
+      return G.Is_UTF_32_Basic (Wide_Character'Pos (U));
+   end Is_Basic;
+
+   --------------
    -- Is_Digit --
    --------------
 
@@ -149,26 +158,30 @@ package body Ada.Wide_Characters.Unicode is
       return G.Is_UTF_32_Space (G.Category (C));
    end Is_Space;
 
+   --------------
+   -- To_Basic --
+   --------------
+
+   function To_Basic (U : Wide_Character) return Wide_Character is
+   begin
+      return Wide_Character'Val (G.UTF_32_To_Basic (Wide_Character'Pos (U)));
+   end To_Basic;
+
    -------------------
    -- To_Lower_Case --
    -------------------
 
-   function To_Lower_Case
-     (U : Wide_Character) return Wide_Character
-   is
+   function To_Lower_Case (U : Wide_Character) return Wide_Character is
    begin
       return
-        Wide_Character'Val
-          (G.UTF_32_To_Lower_Case (Wide_Character'Pos (U)));
+        Wide_Character'Val (G.UTF_32_To_Lower_Case (Wide_Character'Pos (U)));
    end To_Lower_Case;
 
    -------------------
    -- To_Upper_Case --
    -------------------
 
-   function To_Upper_Case
-     (U : Wide_Character) return Wide_Character
-   is
+   function To_Upper_Case (U : Wide_Character) return Wide_Character is
    begin
       return
         Wide_Character'Val

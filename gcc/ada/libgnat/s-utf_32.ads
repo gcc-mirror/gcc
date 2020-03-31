@@ -189,6 +189,11 @@ package System.UTF_32 is
    --  letters to upper case using this routine. A corresponding routine to
    --  fold to lower case is also provided.
 
+   function Is_UTF_32_Basic (U : UTF_32) return Boolean;
+   pragma Inline (Is_UTF_32_Basic);
+   --  Return True if U has no Decomposition Mapping in the code charts of
+   --  ISO/IEC 10646:2017.
+
    function UTF_32_To_Lower_Case (U : UTF_32) return UTF_32;
    pragma Inline (UTF_32_To_Lower_Case);
    --  If U represents an upper case letter, returns the corresponding lower
@@ -208,5 +213,11 @@ package System.UTF_32 is
    --  is the same but with SMALL LETTER replaced by CAPITAL LETTER, then the
    --  code is folded to this CAPITAL LETTER code. Otherwise the input code is
    --  returned unchanged.
+
+   function UTF_32_To_Basic (U : UTF_32) return UTF_32;
+   pragma Inline (UTF_32_To_Basic);
+   --  Returns the UTF_32 character whose code point is given by the first
+   --  value of its Decomposition Mapping in the code charts of ISO/IEC
+   --  10646:2017 if any; returns Item otherwise.
 
 end System.UTF_32;
