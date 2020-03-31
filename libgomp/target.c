@@ -2480,7 +2480,9 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	}
     }
 
-  size_t i;
+  /* The variables are mapped separately such that they can be released
+     independently.  */
+  size_t i, j;
   if ((flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)
     for (i = 0; i < mapnum; i++)
       if ((kinds[i] & 0xff) == GOMP_MAP_STRUCT)
@@ -2488,6 +2490,15 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	  gomp_map_vars (devicep, sizes[i] + 1, &hostaddrs[i], NULL, &sizes[i],
 			 &kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
 	  i += sizes[i];
+	}
+      else if ((kinds[i] & 0xff) == GOMP_MAP_TO_PSET)
+	{
+	  for (j = i + 1; j < mapnum; j++)
+	    if (!GOMP_MAP_POINTER_P (get_kind (true, kinds, j) & 0xff))
+	      break;
+	  gomp_map_vars (devicep, j-i, &hostaddrs[i], NULL, &sizes[i],
+			 &kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
+	  i += j - i - 1;
 	}
       else
 	gomp_map_vars (devicep, 1, &hostaddrs[i], NULL, &sizes[i], &kinds[i],

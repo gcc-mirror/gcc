@@ -16,7 +16,7 @@ foo (float16x8_t a, float16_t b, mve_pred16_t p)
 mve_pred16_t
 foo1 (float16x8_t a, float16_t b, mve_pred16_t p)
 {
-  return vcmpneq_m_n (a, b, p);
+  return vcmpneq_m (a, b, p);
 }
 
 /* { dg-final { scan-assembler "vpst" } } */

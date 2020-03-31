@@ -15,7 +15,7 @@ foo (float32x4_t a, float32_t b)
 mve_pred16_t
 foo1 (float32x4_t a, float32_t b)
 {
-  return vcmpneq_n (a, b);
+  return vcmpneq (a, b);
 }
 
 /* { dg-final { scan-assembler "vcmp.f32"  }  } */

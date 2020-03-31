@@ -11148,11 +11148,11 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
       /* Convert -A / -B to A / B when the type is signed and overflow is
 	 undefined.  */
-      if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
+      if ((!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
 	  && TREE_CODE (op0) == NEGATE_EXPR
 	  && negate_expr_p (op1))
 	{
-	  if (INTEGRAL_TYPE_P (type))
+	  if (ANY_INTEGRAL_TYPE_P (type))
 	    fold_overflow_warning (("assuming signed overflow does not occur "
 				    "when distributing negation across "
 				    "division"),
@@ -11162,11 +11162,11 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 						    TREE_OPERAND (arg0, 0)),
 				  negate_expr (op1));
 	}
-      if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
+      if ((!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
 	  && TREE_CODE (arg1) == NEGATE_EXPR
 	  && negate_expr_p (op0))
 	{
-	  if (INTEGRAL_TYPE_P (type))
+	  if (ANY_INTEGRAL_TYPE_P (type))
 	    fold_overflow_warning (("assuming signed overflow does not occur "
 				    "when distributing negation across "
 				    "division"),

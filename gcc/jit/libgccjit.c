@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "timevar.h"
 #include "typed-splay-tree.h"
+#include "cppbuiltin.h"
+#include <pthread.h>
 
 #include "libgccjit.h"
 #include "jit-recording.h"
@@ -3174,4 +3176,48 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
     (loc,
      as_vec_type,
      (gcc::jit::recording::rvalue **)elements);
+}
+
+/* A mutex around the cached state in parse_basever.
+   Ideally this would be within parse_basever, but the mutex is only needed
+   by libgccjit.  */
+
+static pthread_mutex_t version_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+struct version_info
+{
+  /* Default constructor.  Populate via parse_basever,
+     guarded by version_mutex.  */
+  version_info ()
+  {
+    pthread_mutex_lock (&version_mutex);
+    parse_basever (&major, &minor, &patchlevel);
+    pthread_mutex_unlock (&version_mutex);
+  }
+
+  int major;
+  int minor;
+  int patchlevel;
+};
+
+
+extern int
+gcc_jit_version_major (void)
+{
+  version_info vi;
+  return vi.major;
+}
+
+extern int
+gcc_jit_version_minor (void)
+{
+  version_info vi;
+  return vi.minor;
+}
+
+extern int
+gcc_jit_version_patchlevel (void)
+{
+  version_info vi;
+  return vi.patchlevel;
 }

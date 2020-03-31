@@ -1487,6 +1487,22 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
 					size_t num_elements,
 					gcc_jit_rvalue **elements);
 
+#define LIBGCCJIT_HAVE_gcc_jit_version
+
+/* Functions to retrive libgccjit version.
+   Analogous to __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__ in C code.
+
+   These API entrypoints were added in LIBGCCJIT_ABI_13; you can test for their
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_version
+ */
+extern int
+gcc_jit_version_major (void);
+extern int
+gcc_jit_version_minor (void);
+extern int
+gcc_jit_version_patchlevel (void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

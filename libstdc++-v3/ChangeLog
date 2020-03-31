@@ -1,3 +1,51 @@
+2020-03-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Library-side tests for parenthesized aggregate init
+
+	PR c++/92878
+	PR c++/92947
+
+	* testsuite/20_util/allocator_traits/members/92878_92947.cc: New.
+	* testsuite/20_util/any/assign/92878_92947.cc: Likewise.
+	* testsuite/20_util/any/cons/92878_92947.cc: Likewise.
+	* testsuite/20_util/is_constructible/92878_92947.cc: Likewise.
+	* testsuite/20_util/optional/assignment/92878_92947.cc: Likewise.
+	* testsuite/20_util/optional/cons/92878_92947.cc: Likewise.
+	* testsuite/20_util/pair/cons/92878_92947.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/92878_92947.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/construct_at/92878_92947.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/creation/92878_92947.cc: Likewise.
+	* testsuite/20_util/uses_allocator/92878_92947.cc: Likewise.
+	* testsuite/20_util/variant/92878_92947.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/list/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/priority_queue/92878_92947.cc: Likewise.
+	* testsuite/23_containers/queue/92878_92947.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/stack/92878_92947.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/emplace/92878_92947.cc:
+	Likewise.
+
 2020-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/is_constructible/value-2.cc: Fix test to account

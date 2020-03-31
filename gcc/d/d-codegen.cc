@@ -1076,26 +1076,6 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
   return compound_expr (body, result);
 }
 
-/* Create an anonymous field of type ubyte[T] at OFFSET to fill
-   the alignment hole between OFFSET and FIELDPOS.  */
-
-static tree
-build_alignment_field (tree type, HOST_WIDE_INT offset, HOST_WIDE_INT fieldpos)
-{
-  tree atype = make_array_type (Type::tuns8, fieldpos - offset);
-  tree field = create_field_decl (atype, NULL, 1, 1);
-
-  SET_DECL_OFFSET_ALIGN (field, TYPE_ALIGN (atype));
-  DECL_FIELD_OFFSET (field) = size_int (offset);
-  DECL_FIELD_BIT_OFFSET (field) = bitsize_zero_node;
-  DECL_FIELD_CONTEXT (field) = type;
-  DECL_PADDING_P (field) = 1;
-
-  layout_decl (field, 0);
-
-  return field;
-}
-
 /* Build a constructor for a variable of aggregate type TYPE using the
    initializer INIT, an ordered flat list of fields and values provided
    by the frontend.  The returned constructor should be a value that
@@ -1111,13 +1091,7 @@ build_struct_literal (tree type, vec<constructor_elt, va_gc> *init)
   vec<constructor_elt, va_gc> *ve = NULL;
   HOST_WIDE_INT offset = 0;
   bool constant_p = true;
-  bool fillholes = true;
   bool finished = false;
-
-  /* Filling alignment holes this only applies to structs.  */
-  if (TREE_CODE (type) != RECORD_TYPE
-      || CLASS_TYPE_P (type) || TYPE_PACKED (type))
-    fillholes = false;
 
   /* Walk through each field, matching our initializer list.  */
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -1163,15 +1137,6 @@ build_struct_literal (tree type, vec<constructor_elt, va_gc> *init)
 	  HOST_WIDE_INT fieldpos = int_byte_position (field);
 	  gcc_assert (value != NULL_TREE);
 
-	  /* Insert anonymous fields in the constructor for padding out
-	     alignment holes in-place between fields.  */
-	  if (fillholes && offset < fieldpos)
-	    {
-	      tree pfield = build_alignment_field (type, offset, fieldpos);
-	      tree pvalue = build_zero_cst (TREE_TYPE (pfield));
-	      CONSTRUCTOR_APPEND_ELT (ve, pfield, pvalue);
-	    }
-
 	  /* Must not initialize fields that overlap.  */
 	  if (fieldpos < offset)
 	    {
@@ -1212,15 +1177,6 @@ build_struct_literal (tree type, vec<constructor_elt, va_gc> *init)
       /* If all initializers have been assigned, there's nothing else to do.  */
       if (vec_safe_is_empty (init))
 	break;
-    }
-
-  /* Finally pad out the end of the record.  */
-  if (fillholes && offset < int_size_in_bytes (type))
-    {
-      tree pfield = build_alignment_field (type, offset,
-					   int_size_in_bytes (type));
-      tree pvalue = build_zero_cst (TREE_TYPE (pfield));
-      CONSTRUCTOR_APPEND_ELT (ve, pfield, pvalue);
     }
 
   /* Ensure that we have consumed all values.  */

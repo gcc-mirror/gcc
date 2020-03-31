@@ -1,3 +1,258 @@
+2020-03-31  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94398
+	* tree-vect-stmts.c (vectorizable_store): Instead of calling
+	vect_supportable_dr_alignment, set alignment_support_scheme to
+	dr_unaligned_supported for gather-scatter accesses.
+	(vectorizable_load): Likewise.
+
+2020-03-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (V_QI, V_HI, V_HF, V_SI, V_SF, V_DI, V_DF):
+	New mode iterators.
+	(vnsi, VnSI, vndi, VnDI): New mode attributes.
+	(mov<mode>): Use <VnDI> in place of V64DI.
+	(mov<mode>_exec): Likewise.
+	(mov<mode>_sgprbase): Likewise.
+	(reload_out<mode>): Likewise.
+	(*vec_set<mode>_1): Use GET_MODE_NUNITS instead of constant 64.
+	(gather_load<mode>v64si): Rename to ...
+	(gather_load<mode><vnsi>): ... this, and use <VnSI> in place of V64SI,
+	and <VnDI> in place of V64DI.
+	(gather<mode>_insn_1offset<exec>): Use <VnDI> in place of V64DI.
+	(gather<mode>_insn_1offset_ds<exec>): Use <VnSI> in place of V64SI.
+	(gather<mode>_insn_2offsets<exec>): Use <VnSI> and <VnDI>.
+	(scatter_store<mode>v64si): Rename to ...
+	(scatter_store<mode><vnsi>): ... this, and use <VnSI> and <VnDI>.
+	(scatter<mode>_expr<exec_scatter>): Use <VnSI> and <VnDI>.
+	(scatter<mode>_insn_1offset<exec_scatter>): Likewise.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Likewise.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	(ds_bpermute<mode>): Use <VnSI>.
+	(addv64si3_vcc<exec_vcc>): Rename to ...
+	(add<mode>3_vcc<exec_vcc>): ... this, and use V_SI.
+	(addv64si3_vcc_dup<exec_vcc>): Rename to ...
+	(add<mode>3_vcc_dup<exec_vcc>): ... this, and use V_SI.
+	(addcv64si3<exec_vcc>): Rename to ...
+	(addc<mode>3<exec_vcc>): ... this, and use V_SI.
+	(subv64si3_vcc<exec_vcc>): Rename to ...
+	(sub<mode>3_vcc<exec_vcc>): ... this, and use V_SI.
+	(subcv64si3<exec_vcc>): Rename to ...
+	(subc<mode>3<exec_vcc>): ... this, and use V_SI.
+	(addv64di3): Rename to ...
+	(add<mode>3): ... this, and use V_DI.
+	(addv64di3_exec): Rename to ...
+	(add<mode>3_exec): ... this, and use V_DI.
+	(subv64di3): Rename to ...
+	(sub<mode>3): ... this, and use V_DI.
+	(subv64di3_exec): Rename to ...
+	(sub<mode>3_exec): ... this, and use V_DI.
+	(addv64di3_zext): Rename to ...
+	(add<mode>3_zext): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_exec): Rename to ...
+	(add<mode>3_zext_exec): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup): Rename to ...
+	(add<mode>3_zext_dup): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup_exec): Rename to ...
+	(add<mode>3_zext_dup_exec): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup2): Rename to ...
+	(add<mode>3_zext_dup2): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup2_exec): Rename to ...
+	(add<mode>3_zext_dup2_exec): ... this, and use V_DI and <VnSI>.
+	(addv64di3_sext_dup2): Rename to ...
+	(add<mode>3_sext_dup2): ... this, and use V_DI and <VnSI>.
+	(addv64di3_sext_dup2_exec): Rename to ...
+	(add<mode>3_sext_dup2_exec): ... this, and use V_DI and <VnSI>.
+	(<su>mulv64si3_highpart<exec>): Rename to ...
+	(<su>mul<mode>3_highpart<exec>): ... this and use V_SI and <VnDI>.
+	(mulv64di3): Rename to ...
+	(mul<mode>3): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_exec): Rename to ...
+	(mul<mode>3_exec): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext): Rename to ...
+	(mul<mode>3_zext): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext_exec): Rename to ...
+	(mul<mode>3_zext_exec): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext_dup2): Rename to ...
+	(mul<mode>3_zext_dup2): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext_dup2_exec): Rename to ...
+	(mul<mode>3_zext_dup2_exec): ... this, and use V_DI and <VnSI>.
+	(<expander>v64di3): Rename to ...
+	(<expander><mode>3): ... this, and use V_DI and <VnSI>.
+	(<expander>v64di3_exec): Rename to ...
+	(<expander><mode>3_exec): ... this, and use V_DI and <VnSI>.
+	(<expander>v64si3<exec>): Rename to ...
+	(<expander><mode>3<exec>): ... this, and use V_SI and <VnSI>.
+	(v<expander>v64si3<exec>): Rename to ...
+	(v<expander><mode>3<exec>): ... this, and use V_SI and <VnSI>.
+	(<expander>v64si3<exec>): Rename to ...
+	(<expander><vnsi>3<exec>): ... this, and use V_SI.
+	(subv64df3<exec>): Rename to ...
+	(sub<mode>3<exec>): ... this, and use V_DF.
+	(truncv64di<mode>2): Rename to ...
+	(trunc<vndi><mode>2): ... this, and use <VnDI>.
+	(truncv64di<mode>2_exec): Rename to ...
+	(trunc<vndi><mode>2_exec): ... this, and use <VnDI>.
+	(<convop><mode>v64di2): Rename to ...
+	(<convop><mode><vndi>2): ... this, and use <VnDI>.
+	(<convop><mode>v64di2_exec): Rename to ...
+	(<convop><mode><vndi>2_exec): ... this, and use <VnDI>.
+	(vec_cmp<u>v64qidi): Rename to ...
+	(vec_cmp<u><mode>di): ... this, and use <VnSI>.
+	(vec_cmp<u>v64qidi_exec): Rename to ...
+	(vec_cmp<u><mode>di_exec): ... this, and use <VnSI>.
+	(vcond_mask_<mode>di): Use <VnDI>.
+	(maskload<mode>di): Likewise.
+	(maskstore<mode>di): Likewise.
+	(mask_gather_load<mode>v64si): Rename to ...
+	(mask_gather_load<mode><vnsi>): ... this, and use <VnSI> and <VnDI>.
+	(mask_scatter_store<mode>v64si): Rename to ...
+	(mask_scatter_store<mode><vnsi>): ... this, and use <VnSI> and <VnDI>.
+	(*<reduc_op>_dpp_shr_v64di): Rename to ...
+	(*<reduc_op>_dpp_shr_<mode>): ... this, and use V_DI and <VnSI>.
+	(*plus_carry_in_dpp_shr_v64si): Rename to ...
+	(*plus_carry_in_dpp_shr_<mode>): ... this, and use V_SI.
+	(*plus_carry_dpp_shr_v64di): Rename to ...
+	(*plus_carry_dpp_shr_<mode>): ... this, and use V_DI and <VnSI>.
+	(vec_seriesv64si): Rename to ...
+	(vec_series<mode>): ... this, and use V_SI.
+	(vec_seriesv64di): Rename to ...
+	(vec_series<mode>): ... this, and use V_DI.
+
+2020-03-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_print_operand): Use
+	HOST_WIDE_INT_PRINT_DEC macro.
+
+2020-03-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (ASM_FORMAT_PRIVATE_NAME): Fix it.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (vbicq): Define MVE intrinsic polymorphic
+	variant.
+	(__arm_vbicq): Likewise.
+
+2020-03-31  Vineet Gupta <vgupta@synopsys.com>
+
+	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER support BE/arc700.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (vaddlvq): Move the polymorphic variant to the
+	common section of both MVE Integer and MVE Floating Point.
+	(vaddvq): Likewise.
+	(vaddlvq_p): Likewise.
+	(vaddvaq): Likewise.
+	(vaddvq_p): Likewise.
+	(vcmpcsq): Likewise.
+	(vmlsdavxq): Likewise.
+	(vmlsdavq): Likewise.
+	(vmladavxq): Likewise.
+	(vmladavq): Likewise.
+	(vminvq): Likewise.
+	(vminavq): Likewise.
+	(vmaxvq): Likewise.
+	(vmaxavq): Likewise.
+	(vmlaldavq): Likewise.
+	(vcmphiq): Likewise.
+	(vaddlvaq): Likewise.
+	(vrmlaldavhq): Likewise.
+	(vrmlaldavhxq): Likewise.
+	(vrmlsldavhq): Likewise.
+	(vrmlsldavhxq): Likewise.
+	(vmlsldavxq): Likewise.
+	(vmlsldavq): Likewise.
+	(vabavq): Likewise.
+	(vrmlaldavhaq): Likewise.
+	(vcmpgeq_m_n): Likewise.
+	(vmlsdavxq_p): Likewise.
+	(vmlsdavq_p): Likewise.
+	(vmlsdavaxq): Likewise.
+	(vmlsdavaq): Likewise.
+	(vaddvaq_p): Likewise.
+	(vcmpcsq_m_n): Likewise.
+	(vcmpcsq_m): Likewise.
+	(vmladavxq_p): Likewise.
+	(vmladavq_p): Likewise.
+	(vmladavaxq): Likewise.
+	(vmladavaq): Likewise.
+	(vminvq_p): Likewise.
+	(vminavq_p): Likewise.
+	(vmaxvq_p): Likewise.
+	(vmaxavq_p): Likewise.
+	(vcmphiq_m): Likewise.
+	(vaddlvaq_p): Likewise.
+	(vmlaldavaq): Likewise.
+	(vmlaldavaxq): Likewise.
+	(vmlaldavq_p): Likewise.
+	(vmlaldavxq_p): Likewise.
+	(vmlsldavaq): Likewise.
+	(vmlsldavaxq): Likewise.
+	(vmlsldavq_p): Likewise.
+	(vmlsldavxq_p): Likewise.
+	(vrmlaldavhaxq): Likewise.
+	(vrmlaldavhq_p): Likewise.
+	(vrmlaldavhxq_p): Likewise.
+	(vrmlsldavhaq): Likewise.
+	(vrmlsldavhaxq): Likewise.
+	(vrmlsldavhq_p): Likewise.
+	(vrmlsldavhxq_p): Likewise.
+	(vabavq_p): Likewise.
+	(vmladavaq_p): Likewise.
+	(vstrbq_scatter_offset): Likewise.
+	(vstrbq_p): Likewise.
+	(vstrbq_scatter_offset_p): Likewise.
+	(vstrdq_scatter_base_p): Likewise.
+	(vstrdq_scatter_base): Likewise.
+	(vstrdq_scatter_offset_p): Likewise.
+	(vstrdq_scatter_offset): Likewise.
+	(vstrdq_scatter_shifted_offset_p): Likewise.
+	(vstrdq_scatter_shifted_offset): Likewise.
+	(vmaxq_x): Likewise.
+	(vminq_x): Likewise.
+	(vmovlbq_x): Likewise.
+	(vmovltq_x): Likewise.
+	(vmulhq_x): Likewise.
+	(vmullbq_int_x): Likewise.
+	(vmullbq_poly_x): Likewise.
+	(vmulltq_int_x): Likewise.
+	(vmulltq_poly_x): Likewise.
+	(vstrbq): Likewise.
+
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94368
+	* config/aarch64/constraints.md (Uph): New constraint.
+	* config/aarch64/atomics.md (cas_short_expected_imm): New mode attr.
+	(@aarch64_compare_and_swap<mode>): Use it instead of n in operand 2's
+	constraint.
+
+2020-03-31  Marc Glisse  <marc.glisse@inria.fr>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94412
+	* fold-const.c (fold_binary_loc) <case TRUNC_DIV_EXPR>: Use
+	ANY_INTEGRAL_TYPE_P instead of INTEGRAL_TYPE_P.
+
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94403
+	* gimple-ssa-store-merging.c (verify_symbolic_number_p): Allow also
+	ENUMERAL_TYPE lhs_type.
+
+	PR rtl-optimization/94344
+	* tree-ssa-forwprop.c (simplify_rotate): Handle also same precision
+	conversions, either on both operands of |^+ or just one.  Handle
+	also extra same precision conversion on RSHIFT_EXPR first operand
+	provided RSHIFT_EXPR is performed in unsigned type.
+
+2020-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* lra.c (finish_insn_code_data_once): Set the array elements
+	to NULL after freeing them.
+
 2020-03-30  Andreas Schwab  <schwab@suse.de>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE) [__riscv && __LP64__]:

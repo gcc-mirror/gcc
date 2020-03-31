@@ -1,3 +1,73 @@
+2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit.dg/test-version.c: New testcase.
+	* jit.dg/all-non-failing-tests.h: Add test-version.c.
+
+2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94424
+	* gdc.dg/pr94424.d: New test.
+
+2020-03-31  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94398
+	* gcc.target/aarch64/pr94398.c: New test.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u32.c: Likewise.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32.c: Likewise.
+
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94368
+	* gcc.dg/pr94368.c: New test.
+
+	PR middle-end/94412
+	* gcc.c-torture/execute/pr94412.c: New test.
+
+	PR tree-optimization/94403
+	* g++.dg/tree-ssa/pr94403.C: New test.
+
+	PR rtl-optimization/94344
+	* gcc.dg/pr94344.c: New test.
+
+2020-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-empty.c
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94385
+	* c-c++-common/pr94385.c: New test.
+
 2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/pragma_power6.c: New.

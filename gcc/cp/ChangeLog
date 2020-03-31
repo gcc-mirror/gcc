@@ -1,3 +1,15 @@
+2020-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90711
+	* tree.c (cp_tree_equal) [CALL_EXPR]: Compare KOENIG_LOOKUP_P.
+	(called_fns_equal): Check DECL_CONTEXT.
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94385
+	* semantics.c (add_stmt): Only set STMT_IS_FULL_EXPR_P on trees with
+	STATEMENT_CODE_P code.
+
 2020-03-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94306

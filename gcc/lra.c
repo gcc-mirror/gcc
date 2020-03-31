@@ -653,7 +653,10 @@ finish_insn_code_data_once (void)
   for (unsigned int i = 0; i < NUM_INSN_CODES; i++)
     {
       if (insn_code_data[i] != NULL)
-	free (insn_code_data[i]);
+	{
+	  free (insn_code_data[i]);
+	  insn_code_data[i] = NULL;
+	}
     }
 }
 
