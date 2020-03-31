@@ -1,5 +1,16 @@
 2020-03-31  Carl Love  <cel@us.ibm.com>
 
+	Backport of:
+	  commit e97929e20b2f52e6cfc046c1302324d1b24d95e3
+	  Author: Carl Love <carll@us.ibm.com>
+	  Date:   Wed Mar 25 18:33:37 2020 -0500
+
+	PR target/93819
+        * gcc/config/rs6000/altivec.h:
+        Fixed swapped arguments for vec_rlnm define.
+
+2020-03-31  Carl Love  <cel@us.ibm.com>
+
 	backport of mainline commit
 
 	commit 68dd57808f7c0147acdb5ca72c88ff655afcb0ce
