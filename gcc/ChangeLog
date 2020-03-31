@@ -1,3 +1,9 @@
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (vbicq): Define MVE intrinsic polymorphic
+	variant.
+	(__arm_vbicq): Likewise.
+
 2020-0-31  Vineet Gupta <vgupta@synopsys.com>
 
 	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER support BE/arc700.

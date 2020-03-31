@@ -10,4 +10,10 @@ foo (uint16x8_t a)
   return vbicq_n_u16 (a, 1);
 }
 
-/* { dg-final { scan-assembler "vbic.i16"  }  } */
+uint16x8_t
+foo1 (uint16x8_t a)
+{
+  return vbicq (a, 1);
+}
+
+/* { dg-final { scan-assembler-times "vbic.i16" 2 }  } */

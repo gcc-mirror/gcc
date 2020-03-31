@@ -1,5 +1,12 @@
 2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u32.c: Likewise.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u16.c: Modify.
 	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u32.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u8.c: Likewise.

@@ -10,4 +10,10 @@ foo (uint32x4_t a)
   return vbicq_n_u32 (a, 1);
 }
 
-/* { dg-final { scan-assembler "vbic.i32"  }  } */
+uint32x4_t
+foo1 (uint32x4_t a)
+{
+  return vbicq (a, 1);
+}
+
+/* { dg-final { scan-assembler-times "vbic.i32" 2 }  } */
