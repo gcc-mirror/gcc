@@ -1,6 +1,15 @@
 2020-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_streaming): Declare.
+	* module.cc (module_streaming): Define.
+	(cluster_cmp): Do not strip template off an alias instantiation.
+	(module_state::read_cluster): Increment module_streaming around
+	the loading.
+	* typeck.c (structural_comptypes): Do not resolve typename types
+	when module_streaming.
+
+	gcc/cp/
 	* pt.c (tsubst_lambda_expr): Set extra scope after creating the
 	lambda struct.
 

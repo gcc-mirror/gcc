@@ -6995,6 +6995,7 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 /* In module.cc  */
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
+extern unsigned module_streaming;
 
 #define MK_MODULE (1 << 0)     /* This TU is a module.  */
 #define MK_GLOBAL (1 << 1)     /* Entities are in the global module.  */

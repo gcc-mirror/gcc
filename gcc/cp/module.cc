@@ -3372,6 +3372,11 @@ enum streamed_extensions {
 /********************************************************************/
 struct module_state_config;
 
+/* Non zero when we're streaming in a module.  Restricts type
+   comparisons to not try and resolve typename types.  */
+
+unsigned module_streaming;
+
 /* State of a particular module. */
 
 class GTY((chain_next ("%h.parent"), for_user)) module_state {
@@ -12753,10 +12758,16 @@ cluster_cmp (const void *a_, const void *b_)
 
   if (a_decl != b_decl)
     {
-      /* Different entities, order by their UID.  Use the non-template
-	 UID, as that's generated first.  */
-      unsigned uid_a = DECL_UID (STRIP_TEMPLATE (a_decl));
-      unsigned uid_b = DECL_UID (STRIP_TEMPLATE (b_decl));
+      /* Different entities, order by their UID.  With the exception
+	 of alias template instantiations (which are distinct from
+	 their non-template), use the non-template UID, as that's
+	 generated first.  */
+      if (TREE_CODE (a_decl) == TEMPLATE_DECL && !a->is_alias_tmpl_inst ())
+	a_decl = DECL_TEMPLATE_RESULT (a_decl);
+      if (TREE_CODE (b_decl) == TEMPLATE_DECL && !b->is_alias_tmpl_inst ())
+	b_decl = DECL_TEMPLATE_RESULT (b_decl);
+      unsigned uid_a = DECL_UID (a_decl);
+      unsigned uid_b = DECL_UID (b_decl);
 
       return uid_a < uid_b ? -1 : +1;
     }
@@ -14749,6 +14760,7 @@ module_state::read_cluster (unsigned snum)
 
   dump () && dump ("Reading section:%u", snum);
   dump.indent ();
+  module_streaming++;
 
   while (!sec.get_overrun () && sec.more_p ())
     {
@@ -14921,7 +14933,7 @@ module_state::read_cluster (unsigned snum)
 #undef cfun
   cfun = old_cfun;
   current_function_decl = old_cfd;
-
+  module_streaming--;
   dump.outdent ();
   dump () && dump ("Read section:%u", snum);
 
