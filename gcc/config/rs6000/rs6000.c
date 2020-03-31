@@ -4401,6 +4401,14 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_CRYPTO;
     }
 
+  if (!TARGET_FPRND && TARGET_VSX)
+    {
+      if (rs6000_isa_flags_explicit & OPTION_MASK_FPRND)
+	/* TARGET_VSX = 1 implies Power 7 and newer */
+	error ("%qs requires %qs", "-mvsx", "-mfprnd");
+      rs6000_isa_flags &= ~OPTION_MASK_FPRND;
+    }
+
   if (TARGET_DIRECT_MOVE && !TARGET_VSX)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE)

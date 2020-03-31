@@ -1,3 +1,17 @@
+2020-03-31  Carl Love  <cel@us.ibm.com>
+
+	backport of mainline commit
+
+	commit 68dd57808f7c0147acdb5ca72c88ff655afcb0ce
+	Author: Carl Love <carll@us.ibm.com>
+	Date:   Fri Mar 20 18:15:05 2020 -0500
+
+	whith change log typo fixed.
+
+	PR target/87583
+	* gcc/config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Add check for TARGET_FPRND for Power 7 or newer.
+
 2020-03-29  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
