@@ -180,7 +180,7 @@
 #define vec_recipdiv __builtin_vec_recipdiv
 #define vec_rlmi __builtin_vec_rlmi
 #define vec_vrlnm __builtin_vec_rlnm
-#define vec_rlnm(a,b,c) (__builtin_vec_rlnm((a),((b)<<8)|(c)))
+#define vec_rlnm(a,b,c) (__builtin_vec_rlnm((a),((c)<<8)|(b)))
 #define vec_rsqrt __builtin_vec_rsqrt
 #define vec_rsqrte __builtin_vec_rsqrte
 #define vec_signed __builtin_vec_vsigned
