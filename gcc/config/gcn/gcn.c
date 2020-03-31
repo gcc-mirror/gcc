@@ -2291,6 +2291,10 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
+      /* Vector parameters are not supported yet.  */
+      if (VECTOR_MODE_P (arg.mode))
+	return 0;
+
       int reg_num = FIRST_PARM_REG + cum->num;
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
@@ -2476,6 +2480,10 @@ gcn_return_in_memory (const_tree type, const_tree ARG_UNUSED (fntype))
   HOST_WIDE_INT size = int_size_in_bytes (type);
 
   if (AGGREGATE_TYPE_P (type))
+    return true;
+
+  /* Vector return values are not supported yet.  */
+  if (VECTOR_TYPE_P (type))
     return true;
 
   if (mode == BLKmode)
