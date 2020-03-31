@@ -212,15 +212,23 @@ bool
 gimple_ranger::range_of_call (irange &r, gcall *call)
 {
   tree type = gimple_call_return_type (call);
+  tree lhs = gimple_call_lhs (call);
+
   if (!irange::supports_type_p (type))
     return false;
 
   if (gimple_call_nonnull_result_p (call))
+    r = range_nonzero (type);
+  else
+    r.set_varying (type);
+
+  // If there is a lHS, intersect that with what is known.
+  if (lhs)
     {
-      r = range_nonzero (type);
-      return true;
+      value_range def;
+      def = gimple_range_global (lhs);
+      r.intersect (def);
     }
-  r.set_varying (type);
   return true;
 }
 
