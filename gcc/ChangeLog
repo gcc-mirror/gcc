@@ -1,3 +1,9 @@
+2020-04-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from trunk
+	2020-0-31  Vineet Gupta <vgupta@synopsys.com>
+	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER support BE/arc700.
+
 2020-04-09  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
