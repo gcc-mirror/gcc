@@ -1,6 +1,11 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94412
+	* gcc.c-torture/execute/pr94412.c: New test.
+
 	2020-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94385
