@@ -1,5 +1,11 @@
 2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/94315
+	* gdc.dg/pr93038.d: Split scan-file into multiple tests.
+	* gdc.dg/pr93038b.d: Likewise.
+
+2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/94321
 	* gdc.dg/pr92216.d: Update to work on targets with 16 or 32-bit
 	pointers.
