@@ -46,11 +46,15 @@ is
    function To_Big_Integer (Arg : Integer) return Big_Integer;
 
    subtype Big_Positive is Big_Integer
-     with Dynamic_Predicate => Big_Positive > To_Big_Integer (0),
+     with Dynamic_Predicate =>
+            (if Is_Valid (Big_Positive)
+             then Big_Positive > To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
    subtype Big_Natural is Big_Integer
-     with Dynamic_Predicate => Big_Natural >= To_Big_Integer (0),
+     with Dynamic_Predicate =>
+            (if Is_Valid (Big_Natural)
+             then Big_Natural >= To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
    function In_Range (Arg, Low, High : Big_Integer) return Boolean is
