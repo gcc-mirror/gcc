@@ -104,7 +104,7 @@
    (clobber (match_scratch:SI 7 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_compare_and_swap (operands);
