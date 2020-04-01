@@ -1,3 +1,9 @@
+2020-04-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/94123
+	* lower-subreg.c (pass_lower_subreg3::gate): Remove test for
+	flag_split_wide_types_early.
+
 2020-04-01  Joerg Sonnenberger  <joerg@bec.de>
 
 	* doc/extend.texi (Common Function Attributes): Fix typo.
