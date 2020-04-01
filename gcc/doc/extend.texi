@@ -2817,7 +2817,7 @@ the same type as the target function.  As a result of the @code{copy}
 attribute the alias also shares the same attributes as the target.
 
 @smallexample
-#define StrongAlias(TagetFunc, AliasDecl)   \
+#define StrongAlias(TargetFunc, AliasDecl)  \
   extern __typeof__ (TargetFunc) AliasDecl  \
     __attribute__ ((alias (#TargetFunc), copy (TargetFunc)));
 
