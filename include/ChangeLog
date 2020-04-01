@@ -1,5 +1,4 @@
-2020-04-01  Martin Liska  <mliska@suse.cz>
-	    Maciej W. Rozycki <macro@linux-mips.org>
+2020-04-01 Maciej W. Rozycki <macro@linux-mips.org>
 
 	PR lto/94249
 	* plugin-api.h: Fix a typo.
