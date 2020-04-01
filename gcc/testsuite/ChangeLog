@@ -1,3 +1,8 @@
+2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94043
+	* gfortran.dg/graphite/vect-pr94043.f90: New test.
+
 2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/90136
