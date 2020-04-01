@@ -56,9 +56,9 @@ package Exp_Ch9 is
    --  a renaming of the said master to service the access type.
 
    function Build_Master_Declaration (Loc : Source_Ptr) return Node_Id;
-   --  For targets supporting tasks generate:
+   --  For targets supporting tasks, generate:
    --      _Master : constant Integer := Current_Master.all;
-   --  For targets where tasks or tasking hierarchies are prohibited generate:
+   --  For targets where tasks or tasking hierarchies are prohibited, generate:
    --      _Master : constant Master_Id := 3;
 
    procedure Build_Master_Entity (Obj_Or_Typ : Entity_Id);
