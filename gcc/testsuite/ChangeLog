@@ -1,3 +1,11 @@
+2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from mainline
+	2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94043
+	* gfortran.dg/graphite/vect-pr94043.f90: New test.
+
 2020-04-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

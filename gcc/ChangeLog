@@ -1,3 +1,12 @@
+2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from mainline
+	2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94043
+	* tree-vect-loop.c (vectorizable_live_operation): Generate loop-closed
+	phi for vec_lhs and use it for lane extraction.
+
 2020-04-16  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/94557
