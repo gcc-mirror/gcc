@@ -1,3 +1,13 @@
+2020-04-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/lse-init.c: New file.
+	* config/aarch64/lse.S: New file.
+	* config/aarch64/t-lse: New file.
+	* config.host: Add t-lse to all aarch64 tuples.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
