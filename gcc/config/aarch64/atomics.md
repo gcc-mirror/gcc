@@ -22,10 +22,10 @@
 
 (define_expand "@atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")			;; bool out
-   (match_operand:ALLI 1 "register_operand" "")			;; val out
-   (match_operand:ALLI 2 "aarch64_sync_memory_operand" "")	;; memory
-   (match_operand:ALLI 3 "nonmemory_operand" "")		;; expected
-   (match_operand:ALLI 4 "aarch64_reg_or_zero" "")		;; desired
+   (match_operand:ALLI_TI 1 "register_operand" "")		;; val out
+   (match_operand:ALLI_TI 2 "aarch64_sync_memory_operand" "")	;; memory
+   (match_operand:ALLI_TI 3 "nonmemory_operand" "")		;; expected
+   (match_operand:ALLI_TI 4 "aarch64_reg_or_zero" "")		;; desired
    (match_operand:SI 5 "const_int_operand")			;; is_weak
    (match_operand:SI 6 "const_int_operand")			;; mod_s
    (match_operand:SI 7 "const_int_operand")]			;; mod_f
@@ -88,6 +88,30 @@
   }
 )
 
+(define_insn_and_split "@aarch64_compare_and_swap<mode>"
+  [(set (reg:CC CC_REGNUM)					;; bool out
+    (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
+   (set (match_operand:JUST_TI 0 "register_operand" "=&r")	;; val out
+    (match_operand:JUST_TI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
+   (set (match_dup 1)
+    (unspec_volatile:JUST_TI
+      [(match_operand:JUST_TI 2 "aarch64_reg_or_zero" "rZ")	;; expect
+       (match_operand:JUST_TI 3 "aarch64_reg_or_zero" "rZ")	;; desired
+       (match_operand:SI 4 "const_int_operand")			;; is_weak
+       (match_operand:SI 5 "const_int_operand")			;; mod_s
+       (match_operand:SI 6 "const_int_operand")]		;; mod_f
+      UNSPECV_ATOMIC_CMPSW))
+   (clobber (match_scratch:SI 7 "=&r"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_split_compare_and_swap (operands);
+    DONE;
+  }
+)
+
 (define_insn "@aarch64_compare_and_swap<mode>_lse"
   [(set (match_operand:SI 0 "register_operand" "+r")		;; val out
     (zero_extend:SI
@@ -131,6 +155,28 @@
     return "casl<atomic_sfx>\t%<w>0, %<w>2, %1";
   else
     return "casal<atomic_sfx>\t%<w>0, %<w>2, %1";
+})
+
+(define_insn "@aarch64_compare_and_swap<mode>_lse"
+  [(set (match_operand:JUST_TI 0 "register_operand" "+r")	;; val out
+    (match_operand:JUST_TI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
+   (set (match_dup 1)
+    (unspec_volatile:JUST_TI
+      [(match_dup 0)						;; expect
+       (match_operand:JUST_TI 2 "register_operand" "r")		;; desired
+       (match_operand:SI 3 "const_int_operand")]		;; mod_s
+      UNSPECV_ATOMIC_CMPSW))]
+  "TARGET_LSE"
+{
+  enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+  if (is_mm_relaxed (model))
+    return "casp\t%0, %R0, %2, %R2, %1";
+  else if (is_mm_acquire (model) || is_mm_consume (model))
+    return "caspa\t%0, %R0, %2, %R2, %1";
+  else if (is_mm_release (model))
+    return "caspl\t%0, %R0, %2, %R2, %1";
+  else
+    return "caspal\t%0, %R0, %2, %R2, %1";
 })
 
 (define_expand "atomic_exchange<mode>"
@@ -581,6 +627,24 @@
   }
 )
 
+(define_insn "aarch64_load_exclusive_pair"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI
+	  [(match_operand:TI 2 "aarch64_sync_memory_operand" "Q")
+	   (match_operand:SI 3 "const_int_operand")]
+	  UNSPECV_LX))
+   (set (match_operand:DI 1 "register_operand" "=r")
+	(unspec_volatile:DI [(match_dup 2) (match_dup 3)] UNSPECV_LX))]
+  ""
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
+      return "ldxp\t%0, %1, %2";
+    else
+      return "ldaxp\t%0, %1, %2";
+  }
+)
+
 (define_insn "@aarch64_store_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=&r")
     (unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
@@ -596,6 +660,25 @@
       return "stxr<atomic_sfx>\t%w0, %<w>2, %1";
     else
       return "stlxr<atomic_sfx>\t%w0, %<w>2, %1";
+  }
+)
+
+(define_insn "aarch64_store_exclusive_pair"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
+   (set (match_operand:TI 1 "aarch64_sync_memory_operand" "=Q")
+	(unspec_volatile:TI
+	  [(match_operand:DI 2 "aarch64_reg_or_zero" "rZ")
+	   (match_operand:DI 3 "aarch64_reg_or_zero" "rZ")
+	   (match_operand:SI 4 "const_int_operand")]
+	  UNSPECV_SX))]
+  ""
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
+      return "stxp\t%w0, %x2, %x3, %1";
+    else
+      return "stlxp\t%w0, %x2, %x3, %1";
   }
 )
 
