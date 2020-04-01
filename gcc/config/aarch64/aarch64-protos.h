@@ -644,4 +644,17 @@ poly_uint64 aarch64_regmode_natural_size (machine_mode);
 
 bool aarch64_high_bits_all_ones_p (HOST_WIDE_INT);
 
+struct atomic_ool_names
+{
+    const char *str[5][4];
+};
+
+rtx aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
+			    const atomic_ool_names *names);
+extern const atomic_ool_names aarch64_ool_swp_names;
+extern const atomic_ool_names aarch64_ool_ldadd_names;
+extern const atomic_ool_names aarch64_ool_ldset_names;
+extern const atomic_ool_names aarch64_ool_ldclr_names;
+extern const atomic_ool_names aarch64_ool_ldeor_names;
+
 #endif /* GCC_AARCH64_PROTOS_H */
