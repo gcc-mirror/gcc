@@ -869,6 +869,15 @@ irange::value_inside_range (tree val) const
   if (undefined_p ())
     return 0;
 
+  /* For constants we can just intersect and avoid using VR_ANTI_RANGE
+     code further below.  */
+  if (constant_p ())
+    {
+      value_range v (val, val);
+      v.intersect (this);
+      return v == value_range (val, val) ? 1 : 0;
+    }
+
   cmp1 = operand_less_p (val, min ());
   if (cmp1 == -2)
     return -2;
