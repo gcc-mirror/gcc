@@ -1,3 +1,8 @@
+2020-04-01  Zackery Spytz  <zspytz@gmail.com>
+
+	* doc/extend.texi: Fix a typo in the documentation of the
+	copy function attribute.
+
 2020-04-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
