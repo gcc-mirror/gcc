@@ -3,6 +3,15 @@
 	Backport from mainline
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/aarch64 (aarch64_split_compare_and_swap): Disable
+	strong_zero_p for aarch64_track_speculation; unify some code paths;
+	use aarch64_gen_compare_reg instead of open-coding.
+
+2020-04-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_gen_compare_reg): Add support
 	for NE comparison of TImode values.
 	(aarch64_emit_load_exclusive): Add support for TImode.
