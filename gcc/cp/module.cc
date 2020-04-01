@@ -2707,11 +2707,12 @@ public:
   public:
     uintset *get (key_t key, bool extract = false);
     bool add (key_t key, T value);
+    uintset *create (key_t key, unsigned num, T init = 0);
   };
 };
 
-/* Entity INDEX depends on entity KEY.  Add it to KEY's pendset.
-   Returns true if we created the pendset.  */
+/* Add VALUE to KEY's uintset, creating it if necessary.  Returns true
+   if we created the uintset.  */
 
 template<typename T>
 bool
@@ -2740,6 +2741,30 @@ uintset<T>::hash::add (typename uintset<T>::hash::key_t key, T value)
   set->values[set->num++] = value;
 
   return is_new;
+}
+
+template<typename T>
+uintset<T> *
+uintset<T>::hash::create (typename uintset<T>::hash::key_t key, unsigned num,
+			  T init)
+{
+  unsigned p2alloc = 0;
+  for (unsigned v = num; v != 1; v = (v >> 1) | (v & 1))
+    p2alloc++;
+
+  size_t new_size = (offsetof (uintset, values)
+		     + (sizeof (uintset::values) << p2alloc));
+  uintset *set = new (::operator new (new_size)) uintset (key);
+  set->allocp2 = p2alloc;
+  set->num = num;
+  while (num--)
+    set->values[num] = init;
+
+  uintset **slot = this->find_slot (key, INSERT);
+  gcc_checking_assert (!*slot);
+  *slot = set;
+
+  return set;
 }
 
 /* Locate KEY's uintset, potentially removing it from the hash table  */
@@ -2774,6 +2799,12 @@ uintset<T>::hash::get (typename uintset<T>::hash::key_t key, bool extract)
 
 typedef uintset<unsigned> pendset;
 static pendset::hash *pending_table;
+
+/* Some entities are attached to another entitity for ODR purposes.
+   For example, at namespace scope, 'inline auto var = []{};', that
+   lambda is attached to 'var', and follows its ODRness.  */
+typedef uintset<tree> attachset;
+static attachset::hash *attached_table;
 
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
@@ -2835,9 +2866,10 @@ enum merge_kind
   MK_vtable,	/* Found by CTX and index on TYPE_VTABLES  */
   MK_as_base,	/* Found by CTX.  */
 
-  MK_indirect_lwm = 0x6,
+  MK_indirect_lwm = 0x5,
   MK_local_friend = MK_indirect_lwm, /* Found by CTX, index.  */
   MK_enum,	/* Found by CTX, & 1stMemberNAME.  */
+  MK_attached, /* Found by attachee & index.  */
 
   /* Template specialization kinds below. These are all found via
      primary template and specialization args.  */
@@ -2866,12 +2898,12 @@ enum merge_kind
    an invalid merge_kind number.  */
 static char const *const merge_kind_name[MK_hwm] =
   {
-    "unique", "named", "field", "vtable",  /* 0...3  */
-    "asbase", NULL, "local friend", "enum",       /* 4...7  */
-    "type spec", "type tmpl spec", /* 8,9 type (template).  */
-    NULL, "type partial spec", /* 10,11  partial template. */
-    "decl spec", "decl tmpl spec", /* 12,13 decl (template).  */
-    "alias spec", NULL /* 14,15 alias. */
+    "unique", "named", "field", "vtable",		/* 0...3  */
+    "asbase", "local friend", "enum", "attached",	/* 4...7  */
+    "type spec", "type tmpl spec",	/*  8,9 type (template).  */
+    NULL, "type partial spec",		/* 10,11 partial template. */
+    "decl spec", "decl tmpl spec",	/* 12,13 decl (template).  */
+    "alias spec", NULL			/* 14,15 alias. */
   };
 
 /* Mergeable entity location data.  */
@@ -5560,6 +5592,7 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
   WB (lang->u.base.module_purview_p);
+  WB (lang->u.base.attached_decls_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5627,6 +5660,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
   RB (lang->u.base.module_purview_p);
+  RB (lang->u.base.attached_decls_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -7627,6 +7661,23 @@ trees_out::decl_value (tree decl, depset *dep)
       install_entity (decl, dep);
     }
 
+  if (inner && DECL_LANG_SPECIFIC (inner) && DECL_ATTACHED_DECLS_P (inner))
+    {
+      /* Stream the attached entities.  */
+      attachset *set = attached_table->get (DECL_UID (inner));
+      unsigned num = set->num;
+      if (streaming_p ())
+	u (num);
+      for (unsigned ix = 0; ix != num; ix++)
+	{
+	  tree attached = set->values[ix];
+	  tree_node (attached);
+	  if (streaming_p ())
+	    dump (dumper::MERGE)
+	      && dump ("Written %d[%u] attached decl %N", tag, ix, attached);
+	}
+    }
+
   if (!type && inner
       && TREE_CODE (inner) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (inner)
@@ -7865,10 +7916,33 @@ trees_in::decl_value ()
       DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
     }
 
-  bool installed = install_entity (back_refs[~tag]);
-
   existing = back_refs[~tag];
+  bool installed = install_entity (existing);
   bool is_new = existing == decl;
+
+  if (inner && DECL_LANG_SPECIFIC (inner) && DECL_ATTACHED_DECLS_P (inner))
+    {
+      /* Read and maybe install the attached entities.  */
+      attachset *set
+	= attached_table->get (DECL_UID (STRIP_TEMPLATE (existing)));
+      unsigned num = u ();
+      if (!is_new == !set)
+	set_overrun ();
+      if (is_new)
+	set = attached_table->create (DECL_UID (inner), num, NULL_TREE);
+      for (unsigned ix = 0; !get_overrun () && ix != num; ix++)
+	{
+	  tree attached = tree_node ();
+	  dump (dumper::MERGE)
+	    && dump ("Read %d[%u] %s attached decl %N", tag, ix,
+		     is_new ? "new" : "matched", attached);
+	  if (is_new)
+	    set->values[ix] = attached;
+	  else if (set->values[ix] != attached)
+	    set_overrun ();
+	}
+    }
+
   if (is_new)
     {
       /* A newly discovered node.  */
@@ -9907,6 +9981,18 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	    break;
 
 	  case NAMESPACE_DECL:
+	    if (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl))
+		&& LAMBDA_TYPE_P (TREE_TYPE (decl)))
+	      if (tree scope
+		  = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
+					     (TREE_TYPE (decl))))
+		if (TREE_CODE (scope) == VAR_DECL
+		    && DECL_ATTACHED_DECLS_P (scope))
+		  {
+		    mk = MK_attached;
+		    break;
+		  }
+
 	    if (TREE_CODE (decl) == TEMPLATE_DECL
 		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	      mk = MK_local_friend;
@@ -10170,9 +10256,30 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	case MK_enum:
 	  /* Anonymous enums are located by their first identifier.  */
+	  // FIXME: Post-Prague, also underlying type
 	  gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
 	  if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
 	    name = DECL_NAME (TREE_VALUE (values));
+	  break;
+
+	case MK_attached:
+	  {
+	    gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (inner)));
+	    tree scope = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
+						  (TREE_TYPE (inner)));
+	    gcc_checking_assert (TREE_CODE (scope) == VAR_DECL);
+	    attachset *root = attached_table->get (DECL_UID (scope));
+	    unsigned ix = root->num;
+	    /* If we don't find it, we'll write a really big number
+	       that the reader will ignore.  */
+	    while (ix--)
+	      if (root->values[ix] == inner)
+		break;
+
+	    /* Use the attached-to decl as the 'name'.  */
+	    name = scope;
+	    key.index = ix;
+	  }
 	  break;
 	}
 
@@ -10409,7 +10516,20 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  gcc_unreachable ();
 
 	case NAMESPACE_DECL:
-	  if (is_mod && !(state->is_module () || state->is_partition ()))
+	  if (mk == MK_attached)
+	    {
+	      if (DECL_LANG_SPECIFIC (name)
+		  && DECL_ATTACHED_DECLS_P (name))
+		if (attachset *set = attached_table->get (DECL_UID (name)))
+		  if (key.index < set->num)
+		    {
+		      existing = set->values[key.index];
+		      gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (existing));
+		      if (inner != decl)
+			existing = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
+		    }
+	    }
+	  else if (is_mod && !(state->is_module () || state->is_partition ()))
 	    kind = "unique";
 	  else
 	    {
@@ -11874,8 +11994,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 			&& true)))
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	    }
-	  else if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		   && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+	  else if (DECL_IMPLICIT_TYPEDEF_P (not_tmpl)
+		   && IDENTIFIER_ANON_P (DECL_NAME (not_tmpl)))
 	    /* No linkage or linkage from typedef name (which
 	       cannot be internal, because that's from the linkage
 	       of the context.  */;
@@ -18309,6 +18429,31 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
   DECL_MODULE_EXPORT_P (decl) = true;
 }
 
+/* DECL is attached to ROOT for odr purposes.  */
+
+void
+maybe_attach_decl (tree ctx, tree decl)
+{
+  if (!flag_modules)
+    return;
+
+  // FIXME: For now just deal with lambdas attached to var decls.
+  // This might be sufficient?
+  if (TREE_CODE (ctx) != VAR_DECL)
+    return;
+
+  gcc_checking_assert (DECL_NAMESPACE_SCOPE_P (ctx));
+
+ if (!attached_table)
+    attached_table = new attachset::hash (EXPERIMENT (1, 400));
+
+  if (attached_table->add (DECL_UID (ctx), decl))
+    {
+      retrofit_lang_decl (ctx);
+      DECL_ATTACHED_DECLS_P (ctx) = true;
+    }
+}
+
 /* Create the flat name string.  It is simplest to have it handy.  */
 
 void
@@ -19508,6 +19653,10 @@ finish_module_processing (cpp_reader *reader)
   /* Or remember any pending entities.  */
   delete pending_table;
   pending_table = NULL;
+
+  /* Or any attachments -- Let it go!  */
+  delete attached_table;
+  attached_table = NULL;
 
   /* Allow a GC, we've possibly made much data unreachable.  */
   ggc_collect ();

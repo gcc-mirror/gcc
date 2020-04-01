@@ -1382,6 +1382,12 @@ record_lambda_scope (tree lambda)
 {
   LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope;
   LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
+  if (lambda_scope)
+    {
+      tree closure = LAMBDA_EXPR_CLOSURE (lambda);
+      gcc_checking_assert (closure);
+      maybe_attach_decl (lambda_scope, TYPE_NAME (closure));
+    }
 }
 
 /* This lambda is an instantiation of a lambda in a template default argument

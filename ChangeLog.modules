@@ -1,3 +1,26 @@
+2020-04-01  Nathan Sidwell  <nathan@acm.org>
+
+	Lambdas attached to namespace-scope non-template vars
+	gcc/cp/
+	* cp-tree.h (DECL_ATTACHED_DECLS_P): New.
+	(struct lang_decl_base): Add attached_decls_p.
+	(maybe_attach_decl): Declare.
+	* lambda.c (record_lambda_scope): Call maybe_attach_decl.
+	* lex.c (cxx_dup_lang_specific): Clear DECL_ATTACHED_DECLS_P.
+	* module.c (uintset<T>::hash::create): New member function.
+	(attachset, attached_tables): Declare.
+	(enum merge_kind): Add MK_attached.  Adjust.
+	(trees_{in,out}::lang_decl_bools): Stream attached_decls_p.
+	(trees_{in,out}::decl_value): Stream attached decls.
+	(trees_out::get_merge_kind): Determine if MK_attached.
+	(trees_{in,out}::key_mergeable): Stream MK_attached.
+	(depset::hash::make_dependency): You can get anonymous templatey
+	things (lambdas).
+	(maybe_attach_decl): New.
+	(finish_module_processing): Delete attached_table.
+	gcc/testsuite/
+	* g++.dg/modules/lambda-2_[ab].[HC]: Remove xfail, add dump scans.
+
 2020-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

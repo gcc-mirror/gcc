@@ -1760,6 +1760,10 @@ check_constraint_info (tree t)
    it for unscoped enums.  */
 #define DECL_MODULE_EXPORT_P(NODE) TREE_LANG_FLAG_3 (NODE)
 
+/* DECL that has attached decls for ODR-relatedness.  */
+#define DECL_ATTACHED_DECLS_P(NODE)			\
+  (DECL_LANG_SPECIFIC (NODE)->u.base.attached_decls_p)
+
 
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
@@ -2807,8 +2811,11 @@ struct GTY(()) lang_decl_base {
   /* Has specializations or members yet to load.  */
   unsigned module_pending_specializations_p : 1;
   unsigned module_pending_members_p : 1;
+
+  /* Is in the decl-attached hash table, (with attached decls).  */
+  unsigned attached_decls_p : 1;
   
-  /* 10 spare bits.  */
+  /* 9 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -7051,6 +7058,7 @@ extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
+extern void maybe_attach_decl (tree ctx, tree decl);
 
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
