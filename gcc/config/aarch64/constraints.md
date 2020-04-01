@@ -220,6 +220,13 @@
   (and (match_code "const_int")
        (match_test "(unsigned) exact_log2 (ival) <= 4")))
 
+(define_constraint "Uph"
+  "@internal
+  A constraint that matches HImode integers zero extendable to
+  SImode plus_operand."
+  (and (match_code "const_int")
+       (match_test "aarch64_plushi_immediate (op, VOIDmode)")))
+
 (define_memory_constraint "Q"
  "A memory address which uses a single base register with no offset."
  (and (match_code "mem")
