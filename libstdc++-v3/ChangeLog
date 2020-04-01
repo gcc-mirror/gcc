@@ -1,3 +1,9 @@
+2020-04-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_free.xml: Move "free books" list from
+	fsf.org to gnu.org.
+	* doc/html/manual/appendix_free.html: Regenerate.
+
 2020-03-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Library-side tests for parenthesized aggregate init
