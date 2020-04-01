@@ -2001,7 +2001,14 @@ package body Sem_Prag is
                Push_Scope (Spec_Id);
 
                if Ekind (Spec_Id) = E_Task_Type then
-                  null;
+
+                  --  Task discriminants cannot appear in the [Refined_]Depends
+                  --  contract, but must be present for the analysis so that we
+                  --  can reject them with an informative error message.
+
+                  if Has_Discriminants (Spec_Id) then
+                     Install_Discriminants (Spec_Id);
+                  end if;
 
                elsif Is_Generic_Subprogram (Spec_Id) then
                   Install_Generic_Formals (Spec_Id);
@@ -2789,7 +2796,14 @@ package body Sem_Prag is
             Push_Scope (Spec_Id);
 
             if Ekind (Spec_Id) = E_Task_Type then
-               null;
+
+               --  Task discriminants cannot appear in the [Refined_]Global
+               --  contract, but must be present for the analysis so that we
+               --  can reject them with an informative error message.
+
+               if Has_Discriminants (Spec_Id) then
+                  Install_Discriminants (Spec_Id);
+               end if;
 
             elsif Is_Generic_Subprogram (Spec_Id) then
                Install_Generic_Formals (Spec_Id);
