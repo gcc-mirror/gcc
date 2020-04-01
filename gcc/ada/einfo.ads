@@ -4184,6 +4184,10 @@ package Einfo is
 --       RM-6.5(4/2). Note that a (simple) return statement within an
 --       extended_return_statement applies to the extended_return_statement,
 --       even though it causes the whole function to return.
+--       Also defined in special E_Block entities built as E_Return_Statement
+--       for extended return statements and attached to the block statement
+--       by Expand_N_Extended_Return_Statement before being turned into an
+--       E_Block by semantic analysis.
 
 --    Return_Present (Flag54)
 --       Defined in function and generic function entities. Set if the
@@ -5917,6 +5921,7 @@ package Einfo is
    --    (plus type attributes)
 
    --  E_Block
+   --    Return_Applies_To                   (Node8)
    --    Block_Node                          (Node11)
    --    First_Entity                        (Node17)
    --    Last_Entity                         (Node20)

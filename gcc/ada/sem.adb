@@ -819,7 +819,7 @@ package body Sem is
             Scope_Suppress.Suppress := Svs;
          end;
 
-      elsif Suppress = Overflow_Check then
+      else
          declare
             Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
