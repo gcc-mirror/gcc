@@ -12040,7 +12040,6 @@ package body Exp_Ch4 is
          Tagged_Conversion : declare
             Actual_Op_Typ   : Entity_Id;
             Actual_Targ_Typ : Entity_Id;
-            Make_Conversion : Boolean := False;
             Root_Op_Typ     : Entity_Id;
 
             procedure Make_Tag_Check (Targ_Typ : Entity_Id);
@@ -12124,78 +12123,26 @@ package body Exp_Ch4 is
                goto Done;
             end if;
 
-            if not Tag_Checks_Suppressed (Actual_Targ_Typ) then
+            --  Create a runtime tag check for a downward CW type conversion
 
-               --  Create a runtime tag check for a downward class-wide type
-               --  conversion.
-
-               if Is_Class_Wide_Type (Actual_Op_Typ)
-                 and then Actual_Op_Typ /= Actual_Targ_Typ
-                 and then Root_Op_Typ /= Actual_Targ_Typ
-                 and then Is_Ancestor (Root_Op_Typ, Actual_Targ_Typ,
-                                       Use_Full_View => True)
-               then
+            if Is_Class_Wide_Type (Actual_Op_Typ)
+              and then Actual_Op_Typ /= Actual_Targ_Typ
+              and then Root_Op_Typ /= Actual_Targ_Typ
+              and then Is_Ancestor
+                         (Root_Op_Typ, Actual_Targ_Typ, Use_Full_View => True)
+              and then not Tag_Checks_Suppressed (Actual_Targ_Typ)
+            then
+               declare
+                  Conv : Node_Id;
+               begin
                   Make_Tag_Check (Class_Wide_Type (Actual_Targ_Typ));
-                  Make_Conversion := True;
-               end if;
-
-               --  AI05-0073: If the result subtype of the function is defined
-               --  by an access_definition designating a specific tagged type
-               --  T, a check is made that the result value is null or the tag
-               --  of the object designated by the result value identifies T.
-               --  Constraint_Error is raised if this check fails.
-
-               if Nkind (Parent (N)) = N_Simple_Return_Statement then
-                  declare
-                     Func     : Entity_Id;
-                     Func_Typ : Entity_Id;
-
-                  begin
-                     --  Climb scope stack looking for the enclosing function
-
-                     Func := Current_Scope;
-                     while Present (Func)
-                       and then Ekind (Func) /= E_Function
-                     loop
-                        Func := Scope (Func);
-                     end loop;
-
-                     --  The function's return subtype must be defined using
-                     --  an access definition.
-
-                     if Nkind (Result_Definition (Parent (Func))) =
-                          N_Access_Definition
-                     then
-                        Func_Typ := Directly_Designated_Type (Etype (Func));
-
-                        --  The return subtype denotes a specific tagged type,
-                        --  in other words, a non class-wide type.
-
-                        if Is_Tagged_Type (Func_Typ)
-                          and then not Is_Class_Wide_Type (Func_Typ)
-                        then
-                           Make_Tag_Check (Actual_Targ_Typ);
-                           Make_Conversion := True;
-                        end if;
-                     end if;
-                  end;
-               end if;
-
-               --  We have generated a tag check for either a class-wide type
-               --  conversion or for AI05-0073.
-
-               if Make_Conversion then
-                  declare
-                     Conv : Node_Id;
-                  begin
-                     Conv :=
-                       Make_Unchecked_Type_Conversion (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                         Expression   => Relocate_Node (Expression (N)));
-                     Rewrite (N, Conv);
-                     Analyze_And_Resolve (N, Target_Type);
-                  end;
-               end if;
+                  Conv :=
+                    Make_Unchecked_Type_Conversion (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                      Expression   => Relocate_Node (Expression (N)));
+                  Rewrite (N, Conv);
+                  Analyze_And_Resolve (N, Target_Type);
+               end;
             end if;
          end Tagged_Conversion;
 

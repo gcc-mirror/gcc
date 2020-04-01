@@ -10185,7 +10185,9 @@ package body Einfo is
          when E_Abstract_State =>
             Write_Str ("Refinement_Constituents");
 
-         when E_Return_Statement =>
+         when E_Block
+            | E_Return_Statement
+         =>
             Write_Str ("Return_Applies_To");
 
          when others =>
