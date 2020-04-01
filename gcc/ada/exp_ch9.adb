@@ -3447,7 +3447,7 @@ package body Exp_Ch9 is
          Find_Enclosing_Context (Par, Context, Context_Id, Decls);
       end if;
 
-      --  Nothing to do if the context already has a master; internally build
+      --  Nothing to do if the context already has a master; internally built
       --  finalizers don't need a master.
 
       if Has_Master_Entity (Context_Id)
@@ -4856,7 +4856,7 @@ package body Exp_Ch9 is
       Chain := Activation_Chain_Entity (Owner);
 
       --  Nothing to do when there are no tasks to activate. This is indicated
-      --  by a missing activation chain entity; skip also generating it when
+      --  by a missing activation chain entity; also skip generating it when
       --  it is a ghost entity.
 
       if No (Chain) or else Is_Ignored_Ghost_Entity (Chain) then
