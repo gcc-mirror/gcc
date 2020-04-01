@@ -1,3 +1,10 @@
+2020-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94423
+	* tree-object-size.c (pass_object_sizes::execute): Don't call
+	replace_uses_by for SSA_NAME_OCCURS_IN_ABNORMAL_PHI lhs, instead
+	call replace_call_with_value.
+
 2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/94043

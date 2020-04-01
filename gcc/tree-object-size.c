@@ -1393,7 +1393,10 @@ pass_object_sizes::execute (function *fun)
 	    }
 
 	  /* Propagate into all uses and fold those stmts.  */
-	  replace_uses_by (lhs, result);
+	  if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	    replace_uses_by (lhs, result);
+	  else
+	    replace_call_with_value (&i, result);
 	}
     }
 
