@@ -23,12 +23,14 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "auto-target.h"
+
 /* Define the symbol gating the LSE implementations.  */
 _Bool __aarch64_have_lse_atomics
   __attribute__((visibility("hidden"), nocommon));
 
 /* Disable initialization of __aarch64_have_lse_atomics during bootstrap.  */
-#ifndef inhibit_libc
+#if !defined(inhibit_libc) && defined(HAVE_SYS_AUXV_H)
 # include <sys/auxv.h>
 
 /* Disable initialization if the system headers are too old.  */

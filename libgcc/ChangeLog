@@ -3,6 +3,17 @@
 	Backport from mainline
 	2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
 
+	PR target/91833
+	* config/aarch64/lse-init.c: Include auto-target.h.  Disable
+	initialization if !HAVE_SYS_AUXV_H.
+	* configure.ac (AC_CHECK_HEADERS): Add sys/auxv.h.
+	* config.in, configure: Rebuild.
+
+2020-04-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
+
 	PR target/91834
 	* config/aarch64/lse.S (LDNM): Ensure STXR output does not
 	overlap the inputs.
