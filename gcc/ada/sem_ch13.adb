@@ -2203,6 +2203,10 @@ package body Sem_Ch13 is
                --  Items that appear in the relaxed initialization aspect
                --  expression of a subprogram; for detecting duplicates.
 
+               Restore_Scope : Boolean;
+               --  Will be set to True if we need to restore the scope table
+               --  after analyzing the aspect expression.
+
             --  Start of processing for Analyze_Aspect_Relaxed_Initialization
 
             begin
@@ -2231,17 +2235,23 @@ package body Sem_Ch13 is
                elsif Is_Subprogram (E) then
                   if Present (Expr) then
 
-                     --  Subprogram and its formal parameters must be visible
-                     --  when analyzing the aspect expression.
+                     --  If we analyze subprogram body that acts as its own
+                     --  spec, then the subprogram itself and its formals are
+                     --  already installed; otherwise, we need to install them,
+                     --  as they must be visible when analyzing the aspect
+                     --  expression.
 
-                     pragma Assert (not In_Open_Scopes (E));
-
-                     Push_Scope (E);
-
-                     if Is_Generic_Subprogram (E) then
-                        Install_Generic_Formals (E);
+                     if In_Open_Scopes (E) then
+                        Restore_Scope := False;
                      else
-                        Install_Formals (E);
+                        Restore_Scope := True;
+                        Push_Scope (E);
+
+                        if Is_Generic_Subprogram (E) then
+                           Install_Generic_Formals (E);
+                        else
+                           Install_Formals (E);
+                        end if;
                      end if;
 
                      --  Aspect expression is either an aggregate with list of
@@ -2281,7 +2291,9 @@ package body Sem_Ch13 is
                         Analyze_Relaxed_Parameter (E, Expr, Seen);
                      end if;
 
-                     End_Scope;
+                     if Restore_Scope then
+                        End_Scope;
+                     end if;
                   else
                      Error_Msg_N ("missing expression for aspect %", N);
                   end if;

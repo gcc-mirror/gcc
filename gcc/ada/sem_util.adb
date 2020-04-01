@@ -12511,7 +12511,8 @@ package body Sem_Util is
 
                if Has_Aspect (Subp_Id, Aspect_Relaxed_Initialization) then
                   Aspect_Expr :=
-                    Find_Value_Of_Aspect (E, Aspect_Relaxed_Initialization);
+                    Find_Value_Of_Aspect
+                      (Subp_Id, Aspect_Relaxed_Initialization);
 
                   --  Aspect expression is either an aggregate, e.g.:
                   --
