@@ -1110,7 +1110,10 @@ get_symbol_decl (Declaration *decl)
       /* Set function type afterwards as there could be self references.  */
       TREE_TYPE (decl->csym) = build_ctype (fd->type);
 
-      if (!fd->fbody)
+      /* Set DECL_INITIAL now if the function has a definition.  */
+      if (fd->fbody)
+	DECL_INITIAL (decl->csym) = error_mark_node;
+      else
 	DECL_EXTERNAL (decl->csym) = 1;
     }
   else
@@ -1151,26 +1154,38 @@ get_symbol_decl (Declaration *decl)
 							 mangled_name);
       /* The frontend doesn't handle duplicate definitions of unused symbols
 	 with the same mangle.  So a check is done here instead.  */
-      if (!DECL_EXTERNAL (decl->csym))
+      if (IDENTIFIER_DSYMBOL (mangled_name))
 	{
-	  if (IDENTIFIER_DSYMBOL (mangled_name))
+	  Declaration *other = IDENTIFIER_DSYMBOL (mangled_name);
+	  tree olddecl = decl->csym;
+	  decl->csym = get_symbol_decl (other);
+
+	  /* The current declaration is a prototype or marked extern, merge
+	     applied user attributes and return.  */
+	  if (DECL_EXTERNAL (olddecl) && !DECL_INITIAL (olddecl))
 	    {
-	      Declaration *other = IDENTIFIER_DSYMBOL (mangled_name);
-
-	      /* Non-templated variables shouldn't be defined twice.  */
-	      if (!decl->isInstantiated ())
-		ScopeDsymbol::multiplyDefined (decl->loc, decl, other);
-
-	      decl->csym = get_symbol_decl (other);
+	      apply_user_attributes (decl, decl->csym);
 	      return decl->csym;
 	    }
-
+	  /* The previous declaration is a prototype or marked extern, set the
+	     current declaration as the main reference of the symbol.  */
+	  else if (DECL_EXTERNAL (decl->csym) && !DECL_INITIAL (decl->csym))
+	    {
+	      IDENTIFIER_DSYMBOL (mangled_name) = decl;
+	      DECL_EXTERNAL (decl->csym) = 0;
+	    }
+	  /* Non-extern, non-templated decls shouldn't be defined twice.  */
+	  else if (!decl->isInstantiated ())
+	    ScopeDsymbol::multiplyDefined (decl->loc, decl, other);
+	}
+      else
+	{
 	  IDENTIFIER_PRETTY_NAME (mangled_name)
 	    = get_identifier (decl->toPrettyChars (true));
 	  IDENTIFIER_DSYMBOL (mangled_name) = decl;
-	}
 
-      SET_DECL_ASSEMBLER_NAME (decl->csym, mangled_name);
+	  SET_DECL_ASSEMBLER_NAME (decl->csym, mangled_name);
+	}
     }
 
   DECL_LANG_SPECIFIC (decl->csym) = build_lang_decl (decl);
@@ -1358,13 +1373,7 @@ get_symbol_decl (Declaration *decl)
     }
 
   /* Apply any user attributes that may affect semantic meaning.  */
-  if (decl->userAttribDecl)
-    {
-      Expressions *attrs = decl->userAttribDecl->getAttributes ();
-      decl_attributes (&decl->csym, build_attributes (attrs), 0);
-    }
-  else if (DECL_ATTRIBUTES (decl->csym) != NULL)
-    decl_attributes (&decl->csym, DECL_ATTRIBUTES (decl->csym), 0);
+  apply_user_attributes (decl, decl->csym);
 
   /* %% Probably should be a little more intelligent about setting this.  */
   TREE_USED (decl->csym) = 1;

@@ -5525,56 +5525,68 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case TARGET_EXPR:
-      if (!literal_type_p (TREE_TYPE (t)))
-	{
-	  if (!ctx->quiet)
-	    {
-	      auto_diagnostic_group d;
-	      error ("temporary of non-literal type %qT in a "
-		     "constant expression", TREE_TYPE (t));
-	      explain_non_literal_class (TREE_TYPE (t));
-	    }
-	  *non_constant_p = true;
+      {
+	tree type = TREE_TYPE (t);
+
+	if (!literal_type_p (type))
+	  {
+	    if (!ctx->quiet)
+	      {
+		auto_diagnostic_group d;
+		error ("temporary of non-literal type %qT in a "
+		       "constant expression", type);
+		explain_non_literal_class (type);
+	      }
+	    *non_constant_p = true;
+	    break;
+	  }
+	gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (t));
+	/* Avoid evaluating a TARGET_EXPR more than once.  */
+	tree slot = TARGET_EXPR_SLOT (t);
+	if (tree *p = ctx->global->values.get (slot))
+	  {
+	    if (lval)
+	      return slot;
+	    r = *p;
+	    break;
+	  }
+	tree init = TARGET_EXPR_INITIAL (t);
+	if ((AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type)))
+	  {
+	    if (ctx->object)
+	      /* If the initializer contains any PLACEHOLDER_EXPR, we need to
+		 resolve them before we create a new CONSTRUCTOR for the
+		 temporary.  */
+	      init = replace_placeholders (init, ctx->object);
+
+	    /* We're being expanded without an explicit target, so start
+	       initializing a new object; expansion with an explicit target
+	       strips the TARGET_EXPR before we get here.  */
+	    new_ctx = *ctx;
+	    new_ctx.ctor = build_constructor (type, NULL);
+	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
+	    new_ctx.object = slot;
+	    ctx->global->values.put (new_ctx.object, new_ctx.ctor);
+	    ctx = &new_ctx;
+	  }
+	/* Pass false for 'lval' because this indicates
+	   initialization of a temporary.  */
+	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
+					  false,
+					  non_constant_p, overflow_p);
+	if (*non_constant_p)
 	  break;
-	}
-      gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (t));
-      /* Avoid evaluating a TARGET_EXPR more than once.  */
-      if (tree *p = ctx->global->values.get (TARGET_EXPR_SLOT (t)))
-	{
-	  if (lval)
-	    return TARGET_EXPR_SLOT (t);
-	  r = *p;
-	  break;
-	}
-      if ((AGGREGATE_TYPE_P (TREE_TYPE (t)) || VECTOR_TYPE_P (TREE_TYPE (t))))
-	{
-	  /* We're being expanded without an explicit target, so start
-	     initializing a new object; expansion with an explicit target
-	     strips the TARGET_EXPR before we get here.  */
-	  new_ctx = *ctx;
-	  new_ctx.ctor = build_constructor (TREE_TYPE (t), NULL);
-	  CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
-	  new_ctx.object = TARGET_EXPR_SLOT (t);
-	  ctx->global->values.put (new_ctx.object, new_ctx.ctor);
-	  ctx = &new_ctx;
-	}
-      /* Pass false for 'lval' because this indicates
-	 initialization of a temporary.  */
-      r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
-					false,
-					non_constant_p, overflow_p);
-      if (*non_constant_p)
-	break;
-      /* Adjust the type of the result to the type of the temporary.  */
-      r = adjust_temp_type (TREE_TYPE (t), r);
-      if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
-	ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
-      r = unshare_constructor (r);
-      ctx->global->values.put (TARGET_EXPR_SLOT (t), r);
-      if (ctx->save_exprs)
-	ctx->save_exprs->safe_push (TARGET_EXPR_SLOT (t));
-      if (lval)
-	return TARGET_EXPR_SLOT (t);
+	/* Adjust the type of the result to the type of the temporary.  */
+	r = adjust_temp_type (type, r);
+	if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
+	  ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
+	r = unshare_constructor (r);
+	ctx->global->values.put (slot, r);
+	if (ctx->save_exprs)
+	  ctx->save_exprs->safe_push (slot);
+	if (lval)
+	  return slot;
+      }
       break;
 
     case INIT_EXPR:

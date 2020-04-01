@@ -1,3 +1,9 @@
+2020-04-01  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/94386
+	expr.c (simplify_parameter_variable): Restore code deleted
+	in PR94246.
+
 2020-03-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/94246

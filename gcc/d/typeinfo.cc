@@ -1254,7 +1254,7 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
   /* Update the type size and record mode for the classinfo type.  */
   if (type != tinfo_types[TK_CLASSINFO_TYPE])
-    finish_aggregate_type (structsize, TYPE_ALIGN_UNIT (type), type, NULL);
+    finish_aggregate_type (structsize, TYPE_ALIGN_UNIT (type), type);
 
   return type;
 }

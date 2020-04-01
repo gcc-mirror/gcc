@@ -1,3 +1,30 @@
+2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90136
+	* d-attribs.cc: Include dmd/attrib.h.
+	(build_attributes): Redeclare as static.
+	(apply_user_attributes): New function.
+	* d-tree.h (class UserAttributeDeclaration): Remove.
+	(build_attributes): Remove.
+	(apply_user_attributes): Declare.
+	(finish_aggregate_type): Remove attrs argument.
+	* decl.cc (get_symbol_decl): Merge declaration prototypes with
+	definitions.  Use apply_user_attributes.
+	* modules.cc (layout_moduleinfo_fields): Remove last argument to
+	finish_aggregate_type.
+	* typeinfo.cc (layout_classinfo_interfaces): Likewise.
+	* types.cc (layout_aggregate_members): Likewise.
+	(finish_aggregate_type): Remove attrs argument.
+	(TypeVisitor::visit (TypeEnum *)): Use apply_user_attributes.
+	(TypeVisitor::visit (TypeStruct *)): Remove last argument to
+	finish_aggregate_type.  Use apply_user_attributes.
+	(TypeVisitor::visit (TypeClass *)): Likewise.
+
+2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (d_langhook_common_attribute_table): Add always_inline.
+	(handle_always_inline_attribute): New function.
+
 2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94424
