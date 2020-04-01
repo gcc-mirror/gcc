@@ -2265,7 +2265,10 @@ found:
 	 a scalar integer initialization-expr and valid kind parameter. */
       if (c == ')')
 	{
-	  if (e->ts.type != BT_INTEGER || e->rank > 0)
+	  bool ok = true;
+	  if (e->expr_type != EXPR_CONSTANT && e->expr_type != EXPR_VARIABLE)
+	    ok = gfc_reduce_init_expr (e);
+	  if (!ok || e->ts.type != BT_INTEGER || e->rank > 0)
 	    {
 	      gfc_free_expr (e);
 	      return MATCH_NO;
