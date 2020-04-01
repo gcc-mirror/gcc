@@ -15,7 +15,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target c++14 } }
+// { dg-do run }
+// { dg-options "-pthread"  }
+// { dg-require-effective-target c++14 }
+// { dg-require-effective-target pthread }
+// { dg-require-gthreads "" }
 
 #include <experimental/executor>
 #include <testsuite_hooks.h>
