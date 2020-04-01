@@ -1,5 +1,9 @@
 2020-04-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/tpl-alias-1_[ab].[HC]: Fix unresolved tests.
+	* g++.dg/modules/vtt-2_b.C: Likewise.
+
 	Lambdas attached to namespace-scope non-template vars
 	gcc/cp/
 	* cp-tree.h (DECL_ATTACHED_DECLS_P): New.

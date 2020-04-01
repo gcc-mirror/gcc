@@ -4,4 +4,4 @@
 import "vtt-2_a.H";
 
 // { dg-final { scan-lang-dump-not {merge key \(new\)} module } }
-// { dg-final { scan-lang-dump-times {merge key \(unique\)} module 2 } }
+// { dg-final { scan-lang-dump-times {merge key \(unique\)} 2 module } }
