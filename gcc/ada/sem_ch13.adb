@@ -952,7 +952,6 @@ package body Sem_Ch13 is
       procedure Check_Aspect_Too_Late (N : Node_Id) is
          Typ  : constant Entity_Id := Entity (N);
          Expr : constant Node_Id   := Expression (N);
-         A_Id : constant Aspect_Id := Get_Aspect_Id (N);
 
          function Find_Type_Reference
            (Typ : Entity_Id; Expr : Node_Id) return Boolean;
@@ -995,42 +994,44 @@ package body Sem_Ch13 is
          Parent_Type : Entity_Id;
 
       begin
-         if A_Id /= Aspect_Default_Value then
+         --  Ensure Expr is analyzed so that e.g. all types are properly
+         --  resolved for Find_Type_Reference.
 
-            --  Ensure Expr is analyzed so that e.g. all types are properly
-            --  resolved for Find_Type_Reference.
+         Analyze (Expr);
 
-            Analyze (Expr);
+         --  A self-referential aspect is illegal if it forces freezing the
+         --  entity before the corresponding aspect has been analyzed.
 
-            --  A self-referential aspect is illegal if it forces freezing the
-            --  entity before the corresponding aspect has been analyzed.
-
-            if Find_Type_Reference (Typ, Expr) then
-               Error_Msg_NE
-                 ("aspect specification causes premature freezing of&",
-                  N, Typ);
-            end if;
+         if Find_Type_Reference (Typ, Expr) then
+            Error_Msg_NE
+              ("aspect specification causes premature freezing of&", N, Typ);
          end if;
 
          --  For representation aspects, check for case of untagged derived
-         --  type whose parent either has primitive operations, or is a by
-         --  reference type (RM 13.1(10)).
+         --  type whose parent either has primitive operations (pre Ada 202x),
+         --  or is a by-reference type (RM 13.1(10)).
+         --  Strictly speaking the check also applies to Ada 2012 but it is
+         --  really too constraining for existing code already, so relax it.
+         --  ??? Confirming aspects should be allowed here.
 
-         if Is_Representation_Aspect (A_Id)
+         if Is_Representation_Aspect (Get_Aspect_Id (N))
            and then Is_Derived_Type (Typ)
            and then not Is_Tagged_Type (Typ)
          then
             Parent_Type := Etype (Base_Type (Typ));
 
-            if Has_Primitive_Operations (Parent_Type) then
-               No_Type_Rep_Item (N);
+            if Ada_Version <= Ada_2012
+              and then Has_Primitive_Operations (Parent_Type)
+            then
+               Error_Msg_N
+                 ("|representation aspect not permitted before Ada 202x!", N);
                Error_Msg_NE
                  ("\parent type & has primitive operations!", N, Parent_Type);
 
             elsif Is_By_Reference_Type (Parent_Type) then
                No_Type_Rep_Item (N);
                Error_Msg_NE
-                 ("\parent type & is a by reference type!", N, Parent_Type);
+                 ("\parent type & is a by-reference type!", N, Parent_Type);
             end if;
          end if;
       end Check_Aspect_Too_Late;
@@ -13868,9 +13869,11 @@ package body Sem_Ch13 is
          return True;
 
       --  Check for case of untagged derived type whose parent either has
-      --  primitive operations, or is a by reference type (RM 13.1(10)). In
-      --  this case we do not output a Too_Late message, since there is no
-      --  earlier point where the rep item could be placed to make it legal.
+      --  primitive operations (pre Ada 202x), or is a by-reference type (RM
+      --  13.1(10)). In this case we do not output a Too_Late message, since
+      --  there is no earlier point where the rep item could be placed to make
+      --  it legal.
+      --  ??? Confirming representation clauses should be allowed here.
 
       elsif Is_Type (T)
         and then not FOnly
@@ -13879,24 +13882,22 @@ package body Sem_Ch13 is
       then
          Parent_Type := Etype (Base_Type (T));
 
-         if Has_Primitive_Operations (Parent_Type) then
-            No_Type_Rep_Item (N);
+         if Relaxed_RM_Semantics then
+            null;
 
-            if not Relaxed_RM_Semantics then
-               Error_Msg_NE
-                 ("\parent type & has primitive operations!", N, Parent_Type);
-            end if;
-
+         elsif Ada_Version <= Ada_2012
+           and then Has_Primitive_Operations (Parent_Type)
+         then
+            Error_Msg_N
+              ("|representation item not permitted before Ada 202x!", N);
+            Error_Msg_NE
+              ("\parent type & has primitive operations!", N, Parent_Type);
             return True;
 
          elsif Is_By_Reference_Type (Parent_Type) then
             No_Type_Rep_Item (N);
-
-            if not Relaxed_RM_Semantics then
-               Error_Msg_NE
-                 ("\parent type & is a by reference type!", N, Parent_Type);
-            end if;
-
+            Error_Msg_NE
+              ("\parent type & is a by-reference type!", N, Parent_Type);
             return True;
          end if;
       end if;
