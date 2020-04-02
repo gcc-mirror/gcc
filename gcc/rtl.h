@@ -331,6 +331,7 @@ struct GTY((desc("0"), tag("0"),
      1 in a MEM if it cannot trap.
      1 in a CALL_INSN logically equivalent to
        ECF_LOOPING_CONST_OR_PURE and DECL_LOOPING_CONST_OR_PURE_P.
+     1 in a VALUE is SP_DERIVED_VALUE_P in cselib.c.
      Dumped as "/c" in RTL dumps.  */
   unsigned int call : 1;
   /* 1 in a REG, MEM, or CONCAT if the value is set at most once, anywhere.

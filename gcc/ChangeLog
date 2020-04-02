@@ -1,5 +1,40 @@
 2020-04-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/92264
+	* rtl.h (struct rtx_def): Mention that call bit is used as
+	SP_DERIVED_VALUE_P in cselib.c.
+	* cselib.c (SP_DERIVED_VALUE_P): Define.
+	(PRESERVED_VALUE_P, SP_BASED_VALUE_P): Move definitions earlier.
+	(cselib_hasher::equal): Handle equality between SP_DERIVED_VALUE_P
+	val_rtx and sp based expression where offsets cancel each other.
+	(preserve_constants_and_equivs): Formatting fix.
+	(cselib_reset_table): Add reverse op loc to SP_DERIVED_VALUE_P
+	locs list for cfa_base_preserved_val if needed.  Formatting fix.
+	(autoinc_split): If the to be returned value is a REG, MEM or
+	VALUE which has SP_DERIVED_VALUE_P + CONST_INT as one of its
+	locs, return the SP_DERIVED_VALUE_P VALUE and adjust *off.
+	(rtx_equal_for_cselib_1): Call autoinc_split even if both
+	expressions are PLUS in Pmode with CONST_INT second operands.
+	Handle SP_DERIVED_VALUE_P cases.
+	(cselib_hash_plus_const_int): New function.
+	(cselib_hash_rtx): Use it for PLUS in Pmode with CONST_INT
+	second operand, as well as for PRE_DEC etc. that ought to be
+	hashed the same way.
+	(cselib_subst_to_values): Substitute PLUS with Pmode and
+	CONST_INT operand if the first operand is a VALUE which has
+	SP_DERIVED_VALUE_P + CONST_INT as one of its locs for the
+	SP_DERIVED_VALUE_P + adjusted offset.
+	(cselib_lookup_1): When creating a new VALUE for stack_pointer_rtx,
+	set SP_DERIVED_VALUE_P on it.  Set PRESERVED_VALUE_P when adding
+	SP_DERIVED_VALUE_P PRESERVED_VALUE_P subseted VALUE location.
+	* var-tracking.c (vt_initialize): Call cselib_add_permanent_equiv
+	on the sp value before calling cselib_add_permanent_equiv on the
+	cfa_base value.
+	* dse.c (check_for_inc_dec_1, check_for_inc_dec): Punt on RTX_AUTOINC
+	in the insn without REG_INC note.
+	(replace_read): Punt on RTX_AUTOINC in the *loc being replaced.
+	Punt on invalid insns added by copy_to_mode_reg.  Formatting fixes.
+
 	PR target/94435
 	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): For
 	y_mode E_[QH]Imode and y being a CONST_INT, change y_mode to SImode.
