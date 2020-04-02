@@ -1,6 +1,10 @@
 2020-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/92264
+	* params.opt (-param=max-find-base-term-values=): Decrease default
+	from 2000 to 200.
+
+	PR rtl-optimization/92264
 	* rtl.h (struct rtx_def): Mention that call bit is used as
 	SP_DERIVED_VALUE_P in cselib.c.
 	* cselib.c (SP_DERIVED_VALUE_P): Define.

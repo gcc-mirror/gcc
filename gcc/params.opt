@@ -663,7 +663,7 @@ Common Joined UInteger Var(param_max_vartrack_size) Init(50000000) Param Optimiz
 Max. size of var tracking hash tables.
 
 -param=max-find-base-term-values=
-Common Joined UInteger Var(param_max_find_base_term_values) Init(2000) Param Optimization
+Common Joined UInteger Var(param_max_find_base_term_values) Init(200) Param Optimization
 Maximum number of VALUEs handled during a single find_base_term call.
 
 -param=max-vrp-switch-assertions=
