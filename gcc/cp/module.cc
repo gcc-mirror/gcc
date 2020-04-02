@@ -3157,8 +3157,10 @@ private:
   bool decl_node (tree, walk_kind ref);
   void type_node (tree);
   void tree_value (tree);
-  void decl_value (tree, depset *);
   void tpl_parm_value (tree);
+
+public:
+  void decl_value (tree, depset *);
 
 public:
   /* Serialize various definitions. */
@@ -8092,6 +8094,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   if (TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
     {
+      gcc_checking_assert (ref == WK_normal);
       if (streaming_p ())
 	{
 	  depset *dep = dep_hash->find_dependency (decl);
@@ -8100,21 +8103,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  i (dep->cluster);
 	}
       else
-	{
-	  if (ref == WK_value)
-	    {
-	      /* We need to add the global_namespace when it is the
-	         context of a namespace, /except/ when it's its own
-	         config.  Normally global namespace will not be added
-	         as it's a global tree.  But we need to know to get
-	         the namespace heirarchy.  */
-	      gcc_checking_assert (dep_hash->current->get_entity () == decl);
-	      dep_hash->add_namespace_context (dep_hash->current,
-					       CP_DECL_CONTEXT (decl));
-	    }
-	  else
-	    dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
-	}
+	dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
 
       int tag = insert (decl, ref);
       if (streaming_p ())
@@ -12557,13 +12546,16 @@ depset::hash::find_dependencies ()
 		walker.tree_node (OVL_FUNCTION (decl));
 	      else if (TREE_VISITED (decl))
 		/* A global tree.  */;
+	      else if (TREE_CODE (decl) == NAMESPACE_DECL
+		       && !DECL_NAMESPACE_ALIAS (decl))
+		add_namespace_context (current, CP_DECL_CONTEXT (decl));
 	      else
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
 
 		  /* Turn the Sneakoscope on when depending the decl.  */
 		  sneakoscope = true;
-		  walker.tree_node (decl);
+		  walker.decl_value (decl, current);
 		  sneakoscope = false;
 		  if (current->has_defn ())
 		    walker.write_definition (decl);
