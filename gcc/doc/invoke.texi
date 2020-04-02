@@ -10432,7 +10432,8 @@ Assume that a loop with an exit will eventually take the exit and not loop
 indefinitely.  This allows the compiler to remove loops that otherwise have
 no side-effects, not considering eventual endless looping as such.
 
-This option is enabled by default at @option{-O2}.
+This option is enabled by default at @option{-O2} for C++ with -std=c++11
+or higher.
 
 @item -ftree-dominator-opts
 @opindex ftree-dominator-opts
@@ -12784,6 +12785,11 @@ of aggregate which is considered for replacement when compiling for
 speed
 (@option{sra-max-scalarization-size-Ospeed}) or size
 (@option{sra-max-scalarization-size-Osize}) respectively.
+
+@item sra-max-propagations
+The maximum number of artificial accesses that Scalar Replacement of
+Aggregates (SRA) will track, per one local variable, in order to
+facilitate copy propagation.
 
 @item tm-max-aggregate-size
 When making copies of thread-local variables in a transaction, this

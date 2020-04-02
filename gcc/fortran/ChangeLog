@@ -1,3 +1,31 @@
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_resolve_formal_arglist): Add prototype.
+	* interface.c (check_dtio_interface1): Call it.
+	* resolve.c (gfc_resolve_formal_arglist): Renamed from
+	resolve_formal_arglist, removed static.
+	(find_arglists, resolve_types): Update calls.
+
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93522
+	* match.c (gfc_match_select_rank): Fix error cleanup.
+
+2020-04-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93498
+	* check.c (gfc_check_findloc):  If the kinds of the arguments
+	differ goto label "incompat".
+
+2020-04-02 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/94030
+	* resolve.c (resolve_equivalence): Correct formatting
+	around the label "identical_types".  Instead of using
+	gfc_resolve_array_spec use is_non_constants_shape_array
+	to determine whether the array can be used in a in an
+	equivalence statement.
+
 2020-04-01  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/94386

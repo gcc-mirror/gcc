@@ -324,6 +324,9 @@ replace_loop_annotate (void)
       /* Then look into the latch, if any.  */
       if (loop->latch)
 	replace_loop_annotate_in_block (loop->latch, loop);
+
+      /* Push the global flag_finite_loops state down to individual loops.  */
+      loop->finite_p = flag_finite_loops;
     }
 
   /* Remove IFN_ANNOTATE.  Safeguard for the case loop->latch == NULL.  */

@@ -5007,6 +5007,9 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
     gfc_error ("DTIO procedure %qs at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
 
+  if (!dtio_sub->resolved)
+    gfc_resolve_formal_arglist (dtio_sub);
+
   arg_num = 0;
   for (formal = dtio_sub->formal; formal; formal = formal->next)
     arg_num++;
@@ -5024,7 +5027,6 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 		 dtio_sub->name, &dtio_sub->declared_at);
       return;
     }
-
 
   /* Now go through the formal arglist.  */
   arg_num = 1;

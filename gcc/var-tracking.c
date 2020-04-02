@@ -10045,19 +10045,25 @@ vt_initialize (void)
       preserve_value (val);
       if (reg != hard_frame_pointer_rtx && fixed_regs[REGNO (reg)])
 	cselib_preserve_cfa_base_value (val, REGNO (reg));
+      if (ofst)
+	{
+	  cselib_val *valsp
+	    = cselib_lookup_from_insn (stack_pointer_rtx,
+				       GET_MODE (stack_pointer_rtx), 1,
+				       VOIDmode, get_insns ());
+	  preserve_value (valsp);
+	  expr = plus_constant (GET_MODE (reg), reg, ofst);
+	  /* This cselib_add_permanent_equiv call needs to be done before
+	     the other cselib_add_permanent_equiv a few lines later,
+	     because after that one is done, cselib_lookup on this expr
+	     will due to the cselib SP_DERIVED_VALUE_P optimizations
+	     return valsp and so no permanent equivalency will be added.  */
+	  cselib_add_permanent_equiv (valsp, expr, get_insns ());
+	}
+
       expr = plus_constant (GET_MODE (stack_pointer_rtx),
 			    stack_pointer_rtx, -ofst);
       cselib_add_permanent_equiv (val, expr, get_insns ());
-
-      if (ofst)
-	{
-	  val = cselib_lookup_from_insn (stack_pointer_rtx,
-					 GET_MODE (stack_pointer_rtx), 1,
-					 VOIDmode, get_insns ());
-	  preserve_value (val);
-	  expr = plus_constant (GET_MODE (reg), reg, ofst);
-	  cselib_add_permanent_equiv (val, expr, get_insns ());
-	}
     }
 
   /* In order to factor out the adjustments made to the stack pointer or to

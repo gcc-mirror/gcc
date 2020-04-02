@@ -1,3 +1,193 @@
+2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/85982
+	* fortran/decl.c (match_attr_spec): Lump COMP_STRUCTURE/COMP_MAP into
+	attribute checking used by TYPE.
+
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92676
+	* ipa-sra.c (struct caller_issues): New fields candidate and
+	call_from_outside_comdat.
+	(check_for_caller_issues): Check for calls from outsied of
+	candidate's same_comdat_group.
+	(check_all_callers_for_issues): Set up issues.candidate, check result
+	of the new check.
+	(mark_callers_calls_comdat_local): New function.
+	(process_isra_node_results): Set calls_comdat_local of callers if
+	appropriate.
+
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR c/94392
+	* common.opt (ffinite-loops): Initialize to zero.
+	* opts.c (default_options_table): Remove OPT_ffinite_loops
+	entry.
+	* cfgloop.h (loop::finite_p): New member.
+	* cfgloopmanip.c (copy_loop_info): Copy finite_p.
+	* ipa-icf-gimple.c (func_checker::compare_loops): Compare
+	finite_p.
+	* lto-streamer-in.c (input_cfg): Stream finite_p.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* tree-cfg.c (replace_loop_annotate): Initialize finite_p
+	from flag_finite_loops at CFG build time.
+	* tree-ssa-loop-niter.c (finite_loop_p): Check the loops
+	finite_p flag instead of flag_finite_loops.
+	* doc/invoke.texi (ffinite-loops): Adjust documentation of
+	default setting.
+
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94450
+	* dwarf2out.c (dwarf2out_early_finish): Remove code emitting
+	DW_TAG_imported_unit.
+
+2020-04-02  Maciej W. Rozycki  <macro@wdc.com>
+
+	* doc/install.texi (Specific) <riscv32-*-elf, riscv32-*-linux>
+	<riscv64-*-elf, riscv64-*-linux>: Update binutils requirement to
+	2.30.
+
+2020-04-02  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94401
+	* tree-vect-loop.c (vectorizable_load): Handle VMAT_CONTIGUOUS_REVERSE
+	access type when loading halves of vector to avoid peeling for gaps.
+
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add a space in
+	between a string literal and MIPS_SYSVERSION_SPEC macro.
+
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Optimize Options): Document sra-max-propagations.
+
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92264
+	* params.opt (-param=max-find-base-term-values=): Decrease default
+	from 2000 to 200.
+
+	PR rtl-optimization/92264
+	* rtl.h (struct rtx_def): Mention that call bit is used as
+	SP_DERIVED_VALUE_P in cselib.c.
+	* cselib.c (SP_DERIVED_VALUE_P): Define.
+	(PRESERVED_VALUE_P, SP_BASED_VALUE_P): Move definitions earlier.
+	(cselib_hasher::equal): Handle equality between SP_DERIVED_VALUE_P
+	val_rtx and sp based expression where offsets cancel each other.
+	(preserve_constants_and_equivs): Formatting fix.
+	(cselib_reset_table): Add reverse op loc to SP_DERIVED_VALUE_P
+	locs list for cfa_base_preserved_val if needed.  Formatting fix.
+	(autoinc_split): If the to be returned value is a REG, MEM or
+	VALUE which has SP_DERIVED_VALUE_P + CONST_INT as one of its
+	locs, return the SP_DERIVED_VALUE_P VALUE and adjust *off.
+	(rtx_equal_for_cselib_1): Call autoinc_split even if both
+	expressions are PLUS in Pmode with CONST_INT second operands.
+	Handle SP_DERIVED_VALUE_P cases.
+	(cselib_hash_plus_const_int): New function.
+	(cselib_hash_rtx): Use it for PLUS in Pmode with CONST_INT
+	second operand, as well as for PRE_DEC etc. that ought to be
+	hashed the same way.
+	(cselib_subst_to_values): Substitute PLUS with Pmode and
+	CONST_INT operand if the first operand is a VALUE which has
+	SP_DERIVED_VALUE_P + CONST_INT as one of its locs for the
+	SP_DERIVED_VALUE_P + adjusted offset.
+	(cselib_lookup_1): When creating a new VALUE for stack_pointer_rtx,
+	set SP_DERIVED_VALUE_P on it.  Set PRESERVED_VALUE_P when adding
+	SP_DERIVED_VALUE_P PRESERVED_VALUE_P subseted VALUE location.
+	* var-tracking.c (vt_initialize): Call cselib_add_permanent_equiv
+	on the sp value before calling cselib_add_permanent_equiv on the
+	cfa_base value.
+	* dse.c (check_for_inc_dec_1, check_for_inc_dec): Punt on RTX_AUTOINC
+	in the insn without REG_INC note.
+	(replace_read): Punt on RTX_AUTOINC in the *loc being replaced.
+	Punt on invalid insns added by copy_to_mode_reg.  Formatting fixes.
+
+	PR target/94435
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): For
+	y_mode E_[QH]Imode and y being a CONST_INT, change y_mode to SImode.
+
+2020-04-02  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94317
+	* config/arm/arm-builtins.c (LDRGBWBXU_QUALIFIERS): Define.
+	(LDRGBWBXU_Z_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (__arm_vldrdq_gather_base_wb_s64): Modify
+	intrinsic defintion by adding a new builtin call to writeback into base
+	address.
+	(__arm_vldrdq_gather_base_wb_u64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_s64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_u64): Likewise.
+	(__arm_vldrwq_gather_base_wb_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_f32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_f32): Likewise.
+	* config/arm/arm_mve_builtins.def (vldrwq_gather_base_wb_z_u): Modify
+	builtin's qualifier.
+	(vldrdq_gather_base_wb_z_u): Likewise.
+	(vldrwq_gather_base_wb_u): Likewise.
+	(vldrdq_gather_base_wb_u): Likewise.
+	(vldrwq_gather_base_wb_z_s): Likewise.
+	(vldrwq_gather_base_wb_z_f): Likewise.
+	(vldrdq_gather_base_wb_z_s): Likewise.
+	(vldrwq_gather_base_wb_s): Likewise.
+	(vldrwq_gather_base_wb_f): Likewise.
+	(vldrdq_gather_base_wb_s): Likewise.
+	(vldrwq_gather_base_nowb_z_u): Define builtin.
+	(vldrdq_gather_base_nowb_z_u): Likewise.
+	(vldrwq_gather_base_nowb_u): Likewise.
+	(vldrdq_gather_base_nowb_u): Likewise.
+	(vldrwq_gather_base_nowb_z_s): Likewise.
+	(vldrwq_gather_base_nowb_z_f): Likewise.
+	(vldrdq_gather_base_nowb_z_s): Likewise.
+	(vldrwq_gather_base_nowb_s): Likewise.
+	(vldrwq_gather_base_nowb_f): Likewise.
+	(vldrdq_gather_base_nowb_s): Likewise.
+	* config/arm/mve.md (mve_vldrwq_gather_base_nowb_<supf>v4si): Define RTL
+	pattern.
+	(mve_vldrwq_gather_base_wb_<supf>v4si): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_z_<supf>v4si): Define RTL pattern.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si): Modify RTL pattern.
+	(mve_vldrwq_gather_base_wb_fv4sf): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_fv4sf): Define RTL pattern.
+	(mve_vldrwq_gather_base_wb_z_fv4sf): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_z_fv4sf): Define RTL pattern.
+	(mve_vldrdq_gather_base_nowb_<supf>v4di): Define RTL pattern.
+	(mve_vldrdq_gather_base_wb_<supf>v4di):  Modify RTL pattern.
+	(mve_vldrdq_gather_base_nowb_z_<supf>v4di): Define RTL pattern.
+	(mve_vldrdq_gather_base_wb_z_<supf>v4di):  Modify RTL pattern.
+
+2020-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md ("<ti*>add<mode>3", "mul<mode>3")
+	("and<mode>3", "notand<mode>3", "ior<mode>3", "ior_not<mode>3")
+	("xor<mode>3", "notxor<mode>3", "smin<mode>3", "smax<mode>3")
+	("umin<mode>3", "umax<mode>3", "vec_widen_smult_even_<mode>")
+	("vec_widen_umult_even_<mode>", "vec_widen_smult_odd_<mode>")
+	("vec_widen_umult_odd_<mode>", "add<mode>3", "sub<mode>3")
+	("mul<mode>3", "fma<mode>4", "fms<mode>4", "neg_fma<mode>4")
+	("neg_fms<mode>4", "*smax<mode>3_vxe", "*smaxv2df3_vx")
+	("*smin<mode>3_vxe", "*sminv2df3_vx"): Remove % constraint
+	modifier.
+	("vec_widen_umult_lo_<mode>", "vec_widen_umult_hi_<mode>")
+	("vec_widen_smult_lo_<mode>", "vec_widen_smult_hi_<mode>"):
+	Remove constraints from expander.
+	* config/s390/vx-builtins.md ("vacc<bhfgq>_<mode>", "vacq")
+	("vacccq", "vec_avg<mode>", "vec_avgu<mode>", "vec_vmal<mode>")
+	("vec_vmah<mode>", "vec_vmalh<mode>", "vec_vmae<mode>")
+	("vec_vmale<mode>", "vec_vmao<mode>", "vec_vmalo<mode>")
+	("vec_smulh<mode>", "vec_umulh<mode>", "vec_nor<mode>3")
+	("vfmin<mode>", "vfmax<mode>"): Remove % constraint modifier.
+
+2020-04-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/94123
+	* lower-subreg.c (pass_lower_subreg3::gate): Remove test for
+	flag_split_wide_types_early.
+
 2020-04-01  Joerg Sonnenberger  <joerg@bec.de>
 
 	* doc/extend.texi (Common Function Attributes): Fix typo.

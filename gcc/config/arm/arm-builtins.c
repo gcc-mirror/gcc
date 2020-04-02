@@ -719,6 +719,17 @@ arm_quinop_unone_unone_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_quinop_unone_unone_unone_unone_imm_unone_qualifiers)
 
 static enum arm_type_qualifiers
+arm_ldrgbwbxu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
+#define LDRGBWBXU_QUALIFIERS (arm_ldrgbwbxu_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ldrgbwbxu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
+      qualifier_unsigned};
+#define LDRGBWBXU_Z_QUALIFIERS (arm_ldrgbwbxu_z_qualifiers)
+
+static enum arm_type_qualifiers
 arm_ldrgbwbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_unsigned, qualifier_immediate};
 #define LDRGBWBS_QUALIFIERS (arm_ldrgbwbs_qualifiers)

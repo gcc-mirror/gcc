@@ -821,6 +821,7 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
       loop->owned_clique = streamer_read_hwi (ib);
       loop->dont_vectorize = streamer_read_hwi (ib);
       loop->force_vectorize = streamer_read_hwi (ib);
+      loop->finite_p = streamer_read_hwi (ib);
       loop->simduid = stream_read_tree (ib, data_in);
 
       place_new_loop (fn, loop);

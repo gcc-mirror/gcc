@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/supergraph.h"
 #include "analyzer/program-point.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "tristate.h"
 #include "selftest.h"
 #include "analyzer/region-model.h"

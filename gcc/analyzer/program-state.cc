@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"

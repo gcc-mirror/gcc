@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "pretty-print.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
@@ -1361,7 +1362,8 @@ exploded_node::detect_leaks (exploded_graph &eg) const
 				  &old_state, &new_state,
 				  NULL,
 				  get_stmt ());
-  new_state.m_region_model->pop_frame (true, &stats, &ctxt);
+  new_state.m_region_model->pop_frame (region_id::null (),
+				       true, &stats, &ctxt);
 }
 
 /* Dump the successors and predecessors of this enode to OUTF.  */
