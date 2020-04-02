@@ -1,5 +1,8 @@
 2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
 
+	Backport from master.
+	2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
+
 	PR fortran/85982
 	* fortran/decl.c (match_attr_spec): Lump COMP_STRUCTURE/COMP_MAP into
 	attribute checking used by TYPE.
