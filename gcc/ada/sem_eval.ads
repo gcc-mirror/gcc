@@ -482,10 +482,10 @@ package Sem_Eval is
    --  then it returns False.
 
    function Predicates_Match (T1, T2 : Entity_Id) return Boolean;
-   --  In Ada 2012, subtypes statically match if their static predicates
-   --  match as well. This function performs the required check that
-   --  predicates match. Separated out from Subtypes_Statically_Match so
-   --  that it can be used in specializing error messages.
+   --  In Ada 2012, subtypes statically match if their predicates match as
+   --  as well. This function performs the required check that predicates
+   --  match. Separated out from Subtypes_Statically_Match so that it can
+   --  be used in specializing error messages.
 
    function Subtypes_Statically_Compatible
      (T1                      : Entity_Id;

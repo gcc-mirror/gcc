@@ -5621,40 +5621,42 @@ package body Sem_Eval is
    ----------------------
 
    function Predicates_Match (T1, T2 : Entity_Id) return Boolean is
-      Pred1 : Node_Id;
-      Pred2 : Node_Id;
+
+      function Have_Same_Rep_Item (Nam : Name_Id) return Boolean;
+      --  Return True if T1 and T2 have the same rep item for Nam
+
+      ------------------------
+      -- Have_Same_Rep_Item --
+      ------------------------
+
+      function Have_Same_Rep_Item (Nam : Name_Id) return Boolean is
+      begin
+         return Get_Rep_Item (T1, Nam) = Get_Rep_Item (T2, Nam);
+      end Have_Same_Rep_Item;
+
+   --  Start of processing for Predicates_Match
 
    begin
       if Ada_Version < Ada_2012 then
          return True;
 
-         --  Both types must have predicates or lack them
+      --  If T2 has no predicates, match if and only if T1 has none
 
-      elsif Has_Predicates (T1) /= Has_Predicates (T2) then
+      elsif not Has_Predicates (T2) then
+         return not Has_Predicates (T1);
+
+      --  T2 has predicates, no match if T1 has none
+
+      elsif not Has_Predicates (T1) then
          return False;
 
-         --  Check matching predicates
+      --  Both T2 and T1 have predicates, check that they all come
+      --  from the same declarations.
 
       else
-         Pred1 :=
-           Get_Rep_Item
-             (T1, Name_Static_Predicate, Check_Parents => False);
-         Pred2 :=
-           Get_Rep_Item
-             (T2, Name_Static_Predicate, Check_Parents => False);
-
-         --  Subtypes statically match if the predicate comes from the
-         --  same declaration, which can only happen if one is a subtype
-         --  of the other and has no explicit predicate.
-
-         --  Suppress warnings on order of actuals, which is otherwise
-         --  triggered by one of the two calls below.
-
-         pragma Warnings (Off);
-         return Pred1 = Pred2
-           or else (No (Pred1) and then Is_Subtype_Of (T1, T2))
-           or else (No (Pred2) and then Is_Subtype_Of (T2, T1));
-         pragma Warnings (On);
+         return Have_Same_Rep_Item (Name_Static_Predicate)
+           and then Have_Same_Rep_Item (Name_Dynamic_Predicate)
+           and then Have_Same_Rep_Item (Name_Predicate);
       end if;
    end Predicates_Match;
 
