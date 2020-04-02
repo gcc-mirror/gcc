@@ -1,3 +1,16 @@
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92676
+	* ipa-sra.c (struct caller_issues): New fields candidate and
+	call_from_outside_comdat.
+	(check_for_caller_issues): Check for calls from outsied of
+	candidate's same_comdat_group.
+	(check_all_callers_for_issues): Set up issues.candidate, check result
+	of the new check.
+	(mark_callers_calls_comdat_local): New function.
+	(process_isra_node_results): Set calls_comdat_local of callers if
+	appropriate.
+
 2020-04-02  Richard Biener  <rguenther@suse.de>
 
 	PR c/94392
