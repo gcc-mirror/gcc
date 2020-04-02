@@ -1,3 +1,25 @@
+2020-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md ("<ti*>add<mode>3", "mul<mode>3")
+	("and<mode>3", "notand<mode>3", "ior<mode>3", "ior_not<mode>3")
+	("xor<mode>3", "notxor<mode>3", "smin<mode>3", "smax<mode>3")
+	("umin<mode>3", "umax<mode>3", "vec_widen_smult_even_<mode>")
+	("vec_widen_umult_even_<mode>", "vec_widen_smult_odd_<mode>")
+	("vec_widen_umult_odd_<mode>", "add<mode>3", "sub<mode>3")
+	("mul<mode>3", "fma<mode>4", "fms<mode>4", "neg_fma<mode>4")
+	("neg_fms<mode>4", "*smax<mode>3_vxe", "*smaxv2df3_vx")
+	("*smin<mode>3_vxe", "*sminv2df3_vx"): Remove % constraint
+	modifier.
+	("vec_widen_umult_lo_<mode>", "vec_widen_umult_hi_<mode>")
+	("vec_widen_smult_lo_<mode>", "vec_widen_smult_hi_<mode>"):
+	Remove constraints from expander.
+	* config/s390/vx-builtins.md ("vacc<bhfgq>_<mode>", "vacq")
+	("vacccq", "vec_avg<mode>", "vec_avgu<mode>", "vec_vmal<mode>")
+	("vec_vmah<mode>", "vec_vmalh<mode>", "vec_vmae<mode>")
+	("vec_vmale<mode>", "vec_vmao<mode>", "vec_vmalo<mode>")
+	("vec_smulh<mode>", "vec_umulh<mode>", "vec_nor<mode>3")
+	("vfmin<mode>", "vfmax<mode>"): Remove % constraint modifier.
+
 2020-04-01  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/94123
