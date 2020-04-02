@@ -1,5 +1,24 @@
 2020-04-02  Richard Biener  <rguenther@suse.de>
 
+	PR c/94392
+	* common.opt (ffinite-loops): Initialize to zero.
+	* opts.c (default_options_table): Remove OPT_ffinite_loops
+	entry.
+	* cfgloop.h (loop::finite_p): New member.
+	* cfgloopmanip.c (copy_loop_info): Copy finite_p.
+	* ipa-icf-gimple.c (func_checker::compare_loops): Compare
+	finite_p.
+	* lto-streamer-in.c (input_cfg): Stream finite_p.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* tree-cfg.c (replace_loop_annotate): Initialize finite_p
+	from flag_finite_loops at CFG build time.
+	* tree-ssa-loop-niter.c (finite_loop_p): Check the loops
+	finite_p flag instead of flag_finite_loops.
+	* doc/invoke.texi (ffinite-loops): Adjust documentation of
+	default setting.
+
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
 	PR debug/94450
 	* dwarf2out.c (dwarf2out_early_finish): Remove code emitting
 	DW_TAG_imported_unit.

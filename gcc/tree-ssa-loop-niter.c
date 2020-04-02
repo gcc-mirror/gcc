@@ -2834,7 +2834,7 @@ finite_loop_p (class loop *loop)
       return true;
     }
 
-  if (flag_finite_loops)
+  if (loop->finite_p)
     {
       unsigned i;
       vec<edge> exits = get_loop_exit_edges (loop);

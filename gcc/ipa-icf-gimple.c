@@ -395,6 +395,8 @@ func_checker::compare_loops (basic_block bb1, basic_block bb2)
     return return_false_with_msg ("dont_vectorize");
   if (l1->force_vectorize != l2->force_vectorize)
     return return_false_with_msg ("force_vectorize");
+  if (l1->finite_p != l2->finite_p)
+    return return_false_with_msg ("finite_p");
   if (l1->unroll != l2->unroll)
     return return_false_with_msg ("unroll");
   if (!compare_variable_decl (l1->simduid, l2->simduid))

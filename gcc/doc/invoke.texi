@@ -10432,7 +10432,8 @@ Assume that a loop with an exit will eventually take the exit and not loop
 indefinitely.  This allows the compiler to remove loops that otherwise have
 no side-effects, not considering eventual endless looping as such.
 
-This option is enabled by default at @option{-O2}.
+This option is enabled by default at @option{-O2} for C++ with -std=c++11
+or higher.
 
 @item -ftree-dominator-opts
 @opindex ftree-dominator-opts
