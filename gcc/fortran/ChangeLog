@@ -1,6 +1,15 @@
 2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93498
+	* check.c (gfc_check_findloc):  If the kinds of the arguments
+	differ goto label "incompat".
+
+2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	Backport from master
 	2020-04-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/94030

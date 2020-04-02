@@ -1,6 +1,15 @@
 2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master
+	Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93498
+	* gfortran.dg/pr93498_1.f90:  New test.
+	* gfortran.dg/pr93498_2.f90:  New test.
+
+2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	Backport from master
 	2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
 	Steven G. Kargl  <kargl@gcc.gnu.org>
 
