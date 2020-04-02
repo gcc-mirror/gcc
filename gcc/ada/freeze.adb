@@ -7071,8 +7071,9 @@ package body Freeze is
       function In_Expanded_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
       --  it is the handled statement sequence of an expander-generated
-      --  subprogram (init proc, stream subprogram, or renaming as body).
-      --  If so, this is not a freezing context.
+      --  subprogram: init proc, stream subprogram, renaming as body, or body
+      --  created for an expression function. If so, this is not a freezing
+      --  context and the entity will be frozen at a later point.
 
       -----------------------------------------
       -- Find_Aggregate_Component_Desig_Type --
@@ -7125,6 +7126,13 @@ package body Freeze is
 
          if Nkind (P) /= N_Subprogram_Body then
             return False;
+
+         --  AI12-0152 : an expression function that is a completion
+         --  is a freeze point. If the body is the result of expansion
+         --  it is not.
+
+         elsif Was_Expression_Function (P) then
+            return not Comes_From_Source (P);
 
          else
             Id := Defining_Unit_Name (Specification (P));
@@ -7539,28 +7547,16 @@ package body Freeze is
                            end if;
                         end if;
 
-                        --  An expression function may act as a completion of
-                        --  a function declaration. As such, it can reference
-                        --  entities declared between the two views:
+                        --  If the entity is not frozen by an expression
+                        --  function that is a completion, continue climing
+                        --  the tree.
 
-                        --     Hidden [];                             -- 1
-                        --     function F return ...;
-                        --     private
-                        --        function Hidden return ...;
-                        --        function F return ... is (Hidden);  -- 2
-
-                        --  Refering to the example above, freezing the
-                        --  expression of F (2) would place Hidden's freeze
-                        --  node (1) in the wrong place. Avoid explicit
-                        --  freezing and let the usual scenarios do the job
-                        --  (for example, reaching the end of the private
-                        --  declarations, or a call to F.)
-
-                        if Nkind (Original_Node (Subp)) = N_Expression_Function
+                        if Nkind (Subp) = N_Subprogram_Body
+                          and then Was_Expression_Function (Subp)
                         then
                            null;
 
-                        --  Freeze outside the body
+                           --  Freeze outside the body
 
                         else
                            Parent_P := Parent (Parent_P);
