@@ -6678,6 +6678,7 @@ gfc_match_select_rank (void)
 
       if (m != MATCH_YES)
 	{
+	  gfc_undo_symbols ();
 	  std::swap (ns, gfc_current_ns);
 	  gfc_free_namespace (ns);
 	  return m;
