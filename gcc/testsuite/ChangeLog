@@ -1,3 +1,8 @@
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94435
+	* gcc.target/aarch64/pr94435.c: New test.
+
 2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master
