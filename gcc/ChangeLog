@@ -1,3 +1,9 @@
+2020-04-02  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94401
+	* tree-vect-loop.c (vectorizable_load): Handle VMAT_CONTIGUOUS_REVERSE
+	access type when loading halves of vector to avoid peeling for gaps.
+
 2020-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add a space in
