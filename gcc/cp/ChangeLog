@@ -1,3 +1,21 @@
+2020-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94219
+	PR c++/94205
+	* constexpr.c (get_or_insert_ctor_field): Split out (while adding
+	support for VECTOR_TYPEs, and optimizations for the common case)
+	from ...
+	(cxx_eval_store_expression): ... here.  Rename local variable
+	'changed_active_union_member_p' to 'activated_union_member_p'.  Record
+	the sequence of indexes into 'indexes' that yields the subobject we're
+	assigning to.  Record the integer offsets of the constructor indexes
+	we're assigning through into 'index_pos_hints'.  After evaluating the
+	initializer of the store expression, recompute 'valp' using 'indexes'
+	and using 'index_pos_hints' as hints.
+	(cxx_eval_bare_aggregate): Tweak comments.  Use get_or_insert_ctor_field
+	to recompute the constructor_elt pointer we're assigning through after
+	evaluating each initializer.
+
 2020-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67825

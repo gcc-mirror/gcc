@@ -1,3 +1,12 @@
+2020-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94219
+	PR c++/94205
+	* g++.dg/cpp1y/constexpr-nsdmi3.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi4.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi5.C: New test.
+	* g++.dg/cpp1z/lambda-this5.C: New test.
+
 2020-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/93940
