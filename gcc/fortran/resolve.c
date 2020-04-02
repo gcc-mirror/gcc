@@ -16873,7 +16873,8 @@ resolve_equivalence (gfc_equiv *eq)
 	  && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where))
 		continue;
 
-  identical_types:
+identical_types:
+
       last_ts =&sym->ts;
       last_where = &e->where;
 
@@ -16881,8 +16882,7 @@ resolve_equivalence (gfc_equiv *eq)
 	continue;
 
       /* Shall not be an automatic array.  */
-      if (e->ref->type == REF_ARRAY
-	  && !gfc_resolve_array_spec (e->ref->u.ar.as, 1))
+      if (e->ref->type == REF_ARRAY && is_non_constant_shape_array (sym))
 	{
 	  gfc_error ("Array %qs at %L with non-constant bounds cannot be "
 		     "an EQUIVALENCE object", sym->name, &e->where);

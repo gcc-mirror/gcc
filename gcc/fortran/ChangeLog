@@ -1,3 +1,12 @@
+2020-04-02 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/94030
+	* resolve.c (resolve_equivalence): Correct formatting
+	around the label "identical_types".  Instead of using
+	gfc_resolve_array_spec use is_non_constants_shape_array
+	to determine whether the array can be used in a in an
+	equivalence statement.
+
 2020-04-01  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/94386
