@@ -1076,6 +1076,9 @@ struct constexpr_ctx {
   tree object;
   /* If inside SWITCH_EXPR.  */
   constexpr_switch_state *css_state;
+  /* The aggregate initialization context inside which this one is nested.  This
+     is used by lookup_placeholder to resolve PLACEHOLDER_EXPRs.  */
+  const constexpr_ctx *parent;
 
   /* Whether we should error on a non-constant expression or fail quietly.
      This flag needs to be here, but some of the others could move to global
@@ -3841,6 +3844,9 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   vec_alloc (*p, vec_safe_length (v));
 
+  if (CONSTRUCTOR_PLACEHOLDER_BOUNDARY (t))
+    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ctx->ctor) = 1;
+
   unsigned i;
   tree index, value;
   bool constant_p = true;
@@ -5303,6 +5309,12 @@ lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
   if (!ctx)
     return NULL_TREE;
 
+  /* Prefer the outermost matching object, but don't cross
+     CONSTRUCTOR_PLACEHOLDER_BOUNDARY constructors.  */
+  if (ctx->ctor && !CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ctx->ctor))
+    if (tree outer_ob = lookup_placeholder (ctx->parent, lval, type))
+      return outer_ob;
+
   /* We could use ctx->object unconditionally, but using ctx->ctor when we
      can is a minor optimization.  */
   if (!lval && ctx->ctor && same_type_p (TREE_TYPE (ctx->ctor), type))
@@ -5606,19 +5618,16 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    r = *p;
 	    break;
 	  }
-	tree init = TARGET_EXPR_INITIAL (t);
 	if ((AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type)))
 	  {
-	    if (ctx->object)
-	      /* If the initializer contains any PLACEHOLDER_EXPR, we need to
-		 resolve them before we create a new CONSTRUCTOR for the
-		 temporary.  */
-	      init = replace_placeholders (init, ctx->object);
-
 	    /* We're being expanded without an explicit target, so start
 	       initializing a new object; expansion with an explicit target
 	       strips the TARGET_EXPR before we get here.  */
 	    new_ctx = *ctx;
+	    /* Link CTX to NEW_CTX so that lookup_placeholder can resolve
+	       any PLACEHOLDER_EXPR within the initializer that refers to the
+	       former object under construction.  */
+	    new_ctx.parent = ctx;
 	    new_ctx.ctor = build_constructor (type, NULL);
 	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
 	    new_ctx.object = slot;
@@ -6472,7 +6481,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool overflow_p = false;
 
   constexpr_global_ctx global_ctx;
-  constexpr_ctx ctx = { &global_ctx, NULL, NULL, NULL, NULL, NULL,
+  constexpr_ctx ctx = { &global_ctx, NULL, NULL, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict,
 			manifestly_const_eval || !allow_non_constant,
 			uid_sensitive };

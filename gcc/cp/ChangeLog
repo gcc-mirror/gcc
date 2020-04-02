@@ -1,5 +1,18 @@
 2020-04-04  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94205
+	PR c++/79937
+	* constexpr.c (struct constexpr_ctx): New field 'parent'.
+	(cxx_eval_bare_aggregate): Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY
+	flag from the original constructor to the reduced constructor.
+	(lookup_placeholder): Prefer to return the outermost matching object
+	by recursively calling lookup_placeholder on the 'parent' context,
+	but don't cross CONSTRUCTOR_PLACEHOLDER_BOUNDARY constructors.
+	(cxx_eval_constant_expression): Link the 'ctx' context to the 'new_ctx'
+	context via 'new_ctx.parent' when being expanded without an explicit
+	target.  Don't call replace_placeholders.
+	(cxx_eval_outermost_constant_expr): Initialize 'ctx.parent' to NULL.
+
 	PR c++/94219
 	PR c++/94205
 	* constexpr.c (get_or_insert_ctor_field): Split out (while adding
