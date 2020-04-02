@@ -8948,43 +8948,43 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      if Kind  = N_Component_Declaration then
-         Error_Msg_N
-           ("component&! cannot be used before end of record declaration", N);
+      case Kind is
+         when N_Component_Declaration =>
+            Error_Msg_N
+              ("component&! cannot be used before end of record declaration",
+               N);
 
-      elsif Kind  = N_Parameter_Specification then
-         Error_Msg_N
-           ("formal parameter&! cannot be used before end of specification",
-            N);
+         when N_Parameter_Specification =>
+            Error_Msg_N
+              ("formal parameter&! cannot be used before end of specification",
+               N);
 
-      elsif Kind  = N_Discriminant_Specification then
-         Error_Msg_N
-           ("discriminant&! cannot be used before end of discriminant part",
-            N);
+         when N_Discriminant_Specification =>
+            Error_Msg_N
+              ("discriminant&! cannot be used before end of discriminant part",
+               N);
 
-      elsif Kind  = N_Procedure_Specification
-        or else Kind = N_Function_Specification
-      then
-         Error_Msg_N
-           ("subprogram&! cannot be used before end of its declaration",
-            N);
+         when N_Procedure_Specification | N_Function_Specification =>
+            Error_Msg_N
+              ("subprogram&! cannot be used before end of its declaration",
+               N);
 
-      elsif Kind = N_Full_Type_Declaration then
-         Error_Msg_N
-           ("type& cannot be used before end of its declaration!", N);
+         when N_Full_Type_Declaration | N_Subtype_Declaration =>
+            Error_Msg_N
+              ("type& cannot be used before end of its declaration!", N);
 
-      else
-         Error_Msg_N
-           ("object& cannot be used before end of its declaration!", N);
+         when others =>
+            Error_Msg_N
+              ("object& cannot be used before end of its declaration!", N);
 
-         --  If the premature reference appears as the expression in its own
-         --  declaration, rewrite it to prevent compiler loops in subsequent
-         --  uses of this mangled declaration in address clauses.
+            --  If the premature reference appears as the expression in its own
+            --  declaration, rewrite it to prevent compiler loops in subsequent
+            --  uses of this mangled declaration in address clauses.
 
-         if Nkind (Parent (N)) = N_Object_Declaration then
-            Set_Entity (N, Any_Id);
-         end if;
-      end if;
+            if Nkind (Parent (N)) = N_Object_Declaration then
+               Set_Entity (N, Any_Id);
+            end if;
+      end case;
    end Premature_Usage;
 
    ------------------------
