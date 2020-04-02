@@ -1,5 +1,13 @@
 2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.h (gfc_resolve_formal_arglist): Add prototype.
+	* interface.c (check_dtio_interface1): Call it.
+	* resolve.c (gfc_resolve_formal_arglist): Renamed from
+	resolve_formal_arglist, removed static.
+	(find_arglists, resolve_types): Update calls.
+
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/93522
 	* match.c (gfc_match_select_rank): Fix error cleanup.
 

@@ -264,8 +264,8 @@ resolve_procedure_interface (gfc_symbol *sym)
    Since a dummy argument cannot be a non-dummy procedure, the only
    resort left for untyped names are the IMPLICIT types.  */
 
-static void
-resolve_formal_arglist (gfc_symbol *proc)
+void
+gfc_resolve_formal_arglist (gfc_symbol *proc)
 {
   gfc_formal_arglist *f;
   gfc_symbol *sym;
@@ -319,7 +319,7 @@ resolve_formal_arglist (gfc_symbol *proc)
         }
 
       if (sym->attr.if_source != IFSRC_UNKNOWN)
-	resolve_formal_arglist (sym);
+	gfc_resolve_formal_arglist (sym);
 
       if (sym->attr.subroutine || sym->attr.external)
 	{
@@ -547,7 +547,7 @@ find_arglists (gfc_symbol *sym)
       || gfc_fl_struct (sym->attr.flavor) || sym->attr.intrinsic)
     return;
 
-  resolve_formal_arglist (sym);
+  gfc_resolve_formal_arglist (sym);
 }
 
 
@@ -17159,7 +17159,7 @@ resolve_types (gfc_namespace *ns)
 
   if (ns->proc_name && ns->proc_name->attr.flavor == FL_PROCEDURE
       && ns->proc_name->attr.if_source == IFSRC_IFBODY)
-    resolve_formal_arglist (ns->proc_name);
+    gfc_resolve_formal_arglist (ns->proc_name);
 
   gfc_traverse_ns (ns, resolve_bind_c_derived_types);
 
