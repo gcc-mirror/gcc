@@ -861,7 +861,7 @@ get_alias_set (tree t)
   alias_set_type set;
 
   /* We cannot give up with -fno-strict-aliasing because we need to build
-     proper type representation for possible functions which are build with
+     proper type representations for possible functions which are built with
      -fstrict-aliasing.  */
 
   /* return 0 if this or its type is an error.  */
@@ -920,9 +920,9 @@ get_alias_set (tree t)
       if (set != -1)
 	return set;
       /* Handle structure type equality for pointer types, arrays and vectors.
-	 This is easy to do, because the code bellow ignore canonical types on
+	 This is easy to do, because the code below ignores canonical types on
 	 these anyway.  This is important for LTO, where TYPE_CANONICAL for
-	 pointers cannot be meaningfuly computed by the frotnend.  */
+	 pointers cannot be meaningfully computed by the frontend.  */
       if (canonical_type_used_p (t))
 	{
 	  /* In LTO we set canonical types for all types where it makes
@@ -1031,9 +1031,9 @@ get_alias_set (tree t)
 	   || TREE_CODE (p) == VECTOR_TYPE;
 	   p = TREE_TYPE (p))
 	{
-	  /* Ada supports recusive pointers.  Instead of doing recrusion check
-	     just give up once the preallocated space of 8 elements is up.
-	     In this case just punt to void * alias set.  */
+	  /* Ada supports recursive pointers.  Instead of doing recursion
+	     check, just give up once the preallocated space of 8 elements
+	     is up.  In this case just punt to void * alias set.  */
 	  if (reference.length () == 8)
 	    {
 	      p = ptr_type_node;
@@ -1048,7 +1048,7 @@ get_alias_set (tree t)
 	}
       p = TYPE_MAIN_VARIANT (p);
 
-      /* In LTO for C++ programs we can turn in complete types to complete
+      /* In LTO for C++ programs we can turn incomplete types to complete
 	 using ODR name lookup.  */
       if (in_lto_p && TYPE_STRUCTURAL_EQUALITY_P (p) && odr_type_p (p))
 	{
