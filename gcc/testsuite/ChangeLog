@@ -1,3 +1,13 @@
+2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	Backport from master
+	2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/94030
+	* gfortran.dg/pr94030_1.f90: New test.
+	* gfortran.dg/pr94030_2.f90: New test.
+
 2020-04-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
