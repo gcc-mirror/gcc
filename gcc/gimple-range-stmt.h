@@ -1,6 +1,7 @@
 /* Header file for the GIMPLE range interface.
-   Copyright (C) 2019 Free Software Foundation, Inc.
-   Contributed by Andrew MacLeod <amacleod@redhat.com>.
+   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Contributed by Andrew MacLeod <amacleod@redhat.com>
+   and Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
 
@@ -18,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_GIMPLE_RANGE_H
-#define GCC_GIMPLE_RANGE_H
+#ifndef GCC_GIMPLE_RANGE_STMT_H
+#define GCC_GIMPLE_RANGE_STMT_H
 
 
 #include "range.h"
@@ -94,4 +95,4 @@ gimple_range_global (tree name)
  return value_range (type);
 }
 
-#endif // GCC_GIMPLE_RANGE_H
+#endif // GCC_GIMPLE_RANGE_STMT_H

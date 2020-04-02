@@ -1,5 +1,5 @@
-/* GIMPLE range GORI functions.
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+/* Gimple range GORI functions.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -26,9 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
-#include "diagnostic-core.h"
-#include "wide-int.h"
-#include "gimple-range.h"
+#include "gimple-range-stmt.h"
 #include "gimple-range-gori.h"
 #include "fold-const.h"
 

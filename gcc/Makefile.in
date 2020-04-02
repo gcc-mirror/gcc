@@ -1327,7 +1327,10 @@ OBJS = \
 	gimple-loop-versioning.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
-	gimple-range.o \
+	gimple-ranger.o \
+	gimple-range-cache.o \
+	gimple-range-cfg.o \
+	gimple-range-stmt.o \
 	gimple-range-gori.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-evrp.o \
@@ -1497,8 +1500,6 @@ OBJS = \
 	spellcheck.o \
 	spellcheck-tree.o \
 	sreal.o \
-	ssa-range.o \
-	ssa-range-cache.o \
 	stack-ptr-mod.o \
 	statistics.o \
 	stmt.o \

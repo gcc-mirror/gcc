@@ -1,5 +1,5 @@
-/* SSA range cache related functionalilty.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+/* Gimple ranger SSA cache implementation.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -23,29 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "insn-codes.h"
-#include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "cfghooks.h"
-#include "tree-pass.h"
 #include "ssa.h"
-#include "optabs-tree.h"
 #include "gimple-pretty-print.h"
-#include "diagnostic-core.h"
-#include "flags.h"
-#include "fold-const.h"
-#include "stor-layout.h"
-#include "calls.h"
-#include "cfganal.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
-#include "gimple-iterator.h"
-#include "gimple-walk.h"
-#include "tree-cfg.h"
-#include "wide-int.h"
-#include "ssa-range.h"
-#include "fold-const.h"
-#include "dbgcnt.h"
+#include "gimple-range-stmt.h"
+#include "gimple-range-cache.h"
 
 // During contructor, Allocate the vector of ssa_names.
 

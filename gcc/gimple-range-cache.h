@@ -1,5 +1,5 @@
-/* Header file for SSA range cache classes.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+/* Header file for gimple ranger SSA cache.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.

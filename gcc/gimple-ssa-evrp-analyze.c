@@ -42,8 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 #include "dbgcnt.h"
-#include "gimple-range.h"
-#include "ssa-range.h"
+#include "gimple-range-stmt.h"
+#include "gimple-ranger.h"
 
 class vr_gori_interface : public trace_gori_compute
 {

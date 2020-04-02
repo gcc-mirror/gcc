@@ -1,5 +1,5 @@
 /* Code for GIMPLE range related routines.
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) 2019-2020 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -27,24 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "cfghooks.h"
-#include "tree-pass.h"
 #include "ssa.h"
-#include "optabs-tree.h"
-#include "gimple-pretty-print.h"
-#include "diagnostic-core.h"
-#include "flags.h"
-#include "fold-const.h"
-#include "stor-layout.h"
-#include "calls.h"
-#include "cfganal.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
 #include "gimple-iterator.h"
-#include "gimple-walk.h"
 #include "tree-cfg.h"
-#include "wide-int.h"
-#include "gimple-range.h"
+#include "gimple-range-stmt.h"
 
 // This function looks for situations when walking the use/def chains
 // may provide additonal contextual range information not exposed on

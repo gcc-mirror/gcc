@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "cfghooks.h"
 #include "range-op.h"
-#include "gimple-range.h"
+#include "gimple-range-stmt.h"
 
 /* Set value range VR to a non-negative range of type TYPE.  */
 

@@ -1,6 +1,7 @@
-/* Header file for SSA range interface.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
-   Contributed by Andrew MacLeod <amacleod@redhat.com>.
+/* Header file for the gimple ranger.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Contributed by Andrew MacLeod <amacleod@redhat.com>
+   and Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
 
@@ -18,12 +19,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_SSA_RANGE_H
-#define GCC_SSA_RANGE_H
+#ifndef GCC_GIMPLE_RANGER_H
+#define GCC_GIMPLE_RANGER_H
 
-#include "gimple-range.h"
+#include "gimple-range-stmt.h"
 #include "gimple-range-gori.h"
-#include "ssa-range-cache.h"
+#include "gimple-range-cfg.h"
+#include "gimple-range-cache.h"
 
 
 // This is the basic range generator interface.
@@ -37,24 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 // type, AKA varying_p or it may be a refined range.  If the range
 // type is not supported, then false is returned.  Non-statement
 // related methods return whatever the current global value is.
-
-class gimple_ranger : public gori_compute
-{
-public:
-  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
-  virtual void range_on_edge (irange &r, edge e, tree name);
-
-  virtual void range_on_entry (irange &r, basic_block bb, tree name);
-  virtual void range_on_exit (irange &r, basic_block bb, tree name);
-protected:
-  bool range_of_range_op (irange &r, gimple *s);
-  bool range_of_phi (irange &r, gphi *phi);
-  bool range_of_call (irange &r, gcall *call);
-  bool range_of_cond_expr (irange &r, gassign* cond);
-private:
-  void range_of_ubsan_call (irange &r, gcall *call, tree_code code);
-};
-
 
 class global_ranger : public gimple_ranger
 {
@@ -152,4 +136,4 @@ on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
     return false;
   return ret;
 }
-#endif // GCC_SSA_RANGE_H
+#endif // GCC_GIMPLE_RANGER_H
