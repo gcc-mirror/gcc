@@ -1,3 +1,7 @@
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Optimize Options): Document sra-max-propagations.
+
 2020-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/92264
