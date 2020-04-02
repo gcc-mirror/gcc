@@ -1,3 +1,55 @@
+2020-04-02  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94317
+	* config/arm/arm-builtins.c (LDRGBWBXU_QUALIFIERS): Define.
+	(LDRGBWBXU_Z_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (__arm_vldrdq_gather_base_wb_s64): Modify
+	intrinsic defintion by adding a new builtin call to writeback into base
+	address.
+	(__arm_vldrdq_gather_base_wb_u64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_s64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_u64): Likewise.
+	(__arm_vldrwq_gather_base_wb_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_f32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_f32): Likewise.
+	* config/arm/arm_mve_builtins.def (vldrwq_gather_base_wb_z_u): Modify
+	builtin's qualifier.
+	(vldrdq_gather_base_wb_z_u): Likewise.
+	(vldrwq_gather_base_wb_u): Likewise.
+	(vldrdq_gather_base_wb_u): Likewise.
+	(vldrwq_gather_base_wb_z_s): Likewise.
+	(vldrwq_gather_base_wb_z_f): Likewise.
+	(vldrdq_gather_base_wb_z_s): Likewise.
+	(vldrwq_gather_base_wb_s): Likewise.
+	(vldrwq_gather_base_wb_f): Likewise.
+	(vldrdq_gather_base_wb_s): Likewise.
+	(vldrwq_gather_base_nowb_z_u): Define builtin.
+	(vldrdq_gather_base_nowb_z_u): Likewise.
+	(vldrwq_gather_base_nowb_u): Likewise.
+	(vldrdq_gather_base_nowb_u): Likewise.
+	(vldrwq_gather_base_nowb_z_s): Likewise.
+	(vldrwq_gather_base_nowb_z_f): Likewise.
+	(vldrdq_gather_base_nowb_z_s): Likewise.
+	(vldrwq_gather_base_nowb_s): Likewise.
+	(vldrwq_gather_base_nowb_f): Likewise.
+	(vldrdq_gather_base_nowb_s): Likewise.
+	* config/arm/mve.md (mve_vldrwq_gather_base_nowb_<supf>v4si): Define RTL
+	pattern.
+	(mve_vldrwq_gather_base_wb_<supf>v4si): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_z_<supf>v4si): Define RTL pattern.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si): Modify RTL pattern.
+	(mve_vldrwq_gather_base_wb_fv4sf): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_fv4sf): Define RTL pattern.
+	(mve_vldrwq_gather_base_wb_z_fv4sf): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_z_fv4sf): Define RTL pattern.
+	(mve_vldrdq_gather_base_nowb_<supf>v4di): Define RTL pattern.
+	(mve_vldrdq_gather_base_wb_<supf>v4di):  Modify RTL pattern.
+	(mve_vldrdq_gather_base_nowb_z_<supf>v4di): Define RTL pattern.
+	(mve_vldrdq_gather_base_wb_z_<supf>v4di):  Modify RTL pattern.
+
 2020-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/vector.md ("<ti*>add<mode>3", "mul<mode>3")

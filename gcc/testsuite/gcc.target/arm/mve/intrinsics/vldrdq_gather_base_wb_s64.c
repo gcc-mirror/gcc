@@ -10,4 +10,6 @@ foo (uint64x2_t * addr)
   return vldrdq_gather_base_wb_s64 (addr, 8);
 }
 
-/* { dg-final { scan-assembler "vldrd.64"  }  } */
+/* { dg-final { scan-assembler "vldrb.8 q\[0-9\]+, \\\[r\[0-9\]+\\\]" } } */
+/* { dg-final { scan-assembler "vldrd.64\tq\[0-9\]+, \\\[q\[0-9\]+, #\[0-9\]+\\\]!" } } */
+/* { dg-final { scan-assembler "vstrb.8 q\[0-9\]+, \\\[r\[0-9\]+\\\]" } } */
