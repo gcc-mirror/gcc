@@ -9036,9 +9036,15 @@ proc check_effective_target_stpcpy {} {
 }
 
 # Returns 1 if "sigsetjmp" is available on the target system.
+# Also check if "__sigsetjmp" is defined since that's what glibc
+# uses.
 
 proc check_effective_target_sigsetjmp {} {
-    return [check_function_available "sigsetjmp"]
+    if { [check_function_available "sigsetjmp"]
+         || [check_function_available "__sigsetjmp"] } {
+	return 1
+    }
+    return 0
 }
 
 # Check whether the vectorizer tests are supported by the target and

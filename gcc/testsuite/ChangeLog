@@ -1,3 +1,8 @@
+2020-04-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_sigsetjmp): Test
+	for __sigsetjmp as well as sigsetjmp.
+
 2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
 
 	PR fortran/85982
