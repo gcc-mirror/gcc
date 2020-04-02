@@ -1,6 +1,12 @@
 2020-04-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (trees_out::decl_node): Treat namespaces like other
+	decls.
+	(module_state::write): When checking, insert non-imported
+	namespace-decls into the entity map here.
+
+	gcc/cp/
 	* modules.cc (trees_out::decl_value): Public.
 	(trees_out::decl_node): Do not expect by-value namespaces.
 	(depset::hash::find_dependencies): Deal with namespaces here.

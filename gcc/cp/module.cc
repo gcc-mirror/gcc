@@ -8091,30 +8091,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
   gcc_checking_assert (DECL_P (decl) && !DECL_TEMPLATE_PARM_P (decl)
 		       && DECL_CONTEXT (decl));
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL
-      && !DECL_NAMESPACE_ALIAS (decl))
-    {
-      gcc_checking_assert (ref == WK_normal);
-      if (streaming_p ())
-	{
-	  depset *dep = dep_hash->find_dependency (decl);
-	  i (tt_entity);
-	  u (dep->is_import () ? dep->section : 0);
-	  i (dep->cluster);
-	}
-      else
-	dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
-
-      int tag = insert (decl, ref);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote namespace:%d %C:%N", tag, TREE_CODE (decl), decl);
-
-      add_indirects (decl);
-
-      return false;
-    }
-
   if (ref == WK_value)
     {
       depset *dep = dep_hash->find_dependency (decl);
@@ -8158,6 +8134,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
 
     case IMPORTED_DECL:
+      /* This describes a USING_DECL to the ME's debug machinery.  It
+	 originates from the fortran FE, and has nothing to do with
+	 C++ modules.  */
       return true;
 
     case LABEL_DECL:
@@ -8337,7 +8316,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 		       || TREE_CODE (decl) == FUNCTION_DECL
 		       || TREE_CODE (decl) == TYPE_DECL
 		       || TREE_CODE (decl) == USING_DECL
-		       || TREE_CODE (decl) == CONCEPT_DECL);
+		       || TREE_CODE (decl) == CONCEPT_DECL
+		       || TREE_CODE (decl) == NAMESPACE_DECL);
 
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
@@ -8380,7 +8360,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
 	   || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl)
 	       && !DECL_MODULE_PARTITION_P (decl)))
-    dep = dep_hash->add_dependency (decl, depset::EK_DECL);
+    dep = dep_hash->add_dependency (decl,
+				    TREE_CODE (decl) == NAMESPACE_DECL
+				    && !DECL_NAMESPACE_ALIAS (decl)
+				    ? depset::EK_NAMESPACE : depset::EK_DECL);
 
   if (!dep)
     {
@@ -17663,6 +17646,16 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      base[0]->cluster = counts[MSC_entities]++;
 	      spaces.quick_push (base[0]);
 	      counts[MSC_namespaces]++;
+	      if (CHECKING_P && !base[0]->is_import ())
+		{
+		  /* Add it to the entity map, such that we can tell it is
+		     part of us.  */
+		  bool existed;
+		  unsigned *slot = &entity_map->get_or_insert
+		    (DECL_UID (decl), &existed);
+		  gcc_checking_assert (!existed);
+		  *slot = ~base[0]->cluster;
+		}
 	      dump (dumper::CLUSTER) && dump ("Cluster namespace %N", decl);
 	    }
 	  size = 1;
