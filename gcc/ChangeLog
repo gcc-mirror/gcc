@@ -1,3 +1,9 @@
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94450
+	* dwarf2out.c (dwarf2out_early_finish): Remove code emitting
+	DW_TAG_imported_unit.
+
 2020-04-02  Maciej W. Rozycki  <macro@wdc.com>
 
 	* doc/install.texi (Specific) <riscv32-*-elf, riscv32-*-linux>
