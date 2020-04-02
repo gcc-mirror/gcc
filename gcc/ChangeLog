@@ -1,3 +1,8 @@
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add a space in
+	between a string literal and MIPS_SYSVERSION_SPEC macro.
+
 2020-04-02  Martin Jambor  <mjambor@suse.cz>
 
 	* doc/invoke.texi (Optimize Options): Document sra-max-propagations.
