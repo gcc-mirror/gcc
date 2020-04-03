@@ -1,3 +1,11 @@
+2020-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93960
+	* include/bits/ptr_traits.h (__to_address): Add special case for debug
+	iterators, to avoid dereferenceable check.
+	* testsuite/20_util/to_address/1_neg.cc: Adjust dg-error line number.
+	* testsuite/20_util/to_address/debug.cc: New test.
+
 2020-04-01  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* testsuite/experimental/net/execution_context/use_service.cc:
