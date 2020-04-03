@@ -1,3 +1,9 @@
+2020-04-03  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/92264
+	* config/stormy16/stormy16.c (xstormy16_preferred_reload_class): Handle
+	reloading of auto-increment addressing modes.
+
 2020-04-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94467
