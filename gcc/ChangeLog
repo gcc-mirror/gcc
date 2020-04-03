@@ -1,3 +1,12 @@
+2020-04-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-04-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94445
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call):
+	  Compare type attributes for gimple_call_fntypes.
+
 2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
 
 	Backport from master.
