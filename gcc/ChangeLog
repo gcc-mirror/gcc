@@ -1,3 +1,13 @@
+2020-04-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93435
+	* params.def (PARAM_SRA_MAX_PROPAGATIONS): New parameter.
+	* tree-sra.c (propagation_budget): New variable.
+	(budget_for_propagation_access): New function.
+	(propagate_subaccesses_across_link): Use it.
+	(propagate_all_subaccesses): Set up and destroy propagation_budget.
+	* doc/invoke.texi (sra-max-propagations): New.
+
 2020-04-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

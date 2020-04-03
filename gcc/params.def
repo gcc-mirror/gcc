@@ -1017,6 +1017,13 @@ DEFPARAM (PARAM_SRA_MAX_SCALARIZATION_SIZE_SIZE,
 	  "considered for scalarization when compiling for size.",
 	  0, 0, 0)
 
+DEFPARAM (PARAM_SRA_MAX_PROPAGATIONS,
+	  "sra-max-propagations",
+	  "Maximum number of artificial accesses to enable forward propagation "
+	  "that Scalar Replacement of Aggregates will keep for one local "
+	  "variable.",
+	  32, 0, 0)
+
 DEFPARAM (PARAM_IPA_CP_VALUE_LIST_SIZE,
 	  "ipa-cp-value-list-size",
 	  "Maximum size of a list of values associated with each parameter for "

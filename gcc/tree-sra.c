@@ -291,6 +291,9 @@ static object_allocator<assign_link> assign_link_pool ("SRA links");
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
 static hash_map<tree, auto_vec<access_p> > *base_access_vec;
 
+/* Hash to limit creation of artificial accesses */
+static hash_map<tree, unsigned> *propagation_budget;
+
 /* Candidate hash table helpers.  */
 
 struct uid_decl_hasher : nofree_ptr_hash <tree_node>
@@ -2665,6 +2668,32 @@ subtree_mark_written_and_enqueue (struct access *access)
     subtree_mark_written_and_enqueue (child);
 }
 
+/* If there is still budget to create a propagation access for DECL, return
+   true and decrement the budget.  Otherwise return false.  */
+
+static bool
+budget_for_propagation_access (tree decl)
+{
+  unsigned b, *p = propagation_budget->get (decl);
+  if (p)
+    b = *p;
+  else
+    b = PARAM_SRA_MAX_PROPAGATIONS;
+
+  if (b == 0)
+    return false;
+  b--;
+
+  if (b == 0 && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "The propagation budget of ");
+      print_generic_expr (dump_file, decl);
+      fprintf (dump_file, " (UID: %u) has been exhausted.\n", DECL_UID (decl));
+    }
+  propagation_budget->put (decl, b);
+  return true;
+}
+
 /* Propagate subaccesses and grp_write flags of RACC across an assignment link
    to LACC.  Enqueue sub-accesses as necessary so that the write flag is
    propagated transitively.  Return true if anything changed.  Additionally, if
@@ -2765,7 +2794,8 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	  continue;
 	}
 
-      if (rchild->grp_unscalarizable_region)
+      if (rchild->grp_unscalarizable_region
+	  || !budget_for_propagation_access (lacc->base))
 	{
 	  if (rchild->grp_write && !lacc->grp_write)
 	    {
@@ -2795,6 +2825,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 static void
 propagate_all_subaccesses (void)
 {
+  propagation_budget = new hash_map<tree, unsigned>;
   while (work_queue_head)
     {
       struct access *racc = pop_access_from_work_queue ();
@@ -2833,6 +2864,7 @@ propagate_all_subaccesses (void)
 	    while (lacc);
 	}
     }
+  delete propagation_budget;
 }
 
 /* Go through all accesses collected throughout the (intraprocedural) analysis
