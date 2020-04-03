@@ -16060,22 +16060,6 @@
 	    (vec_concat:V4HI
 	      (vec_concat:V2HI
 		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 8)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 9)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 10)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 11)]))))
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 12)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 13)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 14)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 15)]))))))
-	  (vec_concat:V8HI
-	    (vec_concat:V4HI
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
 		  (vec_select:HI
 		    (match_operand:V16HI 2 "nonimmediate_operand" "xm")
 		    (parallel [(const_int 0)]))
@@ -16089,7 +16073,23 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 5)])))
 		(ssse3_plusminus:HI
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 6)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 7)])))))
+		  (vec_select:HI (match_dup 2) (parallel [(const_int 7)]))))))
+	  (vec_concat:V8HI
+	    (vec_concat:V4HI
+	      (vec_concat:V2HI
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 8)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 9)])))
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 10)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 11)]))))
+	      (vec_concat:V2HI
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 12)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 13)])))
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 14)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 15)])))))
 	    (vec_concat:V4HI
 	      (vec_concat:V2HI
 		(ssse3_plusminus:HI
@@ -16224,21 +16224,21 @@
 		(vec_select:SI (match_dup 1) (parallel [(const_int 3)]))))
 	    (vec_concat:V2SI
 	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 4)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 5)])))
-	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 6)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 7)])))))
-	  (vec_concat:V4SI
-	    (vec_concat:V2SI
-	      (plusminus:SI
 		(vec_select:SI
 		  (match_operand:V8SI 2 "nonimmediate_operand" "xm")
 		  (parallel [(const_int 0)]))
 		(vec_select:SI (match_dup 2) (parallel [(const_int 1)])))
 	      (plusminus:SI
 		(vec_select:SI (match_dup 2) (parallel [(const_int 2)]))
-		(vec_select:SI (match_dup 2) (parallel [(const_int 3)]))))
+		(vec_select:SI (match_dup 2) (parallel [(const_int 3)])))))
+	  (vec_concat:V4SI
+	    (vec_concat:V2SI
+	      (plusminus:SI
+		(vec_select:SI (match_dup 1) (parallel [(const_int 4)]))
+		(vec_select:SI (match_dup 1) (parallel [(const_int 5)])))
+	      (plusminus:SI
+		(vec_select:SI (match_dup 1) (parallel [(const_int 6)]))
+		(vec_select:SI (match_dup 1) (parallel [(const_int 7)]))))
 	    (vec_concat:V2SI
 	      (plusminus:SI
 		(vec_select:SI (match_dup 2) (parallel [(const_int 4)]))

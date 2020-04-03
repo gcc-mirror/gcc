@@ -1,3 +1,8 @@
+2020-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* gcc.target/i386/avx2-pr94460.c: New test.
+
 2020-04-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93211

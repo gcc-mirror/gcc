@@ -1,3 +1,11 @@
+2020-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3,
+	avx2_ph<plusminus_mnemonic>dv8si3): Fix up RTL pattern to do
+	second half of first lane from first lane of second operand and
+	first half of second lane from second lane of first operand.
+
 2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm_mve.h: Condition the header file on __ARM_FEATURE_MVE.
