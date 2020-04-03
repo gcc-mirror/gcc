@@ -481,6 +481,12 @@ package Sem_Eval is
    --  it cannot (because the value of Lo or Hi is not known at compile time)
    --  then it returns False.
 
+   function Predicates_Compatible (T1, T2 : Entity_Id) return Boolean;
+   --  In Ada 2012, subtypes are statically compatible if the predicates are
+   --  compatible as well. This function performs the required check that
+   --  predicates are compatible. Split from Subtypes_Statically_Compatible
+   --  so that it can be used in specializing error messages.
+
    function Predicates_Match (T1, T2 : Entity_Id) return Boolean;
    --  In Ada 2012, subtypes statically match if their predicates match as
    --  as well. This function performs the required check that predicates
