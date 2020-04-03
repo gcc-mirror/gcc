@@ -80,6 +80,8 @@ aarch64_frob_update_context (struct _Unwind_Context *context,
   if (fs->regs.reg[DWARF_REGNUM_AARCH64_RA_STATE].loc.offset & 0x1)
     /* The flag is used for re-authenticating EH handler's address.  */
     context->flags |= RA_A_SIGNED_BIT;
+  else
+    context->flags &= ~RA_A_SIGNED_BIT;
 
   return;
 }
