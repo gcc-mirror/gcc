@@ -1,6 +1,15 @@
 2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from mainline
+	2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94443
+	* tree-vect-loop.c (vectorizable_live_operation): Use
+	gsi_insert_seq_before to replace gsi_insert_before.
+
+2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from mainline
 	2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/94043

@@ -1,6 +1,14 @@
 2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from mainline
+	2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94443
+	* gcc.dg/vect/pr94443.c: New test.
+
+2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from mainline
 	2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/94043
