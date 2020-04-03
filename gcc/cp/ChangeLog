@@ -1,3 +1,9 @@
+2020-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91966
+	* pt.c (complex_pack_expansion_r): New.
+	(complex_alias_template_p): Use it.
+
 2020-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84733
