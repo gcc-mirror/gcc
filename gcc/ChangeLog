@@ -1,3 +1,63 @@
+2020-04-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94467
+	* config/i386/sse.md (ssse3_pshufbv8qi3): Mark scratch operand
+	as earlyclobber.
+
+2020-04-03  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/92264
+	* config/m32r/m32r.c (m32r_output_block_move): Properly account for
+	post-increment addressing of source operands as well as residuals
+	when computing any adjustments to the input pointer.
+
+2020-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3,
+	avx2_ph<plusminus_mnemonic>dv8si3): Fix up RTL pattern to do
+	second half of first lane from first lane of second operand and
+	first half of second lane from second lane of first operand.
+
+2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Condition the header file on __ARM_FEATURE_MVE.
+
+2020-04-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94396
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_get_extension_string_for_isa_flags): Handle default flags.
+
+2020-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94465
+	* tree.c (array_ref_low_bound): Deal with released SSA names
+	in index position.
+
+2020-04-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (print_operand): Handle unordered comparison
+	operators.
+	* config/gcn/predicates.md (gcn_fp_compare_operator): Add unordered
+	comparison operators.
+
+2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94443
+	* tree-vect-loop.c (vectorizable_live_operation): Use
+	gsi_insert_seq_before to replace gsi_insert_before.
+
+2020-04-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94445
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call):
+	  Compare type attributes for gimple_call_fntypes.
+
+2020-04-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* alias.c (get_alias_set): Fix comment typos.
+
 2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
 
 	PR fortran/85982

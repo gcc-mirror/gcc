@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,21 +16,21 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
-// { dg-error "not a function pointer" "" { target *-*-* } 157 }
+// { dg-do run { target c++2a } }
 
-#include <memory>
+#include <debug/vector>
+#include <testsuite_hooks.h>
 
-struct P
+void
+test01()
 {
-  using element_type = void();
+  __gnu_debug::vector<int> v{1, 2, 3};
+  auto p = std::to_address(v.end());
+  VERIFY( p == v.data() + v.size() );
+}
 
-  element_type* operator->() const noexcept
-  { return nullptr; }
-};
-
-void test01()
+int
+main()
 {
-  P p;
-  std::to_address(p); // { dg-error "required from here" }
+  test01();
 }

@@ -1,3 +1,17 @@
+2020-04-03  Jim Johnston  <jjohnst@us.ibm.com>
+
+	* config/s390/tpf-unwind.h (MIN_PATRANGE, MAX_PATRANGE)
+	(TPFRA_OFFSET): Macros removed.
+	(CP_CNF, cinfc_fast, CINFC_CMRESET, CINTFC_CMCENBKST)
+	(CINTFC_CMCENBKED, ICST_CRET, ICST_SRET, LOWCORE_PAGE3_ADDR)
+	(PG3_SKIPPING_OFFSET): New macros.
+	(__isPATrange): Use cinfc_fast for the check.
+	(__isSkipResetAddr): New function.
+	(s390_fallback_frame_state): Check for skip trace addresses. Use
+	either ICST_CRET or ICST_SRET to calculate return address
+	location.
+	(__tpf_eh_return): Handle skip trace addresses.
+
 2020-03-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/94220

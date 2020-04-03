@@ -2676,7 +2676,7 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 	     destination pointer.  */
 	  int dst_inc_amount = dst_offset + bytes - 4;
 	  /* The same for the source pointer.  */
-	  int src_inc_amount = bytes;
+	  int src_inc_amount = bytes - (got_extra ? 4 : 0);
 	  int last_shift;
 	  rtx my_operands[3];
 

@@ -1,3 +1,11 @@
+2020-04-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/89713
+	PR c/94392
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: Again expect
+	'bar.sync'.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: Likewise.
+
 2020-03-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	* target.c (GOMP_target_enter_exit_data): Handle PSET/MAP_POINTER.
