@@ -1,3 +1,15 @@
+2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: Put -mfpu=auto back.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+
 2020-04-03  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/94396
