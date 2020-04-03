@@ -391,7 +391,22 @@ aarch64_get_extension_string_for_isa_flags (uint64_t isa_flags,
 	/* We remove all the dependent bits, to prevent them from being turned
 	   on twice.  This only works because we assume that all there are
 	   individual options to set all bits standalone.  */
-	isa_flag_bits &= ~opt->flags_on;
+
+	/* PR target/94396.
+
+	   For flags which would already imply a bit that's on by default (e.g
+	   fp16fml which implies +fp,+fp16) we must emit the flags that are not
+	   on by default.  i.e. in Armv8.4-a +fp16fml is default if +fp16.  So
+	   if a user passes armv8.4-a+fp16 (or +fp16fml) then we need to emit
+	   +fp16.  But if +fp16fml is used in an architecture where it is
+	   completely optional we only have to emit the canonical flag.  */
+	uint64_t toggle_bits = opt->flags_on & default_arch_flags;
+	/* Now check to see if the canonical flag is on by default.  If it
+	   is not then enabling it will enable all bits in flags_on.  */
+	if ((opt->flag_canonical & default_arch_flags) == 0)
+	  toggle_bits = opt->flags_on;
+
+	isa_flag_bits &= ~toggle_bits;
 	isa_flag_bits |= opt->flag_canonical;
       }
     }
