@@ -1,3 +1,9 @@
+2020-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94465
+	* tree.c (array_ref_low_bound): Deal with released SSA names
+	in index position.
+
 2020-04-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/gcn.c (print_operand): Handle unordered comparison
