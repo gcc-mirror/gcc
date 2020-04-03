@@ -1,3 +1,10 @@
+2020-04-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (print_operand): Handle unordered comparison
+	operators.
+	* config/gcn/predicates.md (gcn_fp_compare_operator): Add unordered
+	comparison operators.
+
 2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/94443
