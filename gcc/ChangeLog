@@ -1,3 +1,10 @@
+2020-04-03  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/92264
+	* config/m32r/m32r.c (m32r_output_block_move): Properly account for
+	post-increment addressing of source operands as well as residuals
+	when computing any adjustments to the input pointer.
+
 2020-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94460
