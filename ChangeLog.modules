@@ -1,5 +1,11 @@
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/94476
+	gcc/cp/
+	* class.c (layout_class_type): Zap NSDMI of as_base fields.
+	gcc/testsuite/
+	* g++.dg/modules/nsdmi-2.C: New.
+
 	Merge master bcafd8748cf9eb83a9e71bf67c4e2a7c5c8f513c
 
 	NSDMIs

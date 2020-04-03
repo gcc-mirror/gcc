@@ -6677,6 +6677,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    *next_field = copy_node (field);
+	    /* Zap any NSDMI, it's not needed and might be a deferred
+	       parse.  */
+	    DECL_INITIAL (*next_field) = NULL_TREE;
 	    DECL_CONTEXT (*next_field) = base_t;
 	    next_field = &DECL_CHAIN (*next_field);
 	  }
