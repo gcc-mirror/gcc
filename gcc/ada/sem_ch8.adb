@@ -754,7 +754,7 @@ package body Sem_Ch8 is
       Id            : constant Entity_Id  := Defining_Identifier (N);
       Loc           : constant Source_Ptr := Sloc (N);
       Nam           : constant Node_Id    := Name (N);
-      Is_Object_Ref : Boolean := False;
+      Is_Object_Ref : Boolean;
       Dec           : Node_Id;
       T             : Entity_Id;
       T2            : Entity_Id;
@@ -1366,7 +1366,7 @@ package body Sem_Ch8 is
       if T = Any_Type or else Etype (Nam) = Any_Type then
          return;
 
-      --  Verify that the renamed entity is an object or function call.
+      --  Verify that the renamed entity is an object or function call
 
       elsif Is_Object_Ref then
          if Comes_From_Source (N) then

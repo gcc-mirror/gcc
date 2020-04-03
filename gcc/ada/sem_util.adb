@@ -16978,9 +16978,8 @@ package body Sem_Util is
             --  Note that predefined operators are functions as well, and so
             --  are attributes that are (can be renamed as) functions.
 
-            when N_Binary_Op
-               | N_Function_Call
-               | N_Unary_Op
+            when N_Function_Call
+               | N_Op
             =>
                return Etype (N) /= Standard_Void_Type;
 
@@ -17040,12 +17039,21 @@ package body Sem_Util is
             --  of aggregates in more contexts.
 
             when N_Qualified_Expression =>
-               if Ada_Version <  Ada_2012 then
-                  return False;
-               else
-                  return Is_Object_Reference (Expression (N))
-                    or else Nkind (Expression (N)) = N_Aggregate;
-               end if;
+               return Ada_Version >= Ada_2012
+                 and then Is_Object_Reference (Expression (N));
+
+            --  In Ada 95 an aggreate is an object reference
+
+            when N_Aggregate =>
+               return Ada_Version >= Ada_95;
+
+            --  A string literal is not an object reference, but it might come
+            --  from rewriting of an object reference, e.g. from folding of an
+            --  aggregate.
+
+            when N_String_Literal =>
+               return Is_Rewrite_Substitution (N)
+                 and then Is_Object_Reference (Original_Node (N));
 
             when others =>
                return False;
