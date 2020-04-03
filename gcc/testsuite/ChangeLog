@@ -1,3 +1,9 @@
+2020-04-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93211
+	PR c++/90711
+	* g++.dg/template/koenig11.C: New test.
+
 2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: Put -mfpu=auto back.
