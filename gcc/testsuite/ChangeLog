@@ -1,3 +1,19 @@
+2020-05-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline.
+	2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* g++.target/aarch64/pr94514.C: Require lp64.
+	* gcc.target/aarch64/pr94514.c: Likewise.
+
+	Backport from mainline.
+	2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* g++.target/aarch64/pr94514.C: New test.
+	* gcc.target/aarch64/pr94514.c: New test.
+
 2020-05-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master
