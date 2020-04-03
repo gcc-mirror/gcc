@@ -1,3 +1,9 @@
+2020-04-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94467
+	* gcc.target/i386/pr94467-1.c: New test.
+	* gcc.target/i386/pr94467-2.c: Likewise.
+
 2020-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94460
