@@ -17042,7 +17042,7 @@ package body Sem_Util is
                return Ada_Version >= Ada_2012
                  and then Is_Object_Reference (Expression (N));
 
-            --  In Ada 95 an aggreate is an object reference
+            --  In Ada 95 an aggregate is an object reference
 
             when N_Aggregate =>
                return Ada_Version >= Ada_95;

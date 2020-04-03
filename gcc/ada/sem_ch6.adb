@@ -1269,7 +1269,7 @@ package body Sem_Ch6 is
          --  only once, i.e. not to the simple return statement generated at
          --  the end of its expansion because, prior to leaving the function,
          --  the accessibility level of the return object changes to be a level
-         --  determined by the point of call (RM 3.10.2(10.8/3).
+         --  determined by the point of call (RM 3.10.2(10.8/3)).
 
          if Ada_Version >= Ada_2005
            and then Ekind (R_Type) = E_Anonymous_Access_Type
