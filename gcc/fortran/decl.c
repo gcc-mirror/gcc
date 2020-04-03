@@ -5408,15 +5408,19 @@ match_attr_spec (void)
       if (d == DECL_STATIC && seen[DECL_SAVE])
 	continue;
 
-      if (gfc_current_state () == COMP_DERIVED
+      if (gfc_comp_struct (gfc_current_state ())
 	  && d != DECL_DIMENSION && d != DECL_CODIMENSION
 	  && d != DECL_POINTER   && d != DECL_PRIVATE
 	  && d != DECL_PUBLIC && d != DECL_CONTIGUOUS && d != DECL_NONE)
 	{
+	  bool is_derived = gfc_current_state () == COMP_DERIVED;
 	  if (d == DECL_ALLOCATABLE)
 	    {
-	      if (!gfc_notify_std (GFC_STD_F2003, "ALLOCATABLE "
-				   "attribute at %C in a TYPE definition"))
+	      if (!gfc_notify_std (GFC_STD_F2003, is_derived
+				   ? G_("ALLOCATABLE attribute at %C in a "
+					"TYPE definition")
+				   : G_("ALLOCATABLE attribute at %C in a "
+					"STRUCTURE definition")))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5424,8 +5428,11 @@ match_attr_spec (void)
 	    }
 	  else if (d == DECL_KIND)
 	    {
-	      if (!gfc_notify_std (GFC_STD_F2003, "KIND "
-				   "attribute at %C in a TYPE definition"))
+	      if (!gfc_notify_std (GFC_STD_F2003, is_derived
+				   ? G_("KIND attribute at %C in a "
+					"TYPE definition")
+				   : G_("KIND attribute at %C in a "
+					"STRUCTURE definition")))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5448,8 +5455,11 @@ match_attr_spec (void)
 	    }
 	  else if (d == DECL_LEN)
 	    {
-	      if (!gfc_notify_std (GFC_STD_F2003, "LEN "
-				   "attribute at %C in a TYPE definition"))
+	      if (!gfc_notify_std (GFC_STD_F2003, is_derived
+				   ? G_("LEN attribute at %C in a "
+					"TYPE definition")
+				   : G_("LEN attribute at %C in a "
+					"STRUCTURE definition")))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5472,8 +5482,10 @@ match_attr_spec (void)
 	    }
 	  else
 	    {
-	      gfc_error ("Attribute at %L is not allowed in a TYPE definition",
-			 &seen_at[d]);
+	      gfc_error (is_derived ? G_("Attribute at %L is not allowed in a "
+					 "TYPE definition")
+				    : G_("Attribute at %L is not allowed in a "
+					 "STRUCTURE definition"), &seen_at[d]);
 	      m = MATCH_ERROR;
 	      goto cleanup;
 	    }
@@ -9699,13 +9711,20 @@ gfc_match_submod_proc (void)
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
 
-  /* Make sure that the result field is appropriately filled, even though
-     the result symbol will be replaced later on.  */
+  /* Make sure that the result field is appropriately filled.  */
   if (sym->tlink && sym->tlink->attr.function)
     {
-      if (sym->tlink->result
-	  && sym->tlink->result != sym->tlink)
-	sym->result= sym->tlink->result;
+      if (sym->tlink->result && sym->tlink->result != sym->tlink)
+	{
+	  sym->result = sym->tlink->result;
+	  if (!sym->result->attr.use_assoc)
+	    {
+	      gfc_symtree *st = gfc_new_symtree (&gfc_current_ns->sym_root,
+						 sym->result->name);
+	      st->n.sym = sym->result;
+	      sym->result->refs++;
+	    }
+	}
       else
 	sym->result = sym;
     }

@@ -183,7 +183,7 @@ static int unify_pack_expansion (tree, tree, tree,
 				 tree, unification_kind_t, bool, bool);
 static tree copy_template_args (tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
-static tree most_specialized_partial_spec (tree, tsubst_flags_t);
+tree most_specialized_partial_spec (tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
@@ -6364,6 +6364,33 @@ uses_all_template_parms_r (tree t, void *data_)
   return 0;
 }
 
+/* for_each_template_parm any_fn callback for complex_alias_template_p.  */
+
+static int
+complex_pack_expansion_r (tree t, void *data_)
+{
+  /* An alias template with a pack expansion that expands a pack from the
+     enclosing class needs to be considered complex, to avoid confusion with
+     the same pack being used as an argument to the alias's own template
+     parameter (91966).  */
+  if (!PACK_EXPANSION_P (t))
+    return 0;
+  struct uses_all_template_parms_data &data
+    = *(struct uses_all_template_parms_data*)data_;
+  for (tree pack = PACK_EXPANSION_PARAMETER_PACKS (t); pack;
+       pack = TREE_CHAIN (pack))
+    {
+      tree parm_pack = TREE_VALUE (pack);
+      if (!TEMPLATE_PARM_P (parm_pack))
+	continue;
+      int idx, level;
+      template_parm_level_and_index (parm_pack, &level, &idx);
+      if (level < data.level)
+	return 1;
+    }
+  return 0;
+}
+
 static bool
 complex_alias_template_p (const_tree tmpl)
 {
@@ -6384,7 +6411,9 @@ complex_alias_template_p (const_tree tmpl)
   for (int i = 0; i < len; ++i)
     data.seen[i] = false;
 
-  for_each_template_parm (pat, uses_all_template_parms_r, &data, NULL, true);
+  if (for_each_template_parm (pat, uses_all_template_parms_r, &data,
+			      NULL, true, complex_pack_expansion_r))
+    return true;
   for (int i = 0; i < len; ++i)
     if (!data.seen[i])
       return true;
@@ -20381,8 +20410,6 @@ tsubst_copy_and_build (tree t,
     case REQUIRES_EXPR:
       {
 	tree r = tsubst_requires_expr (t, args, tf_none, in_decl);
-	if (r == error_mark_node && (complain & tf_error))
-	  tsubst_requires_expr (t, args, complain, in_decl);
 	RETURN (r);
       }
 
@@ -24406,7 +24433,7 @@ most_general_template (tree decl)
    partial specializations matching TARGET, then NULL_TREE is
    returned, indicating that the primary template should be used.  */
 
-static tree
+tree
 most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 {
   tree list = NULL_TREE;

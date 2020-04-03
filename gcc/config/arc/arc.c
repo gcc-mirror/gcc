@@ -4530,7 +4530,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'c':
       if (GET_CODE (x) == CONST_INT)
-        fprintf (file, "%ld", INTVAL (x) );
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) );
       else
         output_operand_lossage ("invalid operands to %%c code");
 
@@ -4724,7 +4724,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  /* No special treatment for jli_fixed functions.  */
 		  if (code == 'j')
 		    break;
-		  fprintf (file, "%ld\t; @",
+		  fprintf (file, HOST_WIDE_INT_PRINT_DEC "\t; @",
 			   TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attrs))));
 		  assemble_name (file, XSTR (x, 0));
 		  return;
@@ -4745,7 +4745,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  tree attrs = (TREE_TYPE (SYMBOL_REF_DECL (x)) != error_mark_node
 			? TYPE_ATTRIBUTES (TREE_TYPE (SYMBOL_REF_DECL (x)))
 			: NULL_TREE);
-	  fprintf (file, "%ld\t; @",
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "\t; @",
 		   TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attrs))));
 	  assemble_name (file, XSTR (x, 0));
 	  return;

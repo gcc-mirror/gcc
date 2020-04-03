@@ -2545,7 +2545,7 @@ __attribute__ ((access (read_write, 1), access (read_only, 2))) char* strcat (ch
 The @code{write_only} access mode applies to arguments of pointer types
 without the @code{const} qualifier.  It specifies that the pointer to which
 it applies is used to write to the referenced object but not read from it.
-The object refrenced by the pointer need not be initialized.  An example
+The object referenced by the pointer need not be initialized.  An example
 of the use of the @code{write_only} access mode is the first argument to
 the @code{strcpy} function, or the first two arguments to the @code{fgets}
 function.
@@ -2817,7 +2817,7 @@ the same type as the target function.  As a result of the @code{copy}
 attribute the alias also shares the same attributes as the target.
 
 @smallexample
-#define StrongAlias(TagetFunc, AliasDecl)   \
+#define StrongAlias(TargetFunc, AliasDecl)  \
   extern __typeof__ (TargetFunc) AliasDecl  \
     __attribute__ ((alias (#TargetFunc), copy (TargetFunc)));
 

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 
+#include "dmd/attrib.h"
 #include "dmd/declaration.h"
 #include "dmd/mtype.h"
 
@@ -52,6 +53,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
+static tree handle_always_inline_attribute (tree *, tree, tree, int, bool *);
 
 /* D attribute handlers for user defined attributes.  */
 static tree d_handle_noinline_attribute (tree *, tree, tree, int, bool *);
@@ -137,6 +139,8 @@ const attribute_spec d_langhook_common_attribute_table[] =
 	     handle_type_generic_attribute, NULL),
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false,
 	     handle_fnspec_attribute, NULL),
+  ATTR_SPEC ("always_inline", 0, 0, true,  false, false, false,
+	     handle_always_inline_attribute, NULL),
   ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
@@ -231,7 +235,7 @@ uda_attribute_p (const char *name)
    `gcc.attribute.Attribute'.  This symbol is internally recognized by the
    compiler and maps them to their equivalent GCC attribute.  */
 
-tree
+static tree
 build_attributes (Expressions *eattrs)
 {
   if (!eattrs)
@@ -314,6 +318,30 @@ build_attributes (Expressions *eattrs)
     }
 
   return attribs;
+}
+
+/* If any GCC attributes are found in the declaration SYM, apply them to the
+   type or decl NODE.  */
+
+void
+apply_user_attributes (Dsymbol *sym, tree node)
+{
+  if (!sym->userAttribDecl)
+    {
+      if (DECL_P (node) && DECL_ATTRIBUTES (node) != NULL)
+	decl_attributes (&node, DECL_ATTRIBUTES (node), 0);
+
+      return;
+    }
+
+  location_t saved_location = input_location;
+  input_location = make_location_t (sym->loc);
+
+  Expressions *attrs = sym->userAttribDecl->getAttributes ();
+  decl_attributes (&node, build_attributes (attrs),
+		   TYPE_P (node) ? ATTR_FLAG_TYPE_IN_PLACE : 0);
+
+  input_location = saved_location;
 }
 
 /* Built-in attribute handlers.  */
@@ -562,6 +590,19 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
+  return NULL_TREE;
+}
+
+/* Handle a "always_inline" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_always_inline_attribute (tree *node, tree ARG_UNUSED (name),
+				tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+				bool *no_add_attrs ATTRIBUTE_UNUSED)
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+
   return NULL_TREE;
 }
 

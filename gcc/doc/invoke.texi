@@ -8653,10 +8653,12 @@ The graph is written to @file{@var{file}.state-purge.dot}.
 
 @item -fdump-analyzer-supergraph
 @opindex fdump-analyzer-supergraph
-Dump a representation of the ``supergraph'' suitable for viewing with
-GraphViz to @file{@var{file}.supergraph.dot}.  This shows all of the
+Dump representations of the ``supergraph'' suitable for viewing with
+GraphViz to @file{@var{file}.supergraph.dot} and to
+@file{@var{file}.supergraph-eg.dot}.  These show all of the
 control flow graphs in the program, with interprocedural edges for
-calls and returns.
+calls and returns.  The second dump contains annotations showing nodes
+in the ``exploded graph'' and diagnostics associated with them.
 
 @end table
 
@@ -10476,7 +10478,8 @@ Assume that a loop with an exit will eventually take the exit and not loop
 indefinitely.  This allows the compiler to remove loops that otherwise have
 no side-effects, not considering eventual endless looping as such.
 
-This option is enabled by default at @option{-O2}.
+This option is enabled by default at @option{-O2} for C++ with -std=c++11
+or higher.
 
 @item -ftree-dominator-opts
 @opindex ftree-dominator-opts
@@ -10983,9 +10986,9 @@ The @option{-fstrict-aliasing} option is enabled at levels
 @itemx -falign-functions=@var{n}:@var{m}:@var{n2}
 @itemx -falign-functions=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-functions
-Align the start of functions to the next power-of-two greater than
-@var{n}, skipping up to @var{m}-1 bytes.  This ensures that at least
-the first @var{m} bytes of the function can be fetched by the CPU
+Align the start of functions to the next power-of-two greater than or
+equal to @var{n}, skipping up to @var{m}-1 bytes.  This ensures that at
+least the first @var{m} bytes of the function can be fetched by the CPU
 without crossing an @var{n}-byte alignment boundary.
 
 If @var{m} is not specified, it defaults to @var{n}.
@@ -11051,6 +11054,9 @@ Align loops to a power-of-two boundary.  If the loops are executed
 many times, this makes up for any execution of the dummy padding
 instructions.
 
+If @option{-falign-labels} is greater than this value, then its value
+is used instead.
+
 Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-loops} and @option{-falign-loops=1} are
 equivalent and mean that loops are not aligned.
@@ -11069,6 +11075,9 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align branch targets to a power-of-two boundary, for branch targets
 where the targets can only be reached by jumping.  In this case,
 no dummy operations need be executed.
+
+If @option{-falign-labels} is greater than this value, then its value
+is used instead.
 
 Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-jumps} and @option{-falign-jumps=1} are
@@ -12822,6 +12831,11 @@ of aggregate which is considered for replacement when compiling for
 speed
 (@option{sra-max-scalarization-size-Ospeed}) or size
 (@option{sra-max-scalarization-size-Osize}) respectively.
+
+@item sra-max-propagations
+The maximum number of artificial accesses that Scalar Replacement of
+Aggregates (SRA) will track, per one local variable, in order to
+facilitate copy propagation.
 
 @item tm-max-aggregate-size
 When making copies of thread-local variables in a transaction, this

@@ -4545,8 +4545,7 @@ This configuration is intended for embedded systems.
 @heading riscv32-*-elf
 The RISC-V RV32 instruction set.
 This configuration is intended for embedded systems.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4554,8 +4553,7 @@ binutils 2.28 release.
 @anchor{riscv32-x-linux}
 @heading riscv32-*-linux
 The RISC-V RV32 instruction set running GNU/Linux.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4564,8 +4562,7 @@ binutils 2.28 release.
 @heading riscv64-*-elf
 The RISC-V RV64 instruction set.
 This configuration is intended for embedded systems.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />
@@ -4573,8 +4570,7 @@ binutils 2.28 release.
 @anchor{riscv64-x-linux}
 @heading riscv64-*-linux
 The RISC-V RV64 instruction set running GNU/Linux.
-This (and all other RISC-V) targets are supported upstream as of the
-binutils 2.28 release.
+This (and all other RISC-V) targets require the binutils 2.30 release.
 
 @html
 <hr />

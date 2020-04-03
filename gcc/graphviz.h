@@ -43,6 +43,12 @@ class graphviz_out {
   void begin_tr ();
   void end_tr ();
 
+  void begin_td ();
+  void end_td ();
+
+  void begin_trtd ();
+  void end_tdtr ();
+
   pretty_printer *get_pp () const { return m_pp; }
 
  private:

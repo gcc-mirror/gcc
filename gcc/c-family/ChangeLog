@@ -1,3 +1,26 @@
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR c/94392
+	* c-opts.c (c_common_post_options): Enable -ffinite-loops
+	for -O2 and C++11 or newer.
+
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	* c.opt: Add -fconcepts-diagnostics-depth.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94346
+	* c-attribs.c (handle_copy_attribute): Avoid passing expressions
+	to decl_attributes.  Make handling of different kinds of entities
+	more robust.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94098
+	* c-attribs.c (handle_access_attribute): Avoid setting TYPE_ATTRIBUTES
+	here.
+
 2020-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91993

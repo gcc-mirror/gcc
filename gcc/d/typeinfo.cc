@@ -358,7 +358,7 @@ class TypeInfoVisitor : public Visitor
     DECL_EXTERNAL (decl) = 0;
     TREE_PUBLIC (decl) = 1;
     DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
-    DECL_COMDAT (decl) = 1;
+    d_comdat_linkage (decl);
     d_pushdecl (decl);
 
     return decl;
@@ -1254,7 +1254,7 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 
   /* Update the type size and record mode for the classinfo type.  */
   if (type != tinfo_types[TK_CLASSINFO_TYPE])
-    finish_aggregate_type (structsize, TYPE_ALIGN_UNIT (type), type, NULL);
+    finish_aggregate_type (structsize, TYPE_ALIGN_UNIT (type), type);
 
   return type;
 }

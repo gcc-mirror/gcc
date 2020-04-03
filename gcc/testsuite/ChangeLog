@@ -1,3 +1,370 @@
+2020-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* gcc.target/i386/avx2-pr94460.c: New test.
+
+2020-04-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93211
+	PR c++/90711
+	* g++.dg/template/koenig11.C: New test.
+
+2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: Put -mfpu=auto back.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+
+2020-04-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94396
+	* gcc.target/aarch64/options_set_11.c: New test.
+	* gcc.target/aarch64/options_set_12.c: New test.
+	* gcc.target/aarch64/options_set_13.c: New test.
+	* gcc.target/aarch64/options_set_14.c: New test.
+	* gcc.target/aarch64/options_set_15.c: New test.
+	* gcc.target/aarch64/options_set_16.c: New test.
+	* gcc.target/aarch64/options_set_17.c: New test.
+	* gcc.target/aarch64/options_set_18.c: New test.
+	* gcc.target/aarch64/options_set_19.c: New test.
+	* gcc.target/aarch64/options_set_20.c: New test.
+	* gcc.target/aarch64/options_set_21.c: New test.
+	* gcc.target/aarch64/options_set_22.c: New test.
+	* gcc.target/aarch64/options_set_23.c: New test.
+	* gcc.target/aarch64/options_set_24.c: New test.
+	* gcc.target/aarch64/options_set_25.c: New test.
+	* gcc.target/aarch64/options_set_26.c: New test.
+
+2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94443
+	* gcc.dg/vect/pr94443.c: New test.
+
+2020-04-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_sigsetjmp): Test
+	for __sigsetjmp as well as sigsetjmp.
+
+2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/85982
+	* gfortran.dg/dec_structure_28.f90: New test.
+
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/dtio_35.f90: New.
+
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR c/94392
+	* gcc.dg/torture/pr94392.c: New testcase.
+
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94435
+	* gcc.target/aarch64/pr94435.c: New test.
+
+2020-04-02  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94317
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_s64.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_z_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_z_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrwq_gather_base_wb_z_u32.c: Likewise.
+
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93522
+	* gfortran.dg/select_rank_4.f90: New.
+
+2020-04-02  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93498
+	* gfortran.dg/pr93498_1.f90:  New test.
+	* gfortran.dg/pr93498_2.f90:  New test.
+
+2020-04-02  Mark Eggleston  <mark.eggleston@codethink.com>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/94030
+	* gfortran.dg/pr94030_1.f90: New test.
+	* gfortran.dg/pr94030_2.f90: New test.
+
+2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94315
+	* gdc.dg/pr93038.d: Split scan-file into multiple tests.
+	* gdc.dg/pr93038b.d: Likewise.
+
+2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94321
+	* gdc.dg/pr92216.d: Update to work on targets with 16 or 32-bit
+	pointers.
+
+2020-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94378
+	* gcc.dg/analyzer/compound-assignment-1.c: New test.
+	* gcc.dg/analyzer/compound-assignment-2.c: New test.
+	* gcc.dg/analyzer/compound-assignment-3.c: New test.
+
+2020-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94436
+	* gcc.dg/pr94436.c: New test.
+
+	PR middle-end/94423
+	* gcc.dg/ubsan/pr94423.c: New test.
+
+2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94043
+	* gfortran.dg/graphite/vect-pr94043.f90: New test.
+
+2020-04-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90136
+	* gdc.dg/pr90136a.d: New test.
+	* gdc.dg/pr90136b.d: New test.
+	* gdc.dg/pr90136c.d: New test.
+
+2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit.dg/test-version.c: New testcase.
+	* jit.dg/all-non-failing-tests.h: Add test-version.c.
+
+2020-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94424
+	* gdc.dg/pr94424.d: New test.
+
+2020-03-31  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94398
+	* gcc.target/aarch64/pr94398.c: New test.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u32.c: Likewise.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u16.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpcsq_m_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_m_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_m_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32.c: Likewise.
+
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94368
+	* gcc.dg/pr94368.c: New test.
+
+	PR middle-end/94412
+	* gcc.c-torture/execute/pr94412.c: New test.
+
+	PR tree-optimization/94403
+	* g++.dg/tree-ssa/pr94403.C: New test.
+
+	PR rtl-optimization/94344
+	* gcc.dg/pr94344.c: New test.
+
+2020-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-empty.c
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94385
+	* c-c++-common/pr94385.c: New test.
+
+2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pragma_power6.c: New.
+	* gcc.target/powerpc/pragma_power7.c: New.
+	* gcc.target/powerpc/pragma_power8.c: New.
+	* gcc.target/powerpc/pragma_power9.c: New.
+	* gcc.target/powerpc/pragma_misc9.c: New.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c: Update error message.
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c: Update error message.
+
+2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/bswap64-4.c: Update scan-assembler
+	expected results.
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94343
+	* gcc.target/i386/avx512f-pr94343.c: New test.
+	* gcc.target/i386/avx512vl-pr94343.c: New test.
+
+2020-03-30  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/87716
+	* gcc.target/i386/pr57193.c: XFAIL a test-case.
+
+2020-03-30  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/94402
+	* gfortran.dg/vect/vect-8.f90: Allow 22 or 23 loops
+	to be vectorized (based on libmvec presence).
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* gcc.target/i386/avx512vl-pr93069.c: New test.
+	* gcc.dg/vect/pr93069.c: New test.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc-utils.exp: (gdc-convert-args): Handle compilation test
+	arguments -D, -H, -X, and set compilable_output_file_ext.
+	(gdc-convert-test): Document and add cases DFLAGS and
+	EXTRA_CPP_SOURCES.  Add dg-final entry for output generation tests,
+	and set compilable_do_what to compile.
+	(gdc-do-test): Define compilable_do_what, default to assemble.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/runnable_cxx/runnable_cxx.exp: New file.
+	* lib/gdc-utils.exp (gdc-do-test): Add case for runnable_cxx.
+	* lib/gdc.exp (gdc_include_flags): Only add flags for libstdc++-v3 if
+	GDC_INCLUDE_CXX_FLAGS is true.
+	(gdc_link_flags): Likewise.
+	(gdc_init): Move setting of default gdc test flags to...
+	(gdc_target_compile): ...here.
+
+2020-03-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/compilable/compilable.exp: New file.
+	* gdc.test/fail_compilation/fail_compilation.exp: New file.
+	* gdc.test/runnable/runnable.exp: New file.
+	* gdc.test/gdc-test.exp: Move and rename to...
+	* lib/gdc-utils.exp: ...this.  Remove load_lib gdc-dg.exp.
+	(dmd2dg): Rename to...
+	(gdc-convert-test): ...this.
+	(gdc-do-test): Add testcases parameter and remove subdir handling.
+
+2020-03-28  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.dg/torture/pr87197-debug-sms.c: Move to ...
+	* gcc.dg/sms-compare-debug-1.c: ... this.  Add -O2.
+	* gcc.c-torture/execute/pr70127-debug-sms.c: Move to ...
+	* gcc.dg/sms-compare-debug-2.c: ... this.  Add -O2.
+
+2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94348
+	* gfortran.dg/module_procedure_3.f90: New.
+
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94306
+	* g++.dg/concepts/diagnostic8.C: New test.
+
+	PR c++/94252
+	* g++.dg/concepts/diagnostic7.C: New test.
+	* g++.dg/concepts/pr94252.C: New test.
+	* g++.dg/cpp2a/concepts-requires18.C: Adjust to expect an additional
+	diagnostic.
+
+	* g++.dg/concepts/diagnostic1.C: Pass -fconcepts-diagnostics-depth=2.
+	* g++.dg/concepts/diagnostic5.C: Adjust expected diagnostics.
+	* g++.dg/cpp2a/concepts-iconv1.C: Pass -fconcepts-diagnostics-depth=2.
+	* g++.dg/cpp2a/concepts-requires5.C: Likewise.
+
+	* g++.dg/concepts/diagnostic2.C: Expect "no operand" instead of
+	"neither operand".
+	* g++.dg/concepts/diagnostic5.C: New test.
+
+2020-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93573
+	* gcc.dg/pr93573-1.c: New test.
+	* gcc.dg/pr93573-2.c: New test.
+
+	PR tree-optimization/94329
+	* gfortran.dg/pr94329.f90: New test.
+
+2020-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94339
+	* g++.dg/ext/attr-copy-2.C: Revert the last changes.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94346
+	* c-c++-common/attr-copy.c: New test.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94098
+	* g++.dg/ext/attr-access-2.C: New test.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94078
+	PR c++/93824
+	PR c++/93810
+	* g++.dg/warn/Wmismatched-tags-3.C: New test.
+	* g++.dg/warn/Wmismatched-tags-4.C: New test.
+	* g++.dg/warn/Wmismatched-tags-5.C: New test.
+	* g++.dg/warn/Wmismatched-tags-6.C: New test.
+	* g++.dg/warn/Wredundant-tags-3.C: Remove xfails.
+	* g++.dg/warn/Wredundant-tags-6.C: New test.
+	* g++.dg/warn/Wredundant-tags-7.C: New test.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-5b.c: Add xfail for new false
+	positive leak.
+	* gcc.dg/analyzer/data-model-5c.c: Likewise.
+	* gcc.dg/analyzer/malloc-5.c: New test.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/dot-output.c: Check that
+	dot-output.c.supergraph-eg.dot is valid.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94273
+	* g++.dg/debug/pr94273.C: New testcase.
+
 2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93957

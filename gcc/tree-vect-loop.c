@@ -7998,6 +7998,25 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
       bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
     }
 
+  /* Ensure the VEC_LHS for lane extraction stmts satisfy loop-closed PHI
+     requirement, insert one phi node for it.  It looks like:
+	 loop;
+       BB:
+	 # lhs' = PHI <lhs>
+     ==>
+	 loop;
+       BB:
+	 # vec_lhs' = PHI <vec_lhs>
+	 new_tree = lane_extract <vec_lhs', ...>;
+	 lhs' = new_tree;  */
+
+  basic_block exit_bb = single_exit (loop)->dest;
+  gcc_assert (single_pred_p (exit_bb));
+
+  tree vec_lhs_phi = copy_ssa_name (vec_lhs);
+  gimple *phi = create_phi_node (vec_lhs_phi, exit_bb);
+  SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, vec_lhs);
+
   gimple_seq stmts = NULL;
   tree new_tree;
   if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
@@ -8010,10 +8029,10 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 	 the loop mask for the final iteration.  */
       gcc_assert (ncopies == 1 && !slp_node);
       tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
-      tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo),
-				      1, vectype, 0);
-      tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST,
-				      scalar_type, mask, vec_lhs);
+      tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo), 1,
+				      vectype, 0);
+      tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
+				      mask, vec_lhs_phi);
 
       /* Convert the extracted vector element to the required scalar type.  */
       new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
@@ -8023,13 +8042,32 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
       tree bftype = TREE_TYPE (vectype);
       if (VECTOR_BOOLEAN_TYPE_P (vectype))
 	bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
-      new_tree = build3 (BIT_FIELD_REF, bftype, vec_lhs, bitsize, bitstart);
+      new_tree = build3 (BIT_FIELD_REF, bftype, vec_lhs_phi, bitsize, bitstart);
       new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
 				       &stmts, true, NULL_TREE);
     }
 
   if (stmts)
-    gsi_insert_seq_on_edge_immediate (single_exit (loop), stmts);
+    {
+      gimple_stmt_iterator exit_gsi = gsi_after_labels (exit_bb);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+
+      /* Remove existing phi from lhs and create one copy from new_tree.  */
+      tree lhs_phi = NULL_TREE;
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (exit_bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *phi = gsi_stmt (gsi);
+	  if ((gimple_phi_arg_def (phi, 0) == lhs))
+	    {
+	      remove_phi_node (&gsi, false);
+	      lhs_phi = gimple_phi_result (phi);
+	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
+	      gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
+	      break;
+	    }
+	}
+    }
 
   /* Replace use of lhs with newly computed result.  If the use stmt is a
      single arg PHI, just replace all uses of PHI result.  It's necessary

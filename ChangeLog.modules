@@ -1,5 +1,7 @@
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master bcafd8748cf9eb83a9e71bf67c4e2a7c5c8f513c
+
 	NSDMIs
 	WARNING causes ICES in the STL header tests.  There's a trunk
 	NSDMI parsing bug (pr94476)

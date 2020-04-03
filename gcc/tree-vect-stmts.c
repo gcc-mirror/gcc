@@ -8051,8 +8051,14 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   auto_vec<tree> dr_chain (group_size);
   oprnds.create (group_size);
 
-  alignment_support_scheme
-    = vect_supportable_dr_alignment (first_dr_info, false);
+  /* Gather-scatter accesses perform only component accesses, alignment
+     is irrelevant for them.  */
+  if (memory_access_type == VMAT_GATHER_SCATTER)
+    alignment_support_scheme = dr_unaligned_supported;
+  else
+    alignment_support_scheme
+      = vect_supportable_dr_alignment (first_dr_info, false);
+
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -9168,8 +9174,14 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
     }
 
-  alignment_support_scheme
-    = vect_supportable_dr_alignment (first_dr_info, false);
+  /* Gather-scatter accesses perform only component accesses, alignment
+     is irrelevant for them.  */
+  if (memory_access_type == VMAT_GATHER_SCATTER)
+    alignment_support_scheme = dr_unaligned_supported;
+  else
+    alignment_support_scheme
+      = vect_supportable_dr_alignment (first_dr_info, false);
+
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -9590,11 +9602,20 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			    if (new_vtype != NULL_TREE)
 			      ltype = half_vtype;
 			  }
+			tree offset
+			  = (dataref_offset ? dataref_offset
+					    : build_int_cst (ref_type, 0));
+			if (ltype != vectype
+			    && memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+			  {
+			    unsigned HOST_WIDE_INT gap
+			      = DR_GROUP_GAP (first_stmt_info);
+			    gap *= tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
+			    tree gapcst = build_int_cst (ref_type, gap);
+			    offset = size_binop (PLUS_EXPR, offset, gapcst);
+			  }
 			data_ref
-			  = fold_build2 (MEM_REF, ltype, dataref_ptr,
-					 dataref_offset
-					 ? dataref_offset
-					 : build_int_cst (ref_type, 0));
+			  = fold_build2 (MEM_REF, ltype, dataref_ptr, offset);
 			if (alignment_support_scheme == dr_aligned)
 			  ;
 			else if (DR_MISALIGNMENT (first_dr_info) == -1)
@@ -9607,16 +9628,27 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 						  TYPE_ALIGN (elem_type));
 			if (ltype != vectype)
 			  {
-			    vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+			    vect_copy_ref_info (data_ref,
+						DR_REF (first_dr_info->dr));
 			    tree tem = make_ssa_name (ltype);
 			    new_stmt = gimple_build_assign (tem, data_ref);
-			    vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+			    vect_finish_stmt_generation (stmt_info, new_stmt,
+							 gsi);
 			    data_ref = NULL;
 			    vec<constructor_elt, va_gc> *v;
 			    vec_alloc (v, 2);
-			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
-			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-						    build_zero_cst (ltype));
+			    if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+			      {
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+							build_zero_cst (ltype));
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
+			      }
+			    else
+			      {
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+							build_zero_cst (ltype));
+			      }
 			    gcc_assert (new_vtype != NULL_TREE);
 			    if (new_vtype == vectype)
 			      new_stmt = gimple_build_assign (

@@ -1461,6 +1461,10 @@ fconcepts-ts
 C++ ObjC++ Var(flag_concepts_ts) Init(0)
 Enable certain features present in the Concepts TS.
 
+fconcepts-diagnostics-depth=
+C++ ObjC++ Joined RejectNegative UInteger Var(concepts_diagnostics_max_depth) Init(1)
+Specify maximum error replay depth during recursive diagnosis of a constraint satisfaction failure.
+
 fcond-mismatch
 C ObjC C++ ObjC++
 Allow the arguments of the '?' operator to have different types.

@@ -871,7 +871,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     {
       bool const_init;
       tree oldval = value;
-      value = fold_non_dependent_expr (value);
+      value = fold_non_dependent_expr (value, tf_warning_or_error, true, decl);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
 	      && DECL_INITIALIZED_IN_CLASS_P (decl)))

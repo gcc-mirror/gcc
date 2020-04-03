@@ -1436,6 +1436,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_convertible_helper<_From, _To>::type
     { };
 
+  // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
+  template<typename _ToElementType, typename _FromElementType>
+    using __is_array_convertible
+      = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
+
   template<typename _From, typename _To,
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
@@ -1464,11 +1469,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using type = decltype(__test<_From, _To>(0));
     };
 #pragma GCC diagnostic pop
-
-  // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
-  template<typename _ToElementType, typename _FromElementType>
-    using __is_array_convertible
-      = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
 
   // is_nothrow_convertible for C++11
   template<typename _From, typename _To>

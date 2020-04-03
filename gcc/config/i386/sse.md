@@ -8693,7 +8693,8 @@
 })
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,v,m")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
+					  "=v,v,<store_mask_constraint>")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:V16FI 1 "<store_mask_predicate>"
 				 "v,<store_mask_constraint>,v")
@@ -8750,7 +8751,8 @@
 })
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,v,m")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
+					  "=v,v,<store_mask_constraint>")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:VI8F_256 1 "<store_mask_predicate>"
 				    "v,<store_mask_constraint>,v")
@@ -8760,7 +8762,7 @@
    && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>)
-    return "vextract<shuffletype>64x2\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}";
+    return "vextract<shuffletype>64x2\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
   else
     return "#";
 }
@@ -12796,14 +12798,29 @@
 })
 
 (define_insn "<mask_codefor>one_cmpl<mode>2<mask_name>"
-  [(set (match_operand:VI 0 "register_operand" "=v")
-	(xor:VI (match_operand:VI 1 "nonimmediate_operand" "vm")
-		(match_operand:VI 2 "vector_all_ones_operand" "BC")))]
-  "TARGET_AVX512F"
-  "vpternlog<ternlogsuffix>\t{$0x55, %1, %0, %0<mask_operand3>|%0<mask_operand3>, %0, %1, 0x55}"
+  [(set (match_operand:VI 0 "register_operand" "=v,v")
+	(xor:VI (match_operand:VI 1 "nonimmediate_operand" "v,m")
+		(match_operand:VI 2 "vector_all_ones_operand" "BC,BC")))]
+  "TARGET_AVX512F
+   && (!<mask_applied>
+       || <ssescalarmode>mode == SImode
+       || <ssescalarmode>mode == DImode)"
+{
+  if (TARGET_AVX512VL)
+    return "vpternlog<ternlogsuffix>\t{$0x55, %1, %0, %0<mask_operand3>|%0<mask_operand3>, %0, %1, 0x55}";
+  else
+    return "vpternlog<ternlogsuffix>\t{$0x55, %g1, %g0, %g0<mask_operand3>|%g0<mask_operand3>, %g0, %g1, 0x55}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set (attr "mode")
+        (if_then_else (match_test "TARGET_AVX512VL")
+		      (const_string "<sseinsnmode>")
+		      (const_string "XI")))
+   (set (attr "enabled")
+	(if_then_else (eq_attr "alternative" "1")
+		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
+		      (const_int 1)))])
 
 (define_expand "<sse2_avx2>_andnot<mode>3"
   [(set (match_operand:VI_AVX2 0 "register_operand")
@@ -16043,22 +16060,6 @@
 	    (vec_concat:V4HI
 	      (vec_concat:V2HI
 		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 8)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 9)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 10)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 11)]))))
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 12)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 13)])))
-		(ssse3_plusminus:HI
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 14)]))
-		  (vec_select:HI (match_dup 1) (parallel [(const_int 15)]))))))
-	  (vec_concat:V8HI
-	    (vec_concat:V4HI
-	      (vec_concat:V2HI
-		(ssse3_plusminus:HI
 		  (vec_select:HI
 		    (match_operand:V16HI 2 "nonimmediate_operand" "xm")
 		    (parallel [(const_int 0)]))
@@ -16072,7 +16073,23 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 5)])))
 		(ssse3_plusminus:HI
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 6)]))
-		  (vec_select:HI (match_dup 2) (parallel [(const_int 7)])))))
+		  (vec_select:HI (match_dup 2) (parallel [(const_int 7)]))))))
+	  (vec_concat:V8HI
+	    (vec_concat:V4HI
+	      (vec_concat:V2HI
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 8)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 9)])))
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 10)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 11)]))))
+	      (vec_concat:V2HI
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 12)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 13)])))
+		(ssse3_plusminus:HI
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 14)]))
+		  (vec_select:HI (match_dup 1) (parallel [(const_int 15)])))))
 	    (vec_concat:V4HI
 	      (vec_concat:V2HI
 		(ssse3_plusminus:HI
@@ -16207,21 +16224,21 @@
 		(vec_select:SI (match_dup 1) (parallel [(const_int 3)]))))
 	    (vec_concat:V2SI
 	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 4)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 5)])))
-	      (plusminus:SI
-		(vec_select:SI (match_dup 1) (parallel [(const_int 6)]))
-		(vec_select:SI (match_dup 1) (parallel [(const_int 7)])))))
-	  (vec_concat:V4SI
-	    (vec_concat:V2SI
-	      (plusminus:SI
 		(vec_select:SI
 		  (match_operand:V8SI 2 "nonimmediate_operand" "xm")
 		  (parallel [(const_int 0)]))
 		(vec_select:SI (match_dup 2) (parallel [(const_int 1)])))
 	      (plusminus:SI
 		(vec_select:SI (match_dup 2) (parallel [(const_int 2)]))
-		(vec_select:SI (match_dup 2) (parallel [(const_int 3)]))))
+		(vec_select:SI (match_dup 2) (parallel [(const_int 3)])))))
+	  (vec_concat:V4SI
+	    (vec_concat:V2SI
+	      (plusminus:SI
+		(vec_select:SI (match_dup 1) (parallel [(const_int 4)]))
+		(vec_select:SI (match_dup 1) (parallel [(const_int 5)])))
+	      (plusminus:SI
+		(vec_select:SI (match_dup 1) (parallel [(const_int 6)]))
+		(vec_select:SI (match_dup 1) (parallel [(const_int 7)]))))
 	    (vec_concat:V2SI
 	      (plusminus:SI
 		(vec_select:SI (match_dup 2) (parallel [(const_int 4)]))

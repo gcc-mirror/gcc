@@ -2526,17 +2526,21 @@ handle_copy_attribute (tree *node, tree name, tree args,
       && !FUNCTION_POINTER_TYPE_P (TREE_TYPE (ref)))
     ref = TREE_TYPE (ref);
 
+  tree reftype = TYPE_P (ref) ? ref : TREE_TYPE (ref);
+
   if (DECL_P (decl))
     {
       if ((VAR_P (decl)
 	   && (TREE_CODE (ref) == FUNCTION_DECL
 	       || (EXPR_P (ref)
-		   && POINTER_TYPE_P (TREE_TYPE (ref))
-		   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (ref))))))
+		   && POINTER_TYPE_P (reftype)
+		   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (reftype)))))
 	  || (TREE_CODE (decl) == FUNCTION_DECL
 	      && (VAR_P (ref)
 		  || (EXPR_P (ref)
-		      && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (ref))))))
+		      && !FUNC_OR_METHOD_TYPE_P (reftype)
+		      && (!POINTER_TYPE_P (reftype)
+			  || !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (reftype)))))))
 	{
 	  /* It makes no sense to try to copy function attributes
 	     to a variable, or variable attributes to a function.  */
@@ -2586,7 +2590,7 @@ handle_copy_attribute (tree *node, tree name, tree args,
 	  /* Create a copy of just the one attribute ar AT, including
 	     its argumentsm and add it to DECL.  */
 	  tree attr = tree_cons (atname, copy_list (atargs), NULL_TREE);
-	  decl_attributes (node, attr, flags, ref);
+	  decl_attributes (node, attr, flags,  EXPR_P (ref) ? NULL_TREE : ref);
 	}
 
       /* Proceed to copy type attributes below.  */
@@ -2606,14 +2610,10 @@ handle_copy_attribute (tree *node, tree name, tree args,
 
   /* Similarly, a function declared with attribute noreturn has it
      attached on to it, but a C11 _Noreturn function does not.  */
-  tree reftype = ref;
   if (DECL_P (ref)
       && TREE_THIS_VOLATILE (ref)
-      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (reftype)))
+      && FUNC_OR_METHOD_TYPE_P (reftype))
     TREE_THIS_VOLATILE (decl) = true;
-
-  if (DECL_P (ref) || EXPR_P (ref))
-    reftype = TREE_TYPE (ref);
 
   if (POINTER_TYPE_P (reftype))
     reftype = TREE_TYPE (reftype);
@@ -2623,9 +2623,10 @@ handle_copy_attribute (tree *node, tree name, tree args,
 
   tree attrs = TYPE_ATTRIBUTES (reftype);
 
-  /* Copy type attributes from REF to DECL.  */
+  /* Copy type attributes from REF to DECL.  Pass in REF if it's a DECL
+     or a type but not if it's an expression.  */
   for (tree at = attrs; at; at = TREE_CHAIN (at))
-    decl_attributes (node, at, flags, ref);
+    decl_attributes (node, at, flags, EXPR_P (ref) ? NULL_TREE : ref);
 
   return NULL_TREE;
 }
@@ -4182,7 +4183,6 @@ handle_access_attribute (tree *node, tree name, tree args,
 
   /* Replace any existing access attribute specification with
      the concatenation above.  */
-  attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
   new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
   new_attrs = tree_cons (name, new_attrs, attrs);
 
@@ -4190,15 +4190,12 @@ handle_access_attribute (tree *node, tree name, tree args,
     {
       /* Repeat for the previously declared type.  */
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (node[1]));
-      tree new_attrs
-	= append_access_attrs (node[1], attrs, attrstr, code, idxs);
-      if (!new_attrs)
+      tree attrs1 = append_access_attrs (node[1], attrs, attrstr, code, idxs);
+      if (!attrs1)
 	return NULL_TREE;
 
-      attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
-      new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
-      new_attrs = tree_cons (name, new_attrs, attrs);
-      TYPE_ATTRIBUTES (TREE_TYPE (node[1])) = new_attrs;
+      attrs1 = tree_cons (NULL_TREE, attrs1, NULL_TREE);
+      new_attrs = tree_cons (name, attrs1, attrs);
     }
 
   /* Recursively call self to "replace" the documented/external form

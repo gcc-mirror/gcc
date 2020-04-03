@@ -13437,7 +13437,9 @@ array_ref_low_bound (tree exp)
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_MIN_VALUE (domain_type), exp);
 
   /* Otherwise, return a zero of the appropriate type.  */
-  return build_int_cst (TREE_TYPE (TREE_OPERAND (exp, 1)), 0);
+  tree idxtype = TREE_TYPE (TREE_OPERAND (exp, 1));
+  return (idxtype == error_mark_node
+	  ? integer_zero_node : build_int_cst (idxtype, 0));
 }
 
 /* Return a tree representing the upper bound of the array mentioned in

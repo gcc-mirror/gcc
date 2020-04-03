@@ -1,3 +1,8 @@
+2020-04-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Search for the pattern
+	at line beginning only.
+
 2020-01-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc-git-customization.sh: Use users/<pfx> for the personal remote

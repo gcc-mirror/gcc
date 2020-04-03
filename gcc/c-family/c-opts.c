@@ -1002,6 +1002,10 @@ c_common_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, flag_new_ttp,
 		       cxx_dialect >= cxx17);
 
+  /* C++11 guarantees forward progress.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, flag_finite_loops,
+		       optimize >= 2 && cxx_dialect >= cxx11);
+
   if (cxx_dialect >= cxx11)
     {
       /* If we're allowing C++0x constructs, don't warn about C++98

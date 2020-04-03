@@ -6007,6 +6007,21 @@ print_operand (FILE *file, rtx x, int code)
 	  case UNORDERED:
 	    s = "_u_";
 	    break;
+	  case UNEQ:
+	    s = "_nlg_";
+	    break;
+	  case UNGE:
+	    s = "_nlt_";
+	    break;
+	  case UNGT:
+	    s = "_nle_";
+	    break;
+	  case UNLE:
+	    s = "_ngt_";
+	    break;
+	  case UNLT:
+	    s = "_nge_";
+	    break;
 	  case LTGT:
 	    s = "_lg_";
 	    break;

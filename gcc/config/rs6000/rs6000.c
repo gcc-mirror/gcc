@@ -13621,7 +13621,7 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
   if (DEFAULT_ABI == ABI_AIX)
     s += sprintf (s,
 		  "l%s 2,%%%u\n\t",
-		  ptrload, funop + 2);
+		  ptrload, funop + 3);
 
   /* We don't need the extra code to stop indirect call speculation if
      calling via LR.  */
@@ -13675,12 +13675,12 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	sprintf (s,
 		 "b%%T%ul\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 3);
+		 funop, ptrload, funop + 4);
       else
 	sprintf (s,
 		 "beq%%T%ul-\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 3);
+		 funop, ptrload, funop + 4);
     }
   else if (DEFAULT_ABI == ABI_ELFv2)
     {
@@ -13688,12 +13688,12 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	sprintf (s,
 		 "b%%T%ul\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 2);
+		 funop, ptrload, funop + 3);
       else
 	sprintf (s,
 		 "beq%%T%ul-\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 2);
+		 funop, ptrload, funop + 3);
     }
   else
     {
@@ -19283,8 +19283,9 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       if (rs6000_pcrel_p (cfun))
 	{
 	  rtx reg = gen_rtx_REG (Pmode, regno);
-	  rtx u = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
-				  UNSPEC_PLT_PCREL);
+	  rtx u = gen_rtx_UNSPEC_VOLATILE (Pmode,
+					   gen_rtvec (3, base, call_ref, arg),
+					   UNSPECV_PLT_PCREL);
 	  emit_insn (gen_rtx_SET (reg, u));
 	  return reg;
 	}
@@ -19303,8 +19304,9 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       rtx reg = gen_rtx_REG (Pmode, regno);
       rtx hi = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
 			       UNSPEC_PLT16_HA);
-      rtx lo = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, reg, call_ref, arg),
-			       UNSPEC_PLT16_LO);
+      rtx lo = gen_rtx_UNSPEC_VOLATILE (Pmode,
+					gen_rtvec (3, reg, call_ref, arg),
+					UNSPECV_PLT16_LO);
       emit_insn (gen_rtx_SET (reg, hi));
       emit_insn (gen_rtx_SET (reg, lo));
       return reg;
@@ -24302,7 +24304,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   rtx toc_restore = NULL_RTX;
   rtx func_addr;
   rtx abi_reg = NULL_RTX;
-  rtx call[4];
+  rtx call[5];
   int n_call;
   rtx insn;
   bool is_pltseq_longcall;
@@ -24443,7 +24445,8 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
-  n_call = 1;
+  call[1] = gen_rtx_USE (VOIDmode, cookie);
+  n_call = 2;
 
   if (toc_load)
     call[n_call++] = toc_load;

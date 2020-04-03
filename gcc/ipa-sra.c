@@ -2897,10 +2897,14 @@ ipa_sra_ipa_function_checks (cgraph_node *node)
 
 struct caller_issues
 {
+  /* The candidate being considered.  */
+  cgraph_node *candidate;
   /* There is a thunk among callers.  */
   bool thunk;
   /* Call site with no available information.  */
   bool unknown_callsite;
+  /* Call from outside the the candidate's comdat group.  */
+  bool call_from_outside_comdat;
   /* There is a bit-aligned load into one of non-gimple-typed arguments. */
   bool bit_aligned_aggregate_argument;
 };
@@ -2920,6 +2924,13 @@ check_for_caller_issues (struct cgraph_node *node, void *data)
 	  issues->thunk = true;
 	  /* TODO: We should be able to process at least some types of
 	     thunks.  */
+	  return true;
+	}
+      if (issues->candidate->calls_comdat_local
+	  && issues->candidate->same_comdat_group
+	  && !issues->candidate->in_same_comdat_group_p (cs->caller))
+	{
+	  issues->call_from_outside_comdat = true;
 	  return true;
 	}
 
@@ -2944,6 +2955,7 @@ check_all_callers_for_issues (cgraph_node *node)
 {
   struct caller_issues issues;
   memset (&issues, 0, sizeof (issues));
+  issues.candidate = node;
 
   node->call_for_symbol_and_aliases (check_for_caller_issues, &issues, true);
   if (issues.unknown_callsite)
@@ -2960,6 +2972,13 @@ check_all_callers_for_issues (cgraph_node *node)
 	fprintf (dump_file, "A call of %s is through thunk, which are not"
 		 " handled yet.  Disabling all modifications.\n",
 		 node->dump_name ());
+      return true;
+    }
+  if (issues.call_from_outside_comdat)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function would become private comdat called "
+		 "outside of its comdat group.\n");
       return true;
     }
 
@@ -3679,6 +3698,17 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
     }
 }
 
+/* Worker for all call_for_symbol_thunks_and_aliases.  Set calls_comdat_local
+   flag of all callers of NODE.  */
+
+static bool
+mark_callers_calls_comdat_local (struct cgraph_node *node, void *)
+{
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    cs->caller->calls_comdat_local = true;
+  return false;
+}
+
 
 /* Do final processing of results of IPA propagation regarding NODE, clone it
    if appropriate.  */
@@ -3763,8 +3793,12 @@ process_isra_node_results (cgraph_node *node,
     = node->create_virtual_clone (callers, NULL, new_adjustments, "isra",
 				  suffix_counter);
   suffix_counter++;
-  if (node->same_comdat_group)
-    new_node->add_to_same_comdat_group (node);
+  if (node->calls_comdat_local && node->same_comdat_group)
+    {
+      new_node->add_to_same_comdat_group (node);
+      new_node->call_for_symbol_and_aliases (mark_callers_calls_comdat_local,
+					     NULL, true);
+    }
   new_node->calls_comdat_local = node->calls_comdat_local;
 
   if (dump_file)

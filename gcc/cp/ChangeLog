@@ -1,3 +1,115 @@
+2020-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91966
+	* pt.c (complex_pack_expansion_r): New.
+	(complex_alias_template_p): Use it.
+
+2020-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94205
+	* constexpr.c (cxx_eval_constant_expression) [TARGET_EXPR]: Call
+	replace_placeholders.
+	* typeck2.c (store_init_value): Fix arguments to
+	fold_non_dependent_expr.
+
+2020-03-31  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression) [TARGET_EXPR]: Use
+	local variables.
+
+2020-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90711
+	* tree.c (cp_tree_equal) [CALL_EXPR]: Compare KOENIG_LOOKUP_P.
+	(called_fns_equal): Check DECL_CONTEXT.
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94385
+	* semantics.c (add_stmt): Only set STMT_IS_FULL_EXPR_P on trees with
+	STATEMENT_CODE_P code.
+
+2020-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94306
+	* parser.c (cp_parser_requires_clause_opt): Diagnose and recover from
+	"requires {" when "requires requires {" was probably intended.
+
+	PR c++/94252
+	* constraint.cc (tsubst_compound_requirement): Always suppress errors
+	from type_deducible_p and expression_convertible_p, as they're not
+	substitution errors.
+	(diagnose_atomic_constraint) <case INTEGER_CST>: Remove this case so
+	that we diagnose INTEGER_CST expressions of non-bool type via the
+	default case.
+	* cp-gimplify.c (cp_genericize_r) <case REQUIRES_EXPR>: New case.
+	* parser.c (cp_parser_requires_expression): Always parse the requirement
+	body as if we're processing a template, by temporarily incrementing
+	processing_template_decl.  Afterwards, if we're not actually in a
+	template context, perform semantic processing to diagnose any invalid
+	types and expressions.
+	* pt.c (tsubst_copy_and_build) <case REQUIRES_EXPR>: Remove dead code.
+	* semantics.c (finish_static_assert): Explain an assertion failure
+	when the condition is a REQUIRES_EXPR like we do when it is a concept
+	check.
+
+	* constraint.cc (diagnose_compound_requirement): When diagnosing a
+	compound requirement, maybe replay the satisfaction failure, subject to
+	the current diagnosis depth.
+
+	* constraint.cc (finish_constraint_binary_op): Set the location of EXPR
+	as well as its range, because build_x_binary_op doesn't always do so.
+	(current_constraint_diagnosis_depth): New.
+	(concepts_diagnostics_max_depth_exceeded_p): New.
+	(collect_operands_of_disjunction): New.
+	(satisfy_disjunction): When diagnosing a satisfaction failure, maybe
+	replay each branch of the disjunction, subject to the current diagnosis
+	depth.
+	(diagnose_valid_expression): When diagnosing a satisfaction failure,
+	maybe replay the substitution error, subject to the current diagnosis
+	recursion.
+	(diagnose_valid_type): Likewise.
+	(diagnose_nested_requiremnet): Likewise.
+	(diagnosing_failed_constraint::diagnosing_failed_constraint): Increment
+	current_constraint_diagnosis_depth when diagnosing.
+	(diagnosing_failed_constraint::~diagnosing_failed_constraint): Decrement
+	current_constraint_diagnosis_depth when diagnosing.
+	(diagnosing_failed_constraint::replay_errors_p): New static member
+	function.
+	(diagnose_constraints): Don't diagnose if concepts_diagnostics_max_depth
+	is 0.  Emit a one-off note to increase -fconcepts-diagnostics-depth if
+	the limit was exceeded.
+	* cp-tree.h (diagnosing_failed_constraint::replay_errors_p): Declare.
+
+2020-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84733
+	* name-lookup.c (do_pushdecl): Look through cleanp levels.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94078
+	PR c++/93824
+	PR c++/93810
+	* cp-tree.h (most_specialized_partial_spec): Declare.
+	* parser.c (cp_parser_elaborated_type_specifier): Distinguish alias
+	from declarations.
+	(specialization_of): New function.
+	(cp_parser_check_class_key): Move code...
+	(class_decl_loc_t::add): ...to here.  Add parameters.  Avoid issuing
+	-Wredundant-tags on first-time declarations in other declarators.
+	Correct handling of template specializations.
+	(class_decl_loc_t::diag_mismatched_tags): Also expect to be called
+	when -Wredundant-tags is enabled.  Use primary template or partial
+	specialization as the guide for uses of implicit instantiations.
+	* pt.c (most_specialized_partial_spec): Declare extern.
+
+2020-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94257
+	* name-lookup.c (push_namespace): Triage ambiguous lookups that
+	contain namespaces.
+
 2020-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94326

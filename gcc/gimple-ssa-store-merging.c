@@ -315,7 +315,8 @@ verify_symbolic_number_p (struct symbolic_number *n, gimple *stmt)
 
   lhs_type = gimple_expr_type (stmt);
 
-  if (TREE_CODE (lhs_type) != INTEGER_TYPE)
+  if (TREE_CODE (lhs_type) != INTEGER_TYPE
+      && TREE_CODE (lhs_type) != ENUMERAL_TYPE)
     return false;
 
   if (TYPE_PRECISION (lhs_type) != TYPE_PRECISION (n->type))

@@ -1490,7 +1490,7 @@ Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated.
 
 ffinite-loops
-Common Report Var(flag_finite_loops) Optimization
+Common Report Var(flag_finite_loops) Optimization Init(0)
 Assume that loops with an exit will terminate and not loop indefinitely.
 
 ffixed-

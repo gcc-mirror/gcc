@@ -1,4 +1,5 @@
-/* { dg-additional-options "-fcompare-debug -fmodulo-sched" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -fcompare-debug -fmodulo-sched" } */
 
 struct S { int f; signed int g : 2; } a[1], c = {5, 1}, d;
 short b;

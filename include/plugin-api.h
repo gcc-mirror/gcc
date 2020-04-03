@@ -51,7 +51,7 @@
 /* Older GCC releases (<4.6.0) can make detection from glibc macros.  */
 #if defined(__GLIBC__) || defined(__GNU_LIBRARY__) || defined(__ANDROID__)
 #include <endian.h>
-#ifdef _BYTE_ORDER
+#ifdef __BYTE_ORDER
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #define PLUGIN_LITTLE_ENDIAN 1
 #elif __BYTE_ORDER == __BIG_ENDIAN

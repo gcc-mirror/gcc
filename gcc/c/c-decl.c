@@ -6416,6 +6416,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		      error_at (loc,
 				"size of unnamed array has non-integer type");
 		    size = integer_one_node;
+		    size_int_const = true;
 		  }
 		/* This can happen with enum forward declaration.  */
 		else if (!COMPLETE_TYPE_P (TREE_TYPE (size)))
@@ -6427,6 +6428,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		      error_at (loc, "size of unnamed array has incomplete "
 				"type");
 		    size = integer_one_node;
+		    size_int_const = true;
 		  }
 
 		size = c_fully_fold (size, false, &size_maybe_const);
@@ -6451,6 +6453,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			else
 			  error_at (loc, "size of unnamed array is negative");
 			size = integer_one_node;
+			size_int_const = true;
 		      }
 		    /* Handle a size folded to an integer constant but
 		       not an integer constant expression.  */

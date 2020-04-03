@@ -399,6 +399,9 @@ get_full_len (const wide_int &op)
 static bool
 should_emit_struct_debug (tree type, enum debug_info_usage usage)
 {
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return false;
+
   enum debug_struct_file criterion;
   tree type_decl;
   bool generic = lang_hooks.types.generic_p (type);
@@ -32037,24 +32040,6 @@ dwarf2out_early_finish (const char *filename)
      sure to adjust the phase after annotating the LTRANS CU DIE.  */
   if (in_lto_p)
     {
-      /* Force DW_TAG_imported_unit to be created now, otherwise
-	 we might end up without it or ordered after DW_TAG_inlined_subroutine
-	 referencing DIEs from it.  */
-      if (! flag_wpa && flag_incremental_link != INCREMENTAL_LINK_LTO)
-	{
-	  unsigned i;
-	  tree tu;
-	  if (external_die_map)
-	    FOR_EACH_VEC_SAFE_ELT (all_translation_units, i, tu)
-	      if (sym_off_pair *desc = external_die_map->get (tu))
-		{
-		  dw_die_ref import = new_die (DW_TAG_imported_unit,
-					       comp_unit_die (), NULL_TREE);
-		  add_AT_external_die_ref (import, DW_AT_import,
-					   desc->sym, desc->off);
-		}
-	}
-
       early_dwarf_finished = true;
       if (dump_file)
 	{

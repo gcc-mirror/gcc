@@ -2493,6 +2493,8 @@ is_overloaded_fn (tree x)
 tree
 dependent_name (tree x)
 {
+  /* FIXME a dependent name must be unqualified, but this function doesn't
+     distinguish between qualified and unqualified identifiers.  */
   if (identifier_p (x))
     return x;
   if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
@@ -3313,7 +3315,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
    a PLACEHOLDER_EXPR has been encountered.  */
 
 tree
-replace_placeholders (tree exp, tree obj, bool *seen_p)
+replace_placeholders (tree exp, tree obj, bool *seen_p /*= NULL*/)
 {
   /* This is only relevant for C++14.  */
   if (cxx_dialect < cxx14)
@@ -3657,6 +3659,15 @@ called_fns_equal (tree t1, tree t2)
       if (name1 != name2)
 	return false;
 
+      /* FIXME dependent_name currently returns an unqualified name regardless
+	 of whether the function was named with a qualified- or unqualified-id.
+	 Until that's fixed, check that we aren't looking at overload sets from
+	 different scopes.  */
+      if (is_overloaded_fn (t1) && is_overloaded_fn (t2)
+	  && (DECL_CONTEXT (get_first_fn (t1))
+	      != DECL_CONTEXT (get_first_fn (t2))))
+	return false;
+
       if (TREE_CODE (t1) == TEMPLATE_ID_EXPR)
 	targs1 = TREE_OPERAND (t1, 1);
       if (TREE_CODE (t2) == TEMPLATE_ID_EXPR)
@@ -3753,7 +3764,8 @@ cp_tree_equal (tree t1, tree t2)
       {
 	tree arg1, arg2;
 	call_expr_arg_iterator iter1, iter2;
-	if (!called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2)
+	    || !called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
 	  return false;
 	for (arg1 = first_call_expr_arg (t1, &iter1),
 	       arg2 = first_call_expr_arg (t2, &iter2);

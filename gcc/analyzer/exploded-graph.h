@@ -179,6 +179,7 @@ class exploded_node : public dnode<eg_traits>
 
   hashval_t hash () const { return m_ps.hash (); }
 
+  const char * get_dot_fillcolor () const;
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
   void dump_dot_id (pretty_printer *pp) const;
@@ -268,8 +269,6 @@ class exploded_node : public dnode<eg_traits>
 
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_node);
-
-  const char * get_dot_fillcolor () const;
 
   /* The <program_point, program_state> pair.  This is const, as it
      is immutable once the exploded_node has been created.  */
@@ -857,9 +856,28 @@ public:
   void dump (FILE *fp) const;
   void dump () const;
 
-  bool feasible_p (logger *logger) const;
+  bool feasible_p (logger *logger, feasibility_problem **out) const;
 
   auto_vec<const exploded_edge *> m_edges;
+};
+
+/* A reason why a particular exploded_path is infeasible.  */
+
+class feasibility_problem
+{
+public:
+  feasibility_problem (unsigned eedge_idx,
+		       const region_model &model,
+		       const exploded_edge &eedge,
+		       const gimple *last_stmt)
+  : m_eedge_idx (eedge_idx), m_model (model), m_eedge (eedge),
+    m_last_stmt (last_stmt)
+  {}
+
+  unsigned m_eedge_idx;
+  region_model m_model;
+  const exploded_edge &m_eedge;
+  const gimple *m_last_stmt;
 };
 
 /* Finding the shortest exploded_path within an exploded_graph.  */

@@ -1,3 +1,657 @@
+2020-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3,
+	avx2_ph<plusminus_mnemonic>dv8si3): Fix up RTL pattern to do
+	second half of first lane from first lane of second operand and
+	first half of second lane from second lane of first operand.
+
+2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Condition the header file on __ARM_FEATURE_MVE.
+
+2020-04-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94396
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_get_extension_string_for_isa_flags): Handle default flags.
+
+2020-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94465
+	* tree.c (array_ref_low_bound): Deal with released SSA names
+	in index position.
+
+2020-04-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (print_operand): Handle unordered comparison
+	operators.
+	* config/gcn/predicates.md (gcn_fp_compare_operator): Add unordered
+	comparison operators.
+
+2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94443
+	* tree-vect-loop.c (vectorizable_live_operation): Use
+	gsi_insert_seq_before to replace gsi_insert_before.
+
+2020-04-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94445
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call):
+	  Compare type attributes for gimple_call_fntypes.
+
+2020-04-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* alias.c (get_alias_set): Fix comment typos.
+
+2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/85982
+	* fortran/decl.c (match_attr_spec): Lump COMP_STRUCTURE/COMP_MAP into
+	attribute checking used by TYPE.
+
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92676
+	* ipa-sra.c (struct caller_issues): New fields candidate and
+	call_from_outside_comdat.
+	(check_for_caller_issues): Check for calls from outsied of
+	candidate's same_comdat_group.
+	(check_all_callers_for_issues): Set up issues.candidate, check result
+	of the new check.
+	(mark_callers_calls_comdat_local): New function.
+	(process_isra_node_results): Set calls_comdat_local of callers if
+	appropriate.
+
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR c/94392
+	* common.opt (ffinite-loops): Initialize to zero.
+	* opts.c (default_options_table): Remove OPT_ffinite_loops
+	entry.
+	* cfgloop.h (loop::finite_p): New member.
+	* cfgloopmanip.c (copy_loop_info): Copy finite_p.
+	* ipa-icf-gimple.c (func_checker::compare_loops): Compare
+	finite_p.
+	* lto-streamer-in.c (input_cfg): Stream finite_p.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* tree-cfg.c (replace_loop_annotate): Initialize finite_p
+	from flag_finite_loops at CFG build time.
+	* tree-ssa-loop-niter.c (finite_loop_p): Check the loops
+	finite_p flag instead of flag_finite_loops.
+	* doc/invoke.texi (ffinite-loops): Adjust documentation of
+	default setting.
+
+2020-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94450
+	* dwarf2out.c (dwarf2out_early_finish): Remove code emitting
+	DW_TAG_imported_unit.
+
+2020-04-02  Maciej W. Rozycki  <macro@wdc.com>
+
+	* doc/install.texi (Specific) <riscv32-*-elf, riscv32-*-linux>
+	<riscv64-*-elf, riscv64-*-linux>: Update binutils requirement to
+	2.30.
+
+2020-04-02  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94401
+	* tree-vect-loop.c (vectorizable_load): Handle VMAT_CONTIGUOUS_REVERSE
+	access type when loading halves of vector to avoid peeling for gaps.
+
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add a space in
+	between a string literal and MIPS_SYSVERSION_SPEC macro.
+
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Optimize Options): Document sra-max-propagations.
+
+2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92264
+	* params.opt (-param=max-find-base-term-values=): Decrease default
+	from 2000 to 200.
+
+	PR rtl-optimization/92264
+	* rtl.h (struct rtx_def): Mention that call bit is used as
+	SP_DERIVED_VALUE_P in cselib.c.
+	* cselib.c (SP_DERIVED_VALUE_P): Define.
+	(PRESERVED_VALUE_P, SP_BASED_VALUE_P): Move definitions earlier.
+	(cselib_hasher::equal): Handle equality between SP_DERIVED_VALUE_P
+	val_rtx and sp based expression where offsets cancel each other.
+	(preserve_constants_and_equivs): Formatting fix.
+	(cselib_reset_table): Add reverse op loc to SP_DERIVED_VALUE_P
+	locs list for cfa_base_preserved_val if needed.  Formatting fix.
+	(autoinc_split): If the to be returned value is a REG, MEM or
+	VALUE which has SP_DERIVED_VALUE_P + CONST_INT as one of its
+	locs, return the SP_DERIVED_VALUE_P VALUE and adjust *off.
+	(rtx_equal_for_cselib_1): Call autoinc_split even if both
+	expressions are PLUS in Pmode with CONST_INT second operands.
+	Handle SP_DERIVED_VALUE_P cases.
+	(cselib_hash_plus_const_int): New function.
+	(cselib_hash_rtx): Use it for PLUS in Pmode with CONST_INT
+	second operand, as well as for PRE_DEC etc. that ought to be
+	hashed the same way.
+	(cselib_subst_to_values): Substitute PLUS with Pmode and
+	CONST_INT operand if the first operand is a VALUE which has
+	SP_DERIVED_VALUE_P + CONST_INT as one of its locs for the
+	SP_DERIVED_VALUE_P + adjusted offset.
+	(cselib_lookup_1): When creating a new VALUE for stack_pointer_rtx,
+	set SP_DERIVED_VALUE_P on it.  Set PRESERVED_VALUE_P when adding
+	SP_DERIVED_VALUE_P PRESERVED_VALUE_P subseted VALUE location.
+	* var-tracking.c (vt_initialize): Call cselib_add_permanent_equiv
+	on the sp value before calling cselib_add_permanent_equiv on the
+	cfa_base value.
+	* dse.c (check_for_inc_dec_1, check_for_inc_dec): Punt on RTX_AUTOINC
+	in the insn without REG_INC note.
+	(replace_read): Punt on RTX_AUTOINC in the *loc being replaced.
+	Punt on invalid insns added by copy_to_mode_reg.  Formatting fixes.
+
+	PR target/94435
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): For
+	y_mode E_[QH]Imode and y being a CONST_INT, change y_mode to SImode.
+
+2020-04-02  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/94317
+	* config/arm/arm-builtins.c (LDRGBWBXU_QUALIFIERS): Define.
+	(LDRGBWBXU_Z_QUALIFIERS): Likewise.
+	* config/arm/arm_mve.h (__arm_vldrdq_gather_base_wb_s64): Modify
+	intrinsic defintion by adding a new builtin call to writeback into base
+	address.
+	(__arm_vldrdq_gather_base_wb_u64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_s64): Likewise.
+	(__arm_vldrdq_gather_base_wb_z_u64): Likewise.
+	(__arm_vldrwq_gather_base_wb_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_s32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_u32): Likewise.
+	(__arm_vldrwq_gather_base_wb_f32): Likewise.
+	(__arm_vldrwq_gather_base_wb_z_f32): Likewise.
+	* config/arm/arm_mve_builtins.def (vldrwq_gather_base_wb_z_u): Modify
+	builtin's qualifier.
+	(vldrdq_gather_base_wb_z_u): Likewise.
+	(vldrwq_gather_base_wb_u): Likewise.
+	(vldrdq_gather_base_wb_u): Likewise.
+	(vldrwq_gather_base_wb_z_s): Likewise.
+	(vldrwq_gather_base_wb_z_f): Likewise.
+	(vldrdq_gather_base_wb_z_s): Likewise.
+	(vldrwq_gather_base_wb_s): Likewise.
+	(vldrwq_gather_base_wb_f): Likewise.
+	(vldrdq_gather_base_wb_s): Likewise.
+	(vldrwq_gather_base_nowb_z_u): Define builtin.
+	(vldrdq_gather_base_nowb_z_u): Likewise.
+	(vldrwq_gather_base_nowb_u): Likewise.
+	(vldrdq_gather_base_nowb_u): Likewise.
+	(vldrwq_gather_base_nowb_z_s): Likewise.
+	(vldrwq_gather_base_nowb_z_f): Likewise.
+	(vldrdq_gather_base_nowb_z_s): Likewise.
+	(vldrwq_gather_base_nowb_s): Likewise.
+	(vldrwq_gather_base_nowb_f): Likewise.
+	(vldrdq_gather_base_nowb_s): Likewise.
+	* config/arm/mve.md (mve_vldrwq_gather_base_nowb_<supf>v4si): Define RTL
+	pattern.
+	(mve_vldrwq_gather_base_wb_<supf>v4si): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_z_<supf>v4si): Define RTL pattern.
+	(mve_vldrwq_gather_base_wb_z_<supf>v4si): Modify RTL pattern.
+	(mve_vldrwq_gather_base_wb_fv4sf): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_fv4sf): Define RTL pattern.
+	(mve_vldrwq_gather_base_wb_z_fv4sf): Modify RTL pattern.
+	(mve_vldrwq_gather_base_nowb_z_fv4sf): Define RTL pattern.
+	(mve_vldrdq_gather_base_nowb_<supf>v4di): Define RTL pattern.
+	(mve_vldrdq_gather_base_wb_<supf>v4di):  Modify RTL pattern.
+	(mve_vldrdq_gather_base_nowb_z_<supf>v4di): Define RTL pattern.
+	(mve_vldrdq_gather_base_wb_z_<supf>v4di):  Modify RTL pattern.
+
+2020-04-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md ("<ti*>add<mode>3", "mul<mode>3")
+	("and<mode>3", "notand<mode>3", "ior<mode>3", "ior_not<mode>3")
+	("xor<mode>3", "notxor<mode>3", "smin<mode>3", "smax<mode>3")
+	("umin<mode>3", "umax<mode>3", "vec_widen_smult_even_<mode>")
+	("vec_widen_umult_even_<mode>", "vec_widen_smult_odd_<mode>")
+	("vec_widen_umult_odd_<mode>", "add<mode>3", "sub<mode>3")
+	("mul<mode>3", "fma<mode>4", "fms<mode>4", "neg_fma<mode>4")
+	("neg_fms<mode>4", "*smax<mode>3_vxe", "*smaxv2df3_vx")
+	("*smin<mode>3_vxe", "*sminv2df3_vx"): Remove % constraint
+	modifier.
+	("vec_widen_umult_lo_<mode>", "vec_widen_umult_hi_<mode>")
+	("vec_widen_smult_lo_<mode>", "vec_widen_smult_hi_<mode>"):
+	Remove constraints from expander.
+	* config/s390/vx-builtins.md ("vacc<bhfgq>_<mode>", "vacq")
+	("vacccq", "vec_avg<mode>", "vec_avgu<mode>", "vec_vmal<mode>")
+	("vec_vmah<mode>", "vec_vmalh<mode>", "vec_vmae<mode>")
+	("vec_vmale<mode>", "vec_vmao<mode>", "vec_vmalo<mode>")
+	("vec_smulh<mode>", "vec_umulh<mode>", "vec_nor<mode>3")
+	("vfmin<mode>", "vfmax<mode>"): Remove % constraint modifier.
+
+2020-04-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/94123
+	* lower-subreg.c (pass_lower_subreg3::gate): Remove test for
+	flag_split_wide_types_early.
+
+2020-04-01  Joerg Sonnenberger  <joerg@bec.de>
+
+	* doc/extend.texi (Common Function Attributes): Fix typo.
+
+2020-04-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/94420
+	* config/rs6000/rs6000.md (*tocref<mode> for P): Add insn condition
+	on operands[1].
+
+2020-04-01  Zackery Spytz  <zspytz@gmail.com>
+
+	* doc/extend.texi: Fix a typo in the documentation of the
+	copy function attribute.
+
+2020-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94423
+	* tree-object-size.c (pass_object_sizes::execute): Don't call
+	replace_uses_by for SSA_NAME_OCCURS_IN_ABNORMAL_PHI lhs, instead
+	call replace_call_with_value.
+
+2020-04-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94043
+	* tree-vect-loop.c (vectorizable_live_operation): Generate loop-closed
+	phi for vec_lhs and use it for lane extraction.
+
+2020-03-31  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94398
+	* tree-vect-stmts.c (vectorizable_store): Instead of calling
+	vect_supportable_dr_alignment, set alignment_support_scheme to
+	dr_unaligned_supported for gather-scatter accesses.
+	(vectorizable_load): Likewise.
+
+2020-03-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (V_QI, V_HI, V_HF, V_SI, V_SF, V_DI, V_DF):
+	New mode iterators.
+	(vnsi, VnSI, vndi, VnDI): New mode attributes.
+	(mov<mode>): Use <VnDI> in place of V64DI.
+	(mov<mode>_exec): Likewise.
+	(mov<mode>_sgprbase): Likewise.
+	(reload_out<mode>): Likewise.
+	(*vec_set<mode>_1): Use GET_MODE_NUNITS instead of constant 64.
+	(gather_load<mode>v64si): Rename to ...
+	(gather_load<mode><vnsi>): ... this, and use <VnSI> in place of V64SI,
+	and <VnDI> in place of V64DI.
+	(gather<mode>_insn_1offset<exec>): Use <VnDI> in place of V64DI.
+	(gather<mode>_insn_1offset_ds<exec>): Use <VnSI> in place of V64SI.
+	(gather<mode>_insn_2offsets<exec>): Use <VnSI> and <VnDI>.
+	(scatter_store<mode>v64si): Rename to ...
+	(scatter_store<mode><vnsi>): ... this, and use <VnSI> and <VnDI>.
+	(scatter<mode>_expr<exec_scatter>): Use <VnSI> and <VnDI>.
+	(scatter<mode>_insn_1offset<exec_scatter>): Likewise.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Likewise.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	(ds_bpermute<mode>): Use <VnSI>.
+	(addv64si3_vcc<exec_vcc>): Rename to ...
+	(add<mode>3_vcc<exec_vcc>): ... this, and use V_SI.
+	(addv64si3_vcc_dup<exec_vcc>): Rename to ...
+	(add<mode>3_vcc_dup<exec_vcc>): ... this, and use V_SI.
+	(addcv64si3<exec_vcc>): Rename to ...
+	(addc<mode>3<exec_vcc>): ... this, and use V_SI.
+	(subv64si3_vcc<exec_vcc>): Rename to ...
+	(sub<mode>3_vcc<exec_vcc>): ... this, and use V_SI.
+	(subcv64si3<exec_vcc>): Rename to ...
+	(subc<mode>3<exec_vcc>): ... this, and use V_SI.
+	(addv64di3): Rename to ...
+	(add<mode>3): ... this, and use V_DI.
+	(addv64di3_exec): Rename to ...
+	(add<mode>3_exec): ... this, and use V_DI.
+	(subv64di3): Rename to ...
+	(sub<mode>3): ... this, and use V_DI.
+	(subv64di3_exec): Rename to ...
+	(sub<mode>3_exec): ... this, and use V_DI.
+	(addv64di3_zext): Rename to ...
+	(add<mode>3_zext): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_exec): Rename to ...
+	(add<mode>3_zext_exec): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup): Rename to ...
+	(add<mode>3_zext_dup): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup_exec): Rename to ...
+	(add<mode>3_zext_dup_exec): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup2): Rename to ...
+	(add<mode>3_zext_dup2): ... this, and use V_DI and <VnSI>.
+	(addv64di3_zext_dup2_exec): Rename to ...
+	(add<mode>3_zext_dup2_exec): ... this, and use V_DI and <VnSI>.
+	(addv64di3_sext_dup2): Rename to ...
+	(add<mode>3_sext_dup2): ... this, and use V_DI and <VnSI>.
+	(addv64di3_sext_dup2_exec): Rename to ...
+	(add<mode>3_sext_dup2_exec): ... this, and use V_DI and <VnSI>.
+	(<su>mulv64si3_highpart<exec>): Rename to ...
+	(<su>mul<mode>3_highpart<exec>): ... this and use V_SI and <VnDI>.
+	(mulv64di3): Rename to ...
+	(mul<mode>3): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_exec): Rename to ...
+	(mul<mode>3_exec): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext): Rename to ...
+	(mul<mode>3_zext): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext_exec): Rename to ...
+	(mul<mode>3_zext_exec): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext_dup2): Rename to ...
+	(mul<mode>3_zext_dup2): ... this, and use V_DI and <VnSI>.
+	(mulv64di3_zext_dup2_exec): Rename to ...
+	(mul<mode>3_zext_dup2_exec): ... this, and use V_DI and <VnSI>.
+	(<expander>v64di3): Rename to ...
+	(<expander><mode>3): ... this, and use V_DI and <VnSI>.
+	(<expander>v64di3_exec): Rename to ...
+	(<expander><mode>3_exec): ... this, and use V_DI and <VnSI>.
+	(<expander>v64si3<exec>): Rename to ...
+	(<expander><mode>3<exec>): ... this, and use V_SI and <VnSI>.
+	(v<expander>v64si3<exec>): Rename to ...
+	(v<expander><mode>3<exec>): ... this, and use V_SI and <VnSI>.
+	(<expander>v64si3<exec>): Rename to ...
+	(<expander><vnsi>3<exec>): ... this, and use V_SI.
+	(subv64df3<exec>): Rename to ...
+	(sub<mode>3<exec>): ... this, and use V_DF.
+	(truncv64di<mode>2): Rename to ...
+	(trunc<vndi><mode>2): ... this, and use <VnDI>.
+	(truncv64di<mode>2_exec): Rename to ...
+	(trunc<vndi><mode>2_exec): ... this, and use <VnDI>.
+	(<convop><mode>v64di2): Rename to ...
+	(<convop><mode><vndi>2): ... this, and use <VnDI>.
+	(<convop><mode>v64di2_exec): Rename to ...
+	(<convop><mode><vndi>2_exec): ... this, and use <VnDI>.
+	(vec_cmp<u>v64qidi): Rename to ...
+	(vec_cmp<u><mode>di): ... this, and use <VnSI>.
+	(vec_cmp<u>v64qidi_exec): Rename to ...
+	(vec_cmp<u><mode>di_exec): ... this, and use <VnSI>.
+	(vcond_mask_<mode>di): Use <VnDI>.
+	(maskload<mode>di): Likewise.
+	(maskstore<mode>di): Likewise.
+	(mask_gather_load<mode>v64si): Rename to ...
+	(mask_gather_load<mode><vnsi>): ... this, and use <VnSI> and <VnDI>.
+	(mask_scatter_store<mode>v64si): Rename to ...
+	(mask_scatter_store<mode><vnsi>): ... this, and use <VnSI> and <VnDI>.
+	(*<reduc_op>_dpp_shr_v64di): Rename to ...
+	(*<reduc_op>_dpp_shr_<mode>): ... this, and use V_DI and <VnSI>.
+	(*plus_carry_in_dpp_shr_v64si): Rename to ...
+	(*plus_carry_in_dpp_shr_<mode>): ... this, and use V_SI.
+	(*plus_carry_dpp_shr_v64di): Rename to ...
+	(*plus_carry_dpp_shr_<mode>): ... this, and use V_DI and <VnSI>.
+	(vec_seriesv64si): Rename to ...
+	(vec_series<mode>): ... this, and use V_SI.
+	(vec_seriesv64di): Rename to ...
+	(vec_series<mode>): ... this, and use V_DI.
+
+2020-03-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_print_operand): Use
+	HOST_WIDE_INT_PRINT_DEC macro.
+
+2020-03-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (ASM_FORMAT_PRIVATE_NAME): Fix it.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (vbicq): Define MVE intrinsic polymorphic
+	variant.
+	(__arm_vbicq): Likewise.
+
+2020-03-31  Vineet Gupta <vgupta@synopsys.com>
+
+	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER support BE/arc700.
+
+2020-03-31  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (vaddlvq): Move the polymorphic variant to the
+	common section of both MVE Integer and MVE Floating Point.
+	(vaddvq): Likewise.
+	(vaddlvq_p): Likewise.
+	(vaddvaq): Likewise.
+	(vaddvq_p): Likewise.
+	(vcmpcsq): Likewise.
+	(vmlsdavxq): Likewise.
+	(vmlsdavq): Likewise.
+	(vmladavxq): Likewise.
+	(vmladavq): Likewise.
+	(vminvq): Likewise.
+	(vminavq): Likewise.
+	(vmaxvq): Likewise.
+	(vmaxavq): Likewise.
+	(vmlaldavq): Likewise.
+	(vcmphiq): Likewise.
+	(vaddlvaq): Likewise.
+	(vrmlaldavhq): Likewise.
+	(vrmlaldavhxq): Likewise.
+	(vrmlsldavhq): Likewise.
+	(vrmlsldavhxq): Likewise.
+	(vmlsldavxq): Likewise.
+	(vmlsldavq): Likewise.
+	(vabavq): Likewise.
+	(vrmlaldavhaq): Likewise.
+	(vcmpgeq_m_n): Likewise.
+	(vmlsdavxq_p): Likewise.
+	(vmlsdavq_p): Likewise.
+	(vmlsdavaxq): Likewise.
+	(vmlsdavaq): Likewise.
+	(vaddvaq_p): Likewise.
+	(vcmpcsq_m_n): Likewise.
+	(vcmpcsq_m): Likewise.
+	(vmladavxq_p): Likewise.
+	(vmladavq_p): Likewise.
+	(vmladavaxq): Likewise.
+	(vmladavaq): Likewise.
+	(vminvq_p): Likewise.
+	(vminavq_p): Likewise.
+	(vmaxvq_p): Likewise.
+	(vmaxavq_p): Likewise.
+	(vcmphiq_m): Likewise.
+	(vaddlvaq_p): Likewise.
+	(vmlaldavaq): Likewise.
+	(vmlaldavaxq): Likewise.
+	(vmlaldavq_p): Likewise.
+	(vmlaldavxq_p): Likewise.
+	(vmlsldavaq): Likewise.
+	(vmlsldavaxq): Likewise.
+	(vmlsldavq_p): Likewise.
+	(vmlsldavxq_p): Likewise.
+	(vrmlaldavhaxq): Likewise.
+	(vrmlaldavhq_p): Likewise.
+	(vrmlaldavhxq_p): Likewise.
+	(vrmlsldavhaq): Likewise.
+	(vrmlsldavhaxq): Likewise.
+	(vrmlsldavhq_p): Likewise.
+	(vrmlsldavhxq_p): Likewise.
+	(vabavq_p): Likewise.
+	(vmladavaq_p): Likewise.
+	(vstrbq_scatter_offset): Likewise.
+	(vstrbq_p): Likewise.
+	(vstrbq_scatter_offset_p): Likewise.
+	(vstrdq_scatter_base_p): Likewise.
+	(vstrdq_scatter_base): Likewise.
+	(vstrdq_scatter_offset_p): Likewise.
+	(vstrdq_scatter_offset): Likewise.
+	(vstrdq_scatter_shifted_offset_p): Likewise.
+	(vstrdq_scatter_shifted_offset): Likewise.
+	(vmaxq_x): Likewise.
+	(vminq_x): Likewise.
+	(vmovlbq_x): Likewise.
+	(vmovltq_x): Likewise.
+	(vmulhq_x): Likewise.
+	(vmullbq_int_x): Likewise.
+	(vmullbq_poly_x): Likewise.
+	(vmulltq_int_x): Likewise.
+	(vmulltq_poly_x): Likewise.
+	(vstrbq): Likewise.
+
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94368
+	* config/aarch64/constraints.md (Uph): New constraint.
+	* config/aarch64/atomics.md (cas_short_expected_imm): New mode attr.
+	(@aarch64_compare_and_swap<mode>): Use it instead of n in operand 2's
+	constraint.
+
+2020-03-31  Marc Glisse  <marc.glisse@inria.fr>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94412
+	* fold-const.c (fold_binary_loc) <case TRUNC_DIV_EXPR>: Use
+	ANY_INTEGRAL_TYPE_P instead of INTEGRAL_TYPE_P.
+
+2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94403
+	* gimple-ssa-store-merging.c (verify_symbolic_number_p): Allow also
+	ENUMERAL_TYPE lhs_type.
+
+	PR rtl-optimization/94344
+	* tree-ssa-forwprop.c (simplify_rotate): Handle also same precision
+	conversions, either on both operands of |^+ or just one.  Handle
+	also extra same precision conversion on RSHIFT_EXPR first operand
+	provided RSHIFT_EXPR is performed in unsigned type.
+
+2020-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* lra.c (finish_insn_code_data_once): Set the array elements
+	to NULL after freeing them.
+
+2020-03-30  Andreas Schwab  <schwab@suse.de>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE) [__riscv && __LP64__]:
+	Define.
+
+2020-03-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c altivec_init_builtins(): Remove code
+	to skip defining builtins based on builtin_mask.
+
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94343
+	* config/i386/sse.md (<mask_codefor>one_cmpl<mode>2<mask_name>): If
+	!TARGET_AVX512VL, use 512-bit vpternlog and make sure the input
+	operand is a register.  Don't enable masked variants for V*[QH]Imode.
+
+	PR target/93069
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Use
+	<store_mask_constraint> instead of m in output operand constraint.
+	(vec_extract_hi_<mode><mask_name>): Use <mask_operand2> instead of
+	%{%3%}.
+
+2020-03-30  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_aix): Emit cookie to pattern.
+	(rs6000_indirect_call_template_1): Adjust to suit.
+	* config/rs6000/rs6000.md (call_local): Merge call_local32,
+	call_local64, and call_local_aix.
+	(call_value_local): Simlarly.
+	(call_nonlocal_aix, call_value_nonlocal_aix): Adjust rtl to suit,
+	and disable pattern when CALL_LONG.
+	(call_indirect_aix, call_value_indirect_aix): Adjust rtl.
+	(call_indirect_elfv2, call_indirect_pcrel): Likewise.
+	(call_value_indirect_elfv2, call_value_indirect_pcrel): Likewise.
+
+2020-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/94381
+	* doc/invoke.texi: Update -falign-functions, -falign-loops and
+	-falign-jumps documentation.
+
+2020-03-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/94363
+	* cgraphunit.c (process_function_and_variable_attributes): Remove
+	double 'attribute' words.
+
+2020-03-29  John David Anglin  <dave.anglin@bell.net>
+
+	* gcc/config/pa/pa.c (pa_asm_output_aligned_bss): Delete duplicate
+	.align output.
+
+2020-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93573
+	* c-decl.c (grokdeclarator): After issuing errors, set size_int_const
+	to true after setting size to integer_one_node.
+
+	PR tree-optimization/94329
+	* tree-ssa-reassoc.c (reassociate_bb): When calling reassoc_remove_stmt
+	on the last stmt in a bb, make sure gsi_prev isn't done immediately
+	after gsi_last_bb.
+
+2020-03-27  Alan Modra  <amodra@gmail.com>
+
+	PR target/94145
+	* config/rs6000/rs6000.c (rs6000_longcall_ref): Use unspec_volatile
+	for PLT16_LO and PLT_PCREL.
+	* config/rs6000/rs6000.md (UNSPEC_PLT16_LO, UNSPEC_PLT_PCREL): Remove.
+	(UNSPECV_PLT16_LO, UNSPECV_PLT_PCREL): Define.
+	(pltseq_plt16_lo_, pltseq_plt_pcrel): Use unspec_volatile.
+
+2020-03-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94098
+	* calls.c (init_attr_rdwr_indices): Iterate over all access attributes.
+
+2020-03-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md:
+	(VEC_SUBDWORD_MODE): Rename to V_QIHI throughout.
+	(VEC_1REG_MODE): Delete.
+	(VEC_1REG_ALT): Delete.
+	(VEC_ALL1REG_MODE): Rename to V_1REG throughout.
+	(VEC_1REG_INT_MODE): Delete.
+	(VEC_ALL1REG_INT_MODE): Rename to V_INT_1REG throughout.
+	(VEC_ALL1REG_INT_ALT): Rename to V_INT_1REG_ALT throughout.
+	(VEC_2REG_MODE): Rename to V_2REG throughout.
+	(VEC_REG_MODE): Rename to V_noHI throughout.
+	(VEC_ALLREG_MODE): Rename to V_ALL throughout.
+	(VEC_ALLREG_ALT):  Rename to V_ALL_ALT throughout.
+	(VEC_ALLREG_INT_MODE): Rename to V_INT throughout.
+	(VEC_INT_MODE): Delete.
+	(VEC_FP_MODE): Rename to V_FP throughout and move to top.
+	(VEC_FP_1REG_MODE): Rename to V_FP_1REG throughout and move to top.
+	(FP_MODE): Delete and replace with FP throughout.
+	(FP_1REG_MODE): Delete and replace with FP_1REG throughout.
+	(VCMP_MODE): Rename to V_noQI throughout and move to top.
+	(VCMP_MODE_INT): Rename to V_INT_noQI throughout and move to top.
+	* config/gcn/gcn.md (FP): New mode iterator.
+	(FP_1REG): New mode iterator.
+
+2020-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-supergraph): Document that this
+	now emits two .dot files.
+	* graphviz.cc (graphviz_out::begin_tr): Only emit a TR, not a TD.
+	(graphviz_out::end_tr): Only close a TR, not a TD.
+	(graphviz_out::begin_td): New.
+	(graphviz_out::end_td): New.
+	(graphviz_out::begin_trtd): New, replacing the old implementation
+	of graphviz_out::begin_tr.
+	(graphviz_out::end_tdtr): New, replacing the old implementation
+	of graphviz_out::end_tr.
+	* graphviz.h (graphviz_out::begin_td): New decl.
+	(graphviz_out::end_td): New decl.
+	(graphviz_out::begin_trtd): New decl.
+	(graphviz_out::end_tdtr): New decl.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/94273
+	* dwarf2out.c (should_emit_struct_debug): Return false for
+	DINFO_LEVEL_TERSE.
+
+2020-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94352
+	* tree-ssa-propagate.c (ssa_prop_init): Move seeding of the
+	worklist ...
+	(ssa_propagation_engine::ssa_propagate): ... here after
+	initializing curr_order.
+
 2020-03-27  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/90332
