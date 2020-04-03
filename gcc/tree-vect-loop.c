@@ -8050,7 +8050,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
   if (stmts)
     {
       gimple_stmt_iterator exit_gsi = gsi_after_labels (exit_bb);
-      gsi_insert_before (&exit_gsi, stmts, GSI_CONTINUE_LINKING);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       /* Remove existing phi from lhs and create one copy from new_tree.  */
       tree lhs_phi = NULL_TREE;
@@ -8063,7 +8063,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 	      remove_phi_node (&gsi, false);
 	      lhs_phi = gimple_phi_result (phi);
 	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
-	      gsi_insert_after (&exit_gsi, copy, GSI_CONTINUE_LINKING);
+	      gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
 	      break;
 	    }
 	}

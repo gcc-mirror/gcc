@@ -1,3 +1,8 @@
+2020-04-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/94443
+	* gcc.dg/vect/pr94443.c: New test.
+
 2020-04-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_sigsetjmp): Test
