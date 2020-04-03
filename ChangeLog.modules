@@ -1,5 +1,8 @@
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/xtreme-header-[123456]{,_[ab]}.[hHC]: New.
+
 	gcc/
 	* gcc.c (driver::maybe_print_and_exit): Shout about
 	experimentalness.
