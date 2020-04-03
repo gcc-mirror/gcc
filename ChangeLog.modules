@@ -1,5 +1,14 @@
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	NSDMIs
+	WARNING causes ICES in the STL header tests.  There's a trunk
+	NSDMI parsing bug (pr94476)
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Write FIELD_DECL initial
+	value.
+	gcc/testsuite/
+	* g++.dg/modules/nsdmi-1_[ab].C: New.
+
 	gcc/testsuite/
 	* g++.dg/modules/xtreme-header-[123456]{,_[ab]}.[hHC]: New.
 

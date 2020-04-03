@@ -6111,6 +6111,7 @@ trees_out::core_vals (tree t)
       WT (t->field_decl.qualifier); /* bitfield unit.  */
       WT (t->field_decl.bit_offset);
       WT (t->field_decl.fcontext);
+      WT (t->decl_common.initial);
       break;
 
     case LABEL_DECL:
@@ -6548,6 +6549,7 @@ trees_in::core_vals (tree t)
       RT (t->field_decl.qualifier);
       RT (t->field_decl.bit_offset);
       RT (t->field_decl.fcontext);
+      RT (t->decl_common.initial);
       break;
 
     case LABEL_DECL:
@@ -11406,9 +11408,9 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  vec_alloc (member_vec, len);
 	  for (unsigned ix = 0; ix != len; ix++)
 	    {
-if (get_overrun ())
-break;
 	      tree m = tree_node ();
+	      if (get_overrun ())
+		break;
 	      if (TYPE_P (m))
 		m = TYPE_NAME (m);
 	      member_vec->quick_push (m);
