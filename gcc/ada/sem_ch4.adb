@@ -8460,7 +8460,9 @@ package body Sem_Ch4 is
       --  Transform Obj.Operation (X, Y, ...) into Operation (Obj, X, Y ...).
       --  Call_Node is the resulting subprogram call, Node_To_Replace is
       --  either N or the parent of N, and Subprog is a reference to the
-      --  subprogram we are trying to match.
+      --  subprogram we are trying to match. Note that the transformation
+      --  may be partially destructive for the parent of N, so it needs to
+      --  be undone in the case where Try_Object_Operation returns false.
 
       function Try_Class_Wide_Operation
         (Call_Node       : Node_Id;
@@ -8731,7 +8733,7 @@ package body Sem_Ch4 is
             --  example:
             --            Some_Subprogram (..., Obj.Operation, ...)
 
-            and then Name (Parent_Node) = N
+            and then N = Name (Parent_Node)
          then
             Node_To_Replace := Parent_Node;
 
@@ -9769,8 +9771,20 @@ package body Sem_Ch4 is
          return True;
 
       else
-         --  There was no candidate operation, so report it as an error
-         --  in the caller: Analyze_Selected_Component.
+         --  There was no candidate operation, but Analyze_Selected_Component
+         --  may continue the analysis so we need to undo the change possibly
+         --  made to the Parent of N earlier by Transform_Object_Operation.
+
+         declare
+            Parent_Node : constant Node_Id := Parent (N);
+
+         begin
+            if Node_To_Replace = Parent_Node then
+               Remove (First (Parameter_Associations (New_Call_Node)));
+               Set_Parent
+                 (Parameter_Associations (New_Call_Node), Parent_Node);
+            end if;
+         end;
 
          return False;
       end if;
