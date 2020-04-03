@@ -21,4 +21,7 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "bar.sync" 0 } } */
+/* Atm, %ntid.y is broadcast from one loop to the next, so there are 2 bar.syncs
+   for that (the other two are there for the same reason as in pr85381-2.c).
+   Todo: Recompute %ntid.y instead of broadcasting it. */
+/* { dg-final { scan-assembler-times "bar.sync" 4 } } */
