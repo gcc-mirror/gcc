@@ -18,7 +18,7 @@ ask () {
 }
 
 # Add a git command to find the git commit equivalent to legacy SVN revision NNN
-git config alias.svn-rev '!f() { rev=$1; shift; git log --all --grep="From-SVN: r\\?$rev\\b" "${@}"; } ; f'
+git config alias.svn-rev '!f() { rev=$1; shift; git log --all --grep="^From-SVN: r\\?$rev\\b" "${@}"; } ; f'
 
 # Add git commands to convert git commit to monotonically increasing revision number
 # and vice versa
