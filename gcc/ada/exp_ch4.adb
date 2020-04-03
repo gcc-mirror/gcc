@@ -12716,6 +12716,11 @@ package body Exp_Ch4 is
               Make_Op_Eq (Sloc (Alt),
                 Left_Opnd  => L,
                 Right_Opnd => R);
+
+            --  We reset the Entity since we do not want to bypass the operator
+            --  resolution.
+
+            Set_Entity (Cond, Empty);
          end if;
 
          return Cond;

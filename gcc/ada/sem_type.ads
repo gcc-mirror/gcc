@@ -196,7 +196,7 @@ package Sem_Type is
    --  a compatible one.
 
    function Hides_Op (F : Entity_Id; Op : Entity_Id) return Boolean;
-   --  A user-defined function hides a predefined operator if it is matches the
+   --  A user-defined function hides a predefined operator if it matches the
    --  signature of the operator, and is declared in an open scope, or in the
    --  scope of the result type.
 
