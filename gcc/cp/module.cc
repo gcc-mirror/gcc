@@ -2266,7 +2266,7 @@ private:
 
 public:
   /* The kinds of entity the depset could describe.  The ordering is
-     significant, see cluster_cmp.  Also see entity_kind_name.  */
+     significant, see entity_kind_name.  */
   enum entity_kind
   {
     EK_DECL,		/* A decl.  */
@@ -2514,14 +2514,15 @@ public:
 
   public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
+    hash *chain;	     /* Original table.  */
     depset *current;         /* Current depset being depended.  */
     unsigned section;	     /* When writing out, the section.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort).  */
     bool reached_unreached;  /* We reached an unreached entity.  */
 
   public:
-    hash (size_t size)
-      : parent (size), current (NULL), section (0),
+    hash (size_t size, hash *c = NULL)
+      : parent (size), chain (c), current (NULL), section (0),
 	sneakoscope (false), reached_unreached (false)
     {
       worklist.create (size);
@@ -2529,6 +2530,12 @@ public:
     ~hash ()
     {
       worklist.release ();
+    }
+
+  public:
+    bool is_key_order () const
+    {
+      return chain != NULL;
     }
 
   private:
@@ -2543,6 +2550,7 @@ public:
     void add_dependency (depset *);
 
   public:
+    void add_mergeable (depset *);
     depset *add_dependency (tree decl, entity_kind);
     void add_namespace_context (depset *, tree ns);
 
@@ -3090,6 +3098,7 @@ private:
   void unmark_trees ();
 
 public:
+  /* Hey, let's ignore the well known STL iterator idiom.  */
   void begin ();
   unsigned end (elf_out *sink, unsigned name, unsigned *crc_ptr);
   void end ();
@@ -3101,6 +3110,12 @@ public:
     tag_value = 0,	/* Write by value.  */
     tag_fixed		/* Lower bound on the fixed trees.  */
   };
+
+public:
+  bool is_key_order () const
+  {
+    return dep_hash->is_key_order ();
+  }
 
 public:
   int insert (tree, walk_kind = WK_normal);
@@ -7625,18 +7640,21 @@ trees_out::decl_value (tree decl, depset *dep)
     // FIXME: Stream in the type here as that's where the default args are?
     fn_parms_fini (inner);
 
-  tree_node_vals (decl);
+  if (!is_key_order ())
+    tree_node_vals (decl);
 
   if (inner_tag)
     {
-      tree_node_vals (inner);
+      if (!is_key_order ())
+	tree_node_vals (inner);
       tpl_parms_fini (decl, tpl_levels);
     }
   else if (!inner)
     {
       /* A template alias instantiation.  */
       inner = DECL_TEMPLATE_RESULT (decl);
-      tree_node (inner);
+      if (!is_key_order ())
+	tree_node (inner);
       if (streaming_p ())
 	dump (dumper::TREE)
 	  && dump ("Wrote(%d) alias template %C:%N",
@@ -7644,14 +7662,15 @@ trees_out::decl_value (tree decl, depset *dep)
       inner = NULL_TREE;
     }
 
-  if (type)
+  if (type && !is_key_order ())
     {
       tree_node_vals (type);
       if (stub_decl)
 	tree_node_vals (stub_decl);
     }
 
-  tree_node (get_constraints (decl));
+  if (!is_key_order ())
+    tree_node (get_constraints (decl));
 
   if (streaming_p ())
     {
@@ -7663,7 +7682,8 @@ trees_out::decl_value (tree decl, depset *dep)
       install_entity (decl, dep);
     }
 
-  if (inner && DECL_LANG_SPECIFIC (inner) && DECL_ATTACHED_DECLS_P (inner))
+  if (inner && DECL_LANG_SPECIFIC (inner) && DECL_ATTACHED_DECLS_P (inner)
+      && !is_key_order ())
     {
       /* Stream the attached entities.  */
       attachset *set = attached_table->get (DECL_UID (inner));
@@ -9922,6 +9942,14 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		       && TREE_CODE (decl) != USING_DECL
 		       && TREE_CODE (decl) != CONST_DECL);
 
+  if (is_key_order ())
+    {
+      /* When doing the mergeablilty graph, there's an indirection to
+	 the actual depset.  */
+      gcc_assert (dep->is_special ());
+      dep = dep->deps[0];
+    }
+
   gcc_checking_assert (decl == dep->get_entity ());
 
   merge_kind mk = MK_named;
@@ -10056,6 +10084,12 @@ void
 trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 			  tree container, depset *dep)
 {
+  if (dep && is_key_order ())
+    {
+      gcc_checking_assert (dep->is_special ());
+      dep = dep->deps[0];
+    }
+
   if (streaming_p ())
     dump (dumper::MERGE)
       && dump ("Writing:%d's %s merge key (%s) %C:%N", tag, merge_kind_name[mk],
@@ -11867,6 +11901,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
   gcc_checking_assert (TREE_CODE (decl) != FIELD_DECL
 		       && (TREE_CODE (decl) != USING_DECL
 			   || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL));
+  gcc_checking_assert (!is_key_order ());
   if (ek == EK_USING)
     gcc_checking_assert (TREE_CODE (decl) == OVERLOAD);
 
@@ -12013,7 +12048,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 void
 depset::hash::add_dependency (depset *dep)
 {
-  gcc_checking_assert (current);
+  gcc_checking_assert (current && !is_key_order ());
   current->deps.safe_push (dep);
 
   if (dep->is_internal () && !current->is_internal ())
@@ -12048,10 +12083,33 @@ depset::hash::add_dependency (depset *dep)
 depset *
 depset::hash::add_dependency (tree decl, entity_kind ek)
 {
-  depset *dep = make_dependency (decl, ek);
-  if (dep->get_entity_kind () != EK_REDIRECT
-      && !dep->is_import ())
-    add_dependency (dep);
+  depset *dep;
+
+  if (is_key_order ())
+    {
+      dep = find_dependency (decl);
+      if (dep)
+	{
+	  current->deps.safe_push (dep);
+	  dump (dumper::MERGE)
+	    && dump ("Key dependency on %s %C:%N found",
+		     dep->entity_kind_name (), TREE_CODE (decl), decl);
+	}
+      else
+	{
+	  /* It's not a mergeable decl, look for it in the original
+	     table.  */
+	  dep = chain->find_dependency (decl);
+	  gcc_checking_assert (dep);
+	}
+    }
+  else
+    {
+      dep = make_dependency (decl, ek);
+      if (dep->get_entity_kind () != EK_REDIRECT && !dep->is_import ())
+	add_dependency (dep);
+    }
+
   return dep;
 }
 
@@ -12077,7 +12135,7 @@ depset::hash::add_binding (tree ns, tree value)
   depset *binding = make_binding (ns, NULL_TREE);
 
   tree name = NULL_TREE;
-  gcc_checking_assert (TREE_PUBLIC (ns));
+  gcc_checking_assert (TREE_PUBLIC (ns) && !is_key_order ());
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
@@ -12496,6 +12554,29 @@ depset::hash::add_specializations (bool decl_p)
   data.release ();
 }
 
+/* Add a depset into the mergeable hash.  */
+
+void
+depset::hash::add_mergeable (depset *mergeable)
+{
+  gcc_checking_assert (is_key_order ());
+  entity_kind ek = mergeable->get_entity_kind ();
+  tree decl = mergeable->get_entity ();
+  gcc_checking_assert (ek == EK_DECL || ek == EK_SPECIALIZATION);
+
+  depset **slot = entity_slot (decl, true);
+  gcc_checking_assert (!*slot);
+  depset *dep = make_entity (decl, ek);
+  *slot = dep;
+
+  worklist.safe_push (dep);
+
+  /* So we can locate the mergeable depset this depset refers to,
+     mark the first dep.  */
+  dep->set_special ();
+  dep->deps.safe_push (mergeable);
+}
+
 /* Iteratively find dependencies.  During the walk we may find more
    entries on the same binding that need walking.  */
 
@@ -12522,7 +12603,8 @@ depset::hash::find_dependencies ()
 	      tree decl = current->get_entity ();
 	      dump (dumper::DEPEND)
 		&& dump ("Dependencies of %s %C:%N",
-			 current->entity_kind_name (), TREE_CODE (decl), decl);
+			 is_key_order () ? "key-order"
+			 : current->entity_kind_name (), TREE_CODE (decl), decl);
 	      dump.indent ();
 	      walker.begin ();
 	      if (current->get_entity_kind () == EK_USING)
@@ -12545,9 +12627,10 @@ depset::hash::find_dependencies ()
 		}
 	      walker.end ();
 
-	      /* Mark all the explicit & partial specializations as
-		 reachable.  */
-	      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	      if (!walker.is_key_order ()
+		  && TREE_CODE (decl) == TEMPLATE_DECL)
+		/* Mark all the explicit & partial specializations as
+		   reachable.  */
 		for (tree cons = DECL_TEMPLATE_INSTANTIATIONS (decl);
 		     cons; cons = TREE_CHAIN (cons))
 		  {
@@ -12822,79 +12905,105 @@ depset_cmp (const void *a_, const void *b_)
   return a < b ? -1 : +1;
 }
 
-/* Compare members of a cluster.  We rely on DECL_UIDs being allocated
-   sequentially, that way we can place the earlier-created decls
-   before the later-created ones.  This is significant when a
-   declaration is involves decltype and/or dependent instantiations.
-   // FIXME: Sadly that's not sufficient because of late return types
-   involving decltype.  We must do a dependency walk for robustness.
+/* Sort the clusters in SCC such that those that depend on one another
+   are placed later.   */
 
-   Bindings and usings are placed later.  */
-
-static int
-cluster_cmp (const void *a_, const void *b_)
+static void
+sort_cluster (depset::hash *original, depset *scc[], unsigned size)
 {
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
+  depset::hash table (size, original);
 
-  unsigned a_kind = a->get_entity_kind ();
-  unsigned b_kind = b->get_entity_kind ();
+  dump.indent ();
 
-  if (a_kind != b_kind)
-    return a_kind < b_kind ? -1 : +1;
-
-  tree a_decl = a->get_entity ();
-  tree b_decl = b->get_entity ();
-  if (a_kind == depset::EK_USING)
+  /* Place bindings last, usings before that.  It's not strictly
+     necessary, but it does make things neater.  Says Mr OCD.  */
+  unsigned bind_lwm = size;
+  unsigned use_lwm = size;
+  for (unsigned ix = 0; ix != use_lwm;)
     {
-      a_decl = OVL_FUNCTION (a_decl);
-      b_decl = OVL_FUNCTION (b_decl);
+      depset *dep = scc[ix];
+      switch (dep->get_entity_kind ())
+	{
+	case depset::EK_BINDING:
+	  /* Move to end.  No increment.  Notice this could be moving
+	     a using decl, which we'll then move again.  */
+	  if (--bind_lwm != ix)
+	    {
+	      scc[ix] = scc[bind_lwm];
+	      scc[bind_lwm] = dep;
+	    }
+	  if (use_lwm > bind_lwm)
+	    {
+	      use_lwm--;
+	      break;
+	    }
+	  /* We must have copied a using, so move it too.  */
+	  dep = scc[ix];
+	  gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING);
+	  /* FALLTHROUGH  */
+
+	case depset::EK_USING:
+	  if (--use_lwm != ix)
+	    {
+	      scc[ix] = scc[use_lwm];
+	      scc[use_lwm] = dep;
+	    }
+	  break;
+
+	case depset::EK_DECL:
+	case depset::EK_SPECIALIZATION:
+	  table.add_mergeable (dep);
+	  ix++;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
     }
 
-  if (a_decl != b_decl)
-    {
-      /* Different entities, order by their UID.  With the exception
-	 of alias template instantiations (which are distinct from
-	 their non-template), use the non-template UID, as that's
-	 generated first.  */
-      if (TREE_CODE (a_decl) == TEMPLATE_DECL && !a->is_alias_tmpl_inst ())
-	a_decl = DECL_TEMPLATE_RESULT (a_decl);
-      if (TREE_CODE (b_decl) == TEMPLATE_DECL && !b->is_alias_tmpl_inst ())
-	b_decl = DECL_TEMPLATE_RESULT (b_decl);
-      unsigned uid_a = DECL_UID (a_decl);
-      unsigned uid_b = DECL_UID (b_decl);
+  gcc_checking_assert (use_lwm <= bind_lwm);
+  dump (dumper::MERGE) && dump ("Ordering %u/%u depsets", use_lwm, size);
 
-      return uid_a < uid_b ? -1 : +1;
+  table.find_dependencies ();
+
+  vec<depset *> order = table.connect ();
+  gcc_checking_assert (order.length () == use_lwm);
+
+  /* Now rewrite entries [0,lwm), in the dependency order we
+     discovered.  Usually each entity is in its own cluster.  Rarely,
+     we can get multi-entity clusters, in which case all but one must
+     only be reached from within the cluster.  This happens for
+     something like:
+
+     template<typename T>
+     auto Foo (const T &arg) -> TPL<decltype (arg)>;
+
+     The instantiation of TPL will be in the specialization table, and
+     refer to Foo via arg.  But we can only get to that specialization
+     from Foo's declaration, so we only need to treat Foo as mergable
+     (We'll do structural comparison of TPL<decltype (arg)>).
+
+     Finding the single cluster entry dep is very tricky and
+     expensive.  Let's just not do that.  It's harmless in this case
+     anyway. */
+  unsigned pos = 0;
+  unsigned cluster = ~0u;
+  for (unsigned ix = 0; ix != order.length (); ix++)
+    {
+      gcc_checking_assert (order[ix]->is_special ());
+      depset *dep = order[ix]->deps[0];
+      scc[pos++] = dep;
+      dump (dumper::MERGE)
+	&& dump ("Mergeable %u is %N%s", ix, dep->get_entity (),
+		 order[ix]->cluster == cluster ? " (tight)" : "");
+      cluster = order[ix]->cluster;
     }
 
-  /* Now order for qsort stability.  */
-  if (a == b)
-    /* Can occur during testing.  */
-    return 0;
+  gcc_checking_assert (pos == use_lwm);
 
-  /* Same decl.  They must be bindings or (rarely) using_decls.  */
-
-  /* Order by strcmp for user-meaningful order.  */
-  if (a_kind == depset::EK_BINDING)
-    return strcmp (IDENTIFIER_POINTER (a->get_name ()),
-		   IDENTIFIER_POINTER (b->get_name ()));
-
-  if (a_kind == depset::EK_USING)
-    {
-      depset *a_binding = a->deps[0];
-      depset *b_binding = b->deps[0];
-
-      gcc_checking_assert (a_binding->is_binding () && b_binding->is_binding ());
-      tree a_ns = a_binding->get_entity ();
-      tree b_ns = b_binding->get_entity ();
-      
-      unsigned uid_a = DECL_UID (a_ns);
-      unsigned uid_b = DECL_UID (b_ns);
-
-      return uid_a < uid_b ? -1 : +1;
-    }
-
-  gcc_unreachable ();
+  order.release ();
+  dump (dumper::MERGE) && dump ("Ordered %u keys", pos);
+  dump.outdent ();
 }
 
 /* Reduce graph to SCCS clusters.  SCCS will be populated with the
@@ -12935,7 +13044,8 @@ depset::hash::connect ()
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
 	 : dump ("Connecting %s %s %C:%N",
-		 !v->has_defn () ? "declaration" : "definition",
+		 is_key_order () ? "key-order"
+		 : !v->has_defn () ? "declaration" : "definition",
 		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
 		 v->get_entity ()));
       if (!v->cluster)
@@ -14714,14 +14824,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   depset *namer = NULL;
 
-  /* Write things out.  The sorted order is DECK<SPEC<UNNAMED<BINDINGS
-     -- see cluster_cmp.  I'm not totally sure this is robust, given
-     the necessary merging of global module entities in the face of
-     late return types of templates -- we must meet the containing
-     function before something that uses its parms, so that the
-     latter can be merged before the former.  It might be a more
-     sophisticated sorting is needed along the lines of the earlier
-     mergeable sort algorithm?  */
+  /* Write things out.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -17606,10 +17709,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	    if (base[size]->cluster != base[0]->cluster)
 	      break;
 
-	  /* Sort the cluster.  Later processing makes use of the
-	     ordering.  */
-	  qsort (base, size, sizeof (depset *), cluster_cmp);
-
 	  for (unsigned jx = 0; jx != size; jx++)
 	    {
 	      /* Set the section number.  */
@@ -17666,6 +17765,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
 	  /* Cluster is now used to number entities.  */
 	  base[0]->cluster = ~(~0u >> 1); /* A bad value.  */
+
+	  sort_cluster (&table, base, size);
+
 	  /* Record the section for consistency checking during stream
 	     out -- we don't want to start writing decls in different
 	     sections.  */

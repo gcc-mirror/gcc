@@ -1,3 +1,26 @@
+2020-04-03  Nathan Sidwell  <nathan@acm.org>
+
+	Resurrect topological key-order sort for clusters
+	gcc/cp/
+	* module.cc (depset::hash): Add chain, is_key_order.
+	(trees_out::is_key_order): New.
+	(trees_out::decl_value): Adjust for key-order walk.
+	(trees_out::{get_merge_kind,key_mergeable}): Likewise.
+	(depset::hash::add_dependency): Deal with key-order dependency.
+	(depset::hash::add_mergeable): New.
+	(depset::hash::find_dependencies): Adjust for key-order walk.
+	(cluster_cmp): Delete.
+	(sort_cluster): New.
+	(module_state::write): Call sort_cluster, not qsort (cluster_cmp).
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_b.C: Adjust final scan.
+	* g++.dg/modules/late-ret-3_a.H: Likewise.
+	* g++.dg/modules/member-def-[12]_c.C: Likewise.
+	* g++.dg/modules/tpl-alias-1_a.H: Likewise.
+	* g++.dg/modules/tpl-friend-1_a.C: Likewise.
+	* g++.dg/modules/tpl-spec-3_[ab].C: Likewise.
+	* g++.dg/modules/using-7.C: Likewise.
+
 2020-04-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

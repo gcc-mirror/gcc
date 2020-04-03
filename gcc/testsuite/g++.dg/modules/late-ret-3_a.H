@@ -17,4 +17,4 @@ auto Bar (const A& arg)
   -> TPL_3<typename TPL_1<decltype(arg)>::type>
   {return 3;}
 
-// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::template Foo'\n  \[1\]=specialization declaration '::TPL_1<#null#>'\n  \[2\]=specialization declaration '::TPL_2<::TPL_1<#null#>::type>'\n  \[3\]=specialization declaration '::TPL_3<::TPL_1<#null#>::type>'\n  \[4\]=binding '::Foo'\n} module } }
+// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::template Foo'\n  \[1\]=specialization declaration '::TPL_1<#null#>'\n  \[2\]=specialization declaration '::TPL_3<::TPL_1<#null#>::type>'\n  \[3\]=specialization declaration '::TPL_2<::TPL_1<#null#>::type>'\n  \[4\]=binding '::Foo'\n} module } }
