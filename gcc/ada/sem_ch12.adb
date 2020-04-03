@@ -13321,8 +13321,16 @@ package body Sem_Ch12 is
             if not Subtypes_Statically_Compatible
                      (Act_T, Ancestor, Formal_Derived_Matching => True)
             then
-               Error_Msg_N
-                 ("constraint on actual is incompatible with formal", Actual);
+               Error_Msg_NE
+                 ("actual for & must be statically compatible with ancestor",
+                  Actual, Gen_T);
+
+               if not Predicates_Compatible (Act_T, Ancestor) then
+                  Error_Msg_N
+                    ("\predicate on actual is not compatible with ancestor",
+                     Actual);
+               end if;
+
                Abandon_Instantiation (Actual);
             end if;
          end if;
