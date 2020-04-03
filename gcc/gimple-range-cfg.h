@@ -35,7 +35,8 @@ protected:
   bool range_of_call (irange &r, gcall *call);
   bool range_of_cond_expr (irange &r, gassign* cond);
 private:
-  void range_of_ubsan_call (irange &r, gcall *call, tree_code code);
+  bool range_of_builtin_call (irange &r, gcall *call);
+  void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code);
 };
 
 #endif // GCC_GIMPLE_RANGE_CFG_H

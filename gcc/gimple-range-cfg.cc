@@ -190,9 +190,46 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
 }
 
 
-void
-gimple_ranger::range_of_ubsan_call (irange &r, gcall *call, tree_code code)
+// Calculate a range for call statement S and return it in R.
+// If a range cannot be calculated, return false.
+
+bool
+gimple_ranger::range_of_call (irange &r, gcall *call)
 {
+  tree type = gimple_call_return_type (call);
+  tree lhs = gimple_call_lhs (call);
+  bool strict_overflow_p;
+
+  if (!irange::supports_type_p (type))
+    return false;
+
+  if (range_of_builtin_call (r, call))
+    ;
+  else if (gimple_stmt_nonnegative_warnv_p (call, &strict_overflow_p))
+    r.set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
+  else if (gimple_call_nonnull_result_p (call)
+	   || gimple_call_nonnull_arg (call))
+    r = range_nonzero (type);
+  else
+    r.set_varying (type);
+
+  // If there is a lHS, intersect that with what is known.
+  if (lhs)
+    {
+      value_range def;
+      def = gimple_range_global (lhs);
+      r.intersect (def);
+    }
+  return true;
+}
+
+
+void
+gimple_ranger::range_of_builtin_ubsan_call (irange &r, gcall *call,
+					    tree_code code)
+{
+  gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR
+		       || code == MULT_EXPR);
   tree type = gimple_call_return_type (call);
   range_operator *op = range_op_handler (code, type);
   gcc_checking_assert (op);
@@ -219,29 +256,26 @@ gimple_ranger::range_of_ubsan_call (irange &r, gcall *call, tree_code code)
 }
 
 
-// Calculate a range for call statement S and return it in R.
-// If a range cannot be calculated, return false.
-
 bool
-gimple_ranger::range_of_call (irange &r, gcall *call)
+gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 {
+  combined_fn func = gimple_call_combined_fn (call);
+  if (func == CFN_LAST)
+    return false;
+
   tree type = gimple_call_return_type (call);
-  tree lhs = gimple_call_lhs (call);
   tree arg;
   int mini, maxi, zerov, prec;
   scalar_int_mode mode;
 
-  if (!irange::supports_type_p (type))
-    return false;
-
-  combined_fn func = gimple_call_combined_fn (call);
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
       if (cfun->after_inlining)
 	{
 	  r.set_zero (type);
-	  // r.equiv_clean ();
+	  // r.equiv_clear ();
+	  return true;
 	}
       break;
       /* __builtin_ffs* and __builtin_popcount* return [0, prec].  */
@@ -268,12 +302,10 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 	}
       r.set (build_int_cst (type, mini),
 	     build_int_cst (type, maxi));
-      break;
-      /* __builtin_parity* returns [0, 1].  */
+      return true;
     CASE_CFN_PARITY:
-      r.set (build_int_cst (type, 0),
-	     build_int_cst (type, 1));
-      break;
+      r.set (build_zero_cst (type), build_one_cst (type));
+      return true;
       /* __builtin_c[lt]z* return [0, prec-1], except for
 	 when the argument is 0, but that is undefined behavior.
 	 On many targets where the CLZ RTL or optab value is defined
@@ -326,12 +358,12 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 	break;
       r.set (build_int_cst (type, mini),
 	     build_int_cst (type, maxi));
-      break;
-	  /* __builtin_ctz* return [0, prec-1], except for
-	     when the argument is 0, but that is undefined behavior.
-	     If there is a ctz optab for this mode and
-	     CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
-	     otherwise just assume 0 won't be seen.  */
+      return true;
+      /* __builtin_ctz* return [0, prec-1], except for
+	 when the argument is 0, but that is undefined behavior.
+	 If there is a ctz optab for this mode and
+	 CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
+	 otherwise just assume 0 won't be seen.  */
     CASE_CFN_CTZ:
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
@@ -362,8 +394,8 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 	      mini = 0;
 	      maxi = prec - 1;
 	    }
-	  /* If some high bits are known to be zero,
-	     we can decrease the result maximum.  */
+	  /* If some high bits are known to be zero, we can decrease
+	     the result maximum.  */
 	  if (vr0.kind () == VR_RANGE
 	      && TREE_CODE (vr0.max ()) == INTEGER_CST)
 	    {
@@ -377,22 +409,22 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 	break;
       r.set (build_int_cst (type, mini),
 	     build_int_cst (type, maxi));
-      break;
+      return true;
       /* __builtin_clrsb* returns [0, prec-1].  */
     CASE_CFN_CLRSB:
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
-      break;
+      return true;
     case CFN_UBSAN_CHECK_ADD:
-      range_of_ubsan_call (r, call, PLUS_EXPR);
-      break;
+      range_of_builtin_ubsan_call (r, call, PLUS_EXPR);
+      return true;
     case CFN_UBSAN_CHECK_SUB:
-      range_of_ubsan_call (r, call, MINUS_EXPR);
-      break;
+      range_of_builtin_ubsan_call (r, call, MINUS_EXPR);
+      return true;
     case CFN_UBSAN_CHECK_MUL:
-      range_of_ubsan_call (r, call, MULT_EXPR);
-      break;
+      range_of_builtin_ubsan_call (r, call, MULT_EXPR);
+      return true;
     case CFN_GOACC_DIM_SIZE:
     case CFN_GOACC_DIM_POS:
       /* Optimizing these two internal functions helps the loop
@@ -412,8 +444,8 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 	r.set (build_int_cst (type, is_pos ? 0 : 1),
 	       size
 	       ? build_int_cst (type, size - is_pos) : vrp_val_max (type));
+	return true;
       }
-      break;
     case CFN_BUILT_IN_STRLEN:
       if (tree lhs = gimple_call_lhs (call))
 	if (ptrdiff_type_node
@@ -431,29 +463,11 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 	       FIXME: Use max_object_size() - 1 here.  */
 	    tree range_max = wide_int_to_tree (type, wmax - 2);
 	    r.set (range_min, range_max);
-	    break;
+	    return true;
 	  }
       break;
     default:
-      {
-	bool ignore;
-	if (gimple_stmt_nonnegative_warnv_p (call, &ignore))
-	  r.set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
-	else if (gimple_call_nonnull_result_p (call)
-		 || gimple_call_nonnull_arg (call))
-	  r = range_nonzero (type);
-	else
-	  r.set_varying (type);
-	break;
-      }
+      break;
     }
-
-  // If there is a lHS, intersect that with what is known.
-  if (lhs)
-    {
-      value_range def;
-      def = gimple_range_global (lhs);
-      r.intersect (def);
-    }
-  return true;
+  return false;
 }
