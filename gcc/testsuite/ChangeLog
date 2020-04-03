@@ -1,3 +1,8 @@
+2020-04-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93435
+	* gcc.dg/tree-ssa/pr93435.c: New test.
+
 2020-04-02  Fritz Reese  <foreese@gcc.gnu.org>
 
 	Backport from master.
