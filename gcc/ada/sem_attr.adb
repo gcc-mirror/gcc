@@ -5202,6 +5202,7 @@ package body Sem_Attr is
       when Attribute_Passed_By_Reference =>
          Check_E0;
          Check_Type;
+         Check_Not_Incomplete_Type;
          Set_Etype (N, Standard_Boolean);
 
       ------------------
