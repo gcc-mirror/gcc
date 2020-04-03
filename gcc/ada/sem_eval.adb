@@ -1001,7 +1001,7 @@ package body Sem_Eval is
                     (Is_Known_Valid (Entity (Opnd))
                       or else Ekind (Entity (Opnd)) = E_In_Parameter
                       or else
-                        (Ekind (Entity (Opnd)) in Object_Kind
+                        (Is_Object (Entity (Opnd))
                           and then Present (Current_Value (Entity (Opnd))))))
            or else Is_OK_Static_Expression (Opnd);
       end Is_Known_Valid_Operand;

@@ -6396,7 +6396,7 @@ package body Exp_Util is
 
       --  Immediate return, nothing doing, if this is not an object
 
-      if Ekind (Ent) not in Object_Kind then
+      if not Is_Object (Ent) then
          return;
       end if;
 
