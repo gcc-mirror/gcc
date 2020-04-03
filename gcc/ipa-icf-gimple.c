@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "tree-eh.h"
 #include "builtins.h"
+#include "attribs.h"
 
 #include "ipa-icf-gimple.h"
 
@@ -767,6 +768,9 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
       || (!fntype1 && fntype2)
       || (fntype1 && !types_compatible_p (fntype1, fntype2)))
     return return_false_with_msg ("call function types are not compatible");
+
+  if (fntype1 && fntype2 && comp_type_attributes (fntype1, fntype2) != 1)
+    return return_false_with_msg ("different fntype attributes");
 
   tree chain1 = gimple_call_chain (s1);
   tree chain2 = gimple_call_chain (s2);
