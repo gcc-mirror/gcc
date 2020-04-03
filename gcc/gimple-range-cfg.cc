@@ -1,6 +1,7 @@
 /* Implementation of the gimple_ranger class.
    Copyright (C) 2017-2020 Free Software Foundation, Inc.
-   Contributed by Andrew MacLeod <amacleod@redhat.com>.
+   Contributed by Andrew MacLeod <amacleod@redhat.com>
+   and Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
 
@@ -278,40 +279,38 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 	  return true;
 	}
       break;
-      /* __builtin_ffs* and __builtin_popcount* return [0, prec].  */
+
     CASE_CFN_FFS:
     CASE_CFN_POPCOUNT:
+      // __builtin_ffs* and __builtin_popcount* return [0, prec].
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
       maxi = prec;
-      if (TREE_CODE (arg) == SSA_NAME)
+      gcc_assert (range_of_expr (r, arg, call));
+      // If arg is non-zero, then ffs or popcount are non-zero.
+      if (!range_includes_zero_p (&r))
+	mini = 1;
+      // If some high bits are known to be zero, decrease the maximum.
+      if (!r.undefined_p ())
 	{
-	  widest_irange vr0;
-	  gcc_assert (range_of_expr (vr0, arg, call));
-	  /* If arg is non-zero, then ffs or popcount are non-zero.  */
-	  if (range_includes_zero_p (&vr0) == 0)
-	    mini = 1;
-	  /* If some high bits are known to be zero, we can decrease
-	     the maximum.  */
-	  if (vr0.kind () == VR_RANGE
-	      && TREE_CODE (vr0.max ()) == INTEGER_CST
-	      && !operand_less_p (vr0.min (),
-				  build_zero_cst (TREE_TYPE (vr0.min ()))))
-	    maxi = tree_floor_log2 (vr0.max ()) + 1;
+	  wide_int max = r.upper_bound ();
+	  maxi = wi::floor_log2 (max);
 	}
-      r.set (build_int_cst (type, mini),
-	     build_int_cst (type, maxi));
+      r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
       return true;
+
     CASE_CFN_PARITY:
       r.set (build_zero_cst (type), build_one_cst (type));
       return true;
-      /* __builtin_c[lt]z* return [0, prec-1], except for
-	 when the argument is 0, but that is undefined behavior.
-	 On many targets where the CLZ RTL or optab value is defined
-	 for 0 the value is prec, so include that in the range
-	 by default.  */
+
     CASE_CFN_CLZ:
+      // __builtin_c[lt]z* return [0, prec-1], except when the
+      // argument is 0, but that is undefined behavior.
+      //
+      // On many targets where the CLZ RTL or optab value is defined
+      // for 0, the value is prec, so include that in the range by
+      // default.
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
@@ -319,52 +318,45 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
       if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
 	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov)
-	  /* Handle only the single common value.  */
+	  // Only handle the single common value.
 	  && zerov != prec)
-	/* Magic value to give up, unless vr0 proves
-	   arg is non-zero.  */
+	// Magic value to give up, unless we can prove arg is non-zero.
 	mini = -2;
-      if (TREE_CODE (arg) == SSA_NAME)
+
+      gcc_assert (range_of_expr (r, arg, call));
+      // From clz of minimum we can compute result maximum.
+      if (r.constant_p ())
 	{
-	  widest_irange vr0;
-	  gcc_assert (range_of_expr (vr0, arg, call));
-	  /* From clz of VR_RANGE minimum we can compute
-	     result maximum.  */
-	  if (vr0.kind () == VR_RANGE
-	      && TREE_CODE (vr0.min ()) == INTEGER_CST)
-	    {
-	      maxi = prec - 1 - tree_floor_log2 (vr0.min ());
-	      if (maxi != prec)
-		mini = 0;
-	    }
-	  else if (!range_includes_zero_p (&vr0))
-	    {
-	      maxi = prec - 1;
-	      mini = 0;
-	    }
-	  if (mini == -2)
-	    break;
-	  /* From clz of VR_RANGE maximum we can compute
-	     result minimum.  */
-	  if (vr0.kind () == VR_RANGE
-	      && TREE_CODE (vr0.max ()) == INTEGER_CST)
-	    {
-	      mini = prec - 1 - tree_floor_log2 (vr0.max ());
-	      if (mini == prec)
-		break;
-	    }
+	  maxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
+	  if (maxi != prec)
+	    mini = 0;
+	}
+      else if (!range_includes_zero_p (&r))
+	{
+	  maxi = prec - 1;
+	  mini = 0;
 	}
       if (mini == -2)
 	break;
-      r.set (build_int_cst (type, mini),
-	     build_int_cst (type, maxi));
+      // From clz of maximum we can compute result minimum.
+      if (r.constant_p ())
+	{
+	  mini = prec - 1 - wi::floor_log2 (r.upper_bound ());
+	  if (mini == prec)
+	    break;
+	}
+      if (mini == -2)
+	break;
+      r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
       return true;
-      /* __builtin_ctz* return [0, prec-1], except for
-	 when the argument is 0, but that is undefined behavior.
-	 If there is a ctz optab for this mode and
-	 CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
-	 otherwise just assume 0 won't be seen.  */
+
     CASE_CFN_CTZ:
+      // __builtin_ctz* return [0, prec-1], except for when the
+      // argument is 0, but that is undefined behavior.
+      //
+      // If there is a ctz optab for this mode and
+      // CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
+      // otherwise just assume 0 won't be seen.
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
@@ -373,44 +365,35 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
 	  && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov))
 	{
-	  /* Handle only the two common values.  */
+	  // Handle only the two common values.
 	  if (zerov == -1)
 	    mini = -1;
 	  else if (zerov == prec)
 	    maxi = prec;
 	  else
-	    /* Magic value to give up, unless vr0 proves
-	       arg is non-zero.  */
+	    // Magic value to give up, unless we can prove arg is non-zero.
 	    mini = -2;
 	}
-      if (TREE_CODE (arg) == SSA_NAME)
+      gcc_assert (range_of_expr (r, arg, call));
+      if (!r.undefined_p ())
 	{
-	  widest_irange vr0;
-	  gcc_assert (range_of_expr (vr0, arg, call));
-	  /* If arg is non-zero, then use [0, prec - 1].  */
-	  if (vr0.kind () == VR_RANGE
-	      && integer_nonzerop (vr0.min ()))
+	  if (r.lower_bound () != 0)
 	    {
 	      mini = 0;
 	      maxi = prec - 1;
 	    }
-	  /* If some high bits are known to be zero, we can decrease
-	     the result maximum.  */
-	  if (vr0.kind () == VR_RANGE
-	      && TREE_CODE (vr0.max ()) == INTEGER_CST)
-	    {
-	      maxi = tree_floor_log2 (vr0.max ());
-	      /* For vr0 [0, 0] give up.  */
-	      if (maxi == -1)
-		break;
-	    }
+	  // If some high bits are known to be zero, we can decrease
+	  // the maximum.
+	  wide_int max = r.upper_bound ();
+	  if (max == 0)
+	    break;
+	  maxi = wi::floor_log2 (max);
 	}
       if (mini == -2)
 	break;
-      r.set (build_int_cst (type, mini),
-	     build_int_cst (type, maxi));
+      r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
       return true;
-      /* __builtin_clrsb* returns [0, prec-1].  */
+
     CASE_CFN_CLRSB:
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
@@ -425,27 +408,26 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
     case CFN_UBSAN_CHECK_MUL:
       range_of_builtin_ubsan_call (r, call, MULT_EXPR);
       return true;
+
     case CFN_GOACC_DIM_SIZE:
     case CFN_GOACC_DIM_POS:
-      /* Optimizing these two internal functions helps the loop
-	 optimizer eliminate outer comparisons.  Size is [1,N]
-	 and pos is [0,N-1].  */
+      // Optimizing these two internal functions helps the loop
+      // optimizer eliminate outer comparisons.  Size is [1,N]
+      // and pos is [0,N-1].
       {
 	bool is_pos = func == CFN_GOACC_DIM_POS;
 	int axis = oacc_get_ifn_dim_arg (call);
 	int size = oacc_get_fn_dim_size (current_function_decl, axis);
-
 	if (!size)
-	  /* If it's dynamic, the backend might know a hardware
-	     limitation.  */
+	  // If it's dynamic, the backend might know a hardware limitation.
 	  size = targetm.goacc.dim_limit (axis);
 
-	tree type = TREE_TYPE (gimple_call_lhs (call));
 	r.set (build_int_cst (type, is_pos ? 0 : 1),
 	       size
 	       ? build_int_cst (type, size - is_pos) : vrp_val_max (type));
 	return true;
       }
+
     case CFN_BUILT_IN_STRLEN:
       if (tree lhs = gimple_call_lhs (call))
 	if (ptrdiff_type_node
@@ -454,13 +436,14 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 	  {
 	    tree type = TREE_TYPE (lhs);
 	    tree max = vrp_val_max (ptrdiff_type_node);
-	    wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+	    wide_int wmax
+	      = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
 	    tree range_min = build_zero_cst (type);
-	    /* To account for the terminating NULL, the maximum length
-	       is one less than the maximum array size, which in turn
-	       is one  less than PTRDIFF_MAX (or SIZE_MAX where it's
-	       smaller than the former type).
-	       FIXME: Use max_object_size() - 1 here.  */
+	    // To account for the terminating NULL, the maximum length
+	    // is one less than the maximum array size, which in turn
+	    // is one less than PTRDIFF_MAX (or SIZE_MAX where it's
+	    // smaller than the former type).
+	    // FIXME: Use max_object_size() - 1 here.
 	    tree range_max = wide_int_to_tree (type, wmax - 2);
 	    r.set (range_min, range_max);
 	    return true;
