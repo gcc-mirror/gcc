@@ -24,11 +24,9 @@
 
 #if __ARM_BIG_ENDIAN
 #error "MVE intrinsics are not supported in Big-Endian mode."
-#endif
-
-#if !__ARM_FEATURE_MVE
+#elif !__ARM_FEATURE_MVE
 #error "MVE feature not supported"
-#endif
+#else
 
 #include <stdint.h>
 #ifndef  __cplusplus
@@ -27554,4 +27552,5 @@ extern void *__ARM_undef;
 }
 #endif
 
+#endif /* __ARM_FEATURE_MVE  */
 #endif /* _GCC_ARM_MVE_H.  */

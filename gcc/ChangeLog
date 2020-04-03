@@ -1,3 +1,7 @@
+2020-04-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Condition the header file on __ARM_FEATURE_MVE.
+
 2020-04-03  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/94396
