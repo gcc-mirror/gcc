@@ -265,7 +265,7 @@ read_counts_file (void)
 	  else if (entry->lineno_checksum != lineno_checksum
 		   || entry->cfg_checksum != cfg_checksum)
 	    {
-	      error ("Profile data for function %u is corrupted", fn_ident);
+	      error ("profile data for function %u is corrupted", fn_ident);
 	      error ("checksum is (%x,%x) instead of (%x,%x)",
 		     entry->lineno_checksum, entry->cfg_checksum,
 		     lineno_checksum, cfg_checksum);
@@ -1226,14 +1226,6 @@ coverage_init (const char *filename)
 	}
       else
 	profile_data_prefix = getpwd ();
-    }
-  else if (profile_data_prefix != NULL)
-    {
-      /* when filename is a absolute path, we also need to mangle the full
-      path of filename to prevent the profiling data being stored into a
-      different path than that specified by profile_data_prefix.  */
-      filename = mangle_path (filename);
-      len = strlen (filename);
     }
 
   if (profile_data_prefix)

@@ -13,7 +13,6 @@ foo (void)
 
 /* Register rename will try to use registers from the lower register
    regradless of the REG_ALLOC_ORDER.
-   In theory, t0-t6 should not used in such small program if regrename
-   not executed incorrectly, because a5-a0 has higher priority in
-   REG_ALLOC_ORDER.  */
-/* { dg-final { scan-assembler-not "t\[0-6\]" } } */
+   In theory, t2 should not used in such small program if regrename
+   not executed incorrectly, because t0-a2 should be enough.  */
+/* { dg-final { scan-assembler-not "t2" } } */

@@ -785,6 +785,8 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
     [version_specific_libs=no])
   AC_MSG_RESULT($version_specific_libs)
 
+  GCC_WITH_TOOLEXECLIBDIR
+
   # Default case for install directory for include files.
   if test $version_specific_libs = no && test $gxx_include_dir = no; then
     gxx_include_dir='include/c++/${gcc_version}'
@@ -815,7 +817,14 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
     if test -n "$with_cross_host" &&
        test x"$with_cross_host" != x"no"; then
       glibcxx_toolexecdir='${exec_prefix}/${host_alias}'
-      glibcxx_toolexeclibdir='${toolexecdir}/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  glibcxx_toolexeclibdir='${toolexecdir}/lib'
+	  ;;
+	*)
+	  glibcxx_toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
       glibcxx_toolexeclibdir='${libdir}'
@@ -1413,20 +1422,14 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_nanosleep=yes
         ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
-        AC_MSG_CHECKING([for at least GNU libc 2.17])
-        AC_TRY_COMPILE(
-          [#include <features.h>],
-          [
-          #if ! __GLIBC_PREREQ(2, 17)
-          #error
-          #endif
-          ],
-          [glibcxx_glibc217=yes], [glibcxx_glibc217=no])
-        AC_MSG_RESULT($glibcxx_glibc217)
-
-        if test x"$glibcxx_glibc217" = x"yes"; then
-          ac_has_clock_monotonic=yes
-          ac_has_clock_realtime=yes
+        # Don't use link test for freestanding library, in case gcc_no_link=yes
+        if test x"$is_hosted" = xyes; then
+          # Versions of glibc before 2.17 needed -lrt for clock_gettime.
+          AC_SEARCH_LIBS(clock_gettime, [rt])
+          if test x"$ac_cv_search_clock_gettime" = x"none required"; then
+            ac_has_clock_monotonic=yes
+            ac_has_clock_realtime=yes
+          fi
         fi
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes

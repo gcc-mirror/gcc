@@ -713,7 +713,9 @@ cgraph_add_edge_to_call_site_hash (cgraph_edge *e)
   if (*slot)
     {
       gcc_assert (((cgraph_edge *)*slot)->speculative);
-      if (e->callee)
+      if (e->callee && (!e->prev_callee
+			|| !e->prev_callee->speculative
+			|| e->prev_callee->call_stmt != e->call_stmt))
 	*slot = e;
       return;
     }
@@ -782,21 +784,40 @@ cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
      when asked to.  */
   if (update_speculative && e->speculative)
     {
-      cgraph_edge *direct, *indirect;
+      cgraph_edge *direct, *indirect, *next;
       ipa_ref *ref;
       bool e_indirect = e->indirect_unknown_callee;
+      int n = 0;
 
-      e->speculative_call_info (direct, indirect, ref);
-      ref->stmt = new_stmt;
-      cgraph_edge *d2 = set_call_stmt (direct, new_stmt, false);
-      gcc_assert (direct == d2);
+      direct = e->first_speculative_call_target ();
+      indirect = e->speculative_call_indirect_edge ();
+
+      gcall *old_stmt = direct->call_stmt;
+      for (cgraph_edge *d = direct; d; d = next)
+	{
+	  next = d->next_speculative_call_target ();
+	  cgraph_edge *d2 = set_call_stmt (d, new_stmt, false);
+	  gcc_assert (d2 == d);
+	  n++;
+	}
+      gcc_checking_assert (indirect->num_speculative_call_targets_p () == n);
+      for (unsigned int i = 0; e->caller->iterate_reference (i, ref); i++)
+	if (ref->speculative && ref->stmt == old_stmt)
+	  {
+	    ref->stmt = new_stmt;
+	    n--;
+	  }
+
       indirect = set_call_stmt (indirect, new_stmt, false);
       return e_indirect ? indirect : direct;
     }
 
   /* Only direct speculative edges go to call_site_hash.  */
   if (e->caller->call_site_hash
-      && (!e->speculative || !e->indirect_unknown_callee))
+      && (!e->speculative || !e->indirect_unknown_callee)
+      /* It is possible that edge was previously speculative.  In this case
+	 we have different value in call stmt hash which needs preserving.  */
+      && e->caller->get_edge (e->call_stmt) == e)
     e->caller->call_site_hash->remove_elt_with_hash
       (e->call_stmt, cgraph_edge_hasher::hash (e->call_stmt));
 
@@ -814,7 +835,14 @@ cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
 
   function *fun = DECL_STRUCT_FUNCTION (e->caller->decl);
   e->can_throw_external = stmt_can_throw_external (fun, new_stmt);
-  if (e->caller->call_site_hash)
+  /* Update call stite hash.  For speculative calls we only record the first
+     direct edge.  */
+  if (e->caller->call_site_hash
+      && (!e->speculative
+	  || (e->callee
+	      && (!e->prev_callee || !e->prev_callee->speculative
+		  || e->prev_callee->call_stmt != e->call_stmt))
+	  || (e->speculative && !e->callee)))
     cgraph_add_edge_to_call_site_hash (e);
   return e;
 }
@@ -858,7 +886,6 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->prev_callee = NULL;
   edge->next_callee = NULL;
   edge->lto_stmt_uid = 0;
-  edge->target_prob = 0;
   edge->speculative_id = 0;
 
   edge->count = count;
@@ -992,7 +1019,8 @@ cgraph_edge::remove_caller (void)
       else
 	caller->callees = next_callee;
     }
-  if (caller->call_site_hash)
+  if (caller->call_site_hash
+      && this == caller->get_edge (call_stmt))
     caller->call_site_hash->remove_elt_with_hash
 	(call_stmt, cgraph_edge_hasher::hash (call_stmt));
 }
@@ -1049,13 +1077,11 @@ cgraph_edge::remove (cgraph_edge *edge)
    speculative_id is used to link direct calls with their corresponding
    IPA_REF_ADDR references when representing speculative calls.
 
-   target_prob is the probability of the speculative call.
-
    Return direct edge created.  */
 
 cgraph_edge *
 cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count,
-			       unsigned int speculative_id, int target_prob)
+			       unsigned int speculative_id)
 {
   cgraph_node *n = caller;
   ipa_ref *ref = NULL;
@@ -1074,7 +1100,6 @@ cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count,
     e2->can_throw_external = can_throw_external;
   e2->lto_stmt_uid = lto_stmt_uid;
   e2->speculative_id = speculative_id;
-  e2->target_prob = target_prob;
   e2->in_polymorphic_cdtor = in_polymorphic_cdtor;
   indirect_info->num_speculative_call_targets++;
   count -= e2->count;
@@ -1087,91 +1112,59 @@ cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count,
   return e2;
 }
 
-/* Speculative calls represent a transformation of indirect calls
-   which may be later inserted into gimple in the following form:
+/* Speculative call consists of an indirect edge and one or more
+   direct edge+ref pairs.
 
-   if (call_dest == target1)
-   target1 ();
-   else if (call_dest == target2)
-   target2 ();
-   else
-   call_dest ();
+   Given an edge which is part of speculative call, return the first
+   direct call edge in the speculative call sequence.  */
 
-   This is a win in the case when target1 and target2 are common values for
-   call_dest as determined by ipa-devirt or indirect call profiling.
-   In particular this may enable inlining and other optimizations.
-
-   Speculative call consists of the following main components:
-
-   1) One or more "speculative" direct call (num_speculative_call_targets is
-   speculative direct call count belongs to the speculative indirect call)
-   2) One or more IPA_REF_ADDR references (representing the fact that code above
-   takes address of target1 and target2)
-   3) The fallback "speculative" indirect call
-
-   Direct calls and corresponding references are linked by
-   speculative_id.
-
-   speculative_call_info returns triple
-   (direct_call, indirect call, IPA_REF_ADDR reference)
-   when called on one edge participating in the speculative call:
-
-   1) If called on direct call, its corresponding IPA_REF_ADDR and related
-   indirect call are returned.
-
-   2) If called on indirect call, it will return one of direct edges and its
-   matching IPA_REF_ADDR.
- */
-
-void
-cgraph_edge::speculative_call_info (cgraph_edge *&direct,
-				    cgraph_edge *&indirect,
-				    ipa_ref *&reference)
+cgraph_edge *
+cgraph_edge::first_speculative_call_target ()
 {
-  ipa_ref *ref;
-  int i;
-  cgraph_edge *e2;
   cgraph_edge *e = this;
 
-  if (!e->indirect_unknown_callee)
-    for (e2 = e->caller->indirect_calls;
-	 e2->call_stmt != e->call_stmt || e2->lto_stmt_uid != e->lto_stmt_uid;
-	 e2 = e2->next_callee)
-      ;
-  else
+  gcc_checking_assert (e->speculative);
+  if (e->callee)
     {
-      e2 = e;
-      /* We can take advantage of the call stmt hash.  */
-      if (e2->call_stmt)
-	{
-	  e = e->caller->get_edge (e2->call_stmt);
-	  gcc_assert (e->speculative && !e->indirect_unknown_callee);
-	}
-      else
-	for (e = e->caller->callees; 
-	     e2->call_stmt != e->call_stmt
-	     || e2->lto_stmt_uid != e->lto_stmt_uid;
-	     e = e->next_callee)
-	  ;
+      while (e->prev_callee && e->prev_callee->speculative
+	     && e->prev_callee->call_stmt == e->call_stmt
+	     && e->prev_callee->lto_stmt_uid == e->lto_stmt_uid)
+	e = e->prev_callee;
+      return e;
     }
-  gcc_assert (e->speculative && e2->speculative);
-  direct = e;
-  indirect = e2;
+  /* Call stmt site hash always points to the first target of the
+     speculative call sequence.  */
+  if (e->call_stmt)
+    return e->caller->get_edge (e->call_stmt);
+  for (cgraph_edge *e2 = e->caller->callees; true; e2 = e2->next_callee)
+    if (e2->speculative
+	&& e->call_stmt == e2->call_stmt
+	&& e->lto_stmt_uid == e2->lto_stmt_uid)
+      return e2;
+}
 
-  reference = NULL;
-  for (i = 0; e->caller->iterate_reference (i, ref); i++)
-    if (ref->speculative && ref->speculative_id == e->speculative_id
-	&& ((ref->stmt && ref->stmt == e->call_stmt)
-	    || (!ref->stmt && ref->lto_stmt_uid == e->lto_stmt_uid)))
-      {
-	reference = ref;
-	break;
-      }
-
-  /* Speculative edge always consist of all three components - direct edge,
-     indirect and reference.  */
-  
-  gcc_assert (e && e2 && ref);
+/* We always maintain first direct edge in the call site hash, if one
+   exists.  E is going to be removed.  See if it is first one and update
+   hash accordingly.  INDIRECT is the indirect edge of speculative call.
+   We assume that INDIRECT->num_speculative_call_targets_p () is already
+   updated for removal of E.  */
+static void
+update_call_stmt_hash_for_removing_direct_edge (cgraph_edge *e,
+						cgraph_edge *indirect)
+{
+  if (e->caller->call_site_hash)
+    {
+      if (e->caller->get_edge (e->call_stmt) != e)
+	;
+      else if (!indirect->num_speculative_call_targets_p ())
+	cgraph_update_edge_in_call_site_hash (indirect);
+      else
+	{
+	  gcc_checking_assert (e->next_callee && e->next_callee->speculative
+			       && e->next_callee->call_stmt == e->call_stmt);
+	  cgraph_update_edge_in_call_site_hash (e->next_callee);
+	}
+    }
 }
 
 /* Speculative call EDGE turned out to be direct call to CALLEE_DECL.  Remove
@@ -1195,8 +1188,13 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
   cgraph_edge *e2;
   ipa_ref *ref;
 
-  gcc_assert (edge->speculative);
-  edge->speculative_call_info (e2, edge, ref);
+  gcc_assert (edge->speculative && (!callee_decl || edge->callee));
+  if (!edge->callee)
+    e2 = edge->first_speculative_call_target ();
+  else
+    e2 = edge;
+  ref = e2->speculative_call_target_ref ();
+  edge = edge->speculative_call_indirect_edge ();
   if (!callee_decl
       || !ref->referred->semantically_equivalent_p
 	   (symtab_node::get (callee_decl)))
@@ -1242,29 +1240,28 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
   else
     edge->speculative = false;
   e2->speculative = false;
+  update_call_stmt_hash_for_removing_direct_edge (e2, edge);
   ref->remove_reference ();
   if (e2->indirect_unknown_callee || e2->inline_failed)
     remove (e2);
   else
     e2->callee->remove_symbol_and_inline_clones ();
-  if (edge->caller->call_site_hash)
-    {
-      /* We always maintain direct edge in the call site hash, if one
-	 exists.  */
-      if (!edge->num_speculative_call_targets_p ())
-	cgraph_update_edge_in_call_site_hash (edge);
-      else
-	{
-	  cgraph_edge *e;
-	  for (e = edge->caller->callees;
-	       e->call_stmt != edge->call_stmt
-	       || e->lto_stmt_uid != edge->lto_stmt_uid;
-	       e = e->next_callee)
-	    ;
-	  cgraph_update_edge_in_call_site_hash (e);
-	}
-    }
   return edge;
+}
+
+/* Return edge corresponding to speculative call to a given target.
+   NULL if speculative call does not have one.  */
+
+cgraph_edge *
+cgraph_edge::speculative_call_for_target (cgraph_node *target)
+{
+  for (cgraph_edge *direct = first_speculative_call_target ();
+       direct;
+       direct = direct->next_speculative_call_target ())
+    if (direct->speculative_call_target_ref ()
+	->referred->semantically_equivalent_p (target))
+      return direct;
+  return NULL;
 }
 
 /* Make an indirect edge with an unknown callee an ordinary edge leading to
@@ -1281,38 +1278,28 @@ cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
     {
       cgraph_edge *found = NULL;
       cgraph_edge *direct, *next;
-      ipa_ref *ref;
 
-      edge->speculative_call_info (direct, edge, ref);
+      edge = edge->speculative_call_indirect_edge ();
 
       /* Look all speculative targets and remove all but one corresponding
-	 to callee (if it exists).
-	 If there is only one target we can save one extra call to
-	 speculative_call_info.  */
-      if (edge->num_speculative_call_targets_p () != 1)
-	for (direct = edge->caller->callees; direct; direct = next)
-	  {
-	    next = direct->next_callee;
-	    if (direct->call_stmt == edge->call_stmt
-		&& direct->lto_stmt_uid == edge->lto_stmt_uid)
-	      {
-		direct->speculative_call_info (direct, edge, ref);
+	 to callee (if it exists).  */
+      for (direct = edge->first_speculative_call_target ();
+	   direct;
+	   direct = next)
+	{
+	  next = direct->next_speculative_call_target ();
 
-		/* Compare ref not direct->callee.  Direct edge is possibly
-		   inlined or redirected.  */
-		if (!ref->referred->semantically_equivalent_p (callee))
-		  edge = direct->resolve_speculation (direct, NULL);
-		else
-		  {
-		    gcc_checking_assert (!found);
-		    found = direct;
-		  }
-	      }
-	  }
-	else if (!ref->referred->semantically_equivalent_p (callee))
-	  edge = direct->resolve_speculation (direct, NULL);
-	else
-	  found = direct;
+	  /* Compare ref not direct->callee.  Direct edge is possibly
+	     inlined or redirected.  */
+	  if (!direct->speculative_call_target_ref ()
+	       ->referred->semantically_equivalent_p (callee))
+	    edge = direct->resolve_speculation (direct, NULL);
+	  else
+	    {
+	      gcc_checking_assert (!found);
+	      found = direct;
+	    }
+	}
 
       /* On successful speculation just remove the indirect edge and
 	 return the pre existing direct edge.
@@ -1320,8 +1307,8 @@ cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
 	 edge may be inlined or redirected.  */
       if (found)
 	{
-	  resolve_speculation (edge, callee->decl);
-	  gcc_checking_assert (!found->speculative);
+	  cgraph_edge *e2 = resolve_speculation (found, callee->decl);
+	  gcc_checking_assert (!found->speculative && e2 == found);
 	  return found;
 	}
       gcc_checking_assert (!edge->speculative);
@@ -1377,17 +1364,20 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 
   if (e->speculative)
     {
-      cgraph_edge *e2;
-      gcall *new_stmt;
-      ipa_ref *ref;
-
-      e->speculative_call_info (e, e2, ref);
       /* If there already is an direct call (i.e. as a result of inliner's
 	 substitution), forget about speculating.  */
       if (decl)
-	e = make_direct (e, cgraph_node::get (decl));
+	e = make_direct (e->speculative_call_indirect_edge (),
+			 cgraph_node::get (decl));
       else
 	{
+	  /* Be sure we redirect all speculative targets before poking
+	     abou tindirect edge.  */
+	  gcc_checking_assert (e->callee);
+	  cgraph_edge *indirect = e->speculative_call_indirect_edge ();
+	  gcall *new_stmt;
+	  ipa_ref *ref;
+
 	  /* Expand speculation into GIMPLE code.  */
 	  if (dump_file)
 	    {
@@ -1398,51 +1388,45 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	      e->count.dump (dump_file);
 	      fprintf (dump_file, "\n");
 	    }
-	  gcc_assert (e2->speculative);
 	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
 
-	  profile_probability prob = e->count.probability_in (e->count
-							      + e2->count);
+	  profile_count all = indirect->count;
+	  for (cgraph_edge *e2 = e->first_speculative_call_target ();
+	       e2;
+	       e2 = e2->next_speculative_call_target ())
+	    all = all + e2->count;
+	  profile_probability prob = e->count.probability_in (all);
 	  if (!prob.initialized_p ())
 	    prob = profile_probability::even ();
+	  ref = e->speculative_call_target_ref ();
 	  new_stmt = gimple_ic (e->call_stmt,
 				dyn_cast<cgraph_node *> (ref->referred),
 				prob);
 	  e->speculative = false;
-	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,
-						     false);
-	  e->count = gimple_bb (e->call_stmt)->count;
-	  if (e2->num_speculative_call_targets_p ())
+	  if (indirect->num_speculative_call_targets_p ())
 	    {
 	      /* The indirect edge has multiple speculative targets, don't
 		 remove speculative until all related direct edges are
 		 redirected.  */
-	      e2->indirect_info->num_speculative_call_targets--;
-	      if (!e2->indirect_info->num_speculative_call_targets)
-		e2->speculative = false;
+	      indirect->indirect_info->num_speculative_call_targets--;
+	      if (!indirect->indirect_info->num_speculative_call_targets)
+		indirect->speculative = false;
 	    }
 	  else
-	    e2->speculative = false;
-	  e2->count = gimple_bb (e2->call_stmt)->count;
-	  ref->speculative = false;
-	  ref->stmt = NULL;
+	    indirect->speculative = false;
 	  /* Indirect edges are not both in the call site hash.
 	     get it updated.  */
-	  if (e->caller->call_site_hash)
-	    {
-	      if (!e2->num_speculative_call_targets_p ())
-		cgraph_update_edge_in_call_site_hash (e2);
-	      else
-		{
-		  cgraph_edge *e;
-		  for (e = e2->caller->callees;
-		       e->call_stmt != e2->call_stmt
-		       || e->lto_stmt_uid != e2->lto_stmt_uid;
-		       e = e->next_callee)
-		    ;
-		  cgraph_update_edge_in_call_site_hash (e);
-		}
-	    }
+	  update_call_stmt_hash_for_removing_direct_edge (e, indirect);
+	  cgraph_edge::set_call_stmt (e, new_stmt, false);
+	  e->count = gimple_bb (e->call_stmt)->count;
+
+	  /* Once we are done with expanding the sequence, update also indirect
+	     call probability.  Until then the basic block accounts for the
+	     sum of indirect edge and all non-expanded speculations.  */
+	  if (!indirect->speculative)
+	    indirect->count = gimple_bb (indirect->call_stmt)->count;
+	  ref->speculative = false;
+	  ref->stmt = NULL;
 	  pop_cfun ();
 	  /* Continue redirecting E to proper target.  */
 	}
@@ -3222,10 +3206,21 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
       refs[i] = NULL;
     }
 
+  cgraph_edge *first_call = NULL;
+  cgraph_edge *prev_call = NULL;
+
   for (cgraph_edge *direct = node->callees; direct;
        direct = direct->next_callee)
     if (direct->call_stmt == stmt && direct->lto_stmt_uid == lto_stmt_uid)
       {
+	if (!first_call)
+	  first_call = direct;
+	if (prev_call && direct != prev_call->next_callee)
+	  {
+	    error ("speculative edges are not adjacent");
+	    return true;
+	  }
+	prev_call = direct;
 	if (!direct->speculative)
 	  {
 	    error ("direct call to %s in speculative call sequence has no "
@@ -3235,19 +3230,27 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
 	if (direct->speculative_id >= num)
 	  {
 	    error ("direct call to %s in speculative call sequence has "
-		   "speculative_uid %i out of range",
+		   "speculative_id %i out of range",
 		   direct->callee->dump_name (), direct->speculative_id);
 	    return true;
 	  }
 	if (direct_calls[direct->speculative_id])
 	  {
 	    error ("duplicate direct call to %s in speculative call sequence "
-		   "with speculative_uid %i",
+		   "with speculative_id %i",
 		   direct->callee->dump_name (), direct->speculative_id);
 	    return true;
 	  }
 	direct_calls[direct->speculative_id] = direct;
       }
+
+  if (first_call->call_stmt
+      && first_call != node->get_edge (first_call->call_stmt))
+    {
+      error ("call stmt hash does not point to first direct edge of "
+	     "speculative call sequence");
+      return true;
+    }
 
   ipa_ref *ref;
   for (int i = 0; node->iterate_reference (i, ref); i++)
@@ -3257,14 +3260,14 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
 	if (ref->speculative_id >= num)
 	  {
 	    error ("direct call to %s in speculative call sequence has "
-		   "speculative_uid %i out of range",
+		   "speculative_id %i out of range",
 		   ref->referred->dump_name (), ref->speculative_id);
 	    return true;
 	  }
 	if (refs[ref->speculative_id])
 	  {
 	    error ("duplicate reference %s in speculative call sequence "
-		   "with speculative_uid %i",
+		   "with speculative_id %i",
 		   ref->referred->dump_name (), ref->speculative_id);
 	    return true;
 	  }
@@ -3291,7 +3294,7 @@ verify_speculative_call (struct cgraph_node *node, gimple *stmt,
   if (num_targets != indirect->num_speculative_call_targets_p ())
     {
       error ("number of speculative targets %i mismatched with "
-	     "num_speculative_targets %i",
+	     "num_speculative_call_targets %i",
 	     num_targets,
 	     indirect->num_speculative_call_targets_p ());
       return true;
@@ -3371,6 +3374,13 @@ cgraph_node::verify_node (void)
       error ("calls_comdat_local is set outside of a comdat group");
       error_found = true;
     }
+  if (DECL_IS_MALLOC (decl)
+      && !POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    {
+      error ("malloc attribute should be used for a function that "
+	     "returns a pointer");
+      error_found = true;
+    }
   for (e = indirect_calls; e; e = e->next_callee)
     {
       if (e->aux)
@@ -3397,7 +3407,7 @@ cgraph_node::verify_node (void)
 	}
       if (e->call_stmt && e->lto_stmt_uid)
 	{
-	  error ("edge has both cal_stmt and lto_stmt_uid set");
+	  error ("edge has both call_stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
     }
@@ -3468,7 +3478,7 @@ cgraph_node::verify_node (void)
 	}
       if (e->call_stmt && e->lto_stmt_uid)
 	{
-	  error ("edge has both cal_stmt and lto_stmt_uid set");
+	  error ("edge has both call_stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
       if (e->speculative
@@ -3506,7 +3516,7 @@ cgraph_node::verify_node (void)
     {
       if (ref->stmt && ref->lto_stmt_uid)
 	{
-	  error ("reference has both cal_stmt and lto_stmt_uid set");
+	  error ("reference has both stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
       if (ref->speculative

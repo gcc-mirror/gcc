@@ -1957,65 +1957,6 @@ fail:
   return res;
 }
 
-/* If in c++-11, check if the c++-11 alignment constraint with respect
-   to fundamental alignment (in [dcl.align]) are satisfied.  If not in
-   c++-11 mode, does nothing.
-
-   [dcl.align]2/ says:
-
-   [* if the constant expression evaluates to a fundamental alignment,
-   the alignment requirement of the declared entity shall be the
-   specified fundamental alignment.
-
-   * if the constant expression evaluates to an extended alignment
-   and the implementation supports that alignment in the context
-   of the declaration, the alignment of the declared entity shall
-   be that alignment
-
-   * if the constant expression evaluates to an extended alignment
-   and the implementation does not support that alignment in the
-   context of the declaration, the program is ill-formed].  */
-
-static bool
-check_cxx_fundamental_alignment_constraints (tree node,
-					     unsigned align_log,
-					     int flags)
-{
-  bool alignment_too_large_p = false;
-  unsigned requested_alignment = (1U << align_log) * BITS_PER_UNIT;
-  unsigned max_align = 0;
-
-  if ((!(flags & ATTR_FLAG_CXX11) && !warn_cxx_compat)
-      || (node == NULL_TREE || node == error_mark_node))
-    return true;
-
-  if (cxx_fundamental_alignment_p (requested_alignment))
-    return true;
-
-  if (VAR_P (node))
-    {
-      if (TREE_STATIC (node) || DECL_EXTERNAL (node))
-	/* For file scope variables and static members, the target supports
-	   alignments that are at most MAX_OFILE_ALIGNMENT.  */
-	max_align = MAX_OFILE_ALIGNMENT;
-      else
-	/* For stack variables, the target supports at most
-	   MAX_STACK_ALIGNMENT.  */
-	max_align = MAX_STACK_ALIGNMENT;
-      if (requested_alignment > max_align)
-	alignment_too_large_p = true;
-    }
-  /* Let's be liberal for types and fields; don't limit their alignment any
-     more than check_user_alignment already did.  */
-
-  if (alignment_too_large_p)
-    pedwarn (input_location, OPT_Wattributes,
-	     "requested alignment %d is larger than %d",
-	     requested_alignment / BITS_PER_UNIT, max_align / BITS_PER_UNIT);
-
-  return !alignment_too_large_p;
-}
-
 /* Common codes shared by handle_warn_if_not_aligned_attribute and
    handle_aligned_attribute.  */
 
@@ -2059,8 +2000,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   /* Log2 of specified alignment.  */
   int pow2align = check_user_alignment (align_expr, objfile,
 					/* warn_zero = */ true);
-  if (pow2align == -1
-      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
+  if (pow2align == -1)
     {
       *no_add_attrs = true;
       return NULL_TREE;
@@ -3905,6 +3845,10 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 
   if (tree acs = lookup_attribute ("access", attrs))
     {
+      /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
+	 is the attribute argument's value.  */
+      acs = TREE_VALUE (acs);
+      gcc_assert (TREE_CODE (acs) == TREE_LIST);
       acs = TREE_VALUE (acs);
       gcc_assert (TREE_CODE (acs) == STRING_CST);
 
@@ -4031,11 +3975,20 @@ handle_access_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  tree access_mode = TREE_VALUE (args);
+  if (TREE_CODE (access_mode) == STRING_CST)
+    {
+      /* This must be a recursive call to handle the condensed internal
+	 form of the attribute (see below).  Since all validation has
+	 been done simply return here, accepting the attribute as is.  */
+      *no_add_attrs = false;
+      return NULL_TREE;
+    }
+
   /* Set to true when the access mode has the form of a function call
      as in 'attribute (read_only (1, 2))'.  That's an easy mistake to
      make and so worth a special diagnostic.  */
   bool funcall = false;
-  tree access_mode = TREE_VALUE (args);
   if (TREE_CODE (access_mode) == CALL_EXPR)
     {
       access_mode = CALL_EXPR_FN (access_mode);
@@ -4059,8 +4012,8 @@ handle_access_attribute (tree *node, tree name, tree args,
     }
 
   const bool read_only = strncmp (ps, "read_only", 9) == 0;
-  const bool write_only = strncmp (ps, "write_only", 9) == 0;
-  if (!read_only && !write_only && strncmp (ps, "read_write", 9))
+  const bool write_only = strncmp (ps, "write_only", 10) == 0;
+  if (!read_only && !write_only && strncmp (ps, "read_write", 10))
     {
       error ("attribute %qE invalid mode %qs; expected one of "
 	     "%qs, %qs, or %qs", name, access_str,
@@ -4230,6 +4183,7 @@ handle_access_attribute (tree *node, tree name, tree args,
   /* Replace any existing access attribute specification with
      the concatenation above.  */
   attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
+  new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
   new_attrs = tree_cons (name, new_attrs, attrs);
 
   if (node[1])
@@ -4242,11 +4196,14 @@ handle_access_attribute (tree *node, tree name, tree args,
 	return NULL_TREE;
 
       attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
+      new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
       new_attrs = tree_cons (name, new_attrs, attrs);
       TYPE_ATTRIBUTES (TREE_TYPE (node[1])) = new_attrs;
     }
 
-  TYPE_ATTRIBUTES (*node) = new_attrs;
+  /* Recursively call self to "replace" the documented/external form
+     of the attribute with the condensend internal form.  */
+  decl_attributes (node, new_attrs, flags);
   return NULL_TREE;
 }
 

@@ -85,6 +85,10 @@ func netpolldescriptor() uintptr {
 	return uintptr(rdwake<<16 | wrwake)
 }
 
+func netpollIsPollDescriptor(fd uintptr) bool {
+	return fd == uintptr(rdwake) || fd == uintptr(wrwake)
+}
+
 // netpollwakeup writes on wrwake to wakeup poll before any changes.
 func netpollwakeup() {
 	if pendingUpdates == 0 {
@@ -158,17 +162,32 @@ func netpollarm(pd *pollDesc, mode int) {
 	unlock(&mtxset)
 }
 
-// polls for ready network connections
-// returns list of goroutines that become runnable
+// netpollBreak interrupts an epollwait.
+func netpollBreak() {
+	netpollwakeup()
+}
+
+// netpoll checks for ready network connections.
+// Returns list of goroutines that become runnable.
+// delay < 0: blocks indefinitely
+// delay == 0: does not block, just polls
+// delay > 0: block for up to that many nanoseconds
 //go:nowritebarrierrec
-func netpoll(block bool) gList {
+func netpoll(delay int64) gList {
 	timeout := int32(0)
-	if !block {
+	if delay < 0 {
 		timeout = 0
+	} else if delay == 0 {
+		// TODO: call poll with timeout == 0
 		return gList{}
-	}
-	if pollVerbose {
-		println("*** netpoll", block)
+	} else if delay < 1e6 {
+		timeout = 1
+	} else if delay < 1e15 {
+		timeout = int32(delay / 1e6)
+	} else {
+		// An arbitrary cap on how long to wait for a timer.
+		// 1e9 ms == ~11.5 days.
+		timeout = 1e9
 	}
 retry:
 	lock(&mtxpoll)
@@ -176,40 +195,37 @@ retry:
 	pendingUpdates = 0
 	unlock(&mtxpoll)
 
-	if pollVerbose {
-		println("*** netpoll before poll")
-	}
 	n := libc_poll(&pfds[0], int32(len(pfds)), timeout)
-	if pollVerbose {
-		println("*** netpoll after poll", n)
-	}
 	if n < 0 {
 		e := errno()
 		if e != _EINTR {
 			println("errno=", e, " len(pfds)=", len(pfds))
 			throw("poll failed")
 		}
-		if pollVerbose {
-			println("*** poll failed")
-		}
 		unlock(&mtxset)
+		// If a timed sleep was interrupted, just return to
+		// recalculate how long we should sleep now.
+		if timeout > 0 {
+			return gList{}
+		}
 		goto retry
 	}
 	// Check if some descriptors need to be changed
 	if n != 0 && pfds[0].revents&(_POLLIN|_POLLHUP|_POLLERR) != 0 {
-		var b [1]byte
-		for read(rdwake, unsafe.Pointer(&b[0]), 1) == 1 {
-			if pollVerbose {
-				println("*** read 1 byte from pipe")
+		if delay != 0 {
+			// A netpollwakeup could be picked up by a
+			// non-blocking poll. Only clear the wakeup
+			// if blocking.
+			var b [1]byte
+			for read(rdwake, unsafe.Pointer(&b[0]), 1) == 1 {
 			}
 		}
-		// Do not look at the other fds in this case as the mode may have changed
-		// XXX only additions of flags are made, so maybe it is ok
-		unlock(&mtxset)
-		goto retry
+		// Still look at the other fds even if the mode may have
+		// changed, as netpollBreak might have been called.
+		n--
 	}
 	var toRun gList
-	for i := 0; i < len(pfds) && n > 0; i++ {
+	for i := 1; i < len(pfds) && n > 0; i++ {
 		pfd := &pfds[i]
 
 		var mode int32
@@ -222,19 +238,14 @@ retry:
 			pfd.events &= ^_POLLOUT
 		}
 		if mode != 0 {
-			if pollVerbose {
-				println("*** netpollready i=", i, "revents=", pfd.revents, "events=", pfd.events, "pd=", pds[i])
+			pds[i].everr = false
+			if pfd.revents == _POLLERR {
+				pds[i].everr = true
 			}
 			netpollready(&toRun, pds[i], mode)
 			n--
 		}
 	}
 	unlock(&mtxset)
-	if block && toRun.empty() {
-		goto retry
-	}
-	if pollVerbose {
-		println("*** netpoll returning end")
-	}
 	return toRun
 }

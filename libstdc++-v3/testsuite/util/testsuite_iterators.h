@@ -337,6 +337,26 @@ namespace __gnu_test
       ++*this;
       return tmp;
     }
+
+#if __cplusplus >= 201402L
+    bool
+    operator==(const forward_iterator_wrapper& it) const noexcept
+    {
+      // Since C++14 value-initialized forward iterators are comparable.
+      if (this->SharedInfo == nullptr || it.SharedInfo == nullptr)
+	return this->SharedInfo == it.SharedInfo && this->ptr == it.ptr;
+
+      const input_iterator_wrapper<T>& base_this = *this;
+      const input_iterator_wrapper<T>& base_that = it;
+      return base_this == base_that;
+    }
+
+    bool
+    operator!=(const forward_iterator_wrapper& it) const noexcept
+    {
+      return !(*this == it);
+    }
+#endif
   };
 
   /**
@@ -654,6 +674,34 @@ namespace __gnu_test
       { return iter -= n; }
     };
 
+  // A move-only input iterator type.
+  template<typename T>
+    struct input_iterator_wrapper_nocopy : input_iterator_wrapper<T>
+    {
+      using input_iterator_wrapper<T>::input_iterator_wrapper;
+
+      input_iterator_wrapper_nocopy()
+	: input_iterator_wrapper<T>(nullptr, nullptr)
+      { }
+
+      input_iterator_wrapper_nocopy(const input_iterator_wrapper_nocopy&) = delete;
+      input_iterator_wrapper_nocopy&
+      operator=(const input_iterator_wrapper_nocopy&) = delete;
+
+      input_iterator_wrapper_nocopy(input_iterator_wrapper_nocopy&&) = default;
+      input_iterator_wrapper_nocopy&
+      operator=(input_iterator_wrapper_nocopy&&) = default;
+
+      using input_iterator_wrapper<T>::operator++;
+
+      input_iterator_wrapper_nocopy&
+      operator++()
+      {
+	input_iterator_wrapper<T>::operator++();
+	return *this;
+      }
+    };
+
   // A type meeting the minimum std::range requirements
   template<typename T, template<typename> class Iter>
     class test_range
@@ -675,10 +723,19 @@ namespace __gnu_test
 	{
 	  T* end;
 
-	  friend bool operator==(const sentinel& s, const I& i)
+	  friend bool operator==(const sentinel& s, const I& i) noexcept
 	  { return s.end == i.ptr; }
+
+	  friend auto operator-(const sentinel& s, const I& i) noexcept
+	    requires std::random_access_iterator<I>
+	  { return s.end - i.ptr; }
+
+	  friend auto operator-(const I& i, const sentinel& s) noexcept
+	    requires std::random_access_iterator<I>
+	  { return i.ptr - s.end; }
 	};
 
+    protected:
       auto
       get_iterator(T* p)
       {
@@ -702,10 +759,7 @@ namespace __gnu_test
       auto end() &
       {
 	using I = decltype(get_iterator(bounds.last));
-	if constexpr (std::sentinel_for<I, I>)
-	  return get_iterator(bounds.last);
-	else
-	  return sentinel<I>{bounds.last};
+	return sentinel<I>{bounds.last};
       }
 
       typename Iter<T>::ContainerType bounds;
@@ -759,9 +813,40 @@ namespace __gnu_test
     using test_output_sized_range
       = test_sized_range<T, output_iterator_wrapper>;
 
+  // A type meeting the minimum std::sized_range requirements, and whose end()
+  // returns a sized sentinel.
+  template<typename T, template<typename> class Iter>
+    struct test_sized_range_sized_sent : test_sized_range<T, Iter>
+    {
+      using test_sized_range<T, Iter>::test_sized_range;
+
+      template<typename I>
+	struct sentinel
+	{
+	  T* end;
+
+	  friend bool operator==(const sentinel& s, const I& i) noexcept
+	  { return s.end == i.ptr; }
+
+	  friend std::iter_difference_t<I>
+	  operator-(const sentinel& s, const I& i) noexcept
+	  { return s.end - i.ptr; }
+
+	  friend std::iter_difference_t<I>
+	  operator-(const I& i, const sentinel& s) noexcept
+	  { return i.ptr - s.end; }
+	};
+
+      auto end() &
+      {
+	using I = decltype(this->get_iterator(this->bounds.last));
+	return sentinel<I>{this->bounds.last};
+      }
+    };
+
 // test_range and test_sized_range do not own their elements, so they model
-// std::ranges::safe_range.  This file does not define specializations of
-// std::ranges::enable_safe_range, so that individual tests can decide
+// std::ranges::borrowed_range.  This file does not define specializations of
+// std::ranges::enable_borrowed_range, so that individual tests can decide
 // whether or not to do so.
 // This is also true for test_container, although only when it has forward
 // iterators (because output_iterator_wrapper and input_iterator_wrapper are

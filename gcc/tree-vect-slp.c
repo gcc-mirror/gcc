@@ -1353,6 +1353,23 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  *max_nunits = this_max_nunits;
 	  (*tree_size)++;
 	  node = vect_create_new_slp_node (stmts);
+	  /* And compute the load permutation.  Whether it is actually
+	     a permutation depends on the unrolling factor which is
+	     decided later.  */
+	  vec<unsigned> load_permutation;
+	  int j;
+	  stmt_vec_info load_info;
+	  load_permutation.create (group_size);
+	  stmt_vec_info first_stmt_info
+	    = DR_GROUP_FIRST_ELEMENT (SLP_TREE_SCALAR_STMTS (node)[0]);
+	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
+	    {
+	      int load_place = vect_get_place_in_interleaving_chain
+		  (load_info, first_stmt_info);
+	      gcc_assert (load_place != -1);
+	      load_permutation.safe_push (load_place);
+	    }
+	  SLP_TREE_LOAD_PERMUTATION (node) = load_permutation;
 	  return node;
 	}
     }
@@ -1624,7 +1641,7 @@ static void
 vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		     slp_tree node, hash_set<slp_tree> &visited)
 {
-  unsigned i;
+  unsigned i, j;
   stmt_vec_info stmt_info;
   slp_tree child;
   tree op;
@@ -1634,13 +1651,13 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u)\n",
+  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u, refcnt=%u)\n",
 		   SLP_TREE_DEF_TYPE (node) == vect_external_def
 		   ? " (external)"
 		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
 		      ? " (constant)"
 		      : ""), node,
-		   estimated_poly_value (node->max_nunits));
+		   estimated_poly_value (node->max_nunits), node->refcnt);
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
       dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
@@ -1651,6 +1668,13 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 	dump_printf (metadata, "%T%s ", op,
 		     i < SLP_TREE_SCALAR_OPS (node).length () - 1 ? "," : "");
       dump_printf (metadata, "}\n");
+    }
+  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+    {
+      dump_printf_loc (metadata, user_loc, "\tload permutation {");
+      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (node), i, j)
+	dump_printf (dump_kind, " %u", j);
+      dump_printf (dump_kind, " }\n");
     }
   if (SLP_TREE_CHILDREN (node).is_empty ())
     return;
@@ -1732,6 +1756,45 @@ vect_mark_slp_stmts_relevant (slp_tree node)
   vect_mark_slp_stmts_relevant (node, visited);
 }
 
+/* Copy the SLP subtree rooted at NODE.  */
+
+static slp_tree
+slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
+{
+  unsigned i;
+
+  bool existed_p;
+  slp_tree &copy_ref = map.get_or_insert (node, &existed_p);
+  if (existed_p)
+    return copy_ref;
+
+  copy_ref = XNEW (_slp_tree);
+  slp_tree copy = copy_ref;
+  memcpy (copy, node, sizeof (_slp_tree));
+  if (SLP_TREE_SCALAR_STMTS (node).exists ())
+    {
+      SLP_TREE_SCALAR_STMTS (copy) = SLP_TREE_SCALAR_STMTS (node).copy ();
+      stmt_vec_info stmt_info;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+	STMT_VINFO_NUM_SLP_USES (stmt_info)++;
+    }
+  if (SLP_TREE_SCALAR_OPS (node).exists ())
+    SLP_TREE_SCALAR_OPS (copy) = SLP_TREE_SCALAR_OPS (node).copy ();
+  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+    SLP_TREE_LOAD_PERMUTATION (copy) = SLP_TREE_LOAD_PERMUTATION (node).copy ();
+  if (SLP_TREE_CHILDREN (node).exists ())
+    SLP_TREE_CHILDREN (copy) = SLP_TREE_CHILDREN (node).copy ();
+  gcc_assert (!SLP_TREE_VEC_STMTS (node).exists ());
+  copy->refcnt = 0;
+
+  slp_tree child;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (copy), i, child)
+    {
+      SLP_TREE_CHILDREN (copy)[i] = slp_copy_subtree (child, map);
+      SLP_TREE_CHILDREN (copy)[i]->refcnt++;
+    }
+  return copy;
+}
 
 /* Rearrange the statements of NODE according to PERMUTATION.  */
 
@@ -1823,6 +1886,18 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
      statements in the nodes is not important unless they are memory
      accesses, we can rearrange the statements in all the nodes
      according to the order of the loads.  */
+
+  /* We have to unshare the SLP tree we modify.  */
+  hash_map<slp_tree, slp_tree> map;
+  slp_tree unshared = slp_copy_subtree (SLP_INSTANCE_TREE (slp_instn), map);
+  vect_free_slp_tree (SLP_INSTANCE_TREE (slp_instn), false);
+  unshared->refcnt++;
+  SLP_INSTANCE_TREE (slp_instn) = unshared;
+  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
+    SLP_INSTANCE_LOADS (slp_instn)[i] = *map.get (node);
+  node = SLP_INSTANCE_LOADS (slp_instn)[0];
+
+  /* Do the actual re-arrangement.  */
   hash_set<slp_tree> visited;
   vect_slp_rearrange_stmts (SLP_INSTANCE_TREE (slp_instn), group_size,
 			    node->load_permutation, visited);
@@ -2210,34 +2285,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
 			      &tree_size, bst_map);
   if (node != NULL)
     {
-      /* If this is a reduction chain with a conversion in front
-         amend the SLP tree with a node for that.  */
-      if (!dr
-	  && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
-	{
-	  /* Get at the conversion stmt - we know it's the single use
-	     of the last stmt of the reduction chain.  */
-	  gimple *tem = vect_orig_stmt (scalar_stmts[group_size - 1])->stmt;
-	  use_operand_p use_p;
-	  gimple *use_stmt;
-	  bool r = single_imm_use (gimple_assign_lhs (tem), &use_p, &use_stmt);
-	  gcc_assert (r);
-	  next_info = vinfo->lookup_stmt (use_stmt);
-	  next_info = vect_stmt_to_vectorize (next_info);
-	  scalar_stmts = vNULL;
-	  scalar_stmts.create (group_size);
-	  for (unsigned i = 0; i < group_size; ++i)
-	    scalar_stmts.quick_push (next_info);
-	  slp_tree conv = vect_create_new_slp_node (scalar_stmts);
-	  SLP_TREE_CHILDREN (conv).quick_push (node);
-	  node = conv;
-	  /* We also have to fake this conversion stmt as SLP reduction group
-	     so we don't have to mess with too much code elsewhere.  */
-	  REDUC_GROUP_FIRST_ELEMENT (next_info) = next_info;
-	  REDUC_GROUP_NEXT_ELEMENT (next_info) = NULL;
-	}
-
       /* Calculate the unrolling factor based on the smallest type.  */
       poly_uint64 unrolling_factor
 	= calculate_unrolling_factor (max_nunits, group_size);
@@ -2282,22 +2329,19 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  bool loads_permuted = false;
 	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
 	    {
-	      vec<unsigned> load_permutation;
-	      int j;
+	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
+		continue;
+	      unsigned j;
 	      stmt_vec_info load_info;
 	      bool this_load_permuted = false;
-	      load_permutation.create (group_size);
 	      stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT
 		  (SLP_TREE_SCALAR_STMTS (load_node)[0]);
 	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
-		{
-		  int load_place = vect_get_place_in_interleaving_chain
-		      (load_info, first_stmt_info);
-		  gcc_assert (load_place != -1);
-		  if (load_place != j)
+		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
+		  {
 		    this_load_permuted = true;
-		  load_permutation.safe_push (load_place);
-		}
+		    break;
+		  }
 	      if (!this_load_permuted
 		  /* The load requires permutation when unrolling exposes
 		     a gap either because the group is larger than the SLP
@@ -2306,10 +2350,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		      || (group_size == DR_GROUP_SIZE (first_stmt_info)
 			  && DR_GROUP_GAP (first_stmt_info) == 0)))
 		{
-		  load_permutation.release ();
+		  SLP_TREE_LOAD_PERMUTATION (load_node).release ();
 		  continue;
 		}
-	      SLP_TREE_LOAD_PERMUTATION (load_node) = load_permutation;
 	      loads_permuted = true;
 	    }
 
@@ -2353,6 +2396,36 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		  vect_free_slp_instance (new_instance, false);
 		  return false;
 		}
+	    }
+
+	  /* If this is a reduction chain with a conversion in front
+	     amend the SLP tree with a node for that.  */
+	  if (!dr
+	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
+	    {
+	      /* Get at the conversion stmt - we know it's the single use
+		 of the last stmt of the reduction chain.  */
+	      gimple *tem = vect_orig_stmt (scalar_stmts[group_size - 1])->stmt;
+	      use_operand_p use_p;
+	      gimple *use_stmt;
+	      bool r = single_imm_use (gimple_assign_lhs (tem),
+				       &use_p, &use_stmt);
+	      gcc_assert (r);
+	      next_info = vinfo->lookup_stmt (use_stmt);
+	      next_info = vect_stmt_to_vectorize (next_info);
+	      scalar_stmts = vNULL;
+	      scalar_stmts.create (group_size);
+	      for (unsigned i = 0; i < group_size; ++i)
+		scalar_stmts.quick_push (next_info);
+	      slp_tree conv = vect_create_new_slp_node (scalar_stmts);
+	      SLP_TREE_CHILDREN (conv).quick_push (node);
+	      SLP_INSTANCE_TREE (new_instance) = conv;
+	      /* We also have to fake this conversion stmt as SLP reduction
+		 group so we don't have to mess with too much code
+		 elsewhere.  */
+	      REDUC_GROUP_FIRST_ELEMENT (next_info) = next_info;
+	      REDUC_GROUP_NEXT_ELEMENT (next_info) = NULL;
 	    }
 
 	  vinfo->slp_instances.safe_push (new_instance);

@@ -24,7 +24,7 @@
 
 #ifndef __cpp_lib_erase_if
 # error "Feature-test macro for erase_if missing"
-#elif __cpp_lib_erase_if < 201811
+#elif __cpp_lib_erase_if < 202002
 # error "Feature-test macro for erase_if has wrong value"
 #endif
 

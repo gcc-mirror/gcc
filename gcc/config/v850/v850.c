@@ -2961,7 +2961,7 @@ static void
 v850_asm_trampoline_template (FILE *f)
 {
   fprintf (f, "\tjarl .+4,r12\n");
-  fprintf (f, "\tld.w 12[r12],r20\n");
+  fprintf (f, "\tld.w 12[r12],r19\n");
   fprintf (f, "\tld.w 16[r12],r12\n");
   fprintf (f, "\tjmp [r12]\n");
   fprintf (f, "\tnop\n");

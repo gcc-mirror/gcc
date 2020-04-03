@@ -20,6 +20,12 @@
 
 #include <type_traits>
 
+#ifndef __cpp_lib_unwrap_ref
+# error "Feature-test macro for unwrap_reference missing in <type_traits>"
+#elif __cpp_lib_unwrap_ref != 201811L
+# error "Feature-test macro for unwrap_reference has wrong value in <type_traits>"
+#endif
+
 template<typename T, typename U> struct expect_same;
 template<typename T> struct expect_same<T, T> : std::true_type { };
 

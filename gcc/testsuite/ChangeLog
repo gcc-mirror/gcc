@@ -1,3 +1,2846 @@
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/arm/simd/bf16_vstn_1.c: New test.
+
+2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr93304.c: Update expected output and comment.
+
+2020-03-06  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nobf16.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-nosimd.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvtnq2-untied.c: New test.
+
+2020-03-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR tree-optimization/90883
+	* g++.dg/tree-ssa/pr90883.c: Add --param max-inline-insns-size=1.
+	Add aarch64-*-* mips*-*-* to XFAIL.
+
+2020-03-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/89229
+	PR target/89346
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Updated.
+	* gcc.target/i386/pr89229-2a.c: New test.
+	* gcc.target/i386/pr89229-2b.c: Likewise.
+	* gcc.target/i386/pr89229-2c.c: Likewise.
+	* gcc.target/i386/pr89229-3a.c: Likewise.
+	* gcc.target/i386/pr89229-3b.c: Likewise.
+	* gcc.target/i386/pr89229-3c.c: Likewise.
+	* gcc.target/i386/pr89346.c: Likewise.
+
+2020-03-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* g++.dg/pr80481.C: Disable epilogue vectorization.
+
+2020-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93577
+	* gcc.dg/pr93577-1.c, gcc.dg/pr93577-2.c, gcc.dg/pr93577-3.c,
+	gcc.dg/pr93577-4.c, gcc.dg/pr93577-5.c, gcc.dg/pr93577-6.c: New
+	tests.
+	* gcc.dg/vla-init-1.c: Expect fewer errors about VLA initializer.
+
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/91890
+	* gcc.dg/pragma-diag-8.c: New test.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94046
+	* g++.target/i386/pr94046-1.C: New test.
+	* g++.target/i386/pr94046-2.C: New test.
+
+2020-03-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/asan/asan_test.C (dg-options): Add
+	-Wno-alloc-size-larger-than.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90311
+	* gcc.c-torture/execute/pr90311.c: New test.
+
+2020-03-05  Jeff Law  <law@redhat.com>
+
+	* gcc.target/arm/fuse-caller-save.c: Generalize expected output.
+
+2020-03-05 Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93792
+	* gfortran.dg/pr93792.f90:  New test.
+
+2020-03-05  Delia Burduv  <delia.burduv@arm.com>
+
+	* gcc.target/arm/simd/bf16_ma_1.c: New test.
+	* gcc.target/arm/simd/bf16_ma_2.c: New test.
+	* gcc.target/arm/simd/bf16_mmla_1.c: New test.
+
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93399
+	* gcc.dg/pr93399.c: New test.
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-11.c: New test.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90938
+	* g++.dg/init/array55.C: New test.
+	* g++.dg/init/array56.C: New test.
+	* g++.dg/cpp2a/nontype-class33.C: New test.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93986
+        * gcc.dg/pr93986.c: New test.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94028
+	* g++.dg/analyzer/pr94028.C: New test.
+
+2020-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81401
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-24.c: New test.
+
+2020-03-04  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/20050603-3.c: Remove XFAILS.
+
+2020-03-04  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr93122.c: Add dg-require.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* gcc.dg/analyzer/expect-1.c: New test.
+	* gcc.dg/analyzer/malloc-4.c: New test.
+	* gfortran.dg/analyzer/pr93993.f90: Remove xfail from dg-bogus.
+	Move location of leak warning and update message.
+
+2020-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93993
+	* gfortran.dg/analyzer/pr93993.f90: New test.
+
+2020-03-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr91623.c: Add -fcommon in order
+	to re-trigger the needed code for the test-case which
+	was added in r10-2910-g9151048d854e352a9b83b771c6711b8221c73f7e.
+
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/93888
+	* g++.dg/guality/pr93888.C: New test.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93964
+	* gcc.dg/graphite/pr93964.c: New testcase.
+
+2020-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94001
+	* gcc.dg/pr94001.c: New test.
+
+2020-03-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93995
+	* gcc.dg/pr93995.c: New.
+
+2020-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90505 - mismatch in template argument deduction.
+	* g++.dg/template/deduce4.C: New test.
+	* g++.dg/template/deduce5.C: New test.
+	* g++.dg/template/deduce6.C: New test.
+	* g++.dg/template/deduce7.C: New test.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93998
+	* g++.dg/ext/pr93998.C: New test.
+
+2020-03-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/bf16_cvt_1.c: New test.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-10.c: New test.
+	* gcc.dg/pr93582.c: New test.
+	* gcc.c-torture/execute/pr93582.c: New test.
+
+2020-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93946
+	* gcc.dg/torture/pr93946-1.c: New testcase.
+	* gcc.dg/torture/pr93946-2.c: Likewise.
+
+2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94002
+	* gcc.dg/pr94002.c: New test.
+
+	PR tree-optimization/93927
+	* gcc.c-torture/compile/pr93927-1.c: New test.
+	* gcc.c-torture/compile/pr93927-2.c: New test.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/torture/co-await-15-capture-comp-ref.C: New test.
+
+2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/torture/co-await-14-template-traits.C: New test.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Add
+	-fanalyzer-show-duplicate-count.
+
+2020-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93959
+	* g++.dg/analyzer/cstdlib-2.C: New test.
+	* g++.dg/analyzer/cstdlib.C: New test.
+
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/torture/class-05-lambda-capture-copy-local.C:
+	* g++.dg/coroutines/torture/lambda-09-init-captures.C: New test.
+	* g++.dg/coroutines/torture/lambda-10-mutable.C: New test.
+
+2020-03-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93997
+	* gcc.target/i386/pr93997.c: New test.
+
+2020-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92982
+	* gcc.dg/strlenopt-94.c: New test.
+
+2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/func-params-09-awaitable-parms.C: New test.
+	* g++.dg/coroutines/torture/local-var-5-awaitable.C: New test.
+
+2020-03-02  Jeff Law  <law@redhat.com>
+
+	* gcc.target/arm/fuse-caller-save.c: Update expected output.
+
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/vect/bb-slp-19.c: The comment
+	does not align with fact that we started
+	to SLP the testcase.
+
+2020-03-02  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/scev-8.c: Revise check string.
+	* gcc.dg/tree-ssa/scev-9.c: Ditto.
+	* gcc.dg/tree-ssa/scev-10.c: Ditto.
+	* gcc.dg/tree-ssa/scev-11.c: Ditto.
+	* gcc.dg/tree-ssa/scev-12.c: Ditto.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/92721
+	g++.dg/ext/attr-access.C: New test.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93926
+	* gcc.dg/Wbuiltin-declaration-mismatch-13.c: New test.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93812
+	* gcc.dg/format/proto.c: New test.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93829
+	* gcc.dg/Wstringop-overflow-32.c: New test.
+
+2020-03-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR testsuite/91797
+	* gcc.target/powerpc/pr68805.c: Update expected output.
+
+	PR testsuite/91799
+	* gcc.target/powerpc/pr88233.c: Update expected output and
+	add target selector.
+
+2020-03-01 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/class-07-data-member.C: New test.
+
+2020-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92976
+	* gfortran.dg/select_type_48.f90 : New test.
+
+2020-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92959
+	* gfortran.dg/associated_8.f90 : New test.
+
+2020-02-29 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Add templated
+	awaitable.
+	* g++.dg/coroutines/torture/co-await-15-return-non-triv.C: New test.
+
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR ada/91100
+	* gnat.dg/socket1.adb: Disable on hppa*-*-hpux*.
+
+	* g++.dg/pr90981.C: Skip on hppa*-*-hpux*.
+	* gcc.dg/gnu2x-attrs-1.c: Add dg-require-alias.
+	* gcc.dg/pr90756.c: Add -fno-common option on hppa*-*-hpux*.
+	* gcc.dg/torture/20190327-1.c: Likewise.
+	* gcc.dg/spellcheck-options-21.c: Skip on 32-bit hppa*-*-hpux*.
+	* gcc.dg/strlenopt-68.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/torture/pr90020.c: Likewise.
+	* gcc.dg/ucnid-16-utf8.c: Add dg-require-iconv "latin1".
+
+	PR ipa/92548
+	* gcc.dg/ipa/ipa-sra-12.c: xfail parameter split test on 32-bit
+	hppa*-*-hpux*.
+	* gcc.dg/ipa/ipa-sra-14.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-12.c: xfail adding extra caller test.
+
+	* g++.dg/ext/visibility/ref-temp1.C: Require visibility.
+	* gfortran.dg/pr90988_4.f: Likewise.
+	* gfortran.dg/pr91372.f90: Likewise.
+
+2020-02-29  Jeff Law  <law@redhat.com>
+
+	* gcc.target/or1k/return-2.c: Update expected output.
+
+	* gcc.target/xstormy16/sfr/06_sfrw_to_var.c: Update expected output.
+
+2020-02-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/func-params-08.C: Update
+	to suspend for each co_await operation.
+
+2020-02-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92785
+	* gfortran.dg/unlimited_polymorphic_31.f03 : New test.
+
+2020-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* g++.dg/cpp2a/consteval3.C: Change dg-error about taking address of
+	immediate function in unevaluated contexts into dg-bogus.
+	* g++.dg/cpp2a/consteval16.C: New test.
+
+	PR middle-end/92152
+	* g++.dg/torture/pr92152.C (size_t): Use decltype (sizeof (0)) instead
+	of hardcoding unsigned long.
+	(uint64_t): Use unsigned long long instead of unsigned long.
+
+2020-02-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/93932
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Adjust
+	instruction counts.
+
+2020-02-27  Martin Jambor  <mjambor@suse.cz>
+	    Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93707
+	* gcc.dg/ipa/pr93707.c: New test.
+
+2020-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/92152
+	* gcc.dg/tree-ssa/alias-access-path-12.c: New testcase.
+	* g++.dg/torture/pr92152.C: New testcase.
+	* gcc.dg/torture/pr92152.c: New testcase.
+	* gcc.dg/tree-ssa/20030807-7.c: xfail.
+	* gcc.dg/tree-ssa/alias-access-path-4.c: xfail one case.
+	* gcc.dg/tree-ssa/alias-access-path-5.c: xfail one case.
+
+2020-02-27  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/bf16_dup.c: New test.
+	* gcc.target/arm/bf16_reinterpret.c: Likewise.
+
+2020-02-27  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target_supports.exp (check_effective_target_has_arch_pwr5): New.
+	(check_effective_target_has_arch_pwr6): New.
+	(check_effective_target_has_arch_pwr7): New.
+	(check_effective_target_has_arch_pwr8): New.
+	(check_effective_target_has_arch_pwr9): New.
+	* gcc.target/powerpc/pr92132-fp-1.c: Add target check.
+
+
+2020-02-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-1.c: Compile with -mno-pcrel.
+	* gcc.target/powerpc/ppc64-abi-2.c: Likewise.
+
+2020-02-27  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/aarch64/vect-mull.x (SH): Undefine.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93508
+	* gcc.dg/tree-ssa/ssa-fre-85.c: New testcase.
+
+2020-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93953
+	* gcc.dg/pr93953.c: New testcase.
+
+2020-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93949
+	* gcc.c-torture/compile/pr93949.c: New test.
+
+	PR tree-optimization/93582
+	PR tree-optimization/93945
+	* gcc.dg/tree-ssa/pr93582-9.c: New test.
+	* gcc.c-torture/execute/pr93945.c: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93789 - ICE with invalid array bounds.
+	* g++.dg/ext/vla22.C: New test.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93950
+	* g++.dg/analyzer/pr93950.C: New test.
+
+2020-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93947
+	* gcc.dg/analyzer/torture/pr93947.c: New test.
+
+2020-02-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-refs-and-ctors.h: New.
+	* g++.dg/coroutines/torture/func-params-07.C: New test.
+	* g++.dg/coroutines/torture/func-params-08.C: New test.
+
+2020-02-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93913
+	* gcc.target/powerpc/fold-vec-st-char.c (scan-assembler-times): Allow
+	stxv and stxvx instructions as well.
+	* gcc.target/powerpc/fold-vec-st-float.c: Likewise.
+	* gcc.target/powerpc/fold-vec-st-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-st-short.c: Likewise.
+
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic2.C: New test.
+	* g++.dg/concepts/diagnostic3.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93676 - value-init crash in template.
+	* g++.dg/cpp0x/nsdmi-template19.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93862 - ICE with static_cast when converting from int[].
+	* g++.dg/cpp0x/rv-cast7.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	DR 1423, Convertibility of nullptr to bool.
+	* g++.dg/DRs/dr1423.C: New test.
+
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93803 - ICE with constexpr init and [[no_unique_address]].
+	* g++.dg/cpp2a/constexpr-init16.C: New test.
+	* g++.dg/cpp2a/constexpr-init17.C: New test.
+
+2020-02-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/93843
+	* gcc.dg/vect/pr93843-1.c: New test.
+	* gcc.dg/vect/pr93843-2.c: Likewise.
+
+2020-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93820
+	* gcc.dg/pr93820-2.c: New test.
+
+	PR tree-optimization/93820
+	* gcc.dg/pr93820.c: New test.
+
+	PR c++/93905
+	* g++.dg/cpp0x/pr93905.C: New test.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstn.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldn.c: New test.
+
+2020-02-25  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_dup.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_reinterpret.c: New test.
+
+2020-02-25  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/bf16_dot_1.c: New test.
+	* gcc.target/arm/simd/bf16_dot_2.c: New test.
+	* gcc.target/arm/simd/bf16_dot_3.c: New test.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93908
+	* gcc.c-torture/execute/pr93908.c: New test.
+
+2019-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto24.adb: New test.
+	* gnat.dg/lto24_pkg1.ads: New helper.
+	* gnat.dg/lto24_pkg2.ad[sb]: Likewise.
+
+2020-02-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-86.c: New testcase.
+
+2020-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93868
+	* gcc.dg/torture/pr93868.c: New testcase.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93874
+	* gcc.dg/pr93874.c: New test.
+
+	PR ipa/93763
+	* gcc.dg/ipa/pr93763.c: Adjust the test so that it compiles without
+	warnings and still ICEs before the ipa-cp.c fix.
+	* g++.dg/ipa/pr93763.C: Require c++11 effective target.
+
+	PR translation/93864
+	* objc.dg/encode-2.m: Fix comment typo paramter -> parameter.
+	* obj-c++.dg/encode-4.mm: Likewise.
+	* gfortran.dg/data_array_5.f90: Likewise.
+	* gcc.dg/decl-1.c: Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93032
+	* gcc.dg/analyzer/pr93382.c: Add "-fanalyzer-checker=taint".
+	* gcc.dg/analyzer/taint-1.c: Likewise.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93899
+	* g++.dg/analyzer/pr93899.C: New test.
+
+2020-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93804
+	* g++.dg/warn/Wredundant-tags-4.C: New test.
+	* g++.dg/warn/Wredundant-tags-5.C: New test.
+	* g++.dg/warn/Wredundant-tags-5.h: New test.
+
+2020-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/analyzer-verbosity-2a.c: New test.
+	* gcc.dg/analyzer/analyzer-verbosity-3.c: New test, based on
+	analyzer-verbosity-2.c
+	* gcc.dg/analyzer/analyzer-verbosity-3a.c: New test.
+	* gcc.dg/analyzer/edges-1.c: New test.
+	* gcc.dg/analyzer/edges-2.c: New test.
+	* gcc.dg/analyzer/file-paths-1.c: Add -fanalyzer-verbosity=3.
+
+2020-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93869 - ICE with -Wmismatched-tags.
+	* g++.dg/warn/Wmismatched-tags-2.C: New test.
+
+2020-02-20  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93835
+	* gfortran.dg/pr77351.f90 : Check for one error instead of two.
+	* gfortran.dg/pr93835.f08 : New test.
+
+2020-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93712 - ICE with ill-formed array list-initialization.
+	* g++.dg/cpp0x/initlist-array11.C: New test.
+
+2020-02-20  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93604
+	* gfortran.dg/pr93604.f90 : New test.
+
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	P1937R2 - Fixing inconsistencies between const{expr,eval} functions
+	* g++.dg/ext/consteval1.C: Change dg-{message,error} into dg-bogus.
+	* g++.dg/cpp2a/consteval6.C: Likewise.
+	* g++.dg/cpp2a/consteval3.C: Change dg-error for unevaluated operands
+	into dg-bogus.
+
+2020-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR lto/78353
+	* gcc.target/arm/pr78353-1.c: Add arm_arch_v7a_multilib effective
+	target.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
+2020-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-4.c: New test.
+	* gcc.dg/tree-ssa/pr93582-5.c: New test.
+	* gcc.dg/tree-ssa/pr93582-6.c: New test.
+	* gcc.dg/tree-ssa/pr93582-7.c: New test.
+	* gcc.dg/tree-ssa/pr93582-8.c: New test.
+
+2020-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93552
+	* gfortran.dg/goacc/tile-4.f90: New.
+
+2020-02-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Kugan Vivekandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR driver/47785
+	PR lto/78353
+	* gcc.target/arm/pr78353-1.c: New test.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
+2020-02-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93890
+	* gfortran.dg/argument_checking_24.f90: Correct test case.
+
+2020-02-21  Martin Sebor  <msebor@redhat.com>
+
+	PR gcov-profile/93753
+	* g++.dg/ext/flexary36.C: New test.
+	* g++.dg/lto/pr93166_0.C: Make struct with flexarray valid.
+
+2020-02-21  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/vmmla_1.c: New test.
+
+2020-02-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc.target/arm/armv8_1m-shift-imm-1.c: Add MVE target checks.
+	* gcc.target/arm/armv8_1m-shift-reg-1.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): New.
+	(check_effective_target_arm_v8_1m_mve_ok): New.
+	(add_options_for_v8_1m_mve): New.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr69052.c: Require target ia32.
+	(dg-options): Add -fcommon and remove -pie.
+
+2020-02-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-epilogues.c (scan-tree-dump): Require
+	vect_mutiple_sizes effective target.
+
+2020-02-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93586
+	* gcc.dg/torture/pr93586.c: New testcase.
+
+2020-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93845
+	* g++.dg/tree-ssa/pr93845.C: New test.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/rsqrt_1.c: New test.
+	* gcc.target/aarch64/sve/rsqrt_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1.c: Likewise.
+	* gcc.target/aarch64/sve/sqrt_1_run.c: Likewise.
+
+2020-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/recip_1.c: New test.
+	* gcc.target/aarch64/sve/recip_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/recip_2.c: Likewise.
+	* gcc.target/aarch64/sve/recip_2_run.c: Likewise.
+
+2020-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/93801
+	* g++.dg/warn/Wredundant-tags-3.C: New test.
+
+2020-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93828
+	* g++.target/i386/pr93828.C: New test.
+
+2020-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/93658
+	* gcc.target/powerpc/pr93658.c: New test.
+
+2020-02-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93825
+	* gfortran.dg/goacc/tile-3.f90: New.
+
+2020-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93169 - wrong-code with a non-constexpr constructor.
+	* g++.dg/cpp0x/constexpr-93169.C: New test.
+
+2020-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92128
+	* gcc.dg/strlenopt-81.c: Align arrays to let strictly aligned targets
+	optimize away calls as expected.
+
+2020-02-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gimplefe-41.c: Add -msse2 additional options for x86 targets.
+	* gcc.dg/ipa/ipa-sra-19.c: Ditto.
+
+2020-02-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93767
+	* gcc.dg/vect/pr93767.c: New test.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93776
+	* gcc.dg/tree-ssa/pr93776.c: New test.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93667
+	* g++.dg/tree-ssa/pr93667.C: New test.
+
+2020-02-19  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.C: add -mavx512vbmi2
+	* g++.dg/other/i386-3.C: Ditto.
+
+2020-02-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vmull_high.c: New.
+
+2020-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93817
+	* g++.dg/diagnostic/array-init1.C: Fix for ILP32.
+
+2020-02-18  Jon Beniston <jon@beniston.com>
+
+	* gcc.dg/strcmpopt_6.c: Add space in array for terminator.
+
+2020-02-18  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93714
+	* gfortran.dg/char_pointer_assign_6.f90: Look for no target
+	message instead of length mismatch.
+	* gfortran.dg/pr93714_1.f90
+	* gfortran.dg/pr93714_2.f90
+
+2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93601
+	* gfortran.dg/pr93601.f90 : New test.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93583
+	* gcc.dg/ipa/pr93583.c: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93777
+	* g++.dg/analyzer/pr93777.C: New test.
+	* gfortran.dg/analyzer/pr93777.f90: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93778
+	* gfortran.dg/analyzer/pr93778.f90: New test.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93774
+	* gfortran.dg/analyzer/deferred_character_25.f90: New test,
+	based on gfortran.dg/deferred_character_25.f90.
+
+2020-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93779
+	* gfortran.dg/analyzer/pr88304-2.f90: New test, adapted from
+	gfortran.fortran-torture/compile/pr88304-2.f90
+
+2020-02-18  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93603
+	* gfortran.dg/pr93603.f90 : New test.
+
+2020-02-20  Mark Eggleston <markeggleston@gcc.gnu.org>
+
+	PR fortran/93580
+	* gfortran.dg/dg/pr93580.f90: New test.
+
+2020-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93780
+	* gcc.dg/pr93780.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93775
+	* gcc.dg/analyzer/20020129-1.c: New test.
+
+2020-02-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tls/emutls-3.c: New, combining emutls-2.c and
+	thr-init-2.c into an execution test with explicitly common
+	variables.
+
+2020-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/pr93565.c: Fix test for ilp32.
+
+2020-02-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Correct
+	number of expected insns.
+
+2020-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93760
+	* g++.dg/lto/odr-8_1.C: Fix grammar.
+
+2020-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/86134
+	* gcc.dg/pr86134.c: New testcase.
+	* gcc.dg/pr28322-2.c: Adjust.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* gcc.dg/analyzer/torture/20060625-1.c: New test.
+	* gcc.dg/analyzer/torture/pr51628-30.c: New test.
+	* gcc.dg/analyzer/torture/pr59037.c: New test.
+
+2020-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-1.c (test_48): New.
+
+2020-02-17  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/93047
+	* gcc.dg/torture/stackalign/builtin-return-2.c: New test case.
+
+2020-02-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93743
+	* gcc.target/i386/pr93743.c : New test.
+
+2020-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93710 - poor diagnostic for array initializer.
+	* g++.dg/diagnostic/array-init1.C: New test.
+
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++2a_only): Also
+	look for -std=*++20.
+	(check_effective_target_concepts): Use check_effective_target_c++2a.
+
+2020-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93744
+	* gcc.c-torture/execute/pr93744-1.c: New test.
+	* gcc.c-torture/execute/pr93744-2.c: New test.
+	* gcc.c-torture/execute/pr93744-3.c: New test.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61414
+	* g++.dg/cpp0x/enum39.C: New test.
+
+2020-02-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/93516
+	* g++.dg/tree-ssa/pr93516.C: New test.
+
+2020-02-14 Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vbmi2-vpshld-1.c: New test.
+	* gcc.target/i386/avx512vbmi2-vpshrd-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Add -mavx512vbmi2.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add -mavx512vbmi2 and tests.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2020-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Partially implement P1042R1: __VA_OPT__ wording clarifications
+	PR preprocessor/92319
+	* c-c++-common/cpp/va-opt-4.c: New test.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93576
+	* gcc.dg/pr93576.c: New test.
+
+2020-02-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/constexpr-static13.C:
+	Add -fdelete-null-pointer-checks.
+	* g++.dg/cpp2a/constexpr-new11.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new12.C: Likewise.
+
+2020-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93656
+	* gcc.target/i386/pr93656.c: New test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/nps400-1.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/or-cnst-size2.c: Update test.
+
+2020-02-13  Claudiu Zissulescu  <claziss@synopsys.com>
+	Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/mul64-1.c: New test.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93696
+	* gcc.target/i386/pr93696-1.c: New test.
+	* gcc.target/i386/pr93696-2.c: New test.
+	* gcc.target/i386/avx512bitalg-vpopcntw-1.c (TEST): Fix argument order
+	of _mm*_mask_popcnt_*.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb-1.c (TEST): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntb.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntbvl.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntwvl.c (foo): Likewise.
+	* gcc.target/i386/avx512bitalg-vpopcntw.c (foo): Likewise.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c (foo): Likewise.
+
+	PR tree-optimization/93582
+	* gcc.dg/tree-ssa/pr93582-1.c: New test.
+	* gcc.dg/tree-ssa/pr93582-2.c: New test.
+	* gcc.dg/tree-ssa/pr93582-3.c: New test.
+
+2020-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93717
+	* gcc.dg/optimize-bswapsi-2.c: Add BE case.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93673
+	* gcc.target/i386/avx512f-pr93673.c: New test.
+	* gcc.target/i386/avx512dq-pr93673.c: New test.
+	* gcc.target/i386/avx512bw-pr93673.c: New test.
+
+	* g++.dg/analyzer/pr93212.C: Require c++14 rather than c++11.
+
+2020-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-allocators.h: New.
+	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: New test.
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: New test.
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C: Use new
+	coro1-allocators.h header.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C: Likewise.
+	* g++.dg/coroutines/torture/alloc-02-fail-new-grooaf-check.C: New.
+	* g++.dg/coroutines/torture/alloc-03-overload-new-1.C: New test.
+	* g++.dg/coroutines/torture/alloc-04-overload-del-use-two-args.C:New.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/pr93122.c: Use -mprefixed instead of
+	-mprefixed-addr in dg-options.
+
+	PR middle-end/93663
+	* gcc.dg/torture/builtin-round-roundeven.c (main): Add tests
+	for DBL_MAX, inf, their negations and nan.
+
+2020-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93646
+	* gcc.dg/Wstringop-overflow-31.c: New test.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/93565
+	* gcc.target/aarch64/pr93565.c: New test.
+
+2020-02-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/popcnt2.c: New test.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88819
+	* g++.dg/cpp2a/nontype-class32.C: New test.
+
+2020-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93684 - ICE-on-invalid with broken attribute.
+	* g++.dg/parse/attr4.C: New test.
+
+2020-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93670
+	* gcc.target/i386/avx512vl-pr93670.c: New test.
+
+2020-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93697
+	* gcc.dg/pr93661.c: Pass -w, remove dg-warning.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93288
+	* g++.dg/analyzer/malloc.C: Add test coverage for a double-free
+	called in a constructor.
+	* g++.dg/analyzer/pr93288.C: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93212
+	* g++.dg/analyzer/analyzer.exp: New subdirectory and .exp suite.
+	* g++.dg/analyzer/malloc.C: New test.
+	* g++.dg/analyzer/pr93212.C: New test.
+
+2020-02-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93683
+	* gcc.dg/tree-ssa/ssa-dse-39.c: New test.
+
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_ppc_ieee128_ok): New.
+	* gcc.target/powerpc/pr92796.c: Add a require-effective-target
+	statement for ppc_ieee128_ok.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93374
+	* gcc.dg/analyzer/torture/pr93374.c: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93669
+	* gcc.dg/analyzer/pr93669.c: New test.
+
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93649
+	* gcc.dg/analyzer/torture/pr93649.c: New test.
+
+2020-02-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr70010-2.c: Add -maltivec.
+	* gcc.target/powerpc/pr70010-3.c: Add -maltivec.
+
+2020-02-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: New test.
+	* gcc.target/arm/simd/vdot-2-2.c: New test.
+	* gcc.target/arm/simd/vdot-2-3.c: New test.
+	* gcc.target/arm/simd/vdot-2-4.c: New test.
+
+2020-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93661
+	PR tree-optimization/93662
+	* gcc.dg/pr93661.c: New testcase.
+
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/69448
+	PR c++/80471
+	* g++.dg/concepts/abbrev3.C: New test.
+	* g++.dg/cpp2a/concepts-pr80471.C: Adjust a static_assert to expect the
+	correct behavior.
+	* g++.dg/cpp0x/auto9.C: Adjust a dg-error directive.
+
+	* g++.dg/cpp2a/concepts6.C: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93350
+	* gcc.dg/analyzer/torture/pr93350.c: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93647
+	* gcc.dg/analyzer/torture/pr93647.c: New test.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93637
+	* gcc.target/i386/avx-pr93637.c: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93405
+	* gfortran.dg/analyzer/pr93405.f90: New test.
+
+2020-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gfortran.dg/analyzer/analyzer.exp: New subdirectory and .exp
+	suite.
+	* gfortran.dg/analyzer/malloc-example.f90: New test.
+	* gfortran.dg/analyzer/malloc.f90: New test.
+
+2020-02-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93640
+	* gcc.dg/attr-access.c: New test.
+
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/cris.exp (check_effective_target_cc0): New.
+
+	PR target/93372
+	* gcc.target/cris/pr93372-1.c, gcc.target/cris/pr93372-2.c,
+	gcc.target/cris/pr93372-5.c, gcc.target/cris/pr93372-8.c,
+	gcc.target/cris/pr93372-3.c, gcc.target/cris/pr93372-4.c,
+	gcc.target/cris/pr93372-6.c, gcc.target/cris/pr93372-7.c,
+	gcc.target/cris/pr93372-9.c, gcc.target/cris/pr93372-10.c,
+	gcc.target/cris/pr93372-11.c, gcc.target/cris/pr93372-12.c,
+	gcc.target/cris/pr93372-13.c, gcc.target/cris/pr93372-14.c,
+	gcc.target/cris/pr93372-15.c, gcc.target/cris/pr93372-16.c,
+	gcc.target/cris/pr93372-17.c, gcc.target/cris/pr93372-18.c,
+	gcc.target/cris/pr93372-19.c, gcc.target/cris/pr93372-20.c,
+	gcc.target/cris/pr93372-21.c, gcc.target/cris/pr93372-22.c,
+	gcc.target/cris/pr93372-23.c, gcc.target/cris/pr93372-24.c,
+	gcc.target/cris/pr93372-25.c, gcc.target/cris/pr93372-26.c,
+	gcc.target/cris/pr93372-27.c, gcc.target/cris/pr93372-28.c,
+	gcc.target/cris/pr93372-29.c, gcc.target/cris/pr93372-30.c,
+	gcc.target/cris/pr93372-31.c, gcc.target/cris/pr93372-32.c,
+	gcc.target/cris/pr93372-33.c, gcc.target/cris/pr93372-34.c,
+	gcc.target/cris/pr93372-35.c, gcc.target/cris/dbr-1.c: New tests.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91913
+	* gfortran.dg/pr91913.f90: New test.
+
+2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* g++.target/i386/pr85334-1.C: New test.
+	* g++.target/i386/pr85334-2.C: Likewise.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* gcc.dg/format/gcc_diag-11.c (test_cdiag_bad_words): Add two further
+	tests.
+
+2020-02-10  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93203
+	* g++.dg/ipa/pr93203.C: New test.
+	* gcc.dg/ipa/ipcp-1: Change dump string.
+
+2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr91333.c (dg-do): Fix target selector.
+
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93633
+	* g++.dg/cpp2a/constexpr-new11.C: New test.
+	* g++.dg/cpp2a/constexpr-new12.C: New test.
+	* g++.dg/cpp2a/constexpr-new13.C: New test.
+
+2020-02-08  Andrew Pinski  <apinski@marvel.com>
+
+	PR target/91927
+	* gcc.target/aarch64/pr91927.c: New testcase.
+
+2020-02-08  Peter Bergner <bergner@linux.ibm.com>
+
+	PR target/93136
+	* gcc.dg/vmx/ops.c: Add -flax-vector-conversions to dg-options.
+	* gcc.target/powerpc/vsx-vector-6.h: Split tests into smaller functions.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Adjust scan-assembler-times
+	regex directives.  Adjust expected instruction counts.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Likewise.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Likewise.
+
+2020-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93549
+	* g++.dg/ext/constexpr-pr93549.C: New test.
+
+2020-02-08  Uroš Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65782
+	* gcc.target/i386/pr65782.c: New test.
+
+2020-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92947 - Paren init of aggregates in unevaluated context.
+	* g++.dg/cpp2a/paren-init21.C: New test.
+
+2020-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* testsuite/gcc.target/powerpc/pr92923-1.c: Add -mvsx.
+
+2020-02-07  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/aarch64/simd/vmmla.c: New test.
+
+2020-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93519
+	* gcc.dg/Wrestrict-21.c: New testcase.
+
+2020-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85667
+	* gcc.target/i386/pr85667-10.c: New test.
+	* gcc.target/i386/pr85667-7.c: Likewise.
+	* gcc.target/i386/pr85667-8.c: Likewise.
+	* gcc.target/i386/pr85667-9.c: Likewise.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93122
+	* gcc.target/powerpc/pr93122.c: New test.
+
+2020-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89404
+	* g++.dg/ext/vla21.C: New.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93615
+	* gcc.dg/pr93615.c: New test.
+
+	PR target/93611
+	* gcc.target/i386/pr93611.c: New test.
+
+2020-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* gcc.dg/analyzer/pr93375.c: Rework test case to avoid per-target
+	differences in how __builtin_memcpy has been optimized at the time
+	the analyzer runs.
+
+2020-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/torture/intptr_t.c: New test.
+
+2020-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr93012.c: New.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/87763
+	* gcc.target/aarch64/movk_2.c: New test.
+
+2020-02-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/memcpy-strategy-1.c (dg-final):
+	Unify scan-assembler strings for all targets.
+	* gcc.target/i386/memcpy-strategy-2.c (dg-final): Ditto.
+	* gcc.target/i386/memcpy-strategy-3.c (dg-final): Ditto.
+	* gcc.target/i386/memcpy-vector_loop-1.c (dg-final): Ditto.
+
+2020-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93597 - ICE with lambda in operator function.
+	* g++.dg/cpp0x/lambda/lambda-93597.C: New test.
+
+2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.target/arm/multilib.exp (multilib_config): Pass flags to
+	…_target_compile as (additional_flags=) option and not as source
+	filename to make it work with remote execution.
+	* lib/target-supports.exp (check_runtime, check_gc_sections_available,
+	check_effective_target_gas, check_effective_target_gld): Likewise.
+
+2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93594
+	* gcc.target/i386/avx2-pr93594.c: New test.
+
+2020-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92765
+	* g++.dg/tree-ssa/strlenopt-1.C: New test.
+	* g++.dg/tree-ssa/strlenopt-2.C: New test.
+	* gcc.dg/Warray-bounds-58.c: New test.
+	* gcc.dg/Wrestrict-20.c: Avoid a valid -Wformat-overflow.
+	* gcc.dg/Wstring-compare.c: Xfail a test.
+	* gcc.dg/strcmpopt_2.c: Disable tests.
+	* gcc.dg/strcmpopt_4.c: Adjust tests.
+	* gcc.dg/strcmpopt_10.c: New test.
+	* gcc.dg/strcmpopt_11.c: New test.
+	* gcc.dg/strlenopt-69.c: Disable tests.
+	* gcc.dg/strlenopt-92.c: New test.
+	* gcc.dg/strlenopt-93.c: New test.
+	* gcc.dg/strlenopt.h: Declare calloc.
+	* gcc.dg/tree-ssa/pr92056.c: Xfail tests until pr93518 is resolved.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-23.c: Correct test (pr93517).
+
+2020-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93559 - ICE with CONSTRUCTOR flags verification.
+	* g++.dg/cpp0x/initlist119.C: New test.
+	* g++.dg/cpp0x/initlist120.C: New test.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93557
+	* c-c++-common/Wunused-var-17.c: New test.
+
+2020-02-05  Jeff Law  <law@redhat.com>
+
+	* gcc.target/hppa/shadd-3.c: Disable delay slot filling and
+	adjust expected shadd insn count appropriately.
+
+2020-02-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-1.c: Update for changed output to
+	__analyzer_dump_exploded_nodes, dropping redundant call at merger.
+	* gcc.dg/analyzer/data-model-7.c: Likewise.
+	* gcc.dg/analyzer/loop-2.c: Update for changed output format.
+	* gcc.dg/analyzer/loop-2a.c: Likewise.
+	* gcc.dg/analyzer/loop-4.c: Likewise.
+	* gcc.dg/analyzer/loop.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-10.c: Likewise; drop redundant
+	call at merger.
+	* gcc.dg/analyzer/malloc-vs-local-1a.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-1b.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-3.c: Likewise.
+	* gcc.dg/analyzer/paths-1.c: Likewise.
+	* gcc.dg/analyzer/paths-1a.c: Likewise.
+	* gcc.dg/analyzer/paths-2.c: Likewise.
+	* gcc.dg/analyzer/paths-3.c: Likewise.
+	* gcc.dg/analyzer/paths-4.c: Update for changed output format.
+	* gcc.dg/analyzer/paths-5.c: Likewise.
+	* gcc.dg/analyzer/paths-6.c: Likewise; drop redundant calls
+	at merger.
+	* gcc.dg/analyzer/paths-7.c: Likewise.
+	* gcc.dg/analyzer/torture/conditionals-2.c: Update for changed
+	output format.
+	* gcc.dg/analyzer/zlib-1.c: Likewise; drop redundant calls.
+	* gcc.dg/analyzer/zlib-5.c: Update for changed output format.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92190
+	* gcc.target/i386/pr92190.c: New test.
+
+2020-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92177
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+
+2020-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90648
+	* gcc.dg/pr90648.c: New testcase.
+
+2020-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93555
+	* c-c++-common/gomp/pr93555-1.c: New test.
+	* c-c++-common/gomp/pr93555-2.c: New test.
+	* gfortran.dg/gomp/pr93555.f90: New test.
+
+2020-02-05  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-14-return-ref-to-auto.C: New test.
+
+2020-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-1.c (struct coord): Convert fields
+	from int to long.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93538
+	* gcc.dg/tree-ssa/forwprop-38.c: New testcase.
+
+2020-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/has-include-1.c: New test.
+	* c-c++-common/cpp/has-include-next-1.c: New test.
+	* c-c++-common/gomp/has-include-1.c: New test.
+
+	PR preprocessor/93545
+	* c-c++-common/cpp/pr88974.c: Expect another diagnostics during error
+	recovery.
+	* c-c++-common/cpp/pr93545-1.c: New test.
+	* c-c++-common/cpp/pr93545-2.c: New test.
+	* c-c++-common/cpp/pr93545-3.c: New test.
+	* c-c++-common/cpp/pr93545-4.c: New test.
+
+2020-02-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-missing-promise.C: New test.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91123
+	* gcc.dg/tree-ssa/ssa-fre-85.c: New testcase.
+
+2020-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* gcc.target/i386/pr92819.c: New testcase.
+	* gcc.target/i386/pr92803.c: Adjust.
+
+2020-02-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93458
+	* g++.dg/coroutines/pr93458-1-missing-traits.C: New test.
+	* g++.dg/coroutines/pr93458-2-bad-traits.C: New test.
+	* g++.dg/coroutines/pr93458-3-missing-handle.C: New test.
+	* g++.dg/coroutines/pr93458-4-bad-coro-handle.C: New test.
+	* g++.dg/coroutines/pr93458-5-bad-coro-type.C: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93544
+	* gcc.dg/analyzer/torture/pr93544.c: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93546
+	* gcc.dg/analyzer/pr93546.c: New test.
+
+2020-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93547
+	* gcc.dg/analyzer/pr93547.c: New test.
+
+2020-02-03  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* gcc.target/arm/pr91816.c: New test.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/cpp/openacc-define-3.c: Update expected value for
+	_OPENACC define.
+	* gfortran.dg/openacc-define-3.f90: Likewise.
+
+2020-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93427
+	* gfortran.dg/associate_52.f90: New.
+
+2020-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93533
+	* gcc.c-torture/compile/pr93533.c: New test.
+	* gcc.target/s390/pr93533.c: New test.
+
+2020-02-03  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-04-control-flow.C: Add label.
+
+2020-02-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93530 - ICE on invalid alignas in a template.
+	* g++.dg/cpp0x/alignas18.C: New test.
+
+2020-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/darwin-abi-12.c: Add '-fcommon' to the
+	options.
+
+2020-02-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* gcc.target/i386/pr91333.c: Add vmovsd to regexp.  Set up count
+	to 3.
+
+2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
+
+	* g++.target/nios2/hello-pie.C: New.
+	* g++.target/nios2/nios2.exp: New.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93457
+	* gcc.dg/analyzer/pr93457.c: New test.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93373
+	* gcc.dg/analyzer/torture/pr93373.c: New test.
+
+2020-01-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91333
+	* gcc.target/i386/pr91333.c: New.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93379
+	* gcc.dg/analyzer/torture/pr93379-2.c: New test.
+	* gcc.dg/analyzer/torture/pr93379.c: New test.
+
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93438
+	* gcc.dg/analyzer/torture/pr93438.c: New test.
+	* gcc.dg/analyzer/torture/pr93438-2.c: New test.
+
+2020-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/91838
+	* g++.dg/pr91838.C: Moved to ...
+	* g++.dg/opt/pr91838.C: ... here.  Require c++11 target instead of
+	dg-skip-if for c++98.  Pass -Wno-psabi -w to avoid psabi style
+	warnings on vector arg passing or return.  Add -masm=att on i?86/x86_64.
+	Only check for pxor %xmm0, %xmm0 on lp64 i?86/x86_64.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_bf16_ok):
+	New proc.
+	* gcc.target/aarch64/sve/acle/asm/bfdot_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/bfdot_lane_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalb_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalb_lane_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalt_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmlalt_lane_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/bfmmla_f32.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/cvt_bf16.c: Likweise.
+	* gcc.target/aarch64/sve/acle/asm/cvtnt_bf16.c: Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_1.c: Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_lane_1.c:
+	Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_lanex2_1.c:
+	Likweise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_opt_n_1.c:
+	Likweise.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Test mangling
+	of svbfloat16_t.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise for
+	__SVBfloat16_t.
+	* gcc.target/aarch64/sve/acle/asm/clasta_bf16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/clastb_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cnt_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create2_1.c (create_bf16): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create3_1.c (create_bf16): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create4_1.c (create_bf16): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dupq_lane_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ext_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/insr_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lasta_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lastb_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/len_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f16.c
+	(reinterpret_f16_bf16_tied1, reinterpret_f16_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f32.c
+	(reinterpret_f32_bf16_tied1, reinterpret_f32_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f64.c
+	(reinterpret_f64_bf16_tied1, reinterpret_f64_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s16.c
+	(reinterpret_s16_bf16_tied1, reinterpret_s16_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s32.c
+	(reinterpret_s32_bf16_tied1, reinterpret_s32_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s64.c
+	(reinterpret_s64_bf16_tied1, reinterpret_s64_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s8.c
+	(reinterpret_s8_bf16_tied1, reinterpret_s8_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u16.c
+	(reinterpret_u16_bf16_tied1, reinterpret_u16_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u32.c
+	(reinterpret_u32_bf16_tied1, reinterpret_u32_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u64.c
+	(reinterpret_u64_bf16_tied1, reinterpret_u64_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u8.c
+	(reinterpret_u8_bf16_tied1, reinterpret_u8_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/rev_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sel_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/splice_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tbl_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef2_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef3_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef4_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_1.c (ret_bf16, ret_bf16x2)
+	(ret_bf16x3, ret_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_2.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_3.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_4.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_5.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_6.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_7.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_1.c (bfloat16x16_t): New
+	typedef.
+	(bfloat16_callee, bfloat16_caller): New tests.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_2.c (bfloat16x16_t): New
+	typedef.
+	(bfloat16_callee, bfloat16_caller): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_256.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_512.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_1024.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_2048.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_256.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_512.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_1024.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_2048.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_256.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_512.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_1024.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_2048.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_7.c (callee_bf16): Likewise
+	(caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_8.c (callee_bf16): Likewise
+	(caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_9.c (callee_bf16): Likewise
+	(caller_bf16): Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/tbl2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/tbx_bf16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_bf16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_bf16.c: Likewise.
+
+2020-01-31  Dennis Zhang  <dennis.zhang@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_i8mm_ok)
+	(check_effective_target_aarch64_asm_f32mm_ok): New target selectors.
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Test handling of
+	__ARM_FEATURE_SVE_MATMUL_INT8, __ARM_FEATURE_SVE_MATMUL_FP32 and
+	__ARM_FEATURE_SVE_MATMUL_FP64.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h (TEST_TRIPLE_Z):
+	(TEST_TRIPLE_Z_REV2, TEST_TRIPLE_Z_REV, TEST_TRIPLE_LANE_REG)
+	(TEST_TRIPLE_ZX): New macros.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: Remove +sve and
+	rely on +f64mm to enable it.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mmla_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mmla_f64.c: Likewise,
+	* gcc.target/aarch64/sve/acle/asm/mmla_s32.c: Likewise,
+	* gcc.target/aarch64/sve/acle/asm/mmla_u32.c: Likewise,
+	* gcc.target/aarch64/sve/acle/asm/sudot_lane_s32.c: Likewise,
+	* gcc.target/aarch64/sve/acle/asm/sudot_s32.c: Likewise,
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/usdot_lane_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/usdot_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/usmmla_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_intq_uintq_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_intq_uintq_opt_n_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_uintq_intq_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_uintq_intq_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_uintq_intq_opt_n_1.c:
+	Likewise.
+
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/args_1.c: Require lp64 for
+	check-function-bodies tests.
+	* gcc.target/aarch64/sve/pcs/args_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_4.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_be_nowrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_be_wrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_le_nowrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_le_wrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_4_be.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_4_le.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f16.c: Require lp64.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_7.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_9.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c: Require lp64 and
+	aarch64_little_endian for check-function-bodies tests.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_128.c: Likewise.  Remove
+	target selector from dg-compile.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c: Likewise.
+
+2020-01-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93462
+	* gfortran.dg/goacc/atomic-1.f90: New.
+
+2020-01-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/91838
+	* g++.dg/pr91838.C: New test.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-1.c: Remove include of <string.h>.
+	Use __builtin_ forms of memset and strlen throughout.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/conditionals-2.c: Move to...
+	* gcc.dg/analyzer/torture/conditionals-2.c: ...here, converting
+	to a torture test.  Remove redundant include.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93356
+	* gcc.dg/analyzer/conditionals-notrans.c (test_float_selfcmp):
+	Add.
+	* gcc.dg/analyzer/conditionals-trans.c: Mark floating point
+	comparison test as failing.
+	(test_float_selfcmp): Add.
+	* gcc.dg/analyzer/data-model-1.c: Mark floating point comparison
+	tests as failing.
+	* gcc.dg/analyzer/torture/pr93356.c: New test.
+
+2020-01-30  Jeff Law  <law@redhat.com>
+
+	PR c/88660
+	* gcc.dg/pr88660.c: New test
+
+2020-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/93384
+	* gcc.dg/lto/pr93384_0.c: New test.
+	* gcc.dg/lto/pr93384_1.c: New file.
+
+	PR middle-end/93505
+	* gcc.c-torture/compile/pr93505.c: New test.
+
+2020-01-30  Jeff Law  <law@redhat.com
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Make existing dg-final scan
+	conditional on !c6x.  Add dg-final scan pattern for c6x.
+
+2020-01-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92323
+	* gcc.dg/Warray-bounds-57.c: New test.
+
+2020-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93450
+	* gcc.dg/analyzer/torture/pr93450.c: New test.
+
+2020-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93494
+	* gcc.c-torture/execute/pr93494.c: New test.
+
+2020-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90338
+	* g++.dg/pr90338.C: New.
+
+2020-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91824
+	* gcc.target/i386/pr91824-2.c: New test.
+
+	PR target/91824
+	* gcc.target/i386/pr91824-1.c: New test.
+
+2020-01-30  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-syntax-09-convert.C: New test.
+
+2020-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92706
+	* gcc.dg/tree-ssa/pr92706-1.c: Require int128 effective target.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88092
+	* g++.dg/cpp2a/nontype-class31.C: New test.
+
+2020-01-29  Jeff Law  <law@redhat.com
+
+	PR tree-optimization/89689
+	* gcc.dg/pr89689.c: New test.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91754 - Fix template arguments comparison with class NTTP.
+	* g++.dg/cpp2a/nontype-class30.C: New test.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92948 - Fix class NTTP with template arguments.
+	* g++.dg/cpp2a/nontype-class28.C: New test.
+	* g++.dg/cpp2a/nontype-class29.C: New test.
+
+2020-01-29  Joel Hutton  <Joel.Hutton@arm.com>
+
+	PR target/93221
+	* gcc.target/aarch64/pr93221.c: New test.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
+	* gcc.dg/tree-ssa/pr92706-1.c: New test.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
+	* gcc.dg/tree-ssa/pr92706-2.c: New test.
+	* gcc.dg/guality/pr59776.c: Xfail tests for s2.g.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/indir-call-prof-2.c: New testcase.
+
+2020-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/93393
+	* gcc.dg/torture/pr93133.c: XFAIL for powerpc*-*-*.
+
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91118
+	* g++.dg/gomp/pr91118-1.C: New test.
+	* g++.dg/gomp/pr91118-2.C: New test.
+
+	PR fortran/93463
+	* gfortran.dg/goacc/pr93463.f90: New test.
+
+2020-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93428
+	* gcc.dg/torture/pr93428.c: New testcase.
+
+2020-01-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93437
+	* g++.dg/warn/Wstringop-overflow-5.C: New test.a
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-prof/indir-call-prof.C: Update template.
+	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Add more targets.
+	* gcc.dg/tree-prof/crossmodule-indircall-1a.c: Add more targets.
+	* gcc.dg/tree-prof/indir-call-prof.c: Update template.
+
+2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91461
+	* gcc.target/i386/avx256-unaligned-store-2.c: Don't check
+	vmovups.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-4.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-5.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-6.c: Likewise.
+	* gcc.target/i386/pieces-strcpy-2.c: Likewise.
+	* gcc.target/i386/pr90980-1.c: Likewise.
+	* gcc.target/i386/pr87317-4.c: Check "\tvmovd\t" instead of
+	"vmovd" to avoid matching "vmovdqu".
+	* gcc.target/i386/pr87317-5.c: Likewise.
+	* gcc.target/i386/pr87317-7.c: Likewise.
+	* gcc.target/i386/pr91461-1.c: New test.
+	* gcc.target/i386/pr91461-2.c: Likewise.
+	* gcc.target/i386/pr91461-3.c: Likewise.
+	* gcc.target/i386/pr91461-4.c: Likewise.
+	* gcc.target/i386/pr91461-5.c: Likewise.
+
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c: Update for
+	renaming of warning_at overload to warning_meta.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: Likewise.
+
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/mapping-tests-2.f90: New test.
+	* gfortran.dg/goacc/subarrays.f95: Expect rejection of non-contiguous
+	array.
+
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/deep-copy-2.f90: Move test here (from libgomp
+	testsuite). Make a compilation test, and expect rejection of mixed
+	component/non-component accesses.
+	* gfortran.dg/goacc/mapping-tests-1.f90: New test.
+
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/strided-alloc-ptr.f90: New test.
+
+2020-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93439
+	* gfortran.dg/graphite/pr93439.f90: New testcase.
+
+2020-01-28  Sahahb Vahedi  <shahab@synopsys.com>
+
+	* gcc.target/arc/code-density-flag.c: New test
+
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93464
+	* gfortran.dg/goacc/pr93464.f90: New.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93434
+	* gcc.c-torture/execute/pr93434.c: New test.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/93460
+	* gcc.dg/torture/pr93170.c: Add -Wpsabi.
+
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92440
+	* g++.dg/template/pr92440.C: New test.
+	* g++.dg/cpp0x/vt-34314.C: Update error to note.
+	* g++.dg/template/pr59930-2.C: Likewise.
+	* g++.old-deja/g++.pt/redecl1.C: Likewise.
+
+2020-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93418
+	* gcc.target/i386/avx2-pr93418.c: New test.
+
+	PR tree-optimization/93454
+	* gcc.dg/pr93454.c: New test.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93451
+	* gcc.dg/analyzer/torture/pr93451.c: New test.
+
+2020-01-27  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Update following load/store
+	optimisation.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93349
+	* gcc.dg/analyzer/torture/pr93349.c: New test.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93291
+	* gcc.dg/analyzer/pattern-test-2.c: Remove include of stdlib.h.
+	(test_2): Rewrite to explicitly perform a bitwise-or of two
+	boolean conditions.
+	(test_3): New function, to test bitwise-and.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/71727
+	* gcc.target/aarch64/pr71727.c: Add -fcommon.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/sigsetjmp-5.c: New test.
+	* gcc.dg/analyzer/sigsetjmp-6.c: New test.
+
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/91171
+	* gcc.dg/graphite/scop-21.c: un-XFAIL.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/interrupt-6.c: Update test.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/uncached-3.c: New test.
+	* gcc.target/arc/uncached-4.c: Likewise.
+	* gcc.target/arc/uncached-5.c: Likewise.
+	* gcc.target/arc/uncached-6.c: Likewise.
+	* gcc.target/arc/uncached-7.c: Likewise.
+	* gcc.target/arc/uncached-8.c: Likewise.
+	* gcc.target/arc/arc.exp (ll64): New predicate.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr93170.c: New test.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	* gcc.target/i386/pr81213.c: Adjust to not expect
+	a globally unique name.
+
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93397
+	* gcc.dg/torture/pr93397.c: New testcase.
+
+2020-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/85781
+	* gfortran.dg/bind_c_char_2.f90: New.
+	* gfortran.dg/bind_c_char_3.f90: New.
+	* gfortran.dg/bind_c_char_4.f90: New.
+	* gfortran.dg/bind_c_char_5.f90: New.
+
+2020-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr91298-1.c: xfail on Solaris/x86 with native
+	assembler.
+	* gcc.target/i386/pr91298-2.c: Likewise.
+
+2020-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93412
+	* gcc.dg/pr93412.c: New test.
+
+	PR target/93430
+	* gcc.dg/pr93430.c: New test.
+	* gcc.target/i386/avx2-pr93430.c: New test.
+
+	PR ipa/93166
+	* g++.dg/pr93166.C: Move to ...
+	* g++.dg/pr93166_0.C: ... here.  Turn it into a proper lto test.
+
+	PR tree-optimization/92788
+	* g++.dg/pr92788.C: Move to ...
+	* g++.target/i386/pr92788.C: ... here.  Remove target from dg-do line.
+	Change type of operator new's first parameter to __SIZE_TYPE__.
+
+2020-01-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
+	* g++.dg/cpp2a/constexpr-dynamic18.C: New test.
+
+2020-01-25  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93166
+	* g++.dg/pr93166.C: New test.
+
+2020-01-25  Andrew Pinski <apinski@marvell.com>
+
+	* gcc.target/aarch64/vec_zeroextend.c: Fix for big-endian.
+
+2020-01-24  Jeff Law  <law@redhat.com
+
+	PR tree-optimization/92788
+	* g++.dg/pr92788.C: New test.
+
+2020-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93395
+	* gcc.target/i386/pr93395.c: New test.
+	* gcc.target/i386/avx512vl-vpermilpdi-1.c: Remove xfail.
+
+2020-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93299 - ICE in tsubst_copy with parenthesized expression.
+	* g++.dg/cpp1y/paren5.C: New test.
+
+2020-01-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/constexpr-odr1.C: Add -fdelete-null-pointer-checks.
+	* g++.dg/cpp0x/constexpr-odr2.C: Likewise.
+	* g++.dg/cpp0x/nontype4.C: Likewise.
+	* g++.dg/cpp1y/constexpr-new.C: Likewise.
+	* g++.dg/cpp1y/new1.C: Likewise.
+	* g++.dg/cpp1y/new2.C: Likewise.
+	* g++.dg/cpp2a/constexpr-dynamic11.C: Likewise.
+	* g++.dg/cpp2a/constexpr-dynamic17.C: Likewise.
+	* g++.dg/cpp2a/constexpr-dynamic4.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new1.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new10.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new2.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new3.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new4.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new8.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new9.C: Likewise.
+	* g++.dg/cpp2a/nontype-class1.C: Likewise.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_unsigned_char):
+	New.
+
+2020-01-24  Jeff Law  <law@redhat.com
+
+	PR target/13721
+	* gcc.target/h8300/pr13721.c: New test.
+
+2020-01-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR debug/92763
+	* g++.dg/debug/pr92763.C: Require fopenmp.
+
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93367
+	* gcc.dg/analyzer/abort.c: Remove include of <assert.h>.
+	Replace use of assert with a custom assertion implementation.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/93027
+	* gcc.target/i386/pr93027.c: Require lp64 target rather x86_64-*-*.
+
+	PR rtl-optimization/93402
+	* gcc.c-torture/execute/pr93402.c: New test.
+
+2020-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/92804
+	* g++.dg/concepts/pr92804-1.C: New.
+	* g++.dg/concepts/pr92804-2.C: Likewise.
+
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* gcc.dg/analyzer/pr93375.c: New test.
+
+2020-01-23  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_unsigned_char):
+	New.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93376
+	* gcc.dg/pr93376.c: New test.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/93341
+	* gcc.target/aarch64/pr93341.c: New test.
+
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-3.c: Remove hardcoded "-O2" and move
+	to torture/conftest-1.c.
+	* gcc.dg/analyzer/torture/analyzer-torture.exp: New.
+	* gcc.dg/analyzer/torture/conftest-1.c: Move here from
+	analyzer/data-model-3.c.
+	* gcc.dg/analyzer/torture/poc.c: New test.
+
+2020-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93381
+	* gcc.dg/torture/pr93354.c: New testcase.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93346
+	* gcc.target/i386/pr93346.c: New test.
+
+2020-01-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/84919
+	* gcc.dg/Wrestrict-20.c: New test.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/whilele_1.C: Skip for ILP32.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/ld1_f16.c: Skip check-function-bodies
+	test for ILP32.
+	* gcc.target/aarch64/sve/acle/asm/ld1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfb.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfb_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfd.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfd_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfh.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfh_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfw.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfw_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1w_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1w_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1w_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1w_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/temporaries_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1w_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1w_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_f16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_f16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_u8.c: Likewise.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (check-function-bodies): Add an optional
+	target/xfail selector.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr93124.c: New test.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93382
+	* gcc.dg/analyzer/pr93382.c: New test.
+
+2020-01-22  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/pr88497-1.c: Move to ...
+	* gcc.dg/vect/pr88497-1.c: This.
+	* gcc.dg/tree-ssa/pr88497-2.c: Move to ...
+	* gcc.dg/vect/pr88497-2.c: This.
+	* gcc.dg/tree-ssa/pr88497-3.c: Move to ...
+	* gcc.dg/vect/pr88497-3.c: This.
+	* gcc.dg/tree-ssa/pr88497-4.c: Move to ...
+	* gcc.dg/vect/pr88497-4.c: This.
+	* gcc.dg/tree-ssa/pr88497-5.c: Move to ...
+	* gcc.dg/vect/pr88497-5.c: This.
+	* gcc.dg/tree-ssa/pr88497-6.c: Move to ...
+	* gcc.dg/vect/pr88497-6.c: This.
+	* gcc.dg/tree-ssa/pr88497-7.c: Move to ...
+	* gcc.dg/vect/pr88497-7.c: This.
+
+	Revert:
+	* tree-ssa.exp: Set DEFAULT_VECTCFLAGS and DEFAULT_VECTCFLAGS.
+	Call check_vect_support_and_set_flags also.
+
 2020-01-22  Andrew Pinski  <apinski@marvell.com>
 
 	* tree-ssa.exp: Set DEFAULT_VECTCFLAGS and DEFAULT_VECTCFLAGS.
@@ -132,7 +2975,7 @@
 	* gcc.target/i386/pr93319-1a.c: Don't include <stdio.h>.
 	(test1): Replace printf with __builtin_printf.
 
-2020-01-21  Bin Cheng  <bin.linux@linux.alibaba.com>
+2020-01-21  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-await-void_type.C: New test.
 

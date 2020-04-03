@@ -3539,7 +3539,7 @@
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
-  "")
+  "cris_reduce_compare (&operands[0], &operands[1], &operands[2]);")
 
 (define_expand "cbranchdi4"
   [(set (cc0)
@@ -3552,6 +3552,7 @@
 		      (pc)))]
   ""
 {
+  cris_reduce_compare (&operands[0], &operands[1], &operands[2]);
   if (TARGET_V32 && !REG_P (operands[1]))
     operands[1] = force_reg (DImode, operands[1]);
   if (TARGET_V32 && MEM_P (operands[2]))
@@ -3652,6 +3653,7 @@
 	 [(cc0) (const_int 0)]))]
   ""
 {
+  cris_reduce_compare (&operands[1], &operands[2], &operands[3]);
   if (TARGET_V32 && !REG_P (operands[2]))
     operands[2] = force_reg (DImode, operands[2]);
   if (TARGET_V32 && MEM_P (operands[3]))
@@ -3666,7 +3668,7 @@
 	(match_operator:SI 1 "ordered_comparison_operator"
 	 [(cc0) (const_int 0)]))]
   ""
-  "")
+  "cris_reduce_compare (&operands[1], &operands[2], &operands[3]);")
 
 ;; Like bCC, we have to check the overflow bit for
 ;; signed conditions.

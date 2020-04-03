@@ -2,10 +2,10 @@
 
 /* The _encoded_ parameter offsets for Objective-C methods are 
    computed inductively as follows:
-    - The first paramter (self) has offset 0;
+    - The first parameter (self) has offset 0;
     - The k-th parameter (k > 1) has offset equal to the
       sum of:
-        - the offset of the k-1-st paramter
+        - the offset of the k-1-st parameter
         - the (void *)-promoted size of the k-1-st parameter.
 
    Note that the encoded offsets need not correspond

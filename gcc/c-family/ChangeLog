@@ -1,3 +1,72 @@
+2020-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93958 - add missing -std=gnu++20.
+	* c.opt: Add -std=gnu++20.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/92721
+	* c-attribs.c (append_access_attrs): Correctly handle attribute.
+	(handle_access_attribute): Same.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93858
+	* c-pragma.c (handle_pragma_diagnostic): Add missing ? after
+	"did you mean" hint in diagnostics.
+
+2020-02-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -std=c++20.
+
+2020-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c: Include bitmap.h.
+	(dump_ada_double_name): Rename into...
+	(dump_anonymous_type_name): ...this.  Always use the TYPE_UID.
+	(dump_ada_array_type): Adjust to above renaming.  Robustify.
+	(dump_nested_types_1): New function copied from...  Add dumped_types
+	parameter and pass it down to dump_nested_type.
+	(dump_nested_types): ...this.  Remove parent parameter.  Just call
+	dump_nested_types_1 on an automatic bitmap.
+	(dump_nested_type): Add dumped_types parameter.
+	<ARRAY_TYPE>: Do not dump it if already present in dumped_types.
+	Adjust recursive calls and adjust to above renaming.
+	(dump_ada_declaration): Adjust call to dump_nested_types.
+	Tidy up and adjust to above renaming.
+	(dump_ada_specs): Initialize and release bitmap obstack.
+
+2020-02-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93640
+	* c-attribs.c (handle_access_attribute): Correct off-by-one mistakes.
+
+2020-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93641
+	* c-format.c (check_plain): Fix up last argument of strncasecmp.
+	Remove useless extra test.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update _OPENACC define to 201711.
+
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89357
+	* c-attribs.c (check_cxx_fundamental_alignment_constraints): Remove.
+
+2020-01-23  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.c (conversion_warning): Change -Wsign-conversion handling.
+
+2020-01-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/84919
+	* c-common.c (check_function_arguments): Avoid overlap checking
+	of sprintf functions.
+
 2020-01-22  Jason Merrill  <jason@redhat.com>
 
 	PR testsuite/93391 - PR 40752 test fails with unsigned plain char.

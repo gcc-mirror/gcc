@@ -3,8 +3,6 @@
 ! of all device types mentioned in the OpenACC standard.
 !
 ! See also acc_get_property.c
-! { dg-do run { target { { ! { openacc_host_selected } } && { ! { openacc_amdgcn_accel_selected } } } } }
-! FIXME: This test does not work with the GCN implementation stub yet.
 
 program test
   use openacc
@@ -28,13 +26,14 @@ end program test
 ! and do basic device independent validation.
 subroutine print_device_properties (device_type)
   use openacc
+  use iso_c_binding, only: c_size_t
   implicit none
 
   integer, intent(in) :: device_type
 
   integer :: device_count
   integer :: device
-  integer(acc_device_property) :: v
+  integer(c_size_t) :: v
   character*256 :: s
 
   device_count = acc_get_num_devices(device_type)

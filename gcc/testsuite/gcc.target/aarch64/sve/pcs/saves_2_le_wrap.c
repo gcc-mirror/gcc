@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -mlittle-endian -fshrink-wrap -fno-stack-clash-protection -g" } */
-/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-final { check-function-bodies "**" "" { target lp64 } } } */
 
 void standard_callee (void);
 __attribute__((aarch64_vector_pcs)) void vpcs_callee (void);

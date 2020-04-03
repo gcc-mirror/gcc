@@ -212,20 +212,20 @@ struct cpu_branch_cost
 /* Control approximate alternatives to certain FP operators.  */
 #define AARCH64_APPROX_MODE(MODE) \
   ((MIN_MODE_FLOAT <= (MODE) && (MODE) <= MAX_MODE_FLOAT) \
-   ? (1 << ((MODE) - MIN_MODE_FLOAT)) \
+   ? ((uint64_t) 1 << ((MODE) - MIN_MODE_FLOAT)) \
    : (MIN_MODE_VECTOR_FLOAT <= (MODE) && (MODE) <= MAX_MODE_VECTOR_FLOAT) \
-     ? (1 << ((MODE) - MIN_MODE_VECTOR_FLOAT \
-	      + MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1)) \
+     ? ((uint64_t) 1 << ((MODE) - MIN_MODE_VECTOR_FLOAT \
+			 + MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1)) \
      : (0))
-#define AARCH64_APPROX_NONE (0)
-#define AARCH64_APPROX_ALL (-1)
+#define AARCH64_APPROX_NONE ((uint64_t) 0)
+#define AARCH64_APPROX_ALL (~(uint64_t) 0)
 
 /* Allowed modes for approximations.  */
 struct cpu_approx_modes
 {
-  const unsigned int division;		/* Division.  */
-  const unsigned int sqrt;		/* Square root.  */
-  const unsigned int recip_sqrt;	/* Reciprocal square root.  */
+  const uint64_t division;	/* Division.  */
+  const uint64_t sqrt;		/* Square root.  */
+  const uint64_t recip_sqrt;	/* Reciprocal square root.  */
 };
 
 /* Cache prefetch settings for prefetch-loop-arrays.  */
@@ -560,6 +560,7 @@ bool aarch64_sve_float_mul_immediate_p (rtx);
 bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
+int aarch64_movk_shift (const wide_int_ref &, const wide_int_ref &);
 bool aarch64_use_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
 

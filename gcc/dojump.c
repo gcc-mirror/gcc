@@ -897,7 +897,7 @@ split_comparison (enum rtx_code code, machine_mode mode,
       return false;
     case LTGT:
       /* Do not turn a trapping comparison into a non-trapping one.  */
-      if (HONOR_SNANS (mode))
+      if (HONOR_NANS (mode))
 	{
           *code1 = LT;
           *code2 = GT;

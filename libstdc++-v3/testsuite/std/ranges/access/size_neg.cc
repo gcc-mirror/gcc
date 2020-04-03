@@ -25,6 +25,5 @@ extern int unbounded[];
 auto
 test01()
 {
-  return std::ranges::size(unbounded); // { dg-error "here" }
+  return std::ranges::size(unbounded); // { dg-error "no match" }
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }

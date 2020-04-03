@@ -62,9 +62,10 @@
 // Allocating and freeing a large object uses the mheap
 // directly, bypassing the mcache and mcentral.
 //
-// Free object slots in an mspan are zeroed only if mspan.needzero is
-// false. If needzero is true, objects are zeroed as they are
-// allocated. There are various benefits to delaying zeroing this way:
+// If mspan.needzero is false, then free object slots in the mspan are
+// already zeroed. Otherwise if needzero is true, objects are zeroed as
+// they are allocated. There are various benefits to delaying zeroing
+// this way:
 //
 //	1. Stack frame allocation can avoid zeroing altogether.
 //
@@ -513,6 +514,7 @@ func mallocinit() {
 		// allocation at 0x40 << 32 because when using 4k pages with 3-level
 		// translation buffers, the user address space is limited to 39 bits
 		// On darwin/arm64, the address space is even smaller.
+		//
 		// On AIX, mmaps starts at 0x0A00000000000000 for 64-bit.
 		// processes.
 		for i := 0x7f; i >= 0; i-- {

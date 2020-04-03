@@ -19,6 +19,8 @@
 
 // 21.3.1 basic_string constructors.
 
+// { dg-options "-Wno-stringop-overflow" }
+
 #include <new>
 #include <stdexcept>
 #include <testsuite_hooks.h>

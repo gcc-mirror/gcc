@@ -39,13 +39,17 @@ test01()
   test_range<int, random_access_iterator_wrapper> c(a);
   VERIFY( std::ranges::distance(c) == 10 );
 
-  auto b = c.begin(), e = c.end();
+  auto b = c.begin();
+  auto e = c.end();
+  auto ei = std::ranges::next(b, e);
   VERIFY( std::ranges::distance(b, e) == 10 );
-  VERIFY( std::ranges::distance(e, b) == -10 );
+  VERIFY( std::ranges::distance(ei, b) == -10 );
 
-  const auto cb = b, ce = e;
+  const auto cb = b;
+  const auto ce = e;
+  const auto cei = ei;
   VERIFY( std::ranges::distance(cb, ce) == 10 );
-  VERIFY( std::ranges::distance(ce, cb) == -10 );
+  VERIFY( std::ranges::distance(cei, cb) == -10 );
 
   test_sized_range<int, random_access_iterator_wrapper> c2(a);
   VERIFY( std::ranges::distance(c2) == 10 );
@@ -60,10 +64,12 @@ test02()
   test_range<int, bidirectional_iterator_wrapper> c(a);
   VERIFY( std::ranges::distance(c) == 2 );
 
-  auto b = c.begin(), e = c.end();
+  auto b = c.begin();
+  auto e = c.end();
   VERIFY( std::ranges::distance(b, e) == 2 );
 
-  const auto cb = b, ce = e;
+  const auto cb = b;
+  const auto ce = e;
   VERIFY( std::ranges::distance(cb, ce) == 2 );
 
   test_sized_range<int, bidirectional_iterator_wrapper> c2(a);
@@ -77,10 +83,12 @@ test03()
   test_range<int, forward_iterator_wrapper> c(a);
   VERIFY( std::ranges::distance(c) == 3 );
 
-  auto b = c.begin(), e = c.end();
+  auto b = c.begin();
+  auto e = c.end();
   VERIFY( std::ranges::distance(b, e) == 3 );
 
-  const auto cb = b, ce = e;
+  const auto cb = b;
+  const auto ce = e;
   VERIFY( std::ranges::distance(cb, ce) == 3 );
 
   test_sized_range<int, forward_iterator_wrapper> c2(a);
@@ -99,11 +107,13 @@ test04()
   VERIFY( std::ranges::distance(c) == 0 );
 
   c = test_range<int, input_iterator_wrapper>(a);
-  auto b = c.begin(), e = c.end();
+  auto b = c.begin();
+  auto e = c.end();
   VERIFY( std::ranges::distance(b, e) == 4 );
 
   test_range<int, input_iterator_wrapper> c2(a);
-  const auto cb = c2.begin(), ce = c2.end();
+  const auto cb = c2.begin();
+  const auto ce = c2.end();
   VERIFY( std::ranges::distance(cb, ce) == 4 );
 
   test_sized_range<int, input_iterator_wrapper> c3(a);

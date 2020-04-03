@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/checker-path.h"
+#include "analyzer/reachability.h"
 
 #if ENABLE_ANALYZER
 
@@ -106,6 +107,41 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_d->equal_p (*other.m_d)
 	  && m_trailing_eedge == other.m_trailing_eedge);
 }
+
+/* State for building a checker_path from a particular exploded_path.
+   In particular, this precomputes reachability information: the set of
+   source enodes for which a a path be found to the diagnostic enode.  */
+
+class path_builder
+{
+public:
+  path_builder (const exploded_graph &eg,
+		const exploded_path &epath)
+  : m_eg (eg),
+    m_diag_enode (epath.get_final_enode ()),
+    m_reachability (eg, m_diag_enode)
+  {}
+
+  const exploded_node *get_diag_node () const { return m_diag_enode; }
+
+  bool reachable_from_p (const exploded_node *src_enode) const
+  {
+    return m_reachability.reachable_from_p (src_enode);
+  }
+
+  const extrinsic_state &get_ext_state () const { return m_eg.get_ext_state (); }
+
+private:
+  typedef reachability<eg_traits> enode_reachability;
+
+  const exploded_graph &m_eg;
+
+  /* The enode where the diagnostic occurs.  */
+  const exploded_node *m_diag_enode;
+
+  /* Precompute all enodes from which the diagnostic is reachable.  */
+  enode_reachability m_reachability;
+};
 
 /* class diagnostic_manager.  */
 
@@ -470,10 +506,15 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   pretty_printer *pp = global_dc->printer->clone ();
 
+  /* Precompute all enodes from which the diagnostic is reachable.  */
+  path_builder pb (eg, epath);
+
+  /* This is the diagnostic_path subclass that will be built for
+     the diagnostic.  */
   checker_path emission_path;
 
   /* Populate emission_path with a full description of EPATH.  */
-  build_emission_path (eg, epath, &emission_path);
+  build_emission_path (pb, epath, &emission_path);
 
   /* Now prune it to just cover the most pertinent events.  */
   prune_path (&emission_path, sd.m_sm, sd.m_var, sd.m_state);
@@ -489,8 +530,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      trailing eedge stashed, add any events for it.  This is for use
      in handling longjmp, to show where a longjmp is rewinding to.  */
   if (sd.m_trailing_eedge)
-    add_events_for_eedge (*sd.m_trailing_eedge, eg.get_ext_state (),
-			  &emission_path);
+    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path);
 
   emission_path.prepare_for_emission (sd.m_d);
 
@@ -501,7 +541,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   auto_cfun sentinel (sd.m_snode->m_fun);
   if (sd.m_d->emit (&rich_loc))
     {
-      if (num_dupes > 0)
+      if (flag_analyzer_show_duplicate_count && num_dupes > 0)
 	inform_n (stmt->location, num_dupes,
 		  "%i duplicate", "%i duplicates",
 		  num_dupes);
@@ -534,9 +574,14 @@ get_any_origin (const gimple *stmt,
   if (const gassign *assign = dyn_cast <const gassign *> (stmt))
     {
       tree lhs = gimple_assign_lhs (assign);
-      /* Use region IDs to compare lhs with DST_REP.  */
-      if (dst_state.m_region_model->get_lvalue (lhs, NULL)
-	  == dst_state.m_region_model->get_lvalue (dst_rep, NULL))
+      /* Use region IDs to compare lhs with DST_REP, bulletproofing against
+	 cases where they can't have lvalues by using
+	 tentative_region_model_context.  */
+      tentative_region_model_context ctxt;
+      region_id lhs_rid = dst_state.m_region_model->get_lvalue (lhs, &ctxt);
+      region_id dst_rep_rid
+	= dst_state.m_region_model->get_lvalue (dst_rep, &ctxt);
+      if (lhs_rid == dst_rep_rid && !ctxt.had_errors_p ())
 	{
 	  tree rhs1 = gimple_assign_rhs1 (assign);
 	  enum tree_code op = gimple_assign_rhs_code (assign);
@@ -558,16 +603,15 @@ get_any_origin (const gimple *stmt,
    EPATH within EG.  */
 
 void
-diagnostic_manager::build_emission_path (const exploded_graph &eg,
+diagnostic_manager::build_emission_path (const path_builder &pb,
 					 const exploded_path &epath,
 					 checker_path *emission_path) const
 {
   LOG_SCOPE (get_logger ());
-  const extrinsic_state &ext_state = eg.get_ext_state ();
   for (unsigned i = 0; i < epath.m_edges.length (); i++)
     {
       const exploded_edge *eedge = epath.m_edges[i];
-      add_events_for_eedge (*eedge, ext_state, emission_path);
+      add_events_for_eedge (pb, *eedge, emission_path);
     }
 }
 
@@ -684,10 +728,10 @@ for_each_state_change (const program_state &src_state,
 		       state_change_visitor *visitor)
 {
   gcc_assert (src_state.m_checker_states.length ()
-	      == ext_state.m_checkers.length ());
+	      == ext_state.get_num_checkers ());
   gcc_assert (dst_state.m_checker_states.length ()
-	      == ext_state.m_checkers.length ());
-  for (unsigned i = 0; i < ext_state.m_checkers.length (); i++)
+	      == ext_state.get_num_checkers ());
+  for (unsigned i = 0; i < ext_state.get_num_checkers (); i++)
     {
       const state_machine &sm = ext_state.get_sm (i);
       const sm_state_map &src_smap = *src_state.m_checker_states[i];
@@ -746,8 +790,8 @@ for_each_state_change (const program_state &src_state,
    Add any events for EEDGE to EMISSION_PATH.  */
 
 void
-diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
-					  const extrinsic_state &ext_state,
+diagnostic_manager::add_events_for_eedge (const path_builder &pb,
+					  const exploded_edge &eedge,
 					  checker_path *emission_path) const
 {
   const exploded_node *src_node = eedge.m_src;
@@ -786,7 +830,7 @@ diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
       |              |
       |              (3) ...to here        (end_cfg_edge_event).  */
   state_change_event_creator visitor (eedge, emission_path);
-  for_each_state_change (src_state, dst_state, ext_state,
+  for_each_state_change (src_state, dst_state, pb.get_ext_state (),
 			 &visitor);
 
   /* Allow non-standard edges to add events, e.g. when rewinding from
@@ -803,7 +847,7 @@ diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
       if (src_point.get_kind () == PK_AFTER_SUPERNODE)
 	{
 	  if (eedge.m_sedge)
-	    add_events_for_superedge (eedge, emission_path);
+	    add_events_for_superedge (pb, eedge, emission_path);
 	}
       /* Add function entry events.  */
       if (dst_point.get_supernode ()->entry_p ())
@@ -818,12 +862,14 @@ diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
     case PK_BEFORE_STMT:
       {
 	const gimple *stmt = dst_point.get_stmt ();
-	if (is_setjmp_call_p (stmt))
+	const gcall *call = dyn_cast <const gcall *> (stmt);
+	if (call && is_setjmp_call_p (call))
 	  emission_path->add_event
 	    (new setjmp_event (stmt->location,
 			       dst_node,
 			       dst_point.get_fndecl (),
-			       dst_stack_depth));
+			       dst_stack_depth,
+			       call));
 	else
 	  emission_path->add_event
 	    (new statement_event (stmt,
@@ -834,17 +880,94 @@ diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
     }
 }
 
+/* Return true if EEDGE is a significant edge in the path to the diagnostic
+   for PB.
+
+   Consider all of the sibling out-eedges from the same source enode
+   as EEDGE.
+   If there's no path from the destinations of those eedges to the
+   diagnostic enode, then we have to take this eedge and thus it's
+   significant.
+
+   Conversely if there is a path from the destination of any other sibling
+   eedge to the diagnostic enode, then this edge is insignificant.
+
+   Example 1: redundant if-else:
+
+     (A) if (...)            A
+     (B)   ...              / \
+         else              B   C
+     (C)   ...              \ /
+     (D) [DIAGNOSTIC]        D
+
+     D is reachable by either B or C, so neither of these edges
+     are significant.
+
+   Example 2: pertinent if-else:
+
+     (A) if (...)                         A
+     (B)   ...                           / \
+         else                           B   C
+     (C)   [NECESSARY CONDITION]        |   |
+     (D) [POSSIBLE DIAGNOSTIC]          D1  D2
+
+     D becomes D1 and D2 in the exploded graph, where the diagnostic occurs
+     at D2.  D2 is only reachable via C, so the A -> C edge is significant.
+
+   Example 3: redundant loop:
+
+     (A) while (...)          +-->A
+     (B)   ...                |  / \
+     (C) ...                  +-B  C
+     (D) [DIAGNOSTIC]              |
+                                   D
+
+     D is reachable from both B and C, so the A->C edge is not significant.  */
+
+bool
+diagnostic_manager::significant_edge_p (const path_builder &pb,
+					const exploded_edge &eedge) const
+{
+  int i;
+  exploded_edge *sibling;
+  FOR_EACH_VEC_ELT (eedge.m_src->m_succs, i, sibling)
+    {
+      if (sibling == &eedge)
+	continue;
+      if (pb.reachable_from_p (sibling->m_dest))
+	{
+	  if (get_logger ())
+	    get_logger ()->log ("  edge EN: %i -> EN: %i is insignificant as"
+				" EN: %i is also reachable via"
+				" EN: %i -> EN: %i",
+				eedge.m_src->m_index, eedge.m_dest->m_index,
+				pb.get_diag_node ()->m_index,
+				sibling->m_src->m_index,
+				sibling->m_dest->m_index);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
 /* Subroutine of diagnostic_manager::add_events_for_eedge
    where EEDGE has an underlying superedge i.e. a CFG edge,
    or an interprocedural call/return.
    Add any events for the superedge to EMISSION_PATH.  */
 
 void
-diagnostic_manager::add_events_for_superedge (const exploded_edge &eedge,
+diagnostic_manager::add_events_for_superedge (const path_builder &pb,
+					      const exploded_edge &eedge,
 					      checker_path *emission_path)
   const
 {
   gcc_assert (eedge.m_sedge);
+
+  /* Don't add events for insignificant edges at verbosity levels below 3.  */
+  if (m_verbosity < 3)
+    if (!significant_edge_p (pb, eedge))
+      return;
 
   const exploded_node *src_node = eedge.m_src;
   const program_point &src_point = src_node->get_point ();
@@ -941,6 +1064,25 @@ diagnostic_manager::prune_path (checker_path *path,
   path->maybe_log (get_logger (), "pruned");
 }
 
+/* A cheap test to determine if EXPR can be the expression of interest in
+   an sm-diagnostic, so that we can reject cases where we have a non-lvalue.
+   We don't have always have a model when calling this, so we can't use
+   tentative_region_model_context, so there can be false positives.  */
+
+static bool
+can_be_expr_of_interest_p (tree expr)
+{
+  if (!expr)
+    return false;
+
+  /* Reject constants.  */
+  if (CONSTANT_CLASS_P (expr))
+    return false;
+
+  /* Otherwise assume that it can be an lvalue.  */
+  return true;
+}
+
 /* First pass of diagnostic_manager::prune_path: apply verbosity level,
    pruning unrelated state change events.
 
@@ -963,6 +1105,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 					     tree var,
 					     state_machine::state_t state) const
 {
+  update_for_unsuitable_sm_exprs (&var);
+
   int idx = path->num_events () - 1;
   while (idx >= 0 && idx < (signed)path->num_events ())
     {
@@ -981,13 +1125,14 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  else
 	    log ("considering event %i", idx);
 	}
+      gcc_assert (var == NULL || can_be_expr_of_interest_p (var));
       switch (base_event->m_kind)
 	{
 	default:
 	  gcc_unreachable ();
 
 	case EK_DEBUG:
-	  if (m_verbosity < 3)
+	  if (m_verbosity < 4)
 	    {
 	      log ("filtering event %i: debug event", idx);
 	      path->delete_event (idx);
@@ -1013,7 +1158,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    var = new_var;
 		  }
 	      }
-	    if (m_verbosity < 3)
+	    if (m_verbosity < 4)
 	      {
 		log ("filtering event %i: statement event", idx);
 		path->delete_event (idx);
@@ -1032,21 +1177,28 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	case EK_STATE_CHANGE:
 	  {
 	    state_change_event *state_change = (state_change_event *)base_event;
-	    if (state_change->get_lvalue (state_change->m_var)
-		== state_change->get_lvalue (var))
+	    /* Use region IDs to compare var with the state_change's m_var,
+	       bulletproofing against cases where they can't have lvalues by
+	       using tentative_region_model_context.  */
+	    tentative_region_model_context ctxt;
+	    region_id state_var_rid
+	      = state_change->get_lvalue (state_change->m_var, &ctxt);
+	    region_id var_rid = state_change->get_lvalue (var, &ctxt);
+	    if (state_var_rid == var_rid && !ctxt.had_errors_p ())
 	      {
 		if (state_change->m_origin)
 		  {
 		    log ("event %i: switching var of interest from %qE to %qE",
 			 idx, var, state_change->m_origin);
 		    var = state_change->m_origin;
+		    update_for_unsuitable_sm_exprs (&var);
 		  }
 		log ("event %i: switching state of interest from %qs to %qs",
 		     idx, sm->get_state_name (state_change->m_to),
 		     sm->get_state_name (state_change->m_from));
 		state = state_change->m_from;
 	      }
-	    else if (m_verbosity < 3)
+	    else if (m_verbosity < 4)
 	      {
 		if (var)
 		  log ("filtering event %i:"
@@ -1055,6 +1207,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		else
 		  log ("filtering event %i: state change to %qE",
 		       idx, state_change->m_var);
+		if (ctxt.had_errors_p ())
+		  log ("context had errors");
 		path->delete_event (idx);
 	      }
 	  }
@@ -1085,6 +1239,10 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			  pp_gimple_stmt_1 (&pp, phi, 0, (dump_flags_t)0);
 			  log ("  phi: %s", pp_formatted_text (&pp));
 			}
+		      /* If we've chosen a bad exploded_path, then the
+			 phi arg might be a constant.  Fail gracefully for
+			 this case.  */
+		      update_for_unsuitable_sm_exprs (&var);
 		    }
 		}
 
@@ -1127,6 +1285,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		var = caller_var;
 		if (expr.param_p ())
 		  event->record_critical_state (var, state);
+		update_for_unsuitable_sm_exprs (&var);
 	      }
 	  }
 	  break;
@@ -1152,6 +1311,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    var = callee_var;
 		    if (expr.return_value_p ())
 		      event->record_critical_state (var, state);
+		    update_for_unsuitable_sm_exprs (&var);
 		  }
 	      }
 	  }
@@ -1169,6 +1329,21 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  break;
 	}
       idx--;
+    }
+}
+
+/* Subroutine of diagnostic_manager::prune_for_sm_diagnostic.
+   If *EXPR is not suitable to be the expression of interest in
+   an sm-diagnostic, set *EXPR to NULL and log.  */
+
+void
+diagnostic_manager::update_for_unsuitable_sm_exprs (tree *expr) const
+{
+  gcc_assert (expr);
+  if (*expr && !can_be_expr_of_interest_p (*expr))
+    {
+      log ("new var %qE is unsuitable; setting var to NULL", *expr);
+      *expr = NULL_TREE;
     }
 }
 

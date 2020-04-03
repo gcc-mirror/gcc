@@ -107,10 +107,19 @@ INT_MODE (XI, 64);
 PARTIAL_INT_MODE (HI, 16, P2QI);
 PARTIAL_INT_MODE (SI, 32, P2HI);
 
+/* Mode used for signed overflow checking of TImode.  As
+   MAX_BITSIZE_MODE_ANY_INT is only 160, wide-int.h reserves only that
+   rounded up to multiple of HOST_BITS_PER_WIDE_INT bits in wide_int etc.,
+   so OImode is too large.  For the overflow checking we actually need
+   just 1 or 2 bits beyond TImode precision.  Use 160 bits to have
+   a multiple of 32.  */
+PARTIAL_INT_MODE (OI, 160, POI);
+
 /* Keep the OI and XI modes from confusing the compiler into thinking
    that these modes could actually be used for computation.  They are
-   only holders for vectors during data movement.  */
-#define MAX_BITSIZE_MODE_ANY_INT (128)
+   only holders for vectors during data movement.  Include POImode precision
+   though.  */
+#define MAX_BITSIZE_MODE_ANY_INT (160)
 
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
    The tm.h file specifies which one.  It is not a distinct mode.  */

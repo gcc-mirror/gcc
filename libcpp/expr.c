@@ -64,8 +64,6 @@ static unsigned int interpret_float_suffix (cpp_reader *, const uchar *, size_t)
 static unsigned int interpret_int_suffix (cpp_reader *, const uchar *, size_t);
 static void check_promotion (cpp_reader *, const struct op *);
 
-static cpp_num parse_has_include (cpp_reader *, cpp_hashnode *, include_type);
-
 /* Token type abuse to create unary plus and minus operators.  */
 #define CPP_UPLUS ((enum cpp_ttype) (CPP_LAST_CPP_OP + 1))
 #define CPP_UMINUS ((enum cpp_ttype) (CPP_LAST_CPP_OP + 2))
@@ -1159,10 +1157,6 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
     case CPP_NAME:
       if (token->val.node.node == pfile->spec_nodes.n_defined)
 	return parse_defined (pfile);
-      else if (token->val.node.node == pfile->spec_nodes.n__has_include)
-	return parse_has_include (pfile, token->val.node.node, IT_INCLUDE);
-      else if (token->val.node.node == pfile->spec_nodes.n__has_include_next)
-	return parse_has_include (pfile, token->val.node.node, IT_INCLUDE_NEXT);
       else if (CPP_OPTION (pfile, cplusplus)
 	       && (token->val.node.node == pfile->spec_nodes.n_true
 		   || token->val.node.node == pfile->spec_nodes.n_false))
@@ -2189,60 +2183,3 @@ num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op,
   return lhs;
 }
 
-/* Handle meeting "__has_include" in a preprocessor expression.  */
-static cpp_num
-parse_has_include (cpp_reader *pfile, cpp_hashnode *op, include_type type)
-{
-  cpp_num result;
-
-  result.unsignedp = false;
-  result.high = 0;
-  result.overflow = false;
-  result.low = 0;
-
-  pfile->state.angled_headers = true;
-  const cpp_token *token = cpp_get_token (pfile);
-  bool paren = token->type == CPP_OPEN_PAREN;
-  if (paren)
-    token = cpp_get_token (pfile);
-  else
-    cpp_error (pfile, CPP_DL_ERROR,
-	       "missing '(' before \"%s\" operand", NODE_NAME (op));
-  pfile->state.angled_headers = false;
-
-  bool bracket = token->type != CPP_STRING;
-  cpp_hashnode *node = NULL;
-  char *fname = NULL;
-  if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
-    {
-      fname = XNEWVEC (char, token->val.str.len - 1);
-      memcpy (fname, token->val.str.text + 1, token->val.str.len - 2);
-      fname[token->val.str.len - 2] = '\0';
-      node = token->val.node.node;
-    }
-  else if (token->type == CPP_LESS)
-    fname = _cpp_bracket_include (pfile);
-  else
-    cpp_error (pfile, CPP_DL_ERROR,
-	       "operator \"%s\" requires a header-name", NODE_NAME (op));
-
-  if (fname)
-    {
-      /* Do not do the lookup if we're skipping, that's unnecessary
-	 IO.  */
-      if (!pfile->state.skip_eval
-	  && _cpp_has_header (pfile, fname, bracket, type))
-	result.low = 1;
-
-      XDELETEVEC (fname);
-    }
-
-  if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
-    cpp_error (pfile, CPP_DL_ERROR,
-	       "missing ')' after \"%s\" operand", NODE_NAME (op));
-
-  if (node)
-    pfile->mi_ind_cmacro = node;
-
-  return result;
-}

@@ -114,22 +114,22 @@ public:
       default:
 	gcc_unreachable ();
       case BOUNDS_NONE:
-	return warning_at (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
-			   "use of tainted value %qE in array lookup"
-			   " without bounds checking",
-			   m_arg);
+	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
+			     "use of tainted value %qE in array lookup"
+			     " without bounds checking",
+			     m_arg);
 	break;
       case BOUNDS_UPPER:
-	return warning_at (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
-			   "use of tainted value %qE in array lookup"
-			   " without lower-bounds checking",
-			   m_arg);
+	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
+			     "use of tainted value %qE in array lookup"
+			     " without lower-bounds checking",
+			     m_arg);
 	break;
       case BOUNDS_LOWER:
-	return warning_at (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
-			   "use of tainted value %qE in array lookup"
-			   " without upper-bounds checking",
-			   m_arg);
+	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
+			     "use of tainted value %qE in array lookup"
+			     " without upper-bounds checking",
+			     m_arg);
 	break;
       }
   }

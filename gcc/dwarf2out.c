@@ -12101,8 +12101,9 @@ file_name_acquire (dwarf_file_data **slot, file_name_acquire_data *fnad)
 
   fi = fnad->files + fnad->used_files++;
 
+  f = remap_debug_filename (d->filename);
+
   /* Skip all leading "./".  */
-  f = d->filename;
   while (f[0] == '.' && IS_DIR_SEPARATOR (f[1]))
     f += 2;
 
@@ -27610,6 +27611,7 @@ dwarf2out_inline_entry (tree block)
 static void
 dwarf2out_size_function (tree decl)
 {
+  set_early_dwarf s;
   function_to_dwarf_procedure (decl);
 }
 

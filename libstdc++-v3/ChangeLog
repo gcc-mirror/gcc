@@ -1,3 +1,1429 @@
+2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/all.cc: Mark unused variable.
+	* testsuite/27_io/filesystem/operations/copy.cc: Fix typo.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/file_size.cc: Use correct type
+	for return value, and in comparison.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+
+	PR libstdc++/94051
+	* include/std/string_view: Include <bits/ostream_insert.h>.
+	* testsuite/21_strings/basic_string_view/inserters/94051.cc: New test.
+
+2020-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__memcpyable): Fix comment.
+
+2020-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/94017
+	* include/bits/ranges_algobase.h (__fill_n_fn::operator()): Refine
+	condition for when to use memset, making sure to additionally check that
+	the output pointer's value type is a non-volatile byte type.  Instead of
+	requiring that the fill type is a byte type, just require that it's an
+	integral type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/94017.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/94017.cc:
+	New test.
+	* testsuite/25_algorithms/fill/94013.cc: Uncomment part of test that was
+	blocked by PR 94017.
+	* testsuite/25_algorithms/fill/94017.cc: New test.
+	* testsuite/25_algorithms/fill_n/94017.cc: New test.
+
+	LWG 3355 The memory algorithms should support move-only input iterators
+	introduced by P1207
+	* include/bits/ranges_uninitialized.h
+	(__uninitialized_copy_fn::operator()): Use std::move to avoid attempting
+	to copy __ifirst, which could be a move-only input iterator.  Use
+	operator- instead of ranges::distance to compute distance from a sized
+	sentinel.
+	(__uninitialized_copy_n_fn::operator()): Likewise.
+	(__uninitialized_move_fn::operator()): Likewise.
+	(__uninitialized_move_n_fn::operator()): Likewise.
+	(__uninitialized_destroy_fn::operator()): Use std::move to avoid
+	attempting to copy __first.
+	(__uninitialized_destroy_n_fn::operator()): Likewise.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc:
+	Augment test.
+	* .../specialized_algorithms/uninitialized_copy/constrained.cc:
+	Likewise.
+	* .../specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+
+	* testsuite/util/testsuite_iterators.h (test_range::get_iterator): Make
+	protected instead of private.
+	(test_sized_range_sized_sent): New.
+
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper_nocopy):
+	New testsuite iterator.
+	* testsuite/24_iterators/counted_iterator/lwg3389.cc: use it.
+	* testsuite/24_iterators/move_iterator/lwg3390.cc: Likewise.
+
+	* include/bits/ranges_uninitialized.h
+	(uninitialized_copy_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_copy_fn::operator()): Likewise.
+	(uninitialized_move_fn::operator()): Likewise.  Return an in_out_result
+	with the input iterator stripped of its move_iterator.
+	(uninitialized_move_n_fn::operator()): Likewise.
+	(uninitialized_fill_fn::operator()): Pass a reference type as the first
+	argument to is_nothrow_assignable_v.
+	(uninitialized_fill_n_fn::operator()): Likewise.
+
+2020-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94013
+	* include/bits/cpp_type_traits.h (__memcpyable, __memcmpable): New
+	traits to control when to use memmove and memcmp optimizations.
+	(__is_nonvolatile_trivially_copyable): New helper trait.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Do not
+	use memcmp optimization with volatile data.
+	* include/bits/ranges_algobase.h (__equal_fn): Use __memcmpable.
+	(__copy_or_move, __copy_or_move_backward): Use __memcpyable.
+	* include/bits/stl_algobase.h (__copy_move_a2): Use __memcpyable.
+	(__copy_move_backward_a2): Likewise.
+	(__equal_aux1): Use __memcmpable.
+	(__lexicographical_compare_aux): Do not use memcmp optimization with
+	volatile data.
+	* testsuite/25_algorithms/copy/94013.cc: New test.
+	* testsuite/25_algorithms/copy_backward/94013.cc: New test.
+	* testsuite/25_algorithms/equal/94013.cc: New test.
+	* testsuite/25_algorithms/fill/94013.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/94013.cc: New test.
+	* testsuite/25_algorithms/move/94013.cc: New test.
+	* testsuite/25_algorithms/move_backward/94013.cc: New test.
+
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Avoid redundant iterator comparisons (LWG 3410).
+
+2020-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93972
+	* include/bits/stl_algobase.h (__memcmp): Allow pointer types to
+	differ.
+	* testsuite/25_algorithms/lexicographical_compare/uchar.cc: New test.
+
+	* include/std/ranges (__detail::__maybe_empty_t): Rename to
+	__maybe_present_t.
+	(__adaptor::_RangeAdaptor, join_view, split_view): Use new name.
+
+	* include/bits/ranges_algo.h (shift_right): Add 'typename' to
+	dependent type.
+
+2020-03-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/17_intro/headers/c++1998/charset.cc: Skip on *-*-hpux*.
+	* testsuite/17_intro/headers/c++2011/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/charset.cc: Likewise.
+	* testsuite/17_intro/headers/c++2020/charset.cc: Likewise.
+
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	Add libatomic option.
+	* testsuite/30_threads/jthread/jthread.cc: Likewise.
+
+2020-02-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__find_if, __count_if, __is_permutation, std::is_permutation): Move...
+	* include/bits/stl_algobase.h: ...here.
+	* include/bits/hashtable_policy.h: Remove <bits/stl_algo.h> include.
+
+2020-02-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/30_threads/stop_token/stop_callback.cc: Add libatomic
+	option.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock-mt.cc:
+	Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/invoke.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_source/assign.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_token/stop_possible.cc:
+	Likewise.
+
+	PR libstdc++/92906
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93972
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):
+	Fix condition for when to use memcmp, making it consistent with the
+	corresponding condition used in std::lexicographical_compare.
+	* testsuite/25_algorithms/lexicographical_compare/93972.cc: New test.
+
+	* testsuite/26_numerics/headers/numeric/synopsis.cc: Add signatures for
+	functions introduced in C++11, C++17 and C++2a.  Add 'constexpr' to
+	existing signatures for C++2a.
+
+2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: Run
+	test instead of just compiling it.
+
+2020-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (reverse_view::_S_needs_cached_begin): Set to false
+	whenever the underlying range models common_range.
+
+	* include/std/ranges (__detail::_CachedPosition): New struct.
+	(views::filter_view::_S_needs_cached_begin): New member variable.
+	(views::filter_view::_M_cached_begin): New member variable.
+	(views::filter_view::begin): Use _M_cached_begin to cache its
+	result.
+	(views::drop_view::_S_needs_cached_begin): New static member variable.
+	(views::drop_view::_M_cached_begin): New member variable.
+	(views::drop_view::begin): Use _M_cached_begin to cache its result
+	when _S_needs_cached_begin.
+	(views::drop_while_view::_M_cached_begin): New member variable.
+	(views::drop_while_view::begin): Use _M_cached_begin to cache its
+	result.
+	(views::reverse_view::_S_needs_cached_begin): New static member
+	variable.
+	(views::reverse_view::_M_cached_begin): New member variable.
+	(views::reverse_view::begin): Use _M_cached_begin to cache its result
+	when _S_needs_cached_begin.
+	* testsuite/std/ranges/adaptors/drop.cc: Augment test to check that
+	drop_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/drop_while.cc: Augment test to check
+	that drop_while_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/filter.cc: Augment test to check that
+	filter_view::begin caches its result.
+	* testsuite/std/ranges/adaptors/reverse.cc: Augment test to check that
+	reverse_view::begin caches its result.
+
+2020-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
+	filesystems that silently truncate timestamps.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+
+	* testsuite/21_strings/basic_string/cons/char/1.cc: Disable
+	-Wstringop-overflow warnings.
+
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Add
+	-fdiagnostics-urls=never to options.
+
+2020-02-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator<_Const>): Befriend
+	_Iterator<!_Const>.
+	(transform_view::_Sentinel<_Const>): Befriend _Sentinel<!_Const>.
+	(take_view::_Sentinel<_Const>): Likewise.
+	(take_while_view::_Sentinel<_Const>): Likewise.
+	(split_view::_OuterIter<_Const>): Befriend _OuterIter<!_Const>.
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take.cc: Augment test.
+	* testsuite/std/ranges/adaptors/take_while.cc: Augment test.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
+	* testsuite/25_algorithms/copy/constrained.cc: Don't assume that the
+	base() of a vector<>::iterator is a pointer.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move/constrained.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/constrained.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: Use foo.data()
+	instead of &foo[0].
+	* testsuite/25_algorithms/partial_sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/constrained.cc: Likewise.
+	* testsuite/25_algorithms/sort/constrained.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: Likewise.
+
+2020-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/array (operator<=>): Define for C++20.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
+	* testsuite/23_containers/span/back_assert_neg.cc: Add #undef before
+	defining _GLIBCXX_ASSERTIONS.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+
+	* include/debug/string (__gnu_debug::basic_string::insert): Fix for
+	C++98 where the member function of the base class returns void.
+
+	* testsuite/util/testsuite_iterators.h (forward_iterator_wrapper): Add
+	equality comparisons that support value-initialized iterators.
+
+	* include/bits/boost_concept_check.h (__function_requires): Add
+	_GLIBCXX14_CONSTEXPR.
+	* testsuite/25_algorithms/min/concept_checks.cc: New test.
+
+2020-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93936
+	* include/std/ranges (split_view::_InnerIter::operator==): Compare
+	the operands' _M_i rather than their _M_i.current().
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+
+	P1645R1 constexpr for <numeric> algorithms
+	* include/bits/stl_numeric.h (iota, accumulate, inner_product,
+	partial_sum, adjacent_difference): Make conditionally constexpr for
+	C++20.
+	* include/std/numeric (__cpp_lib_constexpr_numeric): Define this feature
+	test macro.
+	(reduce, transform_reduce, exclusive_scan, inclusive_scan,
+	transform_exclusive_scan, transform_inclusive_scan): Make conditionally
+	constexpr for C++20.
+	* include/std/version (__cpp_lib_constexpr_numeric): Define.
+	* testsuite/26_numerics/accumulate/constexpr.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/constexpr.cc: Likewise.
+	* testsuite/26_numerics/exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/inner_product/constexpr.cc: Likewise.
+	* testsuite/26_numerics/iota/constexpr.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/constexpr.cc: Likewise.
+	* testsuite/26_numerics/reduce/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_exclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_inclusive_scan/constexpr.cc: Likewise.
+	* testsuite/26_numerics/transform_reduce/constexpr.cc: Likewise.
+
+2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn): Declare
+	variables in smaller scope and avoid calling ranges::distance when we
+	know they are pointers. Remove statically-unreachable use of
+	__builtin_unreachable().
+	* include/bits/stl_algobase.h (__lexicographical_compare::__lc):
+	Define inline.
+
+	* include/std/ranges (__detail::__maybe_empty_t): Define new helper
+	alias.
+	(__detail::__maybe_const_t): Likewise.
+	(__adaptor::_RangeAdaptor): Use __maybe_empty_t.
+	(transform_view, take_view, take_while_view, elements_view): Use
+	__maybe_const_t.
+	(join_view, split_view): Use both.
+
+2020-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	LWG 3397 basic_istream_view::iterator should not provide
+	iterator_category
+	* include/std/ranges (basic_istream_view:_Iterator::iterator_category):
+	Rename to ...
+	(basic_istream_view:_Iterator::iterator_concept): ... this.
+	* testsuite/std/ranges/istream_view.cc: Augment test.
+
+	LWG 3325 Constrain return type of transformation function for
+	transform_view
+	* include/std/ranges (transform_view): Constrain the return type of the
+	transformation function as per LWG 3325.
+	* testsuite/std/ranges/adaptors/lwg3325_neg.cc: New test.
+
+	LWG 3313 join_view::_Iterator::operator-- is incorrectly constrained
+	* include/std/ranges (join_view::_Iterator::operator--): Require that
+	range_reference_t<_Base> models common_range.
+	* testsuite/std/ranges/adaptors/lwg3313_neg.cc: New test.
+
+	LWG 3301 transform_view::_Iterator has incorrect iterator_category
+	* include/std/ranges (transform_view::_Iterator::_S_iter_cat): Adjust
+	determination of iterator_category as per LWG 3301.
+	* testsuite/std/ranges/adaptors/transform.cc: Augment test.
+
+	LWG 3292 iota_view is under-constrained
+	* include/std/ranges (iota_view): Require that _Winc models semiregular
+	  as per LWG 3292.
+	* testsuite/std/ranges/iota/lwg3292_neg.cc: New test.
+
+2020-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__copy_or_move): Do not use memmove
+	during constant evaluation. Call __builtin_memmove directly instead of
+	__memmove.
+	(__copy_or_move_backward): Likewise.
+	* include/bits/stl_algobase.h (__memmove): Remove.
+	(__copy_move<M, true, random_access_iterator_tag>::__copy_m)
+	(__copy_move_backward<M, true, random_access_iterator_tag>::__copy_m):
+	Use __builtin_memmove directly instead of __memmove.
+	(__copy_move_a2): Do not use memmove during constant evaluation.
+	(__copy_move_backward_a2): Use _IsMove constant to select correct
+	__copy_move_backward specialization.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Check for copies
+	begin turned into moves during constant evaluation.
+
+	* testsuite/25_algorithms/move_backward/93872.cc: Add test left out of
+	previous commit.
+
+	PR libstdc++/93872
+	* include/bits/stl_algobase.h (__memmove): Cast away const before
+	doing move assignment.
+	* testsuite/25_algorithms/move/93872.cc: New test.
+	* testsuite/25_algorithms/move_backward/93872.cc: New test.
+
+2020-02-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/93884
+	* include/bits/ranges_algobase.h (__copy_or_move,
+	__copy_or_move_backward): Don't inspect the iter_value_t of the output
+	iterator, instead inspect its iterator_traits directly.
+	* include/bits/stl_iterator.h (back_insert_iterator::container):
+	Conditionally initialize.
+	(back_insert_iterator::difference_type): Conditionally define.
+	(back_insert_iterator::back_insert_iterator): Conditionally define this
+	default constructor.
+	(front_insert_iterator::container): Conditionally initialize.
+	(front_insert_iterator::difference_type): Conditionally define.
+	(front_insert_iterator::front_insert_iterator): Conditionally define
+	this default constructor.
+	* 24_iterators/back_insert_iterator/pr93884.cc: New test.
+	* 24_iterators/front_insert_iterator/pr93884.cc: New test.
+
+	P0769R2 Add shift to <algorithm>
+	* include/bits/ranges_algo.h (shift_left, shift_right): New.
+	* testsuite/25_algorithms/shift_left/1.cc: New test.
+	* testsuite/25_algorithms/shift_right/1.cc: New test.
+
+2020-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
+	Make noexcept-specifier conditional.
+	* testsuite/24_iterators/istream_iterator/cons/sentinel.cc: Check
+	noexcept-specifier.
+
+	* include/bits/stream_iterator.h (istream_iterator(default_sentinel_t)):
+	Add constructor.
+	(operator==(istream_iterator, default_sentinel_t)): Add operator.
+	(ostream_iterator::difference_type): Define to ptrdiff_t for C++20.
+	* include/bits/streambuf_iterator.h
+	(istreambuf_iterator(default_sentinel_t)): Add constructor.
+	(operator==(istreambuf_iterator, default_sentinel_t)): Add operator.
+	* testsuite/24_iterators/istream_iterator/cons/sentinel.cc:
+	New test.
+	* testsuite/24_iterators/istream_iterator/sentinel.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/cons/sentinel.cc:
+	New test.
+	* testsuite/24_iterators/istreambuf_iterator/sentinel.cc: New test.
+
+	* include/std/ranges (__deep_const_range, __enable_view_impl): Remove.
+	(ranges::enable_view): Simplify (LWG 3326).
+	* include/bits/range_access.h (ranges::enable_view): Declare.
+	* include/bits/regex.h (__enable_view_impl): Remove partial
+	specialization.
+	* include/bits/stl_multiset.h (__enable_view_impl): Likewise.
+	* include/bits/stl_set.h (__enable_view_impl): Likewise.
+	* include/bits/unordered_set.h (__enable_view_impl): Likewise.
+	* include/debug/multiset.h (__enable_view_impl): Likewise.
+	* include/debug/set.h (__enable_view_impl): Likewise.
+	* include/debug/unordered_set (__enable_view_impl): Likewise.
+	* include/experimental/string_view (ranges::enable_view): Define
+	partial specialization.
+	* include/std/span (ranges::enable_view): Likewise.
+	* include/std/string_view (ranges::enable_view): Likewise.
+	* testsuite/std/ranges/view.cc: Check satisfaction of updated concept.
+
+2020-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (operator<=>(optional<T>, optional<U>))
+	(operator<=>(optional<T>, nullopt), operator<=>(optional<T>, U)):
+	Define for C++20.
+	* include/std/tuple (__tuple_cmp): New helper function for <=>.
+	(operator<=>(tuple<T...>, tuple<U>...)): Define for C++20.
+	* include/std/variant (operator<=>(variant<T...>, variant<T...>))
+	(operator<=>(monostate, monostate)): Define for C++20.
+	* testsuite/20_util/optional/relops/three_way.cc: New test.
+	* testsuite/20_util/tuple/comparison_operators/three_way.cc: New test.
+	* testsuite/20_util/variant/89851.cc: Move to ...
+	* testsuite/20_util/variant/relops/89851.cc: ... here.
+	* testsuite/20_util/variant/90008.cc: Move to ...
+	* testsuite/20_util/variant/relops/90008.cc: ... here.
+	* testsuite/20_util/variant/relops/three_way.cc: New test.
+
+2020-02-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::__adaptor::__maybe_refwrap): New utility
+	function.
+	(views::__adaptor::_RangeAdaptor::operator()): Add comments.  Use
+	__maybe_refwrap to capture lvalue references by reference, and then use
+	unwrap_reference_t to forward the by-reference captures as references.
+	* testsuite/std/ranges/adaptors/split.cc: Augment test.
+	* testsuite/std/ranges/adaptors/split_neg.cc: New test.
+
+	* include/std/ranges (iota_view): Forward declare _Sentinel.
+	(iota_view::_Iterator): Befriend _Sentinel.
+	(iota_view::_Sentinel::_M_equal): New member function.
+	(iota_view::_Sentinel::operator==): Use it.
+	(views::_Iota::operator()): Forward __f using the correct type.
+	* testsuite/std/ranges/access/ssize.cc (test06): Don't call views::iota
+	with integers of different signedness, to appease iota_view's deduction
+	guide.
+	* testsuite/std/ranges/iota/iota_view.cc: Augment test.
+
+2020-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (ranges::begin): Reject array of
+	incomplete type.
+	(ranges::end, ranges::size): Require arrays to be bounded.
+	(ranges::data): Require lvalue or borrowed_range.
+	(ranges::iterator_t): Remove constraint.
+	* testsuite/std/ranges/access/begin.cc: Do not check array of
+	incomplete type.
+	* testsuite/std/ranges/access/begin_neg.cc: New test.
+	* testsuite/std/ranges/access/end_neg.cc: Adjust expected error.
+	* testsuite/std/ranges/access/size_neg.cc: Adjust expected error.
+	* testsuite/std/ranges/access/ssize.cc: Do not check array of
+	incomplete type.
+
+	* include/std/system_error (error_category::operator<=>)
+	(operator<=>(const error_code&, const error_code&))
+	(operator<=>(const error_condition&, const error_condition&)): Define
+	for C++20.
+	* testsuite/19_diagnostics/error_category/operators/less.cc: New test.
+	* testsuite/19_diagnostics/error_category/operators/three_way.cc: New
+	test.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Remove
+	incorrect comment.
+	* testsuite/19_diagnostics/error_code/operators/less.cc: New test.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Remove
+	incorrect comment.
+	* testsuite/19_diagnostics/error_code/operators/three_way.cc: New test.
+	* testsuite/19_diagnostics/error_condition/operators/equal.cc: Remove
+	incorrect comment.
+	* testsuite/19_diagnostics/error_condition/operators/less.cc: New test.
+	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc:
+	Remove incorrect comment.
+	* testsuite/19_diagnostics/error_condition/operators/three_way.cc: New
+	test.
+
+	* libsupc++/typeinfo (type_info::operator!=): Remove for C++20.
+
+	* include/std/thread (thread::id::operator<=>): Define for C++20.
+	* testsuite/30_threads/thread/id/70294.cc: Do not take addresses of
+	functions in namespace std.
+	* testsuite/30_threads/thread/id/operators_c++20.cc: New test.
+
+2020-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/std/ranges/adaptors/split.cc (test03): Don't include the
+	null terminator of the underlying string as part of the test_range.
+	(main): Call test03.
+
+2020-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Add copyable<I>
+	requirement (LWG 3385).
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Adjust
+	expected declaration.
+
+	* include/std/ranges (take_while_view, drop_view, drop_while_view)
+	(elements_view:_Iterator): Initialize data members (LWG 3364).
+
+	* libsupc++/compare (three_way_comparable): Remove always-false check
+	that should have been removed with weak_equality (P1959R0).
+	(three_way_comparable_with): Likewise. Reorder requirements (LWG 3360).
+
+	* include/std/concepts (__detail::__partially_ordered_with): Move here
+	from <compare>.
+	(totally_ordered, totally_ordered_with): Use __partially_ordered_with
+	to simplify definition (LWG 3331).
+	* libsupc++/compare (__detail::__partially_ordered_with): Move to
+	<concepts>.
+
+	* include/std/concepts (totally_ordered_with): Remove redundant
+	requirement (LWG 3329).
+
+	* include/std/ranges (__detail::__convertible_to_non_slicing): New
+	helper concept.
+	(__detail::__pair_like_convertible_to): Remove.
+	(__detail::__pair_like_convertible_from): Add requirements for
+	non-slicing conversions.
+	(subrange): Constrain constructors with __convertible_to_non_slicing.
+	Remove constructors from pair-like types. Add new deduction guide.
+	* testsuite/std/ranges/subrange/lwg3282_neg.cc: New test.
+
+	* include/bits/iterator_concepts.h (iter_move): Add declaration to
+	prevent unqualified lookup finding a suitable declaration (LWG 3247).
+
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Change type of exception to
+	bad_array_new_length (LWG 3237).
+	* testsuite/20_util/polymorphic_allocator/lwg3237.cc: New test.
+
+	* include/std/type_traits (__cpp_lib_unwrap_ref): Define (LWG 3348).
+	* include/std/version (__cpp_lib_unwrap_ref): Likewise.
+	* testsuite/20_util/unwrap_reference/1.cc: Check macro.
+	* testsuite/20_util/unwrap_reference/3.cc: New test.
+
+	* include/std/numeric (midpoint(T8, T*)): Do not check for complete
+	type during overload resolution, use static assert instead (LWG 3200).
+	* testsuite/26_numerics/midpoint/pointer.cc: Do not test with
+	incomplete type.
+	* testsuite/26_numerics/midpoint/pointer_neg.cc: New test.
+
+	* include/std/span (span(T (&)[N])): Use non-deduced context to
+	prevent first parameter from interfering with class template argument
+	deduction (LWG 3369).
+	* testsuite/23_containers/span/deduction.cc: Add missing 'const'.
+	* testsuite/23_containers/span/lwg3255.cc: Check for construction from
+	rvalues.
+
+	* include/std/span (span::const_iterator, span::const_reverse_iterator)
+	(span::cbegin(), span::cend(), span::crbegin(), span::crend()):
+	Remove (LWG 3320).
+	* testsuite/23_containers/span/everything.cc: Replace uses of cbegin
+	and cend.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/
+	uninitialized_default_construct/constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/
+	constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/
+	constrained.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/
+	uninitialized_value_construct/constrained.cc: Likewise.
+
+	* include/bits/range_access.h (range_size_t): Define alias template.
+	* include/std/ranges (all_view): Rename to views::all_t (LWG 3335).
+	* testsuite/std/ranges/adaptors/filter.cc: Adjust to new name.
+
+	* include/std/ranges (filter_view, transform_view, take_view)
+	(join_view, split_view, reverse_view): Remove commented-out converting
+	constructors (LWG 3280).
+
+	* include/std/memory (uninitialized_construct_using_allocator): Use
+	std::construct_at (LWG 3321).
+
+	* include/std/memory_resource (polymorphic_allocator::allocate_bytes)
+	(polymorphic_allocator::allocate_object)
+	(polymorphic_allocator::new_object): Add nodiscard attribute (LWG3304).
+
+	LWG 3379. "safe" in several library names is misleading
+	* include/bits/range_access.h (enable_safe_range): Rename to
+	enable_borrowed_range.
+	(__detail::__maybe_safe_range): Rename to __maybe_borrowed_range.
+	(safe_range): Rename to borrowed_range.
+	* include/bits/ranges_algo.h: Adjust to use new names.
+	* include/bits/ranges_algobase.h: Likewise.
+	* include/bits/ranges_uninitialized.h: Likewise.
+	* include/std/ranges: Likewise.
+	(safe_iterator_t): Rename to borrowed_iterator_t.
+	(safe_subrange_t): Rename to borrowed_subrange_t.
+	* include/std/span: Adjust to use new names.
+	* include/std/string_view: Likewise.
+	* include/experimental/string_view: Likewise.
+	* testsuite/std/ranges/access/begin.cc: Likewise.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/safe_range.cc: Likewise.
+	* testsuite/std/ranges/safe_range_types.cc: Likewise.
+	* testsuite/util/testsuite_iterators.h: Likewise.
+
+	* include/std/ranges (tuple_element<0, const subrange<I, S, K>>)
+	(tuple_element<1, const subrange<I, S, K>>): Add partial
+	specializations (LWG 3398).
+	* testsuite/std/ranges/subrange/tuple_like.cc: New test.
+
+	* include/bits/ranges_algo.h (__find_fn, __find_first_of_fn)
+	(__adjacent_find_fn, __remove_if_fn, __remove_copy_if_fn)
+	(__unique_fn, __unique_copy_fn): Remove redundant conversions to bool.
+
+2020-02-18  Patrick Palka  <ppalka@redhat.com>
+
+	P1983R0 Wording for GB301, US296, US292, US291, and US283
+	* include/std/ranges (filter_view::pred): New member function.
+	(join_view::_Iterator::_Iterator): Remove now-redundant comment since
+	P1983R0 fixes the highlighted issue in the same way.
+	(join_view::_Iterator<_Const>): Add friend
+	join_view::_Iterator<!_Const>.
+	(join_view::_M_inner): Remove mutable specifier, effectively reverting
+	the proposed wording changes of P3278.
+	(join_view::begin): Refine the condition for when to return a const
+	iterator.
+	(split_view::_OuterIter::_OuterIter): Adjust constraints.
+	* testsuite/std/ranges/adaptors/filter.cc: Test that filter_view::pred
+	exists and works.
+
+2020-02-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93818
+	* include/std/ranges (_RangeAdaptor): Add deduction guide.
+	(filter_view::_Iterator): Add alias _Vp_iter and use in place of
+	iterator_t<_Vp>.
+	(filter_view::_Iterator::_S_iter_cat()): Add 'typename'.
+	(transform_view::_Iterator): Add alias _Base_iter and use in place of
+	iterator_t<_Base>.
+	(transform_view::_Iterator::_S_iter_cat()): Add 'typename'.
+	(join_view::_Iterator): Add _Outer_iter and _Inner_iter aliases.
+	(join_view::_Iterator::_S_iter_cat()): Add 'typename'.
+	(split_view::_InnerIter::_S_iter_cat()): Likewise.
+
+	* testsuite/20_util/integer_comparisons/equal.cc: Fix invalid
+	assumption that long is wider than int.
+	* testsuite/20_util/integer_comparisons/greater_equal.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/less.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/less_equal.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/not_equal.cc: Likewise.
+
+	P1976R2 Fixed-size span construction from dynamic range
+	* include/std/span (__cpp_lib_span): Update value.
+	(span(It, size_type), span(It, End)): Make conditionally explicit. Add
+	assertion.
+	(span(R&&), span(const span<OType, OExtent>&)): Likewise and relax
+	constraints.
+	(span::first<Count>(), span::last<Count>()): Use explicit type in
+	return statement.
+	(as_bytes, as_writable_bytes): Likewise.
+	* include/std/version (__cpp_lib_span): Update value.
+	* testsuite/23_containers/span/1.cc: Check new value.
+	* testsuite/23_containers/span/2.cc: Check new value.
+	* testsuite/23_containers/span/explicit.cc: New test.
+
+	* include/std/span (span::__is_compatible_array): Simplify alias
+	template by using requires-clause.
+	(span::__is_compatible_ref): New alias template for constraining
+	constructors.
+	(span::__is_compatible_iterator, span::__is_compatible_range): Remove.
+	(span(It, size_type), span(It, End)): Use __is_compatible_ref.
+	(span(T(&)[N], span(array<T, N>&), span(const array<T, N>&)): Remove
+	redundant parentheses.
+	(span(R&&)): Add missing constraints.
+
+	* include/std/span (span): Reorder members and rename template
+	parameters to match declarations in the C++2a working paper.
+
+	P2116R0 Remove tuple-like protocol support from fixed-extent span
+	* include/std/span (get, tuple_size, tuple_element): Remove.
+	* testsuite/23_containers/span/everything.cc: Remove checks for
+	tuple-like API.
+	* testsuite/23_containers/span/get_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_element_dynamic_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_element_oob_neg.cc: Remove.
+	* testsuite/23_containers/span/tuple_size_neg.cc: Remove.
+
+2020-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	P2106R0 Alternative wording for GB315 and GB316
+	* include/bits/ranges_algo.h (in_fun_result): New.
+	(for_each_result, for_each_n_result): Change into an alias of
+	in_fun_result.
+	(in_in_result): New.
+	(mismatch_result): Change into an alias of in_in_result.
+	(copy_if_result): Change into an alias of in_out_result.
+	(swap_ranges_result): Change into an alias of in_in_result.
+	(unary_transform_result): Change into an alias of in_out_result.
+	(in_in_out_result): New.
+	(binary_transform_result): Change into an alias of in_in_out_result.
+	(replace_copy_result, replace_copy_if_result, remove_copy_if_result,
+	remove_copy_result, unique_copy_result, reverse_copy_result,
+	rotate_copy_result, partial_sort_copy_result): Change into an alias of
+	in_out_result.
+	(in_out_out_result): New.
+	(partition_copy_result, merge_result): Change into an alias of
+	in_out_out_result.
+	(set_union_result, set_intersection_result): Change into an alias of
+	in_in_out_result.
+	(set_difference_result): Change into an alias of in_out_result.
+	(set_symmetric_difference): Change into an alias of in_in_out_result.
+	(min_max_result): New.
+	(minmax_result, minmax_element_result): Change into an alias of
+	min_max_result.
+	(in_found_result): New.
+	(next_permutation_result, prev_permutation_result): Change into an alias
+	of in_found_result.
+	(__next_permutation_fn::operator(), __prev_permutation_fn::operator()):
+	Adjust following changes to next_permutation_result and
+	prev_permutation_result.
+	* include/bits/ranges_algobase.h (in_out_result): New.
+	(copy_result, move_result, move_backward_result, copy_backward_result,
+	copy_n_result): Change into an alias of in_out_result.
+	* include/bits/ranges_uninitialized.h (uninitialized_copy_result,
+	uninitialized_copy_n_result, uninitialized_move_result,
+	uninitialized_move_n_result): Likewise.
+	* testsuite/25_algorithms/next_permutation/constrained.cc: Adjust uses of
+	structured bindings.
+	* testsuite/25_algorithms/prev_permutation/constrained.cc: Likewise.
+
+	P1243R4 Rangify new algorithms
+	* include/bits/ranges_algo.h (for_each_n_result, __for_each_n_fn,
+	for_each_n, __sample_fn, sample, __clamp_fn, clamp): New.
+	* testsuite/25_algorithms/clamp/constrained.cc: New test.
+	* testsuite/25_algorithms/for_each/constrained.cc: Augment test.
+	* testsuite/25_algorithms/sample/constrained.cc: New test.
+
+2020-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	P1964R2 Wording for boolean-testable
+	* include/bits/ranges_algo.h (__find_fn, __find_first_of_fn)
+	(__adjacent_find_fn): Cast result of predicate to bool.
+	* include/std/concepts (__boolean): Remove.
+	(__detail::__boolean_testable_impl, __detail::__boolean_testable): Add
+	new helper concepts.
+	(__detail::__weakly_eq_cmp_with, totally_ordered, totally_ordered_with)
+	(predicate): Use __boolean_testable instead of boolean.
+	* libsupc++/compare (__detail::__partially_ordered, _Synth3way):
+	Likewise.
+
+	P1970R2 Consistency for size() functions: Add ranges::ssize
+	* include/bits/range_access.h (_SSize, ssize): Define for C++20.
+	* testsuite/std/ranges/access/ssize.cc: New test.
+
+	P1956R1 On the names of low-level bit manipulation functions
+	* include/bits/hashtable_policy.h: Update comment.
+	* include/std/bit (__ispow2, __ceil2, __floor2, __log2p1): Rename.
+	(ispow2, ceil2, floor2, log2p1): Likewise.
+	(__cpp_lib_int_pow2): Add feature test macro.
+	* include/std/charconv (__to_chars_len_2): Adjust use of __log2p1.
+	* include/std/memory (assume_aligned): Adjust use of ispow2.
+	* include/std/version (__cpp_lib_int_pow2): Add.
+	* libsupc++/new_opa.cc: Adjust use of __ispow2.
+	* src/c++17/memory_resource.cc: Likewise, and for __ceil2 and __log2p1.
+	* testsuite/17_intro/freestanding.cc: Adjust use of ispow2.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_ceil_neg.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_floor.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/bit_width.cc: ... here.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.pow.two/has_single_bit.cc: ... here.
+
+	* include/std/charconv: Add comment.
+
+	PR libstdc++/92546 (partial)
+	* include/bits/random.h (uniform_random_bit_generator): Move definition
+	to <bits/uniform_int_dist.h>.
+	* include/bits/ranges_algo.h: Include <bits/uniform_int_dist.h> instead
+	of <bits/random.h>.
+	* include/bits/ranges_algobase.h: Do not include <cmath>.
+	* include/bits/uniform_int_dist.h (uniform_random_bit_generator):
+	Move here.
+	* include/std/ranges: Do not include <limits>.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error lineno.
+
+	PR libstdc++/92546 (partial)
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/int_limits.h: New header.
+	* include/bits/parse_numbers.h (__select_int::_Select_int): Replace
+	numeric_limits with __detail::__int_limits.
+	* include/std/bit (__rotl, __rotr, __countl_zero, __countl_one)
+	(__countr_zero, __countr_one, __popcount, __ceil2, __floor2, __log2p1):
+	Likewise.
+	* include/std/charconv (__to_chars_8, __from_chars_binary)
+	(__from_chars_alpha_to_num, from_chars): Likewise.
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Likewise.
+	* include/std/string_view (basic_string_view::_S_compare): Likewise.
+	* include/std/utility (in_range): Likewise.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc: Adjust for
+	extra error about incomplete type __int_limits<bool>.
+	* testsuite/26_numerics/bit/bit.count/countl_one.cc: Include <limits>.
+	* testsuite/26_numerics/bit/bit.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.count/popcount.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotl.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.rotate/rotr.cc: Likewise.
+
+	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter.to_string): Update
+	value for partial_ordering::unordered.
+
+	* include/bits/iterator_concepts.h (indirectly_copyable_storable): Add
+	const-qualified expression variations.
+	* include/std/concepts (copyable): Likewise.
+
+	* include/std/type_traits (__is_standard_integer): New helper trait.
+	* include/std/utility (cmp_equal, cmp_not_equal, cmp_less, cmp_greater)
+	(cmp_less_equal, cmp_greater_equal, in_range): Define for C++20.
+	* include/std/version (__cpp_lib_integer_comparison_functions): Define.
+	* testsuite/20_util/integer_comparisons/1.cc: New test.
+	* testsuite/20_util/integer_comparisons/2.cc: New test.
+	* testsuite/20_util/integer_comparisons/equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/greater_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/in_range.cc: New test.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/less.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_equal_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/less_neg.cc: New test.
+	* testsuite/20_util/integer_comparisons/not_equal.cc: New test.
+	* testsuite/20_util/integer_comparisons/not_equal_neg.cc: New test.
+
+2020-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn::operator()):
+	Move code after an early exit constexpr if to under an else branch.
+	* include/bits/ranges_algobase.h (__equal_fn::operator()): Likewise.
+
+2020-02-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h: Adjust whitespace and formatting.
+	* include/bits/ranges_algobase.h: Likewise.
+	* include/bits/ranges_uninitialized.h: Likewise.
+
+	* include/bits/ranges_algo.h: (adjacent_find, all_of, any_of,
+	binary_search, copy_if, count, count_if, equal_range, find, find_end,
+	find_first_of, find_if, find_if_not, for_each, generate, generate_n,
+	includes, inplace_merge, is_heap, is_heap_until, is_partitioned,
+	is_permutation, is_sorted, is_sorted_until, lexicographical_compare,
+	lower_bound, make_heap, max, max_element, merge, min, min_element,
+	minmax, minmax_element, mismatch, next_permutation, none_of,
+	nth_element, partial_sort, partial_sort_copy, partition, partition_copy,
+	partition_point, pop_heap, prev_permutation, push_heap, remove,
+	remove_copy, remove_copy_if, remove_if, replace, replace_copy,
+	replace_copy_if, replace_if, reverse, reverse_copy, rotate, rotate_copy,
+	search, search_n, set_difference, set_intersection,
+	set_symmetric_difference, set_union, shuffle, sort, sort_heap,
+	stable_partition, stable_sort, swap_ranges, transform, unique,
+	unique_copy, upper_bound): Convert into function objects.
+	* include/bits/ranges_algobase.h: (equal, copy, move, copy_n, fill_n,
+	fill, move_backward, copy_backward): Likewise.
+	* include/bits/ranges_uninitialized.h (uninitialized_default_construct,
+	uninitialized_default_construct_n, uninitialized_value_construct,
+	uninitialized_value_construct_n, uninitialized_copy,
+	uninitialized_copy_n, uninitialized_move, uninitialized_move_n,
+	uninitialized_fill, uninitialized_fill_n, construct_at, destroy_at,
+	destroy, destroy_n): Likewise.
+
+	* include/bits/ranges_algo.h (ranges::__find_end): Fold into ...
+	(ranges::find_end): ... here.
+	(ranges::__lexicographical_compare): Fold into ...
+	(ranges::lexicographical_compare): ... here.
+	* include/bits/ranges_algobase.h (ranges::__equal): Fold into ...
+	(ranges::equal): ... here.
+
+2020-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/erase_if.h (__cpp_lib_erase_if): Define to 202002L.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/string: Likewise.
+	* include/std/vector: Likewise.
+	* include/std/version: Likewise.
+	* testsuite/23_containers/deque/erasure.cc: Test for new value.
+	* testsuite/23_containers/forward_list/erasure.cc: Likewise.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+	* testsuite/23_containers/map/erasure.cc: Likewise.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/23_containers/vector/erasure.cc: Likewise.
+
+2020-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (uniform_random_bit_generator): Require min()
+	and max() to be constant expressions and min() to be less than max().
+	* testsuite/26_numerics/random/concept.cc: Check additional cases.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error lineno.
+
+2020-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/Makefile.am: Add <bits/ranges_uninitialized.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/ranges_uninitialized.h: New header.
+	* include/std/memory: Include it.
+	* testsuite/20_util/specialized_algorithms/destroy/constrained.cc: New
+	test.
+	* .../uninitialized_copy/constrained.cc: New test.
+	* .../uninitialized_default_construct/constrained.cc: New test.
+	* .../uninitialized_fill/constrained.cc: New test.
+	* .../uninitialized_move/constrained.cc: New test.
+	* .../uninitialized_value_construct/constrained.cc: New test.
+
+	* include/Makefile.am: Add bits/ranges_algobase.h
+	* include/Makefile.in: Regenerate.
+	* bits/ranges_algo.h: Include <bits/ranges_algobase.h> and refactor
+	existing #includes.
+	(__detail::__is_normal_iterator, __detail::is_reverse_iterator,
+	__detail::__is_move_iterator, copy_result, move_result,
+	__equal, equal, copy_result, move_result, move_backward_result,
+	copy_backward_result, __copy_or_move_backward, __copy_or_move, copy,
+	move, copy_backward, move_backward, copy_n_result, copy_n, fill_n,
+	fill): Split out into ...
+	* bits/range_algobase.h: ... this new header.
+
+2020-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	LWG 3389 and LWG 3390
+	* include/bits/stl_iterator.h (move_move_iterator): Use std::move when
+	constructing the move_iterator with __i.
+	(counted_iterator::counted_iterator): Use std::move when initializing
+	M_current with __i.
+	* testsuite/24_iterators/counted_iterator/lwg3389.cc: New test.
+	* testsuite/24_iterators/move_iterator/lwg3390.cc: New test.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
+2020-02-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h
+	(_Hashtable<>(_Hashtable&&, std::allocator_type&)): Add
+	missing std namespace qualification to forward call.
+
+2020-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: Fix
+	comment.
+	* testsuite/20_util/function_objects/range.cmp/less.ccL Likewise.
+
+	* include/std/ranges: Fix non-ASCII characters in comment.
+
+	* include/bits/range_cmp.h (__detail::__eq_builtin_ptr_cmp): Require
+	equality comparison to be valid and return bool.
+	(__detail::__less_builtin_ptr_cmp): Likewise for less-than comparison.
+	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: Check
+	type with ambiguous conversion to fundamental types.
+	* testsuite/20_util/function_objects/range.cmp/less.cc: Likewise.
+
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (iter_difference_t, iter_value_t):
+	Use remove_cvref_t.
+	(readable_traits): Rename to indirectly_readable_traits.
+	(readable): Rename to indirectly_readable.
+	(writable): Rename to indirectly_writable.
+	(__detail::__iter_exchange_move): Do not use remove_reference_t.
+	(indirectly_swappable): Adjust requires expression parameter types.
+	expression.
+	* include/bits/ranges_algo.h (ranges::transform, ranges::replace)
+	(ranges::replace_if, ranges::generate_n, ranges::generate)
+	(ranges::remove): Use new name for writable.
+	* include/bits/stl_iterator.h (__detail::__common_iter_has_arrow):
+	Use new name for readable.
+	* include/ext/pointer.h (readable_traits<_Pointer_adapter<P>>): Use
+	new name for readable_traits.
+	* testsuite/24_iterators/associated_types/readable.traits.cc: Likewise.
+	* testsuite/24_iterators/indirect_callable/projected.cc: Adjust for
+	new definition of indirectly_readable.
+
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Change
+	to take parameters of common_iterator, instead of the common_iterator
+	type itself. Fix argument for __common_iter_has_arrow constraint.
+	(iterator_traits<common_iterator<I, S>>::pointer): Adjust.
+
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (iota_view): Add braces to prevent -Wempty-body
+	warning.
+	(basic_istream_view::_Iterator::operator++()): Add missing return.
+
+2020-02-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h: Remove extraneous &&.
+
+	* include/std/ranges (ranges::__detail::__stream_extractable,
+	ranges::basic_istream_view, ranges::istream_view): Define.
+	* testsuite/std/ranges/istream_view: New test.
+
+	Implement C++20 range adaptors
+	* include/std/ranges: Include <bits/refwrap.h> and <tuple>.
+	(subrange::_S_store_size): Mark as const instead of constexpr to
+	avoid what seems to be a bug in GCC.
+	(__detail::__box): Give it defaulted copy and move constructors.
+	(ranges::views::_Single::operator()): Mark constexpr.
+	(ranges::views::_Iota::operator()): Mark constexpr.
+	(__detail::Empty): Define.
+	(ranges::views::__closure::_RangeAdaptor,
+	ranges::views::__closure::_RangeAdaptorClosure, ref_view, all_view,
+	ranges::views::all, ranges::__detail::find_if,
+	ranges::__detail::find_if_not, ranges::__detail::mismatch,
+	ranges::detail::min, filter_view, ranges::views::filter, transform_view,
+	ranges::views::transform, take_view, ranges::views::take,
+	take_while_view, ranges::views::take_while, drop_view,
+	ranges::views::drop, join_view, ranges::views::join,
+	__detail::require_constant, __detail::tiny_range, split_view,
+	ranges::views::split, ranges::views::_Counted, ranges::views::counted,
+	common_view, ranges::views::common, reverse_view,
+	ranges::views::reverse,
+	ranges::views::__detail::__is_reversible_subrange,
+	ranges::views::__detail::__is_reverse_view, reverse_view,
+	ranges::views::reverse, __detail::__has_tuple_element, elements_view,
+	ranges::views::elements, ranges::views::keys, ranges::views::values):
+	Define.
+	(views): Alias for ranges::views.
+	(tuple_size<ranges::subrange<>>, tuple_element<0, ranges::subrange>,
+	tuple_element<1, ranges::subrange>): New partial specializations.
+	* testsuite/std/ranges/adaptors/all.cc: New test.
+	* testsuite/std/ranges/adaptors/common.cc: Likewise.
+	* testsuite/std/ranges/adaptors/counted.cc: Likewise.
+	* testsuite/std/ranges/adaptors/drop.cc: Likewise.
+	* testsuite/std/ranges/adaptors/drop_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc: Likewise.
+	* testsuite/std/ranges/adaptors/filter.cc: Likewise.
+	* testsuite/std/ranges/adaptors/join.cc: Likewise.
+	* testsuite/std/ranges/adaptors/reverse.cc: Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+
+2020-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::type): Define typedef for underlying
+	type of enumerations and comparison category types.
+	(__cmp_cat::_Ord, __cmp_cat::_Ncmp): Add underlying type.
+	(__cmp_cat::_Ncmp::unordered): Change value to 2.
+	(partial_ordering::_M_value, weak_ordering::_M_value)
+	(strong_ordering::_M_value): Change type to __cmp_cat::type.
+	(partial_ordering::_M_is_ordered): Remove data member.
+	(partial_ordering): Use second bit of _M_value for unordered. Adjust
+	comparison operators.
+	(weak_ordering::operator partial_ordering): Simplify to remove
+	branches.
+	(operator<=>(unspecified, weak_ordering)): Likewise.
+	(strong_ordering::operator partial_ordering): Likewise.
+	(strong_ordering::operator weak_ordering): Likewise.
+	(operator<=>(unspecified, strong_ordering)): Likewise.
+	* testsuite/18_support/comparisons/categories/partialord.cc: New test.
+	* testsuite/18_support/comparisons/categories/strongord.cc: New test.
+	* testsuite/18_support/comparisons/categories/weakord.cc: New test.
+
+	* include/std/ranges (iota_view::_Iterator): Fix typo in name of
+	__cpp_lib_three_way_comparison macro and use deduced return type for
+	operator<=>.
+	* testsuite/std/ranges/iota/iterator.cc: New test.
+
+2020-02-07  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement C++20 constrained algorithms
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/algorithm: Include <bits/ranges_algo.h>.
+	* include/bits/ranges_algo.h: New file.
+	* testsuite/25_algorithms/adjacent_find/constrained.cc: New test.
+	* testsuite/25_algorithms/all_of/constrained.cc: New test.
+	* testsuite/25_algorithms/any_of/constrained.cc: New test.
+	* testsuite/25_algorithms/binary_search/constrained.cc: New test.
+	* testsuite/25_algorithms/copy/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_n/constrained.cc: New test.
+	* testsuite/25_algorithms/count/constrained.cc: New test.
+	* testsuite/25_algorithms/count_if/constrained.cc: New test.
+	* testsuite/25_algorithms/equal/constrained.cc: New test.
+	* testsuite/25_algorithms/equal_range/constrained.cc: New test.
+	* testsuite/25_algorithms/fill/constrained.cc: New test.
+	* testsuite/25_algorithms/fill_n/constrained.cc: New test.
+	* testsuite/25_algorithms/find/constrained.cc: New test.
+	* testsuite/25_algorithms/find_end/constrained.cc: New test.
+	* testsuite/25_algorithms/find_first_of/constrained.cc: New test.
+	* testsuite/25_algorithms/find_if/constrained.cc: New test.
+	* testsuite/25_algorithms/find_if_not/constrained.cc: New test.
+	* testsuite/25_algorithms/for_each/constrained.cc: New test.
+	* testsuite/25_algorithms/generate/constrained.cc: New test.
+	* testsuite/25_algorithms/generate_n/constrained.cc: New test.
+	* testsuite/25_algorithms/heap/constrained.cc: New test.
+	* testsuite/25_algorithms/includes/constrained.cc: New test.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: New test.
+	* testsuite/25_algorithms/is_partitioned/constrained.cc: New test.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/is_sorted/constrained.cc: New test.
+	* testsuite/25_algorithms/is_sorted_until/constrained.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc: New
+	test.
+	* testsuite/25_algorithms/lower_bound/constrained.cc: New test.
+	* testsuite/25_algorithms/max/constrained.cc: New test.
+	* testsuite/25_algorithms/max_element/constrained.cc: New test.
+	* testsuite/25_algorithms/merge/constrained.cc: New test.
+	* testsuite/25_algorithms/min/constrained.cc: New test.
+	* testsuite/25_algorithms/min_element/constrained.cc: New test.
+	* testsuite/25_algorithms/minmax/constrained.cc: New test.
+	* testsuite/25_algorithms/minmax_element/constrained.cc: New test.
+	* testsuite/25_algorithms/mismatch/constrained.cc: New test.
+	* testsuite/25_algorithms/move/constrained.cc: New test.
+	* testsuite/25_algorithms/move_backward/constrained.cc: New test.
+	* testsuite/25_algorithms/next_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/none_of/constrained.cc: New test.
+	* testsuite/25_algorithms/nth_element/constrained.cc: New test.
+	* testsuite/25_algorithms/partial_sort/constrained.cc: New test.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/partition/constrained.cc: New test.
+	* testsuite/25_algorithms/partition_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/partition_point/constrained.cc: New test.
+	* testsuite/25_algorithms/prev_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/remove/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_if/constrained.cc: New test.
+	* testsuite/25_algorithms/replace/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_if/constrained.cc: New test.
+	* testsuite/25_algorithms/reverse/constrained.cc: New test.
+	* testsuite/25_algorithms/reverse_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/rotate/constrained.cc: New test.
+	* testsuite/25_algorithms/rotate_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/search/constrained.cc: New test.
+	* testsuite/25_algorithms/search_n/constrained.cc: New test.
+	* testsuite/25_algorithms/set_difference/constrained.cc: New test.
+	* testsuite/25_algorithms/set_intersection/constrained.cc: New test.
+	* testsuite/25_algorithms/set_symmetric_difference/constrained.cc: New
+	test.
+	* testsuite/25_algorithms/set_union/constrained.cc: New test.
+	* testsuite/25_algorithms/shuffle/constrained.cc: New test.
+	* testsuite/25_algorithms/sort/constrained.cc: New test.
+	* testsuite/25_algorithms/stable_partition/constrained.cc: New test.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: New test.
+	* testsuite/25_algorithms/swap_ranges/constrained.cc: New test.
+	* testsuite/25_algorithms/transform/constrained.cc: New test.
+	* testsuite/25_algorithms/unique/constrained.cc: New test.
+	* testsuite/25_algorithms/unique_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/upper_bound/constrained.cc: New test.
+
+2020-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Fix PR
+	number in comment. Fix indentation.
+
+	* include/bits/stl_algobase.h (__iter_swap, __iter_swap<true>): Remove
+	redundant _GLIBCXX20_CONSTEXPR.
+
+	* include/std/ranges (viewable_range): Replace decay_t with
+	remove_cvref_t (LWG 3375).
+
+2020-02-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (iter_reference_t)
+	(iter_rvalue_reference_t, iter_common_reference_t, indirect_result_t):
+	Remove workarounds for PR c++/67704.
+	* testsuite/24_iterators/aliases.cc: New test.
+
+2020-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::move_iterator): Move __i
+	when initializing _M_current.
+	(move_iterator::base): Split into two overloads differing in
+	ref-qualifiers as in P1207R4 for C++20.
+
+2020-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_GLIBCXX_NOT_FN_CALL_OP): Un-define after
+	use.
+
+	PR libstdc++/93562
+	* include/bits/unique_ptr.h (__uniq_ptr_impl::swap): Define.
+	(unique_ptr::swap, unique_ptr<T[], D>::swap): Call it.
+	* testsuite/20_util/unique_ptr/modifiers/93562.cc: New test.
+
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
+2020-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/24_iterators/range_operations/distance.cc: Do not assume
+	test_range::end() returns the same type as test_range::begin().
+	* testsuite/24_iterators/range_operations/next.cc: Likewise.
+	* testsuite/24_iterators/range_operations/prev.cc: Likewise.
+	* testsuite/util/testsuite_iterators.h (__gnu_test::test_range::end):
+	Always return a sentinel<I>.
+
+2020-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92895
+	* include/std/stop_token (stop_token::stop_possible()): Call new
+	_M_stop_possible() function.
+	(stop_token::stop_requested()): Do not use stop_possible().
+	(stop_token::binary_semaphore): New class, as temporary stand-in for
+	std::binary_semaphore.
+	(stop_token::_Stop_cb::_M_callback): Add noexcept to type.
+	(stop_token::_Stop_cb::_M_destroyed, stop_token::_Stop_cb::_M_done):
+	New data members for symchronization with stop_callback destruction.
+	(stop_token::_Stop_cb::_Stop_cb): Make non-template.
+	(stop_token::_Stop_cb::_M_linked, stop_token::_Stop_cb::_S_execute):
+	Remove.
+	(stop_token::_Stop_cb::_M_run): New member function.
+	(stop_token::_Stop_state::_M_stopped, stop_token::_Stop_state::_M_mtx):
+	Remove.
+	(stop_token::_Stop_state::_M_owners): New data member to track
+	reference count for ownership.
+	(stop_token::_Stop_state::_M_value): New data member combining a
+	spinlock, the stop requested flag, and the reference count for
+	associated stop_source objects.
+	(stop_token::_Stop_state::_M_requester): New data member for
+	synchronization with stop_callback destruction.
+	(stop_token::_Stop_state::_M_stop_possible()): New member function.
+	(stop_token::_Stop_state::_M_stop_requested()): Inspect relevant bit
+	of _M_value.
+	(stop_token::_Stop_state::_M_add_owner)
+	(stop_token::_Stop_state::_M_release_ownership)
+	(stop_token::_Stop_state::_M_add_ssrc)
+	(stop_token::_Stop_state::_M_sub_ssrc): New member functions for
+	updating reference counts.
+	(stop_token::_Stop_state::_M_lock, stop_token::_Stop_state::_M_unlock)
+	(stop_token::_Stop_state::_M_lock, stop_token::_Stop_state::_M_unlock)
+	(stop_token::_Stop_state::_M_try_lock)
+	(stop_token::_Stop_state::_M_try_lock_and_stop)
+	(stop_token::_Stop_state::_M_do_try_lock): New member functions for
+	managing spinlock.
+	(stop_token::_Stop_state::_M_request_stop): Use atomic operations to
+	read and update state. Release lock while running callbacks. Use new
+	data members to synchronize with callback destruction.
+	(stop_token::_Stop_state::_M_remove_callback): Likewise.
+	(stop_token::_Stop_state::_M_register_callback): Use atomic operations
+	to read and update state.
+	(stop_token::_Stop_state_ref): Handle type to manage _Stop_state,
+	replacing shared_ptr.
+	(stop_source::stop_source(const stop_source&)): Update reference count.
+	(stop_source::operator=(const stop_source&)): Likewise.
+	(stop_source::~stop_source()): Likewise.
+	(stop_source::stop_source(stop_source&&)): Define as defaulted.
+	(stop_source::operator=(stop_source&&)): Establish postcondition on
+	parameter.
+	(stop_callback): Enforce preconditions on template parameter. Replace
+	base class with data member of new _Cb_impl type.
+	(stop_callback::stop_callback(const stop_token&, Cb&&))
+	(stop_callback::stop_callback(stop_token&&, Cb&&)): Fix TOCTTOU race.
+	(stop_callback::_Cb_impl): New type wrapping _Callback member and
+	defining the _S_execute member function.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock-mt.cc: New
+	test.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock.cc: New test.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc: New test.
+	* testsuite/30_threads/stop_token/stop_callback/destructible_neg.cc:
+	New test.
+	* testsuite/30_threads/stop_token/stop_callback/invocable_neg.cc: New
+	test.
+	* testsuite/30_threads/stop_token/stop_callback/invoke.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source/assign.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token/stop_possible.cc: New
+	test.
+
+	* libsupc++/compare (__detail::__3way_builtin_ptr_cmp): Use
+	three_way_comparable_with.
+	(__detail::__3way_cmp_with): Remove workaround for fixed bug.
+	(compare_three_way::operator()): Remove redundant constraint from
+	requires-clause.
+	(__detail::_Synth3way::operator()): Use three_way_comparable_with
+	instead of workaround.
+	* testsuite/18_support/comparisons/object/93479.cc: Prune extra
+	output due to simplified constraints on compare_three_way::operator().
+
+	PR libstdc++/93479
+	* libsupc++/compare (__3way_builtin_ptr_cmp): Require <=> to be valid.
+	* testsuite/18_support/comparisons/object/93479.cc: New test.
+
+	* testsuite/std/ranges/access/end.cc: Do not assume test_range::end()
+	returns the same type as test_range::begin(). Add comments.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/range.cc: Do not assume the sentinel for
+	test_range is the same as its iterator type.
+	* testsuite/util/testsuite_iterators.h (test_range::sentinel): Add
+	operator- overloads to satisfy sized_sentinel_for when the iterator
+	satisfies random_access_iterator.
+
+2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93470
+	* include/bits/refwrap.h (reference_wrapper::operator()): Restrict
+	static assertion to object types.
+
+	PR libstdc++/93325
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Use AC_SEARCH_LIBS for
+	clock_gettime instead of explicit glibc version check.
+	* configure: Regenerate.
+
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR libstdc++/93478
+	* include/std/atomic: Fix typo.
+	* include/std/optional: Likewise.
+
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
+2020-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93426
+	* include/std/span (span): Fix deduction guide.
+	* testsuite/23_containers/span/deduction.cc: New test.
+
+2020-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::_Eq): Remove enumeration type.
+	(__cmp_cat::_Ord::equivalent): Add enumerator.
+	(__cmp_cat::_Ord::_Less, __cmp_cat::_Ord::_Greater): Rename to less
+	and greater.
+	(partial_ordering, weak_ordering, strong_ordering): Remove
+	constructors taking __cmp_cat::_Eq parameters. Use renamed
+	enumerators.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* acinclude.m4: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-01-23  Alexandre Oliva <oliva@adacore.com>
+
+	* crossconfig.m4 (GLIBCXX_CHECK_MATH_DECL): Reject macros.
+	* configure: Rebuild.
+
+	* testsuite/27_io/fpos/mbstate_t/1.cc: Zero-init mbstate_t.
+
+2020-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91947
+	* include/Makefile.am (${host_builddir}/largefile-config.h): Simplify
+	rule.
+	* include/Makefile.in: Regenerate.
+
 2020-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Fix grammar.

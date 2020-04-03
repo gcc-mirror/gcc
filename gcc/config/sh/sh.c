@@ -800,7 +800,7 @@ register_sh_passes (void)
   /* Run sh_treg_combine pass after register allocation and basic block
      reordering as this sometimes creates new opportunities.  */
   register_pass (make_pass_sh_treg_combine (g, true, "sh_treg_combine3"),
-		 PASS_POS_INSERT_AFTER, "split4", 1);
+		 PASS_POS_INSERT_AFTER, "split3", 1);
 
   /* Optimize sett and clrt insns, by e.g. removing them if the T bit value
      is known after a conditional branch.
@@ -2108,7 +2108,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       lsw_taken = EQ;
       if (prob.initialized_p ())
 	{
-	  /* FIXME: This is not optimal.  We do not really know the probablity
+	  /* FIXME: This is not optimal.  We do not really know the probability
 	     that values differ by MCW only, but we should probably distribute
 	     probabilities more evenly.  */
 	  msw_skip_prob = rev_prob;

@@ -1,3 +1,10 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

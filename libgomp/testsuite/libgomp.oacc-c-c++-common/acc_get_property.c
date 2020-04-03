@@ -3,8 +3,7 @@
    of all device types mentioned in the OpenACC standard.
 
    See also acc_get_property.f90. */
-/* { dg-do run { target { { ! { openacc_host_selected } } && { ! { openacc_amdgcn_accel_selected } } } } } */
-/* FIXME: This test does not work with the GCN implementation stub yet.  */
+/* { dg-do run } */
 
 #include <openacc.h>
 #include <stdlib.h>
@@ -15,16 +14,16 @@
    and do basic device independent validation. */
 
 void
-print_device_properties(acc_device_t type)
+print_device_properties (acc_device_t type)
 {
   const char *s;
   size_t v;
 
-  int dev_count = acc_get_num_devices(type);
+  int dev_count = acc_get_num_devices (type);
 
   for (int i = 0; i < dev_count; ++i)
     {
-      printf("  Device %d:\n", i+1);
+      printf ("  Device %d:\n", i+1);
 
       s = acc_get_property_string (i, type, acc_property_vendor);
       printf ("    Vendor: %s\n", s);
@@ -35,10 +34,10 @@ print_device_properties(acc_device_t type)
 	}
 
       v = acc_get_property (i, type,  acc_property_memory);
-      printf ("    Total memory: %zd\n", v);
+      printf ("    Total memory: %zu\n", v);
 
       v = acc_get_property (i, type, acc_property_free_memory);
-      printf ("    Free memory: %zd\n", v);
+      printf ("    Free memory: %zu\n", v);
 
       s = acc_get_property_string (i, type, acc_property_name);
       printf ("    Name: %s\n", s);
@@ -58,19 +57,20 @@ print_device_properties(acc_device_t type)
     }
 }
 
-int main ()
+int
+main ()
 {
-  printf("acc_device_none:\n");
+  printf ("acc_device_none:\n");
   /* For completness; not expected to print anything since there
      should be no devices of this type. */
-  print_device_properties(acc_device_none);
+  print_device_properties (acc_device_none);
 
-  printf("acc_device_default:\n");
-  print_device_properties(acc_device_default);
+  printf ("acc_device_default:\n");
+  print_device_properties (acc_device_default);
 
-  printf("acc_device_host:\n");
-  print_device_properties(acc_device_host);
+  printf ("acc_device_host:\n");
+  print_device_properties (acc_device_host);
 
-  printf("acc_device_not_host:\n");
-  print_device_properties(acc_device_not_host);
+  printf ("acc_device_not_host:\n");
+  print_device_properties (acc_device_not_host);
 }

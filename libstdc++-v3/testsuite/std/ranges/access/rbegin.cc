@@ -32,12 +32,14 @@ struct R1
 };
 
 // N.B. this is a lie, rbegin on an R1 rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<R1> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R1> = true;
 
 void
 test01()
 {
   constexpr R1 r;
+  // decay-copy(t.rbegin()) if it is a valid expression
+  // and its type I models input_or_output_iterator.
   static_assert( std::ranges::rbegin(r) == &r.i );
   static_assert( std::ranges::rbegin(std::move(r)) == &r.i );
 }
@@ -54,12 +56,14 @@ struct R2
 };
 
 // N.B. this is a lie, begin/end on an R2 rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<R2> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R2> = true;
 
 void
 test02()
 {
   constexpr R2 r;
+  // Otherwise, decay-copy(rbegin(t)) if it is a valid expression
+  // and its type I models input_or_output_iterator [...]
   static_assert( std::ranges::rbegin(r)
       == std::make_reverse_iterator(std::ranges::end(r)) );
   static_assert( std::ranges::rbegin(std::move(r))
@@ -69,11 +73,29 @@ test02()
 void
 test03()
 {
-  using __gnu_test::test_range;
-  using __gnu_test::bidirectional_iterator_wrapper;
+  struct R3
+  : __gnu_test::test_range<int, __gnu_test::bidirectional_iterator_wrapper>
+  {
+    R3(int (&a)[2]) : test_range(a) { }
+
+    using test_range::begin;
+
+    // Replace test_range::end() to return same type as begin()
+    // so ranges::rbegin will wrap it in a reverse_iterator .
+    auto end() &
+    {
+      using __gnu_test::bidirectional_iterator_wrapper;
+      return bidirectional_iterator_wrapper<int>(bounds.last, &bounds);
+    }
+  };
 
   int a[2] = { };
-  test_range<int, bidirectional_iterator_wrapper> r(a);
+  R3 r(a);
+
+  // Otherwise, make_reverse_iterator(ranges::end(t)) if both ranges::begin(t)
+  // and ranges::end(t) are valid expressions of the same type I which models
+  // bidirectional_iterator.
+
   VERIFY( std::ranges::rbegin(r) == std::make_reverse_iterator(std::ranges::end(r)) );
 }
 

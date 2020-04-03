@@ -70,13 +70,15 @@ $(srcdir)/config/arm/arm-tune.md: $(srcdir)/config/arm/parsecpu.awk \
 	$(srcdir)/config/arm/arm-cpus.in
 	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=md \
 		$(srcdir)/config/arm/arm-cpus.in > arm-tune.new
-	mv arm-tune.new $(srcdir)/config/arm/arm-tune.md
+	$(srcdir)/../move-if-change arm-tune.new \
+				    $(srcdir)/config/arm/arm-tune.md
 
 $(srcdir)/config/arm/arm-tables.opt: $(srcdir)/config/arm/parsecpu.awk \
   $(srcdir)/config/arm/arm-cpus.in
 	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=opt \
 		$(srcdir)/config/arm/arm-cpus.in > arm-tables.new
-	mv arm-tables.new $(srcdir)/config/arm/arm-tables.opt
+	$(srcdir)/../move-if-change arm-tables.new \
+				    $(srcdir)/config/arm/arm-tables.opt
 
 arm-cpu.h: s-arm-cpu ; @true
 s-arm-cpu: $(srcdir)/config/arm/parsecpu.awk \

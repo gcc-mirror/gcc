@@ -765,14 +765,18 @@ cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 	       callgraph edges.  */
 	    if (edge->speculative && !update_speculative)
 	      {
-		cgraph_edge *direct, *indirect;
-		ipa_ref *ref;
+		cgraph_edge *indirect = edge->speculative_call_indirect_edge ();
 
-		gcc_assert (!edge->indirect_unknown_callee);
-		edge->speculative_call_info (direct, indirect, ref);
-		direct->speculative = false;
+		for (cgraph_edge *next, *direct
+			= edge->first_speculative_call_target ();
+		     direct;
+		     direct = next)
+		  {
+		    next = direct->next_speculative_call_target ();
+		    direct->speculative_call_target_ref ()->speculative = false;
+		    direct->speculative = false;
+		  }
 		indirect->speculative = false;
-		ref->speculative = false;
 	      }
 	  }
 	if (node->clones)

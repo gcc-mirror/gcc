@@ -1656,6 +1656,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx8HImode:
     case E_VNx4SImode:
     case E_VNx2DImode:
+    case E_VNx8BFmode:
     case E_VNx8HFmode:
     case E_VNx4SFmode:
     case E_VNx2DFmode:
@@ -1666,6 +1667,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx16HImode:
     case E_VNx8SImode:
     case E_VNx4DImode:
+    case E_VNx16BFmode:
     case E_VNx16HFmode:
     case E_VNx8SFmode:
     case E_VNx4DFmode:
@@ -1674,6 +1676,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx24HImode:
     case E_VNx12SImode:
     case E_VNx6DImode:
+    case E_VNx24BFmode:
     case E_VNx24HFmode:
     case E_VNx12SFmode:
     case E_VNx6DFmode:
@@ -1682,6 +1685,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx32HImode:
     case E_VNx16SImode:
     case E_VNx8DImode:
+    case E_VNx32BFmode:
     case E_VNx32HFmode:
     case E_VNx16SFmode:
     case E_VNx8DFmode:
@@ -2290,7 +2294,7 @@ aarch64_is_noplt_call_p (rtx sym)
 
 /* Return true if the offsets to a zero/sign-extract operation
    represent an expression that matches an extend operation.  The
-   operands represent the paramters from
+   operands represent the parameters from
 
    (extract:MODE (mult (reg) (MULT_IMM)) (EXTRACT_IMM) (const_int 0)).  */
 bool
@@ -7891,6 +7895,30 @@ aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
 	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
 }
 
+/* Test whether:
+
+     X = (X & AND_VAL) | IOR_VAL;
+
+   can be implemented using:
+
+     MOVK X, #(IOR_VAL >> shift), LSL #shift
+
+   Return the shift if so, otherwise return -1.  */
+int
+aarch64_movk_shift (const wide_int_ref &and_val,
+		    const wide_int_ref &ior_val)
+{
+  unsigned int precision = and_val.get_precision ();
+  unsigned HOST_WIDE_INT mask = 0xffff;
+  for (unsigned int shift = 0; shift < precision; shift += 16)
+    {
+      if (and_val == ~mask && (ior_val & mask) == ior_val)
+	return shift;
+      mask <<= 16;
+    }
+  return -1;
+}
+
 /* VAL is a value with the inner mode of MODE.  Replicate it to fill a
    64-bit (DImode) integer.  */
 
@@ -11020,6 +11048,8 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
   rtx inner;
   rtx comparator;
   enum rtx_code cmpcode;
+  const struct cpu_cost_table *extra_cost
+    = aarch64_tune_params.insn_extra_cost;
 
   if (COMPARISON_P (op0))
     {
@@ -11054,8 +11084,17 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 		    /* CBZ/CBNZ.  */
 		    *cost += rtx_cost (inner, VOIDmode, cmpcode, 0, speed);
 
-	        return true;
-	      }
+		  return true;
+		}
+	      if (register_operand (inner, VOIDmode)
+		  && aarch64_imm24 (comparator, VOIDmode))
+		{
+		  /* SUB and SUBS.  */
+		  *cost += COSTS_N_INSNS (2);
+		  if (speed)
+		    *cost += extra_cost->alu.arith * 2;
+		  return true;
+		}
 	    }
 	  else if (cmpcode == LT || cmpcode == GE)
 	    {
@@ -11466,6 +11505,13 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	    *cost += extra_cost->alu.clz;
 	}
 
+      return false;
+
+    case CTZ:
+      *cost = COSTS_N_INSNS (2);
+
+      if (speed)
+	*cost += extra_cost->alu.clz + extra_cost->alu.rev;
       return false;
 
     case COMPARE:
@@ -12693,6 +12739,25 @@ aarch64_builtin_reciprocal (tree fndecl)
   gcc_unreachable ();
 }
 
+/* Emit code to perform the floating-point operation:
+
+     DST = SRC1 * SRC2
+
+   where all three operands are already known to be registers.
+   If the operation is an SVE one, PTRUE is a suitable all-true
+   predicate.  */
+
+static void
+aarch64_emit_mult (rtx dst, rtx ptrue, rtx src1, rtx src2)
+{
+  if (ptrue)
+    emit_insn (gen_aarch64_pred (UNSPEC_COND_FMUL, GET_MODE (dst),
+				 dst, ptrue, src1, src2,
+				 gen_int_mode (SVE_RELAXED_GP, SImode)));
+  else
+    emit_set_insn (dst, gen_rtx_MULT (GET_MODE (dst), src1, src2));
+}
+
 /* Emit instruction sequence to compute either the approximate square root
    or its approximate reciprocal, depending on the flag RECP, and return
    whether the sequence was emitted or not.  */
@@ -12715,7 +12780,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
 		& AARCH64_APPROX_MODE (mode))))
 	return false;
 
-      if (flag_finite_math_only
+      if (!flag_finite_math_only
 	  || flag_trapping_math
 	  || !flag_unsafe_math_optimizations
 	  || optimize_function_for_size_p (cfun))
@@ -12725,17 +12790,33 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     /* Caller assumes we cannot fail.  */
     gcc_assert (use_rsqrt_p (mode));
 
+  rtx pg = NULL_RTX;
+  if (aarch64_sve_mode_p (mode))
+    pg = aarch64_ptrue_reg (aarch64_sve_pred_mode (mode));
   machine_mode mmsk = (VECTOR_MODE_P (mode)
 		       ? related_int_vector_mode (mode).require ()
 		       : int_mode_for_mode (mode).require ());
-  rtx xmsk = gen_reg_rtx (mmsk);
+  rtx xmsk = NULL_RTX;
   if (!recp)
-    /* When calculating the approximate square root, compare the
-       argument with 0.0 and create a mask.  */
-    emit_insn (gen_rtx_SET (xmsk,
-			    gen_rtx_NEG (mmsk,
-					 gen_rtx_EQ (mmsk, src,
-						     CONST0_RTX (mode)))));
+    {
+      /* When calculating the approximate square root, compare the
+	 argument with 0.0 and create a mask.  */
+      rtx zero = CONST0_RTX (mode);
+      if (pg)
+	{
+	  xmsk = gen_reg_rtx (GET_MODE (pg));
+	  rtx hint = gen_int_mode (SVE_KNOWN_PTRUE, SImode);
+	  emit_insn (gen_aarch64_pred_fcm (UNSPEC_COND_FCMNE, mode,
+					   xmsk, pg, hint, src, zero));
+	}
+      else
+	{
+	  xmsk = gen_reg_rtx (mmsk);
+	  emit_insn (gen_rtx_SET (xmsk,
+				  gen_rtx_NEG (mmsk,
+					       gen_rtx_EQ (mmsk, src, zero))));
+	}
+    }
 
   /* Estimate the approximate reciprocal square root.  */
   rtx xdst = gen_reg_rtx (mode);
@@ -12756,29 +12837,40 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
   while (iterations--)
     {
       rtx x2 = gen_reg_rtx (mode);
-      emit_set_insn (x2, gen_rtx_MULT (mode, xdst, xdst));
+      aarch64_emit_mult (x2, pg, xdst, xdst);
 
       emit_insn (gen_aarch64_rsqrts (mode, x1, src, x2));
 
       if (iterations > 0)
-	emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, x1));
+	aarch64_emit_mult (xdst, pg, xdst, x1);
     }
 
   if (!recp)
     {
-      /* Qualify the approximate reciprocal square root when the argument is
-	 0.0 by squashing the intermediary result to 0.0.  */
-      rtx xtmp = gen_reg_rtx (mmsk);
-      emit_set_insn (xtmp, gen_rtx_AND (mmsk, gen_rtx_NOT (mmsk, xmsk),
-					      gen_rtx_SUBREG (mmsk, xdst, 0)));
-      emit_move_insn (xdst, gen_rtx_SUBREG (mode, xtmp, 0));
+      if (pg)
+	/* Multiply nonzero source values by the corresponding intermediate
+	   result elements, so that the final calculation is the approximate
+	   square root rather than its reciprocal.  Select a zero result for
+	   zero source values, to avoid the Inf * 0 -> NaN that we'd get
+	   otherwise.  */
+	emit_insn (gen_cond (UNSPEC_COND_FMUL, mode,
+			     xdst, xmsk, xdst, src, CONST0_RTX (mode)));
+      else
+	{
+	  /* Qualify the approximate reciprocal square root when the
+	     argument is 0.0 by squashing the intermediary result to 0.0.  */
+	  rtx xtmp = gen_reg_rtx (mmsk);
+	  emit_set_insn (xtmp, gen_rtx_AND (mmsk, gen_rtx_NOT (mmsk, xmsk),
+					    gen_rtx_SUBREG (mmsk, xdst, 0)));
+	  emit_move_insn (xdst, gen_rtx_SUBREG (mode, xtmp, 0));
 
-      /* Calculate the approximate square root.  */
-      emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, src));
+	  /* Calculate the approximate square root.  */
+	  aarch64_emit_mult (xdst, pg, xdst, src);
+	}
     }
 
   /* Finalize the approximation.  */
-  emit_set_insn (dst, gen_rtx_MULT (mode, xdst, x1));
+  aarch64_emit_mult (dst, pg, xdst, x1);
 
   return true;
 }
@@ -12808,6 +12900,10 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
   if (!TARGET_SIMD && VECTOR_MODE_P (mode))
     return false;
 
+  rtx pg = NULL_RTX;
+  if (aarch64_sve_mode_p (mode))
+    pg = aarch64_ptrue_reg (aarch64_sve_pred_mode (mode));
+
   /* Estimate the approximate reciprocal.  */
   rtx xrcp = gen_reg_rtx (mode);
   emit_insn (gen_aarch64_frecpe (mode, xrcp, den));
@@ -12827,7 +12923,7 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
       emit_insn (gen_aarch64_frecps (mode, xtmp, xrcp, den));
 
       if (iterations > 0)
-	emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xtmp));
+	aarch64_emit_mult (xrcp, pg, xrcp, xtmp);
     }
 
   if (num != CONST1_RTX (mode))
@@ -12835,11 +12931,11 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
       /* As the approximate reciprocal of DEN is already calculated, only
 	 calculate the approximate division when NUM is not 1.0.  */
       rtx xnum = force_reg (mode, num);
-      emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xnum));
+      aarch64_emit_mult (xrcp, pg, xrcp, xnum);
     }
 
   /* Finalize the approximation.  */
-  emit_set_insn (quo, gen_rtx_MULT (mode, xrcp, xtmp));
+  aarch64_emit_mult (quo, pg, xrcp, xtmp);
   return true;
 }
 
@@ -14035,8 +14131,8 @@ aarch64_override_options (void)
       if (selected_arch->arch != selected_cpu->arch)
 	{
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
-		       all_architectures[selected_cpu->arch].name,
-		       selected_arch->name);
+		       aarch64_cpu_string,
+		       aarch64_arch_string);
 	}
       aarch64_isa_flags = arch_isa;
       explicit_arch = selected_arch->arch;
@@ -16098,8 +16194,10 @@ aarch64_full_sve_mode (scalar_mode mode)
       return VNx4SFmode;
     case E_HFmode:
       return VNx8HFmode;
+    case E_BFmode:
+      return VNx8BFmode;
     case E_DImode:
-	return VNx2DImode;
+      return VNx2DImode;
     case E_SImode:
       return VNx4SImode;
     case E_HImode:

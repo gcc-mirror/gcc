@@ -61,9 +61,12 @@ gfc_get_string (const char *format, ...)
     }
   else
     {
+      int ret;
       va_start (ap, format);
-      vsnprintf (temp_name, sizeof (temp_name), format, ap);
+      ret = vsnprintf (temp_name, sizeof (temp_name), format, ap);
       va_end (ap);
+      if (ret < 1 || ret >= (int) sizeof (temp_name)) /* Reject truncation.  */
+	gfc_internal_error ("identifier overflow: %d", ret);
       temp_name[sizeof (temp_name) - 1] = 0;
       str = temp_name;
     }

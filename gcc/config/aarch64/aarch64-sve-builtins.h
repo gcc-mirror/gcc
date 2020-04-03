@@ -150,6 +150,7 @@ enum predication_index
 enum type_class_index
 {
   TYPE_bool,
+  TYPE_bfloat,
   TYPE_float,
   TYPE_signed,
   TYPE_unsigned,

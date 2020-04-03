@@ -9775,7 +9775,14 @@ mips_declare_object_name (FILE *stream, const char *name,
 			  tree decl ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
-  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
+#ifdef USE_GNU_UNIQUE_OBJECT
+  /* As in elfos.h.  */
+  if (USE_GNU_UNIQUE_OBJECT && DECL_ONE_ONLY (decl)
+      && (!DECL_ARTIFICIAL (decl) || !TREE_READONLY (decl)))
+    ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "gnu_unique_object");
+  else
+#endif
+    ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
 #endif
 
   size_directive_output = 0;
@@ -22550,6 +22557,13 @@ mips_starting_frame_offset (void)
     return 0;
   return crtl->outgoing_args_size + MIPS_GP_SAVE_AREA_SIZE;
 }
+
+static void
+mips_asm_file_end (void)
+{
+  if (NEED_INDICATE_EXEC_STACK)
+    file_end_indicate_exec_stack ();
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22856,6 +22870,10 @@ mips_starting_frame_offset (void)
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET mips_starting_frame_offset
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END mips_asm_file_end
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

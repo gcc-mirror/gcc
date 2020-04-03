@@ -2804,7 +2804,7 @@ if test $in_tree_ld != yes ; then
       ld_vers=`echo $ld_ver | sed -n \
 	  -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
     fi
-    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)\(-*\)\([01][0-9]\)\2\([0-3][0-9]\).*$,\1\3\4,p'`
     ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
     ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
     ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
@@ -5032,6 +5032,17 @@ pointers into PC-relative form.])
 configured with --enable-newlib-nano-formatted-io.])
       fi
     ;;
+    nios2-*-*)
+    # Versions 2.33 and earlier lacked support for the %gotoff relocation
+    # syntax that is documented in the ABI specification.
+    gcc_GAS_CHECK_FEATURE([support for %gotoff relocations in constant data],
+      gcc_cv_as_nios2_gotoff_relocation,,,
+[	.extern foo
+	.data
+	.long %gotoff(foo)],,
+      [AC_DEFINE(HAVE_AS_NIOS2_GOTOFF_RELOCATION, 1,
+          [Define if your assembler supports %gotoff relocation syntax.])])
+    ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
       gcc_cv_as_riscv_attribute, [2,32,0],,
@@ -6247,6 +6258,18 @@ if test x$gcc_cv_libc_provides_hwcap_in_tcb = xyes; then
 	    [Define if your target C Library provides the AT_HWCAP value in the TCB])
 fi
 
+# Check if the target LIBC handles PT_GNU_STACK.
+gcc_cv_libc_gnustack=unknown
+case "$target" in
+  mips*-*-linux*)
+    GCC_GLIBC_VERSION_GTE_IFELSE([2], [31], [gcc_cv_libc_gnustack=yes], )
+    ;;
+esac
+if test x$gcc_cv_libc_gnustack = xyes; then
+  AC_DEFINE(TARGET_LIBC_GNUSTACK, 1,
+            [Define if your target C Library properly handles PT_GNU_STACK])
+fi
+
 AC_MSG_CHECKING(dl_iterate_phdr in target C library)
 gcc_cv_target_dl_iterate_phdr=unknown
 case "$target" in
@@ -6717,6 +6740,34 @@ AC_ARG_WITH([diagnostics-color],
 [DIAGNOSTICS_COLOR_DEFAULT=DIAGNOSTICS_COLOR_AUTO])
 AC_DEFINE_UNQUOTED(DIAGNOSTICS_COLOR_DEFAULT, $DIAGNOSTICS_COLOR_DEFAULT,
 		   [The default for -fdiagnostics-color option])
+
+# Specify what should be the default of -fdiagnostics-urls option.
+AC_ARG_WITH([diagnostics-urls],
+[AC_HELP_STRING([--with-diagnostics-urls={never,auto,auto-if-env,always}],
+                [specify the default of -fdiagnostics-urls option
+                 auto-if-env stands for -fdiagnostics-urls=auto if
+                 GCC_URLS or TERM_URLS environment variable is present and
+                 -fdiagnostics-urls=never otherwise])],
+[case x"$withval" in
+   xnever)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_URLS_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_YES
+     ;;
+   *)
+     AC_MSG_ERROR([$withval is an invalid option to --with-diagnostics-urls])
+     ;;
+ esac],
+[DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO])
+AC_DEFINE_UNQUOTED(DIAGNOSTICS_URLS_DEFAULT, $DIAGNOSTICS_URLS_DEFAULT,
+		   [The default for -fdiagnostics-urls option])
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.

@@ -6029,8 +6029,8 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
   basic_block cont_bb = region->cont; /* BB ending in OMP_CONTINUE  */
   basic_block bottom_bb = NULL;
 
-  /* entry_bb has two sucessors; the branch edge is to the exit
-     block,  fallthrough edge to body.  */
+  /* entry_bb has two successors; the branch edge is to the exit
+     block, fallthrough edge to body.  */
   gcc_assert (EDGE_COUNT (entry_bb->succs) == 2
 	      && BRANCH_EDGE (entry_bb)->dest == exit_bb);
 

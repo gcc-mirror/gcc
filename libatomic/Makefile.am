@@ -101,7 +101,9 @@ PAT_S		= $(word 3,$(PAT_SPLIT))
 IFUNC_DEF	= -DIFUNC_ALT=$(PAT_S)
 IFUNC_OPT	= $(word $(PAT_S),$(IFUNC_OPTIONS))
 
-M_DEPS		= -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
+@AMDEP_TRUE@M_DEPS		= -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
+@AMDEP_FALSE@M_DEPS		=
+
 M_SIZE		= -DN=$(PAT_N)
 M_IFUNC		= $(if $(PAT_S),$(IFUNC_DEF) $(IFUNC_OPT))
 M_FILE		= $(PAT_BASE)_n.c

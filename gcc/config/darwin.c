@@ -3302,7 +3302,8 @@ darwin_override_options (void)
   else if (DARWIN_X86 && darwin_symbol_stubs && TARGET_64BIT)
     {
       inform (input_location,
-	      "%<-mpic-symbol-stubs%> is not required for 64b code (ignored)");
+	      "%<-mpic-symbol-stubs%> is not required for 64-bit code "
+	      "(ignored)");
       darwin_symbol_stubs = false;
     }
 

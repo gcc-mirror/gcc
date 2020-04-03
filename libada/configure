@@ -704,6 +704,7 @@ enable_option_checking
 with_build_libsubdir
 enable_version_specific_runtime_libs
 enable_maintainer_mode
+with_toolexeclibdir
 enable_multilib
 enable_shared
 with_system_libunwind
@@ -1339,6 +1340,9 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-system-libunwind use installed libunwind
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
@@ -2249,6 +2253,22 @@ else
 fi
 
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
 # Default to --enable-multilib
 # Check whether --enable-multilib was given.
 if test "${enable_multilib+set}" = set; then :
@@ -2301,7 +2321,14 @@ case ${enable_version_specific_runtime_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_alias)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
       toolexeclibdir='$(libdir)'

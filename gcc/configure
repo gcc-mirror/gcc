@@ -974,6 +974,7 @@ with_zstd_include
 with_zstd_lib
 enable_rpath
 with_libiconv_prefix
+with_libiconv_type
 enable_sjlj_exceptions
 with_gcc_major_version_only
 enable_secureplt
@@ -1014,6 +1015,7 @@ enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
 with_diagnostics_color
+with_diagnostics_urls
 enable_default_pie
 '
       ac_precious_vars='build_alias
@@ -1811,6 +1813,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+  --with-libiconv-type=TYPE     type of library to search for (auto/static/shared)
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
   --with-pic              try to use only PIC/non-PIC objects [default=use
@@ -1834,6 +1837,11 @@ Optional Packages:
                           auto-if-env stands for -fdiagnostics-color=auto if
                           GCC_COLOR environment variable is present and
                           -fdiagnostics-color=never otherwise
+  --with-diagnostics-urls={never,auto,auto-if-env,always}
+                          specify the default of -fdiagnostics-urls option
+                          auto-if-env stands for -fdiagnostics-urls=auto if
+                          GCC_URLS or TERM_URLS environment variable is
+                          present and -fdiagnostics-urls=never otherwise
 
 Some influential environment variables:
   CC          C compiler command
@@ -10730,6 +10738,16 @@ if test "${with_libiconv_prefix+set}" = set; then :
 
 fi
 
+
+# Check whether --with-libiconv-type was given.
+if test "${with_libiconv_type+set}" = set; then :
+  withval=$with_libiconv_type;  with_libiconv_type=$withval
+else
+   with_libiconv_type=auto
+fi
+
+  lib_type=`eval echo \$with_libiconv_type`
+
       LIBICONV=
   LTLIBICONV=
   INCICONV=
@@ -10767,13 +10785,13 @@ fi
           found_so=
           found_a=
           if test $use_additional = yes; then
-            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext" && test x$lib_type != xstatic; then
               found_dir="$additional_libdir"
               found_so="$additional_libdir/lib$name.$shlibext"
               if test -f "$additional_libdir/lib$name.la"; then
                 found_la="$additional_libdir/lib$name.la"
               fi
-            else
+            elif test x$lib_type != xshared; then
               if test -f "$additional_libdir/lib$name.$libext"; then
                 found_dir="$additional_libdir"
                 found_a="$additional_libdir/lib$name.$libext"
@@ -10797,13 +10815,13 @@ fi
               case "$x" in
                 -L*)
                   dir=`echo "X$x" | sed -e 's/^X-L//'`
-                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext"; then
+                  if test -n "$shlibext" && test -f "$dir/lib$name.$shlibext" && test x$lib_type != xstatic; then
                     found_dir="$dir"
                     found_so="$dir/lib$name.$shlibext"
                     if test -f "$dir/lib$name.la"; then
                       found_la="$dir/lib$name.la"
                     fi
-                  else
+                  elif test x$lib_type != xshared; then
                     if test -f "$dir/lib$name.$libext"; then
                       found_dir="$dir"
                       found_a="$dir/lib$name.$libext"
@@ -11031,8 +11049,13 @@ fi
               done
             fi
           else
-                                                            LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
-            LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+                                                            if test "x$lib_type" = "xauto" || test "x$lib_type" = "xshared"; then
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l$name"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l$name"
+            else
+              LIBICONV="${LIBICONV}${LIBICONV:+ }-l:lib$name.$libext"
+              LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-l:lib$name.$libext"
+            fi
           fi
         fi
       fi
@@ -18957,7 +18980,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18960 "configure"
+#line 18983 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19063,7 +19086,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19066 "configure"
+#line 19089 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23361,7 +23384,7 @@ if test $in_tree_ld != yes ; then
       ld_vers=`echo $ld_ver | sed -n \
 	  -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
     fi
-    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)\(-*\)\([01][0-9]\)\2\([0-3][0-9]\).*$,\1\3\4,p'`
     ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
     ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
     ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
@@ -27956,6 +27979,43 @@ $as_echo "#define HAVE_NEWLIB_NANO_FORMATTED_IO 1" >>confdefs.h
 
       fi
     ;;
+    nios2-*-*)
+    # Versions 2.33 and earlier lacked support for the %gotoff relocation
+    # syntax that is documented in the ABI specification.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for support for %gotoff relocations in constant data" >&5
+$as_echo_n "checking assembler for support for %gotoff relocations in constant data... " >&6; }
+if ${gcc_cv_as_nios2_gotoff_relocation+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_nios2_gotoff_relocation=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '	.extern foo
+	.data
+	.long %gotoff(foo)' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_nios2_gotoff_relocation=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_nios2_gotoff_relocation" >&5
+$as_echo "$gcc_cv_as_nios2_gotoff_relocation" >&6; }
+if test $gcc_cv_as_nios2_gotoff_relocation = yes; then
+
+$as_echo "#define HAVE_AS_NIOS2_GOTOFF_RELOCATION 1" >>confdefs.h
+
+fi
+
+    ;;
     riscv*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5
 $as_echo_n "checking assembler for .attribute support... " >&6; }
@@ -29800,6 +29860,23 @@ $as_echo "#define TARGET_LIBC_PROVIDES_HWCAP_IN_TCB 1" >>confdefs.h
 
 fi
 
+# Check if the target LIBC handles PT_GNU_STACK.
+gcc_cv_libc_gnustack=unknown
+case "$target" in
+  mips*-*-linux*)
+
+if test $glibc_version_major -gt 2 \
+  || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 31 ); then :
+  gcc_cv_libc_gnustack=yes
+fi
+    ;;
+esac
+if test x$gcc_cv_libc_gnustack = xyes; then
+
+$as_echo "#define TARGET_LIBC_GNUSTACK 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking dl_iterate_phdr in target C library" >&5
 $as_echo_n "checking dl_iterate_phdr in target C library... " >&6; }
 gcc_cv_target_dl_iterate_phdr=unknown
@@ -30501,6 +30578,37 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define DIAGNOSTICS_COLOR_DEFAULT $DIAGNOSTICS_COLOR_DEFAULT
+_ACEOF
+
+
+# Specify what should be the default of -fdiagnostics-urls option.
+
+# Check whether --with-diagnostics-urls was given.
+if test "${with_diagnostics_urls+set}" = set; then :
+  withval=$with_diagnostics_urls; case x"$withval" in
+   xnever)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_NO
+     ;;
+   xauto)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+     ;;
+   xauto-if-env)
+     DIAGNOSTICS_URLS_DEFAULT=-1
+     ;;
+   xalways)
+     DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_YES
+     ;;
+   *)
+     as_fn_error $? "$withval is an invalid option to --with-diagnostics-urls" "$LINENO" 5
+     ;;
+ esac
+else
+  DIAGNOSTICS_URLS_DEFAULT=DIAGNOSTICS_URL_AUTO
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DIAGNOSTICS_URLS_DEFAULT $DIAGNOSTICS_URLS_DEFAULT
 _ACEOF
 
 

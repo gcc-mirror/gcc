@@ -83,6 +83,7 @@ var arches = map[string]func(){
 	"mips64x": func() { genMIPS(true) },
 	"mipsx":   func() { genMIPS(false) },
 	"ppc64x":  genPPC64,
+	"riscv64": genRISCV64,
 	"s390x":   genS390X,
 	"wasm":    genWasm,
 }
@@ -242,6 +243,15 @@ func genAMD64() {
 	}
 
 	// TODO: MXCSR register?
+
+	// Apparently, the signal handling code path in darwin kernel leaves
+	// the upper bits of Y registers in a dirty state, which causes
+	// many SSE operations (128-bit and narrower) become much slower.
+	// Clear the upper bits to get to a clean state. See issue #37174.
+	// It is safe here as Go code don't use the upper bits of Y registers.
+	p("#ifdef GOOS_darwin")
+	p("VZEROUPPER")
+	p("#endif")
 
 	p("PUSHQ BP")
 	p("MOVQ SP, BP")
@@ -476,6 +486,11 @@ func genPPC64() {
 	p("MOVD 32(R1), R31")        // restore R31
 	p("ADD $%d, R1", l.stack+32) // pop frame (including the space pushed by sigctxt.pushCall)
 	p("JMP (CTR)")
+}
+
+func genRISCV64() {
+	p("// No async preemption on riscv64 - see issue 36711")
+	p("UNDEF")
 }
 
 func genS390X() {

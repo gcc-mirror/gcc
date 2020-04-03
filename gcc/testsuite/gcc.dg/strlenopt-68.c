@@ -3,6 +3,7 @@
    the expected result regardless of the order of the expression
    operands.
    { dg-do run }
+   { dg-skip-if "UNIX 2003 return behavior not supported" { hppa*-*-hpux* } }
    { dg-options "-O2 -Wall" } */
 
 #include "strlenopt.h"

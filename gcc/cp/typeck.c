@@ -58,7 +58,7 @@ static tree pointer_diff (location_t, tree, tree, tree, tsubst_flags_t, tree *);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
-static bool maybe_warn_about_returning_address_of_local (tree);
+static bool maybe_warn_about_returning_address_of_local (tree, location_t = UNKNOWN_LOCATION);
 static void error_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
@@ -1483,10 +1483,17 @@ structural_comptypes (tree t1, tree t2, int strict)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
+  gcc_checking_assert (t1 && t2);
+
+  /* TYPE_ARGUMENT_PACKS are not really types.  */
+  gcc_checking_assert (TREE_CODE (t1) != TYPE_ARGUMENT_PACK
+		       && TREE_CODE (t2) != TYPE_ARGUMENT_PACK);
+
   if (strict == COMPARE_STRICT && comparing_specializations
       && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
     /* If comparing_specializations, treat dependent aliases as distinct.  */
     strict = COMPARE_STRUCTURAL;
+
   if (strict == COMPARE_STRICT)
     {
       if (t1 == t2)
@@ -6325,6 +6332,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       tree stripped_arg = tree_strip_any_location_wrapper (arg);
       if (TREE_CODE (stripped_arg) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (stripped_arg)
+	  && cp_unevaluated_operand == 0
 	  && (current_function_decl == NULL_TREE
 	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
 	{
@@ -7383,7 +7391,7 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
   if (TYPE_REF_P (type)
       && TYPE_REF_IS_RVALUE (type)
       && (clk = real_lvalue_p (expr))
-      && reference_related_p (TREE_TYPE (type), intype)
+      && reference_compatible_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
       if (processing_template_decl)
@@ -9466,11 +9474,12 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
    temporary give an appropriate warning and return true.  */
 
 static bool
-maybe_warn_about_returning_address_of_local (tree retval)
+maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = fold_for_warn (retval);
-  location_t loc = cp_expr_loc_or_input_loc (retval);
+  if (!loc)
+    loc = cp_expr_loc_or_input_loc (retval);
 
   for (;;)
     {
@@ -9504,7 +9513,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  || is_std_forward_p (whats_returned)))
     {
       tree arg = CALL_EXPR_ARG (whats_returned, 0);
-      return maybe_warn_about_returning_address_of_local (arg);
+      return maybe_warn_about_returning_address_of_local (arg, loc);
     }
 
   if (TREE_CODE (whats_returned) != ADDR_EXPR)
@@ -9550,7 +9559,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  if (TYPE_REF_P (TREE_TYPE (base)))
 	    {
 	      if (tree init = DECL_INITIAL (base))
-		return maybe_warn_about_returning_address_of_local (init);
+		return maybe_warn_about_returning_address_of_local (init, loc);
 	      else
 		return false;
 	    }
@@ -10077,7 +10086,7 @@ check_return_expr (tree retval, bool *no_warning)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 TREE_OPERAND (retval, 0));
       else if (!processing_template_decl
-	       && maybe_warn_about_returning_address_of_local (retval)
+	       && maybe_warn_about_returning_address_of_local (retval, loc)
 	       && INDIRECT_TYPE_P (valtype))
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));

@@ -1647,7 +1647,7 @@ pretty_printer::pretty_printer (int maximum_length)
     need_newline (),
     translate_identifiers (true),
     show_color (),
-    show_urls (false)
+    url_format (URL_FORMAT_NONE)
 {
   pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
@@ -1670,7 +1670,7 @@ pretty_printer::pretty_printer (const pretty_printer &other)
   need_newline (other.need_newline),
   translate_identifiers (other.translate_identifiers),
   show_color (other.show_color),
-  show_urls (other.show_urls)
+  url_format (other.url_format)
 {
   pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
@@ -2171,8 +2171,19 @@ identifier_to_locale (const char *ident)
 void
 pp_begin_url (pretty_printer *pp, const char *url)
 {
-  if (pp->show_urls)
+  switch (pp->url_format)
+  {
+  case URL_FORMAT_NONE:
+    break;
+  case URL_FORMAT_ST:
+    pp_printf (pp, "\33]8;;%s\33\\", url);
+    break;
+  case URL_FORMAT_BEL:
     pp_printf (pp, "\33]8;;%s\a", url);
+    break;
+  default:
+    gcc_unreachable ();
+  }
 }
 
 /* If URL-printing is enabled, write a "close URL" escape sequence to PP.  */
@@ -2180,8 +2191,19 @@ pp_begin_url (pretty_printer *pp, const char *url)
 void
 pp_end_url (pretty_printer *pp)
 {
-  if (pp->show_urls)
+  switch (pp->url_format)
+  {
+  case URL_FORMAT_NONE:
+    break;
+  case URL_FORMAT_ST:
+    pp_string (pp, "\33]8;;\33\\");
+    break;
+  case URL_FORMAT_BEL:
     pp_string (pp, "\33]8;;\a");
+    break;
+  default:
+    gcc_unreachable ();
+  }
 }
 
 #if CHECKING_P
@@ -2490,7 +2512,7 @@ test_urls ()
 {
   {
     pretty_printer pp;
-    pp.show_urls = false;
+    pp.url_format = URL_FORMAT_NONE;
     pp_begin_url (&pp, "http://example.com");
     pp_string (&pp, "This is a link");
     pp_end_url (&pp);
@@ -2500,7 +2522,17 @@ test_urls ()
 
   {
     pretty_printer pp;
-    pp.show_urls = true;
+    pp.url_format = URL_FORMAT_ST;
+    pp_begin_url (&pp, "http://example.com");
+    pp_string (&pp, "This is a link");
+    pp_end_url (&pp);
+    ASSERT_STREQ ("\33]8;;http://example.com\33\\This is a link\33]8;;\33\\",
+		  pp_formatted_text (&pp));
+  }
+
+  {
+    pretty_printer pp;
+    pp.url_format = URL_FORMAT_BEL;
     pp_begin_url (&pp, "http://example.com");
     pp_string (&pp, "This is a link");
     pp_end_url (&pp);

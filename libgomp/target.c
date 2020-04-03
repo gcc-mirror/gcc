@@ -2022,6 +2022,16 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
   gomp_unmap_vars (tgt_vars, true);
 }
 
+static inline unsigned int
+clear_unsupported_flags (struct gomp_device_descr *devicep, unsigned int flags)
+{
+  /* If we cannot run asynchronously, simply ignore nowait.  */
+  if (devicep != NULL && devicep->async_run_func == NULL)
+    flags &= ~GOMP_TARGET_FLAG_NOWAIT;
+
+  return flags;
+}
+
 /* Like GOMP_target, but KINDS is 16-bit, UNUSED is no longer present,
    and several arguments have been added:
    FLAGS is a bitmask, see GOMP_TARGET_FLAG_* in gomp-constants.h.
@@ -2053,6 +2063,8 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
   struct gomp_device_descr *devicep = resolve_device (device);
   size_t tgt_align = 0, tgt_size = 0;
   bool fpc_done = false;
+
+  flags = clear_unsupported_flags (devicep, flags);
 
   if (flags & GOMP_TARGET_FLAG_NOWAIT)
     {
@@ -2524,6 +2536,7 @@ gomp_target_task_fn (void *data)
 	}
       ttask->state = GOMP_TARGET_TASK_READY_TO_RUN;
 
+      assert (devicep->async_run_func);
       devicep->async_run_func (devicep->target_id, fn_addr, actual_arguments,
 			       ttask->args, (void *) ttask);
       return true;
@@ -3040,7 +3053,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
     {
       DLSYM (run);
-      DLSYM (async_run);
+      DLSYM_OPT (async_run, async_run);
       DLSYM_OPT (can_run, can_run);
       DLSYM (dev2dev);
     }

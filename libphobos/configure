@@ -837,6 +837,7 @@ with_libbacktrace
 with_target_system_zlib
 with_cross_host
 enable_version_specific_runtime_libs
+with_toolexeclibdir
 enable_libphobos
 '
       ac_precious_vars='build_alias
@@ -1504,6 +1505,9 @@ Optional Packages:
   --with-target-system-zlib={yes,no,auto}
                           use installed libz (default: no)
   --with-cross-host=HOST  configuring with a cross compiler
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
 
 Some influential environment variables:
   CC          C compiler command
@@ -11640,7 +11644,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11643 "configure"
+#line 11647 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11746,7 +11750,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11749 "configure"
+#line 11753 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15237,6 +15241,22 @@ fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version_specific_libs" >&5
 $as_echo "$version_specific_libs" >&6; }
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
   # Version-specific runtime libs processing.
   if test $version_specific_libs = yes; then
     libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
@@ -15246,7 +15266,14 @@ $as_echo "$version_specific_libs" >&6; }
     # Install a library built with a cross compiler in tooldir, not libdir.
     if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
       libphobos_toolexecdir='${exec_prefix}/${host_alias}'
-      libphobos_toolexeclibdir='${toolexecdir}/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  libphobos_toolexeclibdir='${toolexecdir}/lib'
+	  ;;
+	*)
+	  libphobos_toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
       libphobos_toolexeclibdir='${libdir}'

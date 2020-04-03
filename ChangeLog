@@ -1,3 +1,25 @@
+2020-03-05  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-02-28  Joel Hutton  <joel.hutton@arm.com>
+
+	* MAINTAINERS (Write After Approval) : Add myself.
+
+2020-02-20  Palmer Dabbelt  <palmer@sifive.com>
+
+	* MAINTAINERS: Change palmer@sifive.com to palmer@dabbelt.com.
+
+2020-02-14  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute alias): Mention type requirement.
+	(attribute weak): Same.
+	(attribute weakref): Correct invalid example.
+
+2020-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (PowerPC and IBM RS6000): Improve documentation.
+
 2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

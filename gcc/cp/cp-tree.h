@@ -206,6 +206,10 @@ enum cp_tree_index
 
     CPTI_SOURCE_LOCATION_IMPL,
 
+    CPTI_FALLBACK_DFLOAT32_TYPE,
+    CPTI_FALLBACK_DFLOAT64_TYPE,
+    CPTI_FALLBACK_DFLOAT128_TYPE,
+
     CPTI_MAX
 };
 
@@ -365,6 +369,12 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    access nodes in tree.h.  */
 
 #define access_default_node		null_node
+
+/* Variant of dfloat{32,64,128}_type_node only used for fundamental
+   rtti purposes if DFP is disabled.  */
+#define fallback_dfloat32_type		cp_global_trees[CPTI_FALLBACK_DFLOAT32_TYPE]
+#define fallback_dfloat64_type		cp_global_trees[CPTI_FALLBACK_DFLOAT64_TYPE]
+#define fallback_dfloat128_type		cp_global_trees[CPTI_FALLBACK_DFLOAT128_TYPE]
 
 
 #include "name-lookup.h"
@@ -3482,7 +3492,7 @@ struct GTY(()) lang_decl {
    for the alias template (if any).  Otherwise behave as
    TYPE_TEMPLATE_INFO.  */
 #define TYPE_TEMPLATE_INFO_MAYBE_ALIAS(NODE)				\
-  (TYPE_ALIAS_P (NODE)							\
+  (typedef_variant_p (NODE)						\
    ? TYPE_ALIAS_TEMPLATE_INFO (NODE)					\
    : TYPE_TEMPLATE_INFO (NODE))
 
@@ -6347,6 +6357,7 @@ extern tree make_temporary_var_for_ref_to_temp	(tree, tree);
 extern bool type_has_extended_temps		(tree);
 extern tree strip_top_quals			(tree);
 extern bool reference_related_p			(tree, tree);
+extern bool reference_compatible_p		(tree, tree);
 extern int remaining_arguments			(tree);
 extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);
 extern tree perform_implicit_conversion_flags	(tree, tree, tsubst_flags_t, int);
@@ -6428,6 +6439,7 @@ extern bool type_has_constexpr_destructor	(tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
 extern bool classtype_has_non_deleted_move_ctor (tree);
+extern bool classtype_has_non_deleted_copy_ctor (tree);
 extern tree classtype_has_depr_implicit_copy	(tree);
 extern bool classtype_has_op (tree, tree_code);
 extern tree classtype_has_defaulted_op (tree, tree_code);
@@ -6801,6 +6813,7 @@ extern void after_nsdmi_defaulted_late_checks   (tree);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
 extern void deduce_inheriting_ctor		(tree);
+extern bool decl_remember_implicit_trigger_p	(tree);
 extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);
@@ -7424,6 +7437,7 @@ extern tree build_exception_variant		(tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
+extern bool array_of_unknown_bound_p		(const_tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);
@@ -7832,6 +7846,7 @@ extern void remove_constraints                  (tree);
 extern tree current_template_constraints	(void);
 extern tree associate_classtype_constraints     (tree);
 extern tree build_constraints                   (tree, tree);
+extern tree maybe_substitute_reqs_for		(tree, const_tree);
 extern tree get_template_head_requirements	(tree);
 extern tree get_trailing_function_requirements	(tree);
 extern tree get_shorthand_constraints           (tree);
@@ -7929,7 +7944,7 @@ extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
-extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,

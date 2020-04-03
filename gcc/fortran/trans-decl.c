@@ -1552,6 +1552,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       sym->ts.u.cl->backend_decl = build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
     }
 
+  if (is_CFI_desc (sym, NULL))
+    gfc_defer_symbol_init (sym);
+
   fun_or_res = byref && (sym->attr.result
 			 || (sym->attr.function && sym->ts.deferred));
   if ((sym->attr.dummy && ! sym->attr.function) || fun_or_res)
@@ -2642,8 +2645,8 @@ create_function_arglist (gfc_symbol * sym)
 	      || f->sym->ts.u.cl->backend_decl == length)
 	    {
 	      if (POINTER_TYPE_P (len_type))
-		f->sym->ts.u.cl->backend_decl =
-			build_fold_indirect_ref_loc (input_location, length);
+		f->sym->ts.u.cl->backend_decl
+		  = build_fold_indirect_ref_loc (input_location, length);
 	      else if (f->sym->ts.u.cl->backend_decl == NULL)
 		gfc_create_string_length (f->sym);
 
@@ -2674,6 +2677,8 @@ create_function_arglist (gfc_symbol * sym)
           DECL_ARG_TYPE (tmp) = boolean_type_node;
           TREE_READONLY (tmp) = 1;
           gfc_finish_decl (tmp);
+
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	}
 
       /* For non-constant length array arguments, make sure they use
@@ -3763,12 +3768,17 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("internal_unpack")), ".wR",
 	void_type_node, 2, pvoid_type_node, pvoid_type_node);
 
+  /* These two builtins write into what the first argument points to and
+     read from what the second argument points to, but we can't use R
+     for that, because the directly pointed structure contains a pointer
+     which is copied into the descriptor pointed by the first argument,
+     effectively escaping that way.  See PR92123.  */
   gfor_fndecl_cfi_to_gfc = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cfi_desc_to_gfc_desc")), ".ww",
+	get_identifier (PREFIX("cfi_desc_to_gfc_desc")), ".w.",
 	void_type_node, 2, pvoid_type_node, ppvoid_type_node);
 
   gfor_fndecl_gfc_to_cfi = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("gfc_desc_to_cfi_desc")), ".wR",
+	get_identifier (PREFIX("gfc_desc_to_cfi_desc")), ".w.",
 	void_type_node, 2, ppvoid_type_node, pvoid_type_node);
 
   gfor_fndecl_associated = gfc_build_library_function_decl_with_spec (
@@ -4398,6 +4408,8 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
      while CFI_desc is the descriptor itself.  */
   if (DECL_LANG_SPECIFIC (sym->backend_decl))
     CFI_desc = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
+  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (sym->backend_decl))))
+    CFI_desc = sym->backend_decl;
   else
     CFI_desc = NULL;
 

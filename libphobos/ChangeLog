@@ -1,3 +1,19 @@
+2020-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR other/93756
+	* src/std/algorithm/iteration.d: Fix typo.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* m4/druntime.m4: Handle `--with-toolexeclibdir='.
+	* m4/Makefile.in: Regenerate.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

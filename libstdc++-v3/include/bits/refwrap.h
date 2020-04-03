@@ -343,7 +343,8 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 	operator()(_Args&&... __args) const
 	{
 #if __cplusplus > 201703L
-	  static_assert(sizeof(type), "type must be complete");
+	  if constexpr (is_object_v<type>)
+	    static_assert(sizeof(type), "type must be complete");
 #endif
 	  return std::__invoke(get(), std::forward<_Args>(__args)...);
 	}

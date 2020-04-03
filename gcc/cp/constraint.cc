@@ -155,14 +155,14 @@ finish_constraint_binary_op (location_t loc,
   if (!check_constraint_operands (loc, lhs, rhs))
     return error_mark_node;
   tree overload;
-  tree expr = build_x_binary_op (loc, code,
-				 lhs, TREE_CODE (lhs),
-				 rhs, TREE_CODE (rhs),
-				 &overload, tf_none);
+  cp_expr expr = build_x_binary_op (loc, code,
+				    lhs, TREE_CODE (lhs),
+				    rhs, TREE_CODE (rhs),
+				    &overload, tf_none);
   /* When either operand is dependent, the overload set may be non-empty.  */
   if (expr == error_mark_node)
     return error_mark_node;
-  SET_EXPR_LOCATION (expr, loc);
+  expr.set_range (lhs.get_start (), rhs.get_finish ());
   return expr;
 }
 
@@ -1187,6 +1187,29 @@ remove_constraints (tree t)
 
   if (decl_constraints)
     decl_constraints->remove (t);
+}
+
+/* If DECL is a friend, substitute into REQS to produce requirements suitable
+   for declaration matching.  */
+
+tree
+maybe_substitute_reqs_for (tree reqs, const_tree decl_)
+{
+  if (reqs == NULL_TREE)
+    return NULL_TREE;
+  tree decl = CONST_CAST_TREE (decl_);
+  tree result = STRIP_TEMPLATE (decl);
+  if (DECL_FRIEND_P (result))
+    {
+      tree tmpl = decl == result ? DECL_TI_TEMPLATE (result) : decl;
+      tree gargs = generic_targs_for (tmpl);
+      processing_template_decl_sentinel s;
+      if (uses_template_parms (gargs))
+	++processing_template_decl;
+      reqs = tsubst_constraint (reqs, gargs,
+				tf_warning_or_error, NULL_TREE);
+    }
+  return reqs;
 }
 
 /* Returns the template-head requires clause for the template
@@ -2524,7 +2547,7 @@ satisfy_atom (tree t, tree args, subst_info info)
   /* Compute the value of the constraint.  */
   result = satisfaction_value (cxx_constant_value (result));
   if (result == boolean_false_node && info.noisy ())
-    diagnose_atomic_constraint (t, args, info);
+    diagnose_atomic_constraint (t, map, info);
 
   return cache.save (result);
 }
@@ -2669,7 +2692,8 @@ satisfy_declaration_constraints (tree t, subst_info info)
   tree result = boolean_true_node;
   if (norm)
     {
-      push_tinst_level (t);
+      if (!push_tinst_level (t))
+	return result;
       push_access_scope (t);
       result = satisfy_associated_constraints (norm, args, info);
       pop_access_scope (t);
@@ -3032,9 +3056,10 @@ get_constraint_error_location (tree t)
 /* Emit a diagnostic for a failed trait.  */
 
 void
-diagnose_trait_expr (tree expr, tree args)
+diagnose_trait_expr (tree expr, tree map)
 {
   location_t loc = cp_expr_location (expr);
+  tree args = get_mapped_args (map);
 
   /* Build a "fake" version of the instantiated trait, so we can
      get the instantiated types from result.  */
@@ -3247,11 +3272,12 @@ diagnose_requirement (tree req, tree args, tree in_decl)
 }
 
 static void
-diagnose_requires_expr (tree expr, tree args, tree in_decl)
+diagnose_requires_expr (tree expr, tree map, tree in_decl)
 {
   local_specialization_stack stack (lss_copy);
   tree parms = TREE_OPERAND (expr, 0);
   tree body = TREE_OPERAND (expr, 1);
+  tree args = get_mapped_args (map);
 
   cp_unevaluated u;
   subst_info info (tf_warning_or_error, NULL_TREE);
@@ -3268,11 +3294,11 @@ diagnose_requires_expr (tree expr, tree args, tree in_decl)
     }
 }
 
-/* Diagnose a substitution failure in the atomic constraint T. Note that
-   ARGS have been previously instantiated through the parameter map.  */
+/* Diagnose a substitution failure in the atomic constraint T when applied
+   with the instantiated parameter mapping MAP.  */
 
 static void
-diagnose_atomic_constraint (tree t, tree args, subst_info info)
+diagnose_atomic_constraint (tree t, tree map, subst_info info)
 {
   /* If the constraint is already ill-formed, we've previously diagnosed
      the reason. We should still say why the constraints aren't satisfied.  */
@@ -3296,17 +3322,20 @@ diagnose_atomic_constraint (tree t, tree args, subst_info info)
   switch (TREE_CODE (expr))
     {
     case TRAIT_EXPR:
-      diagnose_trait_expr (expr, args);
+      diagnose_trait_expr (expr, map);
       break;
     case REQUIRES_EXPR:
-      diagnose_requires_expr (expr, args, info.in_decl);
+      diagnose_requires_expr (expr, map, info.in_decl);
       break;
     case INTEGER_CST:
       /* This must be either 0 or false.  */
       inform (loc, "%qE is never satisfied", expr);
       break;
     default:
-      inform (loc, "the expression %qE evaluated to %<false%>", expr);
+      tree a = copy_node (t);
+      ATOMIC_CONSTR_MAP (a) = map;
+      inform (loc, "the expression %qE evaluated to %<false%>", a);
+      ggc_free (a);
     }
 }
 

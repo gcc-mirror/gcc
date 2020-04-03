@@ -52,7 +52,6 @@ void __gcov_dump (void) {}
   { src (); }
 
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
-extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 
 #ifdef L_gcov_flush
 #ifdef __GTHREAD_MUTEX_INIT

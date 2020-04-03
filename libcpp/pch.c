@@ -811,8 +811,6 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
     s->n_false		= cpp_lookup (r, DSC("false"));
     s->n__VA_ARGS__     = cpp_lookup (r, DSC("__VA_ARGS__"));
     s->n__VA_OPT__      = cpp_lookup (r, DSC("__VA_OPT__"));
-    s->n__has_include   = cpp_lookup (r, DSC("__has_include"));
-    s->n__has_include_next = cpp_lookup (r, DSC("__has_include_next"));
   }
 
   old_state = r->state;

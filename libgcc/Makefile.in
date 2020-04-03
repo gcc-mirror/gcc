@@ -165,6 +165,7 @@ AUTOCONF = autoconf
 configure_deps = \
 	$(srcdir)/../config/enable.m4 \
 	$(srcdir)/../config/tls.m4 \
+	$(srcdir)/../config/toolexeclibdir.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/no-executables.m4 \
 	$(srcdir)/../config/lib-ld.m4 \

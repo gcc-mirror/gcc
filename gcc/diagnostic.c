@@ -260,11 +260,26 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
 void
 diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
 {
+  /* value == -1 is the default value.  */
   if (value < 0)
-    value = DIAGNOSTICS_COLOR_DEFAULT;
+    {
+      /* If DIAGNOSTICS_URLS_DEFAULT is -1, default to
+	 -fdiagnostics-urls=auto if GCC_URLS or TERM_URLS is in the
+	 environment, otherwise default to -fdiagnostics-urls=never,
+	 for other values default to that
+	 -fdiagnostics-urls={never,auto,always}.  */
+      if (DIAGNOSTICS_URLS_DEFAULT == -1)
+	{
+	  if (!getenv ("GCC_URLS") && !getenv ("TERM_URLS"))
+	    return;
+	  value = DIAGNOSTICS_URL_AUTO;
+	}
+      else
+	value = DIAGNOSTICS_URLS_DEFAULT;
+    }
 
-  context->printer->show_urls
-    = diagnostic_urls_enabled_p ((diagnostic_url_rule_t) value);
+  context->printer->url_format
+    = determine_url_format ((diagnostic_url_rule_t) value);
 }
 
 /* Do any cleaning up required after the last diagnostic is emitted.  */
@@ -968,12 +983,16 @@ print_any_cwe (diagnostic_context *context,
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
 				     diagnostic_kind_color[diagnostic->kind]));
-      char *cwe_url = get_cwe_url (cwe);
-      pp_begin_url (pp, cwe_url);
-      free (cwe_url);
+      if (pp->url_format != URL_FORMAT_NONE)
+	{
+	  char *cwe_url = get_cwe_url (cwe);
+	  pp_begin_url (pp, cwe_url);
+	  free (cwe_url);
+	}
       pp_printf (pp, "CWE-%i", cwe);
       pp_set_prefix (context->printer, saved_prefix);
-      pp_end_url (pp);
+      if (pp->url_format != URL_FORMAT_NONE)
+	pp_end_url (pp);
       pp_string (pp, colorize_stop (pp_show_color (pp)));
       pp_character (pp, ']');
     }
@@ -996,7 +1015,8 @@ print_option_information (diagnostic_context *context,
   if (option_text)
     {
       char *option_url = NULL;
-      if (context->get_option_url)
+      if (context->get_option_url
+	  && context->printer->url_format != URL_FORMAT_NONE)
 	option_url = context->get_option_url (context,
 					      diagnostic->option_index);
       pretty_printer *pp = context->printer;
@@ -1356,17 +1376,6 @@ emit_diagnostic_valist (diagnostic_t kind, location_t location, int opt,
   return diagnostic_impl (&richloc, NULL, opt, gmsgid, ap, kind);
 }
 
-/* Wrapper around diagnostic_impl taking a va_list parameter.  */
-
-bool
-emit_diagnostic_valist (diagnostic_t kind, rich_location *richloc,
-			const diagnostic_metadata *metadata,
-			int opt,
-			const char *gmsgid, va_list *ap)
-{
-  return diagnostic_impl (richloc, metadata, opt, gmsgid, ap, kind);
-}
-
 /* An informative note at LOCATION.  Use this for additional details on an error
    message.  */
 void
@@ -1457,8 +1466,9 @@ warning_at (rich_location *richloc, int opt, const char *gmsgid, ...)
 /* Same as "warning at" above, but using METADATA.  */
 
 bool
-warning_at (rich_location *richloc, const diagnostic_metadata &metadata,
-	    int opt, const char *gmsgid, ...)
+warning_meta (rich_location *richloc,
+	      const diagnostic_metadata &metadata,
+	      int opt, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 

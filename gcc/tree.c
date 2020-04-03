@@ -5803,7 +5803,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
     }
   else if (VAR_P (decl))
     {
-      /* See comment above why we set the flag for functoins.  */
+      /* See comment above why we set the flag for functions.  */
       if (TREE_PUBLIC (decl))
 	TREE_ADDRESSABLE (decl) = true;
       if ((DECL_EXTERNAL (decl)
@@ -13881,9 +13881,9 @@ verify_type_variant (const_tree t, tree tv)
 	  debug_tree (TYPE_SIZE_UNIT (t));
 	  return false;
 	}
+      verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
     }
   verify_variant_match (TYPE_PRECISION);
-  verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
   if (RECORD_OR_UNION_TYPE_P (t))
     verify_variant_match (TYPE_TRANSPARENT_AGGR);
   else if (TREE_CODE (t) == ARRAY_TYPE)

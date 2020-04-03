@@ -62,7 +62,7 @@ struct test_node : public dnode<test_graph_traits>
 struct test_edge : public dedge<test_graph_traits>
 {
   test_edge (node_t *src, node_t *dest)
-  : dedge (src, dest)
+  : dedge<test_graph_traits> (src, dest)
   {}
 
   void dump_dot (graphviz_out *gv, const dump_args_t &) const OVERRIDE

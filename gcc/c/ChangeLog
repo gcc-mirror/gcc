@@ -1,3 +1,42 @@
+2020-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93577
+	* c-typeck.c (pop_init_level): Do not diagnose initializers as
+	empty when initialized type is error_mark_node.
+	(set_designator, process_init_element): Ignore initializers for
+	elements of a variable-size type or of error_mark_node.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93926
+	* c-decl.c (types_close_enough_to_match): New function.
+	(match_builtin_function_types):
+	(diagnose_mismatched_decls): Add missing inform call to a warning.
+
+2020-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93812
+	* c-typeck.c (build_functype_attribute_variant): New function.
+	(composite_type): Call it.
+
+2020-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/93912
+	* gimple-parser.c (c_parser_gimple_parse_bb_spec_edge_probability):
+	Rename last argument from probablity to probability.
+
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/93576
+	* c-decl.c (grokdeclarator): If this_size_varies, only push size into
+	*expr if it has side effects.
+
+2020-01-30  Jeff Law  <law@redhat.com>
+
+	PR c/88660
+	* c-parser.c (c_parser_switch_statement): Make sure to request
+	marking the switch expr as used.
+
 2020-01-22  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93348

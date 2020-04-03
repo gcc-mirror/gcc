@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "options.h"
 #include "ssa-iterators.h"
+#include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
 #include "function.h"
 #include "analyzer/analyzer.h"
@@ -444,12 +445,10 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
        state_purge_per_ssa_name *per_name_data = (*iter).second;
        if (per_name_data->get_function () == n.m_fun)
 	 {
-PUSH_IGNORE_WFORMAT
 	   if (per_name_data->needed_at_point_p (before_supernode))
 	     pp_printf (pp, "%qE needed here", name);
 	   else
 	     pp_printf (pp, "%qE not needed here", name);
-POP_IGNORE_WFORMAT
 	 }
        pp_newline (pp);
      }
@@ -476,9 +475,7 @@ print_vec_of_names (graphviz_out *gv, const char *title,
     {
       if (i > 0)
 	pp_string (pp, ", ");
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE", name);
-POP_IGNORE_WFORMAT
     }
   pp_printf (pp, "}");
   pp_write_text_as_html_like_dot_to_stream (pp);

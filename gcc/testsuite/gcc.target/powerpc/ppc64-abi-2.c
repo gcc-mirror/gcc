@@ -1,5 +1,5 @@
 /* { dg-do run { target { { powerpc*-*-linux* && lp64 } && powerpc_altivec_ok } } } */
-/* { dg-options "-O2 -fprofile -mprofile-kernel -maltivec -mabi=altivec" } */
+/* { dg-options "-O2 -fprofile -mprofile-kernel -maltivec -mabi=altivec -mno-pcrel" } */
 #include <stdarg.h>
 #include <signal.h>
 #include <altivec.h>

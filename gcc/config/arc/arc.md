@@ -164,6 +164,9 @@
   VUNSPEC_ARC_BLOCKAGE
   VUNSPEC_ARC_EH_RETURN
   VUNSPEC_ARC_ARC600_RTIE
+  VUNSPEC_ARC_ARC600_STALL
+  VUNSPEC_ARC_LDDI
+  VUNSPEC_ARC_STDI
   ])
 
 (define_constants
@@ -224,6 +227,10 @@
    (PCL_REG 63)
   ]
 )
+
+;; What is the insn_cost for this insn?  The target hook can still override
+;; this.  For optimizing for size the "length" attribute is used instead.
+(define_attr "cost" "" (const_int 0))
 
 (define_attr "is_sfunc" "no,yes" (const_string "no"))
 
@@ -2236,6 +2243,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "no, no, yes")
    (set_attr "cond" "nocond, canuse_limm, canuse")])
 
+; The gcc-internal representation may differ from the hardware
+; register number in order to allow the generic code to correctly
+; split the concatenation of mhi and mlo.
 (define_insn_and_split "mulsi64"
  [(set (match_operand:SI 0 "register_operand"            "=w")
 	(mult:SI (match_operand:SI 1 "register_operand"  "%c")
@@ -2245,12 +2255,13 @@ core_3, archs4x, archs4xd, archs4xd_slow"
  "#"
  "TARGET_MUL64_SET && reload_completed"
   [(const_int 0)]
-{
-  emit_insn (gen_mulsi_600 (operands[1], operands[2],
-			gen_mlo (), gen_mhi ()));
-  emit_move_insn (operands[0], gen_mlo ());
-  DONE;
-}
+  {
+   rtx mhi = gen_rtx_REG (SImode, R59_REG);
+   rtx mlo = gen_rtx_REG (SImode, R58_REG);
+   emit_insn (gen_mulsi_600 (operands[1], operands[2], mlo, mhi));
+   emit_move_insn (operands[0], mlo);
+   DONE;
+  }
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -2260,23 +2271,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		 (match_operand:SI 1 "nonmemory_operand" "Rcq#q,cL,I,Cal")))
    (clobber (match_operand:SI 3 "mhi_operand" ""))]
   "TARGET_MUL64_SET"
-; The assembler mis-assembles mul64 / mulu64 with "I" constraint constants,
-; using a machine code pattern that only allows "L" constraint constants.
-;  "mul64%? \t0, %0, %1%&"
-{
-  if (satisfies_constraint_I (operands[1])
-      && !satisfies_constraint_L (operands[1]))
-    {
-      /* MUL64 <0,>b,s12 00101bbb10000100 0BBBssssssSSSSSS  */
-      int n = true_regnum (operands[0]);
-      int i = INTVAL (operands[1]);
-      asm_fprintf (asm_out_file, "\t.short %d`", 0x2884 + ((n & 7) << 8));
-      asm_fprintf (asm_out_file, "\t.short %d`",
-		   ((i & 0x3f) << 6) + ((i >> 6) & 0x3f) + ((n & 070) << 9));
-      return "; mul64%? \t0, %0, %1%&";
-    }
-  return "mul64%? \t0, %0, %1%&";
-}
+  "mul64%?\\t0,%0,%1"
   [(set_attr "length" "*,4,4,8")
    (set_attr "iscompact" "maybe,false,false,false")
    (set_attr "type" "multi,multi,multi,multi")
@@ -2284,19 +2279,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
 
 (define_insn_and_split "mulsidi_600"
-  [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"  "%Rcq#q, c,c,  c"))
-		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "Rcq#q,cL,L,C32"))))
-   (clobber (reg:DI MUL64_OUT_REG))]
+  [(set (match_operand:DI 0 "register_operand"                           "=r,r,  r")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"  "%r,r,  r"))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand" "rL,L,C32"))))
+   (clobber (reg:DI R58_REG))]
   "TARGET_MUL64_SET"
   "#"
-  "TARGET_MUL64_SET"
+  "TARGET_MUL64_SET && reload_completed"
   [(const_int 0)]
-  "emit_insn (gen_mul64 (operands[1], operands[2]));
-   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
-   DONE;"
+ {
+   int hi = !TARGET_BIG_ENDIAN;
+   int lo = !hi;
+   rtx lr = operand_subword (operands[0], lo, 0, DImode);
+   rtx hr = operand_subword (operands[0], hi, 0, DImode);
+   emit_insn (gen_mul64 (operands[1], operands[2]));
+   emit_move_insn (lr, gen_rtx_REG (SImode, R58_REG));
+   emit_move_insn (hr, gen_rtx_REG (SImode, R59_REG));
+   DONE;
+ }
   [(set_attr "type" "multi")
-   (set_attr "length" "8")])
+   (set_attr "length" "4,4,8")])
 
 (define_insn "mul64"
   [(set (reg:DI MUL64_OUT_REG)
@@ -2312,19 +2314,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
 
 (define_insn_and_split "umulsidi_600"
-  [(set (match_operand:DI 0 "register_operand"                            "=c,c, c")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"   "%c,c, c"))
-		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "cL,L,C32"))))
-   (clobber (reg:DI MUL64_OUT_REG))]
+  [(set (match_operand:DI 0 "register_operand"                            "=r,r, r")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"   "%r,r, r"))
+		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand"  "rL,L,C32"))))
+   (clobber (reg:DI R58_REG))]
   "TARGET_MUL64_SET"
   "#"
-  "TARGET_MUL64_SET"
+  "TARGET_MUL64_SET && reload_completed"
   [(const_int 0)]
-  "emit_insn (gen_mulu64 (operands[1], operands[2]));
-   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
-   DONE;"
+ {
+   int hi = !TARGET_BIG_ENDIAN;
+   int lo = !hi;
+   rtx lr = operand_subword (operands[0], lo, 0, DImode);
+   rtx hr = operand_subword (operands[0], hi, 0, DImode);
+   emit_insn (gen_mulu64 (operands[1], operands[2]));
+   emit_move_insn (lr, gen_rtx_REG (SImode, R58_REG));
+   emit_move_insn (hr, gen_rtx_REG (SImode, R59_REG));
+   DONE;
+ }
   [(set_attr "type" "umulti")
-   (set_attr "length" "8")])
+   (set_attr "length" "4,4,8")])
 
 (define_insn "mulu64"
   [(set (reg:DI MUL64_OUT_REG)
@@ -2737,34 +2746,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   ")
 
 (define_expand "adddi3"
-  [(parallel [(set (match_operand:DI 0 "dest_reg_operand" "")
-		   (plus:DI (match_operand:DI 1 "register_operand" "")
-			    (match_operand:DI 2 "nonmemory_operand" "")))
-	      (clobber (reg:CC CC_REG))])]
-  ""
-{})
-
-; This assumes that there can be no strictly partial overlap between
-; operands[1] and operands[2].
-(define_insn_and_split "*adddi3_i"
-  [(set (match_operand:DI 0 "dest_reg_operand" "=&w,w,w")
-	(plus:DI (match_operand:DI 1 "register_operand" "%c,0,c")
-		 (match_operand:DI 2 "nonmemory_operand" "ci,ci,!i")))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (match_operand:DI 1 "register_operand" "")
+		 (match_operand:DI 2 "nonmemory_operand" "")))
    (clobber (reg:CC CC_REG))]
   ""
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-{
-  int hi = !TARGET_BIG_ENDIAN;
-  int lo = !hi;
-  rtx l0 = operand_subword (operands[0], lo, 0, DImode);
-  rtx h0 = operand_subword (operands[0], hi, 0, DImode);
-  rtx l1 = operand_subword (operands[1], lo, 0, DImode);
-  rtx h1 = operand_subword (operands[1], hi, 0, DImode);
-  rtx l2 = operand_subword (operands[2], lo, 0, DImode);
-  rtx h2 = operand_subword (operands[2], hi, 0, DImode);
-
+  "
+  rtx l0 = gen_lowpart (SImode, operands[0]);
+  rtx h0 = gen_highpart (SImode, operands[0]);
+  rtx l1 = gen_lowpart (SImode, operands[1]);
+  rtx h1 = gen_highpart (SImode, operands[1]);
+  rtx l2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_lowpart_offset (SImode, DImode));
+  rtx h2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_highpart_offset (SImode, DImode));
 
   if (l2 == const0_rtx)
     {
@@ -2773,13 +2768,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
       emit_insn (gen_addsi3 (h0, h1, h2));
       if (!rtx_equal_p (l0, l1) && rtx_equal_p (l0, h1))
 	emit_move_insn (l0, l1);
-      DONE;
-    }
-  if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 0
-      && INTVAL (operands[2]) >= -0x7fffffff)
-    {
-      emit_insn (gen_subdi3_i (operands[0], operands[1],
-		 GEN_INT (-INTVAL (operands[2]))));
       DONE;
     }
   if (rtx_equal_p (l0, h1))
@@ -2795,28 +2783,32 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 	   gen_rtx_LTU (VOIDmode, gen_rtx_REG (CC_Cmode, CC_REG), GEN_INT (0)),
 	   gen_rtx_SET (h0, plus_constant (SImode, h0, 1))));
       DONE;
-    }
+      }
   emit_insn (gen_add_f (l0, l1, l2));
   emit_insn (gen_adc (h0, h1, h2));
   DONE;
-}
-  [(set_attr "cond" "clob")
-   (set_attr "type" "binary")
-   (set_attr "length" "16,16,20")])
+")
 
 (define_insn "add_f"
   [(set (reg:CC_C CC_REG)
 	(compare:CC_C
-	  (plus:SI (match_operand:SI 1 "register_operand" "c,0,c")
-		   (match_operand:SI 2 "nonmemory_operand" "cL,I,cCal"))
+	  (plus:SI (match_operand:SI 1 "nonmemory_operand" "%r,L,0,I,Cal,r")
+		   (match_operand:SI 2 "nonmemory_operand" "rL,r,I,0,  r,rCal"))
 	  (match_dup 1)))
-   (set (match_operand:SI 0 "dest_reg_operand" "=w,Rcw,w")
+   (set (match_operand:SI 0 "dest_reg_operand" "=r,r,r,r,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  ""
-  "add.f %0,%1,%2"
+  "register_operand (operands[1], SImode)
+   || register_operand (operands[2], SImode)"
+  "@
+  add.f\\t%0,%1,%2
+  add.f\\t%0,%2,%1
+  add.f\\t%0,%1,%2
+  add.f\\t%0,%2,%1
+  add.f\\t%0,%2,%1
+  add.f\\t%0,%1,%2"
   [(set_attr "cond" "set")
    (set_attr "type" "compare")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4,4,4,4,8,8")])
 
 (define_insn "*add_f_2"
   [(set (reg:CC_C CC_REG)
@@ -2971,35 +2963,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   ])
 
 (define_expand "subdi3"
-  [(parallel [(set (match_operand:DI 0 "dest_reg_operand" "")
-		   (minus:DI (match_operand:DI 1 "nonmemory_operand" "")
-			     (match_operand:DI 2 "nonmemory_operand" "")))
-	      (clobber (reg:CC CC_REG))])]
-  ""
-{
-  if (!register_operand (operands[2], DImode))
-    operands[1] = force_reg (DImode, operands[1]);
-})
-
-(define_insn_and_split "subdi3_i"
-  [(set (match_operand:DI 0 "dest_reg_operand" "=&w,w,w,w,w")
-	(minus:DI (match_operand:DI 1 "nonmemory_operand" "ci,0,ci,c,!i")
-		  (match_operand:DI 2 "nonmemory_operand" "ci,ci,0,!i,c")))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(minus:DI (match_operand:DI 1 "register_operand" "")
+		  (match_operand:DI 2 "nonmemory_operand" "")))
    (clobber (reg:CC CC_REG))]
-  "register_operand (operands[1], DImode)
-   || register_operand (operands[2], DImode)"
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-{
-  int hi = !TARGET_BIG_ENDIAN;
-  int lo = !hi;
-  rtx l0 = operand_subword (operands[0], lo, 0, DImode);
-  rtx h0 = operand_subword (operands[0], hi, 0, DImode);
-  rtx l1 = operand_subword (operands[1], lo, 0, DImode);
-  rtx h1 = operand_subword (operands[1], hi, 0, DImode);
-  rtx l2 = operand_subword (operands[2], lo, 0, DImode);
-  rtx h2 = operand_subword (operands[2], hi, 0, DImode);
+  ""
+  "
+  rtx l0 = gen_lowpart (SImode, operands[0]);
+  rtx h0 = gen_highpart (SImode, operands[0]);
+  rtx l1 = gen_lowpart (SImode, operands[1]);
+  rtx h1 = gen_highpart (SImode, operands[1]);
+  rtx l2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_lowpart_offset (SImode, DImode));
+  rtx h2 = simplify_gen_subreg (SImode, operands[2], DImode,
+                                subreg_highpart_offset (SImode, DImode));
 
   if (rtx_equal_p (l0, h1) || rtx_equal_p (l0, h2))
     {
@@ -3017,9 +2994,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   emit_insn (gen_sub_f (l0, l1, l2));
   emit_insn (gen_sbc (h0, h1, h2, gen_rtx_REG (CCmode, CC_REG)));
   DONE;
-}
-  [(set_attr "cond" "clob")
-   (set_attr "length" "16,16,16,20,20")])
+  ")
 
 (define_insn "*sbc_0"
   [(set (match_operand:SI 0 "dest_reg_operand" "=w")
@@ -3122,9 +3097,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:SI 0 "dest_reg_operand" "=q,r,r")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			  (match_operand:SI 2 "_2_4_8_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand" "0,r,Csz")))]
+		 (match_operand:SI 3 "arc_nonmemory_operand" "0,r,Csz")))]
   ""
-  "add%z2%?\\t%0,%3,%1%&"
+  "add%z2%?\\t%0,%3,%1"
   [(set_attr "type" "shift")
    (set_attr "length" "*,4,8")
    (set_attr "predicable" "yes,no,no")
@@ -3555,26 +3530,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; to truncate a symbol in a u6 immediate; but that's rather exotic, so only
 ; provide one alternatice for this, without condexec support.
 (define_insn "*ashlsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"           "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCsz")
-		   (match_operand:SI 2 "nonmemory_operand"  "K,  K,RcqqM, cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"                 "=q,q, q, r, r,   r")
+	(ashift:SI (match_operand:SI 1 "arc_nonmemory_operand" "!0,q, 0, 0, r,rCsz")
+		   (match_operand:SI 2 "nonmemory_operand"      "K,K,qM,rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
        || register_operand (operands[2], SImode))"
-  "asl%? %0,%1,%2%&"
+  "asl%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn "*ashrsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(ashiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCsz")
-		     (match_operand:SI 2 "nonmemory_operand"  "K,  K,RcqqM, cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"                   "=q,q, q, r, r,   r")
+	(ashiftrt:SI (match_operand:SI 1 "arc_nonmemory_operand" "!0,q, 0, 0, r,rCsz")
+		     (match_operand:SI 2 "nonmemory_operand"      "K,K,qM,rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
        || register_operand (operands[2], SImode))"
-  "asr%? %0,%1,%2%&"
+  "asr%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,no,yes,no,no")
@@ -3595,11 +3570,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn "rotrsi3"
-  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcw, w,   w")
-	(rotatert:SI (match_operand:SI 1 "register_operand"  " 0,cL,cCsz")
-		     (match_operand:SI 2 "nonmemory_operand" "cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"                    "=r, r,   r")
+	(rotatert:SI (match_operand:SI 1 "arc_nonmemory_operand"  " 0,rL,rCsz")
+		     (match_operand:SI 2 "nonmemory_operand"      "rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER"
-  "ror%? %0,%1,%2"
+  "ror%?\\t%0,%1,%2"
   [(set_attr "type" "shift,shift,shift")
    (set_attr "predicable" "yes,no,no")
    (set_attr "length" "4,4,8")])
@@ -4296,6 +4271,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "block")]
 )
 
+(define_insn "arc600_stall"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_ARC_ARC600_STALL)]
+  "TARGET_MUL64_SET"
+  "mov\\t0,mlo\t;wait until multiply complete."
+  [(set_attr "length" "4")
+   (set_attr "type" "move")]
+)
+
 ;; Split up troublesome insns for better scheduling.
 
 ;; Peepholes go at the end.
@@ -4323,16 +4306,15 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 	(ashift:SI (match_operand:SI 1 "register_operand" "")
 		   (match_operand:SI 2 "_1_2_3_operand" "")))
   (set (match_operand:SI 3 "dest_reg_operand" "")
-       (plus:SI (match_operand:SI 4 "nonmemory_operand" "")
-		(match_operand:SI 5 "nonmemory_operand" "")))]
+       (plus:SI (match_operand:SI 4 "arc_nonmemory_operand" "")
+		(match_operand:SI 5 "arc_nonmemory_operand" "")))]
   "(true_regnum (operands[4]) == true_regnum (operands[0])
        || true_regnum (operands[5]) == true_regnum (operands[0]))
    && (peep2_reg_dead_p (2, operands[0])
-       || (true_regnum (operands[3]) == true_regnum (operands[0])))
-   && !(optimize_size && satisfies_constraint_I (operands[4]))
-   && !(optimize_size && satisfies_constraint_I (operands[5]))"
- ;; the preparation statements take care to put proper operand in operands[4]
- ;; operands[4] will always contain the correct operand. This is added to satisfy commutativity
+       || (true_regnum (operands[3]) == true_regnum (operands[0])))"
+ ;; the preparation statements take care to put proper operand in
+ ;; operands[4] operands[4] will always contain the correct
+ ;; operand. This is added to satisfy commutativity
   [(set (match_dup 3)
 	(plus:SI (mult:SI (match_dup 1)
 			  (match_dup 2))
@@ -4681,6 +4663,64 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "sr\t%0, [%1]"
   [(set_attr "length" "8,4,8,4")
    (set_attr "type" "sr,sr,sr,sr")])
+
+(define_mode_iterator ALLI [QI HI SI (DI "TARGET_LL64")])
+(define_mode_attr mALLI [(QI "b") (HI "%_") (SI "") (DI "d")])
+
+(define_insn "lddi<mode>"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
+	(unspec_volatile:ALLI [(match_operand:ALLI 1 "memory_operand" "m")]
+			      VUNSPEC_ARC_LDDI))]
+  ""
+  "ld<mALLI>%U1.di\\t%0,%1"
+  [(set_attr "type" "load")])
+
+(define_insn "stdi<mode>"
+  [(unspec_volatile [(match_operand:ALLI 0 "memory_operand"    "m,m,Usc")
+		     (match_operand:ALLI 1 "nonmemory_operand" "r,Cm3,i")]
+		    VUNSPEC_ARC_STDI)]
+  ""
+  "st<mALLI>%U0.di\\t%1,%0"
+  [(set_attr "length" "*,*,8")
+   (set_attr "type" "store")])
+
+(define_insn_and_split "*stdidi_split"
+  [(unspec_volatile [(match_operand:DI 0 "memory_operand"   "m")
+		     (match_operand:DI 1 "register_operand" "r")]
+		    VUNSPEC_ARC_STDI)]
+  "!TARGET_LL64"
+  "#"
+  "&& reload_completed"
+  [(unspec_volatile:SI [(match_dup 2) (match_dup 3)] VUNSPEC_ARC_STDI)
+   (unspec_volatile:SI [(match_dup 4) (match_dup 5)] VUNSPEC_ARC_STDI)]
+  "
+  {
+   operands[3] = gen_lowpart (SImode, operands[1]);
+   operands[5] = gen_highpart_mode (SImode, DImode, operands[1]);
+   operands[2] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[0]);
+  }
+  "
+  )
+
+(define_insn_and_split "*lddidi_split"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(match_operand:DI 1 "memory_operand" "m")]
+			    VUNSPEC_ARC_LDDI))]
+  "!TARGET_LL64"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 2) (unspec_volatile:SI [(match_dup 3)] VUNSPEC_ARC_LDDI))
+   (set (match_dup 4) (unspec_volatile:SI [(match_dup 5)] VUNSPEC_ARC_LDDI))]
+  "
+  {
+   operands[3] = gen_lowpart (SImode, operands[1]);
+   operands[5] = gen_highpart (SImode, operands[1]);
+   operands[2] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[0]);
+  }
+  "
+  )
 
 (define_insn "trap_s"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "L,Cal")]
@@ -6351,7 +6391,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
 	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			    (match_operand:SI 2 "_1_2_3_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand"  "0,r,Csz")))]
+		 (match_operand:SI 3 "arc_nonmemory_operand"  "0,r,Csz")))]
   ""
   "add%2%?\\t%0,%3,%1"
   [(set_attr "length" "*,4,8")
@@ -6678,7 +6718,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
     arc_eh_return_address_location (operands[0]);
     DONE;
   }"
-)
+  [(set_attr "length" "8")]
+  )
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

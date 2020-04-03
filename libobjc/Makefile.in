@@ -293,6 +293,7 @@ aclocal_deps = \
 	$(srcdir)/../config/multi.m4 \
 	$(srcdir)/../config/override.m4 \
 	$(srcdir)/../config/proginstall.m4 \
+	$(srcdir)/../config/toolexeclibdir.m4 \
 	$(srcdir)/../ltoptions.m4 \
 	$(srcdir)/../ltsugar.m4 \
 	$(srcdir)/../ltversion.m4 \

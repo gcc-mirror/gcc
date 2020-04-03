@@ -6026,10 +6026,18 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	 info_for_reduction to work.  */
       if (STMT_VINFO_LIVE_P (vdef))
 	STMT_VINFO_REDUC_DEF (def) = phi_info;
-      if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (vdef->stmt)))
+      gassign *assign = dyn_cast <gassign *> (vdef->stmt);
+      if (!assign)
 	{
-	  if (!tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (vdef->stmt)),
-				      TREE_TYPE (gimple_assign_rhs1 (vdef->stmt))))
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "reduction chain includes calls.\n");
+	  return false;
+	}
+      if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
+	{
+	  if (!tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (assign)),
+				      TREE_TYPE (gimple_assign_rhs1 (assign))))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

@@ -334,7 +334,7 @@ superedge_event::should_filter_p (int verbosity) const
 	if (verbosity < 2)
 	  return true;
 
-	if (verbosity == 2)
+	if (verbosity < 4)
 	  {
 	    /* Filter events with empty descriptions.  This ought to filter
 	       FALLTHRU, but retain true/false/switch edges.  */
@@ -709,7 +709,7 @@ setjmp_event::get_desc (bool can_colorize) const
 {
   return make_label_text (can_colorize,
 			  "%qs called here",
-			  "setjmp");
+			  get_user_facing_name (m_setjmp_call));
 }
 
 /* Implementation of checker_event::prepare_for_emission vfunc for setjmp_event.
@@ -748,11 +748,13 @@ rewind_event::get_setjmp_caller () const
 
 rewind_event::rewind_event (const exploded_edge *eedge,
 			    enum event_kind kind,
-			    location_t loc, tree fndecl, int depth)
+			    location_t loc, tree fndecl, int depth,
+			    const rewind_info_t *rewind_info)
 : checker_event (kind, loc, fndecl, depth),
+  m_rewind_info (rewind_info),
   m_eedge (eedge)
 {
-  gcc_assert (m_eedge->m_custom_info); // a rewind_info_t
+  gcc_assert (m_eedge->m_custom_info == m_rewind_info);
 }
 
 /* class rewind_from_longjmp_event : public rewind_event.  */
@@ -763,7 +765,8 @@ rewind_event::rewind_event (const exploded_edge *eedge,
 label_text
 rewind_from_longjmp_event::get_desc (bool can_colorize) const
 {
-  const char *src_name = "longjmp";
+  const char *src_name
+    = get_user_facing_name (m_rewind_info->get_longjmp_call ());
 
   if (get_longjmp_caller () == get_setjmp_caller ())
     /* Special-case: purely intraprocedural rewind.  */
@@ -786,7 +789,8 @@ rewind_from_longjmp_event::get_desc (bool can_colorize) const
 label_text
 rewind_to_setjmp_event::get_desc (bool can_colorize) const
 {
-  const char *dst_name = "setjmp";
+  const char *dst_name
+    = get_user_facing_name (m_rewind_info->get_setjmp_call ());
 
   /* If we can, identify the ID of the setjmp_event.  */
   if (m_original_setjmp_event_id.known_p ())

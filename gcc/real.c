@@ -420,7 +420,10 @@ clear_significand_below (REAL_VALUE_TYPE *r, unsigned int n)
   for (i = 0; i < w; ++i)
     r->sig[i] = 0;
 
-  r->sig[w] &= ~(((unsigned long)1 << (n % HOST_BITS_PER_LONG)) - 1);
+  /* We are actually passing N == SIGNIFICAND_BITS which would result
+     in an out-of-bound access below.  */
+  if (n % HOST_BITS_PER_LONG != 0)
+    r->sig[w] &= ~(((unsigned long)1 << (n % HOST_BITS_PER_LONG)) - 1);
 }
 
 /* Divide the significands of A and B, placing the result in R.  Return
@@ -5147,10 +5150,10 @@ real_round (REAL_VALUE_TYPE *r, format_helper fmt,
     real_convert (r, fmt, r);
 }
 
-/* Return true including 0 if integer part of R is even, else return
+/* Return true (including 0) if integer part of R is even, else return
    false.  The function is not valid for rvc_inf and rvc_nan classes.  */
 
-bool
+static bool
 is_even (REAL_VALUE_TYPE *r)
 {
   gcc_assert (r->cl != rvc_inf);
@@ -5181,16 +5184,12 @@ is_even (REAL_VALUE_TYPE *r)
 }
 
 /* Return true if R is halfway between two integers, else return
-   false.  The function is not valid for rvc_inf and rvc_nan classes.  */
+   false.  */
 
-bool
+static bool
 is_halfway_below (const REAL_VALUE_TYPE *r)
 {
-  gcc_assert (r->cl != rvc_inf);
-  gcc_assert (r->cl != rvc_nan);
-  int i;
-
-  if (r->cl == rvc_zero)
+  if (r->cl != rvc_normal)
     return false;
 
   /* For numbers (-0.5,0) and (0,0.5).  */
@@ -5202,13 +5201,13 @@ is_halfway_below (const REAL_VALUE_TYPE *r)
       unsigned int n = SIGNIFICAND_BITS - REAL_EXP (r) - 1;
       int w = n / HOST_BITS_PER_LONG;
 
-      for (i = 0; i < w; ++i)
+      for (int i = 0; i < w; ++i)
 	if (r->sig[i] != 0)
 	  return false;
 
-      unsigned long num = ((unsigned long)1 << (n % HOST_BITS_PER_LONG));
+      unsigned long num = 1UL << (n % HOST_BITS_PER_LONG);
 
-      if (((r->sig[w] & num) != 0) && ((r->sig[w] & (num-1)) == 0))
+      if ((r->sig[w] & num) != 0 && (r->sig[w] & (num - 1)) == 0)
 	return true;
     }
   return false;

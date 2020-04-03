@@ -5130,10 +5130,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	{
 	  HOST_WIDE_INT pos = INTVAL (XEXP (SET_DEST (x), 2));
 	  unsigned HOST_WIDE_INT len = INTVAL (XEXP (SET_DEST (x), 1));
-	  unsigned HOST_WIDE_INT src = INTVAL (SET_SRC (x));
 	  rtx dest = XEXP (SET_DEST (x), 0);
-	  unsigned HOST_WIDE_INT mask
-	    = (HOST_WIDE_INT_1U << len) - 1;
+	  unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << len) - 1;
+	  unsigned HOST_WIDE_INT src = INTVAL (SET_SRC (x)) & mask;
 	  rtx or_mask;
 
 	  if (BITS_BIG_ENDIAN)
@@ -12410,7 +12409,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     bit.  This will be converted into a ZERO_EXTRACT.  */
 	  if (const_op == 0 && sign_bit_comparison_p
 	      && CONST_INT_P (XEXP (op0, 1))
-	      && mode_width <= HOST_BITS_PER_WIDE_INT)
+	      && mode_width <= HOST_BITS_PER_WIDE_INT
+	      && UINTVAL (XEXP (op0, 1)) < mode_width)
 	    {
 	      op0 = simplify_and_const_int (NULL_RTX, mode, XEXP (op0, 0),
 					    (HOST_WIDE_INT_1U

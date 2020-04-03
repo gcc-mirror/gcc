@@ -586,18 +586,8 @@ special_function_p (const_tree fndecl, int flags)
 {
   tree name_decl = DECL_NAME (fndecl);
 
-  if (fndecl && name_decl
-      && IDENTIFIER_LENGTH (name_decl) <= 11
-      /* Exclude functions not at the file scope, or not `extern',
-	 since they are not the magic functions we would otherwise
-	 think they are.
-	 FIXME: this should be handled with attributes, not with this
-	 hacky imitation of DECL_ASSEMBLER_NAME.  It's (also) wrong
-	 because you can declare fork() inside a function if you
-	 wish.  */
-      && (DECL_CONTEXT (fndecl) == NULL_TREE
-	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
-      && TREE_PUBLIC (fndecl))
+  if (maybe_special_function_p (fndecl)
+      && IDENTIFIER_LENGTH (name_decl) <= 11)
     {
       const char *name = IDENTIFIER_POINTER (name_decl);
       const char *tname = name;
@@ -1901,8 +1891,13 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
   if (!access)
     return;
 
+  /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
+     is the attribute argument's value.  */
   tree mode = TREE_VALUE (access);
+  gcc_assert (TREE_CODE (mode) == TREE_LIST);
+  mode = TREE_VALUE (mode);
   gcc_assert (TREE_CODE (mode) == STRING_CST);
+
   const char *modestr = TREE_STRING_POINTER (mode);
   for (const char *m = modestr; *m; )
     {

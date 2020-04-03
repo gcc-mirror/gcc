@@ -19,6 +19,7 @@ sinclude(../config/acx.m4)
 sinclude(../config/multi.m4)
 sinclude(../config/override.m4)
 sinclude(../config/picflag.m4)
+sinclude(../config/toolexeclibdir.m4)
 sinclude(../config/unwind_ipinfo.m4)
 
 AC_INIT
@@ -67,6 +68,8 @@ AC_ARG_ENABLE([maintainer-mode],
   [MAINT='#'])
 AC_SUBST([MAINT])dnl
 
+GCC_WITH_TOOLEXECLIBDIR
+
 AM_ENABLE_MULTILIB(, ..)
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
@@ -83,7 +86,14 @@ case ${enable_version_specific_runtime_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_alias)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
       toolexeclibdir='$(libdir)'

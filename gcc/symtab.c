@@ -1864,7 +1864,7 @@ symtab_node::noninterposable_alias (void)
   symtab_node *node = ultimate_alias_target ();
   gcc_assert (!node->alias && !node->weakref);
   node->call_for_symbol_and_aliases (symtab_node::noninterposable_alias,
-				   (void *)&new_node, true);
+				     (void *)&new_node, true);
   if (new_node)
     return new_node;
 
@@ -1875,7 +1875,17 @@ symtab_node::noninterposable_alias (void)
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
   DECL_DLLIMPORT_P (new_decl) = 0;
-  DECL_NAME (new_decl) = clone_function_name (node->decl, "localalias");
+  tree name = clone_function_name (node->decl, "localalias");
+  if (!flag_wpa)
+    {
+      unsigned long num = 0;
+      /* In the rare case we already have a localalias, but the above
+	 node->call_for_symbol_and_aliases call didn't find any suitable,
+	 iterate until we find one not used yet.  */
+      while (symtab_node::get_for_asmname (name))
+	name = clone_function_name (node->decl, "localalias", num++);
+    }
+  DECL_NAME (new_decl) = name;
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     DECL_STRUCT_FUNCTION (new_decl) = NULL;
   DECL_INITIAL (new_decl) = NULL;
@@ -2048,22 +2058,22 @@ symtab_node::nonzero_address ()
      bind to NULL. This is on by default on embedded targets only.
 
      Otherwise all non-WEAK symbols must be defined and thus non-NULL or
-     linking fails.  Important case of WEAK we want to do well are comdats.
-     Those are handled by later check for definition.
+     linking fails.  Important case of WEAK we want to do well are comdats,
+     which also must be defined somewhere.
 
      When parsing, beware the cases when WEAK attribute is added later.  */
-  if (!DECL_WEAK (decl)
+  if ((!DECL_WEAK (decl) || DECL_COMDAT (decl))
       && flag_delete_null_pointer_checks)
     {
       refuse_visibility_changes = true;
       return true;
     }
 
-  /* If target is defined and either comdat or not extern, we know it will be
+  /* If target is defined and not extern, we know it will be
      output and thus it will bind to non-NULL.
      Play safe for flag_delete_null_pointer_checks where weak definition may
      be re-defined by NULL.  */
-  if (definition && (!DECL_EXTERNAL (decl) || DECL_COMDAT (decl))
+  if (definition && !DECL_EXTERNAL (decl)
       && (flag_delete_null_pointer_checks || !DECL_WEAK (decl)))
     {
       if (!DECL_WEAK (decl))

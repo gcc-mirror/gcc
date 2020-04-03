@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a -pthread" }
+// { dg-add-options libatomic }
 // { dg-do run { target c++2a } }
 // { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }

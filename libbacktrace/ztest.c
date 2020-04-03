@@ -89,7 +89,8 @@ struct zlib_test
 /* Error callback.  */
 
 static void
-error_callback_compress (void *vdata, const char *msg, int errnum)
+error_callback_compress (void *vdata ATTRIBUTE_UNUSED, const char *msg,
+			 int errnum)
 {
   fprintf (stderr, "%s", msg);
   if (errnum > 0)
@@ -314,8 +315,8 @@ test_large (struct backtrace_state *state)
   size_t ctimes[16];
   size_t ztimes[16];
   static const char * const names[] = {
-    "Mark.Twain-Tom.Sawyer.txt",
-    "../libgo/go/compress/testdata/Mark.Twain-Tom.Sawyer.txt"
+    "Isaac.Newton-Opticks.txt",
+    "../libgo/go/testdata/Isaac.Newton-Opticks.txt",
   };
 
   orig_buf = NULL;
@@ -360,7 +361,7 @@ test_large (struct backtrace_state *state)
       fclose (e);
       if (got > 0)
 	{
-	  orig_buf = rbuf;
+	  orig_buf = (unsigned char *) rbuf;
 	  orig_bufsize = got;
 	  break;
 	}
@@ -383,7 +384,7 @@ test_large (struct backtrace_state *state)
     }
 
   compress_sizearg = compressed_bufsize - 12;
-  r = compress (compressed_buf + 12, &compress_sizearg,
+  r = compress ((unsigned char *) compressed_buf + 12, &compress_sizearg,
 		orig_buf, orig_bufsize);
   if (r != Z_OK)
     {
@@ -406,7 +407,8 @@ test_large (struct backtrace_state *state)
     }
   uncompressed_bufsize = orig_bufsize;
 
-  if (!backtrace_uncompress_zdebug (state, compressed_buf, compressed_bufsize,
+  if (!backtrace_uncompress_zdebug (state, (unsigned char *) compressed_buf,
+				    compressed_bufsize,
 				    error_callback_compress, NULL,
 				    &uncompressed_buf, &uncompressed_bufsize))
     {
@@ -443,7 +445,8 @@ test_large (struct backtrace_state *state)
 	  return;
 	}
 
-      if (!backtrace_uncompress_zdebug (state, compressed_buf,
+      if (!backtrace_uncompress_zdebug (state,
+					(unsigned char *) compressed_buf,
 					compressed_bufsize,
 					error_callback_compress, NULL,
 					&uncompressed_buf,
@@ -472,8 +475,9 @@ test_large (struct backtrace_state *state)
 	}
 
       uncompress_sizearg = uncompressed_bufsize;
-      r = uncompress (uncompressed_buf, &uncompress_sizearg,
-		      compressed_buf + 12, compressed_bufsize - 12);
+      r = uncompress ((unsigned char *) uncompressed_buf, &uncompress_sizearg,
+		      (unsigned char *) compressed_buf + 12,
+		      compressed_bufsize - 12);
 
       if (clock_gettime (cid, &ts2) < 0)
 	{

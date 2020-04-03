@@ -692,6 +692,7 @@ begin arch armv8.1-m.main
  tune for cortex-m7
  tune flags CO_PROC
  base 8M_MAIN
+ profile M
  isa ARMv8_1m_main
 # fp => FPv5-sp-d16; fp.dp => FPv5-d16
  option dsp add armv7em

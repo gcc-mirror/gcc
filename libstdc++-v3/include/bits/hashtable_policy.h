@@ -33,8 +33,7 @@
 
 #include <tuple>		// for std::tuple, std::forward_as_tuple
 #include <limits>		// for std::numeric_limits
-#include <bits/stl_algobase.h>	// for std::min.
-#include <bits/stl_algo.h>	// for std::is_permutation.
+#include <bits/stl_algobase.h>	// for std::min, std::is_permutation.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -508,7 +507,7 @@ namespace __detail
   inline std::size_t
   __clp2(std::size_t __n) noexcept
   {
-    // Equivalent to return __n ? std::ceil2(__n) : 0;
+    // Equivalent to return __n ? std::bit_ceil(__n) : 0;
     if (__n < 2)
       return __n;
     const unsigned __lz = sizeof(size_t) > sizeof(long)

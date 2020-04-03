@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analysis-plan.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/state-purge.h"
+#include "analyzer/bar-chart.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -90,8 +91,9 @@ impl_region_model_context (exploded_graph &eg,
 impl_region_model_context::
 impl_region_model_context (program_state *state,
 			   state_change *change,
-			   const extrinsic_state &ext_state)
-: m_eg (NULL), m_logger (NULL), m_enode_for_diag (NULL),
+			   const extrinsic_state &ext_state,
+			   logger *logger)
+: m_eg (NULL), m_logger (logger), m_enode_for_diag (NULL),
   m_old_state (NULL),
   m_new_state (state),
   m_change (change),
@@ -663,6 +665,46 @@ impl_region_model_context::on_condition (tree lhs, enum tree_code op, tree rhs)
     }
 }
 
+/* Implementation of region_model_context::on_phi vfunc.
+   Notify all state machines about the phi, which could lead to
+   state transitions.  */
+
+void
+impl_region_model_context::on_phi (const gphi *phi, tree rhs)
+{
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+    {
+      const state_machine &sm = m_ext_state.get_sm (sm_idx);
+      impl_sm_context sm_ctxt (*m_eg, sm_idx, sm, m_enode_for_diag,
+			       m_old_state, m_new_state,
+			       m_change,
+			       m_old_state->m_checker_states[sm_idx],
+			       m_new_state->m_checker_states[sm_idx]);
+      sm.on_phi (&sm_ctxt, m_enode_for_diag->get_supernode (), phi, rhs);
+    }
+}
+
+/* Implementation of region_model_context::on_unexpected_tree_code vfunc.
+   Mark the new state as being invalid for further exploration.
+   TODO(stage1): introduce a warning for when this occurs.  */
+
+void
+impl_region_model_context::on_unexpected_tree_code (tree t,
+						    const dump_location_t &loc)
+{
+  logger * const logger = get_logger ();
+  if (logger)
+    logger->log ("unhandled tree code: %qs in %qs at %s:%i",
+		 get_tree_code_name (TREE_CODE (t)),
+		 loc.get_impl_location ().m_function,
+		 loc.get_impl_location ().m_file,
+		 loc.get_impl_location ().m_line);
+  if (m_new_state)
+    m_new_state->m_valid = false;
+}
+
 /* struct point_and_state.  */
 
 /* Assert that this object is sane.  */
@@ -806,6 +848,8 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_write_text_to_stream (pp);
 
   pp_printf (pp, "EN: %i", m_index);
+  if (m_status == STATUS_MERGER)
+    pp_string (pp, " (merger)");
   pp_newline (pp);
 
   format f (true);
@@ -826,6 +870,20 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 	  {
 	    pp_printf (pp, "%s: ", ext_state.get_name (i));
 	    smap->print (ext_state.get_sm (i), pp);
+	    pp_newline (pp);
+	  }
+      }
+  }
+
+  /* Dump any saved_diagnostics at this enode.  */
+  {
+    const diagnostic_manager &dm = args.m_eg.get_diagnostic_manager ();
+    for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
+      {
+	const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
+	if (sd->m_enode == this)
+	  {
+	    pp_printf (pp, "DIAGNOSTIC: %s", sd->m_d->get_kind ());
 	    pp_newline (pp);
 	  }
       }
@@ -1001,7 +1059,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 	{
 	  /* This is handled elsewhere.  */
 	}
-      else if (is_setjmp_call_p (stmt))
+      else if (is_setjmp_call_p (call))
 	state->m_region_model->on_setjmp (call, this, &ctxt);
       else if (is_longjmp_call_p (call))
 	{
@@ -1021,23 +1079,24 @@ exploded_node::on_stmt (exploded_graph &eg,
       const sm_state_map *old_smap
 	= old_state.m_checker_states[sm_idx];
       sm_state_map *new_smap = state->m_checker_states[sm_idx];
-      impl_sm_context ctxt (eg, sm_idx, sm, this, &old_state, state,
-			    change,
-			    old_smap, new_smap);
+      impl_sm_context sm_ctxt (eg, sm_idx, sm, this, &old_state, state,
+			       change,
+			       old_smap, new_smap);
       /* Allow the state_machine to handle the stmt.  */
-      if (sm.on_stmt (&ctxt, snode, stmt))
+      if (sm.on_stmt (&sm_ctxt, snode, stmt))
 	unknown_side_effects = false;
       else
 	{
 	  /* For those stmts that were not handled by the state machine.  */
 	  if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	    {
-	      tree callee_fndecl = gimple_call_fndecl (call);
-	      // TODO: maybe we can be smarter about handling function pointers?
+	      tree callee_fndecl
+		= state->m_region_model->get_fndecl_for_call (call, &ctxt);
 
 	      if (!fndecl_has_gimple_body_p (callee_fndecl))
 		new_smap->purge_for_unknown_fncall (eg, sm, call, callee_fndecl,
-						    state->m_region_model);
+						    state->m_region_model,
+						    &ctxt);
 	    }
 	}
       if (*old_smap != *new_smap)
@@ -1126,7 +1185,8 @@ public:
     return warning_at
       (richloc, OPT_Wanalyzer_stale_setjmp_buffer,
        "%qs called after enclosing function of %qs has returned",
-       "longjmp", "setjmp");
+       get_user_facing_name (m_longjmp_call),
+       get_user_facing_name (m_setjmp_call));
   }
 
   const char *get_kind () const FINAL OVERRIDE
@@ -1143,10 +1203,10 @@ private:
   const gcall *m_longjmp_call;
 };
 
-/* Handle LONGJMP_CALL, a call to "longjmp".
+/* Handle LONGJMP_CALL, a call to longjmp or siglongjmp.
 
-   Attempt to locate where "setjmp" was called on the jmp_buf and build an
-   exploded_node and exploded_edge to it representing a rewind to that frame,
+   Attempt to locate where setjmp/sigsetjmp was called on the jmp_buf and build
+   an exploded_node and exploded_edge to it representing a rewind to that frame,
    handling the various kinds of failure that can occur.  */
 
 void
@@ -1174,9 +1234,9 @@ exploded_node::on_longjmp (exploded_graph &eg,
 
   const setjmp_record tmp_setjmp_record = setjmp_sval->get_setjmp_record ();
 
-  /* Build a custom enode and eedge for rewinding from the longjmp
-     call back to the setjmp.  */
-  rewind_info_t rewind_info (tmp_setjmp_record);
+  /* Build a custom enode and eedge for rewinding from the longjmp/siglongjmp
+     call back to the setjmp/sigsetjmp.  */
+  rewind_info_t rewind_info (tmp_setjmp_record, longjmp_call);
 
   const gcall *setjmp_call = rewind_info.get_setjmp_call ();
   const program_point &setjmp_point = rewind_info.get_setjmp_point ();
@@ -1217,7 +1277,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
       exploded_edge *eedge
 	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL,
 		       change,
-		       new rewind_info_t (tmp_setjmp_record));
+		       new rewind_info_t (tmp_setjmp_record, longjmp_call));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"
@@ -1332,21 +1392,13 @@ void
 rewind_info_t::update_model (region_model *model,
 			     const exploded_edge &eedge)
 {
-  const exploded_node &src_enode = *eedge.m_src;
-  const program_point &src_point = src_enode.get_point ();
-
-  const gimple *last_stmt
-    = src_point.get_supernode ()->get_last_stmt ();
-  gcc_assert (last_stmt);
-  const gcall *longjmp_call = as_a <const gcall *> (last_stmt);
-
   const program_point &longjmp_point = eedge.m_src->get_point ();
   const program_point &setjmp_point = eedge.m_dest->get_point ();
 
   gcc_assert (longjmp_point.get_stack_depth ()
 	      >= setjmp_point.get_stack_depth ());
 
-  model->on_longjmp (longjmp_call,
+  model->on_longjmp (get_longjmp_call (),
 		     get_setjmp_call (),
 		     setjmp_point.get_stack_depth (), NULL);
 }
@@ -1367,9 +1419,9 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 
   emission_path->add_event
     (new rewind_from_longjmp_event
-     (&eedge, src_point.get_supernode ()->get_end_location (),
+     (&eedge, get_longjmp_call ()->location,
       src_point.get_fndecl (),
-      src_stack_depth));
+      src_stack_depth, this));
   emission_path->add_event
     (new rewind_to_setjmp_event
      (&eedge, get_setjmp_call ()->location,
@@ -1377,18 +1429,19 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
       dst_stack_depth, this));
 }
 
-/* class exploded_edge : public dedge.  */
+/* class exploded_edge : public dedge<eg_traits>.  */
 
 /* exploded_edge's ctor.  */
 
 exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
+			      const extrinsic_state &ext_state,
 			      const superedge *sedge,
 			      const state_change &change,
 			      custom_info_t *custom_info)
-: dedge (src, dest), m_sedge (sedge), m_change (change),
+: dedge<eg_traits> (src, dest), m_sedge (sedge), m_change (change),
   m_custom_info (custom_info)
 {
-  change.validate (dest->get_state ());
+  change.validate (dest->get_state (), ext_state);
 }
 
 /* exploded_edge's dtor.  */
@@ -1475,9 +1528,10 @@ stats::log (logger *logger) const
 {
   gcc_assert (logger);
   for (int i = 0; i < NUM_POINT_KINDS; i++)
-    logger->log ("m_num_nodes[%s]: %i",
-		 point_kind_to_string (static_cast <enum point_kind> (i)),
-		 m_num_nodes[i]);
+    if (m_num_nodes[i] > 0)
+      logger->log ("m_num_nodes[%s]: %i",
+		   point_kind_to_string (static_cast <enum point_kind> (i)),
+		   m_num_nodes[i]);
   logger->log ("m_node_reuse_count: %i", m_node_reuse_count);
   logger->log ("m_node_reuse_after_merge_count: %i",
 	       m_node_reuse_after_merge_count);
@@ -1489,9 +1543,10 @@ void
 stats::dump (FILE *out) const
 {
   for (int i = 0; i < NUM_POINT_KINDS; i++)
-    fprintf (out, "m_num_nodes[%s]: %i\n",
-	     point_kind_to_string (static_cast <enum point_kind> (i)),
-	     m_num_nodes[i]);
+    if (m_num_nodes[i] > 0)
+      fprintf (out, "m_num_nodes[%s]: %i\n",
+	       point_kind_to_string (static_cast <enum point_kind> (i)),
+	       m_num_nodes[i]);
   fprintf (out, "m_node_reuse_count: %i\n", m_node_reuse_count);
   fprintf (out, "m_node_reuse_after_merge_count: %i\n",
 	   m_node_reuse_after_merge_count);
@@ -1499,6 +1554,17 @@ stats::dump (FILE *out) const
   if (m_num_supernodes > 0)
     fprintf (out, "PK_AFTER_SUPERNODE nodes per supernode: %.2f\n",
 	     (float)m_num_nodes[PK_AFTER_SUPERNODE] / (float)m_num_supernodes);
+}
+
+/* Return the total number of enodes recorded within this object.  */
+
+int
+stats::get_total_enodes () const
+{
+  int result = 0;
+  for (int i = 0; i < NUM_POINT_KINDS; i++)
+    result += m_num_nodes[i];
+  return result;
 }
 
 /* strongly_connected_components's ctor.  Tarjan's SCC algorithm.  */
@@ -1588,8 +1654,7 @@ strongly_connected_components::strong_connect (unsigned index)
 /* worklist's ctor.  */
 
 worklist::worklist (const exploded_graph &eg, const analysis_plan &plan)
-: m_eg (eg),
-  m_scc (eg.get_supergraph (), eg.get_logger ()),
+: m_scc (eg.get_supergraph (), eg.get_logger ()),
   m_plan (plan),
   m_queue (key_t (*this, NULL))
 {
@@ -1624,6 +1689,7 @@ worklist::peek_next ()
 void
 worklist::add_node (exploded_node *enode)
 {
+  gcc_assert (enode->get_status () == exploded_node::STATUS_WORKLIST);
   m_queue.insert (key_t (*this, enode), enode);
 }
 
@@ -1633,7 +1699,7 @@ worklist::add_node (exploded_node *enode)
    Return 0 if they are equal.  */
 
 int
-worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
+worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 {
   const program_point &point_a = ka.m_enode->get_point ();
   const program_point &point_b = kb.m_enode->get_point ();
@@ -1709,9 +1775,12 @@ worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
       sm_state_map *smap_a = state_a.m_checker_states[sm_idx];
       sm_state_map *smap_b = state_b.m_checker_states[sm_idx];
 
-      int sm_cmp = smap_a->hash () - smap_b->hash ();
-      if (sm_cmp)
-	return sm_cmp;
+      hashval_t hash_a = smap_a->hash ();
+      hashval_t hash_b = smap_b->hash ();
+      if (hash_a < hash_b)
+	return -1;
+      else if (hash_a > hash_b)
+	return 1;
     }
 
   /* Otherwise, we have two enodes at the same program point but with
@@ -1719,30 +1788,6 @@ worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
      so order them by enode index, so that we have at least have a
      stable sort.  */
   return ka.m_enode->m_index - kb.m_enode->m_index;
-}
-
-/* Comparator for implementing worklist::key_t comparison operators.
-   Return negative if KA is before KB
-   Return positive if KA is after KB
-   Return 0 if they are equal.  */
-
-int
-worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
-{
-  int result = cmp_1 (ka, kb);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = cmp_1 (kb, ka);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal (point, state) pairs.  */
-  gcc_assert (result != 0
-	      || (*ka.m_enode->get_ps_key ()
-		  == *kb.m_enode->get_ps_key ()));
-
-  return result;
 }
 
 /* exploded_graph's ctor.  */
@@ -1798,7 +1843,11 @@ exploded_graph::add_function_entry (function *fun)
 {
   program_point point = program_point::from_function_entry (m_sg, fun);
   program_state state (m_ext_state);
-  state.m_region_model->push_frame (fun, NULL, NULL);
+  impl_region_model_context ctxt (&state, NULL, m_ext_state, get_logger ());
+  state.m_region_model->push_frame (fun, NULL, &ctxt);
+
+  if (!state.m_valid)
+    return NULL;
 
   exploded_node *enode = get_or_create_node (point, state, NULL);
   /* We should never fail to add such a node.  */
@@ -1830,8 +1879,17 @@ exploded_graph::get_or_create_node (const program_point &point,
       logger->end_log_line ();
       logger->start_log_line ();
       pp_string (pp, "state: ");
-      state.dump (m_ext_state, true);
+      state.dump_to_pp (m_ext_state, true, pp);
       logger->end_log_line ();
+    }
+
+  /* Stop exploring paths for which we don't know how to effectively
+     model the state.  */
+  if (!state.m_valid)
+    {
+      if (logger)
+	logger->log ("invalid state; not creating node");
+      return NULL;
     }
 
   auto_cfun sentinel (point.get_function ());
@@ -1902,8 +1960,14 @@ exploded_graph::get_or_create_node (const program_point &point,
 		logger->log ("merging new state with that of EN: %i",
 			     existing_enode->m_index);
 
-	      /* Try again for a cache hit.  */
+	      /* Try again for a cache hit.
+		 Whether we get one or not, merged_state's value_ids have no
+		 relationship to those of the input state, and thus to those
+		 of CHANGE, so we must purge any svalue_ids from *CHANGE.  */
 	      ps.set_state (merged_state);
+	      if (change)
+		change->on_svalue_purge (svalue_id::from_int (0));
+
 	      if (exploded_node **slot = m_point_and_state_to_node.get (&ps))
 		{
 		  /* An exploded_node for PS already exists.  */
@@ -1914,13 +1978,6 @@ exploded_graph::get_or_create_node (const program_point &point,
 		  per_cs_stats->m_node_reuse_after_merge_count++;
 		  return *slot;
 		}
-
-	      /* Otherwise, continue, using the merged state in "ps".
-		 Given that merged_state's svalue_ids have no relationship
-		 to those of the input state, and thus to those of CHANGE,
-		 purge any svalue_ids from *CHANGE.  */
-	      if (change)
-		change->on_svalue_purge (svalue_id::from_int (0));
 	    }
 	  else
 	    if (logger)
@@ -1938,6 +1995,7 @@ exploded_graph::get_or_create_node (const program_point &point,
 	logger->log ("not creating enode; too many at program point");
       warning_at (point.get_location (), OPT_Wanalyzer_too_complex,
 		  "terminating analysis for this program point");
+      per_point_data->m_excess_enodes++;
       return NULL;
     }
 
@@ -1990,8 +2048,9 @@ exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  const state_change &change,
 			  exploded_edge::custom_info_t *custom_info)
 {
-  exploded_edge *e = new exploded_edge (src, dest, sedge, change, custom_info);
-  digraph::add_edge (e);
+  exploded_edge *e = new exploded_edge (src, dest, m_ext_state,
+					sedge, change, custom_info);
+  digraph<eg_traits>::add_edge (e);
   return e;
 }
 
@@ -2110,8 +2169,13 @@ exploded_graph::build_initial_worklist ()
       continue;
     exploded_node *enode = add_function_entry (fun);
     if (logger)
-      logger->log ("created EN %i for %qE entrypoint",
-		   enode->m_index, fun->decl);
+      {
+	if (enode)
+	  logger->log ("created EN %i for %qE entrypoint",
+		       enode->m_index, fun->decl);
+	else
+	  logger->log ("did not create enode for %qE entrypoint", fun->decl);
+      }
   }
 }
 
@@ -2131,6 +2195,7 @@ exploded_graph::process_worklist ()
   while (m_worklist.length () > 0)
     {
       exploded_node *node = m_worklist.take_next ();
+      gcc_assert (node->get_status () == exploded_node::STATUS_WORKLIST);
       gcc_assert (node->m_succs.length () == 0
 		  || node == m_origin);
 
@@ -2143,6 +2208,8 @@ exploded_graph::process_worklist ()
       if (flag_analyzer_state_merge && node != m_origin)
 	if (exploded_node *node_2 = m_worklist.peek_next ())
 	  {
+	    gcc_assert (node_2->get_status ()
+			== exploded_node::STATUS_WORKLIST);
 	    gcc_assert (node->m_succs.length () == 0);
 	    gcc_assert (node_2->m_succs.length () == 0);
 
@@ -2188,6 +2255,7 @@ exploded_graph::process_worklist ()
 
 			/* Remove node_2 from the worklist.  */
 			m_worklist.take_next ();
+			node_2->set_status (exploded_node::STATUS_MERGER);
 
 			/* Continue processing "node" below.  */
 		      }
@@ -2197,6 +2265,7 @@ exploded_graph::process_worklist ()
 			   in the worklist, to be processed on the next
 			   iteration.  */
 			add_edge (node, node_2, NULL, change);
+			node->set_status (exploded_node::STATUS_MERGER);
 			continue;
 		      }
 		    else
@@ -2239,12 +2308,18 @@ exploded_graph::process_worklist ()
 			if (merged_enode == node)
 			  m_worklist.add_node (merged_enode);
 			else
-			  add_edge (node, merged_enode, NULL, change);
+			  {
+			    add_edge (node, merged_enode, NULL, change);
+			    node->set_status (exploded_node::STATUS_MERGER);
+			  }
 
 			if (merged_enode == node_2)
 			  m_worklist.add_node (merged_enode);
 			else
-			  add_edge (node_2, merged_enode, NULL, change);
+			  {
+			    add_edge (node_2, merged_enode, NULL, change);
+			    node_2->set_status (exploded_node::STATUS_MERGER);
+			  }
 
 			continue;
 		      }
@@ -2326,6 +2401,8 @@ exploded_graph::process_node (exploded_node *node)
 {
   logger * const logger = get_logger ();
   LOG_FUNC_1 (logger, "EN: %i", node->m_index);
+
+  node->set_status (exploded_node::STATUS_PROCESSED);
 
   const program_point &point = node->get_point ();
 
@@ -2543,6 +2620,100 @@ exploded_graph::get_or_create_function_stats (function *fn)
     }
 }
 
+/* Print bar charts to PP showing:
+   - the number of enodes per function, and
+   - for each function:
+     - the number of enodes per supernode/BB
+     - the number of excess enodes per supernode/BB beyond the
+       per-program-point limit, if there were any.  */
+
+void
+exploded_graph::print_bar_charts (pretty_printer *pp) const
+{
+  cgraph_node *cgnode;
+
+  pp_string (pp, "enodes per function:");
+  pp_newline (pp);
+  bar_chart enodes_per_function;
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cgnode)
+    {
+      function *fn = cgnode->get_fun ();
+      const stats * const *s_ptr
+	= const_cast <function_stat_map_t &> (m_per_function_stats).get (fn);
+      enodes_per_function.add_item (function_name (fn),
+				    s_ptr ? (*s_ptr)->get_total_enodes () : 0);
+    }
+  enodes_per_function.print (pp);
+
+  /* Accumulate number of enodes per supernode.  */
+  auto_vec<unsigned> enodes_per_supernode (m_sg.num_nodes ());
+  for (int i = 0; i < m_sg.num_nodes (); i++)
+    enodes_per_supernode.quick_push (0);
+  int i;
+  exploded_node *enode;
+  FOR_EACH_VEC_ELT (m_nodes, i, enode)
+    {
+      const supernode *iter_snode = enode->get_supernode ();
+      if (!iter_snode)
+	continue;
+      enodes_per_supernode[iter_snode->m_index]++;
+    }
+
+  /* Accumulate excess enodes per supernode.  */
+  auto_vec<unsigned> excess_enodes_per_supernode (m_sg.num_nodes ());
+  for (int i = 0; i < m_sg.num_nodes (); i++)
+    excess_enodes_per_supernode.quick_push (0);
+  for (point_map_t::iterator iter = m_per_point_data.begin ();
+       iter != m_per_point_data.end (); ++iter)
+    {
+      const program_point *point = (*iter).first;
+      const supernode *iter_snode = point->get_supernode ();
+      if (!iter_snode)
+	continue;
+      const per_program_point_data *point_data = (*iter).second;
+      excess_enodes_per_supernode[iter_snode->m_index]
+	+= point_data->m_excess_enodes;
+    }
+
+  /* Show per-function bar_charts of enodes per supernode/BB.  */
+  pp_string (pp, "per-function enodes per supernode/BB:");
+  pp_newline (pp);
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cgnode)
+    {
+      function *fn = cgnode->get_fun ();
+      pp_printf (pp, "function: %qs", function_name (fn));
+      pp_newline (pp);
+
+      bar_chart enodes_per_snode;
+      bar_chart excess_enodes_per_snode;
+      bool have_excess_enodes = false;
+      for (int i = 0; i < m_sg.num_nodes (); i++)
+	{
+	  const supernode *iter_snode = m_sg.get_node_by_index (i);
+	  if (iter_snode->get_function () != fn)
+	    continue;
+	  pretty_printer tmp_pp;
+	  pp_printf (&tmp_pp, "sn %i (bb %i)",
+		     iter_snode->m_index, iter_snode->m_bb->index);
+	  enodes_per_snode.add_item (pp_formatted_text (&tmp_pp),
+				     enodes_per_supernode[iter_snode->m_index]);
+	  const int num_excess
+	    = excess_enodes_per_supernode[iter_snode->m_index];
+	  excess_enodes_per_snode.add_item (pp_formatted_text (&tmp_pp),
+					    num_excess);
+	  if (num_excess)
+	    have_excess_enodes = true;
+	}
+      enodes_per_snode.print (pp);
+      if (have_excess_enodes)
+	{
+	  pp_printf (pp, "EXCESS ENODES:");
+	  pp_newline (pp);
+	  excess_enodes_per_snode.print (pp);
+	}
+    }
+}
+
 /* Write all stats information to this graph's logger, if any.  */
 
 void
@@ -2557,6 +2728,7 @@ exploded_graph::log_stats () const
   logger->log ("m_sg.num_nodes (): %i", m_sg.num_nodes ());
   logger->log ("m_nodes.length (): %i", m_nodes.length ());
   logger->log ("m_edges.length (): %i", m_edges.length ());
+  logger->log ("remaining enodes in worklist: %i", m_worklist.length ());
 
   logger->log ("global stats:");
   m_global_stats.log (logger);
@@ -2569,6 +2741,8 @@ exploded_graph::log_stats () const
       log_scope s (logger, function_name (fn));
       (*iter).second->log (logger);
     }
+
+  print_bar_charts (logger->get_printer ());
 }
 
 /* Dump all stats information to OUT.  */
@@ -2579,6 +2753,7 @@ exploded_graph::dump_stats (FILE *out) const
   fprintf (out, "m_sg.num_nodes (): %i\n", m_sg.num_nodes ());
   fprintf (out, "m_nodes.length (): %i\n", m_nodes.length ());
   fprintf (out, "m_edges.length (): %i\n", m_edges.length ());
+  fprintf (out, "remaining enodes in worklist: %i", m_worklist.length ());
 
   fprintf (out, "global stats:\n");
   m_global_stats.dump (out);
@@ -2839,7 +3014,8 @@ public:
 		 (const void *)this);
     gv->indent ();
     gv->println ("style=\"dashed\";");
-    gv->println ("label=\"SN: %i\";", m_supernode->m_index);
+    gv->println ("label=\"SN: %i (bb: %i)\";",
+		 m_supernode->m_index, m_supernode->m_bb->index);
 
     int i;
     exploded_node *enode;
@@ -2968,7 +3144,7 @@ template <>
 inline void
 pod_hash_traits<function_call_string>::mark_empty (value_type &v)
 {
-  v.m_fun = reinterpret_cast<function *> (NULL);
+  v.m_fun = NULL;
 }
 template <>
 inline bool
@@ -2980,7 +3156,7 @@ template <>
 inline bool
 pod_hash_traits<function_call_string>::is_empty (value_type v)
 {
-  return v.m_fun == reinterpret_cast<function *> (NULL);
+  return v.m_fun == NULL;
 }
 
 namespace ana {
@@ -3186,8 +3362,16 @@ exploded_graph::dump_exploded_nodes () const
     }
 
   /* Emit a warning at any call to "__analyzer_dump_exploded_nodes",
-     giving the number of exploded nodes for "before-stmt", and their
-     IDs.  */
+     giving the number of processed exploded nodes for "before-stmt",
+     and the IDs of processed, merger, and worklist enodes.
+
+     We highlight the count of *processed* enodes since this is of most
+     interest in DejaGnu tests for ensuring that state merger has
+     happened.
+
+     We don't show the count of merger and worklist enodes, as this is
+     more of an implementation detail of the merging/worklist that we
+     don't want to bake into our expected DejaGnu messages.  */
 
   unsigned i;
   exploded_node *enode;
@@ -3205,25 +3389,52 @@ exploded_graph::dump_exploded_nodes () const
 	      if (seen.contains (stmt))
 		continue;
 
+	      auto_vec<exploded_node *> processed_enodes;
+	      auto_vec<exploded_node *> merger_enodes;
+	      auto_vec<exploded_node *> worklist_enodes;
 	      /* This is O(N^2).  */
 	      unsigned j;
-	      auto_vec<exploded_node *> enodes;
 	      exploded_node *other_enode;
 	      FOR_EACH_VEC_ELT (m_nodes, j, other_enode)
 		{
 		  if (other_enode->get_point ().get_kind () != PK_BEFORE_STMT)
 		    continue;
 		  if (other_enode->get_stmt () == stmt)
-		    enodes.safe_push (other_enode);
+		    switch (other_enode->get_status ())
+		      {
+		      default:
+			gcc_unreachable ();
+		      case exploded_node::STATUS_WORKLIST:
+			worklist_enodes.safe_push (other_enode);
+			break;
+		      case exploded_node::STATUS_PROCESSED:
+			processed_enodes.safe_push (other_enode);
+			break;
+		      case exploded_node::STATUS_MERGER:
+			merger_enodes.safe_push (other_enode);
+			break;
+		      }
 		}
 
 	      pretty_printer pp;
-	      print_enode_indices (&pp, enodes);
+	      pp_character (&pp, '[');
+	      print_enode_indices (&pp, processed_enodes);
+	      if (merger_enodes.length () > 0)
+		{
+		  pp_string (&pp, "] merger(s): [");
+		  print_enode_indices (&pp, merger_enodes);
+		}
+	      if (worklist_enodes.length () > 0)
+		{
+		  pp_string (&pp, "] worklist: [");
+		  print_enode_indices (&pp, worklist_enodes);
+		}
+	      pp_character (&pp, ']');
 
-	      warning_n (stmt->location, 0, enodes.length (),
-			 "%i exploded node: %s",
-			 "%i exploded nodes: %s",
-			 enodes.length (), pp_formatted_text (&pp));
+	      warning_n (stmt->location, 0, processed_enodes.length (),
+			 "%i processed enode: %s",
+			 "%i processed enodes: %s",
+			 processed_enodes.length (), pp_formatted_text (&pp));
 	      seen.add (stmt);
 
 	      /* If the argument is non-zero, then print all of the states
@@ -3239,10 +3450,11 @@ exploded_graph::dump_exploded_nodes () const
 	      if (i_arg)
 		{
 		  exploded_node *other_enode;
-		  FOR_EACH_VEC_ELT (enodes, j, other_enode)
+		  FOR_EACH_VEC_ELT (processed_enodes, j, other_enode)
 		    {
 		      fprintf (stderr, "%i of %i: EN %i:\n",
-			       j + 1, enodes.length (), other_enode->m_index);
+			       j + 1, processed_enodes.length (),
+			       other_enode->m_index);
 		      other_enode->dump_succs_and_preds (stderr);
 		      /* Dump state.  */
 		      other_enode->get_state ().dump (m_ext_state, false);
@@ -3332,7 +3544,7 @@ public:
 	// TODO: also show the per-callstring breakdown
 	const exploded_graph::call_string_data_map_t *per_cs_data
 	  = args.m_eg->get_per_call_string_data ();
-	for (typename exploded_graph::call_string_data_map_t::iterator iter
+	for (exploded_graph::call_string_data_map_t::iterator iter
 	       = per_cs_data->begin ();
 	     iter != per_cs_data->end ();
 	     ++iter)
@@ -3389,10 +3601,8 @@ private:
 class viz_callgraph_edge : public dedge<viz_callgraph_traits>
 {
 public:
-  viz_callgraph_edge (viz_callgraph_node *src, viz_callgraph_node *dest,
-		     const call_superedge *call_sedge)
-  : dedge (src, dest),
-    m_call_sedge (call_sedge)
+  viz_callgraph_edge (viz_callgraph_node *src, viz_callgraph_node *dest)
+  : dedge<viz_callgraph_traits> (src, dest)
   {}
 
   void dump_dot (graphviz_out *gv, const dump_args_t &) const
@@ -3414,9 +3624,6 @@ public:
 	       style, color, weight, constraint);
     pp_printf (pp, "\"];\n");
   }
-
-private:
-  const call_superedge * const m_call_sedge;
 };
 
 /* Subclass of digraph representing the callgraph.  */
@@ -3437,7 +3644,6 @@ public:
   }
 
 private:
-  const supergraph &m_sg;
   hash_map<function *, viz_callgraph_node *> m_map;
 };
 
@@ -3450,7 +3656,6 @@ class viz_callgraph_cluster : public cluster<viz_callgraph_traits>
 /* viz_callgraph's ctor.  */
 
 viz_callgraph::viz_callgraph (const supergraph &sg)
-: m_sg (sg)
 {
   cgraph_node *node;
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
@@ -3469,11 +3674,11 @@ viz_callgraph::viz_callgraph (const supergraph &sg)
       viz_callgraph_node *vcg_src = get_vcg_node_for_snode (sedge->m_src);
       if (vcg_src->m_fun)
 	get_vcg_node_for_function (vcg_src->m_fun)->m_num_superedges++;
-      if (const call_superedge *call_sedge = sedge->dyn_cast_call_superedge ())
+      if (sedge->dyn_cast_call_superedge ())
 	{
 	  viz_callgraph_node *vcg_dest = get_vcg_node_for_snode (sedge->m_dest);
 	  viz_callgraph_edge *vcg_edge
-	    = new viz_callgraph_edge (vcg_src, vcg_dest, call_sedge);
+	    = new viz_callgraph_edge (vcg_src, vcg_dest);
 	  add_edge (vcg_edge);
 	}
     }
@@ -3609,6 +3814,9 @@ impl_run_checkers (logger *logger)
 void
 run_checkers ()
 {
+  /* Save input_location.  */
+  location_t saved_input_location = input_location;
+
   /* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
   FILE *dump_fout = NULL;
   /* Track if we're responsible for closing dump_fout.  */
@@ -3639,6 +3847,11 @@ run_checkers ()
 
   if (owns_dump_fout)
     fclose (dump_fout);
+
+  /* Restore input_location.  Subsequent passes may assume that input_location
+     is some arbitrary value *not* in the block tree, which might be violated
+     if we didn't restore it.  */
+  input_location = saved_input_location;
 }
 
 } // namespace ana

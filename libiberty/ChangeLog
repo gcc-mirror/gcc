@@ -1,3 +1,36 @@
+2020-03-05  Egeyar Bagcioglu  <egeyar.bagcioglu@oracle.com>
+
+	* simple-object.c (handle_lto_debug_sections): Name
+	".GCC.command.line" among debug sections to be copied over
+	from lto objects.
+
+2020-03-02  Nick Clifton  <nickc@redhat.com>
+
+	* testsuite/demangle-expected: Update expected demangling of
+	enable_if pattern.
+
+2020-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/93966
+	* simple-object.c (handle_lto_debug_sections): Also copy
+	.note.gnu.property section.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
+2020-02-05  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* hashtab.c (htab_remove_elt): Make a parameter const.
+	(htab_remove_elt_with_hash): Likewise.
+
+2020-01-23  Alexandre Oliva <oliva@adacore.com>
+
+	* argv.c (writeargv): Output empty args as "".
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

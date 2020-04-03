@@ -1,3 +1,10 @@
+2020-01-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Use users/<pfx> for the personal remote
+	rather than just <pfx>.  Convert existing personal branches to the
+	new remote.
+	* git-add-user-branch.sh: New file.
+
 2020-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* git-add-vendor-branch.sh: New file.

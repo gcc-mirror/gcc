@@ -8573,7 +8573,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   gfc_se arg2se;
   tree tmp2;
   tree tmp;
-  tree nonzero_charlen;
   tree nonzero_arraylen;
   gfc_ss *ss;
   bool scalar;
@@ -8629,13 +8628,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       if (arg2->expr->ts.type == BT_CLASS)
 	gfc_add_data_component (arg2->expr);
 
-      nonzero_charlen = NULL_TREE;
-      if (arg1->expr->ts.type == BT_CHARACTER)
-	nonzero_charlen = fold_build2_loc (input_location, NE_EXPR,
-					   logical_type_node,
-					   arg1->expr->ts.u.cl->backend_decl,
-					   build_zero_cst
-					   (TREE_TYPE (arg1->expr->ts.u.cl->backend_decl)));
       if (scalar)
         {
 	  /* A pointer to a scalar.  */
@@ -8705,10 +8697,15 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 
       /* If target is present zero character length pointers cannot
 	 be associated.  */
-      if (nonzero_charlen != NULL_TREE)
-	se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-				    logical_type_node,
-				    se->expr, nonzero_charlen);
+      if (arg1->expr->ts.type == BT_CHARACTER)
+	{
+	  tmp = arg1se.string_length;
+	  tmp = fold_build2_loc (input_location, NE_EXPR,
+				 logical_type_node, tmp,
+				 build_zero_cst (TREE_TYPE (tmp)));
+	  se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				      logical_type_node, se->expr, tmp);
+	}
     }
 
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), se->expr);

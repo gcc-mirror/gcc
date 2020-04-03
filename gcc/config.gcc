@@ -3104,7 +3104,7 @@ s390x-*-linux*)
 	tmake_file="${tmake_file} s390/t-linux64 s390/t-s390"
 	;;
 s390x-ibm-tpf*)
-	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h s390/tpf.h"
+	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h glibc-stdint.h s390/tpf.h"
 	tm_p_file=s390/s390-protos.h
 	c_target_objs="${c_target_objs} s390-c.o"
 	cxx_target_objs="${cxx_target_objs} s390-c.o"
@@ -4404,7 +4404,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | carrizo | fiji | gfx900 | gfx906 )
+			"" | fiji | gfx900 | gfx906 )
 				# OK
 				;;
 			*)

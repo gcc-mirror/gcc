@@ -390,6 +390,8 @@ Lack of function pointer analysis
 @item
 The constraint-handling code assumes reflexivity in some places
 (that values are equal to themselves), which is not the case for NaN.
+As a simple workaround, constraints on floating-point values are
+currently ignored.
 @item
 The region model code creates lots of little mutable objects at each
 @code{region_model} (and thus per @code{exploded_node}) rather than
@@ -467,20 +469,28 @@ __analyzer_dump_path ();
 will emit a placeholder ``note'' diagnostic with a path to that call site,
 if the analyzer finds a feasible path to it.
 
-The builtin @code{__analyzer_dump_exploded_nodes} will dump information
-after analysis on all of the exploded nodes at that program point:
+The builtin @code{__analyzer_dump_exploded_nodes} will emit a warning
+after analysis containing information on all of the exploded nodes at that
+program point:
 
 @smallexample
   __analyzer_dump_exploded_nodes (0);
 @end smallexample
 
-will dump just the number of nodes, and their IDs.
+will output the number of ``processed'' nodes, and the IDs of
+both ``processed'' and ``merger'' nodes, such as:
+
+@smallexample
+warning: 2 processed enodes: [EN: 56, EN: 58] merger(s): [EN: 54-55, EN: 57, EN: 59]
+@end smallexample
+
+With a non-zero argument
 
 @smallexample
   __analyzer_dump_exploded_nodes (1);
 @end smallexample
 
-will also dump all of the states within those nodes.
+it will also dump all of the states within the ``processed'' nodes.
 
 @smallexample
    __analyzer_dump_region_model ();

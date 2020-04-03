@@ -46,5 +46,5 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump-times "Will split parameter" 2 "sra" } } */
-/* { dg-final { scan-ipa-dump-times "component at byte offset" 4 "sra" } } */
+/* { dg-final { scan-ipa-dump-times "Will split parameter" 2 "sra" { xfail { hppa*-*-hpux* && { ! lp64 } } } } } */
+/* { dg-final { scan-ipa-dump-times "component at byte offset" 4 "sra" { xfail { hppa*-*-hpux* && { ! lp64 } } } } } */

@@ -77,9 +77,8 @@ enum ls {ls_none = 0,		/* Normal state.  */
 	 ls_defined_close,	/* Looking for ')' of defined().  */
 	 ls_hash,		/* After # in preprocessor conditional.  */
 	 ls_predicate,		/* After the predicate, maybe paren?  */
-	 ls_answer,		/* In answer to predicate.  */
-	 ls_has_include,	/* After __has_include.  */
-	 ls_has_include_close};	/* Looking for ')' of __has_include.  */
+	 ls_answer		/* In answer to predicate.  */
+};
 
 /* Lexing TODO: Maybe handle space in escaped newlines.  Stop lex.c
    from recognizing comments and directives during its lexing pass.  */
@@ -564,13 +563,6 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 		  lex_state = ls_defined;
 		  continue;
 		}
-	      else if (pfile->state.in_expression
-		       && (node == pfile->spec_nodes.n__has_include
-			|| node == pfile->spec_nodes.n__has_include_next))
-		{
-		  lex_state = ls_has_include;
-		  continue;
-		}
 	    }
 	  break;
 
@@ -594,8 +586,6 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 		lex_state = ls_answer;
 	      else if (lex_state == ls_defined)
 		lex_state = ls_defined_close;
-	      else if (lex_state == ls_has_include)
-		lex_state = ls_has_include_close;
 	    }
 	  break;
 
@@ -729,8 +719,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 		      goto new_context;
 		    }
 		}
-	      else if (lex_state == ls_answer || lex_state == ls_defined_close
-			|| lex_state == ls_has_include_close)
+	      else if (lex_state == ls_answer || lex_state == ls_defined_close)
 		lex_state = ls_none;
 	    }
 	  break;
@@ -811,8 +800,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 	lex_state = ls_none;
       else if (lex_state == ls_hash
 	       || lex_state == ls_predicate
-	       || lex_state == ls_defined
-	       || lex_state == ls_has_include)
+	       || lex_state == ls_defined)
 	lex_state = ls_none;
 
       /* ls_answer and ls_defined_close keep going until ')'.  */

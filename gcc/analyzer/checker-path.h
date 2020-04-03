@@ -201,9 +201,9 @@ public:
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
-  region_id get_lvalue (tree expr) const
+  region_id get_lvalue (tree expr, region_model_context *ctxt) const
   {
-    return m_dst_state.m_region_model->get_lvalue (expr, NULL);
+    return m_dst_state.m_region_model->get_lvalue (expr, ctxt);
   }
 
   const supernode *m_node;
@@ -329,15 +329,15 @@ public:
   bool is_return_p () const FINAL OVERRIDE;
 };
 
-/* A concrete event subclass for a setjmp call.  */
+/* A concrete event subclass for a setjmp or sigsetjmp call.  */
 
 class setjmp_event : public checker_event
 {
 public:
   setjmp_event (location_t loc, const exploded_node *enode,
-		tree fndecl, int depth)
+		tree fndecl, int depth, const gcall *setjmp_call)
   : checker_event (EK_SETJMP, loc, fndecl, depth),
-    m_enode (enode)
+    m_enode (enode), m_setjmp_call (setjmp_call)
   {
   }
 
@@ -349,9 +349,12 @@ public:
 
 private:
   const exploded_node *m_enode;
+  const gcall *m_setjmp_call;
 };
 
-/* An abstract event subclass for rewinding from a longjmp to a setjmp.
+/* An abstract event subclass for rewinding from a longjmp to a setjmp
+   (or siglongjmp to sigsetjmp).
+
    Base class for two from/to subclasses, showing the two halves of the
    rewind.  */
 
@@ -365,21 +368,25 @@ public:
  protected:
   rewind_event (const exploded_edge *eedge,
 		enum event_kind kind,
-		location_t loc, tree fndecl, int depth);
+		location_t loc, tree fndecl, int depth,
+		const rewind_info_t *rewind_info);
+  const rewind_info_t *m_rewind_info;
 
  private:
   const exploded_edge *m_eedge;
 };
 
 /* A concrete event subclass for rewinding from a longjmp to a setjmp,
-   showing the longjmp.  */
+   showing the longjmp (or siglongjmp).  */
 
 class rewind_from_longjmp_event : public rewind_event
 {
 public:
   rewind_from_longjmp_event (const exploded_edge *eedge,
-			     location_t loc, tree fndecl, int depth)
-  : rewind_event (eedge, EK_REWIND_FROM_LONGJMP, loc, fndecl, depth)
+			     location_t loc, tree fndecl, int depth,
+			     const rewind_info_t *rewind_info)
+  : rewind_event (eedge, EK_REWIND_FROM_LONGJMP, loc, fndecl, depth,
+		  rewind_info)
   {
   }
 
@@ -387,7 +394,7 @@ public:
 };
 
 /* A concrete event subclass for rewinding from a longjmp to a setjmp,
-   showing the setjmp.  */
+   showing the setjmp (or sigsetjmp).  */
 
 class rewind_to_setjmp_event : public rewind_event
 {
@@ -395,8 +402,8 @@ public:
   rewind_to_setjmp_event (const exploded_edge *eedge,
 			  location_t loc, tree fndecl, int depth,
 			  const rewind_info_t *rewind_info)
-  : rewind_event (eedge, EK_REWIND_TO_SETJMP, loc, fndecl, depth),
-    m_rewind_info (rewind_info)
+  : rewind_event (eedge, EK_REWIND_TO_SETJMP, loc, fndecl, depth,
+		  rewind_info)
   {
   }
 
@@ -408,7 +415,6 @@ public:
 
 private:
   diagnostic_event_id_t m_original_setjmp_event_id;
-  const rewind_info_t *m_rewind_info;
 };
 
 /* Concrete subclass of checker_event for use at the end of a path:

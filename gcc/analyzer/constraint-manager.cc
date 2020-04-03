@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "fold-const.h"
 #include "selftest.h"
+#include "diagnostic-core.h"
 #include "graphviz.h"
 #include "function.h"
 #include "analyzer/analyzer.h"
@@ -120,13 +121,11 @@ bound::get_relation_as_str () const
 void
 range::dump (pretty_printer *pp) const
 {
-PUSH_IGNORE_WFORMAT
   pp_printf (pp, "%qE %s x %s %qE",
 	     m_lower_bound.m_constant,
 	     m_lower_bound.get_relation_as_str (),
 	     m_upper_bound.get_relation_as_str (),
 	     m_upper_bound.m_constant);
-POP_IGNORE_WFORMAT
 }
 
 /* Determine if there is only one possible value for this range.
@@ -146,10 +145,9 @@ range::constrained_to_single_element (tree *out)
   m_upper_bound.ensure_closed (true);
 
   // Are they equal?
-  tree comparison
-    = fold_build2 (EQ_EXPR, boolean_type_node,
-		   m_lower_bound.m_constant,
-		   m_upper_bound.m_constant);
+  tree comparison = fold_binary (EQ_EXPR, boolean_type_node,
+				 m_lower_bound.m_constant,
+				 m_upper_bound.m_constant);
   if (comparison == boolean_true_node)
     {
       *out = m_lower_bound.m_constant;
@@ -200,9 +198,7 @@ equiv_class::print (pretty_printer *pp) const
     {
       if (i > 0)
 	pp_string (pp, " == ");
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE", m_constant);
-POP_IGNORE_WFORMAT
     }
   pp_character (pp, '}');
 }
@@ -690,8 +686,8 @@ constraint_manager::add_constraint (equiv_class_id lhs_ec_id,
 
 	if (rhs_ec_obj.m_constant)
 	  {
-	    //gcc_assert (lhs_ec_obj.m_constant == NULL);
 	    lhs_ec_obj.m_constant = rhs_ec_obj.m_constant;
+	    lhs_ec_obj.m_cst_sid = rhs_ec_obj.m_cst_sid;
 	  }
 
 	/* Drop rhs equivalence class, overwriting it with the
@@ -931,9 +927,11 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
       int i;
       equiv_class *ec;
       FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
-	if (ec->m_constant)
+	if (ec->m_constant
+	    && types_compatible_p (TREE_TYPE (cst),
+				   TREE_TYPE (ec->m_constant)))
 	  {
-	    tree eq = fold_build2 (EQ_EXPR, boolean_type_node,
+	    tree eq = fold_binary (EQ_EXPR, boolean_type_node,
 				   cst, ec->m_constant);
 	    if (eq == boolean_true_node)
 	      {
@@ -961,17 +959,17 @@ constraint_manager::get_or_add_equiv_class (svalue_id sid)
 	   other_id.m_idx++)
 	{
 	  const equiv_class &other_ec = other_id.get_obj (*this);
-	  if (other_ec.m_constant)
+	  if (other_ec.m_constant
+	      && types_compatible_p (TREE_TYPE (new_ec->m_constant),
+				     TREE_TYPE (other_ec.m_constant)))
 	    {
 	      /* If we have two ECs, both with constants, the constants must be
 		 non-equal (or they would be in the same EC).
 		 Determine the direction of the inequality, and record that
 		 fact.  */
 	      tree lt
-		= fold_build2 (LT_EXPR, boolean_type_node,
+		= fold_binary (LT_EXPR, boolean_type_node,
 			       new_ec->m_constant, other_ec.m_constant);
-	      //gcc_assert (lt == boolean_true_node || lt == boolean_false_node);
-	      // not true for int vs float comparisons
 	      if (lt == boolean_true_node)
 		add_constraint_internal (new_id, CONSTRAINT_LT, other_id);
 	      else if (lt == boolean_false_node)
@@ -1017,7 +1015,7 @@ constraint_manager::eval_condition (equiv_class_id lhs_ec,
   if (lhs_const && rhs_const)
     {
       tree comparison
-	= fold_build2 (op, boolean_type_node, lhs_const, rhs_const);
+	= fold_binary (op, boolean_type_node, lhs_const, rhs_const);
       if (comparison == boolean_true_node)
 	return tristate (tristate::TS_TRUE);
       if (comparison == boolean_false_node)
@@ -1518,7 +1516,11 @@ constraint_manager::validate () const
 	  gcc_assert (sid->as_int () < get_num_svalues ());
 	}
       if (ec->m_constant)
-	gcc_assert (CONSTANT_CLASS_P (ec->m_constant));
+	{
+	  gcc_assert (CONSTANT_CLASS_P (ec->m_constant));
+	  gcc_assert (!ec->m_cst_sid.null_p ());
+	  gcc_assert (ec->m_cst_sid.as_int () < get_num_svalues ());
+	}
 #if 0
       else
 	gcc_assert (ec->m_vars.length () > 0);

@@ -260,7 +260,8 @@ proc check_runtime {prop args} {
 proc check_configured_with { pattern } {
     global tool
 
-    set gcc_output [${tool}_target_compile "-v" "" "none" ""]
+    set options [list "additional_flags=-v"]
+    set gcc_output [${tool}_target_compile "" "" "none" $options]
     if { [ regexp "Configured with: \[^\n\]*$pattern" $gcc_output ] } {
         verbose "Matched: $pattern" 2
         return 1
@@ -504,7 +505,8 @@ proc check_gc_sections_available { } {
 	}
 
 	# Check if the ld used by gcc supports --gc-sections.
-	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set options [list "additional_flags=-print-prog-name=ld"]
+	set gcc_ld [lindex [${tool}_target_compile "" "" "none" $options] 0]
 	set ld_output [remote_exec host "$gcc_ld" "--help"]
 	if { [ string first "--gc-sections" $ld_output ] >= 0 } {
 	    return 1
@@ -2248,6 +2250,25 @@ proc check_ppc_float128_hw_available { } {
     }]
 }
 
+# See if the __ieee128 keyword is understood.
+proc check_effective_target_ppc_ieee128_ok { } {
+    return [check_cached_effective_target ppc_ieee128_ok {
+	# disable on AIX.
+	if { [istarget *-*-aix*] } {
+	    expr 0
+	} else {
+	    set options "-mfloat128"
+	    check_runtime_nocache ppc_ieee128_ok {
+		int main()
+		{
+		  __ieee128 a;
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing VSX instructions, 0
 # otherwise.  Cache the result.
 
@@ -3112,6 +3133,14 @@ proc check_effective_target_dfp { } {
 proc check_effective_target_dfprt { } {
     return [check_cached_effective_target dfprt {
 	check_effective_target_dfprt_nocache
+    }]
+}
+
+# Return 1 iff target has unsigned plain 'char' by default.
+
+proc check_effective_target_unsigned_char {} {
+    return [check_no_compiler_messages unsigned_char assembly {
+	char ar[(char)-1];
     }]
 }
 
@@ -4799,6 +4828,48 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
     return 0;
 }
 
+# Return 1 if the target supports ARMv8.1-M MVE
+# instructions, 0 otherwise.  The test is valid for ARM.
+# Record the command line options needed.
+
+proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
+    global et_arm_v8_1m_mve_flags
+    set et_arm_v8_1m_mve_flags ""
+
+    if { ![istarget arm*-*-*] } {
+        return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=auto" "-mfloat-abi=hard -mfpu=auto"} {
+        if { [check_no_compiler_messages_nocache \
+                  arm_v8_1m_mve_ok object {
+            #if !defined (__ARM_FEATURE_MVE)
+            #error "__ARM_FEATURE_MVE not defined"
+            #endif
+        } "$flags -mthumb"] } {
+            set et_arm_v8_1m_mve_flags "$flags -mthumb"
+            return 1
+        }
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_1m_mve_ok { } {
+    return [check_cached_effective_target arm_v8_1m_mve_ok \
+                check_effective_target_arm_v8_1m_mve_ok_nocache]
+}
+
+proc add_options_for_arm_v8_1m_mve { flags } {
+    if { ! [check_effective_target_arm_v8_1m_mve_ok] } {
+        return "$flags"
+    }
+    global et_arm_v8_1m_mve_flags
+    return "$flags $et_arm_v8_1m_mve_flags"
+}
+
 proc check_effective_target_arm_v8_2a_dotprod_neon_ok { } {
     return [check_cached_effective_target arm_v8_2a_dotprod_neon_ok \
                 check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache]
@@ -5476,6 +5547,58 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
     } else {
 	return 0
     }
+}
+
+# return 1 if our compiler returns the ARCH_PWR defines with the options
+# as provided by the test.
+proc check_effective_target_has_arch_pwr5 { } {
+	return [check_no_compiler_messages arch_pwr5 assembly {
+		#ifndef _ARCH_PWR5
+		#error does not have power5 support.
+		#else
+		/* "has power5 support" */
+		#endif
+	}]
+}
+
+proc check_effective_target_has_arch_pwr6 { } {
+	return [check_no_compiler_messages arch_pwr6 assembly {
+		#ifndef _ARCH_PWR6
+		#error does not have power6 support.
+		#else
+		/* "has power6 support" */
+		#endif
+	}]
+}
+
+proc check_effective_target_has_arch_pwr7 { } {
+	return [check_no_compiler_messages arch_pwr7 assembly {
+		#ifndef _ARCH_PWR7
+		#error does not have power7 support.
+		#else
+		/* "has power7 support" */
+		#endif
+	}]
+}
+
+proc check_effective_target_has_arch_pwr8 { } {
+	return [check_no_compiler_messages arch_pwr8 assembly {
+		#ifndef _ARCH_PWR8
+		#error does not have power8 support.
+		#else
+		/* "has power8 support" */
+		#endif
+	}]
+}
+
+proc check_effective_target_has_arch_pwr9 { } {
+	return [check_no_compiler_messages arch_pwr9 assembly {
+		#ifndef _ARCH_PWR9
+		#error does not have power9 support.
+		#else
+		/* "has power9 support" */
+		#endif
+	}]
 }
 
 # Return 1 if this is a PowerPC target supporting -mfuture.
@@ -8558,7 +8681,8 @@ proc check_effective_target_gas { } {
 
     if {![info exists use_gas_saved]} {
 	# Check if the as used by gcc is GNU as.
-	set gcc_as [lindex [${tool}_target_compile "-print-prog-name=as" "" "none" ""] 0]
+	set options [list "additional_flags=-print-prog-name=as"]
+	set gcc_as [lindex [${tool}_target_compile "" "" "none" $options] 0]
 	# Provide /dev/null as input, otherwise gas times out reading from
 	# stdin.
 	set status [remote_exec host "$gcc_as" "-v /dev/null"]
@@ -8580,7 +8704,8 @@ proc check_effective_target_gld { } {
 
     if {![info exists use_gld_saved]} {
 	# Check if the ld used by gcc is GNU ld.
-	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set options [list "additional_flags=-print-prog-name=ld"]
+	set gcc_ld [lindex [${tool}_target_compile "" "" "none" $options] 0]
 	set status [remote_exec host "$gcc_ld" "--version"]
 	set ld_output [lindex $status 1]
 	if { [ string first "GNU" $ld_output ] >= 0 } {
@@ -8775,7 +8900,7 @@ proc check_effective_target_c++2a_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    if [check-flags { { } { } { -std=c++2a -std=gnu++2a } }] {
+    if [check-flags { { } { } { -std=c++2a -std=gnu++2a -std=c++20 -std=gnu++20 } }] {
 	return 1
     }
     if { $cxx_default == "c++20" && [check-flags { { } { } { } { -std=* } }] } {
@@ -8787,9 +8912,12 @@ proc check_effective_target_c++2a { } {
     return [check_effective_target_c++2a_only]
 }
 
-# Check for C++ Concepts TS support, i.e. -fconcepts flag.
+# Check for C++ Concepts support, i.e. -fconcepts flag.
 proc check_effective_target_concepts { } {
-    return [check-flags { "" { } { -fconcepts -std=*2a } }]
+    if [check_effective_target_c++2a] {
+	return 1
+    }
+    return [check-flags { "" { } { -fconcepts } }]
 }
 
 # Return 1 if expensive testcases should be run.
@@ -8988,7 +9116,7 @@ proc check_effective_target_aarch64_tiny { } {
 # various architecture extensions via the .arch_extension pseudo-op.
 
 foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
-			  "f64mm" } {
+			  "i8mm" "f32mm" "f64mm" "bf16" } {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {

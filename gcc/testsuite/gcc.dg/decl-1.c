@@ -6,7 +6,7 @@
    6.7.5.3 p11.  Also see C89 DR #009, which was erroneously omitted
    from C99, and resubmitted as DR #249: if in a parameter
    declaration, an identifier can be read as a typedef name or a
-   paramter name, it is read as a typedef name).  */
+   parameter name, it is read as a typedef name).  */
 
 /* { dg-do compile } */
 

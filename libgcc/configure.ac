@@ -2,6 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 sinclude(../config/enable.m4)
 sinclude(../config/tls.m4)
+sinclude(../config/toolexeclibdir.m4)
 sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 sinclude(../config/lib-ld.m4)
@@ -113,16 +114,25 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
+GCC_WITH_TOOLEXECLIBDIR
+
 AC_ARG_WITH(slibdir,
 [  --with-slibdir=DIR      shared libraries in DIR [LIBDIR]],
 slibdir="$with_slibdir",
-if test "${version_specific_libs}" = yes; then
+[if test "${version_specific_libs}" = yes; then
   slibdir='$(libsubdir)'
 elif test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
-  slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
+      ;;
+    *)
+      slibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   slibdir='$(libdir)'
-fi)
+fi])
 AC_SUBST(slibdir)
 
 # Command-line options.
@@ -168,7 +178,14 @@ case ${version_specific_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_noncanonical)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
       toolexeclibdir='$(libdir)'

@@ -34,6 +34,20 @@ extern "C" {
 typedef __bf16 bfloat16_t;
 typedef float float32_t;
 
+__extension__ extern __inline float32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcvtah_f32_bf16 (bfloat16_t __a)
+{
+  return __builtin_neon_vbfcvtbf (__a);
+}
+
+__extension__ extern __inline bfloat16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcvth_bf16_f32 (float32_t __a)
+{
+  return __builtin_neon_vbfcvtsf (__a);
+}
+
 #ifdef __cplusplus
 }
 #endif

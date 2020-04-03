@@ -353,7 +353,28 @@ c_vla_type_p (const_tree t)
     return true;
   return false;
 }
-
+
+/* If NTYPE is a type of a non-variadic function with a prototype
+   and OTYPE is a type of a function without a prototype and ATTRS
+   contains attribute format, diagnosess and removes it from ATTRS.
+   Returns the result of build_type_attribute_variant of NTYPE and
+   the (possibly) modified ATTRS.  */
+
+static tree
+build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
+{
+  if (!prototype_p (otype)
+      && prototype_p (ntype)
+      && lookup_attribute ("format", attrs))
+    {
+      warning_at (input_location, OPT_Wattributes,
+		  "%qs attribute cannot be applied to a function that "
+		  "does not take variable arguments", "format");
+      attrs = remove_attribute ("format", attrs);
+    }
+  return build_type_attribute_variant (ntype, attrs);
+
+}
 /* Return the composite type of two compatible types.
 
    We assume that comptypes has already been done and returned
@@ -504,9 +525,9 @@ composite_type (tree t1, tree t2)
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && !TYPE_ARG_TYPES (t2))
-	  return build_type_attribute_variant (t1, attributes);
+	  return build_functype_attribute_variant (t1, t2, attributes);
 	if (valtype == TREE_TYPE (t2) && !TYPE_ARG_TYPES (t1))
-	  return build_type_attribute_variant (t2, attributes);
+	  return build_functype_attribute_variant (t2, t1, attributes);
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == NULL_TREE)
@@ -8738,7 +8759,7 @@ pop_init_level (location_t loc, int implicit,
 	 the element, after verifying there is just one.  */
       if (vec_safe_is_empty (constructor_elements))
 	{
-	  if (!constructor_erroneous)
+	  if (!constructor_erroneous && constructor_type != error_mark_node)
 	    error_init (loc, "empty scalar initializer");
 	  ret.value = error_mark_node;
 	}
@@ -8815,13 +8836,19 @@ set_designator (location_t loc, bool array,
   enum tree_code subcode;
 
   /* Don't die if an entire brace-pair level is superfluous
-     in the containing level.  */
-  if (constructor_type == NULL_TREE)
+     in the containing level, or for an erroneous type.  */
+  if (constructor_type == NULL_TREE || constructor_type == error_mark_node)
     return true;
 
   /* If there were errors in this designator list already, bail out
      silently.  */
   if (designator_erroneous)
+    return true;
+
+  /* Likewise for an initializer for a variable-size type.  Those are
+     diagnosed in digest_init.  */
+  if (COMPLETE_TYPE_P (constructor_type)
+      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
     return true;
 
   if (!designator_depth)
@@ -9934,8 +9961,14 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     }
 
   /* Ignore elements of a brace group if it is entirely superfluous
-     and has already been diagnosed.  */
-  if (constructor_type == NULL_TREE)
+     and has already been diagnosed, or if the type is erroneous.  */
+  if (constructor_type == NULL_TREE || constructor_type == error_mark_node)
+    return;
+
+  /* Ignore elements of an initializer for a variable-size type.
+     Those are diagnosed in digest_init.  */
+  if (COMPLETE_TYPE_P (constructor_type)
+      && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
     return;
 
   if (!implicit && warn_designated_init && !was_designated

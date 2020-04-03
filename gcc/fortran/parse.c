@@ -6045,8 +6045,9 @@ set_syms_host_assoc (gfc_symbol *sym)
 {
   gfc_component *c;
   const char dot[2] = ".";
-  char parent1[GFC_MAX_SYMBOL_LEN + 1];
-  char parent2[GFC_MAX_SYMBOL_LEN + 1];
+  /* Symbols take the form module.submodule_ or module.name_. */
+  char parent1[2 * GFC_MAX_SYMBOL_LEN + 2];
+  char parent2[2 * GFC_MAX_SYMBOL_LEN + 2];
 
   if (sym == NULL)
     return;

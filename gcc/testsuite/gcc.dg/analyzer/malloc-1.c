@@ -1,6 +1,5 @@
 #include <alloca.h>
 #include <stdlib.h>
-#include <string.h>
 
 extern int foo (void);
 extern int bar (void);
@@ -71,7 +70,7 @@ void test_7 (void)
   void *ptr = malloc(4096);
   if (!ptr)
     return;
-  memset(ptr, 0, 4096);
+  __builtin_memset(ptr, 0, 4096);
   free(ptr);
 }
 
@@ -80,7 +79,7 @@ void *test_8 (void)
   void *ptr = malloc(4096);
   if (!ptr)
     return NULL;
-  memset(ptr, 0, 4096);
+  __builtin_memset(ptr, 0, 4096);
   return ptr;
   /* This needs phi nodes to affect equivalence classes, or we get a false report
      of a leak.  */
@@ -398,7 +397,7 @@ int test_35 (void)
   void *ptr = malloc(4096);
   if (!ptr)
     return -1;
-  memset(ptr, 0, 4096);
+  __builtin_memset(ptr, 0, 4096);
   free(ptr);
   return 0;
 }
@@ -408,14 +407,14 @@ void test_36 (void)
   void *ptr = malloc(4096);
   if (!ptr)
     return;
-  memset(ptr, 0, 4096);
+  __builtin_memset(ptr, 0, 4096);
   free(ptr);
 }
 
 void *test_37a (void)
 {
   void *ptr = malloc(4096); /* { dg-message "this call could return NULL" } */
-  memset(ptr, 0, 4096); /* { dg-warning "use of possibly-NULL 'ptr' where non-null expected" } */
+  __builtin_memset(ptr, 0, 4096); /* { dg-warning "use of possibly-NULL 'ptr' where non-null expected" } */
   return ptr;
 }
 
@@ -424,9 +423,9 @@ int test_37b (void)
   void *p = malloc(4096);
   void *q = malloc(4096); /* { dg-message "this call could return NULL" } */
   if (p) {
-    memset(p, 0, 4096); /* Not a bug: checked */
+    __builtin_memset(p, 0, 4096); /* Not a bug: checked */
   } else {
-    memset(q, 0, 4096); /* { dg-warning "use of possibly-NULL 'q' where non-null expected" } */
+    __builtin_memset(q, 0, 4096); /* { dg-warning "use of possibly-NULL 'q' where non-null expected" } */
   }
   free(p);
   free(q);
@@ -579,8 +578,14 @@ int test_47 (void)
     int retval = maybe_alloc (&p); /* this might write to "p".  */
     if (retval)
       return (retval);
-    p_size = strlen(p); /* { dg-bogus "non-null expected" } */
+    p_size = __builtin_strlen(p); /* { dg-bogus "non-null expected" } */
     free (p);
   }
   return p_size;
+}
+
+void test_48 (void)
+{
+  int *p = NULL; /* { dg-message "'p' is NULL" } */
+  *p = 1; /* { dg-warning "dereference of NULL 'p'" } */
 }

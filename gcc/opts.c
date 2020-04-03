@@ -1285,6 +1285,14 @@ print_filtered_help (unsigned int include_flags,
 			       | CL_COMMON | CL_TARGET)) == 0)
 	continue;
 
+      /* If an option contains a language specification,
+	 exclude it from common unless all languages are present.  */
+      if ((include_flags & CL_COMMON)
+	  && !(option->flags & CL_DRIVER)
+	  && (option->flags & CL_LANG_ALL)
+	  && (option->flags & CL_LANG_ALL) != CL_LANG_ALL)
+	continue;
+
       found = true;
       /* Skip switches that have already been printed.  */
       if (opts->x_help_printed[i])
@@ -1301,10 +1309,13 @@ print_filtered_help (unsigned int include_flags,
 	  help = undocumented_msg;
 	}
 
+      /* Get the translation.  */
+      help = _(help);
+
       if (option->alias_target < N_OPTS
 	  && cl_options [option->alias_target].help)
 	{
-	  if (help == undocumented_msg)
+	  if (option->help == NULL)
 	    {
 	      /* For undocumented options that are aliases for other options
 		 that are documented, point the reader to the other option in
@@ -1338,9 +1349,6 @@ print_filtered_help (unsigned int include_flags,
 
 	  help = new_help;
 	}
-
-      /* Get the translation.  */
-      help = _(help);
 
       /* Find the gap between the name of the
 	 option and its descriptive text.  */
@@ -2140,7 +2148,9 @@ print_help (struct gcc_options *opts, unsigned int lang_mask,
   /* We started using PerFunction/Optimization for parameters and
      a warning.  We should exclude these from optimization options.  */
   if (include_flags & CL_OPTIMIZATION)
-    exclude_flags |= CL_WARNING | CL_PARAMS;
+    exclude_flags |= CL_WARNING;
+  if (!(include_flags & CL_PARAMS))
+    exclude_flags |= CL_PARAMS;
 
   if (include_flags)
     print_specific_help (include_flags, exclude_flags, 0, opts,

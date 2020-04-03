@@ -44,14 +44,13 @@ int test_repeated_predicate_1 (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
   // FIXME: why 3 here?
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
   // FIXME: why 3 here?
 
   if (n > 10)
@@ -73,11 +72,11 @@ int test_repeated_predicate_2 (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff_2 (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -102,11 +101,11 @@ int test_explicit_flag (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
   // FIXME: why 3 here?
 
   if (need_to_free)
@@ -128,11 +127,11 @@ int test_pointer_comparison (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
   // FIXME: why 3 here?
 
   if (ptr != buf)
@@ -159,19 +158,18 @@ int test_initial_flag (int n)
   /* Due to state-merging, we lose the relationship between 'n > 10'
      and 'on_heap' here; we have to rely on feasibility-checking
      in the diagnostic_manager to reject the false warnings.  */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   if (on_heap)
     ptr = (int *)malloc (sizeof (int) * n);
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "5 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "5 processed enodes" } */
   // FIXME: why 5 here?
 
   if (n > 10)

@@ -1,3 +1,118 @@
+2020-03-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/bpabi-v6m.S (aeabi_lcmp): Convert thumb1 code to unified
+	syntax.
+	(aeabi_ulcmp, aeabi_ldivmod, aeabi_uldivmod): Likewise.
+	(aeabi_frsub, aeabi_cfcmpeq, aeabi_fcmpeq): Likewise.
+	(aeabi_fcmp, aeabi_drsub, aeabi_cdrcmple): Likewise.
+	(aeabi_cdcmpeq, aeabi_dcmpeq, aeabi_dcmp): Likewise.
+	* config/arm/lib1funcs.S (Lend_fde): Convert thumb1 code to unified
+	syntax.
+	(divsi3, modsi3): Likewise.
+	(clzdi2, ctzsi2): Likewise.
+	* config/arm/libunwind.S (restore_core_regs): Convert thumb1 code to
+	unified syntax.
+	(UNWIND_WRAPPER): Likewise.
+
+2020-03-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-interface.c: Remove duplicate
+	declaration of __gcov_flush_mx.
+
+2020-02-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92924
+	* libgcov-merge.c (merge_topn_values_set): Record
+	when a TOP N counter becomes invalid.  When merging
+	remove a smallest value if the space is needed.
+
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* configure: Regenerated.
+
+2020-02-10  Jeff Law  <law@redhat.com>
+
+	* config/frv/frvbegin.c: Use right flags for .ctors and .dtors
+	sections.
+	* config/frv/frvend.c: Similarly.
+
+2020-02-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	New.
+
+2020-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/93615
+	* unwind-arm-common.inc: Replace uses of gnu_Unwind_Find_got with
+	_Unwind_gnu_Find_got.
+	* unwind-pe.h: Likewise.
+
+2020-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93615
+	* config/arm/unwind-arm.h (gnu_Unwind_Find_got): Rename to ...
+	(_Unwind_gnu_Find_got): ... this.  Use __asm instead of asm.  Remove
+	trailing :s in asm.  Formatting fixes.
+	(_Unwind_decode_typeinfo_ptr): Adjust caller.
+
+2020-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	nios2: Support for GOT-relative DW_EH_PE_datarel encoding.
+
+	* config.host [nios2-*-linux*] (tmake_file, tm_file): Adjust.
+	* config/nios2-elf-lib.h: New.
+	* unwind-dw2-fde-dip.c (_Unwind_IteratePhdrCallback): Use existing
+	code for finding GOT base for nios2.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93403
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v4):
+	Call __gcov_indirect_call_profiler_body.
+	(__gcov_indirect_call_profiler_body): New.
+	(__gcov_indirect_call_profiler_v4_atomic): New.
+	* libgcov.h (__gcov_indirect_call_profiler_v4_atomic):
+	New declaration.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/crti.S: Add RF16 object attribute.
+	* config/arc/crtn.S: Likewise.
+	* config/arc/crttls.S: Likewise.
+	* config/arc/lib1funcs.S: Likewise.
+	* config/arc/fp-hack.h (ARC_OPTFPE): Define.
+	* config/arc/lib2funcs.c: New file.
+	* config/arc/t-arc: Add lib2funcs to LIB2ADD.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (configure_deps): Add `toolexeclibdir.m4'.
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* configure: Regenerate.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/gnustack.h: Check for TARGET_LIBC_GNUSTACK also.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/gnustack.h: New file.
+	* config/mips/crti.S: Include gnustack.h.
+	* config/mips/crtn.S: Likewise.
+	* config/mips/mips16.S: Likewise.
+	* config/mips/vr4120-div.S: Likewise.
+
+2020-01-23  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove
+	check for -1 as we only prune run-time counters
+	that do not generate an invalid state.
+
 2020-01-22  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92924

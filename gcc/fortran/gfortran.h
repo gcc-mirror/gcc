@@ -1592,9 +1592,11 @@ typedef struct gfc_symbol
      current statement have the mark member nonzero.  Of these symbols,
      symbols with old_symbol equal to NULL are symbols created within
      the current statement.  Otherwise, old_symbol points to a copy of
-     the old symbol. gfc_new is used in symbol.c to flag new symbols.  */
+     the old symbol. gfc_new is used in symbol.c to flag new symbols.
+     comp_mark is used to indicate variables which have component accesses
+     in OpenMP/OpenACC directive clauses.  */
   struct gfc_symbol *old_symbol;
-  unsigned mark:1, gfc_new:1;
+  unsigned mark:1, comp_mark:1, gfc_new:1;
 
   /* The tlink field is used in the front end to carry the module
      declaration of separate module procedures so that the characteristics
@@ -2842,6 +2844,13 @@ bool gfc_insert_kind_parameter_exprs (gfc_expr *);
 bool gfc_insert_parameter_exprs (gfc_expr *, gfc_actual_arglist *);
 match gfc_get_pdt_instance (gfc_actual_arglist *, gfc_symbol **,
 			    gfc_actual_arglist **);
+
+
+/* Given a symbol, test whether it is a module procedure in a submodule */
+#define gfc_submodule_procedure(attr)				     \
+  (gfc_state_stack->previous && gfc_state_stack->previous->previous  \
+   && gfc_state_stack->previous->previous->state == COMP_SUBMODULE   \
+   && attr->module_procedure)
 
 /* scanner.c */
 void gfc_scanner_done_1 (void);

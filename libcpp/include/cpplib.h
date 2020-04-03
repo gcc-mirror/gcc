@@ -860,7 +860,9 @@ enum cpp_builtin_type
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
   BT_HAS_ATTRIBUTE,		/* `__has_attribute(x)' */
-  BT_HAS_BUILTIN		/* `__has_builtin(x)' */
+  BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
+  BT_HAS_INCLUDE,		/* `__has_include(x)' */
+  BT_HAS_INCLUDE_NEXT		/* `__has_include_next(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))

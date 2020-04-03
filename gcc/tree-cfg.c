@@ -3226,6 +3226,13 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  debug_generic_stmt (expr);
 	  return true;
 	}
+      if (MR_DEPENDENCE_CLIQUE (expr) != 0
+	  && MR_DEPENDENCE_CLIQUE (expr) > cfun->last_clique)
+	{
+	  error ("invalid clique in %qs", code_name);
+	  debug_generic_stmt (expr);
+	  return true;
+	}
     }
   else if (TREE_CODE (expr) == TARGET_MEM_REF)
     {
@@ -3242,6 +3249,13 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  || !POINTER_TYPE_P (TREE_TYPE (TMR_OFFSET (expr))))
 	{
 	  error ("invalid offset operand in %qs", code_name);
+	  debug_generic_stmt (expr);
+	  return true;
+	}
+      if (MR_DEPENDENCE_CLIQUE (expr) != 0
+	  && MR_DEPENDENCE_CLIQUE (expr) > cfun->last_clique)
+	{
+	  error ("invalid clique in %qs", code_name);
 	  debug_generic_stmt (expr);
 	  return true;
 	}
@@ -7743,6 +7757,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, &d);
       after = bb;
     }
+
+  /* Adjust the maximum clique used.  */
+  dest_cfun->last_clique = saved_cfun->last_clique;
 
   loop->aux = NULL;
   loop0->aux = NULL;

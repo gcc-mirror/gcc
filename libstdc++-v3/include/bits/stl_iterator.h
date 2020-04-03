@@ -496,11 +496,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
+#if __cplusplus <= 201703L
       _Container* container;
+#else
+      _Container* container = nullptr;
+#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+#endif
+
+#if __cplusplus > 201703L
+      constexpr back_insert_iterator() noexcept = default;
+#endif
 
       /// The only way to create this %iterator is with a container.
       explicit
@@ -588,11 +599,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
+#if __cplusplus <= 201703L
       _Container* container;
+#else
+      _Container* container = nullptr;
+#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+#endif
+
+#if __cplusplus > 201703L
+      constexpr front_insert_iterator() noexcept = default;
+#endif
 
       /// The only way to create this %iterator is with a container.
       explicit front_insert_iterator(_Container& __x)
@@ -1166,16 +1188,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit _GLIBCXX17_CONSTEXPR
       move_iterator(iterator_type __i)
-      : _M_current(__i) { }
+      : _M_current(std::move(__i)) { }
 
       template<typename _Iter>
 	_GLIBCXX17_CONSTEXPR
 	move_iterator(const move_iterator<_Iter>& __i)
 	: _M_current(__i.base()) { }
 
+#if __cplusplus <= 201703L
       _GLIBCXX17_CONSTEXPR iterator_type
       base() const
       { return _M_current; }
+#else
+      constexpr iterator_type
+      base() const &
+#if __cpp_lib_concepts
+	requires copy_constructible<iterator_type>
+#endif
+      { return _M_current; }
+
+      constexpr iterator_type
+      base() &&
+      { return std::move(_M_current); }
+#endif
 
       _GLIBCXX17_CONSTEXPR reference
       operator*() const
@@ -1362,7 +1397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR move_iterator<_Iterator>
     make_move_iterator(_Iterator __i)
-    { return move_iterator<_Iterator>(__i); }
+    { return move_iterator<_Iterator>(std::move(__i)); }
 
   template<typename _Iterator, typename _ReturnType
     = typename conditional<__move_if_noexcept_cond
@@ -1404,7 +1439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _It>
-      concept __common_iter_has_arrow = readable<const _It>
+      concept __common_iter_has_arrow = indirectly_readable<const _It>
 	&& (requires(const _It& __it) { __it.operator->(); }
 	    || is_reference_v<iter_reference_t<_It>>
 	    || constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
@@ -1413,7 +1448,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// An iterator/sentinel adaptor for representing a non-common range.
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-    requires (!same_as<_It, _Sent>)
+    requires (!same_as<_It, _Sent>) && copyable<_It>
   class common_iterator
   {
     template<typename _Tp, typename _Up>
@@ -1724,18 +1759,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-    // FIXME: This has to be at namespace-scope because of PR 92078.
-    template<typename _Iter>
+    // FIXME: This has to be at namespace-scope because of PR 92103.
+    template<typename _It, typename _Sent>
       struct __common_iter_ptr
-	{
-	  using type = void;
-	};
-
-    template<typename _Iter>
-      requires __detail::__common_iter_has_arrow<_Iter>
-      struct __common_iter_ptr<_Iter>
       {
-	using type = decltype(std::declval<const _Iter&>().operator->());
+	using type = void;
+      };
+
+    template<typename _It, typename _Sent>
+      requires __detail::__common_iter_has_arrow<_It>
+      struct __common_iter_ptr<_It, _Sent>
+      {
+	using common_iterator = std::common_iterator<_It, _Sent>;
+
+	using type
+	  = decltype(std::declval<const common_iterator&>().operator->());
       };
   } // namespace __detail
 
@@ -1749,8 +1787,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	forward_iterator_tag, input_iterator_tag>;
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
-      using pointer = typename
-	__detail::__common_iter_ptr<common_iterator<_It, _Sent>>::type;
+      using pointer = typename __detail::__common_iter_ptr<_It, _Sent>::type;
       using reference = iter_reference_t<_It>;
     };
 
@@ -1767,7 +1804,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       counted_iterator(_It __i, iter_difference_t<_It> __n)
-      : _M_current(__i), _M_length(__n)
+      : _M_current(std::move(__i)), _M_length(__n)
       { __glibcxx_assert(__n >= 0); }
 
       template<typename _It2>

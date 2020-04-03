@@ -1,5 +1,6 @@
 // PR c++/92062 - ODR-use ignored for static member of class template.
 // { dg-do run { target c++11 } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 template<int> struct A {
   static const bool x;

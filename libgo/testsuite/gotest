@@ -517,6 +517,11 @@ symtogo() {
     if expr "$tp" : '^\.' >/dev/null 2>&1; then
       continue
     fi
+    # Skip type descriptors.  These are normally skipped because they
+    # are weak symbols, but if not using GNU nm we may see them here.
+    if expr "$tp" : '^type\.\.' >/dev/null 2>&1; then
+      continue
+    fi
     s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
     # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then

@@ -19,17 +19,6 @@
 # Load support procs.
 load_lib gcc-dg.exp
 
-# Set up flags used for tests that don't specify options.
-global DEFAULT_VECTCFLAGS
-set DEFAULT_VECTCFLAGS ""
-
-# Set up a list of effective targets to run vector tests for all supported
-# targets.
-global EFFECTIVE_TARGETS
-set EFFECTIVE_TARGETS ""
-
-check_vect_support_and_set_flags
-
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

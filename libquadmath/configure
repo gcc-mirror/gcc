@@ -786,6 +786,7 @@ enable_fast_install
 with_gnu_ld
 enable_libtool_lock
 enable_maintainer_mode
+with_toolexeclibdir
 enable_symvers
 enable_cet
 enable_generated_files_in_srcdir
@@ -1451,6 +1452,9 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
 
@@ -3457,11 +3461,11 @@ done
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
+#include <stdio.h>
 int
 main ()
 {
-
+printf ("hello world\n");
   ;
   return 0;
 }
@@ -10810,7 +10814,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10813 "configure"
+#line 10817 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10916,7 +10920,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10919 "configure"
+#line 10923 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12088,6 +12092,22 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${version_specific_libs} in
@@ -12103,7 +12123,14 @@ case ${version_specific_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_alias)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
       toolexeclibdir='$(libdir)'

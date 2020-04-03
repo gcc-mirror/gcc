@@ -262,6 +262,7 @@
     UNSPEC_REV_SUBREG
     UNSPEC_REINTERPRET
     UNSPEC_SPECULATION_TRACKER
+    UNSPEC_SPECULATION_TRACKER_REV
     UNSPEC_COPYSIGN
     UNSPEC_TTEST		; Represent transaction test.
     UNSPEC_UPDATE_FFR
@@ -1278,6 +1279,24 @@
   "UINTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
    && UINTVAL (operands[1]) % 16 == 0"
   "movk\\t%<w>0, %X2, lsl %1"
+  [(set_attr "type" "mov_imm")]
+)
+
+;; Match MOVK as a normal AND and IOR operation.
+(define_insn "aarch64_movk<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
+			  (match_operand:GPI 2 "const_int_operand"))
+		 (match_operand:GPI 3 "const_int_operand")))]
+  "aarch64_movk_shift (rtx_mode_t (operands[2], <MODE>mode),
+		       rtx_mode_t (operands[3], <MODE>mode)) >= 0"
+  {
+    int shift = aarch64_movk_shift (rtx_mode_t (operands[2], <MODE>mode),
+				    rtx_mode_t (operands[3], <MODE>mode));
+    operands[2] = gen_int_mode (UINTVAL (operands[3]) >> shift, SImode);
+    operands[3] = gen_int_mode (shift, SImode);
+    return "movk\\t%<w>0, #%X2, lsl %3";
+  }
   [(set_attr "type" "mov_imm")]
 )
 
@@ -4829,7 +4848,6 @@
 {
   rtx v = gen_reg_rtx (V8QImode);
   rtx v1 = gen_reg_rtx (V8QImode);
-  rtx r = gen_reg_rtx (QImode);
   rtx in = operands[1];
   rtx out = operands[0];
   if(<MODE>mode == SImode)
@@ -4843,8 +4861,7 @@
     }
   emit_move_insn (v, gen_lowpart (V8QImode, in));
   emit_insn (gen_popcountv8qi2 (v1, v));
-  emit_insn (gen_reduc_plus_scal_v8qi (r, v1));
-  emit_insn (gen_zero_extendqi<mode>2 (out, r));
+  emit_insn (gen_aarch64_zero_extend<mode>_reduc_plus_v8qi (out, v1));
   DONE;
 })
 
@@ -5767,6 +5784,21 @@
   "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
 	     1, GET_MODE_BITSIZE (<MODE>mode) - 1)"
   "sbfiz\\t%<w>0, %<w>1, %3, %2"
+  [(set_attr "type" "bfx")]
+)
+
+(define_insn "*ashiftsi_extvdi_bfiz"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI
+	  (match_operator:SI 4 "subreg_lowpart_operator"
+	    [(sign_extract:DI
+	       (match_operand:DI 1 "register_operand" "r")
+	       (match_operand 2 "aarch64_simd_shift_imm_offset_si")
+	       (const_int 0))])
+	  (match_operand 3 "aarch64_simd_shift_imm_si")))]
+  "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
+	     1, GET_MODE_BITSIZE (SImode) - 1)"
+  "sbfiz\\t%w0, %w1, %3, %2"
   [(set_attr "type" "bfx")]
 )
 
@@ -7214,6 +7246,20 @@
   {
     operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
     output_asm_insn ("csel\\t%1, %1, xzr, %m0", operands);
+    return "";
+  }
+  [(set_attr "type" "csel")]
+)
+
+;; Like speculation_tracker, but track the inverse condition.
+(define_insn "speculation_tracker_rev"
+  [(set (reg:DI SPECULATION_TRACKER_REGNUM)
+	(unspec:DI [(reg:DI SPECULATION_TRACKER_REGNUM) (match_operand 0)]
+	 UNSPEC_SPECULATION_TRACKER_REV))]
+  ""
+  {
+    operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+    output_asm_insn ("csel\\t%1, %1, xzr, %M0", operands);
     return "";
   }
   [(set_attr "type" "csel")]

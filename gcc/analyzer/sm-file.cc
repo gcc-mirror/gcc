@@ -178,9 +178,9 @@ public:
     /* CWE-775: "Missing Release of File Descriptor or Handle after
        Effective Lifetime". */
     m.add_cwe (775);
-    return warning_at (rich_loc, m, OPT_Wanalyzer_file_leak,
-		       "leak of FILE %qE",
-		       m_arg);
+    return warning_meta (rich_loc, m, OPT_Wanalyzer_file_leak,
+			 "leak of FILE %qE",
+			 m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)

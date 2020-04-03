@@ -3716,10 +3716,10 @@ of spill registers and print a fatal error message.",
    target is constrainted to use post-reload comparison elimination.  */
 DEFHOOKPOD
 (flags_regnum,
- "If the target has a dedicated flags register, and it needs to use the\
- post-reload comparison elimination pass, then this value should be set\
- appropriately.",
- unsigned int, INVALID_REGNUM)
+ "If the target has a dedicated flags register, and it needs to use the\n\
+post-reload comparison elimination pass, or the delay slot filler pass,\n\
+then this value should be set appropriately.",
+unsigned int, INVALID_REGNUM)
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be

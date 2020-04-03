@@ -126,10 +126,10 @@ public:
     diagnostic_metadata m;
     /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
     m.add_cwe (479);
-    return warning_at (rich_loc, m,
-		       OPT_Wanalyzer_unsafe_call_within_signal_handler,
-		       "call to %qD from within signal handler",
-		       m_unsafe_fndecl);
+    return warning_meta (rich_loc, m,
+			 OPT_Wanalyzer_unsafe_call_within_signal_handler,
+			 "call to %qD from within signal handler",
+			 m_unsafe_fndecl);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -369,7 +369,8 @@ analyzer_sm_signal_cc_tests ()
 
 } // namespace selftest
 
+#endif /* CHECKING_P */
+
 } // namespace ana
 
-#endif /* CHECKING_P */
 #endif /* #if ENABLE_ANALYZER */

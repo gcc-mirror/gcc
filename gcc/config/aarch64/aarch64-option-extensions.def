@@ -53,27 +53,28 @@
 /* Enabling "fp" just enables "fp".
    Disabling "fp" also disables "simd", "crypto", "fp16", "aes", "sha2",
    "sha3", sm3/sm4, "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4",
-   "sve2-bitperm", "i8mm", "f64mm", and "bf16".  */
+   "sve2-bitperm", "i8mm", "f32mm", "f64mm", and "bf16".  */
 AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | \
 		      AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | \
 		      AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | \
 		      AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | \
 		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | \
 		      AARCH64_FL_SVE2_BITPERM | AARCH64_FL_I8MM | \
-		      AARCH64_FL_F64MM | AARCH64_FL_BF16, false, "fp")
+		      AARCH64_FL_F32MM | AARCH64_FL_F64MM | AARCH64_FL_BF16,
+		       false, "fp")
 
 /* Enabling "simd" also enables "fp".
    Disabling "simd" also disables "crypto", "dotprod", "aes", "sha2", "sha3",
    "sm3/sm4", "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4",
-   "sve2-bitperm", "i8mm", and "f64mm".  */
+   "sve2-bitperm", "i8mm", "f32mm" and "f64mm".  */
 AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, \
 		      AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD | \
 		      AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | \
 		      AARCH64_FL_SM4 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | \
 		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
 		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM | \
-		      AARCH64_FL_I8MM | AARCH64_FL_F64MM, false, \
-		      "asimd")
+		      AARCH64_FL_I8MM | AARCH64_FL_F32MM | AARCH64_FL_F64MM, \
+		      false, "asimd")
 
 /* Enabling "crypto" also enables "fp", "simd", "aes" and "sha2".
    Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4",
@@ -93,12 +94,13 @@ AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, false, "atomics")
 
 /* Enabling "fp16" also enables "fp".
    Disabling "fp16" disables "fp16", "fp16fml", "sve", "sve2",
-   "sve2-aes", "sve2-sha3", "sve2-sm4", "sve2-bitperm", and "f64mm".  */
+   "sve2-aes", "sve2-sha3", "sve2-sm4", "sve2-bitperm", "f32mm" and
+    "f64mm".  */
 AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, \
-		      AARCH64_FL_F16FML | AARCH64_FL_SVE | AARCH64_FL_F64MM | \
-		      AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | \
-		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | \
-		      AARCH64_FL_SVE2_BITPERM, false, \
+		      AARCH64_FL_F16FML | AARCH64_FL_SVE | AARCH64_FL_F32MM | \
+		      AARCH64_FL_F64MM | AARCH64_FL_SVE2 | \
+		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
+		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, \
 		      "fphp asimdhp")
 
 /* Enabling or disabling "rcpc" only changes "rcpc".  */
@@ -141,13 +143,13 @@ AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, \
 		      AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfhm")
 
 /* Enabling "sve" also enables "fp16", "fp" and "simd".
-   Disabling "sve" disables "sve", "f64mm", "sve2", "sve2-aes", "sve2-sha3",
-   "sve2-sm4" and "sve2-bitperm".  */
+   Disabling "sve" disables "sve", "f32mm", "f64mm", "sve2", "sve2-aes",
+   "sve2-sha3", "sve2-sm4" and "sve2-bitperm".  */
 AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | \
-		      AARCH64_FL_F16, AARCH64_FL_F64MM | AARCH64_FL_SVE2 | \
-		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
-		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, \
-		      false, "sve")
+		      AARCH64_FL_F16, AARCH64_FL_F32MM | AARCH64_FL_F64MM | \
+		      AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | \
+		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | \
+		      AARCH64_FL_SVE2_BITPERM, false, "sve")
 
 /* Enabling/Disabling "profile" does not enable/disable any other feature.  */
 AARCH64_OPT_EXTENSION("profile", AARCH64_FL_PROFILE, 0, 0, false, "")
@@ -206,6 +208,12 @@ AARCH64_OPT_EXTENSION("tme", AARCH64_FL_TME, 0, 0, false, "")
    Disabling "i8mm" only disables "i8mm".  */
 AARCH64_OPT_EXTENSION("i8mm", AARCH64_FL_I8MM, \
 		      AARCH64_FL_SIMD | AARCH64_FL_FP, 0, false, "i8mm")
+
+/* Enabling "f32mm" also enables "sve", "fp16", "fp", and "simd".
+   Disabling "f32mm" only disables "f32mm".  */
+AARCH64_OPT_EXTENSION("f32mm", AARCH64_FL_F32MM, \
+		      AARCH64_FL_SVE | AARCH64_FL_F16 | AARCH64_FL_FP | \
+		      AARCH64_FL_SIMD, 0, false, "f32mm")
 
 /* Enabling "f64mm" also enables "sve", "fp16", "fp", and "simd".
    Disabling "f64mm" only disables "f64mm".  */

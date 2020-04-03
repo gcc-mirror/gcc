@@ -41,7 +41,7 @@
 (define_expand "movmisalign<mode>"
   [(set (match_operand:VALL 0 "nonimmediate_operand")
         (match_operand:VALL 1 "general_operand"))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && !STRICT_ALIGNMENT"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
      are non-registers (e.g. memory := constant, which can be created by the
@@ -282,37 +282,51 @@
         rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
 	rtx lo = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
 	rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-
-        emit_insn
-          (gen_aarch64_simd_mov_from_<mode>low (dst_low_part, src, lo));
-        emit_insn
-          (gen_aarch64_simd_mov_from_<mode>high (dst_high_part, src, hi));
+        emit_insn (gen_aarch64_get_half<mode> (dst_low_part, src, lo));
+        emit_insn (gen_aarch64_get_half<mode> (dst_high_part, src, hi));
       }
     DONE;
   }
 )
 
-(define_insn "aarch64_simd_mov_from_<mode>low"
-  [(set (match_operand:<VHALF> 0 "register_operand" "=r")
+(define_expand "aarch64_get_half<mode>"
+  [(set (match_operand:<VHALF> 0 "register_operand")
         (vec_select:<VHALF>
-          (match_operand:VQMOV 1 "register_operand" "w")
-          (match_operand:VQMOV 2 "vect_par_cnst_lo_half" "")))]
-  "TARGET_SIMD && reload_completed"
-  "umov\t%0, %1.d[0]"
-  [(set_attr "type" "neon_to_gp<q>")
-   (set_attr "length" "4")
-  ])
+          (match_operand:VQMOV 1 "register_operand")
+          (match_operand 2 "ascending_int_parallel")))]
+  "TARGET_SIMD"
+)
+
+(define_insn_and_split "aarch64_simd_mov_from_<mode>low"
+  [(set (match_operand:<VHALF> 0 "register_operand" "=w,?r")
+        (vec_select:<VHALF>
+          (match_operand:VQMOV_NO2E 1 "register_operand" "w,w")
+          (match_operand:VQMOV_NO2E 2 "vect_par_cnst_lo_half" "")))]
+  "TARGET_SIMD"
+  "@
+   #
+   umov\t%0, %1.d[0]"
+  "&& reload_completed && aarch64_simd_register (operands[0], <VHALF>mode)"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    operands[1] = aarch64_replace_reg_mode (operands[1], <VHALF>mode);
+  }
+  [(set_attr "type" "mov_reg,neon_to_gp<q>")
+   (set_attr "length" "4")]
+)
 
 (define_insn "aarch64_simd_mov_from_<mode>high"
-  [(set (match_operand:<VHALF> 0 "register_operand" "=r")
+  [(set (match_operand:<VHALF> 0 "register_operand" "=w,?r")
         (vec_select:<VHALF>
-          (match_operand:VQMOV 1 "register_operand" "w")
-          (match_operand:VQMOV 2 "vect_par_cnst_hi_half" "")))]
-  "TARGET_SIMD && reload_completed"
-  "umov\t%0, %1.d[1]"
-  [(set_attr "type" "neon_to_gp<q>")
-   (set_attr "length" "4")
-  ])
+          (match_operand:VQMOV_NO2E 1 "register_operand" "w,w")
+          (match_operand:VQMOV_NO2E 2 "vect_par_cnst_hi_half" "")))]
+  "TARGET_SIMD"
+  "@
+   dup\\t%d0, %1.d[1]
+   umov\t%0, %1.d[1]"
+  [(set_attr "type" "neon_dup<q>,neon_to_gp<q>")
+   (set_attr "length" "4")]
+)
 
 (define_insn "orn<mode>3"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
@@ -1825,6 +1839,17 @@
   [(set_attr "type" "neon_mul_<Vetype>_long")]
 )
 
+(define_insn "aarch64_intrinsic_vec_<su>mult_lo_<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(mult:<VWIDE> (ANY_EXTEND:<VWIDE>
+			 (match_operand:VD_BHSI 1 "register_operand" "w"))
+		      (ANY_EXTEND:<VWIDE>
+			 (match_operand:VD_BHSI 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "<su>mull\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_mul_<Vetype>_long")]
+)
+
 (define_expand "vec_widen_<su>mult_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
    (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
@@ -2458,6 +2483,17 @@
  "TARGET_SIMD"
  "add<VDQV:vp>\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
+)
+
+;; ADDV with result zero-extended to SI/DImode (for popcount).
+(define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
+ [(set (match_operand:GPI 0 "register_operand" "=w")
+       (zero_extend:GPI
+	(unspec:<VDQV_E:VEL> [(match_operand:VDQV_E 1 "register_operand" "w")]
+			     UNSPEC_ADDV)))]
+ "TARGET_SIMD"
+ "add<VDQV_E:vp>\\t%<VDQV_E:Vetype>0, %1.<VDQV_E:Vtype>"
+  [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
 )
 
 (define_insn "aarch64_reduc_plus_internalv2si"
@@ -6140,6 +6176,35 @@
     DONE;
 })
 
+;; Extract a 64-bit vector from one half of a 128-bit vector.
+(define_expand "vec_extract<mode><Vhalf>"
+  [(match_operand:<VHALF> 0 "register_operand")
+   (match_operand:VQMOV_NO2E 1 "register_operand")
+   (match_operand 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  int start = INTVAL (operands[2]);
+  if (start != 0 && start != <nunits> / 2)
+    FAIL;
+  rtx sel = aarch64_gen_stepped_int_parallel (<nunits> / 2, start, 1);
+  emit_insn (gen_aarch64_get_half<mode> (operands[0], operands[1], sel));
+  DONE;
+})
+
+;; Extract a single-element 64-bit vector from one half of a 128-bit vector.
+(define_expand "vec_extractv2dfv1df"
+  [(match_operand:V1DF 0 "register_operand")
+   (match_operand:V2DF 1 "register_operand")
+   (match_operand 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  /* V1DF is rarely used by other patterns, so it should be better to hide
+     it in a subreg destination of a normal DF op.  */
+  rtx scalar0 = gen_lowpart (DFmode, operands[0]);
+  emit_insn (gen_vec_extractv2dfdf (scalar0, operands[1], operands[2]));
+  DONE;
+})
+
 ;; aes
 
 (define_insn "aarch64_crypto_aes<aes_op>v16qi"
@@ -7090,4 +7155,84 @@
   return "bfdot\t%0.<VDQSF:Vtype>, %2.<VDQSF:Vbfdottype>, %3.2h[%4]";
 }
   [(set_attr "type" "neon_dot<VDQSF:q>")]
+)
+
+;; bfmmla
+(define_insn "aarch64_bfmmlaqv4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus:V4SF (match_operand:V4SF 1 "register_operand" "0")
+                   (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                 (match_operand:V8BF 3 "register_operand" "w")]
+                    UNSPEC_BFMMLA)))]
+  "TARGET_BF16_SIMD"
+  "bfmmla\\t%0.4s, %2.8h, %3.8h"
+  [(set_attr "type" "neon_fp_mla_s_q")]
+)
+
+;; bfmlal<bt>
+(define_insn "aarch64_bfmlal<bt>v4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus: V4SF (match_operand:V4SF 1 "register_operand" "0")
+                    (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                  (match_operand:V8BF 3 "register_operand" "w")]
+                     BF_MLA)))]
+  "TARGET_BF16_SIMD"
+  "bfmlal<bt>\\t%0.4s, %2.8h, %3.8h"
+  [(set_attr "type" "neon_fp_mla_s_q")]
+)
+
+(define_insn "aarch64_bfmlal<bt>_lane<q>v4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+        (plus: V4SF (match_operand:V4SF 1 "register_operand" "0")
+                    (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
+                                  (match_operand:VBF 3 "register_operand" "w")
+                                  (match_operand:SI 4 "const_int_operand" "n")]
+                     BF_MLA)))]
+  "TARGET_BF16_SIMD"
+{
+  operands[4] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[4]));
+  return "bfmlal<bt>\\t%0.4s, %2.8h, %3.h[%4]";
+}
+  [(set_attr "type" "neon_fp_mla_s_scalar_q")]
+)
+
+;; 8-bit integer matrix multiply-accumulate
+(define_insn "aarch64_simd_<sur>mmlav16qi"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+	(plus:V4SI
+	 (unspec:V4SI [(match_operand:V16QI 2 "register_operand" "w")
+		       (match_operand:V16QI 3 "register_operand" "w")] MATMUL)
+	 (match_operand:V4SI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "<sur>mmla\\t%0.4s, %2.16b, %3.16b"
+  [(set_attr "type" "neon_mla_s_q")]
+)
+
+;; bfcvtn
+(define_insn "aarch64_bfcvtn<q><mode>"
+  [(set (match_operand:V4SF_TO_BF 0 "register_operand" "=w")
+        (unspec:V4SF_TO_BF [(match_operand:V4SF 1 "register_operand" "w")]
+                            UNSPEC_BFCVTN))]
+  "TARGET_BF16_SIMD"
+  "bfcvtn\\t%0.4h, %1.4s"
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
+)
+
+(define_insn "aarch64_bfcvtn2v8bf"
+  [(set (match_operand:V8BF 0 "register_operand" "=w")
+        (unspec:V8BF [(match_operand:V8BF 1 "register_operand" "0")
+                      (match_operand:V4SF 2 "register_operand" "w")]
+                      UNSPEC_BFCVTN2))]
+  "TARGET_BF16_SIMD"
+  "bfcvtn2\\t%0.8h, %2.4s"
+  [(set_attr "type" "neon_fp_cvt_narrow_s_q")]
+)
+
+(define_insn "aarch64_bfcvtbf"
+  [(set (match_operand:BF 0 "register_operand" "=w")
+        (unspec:BF [(match_operand:SF 1 "register_operand" "w")]
+                    UNSPEC_BFCVT))]
+  "TARGET_BF16_FP"
+  "bfcvt\\t%h0, %s1"
+  [(set_attr "type" "f_cvt")]
 )

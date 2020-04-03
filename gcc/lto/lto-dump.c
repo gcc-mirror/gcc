@@ -122,7 +122,7 @@ public:
     cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
     gcc_assert (cnode);
 
-    return (cnode->definition)
+    return (cnode->definition && !cnode->alias)
      ? n_basic_blocks_for_fn (DECL_STRUCT_FUNCTION (cnode->decl))
      : 0;
   }
@@ -157,10 +157,10 @@ void dump_list_functions (void)
   cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
   {
-    if (cnode->definition)
+    if (cnode->definition && !cnode->alias)
       cnode->get_untransformed_body ();
     symbol_entry *e = new function_entry (cnode);
-    if (!flag_lto_dump_defined || cnode->definition)
+    if (!flag_lto_dump_defined || (cnode->definition && !cnode->alias))
       v.safe_push (e);
   }
 
@@ -260,13 +260,15 @@ void dump_body ()
   }
   cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
-  if (cnode->definition && !strcmp (cnode->name (), flag_dump_body))
-  {
-    printf ("Gimple Body of Function: %s\n", cnode->name ());
-    cnode->get_untransformed_body ();
-    debug_function (cnode->decl, flags);
-    flag = 1;
-  }
+    if (cnode->definition
+	&& !cnode->alias
+	&& !strcmp (cnode->name (), flag_dump_body))
+      {
+	printf ("Gimple Body of Function: %s\n", cnode->name ());
+	cnode->get_untransformed_body ();
+	debug_function (cnode->decl, flags);
+	flag = 1;
+      }
   if (!flag)
     error_at (input_location, "Function not found.");
   return;

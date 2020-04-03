@@ -1839,41 +1839,50 @@ final releases.  The specific files which get @option{-Werror} are
 controlled by the Makefiles.
 
 @item --enable-checking
+@itemx --disable-checking
 @itemx --enable-checking=@var{list}
-When you specify this option, the compiler is built to perform internal
-consistency checks of the requested complexity.  This does not change the
-generated code, but adds error checking within the compiler.  This will
-slow down the compiler and may only work properly if you are building
-the compiler with GCC@.  This is @samp{yes,extra} by default when building
-from the source repository or snapshots, but @samp{release} for releases.  The default
-for building the stage1 compiler is @samp{yes}.  More control
-over the checks may be had by specifying @var{list}.  The categories of
-checks available are @samp{yes} (most common checks
-@samp{assert,misc,tree,gc,rtlflag,runtime}), @samp{no} (no checks at
-all), @samp{all} (all but @samp{valgrind}), @samp{release} (cheapest
-checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
-Individual checks can be enabled with these flags @samp{assert},
-@samp{df}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{misc}, @samp{rtl},
-@samp{rtlflag}, @samp{runtime}, @samp{tree}, @samp{extra} and @samp{valgrind}.
-@samp{extra} adds for @samp{misc} checking extra checks that might affect
-code generation and should therefore not differ between stage1 and later
-stages.
+This option controls performing internal consistency checks in the compiler.
+It does not change the generated code, but adds error checking of the
+requested complexity.  This slows down the compiler and may only work
+properly if you are building the compiler with GCC@.
 
-The @samp{valgrind} check requires the external @command{valgrind}
-simulator, available from @uref{http://valgrind.org/}.  The
-@samp{df}, @samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
-To disable all checking, @samp{--disable-checking} or
-@samp{--enable-checking=none} must be explicitly requested.  Disabling
-assertions will make the compiler and runtime slightly faster but
-increase the risk of undetected internal errors causing wrong code to be
-generated.
+When the option is not specified, the active set of checks depends on context.
+Namely, bootstrap stage 1 defaults to @samp{--enable-checking=yes}, builds
+from release branches or release archives default to
+@samp{--enable-checking=release}, and otherwise
+@samp{--enable-checking=yes,extra} is used.  When the option is
+specified without a @var{list}, the result is the same as
+@samp{--enable-checking=yes}.  Likewise, @samp{--disable-checking} is
+equivalent to @samp{--enable-checking=no}.
+
+The categories of checks available in @var{list} are @samp{yes} (most common
+checks @samp{assert,misc,gc,gimple,rtlflag,runtime,tree,types}), @samp{no}
+(no checks at all), @samp{all} (all but @samp{valgrind}), @samp{release}
+(cheapest checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
+@samp{release} checks are always on and to disable them
+@samp{--disable-checking} or @samp{--enable-checking=no[,<other checks>]}
+must be explicitly requested.  Disabling assertions makes the compiler and
+runtime slightly faster but increases the risk of undetected internal errors
+causing wrong code to be generated.
+
+Individual checks can be enabled with these flags: @samp{assert}, @samp{df},
+@samp{extra}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{gimple},
+@samp{misc}, @samp{rtl}, @samp{rtlflag}, @samp{runtime}, @samp{tree},
+@samp{types} and @samp{valgrind}.  @samp{extra} extends @samp{misc}
+checking with extra checks that might affect code generation and should
+therefore not differ between stage1 and later stages in bootstrap.
+
+The @samp{valgrind} check requires the external @command{valgrind} simulator,
+available from @uref{http://valgrind.org/}.  The @samp{rtl} checks are
+expensive and the @samp{df}, @samp{gcac} and @samp{valgrind} checks are very
+expensive.
 
 @item --disable-stage1-checking
 @itemx --enable-stage1-checking
 @itemx --enable-stage1-checking=@var{list}
-If no @option{--enable-checking} option is specified the stage1
-compiler will be built with @samp{yes} checking enabled, otherwise
-the stage1 checking flags are the same as specified by
+This option affects only bootstrap build.  If no @option{--enable-checking}
+option is specified the stage1 compiler is built with @samp{yes} checking
+enabled, otherwise the stage1 checking flags are the same as specified by
 @option{--enable-checking}.  To build the stage1 compiler with
 different checking options use @option{--enable-stage1-checking}.
 The list of checking options is the same as for @option{--enable-checking}.
@@ -2095,10 +2104,19 @@ GLIBC 2.11 or above, otherwise disabled.
 Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-color=}
 option (if not used explicitly on the command line).  @var{choice}
 can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
-where @samp{auto} is the default.  @samp{auto-if-env} means that
-@option{-fdiagnostics-color=auto} will be the default if @code{GCC_COLORS}
-is present and non-empty in the environment, and
+where @samp{auto} is the default.  @samp{auto-if-env} makes
+@option{-fdiagnostics-color=auto} the default if @env{GCC_COLORS}
+is present and non-empty in the environment of the compiler, and
 @option{-fdiagnostics-color=never} otherwise.
+
+@item --with-diagnostics-urls=@var{choice}
+Tells GCC to use @var{choice} as the default for @option{-fdiagnostics-urls=}
+option (if not used explicitly on the command line).  @var{choice}
+can be one of @samp{never}, @samp{auto}, @samp{always}, and @samp{auto-if-env}
+where @samp{auto} is the default.  @samp{auto-if-env} makes
+@option{-fdiagnostics-urls=auto} the default if @env{GCC_URLS}
+or @env{TERM_URLS} is present and non-empty in the environment of the
+compiler, and @option{-fdiagnostics-urls=never} otherwise.
 
 @item --enable-lto
 @itemx --disable-lto
@@ -2207,6 +2225,10 @@ target if target binutils supported.
 The following options only apply to building cross compilers.
 
 @table @code
+@item --with-toolexeclibdir=@var{dir}
+Specify the installation directory for libraries built with a cross compiler.
+The default is @option{$@{gcc_tooldir@}/lib}.
+
 @item --with-sysroot
 @itemx --with-sysroot=@var{dir}
 Tells GCC to consider @var{dir} as the root of a tree that contains
@@ -3252,7 +3274,7 @@ AIX:
 @itemize
 @item
 @uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
-for AIX 5L and AIX 6};
+for AIX 6 and AIX 7};
 
 @item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1

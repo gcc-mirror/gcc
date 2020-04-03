@@ -1,5 +1,6 @@
 // PR c++/91369
 // { dg-do compile { target c++2a } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 struct S {
   constexpr S (int *i) : i{i} {}

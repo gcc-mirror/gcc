@@ -139,8 +139,10 @@ print_ignored_options (void)
       const char *opt;
 
       opt = ignored_options.pop ();
-      warning_at (UNKNOWN_LOCATION, 0,
-		  "unrecognized command-line option %qs", opt);
+      /* Use inform, not warning_at, to avoid promoting these to errors.  */
+      inform (UNKNOWN_LOCATION,
+	      "unrecognized command-line option %qs may have been intended "
+	      "to silence earlier diagnostics", opt);
     }
 }
 

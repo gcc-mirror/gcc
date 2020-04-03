@@ -1030,11 +1030,14 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
      handle such pseudos live across such edges.  */
   if (bb_has_abnormal_pred (bb))
     {
+      HARD_REG_SET clobbers;
+
+      CLEAR_HARD_REG_SET (clobbers);
 #ifdef STACK_REGS
       EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, px)
 	lra_reg_info[px].no_stack_p = true;
       for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
-	make_hard_regno_live (px);
+	SET_HARD_REG_BIT (clobbers, px);
 #endif
       /* No need to record conflicts for call clobbered regs if we
 	 have nonlocal labels around, as we don't ever try to
@@ -1054,7 +1057,15 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		  && !HARD_REGISTER_P (pic_offset_table_rtx))
 #endif
 	      )
+	    SET_HARD_REG_BIT (clobbers, px);
+
+      clobbers &= ~hard_regs_live;
+      for (px = 0; HARD_REGISTER_NUM_P (px); px++)
+	if (TEST_HARD_REG_BIT (clobbers, px))
+	  {
 	    make_hard_regno_live (px);
+	    make_hard_regno_dead (px);
+	  }
     }
 
   bool live_change_p = false;

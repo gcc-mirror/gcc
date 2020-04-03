@@ -77,20 +77,39 @@ libexecsubdir=${libexecdir}/gcc/${target_noncanonical}/${version}
 itoolsdir=${libexecsubdir}/install-tools
 itoolsdatadir=${libsubdir}/install-tools
 incdir=${libsubdir}/include-fixed
-mkinstalldirs="@SHELL@ ${itoolsdir}/mkinstalldirs"
+mkinstalldirs="${itoolsdir}/mkinstalldirs"
 
 cd ${itoolsdir}
 rm -rf ${incdir}/*
+
+for shell in $CONFIG_SHELL $SHELL @SHELL@ /bin/sh ""; do
+  if { test -x $shell || test -x $shell.exe; } \
+  && $shell $mkinstalldirs > /dev/null 2>&1; then
+    mkinstalldirs="$shell $mkinstalldirs"
+    break
+  elif test x$shell = x; then
+    if $mkinstalldirs > /dev/null 2>&1; then
+      break
+    elif test ! -f $mkinstalldirs; then
+      echo mkheaders: could not find $mkinstalldirs >&2
+      exit 1
+    else
+      echo mkheaders: please rerun with CONFIG_SHELL set to a working Bourne shell >&2
+      exit 1
+    fi
+  fi
+done
 
 for ml in `cat ${itoolsdatadir}/fixinc_list`; do
   sysroot_headers_suffix=`echo ${ml} | sed -e 's/;.*$//'`
   multi_dir=`echo ${ml} | sed -e 's/^[^;]*;//'`
   subincdir=${incdir}${multi_dir}
+  ${mkinstalldirs} ${subincdir}
   . ${itoolsdatadir}/mkheaders.conf
   if [ x${STMP_FIXINC} != x ] ; then
 	TARGET_MACHINE="${target}" target_canonical="${target}" \
 	    MACRO_LIST="${itoolsdatadir}/macro_list" \
-	    @SHELL@ ./fixinc.sh ${subincdir} \
+	    $shell ./fixinc.sh ${subincdir} \
 	    ${isysroot}${SYSTEM_HEADER_DIR} ${OTHER_FIXINCLUDES_DIRS}
 	rm -f ${subincdir}/syslimits.h
 	if [ -f ${subincdir}/limits.h ]; then
@@ -100,5 +119,5 @@ for ml in `cat ${itoolsdatadir}/fixinc_list`; do
 	fi
   fi
 
-  cp ${itoolsdatadir}/include${multi_dir}/limits.h ${subincdir}
+  cp ${itoolsdatadir}/include${multi_dir}/limits.h ${subincdir}/limits.h
 done

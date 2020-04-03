@@ -371,6 +371,8 @@ struct hsa_kernel_description
 {
   const char *name;
   int oacc_dims[3];  /* Only present for GCN kernels.  */
+  int sgpr_count;
+  int vpgr_count;
 };
 
 /* Mkoffload uses this structure to describe an offload variable.  */
@@ -401,7 +403,6 @@ struct gcn_image_desc
    See https://llvm.org/docs/AMDGPUUsage.html#amdgpu-ef-amdgpu-mach-table */
 
 typedef enum {
-  EF_AMDGPU_MACH_AMDGCN_GFX801 = 0x028,
   EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
@@ -425,7 +426,10 @@ struct agent_info
 
   /* The instruction set architecture of the device. */
   gcn_isa device_isa;
-
+  /* Name of the agent. */
+  char name[64];
+  /* Name of the vendor of the agent. */
+  char vendor_name[64];
   /* Command queues of the agent.  */
   hsa_queue_t *sync_queue;
   struct goacc_asyncqueue *async_queues, *omp_async_queue;
@@ -475,6 +479,8 @@ struct kernel_info
   struct agent_info *agent;
   /* The specific module where the kernel takes place.  */
   struct module_info *module;
+  /* Information provided by mkoffload associated with the kernel.  */
+  struct hsa_kernel_description *description;
   /* Mutex enforcing that at most once thread ever initializes a kernel for
      use.  A thread should have locked agent->module_rwlock for reading before
      acquiring it.  */
@@ -544,6 +550,8 @@ struct hsa_context_info
   int agent_count;
   /* Array of agent_info structures describing the individual HSA agents.  */
   struct agent_info *agents;
+  /* Driver version string. */
+  char driver_version_s[30];
 };
 
 /* Format of the on-device heap.
@@ -1228,7 +1236,8 @@ parse_target_attributes (void **input,
 	  grid_attrs_found = true;
 	  break;
 	}
-      else if ((id & GOMP_TARGET_ARG_DEVICE_ALL) == GOMP_TARGET_ARG_DEVICE_ALL)
+      else if ((id & GOMP_TARGET_ARG_DEVICE_MASK)
+	       == GOMP_TARGET_ARG_DEVICE_ALL)
 	{
 	  gcn_dims_found = true;
 	  switch (id & GOMP_TARGET_ARG_ID_MASK)
@@ -1512,6 +1521,25 @@ init_hsa_context (void)
 	GOMP_PLUGIN_error ("Failed to list all HSA runtime agents");
     }
 
+  uint16_t minor, major;
+  status = hsa_fns.hsa_system_get_info_fn (HSA_SYSTEM_INFO_VERSION_MINOR,
+					   &minor);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("Failed to obtain HSA runtime minor version");
+  status = hsa_fns.hsa_system_get_info_fn (HSA_SYSTEM_INFO_VERSION_MAJOR,
+					   &major);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("Failed to obtain HSA runtime major version");
+
+  size_t len = sizeof hsa_context.driver_version_s;
+  int printed = snprintf (hsa_context.driver_version_s, len,
+			  "HSA Runtime %hu.%hu", (unsigned short int)major,
+			  (unsigned short int)minor);
+  if (printed >= len)
+    GCN_WARNING ("HSA runtime version string was truncated."
+		 "Version %hu.%hu is too long.", (unsigned short int)major,
+		 (unsigned short int)minor);
+
   hsa_context.initialized = true;
   return true;
 }
@@ -1600,7 +1628,6 @@ elf_gcn_isa_field (Elf64_Ehdr *image)
   return image->e_flags & EF_AMDGPU_MACH_MASK;
 }
 
-const static char *gcn_gfx801_s = "gfx801";
 const static char *gcn_gfx803_s = "gfx803";
 const static char *gcn_gfx900_s = "gfx900";
 const static char *gcn_gfx906_s = "gfx906";
@@ -1613,8 +1640,6 @@ static const char*
 isa_hsa_name (int isa) {
   switch(isa)
     {
-    case EF_AMDGPU_MACH_AMDGCN_GFX801:
-      return gcn_gfx801_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX803:
       return gcn_gfx803_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX900:
@@ -1633,8 +1658,6 @@ static const char*
 isa_gcc_name (int isa) {
   switch(isa)
     {
-    case EF_AMDGPU_MACH_AMDGCN_GFX801:
-      return "carrizo";
     case EF_AMDGPU_MACH_AMDGCN_GFX803:
       return "fiji";
     default:
@@ -1647,9 +1670,6 @@ isa_gcc_name (int isa) {
 
 static gcn_isa
 isa_code(const char *isa) {
-  if (!strncmp (isa, gcn_gfx801_s, gcn_isa_name_len))
-    return EF_AMDGPU_MACH_AMDGCN_GFX801;
-
   if (!strncmp (isa, gcn_gfx803_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX803;
 
@@ -2077,6 +2097,24 @@ run_kernel (struct kernel_info *kernel, void *vars,
 	    struct GOMP_kernel_launch_attributes *kla,
 	    struct goacc_asyncqueue *aq, bool module_locked)
 {
+  GCN_DEBUG ("SGPRs: %d, VGPRs: %d\n", kernel->description->sgpr_count,
+	     kernel->description->vpgr_count);
+
+  /* Reduce the number of threads/workers if there are insufficient
+     VGPRs available to run the kernels together.  */
+  if (kla->ndim == 3 && kernel->description->vpgr_count > 0)
+    {
+      int granulated_vgprs = (kernel->description->vpgr_count + 3) & ~3;
+      int max_threads = (256 / granulated_vgprs) * 4;
+      if (kla->gdims[2] > max_threads)
+	{
+	  GCN_WARNING ("Too many VGPRs required to support %d threads/workers"
+		       " per team/gang - reducing to %d threads/workers.\n",
+		       kla->gdims[2], max_threads);
+	  kla->gdims[2] = max_threads;
+	}
+    }
+
   GCN_DEBUG ("GCN launch on queue: %d:%d\n", kernel->agent->device_id,
 	     (aq ? aq->id : 0));
   GCN_DEBUG ("GCN launch attribs: gdims:[");
@@ -2278,6 +2316,7 @@ init_basic_kernel_info (struct kernel_info *kernel,
   kernel->agent = agent;
   kernel->module = module;
   kernel->name = d->name;
+  kernel->description = d;
   if (pthread_mutex_init (&kernel->init_mutex, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN kernel mutex");
@@ -3409,15 +3448,19 @@ GOMP_OFFLOAD_init_device (int n)
     return hsa_error ("Error requesting maximum queue size of the GCN agent",
 		      status);
 
-  char buf[64];
   status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_NAME,
-					  &buf);
+					  &agent->name);
   if (status != HSA_STATUS_SUCCESS)
     return hsa_error ("Error querying the name of the agent", status);
 
-  agent->device_isa = isa_code (buf);
+  agent->device_isa = isa_code (agent->name);
   if (agent->device_isa < 0)
-    return hsa_error ("Unknown GCN agent architecture.", HSA_STATUS_ERROR);
+    return hsa_error ("Unknown GCN agent architecture", HSA_STATUS_ERROR);
+
+  status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_VENDOR_NAME,
+					  &agent->vendor_name);
+  if (status != HSA_STATUS_SUCCESS)
+    return hsa_error ("Error querying the vendor name of the agent", status);
 
   status = hsa_fns.hsa_queue_create_fn (agent->id, queue_size,
 					HSA_QUEUE_TYPE_MULTI,
@@ -4114,12 +4157,37 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 union goacc_property_value
 GOMP_OFFLOAD_openacc_get_property (int device, enum goacc_property prop)
 {
-  /* Stub. Check device and return default value for unsupported properties. */
-  /* TODO: Implement this function. */
-  get_agent_info (device);
+  struct agent_info *agent = get_agent_info (device);
 
-  union goacc_property_value nullval = { .val = 0 };
-  return nullval;
+  union goacc_property_value propval = { .val = 0 };
+
+  switch (prop)
+    {
+    case GOACC_PROPERTY_FREE_MEMORY:
+      /* Not supported. */
+      break;
+    case GOACC_PROPERTY_MEMORY:
+      {
+	size_t size;
+	hsa_region_t region = agent->data_region;
+	hsa_status_t status =
+	  hsa_fns.hsa_region_get_info_fn (region, HSA_REGION_INFO_SIZE, &size);
+	if (status == HSA_STATUS_SUCCESS)
+	  propval.val = size;
+	break;
+      }
+    case GOACC_PROPERTY_NAME:
+      propval.ptr = agent->name;
+      break;
+    case GOACC_PROPERTY_VENDOR:
+      propval.ptr = agent->vendor_name;
+      break;
+    case GOACC_PROPERTY_DRIVER:
+      propval.ptr = hsa_context.driver_version_s;
+      break;
+    }
+
+  return propval;
 }
 
 /* Set up plugin-specific thread-local-data (host-side).  */

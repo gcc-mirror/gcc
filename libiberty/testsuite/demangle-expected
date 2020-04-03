@@ -1449,7 +1449,7 @@ Foo<int>()::{lambda(auto:1)#1}::operator()<char>(char) const::X::fn
 #PR91979 demangling nullptr expression
 
 _Z3fooILPv0EEvPN9enable_ifIXeqT_LDnEEvE4typeE
-void foo<(void*)0>(enable_if<((void*)0)==((decltype(nullptr))), void>::type*)
+void foo<(void*)0>(enable_if<((void*)0)==(decltype(nullptr)), void>::type*)
 
 _ZNK5coro15emptyawEv
 coro1::empty::operator co_await() const

@@ -23,8 +23,7 @@ int test_1 (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   {
     int *p = ptr;
@@ -37,7 +36,7 @@ int test_1 (int n)
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
 
   return result; /* { dg-message "leak of 'p'" } */
   /* FIXME: should this be 'ptr'?  */
@@ -56,11 +55,11 @@ int test_2 (int n)
   else
     ptr = buf;
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   result = do_stuff_2 (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
   return result; /* { dg-message "leak of 'ptr'" } */
 }

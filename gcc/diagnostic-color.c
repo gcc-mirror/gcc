@@ -216,6 +216,7 @@ should_colorize (void)
 	  && GetConsoleMode (h, &m);
 #else
   char const *t = getenv ("TERM");
+  /* emacs M-x shell sets TERM="dumb".  */
   return t && strcmp (t, "dumb") != 0 && isatty (STDERR_FILENO);
 #endif
 }
@@ -239,20 +240,108 @@ colorize_init (diagnostic_color_rule_t rule)
     }
 }
 
-/* Determine if URLs should be enabled, based on RULE.
+/* Return URL_FORMAT_XXX which tells how we should emit urls
+   when in always mode.
+   We use GCC_URLS and if that is not defined TERM_URLS.
+   If neither is defined the feature is enabled by default.  */
+
+static diagnostic_url_format
+parse_env_vars_for_urls ()
+{
+  const char *p;
+
+  p = getenv ("GCC_URLS"); /* Plural! */
+  if (p == NULL)
+    p = getenv ("TERM_URLS");
+
+  if (p == NULL)
+    return URL_FORMAT_DEFAULT;
+
+  if (*p == '\0')
+    return URL_FORMAT_NONE;
+
+  if (!strcmp (p, "no"))
+    return URL_FORMAT_NONE;
+
+  if (!strcmp (p, "st"))
+    return URL_FORMAT_ST;
+
+  if (!strcmp (p, "bel"))
+    return URL_FORMAT_BEL;
+
+  return URL_FORMAT_DEFAULT;
+}
+
+/* Return true if we should use urls when in auto mode, false otherwise.  */
+
+static bool
+auto_enable_urls ()
+{
+#ifdef __MINGW32__
+  return false;
+#else
+  const char *term, *colorterm;
+
+  /* First check the terminal is capable of printing color escapes,
+     if not URLs won't work either.  */
+  if (!should_colorize ())
+    return false;
+
+  /* xfce4-terminal is known to not implement URLs at this time.
+     Recently new installations (0.8) will safely ignore the URL escape
+     sequences, but a large number of legacy installations (0.6.3) print
+     garbage when URLs are printed.  Therefore we lose nothing by
+     disabling this feature for that specific terminal type.  */
+  colorterm = getenv ("COLORTERM");
+  if (colorterm && !strcmp (colorterm, "xfce4-terminal"))
+    return false;
+
+  /* Old versions of gnome-terminal where URL escapes cause screen
+     corruptions set COLORTERM="gnome-terminal", recent versions
+     with working URL support set this to "truecolor".  */
+  if (colorterm && !strcmp (colorterm, "gnome-terminal"))
+    return false;
+
+  /* Since the following checks are less specific than the ones
+     above, let GCC_URLS and TERM_URLS override the decision.  */
+  if (getenv ("GCC_URLS") || getenv ("TERM_URLS"))
+    return true;
+
+  /* In an ssh session the COLORTERM is not there, but TERM=xterm
+     can be used as an indication of a incompatible terminal while
+     TERM=xterm-256color appears to be a working terminal.  */
+  term = getenv ("TERM");
+  if (!colorterm && term && !strcmp (term, "xterm"))
+    return false;
+
+  /* When logging in a linux over serial line, we see TERM=linux
+     and no COLORTERM, it is unlikely that the URL escapes will
+     work in that environmen either.  */
+  if (!colorterm && term && !strcmp (term, "linux"))
+    return false;
+
+  return true;
+#endif
+}
+
+/* Determine if URLs should be enabled, based on RULE,
+   and, if so, which format to use.
    This reuses the logic for colorization.  */
 
-bool
-diagnostic_urls_enabled_p (diagnostic_url_rule_t rule)
+diagnostic_url_format
+determine_url_format (diagnostic_url_rule_t rule)
 {
   switch (rule)
     {
     case DIAGNOSTICS_URL_NO:
-      return false;
+      return URL_FORMAT_NONE;
     case DIAGNOSTICS_URL_YES:
-      return true;
+      return parse_env_vars_for_urls ();
     case DIAGNOSTICS_URL_AUTO:
-      return should_colorize ();
+      if (auto_enable_urls ())
+	return parse_env_vars_for_urls ();
+      else
+	return URL_FORMAT_NONE;
     default:
       gcc_unreachable ();
     }

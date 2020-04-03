@@ -1165,13 +1165,17 @@ static GTY(()) vec<pending_noexcept, va_gc> *pending_noexcept_checks;
 static void
 maybe_noexcept_warning (tree fn)
 {
-  if (TREE_NOTHROW (fn))
+  if (TREE_NOTHROW (fn)
+      && (!DECL_IN_SYSTEM_HEADER (fn)
+	  || global_dc->dc_warn_system_headers))
     {
-      warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
-	       "because of a call to %qD", fn);
-      warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wnoexcept,
-		  "but %qD does not throw; perhaps "
-		  "it should be declared %<noexcept%>", fn);
+      temp_override<bool> s (global_dc->dc_warn_system_headers, true);
+      auto_diagnostic_group d;
+      if (warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
+		   "because of a call to %qD", fn))
+	inform (DECL_SOURCE_LOCATION (fn),
+		"but %qD does not throw; perhaps "
+		"it should be declared %<noexcept%>", fn);
     }
 }
 

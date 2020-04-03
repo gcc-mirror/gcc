@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { xfail powerpc*-*-* } } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-skip-if "fenv" { powerpc-ibm-aix* } } */

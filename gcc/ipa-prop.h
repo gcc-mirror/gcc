@@ -738,7 +738,7 @@ struct GTY(()) ipa_agg_replacement_value
   HOST_WIDE_INT offset;
   /* The constant value.  */
   tree value;
-  /* The paramter index.  */
+  /* The parameter index.  */
   int index;
   /* Whether the value was passed by reference.  */
   bool by_ref;

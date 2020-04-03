@@ -674,201 +674,75 @@ ipa_merge_profiles (struct cgraph_node *dst,
       for (e = dst->indirect_calls, e2 = src->indirect_calls; e;
 	   e2 = (e2 ? e2->next_callee : NULL), e = e->next_callee)
 	{
-	  profile_count count = gimple_bb (e->call_stmt)->count;
-	  /* Below code are introduced by r279373 of "Fix merging of common
-	     traget info.".
+	  if (!e->speculative && !e2->speculative)
+	    {
+	      /* FIXME: we need to also merge ipa-profile histograms
+		 because with LTO merging happens from lto-symtab before
+		 these are converted to indirect edges.  */
+	      e->count = gimple_bb (e->call_stmt)->count;
+	      continue;
+	    }
 
-	     ipa-icf runs after ipa-profile, common_target_id with
-	     common_target_probablity are useless in ipa-icf since they are
-	     moved from cgraph.h to ipa-profile.c and processed already.
-	     Need double circulation to find out each mapped direct speculative
-	     edge and do prob merge.  Not easy to construct a case to cover all
-	     circumstances here.  For src and dst both have multiple speculative
-	     targets, only N:N maps are implemented, 2:0, 2:1, 0:2, 1:2 are not
-	     implemented yet as too complicated and no test cases to cover.  */
+	  /* When copying just remove all speuclations on dst and then copy
+	     one from src.  */
 	  if (copy_counts)
 	    {
-	      /* copy if both e and e2 have same num_speculative_call_targets.
-	       */
-	      if (e->num_speculative_call_targets_p ()
-		  == e2->num_speculative_call_targets_p ())
+	      while (e->speculative)
+		cgraph_edge::resolve_speculation (e, NULL);
+	      e->count = gimple_bb (e->call_stmt)->count;
+	      if (e2->speculative)
 		{
-		  int num_specs = e->num_speculative_call_targets_p ();
-		  cgraph_edge *direct, *indirect, *next_direct;
-		  cgraph_edge *direct2, *indirect2, *next_direct2;
-		  ipa_ref *ref;
-		  for (next_direct = e; next_direct && num_specs--;
-		       next_direct = direct->next_callee)
+		  for (cgraph_edge *e3 = e2->first_speculative_call_target ();
+		       e3;
+		       e3 = e3->next_speculative_call_target ())
 		    {
-		      next_direct->speculative_call_info (direct, indirect,
-							  ref);
-
-		      int num_specs2 = e2->num_speculative_call_targets_p ();
-		      for (next_direct2 = e2; next_direct2 && num_specs2--;
-			   next_direct2 = direct2->next_callee)
-			{
-			  if (e2 && e2->speculative)
-			    next_direct2->speculative_call_info (direct2,
-								 indirect2,
-								 ref);
-			  if (direct->speculative_id == direct2->speculative_id
-			      && direct->lto_stmt_uid == direct2->lto_stmt_uid)
-			    {
-			      direct->target_prob = direct2->target_prob;
-			      break;
-			    }
-			}
+		      cgraph_edge *ns;
+		      ns = e->make_speculative
+			 (dyn_cast <cgraph_node *>
+			    (e3->speculative_call_target_ref ()->referred),
+			     e3->count, e3->speculative_id);
+		      /* Target may differ from ref (for example it may be
+			 redirected to local alias.  */
+		      ns->redirect_callee (e3->callee);
 		    }
 		}
+	      continue;
+	    }
+
+	  /* Iterate all speculations in SRC, see if corresponding ones exist
+	     int DST and if so, sum the counts.  Otherwise create new
+	     speculation.  */
+	  int max_spec = 0;
+	  for (cgraph_edge *e3 = e->first_speculative_call_target ();
+	       e3;
+	       e3 = e3->next_speculative_call_target ())
+	    if (e3->speculative_id > max_spec)
+	      max_spec = e3->speculative_id;
+	  for (cgraph_edge *e3 = e2->first_speculative_call_target ();
+	       e3;
+	       e3 = e3->next_speculative_call_target ())
+	    {
+	      cgraph_edge *te
+		 = e->speculative_call_for_target
+			 (dyn_cast <cgraph_node *>
+			    (e3->speculative_call_target_ref ()->referred));
+	      if (te)
+		te->count = te->count + e3->count;
 	      else
-		gcc_assert (e->num_speculative_call_targets_p ()
-			    && e->num_speculative_call_targets_p ());
-	    }
-	  else if (e->num_speculative_call_targets_p ()
-		   || e2->num_speculative_call_targets_p ())
-	    {
-	      if (e->num_speculative_call_targets_p ()
-		  == e2->num_speculative_call_targets_p ())
 		{
-		  int num_specs = e->num_speculative_call_targets_p ();
-		  cgraph_edge *direct, *indirect, *next_direct;
-		  cgraph_edge *direct2, *indirect2, *next_direct2;
-		  ipa_ref *ref;
-		  for (next_direct = e; next_direct && num_specs--;
-		       next_direct = direct->next_callee)
-		    {
-		      next_direct->speculative_call_info (direct, indirect,
-							  ref);
-
-		      int num_specs2 = e2->num_speculative_call_targets_p ();
-		      for (next_direct2 = e2; next_direct2 && num_specs2--;
-			   next_direct2 = direct2->next_callee)
-			{
-			  if (e2 && e2->speculative)
-			    next_direct2->speculative_call_info (direct2,
-								 indirect2,
-								 ref);
-			  if (direct->speculative_id == direct2->speculative_id
-			      && direct->lto_stmt_uid == direct2->lto_stmt_uid)
-			    {
-			      sreal scale1
-				= e->count.ipa ().to_sreal_scale (count);
-			      sreal scale2
-				= e2->count.ipa ().to_sreal_scale (count);
-
-			      if (scale1 == 0 && scale2 == 0)
-				scale1 = scale2 = 1;
-			      sreal sum = scale1 + scale2;
-			      int scaled_prob1
-				= (((sreal)direct->target_prob)
-				   * scale1 / sum).to_int ();
-			      int scaled_prob2
-				= (((sreal)direct2->target_prob)
-				   * scale2 / sum).to_int ();
-			      if (symtab->dump_file)
-				{
-				  fprintf (
-				    symtab->dump_file,
-				    "Merging speculative id %i prob %i"
-				    " and %i prob %i with scales %f %f\n",
-				    direct->speculative_id, direct->target_prob,
-				    direct2->speculative_id,
-				    direct2->target_prob, scale1.to_double (),
-				    scale2.to_double ());
-				  fprintf (symtab->dump_file,
-					   "Combined BB count ");
-				  count.dump (symtab->dump_file);
-				  fprintf (symtab->dump_file,
-					   " dst edge count ");
-				  e->count.dump (symtab->dump_file);
-				  fprintf (symtab->dump_file,
-					   " src edge count ");
-				  e2->count.dump (symtab->dump_file);
-				  fprintf (symtab->dump_file, "\n");
-				}
-			      direct->target_prob = scaled_prob1 + scaled_prob2;
-			      break;
-			    }
-			}
-		    }
-		}
-	      else if (e->num_speculative_call_targets_p ())
-		{
-		  /* Process if only dst is speculative.  */
-		  gcc_assert (!e->num_speculative_call_targets_p ());
-		}
-	      else if (e2->num_speculative_call_targets_p ())
-		{
-		  /* Process if only src is speculative.  */
-		  gcc_assert (!e2->num_speculative_call_targets_p ());
+		  e->count = e->count + e3->count;
+		  cgraph_edge *ns;
+		  ns = e->make_speculative
+			 (dyn_cast <cgraph_node *>
+			    (e3->speculative_call_target_ref ()
+			     ->referred),
+			  e3->count,
+			  e3->speculative_id + max_spec + 1);
+		  /* Target may differ from ref (for example it may be
+		     redirected to local alias.  */
+		  ns->redirect_callee (e3->callee);
 		}
 	    }
-
-	  /* When call is speculative, we need to re-distribute probabilities
-	     the same way as they was.  This is not really correct because
-	     in the other copy the speculation may differ; but probably it
-	     is not really worth the effort.  */
-	  if (e->speculative)
-	    {
-	      cgraph_edge *direct, *indirect;
-	      cgraph_edge *direct2 = NULL, *indirect2 = NULL;
-	      ipa_ref *ref;
-
-	      e->speculative_call_info (direct, indirect, ref);
-	      gcc_assert (e == indirect);
-	      if (e2 && e2->speculative)
-	        e2->speculative_call_info (direct2, indirect2, ref);
-	      if (indirect->count > profile_count::zero ()
-		  || direct->count > profile_count::zero ())
-		{
-		  /* We should mismatch earlier if there is no matching
-		     indirect edge.  */
-		  if (!e2)
-		    {
-		      if (symtab->dump_file)
-		        fprintf (symtab->dump_file,
-				 "Mismatch in merging indirect edges\n");
-		    }
-		  else if (!e2->speculative)
-		    indirect->count += e2->count;
-		  else if (e2->speculative)
-		    {
-		      if (DECL_ASSEMBLER_NAME (direct2->callee->decl)
-			  != DECL_ASSEMBLER_NAME (direct->callee->decl))
-			{
-			  if (direct2->count >= direct->count)
-			    {
-			      direct->redirect_callee (direct2->callee);
-			      indirect->count += indirect2->count
-						 + direct->count;
-			      direct->count = direct2->count;
-			    }
-			  else
-			    indirect->count += indirect2->count + direct2->count;
-			}
-		      else
-			{
-			   direct->count += direct2->count;
-			   indirect->count += indirect2->count;
-			}
-		    }
-		}
-	      else
-		/* At the moment we should have only profile feedback based
-		   speculations when merging.  */
-		gcc_unreachable ();
-	    }
-	  else if (e2 && e2->speculative)
-	    {
-	      cgraph_edge *direct, *indirect;
-	      ipa_ref *ref;
-
-	      e2->speculative_call_info (direct, indirect, ref);
-	      e->count = count;
-	      e->make_speculative (direct->callee, direct->count);
-	    }
-	  else
-	    e->count = count;
 	}
       if (!preserve_body)
         src->release_body ();
@@ -882,7 +756,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
   src->decl = oldsrcdecl;
 }
 
-/* Return true if call to DEST is known to be self-recusive call withing FUNC.   */
+/* Return true if call to DEST is known to be self-recusive
+   call withing FUNC.  */
 
 bool
 recursive_call_p (tree func, tree dest)

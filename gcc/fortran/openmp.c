@@ -4248,6 +4248,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     for (n = omp_clauses->lists[list]; n; n = n->next)
       {
 	n->sym->mark = 0;
+	n->sym->comp_mark = 0;
 	if (n->sym->attr.flavor == FL_VARIABLE
 	    || n->sym->attr.proc_pointer
 	    || (!code && (!n->sym->attr.dummy || n->sym->ns != ns)))
@@ -4313,23 +4314,25 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	&& (list != OMP_LIST_REDUCTION || !openacc))
       for (n = omp_clauses->lists[list]; n; n = n->next)
 	{
-	  bool array_only_p = true;
-	  /* Disallow duplicate bare variable references and multiple
-	     subarrays of the same array here, but allow multiple components of
-	     the same (e.g. derived-type) variable.  For the latter, duplicate
-	     components are detected elsewhere.  */
-	  if (openacc && n->expr && n->expr->expr_type == EXPR_VARIABLE)
+	  bool component_ref_p = false;
+
+	  /* Allow multiple components of the same (e.g. derived-type)
+	     variable here.  Duplicate components are detected elsewhere.  */
+	  if (n->expr && n->expr->expr_type == EXPR_VARIABLE)
 	    for (gfc_ref *ref = n->expr->ref; ref; ref = ref->next)
-	      if (ref->type != REF_ARRAY)
-		{
-		  array_only_p = false;
-		  break;
-		}
-	  if (array_only_p)
+	      if (ref->type == REF_COMPONENT)
+		component_ref_p = true;
+	  if ((!component_ref_p && n->sym->comp_mark)
+	      || (component_ref_p && n->sym->mark))
+	    gfc_error ("Symbol %qs has mixed component and non-component "
+		       "accesses at %L", n->sym->name, &n->where);
+	  else if (n->sym->mark)
+	    gfc_error ("Symbol %qs present on multiple clauses at %L",
+		       n->sym->name, &n->where);
+	  else
 	    {
-	      if (n->sym->mark)
-		gfc_error ("Symbol %qs present on multiple clauses at %L",
-			   n->sym->name, &n->where);
+	      if (component_ref_p)
+		n->sym->comp_mark = 1;
 	      else
 		n->sym->mark = 1;
 	    }
@@ -4533,13 +4536,28 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    /* Look through component refs to find last array
 		       reference.  */
 		    if (openacc && resolved)
-		      while (array_ref
-			     && (array_ref->type == REF_COMPONENT
-				 || (array_ref->type == REF_ARRAY
-				     && array_ref->next
-				     && (array_ref->next->type
-					 == REF_COMPONENT))))
-			array_ref = array_ref->next;
+		      {
+			/* The "!$acc cache" directive allows rectangular
+			   subarrays to be specified, with some restrictions
+			   on the form of bounds (not implemented).
+			   Only raise an error here if we're really sure the
+			   array isn't contiguous.  An expression such as
+			   arr(-n:n,-n:n) could be contiguous even if it looks
+			   like it may not be.  */
+			if (list != OMP_LIST_CACHE
+			    && !gfc_is_simply_contiguous (n->expr, false, true)
+			    && gfc_is_not_contiguous (n->expr))
+			  gfc_error ("Array is not contiguous at %L",
+				     &n->where);
+
+			while (array_ref
+			       && (array_ref->type == REF_COMPONENT
+				   || (array_ref->type == REF_ARRAY
+				       && array_ref->next
+				       && (array_ref->next->type
+					   == REF_COMPONENT))))
+			  array_ref = array_ref->next;
+		      }
 		  }
 		if (array_ref
 		    || (n->expr
@@ -6003,6 +6021,20 @@ oacc_code_to_statement (gfc_code *code)
       return ST_OACC_LOOP;
     case EXEC_OACC_ATOMIC:
       return ST_OACC_ATOMIC;
+    case EXEC_OACC_ROUTINE:
+      return ST_OACC_ROUTINE;
+    case EXEC_OACC_UPDATE:
+      return ST_OACC_UPDATE;
+    case EXEC_OACC_WAIT:
+      return ST_OACC_WAIT;
+    case EXEC_OACC_CACHE:
+      return ST_OACC_CACHE;
+    case EXEC_OACC_ENTER_DATA:
+      return ST_OACC_ENTER_DATA;
+    case EXEC_OACC_EXIT_DATA:
+      return ST_OACC_EXIT_DATA;
+    case EXEC_OACC_DECLARE:
+      return ST_OACC_DECLARE;
     default:
       gcc_unreachable ();
     }
@@ -6160,10 +6192,8 @@ resolve_oacc_loop_blocks (gfc_code *code)
   if (code->ext.omp_clauses->tile_list)
     {
       gfc_expr_list *el;
-      int num = 0;
       for (el = code->ext.omp_clauses->tile_list; el; el = el->next)
 	{
-	  num++;
 	  if (el->expr == NULL)
 	    {
 	      /* NULL expressions are used to represent '*' arguments.
@@ -6181,7 +6211,6 @@ resolve_oacc_loop_blocks (gfc_code *code)
 			   &code->loc);
 	    }
 	}
-      resolve_oacc_nested_loops (code, code->block->next, num, "tiled");
     }
 }
 
@@ -6233,6 +6262,18 @@ resolve_oacc_loop (gfc_code *code)
 
   do_code = code->block->next;
   collapse = code->ext.omp_clauses->collapse;
+
+  /* Both collapsed and tiled loops are lowered the same way, but are not
+     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
+  if (code->ext.omp_clauses->tile_list)
+    {
+      int num = 0;
+      gfc_expr_list *el;
+      for (el = code->ext.omp_clauses->tile_list; el; el = el->next)
+	++num;
+      resolve_oacc_nested_loops (code, code->block->next, num, "tiled");
+      return;
+    }
 
   if (collapse <= 0)
     collapse = 1;

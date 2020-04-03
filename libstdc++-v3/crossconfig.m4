@@ -333,6 +333,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL], [
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef $1
 ], [
   void (*f)(void) = (void (*)(void))$1;
 ], [glibcxx_cv_func_$1_use=yes

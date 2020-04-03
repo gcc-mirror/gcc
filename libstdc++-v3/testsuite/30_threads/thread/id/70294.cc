@@ -19,5 +19,14 @@
 
 #include <thread>
 
-bool (*lt)(std::thread::id, std::thread::id) = &std::operator<;
-bool (*eq)(std::thread::id, std::thread::id) = &std::operator==;
+struct T
+{
+  operator std::thread::id() const;
+} const t;
+
+using namespace std;
+
+// std::thread::id comparison operators are not hidden friends,
+// so should be candidates for these expressions:
+bool lt = t < t;
+bool eq = t == t;

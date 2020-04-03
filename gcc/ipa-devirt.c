@@ -1548,7 +1548,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       && COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
     {
       warn_odr (t1, t2, NULL, NULL, warn, warned,
-		G_("one type needs to be constructed while other not"));
+		G_("one type needs to be constructed while the other does not"));
       gcc_checking_assert (RECORD_OR_UNION_TYPE_P (t1));
       return false;
     }
@@ -3757,11 +3757,8 @@ ipa_devirt (void)
  	       with the speculation.  */
 	    if (e->speculative)
 	      {
-		struct cgraph_edge *e2;
-		struct ipa_ref *ref;
-		e->speculative_call_info (e2, e, ref);
-		if (e2->callee->ultimate_alias_target ()
-		    == likely_target->ultimate_alias_target ())
+		bool found = e->speculative_call_for_target (likely_target);
+		if (found)
 		  {
 		    fprintf (dump_file, "We agree with speculation\n\n");
 		    nok++;

@@ -10,6 +10,4 @@ void
 foo (void)
 {
   int x[a] = { 1 }; /* { dg-error "variable-sized object may not be initialized" "VLA init" } */
-  /* { dg-warning "excess elements in array initializer" "excess" { target *-*-* } .-1 } */
-  /* { dg-message "near initialization" "near" { target *-*-* } .-2 } */
 }

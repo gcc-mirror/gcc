@@ -1435,7 +1435,7 @@ class StdCmpCatPrinter:
         if self.typename == 'strong_ordering' and self.val == 0:
             name = 'equal'
         else:
-            names = {-127:'unordered', -1:'less', 0:'equivalent', 1:'greater'}
+            names = {2:'unordered', -1:'less', 0:'equivalent', 1:'greater'}
             name = names[int(self.val)]
         return 'std::{}::{}'.format(self.typename, name)
 

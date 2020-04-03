@@ -230,7 +230,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 
   if (node->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
-  /* When doing LTO or whole program, we can bring COMDAT functoins static.
+  /* When doing LTO or whole program, we can bring COMDAT functions static.
      This improves code quality and we know we will duplicate them at most twice
      (in the case that we are not using plugin and link with object file
       implementing same COMDAT)  */

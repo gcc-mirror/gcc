@@ -29,9 +29,11 @@ static_assert(std::same_as<decltype(*std::declval<const PI<int*>&>()), int&>);
 struct X
 {
   using value_type = char*;
-  char* const& operator*() &;
+  char* const& operator*() const;
 };
-static_assert( std::readable<X> );
+static_assert( std::indirectly_readable<X> );
+static_assert( std::indirectly_readable<X&> );
+static_assert( std::indirectly_readable<const X> );
 static_assert(std::same_as<PI<X>::value_type, char*>);
 static_assert(std::same_as<decltype(*std::declval<PI<X>&>()), char* const&>);
 

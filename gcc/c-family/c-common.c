@@ -5729,8 +5729,26 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
 
-  if (warn_restrict)
-    warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_SPRINTF:
+	case BUILT_IN_SPRINTF_CHK:
+	case BUILT_IN_SNPRINTF:
+	case BUILT_IN_SNPRINTF_CHK:
+	  /* Let the sprintf pass handle these.  */
+	  return warned_p;
+
+	default:
+	  break;
+	}
+    }
+
+  /* check_function_restrict sets the DECL_READ_P for arguments
+     so it must be called unconditionally.  */
+  warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
+
   return warned_p;
 }
 

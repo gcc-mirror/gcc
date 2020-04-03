@@ -8827,7 +8827,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  cdesc = gfc_create_var (cdesc, "cdesc");
 	  DECL_ARTIFICIAL (cdesc) = 1;
-  
+
 	  gfc_add_modify (&tmpblock, gfc_conv_descriptor_dtype (cdesc),
 	  		  gfc_get_dtype_rank_type (1, tmp));
 	  gfc_conv_descriptor_lbound_set (&tmpblock, cdesc,
@@ -8838,7 +8838,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 					  gfc_index_one_node);
 	  gfc_conv_descriptor_ubound_set (&tmpblock, cdesc,
 					  gfc_index_zero_node, ubound);
-  
+
 	  if (attr->dimension)
 	    comp = gfc_conv_descriptor_data_get (comp);
 	  else
@@ -9116,9 +9116,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      && (CLASS_DATA (c)->attr.allocatable
 		  || CLASS_DATA (c)->attr.class_pointer))
 	    {
+	      tree vptr_decl;
+
 	      /* Allocatable CLASS components.  */
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
+
+	      vptr_decl = gfc_class_vptr_get (comp);
 
 	      comp = gfc_class_data_get (comp);
 	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
@@ -9131,6 +9135,24 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 					 build_int_cst (TREE_TYPE (comp), 0));
 		  gfc_add_expr_to_block (&fnblock, tmp);
 		}
+
+	      /* The dynamic type of a disassociated pointer or unallocated
+		 allocatable variable is its declared type. An unlimited
+		 polymorphic entity has no declared type.  */
+	      if (!UNLIMITED_POLY (c))
+		{
+		  vtab = gfc_find_derived_vtab (c->ts.u.derived);
+		  if (!vtab->backend_decl)
+		     gfc_get_symbol_decl (vtab);
+		  tmp = gfc_build_addr_expr (NULL_TREE, vtab->backend_decl);
+		}
+	      else
+		tmp = build_int_cst (TREE_TYPE (vptr_decl), 0);
+
+	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+					 void_type_node, vptr_decl, tmp);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+
 	      cmp_has_alloc_comps = false;
 	    }
 	  /* Coarrays need the component to be nulled before the api-call
@@ -9824,7 +9846,7 @@ gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 }
 
 
-/* Recursively traverse an object of paramterized derived type, generating
+/* Recursively traverse an object of parameterized derived type, generating
    code to allocate parameterized components.  */
 
 tree
@@ -9840,7 +9862,7 @@ gfc_allocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank,
   return res;
 }
 
-/* Recursively traverse an object of paramterized derived type, generating
+/* Recursively traverse an object of parameterized derived type, generating
    code to deallocate parameterized components.  */
 
 tree
@@ -9851,7 +9873,7 @@ gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
 }
 
 
-/* Recursively traverse a dummy of paramterized derived type to check the
+/* Recursively traverse a dummy of parameterized derived type to check the
    values of LEN parameters.  */
 
 tree

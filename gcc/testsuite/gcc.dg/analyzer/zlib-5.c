@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   if (compr == 0 || uncompr == 0)
     exit(1);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 
   test_compress(compr, comprLen, uncompr, uncomprLen);
 

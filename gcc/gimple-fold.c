@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "tree-vector-builder.h"
 #include "tree-ssa-strlen.h"
+#include "varasm.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -1280,7 +1281,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 		       c_strlen_data *pdata, unsigned eltsize)
 {
   gcc_assert (TREE_CODE (arg) != SSA_NAME);
- 
+
   /* The length computed by this invocation of the function.  */
   tree val = NULL_TREE;
 
@@ -1422,7 +1423,44 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	     type about the length here.  */
 	  tight_bound = true;
 	}
-      else if (VAR_P (arg))
+      else if (TREE_CODE (arg) == MEM_REF
+	       && TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == INTEGER_TYPE
+	       && TREE_CODE (TREE_OPERAND (arg, 0)) == ADDR_EXPR)
+	{
+	  /* Handle a MEM_REF into a DECL accessing an array of integers,
+	     being conservative about references to extern structures with
+	     flexible array members that can be initialized to arbitrary
+	     numbers of elements as an extension (static structs are okay).
+	     FIXME: Make this less conservative -- see
+	     component_ref_size in tree.c.  */
+	  tree ref = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+	  if ((TREE_CODE (ref) == PARM_DECL || VAR_P (ref))
+	      && (decl_binds_to_current_def_p (ref)
+		  || !array_at_struct_end_p (arg)))
+	    {
+	      /* Fail if the offset is out of bounds.  Such accesses
+		 should be diagnosed at some point.  */
+	      val = DECL_SIZE_UNIT (ref);
+	      if (!val || integer_zerop (val))
+		return false;
+
+	      poly_offset_int psiz = wi::to_offset (val);
+	      poly_offset_int poff = mem_ref_offset (arg);
+	      if (known_le (psiz, poff))
+		return false;
+
+	      pdata->minlen = ssize_int (0);
+
+	      /* Subtract the offset and one for the terminating nul.  */
+	      psiz -= poff;
+	      psiz -= 1;
+	      val = wide_int_to_tree (TREE_TYPE (val), psiz);
+	      /* Since VAL reflects the size of a declared object
+		 rather the type of the access it is not a tight bound.  */
+	    }
+	}
+      else if (TREE_CODE (arg) == PARM_DECL || VAR_P (arg))
 	{
 	  /* Avoid handling pointers to arrays.  GCC might misuse
 	     a pointer to an array of one bound to point to an array
@@ -1500,7 +1538,8 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	     the referenced subobject minus 1 (for the terminating nul).  */
 	  tree type = TREE_TYPE (base);
 	  if (TREE_CODE (type) == POINTER_TYPE
-	      || !VAR_P (base) || !(val = DECL_SIZE_UNIT (base)))
+	      || (TREE_CODE (base) != PARM_DECL && !VAR_P (base))
+	      || !(val = DECL_SIZE_UNIT (base)))
 	    val = build_all_ones_cst (size_type_node);
 	  else
 	    {
@@ -6665,12 +6704,14 @@ fold_array_ctor_reference (tree type, tree ctor,
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
 
-  if (size > elt_size.to_uhwi () * BITS_PER_UNIT)
+  unsigned HOST_WIDE_INT elt_sz = elt_size.to_uhwi ();
+  if (size > elt_sz * BITS_PER_UNIT)
     {
       /* native_encode_expr constraints.  */
       if (size > MAX_BITSIZE_MODE_ANY_MODE
 	  || size % BITS_PER_UNIT != 0
-	  || inner_offset % BITS_PER_UNIT != 0)
+	  || inner_offset % BITS_PER_UNIT != 0
+	  || elt_sz > MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT)
 	return NULL_TREE;
 
       unsigned ctor_idx;
@@ -6701,10 +6742,11 @@ fold_array_ctor_reference (tree type, tree ctor,
       index = wi::umax (index, access_index);
       do
 	{
-	  int len = native_encode_expr (val, buf + bufoff,
-					elt_size.to_uhwi (),
+	  if (bufoff + elt_sz > sizeof (buf))
+	    elt_sz = sizeof (buf) - bufoff;
+	  int len = native_encode_expr (val, buf + bufoff, elt_sz,
 					inner_offset / BITS_PER_UNIT);
-	  if (len != elt_size - inner_offset / BITS_PER_UNIT)
+	  if (len != (int) elt_sz - inner_offset / BITS_PER_UNIT)
 	    return NULL_TREE;
 	  inner_offset = 0;
 	  bufoff += len;

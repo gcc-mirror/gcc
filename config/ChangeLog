@@ -1,3 +1,25 @@
+2020-02-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/79193
+	PR libstdc++/88999
+
+	* no-executables.m4: Use a non-empty program to test for linker
+	support.
+
+2020-02-01  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Update shell syntax.
+
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Add new
+	--with-libXXX-type=... option.  Use this to guide the selection of
+	either a shared library or a static library.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* toolexeclibdir.m4: New file.
+
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
 	* futex.m4: Handle *-uclinux*.

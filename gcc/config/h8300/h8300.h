@@ -434,7 +434,7 @@ struct cum_arg
    for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\t%s\t#LP%d,%s\n\tjsr @mcount\n", \
+  fprintf (FILE, "\t%s\t#.LP%d,%s\n\tjsr @mcount\n", \
 	   h8_mov_op, (LABELNO), h8_reg_names[0]);
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,

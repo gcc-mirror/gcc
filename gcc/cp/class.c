@@ -3241,7 +3241,11 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       {
 	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
 					 NULL_TREE);
-	add_method (t, eq, false);
+	if (DECL_FRIEND_P (space))
+	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
+		     NULL_TREE, NO_SPECIAL, true);
+	else
+	  add_method (t, eq, false);
       }
 
   while (*access_decls)
@@ -3285,7 +3289,7 @@ enum_min_precision (tree type)
     enum_to_min_precision = hash_map<tree, int>::create_ggc (37);
 
   bool existed;
-  int prec = enum_to_min_precision->get_or_insert (type, &existed);
+  int &prec = enum_to_min_precision->get_or_insert (type, &existed);
   if (existed)
     return prec;
 
@@ -4896,8 +4900,8 @@ adjust_clone_args (tree decl)
 	      break;
 	    }
 
-	  gcc_assert (same_type_p (TREE_TYPE (decl_parms),
-				   TREE_TYPE (clone_parms)));
+	  gcc_checking_assert (same_type_p (TREE_VALUE (decl_parms),
+					    TREE_VALUE (clone_parms)));
 
 	  if (TREE_PURPOSE (decl_parms) && !TREE_PURPOSE (clone_parms))
 	    {
@@ -5439,6 +5443,19 @@ classtype_has_non_deleted_move_ctor (tree t)
     lazily_declare_fn (sfk_move_constructor, t);
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     if (move_fn_p (*iter) && !DECL_DELETED_FN (*iter))
+      return true;
+  return false;
+}
+
+/* True iff T has a copy constructor that is not deleted.  */
+
+bool
+classtype_has_non_deleted_copy_ctor (tree t)
+{
+  if (CLASSTYPE_LAZY_COPY_CTOR (t))
+    lazily_declare_fn (sfk_copy_constructor, t);
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (copy_fn_p (*iter) && !DECL_DELETED_FN (*iter))
       return true;
   return false;
 }
@@ -7138,6 +7155,8 @@ check_flexarrays (tree t, flexmems_t *fmem /* = NULL */,
   /* Is the type unnamed (and therefore a member of it potentially
      an anonymous struct or union)?  */
   bool maybe_anon_p = TYPE_UNNAMED_P (t);
+  if (tree ctx = maybe_anon_p ? TYPE_CONTEXT (t) : NULL_TREE)
+    maybe_anon_p = RECORD_OR_UNION_TYPE_P (ctx);
 
   /* Search the members of the current (possibly derived) class, skipping
      unnamed structs and unions since those could be anonymous.  */

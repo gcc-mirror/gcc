@@ -76,6 +76,12 @@
 #endif
 
 
+/* The default for -fdiagnostics-urls option */
+#ifndef USED_FOR_TARGET
+#undef DIAGNOSTICS_URLS_DEFAULT
+#endif
+
+
 /* Define 0/1 if static analyzer feature is enabled. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_ANALYZER
@@ -568,6 +574,12 @@
 /* Define if the assembler understands -mnan=. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_NAN
+#endif
+
+
+/* Define if your assembler supports %gotoff relocation syntax. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_NIOS2_GOTOFF_RELOCATION
 #endif
 
 
@@ -2182,6 +2194,12 @@
 /* GNU C Library minor version number used on the target, or 0. */
 #ifndef USED_FOR_TARGET
 #undef TARGET_GLIBC_MINOR
+#endif
+
+
+/* Define if your target C Library properly handles PT_GNU_STACK */
+#ifndef USED_FOR_TARGET
+#undef TARGET_LIBC_GNUSTACK
 #endif
 
 

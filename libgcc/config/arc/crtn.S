@@ -28,6 +28,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # This file just makes sure that the .fini and .init sections do in
 # fact return. This file is the last thing linked into any executable.
 
+#ifdef __ARC_RF16__
+	/* Use object attributes to inform other tools this file is
+	safe for RF16 configuration.  */
+	.arc_attribute Tag_ARC_ABI_rf16, 1
+#endif
 	.section .init
 	pop_s	blink
 	j_s	[blink]

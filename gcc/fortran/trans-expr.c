@@ -843,6 +843,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   tree ctree;
   tree var;
   tree tmp;
+  int dim;
 
   /* The intrinsic type needs to be converted to a temporary
      CLASS object.  */
@@ -892,6 +893,16 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	  parmse->ss = ss;
 	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
+
+	  /* Array references with vector subscripts and non-variable expressions
+	     need be converted to a one-based descriptor.  */
+	  if (e->expr_type != EXPR_VARIABLE)
+	    {
+	      for (dim = 0; dim < e->rank; ++dim)
+		gfc_conv_shift_descriptor_lbound (&parmse->pre, parmse->expr,
+						  dim, gfc_index_one_node);
+	    }
+
 	  if (class_ts.u.derived->components->as->rank != e->rank)
 	    {
 	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
@@ -2334,8 +2345,12 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       else
 	tmp = build_fold_indirect_ref_loc (input_location,
 				       se->expr);
-      tmp = gfc_build_array_ref (tmp, start.expr, NULL);
-      se->expr = gfc_build_addr_expr (type, tmp);
+      /* For BIND(C), a BT_CHARACTER is not an ARRAY_TYPE.  */
+      if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
+	{
+	  tmp = gfc_build_array_ref (tmp, start.expr, NULL);
+	  se->expr = gfc_build_addr_expr (type, tmp);
+	}
     }
 
   /* Length = end + 1 - start.  */

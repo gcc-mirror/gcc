@@ -96,7 +96,7 @@ or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
-riscv port		Palmer Dabbelt		<palmer@sifive.com>
+riscv port		Palmer Dabbelt		<palmer@dabbelt.com>
 riscv port		Andrew Waterman		<andrew@sifive.com>
 riscv port		Jim Wilson		<jimw@sifive.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
@@ -429,6 +429,7 @@ Falk Hueffner					<falk@debian.org>
 Andrew John Hughes				<gnu_andrew@member.fsf.org>
 Dominique d'Humieres				<dominiq@lps.ens.fr>
 Andy Hutchinson					<hutchinsonandy@aim.com>
+Joel Hutton					<joel.hutton@arm.com>
 Lewis Hyatt					<lhyatt@gmail.com>
 Naveen H.S					<naveenh@marvell.com>
 Roland Illig					<roland.illig@gmx.de>
@@ -539,6 +540,7 @@ Peter O'Gorman					<pogma@thewrittenword.com>
 Andrea Ornstein					<andrea.ornstein@st.com>
 Maxim Ostapenko					<m.ostapenko@samsung.com>
 Patrick Palka					<ppalka@gcc.gnu.org>
+Srinath Parvathaneni				<srinath.parvathaneni@arm.com>
 Devang Patel					<dpatel@apple.com>
 Andris Pavenis					<andris.pavenis@iki.fi>
 Fernando Pereira				<pronesto@gmail.com>

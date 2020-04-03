@@ -306,7 +306,7 @@
 (define_predicate "cint34_operand"
   (match_code "const_int")
 {
-  if (!TARGET_PREFIXED_ADDR)
+  if (!TARGET_PREFIXED)
     return 0;
 
   return SIGNED_INTEGER_34BIT_P (INTVAL (op));

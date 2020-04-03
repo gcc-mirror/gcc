@@ -43,7 +43,8 @@ class impl_region_model_context : public region_model_context
 
   impl_region_model_context (program_state *state,
 			     state_change *change,
-			     const extrinsic_state &ext_state);
+			     const extrinsic_state &ext_state,
+			     logger *logger = NULL);
 
   void warn (pending_diagnostic *d) FINAL OVERRIDE;
 
@@ -74,6 +75,11 @@ class impl_region_model_context : public region_model_context
 
   void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE;
 
+  void on_phi (const gphi *phi, tree rhs) FINAL OVERRIDE;
+
+  void on_unexpected_tree_code (tree t,
+				const dump_location_t &loc) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   const exploded_node *m_enode_for_diag;
@@ -98,6 +104,9 @@ public:
     m_state (state),
     m_hash (m_point.hash () ^ m_state.hash ())
   {
+    /* We shouldn't be building point_and_states and thus exploded_nodes
+       for states that aren't valid.  */
+    gcc_assert (state.m_valid);
   }
 
   hashval_t hash () const
@@ -149,9 +158,26 @@ struct eg_traits
 class exploded_node : public dnode<eg_traits>
 {
  public:
+  /* Has this enode had exploded_graph::process_node called on it?
+     This allows us to distinguish enodes that were merged during
+     worklist-handling, and thus never had process_node called on them
+     (in favor of processing the merged node).  */
+  enum status
+  {
+    /* Node is in the worklist.  */
+    STATUS_WORKLIST,
+
+    /* Node has had exploded_graph::process_node called on it.  */
+    STATUS_PROCESSED,
+
+    /* Node was left unprocessed due to merger; it won't have had
+       exploded_graph::process_node called on it.  */
+    STATUS_MERGER
+  };
+
   exploded_node (point_and_state ps,
 		 int index)
-  : m_ps (ps), m_index (index)
+  : m_ps (ps), m_status (STATUS_WORKLIST), m_index (index)
   {
     gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
   }
@@ -238,6 +264,13 @@ class exploded_node : public dnode<eg_traits>
 
   void dump_succs_and_preds (FILE *outf) const;
 
+  enum status get_status () const { return m_status; }
+  void set_status (enum status status)
+  {
+    gcc_assert (m_status == STATUS_WORKLIST);
+    m_status = status;
+  }
+
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_node);
 
@@ -246,6 +279,8 @@ private:
   /* The <program_point, program_state> pair.  This is const, as it
      is immutable once the exploded_node has been created.  */
   const point_and_state m_ps;
+
+  enum status m_status;
 
 public:
   /* The index of this exploded_node.  */
@@ -278,6 +313,7 @@ class exploded_edge : public dedge<eg_traits>
   };
 
   exploded_edge (exploded_node *src, exploded_node *dest,
+		 const extrinsic_state &ext_state,
 		 const superedge *sedge,
 		 const state_change &change,
 		 custom_info_t *custom_info);
@@ -302,13 +338,15 @@ private:
 };
 
 /* Extra data for an exploded_edge that represents a rewind from a
-   longjmp to a setjmp.  */
+   longjmp to a setjmp (or from a siglongjmp to a sigsetjmp).  */
 
 class rewind_info_t : public exploded_edge::custom_info_t
 {
 public:
-  rewind_info_t (const setjmp_record &setjmp_record)
-  : m_setjmp_record (setjmp_record)
+  rewind_info_t (const setjmp_record &setjmp_record,
+		 const gcall *longjmp_call)
+  : m_setjmp_record (setjmp_record),
+    m_longjmp_call (longjmp_call)
   {}
 
   void print (pretty_printer *pp) FINAL OVERRIDE
@@ -339,6 +377,11 @@ public:
     return m_setjmp_record.m_setjmp_call;
   }
 
+  const gcall *get_longjmp_call () const
+  {
+    return m_longjmp_call;
+  }
+
   const exploded_node *get_enode_origin () const
   {
     return m_setjmp_record.m_enode;
@@ -346,6 +389,7 @@ public:
 
 private:
   setjmp_record m_setjmp_record;
+  const gcall *m_longjmp_call;
 };
 
 /* Statistics about aspects of an exploded_graph.  */
@@ -355,6 +399,8 @@ struct stats
   stats (int num_supernodes);
   void log (logger *logger) const;
   void dump (FILE *out) const;
+
+  int get_total_enodes () const;
 
   int m_num_nodes[NUM_POINT_KINDS];
   int m_node_reuse_count;
@@ -422,11 +468,14 @@ struct eg_hash_map_traits
 struct per_program_point_data
 {
   per_program_point_data (const program_point &key)
-  : m_key (key)
+  : m_key (key), m_excess_enodes (0)
   {}
 
   const program_point m_key;
   auto_vec<exploded_node *> m_enodes;
+  /* The number of attempts to create an enode for this point
+     after exceeding --param=analyzer-max-enodes-per-program-point.  */
+  int m_excess_enodes;
 };
 
 /* Traits class for storing per-program_point data within
@@ -644,7 +693,6 @@ private:
     }
 
   private:
-    static int cmp_1 (const key_t &ka, const key_t &kb);
     static int cmp (const key_t &ka, const key_t &kb);
 
     int get_scc_id (const exploded_node *enode) const
@@ -662,7 +710,6 @@ private:
   /* The order is important here: m_scc needs to stick around
      until after m_queue has finished being cleaned up (the dtor
      calls the ordering fns).  */
-  const exploded_graph &m_eg;
   strongly_connected_components m_scc;
   const analysis_plan &m_plan;
 
@@ -732,6 +779,10 @@ public:
   {
     return m_diagnostic_manager;
   }
+  const diagnostic_manager &get_diagnostic_manager () const
+  {
+    return m_diagnostic_manager;
+  }
 
   stats *get_global_stats () { return &m_global_stats; }
   stats *get_or_create_function_stats (function *fn);
@@ -744,6 +795,8 @@ public:
   { return &m_per_call_string_data; }
 
 private:
+  void print_bar_charts (pretty_printer *pp) const;
+
   DISABLE_COPY_AND_ASSIGN (exploded_graph);
 
   const supergraph &m_sg;

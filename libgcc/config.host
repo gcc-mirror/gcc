@@ -1112,7 +1112,8 @@ nds32*-elf*)
 	esac
 	;;
 nios2-*-linux*)
-	tmake_file="$tmake_file nios2/t-nios2 nios2/t-linux t-libgcc-pic t-slibgcc-libgcc"
+	tmake_file="$tmake_file nios2/t-nios2 nios2/t-linux t-libgcc-pic t-eh-dw2-dip t-slibgcc-libgcc"
+	tm_file="$tm_file nios2/elf-lib.h"
 	md_unwind_header=nios2/linux-unwind.h
 	;;
 nios2-*-*)
@@ -1300,7 +1301,7 @@ s390x-*-linux*)
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)
-	tmake_file="${tmake_file} s390/t-crtstuff t-libgcc-pic t-eh-dw2-dip"
+	tmake_file="${tmake_file} s390/t-crtstuff t-libgcc-pic t-eh-dw2-dip s390/t-tpf"
 	extra_parts="crtbeginS.o crtendS.o"
 	md_unwind_header=s390/tpf-unwind.h
 	;;

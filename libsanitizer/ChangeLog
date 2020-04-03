@@ -1,3 +1,23 @@
+2020-03-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR sanitizer/93731
+	* configure.tgt (x86_64-*-darwin*, i?86-*-darwin*): Enable by
+	default only for Darwin versions greater than 12 (macOS 10.8).
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
 2019-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/92154

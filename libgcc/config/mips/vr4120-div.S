@@ -22,6 +22,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* An executable stack is *not* required for these functions.  */
+#include "gnustack.h"
+
 /* This file contains functions which implement divsi3 and modsi3 for
    -mfix-vr4120.  div and ddiv do not give the correct result when one
    of the operands is negative.  */

@@ -48,7 +48,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_span 201902L
+#define __cpp_lib_span 202002L
 
   inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
@@ -123,42 +123,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3255. span's array constructor is too strict
       template<typename _Tp, size_t _ArrayExtent>
-	using __is_compatible_array = __and_<
-	  bool_constant<(_Extent == dynamic_extent || _ArrayExtent == _Extent)>,
-	  __is_array_convertible<_Type, _Tp>>;
+	requires (_Extent == dynamic_extent || _ArrayExtent == _Extent)
+	using __is_compatible_array = __is_array_convertible<_Type, _Tp>;
 
-      template<typename _Iter, typename _Ref = iter_reference_t<_Iter>>
-	using __is_compatible_iterator = __and_<
-	  bool_constant<contiguous_iterator<_Iter>>,
-	  is_lvalue_reference<iter_reference_t<_Iter>>,
-	  is_same<iter_value_t<_Iter>, remove_cvref_t<_Ref>>,
-	  __is_array_convertible<_Type, remove_reference_t<_Ref>>>;
-
-      template<typename _Range>
-	using __is_compatible_range
-	  = __is_compatible_iterator<ranges::iterator_t<_Range>>;
+      template<typename _Ref>
+	using __is_compatible_ref
+	  = __is_array_convertible<_Type, remove_reference_t<_Ref>>;
 
     public:
       // member types
-      using value_type             = remove_cv_t<_Type>;
       using element_type           = _Type;
+      using value_type             = remove_cv_t<_Type>;
       using size_type              = size_t;
-      using reference              = element_type&;
-      using const_reference        = const element_type&;
+      using difference_type        = ptrdiff_t;
       using pointer                = _Type*;
       using const_pointer          = const _Type*;
-      using iterator
-	= __gnu_cxx::__normal_iterator<pointer, span>;
-      using const_iterator
-	= __gnu_cxx::__normal_iterator<const_pointer, span>;
+      using reference              = element_type&;
+      using const_reference        = const element_type&;
+      using iterator = __gnu_cxx::__normal_iterator<pointer, span>;
       using reverse_iterator       = std::reverse_iterator<iterator>;
-      using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-      using difference_type        = ptrdiff_t;
 
       // member constants
-      static inline constexpr size_t extent = _Extent;
+      static constexpr size_t extent = _Extent;
 
-      // constructors
+      // constructors, copy and assignment
 
       constexpr
       span() noexcept
@@ -166,75 +154,93 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_extent(0), _M_ptr(nullptr)
       { }
 
-      constexpr
-      span(const span&) noexcept = default;
+      template<contiguous_iterator _It>
+	requires __is_compatible_ref<iter_reference_t<_It>>::value
+	constexpr explicit(extent != dynamic_extent)
+	span(_It __first, size_type __count)
+	noexcept
+	: _M_extent(__count), _M_ptr(std::to_address(__first))
+	{
+	  if constexpr (_Extent != dynamic_extent)
+	    {
+	      __glibcxx_assert(__count == _Extent);
+	    }
+	}
 
-      template<typename _Tp, size_t _ArrayExtent>
-	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
+      template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
+	requires __is_compatible_ref<iter_reference_t<_It>>::value
+	  && (!is_convertible_v<_End, size_type>)
+	constexpr explicit(extent != dynamic_extent)
+	span(_It __first, _End __last)
+	noexcept(noexcept(__last - __first))
+	: _M_extent(static_cast<size_type>(__last - __first)),
+	  _M_ptr(std::to_address(__first))
+	{
+	  if constexpr (_Extent != dynamic_extent)
+	    {
+	      __glibcxx_assert((__last - __first) == _Extent);
+	    }
+	}
+
+      template<size_t _ArrayExtent>
+	requires (_Extent == dynamic_extent || _ArrayExtent == _Extent)
 	constexpr
-	span(_Tp (&__arr)[_ArrayExtent]) noexcept
+	span(type_identity_t<element_type> (&__arr)[_ArrayExtent]) noexcept
 	: span(static_cast<pointer>(__arr), _ArrayExtent)
 	{ }
 
       template<typename _Tp, size_t _ArrayExtent>
-	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
+	requires __is_compatible_array<_Tp, _ArrayExtent>::value
 	constexpr
 	span(array<_Tp, _ArrayExtent>& __arr) noexcept
 	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
       template<typename _Tp, size_t _ArrayExtent>
-	  requires (__is_compatible_array<const _Tp, _ArrayExtent>::value)
+	requires __is_compatible_array<const _Tp, _ArrayExtent>::value
 	constexpr
 	span(const array<_Tp, _ArrayExtent>& __arr) noexcept
 	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
-    public:
-      template<ranges::contiguous_range _Range>
-	requires (_Extent == dynamic_extent)
+      template<typename _Range>
+	requires ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
+	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
 	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
 	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
-	  && (!is_array_v<remove_reference_t<_Range>>)
-	  && (__is_compatible_range<_Range>::value)
-	constexpr
+	  && (!is_array_v<remove_cvref_t<_Range>>)
+	  && __is_compatible_ref<ranges::range_reference_t<_Range>>::value
+	constexpr explicit(extent != dynamic_extent)
 	span(_Range&& __range)
 	noexcept(noexcept(ranges::data(__range))
 		  && noexcept(ranges::size(__range)))
 	: span(ranges::data(__range), ranges::size(__range))
-	{ }
-
-      template<contiguous_iterator _ContiguousIterator,
-	sized_sentinel_for<_ContiguousIterator> _Sentinel>
-	  requires (__is_compatible_iterator<_ContiguousIterator>::value)
-	    && (!is_convertible_v<_Sentinel, size_type>)
-	constexpr
-	span(_ContiguousIterator __first, _Sentinel __last)
-	noexcept(noexcept(__last - __first))
-	: _M_extent(static_cast<size_type>(__last - __first)),
-	  _M_ptr(std::to_address(__first))
 	{
-	  if (_Extent != dynamic_extent)
-	    __glibcxx_assert((__last - __first) == _Extent);
+	  if constexpr (extent != dynamic_extent)
+	    {
+	      __glibcxx_assert(ranges::size(__range) == extent);
+	    }
 	}
 
-      template<contiguous_iterator _ContiguousIterator>
-	requires (__is_compatible_iterator<_ContiguousIterator>::value)
-	constexpr
-	span(_ContiguousIterator __first, size_type __count)
-	noexcept
-	: _M_extent(__count), _M_ptr(std::to_address(__first))
-	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
+      constexpr
+      span(const span&) noexcept = default;
 
       template<typename _OType, size_t _OExtent>
-	requires (_Extent == dynamic_extent || _Extent == _OExtent)
+	requires (_Extent == dynamic_extent || _OExtent == dynamic_extent
+		  || _Extent == _OExtent)
 	  && (__is_array_convertible<_Type, _OType>::value)
 	constexpr
+	explicit(extent != dynamic_extent && _OExtent == dynamic_extent)
 	span(const span<_OType, _OExtent>& __s) noexcept
 	: _M_extent(__s.size()), _M_ptr(__s.data())
-	{ }
+	{
+	  if constexpr (extent != dynamic_extent)
+	    {
+	      __glibcxx_assert(__s.size() == extent);
+	    }
+	}
 
-      // assignment
+      ~span() noexcept = default;
 
       constexpr span&
       operator=(const span&) noexcept = default;
@@ -289,33 +295,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       begin() const noexcept
       { return iterator(this->_M_ptr); }
 
-      constexpr const_iterator
-      cbegin() const noexcept
-      { return const_iterator(this->_M_ptr); }
-
       constexpr iterator
       end() const noexcept
       { return iterator(this->_M_ptr + this->size()); }
-
-      constexpr const_iterator
-      cend() const noexcept
-      { return const_iterator(this->_M_ptr + this->size()); }
 
       constexpr reverse_iterator
       rbegin() const noexcept
       { return reverse_iterator(this->end()); }
 
-      constexpr const_reverse_iterator
-      crbegin() const noexcept
-      { return const_reverse_iterator(this->cend()); }
-
       constexpr reverse_iterator
       rend() const noexcept
       { return reverse_iterator(this->begin()); }
-
-      constexpr const_reverse_iterator
-      crend() const noexcept
-      { return const_reverse_iterator(this->cbegin()); }
 
       // subviews
 
@@ -327,7 +317,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(_Count <= size());
 	  else
 	    static_assert(_Count <= extent);
-	  return { this->data(), _Count };
+	  using _Sp = span<element_type, _Count>;
+	  return _Sp{ this->data(), _Count };
 	}
 
       constexpr span<element_type, dynamic_extent>
@@ -345,7 +336,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(_Count <= size());
 	  else
 	    static_assert(_Count <= extent);
-	  return { this->data() + (this->size() - _Count), _Count };
+	  using _Sp = span<element_type, _Count>;
+	  return _Sp{ this->data() + (this->size() - _Count), _Count };
 	}
 
       constexpr span<element_type, dynamic_extent>
@@ -361,12 +353,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	-> span<element_type, _S_subspan_extent<_Offset, _Count>()>
 	{
 	  if constexpr (_Extent == dynamic_extent)
-	    __glibcxx_assert(_Offset <= size());
+	    {
+	      __glibcxx_assert(_Offset <= size());
+	    }
 	  else
 	    static_assert(_Offset <= extent);
 
+	  using _Sp = span<element_type, _S_subspan_extent<_Offset, _Count>()>;
+
 	  if constexpr (_Count == dynamic_extent)
-	    return { this->data() + _Offset, this->size() - _Offset };
+	    return _Sp{ this->data() + _Offset, this->size() - _Offset };
 	  else
 	    {
 	      if constexpr (_Extent == dynamic_extent)
@@ -379,7 +375,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  static_assert(_Count <= extent);
 		  static_assert(_Count <= (extent - _Offset));
 		}
-	      return { this->data() + _Offset, _Count };
+	      return _Sp{ this->data() + _Offset, _Count };
 	    }
 	}
 
@@ -404,6 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // deduction guides
+
   template<typename _Type, size_t _ArrayExtent>
     span(_Type(&)[_ArrayExtent]) -> span<_Type, _ArrayExtent>;
 
@@ -414,9 +411,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     span(const array<_Type, _ArrayExtent>&)
       -> span<const _Type, _ArrayExtent>;
 
-  template<contiguous_iterator _Iter, typename _Sentinel>
-    span(_Iter, _Sentinel)
-      -> span<remove_reference_t<ranges::range_reference_t<_Iter>>>;
+  template<contiguous_iterator _Iter, typename _End>
+    span(_Iter, _End)
+      -> span<remove_reference_t<iter_reference_t<_Iter>>>;
 
   template<typename _Range>
     span(_Range &&)
@@ -428,7 +425,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	? dynamic_extent : _Extent * sizeof(_Type)>
     as_bytes(span<_Type, _Extent> __sp) noexcept
     {
-      return {reinterpret_cast<const byte*>(__sp.data()), __sp.size_bytes()};
+      auto data = reinterpret_cast<const byte*>(__sp.data());
+      auto size = __sp.size_bytes();
+      constexpr auto extent = _Extent == dynamic_extent
+	? dynamic_extent : _Extent * sizeof(_Type);
+      return span<const byte, extent>{data, size};
     }
 
   template<typename _Type, size_t _Extent>
@@ -437,46 +438,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        ? dynamic_extent : _Extent * sizeof(_Type)>
     as_writable_bytes(span<_Type, _Extent> __sp) noexcept
     {
-      return {reinterpret_cast<byte*>(__sp.data()), __sp.size_bytes()};
+      auto data = reinterpret_cast<byte*>(__sp.data());
+      auto size = __sp.size_bytes();
+      constexpr auto extent = _Extent == dynamic_extent
+	? dynamic_extent : _Extent * sizeof(_Type);
+      return span<byte, extent>{data, size};
     }
-
-  // tuple helpers
-  template<size_t _Index, typename _Type, size_t _Extent>
-    constexpr _Type&
-    get(span<_Type, _Extent> __sp) noexcept
-    {
-      static_assert(_Extent != dynamic_extent && _Index < _Extent,
-	"get<I> can only be used with a span of non-dynamic (fixed) extent");
-      return __sp[_Index];
-    }
-
-  template<typename _Tp> struct tuple_size;
-  template<size_t __i, typename _Tp> struct tuple_element;
-
-  template<typename _Type, size_t _Extent>
-    struct tuple_size<span<_Type, _Extent>>
-    : public integral_constant<size_t, _Extent>
-    {
-      static_assert(_Extent != dynamic_extent, "tuple_size can only "
-	"be used with a span of non-dynamic (fixed) extent");
-    };
-
-  template<size_t _Index, typename _Type, size_t _Extent>
-    struct tuple_element<_Index, span<_Type, _Extent>>
-    {
-      static_assert(_Extent != dynamic_extent, "tuple_element can only "
-	"be used with a span of non-dynamic (fixed) extent");
-      static_assert(_Index < _Extent, "Index is less than Extent");
-      using type = _Type;
-    };
 
   namespace ranges
   {
-    template<typename> extern inline const bool enable_safe_range;
-    // Opt-in to safe_range concept
+    // Opt-in to borrowed_range concept
     template<typename _ElementType, size_t _Extent>
       inline constexpr bool
-	enable_safe_range<span<_ElementType, _Extent>> = true;
+	enable_borrowed_range<span<_ElementType, _Extent>> = true;
+
+    // Opt-in to view concept
+    template<typename _ElementType, size_t _Extent>
+      inline constexpr bool
+	enable_view<span<_ElementType, _Extent>>
+	  = _Extent == 0 || _Extent == dynamic_extent;
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

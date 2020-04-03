@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef long v2di __attribute__((vector_size(16)));
 v2di v;

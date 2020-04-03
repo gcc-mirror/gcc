@@ -1649,6 +1649,18 @@ c_bind (location_t loc, tree decl, bool is_global)
 
 static GTY(()) tree last_structptr_types[6];
 
+/* Returns true if types T1 and T2 representing return types or types
+   of function arguments are close enough to be considered interchangeable
+   in redeclarations of built-in functions.  */
+
+static bool
+types_close_enough_to_match (tree t1, tree t2)
+{
+  return (TYPE_MODE (t1) == TYPE_MODE (t2)
+	  && POINTER_TYPE_P (t1) == POINTER_TYPE_P (t2)
+	  && FUNCTION_POINTER_TYPE_P (t1) == FUNCTION_POINTER_TYPE_P (t2));
+}
+
 /* Subroutine of compare_decls.  Allow harmless mismatches in return
    and argument types provided that the type modes match.  Set *STRICT
    and *ARGNO to the expected argument type and number in case of
@@ -1659,16 +1671,19 @@ static tree
 match_builtin_function_types (tree newtype, tree oldtype,
 			      tree *strict, unsigned *argno)
 {
-  /* Accept the return type of the new declaration if same modes.  */
-  tree oldrettype = TREE_TYPE (oldtype);
-  tree newrettype = TREE_TYPE (newtype);
-
   *argno = 0;
   *strict = NULL_TREE;
 
-  if (TYPE_MODE (oldrettype) != TYPE_MODE (newrettype))
+  /* Accept the return type of the new declaration if it has the same
+     mode and if they're both pointers or if neither is.  */
+  tree oldrettype = TREE_TYPE (oldtype);
+  tree newrettype = TREE_TYPE (newtype);
+
+  if (!types_close_enough_to_match (oldrettype, newrettype))
     return NULL_TREE;
 
+  /* Check that the return types are compatible but don't fail if they
+     are not (e.g., int vs long in ILP32) and just let the caller know.  */
   if (!comptypes (TYPE_MAIN_VARIANT (oldrettype),
 		  TYPE_MAIN_VARIANT (newrettype)))
     *strict = oldrettype;
@@ -1692,15 +1707,7 @@ match_builtin_function_types (tree newtype, tree oldtype,
       tree oldtype = TYPE_MAIN_VARIANT (TREE_VALUE (oldargs));
       tree newtype = TYPE_MAIN_VARIANT (TREE_VALUE (newargs));
 
-      /* Fail for types with incompatible modes/sizes.  */
-      if (TYPE_MODE (TREE_VALUE (oldargs))
-	  != TYPE_MODE (TREE_VALUE (newargs)))
-	return NULL_TREE;
-
-      /* Fail for function and object pointer mismatches.  */
-      if ((FUNCTION_POINTER_TYPE_P (oldtype)
-	   != FUNCTION_POINTER_TYPE_P (newtype))
-	  || POINTER_TYPE_P (oldtype) != POINTER_TYPE_P (newtype))
+      if (!types_close_enough_to_match (oldtype, newtype))
 	return NULL_TREE;
 
       unsigned j = (sizeof (builtin_structptr_types)
@@ -1957,11 +1964,10 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  && !C_DECL_DECLARED_BUILTIN (olddecl))
 	{
 	  /* Accept "harmless" mismatches in function types such
-	     as missing qualifiers or pointer vs same size integer
-	     mismatches.  This is for the ffs and fprintf builtins.
-	     However, with -Wextra in effect, diagnose return and
-	     argument types that are incompatible according to
-	     language rules.  */
+	     as missing qualifiers or int vs long when they're the same
+	     size.  However, with -Wextra in effect, diagnose return and
+	     argument types that are incompatible according to language
+	     rules.  */
 	  tree mismatch_expect;
 	  unsigned mismatch_argno;
 
@@ -1999,16 +2005,25 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	      /* If types match only loosely, print a warning but accept
 		 the redeclaration.  */
 	      location_t newloc = DECL_SOURCE_LOCATION (newdecl);
+	      bool warned = false;
 	      if (mismatch_argno)
-		warning_at (newloc, OPT_Wbuiltin_declaration_mismatch,
-			    "mismatch in argument %u type of built-in "
-			    "function %qD; expected %qT",
-			    mismatch_argno, newdecl, mismatch_expect);
+		warned = warning_at (newloc, OPT_Wbuiltin_declaration_mismatch,
+				     "mismatch in argument %u type of built-in "
+				     "function %qD; expected %qT",
+				     mismatch_argno, newdecl, mismatch_expect);
 	      else
-		warning_at (newloc, OPT_Wbuiltin_declaration_mismatch,
-			    "mismatch in return type of built-in "
-			    "function %qD; expected %qT",
-			    newdecl, mismatch_expect);
+		warned = warning_at (newloc, OPT_Wbuiltin_declaration_mismatch,
+				     "mismatch in return type of built-in "
+				     "function %qD; expected %qT",
+				     newdecl, mismatch_expect);
+	      const char *header = header_for_builtin_fn (olddecl);
+	      if (warned && header)
+		{
+		  rich_location richloc (line_table, newloc);
+		  maybe_add_include_fixit (&richloc, header, true);
+		  inform (&richloc,
+			  "%qD is declared in header %qs", olddecl, header);
+		}
 	    }
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -6512,11 +6527,14 @@ grokdeclarator (const struct c_declarator *declarator,
 		  }
 		if (this_size_varies)
 		  {
-		    if (*expr)
-		      *expr = build2 (COMPOUND_EXPR, TREE_TYPE (size),
-				      *expr, size);
-		    else
-		      *expr = size;
+		    if (TREE_SIDE_EFFECTS (size))
+		      {
+			if (*expr)
+			  *expr = build2 (COMPOUND_EXPR, TREE_TYPE (size),
+					  *expr, size);
+			else
+			  *expr = size;
+		      }
 		    *expr_const_operands &= size_maybe_const;
 		  }
 	      }

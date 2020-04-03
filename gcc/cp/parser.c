@@ -6467,16 +6467,27 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		      tree fns = get_fns (tid);
 		      if (OVL_SINGLE_P (fns))
 			tmpl = OVL_FIRST (fns);
-		      error_at (token->location, "function template-id %qD "
-				"in nested-name-specifier", tid);
+		      if (function_concept_p (fns))
+			error_at (token->location, "concept-id %qD "
+				  "in nested-name-specifier", tid);
+		      else
+			error_at (token->location, "function template-id "
+				  "%qD in nested-name-specifier", tid);
 		    }
 		  else
 		    {
-		      /* Variable template.  */
 		      tmpl = TREE_OPERAND (tid, 0);
-		      gcc_assert (variable_template_p (tmpl));
-		      error_at (token->location, "variable template-id %qD "
-				"in nested-name-specifier", tid);
+		      if (variable_concept_p (tmpl)
+			  || standard_concept_p (tmpl))
+			error_at (token->location, "concept-id %qD "
+				  "in nested-name-specifier", tid);
+		      else
+			{
+			  /* Variable template.  */
+			  gcc_assert (variable_template_p (tmpl));
+			  error_at (token->location, "variable template-id "
+				    "%qD in nested-name-specifier", tid);
+			}
 		    }
 		  if (tmpl)
 		    inform (DECL_SOURCE_LOCATION (tmpl),
@@ -10519,6 +10530,10 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->implicit_template_scope = 0;
     parser->auto_is_implicit_function_template_parm_p = false;
 
+    /* The body of a lambda in a discarded statement is not discarded.  */
+    bool discarded = in_discarded_stmt;
+    in_discarded_stmt = 0;
+
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
@@ -10548,6 +10563,8 @@ cp_parser_lambda_expression (cp_parser* parser)
       maybe_add_lambda_conv_op (type);
 
     finish_struct (type, /*attributes=*/NULL_TREE);
+
+    in_discarded_stmt = discarded;
 
     parser->num_template_parameter_lists = saved_num_template_parameter_lists;
     parser->in_statement = in_statement;
@@ -10603,6 +10620,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
   /* Record default capture mode.  "[&" "[=" "[&," "[=,"  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_AND)
+      && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_ELLIPSIS)
       && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)
       && !cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_THIS))
     LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) = CPLD_REFERENCE;
@@ -10698,6 +10716,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  continue;
 	}
 
+      /* Remember whether we want to capture as a reference or not.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
+	{
+	  capture_kind = BY_REFERENCE;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+
       bool init_pack_expansion = false;
       location_t ellipsis_loc = UNKNOWN_LOCATION;
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -10710,9 +10735,12 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  init_pack_expansion = true;
 	}
 
-      /* Remember whether we want to capture as a reference or not.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
+      /* Early C++20 drafts had ...& instead of &...; be forgiving.  */
+      if (init_pack_expansion && capture_kind != BY_REFERENCE
+	  && cp_lexer_next_token_is (parser->lexer, CPP_AND))
 	{
+	  pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		   0, "%<&%> should come before %<...%>");
 	  capture_kind = BY_REFERENCE;
 	  cp_lexer_consume_token (parser->lexer);
 	}
@@ -10945,6 +10973,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       ++parser->num_template_parameter_lists;
     }
 
+  /* Committee discussion supports allowing attributes here.  */
+  lambda_specs.attributes = cp_parser_attributes_opt (parser);
+
   /* The parameter-declaration-clause is optional (unless
      template-parameter-list was given), but must begin with an
      opening parenthesis if present.  */
@@ -11080,7 +11111,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
-		      gnu_attrs);
+		      chainon (gnu_attrs, lambda_specs.attributes));
     if (fco != error_mark_node)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
@@ -14144,7 +14175,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 			 "allowed in a C++20 concept definition");
 	      else
 		pedwarn (token->location, 0, "C++20 concept definition syntax "
-			 "is %<concept <name> = <expr>%> ");
+			 "is %<concept <name> = <expr>%>");
             }
 
 	  /* In C++20 a concept definition is just 'concept name = expr;'
@@ -14881,11 +14912,8 @@ cp_parser_decltype (cp_parser *parser)
     }
 
   if (!expr)
-    {
-      /* Build auto.  */
-      expr = make_decltype_auto ();
-      AUTO_IS_DECLTYPE (expr) = true;
-    }
+    /* Build auto.  */
+    expr = make_decltype_auto ();
   else
     expr = finish_decltype_type (expr, id_expression_or_member_access_p,
 				 tf_warning_or_error);
@@ -22260,6 +22288,18 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       /* Check for attributes first.  */
       if (cp_next_tokens_can_be_attribute_p (parser))
 	{
+	  /* GNU attributes at the end of a declaration apply to the
+	     declaration as a whole, not to the trailing return type.  So look
+	     ahead to see if these attributes are at the end.  */
+	  if (seen_type_specifier && is_trailing_return
+	      && cp_next_tokens_can_be_gnu_attribute_p (parser))
+	    {
+	      size_t n = cp_parser_skip_attributes_opt (parser, 1);
+	      cp_token *tok = cp_lexer_peek_nth_token (parser->lexer, n);
+	      if (tok->type == CPP_SEMICOLON || tok->type == CPP_COMMA
+		  || tok->type == CPP_EQ || tok->type == CPP_OPEN_BRACE)
+		break;
+	    }
 	  type_specifier_seq->attributes
 	    = attr_chainon (type_specifier_seq->attributes,
 			    cp_parser_attributes_opt (parser));
@@ -23279,6 +23319,9 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
   /* Assume all of the expressions are constant.  */
   *non_constant_p = false;
 
+  unsigned nelts = 0;
+  int suppress = suppress_location_wrappers;
+
   /* Parse the rest of the list.  */
   while (true)
     {
@@ -23418,6 +23461,19 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
       if (token->type == CPP_CLOSE_BRACE)
 	break;
 
+      /* Suppress location wrappers in a long initializer to save memory
+	 (14179).  The cutoff is chosen arbitrarily.  */
+      const unsigned loc_max = 256;
+      unsigned incr = 1;
+      if (TREE_CODE (initializer) == CONSTRUCTOR)
+	/* Look one level down because it's easy.  Looking deeper would require
+	   passing down a nelts pointer, and I don't think multi-level massive
+	   initializers are common enough to justify this.  */
+	incr = CONSTRUCTOR_NELTS (initializer);
+      nelts += incr;
+      if (nelts >= loc_max && (nelts - incr) < loc_max)
+	++suppress_location_wrappers;
+
       /* Consume the `,' token.  */
       cp_lexer_consume_token (parser->lexer);
     }
@@ -23446,6 +23502,8 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 	if (designator && TREE_CODE (designator) == IDENTIFIER_NODE)
 	  IDENTIFIER_MARKED (designator) = 0;
     }
+
+  suppress_location_wrappers = suppress;
 
   *designated = first_designator != NULL_TREE;
   return v;
@@ -26673,7 +26731,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 				   "with scoped attribute token");
       attr_ns = attr_id;
 
-      token = cp_lexer_consume_token (parser->lexer);
+      token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_NAME)
 	attr_id = token->u.value;
       else if (token->type == CPP_KEYWORD)
@@ -26686,6 +26744,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 		    "expected an identifier for the attribute name");
 	  return error_mark_node;
 	}
+      cp_lexer_consume_token (parser->lexer);
 
       attr_ns = canonicalize_attr_name (attr_ns);
       attr_id = canonicalize_attr_name (attr_id);
@@ -27428,7 +27487,7 @@ cp_parser_constraint_primary_expression (cp_parser *parser, bool lambda_p)
       return e;
     }
 
-  cp_parser_parse_tentatively (parser);
+  cp_lexer_save_tokens (parser->lexer);
   cp_id_kind idk;
   location_t loc = input_location;
   cp_expr expr = cp_parser_primary_expression (parser,
@@ -27444,19 +27503,16 @@ cp_parser_constraint_primary_expression (cp_parser *parser, bool lambda_p)
       /* The primary-expression could be part of an unenclosed non-logical
 	 compound expression.  */
       pce = cp_parser_constraint_requires_parens (parser, lambda_p);
-      if (pce != pce_ok)
-	cp_parser_simulate_error (parser);
-      else
-	expr = finish_constraint_primary_expr (expr);
     }
-  if (cp_parser_parse_definitely (parser))
-    return expr;
-  if (expr == error_mark_node)
-    return error_mark_node;
+  if (pce == pce_ok)
+    {
+      cp_lexer_commit_tokens (parser->lexer);
+      return finish_constraint_primary_expr (expr);
+    }
 
   /* Retry the parse at a lower precedence. If that succeeds, diagnose the
      error, but return the expression as if it were valid.  */
-  gcc_assert (pce != pce_ok);
+  cp_lexer_rollback_tokens (parser->lexer);
   cp_parser_parse_tentatively (parser);
   if (pce == pce_maybe_operator)
     expr = cp_parser_assignment_expression (parser, NULL, false, false);
@@ -27660,8 +27716,8 @@ cp_parser_requirement_parameter_list (cp_parser *parser)
   if (!parens.require_open (parser))
     return error_mark_node;
 
-  tree parms
-    = cp_parser_parameter_declaration_clause (parser, CP_PARSER_FLAGS_NONE);
+  tree parms = (cp_parser_parameter_declaration_clause
+		(parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL));
 
   if (!parens.require_close (parser))
     return error_mark_node;
@@ -30781,15 +30837,31 @@ cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
   /* The enum-key is redundant for uses of the TYPE that are not
      declarations and for which name lookup returns just the type
      itself.  */
-  if (decl == type_decl)
+  if (decl != type_decl)
+    return;
+
+  if (scoped_key != RID_CLASS
+      && scoped_key != RID_STRUCT
+      && current_lang_name != lang_name_cplusplus
+      && current_namespace == global_namespace)
     {
-      gcc_rich_location richloc (key_loc);
-      richloc.add_fixit_remove (key_loc);
-      warning_at (&richloc, OPT_Wredundant_tags,
-		  "redundant enum-key %<enum%s%> in reference to %q#T",
-		  (scoped_key == RID_CLASS ? " class"
-		   : scoped_key == RID_STRUCT ? " struct" : ""), type);
+      /* Avoid issuing the diagnostic for apparently redundant (unscoped)
+	 enum tag in shared C/C++ code in files (such as headers) included
+	 in the main source file.  */
+      const line_map_ordinary *map = NULL;
+      linemap_resolve_location (line_table, key_loc,
+				LRK_MACRO_DEFINITION_LOCATION,
+				&map);
+      if (!MAIN_FILE_P (map))
+	return;
     }
+
+  gcc_rich_location richloc (key_loc);
+  richloc.add_fixit_remove (key_loc);
+  warning_at (&richloc, OPT_Wredundant_tags,
+	      "redundant enum-key %<enum%s%> in reference to %q#T",
+	      (scoped_key == RID_CLASS ? " class"
+	       : scoped_key == RID_STRUCT ? " struct" : ""), type);
 }
 
 /* Describes the set of declarations of a struct, class, or class template
@@ -30942,6 +31014,13 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   if (!warn_mismatched_tags && !warn_redundant_tags)
     return;
 
+  /* Only consider the true class-keys below and ignore typename_type,
+     etc. that are not C++ class-keys.  */
+  if (class_key != class_type
+      && class_key != record_type
+      && class_key != union_type)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
@@ -30954,15 +31033,32 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
      neither definitions of it nor declarations, and for which name
      lookup returns just the type itself.  */
   bool key_redundant = !def_p && !decl_p && decl == type_decl;
+
+  if (key_redundant
+      && class_key != class_type
+      && current_lang_name != lang_name_cplusplus
+      && current_namespace == global_namespace)
+    {
+      /* Avoid issuing the diagnostic for apparently redundant struct
+	 and union class-keys in shared C/C++ code in files (such as
+	 headers) included in the main source file.  */
+      const line_map_ordinary *map = NULL;
+      linemap_resolve_location (line_table, key_loc,
+				LRK_MACRO_DEFINITION_LOCATION,
+				&map);
+      if (!MAIN_FILE_P (map))
+	key_redundant = false;
+    }
+
   if (key_redundant)
     {
       gcc_rich_location richloc (key_loc);
       richloc.add_fixit_remove (key_loc);
       warning_at (&richloc, OPT_Wredundant_tags,
-		"redundant class-key %qs in reference to %q#T",
-		class_key == union_type ? "union"
-		: class_key == record_type ? "struct" : "class",
-		type);
+		  "redundant class-key %qs in reference to %q#T",
+		  class_key == union_type ? "union"
+		  : class_key == record_type ? "struct" : "class",
+		  type);
     }
 
   if (seen_as_union || !warn_mismatched_tags)

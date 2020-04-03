@@ -2202,7 +2202,6 @@ create_loop_fn (location_t loc)
   DECL_ARGUMENTS (decl) = t;
 
   allocate_struct_function (decl, false);
-  DECL_STRUCT_FUNCTION (decl)->last_clique = act_cfun->last_clique;
 
   /* The call to allocate_struct_function clobbers CFUN, so we need to restore
      it.  */

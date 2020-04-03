@@ -611,25 +611,27 @@ build_conflicts (void)
 static void
 print_hard_reg_set (FILE *file, const char *title, HARD_REG_SET set)
 {
-  int i, start;
+  int i, start, end;
 
   fputs (title, file);
-  for (start = -1, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  for (start = end = -1, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (TEST_HARD_REG_BIT (set, i))
+      bool reg_included = TEST_HARD_REG_BIT (set, i);
+
+      if (reg_included)
 	{
-	  if (i == 0 || ! TEST_HARD_REG_BIT (set, i - 1))
+	  if (start == -1)
 	    start = i;
+	  end = i;
 	}
-      if (start >= 0
-	  && (i == FIRST_PSEUDO_REGISTER - 1 || ! TEST_HARD_REG_BIT (set, i)))
+      if (start >= 0 && (!reg_included || i == FIRST_PSEUDO_REGISTER - 1))
 	{
-	  if (start == i - 1)
+	  if (start == end)
 	    fprintf (file, " %d", start);
-	  else if (start == i - 2)
-	    fprintf (file, " %d %d", start, start + 1);
+	  else if (start == end + 1)
+	    fprintf (file, " %d %d", start, end);
 	  else
-	    fprintf (file, " %d-%d", start, i - 1);
+	    fprintf (file, " %d-%d", start, end);
 	  start = -1;
 	}
     }

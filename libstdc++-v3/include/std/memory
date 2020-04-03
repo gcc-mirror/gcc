@@ -66,6 +66,7 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_tempbuf.h>
 #include <bits/stl_raw_storage_iter.h>
+#include <bits/ranges_uninitialized.h>
 
 #if __cplusplus >= 201103L
 #  include <exception>        	  // std::exception
@@ -92,7 +93,7 @@
 #if __cplusplus >= 201103L
 #include <cstdint>
 #if __cplusplus > 201703L
-# include <bit>			// for ispow2
+# include <bit>			// for has_single_bit
 # include <new>			// for placement operator new
 # include <tuple>		// for tuple, make_tuple, make_from_tuple
 #endif
@@ -190,7 +191,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr _Tp* assume_aligned(_Tp* __ptr)
     {
-      static_assert(std::ispow2(_Align));
+      static_assert(std::has_single_bit(_Align));
       _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
       return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
     }
@@ -386,9 +387,10 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     uninitialized_construct_using_allocator(_Tp* __p, const _Alloc& __a,
 					    _Args&&... __args)
     {
-      void* __vp = const_cast<void*>(static_cast<const volatile void*>(__p));
-      return ::new(__vp) _Tp(std::make_obj_using_allocator<_Tp>(__a,
-	    std::forward<_Args>(__args)...));
+      return std::apply([&](auto&&... __xs) {
+	return std::construct_at(__p, std::forward<decltype(__xs)>(__xs)...);
+      }, std::uses_allocator_construction_args<_Tp>(__a,
+	std::forward<_Args>(__args)...));
     }
 // @}
 

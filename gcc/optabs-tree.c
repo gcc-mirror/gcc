@@ -284,8 +284,13 @@ supportable_convert_operation (enum tree_code code,
   machine_mode m1,m2;
   bool truncp;
 
+  gcc_assert (VECTOR_TYPE_P (vectype_out) && VECTOR_TYPE_P (vectype_in));
+
   m1 = TYPE_MODE (vectype_out);
   m2 = TYPE_MODE (vectype_in);
+
+  if (!VECTOR_MODE_P (m1) || !VECTOR_MODE_P (m2))
+    return false;
 
   /* First check if we can done conversion directly.  */
   if ((code == FIX_TRUNC_EXPR

@@ -5,7 +5,7 @@
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
-// targeting P8, both LE and BE. six tests.
+// Targeting P8LE and P8BE, six tests total.
 // P8 (LE) constants: mfvsrd
 // P8 (LE) variables: xori, rldic, mtvsrd, xxpermdi, vslo, mfvsrd
 // P8 (BE) constants: xxpermdi, mfvsrd

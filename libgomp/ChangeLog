@@ -1,3 +1,174 @@
+2020-02-21  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Adapt to
+	changes from 2020-02-19, i.e. use integer(c_size_t) instead of
+	integer(acc_device_property) for the type of the return value of
+	acc_get_property.
+
+2020-02-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* .gitattributes: New; whitespace handling for Fortran's openacc_lib.h.
+	* config/accel/openacc.f90 (openacc_kinds): Add acc_device_current.
+	(openacc_internal, acc_on_device_h): Fix argument name; minor cleanup.
+	* libgomp.texi (Enabling OpenACC): No longer mark as experimental.
+	(acc_set_device_num): Fix Fortran argument name, use same name for C.
+	(acc_get_property): Update Fortran interface to post-OpenACC 3.0
+	corrections; add note about the previous interface and named constant.
+	(OpenACC library and environment variables): Fix two typos.
+	* openacc.f90: Use for all procedures the argument names from the spec
+	as for …_h they are user visible.
+	(openacc_kinds): Rename acc_device_property to
+	acc_device_property_kinds and change value to int32 ; and update users.
+	Re-add acc_device_property for for backward compatibility.
+	(acc_get_property_string_h): Clean up as acc_device_property_kind
+	changed.
+	(acc_get_property_h): Likewise and return c_size_t instead of
+	acc_device_property.
+	(openacc): Also export acc_device_property_kinds.
+	(acc_async_test_h, acc_async_test_all_h, acc_on_device_h,
+	acc_is_present_32_h, acc_is_present_64_h): Simplify logical-return-value
+	handling; check against /= 0 instead of == 1 to match C.
+	* openacc_lib.h: Use for all procedures the argument names from the spec
+	as for …_h they are user visible. Place !GCC$ into the first column to
+	be active also for fixed-form souce form.
+	(acc_device_current, acc_device_property_kind, acc_device_property,
+	acc_property_memory, acc_property_free_memory, acc_property_name,
+	acc_property_vendor, acc_property_driver): New named constants.
+	(acc_get_property, acc_get_property_string): New generic interface.
+
+2020-02-13  Frederik Harwath  <frederik@codesourcery.com>
+
+	PR libgomp/93481
+	* plugin/plugin-nvptx.c: Remove GOMP_OFFLOAD_async_run stub.
+	* target.c (gomp_load_plugin_for_device): Make "async_run" loading
+	optional.
+	(gomp_target_task_fn): Assert "devicep->async_run_func".
+	(clear_unsupported_flags): New function to remove unsupported flags
+	(right now only GOMP_TARGET_FLAG_NOWAIT) that can be be ignored.
+	(GOMP_target_ext): Apply clear_unsupported_flags to flags.
+	* testsuite/libgomp.c/target-33.c:
+	Remove xfail for offload_target_nvptx.
+	* testsuite/libgomp.c/target-34.c: Likewise.
+
+2020-02-10  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.c/target-33.c: Add xfail for execution on
+	offload_target_nvptx, cf. https://gcc.gnu.org/PR81688.
+	* testsuite/libgomp.c/target-34.c: Likewise.
+	* testsuite/libgomp.c/target-link-1.c: Add xfail for
+	offload_target_nvptx, cf. https://gcc.gnu.org/PR81689.
+
+2020-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-38.c: New test.
+
+2020-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/93515
+	* testsuite/libgomp.c-c++-common/pr93515.c: New test.
+
+2020-02-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_nvptx): Pass flags as 'options'
+	and not as 'source' argument to libgomp_target_compile.
+
+2020-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX801): Remove.
+	(gcn_gfx801_s): Remove.
+	(isa_hsa_name): Remove gfx801.
+	(isa_gcc_name): Remove gfx801/carizzo.
+	(isa_code): Remove gfx801.
+
+2020-02-03  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenACC Runtime Library Routines): Document *_async
+	and *_finalize variants; document acc_attach and acc_detach; update
+	references from OpenACC 2.0 to 2.6.
+	* openacc.f90 (openacc_version): Update to 201711.
+	* openacc_lib.h (openacc_version): Update to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Update expected
+	openacc_version to 201711.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+
+2020-01-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct hsa_kernel_description): Add sgpr_count
+	and vgpr_count fields.
+	(struct kernel_info): Add a field for a hsa_kernel_description.
+	(run_kernel): Reduce the number of threads/workers if the requested
+	number would require too many VGPRs.
+	(init_basic_kernel_info): Initialize description field with
+	the hsa_kernel_description entry for the kernel.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR bootstrap/93409
+	* plugin/configfrag.ac (enable_offload_targets): Skip
+	HSA and GCN plugin besides -m32 also for -mx32.
+	* configure: Regenerate.
+
+2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* oacc-init.c (name_of_acc_device_t): Handle acc_device_radeon.
+
+2020-01-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* plugin-gcn.c (struct agent_info): Add fields "name" and
+	"vendor_name" ...
+	(GOMP_OFFLOAD_init_device): ... and init from here.
+	(struct hsa_context_info): Add field "driver_version_s" ...
+	(init_hsa_contest): ... and init from here.
+	(GOMP_OFFLOAD_openacc_get_property): Replace stub with a proper
+	implementation.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property.c:
+	Enable test execution for amdgcn and host offloading targets.
+	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-aux.c
+	(expect_device_properties): Split function into ...
+	(expect_device_string_properties): ... this new function ...
+	(expect_device_memory): ... and this new function.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-gcn.c:
+	Add test.
+
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/deep-copy-2.f90: Remove test from here.
+	* testsuite/libgomp.oacc-fortran/deep-copy-3.f90: Don't use mixed
+	component/non-component variable refs in a single directive.
+	* testsuite/libgomp.oacc-fortran/classtypes-1.f95: Likewise.
+
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-01-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-aux.c
+	(expect_device_properties): Remove "expected_free_mem" argument,
+	change "expected_total_mem" argument type to size_t;
+	change types of acc_get_property results to size_t,
+	adapt format strings.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property.c:
+	Use %zu instead of %zd to print size_t values.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-2.c: Adapt and
+	rename to ...
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-nvptx.c: ... this.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-3.c: Adapt and
+	rename to ...
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-host.c: ... this.
+
+2020-01-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (parse_target_attributes): Use correct mask for
+	the device id.
+
 2020-01-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Skip test on gcn.

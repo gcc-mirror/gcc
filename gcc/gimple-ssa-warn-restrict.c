@@ -1692,10 +1692,11 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
    has been issued, or would have been issued if DO_WARN had been true.  */
 
 static bool
-maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
+maybe_diag_access_bounds (gimple *call, tree func, int strict,
 			  const builtin_memref &ref, offset_int wroff,
 			  bool do_warn)
 {
+  location_t loc = gimple_or_expr_nonartificial_location (call, ref.ptr);
   const offset_int maxobjsize = ref.maxobjsize;
 
   /* Check for excessive size first and regardless of warning options
@@ -1711,11 +1712,6 @@ maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
 
       if (warn_stringop_overflow)
 	{
-	  if (EXPR_HAS_LOCATION (ref.ptr))
-	    loc = EXPR_LOCATION (ref.ptr);
-
-	  loc = expansion_point_location_if_in_system_header (loc);
-
 	  if (ref.sizrange[0] == ref.sizrange[1])
 	    return warning_at (loc, OPT_Wstringop_overflow_,
 			       "%G%qD specified bound %wu "
@@ -1753,11 +1749,6 @@ maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
   if (TREE_NO_WARNING (ref.ptr)
       || (ref.ref && TREE_NO_WARNING (ref.ref)))
     return false;
-
-  if (EXPR_HAS_LOCATION (ref.ptr))
-    loc = EXPR_LOCATION (ref.ptr);
-
-  loc = expansion_point_location_if_in_system_header (loc);
 
   char rangestr[2][64];
   if (ooboff[0] == ooboff[1]
@@ -2018,9 +2009,6 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 			 tree srcsize, bool bounds_only /* = false */,
 			 bool do_warn /* = true */)
 {
-  location_t loc = gimple_nonartificial_location (call);
-  loc = expansion_point_location_if_in_system_header (loc);
-
   tree func = gimple_call_fndecl (call);
 
   builtin_memref dstref (dst, dstsize);
@@ -2041,8 +2029,8 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
   /* Validate offsets to each reference before the access first to make
      sure they are within the bounds of the destination object if its
      size is known, or PTRDIFF_MAX otherwise.  */
-  if (maybe_diag_access_bounds (loc, call, func, strict, dstref, wroff, do_warn)
-      || maybe_diag_access_bounds (loc, call, func, strict, srcref, 0, do_warn))
+  if (maybe_diag_access_bounds (call, func, strict, dstref, wroff, do_warn)
+      || maybe_diag_access_bounds (call, func, strict, srcref, 0, do_warn))
     {
       if (do_warn)
 	gimple_set_no_warning (call, true);
@@ -2066,6 +2054,7 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 	}
     }
 
+  location_t loc = gimple_or_expr_nonartificial_location (call, dst);
   if (operand_equal_p (dst, src, 0))
     {
       /* Issue -Wrestrict unless the pointers are null (those do

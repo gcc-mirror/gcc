@@ -1,3 +1,14 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* plugin/configure.ac: Handle `--with-toolexeclibdir='.
+	* plugin/Makefile.in: Regenerate.
+	* plugin/aclocal.m4: Regenerate.
+	* plugin/configure: Regenerate.
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_property):

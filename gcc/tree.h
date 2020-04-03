@@ -5611,6 +5611,31 @@ builtin_decl_declared_p (enum built_in_function fncode)
 	  && builtin_info[uns_fncode].declared_p);
 }
 
+/* Determine if the function identified by FNDECL is one that
+   makes sense to match by name, for those places where we detect
+   "magic" functions by name.
+
+   Return true if FNDECL has a name and is an extern fndecl at file scope.
+   FNDECL must be a non-NULL decl.
+
+   Avoid using this, as it's generally better to use attributes rather
+   than to check for functions by name.  */
+
+static inline bool
+maybe_special_function_p (const_tree fndecl)
+{
+  tree name_decl = DECL_NAME (fndecl);
+  if (name_decl
+      /* Exclude functions not at the file scope, or not `extern',
+	 since they are not the magic functions we would otherwise
+	 think they are.  */
+      && (DECL_CONTEXT (fndecl) == NULL_TREE
+	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
+      && TREE_PUBLIC (fndecl))
+    return true;
+  return false;
+}
+
 /* Return true if T (assumed to be a DECL) is a global variable.
    A variable is considered global if its storage is not automatic.  */
 

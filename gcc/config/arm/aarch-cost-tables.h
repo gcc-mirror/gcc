@@ -235,7 +235,7 @@ const struct cpu_cost_table cortexa57_extra_costs =
     0,                 /* arith.  */
     0,                 /* logical.  */
     0,                 /* shift.  */
-    COSTS_N_INSNS (1), /* shift_reg.  */
+    0,			/* shift_reg.  */
     COSTS_N_INSNS (1), /* arith_shift.  */
     COSTS_N_INSNS (1), /* arith_shift_reg.  */
     COSTS_N_INSNS (1), /* log_shift.  */

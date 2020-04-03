@@ -30,6 +30,10 @@ extern int native_encode_initializer (tree, unsigned char *, int,
 				      int off = -1);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
 extern bool can_native_interpret_type_p (tree);
+extern void shift_bytes_in_array_left (unsigned char *, unsigned int,
+				       unsigned int);
+extern void shift_bytes_in_array_right (unsigned char *, unsigned int,
+					unsigned int);
 
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.

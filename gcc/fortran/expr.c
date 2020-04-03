@@ -3495,8 +3495,10 @@ gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, .
     return true;
 
   va_start (argp, optype_msgid);
-  vsnprintf (buffer, 240, optype_msgid, argp);
+  d = vsnprintf (buffer, sizeof (buffer), optype_msgid, argp);
   va_end (argp);
+  if (d < 1 || d >= (int) sizeof (buffer)) /* Reject truncation.  */
+    gfc_internal_error ("optype_msgid overflow: %d", d);
 
   if (op1->rank != op2->rank)
     {
@@ -4220,13 +4222,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
   if (rvalue->expr_type == EXPR_NULL)
     return true;
 
-  if (lvalue->ts.type == BT_CHARACTER)
-    {
-      bool t = gfc_check_same_strlen (lvalue, rvalue, "pointer assignment");
-      if (!t)
-	return false;
-    }
-
   if (rvalue->expr_type == EXPR_VARIABLE && is_subref_array (rvalue))
     lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
 
@@ -4280,6 +4275,13 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 		     "nor POINTER at %L", &rvalue->where);
 	  return false;
 	}
+    }
+
+  if (lvalue->ts.type == BT_CHARACTER)
+    {
+      bool t = gfc_check_same_strlen (lvalue, rvalue, "pointer assignment");
+      if (!t)
+	return false;
     }
 
   if (is_pure && gfc_impure_variable (rvalue->symtree->n.sym))

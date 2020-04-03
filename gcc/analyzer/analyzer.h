@@ -78,8 +78,12 @@ extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 extern bool is_named_call_p (tree fndecl, const char *funcname);
 extern bool is_named_call_p (tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
-extern bool is_setjmp_call_p (const gimple *stmt);
+extern bool is_std_named_call_p (tree fndecl, const char *funcname,
+				 const gcall *call, unsigned int num_args);
+extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
+
+extern const char *get_user_facing_name (const gcall *call);
 
 extern void register_analyzer_pass ();
 
@@ -97,18 +101,6 @@ public:
   auto_cfun (function *fun) { push_cfun (fun); }
   ~auto_cfun () { pop_cfun (); }
 };
-
-/* Begin suppressing -Wformat and -Wformat-extra-args.  */
-
-#define PUSH_IGNORE_WFORMAT \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wformat\"") \
-  _Pragma("GCC diagnostic ignored \"-Wformat-extra-args\"")
-
-/* Finish suppressing -Wformat and -Wformat-extra-args.  */
-
-#define POP_IGNORE_WFORMAT \
-  _Pragma("GCC diagnostic pop")
 
 /* A template for creating hash traits for a POD type.  */
 

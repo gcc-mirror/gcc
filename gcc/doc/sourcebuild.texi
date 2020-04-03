@@ -1893,6 +1893,11 @@ ARM target supports options to generate instructions from ARMv8.2-A with
 the 8-Bit Integer Matrix Multiply extension (i8mm). Some multilibs may be
 incompatible with these options.
 
+@item arm_v8_1m_mve_ok
+ARM target supports options to generate instructions from ARMv8.1-M with
+the M-Profile Vector Extension (MVE). Some multilibs may be incompatible
+with these options.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -2723,7 +2728,7 @@ assembly output.
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
 
-@item check-function-bodies @var{prefix} @var{terminator} [@var{option}]
+@item check-function-bodies @var{prefix} @var{terminator} [@var{option} [@{ target/xfail @var{selector} @}]]
 Looks through the source file for comments that give the expected assembly
 output for selected functions.  Each line of expected output starts with the
 prefix string @var{prefix} and the expected output for a function as a whole

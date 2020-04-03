@@ -1604,20 +1604,34 @@ rs6000_emit_probe_stack_range_stack_clash (HOST_WIDE_INT orig_size,
       rtx end_addr
 	= copy_reg ? gen_rtx_REG (Pmode, 0) : gen_rtx_REG (Pmode, 12);
       rtx rs = GEN_INT (-rounded_size);
-      rtx_insn *insn;
-      if (add_operand (rs, Pmode))
-	insn = emit_insn (gen_add3_insn (end_addr, stack_pointer_rtx, rs));
+      rtx_insn *insn = gen_add3_insn (end_addr, stack_pointer_rtx, rs);
+      if (insn == NULL)
+	{
+	  emit_move_insn (end_addr, rs);
+	  insn = gen_add3_insn (end_addr, end_addr, stack_pointer_rtx);
+	  gcc_assert (insn);
+	}
+      bool add_note = false;
+      if (!NONJUMP_INSN_P (insn) || NEXT_INSN (insn))
+	add_note = true;
       else
 	{
-	  emit_move_insn (end_addr, GEN_INT (-rounded_size));
-	  insn = emit_insn (gen_add3_insn (end_addr, end_addr,
-					   stack_pointer_rtx));
-	  /* Describe the effect of INSN to the CFI engine.  */
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (end_addr,
-				     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-						   rs)));
+	  rtx set = single_set (insn);
+	  if (set == NULL_RTX
+	      || SET_DEST (set) != end_addr
+	      || GET_CODE (SET_SRC (set)) != PLUS
+	      || XEXP (SET_SRC (set), 0) != stack_pointer_rtx
+	      || XEXP (SET_SRC (set), 1) != rs)
+	    add_note = true;
 	}
+      insn = emit_insn (insn);
+      /* Describe the effect of INSN to the CFI engine, unless it
+	 is a single insn that describes it itself.  */
+      if (add_note)
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		      gen_rtx_SET (end_addr,
+				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+						 rs)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Emit the loop.  */

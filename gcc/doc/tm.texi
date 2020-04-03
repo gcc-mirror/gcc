@@ -6532,7 +6532,9 @@ returns @code{VOIDmode}.
 @end deftypefn
 
 @deftypevr {Target Hook} {unsigned int} TARGET_FLAGS_REGNUM
-If the target has a dedicated flags register, and it needs to use the post-reload comparison elimination pass, then this value should be set appropriately.
+If the target has a dedicated flags register, and it needs to use the
+post-reload comparison elimination pass, or the delay slot filler pass,
+then this value should be set appropriately.
 @end deftypevr
 
 @node Costs

@@ -60,6 +60,9 @@
 #include <utility> // UK-300.
 #include <bits/stl_algobase.h>
 #include <bits/stl_algo.h>
+#if __cplusplus > 201703L
+# include <bits/ranges_algo.h>
+#endif
 
 #if __cplusplus > 201402L
 // Parallel STL algorithms

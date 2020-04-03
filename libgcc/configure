@@ -705,6 +705,7 @@ enable_gcov
 enable_vtable_verify
 with_aix_soname
 enable_version_specific_runtime_libs
+with_toolexeclibdir
 with_slibdir
 enable_maintainer_mode
 with_build_libsubdir
@@ -1369,6 +1370,9 @@ Optional Packages:
   --with-aix-soname=aix|svr4|both
                           shared library versioning (aka "SONAME") variant to
                           provide on AIX
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-libunwind use installed libunwind
@@ -2464,6 +2468,22 @@ fi
 $as_echo "$version_specific_libs" >&6; }
 
 
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
+
 # Check whether --with-slibdir was given.
 if test "${with_slibdir+set}" = set; then :
   withval=$with_slibdir; slibdir="$with_slibdir"
@@ -2471,7 +2491,14 @@ else
   if test "${version_specific_libs}" = yes; then
   slibdir='$(libsubdir)'
 elif test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
-  slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
+      ;;
+    *)
+      slibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   slibdir='$(libdir)'
 fi
@@ -2701,7 +2728,14 @@ case ${version_specific_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_noncanonical)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
       toolexeclibdir='$(libdir)'
@@ -3519,11 +3553,11 @@ done
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
+#include <stdio.h>
 int
 main ()
 {
-
+printf ("hello world\n");
   ;
   return 0;
 }

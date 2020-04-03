@@ -3,7 +3,7 @@
 /* { dg-options "-O3 -flto -DDOJOB=1" } */
 
 int a;
-extern void (*p[2])(int n);
+extern void (*p[5])(int n);
 void abort (void);
 int
 main()
@@ -14,8 +14,8 @@ main()
     p[0](1);
   /* This call shall not be converted.  */
   for (i = 0;i<1000;i++)
-    p[i%2](2);
-  if (a != 1000)
+    p[i%5](2);
+  if (a != -1000)
     abort ();
 
   return 0;

@@ -62,6 +62,13 @@ public:
 			const supernode *node,
 			const gimple *stmt) const = 0;
 
+  virtual void on_phi (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+		       const supernode *node ATTRIBUTE_UNUSED,
+		       const gphi *phi ATTRIBUTE_UNUSED,
+		       tree rhs ATTRIBUTE_UNUSED) const
+  {
+  }
+
   virtual void on_condition (sm_context *sm_ctxt,
 			     const supernode *node,
 			     const gimple *stmt,
@@ -79,6 +86,8 @@ public:
   }
 
   void validate (state_t s) const;
+
+  void dump_to_pp (pretty_printer *pp) const;
 
 protected:
   state_t add_state (const char *name);

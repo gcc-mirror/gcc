@@ -1,3 +1,8 @@
+2020-02-06  Alexandre Oliva <oliva@adacore.com>
+
+	* raise-gcc.c (personality_body) [__ARM_EABI_UNWINDER__]:
+	Initialize barrier_cache.sp when ending phase1.
+
 2020-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads: Bump copyright year.

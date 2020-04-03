@@ -80,6 +80,8 @@ AC_ARG_ENABLE([version-specific-runtime-libs],
   [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
+GCC_WITH_TOOLEXECLIBDIR
+
 # Version-specific runtime libs processing.
 if test $version_specific_libs = yes; then
   glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
@@ -91,7 +93,14 @@ fi
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   nover_glibgo_toolexecdir='${exec_prefix}/${host_alias}'
-  nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      nover_glibgo_toolexeclibdir='${toolexecdir}/lib'
+      ;;
+    *)
+      nover_glibgo_toolexeclibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
   nover_glibgo_toolexeclibdir='${libdir}'

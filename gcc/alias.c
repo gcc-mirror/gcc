@@ -368,6 +368,26 @@ rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
 			     && MEM_ALIAS_SET (mem) != 0);
 }
 
+/* Return true if the ref EARLIER behaves the same as LATER with respect
+   to TBAA for every memory reference that might follow LATER.  */
+
+bool
+refs_same_for_tbaa_p (tree earlier, tree later)
+{
+  ao_ref earlier_ref, later_ref;
+  ao_ref_init (&earlier_ref, earlier);
+  ao_ref_init (&later_ref, later);
+  alias_set_type earlier_set = ao_ref_alias_set (&earlier_ref);
+  alias_set_type later_set = ao_ref_alias_set (&later_ref);
+  if (!(earlier_set == later_set
+	|| alias_set_subset_of (later_set, earlier_set)))
+    return false;
+  alias_set_type later_base_set = ao_ref_base_alias_set (&later_ref);
+  alias_set_type earlier_base_set = ao_ref_base_alias_set (&earlier_ref);
+  return (earlier_base_set == later_base_set
+	  || alias_set_subset_of (later_base_set, earlier_base_set));
+}
+
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 
@@ -587,6 +607,49 @@ objects_must_conflict_p (tree t1, tree t2)
   return alias_sets_must_conflict_p (set1, set2);
 }
 
+/* Return true if T is an end of the access path which can be used
+   by type based alias oracle.  */
+
+bool
+ends_tbaa_access_path_p (const_tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case COMPONENT_REF:
+      if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
+	return true;
+      /* Permit type-punning when accessing a union, provided the access
+	 is directly through the union.  For example, this code does not
+	 permit taking the address of a union member and then storing
+	 through it.  Even the type-punning allowed here is a GCC
+	 extension, albeit a common and useful one; the C standard says
+	 that such accesses have implementation-defined behavior.  */
+      else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+	return true;
+      break;
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
+	return true;
+      break;
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      break;
+
+    case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
+      /* Bitfields and casts are never addressable.  */
+      return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
 /* Return the outermost parent of component present in the chain of
    component references handled by get_inner_reference in T with the
    following property:
@@ -601,40 +664,8 @@ component_uses_parent_alias_set_from (const_tree t)
 
   while (handled_component_p (t))
     {
-      switch (TREE_CODE (t))
-	{
-	case COMPONENT_REF:
-	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
-	    found = t;
-	  /* Permit type-punning when accessing a union, provided the access
-	     is directly through the union.  For example, this code does not
-	     permit taking the address of a union member and then storing
-	     through it.  Even the type-punning allowed here is a GCC
-	     extension, albeit a common and useful one; the C standard says
-	     that such accesses have implementation-defined behavior.  */
-	  else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
-	    found = t;
-	  break;
-
-	case ARRAY_REF:
-	case ARRAY_RANGE_REF:
-	  if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
-	    found = t;
-	  break;
-
-	case REALPART_EXPR:
-	case IMAGPART_EXPR:
-	  break;
-
-	case BIT_FIELD_REF:
-	case VIEW_CONVERT_EXPR:
-	  /* Bitfields and casts are never addressable.  */
-	  found = t;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
+      if (ends_tbaa_access_path_p (t))
+	found = t;
 
       t = TREE_OPERAND (t, 0);
     }

@@ -36,10 +36,10 @@ test01()
   constexpr long b[2] = { };
   static_assert( std::ranges::begin(b) == (b + 0) );
 
-  struct Incomplete;
-  using A = Incomplete[]; // unbounded array of incomplete type
+  struct X { };
+  using A = X[]; // unbounded array
   extern A& f();
-  static_assert( same_as<decltype(std::ranges::begin(f())), Incomplete*> );
+  static_assert( same_as<decltype(std::ranges::begin(f())), X*> );
 }
 
 void
@@ -85,7 +85,7 @@ struct RV // view on an R
 };
 
 // Allow ranges::begin to work with RV&&
-template<> constexpr bool std::ranges::enable_safe_range<RV> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<RV> = true;
 
 void
 test03()
@@ -102,7 +102,7 @@ test03()
   VERIFY( std::ranges::begin(c) == begin(c) );
 
   RV v{r};
-  // enable_safe_range<RV> allows ranges::begin to work for rvalues,
+  // enable_borrowed_range<RV> allows ranges::begin to work for rvalues,
   // but it will call v.begin() or begin(v) on an lvalue:
   static_assert(same_as<decltype(std::ranges::begin(std::move(v))),
 		decltype(begin(v))>);
@@ -132,7 +132,7 @@ struct RR
 };
 
 // N.B. this is a lie, begin on an RR rvalue will return a dangling pointer.
-template<> constexpr bool std::ranges::enable_safe_range<RR> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<RR> = true;
 
 void
 test04()
