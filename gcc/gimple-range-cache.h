@@ -32,8 +32,8 @@ class ssa_global_cache
 public:
   ssa_global_cache ();
   ~ssa_global_cache ();
-  bool get_global_range (irange& r, tree name) const;
-  void set_global_range (tree name, const irange&r);
+  bool get_global_range (irange &r, tree name) const;
+  void set_global_range (tree name, const irange &r);
   void clear_global_range (tree name);
   void clear ();
   void dump (FILE *f = stderr);
@@ -41,25 +41,9 @@ private:
   vec<irange_storage *> m_tab;
 };
 
-// Class used to track non-null references of an ssa-name
-// A vector of bitmaps indexed by ssa-name is maintained. When indexed by
-// Basic Block, an on-bit indicates there is a non-null dereference for
-// that ssa_name in that basic block.
-
-class non_null_ref
-{
-public:
-  non_null_ref ();
-  ~non_null_ref ();
-  bool non_null_deref_p (tree name, basic_block bb);
-private:
-  vec <bitmap> m_nn;
-  void process_name (tree name);
-};
-
-// This class manages a vector of pointers to ssa_block ranges.
-// THis provides the basis for the "range on entry" cache for
-// all ssa-names.
+// This class manages a vector of pointers to ssa_block ranges.  It
+// provides the basis for the "range on entry" cache for all
+// SSA names.
 
 class block_range_cache
 {
@@ -67,7 +51,6 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  // Hide the details of the block cache with these wrappers
   void set_bb_range (tree name, const basic_block bb, const irange &r);
   void set_bb_varying (tree name, const basic_block bb);
   bool get_bb_range (irange &r, tree name, const basic_block bb);
@@ -80,5 +63,20 @@ private:
   ssa_block_ranges &get_block_ranges (tree name);
 };
 
+// Class used to track non-null references of an SSA name.  A vector
+// of bitmaps indexed by SSA name is maintained.  When indexed by
+// basic block, an on-bit indicates there is a non-null dereference
+// for that SSA in that block.
+
+class non_null_ref
+{
+public:
+  non_null_ref ();
+  ~non_null_ref ();
+  bool non_null_deref_p (tree name, basic_block bb);
+private:
+  vec <bitmap> m_nn;
+  void process_name (tree name);
+};
 
 #endif // GCC_SSA_RANGE_CACHE_H

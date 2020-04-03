@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range-stmt.h"
 #include "gimple-range-cache.h"
 
-// During contructor, Allocate the vector of ssa_names.
+// During contructor, allocate the vector of ssa_names.
 
 non_null_ref::non_null_ref ()
 {
@@ -64,11 +64,11 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb)
   return bitmap_bit_p (m_nn[v], bb->index);
 }
 
-// Allocate an populate the bitmap for NAME.  An ON bit for a block index
-// indicates there is a non-null reference in that block.
-// In order to populate the bitmap, a quick run of all the immediate uses
-// are made and the statement checked to see if a non-null dereference is made
-// on that statement.
+// Allocate an populate the bitmap for NAME.  An ON bit for a block
+// index indicates there is a non-null reference in that block.  In
+// order to populate the bitmap, a quick run of all the immediate uses
+// are made and the statement checked to see if a non-null dereference
+// is made on that statement.
 
 void
 non_null_ref::process_name (tree name)
@@ -111,13 +111,13 @@ non_null_ref::process_name (tree name)
   m_nn[v] = b;
 }
 
-// This class implements a cache of ranges indexed by basic block.
-// It represents all that is known about an SSA_NAME on entry to each block
-// It caches a range-for-type varying range so it doesnt need to be reformed all
-// the time.  If a range is ever always associated with a type, we can use that
-// instead,.
-// Whenever varying is being set for a block, the cache simply points
-// to this cached one rather than create a new one each time.
+// This class implements a cache of ranges indexed by basic block.  It
+// represents all that is known about an SSA_NAME on entry to each
+// block.  It caches a range-for-type varying range so it doesn't need
+// to be reformed all the time.  If a range is ever always associated
+// with a type, we can use that instead.  Whenever varying is being
+// set for a block, the cache simply points to this cached one rather
+// than create a new one each time.
 
 class ssa_block_ranges
 {
@@ -190,8 +190,8 @@ ssa_block_ranges::set_bb_varying (const basic_block bb)
   m_tab[bb->index] = m_type_range;
 }
 
-// Return the range associated with block BB in R. Return false if there is no
-// range,
+// Return the range associated with block BB in R. Return false if
+// there is no range.
 
 bool
 ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
@@ -290,7 +290,8 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
   return get_block_ranges (name).set_bb_varying (bb);
 }
 
-// Return the range for NAME on entry to BB in R.  Return true if here is one.
+// Return the range for NAME on entry to BB in R.  Return true if here
+// is one.
 
 bool
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
@@ -414,7 +415,7 @@ ssa_global_cache::set_global_range (tree name, const irange &r)
     m_tab.safe_grow_cleared (num_ssa_names + 1);
   irange_storage *m = m_tab[v];
 
-  // Ficme update in place it if fits.
+  // Fixme update in place it if fits.
 //  if (m && m->update (r, TREE_TYPE (name)))
 //    ;
 //  else

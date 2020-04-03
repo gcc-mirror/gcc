@@ -126,7 +126,7 @@ global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   // Start with any known range
   gcc_assert (range_of_stmt (r, SSA_NAME_DEF_STMT (name), name));
 
-  // Now see if there is any on_entry value which may refine it .
+  // Now see if there is any on_entry value which may refine it.
   if (block_range (entry_range, bb, name))
     r.intersect (entry_range);
 }
@@ -142,9 +142,9 @@ global_ranger::range_on_exit (irange &r, basic_block bb, tree name)
   gcc_checking_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   gimple *s = last_stmt (bb);
-  // If there is no statement in the block and this isnt the entry block,
-  // go get the range_on_entry for this block.
-  // For the entry block, a NULL stmt will return the global value for NAME.
+  // If there is no statement in the block and this isn't the entry
+  // block, go get the range_on_entry for this block.  For the entry
+  // block, a NULL stmt will return the global value for NAME.
   if (!s && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
     range_on_entry (r, bb, name);
   else
@@ -154,10 +154,10 @@ global_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 }
 
 
-// Calculate a range for statement S and return it in R.  If NAME is provided
-// it represents the SSA_NAME on the LHS of the statement. It is only required
-// if there is more than one lhs/output.
-// Check the global cache for NAME first to see if the evaluation can be
+// Calculate a range for statement S and return it in R.  If NAME is
+// provided it represents the SSA_NAME on the LHS of the statement.
+// It is only required if there is more than one lhs/output.  Check
+// the global cache for NAME first to see if the evaluation can be
 // avoided.  If a range cannot be calculated, return false.
 
 bool
@@ -192,8 +192,8 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 }
 
 
-// Determine a range for OP on stmt S, returning the result in R.
-// If OP is not defined in BB, find the range on entry to this block.
+// Determine a range for OP on stmt S, returning the result in R.  If
+// OP is not defined in BB, find the range on entry to this block.
 
 void
 global_ranger::range_of_ssa_name (irange &r, tree name, gimple *s)
@@ -237,8 +237,8 @@ global_ranger::range_from_import (irange &r, tree name, irange &import_range)
   bool res = true;
   tree import = m_gori_map.terminal_name (name);
 
-  // This probably means the IL has changed underneath... just return false
-  // until we have a more comprehensive solution
+  // This probably means the IL has changed underneath... just return
+  // false until we have a more comprehensive solution.
   if (!import || (import_range.undefined_p () ||
 		  useless_type_conversion_p (TREE_TYPE (import),
 					     import_range.type ())))
@@ -316,9 +316,10 @@ global_ranger::export_global_ranges ()
   for ( x = 1; x < num_ssa_names; x++)
     {
       tree name = ssa_name (x);
-      if (name && !SSA_NAME_IN_FREE_LIST (name) &&
-	  gimple_range_ssa_p (name) && m_globals.get_global_range (r, name) &&
-	  !r.varying_p())
+      if (name && !SSA_NAME_IN_FREE_LIST (name)
+	  && gimple_range_ssa_p (name)
+	  && m_globals.get_global_range (r, name)
+	  && !r.varying_p())
 	{
 	  // Make sure the new range is a subset of the old range.
 	  widest_irange old_range;
@@ -397,8 +398,9 @@ global_ranger::dump (FILE *f)
 	      if (name && outgoing_edge_range_p (range, e, name))
 		{
 		  gimple *s = SSA_NAME_DEF_STMT (name);
-		  // Only print the range if this is the def block,
-		  // or the on entry cache for either end of the edge is set.
+		  // Only print the range if this is the def block, or
+		  // the on entry cache for either end of the edge is
+		  // set.
 		  if ((s && bb == gimple_bb (s)) ||
 		      block_range (range, bb, name, false) ||
 		      block_range (range, e->dest, name, false))
@@ -501,7 +503,7 @@ global_ranger::block_range (irange &r, basic_block bb, tree name, bool calc)
 	def_bb = gimple_bb (def_stmt);;
       if (!def_bb)
 	{
-	  // IF we get to the entry block, this better be a default def
+	  // If we get to the entry block, this better be a default def
 	  // or range_on_entry was called fo a block not dominated by
 	  // the def.  This would be a bug.
 	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
@@ -521,11 +523,10 @@ global_ranger::block_range (irange &r, basic_block bb, tree name, bool calc)
 
 
 // Return the static range for NAME on edge E in R. If there is no
-// range-on-entry cache for E->src, then return false.
-// If this is the def block, then see if the DEF can be evaluated with them
-// import name, otherwise use varying as the range.
-// If there is any outgoing range information on edge E, incorporate it
-// into the results.
+// range-on-entry cache for E->src, then return false.  If this is the
+// def block, then see if the DEF can be evaluated with them import
+// name, otherwise use varying as the range.  If there is any outgoing
+// range information on edge E, incorporate it into the results.
 
 bool
 global_ranger::edge_range (irange &r, edge e, tree name)
@@ -538,10 +539,10 @@ global_ranger::edge_range (irange &r, edge e, tree name)
 
   if (src == def_bb)
     {
-      // Check to see if the import has a cache_entry, and if it does use that
-      // in an evaluation to get a static starting value.
-      // The import should have a range if the global range is requested
-      // before any other lookups.
+      // Check to see if the import has a cache_entry, and if it does
+      // use that in an evaluation to get a static starting value.
+      // The import should have a range if the global range is
+      // requested before any other lookups.
       tree term = (has_edge_range_p (e, name) ? m_gori_map.terminal_name (name)
 		   : NULL_TREE);
       if (!term || !(m_on_entry.get_bb_range (tmp, term, src) &&
@@ -556,9 +557,9 @@ global_ranger::edge_range (irange &r, edge e, tree name)
     if (!m_on_entry.get_bb_range (r, name, src))
       return false;
 
-  // Check if pointers have any non-null dereferences.
-  // Non-call exceptions mean we could throw in the middle of he block,
-  // so just punt for now on those.
+  // Check if pointers have any non-null dereferences.  Non-call
+  // exceptions mean we could throw in the middle of he block, so just
+  // punt for now on those.
   if (r.varying_p () && m_non_null.non_null_deref_p (name, src) &&
       !cfun->can_throw_non_call_exceptions)
     r = range_nonzero (TREE_TYPE (name));
@@ -577,8 +578,8 @@ global_ranger::add_to_update (basic_block bb)
 
 #define DEBUG_CACHE (0 && dump_file)
 
-// If there is anything in the iterative update_list, continue processing NAME
-// until the list of blocks is empty.
+// If there is anything in the iterative update_list, continue
+// processing NAME until the list of blocks is empty.
 
 void
 global_ranger::iterative_cache_update (tree name)
@@ -590,10 +591,11 @@ global_ranger::iterative_cache_update (tree name)
   widest_irange current_range;
   widest_irange e_range;
 
-  // Process each block by seeing if it's calculated range on entry is the same
-  // as it's cached value. IF there is a difference, update the cache to
-  // reflect the new value, and check to see if any successors have cache
-  // entries which may need to be checked for updates.
+  // Process each block by seeing if it's calculated range on entry is
+  // the same as it's cached value. IF there is a difference, update
+  // the cache to reflect the new value, and check to see if any
+  // successors have cache entries which may need to be checked for
+  // updates.
 
   while (m_update_list.length () > 0)
     {
@@ -671,8 +673,8 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 	      continue;
 	    }
 
-	  // If the pred is entry but NOT def, then it is used before defined,
-	  // It'll get set to []. and no need to update it.
+	  // If the pred is entry but NOT def, then it is used before
+	  // defined, it'll get set to []. and no need to update it.
 	  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    continue;
 
@@ -690,7 +692,8 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
 	      continue;
 	    }
 
-	  // If the pred hasn't been visited (has no range), add it to the list.
+	  // If the pred hasn't been visited (has no range), add it to
+	  // the list.
 	  gcc_checking_assert (!m_on_entry.bb_range_p (name, pred));
 	  m_on_entry.set_bb_range (name, pred, undefined);
 	  m_workback.quick_push (pred);
