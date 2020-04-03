@@ -1,5 +1,12 @@
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	Template vars inited to lambdas
+	gcc/cp/
+	* module.cc (depset::hash::find_dependencies): Adjust dump
+	predicate.
+	gcc/testsuite/
+	* g++.dg/modules/lambda-3{,_[ab]}.[hHC]: New.
+
 	Resurrect topological key-order sort for clusters
 	gcc/cp/
 	* module.cc (depset::hash): Add chain, is_key_order.

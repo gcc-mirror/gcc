@@ -12601,7 +12601,7 @@ depset::hash::find_dependencies ()
 	    {
 	      current = item;
 	      tree decl = current->get_entity ();
-	      dump (dumper::DEPEND)
+	      dump (is_key_order () ? dumper::MERGE : dumper::DEPEND)
 		&& dump ("Dependencies of %s %C:%N",
 			 is_key_order () ? "key-order"
 			 : current->entity_kind_name (), TREE_CODE (decl), decl);
