@@ -1,5 +1,13 @@
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* gcc.c (driver::maybe_print_and_exit): Shout about
+	experimentalness.
+	(driver::final_actions): Likewise.
+	* diagnostic.c (diagnostic_action_after_output): Likewise.
+	gcc/testsuite/
+	* lib/prune.exp (prune_gcc_output): Prune the shouting.
+
 	Template vars inited to lambdas
 	gcc/cp/
 	* module.cc (depset::hash::find_dependencies): Adjust dump

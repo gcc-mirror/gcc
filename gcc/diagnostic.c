@@ -588,6 +588,10 @@ diagnostic_action_after_output (diagnostic_context *context,
 	fnotice (stderr, "We are damaged, This is broken.\n"
 		 "Logic is lost,\nWe struggle,\n"
 		 "Hunt through the rubble for what once was.\n");
+	fnotice (stderr, "THIS IS AN IN-DEVELOPMENT COMPILER,"
+		 " it barfed, quelle horreur\n"
+		 "See %s, WHICH IS NOT THE USUAL REPORTING MECHANISM!\n",
+		 bug_report_url);
 #else
 	fnotice (stderr, "Please submit a full bug report,\n"
 		 "with preprocessed source if appropriate.\n");
@@ -595,8 +599,8 @@ diagnostic_action_after_output (diagnostic_context *context,
 	  fnotice (stderr,
 		   ("Please include the complete backtrace "
 		    "with any bug report.\n"));
-#endif
 	fnotice (stderr, "See %s for instructions.\n", bug_report_url);
+#endif
 
 	exit (ICE_EXIT_CODE);
       }
@@ -606,6 +610,12 @@ diagnostic_action_after_output (diagnostic_context *context,
 	real_abort ();
       diagnostic_finish (context);
       fnotice (stderr, "compilation terminated.\n");
+#if 1
+      fnotice (stderr, "THIS IS AN IN-DEVELOPMENT COMPILER,"
+	       " it ate something it didn't agree with\n"
+	       "See %s, WHICH IS NOT THE USUAL REPORTING MECHANISM!\n",
+	       bug_report_url);
+#endif
       exit (FATAL_EXIT_CODE);
 
     default:

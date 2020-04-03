@@ -8022,7 +8022,12 @@ driver::maybe_print_and_exit () const
 
       if (! verbose_flag)
 	{
+#if 1
+	  printf ("\nTHIS IS AN IN-DEVELOPMENT COMPILER\n"
+		  "For bug reporting, see the UNUSUAL URL:\n");
+#else
 	  printf (_("\nFor bug reporting instructions, please see:\n"));
+#endif
 	  printf ("%s.\n", bug_report_url);
 
 	  return (0);
@@ -8386,7 +8391,12 @@ driver::final_actions () const
 
   if (print_help_list)
     {
+#if 1
+      printf ("\nTHIS IS AN IN-DEVELOPMENT COMPILER\n"
+	      "For bug reporting, see the UNUSUAL URL:\n");
+#else
       printf (("\nFor bug reporting instructions, please see:\n"));
+#endif
       printf ("%s\n", bug_report_url);
     }
 }
