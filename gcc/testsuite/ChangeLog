@@ -1,5 +1,8 @@
 2020-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/94468
+	* g++.dg/opt/pr94468.C: New test.
+
 	PR debug/94441
 	* g++.dg/opt/pr94441.C: New test.
 

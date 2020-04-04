@@ -1,5 +1,13 @@
 2020-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/94468
+	* cselib.c (references_value_p): Formatting fix.
+	(cselib_useless_value_p): New function.
+	(discard_useless_locs, discard_useless_values,
+	cselib_invalidate_regno_val, cselib_invalidate_mem,
+	cselib_record_set): Use it instead of
+	v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx).
+
 	PR debug/94441
 	* tree-iterator.h (expr_single): Declare.
 	* tree-iterator.c (expr_single): New function.
