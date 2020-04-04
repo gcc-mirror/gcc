@@ -1,5 +1,13 @@
 2020-05-20  Marek Polacek  <polacek@redhat.com>
 
+	DR 2237
+	* parser.c (cp_parser_unqualified_id): Reject simple-template-id as
+	the declarator-id of a destructor.
+	(cp_parser_constructor_declarator_p): Reject simple-template-id as
+	the declarator-id of a constructor.
+
+2020-05-20  Marek Polacek  <polacek@redhat.com>
+
 	DR 2289
 	PR c++/94553
 	* cp-tree.h (SD_DECOMPOSITION): New flag.

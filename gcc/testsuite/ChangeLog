@@ -1,5 +1,17 @@
 2020-05-20  Marek Polacek  <polacek@redhat.com>
 
+	DR 2237
+	* g++.dg/DRs/dr2237.C: New test.
+	* g++.dg/parse/constructor2.C: Add dg-error for C++20.
+	* g++.dg/parse/dtor12.C: Likewise.
+	* g++.dg/parse/dtor4.C: Likewise.
+	* g++.dg/template/dtor4.C: Adjust dg-error.
+	* g++.dg/template/error34.C: Likewise.
+	* g++.old-deja/g++.other/inline15.C: Only run for C++17 and lesses.
+	* g++.old-deja/g++.pt/ctor2.C: Add dg-error for C++20.
+
+2020-05-20  Marek Polacek  <polacek@redhat.com>
+
 	DR 2289
 	PR c++/94553
 	* g++.dg/cpp1z/decomp52.C: New test.
