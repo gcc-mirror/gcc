@@ -5602,7 +5602,7 @@ maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
       r = *cached;
       if (r != t)
 	{
-	  r = unshare_expr_without_location (r);
+	  r = break_out_target_exprs (r, /*clear_loc*/true);
 	  protected_set_expr_location (r, EXPR_LOCATION (t));
 	}
       return r;

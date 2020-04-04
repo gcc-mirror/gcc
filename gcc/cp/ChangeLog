@@ -1,3 +1,10 @@
+2020-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94453
+	* constexpr.c (maybe_constant_value): Use break_out_target_exprs.
+	* expr.c (mark_use) [VIEW_CONVERT_EXPR]: Don't wrap a TARGET_EXPR in
+	NON_LVALUE_EXPR.
+
 2020-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91966
