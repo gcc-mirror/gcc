@@ -2929,6 +2929,10 @@ package Sem_Util is
    function Statically_Names_Object (N : Node_Id) return Boolean;
    --  Return True iff N is a name that "statically names" an object.
 
+   function String_From_Numeric_Literal (N : Node_Id) return String_Id;
+   --  Return the string that corresponds to the numeric literal N as it
+   --  appears in the source.
+
    function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean;
    --  Determine whether node N is a loop statement subject to at least one
    --  'Loop_Entry attribute.

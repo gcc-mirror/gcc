@@ -1461,6 +1461,12 @@ package body Sem_Ch13 is
                            ASN, E);
                      end if;
 
+                  when Aspect_Integer_Literal
+                     | Aspect_Real_Literal
+                     | Aspect_String_Literal
+                  =>
+                     Validate_Literal_Aspect (E, ASN);
+
                   when Aspect_Iterable =>
                      Validate_Iterable_Aspect (E, ASN);
 
@@ -3746,6 +3752,24 @@ package body Sem_Ch13 is
                         Error_Msg_N ("aspect% requires scalar components", Id);
                         goto Continue;
                      end if;
+                  end if;
+
+                  Aitem := Empty;
+
+               when Aspect_Integer_Literal
+                  | Aspect_Real_Literal
+                  | Aspect_String_Literal
+               =>
+
+                  if not Is_First_Subtype (E) then
+                     Error_Msg_N
+                       ("may only be specified for a first subtype", Aspect);
+                     goto Continue;
+                  end if;
+
+                  if Ada_Version < Ada_2020 then
+                     Check_Restriction
+                       (No_Implementation_Aspect_Specifications, N);
                   end if;
 
                   Aitem := Empty;
@@ -9868,7 +9892,10 @@ package body Sem_Ch13 is
       elsif A_Id = Aspect_Variable_Indexing or else
             A_Id = Aspect_Constant_Indexing or else
             A_Id = Aspect_Default_Iterator  or else
-            A_Id = Aspect_Iterator_Element
+            A_Id = Aspect_Iterator_Element  or else
+            A_Id = Aspect_Integer_Literal   or else
+            A_Id = Aspect_Real_Literal      or else
+            A_Id = Aspect_String_Literal
       then
          --  Make type unfrozen before analysis, to prevent spurious errors
          --  about late attributes.
@@ -9988,6 +10015,9 @@ package body Sem_Ch13 is
    procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id) is
       Ident : constant Node_Id := Identifier (ASN);
       --  Identifier (use Entity field to save expression)
+
+      Expr : constant Node_Id := Expression (ASN);
+      --  For cases where using Entity (Identifier) doesn't work
 
       A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (Ident));
 
@@ -10134,6 +10164,20 @@ package body Sem_Ch13 is
             | Aspect_Iterator_Element
             | Aspect_Variable_Indexing
          =>
+            Analyze (Expression (ASN));
+            return;
+
+         --  Same for Literal aspects, where the expression is a function
+         --  name. Legality rules are checked separately. Use Expr to avoid
+         --  losing track of the previous resolution of Expression.
+
+         when Aspect_Integer_Literal
+            | Aspect_Real_Literal
+            | Aspect_String_Literal
+         =>
+            Set_Entity (Expression (ASN), Entity (Expr));
+            Set_Etype (Expression (ASN), Etype (Expr));
+            Set_Is_Overloaded (Expression (ASN), False);
             Analyze (Expression (ASN));
             return;
 
@@ -15121,6 +15165,115 @@ package body Sem_Ch13 is
          null;  --  optional
       end if;
    end Validate_Iterable_Aspect;
+
+   ------------------------------
+   -- Validate_Literal_Aspect --
+   ------------------------------
+
+   procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id) is
+      A_Id        : constant Aspect_Id := Get_Aspect_Id (ASN);
+      pragma Assert ((A_Id = Aspect_Integer_Literal) or
+                     (A_Id = Aspect_Real_Literal) or
+                     (A_Id = Aspect_String_Literal));
+      Func_Name   : constant Node_Id := Expression (ASN);
+      Overloaded  : Boolean := Is_Overloaded (Func_Name);
+
+      I           : Interp_Index;
+      It          : Interp;
+      Param_Type  : Entity_Id;
+      Match_Found : Boolean := False;
+      Is_Match    : Boolean;
+      Match       : Interp;
+   begin
+      if not Is_Type (Typ) then
+         Error_Msg_N ("aspect can only be specified for a type", ASN);
+         return;
+      elsif not Is_First_Subtype (Typ) then
+         Error_Msg_N ("aspect cannot be specified for a subtype", ASN);
+         return;
+      end if;
+
+      if A_Id = Aspect_String_Literal then
+         if Is_String_Type (Typ) then
+            Error_Msg_N ("aspect cannot be specified for a string type", ASN);
+            return;
+         end if;
+         Param_Type := Standard_Wide_Wide_String;
+      else
+         if Is_Numeric_Type (Typ) then
+            Error_Msg_N ("aspect cannot be specified for a numeric type", ASN);
+            return;
+         end if;
+         Param_Type := Standard_String;
+      end if;
+
+      if not Overloaded and then not Present (Entity (Func_Name)) then
+         Analyze (Func_Name);
+         Overloaded := Is_Overloaded (Func_Name);
+      end if;
+
+      if Overloaded then
+         Get_First_Interp (Func_Name, I => I, It => It);
+      else
+         --  only one possible interpretation
+         It.Nam := Entity (Func_Name);
+         pragma Assert (Present (It.Nam));
+      end if;
+
+      while It.Nam /= Empty loop
+         Is_Match := False;
+
+         if Ekind (It.Nam) = E_Function
+           and then Base_Type (Etype (It.Nam)) = Typ
+         then
+            declare
+               Params : constant List_Id :=
+                 Parameter_Specifications (Parent (It.Nam));
+               Param_Spec : Node_Id;
+               Param_Id   : Entity_Id;
+            begin
+               if List_Length (Params) = 1 then
+                  Param_Spec := First (Params);
+                  if not More_Ids (Param_Spec) then
+                     Param_Id := Defining_Identifier (Param_Spec);
+                     if Base_Type (Etype (Param_Id)) = Param_Type
+                        and then Ekind (Param_Id) = E_In_Parameter
+                     then
+                        Is_Match := True;
+                     end if;
+                  end if;
+               end if;
+            end;
+         end if;
+
+         if Is_Match then
+            if Match_Found then
+               Error_Msg_N ("aspect specification is ambiguous", ASN);
+               return;
+            end if;
+            Match_Found := True;
+            Match := It;
+         end if;
+
+         exit when not Overloaded;
+
+         if not Is_Match then
+            Remove_Interp (I => I);
+         end if;
+
+         Get_Next_Interp (I => I, It => It);
+      end loop;
+
+      if not Match_Found then
+         Error_Msg_N
+           ("function name in aspect specification cannot be resolved", ASN);
+         return;
+      end if;
+
+      Set_Entity (Func_Name, Match.Nam);
+      Set_Etype (Func_Name, Etype (Match.Nam));
+      Set_Is_Overloaded (Func_Name, False);
+   end Validate_Literal_Aspect;
 
    -----------------------------------
    -- Validate_Unchecked_Conversion --
