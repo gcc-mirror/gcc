@@ -636,7 +636,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		  }
 
 		/* Determine known aggregate values.  */
-		if (vrp_will_run_p (caller))
+		if (fre_will_run_p (caller))
 		  {
 		    ipa_agg_value_set agg
 			= ipa_agg_value_set_from_jfunc (caller_parms_info,
