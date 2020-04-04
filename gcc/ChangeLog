@@ -1,3 +1,12 @@
+2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94459
+	* dwarf2out.c (gen_subprogram_die): Look through references, pointers,
+	arrays, pointer-to-members, function types and qualifiers when
+	checking if in-class DIE had an 'auto' or 'decltype(auto)' return type
+	to emit type again on definition.
+
 2020-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/93940
