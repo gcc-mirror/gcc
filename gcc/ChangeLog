@@ -1,3 +1,9 @@
+2020-04-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/92989
+	* lra-lives.c (process_bb_lives): Do not treat eh_return data
+	registers as being live at the beginning of the EH receiver.
+
 2020-04-05 Zachary Spytz  <zspytz@gmail.com>
 
 	* extend.texi: Add free to list of ISO C90 functions that
