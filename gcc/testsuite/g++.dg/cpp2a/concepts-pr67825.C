@@ -15,6 +15,6 @@ template <class X> concept bool C() {
 }
 
 int main() {
-  static_assert(C<A>());
+  static_assert(!C<A>());
   return 0;
 }
