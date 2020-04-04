@@ -26720,6 +26720,63 @@ package body Sem_Util is
       return Statically_Names_Object (Prefix (N));
    end Statically_Names_Object;
 
+   ---------------------------------
+   -- String_From_Numeric_Literal --
+   ---------------------------------
+
+   function String_From_Numeric_Literal (N : Node_Id) return String_Id is
+      Loc     : constant Source_Ptr        := Sloc (N);
+      Sbuffer : constant Source_Buffer_Ptr :=
+                  Source_Text (Get_Source_File_Index (Loc));
+      Src_Ptr : Source_Ptr := Loc;
+
+      C : Character  := Sbuffer (Src_Ptr);
+      --  Current source program character
+
+      function Belongs_To_Numeric_Literal (C : Character) return Boolean;
+      --  Return True if C belongs to the numeric literal
+
+      --------------------------------
+      -- Belongs_To_Numeric_Literal --
+      --------------------------------
+
+      function Belongs_To_Numeric_Literal (C : Character) return Boolean is
+      begin
+         case C is
+            when '0' .. '9'
+               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+            =>
+               return True;
+
+            --  Make sure '+' or '-' is part of an exponent
+
+            when '+' | '-' =>
+               declare
+                  Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
+               begin
+                  return Prev_C = 'e' or else Prev_C = 'E';
+               end;
+
+            --  Other characters cannot belong to a numeric literal
+
+            when others =>
+               return False;
+         end case;
+      end Belongs_To_Numeric_Literal;
+
+   --  Start of processing for String_From_Numeric_Literal
+
+   begin
+      Start_String;
+      while Belongs_To_Numeric_Literal (C) loop
+         Store_String_Char (C);
+         Src_Ptr := Src_Ptr + 1;
+         C       := Sbuffer (Src_Ptr);
+      end loop;
+
+      return End_String;
+   end String_From_Numeric_Literal;
+
    --------------------------------------
    -- Subject_To_Loop_Entry_Attributes --
    --------------------------------------

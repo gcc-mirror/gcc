@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Alloc;
 with Debug;    use Debug;
@@ -2427,7 +2428,19 @@ package body Sem_Type is
            or else
              (not Is_Tagged_Type (Typ)
                and then Ekind (Typ) /= E_Anonymous_Access_Type
-               and then Covers (Etype (N), Typ));
+               and then Covers (Etype (N), Typ))
+
+           or else
+             (Nkind (N) = N_Integer_Literal
+               and then Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+
+           or else
+             (Nkind (N) = N_Real_Literal
+               and then Present (Find_Aspect (Typ, Aspect_Real_Literal)))
+
+           or else
+             (Nkind (N) = N_String_Literal
+               and then Present (Find_Aspect (Typ, Aspect_String_Literal)));
 
       --  Overloaded case
 

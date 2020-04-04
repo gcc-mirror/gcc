@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -2142,6 +2143,12 @@ package body Sem_Res is
          return;
       end Resolution_Failed;
 
+      Literal_Aspect_Map :
+        constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
+          (N_Integer_Literal => Aspect_Integer_Literal,
+           N_Real_Literal    => Aspect_Real_Literal,
+           N_String_Literal  => Aspect_String_Literal);
+
    --  Start of processing for Resolve
 
    begin
@@ -2843,6 +2850,80 @@ package body Sem_Res is
                begin
                   Check_Aggr (N);
                end;
+            end if;
+
+            --  Rewrite Literal as a call if the corresponding literal aspect
+            --  is set.
+
+            if Nkind (N) in N_Numeric_Or_String_Literal
+              and then Present
+                         (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N))))
+            then
+               declare
+                  function Literal_Text (N : Node_Id) return String_Id;
+                  --  Returns the text of a literal node
+
+                  -------------------
+                  --  Literal_Text --
+                  -------------------
+
+                  function Literal_Text (N : Node_Id) return String_Id is
+                  begin
+                     pragma Assert (Nkind (N) in N_Numeric_Or_String_Literal);
+
+                     if Nkind (N) = N_String_Literal then
+                        return Strval (N);
+                     else
+                        return String_From_Numeric_Literal (N);
+                     end if;
+                  end Literal_Text;
+
+                  Lit_Aspect : constant Aspect_Id :=
+                    Literal_Aspect_Map (Nkind (N));
+
+                  Callee : constant Entity_Id :=
+                    Entity (Expression (Find_Aspect (Typ, Lit_Aspect)));
+
+                  Loc  : constant Source_Ptr := Sloc (N);
+
+                  Name : constant Node_Id :=
+                    Make_Identifier (Loc, Chars (Callee));
+
+                  Param : constant Node_Id :=
+                    Make_String_Literal (Loc, Literal_Text (N));
+
+                  Params : constant List_Id := New_List (Param);
+
+                  Call : Node_Id :=
+                    Make_Function_Call
+                      (Sloc                   => Loc,
+                       Name                   => Name,
+                       Parameter_Associations => Params);
+               begin
+                  Set_Entity (Name, Callee);
+                  Set_Is_Overloaded (Name, False);
+                  if Lit_Aspect = Aspect_String_Literal then
+                     Set_Etype (Param, Standard_Wide_Wide_String);
+                  else
+                     Set_Etype (Param, Standard_String);
+                  end if;
+                  Set_Etype (Call, Etype (Callee));
+
+                  --  Conversion needed in case of an inherited aspect
+                  --  of a derived type.
+                  --
+                  --  ??? Need to do something different here for downward
+                  --  tagged conversion case (which is only possible in the
+                  --  case of a null extension); the current call to
+                  --  Convert_To results in an error message about an illegal
+                  --  downward conversion.
+
+                  Call := Convert_To (Typ, Call);
+
+                  Rewrite (N, Call);
+               end;
+               Analyze_And_Resolve (N, Typ);
+               return;
             end if;
 
             --  Looks like we have a type error, but check for special case
