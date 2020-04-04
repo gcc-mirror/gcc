@@ -354,4 +354,45 @@ expr_last (tree expr)
   return expr;
 }
 
+/* If EXPR is a STATEMENT_LIST containing just DEBUG_BEGIN_STMTs and
+   a single other stmt, return that other stmt (recursively).
+   If it is a STATEMENT_LIST containing no non-DEBUG_BEGIN_STMTs or
+   multiple, return NULL_TREE.
+   Otherwise return EXPR.  */
+
+tree
+expr_single (tree expr)
+{
+  if (expr == NULL_TREE)
+    return expr;
+
+  if (TREE_CODE (expr) == STATEMENT_LIST)
+    {
+      /* With -gstatement-frontiers we could have a STATEMENT_LIST with
+	 DEBUG_BEGIN_STMT(s) and only a single other stmt, which with
+	 -g wouldn't be present and we'd have that single other stmt
+	 directly instead.  */
+      struct tree_statement_list_node *n = STATEMENT_LIST_HEAD (expr);
+      if (!n)
+	return NULL_TREE;
+      while (TREE_CODE (n->stmt) == DEBUG_BEGIN_STMT)
+	{
+	  n = n->next;
+	  if (!n)
+	    return NULL_TREE;
+	}
+      expr = n->stmt;
+      do
+	{
+	  n = n->next;
+	  if (!n)
+	    return expr_single (expr);
+	}
+      while (TREE_CODE (n->stmt) == DEBUG_BEGIN_STMT);
+      return NULL_TREE;
+    }
+
+  return expr;
+}
+
 #include "gt-tree-iterator.h"

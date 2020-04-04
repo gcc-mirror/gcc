@@ -1,5 +1,10 @@
 2020-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/94441
+	* parser.c (cp_parser_omp_for_loop): Use
+	protected_set_expr_location_if_unset.
+	* cp-gimplify.c (genericize_if_stmt, genericize_cp_loop): Likewise.
+
 	PR c++/94477
 	* pt.c (tsubst_expr) <case OMP_MASTER>: Clear
 	omp_parallel_combined_clauses.

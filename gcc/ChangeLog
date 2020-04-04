@@ -1,3 +1,12 @@
+2020-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94441
+	* tree-iterator.h (expr_single): Declare.
+	* tree-iterator.c (expr_single): New function.
+	* tree.h (protected_set_expr_location_if_unset): Declare.
+	* tree.c (protected_set_expr_location): Use expr_single.
+	(protected_set_expr_location_if_unset): New function.
+
 2020-04-03  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/92264
