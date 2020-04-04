@@ -195,11 +195,23 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	  tree nop = RECUR (op);
 	  if (nop == error_mark_node)
 	    return error_mark_node;
-	  TREE_OPERAND (expr, 0) = nop;
-	  /* If we're replacing a DECL with a constant, we also need to change
-	     the TREE_CODE of the location wrapper.  */
-	  if (op != nop && rvalue_p)
-	    TREE_SET_CODE (expr, NON_LVALUE_EXPR);
+	  else if (op == nop)
+	    /* No change.  */;
+	  else if (DECL_P (nop) || CONSTANT_CLASS_P (nop))
+	    {
+	      /* Reuse the location wrapper.  */
+	      TREE_OPERAND (expr, 0) = nop;
+	      /* If we're replacing a DECL with a constant, we also need to
+		 change the TREE_CODE of the location wrapper.  */
+	      if (rvalue_p)
+		TREE_SET_CODE (expr, NON_LVALUE_EXPR);
+	    }
+	  else
+	    {
+	      /* Drop the location wrapper.  */
+	      expr = nop;
+	      protected_set_expr_location (expr, loc);
+	    }
 	  return expr;
 	}
       gcc_fallthrough();
