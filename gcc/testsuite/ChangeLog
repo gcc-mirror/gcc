@@ -1,3 +1,7 @@
+2020-04-05 Nagaraju Mekala <nmekala@xilix.com>
+    
+        * gcc.target/microblaze/others/builtin-trap.c: Update expected output.
+
 2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

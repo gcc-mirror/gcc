@@ -1,3 +1,10 @@
+2020-04-05 Nagaraju Mekala <nmekala@xilix.com>
+    
+        * gcc/config/microblaze/microblaze.md (trap): Update output pattern.
+
+        * gcc/testsuite/gcc.target/microblaze/others/builtin-trap.c
+        (dg-final): update in the scan-assembler instruction
+
 2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

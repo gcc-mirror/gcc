@@ -5,4 +5,4 @@ void trap ()
   __builtin_trap ();
 }
 
-/* { dg-final { scan-assembler "brki\tr0,-1" } } */
+/* { dg-final { scan-assembler "bri\t0" } } */
