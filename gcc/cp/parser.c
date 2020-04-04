@@ -39149,8 +39149,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    incr = cp_parser_omp_for_incr (parser, real_decl);
 	  else
 	    incr = cp_parser_expression (parser);
-	  if (!EXPR_HAS_LOCATION (incr))
-	    protected_set_expr_location (incr, input_location);
+	  protected_set_expr_location_if_unset (incr, input_location);
 	}
 
     parse_close_paren:

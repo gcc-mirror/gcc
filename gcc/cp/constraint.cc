@@ -1864,7 +1864,10 @@ hash_placeholder_constraint (tree c)
 static tree
 tsubst_valid_expression_requirement (tree t, tree args, subst_info info)
 {
-  return tsubst_expr (t, args, info.complain, info.in_decl, false);
+  tree r = tsubst_expr (t, args, info.complain, info.in_decl, false);
+  if (convert_to_void (r, ICV_STATEMENT, info.complain) == error_mark_node)
+    return error_mark_node;
+  return r;
 }
 
 

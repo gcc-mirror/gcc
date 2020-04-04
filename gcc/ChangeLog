@@ -1,3 +1,35 @@
+2020-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/93940
+	* ipa-fnsummary.c (vrp_will_run_p): New function.
+	(fre_will_run_p): New function.
+	(evaluate_properties_for_edge): Use it.
+	* ipa-inline.c (can_inline_edge_by_limits_p): Do not inline
+	!optimize_debug to optimize_debug.
+
+2020-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94468
+	* cselib.c (references_value_p): Formatting fix.
+	(cselib_useless_value_p): New function.
+	(discard_useless_locs, discard_useless_values,
+	cselib_invalidate_regno_val, cselib_invalidate_mem,
+	cselib_record_set): Use it instead of
+	v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx).
+
+	PR debug/94441
+	* tree-iterator.h (expr_single): Declare.
+	* tree-iterator.c (expr_single): New function.
+	* tree.h (protected_set_expr_location_if_unset): Declare.
+	* tree.c (protected_set_expr_location): Use expr_single.
+	(protected_set_expr_location_if_unset): New function.
+
+2020-04-03  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/92264
+	* config/stormy16/stormy16.c (xstormy16_preferred_reload_class): Handle
+	reloading of auto-increment addressing modes.
+
 2020-04-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94467

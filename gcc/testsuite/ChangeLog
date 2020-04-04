@@ -1,3 +1,33 @@
+2020-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94205
+	PR c++/79937
+	* g++.dg/cpp1y/pr79937-5.C: New test.
+	* g++.dg/cpp1z/lambda-this6.C: New test.
+
+	PR c++/94219
+	PR c++/94205
+	* g++.dg/cpp1y/constexpr-nsdmi3.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi4.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi5.C: New test.
+	* g++.dg/cpp1z/lambda-this5.C: New test.
+
+2020-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/93940
+	* g++.dg/tree-ssa/pr93940.C: New test.
+
+2020-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94468
+	* g++.dg/opt/pr94468.C: New test.
+
+	PR debug/94441
+	* g++.dg/opt/pr94441.C: New test.
+
+	PR c++/94477
+	* g++.dg/gomp/pr94477.C: New test.
+
 2020-04-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94467

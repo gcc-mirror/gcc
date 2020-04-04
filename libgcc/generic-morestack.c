@@ -53,6 +53,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "generic-morestack.h"
 
+/* Some systems use LD_PRELOAD or similar tricks to add hooks to
+   mmap/munmap.  That breaks this code, because when we call mmap
+   there is enough stack space for the system call but there is not,
+   in general, enough stack space to run a hook.  At least when using
+   glibc on GNU/Linux we can avoid the problem by calling __mmap and
+   __munmap.  */
+
+#ifdef __gnu_linux__
+
+extern void *__mmap (void *, size_t, int, int, int, off_t);
+extern int __munmap (void *, size_t);
+
+#define mmap __mmap
+#define munmap __munmap
+
+#endif /* defined(__gnu_linux__) */
+
 typedef unsigned uintptr_type __attribute__ ((mode (pointer)));
 
 /* This file contains subroutines that are used by code compiled with

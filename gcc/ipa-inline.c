@@ -485,6 +485,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
      else if (check_match (flag_wrapv)
 	      || check_match (flag_trapv)
 	      || check_match (flag_pcc_struct_return)
+	      || check_maybe_down (optimize_debug)
 	      /* When caller or callee does FP math, be sure FP codegen flags
 		 compatible.  */
 	      || ((caller_info->fp_expressions && callee_info->fp_expressions)
