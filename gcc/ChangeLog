@@ -1,9 +1,9 @@
 2020-04-05 Nagaraju Mekala <nmekala@xilix.com>
-    
-        * gcc/config/microblaze/microblaze.md (trap): Update output pattern.
 
-        * gcc/testsuite/gcc.target/microblaze/others/builtin-trap.c
-        (dg-final): update in the scan-assembler instruction
+	* config/microblaze/microblaze.c (microblaze_must_save_register): Check
+	for fast_interrupt.
+ 
+	* config/microblaze/microblaze.md (trap): Update output pattern.
 
 2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
 	    Jakub Jelinek  <jakub@redhat.com>
