@@ -1,3 +1,8 @@
+2020-04-05 Zachary Spytz  <zspytz@gmail.com>
+
+	* extend.texi: Add free to list of ISO C90 functions that
+	are recognized by the compiler.
+
 2020-04-05 Nagaraju Mekala <nmekala@xilix.com>
 
 	* config/microblaze/microblaze.c (microblaze_must_save_register): Check

@@ -12670,7 +12670,7 @@ The ISO C90 functions
 @code{abort}, @code{abs}, @code{acos}, @code{asin}, @code{atan2},
 @code{atan}, @code{calloc}, @code{ceil}, @code{cosh}, @code{cos},
 @code{exit}, @code{exp}, @code{fabs}, @code{floor}, @code{fmod},
-@code{fprintf}, @code{fputs}, @code{frexp}, @code{fscanf},
+@code{fprintf}, @code{fputs}, @code{free}, @code{frexp}, @code{fscanf},
 @code{isalnum}, @code{isalpha}, @code{iscntrl}, @code{isdigit},
 @code{isgraph}, @code{islower}, @code{isprint}, @code{ispunct},
 @code{isspace}, @code{isupper}, @code{isxdigit}, @code{tolower},
