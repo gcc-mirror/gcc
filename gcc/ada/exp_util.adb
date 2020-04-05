@@ -4953,9 +4953,11 @@ package body Exp_Util is
          when N_Explicit_Dereference =>
             Force_Evaluation (Prefix (Nam));
 
-         --  For a function call, we evaluate the call
+         --  For a function call, we evaluate the call; same for an operator
 
-         when N_Function_Call =>
+         when N_Function_Call
+            | N_Op
+         =>
             Force_Evaluation (Nam);
 
          --  For a qualified expression, we evaluate the underlying object
@@ -4989,9 +4991,11 @@ package body Exp_Util is
          when N_Type_Conversion =>
             Evaluate_Name (Expression (Nam));
 
-         --  The remaining cases are direct name, operator symbol and character
-         --  literal. In all these cases, we do nothing, since we want to
-         --  reevaluate each time the renamed object is used.
+         --  The remaining cases are direct name and character literal. In all
+         --  these cases, we do nothing, since we want to reevaluate each time
+         --  the renamed object is used. ??? There are more remaining cases, at
+         --  least in the GNATprove_Mode, where this routine is called in more
+         --  contexts than in GNAT.
 
          when others =>
             null;
