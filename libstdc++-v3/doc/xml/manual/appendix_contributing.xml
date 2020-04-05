@@ -126,7 +126,7 @@
   <section xml:id="list.getting"><info><title>Getting Sources</title></info>
     
     <para>
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/svnwrite.html">Getting write access
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/gitwrite.html">Getting write access
 	(look for "Write after approval")</link>
     </para>
   </section>

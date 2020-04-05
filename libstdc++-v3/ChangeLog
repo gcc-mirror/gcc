@@ -1,3 +1,9 @@
+2020-04-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Refer to Git
+	documentation instead of Subversion.  Switch to https.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
 2020-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93960
