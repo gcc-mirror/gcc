@@ -7114,22 +7114,15 @@ package body Freeze is
       ----------------------
 
       function In_Expanded_Body (N : Node_Id) return Boolean is
-         P  : Node_Id;
+         P  : constant Node_Id := Parent (N);
          Id : Entity_Id;
 
       begin
-         if Nkind (N) = N_Subprogram_Body then
-            P := N;
-         else
-            P := Parent (N);
-         end if;
-
          if Nkind (P) /= N_Subprogram_Body then
             return False;
 
-         --  AI12-0152 : an expression function that is a completion
-         --  is a freeze point. If the body is the result of expansion
-         --  it is not.
+         --  AI12-0157: An expression function that is a completion is a freeze
+         --  point. If the body is the result of expansion, it is not.
 
          elsif Was_Expression_Function (P) then
             return not Comes_From_Source (P);
@@ -7146,9 +7139,8 @@ package body Freeze is
                          or else Is_TSS (Id, TSS_Stream_Output)
                          or else Is_TSS (Id, TSS_Stream_Read)
                          or else Is_TSS (Id, TSS_Stream_Write)
-                         or else Nkind_In (Original_Node (P),
-                                           N_Subprogram_Renaming_Declaration,
-                                           N_Expression_Function))
+                         or else Nkind (Original_Node (P)) =
+                                             N_Subprogram_Renaming_Declaration)
             then
                return True;
             else
@@ -7518,45 +7510,61 @@ package body Freeze is
 
                   if In_Expanded_Body (Parent_P) then
                      declare
-                        Subp : constant Node_Id := Parent (Parent_P);
-                        Spec : Entity_Id;
+                        Subp_Body : constant Node_Id := Parent (Parent_P);
+                        Spec_Id   : Entity_Id;
 
                      begin
                         --  Freeze the entity only when it is declared inside
-                        --  the body of the expander generated procedure.
-                        --  This case is recognized by the scope of the entity
-                        --  or its type, which is either the spec for some
-                        --  enclosing body, or (in the case of init_procs,
-                        --  for which there are no separate specs) the current
-                        --  scope.
+                        --  the body of the expander generated procedure. This
+                        --  case is recognized by the subprogram scope of the
+                        --  entity or its type, which is either the spec of an
+                        --  enclosing body, or (in the case of init_procs for
+                        --  which there is no separate spec) the current scope.
 
-                        if Nkind (Subp) = N_Subprogram_Body then
-                           Spec := Corresponding_Spec (Subp);
+                        if Nkind (Subp_Body) = N_Subprogram_Body then
+                           declare
+                              S : Entity_Id;
 
-                           if (Present (Typ) and then Scope (Typ) = Spec)
-                                or else
-                              (Present (Nam) and then Scope (Nam) = Spec)
-                           then
-                              exit;
+                           begin
+                              Spec_Id := Corresponding_Spec (Subp_Body);
 
-                           elsif Present (Typ)
-                             and then Scope (Typ) = Current_Scope
-                             and then Defining_Entity (Subp) = Current_Scope
-                           then
-                              exit;
-                           end if;
+                              if Present (Typ) then
+                                 S := Scope (Typ);
+                              elsif Present (Nam) then
+                                 S := Scope (Nam);
+                              else
+                                 S := Standard_Standard;
+                              end if;
+
+                              while S /= Standard_Standard
+                                and then not Is_Subprogram (S)
+                              loop
+                                 S := Scope (S);
+                              end loop;
+
+                              if S = Spec_Id then
+                                 exit;
+
+                              elsif Present (Typ)
+                                and then Scope (Typ) = Current_Scope
+                                and then
+                                  Defining_Entity (Subp_Body) = Current_Scope
+                              then
+                                 exit;
+                              end if;
+                           end;
                         end if;
 
                         --  If the entity is not frozen by an expression
-                        --  function that is a completion, continue climing
-                        --  the tree.
+                        --  function that is not a completion, continue
+                        --  climbing the tree.
 
-                        if Nkind (Subp) = N_Subprogram_Body
-                          and then Was_Expression_Function (Subp)
+                        if Nkind (Subp_Body) = N_Subprogram_Body
+                          and then Was_Expression_Function (Subp_Body)
                         then
                            null;
 
-                           --  Freeze outside the body
+                        --  Freeze outside the body
 
                         else
                            Parent_P := Parent (Parent_P);
