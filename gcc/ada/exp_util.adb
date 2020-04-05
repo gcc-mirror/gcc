@@ -4918,11 +4918,16 @@ package body Exp_Util is
 
    procedure Evaluate_Name (Nam : Node_Id) is
    begin
-      --  For an attribute reference or an indexed component, evaluate the
-      --  prefix, which is itself a name, recursively, and then force the
-      --  evaluation of all the subscripts (or attribute expressions).
-
       case Nkind (Nam) is
+         --  For an aggregate, force its evaluation
+
+         when N_Aggregate =>
+            Force_Evaluation (Nam);
+
+         --  For an attribute reference or an indexed component, evaluate the
+         --  prefix, which is itself a name, recursively, and then force the
+         --  evaluation of all the subscripts (or attribute expressions).
+
          when N_Attribute_Reference
             | N_Indexed_Component
          =>
@@ -4960,16 +4965,10 @@ package body Exp_Util is
          =>
             Force_Evaluation (Nam);
 
-         --  For a qualified expression, we evaluate the underlying object
-         --  name if any, otherwise we force the evaluation of the underlying
-         --  expression.
+         --  For a qualified expression, we evaluate the expression
 
          when N_Qualified_Expression =>
-            if Is_Object_Reference (Expression (Nam)) then
-               Evaluate_Name (Expression (Nam));
-            else
-               Force_Evaluation (Expression (Nam));
-            end if;
+            Evaluate_Name (Expression (Nam));
 
          --  For a selected component, we simply evaluate the prefix
 
