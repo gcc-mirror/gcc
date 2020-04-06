@@ -2216,18 +2216,94 @@ package body Sem_Ch4 is
    -- Analyze_Expression_With_Actions --
    -------------------------------------
 
+   --  Start of processing for Analyze_Quantified_Expression
+
    procedure Analyze_Expression_With_Actions (N : Node_Id) is
+
+      procedure Check_Action_OK (A : Node_Id);
+      --  Check that the action is something that is allows as a declare_item
+      --  of a declare_expression, except the checks are suppressed for
+      --  generated code.
+
+      procedure Check_Action_OK (A : Node_Id) is
+      begin
+         if not Comes_From_Source (N) or else not Comes_From_Source (A) then
+            return; -- Allow anything in generated code
+         end if;
+
+         case Nkind (A) is
+            when N_Object_Declaration =>
+               if Nkind (Object_Definition (A)) = N_Access_Definition then
+                  Error_Msg_N
+                    ("anonymous access type not allowed in declare_expression",
+                     Object_Definition (A));
+               end if;
+
+               if Aliased_Present (A) then
+                  Error_Msg_N ("aliased not allowed in declare_expression", A);
+               end if;
+
+               if Constant_Present (A)
+                 and then not Is_Limited_Type (Etype (Defining_Identifier (A)))
+               then
+                  return; -- nonlimited constants are OK
+               end if;
+
+            when N_Object_Renaming_Declaration =>
+               if Present (Access_Definition (A)) then
+                  Error_Msg_N
+                    ("anonymous access type not allowed in declare_expression",
+                     Access_Definition (A));
+               end if;
+
+               if not Is_Limited_Type (Etype (Defining_Identifier (A))) then
+                  return; -- ???For now; the RM rule is a bit more complicated
+               end if;
+
+            when others =>
+               null; -- Nothing else allowed, not even pragmas
+         end case;
+
+         Error_Msg_N ("object renaming or constant declaration expected", A);
+      end Check_Action_OK;
+
       A : Node_Id;
+      EWA_Scop : Entity_Id;
+
+   --  Start of processing for Analyze_Expression_With_Actions
 
    begin
+      --  Create a scope, which is needed to provide proper visibility of the
+      --  declare_items.
+
+      EWA_Scop := New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+      Set_Etype  (EWA_Scop, Standard_Void_Type);
+      Set_Scope  (EWA_Scop, Current_Scope);
+      Set_Parent (EWA_Scop, N);
+      Push_Scope (EWA_Scop);
+
+      --  If this Expression_With_Actions node comes from source, then it
+      --  represents a declare_expression; increment the counter to take note
+      --  of that.
+
+      if Comes_From_Source (N) then
+         In_Declare_Expr := In_Declare_Expr + 1;
+      end if;
+
       A := First (Actions (N));
       while Present (A) loop
          Analyze (A);
+         Check_Action_OK (A);
          Next (A);
       end loop;
 
       Analyze_Expression (Expression (N));
       Set_Etype (N, Etype (Expression (N)));
+      End_Scope;
+
+      if Comes_From_Source (N) then
+         In_Declare_Expr := In_Declare_Expr - 1;
+      end if;
    end Analyze_Expression_With_Actions;
 
    ---------------------------

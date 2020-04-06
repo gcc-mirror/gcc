@@ -4702,7 +4702,9 @@ package body Ch3 is
    --  the scan pointer is repositioned past the next semicolon, and the scan
    --  for declarative items continues.
 
-   function P_Basic_Declarative_Items return List_Id is
+   function P_Basic_Declarative_Items
+     (Declare_Expression : Boolean) return List_Id
+   is
       Decl  : Node_Id;
       Decls : List_Id;
       Kind  : Node_Kind;
@@ -4750,7 +4752,15 @@ package body Ch3 is
             Kind = N_Task_Body       or else
             Kind = N_Protected_Body
          then
-            Error_Msg ("proper body not allowed in package spec", Sloc (Decl));
+            if Declare_Expression then
+               Error_Msg
+                 ("proper body not allowed in declare_expression",
+                  Sloc (Decl));
+            else
+               Error_Msg
+                 ("proper body not allowed in package spec",
+                  Sloc (Decl));
+            end if;
 
             --  Complete declaration of mangled subprogram body, for better
             --  recovery if analysis is attempted.
