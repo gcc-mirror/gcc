@@ -497,7 +497,7 @@ predicate::remap_after_duplication (clause_t possible_truths)
    is summary of function predicate P is from. OPERAND_MAP is array giving
    callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clause of all
    callee conditions that may be true in caller context.  TOPLEV_PREDICATE is
-   predicate under which callee is executed.  OFFSET_MAP is an array of of
+   predicate under which callee is executed.  OFFSET_MAP is an array of
    offsets that need to be added to conditions, negative offset means that
    conditions relying on values passed by reference have to be discarded
    because they might not be preserved (and should be considered offset zero

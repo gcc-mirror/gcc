@@ -1491,8 +1491,7 @@ void FuncDeclaration::semantic3(Scope *sc)
          * e.g.
          *      class C { int x; static assert(is(typeof({ this.x = 1; }))); }
          *
-         * To properly accept it, mark these lambdas as member functions -
-         * isThis() returns true and isNested() returns false.
+         * To properly accept it, mark these lambdas as member functions.
          */
         if (FuncLiteralDeclaration *fld = isFuncLiteralDeclaration())
         {
@@ -1510,7 +1509,6 @@ void FuncDeclaration::semantic3(Scope *sc)
                     if (fld->tok != TOKfunction)
                         fld->tok = TOKdelegate;
                 }
-                assert(!isNested());
             }
         }
 

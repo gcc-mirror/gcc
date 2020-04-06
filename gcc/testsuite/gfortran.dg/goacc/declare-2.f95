@@ -1,9 +1,5 @@
 
 module amod
-
-contains
-
-subroutine asubr (b)
   implicit none
   integer :: b(8)
 
@@ -16,9 +12,24 @@ subroutine asubr (b)
   !$acc declare present_or_create (b) ! { dg-error "present on multiple" }
   !$acc declare deviceptr (b) ! { dg-error "Invalid clause in module" }
   !$acc declare create (b) copyin (b) ! { dg-error "present on multiple" }
+end module
 
+module amod2
+contains
+subroutine asubr (a, b, c, d, e, f, g, h, i, j, k)
+  implicit none
+  integer, dimension(8) :: a, b, c, d, e, f, g, h, i, j, k
+
+  !$acc declare copy (a)
+  !$acc declare copyout (b)
+  !$acc declare present (c)
+  !$acc declare present_or_copy (d)
+  !$acc declare present_or_copyin (e)
+  !$acc declare present_or_copyout (f)
+  !$acc declare present_or_create (g)
+  !$acc declare deviceptr (h)
+  !$acc declare create (j) copyin (k)
 end subroutine
-
 end module
 
 module bmod

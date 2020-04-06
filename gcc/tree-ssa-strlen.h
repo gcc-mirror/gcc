@@ -31,7 +31,7 @@ extern tree get_range (tree, wide_int[2], const vr_values * = NULL);
 struct c_strlen_data;
 extern void get_range_strlen_dynamic (tree , c_strlen_data *, const vr_values *);
 
-/* APIs internal to strlen pass.  Defined in in gimple-ssa-sprintf.c.  */
+/* APIs internal to strlen pass.  Defined in gimple-ssa-sprintf.c.  */
 extern bool handle_printf_call (gimple_stmt_iterator *,  const vr_values *);
 
 #endif   // GCC_TREE_SSA_STRLEN_H

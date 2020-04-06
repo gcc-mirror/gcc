@@ -414,6 +414,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline void
       sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
+#if __cplusplus > 201703L
+	static_assert(chrono::is_clock_v<_Clock>);
+#endif
 	auto __now = _Clock::now();
 	if (_Clock::is_steady)
 	  {

@@ -986,6 +986,13 @@
 			 (V4SF "4s") (V2DF "2d")
 			 (V4HF "4h") (V8HF "8h")])
 
+;; Map mode to type used in widening multiplies.
+(define_mode_attr Vcondtype [(V4HI "4h") (V8HI "4h") (V2SI "2s") (V4SI "2s")])
+
+;; Map lane mode to name
+(define_mode_attr Qlane [(V4HI "_v4hi") (V8HI  "q_v4hi")
+			 (V2SI "_v2si") (V4SI  "q_v2si")])
+
 (define_mode_attr Vrevsuff [(V4HI "16") (V8HI "16") (V2SI "32")
                             (V4SI "32") (V2DI "64")])
 
@@ -993,7 +1000,8 @@
 			 (V4HI ".4h") (V8HI  ".8h")
 			 (V2SI ".2s") (V4SI  ".4s")
 			 (V2DI ".2d") (V4HF ".4h")
-			 (V8HF ".8h") (V2SF ".2s")
+			 (V8HF ".8h") (V4BF ".4h")
+			 (V8BF ".8h") (V2SF ".2s")
 			 (V4SF ".4s") (V2DF ".2d")
 			 (DI   "")    (SI   "")
 			 (HI   "")    (QI   "")

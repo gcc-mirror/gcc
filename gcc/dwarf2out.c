@@ -399,6 +399,9 @@ get_full_len (const wide_int &op)
 static bool
 should_emit_struct_debug (tree type, enum debug_info_usage usage)
 {
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return false;
+
   enum debug_struct_file criterion;
   tree type_decl;
   bool generic = lang_hooks.types.generic_p (type);
@@ -21563,6 +21566,9 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
   enum tree_code code  = TREE_CODE (type);
   dw_die_ref type_die  = NULL;
 
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return;
+
   /* ??? If this type is an unnamed subrange type of an integral, floating-point
      or fixed-point type, use the inner type.  This is because we have no
      support for unnamed types in base_type_die.  This can happen if this is
@@ -22899,11 +22905,22 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  != (unsigned) s.column))
 	    add_AT_unsigned (subr_die, DW_AT_decl_column, s.column);
 
-	  /* If the prototype had an 'auto' or 'decltype(auto)' return type,
-	     emit the real type on the definition die.  */
+	  /* If the prototype had an 'auto' or 'decltype(auto)' in
+	     the return type, emit the real type on the definition die.  */
 	  if (is_cxx () && debug_info_level > DINFO_LEVEL_TERSE)
 	    {
 	      dw_die_ref die = get_AT_ref (old_die, DW_AT_type);
+	      while (die
+		     && (die->die_tag == DW_TAG_reference_type
+			 || die->die_tag == DW_TAG_rvalue_reference_type
+			 || die->die_tag == DW_TAG_pointer_type
+			 || die->die_tag == DW_TAG_const_type
+			 || die->die_tag == DW_TAG_volatile_type
+			 || die->die_tag == DW_TAG_restrict_type
+			 || die->die_tag == DW_TAG_array_type
+			 || die->die_tag == DW_TAG_ptr_to_member_type
+			 || die->die_tag == DW_TAG_subroutine_type))
+		die = get_AT_ref (die, DW_AT_type);
 	      if (die == auto_die || die == decltype_auto_die)
 		add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
 				    TYPE_UNQUALIFIED, false, context_die);
@@ -26355,39 +26372,44 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
     case VAR_DECL:
     case RESULT_DECL:
       /* If we are in terse mode, don't generate any DIEs to represent any
-	 variable declarations or definitions.  */
-      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	 variable declarations or definitions unless it is external.  */
+      if (debug_info_level < DINFO_LEVEL_TERSE
+	  || (debug_info_level == DINFO_LEVEL_TERSE
+	      && !TREE_PUBLIC (decl_or_origin)))
 	break;
 
-      /* Avoid generating stray type DIEs during late dwarf dumping.
-         All types have been dumped early.  */
-      if (early_dwarf
-	  /* ???  But in LTRANS we cannot annotate early created variably
-	     modified type DIEs without copying them and adjusting all
-	     references to them.  Dump them again as happens for inlining
-	     which copies both the decl and the types.  */
-	  /* ???  And even non-LTO needs to re-visit type DIEs to fill
-	     in VLA bound information for example.  */
-	  || (decl && variably_modified_type_p (TREE_TYPE (decl),
-						current_function_decl)))
+      if (debug_info_level > DINFO_LEVEL_TERSE)
 	{
-	  /* Output any DIEs that are needed to specify the type of this data
-	     object.  */
-	  if (decl_by_reference_p (decl_or_origin))
-	    gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
-	  else
-	    gen_type_die (TREE_TYPE (decl_or_origin), context_die);
-	}
+	  /* Avoid generating stray type DIEs during late dwarf dumping.
+	     All types have been dumped early.  */
+	  if (early_dwarf
+	      /* ???  But in LTRANS we cannot annotate early created variably
+		 modified type DIEs without copying them and adjusting all
+		 references to them.  Dump them again as happens for inlining
+		 which copies both the decl and the types.  */
+	      /* ???  And even non-LTO needs to re-visit type DIEs to fill
+		 in VLA bound information for example.  */
+	      || (decl && variably_modified_type_p (TREE_TYPE (decl),
+						    current_function_decl)))
+	    {
+	      /* Output any DIEs that are needed to specify the type of this data
+		 object.  */
+	      if (decl_by_reference_p (decl_or_origin))
+		gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
+	      else
+		gen_type_die (TREE_TYPE (decl_or_origin), context_die);
+	    }
 
-      if (early_dwarf)
-	{
-	  /* And its containing type.  */
-	  class_origin = decl_class_context (decl_or_origin);
-	  if (class_origin != NULL_TREE)
-	    gen_type_die_for_member (class_origin, decl_or_origin, context_die);
+	  if (early_dwarf)
+	    {
+	      /* And its containing type.  */
+	      class_origin = decl_class_context (decl_or_origin);
+	      if (class_origin != NULL_TREE)
+		gen_type_die_for_member (class_origin, decl_or_origin, context_die);
 
-	  /* And its containing namespace.  */
-	  context_die = declare_in_namespace (decl_or_origin, context_die);
+	      /* And its containing namespace.  */
+	      context_die = declare_in_namespace (decl_or_origin, context_die);
+	    }
 	}
 
       /* Now output the DIE to represent the data object itself.  This gets
@@ -26832,8 +26854,10 @@ dwarf2out_decl (tree decl)
 	context_die = lookup_decl_die (DECL_CONTEXT (decl));
 
       /* If we are in terse mode, don't generate any DIEs to represent any
-	 variable declarations or definitions.  */
-      if (debug_info_level <= DINFO_LEVEL_TERSE)
+	 variable declarations or definitions unless it is external.  */
+      if (debug_info_level < DINFO_LEVEL_TERSE
+	  || (debug_info_level == DINFO_LEVEL_TERSE
+	      && !TREE_PUBLIC (decl)))
 	return;
       break;
 
@@ -32027,24 +32051,6 @@ dwarf2out_early_finish (const char *filename)
      sure to adjust the phase after annotating the LTRANS CU DIE.  */
   if (in_lto_p)
     {
-      /* Force DW_TAG_imported_unit to be created now, otherwise
-	 we might end up without it or ordered after DW_TAG_inlined_subroutine
-	 referencing DIEs from it.  */
-      if (! flag_wpa && flag_incremental_link != INCREMENTAL_LINK_LTO)
-	{
-	  unsigned i;
-	  tree tu;
-	  if (external_die_map)
-	    FOR_EACH_VEC_SAFE_ELT (all_translation_units, i, tu)
-	      if (sym_off_pair *desc = external_die_map->get (tu))
-		{
-		  dw_die_ref import = new_die (DW_TAG_imported_unit,
-					       comp_unit_die (), NULL_TREE);
-		  add_AT_external_die_ref (import, DW_AT_import,
-					   desc->sym, desc->off);
-		}
-	}
-
       early_dwarf_finished = true;
       if (dump_file)
 	{
@@ -32152,7 +32158,7 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
-  /* Traverse the DIE's and add add sibling attributes to those DIE's
+  /* Traverse the DIE's and add sibling attributes to those DIE's
      that have children.  */
   add_sibling_attributes (comp_unit_die ());
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)

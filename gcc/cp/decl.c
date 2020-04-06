@@ -6062,7 +6062,25 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       else if (last_nonzero < nelts - 1)
 	nelts = last_nonzero + 1;
 
-      vec_safe_truncate (CONSTRUCTOR_ELTS (new_init), nelts);
+      /* Sharing a stripped constructor can get in the way of
+	 overload resolution.  E.g., initializing a class from
+	 {{0}} might be invalid while initializing the same class
+	 from {{}} might be valid.  */
+      if (reuse && nelts < CONSTRUCTOR_NELTS (new_init))
+	{
+	  vec<constructor_elt, va_gc> *v;
+	  vec_alloc (v, nelts);
+	  for (unsigned int i = 0; i < nelts; i++)
+	    {
+	      constructor_elt elt = *CONSTRUCTOR_ELT (new_init, i);
+	      if (TREE_CODE (elt.value) == CONSTRUCTOR)
+		elt.value = unshare_constructor (elt.value);
+	      v->quick_push (elt);
+	    }
+	  new_init = build_constructor (TREE_TYPE (new_init), v);
+	}
+      else
+	vec_safe_truncate (CONSTRUCTOR_ELTS (new_init), nelts);
     }
 
   return new_init;
@@ -9626,6 +9644,15 @@ grokfndecl (tree ctype,
 		    "namespace scope", decl);
 	  return NULL_TREE;
 	}
+      tree type = TREE_TYPE (DECL_NAME (decl));
+      if (in_namespace == NULL_TREE
+	  && CP_DECL_CONTEXT (decl) != CP_TYPE_CONTEXT (type))
+	{
+	  error_at (location, "deduction guide %qD must be declared in the "
+			      "same scope as %qT", decl, type);
+	  inform (location_of (type), "  declared here");
+	  return NULL_TREE;
+	}
       if (funcdef_flag)
 	error_at (location,
 		  "deduction guide %qD must not have a function body", decl);
@@ -10276,13 +10303,12 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 	   NOP_EXPR with TREE_SIDE_EFFECTS; don't fold in that case.  */;
       else
 	{
-	  size = instantiate_non_dependent_expr_sfinae (size, complain);
 	  size = build_converted_constant_expr (size_type_node, size, complain);
 	  /* Pedantically a constant expression is required here and so
 	     __builtin_is_constant_evaluated () should fold to true if it
 	     is successfully folded into a constant.  */
-	  size = maybe_constant_value (size, NULL_TREE,
-				       /*manifestly_const_eval=*/true);
+	  size = fold_non_dependent_expr (size, complain,
+					  /*manifestly_const_eval=*/true);
 
 	  if (!TREE_CONSTANT (size))
 	    size = origsize;
@@ -10312,8 +10338,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
   /* We can only call value_dependent_expression_p on integral constant
      expressions; treat non-constant expressions as dependent, too.  */
   if (processing_template_decl
-      && (type_dependent_expression_p (size)
-	  || !TREE_CONSTANT (size) || value_dependent_expression_p (size)))
+      && (!TREE_CONSTANT (size) || value_dependent_expression_p (size)))
     {
       /* We cannot do any checking for a SIZE that isn't known to be
 	 constant. Just build the index type and mark that it requires
@@ -17607,10 +17632,8 @@ build_explicit_specifier (tree expr, tsubst_flags_t complain)
     /* Wait for instantiation, tsubst_function_decl will handle it.  */
     return expr;
 
-  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-  /* Don't let convert_like_real create more template codes.  */
-  processing_template_decl_sentinel s;
   expr = build_converted_constant_bool_expr (expr, complain);
+  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
   expr = cxx_constant_value (expr);
   return expr;
 }

@@ -61,11 +61,6 @@
   (and (match_code "reg")
        (match_test "SSE_REGNO_P (REGNO (op))")))
 
-;; True if the operand is an AVX-512 new register.
-(define_predicate "ext_sse_reg_operand"
-  (and (match_code "reg")
-       (match_test "EXT_REX_SSE_REGNO_P (REGNO (op))")))
-
 ;; Return true if op is a QImode register.
 (define_predicate "any_QIreg_operand"
   (and (match_code "reg")

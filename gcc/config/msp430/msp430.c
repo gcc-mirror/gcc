@@ -1916,7 +1916,7 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
     case SECCAT_RODATA_MERGE_CONST:
       return default_elf_select_section (decl, reloc, align);
 
-    /* The sections listed below are are not supported for MSP430.
+    /* The sections listed below are not supported for MSP430.
        They should not be generated, but in case they are, we use
        default_select_section so they get placed in sections
        the msp430 assembler and linker understand.  */

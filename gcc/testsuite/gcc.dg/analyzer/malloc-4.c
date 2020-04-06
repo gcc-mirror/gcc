@@ -17,4 +17,4 @@ void a5 (void)
 {
   struct bar *qb = NULL;
   hv (&qb);
-} /* { dg-warning "leak of '\\(struct foo\\)qb'" } */
+} /* { dg-warning "leak of '\\(struct foo \\*\\)qb'" } */

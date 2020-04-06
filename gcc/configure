@@ -9962,13 +9962,15 @@ fi
 case "x$with_zstd" in
   x) ;;
   xno)
-    ZSTD_INCLUDE=no
-    ZSTD_LIB=no
+    ZSTD_INCLUDE=
+    ZSTD_LIB=
     ;;
   *) ZSTD_INCLUDE=$with_zstd/include
      ZSTD_LIB=$with_zstd/lib
      ;;
 esac
+
+if test "x$with_zstd" != xno; then
 if test "x$with_zstd_include" != x; then
   ZSTD_INCLUDE=$with_zstd_include
 fi
@@ -10017,6 +10019,8 @@ if test $gcc_cv_header_zstd_h = yes; then
 
 $as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
 
+elif test "x$with_zstd" != x; then
+    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
 
 # LTO can use zstd compression algorithm
@@ -10081,6 +10085,7 @@ fi
 ZSTD_LIB="$LIBS"
 LIBS="$save_LIBS"
 
+fi
 
 
 
@@ -18980,7 +18985,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18983 "configure"
+#line 18988 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19086,7 +19091,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19089 "configure"
+#line 19094 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

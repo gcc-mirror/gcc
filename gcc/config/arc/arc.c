@@ -2607,7 +2607,7 @@ frame_stack_add (HOST_WIDE_INT offset)
    register.
 
    During compilation of a function the frame size is evaluated
-   multiple times, it is not until the reload pass is complete the the
+   multiple times, it is not until the reload pass is complete the
    frame size is considered fixed (it is at this point that space for
    all spills has been allocated).  However the frame_pointer_needed
    variable is not set true until the register allocation pass, as a
@@ -4530,7 +4530,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'c':
       if (GET_CODE (x) == CONST_INT)
-        fprintf (file, "%ld", INTVAL (x) );
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) );
       else
         output_operand_lossage ("invalid operands to %%c code");
 
@@ -4724,7 +4724,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  /* No special treatment for jli_fixed functions.  */
 		  if (code == 'j')
 		    break;
-		  fprintf (file, "%ld\t; @",
+		  fprintf (file, HOST_WIDE_INT_PRINT_DEC "\t; @",
 			   TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attrs))));
 		  assemble_name (file, XSTR (x, 0));
 		  return;
@@ -4745,7 +4745,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  tree attrs = (TREE_TYPE (SYMBOL_REF_DECL (x)) != error_mark_node
 			? TYPE_ATTRIBUTES (TREE_TYPE (SYMBOL_REF_DECL (x)))
 			: NULL_TREE);
-	  fprintf (file, "%ld\t; @",
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "\t; @",
 		   TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attrs))));
 	  assemble_name (file, XSTR (x, 0));
 	  return;
@@ -9353,7 +9353,7 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
 	  continue;
 	}
       rtx dest = XEXP (x, 0);
-      /* Check if this sets a an extension register.  N.B. we use 61 for the
+      /* Check if this sets an extension register.  N.B. we use 61 for the
 	 condition codes, which is definitely not an extension register.  */
       if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61
 	  /* Check if the same register is used by the PAT.  */

@@ -1086,34 +1086,56 @@ namespace __detail
   inline std::u32string
   path::u32string() const { return string<char32_t>(); }
 
-#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   template<typename _CharT, typename _Traits, typename _Allocator>
     inline std::basic_string<_CharT, _Traits, _Allocator>
     path::generic_string(const _Allocator& __a) const
-    { return string<_CharT, _Traits, _Allocator>(__a); }
+    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      const _CharT __slash = is_same<_CharT, wchar_t>::value
+	? _CharT(L'/')
+	: _CharT('/'); // Assume value is correct for the encoding.
+#else
+      const _CharT __slash = _CharT('/');
+#endif
+      basic_string<_CharT, _Traits, _Allocator> __str(__a);
+      __str.reserve(_M_pathname.size());
+      bool __add_slash = false;
+      for (auto& __elem : *this)
+	{
+	  if (__elem._M_type == _Type::_Root_dir)
+	    {
+	      __str += __slash;
+	      continue;
+	    }
+	  if (__add_slash)
+	    __str += __slash;
+	  __str += __elem.string<_CharT, _Traits, _Allocator>(__a);
+	  __add_slash = __elem._M_type == _Type::_Filename;
+	}
+      return __str;
+    }
 
   inline std::string
-  path::generic_string() const { return string(); }
+  path::generic_string() const { return generic_string<char>(); }
 
 #if _GLIBCXX_USE_WCHAR_T
   inline std::wstring
-  path::generic_wstring() const { return wstring(); }
+  path::generic_wstring() const { return generic_string<wchar_t>(); }
 #endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   inline std::u8string
-  path::generic_u8string() const { return u8string(); }
+  path::generic_u8string() const { return generic_string<char8_t>(); }
 #else
   inline std::string
-  path::generic_u8string() const { return u8string(); }
+  path::generic_u8string() const { return generic_string<char>(); }
 #endif
 
   inline std::u16string
-  path::generic_u16string() const { return u16string(); }
+  path::generic_u16string() const { return generic_string<char16_t>(); }
 
   inline std::u32string
-  path::generic_u32string() const { return u32string(); }
-#endif
+  path::generic_u32string() const { return generic_string<char32_t>(); }
 
   inline int
   path::compare(const string_type& __s) const { return compare(path(__s)); }

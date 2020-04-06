@@ -67,7 +67,7 @@
 # include <type_traits>  // For __void_t, is_convertible
 #endif
 
-#if __cplusplus > 201703L && __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts >= 201907L
 # include <bits/iterator_concepts.h>
 #endif
 
@@ -192,7 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L
   /// Partial specialization for object pointer types.
   template<typename _Tp>
-#if __cpp_concepts
+#if __cpp_concepts >= 201907L
     requires is_object_v<_Tp>
 #endif
     struct iterator_traits<_Tp*>

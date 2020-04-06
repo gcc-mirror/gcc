@@ -4728,6 +4728,18 @@ is_gimple_debug (const gimple *gs)
 }
 
 
+/* Return the first nondebug statement in GIMPLE sequence S.  */
+
+static inline gimple *
+gimple_seq_first_nondebug_stmt (gimple_seq s)
+{
+  gimple_seq_node n = gimple_seq_first (s);
+  while (n && is_gimple_debug (n))
+    n = n->next;
+  return n;
+}
+
+
 /* Return the last nondebug statement in GIMPLE sequence S.  */
 
 static inline gimple *
@@ -4737,7 +4749,7 @@ gimple_seq_last_nondebug_stmt (gimple_seq s)
   for (n = gimple_seq_last (s);
        n && is_gimple_debug (n);
        n = n->prev)
-    if (n->prev == s)
+    if (n == s)
       return NULL;
   return n;
 }

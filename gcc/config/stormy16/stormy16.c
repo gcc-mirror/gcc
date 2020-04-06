@@ -497,7 +497,17 @@ xstormy16_secondary_reload_class (enum reg_class rclass,
 static reg_class_t
 xstormy16_preferred_reload_class (rtx x, reg_class_t rclass)
 {
-  if (rclass == GENERAL_REGS && MEM_P (x))
+  /* Only the first eight registers can be moved to/from memory.
+     So those prefer EIGHT_REGS.
+
+     Similarly reloading an auto-increment address is going to
+     require loads and stores, so we must use EIGHT_REGS for those
+     too.  */
+  if (rclass == GENERAL_REGS
+      && (MEM_P (x)
+	  || GET_CODE (x) == POST_INC
+	  || GET_CODE (x) == PRE_DEC
+	  || GET_CODE (x) == PRE_MODIFY))
     return EIGHT_REGS;
 
   return rclass;

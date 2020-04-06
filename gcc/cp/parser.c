@@ -556,7 +556,7 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 			      parser->in_statement & IN_SWITCH_STMT);
   cp_debug_print_flag (file, "Parsing a structured OpenMP block",
 			      parser->in_statement & IN_OMP_BLOCK);
-  cp_debug_print_flag (file, "Parsing a an OpenMP loop",
+  cp_debug_print_flag (file, "Parsing an OpenMP loop",
 			      parser->in_statement & IN_OMP_FOR);
   cp_debug_print_flag (file, "Parsing an if statement",
 			      parser->in_statement & IN_IF_STMT);
@@ -6068,6 +6068,15 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      cp_lexer_consume_token (parser->lexer);
 	    return error_mark_node;
 	  }
+	if (template_keyword_p)
+	  {
+	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+	      error_at (tilde_loc, "%<template%> keyword not permitted in "
+			"destructor name");
+	    cp_parser_simulate_error (parser);
+	    return error_mark_node;
+	  }
+
 	gcc_assert (!scope || TYPE_P (scope));
 
 	token = cp_lexer_peek_token (parser->lexer);
@@ -6266,6 +6275,32 @@ cp_parser_unqualified_id (cp_parser* parser,
     }
 }
 
+/* Check [temp.names]/5: A name prefixed by the keyword template shall
+   be a template-id or the name shall refer to a class template or an
+   alias template.  */
+
+static void
+check_template_keyword_in_nested_name_spec (tree name)
+{
+  if (CLASS_TYPE_P (name)
+      && ((CLASSTYPE_USE_TEMPLATE (name)
+	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (name)))
+	  || CLASSTYPE_IS_TEMPLATE (name)))
+    return;
+
+  if (TREE_CODE (name) == TYPENAME_TYPE
+      && TREE_CODE (TYPENAME_TYPE_FULLNAME (name)) == TEMPLATE_ID_EXPR)
+    return;
+  /* Alias templates are also OK.  */
+  else if (alias_template_specialization_p (name, nt_opaque))
+    return;
+
+  permerror (input_location, TYPE_P (name)
+	     ? G_("%qT is not a template")
+	     : G_("%qD is not a template"),
+	     name);
+}
+
 /* Parse an (optional) nested-name-specifier.
 
    nested-name-specifier: [C++98]
@@ -6389,7 +6424,17 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       /* Look for the optional `template' keyword, if this isn't the
 	 first time through the loop.  */
       if (success)
-	template_keyword_p = cp_parser_optional_template_keyword (parser);
+	{
+	  template_keyword_p = cp_parser_optional_template_keyword (parser);
+	  /* DR1710: "In a qualified-id used as the name in
+	     a typename-specifier, elaborated-type-specifier, using-declaration,
+	     or class-or-decltype, an optional keyword template appearing at
+	     the top level is ignored."  */
+	  if (!template_keyword_p
+	      && typename_keyword_p
+	      && cp_parser_nth_token_starts_template_argument_list_p (parser, 2))
+	    template_keyword_p = true;
+	}
 
       /* Save the old scope since the name lookup we are about to do
 	 might destroy it.  */
@@ -6580,18 +6625,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       if (TREE_CODE (new_scope) == TYPE_DECL)
 	new_scope = TREE_TYPE (new_scope);
       /* Uses of "template" must be followed by actual templates.  */
-      if (template_keyword_p
-	  && !(CLASS_TYPE_P (new_scope)
-	       && ((CLASSTYPE_USE_TEMPLATE (new_scope)
-		    && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (new_scope)))
-		   || CLASSTYPE_IS_TEMPLATE (new_scope)))
-	  && !(TREE_CODE (new_scope) == TYPENAME_TYPE
-	       && (TREE_CODE (TYPENAME_TYPE_FULLNAME (new_scope))
-		   == TEMPLATE_ID_EXPR)))
-	permerror (input_location, TYPE_P (new_scope)
-		   ? G_("%qT is not a template")
-		   : G_("%qD is not a template"),
-		   new_scope);
+      if (template_keyword_p)
+	check_template_keyword_in_nested_name_spec (new_scope);
       /* If it is a class scope, try to complete it; we are about to
 	 be looking up names inside the class.  */
       if (TYPE_P (new_scope)
@@ -11346,8 +11381,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  /* This must be a namespace alias definition.  */
 	  if (std_attrs != NULL_TREE)
 	    {
-	      /*  Attributes should be parsed as part of the the
-		  declaration, so let's un-parse them.  */
+	      /* Attributes should be parsed as part of the
+		 declaration, so let's un-parse them.  */
 	      saved_tokens.rollback();
 	      std_attrs = NULL_TREE;
 	    }
@@ -11934,6 +11969,13 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
 		       "init-statement in selection statements only available "
 		       "with %<-std=c++17%> or %<-std=gnu++17%>");
+	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+	      {
+		/* A non-empty init-statement can have arbitrary side
+		   effects.  */
+		delete chain;
+		chain = NULL;
+	      }
 	    cp_parser_init_statement (parser, &decl);
 	  }
 
@@ -14554,7 +14596,7 @@ cp_parser_linkage_specification (cp_parser* parser)
   /* We're now using the new linkage.  */
   push_lang_context (linkage);
 
-  /* Preserve the location of the the innermost linkage specification,
+  /* Preserve the location of the innermost linkage specification,
      tracking the locations of nested specifications via a local.  */
   location_t saved_location
     = parser->innermost_linkage_specification_location;
@@ -18113,6 +18155,33 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 		}
 	    }
 	}
+      /* DR 1812: A < following a qualified-id in a typename-specifier
+	 could safely be assumed to begin a template argument list, so
+	 the template keyword should be optional.  */
+      else if (parser->scope
+	       && qualified_p
+	       && typename_p
+	       && cp_lexer_next_token_is (parser->lexer, CPP_TEMPLATE_ID))
+	{
+	  cp_parser_parse_tentatively (parser);
+
+	  type = cp_parser_template_id (parser,
+					/*template_keyword_p=*/true,
+					/*check_dependency_p=*/true,
+					none_type,
+					/*is_declaration=*/false);
+	  /* This is handled below, so back off.  */
+	  if (type && concept_check_p (type))
+	    cp_parser_simulate_error (parser);
+
+	  if (!cp_parser_parse_definitely (parser))
+	    type = NULL_TREE;
+	  else if (TREE_CODE (type) == TEMPLATE_ID_EXPR)
+	    type = make_typename_type (parser->scope, type, typename_type,
+				       /*complain=*/tf_error);
+	  else if (TREE_CODE (type) != TYPE_DECL)
+	    type = NULL_TREE;
+	}
 
       /* Otherwise, look for a type-name.  */
       if (!type)
@@ -18316,7 +18385,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
     }
 
   /* A type constraint constrains a contextually determined type or type
-     parameter pack. However, the the Concepts TS does allow concepts
+     parameter pack. However, the Concepts TS does allow concepts
      to introduce non-type and template template parameters.  */
   if (TREE_CODE (proto) != TYPE_DECL)
     {
@@ -18937,9 +19006,12 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
     cp_parser_maybe_warn_enum_key (parser, key_loc, type, scoped_key);
   else
     {
-      /* Diagnose class/struct/union mismatches.  */
+      /* Diagnose class/struct/union mismatches.  IS_DECLARATION is false
+	 for alias definition.  */
+      bool decl_class = (is_declaration
+			 && cp_parser_declares_only_class_p (parser));
       cp_parser_check_class_key (parser, key_loc, tag_type, type, false,
-				 cp_parser_declares_only_class_p (parser));
+				 decl_class);
 
       /* Indicate whether this class was declared as a `class' or as a
 	 `struct'.  */
@@ -19001,9 +19073,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   bool is_unnamed = false;
   tree underlying_type = NULL_TREE;
   cp_token *type_start_token = NULL;
-  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
-
-  parser->colon_corrects_to_scope_p = false;
+  temp_override<bool> cleanup (parser->colon_corrects_to_scope_p, false);
 
   /* Parse tentatively so that we can back up if we don't find a
      enum-specifier.  */
@@ -19043,24 +19113,24 @@ cp_parser_enum_specifier (cp_parser* parser)
 
   push_deferring_access_checks (dk_no_check);
   nested_name_specifier
-      = cp_parser_nested_name_specifier_opt (parser,
-					     /*typename_keyword_p=*/true,
-					     /*check_dependency_p=*/false,
-					     /*type_p=*/false,
-					     /*is_declaration=*/false);
+    = cp_parser_nested_name_specifier_opt (parser,
+					   /*typename_keyword_p=*/true,
+					   /*check_dependency_p=*/false,
+					   /*type_p=*/false,
+					   /*is_declaration=*/false);
 
   if (nested_name_specifier)
     {
       tree name;
 
       identifier = cp_parser_identifier (parser);
-      name =  cp_parser_lookup_name (parser, identifier,
-				     enum_type,
-				     /*is_template=*/false,
-				     /*is_namespace=*/false,
-				     /*check_dependency=*/true,
-				     /*ambiguous_decls=*/NULL,
-				     input_location);
+      name = cp_parser_lookup_name (parser, identifier,
+				    enum_type,
+				    /*is_template=*/false,
+				    /*is_namespace=*/false,
+				    /*check_dependency=*/true,
+				    /*ambiguous_decls=*/NULL,
+				    input_location);
       if (name && name != error_mark_node)
 	{
 	  type = TREE_TYPE (name);
@@ -19140,23 +19210,21 @@ cp_parser_enum_specifier (cp_parser* parser)
     {
       if (cxx_dialect < cxx11 || (!scoped_enum_p && !underlying_type))
 	{
+	  if (has_underlying_type)
+	    cp_parser_commit_to_tentative_parse (parser);
 	  cp_parser_error (parser, "expected %<{%>");
 	  if (has_underlying_type)
-	    {
-	      type = NULL_TREE;
-	      goto out;
-	    }
+	    return error_mark_node;
 	}
       /* An opaque-enum-specifier must have a ';' here.  */
       if ((scoped_enum_p || underlying_type)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	{
+	  if (has_underlying_type)
+	    cp_parser_commit_to_tentative_parse (parser);
 	  cp_parser_error (parser, "expected %<;%> or %<{%>");
 	  if (has_underlying_type)
-	    {
-	      type = NULL_TREE;
-	      goto out;
-	    }
+	    return error_mark_node;
 	}
     }
 
@@ -19172,9 +19240,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 	  push_scope (nested_name_specifier);
 	}
       else if (TREE_CODE (nested_name_specifier) == NAMESPACE_DECL)
-	{
-	  push_nested_namespace (nested_name_specifier);
-	}
+	push_nested_namespace (nested_name_specifier);
     }
 
   /* Issue an error message if type-definitions are forbidden here.  */
@@ -19334,12 +19400,8 @@ cp_parser_enum_specifier (cp_parser* parser)
 	  pop_scope (nested_name_specifier);
 	}
       else if (TREE_CODE (nested_name_specifier) == NAMESPACE_DECL)
-	{
-	  pop_nested_namespace (nested_name_specifier);
-	}
+	pop_nested_namespace (nested_name_specifier);
     }
- out:
-  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return type;
 }
 
@@ -20771,16 +20833,24 @@ cp_parser_init_declarator (cp_parser* parser,
       else
 	{
 	  /* We want to record the extra mangling scope for in-class
-	     initializers of class members and initializers of static data
-	     member templates.  The former involves deferring
-	     parsing of the initializer until end of class as with default
-	     arguments.  So right here we only handle the latter.  */
-	  if (!member_p && processing_template_decl && decl != error_mark_node)
+	     initializers of class members and initializers of static
+	     data member templates and namespace-scope initializers.
+	     The former involves deferring parsing of the initializer
+	     until end of class as with default arguments.  So right
+	     here we only handle the latter two.  */
+	  bool has_lambda_scope = false;
+
+	  if (decl != error_mark_node
+	      && !member_p
+	      && (processing_template_decl || DECL_NAMESPACE_SCOPE_P (decl)))
+	    has_lambda_scope = true;
+
+	  if (has_lambda_scope)
 	    start_lambda_scope (decl);
 	  initializer = cp_parser_initializer (parser,
 					       &is_direct_init,
 					       &is_non_constant_init);
-	  if (!member_p && processing_template_decl && decl != error_mark_node)
+	  if (has_lambda_scope)
 	    finish_lambda_scope ();
 	  if (initializer == error_mark_node)
 	    cp_parser_skip_to_end_of_statement (parser);
@@ -27339,7 +27409,7 @@ cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
 
       case CPP_EQ:
 	{
-	  /* An equal sign may be part of the the definition of a function,
+	  /* An equal sign may be part of the definition of a function,
 	     and not an assignment operator, when parsing the expression
 	     for a trailing requires-clause. For example:
 
@@ -27634,7 +27704,22 @@ cp_parser_requires_clause_opt (cp_parser *parser, bool lambda_p)
 	}
       return NULL_TREE;
     }
-  cp_lexer_consume_token (parser->lexer);
+
+  cp_token *tok2 = cp_lexer_peek_nth_token (parser->lexer, 2);
+  if (tok2->type == CPP_OPEN_BRACE)
+    {
+      /* An opening brace following the start of a requires-clause is
+	 ill-formed; the user likely forgot the second `requires' that
+	 would start a requires-expression.  */
+      gcc_rich_location richloc (tok2->location);
+      richloc.add_fixit_insert_after (tok->location, " requires");
+      error_at (&richloc, "missing additional %<requires%> to start "
+		"a requires-expression");
+      /* Don't consume the `requires', so that it's reused as the start of a
+	 requires-expression.  */
+    }
+  else
+    cp_lexer_consume_token (parser->lexer);
 
   if (!flag_concepts_ts)
     return cp_parser_requires_clause_expression (parser, lambda_p);
@@ -27692,7 +27777,9 @@ cp_parser_requires_expression (cp_parser *parser)
       parms = NULL_TREE;
 
     /* Parse the requirement body. */
+    ++processing_template_decl;
     reqs = cp_parser_requirement_body (parser);
+    --processing_template_decl;
     if (reqs == error_mark_node)
       return error_mark_node;
   }
@@ -27701,7 +27788,17 @@ cp_parser_requires_expression (cp_parser *parser)
      the parm chain.  */
   grokparms (parms, &parms);
   loc = make_location (loc, loc, parser->lexer);
-  return finish_requires_expr (loc, parms, reqs);
+  tree expr = finish_requires_expr (loc, parms, reqs);
+  if (!processing_template_decl)
+    {
+      /* Perform semantic processing now to diagnose any invalid types and
+	 expressions.  */
+      int saved_errorcount = errorcount;
+      tsubst_requires_expr (expr, NULL_TREE, tf_warning_or_error, NULL_TREE);
+      if (errorcount > saved_errorcount)
+	return error_mark_node;
+    }
+  return expr;
 }
 
 /* Parse a parameterized requirement.
@@ -30924,8 +31021,9 @@ class class_decl_loc_t
   /* Issues -Wmismatched-tags for all classes.  */
   static void diag_mismatched_tags ();
 
-  /* Adds TYPE_DECL to the collection of class decls.  */
-  static void add (tree, tag_types, bool, bool);
+  /* Adds TYPE_DECL to the collection of class decls and diagnoses
+     redundant tags (if -Wredundant-tags is enabled).  */
+  static void add (cp_parser *, location_t, tag_types, tree, bool, bool);
 
   /* Either adds this decl to the collection of class decls
      or diagnoses it, whichever is appropriate.  */
@@ -30953,12 +31051,19 @@ private:
     return locvec[i].class_key;
   }
 
+  /* True if a definition for the class has been seen.  */
+  bool def_p () const
+  {
+    return idxdef < locvec.length ();
+  }
+
   /* The location of a single mention of a class type with the given
      class-key.  */
   struct class_key_loc_t
   {
     class_key_loc_t (tree func, location_t loc, tag_types key, bool redundant)
-      : func (func), loc (loc), class_key (key), key_redundant (redundant) { }
+      : func (func), loc (loc), class_key (key), key_redundant (redundant)
+    { }
 
     /* The function the type is mentioned in.  */
     tree func;
@@ -31021,6 +31126,40 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
       && class_key != union_type)
     return;
 
+  class_decl_loc_t::add (parser, key_loc, class_key, type, def_p, decl_p);
+}
+
+/* Returns the template or specialization of one to which the RECORD_TYPE
+   TYPE corresponds.  */
+
+static tree
+specialization_of (tree type)
+{
+  tree ret = type;
+
+  /* Determine the template or its partial specialization to which TYPE
+     corresponds.  */
+  if (tree spec = most_specialized_partial_spec (type, tf_none))
+    if (spec != error_mark_node)
+      ret = TREE_TYPE (TREE_VALUE (spec));
+
+  if (ret == type)
+    ret = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (type);
+
+  return TYPE_MAIN_DECL (ret);
+}
+
+
+/* Adds the class TYPE to the collection of class decls and diagnoses
+   redundant tags (if -Wredundant-tags is enabled).
+   DEF_P is expected to be set for a definition of class TYPE.  DECL_P
+   is set for a (likely, based on syntactic context) declaration of class
+   TYPE and clear for a reference to it that is not a declaration of it.  */
+
+void
+class_decl_loc_t::add (cp_parser *parser, location_t key_loc,
+		       tag_types class_key, tree type, bool def_p, bool decl_p)
+{
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
@@ -31032,7 +31171,10 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name
      lookup returns just the type itself.  */
-  bool key_redundant = !def_p && !decl_p && decl == type_decl;
+  bool key_redundant = (!def_p && !decl_p
+			&& (decl == type_decl
+			    || TREE_CODE (decl) == TEMPLATE_DECL
+			    || TYPE_BEING_DEFINED (type)));
 
   if (key_redundant
       && class_key != class_type
@@ -31050,6 +31192,41 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
 	key_redundant = false;
     }
 
+  /* Set if a declaration of TYPE has previously been seen or if it must
+     exist in a precompiled header.  */
+  bool exist;
+  class_decl_loc_t *rdl = &class2loc.get_or_insert (type_decl, &exist);
+  if (!exist)
+    {
+      tree type = TREE_TYPE (type_decl);
+      if (def_p || !COMPLETE_TYPE_P (type))
+	{
+	  /* TYPE_DECL is the first declaration or definition of the type
+	     (outside precompiled headers -- see below).  Just create
+	     a new entry for it and return unless it's a declaration
+	     involving a template that may need to be diagnosed by
+	     -Wredundant-tags.  */
+	  *rdl = class_decl_loc_t (class_key, false, def_p);
+	  if (TREE_CODE (decl) != TEMPLATE_DECL)
+	    return;
+	}
+      else
+	{
+	  /* TYPE was previously defined in some unknown precompiled hdeader.
+	     Simply add a record of its definition at an unknown location and
+	     proceed below to add a reference to it at the current location.
+	     (Declarations in precompiled headers that are not definitions
+	     are ignored.)  */
+	  tag_types def_key
+	    = CLASSTYPE_DECLARED_CLASS (type) ? class_type : record_type;
+	  location_t def_loc = DECL_SOURCE_LOCATION (type_decl);
+	  *rdl = class_decl_loc_t (def_key, false, true, def_loc);
+	  exist = true;
+	}
+    }
+
+  /* A prior declaration of TYPE_DECL has been seen.  */
+
   if (key_redundant)
     {
       gcc_rich_location richloc (key_loc);
@@ -31061,51 +31238,17 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
 		  type);
     }
 
-  if (seen_as_union || !warn_mismatched_tags)
-    return;
-
-  class_decl_loc_t::add (type_decl, class_key, key_redundant, def_p);
-}
-
-/* Adds TYPE_DECL to the collection of class decls.  */
-
-void
-class_decl_loc_t::add (tree type_decl, tag_types class_key, bool redundant,
-		       bool def_p)
-{
-  bool exist;
-  class_decl_loc_t *rdl = &class2loc.get_or_insert (type_decl, &exist);
   if (!exist)
-    {
-      tree type = TREE_TYPE (type_decl);
-      if (def_p || !COMPLETE_TYPE_P (type))
-	{
-	  /* TYPE_DECL is the first declaration or definition of the type
-	     (outside precompiled headers -- see below).  Just create
-	     a new entry for it.  */
-	  *rdl = class_decl_loc_t (class_key, false, def_p);
-	  return;
-	}
-
-      /* TYPE was previously defined in some unknown precompiled hdeader.
-	 Simply add a record of its definition at an unknown location and
-	 proceed below to add a reference to it at the current location.
-	 (Declarations in precompiled headers that are not definitions
-	 are ignored.)  */
-      tag_types def_key
-	= CLASSTYPE_DECLARED_CLASS (type) ? class_type : record_type;
-      location_t def_loc = DECL_SOURCE_LOCATION (type_decl);
-      *rdl = class_decl_loc_t (def_key, false, true, def_loc);
-    }
-
-  /* A prior declaration of TYPE_DECL has been seen.  */
+    /* Do nothing if this is the first declaration of the type.  */
+    return;
 
   if (rdl->idxdef != UINT_MAX && rdl->def_class_key == class_key)
     /* Do nothing if the class-key in this declaration matches
        the definition.  */
     return;
 
-  rdl->add_or_diag_mismatched_tag (type_decl, class_key, redundant, def_p);
+  rdl->add_or_diag_mismatched_tag (type_decl, class_key, key_redundant,
+				   def_p);
 }
 
 /* Either adds this DECL corresponding to the TYPE_DECL to the collection
@@ -31158,34 +31301,69 @@ class_decl_loc_t::add_or_diag_mismatched_tag (tree type_decl,
 void
 class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 {
-  unsigned ndecls = locvec.length ();
-
-  /* Skip a declaration that consistently uses the same class-key
-     or one with just a solitary declaration (i.e., TYPE_DECL).  */
-  if (def_class_key != none_type || ndecls < 2)
+  if (!warn_mismatched_tags)
     return;
 
-  /* Save the current function before changing it below.  */
-  tree save_func = current_function_decl;
-  /* Set if a class definition for RECLOC has been seen.  */
-  bool def_p = idxdef < ndecls;
-  unsigned idxguide = def_p ? idxdef : 0;
+  /* Number of uses of the class.  */
+  const unsigned ndecls = locvec.length ();
+
+  /* The class (or template) declaration guiding the decisions about
+     the diagnostic.  For ordinary classes it's the same as THIS.  For
+     uses of instantiations of templates other than their declarations
+     it points to the record for the declaration of the corresponding
+     primary template or partial specialization.  */
+  class_decl_loc_t *cdlguide = this;
+
+  tree type = TREE_TYPE (type_decl);
+  if (CLASSTYPE_IMPLICIT_INSTANTIATION (type))
+    {
+      /* For implicit instantiations of a primary template look up
+	 the primary or partial specialization and use it as
+	 the expected class-key rather than using the class-key of
+	 the first reference to the instantiation.  The primary must
+	 be (and inevitably is) at index zero.  */
+      tree spec = specialization_of (type);
+      cdlguide = class2loc.get (spec);
+      gcc_assert (cdlguide != NULL);
+    }
+  else
+    {
+      /* Skip declarations that consistently use the same class-key.  */
+      if (def_class_key != none_type)
+	return;
+    }
+
+  /* Set if a definition for the class has been seen.  */
+  const bool def_p = cdlguide->def_p ();
+
+  /* The index of the declaration whose class-key this declaration
+     is expected to match.  It's either the class-key of the class
+     definition if one exists or the first declaration otherwise.  */
+  const unsigned idxguide = def_p ? cdlguide->idxdef : 0;
+
+  /* The class-key the class is expected to be declared with: it's
+     either the key used in its definition or the first declaration
+     if no definition has been provided.
+     For implicit instantiations of a primary template it's
+     the class-key used to declare the primary with.  The primary
+     must be at index zero.  */
+  const tag_types xpect_key = cdlguide->class_key (idxguide);
+
   unsigned idx = 0;
   /* Advance IDX to the first declaration that either is not
      a definition or that doesn't match the first declaration
      if no definition is provided.  */
-  while (class_key (idx) == class_key (idxguide))
+  while (class_key (idx) == xpect_key)
     if (++idx == ndecls)
       return;
 
-  /* The class-key the class is expected to be declared with: it's
-     either the key used in its definition or the first declaration
-     if no definition has been provided.  */
-  tag_types xpect_key = class_key (def_p ? idxguide : 0);
-  const char *xmatchkstr = xpect_key == record_type ? "class" : "struct";
-  const char *xpectkstr = xpect_key == record_type ? "struct" : "class";
+  /* Save the current function before changing it below.  */
+  tree save_func = current_function_decl;
   /* Set the function declaration to print in diagnostic context.  */
   current_function_decl = function (idx);
+
+  const char *xmatchkstr = xpect_key == record_type ? "class" : "struct";
+  const char *xpectkstr = xpect_key == record_type ? "struct" : "class";
 
   location_t loc = location (idx);
   bool key_redundant_p = key_redundant (idx);
@@ -31207,7 +31385,7 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 
   /* Also point to the first declaration or definition that guided
      the decision to issue the warning above.  */
-  inform (location (idxguide),
+  inform (cdlguide->location (idxguide),
 	  (def_p
 	   ? G_("%qT defined as %qs here")
 	   : G_("%qT first declared as %qs here")),
@@ -31249,25 +31427,29 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 void
 class_decl_loc_t::diag_mismatched_tags ()
 {
-  /* CLASS2LOC should be empty if -Wmismatched-tags is disabled.  */
-  gcc_assert (warn_mismatched_tags || class2loc.is_empty ());
+  /* CLASS2LOC should be empty if both -Wmismatched-tags and
+     -Wredundant-tags are disabled.  */
+  gcc_assert (warn_mismatched_tags
+	      || warn_redundant_tags
+	      || class2loc.is_empty ());
 
-  /* Save the current function before changing it below.  It should
+  /* Save the current function before changing on return.  It should
      be null at this point.  */
-  tree save_func = current_function_decl;
+  temp_override<tree> cleanup (current_function_decl);
 
-  /* Iterate over the collected class/struct declarations.  */
-  typedef class_to_loc_map_t::iterator iter_t;
-  for (iter_t it = class2loc.begin (); it != class2loc.end (); ++it)
+  if (warn_mismatched_tags)
     {
-      tree type_decl = (*it).first;
-      class_decl_loc_t &recloc = (*it).second;
-      recloc.diag_mismatched_tags (type_decl);
+      /* Iterate over the collected class/struct/template declarations.  */
+      typedef class_to_loc_map_t::iterator iter_t;
+      for (iter_t it = class2loc.begin (); it != class2loc.end (); ++it)
+	{
+	  tree type_decl = (*it).first;
+	  class_decl_loc_t &recloc = (*it).second;
+	  recloc.diag_mismatched_tags (type_decl);
+	}
     }
 
   class2loc.empty ();
-  /* Restore the current function.  */
-  current_function_decl = save_func;
 }
 
 /* Issue an error message if DECL is redeclared with different
@@ -34061,6 +34243,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 					   token->location);
 	    }
 	}
+      if (outer_automatic_var_p (decl))
+	decl = process_outer_var_ref (decl, tf_warning_or_error);
       if (decl == error_mark_node)
 	;
       else if (kind != 0)
@@ -38965,8 +39149,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    incr = cp_parser_omp_for_incr (parser, real_decl);
 	  else
 	    incr = cp_parser_expression (parser);
-	  if (!EXPR_HAS_LOCATION (incr))
-	    protected_set_expr_location (incr, input_location);
+	  protected_set_expr_location_if_unset (incr, input_location);
 	}
 
     parse_close_paren:

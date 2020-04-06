@@ -101,6 +101,28 @@ test05()
   VERIFY( i == v.end() );
 }
 
+void
+test06()
+{
+  std::vector<std::string> x = {""};
+  auto i = std::counted_iterator(x.begin(), 1);
+  auto r = ranges::subrange{i, std::default_sentinel};
+  auto v = r | views::transform(std::identity{}) | views::join;
+
+  // Verify that _Iterator<false> is implicitly convertible to _Iterator<true>.
+  static_assert(!std::same_as<decltype(ranges::begin(v)),
+			      decltype(ranges::cbegin(v))>);
+  auto a = ranges::cbegin(v);
+  a = ranges::begin(v);
+
+  // Verify that _Sentinel<false> is implicitly convertible to _Sentinel<true>.
+  static_assert(!ranges::common_range<decltype(v)>);
+  static_assert(!std::same_as<decltype(ranges::end(v)),
+			      decltype(ranges::cend(v))>);
+  auto b = ranges::cend(v);
+  b = ranges::end(v);
+}
+
 int
 main()
 {
@@ -109,4 +131,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

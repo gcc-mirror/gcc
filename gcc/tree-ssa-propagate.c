@@ -421,14 +421,6 @@ ssa_prop_init (void)
 	e->flags &= ~EDGE_EXECUTABLE;
     }
   uid_to_stmt.safe_grow (gimple_stmt_max_uid (cfun));
-
-  /* Seed the algorithm by adding the successors of the entry block to the
-     edge worklist.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
-    {
-      e->flags &= ~EDGE_EXECUTABLE;
-      add_control_edge (e);
-    }
 }
 
 
@@ -758,7 +750,16 @@ ssa_propagation_engine::ssa_propagate (void)
 
   /* Iterate until the worklists are empty.  We iterate both blocks
      and stmts in RPO order, using sets of two worklists to first
-     complete the current iteration before iterating over backedges.  */
+     complete the current iteration before iterating over backedges.
+     Seed the algorithm by adding the successors of the entry block to the
+     edge worklist.  */
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
+    {
+      e->flags &= ~EDGE_EXECUTABLE;
+      add_control_edge (e);
+    }
   while (1)
     {
       int next_block_order = (bitmap_empty_p (cfg_blocks)

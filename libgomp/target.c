@@ -1648,8 +1648,9 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
     {
       struct addr_pair *target_var = &target_table[num_funcs + i];
       uintptr_t target_size = target_var->end - target_var->start;
+      bool is_link_var = link_bit & (uintptr_t) host_var_table[i * 2 + 1];
 
-      if ((uintptr_t) host_var_table[i * 2 + 1] != target_size)
+      if (!is_link_var && (uintptr_t) host_var_table[i * 2 + 1] != target_size)
 	{
 	  gomp_mutex_unlock (&devicep->lock);
 	  if (is_register_lock)
@@ -1663,7 +1664,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 	= k->host_start + (size_mask & (uintptr_t) host_var_table[i * 2 + 1]);
       k->tgt = tgt;
       k->tgt_offset = target_var->start;
-      k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
+      k->refcount = is_link_var ? REFCOUNT_LINK : REFCOUNT_INFINITY;
       k->virtual_refcount = 0;
       k->aux = NULL;
       array->left = NULL;
@@ -2479,7 +2480,9 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	}
     }
 
-  size_t i;
+  /* The variables are mapped separately such that they can be released
+     independently.  */
+  size_t i, j;
   if ((flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)
     for (i = 0; i < mapnum; i++)
       if ((kinds[i] & 0xff) == GOMP_MAP_STRUCT)
@@ -2487,6 +2490,15 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	  gomp_map_vars (devicep, sizes[i] + 1, &hostaddrs[i], NULL, &sizes[i],
 			 &kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
 	  i += sizes[i];
+	}
+      else if ((kinds[i] & 0xff) == GOMP_MAP_TO_PSET)
+	{
+	  for (j = i + 1; j < mapnum; j++)
+	    if (!GOMP_MAP_POINTER_P (get_kind (true, kinds, j) & 0xff))
+	      break;
+	  gomp_map_vars (devicep, j-i, &hostaddrs[i], NULL, &sizes[i],
+			 &kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
+	  i += j - i - 1;
 	}
       else
 	gomp_map_vars (devicep, 1, &hostaddrs[i], NULL, &sizes[i], &kinds[i],

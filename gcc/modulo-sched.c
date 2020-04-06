@@ -369,7 +369,7 @@ doloop_register_get (rtx_insn *head, rtx_insn *tail)
                              : prev_nondebug_insn (tail));
 
   for (insn = head; insn != first_insn_not_to_check; insn = NEXT_INSN (insn))
-    if (!DEBUG_INSN_P (insn) && reg_mentioned_p (reg, insn))
+    if (NONDEBUG_INSN_P (insn) && reg_mentioned_p (reg, insn))
       {
         if (dump_file)
         {
@@ -428,7 +428,7 @@ res_MII (ddg_ptr g)
   if (targetm.sched.sms_res_mii)
     return targetm.sched.sms_res_mii (g);
 
-  return ((g->num_nodes - g->num_debug) / issue_rate);
+  return g->num_nodes / issue_rate;
 }
 
 
@@ -2152,11 +2152,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
   	  ddg_node_ptr u_node = &ps->g->nodes[u];
 	  rtx_insn *insn = u_node->insn;
 
-	  if (!NONDEBUG_INSN_P (insn))
-	    {
-	      bitmap_clear_bit (tobe_scheduled, u);
-	      continue;
-	    }
+	  gcc_checking_assert (NONDEBUG_INSN_P (insn));
 
 	  if (bitmap_bit_p (sched_nodes, u))
 	    continue;
@@ -3157,9 +3153,6 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 	   crr_insn = crr_insn->next_in_row)
 	{
 	  rtx_insn *insn = ps_rtl_insn (ps, crr_insn->id);
-
-	  if (!NONDEBUG_INSN_P (insn))
-	    continue;
 
 	  /* Check if there is room for the current insn.  */
 	  if (!can_issue_more || state_dead_lock_p (curr_state))

@@ -1,3 +1,27 @@
+2020-03-31  Andrea Corallo  <andrea.corallo@arm.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_13): New ABI tag
+	plus add version paragraph.
+	* libgccjit++.h (namespace gccjit::version): Add new namespace.
+	* libgccjit.c (gcc_jit_version_major, gcc_jit_version_minor)
+	(gcc_jit_version_patchlevel): New functions.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_version): New macro.
+	(gcc_jit_version_major, gcc_jit_version_minor)
+	(gcc_jit_version_patchlevel): New functions.
+	* libgccjit.map (LIBGCCJIT_ABI_13) New ABI tag.
+
+2020-03-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit-playback.h
+	(gcc::jit::playback::context m_recording_ctxt): Remove
+	m_char_array_type_node field.
+	* jit-playback.c
+	(playback::context::context) Remove m_char_array_type_node from member
+	initializer list.
+	(playback::context::new_string_literal) Fix logic to handle string
+	length > 200.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

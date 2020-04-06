@@ -264,8 +264,8 @@ resolve_procedure_interface (gfc_symbol *sym)
    Since a dummy argument cannot be a non-dummy procedure, the only
    resort left for untyped names are the IMPLICIT types.  */
 
-static void
-resolve_formal_arglist (gfc_symbol *proc)
+void
+gfc_resolve_formal_arglist (gfc_symbol *proc)
 {
   gfc_formal_arglist *f;
   gfc_symbol *sym;
@@ -319,7 +319,7 @@ resolve_formal_arglist (gfc_symbol *proc)
         }
 
       if (sym->attr.if_source != IFSRC_UNKNOWN)
-	resolve_formal_arglist (sym);
+	gfc_resolve_formal_arglist (sym);
 
       if (sym->attr.subroutine || sym->attr.external)
 	{
@@ -547,7 +547,7 @@ find_arglists (gfc_symbol *sym)
       || gfc_fl_struct (sym->attr.flavor) || sym->attr.intrinsic)
     return;
 
-  resolve_formal_arglist (sym);
+  gfc_resolve_formal_arglist (sym);
 }
 
 
@@ -5199,8 +5199,8 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 bool
 gfc_resolve_ref (gfc_expr *expr)
 {
-  int current_part_dimension, n_components, seen_part_dimension;
-  gfc_ref *ref, **prev;
+  int current_part_dimension, n_components, seen_part_dimension, dim;
+  gfc_ref *ref, **prev, *array_ref;
   bool equal_length;
 
   for (ref = expr->ref; ref; ref = ref->next)
@@ -5246,12 +5246,14 @@ gfc_resolve_ref (gfc_expr *expr)
   current_part_dimension = 0;
   seen_part_dimension = 0;
   n_components = 0;
+  array_ref = NULL;
 
   for (ref = expr->ref; ref; ref = ref->next)
     {
       switch (ref->type)
 	{
 	case REF_ARRAY:
+	  array_ref = ref;
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_FULL:
@@ -5267,6 +5269,7 @@ gfc_resolve_ref (gfc_expr *expr)
 	      break;
 
 	    case AR_ELEMENT:
+	      array_ref = NULL;
 	      current_part_dimension = 0;
 	      break;
 
@@ -5306,7 +5309,33 @@ gfc_resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
+	  break;
+
 	case REF_INQUIRY:
+	  /* Implement requirement in note 9.7 of F2018 that the result of the
+	     LEN inquiry be a scalar.  */
+	  if (ref->u.i == INQUIRY_LEN && array_ref && expr->ts.deferred)
+	    {
+	      array_ref->u.ar.type = AR_ELEMENT;
+	      expr->rank = 0;
+	      /* INQUIRY_LEN is not evaluated from the rest of the expr
+		 but directly from the string length. This means that setting
+		 the array indices to one does not matter but might trigger
+		 a runtime bounds error. Suppress the check.  */
+	      expr->no_bounds_check = 1;
+	      for (dim = 0; dim < array_ref->u.ar.dimen; dim++)
+		{
+		  array_ref->u.ar.dimen_type[dim] = DIMEN_ELEMENT;
+		  if (array_ref->u.ar.start[dim])
+		    gfc_free_expr (array_ref->u.ar.start[dim]);
+		  array_ref->u.ar.start[dim]
+			= gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+		  if (array_ref->u.ar.end[dim])
+		    gfc_free_expr (array_ref->u.ar.end[dim]);
+		  if (array_ref->u.ar.stride[dim])
+		    gfc_free_expr (array_ref->u.ar.stride[dim]);
+		}
+	    }
 	  break;
 	}
 
@@ -8839,25 +8868,43 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* For variable targets, we get some attributes from the target.  */
   if (target->expr_type == EXPR_VARIABLE)
     {
-      gfc_symbol* tsym;
+      gfc_symbol *tsym, *dsym;
 
       gcc_assert (target->symtree);
       tsym = target->symtree->n.sym;
-
-      if (tsym->attr.subroutine
-	  || tsym->attr.external
-	  || (tsym->attr.function && tsym->result != tsym))
-	{
-	  gfc_error ("Associating entity %qs at %L is a procedure name",
-		     tsym->name, &target->where);
-	  return;
-	}
 
       if (gfc_expr_attr (target).proc_pointer)
 	{
 	  gfc_error ("Associating entity %qs at %L is a procedure pointer",
 		     tsym->name, &target->where);
 	  return;
+	}
+
+      if (tsym->attr.flavor == FL_PROCEDURE && tsym->generic
+	  && (dsym = gfc_find_dt_in_generic (tsym)) != NULL
+	  && dsym->attr.flavor == FL_DERIVED)
+	{
+	  gfc_error ("Derived type %qs cannot be used as a variable at %L",
+		     tsym->name, &target->where);
+	  return;
+	}
+
+      if (tsym->attr.flavor == FL_PROCEDURE)
+	{
+	  bool is_error = true;
+	  if (tsym->attr.function && tsym->result == tsym)
+	    for (gfc_namespace *ns = sym->ns; ns; ns = ns->parent)
+	      if (tsym == ns->proc_name)
+		{
+		  is_error = false;
+		  break;
+		}
+	  if (is_error)
+	    {
+	      gfc_error ("Associating entity %qs at %L is a procedure name",
+			 tsym->name, &target->where);
+	      return;
+	    }
 	}
 
       sym->attr.asynchronous = tsym->attr.asynchronous;
@@ -16826,7 +16873,8 @@ resolve_equivalence (gfc_equiv *eq)
 	  && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where))
 		continue;
 
-  identical_types:
+identical_types:
+
       last_ts =&sym->ts;
       last_where = &e->where;
 
@@ -16834,8 +16882,7 @@ resolve_equivalence (gfc_equiv *eq)
 	continue;
 
       /* Shall not be an automatic array.  */
-      if (e->ref->type == REF_ARRAY
-	  && !gfc_resolve_array_spec (e->ref->u.ar.as, 1))
+      if (e->ref->type == REF_ARRAY && is_non_constant_shape_array (sym))
 	{
 	  gfc_error ("Array %qs at %L with non-constant bounds cannot be "
 		     "an EQUIVALENCE object", sym->name, &e->where);
@@ -17112,7 +17159,7 @@ resolve_types (gfc_namespace *ns)
 
   if (ns->proc_name && ns->proc_name->attr.flavor == FL_PROCEDURE
       && ns->proc_name->attr.if_source == IFSRC_IFBODY)
-    resolve_formal_arglist (ns->proc_name);
+    gfc_resolve_formal_arglist (ns->proc_name);
 
   gfc_traverse_ns (ns, resolve_bind_c_derived_types);
 

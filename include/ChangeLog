@@ -1,3 +1,32 @@
+2020-04-01 Maciej W. Rozycki <macro@linux-mips.org>
+
+	PR lto/94249
+	* plugin-api.h: Fix a typo.
+
+2020-03-24  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94249
+	* plugin-api.h: Add more robust endianess detection.
+
+2020-03-21  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum ld_plugin_symbol_type): Remove
+	comma after last value of an enum.
+	* lto-symtab.h (enum gcc_plugin_symbol_type): Likewise.
+
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-symtab.h (enum gcc_plugin_symbol_type): New.
+	(enum gcc_plugin_symbol_section_kind): Likewise.
+
+2020-03-19  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (struct ld_plugin_symbol): Split
+	int def into 4 char fields.
+	(enum ld_plugin_symbol_type): New.
+	(enum ld_plugin_symbol_section_kind): New.
+	(enum ld_plugin_tag): Add LDPT_ADD_SYMBOLS_V2.
+
 2020-02-05  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* hashtab.h (htab_remove_elt): Make a parameter const.

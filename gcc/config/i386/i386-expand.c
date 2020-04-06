@@ -10968,8 +10968,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
      OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32
      OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4
-     where for each this pair it is sufficient if either of the ISAs is
-     enabled, plus if it is ored with other options also those others.  */
+     where for each such pair it is sufficient if either of the ISAs is
+     enabled, plus if it is ored with other options also those others.
+     OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
   if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
        == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
       && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A)) != 0)
@@ -10982,24 +10983,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
-  /* Use SSE/SSE2/SSSE3 to emulate MMX intrinsics in 64-bit mode when
-     MMX is disabled.  NB: Since MMX intrinsics are marked with
-     SSE/SSE2/SSSE3, enable them without SSE/SSE2/SSSE3 if MMX is
-     enabled.  */
-  if (TARGET_MMX || TARGET_MMX_WITH_SSE)
+  if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE)
     {
-      if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
-	   == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
-	  && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX)) != 0)
-	isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX);
-      if (((bisa & (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX))
-	   == (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX))
-	  && (isa & (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX)) != 0)
-	isa |= (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX);
-      if (((bisa & (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX))
-	   == (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX))
-	  && (isa & (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX)) != 0)
-	isa |= (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX);
+      bisa &= ~OPTION_MASK_ISA_MMX;
+      bisa |= OPTION_MASK_ISA_SSE2;
     }
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {

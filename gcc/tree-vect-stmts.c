@@ -2220,6 +2220,62 @@ vect_get_store_rhs (stmt_vec_info stmt_info)
   gcc_unreachable ();
 }
 
+/* Function VECTOR_VECTOR_COMPOSITION_TYPE
+
+   This function returns a vector type which can be composed with NETLS pieces,
+   whose type is recorded in PTYPE.  VTYPE should be a vector type, and has the
+   same vector size as the return vector.  It checks target whether supports
+   pieces-size vector mode for construction firstly, if target fails to, check
+   pieces-size scalar mode for construction further.  It returns NULL_TREE if
+   fails to find the available composition.
+
+   For example, for (vtype=V16QI, nelts=4), we can probably get:
+     - V16QI with PTYPE V4QI.
+     - V4SI with PTYPE SI.
+     - NULL_TREE.  */
+
+static tree
+vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
+{
+  gcc_assert (VECTOR_TYPE_P (vtype));
+  gcc_assert (known_gt (nelts, 0U));
+
+  machine_mode vmode = TYPE_MODE (vtype);
+  if (!VECTOR_MODE_P (vmode))
+    return NULL_TREE;
+
+  poly_uint64 vbsize = GET_MODE_BITSIZE (vmode);
+  unsigned int pbsize;
+  if (constant_multiple_p (vbsize, nelts, &pbsize))
+    {
+      /* First check if vec_init optab supports construction from
+	 vector pieces directly.  */
+      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vtype));
+      poly_uint64 inelts = pbsize / GET_MODE_BITSIZE (elmode);
+      machine_mode rmode;
+      if (related_vector_mode (vmode, elmode, inelts).exists (&rmode)
+	  && (convert_optab_handler (vec_init_optab, vmode, rmode)
+	      != CODE_FOR_nothing))
+	{
+	  *ptype = build_vector_type (TREE_TYPE (vtype), inelts);
+	  return vtype;
+	}
+
+      /* Otherwise check if exists an integer type of the same piece size and
+	 if vec_init optab supports construction from it directly.  */
+      if (int_mode_for_size (pbsize, 0).exists (&elmode)
+	  && related_vector_mode (vmode, elmode, nelts).exists (&rmode)
+	  && (convert_optab_handler (vec_init_optab, rmode, elmode)
+	      != CODE_FOR_nothing))
+	{
+	  *ptype = build_nonstandard_integer_type (pbsize, 1);
+	  return build_vector_type (*ptype, nelts);
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* A subroutine of get_load_store_type, with a subset of the same
    arguments.  Handle the case where STMT_INFO is part of a grouped load
    or store.
@@ -2300,8 +2356,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 	     by simply loading half of the vector only.  Usually
 	     the construction with an upper zero half will be elided.  */
 	  dr_alignment_support alignment_support_scheme;
-	  scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
-	  machine_mode vmode;
+	  tree half_vtype;
 	  if (overrun_p
 	      && !masked_p
 	      && (((alignment_support_scheme
@@ -2310,12 +2365,8 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
 	      && known_eq (nunits, group_size)
-	      && VECTOR_MODE_P (TYPE_MODE (vectype))
-	      && related_vector_mode (TYPE_MODE (vectype), elmode,
-				      group_size - gap).exists (&vmode)
-	      && (convert_optab_handler (vec_init_optab,
-					 TYPE_MODE (vectype), vmode)
-		  != CODE_FOR_nothing))
+	      && (vector_vector_composition_type (vectype, 2, &half_vtype)
+		  != NULL_TREE))
 	    overrun_p = false;
 
 	  if (overrun_p && !can_overrun_p)
@@ -8000,8 +8051,14 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   auto_vec<tree> dr_chain (group_size);
   oprnds.create (group_size);
 
-  alignment_support_scheme
-    = vect_supportable_dr_alignment (first_dr_info, false);
+  /* Gather-scatter accesses perform only component accesses, alignment
+     is irrelevant for them.  */
+  if (memory_access_type == VMAT_GATHER_SCATTER)
+    alignment_support_scheme = dr_unaligned_supported;
+  else
+    alignment_support_scheme
+      = vect_supportable_dr_alignment (first_dr_info, false);
+
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -8915,47 +8972,24 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  if (group_size < const_nunits)
 	    {
-	      /* First check if vec_init optab supports construction from
-		 vector elts directly.  */
-	      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
-	      machine_mode vmode;
-	      if (VECTOR_MODE_P (TYPE_MODE (vectype))
-		  && related_vector_mode (TYPE_MODE (vectype), elmode,
-					  group_size).exists (&vmode)
-		  && (convert_optab_handler (vec_init_optab,
-					     TYPE_MODE (vectype), vmode)
-		      != CODE_FOR_nothing))
+	      /* First check if vec_init optab supports construction from vector
+		 elts directly.  Otherwise avoid emitting a constructor of
+		 vector elements by performing the loads using an integer type
+		 of the same size, constructing a vector of those and then
+		 re-interpreting it as the original vector type.  This avoids a
+		 huge runtime penalty due to the general inability to perform
+		 store forwarding from smaller stores to a larger load.  */
+	      tree ptype;
+	      tree vtype
+		= vector_vector_composition_type (vectype,
+						  const_nunits / group_size,
+						  &ptype);
+	      if (vtype != NULL_TREE)
 		{
 		  nloads = const_nunits / group_size;
 		  lnel = group_size;
-		  ltype = build_vector_type (TREE_TYPE (vectype), group_size);
-		}
-	      else
-		{
-		  /* Otherwise avoid emitting a constructor of vector elements
-		     by performing the loads using an integer type of the same
-		     size, constructing a vector of those and then
-		     re-interpreting it as the original vector type.
-		     This avoids a huge runtime penalty due to the general
-		     inability to perform store forwarding from smaller stores
-		     to a larger load.  */
-		  unsigned lsize
-		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-		  unsigned int lnunits = const_nunits / group_size;
-		  /* If we can't construct such a vector fall back to
-		     element loads of the original vector type.  */
-		  if (int_mode_for_size (lsize, 0).exists (&elmode)
-		      && VECTOR_MODE_P (TYPE_MODE (vectype))
-		      && related_vector_mode (TYPE_MODE (vectype), elmode,
-					      lnunits).exists (&vmode)
-		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
-			  != CODE_FOR_nothing))
-		    {
-		      nloads = lnunits;
-		      lnel = group_size;
-		      ltype = build_nonstandard_integer_type (lsize, 1);
-		      lvectype = build_vector_type (ltype, nloads);
-		    }
+		  lvectype = vtype;
+		  ltype = ptype;
 		}
 	    }
 	  else
@@ -9140,8 +9174,14 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
     }
 
-  alignment_support_scheme
-    = vect_supportable_dr_alignment (first_dr_info, false);
+  /* Gather-scatter accesses perform only component accesses, alignment
+     is irrelevant for them.  */
+  if (memory_access_type == VMAT_GATHER_SCATTER)
+    alignment_support_scheme = dr_unaligned_supported;
+  else
+    alignment_support_scheme
+      = vect_supportable_dr_alignment (first_dr_info, false);
+
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -9541,6 +9581,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    else
 		      {
 			tree ltype = vectype;
+			tree new_vtype = NULL_TREE;
 			/* If there's no peeling for gaps but we have a gap
 			   with slp loads then load the lower half of the
 			   vector only.  See get_group_load_store_type for
@@ -9553,15 +9594,28 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					 (group_size
 					  - DR_GROUP_GAP (first_stmt_info)) * 2)
 			    && known_eq (nunits, group_size))
-			  ltype = build_vector_type (TREE_TYPE (vectype),
-						     (group_size
-						      - DR_GROUP_GAP
-						          (first_stmt_info)));
+			  {
+			    tree half_vtype;
+			    new_vtype
+			      = vector_vector_composition_type (vectype, 2,
+								&half_vtype);
+			    if (new_vtype != NULL_TREE)
+			      ltype = half_vtype;
+			  }
+			tree offset
+			  = (dataref_offset ? dataref_offset
+					    : build_int_cst (ref_type, 0));
+			if (ltype != vectype
+			    && memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+			  {
+			    unsigned HOST_WIDE_INT gap
+			      = DR_GROUP_GAP (first_stmt_info);
+			    gap *= tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
+			    tree gapcst = build_int_cst (ref_type, gap);
+			    offset = size_binop (PLUS_EXPR, offset, gapcst);
+			  }
 			data_ref
-			  = fold_build2 (MEM_REF, ltype, dataref_ptr,
-					 dataref_offset
-					 ? dataref_offset
-					 : build_int_cst (ref_type, 0));
+			  = fold_build2 (MEM_REF, ltype, dataref_ptr, offset);
 			if (alignment_support_scheme == dr_aligned)
 			  ;
 			else if (DR_MISALIGNMENT (first_dr_info) == -1)
@@ -9574,20 +9628,42 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 						  TYPE_ALIGN (elem_type));
 			if (ltype != vectype)
 			  {
-			    vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+			    vect_copy_ref_info (data_ref,
+						DR_REF (first_dr_info->dr));
 			    tree tem = make_ssa_name (ltype);
 			    new_stmt = gimple_build_assign (tem, data_ref);
-			    vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+			    vect_finish_stmt_generation (stmt_info, new_stmt,
+							 gsi);
 			    data_ref = NULL;
 			    vec<constructor_elt, va_gc> *v;
 			    vec_alloc (v, 2);
-			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
-			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-						    build_zero_cst (ltype));
-			    new_stmt
-			      = gimple_build_assign (vec_dest,
-						     build_constructor
-						       (vectype, v));
+			    if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+			      {
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+							build_zero_cst (ltype));
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
+			      }
+			    else
+			      {
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
+				CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+							build_zero_cst (ltype));
+			      }
+			    gcc_assert (new_vtype != NULL_TREE);
+			    if (new_vtype == vectype)
+			      new_stmt = gimple_build_assign (
+				vec_dest, build_constructor (vectype, v));
+			    else
+			      {
+				tree new_vname = make_ssa_name (new_vtype);
+				new_stmt = gimple_build_assign (
+				  new_vname, build_constructor (new_vtype, v));
+				vect_finish_stmt_generation (stmt_info,
+							     new_stmt, gsi);
+				new_stmt = gimple_build_assign (
+				  vec_dest, build1 (VIEW_CONVERT_EXPR, vectype,
+						    new_vname));
+			      }
 			  }
 		      }
 		    break;

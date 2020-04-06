@@ -697,6 +697,17 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   if (error_operand_p (e) || type == error_mark_node)
     return error_mark_node;
 
+  if (TREE_CODE (e) == COMPOUND_EXPR)
+    {
+      e = ocp_convert (type, TREE_OPERAND (e, 1), convtype, flags, complain);
+      if (e == error_mark_node)
+	return error_mark_node;
+      if (e == TREE_OPERAND (expr, 1))
+	return expr;
+      return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (e),
+			 TREE_OPERAND (expr, 0), e);
+    }
+
   complete_type (type);
   complete_type (TREE_TYPE (expr));
 

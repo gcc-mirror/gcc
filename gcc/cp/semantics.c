@@ -380,7 +380,8 @@ add_stmt (tree t)
 
       /* When we expand a statement-tree, we must know whether or not the
 	 statements are full-expressions.  We record that fact here.  */
-      STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
+      if (STATEMENT_CODE_P (TREE_CODE (t)))
+	STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
     }
 
   if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
@@ -9687,8 +9688,10 @@ finish_static_assert (tree condition, tree message, location_t location,
             error ("static assertion failed: %s",
 		   TREE_STRING_POINTER (message));
 
-	  /* Actually explain the failure if this is a concept check.  */
-	  if (concept_check_p (orig_condition))
+	  /* Actually explain the failure if this is a concept check or a
+	     requires-expression.  */
+	  if (concept_check_p (orig_condition)
+	      || TREE_CODE (orig_condition) == REQUIRES_EXPR)
 	    diagnose_constraints (location, orig_condition, NULL_TREE);
 	}
       else if (condition && condition != error_mark_node)

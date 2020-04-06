@@ -15,3 +15,5 @@ log_bad_request ()
 {
   b += sprintf (0, "foo");
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */

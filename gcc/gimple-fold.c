@@ -1235,11 +1235,17 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 
   length = tree_to_uhwi (len);
   if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (etype)) != length
+      || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (etype))
+	  != GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (etype)))
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
     return NULL_TREE;
+
+  if (!type_has_mode_precision_p (etype))
+    etype = lang_hooks.types.type_for_mode (SCALAR_INT_TYPE_MODE (etype),
+					    TYPE_UNSIGNED (etype));
 
   if (integer_zerop (c))
     cval = 0;
@@ -1372,7 +1378,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 
 	  /* Fail when the array bound is unknown or zero.  */
 	  val = TYPE_SIZE_UNIT (optype);
-	  if (!val || integer_zerop (val))
+	  if (!val
+	      || TREE_CODE (val) != INTEGER_CST
+	      || integer_zerop (val))
 	    return false;
 
 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
@@ -1406,7 +1414,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 
 	  /* Fail when the array bound is unknown or zero.  */
 	  val = TYPE_SIZE_UNIT (optype);
-	  if (!val || integer_zerop (val))
+	  if (!val
+	      || TREE_CODE (val) != INTEGER_CST
+	      || integer_zerop (val))
 	    return false;
 	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
 			     integer_one_node);
@@ -1442,7 +1452,9 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	      /* Fail if the offset is out of bounds.  Such accesses
 		 should be diagnosed at some point.  */
 	      val = DECL_SIZE_UNIT (ref);
-	      if (!val || integer_zerop (val))
+	      if (!val
+		  || TREE_CODE (val) != INTEGER_CST
+		  || integer_zerop (val))
 		return false;
 
 	      poly_offset_int psiz = wi::to_offset (val);
@@ -1857,7 +1869,7 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
     {
-      /* Avoid warning if the destination refers to a an array/pointer
+      /* Avoid warning if the destination refers to an array/pointer
 	 decorate with attribute nonstring.  */
       if (!nonstring)
 	{
@@ -6413,8 +6425,8 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		    && TREE_CODE (op1) == INTEGER_CST)
 		  {
 		    tree off = fold_convert (ptr_type_node, op1);
-		    return build_fold_addr_expr_loc
-			(loc,
+		    return build1_loc
+			(loc, ADDR_EXPR, TREE_TYPE (op0),
 			 fold_build2 (MEM_REF,
 				      TREE_TYPE (TREE_TYPE (op0)),
 				      unshare_expr (op0), off));

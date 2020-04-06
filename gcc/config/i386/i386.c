@@ -5118,6 +5118,40 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
     case MODE_V4SF:
       return ix86_get_ssemov (operands, 16, insn_mode, mode);
 
+    case MODE_DI:
+      /* Handle broken assemblers that require movd instead of movq. */
+      if (!HAVE_AS_IX86_INTERUNIT_MOVQ
+	  && (GENERAL_REG_P (operands[0])
+	      || GENERAL_REG_P (operands[1])))
+	return "%vmovd\t{%1, %0|%0, %1}";
+      else
+	return "%vmovq\t{%1, %0|%0, %1}";
+
+    case MODE_SI:
+      return "%vmovd\t{%1, %0|%0, %1}";
+
+    case MODE_DF:
+      if (TARGET_AVX && REG_P (operands[0]) && REG_P (operands[1]))
+	return "vmovsd\t{%d1, %0|%0, %d1}";
+      else
+	return "%vmovsd\t{%1, %0|%0, %1}";
+
+    case MODE_SF:
+      if (TARGET_AVX && REG_P (operands[0]) && REG_P (operands[1]))
+	return "vmovss\t{%d1, %0|%0, %d1}";
+      else
+	return "%vmovss\t{%1, %0|%0, %1}";
+
+    case MODE_V1DF:
+      gcc_assert (!TARGET_AVX);
+      return "movlpd\t{%1, %0|%0, %1}";
+
+    case MODE_V2SF:
+      if (TARGET_AVX && REG_P (operands[0]))
+	return "vmovlps\t{%1, %d0|%d0, %1}";
+      else
+	return "%vmovlps\t{%1, %0|%0, %1}";
+
     default:
       gcc_unreachable ();
     }
@@ -22894,7 +22928,7 @@ ix86_test_loading_unspec ()
   /* Verify that the two mems are thus treated as equal.  */
   ASSERT_TRUE (rtx_equal_p (dst, v0));
 
-  /* Verify the the insn is recognized.  */
+  /* Verify that the insn is recognized.  */
   ASSERT_NE(-1, recog_memoized (insn));
 
   /* Test of an UNSPEC_VOLATILE, which has its own enum values.  */

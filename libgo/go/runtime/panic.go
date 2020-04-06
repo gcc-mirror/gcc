@@ -218,10 +218,13 @@ func panicmem() {
 // pfn is a C function pointer.
 // arg is a value to pass to pfn.
 func deferproc(frame *bool, pfn uintptr, arg unsafe.Pointer) {
+	gp := getg()
 	d := newdefer()
 	if d._panic != nil {
 		throw("deferproc: d.panic != nil after newdefer")
 	}
+	d.link = gp._defer
+	gp._defer = d
 	d.frame = frame
 	d.panicStack = getg()._panic
 	d.pfn = pfn
@@ -300,8 +303,6 @@ func newdefer() *_defer {
 		}
 	}
 	d.heap = true
-	d.link = gp._defer
-	gp._defer = d
 	return d
 }
 
@@ -1175,6 +1176,12 @@ func startpanic_m() bool {
 	}
 }
 
+// throwReportQuirk, if non-nil, is called by throw after dumping the stacks.
+//
+// TODO(austin): Remove this after Go 1.15 when we remove the
+// mlockGsignal workaround.
+var throwReportQuirk func()
+
 var didothers bool
 var deadlock mutex
 
@@ -1220,6 +1227,10 @@ func dopanic_m(gp *g, pc, sp uintptr) bool {
 	}
 
 	printDebugLog()
+
+	if throwReportQuirk != nil {
+		throwReportQuirk()
+	}
 
 	return docrash
 }

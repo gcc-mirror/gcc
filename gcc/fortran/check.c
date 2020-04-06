@@ -3947,6 +3947,10 @@ gfc_check_findloc (gfc_actual_arglist *ap)
   v1 = v->ts.type == BT_CHARACTER;
   if ((a1 && !v1) || (!a1 && v1))
     goto incompat;
+
+  /* Check the kind of the characters argument match.  */
+  if (a1 && v1 && a->ts.kind != v->ts.kind)
+    goto incompat;
 	 
   d = ap->next->next->expr;
   m = ap->next->next->next->expr;

@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/analyzer-selftests.h"
+#include "stor-layout.h"
 
 #if ENABLE_ANALYZER
 
@@ -71,6 +72,17 @@ static void
 dump_tree (pretty_printer *pp, tree t)
 {
   dump_generic_node (pp, t, 0, TDF_SLIM, 0);
+}
+
+/* Dump T to PP in language-independent form in quotes, for
+   debugging/logging/dumping purposes.  */
+
+void
+dump_quoted_tree (pretty_printer *pp, tree t)
+{
+  pp_begin_quote (pp, pp_show_color (pp));
+  dump_tree (pp, t);
+  pp_end_quote (pp, pp_show_color (pp));
 }
 
 /* Equivalent to pp_printf (pp, "%qT", t), to avoid nesting pp_printf
@@ -231,13 +243,18 @@ region_id::validate (const region_model &model) const
   gcc_assert (null_p () || m_idx < (int)model.get_num_regions ());
 }
 
-/* class id_set.  */
+/* class region_id_set.  */
 
-/* id_set<region_id>'s ctor.  */
-
-template<>
-id_set<region_id>::id_set (const region_model *model)
+region_id_set::region_id_set (const region_model *model)
 : m_bitmap (model->get_num_regions ())
+{
+  bitmap_clear (m_bitmap);
+}
+
+/* class svalue_id_set.  */
+
+svalue_id_set::svalue_id_set ()
+: m_bitmap (NULL)
 {
   bitmap_clear (m_bitmap);
 }
@@ -1207,6 +1224,127 @@ region::get_inherited_child_sid (region *child,
   return svalue_id::null ();
 }
 
+/* Copy from SRC_RID to DST_RID, using CTXT for any issues that occur.
+   Copy across any value for the region, and handle structs, unions
+   and arrays recursively.  */
+
+void
+region_model::copy_region (region_id dst_rid, region_id src_rid,
+			   region_model_context *ctxt)
+{
+  gcc_assert (!dst_rid.null_p ());
+  gcc_assert (!src_rid.null_p ());
+  if (dst_rid == src_rid)
+    return;
+  region *dst_reg = get_region (dst_rid);
+  region *src_reg = get_region (src_rid);
+
+  /* Copy across any value for the src region itself.  */
+  svalue_id sid = src_reg->get_value (*this, true, ctxt);
+  set_value (dst_rid, sid, ctxt);
+
+  if (dst_reg->get_kind () != src_reg->get_kind ())
+    return;
+
+  /* Copy across child regions for structs, unions, and arrays.  */
+  switch (dst_reg->get_kind ())
+    {
+    case RK_PRIMITIVE:
+      return;
+    case RK_STRUCT:
+      {
+	struct_region *dst_sub = as_a <struct_region *> (dst_reg);
+	struct_region *src_sub = as_a <struct_region *> (src_reg);
+	copy_struct_region (dst_rid, dst_sub, src_sub, ctxt);
+      }
+      return;
+    case RK_UNION:
+      {
+	union_region *src_sub = as_a <union_region *> (src_reg);
+	copy_union_region (dst_rid, src_sub, ctxt);
+      }
+      return;
+    case RK_FRAME:
+    case RK_GLOBALS:
+    case RK_CODE:
+    case RK_FUNCTION:
+      return;
+    case RK_ARRAY:
+      {
+	array_region *dst_sub = as_a <array_region *> (dst_reg);
+	array_region *src_sub = as_a <array_region *> (src_reg);
+	copy_array_region (dst_rid, dst_sub, src_sub, ctxt);
+      }
+      return;
+    case RK_STACK:
+    case RK_HEAP:
+    case RK_ROOT:
+    case RK_SYMBOLIC:
+      return;
+    }
+}
+
+/* Subroutine of region_model::copy_region for copying the child
+   regions for a struct.  */
+
+void
+region_model::copy_struct_region (region_id dst_rid,
+				  struct_region *dst_reg,
+				  struct_region *src_reg,
+				  region_model_context *ctxt)
+{
+  for (map_region::iterator_t iter = src_reg->begin ();
+       iter != src_reg->end (); ++iter)
+    {
+      tree src_key = (*iter).first;
+      region_id src_field_rid = (*iter).second;
+      region *src_field_reg = get_region (src_field_rid);
+      region_id dst_field_rid
+	= dst_reg->get_or_create (this, dst_rid, src_key,
+				  src_field_reg->get_type (), ctxt);
+      copy_region (dst_field_rid, src_field_rid, ctxt);
+    }
+}
+
+/* Subroutine of region_model::copy_region for copying the active
+   child region for a union.  */
+
+void
+region_model::copy_union_region (region_id dst_rid,
+				 union_region *src_reg,
+				 region_model_context *ctxt)
+{
+  region_id src_active_view_rid = src_reg->get_active_view ();
+  if (src_active_view_rid.null_p ())
+    return;
+  region *src_active_view = get_region (src_active_view_rid);
+  tree type = src_active_view->get_type ();
+  region_id dst_active_view_rid = get_or_create_view (dst_rid, type, ctxt);
+  copy_region (dst_active_view_rid, src_active_view_rid, ctxt);
+}
+
+/* Subroutine of region_model::copy_region for copying the child
+   regions for an array.  */
+
+void
+region_model::copy_array_region (region_id dst_rid,
+				 array_region *dst_reg,
+				 array_region *src_reg,
+				 region_model_context *ctxt)
+{
+  for (array_region::iterator_t iter = src_reg->begin ();
+       iter != src_reg->end (); ++iter)
+    {
+      array_region::key_t src_key = (*iter).first;
+      region_id src_field_rid = (*iter).second;
+      region *src_field_reg = get_region (src_field_rid);
+      region_id dst_field_rid
+	= dst_reg->get_or_create (this, dst_rid, src_key,
+				  src_field_reg->get_type (), ctxt);
+      copy_region (dst_field_rid, src_field_rid, ctxt);
+    }
+}
+
 /* Generate a hash value for this region.  The work is done by the
    add_to_hash vfunc.  */
 
@@ -1595,7 +1733,8 @@ map_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       tree expr = (*iter).first;
       region_id child_rid = (*iter).second;
-      pp_printf (pp, "%qE: ", expr);
+      dump_quoted_tree (pp, expr);
+      pp_string (pp, ": ");
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -1665,10 +1804,8 @@ map_region::dump_child_label (const region_model &model,
       if (child_rid == (*iter).second)
 	{
 	  tree key = (*iter).first;
-	  if (DECL_P (key))
-	    pp_printf (pp, "%qD: ", key);
-	  else
-	    pp_printf (pp, "%qE: ", key);
+	  dump_quoted_tree (pp, key);
+	  pp_string (pp, ": ");
 	}
     }
 }
@@ -2484,6 +2621,16 @@ array_region::key_from_constant (tree cst)
   return result;
 }
 
+/* Convert array_region::key_t KEY into a tree constant.  */
+
+tree
+array_region::constant_from_key (key_t key)
+{
+  tree array_type = get_type ();
+  tree index_type = TYPE_DOMAIN (array_type);
+  return build_int_cst (index_type, key);
+}
+
 /* class function_region : public map_region.  */
 
 /* Compare the fields of this function_region with OTHER, returning true
@@ -2609,21 +2756,21 @@ stack_region::get_current_frame_id () const
 
 /* Pop the topmost frame_region from this stack.
 
+   If RESULT_DST_RID is non-null, copy any return value from the frame
+   into RESULT_DST_RID's region.
+
    Purge the frame region and all its descendent regions.
    Convert any pointers that point into such regions into
    POISON_KIND_POPPED_STACK svalues.
 
-   Return the ID of any return value from the frame.
-
    If PURGE, then purge all unused svalues, with the exception of any
-   return value for the frame, which is temporarily
-   preserved in case no regions reference it, so it can
-   be written into a region in the caller.
+   returned values.
 
    Accumulate stats on purged entities into STATS.  */
 
-svalue_id
-stack_region::pop_frame (region_model *model, bool purge, purge_stats *stats,
+void
+stack_region::pop_frame (region_model *model, region_id result_dst_rid,
+			 bool purge, purge_stats *stats,
 			 region_model_context *ctxt)
 {
   gcc_assert (m_frame_rids.length () > 0);
@@ -2632,11 +2779,35 @@ stack_region::pop_frame (region_model *model, bool purge, purge_stats *stats,
   frame_region *frame = model->get_region<frame_region> (frame_rid);
 
   /* Evaluate the result, within the callee frame.  */
-  svalue_id result_sid;
+  svalue_id_set returned_sids;
   tree fndecl = frame->get_function ()->decl;
   tree result = DECL_RESULT (fndecl);
   if (result && TREE_TYPE (result) != void_type_node)
-    result_sid = model->get_rvalue (result, ctxt);
+    {
+      if (!result_dst_rid.null_p ())
+	{
+	  /* Copy the result to RESULT_DST_RID.  */
+	  model->copy_region (result_dst_rid, model->get_lvalue (result, ctxt),
+			      ctxt);
+	}
+      if (purge)
+	{
+	  /* Populate returned_sids, to avoid purging them.  */
+	  region_id return_rid = model->get_lvalue (result, NULL);
+	  region_id_set returned_rids (model);
+	  model->get_descendents (return_rid, &returned_rids,
+				  region_id::null ());
+	  for (unsigned i = 0; i < model->get_num_regions (); i++)
+	    {
+	      region_id rid = region_id::from_int (i);
+	      if (returned_rids.region_p (rid))
+		{
+		  svalue_id sid = model->get_region (rid)->get_value_direct ();
+		  returned_sids.add_svalue (sid);
+		}
+	    }
+	}
+    }
 
   /* Pop the frame RID.  */
   m_frame_rids.pop ();
@@ -2646,13 +2817,11 @@ stack_region::pop_frame (region_model *model, bool purge, purge_stats *stats,
 					stats,
 					ctxt ? ctxt->get_logger () : NULL);
 
-  /* Delete unused svalues, but don't delete the return value.  */
+  /* Delete unused svalues, but don't delete the return value(s).  */
   if (purge)
-    model->purge_unused_svalues (stats, ctxt, &result_sid);
+    model->purge_unused_svalues (stats, ctxt, &returned_sids);
 
   model->validate ();
-
-  return result_sid;
 }
 
 /* Implementation of region::add_to_hash vfunc for stack_region.  */
@@ -3018,12 +3187,13 @@ root_region::get_current_frame_id (const region_model &model) const
 /* Pop the topmost frame_region from this root_region's stack;
    see the comment for stack_region::pop_frame.  */
 
-svalue_id
-root_region::pop_frame (region_model *model, bool purge, purge_stats *out,
+void
+root_region::pop_frame (region_model *model, region_id result_dst_rid,
+			bool purge, purge_stats *out,
 			region_model_context *ctxt)
 {
   stack_region *stack = model->get_region <stack_region> (m_stack_rid);
-  return stack->pop_frame (model, purge, out, ctxt);
+  stack->pop_frame (model, result_dst_rid, purge, out, ctxt);
 }
 
 /* Return the region_id of the stack region, creating it if doesn't
@@ -3284,6 +3454,17 @@ symbolic_region::walk_for_canonicalization (canonicalization *) const
   /* Empty.  */
 }
 
+/* Implementation of region::print_fields vfunc for symbolic_region.  */
+
+void
+symbolic_region::print_fields (const region_model &model,
+			       region_id this_rid,
+			       pretty_printer *pp) const
+{
+  region::print_fields (model, this_rid, pp);
+  pp_printf (pp, ", possibly_null: %s", m_possibly_null ? "true" : "false");
+}
+
 /* class region_model.  */
 
 /* region_model's default ctor.  */
@@ -3518,7 +3699,7 @@ region_model::dump_dot (const char *path) const
 /* Dump a multiline representation of this model to PP, showing the
    region hierarchy, the svalues, and any constraints.
 
-   If SUMMARIZE is true, show only the most pertient information,
+   If SUMMARIZE is true, show only the most pertinent information,
    in a form that attempts to be less verbose.
    Otherwise, show all information.  */
 
@@ -3527,18 +3708,23 @@ region_model::dump_to_pp (pretty_printer *pp, bool summarize) const
 {
   if (summarize)
     {
-      bool is_first = true;
-      region_id frame_id = get_current_frame_id ();
-      frame_region *frame = get_region <frame_region> (frame_id);
-      if (frame)
-	dump_summary_of_map (pp, frame, &is_first);
-
-      region_id globals_id = get_globals_region_id ();
-      map_region *globals = get_region <map_region> (globals_id);
-      if (globals)
-	dump_summary_of_map (pp, globals, &is_first);
+      auto_vec<path_var> rep_path_vars;
 
       unsigned i;
+      region *reg;
+      FOR_EACH_VEC_ELT (m_regions, i, reg)
+	{
+	  region_id rid = region_id::from_int (i);
+	  path_var pv = get_representative_path_var (rid);
+	  if (pv.m_tree)
+	    rep_path_vars.safe_push (pv);
+	}
+      bool is_first = true;
+
+      /* Work with a copy in case the get_lvalue calls change anything
+	 (they shouldn't).  */
+      region_model copy (*this);
+      copy.dump_summary_of_rep_path_vars (pp, &rep_path_vars, &is_first);
 
       equiv_class *ec;
       FOR_EACH_VEC_ELT (m_constraints->m_equiv_classes, i, ec)
@@ -3660,37 +3846,28 @@ dump_vec_of_tree (pretty_printer *pp,
   pp_printf (pp, "}: %s", label);
 }
 
-/* Dump *MAP_REGION to PP in compact form, updating *IS_FIRST.
-   Subroutine of region_model::dump_to_pp for use on stack frames and for
-   the "globals" region.  */
+/* Dump all *REP_PATH_VARS to PP in compact form, updating *IS_FIRST.
+   Subroutine of region_model::dump_to_pp.  */
 
 void
-region_model::dump_summary_of_map (pretty_printer *pp,
-				   map_region *map_region,
-				   bool *is_first) const
+region_model::dump_summary_of_rep_path_vars (pretty_printer *pp,
+					     auto_vec<path_var> *rep_path_vars,
+					     bool *is_first)
 {
-  /* Get the keys, sorted by tree_cmp.  In particular, this ought
-     to alphabetize any decls.  */
-  auto_vec<tree> keys (map_region->elements ());
-  for (map_region::iterator_t iter = map_region->begin ();
-       iter != map_region->end ();
-       ++iter)
-    {
-      tree key_a = (*iter).first;
-      keys.quick_push (key_a);
-    }
-  keys.qsort (tree_cmp);
-
   /* Print pointers, constants, and poisoned values that aren't "uninit";
      gather keys for unknown and uninit values.  */
   unsigned i;
-  tree key;
-  auto_vec<tree> unknown_keys;
-  auto_vec<tree> uninit_keys;
-  FOR_EACH_VEC_ELT (keys, i, key)
+  path_var *pv;
+  auto_vec<tree> unknown_trees;
+  auto_vec<tree> uninit_trees;
+  FOR_EACH_VEC_ELT (*rep_path_vars, i, pv)
     {
-      region_id child_rid = *map_region->get (key);
-
+      if (TREE_CODE (pv->m_tree) == STRING_CST)
+	continue;
+      tentative_region_model_context ctxt;
+      region_id child_rid = get_lvalue (*pv, &ctxt);
+      if (ctxt.had_errors_p ())
+	continue;
       region *child_region = get_region (child_rid);
       if (!child_region)
 	continue;
@@ -3706,38 +3883,37 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	  {
 	    region_svalue *region_sval = as_a <region_svalue *> (sval);
 	    region_id pointee_rid = region_sval->get_pointee ();
+	    gcc_assert (!pointee_rid.null_p ());
 	    tree pointee = get_representative_path_var (pointee_rid).m_tree;
 	    dump_separator (pp, is_first);
-	    dump_tree (pp, key);
+	    dump_tree (pp, pv->m_tree);
 	    pp_string (pp, ": ");
+	    pp_character (pp, '&');
 	    if (pointee)
-	      {
-		pp_character (pp, '&');
-		dump_tree (pp, pointee);
-	      }
+	      dump_tree (pp, pointee);
 	    else
-	      pp_string (pp, "NULL");
+	      pointee_rid.print (pp);
 	  }
 	  break;
 	case SK_CONSTANT:
 	  dump_separator (pp, is_first);
-	  dump_tree (pp, key);
+	  dump_tree (pp, pv->m_tree);
 	  pp_string (pp, ": ");
 	  dump_tree (pp, sval->dyn_cast_constant_svalue ()->get_constant ());
 	  break;
 	case SK_UNKNOWN:
-	  unknown_keys.safe_push (key);
+	  unknown_trees.safe_push (pv->m_tree);
 	  break;
 	case SK_POISONED:
 	  {
 	    poisoned_svalue *poisoned_sval = as_a <poisoned_svalue *> (sval);
 	    enum poison_kind pkind = poisoned_sval->get_poison_kind ();
 	    if (pkind == POISON_KIND_UNINIT)
-	      uninit_keys.safe_push (key);
+	      uninit_trees.safe_push (pv->m_tree);
 	    else
 	      {
 		dump_separator (pp, is_first);
-		dump_tree (pp, key);
+		dump_tree (pp, pv->m_tree);
 		pp_printf (pp, ": %s", poison_kind_to_str (pkind));
 	      }
 	  }
@@ -3751,8 +3927,8 @@ region_model::dump_summary_of_map (pretty_printer *pp,
     }
 
   /* Print unknown and uninitialized values in consolidated form.  */
-  dump_vec_of_tree (pp, is_first, unknown_keys, "unknown");
-  dump_vec_of_tree (pp, is_first, uninit_keys, "uninit");
+  dump_vec_of_tree (pp, is_first, unknown_trees, "unknown");
+  dump_vec_of_tree (pp, is_first, uninit_trees, "uninit");
 }
 
 /* Assert that this object is valid.  */
@@ -4112,8 +4288,8 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
     case PARM_DECL:
       {
 	/* LHS = VAR;  */
-	svalue_id var_sid = get_rvalue (rhs1, ctxt);
-	set_value (lhs_rid, var_sid, ctxt);
+	region_id rhs_rid = get_lvalue (rhs1, ctxt);
+	copy_region (lhs_rid, rhs_rid, ctxt);
       }
       break;
 
@@ -4574,7 +4750,7 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
   tree rhs = gimple_return_retval (return_stmt);
 
   if (lhs && rhs)
-    set_value (get_lvalue (lhs, ctxt), get_rvalue (rhs, ctxt), ctxt);
+    copy_region (get_lvalue (lhs, ctxt), get_lvalue (rhs, ctxt), ctxt);
 }
 
 /* Update this model for a call and return of setjmp/sigsetjmp at CALL within
@@ -4629,7 +4805,7 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
   while (get_stack_depth () > setjmp_stack_depth)
     {
       /* Don't purge unused svalues yet, as we're using fake_retval_sid.  */
-      pop_frame (false, NULL, ctxt);
+      pop_frame (region_id::null (), false, NULL, ctxt);
     }
 
   gcc_assert (get_stack_depth () == setjmp_stack_depth);
@@ -4730,7 +4906,18 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 
 	region_id array_rid = get_lvalue (array, ctxt);
 	svalue_id index_sid = get_rvalue (index, ctxt);
-	array_region *array_reg = get_region<array_region> (array_rid);
+	region *base_array_reg = get_region (array_rid);
+	array_region *array_reg  = base_array_reg->dyn_cast_array_region ();
+	if (!array_reg)
+	  {
+	    /* Normally, array_rid ought to refer to an array_region, since
+	       array's type will be ARRAY_TYPE.  However, if we have an
+	       unexpected tree code for array, we could have a
+	       symbolic_region here.  If so, we're in error-handling. */
+	    gcc_assert (base_array_reg->get_type () == NULL_TREE);
+	    return make_region_for_unexpected_tree_code (ctxt, expr,
+							 dump_location_t ());
+	  }
 	return array_reg->get_element (this, array_rid, index_sid, ctxt);
       }
       break;
@@ -4830,6 +5017,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
       }
       break;
 
+    case NOP_EXPR:
     case VIEW_CONVERT_EXPR:
       {
 	tree obj = TREE_OPERAND (expr, 0);
@@ -4840,7 +5028,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
     }
 }
 
-/* If we see a tree code we we don't know how to handle, rather than
+/* If we see a tree code we don't know how to handle, rather than
    ICE or generate bogus results, create a dummy region, and notify
    CTXT so that it can mark the new state as being not properly
    modelled.  The exploded graph can then stop exploring that path,
@@ -5324,6 +5512,19 @@ region_model::set_value (region_id lhs_rid, svalue_id rhs_sid,
   get_region (lhs_rid)->set_value (*this, lhs_rid, rhs_sid, ctxt);
 }
 
+/* Set the value of the region given by LHS to the value given
+   by RHS.  */
+
+void
+region_model::set_value (tree lhs, tree rhs, region_model_context *ctxt)
+{
+  region_id lhs_rid = get_lvalue (lhs, ctxt);
+  svalue_id rhs_sid = get_rvalue (rhs, ctxt);
+  gcc_assert (!lhs_rid.null_p ());
+  gcc_assert (!rhs_sid.null_p ());
+  set_value (lhs_rid, rhs_sid, ctxt);
+}
+
 /* Determine what is known about the condition "LHS_SID OP RHS_SID" within
    this model.  */
 
@@ -5478,6 +5679,16 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   m_constraints->add_constraint (lhs_sid, op, rhs_sid);
 
   add_any_constraints_from_ssa_def_stmt (lhs, op, rhs, ctxt);
+
+  /* If we now know a symbolic_region is non-NULL, clear its
+     m_possibly_null.  */
+  if (zerop (rhs) && op == NE_EXPR)
+    if (region_svalue *ptr = get_svalue (lhs_sid)->dyn_cast_region_svalue ())
+      {
+	region *pointee = get_region (ptr->get_pointee ());
+	if (symbolic_region *sym_reg = pointee->dyn_cast_symbolic_region ())
+	  sym_reg->m_possibly_null = false;
+      }
 
   /* Notify the context, if any.  This exists so that the state machines
      in a program_state can be notified about the condition, and so can
@@ -5660,9 +5871,7 @@ region_model::add_new_malloc_region ()
   return add_region (new symbolic_region (heap_rid, NULL_TREE, true));
 }
 
-/* Attempt to return a tree that represents SID, or return NULL_TREE.
-   Find the first region that stores the value (e.g. a local) and
-   generate a representative tree for it.  */
+/* Attempt to return a tree that represents SID, or return NULL_TREE.  */
 
 tree
 region_model::get_representative_tree (svalue_id sid) const
@@ -5670,6 +5879,8 @@ region_model::get_representative_tree (svalue_id sid) const
   if (sid.null_p ())
     return NULL_TREE;
 
+  /* Find the first region that stores the value (e.g. a local) and
+     generate a representative tree for it.  */
   unsigned i;
   region *region;
   FOR_EACH_VEC_ELT (m_regions, i, region)
@@ -5679,6 +5890,18 @@ region_model::get_representative_tree (svalue_id sid) const
 	if (pv.m_tree)
 	  return pv.m_tree;
       }
+
+  /* Handle string literals and various other pointers.  */
+  svalue *sval = get_svalue (sid);
+  if (region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
+    {
+      region_id rid = ptr_sval->get_pointee ();
+      path_var pv = get_representative_path_var (rid);
+      if (pv.m_tree)
+	return build1 (ADDR_EXPR,
+		       TREE_TYPE (sval->get_type ()),
+		       pv.m_tree);
+    }
 
   return maybe_get_constant (sid);
 }
@@ -5692,12 +5915,12 @@ path_var
 region_model::get_representative_path_var (region_id rid) const
 {
   region *reg = get_region (rid);
-  region *parent_region = get_region (reg->get_parent ());
+  region *parent_reg = get_region (reg->get_parent ());
   region_id stack_rid = get_stack_region_id ();
   if (!stack_rid.null_p ())
-    if (parent_region->get_parent () == stack_rid)
+    if (parent_reg && parent_reg->get_parent () == stack_rid)
       {
-	frame_region *parent_frame = (frame_region *)parent_region;
+	frame_region *parent_frame = (frame_region *)parent_reg;
 	tree t = parent_frame->get_tree_for_child_region (rid);
 	return path_var (t, parent_frame->get_depth ());
     }
@@ -5710,7 +5933,6 @@ region_model::get_representative_path_var (region_id rid) const
 
   /* Handle e.g. fields of a local by recursing.  */
   region_id parent_rid = reg->get_parent ();
-  region *parent_reg = get_region (parent_rid);
   if (parent_reg)
     {
       if (reg->is_view_p ())
@@ -5718,7 +5940,7 @@ region_model::get_representative_path_var (region_id rid) const
 	  path_var parent_pv = get_representative_path_var (parent_rid);
 	  if (parent_pv.m_tree && reg->get_type ())
 	    return path_var (build1 (NOP_EXPR,
-				     TREE_TYPE (reg->get_type ()),
+				     reg->get_type (),
 				     parent_pv.m_tree),
 			     parent_pv.m_stack_depth);
 	}
@@ -5739,7 +5961,33 @@ region_model::get_representative_path_var (region_id rid) const
 				 parent_pv.m_stack_depth);
 	    }
 	}
+
+      /* Handle elements within an array.  */
+      if (array_region *array_reg = parent_reg->dyn_cast_array_region ())
+      {
+	array_region::key_t key;
+	if (array_reg->get_key_for_child_region (rid, &key))
+	  {
+	    path_var parent_pv = get_representative_path_var (parent_rid);
+	    if (parent_pv.m_tree && reg->get_type ())
+	      {
+		tree index = array_reg->constant_from_key (key);
+		return path_var (build4 (ARRAY_REF,
+					 reg->get_type (),
+					 parent_pv.m_tree, index,
+					 NULL_TREE, NULL_TREE),
+				 parent_pv.m_stack_depth);
+	      }
+	  }
+      }
     }
+
+  /* Handle string literals.  */
+  svalue_id sid = reg->get_value_direct ();
+  if (svalue *sval = get_svalue (sid))
+    if (tree cst = sval->maybe_get_constant ())
+      if (TREE_CODE (cst) == STRING_CST)
+	return path_var (cst, 0);
 
   return path_var (NULL_TREE, 0);
 }
@@ -5898,31 +6146,39 @@ region_model::update_for_call_superedge (const call_superedge &call_edge,
   push_frame (call_edge.get_callee_function (), &arg_sids, ctxt);
 }
 
-/* Pop the top-most frame_region from the stack, and store the svalue
-   for any returned value into the region for the lvalue of the LHS of
+/* Pop the top-most frame_region from the stack, and copy the return
+   region's values (if any) into the region for the lvalue of the LHS of
    the call (if any).  */
 
 void
 region_model::update_for_return_superedge (const return_superedge &return_edge,
 					   region_model_context *ctxt)
 {
-  purge_stats stats;
-  svalue_id result_sid = pop_frame (true, &stats, ctxt);
-  // TODO: do something with the stats?
+  region_id stack_rid = get_stack_region_id ();
+  stack_region *stack = get_region <stack_region> (stack_rid);
 
-  if (result_sid.null_p ())
-    return;
-
-  /* Set the result of the call, within the caller frame.  */
+  /* Get the region for the result of the call, within the caller frame.  */
+  region_id result_dst_rid;
   const gcall *call_stmt = return_edge.get_call_stmt ();
   tree lhs = gimple_call_lhs (call_stmt);
   if (lhs)
-    set_value (get_lvalue (lhs, ctxt), result_sid, ctxt);
-  else
+    {
+      /* Normally we access the top-level frame, which is:
+	   path_var (expr, stack->get_num_frames () - 1)
+	 whereas here we need the caller frame, hence "- 2" here.  */
+      gcc_assert (stack->get_num_frames () >= 2);
+      result_dst_rid = get_lvalue (path_var (lhs, stack->get_num_frames () - 2),
+				   ctxt);
+    }
+
+  purge_stats stats;
+  stack->pop_frame (this, result_dst_rid, true, &stats, ctxt);
+  // TODO: do something with the stats?
+
+  if (!lhs)
     {
       /* This could be a leak; try purging again, but this time,
-	 don't special-case the result_sid.  */
-      purge_stats stats;
+	 don't special-case the result sids (as was done in pop_frame).  */
       purge_unused_svalues (&stats, ctxt);
     }
 }
@@ -6090,11 +6346,12 @@ region_model::get_current_function () const
 /* Pop the topmost frame_region from this region_model's stack;
    see the comment for stack_region::pop_frame.  */
 
-svalue_id
-region_model::pop_frame (bool purge, purge_stats *out,
+void
+region_model::pop_frame (region_id result_dst_rid,
+			 bool purge, purge_stats *out,
 			 region_model_context *ctxt)
 {
-  return get_root_region ()->pop_frame (this, purge, out, ctxt);
+  get_root_region ()->pop_frame (this, result_dst_rid, purge, out, ctxt);
 }
 
 /* Get the number of frames in this region_model's stack.  */
@@ -6275,17 +6532,19 @@ private:
    number of redundant unknown values could grow without bounds, and each
    such model would be treated as distinct.
 
-   If KNOWN_USED is non-NULL, treat *KNOWN_USED as used (this is for
+   If KNOWN_USED_SIDS is non-NULL, treat *KNOWN_USED_SIDS as used (this is for
    handling values being returned from functions as their frame is popped,
    since otherwise we'd have to simultaneously determine both the rvalue
    of the return expr in the callee frame and the lvalue for the gcall's
    assignment in the caller frame, and it seems cleaner to express all
-   lvalue and rvalue lookups implicitly relative to a "current" frame).  */
+   lvalue and rvalue lookups implicitly relative to a "current" frame).
+   The svalue_ids in *KNOWN_USED_SIDS are not remapped and hence this
+   call makes it invalid.  */
 
 void
 region_model::purge_unused_svalues (purge_stats *stats,
 				    region_model_context *ctxt,
-				    svalue_id *known_used_sid)
+				    svalue_id_set *known_used_sids)
 {
   // TODO: might want to avoid a vfunc call just to do logging here:
   logger *logger = ctxt ? ctxt->get_logger () : NULL;
@@ -6295,9 +6554,14 @@ region_model::purge_unused_svalues (purge_stats *stats,
   auto_sbitmap used (m_svalues.length ());
   bitmap_clear (used);
 
-  if (known_used_sid)
-    if (!known_used_sid->null_p ())
-      bitmap_set_bit (used, known_used_sid->as_int ());
+  if (known_used_sids)
+    {
+      /* We can't use an sbitmap for known_used_sids as the number of
+	 svalues could have grown since it was created.  */
+      for (unsigned i = 0; i < get_num_svalues (); i++)
+	if (known_used_sids->svalue_p (svalue_id::from_int (i)))
+	  bitmap_set_bit (used, i);
+    }
 
   /* Walk the regions, marking sids that are used.  */
   unsigned i;
@@ -6391,9 +6655,6 @@ region_model::purge_unused_svalues (purge_stats *stats,
       if (stats)
 	stats->m_num_svalues++;
     }
-
-  if (known_used_sid)
-    map.update (known_used_sid);
 
   validate ();
 }
@@ -6538,7 +6799,7 @@ region_model::get_descendents (region_id rid, region_id_set *out,
 }
 
 /* Delete RID and all descendent regions.
-   Find any pointers to such regions; convert convert them to
+   Find any pointers to such regions; convert them to
    poisoned values of kind PKIND.
    Accumulate stats on purged entities into STATS.  */
 
@@ -7264,6 +7525,25 @@ assert_condition (const location &loc,
   ASSERT_EQ_AT (loc, actual, expected);
 }
 
+/* Implementation detail of ASSERT_DUMP_TREE_EQ.  */
+
+static void
+assert_dump_tree_eq (const location &loc, tree t, const char *expected)
+{
+  auto_fix_quotes sentinel;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  dump_tree (&pp, t);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected);
+}
+
+/* Assert that dump_tree (T) is EXPECTED.  */
+
+#define ASSERT_DUMP_TREE_EQ(T, EXPECTED) \
+  SELFTEST_BEGIN_STMT							\
+  assert_dump_tree_eq ((SELFTEST_LOCATION), (T), (EXPECTED)); \
+  SELFTEST_END_STMT
+
 /* Implementation detail of ASSERT_DUMP_EQ.  */
 
 static void
@@ -7310,6 +7590,162 @@ test_dump ()
 		  "  equiv classes:\n"
 		  "  constraints:\n");
   ASSERT_DUMP_EQ (model, true, "");
+}
+
+/* Helper function for selftests.  Create a struct or union type named NAME,
+   with the fields given by the FIELD_DECLS in FIELDS.
+   If IS_STRUCT is true create a RECORD_TYPE (aka a struct), otherwise
+   create a UNION_TYPE.  */
+
+static tree
+make_test_compound_type (const char *name, bool is_struct,
+			 const auto_vec<tree> *fields)
+{
+  tree t = make_node (is_struct ? RECORD_TYPE : UNION_TYPE);
+  TYPE_NAME (t) = get_identifier (name);
+  TYPE_SIZE (t) = 0;
+
+  tree fieldlist = NULL;
+  int i;
+  tree field;
+  FOR_EACH_VEC_ELT (*fields, i, field)
+    {
+      gcc_assert (TREE_CODE (field) == FIELD_DECL);
+      DECL_CONTEXT (field) = t;
+      fieldlist = chainon (field, fieldlist);
+    }
+  fieldlist = nreverse (fieldlist);
+  TYPE_FIELDS (t) = fieldlist;
+
+  layout_type (t);
+  return t;
+}
+
+/* Selftest fixture for creating the type "struct coord {int x; int y; };".  */
+
+struct coord_test
+{
+  coord_test ()
+  {
+    auto_vec<tree> fields;
+    m_x_field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			       get_identifier ("x"), integer_type_node);
+    fields.safe_push (m_x_field);
+    m_y_field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			       get_identifier ("y"), integer_type_node);
+    fields.safe_push (m_y_field);
+    m_coord_type = make_test_compound_type ("coord", true, &fields);
+  }
+
+  tree m_x_field;
+  tree m_y_field;
+  tree m_coord_type;
+};
+
+/* Verify that dumps can show struct fields.  */
+
+static void
+test_dump_2 ()
+{
+  coord_test ct;
+
+  tree c = build_global_decl ("c", ct.m_coord_type);
+  tree c_x = build3 (COMPONENT_REF, TREE_TYPE (ct.m_x_field),
+		     c, ct.m_x_field, NULL_TREE);
+  tree c_y = build3 (COMPONENT_REF, TREE_TYPE (ct.m_y_field),
+		     c, ct.m_y_field, NULL_TREE);
+
+  tree int_17 = build_int_cst (integer_type_node, 17);
+  tree int_m3 = build_int_cst (integer_type_node, -3);
+
+  region_model model;
+  model.set_value (c_x, int_17, NULL);
+  model.set_value (c_y, int_m3, NULL);
+
+  /* Simplified dump.  */
+  ASSERT_DUMP_EQ (model, true, "c.x: 17, c.y: -3");
+
+  /* Full dump.  */
+  ASSERT_DUMP_EQ
+    (model, false,
+     "r0: {kind: `root', parent: null, sval: null}\n"
+     "`-globals: r1: {kind: `globals', parent: r0, sval: null, map: {`c': r2}}\n"
+     "  `-`c': r2: {kind: `struct', parent: r1, sval: null, type: `struct coord', map: {`x': r3, `y': r4}}\n"
+     "    |: type: `struct coord'\n"
+     "    |-`x': r3: {kind: `primitive', parent: r2, sval: sv0, type: `int'}\n"
+     "    |  |: sval: sv0: {type: `int', `17'}\n"
+     "    |  |: type: `int'\n"
+     "    `-`y': r4: {kind: `primitive', parent: r2, sval: sv1, type: `int'}\n"
+     "      |: sval: sv1: {type: `int', `-3'}\n"
+     "      |: type: `int'\n"
+     "svalues:\n"
+     "  sv0: {type: `int', `17'}\n"
+     "  sv1: {type: `int', `-3'}\n"
+     "constraint manager:\n"
+     "  equiv classes:\n"
+     "  constraints:\n");
+}
+
+/* Verify that dumps can show array elements.  */
+
+static void
+test_dump_3 ()
+{
+  tree tlen = size_int (10);
+  tree arr_type = build_array_type (char_type_node, build_index_type (tlen));
+
+  tree a = build_global_decl ("a", arr_type);
+
+  region_model model;
+  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree a_0 = build4 (ARRAY_REF, char_type_node,
+		     a, int_0, NULL_TREE, NULL_TREE);
+  tree char_A = build_int_cst (char_type_node, 'A');
+  model.set_value (a_0, char_A, NULL);
+
+  /* Simplified dump.  */
+  ASSERT_DUMP_EQ (model, true, "a[0]: 65");
+
+  /* Full dump.  */
+  ASSERT_DUMP_EQ
+    (model, false,
+     "r0: {kind: `root', parent: null, sval: null}\n"
+     "`-globals: r1: {kind: `globals', parent: r0, sval: null, map: {`a': r2}}\n"
+     "  `-`a': r2: {kind: `array', parent: r1, sval: null, type: `char[11]', array: {[0]: r3}}\n"
+     "    |: type: `char[11]'\n"
+     "    `-[0]: r3: {kind: `primitive', parent: r2, sval: sv1, type: `char'}\n"
+     "      |: sval: sv1: {type: `char', `65'}\n"
+     "      |: type: `char'\n"
+     "svalues:\n"
+     "  sv0: {type: `int', `0'}\n"
+     "  sv1: {type: `char', `65'}\n"
+     "constraint manager:\n"
+     "  equiv classes:\n"
+     "  constraints:\n");
+}
+
+/* Verify that region_model::get_representative_tree works as expected.  */
+
+static void
+test_get_representative_tree ()
+{
+  /* STRING_CST.  */
+  {
+    tree string_cst = build_string (4, "foo");
+    region_model m;
+    svalue_id str_sid = m.get_rvalue (string_cst, NULL);
+    tree rep = m.get_representative_tree (str_sid);
+    ASSERT_EQ (rep, string_cst);
+  }
+
+  /* String literal.  */
+  {
+    tree string_cst_ptr = build_string_literal (4, "foo");
+    region_model m;
+    svalue_id str_sid = m.get_rvalue (string_cst_ptr, NULL);
+    tree rep = m.get_representative_tree (str_sid);
+    ASSERT_DUMP_TREE_EQ (rep, "&\"foo\"[0]");
+  }
 }
 
 /* Verify that calling region_model::get_rvalue repeatedly on the same
@@ -7621,6 +8057,41 @@ test_assignment ()
   ASSERT_DUMP_EQ (model, true, "y: 0, {x}: unknown, x == y");
 }
 
+/* Verify that compound assignments work as expected.  */
+
+static void
+test_compound_assignment ()
+{
+  coord_test ct;
+
+  tree c = build_global_decl ("c", ct.m_coord_type);
+  tree c_x = build3 (COMPONENT_REF, TREE_TYPE (ct.m_x_field),
+		     c, ct.m_x_field, NULL_TREE);
+  tree c_y = build3 (COMPONENT_REF, TREE_TYPE (ct.m_y_field),
+		     c, ct.m_y_field, NULL_TREE);
+  tree d = build_global_decl ("d", ct.m_coord_type);
+  tree d_x = build3 (COMPONENT_REF, TREE_TYPE (ct.m_x_field),
+		     d, ct.m_x_field, NULL_TREE);
+  tree d_y = build3 (COMPONENT_REF, TREE_TYPE (ct.m_y_field),
+		     d, ct.m_y_field, NULL_TREE);
+
+  tree int_17 = build_int_cst (integer_type_node, 17);
+  tree int_m3 = build_int_cst (integer_type_node, -3);
+
+  region_model model;
+  model.set_value (c_x, int_17, NULL);
+  model.set_value (c_y, int_m3, NULL);
+
+  ASSERT_DUMP_EQ (model, true, "c.x: 17, c.y: -3");
+
+  /* Copy c to d.  */
+  model.copy_region (model.get_lvalue (d, NULL), model.get_lvalue (c, NULL),
+		     NULL);
+  /* Check that the fields have the same svalues.  */
+  ASSERT_EQ (model.get_rvalue (c_x, NULL), model.get_rvalue (d_x, NULL));
+  ASSERT_EQ (model.get_rvalue (c_y, NULL), model.get_rvalue (d_y, NULL));
+}
+
 /* Verify the details of pushing and popping stack frames.  */
 
 static void
@@ -7722,11 +8193,11 @@ test_stack_frames ()
 #endif
 
   ASSERT_DUMP_EQ (model, true,
-		  "x: 0, {y}: unknown, p: &x, q: &p, b < 10, y != 5");
+		  "a: 42, x: 0, p: &x, q: &p, {b, y}: unknown, b < 10, y != 5");
 
   /* Pop the "child_fn" frame from the stack.  */
   purge_stats purged;
-  model.pop_frame (true, &purged, &ctxt);
+  model.pop_frame (region_id::null (), true, &purged, &ctxt);
 
   /* We should have purged the unknown values for x and y. */
   ASSERT_EQ (purged.m_num_svalues, 2);
@@ -8356,6 +8827,45 @@ test_constraint_merging ()
 	     tristate (tristate::TS_UNKNOWN));
 }
 
+/* Verify that if we mark a pointer to a malloc-ed region as non-NULL,
+   all cast pointers to that region are also known to be non-NULL.  */
+
+static void
+test_malloc_constraints ()
+{
+  region_model model;
+  tree p = build_global_decl ("p", ptr_type_node);
+  tree char_star = build_pointer_type (char_type_node);
+  tree q = build_global_decl ("q", char_star);
+  tree null_ptr = build_int_cst (ptr_type_node, 0);
+
+  region_id rid = model.add_new_malloc_region ();
+  svalue_id sid = model.get_or_create_ptr_svalue (ptr_type_node, rid);
+  model.set_value (model.get_lvalue (p, NULL), sid, NULL);
+  model.set_value (q, p, NULL);
+
+  /* We should have a symbolic_region with m_possibly_null: true.  */
+  region *pointee = model.get_region (rid);
+  symbolic_region *sym_reg = pointee->dyn_cast_symbolic_region ();
+  ASSERT_NE (sym_reg, NULL);
+  ASSERT_TRUE (sym_reg->m_possibly_null);
+
+  ASSERT_CONDITION_UNKNOWN (model, p, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_UNKNOWN (model, p, EQ_EXPR, null_ptr);
+  ASSERT_CONDITION_UNKNOWN (model, q, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_UNKNOWN (model, q, EQ_EXPR, null_ptr);
+
+  model.add_constraint (p, NE_EXPR, null_ptr, NULL);
+
+  /* Adding the constraint should have cleared m_possibly_null.  */
+  ASSERT_FALSE (sym_reg->m_possibly_null);
+
+  ASSERT_CONDITION_TRUE (model, p, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_FALSE (model, p, EQ_EXPR, null_ptr);
+  ASSERT_CONDITION_TRUE (model, q, NE_EXPR, null_ptr);
+  ASSERT_CONDITION_FALSE (model, q, EQ_EXPR, null_ptr);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -8363,12 +8873,16 @@ analyzer_region_model_cc_tests ()
 {
   test_tree_cmp_on_constants ();
   test_dump ();
+  test_dump_2 ();
+  test_dump_3 ();
+  test_get_representative_tree ();
   test_unique_constants ();
   test_svalue_equality ();
   test_region_equality ();
   test_purging_by_criteria ();
   test_purge_unused_svalues ();
   test_assignment ();
+  test_compound_assignment ();
   test_stack_frames ();
   test_get_representative_path_var ();
   test_canonicalization_1 ();
@@ -8377,6 +8891,7 @@ analyzer_region_model_cc_tests ()
   test_canonicalization_4 ();
   test_state_merging ();
   test_constraint_merging ();
+  test_malloc_constraints ();
 }
 
 } // namespace selftest

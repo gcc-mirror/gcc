@@ -47,3 +47,4 @@ int test_2 (void)
 /* { dg-final { dg-check-dot "dot-output.c.eg.dot" } } */
 /* { dg-final { dg-check-dot "dot-output.c.state-purge.dot" } } */
 /* { dg-final { dg-check-dot "dot-output.c.supergraph.dot" } } */
+/* { dg-final { dg-check-dot "dot-output.c.supergraph-eg.dot" } } */

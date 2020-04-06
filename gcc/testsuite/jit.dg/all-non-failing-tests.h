@@ -116,6 +116,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-empty.c */
+#define create_code create_code_empty
+#define verify_code verify_code_empty
+#include "test-empty.c"
+#undef create_code
+#undef verify_code
+
 /* test-error-*.c: We don't use these test cases, since they deliberately
    introduce errors, which we don't want here.  */
 
@@ -175,6 +182,13 @@
 #define create_code create_code_long_names
 #define verify_code verify_code_long_names
 #include "test-long-names.c"
+#undef create_code
+#undef verify_code
+
+/* test-long-string-literal.c */
+#define create_code create_code_long_string_literal
+#define verify_code verify_code_long_string_literal
+#include "test-long-string-literal.c"
 #undef create_code
 #undef verify_code
 
@@ -254,6 +268,13 @@
 
 /* test-vector-types.cc: We don't use this, since it's C++.  */
 
+/* test-version.c */
+#define create_code create_code_version
+#define verify_code verify_code_version
+#include "test-version.c"
+#undef create_code
+#undef verify_code
+
 /* test-volatile.c */
 #define create_code create_code_volatile
 #define verify_code verify_code_volatile
@@ -321,6 +342,9 @@ const struct testcase testcases[] = {
   {"expressions",
    create_code_expressions,
    verify_code_expressions},
+  {"empty",
+   create_code_empty,
+   verify_code_empty},
   {"factorial",
    create_code_factorial,
    verify_code_factorial},
@@ -342,6 +366,9 @@ const struct testcase testcases[] = {
   {"long_names",
    create_code_long_names,
    verify_code_long_names},
+  {"long_string_literal",
+   create_code_long_string_literal,
+   verify_code_long_string_literal},
   {"quadratic",
    create_code_quadratic,
    verify_code_quadratic},
@@ -372,6 +399,9 @@ const struct testcase testcases[] = {
   {"using_global",
    create_code_using_global,
    verify_code_using_global},
+  {"version",
+   create_code_version,
+   verify_code_version},
   {"volatile",
    create_code_volatile,
    verify_code_volatile}

@@ -2387,10 +2387,13 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
     }
 
   for (t = registered_builtin_types; t; t = TREE_CHAIN (t))
-    if (TYPE_MODE (TREE_VALUE (t)) == mode
-	&& !!unsignedp == !!TYPE_UNSIGNED (TREE_VALUE (t)))
-      return TREE_VALUE (t);
-
+    {
+      tree type = TREE_VALUE (t);
+      if (TYPE_MODE (type) == mode
+	  && VECTOR_TYPE_P (type) == VECTOR_MODE_P (mode)
+	  && !!unsignedp == !!TYPE_UNSIGNED (type))
+	return type;
+    }
   return NULL_TREE;
 }
 
@@ -7427,7 +7430,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	      warning_at (input_location, 0,
 			  "this target does not define a speculation barrier; "
 			  "your program will still execute correctly, "
-			  "but incorrect speculation may not be be "
+			  "but incorrect speculation may not be "
 			  "restricted");
 
 	    /* If the optional second argument is present, handle any side

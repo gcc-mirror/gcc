@@ -562,52 +562,6 @@ again:
   /* Swap operands.  */
   if (swapped)
     {
-      if (first_op_cond)
-	{
-	  /* If there are already uses of this stmt in a SLP instance then
-	     we've committed to the operand order and can't swap it.  */
-	  if (STMT_VINFO_NUM_SLP_USES (stmt_info) != 0)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: cannot swap operands of "
-				 "shared stmt %G", stmt_info->stmt);
-	      return -1;
-	    }
-
-	  /* To get rid of this swapping we have to move the stmt code
-	     to the SLP tree as well (and gather it here per stmt).  */
-	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-	  tree cond = gimple_assign_rhs1 (stmt);
-	  enum tree_code code = TREE_CODE (cond);
-
-	  /* Swap.  */
-	  if (*swap == 1)
-	    {
-	      swap_ssa_operands (stmt, &TREE_OPERAND (cond, 0),
-				 &TREE_OPERAND (cond, 1));
-	      TREE_SET_CODE (cond, swap_tree_comparison (code));
-	    }
-	  /* Invert.  */
-	  else
-	    {
-	      swap_ssa_operands (stmt, gimple_assign_rhs2_ptr (stmt),
-				 gimple_assign_rhs3_ptr (stmt));
-	      if (STMT_VINFO_REDUC_IDX (stmt_info) == 1)
-		STMT_VINFO_REDUC_IDX (stmt_info) = 2;
-	      else if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
-		STMT_VINFO_REDUC_IDX (stmt_info) = 1;
-	      bool honor_nans = HONOR_NANS (TREE_OPERAND (cond, 0));
-	      code = invert_tree_comparison (TREE_CODE (cond), honor_nans);
-	      gcc_assert (code != ERROR_MARK);
-	      TREE_SET_CODE (cond, code);
-	    }
-	}
-      else
-	{
-	  /* Commutative ops need not reflect swapping, ops are in
-	     the SLP tree.  */
-	}
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "swapped operands to match def types in %G",
@@ -1815,6 +1769,14 @@ vect_slp_rearrange_stmts (slp_tree node, unsigned int group_size,
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     {
       gcc_assert (group_size == SLP_TREE_SCALAR_STMTS (node).length ());
+      /* ???  Computation nodes are isomorphic and need no rearrangement.
+	 This is a quick hack to cover those where rearrangement breaks
+	 semantics because only the first stmt is guaranteed to have the
+	 correct operation code due to others being swapped or inverted.  */
+      stmt_vec_info first = SLP_TREE_SCALAR_STMTS (node)[0];
+      if (is_gimple_assign (first->stmt)
+	  && gimple_assign_rhs_code (first->stmt) == COND_EXPR)
+	return;
       vec<stmt_vec_info> tmp_stmts;
       tmp_stmts.create (group_size);
       tmp_stmts.quick_grow (group_size);
@@ -2257,6 +2219,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      /* Value is defined in another basic block.  */
 	      if (!def_info)
 		return false;
+	      def_info = vect_stmt_to_vectorize (def_info);
 	      scalar_stmts.safe_push (def_info);
 	    }
 	  else
@@ -2434,7 +2397,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "Final SLP tree for instance:\n");
-	      vect_print_slp_tree (MSG_NOTE, vect_location, node);
+	      vect_print_slp_tree (MSG_NOTE, vect_location,
+				   SLP_INSTANCE_TREE (new_instance));
 	    }
 
 	  return true;

@@ -30,7 +30,7 @@
 #ifndef _GLIBCXX_CONCEPTS
 #define _GLIBCXX_CONCEPTS 1
 
-#if __cplusplus > 201703L && __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts >= 201907L
 
 #pragma GCC system_header
 

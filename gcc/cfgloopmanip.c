@@ -1023,6 +1023,7 @@ copy_loop_info (class loop *loop, class loop *target)
   target->dont_vectorize = loop->dont_vectorize;
   target->force_vectorize = loop->force_vectorize;
   target->in_oacc_kernels_region = loop->in_oacc_kernels_region;
+  target->finite_p = loop->finite_p;
   target->unroll = loop->unroll;
   target->owned_clique = loop->owned_clique;
 }

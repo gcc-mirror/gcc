@@ -281,12 +281,18 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires (!_S_store_size || sized_range<_Rng>)
+	subrange(_Rng&& __r) requires _S_store_size && sized_range<_Rng>
+	: subrange{__r, ranges::size(__r)}
+	{ }
+
+      template<__detail::__not_same_as<subrange> _Rng>
+	requires borrowed_range<_Rng>
+	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
+	  && convertible_to<sentinel_t<_Rng>, _Sent>
+	constexpr
+	subrange(_Rng&& __r) requires (!_S_store_size)
 	: subrange{ranges::begin(__r), ranges::end(__r)}
-	{
-	  if constexpr (_S_store_size)
-	    _M_size._M_size = ranges::size(__r);
-	}
+	{ }
 
       template<borrowed_range _Rng>
 	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
@@ -1679,17 +1685,6 @@ namespace views
 	      return input_iterator_tag{};
 	  }
 
-	  static constexpr decltype(auto)
-	  __iter_move(const _Iterator& __i = {})
-	    noexcept(noexcept(std::__invoke(*__i._M_parent->_M_fun,
-					    *__i._M_current)))
-	  {
-	    if constexpr (is_lvalue_reference_v<decltype(*__i)>)
-	      return std::move(*__i);
-	    else
-	      return *__i;
-	  }
-
 	  using _Base_iter = iterator_t<_Base>;
 
 	  _Base_iter _M_current = _Base_iter();
@@ -1728,6 +1723,7 @@ namespace views
 
 	  constexpr decltype(auto)
 	  operator*() const
+	    noexcept(noexcept(std::__invoke(*_M_parent->_M_fun, *_M_current)))
 	  { return std::__invoke(*_M_parent->_M_fun, *_M_current); }
 
 	  constexpr _Iterator&
@@ -1837,8 +1833,13 @@ namespace views
 	  { return __x._M_current - __y._M_current; }
 
 	  friend constexpr decltype(auto)
-	  iter_move(const _Iterator& __i) noexcept(noexcept(__iter_move()))
-	  { return __iter_move(__i); }
+	  iter_move(const _Iterator& __i) noexcept(noexcept(*__i))
+	  {
+	    if constexpr (is_lvalue_reference_v<decltype(*__i)>)
+	      return std::move(*__i);
+	    else
+	      return *__i;
+	  }
 
 	  friend constexpr void
 	  iter_swap(const _Iterator& __x, const _Iterator& __y)
@@ -2037,7 +2038,10 @@ namespace views
 	    if constexpr (random_access_range<_Vp>)
 	      return ranges::begin(_M_base);
 	    else
-	      return counted_iterator{ranges::begin(_M_base), size()};
+	      {
+		auto __sz = size();
+		return counted_iterator{ranges::begin(_M_base), __sz};
+	      }
 	  }
 	else
 	  return counted_iterator{ranges::begin(_M_base), _M_count};
@@ -2051,7 +2055,10 @@ namespace views
 	    if constexpr (random_access_range<const _Vp>)
 	      return ranges::begin(_M_base);
 	    else
-	      return counted_iterator{ranges::begin(_M_base), size()};
+	      {
+		auto __sz = size();
+		return counted_iterator{ranges::begin(_M_base), __sz};
+	      }
 	  }
 	else
 	  return counted_iterator{ranges::begin(_M_base), _M_count};
@@ -2592,6 +2599,8 @@ namespace views
 	  friend constexpr bool
 	  operator==(const _Iterator<_Const>& __x, const _Sentinel& __y)
 	  { return __y.__equal(__x); }
+
+	  friend _Sentinel<!_Const>;
 	};
 
       _Vp _M_base = _Vp();
@@ -2706,14 +2715,14 @@ namespace views
 
 	  constexpr bool
 	  __at_end() const
-	  { return _M_current == ranges::end(_M_parent->_M_base); }
+	  { return __current() == ranges::end(_M_parent->_M_base); }
 
-	  // XXX: [24.7.11.3.1]
+	  // [range.split.outer] p1
 	  //  Many of the following specifications refer to the notional member
 	  //  current of outer-iterator.  current is equivalent to current_ if
 	  //  V models forward_range, and parent_->current_ otherwise.
 	  constexpr auto&
-	  __current()
+	  __current() noexcept
 	  {
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
@@ -2722,7 +2731,7 @@ namespace views
 	  }
 
 	  constexpr auto&
-	  __current() const
+	  __current() const noexcept
 	  {
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
@@ -2776,7 +2785,7 @@ namespace views
 
 	  constexpr explicit
 	  _OuterIter(_Parent& __parent) requires (!forward_range<_Base>)
-	    : _M_parent(address(__parent))
+	    : _M_parent(std::__addressof(__parent))
 	  { }
 
 	  constexpr
@@ -2801,21 +2810,21 @@ namespace views
 	  operator++()
 	  {
 	    const auto __end = ranges::end(_M_parent->_M_base);
-	    if (_M_current == __end)
+	    if (__current() == __end)
 	      return *this;
 	    const auto [__pbegin, __pend] = subrange{_M_parent->_M_pattern};
 	    if (__pbegin == __pend)
-	      ++_M_current;
+	      ++__current();
 	    else
 	      do
 		{
 		  auto [__b, __p]
-		    = __detail::mismatch(std::move(_M_current), __end,
+		    = __detail::mismatch(std::move(__current()), __end,
 					 __pbegin, __pend);
-		  _M_current = std::move(__b);
+		  __current() = std::move(__b);
 		  if (__p == __pend)
 		    break;
-		} while (++_M_current != __end);
+		} while (++__current() != __end);
 	    return *this;
 	  }
 
@@ -2858,7 +2867,7 @@ namespace views
 	    auto __end = ranges::end(_M_i._M_parent->_M_base);
 	    if constexpr (__detail::__tiny_range<_Pattern>)
 	      {
-		const auto& __cur = _M_i.__current();
+		const auto& __cur = _M_i_current();
 		if (__cur == __end)
 		  return true;
 		if (__pcur == __pend)
@@ -2867,7 +2876,7 @@ namespace views
 	      }
 	    else
 	      {
-		auto __cur = _M_i.__current();
+		auto __cur = _M_i_current();
 		if (__cur == __end)
 		  return true;
 		if (__pcur == __pend)
@@ -2894,16 +2903,13 @@ namespace views
 	      return _Cat{};
 	  }
 
-	  static constexpr decltype(auto)
-	  __iter_move(const _InnerIter& __i = {})
-	  noexcept(noexcept(ranges::iter_move(__i._M_i.__current())))
-	  { return ranges::iter_move(__i._M_i.__current()); }
+	  constexpr auto&
+	  _M_i_current() noexcept
+	  { return _M_i.__current(); }
 
-	  static constexpr void
-	  __iter_swap(const _InnerIter& __x = {}, const _InnerIter& __y = {})
-	    noexcept(noexcept(ranges::iter_swap(__x._M_i.__current(),
-						__y._M_i.__current())))
-	  { ranges::iter_swap(__x._M_i.__current(), __y._M_i.__current()); }
+	  constexpr auto&
+	  _M_i_current() const noexcept
+	  { return _M_i.__current(); }
 
 	  _OuterIter<_Const> _M_i = _OuterIter<_Const>();
 	  bool _M_incremented = false;
@@ -2924,7 +2930,7 @@ namespace views
 
 	  constexpr decltype(auto)
 	  operator*() const
-	  { return *_M_i._M_current; }
+	  { return *_M_i_current(); }
 
 	  constexpr _InnerIter&
 	  operator++()
@@ -2933,7 +2939,7 @@ namespace views
 	    if constexpr (!forward_range<_Base>)
 	      if constexpr (_Pattern::size() == 0)
 		return *this;
-	    ++_M_i.__current();
+	    ++_M_i_current();
 	    return *this;
 	  }
 
@@ -2960,14 +2966,16 @@ namespace views
 	  { return __x.__at_end(); }
 
 	  friend constexpr decltype(auto)
-	  iter_move(const _InnerIter& __i) noexcept(noexcept(__iter_move()))
-	  { return __iter_move(__i); }
+	  iter_move(const _InnerIter& __i)
+	    noexcept(noexcept(ranges::iter_move(__i._M_i_current())))
+	  { return ranges::iter_move(__i._M_i_current()); }
 
 	  friend constexpr void
 	  iter_swap(const _InnerIter& __x, const _InnerIter& __y)
-	    noexcept(noexcept(__iter_swap()))
+	    noexcept(noexcept(ranges::iter_swap(__x._M_i_current(),
+						__y._M_i_current())))
 	    requires indirectly_swappable<iterator_t<_Base>>
-	  { __iter_swap(__x, __y); }
+	  { ranges::iter_swap(__x._M_i_current(), __y._M_i_current()); }
 	};
 
       _Vp _M_base = _Vp();
@@ -3008,8 +3016,8 @@ namespace views
       begin()
       {
 	if constexpr (forward_range<_Vp>)
-	  return _OuterIter<__detail::__simple_view<_Vp>>{*this,
-							ranges::begin(_M_base)};
+	  return _OuterIter<__detail::__simple_view<_Vp>>{
+	      *this, ranges::begin(_M_base)};
 	else
 	  {
 	    _M_current = ranges::begin(_M_base);
@@ -3026,7 +3034,8 @@ namespace views
       constexpr auto
       end() requires forward_range<_Vp> && common_range<_Vp>
       {
-	return _OuterIter<__detail::__simple_view<_Vp>>{*this, ranges::end(_M_base)};
+	return _OuterIter<__detail::__simple_view<_Vp>>{
+	    *this, ranges::end(_M_base)};
       }
 
       constexpr auto

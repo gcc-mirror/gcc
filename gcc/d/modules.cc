@@ -543,7 +543,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
 
   size_t alignsize = MAX (TYPE_ALIGN_UNIT (type),
 			  TYPE_ALIGN_UNIT (ptr_type_node));
-  finish_aggregate_type (offset, alignsize, type, NULL);
+  finish_aggregate_type (offset, alignsize, type);
 
   return type;
 }

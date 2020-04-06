@@ -66,6 +66,20 @@
 ;; Integer and float modes supported by Neon and IWMMXT.
 (define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
+;; Integer and float modes supported by Neon, IWMMXT and MVE, used by
+;; arithmetic epxand patterns.
+(define_mode_iterator VNIM [V16QI V8HI V4SI V4SF])
+
+;; Integer and float modes supported by Neon and IWMMXT but not MVE, used by
+;; arithmetic epxand patterns.
+(define_mode_iterator VNINOTM [V2SI V4HI V8QI V2SF V2DI])
+
+;; Integer and float modes supported by Neon, IWMMXT and MVE.
+(define_mode_iterator VNIM1 [V16QI V8HI V4SI V4SF V2DI])
+
+;; Integer and float modes supported by Neon and IWMMXT but not MVE.
+(define_mode_iterator VNINOTM1 [V2SI V4HI V8QI V2SF])
+
 ;; Integer and float modes supported by Neon and IWMMXT, except V2DI.
 (define_mode_iterator VALLW [V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
@@ -86,6 +100,9 @@
 
 ;; Double-width vector modes plus 64-bit elements, including V4BF.
 (define_mode_iterator VDXBF [V8QI V4HI V4HF (V4BF "TARGET_BF16_SIMD") V2SI V2SF DI])
+
+;; Double-width vector modes plus 64-bit elements, V4BF and V8BF.
+(define_mode_iterator VDXBF2 [V8QI V4HI V4HF V2SI V2SF DI (V4BF "TARGET_BF16_SIMD") (V8BF ("TARGET_BF16_SIMD"))])
 
 ;; Double-width vector modes plus 64-bit elements,
 ;; with V4BFmode added, suitable for moves.
@@ -112,6 +129,9 @@
 ;; Quad-width vector modes plus 64-bit elements.
 (define_mode_iterator VQX [V16QI V8HI V8HF V8BF V4SI V4SF V2DI])
 
+;; Quad-width vector modes plus 64-bit elements.
+(define_mode_iterator VQX_NOBF [V16QI V8HI V8HF V4SI V4SF V2DI])
+
 ;; Quad-width vector modes plus 64-bit elements and V8BF.
 (define_mode_iterator VQXBF [V16QI V8HI V8HF (V8BF "TARGET_BF16_SIMD") V4SI V4SF V2DI])
 
@@ -122,7 +142,8 @@
 (define_mode_iterator VQXMOV [V16QI V8HI V8HF V8BF V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
-(define_mode_iterator VSTRUCT [EI OI CI XI])
+(define_mode_iterator VSTRUCT [(EI "!TARGET_HAVE_MVE") OI
+			       (CI "!TARGET_HAVE_MVE") XI])
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
@@ -220,6 +241,10 @@
 
 ;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
 (define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
+
+;; 16-bit floating-point vector modes suitable for moving (includes BFmode,
+;; without V8HF ).
+(define_mode_iterator VHFBF_split [V4HF V4BF V8BF])
 
 ;; 16-bit floating-point scalar modes suitable for moving (includes BFmode).
 (define_mode_iterator HFBF [HF BF])

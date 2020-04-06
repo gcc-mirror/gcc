@@ -1844,8 +1844,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_split_wide_types
-					  && !flag_split_wide_types_early; }
+  virtual bool gate (function *) { return flag_split_wide_types; }
   virtual unsigned int execute (function *)
     {
       decompose_multiword_subregs (true);

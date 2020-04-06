@@ -1,3 +1,126 @@
+2020-04-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93686
+	* decl.c (gfc_match_data): Handle data matching for derived type
+	pointers.
+
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_resolve_formal_arglist): Add prototype.
+	* interface.c (check_dtio_interface1): Call it.
+	* resolve.c (gfc_resolve_formal_arglist): Renamed from
+	resolve_formal_arglist, removed static.
+	(find_arglists, resolve_types): Update calls.
+
+2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93522
+	* match.c (gfc_match_select_rank): Fix error cleanup.
+
+2020-04-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93498
+	* check.c (gfc_check_findloc):  If the kinds of the arguments
+	differ goto label "incompat".
+
+2020-04-02 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/94030
+	* resolve.c (resolve_equivalence): Correct formatting
+	around the label "identical_types".  Instead of using
+	gfc_resolve_array_spec use is_non_constants_shape_array
+	to determine whether the array can be used in a in an
+	equivalence statement.
+
+2020-04-01  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/94386
+	expr.c (simplify_parameter_variable): Restore code deleted
+	in PR94246.
+
+2020-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/94246
+	* arith.c : Remove trailing white space.
+	* expr.c (scalarize_intrinsic_call): Remove the error checking.
+	Make a copy of the expression to be simplified and only replace
+	the original if the simplification succeeds.
+
+2020-03-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94348
+	* decl.c (gfc_match_submod_proc): Add result var to the
+	proc's namespace.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93957
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Accept
+	nonallocatable, nonpointer deferred-rank arrays.
+
+2020-03-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93363
+	* resolve.c (resolve_assoc_var): Reject association to DT and
+	function name.
+
+2020-03-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93484
+	* match.c (gfc_match_type_spec): Replace gfc_match_init_expr with
+	gfc_match_expr. Return m if m is MATCH_NO or MATCH_ERROR.
+
+2020-03-23  Mark Eggleston  <mark.eggleston@codethink.com>
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93600
+	* expr.c (simplify_parameter_variable): Check whether the ref
+	chain contains INQUIRY_LEN or INQUIRY_KIND and set inquiry
+	boolean. When an empty array has been identified and a new
+	new EXPR_ARRAY expression has been created only return that
+	expression if inquiry is not set. This allows the new
+	expression to drop through to be simplified into a
+	EXPR_CONSTANT representing %kind or %len.
+	* matc.c (gfc_match_assignment): If lvalue doesn't have a
+	symtree free both lvalue and rvalue expressions and return
+	an error.
+	* resolv.c (gfc_resolve_ref): Ensure that code to handle
+	INQUIRY_LEN is only performed for arrays with deferred types.
+
+2020-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* class.c (generate_finalization_wrapper): Fix up duplicated word
+	issue in a comment.
+	* trans-types.c (gfc_get_nodesc_array_type): Likewise.
+
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* array.c (gfc_check_iter_variable): Fix up duplicated word issue
+	in a comment.
+	* arith.c (gfc_arith_concat): Likewise.
+	* resolve.c (gfc_resolve_ref): Likewise.
+	* frontend-passes.c (matmul_lhs_realloc): Likewise.
+	* module.c (gfc_match_submodule, load_needed): Likewise.
+	* trans-expr.c (gfc_init_se): Likewise.
+
+2020-03-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* lang.opt: Avoid redundancy in the help text.
+
+2020-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* openmp.c (gfc_match_oacc_declare): Accept function-result
+	variables; reject variables declared in a different scoping unit.
+
+2020-03-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93581
+	* resolve.c (gfc_resolve_ref): Modify array refs to be elements
+	if the ref chain ends in INQUIRY_LEN.
+	* trans-array.c (gfc_get_dataptr_offset): Provide the offsets
+	for INQUIRY_RE and INQUIRY_IM.
+
 2020-03-05 Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/93792

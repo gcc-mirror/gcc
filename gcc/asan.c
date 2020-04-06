@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "fnmatch.h"
 #include "tree-inline.h"
+#include "tree-ssa.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -794,7 +795,7 @@ get_mem_refs_of_builtin_call (gcall *call,
       handle_builtin_alloca (call, iter);
       break;
     /* And now the __atomic* and __sync builtins.
-       These are handled differently from the classical memory memory
+       These are handled differently from the classical memory
        access builtins above.  */
 
     case BUILT_IN_ATOMIC_LOAD_1:
@@ -2061,10 +2062,10 @@ static tree
 maybe_create_ssa_name (location_t loc, tree base, gimple_stmt_iterator *iter,
 		       bool before_p)
 {
+  STRIP_USELESS_TYPE_CONVERSION (base);
   if (TREE_CODE (base) == SSA_NAME)
     return base;
-  gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (base)),
-				  TREE_CODE (base), base);
+  gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (base)), base);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_insert_before (iter, g, GSI_SAME_STMT);

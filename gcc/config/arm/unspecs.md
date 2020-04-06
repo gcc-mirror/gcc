@@ -170,6 +170,7 @@
   UNSPEC_TORC		; Used by the intrinsic form of the iWMMXt TORC instruction.
   UNSPEC_TORVSC		; Used by the intrinsic form of the iWMMXt TORVSC instruction.
   UNSPEC_TEXTRC		; Used by the intrinsic form of the iWMMXt TEXTRC instruction.
+  UNSPEC_GET_FPSCR_NZCVQC	; Represent fetch of FPSCR_nzcvqc content.
 ])
 
 
@@ -218,6 +219,7 @@
   VUNSPEC_STL		; Represent a store-register-release.
   VUNSPEC_GET_FPSCR	; Represent fetch of FPSCR content.
   VUNSPEC_SET_FPSCR	; Represent assign of FPSCR content.
+  VUNSPEC_SET_FPSCR_NZCVQC	; Represent assign of FPSCR_nzcvqc content.
   VUNSPEC_PROBE_STACK_RANGE ; Represent stack range probing.
   VUNSPEC_CDP		; Represent the coprocessor cdp instruction.
   VUNSPEC_CDP2		; Represent the coprocessor cdp2 instruction.

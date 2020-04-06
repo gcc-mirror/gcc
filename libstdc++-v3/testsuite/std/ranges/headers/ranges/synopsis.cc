@@ -20,6 +20,12 @@
 
 #include <ranges>
 
+#ifndef __cpp_lib_ranges
+# error "Feature test macro for ranges is missing in <ranges>"
+#elif __cpp_lib_ranges < 201911L
+# error "Feature test macro for ranges has wrong value in <ranges>"
+#endif
+
 struct R { };
 template<> constexpr bool std::ranges::disable_sized_range<R> = true;
 

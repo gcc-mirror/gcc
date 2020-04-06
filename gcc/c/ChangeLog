@@ -1,3 +1,55 @@
+2020-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	PR c/94239
+	* c-parser.c (c_parser_declaration_or_fndef): Initialize endloc to
+	the function_start_locus location.  Don't do that afterwards for the
+	__GIMPLE body parsing.
+
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/94029
+	* c-tree.h (finish_function): Add location_t argument defaulted to
+	input_location.
+	* c-parser.c (c_parser_compound_statement): Add endlocp argument and
+	set it to the locus of closing } if non-NULL.
+	(c_parser_compound_statement_nostart): Return locus of closing }.
+	(c_parser_parse_rtl_body): Likewise.
+	(c_parser_declaration_or_fndef): Propagate locus of closing } to
+	finish_function.
+	* c-decl.c (finish_function): Add end_loc argument, use it instead of
+	input_location to set function_end_locus.
+
+2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94172
+	* c-tree.h (C_TYPE_INCOMPLETE_VARS): Define to TYPE_LANG_SLOT_1
+	instead of TYPE_VFIELD, and support it on {RECORD,UNION,ENUMERAL}_TYPE.
+	(TYPE_ACTUAL_ARG_TYPES): Check that it is only used on FUNCTION_TYPEs.
+	* c-decl.c (pushdecl): Push C_TYPE_INCOMPLETE_VARS also to
+	ENUMERAL_TYPEs.
+	(finish_incomplete_vars): New function, moved from finish_struct.  Use
+	relayout_decl instead of layout_decl.
+	(finish_struct): Remove obsolete comment about C_TYPE_INCOMPLETE_VARS
+	being TYPE_VFIELD.  Use finish_incomplete_vars.
+	(finish_enum): Clear C_TYPE_INCOMPLETE_VARS.  Call
+	finish_incomplete_vars.
+	* c-typeck.c (c_build_qualified_type): Clear C_TYPE_INCOMPLETE_VARS
+	also on ENUMERAL_TYPEs.
+
+2020-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94179
+	* c-fold.c (c_fully_fold_internal): Handle MEM_REF.
+
+2020-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/94040
+	* c-decl.c (builtin_structptr_type_count): New constant.
+	(match_builtin_function_types): Reject decls that are incompatible
+	in types pointed to by pointers.
+	(diagnose_mismatched_decls): Adjust comments.
+
 2020-03-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93577

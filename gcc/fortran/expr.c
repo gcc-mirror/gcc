@@ -2057,6 +2057,18 @@ simplify_parameter_variable (gfc_expr *p, int type)
     }
   gfc_expression_rank (p);
 
+  /* Is this an inquiry?  */
+  bool inquiry = false;
+  gfc_ref* ref = p->ref;
+  while (ref)
+    {
+      if (ref->type == REF_INQUIRY)
+	break;
+      ref = ref->next;
+    }
+  if (ref && ref->type == REF_INQUIRY)
+    inquiry = ref->u.i == INQUIRY_LEN || ref->u.i == INQUIRY_KIND;
+
   if (gfc_is_size_zero_array (p))
     {
       if (p->expr_type == EXPR_ARRAY)
@@ -2069,15 +2081,22 @@ simplify_parameter_variable (gfc_expr *p, int type)
       e->value.constructor = NULL;
       e->shape = gfc_copy_shape (p->shape, p->rank);
       e->where = p->where;
-      gfc_replace_expr (p, e);
-      return true;
+      /* If %kind and %len are not used then we're done, otherwise
+	 drop through for simplification.  */
+      if (!inquiry)
+	{
+	  gfc_replace_expr (p, e);
+	  return true;
+	}
     }
+  else
+    {
+      e = gfc_copy_expr (p->symtree->n.sym->value);
+      if (e == NULL)
+	return false;
 
-  e = gfc_copy_expr (p->symtree->n.sym->value);
-  if (e == NULL)
-    return false;
-
-  e->rank = p->rank;
+      e->rank = p->rank;
+    }
 
   if (e->ts.type == BT_CHARACTER && e->ts.u.cl == NULL)
     e->ts.u.cl = gfc_new_charlen (gfc_current_ns, p->ts.u.cl);
@@ -2296,9 +2315,8 @@ scalarize_intrinsic_call (gfc_expr *e, bool init_flag)
   gfc_constructor_base ctor;
   gfc_constructor *args[5] = {};  /* Avoid uninitialized warnings.  */
   gfc_constructor *ci, *new_ctor;
-  gfc_expr *expr, *old;
+  gfc_expr *expr, *old, *p;
   int n, i, rank[5], array_arg;
-  int errors = 0;
 
   if (e == NULL)
     return false;
@@ -2366,8 +2384,6 @@ scalarize_intrinsic_call (gfc_expr *e, bool init_flag)
       n++;
     }
 
-  gfc_get_errors (NULL, &errors);
-
   /* Using the array argument as the master, step through the array
      calling the function for each element and advancing the array
      constructors together.  */
@@ -2401,8 +2417,12 @@ scalarize_intrinsic_call (gfc_expr *e, bool init_flag)
       /* Simplify the function calls.  If the simplification fails, the
 	 error will be flagged up down-stream or the library will deal
 	 with it.  */
-      if (errors == 0)
-	gfc_simplify_expr (new_ctor->expr, 0);
+      p = gfc_copy_expr (new_ctor->expr);
+
+      if (!gfc_simplify_expr (p, init_flag))
+	gfc_free_expr (p);
+      else
+	gfc_replace_expr (new_ctor->expr, p);
 
       for (i = 0; i < n; i++)
 	if (args[i])

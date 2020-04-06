@@ -49,6 +49,8 @@ namespace gccjit
   class timer;
   class auto_time;
 
+  namespace version {};
+
   /* Errors within the API become C++ exceptions of this class.  */
   class error
   {
@@ -1913,6 +1915,26 @@ auto_time::~auto_time ()
   m_timer.pop (m_item_name);
 }
 
+namespace version
+{
+inline int
+major_v ()
+{
+  return gcc_jit_version_major ();
+}
+
+inline int
+minor_v ()
+{
+  return gcc_jit_version_minor ();
+}
+
+inline int
+patchlevel_v ()
+{
+  return gcc_jit_version_patchlevel ();
+}
+} // namespace version
 } // namespace gccjit
 
 #endif /* #ifndef LIBGCCJIT_PLUS_PLUS_H */

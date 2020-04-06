@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fibonacci_heap.h"
 #include "shortest-paths.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "tristate.h"
 #include "selftest.h"
 #include "ordered-hash-map.h"
@@ -77,7 +78,8 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
     outlive that.  */
   m_stmt_finder (stmt_finder ? stmt_finder->clone () : NULL),
   m_var (var), m_state (state),
-  m_d (d), m_trailing_eedge (NULL)
+  m_d (d), m_trailing_eedge (NULL),
+  m_status (STATUS_NEW), m_epath_length (0), m_problem (NULL)
 {
   gcc_assert (m_stmt || m_stmt_finder);
 
@@ -92,6 +94,7 @@ saved_diagnostic::~saved_diagnostic ()
 {
   delete m_stmt_finder;
   delete m_d;
+  delete m_problem;
 }
 
 bool
@@ -110,7 +113,7 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
-   source enodes for which a a path be found to the diagnostic enode.  */
+   source enodes for which a path be found to the diagnostic enode.  */
 
 class path_builder
 {
@@ -257,8 +260,8 @@ class dedupe_candidate
 public:
   // has the exploded_path
   dedupe_candidate (const shortest_exploded_paths &sp,
-		    const saved_diagnostic &sd)
-  : m_epath (sp.get_shortest_path (sd.m_enode)),
+		    saved_diagnostic *sd)
+  : m_epath (sp.get_shortest_path (sd->m_enode)),
     m_num_dupes (0)
   {
   }
@@ -344,11 +347,13 @@ public:
 
   void add (logger *logger,
 	    const shortest_exploded_paths &sp,
-	    const saved_diagnostic &sd)
+	    saved_diagnostic *sd)
   {
     /* Build a dedupe_candidate for SD.
        This uses SP to build an exploded_path.  */
     dedupe_candidate *dc = new dedupe_candidate (sp, sd);
+
+    sd->set_epath_length (dc->length ());
 
     /* Verify that the epath is feasible.
        State-merging means that not every path in the epath corresponds
@@ -358,23 +363,31 @@ public:
        This could introduce false negatives, as there could be longer
        feasible paths within the egraph.  */
     if (logger)
-      logger->log ("considering %qs at SN: %i",
-		   sd.m_d->get_kind (), sd.m_snode->m_index);
-    if (!dc->get_path ().feasible_p (logger))
+      logger->log ("considering %qs at EN: %i, SN: %i",
+		   sd->m_d->get_kind (), sd->m_enode->m_index,
+		   sd->m_snode->m_index);
+
+    feasibility_problem *p = NULL;
+    if (!dc->get_path ().feasible_p (logger, &p))
       {
 	if (logger)
-	  logger->log ("rejecting %qs at SN: %i"
+	  logger->log ("rejecting %qs at EN: %i, SN: %i"
 		       " due to infeasible path",
-		       sd.m_d->get_kind (), sd.m_snode->m_index);
+		       sd->m_d->get_kind (), sd->m_enode->m_index,
+		       sd->m_snode->m_index);
+	sd->set_infeasible (p);
 	delete dc;
 	return;
       }
     else
       if (logger)
-	logger->log ("accepting %qs at SN: %i with feasible path",
-		     sd.m_d->get_kind (), sd.m_snode->m_index);
+	logger->log ("accepting %qs at EN: %i, SN: %i with feasible path",
+		     sd->m_d->get_kind (), sd->m_enode->m_index,
+		     sd->m_snode->m_index);
 
-    dedupe_key *key = new dedupe_key (sd, dc->get_path ());
+    sd->set_feasible ();
+
+    dedupe_key *key = new dedupe_key (*sd, dc->get_path ());
     if (dedupe_candidate **slot = m_map.get (key))
       {
 	if (logger)
@@ -466,6 +479,15 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   LOG_SCOPE (get_logger ());
   auto_timevar tv (TV_ANALYZER_DIAGNOSTICS);
   log ("# saved diagnostics: %i", m_saved_diagnostics.length ());
+  if (get_logger ())
+    {
+      unsigned i;
+      saved_diagnostic *sd;
+      FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
+	log ("[%i] sd: %qs at EN: %i, SN: %i",
+	     i, sd->m_d->get_kind (), sd->m_enode->m_index,
+	     sd->m_snode->m_index);
+    }
 
   if (m_saved_diagnostics.length () == 0)
     return;
@@ -482,7 +504,7 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   int i;
   saved_diagnostic *sd;
   FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
-    best_candidates.add (get_logger (), sp, *sd);
+    best_candidates.add (get_logger (), sp, sd);
 
   /* For each dedupe-key, call emit_saved_diagnostic on the "best"
      saved_diagnostic.  */
@@ -768,9 +790,10 @@ for_each_state_change (const program_state &src_state,
 	      if (dst_pv->m_stack_depth
 		  >= src_state.m_region_model->get_stack_depth ())
 		continue;
+	      tentative_region_model_context ctxt;
 	      svalue_id src_sid
-		= src_state.m_region_model->get_rvalue (*dst_pv, NULL);
-	      if (src_sid.null_p ())
+		= src_state.m_region_model->get_rvalue (*dst_pv, &ctxt);
+	      if (src_sid.null_p () || ctxt.had_errors_p ())
 		continue;
 	      state_machine::state_t src_sm_val = src_smap.get_state (src_sid);
 	      if (dst_sm_val != src_sm_val)

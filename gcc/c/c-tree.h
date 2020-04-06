@@ -38,9 +38,12 @@ along with GCC; see the file COPYING3.  If not see
    nonzero if the definition of the type has already started.  */
 #define C_TYPE_BEING_DEFINED(TYPE) TYPE_LANG_FLAG_0 (TYPE)
 
-/* In an incomplete RECORD_TYPE or UNION_TYPE, a list of variable
-   declarations whose type would be completed by completing that type.  */
-#define C_TYPE_INCOMPLETE_VARS(TYPE) TYPE_VFIELD (TYPE)
+/* In an incomplete RECORD_TYPE, UNION_TYPE or ENUMERAL_TYPE, a list of
+   variable declarations whose type would be completed by completing
+   that type.  */
+#define C_TYPE_INCOMPLETE_VARS(TYPE) \
+  TYPE_LANG_SLOT_1 (TREE_CHECK4 (TYPE, RECORD_TYPE, UNION_TYPE, \
+				 QUAL_UNION_TYPE, ENUMERAL_TYPE))
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
    keyword.  C_RID_CODE (node) is then the RID_* value of the keyword.  */
@@ -108,7 +111,8 @@ along with GCC; see the file COPYING3.  If not see
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */
-#define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_LANG_SLOT_1 (NODE)
+#define TYPE_ACTUAL_ARG_TYPES(NODE) \
+  TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For a CONSTRUCTOR, whether some initializer contains a
    subexpression meaning it is not a constant expression.  */
@@ -576,7 +580,7 @@ extern bool c_check_switch_jump_warnings (struct c_spot_bindings *,
 					  location_t, location_t);
 extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
-extern void finish_function (void);
+extern void finish_function (location_t = input_location);
 extern tree finish_struct (location_t, tree, tree, tree,
 			   class c_struct_parse_info *);
 extern tree c_simulate_enum_decl (location_t, const char *,

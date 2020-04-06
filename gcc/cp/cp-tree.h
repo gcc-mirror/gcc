@@ -59,7 +59,10 @@ public:
     m_value (value), m_loc (cp_expr_location (m_value)) {}
 
   cp_expr (tree value, location_t loc):
-    m_value (value), m_loc (loc) {}
+    m_value (value), m_loc (loc)
+  {
+    protected_set_expr_location (value, loc);
+  }
 
   /* Implicit conversions to tree.  */
   operator tree () const { return m_value; }
@@ -5145,6 +5148,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    the initializer has void type, it's doing something more complicated.  */
 #define SIMPLE_TARGET_EXPR_P(NODE)				\
   (TREE_CODE (NODE) == TARGET_EXPR				\
+   && TARGET_EXPR_INITIAL (NODE)				\
    && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (NODE))))
 
 /* True if EXPR expresses direct-initialization of a TYPE.  */
@@ -6943,6 +6947,7 @@ extern int comp_template_args			(tree, tree, tree * = NULL,
 extern int template_args_equal                  (tree, tree, bool = false);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
+extern tree most_specialized_partial_spec       (tree, tsubst_flags_t);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,
@@ -7016,6 +7021,7 @@ extern tree resolve_nondeduced_context_or_error	(tree, tsubst_flags_t);
 extern hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
 extern tree coerce_template_parms               (tree, tree, tree);
 extern tree coerce_template_parms               (tree, tree, tree, tsubst_flags_t);
+extern tree canonicalize_type_argument		(tree, tsubst_flags_t);
 extern void register_local_specialization       (tree, tree);
 extern tree retrieve_local_specialization       (tree);
 extern tree extract_fnparm_pack                 (tree, tree *);
@@ -7828,6 +7834,7 @@ struct diagnosing_failed_constraint
 {
   diagnosing_failed_constraint (tree, tree, bool);
   ~diagnosing_failed_constraint ();
+  static bool replay_errors_p ();
 
   bool diagnosing_error;
 };

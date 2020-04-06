@@ -1326,6 +1326,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Return true if this node represents a former, i.e. an expanded, thunk.  */
   inline bool former_thunk_p (void);
 
+  /* Check if function calls comdat local.  This is used to recompute
+     calls_comdat_local flag after function transformations.  */
+  bool check_calls_comdat_local_p ();
+
   /* Return true if function should be optimized for size.  */
   bool optimize_for_size_p (void);
 
@@ -3296,19 +3300,6 @@ cgraph_edge::set_callee (cgraph_node *n)
   next_caller = n->callers;
   n->callers = this;
   callee = n;
-}
-
-/* Redirect callee of the edge to N.  The function does not update underlying
-   call expression.  */
-
-inline void
-cgraph_edge::redirect_callee (cgraph_node *n)
-{
-  /* Remove from callers list of the current callee.  */
-  remove_callee ();
-
-  /* Insert to callers list of the new callee.  */
-  set_callee (n);
 }
 
 /* Return true when the edge represents a direct recursion.  */

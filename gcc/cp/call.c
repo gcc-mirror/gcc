@@ -333,11 +333,14 @@ set_flags_from_callee (tree call)
 	   && internal_fn_flags (CALL_EXPR_IFN (call)) & ECF_NOTHROW)
     nothrow = true;
 
-  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
-    cp_function_chain->can_throw = 1;
+  if (cfun && cp_function_chain && !cp_unevaluated_operand)
+    {
+      if (!nothrow && at_function_scope_p ())
+	cp_function_chain->can_throw = 1;
 
-  if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
-    current_function_returns_abnormally = 1;
+      if (decl && TREE_THIS_VOLATILE (decl))
+	current_function_returns_abnormally = 1;
+    }
 
   TREE_NOTHROW (call) = nothrow;
 }
@@ -392,6 +395,10 @@ build_call_a (tree function, int n, tree *argarray)
 	if (is_empty_class (TREE_TYPE (arg))
 	    && simple_empty_class_p (TREE_TYPE (arg), arg, INIT_EXPR))
 	  {
+	    while (TREE_CODE (arg) == TARGET_EXPR)
+	      /* We're disconnecting the initializer from its target,
+		 don't create a temporary.  */
+	      arg = TARGET_EXPR_INITIAL (arg);
 	    tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (arg));
 	    arg = build2 (COMPOUND_EXPR, TREE_TYPE (t), arg, t);
 	    CALL_EXPR_ARG (function, i) = arg;
@@ -7377,6 +7384,19 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   if (issue_conversion_warnings && (complain & tf_warning))
     conversion_null_warnings (totype, expr, fn, argnum);
 
+  /* Creating &TARGET_EXPR<> in a template breaks when substituting,
+     and creating a CALL_EXPR in a template breaks in finish_call_expr
+     so use an IMPLICIT_CONV_EXPR for this conversion.  We would have
+     created such codes e.g. when calling a user-defined conversion
+     function.  */
+  if (processing_template_decl
+      && convs->kind != ck_identity
+      && (CLASS_TYPE_P (totype) || CLASS_TYPE_P (TREE_TYPE (expr))))
+    {
+      expr = build1 (IMPLICIT_CONV_EXPR, totype, expr);
+      return convs->kind == ck_ref_bind ? expr : convert_from_reference (expr);
+    }
+
   switch (convs->kind)
     {
     case ck_user:
@@ -7730,15 +7750,18 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	      {
 		/* If the reference is volatile or non-const, we
 		   cannot create a temporary.  */
-		if (lvalue & clk_bitfield)
-		  error_at (loc, "cannot bind bit-field %qE to %qT",
-			    expr, ref_type);
-		else if (lvalue & clk_packed)
-		  error_at (loc, "cannot bind packed field %qE to %qT",
-			    expr, ref_type);
-		else
-		  error_at (loc, "cannot bind rvalue %qE to %qT",
-			    expr, ref_type);
+		if (complain & tf_error)
+		  {
+		    if (lvalue & clk_bitfield)
+		      error_at (loc, "cannot bind bit-field %qE to %qT",
+				expr, ref_type);
+		    else if (lvalue & clk_packed)
+		      error_at (loc, "cannot bind packed field %qE to %qT",
+				expr, ref_type);
+		    else
+		      error_at (loc, "cannot bind rvalue %qE to %qT",
+				expr, ref_type);
+		  }
 		return error_mark_node;
 	      }
 	    /* If the source is a packed field, and we must use a copy
@@ -7760,6 +7783,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		expr = convert_bitfield_to_declared_type (expr);
 		expr = fold_convert (type, expr);
 	      }
+
+	    /* Creating &TARGET_EXPR<> in a template would break when
+	       tsubsting the expression, so use an IMPLICIT_CONV_EXPR
+	       instead.  This can happen even when there's no class
+	       involved, e.g., when converting an integer to a reference
+	       type.  */
+	    if (processing_template_decl)
+	      return build1 (IMPLICIT_CONV_EXPR, totype, expr);
 	    expr = build_target_expr_with_type (expr, type, complain);
 	  }
 
@@ -9041,6 +9072,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
   else
     {
+      /* If FN is marked deprecated, then we've already issued a deprecated-use
+	 warning from mark_used above, so avoid redundantly issuing another one
+	 from build_addr_func.  */
+      warning_sentinel w (warn_deprecated_decl);
+
       fn = build_addr_func (fn, complain);
       if (fn == error_mark_node)
 	return error_mark_node;

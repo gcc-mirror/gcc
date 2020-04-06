@@ -5159,12 +5159,10 @@ in_class_defaulted_default_constructor (tree t)
 bool
 user_provided_p (tree fn)
 {
-  if (TREE_CODE (fn) == TEMPLATE_DECL)
-    return true;
-  else
-    return (!DECL_ARTIFICIAL (fn)
-	    && !(DECL_INITIALIZED_IN_CLASS_P (fn)
-		 && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
+  fn = STRIP_TEMPLATE (fn);
+  return (!DECL_ARTIFICIAL (fn)
+	  && !(DECL_INITIALIZED_IN_CLASS_P (fn)
+	       && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
 }
 
 /* Returns true iff class T has a user-provided constructor.  */
@@ -6705,6 +6703,10 @@ layout_class_type (tree t, tree *virtuals_p)
 
   /* If we didn't end up needing an as-base type, don't use it.  */
   if (CLASSTYPE_AS_BASE (t) != t
+      /* If T's CLASSTYPE_AS_BASE is TYPE_USER_ALIGN, but T is not,
+	 replacing the as-base type would change CLASSTYPE_USER_ALIGN,
+	 causing us to lose the user-specified alignment as in PR94050.  */
+      && TYPE_USER_ALIGN (t) == TYPE_USER_ALIGN (CLASSTYPE_AS_BASE (t))
       && tree_int_cst_equal (TYPE_SIZE (t),
 			     TYPE_SIZE (CLASSTYPE_AS_BASE (t))))
     CLASSTYPE_AS_BASE (t) = t;

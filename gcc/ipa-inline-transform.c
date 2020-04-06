@@ -504,14 +504,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;
   else if (to->calls_comdat_local && comdat_local)
-    {
-      struct cgraph_edge *se = to->callees;
-      for (; se; se = se->next_callee)
-	if (se->inline_failed && se->callee->comdat_local_p ())
-	  break;
-      if (se == NULL)
-	to->calls_comdat_local = false;
-    }
+    to->calls_comdat_local = to->check_calls_comdat_local_p ();
 
   /* FIXME: This assert suffers from roundoff errors, disable it for GCC 5
      and revisit it after conversion to sreals in GCC 6.

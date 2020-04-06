@@ -436,4 +436,5 @@ GCC_BASE_VER
 AC_CONFIG_FILES(omp.h omp_lib.h omp_lib.f90 libgomp_f.h)
 AC_CONFIG_FILES(Makefile testsuite/Makefile libgomp.spec)
 AC_CONFIG_FILES([testsuite/libgomp-test-support.pt.exp:testsuite/libgomp-test-support.exp.in])
+AC_CONFIG_FILES([testsuite/libgomp-site-extra.exp])
 AC_OUTPUT

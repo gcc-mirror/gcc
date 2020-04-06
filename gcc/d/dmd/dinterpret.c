@@ -4649,6 +4649,10 @@ public:
                     result = getVarExp(e->loc, istate, ((SymbolExp *)ea)->var, ctfeNeedRvalue);
                 else if (ea->op == TOKaddress)
                     result = interpret(((AddrExp *)ea)->e1, istate);
+                // https://issues.dlang.org/show_bug.cgi?id=18871
+                // https://issues.dlang.org/show_bug.cgi?id=18819
+                else if (ea->op == TOKarrayliteral)
+                    result = interpret((ArrayLiteralExp *)ea, istate);
                 else
                     assert(0);
                 if (CTFEExp::isCantExp(result))

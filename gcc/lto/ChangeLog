@@ -1,3 +1,25 @@
+2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94223
+	* lto-lang.c (lto_set_decl_assembler_name): Use a static ulong
+	counter instead of DECL_UID.
+
+2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/81689
+	* lto.c (offload_handle_link_vars): Propagate TREE_PUBLIC state.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto.c (offload_handle_link_vars): Reduce chance of
+	naming clashes of generated linkptr variable.
+
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94233
+	* lto.c (offload_handle_link_vars): Cleanup; call
+	build_decl to ensure alignment is set.
+
 2020-02-05  Martin Liska  <mliska@suse.cz>
 
 	PR lto/93489

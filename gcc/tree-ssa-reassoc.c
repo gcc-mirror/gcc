@@ -1793,8 +1793,11 @@ sort_by_mach_mode (const void *p_i, const void *p_j)
     return 1;
   else if (mode1 < mode2)
     return -1;
-  else
-    return 0;
+  if (SSA_NAME_VERSION (tr1) < SSA_NAME_VERSION (tr2))
+    return -1;
+  else if (SSA_NAME_VERSION (tr1) > SSA_NAME_VERSION (tr2))
+    return 1;
+  return 0;
 }
 
 /* Cleanup hash map for VECTOR information.  */
@@ -6221,8 +6224,11 @@ reassociate_bb (basic_block bb)
   if (stmt && !gimple_visited_p (stmt))
     cfg_cleanup_needed |= maybe_optimize_range_tests (stmt);
 
-  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+  bool do_prev = false;
+  for (gsi = gsi_last_bb (bb);
+       !gsi_end_p (gsi); do_prev ? gsi_prev (&gsi) : (void) 0)
     {
+      do_prev = true;
       stmt = gsi_stmt (gsi);
 
       if (is_gimple_assign (stmt)
@@ -6243,15 +6249,12 @@ reassociate_bb (basic_block bb)
 		  release_defs (stmt);
 		  /* We might end up removing the last stmt above which
 		     places the iterator to the end of the sequence.
-		     Reset it to the last stmt in this case which might
-		     be the end of the sequence as well if we removed
-		     the last statement of the sequence.  In which case
-		     we need to bail out.  */
+		     Reset it to the last stmt in this case and make sure
+		     we don't do gsi_prev in that case.  */
 		  if (gsi_end_p (gsi))
 		    {
 		      gsi = gsi_last_bb (bb);
-		      if (gsi_end_p (gsi))
-			break;
+		      do_prev = false;
 		    }
 		}
 	      continue;
@@ -6370,7 +6373,7 @@ reassociate_bb (basic_block bb)
 		  int width;
 
 		  /* For binary bit operations, if there are at least 3
-		     operands and the last last operand in OPS is a constant,
+		     operands and the last operand in OPS is a constant,
 		     move it to the front.  This helps ensure that we generate
 		     (X & Y) & C rather than (X & C) & Y.  The former will
 		     often match a canonical bit test when we get to RTL.  */

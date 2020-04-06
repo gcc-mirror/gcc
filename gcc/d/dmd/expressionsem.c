@@ -1758,15 +1758,30 @@ public:
                 else
                 {
                     // Disallow shadowing
-                    for (Scope *scx = sc->enclosing; scx && scx->func == sc->func; scx = scx->enclosing)
+                    for (Scope *scx = sc->enclosing; scx && (scx->func == sc->func || (scx->func && sc->func->fes)); scx = scx->enclosing)
                     {
                         Dsymbol *s2;
                         if (scx->scopesym && scx->scopesym->symtab &&
                             (s2 = scx->scopesym->symtab->lookup(s->ident)) != NULL &&
                             s != s2)
                         {
-                            e->error("%s %s is shadowing %s %s", s->kind(), s->ident->toChars(), s2->kind(), s2->toPrettyChars());
-                            return setError();
+                            // allow STClocal symbols to be shadowed
+                            // TODO: not reallly an optimal design
+                            Declaration *decl = s2->isDeclaration();
+                            if (!decl || !(decl->storage_class & STClocal))
+                            {
+                                if (sc->func->fes)
+                                {
+                                    e->deprecation("%s `%s` is shadowing %s `%s`. Rename the `foreach` variable.",
+                                        s->kind(), s->ident->toChars(), s2->kind(), s2->toPrettyChars());
+                                }
+                                else
+                                {
+                                    e->error("%s %s is shadowing %s %s",
+                                        s->kind(), s->ident->toChars(), s2->kind(), s2->toPrettyChars());
+                                    return setError();
+                                }
+                            }
                         }
                     }
                 }
@@ -2355,6 +2370,7 @@ public:
             return setError();
         }
 
+        sc->_module->contentImportedFiles.push(name);
         if (global.params.verbose)
             message("file      %.*s\t(%s)", (int)se->len, (char *)se->string, name);
         if (global.params.moduleDeps != NULL)
@@ -7929,6 +7945,12 @@ public:
         bool f2 = checkNonAssignmentArrayOp(exp->e2);
         if (f1 || f2)
             return setError();
+
+        if (exp->e1->op == TOKtype || exp->e2->op == TOKtype)
+        {
+            result = exp->incompatibleTypes();
+            return;
+        }
 
         exp->type = Type::tbool;
 

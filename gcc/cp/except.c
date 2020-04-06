@@ -1160,7 +1160,10 @@ struct GTY(()) pending_noexcept {
 static GTY(()) vec<pending_noexcept, va_gc> *pending_noexcept_checks;
 
 /* FN is a FUNCTION_DECL that caused a noexcept-expr to be false.  Warn if
-   it can't throw.  */
+   it can't throw.
+
+   TODO: Consider extending -Wnoexcept to do something like walk_subtrees in the
+   case of a defaulted function that obtained a noexcept(false) spec.  */
 
 static void
 maybe_noexcept_warning (tree fn)
@@ -1299,10 +1302,8 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
       && !value_dependent_expression_p (expr))
     {
-      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-      /* Don't let convert_like_real create more template codes.  */
-      processing_template_decl_sentinel s;
       expr = build_converted_constant_bool_expr (expr, complain);
+      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
       expr = cxx_constant_value (expr);
     }
   if (TREE_CODE (expr) == INTEGER_CST)

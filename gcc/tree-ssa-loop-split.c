@@ -770,7 +770,7 @@ find_vdef_in_loop (struct loop *loop)
 
 	  /* Non-pure call statement is conservatively assumed to impact all
 	     memory locations.  So place call statements ahead of other memory
-	     stores in the vector with an idea of of using them as shortcut
+	     stores in the vector with an idea of using them as shortcut
 	     terminators to memory alias analysis.  */
 	  if (gimple_code (stmt) == GIMPLE_CALL)
 	    info->memory_stores.safe_push (stmt);

@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   for (unsigned i = 0; i < N; i++)
     a[i] = i;
 
-  if (argc == 1)
+  if (argc < 2)
     m = 17;
 
   unsigned int r = df_count_refs(1);

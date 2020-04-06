@@ -285,6 +285,9 @@ static object_allocator<assign_link> assign_link_pool ("SRA links");
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
 static hash_map<tree, auto_vec<access_p> > *base_access_vec;
 
+/* Hash to limit creation of artificial accesses */
+static hash_map<tree, unsigned> *propagation_budget;
+
 /* Candidate hash table helpers.  */
 
 struct uid_decl_hasher : nofree_ptr_hash <tree_node>
@@ -2142,7 +2145,7 @@ sort_and_splice_var_accesses (tree var)
 /* Create a variable for the given ACCESS which determines the type, name and a
    few other properties.  Return the variable declaration and store it also to
    ACCESS->replacement.  REG_TREE is used when creating a declaration to base a
-   default-definition SSA name on on in order to facilitate an uninitialized
+   default-definition SSA name on in order to facilitate an uninitialized
    warning.  It is used instead of the actual ACCESS type if that is not of a
    gimple register type.  */
 
@@ -2687,6 +2690,32 @@ subtree_mark_written_and_rhs_enqueue (struct access *access)
     subtree_mark_written_and_rhs_enqueue (child);
 }
 
+/* If there is still budget to create a propagation access for DECL, return
+   true and decrement the budget.  Otherwise return false.  */
+
+static bool
+budget_for_propagation_access (tree decl)
+{
+  unsigned b, *p = propagation_budget->get (decl);
+  if (p)
+    b = *p;
+  else
+    b = param_sra_max_propagations;
+
+  if (b == 0)
+    return false;
+  b--;
+
+  if (b == 0 && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "The propagation budget of ");
+      print_generic_expr (dump_file, decl);
+      fprintf (dump_file, " (UID: %u) has been exhausted.\n", DECL_UID (decl));
+    }
+  propagation_budget->put (decl, b);
+  return true;
+}
+
 /* Propagate subaccesses and grp_write flags of RACC across an assignment link
    to LACC.  Enqueue sub-accesses as necessary so that the write flag is
    propagated transitively.  Return true if anything changed.  Additionally, if
@@ -2791,7 +2820,8 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	  continue;
 	}
 
-      if (rchild->grp_unscalarizable_region)
+      if (rchild->grp_unscalarizable_region
+	  || !budget_for_propagation_access (lacc->base))
 	{
 	  if (rchild->grp_write && !lacc->grp_write)
 	    {
@@ -2851,7 +2881,8 @@ propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
 
       if (lchild->grp_unscalarizable_region
 	  || child_would_conflict_in_acc (racc, norm_offset, lchild->size,
-					  &matching_acc))
+					  &matching_acc)
+	  || !budget_for_propagation_access (racc->base))
 	{
 	  if (matching_acc
 	      && propagate_subaccesses_from_lhs (lchild, matching_acc))
@@ -2882,6 +2913,7 @@ propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
 static void
 propagate_all_subaccesses (void)
 {
+  propagation_budget = new hash_map<tree, unsigned>;
   while (rhs_work_queue_head)
     {
       struct access *racc = pop_access_from_rhs_work_queue ();
@@ -2945,6 +2977,7 @@ propagate_all_subaccesses (void)
 	    add_access_to_lhs_work_queue (racc);
 	}
     }
+  delete propagation_budget;
 }
 
 /* Return true if the forest beginning with ROOT does not contain

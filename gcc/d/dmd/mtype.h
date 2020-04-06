@@ -94,6 +94,7 @@ enum ENUMTY
     Tvector,
     Tint128,
     Tuns128,
+    Ttraits,
     TMAX
 };
 typedef unsigned char TY;       // ENUMTY
@@ -656,6 +657,23 @@ public:
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     bool hasPointers() /*const*/;
 
+    void accept(Visitor *v) { v->visit(this); }
+};
+
+class TypeTraits : public Type
+{
+public:
+    Loc loc;
+    /// The expression to resolve as type or symbol.
+    TraitsExp *exp;
+    /// The symbol when exp doesn't represent a type.
+    Dsymbol *sym;
+
+    TypeTraits(const Loc &loc, TraitsExp *exp);
+    Type *syntaxCopy();
+    Type *semantic(Loc loc, Scope *sc);
+    void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
+    d_uns64 size(Loc loc);
     void accept(Visitor *v) { v->visit(this); }
 };
 

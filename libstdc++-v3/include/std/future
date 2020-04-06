@@ -371,6 +371,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         future_status
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
         {
+#if __cplusplus > 201703L
+	  static_assert(chrono::is_clock_v<_Clock>);
+#endif
 	  // First, check if the future has been made ready.  Use acquire MO
 	  // to synchronize with the thread that made it ready.
 	  if (_M_status._M_load(memory_order_acquire) == _Status::__ready)

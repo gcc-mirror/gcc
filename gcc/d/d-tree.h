@@ -29,7 +29,6 @@ class FuncDeclaration;
 class StructDeclaration;
 class TypeInfoDeclaration;
 class VarDeclaration;
-class UserAttributeDeclaration;
 class Expression;
 class ClassReferenceExp;
 class Module;
@@ -204,6 +203,7 @@ struct GTY(()) lang_identifier
 
   /* The frontend Declaration associated with this identifier.  */
   Declaration * GTY((skip)) dsymbol;
+  AggregateDeclaration * GTY((skip)) daggregate;
 };
 
 #define IDENTIFIER_LANG_SPECIFIC(NODE) \
@@ -217,6 +217,9 @@ struct GTY(()) lang_identifier
 
 #define IDENTIFIER_DSYMBOL(NODE) \
   (IDENTIFIER_LANG_SPECIFIC (NODE)->dsymbol)
+
+#define IDENTIFIER_DAGGREGATE(NODE) \
+  (IDENTIFIER_LANG_SPECIFIC (NODE)->daggregate)
 
 /* Global state pertinent to the current function.  */
 
@@ -481,7 +484,7 @@ extern bool doing_semantic_analysis_p;
 /* In d-attribs.c.  */
 extern tree insert_type_attribute (tree, const char *, tree = NULL_TREE);
 extern tree insert_decl_attribute (tree, const char *, tree = NULL_TREE);
-extern tree build_attributes (Expressions *);
+extern void apply_user_attributes (Dsymbol *, tree);
 
 /* In d-builtins.cc.  */
 extern const attribute_spec d_langhook_attribute_table[];
@@ -600,6 +603,7 @@ extern tree d_signed_type (tree);
 extern void d_keep (tree);
 
 /* In decl.cc.  */
+extern const char *d_mangle_decl (Dsymbol *);
 extern tree mangle_internal_decl (Dsymbol *, const char *, const char *);
 extern void build_decl_tree (Dsymbol *);
 extern tree get_symbol_decl (Declaration *);
@@ -676,8 +680,7 @@ extern tree make_array_type (Type *, unsigned HOST_WIDE_INT);
 extern tree make_struct_type (const char *, int n, ...);
 extern tree insert_type_modifiers (tree, unsigned);
 extern void insert_aggregate_field (tree, tree, size_t);
-extern void finish_aggregate_type (unsigned, unsigned, tree,
-				   UserAttributeDeclaration *);
+extern void finish_aggregate_type (unsigned, unsigned, tree);
 extern tree build_ctype (Type *);
 
 #endif  /* GCC_D_TREE_H  */

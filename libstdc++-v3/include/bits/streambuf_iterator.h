@@ -115,7 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_CONSTEXPR istreambuf_iterator() _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && __cpp_lib_concepts
       constexpr istreambuf_iterator(default_sentinel_t) noexcept
       : istreambuf_iterator() { }
 #endif
@@ -215,7 +215,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return traits_type::eq_int_type(__c, __eof);
       }
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && __cpp_lib_concepts
       friend bool
       operator==(const istreambuf_iterator& __i, default_sentinel_t __s)
       { return __i._M_at_eof(); }

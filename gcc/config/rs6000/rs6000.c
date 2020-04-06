@@ -99,7 +99,7 @@
 #endif
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
-GTY(()) tree altivec_builtin_mask_for_load;
+tree altivec_builtin_mask_for_load;
 
 #ifdef USING_ELFOS_H
 /* Counter for labels which are to be placed in .fixup.  */
@@ -181,7 +181,6 @@ static GTY(()) section *tls_private_data_section;
 static GTY(()) section *read_only_private_data_section;
 static GTY(()) section *sdata2_section;
 
-extern GTY(()) section *toc_section;
 section *toc_section = 0;
 
 /* Describe the vector unit used for modes.  */
@@ -196,7 +195,7 @@ enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 int rs6000_vector_align[NUM_MACHINE_MODES];
 
 /* Map selected modes to types for builtins.  */
-GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
+tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
 
 /* What modes to automatically generate reciprocal divide estimate (fre) and
    reciprocal sqrt (frsqrte) for.  */
@@ -3715,6 +3714,14 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_CRYPTO;
     }
 
+  if (!TARGET_FPRND && TARGET_VSX)
+    {
+      if (rs6000_isa_flags_explicit & OPTION_MASK_FPRND)
+	/* TARGET_VSX = 1 implies Power 7 and newer */
+	error ("%qs requires %qs", "-mvsx", "-mfprnd");
+      rs6000_isa_flags &= ~OPTION_MASK_FPRND;
+    }
+
   if (TARGET_DIRECT_MOVE && !TARGET_VSX)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE)
@@ -3956,7 +3963,7 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* Enable the default support for IEEE 128-bit floating point on Linux VSX
-     sytems.  In GCC 7, we would enable the the IEEE 128-bit floating point
+     sytems.  In GCC 7, we would enable the IEEE 128-bit floating point
      infrastructure (-mfloat128-type) but not enable the actual __float128 type
      unless the user used the explicit -mfloat128.  In GCC 8, we enable both
      the keyword as well as the type.  */
@@ -4363,11 +4370,6 @@ rs6000_option_override_internal (bool global_init_p)
 		  str_align_loops = "16";
 		}
 	    }
-
-	  if (flag_align_jumps && !str_align_jumps)
-	    str_align_jumps = "16";
-	  if (flag_align_loops && !str_align_loops)
-	    str_align_loops = "16";
 	}
 
       /* Arrange to save and restore machine status around nested functions.  */
@@ -5617,7 +5619,10 @@ num_insns_constant_multi (HOST_WIDE_INT value, machine_mode mode)
 	  && rs6000_is_valid_and_mask (GEN_INT (low), DImode))
 	insns = 2;
       total += insns;
-      value >>= BITS_PER_WORD;
+      /* If BITS_PER_WORD is the number of bits in HOST_WIDE_INT, doing
+	 it all at once would be UB. */
+      value >>= (BITS_PER_WORD - 1);
+      value >>= 1;
     }
   return total;
 }
@@ -12302,6 +12307,15 @@ rs6000_can_change_mode_class (machine_mode from,
 	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
 	    return false;
 
+	  /* Allow SD<->DD changes, since SDmode values are stored in
+	     the low half of the DDmode, just like target-independent
+	     code expects.  We need to allow at least SD->DD since
+	     rs6000_secondary_memory_needed_mode asks for that change
+	     to be made for SD reloads.  */
+	  if ((to == DDmode && from == SDmode)
+	      || (to == SDmode && from == DDmode))
+	    return true;
+
 	  if (from_size < 8 || to_size < 8)
 	    return false;
 
@@ -13607,7 +13621,7 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
   if (DEFAULT_ABI == ABI_AIX)
     s += sprintf (s,
 		  "l%s 2,%%%u\n\t",
-		  ptrload, funop + 2);
+		  ptrload, funop + 3);
 
   /* We don't need the extra code to stop indirect call speculation if
      calling via LR.  */
@@ -13661,12 +13675,12 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	sprintf (s,
 		 "b%%T%ul\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 3);
+		 funop, ptrload, funop + 4);
       else
 	sprintf (s,
 		 "beq%%T%ul-\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 3);
+		 funop, ptrload, funop + 4);
     }
   else if (DEFAULT_ABI == ABI_ELFv2)
     {
@@ -13674,12 +13688,12 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	sprintf (s,
 		 "b%%T%ul\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 2);
+		 funop, ptrload, funop + 3);
       else
 	sprintf (s,
 		 "beq%%T%ul-\n\t"
 		 "l%s 2,%%%u(1)",
-		 funop, ptrload, funop + 2);
+		 funop, ptrload, funop + 3);
     }
   else
     {
@@ -14836,7 +14850,11 @@ rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (rtx_equal_p (op0, true_cond) && rtx_equal_p (op1, false_cond))
     ;
 
-  else if (rtx_equal_p (op1, true_cond) && rtx_equal_p (op0, false_cond))
+  /* Only when NaNs and signed-zeros are not in effect, smax could be
+     used for `op0 < op1 ? op1 : op0`, and smin could be used for
+     `op0 > op1 ? op1 : op0`.  */
+  else if (rtx_equal_p (op1, true_cond) && rtx_equal_p (op0, false_cond)
+	   && !HONOR_NANS (compare_mode) && !HONOR_SIGNED_ZEROS (compare_mode))
     max_p = !max_p;
 
   else
@@ -19265,8 +19283,9 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       if (rs6000_pcrel_p (cfun))
 	{
 	  rtx reg = gen_rtx_REG (Pmode, regno);
-	  rtx u = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
-				  UNSPEC_PLT_PCREL);
+	  rtx u = gen_rtx_UNSPEC_VOLATILE (Pmode,
+					   gen_rtvec (3, base, call_ref, arg),
+					   UNSPECV_PLT_PCREL);
 	  emit_insn (gen_rtx_SET (reg, u));
 	  return reg;
 	}
@@ -19285,8 +19304,9 @@ rs6000_longcall_ref (rtx call_ref, rtx arg)
       rtx reg = gen_rtx_REG (Pmode, regno);
       rtx hi = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
 			       UNSPEC_PLT16_HA);
-      rtx lo = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, reg, call_ref, arg),
-			       UNSPEC_PLT16_LO);
+      rtx lo = gen_rtx_UNSPEC_VOLATILE (Pmode,
+					gen_rtvec (3, reg, call_ref, arg),
+					UNSPECV_PLT16_LO);
       emit_insn (gen_rtx_SET (reg, hi));
       emit_insn (gen_rtx_SET (reg, lo));
       return reg;
@@ -23885,6 +23905,18 @@ make_resolver_func (const tree default_decl,
   DECL_INITIAL (decl) = make_node (BLOCK);
   DECL_STATIC_CONSTRUCTOR (decl) = 0;
 
+  if (DECL_COMDAT_GROUP (default_decl)
+      || TREE_PUBLIC (default_decl))
+    {
+      /* In this case, each translation unit with a call to this
+	 versioned function will put out a resolver.  Ensure it
+	 is comdat to keep just one copy.  */
+      DECL_COMDAT (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+  else
+    TREE_PUBLIC (dispatch_decl) = 0;
+
   /* Build result decl and add to function_decl.  */
   tree t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
   DECL_CONTEXT (t) = decl;
@@ -24272,7 +24304,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   rtx toc_restore = NULL_RTX;
   rtx func_addr;
   rtx abi_reg = NULL_RTX;
-  rtx call[4];
+  rtx call[5];
   int n_call;
   rtx insn;
   bool is_pltseq_longcall;
@@ -24413,7 +24445,8 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
-  n_call = 1;
+  call[1] = gen_rtx_USE (VOIDmode, cookie);
+  n_call = 2;
 
   if (toc_load)
     call[n_call++] = toc_load;

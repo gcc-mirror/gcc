@@ -185,9 +185,6 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
   else if (DEP_TYPE (link) == REG_DEP_OUTPUT)
     t = OUTPUT_DEP;
 
-  gcc_assert (!DEBUG_INSN_P (dest_node->insn) || t == ANTI_DEP);
-  gcc_assert (!DEBUG_INSN_P (src_node->insn) || t == ANTI_DEP);
-
   /* We currently choose not to create certain anti-deps edges and
      compensate for that by generating reg-moves based on the life-range
      analysis.  The anti-deps that will be deleted are the ones which
@@ -222,9 +219,9 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
         }
     }
 
-   latency = dep_cost (link);
-   e = create_ddg_edge (src_node, dest_node, t, dt, latency, distance);
-   add_edge_to_ddg (g, e);
+  latency = dep_cost (link);
+  e = create_ddg_edge (src_node, dest_node, t, dt, latency, distance);
+  add_edge_to_ddg (g, e);
 }
 
 /* The same as the above function, but it doesn't require a link parameter.  */
@@ -236,9 +233,6 @@ create_ddg_dep_no_link (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to,
   int l;
   enum reg_note dep_kind;
   struct _dep _dep, *dep = &_dep;
-
-  gcc_assert (!DEBUG_INSN_P (to->insn) || d_t == ANTI_DEP);
-  gcc_assert (!DEBUG_INSN_P (from->insn) || d_t == ANTI_DEP);
 
   if (d_t == ANTI_DEP)
     dep_kind = REG_DEP_ANTI;
@@ -272,16 +266,15 @@ create_ddg_dep_no_link (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to,
 static void
 add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
 {
-  int regno = DF_REF_REGNO (last_def);
   struct df_link *r_use;
   int has_use_in_bb_p = false;
-  rtx_insn *def_insn = DF_REF_INSN (last_def);
-  ddg_node_ptr last_def_node = get_node_of_insn (g, def_insn);
-  ddg_node_ptr use_node;
+  int regno = DF_REF_REGNO (last_def);
+  ddg_node_ptr last_def_node = get_node_of_insn (g, DF_REF_INSN (last_def));
   df_ref first_def = df_bb_regno_first_def_find (g->bb, regno);
+  ddg_node_ptr first_def_node = get_node_of_insn (g, DF_REF_INSN (first_def));
+  ddg_node_ptr use_node;
 
-  gcc_assert (last_def_node);
-  gcc_assert (first_def);
+  gcc_assert (last_def_node && first_def && first_def_node);
 
   if (flag_checking && DF_REF_ID (last_def) != DF_REF_ID (first_def))
     {
@@ -300,6 +293,9 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
 
       rtx_insn *use_insn = DF_REF_INSN (r_use->ref);
 
+      if (DEBUG_INSN_P (use_insn))
+	continue;
+
       /* ??? Do not handle uses with DF_REF_IN_NOTE notes.  */
       use_node = get_node_of_insn (g, use_insn);
       gcc_assert (use_node);
@@ -310,35 +306,28 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
 	     iteration.  Any such upwards exposed use appears before
 	     the last_def def.  */
 	  create_ddg_dep_no_link (g, last_def_node, use_node,
-				  DEBUG_INSN_P (use_insn) ? ANTI_DEP : TRUE_DEP,
-				  REG_DEP, 1);
+				  TRUE_DEP, REG_DEP, 1);
 	}
-      else if (!DEBUG_INSN_P (use_insn))
+      else
 	{
 	  /* Add anti deps from last_def's uses in the current iteration
 	     to the first def in the next iteration.  We do not add ANTI
 	     dep when there is an intra-loop TRUE dep in the opposite
 	     direction, but use regmoves to fix such disregarded ANTI
 	     deps when broken.	If the first_def reaches the USE then
-	     there is such a dep.  */
-	  ddg_node_ptr first_def_node = get_node_of_insn (g,
-							  DF_REF_INSN (first_def));
-
-	  gcc_assert (first_def_node);
-
-         /* Always create the edge if the use node is a branch in
-            order to prevent the creation of reg-moves.  
-            If the address that is being auto-inc or auto-dec in LAST_DEF
-            is used in USE_INSN then do not remove the edge to make sure
-            reg-moves will not be created for that address.  */
-          if (DF_REF_ID (last_def) != DF_REF_ID (first_def)
-              || !flag_modulo_sched_allow_regmoves
+	     there is such a dep.
+	     Always create the edge if the use node is a branch in
+	     order to prevent the creation of reg-moves.
+	     If the address that is being auto-inc or auto-dec in LAST_DEF
+	     is used in USE_INSN then do not remove the edge to make sure
+	     reg-moves will not be created for that address.  */
+	  if (DF_REF_ID (last_def) != DF_REF_ID (first_def)
+	      || !flag_modulo_sched_allow_regmoves
 	      || JUMP_P (use_node->insn)
-              || autoinc_var_is_used_p (DF_REF_INSN (last_def), use_insn)
+	      || autoinc_var_is_used_p (DF_REF_INSN (last_def), use_insn)
 	      || def_has_ccmode_p (DF_REF_INSN (last_def)))
-            create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
-                                    REG_DEP, 1);
-
+	    create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
+				    REG_DEP, 1);
 	}
     }
   /* Create an inter-loop output dependence between LAST_DEF (which is the
@@ -348,19 +337,11 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
      defs starting with a true dependence to a use which can be in the
      next iteration; followed by an anti dependence of that use to the
      first def (i.e. if there is a use between the two defs.)  */
-  if (!has_use_in_bb_p)
-    {
-      ddg_node_ptr dest_node;
-
-      if (DF_REF_ID (last_def) == DF_REF_ID (first_def))
-	return;
-
-      dest_node = get_node_of_insn (g, DF_REF_INSN (first_def));
-      gcc_assert (dest_node);
-      create_ddg_dep_no_link (g, last_def_node, dest_node,
-			      OUTPUT_DEP, REG_DEP, 1);
-    }
+  if (!has_use_in_bb_p && DF_REF_ID (last_def) != DF_REF_ID (first_def))
+    create_ddg_dep_no_link (g, last_def_node, first_def_node,
+			    OUTPUT_DEP, REG_DEP, 1);
 }
+
 /* Build inter-loop dependencies, by looking at DF analysis backwards.  */
 static void
 build_inter_loop_deps (ddg_ptr g)
@@ -417,13 +398,9 @@ add_intra_loop_mem_dep (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to)
   if (mem_write_insn_p (from->insn))
     {
       if (mem_read_insn_p (to->insn))
-	create_ddg_dep_no_link (g, from, to,
-				DEBUG_INSN_P (to->insn)
-				? ANTI_DEP : TRUE_DEP, MEM_DEP, 0);
+	create_ddg_dep_no_link (g, from, to, TRUE_DEP, MEM_DEP, 0);
       else
-	create_ddg_dep_no_link (g, from, to,
-				DEBUG_INSN_P (to->insn)
-				? ANTI_DEP : OUTPUT_DEP, MEM_DEP, 0);
+	create_ddg_dep_no_link (g, from, to, OUTPUT_DEP, MEM_DEP, 0);
     }
   else if (!mem_read_insn_p (to->insn))
     create_ddg_dep_no_link (g, from, to, ANTI_DEP, MEM_DEP, 0);
@@ -441,13 +418,9 @@ add_inter_loop_mem_dep (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to)
   if (mem_write_insn_p (from->insn))
     {
       if (mem_read_insn_p (to->insn))
-  	create_ddg_dep_no_link (g, from, to,
-				DEBUG_INSN_P (to->insn)
-				? ANTI_DEP : TRUE_DEP, MEM_DEP, 1);
+	create_ddg_dep_no_link (g, from, to, TRUE_DEP, MEM_DEP, 1);
       else if (from->cuid != to->cuid)
-  	create_ddg_dep_no_link (g, from, to,
-				DEBUG_INSN_P (to->insn)
-				? ANTI_DEP : OUTPUT_DEP, MEM_DEP, 1);
+	create_ddg_dep_no_link (g, from, to, OUTPUT_DEP, MEM_DEP, 1);
     }
   else
     {
@@ -456,13 +429,9 @@ add_inter_loop_mem_dep (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to)
       else if (from->cuid != to->cuid)
 	{
 	  create_ddg_dep_no_link (g, from, to, ANTI_DEP, MEM_DEP, 1);
-	  if (DEBUG_INSN_P (from->insn) || DEBUG_INSN_P (to->insn))
-	    create_ddg_dep_no_link (g, to, from, ANTI_DEP, MEM_DEP, 1);
-	  else
-	    create_ddg_dep_no_link (g, to, from, TRUE_DEP, MEM_DEP, 1);
+	  create_ddg_dep_no_link (g, to, from, TRUE_DEP, MEM_DEP, 1);
 	}
     }
-
 }
 
 /* Perform intra-block Data Dependency analysis and connect the nodes in
@@ -491,20 +460,10 @@ build_intra_loop_deps (ddg_ptr g)
       sd_iterator_def sd_it;
       dep_t dep;
 
-      if (! INSN_P (dest_node->insn))
-	continue;
-
       FOR_EACH_DEP (dest_node->insn, SD_LIST_BACK, sd_it, dep)
 	{
 	  rtx_insn *src_insn = DEP_PRO (dep);
-	  ddg_node_ptr src_node;
-
-	  /* Don't add dependencies on debug insns to non-debug insns
-	     to avoid codegen differences between -g and -g0.  */
-	  if (DEBUG_INSN_P (src_insn) && !DEBUG_INSN_P (dest_node->insn))
-	    continue;
-
-	  src_node = get_node_of_insn (g, src_insn);
+	  ddg_node_ptr src_node = get_node_of_insn (g, src_insn);
 
 	  if (!src_node)
 	    continue;
@@ -521,8 +480,7 @@ build_intra_loop_deps (ddg_ptr g)
 	  for (j = 0; j <= i; j++)
 	    {
 	      ddg_node_ptr j_node = &g->nodes[j];
-	      if (DEBUG_INSN_P (j_node->insn))
-		continue;
+
 	      if (mem_access_insn_p (j_node->insn))
 		{
 		  /* Don't bother calculating inter-loop dep if an intra-loop dep
@@ -573,23 +531,21 @@ create_ddg (basic_block bb, int closing_branch_deps)
   for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     {
-      if (! INSN_P (insn) || GET_CODE (PATTERN (insn)) == USE)
+      if (!INSN_P (insn) || GET_CODE (PATTERN (insn)) == USE)
 	continue;
 
-      if (DEBUG_INSN_P (insn))
-	g->num_debug++;
-      else
+      if (NONDEBUG_INSN_P (insn))
 	{
 	  if (mem_read_insn_p (insn))
 	    g->num_loads++;
 	  if (mem_write_insn_p (insn))
 	    g->num_stores++;
+	  num_nodes++;
 	}
-      num_nodes++;
     }
 
   /* There is nothing to do for this BB.  */
-  if ((num_nodes - g->num_debug) <= 1)
+  if (num_nodes <= 1)
     {
       free (g);
       return NULL;
@@ -604,38 +560,39 @@ create_ddg (basic_block bb, int closing_branch_deps)
   for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     {
-      if (! INSN_P (insn))
-	{
-	  if (! first_note && NOTE_P (insn)
-	      && NOTE_KIND (insn) !=  NOTE_INSN_BASIC_BLOCK)
-	    first_note = insn;
-	  continue;
-	}
+      if (LABEL_P (insn) || NOTE_INSN_BASIC_BLOCK_P (insn))
+	continue;
+
+      if (!first_note && (INSN_P (insn) || NOTE_P (insn)))
+	first_note = insn;
+
+      if (!INSN_P (insn) || GET_CODE (PATTERN (insn)) == USE)
+	continue;
+
       if (JUMP_P (insn))
 	{
 	  gcc_assert (!g->closing_branch);
 	  g->closing_branch = &g->nodes[i];
 	}
-      else if (GET_CODE (PATTERN (insn)) == USE)
+
+      if (NONDEBUG_INSN_P (insn))
 	{
-	  if (! first_note)
-	    first_note = insn;
-	  continue;
+	  g->nodes[i].cuid = i;
+	  g->nodes[i].successors = sbitmap_alloc (num_nodes);
+	  bitmap_clear (g->nodes[i].successors);
+	  g->nodes[i].predecessors = sbitmap_alloc (num_nodes);
+	  bitmap_clear (g->nodes[i].predecessors);
+
+	  gcc_checking_assert (first_note);
+	  g->nodes[i].first_note = first_note;
+
+	  g->nodes[i].aux.count = -1;
+	  g->nodes[i].max_dist = XCNEWVEC (int, num_nodes);
+	  for (j = 0; j < num_nodes; j++)
+	    g->nodes[i].max_dist[j] = -1;
+
+	  g->nodes[i++].insn = insn;
 	}
-
-      g->nodes[i].cuid = i;
-      g->nodes[i].successors = sbitmap_alloc (num_nodes);
-      bitmap_clear (g->nodes[i].successors);
-      g->nodes[i].predecessors = sbitmap_alloc (num_nodes);
-      bitmap_clear (g->nodes[i].predecessors);
-      g->nodes[i].first_note = (first_note ? first_note : insn);
-
-      g->nodes[i].aux.count = -1;
-      g->nodes[i].max_dist = XCNEWVEC (int, num_nodes);
-      for (j = 0; j < num_nodes; j++)
-         g->nodes[i].max_dist[j] = -1;
-
-      g->nodes[i++].insn = insn;
       first_note = NULL;
     }
 
@@ -838,7 +795,7 @@ set_recurrence_length (ddg_scc_ptr scc)
       int length = src->max_dist[dest->cuid];
 
       if (length < 0)
-        continue;
+	continue;
 
       length += backarc->latency;
       result = MAX (result, (length / distance));
@@ -1069,8 +1026,8 @@ create_ddg_all_sccs (ddg_ptr g)
 
       n->max_dist[k] = 0;
       for (e = n->out; e; e = e->next_out)
-        if (e->distance == 0 && g->nodes[e->dest->cuid].aux.count == n->aux.count)
-          n->max_dist[e->dest->cuid] = e->latency;
+	if (e->distance == 0 && g->nodes[e->dest->cuid].aux.count == n->aux.count)
+	  n->max_dist[e->dest->cuid] = e->latency;
     }
 
   /* Run main Floid-Warshall loop.  We use only non-backarc edges
@@ -1079,19 +1036,19 @@ create_ddg_all_sccs (ddg_ptr g)
     {
       scc = g->nodes[k].aux.count;
       if (scc != -1)
-        {
-          for (i = 0; i < num_nodes; i++)
-            if (g->nodes[i].aux.count == scc)
-              for (j = 0; j < num_nodes; j++)
-                if (g->nodes[j].aux.count == scc
-                    && g->nodes[i].max_dist[k] >= 0
-                    && g->nodes[k].max_dist[j] >= 0)
-                  {
-                    way = g->nodes[i].max_dist[k] + g->nodes[k].max_dist[j];
-                    if (g->nodes[i].max_dist[j] < way)
-                      g->nodes[i].max_dist[j] = way;
-                  }
-        }
+	{
+	  for (i = 0; i < num_nodes; i++)
+	    if (g->nodes[i].aux.count == scc)
+	      for (j = 0; j < num_nodes; j++)
+		if (g->nodes[j].aux.count == scc
+		    && g->nodes[i].max_dist[k] >= 0
+		    && g->nodes[k].max_dist[j] >= 0)
+		  {
+		    way = g->nodes[i].max_dist[k] + g->nodes[k].max_dist[j];
+		    if (g->nodes[i].max_dist[j] < way)
+		      g->nodes[i].max_dist[j] = way;
+		  }
+	}
     }
 
   /* Calculate recurrence_length using max_dist info.  */

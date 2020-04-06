@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "internal-fn.h"
 #include "cgraph.h"
+#include "tree-ssa.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -732,16 +733,15 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       if (TREE_CODE (new_def_rhs) == MEM_REF
 	  && !is_gimple_mem_ref_addr (TREE_OPERAND (new_def_rhs, 0)))
 	return false;
-      new_def_rhs = build_fold_addr_expr_with_type (new_def_rhs,
-						    TREE_TYPE (rhs));
+      new_def_rhs = build1 (ADDR_EXPR, TREE_TYPE (rhs), new_def_rhs);
 
       /* Recurse.  If we could propagate into all uses of lhs do not
 	 bother to replace into the current use but just pretend we did.  */
-      if (TREE_CODE (new_def_rhs) == ADDR_EXPR
-	  && forward_propagate_addr_expr (lhs, new_def_rhs, single_use_p))
+      if (forward_propagate_addr_expr (lhs, new_def_rhs, single_use_p))
 	return true;
 
-      if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (new_def_rhs)))
+      if (useless_type_conversion_p (TREE_TYPE (lhs),
+				     TREE_TYPE (new_def_rhs)))
 	gimple_assign_set_rhs_with_ops (use_stmt_gsi, TREE_CODE (new_def_rhs),
 					new_def_rhs);
       else if (is_gimple_min_invariant (new_def_rhs))
@@ -1319,6 +1319,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 		  || !tree_fits_shwi_p (src1))
 		break;
 	      ptr1 = build_fold_addr_expr (ptr1);
+	      STRIP_USELESS_TYPE_CONVERSION (ptr1);
 	      callee1 = NULL_TREE;
 	      len1 = size_one_node;
 	      lhs1 = NULL_TREE;
@@ -1561,18 +1562,33 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   for (i = 0; i < 2; i++)
     defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
 
-  /* Look through narrowing conversions.  */
+  /* Look through narrowing (or same precision) conversions.  */
   if (CONVERT_EXPR_CODE_P (def_code[0])
       && CONVERT_EXPR_CODE_P (def_code[1])
       && INTEGRAL_TYPE_P (TREE_TYPE (def_arg1[0]))
       && INTEGRAL_TYPE_P (TREE_TYPE (def_arg1[1]))
       && TYPE_PRECISION (TREE_TYPE (def_arg1[0]))
 	 == TYPE_PRECISION (TREE_TYPE (def_arg1[1]))
-      && TYPE_PRECISION (TREE_TYPE (def_arg1[0])) > TYPE_PRECISION (rtype)
+      && TYPE_PRECISION (TREE_TYPE (def_arg1[0])) >= TYPE_PRECISION (rtype)
       && has_single_use (arg[0])
       && has_single_use (arg[1]))
     {
       for (i = 0; i < 2; i++)
+	{
+	  arg[i] = def_arg1[i];
+	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+	}
+    }
+  else
+    {
+      /* Handle signed rotate; the RSHIFT_EXPR has to be done
+	 in unsigned type but LSHIFT_EXPR could be signed.  */
+      i = (def_code[0] == LSHIFT_EXPR || def_code[0] == RSHIFT_EXPR);
+      if (CONVERT_EXPR_CODE_P (def_code[i])
+	  && (def_code[1 - i] == LSHIFT_EXPR || def_code[1 - i] == RSHIFT_EXPR)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (def_arg1[i]))
+	  && TYPE_PRECISION (rtype) == TYPE_PRECISION (TREE_TYPE (def_arg1[i]))
+	  && has_single_use (arg[i]))
 	{
 	  arg[i] = def_arg1[i];
 	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
@@ -1607,8 +1623,33 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   if (!operand_equal_for_phi_arg_p (def_arg1[0], def_arg1[1])
       || !types_compatible_p (TREE_TYPE (def_arg1[0]),
 			      TREE_TYPE (def_arg1[1])))
-    return false;
-  if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[0])))
+    {
+      if ((TYPE_PRECISION (TREE_TYPE (def_arg1[0]))
+	   != TYPE_PRECISION (TREE_TYPE (def_arg1[1])))
+	  || (TYPE_UNSIGNED (TREE_TYPE (def_arg1[0]))
+	      == TYPE_UNSIGNED (TREE_TYPE (def_arg1[1]))))
+	return false;
+
+      /* Handle signed rotate; the RSHIFT_EXPR has to be done
+	 in unsigned type but LSHIFT_EXPR could be signed.  */
+      i = def_code[0] != RSHIFT_EXPR;
+      if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[i])))
+	return false;
+
+      tree tem;
+      enum tree_code code;
+      defcodefor_name (def_arg1[i], &code, &tem, NULL);
+      if (!CONVERT_EXPR_CODE_P (code)
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (tem))
+	  || TYPE_PRECISION (TREE_TYPE (tem)) != TYPE_PRECISION (rtype))
+	return false;
+      def_arg1[i] = tem;
+      if (!operand_equal_for_phi_arg_p (def_arg1[0], def_arg1[1])
+	  || !types_compatible_p (TREE_TYPE (def_arg1[0]),
+				  TREE_TYPE (def_arg1[1])))
+	return false;
+    }
+  else if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[0])))
     return false;
 
   /* CNT1 + CNT2 == B case above.  */
@@ -2711,6 +2752,7 @@ pass_forwprop::execute (function *fun)
 	      if ((!base
 		   || !DECL_P (base)
 		   || decl_address_invariant_p (base))
+		  && TREE_CODE (base) != TARGET_MEM_REF
 		  && !stmt_references_abnormal_ssa_name (stmt)
 		  && forward_propagate_addr_expr (lhs, rhs, true))
 		{

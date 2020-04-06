@@ -1014,13 +1014,19 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
     }
 
   if (bb_has_eh_pred (bb))
+    /* Any pseudos that are currently live conflict with the eh_return
+       data registers.  For liveness purposes, these registers are set
+       by artificial definitions at the start of the BB, so are not
+       actually live on entry.  */
     for (j = 0; ; ++j)
       {
 	unsigned int regno = EH_RETURN_DATA_REGNO (j);
 
 	if (regno == INVALID_REGNUM)
 	  break;
+
 	make_hard_regno_live (regno);
+	make_hard_regno_dead (regno);
       }
 
   /* Pseudos can't go in stack regs at the start of a basic block that

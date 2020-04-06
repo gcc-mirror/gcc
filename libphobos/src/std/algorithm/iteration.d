@@ -3620,7 +3620,7 @@ The number of seeds must be correspondingly increased.
     static assert(!__traits(compiles, cumulativeFold!(min, max)("hello", tuple(c))));
     //"Seed (dchar, dchar, dchar) does not have the correct amount of fields (should be 2)"
     static assert(!__traits(compiles, cumulativeFold!(min, max)("hello", tuple(c, c, c))));
-    //"Incompatable function/seed/element: all(alias pred = "a")/int/dchar"
+    //"Incompatible function/seed/element: all(alias pred = "a")/int/dchar"
     static assert(!__traits(compiles, cumulativeFold!all("hello", 1)));
     static assert(!__traits(compiles, cumulativeFold!(all, all)("hello", tuple(1, 1))));
 }

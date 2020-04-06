@@ -1425,7 +1425,7 @@ aarch64_sve_abi (void)
 	= default_function_abi.full_reg_clobbers ();
       for (int regno = V8_REGNUM; regno <= V23_REGNUM; ++regno)
 	CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
-      for (int regno = P4_REGNUM; regno <= P11_REGNUM; ++regno)
+      for (int regno = P4_REGNUM; regno <= P15_REGNUM; ++regno)
 	CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
       sve_abi.initialize (ARM_PCS_SVE, full_reg_clobbers);
     }
@@ -2371,7 +2371,10 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
   if (y_mode == E_QImode || y_mode == E_HImode)
     {
       if (CONST_INT_P (y))
-	y = GEN_INT (INTVAL (y) & GET_MODE_MASK (y_mode));
+	{
+	  y = GEN_INT (INTVAL (y) & GET_MODE_MASK (y_mode));
+	  y_mode = SImode;
+	}
       else
 	{
 	  rtx t, cc_reg;
@@ -2739,8 +2742,21 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       }
 
     case SYMBOL_TINY_GOT:
-      emit_insn (gen_ldr_got_tiny (dest, imm));
-      return;
+      {
+	rtx insn;
+	machine_mode mode = GET_MODE (dest);
+
+	if (mode == ptr_mode)
+	  insn = gen_ldr_got_tiny (mode, dest, imm);
+	else
+	  {
+	    gcc_assert (mode == Pmode);
+	    insn = gen_ldr_got_tiny_sidi (dest, imm);
+	  }
+
+	emit_insn (insn);
+	return;
+      }
 
     case SYMBOL_TINY_TLSIE:
       {
@@ -3713,7 +3729,7 @@ aarch64_add_offset_1 (scalar_int_mode mode, rtx dest,
   gcc_assert (emit_move_imm || temp1 != NULL_RTX);
   gcc_assert (temp1 == NULL_RTX || !reg_overlap_mentioned_p (temp1, src));
 
-  HOST_WIDE_INT moffset = abs_hwi (offset);
+  unsigned HOST_WIDE_INT moffset = absu_hwi (offset);
   rtx_insn *insn;
 
   if (!moffset)
@@ -3757,7 +3773,8 @@ aarch64_add_offset_1 (scalar_int_mode mode, rtx dest,
   if (emit_move_imm)
     {
       gcc_assert (temp1 != NULL_RTX || can_create_pseudo_p ());
-      temp1 = aarch64_force_temporary (mode, temp1, GEN_INT (moffset));
+      temp1 = aarch64_force_temporary (mode, temp1,
+				       gen_int_mode (moffset, mode));
     }
   insn = emit_insn (offset < 0
 		    ? gen_sub3_insn (dest, src, temp1)
@@ -6007,14 +6024,31 @@ aarch64_layout_frame (void)
 	offset += BYTES_PER_SVE_PRED;
       }
 
-  /* We save a maximum of 8 predicate registers, and since vector
-     registers are 8 times the size of a predicate register, all the
-     saved predicates fit within a single vector.  Doing this also
-     rounds the offset to a 128-bit boundary.  */
   if (maybe_ne (offset, 0))
     {
-      gcc_assert (known_le (offset, vector_save_size));
-      offset = vector_save_size;
+      /* If we have any vector registers to save above the predicate registers,
+	 the offset of the vector register save slots need to be a multiple
+	 of the vector size.  This lets us use the immediate forms of LDR/STR
+	 (or LD1/ST1 for big-endian).
+
+	 A vector register is 8 times the size of a predicate register,
+	 and we need to save a maximum of 12 predicate registers, so the
+	 first vector register will be at either #1, MUL VL or #2, MUL VL.
+
+	 If we don't have any vector registers to save, and we know how
+	 big the predicate save area is, we can just round it up to the
+	 next 16-byte boundary.  */
+      if (last_fp_reg == (int) INVALID_REGNUM && offset.is_constant ())
+	offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+      else
+	{
+	  if (known_le (offset, vector_save_size))
+	    offset = vector_save_size;
+	  else if (known_le (offset, vector_save_size * 2))
+	    offset = vector_save_size * 2;
+	  else
+	    gcc_unreachable ();
+	}
     }
 
   /* If we need to save any SVE vector registers, add them next.  */
@@ -12911,10 +12945,12 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
   /* Iterate over the series twice for SF and thrice for DF.  */
   int iterations = (GET_MODE_INNER (mode) == DFmode) ? 3 : 2;
 
-  /* Optionally iterate over the series once less for faster performance,
-     while sacrificing the accuracy.  */
+  /* Optionally iterate over the series less for faster performance,
+     while sacrificing the accuracy.  The default is 2 for DF and 1 for SF.  */
   if (flag_mlow_precision_div)
-    iterations--;
+    iterations = (GET_MODE_INNER (mode) == DFmode
+		  ? aarch64_double_recp_precision
+		  : aarch64_float_recp_precision);
 
   /* Iterate over the series to calculate the approximate reciprocal.  */
   rtx xtmp = gen_reg_rtx (mode);
@@ -21293,7 +21329,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
     {
       base_off = 0x1000 - 1;
       /* We must still make sure that the base offset is aligned with respect
-	 to the address.  But it may may not be made any bigger.  */
+	 to the address.  But it may not be made any bigger.  */
       base_off -= (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
     }
 

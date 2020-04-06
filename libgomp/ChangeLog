@@ -1,3 +1,66 @@
+2020-04-06  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Add testsuite/libgomp-site-extra.exp to output
+	files.
+	* configure: Regenerate.
+	* testsuite/libgomp-site-extra.exp.in: New file.
+	* testsuite/libgomp-test-support.exp.in (GCC_UNDER_TEST): Remove
+	variable.
+	* testsuite/Makefile.am (EXTRA_DEJAGNU_SITE_CONFIG): New
+	variable.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-04-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/89713
+	PR c/94392
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: Again expect
+	'bar.sync'.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: Likewise.
+
+2020-03-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (GOMP_target_enter_exit_data): Handle PSET/MAP_POINTER.
+	* testsuite/libgomp.fortran/target-enter-data-1.f90: New.
+
+2020-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/81689
+	* testsuite/libgomp.c/target-link-1.c: Remove xfail.
+
+2020-03-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/94251
+	* target.c (gomp_load_image_to_device): Fix link
+	variable handling.
+
+2020-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93931
+	* testsuite/libgomp.c++/pr93931.C: New test.
+
+2020-03-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Add
+	dg-allow-blank-lines-in-output.
+
+2020-03-18  Julian Brown <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90: Really make
+	it work concurrently.
+
+2020-03-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/firstprivate-mappings-1.C: Add
+	#define DO_LONG_DOUBLE; set to 1, except for nvidia + gcn.
+	* libgomp.oacc-c-c++-common/firstprivate-mappings-1.c: Likewise.
+
+2020-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93566
+	* testsuite/libgomp.c/pr93566.c: New test.
+
 2020-02-21  Frederik Harwath  <frederik@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/acc_get_property.f90: Adapt to

@@ -370,25 +370,24 @@ one_way_id_map<T>::update (T *id) const
   *id = get_dst_for_src (*id);
 }
 
-/* A set of IDs within a region_model (either svalue_id or region_id).  */
+/* A set of region_ids within a region_model.  */
 
-template <typename T>
-class id_set
+class region_id_set
 {
 public:
-  id_set (const region_model *model);
+  region_id_set (const region_model *model);
 
-  void add_region (T id)
+  void add_region (region_id rid)
   {
-    if (!id.null_p ())
-      bitmap_set_bit (m_bitmap, id.as_int ());
+    if (!rid.null_p ())
+      bitmap_set_bit (m_bitmap, rid.as_int ());
   }
 
-  bool region_p (T id) const
+  bool region_p (region_id rid) const
   {
-    gcc_assert (!id.null_p ());
+    gcc_assert (!rid.null_p ());
     return bitmap_bit_p (const_cast <auto_sbitmap &> (m_bitmap),
-			 id.as_int ());
+			 rid.as_int ());
   }
 
   unsigned int num_regions ()
@@ -400,7 +399,29 @@ private:
   auto_sbitmap m_bitmap;
 };
 
-typedef id_set<region_id> region_id_set;
+/* A set of svalue_ids within a region_model.  */
+
+class svalue_id_set
+{
+public:
+  svalue_id_set ();
+
+  void add_svalue (svalue_id sid)
+  {
+    if (!sid.null_p ())
+      bitmap_set_bit (m_bitmap, sid.as_int ());
+  }
+
+  bool svalue_p (svalue_id sid) const
+  {
+    gcc_assert (!sid.null_p ());
+    return bitmap_bit_p (const_cast <auto_bitmap &> (m_bitmap),
+			 sid.as_int ());
+  }
+
+private:
+  auto_bitmap m_bitmap;
+};
 
 /* Various operations delete information from a region_model.
 
@@ -844,8 +865,9 @@ public:
 
   virtual enum region_kind get_kind () const = 0;
   virtual map_region *dyn_cast_map_region () { return NULL; }
-  virtual const symbolic_region *dyn_cast_symbolic_region () const
-  { return NULL; }
+  virtual array_region *dyn_cast_array_region () { return NULL; }
+  virtual symbolic_region *dyn_cast_symbolic_region () { return NULL; }
+  virtual const symbolic_region *dyn_cast_symbolic_region () const { return NULL; }
 
   region_id get_parent () const { return m_parent_rid; }
   region *get_parent_region (const region_model &model) const;
@@ -889,6 +911,7 @@ public:
 
   void add_view (region_id view_rid, region_model *model);
   region_id get_view (tree type, region_model *model) const;
+  region_id get_active_view () const { return m_active_view_rid; }
   bool is_view_p () const { return m_is_view; }
 
   virtual void validate (const region_model &model) const;
@@ -1354,6 +1377,7 @@ public:
   /* region vfuncs.  */
   region *clone () const FINAL OVERRIDE;
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_ARRAY; }
+  array_region *dyn_cast_array_region () { return this; }
 
   region_id get_element (region_model *model,
 			 region_id this_rid,
@@ -1400,6 +1424,7 @@ public:
   void validate (const region_model &model) const FINAL OVERRIDE;
 
   static key_t key_from_constant (tree cst);
+  tree constant_from_key (key_t key);
 
  private:
   static int key_cmp (const void *, const void *);
@@ -1447,8 +1472,9 @@ public:
 
   void push_frame (region_id frame_rid);
   region_id get_current_frame_id () const;
-  svalue_id pop_frame (region_model *model, bool purge, purge_stats *stats,
-		       region_model_context *ctxt);
+  void pop_frame (region_model *model, region_id result_dst_rid,
+		  bool purge, purge_stats *stats,
+		  region_model_context *ctxt);
 
   void remap_region_ids (const region_id_map &map) FINAL OVERRIDE;
 
@@ -1552,8 +1578,9 @@ public:
 			vec<svalue_id> *arg_sids,
 			region_model_context *ctxt);
   region_id get_current_frame_id (const region_model &model) const;
-  svalue_id pop_frame (region_model *model, bool purge, purge_stats *stats,
-		       region_model_context *ctxt);
+  void pop_frame (region_model *model, region_id result_dst_rid,
+		  bool purge, purge_stats *stats,
+		  region_model_context *ctxt);
 
   region_id ensure_stack_region (region_model *model);
   region_id get_stack_region_id () const { return m_stack_rid; }
@@ -1622,6 +1649,8 @@ public:
 
   const symbolic_region *dyn_cast_symbolic_region () const FINAL OVERRIDE
   { return this; }
+  symbolic_region *dyn_cast_symbolic_region () FINAL OVERRIDE
+  { return this; }
 
   bool compare_fields (const symbolic_region &other) const;
 
@@ -1630,6 +1659,10 @@ public:
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_SYMBOLIC; }
 
   void walk_for_canonicalization (canonicalization *c) const FINAL OVERRIDE;
+
+  void print_fields (const region_model &model,
+		     region_id this_rid,
+		     pretty_printer *pp) const FINAL OVERRIDE;
 
   bool m_possibly_null;
 };
@@ -1715,8 +1748,9 @@ class region_model
 			region_model_context *ctxt);
   region_id get_current_frame_id () const;
   function * get_current_function () const;
-  svalue_id pop_frame (bool purge, purge_stats *stats,
-		       region_model_context *ctxt);
+  void pop_frame (region_id result_dst_rid,
+		  bool purge, purge_stats *stats,
+		  region_model_context *ctxt);
   int get_stack_depth () const;
   function *get_function_at_depth (unsigned depth) const;
 
@@ -1768,8 +1802,12 @@ class region_model
 
   void set_value (region_id lhs_rid, svalue_id rhs_sid,
 		  region_model_context *ctxt);
+  void set_value (tree lhs, tree rhs, region_model_context *ctxt);
   svalue_id set_to_new_unknown_value (region_id dst_rid, tree type,
 				      region_model_context *ctxt);
+
+  void copy_region (region_id dst_rid, region_id src_rid,
+		    region_model_context *ctxt);
 
   tristate eval_condition (svalue_id lhs,
 			   enum tree_code op,
@@ -1794,7 +1832,7 @@ class region_model
 
   void purge_unused_svalues (purge_stats *out,
 			     region_model_context *ctxt,
-			     svalue_id *known_used_sid = NULL);
+			     svalue_id_set *known_used_sids = NULL);
   void remap_svalue_ids (const svalue_id_map &map);
   void remap_region_ids (const region_id_map &map);
 
@@ -1848,6 +1886,13 @@ class region_model
   region_id get_lvalue_1 (path_var pv, region_model_context *ctxt);
   svalue_id get_rvalue_1 (path_var pv, region_model_context *ctxt);
 
+  void copy_struct_region (region_id dst_rid, struct_region *dst_reg,
+			   struct_region *src_reg, region_model_context *ctxt);
+  void copy_union_region (region_id dst_rid, union_region *src_reg,
+			  region_model_context *ctxt);
+  void copy_array_region (region_id dst_rid, array_region *dst_reg,
+			  array_region *src_reg, region_model_context *ctxt);
+
   region_id make_region_for_unexpected_tree_code (region_model_context *ctxt,
 						  tree t,
 						  const dump_location_t &loc);
@@ -1881,8 +1926,9 @@ class region_model
   void poison_any_pointers_to_bad_regions (const region_id_set &bad_regions,
 					   enum poison_kind pkind);
 
-  void dump_summary_of_map (pretty_printer *pp, map_region *map_region,
-			    bool *is_first) const;
+  void dump_summary_of_rep_path_vars (pretty_printer *pp,
+				      auto_vec<path_var> *rep_path_vars,
+				      bool *is_first);
 
   auto_delete_vec<svalue> m_svalues;
   auto_delete_vec<region> m_regions;
@@ -1969,42 +2015,50 @@ class region_model_context
 					const dump_location_t &loc) = 0;
 };
 
-/* A subclass of region_model_context for determining if operations fail
-   e.g. "can we generate a region for the lvalue of EXPR?".  */
+/* A "do nothing" subclass of region_model_context.  */
 
-class tentative_region_model_context : public region_model_context
+class noop_region_model_context : public region_model_context
 {
 public:
-  tentative_region_model_context () : m_num_unexpected_codes (0) {}
-
-  void warn (pending_diagnostic *) FINAL OVERRIDE {}
-  void remap_svalue_ids (const svalue_id_map &) FINAL OVERRIDE {}
-  int on_svalue_purge (svalue_id, const svalue_id_map &) FINAL OVERRIDE
+  void warn (pending_diagnostic *) OVERRIDE {}
+  void remap_svalue_ids (const svalue_id_map &) OVERRIDE {}
+  int on_svalue_purge (svalue_id, const svalue_id_map &) OVERRIDE
   {
     return 0;
   }
-  logger *get_logger () FINAL OVERRIDE { return NULL; }
+  logger *get_logger () OVERRIDE { return NULL; }
   void on_inherited_svalue (svalue_id parent_sid ATTRIBUTE_UNUSED,
 			    svalue_id child_sid  ATTRIBUTE_UNUSED)
-    FINAL OVERRIDE
+    OVERRIDE
   {
   }
   void on_cast (svalue_id src_sid ATTRIBUTE_UNUSED,
-		svalue_id dst_sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		svalue_id dst_sid ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
   void on_condition (tree lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
-		     tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		     tree rhs ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
-  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
   void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
-	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+	       tree rhs ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
+  void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
+};
+
+/* A subclass of region_model_context for determining if operations fail
+   e.g. "can we generate a region for the lvalue of EXPR?".  */
+
+class tentative_region_model_context : public noop_region_model_context
+{
+public:
+  tentative_region_model_context () : m_num_unexpected_codes (0) {}
+
   void on_unexpected_tree_code (tree, const dump_location_t &)
     FINAL OVERRIDE
   {
@@ -2140,7 +2194,7 @@ using namespace ::selftest;
 /* An implementation of region_model_context for use in selftests, which
    stores any pending_diagnostic instances passed to it.  */
 
-class test_region_model_context : public region_model_context
+class test_region_model_context : public noop_region_model_context
 {
 public:
   void warn (pending_diagnostic *d) FINAL OVERRIDE
@@ -2148,53 +2202,7 @@ public:
     m_diagnostics.safe_push (d);
   }
 
-  void remap_svalue_ids (const svalue_id_map &) FINAL OVERRIDE
-  {
-    /* Empty.  */
-  }
-
-#if 0
-  bool can_purge_p (svalue_id) FINAL OVERRIDE
-  {
-    return true;
-  }
-#endif
-
-  int on_svalue_purge (svalue_id, const svalue_id_map &) FINAL OVERRIDE
-  {
-    /* Empty.  */
-    return 0;
-  }
-
-  logger *get_logger () FINAL OVERRIDE { return NULL; }
-
-  void on_inherited_svalue (svalue_id parent_sid ATTRIBUTE_UNUSED,
-			    svalue_id child_sid  ATTRIBUTE_UNUSED)
-    FINAL OVERRIDE
-  {
-  }
-
-  void on_cast (svalue_id src_sid ATTRIBUTE_UNUSED,
-		svalue_id dst_sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
-
   unsigned get_num_diagnostics () const { return m_diagnostics.length (); }
-
-  void on_condition (tree lhs ATTRIBUTE_UNUSED,
-		     enum tree_code op ATTRIBUTE_UNUSED,
-		     tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
-
-  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
-
-  void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
-	       tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
-  {
-  }
 
   void on_unexpected_tree_code (tree t, const dump_location_t &)
     FINAL OVERRIDE

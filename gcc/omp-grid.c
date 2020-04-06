@@ -1186,7 +1186,7 @@ grid_mark_tiling_parallels_and_loops (gimple_stmt_iterator *gsi,
 /* Given freshly copied top level kernel SEQ, identify the individual OMP
    components, mark them as part of kernel, copy assignment leading to them
    just before DST, remapping them using WI and adding new temporaries to
-   TGT_BIND, and and return the loop that will be used for kernel dispatch.  */
+   TGT_BIND, and return the loop that will be used for kernel dispatch.  */
 
 static gomp_for *
 grid_process_kernel_body_copy (grid_prop *grid, gimple_seq seq,

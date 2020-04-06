@@ -68,7 +68,7 @@ Generate code for the kernel or loadable kernel extensions.
 ; Init is never used.
 mmacosx-version-min=
 Target RejectNegative Joined Report Var(darwin_macosx_version_min) Init(DEF_MIN_OSX_VERSION)
-The earliest MacOS X version on which this program will run.
+The earliest macOS version on which this program will run.
 
 ; Really, only relevant to PowerPC which has a 4 byte bool by default.
 mone-byte-bool
@@ -85,57 +85,57 @@ Target RejectNegative Joined Report Alias(mtarget-linker)
 
 mtarget-linker
 Target RejectNegative Joined Separate Report Var(darwin_target_linker) Init(LD64_VERSION)
-The version of ld64 in use for this toolchain.
+-mtarget-linker <version>	Specify that ld64 <version> is the toolchain linker for the current invocation.
 
 ; Driver options.
 
 all_load
 Driver RejectNegative Alias(Zall_load)
-Loads all members of archive libraries
+Load all members of archive libraries, rather than only those that satisfy undefined symbols.
 
 allowable_client
 Driver RejectNegative Separate Alias(Zallowable_client)
--allowable_client <name>	The output dylib is private to the client(s) named
+-allowable_client <name>	The output dylib is private to the client <name>.
 
 arch
 Driver RejectNegative Separate
--arch <name>	Specify that the output file should be generated for architecture  \"name\"
+-arch <name>	Generate output for architecture <name>.
 
 arch_errors_fatal
 Driver RejectNegative Alias(Zarch_errors_fatal)
-Mismatches between file architecture and the \"-arch\" are errors instead of warnings
+Mismatches between file architecture and one specified by \"-arch\" are errors instead of warnings.
 
 asm_macosx_version_min=
 Driver RejectNegative Joined
-The earliest MacOS X version on which this program will run (formatted for the assembler)
+The earliest macOS version on which this program will run (formatted for the assembler).
 
 bind_at_load
 Driver RejectNegative Alias(Zbind_at_load)
-Produce an output file that will bind symbols on load, rather than lazily.
+Generate an output executable that binds symbols on load, rather than lazily.
 
 bundle
 Driver RejectNegative Alias(Zbundle)
-Produce a Mach-O bundle (file type MH_BUNDLE)
+Generate a Mach-O bundle (file type MH_BUNDLE).
 
 bundle_loader
 Driver RejectNegative Separate Alias(Zbundle_loader)
--bundle_loader <executable>	Treat \"executable\" (that will be loading this bundle) as if it was one of the dynamic libraries the bundle is linked against for symbol resolution
+-bundle_loader <executable>	Treat <executable> (that will be loading this bundle) as if it was one of the dynamic libraries the bundle is linked against for symbol resolution.
 
 client_name
 Driver RejectNegative Separate
--client_name <name>	Enable the executable being built to link against a private dylib (using allowable_client)
+-client_name <name>	Enable the executable being built to link against a private dylib (using allowable_client).
 
 compatibility_version
 Driver RejectNegative Separate
--compatibility_version <number>	Set the minimum version for the client interface.  Clients must record a greater number than this or the binding will fail at runtime
+-compatibility_version <number>	Set the version for the client interface.  Client programs must record a value less than or equal to <number>, or the binding will fail at runtime.
 
 current_version
 Driver RejectNegative Separate
--current_version <number>	Set the current version for the library.
+-current_version <number>	Set the current version for the library to <number>.
 
 dead_strip
 Driver RejectNegative Alias(Zdead_strip)
-Remove code and data that is unreachable from any exported symbol (including the entry point)
+Remove code and data that is unreachable from any exported symbol (including the entry point).
 
 dylib_file
 Driver Separate Alias(Zdylib_file)
@@ -154,15 +154,15 @@ The default (and opposite of -static), implied by user mode executables, shared 
 
 dynamiclib
 Driver RejectNegative Alias(Zdynamiclib)
-Produce a Mach-O shared library (file type MH_DYLIB), synonym for -shared
+Produce a Mach-O shared library (file type MH_DYLIB), synonym for \"-shared\".
 
 exported_symbols_list
 Driver RejectNegative Separate Alias(Zexported_symbols_list)
--exported_symbols_list <filename>	Global symbols in \"filename\" will be exported from the linked output file, any symbols not mentioned will be treated as hidden.
+-exported_symbols_list <filename>	Export global symbols in <filename> in linked output file; any symbols not mentioned will be treated as \"hidden\".
 
 filelist
 Driver RejectNegative Separate
-Supply a list of objects to be linked from a file, rather than the command line
+Supply a list of objects to be linked from a file, rather than the command line.
 
 findirect-virtual-calls
 Driver RejectNegative
@@ -178,11 +178,11 @@ For the assembler (and linker) permit any architecture sub-variant to be used wi
 
 force_flat_namespace
 Driver RejectNegative Alias(Zforce_flat_namespace)
-Set the output object such that, on loading, dyld  will ignore any two-level information and resolve symbols in the discovery order for loaded libs.
+Set the output object such that, on loading, dyld will ignore any two-level namespace information and resolve symbols in the discovery order for loaded libs.
 
 framework
 Driver RejectNegative Separate
--framework <name>	The linker should search for the named framework in the framework search path.
+-framework <name>	The linker should search for the framework <name> in the framework search path.
 
 fterminated-vtables
 Driver RejectNegative
@@ -190,23 +190,23 @@ Used for generating code for some older kernel revisions.
 
 gfull
 Driver RejectNegative
-Abbreviation for \"-g -fno-eliminate-unused-debug-symbols\"
+Abbreviation for \"-g -fno-eliminate-unused-debug-symbols\".
 
 gused
 Driver RejectNegative
-Abbreviation for \"-g -feliminate-unused-debug-symbols\"
+Abbreviation for \"-g -feliminate-unused-debug-symbols\".
 
 headerpad_max_install_names
 Driver RejectNegative
-Automatically adds space for longer path names in load commands (up to MAXPATHLEN)
+Automatically adds space for longer path names in load commands (up to MAXPATHLEN).
 
 image_base
 Driver RejectNegative Separate Alias(Zimage_base)
--image_base <address>	Choose a base address for a dylib or bundle.
+-image_base <address>	Specify <address> as the base address for a dylib or bundle.
 
 init
 Driver RejectNegative Separate Alias(Zinit)
--init <symbol_name>	The symbol \"symbol_name\" will be used as the first initialiser for a dylib.
+-init <symbol_name>	The symbol <symbol_name> will be used as the first initialiser for a dylib.
 
 install_name
 Driver RejectNegative Separate Alias(Zinstall_name)
@@ -218,11 +218,11 @@ Usually \"private extern\" (hidden) symbols are made local when linking, this co
 
 multi_module
 Driver RejectNegative Alias(Zmulti_module)
-(Obsolete after 10.4) Multi modules are ignored at runtime since MacOS 10.4
+(Obsolete after 10.4) Multi modules are ignored at runtime since macOS 10.4.
 
 multiply_defined
 Driver RejectNegative Separate Alias(Zmultiply_defined)
-(Obsolete after 10.4) -multiply_defined <treatment> Provided a mechanism for warning about symbols defined in multiple dylibs.
+(Obsolete after 10.4) -multiply_defined <treatment>	Provided a mechanism for warning about symbols defined in multiple dylibs.
 
 multiply_defined_unused
 Driver RejectNegative Separate Alias(Zmultiplydefinedunused)
@@ -230,11 +230,11 @@ Driver RejectNegative Separate Alias(Zmultiplydefinedunused)
 
 no_dead_strip_inits_and_terms
 Driver RejectNegative Alias(Zno_dead_strip_inits_and_terms)
-(Obsolete) The linker never dead strips these items, so the option is not needed.
+(Obsolete) Current linkers never dead-strip these items, so the option is not needed.
 
 nofixprebinding
 Driver RejectNegative
-(Obsolete after 10.3.9) Set MH_NOPREFIXBINDING, in an exectuable.
+(Obsolete after 10.3.9) Set MH_NOPREFIXBINDING, in an executable.
 
 nomultidefs
 Driver RejectNegative
@@ -253,7 +253,7 @@ Driver RejectNegative
 
 pagezero_size
 Driver RejectNegative Separate
--pagezero_size size	Allows setting the page 0 size to 4kb for certain special cases.
+-pagezero_size <size>	Allows setting the page 0 size to 4kb when required.
 
 prebind
 Driver RejectNegative Negative(noprebind)
@@ -280,15 +280,15 @@ Synonym for \"-export-dynamic\" for linker versions that support it.
 
 read_only_relocs
 Driver RejectNegative Separate
--read_only_relocs <treatment>	This will allow relocs in read-only pages (not advisable).
+-read_only_relocs <treatment>	Allow relocations in read-only pages (not recommended).
 
 sectalign
 Driver RejectNegative Separate Args(3)
--sectalign <segname> <sectname> <value>	Set section \"sectname\" in segment \"segname\" to have alignment \"value\" which must be an integral power of two expressed in hexadecimal form.
+-sectalign <segname> <sectname> <value>	Set section <sectname> in segment <segname> to have alignment <value> which must be an integral power of two expressed in hexadecimal form.
 
 sectcreate
 Driver RejectNegative Separate Args(3)
--sectcreate <segname> <sectname> <file>	Create section \"sectname\" in segment \"segname\" from the contents of \"file\".
+-sectcreate <segname> <sectname> <file>	Create section <sectname> in segment <segname> from the contents of <file>.
 
 sectobjectsymbols
 Driver RejectNegative Separate Args(2)
@@ -296,29 +296,29 @@ Driver RejectNegative Separate Args(2)
 
 sectorder
 Driver RejectNegative Separate Args(3)
-(Obsolete) -sectorder <segname> <sectname> orderfile	Replaced by a more general option \"-order_file\".
+(Obsolete) -sectorder <segname> <sectname> <orderfile>	Replaced by a more general option \"-order_file\".
 
 seg_addr_table
 Driver RejectNegative Separate Alias(Zseg_addr_table)
--seg_addr_table <file>	Specify the base addresses for dynamic libraries, \"file\" contains a line for each library.
+-seg_addr_table <file>	Specify the base addresses for dynamic libraries; <file> contains a line for each library.
 
 ; This is only usable by the ld_classic linker.
 seg_addr_table_filename
 Driver RejectNegative Separate Alias(Zfn_seg_addr_table_filename)
-(Obsolete, ld_classic only) -seg_addr_table_filename <path>
+(Obsolete, ld_classic only) -seg_addr_table_filename <path>.
 
 seg1addr
 Driver RejectNegative Separate
-Synonym for \"image_base\"
+Synonym for \"image_base\".
 
 segaddr
 Driver RejectNegative Separate Args(2) Alias(Zsegaddr)
--segaddr <name> <address>	Set the base address of segment \"name\" to \"address\" which must be aligned to a page boundary (currently 4kb).
+-segaddr <name> <address>	Set the base address of segment <name> to <address> which must be aligned to a page boundary (currently 4kb).
 
 ; This is only usable by the ld_classic linker.
 segcreate
 Driver RejectNegative Separate Args(3)
-(Obsolete, ld_classic only) -sectcreate segname sectname file
+(Obsolete, ld_classic only) -sectcreate <segname> <sectname> <file>	Allowed creation of a section from a file.
 
 seglinkedit
 Driver RejectNegative Negative(noseglinkedit)
@@ -326,15 +326,15 @@ Driver RejectNegative Negative(noseglinkedit)
 
 segprot
 Driver RejectNegative Separate Args(3)
--segprot <segname> max_prot init_prot	The protection values are \"r\", \"w\", \"x\" or \"-\" the latter meaning \"no access\".
+-segprot <segname> <max_prot> <init_prot>	The virtual memory protections for segment <segname> have maximum and initial values <max_prot> and <init_prot> respectively.  The specified values may contain \"r\", \"w\", \"x\" or \"-\" the latter meaning \"no access\".
 
 segs_read_only_addr
 Driver RejectNegative Separate Alias(Zsegs_read_only_addr)
--segs_read_only_addr address 	Allows specifying the address of the read only portion of a dylib.
+-segs_read_only_addr <address>	Specify that <address> is the base address of the read-only segments of a dylib.
 
 segs_read_write_addr
 Driver RejectNegative Separate Alias(Zsegs_read_write_addr)
--segs_read_write_addr address 	Allows specifying the address of the read/write portion of a dylib.
+-segs_read_write_addr <address>	Specify that <address> is the base address address of the read-write segments of a dylib.
 
 single_module
 Driver RejectNegative Alias(Zsingle_module)
@@ -342,19 +342,19 @@ Driver RejectNegative Alias(Zsingle_module)
 
 sub_library
 Driver RejectNegative Separate
--sub_library <name>	Library named \"name\" will be re-exported (only useful for dylibs).
+-sub_library <name>	Library named <name> will be re-exported (only useful for dylibs).
 
 sub_umbrella
 Driver RejectNegative Separate
--sub_umbrella <name>	Framework named \"name\" will be re-exported (only useful for dylibs).
+-sub_umbrella <name>	Framework named <name> will be re-exported (only useful for dylibs).
 
 twolevel_namespace
 Driver RejectNegative
-This is the default
+This is the default.
 
 twolevel_namespace_hints
 Driver RejectNegative
-Specifies content that can speed up dynamic loading when the binaries are unchanged.
+Add extra information to the executable that can speed up dynamic loading (provided that dependent libraries are unchanged).
 
 umbrella
 Driver RejectNegative Separate Alias(Zumbrella)
@@ -366,7 +366,7 @@ Driver RejectNegative Separate
 
 unexported_symbols_list
 Driver RejectNegative Separate Alias(Zunexported_symbols_list)
--unexported_symbols_list <filename>	Don't export global symbols listed in filename.
+-unexported_symbols_list <filename>	Do not export the global symbols listed in <filename>.
 
 weak_reference_mismatches
 Driver RejectNegative Separate Alias(Zweak_reference_mismatches)
@@ -374,7 +374,7 @@ Driver RejectNegative Separate Alias(Zweak_reference_mismatches)
 
 whatsloaded
 Driver RejectNegative
-Logs the object files the linker loads
+Logs which object files the linker loads.
 
 whyload
 Driver RejectNegative
@@ -386,7 +386,7 @@ Driver RejectNegative
 
 y
 Driver RejectNegative Joined
-(Obsolete, ignored)	Old support similar to whyload.
+(Obsolete, ignored)	Old support similar to \"-whyload\".
 
 Mach
 Driver RejectNegative

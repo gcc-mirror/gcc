@@ -851,6 +851,13 @@ process_function_and_variable_attributes (cgraph_node *first,
        node = symtab->next_function (node))
     {
       tree decl = node->decl;
+
+      if (node->alias
+	  && lookup_attribute ("flatten", DECL_ATTRIBUTES (decl)))
+	{
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+		      "%<flatten%> attribute is ignored on aliases");
+	}
       if (DECL_PRESERVE_P (decl))
 	node->mark_force_output ();
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
@@ -861,14 +868,23 @@ process_function_and_variable_attributes (cgraph_node *first,
 			" attribute have effect only on public objects");
 	}
       if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
-	  && (node->definition && !node->alias))
+	  && node->definition
+	  && (!node->alias || DECL_INITIAL (decl) != error_mark_node))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+	  /* NODE->DEFINITION && NODE->ALIAS is nonzero for valid weakref
+	     function declarations; DECL_INITIAL is non-null for invalid
+	     weakref functions that are also defined.  */
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
 		      "%<weakref%> attribute ignored"
 		      " because function is defined");
 	  DECL_WEAK (decl) = 0;
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						     DECL_ATTRIBUTES (decl));
+	  DECL_ATTRIBUTES (decl) = remove_attribute ("alias",
+						     DECL_ATTRIBUTES (decl));
+	  node->alias = false;
+	  node->weakref = false;
+	  node->transparent_alias = false;
 	}
       else if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl))
 	  && node->definition
@@ -1051,15 +1067,15 @@ check_global_declaration (symtab_node *snode)
       && DECL_INITIAL (decl) == 0
       && DECL_EXTERNAL (decl)
       && ! DECL_ARTIFICIAL (decl)
-      && ! TREE_NO_WARNING (decl)
-      && ! TREE_PUBLIC (decl)
-      && (warn_unused_function
-	  || snode->referred_to_p (/*include_self=*/false)))
+      && ! TREE_PUBLIC (decl))
     {
-      if (snode->referred_to_p (/*include_self=*/false))
+      if (TREE_NO_WARNING (decl))
+	;
+      else if (snode->referred_to_p (/*include_self=*/false))
 	pedwarn (input_location, 0, "%q+F used but never defined", decl);
       else
-	warning (OPT_Wunused_function, "%q+F declared %<static%> but never defined", decl);
+	warning (OPT_Wunused_function, "%q+F declared %<static%> but never "
+				       "defined", decl);
       /* This symbol is effectively an "extern" declaration now.  */
       TREE_PUBLIC (decl) = 1;
     }

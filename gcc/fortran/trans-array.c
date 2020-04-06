@@ -6947,6 +6947,24 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 	      tmp = gfc_build_array_ref (tmp, index, NULL);
 	      break;
 
+	    case REF_INQUIRY:
+	      switch (ref->u.i)
+		{
+		case INQUIRY_RE:
+		  tmp = fold_build1_loc (input_location, REALPART_EXPR,
+					 TREE_TYPE (TREE_TYPE (tmp)), tmp);
+		  break;
+
+		case INQUIRY_IM:
+		  tmp = fold_build1_loc (input_location, IMAGPART_EXPR,
+					 TREE_TYPE (TREE_TYPE (tmp)), tmp);
+		  break;
+
+		default:
+		  break;
+		}
+	      break;
+
 	    default:
 	      gcc_unreachable ();
 	      break;
@@ -10654,7 +10672,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 
 /* NULLIFY an allocatable/pointer array on function entry, free it on exit.
    Do likewise, recursively if necessary, with the allocatable components of
-   derived types.  */
+   derived types.  This function is also called for assumed-rank arrays, which
+   are always dummy arguments.  */
 
 void
 gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
@@ -10676,7 +10695,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 
   /* Make sure the frontend gets these right.  */
   gcc_assert (sym->attr.pointer || sym->attr.allocatable || sym_has_alloc_comp
-	      || has_finalizer);
+	      || has_finalizer
+	      || (sym->as->type == AS_ASSUMED_RANK && sym->attr.dummy));
 
   gfc_save_backend_locus (&loc);
   gfc_set_backend_locus (&sym->declared_at);

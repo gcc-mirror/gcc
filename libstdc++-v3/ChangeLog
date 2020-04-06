@@ -1,3 +1,386 @@
+2020-04-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94498
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::move): Make it
+	usable in constant expressions for C++20.
+	(__gnu_cxx::char_traits::copy, __gnu_cxx::char_traits::assign): Add
+	_GLIBCXX20_CONSTEXPR.
+	(std::char_traits<char>, std::char_traits<wchar_t>)
+	(std::char_traits<char8_t>): Make move, copy and assign usable in
+	constant expressions for C++20.
+	(std::char_traits<char16_t>, std::char_traits<char32_t>): Make move
+	and copy usable in constant expressions for C++20.
+	* include/std/string_view (basic_string_view::copy): Add
+	_GLIBCXX20_CONSTEXPR.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/
+	constexpr.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/
+	constexpr.cc: New test.
+
+2020-04-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Refer to Git
+	documentation instead of Subversion.  Switch to https.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2020-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93960
+	* include/bits/ptr_traits.h (__to_address): Add special case for debug
+	iterators, to avoid dereferenceable check.
+	* testsuite/20_util/to_address/1_neg.cc: Adjust dg-error line number.
+	* testsuite/20_util/to_address/debug.cc: New test.
+
+2020-04-01  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* testsuite/experimental/net/execution_context/use_service.cc:
+	Require pthread and gthreads.
+
+2020-04-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_free.xml: Move "free books" list from
+	fsf.org to gnu.org.
+	* doc/html/manual/appendix_free.html: Regenerate.
+
+2020-03-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Library-side tests for parenthesized aggregate init
+
+	PR c++/92878
+	PR c++/92947
+
+	* testsuite/20_util/allocator_traits/members/92878_92947.cc: New.
+	* testsuite/20_util/any/assign/92878_92947.cc: Likewise.
+	* testsuite/20_util/any/cons/92878_92947.cc: Likewise.
+	* testsuite/20_util/is_constructible/92878_92947.cc: Likewise.
+	* testsuite/20_util/optional/assignment/92878_92947.cc: Likewise.
+	* testsuite/20_util/optional/cons/92878_92947.cc: Likewise.
+	* testsuite/20_util/pair/cons/92878_92947.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/92878_92947.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/construct_at/92878_92947.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/creation/92878_92947.cc: Likewise.
+	* testsuite/20_util/uses_allocator/92878_92947.cc: Likewise.
+	* testsuite/20_util/variant/92878_92947.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/list/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/priority_queue/92878_92947.cc: Likewise.
+	* testsuite/23_containers/queue/92878_92947.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/emplace/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/stack/92878_92947.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/92878_92947.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/emplace/92878_92947.cc:
+	Likewise.
+
+2020-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_constructible/value-2.cc: Fix test to account
+	for changes due to parenthesized aggregate-initialization in C++20.
+	* testsuite/20_util/time_point/cons/81468.cc: Fix test to not clash
+	with std::chrono::sys_time in C++20.
+
+	* include/bits/stl_iterator.h (reverse_iterator): Use requires-clause
+	to constrain C++20 versions of comparison operators. Fix backwards
+	logic of relational operators.
+	(move_iterator): Use requires-clause to constrain comparison operators
+	in C++20. Do not declare non-standard same-type overloads for C++20.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc: Check result
+	of comparisons and check using greedy_ops type.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: Remove redundant
+	main function from compile-only test.
+	* testsuite/24_iterators/reverse_iterator/greedy_ops.cc: Likewise.
+
+2020-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_cmp.h (__cpp_lib_ranges): Define.
+	* include/bits/stl_iterator.h: Check value of __cpp_concepts so that
+	C++20 concepts are required.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/std/concepts: Likewise.
+	* include/std/version: Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: Check feature test
+	macro.
+
+	* include/bits/stl_iterator.h (reverse_iterator::iterator_concept)
+	(reverse_iterator::iterator_category): Define for C++20.
+	(reverse_iterator): Define comparison operators correctly for C++20.
+	(__normal_iterator): Add constraints to comparison operators for C++20.
+	(move_iterator::operator++(int)) [__cpp_lib_concepts]: Define new
+	overload for input iterators.
+	(move_iterator): Add constraints to comparison operators for C++20.
+	Define operator<=> for C++20.
+	* testsuite/24_iterators/move_iterator/input_iterator.cc: New test.
+	* testsuite/24_iterators/move_iterator/move_only.cc: New test.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc: New test.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc: New test.
+
+	* include/bits/iterator_concepts.h (__detail::__decay_copy)
+	(__detail::__member_begin, __detail::__adl_begin): Move here from
+	<bits/range_access.h>.
+	(__detail::__ranges_begin, __detail::__range_iter_t): Define.
+	* bits/range_access.h (__cust_access::__decay_copy)
+	(__cust_access::__member_begin, __cust_access::__adl_begin): Move to
+	<bits/iterator_concepts.h>.
+	(ranges::iterator_t): Use __detail::__range_iter_t.
+	* include/bits/stl_iterator.h (back_insert_iterator): Simplify
+	conditional compilation. Add _GLIBCXX20_CONSTEXPR to all members.
+	(front_insert_iterator): Likewise.
+	(insert_iterator): Implement changes from P0896R4 for C++20.
+	* testsuite/24_iterators/back_insert_iterator/constexpr.cc: New test.
+	* testsuite/24_iterators/front_insert_iterator/constexpr.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc: Adjust
+	for inclusion in synopsis_c++20.cc which expects different signatures
+	for some function templates.
+	* testsuite/24_iterators/insert_iterator/constexpr.cc: New test.
+
+	* include/std/type_traits (__is_array_convertible): Move definition
+	to immediately after is_convertible.
+
+2020-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (chrono::days, chrono::weeks, chrono::years)
+	(chrono::months, chrono::sys_days, chrono::local_t)
+	(chrono::local_time, chrono::local_seconds, chrono::local_days):
+	Define for C++20.
+	(chrono::time_point): Add missing static assert.
+	* testsuite/20_util/time_point/requirements/duration_neg.cc: New test.
+	* testsuite/std/time/clock/file/overview.cc: New test.
+	* testsuite/std/time/clock/file/members.cc: New test.
+	* testsuite/std/time/syn_c++20.cc: New test.
+
+2020-03-25  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	test.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/2.cc: New
+	test.
+
+2020-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (filesystem::__file_clock): Move to ...
+	* include/std/chrono (filesystem::__file_clock): Here.
+	(filesystem::__file_clock::from_sys, filesystem::__file_clock::to_sys):
+	Define public member functions for C++20.
+	(is_clock, is_clock_v): Define traits for C++20.
+	* include/std/condition_variable (condition_variable::wait_until): Add
+	check for valid clock.
+	* include/std/future (_State_baseV2::wait_until): Likewise.
+	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Likewise.
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_shared_until):
+	Likewise.
+	* include/std/thread (this_thread::sleep_until): Likewise.
+	* testsuite/30_threads/condition_variable/members/2.cc: Qualify
+	slow_clock with new namespace.
+	* testsuite/30_threads/condition_variable/members/clock_neg.cc: New
+	test.
+	* testsuite/30_threads/condition_variable_any/members/clock_neg.cc:
+	New test.
+	* testsuite/30_threads/future/members/clock_neg.cc: New test.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	Qualify slow_clock with new namespace.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/
+	clock_neg.cc: New test.
+	* testsuite/30_threads/shared_future/members/clock_neg.cc: New
+	test.
+	* testsuite/30_threads/shared_lock/locking/clock_neg.cc: New test.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/clock_neg.cc:
+	New test.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: Qualify
+	slow_clock with new namespace.
+	* testsuite/30_threads/timed_mutex/try_lock_until/4.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/clock_neg.cc: New
+	test.
+	* testsuite/30_threads/unique_lock/locking/clock_neg.cc: New test.
+	* testsuite/std/time/traits/is_clock.cc: New test.
+	* testsuite/util/slow_clock.h (slow_clock): Move to __gnu_test
+	namespace.
+
+2020-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93245
+	* include/experimental/bits/fs_path.h (path::generic_string<C,T,A>()):
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Improve test coverage.
+
+	PR libstdc++/94242
+	* include/bits/fs_path.h (path::_S_str_convert): Replace first
+	parameter with basic_string_view so that strings with different
+	allocators can be accepted.
+	(path::generic_string<C,T,A>()): Use basic_string object that uses the
+	right allocator type.
+	* testsuite/27_io/filesystem/path/generic/94242.cc: New test.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Improve
+	test coverage.
+
+2020-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94033
+	* include/std/type_traits (__is_nt_default_constructible_atom): Remove.
+	(__is_nt_default_constructible_impl): Remove.
+	(__is_nothrow_default_constructible_impl): Remove.
+	(__is_nt_constructible_impl): Add bool template parameter. Adjust
+	partial specializations.
+	(__is_nothrow_constructible_impl): Replace class template with alias
+	template.
+	(is_nothrow_default_constructible): Derive from alias template
+	__is_nothrow_constructible_impl instead of
+	__is_nothrow_default_constructible_impl.
+	* testsuite/20_util/is_nothrow_constructible/94003.cc: New test.
+
+	* include/std/stop_token (stop_token::_Stop_state_ref): Define
+	comparison operators explicitly if the compiler won't synthesize them.
+
+	* include/bits/stl_algobase.h (__lexicographical_compare_aux): Check
+	__cpp_lib_concepts before using iter_reference_t.
+	* include/bits/stream_iterator.h (istream_iterator): Check
+	__cpp_lib_concepts before using default_sentinel_t.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Likewise.
+
+	PR libstdc++/94203
+	* include/experimental/executor (executor::executor(Executor)): Call
+	make_shared directly instead of _M_create. Create _Tgt1 object.
+	(executor::executor(allocator_arg_t, const ProtoAlloc&, Executor)):
+	Call allocate_shared directly instead of _M_create. Create _Tgt2
+	object.
+	(executor::target_type): Add cast needed for new _Tgt interface.
+	(executor::target): Define when RTTI is disabled. Use _Tgt::_M_func.
+	(executor::_Tgt): Define the same interface whether RTTI is enabled or
+	not.
+	(executor::_Tgt::target_type, executor::_Tgt::target): Do not use
+	std::type_info in the interface.
+	(executor::_Tgt::_M_func): Add data member.
+	(executor::_TgtImpl): Replace with _Tgt1 and _Tgt2 class templates.
+	(executor::_Tgt1::_S_func): Define function to access target without
+	depending on RTTI.
+	(executor::_M_create): Remove.
+	(operator==, operator!=): Simplify comparisons for executor.
+	* include/experimental/socket (is_error_code_enum<socket_errc>):
+	Define specialization before use.
+	* testsuite/experimental/net/executor/1.cc: New test.
+
+2020-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94199
+	* include/experimental/executor (service_already_exists): Add default
+	constructor. Declare make_service to be a friend.
+	* testsuite/experimental/net/execution_context/make_service.cc: New
+	test.
+
+2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Do not pass
+	a null pointer to functions with nonnull(1) attribute.
+
+2020-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_OuterIter::_OuterIter): Typo fix,
+	'address' -> 'std::__addressof'.
+	* testsuite/std/ranges/adaptors/split.cc: Test taking the split_view of
+	a non-forward input_range.
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper): Make
+	default constructor protected instead of deleted, like with
+	input_iterator_wrapper.
+	(test_range::iterator): Add comment explaining that this type is used
+	only when the underlying wrapper is input_iterator_wrapper or
+	output_iterator_wrapper.  Remove delegating defaulted constructor so
+	that the inherited default constructor is used instead.
+
+	LWG 3286 ranges::size is not required to be valid after a call to
+	ranges::begin on an input range
+	* include/std/ranges (subrange::subrange): Split single-argument
+	constructor into two, one constrained by _S_store_size and another by
+	!_S_store_size.
+	(take_view::begin): Call size() before calling ranges::begin(_M_base).
+	* testsuite/std/ranges/adaptors/lwg3286.cc: New test.
+	* testsuite/std/ranges/subrange/lwg3286.cc: New test.
+
+2020-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (split_view::_OuterIter::__at_end): Use __current
+	instead of _M_current.
+	(split_view::_OuterIter::operator++): Likewise.
+
+	* include/std/ranges (transform_view::_Iterator::__iter_move): Remove.
+	(transform_view::_Iterator::operator*): Add noexcept-specifier.
+	(transform_view::_Iterator::iter_move): Inline __iter_move body here.
+	(split_view::_OuterIter::__current): Add noexcept.
+	(split_view::_InnerIter::__iter_swap): Remove.
+	(split_view::_InnerIter::__iter_move): Remove.
+	(split_view::_InnerIter::_M_i_current): New accessors.
+	(split_view::_InnerIter::__at_end): Use _M_i_current().
+	(split_view::_InnerIter::operator*): Likewise.
+	(split_view::_InnerIter::operator++): Likewise.
+	(iter_move(const _InnerIter&)): Likewise.
+	(iter_swap(const _InnerIter&, const _InnerIter&)): Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Check noexcept-specifier
+	for iter_move and iter_swap on split_view's inner iterator.
+
+	PR c++/94117
+	* include/std/ranges (ranges::transform_view::_Iterator::iter_move):
+	Change expression in noexcept-specifier to match function body.
+
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Add
+	comment explaining multiple dg-do directives.
+	* testsuite/24_iterators/ostream_iterator/1.cc: Fix do-do directive
+	so test is run as well as compiled.
+
+2020-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94063
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Add kluge to
+	handle concatenations that change the type of the first component.
+	(path::operator+=(basic_string_view<value_type>)): Likewise.
+	* testsuite/27_io/filesystem/path/concat/94063.cc: New test.
+
+2020-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::_Sentinel<_Const>): Befriend
+	join_view::_Sentinel<!_Const>.
+	* testsuite/std/ranges/adaptors/join.cc: Augment test.
+
+	PR libstdc++/93978
+	* include/bits/range_access.h (__cust_access::_Empty::operator()):
+	Declare return type to be bool instead of auto.
+	* testsuite/std/ranges/adaptors/93978.cc: New test.
+
+2020-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94069
+	* include/std/shared_mutex [!PTHREAD_RWLOCK_INITIALIZER]
+	(__shared_mutex_pthread::__shared_mutex_pthread()): Remove incorrect
+	second argument to __glibcxx_rwlock_init.
+	* testsuite/30_threads/shared_timed_mutex/94069.cc: New test.
+
+	PR libstdc++/93244
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Adjust
+	test to not fail due to PR 94063.
+	* testsuite/27_io/filesystem/path/generic/utf.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/wchar_t.cc: Likewise.
+
+2020-03-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* src/c++11/system_error.cc: Omit the ENOTSUP case statement if it
+	would match ENOSYS.
+
 2020-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/operations/all.cc: Mark unused variable.

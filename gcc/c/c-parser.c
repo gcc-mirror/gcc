@@ -1487,8 +1487,8 @@ static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
 static void c_parser_initelt (c_parser *, struct obstack *);
 static void c_parser_initval (c_parser *, struct c_expr *,
 			      struct obstack *);
-static tree c_parser_compound_statement (c_parser *);
-static void c_parser_compound_statement_nostart (c_parser *);
+static tree c_parser_compound_statement (c_parser *, location_t * = NULL);
+static location_t c_parser_compound_statement_nostart (c_parser *);
 static void c_parser_label (c_parser *);
 static void c_parser_statement (c_parser *, bool *, location_t * = NULL);
 static void c_parser_statement_after_labels (c_parser *, bool *,
@@ -1583,8 +1583,7 @@ static void c_parser_objc_at_synthesize_declaration (c_parser *);
 static void c_parser_objc_at_dynamic_declaration (c_parser *);
 static bool c_parser_objc_diagnose_bad_element_prefix
   (c_parser *, struct c_declspecs *);
-
-static void c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass);
+static location_t c_parser_parse_rtl_body (c_parser *, char *);
 
 /* Parse a translation unit (C90 6.7, C99 6.9, C11 6.9).
 
@@ -2470,14 +2469,16 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 				   omp_declare_simd_clauses);
       if (oacc_routine_data)
 	c_finish_oacc_routine (oacc_routine_data, current_function_decl, true);
+      location_t startloc = c_parser_peek_token (parser)->location;
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
-	= c_parser_peek_token (parser)->location;
+	= startloc;
+      location_t endloc = startloc;
 
       /* If the definition was marked with __RTL, use the RTL parser now,
 	 consuming the function body.  */
       if (specs->declspec_il == cdil_rtl)
 	{
-	  c_parser_parse_rtl_body (parser, specs->gimple_or_rtl_pass);
+	  endloc = c_parser_parse_rtl_body (parser, specs->gimple_or_rtl_pass);
 
 	  /* Normally, store_parm_decls sets next_is_function_body,
 	     anticipating a function body.  We need a push_scope/pop_scope
@@ -2486,7 +2487,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  push_scope ();
 	  pop_scope ();
 
-	  finish_function ();
+	  finish_function (endloc);
 	  return;
 	}
       /* If the definition was marked with __GIMPLE then parse the
@@ -2501,7 +2502,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  in_late_binary_op = saved;
 	}
       else
-	fnbody = c_parser_compound_statement (parser);
+	fnbody = c_parser_compound_statement (parser, &endloc);
       tree fndecl = current_function_decl;
       if (nested)
 	{
@@ -2512,7 +2513,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	     by initializer_constant_valid_p.  See gcc.dg/nested-fn-2.c.  */
 	  DECL_STATIC_CHAIN (decl) = 1;
 	  add_stmt (fnbody);
-	  finish_function ();
+	  finish_function (endloc);
 	  c_pop_function_context ();
 	  add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
 	}
@@ -2520,7 +2521,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	{
 	  if (fnbody)
 	    add_stmt (fnbody);
-	  finish_function ();
+	  finish_function (endloc);
 	}
       /* Get rid of the empty stmt list for GIMPLE/RTL.  */
       if (specs->declspec_il != cdil_none)
@@ -5599,7 +5600,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
      cancellation-point-directive  */
 
 static tree
-c_parser_compound_statement (c_parser *parser)
+c_parser_compound_statement (c_parser *parser, location_t *endlocp)
 {
   tree stmt;
   location_t brace_loc;
@@ -5613,7 +5614,9 @@ c_parser_compound_statement (c_parser *parser)
       return error_mark_node;
     }
   stmt = c_begin_compound_stmt (true);
-  c_parser_compound_statement_nostart (parser);
+  location_t end_loc = c_parser_compound_statement_nostart (parser);
+  if (endlocp)
+    *endlocp = end_loc;
 
   return c_end_compound_stmt (brace_loc, stmt, true);
 }
@@ -5622,7 +5625,7 @@ c_parser_compound_statement (c_parser *parser)
    used for parsing both compound statements and statement expressions
    (which follow different paths to handling the opening).  */
 
-static void
+static location_t
 c_parser_compound_statement_nostart (c_parser *parser)
 {
   bool last_stmt = false;
@@ -5631,9 +5634,10 @@ c_parser_compound_statement_nostart (c_parser *parser)
   location_t label_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
-      add_debug_begin_stmt (c_parser_peek_token (parser)->location);
+      location_t endloc = c_parser_peek_token (parser)->location;
+      add_debug_begin_stmt (endloc);
       c_parser_consume_token (parser);
-      return;
+      return endloc;
     }
   mark_valid_location_for_stdc_pragma (true);
   if (c_parser_next_token_is_keyword (parser, RID_LABEL))
@@ -5674,8 +5678,9 @@ c_parser_compound_statement_nostart (c_parser *parser)
     {
       mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
       c_parser_error (parser, "expected declaration or statement");
+      location_t endloc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
-      return;
+      return endloc;
     }
   while (c_parser_next_token_is_not (parser, CPP_CLOSE_BRACE))
     {
@@ -5773,7 +5778,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	{
 	  mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
 	  c_parser_error (parser, "expected declaration or statement");
-	  return;
+	  return c_parser_peek_token (parser)->location;
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_ELSE))
         {
@@ -5781,7 +5786,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
             {
 	      mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
 	      error_at (loc, "expected %<}%> before %<else%>");
-              return;
+	      return c_parser_peek_token (parser)->location;
             }
           else
             {
@@ -5804,9 +5809,11 @@ c_parser_compound_statement_nostart (c_parser *parser)
     }
   if (last_label)
     error_at (label_loc, "label at end of compound statement");
+  location_t endloc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   /* Restore the value we started with.  */
   mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
+  return endloc;
 }
 
 /* Parse all consecutive labels, possibly preceded by standard
@@ -21725,13 +21732,13 @@ c_parse_file (void)
 
    Take ownership of START_WITH_PASS, if non-NULL.  */
 
-void
+location_t
 c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass)
 {
   if (!c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
     {
       free (start_with_pass);
-      return;
+      return c_parser_peek_token (parser)->location;
     }
 
   location_t start_loc = c_parser_peek_token (parser)->location;
@@ -21753,7 +21760,7 @@ c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass)
 	case CPP_EOF:
 	  error_at (start_loc, "no closing brace");
 	  free (start_with_pass);
-	  return;
+	  return c_parser_peek_token (parser)->location;
 	default:
 	  break;
 	}
@@ -21771,12 +21778,13 @@ c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass)
   if (!read_rtl_function_body_from_file_range (start_loc, end_loc))
     {
       free (start_with_pass);
-      return;
+      return end_loc;
     }
 
  /*  Run the backend on the cfun created above, transferring ownership of
      START_WITH_PASS.  */
   run_rtl_passes (start_with_pass);
+  return end_loc;
 }
 
 #include "gt-c-c-parser.h"

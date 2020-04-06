@@ -569,12 +569,23 @@ class dot_annotator
 {
  public:
   virtual ~dot_annotator () {}
-  virtual void add_node_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
-				     const supernode &n ATTRIBUTE_UNUSED)
-    const {}
+  virtual bool add_node_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
+				     const supernode &n ATTRIBUTE_UNUSED,
+				     bool within_table ATTRIBUTE_UNUSED)
+    const
+  {
+    return false;
+  }
   virtual void add_stmt_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
-				     const gimple *stmt ATTRIBUTE_UNUSED)
+				     const gimple *stmt ATTRIBUTE_UNUSED,
+				     bool within_row ATTRIBUTE_UNUSED)
     const {}
+  virtual bool add_after_node_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
+					   const supernode &n ATTRIBUTE_UNUSED)
+    const
+  {
+    return false;
+  }
 };
 
 extern cgraph_edge *supergraph_call_edge (function *fun, gimple *stmt);

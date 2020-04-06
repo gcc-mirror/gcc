@@ -34,6 +34,10 @@
 
 #include <bits/move.h>
 
+#if __cplusplus > 201703L
+namespace __gnu_debug { struct _Safe_iterator_base; }
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -169,7 +173,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr, typename... _None>
     constexpr auto
     __to_address(const _Ptr& __ptr, _None...) noexcept
-    { return std::__to_address(__ptr.operator->()); }
+    {
+      if constexpr (is_base_of_v<__gnu_debug::_Safe_iterator_base, _Ptr>)
+	return std::__to_address(__ptr.base().operator->());
+      else
+	return std::__to_address(__ptr.operator->());
+    }
 
   /**
    * @brief Obtain address referenced by a pointer to an object

@@ -12069,7 +12069,6 @@ altivec_init_builtins (void)
   size_t i;
   tree ftype;
   tree decl;
-  HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
   tree pvoid_type_node = build_pointer_type (void_type_node);
 
@@ -12431,17 +12430,8 @@ altivec_init_builtins (void)
   d = bdesc_dst;
   for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
     {
-      HOST_WIDE_INT mask = d->mask;
-
       /* It is expected that these dst built-in functions may have
 	 d->icode equal to CODE_FOR_nothing.  */
-      if ((mask & builtin_mask) != mask)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "altivec_init_builtins, skip dst %s\n",
-		     d->name);
-	  continue;
-	}
       def_builtin (d->name, void_ftype_pcvoid_int_int, d->code);
     }
 
@@ -12451,15 +12441,6 @@ altivec_init_builtins (void)
     {
       machine_mode mode1;
       tree type;
-      HOST_WIDE_INT mask = d->mask;
-
-      if ((mask & builtin_mask) != mask)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "altivec_init_builtins, skip predicate %s\n",
-		     d->name);
-	  continue;
-	}
 
       if (rs6000_overloaded_builtin_p (d->code))
 	mode1 = VOIDmode;
@@ -12506,15 +12487,6 @@ altivec_init_builtins (void)
     {
       machine_mode mode0;
       tree type;
-      HOST_WIDE_INT mask = d->mask;
-
-      if ((mask & builtin_mask) != mask)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "altivec_init_builtins, skip abs %s\n",
-		     d->name);
-	  continue;
-	}
 
       /* Cannot define builtin if the instruction is disabled.  */
       gcc_assert (d->icode != CODE_FOR_nothing);

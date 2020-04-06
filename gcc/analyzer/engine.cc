@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "pretty-print.h"
 #include "sbitmap.h"
+#include "bitmap.h"
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
@@ -47,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "gimple-pretty-print.h"
 #include "cgraph.h"
 #include "digraph.h"
 #include "analyzer/supergraph.h"
@@ -795,6 +797,17 @@ print_enode_indices (pretty_printer *pp,
     }
 }
 
+/* class exploded_node : public dnode<eg_traits>.  */
+
+/* exploded_node's ctor.  */
+
+exploded_node::exploded_node (const point_and_state &ps,
+			      int index)
+: m_ps (ps), m_status (STATUS_WORKLIST), m_index (index)
+{
+  gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
+}
+
 /* For use by dump_dot, get a value for the .dot "fillcolor" attribute.
    Colorize by sm-state, to make it easier to see how sm-state propagates
    through the exploded_graph.  */
@@ -869,7 +882,7 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 	if (!smap->is_empty_p ())
 	  {
 	    pp_printf (pp, "%s: ", ext_state.get_name (i));
-	    smap->print (ext_state.get_sm (i), pp);
+	    smap->print (ext_state.get_sm (i), state.m_region_model, pp);
 	    pp_newline (pp);
 	  }
       }
@@ -1349,7 +1362,8 @@ exploded_node::detect_leaks (exploded_graph &eg) const
 				  &old_state, &new_state,
 				  NULL,
 				  get_stmt ());
-  new_state.m_region_model->pop_frame (true, &stats, &ctxt);
+  new_state.m_region_model->pop_frame (region_id::null (),
+				       true, &stats, &ctxt);
 }
 
 /* Dump the successors and predecessors of this enode to OUTF.  */
@@ -2831,10 +2845,12 @@ exploded_path::get_final_enode () const
   return m_edges[m_edges.length () - 1]->m_dest;
 }
 
-/* Check state along this path, returning true if it is feasible.  */
+/* Check state along this path, returning true if it is feasible.
+   If OUT is non-NULL, and the path is infeasible, write a new
+   feasibility_problem to *OUT.  */
 
 bool
-exploded_path::feasible_p (logger *logger) const
+exploded_path::feasible_p (logger *logger, feasibility_problem **out) const
 {
   LOG_SCOPE (logger);
 
@@ -2887,6 +2903,8 @@ exploded_path::feasible_p (logger *logger) const
 		  logger->log ("rejecting due to region model");
 		  model.dump_to_pp (logger->get_printer (), false);
 		}
+	      if (out)
+		*out = new feasibility_problem (i, model, *eedge, last_stmt);
 	      return false;
 	    }
 	}
@@ -2988,7 +3006,7 @@ exploded_path::dump () const
    cluster, each supernode gets its own cluster.
 
    Hence all enodes relating to a particular function with a particular
-   callstring will be be in a cluster together; all enodes for the same
+   callstring will be in a cluster together; all enodes for the same
    function but with a different callstring will be in a different
    cluster.  */
 
@@ -3511,19 +3529,19 @@ public:
     pp_string (pp, "<TABLE BORDER=\"0\">");
     pp_write_text_to_stream (pp);
 
-    gv->begin_tr ();
+    gv->begin_trtd ();
     pp_printf (pp, "VCG: %i: %s", m_index, function_name (m_fun));
-    gv->end_tr ();
+    gv->end_tdtr ();
     pp_newline (pp);
 
-    gv->begin_tr ();
+    gv->begin_trtd ();
     pp_printf (pp, "supernodes: %i\n", m_num_supernodes);
-    gv->end_tr ();
+    gv->end_tdtr ();
     pp_newline (pp);
 
-    gv->begin_tr ();
+    gv->begin_trtd ();
     pp_printf (pp, "superedges: %i\n", m_num_superedges);
-    gv->end_tr ();
+    gv->end_tdtr ();
     pp_newline (pp);
 
     if (args.m_eg)
@@ -3536,9 +3554,9 @@ public:
 	    if (enode->get_point ().get_function () == m_fun)
 	      num_enodes++;
 	  }
-	gv->begin_tr ();
+	gv->begin_trtd ();
 	pp_printf (pp, "enodes: %i\n", num_enodes);
-	gv->end_tr ();
+	gv->end_tdtr ();
 	pp_newline (pp);
 
 	// TODO: also show the per-callstring breakdown
@@ -3560,11 +3578,11 @@ public:
 	      }
 	    if (num_enodes > 0)
 	      {
-		gv->begin_tr ();
+		gv->begin_trtd ();
 		cs->print (pp);
 		pp_printf (pp, ": %i\n", num_enodes);
 		pp_write_text_as_html_like_dot_to_stream (pp);
-		gv->end_tr ();
+		gv->end_tdtr ();
 	      }
 	  }
 
@@ -3573,10 +3591,10 @@ public:
 	if (data)
 	  {
 	    pp_newline (pp);
-	    gv->begin_tr ();
+	    gv->begin_trtd ();
 	    pp_printf (pp, "summaries: %i\n", data->m_summaries.length ());
 	    pp_write_text_as_html_like_dot_to_stream (pp);
-	    gv->end_tr ();
+	    gv->end_tdtr ();
 	  }
       }
 
@@ -3719,6 +3737,231 @@ dump_callgraph (const supergraph &sg, const exploded_graph *eg)
   free (filename);
 }
 
+/* Subclass of dot_annotator for implementing
+   DUMP_BASE_NAME.supergraph-eg.dot, a post-analysis dump of the supergraph.
+
+   Annotate the supergraph nodes by printing the exploded nodes in concise
+   form within them, next to their pertinent statements where appropriate,
+   colorizing the exploded nodes based on sm-state.
+   Also show saved diagnostics within the exploded nodes, giving information
+   on whether they were feasible, and, if infeasible, where the problem
+   was.  */
+
+class exploded_graph_annotator : public dot_annotator
+{
+public:
+  exploded_graph_annotator (const exploded_graph &eg)
+  : m_eg (eg)
+  {
+    /* Avoid O(N^2) by prepopulating m_enodes_per_snodes.  */
+    unsigned i;
+    supernode *snode;
+    FOR_EACH_VEC_ELT (eg.get_supergraph ().m_nodes, i, snode)
+      m_enodes_per_snodes.safe_push (new auto_vec <exploded_node *> ());
+    exploded_node *enode;
+    FOR_EACH_VEC_ELT (m_eg.m_nodes, i, enode)
+      if (enode->get_supernode ())
+	m_enodes_per_snodes[enode->get_supernode ()->m_index]->safe_push (enode);
+  }
+
+  /* Show exploded nodes for BEFORE_SUPERNODE points before N.  */
+  bool add_node_annotations (graphviz_out *gv, const supernode &n,
+			     bool within_table)
+    const FINAL OVERRIDE
+  {
+    if (!within_table)
+      return false;
+    gv->begin_tr ();
+    pretty_printer *pp = gv->get_pp ();
+
+    gv->begin_td ();
+    pp_string (pp, "BEFORE");
+    gv->end_td ();
+
+    unsigned i;
+    exploded_node *enode;
+    bool had_enode = false;
+    FOR_EACH_VEC_ELT (*m_enodes_per_snodes[n.m_index], i, enode)
+      {
+	gcc_assert (enode->get_supernode () == &n);
+	const program_point &point = enode->get_point ();
+	if (point.get_kind () != PK_BEFORE_SUPERNODE)
+	  continue;
+	print_enode (gv, enode);
+	had_enode = true;
+      }
+    if (!had_enode)
+      pp_string (pp, "<TD BGCOLOR=\"red\">UNREACHED</TD>");
+    pp_flush (pp);
+    gv->end_tr ();
+    return true;
+  }
+
+  /* Show exploded nodes for STMT.  */
+  void add_stmt_annotations (graphviz_out *gv, const gimple *stmt,
+			     bool within_row)
+    const FINAL OVERRIDE
+  {
+    if (!within_row)
+      return;
+    pretty_printer *pp = gv->get_pp ();
+
+    const supernode *snode
+      = m_eg.get_supergraph ().get_supernode_for_stmt (stmt);
+    unsigned i;
+    exploded_node *enode;
+    bool had_td = false;
+    FOR_EACH_VEC_ELT (*m_enodes_per_snodes[snode->m_index], i, enode)
+      {
+	const program_point &point = enode->get_point ();
+	if (point.get_kind () != PK_BEFORE_STMT)
+	  continue;
+	if (point.get_stmt () != stmt)
+	  continue;
+	print_enode (gv, enode);
+	had_td = true;
+      }
+    pp_flush (pp);
+    if (!had_td)
+      {
+	gv->begin_td ();
+	gv->end_td ();
+      }
+  }
+
+  /* Show exploded nodes for AFTER_SUPERNODE points after N.  */
+  bool add_after_node_annotations (graphviz_out *gv, const supernode &n)
+    const FINAL OVERRIDE
+  {
+    gv->begin_tr ();
+    pretty_printer *pp = gv->get_pp ();
+
+    gv->begin_td ();
+    pp_string (pp, "AFTER");
+    gv->end_td ();
+
+    unsigned i;
+    exploded_node *enode;
+    FOR_EACH_VEC_ELT (*m_enodes_per_snodes[n.m_index], i, enode)
+      {
+	gcc_assert (enode->get_supernode () == &n);
+	const program_point &point = enode->get_point ();
+	if (point.get_kind () != PK_AFTER_SUPERNODE)
+	  continue;
+	print_enode (gv, enode);
+      }
+    pp_flush (pp);
+    gv->end_tr ();
+    return true;
+  }
+
+private:
+  /* Concisely print a TD element for ENODE, showing the index, status,
+     and any saved_diagnostics at the enode.  Colorize it to show sm-state.
+
+     Ideally we'd dump ENODE's state here, hidden behind some kind of
+     interactive disclosure method like a tooltip, so that the states
+     can be explored without overwhelming the graph.
+     However, I wasn't able to get graphviz/xdot to show tooltips on
+     individual elements within a HTML-like label.  */
+  void print_enode (graphviz_out *gv, const exploded_node *enode) const
+  {
+    pretty_printer *pp = gv->get_pp ();
+    pp_printf (pp, "<TD BGCOLOR=\"%s\">",
+	       enode->get_dot_fillcolor ());
+    pp_printf (pp, "<TABLE BORDER=\"0\">");
+    gv->begin_trtd ();
+    pp_printf (pp, "EN: %i", enode->m_index);
+    switch (enode->get_status ())
+      {
+      default:
+	gcc_unreachable ();
+      case exploded_node::STATUS_WORKLIST:
+	pp_string (pp, "(W)");
+	break;
+      case exploded_node::STATUS_PROCESSED:
+	break;
+      case exploded_node::STATUS_MERGER:
+	pp_string (pp, "(M)");
+	break;
+      }
+    gv->end_tdtr ();
+    /* Dump any saved_diagnostics at this enode.  */
+    {
+      const diagnostic_manager &dm = m_eg.get_diagnostic_manager ();
+      for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
+	{
+	  const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
+	  if (sd->m_enode == enode)
+	    print_saved_diagnostic (gv, sd);
+	}
+    }
+    pp_printf (pp, "</TABLE>");
+    pp_printf (pp, "</TD>");
+  }
+
+  /* Print a TABLE element for SD, showing the kind, the length of the
+     exploded_path, whether the path was feasible, and if infeasible,
+     what the problem was.  */
+  void print_saved_diagnostic (graphviz_out *gv,
+			       const saved_diagnostic *sd) const
+  {
+    pretty_printer *pp = gv->get_pp ();
+    gv->begin_trtd ();
+    pp_printf (pp, "<TABLE BORDER=\"0\">");
+    gv->begin_tr ();
+    pp_string (pp, "<TD BGCOLOR=\"green\">");
+    pp_printf (pp, "DIAGNOSTIC: %s", sd->m_d->get_kind ());
+    gv->end_tdtr ();
+    gv->begin_trtd ();
+    pp_printf (pp, "epath length: %i", sd->get_epath_length ());
+    gv->end_tdtr ();
+    switch (sd->get_status ())
+      {
+      default:
+      case saved_diagnostic::STATUS_NEW:
+	gcc_unreachable ();
+	break;
+      case saved_diagnostic::STATUS_INFEASIBLE_PATH:
+	{
+	  gv->begin_trtd ();
+	  pp_printf (pp, "INFEASIBLE");
+	  gv->end_tdtr ();
+	  const feasibility_problem *p = sd->get_feasibility_problem ();
+	  gcc_assert (p);
+	  gv->begin_trtd ();
+	  pp_printf (pp, "at eedge %i: EN:%i -> EN:%i",
+		     p->m_eedge_idx,
+		     p->m_eedge.m_src->m_index,
+		     p->m_eedge.m_dest->m_index);
+	  pp_write_text_as_html_like_dot_to_stream (pp);
+	  gv->end_tdtr ();
+	  gv->begin_trtd ();
+	  p->m_eedge.m_sedge->dump (pp);
+	  pp_write_text_as_html_like_dot_to_stream (pp);
+	  gv->end_tdtr ();
+	  gv->begin_trtd ();
+	  pp_gimple_stmt_1 (pp, p->m_last_stmt, 0, (dump_flags_t)0);
+	  pp_write_text_as_html_like_dot_to_stream (pp);
+	  gv->end_tdtr ();
+	  /* Ideally we'd print p->m_model here; see the notes above about
+	     tooltips.  */
+	}
+	break;
+      case saved_diagnostic::STATUS_FEASIBLE_PATH:
+	gv->begin_trtd ();
+	pp_printf (pp, "FEASIBLE");
+	gv->end_tdtr ();
+	break;
+      }
+    pp_printf (pp, "</TABLE>");
+    gv->end_tdtr ();
+  }
+
+  const exploded_graph &m_eg;
+  auto_delete_vec<auto_vec <exploded_node *> > m_enodes_per_snodes;
+};
+
 /* Run the analysis "engine".  */
 
 void
@@ -3741,6 +3984,7 @@ impl_run_checkers (logger *logger)
 
   if (flag_dump_analyzer_supergraph)
     {
+      /* Dump supergraph pre-analysis.  */
       auto_timevar tv (TV_ANALYZER_DUMP);
       char *filename = concat (dump_base_name, ".supergraph.dot", NULL);
       supergraph::dump_args_t args ((enum supergraph_dot_flags)0, NULL);
@@ -3804,6 +4048,17 @@ impl_run_checkers (logger *logger)
 
   if (flag_dump_analyzer_callgraph)
     dump_callgraph (sg, &eg);
+
+  if (flag_dump_analyzer_supergraph)
+    {
+      /* Dump post-analysis form of supergraph.  */
+      auto_timevar tv (TV_ANALYZER_DUMP);
+      char *filename = concat (dump_base_name, ".supergraph-eg.dot", NULL);
+      exploded_graph_annotator a (eg);
+      supergraph::dump_args_t args ((enum supergraph_dot_flags)0, &a);
+      sg.dump_dot (filename, args);
+      free (filename);
+    }
 
   delete purge_map;
 }

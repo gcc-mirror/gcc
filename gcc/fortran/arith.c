@@ -524,7 +524,7 @@ gfc_range_check (gfc_expr *e)
       if (rc == ARITH_UNDERFLOW)
 	mpfr_set_ui (mpc_imagref (e->value.complex), 0, GFC_RND_MODE);
       if (rc == ARITH_OVERFLOW)
-	mpfr_set_inf (mpc_imagref (e->value.complex), 
+	mpfr_set_inf (mpc_imagref (e->value.complex),
 		      mpfr_sgn (mpc_imagref (e->value.complex)));
       if (rc == ARITH_NAN)
 	mpfr_set_nan (mpc_imagref (e->value.complex));
@@ -994,7 +994,7 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   size_t len;
 
-  /* By cleverly playing around with constructors, is is possible
+  /* By cleverly playing around with constructors, it is possible
      to get mismaching types here.  */
   if (op1->ts.type != BT_CHARACTER || op2->ts.type != BT_CHARACTER
       || op1->ts.kind != op2->ts.kind)
@@ -1100,7 +1100,7 @@ compare_complex (gfc_expr *op1, gfc_expr *op2)
 
 
 /* Given two constant strings and the inverse collating sequence, compare the
-   strings.  We return -1 for a < b, 0 for a == b and 1 for a > b. 
+   strings.  We return -1 for a < b, 0 for a == b and 1 for a > b.
    We use the processor's default collating sequence.  */
 
 int
@@ -2176,7 +2176,7 @@ gfc_real2real (gfc_expr *src, int kind)
   if ((warn_conversion || warn_conversion_extra) && src->ts.kind > kind)
     {
       int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
-      
+
       /* Calculate the difference between the constant and the rounded
 	 value and check it against zero.  */
 
@@ -2358,7 +2358,7 @@ gfc_complex2real (gfc_expr *src, int kind)
 
       /* Calculate the difference between the real constant and the rounded
 	 value and check it against zero.  */
-      
+
       if (kind > src->ts.kind
 	  && wprecision_real_real (mpc_realref (src->value.complex),
 				   src->ts.kind, kind))
@@ -2502,7 +2502,7 @@ gfc_character2character (gfc_expr *src, int kind)
   return result;
 }
 
-/* Helper function to set the representation in a Hollerith conversion.  
+/* Helper function to set the representation in a Hollerith conversion.
    This assumes that the ts.type and ts.kind of the result have already
    been set.  */
 

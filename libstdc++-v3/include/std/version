@@ -146,6 +146,7 @@
 #define __cpp_lib_nonmember_container_access 201411
 #define __cpp_lib_not_fn 201603
 #define __cpp_lib_optional 201606L
+#define __cpp_lib_parallel_algorithm 201603L
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample 201603
 #ifdef _GLIBCXX_HAS_GTHREADS
@@ -158,7 +159,6 @@
 #define __cpp_lib_unordered_map_insertion 201411
 #define __cpp_lib_unordered_map_try_emplace 201411
 #define __cpp_lib_variant 201606L
-#define __cpp_lib_parallel_algorithm 201603L
 #endif
 
 #if __cplusplus > 201703L
@@ -167,7 +167,7 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
-#if __cpp_concepts
+#if __cpp_concepts >= 201907L
 # define __cpp_lib_concepts 201806L
 #endif
 #if __cpp_impl_destroying_delete
@@ -195,6 +195,9 @@
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants 201907L
+#if __cpp_lib_concepts
+# define __cpp_lib_ranges 201911L
+#endif
 #define __cpp_lib_span 202002L
 #if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
 # define __cpp_lib_three_way_comparison 201711L

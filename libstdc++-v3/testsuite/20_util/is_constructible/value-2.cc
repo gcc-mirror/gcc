@@ -107,7 +107,9 @@ static_assert(!std::is_constructible<Abstract, std::nullptr_t>::value, "Error");
 static_assert(!std::is_constructible<std::nullptr_t, Abstract>::value, "Error");
 static_assert(!std::is_constructible<Abstract, int[]>::value, "Error");
 static_assert(std::is_constructible<B, D>::value, "Error");
+#ifndef __cpp_aggregate_paren_init
 static_assert(!std::is_constructible<D, B>::value, "Error");
+#endif
 static_assert(!std::is_constructible<int[], int[1]>::value, "Error");
 static_assert(!std::is_constructible<int[1], int[]>::value, "Error");
 static_assert(!std::is_constructible<int[], Empty>::value, "Error");
@@ -416,7 +418,9 @@ static_assert(!std::is_constructible<int(&)[1], int(&)[2]>::value, "Error");
 static_assert(!std::is_constructible<int(&)[1], int&>::value, "Error");
 static_assert(!std::is_constructible<int&, int(&)[1]>::value, "Error");
 
+#ifndef __cpp_aggregate_paren_init
 static_assert(!std::is_constructible<U, int>::value, "Error");
+#endif
 static_assert(!std::is_constructible<U, Empty>::value, "Error");
 
 static_assert(!std::is_constructible<void(), void()>::value, "Error");

@@ -6656,7 +6656,7 @@ pass_expand::execute (function *fun)
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
 
-  /* BB subdivision may have created basic blocks that are are only reachable
+  /* BB subdivision may have created basic blocks that are only reachable
      from unlikely bbs but not marked as such in the profile.  */
   if (optimize)
     propagate_unlikely_bbs_forward ();

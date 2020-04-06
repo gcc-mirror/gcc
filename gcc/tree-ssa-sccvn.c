@@ -2058,6 +2058,8 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 		shift_bytes_in_array_left (this_buffer, len + 1, amnt);
 	      unsigned int off = pd.offset / BITS_PER_UNIT;
 	      gcc_assert (off < needed_len);
+	      size = MIN (size,
+			  (HOST_WIDE_INT) (needed_len - off) * BITS_PER_UNIT);
 	      p = buffer + off;
 	      if (amnt + size < BITS_PER_UNIT)
 		{
@@ -4899,13 +4901,22 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
   if (result
       && !useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (op)))
     {
-      /* We will be setting the value number of lhs to the value number
-	 of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
-	 So first simplify and lookup this expression to see if it
-	 is already available.  */
-      gimple_match_op res_op (gimple_match_cond::UNCOND,
-			      VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
-      result = vn_nary_build_or_lookup (&res_op);
+      /* Avoid the type punning in case the result mode has padding where
+	 the op we lookup has not.  */
+      if (maybe_lt (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (result))),
+		    GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op)))))
+	result = NULL_TREE;
+      else
+	{
+	  /* We will be setting the value number of lhs to the value number
+	     of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
+	     So first simplify and lookup this expression to see if it
+	     is already available.  */
+	  gimple_match_op res_op (gimple_match_cond::UNCOND,
+				  VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
+	  result = vn_nary_build_or_lookup (&res_op);
+	}
+
       /* When building the conversion fails avoid inserting the reference
          again.  */
       if (!result)
