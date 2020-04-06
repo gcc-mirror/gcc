@@ -1,3 +1,9 @@
+2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/crtresfpr.S: Use .machine ppc.
+	* config/rs6000/crtresxfpr.S: Likewise.
+	* config/rs6000/crtsavfpr.S: Likewise.
+
 2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94514

@@ -27,6 +27,7 @@
 
 /* Do any initializations needed for the eabi environment */
 
+	.machine ppc
 	.section ".text"
 	#include "ppc-asm.h"
 
