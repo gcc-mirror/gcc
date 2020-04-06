@@ -26,7 +26,7 @@ msgstr ""
 "Project-Id-Version: gcc 10.1-b20200322\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-03-20 23:17+0000\n"
-"PO-Revision-Date: 2020-03-29 20:41+0200\n"
+"PO-Revision-Date: 2020-04-05 10:14+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -1332,11 +1332,11 @@ msgstr "Följande flaggor styr parametrar"
 
 #: opts.c:1639
 msgid "The following options are specific to just the language "
-msgstr "Följande flaggor är specifika för just språket"
+msgstr "Följande flaggor är specifika för just språket "
 
 #: opts.c:1641
 msgid "The following options are supported by the language "
-msgstr "Följande flaggor stödjs av språket"
+msgstr "Följande flaggor stödjs av språket "
 
 #: opts.c:1652
 msgid "The following options are not documented"
@@ -7961,22 +7961,19 @@ msgid "Control which events are displayed in diagnostic paths."
 msgstr "Styr vilka händelser som visas i diagnostikvägar."
 
 #: analyzer/analyzer.opt:151
-#, fuzzy, no-c-format
-#| msgid "Dump internal details about what the analyzer is doing to SRCFILE.analyzer.txt."
+#, no-c-format
 msgid "Dump various analyzer internals to SRCFILE.analyzer.txt."
-msgstr "Dumpa interna detaljer om vad analyseraren gör till KÄLLFIL.analyzer.txt."
+msgstr "Dumpa diverse intern information om analyseraren KÄLLFIL.analyzer.txt."
 
 #: analyzer/analyzer.opt:155
-#, fuzzy, no-c-format
-#| msgid "-fdump-<type>\tDump various compiler internals to a file."
+#, no-c-format
 msgid "Dump various analyzer internals to stderr."
-msgstr "-fdump-<typ>\tSkriv ut diverse intern kompilatorinformation till en fil."
+msgstr "Dumpa diverse intern information om analyseraren till standard fel."
 
 #: analyzer/analyzer.opt:159
-#, fuzzy, no-c-format
-#| msgid "Dump the analyzer supergraph to a SRCFILE.callgraph.dot file."
+#, no-c-format
 msgid "Dump analyzer-specific call graph information to a SRCFILE.callgraph.dot file."
-msgstr "Dumpa analyserarens supergraf till en fil KÄLLFIL.callgraph.dot."
+msgstr "Dumpa analyserarspecifik anropsgrafsinformation till en fil KÄLLFIL.callgraph.dot."
 
 #: analyzer/analyzer.opt:163
 #, no-c-format
@@ -8234,10 +8231,9 @@ msgid "Set sizeof(bool) to 1."
 msgstr "Sätt sizeof(bool) till 1."
 
 #: config/darwin.opt:80
-#, fuzzy, no-c-format
-#| msgid "Support code generation of movbe instruction."
+#, no-c-format
 msgid "Force generation of external symbol indirection stubs."
-msgstr "Stöd kodgenerering av movbe-instruktioner."
+msgstr "Framtvinga generering av externa symbolindirektionsstubbar."
 
 #: config/darwin.opt:88
 #, no-c-format
@@ -8265,10 +8261,9 @@ msgid "Mismatches between file architecture and the \"-arch\" are errors instead
 msgstr "Brist på överensstämmelse mellan filarkitekturen och ”-arch” är fel istället för varningar"
 
 #: config/darwin.opt:110
-#, fuzzy, no-c-format
-#| msgid "The earliest MacOS X version on which this program will run."
+#, no-c-format
 msgid "The earliest MacOS X version on which this program will run (formatted for the assembler)"
-msgstr "Den tidigaste MacOS X-versionen som detta program kommer köra på."
+msgstr "Den tidigaste MacOS X-versionen som detta program kommer köra på (formaterad för assemblern)."
 
 #: config/darwin.opt:114
 #, no-c-format
@@ -8336,10 +8331,9 @@ msgid "Supply a list of objects to be linked from a file, rather than the comman
 msgstr "Ge en lista av objekt att länkas från en fil, istället för kommandoraden"
 
 #: config/darwin.opt:169 config/darwin.opt:189
-#, fuzzy, no-c-format
-#| msgid "Generate code for darwin loadable kernel extensions."
+#, no-c-format
 msgid "Used for generating code for some older kernel revisions."
-msgstr "Generera kod för darwin laddbara kärnutvidgningar."
+msgstr "Använd för att generera kod för några äldre kärnversioner."
 
 #: config/darwin.opt:173
 #, no-c-format
@@ -8427,16 +8421,14 @@ msgid "(Obsolete after 10.4)\tSet MH_NOMULTIDEFS in an umbrella framework."
 msgstr "(Föråldrat efter 10.4)\tSätt MH_NOMULTIDEFS i ett paraplyramverk."
 
 #: config/darwin.opt:245 config/darwin.opt:260 config/darwin.opt:264
-#, fuzzy, no-c-format
-#| msgid "switch %qs is no longer supported"
+#, no-c-format
 msgid "(Obsolete) LD_PREBIND is no longer supported."
-msgstr "flaggan %qs stödjs inte längre"
+msgstr "(Föråldrad) LD_PREBIND stödjs inte längre."
 
 #: config/darwin.opt:249
-#, fuzzy, no-c-format
-#| msgid "Stores doubles in 32 bits.  This is the default."
+#, no-c-format
 msgid "(Obsolete) This is the default."
-msgstr "Lagrar dubbla i 32 bitar.  Detta är standard."
+msgstr "(Föråldrad) Detta är standard."
 
 #: config/darwin.opt:256
 #, no-c-format
@@ -8494,10 +8486,9 @@ msgid "(Obsolete, ld_classic only) -seg_addr_table_filename <path>"
 msgstr "(Föråldrat, endast ld_classic) -seg_addr_table_filename <sökväg>"
 
 #: config/darwin.opt:312
-#, fuzzy, no-c-format
-#| msgid "Synonym for -Wcomment."
+#, no-c-format
 msgid "Synonym for \"image_base\""
-msgstr "Synonym för -Wcomment."
+msgstr "Synonym för ”image_base”"
 
 #: config/darwin.opt:316
 #, no-c-format
@@ -8530,10 +8521,9 @@ msgid "-segs_read_write_addr address \tAllows specifying the address of the read
 msgstr "-segs_read_write_addr adress \tMöjliggör att ange adressen till den läs-/skrivbara delen av ett dylib."
 
 #: config/darwin.opt:341
-#, fuzzy, no-c-format
-#| msgid "Stores doubles in 32 bits.  This is the default."
+#, no-c-format
 msgid "(Obsolete)\tThis is the default."
-msgstr "Lagrar dubbla i 32 bitar.  Detta är standard."
+msgstr "(Föråldrat)\tDetta är standard."
 
 #: config/darwin.opt:345
 #, no-c-format
@@ -8546,10 +8536,9 @@ msgid "-sub_umbrella <name>\tFramework named \"name\" will be re-exported (only 
 msgstr "-sub_umbrella <namn>\tRamverket med namnet ”namn” kommer omexporteras (endast meningsfullt för dylib:ar)."
 
 #: config/darwin.opt:353
-#, fuzzy, no-c-format
-#| msgid "this is the first default label"
+#, no-c-format
 msgid "This is the default"
-msgstr "detta är den första default-etiketten"
+msgstr "Detta är standard"
 
 #: config/darwin.opt:357
 #, no-c-format
@@ -9289,10 +9278,9 @@ msgid "Use an immediate to offset from the stack protector guard register, sp_el
 msgstr "Använd en omedelbar för att få avstånd från stackskyddsvaktregistret, sp_el0.  Denna flagga skall användas med fstack-protector-strong och är inte till för kod i användarmarken."
 
 #: config/aarch64/aarch64.opt:260
-#, fuzzy, no-c-format
-#| msgid "Generate a call to abort if a noreturn function returns."
+#, no-c-format
 msgid "Generate local calls to out-of-line atomic operations."
-msgstr "Generera ett anrop till abort om en noreturn-funktion returnerar."
+msgstr "Generera lokala anrop till atomära operationer utanför linjen."
 
 #: config/aarch64/aarch64.opt:264
 #, no-c-format
@@ -9727,22 +9715,19 @@ msgid "Make GCC pass the --no-relax command-line option to the linker instead of
 msgstr "Låt GCC skicka kommandoradsflaggan --no-relax till länkaren istället för flaggan --relax."
 
 #: config/pru/pru.opt:40
-#, fuzzy, no-c-format
-#| msgid "Allow gcc to generate LIW instructions."
+#, no-c-format
 msgid "Allow (or do not allow) gcc to use the LOOP instruction."
-msgstr "Tillåt gcc att generera LIW-instruktioner."
+msgstr "Tillåt (eller tillåt inte) gcc att använda LOOP-instruktionen."
 
 #: config/pru/pru.opt:44
-#, fuzzy, no-c-format
-#| msgid "Select the runtime."
+#, no-c-format
 msgid "Select target ABI variant."
-msgstr "Välj körtidssystem."
+msgstr "Välj mål-ABI-variant."
 
 #: config/pru/pru.opt:48
-#, fuzzy, no-c-format
-#| msgid "Known ABIs (for use with the -mabi= option):"
+#, no-c-format
 msgid "ABI variant code generation (for use with -mabi= option):"
-msgstr "Kända ABI:er (att användas med flaggan -mabi=):"
+msgstr "ABI-variantkodgenerering (att användas med flaggan -mabi=):"
 
 #: config/pdp11/pdp11.opt:23
 #, no-c-format
@@ -10389,10 +10374,9 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F a
 msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512BITALG-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:749
-#, fuzzy, no-c-format
-#| msgid "Support AVX512VNNI built-in functions and code generation."
+#, no-c-format
 msgid "Support AVX512VP2INTERSECT built-in functions and code generation."
-msgstr "Stöd inbyggda AVX512VNNI-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda AVX512VP2INTERSECT-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:753
 #, no-c-format
@@ -10765,16 +10749,14 @@ msgid "Generate a __return_loc section pointing to all return instrumentation co
 msgstr "Generera en __return_loc-sektion som pekar på all returinstrumenteringskod."
 
 #: config/i386/i386.opt:1104
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BF16 built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512VBMI2-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512BF16-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1109
-#, fuzzy, no-c-format
-#| msgid "Support RDRND built-in functions and code generation."
+#, no-c-format
 msgid "Support ENQCMD built-in functions and code generation."
-msgstr "Stöd inbyggda RDRND-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda ENQCMD-funktioner och -kodgenerering."
 
 #: config/pa/pa64-hpux.opt:23
 #, no-c-format
@@ -11268,10 +11250,9 @@ msgid "Do not link against the device-specific library lib<MCU>.a."
 msgstr "Länka inte mot det enhetsspecifika biblioteket lib<MCU>.a."
 
 #: config/avr/avr.opt:132
-#, fuzzy, no-c-format
-#| msgid "Do not link against the device-specific library lib<MCU>.a."
+#, no-c-format
 msgid "Do not use the device-specific specs file device-specs/specs-<MCU>."
-msgstr "Länka inte mot det enhetsspecifika biblioteket lib<MCU>.a."
+msgstr "Använd inte den enhetsspecifika specs-filen device-specs/specs-<MCU>."
 
 #: config/avr/avr.opt:136
 #, no-c-format
@@ -11814,10 +11795,9 @@ msgid "Enable unaligned word and halfword accesses to packed data."
 msgstr "Tillåt ojusterade ord- och halvordsåtkomster till packade data."
 
 #: config/arm/arm.opt:280
-#, fuzzy, no-c-format
-#| msgid "This switch is deprecated; do not use."
+#, no-c-format
 msgid "This option is deprecated and has no effect."
-msgstr "Denna flagga bör undvikas, använd den inte."
+msgstr "Denna flagga bör undvikas och har ingen effekt."
 
 #: config/arm/arm.opt:284
 #, no-c-format
@@ -12451,22 +12431,19 @@ msgid "Enable default conversions between __float128 & long double."
 msgstr "Aktivera standardkonvertering mellan __float128 & long double."
 
 #: config/rs6000/rs6000.opt:572
-#, fuzzy, no-c-format
-#| msgid "BMX instructions are only supported with R2 architecture"
+#, no-c-format
 msgid "Use instructions for a future architecture."
-msgstr "BMX-instruktioner stödjs endast med R2-arkitekturen"
+msgstr "Använd instruktioner för en framtida arkitektur."
 
 #: config/rs6000/rs6000.opt:576
-#, fuzzy, no-c-format
-#| msgid "Generate the quad word memory instructions (lq/stq)."
+#, no-c-format
 msgid "Generate (do not generate) prefixed memory instructions."
-msgstr "Generera fyrords minnesinstruktioner (lq/stq)."
+msgstr "Generera (generera inte) prefixade minnesinstruktioner."
 
 #: config/rs6000/rs6000.opt:580
-#, fuzzy, no-c-format
-#| msgid "Do not generate unaligned memory accesses."
+#, no-c-format
 msgid "Generate (do not generate) pc-relative memory addressing."
-msgstr "Generera inte ojusterade minnesreferenser."
+msgstr "Generera (generera inte) pc-relativ minnesadressering."
 
 #: config/rs6000/sysv4.opt:24
 #, no-c-format
@@ -12741,10 +12718,9 @@ msgid "Enable user-defined instructions."
 msgstr "Använd användardefinierade instruktioner."
 
 #: config/or1k/elf.opt:28
-#, fuzzy, no-c-format
-#| msgid "Configure board specific runtime."
+#, no-c-format
 msgid "Configure the newlib board specific runtime.  The default is or1ksim."
-msgstr "Konfigurera kortspecifik körtid."
+msgstr "Konfigurera newlib-specifik körtid för kort.  Standard är or1ksim."
 
 #: config/or1k/elf.opt:32
 #, no-c-format
@@ -12777,10 +12753,9 @@ msgid "Enable generation of binaries which use functions from libgcc to perform 
 msgstr "Aktivera generering av binärer som använder funktioner från libgcc för att utföra flyttalsoperationer.  Detta är standard; använd -mhard-float för att åsidosätta."
 
 #: config/or1k/or1k.opt:51
-#, fuzzy, no-c-format
-#| msgid "Enable hardware floating-point instructions."
+#, no-c-format
 msgid "Enable generation of hardware floating point instructions. The default is -msoft-float."
-msgstr "Aktivera flyttalsinstruktioner i hårdvara."
+msgstr "Aktivera generering av flyttalsinstruktioner i hårdvara.  Standard -r -msoft-float."
 
 #: config/or1k/or1k.opt:56
 #, no-c-format
@@ -12793,10 +12768,9 @@ msgid "When -mhard-float is selected, enables generation of unordered floating p
 msgstr "När -mhard-float är valt, aktiverar generering av instruktioner för oordnad flyttalsjämförelse och för att sätta flaggor (lf.sfun*).  Som standard används funktioner från libgcc för att utföra oordnad jämförelse av flyttal och operationer för att sätta flaggor."
 
 #: config/or1k/or1k.opt:68
-#, fuzzy, no-c-format
-#| msgid "Allows generation of binaries which use the l.cmov instruction.  If your target does not support this the compiler will generate the equivalent using set and branch."
+#, no-c-format
 msgid "Enable generation of conditional move (l.cmov) instructions.  By default the equivalent will be generated using set and branch."
-msgstr "Tillåt generering av binärer som använder instruktionen l.cmov.  Om ditt mål inte stödjer detta kommer kompilatorn generera motsvarigheten med set och branch."
+msgstr "Aktivera generering instruktioner för villkorlig förflyttning (l.cmov).  Som standard kommer det motsvarande genereras med set och branch."
 
 #: config/or1k/or1k.opt:73
 #, no-c-format
@@ -12809,22 +12783,19 @@ msgid "Enable generation of rotate right with immediate (l.rori) instructions.  
 msgstr "Aktivera generering av instruktioner för att rotera åt höger med omedelbar (l.rori).  Som standard används funktioner från libgcc för att utföra operationer som roterar åt höger med omedelbar."
 
 #: config/or1k/or1k.opt:84
-#, fuzzy, no-c-format
-#| msgid "Allows generation of binaries which use sign-extension instructions.  If your target does not support this the compiler will use memory loads to perform sign extension."
+#, no-c-format
 msgid "Enable generation of sign extension (l.ext*) instructions.  By default memory loads are used to perform sign extension."
-msgstr "Tillåt generering av binärer som använder instruktionen för teckenutökning.  Om ditt mål inte stödjer detta kommer kompilatorn generera minnesinläsning för att utföra teckenutökning."
+msgstr "Aktivera generering av instruktioner för teckenutökning (l.ext*).  Som standard används minnesinläsning för att utföra teckenutökning."
 
 #: config/or1k/or1k.opt:89
-#, fuzzy, no-c-format
-#| msgid "Allows generation of binaries which use l.sf*i instructions.  If your target does not support this the compiler will generate instructions to store the immediate to a register first."
+#, no-c-format
 msgid "Enable generation of compare and set flag with immediate (l.sf*i) instructions. By default extra instructions will be generated to store the immediate to a register first."
-msgstr "Tillåt generering av binärer som använder instruktionenerna l.sf*i.  Om ditt mål inte stödjer detta kommer kompilatorn generera instruktioner för att lagra den omedelbara i ett register först."
+msgstr "Aktivera generering av instruktioner för jämförelse och sätt flagga med omedelbar (l.sf*i).  Som standard kommer extra instruktioner genereras för att lagra den omedelbara i ett register först."
 
 #: config/or1k/or1k.opt:95
-#, fuzzy, no-c-format
-#| msgid "Allows generation of binaries which use l.sf*i instructions.  If your target does not support this the compiler will generate instructions to store the immediate to a register first."
+#, no-c-format
 msgid "Enable generation of shift with immediate (l.srai, l.srli, l.slli) instructions. By default extra instructions will be generated to store the immediate to a register first."
-msgstr "Tillåt generering av binärer som använder instruktionenerna l.sf*i.  Om ditt mål inte stödjer detta kommer kompilatorn generera instruktioner för att lagra den omedelbara i ett register först."
+msgstr "Aktivera generering av instruktioner för skift med omedelbar (l.srai, l.srli, l.slli).  Som standard kommer extra instruktioner genereras för att lagra den omedelbara i ett register först."
 
 #: config/nios2/elf.opt:26
 #, no-c-format
@@ -13524,8 +13495,7 @@ msgid "Regular expression matching section names for r0-relative addressing."
 msgstr "Reguljärt uttryck som matchar sektionsnamn för r0-relativ adressering."
 
 #: config/rx/elf.opt:32
-#, fuzzy, no-c-format
-#| msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax."
+#, no-c-format
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax."
 msgstr "Generera assemblerutdatat som är kompatibel med Renesas AS100-assembler.  Detta kan begränsa några av kompilatorns egenskaper.  Standard är att generera GAS-kompatibel syntax."
 
@@ -14920,22 +14890,19 @@ msgid "Assume small address space."
 msgstr "Anta liten adressrymd."
 
 #: config/bpf/bpf.opt:28
-#, fuzzy, no-c-format
-#| msgid "Generate code for the kernel or loadable kernel extensions."
+#, no-c-format
 msgid "Generate eBPF for the given Linux kernel version."
-msgstr "Generera kod för kärnan eller laddbara kärnutvidgningar."
+msgstr "Generera eBPF för den angivna versionen av Linuxkärnan."
 
 #: config/bpf/bpf.opt:115
-#, fuzzy, no-c-format
-#| msgid "Generate big-endian code."
+#, no-c-format
 msgid "Generate big-endian eBPF."
-msgstr "Generera kod med rak byteordning."
+msgstr "Generera eBPF med rak byteordning."
 
 #: config/bpf/bpf.opt:119
-#, fuzzy, no-c-format
-#| msgid "Generate little-endian code."
+#, no-c-format
 msgid "Generate little-endian eBPF."
-msgstr "Generera kod med omvänd byteordning."
+msgstr "Generera eBPF med omvänd byteordning."
 
 #: config/bpf/bpf.opt:123
 #, no-c-format
@@ -15483,10 +15450,9 @@ msgid "Force all calls to be made via a jli instruction."
 msgstr "Tvinga alla anrop att göras via en jli-instruktion."
 
 #: config/arc/arc.opt:62
-#, fuzzy, no-c-format
-#| msgid "-mmpy-option=MPY Compile ARCv2 code with a multiplier design option."
+#, no-c-format
 msgid "-mmpy-option=MPY\tCompile ARCv2 code with a multiplier design option."
-msgstr "-mmpy-option=MPY Kompilera ARCv2-kod med en multiplicerardesignflagga."
+msgstr "-mmpy-option=MPY\tKompilera ARCv2-kod med en multiplicerardesignflagga."
 
 #: config/arc/arc.opt:132
 #, no-c-format
@@ -15539,10 +15505,9 @@ msgid "Do not generate mpy instructions for ARC700."
 msgstr "Generera inte mpy-instruktioner för ARC700."
 
 #: config/arc/arc.opt:178
-#, fuzzy, no-c-format
-#| msgid "Generate Extended arithmetic instructions.  Currently only divaw, adds, subs and sat16 are supported."
+#, no-c-format
 msgid "Generate extended arithmetic instructions, only valid for ARC700."
-msgstr "Generera utökade aritmetiska instruktioner.  För närvarande stödjs endast divaw, adds, subs och sat16."
+msgstr "Generera utökade aritmetiska instruktioner, endast giltigt för ARC700."
 
 #: config/arc/arc.opt:182
 #, no-c-format
@@ -15620,10 +15585,9 @@ msgid "Cost to assume for a multiply instruction, with 4 being equal to a normal
 msgstr "Kostnad att anta för en multiplikationsinstruktion, med 4 lika med en normal instruktion."
 
 #: config/arc/arc.opt:254
-#, fuzzy, no-c-format
-#| msgid "-mcpu=TUNE Tune code for given ARC variant."
+#, no-c-format
 msgid "-mtune=TUNE\tTune code for given ARC variant."
-msgstr "-mcpu=TUNE Trimma kod för angiven ARC-variant."
+msgstr "-mcpu=TUNE\tTrimma kod för angiven ARC-variant."
 
 #: config/arc/arc.opt:285
 #, no-c-format
@@ -15871,16 +15835,14 @@ msgid "Dump the demangled output."
 msgstr "Dumpa den avmanglade utdatan."
 
 #: lto/lang.opt:83
-#, fuzzy, no-c-format
-#| msgid "Unable to find symbol %qs"
+#, no-c-format
 msgid "Dump only the defined symbols."
-msgstr "Kan inte hitta symbolen %qs"
+msgstr "Dumpa endast de definierade symbolerna."
 
 #: lto/lang.opt:87
-#, fuzzy, no-c-format
-#| msgid "Warn about uninitialized automatic variables."
+#, no-c-format
 msgid "Print the initial values of the variables."
-msgstr "Varna för oinitierade automatiska variabler."
+msgstr "Skriv ut de initiala värdena av variablerna."
 
 #: lto/lang.opt:91
 #, no-c-format
@@ -15893,10 +15855,9 @@ msgid "Sort the symbols according to size."
 msgstr "Sortera symbolerna i storleksordning."
 
 #: lto/lang.opt:99
-#, fuzzy, no-c-format
-#| msgid "Display the compiler's version."
+#, no-c-format
 msgid "Display the symbols in reverse order."
-msgstr "Visa kompilatorns version."
+msgstr "Visa symbolerna i omvänd ordning."
 
 #: lto/lang.opt:106
 #, no-c-format
@@ -15919,10 +15880,9 @@ msgid "Dump the statistics of gimple statements."
 msgstr "Dumpa statistiken om gimple-satser."
 
 #: lto/lang.opt:128
-#, fuzzy, no-c-format
-#| msgid "unrecognized command line option %qs"
+#, no-c-format
 msgid "Dump the dump tool command line options."
-msgstr "okänd kommandoradsflagga %qs"
+msgstr "Dumpa dump-verktygets kommandoradsflaggor."
 
 #: lto/lang.opt:132
 #, no-c-format
@@ -16350,16 +16310,14 @@ msgid "Align the start of loops."
 msgstr "Justera starten av slingor."
 
 #: common.opt:990
-#, fuzzy, no-c-format
-#| msgid "Allow the store merging pass to introduce unaligned stores if it is legal to do so."
+#, no-c-format
 msgid "Allow the compiler to introduce new data races on stores."
-msgstr "Tillåt passet för lagringssammanslagning att introducera ojusterade lagringar om det är tillåtet att göra det."
+msgstr "Tillåt kompilatorn att introducera nya datakapplöpningar (race conditions) vid lagringar."
 
 #: common.opt:994
-#, fuzzy, no-c-format
-#| msgid "Enable traditional preprocessing."
+#, no-c-format
 msgid "Enable static analysis pass."
-msgstr "Aktivera traditionell preprocessning."
+msgstr "Aktivera statiska analyspass."
 
 #: common.opt:1014
 #, no-c-format
@@ -16432,16 +16390,14 @@ msgid "Use profiling information for branch probabilities."
 msgstr "Använd profileringsinformation för grensannolikheter."
 
 #: common.opt:1092
-#, fuzzy, no-c-format
-#| msgid "Output stack usage information on a per-function basis."
+#, no-c-format
 msgid "Output callgraph information on a per-file basis."
-msgstr "Skriv ut information om stackanvändning för varje funktion."
+msgstr "Skriv ut information om anropsgrafer för varje fil."
 
 #: common.opt:1096
-#, fuzzy, no-c-format
-#| msgid "Output stack usage information on a per-function basis."
+#, no-c-format
 msgid "Output callgraph information on a per-file basis with decorations."
-msgstr "Skriv ut information om stackanvändning för varje funktion."
+msgstr "Skriv ut information om anropsgrafer för varje fil med dekorationer."
 
 #: common.opt:1100
 #, no-c-format
@@ -16484,10 +16440,9 @@ msgid "Looks for opportunities to reduce stack adjustments and stack references.
 msgstr "Söker efter möjligheter att minska stackjusteringar och stackreferenser."
 
 #: common.opt:1139
-#, fuzzy, no-c-format
-#| msgid "Do not put uninitialized globals in the common section."
+#, no-c-format
 msgid "Put uninitialized globals in the common section."
-msgstr "Lägg inte oinitierade globala i den gemensamma sektionen."
+msgstr "Lägg oinitierade globala i den gemensamma sektionen."
 
 #: common.opt:1147
 #, no-c-format
@@ -16545,22 +16500,19 @@ msgid "List all available debugging counters with their limits and counts."
 msgstr "Lista alla tillgängliga felsökningsräknare med deras gränser och värden."
 
 #: common.opt:1195
-#, fuzzy, no-c-format
-#| msgid "-fdbg-cnt=<counter>[:<lower_limit>]:<upper_limit>[,<counter>:...]\tSet the debug counter limit."
+#, no-c-format
 msgid "-fdbg-cnt=<counter>[:<lower_limit1>-]<upper_limit1>[:<lower_limit2>-<upper_limit2>:...][,<counter>:...]\tSet the debug counter limit."
-msgstr "-fdbg-cnt=<räknare>[:<undre_gräns>]:<övre_gräns[,<räknare>:…]\tSätt gränsen för felsökningsräknare."
+msgstr "-fdbg-cnt=<räknare>[:<undre_gräns1>-]:<övre_gräns1>[:<undre_gräns2>-<övre_gräns2>:…][,<räknare>:…]\tSätt gränsen för felsökningsräknare."
 
 #: common.opt:1199
-#, fuzzy, no-c-format
-#| msgid "-fdebug-prefix-map=<old>=<new> Map one directory name to another in debug information."
+#, no-c-format
 msgid "-fdebug-prefix-map=<old>=<new>\tMap one directory name to another in debug information."
-msgstr "-fdebug-prefix-map=<gammalt>=<nytt> Översätt ett katalognamn till ett annat i felsökningsinformation."
+msgstr "-fdebug-prefix-map=<gammalt>=<nytt>\tÖversätt ett katalognamn till ett annat i felsökningsinformation."
 
 #: common.opt:1203
-#, fuzzy, no-c-format
-#| msgid "-ffile-prefix-map=<old>=<new> Map one directory name to another in compilation result."
+#, no-c-format
 msgid "-ffile-prefix-map=<old>=<new>\tMap one directory name to another in compilation result."
-msgstr "-ffile-prefix-map=<gammalt>=<nytt> Översätt ett katalognamn till ett annat i kompileringsresultatet."
+msgstr "-ffile-prefix-map=<gammalt>=<nytt>\tÖversätt ett katalognamn till ett annat i kompileringsresultatet."
 
 #: common.opt:1207
 #, no-c-format
@@ -16628,16 +16580,14 @@ msgid "-fdiagnostics-color=[never|always|auto]\tColorize diagnostics."
 msgstr "-fdiagnostics-color=[never|always|auto]\tFärglägg felmeddelanden."
 
 #: common.opt:1294
-#, fuzzy, no-c-format
-#| msgid "-fdiagnostics-color=[never|always|auto]\tColorize diagnostics."
+#, no-c-format
 msgid "-fdiagnostics-urls=[never|always|auto]\tEmbed URLs in diagnostics."
-msgstr "-fdiagnostics-color=[never|always|auto]\tFärglägg felmeddelanden."
+msgstr "-fdiagnostics-urls=[never|always|auto]\tBädda in URL:ar i felmeddelanden."
 
 #: common.opt:1314
-#, fuzzy, no-c-format
-#| msgid "-fdiagnostics-format=[text|json] Select output format."
+#, no-c-format
 msgid "-fdiagnostics-format=[text|json]\tSelect output format."
-msgstr "-fdiagnostics-format=[text|json] Välj utmatningsformat."
+msgstr "-fdiagnostics-format=[text|json]\tVälj utmatningsformat."
 
 #: common.opt:1331
 #, no-c-format
@@ -16675,16 +16625,14 @@ msgid "Set minimum width of left margin of source code when showing source."
 msgstr "Sätt minsta bredd på vänstermarginalen för källkod när källan visas."
 
 #: common.opt:1371
-#, fuzzy, no-c-format
-#| msgid "-fdisable-[tree|rtl|ipa]-<pass>=range1+range2 disables an optimization pass."
+#, no-c-format
 msgid "-fdisable-[tree|rtl|ipa]-<pass>=range1+range2\tDisable an optimization pass."
-msgstr "-fdisable-[tree|rtl|ipa]-<pass>=intrvl1+intrvl2 avaktiverar ett optimeringspass."
+msgstr "-fdisable-[tree|rtl|ipa]-<pass>=intrvl1+intrvl2\tAvaktivera ett optimeringspass."
 
 #: common.opt:1375
-#, fuzzy, no-c-format
-#| msgid "-fenable-[tree|rtl|ipa]-<pass>=range1+range2 enables an optimization pass."
+#, no-c-format
 msgid "-fenable-[tree|rtl|ipa]-<pass>=range1+range2\tEnable an optimization pass."
-msgstr "-fenable-[tree|rtl|ipa]-<pass>=intrvl1+intrvl2 aktiverar ett optimeringspass."
+msgstr "-fenable-[tree|rtl|ipa]-<pass>=intrvl1+intrvl2\tAktivera ett optimeringspass."
 
 #: common.opt:1379
 #, no-c-format
@@ -17002,16 +16950,14 @@ msgid "Instrument function entry and exit with profiling calls."
 msgstr "Instrumentera funktionsingång och -utgång med profileringsanrop."
 
 #: common.opt:1758
-#, fuzzy, no-c-format
-#| msgid "-finstrument-functions-exclude-function-list=name,...  Do not instrument listed functions."
+#, no-c-format
 msgid "-finstrument-functions-exclude-function-list=name,...\tDo not instrument listed functions."
-msgstr "-finstrument-functions-exclude-function-list=namn,...  Instrumentera inte uppräknade funktioner."
+msgstr "-finstrument-functions-exclude-function-list=namn,…\tInstrumentera inte uppräknade funktioner."
 
 #: common.opt:1762
-#, fuzzy, no-c-format
-#| msgid "-finstrument-functions-exclude-file-list=filename,...  Do not instrument functions listed in files."
+#, no-c-format
 msgid "-finstrument-functions-exclude-file-list=filename,...\tDo not instrument functions listed in files."
-msgstr "-finstrument-functions-exclude-file-list=filenamn,...  Instrumentera inte funktioner uppräknade i filerna."
+msgstr "-finstrument-functions-exclude-file-list=filenamn,…\tInstrumentera inte funktioner uppräknade i filerna."
 
 #: common.opt:1766
 #, no-c-format
@@ -17164,10 +17110,9 @@ msgid "Specify the algorithm to partition symbols and vars at linktime."
 msgstr "Ange algoritmen för att dela upp symboler och variabler vid länktillfället."
 
 #: common.opt:1944
-#, fuzzy, no-c-format
-#| msgid "-flto-compression-level=<number>\tUse zlib compression level <number> for IL."
+#, no-c-format
 msgid "-flto-compression-level=<number>\tUse zlib/zstd compression level <number> for IL."
-msgstr "-flto-compression-level=<tal>\tAnvänd zlib-komprimering på nivå <tal> för IL."
+msgstr "-flto-compression-level=<tal>\tAnvänd zlib/zstd-komprimering på nivå <tal> för IL."
 
 #: common.opt:1952
 #, no-c-format
@@ -17255,16 +17200,14 @@ msgid "Support synchronous non-call exceptions."
 msgstr "Stöd synkrona icke-anropsundantag."
 
 #: common.opt:2023
-#, fuzzy, no-c-format
-#| msgid "-foffload=<targets>=<options>  Specify offloading targets and options for them."
+#, no-c-format
 msgid "-foffload=<targets>=<options>\tSpecify offloading targets and options for them."
-msgstr "-foffload=<mål>=<flaggor>  Ange mål att lasta av till och flaggor för dem."
+msgstr "-foffload=<mål>=<flaggor>\tAnge mål att lasta av till och flaggor för dem."
 
 #: common.opt:2027
-#, fuzzy, no-c-format
-#| msgid "-foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler."
+#, no-c-format
 msgid "-foffload-abi=[lp64|ilp32]\tSet the ABI to use in an offload compiler."
-msgstr "-foffload-abi=[lp64|ilp32]     Ange ABI:et att använda i en avlastningskompilator."
+msgstr "-foffload-abi=[lp64|ilp32]\tAnge ABI:et att använda i en avlastningskompilator."
 
 #: common.opt:2040
 #, no-c-format
@@ -17397,10 +17340,9 @@ msgid "Set the top-level directory for storing the profile data. The default is 
 msgstr "Sätt toppnivåkatalogen för att spara profildata.  Standard är ”pwd”."
 
 #: common.opt:2153
-#, fuzzy, no-c-format
-#| msgid "Set the top-level directory for storing the profile data. The default is 'pwd'."
+#, no-c-format
 msgid "Select the name for storing the profile note file."
-msgstr "Sätt toppnivåkatalogen för att spara profildata.  Standard är ”pwd”."
+msgstr "Välj namnet att lagra profileringsnoteringsfil."
 
 #: common.opt:2157
 #, no-c-format
@@ -17733,10 +17675,9 @@ msgid "Split wide types into independent registers."
 msgstr "Dela upp breda typer i oberoende register."
 
 #: common.opt:2511
-#, fuzzy, no-c-format
-#| msgid "Split wide types into independent registers."
+#, no-c-format
 msgid "Split wide types into independent registers earlier."
-msgstr "Dela upp breda typer i oberoende register."
+msgstr "Dela upp breda typer i oberoende register tidigare."
 
 #: common.opt:2515
 #, no-c-format
@@ -18494,8 +18435,7 @@ msgid "Maximum number of bits for which we avoid creating FMAs."
 msgstr "Maximalt antal bitar för vilka vi undviker att skapa FMA:er."
 
 #: params.opt:75
-#, fuzzy, no-c-format
-#| msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
+#, no-c-format
 msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
 msgstr "Ange den uppskattade sannolikheten i procent för den inbyggda expect.  Standardvärdet är 90 % sannolikhet."
 
@@ -18606,10 +18546,9 @@ msgid "The number of elements for which hash table verification is done for each
 msgstr "Antalet element för vilka verfiering av hashtabellen görs för varje sökt element."
 
 #: params.opt:163
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot (used in non-LTO mode)."
+#, no-c-format
 msgid "The denominator n of fraction 1/n of the maximal execution count of a basic block in the entire program that a basic block needs to at least have in order to be considered hot (used in non-LTO mode)."
-msgstr "Välj andel av det maximala antalet repetitioner av grundblock i programmet givet grundblock måste ha för att anses heta (använt i icke-LTO-läge).."
+msgstr "Nämnaren n i bråket 1/n av det maximala antalet körningar av ett grundblock i hela programmet som ett grundblock åtminstone måste ha för att anses hett (används i icke-LTO-läge)."
 
 #: params.opt:167
 #, no-c-format
@@ -18617,10 +18556,9 @@ msgid "The number of most executed permilles of the profiled execution of the en
 msgstr "Antalet mest exekverade promille av den profilerade körningen av hela programmet till vilken körningsräknaren för ett grundblock måste vara en del av för att betraktas som varm (används i LTO-läge)."
 
 #: params.opt:171
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot."
+#, no-c-format
 msgid "The denominator n of fraction 1/n of the execution frequency of the entry block of a function that a basic block of this function needs to at least have in order to be considered hot."
-msgstr "Välj andel av den maximala exekveringsfrekvensen av grundblock i funktion givet grundblock måste ha för att anses hett."
+msgstr "Nämnaren n i bråket 1/n av frekvensen av antalet körningar av ingångsblocket till en funktion som ett grundblock för denna funktion åtminstone måste ha för att anses hett."
 
 #: params.opt:175
 #, no-c-format
@@ -18658,16 +18596,14 @@ msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or
 msgstr "Bonus IPA-CP tilldelar vid kompileringstillfället till kandidater vilka gör slingbegränsningar eller -steg kända."
 
 #: params.opt:203
-#, fuzzy, no-c-format
-#| msgid "The maximum depth of recursive inlining for inline functions."
+#, no-c-format
 msgid "Maximum depth of recursive cloning for self-recursive function."
-msgstr "Det maximala djupet för rekursiv inline:ing för inline-funktioner."
+msgstr "Det maximala djupet för rekursiv kloning för självrekursiva funktioner."
 
 #: params.opt:207
-#, fuzzy, no-c-format
-#| msgid "Inline recursively only when the probability of call being executed exceeds the parameter."
+#, no-c-format
 msgid "Recursive cloning only when the probability of call being executed exceeds the parameter."
-msgstr "Inline:a rekursivt endast när sannolikheten för att ett anrop skall göras överskrider parametern."
+msgstr "Rekursiv kloning endast när sannolikheten för att ett anrop skall göras överskrider parametern."
 
 #: params.opt:211
 #, no-c-format
@@ -18700,14 +18636,12 @@ msgid "Maximum number of aggregate content items for a parameter in jump functio
 msgstr "Maximalt antal av sammansatta innehållsposter för en parameter i hoppfunktioner och gitter."
 
 #: params.opt:235
-#, fuzzy, no-c-format
-#| msgid "Maximum number of conditional store pairs that can be sunk."
+#, no-c-format
 msgid "Maximum number of operations in a parameter expression that can be handled by IPA analysis."
-msgstr "Maximalt antal villkorliga lagringspar som kan sänkas."
+msgstr "Maximalt antal operationer i ett parameteruttryck som kan hanteras av IPA-analys."
 
 #: params.opt:239
-#, fuzzy, no-c-format
-#| msgid "Maximal number of boundary endpoints of case ranges of switch statement used during IPA functoin summary generation."
+#, no-c-format
 msgid "Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation."
 msgstr "Maximala antalet gränsändpunkter för case-intervall i switch-satser som är oanvända under IPA-funktionssammanfattningsgenerering."
 
@@ -19293,10 +19227,9 @@ msgid "Minimum number of iterations per thread of an innermost parallelized loop
 msgstr "Det minimala antalet iterationer per trådar hos en innersta parallelliserad slinga."
 
 #: params.opt:715
-#, fuzzy, no-c-format
-#| msgid "Chunk size of omp schedule for loops parallelized by parloops."
+#, no-c-format
 msgid "--param=parloops-schedule=[static|dynamic|guided|auto|runtime]\tSchedule type of omp schedule for loops parallelized by parloops."
-msgstr "Styckesstorlek för omp-schema för slingor som parallelliseras av parloops."
+msgstr "--param=parloops-schedule=[static|dynamic|guided|auto|runtime]\tSchemaläggningstyp för omp-scheman för slingor som parallelliseras av parloops."
 
 #: params.opt:737
 #, no-c-format
@@ -19354,10 +19287,9 @@ msgid "Bound on size of expressions used in the scalar evolutions analyzer."
 msgstr "Gräns för storleken av uttryck som används i analyseraren av skalära uttryck."
 
 #: params.opt:781
-#, fuzzy, no-c-format
-#| msgid "Hardware autoprefetcher scheduler model control flag.  Number of lookahead cycles the model looks into; at '0' only enable instruction sorting heuristic.  Disabled by default."
+#, no-c-format
 msgid "Hardware autoprefetcher scheduler model control flag.  Number of lookahead cycles the model looks into, at '0' only enable instruction sorting heuristic.  Disabled by default."
-msgstr "Styrflagga för schemaläggningsmodell av automatisk förhandshämtning i hårdvara.  Antalet cykler av framförhållning modellen tittar in i; vid ”0” aktiveras endast heuristik för instruktionssortering.  Avaktiverat som standard."
+msgstr "Styrflagga för schemaläggningsmodell av automatisk förhandshämtning i hårdvara.  Antalet cykler av framförhållning modellen tittar in i, vid ”0” aktiveras endast heuristik för instruktionssortering.  Avaktiverat som standard."
 
 #: params.opt:785
 #, no-c-format
@@ -19440,10 +19372,9 @@ msgid "Maximum size, in storage units, of an aggregate which should be considere
 msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för hastighet."
 
 #: params.opt:849
-#, fuzzy, no-c-format
-#| msgid "The maximum number of stmts in loop nest for loop interchange."
+#, no-c-format
 msgid "The maximum number of SSA_NAME assignments to follow in determining a value."
-msgstr "Det maximala antalet satser i slingnästning för slingutväxling."
+msgstr "Det maximala antalet SSA_NAME-tilldelningar att följa för att avgöra ett värde."
 
 #: params.opt:853
 #, no-c-format
@@ -19541,10 +19472,9 @@ msgid "Time accounted for function thunk overhead."
 msgstr "Tid inräknad för funktionssnuttsomkostnader."
 
 #: params.opt:929
-#, fuzzy, no-c-format
-#| msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely."
+#, no-c-format
 msgid "The denominator n of fraction 1/n of the number of profiled runs of the entire program below which the execution count of a basic block must be in order for the basic block to be considered unlikely."
-msgstr "Minsta andelen av profileringskörningar ett givet grundblocks exekveringsräknare måste ha för att inte anses osannolik."
+msgstr "Nämnaren n i bråket 1/n för antalet profileringskörningar av hela programmet under vilken exekveringsräknare för att givet grundblock måste vara för att inte anses osannolik."
 
 #: params.opt:933
 #, no-c-format
@@ -19636,10 +19566,8 @@ msgstr "skift med operand som inte är heltal"
 
 #: go/gofrontend/expressions.cc:6871 go/gofrontend/expressions.cc:6874
 #: go/gofrontend/expressions.cc:6882
-#, fuzzy
-#| msgid "shift count not unsigned integer"
 msgid "shift count not integer"
-msgstr "skiftantal är inte teckenlöst heltal"
+msgstr "skiftantal är inte ett heltal"
 
 #: go/gofrontend/expressions.cc:6887
 msgid "negative shift count"
@@ -20057,10 +19985,9 @@ msgid "wrong number of arguments specified for %qE attribute"
 msgstr "fel antal argument angivet för attributet %qE"
 
 #: attribs.c:586
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<(%> or end of line"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected %i or more, found %i"
-msgstr "%<(%> eller filslut förväntades"
+msgstr "%i eller fler förväntades, hittade %i"
 
 #: attribs.c:589
 #, gcc-internal-format, gfc-internal-format
@@ -20322,10 +20249,9 @@ msgid "%K%qD specified size %E exceeds maximum object size %E"
 msgstr "%K%qD: den angivna storleken %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3444
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified size %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna storleken %E överskrider maximal objektstorlek %E"
+msgstr "%Kden angivna storleken %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3450
 #, gcc-internal-format
@@ -20333,10 +20259,9 @@ msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
 msgstr "%K%qD: den angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3455
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified size between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
+msgstr "%Kden angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3494 builtins.c:3523
 #, gcc-internal-format
@@ -20344,10 +20269,9 @@ msgid "%K%qD writing %E or more bytes into a region of size %E overflows the des
 msgstr "%K%qD: att skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:3499 builtins.c:3528
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E or more bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%Kwriting %E or more bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: att skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
+msgstr "%Katt skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:3507
 #, gcc-internal-format
@@ -20357,13 +20281,11 @@ msgstr[0] "%K%qD: att skriva %E byte till en region av storlek %E spiller över 
 msgstr[1] "%K%qD: att skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:3513
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
-#| msgid_plural "%K%qD writing %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%Kwriting %E byte into a region of size %E overflows the destination"
 msgid_plural "%Kwriting %E bytes into a region of size %E overflows the destination"
-msgstr[0] "%K%qD: att skriva %E byte till en region av storlek %E spiller över destinationen"
-msgstr[1] "%K%qD: att skriva %E byte till en region av storlek %E spiller över destinationen"
+msgstr[0] "%Katt skriva %E byte till en region av storlek %E spiller över destinationen"
+msgstr[1] "%Katt skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:3536
 #, gcc-internal-format
@@ -20371,16 +20293,14 @@ msgid "%K%qD writing between %E and %E bytes into a region of size %E overflows 
 msgstr "%K%qD: att skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:3542
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing between %E and %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%Kwriting between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: att skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
+msgstr "%Katt skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:3583
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna gränsen %E överskrider maximal objektstorlek %E"
+msgstr "%Kden angivna gränsen %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3589
 #, gcc-internal-format
@@ -20388,10 +20308,9 @@ msgid "%K%qD specified bound between %E and %E exceeds maximum object size %E"
 msgstr "%K%qD: den angivna gränsen mellan %E och %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3595
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound between %E and %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna gränsen mellan %E och %E överskrider maximal objektstorlek %E"
+msgstr "%Kden angivna gränsen mellan %E och %E överskrider maximal objektstorlek %E"
 
 #: builtins.c:3615
 #, gcc-internal-format
@@ -20399,10 +20318,9 @@ msgid "%K%qD specified bound %E exceeds destination size %E"
 msgstr "%K%qD: den angivna gränsen %E överskrider destinationsstorleken %E"
 
 #: builtins.c:3620
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound %E exceeds destination size %E"
-msgstr "%K%qD: den angivna gränsen %E överskrider destinationsstorleken %E"
+msgstr "%Kden angivna gränsen %E överskrider destinationsstorleken %E"
 
 #: builtins.c:3626
 #, gcc-internal-format
@@ -20410,10 +20328,9 @@ msgid "%K%qD specified bound between %E and %E exceeds destination size %E"
 msgstr "%K%qD: den angivna gränsen mellan %E och %E överskrider destinationsstorleken %E"
 
 #: builtins.c:3631
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound between %E and %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound between %E and %E exceeds destination size %E"
-msgstr "%K%qD: den angivna gränsen mellan %E och %E överskrider destinationsstorleken %E"
+msgstr "%Kden angivna gränsen mellan %E och %E överskrider destinationsstorleken %E"
 
 #: builtins.c:3659
 #, gcc-internal-format
