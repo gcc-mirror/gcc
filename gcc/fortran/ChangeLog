@@ -1,3 +1,12 @@
+2020-04-06  Fritz Reese  <foreese@gcc.gnu.org>
+
+	Backport from master
+	Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93686
+	* decl.c (gfc_match_data): Handle data matching for derived type
+	pointers.
+
 2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master
