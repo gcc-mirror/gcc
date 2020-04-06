@@ -1,3 +1,17 @@
+2020-05-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (RTEMS_STARTFILE_SPEC): Define if undefined.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	(STARTFILE_SPEC): Update comment.  Add RTEMS_STARTFILE_SPEC.
+	(ENDFILE_SPEC): Add RTEMS_ENDFILE_SPEC.
+	(LIB_SPECS): Support -nodefaultlibs option.
+	* config/or1k/rtems.h (RTEMS_STARTFILE_SPEC): Define.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	* config/rs6000/rtems.h (RTEMS_STARTFILE_SPEC): Likewise.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+	* config/v850/rtems.h (RTEMS_STARTFILE_SPEC): Likewise.
+	(RTEMS_ENDFILE_SPEC): Likewise.
+
 2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/pru.c (pru_hard_regno_call_part_clobbered): Remove.
