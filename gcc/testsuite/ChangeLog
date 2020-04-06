@@ -1,3 +1,7 @@
+2020-04-06  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.target/arm/div64-unwinding.c: Skip on vxworks_kernel targets.
+
 2020-04-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94155 - crash in gimplifier with paren init of aggregates.
