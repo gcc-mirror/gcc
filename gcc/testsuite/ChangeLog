@@ -1,3 +1,8 @@
+2020-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* g++.dg/cpp1y/pr90996.C: New test.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94509

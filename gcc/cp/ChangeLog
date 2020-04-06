@@ -1,3 +1,12 @@
+2020-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* tree.c (replace_placeholders): Look through all handled components,
+	not just COMPONENT_REFs.
+	* typeck2.c (process_init_constructor_array): Propagate
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY up from each element initializer to
+	the array initializer.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94512
