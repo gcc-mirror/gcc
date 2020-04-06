@@ -1,3 +1,9 @@
+2020-04-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93686
+	* decl.c (gfc_match_data): Handle data matching for derived type
+	pointers.
+
 2020-04-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (gfc_resolve_formal_arglist): Add prototype.
