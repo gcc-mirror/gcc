@@ -1,3 +1,8 @@
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94507 - ICE-on-invalid with lambda template.
+	* g++.dg/cpp2a/lambda-generic7.C: New test.
+
 2020-04-08  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.target/arm/fp16-aapcs-3.c: Explicitly use the

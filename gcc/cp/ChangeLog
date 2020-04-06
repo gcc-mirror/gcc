@@ -1,3 +1,9 @@
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94507 - ICE-on-invalid with lambda template.
+	* pt.c (tsubst_lambda_expr): Cope when tsubst_template_decl or
+	tsubst_function_decl returns error_mark_node.
+
 2020-04-08  Martin Liska  <mliska@suse.cz>
 
 	PR c++/94314

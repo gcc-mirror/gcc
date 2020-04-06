@@ -18953,6 +18953,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (oldtmpl)
 	{
 	  tmpl = tsubst_template_decl (oldtmpl, args, complain, fntype);
+	  if (tmpl == error_mark_node)
+	    {
+	      r = error_mark_node;
+	      goto out;
+	    }
 	  fn = DECL_TEMPLATE_RESULT (tmpl);
 	  finish_member_declaration (tmpl);
 	}
@@ -18960,6 +18965,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	{
 	  tmpl = NULL_TREE;
 	  fn = tsubst_function_decl (oldfn, args, complain, fntype);
+	  if (fn == error_mark_node)
+	    {
+	      r = error_mark_node;
+	      goto out;
+	    }
 	  finish_member_declaration (fn);
 	}
 
@@ -19025,6 +19035,7 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       maybe_add_lambda_conv_op (type);
     }
 
+out:
   finish_struct (type, /*attr*/NULL_TREE);
 
   insert_pending_capture_proxies ();
