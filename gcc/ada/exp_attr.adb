@@ -4706,6 +4706,8 @@ package body Exp_Attr is
                 Name                =>
                   Convert_To (Typ, New_Occurrence_Of (CW_Temp, Loc))));
 
+            Set_Stores_Attribute_Old_Prefix (CW_Temp);
+
          --  Non-tagged case
 
          else
