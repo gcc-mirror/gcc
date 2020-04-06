@@ -1,3 +1,8 @@
+2020-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* cselib.c (cselib_subst_to_values): For SP_DERIVED_VALUE_P
+	+ const0_rtx return the SP_DERIVED_VALUE_P.
+
 2020-04-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/92989
