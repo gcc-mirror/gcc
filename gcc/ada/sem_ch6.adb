@@ -5464,9 +5464,7 @@ package body Sem_Ch6 is
                           N_Formal_Abstract_Subprogram_Declaration,
                           N_Subprogram_Renaming_Declaration)
          then
-            if Is_Abstract_Type (Etype (Designator))
-              and then not Is_Interface (Etype (Designator))
-            then
+            if Is_Abstract_Type (Etype (Designator)) then
                Error_Msg_N
                  ("function that returns abstract type must be abstract", N);
 
