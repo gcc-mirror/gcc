@@ -39,3 +39,6 @@
 %{!mv850es:%{!mv850e1:%{mv*:-mv%*}} \
 %{m8byte-align:-m8byte-align} \
 %{mgcc-abi:-mgcc-abi}}"
+
+#define RTEMS_STARTFILE_SPEC ""
+#define RTEMS_ENDFILE_SPEC ""
