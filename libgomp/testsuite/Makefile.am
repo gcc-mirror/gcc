@@ -12,6 +12,8 @@ _RUNTEST = $(shell if test -f $(top_srcdir)/../dejagnu/runtest; then \
 	     echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi)
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
 
+EXTRA_DEJAGNU_SITE_CONFIG = libgomp-site-extra.exp
+
 # Instead of directly in ../testsuite/libgomp-test-support.exp.in, the
 # following variables have to be "routed through" this Makefile, for expansion
 # of the several (Makefile) variables used therein.
