@@ -1,3 +1,11 @@
+2020-04-05  Marek Polacek  <polacek@redhat.com>
+
+	2020-02-06  Marek Polacek  <polacek@redhat.com>
+	Backport from mainline
+
+	PR c++/93597 - ICE with lambda in operator function.
+	* name-lookup.c (maybe_save_operator_binding): Check is_overloaded_fn.
+
 2020-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91377
