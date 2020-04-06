@@ -28,3 +28,6 @@
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)
+
+#define RTEMS_STARTFILE_SPEC "crtbegin%O%s"
+#define RTEMS_ENDFILE_SPEC "crtend%O%s"

@@ -22,15 +22,25 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef RTEMS_STARTFILE_SPEC
+#define RTEMS_STARTFILE_SPEC "crti%O%s crtbegin%O%s"
+#endif
+
+#ifndef RTEMS_ENDFILE_SPEC
+#define RTEMS_ENDFILE_SPEC "crtend%O%s crtn%O%s"
+#endif
+
 /*
- * Dummy start/end specification to let linker work as
- * needed by autoconf scripts using this compiler.
+ * The crt0.o is a dummy start file to let the linker work as needed by
+ * autoconf scripts using this compiler.
  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt0.o%s"
+#define STARTFILE_SPEC "%{!qrtems:crt0%O%s} " \
+"%{qrtems:%{!nostdlib:%{!nostartfiles:" RTEMS_STARTFILE_SPEC "}}}"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC   ""
+#define ENDFILE_SPEC \
+"%{qrtems:%{!nostdlib:%{!nostartfiles:" RTEMS_ENDFILE_SPEC "}}}"
 
 /*
  * Some targets do not set up LIB_SPECS, override it, here.
@@ -38,10 +48,10 @@
 #define STD_LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{!qrtems: " STD_LIB_SPEC "} " \
-"%{!nostdlib: %{qrtems: --start-group \
- -lrtemsbsp -lrtemscpu \
- -latomic -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
+#define LIB_SPEC "%{!qrtems:" STD_LIB_SPEC "} " \
+"%{qrtems:%{!nostdlib:%{!nodefaultlibs:" \
+"--start-group -lrtemsbsp -lrtemscpu -latomic -lc -lgcc --end-group} " \
+"%{!qnolinkcmds:-T linkcmds%s}}}"
 
 #define TARGET_POSIX_IO
 
