@@ -8566,7 +8566,7 @@ package body Sem_Ch13 is
 
          --  Identifier (other than static expression) case
 
-         else pragma Assert (Nkind (N) = N_Identifier);
+         else pragma Assert (Nkind_In (N, N_Expanded_Name, N_Identifier));
 
             --  Type case
 
