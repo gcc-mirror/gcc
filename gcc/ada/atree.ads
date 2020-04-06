@@ -772,7 +772,7 @@ package Atree is
       V10 : Node_Kind;
       V11 : Node_Kind) return Boolean;
 
-   --  12..15-parameter versions are not yet needed
+   --  12..16-parameter versions are not yet needed
 
    function Nkind_In
      (N   : Node_Id;
@@ -791,7 +791,8 @@ package Atree is
       V13 : Node_Kind;
       V14 : Node_Kind;
       V15 : Node_Kind;
-      V16 : Node_Kind) return Boolean;
+      V16 : Node_Kind;
+      V17 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
    --  Inline all above functions

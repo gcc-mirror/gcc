@@ -801,6 +801,14 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
+         --  Access and Unchecked_Access are illegal in declare_expressions,
+         --  according to the RM. We also make the GNAT-specific
+         --  Unrestricted_Access attribute illegal.
+
+         if In_Declare_Expr > 0 then
+            Error_Attr ("% attribute cannot occur in a declare_expression", N);
+         end if;
+
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then

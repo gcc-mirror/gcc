@@ -72,23 +72,24 @@ package body Ch4 is
    -- Local Subprograms --
    -----------------------
 
-   function P_Aggregate_Or_Paren_Expr                 return Node_Id;
-   function P_Allocator                               return Node_Id;
-   function P_Case_Expression_Alternative             return Node_Id;
-   function P_Iterated_Component_Association          return Node_Id;
-   function P_Record_Or_Array_Component_Association   return Node_Id;
-   function P_Factor                                  return Node_Id;
-   function P_Primary                                 return Node_Id;
-   function P_Relation                                return Node_Id;
-   function P_Term                                    return Node_Id;
+   function P_Aggregate_Or_Paren_Expr               return Node_Id;
+   function P_Allocator                             return Node_Id;
+   function P_Case_Expression_Alternative           return Node_Id;
+   function P_Iterated_Component_Association        return Node_Id;
+   function P_Record_Or_Array_Component_Association return Node_Id;
+   function P_Factor                                return Node_Id;
+   function P_Primary                               return Node_Id;
+   function P_Relation                              return Node_Id;
+   function P_Term                                  return Node_Id;
+   function P_Declare_Expression                    return Node_Id;
    function P_Reduction_Attribute_Reference (S : Node_Id)
       return Node_Id;
 
-   function P_Binary_Adding_Operator                  return Node_Kind;
-   function P_Logical_Operator                        return Node_Kind;
-   function P_Multiplying_Operator                    return Node_Kind;
-   function P_Relational_Operator                     return Node_Kind;
-   function P_Unary_Adding_Operator                   return Node_Kind;
+   function P_Binary_Adding_Operator                return Node_Kind;
+   function P_Logical_Operator                      return Node_Kind;
+   function P_Multiplying_Operator                  return Node_Kind;
+   function P_Relational_Operator                   return Node_Kind;
+   function P_Unary_Adding_Operator                 return Node_Kind;
 
    procedure Bad_Range_Attribute (Loc : Source_Ptr);
    --  Called to place complaint about bad range attribute at the given
@@ -107,11 +108,18 @@ package body Ch4 is
    --  prefix. The current token is known to be an apostrophe and the
    --  following token is known to be RANGE.
 
-   function P_Unparen_Cond_Case_Quant_Expression return Node_Id;
-   --  This function is called with Token pointing to IF, CASE, or FOR, in a
-   --  context that allows a case, conditional, or quantified expression if
-   --  it is surrounded by parentheses. If not surrounded by parentheses, the
-   --  expression is still returned, but an error message is issued.
+   function P_Case_Expression return Node_Id;
+   --  Scans out a case expression. Called with Token pointing to the CASE
+   --  keyword, and returns pointing to the terminating right parent,
+   --  semicolon, or comma, but does not consume this terminating token.
+
+   function P_Unparen_Cond_Expr_Etc return Node_Id;
+   --  This function is called with Token pointing to IF, CASE, FOR, or
+   --  DECLARE, in a context that allows a conditional (if or case) expression,
+   --  a quantified expression, an iterated component association, or a declare
+   --  expression, if it is surrounded by parentheses. If not surrounded by
+   --  parentheses, the expression is still returned, but an error message is
+   --  issued.
 
    -------------------------
    -- Bad_Range_Attribute --
@@ -1944,8 +1952,12 @@ package body Ch4 is
    begin
       --  Case of conditional, case or quantified expression
 
-      if Token = Tok_Case or else Token = Tok_If or else Token = Tok_For then
-         return P_Unparen_Cond_Case_Quant_Expression;
+      if Token = Tok_Case
+        or else Token = Tok_If
+        or else Token = Tok_For
+        or else Token = Tok_Declare
+      then
+         return P_Unparen_Cond_Expr_Etc;
 
       --  Normal case, not case/conditional/quantified expression
 
@@ -2053,8 +2065,12 @@ package body Ch4 is
    begin
       --  Case of conditional, case or quantified expression
 
-      if Token = Tok_Case or else Token = Tok_If or else Token = Tok_For then
-         return P_Unparen_Cond_Case_Quant_Expression;
+      if Token = Tok_Case
+        or else Token = Tok_If
+        or else Token = Tok_For
+        or else Token = Tok_Declare
+      then
+         return P_Unparen_Cond_Expr_Etc;
 
       --  Normal case, not one of the above expression types
 
@@ -3442,7 +3458,7 @@ package body Ch4 is
         (Loc  : Source_Ptr;
          Cond : Node_Id) return Node_Id
       is
-         Exprs : constant List_Id    := New_List;
+         Exprs : constant List_Id := New_List;
          Expr  : Node_Id;
          State : Saved_Scan_State;
          Eptr  : Source_Ptr;
@@ -3557,6 +3573,49 @@ package body Ch4 is
       return If_Expr;
    end P_If_Expression;
 
+   --------------------------
+   -- P_Declare_Expression --
+   --------------------------
+
+   --  DECLARE_EXPRESSION ::=
+   --      DECLARE {DECLARE_ITEM}
+   --      begin BODY_EXPRESSION
+
+   --  DECLARE_ITEM ::= OBJECT_DECLARATION
+   --  | OBJECT_RENAMING_DECLARATION
+
+   function P_Declare_Expression return Node_Id is
+      Loc : constant Source_Ptr := Token_Ptr;
+   begin
+      Scan; -- past IF
+
+      declare
+         Actions : constant List_Id := P_Basic_Declarative_Items
+           (Declare_Expression => True);
+         --  Most declarative items allowed by P_Basic_Declarative_Items are
+         --  illegal; semantic analysis will deal with that.
+      begin
+         if Token = Tok_Begin then
+            Scan;
+         else
+            Error_Msg_SC -- CODEFIX
+              ("BEGIN expected!");
+         end if;
+
+         declare
+            Expression : constant Node_Id := P_Expression;
+            Result : constant Node_Id :=
+              Make_Expression_With_Actions (Loc, Actions, Expression);
+         begin
+            if Ada_Version < Ada_2020 then
+               Error_Msg ("declare_expression is an Ada 2020 feature", Loc);
+            end if;
+
+            return Result;
+         end;
+      end;
+   end P_Declare_Expression;
+
    -----------------------
    -- P_Membership_Test --
    -----------------------
@@ -3594,11 +3653,11 @@ package body Ch4 is
       end if;
    end P_Membership_Test;
 
-   ------------------------------------------
-   -- P_Unparen_Cond_Case_Quant_Expression --
-   ------------------------------------------
+   -----------------------------
+   -- P_Unparen_Cond_Expr_Etc --
+   -----------------------------
 
-   function P_Unparen_Cond_Case_Quant_Expression return Node_Id is
+   function P_Unparen_Cond_Expr_Etc return Node_Id is
       Lparen : constant Boolean := Prev_Token = Tok_Left_Paren;
 
       Result     : Node_Id;
@@ -3647,6 +3706,15 @@ package body Ch4 is
             Result := P_Iterated_Component_Association;
          end if;
 
+      --  Declare expression
+
+      elsif Token = Tok_Declare then
+         Result := P_Declare_Expression;
+
+         if not (Lparen and then Token = Tok_Right_Paren) then
+            Error_Msg_N ("declare expression must be parenthesized!", Result);
+         end if;
+
       --  No other possibility should exist (caller was supposed to check)
 
       else
@@ -3656,6 +3724,6 @@ package body Ch4 is
       --  Return expression (possibly after having given message)
 
       return Result;
-   end P_Unparen_Cond_Case_Quant_Expression;
+   end P_Unparen_Cond_Expr_Etc;
 
 end Ch4;

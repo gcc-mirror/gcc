@@ -976,7 +976,8 @@ package body Sem_Aggr is
                                            N_Extension_Aggregate,
                                            N_Component_Association,
                                            N_Case_Expression_Alternative,
-                                           N_If_Expression))
+                                           N_If_Expression,
+                                           N_Expression_With_Actions))
             then
                Aggr_Resolved :=
                  Resolve_Array_Aggregate

@@ -7288,7 +7288,8 @@ package body Sinfo is
       V13 : Node_Kind;
       V14 : Node_Kind;
       V15 : Node_Kind;
-      V16 : Node_Kind) return Boolean
+      V16 : Node_Kind;
+      V17 : Node_Kind) return Boolean
    is
    begin
       return T = V1  or else
@@ -7306,7 +7307,8 @@ package body Sinfo is
              T = V13 or else
              T = V14 or else
              T = V15 or else
-             T = V16;
+             T = V16 or else
+             T = V17;
    end Nkind_In;
 
    --------------------------
