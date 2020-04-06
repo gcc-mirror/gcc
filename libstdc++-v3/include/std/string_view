@@ -263,6 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [string.view.ops], string operations:
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       copy(_CharT* __str, size_type __n, size_type __pos = 0) const
       {

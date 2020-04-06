@@ -1,3 +1,30 @@
+2020-04-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/92989
+	* lra-lives.c (process_bb_lives): Do not treat eh_return data
+	registers as being live at the beginning of the EH receiver.
+
+2020-04-05 Zachary Spytz  <zspytz@gmail.com>
+
+	* extend.texi: Add free to list of ISO C90 functions that
+	are recognized by the compiler.
+
+2020-04-05 Nagaraju Mekala <nmekala@xilix.com>
+
+	* config/microblaze/microblaze.c (microblaze_must_save_register): Check
+	for fast_interrupt.
+ 
+	* config/microblaze/microblaze.md (trap): Update output pattern.
+
+2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94459
+	* dwarf2out.c (gen_subprogram_die): Look through references, pointers,
+	arrays, pointer-to-members, function types and qualifiers when
+	checking if in-class DIE had an 'auto' or 'decltype(auto)' return type
+	to emit type again on definition.
+
 2020-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/93940

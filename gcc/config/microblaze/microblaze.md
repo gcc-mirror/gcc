@@ -2303,7 +2303,7 @@
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
   ""
-  "brki\tr0,-1"
+  "bri\t0"
  [(set_attr "type" "trap")]
 )
 

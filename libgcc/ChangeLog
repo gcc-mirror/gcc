@@ -1,3 +1,7 @@
+2020-04-04  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack.c: Only use __mmap on glibc >= 2.26.
+
 2020-04-03  Ian Lance Taylor  <iant@golang.org>
 
 	* generic-morestack.c: On GNU/Linux use __mmap/__munmap rather

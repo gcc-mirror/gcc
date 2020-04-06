@@ -60,7 +60,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    glibc on GNU/Linux we can avoid the problem by calling __mmap and
    __munmap.  */
 
-#ifdef __gnu_linux__
+#if defined(__gnu_linux__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
 
 extern void *__mmap (void *, size_t, int, int, int, off_t);
 extern int __munmap (void *, size_t);
