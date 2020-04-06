@@ -1,3 +1,12 @@
+2020-04-06  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp
+	* module.cc (depset::hash::make_dependency): Imported namespaces
+	from a partition don't have PARTITION_P set.
+	(module_state::write): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/part-5_[abc].C: New.
+
 2020-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94476

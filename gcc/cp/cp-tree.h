@@ -1732,6 +1732,10 @@ check_constraint_info (tree t)
 
 /* True if we're the primary interface and this decl was imported from
    a partition, or is in the PMF (not implemented).  */
+// FIXME: We can probably elide this, as we can simply find the
+// importing module and note it is a partition.  Plus we cannot set
+// this on a namespace, because that'd confuse other users of the same
+// namespace
 #define DECL_MODULE_PARTITION_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_partition_p)
 

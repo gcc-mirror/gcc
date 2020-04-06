@@ -612,7 +612,7 @@ diagnostic_action_after_output (diagnostic_context *context,
       fnotice (stderr, "compilation terminated.\n");
 #if 1
       fnotice (stderr, "THIS IS AN IN-DEVELOPMENT COMPILER,"
-	       " it ate something it didn't agree with\n"
+	       " it ate something that didn't agree with it\n"
 	       "See %s, WHICH IS NOT THE USUAL REPORTING MECHANISM!\n",
 	       bug_report_url);
 #endif

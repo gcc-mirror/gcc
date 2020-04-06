@@ -8380,7 +8380,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
   else if (TREE_CODE (ctx) != FUNCTION_DECL
 	   || TREE_CODE (decl) == TEMPLATE_DECL
 	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
-	   || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl)
+	   || (DECL_LANG_SPECIFIC (decl)
+	       && DECL_MODULE_IMPORT_P (decl)
 	       && !DECL_MODULE_PARTITION_P (decl)))
     dep = dep_hash->add_dependency (decl,
 				    TREE_CODE (decl) == NAMESPACE_DECL
@@ -11960,14 +11961,21 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	       && DECL_MODULE_IMPORT_P (decl)
 	       && !DECL_MODULE_PARTITION_P (decl))
 	{
-	  dep->set_flag_bit<DB_IMPORTED_BIT> ();
 	  /* Store the module number and index in cluster/section, so
 	     we don't have to look them up again.  */
 	  unsigned index = import_entity_index (decl);
 	  module_state *from = import_entity_module (index);
-	  gcc_checking_assert (from->remap);
-	  dep->cluster = index - from->entity_lwm;
-	  dep->section = from->remap;
+	  if (!from->remap)
+	    // FIXME: We can't set DECL_MODULE_PARTITION_P on a
+	    // namespace, because it is shared.  See fixme in
+	    // cp-tree.h about getting rid of D_M_P_P
+	    gcc_checking_assert (ek == EK_NAMESPACE);
+	  else
+	    {
+	      dep->cluster = index - from->entity_lwm;
+	      dep->section = from->remap;
+	      dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	    }
 	}
       else if (ek == EK_DECL
 	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
@@ -17747,14 +17755,17 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      base[0]->cluster = counts[MSC_entities]++;
 	      spaces.quick_push (base[0]);
 	      counts[MSC_namespaces]++;
-	      if (CHECKING_P && !base[0]->is_import ())
+	      if (CHECKING_P)
 		{
 		  /* Add it to the entity map, such that we can tell it is
 		     part of us.  */
 		  bool existed;
 		  unsigned *slot = &entity_map->get_or_insert
 		    (DECL_UID (decl), &existed);
-		  gcc_checking_assert (!existed);
+		  if (existed)
+		    /* It must have come from a partition.  */
+		    gcc_checking_assert
+		      (import_entity_module (*slot)->is_partition ());
 		  *slot = ~base[0]->cluster;
 		}
 	      dump (dumper::CLUSTER) && dump ("Cluster namespace %N", decl);
