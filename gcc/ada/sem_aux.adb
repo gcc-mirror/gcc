@@ -1330,6 +1330,15 @@ package body Sem_Aux is
                                N_Protected_Definition);
    end Is_Protected_Operation;
 
+   -------------------------------
+   -- Is_Record_Or_Limited_Type --
+   -------------------------------
+
+   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean is
+   begin
+      return Is_Record_Type (Typ) or else Is_Limited_Type (Typ);
+   end Is_Record_Or_Limited_Type;
+
    ----------------------
    -- Nearest_Ancestor --
    ----------------------

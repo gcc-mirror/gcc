@@ -12717,10 +12717,13 @@ package body Exp_Ch4 is
                 Left_Opnd  => L,
                 Right_Opnd => R);
 
-            --  We reset the Entity since we do not want to bypass the operator
-            --  resolution.
+            if Is_Record_Or_Limited_Type (Etype (Alt)) then
 
-            Set_Entity (Cond, Empty);
+               --  We reset the Entity in order to use the primitive equality
+               --  of the type, as per RM 4.5.2 (28.1/4).
+
+               Set_Entity (Cond, Empty);
+            end if;
          end if;
 
          return Cond;
