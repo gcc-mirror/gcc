@@ -16781,7 +16781,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	      /* vpshufb only works intra lanes, it is not
 		 possible to shuffle bytes in between the lanes.  */
 	      for (i = 0; i < nelt; ++i)
-		if ((d->perm[i] ^ i) & (nelt / 4))
+		if ((d->perm[i] ^ i) & (3 * nelt / 4))
 		  return false;
 	    }
 	}
