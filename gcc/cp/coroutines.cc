@@ -2832,7 +2832,9 @@ maybe_promote_captured_temps (tree *stmt, void *d)
 	    sloc = DECL_SOURCE_LOCATION (orig_temp);
 	  DECL_SOURCE_LOCATION (newvar) = sloc;
 	  DECL_CHAIN (newvar) = varlist;
-	  varlist = newvar;
+	  varlist = newvar; /* Chain it onto the list for the bind expr.  */
+	  /* Declare and initialze it in the new bind scope.  */
+	  add_decl_expr (newvar);
 	  tree stmt
 	    = build2_loc (sloc, INIT_EXPR, var_type, newvar, to_replace);
 	  stmt = coro_build_cvt_void_expr_stmt (stmt, sloc);
