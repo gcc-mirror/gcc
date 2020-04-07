@@ -742,20 +742,26 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	}
       if (code == CALL_EXPR)
 	{
-	  call_expr_arg_iterator iter;
-	  tree arg;
 	  print_node (file, "fn", CALL_EXPR_FN (node), indent + 4);
 	  print_node (file, "static_chain", CALL_EXPR_STATIC_CHAIN (node),
 		      indent + 4);
-	  i = 0;
-	  FOR_EACH_CALL_EXPR_ARG (arg, iter, node)
+
+	  call_expr_arg_iterator iter;
+	  init_call_expr_arg_iterator (node, &iter);
+	  while (more_call_expr_args_p (&iter))
 	    {
 	      /* Buffer big enough to format a 32-bit UINT_MAX into, plus
 		 the text.  */
 	      char temp[15];
-	      sprintf (temp, "arg:%u", i);
-	      print_node (file, temp, arg, indent + 4);
-	      i++;
+	      sprintf (temp, "arg:%u", iter.i);
+	      tree arg = next_call_expr_arg (&iter);
+	      if (arg)
+		print_node (file, temp, arg, indent + 4);
+	      else
+		{
+		  indent_to (file, indent + 4);
+		  fprintf (file, "%s NULL", temp);
+		}
 	    }
 	}
       else
