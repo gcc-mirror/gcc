@@ -1,3 +1,16 @@
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Remove use of typeof for addr pointer parameters
+	and remove const_ptr enums.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h (vsubq_n): Merge with...
+	(vsubq): ... this.
+	(vmulq_n): Merge with...
+	(vmulq): ... this.
+	(__ARM_mve_typeid): Simplify scalar and constant detection.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94509
