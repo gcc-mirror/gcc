@@ -416,6 +416,7 @@ static void try_generate_repro (const char **argv);
 static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
+static const char *if_exists_then_else_spec_function (int, const char **);
 static const char *sanitize_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
 static const char *remove_outfile_spec_function (int, const char **);
@@ -1723,6 +1724,7 @@ static const struct spec_function static_spec_functions[] =
   { "getenv",                   getenv_spec_function },
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
+  { "if-exists-then-else",	if_exists_then_else_spec_function },
   { "sanitize",			sanitize_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
   { "remove-outfile",		remove_outfile_spec_function },
@@ -10085,6 +10087,29 @@ if_exists_else_spec_function (int argc, const char **argv)
     return argv[0];
 
   return argv[1];
+}
+
+/* if-exists-then-else built-in spec function.
+
+   Checks to see if the file specified by the absolute pathname in
+   the first arg exists.  Returns the second arg if so, otherwise returns
+   the third arg if it is present.  */
+
+static const char *
+if_exists_then_else_spec_function (int argc, const char **argv)
+{
+
+  /* Must have two or three arguments.  */
+  if (argc != 2 && argc != 3)
+    return NULL;
+
+  if (IS_ABSOLUTE_PATH (argv[0]) && ! access (argv[0], R_OK))
+    return argv[1];
+
+  if (argc == 3)
+    return argv[2];
+
+  return NULL;
 }
 
 /* sanitize built-in spec function.
