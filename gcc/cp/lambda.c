@@ -1112,6 +1112,8 @@ maybe_add_lambda_conv_op (tree type)
     while (src)
       {
 	tree new_node = copy_node (src);
+	/* We set DECL_CONTEXT of NEW_NODE to the statfn below.
+	   Notice this is creating a recursive type!  */
 
 	/* Clear TREE_ADDRESSABLE on thunk arguments.  */
 	TREE_ADDRESSABLE (new_node) = 0;

@@ -10186,9 +10186,15 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  key.constraints = reqs;
 		}
 
-	      if (decl != inner || name == conv_op_identifier)
+	      if (IDENTIFIER_CONV_OP_P (name)
+		  || (decl != inner
+		      && !(name == fun_identifier
+			   /* In case the user names something _FUN  */
+			   && LAMBDA_TYPE_P (DECL_CONTEXT (inner)))))
 		/* And a function template, or conversion operator needs
-		   the return type.  */
+		   the return type.  Except for the _FUN thunk of a
+		   generic lambda, which has a recursive decl_type'd
+		   return type.  */
 		// FIXME: What if the return type is a voldemort?
 		key.ret = fndecl_declared_return_type (inner);
 	    }
@@ -10727,7 +10733,11 @@ trees_in::is_matching_decl (tree existing, tree decl)
     {
       tree e_ret = fndecl_declared_return_type (existing);
       tree d_ret = fndecl_declared_return_type (decl);
-      if (!same_type_p (e_ret, d_ret))
+
+      if (decl != inner && DECL_NAME (inner) == fun_identifier
+	  && LAMBDA_TYPE_P (DECL_CONTEXT (inner)))
+	/* This has a recursive type that will compare different.  */;
+      else if (!same_type_p (e_ret, d_ret))
 	goto mismatch;
 
       tree e_type = TREE_TYPE (existing);
@@ -12912,7 +12922,11 @@ depset_cmp (const void *a_, const void *b_)
 
 /* Sort the clusters in SCC such that those that depend on one another
    are placed later.   */
-
+// FIXME: I am still not convinced this is both needed and sufficient.
+// We emit the decls in this order but that emission could walk into
+// later decls (from the body of the decl, or default arg-like
+// things).  Why doesn't that walk do the right thing?  And if it DTRT
+// why do we need to sort here -- won't things naturally work?
 static void
 sort_cluster (depset::hash *original, depset *scc[], unsigned size)
 {
