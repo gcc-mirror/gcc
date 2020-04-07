@@ -1,3 +1,15 @@
+2020-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94520
+	* include/std/charconv (__integer_to_chars_result_type)
+	(__integer_from_chars_result_type): Use __or_ instead of __or_v_ to
+	allow use in C++14.
+	* testsuite/20_util/from_chars/1.cc: Run test as C++14 and replace
+	use of std::string_view with std::string.
+	* testsuite/20_util/from_chars/2.cc: Likewise.
+	* testsuite/20_util/to_chars/1.cc: Likewise.
+	* testsuite/20_util/to_chars/2.cc: Likewise.
+
 2020-04-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94498
