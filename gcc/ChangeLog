@@ -1,3 +1,11 @@
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94291
+	PR rtl-optimization/84169
+	* combine.c (try_combine): For split_i2i3, don't assume SET_DEST
+	must be a REG or SUBREG of REG; if it is not one of these, don't
+	update LOG_LINKs.
+
 2020-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94479
