@@ -26,7 +26,7 @@ package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
 is
    type Big_Real is private with
---    Real_Literal => From_String,
+     Real_Literal => From_String,
      Put_Image    => Put_Image;
 
    function Is_Valid (Arg : Big_Real) return Boolean
