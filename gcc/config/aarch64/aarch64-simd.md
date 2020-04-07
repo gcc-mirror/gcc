@@ -1012,31 +1012,17 @@
 						     tmp));
           DONE;
         }
-      else
-        {
-          operands[2] = force_reg (SImode, operands[2]);
-        }
-    }
-  else if (MEM_P (operands[2]))
-    {
-      operands[2] = force_reg (SImode, operands[2]);
     }
 
-  if (REG_P (operands[2]))
-    {
-      rtx tmp = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_aarch64_simd_dup<mode> (tmp,
-					     convert_to_mode (<VEL>mode,
-							      operands[2],
-							      0)));
-      emit_insn (gen_aarch64_simd_reg_sshl<mode> (operands[0], operands[1],
-						  tmp));
-      DONE;
-    }
-  else
-    FAIL;
-}
-)
+  operands[2] = force_reg (SImode, operands[2]);
+
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_aarch64_simd_dup<mode> (tmp, convert_to_mode (<VEL>mode,
+							       operands[2],
+							       0)));
+  emit_insn (gen_aarch64_simd_reg_sshl<mode> (operands[0], operands[1], tmp));
+  DONE;
+})
 
 (define_expand "lshr<mode>3"
   [(match_operand:VDQ_I 0 "register_operand" "")
@@ -1059,31 +1045,19 @@
 						  tmp));
 	  DONE;
 	}
-      else
-        operands[2] = force_reg (SImode, operands[2]);
-    }
-  else if (MEM_P (operands[2]))
-    {
-      operands[2] = force_reg (SImode, operands[2]);
     }
 
-  if (REG_P (operands[2]))
-    {
-      rtx tmp = gen_reg_rtx (SImode);
-      rtx tmp1 = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_negsi2 (tmp, operands[2]));
-      emit_insn (gen_aarch64_simd_dup<mode> (tmp1,
-					     convert_to_mode (<VEL>mode,
-							      tmp, 0)));
-      emit_insn (gen_aarch64_simd_reg_shl<mode>_unsigned (operands[0],
-							  operands[1],
-							  tmp1));
-      DONE;
-    }
-  else
-    FAIL;
-}
-)
+  operands[2] = force_reg (SImode, operands[2]);
+
+  rtx tmp = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_negsi2 (tmp, operands[2]));
+  emit_insn (gen_aarch64_simd_dup<mode> (tmp1,
+					 convert_to_mode (<VEL>mode, tmp, 0)));
+  emit_insn (gen_aarch64_simd_reg_shl<mode>_unsigned (operands[0], operands[1],
+						      tmp1));
+  DONE;
+})
 
 (define_expand "ashr<mode>3"
   [(match_operand:VDQ_I 0 "register_operand" "")
@@ -1106,31 +1080,19 @@
 						  tmp));
           DONE;
 	}
-      else
-        operands[2] = force_reg (SImode, operands[2]);
-    }
-  else if (MEM_P (operands[2]))
-    {
-      operands[2] = force_reg (SImode, operands[2]);
     }
 
-  if (REG_P (operands[2]))
-    {
-      rtx tmp = gen_reg_rtx (SImode);
-      rtx tmp1 = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_negsi2 (tmp, operands[2]));
-      emit_insn (gen_aarch64_simd_dup<mode> (tmp1,
-					     convert_to_mode (<VEL>mode,
-							      tmp, 0)));
-      emit_insn (gen_aarch64_simd_reg_shl<mode>_signed (operands[0],
-							operands[1],
-							tmp1));
-      DONE;
-    }
-  else
-    FAIL;
-}
-)
+  operands[2] = force_reg (SImode, operands[2]);
+
+  rtx tmp = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_negsi2 (tmp, operands[2]));
+  emit_insn (gen_aarch64_simd_dup<mode> (tmp1, convert_to_mode (<VEL>mode,
+								tmp, 0)));
+  emit_insn (gen_aarch64_simd_reg_shl<mode>_signed (operands[0], operands[1],
+						    tmp1));
+  DONE;
+})
 
 (define_expand "vashl<mode>3"
  [(match_operand:VDQ_I 0 "register_operand" "")
