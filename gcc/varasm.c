@@ -5136,6 +5136,26 @@ struct oc_local_state {
 static void
 output_constructor_array_range (oc_local_state *local)
 {
+  /* Perform the index calculation in modulo arithmetic but
+     sign-extend the result because Ada has negative DECL_FIELD_OFFSETs
+     but we are using an unsigned sizetype.  */
+  unsigned prec = TYPE_PRECISION (sizetype);
+  offset_int idx = wi::sext (wi::to_offset (TREE_OPERAND (local->index, 0))
+			     - wi::to_offset (local->min_index), prec);
+  tree valtype = TREE_TYPE (local->val);
+  HOST_WIDE_INT fieldpos
+    = (idx * wi::to_offset (TYPE_SIZE_UNIT (valtype))).to_short_addr ();
+
+  /* Advance to offset of this element.  */
+  if (fieldpos > local->total_bytes)
+    {
+      assemble_zeros (fieldpos - local->total_bytes);
+      local->total_bytes = fieldpos;
+    }
+  else
+    /* Must not go backwards.  */
+    gcc_assert (fieldpos == local->total_bytes);
+
   unsigned HOST_WIDE_INT fieldsize
     = int_size_in_bytes (TREE_TYPE (local->type));
 

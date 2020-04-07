@@ -1,13 +1,19 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94303
+	* varasm.c (output_constructor_array_range): If local->index
+	RANGE_EXPR doesn't start at the current location in the constructor,
+	skip needed number of bytes using assemble_zeros or assert we don't
+	go backwards.
+
 	2020-03-25  Richard Biener  <rguenther@suse.de>
 		    Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94283
 	* tree-if-conv.c (ifcvt_local_dce): Delete dead statements backwards.
-
-2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	2020-03-24  Jakub Jelinek  <jakub@redhat.com>
 
