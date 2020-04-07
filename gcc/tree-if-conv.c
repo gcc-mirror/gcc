@@ -2913,9 +2913,12 @@ ifcvt_local_dce (basic_block bb)
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
-      if (gimple_store_p (stmt)
-	  || gimple_assign_load_p (stmt)
-	  || is_gimple_debug (stmt))
+      if (is_gimple_debug (stmt))
+	{
+	  gimple_set_plf (stmt, GF_PLF_2, true);
+	  continue;
+	}
+      if (gimple_store_p (stmt) || gimple_assign_load_p (stmt))
 	{
 	  gimple_set_plf (stmt, GF_PLF_2, true);
 	  worklist.safe_push (stmt);
@@ -2936,7 +2939,7 @@ ifcvt_local_dce (basic_block bb)
 	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
 	    {
 	      stmt1 = USE_STMT (use_p);
-	      if (gimple_bb (stmt1) != bb)
+	      if (!is_gimple_debug (stmt1) && gimple_bb (stmt1) != bb)
 		{
 		  gimple_set_plf (stmt, GF_PLF_2, true);
 		  worklist.safe_push (stmt);
@@ -2959,8 +2962,7 @@ ifcvt_local_dce (basic_block bb)
 	  if (TREE_CODE (use) != SSA_NAME)
 	    continue;
 	  stmt1 = SSA_NAME_DEF_STMT (use);
-	  if (gimple_bb (stmt1) != bb
-	      || gimple_plf (stmt1, GF_PLF_2))
+	  if (gimple_bb (stmt1) != bb || gimple_plf (stmt1, GF_PLF_2))
 	    continue;
 	  gimple_set_plf (stmt1, GF_PLF_2, true);
 	  worklist.safe_push (stmt1);
