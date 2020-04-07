@@ -1,6 +1,11 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94423
+	* gcc.dg/ubsan/pr94423.c: New test.
+
 	2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94412

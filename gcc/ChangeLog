@@ -1,14 +1,19 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94423
+	* tree-object-size.c (pass_object_sizes::execute): Don't call
+	replace_uses_by for SSA_NAME_OCCURS_IN_ABNORMAL_PHI lhs, instead
+	call replace_call_with_value.
+
 	2020-03-31  Marc Glisse  <marc.glisse@inria.fr>
 		    Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94412
 	* fold-const.c (fold_binary_loc) <case TRUNC_DIV_EXPR>: Use
 	ANY_INTEGRAL_TYPE_P instead of INTEGRAL_TYPE_P.
-
-2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	2020-03-30  Jakub Jelinek  <jakub@redhat.com>
 
