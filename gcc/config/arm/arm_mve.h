@@ -13585,29 +13585,33 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_m_n_u8 (uint8x16_t __inactive, uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_vdwdupq_m_n_uv16qi (__inactive, __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_m_n_uv16qi (__inactive, __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_m_n_u32 (uint32x4_t __inactive, uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_vdwdupq_m_n_uv4si (__inactive, __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_m_n_uv4si (__inactive, __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_m_n_u16 (uint16x8_t __inactive, uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_vdwdupq_m_n_uv8hi (__inactive, __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_m_n_uv8hi (__inactive, __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_m_wb_u8 (uint8x16_t __inactive, uint32_t * __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint8x16_t __res =  __builtin_mve_vdwdupq_m_n_uv16qi (__inactive, *__a, __b, __imm, __p);
-  *__a = __builtin_mve_vdwdupq_m_wb_uv16qi (__inactive, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint8x16_t __res =  __builtin_mve_vdwdupq_m_n_uv16qi (__inactive, *__a, __c, __imm, __p);
+  *__a = __builtin_mve_vdwdupq_m_wb_uv16qi (__inactive, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -13615,8 +13619,9 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_m_wb_u32 (uint32x4_t __inactive, uint32_t * __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint32x4_t __res =  __builtin_mve_vdwdupq_m_n_uv4si (__inactive, *__a, __b, __imm, __p);
-  *__a = __builtin_mve_vdwdupq_m_wb_uv4si (__inactive, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint32x4_t __res =  __builtin_mve_vdwdupq_m_n_uv4si (__inactive, *__a, __c, __imm, __p);
+  *__a = __builtin_mve_vdwdupq_m_wb_uv4si (__inactive, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -13624,8 +13629,9 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_m_wb_u16 (uint16x8_t __inactive, uint32_t * __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint16x8_t __res =  __builtin_mve_vdwdupq_m_n_uv8hi (__inactive, *__a, __b, __imm, __p);
-  *__a = __builtin_mve_vdwdupq_m_wb_uv8hi (__inactive, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint16x8_t __res =  __builtin_mve_vdwdupq_m_n_uv8hi (__inactive, *__a, __c, __imm, __p);
+  *__a = __builtin_mve_vdwdupq_m_wb_uv8hi (__inactive, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -13633,29 +13639,33 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_n_u8 (uint32_t __a, uint32_t __b, const int __imm)
 {
-  return __builtin_mve_vdwdupq_n_uv16qi (__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_n_uv16qi (__a, __c, __imm);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_n_u32 (uint32_t __a, uint32_t __b, const int __imm)
 {
-  return __builtin_mve_vdwdupq_n_uv4si (__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_n_uv4si (__a, __c, __imm);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_n_u16 (uint32_t __a, uint32_t __b, const int __imm)
 {
-  return __builtin_mve_vdwdupq_n_uv8hi (__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_n_uv8hi (__a, __c, __imm);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_wb_u8 (uint32_t * __a, uint32_t __b, const int __imm)
 {
-  uint8x16_t __res = __builtin_mve_vdwdupq_n_uv16qi (*__a, __b, __imm);
-  *__a = __builtin_mve_vdwdupq_wb_uv16qi (*__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint8x16_t __res = __builtin_mve_vdwdupq_n_uv16qi (*__a, __c, __imm);
+  *__a = __builtin_mve_vdwdupq_wb_uv16qi (*__a, __c, __imm);
   return __res;
 }
 
@@ -13663,8 +13673,9 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_wb_u32 (uint32_t * __a, uint32_t __b, const int __imm)
 {
-  uint32x4_t __res = __builtin_mve_vdwdupq_n_uv4si (*__a, __b, __imm);
-  *__a = __builtin_mve_vdwdupq_wb_uv4si (*__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint32x4_t __res = __builtin_mve_vdwdupq_n_uv4si (*__a, __c, __imm);
+  *__a = __builtin_mve_vdwdupq_wb_uv4si (*__a, __c, __imm);
   return __res;
 }
 
@@ -13672,8 +13683,9 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_wb_u16 (uint32_t * __a, uint32_t __b, const int __imm)
 {
-  uint16x8_t __res = __builtin_mve_vdwdupq_n_uv8hi (*__a, __b, __imm);
-  *__a = __builtin_mve_vdwdupq_wb_uv8hi (*__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint16x8_t __res = __builtin_mve_vdwdupq_n_uv8hi (*__a, __c, __imm);
+  *__a = __builtin_mve_vdwdupq_wb_uv8hi (*__a, __c, __imm);
   return __res;
 }
 
@@ -13804,29 +13816,33 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_m_n_u8 (uint8x16_t __inactive, uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_viwdupq_m_n_uv16qi (__inactive, __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_m_n_uv16qi (__inactive, __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_m_n_u32 (uint32x4_t __inactive, uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_viwdupq_m_n_uv4si (__inactive, __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_m_n_uv4si (__inactive, __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_m_n_u16 (uint16x8_t __inactive, uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_viwdupq_m_n_uv8hi (__inactive, __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_m_n_uv8hi (__inactive, __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_m_wb_u8 (uint8x16_t __inactive, uint32_t * __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint8x16_t __res = __builtin_mve_viwdupq_m_n_uv16qi (__inactive, *__a, __b, __imm, __p);
-  *__a =  __builtin_mve_viwdupq_m_wb_uv16qi (__inactive, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint8x16_t __res = __builtin_mve_viwdupq_m_n_uv16qi (__inactive, *__a, __c, __imm, __p);
+  *__a =  __builtin_mve_viwdupq_m_wb_uv16qi (__inactive, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -13834,8 +13850,9 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_m_wb_u32 (uint32x4_t __inactive, uint32_t * __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint32x4_t __res = __builtin_mve_viwdupq_m_n_uv4si (__inactive, *__a, __b, __imm, __p);
-  *__a =  __builtin_mve_viwdupq_m_wb_uv4si (__inactive, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint32x4_t __res = __builtin_mve_viwdupq_m_n_uv4si (__inactive, *__a, __c, __imm, __p);
+  *__a =  __builtin_mve_viwdupq_m_wb_uv4si (__inactive, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -13843,8 +13860,9 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_m_wb_u16 (uint16x8_t __inactive, uint32_t * __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint16x8_t __res = __builtin_mve_viwdupq_m_n_uv8hi (__inactive, *__a, __b, __imm, __p);
-  *__a =  __builtin_mve_viwdupq_m_wb_uv8hi (__inactive, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint16x8_t __res = __builtin_mve_viwdupq_m_n_uv8hi (__inactive, *__a, __c, __imm, __p);
+  *__a =  __builtin_mve_viwdupq_m_wb_uv8hi (__inactive, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -13852,29 +13870,33 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_n_u8 (uint32_t __a, uint32_t __b, const int __imm)
 {
-  return __builtin_mve_viwdupq_n_uv16qi (__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_n_uv16qi (__a, __c, __imm);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_n_u32 (uint32_t __a, uint32_t __b, const int __imm)
 {
-  return __builtin_mve_viwdupq_n_uv4si (__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_n_uv4si (__a, __c, __imm);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_n_u16 (uint32_t __a, uint32_t __b, const int __imm)
 {
-  return __builtin_mve_viwdupq_n_uv8hi (__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_n_uv8hi (__a, __c, __imm);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_wb_u8 (uint32_t * __a, uint32_t __b, const int __imm)
 {
-  uint8x16_t __res = __builtin_mve_viwdupq_n_uv16qi (*__a, __b, __imm);
-  *__a = __builtin_mve_viwdupq_wb_uv16qi (*__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint8x16_t __res = __builtin_mve_viwdupq_n_uv16qi (*__a, __c, __imm);
+  *__a = __builtin_mve_viwdupq_wb_uv16qi (*__a, __c, __imm);
   return __res;
 }
 
@@ -13882,8 +13904,9 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_wb_u32 (uint32_t * __a, uint32_t __b, const int __imm)
 {
-  uint32x4_t __res = __builtin_mve_viwdupq_n_uv4si (*__a, __b, __imm);
-  *__a = __builtin_mve_viwdupq_wb_uv4si (*__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint32x4_t __res = __builtin_mve_viwdupq_n_uv4si (*__a, __c, __imm);
+  *__a = __builtin_mve_viwdupq_wb_uv4si (*__a, __c, __imm);
   return __res;
 }
 
@@ -13891,10 +13914,12 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_wb_u16 (uint32_t * __a, uint32_t __b, const int __imm)
 {
-  uint16x8_t __res = __builtin_mve_viwdupq_n_uv8hi (*__a, __b, __imm);
-  *__a = __builtin_mve_viwdupq_wb_uv8hi (*__a, __b, __imm);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint16x8_t __res = __builtin_mve_viwdupq_n_uv8hi (*__a, __c, __imm);
+  *__a = __builtin_mve_viwdupq_wb_uv8hi (*__a, __c, __imm);
   return __res;
 }
+
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -14095,30 +14120,34 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_x_n_u8 (uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_vdwdupq_m_n_uv16qi (vuninitializedq_u8 (), __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_m_n_uv16qi (__arm_vuninitializedq_u8 (), __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_x_n_u16 (uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_vdwdupq_m_n_uv8hi (vuninitializedq_u16 (), __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_m_n_uv8hi (__arm_vuninitializedq_u16 (), __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_x_n_u32 (uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_vdwdupq_m_n_uv4si (vuninitializedq_u32 (), __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_vdwdupq_m_n_uv4si (__arm_vuninitializedq_u32 (), __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_x_wb_u8 (uint32_t *__a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint8x16_t __arg1 = vuninitializedq_u8 ();
-  uint8x16_t __res = __builtin_mve_vdwdupq_m_n_uv16qi (__arg1, *__a, __b, __imm, __p);
-  *__a = __builtin_mve_vdwdupq_m_wb_uv16qi (__arg1, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint8x16_t __arg1 = __arm_vuninitializedq_u8 ();
+  uint8x16_t __res = __builtin_mve_vdwdupq_m_n_uv16qi (__arg1, *__a, __c, __imm, __p);
+  *__a = __builtin_mve_vdwdupq_m_wb_uv16qi (__arg1, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -14126,9 +14155,10 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_x_wb_u16 (uint32_t *__a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint16x8_t __arg1 = vuninitializedq_u16 ();
-  uint16x8_t __res =  __builtin_mve_vdwdupq_m_n_uv8hi (__arg1, *__a, __b, __imm, __p);
-  *__a = __builtin_mve_vdwdupq_m_wb_uv8hi (__arg1, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint16x8_t __arg1 = __arm_vuninitializedq_u16 ();
+  uint16x8_t __res =  __builtin_mve_vdwdupq_m_n_uv8hi (__arg1, *__a, __c, __imm, __p);
+  *__a = __builtin_mve_vdwdupq_m_wb_uv8hi (__arg1, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -14136,9 +14166,10 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vdwdupq_x_wb_u32 (uint32_t *__a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint32x4_t __arg1 = vuninitializedq_u32 ();
-  uint32x4_t __res =  __builtin_mve_vdwdupq_m_n_uv4si (__arg1, *__a, __b, __imm, __p);
-  *__a = __builtin_mve_vdwdupq_m_wb_uv4si (__arg1, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint32x4_t __arg1 = __arm_vuninitializedq_u32 ();
+  uint32x4_t __res =  __builtin_mve_vdwdupq_m_n_uv4si (__arg1, *__a, __c, __imm, __p);
+  *__a = __builtin_mve_vdwdupq_m_wb_uv4si (__arg1, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -14197,30 +14228,34 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_x_n_u8 (uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_viwdupq_m_n_uv16qi (vuninitializedq_u8 (), __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_m_n_uv16qi (__arm_vuninitializedq_u8 (), __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_x_n_u16 (uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_viwdupq_m_n_uv8hi (vuninitializedq_u16 (), __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_m_n_uv8hi (__arm_vuninitializedq_u16 (), __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_x_n_u32 (uint32_t __a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  return __builtin_mve_viwdupq_m_n_uv4si (vuninitializedq_u32 (), __a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  return __builtin_mve_viwdupq_m_n_uv4si (__arm_vuninitializedq_u32 (), __a, __c, __imm, __p);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_x_wb_u8 (uint32_t *__a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint8x16_t __arg1 = vuninitializedq_u8 ();
-  uint8x16_t __res = __builtin_mve_viwdupq_m_n_uv16qi (__arg1, *__a, __b, __imm, __p);
-  *__a =  __builtin_mve_viwdupq_m_wb_uv16qi (__arg1, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint8x16_t __arg1 = __arm_vuninitializedq_u8 ();
+  uint8x16_t __res = __builtin_mve_viwdupq_m_n_uv16qi (__arg1, *__a, __c, __imm, __p);
+  *__a =  __builtin_mve_viwdupq_m_wb_uv16qi (__arg1, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -14228,9 +14263,10 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_x_wb_u16 (uint32_t *__a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint16x8_t __arg1 = vuninitializedq_u16 ();
-  uint16x8_t __res = __builtin_mve_viwdupq_m_n_uv8hi (__arg1, *__a, __b, __imm, __p);
-  *__a =  __builtin_mve_viwdupq_m_wb_uv8hi (__arg1, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint16x8_t __arg1 = __arm_vuninitializedq_u16 ();
+  uint16x8_t __res = __builtin_mve_viwdupq_m_n_uv8hi (__arg1, *__a, __c, __imm, __p);
+  *__a =  __builtin_mve_viwdupq_m_wb_uv8hi (__arg1, *__a, __c, __imm, __p);
   return __res;
 }
 
@@ -14238,9 +14274,10 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_viwdupq_x_wb_u32 (uint32_t *__a, uint32_t __b, const int __imm, mve_pred16_t __p)
 {
-  uint32x4_t __arg1 = vuninitializedq_u32 ();
-  uint32x4_t __res = __builtin_mve_viwdupq_m_n_uv4si (__arg1, *__a, __b, __imm, __p);
-  *__a =  __builtin_mve_viwdupq_m_wb_uv4si (__arg1, *__a, __b, __imm, __p);
+  uint64_t __c = ((uint64_t) __b) << 32;
+  uint32x4_t __arg1 = __arm_vuninitializedq_u32 ();
+  uint32x4_t __res = __builtin_mve_viwdupq_m_n_uv4si (__arg1, *__a, __c, __imm, __p);
+  *__a =  __builtin_mve_viwdupq_m_wb_uv4si (__arg1, *__a, __c, __imm, __p);
   return __res;
 }
 

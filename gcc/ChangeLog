@@ -1,5 +1,10 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm_mve.h: Fix v[id]wdup intrinsics.
+	* config/arm/mve/md: Fix v[id]wdup patterns.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm.c (output_move_neon): Deal with label + offset cases.
 	* config/arm/mve.md (*mve_mov<mode>): Handle const vectors.
 

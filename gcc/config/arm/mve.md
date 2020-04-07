@@ -9853,7 +9853,7 @@
 (define_expand "mve_vdwdupq_n_u<mode>"
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")]
  "TARGET_HAVE_MVE"
 {
@@ -9870,7 +9870,7 @@
 (define_expand "mve_vdwdupq_wb_u<mode>"
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")
   (unspec:MVE_2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
  "TARGET_HAVE_MVE"
@@ -9888,16 +9888,16 @@
 (define_insn "mve_vdwdupq_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
-		       (match_operand:SI 3 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 3 "s_register_operand" "r") 4)
 		       (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")]
 	 VDWDUPQ))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
-		    (match_dup 3)
+		    (subreg:SI (match_dup 3) 4)
 		    (match_dup 4)]
 	 VDWDUPQ))]
   "TARGET_HAVE_MVE"
-  "vdwdup.u%#<V_sz_elem>\t%q0, %2, %3, %4"
+  "vdwdup.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
 )
 
 ;;
@@ -9907,7 +9907,7 @@
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -9927,7 +9927,7 @@
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -9945,22 +9945,22 @@
 ;;
 (define_insn "mve_vdwdupq_m_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "w")
+	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		       (match_operand:SI 3 "s_register_operand" "1")
-		       (match_operand:SI 4 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 4 "s_register_operand" "r") 4)
 		       (match_operand:SI 5 "mve_imm_selective_upto_8" "Rg")
 		       (match_operand:HI 6 "vpr_register_operand" "Up")]
 	 VDWDUPQ_M))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
 		    (match_dup 3)
-		    (match_dup 4)
+		    (subreg:SI (match_dup 4) 4)
 		    (match_dup 5)
 		    (match_dup 6)]
 	 VDWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;\tvdwdupt.u%#<V_sz_elem>\t%q2, %3, %4, %5"
+  "vpst\;\tvdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -9970,7 +9970,7 @@
 (define_expand "mve_viwdupq_n_u<mode>"
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")]
  "TARGET_HAVE_MVE"
 {
@@ -9987,7 +9987,7 @@
 (define_expand "mve_viwdupq_wb_u<mode>"
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")
   (unspec:MVE_2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
  "TARGET_HAVE_MVE"
@@ -10005,16 +10005,16 @@
 (define_insn "mve_viwdupq_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
-		       (match_operand:SI 3 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 3 "s_register_operand" "r") 4)
 		       (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")]
 	 VIWDUPQ))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
-		    (match_dup 3)
+		    (subreg:SI (match_dup 3) 4)
 		    (match_dup 4)]
 	 VIWDUPQ))]
   "TARGET_HAVE_MVE"
-  "viwdup.u%#<V_sz_elem>\t%q0, %2, %3, %4"
+  "viwdup.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
 )
 
 ;;
@@ -10024,7 +10024,7 @@
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -10044,7 +10044,7 @@
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -10062,24 +10062,25 @@
 ;;
 (define_insn "mve_viwdupq_m_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "w")
+	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		       (match_operand:SI 3 "s_register_operand" "1")
-		       (match_operand:SI 4 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 4 "s_register_operand" "r") 4)
 		       (match_operand:SI 5 "mve_imm_selective_upto_8" "Rg")
 		       (match_operand:HI 6 "vpr_register_operand" "Up")]
 	 VIWDUPQ_M))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
 		    (match_dup 3)
-		    (match_dup 4)
+		    (subreg:SI (match_dup 4) 4)
 		    (match_dup 5)
 		    (match_dup 6)]
 	 VIWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;\tviwdupt.u%#<V_sz_elem>\t%q2, %3, %4, %5"
+  "vpst\;\tviwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
+
 (define_expand "mve_vstrwq_scatter_base_wb_<supf>v4si"
   [(match_operand:V4SI 0 "s_register_operand" "=w")
    (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
