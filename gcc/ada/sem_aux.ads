@@ -362,6 +362,9 @@ package Sem_Aux is
    --  Given a subprogram or entry, determines whether E is a protected entry
    --  or subprogram.
 
+   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean;
+   --  Return True if Typ requires is a record or limited type.
+
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from
    --  which constraints and predicates are inherited. There is no simple link

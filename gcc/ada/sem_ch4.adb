@@ -3018,10 +3018,14 @@ package body Sem_Ch4 is
                Op := Make_Op_Ne (Loc, Left_Opnd  => L, Right_Opnd => R);
             end if;
 
-            --  We reset the Entity since we do not want to bypass the operator
-            --  resolution.
+            if Is_Record_Or_Limited_Type (Etype (L)) then
 
-            Set_Entity (Op, Empty);
+               --  We reset the Entity in order to use the primitive equality
+               --  of the type, as per RM 4.5.2 (28.1/4).
+
+               Set_Entity (Op, Empty);
+            end if;
+
             Rewrite (N, Op);
             Analyze (N);
             return;
