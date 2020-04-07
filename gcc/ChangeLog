@@ -1,3 +1,9 @@
+2020-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94479
+	* gimplify.c (gimplify_addr_expr): Also consider generated
+	MEM_REFs.
+
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm_mve.h: Add C++ polymorphism and fix preserve MACROs.
