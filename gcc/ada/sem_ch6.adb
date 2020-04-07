@@ -552,6 +552,37 @@ package body Sem_Ch6 is
                   Check_Limited_Return (Original_Node (N), Expr, Typ);
                   End_Scope;
                end if;
+
+               --  In the case of an expression function marked with the
+               --  aspect Static, we need to check the requirement that the
+               --  function's expression is a potentially static expression.
+               --  This is done by making a full copy of the expression tree
+               --  and performing a special preanalysis on that tree with
+               --  the global flag Checking_Potentially_Static_Expression
+               --  enabled. If the resulting expression is static, then it's
+               --  OK, but if not, that means the expression violates the
+               --  requirements of the Ada 202x RM in 4.9(3.2/5-3.4/5) and
+               --  we flag an error.
+
+               if Is_Static_Expression_Function (Def_Id) then
+                  if not Is_Static_Expression (Expr) then
+                     declare
+                        Exp_Copy : constant Node_Id := New_Copy_Tree (Expr);
+                     begin
+                        Set_Checking_Potentially_Static_Expression (True);
+
+                        Preanalyze_Formal_Expression (Exp_Copy, Typ);
+
+                        if not Is_Static_Expression (Exp_Copy) then
+                           Error_Msg_N
+                             ("static expression function requires "
+                                & "potentially static expression", Expr);
+                        end if;
+
+                        Set_Checking_Potentially_Static_Expression (False);
+                     end;
+                  end if;
+               end if;
             end if;
          end;
       end if;

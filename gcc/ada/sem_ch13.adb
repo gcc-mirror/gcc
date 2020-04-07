@@ -1792,6 +1792,9 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Relaxed_Initialization;
             --  Perform analysis of aspect Relaxed_Initialization
 
+            procedure Analyze_Aspect_Static;
+            --  Ada 202x (AI12-0075): Perform analysis of aspect Static
+
             procedure Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
                Pragma_Name                  : Name_Id);
@@ -2308,6 +2311,129 @@ package body Sem_Ch13 is
                   Error_Msg_N ("inappropriate entity for aspect %", E);
                end if;
             end Analyze_Aspect_Relaxed_Initialization;
+
+            ---------------------------
+            -- Analyze_Aspect_Static --
+            ---------------------------
+
+            procedure Analyze_Aspect_Static is
+            begin
+               if Ada_Version < Ada_2020 then
+                  Error_Msg_N
+                    ("aspect % is an Ada 202x feature", Aspect);
+                  Error_Msg_N ("\compile with -gnat2020", Aspect);
+
+                  return;
+
+               --  The aspect applies only to expression functions that
+               --  statisfy the requirements for a static expression function
+               --  (such as having an expression that is predicate-static).
+
+               elsif not Is_Expression_Function (E) then
+                  Error_Msg_N
+                    ("aspect % requires expression function", Aspect);
+
+                  return;
+
+               --  Ada 202x (AI12-0075): Check that the function satisfies
+               --  several requirements of static expression functions as
+               --  specified in RM 6.8(5.1-5.8). Note that some of the
+               --  requirements given there are checked elsewhere.
+
+               else
+                  --  The expression of the expression function must be a
+                  --  potentially static expression (RM 202x 6.8(3.2-3.4)).
+                  --  That's checked in Sem_Ch6.Analyze_Expression_Function.
+
+                  --  The function must not contain any calls to itself, which
+                  --  is checked in Sem_Res.Resolve_Call.
+
+                  --  Each formal must be of mode in and have a static subtype
+
+                  declare
+                     Formal : Entity_Id := First_Formal (E);
+                  begin
+                     while Present (Formal) loop
+                        if Ekind (Formal) /= E_In_Parameter then
+                           Error_Msg_N
+                             ("aspect % requires formals of mode IN",
+                              Aspect);
+
+                           return;
+                        end if;
+
+                        if not Is_Static_Subtype (Etype (Formal)) then
+                           Error_Msg_N
+                             ("aspect % requires formals with static subtypes",
+                              Aspect);
+
+                           return;
+                        end if;
+
+                        Next_Formal (Formal);
+                     end loop;
+                  end;
+
+                  --  The function's result subtype must be a static subtype
+
+                  if not Is_Static_Subtype (Etype (E)) then
+                     Error_Msg_N
+                       ("aspect % requires function with result of "
+                        & "a static subtype",
+                        Aspect);
+
+                     return;
+                  end if;
+
+                  --  Check that the function does not have any applicable
+                  --  precondition or postcondition expression.
+
+                  for Asp in Pre_Post_Aspects loop
+                     if Has_Aspect (E, Asp) then
+                        Error_Msg_N
+                          ("this aspect not allowed for static expression "
+                             & "functions", Find_Aspect (E, Asp));
+
+                        return;
+                     end if;
+                  end loop;
+
+                  --  ??? TBD: Must check that "for result type R, if the
+                  --  function is a boundary entity for type R (see 7.3.2),
+                  --  no type invariant applies to type R; if R has a
+                  --  component type C, a similar rule applies to C."
+               end if;
+
+               --  Preanalyze the expression (if any) when the aspect resides
+               --  in a generic unit. (Is this generic-related code necessary
+               --  for this aspect? It's modeled on what's done for aspect
+               --  Disable_Controlled. ???)
+
+               if Inside_A_Generic then
+                  if Present (Expr) then
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+               --  Otherwise the aspect resides in a nongeneric context
+
+               else
+                  --  When the expression statically evaluates to True, the
+                  --  expression function is treated as a static function.
+                  --  Otherwise the aspect appears without an expression and
+                  --  defaults to True.
+
+                  if Present (Expr) then
+                     Analyze_And_Resolve (Expr, Any_Boolean);
+
+                     --  Error if the boolean expression is not static
+
+                     if not Is_OK_Static_Expression (Expr) then
+                        Error_Msg_N
+                          ("expression of aspect % must be static", Aspect);
+                     end if;
+                  end if;
+               end if;
+            end Analyze_Aspect_Static;
 
             -----------------------
             -- Make_Aitem_Pragma --
@@ -4056,6 +4182,12 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Disable_Controlled then
                      Analyze_Aspect_Disable_Controlled;
+                     goto Continue;
+
+                  --  Ada 202x (AI12-0075): static expression functions
+
+                  elsif A_Id = Aspect_Static then
+                     Analyze_Aspect_Static;
                      goto Continue;
                   end if;
 
