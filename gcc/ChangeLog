@@ -1,5 +1,10 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm_mve.h: Replace all uses of vuninitializedq_* with the
+	same with '__arm_' prefix.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/mve.md (mve_vec_extract*): Allow memory operands in set.
 
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
