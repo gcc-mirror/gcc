@@ -48,6 +48,7 @@ public:
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
   virtual void range_on_exit (irange &r, basic_block bb, tree name);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+  virtual void range_on_edge (irange &r, edge e, tree name);
 
   void export_global_ranges ();
 
@@ -57,6 +58,7 @@ protected:
   virtual void range_of_ssa_name (irange &r, tree name, gimple *s = NULL);
   bool range_from_import (irange &r, tree name, irange &import_range);
 private:
+  typedef gimple_ranger super;  // Inherited from class for easy changing.
   bool non_null_deref_p (tree name, basic_block bb);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
   void dump_block (FILE *f, basic_block bb);

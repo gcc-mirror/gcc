@@ -86,7 +86,6 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 
 
 // Calculate a range for NAME on edge E and return it in R.
-// Return false if no range can be determined.
 
 void
 gimple_ranger::range_on_edge (irange &r, edge e, tree name)

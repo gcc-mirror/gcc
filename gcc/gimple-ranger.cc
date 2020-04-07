@@ -153,6 +153,20 @@ global_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 		       || types_compatible_p (r.type(), TREE_TYPE (name)));
 }
 
+// Calculate a range for NAME on edge E and return it in R.
+
+void
+global_ranger::range_on_edge (irange &r, edge e, tree name)
+{
+  super::range_on_edge (r, e, name);
+
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      widest_irange range_for_name;
+      range_of_ssa_name (range_for_name, name);
+      r.intersect (range_for_name);
+    }
+}
 
 // Calculate a range for statement S and return it in R.  If NAME is
 // provided it represents the SSA_NAME on the LHS of the statement.
