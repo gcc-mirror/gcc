@@ -1,3 +1,15 @@
+2020-04-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94240
+	* typeinfo.cc (class TypeInfoVisitor): Replace type_ field with decl_.
+	(TypeInfoVisitor::TypeInfoVisitor): Set decl_.
+	(TypeInfoVisitor::result): Update.
+	(TypeInfoVisitor::internal_reference): New function.
+	(TypeInfoVisitor::layout_string): Use internal_reference.
+	(TypeInfoVisitor::visit (TypeInfoTupleDeclaration *)): Likewise.
+	(layout_typeinfo): Construct TypeInfoVisitor with typeinfo decl.
+	(layout_classinfo): Likewise.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
