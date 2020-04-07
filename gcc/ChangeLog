@@ -1,3 +1,9 @@
+2020-04-07  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/92264
+	* config/h8300/h8300.md (mov;add peephole2): Avoid applying when
+	the destination is the stack pointer.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94291
