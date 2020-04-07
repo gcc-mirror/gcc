@@ -1,6 +1,12 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* gcc.target/i386/avx512vl-pr93069.c: New test.
+	* gcc.dg/vect/pr93069.c: New test.
+
 	2020-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94329
