@@ -7332,7 +7332,16 @@ trees_out::tpl_parm_value (tree parm)
   if (inner != parm)
     tree_node_vals (inner);
   if (type)
-    tree_node_vals (type);
+    {
+      tree_node_vals (type);
+      if (DECL_NAME (inner) == auto_identifier
+	  || DECL_NAME (inner) == decltype_auto_identifier)
+	{
+	  /* Placeholder auto.  */
+	  tree_node (DECL_INITIAL (inner));
+	  tree_node (DECL_SIZE_UNIT (inner));
+	}
+    }
 
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Wrote template parm:%d %C:%N",
@@ -7390,6 +7399,13 @@ trees_in::tpl_parm_value ()
   if (type)
     {
       tree_node_vals (type);
+      if (DECL_NAME (inner) == auto_identifier
+	  || DECL_NAME (inner) == decltype_auto_identifier)
+	{
+	  /* Placeholder auto.  */
+	  DECL_INITIAL (inner) = tree_node ();
+	  DECL_SIZE_UNIT (inner) = tree_node ();
+	}
       if (TYPE_CANONICAL (type))
 	{
 	  gcc_checking_assert (TYPE_CANONICAL (type) == type);
@@ -8522,8 +8538,8 @@ trees_out::type_node (tree type)
     }
 
   if (tree name = TYPE_NAME (type))
-    if (DECL_TEMPLATE_PARM_P (name)
-	|| (TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
+    if ((TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
+	|| DECL_TEMPLATE_PARM_P (name)
 	|| TREE_CODE (type) == RECORD_TYPE
 	|| TREE_CODE (type) == UNION_TYPE
 	|| TREE_CODE (type) == ENUMERAL_TYPE)

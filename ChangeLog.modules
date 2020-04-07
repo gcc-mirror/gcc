@@ -1,10 +1,17 @@
 2020-04-07  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parm_value): Stream auto
+	placeholder & constraints.
+	gcc/testsuite/
+	* g++.dg/modules/lambda-4{,_[ab]}.[hHC]: New.
+
 	_FUN with recursive types (pun intended)
 	gcc/cp/
 	* module.cc (trees_out::key_mergeable): A lambda's static _FUN has
 	a recursive return type.
 	(trees_in::is_matching_decl): Likewise.
+	gcc/testsuite/
 	* g++.dg/modules/lambda-4{,_[ab]}.[hHC]: New.
 	* g++.dg/modules/concept-6_b.C: Remove xfail.
 
