@@ -1,12 +1,14 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94509
+	* config/i386/i386.c (expand_vec_perm_pshufb): Fix the check
+	for inter-lane permutation for 64-byte modes.
+
 	PR target/94488
 	* config/aarch64/aarch64-simd.md (ashl<mode>3, lshr<mode>3,
 	ashr<mode>3): Force operands[2] into reg whenever it is not CONST_INT.
 	Assume it is a REG after that instead of testing it and doing FAIL
 	otherwise.  Formatting fix.
-
-2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
 	2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
