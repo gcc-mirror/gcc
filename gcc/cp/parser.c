@@ -37820,9 +37820,9 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 	  cp_parser_end_omp_structured_block (parser, save);
 	  stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
 				      block);
-	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  if (ret == NULL_TREE)
 	    return ret;
+	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
       else if (!flag_openmp)  /* flag_openmp_simd  */

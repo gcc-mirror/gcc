@@ -17631,9 +17631,9 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
 	  stmt = c_finish_omp_parallel (loc,
 					cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
 					block);
-	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  if (ret == NULL)
 	    return ret;
+	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
       else if (!flag_openmp)  /* flag_openmp_simd  */

@@ -1,5 +1,8 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94512
+	* g++.dg/gomp/pr94512.C: New test.
+
 	PR target/94488
 	* gcc.c-torture/compile/pr94488.c: New test.
 
