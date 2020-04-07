@@ -98,6 +98,12 @@ else
     DRUNTIME_SOURCES_CONFIGURED += config/x86/switchcontext.S
 endif
 endif
+if DRUNTIME_CPU_SYSTEMZ
+    DRUNTIME_SOURCES_CONFIGURED += config/systemz/get_tls_offset.S
+endif
+if DRUNTIME_CPU_S390
+    DRUNTIME_SOURCES_CONFIGURED += config/s390/get_tls_offset.S
+endif
 
 # Provide __start_minfo, __stop_minfo if linker doesn't.
 if !DRUNTIME_OS_MINFO_BRACKETING

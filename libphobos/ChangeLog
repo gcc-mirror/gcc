@@ -1,3 +1,14 @@
+2020-04-07  Robin Dapp  <rdapp@linux.ibm.com>
+	    Stefan Liebler  <stli@linux.ibm.com>
+
+	* configure: Regenerate.
+	* libdruntime/Makefile.am: Add s390x and s390.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/s390/get_tls_offset.S: New file.
+	* libdruntime/config/systemz/get_tls_offset.S: New file.
+	* libdruntime/gcc/sections/elf_shared.d: Use ibmz_get_tls_offset.
+	* m4/druntime/cpu.m4: Add s390x and s390.
+
 2020-04-07  Stefan Liebler  <stli@linux.ibm.com>
 
 	* libdruntime/core/sys/posix/signal.d:
