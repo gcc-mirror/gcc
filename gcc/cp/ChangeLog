@@ -1,5 +1,8 @@
 2020-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/94480
+	* parser.c (cp_parser_requires_expression): Use tentative_firewall.
+
 	PR c++/94481
 	* parser.c (cp_parser_placeholder_type_specifier): Use
 	matching_parens.

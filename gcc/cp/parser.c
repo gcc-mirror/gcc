@@ -27740,6 +27740,9 @@ cp_parser_requires_expression (cp_parser *parser)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES));
   location_t loc = cp_lexer_consume_token (parser->lexer)->location;
 
+  /* Avoid committing to outer tentative parse.  */
+  tentative_firewall firewall (parser);
+
   /* This is definitely a requires-expression.  */
   cp_parser_commit_to_tentative_parse (parser);
 
