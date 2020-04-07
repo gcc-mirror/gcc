@@ -3084,14 +3084,12 @@ package body Sem_Aggr is
       Analyze (A);
       Check_Parameterless_Call (A);
 
-      --  In SPARK, the ancestor part cannot be a type mark
-
       if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
 
          --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
          --  must not have unknown discriminants.
 
-         if Has_Unknown_Discriminants (Root_Type (Typ)) then
+         if Has_Unknown_Discriminants (Entity (A)) then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
                  & "has unknown discriminants", N, Typ);
@@ -4291,6 +4289,10 @@ package body Sem_Aggr is
 
          --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
          --  must not have unknown discriminants.
+         --  ??? We are not checking any subtype mark here and this code is not
+         --  exercised by any test, so it's likely wrong (in particular
+         --  we should not use Root_Type here but the subtype mark, if any),
+         --  and possibly not needed.
 
          if Is_Derived_Type (Typ)
            and then Has_Unknown_Discriminants (Root_Type (Typ))
