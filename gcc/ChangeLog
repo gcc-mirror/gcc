@@ -1,5 +1,9 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm_mve.h: Cast some pointers to expected types.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm_mve.h: Replace all uses of vuninitializedq_* with the
 	same with '__arm_' prefix.
 
