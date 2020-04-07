@@ -1,6 +1,12 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94459
+	* g++.dg/debug/pr94459.C: New test.
+
 	2020-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94477

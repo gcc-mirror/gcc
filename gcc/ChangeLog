@@ -1,6 +1,15 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-04-04  Hannes Domani  <ssbssa@yahoo.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94459
+	* dwarf2out.c (gen_subprogram_die): Look through references, pointers,
+	arrays, pointer-to-members, function types and qualifiers when
+	checking if in-class DIE had an 'auto' or 'decltype(auto)' return type
+	to emit type again on definition.
+
 	2020-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94460
@@ -8,8 +17,6 @@
 	avx2_ph<plusminus_mnemonic>dv8si3): Fix up RTL pattern to do
 	second half of first lane from first lane of second operand and
 	first half of second lane from second lane of first operand.
-
-2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	2020-04-01  Jakub Jelinek  <jakub@redhat.com>
 
