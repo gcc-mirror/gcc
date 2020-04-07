@@ -1,5 +1,9 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm.d (ashldi3): Don't use lsll for constant 32-bit shifts.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm_mve.h: Fix v[id]wdup intrinsics.
 	* config/arm/mve/md: Fix v[id]wdup patterns.
 
