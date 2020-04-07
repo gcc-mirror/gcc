@@ -1,5 +1,8 @@
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94512
+	* g++.dg/gomp/pr94512.C: New test.
+
 	PR target/94500
 	* gcc.target/i386/avx512bw-pr94500.c: New test.
 

@@ -1,3 +1,9 @@
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94512
+	* parser.c (cp_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
+	if cp_parser_omp_master succeeded.
+
 2020-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94462
