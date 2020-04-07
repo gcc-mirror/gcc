@@ -1,3 +1,8 @@
+2020-04-07  Stefan Liebler  <stli@linux.ibm.com>
+
+	* libdruntime/core/sys/posix/signal.d:
+	Add struct sigaction_t for SystemZ.
+
 2020-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/92792
