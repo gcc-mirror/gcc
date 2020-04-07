@@ -15,7 +15,7 @@ foo (float32x4_t a, float32_t b)
 float32x4_t
 foo1 (float32x4_t a, float32_t b)
 {
-  return vmulq_n (a, b);
+  return vmulq (a, b);
 }
 
 /* { dg-final { scan-assembler "vmul.f32"  }  } */

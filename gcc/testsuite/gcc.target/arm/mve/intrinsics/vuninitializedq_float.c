@@ -4,11 +4,12 @@
 
 #include "arm_mve.h"
 
+float16x8_t fa;
+float32x4_t fb;
+
 void
 foo ()
 {
-  float16x8_t fa;
-  float32x4_t fb;
   fa = vuninitializedq_f16 ();
   fb = vuninitializedq_f32 ();
 }

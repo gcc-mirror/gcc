@@ -15,23 +15,29 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
-// { dg-do run { target c++17 } }
+// { dg-do run { target c++14 } }
 // { dg-require-string-conversions "" }
 
 #include <charconv>
-#include <string_view>
+#if __cplusplus >= 201703L
+# include <string_view>
+using std::string_view;
+#else
+// <charconv> is supported in C++14 as a GNU extension
+# include <string>
+using string_view = std::string;
+#endif
 
 template<typename I>
 bool
-check_to_chars(I val, std::string_view expected, int base = 0)
+check_to_chars(I val, string_view expected, int base = 0)
 {
   // Space for minus sign, 64 binary digits, final '*', and null terminator:
   char buf[67] = "******************************************************************";
   std::to_chars_result r = base == 0
     ? std::to_chars(buf, buf+sizeof(buf), val)
     : std::to_chars(buf, buf+sizeof(buf), val, base);
-  return r.ec == std::errc{} && *r.ptr == '*' && std::string_view(buf, r.ptr - buf) == expected;
+  return r.ec == std::errc{} && *r.ptr == '*' && string_view(buf, r.ptr - buf) == expected;
 }
 
 #include <string>
@@ -78,7 +84,7 @@ test01()
   VERIFY( check_to_chars<signed long long>(123, "123") );
   VERIFY( check_to_chars<unsigned long long>(123, "123") );
 
-  if constexpr (std::is_signed_v<char>)
+  if (std::is_signed<char>::value)
     VERIFY( check_to_chars<char>(-79, "-79") );
   VERIFY( check_to_chars<signed char>(-79, "-79") );
   VERIFY( check_to_chars<signed short>(-79, "-79") );
@@ -160,7 +166,7 @@ test02()
   VERIFY( check_to_chars<signed long long>(123, "123", 10) );
   VERIFY( check_to_chars<unsigned long long>(123, "123", 10) );
 
-  if constexpr (std::is_signed_v<char>)
+  if (std::is_signed<char>::value)
     VERIFY( check_to_chars<char>(-79, "-79", 10) );
   VERIFY( check_to_chars<signed char>(-79, "-79", 10) );
   VERIFY( check_to_chars<signed short>(-79, "-79", 10) );
@@ -385,7 +391,7 @@ test03()
     VERIFY( check_to_chars<signed long long>(1, "1", base) );
     VERIFY( check_to_chars<unsigned long long>(1, "1", base) );
 
-    if constexpr (std::is_signed_v<char>)
+    if (std::is_signed<char>::value)
       VERIFY( check_to_chars<char>(-1, "-1", base) );
     VERIFY( check_to_chars<signed char>(-1, "-1", base) );
     VERIFY( check_to_chars<signed short>(-1, "-1", base) );
@@ -407,7 +413,7 @@ test03()
       VERIFY( check_to_chars<signed long long>(2, "2", base) );
       VERIFY( check_to_chars<unsigned long long>(2, "2", base) );
 
-      if constexpr (std::is_signed_v<char>)
+      if (std::is_signed<char>::value)
 	VERIFY( check_to_chars<char>(-2, "-2", base) );
       VERIFY( check_to_chars<signed char>(-2, "-2", base) );
       VERIFY( check_to_chars<signed short>(-2, "-2", base) );
@@ -466,7 +472,7 @@ test04()
   VERIFY( check_to_chars<signed long long>(123, to_string(123), 8) );
   VERIFY( check_to_chars<unsigned long long>(123, to_string(123), 8) );
 
-  if constexpr (std::is_signed_v<char>)
+  if (std::is_signed<char>::value)
     VERIFY( check_to_chars<char>(-79, to_string(-79), 8) );
   VERIFY( check_to_chars<signed char>(-79, to_string(-79), 8) );
   VERIFY( check_to_chars<signed short>(-79, to_string(-79), 8) );
@@ -534,7 +540,7 @@ test05()
   VERIFY( check_to_chars<signed long long>(123, to_string(123), 16) );
   VERIFY( check_to_chars<unsigned long long>(123, to_string(123), 16) );
 
-  if constexpr (std::is_signed_v<char>)
+  if (std::is_signed<char>::value)
     VERIFY( check_to_chars<char>(-79, to_string(-79), 16) );
   VERIFY( check_to_chars<signed char>(-79, to_string(-79), 16) );
   VERIFY( check_to_chars<signed short>(-79, to_string(-79), 16) );
@@ -610,7 +616,7 @@ test06()
   VERIFY( check_to_chars<signed long long>(123, to_string(123), 2) );
   VERIFY( check_to_chars<unsigned long long>(123, to_string(123), 2) );
 
-  if constexpr (std::is_signed_v<char>)
+  if (std::is_signed<char>::value)
     VERIFY( check_to_chars<char>(-79, to_string(-79), 2) );
   VERIFY( check_to_chars<signed char>(-79, to_string(-79), 2) );
   VERIFY( check_to_chars<signed short>(-79, to_string(-79), 2) );

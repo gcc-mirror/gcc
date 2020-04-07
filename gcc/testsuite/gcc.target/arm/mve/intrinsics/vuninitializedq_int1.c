@@ -4,17 +4,18 @@
 
 #include "arm_mve.h"
 
+int8x16_t a, aa;
+int16x8_t b, bb;
+int32x4_t c, cc;
+int64x2_t d, dd;
+uint8x16_t ua, uaa;
+uint16x8_t ub, ubb;
+uint32x4_t uc, ucc;
+uint64x2_t ud, udd;
+
 void
 foo ()
 {
-  int8x16_t a, aa;
-  int16x8_t b, bb;
-  int32x4_t c, cc;
-  int64x2_t d, dd;
-  uint8x16_t ua, uaa;
-  uint16x8_t ub, ubb;
-  uint32x4_t uc, ucc;
-  uint64x2_t ud, udd;
   a = vuninitializedq (aa);
   b = vuninitializedq (bb);
   c = vuninitializedq (cc);

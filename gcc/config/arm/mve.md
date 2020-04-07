@@ -401,8 +401,10 @@
 			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
 			(VCTP32Q_M "32") (VCTP64Q_M "64")])
 (define_mode_attr MVE_pred2 [(V16QI "mve_imm_8") (V8HI "mve_imm_16")
-			     (V4SI "mve_imm_32")])
-(define_mode_attr MVE_constraint2 [(V16QI "Rb") (V8HI "Rd") (V4SI "Rf")])
+			     (V4SI "mve_imm_32")
+			     (V8HF "mve_imm_16") (V4SF "mve_imm_32")])
+(define_mode_attr MVE_constraint2 [(V16QI "Rb") (V8HI "Rd") (V4SI "Rf")
+				    (V8HF "Rd") (V4SF "Rf")])
 (define_mode_attr MVE_LANES [(V16QI "16") (V8HI "8") (V4SI "4")])
 (define_mode_attr MVE_constraint [ (V16QI "Ra") (V8HI "Rc") (V4SI "Re")])
 (define_mode_attr MVE_pred [ (V16QI "mve_imm_7") (V8HI "mve_imm_15")
@@ -695,9 +697,9 @@
     case 2:
       return "vmov\t%Q0, %R0, %e1  @ <mode>\;vmov\t%J0, %K0, %f1";
     case 4:
-      if ((TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))
-	  || (MEM_P (operands[1])
-	      && GET_CODE (XEXP (operands[1], 0)) == LABEL_REF))
+      if (MEM_P (operands[1])
+	  && (GET_CODE (XEXP (operands[1], 0)) == LABEL_REF
+	      || GET_CODE (XEXP (operands[1], 0)) == CONST))
 	return output_move_neon (operands);
       else
 	return "vldrb.8 %q0, %E1";
@@ -1330,7 +1332,7 @@
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")
-		       (match_operand:SI 2 "mve_imm_16" "Rd")]
+		       (match_operand:SI 2 "<MVE_pred2>" "<MVE_constraint2>")]
 	 VCVTQ_N_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -1389,7 +1391,7 @@
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")
-		       (match_operand:SI 2 "mve_imm_16" "Rd")]
+		       (match_operand:SI 2 "<MVE_pred2>" "<MVE_constraint2>")]
 	 VCVTQ_N_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -5484,7 +5486,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "<MVE_pred1>" "<MVE_constraint1>")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQSHRNBQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -5500,7 +5502,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQSHRNTQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -5516,7 +5518,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "immediate_operand" "i")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQSHRUNBQ_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -5532,7 +5534,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQSHRUNTQ_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -5868,7 +5870,7 @@
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:MVE_5 1 "s_register_operand" "0")
 		       (match_operand:<MVE_CNVT> 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_16" "Rd")
+		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VCVTQ_M_N_FROM_F))
   ]
@@ -6030,7 +6032,7 @@
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:<MVE_CNVT> 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_16" "Rd")
+		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VCVTQ_M_N_TO_F))
   ]
@@ -7134,11 +7136,11 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "<MVE_pred1>" "<MVE_constraint1>")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VQSHRNBQ_M_N))
   ]
-  "TARGET_HAVE_MVE && arm_mve_immediate_check (operands[3], <MODE>mode, 0)"
+  "TARGET_HAVE_MVE"
   "vpst\n\tvqshrnbt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
@@ -7151,7 +7153,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VQSHRNTQ_M_N))
   ]
@@ -7440,7 +7442,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VQRSHRUNTQ_M_N_S))
   ]
@@ -7457,7 +7459,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VQSHRUNBQ_M_N_S))
   ]
@@ -7474,7 +7476,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:HI 4 "vpr_register_operand" "Up")]
 	 VQSHRUNTQ_M_N_S))
   ]
@@ -9853,7 +9855,7 @@
 (define_expand "mve_vdwdupq_n_u<mode>"
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")]
  "TARGET_HAVE_MVE"
 {
@@ -9870,7 +9872,7 @@
 (define_expand "mve_vdwdupq_wb_u<mode>"
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")
   (unspec:MVE_2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
  "TARGET_HAVE_MVE"
@@ -9888,16 +9890,16 @@
 (define_insn "mve_vdwdupq_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
-		       (match_operand:SI 3 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 3 "s_register_operand" "r") 4)
 		       (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")]
 	 VDWDUPQ))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
-		    (match_dup 3)
+		    (subreg:SI (match_dup 3) 4)
 		    (match_dup 4)]
 	 VDWDUPQ))]
   "TARGET_HAVE_MVE"
-  "vdwdup.u%#<V_sz_elem>\t%q0, %2, %3, %4"
+  "vdwdup.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
 )
 
 ;;
@@ -9907,7 +9909,7 @@
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -9927,7 +9929,7 @@
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -9945,22 +9947,22 @@
 ;;
 (define_insn "mve_vdwdupq_m_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "w")
+	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		       (match_operand:SI 3 "s_register_operand" "1")
-		       (match_operand:SI 4 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 4 "s_register_operand" "r") 4)
 		       (match_operand:SI 5 "mve_imm_selective_upto_8" "Rg")
 		       (match_operand:HI 6 "vpr_register_operand" "Up")]
 	 VDWDUPQ_M))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
 		    (match_dup 3)
-		    (match_dup 4)
+		    (subreg:SI (match_dup 4) 4)
 		    (match_dup 5)
 		    (match_dup 6)]
 	 VDWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;\tvdwdupt.u%#<V_sz_elem>\t%q2, %3, %4, %5"
+  "vpst\;\tvdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -9970,7 +9972,7 @@
 (define_expand "mve_viwdupq_n_u<mode>"
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")]
  "TARGET_HAVE_MVE"
 {
@@ -9987,7 +9989,7 @@
 (define_expand "mve_viwdupq_wb_u<mode>"
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
+  (match_operand:DI 2 "s_register_operand")
   (match_operand:SI 3 "mve_imm_selective_upto_8")
   (unspec:MVE_2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
  "TARGET_HAVE_MVE"
@@ -10005,16 +10007,16 @@
 (define_insn "mve_viwdupq_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
-		       (match_operand:SI 3 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 3 "s_register_operand" "r") 4)
 		       (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")]
 	 VIWDUPQ))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
-		    (match_dup 3)
+		    (subreg:SI (match_dup 3) 4)
 		    (match_dup 4)]
 	 VIWDUPQ))]
   "TARGET_HAVE_MVE"
-  "viwdup.u%#<V_sz_elem>\t%q0, %2, %3, %4"
+  "viwdup.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
 )
 
 ;;
@@ -10024,7 +10026,7 @@
  [(match_operand:MVE_2 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -10044,7 +10046,7 @@
  [(match_operand:SI 0 "s_register_operand")
   (match_operand:MVE_2 1 "s_register_operand")
   (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "s_register_operand")
+  (match_operand:DI 3 "s_register_operand")
   (match_operand:SI 4 "mve_imm_selective_upto_8")
   (match_operand:HI 5 "vpr_register_operand")]
  "TARGET_HAVE_MVE"
@@ -10062,24 +10064,25 @@
 ;;
 (define_insn "mve_viwdupq_m_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "w")
+	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		       (match_operand:SI 3 "s_register_operand" "1")
-		       (match_operand:SI 4 "s_register_operand" "r")
+		       (subreg:SI (match_operand:DI 4 "s_register_operand" "r") 4)
 		       (match_operand:SI 5 "mve_imm_selective_upto_8" "Rg")
 		       (match_operand:HI 6 "vpr_register_operand" "Up")]
 	 VIWDUPQ_M))
    (set (match_operand:SI 1 "s_register_operand" "=e")
 	(unspec:SI [(match_dup 2)
 		    (match_dup 3)
-		    (match_dup 4)
+		    (subreg:SI (match_dup 4) 4)
 		    (match_dup 5)
 		    (match_dup 6)]
 	 VIWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;\tviwdupt.u%#<V_sz_elem>\t%q2, %3, %4, %5"
+  "vpst\;\tviwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
+
 (define_expand "mve_vstrwq_scatter_base_wb_<supf>v4si"
   [(match_operand:V4SI 0 "s_register_operand" "=w")
    (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
@@ -10990,7 +10993,7 @@
 ;; [vgetq_lane_u, vgetq_lane_s, vgetq_lane_f])
 ;;
 (define_insn "mve_vec_extract<mode><V_elem_l>"
- [(set (match_operand:<V_elem> 0 "s_register_operand" "=r")
+ [(set (match_operand:<V_elem> 0 "nonimmediate_operand" "=r")
    (vec_select:<V_elem>
     (match_operand:MVE_VLD_ST 1 "s_register_operand" "w")
     (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
@@ -11008,7 +11011,7 @@
  [(set_attr "type" "mve_move")])
 
 (define_insn "mve_vec_extractv2didi"
- [(set (match_operand:DI 0 "s_register_operand" "=r")
+ [(set (match_operand:DI 0 "nonimmediate_operand" "=r")
    (vec_select:DI
     (match_operand:V2DI 1 "s_register_operand" "w")
     (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
@@ -11021,7 +11024,7 @@
   if (elt == 0)
    return "vmov\t%Q0, %R0, %e1";
   else
-   return "vmov\t%J0, %K0, %f1";
+   return "vmov\t%Q0, %R0, %f1";
 }
  [(set_attr "type" "mve_move")])
 

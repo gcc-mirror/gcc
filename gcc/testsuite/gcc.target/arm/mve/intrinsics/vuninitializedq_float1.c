@@ -4,13 +4,14 @@
 
 #include "arm_mve.h"
 
+float16x8_t fa, faa;
+float32x4_t fb, fbb;
+
 void
 foo ()
 {
-  float16x8_t fa, faa;
-  float32x4_t fb, fbb;
   fa = vuninitializedq (faa);
   fb = vuninitializedq (fbb);
 }
 
-/* { dg-final { scan-assembler-times "vstrb.8" 4444} */
+/* { dg-final { scan-assembler-times "vstrb.8" 6 } } */

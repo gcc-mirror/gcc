@@ -1,3 +1,28 @@
+2020-04-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (maybe_promote_captured_temps): Ensure that
+	reference capture placeholder vars are properly declared.
+
+2020-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* tree.c (replace_placeholders): Look through all handled components,
+	not just COMPONENT_REFs.
+	* typeck2.c (process_init_constructor_array): Propagate
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY up from each element initializer to
+	the array initializer.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94512
+	* parser.c (cp_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
+	if cp_parser_omp_master succeeded.
+
+2020-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94462
+	* decl.c (duplicate_decls): Fix handling of DECL_HIDDEN_FRIEND_P.
+
 2020-04-04  Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

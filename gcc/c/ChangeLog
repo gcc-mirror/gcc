@@ -1,3 +1,9 @@
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94512
+	* c-parser.c (c_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
+	if c_parser_omp_master succeeded.
+
 2020-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/94029

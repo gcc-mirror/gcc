@@ -1,3 +1,40 @@
+2020-04-07  Fritz Reese  <foreese@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93871
+	* gfortran.h (GFC_ISYM_ACOSD, GFC_ISYM_ASIND, GFC_ISYM_ATAN2D,
+	GFC_ISYM_ATAND, GFC_ISYM_COSD, GFC_ISYM_COTAND, GFC_ISYM_SIND,
+	GFC_ISYM_TAND): New.
+	* intrinsic.c (add_functions): Remove check for flag_dec_math.
+	Give degree trig functions simplification and name resolution
+	functions (e.g, gfc_simplify_atrigd () and gfc_resolve_atrigd ()).
+	(do_simplify): Remove special casing of degree trig functions.
+	* intrinsic.h (gfc_simplify_acosd, gfc_simplify_asind,
+	gfc_simplify_atand, gfc_simplify_cosd, gfc_simplify_cotand,
+	gfc_simplify_sind, gfc_simplify_tand, gfc_resolve_trigd2): Add new
+	prototypes.
+	(gfc_simplify_atrigd, gfc_simplify_trigd, gfc_resolve_cotan,
+	resolve_atrigd): Remove prototypes of deleted functions.
+	* iresolve.c (is_trig_resolved, copy_replace_function_shallow,
+	gfc_resolve_cotan, get_radians, get_degrees, resolve_trig_call,
+	gfc_resolve_atrigd, gfc_resolve_atan2d): Delete functions.
+	(gfc_resolve_trigd, gfc_resolve_trigd2): Resolve to library functions.
+	* simplify.c (rad2deg, deg2rad, gfc_simplify_acosd, gfc_simplify_asind,
+	gfc_simplify_atand, gfc_simplify_atan2d, gfc_simplify_cosd,
+	gfc_simplify_sind, gfc_simplify_tand, gfc_simplify_cotand): New
+	functions.
+	(gfc_simplify_atan2): Fix error message.
+	(simplify_trig_call, gfc_simplify_trigd, gfc_simplify_atrigd,
+	radians_f): Delete functions.
+	* trans-intrinsic.c: Add LIB_FUNCTION decls for sind, cosd, tand.
+	(rad2deg, gfc_conv_intrinsic_atrigd, gfc_conv_intrinsic_cotan,
+	gfc_conv_intrinsic_cotand, gfc_conv_intrinsic_atan2d): New functions.
+	(gfc_conv_intrinsic_function): Handle ACOSD, ASIND, ATAND, COTAN,
+	COTAND, ATAN2D.
+	* trigd_fe.inc: New file. Included by simplify.c to implement
+	simplify_sind, simplify_cosd, simplify_tand with code common to the
+	libgfortran implementation.
+
 2020-04-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/93686

@@ -1,3 +1,85 @@
+2020-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94479
+	* gimplify.c (gimplify_addr_expr): Also consider generated
+	MEM_REFs.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Add C++ polymorphism and fix preserve MACROs.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Cast some pointers to expected types.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Replace all uses of vuninitializedq_* with the
+	same with '__arm_' prefix.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (mve_vec_extract*): Allow memory operands in set.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.c (arm_mve_immediate_check): Removed.
+	* config/arm/mve.md (MVE_pred2, MVE_constraint2): Added FP types.
+	(mve_vcvtq_n_to_f_*, mve_vcvtq_n_from_f_*, mve_vqshrnbq_n_*,
+	 mve_vqshrntq_n_*, mve_vqshrunbq_n_s*, mve_vqshruntq_n_s*,
+	 mve_vcvtq_m_n_from_f_*, mve_vcvtq_m_n_to_f_*, mve_vqshrnbq_m_n_*,
+	 mve_vqrshruntq_m_n_s*, mve_vqshrunbq_m_n_s*,
+	 mve_vqshruntq_m_n_s*): Fixed immediate constraints.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.d (ashldi3): Don't use lsll for constant 32-bit shifts.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Fix v[id]wdup intrinsics.
+	* config/arm/mve/md: Fix v[id]wdup patterns.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.c (output_move_neon): Deal with label + offset cases.
+	* config/arm/mve.md (*mve_mov<mode>): Handle const vectors.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h: Remove use of typeof for addr pointer parameters
+	and remove const_ptr enums.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_mve.h (vsubq_n): Merge with...
+	(vsubq): ... this.
+	(vmulq_n): Merge with...
+	(vmulq): ... this.
+	(__ARM_mve_typeid): Simplify scalar and constant detection.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94509
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb): Fix the check
+	for inter-lane permutation for 64-byte modes.
+
+	PR target/94488
+	* config/aarch64/aarch64-simd.md (ashl<mode>3, lshr<mode>3,
+	ashr<mode>3): Force operands[2] into reg whenever it is not CONST_INT.
+	Assume it is a REG after that instead of testing it and doing FAIL
+	otherwise.  Formatting fix.
+
+2020-04-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/t-rtems: Delete mcpu=8540 multilib.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94500
+	* config/i386/i386-expand.c (emit_reduc_half): For V{64QI,32HI}mode
+	handle i < 64 using avx512bw_lshrv4ti3.  Formatting fixes.
+
 2020-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* cselib.c (cselib_subst_to_values): For SP_DERIVED_VALUE_P

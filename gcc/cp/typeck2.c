@@ -1488,6 +1488,17 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	= massage_init_elt (TREE_TYPE (type), ce->value, nested, flags,
 			    complain);
 
+      if (TREE_CODE (ce->value) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value))
+	{
+	  /* Shift CONSTRUCTOR_PLACEHOLDER_BOUNDARY from the element initializer
+	     up to the array initializer, so that the call to
+	     replace_placeholders from store_init_value can resolve any
+	     PLACEHOLDER_EXPRs inside this element initializer.  */
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	}
+
       gcc_checking_assert
 	(ce->value == error_mark_node
 	 || (same_type_ignoring_top_level_qualifiers_p
@@ -1516,6 +1527,13 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	      /* The default zero-initialization is fine for us; don't
 		 add anything to the CONSTRUCTOR.  */
 	      next = NULL_TREE;
+	    else if (TREE_CODE (next) == CONSTRUCTOR
+		     && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next))
+	      {
+		/* As above.  */
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next) = 0;
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	      }
 	  }
 	else if (!zero_init_p (TREE_TYPE (type)))
 	  next = build_zero_init (TREE_TYPE (type),
