@@ -6643,6 +6643,11 @@ Enable/disable the generation of the AMX-BF16 instructions.
 @cindex @code{target("uintr")} function attribute, x86
 Enable/disable the generation of the UINTR instructions.
 
+@item hreset
+@itemx no-hreset
+@cindex @code{target("hreset")} function attribute, x86
+Enable/disable the generation of the HRESET instruction.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

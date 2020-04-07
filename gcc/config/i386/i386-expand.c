@@ -12825,6 +12825,14 @@ rdseed_step:
       emit_insn (gen_incssp (mode, op0));
       return 0;
 
+    case IX86_BUILTIN_HRESET:
+      icode = CODE_FOR_hreset;
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      op0 = force_reg (SImode, op0);
+      emit_insn (gen_hreset (op0));
+      return 0;
+
     case IX86_BUILTIN_RSTORSSP:
     case IX86_BUILTIN_CLRSSBSY:
       arg0 = CALL_EXPR_ARG (exp, 0);

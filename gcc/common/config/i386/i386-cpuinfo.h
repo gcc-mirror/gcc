@@ -220,6 +220,7 @@ enum processor_features
   FEATURE_AMX_INT8,
   FEATURE_AMX_BF16,
   FEATURE_UINTR,
+  FEATURE_HRESET,
   CPU_FEATURE_MAX
 };
 

@@ -600,7 +600,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__MOVBE__");
   if (isa_flag2 & OPTION_MASK_ISA2_UINTR)
     def_or_undef (parse_in, "__UINTR__");
-
+  if (isa_flag2 & OPTION_MASK_ISA2_HRESET)
+    def_or_undef (parse_in, "__HRESET__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

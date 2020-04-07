@@ -1131,3 +1131,7 @@ Support AMX-INT8 built-in functions and code generation.
 mamx-bf16
 Target Report Mask(ISA2_AMX_BF16) Var(ix86_isa_flags2) Save
 Support AMX-BF16 built-in functions and code generation.
+
+mhreset
+Target Report Mask(ISA2_HRESET) Var(ix86_isa_flags2) Save
+Support HRESET built-in functions and code generation.

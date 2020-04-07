@@ -213,7 +213,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mamx-tile",	OPTION_MASK_ISA2_AMX_TILE },
   { "-mamx-int8",	OPTION_MASK_ISA2_AMX_INT8 },
   { "-mamx-bf16",	OPTION_MASK_ISA2_AMX_BF16 },
-  { "-muintr",		OPTION_MASK_ISA2_UINTR }
+  { "-muintr",		OPTION_MASK_ISA2_UINTR },
+  { "-mhreset",		OPTION_MASK_ISA2_HRESET }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1041,6 +1042,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("amx-tile", OPT_mamx_tile),
     IX86_ATTR_ISA ("amx-int8", OPT_mamx_int8),
     IX86_ATTR_ISA ("amx-bf16", OPT_mamx_bf16),
+    IX86_ATTR_ISA ("hreset", OPT_mhreset),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

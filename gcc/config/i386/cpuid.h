@@ -26,6 +26,7 @@
 
 /* %eax */
 #define bit_AVX512BF16	(1 << 5)
+#define bit_HRESET	(1 << 22)
 
 /* %ecx */
 #define bit_SSE3	(1 << 0)
