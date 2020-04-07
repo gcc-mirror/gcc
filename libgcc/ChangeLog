@@ -1,3 +1,9 @@
+2020-04-07  Ian Lance Taylor  <iant@golang.org>
+
+	PR libgcc/94513
+	* generic-morestack.c: Give up trying to use __mmap/__munmap, use
+	syscall instead.
+
 2020-04-04  Ian Lance Taylor  <iant@golang.org>
 
 	* generic-morestack.c: Only use __mmap on glibc >= 2.26.
