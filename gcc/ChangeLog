@@ -1,3 +1,7 @@
+2020-04-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/t-rtems: Delete mcpu=8540 multilib.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94500
