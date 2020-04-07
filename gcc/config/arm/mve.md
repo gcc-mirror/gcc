@@ -695,9 +695,9 @@
     case 2:
       return "vmov\t%Q0, %R0, %e1  @ <mode>\;vmov\t%J0, %K0, %f1";
     case 4:
-      if ((TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))
-	  || (MEM_P (operands[1])
-	      && GET_CODE (XEXP (operands[1], 0)) == LABEL_REF))
+      if (MEM_P (operands[1])
+	  && (GET_CODE (XEXP (operands[1], 0)) == LABEL_REF
+	      || GET_CODE (XEXP (operands[1], 0)) == CONST))
 	return output_move_neon (operands);
       else
 	return "vldrb.8 %q0, %E1";
