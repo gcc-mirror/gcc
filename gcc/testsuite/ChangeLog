@@ -1,3 +1,8 @@
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94500
+	* gcc.target/i386/avx512bw-pr94500.c: New test.
+
 2020-04-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/93435

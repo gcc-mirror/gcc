@@ -44528,43 +44528,51 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V64QImode:
     case E_V32HImode:
+      if (i < 64)
+	{
+	  d = gen_reg_rtx (V4TImode);
+	  tem = gen_avx512bw_lshrv4ti3 (d, gen_lowpart (V4TImode, src),
+					GEN_INT (i / 2));
+	  break;
+	}
+      /* FALLTHRU */
     case E_V16SImode:
     case E_V16SFmode:
     case E_V8DImode:
     case E_V8DFmode:
       if (i > 128)
 	tem = gen_avx512f_shuf_i32x4_1 (gen_lowpart (V16SImode, dest),
-				      gen_lowpart (V16SImode, src),
-				      gen_lowpart (V16SImode, src),
-				      GEN_INT (0x4 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0x5 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0x6 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0x7 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0xC), GEN_INT (0xD),
-				      GEN_INT (0xE), GEN_INT (0xF),
-				      GEN_INT (0x10), GEN_INT (0x11),
-				      GEN_INT (0x12), GEN_INT (0x13),
-				      GEN_INT (0x14), GEN_INT (0x15),
-				      GEN_INT (0x16), GEN_INT (0x17));
+					gen_lowpart (V16SImode, src),
+					gen_lowpart (V16SImode, src),
+					GEN_INT (0x4 + (i == 512 ? 4 : 0)),
+					GEN_INT (0x5 + (i == 512 ? 4 : 0)),
+					GEN_INT (0x6 + (i == 512 ? 4 : 0)),
+					GEN_INT (0x7 + (i == 512 ? 4 : 0)),
+					GEN_INT (0xC), GEN_INT (0xD),
+					GEN_INT (0xE), GEN_INT (0xF),
+					GEN_INT (0x10), GEN_INT (0x11),
+					GEN_INT (0x12), GEN_INT (0x13),
+					GEN_INT (0x14), GEN_INT (0x15),
+					GEN_INT (0x16), GEN_INT (0x17));
       else
 	tem = gen_avx512f_pshufd_1 (gen_lowpart (V16SImode, dest),
-				   gen_lowpart (V16SImode, src),
-				   GEN_INT (i == 128 ? 0x2 : 0x1),
-				   GEN_INT (0x3),
-				   GEN_INT (0x3),
-				   GEN_INT (0x3),
-				   GEN_INT (i == 128 ? 0x6 : 0x5),
-				   GEN_INT (0x7),
-				   GEN_INT (0x7),
-				   GEN_INT (0x7),
-				   GEN_INT (i == 128 ? 0xA : 0x9),
-				   GEN_INT (0xB),
-				   GEN_INT (0xB),
-				   GEN_INT (0xB),
-				   GEN_INT (i == 128 ? 0xE : 0xD),
-				   GEN_INT (0xF),
-				   GEN_INT (0xF),
-				   GEN_INT (0xF));
+				    gen_lowpart (V16SImode, src),
+				    GEN_INT (i == 128 ? 0x2 : 0x1),
+				    GEN_INT (0x3),
+				    GEN_INT (0x3),
+				    GEN_INT (0x3),
+				    GEN_INT (i == 128 ? 0x6 : 0x5),
+				    GEN_INT (0x7),
+				    GEN_INT (0x7),
+				    GEN_INT (0x7),
+				    GEN_INT (i == 128 ? 0xA : 0x9),
+				    GEN_INT (0xB),
+				    GEN_INT (0xB),
+				    GEN_INT (0xB),
+				    GEN_INT (i == 128 ? 0xE : 0xD),
+				    GEN_INT (0xF),
+				    GEN_INT (0xF),
+				    GEN_INT (0xF));
       break;
     default:
       gcc_unreachable ();
