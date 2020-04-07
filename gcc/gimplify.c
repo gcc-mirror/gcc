@@ -6086,7 +6086,9 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* For various reasons, the gimplification of the expression
 	 may have made a new INDIRECT_REF.  */
-      if (TREE_CODE (op0) == INDIRECT_REF)
+      if (TREE_CODE (op0) == INDIRECT_REF
+	  || (TREE_CODE (op0) == MEM_REF
+	      && integer_zerop (TREE_OPERAND (op0, 1))))
 	goto do_indirect_ref;
 
       mark_addressable (TREE_OPERAND (expr, 0));

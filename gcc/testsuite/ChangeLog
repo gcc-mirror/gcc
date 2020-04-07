@@ -1,3 +1,11 @@
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2020-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94479
+	* gcc.dg/torture/pr94479.c: New testcase.
+
 2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline.
