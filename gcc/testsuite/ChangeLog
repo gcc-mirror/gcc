@@ -1,5 +1,12 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: Fix testism.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c: Likewise.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/mve_vec_extracts_from_memory.c: New
 	test.
 
