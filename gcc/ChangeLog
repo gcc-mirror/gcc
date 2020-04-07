@@ -1,3 +1,11 @@
+2020-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/94518
+	2019-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_store_exclusive_pair): Fix
+	memmodel index.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94500
