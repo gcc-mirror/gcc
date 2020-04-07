@@ -282,7 +282,7 @@ package body Exp_Unst is
          --  has been scanned at this point, and thus has an entry in the
          --  subprogram table.
 
-         if E = Sub and then Convention (E) = Convention_Protected then
+         if E = Sub and then Present (Protected_Body_Subprogram (E)) then
             E := Protected_Body_Subprogram (E);
          end if;
 
