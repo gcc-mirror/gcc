@@ -1,5 +1,10 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/mve_vec_extracts_from_memory.c: New
+	test.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/mve_immediates_1_n.c: New test.
 
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>

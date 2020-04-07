@@ -1,5 +1,9 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/mve.md (mve_vec_extract*): Allow memory operands in set.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm.c (arm_mve_immediate_check): Removed.
 	* config/arm/mve.md (MVE_pred2, MVE_constraint2): Added FP types.
 	(mve_vcvtq_n_to_f_*, mve_vcvtq_n_from_f_*, mve_vqshrnbq_n_*,

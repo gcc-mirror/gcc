@@ -10993,7 +10993,7 @@
 ;; [vgetq_lane_u, vgetq_lane_s, vgetq_lane_f])
 ;;
 (define_insn "mve_vec_extract<mode><V_elem_l>"
- [(set (match_operand:<V_elem> 0 "s_register_operand" "=r")
+ [(set (match_operand:<V_elem> 0 "nonimmediate_operand" "=r")
    (vec_select:<V_elem>
     (match_operand:MVE_VLD_ST 1 "s_register_operand" "w")
     (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
@@ -11011,7 +11011,7 @@
  [(set_attr "type" "mve_move")])
 
 (define_insn "mve_vec_extractv2didi"
- [(set (match_operand:DI 0 "s_register_operand" "=r")
+ [(set (match_operand:DI 0 "nonimmediate_operand" "=r")
    (vec_select:DI
     (match_operand:V2DI 1 "s_register_operand" "w")
     (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
@@ -11024,7 +11024,7 @@
   if (elt == 0)
    return "vmov\t%Q0, %R0, %e1";
   else
-   return "vmov\t%J0, %K0, %f1";
+   return "vmov\t%Q0, %R0, %f1";
 }
  [(set_attr "type" "mve_move")])
 
