@@ -3674,9 +3674,6 @@ package body Sem_Warn is
       Act2      : Node_Id;
       Form1     : Entity_Id;
       Form2     : Entity_Id;
-      Warn_Only : Boolean;
-      --  GNAT warns on overlapping in-out parameters of any type, not just for
-      --  elementary in-out parameters (as specified in RM 6.4.1 (15/3-17/3)).
 
    --  Start of processing for Warn_On_Overlapping_Actuals
 
@@ -3685,29 +3682,6 @@ package body Sem_Warn is
       if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
          return;
       end if;
-
-      --  The call is illegal only if there are at least two in-out parameters
-      --  of the same elementary type.
-
-      Warn_Only := True;
-      Form1 := First_Formal (Subp);
-      Set_Warn_Only : while Present (Form1) loop
-         Form2 := Next_Formal (Form1);
-         while Present (Form2) loop
-            if Is_Elementary_Type (Etype (Form1))
-              and then Is_Elementary_Type (Etype (Form2))
-              and then Ekind (Form1) /= E_In_Parameter
-              and then Ekind (Form2) /= E_In_Parameter
-            then
-               Warn_Only := False;
-               exit Set_Warn_Only;
-            end if;
-
-            Next_Formal (Form2);
-         end loop;
-
-         Next_Formal (Form1);
-      end loop Set_Warn_Only;
 
       --  Exclude calls rewritten as enumeration literals
 
@@ -3722,9 +3696,16 @@ package body Sem_Warn is
       --  N that is passed as a parameter of mode in out or out to the call C,
       --  there is no other name among the other parameters of mode in out or
       --  out to C that is known to denote the same object (RM 6.4.1(6.15/3))
+      --  This has been clarified in AI12-0216 to indicate that the illegality
+      --  only occurs if both formals are of an elementary type, bevause of the
+      --  non-determinism on the write-back of the corresponding actuals.
+      --  Earlier versions of the language made it illegal if only one of the
+      --  actuals was an elementary parameter that overlapped a composite
+      --  actual, and both were writable.
 
       --  If appropriate warning switch is set, we also report warnings on
-      --  overlapping parameters that are record types or array types.
+      --  overlapping parameters that are composite types. Users find these
+      --  warnings useful, and they used in style guides.
 
       --  It is also worthwhile to warn on overlaps of composite objects when
       --  only one of the formals is (in)-out. Note that the RM rule above is
@@ -3836,14 +3817,16 @@ package body Sem_Warn is
                           --  Overlap is only illegal in Ada 2012 in the case
                           --  of elementary types (passed by copy). For other
                           --  types we always have a warning in all versions.
+                          --  This is clarified by AI12-0216.
 
-                          or else not Is_Elementary_Type (Etype (Form1))
+                          or else not
+                           (Is_Elementary_Type (Etype (Form1))
+                            and then Is_Elementary_Type (Etype (Form2)))
 
                           --  debug flag -gnatd.E changes the error to a
                           --  warning even in Ada 2012 mode.
 
-                          or else Error_To_Warning
-                          or else Warn_Only;
+                          or else Error_To_Warning;
 
                         if Is_Elementary_Type (Etype (Act1))
                           and then Ekind (Form2) = E_In_Parameter
