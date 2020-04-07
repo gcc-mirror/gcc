@@ -1,3 +1,8 @@
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94478 - ICE with defaulted comparison operator
+	* g++.dg/cpp2a/spaceship-err4.C: New test.
+
 2020-04-08  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.target/arm/polytypes.c: Add quotes around
