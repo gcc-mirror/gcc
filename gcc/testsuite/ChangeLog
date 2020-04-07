@@ -1,3 +1,17 @@
+2020-04-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backport from mainline.
+	2020-03-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pragma_power6.c: New.
+	* gcc.target/powerpc/pragma_power7.c: New.
+	* gcc.target/powerpc/pragma_power8.c: New.
+	* gcc.target/powerpc/pragma_power9.c: New.
+	* gcc.target/powerpc/pragma_misc9.c: New.
+	* gcc.target/powerpc/vsu/pragma_misc9.c: New.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c: Update.
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c: Update.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94500

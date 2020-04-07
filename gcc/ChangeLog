@@ -1,3 +1,11 @@
+2020-04-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backport from mainline.
+	2020-03-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c altivec_init_builtins(): Remove
+	code to skip defining builtins based on builtin_mask.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94500
