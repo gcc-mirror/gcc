@@ -1,5 +1,11 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* g++.target/arm/mve.exp: New.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16: Fix testism.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32: Likewise.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: Fix testism.
 	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.
 	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
