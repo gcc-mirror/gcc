@@ -15,7 +15,7 @@ foo (float16x8_t a, float16_t b)
 float16x8_t
 foo1 (float16x8_t a, float16_t b)
 {
-  return vmulq_n (a, b);
+  return vmulq (a, b);
 }
 
 /* { dg-final { scan-assembler "vmul.f16"  }  } */
