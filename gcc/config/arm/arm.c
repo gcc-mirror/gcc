@@ -32693,31 +32693,6 @@ arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
   return true;
 }
 
-/* To check op's immediate values matches the mode of the defined insn.  */
-bool
-arm_mve_immediate_check (rtx op, machine_mode mode, bool val)
-{
-  if (val)
-    {
-      if (((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 7)
-	   && (mode == E_V16QImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 15)
-	   && (mode == E_V8HImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 31)
-	   && (mode == E_V4SImode)))
-	return true;
-    }
-  else
-    {
-      if (((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 7)
-	   && (mode == E_V8HImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 15)
-	   && (mode == E_V4SImode)))
-	return true;
-    }
-  return false;
-}
-
 /* Can output mi_thunk for all cases except for non-zero vcall_offset
    in Thumb1.  */
 static bool

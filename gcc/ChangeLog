@@ -1,5 +1,15 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm.c (arm_mve_immediate_check): Removed.
+	* config/arm/mve.md (MVE_pred2, MVE_constraint2): Added FP types.
+	(mve_vcvtq_n_to_f_*, mve_vcvtq_n_from_f_*, mve_vqshrnbq_n_*,
+	 mve_vqshrntq_n_*, mve_vqshrunbq_n_s*, mve_vqshruntq_n_s*,
+	 mve_vcvtq_m_n_from_f_*, mve_vcvtq_m_n_to_f_*, mve_vqshrnbq_m_n_*,
+	 mve_vqrshruntq_m_n_s*, mve_vqshrunbq_m_n_s*,
+	 mve_vqshruntq_m_n_s*): Fixed immediate constraints.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm.d (ashldi3): Don't use lsll for constant 32-bit shifts.
 
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>

@@ -1,5 +1,9 @@
 2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc.target/arm/mve/intrinsics/mve_immediates_1_n.c: New test.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc.target/arm/mve/intrinsics/mve_load_from_array.c: New test.
 	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: Remove
 	scan-assembler.
