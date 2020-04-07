@@ -10177,17 +10177,12 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      key.ref_q = type_memfn_rqual (fn_type);
 	      key.args = TYPE_ARG_TYPES (fn_type);
 
-	      if (decl != inner)
+	      if (tree reqs = get_constraints (inner))
 		{
-		  tree reqs = get_constraints (inner);
-
-		  if (reqs)
-		    {
-		      if (cxx_dialect < cxx2a)
-			reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
-		      else
-			reqs = CI_DECLARATOR_REQS (reqs);
-		    }
+		  if (cxx_dialect < cxx2a)
+		    reqs = CI_ASSOCIATED_CONSTRAINTS (reqs);
+		  else
+		    reqs = CI_DECLARATOR_REQS (reqs);
 		  key.constraints = reqs;
 		}
 

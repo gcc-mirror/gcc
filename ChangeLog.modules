@@ -1,6 +1,12 @@
 2020-04-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::key_mergeable): Instantiations can have
+	requires.  Not just the template.
+	gcc/testsuite/
+	* g++.dg/modules/concept-6{,_[ab]}.[hHC]: New.
+
+	gcc/cp/
 	* tree.c (cp_tree_equal): [CALL_EXPR] Directly check number of
 	arguments to a call.  Assert they exist.
 	* typeck.c (structural_comptypes): [DECLTYPE_TYPE] Break apart if
