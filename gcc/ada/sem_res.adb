@@ -6560,6 +6560,7 @@ package body Sem_Res is
 
          if Same_Or_Aliased_Subprograms (Nam, Scop)
            and then not Restriction_Active (No_Recursion)
+           and then not Is_Static_Expression_Function (Scop)
            and then Check_Infinite_Recursion (N)
          then
             --  Here we detected and flagged an infinite recursion, so we do
@@ -6576,6 +6577,20 @@ package body Sem_Res is
          else
             Scope_Loop : while Scop /= Standard_Standard loop
                if Same_Or_Aliased_Subprograms (Nam, Scop) then
+
+                  --  Ada 202x (AI12-0075): Static expression function are
+                  --  never allowed to make a recursive call, as specified
+                  --  by 6.8(5.4/5).
+
+                  if Is_Static_Expression_Function (Scop) then
+                     Error_Msg_N
+                       ("recursive call not allowed in static expression "
+                          & "function", N);
+
+                     Set_Error_Posted (Scop);
+
+                     exit Scope_Loop;
+                  end if;
 
                   --  Although in general case, recursion is not statically
                   --  checkable, the case of calling an immediately containing
@@ -6714,6 +6729,11 @@ package body Sem_Res is
       --  is already present. It may not be available if e.g. the subprogram is
       --  declared in a child instance.
 
+      --  g) If the subprogram is a static expression function and the call is
+      --  a static call (the actuals are all static expressions), then we never
+      --  want to create a transient scope (this could occur in the case of a
+      --  static string-returning call).
+
       if Is_Inlined (Nam)
         and then Has_Pragma_Inline (Nam)
         and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
@@ -6725,6 +6745,7 @@ package body Sem_Res is
         or else Is_Build_In_Place_Function (Nam)
         or else Is_Intrinsic_Subprogram (Nam)
         or else Is_Inlinable_Expression_Function (Nam)
+        or else Is_Static_Expression_Function_Call (N)
       then
          null;
 
@@ -6989,12 +7010,26 @@ package body Sem_Res is
 
       Warn_On_Overlapping_Actuals (Nam, N);
 
+      --  Ada 202x (AI12-0075): If the call is a static call to a static
+      --  expression function, then we want to "inline" the call, replacing
+      --  it with the folded static result. This is not done if the checking
+      --  for a potentially static expression is enabled or if an error has
+      --  been posted on the call (which may be due to the check for recursive
+      --  calls, in which case we don't want to fall into infinite recursion
+      --  when doing the inlining).
+
+      if not Checking_Potentially_Static_Expression
+        and then Is_Static_Expression_Function_Call (N)
+        and then not Error_Posted (Ultimate_Alias (Nam))
+      then
+         Inline_Static_Expression_Function_Call (N, Ultimate_Alias (Nam));
+
       --  In GNATprove mode, expansion is disabled, but we want to inline some
       --  subprograms to facilitate formal verification. Indirect calls through
       --  a subprogram type or within a generic cannot be inlined. Inlining is
       --  performed only for calls subject to SPARK_Mode on.
 
-      if GNATprove_Mode
+      elsif GNATprove_Mode
         and then SPARK_Mode = On
         and then Is_Overloadable (Nam)
         and then not Inside_A_Generic

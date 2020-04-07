@@ -131,6 +131,11 @@ package body Sem_Eval is
    --  Range membership may either be statically known to be in range or out
    --  of range, or not statically known. Used for Test_In_Range below.
 
+   Checking_For_Potentially_Static_Expression : Boolean := False;
+   --  Global flag that is set True during Analyze_Static_Expression_Function
+   --  in order to verify that the result expression of a static expression
+   --  function is a potentially static function (see RM202x 6.8(5.3)).
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -638,6 +643,15 @@ package body Sem_Eval is
          end if;
       end if;
    end Check_String_Literal_Length;
+
+   --------------------------------------------
+   -- Checking_Potentially_Static_Expression --
+   --------------------------------------------
+
+   function Checking_Potentially_Static_Expression return Boolean is
+   begin
+      return Checking_For_Potentially_Static_Expression;
+   end Checking_Potentially_Static_Expression;
 
    --------------------
    -- Choice_Matches --
@@ -2224,6 +2238,38 @@ package body Sem_Eval is
 
             Resolve (N, Typ);
          end if;
+
+      --  Ada 202x (AI12-0075): If checking for potentially static expressions
+      --  is enabled and we have a call to a static expression function,
+      --  substitute a static value for the call, to allow folding the
+      --  expression. This supports checking the requirement of RM 6.8(5.3/5)
+      --  in Analyze_Expression_Function.
+
+      elsif Checking_Potentially_Static_Expression
+        and then Is_Static_Expression_Function_Call (N)
+      then
+         if Is_Integer_Type (Typ) then
+            Fold_Uint (N, Uint_1, Static => True);
+            return;
+
+         elsif Is_Real_Type (Typ) then
+            Fold_Ureal (N, Ureal_1, Static => True);
+            return;
+
+         elsif Is_Enumeration_Type (Typ) then
+            Fold_Uint
+              (N,
+               Expr_Value (Type_Low_Bound (Base_Type (Typ))),
+               Static => True);
+            return;
+
+         elsif Is_String_Type (Typ) then
+            Fold_Str
+              (N,
+               Strval (Make_String_Literal (Sloc (N), "")),
+               Static => True);
+            return;
+         end if;
       end if;
    end Eval_Call;
 
@@ -2502,6 +2548,39 @@ package body Sem_Eval is
                Set_SCO_Condition (N, Expr_Value_E (N) = Standard_True);
             end if;
 
+            return;
+         end if;
+
+      --  Ada 202x (AI12-0075): If checking for potentially static expressions
+      --  is enabled and we have a reference to a formal parameter of mode in,
+      --  substitute a static value for the reference, to allow folding the
+      --  expression. This supports checking the requirement of RM 6.8(5.3/5)
+      --  in Analyze_Expression_Function.
+
+      elsif Ekind (Def_Id) = E_In_Parameter
+        and then Checking_Potentially_Static_Expression
+        and then Is_Static_Expression_Function (Scope (Def_Id))
+      then
+         if Is_Integer_Type (Etype (Def_Id)) then
+            Fold_Uint (N, Uint_1, Static => True);
+            return;
+
+         elsif Is_Real_Type (Etype (Def_Id)) then
+            Fold_Ureal (N, Ureal_1, Static => True);
+            return;
+
+         elsif Is_Enumeration_Type (Etype (Def_Id)) then
+            Fold_Uint
+              (N,
+               Expr_Value (Type_Low_Bound (Base_Type (Etype (Def_Id)))),
+               Static => True);
+            return;
+
+         elsif Is_String_Type (Etype (Def_Id)) then
+            Fold_Str
+              (N,
+               Strval (Make_String_Literal (Sloc (N), "")),
+               Static => True);
             return;
          end if;
       end if;
@@ -5933,6 +6012,21 @@ package body Sem_Eval is
       Set_Raises_Constraint_Error (N, True);
       Set_Is_Static_Expression (N, Stat);
    end Rewrite_In_Raise_CE;
+
+   ------------------------------------------------
+   -- Set_Checking_Potentially_Static_Expression --
+   ------------------------------------------------
+
+   procedure Set_Checking_Potentially_Static_Expression (Value : Boolean) is
+   begin
+      --  Verify that we're not currently checking for a potentially static
+      --  expression unless we're disabling such checking.
+
+      pragma Assert
+        (not Checking_For_Potentially_Static_Expression or else not Value);
+
+      Checking_For_Potentially_Static_Expression := Value;
+   end Set_Checking_Potentially_Static_Expression;
 
    ---------------------
    -- String_Type_Len --

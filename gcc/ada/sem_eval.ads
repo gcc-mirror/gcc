@@ -165,6 +165,14 @@ package Sem_Eval is
    --  In the former case, if the target type, Ttyp is constrained, then a
    --  check is made to see if the string literal is of appropriate length.
 
+   function Checking_Potentially_Static_Expression return Boolean;
+   --  Returns True if the checking for potentially static expressions is
+   --  enabled; otherwise returns False.
+
+   procedure Set_Checking_Potentially_Static_Expression (Value : Boolean);
+   --  Enables checking for potentially static expressions if Value is True,
+   --  and disables such checking if Value is False.
+
    type Compare_Result is (LT, LE, EQ, GT, GE, NE, Unknown);
    subtype Compare_GE is Compare_Result range EQ .. GE;
    subtype Compare_LE is Compare_Result range LT .. EQ;

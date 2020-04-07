@@ -227,6 +227,12 @@ package Inline is
    --  Check a list of statements, Stats, that make inlining of Subp not
    --  worthwhile, including any tasking statement, nested at any level.
 
+   procedure Inline_Static_Expression_Function_Call
+     (N : Node_Id; Subp : Entity_Id);
+   --  Evaluate static call to a static expression function Subp, substituting
+   --  actuals in place of references to their corresponding formals and
+   --  rewriting the call N as a fully folded and static result expression.
+
    procedure List_Inlining_Info;
    --  Generate listing of calls inlined by the frontend plus listing of
    --  calls to inline subprograms passed to the backend.

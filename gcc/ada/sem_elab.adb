@@ -3685,6 +3685,11 @@ package body Sem_Elab is
       then
          return;
 
+      --  Static expression functions require no ABE processing
+
+      elsif Is_Static_Expression_Function (Subp_Id) then
+         return;
+
       --  Source calls to source targets are always considered because they
       --  reflect the original call graph.
 

@@ -207,6 +207,7 @@ package Aspects is
       Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Simple_Storage_Pool_Type,      -- GNAT
+      Aspect_Static,
       Aspect_Suppress_Debug_Info,           -- GNAT
       Aspect_Suppress_Initialization,       -- GNAT
       Aspect_Thread_Local_Storage,          -- GNAT
@@ -554,6 +555,7 @@ package Aspects is
       Aspect_Remote_Access_Type           => False,
       Aspect_Shared                       => True,
       Aspect_Simple_Storage_Pool_Type     => True,
+      Aspect_Static                       => False,
       Aspect_Suppress_Debug_Info          => False,
       Aspect_Suppress_Initialization      => False,
       Aspect_Thread_Local_Storage         => True,
@@ -679,6 +681,7 @@ package Aspects is
       Aspect_Size                         => Name_Size,
       Aspect_Small                        => Name_Small,
       Aspect_SPARK_Mode                   => Name_SPARK_Mode,
+      Aspect_Static                       => Name_Static,
       Aspect_Static_Predicate             => Name_Static_Predicate,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
       Aspect_Storage_Size                 => Name_Storage_Size,
@@ -934,6 +937,7 @@ package Aspects is
       Aspect_Refined_State                => Never_Delay,
       Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
+      Aspect_Static                       => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
