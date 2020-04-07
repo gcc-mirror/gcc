@@ -3762,20 +3762,28 @@ cp_tree_equal (tree t1, tree t2)
 
     case CALL_EXPR:
       {
-	tree arg1, arg2;
+	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2))
+	  return false;
+
+	if (!called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	  return false;
+
 	call_expr_arg_iterator iter1, iter2;
-	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2)
-	    || !called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	init_call_expr_arg_iterator (t1, &iter1);
+	init_call_expr_arg_iterator (t2, &iter2);
+	if (iter1.n != iter2.n)
 	  return false;
-	for (arg1 = first_call_expr_arg (t1, &iter1),
-	       arg2 = first_call_expr_arg (t2, &iter2);
-	     arg1 && arg2;
-	     arg1 = next_call_expr_arg (&iter1),
-	       arg2 = next_call_expr_arg (&iter2))
-	  if (!cp_tree_equal (arg1, arg2))
-	    return false;
-	if (arg1 || arg2)
-	  return false;
+
+	while (more_call_expr_args_p (&iter1))
+	  {
+	    tree arg1 = next_call_expr_arg (&iter1);
+	    tree arg2 = next_call_expr_arg (&iter2);
+
+	    gcc_checking_assert (arg1 && arg2);
+	    if (!cp_tree_equal (arg1, arg2))
+	      return false;
+	  }
+
 	return true;
       }
 

@@ -1444,19 +1444,20 @@ structural_comptypes (tree t1, tree t2, int strict)
 
     case DECLTYPE_TYPE:
       if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t1)
-          != DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t2)
-	  || (DECLTYPE_FOR_LAMBDA_CAPTURE (t1)
-	      != DECLTYPE_FOR_LAMBDA_CAPTURE (t2))
-	  || (DECLTYPE_FOR_LAMBDA_PROXY (t1)
-	      != DECLTYPE_FOR_LAMBDA_PROXY (t2))
-          || !cp_tree_equal (DECLTYPE_TYPE_EXPR (t1), 
-                             DECLTYPE_TYPE_EXPR (t2)))
+          != DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t2))
+	return false;
+      if (DECLTYPE_FOR_LAMBDA_CAPTURE (t1) != DECLTYPE_FOR_LAMBDA_CAPTURE (t2))
+	return false;
+      if (DECLTYPE_FOR_LAMBDA_PROXY (t1) != DECLTYPE_FOR_LAMBDA_PROXY (t2))
+	return false;
+      if (!cp_tree_equal (DECLTYPE_TYPE_EXPR (t1), DECLTYPE_TYPE_EXPR (t2)))
         return false;
       break;
 
     case UNDERLYING_TYPE:
-      return same_type_p (UNDERLYING_TYPE_TYPE (t1), 
-			  UNDERLYING_TYPE_TYPE (t2));
+      if (!same_type_p (UNDERLYING_TYPE_TYPE (t1), UNDERLYING_TYPE_TYPE (t2)))
+	return false;
+      break;
 
     case TYPEOF_TYPE:
       if (!cp_tree_equal (TYPEOF_TYPE_EXPR (t1), TYPEOF_TYPE_EXPR (t2)))
