@@ -18367,7 +18367,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
 
   /* As per the standard, require auto or decltype(auto), except in some
      cases (template parameter lists, -fconcepts-ts enabled).  */
-  cp_token *placeholder = NULL, *open_paren = NULL, *close_paren = NULL;
+  cp_token *placeholder = NULL, *close_paren = NULL;
   if (cxx_dialect >= cxx2a)
     {
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
@@ -18375,12 +18375,10 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DECLTYPE))
 	{
 	  placeholder = cp_lexer_consume_token (parser->lexer);
-	  open_paren = cp_parser_require (parser, CPP_OPEN_PAREN,
-					  RT_OPEN_PAREN);
+	  matching_parens parens;
+	  parens.require_open (parser);
 	  cp_parser_require_keyword (parser, RID_AUTO, RT_AUTO);
-          close_paren = cp_parser_require (parser, CPP_CLOSE_PAREN,
-					   RT_CLOSE_PAREN,
-					   open_paren->location);
+	  close_paren = parens.require_close (parser);
 	}
     }
 
@@ -18429,7 +18427,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
      results in an invented template parameter.  */
   if (parser->auto_is_implicit_function_template_parm_p)
     {
-      if (placeholder && token_is_decltype (placeholder))
+      if (close_paren)
 	{
 	  location_t loc = make_location (placeholder->location,
 					  placeholder->location,
