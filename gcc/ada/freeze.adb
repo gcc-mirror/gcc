@@ -7630,15 +7630,18 @@ package body Freeze is
                      exit;
                   end if;
 
-               --  Note: N_Loop_Statement is a special case. A type that
-               --  appears in the source can never be frozen in a loop (this
-               --  occurs only because of a loop expanded by the expander), so
-               --  we keep on going. Otherwise we terminate the search. Same
-               --  is true of any entity which comes from source. (if they
-               --  have predefined type, that type does not appear to come
-               --  from source, but the entity should not be frozen here).
+               --  N_Loop_Statement is a special case: a type that appears in
+               --  the source can never be frozen in a loop (this occurs only
+               --  because of a loop expanded by the expander), so we keep on
+               --  going. Otherwise we terminate the search. Same is true of
+               --  any entity which comes from source (if it has a predefined
+               --  type, this type does not appear to come from source, but the
+               --  entity should not be frozen here). The reasoning can also be
+               --  applied to if-expressions and case-expressions.
 
-               when N_Loop_Statement =>
+               when N_Loop_Statement
+                  | N_If_Expression
+                  | N_Case_Expression =>
                   exit when not Comes_From_Source (Etype (N))
                     and then (No (Nam) or else not Comes_From_Source (Nam));
 
