@@ -1,3 +1,9 @@
+2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94417
+	* config/i386/i386-features.c (rest_of_insert_endbranch): Insert
+	ENDBR at function entry if function will be called indirectly.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94438
