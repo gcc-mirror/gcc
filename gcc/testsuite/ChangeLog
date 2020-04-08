@@ -1,3 +1,9 @@
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/acle/cde_v_1.c: New test.
+	* gcc.target/arm/acle/cde_v_1_err.c: New test.
+	* gcc.target/arm/acle/cde_v_1_mve.c: New test.
+
 2020-04-08  Patrick Palka  <ppalka@redhat.com>
 
 	Core issues 1001 and 1322

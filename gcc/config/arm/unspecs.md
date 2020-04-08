@@ -154,6 +154,8 @@
   UNSPEC_SMUADX		; Represent the SMUADX operation.
   UNSPEC_SSAT16		; Represent the SSAT16 operation.
   UNSPEC_USAT16		; Represent the USAT16 operation.
+  UNSPEC_VCDE		; Custom Datapath Extension instruction.
+  UNSPEC_VCDEA		; Custom Datapath Extension instruction.
 ])
 
 

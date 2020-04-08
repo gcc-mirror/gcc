@@ -632,7 +632,7 @@
 			 (V2SI "P") (V4SI  "q")
 			 (V2SF "P") (V4SF  "q")
 			 (DI   "P") (V2DI  "q")
-			 (V2HF "") (SF   "")
+			 (V2HF "") (SF   "") (SI "")
 			 (DF    "P") (HF   "")])
 
 ;; Output template to select the high VFP register of a mult-register value.

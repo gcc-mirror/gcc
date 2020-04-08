@@ -33,6 +33,77 @@ extern "C" {
 
 #include <stdint.h>
 
+#if defined (__ARM_FEATURE_CDE)
+
+#if defined (__ARM_FP) || defined (__ARM_FEATURE_MVE)
+
+/* CDE builtins using FPU/MVE registers.  */
+
+/* uint32_t
+   __arm_vcx1_u32(int coproc, uint32_t imm);  */
+#define __arm_vcx1_u32(coproc, imm) \
+	__builtin_arm_vcx1si(coproc, imm)
+
+/* uint32_t
+   __arm_vcx1a_u32(int coproc, uint32_t acc, uint32_t imm);  */
+#define __arm_vcx1a_u32(coproc, acc, imm) \
+	__builtin_arm_vcx1asi(coproc, acc, imm)
+
+/* uint32_t
+   __arm_vcx2_u32(int coproc, uint32_t n, uint32_t imm);  */
+#define __arm_vcx2_u32(coproc, n, imm) \
+	__builtin_arm_vcx2si(coproc, n, imm)
+
+/* uint32_t
+   __arm_vcx2a_u32(int coproc, uint32_t acc, uint32_t n, uint32_t imm);  */
+#define __arm_vcx2a_u32(coproc, acc, n, imm) \
+	__builtin_arm_vcx2asi(coproc, acc, n, imm)
+
+/* uint32_t
+   __arm_vcx3_u32(int coproc, uint32_t n, uint32_t m, uint32_t imm);  */
+#define __arm_vcx3_u32(coproc, n, m, imm) \
+	__builtin_arm_vcx3si(coproc, n, m, imm)
+
+/* uint32_t
+   __arm_vcx3a_u32(int coproc, uint32_t acc, uint32_t n, uint32_t m,
+		   uint32_t imm);  */
+#define __arm_vcx3a_u32(coproc, acc, n, m, imm) \
+	__builtin_arm_vcx3asi(coproc, acc, n, m, imm)
+
+/* uint64_t
+   __arm_vcx1d_u64(int coproc, uint32_t imm);  */
+#define __arm_vcx1d_u64(coproc, imm) \
+	__builtin_arm_vcx1di(coproc, imm)
+
+/* uint64_t
+   __arm_vcx1da_u64(int coproc, uint64_t acc, uint32_t imm);  */
+#define __arm_vcx1da_u64(coproc, acc, imm) \
+	__builtin_arm_vcx1adi(coproc, acc, imm)
+
+/* uint64_t
+   __arm_vcx2d_u64(int coproc, uint64_t m, uint32_t imm);  */
+#define __arm_vcx2d_u64(coproc, m, imm) \
+	__builtin_arm_vcx2di(coproc, m, imm)
+
+/* uint64_t
+   __arm_vcx2da_u64(int coproc, uint64_t acc, uint64_t m, uint32_t imm);  */
+#define __arm_vcx2da_u64(coproc, acc, m, imm) \
+	__builtin_arm_vcx2adi(coproc, acc, m, imm)
+
+/* uint64_t
+   __arm_vcx3d_u64(int coproc, uint64_t n, uint64_t m, uint32_t imm);  */
+#define __arm_vcx3d_u64(coproc, n, m, imm) \
+	__builtin_arm_vcx3di(coproc, n, m, imm)
+
+/* uint64_t
+   __arm_vcx3da_u64(int coproc, uint64_t acc, uint64_t n, uint64_t m,
+		    uint32_t imm);  */
+#define __arm_vcx3da_u64(coproc, acc, n, m, imm) \
+	__builtin_arm_vcx3adi(coproc, acc, n, m, imm)
+
+#endif /* __ARM_FP || __ARM_FEATURE_MVE.  */
+#endif /* __ARM_FEATURE_CDE.  */
+
 #ifdef __cplusplus
 }
 #endif

@@ -25013,7 +25013,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   if (TARGET_VFP_BASE && IS_VFP_REGNUM (regno))
     {
-      if (mode == DFmode)
+      if (mode == DFmode || mode == DImode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
       if (mode == HFmode || mode == BFmode || mode == HImode

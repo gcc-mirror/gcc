@@ -305,6 +305,35 @@ arm_mrrc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define MRRC_QUALIFIERS \
   (arm_mrrc_qualifiers)
 
+/* T (immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_cx_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_immediate, qualifier_unsigned_immediate };
+#define CX_IMM_QUALIFIERS (arm_cx_imm_qualifiers)
+
+/* T (immediate, T, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_cx_unary_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_immediate, qualifier_none,
+      qualifier_unsigned_immediate };
+#define CX_UNARY_QUALIFIERS (arm_cx_unary_qualifiers)
+
+/* T (immediate, T, T, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_cx_binary_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_immediate,
+      qualifier_none, qualifier_none,
+      qualifier_unsigned_immediate };
+#define CX_BINARY_QUALIFIERS (arm_cx_binary_qualifiers)
+
+/* T (immediate, T, T, T, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_cx_ternary_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_immediate,
+      qualifier_none, qualifier_none, qualifier_none,
+      qualifier_unsigned_immediate };
+#define CX_TERNARY_QUALIFIERS (arm_cx_ternary_qualifiers)
+
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use
@@ -928,7 +957,23 @@ static arm_builtin_datum acle_builtin_data[] =
 };
 
 #undef VAR1
+/* IMM_MAX sets the maximum valid value of the CDE immediate operand.
+   ECF_FLAG sets the flag used for set_call_expr_flags.  */
+#define VAR1(T, N, A, IMM_MAX, ECF_FLAG) \
+  {{#N #A, UP (A), CODE_FOR_arm_##N##A, 0, T##_QUALIFIERS}, IMM_MAX, ECF_FLAG},
 
+typedef struct {
+  arm_builtin_datum base;
+  unsigned int imm_max;
+  int ecf_flag;
+} arm_builtin_cde_datum;
+
+static arm_builtin_cde_datum cde_builtin_data[] =
+{
+#include "arm_cde_builtins.def"
+};
+
+#undef VAR1
 #define VAR1(T, N, X) \
   ARM_BUILTIN_NEON_##N##X,
 
@@ -1224,6 +1269,14 @@ enum arm_builtins
 
 #include "arm_acle_builtins.def"
 
+#undef VAR1
+#define VAR1(T, N, X, ... ) \
+  ARM_BUILTIN_##N##X,
+
+  ARM_BUILTIN_CDE_BASE,
+
+#include "arm_cde_builtins.def"
+
   ARM_BUILTIN_MVE_BASE,
 
 #undef VAR1
@@ -1245,6 +1298,12 @@ enum arm_builtins
 
 #define ARM_BUILTIN_ACLE_PATTERN_START \
   (ARM_BUILTIN_ACLE_BASE + 1)
+
+#define ARM_BUILTIN_CDE_PATTERN_START \
+  (ARM_BUILTIN_CDE_BASE + 1)
+
+#define ARM_BUILTIN_CDE_PATTERN_END \
+  (ARM_BUILTIN_CDE_BASE + ARRAY_SIZE (cde_builtin_data))
 
 #undef CF
 #undef VAR1
@@ -1773,6 +1832,15 @@ arm_init_acle_builtins (void)
     {
       arm_builtin_datum *d = &acle_builtin_data[i];
       arm_init_builtin (fcode, d, "__builtin_arm");
+    }
+
+  fcode = ARM_BUILTIN_CDE_PATTERN_START;
+  for (i = 0; i < ARRAY_SIZE (cde_builtin_data); i++, fcode++)
+    {
+      arm_builtin_cde_datum *cde = &cde_builtin_data[i];
+      arm_builtin_datum *d = &cde->base;
+      arm_init_builtin (fcode, d, "__builtin_arm");
+      set_call_expr_flags (arm_builtin_decls[fcode], cde->ecf_flag);
     }
 }
 
@@ -2966,8 +3034,29 @@ constant_arg:
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
 		{
-		  error ("%Kargument %d must be a constant immediate",
-			 exp, argc + 1);
+		  if (IN_RANGE (fcode, ARM_BUILTIN_CDE_PATTERN_START,
+				ARM_BUILTIN_CDE_PATTERN_END))
+		    {
+		      if (argc == 0)
+			{
+			  unsigned int cp_bit = UINTVAL (op[argc]);
+			  if (IN_RANGE (cp_bit, 0, ARM_CDE_CONST_COPROC))
+			    error ("%Kcoprocessor %d is not enabled "
+				   "with +cdecp%d", exp, cp_bit, cp_bit);
+			  else
+			    error ("%Kcoproc must be a constant immediate in "
+				   "range [0-%d] enabled with +cdecp<N>", exp,
+				   ARM_CDE_CONST_COPROC);
+			}
+		      else
+			error ("%Kargument %d must be a constant immediate "
+			       "in range [0-%d]", exp, argc + 1,
+			       cde_builtin_data[fcode -
+			       ARM_BUILTIN_CDE_PATTERN_START].imm_max);
+		    }
+		  else
+		    error ("%Kargument %d must be a constant immediate",
+			   exp, argc + 1);
 		  /* We have failed to expand the pattern, and are safely
 		     in to invalid code.  But the mid-end will still try to
 		     build an assignment for this node while it expands,
@@ -3192,8 +3281,12 @@ arm_expand_acle_builtin (int fcode, tree exp, rtx target)
       /* Don't generate any RTL.  */
       return const0_rtx;
     }
+
+  gcc_assert (fcode != ARM_BUILTIN_CDE_BASE);
   arm_builtin_datum *d
-    = &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START];
+    = (fcode < ARM_BUILTIN_CDE_BASE)
+      ? &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START]
+      : &cde_builtin_data[fcode - ARM_BUILTIN_CDE_PATTERN_START].base;
 
   return arm_expand_builtin_1 (fcode, exp, target, d);
 }

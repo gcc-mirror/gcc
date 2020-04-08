@@ -575,6 +575,10 @@ extern int arm_arch_bf16;
 extern int arm_arch_cde;
 extern int arm_arch_cde_coproc;
 extern const int arm_arch_cde_coproc_bits[];
+#define ARM_CDE_CONST_COPROC	7
+#define ARM_VCDE_CONST_1	((1 << 11) - 1)
+#define ARM_VCDE_CONST_2	((1 << 6 ) - 1)
+#define ARM_VCDE_CONST_3	((1 << 3 ) - 1)
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
