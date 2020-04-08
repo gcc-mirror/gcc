@@ -1,5 +1,13 @@
 2020-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/slice_array.h (operator==(const slice&, const slice&)):
+	Define for C++20.
+	* include/std/complex (operator==(const T&, const complex<T>&))
+	(operator!=(const complex<T>&, const complex<T>&))
+	(operator!=(const complex<T>&, const T&))
+	(operator!=(const T&, const complex<T>&)): Do not declare for C++20.
+	* testsuite/26_numerics/slice/compare.cc: New test.
+
 	* include/std/charconv (to_chars_result, from_chars_result): Add
 	defaulted equality comparisons for C++20.
 	* testsuite/20_util/from_chars/compare.cc: New test.
