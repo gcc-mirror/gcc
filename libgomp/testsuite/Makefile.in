@@ -111,7 +111,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 DIST_COMMON = $(srcdir)/Makefile.am
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = libgomp-test-support.pt.exp
+CONFIG_CLEAN_FILES = libgomp-test-support.pt.exp \
+	libgomp-site-extra.exp
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -310,6 +311,7 @@ _RUNTEST = $(shell if test -f $(top_srcdir)/../dejagnu/runtest; then \
 	     echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi)
 
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
+EXTRA_DEJAGNU_SITE_CONFIG = libgomp-site-extra.exp
 all: all-am
 
 .SUFFIXES:
@@ -343,6 +345,8 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 libgomp-test-support.pt.exp: $(top_builddir)/config.status $(srcdir)/libgomp-test-support.exp.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+libgomp-site-extra.exp: $(top_builddir)/config.status $(srcdir)/libgomp-site-extra.exp.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:

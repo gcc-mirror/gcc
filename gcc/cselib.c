@@ -629,8 +629,8 @@ references_value_p (const_rtx x, int only_useless)
   int i, j;
 
   if (GET_CODE (x) == VALUE
-      && (! only_useless ||
-	  (CSELIB_VAL_PTR (x)->locs == 0 && !PRESERVED_VALUE_P (x))))
+      && (! only_useless
+	  || (CSELIB_VAL_PTR (x)->locs == 0 && !PRESERVED_VALUE_P (x))))
     return 1;
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -644,6 +644,16 @@ references_value_p (const_rtx x, int only_useless)
     }
 
   return 0;
+}
+
+/* Return true if V is a useless VALUE and can be discarded as such.  */
+
+static bool
+cselib_useless_value_p (cselib_val *v)
+{
+  return (v->locs == 0
+	  && !PRESERVED_VALUE_P (v->val_rtx)
+	  && !SP_DERIVED_VALUE_P (v->val_rtx));
 }
 
 /* For all locations found in X, delete locations that reference useless
@@ -666,7 +676,7 @@ discard_useless_locs (cselib_val **x, void *info ATTRIBUTE_UNUSED)
 	p = &(*p)->next;
     }
 
-  if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
+  if (had_locs && cselib_useless_value_p (v))
     {
       if (setting_insn && DEBUG_INSN_P (setting_insn))
 	n_useless_debug_values++;
@@ -684,7 +694,7 @@ discard_useless_values (cselib_val **x, void *info ATTRIBUTE_UNUSED)
 {
   cselib_val *v = *x;
 
-  if (v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
+  if (v->locs == 0 && cselib_useless_value_p (v))
     {
       if (cselib_discard_hook)
 	cselib_discard_hook (v);
@@ -2080,13 +2090,17 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
 	{
 	  rtx t = cselib_subst_to_values (XEXP (x, 0), memmode);
 	  if (GET_CODE (t) == VALUE)
-	    for (struct elt_loc_list *l = CSELIB_VAL_PTR (t)->locs;
-		 l; l = l->next)
-	      if (GET_CODE (l->loc) == PLUS
-		  && GET_CODE (XEXP (l->loc, 0)) == VALUE
-		  && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
-		  && CONST_INT_P (XEXP (l->loc, 1)))
-		return plus_constant (Pmode, l->loc, INTVAL (XEXP (x, 1)));
+	    {
+	      if (SP_DERIVED_VALUE_P (t) && XEXP (x, 1) == const0_rtx)
+		return t;
+	      for (struct elt_loc_list *l = CSELIB_VAL_PTR (t)->locs;
+		   l; l = l->next)
+		if (GET_CODE (l->loc) == PLUS
+		    && GET_CODE (XEXP (l->loc, 0)) == VALUE
+		    && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+		    && CONST_INT_P (XEXP (l->loc, 1)))
+		  return plus_constant (Pmode, l->loc, INTVAL (XEXP (x, 1)));
+	    }
 	  if (t != XEXP (x, 0))
 	    {
 	      copy = shallow_copy_rtx (x);
@@ -2370,7 +2384,7 @@ cselib_invalidate_regno_val (unsigned int regno, struct elt_list **l)
 	}
     }
 
-  if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
+  if (had_locs && cselib_useless_value_p (v))
     {
       if (setting_insn && DEBUG_INSN_P (setting_insn))
 	n_useless_debug_values++;
@@ -2515,7 +2529,7 @@ cselib_invalidate_mem (rtx mem_rtx)
 	  unchain_one_elt_loc_list (p);
 	}
 
-      if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
+      if (had_locs && cselib_useless_value_p (v))
 	{
 	  if (setting_insn && DEBUG_INSN_P (setting_insn))
 	    n_useless_debug_values++;
@@ -2593,14 +2607,14 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 	  REG_VALUES (dreg)->elt = src_elt;
 	}
 
-      if (src_elt->locs == 0 && !PRESERVED_VALUE_P (src_elt->val_rtx))
+      if (cselib_useless_value_p (src_elt))
 	n_useless_values--;
       new_elt_loc_list (src_elt, dest);
     }
   else if (MEM_P (dest) && dest_addr_elt != 0
 	   && cselib_record_memory)
     {
-      if (src_elt->locs == 0 && !PRESERVED_VALUE_P (src_elt->val_rtx))
+      if (cselib_useless_value_p (src_elt))
 	n_useless_values--;
       add_mem_for_addr (dest_addr_elt, src_elt, dest);
     }

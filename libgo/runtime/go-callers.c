@@ -364,3 +364,39 @@ runtime_callersRaw (uintptr *pcbuf, int32 m)
   return data.index;
 }
 
+/* runtime_pcInlineCallers returns the inline stack of calls for a PC.
+   This is like runtime_callers, but instead of doing a backtrace,
+   just finds the information for a single PC value.  */
+
+int32 runtime_pcInlineCallers (uintptr, Location *, int32)
+  __asm__ (GOSYM_PREFIX "runtime.pcInlineCallers");
+
+int32
+runtime_pcInlineCallers (uintptr pc, Location *locbuf, int32 m)
+{
+  struct callers_data data;
+  struct backtrace_state *state;
+  int32 i;
+
+  data.locbuf = locbuf;
+  data.skip = 0;
+  data.index = 0;
+  data.max = m;
+  data.keep_thunks = false;
+  data.saw_sigtramp = 0;
+  runtime_xadd (&__go_runtime_in_callers, 1);
+  state = __go_get_backtrace_state ();
+  backtrace_pcinfo (state, pc, callback, error_callback, &data);
+  runtime_xadd (&__go_runtime_in_callers, -1);
+
+  /* Try to use backtrace_syminfo to fill in missing names.  See
+     runtime_callers.  */
+  for (i = 0; i < data.index; ++i)
+    {
+      if (locbuf[i].function.len == 0 && locbuf[i].pc != 0)
+	backtrace_syminfo (state, locbuf[i].pc, __go_syminfo_fnname_callback,
+			   error_callback, &locbuf[i].function);
+    }
+
+  return data.index;
+}

@@ -15,21 +15,23 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
-// { dg-do run { target c++17 } }
+// <charconv> is supported in C++14 as a GNU extension
+// { dg-do run { target c++14 } }
 
 #include <charconv>
-#include <string_view>
+#include <string>
 
 template<typename I>
 bool
-check_from_chars(I expected, std::string_view s, int base = 0, char term = '\0')
+check_from_chars(I expected, std::string s, int base = 0, char term = '\0')
 {
+  const char* begin = s.data();
+  const char* end = s.data() + s.length();
   I val;
   std::from_chars_result r = base == 0
-    ? std::from_chars(s.begin(), s.end(), val)
-    : std::from_chars(s.begin(), s.end(), val, base);
-  return r.ec == std::errc{} && (r.ptr == s.end() || *r.ptr == term) && val == expected;
+    ? std::from_chars(begin, end, val)
+    : std::from_chars(begin, end, val, base);
+  return r.ec == std::errc{} && (r.ptr == end || *r.ptr == term) && val == expected;
 }
 
 #include <climits>

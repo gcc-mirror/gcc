@@ -13,10 +13,6 @@ foo32 ()
   return b;
 }
 
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldmia.*" }  } */
-
 float16x8_t value1;
 
 float16x8_t
@@ -25,7 +21,3 @@ foo16 ()
   float16x8_t b = value1;
   return b;
 }
-
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldmia.*" }  } */

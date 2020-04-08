@@ -15,7 +15,7 @@ foo (uint32x4_t a, uint32_t b)
 uint32x4_t
 foo1 (uint32x4_t a, uint32_t b)
 {
-  return vmulq_n (a, b);
+  return vmulq (a, b);
 }
 
 /* { dg-final { scan-assembler "vmul.i32"  }  } */

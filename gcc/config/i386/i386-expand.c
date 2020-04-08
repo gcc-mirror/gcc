@@ -10968,8 +10968,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
      OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32
      OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4
-     where for each this pair it is sufficient if either of the ISAs is
-     enabled, plus if it is ored with other options also those others.  */
+     where for each such pair it is sufficient if either of the ISAs is
+     enabled, plus if it is ored with other options also those others.
+     OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
   if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
        == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
       && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A)) != 0)
@@ -10982,24 +10983,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
-  /* Use SSE/SSE2/SSSE3 to emulate MMX intrinsics in 64-bit mode when
-     MMX is disabled.  NB: Since MMX intrinsics are marked with
-     SSE/SSE2/SSSE3, enable them without SSE/SSE2/SSSE3 if MMX is
-     enabled.  */
-  if (TARGET_MMX || TARGET_MMX_WITH_SSE)
+  if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE)
     {
-      if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
-	   == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX))
-	  && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX)) != 0)
-	isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX);
-      if (((bisa & (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX))
-	   == (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX))
-	  && (isa & (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX)) != 0)
-	isa |= (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_MMX);
-      if (((bisa & (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX))
-	   == (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX))
-	  && (isa & (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX)) != 0)
-	isa |= (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_MMX);
+      bisa &= ~OPTION_MASK_ISA_MMX;
+      bisa |= OPTION_MASK_ISA_SSE2;
     }
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
@@ -14904,43 +14891,51 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V64QImode:
     case E_V32HImode:
+      if (i < 64)
+	{
+	  d = gen_reg_rtx (V4TImode);
+	  tem = gen_avx512bw_lshrv4ti3 (d, gen_lowpart (V4TImode, src),
+					GEN_INT (i / 2));
+	  break;
+	}
+      /* FALLTHRU */
     case E_V16SImode:
     case E_V16SFmode:
     case E_V8DImode:
     case E_V8DFmode:
       if (i > 128)
 	tem = gen_avx512f_shuf_i32x4_1 (gen_lowpart (V16SImode, dest),
-				      gen_lowpart (V16SImode, src),
-				      gen_lowpart (V16SImode, src),
-				      GEN_INT (0x4 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0x5 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0x6 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0x7 + (i == 512 ? 4 : 0)),
-				      GEN_INT (0xC), GEN_INT (0xD),
-				      GEN_INT (0xE), GEN_INT (0xF),
-				      GEN_INT (0x10), GEN_INT (0x11),
-				      GEN_INT (0x12), GEN_INT (0x13),
-				      GEN_INT (0x14), GEN_INT (0x15),
-				      GEN_INT (0x16), GEN_INT (0x17));
+					gen_lowpart (V16SImode, src),
+					gen_lowpart (V16SImode, src),
+					GEN_INT (0x4 + (i == 512 ? 4 : 0)),
+					GEN_INT (0x5 + (i == 512 ? 4 : 0)),
+					GEN_INT (0x6 + (i == 512 ? 4 : 0)),
+					GEN_INT (0x7 + (i == 512 ? 4 : 0)),
+					GEN_INT (0xC), GEN_INT (0xD),
+					GEN_INT (0xE), GEN_INT (0xF),
+					GEN_INT (0x10), GEN_INT (0x11),
+					GEN_INT (0x12), GEN_INT (0x13),
+					GEN_INT (0x14), GEN_INT (0x15),
+					GEN_INT (0x16), GEN_INT (0x17));
       else
 	tem = gen_avx512f_pshufd_1 (gen_lowpart (V16SImode, dest),
-				   gen_lowpart (V16SImode, src),
-				   GEN_INT (i == 128 ? 0x2 : 0x1),
-				   GEN_INT (0x3),
-				   GEN_INT (0x3),
-				   GEN_INT (0x3),
-				   GEN_INT (i == 128 ? 0x6 : 0x5),
-				   GEN_INT (0x7),
-				   GEN_INT (0x7),
-				   GEN_INT (0x7),
-				   GEN_INT (i == 128 ? 0xA : 0x9),
-				   GEN_INT (0xB),
-				   GEN_INT (0xB),
-				   GEN_INT (0xB),
-				   GEN_INT (i == 128 ? 0xE : 0xD),
-				   GEN_INT (0xF),
-				   GEN_INT (0xF),
-				   GEN_INT (0xF));
+				    gen_lowpart (V16SImode, src),
+				    GEN_INT (i == 128 ? 0x2 : 0x1),
+				    GEN_INT (0x3),
+				    GEN_INT (0x3),
+				    GEN_INT (0x3),
+				    GEN_INT (i == 128 ? 0x6 : 0x5),
+				    GEN_INT (0x7),
+				    GEN_INT (0x7),
+				    GEN_INT (0x7),
+				    GEN_INT (i == 128 ? 0xA : 0x9),
+				    GEN_INT (0xB),
+				    GEN_INT (0xB),
+				    GEN_INT (0xB),
+				    GEN_INT (i == 128 ? 0xE : 0xD),
+				    GEN_INT (0xF),
+				    GEN_INT (0xF),
+				    GEN_INT (0xF));
       break;
     default:
       gcc_unreachable ();
@@ -16786,7 +16781,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	      /* vpshufb only works intra lanes, it is not
 		 possible to shuffle bytes in between the lanes.  */
 	      for (i = 0; i < nelt; ++i)
-		if ((d->perm[i] ^ i) & (nelt / 4))
+		if ((d->perm[i] ^ i) & (3 * nelt / 4))
 		  return false;
 	    }
 	}

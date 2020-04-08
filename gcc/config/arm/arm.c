@@ -20122,51 +20122,42 @@ output_move_neon (rtx *operands)
 	  break;
 	}
       /* Fall through.  */
-    case LABEL_REF:
     case PLUS:
+      addr = XEXP (addr, 0);
+      /* Fall through.  */
+    case LABEL_REF:
       {
 	int i;
 	int overlap = -1;
-	if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
-	    && GET_CODE (addr) != LABEL_REF)
+	for (i = 0; i < nregs; i++)
 	  {
-	    sprintf (buff, "v%srw.32\t%%q0, %%1", load ? "ld" : "st");
-	    ops[0] = reg;
-	    ops[1] = mem;
-	    output_asm_insn (buff, ops);
-	  }
-	else
-	  {
-	    for (i = 0; i < nregs; i++)
+	    /* We're only using DImode here because it's a convenient
+	       size.  */
+	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
+	    ops[1] = adjust_address (mem, DImode, 8 * i);
+	    if (reg_overlap_mentioned_p (ops[0], mem))
 	      {
-		/* We're only using DImode here because it's a convenient
-		   size.  */
-		ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
-		ops[1] = adjust_address (mem, DImode, 8 * i);
-		if (reg_overlap_mentioned_p (ops[0], mem))
-		  {
-		    gcc_assert (overlap == -1);
-		    overlap = i;
-		  }
-		else
-		  {
-		    if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
-		      sprintf (buff, "v%sr.64\t%%P0, %%1", load ? "ld" : "st");
-		    else
-		      sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
-		    output_asm_insn (buff, ops);
-		  }
+		gcc_assert (overlap == -1);
+		overlap = i;
 	      }
-	    if (overlap != -1)
+	    else
 	      {
-		ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
-		ops[1] = adjust_address (mem, SImode, 8 * overlap);
 		if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
-		  sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
+		  sprintf (buff, "v%sr.64\t%%P0, %%1", load ? "ld" : "st");
 		else
 		  sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
 		output_asm_insn (buff, ops);
 	      }
+	  }
+	if (overlap != -1)
+	  {
+	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
+	    ops[1] = adjust_address (mem, SImode, 8 * overlap);
+	    if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
+	      sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
+	    else
+	      sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
+	    output_asm_insn (buff, ops);
 	  }
 
         return "";
@@ -32700,31 +32691,6 @@ arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
 	return false;
     }
   return true;
-}
-
-/* To check op's immediate values matches the mode of the defined insn.  */
-bool
-arm_mve_immediate_check (rtx op, machine_mode mode, bool val)
-{
-  if (val)
-    {
-      if (((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 7)
-	   && (mode == E_V16QImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 15)
-	   && (mode == E_V8HImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 31)
-	   && (mode == E_V4SImode)))
-	return true;
-    }
-  else
-    {
-      if (((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 7)
-	   && (mode == E_V8HImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 15)
-	   && (mode == E_V4SImode)))
-	return true;
-    }
-  return false;
 }
 
 /* Can output mi_thunk for all cases except for non-zero vcall_offset

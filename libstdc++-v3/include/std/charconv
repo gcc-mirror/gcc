@@ -68,9 +68,9 @@ namespace __detail
 {
   template<typename _Tp>
     using __integer_to_chars_result_type
-      = enable_if_t<__or_v<__is_signed_integer<_Tp>,
-			   __is_unsigned_integer<_Tp>,
-			   is_same<char, remove_cv_t<_Tp>>>,
+      = enable_if_t<__or_<__is_signed_integer<_Tp>,
+			  __is_unsigned_integer<_Tp>,
+			  is_same<char, remove_cv_t<_Tp>>>::value,
 		    to_chars_result>;
 
   // Pick an unsigned type of suitable size. This is used to reduce the
@@ -564,9 +564,9 @@ namespace __detail
 
   template<typename _Tp>
     using __integer_from_chars_result_type
-      = enable_if_t<__or_v<__is_signed_integer<_Tp>,
-			   __is_unsigned_integer<_Tp>,
-			   is_same<char, remove_cv_t<_Tp>>>,
+      = enable_if_t<__or_<__is_signed_integer<_Tp>,
+			  __is_unsigned_integer<_Tp>,
+			  is_same<char, remove_cv_t<_Tp>>>::value,
 		    from_chars_result>;
 
 } // namespace __detail

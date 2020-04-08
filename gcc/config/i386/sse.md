@@ -16695,7 +16695,7 @@
 	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
 		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")]
 		     UNSPEC_PSHUFB))
-   (clobber (match_scratch:V4SI 3 "=X,x,Yv"))]
+   (clobber (match_scratch:V4SI 3 "=X,&x,&Yv"))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
    pshufb\t{%2, %0|%0, %2}

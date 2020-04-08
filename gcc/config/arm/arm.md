@@ -4422,7 +4422,8 @@
         operands[2] = force_reg (SImode, operands[2]);
 
       /* Armv8.1-M Mainline double shifts are not expanded.  */
-      if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
+      if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2]))
+	  && (REG_P (operands[2]) || INTVAL(operands[2]) != 32))
         {
 	  if (!reg_overlap_mentioned_p(operands[0], operands[1]))
 	    emit_insn (gen_movdi (operands[0], operands[1]));

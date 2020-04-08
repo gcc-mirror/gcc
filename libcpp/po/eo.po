@@ -1,14 +1,14 @@
 # Translation of cpplib to Esperanto
-# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018, 2019.
+# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 9.1-b20190203\n"
+"Project-Id-Version: cpplib 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-02-07 22:33+0000\n"
-"PO-Revision-Date: 2019-02-06 20:15+0100\n"
+"PO-Revision-Date: 2020-04-04 10:33-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.0.7\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: charset.c:674
 #, c-format
@@ -90,7 +90,7 @@ msgstr "la universala signo %.*s ne estas valida en komenco de identiganto"
 #: charset.c:1149
 #, c-format
 msgid "%.*s is outside the UCS codespace"
-msgstr ""
+msgstr "%.*s estas for de kodspaco UCS"
 
 #: charset.c:1194 charset.c:2113
 msgid "converting UCN to source character set"
@@ -101,16 +101,14 @@ msgid "converting UCN to execution character set"
 msgstr "konverto de UCN al la plenumiga signaro"
 
 #: charset.c:1265
-#, fuzzy, c-format
-#| msgid "universal character %.*s is not valid in an identifier"
+#, c-format
 msgid "extended character %.*s is not valid in an identifier"
-msgstr "la universala signo %.*s ne estas valida en identiganto"
+msgstr "etendita signo %.*s ne estas valida en identiganto"
 
 #: charset.c:1282
-#, fuzzy, c-format
-#| msgid "universal character %.*s is not valid at the start of an identifier"
+#, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
-msgstr "la universala signo %.*s ne estas valida en komenco de identiganto"
+msgstr "etendita signo %.*s ne estas valida en komenco de identiganto"
 
 #: charset.c:1368
 msgid "the meaning of '\\x' is different in traditional C"
@@ -175,7 +173,7 @@ msgstr "problemo por konverti %s al %s"
 #: directives.c:229 directives.c:272
 #, c-format
 msgid "extra tokens at end of #%s directive"
-msgstr "kromaj ĵetonoj ĉe la fino de la instrukcio #%s"
+msgstr "kromaj ĵetonoj ĉe la fino de la direktivo #%s"
 
 #: directives.c:379
 #, c-format
@@ -203,22 +201,21 @@ msgstr "sugesti kaŝi #%s el tradicia C per krommarĝenigo de #"
 
 #: directives.c:430
 msgid "embedding a directive within macro arguments is not portable"
-msgstr "enkorpigi instrukcion ene de makroaj argumentoj ne estas portebla"
+msgstr "enkorpigi direktivon ene de makroaj argumentoj ne estas portebla"
 
 #: directives.c:450
 msgid "style of line directive is a GCC extension"
-msgstr "stilo de lini-instrukcioj estas aldono de GCC"
+msgstr "stilo de lini-direktivoj estas aldono de GCC"
 
 #: directives.c:531
 #, c-format
 msgid "invalid preprocessing directive #%s"
-msgstr "malvalida antaŭproceza instrukcio #%s"
+msgstr "malvalida antaŭproceza direktivo #%s"
 
 #: directives.c:601
-#, fuzzy, c-format
-#| msgid "\"defined\" cannot be used as a macro name"
+#, c-format
 msgid "\"%s\" cannot be used as a macro name"
-msgstr "\"defined\" ne povas estis uzata kiel makroa nomo"
+msgstr "\"%s\" ne povas estis uzata kiel makroa nomo"
 
 #: directives.c:608
 #, c-format
@@ -228,7 +225,7 @@ msgstr "\"%s\" ne povas esti uzata kiel makroa nomo ĉar ĝi estas operatoro en 
 #: directives.c:611
 #, c-format
 msgid "no macro name given in #%s directive"
-msgstr "neniu makroa nomo estas indikita en la instrukcio #%s"
+msgstr "neniu makroa nomo estas indikita en la direktivo #%s"
 
 #: directives.c:614
 msgid "macro names must be identifiers"
@@ -256,7 +253,7 @@ msgstr "malplena dosiernomo en #%s"
 #: directives.c:838
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
-msgstr ""
+msgstr "nestita profundo %u de #include superas maksimumon %u (uzu -fmax-include-depth=PROFUNDO por pligrandigi la maksimumon)"
 
 #: directives.c:883
 msgid "#include_next in primary source file"
@@ -265,7 +262,7 @@ msgstr "#include_next en ĉefa fonta dosiero"
 #: directives.c:909
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
-msgstr "malvalida flago \"%s\" en lini-instrukcio"
+msgstr "malvalida flago \"%s\" en lini-direktivo"
 
 #: directives.c:969
 msgid "unexpected end of file after #line"
@@ -303,7 +300,7 @@ msgstr "%s"
 #: directives.c:1190
 #, c-format
 msgid "invalid #%s directive"
-msgstr "malvalida instrukcio #%s"
+msgstr "malvalida direktivo #%s"
 
 #: directives.c:1253
 #, c-format
@@ -340,15 +337,15 @@ msgstr "#pragma unufoje en ĉefdosiero"
 
 #: directives.c:1556
 msgid "invalid #pragma push_macro directive"
-msgstr "malvalida instrukcio #pragma push_macro"
+msgstr "malvalida direktivo #pragma push_macro"
 
 #: directives.c:1613
 msgid "invalid #pragma pop_macro directive"
-msgstr "malvalida instrukcio #pragma pop_macro"
+msgstr "malvalida direktivo #pragma pop_macro"
 
 #: directives.c:1668
 msgid "invalid #pragma GCC poison directive"
-msgstr "malvalida instrukcio #pragma GCC poison"
+msgstr "malvalida direktivo #pragma GCC poison"
 
 #: directives.c:1677
 #, c-format
@@ -372,7 +369,7 @@ msgstr "nuna dosiero estas pli malnova ol %s"
 #: directives.c:1749
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
-msgstr "malvalida instrukcio \"#pragma GCC %s\""
+msgstr "malvalida direktivo \"#pragma GCC %s\""
 
 #: directives.c:1950
 msgid "_Pragma takes a parenthesized string literal"
@@ -481,10 +478,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "malvalida sufikso \"%.*s\" kun deksesuma glitkoma konstanto"
 
 #: expr.c:749 expr.c:753
-#, fuzzy
-#| msgid "decimal float constants are a GCC extension"
 msgid "decimal float constants are a C2X feature"
-msgstr "dekumaj glitkomaj konstantoj estas aldono de GCC"
+msgstr "dekumaj glitkomaj konstantoj estas trajto de C2X"
 
 #: expr.c:772
 #, c-format
@@ -653,7 +648,7 @@ msgstr "la celata int estas pli mallarĝa ol la celata char"
 
 #: init.c:625
 msgid "CPP half-integer narrower than CPP character"
-msgstr "duon-entjero de CPP estas pli mallarĝa ol la signo de CPP"
+msgstr "Duon-entjero de CPP estas pli mallarĝa ol la signo de CPP"
 
 #: init.c:629
 #, c-format
@@ -685,7 +680,7 @@ msgstr "\"/*\" ene de komento"
 #: lex.c:1262
 #, c-format
 msgid "%s in preprocessing directive"
-msgstr "%s en antaŭproceza instrukcio"
+msgstr "%s en antaŭproceza direktivo"
 
 #: lex.c:1271
 msgid "null character(s) ignored"
@@ -787,28 +782,24 @@ msgid "'##' cannot appear at either end of __VA_OPT__"
 msgstr "'##' ne povas aperi ĉe iu ajn flanko de __VA_OPT__"
 
 #: macro.c:364
-#, fuzzy, c-format
-#| msgid "%s in preprocessing directive"
+#, c-format
 msgid "\"%s\" used outside of preprocessing directive"
-msgstr "%s en antaŭproceza instrukcio"
+msgstr "\"%s\" uzata for de antaŭproceza direktivo"
 
 #: macro.c:374
-#, fuzzy, c-format
-#| msgid "missing '(' in expression"
+#, c-format
 msgid "missing '(' before \"%s\" operand"
-msgstr "mankas '(' en esprimo"
+msgstr "mankas '(' antaŭ operaciato \"%s\""
 
 #: macro.c:389
-#, fuzzy, c-format
-#| msgid "operator \"__has_include__\" requires a header string"
+#, c-format
 msgid "operator \"%s\" requires a header-name"
-msgstr "la operatoro \"__has_include__\" postulas kapan ĉenon"
+msgstr "la operatoro \"%s\" postulas kap-nomon"
 
 #: macro.c:406
-#, fuzzy, c-format
-#| msgid "missing ')' after \"defined\""
+#, c-format
 msgid "missing ')' after \"%s\" operand"
-msgstr "mankas ')' post \"defined\""
+msgstr "mankas ')' post operaciato \"%s\""
 
 #: macro.c:426
 #, c-format
@@ -835,7 +826,7 @@ msgstr "ne eblis determini la daton kaj horon"
 
 #: macro.c:636
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr "__COUNTER__ estas etendigata interne de instrukcio per -fdirectives-only"
+msgstr "__COUNTER__ estas etendigata interne de direktivo per -fdirectives-only"
 
 #: macro.c:842
 msgid "invalid string literal, ignoring final '\\'"

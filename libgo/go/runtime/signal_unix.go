@@ -343,6 +343,7 @@ func doSigPreempt(gp *g, ctxt *sigctxt, sigpc uintptr) {
 
 	// Acknowledge the preemption.
 	atomic.Xadd(&gp.m.preemptGen, 1)
+	atomic.Store(&gp.m.signalPending, 0)
 }
 
 // gccgo-specific definition.

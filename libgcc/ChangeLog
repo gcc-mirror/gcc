@@ -1,3 +1,18 @@
+2020-04-07  Ian Lance Taylor  <iant@golang.org>
+
+	PR libgcc/94513
+	* generic-morestack.c: Give up trying to use __mmap/__munmap, use
+	syscall instead.
+
+2020-04-04  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack.c: Only use __mmap on glibc >= 2.26.
+
+2020-04-03  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack.c: On GNU/Linux use __mmap/__munmap rather
+	than mmap/munmap, to avoid hooks.
+
 2020-04-03  Jim Johnston  <jjohnst@us.ibm.com>
 
 	* config/s390/tpf-unwind.h (MIN_PATRANGE, MAX_PATRANGE)

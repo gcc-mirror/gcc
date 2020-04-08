@@ -1,4 +1,12 @@
+2020-04-08  Nathan Sidwell  <nathan@acm.org>
+
+	Merge master 50c7853216e8511971c55b51d7fe29173db4749b
+
 2020-04-07  Nathan Sidwell  <nathan@acm.org>
+
+	C++20 Ranges!
+	gcc/testsuite/
+	* g++.dg/modules/xtreme-header-2.h: Enable in c++20 mode.
 
 	gcc/cp/
 	* module.cc (trees_{in,out}::tpl_parm_value): Stream auto

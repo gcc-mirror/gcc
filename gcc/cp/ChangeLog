@@ -1,3 +1,94 @@
+2020-04-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (maybe_promote_captured_temps): Ensure that
+	reference capture placeholder vars are properly declared.
+
+2020-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* tree.c (replace_placeholders): Look through all handled components,
+	not just COMPONENT_REFs.
+	* typeck2.c (process_init_constructor_array): Propagate
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY up from each element initializer to
+	the array initializer.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94512
+	* parser.c (cp_parser_omp_parallel): Set OMP_PARALLEL_COMBINED
+	if cp_parser_omp_master succeeded.
+
+2020-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94462
+	* decl.c (duplicate_decls): Fix handling of DECL_HIDDEN_FRIEND_P.
+
+2020-04-04  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/94155 - crash in gimplifier with paren init of aggregates.
+	* init.c (build_vec_init): Fill in indexes.
+
+2020-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91377
+	* mangle.c (write_expression): Skip IMPLICIT_CONV_EXPR.
+
+2020-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94205
+	PR c++/79937
+	* constexpr.c (struct constexpr_ctx): New field 'parent'.
+	(cxx_eval_bare_aggregate): Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY
+	flag from the original constructor to the reduced constructor.
+	(lookup_placeholder): Prefer to return the outermost matching object
+	by recursively calling lookup_placeholder on the 'parent' context,
+	but don't cross CONSTRUCTOR_PLACEHOLDER_BOUNDARY constructors.
+	(cxx_eval_constant_expression): Link the 'ctx' context to the 'new_ctx'
+	context via 'new_ctx.parent' when being expanded without an explicit
+	target.  Don't call replace_placeholders.
+	(cxx_eval_outermost_constant_expr): Initialize 'ctx.parent' to NULL.
+
+	PR c++/94219
+	PR c++/94205
+	* constexpr.c (get_or_insert_ctor_field): Split out (while adding
+	support for VECTOR_TYPEs, and optimizations for the common case)
+	from ...
+	(cxx_eval_store_expression): ... here.  Rename local variable
+	'changed_active_union_member_p' to 'activated_union_member_p'.  Record
+	the sequence of indexes into 'indexes' that yields the subobject we're
+	assigning to.  Record the integer offsets of the constructor indexes
+	we're assigning through into 'index_pos_hints'.  After evaluating the
+	initializer of the store expression, recompute 'valp' using 'indexes'
+	and using 'index_pos_hints' as hints.
+	(cxx_eval_bare_aggregate): Tweak comments.  Use get_or_insert_ctor_field
+	to recompute the constructor_elt pointer we're assigning through after
+	evaluating each initializer.
+
+2020-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67825
+	* constraint.cc (tsubst_valid_expression_requirement): Call
+	convert_to_void.
+
+2020-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94453
+	* constexpr.c (maybe_constant_value): Use break_out_target_exprs.
+	* expr.c (mark_use) [VIEW_CONVERT_EXPR]: Don't wrap a TARGET_EXPR in
+	NON_LVALUE_EXPR.
+
+2020-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94441
+	* parser.c (cp_parser_omp_for_loop): Use
+	protected_set_expr_location_if_unset.
+	* cp-gimplify.c (genericize_if_stmt, genericize_cp_loop): Likewise.
+
+	PR c++/94477
+	* pt.c (tsubst_expr) <case OMP_MASTER>: Clear
+	omp_parallel_combined_clauses.
+
 2020-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91966

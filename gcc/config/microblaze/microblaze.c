@@ -2035,7 +2035,7 @@ microblaze_must_save_register (int regno)
     {
       if (df_regs_ever_live_p (regno) 
 	  || regno == MB_ABI_MSR_SAVE_REG
-	  || (interrupt_handler
+	  || ((interrupt_handler || fast_interrupt)
               && (regno == MB_ABI_ASM_TEMP_REGNUM
 	          || regno == MB_ABI_EXCEPTION_RETURN_ADDR_REGNUM)))
 	return 1;

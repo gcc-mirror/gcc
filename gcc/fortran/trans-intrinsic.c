@@ -120,6 +120,9 @@ static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
 
   /* Functions in libgfortran.  */
   LIB_FUNCTION (ERFC_SCALED, "erfc_scaled", false),
+  LIB_FUNCTION (SIND, "sind", false),
+  LIB_FUNCTION (COSD, "cosd", false),
+  LIB_FUNCTION (TAND, "tand", false),
 
   /* End the list.  */
   LIB_FUNCTION (NONE, NULL, false)
@@ -4384,6 +4387,181 @@ gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   se->expr = resvar;
 }
+
+
+/* Generate the constant 180 / pi, which is used in the conversion
+   of acosd(), asind(), atand(), atan2d().  */
+
+static tree
+rad2deg (int kind)
+{
+  tree retval;
+  mpfr_t pi, t0;
+
+  gfc_set_model_kind (kind);
+  mpfr_init (pi);
+  mpfr_init (t0);
+  mpfr_set_si (t0, 180, GFC_RND_MODE);
+  mpfr_const_pi (pi, GFC_RND_MODE);
+  mpfr_div (t0, t0, pi, GFC_RND_MODE);
+  retval = gfc_conv_mpfr_to_tree (t0, kind, 0);
+  mpfr_clear (t0);
+  mpfr_clear (pi);
+  return retval;
+}
+
+
+/* ACOSD(x) is translated into ACOS(x) * 180 / pi.
+   ASIND(x) is translated into ASIN(x) * 180 / pi.
+   ATAND(x) is translated into ATAN(x) * 180 / pi.  */
+
+static void
+gfc_conv_intrinsic_atrigd (gfc_se * se, gfc_expr * expr, gfc_isym_id id)
+{
+  tree arg;
+  tree atrigd;
+  tree type;
+
+  type = gfc_typenode_for_spec (&expr->ts);
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  if (id == GFC_ISYM_ACOSD)
+    atrigd = gfc_builtin_decl_for_float_kind (BUILT_IN_ACOS, expr->ts.kind);
+  else if (id == GFC_ISYM_ASIND)
+    atrigd = gfc_builtin_decl_for_float_kind (BUILT_IN_ASIN, expr->ts.kind);
+  else if (id == GFC_ISYM_ATAND)
+    atrigd = gfc_builtin_decl_for_float_kind (BUILT_IN_ATAN, expr->ts.kind);
+  else
+    gcc_unreachable ();
+
+  atrigd = build_call_expr_loc (input_location, atrigd, 1, arg);
+
+  se->expr = fold_build2_loc (input_location, MULT_EXPR, type, atrigd,
+			      fold_convert (type, rad2deg (expr->ts.kind)));
+}
+
+
+/* COTAN(X) is translated into -TAN(X+PI/2) for REAL argument and
+   COS(X) / SIN(X) for COMPLEX argument.  */
+
+static void
+gfc_conv_intrinsic_cotan (gfc_se *se, gfc_expr *expr)
+{
+  gfc_intrinsic_map_t *m;
+  tree arg;
+  tree type;
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  if (expr->ts.type == BT_REAL)
+    {
+      tree tan;
+      tree tmp;
+      mpfr_t pio2;
+
+      /* Create pi/2.  */
+      gfc_set_model_kind (expr->ts.kind);
+      mpfr_init (pio2);
+      mpfr_const_pi (pio2, GFC_RND_MODE);
+      mpfr_div_ui (pio2, pio2, 2, GFC_RND_MODE);
+      tmp = gfc_conv_mpfr_to_tree (pio2, expr->ts.kind, 0);
+      mpfr_clear (pio2);
+
+      /* Find tan builtin function.  */
+      m = gfc_intrinsic_map;
+      for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
+	if (GFC_ISYM_TAN == m->id)
+	  break;
+
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, type, arg, tmp);
+      tan = gfc_get_intrinsic_lib_fndecl (m, expr);
+      tan = build_call_expr_loc (input_location, tan, 1, tmp);
+      se->expr = fold_build1_loc (input_location, NEGATE_EXPR, type, tan);
+    }
+  else
+    {
+      tree sin;
+      tree cos;
+
+      /* Find cos builtin function.  */
+      m = gfc_intrinsic_map;
+      for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
+	if (GFC_ISYM_COS == m->id)
+	  break;
+
+      cos = gfc_get_intrinsic_lib_fndecl (m, expr);
+      cos = build_call_expr_loc (input_location, cos, 1, arg);
+
+      /* Find sin builtin function.  */
+      m = gfc_intrinsic_map;
+      for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
+	if (GFC_ISYM_SIN == m->id)
+	  break;
+
+      sin = gfc_get_intrinsic_lib_fndecl (m, expr);
+      sin = build_call_expr_loc (input_location, sin, 1, arg);
+
+      /* Divide cos by sin. */
+      se->expr = fold_build2_loc (input_location, RDIV_EXPR, type, cos, sin);
+   }
+}
+
+
+/* COTAND(X) is translated into -TAND(X+90) for REAL argument.  */
+
+static void
+gfc_conv_intrinsic_cotand (gfc_se *se, gfc_expr *expr)
+{
+  tree arg;
+  tree type;
+  tree ninety_tree;
+  mpfr_t ninety;
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  gfc_set_model_kind (expr->ts.kind);
+
+  /* Build the tree for x + 90.  */
+  mpfr_init_set_ui (ninety, 90, GFC_RND_MODE);
+  ninety_tree = gfc_conv_mpfr_to_tree (ninety, expr->ts.kind, 0);
+  arg = fold_build2_loc (input_location, PLUS_EXPR, type, arg, ninety_tree);
+  mpfr_clear (ninety);
+
+  /* Find tand.  */
+  gfc_intrinsic_map_t *m = gfc_intrinsic_map;
+  for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
+    if (GFC_ISYM_TAND == m->id)
+      break;
+
+  tree tand = gfc_get_intrinsic_lib_fndecl (m, expr);
+  tand = build_call_expr_loc (input_location, tand, 1, arg);
+
+  se->expr = fold_build1_loc (input_location, NEGATE_EXPR, type, tand);
+}
+
+
+/* ATAN2D(Y,X) is translated into ATAN2(Y,X) * 180 / PI. */
+
+static void
+gfc_conv_intrinsic_atan2d (gfc_se *se, gfc_expr *expr)
+{
+  tree args[2];
+  tree atan2d;
+  tree type;
+
+  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  type = TREE_TYPE (args[0]);
+
+  atan2d = gfc_builtin_decl_for_float_kind (BUILT_IN_ATAN2, expr->ts.kind);
+  atan2d = build_call_expr_loc (input_location, atan2d, 2, args[0], args[1]);
+
+  se->expr = fold_build2_loc (input_location, MULT_EXPR, type, atan2d,
+			      rad2deg (expr->ts.kind));
+}
+
 
 /* COUNT(A) = Number of true elements in A.  */
 static void
@@ -9893,6 +10071,24 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_ANY:
       gfc_conv_intrinsic_anyall (se, expr, NE_EXPR);
+      break;
+
+    case GFC_ISYM_ACOSD:
+    case GFC_ISYM_ASIND:
+    case GFC_ISYM_ATAND:
+      gfc_conv_intrinsic_atrigd (se, expr, expr->value.function.isym->id);
+      break;
+
+    case GFC_ISYM_COTAN:
+      gfc_conv_intrinsic_cotan (se, expr);
+      break;
+
+    case GFC_ISYM_COTAND:
+      gfc_conv_intrinsic_cotand (se, expr);
+      break;
+
+    case GFC_ISYM_ATAN2D:
+      gfc_conv_intrinsic_atan2d (se, expr);
       break;
 
     case GFC_ISYM_BTEST:
