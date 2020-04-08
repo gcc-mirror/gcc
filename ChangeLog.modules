@@ -1,10 +1,13 @@
 2020-04-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/xtreme-header-[1-6]_c.C: New.
+
 	gcc/cp/
 	* module.cc (trees_in::key_mergeable): Avoid null deref.
 	(direct_import): Create attachment table.
 	gcc/testsuite/
-	* g++.dg/modules/lambds-[23]_c.C: New.
+	* g++.dg/modules/lambda-[23]_c.C: New.
 
 	Merge master 50c7853216e8511971c55b51d7fe29173db4749b
 
