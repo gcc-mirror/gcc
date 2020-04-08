@@ -1,3 +1,9 @@
+2020-04-09  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/94530
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(valid_src_p): Fix missing rtx type check.
+
 2020-04-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
 	    Richard Biener  <rguenther@suse.de>
 

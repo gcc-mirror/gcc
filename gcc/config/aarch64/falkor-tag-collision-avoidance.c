@@ -538,6 +538,9 @@ valid_src_p (rtx src, rtx_insn *insn, struct loop *loop, bool *pre_post,
   if (!aarch64_classify_address (&addr, XEXP (x, 0), mode, true))
     return false;
 
+  if (!REG_P (addr.base))
+    return false;
+
   unsigned regno = REGNO (addr.base);
   if (global_regs[regno] || fixed_regs[regno])
     return false;
