@@ -1,5 +1,8 @@
 2020-04-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/hello-1_[ab].C: New.
+
 	gcc/cp/
 	* module.cc (trees_in::decl_value): Need to retrofit lang for
 	inner.
