@@ -1833,10 +1833,22 @@ arm_init_acle_builtins (void)
       arm_builtin_datum *d = &acle_builtin_data[i];
       arm_init_builtin (fcode, d, "__builtin_arm");
     }
+}
 
-  fcode = ARM_BUILTIN_CDE_PATTERN_START;
+static void
+arm_init_cde_builtins (void)
+{
+  unsigned int i, fcode = ARM_BUILTIN_CDE_PATTERN_START;
   for (i = 0; i < ARRAY_SIZE (cde_builtin_data); i++, fcode++)
     {
+      /* Only define CDE floating point builtins if the target has floating
+	 point registers.  NOTE: without HARD_FLOAT we don't have MVE, so we
+	 can break out of this loop directly here.  */
+      if (!TARGET_MAYBE_HARD_FLOAT && fcode >= ARM_BUILTIN_vcx1si)
+	break;
+      /* Only define CDE/MVE builtins if MVE is available.  */
+      if (!TARGET_HAVE_MVE && fcode >= ARM_BUILTIN_vcx1qv16qi)
+	break;
       arm_builtin_cde_datum *cde = &cde_builtin_data[i];
       arm_builtin_datum *d = &cde->base;
       arm_init_builtin (fcode, d, "__builtin_arm");
@@ -2627,6 +2639,9 @@ arm_init_builtins (void)
       arm_init_vfp_builtins ();
       arm_init_crypto_builtins ();
     }
+
+  if (TARGET_CDE)
+    arm_init_cde_builtins ();
 
   arm_init_acle_builtins ();
 
@@ -4176,6 +4191,92 @@ arm_check_builtin_call (location_t , vec<location_t> , tree fndecl,
 		       DECL_ATTRIBUTES (cfun->decl));
     }
   return true;
+}
+
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  This is currently only
+   used for the MVE related builtins for the CDE extension.
+   Here we ensure the type of arguments is such that the size is correct, and
+   then return a tree that describes the same function call but with the
+   relevant types cast as necessary.  */
+tree
+arm_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
+{
+  if (DECL_MD_FUNCTION_CODE (fndecl) <= ARM_BUILTIN_vcx1qv16qi
+      || DECL_MD_FUNCTION_CODE (fndecl) >= ARM_BUILTIN_MVE_BASE)
+    return NULL_TREE;
+
+  vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (arglist);
+  unsigned param_num = params ? params->length() : 0;
+  unsigned num_args = list_length (TYPE_ARG_TYPES (TREE_TYPE (fndecl))) - 1;
+  /* Ensure this function has the correct number of arguments.
+     This won't happen when using the intrinsics defined by the ACLE, since
+     they're exposed to the user via a wrapper in the arm_cde.h header that has
+     the correct number of arguments ... hence the compiler would already catch
+     an incorrect number of arguments there.
+
+     It is still possible to get here if the user tries to call the __bulitin_*
+     functions directly.  We could print some error message in this function,
+     but instead we leave it to the rest of the code to catch this problem in
+     the same way that other __builtin_* functions catch it.
+
+     This does mean an odd error message, but it's consistent with the rest of
+     the builtins.  */
+  if (param_num != num_args)
+    return NULL_TREE;
+
+  tree to_return = NULL_TREE;
+  /* Take the functions return type since that's the same type as the arguments
+     this function needs (the types of the builtin function all come from the
+     machine mode of the RTL pattern, and they're all the same and calculated
+     in the same way).  */
+  tree pattern_type = TREE_TYPE (TREE_TYPE (fndecl));
+
+  unsigned i;
+  for (i = 1; i < (param_num - 1); i++)
+    {
+      tree this_param = (*params)[i];
+      if (TREE_CODE (this_param) == ERROR_MARK)
+	return NULL_TREE;
+      tree param_type = TREE_TYPE (this_param);
+
+      /* Return value is cast to type that second argument originally was.
+	 All non-constant arguments are cast to the return type calculated from
+	 the RTL pattern.
+
+	 Set the return type to an unqualified version of the type of the first
+	 parameter.  The first parameter since that is how the intrinsics are
+	 defined -- to always return the same type as the first polymorphic
+	 argument.  Unqualified version of the type since we don't want passing
+	 a constant parameter to mean that the return value of the builtin is
+	 also constant.  */
+      if (i == 1)
+	to_return = build_qualified_type (param_type, 0 MEM_STAT_INFO);
+
+      /* The only requirement of these intrinsics on the type of the variable
+	 is that it's 128 bits wide.  All other types are valid and we simply
+	 VIEW_CONVERT_EXPR them to the type of the underlying builtin.  */
+      tree type_size = TYPE_SIZE (param_type);
+      if (! tree_fits_shwi_p (type_size)
+	  || tree_to_shwi (type_size) != 128)
+	{
+	  error_at (loc,
+		    "argument %u to function %qE is of type %qT which is not "
+		    "known to be 128 bits wide",
+		    i, fndecl, param_type);
+	  return NULL_TREE;
+	}
+
+      /* Only convert the argument if we actually need to.  */
+      if (! check_base_type (pattern_type, param_type))
+	(*params)[i] = build1 (VIEW_CONVERT_EXPR, pattern_type, this_param);
+    }
+  tree call_expr = build_call_expr_loc_array (loc, fndecl, param_num,
+					      params->address());
+
+  gcc_assert (to_return != NULL_TREE);
+  if (! check_base_type (to_return, pattern_type))
+    return build1 (VIEW_CONVERT_EXPR, to_return, call_expr);
+  return call_expr;
 }
 
 #include "gt-arm-builtins.h"

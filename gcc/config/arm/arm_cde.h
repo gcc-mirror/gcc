@@ -140,6 +140,28 @@ extern "C" {
 #endif /* __ARM_FP || __ARM_FEATURE_MVE.  */
 #endif /* __ARM_FEATURE_CDE.  */
 
+#if __ARM_FEATURE_MVE
+#include "arm_mve_types.h"
+
+#define __arm_vcx1q_u8(coproc, imm) \
+	(uint8x16_t)__builtin_arm_vcx1qv16qi(coproc, imm)
+#define __arm_vcx1qa(coproc, acc, imm) \
+	__builtin_arm_vcx1qav16qi(coproc, acc, imm)
+#define __arm_vcx2q(coproc, n, imm) \
+	__builtin_arm_vcx2qv16qi(coproc, n, imm)
+#define __arm_vcx2q_u8(coproc, n, imm) \
+	(uint8x16_t)__builtin_arm_vcx2qv16qi(coproc, n, imm)
+#define __arm_vcx2qa(coproc, acc, n, imm) \
+	__builtin_arm_vcx2qav16qi(coproc, acc, n, imm)
+#define __arm_vcx3q(coproc, n, m, imm) \
+	__builtin_arm_vcx3qv16qi(coproc, n, m, imm)
+#define __arm_vcx3q_u8(coproc, n, m, imm) \
+	(uint8x16_t)__builtin_arm_vcx3qv16qi(coproc, n, m, imm)
+#define __arm_vcx3qa(coproc, acc, n, m, imm) \
+	__builtin_arm_vcx3qav16qi(coproc, acc, n, m, imm)
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -5120,11 +5120,14 @@ foreach { armfunc armflag armdef } {
 		"-march=armv8-m.main+cdecp0+cdecp6 -mthumb"
 		"defined (__ARM_FEATURE_CDE)"
 	arm_v8m_main_cde_fp
-		"-march=armv8-m.main+fp+cdecp0+cdecp6 -mthumb"
+		"-march=armv8-m.main+fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FP)"
 	arm_v8_1m_main_cde_mve
-		"-march=armv8.1-m.main+mve+cdecp0+cdecp6 -mthumb"
+		"-march=armv8.1-m.main+mve+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FEATURE_MVE)"
+	arm_v8_1m_main_cde_mve_fp
+		"-march=armv8.1-m.main+mve.fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
+		"defined (__ARM_FEATURE_CDE) || __ARM_FEATURE_MVE == 3"
 	} {
     eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
 	proc check_effective_target_FUNC_ok_nocache { } {

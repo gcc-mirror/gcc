@@ -28,6 +28,8 @@
 #include "c-family/c-pragma.h"
 #include "stringpool.h"
 
+tree arm_resolve_overloaded_builtin (location_t, tree, void*);
+
 /* Output C specific EABI object attributes.  These cannot be done in
    arm.c because they require information from the C frontend.  */
 
@@ -360,6 +362,7 @@ arm_register_target_pragmas (void)
 {
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = arm_pragma_target_parse;
+  targetm.resolve_overloaded_builtin = arm_resolve_overloaded_builtin;
 
 #ifdef REGISTER_SUBTARGET_PRAGMAS
   REGISTER_SUBTARGET_PRAGMAS ();

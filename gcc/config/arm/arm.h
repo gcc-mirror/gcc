@@ -582,6 +582,9 @@ extern const int arm_arch_cde_coproc_bits[];
 #define ARM_VCDE_CONST_1	((1 << 11) - 1)
 #define ARM_VCDE_CONST_2	((1 << 6 ) - 1)
 #define ARM_VCDE_CONST_3	((1 << 3 ) - 1)
+#define ARM_MVE_CDE_CONST_1	((1 << 12) - 1)
+#define ARM_MVE_CDE_CONST_2	((1 << 7 ) - 1)
+#define ARM_MVE_CDE_CONST_3	((1 << 4 ) - 1)
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)

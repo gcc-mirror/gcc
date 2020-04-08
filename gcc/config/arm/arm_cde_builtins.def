@@ -37,4 +37,15 @@ CDE_VAR2 (CX_BINARY, vcx2a, si, di, ARM_VCDE_CONST_2, ECF_CONST)
 CDE_VAR2 (CX_BINARY, vcx3, si, di, ARM_VCDE_CONST_3, ECF_CONST)
 CDE_VAR2 (CX_TERNARY, vcx3a, si, di, ARM_VCDE_CONST_3, ECF_CONST)
 
+/* NOTE: The MVE intrinsics must be defined at the end of this file, and with
+	 vcx1q first.
+         These restrictions are relied on to determine which intrinsics need
+	 overload resolution in `arm_resolve_overloaded_builtin`.  */
+VAR1 (CX_IMM, vcx1q, v16qi, ARM_MVE_CDE_CONST_1, ECF_CONST)
+VAR1 (CX_UNARY, vcx1qa, v16qi, ARM_MVE_CDE_CONST_1, ECF_CONST)
+VAR1 (CX_UNARY, vcx2q, v16qi, ARM_MVE_CDE_CONST_2, ECF_CONST)
+VAR1 (CX_BINARY, vcx2qa, v16qi, ARM_MVE_CDE_CONST_2, ECF_CONST)
+VAR1 (CX_BINARY, vcx3q, v16qi, ARM_MVE_CDE_CONST_3, ECF_CONST)
+VAR1 (CX_TERNARY, vcx3qa, v16qi, ARM_MVE_CDE_CONST_3, ECF_CONST)
+
 #undef CDE_VAR2
