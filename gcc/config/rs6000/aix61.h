@@ -154,6 +154,7 @@ do {									\
    %{!maix64:%{!shared:%{g*:-lg}}}\
    %{fprofile-arcs|fprofile-generate*|coverage:-lpthreads}\
    %{mpe:-L%R/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
+   %{mlong-double-128:-lc128}\
    %{pthread:-lpthreads} -lc"
 
 #undef LINK_SPEC

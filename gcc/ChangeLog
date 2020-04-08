@@ -1,3 +1,9 @@
+2020-04-08  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix61.h (LIB_SPEC): Add -lc128 with -mlong-double-128.
+	* config/rs6000/aix71.h (LIB_SPEC): Likewise.
+	* config/rs6000/aix72.h (LIB_SPEC): Likewise.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94526
