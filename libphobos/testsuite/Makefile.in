@@ -216,6 +216,7 @@ SHELL = @SHELL@
 SPEC_PHOBOS_DEPS = @SPEC_PHOBOS_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WARN_DFLAGS = @WARN_DFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@

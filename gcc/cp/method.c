@@ -1102,6 +1102,17 @@ early_check_defaulted_comparison (tree fn)
       return false;
     }
 
+  if (!ctx)
+    {
+      if (DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR))
+	error_at (loc, "three-way comparison operator can only be defaulted "
+		  "in a class definition");
+      else
+	error_at (loc, "equality comparison operator can only be defaulted "
+		  "in a class definition");
+      return false;
+    }
+
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {

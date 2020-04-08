@@ -17047,6 +17047,8 @@ ac_config_files="$ac_config_files Makefile testsuite/Makefile libgomp.spec"
 
 ac_config_files="$ac_config_files testsuite/libgomp-test-support.pt.exp:testsuite/libgomp-test-support.exp.in"
 
+ac_config_files="$ac_config_files testsuite/libgomp-site-extra.exp"
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -18200,6 +18202,7 @@ do
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
     "libgomp.spec") CONFIG_FILES="$CONFIG_FILES libgomp.spec" ;;
     "testsuite/libgomp-test-support.pt.exp") CONFIG_FILES="$CONFIG_FILES testsuite/libgomp-test-support.pt.exp:testsuite/libgomp-test-support.exp.in" ;;
+    "testsuite/libgomp-site-extra.exp") CONFIG_FILES="$CONFIG_FILES testsuite/libgomp-site-extra.exp" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

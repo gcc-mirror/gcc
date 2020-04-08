@@ -1,3 +1,20 @@
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* libgomp.oacc-c++/declare-pr94120.C: New.
+
+2020-04-06  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Add testsuite/libgomp-site-extra.exp to output
+	files.
+	* configure: Regenerate.
+	* testsuite/libgomp-site-extra.exp.in: New file.
+	* testsuite/libgomp-test-support.exp.in (GCC_UNDER_TEST): Remove
+	variable.
+	* testsuite/Makefile.am (EXTRA_DEJAGNU_SITE_CONFIG): New
+	variable.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR tree-optimization/89713

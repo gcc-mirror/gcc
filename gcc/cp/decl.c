@@ -1451,9 +1451,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   /* Check for redeclaration and other discrepancies.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
-      && DECL_ARTIFICIAL (olddecl))
+      && DECL_ARTIFICIAL (olddecl)
+      /* A C++20 implicit friend operator== uses the normal path (94462).  */
+      && !DECL_HIDDEN_FRIEND_P (olddecl))
     {
-      gcc_assert (!DECL_HIDDEN_FRIEND_P (olddecl));
       if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
 	  /* Avoid warnings redeclaring built-ins which have not been
@@ -2367,6 +2368,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    DECL_SET_IS_OPERATOR_NEW (newdecl, true);
 	  DECL_LOOPING_CONST_OR_PURE_P (newdecl)
 	    |= DECL_LOOPING_CONST_OR_PURE_P (olddecl);
+	  DECL_IS_REPLACEABLE_OPERATOR (newdecl)
+	    |= DECL_IS_REPLACEABLE_OPERATOR (olddecl);
 
 	  if (merge_attr)
 	    merge_attribute_bits (newdecl, olddecl);
@@ -4437,13 +4440,17 @@ cxx_init_decl_processing (void)
     tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
     DECL_SET_IS_OPERATOR_NEW (opnew, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
     opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
     DECL_SET_IS_OPERATOR_NEW (opnew, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
     tree opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
     DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
     opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
     DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
     if (flag_sized_deallocation)
       {
 	/* Also push the sized deallocation variants:
@@ -4457,8 +4464,10 @@ cxx_init_decl_processing (void)
 	deltype = build_exception_variant (deltype, empty_except_spec);
 	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
       }
 
     if (aligned_new_threshold)
@@ -4477,9 +4486,11 @@ cxx_init_decl_processing (void)
 	opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
 	DECL_IS_MALLOC (opnew) = 1;
 	DECL_SET_IS_OPERATOR_NEW (opnew, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
 	opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
 	DECL_IS_MALLOC (opnew) = 1;
 	DECL_SET_IS_OPERATOR_NEW (opnew, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
 
 	/* operator delete (void *, align_val_t); */
 	deltype = build_function_type_list (void_type_node, ptr_type_node,
@@ -4488,8 +4499,10 @@ cxx_init_decl_processing (void)
 	deltype = build_exception_variant (deltype, empty_except_spec);
 	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 
 	if (flag_sized_deallocation)
 	  {
@@ -4501,8 +4514,10 @@ cxx_init_decl_processing (void)
 	    deltype = build_exception_variant (deltype, empty_except_spec);
 	    opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	  }
       }
 
@@ -16662,14 +16677,20 @@ begin_destructor_body (void)
 	    /* If the vptr is shared with some virtual nearly empty base,
 	       don't clear it if not in charge, the dtor of the virtual
 	       nearly empty base will do that later.  */
-	    if (CLASSTYPE_VBASECLASSES (current_class_type)
-		&& CLASSTYPE_PRIMARY_BINFO (current_class_type)
-		&& BINFO_VIRTUAL_P
-			  (CLASSTYPE_PRIMARY_BINFO (current_class_type)))
+	    if (CLASSTYPE_VBASECLASSES (current_class_type))
 	      {
-		stmt = convert_to_void (stmt, ICV_STATEMENT,
-					tf_warning_or_error);
-		stmt = build_if_in_charge (stmt);
+		tree c = current_class_type;
+		while (CLASSTYPE_PRIMARY_BINFO (c))
+		  {
+		    if (BINFO_VIRTUAL_P (CLASSTYPE_PRIMARY_BINFO (c)))
+		      {
+			stmt = convert_to_void (stmt, ICV_STATEMENT,
+						tf_warning_or_error);
+			stmt = build_if_in_charge (stmt);
+			break;
+		      }
+		    c = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (c));
+		  }
 	      }
 	    finish_decl_cleanup (NULL_TREE, stmt);
 	  }

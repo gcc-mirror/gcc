@@ -422,8 +422,9 @@ am__objects_58 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	pack_generic.lo selected_char_kind.lo size.lo \
 	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
 	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
-	selected_real_kind.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo $(am__objects_56) $(am__objects_57)
+	selected_real_kind.lo trigd.lo unpack_generic.lo \
+	in_pack_generic.lo in_unpack_generic.lo $(am__objects_56) \
+	$(am__objects_57)
 @IEEE_SUPPORT_TRUE@am__objects_59 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
 am__objects_60 =
@@ -771,9 +772,9 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/rand.c intrinsics/random.c \
 	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
 	intrinsics/selected_int_kind.f90 \
-	intrinsics/selected_real_kind.f90 intrinsics/unpack_generic.c \
-	runtime/in_pack_generic.c runtime/in_unpack_generic.c \
-	$(am__append_3) $(am__append_4)
+	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
+	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
+	runtime/in_unpack_generic.c $(am__append_3) $(am__append_4)
 @IEEE_SUPPORT_FALSE@gfor_ieee_src = 
 @IEEE_SUPPORT_TRUE@gfor_ieee_src = \
 @IEEE_SUPPORT_TRUE@ieee/ieee_arithmetic.F90 \
@@ -2252,6 +2253,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transfer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transfer128.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trigd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/umask.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unix.Plo@am__quote@
@@ -6403,6 +6405,13 @@ reshape_packed.lo: intrinsics/reshape_packed.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/reshape_packed.c' object='reshape_packed.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_packed.lo `test -f 'intrinsics/reshape_packed.c' || echo '$(srcdir)/'`intrinsics/reshape_packed.c
+
+trigd.lo: intrinsics/trigd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT trigd.lo -MD -MP -MF $(DEPDIR)/trigd.Tpo -c -o trigd.lo `test -f 'intrinsics/trigd.c' || echo '$(srcdir)/'`intrinsics/trigd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/trigd.Tpo $(DEPDIR)/trigd.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='intrinsics/trigd.c' object='trigd.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o trigd.lo `test -f 'intrinsics/trigd.c' || echo '$(srcdir)/'`intrinsics/trigd.c
 
 unpack_generic.lo: intrinsics/unpack_generic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unpack_generic.lo -MD -MP -MF $(DEPDIR)/unpack_generic.Tpo -c -o unpack_generic.lo `test -f 'intrinsics/unpack_generic.c' || echo '$(srcdir)/'`intrinsics/unpack_generic.c

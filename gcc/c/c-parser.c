@@ -16580,6 +16580,15 @@ c_parser_oacc_declare (c_parser *parser)
 	  break;
 	}
 
+      if (!c_check_in_current_scope (decl))
+	{
+	  error_at (loc,
+		    "%qD must be a variable declared in the same scope as "
+		    "%<#pragma acc declare%>", decl);
+	  error = true;
+	  continue;
+	}
+
       if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("omp declare target link",
 			       DECL_ATTRIBUTES (decl)))
@@ -18877,9 +18886,9 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
 	  stmt = c_finish_omp_parallel (loc,
 					cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
 					block);
-	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  if (ret == NULL)
 	    return ret;
+	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
       else if (strcmp (p, "loop") == 0)

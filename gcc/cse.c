@@ -5074,7 +5074,7 @@ cse_insn (rtx_insn *insn)
 	     to prefer it.  Copy it to src_related.  The code below will
 	     then give it a negative cost.  */
 	  if (GET_CODE (dest) == code && rtx_equal_p (p->exp, dest))
-	    src_related = dest;
+	    src_related = p->exp;
 	}
 
       /* Find the cheapest valid equivalent, trying all the available
@@ -5332,7 +5332,16 @@ cse_insn (rtx_insn *insn)
 		   && rtx_equal_p (trial, dest)
 		   && !side_effects_p (dest)
 		   && (cfun->can_delete_dead_exceptions
-		       || insn_nothrow_p (insn)))
+		       || insn_nothrow_p (insn))
+		   /* We can only remove the later store if the earlier aliases
+		      at least all accesses the later one.  */
+		   && (!MEM_P (trial)
+		       || ((MEM_ALIAS_SET (dest) == MEM_ALIAS_SET (trial)
+			    || alias_set_subset_of (MEM_ALIAS_SET (dest),
+						    MEM_ALIAS_SET (trial)))
+			    && (!MEM_EXPR (trial)
+				|| refs_same_for_tbaa_p (MEM_EXPR (trial),
+							 MEM_EXPR (dest))))))
 	    {
 	      SET_SRC (sets[i].rtl) = trial;
 	      noop_insn = true;

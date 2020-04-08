@@ -5103,6 +5103,68 @@ proc add_options_for_arm_v8_2a_bf16_neon { flags } {
     return "$flags $et_arm_v8_2a_bf16_neon_flags"
 }
 
+# A series of routines are created to 1) check if a given architecture is
+# effective (check_effective_target_*_ok) and then 2) give the corresponding
+# flags that enable the architecture (add_options_for_*).
+# The series includes:
+#   arm_v8m_main_cde: Armv8-m CDE (Custom Datapath Extension).
+#   arm_v8m_main_cde_fp: Armv8-m CDE with FP registers.
+#   arm_v8_1m_main_cde_mve: Armv8.1-m CDE with MVE.
+# Usage:
+#   /* { dg-require-effective-target arm_v8m_main_cde_ok } */
+#   /* { dg-add-options arm_v8m_main_cde } */
+# The tests are valid for Arm.
+
+foreach { armfunc armflag armdef } {
+	arm_v8m_main_cde
+		"-march=armv8-m.main+cdecp0+cdecp6 -mthumb"
+		"defined (__ARM_FEATURE_CDE)"
+	arm_v8m_main_cde_fp
+		"-march=armv8-m.main+fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
+		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FP)"
+	arm_v8_1m_main_cde_mve
+		"-march=armv8.1-m.main+mve+cdecp0+cdecp6 -mthumb -mfpu=auto"
+		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FEATURE_MVE)"
+	arm_v8_1m_main_cde_mve_fp
+		"-march=armv8.1-m.main+mve.fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
+		"defined (__ARM_FEATURE_CDE) || __ARM_FEATURE_MVE == 3"
+	} {
+    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
+	proc check_effective_target_FUNC_ok_nocache { } {
+	    global et_FUNC_flags
+	    set et_FUNC_flags ""
+
+	    if { ![istarget arm*-*-*] } {
+		return 0;
+	    }
+
+	    if { [check_no_compiler_messages_nocache FUNC_ok assembly {
+		#if !(DEF)
+		#error "DEF failed"
+		#endif
+	    } "FLAG"] } {
+		    set et_FUNC_flags "FLAG"
+		    return 1
+	    }
+
+	    return 0;
+	}
+
+	proc check_effective_target_FUNC_ok { } {
+	    return [check_cached_effective_target FUNC_ok \
+		    check_effective_target_FUNC_ok_nocache]
+	}
+
+	proc add_options_for_FUNC { flags } {
+	    if { ! [check_effective_target_FUNC_ok] } {
+		return "$flags"
+	    }
+	    global et_FUNC_flags
+	    return "$flags $et_FUNC_flags"
+	}
+    }]
+}
+
 # Return 1 if the target supports executing ARMv8 NEON instructions, 0
 # otherwise.
 

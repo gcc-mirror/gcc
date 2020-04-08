@@ -1021,6 +1021,13 @@ int arm_arch_i8mm = 0;
 /* Nonzero if chip supports the BFloat16 instructions.  */
 int arm_arch_bf16 = 0;
 
+/* Nonzero if chip supports the Custom Datapath Extension.  */
+int arm_arch_cde = 0;
+int arm_arch_cde_coproc = 0;
+const int arm_arch_cde_coproc_bits[] = {
+  0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80
+};
+
 /* The condition codes of the ARM, and the inverse function.  */
 static const char * const arm_condition_codes[] =
 {
@@ -3738,6 +3745,21 @@ arm_option_reconfigure_globals (void)
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
 	error ("selected fp16 options are incompatible");
       arm_fp16_format = ARM_FP16_FORMAT_IEEE;
+    }
+
+  arm_arch_cde = 0;
+  arm_arch_cde_coproc = 0;
+  int cde_bits[] = {isa_bit_cdecp0, isa_bit_cdecp1, isa_bit_cdecp2,
+		    isa_bit_cdecp3, isa_bit_cdecp4, isa_bit_cdecp5,
+		    isa_bit_cdecp6, isa_bit_cdecp7};
+  for (int i = 0, e = ARRAY_SIZE (cde_bits); i < e; i++)
+    {
+      int cde_bit = bitmap_bit_p (arm_active_target.isa, cde_bits[i]);
+      if (cde_bit)
+	{
+	  arm_arch_cde |= cde_bit;
+	  arm_arch_cde_coproc |= arm_arch_cde_coproc_bits[i];
+	}
     }
 
   /* And finally, set up some quirks.  */
@@ -20122,51 +20144,42 @@ output_move_neon (rtx *operands)
 	  break;
 	}
       /* Fall through.  */
-    case LABEL_REF:
     case PLUS:
+      addr = XEXP (addr, 0);
+      /* Fall through.  */
+    case LABEL_REF:
       {
 	int i;
 	int overlap = -1;
-	if (TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN
-	    && GET_CODE (addr) != LABEL_REF)
+	for (i = 0; i < nregs; i++)
 	  {
-	    sprintf (buff, "v%srw.32\t%%q0, %%1", load ? "ld" : "st");
-	    ops[0] = reg;
-	    ops[1] = mem;
-	    output_asm_insn (buff, ops);
-	  }
-	else
-	  {
-	    for (i = 0; i < nregs; i++)
+	    /* We're only using DImode here because it's a convenient
+	       size.  */
+	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
+	    ops[1] = adjust_address (mem, DImode, 8 * i);
+	    if (reg_overlap_mentioned_p (ops[0], mem))
 	      {
-		/* We're only using DImode here because it's a convenient
-		   size.  */
-		ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
-		ops[1] = adjust_address (mem, DImode, 8 * i);
-		if (reg_overlap_mentioned_p (ops[0], mem))
-		  {
-		    gcc_assert (overlap == -1);
-		    overlap = i;
-		  }
-		else
-		  {
-		    if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
-		      sprintf (buff, "v%sr.64\t%%P0, %%1", load ? "ld" : "st");
-		    else
-		      sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
-		    output_asm_insn (buff, ops);
-		  }
+		gcc_assert (overlap == -1);
+		overlap = i;
 	      }
-	    if (overlap != -1)
+	    else
 	      {
-		ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
-		ops[1] = adjust_address (mem, SImode, 8 * overlap);
 		if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
-		  sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
+		  sprintf (buff, "v%sr.64\t%%P0, %%1", load ? "ld" : "st");
 		else
 		  sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
 		output_asm_insn (buff, ops);
 	      }
+	  }
+	if (overlap != -1)
+	  {
+	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
+	    ops[1] = adjust_address (mem, SImode, 8 * overlap);
+	    if (TARGET_HAVE_MVE && GET_CODE (addr) == LABEL_REF)
+	      sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
+	    else
+	      sprintf (buff, "v%sr%%?\t%%P0, %%1", load ? "ld" : "st");
+	    output_asm_insn (buff, ops);
 	  }
 
         return "";
@@ -25000,7 +25013,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   if (TARGET_VFP_BASE && IS_VFP_REGNUM (regno))
     {
-      if (mode == DFmode)
+      if (mode == DFmode || mode == DImode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
       if (mode == HFmode || mode == BFmode || mode == HImode
@@ -25044,10 +25057,11 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (ARM_NUM_REGS (mode) > 4)
 	return false;
 
-      if (TARGET_THUMB2 && !TARGET_HAVE_MVE)
+      if (TARGET_THUMB2 && !(TARGET_HAVE_MVE || TARGET_CDE))
 	return true;
 
-      return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
+      return !((TARGET_LDRD || TARGET_CDE)
+	       && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
     }
 
   if (regno == FRAME_POINTER_REGNUM
@@ -32700,31 +32714,6 @@ arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
 	return false;
     }
   return true;
-}
-
-/* To check op's immediate values matches the mode of the defined insn.  */
-bool
-arm_mve_immediate_check (rtx op, machine_mode mode, bool val)
-{
-  if (val)
-    {
-      if (((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 7)
-	   && (mode == E_V16QImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 15)
-	   && (mode == E_V8HImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 31)
-	   && (mode == E_V4SImode)))
-	return true;
-    }
-  else
-    {
-      if (((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 7)
-	   && (mode == E_V8HImode))
-	  || ((GET_CODE (op) == CONST_INT) && (INTVAL (op) <= 15)
-	   && (mode == E_V4SImode)))
-	return true;
-    }
-  return false;
 }
 
 /* Can output mi_thunk for all cases except for non-zero vcall_offset

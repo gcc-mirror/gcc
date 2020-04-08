@@ -22,7 +22,9 @@ include $(top_srcdir)/d_rules.am
 D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) -I .
 
 # D flags for compilation
-AM_DFLAGS=$(phobos_compiler_pic_flag)
+AM_DFLAGS= \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS)
 
 # Install all D and DI files
 ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
@@ -97,6 +99,12 @@ if DRUNTIME_OS_MINGW
 else
     DRUNTIME_SOURCES_CONFIGURED += config/x86/switchcontext.S
 endif
+endif
+if DRUNTIME_CPU_SYSTEMZ
+    DRUNTIME_SOURCES_CONFIGURED += config/systemz/get_tls_offset.S
+endif
+if DRUNTIME_CPU_S390
+    DRUNTIME_SOURCES_CONFIGURED += config/s390/get_tls_offset.S
 endif
 
 # Provide __start_minfo, __stop_minfo if linker doesn't.

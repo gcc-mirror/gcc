@@ -130,6 +130,8 @@ target_triplet = @target@
 @DRUNTIME_CPU_POWERPC64_TRUE@am__append_17 = config/powerpc64/callwithstack.S
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_TRUE@am__append_18 = config/mingw/switchcontext.S
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_FALSE@am__append_19 = config/x86/switchcontext.S
+@DRUNTIME_CPU_SYSTEMZ_TRUE@am__append_20 = config/systemz/get_tls_offset.S
+@DRUNTIME_CPU_S390_TRUE@am__append_21 = config/s390/get_tls_offset.S
 subdir = libdruntime
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -450,17 +452,19 @@ am__objects_25 = core/sys/solaris/dlfcn.lo core/sys/solaris/elf.lo \
 @DRUNTIME_CPU_POWERPC64_TRUE@am__objects_31 = config/powerpc64/libgdruntime_la-callwithstack.lo
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_TRUE@am__objects_32 = config/mingw/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_FALSE@am__objects_33 = config/x86/libgdruntime_la-switchcontext.lo
-am__objects_34 = $(am__objects_4) $(am__objects_6) $(am__objects_8) \
+@DRUNTIME_CPU_SYSTEMZ_TRUE@am__objects_34 = config/systemz/libgdruntime_la-get_tls_offset.lo
+@DRUNTIME_CPU_S390_TRUE@am__objects_35 = config/s390/libgdruntime_la-get_tls_offset.lo
+am__objects_36 = $(am__objects_4) $(am__objects_6) $(am__objects_8) \
 	$(am__objects_10) $(am__objects_12) $(am__objects_14) \
 	$(am__objects_16) $(am__objects_18) $(am__objects_20) \
 	$(am__objects_22) $(am__objects_24) $(am__objects_26) \
 	$(am__objects_27) $(am__objects_28) $(am__objects_29) \
 	$(am__objects_30) $(am__objects_31) $(am__objects_32) \
-	$(am__objects_33)
-am__objects_35 = gcc/config.lo gcc/libbacktrace.lo
-am__objects_36 = $(am__objects_1) $(am__objects_2) $(am__objects_34) \
-	$(am__objects_35)
-am_libgdruntime_la_OBJECTS = $(am__objects_36)
+	$(am__objects_33) $(am__objects_34) $(am__objects_35)
+am__objects_37 = gcc/config.lo gcc/libbacktrace.lo
+am__objects_38 = $(am__objects_1) $(am__objects_2) $(am__objects_36) \
+	$(am__objects_37)
+am_libgdruntime_la_OBJECTS = $(am__objects_38)
 libgdruntime_la_OBJECTS = $(am_libgdruntime_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -616,6 +620,7 @@ SHELL = @SHELL@
 SPEC_PHOBOS_DEPS = @SPEC_PHOBOS_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WARN_DFLAGS = @WARN_DFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -708,7 +713,10 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) -I .
 
 # D flags for compilation
-AM_DFLAGS = $(phobos_compiler_pic_flag)
+AM_DFLAGS = \
+	$(phobos_compiler_pic_flag) \
+	$(WARN_DFLAGS)
+
 
 # Install all D and DI files
 ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
@@ -729,7 +737,8 @@ DRUNTIME_SOURCES_CONFIGURED = $(am__append_1) $(am__append_2) \
 	$(am__append_9) $(am__append_10) $(am__append_11) \
 	$(am__append_12) $(am__append_13) $(am__append_14) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
-	$(am__append_18) $(am__append_19)
+	$(am__append_18) $(am__append_19) $(am__append_20) \
+	$(am__append_21)
 
 # Provide __start_minfo, __stop_minfo if linker doesn't.
 @DRUNTIME_OS_MINFO_BRACKETING_FALSE@DRTSTUFF = gcc/drtbegin.o gcc/drtend.o
@@ -1736,6 +1745,16 @@ config/x86/$(am__dirstamp):
 	@: > config/x86/$(am__dirstamp)
 config/x86/libgdruntime_la-switchcontext.lo:  \
 	config/x86/$(am__dirstamp)
+config/systemz/$(am__dirstamp):
+	@$(MKDIR_P) config/systemz
+	@: > config/systemz/$(am__dirstamp)
+config/systemz/libgdruntime_la-get_tls_offset.lo:  \
+	config/systemz/$(am__dirstamp)
+config/s390/$(am__dirstamp):
+	@$(MKDIR_P) config/s390
+	@: > config/s390/$(am__dirstamp)
+config/s390/libgdruntime_la-get_tls_offset.lo:  \
+	config/s390/$(am__dirstamp)
 gcc/config.lo: gcc/$(am__dirstamp)
 gcc/libbacktrace.lo: gcc/$(am__dirstamp)
 
@@ -1756,6 +1775,10 @@ mostlyclean-compile:
 	-rm -f config/powerpc/*.lo
 	-rm -f config/powerpc64/*.$(OBJEXT)
 	-rm -f config/powerpc64/*.lo
+	-rm -f config/s390/*.$(OBJEXT)
+	-rm -f config/s390/*.lo
+	-rm -f config/systemz/*.$(OBJEXT)
+	-rm -f config/systemz/*.lo
 	-rm -f config/x86/*.$(OBJEXT)
 	-rm -f config/x86/*.lo
 	-rm -f core/*.$(OBJEXT)
@@ -1876,6 +1899,12 @@ config/mingw/libgdruntime_la-switchcontext.lo: config/mingw/switchcontext.S
 config/x86/libgdruntime_la-switchcontext.lo: config/x86/switchcontext.S
 	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/x86/libgdruntime_la-switchcontext.lo `test -f 'config/x86/switchcontext.S' || echo '$(srcdir)/'`config/x86/switchcontext.S
 
+config/systemz/libgdruntime_la-get_tls_offset.lo: config/systemz/get_tls_offset.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/systemz/libgdruntime_la-get_tls_offset.lo `test -f 'config/systemz/get_tls_offset.S' || echo '$(srcdir)/'`config/systemz/get_tls_offset.S
+
+config/s390/libgdruntime_la-get_tls_offset.lo: config/s390/get_tls_offset.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/s390/libgdruntime_la-get_tls_offset.lo `test -f 'config/s390/get_tls_offset.S' || echo '$(srcdir)/'`config/s390/get_tls_offset.S
+
 .c.o:
 	$(AM_V_CC)$(COMPILE) -c -o $@ $<
 
@@ -1899,6 +1928,8 @@ clean-libtool:
 	-rm -rf config/mips/.libs config/mips/_libs
 	-rm -rf config/powerpc/.libs config/powerpc/_libs
 	-rm -rf config/powerpc64/.libs config/powerpc64/_libs
+	-rm -rf config/s390/.libs config/s390/_libs
+	-rm -rf config/systemz/.libs config/systemz/_libs
 	-rm -rf config/x86/.libs config/x86/_libs
 	-rm -rf core/.libs core/_libs
 	-rm -rf core/internal/.libs core/internal/_libs
@@ -2054,6 +2085,8 @@ distclean-generic:
 	-rm -f config/mips/$(am__dirstamp)
 	-rm -f config/powerpc/$(am__dirstamp)
 	-rm -f config/powerpc64/$(am__dirstamp)
+	-rm -f config/s390/$(am__dirstamp)
+	-rm -f config/systemz/$(am__dirstamp)
 	-rm -f config/x86/$(am__dirstamp)
 	-rm -f core/$(am__dirstamp)
 	-rm -f core/internal/$(am__dirstamp)

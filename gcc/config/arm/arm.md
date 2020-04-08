@@ -4408,6 +4408,76 @@
    (set_attr "shift" "3")
    (set_attr "type" "logic_shift_reg")])
 
+;; Custom Datapath Extension insns.
+(define_insn "arm_cx1<mode>"
+   [(set (match_operand:SIDI 0 "s_register_operand" "=r")
+	 (unspec:SIDI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+	               (match_operand:SI 2 "const_int_ccde1_operand" "i")]
+	    UNSPEC_CDE))]
+   "TARGET_CDE"
+   "cx1<cde_suffix>\\tp%c1, <cde_dest>, %2"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_cx1a<mode>"
+   [(set (match_operand:SIDI 0 "s_register_operand" "=r")
+	 (unspec:SIDI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+		       (match_operand:SIDI 2 "s_register_operand" "0")
+	               (match_operand:SI 3 "const_int_ccde1_operand" "i")]
+	    UNSPEC_CDEA))]
+   "TARGET_CDE"
+   "cx1<cde_suffix>a\\tp%c1, <cde_dest>, %3"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_cx2<mode>"
+   [(set (match_operand:SIDI 0 "s_register_operand" "=r")
+	 (unspec:SIDI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+		       (match_operand:SI 2 "s_register_operand" "r")
+	               (match_operand:SI 3 "const_int_ccde2_operand" "i")]
+	    UNSPEC_CDE))]
+   "TARGET_CDE"
+   "cx2<cde_suffix>\\tp%c1, <cde_dest>, %2, %3"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_cx2a<mode>"
+   [(set (match_operand:SIDI 0 "s_register_operand" "=r")
+	 (unspec:SIDI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+		       (match_operand:SIDI 2 "s_register_operand" "0")
+		       (match_operand:SI 3 "s_register_operand" "r")
+	               (match_operand:SI 4 "const_int_ccde2_operand" "i")]
+	    UNSPEC_CDEA))]
+   "TARGET_CDE"
+   "cx2<cde_suffix>a\\tp%c1, <cde_dest>, %3, %4"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_cx3<mode>"
+   [(set (match_operand:SIDI 0 "s_register_operand" "=r")
+	 (unspec:SIDI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+		       (match_operand:SI 2 "s_register_operand" "r")
+		       (match_operand:SI 3 "s_register_operand" "r")
+	               (match_operand:SI 4 "const_int_ccde3_operand" "i")]
+	    UNSPEC_CDE))]
+   "TARGET_CDE"
+   "cx3<cde_suffix>\\tp%c1, <cde_dest>, %2, %3, %4"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_cx3a<mode>"
+   [(set (match_operand:SIDI 0 "s_register_operand" "=r")
+	 (unspec:SIDI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+		       (match_operand:SIDI 2 "s_register_operand" "0")
+		       (match_operand:SI 3 "s_register_operand" "r")
+		       (match_operand:SI 4 "s_register_operand" "r")
+                       (match_operand:SI 5 "const_int_ccde3_operand" "i")]
+	    UNSPEC_CDEA))]
+   "TARGET_CDE"
+   "cx3<cde_suffix>a\\tp%c1, <cde_dest>, %3, %4, %5"
+  [(set_attr "type" "coproc")]
+)
+
 ;; Shift and rotation insns
 
 (define_expand "ashldi3"
@@ -4422,7 +4492,8 @@
         operands[2] = force_reg (SImode, operands[2]);
 
       /* Armv8.1-M Mainline double shifts are not expanded.  */
-      if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
+      if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2]))
+	  && (REG_P (operands[2]) || INTVAL(operands[2]) != 32))
         {
 	  if (!reg_overlap_mentioned_p(operands[0], operands[1]))
 	    emit_insn (gen_movdi (operands[0], operands[1]));

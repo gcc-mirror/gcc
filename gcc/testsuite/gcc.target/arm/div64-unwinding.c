@@ -1,6 +1,7 @@
 /* Performing a 64-bit division should not pull in the unwinder.  */
 
 /* { dg-do run { target { { ! *-*-linux* } && { ! *-*-uclinux* } } } } */
+/* { dg-skip-if "load causes weak symbol resolution" { vxworks_kernel } } */
 /* { dg-options "-O0" } */
 
 #include <stdlib.h>

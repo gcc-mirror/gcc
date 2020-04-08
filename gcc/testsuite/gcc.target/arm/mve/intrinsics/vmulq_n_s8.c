@@ -15,7 +15,7 @@ foo (int8x16_t a, int8_t b)
 int8x16_t
 foo1 (int8x16_t a, int8_t b)
 {
-  return vmulq_n (a, b);
+  return vmulq (a, b);
 }
 
 /* { dg-final { scan-assembler "vmul.i8"  }  } */

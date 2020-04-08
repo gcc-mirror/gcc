@@ -226,6 +226,47 @@
   (and (match_operand 0 "const_int_operand")
        (match_test "satisfies_constraint_M (op)")))
 
+(define_predicate "const_int_coproc_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CDE_CONST_COPROC)")
+       (match_test "arm_arch_cde_coproc_bits[UINTVAL (op)] & arm_arch_cde_coproc")))
+
+(define_predicate "const_int_ccde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_1)")))
+
+(define_predicate "const_int_ccde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_2)")))
+
+(define_predicate "const_int_ccde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_3)")))
+
+(define_predicate "const_int_vcde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_1)")))
+
+(define_predicate "const_int_vcde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_2)")))
+
+(define_predicate "const_int_vcde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_3)")))
+
+(define_predicate "const_int_mve_cde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_MVE_CDE_CONST_1)")))
+
+(define_predicate "const_int_mve_cde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_MVE_CDE_CONST_2)")))
+
+(define_predicate "const_int_mve_cde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_MVE_CDE_CONST_3)")))
+
 ;; This doesn't have to do much because the constant is already checked
 ;; in the shift_operator predicate.
 (define_predicate "shift_amount_operand"

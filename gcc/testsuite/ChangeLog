@@ -1,3 +1,186 @@
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94507 - ICE-on-invalid with lambda template.
+	* g++.dg/cpp2a/lambda-generic7.C: New test.
+
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/arm/fp16-aapcs-3.c: Explicitly use the
+	-mfp16-format=alternative option.
+
+2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94417
+	* gcc.target/i386/pr94417-1.c: New test.
+	* gcc.target/i386/pr94417-2.c: Likewise.
+	* gcc.target/i386/pr94417-3.c: Likewise.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94438
+	* gcc.target/i386/avx512bw-pr94438.c: New test.
+	* gcc.target/i386/avx512vlbw-pr94438.c: New test.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93871
+	* gfortran.dg/dec_math_5.f90: Move to ...
+	* gfortran.dg/ieee/dec_math_1.f90: ... here; change
+	dg-options to dg-additional-options.
+
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.dg/tls/pr78796.c: Require tls_runtime.
+
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* g++.dg/pr94314-2.C: New test.
+	* g++.dg/pr94314-3.C: New test.
+	* g++.dg/pr94314.C: New test.
+
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/acle/cde_v_1.c: New test.
+	* gcc.target/arm/acle/cde_v_1_err.c: New test.
+	* gcc.target/arm/acle/cde_v_1_mve.c: New test.
+
+2020-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Core issues 1001 and 1322
+	PR c++/92010
+	* g++.dg/cpp2a/lambda-uneval11.c: New test.
+	* g++.dg/template/array33.C: New test.
+	* g++.dg/template/array34.C: New test.
+	* g++.dg/template/defarg22.C: New test.
+
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/pragma_cde.c: New test.
+	* lib/target-supports.exp (arm_v8m_main_cde_ok): New target support
+	option.
+	(arm_v8m_main_cde_fp, arm_v8_1m_main_cde_mve): Likewise.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94325
+	* g++.dg/ubsan/vptr-15.C: New test.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94478 - ICE with defaulted comparison operator
+	* g++.dg/cpp2a/spaceship-err4.C: New test.
+
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/arm/polytypes.c: Add quotes around
+	-flax-vector-conversions.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94516
+	* gcc.dg/torture/pr94516.c: New test.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* c-c++-common/goacc/declare-pr94120.c: New.
+	* g++.dg/declare-pr94120.C: New.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94291
+	PR rtl-optimization/84169
+	* gcc.dg/pr94291.c: New test.
+
+2020-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94479
+	* gcc.dg/torture/pr94479.c: New testcase.
+
+2020-04-01  Fritz Reese  <foreese@gcc.gnu.org>
+
+	 PR fortran/93871
+	 * gfortran.dg/dec_math.f90: Extend coverage to real(10) and real(16).
+	 * gfortran.dg/dec_math_2.f90: New test.
+	 * gfortran.dg/dec_math_3.f90: Likewise.
+	 * gfortran.dg/dec_math_4.f90: Likewise.
+	 * gfortran.dg/dec_math_5.f90: Likewise.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* g++.target/arm/mve.exp: New.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16: Fix testism.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32: Likewise.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float.c: Fix testism.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c: Likewise.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vec_extracts_from_memory.c: New
+	test.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_immediates_1_n.c: New test.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_load_from_array.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float.c: Remove
+	scan-assembler.
+	* gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+
+2020-04-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vmulq_n_f16.c: Fix test.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_u8.c: Likewise.
+
+2020-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90996
+	* g++.dg/cpp1y/pr90996.C: New test.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94509
+	* gcc.target/i386/avx512bw-pr94509-1.c: New test.
+	* gcc.target/i386/avx512bw-pr94509-2.c: New test.
+
+	PR c++/94512
+	* g++.dg/gomp/pr94512.C: New test.
+
+	PR target/94488
+	* gcc.c-torture/compile/pr94488.c: New test.
+
+	PR target/94500
+	* gcc.target/i386/avx512bw-pr94500.c: New test.
+
+2020-04-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93686
+	* gfortran.dg/pr93686_1.f90: New test.
+	* gfortran.dg/pr93686_2.f90: Likewise.
+	* gfortran.dg/pr93686_3.f90: Likewise.
+	* gfortran.dg/pr93686_4.f90: Likewise.
+
+2020-04-06  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.target/arm/div64-unwinding.c: Skip on vxworks_kernel targets.
+
 2020-04-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94155 - crash in gimplifier with paren init of aggregates.

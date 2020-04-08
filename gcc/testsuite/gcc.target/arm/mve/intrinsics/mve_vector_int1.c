@@ -16,20 +16,12 @@ foo8 (void)
   return b;
 }
 
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldrb.8*" }  } */
-
 int16x8_t
 foo16 (void)
 {
   int16x8_t b = value2;
   return b;
 }
-
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldrb.8*" }  } */
 
 int32x4_t
 foo32 (void)
@@ -38,10 +30,6 @@ foo32 (void)
   return b;
 }
 
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldrb.8" }  } */
-
 int64x2_t
 foo64 (void)
 {
@@ -49,6 +37,3 @@ foo64 (void)
   return b;
 }
 
-/* { dg-final { scan-assembler "vmov\\tq\[0-7\], q\[0-7\]"  }  } */
-/* { dg-final { scan-assembler "vstrb.*" }  } */
-/* { dg-final { scan-assembler "vldrb.8" }  } */

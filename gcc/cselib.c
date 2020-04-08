@@ -2090,13 +2090,17 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
 	{
 	  rtx t = cselib_subst_to_values (XEXP (x, 0), memmode);
 	  if (GET_CODE (t) == VALUE)
-	    for (struct elt_loc_list *l = CSELIB_VAL_PTR (t)->locs;
-		 l; l = l->next)
-	      if (GET_CODE (l->loc) == PLUS
-		  && GET_CODE (XEXP (l->loc, 0)) == VALUE
-		  && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
-		  && CONST_INT_P (XEXP (l->loc, 1)))
-		return plus_constant (Pmode, l->loc, INTVAL (XEXP (x, 1)));
+	    {
+	      if (SP_DERIVED_VALUE_P (t) && XEXP (x, 1) == const0_rtx)
+		return t;
+	      for (struct elt_loc_list *l = CSELIB_VAL_PTR (t)->locs;
+		   l; l = l->next)
+		if (GET_CODE (l->loc) == PLUS
+		    && GET_CODE (XEXP (l->loc, 0)) == VALUE
+		    && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+		    && CONST_INT_P (XEXP (l->loc, 1)))
+		  return plus_constant (Pmode, l->loc, INTVAL (XEXP (x, 1)));
+	    }
 	  if (t != XEXP (x, 0))
 	    {
 	      copy = shallow_copy_rtx (x);

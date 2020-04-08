@@ -575,24 +575,51 @@ else
 
 version (CRuntime_Glibc)
 {
-    struct sigaction_t
+    version (SystemZ)
     {
-        static if ( true /* __USE_POSIX199309 */ )
+        struct sigaction_t
         {
-            union
+            static if ( true /* __USE_POSIX199309 */ )
+            {
+                union
+                {
+                    sigfn_t     sa_handler;
+                    sigactfn_t  sa_sigaction;
+                }
+            }
+            else
             {
                 sigfn_t     sa_handler;
-                sigactfn_t  sa_sigaction;
             }
-        }
-        else
-        {
-            sigfn_t     sa_handler;
-        }
-        sigset_t        sa_mask;
-        int             sa_flags;
+            int             __glibc_reserved0;
+            int             sa_flags;
 
-        void function() sa_restorer;
+            void function() sa_restorer;
+
+            sigset_t        sa_mask;
+        }
+    }
+    else
+    {
+        struct sigaction_t
+        {
+            static if ( true /* __USE_POSIX199309 */ )
+            {
+                union
+                {
+                    sigfn_t     sa_handler;
+                    sigactfn_t  sa_sigaction;
+                }
+            }
+            else
+            {
+                sigfn_t     sa_handler;
+            }
+            sigset_t        sa_mask;
+            int             sa_flags;
+
+            void function() sa_restorer;
+        }
     }
 }
 else version (CRuntime_Musl)

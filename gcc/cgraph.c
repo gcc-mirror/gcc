@@ -2157,10 +2157,11 @@ cgraph_node::dump (FILE *f)
   if (parallelized_function)
     fprintf (f, " parallelized_function");
   if (DECL_IS_OPERATOR_NEW_P (decl))
-    fprintf (f, " operator_new");
+    fprintf (f, " %soperator_new",
+	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");
   if (DECL_IS_OPERATOR_DELETE_P (decl))
-    fprintf (f, " operator_delete");
-
+    fprintf (f, " %soperator_delete",
+	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");
 
   fprintf (f, "\n");
 

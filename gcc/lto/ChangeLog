@@ -1,3 +1,9 @@
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* lto-common.c (compare_tree_sccs_1): Compare also
+	DECL_IS_REPLACEABLE_OPERATOR.
+
 2020-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94223

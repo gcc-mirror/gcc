@@ -354,6 +354,9 @@ emission of floating point pcs attributes.  */
 /* Nonzero if disallow volatile memory access in IT block.  */
 #define TARGET_NO_VOLATILE_CE		(arm_arch_no_volatile_ce)
 
+/* Nonzero if chip supports the Custom Datapath Extension.  */
+#define TARGET_CDE	(arm_arch_cde && arm_arch8 && !arm_arch_notm)
+
 /* Should constant I be slplit for OP.  */
 #define DONT_EARLY_SPLIT_CONSTANT(i, op) \
 				((optimize >= 2) \
@@ -567,6 +570,21 @@ extern int arm_arch_i8mm;
 
 /* Nonzero if chip supports the BFloat16 instructions.  */
 extern int arm_arch_bf16;
+
+/* Nonzero if chip supports the Custom Datapath Extension.  */
+extern int arm_arch_cde;
+extern int arm_arch_cde_coproc;
+extern const int arm_arch_cde_coproc_bits[];
+#define ARM_CDE_CONST_COPROC	7
+#define ARM_CCDE_CONST_1	((1 << 13) - 1)
+#define ARM_CCDE_CONST_2	((1 << 9 ) - 1)
+#define ARM_CCDE_CONST_3	((1 << 6 ) - 1)
+#define ARM_VCDE_CONST_1	((1 << 11) - 1)
+#define ARM_VCDE_CONST_2	((1 << 6 ) - 1)
+#define ARM_VCDE_CONST_3	((1 << 3 ) - 1)
+#define ARM_MVE_CDE_CONST_1	((1 << 12) - 1)
+#define ARM_MVE_CDE_CONST_2	((1 << 7 ) - 1)
+#define ARM_MVE_CDE_CONST_3	((1 << 4 ) - 1)
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)

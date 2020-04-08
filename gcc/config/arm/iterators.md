@@ -529,6 +529,8 @@
 
 (define_int_iterator BF_MA [UNSPEC_BFMAB UNSPEC_BFMAT])
 
+(define_int_iterator CDE_VCX [UNSPEC_VCDE UNSPEC_VCDEA])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -632,7 +634,7 @@
 			 (V2SI "P") (V4SI  "q")
 			 (V2SF "P") (V4SF  "q")
 			 (DI   "P") (V2DI  "q")
-			 (V2HF "") (SF   "")
+			 (V2HF "") (SF   "") (SI "")
 			 (DF    "P") (HF   "")])
 
 ;; Output template to select the high VFP register of a mult-register value.
@@ -895,6 +897,9 @@
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 
 (define_mode_attr VSF2BF [(V2SF "V4BF") (V4SF "V8BF")])
+
+(define_mode_attr cde_suffix [(SI "") (DI "d")])
+(define_mode_attr cde_dest [(SI "%0") (DI "%0, %H0")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes
@@ -1248,3 +1253,6 @@
 
 ;; An iterator for VFMA<bt>
 (define_int_attr bt [(UNSPEC_BFMAB "b") (UNSPEC_BFMAT "t")])
+
+;; An iterator for CDE MVE accumulator/non-accumulator versions.
+(define_int_attr a [(UNSPEC_VCDE "") (UNSPEC_VCDEA "a")])

@@ -4,6 +4,10 @@
 
 package runtime
 
+import (
+	_ "unsafe" // for go:linkname
+)
+
 // Frames may be used to get function/file/line information for a
 // slice of PC values returned by Callers.
 type Frames struct {
@@ -106,6 +110,33 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 	}
 
 	return frame, more
+}
+
+//go:noescape
+// pcInlineCallers is written in C.
+func pcInlineCallers(pc uintptr, locbuf *location, max int32) int32
+
+// runtime_expandFinalInlineFrame expands the final pc in stk to include all
+// "callers" if pc is inline.
+//
+//go:linkname runtime_expandFinalInlineFrame runtime..z2fpprof.runtime_expandFinalInlineFrame
+func runtime_expandFinalInlineFrame(stk []uintptr) []uintptr {
+	if len(stk) == 0 {
+		return stk
+	}
+	pc := stk[len(stk)-1]
+	tracepc := pc - 1
+
+	var locbuf [_TracebackMaxFrames]location
+	n := pcInlineCallers(tracepc, &locbuf[0], int32(len(locbuf)))
+
+	// Returning the same PC several times causes Frame.Next to do
+	// the right thing.
+	for i := int32(1); i < n; i++ {
+		stk = append(stk, pc)
+	}
+
+	return stk
 }
 
 // NOTE: Func does not expose the actual unexported fields, because we return *Func
