@@ -3697,7 +3697,7 @@ package body Sem_Warn is
       --  there is no other name among the other parameters of mode in out or
       --  out to C that is known to denote the same object (RM 6.4.1(6.15/3))
       --  This has been clarified in AI12-0216 to indicate that the illegality
-      --  only occurs if both formals are of an elementary type, bevause of the
+      --  only occurs if both formals are of an elementary type, because of the
       --  non-determinism on the write-back of the corresponding actuals.
       --  Earlier versions of the language made it illegal if only one of the
       --  actuals was an elementary parameter that overlapped a composite
