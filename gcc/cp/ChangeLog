@@ -1,3 +1,10 @@
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* decl.c (duplicate_decls): Duplicate also DECL_IS_REPLACEABLE_OPERATOR.
+	(cxx_init_decl_processing): Mark replaceable all implicitly defined
+	operators.
+
 2020-04-08  Patrick Palka  <ppalka@redhat.com>
 
 	Core issues 1001 and 1322

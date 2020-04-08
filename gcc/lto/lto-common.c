@@ -1236,6 +1236,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_DISREGARD_INLINE_LIMITS);
       compare_values (DECL_PURE_P);
       compare_values (DECL_LOOPING_CONST_OR_PURE_P);
+      compare_values (DECL_IS_REPLACEABLE_OPERATOR);
       compare_values (DECL_FINAL_P);
       compare_values (DECL_CXX_CONSTRUCTOR_P);
       compare_values (DECL_CXX_DESTRUCTOR_P);
