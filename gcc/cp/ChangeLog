@@ -1,3 +1,10 @@
+2020-04-08  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (maybe_promote_captured_temps): Add a cleanup
+	expression, if needed, to any call from which we promoted
+	temporaries captured by reference.
+
 2020-04-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94507 - ICE-on-invalid with lambda template.
