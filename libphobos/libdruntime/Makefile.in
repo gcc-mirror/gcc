@@ -555,6 +555,7 @@ CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
+CHECKING_DFLAGS = @CHECKING_DFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -715,7 +716,7 @@ D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) -I .
 # D flags for compilation
 AM_DFLAGS = \
 	$(phobos_compiler_pic_flag) \
-	$(WARN_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS)
 
 
 # Install all D and DI files
