@@ -576,6 +576,9 @@ extern int arm_arch_cde;
 extern int arm_arch_cde_coproc;
 extern const int arm_arch_cde_coproc_bits[];
 #define ARM_CDE_CONST_COPROC	7
+#define ARM_CCDE_CONST_1	((1 << 13) - 1)
+#define ARM_CCDE_CONST_2	((1 << 9 ) - 1)
+#define ARM_CCDE_CONST_3	((1 << 6 ) - 1)
 #define ARM_VCDE_CONST_1	((1 << 11) - 1)
 #define ARM_VCDE_CONST_2	((1 << 6 ) - 1)
 #define ARM_VCDE_CONST_3	((1 << 3 ) - 1)

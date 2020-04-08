@@ -35,6 +35,42 @@ extern "C" {
 
 #if defined (__ARM_FEATURE_CDE)
 
+#define __arm_cx1(coproc, imm) \
+	__builtin_arm_cx1si(coproc, imm)
+
+#define __arm_cx1a(coproc, acc, imm) \
+	__builtin_arm_cx1asi(coproc, acc, imm)
+
+#define __arm_cx2(coproc, n, imm) \
+	__builtin_arm_cx2si(coproc, n, imm)
+
+#define __arm_cx2a(coproc, acc, n, imm) \
+	__builtin_arm_cx2asi(coproc, acc, n, imm)
+
+#define __arm_cx3(coproc, n, m, imm) \
+	__builtin_arm_cx3si(coproc, n, m, imm)
+
+#define __arm_cx3a(coproc, acc, n, m, imm) \
+	__builtin_arm_cx3asi(coproc, acc, n, m, imm)
+
+#define __arm_cx1d(coproc, imm) \
+	__builtin_arm_cx1di(coproc, imm)
+
+#define __arm_cx1da(coproc, acc, imm) \
+	__builtin_arm_cx1adi(coproc, acc, imm)
+
+#define __arm_cx2d(coproc, n, imm) \
+	__builtin_arm_cx2di(coproc, n, imm)
+
+#define __arm_cx2da(coproc, acc, n, imm) \
+	__builtin_arm_cx2adi(coproc, acc, n, imm)
+
+#define __arm_cx3d(coproc, n, m, imm) \
+	__builtin_arm_cx3di(coproc, n, m, imm)
+
+#define __arm_cx3da(coproc, acc, n, m, imm) \
+	__builtin_arm_cx3adi(coproc, acc, n, m, imm)
+
 #if defined (__ARM_FP) || defined (__ARM_FEATURE_MVE)
 
 /* CDE builtins using FPU/MVE registers.  */

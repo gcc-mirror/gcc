@@ -25057,10 +25057,11 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (ARM_NUM_REGS (mode) > 4)
 	return false;
 
-      if (TARGET_THUMB2 && !TARGET_HAVE_MVE)
+      if (TARGET_THUMB2 && !(TARGET_HAVE_MVE || TARGET_CDE))
 	return true;
 
-      return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
+      return !((TARGET_LDRD || TARGET_CDE)
+	       && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
     }
 
   if (regno == FRAME_POINTER_REGNUM

@@ -231,6 +231,18 @@
        (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CDE_CONST_COPROC)")
        (match_test "arm_arch_cde_coproc_bits[UINTVAL (op)] & arm_arch_cde_coproc")))
 
+(define_predicate "const_int_ccde1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_1)")))
+
+(define_predicate "const_int_ccde2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_2)")))
+
+(define_predicate "const_int_ccde3_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "IN_RANGE (UINTVAL (op), 0, ARM_CCDE_CONST_3)")))
+
 (define_predicate "const_int_vcde1_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "IN_RANGE (UINTVAL (op), 0, ARM_VCDE_CONST_1)")))

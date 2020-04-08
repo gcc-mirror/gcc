@@ -5117,13 +5117,13 @@ proc add_options_for_arm_v8_2a_bf16_neon { flags } {
 
 foreach { armfunc armflag armdef } {
 	arm_v8m_main_cde
-		"-march=armv8-m.main+cdecp0 -mthumb"
+		"-march=armv8-m.main+cdecp0+cdecp6 -mthumb"
 		"defined (__ARM_FEATURE_CDE)"
 	arm_v8m_main_cde_fp
-		"-march=armv8-m.main+fp+cdecp0 -mthumb"
+		"-march=armv8-m.main+fp+cdecp0+cdecp6 -mthumb"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FP)"
 	arm_v8_1m_main_cde_mve
-		"-march=armv8.1-m.main+mve+cdecp0 -mthumb"
+		"-march=armv8.1-m.main+mve+cdecp0+cdecp6 -mthumb"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FEATURE_MVE)"
 	} {
     eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
