@@ -7624,11 +7624,8 @@ package body Freeze is
                --  case of array types.
 
                when N_Expression_With_Actions =>
-                  if Is_List_Member (P)
-                    and then List_Containing (P) = Actions (Parent_P)
-                  then
-                     exit;
-                  end if;
+                  exit when Is_List_Member (P)
+                    and then List_Containing (P) = Actions (Parent_P);
 
                --  N_Loop_Statement is a special case: a type that appears in
                --  the source can never be frozen in a loop (this occurs only
@@ -7641,7 +7638,8 @@ package body Freeze is
 
                when N_Loop_Statement
                   | N_If_Expression
-                  | N_Case_Expression =>
+                  | N_Case_Expression
+               =>
                   exit when not Comes_From_Source (Etype (N))
                     and then (No (Nam) or else not Comes_From_Source (Nam));
 
