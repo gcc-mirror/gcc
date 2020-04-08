@@ -662,6 +662,8 @@ DRUNTIME_OS_ARM_EABI_UNWINDER_FALSE
 DRUNTIME_OS_ARM_EABI_UNWINDER_TRUE
 DCFG_ARM_EABI_UNWINDER
 DCFG_THREAD_MODEL
+DRUNTIME_OS_POSIX_FALSE
+DRUNTIME_OS_POSIX_TRUE
 DRUNTIME_OS_SOLARIS_FALSE
 DRUNTIME_OS_SOLARIS_TRUE
 DRUNTIME_OS_MINGW_FALSE
@@ -682,8 +684,6 @@ DRUNTIME_OS_ANDROID_FALSE
 DRUNTIME_OS_ANDROID_TRUE
 DRUNTIME_OS_AIX_FALSE
 DRUNTIME_OS_AIX_TRUE
-DRUNTIME_OS_UNIX_FALSE
-DRUNTIME_OS_UNIX_TRUE
 DRUNTIME_CPU_S390_FALSE
 DRUNTIME_CPU_S390_TRUE
 DRUNTIME_CPU_SYSTEMZ_FALSE
@@ -835,7 +835,6 @@ enable_libtool_lock
 with_gcc_major_version_only
 enable_werror
 enable_druntime_gc
-enable_unix
 enable_thread_lib
 with_libatomic
 with_libbacktrace
@@ -1486,8 +1485,6 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-werror         turns on -Werror [default=no]
   --enable-druntime-gc    enable D runtime garbage collector (default: yes)
-  --enable-unix           enables Unix runtime (default: yes, for Unix
-                          targets)
   --enable-thread-lib=<arg>
                           specify linker option for the system thread library
                           (default: autodetect)
@@ -11649,7 +11646,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11652 "configure"
+#line 11649 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11755,7 +11752,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11758 "configure"
+#line 11755 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14105,31 +14102,6 @@ fi
 
 
 
-  # Check whether --enable-unix was given.
-if test "${enable_unix+set}" = set; then :
-  enableval=$enable_unix; :
-else
-  enable_unix=auto
-fi
-
-
-  case "$druntime_cv_target_os" in
-    aix*|*bsd*|cygwin*|darwin*|gnu*|linux*|skyos*|*solaris*|sysv*) d_have_unix=1 ;;
-  esac
-  if test -n "$d_have_unix" && test "$enable_unix" = auto ; then
-    enable_unix=yes
-  fi
-   if test "$enable_unix" = "yes"; then
-  DRUNTIME_OS_UNIX_TRUE=
-  DRUNTIME_OS_UNIX_FALSE='#'
-else
-  DRUNTIME_OS_UNIX_TRUE='#'
-  DRUNTIME_OS_UNIX_FALSE=
-fi
-
-
-
-
 
   druntime_target_os_parsed=""
   case "$druntime_cv_target_os" in
@@ -14236,6 +14208,21 @@ fi
 else
   DRUNTIME_OS_SOLARIS_TRUE='#'
   DRUNTIME_OS_SOLARIS_FALSE=
+fi
+
+
+  druntime_target_posix="no"
+  case "$druntime_cv_target_os" in
+    aix*|*bsd*|cygwin*|darwin*|gnu*|linux*|skyos*|*solaris*|sysv*)
+      druntime_target_posix="yes"
+      ;;
+  esac
+   if test "$druntime_target_posix" = "yes"; then
+  DRUNTIME_OS_POSIX_TRUE=
+  DRUNTIME_OS_POSIX_FALSE='#'
+else
+  DRUNTIME_OS_POSIX_TRUE='#'
+  DRUNTIME_OS_POSIX_FALSE=
 fi
 
 
@@ -15599,10 +15586,6 @@ if test -z "${DRUNTIME_CPU_S390_TRUE}" && test -z "${DRUNTIME_CPU_S390_FALSE}"; 
   as_fn_error $? "conditional \"DRUNTIME_CPU_S390\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${DRUNTIME_OS_UNIX_TRUE}" && test -z "${DRUNTIME_OS_UNIX_FALSE}"; then
-  as_fn_error $? "conditional \"DRUNTIME_OS_UNIX\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${DRUNTIME_OS_AIX_TRUE}" && test -z "${DRUNTIME_OS_AIX_FALSE}"; then
   as_fn_error $? "conditional \"DRUNTIME_OS_AIX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -15641,6 +15624,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_OS_SOLARIS_TRUE}" && test -z "${DRUNTIME_OS_SOLARIS_FALSE}"; then
   as_fn_error $? "conditional \"DRUNTIME_OS_SOLARIS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_OS_POSIX_TRUE}" && test -z "${DRUNTIME_OS_POSIX_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_OS_POSIX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_OS_ARM_EABI_UNWINDER_TRUE}" && test -z "${DRUNTIME_OS_ARM_EABI_UNWINDER_FALSE}"; then

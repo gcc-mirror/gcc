@@ -112,7 +112,7 @@ target_triplet = @target@
 @DRUNTIME_GC_ENABLE_TRUE@am__append_1 = $(DRUNTIME_DSOURCES_GC)
 @DRUNTIME_GC_ENABLE_FALSE@am__append_2 = $(DRUNTIME_DSOURCES_GCSTUB)
 # OS specific sources
-@DRUNTIME_OS_UNIX_TRUE@am__append_3 = $(DRUNTIME_DSOURCES_POSIX)
+@DRUNTIME_OS_POSIX_TRUE@am__append_3 = $(DRUNTIME_DSOURCES_POSIX)
 @DRUNTIME_OS_DARWIN_TRUE@am__append_4 = $(DRUNTIME_DSOURCES_DARWIN)
 @DRUNTIME_OS_DRAGONFLYBSD_TRUE@am__append_5 = $(DRUNTIME_DSOURCES_DRAGONFLYBSD)
 @DRUNTIME_OS_ANDROID_TRUE@am__append_6 = $(DRUNTIME_DSOURCES_BIONIC)
@@ -272,7 +272,7 @@ am__objects_7 = core/sys/posix/aio.lo core/sys/posix/arpa/inet.lo \
 	core/sys/posix/syslog.lo core/sys/posix/termios.lo \
 	core/sys/posix/time.lo core/sys/posix/ucontext.lo \
 	core/sys/posix/unistd.lo core/sys/posix/utime.lo
-@DRUNTIME_OS_UNIX_TRUE@am__objects_8 = $(am__objects_7)
+@DRUNTIME_OS_POSIX_TRUE@am__objects_8 = $(am__objects_7)
 am__objects_9 = core/sys/darwin/crt_externs.lo \
 	core/sys/darwin/dlfcn.lo core/sys/darwin/execinfo.lo \
 	core/sys/darwin/mach/dyld.lo core/sys/darwin/mach/getsect.lo \
