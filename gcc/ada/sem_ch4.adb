@@ -3279,7 +3279,7 @@ package body Sem_Ch4 is
       --  When the type Address is a visible integer type, and the DEC
       --  system extension is visible, the predefined operator may be
       --  hidden as well, by one of the address operations in auxdec.
-      --  Finally, The abstract operations on address do not hide the
+      --  Finally, the abstract operations on address do not hide the
       --  predefined operator (this is the purpose of making them abstract).
 
       -----------------------------------

@@ -781,7 +781,7 @@ package body Sem_Ch3 is
          --  be available in the scope that encloses the protected declaration.
          --  Otherwise the type is in the scope enclosing the subprogram.
 
-         --  If the function has formals, The return type of a subprogram
+         --  If the function has formals, the return type of a subprogram
          --  declaration is analyzed in the scope of the subprogram (see
          --  Process_Formals) and thus the protected type, if present, is
          --  the scope of the current function scope.
