@@ -368,7 +368,7 @@ package body Exp_Ch7 is
    --  Mode such subprograms must be handled as nested inside the (implicit)
    --  elaboration procedure that executes that statement part. To handle
    --  properly uplevel references we construct that subprogram explicitly,
-   --  to contain blocks and inner subprograms, The statement part becomes
+   --  to contain blocks and inner subprograms, the statement part becomes
    --  a call to this subprogram. This is only done if blocks are present
    --  in the statement list of the body. (It would be nice to unify this
    --  procedure with Check_Unnesting_In_Decls_Or_Stmts, if possible, since

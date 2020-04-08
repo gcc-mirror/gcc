@@ -344,8 +344,8 @@ package body Sem_Aux is
       --  predefined integer types. If the type is formal, it is also a first
       --  subtype, and its base type has no freeze node. On the other hand, a
       --  subtype of a generic formal is not its own first subtype. Its base
-      --  type, if anonymous, is attached to the formal type decl. from which
-      --  the first subtype is obtained.
+      --  type, if anonymous, is attached to the formal type declaration from
+      --  which the first subtype is obtained.
 
       if No (F) then
          if B = Base_Type (Standard_Integer) then

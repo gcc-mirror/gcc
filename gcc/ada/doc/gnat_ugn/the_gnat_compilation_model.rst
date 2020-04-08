@@ -3950,7 +3950,7 @@ The following example, provided as part of the GNAT examples, shows how
 to achieve procedural interfacing between Ada and C++ in both
 directions. The C++ class A has two methods. The first method is exported
 to Ada by the means of an extern C wrapper function. The second method
-calls an Ada subprogram. On the Ada side, The C++ calls are modelled by
+calls an Ada subprogram. On the Ada side, the C++ calls are modelled by
 a limited record with a layout comparable to the C++ class. The Ada
 subprogram, in turn, calls the C++ method. So, starting from the C++
 main program, the process passes back and forth between the two

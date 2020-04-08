@@ -3892,8 +3892,6 @@ package body Exp_Ch5 is
       Ind_Comp   : Node_Id;
       Iterator   : Entity_Id;
 
-   --  Start of processing for Expand_Iterator_Loop_Over_Array
-
    begin
       --  for Element of Array loop
 

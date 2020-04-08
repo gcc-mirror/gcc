@@ -1960,7 +1960,7 @@ package body Checks is
    --      (1)  The bounds may not be known at compile time
    --      (2)  The check must take into account rounding or truncation.
    --      (3)  The range of type I may not be exactly representable in F.
-   --      (4)  For the rounding case, The end-points I'First - 0.5 and
+   --      (4)  For the rounding case, the end-points I'First - 0.5 and
    --           I'Last + 0.5 may or may not be in range, depending on the
    --           sign of  I'First and I'Last.
    --      (5)  X may be a NaN, which will fail any comparison
