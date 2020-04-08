@@ -21771,7 +21771,9 @@ ix86_get_mask_mode (machine_mode data_mode)
   if ((TARGET_AVX512F && vector_size == 64)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     {
-      if (elem_size == 4 || elem_size == 8 || TARGET_AVX512BW)
+      if (elem_size == 4
+	  || elem_size == 8
+	  || (TARGET_AVX512BW && (elem_size == 1 || elem_size == 2)))
 	return smallest_int_mode_for_size (nunits);
     }
 

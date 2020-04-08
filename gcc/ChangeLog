@@ -1,3 +1,9 @@
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94438
+	* config/i386/i386.c (ix86_get_mask_mode): Only use int mask for elem_size
+	1, 2, 4 and 8.
+
 2020-04-08  Martin Liska  <mliska@suse.cz>
 
 	PR c++/94314
