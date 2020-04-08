@@ -1,5 +1,9 @@
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/94524
+	* gcc.c-torture/execute/pr94524-1.c: New test.
+	* gcc.c-torture/execute/pr94524-2.c: New test.
+
 	PR c++/94314
 	* g++.dg/pr94314.C (A::operator new, B::operator new, C::operator new):
 	Use __SIZE_TYPE__ instead of unsigned long.

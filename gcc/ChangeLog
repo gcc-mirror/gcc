@@ -1,3 +1,13 @@
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94524
+	* tree-vect-generic.c (expand_vector_divmod): If any elt of op1 is
+	negative for signed TRUNC_MOD_EXPR, multiply with absolute value of
+	op1 rather than op1 itself at the end.  Punt for signed modulo by
+	most negative constant.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Punt for signed
+	modulo by most negative constant.
+
 2020-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/93946
