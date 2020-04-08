@@ -1,5 +1,10 @@
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94314
+	* g++.dg/pr94314.C (A::operator new, B::operator new, C::operator new):
+	Use __SIZE_TYPE__ instead of unsigned long.
+	* g++.dg/pr94314-3.C (base::operator new, B::operator new): Likewise.
+
 	PR middle-end/94120
 	PR testsuite/94533
 	* g++.dg/declare-pr94120.C: Move test to ...

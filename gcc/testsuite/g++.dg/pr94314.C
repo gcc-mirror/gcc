@@ -8,7 +8,7 @@
 struct A
 {
   __attribute__((malloc,noinline))
-  static void* operator new(unsigned long sz)
+  static void* operator new(__SIZE_TYPE__ sz)
   {
     ++count;
     return ::operator new(sz);
@@ -28,7 +28,7 @@ int A::count = 0;
 struct B
 {
   __attribute__((malloc,noinline))
-  static void* operator new(unsigned long sz)
+  static void* operator new(__SIZE_TYPE__ sz)
   {
     ++count;
     return ::operator new(sz);
@@ -48,7 +48,7 @@ int B::count = 0;
 
 struct C
 {
-  static void* operator new(unsigned long sz)
+  static void* operator new(__SIZE_TYPE__ sz)
   {
     ++count;
     return ::operator new(sz);
