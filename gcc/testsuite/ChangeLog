@@ -1,3 +1,10 @@
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93871
+	* gfortran.dg/dec_math_5.f90: Move to ...
+	* gfortran.dg/ieee/dec_math_1.f90: ... here; change
+	dg-options to dg-additional-options.
+
 2020-04-08  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.dg/tls/pr78796.c: Require tls_runtime.

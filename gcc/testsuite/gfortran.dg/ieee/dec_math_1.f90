@@ -1,8 +1,11 @@
-! { dg-options "-cpp -std=gnu" }
 ! { dg-do run }
+! { dg-additional-options "-cpp -std=gnu" }
 !
 ! Test values for degree-valued trigonometric intrinsics.
 !
+! Run under ieee/ as
+!   use ieee_arithmetic
+! (used for result checking) is not available on all platforms)
 
 module dec_math_5
 
