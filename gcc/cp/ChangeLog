@@ -1,3 +1,11 @@
+2020-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93790
+	* call.c (initialize_reference): If the reference binding failed, maybe
+	try initializing from { }.
+	* decl.c (grok_reference_init): For T& t(e), set
+	LOOKUP_AGGREGATE_PAREN_INIT but don't build up a constructor yet.
+
 2020-04-08  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jun Ma <JunMa@linux.alibaba.com>
 

@@ -1,3 +1,9 @@
+2020-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93790
+	* g++.dg/cpp2a/paren-init23.C: New test.
+	* g++.dg/init/aggr14.C: New test.
+
 2020-04-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/91322
