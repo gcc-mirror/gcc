@@ -1,3 +1,9 @@
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* c-c++-common/goacc/declare-pr94120.c: New.
+	* g++.dg/declare-pr94120.C: New.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94291

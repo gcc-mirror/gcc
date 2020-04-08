@@ -40906,6 +40906,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 {
   tree clauses, stmt;
   bool error = false;
+  bool found_in_scope = global_bindings_p ();
 
   clauses = cp_parser_oacc_all_clauses (parser, OACC_DECLARE_CLAUSE_MASK,
 					"#pragma acc declare", pragma_tok, true);
@@ -40978,6 +40979,22 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	  break;
 	}
 
+      if (!found_in_scope)
+	for (tree d = current_binding_level->names; d; d = TREE_CHAIN (d))
+	  if (d == decl)
+	    {
+	      found_in_scope = true;
+	      break;
+	    }
+      if (!found_in_scope)
+	{
+	  error_at (loc,
+		    "%qD must be a variable declared in the same scope as "
+		    "%<#pragma acc declare%>", decl);
+	  error = true;
+	  continue;
+	}
+
       if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("omp declare target link",
 			       DECL_ATTRIBUTES (decl)))
@@ -40999,7 +41016,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 
 	  DECL_ATTRIBUTES (decl)
 	    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
-	  if (global_bindings_p ())
+	  if (current_binding_level->kind == sk_namespace)
 	    {
 	      symtab_node *node = symtab_node::get (decl);
 	      if (node != NULL)
@@ -41016,7 +41033,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	}
     }
 
-  if (error || global_bindings_p ())
+  if (error || current_binding_level->kind == sk_namespace)
     return NULL_TREE;
 
   stmt = make_node (OACC_DECLARE);

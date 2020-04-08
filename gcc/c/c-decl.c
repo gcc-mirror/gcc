@@ -12041,4 +12041,12 @@ c_check_omp_declare_reduction_r (tree *tp, int *, void *data)
   return NULL_TREE;
 }
 
+
+bool
+c_check_in_current_scope (tree decl)
+{
+  struct c_binding *b = I_SYMBOL_BINDING (DECL_NAME (decl));
+  return b != NULL && B_IN_CURRENT_SCOPE (b);
+}
+
 #include "gt-c-c-decl.h"

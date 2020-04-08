@@ -1,3 +1,8 @@
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* libgomp.oacc-c++/declare-pr94120.C: New.
+
 2020-04-06  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Add testsuite/libgomp-site-extra.exp to output

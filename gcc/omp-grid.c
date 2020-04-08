@@ -1065,7 +1065,7 @@ grid_eliminate_combined_simd_part (gomp_for *parloop)
   while (*pc)
     {
       tree c = *pc;
-      switch (TREE_CODE (c))
+      switch (OMP_CLAUSE_CODE (c))
 	{
 	case OMP_CLAUSE_LINEAR:
 	  {
