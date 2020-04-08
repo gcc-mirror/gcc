@@ -1,3 +1,8 @@
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-grid.c (grid_eliminate_combined_simd_part): Use
+	OMP_CLAUSE_CODE to access the omp clause code.
+
 2020-04-07  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/92264
