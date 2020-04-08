@@ -2029,6 +2029,52 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
   return cp_build_addr_expr (obj, complain);
 }
 
+/* Data structure used by replace_result_decl and replace_result_decl_r.  */
+
+struct replace_result_decl_data
+{
+  /* The RESULT_DECL we want to replace.  */
+  tree decl;
+  /* The replacement for DECL.  */
+  tree replacement;
+  /* Whether we've performed any replacements.  */
+  bool changed;
+};
+
+/* Helper function for replace_result_decl, called through cp_walk_tree.  */
+
+static tree
+replace_result_decl_r (tree *tp, int *walk_subtrees, void *data)
+{
+  replace_result_decl_data *d = (replace_result_decl_data *) data;
+
+  if (*tp == d->decl)
+    {
+      *tp = unshare_expr (d->replacement);
+      d->changed = true;
+      *walk_subtrees = 0;
+    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
+/* Replace every occurrence of DECL, a RESULT_DECL, with (an unshared copy of)
+   REPLACEMENT within the reduced constant expression *TP.  Returns true iff a
+   replacement was performed.  */
+
+static bool
+replace_result_decl (tree *tp, tree decl, tree replacement)
+{
+  gcc_checking_assert (TREE_CODE (decl) == RESULT_DECL
+		       && (same_type_ignoring_top_level_qualifiers_p
+			   (TREE_TYPE (decl), TREE_TYPE (replacement))));
+  replace_result_decl_data data = { decl, replacement, false };
+  cp_walk_tree_without_duplicates (tp, replace_result_decl_r, &data);
+  return data.changed;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -2536,6 +2582,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		      break;
 		    }
 	    }
+
+	    /* Rewrite all occurrences of the function's RESULT_DECL with the
+	       current object under construction.  */
+	    if (!*non_constant_p && ctx->object
+		&& AGGREGATE_TYPE_P (TREE_TYPE (res))
+		&& !is_empty_class (TREE_TYPE (res)))
+	      if (replace_result_decl (&result, res, ctx->object))
+		cacheable = false;
 	}
       else
 	/* Couldn't get a function copy to evaluate.  */

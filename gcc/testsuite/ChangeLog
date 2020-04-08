@@ -1,3 +1,12 @@
+2020-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94034
+	* g++.dg/cpp0x/constexpr-empty15.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi6a.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi6b.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi7a.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi7b.C: New test.
+
 2020-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94573
