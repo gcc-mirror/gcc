@@ -1,3 +1,10 @@
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94120
+	PR testsuite/94533
+	* g++.dg/declare-pr94120.C: Move test to ...
+	* g++.dg/goacc/declare-pr94120.C: ... here.  Add dg-error directives.
+
 2020-04-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94507 - ICE-on-invalid with lambda template.
