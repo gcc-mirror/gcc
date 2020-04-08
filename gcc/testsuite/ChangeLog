@@ -1,3 +1,8 @@
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/arm/fp16-aapcs-3.c: Explicitly use the
+	-mfp16-format=alternative option.
+
 2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94417
