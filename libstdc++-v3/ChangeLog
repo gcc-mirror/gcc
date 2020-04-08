@@ -1,3 +1,10 @@
+2020-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (to_chars_result, from_chars_result): Add
+	defaulted equality comparisons for C++20.
+	* testsuite/20_util/from_chars/compare.cc: New test.
+	* testsuite/20_util/to_chars/compare.cc: New test.
+
 2020-04-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94520
