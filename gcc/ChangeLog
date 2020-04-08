@@ -1,3 +1,18 @@
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config.gcc: Add arm_cde.h.
+	* config/arm/arm-c.c (arm_cpu_builtins): Define or undefine
+	__ARM_FEATURE_CDE and __ARM_FEATURE_CDE_COPROC.
+	* config/arm/arm-cpus.in (cdecp0, cdecp1, ..., cdecp7): New options.
+	* config/arm/arm.c (arm_option_reconfigure_globals): Configure
+	arm_arch_cde and arm_arch_cde_coproc to store the feature bits.
+	* config/arm/arm.h (TARGET_CDE): New macro.
+	* config/arm/arm_cde.h: New file.
+	* doc/invoke.texi: Document CDE options +cdecp[0-7].
+	* doc/sourcebuild.texi (arm_v8m_main_cde_ok): Document new target
+	supports option.
+	(arm_v8m_main_cde_fp, arm_v8_1m_main_cde_mve): Likewise.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94516

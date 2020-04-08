@@ -237,6 +237,12 @@ arm_cpu_builtins (struct cpp_reader* pfile)
       builtin_define_with_int_value ("__ARM_FEATURE_COPROC", coproc_level);
     }
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_CDE", TARGET_CDE);
+  cpp_undef (pfile, "__ARM_FEATURE_CDE_COPROC");
+  if (TARGET_CDE)
+    builtin_define_with_int_value ("__ARM_FEATURE_CDE_COPROC",
+				   arm_arch_cde_coproc);
+
   def_or_undef_macro (pfile, "__ARM_FEATURE_MATMUL_INT8", TARGET_I8MM);
   def_or_undef_macro (pfile, "__ARM_FEATURE_BF16_SCALAR_ARITHMETIC",
 		      TARGET_BF16_FP);

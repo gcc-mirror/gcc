@@ -1,3 +1,10 @@
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/pragma_cde.c: New test.
+	* lib/target-supports.exp (arm_v8m_main_cde_ok): New target support
+	option.
+	(arm_v8m_main_cde_fp, arm_v8_1m_main_cde_mve): Likewise.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94325
