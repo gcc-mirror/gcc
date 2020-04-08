@@ -30,9 +30,9 @@ public:
 
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
   virtual void range_on_exit (irange &r, basic_block bb, tree name);
+  virtual bool range_of_phi (irange &r, gphi *phi);
 protected:
   bool range_of_range_op (irange &r, gimple *s);
-  bool range_of_phi (irange &r, gphi *phi);
   bool range_of_call (irange &r, gcall *call);
   bool range_of_cond_expr (irange &r, gassign* cond);
 private:

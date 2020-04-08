@@ -58,7 +58,7 @@ protected:
   virtual void range_of_ssa_name (irange &r, tree name, gimple *s = NULL);
   bool range_from_import (irange &r, tree name, irange &import_range);
 private:
-  typedef gimple_ranger super;  // Inherited from class for easy changing.
+  typedef gimple_ranger super;
   bool non_null_deref_p (tree name, basic_block bb);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
   void dump_block (FILE *f, basic_block bb);
@@ -83,9 +83,13 @@ class loop_ranger : public global_ranger
 public:
   loop_ranger ();
   ~loop_ranger ();
-  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual bool range_of_phi (irange &r, gphi *phi);
 private:
-  void adjust_phi_with_loop_info (irange &r, gphi *phi);
+  typedef global_ranger super;
+  bool range_with_loop_info (irange &r, tree name);
+  void range_of_ssa_name_with_loop_info (irange &, tree, class loop *,
+					 gphi *);
 
   class vr_values *m_vr_values;
 };
@@ -106,7 +110,7 @@ public:
 protected:
   virtual void range_of_ssa_name (irange &r, tree name, gimple *s = NULL);
 private:
-  typedef global_ranger super;  // Inherited from class for easy changing.
+  typedef loop_ranger super;
   static const unsigned bump = 2;
   unsigned indent;
   unsigned trace_count;		// Current trace index count.

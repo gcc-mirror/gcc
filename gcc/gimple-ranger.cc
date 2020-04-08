@@ -717,6 +717,9 @@ if (DEBUG_CACHE)  fprintf (dump_file, "BACK visiting block %d\n", node->index);
   iterative_cache_update (name);
 }
 
+
+// loop_ranger implementation.
+
 loop_ranger::loop_ranger ()
 {
   m_vr_values = new vr_values_tester;
@@ -727,51 +730,85 @@ loop_ranger::~loop_ranger ()
   delete m_vr_values;
 }
 
-// Adjust a PHI result with loop information.
-
 void
-loop_ranger::adjust_phi_with_loop_info (irange &r, gphi *phi)
+loop_ranger::range_of_ssa_name_with_loop_info (irange &r, tree name,
+					       class loop *l, gphi *phi)
 {
-  struct loop *l = loop_containing_stmt (phi);
-  if (l && l->header == gimple_bb (phi))
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
+  value_range_equiv vr;
+  vr.set_varying (TREE_TYPE (name));
+  m_vr_values->adjust_range_with_scev (&vr, l, phi, name);
+  vr.normalize_symbolics ();
+  r = vr;
+}
+
+// If NAME is either a PHI result or a PHI argument, see if we can
+// determine range information by querying loop info.  If so, return
+// TRUE and set the range in R.
+
+bool
+loop_ranger::range_with_loop_info (irange &r, tree name)
+{
+  if (!scev_initialized_p ())
+    return false;
+
+  gimple *def = SSA_NAME_DEF_STMT (name);
+  class loop *l = loop_containing_stmt (def);
+  if (!l)
+    return false;
+
+  basic_block header = l->header;
+  for (gphi_iterator iter = gsi_start_phis (header);
+       !gsi_end_p (iter); gsi_next (&iter))
     {
-      tree phi_result = PHI_RESULT (phi);
-      value_range vl = r;
-      value_range_equiv vr = vl;
-      m_vr_values->adjust_range_with_scev (&vr, l, phi, phi_result);
-      if (vr.constant_p ())
+      gphi *phi = iter.phi ();
+      if (PHI_RESULT (phi) == name)
 	{
-	  widest_irange old = r;
-	  r = vr;
-	  if (old != r
-	      && dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "LOOP_RANGER refined this PHI result: ");
-	      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
-	      fprintf (dump_file, "  from this range: ");
-	      old.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	      fprintf (dump_file, "  into this range: ");
-	      r.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	    }
+	  range_of_ssa_name_with_loop_info (r, name, l, phi);
+	  return true;
 	}
+      for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
+	if (PHI_ARG_DEF (phi, i) == name)
+	  {
+	    range_of_ssa_name_with_loop_info (r, name, l, phi);
+	    return true;
+	  }
     }
+  return false;
 }
 
 // Virtual override of global_ranger::range_of_phi() that adjusts the
 // result with loop information if available.
 
 bool
-loop_ranger::range_of_stmt (irange &r, gimple *s, tree name)
+loop_ranger::range_of_phi (irange &r, gphi *phi)
 {
-  bool result = global_ranger::range_of_stmt (r, s, name);
-  if (result && is_a<gphi *> (s) && scev_initialized_p ())
-    adjust_phi_with_loop_info (r, as_a<gphi *> (s));
-  return result;
+  if (super::range_of_phi (r, phi))
+    {
+      value_range loop_range;
+      if (range_with_loop_info (loop_range, PHI_RESULT (phi)))
+	r.intersect (loop_range);
+      return true;
+    }
+  // ?? Is it worth querying loop info, or should we just return false?
+  return range_with_loop_info (r, PHI_RESULT (phi));
 }
 
-// Constructor for trace_ranger.
+void
+loop_ranger::range_on_edge (irange &r, edge e, tree name)
+{
+  super::range_on_edge (r, e, name);
+
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      value_range loop_range;
+      if (range_with_loop_info (loop_range, name))
+	r.intersect (loop_range);
+    }
+}
+
+
+// trace_ranger implementation.
 
 trace_ranger::trace_ranger ()
 {
