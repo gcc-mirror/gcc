@@ -1,3 +1,8 @@
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/arm/polytypes.c: Add quotes around
+	-flax-vector-conversions.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94516
