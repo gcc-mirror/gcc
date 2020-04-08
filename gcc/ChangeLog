@@ -1,3 +1,11 @@
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94516
+	* postreload.c: Include rtl-iter.h.
+	(reload_cse_move2add): Handle SP autoinc here by FOR_EACH_SUBRTX_VAR
+	looking for all MEMs with RTX_AUTOINC operand.
+	(move2add_note_store): Remove {PRE,POST}_{INC,DEC} handling.
+
 2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-grid.c (grid_eliminate_combined_simd_part): Use
