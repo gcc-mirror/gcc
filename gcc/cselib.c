@@ -884,21 +884,29 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
       else
 	e = cselib_lookup (x, GET_MODE (x), 0, memmode);
       if (e)
-	for (struct elt_loc_list *l = e->locs; l; l = l->next)
-	  if (GET_CODE (l->loc) == PLUS
-	      && GET_CODE (XEXP (l->loc, 0)) == VALUE
-	      && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
-	      && CONST_INT_P (XEXP (l->loc, 1)))
+	{
+	  if (SP_DERIVED_VALUE_P (e->val_rtx)
+	      && (*off == NULL_RTX || *off == const0_rtx))
 	    {
-	      if (*off == NULL_RTX)
-		*off = XEXP (l->loc, 1);
-	      else
-		*off = plus_constant (Pmode, *off,
-				      INTVAL (XEXP (l->loc, 1)));
-	      if (*off == const0_rtx)
-		*off = NULL_RTX;
-	      return XEXP (l->loc, 0);
+	      *off = NULL_RTX;
+	      return e->val_rtx;
 	    }
+	  for (struct elt_loc_list *l = e->locs; l; l = l->next)
+	    if (GET_CODE (l->loc) == PLUS
+		&& GET_CODE (XEXP (l->loc, 0)) == VALUE
+		&& SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+		&& CONST_INT_P (XEXP (l->loc, 1)))
+	      {
+		if (*off == NULL_RTX)
+		  *off = XEXP (l->loc, 1);
+		else
+		  *off = plus_constant (Pmode, *off,
+					INTVAL (XEXP (l->loc, 1)));
+		if (*off == const0_rtx)
+		  *off = NULL_RTX;
+		return XEXP (l->loc, 0);
+	      }
+	}
     }
   return x;
 }

@@ -1,5 +1,11 @@
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/94526
+	* cselib.c (autoinc_split): Handle e->val_rtx being SP_DERIVED_VALUE_P
+	with zero offset.
+	* reload1.c (eliminate_regs_1): Avoid creating
+	(plus (reg) (const_int 0)) in DEBUG_INSNs.
+
 	PR tree-optimization/94524
 	* tree-vect-generic.c (expand_vector_divmod): If any elt of op1 is
 	negative for signed TRUNC_MOD_EXPR, multiply with absolute value of
