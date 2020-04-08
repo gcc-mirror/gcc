@@ -13327,6 +13327,10 @@ package body Exp_Ch9 is
          if Nkind (Context) = N_Block_Statement then
             Context_Id := Entity (Identifier (Context));
 
+            if No (Declarations (Context)) then
+               Set_Declarations (Context, New_List);
+            end if;
+
          elsif Nkind (Context) = N_Entry_Body then
             Context_Id := Defining_Identifier (Context);
 

@@ -78,6 +78,15 @@ with Validsw;   use Validsw;
 
 package body Exp_Ch6 is
 
+   --  Suffix for BIP formals
+
+   BIP_Alloc_Suffix               : constant String := "BIPalloc";
+   BIP_Storage_Pool_Suffix        : constant String := "BIPstoragepool";
+   BIP_Finalization_Master_Suffix : constant String := "BIPfinalizationmaster";
+   BIP_Task_Master_Suffix         : constant String := "BIPtaskmaster";
+   BIP_Activation_Chain_Suffix    : constant String := "BIPactivationchain";
+   BIP_Object_Access_Suffix       : constant String := "BIPaccess";
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -147,6 +156,9 @@ package body Exp_Ch6 is
    --  level is known not to be statically deeper than the result type of the
    --  function.
 
+   function BIP_Suffix_Kind (E : Entity_Id) return BIP_Formal_Kind;
+   --  Ada 2005 (AI-318-02): Returns the kind of the given extra formal.
+
    function Caller_Known_Size
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean;
@@ -155,6 +167,12 @@ package body Exp_Ch6 is
    --  depends on discriminants). In particular, untagged types with only
    --  access discriminants do not require secondary stack use. Note we must
    --  always use the secondary stack for dispatching-on-result calls.
+
+   function Check_BIP_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean;
+   --  Given a subprogram call to the given subprogram return True if the
+   --  names of BIP extra actual and formal parameters match.
 
    function Check_Number_Of_Actuals
      (Subp_Call : Node_Id;
@@ -257,6 +275,9 @@ package body Exp_Ch6 is
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
+
+   function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 
    procedure Replace_Renaming_Declaration_Id
       (New_Decl  : Node_Id;
@@ -737,24 +758,67 @@ package body Exp_Ch6 is
    begin
       case Kind is
          when BIP_Alloc_Form =>
-            return "BIPalloc";
+            return BIP_Alloc_Suffix;
 
          when BIP_Storage_Pool =>
-            return "BIPstoragepool";
+            return BIP_Storage_Pool_Suffix;
 
          when BIP_Finalization_Master =>
-            return "BIPfinalizationmaster";
+            return BIP_Finalization_Master_Suffix;
 
          when BIP_Task_Master =>
-            return "BIPtaskmaster";
+            return BIP_Task_Master_Suffix;
 
          when BIP_Activation_Chain =>
-            return "BIPactivationchain";
+            return BIP_Activation_Chain_Suffix;
 
          when BIP_Object_Access =>
-            return "BIPaccess";
+            return BIP_Object_Access_Suffix;
       end case;
    end BIP_Formal_Suffix;
+
+   ---------------------
+   -- BIP_Suffix_Kind --
+   ---------------------
+
+   function BIP_Suffix_Kind (E : Entity_Id) return BIP_Formal_Kind is
+      Nam : constant String := Get_Name_String (Chars (E));
+
+      function Has_Suffix (Suffix : String) return Boolean;
+      --  Return True if Nam has suffix Suffix
+
+      function Has_Suffix (Suffix : String) return Boolean is
+         Len : constant Natural := Suffix'Length;
+      begin
+         return Nam'Length > Len
+           and then Nam (Nam'Last - Len + 1 .. Nam'Last) = Suffix;
+      end Has_Suffix;
+
+   --  Start of processing for BIP_Suffix_Kind
+
+   begin
+      if Has_Suffix (BIP_Alloc_Suffix) then
+         return BIP_Alloc_Form;
+
+      elsif Has_Suffix (BIP_Storage_Pool_Suffix) then
+         return BIP_Storage_Pool;
+
+      elsif Has_Suffix (BIP_Finalization_Master_Suffix) then
+         return BIP_Finalization_Master;
+
+      elsif Has_Suffix (BIP_Task_Master_Suffix) then
+         return BIP_Task_Master;
+
+      elsif Has_Suffix (BIP_Activation_Chain_Suffix) then
+         return BIP_Activation_Chain;
+
+      elsif Has_Suffix (BIP_Object_Access_Suffix) then
+         return BIP_Object_Access;
+
+      else
+         raise Program_Error;
+      end if;
+   end BIP_Suffix_Kind;
 
    ---------------------------
    -- Build_In_Place_Formal --
@@ -986,6 +1050,42 @@ package body Exp_Ch6 is
             and then No (Controlling_Argument (Func_Call)))
         or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
    end Caller_Known_Size;
+
+   -----------------------
+   -- Check_BIP_Actuals --
+   -----------------------
+
+   function Check_BIP_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean
+   is
+      Formal : Entity_Id;
+      Actual : Node_Id;
+
+   begin
+      pragma Assert (Nkind_In (Subp_Call, N_Entry_Call_Statement,
+                                          N_Function_Call,
+                                          N_Procedure_Call_Statement));
+
+      Formal := First_Formal_With_Extras (Subp_Id);
+      Actual := First_Actual (Subp_Call);
+
+      while Present (Formal) and then Present (Actual) loop
+         if Is_Build_In_Place_Entity (Formal)
+           and then Nkind (Actual) = N_Identifier
+           and then Is_Build_In_Place_Entity (Entity (Actual))
+           and then BIP_Suffix_Kind (Formal)
+                      /= BIP_Suffix_Kind (Entity (Actual))
+         then
+            return False;
+         end if;
+
+         Next_Formal_With_Extras (Formal);
+         Next_Actual (Actual);
+      end loop;
+
+      return No (Formal) and then No (Actual);
+   end Check_BIP_Actuals;
 
    -----------------------------
    -- Check_Number_Of_Actuals --
@@ -2160,13 +2260,18 @@ package body Exp_Ch6 is
 
             --  Ada 2005 (AI-318-02): If the actual parameter is a call to a
             --  build-in-place function, then a temporary return object needs
-            --  to be created and access to it must be passed to the function.
+            --  to be created and access to it must be passed to the function
+            --  (and ensure that we have an activation chain defined for tasks
+            --  and a Master variable).
+
             --  Currently we limit such functions to those with inherently
             --  limited result subtypes, but eventually we plan to expand the
             --  functions that are treated as build-in-place to include other
             --  composite result types.
 
             if Is_Build_In_Place_Function_Call (Actual) then
+               Build_Activation_Chain_Entity (N);
+               Build_Master_Entity (Etype (Actual));
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
 
             --  Ada 2005 (AI-318-02): Specialization of the previous case for
@@ -2174,6 +2279,8 @@ package body Exp_Ch6 is
             --  object covers interface types.
 
             elsif Present (Unqual_BIP_Iface_Function_Call (Actual)) then
+               Build_Activation_Chain_Entity (N);
+               Build_Master_Entity (Etype (Actual));
                Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Actual);
             end if;
 
@@ -3359,6 +3466,8 @@ package body Exp_Ch6 is
 
             Expand_Actuals (Call_Node, Subp, Post_Call);
             pragma Assert (Is_Empty_List (Post_Call));
+            pragma Assert (Check_Number_Of_Actuals (Call_Node, Subp));
+            pragma Assert (Check_BIP_Actuals (Call_Node, Subp));
             return;
          end;
       end if;
@@ -8291,6 +8400,34 @@ package body Exp_Ch6 is
       end if;
    end Is_Build_In_Place_Result_Type;
 
+   ------------------------------
+   -- Is_Build_In_Place_Entity --
+   ------------------------------
+
+   function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean is
+      Nam : constant String := Get_Name_String (Chars (E));
+
+      function Has_Suffix (Suffix : String) return Boolean;
+      --  Return True if Nam has suffix Suffix
+
+      function Has_Suffix (Suffix : String) return Boolean is
+         Len : constant Natural := Suffix'Length;
+      begin
+         return Nam'Length > Len
+           and then Nam (Nam'Last - Len + 1 .. Nam'Last) = Suffix;
+      end Has_Suffix;
+
+   --  Start of processing for Is_Build_In_Place_Entity
+
+   begin
+      return Has_Suffix (BIP_Alloc_Suffix)
+        or else Has_Suffix (BIP_Storage_Pool_Suffix)
+        or else Has_Suffix (BIP_Finalization_Master_Suffix)
+        or else Has_Suffix (BIP_Task_Master_Suffix)
+        or else Has_Suffix (BIP_Activation_Chain_Suffix)
+        or else Has_Suffix (BIP_Object_Access_Suffix);
+   end Is_Build_In_Place_Entity;
+
    --------------------------------
    -- Is_Build_In_Place_Function --
    --------------------------------
@@ -8699,6 +8836,7 @@ package body Exp_Ch6 is
 
       Analyze_And_Resolve (Allocator, Acc_Type);
       pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
+      pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
    end Make_Build_In_Place_Call_In_Allocator;
 
    ---------------------------------------------------
@@ -8821,6 +8959,7 @@ package body Exp_Ch6 is
            (Func_Call, Function_Id, New_Occurrence_Of (Return_Obj_Id, Loc));
 
          pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
+         pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
 
       --  When the result subtype is unconstrained, the function must allocate
       --  the return object in the secondary stack, so appropriate implicit
@@ -8847,6 +8986,7 @@ package body Exp_Ch6 is
            (Func_Call, Function_Id, Empty);
 
          pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
+         pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
       end if;
    end Make_Build_In_Place_Call_In_Anonymous_Context;
 
@@ -8953,6 +9093,7 @@ package body Exp_Ch6 is
 
       Rewrite (Assign, Make_Null_Statement (Loc));
       pragma Assert (Check_Number_Of_Actuals (Func_Call, Func_Id));
+      pragma Assert (Check_BIP_Actuals (Func_Call, Func_Id));
    end Make_Build_In_Place_Call_In_Assignment;
 
    ----------------------------------------------------
@@ -9396,6 +9537,7 @@ package body Exp_Ch6 is
       end if;
 
       pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
+      pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
    -------------------------------------------------
@@ -9686,8 +9828,26 @@ package body Exp_Ch6 is
 
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
-      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+      Subp_Id  : Entity_Id;
+      Func_Typ : Entity_Id;
+
    begin
+      --  For thunks we must rely on their target entity; otherwise, given that
+      --  the profile of thunks for functions returning a limited interface
+      --  type returns a class-wide type, we would erroneously add these extra
+      --  formals.
+
+      if Is_Thunk (Func_Id) then
+         Subp_Id := Thunk_Entity (Func_Id);
+
+      --  Common case
+
+      else
+         Subp_Id := Func_Id;
+      end if;
+
+      Func_Typ := Underlying_Type (Etype (Subp_Id));
+
       return not Global_No_Tasking
         and then (Has_Task (Func_Typ) or else Might_Have_Tasks (Func_Typ));
    end Needs_BIP_Task_Actuals;
