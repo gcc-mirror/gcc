@@ -160,6 +160,21 @@ extern "C" {
 #define __arm_vcx3qa(coproc, acc, n, m, imm) \
 	__builtin_arm_vcx3qav16qi(coproc, acc, n, m, imm)
 
+#define __arm_vcx1q_m(coproc, inactive, imm, pred) \
+	__builtin_arm_vcx1q_p_v16qi(coproc, inactive, imm, pred)
+#define __arm_vcx1qa_m(coproc, acc, imm, pred) \
+	__builtin_arm_vcx1qa_p_v16qi(coproc, acc, imm, pred)
+
+#define __arm_vcx2q_m(coproc, inactive, n, imm, pred) \
+	__builtin_arm_vcx2q_p_v16qi(coproc, inactive, n, imm, pred)
+#define __arm_vcx2qa_m(coproc, acc, n, imm, pred) \
+	__builtin_arm_vcx2qa_p_v16qi(coproc, acc, n, imm, pred)
+
+#define __arm_vcx3q_m(coproc, inactive, n, m, imm, pred) \
+	__builtin_arm_vcx3q_p_v16qi(coproc, inactive, n, m, imm, pred)
+#define __arm_vcx3qa_m(coproc, acc, n, m, imm, pred) \
+	__builtin_arm_vcx3qa_p_v16qi(coproc, acc, n, m, imm, pred)
+
 #endif
 
 #ifdef __cplusplus

@@ -62,34 +62,34 @@ uint64_t test_cde (uint32_t n, uint32_t m)
   accum += __arm_cx3da (8, accum, n, m,           0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
 
   /* `imm` out of range.  */
-  accum += __arm_cx1   (0,                        8192); /* { dg-error {argument 2 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx1a  (0, (uint32_t)accum,       8192); /* { dg-error {argument 3 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx2   (0, n,                     512); /* { dg-error {argument 3 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx2a  (0, (uint32_t)accum, n,    512); /* { dg-error {argument 4 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx3   (0, n, m,                  64); /* { dg-error {argument 4 must be a constant immediate in range \[0-63\]} } */
-  accum += __arm_cx3a  (0, (uint32_t)accum, n, m, 64); /* { dg-error {argument 5 must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx1   (0,                        8192); /* { dg-error {argument 2 to '__builtin_arm_cx1si' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx1a  (0, (uint32_t)accum,       8192); /* { dg-error {argument 3 to '__builtin_arm_cx1asi' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx2   (0, n,                     512);  /* { dg-error {argument 3 to '__builtin_arm_cx2si' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx2a  (0, (uint32_t)accum, n,    512);  /* { dg-error {argument 4 to '__builtin_arm_cx2asi' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx3   (0, n, m,                  64);   /* { dg-error {argument 4 to '__builtin_arm_cx3si' must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx3a  (0, (uint32_t)accum, n, m, 64);   /* { dg-error {argument 5 to '__builtin_arm_cx3asi' must be a constant immediate in range \[0-63\]} } */
 
-  accum += __arm_cx1d  (0,                        8192); /* { dg-error {argument 2 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx1da (0, accum,                 8192); /* { dg-error {argument 3 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx2d  (0, n,                     512); /* { dg-error {argument 3 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx2da (0, accum, n,              512); /* { dg-error {argument 4 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx3d  (0, n, m,                  64); /* { dg-error {argument 4 must be a constant immediate in range \[0-63\]} } */
-  accum += __arm_cx3da (0, accum, n, m,           64); /* { dg-error {argument 5 must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx1d  (0,                        8192); /* { dg-error {argument 2 to '__builtin_arm_cx1di' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx1da (0, accum,                 8192); /* { dg-error {argument 3 to '__builtin_arm_cx1adi' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx2d  (0, n,                     512);  /* { dg-error {argument 3 to '__builtin_arm_cx2di' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx2da (0, accum, n,              512);  /* { dg-error {argument 4 to '__builtin_arm_cx2adi' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx3d  (0, n, m,                  64);   /* { dg-error {argument 4 to '__builtin_arm_cx3di' must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx3da (0, accum, n, m,           64);   /* { dg-error {argument 5 to '__builtin_arm_cx3adi' must be a constant immediate in range \[0-63\]} } */
 
-  /* `imm` is not an immediate.  */
-  accum += __arm_cx1   (0,                        n); /* { dg-error {argument 2 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx1a  (0, (uint32_t)accum,       n); /* { dg-error {argument 3 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx2   (0, n,                     n); /* { dg-error {argument 3 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx2a  (0, (uint32_t)accum, n,    n); /* { dg-error {argument 4 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx3   (0, n, m,                  n); /* { dg-error {argument 4 must be a constant immediate in range \[0-63\]} } */
-  accum += __arm_cx3a  (0, (uint32_t)accum, n, m, n); /* { dg-error {argument 5 must be a constant immediate in range \[0-63\]} } */
+  /* `imm` must be an immediate.  */
+  accum += __arm_cx1   (0,                        n);    /* { dg-error {argument 2 to '__builtin_arm_cx1si' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx1a  (0, (uint32_t)accum,       n);    /* { dg-error {argument 3 to '__builtin_arm_cx1asi' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx2   (0, n,                     n);    /* { dg-error {argument 3 to '__builtin_arm_cx2si' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx2a  (0, (uint32_t)accum, n,    n);    /* { dg-error {argument 4 to '__builtin_arm_cx2asi' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx3   (0, n, m,                  n);    /* { dg-error {argument 4 to '__builtin_arm_cx3si' must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx3a  (0, (uint32_t)accum, n, m, n);    /* { dg-error {argument 5 to '__builtin_arm_cx3asi' must be a constant immediate in range \[0-63\]} } */
 
-  accum += __arm_cx1d  (0,                        n); /* { dg-error {argument 2 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx1da (0, accum,                 n); /* { dg-error {argument 3 must be a constant immediate in range \[0-8191\]} } */
-  accum += __arm_cx2d  (0, n,                     n); /* { dg-error {argument 3 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx2da (0, accum, n,              n); /* { dg-error {argument 4 must be a constant immediate in range \[0-511\]} } */
-  accum += __arm_cx3d  (0, n, m,                  n); /* { dg-error {argument 4 must be a constant immediate in range \[0-63\]} } */
-  accum += __arm_cx3da (0, accum, n, m,           n); /* { dg-error {argument 5 must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx1d  (0,                        n);    /* { dg-error {argument 2 to '__builtin_arm_cx1di' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx1da (0, accum,                 n);    /* { dg-error {argument 3 to '__builtin_arm_cx1adi' must be a constant immediate in range \[0-8191\]} } */
+  accum += __arm_cx2d  (0, n,                     n);    /* { dg-error {argument 3 to '__builtin_arm_cx2di' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx2da (0, accum, n,              n);    /* { dg-error {argument 4 to '__builtin_arm_cx2adi' must be a constant immediate in range \[0-511\]} } */
+  accum += __arm_cx3d  (0, n, m,                  n);    /* { dg-error {argument 4 to '__builtin_arm_cx3di' must be a constant immediate in range \[0-63\]} } */
+  accum += __arm_cx3da (0, accum, n, m,           n);    /* { dg-error {argument 5 to '__builtin_arm_cx3adi' must be a constant immediate in range \[0-63\]} } */
 
   /* `coproc` is not an immediate.  */
   accum += __arm_cx1   ((int)m,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */

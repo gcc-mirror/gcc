@@ -25,6 +25,19 @@ uint8x16_t test_invalid_arguments (uint8x16_t n, uint8x16_t m)
   accum += __arm_vcx3q (0, n, m);                 /* { dg-error {macro "__arm_vcx3q" requires 4 arguments, but only 3 given} } */
   accum += __arm_vcx3qa (0, accum, n, m);         /* { dg-error {macro "__arm_vcx3qa" requires 5 arguments, but only 4 given} } */
 
+  accum += __arm_vcx1q_m (0, accum, 33, 1, 4);         /* { dg-error {macro "__arm_vcx1q_m" passed 5 arguments, but takes just 4} } */
+  accum += __arm_vcx1qa_m (0, accum, 33, 1, 4);        /* { dg-error {macro "__arm_vcx1qa_m" passed 5 arguments, but takes just 4} } */
+  accum += __arm_vcx2q_m (0, accum, n, 33, 1, 4);      /* { dg-error {macro "__arm_vcx2q_m" passed 6 arguments, but takes just 5} } */
+  accum += __arm_vcx2qa_m (0, accum, n, 33, 1, 4);     /* { dg-error {macro "__arm_vcx2qa_m" passed 6 arguments, but takes just 5} } */
+  accum += __arm_vcx3q_m (0, accum, n, m, 33, 1, 4);   /* { dg-error {macro "__arm_vcx3q_m" passed 7 arguments, but takes just 6} } */
+  accum += __arm_vcx3qa_m (0, accum, n, m, 33, 1, 4);  /* { dg-error {macro "__arm_vcx3qa_m" passed 7 arguments, but takes just 6} } */
+  accum += __arm_vcx1q_m (0, accum, 4);                /* { dg-error {macro "__arm_vcx1q_m" requires 4 arguments, but only 3 given} } */
+  accum += __arm_vcx1qa_m (0, accum, 4);               /* { dg-error {macro "__arm_vcx1qa_m" requires 4 arguments, but only 3 given} } */
+  accum += __arm_vcx2q_m (0, accum, n, 4);             /* { dg-error {macro "__arm_vcx2q_m" requires 5 arguments, but only 4 given} } */
+  accum += __arm_vcx2qa_m (0, accum, n, 4);            /* { dg-error {macro "__arm_vcx2qa_m" requires 5 arguments, but only 4 given} } */
+  accum += __arm_vcx3q_m (0, accum, n, m, 4);          /* { dg-error {macro "__arm_vcx3q_m" requires 6 arguments, but only 5 given} } */
+  accum += __arm_vcx3qa_m (0, accum, n, m, 4);         /* { dg-error {macro "__arm_vcx3qa_m" requires 6 arguments, but only 5 given} } */
+
   /* The preprocessor complains that the macro was given an invalid number of
      arguments, and because of that ends up not expanding the macro but
      rather just leaving the macro name in the source code.  That macro name
@@ -37,6 +50,13 @@ uint8x16_t test_invalid_arguments (uint8x16_t n, uint8x16_t m)
   /* { dg-error {'__arm_vcx3q_u8' undeclared \(first use in this function\)}  "" { target { *-*-* } } 16 } */
   /* { dg-error {'__arm_vcx3q' undeclared \(first use in this function\)}  "" { target { *-*-* } } 17 } */
   /* { dg-error {'__arm_vcx3qa' undeclared \(first use in this function\)}  "" { target { *-*-* } } 18 } */
+
+  /* { dg-error {'__arm_vcx1q_m' undeclared \(first use in this function\)} "" { target { *-*-* } } 28 } */
+  /* { dg-error {'__arm_vcx1qa_m' undeclared \(first use in this function\)} "" { target { *-*-* } } 29 } */
+  /* { dg-error {'__arm_vcx2q_m' undeclared \(first use in this function\)} "" { target { *-*-* } } 30 } */
+  /* { dg-error {'__arm_vcx2qa_m' undeclared \(first use in this function\)} "" { target { *-*-* } } 31 } */
+  /* { dg-error {'__arm_vcx3q_m' undeclared \(first use in this function\)} "" { target { *-*-* } } 32 } */
+  /* { dg-error {'__arm_vcx3qa_m' undeclared \(first use in this function\)} "" { target { *-*-* } } 33 } */
 
   return accum;
 }

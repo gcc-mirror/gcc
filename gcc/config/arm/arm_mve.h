@@ -13502,78 +13502,6 @@ __arm_vaddq_u32 (uint32x4_t __a, uint32x4_t __b)
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_u8 (void)
-{
-  uint8x16_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_u16 (void)
-{
-  uint16x8_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_u32 (void)
-{
-  uint32x4_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_u64 (void)
-{
-  uint64x2_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_s8 (void)
-{
-  int8x16_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_s16 (void)
-{
-  int16x8_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_s32 (void)
-{
-  int32x4_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_s64 (void)
-{
-  int64x2_t __uninit;
-  __asm__ ("": "=w"(__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vddupq_m_n_u8 (uint8x16_t __inactive, uint32_t __a, const int __imm, mve_pred16_t __p)
 {
   return __builtin_mve_vddupq_m_n_uv16qi (__inactive, __a, __imm, __p);
@@ -19204,24 +19132,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vaddq_f32 (float32x4_t __a, float32x4_t __b)
 {
   return __a + __b;
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_f16 (void)
-{
-  float16x8_t __uninit;
-  __asm__ ("": "=w" (__uninit));
-  return __uninit;
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq_f32 (void)
-{
-  float32x4_t __uninit;
-  __asm__ ("": "=w" (__uninit));
-  return __uninit;
 }
 
 __extension__ extern __inline float32x4_t
@@ -30146,62 +30056,6 @@ __arm_vaddq (uint32x4_t __a, uint32x4_t __b)
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint8x16_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u8 ();
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint16x8_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u16 ();
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint32x4_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u32 ();
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (uint64x2_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_u64 ();
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int8x16_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s8 ();
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int16x8_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s16 ();
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int32x4_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s32 ();
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (int64x2_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_s64 ();
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vddupq_m (uint8x16_t __inactive, uint32_t __a, const int __imm, mve_pred16_t __p)
 {
  return __arm_vddupq_m_n_u8 (__inactive, __a, __imm, __p);
@@ -35093,20 +34947,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vaddq (float32x4_t __a, float32x4_t __b)
 {
  return __arm_vaddq_f32 (__a, __b);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (float16x8_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_f16 ();
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vuninitializedq (float32x4_t /* __v ATTRIBUTE UNUSED */)
-{
- return __arm_vuninitializedq_f32 ();
 }
 
 __extension__ extern __inline void

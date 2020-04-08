@@ -26,18 +26,18 @@ uint64_t test_coproc_range (uint32_t a, uint64_t b)
 uint64_t test_imm_range (uint32_t a, uint64_t b)
 {
   uint64_t res = 0;
-  res += __arm_vcx1_u32 (0, 2048); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-2047\]} } */
-  res += __arm_vcx1a_u32 (0, a, 2048); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-2047\]} } */
-  res += __arm_vcx2_u32 (0, a, 64); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-63\]} } */
-  res += __arm_vcx2a_u32 (0, a, a, 64); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-63\]} } */
-  res += __arm_vcx3_u32 (0, a, a, 8); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-7\]} } */
-  res += __arm_vcx3a_u32 (0, a, a, a, 8); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-7\]} } */
-  res += __arm_vcx1d_u64 (0, 2048); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-2047\]} } */
-  res += __arm_vcx1da_u64 (0, a, 2048); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-2047\]} } */
-  res += __arm_vcx2d_u64 (0, a, 64); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-63\]} } */
-  res += __arm_vcx2da_u64 (0, a, a, 64); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-63\]} } */
-  res += __arm_vcx3d_u64 (0, a, a, 8); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-7\]} } */
-  res += __arm_vcx3da_u64 (0, a, a, a, 8); /* { dg-error {argument [2-5] must be a constant immediate in range \[0-7\]} } */
+  res += __arm_vcx1_u32 (0, 2048);         /* { dg-error {argument [2-5] to '__builtin_arm_vcx1si' must be a constant immediate in range \[0-2047\]} } */
+  res += __arm_vcx1a_u32 (0, a, 2048);     /* { dg-error {argument [2-5] to '__builtin_arm_vcx1asi' must be a constant immediate in range \[0-2047\]} } */
+  res += __arm_vcx2_u32 (0, a, 64);        /* { dg-error {argument [2-5] to '__builtin_arm_vcx2si' must be a constant immediate in range \[0-63\]} } */
+  res += __arm_vcx2a_u32 (0, a, a, 64);    /* { dg-error {argument [2-5] to '__builtin_arm_vcx2asi' must be a constant immediate in range \[0-63\]} } */
+  res += __arm_vcx3_u32 (0, a, a, 8);      /* { dg-error {argument [2-5] to '__builtin_arm_vcx3si' must be a constant immediate in range \[0-7\]} } */
+  res += __arm_vcx3a_u32 (0, a, a, a, 8);  /* { dg-error {argument [2-5] to '__builtin_arm_vcx3asi' must be a constant immediate in range \[0-7\]} } */
+  res += __arm_vcx1d_u64 (0, 2048);        /* { dg-error {argument [2-5] to '__builtin_arm_vcx1di' must be a constant immediate in range \[0-2047\]} } */
+  res += __arm_vcx1da_u64 (0, a, 2048);    /* { dg-error {argument [2-5] to '__builtin_arm_vcx1adi' must be a constant immediate in range \[0-2047\]} } */
+  res += __arm_vcx2d_u64 (0, a, 64);       /* { dg-error {argument [2-5] to '__builtin_arm_vcx2di' must be a constant immediate in range \[0-63\]} } */
+  res += __arm_vcx2da_u64 (0, a, a, 64);   /* { dg-error {argument [2-5] to '__builtin_arm_vcx2adi' must be a constant immediate in range \[0-63\]} } */
+  res += __arm_vcx3d_u64 (0, a, a, 8);     /* { dg-error {argument [2-5] to '__builtin_arm_vcx3di' must be a constant immediate in range \[0-7\]} } */
+  res += __arm_vcx3da_u64 (0, a, a, a, 8); /* { dg-error {argument [2-5] to '__builtin_arm_vcx3adi' must be a constant immediate in range \[0-7\]} } */
   return res;
 }
 

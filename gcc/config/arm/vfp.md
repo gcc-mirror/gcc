@@ -199,7 +199,7 @@
     case 8:
       return "vmov%?.f32\t%0, %1\t%@ int";
     case 9:
-      return "vmsr%?\tP0, %1\t%@ movhi";
+      return "vmsr%?\t P0, %1\t%@ movhi";
     case 10:
       return "vmrs%?\t%0, P0\t%@ movhi";
     default:

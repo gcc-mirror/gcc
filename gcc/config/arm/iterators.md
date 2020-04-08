@@ -529,6 +529,8 @@
 
 (define_int_iterator BF_MA [UNSPEC_BFMAB UNSPEC_BFMAT])
 
+(define_int_iterator CDE_VCX [UNSPEC_VCDE UNSPEC_VCDEA])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -1251,3 +1253,6 @@
 
 ;; An iterator for VFMA<bt>
 (define_int_attr bt [(UNSPEC_BFMAB "b") (UNSPEC_BFMAT "t")])
+
+;; An iterator for CDE MVE accumulator/non-accumulator versions.
+(define_int_attr a [(UNSPEC_VCDE "") (UNSPEC_VCDEA "a")])
