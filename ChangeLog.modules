@@ -1,5 +1,11 @@
 2020-04-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::decl_value): Need to retrofit lang for
+	inner.
+	gcc/testsuite/
+	* g++.dg/modules/gmf-1_[ab].C: New.
+
 	gcc/testsuite/
 	* g++.dg/modules/xtreme-header-[1-6]_c.C: New.
 

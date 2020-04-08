@@ -7998,8 +7998,10 @@ trees_in::decl_value ()
 	  retrofit_lang_decl (decl);
 	  DECL_MODULE_IMPORT_P (decl) = true;
 	  if (inner_tag)
-	    /* We know there will be a lang_decl in this case.  */
-	    DECL_MODULE_IMPORT_P (inner) = true;
+	    {
+	      retrofit_lang_decl (inner);
+	      DECL_MODULE_IMPORT_P (inner) = true;
+	    }
 
 	  if (state->is_partition ()
 	      && (module_interface_p () && !module_partition_p ()))
@@ -13118,7 +13120,7 @@ pendset_lazy_load (pendset *pendings)
 	  module_state *module = import_entity_module (index);
 	  mc_slot *slot = &(*entity_ary)[index];
 	  if (!slot->is_lazy ())
-	    dump () && dump ("Specialiation %M[%u[ already loaded",
+	    dump () && dump ("Specialiation %M[%u] already loaded",
 			     module, index - module->entity_lwm);
 	  else if (!module->lazy_load (index - module->entity_lwm, slot))
 	    ok = false;
