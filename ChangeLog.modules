@@ -1,5 +1,11 @@
 2020-04-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::key_mergeable): Avoid null deref.
+	(direct_import): Create attachment table.
+	gcc/testsuite/
+	* g++.dg/modules/lambds-[23]_c.C: New.
+
 	Merge master 50c7853216e8511971c55b51d7fe29173db4749b
 
 2020-04-07  Nathan Sidwell  <nathan@acm.org>

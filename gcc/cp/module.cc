@@ -10550,9 +10550,14 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  if (key.index < set->num)
 		    {
 		      existing = set->values[key.index];
-		      gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (existing));
-		      if (inner != decl)
-			existing = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
+		      if (existing)
+			{
+			  gcc_checking_assert
+			    (DECL_IMPLICIT_TYPEDEF_P (existing));
+			  if (inner != decl)
+			    existing
+			      = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
+			}
 		    }
 	    }
 	  else if (is_mod && !(state->is_module () || state->is_partition ()))
@@ -18908,7 +18913,11 @@ direct_import (module_state *import, cpp_reader *reader)
       gcc_unreachable ();
 
   if (import->load_state < 3)
-    import->read_language (true);
+    {
+      if (!attached_table)
+	attached_table = new attachset::hash (EXPERIMENT (1, 400));
+      import->read_language (true);
+    }
 
   (*modules)[0]->set_import (import, import->exported_p);
 
