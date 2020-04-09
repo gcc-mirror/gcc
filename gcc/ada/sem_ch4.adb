@@ -3291,20 +3291,30 @@ package body Sem_Ch4 is
          T2 : Entity_Id) return Boolean
       is
          function Common_Type (T : Entity_Id) return Entity_Id;
-         --  Find non-private full view if any, without going to ancestor type
-         --  (as opposed to Underlying_Type).
+         --  Find non-private underlying full view if any, without going to
+         --  ancestor type (as opposed to Underlying_Type).
 
          -----------------
          -- Common_Type --
          -----------------
 
          function Common_Type (T : Entity_Id) return Entity_Id is
+            CT : Entity_Id;
+
          begin
-            if Is_Private_Type (T) and then Present (Full_View (T)) then
-               return Base_Type (Full_View (T));
-            else
-               return Base_Type (T);
+            CT := T;
+
+            if Is_Private_Type (CT) and then Present (Full_View (CT)) then
+               CT := Full_View (CT);
             end if;
+
+            if Is_Private_Type (CT)
+              and then Present (Underlying_Full_View (CT))
+            then
+               CT := Underlying_Full_View (CT);
+            end if;
+
+            return Base_Type (CT);
          end Common_Type;
 
       --  Start of processing for Compatible_Types_In_Predicate
