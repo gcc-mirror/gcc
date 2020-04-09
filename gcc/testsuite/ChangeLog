@@ -1,3 +1,7 @@
+2020-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* g++.target/arm/cde_mve.C: New test.
+
 2020-04-09  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/cmse/cmse-15.c: Use check-function-bodies.

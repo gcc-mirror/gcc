@@ -1,3 +1,8 @@
+2020-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm_cde.h: Remove `extern "C"` when compiling for
+	C++.
+
 2020-04-09  Martin Jambor  <mjambor@suse.cz>
 	    Richard Biener  <rguenther@suse.de>
 

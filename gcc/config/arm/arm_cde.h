@@ -27,10 +27,6 @@
 #ifndef _GCC_ARM_CDE_H
 #define _GCC_ARM_CDE_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 
 #if defined (__ARM_FEATURE_CDE)
@@ -175,10 +171,6 @@ extern "C" {
 #define __arm_vcx3qa_m(coproc, acc, n, m, imm, pred) \
 	__builtin_arm_vcx3qa_p_v16qi(coproc, acc, n, m, imm, pred)
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif
