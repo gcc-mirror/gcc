@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target pthread } */
 /* { dg-options "-Og --coverage -pthread -fdump-tree-optimized -std=c++17" } */
 using uint16_t = unsigned short;
 
