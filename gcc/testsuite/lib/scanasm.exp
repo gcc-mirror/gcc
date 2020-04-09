@@ -689,7 +689,7 @@ proc check-function-bodies { args } {
 	if { [string equal -length $prefix_len $line $prefix] } {
 	    set line [string trim [string range $line $prefix_len end]]
 	    if { !$in_function } {
-		if { [regexp "^(.*\\S)\\s+{(.*)}\$" $line dummy \
+		if { [regexp "^(.*?\\S)\\s+{(.*)}\$" $line dummy \
 			  line selector] } {
 		    set selector [dg-process-target $selector]
 		} else {
