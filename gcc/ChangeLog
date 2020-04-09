@@ -1,3 +1,16 @@
+2020-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94495
+	* cselib.h (cselib_record_sp_cfa_base_equiv,
+	cselib_sp_derived_value_p): Declare.
+	* cselib.c (cselib_record_sp_cfa_base_equiv,
+	cselib_sp_derived_value_p): New functions.
+	* var-tracking.c (add_stores): Don't record MO_VAL_SET for
+	cselib_sp_derived_value_p values.
+	(vt_initialize): Call cselib_record_sp_cfa_base_equiv at the
+	start of extended basic blocks other than the first one
+	for !frame_pointer_needed functions.
+
 2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/sourcebuild.texi (aarch64_sve_hw, aarch64_sve128_hw)
