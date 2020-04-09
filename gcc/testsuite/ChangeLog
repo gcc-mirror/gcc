@@ -1,3 +1,9 @@
+2020-04-09  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR testsuite/94023
+	* gfortran.dg/vect/pr83232.f90: Expect 2 rather than 3 times SLP on
+	non-vect_hw_misalign targets.
+
 2020-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94526

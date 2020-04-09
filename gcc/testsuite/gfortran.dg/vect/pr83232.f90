@@ -27,5 +27,7 @@
       call foo (Einc)
       END SUBROUTINE
 
-! We should vectorize (1), (2) and (3)
-! { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "slp1" } }
+! We should vectorize (1), (2) and (3) under vect_hw_misalign.
+! { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "slp1" { target vect_hw_misalign } } }
+! But only (1) and (3) under !vect_hw_misalign due to the alignment of (2).
+! { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "slp1" { target { ! vect_hw_misalign } } } }
