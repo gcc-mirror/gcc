@@ -19,9 +19,6 @@ with Ada.Numerics.Big_Numbers.Big_Integers;
 
 with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
 
---  Note that some Ada 2020 aspects are commented out since they are not
---  supported yet.
-
 package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
 is
