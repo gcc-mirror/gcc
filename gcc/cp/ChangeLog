@@ -1,3 +1,9 @@
+2020-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94523
+	* constexpr.c (cxx_eval_constant_expression) [VAR_DECL]: Look at
+	ctx->object and ctx->global->values first.
+
 2020-04-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93790

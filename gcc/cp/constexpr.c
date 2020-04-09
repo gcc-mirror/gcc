@@ -5485,6 +5485,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
+      else if (t == ctx->object)
+	return ctx->ctor;
+      if (VAR_P (t))
+	if (tree *p = ctx->global->values.get (t))
+	  if (*p != NULL_TREE)
+	    {
+	      r = *p;
+	      break;
+	    }
       if (COMPLETE_TYPE_P (TREE_TYPE (t))
 	  && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
 	{
@@ -5499,10 +5508,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
-      if (VAR_P (r))
-	if (tree *p = ctx->global->values.get (r))
-	  if (*p != NULL_TREE)
-	    r = *p;
       if (DECL_P (r))
 	{
 	  if (!ctx->quiet)
