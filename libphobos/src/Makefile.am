@@ -25,7 +25,7 @@ D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
 # D flags for compilation
 AM_DFLAGS= \
 	$(phobos_compiler_pic_flag) \
-	$(WARN_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS)
 
 # Install all D files
 ALL_PHOBOS_INSTALL_DSOURCES = $(PHOBOS_DSOURCES)

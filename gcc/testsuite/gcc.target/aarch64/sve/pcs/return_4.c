@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -g" } */
-/* { dg-final { check-function-bodies "**" "" { target lp64 } } } */
+/* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 #define CALLEE(SUFFIX, TYPE)			\
   TYPE __attribute__((noipa))			\

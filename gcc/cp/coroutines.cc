@@ -2798,11 +2798,13 @@ maybe_promote_captured_temps (tree *stmt, void *d)
       location_t sloc = EXPR_LOCATION (*stmt);
       tree aw_bind
 	= build3_loc (sloc, BIND_EXPR, void_type_node, NULL, NULL, NULL);
-      tree aw_statement_current;
-      if (TREE_CODE (*stmt) == CLEANUP_POINT_EXPR)
-	aw_statement_current = TREE_OPERAND (*stmt, 0);
-      else
-	aw_statement_current = *stmt;
+
+      /* Any cleanup point expression might no longer be necessary, since we
+	 are removing one or more temporaries.  */
+      tree aw_statement_current = *stmt;
+      if (TREE_CODE (aw_statement_current) == CLEANUP_POINT_EXPR)
+	aw_statement_current = TREE_OPERAND (aw_statement_current, 0);
+
       /* Collected the scope vars we need move the temps to regular. */
       tree aw_bind_body = push_stmt_list ();
       tree varlist = NULL_TREE;
@@ -2843,8 +2845,12 @@ maybe_promote_captured_temps (tree *stmt, void *d)
 	  /* Replace all instances of that temp in the original expr.  */
 	  cp_walk_tree (&aw_statement_current, replace_proxy, &pr, NULL);
 	}
-      /* What's left should be the original statement with any temporaries
-	 broken out.  */
+
+      /* What's left should be the original statement with any co_await
+	 captured temporaries broken out.  Other temporaries might remain
+	 so see if we need to wrap the revised statement in a cleanup.  */
+      aw_statement_current =
+	maybe_cleanup_point_expr_void (aw_statement_current);
       add_stmt (aw_statement_current);
       BIND_EXPR_BODY (aw_bind) = pop_stmt_list (aw_bind_body);
       awpts->captured_temps.empty ();

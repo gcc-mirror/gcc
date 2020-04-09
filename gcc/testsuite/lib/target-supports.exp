@@ -4695,8 +4695,12 @@ proc aarch64_sve_hw_bits { bits } {
 # Return true if this is an AArch64 target that can run SVE code and
 # if its SVE vectors have exactly 256 bits.
 
-proc check_effective_target_aarch64_sve256_hw { } {
-    return [aarch64_sve_hw_bits 256]
+foreach N { 128 256 512 1024 2048 } {
+    eval [string map [list N $N] {
+	proc check_effective_target_aarch64_sveN_hw { } {
+	    return [aarch64_sve_hw_bits N]
+	}
+    }]
 }
 
 proc check_effective_target_arm_neonv2_hw { } {

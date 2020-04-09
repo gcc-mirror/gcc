@@ -116,19 +116,3 @@ AC_DEFUN([DRUNTIME_INSTALL_DIRECTORIES],
   gdc_include_dir='$(libdir)/gcc/${target_alias}/${gcc_version}/include/d'
   AC_SUBST(gdc_include_dir)
 ])
-
-
-# DRUNTIME_GC
-# -----------
-# Add the --enable-druntime-gc option and create the
-# DRUNTIME_GC_ENABLE conditional
-AC_DEFUN([DRUNTIME_GC],
-[
-  dnl switch between gc and gcstub
-  AC_ARG_ENABLE(druntime-gc,
-    AC_HELP_STRING([--enable-druntime-gc],
-                   [enable D runtime garbage collector (default: yes)]),
-    [enable_druntime_gc=no],[enable_druntime_gc=yes])
-
-  AM_CONDITIONAL([DRUNTIME_GC_ENABLE], [test "$enable_druntime_gc" = "yes"])
-])

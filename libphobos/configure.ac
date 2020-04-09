@@ -122,7 +122,6 @@ DRUNTIME_MULTILIB
 DRUNTIME_WERROR
 DRUNTIME_GC
 DRUNTIME_CPU_SOURCES
-DRUNTIME_OS_UNIX
 DRUNTIME_OS_SOURCES
 DRUNTIME_OS_THREAD_MODEL
 DRUNTIME_OS_ARM_EABI_UNWINDER
@@ -134,7 +133,7 @@ DRUNTIME_LIBRARIES_CLIB
 WITH_LOCAL_DRUNTIME([
   AC_LANG_PUSH([D])
   AC_SEARCH_LIBS([malloc], [c])
-  DRUNTIME_LIBRARIES_THREAD
+  AC_SEARCH_LIBS([pthread_create], [pthread])
   AC_SEARCH_LIBS([cosf], [m])
   AC_SEARCH_LIBS([clock_gettime], [rt])
   DRUNTIME_ENABLE_ATOMIC_BUILTINS
@@ -188,6 +187,31 @@ yes:*) use_libphobos=yes ;;
 esac
 AM_CONDITIONAL(ENABLE_LIBPHOBOS, test x$use_libphobos = xyes)
 
+# Enable expensive internal checks
+AC_ARG_ENABLE(libphobos-checking,
+[AS_HELP_STRING([[--enable-libphobos-checking[=LIST]]],
+		[enable expensive run-time checks.  With LIST,
+		 enable only specific categories of checks.
+		 Categories are: yes,no,all,none,release.
+		 Flags are: assert or other strings])],
+[ac_checking_flags="${enableval}"],[ac_checking_flags=release])
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in release $ac_checking_flags
+do
+	case $check in
+	# These set all the flags to specific states
+	yes|all) RELEASE_FLAG="-fno-release" ; ASSERT_FLAG= ;;
+	no|none|release) RELEASE_FLAG="-frelease" ; ASSERT_FLAG= ;;
+	# These enable particular checks
+	assert) ASSERT_FLAG="-fassert" ;;
+	# Accept
+	*) ;;
+	esac
+done
+IFS="$ac_save_IFS"
+CHECKING_DFLAGS="$RELEASE_FLAG $ASSERT_FLAG"
+AC_SUBST(CHECKING_DFLAGS)
+
 # Add drtbegin.o/drtend.o to startfile/endfile specs in libgphobos.spec
 if test "$DCFG_MINFO_BRACKETING" = "false"; then
     DRTSTUFF_SPEC=$srcdir/src/drtstuff.spec
@@ -206,12 +230,12 @@ AC_SUBST(libtool_VERSION)
 
 # Set default flags (after DRUNTIME_WERROR!)
 if test -z "$GDCFLAGS"; then
-    GDCFLAGS="-g -frelease -O2"
+    GDCFLAGS="-g -O2"
 fi
 AC_SUBST(GDCFLAGS)
 
 if test -z "$GDCFLAGSX"; then
-    GDCFLAGSX="-g -fno-release -funittest"
+    GDCFLAGSX="-g"
 fi
 AC_SUBST(GDCFLAGSX)
 

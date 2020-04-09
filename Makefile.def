@@ -113,6 +113,8 @@ host_modules= { module= zlib; no_install=true; no_check=true;
 		bootstrap=true;
 	        extra_configure_flags='@extra_host_zlib_configure_flags@';};
 host_modules= { module= gnulib; };
+host_modules= { module= gdbsupport; };
+host_modules= { module= gdbserver; };
 host_modules= { module= gdb; };
 host_modules= { module= expect; };
 host_modules= { module= guile; };
@@ -394,24 +396,38 @@ dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
 dependencies = { module=configure-gdb; on=all-gnulib; };
+dependencies = { module=configure-gdb; on=all-gdbsupport; };
 // Depend on all-libiconv so that configure checks for iconv
 // functions will work.
 dependencies = { module=configure-gdb; on=all-libiconv; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-libiconv; };
 dependencies = { module=all-gdb; on=all-gnulib; };
+dependencies = { module=all-gdb; on=all-gdbsupport; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-build-bison; };
 dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
 dependencies = { module=all-gdb; on=all-libtermcap; };
+dependencies = { module=all-gdb; on=all-libctf; };
+
+// Host modules specific to gdbserver.
+dependencies = { module=configure-gdbserver; on=all-gnulib; };
+dependencies = { module=all-gdbserver; on=all-gdbsupport; };
+dependencies = { module=all-gdbserver; on=all-gnulib; };
+dependencies = { module=all-gdbserver; on=all-libiberty; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
 dependencies = { module=configure-libgui; on=configure-tk; };
 dependencies = { module=all-libgui; on=all-tcl; };
 dependencies = { module=all-libgui; on=all-tk; };
 dependencies = { module=all-libgui; on=all-itcl; };
+
+dependencies = { module=configure-gdbsupport; on=configure-gnulib; };
+dependencies = { module=configure-gdbsupport; on=configure-intl; };
+dependencies = { module=all-gdbsupport; on=all-gnulib; };
+dependencies = { module=all-gdbsupport; on=all-intl; };
 
 // Host modules specific to binutils.
 dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };

@@ -1992,6 +1992,15 @@ AArch64 target which generates instruction sequences for big endian.
 @item aarch64_small_fpic
 Binutils installed on test system supports relocation types required by -fpic
 for AArch64 small memory model.
+@item aarch64_sve_hw
+AArch64 target that is able to generate and execute SVE code (regardless of
+whether it does so by default).
+@item aarch64_sve128_hw
+@itemx aarch64_sve256_hw
+@itemx aarch64_sve512_hw
+@itemx aarch64_sve1024_hw
+@itemx aarch64_sve2048_hw
+Like @code{aarch64_sve_hw}, but also test for an exact hardware vector length.
 
 @end table
 
@@ -2754,17 +2763,19 @@ assembly output.
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
 
-@item check-function-bodies @var{prefix} @var{terminator} [@var{option} [@{ target/xfail @var{selector} @}]]
+@item check-function-bodies @var{prefix} @var{terminator} [@var{options} [@{ target/xfail @var{selector} @}]]
 Looks through the source file for comments that give the expected assembly
 output for selected functions.  Each line of expected output starts with the
 prefix string @var{prefix} and the expected output for a function as a whole
 is followed by a line that starts with the string @var{terminator}.
 Specifying an empty terminator is equivalent to specifying @samp{"*/"}.
 
-If @var{option} is specified, the test only applies to command lines
-that contain @var{option}.  This can be useful if a source file is compiled
-both with and without optimization, since it is rarely useful to check the
-assembly output for unoptimized code.
+@var{options}, if specified, is a list of regular expressions, each of
+which matches a full command-line option.  A non-empty list prevents
+the test from running unless all of the given options are present on the
+command line.  This can help if a source file is compiled both with
+and without optimization, since it is rarely useful to check the full
+function body for unoptimized code.
 
 The first line of the expected output for a function @var{fn} has the form:
 

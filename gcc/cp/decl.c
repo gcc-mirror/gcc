@@ -5568,9 +5568,22 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
 	  && !DECL_DECOMPOSITION_P (decl)
 	  && (cxx_dialect >= cxx2a))
 	{
-	  init = build_constructor_from_list (init_list_type_node, init);
-	  CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
-	  CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	  /* We don't know yet if we should treat const A& r(1) as
+	     const A& r{1}.  */
+	  if (list_length (init) == 1)
+	    {
+	      flags |= LOOKUP_AGGREGATE_PAREN_INIT;
+	      init = build_x_compound_expr_from_list (init, ELK_INIT,
+						      tf_warning_or_error);
+	    }
+	  /* If the list had more than one element, the code is ill-formed
+	     pre-C++20, so we can build a constructor right away.  */
+	  else
+	    {
+	      init = build_constructor_from_list (init_list_type_node, init);
+	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	      CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	    }
 	}
       else
 	init = build_x_compound_expr_from_list (init, ELK_INIT,

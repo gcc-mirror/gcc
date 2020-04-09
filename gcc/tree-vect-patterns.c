@@ -3365,8 +3365,8 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  d = abs_d;
 	  oprnd1 = build_int_cst (itype, abs_d);
 	}
-      else if (HOST_BITS_PER_WIDE_INT >= prec
-	       && abs_d == HOST_WIDE_INT_1U << (prec - 1))
+      if (HOST_BITS_PER_WIDE_INT >= prec
+	  && abs_d == HOST_WIDE_INT_1U << (prec - 1))
 	/* This case is not handled correctly below.  */
 	return NULL;
 

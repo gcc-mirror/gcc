@@ -10,7 +10,7 @@ volatile int idx;
 struct base
 {
   __attribute__ ((malloc, noinline)) static void *
-  operator new (unsigned long sz)
+  operator new (__SIZE_TYPE__ sz)
   {
     return ::operator new (sz);
   }
@@ -28,7 +28,7 @@ volatile int base::count[2] = {0, 0};
 
 struct B : base
 {
-  static void *operator new (unsigned long sz)
+  static void *operator new (__SIZE_TYPE__ sz)
   {
     int c = count[idx];
     count[idx] = c + 1;
