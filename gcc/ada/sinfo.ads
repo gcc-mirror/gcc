@@ -1017,8 +1017,8 @@ package Sinfo is
    --    A flag set on type conversion nodes to indicate that the conversion
    --    is to be considered as being valid, even though it is the case that
    --    the conversion is not valid Ada. This is used for attributes Enum_Rep,
-   --    Fixed_Value and Integer_Value, for internal conversions done for
-   --    fixed-point operations, and for certain conversions for calls to
+   --    Pos, Val, Fixed_Value and Integer_Value, for internal conversions done
+   --    for fixed-point operations, and for certain conversions for calls to
    --    initialization procedures. If Conversion_OK is set, then Etype must be
    --    set (the analyzer assumes that Etype has been set). For the case of
    --    fixed-point operands, it also indicates that the conversion is to be
