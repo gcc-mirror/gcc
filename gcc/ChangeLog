@@ -1,3 +1,10 @@
+2020-04-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_expand_epilogue): Use emit_jump_insn
+	when to emit the epilogue_helper insn.
+	* config/msp430/msp430.md (epilogue_helper): Add a return insn to the
+	RTL pattern.
+
 2020-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/94495
