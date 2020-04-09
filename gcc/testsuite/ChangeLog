@@ -1,3 +1,29 @@
+2020-04-09  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/87923
+	* gfortran.dg/f2003_io_8.f03: Fix expected error messages.
+	* gfortran.dg/io_constraints_8.f90: Likewise.
+	* gfortran.dg/iomsg_2.f90: Likewise.
+	* gfortran.dg/pr66725.f90: Likewise.
+	* gfortran.dg/pr88205.f90: Likewise.
+	* gfortran.dg/write_check4.f90: Likewise.
+	* gfortran.dg/asynchronous_5.f03: New test.
+	* gfortran.dg/io_constraints_15.f90: Likewise.
+	* gfortran.dg/io_constraints_16.f90: Likewise.
+	* gfortran.dg/io_constraints_17.f90: Likewise.
+	* gfortran.dg/io_constraints_18.f90: Likewise.
+	* gfortran.dg/io_tags_1.f90: Likewise.
+	* gfortran.dg/io_tags_10.f90: Likewise.
+	* gfortran.dg/io_tags_2.f90: Likewise.
+	* gfortran.dg/io_tags_3.f90: Likewise.
+	* gfortran.dg/io_tags_4.f90: Likewise.
+	* gfortran.dg/io_tags_5.f90: Likewise.
+	* gfortran.dg/io_tags_6.f90: Likewise.
+	* gfortran.dg/io_tags_7.f90: Likewise.
+	* gfortran.dg/io_tags_8.f90: Likewise.
+	* gfortran.dg/io_tags_9.f90: Likewise.
+	* gfortran.dg/write_check5.f90: Likewise.
+
 2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/attributes_1.c: New test.

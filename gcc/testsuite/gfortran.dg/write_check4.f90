@@ -11,7 +11,7 @@
   no = "no"
   open (unit=10, asynchronous = no)              ! Ok, it isn't a transfer stmt
   write(*,*, asynchronous="Y"//"E"//trim("S  ")) ! Ok, it is an init expr
-  write(*,*, asynchronous=no)  ! { dg-error "must be an initialization expression" } 
+  write(*,*, asynchronous=no)  ! { dg-error "does not reduce to a constant expression" }
   read (*,*, asynchronous="Y"//"e"//trim("S  "))
-  read (*,*, asynchronous=no)  ! { dg-error "must be an initialization expression" }
+  read (*,*, asynchronous=no)  ! { dg-error "does not reduce to a constant expression" }
 end

@@ -9941,9 +9941,6 @@ resolve_transfer (gfc_code *code)
 		 "an assumed-size array", &code->loc);
       return;
     }
-
-  if (async_io_dt && exp->expr_type == EXPR_VARIABLE)
-    exp->symtree->n.sym->attr.asynchronous = 1;
 }
 
 
@@ -12003,14 +12000,14 @@ start:
 	  break;
 
 	case EXEC_OPEN:
-	  if (!gfc_resolve_open (code->ext.open))
+	  if (!gfc_resolve_open (code->ext.open, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.open->err, code);
 	  break;
 
 	case EXEC_CLOSE:
-	  if (!gfc_resolve_close (code->ext.close))
+	  if (!gfc_resolve_close (code->ext.close, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.close->err, code);
@@ -12052,7 +12049,7 @@ start:
 
 	case EXEC_READ:
 	case EXEC_WRITE:
-	  if (!gfc_resolve_dt (code->ext.dt, &code->loc))
+	  if (!gfc_resolve_dt (code, code->ext.dt, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.dt->err, code);
@@ -15009,11 +15006,6 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
     }
 
-  if (async_io_dt)
-    {
-      for (nl = sym->namelist; nl; nl = nl->next)
-	nl->sym->attr.asynchronous = 1;
-    }
   return true;
 }
 
