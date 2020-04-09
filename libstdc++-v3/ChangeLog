@@ -1,3 +1,11 @@
+2020-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (operator<=>): Define for C++20.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/comparison/compare.cc: New test.
+	* testsuite/20_util/unique_ptr/comparison/compare_c++20.cc: New test.
+
 2020-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/slice_array.h (operator==(const slice&, const slice&)):
