@@ -1,3 +1,10 @@
+2020-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94149
+	* g++.dg/cpp2a/paren-init24.C: New test.
+	* g++.dg/cpp2a/paren-init25.C: New test.
+	* g++.dg/ext/is_constructible5.C: New test.
+
 2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
 
 	* gfortran.dg/asynchronous_5.f03: Fix typo in testcase and add

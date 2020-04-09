@@ -1,3 +1,10 @@
+2020-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94149
+	* method.c (constructible_expr): In C++20, try using parenthesized
+	initialization of aggregates to determine the result of
+	__is_constructible.
+
 2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* coroutines.cc (co_await_expander): Simplify.
