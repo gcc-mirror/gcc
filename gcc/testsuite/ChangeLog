@@ -1,3 +1,8 @@
+2020-04-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/93674
+	* g++.dg/pr93674.C: New test.
+
 2020-04-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* g++.dg/tree-ssa/pr93940.C: Require pthread target.

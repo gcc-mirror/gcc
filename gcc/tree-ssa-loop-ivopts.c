@@ -132,6 +132,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "dbgcnt.h"
 
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
+
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
    interface between the GIMPLE and RTL worlds.  */
@@ -3479,8 +3482,21 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
 {
   poly_uint64 offset;
   tree base;
-  tree basetype;
   struct iv *iv = use->iv;
+  tree basetype = TREE_TYPE (iv->base);
+
+  /* Don't add candidate for iv_use with non integer, pointer or non-mode
+     precision types, instead, add candidate for the corresponding scev in
+     unsigned type with the same precision.  See PR93674 for more info.  */
+  if ((TREE_CODE (basetype) != INTEGER_TYPE && !POINTER_TYPE_P (basetype))
+      || !type_has_mode_precision_p (basetype))
+    {
+      basetype = lang_hooks.types.type_for_mode (TYPE_MODE (basetype),
+						 TYPE_UNSIGNED (basetype));
+      add_candidate (data, fold_convert (basetype, iv->base),
+		     fold_convert (basetype, iv->step), false, NULL);
+      return;
+    }
 
   add_candidate (data, iv->base, iv->step, false, use);
 
