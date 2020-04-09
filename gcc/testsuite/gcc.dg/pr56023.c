@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 void
 foo (char *c)

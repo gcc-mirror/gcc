@@ -1,7 +1,6 @@
 /* PR ipa/65521 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 struct S { int s; };
 int f6 (void *, unsigned long);

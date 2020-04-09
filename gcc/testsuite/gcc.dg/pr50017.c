@@ -1,7 +1,6 @@
 /* PR debug/50017 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 struct S { int r, i; };
 

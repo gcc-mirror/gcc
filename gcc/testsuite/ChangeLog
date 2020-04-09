@@ -1,5 +1,40 @@
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
 
+	* g++.dg/debug/dwarf2/pr61433.C: Unfail AIX.
+	* g++.dg/opt/pr48549.C: Same.
+	* g++.dg/opt/pr60002.C: Same.
+	* g++.dg/opt/pr80436.C: Same.
+	* g++.dg/opt/pr83084.C: Same.
+	* g++.dg/other/pr42685.C: Same.
+	* gcc.dg/pr41241.c: Same.
+	* gcc.dg/pr42629.c: Same.
+	* gcc.dg/pr42630.c: Same.
+	* gcc.dg/pr42719.c: Same.
+	* gcc.dg/pr42728.c: Same.
+	* gcc.dg/pr42889.c: Same.
+	* gcc.dg/pr42916.c: Same.
+	* gcc.dg/pr43084.c: Same.
+	* gcc.dg/pr43670.c: Same.
+	* gcc.dg/pr44023.c: Same.
+	* gcc.dg/pr44971.c: Same.
+	* gcc.dg/pr45449.c: Same.
+	* gcc.dg/pr46771.c: Same.
+	* gcc.dg/pr47684.c: Same.
+	* gcc.dg/pr47881.c: Same.
+	* gcc.dg/pr48768.c: Same.
+	* gcc.dg/pr50017.c: Same.
+	* gcc.dg/pr56023.c: Same.
+	* gcc.dg/pr64935-1.c: Same.
+	* gcc.dg/pr64935-2.c: Same.
+	* gcc.dg/pr65521.c: Same.
+	* gcc.dg/pr65779.c: Same.
+	* gcc.dg/pr65980.c: Same.
+	* gcc.dg/pr66688.c: Same.
+	* gcc.dg/pr70405.c: Same.
+	* gcc.dg/vect/pr49352.c: Same.
+
+2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
+
 	* gcc.dg/ipa/ipa-sra-19.c: Add -Wno-psabi option on AIX.
 
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
