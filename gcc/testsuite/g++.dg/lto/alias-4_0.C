@@ -32,6 +32,6 @@ main()
   test ();
   return 0;
 }
-/* On ARM the testcase used to fial because struct a got in conflict with builtin
+/* On ARM the testcase used to fail because struct a got in conflict with builtin
    va_list type.  Check that this does not happen.  */
 /* { dg-final { scan-wpa-ipa-dump-not "ODR and non-ODR type conflict" "cgraph"  } } */

@@ -1,6 +1,7 @@
 2020-04-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/91322
+	* g++.dg/lto/alias-4_0.C: Fix typo.
 	* g++.dg/lto/alias-4_0.C: Avoid conflict with va_list on ARM and add
 	a template testing that
 
