@@ -1,5 +1,14 @@
 2020-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare (compare_three_way): Fix noexcept-specifier.
+	(strong_order, weak_order, partial_order): Replace uses of <=> with
+	compare_three_way function object (LWG 3324).
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc: Add
+	equality operator so that X satisfies three_way_comparable.
+	* testsuite/18_support/comparisons/algorithms/strong_order.cc:
+	Likewise.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc: Likewise.
+
 	* include/bits/unique_ptr.h (operator<=>): Define for C++20.
 	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line.
 	* testsuite/20_util/default_delete/void_neg.cc: Likewise.

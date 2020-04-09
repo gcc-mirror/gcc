@@ -94,6 +94,10 @@ namespace N
       return partial_ordering::equivalent;
     return r.i <=> l.i;
   }
+
+  constexpr bool operator==(X l, X r) { return std::is_eq(l <=> r); }
+
+  static_assert(std::three_way_comparable<X>);
 }
 
 void

@@ -419,7 +419,8 @@ namespace std
       = __detail::__weakly_eq_cmp_with<_Tp, _Tp>
       && __detail::__partially_ordered_with<_Tp, _Tp>
       && requires(const remove_reference_t<_Tp>& __a,
-		  const remove_reference_t<_Tp>& __b) {
+		  const remove_reference_t<_Tp>& __b)
+      {
 	{ __a <=> __b } -> __detail::__compares_as<_Cat>;
       };
 
@@ -435,7 +436,8 @@ namespace std
       && __detail::__weakly_eq_cmp_with<_Tp, _Up>
       && __detail::__partially_ordered_with<_Tp, _Up>
       && requires(const remove_reference_t<_Tp>& __t,
-		  const remove_reference_t<_Up>& __u) {
+		  const remove_reference_t<_Up>& __u)
+      {
 	{ __t <=> __u } -> __detail::__compares_as<_Cat>;
 	{ __u <=> __t } -> __detail::__compares_as<_Cat>;
       };
@@ -494,7 +496,8 @@ namespace std
     template<typename _Tp, typename _Up>
       requires three_way_comparable_with<_Tp, _Up>
       constexpr auto
-      operator()(_Tp&& __t, _Up&& __u) const noexcept
+      operator()(_Tp&& __t, _Up&& __u) const
+      noexcept(noexcept(std::declval<_Tp>() <=> std::declval<_Up>()))
       {
 	if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
 	  {
@@ -579,16 +582,16 @@ namespace std
 	};
 
     template<typename _Ord, typename _Tp, typename _Up>
-      concept __op_cmp = requires(_Tp&& __t, _Up&& __u)
+      concept __cmp3way = requires(_Tp&& __t, _Up&& __u, compare_three_way __c)
 	{
-	  _Ord(static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u));
+	  _Ord(__c(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)));
 	};
 
     template<typename _Tp, typename _Up>
       concept __strongly_ordered
 	= __adl_strong<_Tp, _Up>
 	  // FIXME: || floating_point<remove_reference_t<_Tp>>
-	  || __op_cmp<strong_ordering, _Tp, _Up>;
+	  || __cmp3way<strong_ordering, _Tp, _Up>;
 
     class _Strong_order
     {
@@ -601,8 +604,9 @@ namespace std
 	  else if constexpr (__adl_strong<_Tp, _Up>)
 	    return noexcept(strong_ordering(strong_order(std::declval<_Tp>(),
 							 std::declval<_Up>())));
-	  else if constexpr (__op_cmp<strong_ordering, _Tp, _Up>)
-	    return noexcept(std::declval<_Tp>() <=> std::declval<_Up>());
+	  else if constexpr (__cmp3way<strong_ordering, _Tp, _Up>)
+	    return noexcept(compare_three_way()(std::declval<_Tp>(),
+						std::declval<_Up>()));
 	}
 
       friend class _Weak_order;
@@ -623,8 +627,9 @@ namespace std
 	  else */ if constexpr (__adl_strong<_Tp, _Up>)
 	    return strong_ordering(strong_order(static_cast<_Tp&&>(__e),
 						static_cast<_Up&&>(__f)));
-	  else if constexpr (__op_cmp<strong_ordering, _Tp, _Up>)
-	    return static_cast<_Tp&&>(__e) <=> static_cast<_Up&&>(__f);
+	  else if constexpr (__cmp3way<strong_ordering, _Tp, _Up>)
+	    return compare_three_way()(static_cast<_Tp&&>(__e),
+				       static_cast<_Up&&>(__f));
 	}
     };
 
@@ -632,7 +637,7 @@ namespace std
       concept __weakly_ordered
 	= floating_point<remove_reference_t<_Tp>>
 	  || __adl_weak<_Tp, _Up>
-	  || __op_cmp<weak_ordering, _Tp, _Up>
+	  || __cmp3way<weak_ordering, _Tp, _Up>
 	  || __strongly_ordered<_Tp, _Up>;
 
     class _Weak_order
@@ -646,8 +651,9 @@ namespace std
 	  else if constexpr (__adl_weak<_Tp, _Up>)
 	    return noexcept(weak_ordering(weak_order(std::declval<_Tp>(),
 						     std::declval<_Up>())));
-	  else if constexpr (__op_cmp<weak_ordering, _Tp, _Up>)
-	    return noexcept(std::declval<_Tp>() <=> std::declval<_Up>());
+	  else if constexpr (__cmp3way<weak_ordering, _Tp, _Up>)
+	    return noexcept(compare_three_way()(std::declval<_Tp>(),
+						std::declval<_Up>()));
 	  else if constexpr (__strongly_ordered<_Tp, _Up>)
 	    return _Strong_order::_S_noexcept<_Tp, _Up>();
 	}
@@ -669,8 +675,9 @@ namespace std
 	  else if constexpr (__adl_weak<_Tp, _Up>)
 	    return weak_ordering(weak_order(static_cast<_Tp&&>(__e),
 					    static_cast<_Up&&>(__f)));
-	  else if constexpr (__op_cmp<weak_ordering, _Tp, _Up>)
-	    return static_cast<_Tp&&>(__e) <=> static_cast<_Up&&>(__f);
+	  else if constexpr (__cmp3way<weak_ordering, _Tp, _Up>)
+	    return compare_three_way()(static_cast<_Tp&&>(__e),
+				       static_cast<_Up&&>(__f));
 	  else if constexpr (__strongly_ordered<_Tp, _Up>)
 	    return _Strong_order{}(static_cast<_Tp&&>(__e),
 				   static_cast<_Up&&>(__f));
@@ -680,7 +687,7 @@ namespace std
     template<typename _Tp, typename _Up>
       concept __partially_ordered
 	= __adl_partial<_Tp, _Up>
-	|| __op_cmp<partial_ordering, _Tp, _Up>
+	|| __cmp3way<partial_ordering, _Tp, _Up>
 	|| __weakly_ordered<_Tp, _Up>;
 
     class _Partial_order
@@ -692,8 +699,9 @@ namespace std
 	  if constexpr (__adl_partial<_Tp, _Up>)
 	    return noexcept(partial_ordering(partial_order(std::declval<_Tp>(),
 							 std::declval<_Up>())));
-	  else if constexpr (__op_cmp<partial_ordering, _Tp, _Up>)
-	    return noexcept(std::declval<_Tp>() <=> std::declval<_Up>());
+	  else if constexpr (__cmp3way<partial_ordering, _Tp, _Up>)
+	    return noexcept(compare_three_way()(std::declval<_Tp>(),
+						std::declval<_Up>()));
 	  else if constexpr (__weakly_ordered<_Tp, _Up>)
 	    return _Weak_order::_S_noexcept<_Tp, _Up>();
 	}
@@ -712,8 +720,9 @@ namespace std
 	  if constexpr (__adl_partial<_Tp, _Up>)
 	    return partial_ordering(partial_order(static_cast<_Tp&&>(__e),
 						  static_cast<_Up&&>(__f)));
-	  else if constexpr (__op_cmp<partial_ordering, _Tp, _Up>)
-	    return static_cast<_Tp&&>(__e) <=> static_cast<_Up&&>(__f);
+	  else if constexpr (__cmp3way<partial_ordering, _Tp, _Up>)
+	    return compare_three_way()(static_cast<_Tp&&>(__e),
+				       static_cast<_Up&&>(__f));
 	  else if constexpr (__weakly_ordered<_Tp, _Up>)
 	    return _Weak_order{}(static_cast<_Tp&&>(__e),
 				 static_cast<_Up&&>(__f));
