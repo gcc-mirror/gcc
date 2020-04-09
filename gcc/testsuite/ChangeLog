@@ -1,3 +1,9 @@
+2020-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93369
+	* g++.dg/lto/pr64076_0.C: Add -shared -fPIC.
+	* g++.dg/lto/pr64076_1.C: Add -fPIC.
+
 2020-04-09  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* gcc.target/aarch64/pr94530.c: New test.
