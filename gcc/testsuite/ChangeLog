@@ -1,5 +1,9 @@
 2020-04-09  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/arm/cmse/cmse-15.c: Use check-function-bodies.
+
+2020-04-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* lib/scanasm.exp (check-function-bodies): Use non-greedy regexp
 	when extracting the target selector.
 
