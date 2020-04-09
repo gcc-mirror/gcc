@@ -1,3 +1,9 @@
+2020-04-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94482
+	* gcc.dg/torture/pr94482.c: New test.
+	* gcc.dg/tree-ssa/pr94482-2.c: Likewise.
+
 2020-04-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93790

@@ -1,3 +1,15 @@
+2020-04-09  Martin Jambor  <mjambor@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94482
+	* tree-sra.c (create_access_replacement): Dump new replacement with
+	TDF_UID.
+	(sra_modify_expr): Fix handling of cases when the original EXPR writes
+	to only part of the replacement.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Properly verify
+	the first operand of combinations into REAL/IMAGPART_EXPR and
+	BIT_FIELD_REF.
+
 2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/sourcebuild.texi (check-function-bodies): Treat the third
