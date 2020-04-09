@@ -28,7 +28,6 @@ AM_DFLAGS= \
 
 # Install all D and DI files
 ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
-	$(DRUNTIME_DSOURCES_GC) $(DRUNTIME_DSOURCES_GCSTUB) \
 	$(DRUNTIME_DSOURCES_BIONIC) $(DRUNTIME_DSOURCES_DARWIN) \
 	$(DRUNTIME_DSOURCES_DRAGONFLYBSD) $(DRUNTIME_DSOURCES_FREEBSD) \
 	$(DRUNTIME_DSOURCES_LINUX) $(DRUNTIME_DSOURCES_NETBSD) \
@@ -40,12 +39,6 @@ ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
 # Setup source files depending on configure
 DRUNTIME_SOURCES_CONFIGURED =
 
-# GC sources
-if DRUNTIME_GC_ENABLE
-    DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_GC)
-else
-    DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_GCSTUB)
-endif
 # OS specific sources
 if DRUNTIME_OS_POSIX
     DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_POSIX)
@@ -168,7 +161,9 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/stdc/wctype.d core/sync/barrier.d core/sync/condition.d \
 	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
-	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
+	core/vararg.d gc/bits.d gc/config.d gc/gcinterface.d \
+	gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d gc/pooltable.d \
+	gc/proxy.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
 	gcc/emutls.d gcc/gthread.d gcc/sections/android.d \
 	gcc/sections/elf_shared.d gcc/sections/osx.d gcc/sections/package.d \
 	gcc/sections/win32.d gcc/sections/win64.d gcc/unwind/arm.d \
@@ -198,12 +193,6 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d
-
-DRUNTIME_DSOURCES_GC = gc/bits.d gc/config.d gc/gcinterface.d \
-	gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d gc/pooltable.d \
-	gc/proxy.d
-
-DRUNTIME_DSOURCES_GCSTUB = gcstub/gc.d
 
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/fcntl.d \
 	core/sys/bionic/string.d core/sys/bionic/unistd.d

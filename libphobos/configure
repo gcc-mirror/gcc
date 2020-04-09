@@ -701,8 +701,6 @@ DRUNTIME_CPU_ARM_FALSE
 DRUNTIME_CPU_ARM_TRUE
 DRUNTIME_CPU_AARCH64_FALSE
 DRUNTIME_CPU_AARCH64_TRUE
-DRUNTIME_GC_ENABLE_FALSE
-DRUNTIME_GC_ENABLE_TRUE
 libphobos_srcdir
 libphobos_builddir
 get_gcc_base_ver
@@ -835,7 +833,6 @@ with_gnu_ld
 enable_libtool_lock
 with_gcc_major_version_only
 enable_werror
-enable_druntime_gc
 with_libatomic
 with_libbacktrace
 with_target_system_zlib
@@ -1485,7 +1482,6 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-werror         turns on -Werror [default=no]
-  --enable-druntime-gc    enable D runtime garbage collector (default: yes)
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -11649,7 +11645,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11652 "configure"
+#line 11648 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11755,7 +11751,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11758 "configure"
+#line 11754 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13981,24 +13977,7 @@ fi
       WERROR_FLAG="-Werror"
   fi
 
-
-    # Check whether --enable-druntime-gc was given.
-if test "${enable_druntime_gc+set}" = set; then :
-  enableval=$enable_druntime_gc; enable_druntime_gc=no
-else
-  enable_druntime_gc=yes
-fi
-
-
-   if test "$enable_druntime_gc" = "yes"; then
-  DRUNTIME_GC_ENABLE_TRUE=
-  DRUNTIME_GC_ENABLE_FALSE='#'
-else
-  DRUNTIME_GC_ENABLE_TRUE='#'
-  DRUNTIME_GC_ENABLE_FALSE=
-fi
-
-
+DRUNTIME_GC
 
   druntime_target_cpu_parsed=""
   case "$target_cpu" in
@@ -15508,10 +15487,6 @@ fi
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${DRUNTIME_GC_ENABLE_TRUE}" && test -z "${DRUNTIME_GC_ENABLE_FALSE}"; then
-  as_fn_error $? "conditional \"DRUNTIME_GC_ENABLE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_CPU_AARCH64_TRUE}" && test -z "${DRUNTIME_CPU_AARCH64_FALSE}"; then
