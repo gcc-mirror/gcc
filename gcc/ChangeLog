@@ -1,3 +1,9 @@
+2020-04-15  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(valid_src_p): Check for aarch64_address_info type before
+	accessing base field.
+
 2020-04-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/mve.md (mve_vec_duplicate<mode>): New pattern.
