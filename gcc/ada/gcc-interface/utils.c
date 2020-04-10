@@ -3017,7 +3017,7 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
       unsigned int known_align;
 
       if (tree_fits_uhwi_p (pos))
-	known_align = tree_to_uhwi (pos) & - tree_to_uhwi (pos);
+	known_align = tree_to_uhwi (pos) & -tree_to_uhwi (pos);
       else
 	known_align = BITS_PER_UNIT;
 
