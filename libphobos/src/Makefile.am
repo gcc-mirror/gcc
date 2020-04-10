@@ -42,8 +42,17 @@ libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
-libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la $(LIBZ)
-libgphobos_la_DEPENDENCIES = libgphobos.spec
+libgphobos_la_LIBADD = \
+    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+libgphobos_la_DEPENDENCIES = \
+    ../libdruntime/libgdruntime_convenience.la libgphobos.spec
+
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
 
 # Handles generated files as well
 install-data-local:

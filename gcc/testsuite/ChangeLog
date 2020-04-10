@@ -1,3 +1,7 @@
+2020-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc.exp (gdc_link_flags): Remove libdruntime library paths.
+
 2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-await-syntax-10.C: New test.

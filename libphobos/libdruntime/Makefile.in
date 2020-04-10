@@ -181,7 +181,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
-LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
@@ -459,6 +459,30 @@ am__objects_34 = $(am__objects_1) $(am__objects_2) $(am__objects_32) \
 	$(am__objects_33)
 am_libgdruntime_la_OBJECTS = $(am__objects_34)
 libgdruntime_la_OBJECTS = $(am_libgdruntime_la_OBJECTS)
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__objects_35 = core/stdc/libgdruntime_convenience_la-errno_.lo
+@DRUNTIME_CPU_AARCH64_TRUE@am__objects_36 = config/aarch64/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_ARM_TRUE@am__objects_37 = config/arm/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_MIPS_TRUE@am__objects_38 = config/mips/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_POWERPC_TRUE@am__objects_39 = config/powerpc/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_POWERPC64_TRUE@am__objects_40 = config/powerpc64/libgdruntime_convenience_la-callwithstack.lo
+@DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_TRUE@am__objects_41 = config/mingw/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_FALSE@am__objects_42 = config/x86/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_SYSTEMZ_TRUE@am__objects_43 = config/systemz/libgdruntime_convenience_la-get_tls_offset.lo
+@DRUNTIME_CPU_S390_TRUE@am__objects_44 = config/s390/libgdruntime_convenience_la-get_tls_offset.lo
+am__objects_45 = $(am__objects_4) $(am__objects_6) $(am__objects_8) \
+	$(am__objects_10) $(am__objects_12) $(am__objects_14) \
+	$(am__objects_16) $(am__objects_18) $(am__objects_20) \
+	$(am__objects_22) $(am__objects_36) $(am__objects_37) \
+	$(am__objects_38) $(am__objects_39) $(am__objects_40) \
+	$(am__objects_41) $(am__objects_42) $(am__objects_43) \
+	$(am__objects_44)
+am__objects_46 = $(am__objects_1) $(am__objects_35) $(am__objects_45) \
+	$(am__objects_33)
+am__objects_47 = $(am__objects_46)
+am_libgdruntime_convenience_la_OBJECTS = $(am__objects_47)
+libgdruntime_convenience_la_OBJECTS =  \
+	$(am_libgdruntime_convenience_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -505,7 +529,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgdruntime_la_SOURCES)
+SOURCES = $(libgdruntime_la_SOURCES) \
+	$(libgdruntime_convenience_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -689,18 +714,6 @@ LTDCOMPILE = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(GDC) $(AM_DFLAGS)
 
 
-# Also override library link commands: This is not strictly
-# required, but we want to record additional dependencies such
-# as pthread in the library
-libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
-
-libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
-
-
 # Include D build rules
 
 # Make sure GDC can find libdruntime include files
@@ -741,6 +754,9 @@ DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 ALL_DRUNTIME_SOURCES = $(DRUNTIME_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SOURCES_CONFIGURED) $(DRUNTIME_DSOURCES_GENERATED)
 
+
+# Need this library to both be part of libgphobos.a, and installed separately.
+# 1) separate libgdruntime.la
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
 libgdruntime_la_LIBTOOLFLAGS = 
@@ -749,6 +765,22 @@ libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
 
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
 libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
+
+
+# 2) integrated libgdruntime_convenience.la that is to be part of libgphobos.a
+noinst_LTLIBRARIES = libgdruntime_convenience.la
+libgdruntime_convenience_la_SOURCES = $(libgdruntime_la_SOURCES)
+libgdruntime_convenience_la_LIBTOOLFLAGS = $(libgdruntime_la_LIBTOOLFLAGS)
+libgdruntime_convenience_la_LDFLAGS = $(libgdruntime_la_LDFLAGS)
+libgdruntime_convenience_la_LIBADD = $(libgdruntime_la_LIBADD)
+libgdruntime_convenience_la_DEPENDENCIES = $(libgdruntime_la_DEPENDENCIES)
+libgdruntime_convenience_la_LINK = $(libgdruntime_la_LINK)
 
 # Source file definitions. Boring stuff, auto-generated with
 # https://gist.github.com/jpf91/8ad1dbc9902d6ad876313f134c6527d1
@@ -1023,6 +1055,17 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
 
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -1745,6 +1788,29 @@ gcc/libbacktrace.lo: gcc/$(am__dirstamp)
 
 libgdruntime.la: $(libgdruntime_la_OBJECTS) $(libgdruntime_la_DEPENDENCIES) $(EXTRA_libgdruntime_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgdruntime_la_LINK) -rpath $(toolexeclibdir) $(libgdruntime_la_OBJECTS) $(libgdruntime_la_LIBADD) $(LIBS)
+core/stdc/libgdruntime_convenience_la-errno_.lo:  \
+	core/stdc/$(am__dirstamp)
+config/aarch64/libgdruntime_convenience_la-switchcontext.lo:  \
+	config/aarch64/$(am__dirstamp)
+config/arm/libgdruntime_convenience_la-switchcontext.lo:  \
+	config/arm/$(am__dirstamp)
+config/mips/libgdruntime_convenience_la-switchcontext.lo:  \
+	config/mips/$(am__dirstamp)
+config/powerpc/libgdruntime_convenience_la-switchcontext.lo:  \
+	config/powerpc/$(am__dirstamp)
+config/powerpc64/libgdruntime_convenience_la-callwithstack.lo:  \
+	config/powerpc64/$(am__dirstamp)
+config/mingw/libgdruntime_convenience_la-switchcontext.lo:  \
+	config/mingw/$(am__dirstamp)
+config/x86/libgdruntime_convenience_la-switchcontext.lo:  \
+	config/x86/$(am__dirstamp)
+config/systemz/libgdruntime_convenience_la-get_tls_offset.lo:  \
+	config/systemz/$(am__dirstamp)
+config/s390/libgdruntime_convenience_la-get_tls_offset.lo:  \
+	config/s390/$(am__dirstamp)
+
+libgdruntime_convenience.la: $(libgdruntime_convenience_la_OBJECTS) $(libgdruntime_convenience_la_DEPENDENCIES) $(EXTRA_libgdruntime_convenience_la_DEPENDENCIES) 
+	$(AM_V_GEN)$(libgdruntime_convenience_la_LINK)  $(libgdruntime_convenience_la_OBJECTS) $(libgdruntime_convenience_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1888,6 +1954,33 @@ config/systemz/libgdruntime_la-get_tls_offset.lo: config/systemz/get_tls_offset.
 config/s390/libgdruntime_la-get_tls_offset.lo: config/s390/get_tls_offset.S
 	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/s390/libgdruntime_la-get_tls_offset.lo `test -f 'config/s390/get_tls_offset.S' || echo '$(srcdir)/'`config/s390/get_tls_offset.S
 
+config/aarch64/libgdruntime_convenience_la-switchcontext.lo: config/aarch64/switchcontext.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/aarch64/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/aarch64/switchcontext.S' || echo '$(srcdir)/'`config/aarch64/switchcontext.S
+
+config/arm/libgdruntime_convenience_la-switchcontext.lo: config/arm/switchcontext.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/arm/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/arm/switchcontext.S' || echo '$(srcdir)/'`config/arm/switchcontext.S
+
+config/mips/libgdruntime_convenience_la-switchcontext.lo: config/mips/switchcontext.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/mips/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/mips/switchcontext.S' || echo '$(srcdir)/'`config/mips/switchcontext.S
+
+config/powerpc/libgdruntime_convenience_la-switchcontext.lo: config/powerpc/switchcontext.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/powerpc/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/powerpc/switchcontext.S' || echo '$(srcdir)/'`config/powerpc/switchcontext.S
+
+config/powerpc64/libgdruntime_convenience_la-callwithstack.lo: config/powerpc64/callwithstack.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/powerpc64/libgdruntime_convenience_la-callwithstack.lo `test -f 'config/powerpc64/callwithstack.S' || echo '$(srcdir)/'`config/powerpc64/callwithstack.S
+
+config/mingw/libgdruntime_convenience_la-switchcontext.lo: config/mingw/switchcontext.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/mingw/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/mingw/switchcontext.S' || echo '$(srcdir)/'`config/mingw/switchcontext.S
+
+config/x86/libgdruntime_convenience_la-switchcontext.lo: config/x86/switchcontext.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/x86/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/x86/switchcontext.S' || echo '$(srcdir)/'`config/x86/switchcontext.S
+
+config/systemz/libgdruntime_convenience_la-get_tls_offset.lo: config/systemz/get_tls_offset.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/systemz/libgdruntime_convenience_la-get_tls_offset.lo `test -f 'config/systemz/get_tls_offset.S' || echo '$(srcdir)/'`config/systemz/get_tls_offset.S
+
+config/s390/libgdruntime_convenience_la-get_tls_offset.lo: config/s390/get_tls_offset.S
+	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/s390/libgdruntime_convenience_la-get_tls_offset.lo `test -f 'config/s390/get_tls_offset.S' || echo '$(srcdir)/'`config/s390/get_tls_offset.S
+
 .c.o:
 	$(AM_V_CC)$(COMPILE) -c -o $@ $<
 
@@ -1899,6 +1992,9 @@ config/s390/libgdruntime_la-get_tls_offset.lo: config/s390/get_tls_offset.S
 
 core/stdc/libgdruntime_la-errno_.lo: core/stdc/errno_.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o core/stdc/libgdruntime_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
+
+core/stdc/libgdruntime_convenience_la-errno_.lo: core/stdc/errno_.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o core/stdc/libgdruntime_convenience_la-errno_.lo `test -f 'core/stdc/errno_.c' || echo '$(srcdir)/'`core/stdc/errno_.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -2117,8 +2213,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -2189,8 +2285,9 @@ uninstall-am: uninstall-toolexeclibDATA \
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-toolexeclibLTLIBRARIES cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
+	clean-libtool clean-noinstLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES cscopelist-am ctags ctags-am \
+	distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
 	install-data-local install-dvi install-dvi-am install-exec \

@@ -146,16 +146,11 @@ proc gdc_link_flags { paths } {
 	    append flags "-L${gccpath}/libphobos/src/.libs "
 	    append ld_library_path ":${gccpath}/libphobos/src/.libs"
 	}
-	if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] \
-	     || [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-	    append flags "-L${gccpath}/libphobos/libdruntime/.libs "
-	    append ld_library_path ":${gccpath}/libphobos/libdruntime/.libs"
-	}
 	# Static linking is default. If only the shared lib is available adjust
 	# flags to always use it. If both are available, set SHARED_OPTION which
 	# will be added to PERMUTE_ARGS
-	if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
-	    if { [file exists "${gccpath}/libphobos/libdruntime/.libs/libgdruntime.a"] } {
+	if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.${shlib_ext}"] } {
+	    if { [file exists "${gccpath}/libphobos/src/.libs/libgphobos.a"] } {
 		set SHARED_OPTION "-shared-libphobos"
 	    } else {
 		append flags "-shared-libphobos "
@@ -180,11 +175,6 @@ proc gdc_link_flags { paths } {
 	if { $libphobos != "" } {
 	    append flags "-B${libphobos} -L${libphobos} "
 	    append ld_library_path ":${libphobos}"
-	}
-	set libdruntime [lookfor_file ${tool_root_dir} libgdruntime]
-	if { $libdruntime != "" } {
-	    append flags "-L${libdruntime} "
-	    append ld_library_path ":${libdruntime}"
 	}
 	set libiberty [lookfor_file ${tool_root_dir} libiberty]
 	if { $libiberty != "" } {

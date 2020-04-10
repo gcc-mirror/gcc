@@ -1,3 +1,16 @@
+2020-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d_rules.am (libdgruntime_la_LINK): Move to libdruntime/Makefile.am.
+	(libgphobos_la_LINK): Move to src/Makefile.am
+	* libdruntime/Makefile.am: Add libgdruntime_convenience library.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am (libgphobos_la_LIBADD): Add libgdruntime_convenience
+	library.
+	(libgphobos_la_DEPENDENCIES): Likewise.
+	* src/Makefile.in: Regenerate.
+	* testsuite/lib/libphobos.exp: Remove libdruntime library paths.
+	* testsuite/testsuite_flags.in: Likewise.
+
 2020-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure: Regenerate.
