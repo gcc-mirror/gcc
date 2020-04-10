@@ -773,8 +773,6 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
 {
   switch (Get_Attribute_Id (Attribute_Name (gnat_node)))
     {
-    case Attr_Pos:
-    case Attr_Val:
     case Attr_Pred:
     case Attr_Succ:
     case Attr_First:
@@ -1701,17 +1699,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
   switch (attribute)
     {
-    case Attr_Pos:
-    case Attr_Val:
-      /* These are just conversions since representation clauses for
-	 enumeration types are handled in the front-end.  */
-      gnu_expr = gnat_to_gnu (First (Expressions (gnat_node)));
-      if (attribute == Attr_Pos)
-	gnu_expr = maybe_character_value (gnu_expr);
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
-      gnu_result = convert (gnu_result_type, gnu_expr);
-      break;
-
     case Attr_Pred:
     case Attr_Succ:
       /* These just add or subtract the constant 1 since representation
