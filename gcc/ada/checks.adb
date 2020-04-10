@@ -7001,12 +7001,12 @@ package body Checks is
          return;
       end if;
 
-      --  Here a check is needed. If the expander is not active, or if we are
-      --  in GNATProve mode, then simply set the Do_Range_Check flag and we
-      --  are done. In both these cases, we just want to see the range check
-      --  flag set, we do not want to generate the explicit range check code.
+      --  Here a check is needed. If the expander is not active (which is also
+      --  the case in GNATprove mode), then simply set the Do_Range_Check flag
+      --  and we are done. We just want to see the range check flag set, we do
+      --  not want to generate the explicit range check code.
 
-      if GNATprove_Mode or else not Expander_Active then
+      if not Expander_Active then
          Set_Do_Range_Check (N);
          return;
       end if;

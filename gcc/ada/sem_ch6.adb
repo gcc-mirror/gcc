@@ -4402,13 +4402,7 @@ package body Sem_Ch6 is
 
       --  Handle inlining
 
-      --  Note: Normally we don't do any inlining if expansion is off, since
-      --  we won't generate code in any case. An exception arises in GNATprove
-      --  mode where we want to expand some calls in place, even with expansion
-      --  disabled, since the inlining eases formal verification.
-
-      if not GNATprove_Mode
-        and then Expander_Active
+      if Expander_Active
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
