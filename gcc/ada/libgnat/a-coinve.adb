@@ -408,6 +408,14 @@ package body Ada.Containers.Indefinite_Vectors is
       J        : Index_Type'Base;  -- first index of items that slide down
 
    begin
+      --  The tampering bits exist to prevent an item from being deleted (or
+      --  otherwise harmfully manipulated) while it is being visited. Query,
+      --  Update, and Iterate increment the busy count on entry, and decrement
+      --  the count on exit. Delete checks the count to determine whether it is
+      --  being called while the associated callback procedure is executing.
+
+      TC_Check (Container.TC);
+
       --  Delete removes items from the vector, the number of which is the
       --  minimum of the specified Count and the items (if any) that exist from
       --  Index to Container.Last. There are no constraints on the specified
@@ -459,14 +467,6 @@ package body Ada.Containers.Indefinite_Vectors is
       if Container.Is_Empty then
          return;
       end if;
-
-      --  The tampering bits exist to prevent an item from being deleted (or
-      --  otherwise harmfully manipulated) while it is being visited. Query,
-      --  Update, and Iterate increment the busy count on entry, and decrement
-      --  the count on exit. Delete checks the count to determine whether it is
-      --  being called while the associated callback procedure is executing.
-
-      TC_Check (Container.TC);
 
       --  We first calculate what's available for deletion starting at
       --  Index. Here and elsewhere we use the wider of Index_Type'Base and
@@ -942,6 +942,8 @@ package body Ada.Containers.Indefinite_Vectors is
          I, J : Index_Type'Base;
 
       begin
+         TC_Check (Source.TC);
+
          --  The semantics of Merge changed slightly per AI05-0021. It was
          --  originally the case that if Target and Source denoted the same
          --  container object, then the GNAT implementation of Merge did
@@ -963,8 +965,6 @@ package body Ada.Containers.Indefinite_Vectors is
             Move (Target => Target, Source => Source);
             return;
          end if;
-
-         TC_Check (Source.TC);
 
          I := Target.Last;  -- original value (before Set_Length)
          Target.Set_Length (Length (Target) + Length (Source));
@@ -1128,6 +1128,14 @@ package body Ada.Containers.Indefinite_Vectors is
       Dst          : Elements_Access;  -- new, expanded internal array
 
    begin
+      --  The tampering bits exist to prevent an item from being harmfully
+      --  manipulated while it is being visited. Query, Update, and Iterate
+      --  increment the busy count on entry, and decrement the count on
+      --  exit. Insert checks the count to determine whether it is being called
+      --  while the associated callback procedure is executing.
+
+      TC_Check (Container.TC);
+
       if Checks then
          --  As a precondition on the generic actual Index_Type, the base type
          --  must include Index_Type'Pred (Index_Type'First); this is the value
@@ -1334,14 +1342,6 @@ package body Ada.Containers.Indefinite_Vectors is
 
          return;
       end if;
-
-      --  The tampering bits exist to prevent an item from being harmfully
-      --  manipulated while it is being visited. Query, Update, and Iterate
-      --  increment the busy count on entry, and decrement the count on
-      --  exit. Insert checks the count to determine whether it is being called
-      --  while the associated callback procedure is executing.
-
-      TC_Check (Container.TC);
 
       if New_Length <= Container.Elements.EA'Length then
 
@@ -1908,6 +1908,14 @@ package body Ada.Containers.Indefinite_Vectors is
       Dst          : Elements_Access;  -- new, expanded internal array
 
    begin
+      --  The tampering bits exist to prevent an item from being harmfully
+      --  manipulated while it is being visited. Query, Update, and Iterate
+      --  increment the busy count on entry, and decrement the count on exit.
+      --  Insert checks the count to determine whether it is being called while
+      --  the associated callback procedure is executing.
+
+      TC_Check (Container.TC);
+
       if Checks then
          --  As a precondition on the generic actual Index_Type, the base type
          --  must include Index_Type'Pred (Index_Type'First); this is the value
@@ -2089,14 +2097,6 @@ package body Ada.Containers.Indefinite_Vectors is
 
          return;
       end if;
-
-      --  The tampering bits exist to prevent an item from being harmfully
-      --  manipulated while it is being visited. Query, Update, and Iterate
-      --  increment the busy count on entry, and decrement the count on exit.
-      --  Insert checks the count to determine whether it is being called while
-      --  the associated callback procedure is executing.
-
-      TC_Check (Container.TC);
 
       if New_Length <= Container.Elements.EA'Length then
 
@@ -2757,11 +2757,11 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          X : Element_Access := Container.Elements.EA (Index);
@@ -2784,6 +2784,8 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks then
          if Position.Container = null then
             raise Constraint_Error with "Position cursor has no element";
@@ -2797,8 +2799,6 @@ package body Ada.Containers.Indefinite_Vectors is
             raise Constraint_Error with "Position cursor is out of range";
          end if;
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          X : Element_Access := Container.Elements.EA (Position.Index);
@@ -3258,6 +3258,8 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Swap (Container : in out Vector; I, J : Index_Type) is
    begin
+      TE_Check (Container.TC);
+
       if Checks then
          if I > Container.Last then
             raise Constraint_Error with "I index is out of range";
@@ -3271,8 +3273,6 @@ package body Ada.Containers.Indefinite_Vectors is
       if I = J then
          return;
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          EI : Element_Access renames Container.Elements.EA (I);

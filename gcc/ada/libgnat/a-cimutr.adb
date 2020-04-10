@@ -261,6 +261,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Element     : Element_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -272,8 +274,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Count = 0 then
          return;
       end if;
-
-      TC_Check (Container.TC);
 
       declare
          --  The element allocator may need an accessibility check in the case
@@ -738,6 +738,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Count : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -745,8 +747,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Checks and then Parent.Container /= Container'Unrestricted_Access then
          raise Program_Error with "Parent cursor not in container";
       end if;
-
-      TC_Check (Container.TC);
 
       --  Deallocate_Children returns a count of the number of nodes
       --  that it deallocates, but it works by incrementing the
@@ -772,6 +772,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       X : Tree_Node_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -788,8 +790,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Checks and then not Is_Leaf (Position) then
          raise Constraint_Error with "Position cursor does not designate leaf";
       end if;
-
-      TC_Check (Container.TC);
 
       X := Position.Node;
       Position := No_Element;
@@ -819,6 +819,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Count : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -831,8 +833,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Checks and then Is_Root (Position) then
          raise Program_Error with "Position cursor designates root";
       end if;
-
-      TC_Check (Container.TC);
 
       X := Position.Node;
       Position := No_Element;
@@ -1191,6 +1191,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Element : Element_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -1214,8 +1216,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Position := No_Element;  -- Need ruling from ARG ???
          return;
       end if;
-
-      TC_Check (Container.TC);
 
       declare
          --  The element allocator may need an accessibility check in the case
@@ -1735,6 +1735,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Element     : Element_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -1746,8 +1748,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Count = 0 then
          return;
       end if;
-
-      TC_Check (Container.TC);
 
       declare
          --  The element allocator may need an accessibility check in the case
@@ -2096,6 +2096,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       E, X : Element_Access;
 
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -2108,8 +2110,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Checks and then Is_Root (Position) then
          raise Program_Error with "Position cursor designates root";
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          --  The element allocator may need an accessibility check in the case
@@ -2182,6 +2182,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Count : Count_Type;
 
    begin
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Checks and then Target_Parent = No_Element then
          raise Constraint_Error with "Target_Parent cursor has no element";
       end if;
@@ -2219,8 +2222,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
             return;
          end if;
 
-         TC_Check (Target.TC);
-
          if Checks and then Is_Reachable (From => Target_Parent.Node,
                           To   => Source_Parent.Node)
          then
@@ -2235,9 +2236,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
          return;
       end if;
-
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
 
       --  We cache the count of the nodes we have allocated, so that operation
       --  Node_Count can execute in O(1) time. But that means we must count the
@@ -2265,6 +2263,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Source_Parent   : Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Target_Parent = No_Element then
          raise Constraint_Error with "Target_Parent cursor has no element";
       end if;
@@ -2303,8 +2303,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Target_Parent = Source_Parent then
          return;
       end if;
-
-      TC_Check (Container.TC);
 
       if Checks and then Is_Reachable (From => Target_Parent.Node,
                        To   => Source_Parent.Node)
@@ -2363,6 +2361,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Subtree_Count : Count_Type;
 
    begin
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -2404,8 +2405,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
             end if;
          end if;
 
-         TC_Check (Target.TC);
-
          if Checks and then
            Is_Reachable (From => Parent.Node, To => Position.Node)
          then
@@ -2419,9 +2418,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
          return;
       end if;
-
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
 
       --  This is an unfortunate feature of this API: we must count the nodes
       --  in the subtree that we remove from the source tree, which is an O(n)
@@ -2455,6 +2451,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Position  : Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -2499,8 +2497,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
             return;
          end if;
       end if;
-
-      TC_Check (Container.TC);
 
       if Checks and then
         Is_Reachable (From => Parent.Node, To => Position.Node)
@@ -2553,6 +2549,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       I, J      : Cursor)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then I = No_Element then
          raise Constraint_Error with "I cursor has no element";
       end if;
@@ -2580,8 +2578,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       if Checks and then Is_Root (J) then
          raise Program_Error with "J cursor designates root";
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          EI : constant Element_Access := I.Node.Element;
