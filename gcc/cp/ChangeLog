@@ -1,6 +1,6 @@
 2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
 
-	PR c++/94538
+	PR c++/94528
 	* coroutines.cc (co_await_expander): Remove.
 	(expand_one_await_expression): New.
 	(process_one_statement): New.
