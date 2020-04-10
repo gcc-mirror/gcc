@@ -1,3 +1,8 @@
+2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94538
+	* g++.dg/coroutines/pr94528.C: New test.
+
 2020-04-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94149
