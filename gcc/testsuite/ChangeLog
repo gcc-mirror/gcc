@@ -1,3 +1,8 @@
+2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-syntax-10.C: New test.
+	* g++.dg/coroutines/co-await-syntax-11.C: New test.
+
 2020-04-09  Fritz Reese  <foreese@gcc.gnu.org>
 
 	PR fortran/87923

@@ -1389,34 +1389,13 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     return NULL_TREE;
 
   coro_aw_data *data = (coro_aw_data *) d;
-
   enum tree_code stmt_code = TREE_CODE (*stmt);
   tree stripped_stmt = *stmt;
-
-  /* Look inside <(void) (expr)> cleanup */
-  if (stmt_code == CLEANUP_POINT_EXPR)
-    {
-      stripped_stmt = TREE_OPERAND (*stmt, 0);
-      stmt_code = TREE_CODE (stripped_stmt);
-      if (stmt_code == EXPR_STMT
-	  && (TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CONVERT_EXPR
-	      || TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CAST_EXPR)
-	  && VOID_TYPE_P (TREE_TYPE (EXPR_STMT_EXPR (stripped_stmt))))
-	{
-	  stripped_stmt = TREE_OPERAND (EXPR_STMT_EXPR (stripped_stmt), 0);
-	  stmt_code = TREE_CODE (stripped_stmt);
-	}
-    }
-
   tree *buried_stmt = NULL;
   tree saved_co_await = NULL_TREE;
   enum tree_code sub_code = NOP_EXPR;
 
-  if (stmt_code == EXPR_STMT
-      && TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CO_AWAIT_EXPR)
-    saved_co_await
-      = EXPR_STMT_EXPR (stripped_stmt); /* hopefully, a void exp.  */
-  else if (stmt_code == MODIFY_EXPR || stmt_code == INIT_EXPR)
+  if (stmt_code == MODIFY_EXPR || stmt_code == INIT_EXPR)
     {
       sub_code = TREE_CODE (TREE_OPERAND (stripped_stmt, 1));
       if (sub_code == CO_AWAIT_EXPR)
@@ -1435,6 +1414,8 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   else if ((stmt_code == CONVERT_EXPR || stmt_code == NOP_EXPR)
 	   && TREE_CODE (TREE_OPERAND (stripped_stmt, 0)) == CO_AWAIT_EXPR)
     saved_co_await = TREE_OPERAND (stripped_stmt, 0);
+  else if (stmt_code == CO_AWAIT_EXPR)
+    saved_co_await = stripped_stmt;
 
   if (!saved_co_await)
     return NULL_TREE;
