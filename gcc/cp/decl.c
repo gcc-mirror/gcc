@@ -2368,6 +2368,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    DECL_SET_IS_OPERATOR_NEW (newdecl, true);
 	  DECL_LOOPING_CONST_OR_PURE_P (newdecl)
 	    |= DECL_LOOPING_CONST_OR_PURE_P (olddecl);
+	  DECL_IS_REPLACEABLE_OPERATOR (newdecl)
+	    |= DECL_IS_REPLACEABLE_OPERATOR (olddecl);
 
 	  if (merge_attr)
 	    merge_attribute_bits (newdecl, olddecl);
@@ -4438,13 +4440,17 @@ cxx_init_decl_processing (void)
     tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
     DECL_SET_IS_OPERATOR_NEW (opnew, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
     opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
     DECL_SET_IS_OPERATOR_NEW (opnew, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
     tree opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
     DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
     opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
     DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
     if (flag_sized_deallocation)
       {
 	/* Also push the sized deallocation variants:
@@ -4458,8 +4464,10 @@ cxx_init_decl_processing (void)
 	deltype = build_exception_variant (deltype, empty_except_spec);
 	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
       }
 
     if (aligned_new_threshold)
@@ -4478,9 +4486,11 @@ cxx_init_decl_processing (void)
 	opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
 	DECL_IS_MALLOC (opnew) = 1;
 	DECL_SET_IS_OPERATOR_NEW (opnew, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
 	opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
 	DECL_IS_MALLOC (opnew) = 1;
 	DECL_SET_IS_OPERATOR_NEW (opnew, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
 
 	/* operator delete (void *, align_val_t); */
 	deltype = build_function_type_list (void_type_node, ptr_type_node,
@@ -4489,8 +4499,10 @@ cxx_init_decl_processing (void)
 	deltype = build_exception_variant (deltype, empty_except_spec);
 	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 
 	if (flag_sized_deallocation)
 	  {
@@ -4502,8 +4514,10 @@ cxx_init_decl_processing (void)
 	    deltype = build_exception_variant (deltype, empty_except_spec);
 	    opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
 	  }
       }
 
@@ -5554,9 +5568,22 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
 	  && !DECL_DECOMPOSITION_P (decl)
 	  && (cxx_dialect >= cxx2a))
 	{
-	  init = build_constructor_from_list (init_list_type_node, init);
-	  CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
-	  CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	  /* We don't know yet if we should treat const A& r(1) as
+	     const A& r{1}.  */
+	  if (list_length (init) == 1)
+	    {
+	      flags |= LOOKUP_AGGREGATE_PAREN_INIT;
+	      init = build_x_compound_expr_from_list (init, ELK_INIT,
+						      tf_warning_or_error);
+	    }
+	  /* If the list had more than one element, the code is ill-formed
+	     pre-C++20, so we can build a constructor right away.  */
+	  else
+	    {
+	      init = build_constructor_from_list (init_list_type_node, init);
+	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	      CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	    }
 	}
       else
 	init = build_x_compound_expr_from_list (init, ELK_INIT,
@@ -16663,14 +16690,20 @@ begin_destructor_body (void)
 	    /* If the vptr is shared with some virtual nearly empty base,
 	       don't clear it if not in charge, the dtor of the virtual
 	       nearly empty base will do that later.  */
-	    if (CLASSTYPE_VBASECLASSES (current_class_type)
-		&& CLASSTYPE_PRIMARY_BINFO (current_class_type)
-		&& BINFO_VIRTUAL_P
-			  (CLASSTYPE_PRIMARY_BINFO (current_class_type)))
+	    if (CLASSTYPE_VBASECLASSES (current_class_type))
 	      {
-		stmt = convert_to_void (stmt, ICV_STATEMENT,
-					tf_warning_or_error);
-		stmt = build_if_in_charge (stmt);
+		tree c = current_class_type;
+		while (CLASSTYPE_PRIMARY_BINFO (c))
+		  {
+		    if (BINFO_VIRTUAL_P (CLASSTYPE_PRIMARY_BINFO (c)))
+		      {
+			stmt = convert_to_void (stmt, ICV_STATEMENT,
+						tf_warning_or_error);
+			stmt = build_if_in_charge (stmt);
+			break;
+		      }
+		    c = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (c));
+		  }
 	      }
 	    finish_decl_cleanup (NULL_TREE, stmt);
 	  }

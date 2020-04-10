@@ -16580,6 +16580,15 @@ c_parser_oacc_declare (c_parser *parser)
 	  break;
 	}
 
+      if (!c_check_in_current_scope (decl))
+	{
+	  error_at (loc,
+		    "%qD must be a variable declared in the same scope as "
+		    "%<#pragma acc declare%>", decl);
+	  error = true;
+	  continue;
+	}
+
       if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("omp declare target link",
 			       DECL_ATTRIBUTES (decl)))

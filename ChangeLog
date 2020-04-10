@@ -1,3 +1,13 @@
+2020-04-09  Tom Tromey  <tom@tromey.com>
+
+	* configure: Rebuild.
+	* Makefile.in: Rebuild.
+	* Makefile.def (gdbsupport, gdbserver): New host modules.
+	(configure-gdb): Depend on all-gdbsupport.
+	(all-gdb): Depend on all-gdbsupport, all-libctf.
+	* configure.ac (host_tools): Add gdbserver.
+	Conditionally build gdbserver and gdbsupport.
+
 2020-03-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* configure.ac: Build libgomp by default for amdgcn.

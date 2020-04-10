@@ -1,3 +1,311 @@
+2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* gfortran.dg/asynchronous_5.f03: Fix typo in testcase and add
+	IMPLICIT NONE.
+
+2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* gfortran.dg/asynchronous_5.f03: Add -fdump-tree-original and fix
+	patterns for scan-tree-dump.
+
+2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/89433
+	PR middle-end/93465
+	* c-c++-common/goacc-gomp/pr93465-1.c: New file.
+
+2020-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc.exp (gdc_link_flags): Remove libdruntime library paths.
+
+2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-syntax-10.C: New test.
+	* g++.dg/coroutines/co-await-syntax-11.C: New test.
+
+2020-04-09  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/87923
+	* gfortran.dg/f2003_io_8.f03: Fix expected error messages.
+	* gfortran.dg/io_constraints_8.f90: Likewise.
+	* gfortran.dg/iomsg_2.f90: Likewise.
+	* gfortran.dg/pr66725.f90: Likewise.
+	* gfortran.dg/pr88205.f90: Likewise.
+	* gfortran.dg/write_check4.f90: Likewise.
+	* gfortran.dg/asynchronous_5.f03: New test.
+	* gfortran.dg/io_constraints_15.f90: Likewise.
+	* gfortran.dg/io_constraints_16.f90: Likewise.
+	* gfortran.dg/io_constraints_17.f90: Likewise.
+	* gfortran.dg/io_constraints_18.f90: Likewise.
+	* gfortran.dg/io_tags_1.f90: Likewise.
+	* gfortran.dg/io_tags_10.f90: Likewise.
+	* gfortran.dg/io_tags_2.f90: Likewise.
+	* gfortran.dg/io_tags_3.f90: Likewise.
+	* gfortran.dg/io_tags_4.f90: Likewise.
+	* gfortran.dg/io_tags_5.f90: Likewise.
+	* gfortran.dg/io_tags_6.f90: Likewise.
+	* gfortran.dg/io_tags_7.f90: Likewise.
+	* gfortran.dg/io_tags_8.f90: Likewise.
+	* gfortran.dg/io_tags_9.f90: Likewise.
+	* gfortran.dg/write_check5.f90: Likewise.
+
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/attributes_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/attributes_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct.h: New file.
+	* gcc.target/aarch64/sve/pcs/struct_1_128.c: New test.
+	* gcc.target/aarch64/sve/pcs/struct_1_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_1_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_1_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_1_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_2_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_512.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_aarch64_sve128_hw)
+	(check_effective_target_aarch64_sve512_hw)
+	(check_effective_target_aarch64_sve1024_hw)
+	(check_effective_target_aarch64_sve2048_hw): New procedures.
+
+2020-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* g++.target/arm/cde_mve.C: New test.
+
+2020-04-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmse/cmse-15.c: Use check-function-bodies.
+
+2020-04-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/scanasm.exp (check-function-bodies): Use non-greedy regexp
+	when extracting the target selector.
+
+2020-04-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94482
+	* gcc.dg/torture/pr94482.c: New test.
+	* gcc.dg/tree-ssa/pr94482-2.c: Likewise.
+
+2020-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93790
+	* g++.dg/cpp2a/paren-init23.C: New test.
+	* g++.dg/init/aggr14.C: New test.
+
+2020-04-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/91322
+	* g++.dg/lto/alias-4_0.C: Fix typo.
+	* g++.dg/lto/alias-4_0.C: Avoid conflict with va_list on ARM and add
+	a template testing that
+
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (check-function-bodies): Treat the third
+	parameter as a list of option regexps and require each regexp
+	to match.  Check for cases in which a target/xfail selector
+	was mistakenly passed to the options argument.
+	* gcc.target/aarch64/sve/pcs/args_1.c: Add an empty options list
+	to the invocation of check-function-bodies.
+	* gcc.target/aarch64/sve/pcs/args_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_4.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_1_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_be_nowrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_be_wrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_le_nowrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_2_le_wrap.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_4_be.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/saves_4_le.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u8.c: Likewise.
+
+2020-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93369
+	* g++.dg/lto/pr64076_0.C: Add -shared -fPIC.
+	* g++.dg/lto/pr64076_1.C: Add -fPIC.
+
+2020-04-09  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/pr94530.c: New test.
+
+2020-04-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/93674
+	* g++.dg/pr93674.C: New test.
+
+2020-04-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/tree-ssa/pr93940.C: Require pthread target.
+
+2020-04-09  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR testsuite/94079
+	* gfortran.dg/vect/pr83232.f90: Expect 2 rather than 3 times SLP on
+	non-vect_hw_misalign targets.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94526
+	* gcc.dg/pr94526.c: New test.
+
+	PR tree-optimization/94524
+	* gcc.c-torture/execute/pr94524-1.c: New test.
+	* gcc.c-torture/execute/pr94524-2.c: New test.
+
+	PR c++/94314
+	* g++.dg/pr94314.C (A::operator new, B::operator new, C::operator new):
+	Use __SIZE_TYPE__ instead of unsigned long.
+	* g++.dg/pr94314-3.C (base::operator new, B::operator new): Likewise.
+
+	PR middle-end/94120
+	PR testsuite/94533
+	* g++.dg/declare-pr94120.C: Move test to ...
+	* g++.dg/goacc/declare-pr94120.C: ... here.  Add dg-error directives.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94507 - ICE-on-invalid with lambda template.
+	* g++.dg/cpp2a/lambda-generic7.C: New test.
+
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/arm/fp16-aapcs-3.c: Explicitly use the
+	-mfp16-format=alternative option.
+
+2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94417
+	* gcc.target/i386/pr94417-1.c: New test.
+	* gcc.target/i386/pr94417-2.c: Likewise.
+	* gcc.target/i386/pr94417-3.c: Likewise.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94438
+	* gcc.target/i386/avx512bw-pr94438.c: New test.
+	* gcc.target/i386/avx512vlbw-pr94438.c: New test.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93871
+	* gfortran.dg/dec_math_5.f90: Move to ...
+	* gfortran.dg/ieee/dec_math_1.f90: ... here; change
+	dg-options to dg-additional-options.
+
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.dg/tls/pr78796.c: Require tls_runtime.
+
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* g++.dg/pr94314-2.C: New test.
+	* g++.dg/pr94314-3.C: New test.
+	* g++.dg/pr94314.C: New test.
+
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/acle/cde_v_1.c: New test.
+	* gcc.target/arm/acle/cde_v_1_err.c: New test.
+	* gcc.target/arm/acle/cde_v_1_mve.c: New test.
+
+2020-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Core issues 1001 and 1322
+	PR c++/92010
+	* g++.dg/cpp2a/lambda-uneval11.c: New test.
+	* g++.dg/template/array33.C: New test.
+	* g++.dg/template/array34.C: New test.
+	* g++.dg/template/defarg22.C: New test.
+
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/pragma_cde.c: New test.
+	* lib/target-supports.exp (arm_v8m_main_cde_ok): New target support
+	option.
+	(arm_v8m_main_cde_fp, arm_v8_1m_main_cde_mve): Likewise.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94325
+	* g++.dg/ubsan/vptr-15.C: New test.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94478 - ICE with defaulted comparison operator
+	* g++.dg/cpp2a/spaceship-err4.C: New test.
+
+2020-04-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/arm/polytypes.c: Add quotes around
+	-flax-vector-conversions.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94516
+	* gcc.dg/torture/pr94516.c: New test.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* c-c++-common/goacc/declare-pr94120.c: New.
+	* g++.dg/declare-pr94120.C: New.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94291
+	PR rtl-optimization/84169
+	* gcc.dg/pr94291.c: New test.
+
 2020-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94479

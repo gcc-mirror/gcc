@@ -1615,7 +1615,7 @@ extern alias_set_type gimple_get_alias_set (tree);
 extern bool gimple_ior_addresses_taken (bitmap, gimple *);
 extern bool gimple_builtin_call_types_compatible_p (const gimple *, tree);
 extern combined_fn gimple_call_combined_fn (const gimple *);
-extern bool gimple_call_operator_delete_p (const gcall *);
+extern bool gimple_call_replaceable_operator_delete_p (const gcall *);
 extern bool gimple_call_builtin_p (const gimple *);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_class);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_function);

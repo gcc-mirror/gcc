@@ -1,3 +1,35 @@
+2020-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (compare_three_way): Fix noexcept-specifier.
+	(strong_order, weak_order, partial_order): Replace uses of <=> with
+	compare_three_way function object (LWG 3324).
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc: Add
+	equality operator so that X satisfies three_way_comparable.
+	* testsuite/18_support/comparisons/algorithms/strong_order.cc:
+	Likewise.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc: Likewise.
+
+	* include/bits/unique_ptr.h (operator<=>): Define for C++20.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/comparison/compare.cc: New test.
+	* testsuite/20_util/unique_ptr/comparison/compare_c++20.cc: New test.
+
+2020-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/slice_array.h (operator==(const slice&, const slice&)):
+	Define for C++20.
+	* include/std/complex (operator==(const T&, const complex<T>&))
+	(operator!=(const complex<T>&, const complex<T>&))
+	(operator!=(const complex<T>&, const T&))
+	(operator!=(const T&, const complex<T>&)): Do not declare for C++20.
+	* testsuite/26_numerics/slice/compare.cc: New test.
+
+	* include/std/charconv (to_chars_result, from_chars_result): Add
+	defaulted equality comparisons for C++20.
+	* testsuite/20_util/from_chars/compare.cc: New test.
+	* testsuite/20_util/to_chars/compare.cc: New test.
+
 2020-04-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94520

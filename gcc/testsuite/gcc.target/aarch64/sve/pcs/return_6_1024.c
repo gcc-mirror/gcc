@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -msve-vector-bits=1024 -g" } */
-/* { dg-final { check-function-bodies "**" "" { target lp64 } } } */
+/* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 #include <stdint.h>
 

@@ -44,7 +44,8 @@
 #include <bits/error_constants.h> // for std::errc
 #include <bits/int_limits.h>
 
-// Define when floating point is supported: #define __cpp_lib_to_chars 201611L
+// FIXME: Define when floating point is supported:
+// #define __cpp_lib_to_chars 201611L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -55,6 +56,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     char* ptr;
     errc ec;
+
+#if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
+    friend bool
+    operator==(const to_chars_result&, const to_chars_result&) = default;
+#endif
   };
 
   /// Result type of std::from_chars
@@ -62,6 +68,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     const char* ptr;
     errc ec;
+
+#if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
+    friend bool
+    operator==(const from_chars_result&, const from_chars_result&) = default;
+#endif
   };
 
 namespace __detail

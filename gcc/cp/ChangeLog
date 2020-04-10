@@ -1,3 +1,79 @@
+2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (co_await_expander): Simplify.
+
+2020-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94523
+	* constexpr.c (cxx_eval_constant_expression) [VAR_DECL]: Look at
+	ctx->object and ctx->global->values first.
+
+2020-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93790
+	* call.c (initialize_reference): If the reference binding failed, maybe
+	try initializing from { }.
+	* decl.c (grok_reference_init): For T& t(e), set
+	LOOKUP_AGGREGATE_PAREN_INIT but don't build up a constructor yet.
+
+2020-04-08  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (maybe_promote_captured_temps): Add a cleanup
+	expression, if needed, to any call from which we promoted
+	temporaries captured by reference.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94507 - ICE-on-invalid with lambda template.
+	* pt.c (tsubst_lambda_expr): Cope when tsubst_template_decl or
+	tsubst_function_decl returns error_mark_node.
+
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* decl.c (duplicate_decls): Duplicate also DECL_IS_REPLACEABLE_OPERATOR.
+	(cxx_init_decl_processing): Mark replaceable all implicitly defined
+	operators.
+
+2020-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Core issues 1001 and 1322
+	PR c++/92010
+	* pt.c (rebuild_function_or_method_type): Split function out from ...
+	(tsubst_function_type): ... here.
+	(maybe_rebuild_function_decl_type): New function.
+	(tsubst_function_decl): Use it.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94325
+	* decl.c (begin_destructor_body): For CLASSTYPE_VBASECLASSES class
+	dtors, if CLASSTYPE_PRIMARY_BINFO is non-NULL, but not BINFO_VIRTUAL_P,
+	look at CLASSTYPE_PRIMARY_BINFO of its BINFO_TYPE if it is not
+	BINFO_VIRTUAL_P, and so on.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94478 - ICE with defaulted comparison operator
+	* method.c (early_check_defaulted_comparison): Give an error when the
+	context is null.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* paser.c (cp_parser_oacc_declare): Add check that variables
+	are declared in the same scope as the directive.
+
+2020-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94480
+	* parser.c (cp_parser_requires_expression): Use tentative_firewall.
+
+	PR c++/94481
+	* parser.c (cp_parser_placeholder_type_specifier): Use
+	matching_parens.
+
 2020-04-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (maybe_promote_captured_temps): Ensure that

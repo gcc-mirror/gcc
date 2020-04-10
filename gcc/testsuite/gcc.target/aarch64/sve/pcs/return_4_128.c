@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -msve-vector-bits=128 -g" } */
-/* { dg-final { check-function-bodies "**" "" { target { aarch64_little_endian && lp64 } } } } */
+/* { dg-final { check-function-bodies "**" "" "" { target { aarch64_little_endian && lp64 } } } } */
 
 #define CALLEE(SUFFIX, TYPE)			\
   TYPE __attribute__((noipa))			\

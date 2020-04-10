@@ -4351,25 +4351,29 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       if (GET_CODE (x) == PARALLEL)
 	x = XVECEXP (newi2pat, 0, 0);
 
-      /* It can only be a SET of a REG or of a SUBREG of a REG.  */
-      unsigned int regno = reg_or_subregno (SET_DEST (x));
-
-      bool done = false;
-      for (rtx_insn *insn = NEXT_INSN (i3);
-	   !done
-	   && insn
-	   && NONDEBUG_INSN_P (insn)
-	   && BLOCK_FOR_INSN (insn) == this_basic_block;
-	   insn = NEXT_INSN (insn))
+      if (REG_P (SET_DEST (x))
+	  || (GET_CODE (SET_DEST (x)) == SUBREG
+	      && REG_P (SUBREG_REG (SET_DEST (x)))))
 	{
-	  struct insn_link *link;
-	  FOR_EACH_LOG_LINK (link, insn)
-	    if (link->insn == i3 && link->regno == regno)
-	      {
-		link->insn = i2;
-		done = true;
-		break;
-	      }
+	  unsigned int regno = reg_or_subregno (SET_DEST (x));
+
+	  bool done = false;
+	  for (rtx_insn *insn = NEXT_INSN (i3);
+	       !done
+	       && insn
+	       && NONDEBUG_INSN_P (insn)
+	       && BLOCK_FOR_INSN (insn) == this_basic_block;
+	       insn = NEXT_INSN (insn))
+	    {
+	      struct insn_link *link;
+	      FOR_EACH_LOG_LINK (link, insn)
+		if (link->insn == i3 && link->regno == regno)
+		  {
+		    link->insn = i2;
+		    done = true;
+		    break;
+		  }
+	    }
 	}
     }
 

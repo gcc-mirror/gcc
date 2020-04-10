@@ -3476,18 +3476,17 @@ bool gfc_compare_actual_formal (gfc_actual_arglist **, gfc_formal_arglist *,
 extern gfc_st_label format_asterisk;
 
 void gfc_free_open (gfc_open *);
-bool gfc_resolve_open (gfc_open *);
+bool gfc_resolve_open (gfc_open *, locus *);
 void gfc_free_close (gfc_close *);
-bool gfc_resolve_close (gfc_close *);
+bool gfc_resolve_close (gfc_close *, locus *);
 void gfc_free_filepos (gfc_filepos *);
 bool gfc_resolve_filepos (gfc_filepos *, locus *);
 void gfc_free_inquire (gfc_inquire *);
 bool gfc_resolve_inquire (gfc_inquire *);
 void gfc_free_dt (gfc_dt *);
-bool gfc_resolve_dt (gfc_dt *, locus *);
+bool gfc_resolve_dt (gfc_code *, gfc_dt *, locus *);
 void gfc_free_wait (gfc_wait *);
 bool gfc_resolve_wait (gfc_wait *);
-extern bool async_io_dt;
 
 /* module.c */
 void gfc_module_init_2 (void);

@@ -1,3 +1,84 @@
+2020-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d_rules.am (libdgruntime_la_LINK): Move to libdruntime/Makefile.am.
+	(libgphobos_la_LINK): Move to src/Makefile.am
+	* libdruntime/Makefile.am: Add libgdruntime_convenience library.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am (libgphobos_la_LIBADD): Add libgdruntime_convenience
+	library.
+	(libgphobos_la_DEPENDENCIES): Likewise.
+	* src/Makefile.in: Regenerate.
+	* testsuite/lib/libphobos.exp: Remove libdruntime library paths.
+	* testsuite/testsuite_flags.in: Likewise.
+
+2020-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* libdruntime/Makefile.am (ALL_DRUNTIME_INSTALL_DSOURCES): Remove
+	DRUNTIME_DSOURCES_GC and DRUNTIME_DSOURCES_GCSTUB.
+	(DRUNTIME_DSOURCES): Add gc/*.d sources.
+	(DRUNTIME_DSOURCES_GC): Remove.
+	(DRUNTIME_DSOURCES_GCSTUB): Remove.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcstub/gc.d: Remove.
+	* m4/druntime.m4 (DRUNTIME_GC): Remove.
+
+2020-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94305
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add --enable-libphobos-checking and substitute
+	CHECKING_DFLAGS.  Remove -frelease from GDCFLAGS.
+	* libdruntime/Makefile.am: Add CHECKING_DFLAGS to AM_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Add CHECKING_DFLAGS to AM_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add -fno-release -funittest to
+	--gdcflags.
+
+2020-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac: Use AC_SEARCH_LIBS for pthread_create.
+	* m4/druntime/libraries.m4: Remove DRUNTIME_LIBRARIES_THREAD.
+
+2020-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac: Remove DRUNTIME_OS_UNIX.
+	* libdruntime/Makefile.am: Add DRUNTIME_DSOURCES_POSIX if
+	DRUNTIME_OS_POSIX is true.
+	* libdruntime/Makefile.in: Regenerate.
+	* m4/druntime/os.m4 (DRUNTIME_OS_UNIX): Remove, move AM_CONDITIONAL
+	logic to...
+	(DRUNTIME_OS_SOURCES): ...here.  Rename conditional to
+	DRUNTIME_OS_POSIX.
+
+2020-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Substite WARN_DFLAGS independently of GDCFLAGS.
+	* libdruntime/Makefile.am: Add WARN_DFLAGS to AM_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Add WARN_DFLAGS to AM_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add WARN_DFLAGS to --gdcflags.
+
+2020-04-07  Robin Dapp  <rdapp@linux.ibm.com>
+	    Stefan Liebler  <stli@linux.ibm.com>
+
+	* configure: Regenerate.
+	* libdruntime/Makefile.am: Add s390x and s390.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/s390/get_tls_offset.S: New file.
+	* libdruntime/config/systemz/get_tls_offset.S: New file.
+	* libdruntime/gcc/sections/elf_shared.d: Use ibmz_get_tls_offset.
+	* m4/druntime/cpu.m4: Add s390x and s390.
+
 2020-04-07  Stefan Liebler  <stli@linux.ibm.com>
 
 	* libdruntime/core/sys/posix/signal.d:

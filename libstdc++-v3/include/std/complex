@@ -468,6 +468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const complex<_Tp>& __x, const _Tp& __y)
     { return __x.real() == __y && __x.imag() == _Tp(); }
 
+#if !(__cpp_impl_three_way_comparison >= 201907L)
   template<typename _Tp>
     inline _GLIBCXX_CONSTEXPR bool
     operator==(const _Tp& __x, const complex<_Tp>& __y)
@@ -490,6 +491,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX_CONSTEXPR bool
     operator!=(const _Tp& __x, const complex<_Tp>& __y)
     { return __x != __y.real() || _Tp() != __y.imag(); }
+#endif
   //@}
 
   ///  Extraction operator for complex values.

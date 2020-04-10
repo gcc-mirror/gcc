@@ -1389,34 +1389,13 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
     return NULL_TREE;
 
   coro_aw_data *data = (coro_aw_data *) d;
-
   enum tree_code stmt_code = TREE_CODE (*stmt);
   tree stripped_stmt = *stmt;
-
-  /* Look inside <(void) (expr)> cleanup */
-  if (stmt_code == CLEANUP_POINT_EXPR)
-    {
-      stripped_stmt = TREE_OPERAND (*stmt, 0);
-      stmt_code = TREE_CODE (stripped_stmt);
-      if (stmt_code == EXPR_STMT
-	  && (TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CONVERT_EXPR
-	      || TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CAST_EXPR)
-	  && VOID_TYPE_P (TREE_TYPE (EXPR_STMT_EXPR (stripped_stmt))))
-	{
-	  stripped_stmt = TREE_OPERAND (EXPR_STMT_EXPR (stripped_stmt), 0);
-	  stmt_code = TREE_CODE (stripped_stmt);
-	}
-    }
-
   tree *buried_stmt = NULL;
   tree saved_co_await = NULL_TREE;
   enum tree_code sub_code = NOP_EXPR;
 
-  if (stmt_code == EXPR_STMT
-      && TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CO_AWAIT_EXPR)
-    saved_co_await
-      = EXPR_STMT_EXPR (stripped_stmt); /* hopefully, a void exp.  */
-  else if (stmt_code == MODIFY_EXPR || stmt_code == INIT_EXPR)
+  if (stmt_code == MODIFY_EXPR || stmt_code == INIT_EXPR)
     {
       sub_code = TREE_CODE (TREE_OPERAND (stripped_stmt, 1));
       if (sub_code == CO_AWAIT_EXPR)
@@ -1435,6 +1414,8 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   else if ((stmt_code == CONVERT_EXPR || stmt_code == NOP_EXPR)
 	   && TREE_CODE (TREE_OPERAND (stripped_stmt, 0)) == CO_AWAIT_EXPR)
     saved_co_await = TREE_OPERAND (stripped_stmt, 0);
+  else if (stmt_code == CO_AWAIT_EXPR)
+    saved_co_await = stripped_stmt;
 
   if (!saved_co_await)
     return NULL_TREE;
@@ -2798,11 +2779,13 @@ maybe_promote_captured_temps (tree *stmt, void *d)
       location_t sloc = EXPR_LOCATION (*stmt);
       tree aw_bind
 	= build3_loc (sloc, BIND_EXPR, void_type_node, NULL, NULL, NULL);
-      tree aw_statement_current;
-      if (TREE_CODE (*stmt) == CLEANUP_POINT_EXPR)
-	aw_statement_current = TREE_OPERAND (*stmt, 0);
-      else
-	aw_statement_current = *stmt;
+
+      /* Any cleanup point expression might no longer be necessary, since we
+	 are removing one or more temporaries.  */
+      tree aw_statement_current = *stmt;
+      if (TREE_CODE (aw_statement_current) == CLEANUP_POINT_EXPR)
+	aw_statement_current = TREE_OPERAND (aw_statement_current, 0);
+
       /* Collected the scope vars we need move the temps to regular. */
       tree aw_bind_body = push_stmt_list ();
       tree varlist = NULL_TREE;
@@ -2843,8 +2826,12 @@ maybe_promote_captured_temps (tree *stmt, void *d)
 	  /* Replace all instances of that temp in the original expr.  */
 	  cp_walk_tree (&aw_statement_current, replace_proxy, &pr, NULL);
 	}
-      /* What's left should be the original statement with any temporaries
-	 broken out.  */
+
+      /* What's left should be the original statement with any co_await
+	 captured temporaries broken out.  Other temporaries might remain
+	 so see if we need to wrap the revised statement in a cleanup.  */
+      aw_statement_current =
+	maybe_cleanup_point_expr_void (aw_statement_current);
       add_stmt (aw_statement_current);
       BIND_EXPR_BODY (aw_bind) = pop_stmt_list (aw_bind_body);
       awpts->captured_temps.empty ();

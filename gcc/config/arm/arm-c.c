@@ -27,6 +27,120 @@
 #include "tm_p.h"
 #include "c-family/c-pragma.h"
 #include "stringpool.h"
+#include "arm-builtins.h"
+
+tree
+arm_resolve_cde_builtin (location_t loc, tree fndecl, void *arglist)
+{
+  vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (arglist);
+  unsigned param_num = params ? params->length() : 0;
+  unsigned num_args = list_length (TYPE_ARG_TYPES (TREE_TYPE (fndecl))) - 1;
+  /* Ensure this function has the correct number of arguments.
+     This won't happen when using the intrinsics defined by the ACLE, since
+     they're exposed to the user via a wrapper in the arm_cde.h header that has
+     the correct number of arguments ... hence the compiler would already catch
+     an incorrect number of arguments there.
+
+     It is still possible to get here if the user tries to call the __bulitin_*
+     functions directly.  We could print some error message in this function,
+     but instead we leave it to the rest of the code to catch this problem in
+     the same way that other __builtin_* functions catch it.
+
+     This does mean an odd error message, but it's consistent with the rest of
+     the builtins.  */
+  if (param_num != num_args)
+    return NULL_TREE;
+
+  tree to_return = NULL_TREE;
+  /* Take the functions return type since that's the same type as the arguments
+     this function needs (the types of the builtin function all come from the
+     machine mode of the RTL pattern, and they're all the same and calculated
+     in the same way).  */
+  tree pattern_type = TREE_TYPE (TREE_TYPE (fndecl));
+
+  unsigned i;
+  /* Hard coding the number of parameters we don't want to cast at the end of
+     the builtin.  This is the  easiest approach for the CDE intrinsics, and
+     introducing a parameter to store in the builtins.def macros seems overkill
+     when they're only relevant here.  */
+  unsigned end_args = arm_cde_end_args (fndecl);
+  unsigned cast_param_end = param_num - end_args;
+  /* For the vcx1q patterns that don't need any casts.  */
+  if (cast_param_end == 1)
+    return NULL_TREE;
+
+  /* In order to check all arguments rather than complaining on the first
+     invalid one we record whether *any* arguments are invalid using this
+     boolean variable.  */
+  bool invalid = false;
+  for (i = 1; i < cast_param_end; i++)
+    {
+      tree this_param = (*params)[i];
+      if (TREE_CODE (this_param) == ERROR_MARK)
+	{
+	  invalid = true;
+	  continue;
+	}
+      tree param_type = TREE_TYPE (this_param);
+
+      /* Return value is cast to type that second argument originally was.
+	 All non-constant arguments are cast to the return type calculated from
+	 the RTL pattern.
+
+	 Set the return type to an unqualified version of the type of the first
+	 parameter.  The first parameter since that is how the intrinsics are
+	 defined -- to always return the same type as the first polymorphic
+	 argument.  Unqualified version of the type since we don't want passing
+	 a constant parameter to mean that the return value of the builtin is
+	 also constant.  */
+      if (i == 1)
+	to_return = build_qualified_type (param_type, 0 MEM_STAT_INFO);
+
+      /* The only requirement of these intrinsics on the type of the variable
+	 is that it's 128 bits wide.  All other types are valid and we simply
+	 VIEW_CONVERT_EXPR them to the type of the underlying builtin.  */
+      tree type_size = TYPE_SIZE (param_type);
+      if (! tree_fits_shwi_p (type_size)
+	  || tree_to_shwi (type_size) != 128)
+	{
+	  error_at (loc,
+		    "argument %u to function %qE is of type %qT which is not "
+		    "known to be 128 bits wide",
+		    i + 1, fndecl, param_type);
+	  invalid = true;
+	  continue;
+	}
+
+      /* Only convert the argument if we actually need to.  */
+      if (! check_base_type (pattern_type, param_type))
+	(*params)[i] = build1 (VIEW_CONVERT_EXPR, pattern_type, this_param);
+    }
+  if (invalid)
+    return NULL_TREE;
+
+  /* We know it's safe to call this since this builtin is here to implement an
+     ACLE function, and those functions are only for C/C++.  */
+  tree call_expr = build_function_call_vec (loc, vNULL, fndecl, params,
+					    NULL, fndecl);
+
+  gcc_assert (to_return != NULL_TREE);
+  if (! check_base_type (to_return, pattern_type))
+    return build1 (VIEW_CONVERT_EXPR, to_return, call_expr);
+  return call_expr;
+}
+
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  This is currently only
+   used for the MVE related builtins for the CDE extension.
+   Here we ensure the type of arguments is such that the size is correct, and
+   then return a tree that describes the same function call but with the
+   relevant types cast as necessary.  */
+tree
+arm_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
+{
+  if (arm_describe_resolver (fndecl) == arm_cde_resolver)
+    return arm_resolve_cde_builtin (loc, fndecl, arglist);
+  return NULL_TREE;
+}
 
 /* Output C specific EABI object attributes.  These cannot be done in
    arm.c because they require information from the C frontend.  */
@@ -237,6 +351,12 @@ arm_cpu_builtins (struct cpp_reader* pfile)
       builtin_define_with_int_value ("__ARM_FEATURE_COPROC", coproc_level);
     }
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_CDE", TARGET_CDE);
+  cpp_undef (pfile, "__ARM_FEATURE_CDE_COPROC");
+  if (TARGET_CDE)
+    builtin_define_with_int_value ("__ARM_FEATURE_CDE_COPROC",
+				   arm_arch_cde_coproc);
+
   def_or_undef_macro (pfile, "__ARM_FEATURE_MATMUL_INT8", TARGET_I8MM);
   def_or_undef_macro (pfile, "__ARM_FEATURE_BF16_SCALAR_ARITHMETIC",
 		      TARGET_BF16_FP);
@@ -354,6 +474,7 @@ arm_register_target_pragmas (void)
 {
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = arm_pragma_target_parse;
+  targetm.resolve_overloaded_builtin = arm_resolve_overloaded_builtin;
 
 #ifdef REGISTER_SUBTARGET_PRAGMAS
   REGISTER_SUBTARGET_PRAGMAS ();

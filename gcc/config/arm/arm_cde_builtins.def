@@ -1,0 +1,58 @@
+/* Arm Custom Datapath Extension (CDE) builtin definitions.
+   Copyright (C) 2020 Free Software Foundation, Inc.
+   Contributed by Arm Ltd.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+#undef CDE_VAR2
+#define CDE_VAR2(T, N, A, B, IMM_MAX, ECF_FLAG) \
+  VAR1 (T, N, A, IMM_MAX, ECF_FLAG) \
+  VAR1 (T, N, B, IMM_MAX, ECF_FLAG)
+
+CDE_VAR2 (CX_IMM, cx1, si, di, ARM_CCDE_CONST_1, ECF_CONST)
+CDE_VAR2 (CX_UNARY, cx1a, si, di, ARM_CCDE_CONST_1, ECF_CONST)
+CDE_VAR2 (CX_UNARY, cx2, si, di, ARM_CCDE_CONST_2, ECF_CONST)
+CDE_VAR2 (CX_BINARY, cx2a, si, di, ARM_CCDE_CONST_2, ECF_CONST)
+CDE_VAR2 (CX_BINARY, cx3, si, di, ARM_CCDE_CONST_3, ECF_CONST)
+CDE_VAR2 (CX_TERNARY, cx3a, si, di, ARM_CCDE_CONST_3, ECF_CONST)
+
+CDE_VAR2 (CX_IMM, vcx1, si, di, ARM_VCDE_CONST_1, ECF_CONST)
+CDE_VAR2 (CX_UNARY, vcx1a, si, di, ARM_VCDE_CONST_1, ECF_CONST)
+CDE_VAR2 (CX_UNARY, vcx2, si, di, ARM_VCDE_CONST_2, ECF_CONST)
+CDE_VAR2 (CX_BINARY, vcx2a, si, di, ARM_VCDE_CONST_2, ECF_CONST)
+CDE_VAR2 (CX_BINARY, vcx3, si, di, ARM_VCDE_CONST_3, ECF_CONST)
+CDE_VAR2 (CX_TERNARY, vcx3a, si, di, ARM_VCDE_CONST_3, ECF_CONST)
+
+/* NOTE: The MVE intrinsics must be defined at the end of this file, and with
+	 vcx1q first.  Amongst the MVE intrinsics, the predicated ones are
+	 defined last.
+         These restrictions are relied on to determine which intrinsics need
+	 overload resolution in `arm_resolve_overloaded_builtin`.  */
+VAR1 (CX_IMM, vcx1q, v16qi, ARM_MVE_CDE_CONST_1, ECF_CONST)
+VAR1 (CX_UNARY, vcx1qa, v16qi, ARM_MVE_CDE_CONST_1, ECF_CONST)
+VAR1 (CX_UNARY, vcx2q, v16qi, ARM_MVE_CDE_CONST_2, ECF_CONST)
+VAR1 (CX_BINARY, vcx2qa, v16qi, ARM_MVE_CDE_CONST_2, ECF_CONST)
+VAR1 (CX_BINARY, vcx3q, v16qi, ARM_MVE_CDE_CONST_3, ECF_CONST)
+VAR1 (CX_TERNARY, vcx3qa, v16qi, ARM_MVE_CDE_CONST_3, ECF_CONST)
+
+VAR1 (CX_UNARY_UNONE, vcx1q_p_, v16qi, ARM_MVE_CDE_CONST_1, ECF_CONST)
+VAR1 (CX_UNARY_UNONE, vcx1qa_p_, v16qi, ARM_MVE_CDE_CONST_1, ECF_CONST)
+VAR1 (CX_BINARY_UNONE, vcx2q_p_, v16qi, ARM_MVE_CDE_CONST_2, ECF_CONST)
+VAR1 (CX_BINARY_UNONE, vcx2qa_p_, v16qi, ARM_MVE_CDE_CONST_2, ECF_CONST)
+VAR1 (CX_TERNARY_UNONE, vcx3q_p_, v16qi, ARM_MVE_CDE_CONST_3, ECF_CONST)
+VAR1 (CX_TERNARY_UNONE, vcx3qa_p_, v16qi, ARM_MVE_CDE_CONST_3, ECF_CONST)
+#undef CDE_VAR2

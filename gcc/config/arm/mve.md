@@ -11301,3 +11301,116 @@
  "vpst\;vshlct\t%q0, %1, %4"
  [(set_attr "type" "mve_move")
   (set_attr "length" "8")])
+
+;; CDE instructions on MVE registers.
+
+(define_insn "arm_vcx1qv16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			   (match_operand:SI 2 "const_int_mve_cde1_operand" "i")]
+	 UNSPEC_VCDE))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vcx1\\tp%c1, %q0, #%c2"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_vcx1qav16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			    (match_operand:V16QI 2 "register_operand" "0")
+			    (match_operand:SI 3 "const_int_mve_cde1_operand" "i")]
+	 UNSPEC_VCDEA))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vcx1a\\tp%c1, %q0, #%c3"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_vcx2qv16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			  (match_operand:V16QI 2 "register_operand" "t")
+			  (match_operand:SI 3 "const_int_mve_cde2_operand" "i")]
+	 UNSPEC_VCDE))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vcx2\\tp%c1, %q0, %q2, #%c3"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_vcx2qav16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			  (match_operand:V16QI 2 "register_operand" "0")
+			  (match_operand:V16QI 3 "register_operand" "t")
+			  (match_operand:SI 4 "const_int_mve_cde2_operand" "i")]
+	 UNSPEC_VCDEA))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vcx2a\\tp%c1, %q0, %q3, #%c4"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_vcx3qv16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			  (match_operand:V16QI 2 "register_operand" "t")
+			  (match_operand:V16QI 3 "register_operand" "t")
+			  (match_operand:SI 4 "const_int_mve_cde3_operand" "i")]
+	 UNSPEC_VCDE))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vcx3\\tp%c1, %q0, %q2, %q3, #%c4"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_vcx3qav16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			  (match_operand:V16QI 2 "register_operand" "0")
+			  (match_operand:V16QI 3 "register_operand" "t")
+			  (match_operand:V16QI 4 "register_operand" "t")
+			  (match_operand:SI 5 "const_int_mve_cde3_operand" "i")]
+	 UNSPEC_VCDEA))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vcx3a\\tp%c1, %q0, %q3, %q4, #%c5"
+  [(set_attr "type" "coproc")]
+)
+
+(define_insn "arm_vcx1q<a>_p_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			   (match_operand:V16QI 2 "register_operand" "0")
+			   (match_operand:SI 3 "const_int_mve_cde1_operand" "i")
+			   (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 CDE_VCX))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vpst\;vcx1<a>t\\tp%c1, %q0, #%c3"
+  [(set_attr "type" "coproc")
+   (set_attr "length" "8")]
+)
+
+(define_insn "arm_vcx2q<a>_p_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			  (match_operand:V16QI 2 "register_operand" "0")
+			  (match_operand:V16QI 3 "register_operand" "t")
+			  (match_operand:SI 4 "const_int_mve_cde2_operand" "i")
+			  (match_operand:HI 5 "vpr_register_operand" "Up")]
+	 CDE_VCX))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vpst\;vcx2<a>t\\tp%c1, %q0, %q3, #%c4"
+  [(set_attr "type" "coproc")
+   (set_attr "length" "8")]
+)
+
+(define_insn "arm_vcx3q<a>_p_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=t")
+	(unspec:V16QI [(match_operand:SI 1 "const_int_coproc_operand" "i")
+			  (match_operand:V16QI 2 "register_operand" "0")
+			  (match_operand:V16QI 3 "register_operand" "t")
+			  (match_operand:V16QI 4 "register_operand" "t")
+			  (match_operand:SI 5 "const_int_mve_cde3_operand" "i")
+			  (match_operand:HI 6 "vpr_register_operand" "Up")]
+	 CDE_VCX))]
+  "TARGET_CDE && TARGET_HAVE_MVE"
+  "vpst\;vcx3<a>t\\tp%c1, %q0, %q3, %q4, #%c5"
+  [(set_attr "type" "coproc")
+   (set_attr "length" "8")]
+)
