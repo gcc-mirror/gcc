@@ -1,5 +1,11 @@
 2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
 
+	* gcc.target/riscv/arch-6.c: New.
+	* gcc.target/riscv/attribute-11.c: New.
+	* gcc.target/riscv/attribute-12.c: New.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
 	* gcc.target/riscv/arch-3.c: Adjust option.
 	* gcc.target/riscv/arch-5.c: New.
 	* gcc.target/riscv/attribute-9.c: Adjust option and test

@@ -1,5 +1,22 @@
 2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
 
+	* common/config/riscv/riscv-common.c (riscv_implied_info_t): New.
+	(riscv_implied_info): New.
+	(riscv_subset_list): Add handle_implied_ext.
+	(riscv_subset_list::to_string): New parameter version_p to
+	control output format.
+	(riscv_subset_list::handle_implied_ext): New.
+	(riscv_subset_list::parse_std_ext): Call handle_implied_ext.
+	(riscv_arch_str): New parameter version_p to control output format.
+	(riscv_expand_arch): New.
+	* config/riscv/riscv-protos.h (riscv_arch_str): New parameter,
+	version_p.
+	* config/riscv/riscv.h (riscv_expand_arch): New,
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(ASM_SPEC): Transform -march= via riscv_expand_arch.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
 	* riscv-common.c (parse_sv_or_non_std_ext): Rename to
 	parse_multiletter_ext.
 	(parse_multiletter_ext): Add parsing `h` and `z`, drop `sx`,

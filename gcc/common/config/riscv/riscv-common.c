@@ -44,6 +44,20 @@ struct riscv_subset_t
   struct riscv_subset_t *next;
 };
 
+/* Type for implied ISA info.  */
+struct riscv_implied_info_t
+{
+  const char *ext;
+  const char *implied_ext;
+};
+
+/* Implied ISA info, must end with NULL sentinel.  */
+riscv_implied_info_t riscv_implied_info[] =
+{
+  {"d", "f"},
+  {NULL, NULL}
+};
+
 /* Subset list.  */
 class riscv_subset_list
 {
@@ -73,6 +87,8 @@ private:
   const char *parse_multiletter_ext (const char *, const char *,
 				     const char *);
 
+  void handle_implied_ext (const char *, int, int);
+
 public:
   ~riscv_subset_list ();
 
@@ -82,7 +98,7 @@ public:
 			  int major_version = RISCV_DONT_CARE_VERSION,
 			  int minor_version = RISCV_DONT_CARE_VERSION) const;
 
-  std::string to_string () const;
+  std::string to_string (bool) const;
 
   unsigned xlen() const {return m_xlen;};
 
@@ -140,10 +156,11 @@ riscv_subset_list::add (const char *subset, int major_version,
   m_tail = s;
 }
 
-/* Convert subset info to string with explicit version info.  */
+/* Convert subset info to string with explicit version info,
+   VERSION_P to determine append version info or not.  */
 
 std::string
-riscv_subset_list::to_string () const
+riscv_subset_list::to_string (bool version_p) const
 {
   std::ostringstream oss;
   oss << "rv" << m_xlen;
@@ -153,14 +170,20 @@ riscv_subset_list::to_string () const
 
   while (subset != NULL)
     {
-      if (!first)
+      /* For !version_p, we only separate extension with underline for
+	 multi-letter extension.  */
+      if (!first &&
+	  (version_p || subset->name.length() > 1))
 	oss << '_';
       first = false;
 
-      oss << subset->name
-	  << subset->major_version
-	  << 'p'
-	  << subset->minor_version;
+      oss << subset->name;
+
+      if (version_p)
+	oss  << subset->major_version
+	     << 'p'
+	     << subset->minor_version;
+
       subset = subset->next;
     }
 
@@ -394,9 +417,36 @@ riscv_subset_list::parse_std_ext (const char *p)
 
       subset[0] = std_ext;
 
+      handle_implied_ext (subset, major_version, minor_version);
+
       add (subset, major_version, minor_version);
     }
   return p;
+}
+
+
+/* Check any implied extensions for EXT with version
+   MAJOR_VERSION.MINOR_VERSION.  */
+void
+riscv_subset_list::handle_implied_ext (const char *ext,
+				       int major_version,
+				       int minor_version)
+{
+  riscv_implied_info_t *implied_info;
+  for (implied_info = &riscv_implied_info[0];
+       implied_info->ext;
+       ++implied_info)
+    {
+      if (strcmp (ext, implied_info->ext) != 0)
+	continue;
+
+      /* Skip if implied extension already present.  */
+      if (lookup (implied_info->implied_ext))
+	continue;
+
+      /* TODO: Implied extension might use different version.  */
+      add (implied_info->implied_ext, major_version, minor_version);
+    }
 }
 
 /* Parsing function for multi-letter extensions.
@@ -530,10 +580,10 @@ fail:
 /* Return the current arch string.  */
 
 std::string
-riscv_arch_str ()
+riscv_arch_str (bool version_p)
 {
   gcc_assert (current_subset_list);
-  return current_subset_list->to_string ();
+  return current_subset_list->to_string (version_p);
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
@@ -598,6 +648,21 @@ riscv_handle_option (struct gcc_options *opts,
     default:
       return true;
     }
+}
+
+/* Expand arch string with implied extensions.  */
+
+const char *
+riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
+		   const char **argv)
+{
+  static char *_arch_buf;
+  gcc_assert (argc == 1);
+  int flags;
+  location_t loc = UNKNOWN_LOCATION;
+  riscv_parse_arch_string (argv[0], &flags, loc);
+  _arch_buf = xstrdup (riscv_arch_str (false).c_str ());
+  return _arch_buf;
 }
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
