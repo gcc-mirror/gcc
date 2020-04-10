@@ -70,8 +70,8 @@ private:
 
   const char *parse_std_ext (const char *);
 
-  const char *parse_sv_or_non_std_ext (const char *, const char *,
-				       const char *);
+  const char *parse_multiletter_ext (const char *, const char *,
+				     const char *);
 
 public:
   ~riscv_subset_list ();
@@ -357,7 +357,7 @@ riscv_subset_list::parse_std_ext (const char *p)
     {
       char subset[2] = {0, 0};
 
-      if (*p == 'x' || *p == 's')
+      if (*p == 'x' || *p == 's' || *p == 'h' || *p == 'z')
 	break;
 
       if (*p == '_')
@@ -399,20 +399,20 @@ riscv_subset_list::parse_std_ext (const char *p)
   return p;
 }
 
-/* Parsing function for non-standard and supervisor extensions.
+/* Parsing function for multi-letter extensions.
 
    Return Value:
      Points to the end of extensions.
 
    Arguments:
      `p`: Current parsing position.
-     `ext_type`: What kind of extensions, 'x', 's' or 'sx'.
+     `ext_type`: What kind of extensions, 's', 'h', 'z' or 'x'.
      `ext_type_str`: Full name for kind of extension.  */
 
 const char *
-riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
-					    const char *ext_type,
-					    const char *ext_type_str)
+riscv_subset_list::parse_multiletter_ext (const char *p,
+					  const char *ext_type,
+					  const char *ext_type_str)
 {
   unsigned major_version = 0;
   unsigned minor_version = 0;
@@ -427,11 +427,6 @@ riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
 	}
 
       if (strncmp (p, ext_type, ext_type_len) != 0)
-	break;
-
-      /* It's non-standard supervisor extension if it prefix with sx.  */
-      if ((ext_type[0] == 's') && (ext_type_len == 1)
-	  && (*(p + 1) == 'x'))
 	break;
 
       char *subset = xstrdup (p);
@@ -494,21 +489,26 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing non-standard extension.  */
-  p = subset_list->parse_sv_or_non_std_ext (p, "x", "non-standard extension");
-
-  if (p == NULL)
-    goto fail;
-
   /* Parsing supervisor extension.  */
-  p = subset_list->parse_sv_or_non_std_ext (p, "s", "supervisor extension");
+  p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
 
   if (p == NULL)
     goto fail;
 
-  /* Parsing non-standard supervisor extension.  */
-  p = subset_list->parse_sv_or_non_std_ext
-    (p, "sx", "non-standard supervisor extension");
+  /* Parsing hypervisor extension.  */
+  p = subset_list->parse_multiletter_ext (p, "h", "hypervisor extension");
+
+  if (p == NULL)
+    goto fail;
+
+  /* Parsing sub-extensions.  */
+  p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
+
+  if (p == NULL)
+    goto fail;
+
+  /* Parsing non-standard extension.  */
+  p = subset_list->parse_multiletter_ext (p, "x", "non-standard extension");
 
   if (p == NULL)
     goto fail;

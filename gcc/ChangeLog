@@ -1,3 +1,10 @@
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* riscv-common.c (parse_sv_or_non_std_ext): Rename to
+	parse_multiletter_ext.
+	(parse_multiletter_ext): Add parsing `h` and `z`, drop `sx`,
+	adjust parsing order for 's' and 'x'.
+
 2020-05-19  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (_slp_tree::vectype): Add field.
