@@ -1718,7 +1718,7 @@ package body Sem_Ch12 is
                         Assoc_List);
 
                      --  For a defaulted in_parameter, create an entry in the
-                     --  the list of defaulted actuals, for GNATProve use. Do
+                     --  the list of defaulted actuals, for GNATprove use. Do
                      --  not included these defaults for an instance nested
                      --  within a generic, because the defaults are also used
                      --  in the analysis of the enclosing generic, and only
@@ -1928,7 +1928,7 @@ package body Sem_Ch12 is
                   end if;
 
                   --  If this is a nested generic, preserve default for later
-                  --  instantiations. We do this as well for GNATProve use,
+                  --  instantiations. We do this as well for GNATprove use,
                   --  so that the list of generic associations is complete.
 
                   if No (Match) and then Box_Present (Formal) then

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , May 05, 2020
+GNAT Reference Manual , May 13, 2020
 
 AdaCore
 
@@ -8902,7 +8902,7 @@ DETAILS ::= On | Off, local_NAME
 DETAILS ::= static_string_EXPRESSION
 DETAILS ::= On | Off, static_string_EXPRESSION
 
-TOOL_NAME ::= GNAT | GNATProve
+TOOL_NAME ::= GNAT | GNATprove
 
 REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
 @end example

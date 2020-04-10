@@ -7162,10 +7162,10 @@ package body Sem_Ch8 is
       --  is an array type we may already have a usable subtype for it, so we
       --  can use it rather than generating a new one, because the bounds
       --  will be the values of the discriminants and not discriminant refs.
-      --  This simplifies value tracing in GNATProve. For consistency, both
+      --  This simplifies value tracing in GNATprove. For consistency, both
       --  the entity name and the subtype come from the constrained component.
 
-      --  This is only used in GNATProve mode: when generating code it may be
+      --  This is only used in GNATprove mode: when generating code it may be
       --  necessary to create an itype in the scope of use of the selected
       --  component, e.g. in the context of a expanded record equality.
 
