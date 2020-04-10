@@ -226,9 +226,10 @@ package body Exp_Ch4 is
 
    procedure Optimize_Length_Comparison (N : Node_Id);
    --  Given an expression, if it is of the form X'Length op N (or the other
-   --  way round), where N is known at compile time to be 0 or 1, and X is a
-   --  simple entity, and op is a comparison operator, optimizes it into a
-   --  comparison of First and Last.
+   --  way round), where N is known at compile time to be 0 or 1, or something
+   --  else where the value is known to be positive and in the 32-bit range,
+   --  and X is a simple entity, and op is a comparison operator, optimizes it
+   --  into a comparison of X'First and X'Last.
 
    procedure Process_If_Case_Statements (N : Node_Id; Stmts : List_Id);
    --  Inspect and process statement list Stmt of if or case expression N for
@@ -13783,58 +13784,65 @@ package body Exp_Ch4 is
       Comp : Node_Id;
       --  Comparison operand, set only if Is_Zero is false
 
-      Ent : Entity_Id := Empty;
-      --  Entity whose length is being compared
+      Ent : array (Pos range 1 .. 2) of Entity_Id := (Empty, Empty);
+      --  Entities whose length is being compared
 
-      Index : Node_Id := Empty;
-      --  Integer_Literal node for length attribute expression, or Empty
+      Index : array (Pos range 1 .. 2) of Node_Id := (Empty, Empty);
+      --  Integer_Literal nodes for length attribute expressions, or Empty
       --  if there is no such expression present.
-
-      Ityp  : Entity_Id;
-      --  Type of array index to which 'Length is applied
 
       Op : Node_Kind := Nkind (N);
       --  Kind of comparison operator, gets flipped if operands backwards
 
+      function Convert_To_Long_Long_Integer (N : Node_Id) return Node_Id;
+      --  Given a discrete expression, returns a Long_Long_Integer typed
+      --  expression representing the underlying value of the expression.
+      --  This is done with an unchecked conversion to Long_Long_Integer.
+      --  We use unchecked conversion to handle the enumeration type case.
+
       function Is_Optimizable (N : Node_Id) return Boolean;
       --  Tests N to see if it is an optimizable comparison value (defined as
       --  constant zero or one, or something else where the value is known to
-      --  be positive and in the range of 32-bits, and where the corresponding
-      --  Length value is also known to be 32-bits. If result is true, sets
-      --  Is_Zero, Ityp, and Comp accordingly.
+      --  be positive and in the range of 32 bits and where the corresponding
+      --  Length value is also known to be 32 bits). If result is true, sets
+      --  Is_Zero and Comp accordingly.
 
-      function Is_Entity_Length (N : Node_Id) return Boolean;
+      function Is_Entity_Length (N : Node_Id; Num : Pos) return Boolean;
       --  Tests if N is a length attribute applied to a simple entity. If so,
       --  returns True, and sets Ent to the entity, and Index to the integer
       --  literal provided as an attribute expression, or to Empty if none.
+      --  Num is the index designating the relevant slot in Ent and Index.
       --  Also returns True if the expression is a generated type conversion
       --  whose expression is of the desired form. This latter case arises
       --  when Apply_Universal_Integer_Attribute_Check installs a conversion
       --  to check for being in range, which is not needed in this context.
       --  Returns False if neither condition holds.
 
-      function Prepare_64 (N : Node_Id) return Node_Id;
-      --  Given a discrete expression, returns a Long_Long_Integer typed
-      --  expression representing the underlying value of the expression.
-      --  This is done with an unchecked conversion to the result type. We
-      --  use unchecked conversion to handle the enumeration type case.
+      ----------------------------------
+      -- Convert_To_Long_Long_Integer --
+      ----------------------------------
+
+      function Convert_To_Long_Long_Integer (N : Node_Id) return Node_Id is
+      begin
+         return Unchecked_Convert_To (Standard_Long_Long_Integer, N);
+      end Convert_To_Long_Long_Integer;
 
       ----------------------
       -- Is_Entity_Length --
       ----------------------
 
-      function Is_Entity_Length (N : Node_Id) return Boolean is
+      function Is_Entity_Length (N : Node_Id; Num : Pos) return Boolean is
       begin
          if Nkind (N) = N_Attribute_Reference
            and then Attribute_Name (N) = Name_Length
            and then Is_Entity_Name (Prefix (N))
          then
-            Ent := Entity (Prefix (N));
+            Ent (Num) := Entity (Prefix (N));
 
             if Present (Expressions (N)) then
-               Index := First (Expressions (N));
+               Index (Num) := First (Expressions (N));
             else
-               Index := Empty;
+               Index (Num) := Empty;
             end if;
 
             return True;
@@ -13842,7 +13850,7 @@ package body Exp_Ch4 is
          elsif Nkind (N) = N_Type_Conversion
            and then not Comes_From_Source (N)
          then
-            return Is_Entity_Length (Expression (N));
+            return Is_Entity_Length (Expression (N), Num);
 
          else
             return False;
@@ -13859,6 +13867,8 @@ package body Exp_Ch4 is
          Lo   : Uint;
          Hi   : Uint;
          Indx : Node_Id;
+         Dbl  : Boolean;
+         Ityp : Entity_Id;
 
       begin
          if Compile_Time_Known_Value (N) then
@@ -13887,36 +13897,35 @@ package body Exp_Ch4 is
             return False;
          end if;
 
+         --  Tests if N is also a length attribute applied to a simple entity
+
+         Dbl := Is_Entity_Length (N, 2);
+
          --  Comparison value was within range, so now we must check the index
-         --  value to make sure it is also within 32-bits.
+         --  value to make sure it is also within 32 bits.
 
-         Indx := First_Index (Etype (Ent));
+         for K in Pos range 1 .. 2 loop
+            Indx := First_Index (Etype (Ent (K)));
 
-         if Present (Index) then
-            for J in 2 .. UI_To_Int (Intval (Index)) loop
-               Next_Index (Indx);
-            end loop;
-         end if;
+            if Present (Index (K)) then
+               for J in 2 .. UI_To_Int (Intval (Index (K))) loop
+                  Next_Index (Indx);
+               end loop;
+            end if;
 
-         Ityp := Etype (Indx);
+            Ityp := Etype (Indx);
 
-         if Esize (Ityp) > 32 then
-            return False;
-         end if;
+            if Esize (Ityp) > 32 then
+               return False;
+            end if;
+
+            exit when not Dbl;
+         end loop;
 
          Is_Zero := False;
          Comp := N;
          return True;
       end Is_Optimizable;
-
-      ----------------
-      -- Prepare_64 --
-      ----------------
-
-      function Prepare_64 (N : Node_Id) return Node_Id is
-      begin
-         return Unchecked_Convert_To (Standard_Long_Long_Integer, N);
-      end Prepare_64;
 
    --  Start of processing for Optimize_Length_Comparison
 
@@ -13935,14 +13944,14 @@ package body Exp_Ch4 is
 
       --  Ent'Length op 0/1
 
-      if Is_Entity_Length (Left_Opnd (N))
+      if Is_Entity_Length (Left_Opnd (N), 1)
         and then Is_Optimizable (Right_Opnd (N))
       then
          null;
 
       --  0/1 op Ent'Length
 
-      elsif Is_Entity_Length (Right_Opnd (N))
+      elsif Is_Entity_Length (Right_Opnd (N), 1)
         and then Is_Optimizable (Left_Opnd (N))
       then
          --  Flip comparison to opposite sense
@@ -14036,41 +14045,96 @@ package body Exp_Ch4 is
 
       Left :=
         Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Ent, Loc),
+          Prefix         => New_Occurrence_Of (Ent (1), Loc),
           Attribute_Name => Name_First);
 
-      if Present (Index) then
-         Set_Expressions (Left, New_List (New_Copy (Index)));
+      if Present (Index (1)) then
+         Set_Expressions (Left, New_List (New_Copy (Index (1))));
       end if;
 
       --  If general value case, then do the addition of (n - 1), and
       --  also add the needed conversions to type Long_Long_Integer.
 
+      --  If n = Y'Length, we rewrite X'First + (n - 1) op X'Last into:
+
+      --    Y'Last + (X'First - Y'First) op X'Last
+
+      --  in the hope that X'First - Y'First can be computed statically.
+
       if Present (Comp) then
-         Left :=
-           Make_Op_Add (Loc,
-             Left_Opnd  => Prepare_64 (Left),
-             Right_Opnd =>
-               Make_Op_Subtract (Loc,
-                 Left_Opnd  => Prepare_64 (Comp),
-                 Right_Opnd => Make_Integer_Literal (Loc, 1)));
+         if Present (Ent (2)) then
+            declare
+               Y_First : constant Node_Id :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Ent (2), Loc),
+                   Attribute_Name => Name_First);
+               Y_Last : constant Node_Id :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Ent (2), Loc),
+                   Attribute_Name => Name_Last);
+               R : Compare_Result;
+
+            begin
+               if Present (Index (2)) then
+                  Set_Expressions (Y_First, New_List (New_Copy (Index (2))));
+                  Set_Expressions (Y_Last,  New_List (New_Copy (Index (2))));
+               end if;
+
+               Analyze (Left);
+               Analyze (Y_First);
+
+               --  If X'First = Y'First, rewrite it into a direct comparison
+               --  of Y'Last and X'Last without conversions.
+
+               R := Compile_Time_Compare (Left, Y_First, Assume_Valid => True);
+
+               if R = EQ then
+                  Left := Y_Last;
+                  Comp := Empty;
+
+               --  Otherwise, use the above formula
+
+               else
+                  Left :=
+                    Make_Op_Add (Loc,
+                      Left_Opnd  => Convert_To_Long_Long_Integer (Y_Last),
+                      Right_Opnd =>
+                        Make_Op_Subtract (Loc,
+                          Left_Opnd  =>
+                            Convert_To_Long_Long_Integer (Left),
+                          Right_Opnd =>
+                            Convert_To_Long_Long_Integer (Y_First)));
+               end if;
+            end;
+
+         --  General value case
+
+         else
+            Left :=
+              Make_Op_Add (Loc,
+                Left_Opnd  => Convert_To_Long_Long_Integer (Left),
+                Right_Opnd =>
+                  Make_Op_Subtract (Loc,
+                    Left_Opnd  => Convert_To_Long_Long_Integer (Comp),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1)));
+         end if;
       end if;
 
       --  Build the Last reference we will use
 
       Right :=
         Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Ent, Loc),
+          Prefix         => New_Occurrence_Of (Ent (1), Loc),
           Attribute_Name => Name_Last);
 
-      if Present (Index) then
-         Set_Expressions (Right, New_List (New_Copy (Index)));
+      if Present (Index (1)) then
+         Set_Expressions (Right, New_List (New_Copy (Index (1))));
       end if;
 
       --  If general operand, convert Last reference to Long_Long_Integer
 
       if Present (Comp) then
-         Right := Prepare_64 (Right);
+         Right := Convert_To_Long_Long_Integer (Right);
       end if;
 
       --  Check for cases to optimize
@@ -14147,11 +14211,10 @@ package body Exp_Ch4 is
          raise Program_Error;
       end if;
 
-      --  Rewrite and finish up
+      --  Rewrite and finish up (we can suppress overflow checks, see above)
 
       Rewrite (N, Result);
-      Analyze_And_Resolve (N, Typ);
-      return;
+      Analyze_And_Resolve (N, Typ, Suppress => Overflow_Check);
    end Optimize_Length_Comparison;
 
    --------------------------------
