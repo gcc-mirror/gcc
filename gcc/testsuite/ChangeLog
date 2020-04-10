@@ -1,3 +1,8 @@
+2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* gfortran.dg/asynchronous_5.f03: Add -fdump-tree-original and fix
+	patterns for scan-tree-dump.
+
 2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/89433
