@@ -16032,9 +16032,17 @@ Composite_literal_key_expression::do_lower(Gogo* gogo, Named_object*,
   Named_object* no = gogo->lookup(this->name_, NULL);
   if (no == NULL)
     {
-      go_error_at(this->location(), "reference to undefined name %qs",
-		  Gogo::message_name(this->name_).c_str());
-      return Expression::make_error(this->location());
+      // Gogo::lookup doesn't look in the global namespace, and names
+      // used in composite literal keys aren't seen by
+      // Gogo::define_global_names, so we have to look in the global
+      // namespace ourselves.
+      no = gogo->lookup_global(Gogo::unpack_hidden_name(this->name_).c_str());
+      if (no == NULL)
+	{
+	  go_error_at(this->location(), "reference to undefined name %qs",
+		      Gogo::message_name(this->name_).c_str());
+	  return Expression::make_error(this->location());
+	}
     }
   return Expression::make_unknown_reference(no, this->location());
 }
