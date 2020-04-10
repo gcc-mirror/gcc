@@ -1776,6 +1776,19 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
     = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (fndecl));
   if (attr != NULL_TREE)
     {
+      /* Diagnose if "#pragma omp declare target" has also been applied.  */
+      if (TREE_VALUE (attr) == NULL_TREE)
+	{
+	  /* See <https://gcc.gnu.org/PR93465>; the semantics of combining
+	     OpenACC and OpenMP 'target' are not clear.  */
+	  error_at (loc,
+		    "cannot apply %<%s%> to %qD, which has also been"
+		    " marked with an OpenMP 'declare target' directive",
+		    routine_str, fndecl);
+	  /* Incompatible.  */
+	  return -1;
+	}
+
       /* If a "#pragma acc routine" has already been applied, just verify
 	 this one for compatibility.  */
       /* Collect previous directive's clauses.  */

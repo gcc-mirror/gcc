@@ -104,6 +104,8 @@ extern void cselib_add_permanent_equiv (cselib_val *, rtx, rtx_insn *);
 extern bool cselib_have_permanent_equivalences (void);
 extern void cselib_set_value_sp_based (cselib_val *);
 extern bool cselib_sp_based_value_p (cselib_val *);
+extern void cselib_record_sp_cfa_base_equiv (HOST_WIDE_INT, rtx_insn *);
+extern bool cselib_sp_derived_value_p (cselib_val *);
 
 extern void dump_cselib_table (FILE *);
 

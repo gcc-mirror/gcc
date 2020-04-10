@@ -1,3 +1,30 @@
+2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/89433
+	PR middle-end/93465
+	* omp-general.c (oacc_verify_routine_clauses): Diagnose if
+	"#pragma omp declare target" has also been applied.
+
+2020-04-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_expand_epilogue): Use emit_jump_insn
+	when to emit the epilogue_helper insn.
+	* config/msp430/msp430.md (epilogue_helper): Add a return insn to the
+	RTL pattern.
+
+2020-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94495
+	* cselib.h (cselib_record_sp_cfa_base_equiv,
+	cselib_sp_derived_value_p): Declare.
+	* cselib.c (cselib_record_sp_cfa_base_equiv,
+	cselib_sp_derived_value_p): New functions.
+	* var-tracking.c (add_stores): Don't record MO_VAL_SET for
+	cselib_sp_derived_value_p values.
+	(vt_initialize): Call cselib_record_sp_cfa_base_equiv at the
+	start of extended basic blocks other than the first one
+	for !frame_pointer_needed functions.
+
 2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/sourcebuild.texi (aarch64_sve_hw, aarch64_sve128_hw)

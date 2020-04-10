@@ -119,6 +119,8 @@ DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 ALL_DRUNTIME_SOURCES = $(DRUNTIME_DSOURCES) $(DRUNTIME_CSOURCES) \
 	$(DRUNTIME_SOURCES_CONFIGURED) $(DRUNTIME_DSOURCES_GENERATED)
 
+# Need this library to both be part of libgphobos.a, and installed separately.
+# 1) separate libgdruntime.la
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
 libgdruntime_la_LIBTOOLFLAGS =
@@ -126,6 +128,21 @@ libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
     -version-info $(libtool_VERSION)
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
 libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
+
+# 2) integrated libgdruntime_convenience.la that is to be part of libgphobos.a
+noinst_LTLIBRARIES = libgdruntime_convenience.la
+libgdruntime_convenience_la_SOURCES = $(libgdruntime_la_SOURCES)
+libgdruntime_convenience_la_LIBTOOLFLAGS = $(libgdruntime_la_LIBTOOLFLAGS)
+libgdruntime_convenience_la_LDFLAGS = $(libgdruntime_la_LDFLAGS)
+libgdruntime_convenience_la_LIBADD = $(libgdruntime_la_LIBADD)
+libgdruntime_convenience_la_DEPENDENCIES = $(libgdruntime_la_DEPENDENCIES)
+libgdruntime_convenience_la_LINK = $(libgdruntime_la_LINK)
 
 # Handles generated files as well
 install-data-local:

@@ -42,7 +42,6 @@ case ${query} in
     --gdcldflags)
       GDCLDFLAGS="-B${BUILD_DIR}/src
                   -B${BUILD_DIR}/libdruntime/gcc
-                  -L${BUILD_DIR}/libdruntime/.libs
                   -L${BUILD_DIR}/src/.libs"
       echo ${GDCLDFLAGS}
       ;;

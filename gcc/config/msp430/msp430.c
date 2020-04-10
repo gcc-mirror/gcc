@@ -2587,7 +2587,7 @@ msp430_expand_epilogue (int is_eh)
 		 && helper_n > 1
 		 && !is_eh)
 	  {
-	    emit_insn (gen_epilogue_helper (GEN_INT (helper_n)));
+	    emit_jump_insn (gen_epilogue_helper (GEN_INT (helper_n)));
 	    return;
 	  }
 	else

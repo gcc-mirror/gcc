@@ -1,3 +1,61 @@
+2020-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94149
+	* g++.dg/cpp2a/paren-init24.C: New test.
+	* g++.dg/cpp2a/paren-init25.C: New test.
+	* g++.dg/ext/is_constructible5.C: New test.
+
+2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* gfortran.dg/asynchronous_5.f03: Fix typo in testcase and add
+	IMPLICIT NONE.
+
+2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* gfortran.dg/asynchronous_5.f03: Add -fdump-tree-original and fix
+	patterns for scan-tree-dump.
+
+2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/89433
+	PR middle-end/93465
+	* c-c++-common/goacc-gomp/pr93465-1.c: New file.
+
+2020-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc.exp (gdc_link_flags): Remove libdruntime library paths.
+
+2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-syntax-10.C: New test.
+	* g++.dg/coroutines/co-await-syntax-11.C: New test.
+
+2020-04-09  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/87923
+	* gfortran.dg/f2003_io_8.f03: Fix expected error messages.
+	* gfortran.dg/io_constraints_8.f90: Likewise.
+	* gfortran.dg/iomsg_2.f90: Likewise.
+	* gfortran.dg/pr66725.f90: Likewise.
+	* gfortran.dg/pr88205.f90: Likewise.
+	* gfortran.dg/write_check4.f90: Likewise.
+	* gfortran.dg/asynchronous_5.f03: New test.
+	* gfortran.dg/io_constraints_15.f90: Likewise.
+	* gfortran.dg/io_constraints_16.f90: Likewise.
+	* gfortran.dg/io_constraints_17.f90: Likewise.
+	* gfortran.dg/io_constraints_18.f90: Likewise.
+	* gfortran.dg/io_tags_1.f90: Likewise.
+	* gfortran.dg/io_tags_10.f90: Likewise.
+	* gfortran.dg/io_tags_2.f90: Likewise.
+	* gfortran.dg/io_tags_3.f90: Likewise.
+	* gfortran.dg/io_tags_4.f90: Likewise.
+	* gfortran.dg/io_tags_5.f90: Likewise.
+	* gfortran.dg/io_tags_6.f90: Likewise.
+	* gfortran.dg/io_tags_7.f90: Likewise.
+	* gfortran.dg/io_tags_8.f90: Likewise.
+	* gfortran.dg/io_tags_9.f90: Likewise.
+	* gfortran.dg/write_check5.f90: Likewise.
+
 2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/attributes_1.c: New test.

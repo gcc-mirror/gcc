@@ -1,3 +1,43 @@
+2020-04-09  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/87923
+	* gfortran.h (gfc_resolve_open, gfc_resolve_close): Add
+	locus parameter.
+	(gfc_resolve_dt): Add code parameter.
+	* io.c (async_io_dt, check_char_variable, is_char_type): Removed.
+	(resolve_tag_format): Add locus to error message regarding
+	zero-sized array in FORMAT tag.
+	(check_open_constraints, check_close_constraints): New functions
+	called at resolution time.
+	(gfc_match_open, gfc_match_close, match_io): Move checks which don't
+	affect the match result to new functions check_open_constraints,
+	check_close_constraints, check_io_constraints.
+	(gfc_resolve_open, gfc_resolve_close): Call new functions
+	check_open_constraints, check_close_constraints after all tags have
+	been independently resolved.  Remove duplicate constraints which are
+	already verified by resolve_tag.  Explicitly pass locus to all error
+	reports.
+	(compare_to_allowed_values): Add locus parameter and provide
+	explicit locus all error reports.
+	(match_open_element, match_close_element, match_file_element,
+	match_dt_element, match_inquire_element): Remove redundant special
+	cases for ASYNCHRONOUS and IOMSG tags.
+	(gfc_resolve_dt): Remove redundant special case for format
+	expression.  Call check_io_constraints, forwarding an I/O list as
+	the io_code parameter if present.
+	(check_io_constraints): Change return type to bool.  Pass explicit
+	locus to error reports.  Move generic checks after tag-specific
+	checks, since errors are no longer buffered.  Move simplification of
+	format string to match_io.  Remove redundant checks which are
+	verified by resolve_tag.  Remove usage of async_io_dt flag and
+	explicitly mark symbols used in asynchronous I/O with the
+	asynchronous attribute.
+	* resolve.c (resolve_transfer, resolve_fl_namelist): Remove checks
+	for async_io_dt flag.  This is now done in io.c.
+	(check_io_constraints).
+	(gfc_resolve_code): Pass code locus to gfc_resolve_open,
+	gfc_resolve_close, gfc_resolve_dt.
+
 2020-04-07  Fritz Reese  <foreese@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

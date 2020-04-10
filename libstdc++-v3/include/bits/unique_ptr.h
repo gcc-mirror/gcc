@@ -37,6 +37,9 @@
 #include <tuple>
 #include <bits/stl_function.h>
 #include <bits/functional_hash.h>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -756,6 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
     { return !__x; }
 
+#ifndef __cpp_lib_three_way_comparison
   /// unique_ptr comparison with nullptr
   template<typename _Tp, typename _Dp>
     _GLIBCXX_NODISCARD inline bool
@@ -781,6 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NODISCARD inline bool
     operator!=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
     { return (bool)__x; }
+#endif // three way comparison
 
   /// Relational operator for unique_ptr objects, compares the owned pointers
   template<typename _Tp, typename _Dp,
@@ -878,6 +883,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NODISCARD inline bool
     operator>=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
     { return !(nullptr < __x); }
+
+#ifdef __cpp_lib_three_way_comparison
+  template<typename _Tp, typename _Dp, typename _Up, typename _Ep>
+    requires three_way_comparable_with<typename unique_ptr<_Tp, _Dp>::pointer,
+				       typename unique_ptr<_Up, _Ep>::pointer>
+    compare_three_way_result_t<typename unique_ptr<_Tp, _Dp>::pointer,
+			       typename unique_ptr<_Up, _Ep>::pointer>
+    operator<=>(const unique_ptr<_Tp, _Dp>& __x,
+		const unique_ptr<_Up, _Ep>& __y)
+    { return compare_three_way()(__x.get(), __y.get()); }
+
+  template<typename _Tp, typename _Dp>
+    requires three_way_comparable<typename unique_ptr<_Tp, _Dp>::pointer>
+    compare_three_way_result_t<typename unique_ptr<_Tp, _Dp>::pointer>
+    operator<=>(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    {
+      using pointer = typename unique_ptr<_Tp, _Dp>::pointer;
+      return compare_three_way()(__x.get(), pointer(nullptr));
+    }
+#endif
   // @} relates unique_ptr
 
   /// @cond undocumented

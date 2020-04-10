@@ -44,13 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBPHOBOS_PROFILE LIBPHOBOS
 #endif
 
-#ifndef LIBDRUNTIME
-#define LIBDRUNTIME "gdruntime"
-#endif
-#ifndef LIBDRUNTIME_PROFILE
-#define LIBDRUNTIME_PROFILE LIBDRUNTIME
-#endif
-
 /* What do with libgphobos.  */
 enum phobos_action
 {
@@ -322,7 +315,7 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 
   /* Make sure to have room for the trailing NULL argument.
      - needstdcxx might add `-lstdcxx'
-     - libphobos adds `-Bstatic -lphobos -ldruntime -Bdynamic'
+     - libphobos adds `-Bstatic -lphobos -Bdynamic'
      - only_source adds 1 more arg, also maybe add `-o'.  */
   num_args = argc + need_stdcxx + shared_libgcc + need_phobos * 4 + 2;
   new_decoded_options = XNEWVEC (cl_decoded_option, num_args);
@@ -439,11 +432,6 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 
       generate_option (OPT_l,
 		       saw_profile_flag ? LIBPHOBOS_PROFILE : LIBPHOBOS, 1,
-		       CL_DRIVER, &new_decoded_options[j]);
-      added_libraries++;
-      j++;
-      generate_option (OPT_l,
-		       saw_profile_flag ? LIBDRUNTIME_PROFILE : LIBDRUNTIME, 1,
 		       CL_DRIVER, &new_decoded_options[j]);
       added_libraries++;
       j++;
