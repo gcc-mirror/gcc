@@ -10,6 +10,8 @@
 ! should obtain the "volatile" specifier in its declaration.
 !
 
+implicit none
+
 type t
   character(4) :: comp_async
 end type
@@ -23,7 +25,7 @@ integer :: ivar_noasync
 namelist /names/ ivar_async, rvar_async, lvar_async
 
 open(1, asynchronous="yes")
-write(1, asynchronous="yes") dvar_async, ccvar_async
+write(1, asynchronous="yes") dvar_async
 write(1, asynchronous="yes") dvar_async%comp_async
 read(1, asynchronous="yes", nml=names)
 

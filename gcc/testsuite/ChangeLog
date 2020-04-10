@@ -1,5 +1,10 @@
 2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
 
+	* gfortran.dg/asynchronous_5.f03: Fix typo in testcase and add
+	IMPLICIT NONE.
+
+2020-04-10  Fritz Reese  <foreese@gcc.gnu.org>
+
 	* gfortran.dg/asynchronous_5.f03: Add -fdump-tree-original and fix
 	patterns for scan-tree-dump.
 
