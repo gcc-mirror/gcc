@@ -1,5 +1,11 @@
 2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_print_operand): Don't add offsets to
+	memory references in %B, %C and %D operand selectors when the inner
+	operand is a post increment address.
+
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/msp430.c (msp430_print_operand): Offset a %C memory
 	reference by 4 bytes, and %D memory reference by 6 bytes.
 
