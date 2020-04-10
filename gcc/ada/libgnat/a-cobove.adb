@@ -483,6 +483,8 @@ package body Ada.Containers.Bounded_Vectors is
       Off      : Count_Type'Base;  -- Index expressed as offset from IT'First
 
    begin
+      TC_Check (Container.TC);
+
       --  Delete removes items from the vector, the number of which is the
       --  minimum of the specified Count and the items (if any) that exist from
       --  Index to Container.Last. There are no constraints on the specified
@@ -531,8 +533,6 @@ package body Ada.Containers.Bounded_Vectors is
       --  Update, and Iterate increment the busy count on entry, and decrement
       --  the count on exit. Delete checks the count to determine whether it is
       --  being called while the associated callback procedure is executing.
-
-      TC_Check (Container.TC);
 
       --  We first calculate what's available for deletion starting at
       --  Index. Here and elsewhere we use the wider of Index_Type'Base and
@@ -636,15 +636,6 @@ package body Ada.Containers.Bounded_Vectors is
       Count     : Count_Type := 1)
    is
    begin
-      --  It is not permitted to delete items while the container is busy (for
-      --  example, we're in the middle of a passive iteration). However, we
-      --  always treat deleting 0 items as a no-op, even when we're busy, so we
-      --  simply return without checking.
-
-      if Count = 0 then
-         return;
-      end if;
-
       --  The tampering bits exist to prevent an item from being deleted (or
       --  otherwise harmfully manipulated) while it is being visited. Query,
       --  Update, and Iterate increment the busy count on entry, and decrement
@@ -653,6 +644,10 @@ package body Ada.Containers.Bounded_Vectors is
       --  executing.
 
       TC_Check (Container.TC);
+
+      if Count = 0 then
+         return;
+      end if;
 
       --  There is no restriction on how large Count can be when deleting
       --  items. If it is equal or greater than the current length, then this
@@ -882,6 +877,8 @@ package body Ada.Containers.Bounded_Vectors is
             return;
          end if;
 
+         TC_Check (Source.TC);
+
          if Checks and then Target'Address = Source'Address then
             raise Program_Error with
               "Target and Source denote same non-empty container";
@@ -891,8 +888,6 @@ package body Ada.Containers.Bounded_Vectors is
             Move (Target => Target, Source => Source);
             return;
          end if;
-
-         TC_Check (Source.TC);
 
          I := Target.Length;
          Target.Set_Length (I + Source.Length);
@@ -1021,6 +1016,14 @@ package body Ada.Containers.Bounded_Vectors is
       J     : Count_Type'Base;  -- scratch
 
    begin
+      --  The tampering bits exist to prevent an item from being harmfully
+      --  manipulated while it is being visited. Query, Update, and Iterate
+      --  increment the busy count on entry, and decrement the count on
+      --  exit. Insert checks the count to determine whether it is being called
+      --  while the associated callback procedure is executing.
+
+      TC_Check (Container.TC);
+
       --  As a precondition on the generic actual Index_Type, the base type
       --  must include Index_Type'Pred (Index_Type'First); this is the value
       --  that Container.Last assumes when the vector is empty. However, we do
@@ -1175,14 +1178,6 @@ package body Ada.Containers.Bounded_Vectors is
       if Checks and then New_Length > Max_Length then
          raise Constraint_Error with "Count is out of range";
       end if;
-
-      --  The tampering bits exist to prevent an item from being harmfully
-      --  manipulated while it is being visited. Query, Update, and Iterate
-      --  increment the busy count on entry, and decrement the count on
-      --  exit. Insert checks the count to determine whether it is being called
-      --  while the associated callback procedure is executing.
-
-      TC_Check (Container.TC);
 
       if Checks and then New_Length > Container.Capacity then
          raise Capacity_Error with "New length is larger than capacity";
@@ -1491,6 +1486,14 @@ package body Ada.Containers.Bounded_Vectors is
       J     : Count_Type'Base;  -- scratch
 
    begin
+      --  The tampering bits exist to prevent an item from being harmfully
+      --  manipulated while it is being visited. Query, Update, and Iterate
+      --  increment the busy count on entry, and decrement the count on
+      --  exit. Insert checks the count to determine whether it is being called
+      --  while the associated callback procedure is executing.
+
+      TC_Check (Container.TC);
+
       --  As a precondition on the generic actual Index_Type, the base type
       --  must include Index_Type'Pred (Index_Type'First); this is the value
       --  that Container.Last assumes when the vector is empty. However, we do
@@ -1645,14 +1648,6 @@ package body Ada.Containers.Bounded_Vectors is
       if Checks and then New_Length > Max_Length then
          raise Constraint_Error with "Count is out of range";
       end if;
-
-      --  The tampering bits exist to prevent an item from being harmfully
-      --  manipulated while it is being visited. Query, Update, and Iterate
-      --  increment the busy count on entry, and decrement the count on
-      --  exit. Insert checks the count to determine whether it is being called
-      --  while the associated callback procedure is executing.
-
-      TC_Check (Container.TC);
 
       --  An internal array has already been allocated, so we need to check
       --  whether there is enough unused storage for the new items.
@@ -1937,13 +1932,13 @@ package body Ada.Containers.Bounded_Vectors is
          return;
       end if;
 
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Checks and then Target.Capacity < Source.Length then
          raise Capacity_Error  -- ???
            with "Target capacity is less than Source length";
       end if;
-
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
 
       --  Clear Target now, in case element assignment fails
 
@@ -2222,11 +2217,11 @@ package body Ada.Containers.Bounded_Vectors is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;
-
-      TE_Check (Container.TC);
 
       Container.Elements (To_Array_Index (Index)) := New_Item;
    end Replace_Element;
@@ -2237,6 +2232,8 @@ package body Ada.Containers.Bounded_Vectors is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -2249,8 +2246,6 @@ package body Ada.Containers.Bounded_Vectors is
       if Checks and then Position.Index > Container.Last then
          raise Constraint_Error with "Position cursor is out of range";
       end if;
-
-      TE_Check (Container.TC);
 
       Container.Elements (To_Array_Index (Position.Index)) := New_Item;
    end Replace_Element;
@@ -2425,6 +2420,8 @@ package body Ada.Containers.Bounded_Vectors is
       E : Elements_Array renames Container.Elements;
 
    begin
+      TE_Check (Container.TC);
+
       if Checks and then I > Container.Last then
          raise Constraint_Error with "I index is out of range";
       end if;
@@ -2436,8 +2433,6 @@ package body Ada.Containers.Bounded_Vectors is
       if I = J then
          return;
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          EI_Copy : constant Element_Type := E (To_Array_Index (I));

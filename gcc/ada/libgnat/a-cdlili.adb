@@ -295,6 +295,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       X : Node_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with
            "Position cursor has no element";
@@ -318,8 +320,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
          Position := No_Element;  --  Post-York behavior
          return;
       end if;
-
-      TC_Check (Container.TC);
 
       for Index in 1 .. Count loop
          X := Position.Node;
@@ -604,6 +604,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          Source : in out List)
       is
       begin
+         TC_Check (Target.TC);
+         TC_Check (Source.TC);
+
          --  The semantics of Merge changed slightly per AI05-0021. It was
          --  originally the case that if Target and Source denoted the same
          --  container object, then the GNAT implementation of Merge did
@@ -625,9 +628,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
          then
             raise Constraint_Error with "new length exceeds maximum";
          end if;
-
-         TC_Check (Target.TC);
-         TC_Check (Source.TC);
 
          --  Per AI05-0022, the container implementation is required to detect
          --  element tampering by a generic actual subprogram.
@@ -796,6 +796,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       New_Node   : Node_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Before.Container /= null then
          if Checks and then Before.Container /= Container'Unrestricted_Access
          then
@@ -814,8 +816,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Checks and then Container.Length > Count_Type'Last - Count then
          raise Constraint_Error with "new length exceeds maximum";
       end if;
-
-      TC_Check (Container.TC);
 
       New_Node   := new Node_Type'(New_Item, null, null);
       First_Node := New_Node;
@@ -851,6 +851,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       New_Node   : Node_Access;
 
    begin
+      TC_Check (Container.TC);
+
       if Before.Container /= null then
          if Checks and then Before.Container /= Container'Unrestricted_Access
          then
@@ -869,8 +871,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Checks and then Container.Length > Count_Type'Last - Count then
          raise Constraint_Error with "new length exceeds maximum";
       end if;
-
-      TC_Check (Container.TC);
 
       New_Node   := new Node_Type;
       First_Node := New_Node;
@@ -1372,6 +1372,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1380,8 +1382,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
          raise Program_Error with
            "Position cursor designates wrong container";
       end if;
-
-      TE_Check (Container.TC);
 
       pragma Assert (Vet (Position), "bad cursor in Replace_Element");
 
@@ -1543,6 +1543,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Source : in out List)
    is
    begin
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Before.Container /= null then
          if Checks and then Before.Container /= Target'Unrestricted_Access then
             raise Program_Error with
@@ -1560,9 +1563,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
          raise Constraint_Error with "new length exceeds maximum";
       end if;
 
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
-
       Splice_Internal (Target, Before.Node, Source);
    end Splice;
 
@@ -1572,6 +1572,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position  : Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Before.Container /= null then
          if Checks and then Before.Container /= Container'Unchecked_Access then
             raise Program_Error with
@@ -1600,8 +1602,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
 
       pragma Assert (Container.Length >= 2);
-
-      TC_Check (Container.TC);
 
       if Before.Node = null then
          pragma Assert (Position.Node /= Container.Last);
@@ -1678,6 +1678,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return;
       end if;
 
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Before.Container /= null then
          if Checks and then Before.Container /= Target'Unrestricted_Access then
             raise Program_Error with
@@ -1701,9 +1704,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Checks and then Target.Length = Count_Type'Last then
          raise Constraint_Error with "Target is full";
       end if;
-
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
 
       Splice_Internal (Target, Before.Node, Source, Position.Node);
       Position.Container := Target'Unchecked_Access;
@@ -1862,6 +1862,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       I, J      : Cursor)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then I.Node = null then
          raise Constraint_Error with "I cursor has no element";
       end if;
@@ -1881,8 +1883,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if I.Node = J.Node then
          return;
       end if;
-
-      TE_Check (Container.TC);
 
       pragma Assert (Vet (I), "bad I cursor in Swap");
       pragma Assert (Vet (J), "bad J cursor in Swap");
@@ -1908,6 +1908,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       I, J      : Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then I.Node = null then
          raise Constraint_Error with "I cursor has no element";
       end if;
@@ -1927,8 +1929,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if I.Node = J.Node then
          return;
       end if;
-
-      TC_Check (Container.TC);
 
       pragma Assert (Vet (I), "bad I cursor in Swap_Links");
       pragma Assert (Vet (J), "bad J cursor in Swap_Links");

@@ -299,6 +299,8 @@ package body Ada.Containers.Hashed_Sets is
       Position  : in out Cursor)
    is
    begin
+      TC_Check (Container.HT.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
@@ -307,8 +309,6 @@ package body Ada.Containers.Hashed_Sets is
       then
          raise Program_Error with "Position cursor designates wrong set";
       end if;
-
-      TC_Check (Container.HT.TC);
 
       pragma Assert (Vet (Position), "bad cursor in Delete");
 
@@ -1204,12 +1204,12 @@ package body Ada.Containers.Hashed_Sets is
         Element_Keys.Find (Container.HT, New_Item);
 
    begin
+      TE_Check (Container.HT.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.HT.TC);
 
       Node.Element := New_Item;
    end Replace;

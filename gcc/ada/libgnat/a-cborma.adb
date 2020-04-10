@@ -1418,11 +1418,11 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
 
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Node = 0 then
          raise Constraint_Error with "key not in map";
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          N : Node_Type renames Container.Nodes (Node);
@@ -1443,6 +1443,8 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Position.Node = 0 then
          raise Constraint_Error with
            "Position cursor of Replace_Element equals No_Element";
@@ -1453,8 +1455,6 @@ package body Ada.Containers.Bounded_Ordered_Maps is
          raise Program_Error with
            "Position cursor of Replace_Element designates wrong map";
       end if;
-
-      TE_Check (Container.TC);
 
       pragma Assert (Vet (Container, Position.Node),
                      "Position cursor of Replace_Element is bad");

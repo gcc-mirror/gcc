@@ -94,9 +94,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       Compare : Integer;
 
    begin
-      if Target'Address = Source'Address then
-         TC_Check (Target.TC);
+      TC_Check (Target.TC);
 
+      if Target'Address = Source'Address then
          Clear (Target);
          return;
       end if;
@@ -104,8 +104,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
       if Source.Length = 0 then
          return;
       end if;
-
-      TC_Check (Target.TC);
 
       Tgt := Target.First;
       Src := Source.First;

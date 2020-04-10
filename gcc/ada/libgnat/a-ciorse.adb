@@ -1788,11 +1788,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       pragma Warnings (Off, X);
 
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       declare
          --  The element allocator may need an accessibility check in the case
