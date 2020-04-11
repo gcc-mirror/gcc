@@ -3424,7 +3424,14 @@ package body Exp_Attr is
          --  reference. Note that this must be in keeping with what is done
          --  for scalar types in order for range checks to be elided in loops.
 
-         elsif Is_Array_Type (Ptyp) and then Is_Constrained (Ptyp) then
+         --  However, avoid doing it if the array type is public because, in
+         --  this case, we effectively rely on the back end to create public
+         --  symbols with consistent names across units for the array bounds.
+
+         elsif Is_Array_Type (Ptyp)
+           and then Is_Constrained (Ptyp)
+           and then not Is_Public (Ptyp)
+         then
             declare
                Bnd : Node_Id;
 
