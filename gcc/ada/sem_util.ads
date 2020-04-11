@@ -1126,8 +1126,8 @@ package Sem_Util is
    function Get_Iterable_Type_Primitive
      (Typ : Entity_Id;
       Nam : Name_Id) return Entity_Id;
-   --  Retrieve one of the primitives First, Next, Has_Element, Element from
-   --  the value of the Iterable aspect of a type.
+   --  Retrieve one of the primitives First, Last, Next, Previous, Has_Element,
+   --  Element from the value of the Iterable aspect of a type.
 
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by
