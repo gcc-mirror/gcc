@@ -937,8 +937,8 @@ package body Exp_Ch4 is
                --  the original allocator node. This is for proper handling of
                --  restriction No_Implicit_Heap_Allocations.
 
-               Set_Comes_From_Source
-                 (Expression (Temp_Decl), Comes_From_Source (N));
+               Preserve_Comes_From_Source
+                 (Expression (Temp_Decl), N);
 
                Set_No_Initialization (Expression (Temp_Decl));
                Insert_Action (N, Temp_Decl);

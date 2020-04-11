@@ -3101,7 +3101,7 @@ package body Sem_Ch6 is
                   --  To ensure proper coverage when body is inlined, indicate
                   --  whether the subprogram comes from source.
 
-                  Set_Comes_From_Source (Subp, Comes_From_Source (N));
+                  Preserve_Comes_From_Source (Subp, N);
 
                   if Present (First_Formal (Body_Id)) then
                      Plist := Copy_Parameter_List (Body_Id);

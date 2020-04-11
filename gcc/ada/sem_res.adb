@@ -10744,7 +10744,7 @@ package body Sem_Res is
             --  Set Comes_From_Source on L to preserve warnings for unset
             --  reference.
 
-            Set_Comes_From_Source (L, Comes_From_Source (Reloc_L));
+            Preserve_Comes_From_Source (L, Reloc_L);
          end;
       end if;
 
