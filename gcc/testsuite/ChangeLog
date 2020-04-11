@@ -1,3 +1,25 @@
+2020-04-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86327
+	* g++.dg/cpp1y/constexpr-return5.C: New test.
+
+2020-04-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94494
+	* gcc.target/i386/pr94494.c: New test.
+
+2020-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94482
+	* gcc.dg/torture/pr94482.c: Add -Wno-psabi -w.  Don't add -msse
+	and sse_runtime effective target on x86, instead only add -msse2
+	if target is sse2_runtime.
+
+2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94528
+	* g++.dg/coroutines/pr94528.C: New test.
+
 2020-04-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94149

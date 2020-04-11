@@ -1,3 +1,16 @@
+2020-04-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94494
+	* config/i386/sse.md (REDUC_SSE_SMINMAX_MODE): Use TARGET_SSE2
+	condition for V4SI, V8HI and V16QI modes.
+
+2020-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94495
+	PR target/94551
+	* cselib.c (cselib_record_sp_cfa_base_equiv): Set PRESERVED_VALUE_P on
+	val->val_rtx.
+
 2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/89433

@@ -1,3 +1,18 @@
+2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94528
+	* coroutines.cc (co_await_expander): Remove.
+	(expand_one_await_expression): New.
+	(process_one_statement): New.
+	(await_statement_expander): New.
+	(build_actor_fn): Revise to use per-statement expander.
+	(struct susp_frame_data): Reorder and comment.
+	(register_awaits): Factor code.
+	(replace_statement_captures): New, factored from...
+	(maybe_promote_captured_temps):.. here.
+	(await_statement_walker): Revise to process per statement.
+	(morph_fn_to_coro): Use revised susp_frame_data layout.
+
 2020-04-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94149
