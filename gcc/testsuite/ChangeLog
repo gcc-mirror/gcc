@@ -1,3 +1,10 @@
+2020-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94482
+	* gcc.dg/torture/pr94482.c: Add -Wno-psabi -w.  Don't add -msse
+	and sse_runtime effective target on x86, instead only add -msse2
+	if target is sse2_runtime.
+
 2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94528

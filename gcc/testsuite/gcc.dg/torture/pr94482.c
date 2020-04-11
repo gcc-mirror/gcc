@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-require-effective-target sse_runtime { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-Wno-psabi -w" } */
+/* { dg-additional-options "-msse2" { target sse2_runtime } } */
 
 typedef unsigned V __attribute__ ((__vector_size__ (16)));
 union U
