@@ -10175,6 +10175,16 @@ package body Sem_Util is
      (Typ : Entity_Id;
       Nam : Name_Id) return Entity_Id
    is
+      pragma Assert
+        (Is_Type (Typ)
+         and then
+         Nam_In (Nam, Name_Element,
+                      Name_First,
+                      Name_Has_Element,
+                      Name_Last,
+                      Name_Next,
+                      Name_Previous));
+
       Funcs : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Iterable);
       Assoc : Node_Id;
 
