@@ -14052,6 +14052,17 @@ package body Exp_Ch4 is
          Set_Expressions (Left, New_List (New_Copy (Index (1))));
       end if;
 
+      --  Build the Last reference we will use
+
+      Right :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (Ent (1), Loc),
+          Attribute_Name => Name_Last);
+
+      if Present (Index (1)) then
+         Set_Expressions (Right, New_List (New_Copy (Index (1))));
+      end if;
+
       --  If general value case, then do the addition of (n - 1), and
       --  also add the needed conversions to type Long_Long_Integer.
 
@@ -14083,16 +14094,27 @@ package body Exp_Ch4 is
                Analyze (Left);
                Analyze (Y_First);
 
-               --  If X'First = Y'First, rewrite it into a direct comparison
-               --  of Y'Last and X'Last without conversions.
+               --  If X'First = Y'First, simplify the above formula into a
+               --  direct comparison of Y'Last and X'Last.
 
                R := Compile_Time_Compare (Left, Y_First, Assume_Valid => True);
 
                if R = EQ then
-                  Left := Y_Last;
-                  Comp := Empty;
+                  Analyze (Right);
+                  Analyze (Y_Last);
 
-               --  Otherwise, use the above formula
+                  --  If the base types are different, convert both operands to
+                  --  Long_Long_Integer, else compare them directly.
+
+                  if Base_Type (Etype (Right)) /= Base_Type (Etype (Y_Last))
+                  then
+                     Left := Convert_To_Long_Long_Integer (Y_Last);
+                  else
+                     Left := Y_Last;
+                     Comp := Empty;
+                  end if;
+
+               --  Otherwise, use the above formula as-is
 
                else
                   Left :=
@@ -14118,17 +14140,6 @@ package body Exp_Ch4 is
                     Left_Opnd  => Convert_To_Long_Long_Integer (Comp),
                     Right_Opnd => Make_Integer_Literal (Loc, 1)));
          end if;
-      end if;
-
-      --  Build the Last reference we will use
-
-      Right :=
-        Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Ent (1), Loc),
-          Attribute_Name => Name_Last);
-
-      if Present (Index (1)) then
-         Set_Expressions (Right, New_List (New_Copy (Index (1))));
       end if;
 
       --  If general operand, convert Last reference to Long_Long_Integer
