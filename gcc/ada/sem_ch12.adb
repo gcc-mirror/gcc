@@ -5456,7 +5456,7 @@ package body Sem_Ch12 is
 
          --  Subprogram instance comes from source only if generic does
 
-         Set_Comes_From_Source (Act_Decl_Id, Comes_From_Source (Gen_Unit));
+         Preserve_Comes_From_Source (Act_Decl_Id, Gen_Unit);
 
          --  If the instance is a child unit, mark the Id accordingly. Mark
          --  the anonymous entity as well, which is the real subprogram and
@@ -11898,7 +11898,7 @@ package body Sem_Ch12 is
 
          Act_Body_Id :=
            Make_Defining_Identifier (Sloc (Act_Decl_Id), Chars (Act_Decl_Id));
-         Set_Comes_From_Source (Act_Body_Id, Comes_From_Source (Act_Decl_Id));
+         Preserve_Comes_From_Source (Act_Body_Id, Act_Decl_Id);
 
          --  Some attributes of spec entity are not inherited by body entity
 
@@ -12265,7 +12265,7 @@ package body Sem_Ch12 is
          Act_Body_Id :=
            Make_Defining_Identifier (Sloc (Act_Decl_Id), Chars (Act_Decl_Id));
 
-         Set_Comes_From_Source (Act_Body_Id, Comes_From_Source (Act_Decl_Id));
+         Preserve_Comes_From_Source (Act_Body_Id, Act_Decl_Id);
          Set_Defining_Unit_Name (Specification (Act_Body), Act_Body_Id);
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
