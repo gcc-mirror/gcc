@@ -31,4 +31,4 @@ build_by_default="no"
 
 target_libs="target-libffi target-libbacktrace"
 
-gtfiles="\$(srcdir)/rust/rust-lang.c \$(srcdir)/rust/rust-c.h"
+gtfiles="\$(srcdir)/rust/rust-lang.cc"

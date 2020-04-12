@@ -37,11 +37,9 @@
 #include <set>
 #include <vector>
 #include <sstream>
-<<<<<<< HEAD
-=======
 #include <string>
 #include <deque>
->>>>>>> c611d209696bd5983b4b777be0beea80351dee46
+#include <functional>
 
 #if defined(HAVE_UNORDERED_MAP)
 
@@ -149,5 +147,9 @@ struct hash<T*>
 
 // When using gcc, rust_unreachable is just gcc_unreachable.
 #define rust_unreachable() gcc_unreachable()
+
+extern void rust_preserve_from_gc (tree t);
+
+extern const char* rust_localize_identifier (const char *ident);
 
 #endif // !defined(RUST_SYSTEM_H)

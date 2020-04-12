@@ -22,6 +22,8 @@
 
 ; Please try to keep this file in ASCII collating order.
 
+; Describes command-line options used by this frontend
+
 Language
 Rust
 
@@ -32,6 +34,10 @@ Rust Joined Separate
 L
 Rust Joined Separate
 ; Not documented
+
+frust-dump-
+Rust Joined RejectNegative
+-frust-dump-<type>	Dump Rust frontend internal information.
 
 o
 Rust Joined Separate
