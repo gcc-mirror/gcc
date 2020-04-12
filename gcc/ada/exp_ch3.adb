@@ -515,6 +515,78 @@ package body Exp_Ch3 is
       end loop;
    end Adjust_Discriminants;
 
+   ------------------------------------------
+   -- Build_Access_Subprogram_Wrapper_Body --
+   ------------------------------------------
+
+   procedure Build_Access_Subprogram_Wrapper_Body
+     (Decl : Node_Id;
+      New_Decl : Node_Id)
+   is
+      Loc       : constant Source_Ptr := Sloc (Decl);
+      Actuals   : constant List_Id := New_List;
+      Type_Def  : constant Node_Id := Type_Definition (Decl);
+      Type_Id   : constant Entity_Id := Defining_Identifier (Decl);
+      Spec_Node : constant Node_Id :=
+        New_Copy_Tree (Specification (New_Decl));
+
+      Act       : Node_Id;
+      Body_Node : Node_Id;
+      Call_Stmt : Node_Id;
+      Ptr       : Entity_Id;
+   begin
+      if not Expander_Active then
+         return;
+      end if;
+
+      Set_Defining_Unit_Name (Spec_Node,
+        Make_Defining_Identifier
+          (Loc, Chars (Defining_Unit_Name (Spec_Node))));
+
+      --  Create List of actuals for indirect call. The last
+      --  parameter of the subprogram is the access value itself.
+
+      Act := First (Parameter_Specifications (Spec_Node));
+
+      while Present (Act) loop
+         Append_To (Actuals,
+           Make_Identifier (Loc, Chars (Defining_Identifier (Act))));
+         Next (Act);
+         exit when Act = Last (Parameter_Specifications (Spec_Node));
+      end loop;
+
+      Ptr :=
+        Defining_Identifier
+          (Last (Parameter_Specifications (Spec_Node)));
+
+      if Nkind (Type_Def) = N_Access_Procedure_Definition then
+         Call_Stmt := Make_Procedure_Call_Statement (Loc,
+           Name =>
+              Make_Explicit_Dereference
+                (Loc, New_Occurrence_Of (Ptr, Loc)),
+           Parameter_Associations => Actuals);
+      else
+         Call_Stmt := Make_Simple_Return_Statement (Loc,
+           Expression =>
+             Make_Function_Call (Loc,
+           Name => Make_Explicit_Dereference
+                    (Loc, New_Occurrence_Of (Ptr, Loc)),
+           Parameter_Associations => Actuals));
+      end if;
+
+      Body_Node := Make_Subprogram_Body (Loc,
+        Specification => Spec_Node,
+        Declarations  => New_List,
+        Handled_Statement_Sequence =>
+          Make_Handled_Sequence_Of_Statements (Loc,
+            Statements    => New_List (Call_Stmt)));
+
+      --  Place body in list of freeze actions for the type.
+
+      Ensure_Freeze_Node (Type_Id);
+      Append_Freeze_Actions (Type_Id, New_List (Body_Node));
+   end Build_Access_Subprogram_Wrapper_Body;
+
    ---------------------------
    -- Build_Array_Init_Proc --
    ---------------------------

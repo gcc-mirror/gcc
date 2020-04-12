@@ -92,6 +92,11 @@ package body Sem_Ch3 is
    --  abstract interface types implemented by a record type or a derived
    --  record type.
 
+   procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id);
+   --  When an access_to_subprogram type has pre/postconditions, we
+   --  build a subprogram that includes these contracts and is invoked
+   --  by any indirect call through the corresponding access type.
+
    procedure Build_Derived_Type
      (N             : Node_Id;
       Parent_Type   : Entity_Id;
@@ -3135,6 +3140,17 @@ package body Sem_Ch3 is
                --  usually a violation in Pure unit, Shared_Passive unit.
 
                Validate_Access_Type_Declaration (T, N);
+
+               --  If the type has contracts, we create the corresponding
+               --  wrapper at once, before analyzing the aspect
+               --  specifications, so that pre/postconditions can be
+               --  handled directly on the generated wrapper.
+
+               if Ada_Version >= Ada_2020
+                 and then Present (Aspect_Specifications (N))
+               then
+                  Build_Access_Subprogram_Wrapper (N);
+               end if;
 
             when N_Access_To_Object_Definition =>
                Access_Type_Declaration (T, Def);
@@ -6446,6 +6462,146 @@ package body Sem_Ch3 is
       Set_Can_Use_Internal_Rep (Anon, not Always_Compatible_Rep_On_Target);
       return Anon;
    end Replace_Anonymous_Access_To_Protected_Subprogram;
+
+   -------------------------------------
+   -- Build_Access_Subprogram_Wrapper --
+   -------------------------------------
+
+   procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id) is
+      Loc      : constant Source_Ptr := Sloc (Decl);
+      Id       : constant Entity_Id  := Defining_Identifier (Decl);
+      Type_Def : constant Node_Id    := Type_Definition (Decl);
+      Specs   :  constant List_Id    :=
+                              Parameter_Specifications (Type_Def);
+      Profile : constant List_Id     := New_List;
+      Subp    : constant Entity_Id   := Make_Temporary (Loc, 'A');
+
+      Contracts : constant List_Id := New_List;
+      Form_P    : Node_Id;
+      New_P     : Node_Id;
+      New_Decl  : Node_Id;
+      Spec      : Node_Id;
+
+      procedure Replace_Type_Name (Expr : Node_Id);
+      --  In the expressions for contract aspects, replace
+      --  occurrences of the access type with the name of the
+      --  subprogram entity, as needed, e.g. for 'Result.
+      --  Apects that are not contracts 9e.g. Size or Aligment)
+      --  remain on the originsl access type declaration.
+      --  What about expanded names denoting formals, whose prefix
+      --  in the source is the type name ???
+
+      -----------------------
+      -- Replace_Type_Name --
+      -----------------------
+
+      procedure Replace_Type_Name (Expr : Node_Id) is
+         function Process (N : Node_Id) return Traverse_Result;
+         function Process (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Is_Entity_Name (Prefix (N))
+              and then Chars (Prefix (N)) = Chars (Id)
+            then
+               Set_Prefix (N, Make_Identifier (Sloc (N), Chars (Subp)));
+            end if;
+
+            return OK;
+         end Process;
+
+         procedure Traverse is new Traverse_Proc (Process);
+      begin
+         Traverse (Expr);
+      end Replace_Type_Name;
+
+   begin
+      if Ekind_In (Id, E_Access_Subprogram_Type,
+         E_Access_Protected_Subprogram_Type,
+         E_Anonymous_Access_Protected_Subprogram_Type,
+         E_Anonymous_Access_Subprogram_Type)
+      then
+         null;
+
+      else
+         Error_Msg_N
+           ("illegal pre/postcondition on access type", Decl);
+         return;
+      end if;
+
+      declare
+         Asp  : Node_Id;
+         A_Id : Aspect_Id;
+         Cond : Node_Id;
+         Expr : Node_Id;
+
+      begin
+         Asp := First (Aspect_Specifications (Decl));
+         while Present (Asp) loop
+            A_Id := Get_Aspect_Id (Chars (Identifier (Asp)));
+            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+               Cond := Asp;
+               Expr := Expression (Cond);
+               Replace_Type_Name (Expr);
+               Next (Asp);
+
+               Remove (Cond);
+               Append (Cond, Contracts);
+
+            else
+               Next (Asp);
+            end if;
+         end loop;
+      end;
+
+      --  If there are no contract aspects, no need for a wrapper.
+
+      if Is_Empty_List (Contracts) then
+         return;
+      end if;
+
+      Form_P := First (Specs);
+
+      while Present (Form_P) loop
+         New_P := New_Copy_Tree (Form_P);
+         Set_Defining_Identifier (New_P,
+           Make_Defining_Identifier
+            (Loc, Chars (Defining_Identifier (Form_P))));
+         Append (New_P, Profile);
+         Next (Form_P);
+      end loop;
+
+      --  Add to parameter specifications the access parameter that
+      --  is passed in from an indirect call.
+
+      Append (
+         Make_Parameter_Specification (Loc,
+           Defining_Identifier => Make_Temporary (Loc, 'P'),
+           Parameter_Type  =>  New_Occurrence_Of (Id, Loc)),
+         Profile);
+
+      if Nkind (Type_Def) = N_Access_Procedure_Definition then
+         Spec :=
+           Make_Procedure_Specification (Loc,
+             Defining_Unit_Name       => Subp,
+             Parameter_Specifications => Profile);
+      else
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => Subp,
+             Parameter_Specifications => Profile,
+             Result_Definition        =>
+               New_Copy_Tree
+                 (Result_Definition (Type_Definition (Decl))));
+      end if;
+
+      New_Decl :=
+        Make_Subprogram_Declaration (Loc, Specification => Spec);
+      Set_Aspect_Specifications (New_Decl, Contracts);
+
+      Insert_After (Decl, New_Decl);
+      Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+      Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
+   end Build_Access_Subprogram_Wrapper;
 
    -------------------------------
    -- Build_Derived_Access_Type --
