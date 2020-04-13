@@ -29,7 +29,9 @@ jobs:
                   libmpc-dev \
                   build-essential \
                   gcc-multilib \
-                  g++-multilib
+                  g++-multilib \
+                  gcc-7-plugin-dev \
+                  gcc-8-plugin-dev
 
     - name: Configure
       run: |
