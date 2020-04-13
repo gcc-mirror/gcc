@@ -1,5 +1,11 @@
 2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* g++.dg/coroutines/coro-pre-proc.C: Update coroutines builtin
+	define, per n4861.
+	* g++.dg/coroutines/coro.h: Likewise.
+
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.dg/darwin-version-1.c: Use -mmacosx-version-min= 10.8
 	for system versions 10.14 and 10.15.
 

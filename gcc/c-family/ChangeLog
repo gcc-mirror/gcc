@@ -1,3 +1,8 @@
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update coroutines builtin
+	define, per n4861.
+
 2020-04-02  Richard Biener  <rguenther@suse.de>
 
 	PR c/94392

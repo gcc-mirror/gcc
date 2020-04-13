@@ -1,3 +1,8 @@
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/std/coroutine: Update coroutines builtin define,
+	per n4861.
+
 2020-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare (compare_three_way): Fix noexcept-specifier.
