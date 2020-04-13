@@ -1,5 +1,8 @@
 2020-04-13  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94521
+	* g++.dg/cpp2a/lambda-uneval12.C: New test.
+
 	PR c++/94470
 	* g++.dg/cpp1y/constexpr-nsdmi8.C: New test.
 	* g++.dg/cpp1y/constexpr-nsdmi9.C: New test.

@@ -211,6 +211,8 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
     }
   else if ((flags & TFF_SCOPE) && TREE_CODE (scope) == FUNCTION_DECL)
     {
+      if (DECL_USE_TEMPLATE (scope))
+	f |= TFF_NO_FUNCTION_ARGUMENTS;
       dump_function_decl (pp, scope, f);
       pp_cxx_colon_colon (pp);
     }

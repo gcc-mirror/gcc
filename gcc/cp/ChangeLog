@@ -1,5 +1,10 @@
 2020-04-13  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94521
+	* error.c (dump_scope): Pass TFF_NO_FUNCTION_ARGUMENTS to
+	dump_function_decl when printing a function template instantiation as a
+	scope.
+
 	PR c++/94470
 	* constexpr.c (get_or_insert_ctor_field): Set default value of parameter
 	'pos_hint' to -1.
