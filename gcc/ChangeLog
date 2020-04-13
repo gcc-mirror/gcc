@@ -1,3 +1,9 @@
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (-Wall): Mention -Wformat-overflow and
+	-Wformat-truncation.  Move -Wzero-length-bounds last.
+	(-Wrestrict): Document positive form of option enabled by -Wall.
+
 2020-04-13 Zachary Spytz  <zspytz@gmail.com>
 
 	* doc/extend.texi: Add realloc to list of built-in functions
