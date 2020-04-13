@@ -54,9 +54,12 @@ void bar()
   []{}();
 }
 
-// lambdas used in non-template, non-class body initializers are internal.
+// lambdas used in namespace-scope initializers have the linkage of
+// the decl
 // { dg-final { scan-assembler-not "weak\[^\n\r\]*_ZNKUlv" } }
-// { dg-final { scan-assembler-not "weak\[^\n\r\]*variable" } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*variableMUlvE_clEv" { target c++14_down } } }
+// in c++17 and up, this operator() become constexpr, no not emitted
+// { dg-final { scan-assembler-not "weak\[^\n\r\]*variableMUlvE_clEv" { target c++17 } } }
 int variable = []{return 1;}();
 
 // And a template instantiated with such a lambda is also internal.

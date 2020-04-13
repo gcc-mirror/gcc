@@ -1,3 +1,64 @@
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-pre-proc.C: Update coroutines builtin
+	define, per n4861.
+	* g++.dg/coroutines/coro.h: Likewise.
+
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-version-1.c: Use -mmacosx-version-min= 10.8
+	for system versions 10.14 and 10.15.
+
+2020-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87644
+	* gfortran.dg/variable_parameter.f90: New test.
+
+2020-04-13  Linus Koenig <link@sig-st.de>
+
+	PR fortran/94192
+	* gfortran.dg/bound_resolve_after_error_1.f90: New test.
+
+2020-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94426
+	* g++.dg/cpp0x/lambda/pr94426-[12].C: New.
+	* g++.dg/abi/lambda-vis.C: Drop a warning.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Lambda visibility on
+	variable changes.
+	* g++.dg/opt/dump1.C: Drop warnings of no import.
+
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/operand-modifiers.c: New test.
+
+2020-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94091
+	* gfortran.dg/char_length_22.f90: New test.
+
+2020-04-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/indirect-thunk-1.c: Adjust for fno-common
+	change, removing indirections for vars in .data.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-4.c: Likewise.
+
 2020-04-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86327

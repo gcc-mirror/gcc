@@ -1,3 +1,13 @@
+2020-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94426  lambdas with internal linkage are different to no-linkage
+	* decl2.c (determine_visibility): A lambda's visibility is
+	affected by its extra scope.
+	* pt.c (instantiate_decl): Determine var's visibility before
+	instantiating its initializer.
+	* tree.c (no_linkage_check): Revert code looking at visibility of
+	lambda's extra scope.
+`
 2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94528

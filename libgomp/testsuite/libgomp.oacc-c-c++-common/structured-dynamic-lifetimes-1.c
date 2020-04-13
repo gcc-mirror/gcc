@@ -1,4 +1,4 @@
-/* Test transitioning of data lifetimes between static and dynamic.  */
+/* Test transitioning of data lifetimes between structured and dynamic.  */
 
 /* { dg-skip-if "" { *-*-* } { "-DACC_MEM_SHARED=1" } } */
 
@@ -69,7 +69,8 @@ f2 (void)
 #else
 #pragma acc exit data copyout(block1[0:SIZE])
 #endif
-    /* This should stay present until the end of the static data lifetime.  */
+    /* This should stay present until the end of the structured data
+       lifetime.  */
     assert (acc_is_present (block1, SIZE));
   }
 

@@ -1,3 +1,25 @@
+2020-04-13 Zachary Spytz  <zspytz@gmail.com>
+
+	* doc/extend.texi: Add realloc to list of built-in functions
+	are recognized by the compiler.
+
+2020-04-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94556
+	* config/i386/i386.c (ix86_expand_epilogue): Restore the frame
+	pointer in word_mode for eh_return epilogues.
+
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Don't add offsets to
+	memory references in %B, %C and %D operand selectors when the inner
+	operand is a post increment address.
+
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Offset a %C memory
+	reference by 4 bytes, and %D memory reference by 6 bytes.
+
 2020-04-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94494
