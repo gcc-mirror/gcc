@@ -1,3 +1,7 @@
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/operand-modifiers.c: New test.
+
 2020-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94091

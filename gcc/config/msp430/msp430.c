@@ -3492,7 +3492,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       switch (GET_CODE (op))
 	{
 	case MEM:
-	  op = adjust_address (op, Pmode, 3);
+	  op = adjust_address (op, Pmode, 4);
 	  break;
 	case REG:
 	  op = gen_rtx_REG (Pmode, REGNO (op) + 2);
@@ -3510,7 +3510,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       switch (GET_CODE (op))
 	{
 	case MEM:
-	  op = adjust_address (op, Pmode, 4);
+	  op = adjust_address (op, Pmode, 6);
 	  break;
 	case REG:
 	  op = gen_rtx_REG (Pmode, REGNO (op) + 3);

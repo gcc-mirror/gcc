@@ -1,3 +1,8 @@
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Offset a %C memory
+	reference by 4 bytes, and %D memory reference by 6 bytes.
+
 2020-04-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94494
