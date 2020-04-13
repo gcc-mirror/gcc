@@ -1,0 +1,46 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Deps
+      run: |
+          sudo apt-get update;
+          sudo apt-get install -y \
+                  automake \
+                  autoconf \
+                  libtool \
+                  autogen \
+                  bison \
+                  flex \
+                  libgmp3-dev \
+                  libmpfr-dev \
+                  libmpc-dev \
+                  build-essential \
+                  gcc-multilib \
+                  g++-multilib
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               --enable-languages=c,c++,rust \
+               --disable-bootstrap \
+               --enable-multilib
+
+    - name: Build
+      run: |
+           cd gccrs-build; \
+           make -j2
