@@ -21,6 +21,7 @@ class Dsymbol;
 class Expression;
 class Parameter;
 class Type;
+class TypeTuple;
 struct OutBuffer;
 
 struct Target
@@ -73,4 +74,5 @@ struct Target
     static Type *cppParameterType(Parameter *p);
     static bool cppFundamentalType(const Type *t, bool& isFundamental);
     static LINK systemLinkage();
+    static TypeTuple *toArgTypes(Type *t);
 };

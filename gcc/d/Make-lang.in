@@ -59,7 +59,6 @@ D_FRONTEND_OBJS = \
 	d/access.o \
 	d/aliasthis.o \
 	d/apply.o \
-	d/argtypes.o \
 	d/arrayop.o \
 	d/attrib.o \
 	d/blockexit.o \

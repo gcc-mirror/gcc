@@ -1,3 +1,8 @@
+2020-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Remove d/argtypes.o.
+	* d-target.cc (Target::toArgTypes): New function.
+
 2020-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-spec.cc (LIBDRUNTIME): Remove.
