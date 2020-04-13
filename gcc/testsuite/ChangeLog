@@ -1,3 +1,8 @@
+2020-04-13  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/94584
+	* gcc.target/xtensa/pr94584.c: New test.
+
 2020-04-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94359
