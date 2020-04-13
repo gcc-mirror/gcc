@@ -1,3 +1,8 @@
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-version-1.c: Use -mmacosx-version-min= 10.8
+	for system versions 10.14 and 10.15.
+
 2020-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87644
