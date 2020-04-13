@@ -1,3 +1,8 @@
+2020-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87644
+	* gfortran.dg/variable_parameter.f90: New test.
+
 2020-04-13  Linus Koenig <link@sig-st.de>
 
 	PR fortran/94192
