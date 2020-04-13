@@ -1,3 +1,12 @@
+2020-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94426
+	* g++.dg/cpp0x/lambda/pr94426-[12].C: New.
+	* g++.dg/abi/lambda-vis.C: Drop a warning.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Lambda visibility on
+	variable changes.
+	* g++.dg/opt/dump1.C: Drop warnings of no import.
+
 2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/operand-modifiers.c: New test.

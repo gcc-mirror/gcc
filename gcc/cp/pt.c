@@ -25541,6 +25541,14 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       c_inhibit_evaluation_warnings = 0;
     }
 
+  if (VAR_P (d))
+    {
+      /* The variable might be a lambda's extra scope, and that
+	 lambda's visibility depends on D's.  */
+      maybe_commonize_var (d);
+      determine_visibility (d);
+    }
+
   /* Mark D as instantiated so that recursive calls to
      instantiate_decl do not try to instantiate it again.  */
   DECL_TEMPLATE_INSTANTIATED (d) = 1;

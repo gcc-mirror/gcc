@@ -2,7 +2,7 @@
 // { dg-options "-fno-inline" }
 
 template<typename T> int sfoo (T); // { dg-warning "used but never defined" }
-template<typename T> int gfoo (T); // { dg-warning "used but never defined" }
+template<typename T> int gfoo (T); // OK, but not completable
 template<typename T> int ifoo (T); // OK
 template<typename T> struct Wrapper {};
 template<typename T> Wrapper<T> capture (T &&) {return Wrapper<T> ();}
