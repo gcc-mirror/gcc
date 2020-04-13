@@ -95,13 +95,13 @@ void strcpy_global_array (void)
   /* GMA2 is external but because it's an array its definition in another
      translation unit may not provide an initializer for the flexible array
      member.  Verify that a warning is issued for access to it.  */
-  T (gma2[0].ax, 1);      // { dg-warning "'strcpy' offset \\\[157, 158] from the object at 'gma2' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 157" }
-  T (gma2[0].ax, 7);      // { dg-warning "'strcpy' offset \\\[157, 164] from the object at 'gma2' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 157" }
+  T (gma2[0].ax, 1);      // { dg-warning "'strcpy' offset \\\[157, 158] from the object at 'gma2' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 157" }
+  T (gma2[0].ax, 7);      // { dg-warning "'strcpy' offset \\\[157, 164] from the object at 'gma2' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 157" }
 
-  /* IGMA_ is internal and provides on definition for the flexible array
-     member.  Verify that a warnin is issued for out-of-bounds accesses
+  /* IGMA2_ is internal and provides no definition for the flexible array
+     member.  Verify that a warning is issued for out-of-bounds accesses
      to it.  */
-  T (igma2_[0].ax, 1);    // { dg-warning "'strcpy' offset \\\[157, 158] from the object at 'igma2_' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 157" }
+  T (igma2_[0].ax, 1);    // { dg-warning "'strcpy' offset \\\[157, 158] from the object at 'igma2_' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 157" }
 
   T (igma_3.ax, 0);
   T (igma_3.ax, 1);
@@ -134,7 +134,7 @@ void strcpy_local (void)
   T (lma.a17, 16);
   T (lma.a17, 17);        // { dg-warning "'strcpy' offset 157 from the object at 'lma' is out of the bounds of referenced subobject 'a17' with type 'char\\\[17]' at offset 140" }
 
-  T (lma.ax, 0);          // { dg-warning "'strcpy' offset 157 from the object at 'lma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 157" }
+  T (lma.ax, 0);          // { dg-warning "'strcpy' offset 157 from the object at 'lma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 157" }
 }
 
 
@@ -191,11 +191,11 @@ void strcpy_ref (struct MA17 *pma)
      array.  The warning assumes that PMA doesn't point to the last element
      of the array which could in theory have nonzero elements without
      overlapping other objects.  */
-  T (pma[1].ax, 0);       // { dg-warning "'strcpy' offset 314 from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 314" }
-  T ((pma + 1)->ax, 1);   // { dg-warning "'strcpy' offset \\\[314, 315] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 314" }
-  T ((pma + 1)[1].ax, 2); // { dg-warning "'strcpy' offset \\\[471, 473] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 471" }
-  T ((*(pma + 2)).ax, 2); // { dg-warning "'strcpy' offset \\\[471, 473] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 471" }
-  T (pma[3].ax, 9);       // { dg-warning "'strcpy' offset \\\[628, 637] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[0]' at offset 628" }
+  T (pma[1].ax, 0);       // { dg-warning "'strcpy' offset 314 from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 314" }
+  T ((pma + 1)->ax, 1);   // { dg-warning "'strcpy' offset \\\[314, 315] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 314" }
+  T ((pma + 1)[1].ax, 2); // { dg-warning "'strcpy' offset \\\[471, 473] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 471" }
+  T ((*(pma + 2)).ax, 2); // { dg-warning "'strcpy' offset \\\[471, 473] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 471" }
+  T (pma[3].ax, 9);       // { dg-warning "'strcpy' offset \\\[628, 637] from the object at 'pma' is out of the bounds of referenced subobject 'ax' with type 'char\\\[]' at offset 628" }
 
   T (pma[-1].a1, 0);
   T (pma[-1].a1, 1);      // { dg-warning "'strcpy' offset -152 from the object at 'pma' is out of the bounds of referenced subobject 'a1' with type 'char\\\[1]' at offset -153" }

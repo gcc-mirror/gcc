@@ -1,3 +1,11 @@
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/92326
+	* c-c++-common/Warray-bounds-8.c: New test.
+	* gcc.dg/Warray-bounds-46.c: Adjust expected format of flexible array
+	memebrs in diagnostics.
+	* gcc.dg/Warray-bounds-49.c: Same.
+
 2020-04-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94521

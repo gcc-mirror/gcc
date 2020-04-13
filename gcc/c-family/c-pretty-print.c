@@ -593,7 +593,9 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 		expression (fold_build2 (PLUS_EXPR, type, maxval,
 					 build_int_cst (type, 1)));
 	    }
-	  else
+	  else if (TYPE_SIZE (t))
+	    /* Print zero for zero-length arrays but not for flexible
+	       array members whose TYPE_SIZE is null.  */
 	    pp_string (this, "0");
 	}
       pp_c_right_bracket (this);
