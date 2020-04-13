@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_SYSCALL_LIBS_RTP
 
 #if TARGET_VXWORKS7
-#define VXWORKS_NET_LIBS_RTP "-lnet"
+#define VXWORKS_NET_LIBS_RTP "-l%:if-exists-then-else(%:getenv(VSB_DIR /usr/h/public/rtnetStackLib.h) rtnet net)"
 #else
 #define VXWORKS_NET_LIBS_RTP "-lnet -ldsi"
 #endif
