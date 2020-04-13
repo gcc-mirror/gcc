@@ -227,7 +227,7 @@ package body Exp_Ch4 is
    procedure Optimize_Length_Comparison (N : Node_Id);
    --  Given an expression, if it is of the form X'Length op N (or the other
    --  way round), where N is known at compile time to be 0 or 1, or something
-   --  else where the value is known to be positive and in the 32-bit range,
+   --  else where the value is known to be nonnegative and in the 32-bit range,
    --  and X is a simple entity, and op is a comparison operator, optimizes it
    --  into a comparison of X'First and X'Last.
 
@@ -13781,6 +13781,14 @@ package body Exp_Ch4 is
       Is_Zero : Boolean;
       --  True for comparison operand of zero
 
+      Maybe_Superflat : Boolean;
+      --  True if we may be in the dynamic superflat case, i.e. Is_Zero is set
+      --  to false but the comparison operand can be zero at run time. In this
+      --  case, we normally cannot do anything because the canonical formula of
+      --  the length is not valid, but there is one exception: when the operand
+      --  is itself the length of an array with the same bounds as the array on
+      --  the LHS, we can entirely optimize away the comparison.
+
       Comp : Node_Id;
       --  Comparison operand, set only if Is_Zero is false
 
@@ -13800,13 +13808,6 @@ package body Exp_Ch4 is
       --  This is done with an unchecked conversion to Long_Long_Integer.
       --  We use unchecked conversion to handle the enumeration type case.
 
-      function Is_Optimizable (N : Node_Id) return Boolean;
-      --  Tests N to see if it is an optimizable comparison value (defined as
-      --  constant zero or one, or something else where the value is known to
-      --  be positive and in the range of 32 bits and where the corresponding
-      --  Length value is also known to be 32 bits). If result is true, sets
-      --  Is_Zero and Comp accordingly.
-
       function Is_Entity_Length (N : Node_Id; Num : Pos) return Boolean;
       --  Tests if N is a length attribute applied to a simple entity. If so,
       --  returns True, and sets Ent to the entity, and Index to the integer
@@ -13817,6 +13818,16 @@ package body Exp_Ch4 is
       --  when Apply_Universal_Integer_Attribute_Check installs a conversion
       --  to check for being in range, which is not needed in this context.
       --  Returns False if neither condition holds.
+
+      function Is_Optimizable (N : Node_Id) return Boolean;
+      --  Tests N to see if it is an optimizable comparison value (defined as
+      --  constant zero or one, or something else where the value is known to
+      --  be nonnegative and in the 32-bit range and where the corresponding
+      --  Length value is also known to be 32 bits). If result is true, sets
+      --  Is_Zero, Maybe_Superflat and Comp accordingly.
+
+      procedure Rewrite_For_Equal_Lengths;
+      --  Rewrite the comparison of two equal lengths into either True or False
 
       ----------------------------------
       -- Convert_To_Long_Long_Integer --
@@ -13875,13 +13886,15 @@ package body Exp_Ch4 is
             Val := Expr_Value (N);
 
             if Val = Uint_0 then
-               Is_Zero := True;
-               Comp    := Empty;
+               Is_Zero         := True;
+               Maybe_Superflat := False;
+               Comp            := Empty;
                return True;
 
             elsif Val = Uint_1 then
-               Is_Zero := False;
-               Comp    := Empty;
+               Is_Zero         := False;
+               Maybe_Superflat := False;
+               Comp            := Empty;
                return True;
             end if;
          end if;
@@ -13891,15 +13904,23 @@ package body Exp_Ch4 is
          Determine_Range (N, OK, Lo, Hi, Assume_Valid => True);
 
          if not OK
-           or else Lo < Uint_1
+           or else Lo < Uint_0
            or else Hi > UI_From_Int (Int'Last)
          then
             return False;
          end if;
 
+         Maybe_Superflat := (Lo = Uint_0);
+
          --  Tests if N is also a length attribute applied to a simple entity
 
          Dbl := Is_Entity_Length (N, 2);
+
+         --  We can deal with the superflat case only if N is also a length
+
+         if Maybe_Superflat and then not Dbl then
+            return False;
+         end if;
 
          --  Comparison value was within range, so now we must check the index
          --  value to make sure it is also within 32 bits.
@@ -13926,6 +13947,36 @@ package body Exp_Ch4 is
          Comp := N;
          return True;
       end Is_Optimizable;
+
+      -------------------------------
+      -- Rewrite_For_Equal_Lengths --
+      -------------------------------
+
+      procedure Rewrite_For_Equal_Lengths is
+      begin
+         case Op is
+            when N_Op_Eq
+               | N_Op_Ge
+               | N_Op_Le
+            =>
+               Rewrite (N,
+                 Convert_To (Typ,
+                    New_Occurrence_Of (Standard_True, Sloc (N))));
+
+            when N_Op_Ne
+               | N_Op_Gt
+               | N_Op_Lt
+            =>
+               Rewrite (N,
+                 Convert_To (Typ,
+                    New_Occurrence_Of (Standard_False, Sloc (N))));
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Analyze_And_Resolve (N, Typ);
+      end Rewrite_For_Equal_Lengths;
 
    --  Start of processing for Optimize_Length_Comparison
 
@@ -14103,6 +14154,16 @@ package body Exp_Ch4 is
                   Analyze (Right);
                   Analyze (Y_Last);
 
+                  R := Compile_Time_Compare
+                                         (Right, Y_Last, Assume_Valid => True);
+
+                  --  If the pairs of attributes are equal, we are done
+
+                  if R = EQ then
+                     Rewrite_For_Equal_Lengths;
+                     return;
+                  end if;
+
                   --  If the base types are different, convert both operands to
                   --  Long_Long_Integer, else compare them directly.
 
@@ -14119,7 +14180,8 @@ package body Exp_Ch4 is
                else
                   Left :=
                     Make_Op_Add (Loc,
-                      Left_Opnd  => Convert_To_Long_Long_Integer (Y_Last),
+                      Left_Opnd  =>
+                        Convert_To_Long_Long_Integer (Y_Last),
                       Right_Opnd =>
                         Make_Op_Subtract (Loc,
                           Left_Opnd  =>
@@ -14140,6 +14202,12 @@ package body Exp_Ch4 is
                     Left_Opnd  => Convert_To_Long_Long_Integer (Comp),
                     Right_Opnd => Make_Integer_Literal (Loc, 1)));
          end if;
+      end if;
+
+      --  We cannot do anything in the superflat case past this point
+
+      if Maybe_Superflat then
+         return;
       end if;
 
       --  If general operand, convert Last reference to Long_Long_Integer
