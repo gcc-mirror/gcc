@@ -2219,6 +2219,9 @@ xtensa_option_override (void)
   int regno;
   machine_mode mode;
 
+  if (xtensa_windowed_abi == -1)
+    xtensa_windowed_abi = TARGET_WINDOWED_ABI_DEFAULT;
+
   /* Use CONST16 in the absence of L32R.
      Set it in the TARGET_OPTION_OVERRIDE to avoid dependency on xtensa
      configuration in the xtensa-common.c  */
