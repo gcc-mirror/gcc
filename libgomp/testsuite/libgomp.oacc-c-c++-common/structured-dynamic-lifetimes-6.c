@@ -27,7 +27,8 @@ main (int argc, char *argv[])
 #else
 #pragma acc exit data copyout(block1[0:SIZE], block2[0:SIZE])
 #endif
-    /* These should stay present until the end of the static data lifetime.  */
+    /* These should stay present until the end of the structured data
+       lifetime.  */
     assert (acc_is_present (block1, SIZE));
     assert (acc_is_present (block2, SIZE));
   }
