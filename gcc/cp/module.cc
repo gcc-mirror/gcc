@@ -3930,8 +3930,8 @@ public:
   }
 
 public:
-  static char *import_export (const module_state *, bool export_p);
-  static bool export_done (const module_state *);
+  static const char *import_export (location_t loc, const char *, bool export_p);
+  static bool export_done (location_t, const char *);
 
 public:
   bool cork ()
@@ -3958,10 +3958,10 @@ public:
   }
 
 public:
-  void imex_query (const module_state *, bool exporting);
-  char *imex_response (const module_state *state)
+  void imex_query (location_t loc, const char *flatname, bool exporting);
+  const char *imex_response (location_t loc, const char *flatname)
   {
-    return get_response (state->loc) > 0 ? cmi_response (state) : NULL;
+    return get_response (loc) > 0 ? cmi_response (loc, flatname) : NULL;
   }
   bool translate_include (location_t, const char *path, size_t len);
 
@@ -3989,7 +3989,7 @@ private:
   }
   void response_unexpected (location_t);
   bool response_eol (location_t, bool ignore = false);
-  char *cmi_response (const module_state *);
+  const char *cmi_response (location_t, const char *);
 
 private:
   static module_mapper *mapper;
@@ -14130,34 +14130,32 @@ module_mapper::handshake (location_t loc, const char *cookie)
 /* IMPORT or EXPORT query.  */
 
 void
-module_mapper::imex_query (const module_state *state, bool exporting)
+module_mapper::imex_query (location_t loc, const char *flatname, bool exporting)
 {
-  send_command (state->loc, "%sPORT %s",
-		exporting ? "EX" : "IM",
-		state->get_flatname ());
+  send_command (loc, "%sPORT %s", exporting ? "EX" : "IM", flatname);
 }
 
 /* Response to import/export query.  */
 
-char *
-module_mapper::cmi_response (const module_state *state)
+const char *
+module_mapper::cmi_response (location_t loc, const char *flatname)
 {
   char *filename = NULL;
 
-  switch (response_word (state->loc, "OK", "ERROR", NULL))
+  switch (response_word (loc, "OK", "ERROR", NULL))
     {
     default:
       break;
 
-    case 0: /* OK $bmifile  */
-      filename = response_token (state->loc, true);
+    case 0: /* OK $cmifile  */
+      filename = response_token (loc, true);
       filename = maybe_strip_cmi_prefix (filename);
-      response_eol (state->loc);
+      response_eol (loc);
       break;
 
     case 1: /* ERROR $msg */
-      error_at (state->loc, "mapper cannot provide module %qs: %s",
-		state->get_flatname (), response_error ());
+      error_at (loc, "mapper cannot provide module %qs: %s",
+		flatname, response_error ());
       break;
     }
 
@@ -14166,8 +14164,9 @@ module_mapper::cmi_response (const module_state *state)
 
 /* Import query.  */
 
-char *
-module_mapper::import_export (const module_state *state, bool export_p)
+const char *
+module_mapper::import_export (location_t loc, const char *flatname,
+			      bool export_p)
 {
   module_mapper *mapper = get (main_source_loc);
 
@@ -14175,8 +14174,8 @@ module_mapper::import_export (const module_state *state, bool export_p)
     return NULL;
 
   timevar_start (TV_MODULE_MAPPER);
-  mapper->imex_query (state, export_p);
-  char *fname = mapper->imex_response (state);
+  mapper->imex_query (loc, flatname, export_p);
+  const char *fname = mapper->imex_response (loc, flatname);
   timevar_stop (TV_MODULE_MAPPER);
 
   return fname;
@@ -14185,7 +14184,7 @@ module_mapper::import_export (const module_state *state, bool export_p)
 /* Export done.  */
 
 bool
-module_mapper::export_done (const module_state *state)
+module_mapper::export_done (location_t loc, const char *flatname)
 {
   bool ok = true;
   module_mapper *mapper = get (main_source_loc);
@@ -14194,8 +14193,7 @@ module_mapper::export_done (const module_state *state)
     {
       timevar_start (TV_MODULE_MAPPER);
       dump (dumper::MAPPER) && dump ("Completed mapper");
-      mapper->send_command (state->loc, "DONE %s",
-			    state->get_flatname ());
+      mapper->send_command (loc, "DONE %s", flatname);
       timevar_stop (TV_MODULE_MAPPER);
     }
   else
@@ -14562,7 +14560,8 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      if (imp->filename)
 		fname = NULL;
 	      else if (!fname[0])
-		fname = module_mapper::import_export (imp, false);
+		fname = module_mapper::import_export
+		  (imp->loc, imp->get_flatname (),false);
 
 	      if (imp->is_partition ())
 		dump () && dump ("Importing elided partition %M", imp);
@@ -19305,7 +19304,8 @@ preprocess_module (module_state *module, location_t from_loc,
 	     our module state flags are inadequate.  */
 	  spans.close ();
 
-	  char *fname = module_mapper::import_export (module, false);
+	  const char *fname = module_mapper::import_export
+	    (module->loc, module->get_flatname (), false);
 	  if (!module->do_import (fname, reader, true))
 	    gcc_unreachable ();
 
@@ -19359,7 +19359,8 @@ preprocessed_module (cpp_reader *reader)
 	      if (!any)
 		mapper->cork ();
 	      any = true;
-	      mapper->imex_query (module, module->module_p
+	      mapper->imex_query (module->loc, module->get_flatname (),
+				  module->module_p
 				  && (module->is_partition ()
 				      || module->exported_p));
 	    }
@@ -19372,7 +19373,9 @@ preprocessed_module (cpp_reader *reader)
 	    {
 	      module_state *module = *iter;
 	      if (module->is_direct () && !module->filename)
-		if (char *fname = mapper->imex_response (module))
+		if (const char *fname
+		    = mapper->imex_response (module->loc,
+					     module->get_flatname ()))
 		  module->filename = xstrdup (fname);
 	    }
 	  mapper->maybe_uncork (main_source_loc);
@@ -19734,7 +19737,7 @@ finish_module_processing (cpp_reader *reader)
 	}
 
       if (!errorcount)
-	module_mapper::export_done (state);
+	module_mapper::export_done (state->loc, state->get_flatname ());
       else if (path)
 	{
 	  /* We failed, attempt to erase all evidence we even tried.  */
