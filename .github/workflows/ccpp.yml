@@ -29,9 +29,7 @@ jobs:
                   libmpc-dev \
                   build-essential \
                   gcc-multilib \
-                  g++-multilib \
-                  gcc-7-plugin-dev \
-                  gcc-8-plugin-dev
+                  g++-multilib
 
     - name: Configure
       run: |
@@ -45,4 +43,4 @@ jobs:
     - name: Build
       run: |
            cd gccrs-build; \
-           make -j2
+           make
