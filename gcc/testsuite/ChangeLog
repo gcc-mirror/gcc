@@ -1,3 +1,8 @@
+2020-04-13  Linus Koenig <link@sig-st.de>
+
+	PR fortran/94192
+	* gfortran.dg/bound_resolve_after_error_1.f90: New test.
+
 2020-04-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94426

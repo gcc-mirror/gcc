@@ -4159,6 +4159,10 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
   gfc_array_spec *as;
   int d;
 
+  /* Do not attempt to resolve if error has already been issued.  */
+  if (array->symtree && array->symtree->n.sym->error)
+    return NULL;
+
   if (array->ts.type == BT_CLASS)
     return NULL;
 
