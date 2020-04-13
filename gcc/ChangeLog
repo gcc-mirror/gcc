@@ -1,6 +1,15 @@
 2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline.
+	2020-04-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/94584
+	* config/xtensa/xtensa.md (zero_extendhisi2, zero_extendqisi2)
+	(extendhisi2_internal): Add %v1 before the load instructions.
+
+2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline.
 	2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (hwloop_optimize): Insert zero overhead

@@ -538,7 +538,7 @@
   ""
   "@
    extui\t%0, %1, 0, 16
-   l16ui\t%0, %1"
+   %v1l16ui\t%0, %1"
   [(set_attr "type"	"arith,load")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
@@ -549,7 +549,7 @@
   ""
   "@
    extui\t%0, %1, 0, 8
-   l8ui\t%0, %1"
+   %v1l8ui\t%0, %1"
   [(set_attr "type"	"arith,load")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
@@ -575,7 +575,7 @@
   ""
   "@
    sext\t%0, %1, 15
-   l16si\t%0, %1"
+   %v1l16si\t%0, %1"
   [(set_attr "type"	"arith,load")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
