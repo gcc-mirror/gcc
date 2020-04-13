@@ -1,3 +1,8 @@
+2020-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94588
+	* name-lookup.c (check_local_shadow): Add an inform call.
+
 2020-04-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94521
