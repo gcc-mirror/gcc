@@ -50,7 +50,7 @@ namespace Rust {
             // Type type;
             ::std::unique_ptr<Type> type;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether the type of the type param has been specified.
@@ -68,7 +68,7 @@ namespace Rust {
                 return !outer_attr.is_empty();
             }
 
-            TypeParam(Identifier type_representation, location_t locus = UNKNOWN_LOCATION,
+            TypeParam(Identifier type_representation, Location locus = Location(),
               ::std::vector< ::std::unique_ptr<TypeParamBound> > type_param_bounds
               = ::std::vector< ::std::unique_ptr<TypeParamBound> >(),
               ::std::unique_ptr<Type> type = NULL, Attribute outer_attr = Attribute::create_empty()) :
@@ -116,7 +116,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -314,7 +314,7 @@ namespace Rust {
             // Type type;
             ::std::unique_ptr<Type> type;
 
-            location_t locus;
+            Location locus;
 
             // Unrestricted constructor used for error state
             SelfParam(Lifetime lifetime, bool has_ref, bool is_mut, Type* type) :
@@ -347,12 +347,12 @@ namespace Rust {
             }
 
             // Type-based self parameter (not ref, no lifetime)
-            SelfParam(::std::unique_ptr<Type> type, bool is_mut, location_t locus) :
+            SelfParam(::std::unique_ptr<Type> type, bool is_mut, Location locus) :
               has_ref(false), is_mut(is_mut), lifetime(Lifetime::error()), type(::std::move(type)),
               locus(locus) {}
 
             // Lifetime-based self parameter (is ref, no type)
-            SelfParam(Lifetime lifetime, bool is_mut, location_t locus) :
+            SelfParam(Lifetime lifetime, bool is_mut, Location locus) :
               /*type(NULL), */ has_ref(true), is_mut(is_mut), lifetime(::std::move(lifetime)),
               locus(locus) {}
 
@@ -380,7 +380,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
         };
@@ -432,11 +432,11 @@ namespace Rust {
             // Type type;
             ::std::unique_ptr<Type> type;
 
-            location_t locus;
+            Location locus;
 
           public:
             FunctionParam(::std::unique_ptr<Pattern> param_name, ::std::unique_ptr<Type> param_type,
-              location_t locus) :
+              Location locus) :
               param_name(::std::move(param_name)),
               type(::std::move(param_type)), locus(locus) {}
 
@@ -467,12 +467,12 @@ namespace Rust {
 
             // Creates an error FunctionParam.
             static FunctionParam create_error() {
-                return FunctionParam(NULL, NULL, UNKNOWN_LOCATION);
+                return FunctionParam(NULL, NULL, Location());
             }
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
         };
@@ -587,7 +587,7 @@ namespace Rust {
             // BlockExpr* expr;
             ::std::unique_ptr<BlockExpr> expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~Method() {
@@ -637,7 +637,7 @@ namespace Rust {
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params, SelfParam self_param,
               ::std::vector<FunctionParam> function_params, ::std::unique_ptr<Type> return_type,
               WhereClause where_clause, ::std::unique_ptr<BlockExpr> function_body, Visibility vis,
-              ::std::vector<Attribute> outer_attrs, location_t locus = UNKNOWN_LOCATION) :
+              ::std::vector<Attribute> outer_attrs, Location locus = Location()) :
               outer_attrs(::std::move(outer_attrs)),
               vis(::std::move(vis)), qualifiers(::std::move(qualifiers)),
               method_name(::std::move(method_name)), generic_params(::std::move(generic_params)),
@@ -751,11 +751,11 @@ namespace Rust {
         class Module : public VisItem {
             Identifier module_name;
 
-            location_t locus;
+            Location locus;
 
           protected:
             // Protected constructor
-            Module(Identifier module_name, Visibility visibility, location_t locus,
+            Module(Identifier module_name, Visibility visibility, Location locus,
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               VisItem(::std::move(visibility), ::std::move(outer_attrs)),
               module_name(module_name), locus(locus) {}
@@ -763,7 +763,7 @@ namespace Rust {
           public:
             virtual ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
         };
@@ -790,7 +790,7 @@ namespace Rust {
             }
 
             // Full constructor
-            ModuleBodied(Identifier name, location_t locus,
+            ModuleBodied(Identifier name, Location locus,
               ::std::vector< ::std::unique_ptr<Item> > items
               = ::std::vector< ::std::unique_ptr<Item> >(),
               Visibility visibility = Visibility::create_error(),
@@ -852,7 +852,7 @@ namespace Rust {
 
             // Full constructor
             ModuleNoBody(Identifier name, Visibility visibility, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               Module(::std::move(name), ::std::move(visibility), locus, ::std::move(outer_attrs)) {}
 
             virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
@@ -878,7 +878,7 @@ namespace Rust {
             // this is either an identifier or "_", with _ parsed to string
             ::std::string as_clause_name;
 
-            location_t locus;
+            Location locus;
 
             /* e.g.
                 "extern crate foo as _"
@@ -899,13 +899,13 @@ namespace Rust {
 
             // Constructor
             ExternCrate(::std::string referenced_crate, Visibility visibility,
-              ::std::vector<Attribute> outer_attrs, location_t locus,
+              ::std::vector<Attribute> outer_attrs, Location locus,
               ::std::string as_clause_name = ::std::string()) :
               VisItem(::std::move(visibility), ::std::move(outer_attrs)),
               referenced_crate(::std::move(referenced_crate)),
               as_clause_name(::std::move(as_clause_name)), locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -930,7 +930,7 @@ namespace Rust {
 
         // The path-ish thing referred to in a use declaration - abstract base class
         class UseTree {
-            location_t locus;
+            Location locus;
 
           public:
             virtual ~UseTree() {}
@@ -942,7 +942,7 @@ namespace Rust {
 
             virtual ::std::string as_string() const = 0;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -952,7 +952,7 @@ namespace Rust {
             // Clone function implementation as pure virtual method
             virtual UseTree* clone_use_tree_impl() const = 0;
 
-            UseTree(location_t locus) : locus(locus) {}
+            UseTree(Location locus) : locus(locus) {}
         };
 
         // Use tree with a glob (wildcard) operator
@@ -965,7 +965,7 @@ namespace Rust {
             SimplePath path;
 
           public:
-            UseTreeGlob(PathType glob_type, SimplePath path, location_t locus) :
+            UseTreeGlob(PathType glob_type, SimplePath path, Location locus) :
               UseTree(locus), glob_type(glob_type), path(::std::move(path)) {}
 
             // Returns whether has path. Should be made redundant by PathType PATH_PREFIXED.
@@ -998,7 +998,7 @@ namespace Rust {
 
           public:
             UseTreeList(PathType path_type, SimplePath path,
-              ::std::vector< ::std::unique_ptr<UseTree> > trees, location_t locus) :
+              ::std::vector< ::std::unique_ptr<UseTree> > trees, Location locus) :
               UseTree(locus),
               path_type(path_type), path(::std::move(path)), trees(::std::move(trees)) {}
 
@@ -1067,7 +1067,7 @@ namespace Rust {
             Identifier identifier; // only if NewBindType is IDENTIFIER
 
           public:
-            UseTreeRebind(NewBindType bind_type, SimplePath path, location_t locus,
+            UseTreeRebind(NewBindType bind_type, SimplePath path, Location locus,
               Identifier identifier = ::std::string()) :
               UseTree(locus),
               path(::std::move(path)), bind_type(bind_type), identifier(::std::move(identifier)) {}
@@ -1098,13 +1098,13 @@ namespace Rust {
         class UseDeclaration : public VisItem {
             ::std::unique_ptr<UseTree> use_tree;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             UseDeclaration(::std::unique_ptr<UseTree> use_tree, Visibility visibility,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               VisItem(::std::move(visibility), ::std::move(outer_attrs)),
               use_tree(::std::move(use_tree)), locus(locus) {}
 
@@ -1129,7 +1129,7 @@ namespace Rust {
             UseDeclaration(UseDeclaration&& other) = default;
             UseDeclaration& operator=(UseDeclaration&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -1179,7 +1179,7 @@ namespace Rust {
             // BlockExpr* function_body;
             ::std::unique_ptr<BlockExpr> function_body;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~Function() {
@@ -1212,7 +1212,7 @@ namespace Rust {
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               ::std::vector<FunctionParam> function_params, ::std::unique_ptr<Type> return_type,
               WhereClause where_clause, ::std::unique_ptr<BlockExpr> function_body, Visibility vis,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               qualifiers(::std::move(qualifiers)), function_name(::std::move(function_name)),
               generic_params(::std::move(generic_params)),
@@ -1266,7 +1266,7 @@ namespace Rust {
             Function(Function&& other) = default;
             Function& operator=(Function&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -1310,7 +1310,7 @@ namespace Rust {
             // Type exiting_type;
             ::std::unique_ptr<Type> existing_type;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1329,7 +1329,7 @@ namespace Rust {
             TypeAlias(Identifier new_type_name,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               WhereClause where_clause, ::std::unique_ptr<Type> existing_type, Visibility vis,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               new_type_name(::std::move(new_type_name)), generic_params(::std::move(generic_params)),
               where_clause(::std::move(where_clause)), existing_type(::std::move(existing_type)),
@@ -1376,7 +1376,7 @@ namespace Rust {
             TypeAlias(TypeAlias&& other) = default;
             TypeAlias& operator=(TypeAlias&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -1412,7 +1412,7 @@ namespace Rust {
             // bool has_where_clause;
             WhereClause where_clause;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether struct has generic parameters.
@@ -1425,14 +1425,14 @@ namespace Rust {
                 return !where_clause.is_empty();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
           protected:
             Struct(Identifier struct_name,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
-              WhereClause where_clause, Visibility vis, location_t locus,
+              WhereClause where_clause, Visibility vis, Location locus,
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               struct_name(::std::move(struct_name)), generic_params(::std::move(generic_params)),
@@ -1551,7 +1551,7 @@ namespace Rust {
             StructStruct(::std::vector<StructField> fields, Identifier struct_name,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               WhereClause where_clause, bool is_unit, Visibility vis,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               Struct(::std::move(struct_name), ::std::move(generic_params), ::std::move(where_clause),
                 ::std::move(vis), locus, ::std::move(outer_attrs)),
               fields(::std::move(fields)), is_unit(is_unit) {}
@@ -1560,7 +1560,7 @@ namespace Rust {
             StructStruct(Identifier struct_name,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               WhereClause where_clause, Visibility vis, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               Struct(::std::move(struct_name), ::std::move(generic_params), ::std::move(where_clause),
                 ::std::move(vis), locus, ::std::move(outer_attrs)),
               is_unit(true) {}
@@ -1661,7 +1661,7 @@ namespace Rust {
             TupleStruct(::std::vector<TupleField> fields, Identifier struct_name,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               WhereClause where_clause, Visibility vis, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               Struct(::std::move(struct_name), ::std::move(generic_params), ::std::move(where_clause),
                 ::std::move(vis), locus, ::std::move(outer_attrs)),
               fields(::std::move(fields)) {}
@@ -1687,7 +1687,7 @@ namespace Rust {
 
             Identifier variant_name;
 
-            location_t locus;
+            Location locus;
 
           public:
             virtual ~EnumItem() {}
@@ -1698,7 +1698,7 @@ namespace Rust {
             }
 
             EnumItem(
-              Identifier variant_name, ::std::vector<Attribute> outer_attrs, location_t locus) :
+              Identifier variant_name, ::std::vector<Attribute> outer_attrs, Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               variant_name(::std::move(variant_name)), locus(locus) {}
 
@@ -1731,7 +1731,7 @@ namespace Rust {
             }
 
             EnumItemTuple(Identifier variant_name, ::std::vector<TupleField> tuple_fields,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               EnumItem(::std::move(variant_name), ::std::move(outer_attrs), locus),
               tuple_fields(::std::move(tuple_fields)) {}
 
@@ -1758,7 +1758,7 @@ namespace Rust {
             }
 
             EnumItemStruct(Identifier variant_name, ::std::vector<StructField> struct_fields,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               EnumItem(::std::move(variant_name), ::std::move(outer_attrs), locus),
               struct_fields(::std::move(struct_fields)) {}
 
@@ -1784,7 +1784,7 @@ namespace Rust {
             }*/
 
             EnumItemDiscriminant(Identifier variant_name, ::std::unique_ptr<Expr> expr,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               EnumItem(::std::move(variant_name), ::std::move(outer_attrs), locus),
               expression(::std::move(expr)) {}
 
@@ -1832,7 +1832,7 @@ namespace Rust {
 
             ::std::vector< ::std::unique_ptr<EnumItem> > items;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1857,7 +1857,7 @@ namespace Rust {
             Enum(Identifier enum_name, Visibility vis,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               WhereClause where_clause, ::std::vector< ::std::unique_ptr<EnumItem> > items,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               enum_name(::std::move(enum_name)), generic_params(::std::move(generic_params)),
               where_clause(::std::move(where_clause)), items(::std::move(items)), locus(locus) {}
@@ -1911,7 +1911,7 @@ namespace Rust {
             Enum(Enum&& other) = default;
             Enum& operator=(Enum&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -1942,7 +1942,7 @@ namespace Rust {
 
             ::std::vector<StructField> variants;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1960,7 +1960,7 @@ namespace Rust {
             Union(Identifier union_name, Visibility vis,
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               WhereClause where_clause, ::std::vector<StructField> variants,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               union_name(::std::move(union_name)), generic_params(::std::move(generic_params)),
               where_clause(::std::move(where_clause)), variants(::std::move(variants)), locus(locus) {
@@ -2000,7 +2000,7 @@ namespace Rust {
             Union(Union&& other) = default;
             Union& operator=(Union&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2034,7 +2034,7 @@ namespace Rust {
             // Expr* const_expr;
             ::std::unique_ptr<Expr> const_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~ConstantItem() {
@@ -2045,7 +2045,7 @@ namespace Rust {
 
             ConstantItem(Identifier ident, Visibility vis, ::std::unique_ptr<Type> type,
               ::std::unique_ptr<Expr> const_expr, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               identifier(::std::move(ident)), type(::std::move(type)),
               const_expr(::std::move(const_expr)), locus(locus) {}
@@ -2077,7 +2077,7 @@ namespace Rust {
                 return identifier == ::std::string("_");
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2117,7 +2117,7 @@ namespace Rust {
             // Expr* expr;
             ::std::unique_ptr<Expr> expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~StaticItem() {
@@ -2128,7 +2128,7 @@ namespace Rust {
 
             StaticItem(Identifier name, bool is_mut, ::std::unique_ptr<Type> type,
               ::std::unique_ptr<Expr> expr, Visibility vis, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               has_mut(is_mut), name(::std::move(name)), type(::std::move(type)),
               expr(::std::move(expr)), locus(locus) {}
@@ -2156,7 +2156,7 @@ namespace Rust {
             StaticItem(StaticItem&& other) = default;
             StaticItem& operator=(StaticItem&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2277,7 +2277,7 @@ namespace Rust {
             // BlockExpr* block_expr;
             ::std::unique_ptr<BlockExpr> block_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~TraitItemFunc() {
@@ -2290,7 +2290,7 @@ namespace Rust {
             }
 
             TraitItemFunc(TraitFunctionDecl decl, ::std::unique_ptr<BlockExpr> block_expr,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               decl(::std::move(decl)), block_expr(::std::move(block_expr)), locus(locus) {}
 
@@ -2325,7 +2325,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2445,7 +2445,7 @@ namespace Rust {
             // BlockExpr* block_expr;
             ::std::unique_ptr<BlockExpr> block_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~TraitItemMethod() {
@@ -2458,7 +2458,7 @@ namespace Rust {
             }
 
             TraitItemMethod(TraitMethodDecl decl, ::std::unique_ptr<BlockExpr> block_expr,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               decl(::std::move(decl)), block_expr(::std::move(block_expr)), locus(locus) {}
 
@@ -2486,7 +2486,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2510,7 +2510,7 @@ namespace Rust {
             // Expr* expr;
             ::std::unique_ptr<Expr> expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~TraitItemConst() {
@@ -2523,7 +2523,7 @@ namespace Rust {
             }
 
             TraitItemConst(Identifier name, ::std::unique_ptr<Type> type,
-              ::std::unique_ptr<Expr> expr, ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::unique_ptr<Expr> expr, ::std::vector<Attribute> outer_attrs, Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               name(::std::move(name)), type(::std::move(type)), expr(::std::move(expr)),
               locus(locus) {}
@@ -2553,7 +2553,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2576,7 +2576,7 @@ namespace Rust {
             // TypeParamBounds type_param_bounds;
             ::std::vector< ::std::unique_ptr<TypeParamBound> > type_param_bounds; // inlined form
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether trait item type has type param bounds.
@@ -2586,7 +2586,7 @@ namespace Rust {
 
             TraitItemType(Identifier name,
               ::std::vector< ::std::unique_ptr<TypeParamBound> > type_param_bounds,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               name(::std::move(name)), type_param_bounds(::std::move(type_param_bounds)),
               locus(locus) {}
@@ -2625,7 +2625,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2671,7 +2671,7 @@ namespace Rust {
             // bool has_trait_items;
             ::std::vector< ::std::unique_ptr<TraitItem> > trait_items;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -2701,7 +2701,7 @@ namespace Rust {
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               ::std::vector< ::std::unique_ptr<TypeParamBound> > type_param_bounds,
               WhereClause where_clause, ::std::vector< ::std::unique_ptr<TraitItem> > trait_items,
-              Visibility vis, ::std::vector<Attribute> outer_attrs, location_t locus) :
+              Visibility vis, ::std::vector<Attribute> outer_attrs, Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               has_unsafe(is_unsafe), name(::std::move(name)),
               generic_params(::std::move(generic_params)),
@@ -2771,7 +2771,7 @@ namespace Rust {
             Trait(Trait&& other) = default;
             Trait& operator=(Trait&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2808,7 +2808,7 @@ namespace Rust {
 
           private:
             // doesn't really need to be protected as write access probably not needed
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether impl has generic parameters.
@@ -2826,7 +2826,7 @@ namespace Rust {
                 return !inner_attrs.empty();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -2835,7 +2835,7 @@ namespace Rust {
             Impl(::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               ::std::unique_ptr<Type> trait_type, WhereClause where_clause, Visibility vis,
               ::std::vector<Attribute> inner_attrs, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               generic_params(::std::move(generic_params)), trait_type(::std::move(trait_type)),
               where_clause(::std::move(where_clause)), inner_attrs(::std::move(inner_attrs)),
@@ -2898,7 +2898,7 @@ namespace Rust {
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               ::std::unique_ptr<Type> trait_type, WhereClause where_clause, Visibility vis,
               ::std::vector<Attribute> inner_attrs, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               Impl(::std::move(generic_params), ::std::move(trait_type), ::std::move(where_clause),
                 ::std::move(vis), ::std::move(inner_attrs), ::std::move(outer_attrs), locus),
               impl_items(::std::move(impl_items)) {}
@@ -2970,7 +2970,7 @@ namespace Rust {
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               ::std::unique_ptr<Type> trait_type, WhereClause where_clause, Visibility vis,
               ::std::vector<Attribute> inner_attrs, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               Impl(::std::move(generic_params), ::std::move(trait_type), ::std::move(where_clause),
                 ::std::move(vis), ::std::move(inner_attrs), ::std::move(outer_attrs), locus),
               has_unsafe(is_unsafe), has_exclam(has_exclam), trait_path(::std::move(trait_path)),
@@ -3035,7 +3035,7 @@ namespace Rust {
 
             Identifier item_name;
 
-            location_t locus;
+            Location locus;
 
           public:
             virtual ~ExternalItem() {}
@@ -3057,7 +3057,7 @@ namespace Rust {
 
             virtual ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -3065,7 +3065,7 @@ namespace Rust {
 
           protected:
             ExternalItem(Identifier item_name, Visibility vis, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               visibility(::std::move(vis)), item_name(::std::move(item_name)), locus(locus) {}
 
@@ -3106,7 +3106,7 @@ namespace Rust {
 
           public:
             ExternalStaticItem(Identifier item_name, ::std::unique_ptr<Type> item_type, bool is_mut,
-              Visibility vis, ::std::vector<Attribute> outer_attrs, location_t locus) :
+              Visibility vis, ::std::vector<Attribute> outer_attrs, Location locus) :
               ExternalItem(::std::move(item_name), ::std::move(vis), ::std::move(outer_attrs), locus),
               has_mut(is_mut), item_type(::std::move(item_type)) {}
 
@@ -3230,7 +3230,7 @@ namespace Rust {
               ::std::vector< ::std::unique_ptr<GenericParam> > generic_params,
               ::std::unique_ptr<Type> return_type, WhereClause where_clause,
               ::std::vector<NamedFunctionParam> function_params, bool has_variadics, Visibility vis,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               ExternalItem(::std::move(item_name), ::std::move(vis), ::std::move(outer_attrs), locus),
               generic_params(::std::move(generic_params)), return_type(::std::move(return_type)),
               where_clause(::std::move(where_clause)), function_params(::std::move(function_params)),
@@ -3297,7 +3297,7 @@ namespace Rust {
             // bool has_extern_items;
             ::std::vector< ::std::unique_ptr<ExternalItem> > extern_items;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -3320,7 +3320,7 @@ namespace Rust {
             ExternBlock(::std::string abi,
               ::std::vector< ::std::unique_ptr<ExternalItem> > extern_items, Visibility vis,
               ::std::vector<Attribute> inner_attrs, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               VisItem(::std::move(vis), ::std::move(outer_attrs)),
               abi(::std::move(abi)), inner_attrs(::std::move(inner_attrs)),
               extern_items(::std::move(extern_items)), locus(locus) {}
@@ -3357,7 +3357,7 @@ namespace Rust {
             ExternBlock(ExternBlock&& other) = default;
             ExternBlock& operator=(ExternBlock&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 

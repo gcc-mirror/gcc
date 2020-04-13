@@ -1,8 +1,6 @@
 #include "rust-ast-full.h"
-#include "diagnostic.h"
-
+#include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"
-
 #include "rust-session-manager.h"
 
 /* Compilation unit used for various AST-related functions that would make the headers too long if
@@ -2128,9 +2126,9 @@ namespace Rust {
             }
 
             // kind of a HACK to get locus depending on opening scope resolution
-            location_t locus = UNKNOWN_LOCATION;
+            Location locus = Linemap::unknown_location();
             if (with_opening_scope_resolution) {
-                locus = simple_segments[0].get_locus() - 2; // minus 2 chars for ::
+                locus = simple_segments[0].get_locus()/* - 2*/; // minus 2 chars for ::
             } else {
                 locus = simple_segments[0].get_locus();
             }
@@ -2513,7 +2511,7 @@ namespace Rust {
         TraitBound* TypePath::to_trait_bound(bool in_parens) const {
             // create clone FIXME is this required? or is copy constructor automatically called?
             TypePath copy(*this);
-            return new TraitBound(::std::move(copy), in_parens);
+            return new TraitBound(::std::move(copy), copy.get_locus(), in_parens);
         }
 
         ::std::string InferredType::as_string() const {
@@ -3457,7 +3455,7 @@ namespace Rust {
                         return parse_path_meta_item();
                     }
                     default:
-                        error_at(peek_token()->get_locus(), "unrecognised token '%s' in meta item",
+                        rust_error_at(peek_token()->get_locus(), "unrecognised token '%s' in meta item",
                           get_token_description(peek_token()->get_id()));
                         return NULL;
                 }
@@ -3494,7 +3492,7 @@ namespace Rust {
             }
 
             if (peek_token(1)->get_id() != LEFT_PAREN) {
-                error_at(peek_token(1)->get_locus(),
+                rust_error_at(peek_token(1)->get_locus(),
                   "unexpected token '%s' after identifier in attribute",
                   get_token_description(peek_token(1)->get_id()));
                 return NULL;
@@ -3551,7 +3549,7 @@ namespace Rust {
                   new MetaListPaths(::std::move(ident), ::std::move(path_items)));
             }
 
-            error_at(UNKNOWN_LOCATION, "failed to parse any meta item inner");
+            rust_error_at(Linemap::unknown_location(), "failed to parse any meta item inner");
             return NULL;
         }
 
@@ -3562,7 +3560,7 @@ namespace Rust {
         ::std::unique_ptr<MetaItem> MacroParser::parse_path_meta_item() {
             SimplePath path = parse_simple_path();
             if (path.is_empty()) {
-                error_at(peek_token()->get_locus(), "failed to parse simple path in attribute");
+                rust_error_at(peek_token()->get_locus(), "failed to parse simple path in attribute");
                 return NULL;
             }
 
@@ -3577,10 +3575,10 @@ namespace Rust {
                 case EQUAL: {
                     skip_token();
 
-                    location_t locus = peek_token()->get_locus();
+                    Location locus = peek_token()->get_locus();
                     Literal lit = parse_literal();
                     if (lit.is_error()) {
-                        error_at(peek_token()->get_locus(), "failed to parse literal in attribute");
+                        rust_error_at(peek_token()->get_locus(), "failed to parse literal in attribute");
                         return NULL;
                     }
                     LiteralExpr expr(::std::move(lit), locus);
@@ -3594,7 +3592,7 @@ namespace Rust {
                     // just simple path
                     return ::std::unique_ptr<MetaItemPath>(new MetaItemPath(::std::move(path)));
                 default:
-                    error_at(peek_token()->get_locus(), "unrecognised token '%s' in meta item",
+                    rust_error_at(peek_token()->get_locus(), "unrecognised token '%s' in meta item",
                       get_token_description(peek_token()->get_id()));
                     return NULL;
             }
@@ -3612,7 +3610,7 @@ namespace Rust {
             ::std::vector< ::std::unique_ptr<MetaItemInner> > meta_items;
 
             if (peek_token()->get_id() != LEFT_PAREN) {
-                error_at(peek_token()->get_locus(), "missing left paren in delim token tree");
+                rust_error_at(peek_token()->get_locus(), "missing left paren in delim token tree");
                 return {};
             }
             skip_token();
@@ -3620,7 +3618,7 @@ namespace Rust {
             while (stream_pos < vec_length && peek_token()->get_id() != RIGHT_PAREN) {
                 ::std::unique_ptr<MetaItemInner> inner = parse_meta_item_inner();
                 if (inner == NULL) {
-                    error_at(
+                    rust_error_at(
                       peek_token()->get_locus(), "failed to parse inner meta item in attribute");
                     return {};
                 }
@@ -3633,7 +3631,7 @@ namespace Rust {
             }
 
             if (peek_token()->get_id() != RIGHT_PAREN) {
-                error_at(peek_token()->get_locus(), "missing right paren in delim token tree");
+                rust_error_at(peek_token()->get_locus(), "missing right paren in delim token tree");
                 return {};
             }
             skip_token();
@@ -3647,7 +3645,7 @@ namespace Rust {
 
             // simulate presence of delimiters
             tokens.push_back(::std::unique_ptr<Token>(
-              new Token(LEFT_PAREN, UNKNOWN_LOCATION, "", CORETYPE_UNKNOWN)));
+              new Token(LEFT_PAREN, Linemap::unknown_location(), "", CORETYPE_UNKNOWN)));
 
             for (const auto& tree : token_trees) {
                 ::std::vector< ::std::unique_ptr<Token> > stream = tree->to_token_stream();
@@ -3657,7 +3655,7 @@ namespace Rust {
             }
 
             tokens.push_back(::std::unique_ptr<Token>(
-              new Token(RIGHT_PAREN, UNKNOWN_LOCATION, "", CORETYPE_UNKNOWN)));
+              new Token(RIGHT_PAREN, Linemap::unknown_location(), "", CORETYPE_UNKNOWN)));
 
             tokens.shrink_to_fit();
 
@@ -3692,7 +3690,7 @@ namespace Rust {
                     skip_token();
                     return Literal("false", Literal::BOOL);
                 default:
-                    error_at(tok->get_locus(), "expected literal - found '%s'",
+                    rust_error_at(tok->get_locus(), "expected literal - found '%s'",
                       get_token_description(tok->get_id()));
                     return Literal::create_error();
             }
@@ -3709,7 +3707,7 @@ namespace Rust {
 
             SimplePathSegment segment = parse_simple_path_segment();
             if (segment.is_error()) {
-                error_at(peek_token()->get_locus(),
+                rust_error_at(peek_token()->get_locus(),
                   "failed to parse simple path segment in attribute simple path");
                 return SimplePath::create_empty();
             }
@@ -3720,7 +3718,7 @@ namespace Rust {
 
                 SimplePathSegment segment = parse_simple_path_segment();
                 if (segment.is_error()) {
-                    error_at(peek_token()->get_locus(),
+                    rust_error_at(peek_token()->get_locus(),
                       "failed to parse simple path segment in attribute simple path");
                     return SimplePath::create_empty();
                 }
@@ -3753,14 +3751,14 @@ namespace Rust {
                     }
                     gcc_fallthrough();
                 default:
-                    error_at(tok->get_locus(), "unexpected token '%s' in simple path segment",
+                    rust_error_at(tok->get_locus(), "unexpected token '%s' in simple path segment",
                       get_token_description(tok->get_id()));
                     return SimplePathSegment::create_error();
             }
         }
 
         ::std::unique_ptr<MetaItemLitExpr> MacroParser::parse_meta_item_lit() {
-            location_t locus = peek_token()->get_locus();
+            Location locus = peek_token()->get_locus();
             LiteralExpr lit_expr(parse_literal(), locus);
             return ::std::unique_ptr<MetaItemLitExpr>(new MetaItemLitExpr(::std::move(lit_expr)));
         }
@@ -3802,7 +3800,7 @@ namespace Rust {
             } else if (ident == "not") {
                 if (strs.size() != 1) {
                     // HACK: convert vector platform-dependent size_type to string to use in printf
-                    error_at(UNKNOWN_LOCATION,
+                    rust_error_at(Linemap::unknown_location(),
                       "cfg predicate could not be checked for MetaListNameValueStr with ident of "
                       "'not' because there are '%s' elements, not '1'",
                       ::std::to_string(strs.size()).c_str());
@@ -3811,7 +3809,7 @@ namespace Rust {
 
                 return !strs[0].check_cfg_predicate(session);
             } else {
-                error_at(UNKNOWN_LOCATION,
+                rust_error_at(Linemap::unknown_location(),
                   "cfg predicate could not be checked for MetaListNameValueStr with ident of "
                   "'%s' - ident must be 'all' or 'any'",
                   ident.c_str());
@@ -3837,7 +3835,7 @@ namespace Rust {
             } else if (ident == "not") {
                 if (paths.size() != 1) {
                     // HACK: convert vector platform-dependent size_type to string to use in printf
-                    error_at(UNKNOWN_LOCATION,
+                    rust_error_at(Linemap::unknown_location(),
                       "cfg predicate could not be checked for MetaListPaths with ident of 'not' "
                       "because there are '%s' elements, not '1'",
                       ::std::to_string(paths.size()).c_str());
@@ -3846,7 +3844,7 @@ namespace Rust {
 
                 return !check_path_exists_in_cfg(session, paths[0]);
             } else {
-                error_at(UNKNOWN_LOCATION,
+                rust_error_at(Linemap::unknown_location(),
                   "cfg predicate could not be checked for MetaListNameValueStr with ident of "
                   "'%s' - ident must be 'all' or 'any'",
                   ident.c_str());
@@ -3881,7 +3879,7 @@ namespace Rust {
             } else if (path.as_string() == "not") {
                 if (seq.size() != 1) {
                     // HACK: convert vector platform-dependent size_type to string to use in printf
-                    error_at(UNKNOWN_LOCATION,
+                    rust_error_at(Linemap::unknown_location(),
                       "cfg predicate could not be checked for MetaItemSeq with ident of 'not' "
                       "because there are '%s' elements, not '1'",
                       ::std::to_string(seq.size()).c_str());
@@ -3890,7 +3888,7 @@ namespace Rust {
 
                 return !seq[0]->check_cfg_predicate(session);
             } else {
-                error_at(UNKNOWN_LOCATION,
+                rust_error_at(Linemap::unknown_location(),
                   "cfg predicate could not be checked for MetaItemSeq with path of "
                   "'%s' - path must be 'all' or 'any'",
                   path.as_string().c_str());

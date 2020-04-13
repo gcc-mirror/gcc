@@ -2,11 +2,6 @@
 #define RUST_PARSE_H
 
 #include "rust-lex.h"
-//#include "rust-tree.h"
-#include "rust-scope.h"
-
-//#include "rust-ast-containers.h"
-// TODO: change, maybe?
 #include "rust-ast-full.h"
 
 namespace Rust {
@@ -77,44 +72,6 @@ namespace Rust {
         const_TokenPtr expect_token(TokenId t);
         void unexpected_token(const_TokenPtr t);
         bool skip_generics_right_angle();
-
-        // expression parsing
-        int left_binding_power(const_TokenPtr tok);
-        Tree null_denotation(const_TokenPtr tok);
-        Tree left_denotation(const_TokenPtr tok, Tree left);
-
-        Tree parse_expression(int right_binding_power);
-
-        Tree coerce_binary_arithmetic(const_TokenPtr tok, Tree* left, Tree* right);
-        bool check_logical_operands(const_TokenPtr tok, Tree left, Tree right);
-
-        Tree get_printf_addr();
-        Tree get_puts_addr();
-
-        Tree get_scanf_addr();
-
-        Tree build_label_decl(const char* name, location_t loc);
-        Tree build_if_statement(Tree bool_expr, Tree then_part, Tree else_part);
-        Tree build_while_statement(Tree bool_expr, Tree while_body);
-        Tree build_for_statement(
-          SymbolPtr ind_var, Tree lower_bound, Tree upper_bound, Tree for_body_stmt_list);
-
-        const char* print_type(Tree type);
-
-        TreeStmtList& get_current_stmt_list();
-
-        void enter_scope();
-
-        struct TreeSymbolMapping {
-            Tree bind_expr;
-            Tree block;
-        };
-
-        TreeSymbolMapping leave_scope();
-
-        SymbolPtr query_type(const std::string& name, location_t loc);
-        SymbolPtr query_variable(const std::string& name, location_t loc);
-        SymbolPtr query_integer_variable(const std::string& name, location_t loc);
 
         void parse_statement_seq(bool (Parser::*done)());
 
@@ -476,49 +433,18 @@ namespace Rust {
         AST::StructPatternElements parse_struct_pattern_elems();
         ::std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field();
 
-        // void parse_crate();
-        // AST::Module parse_module();
-        // void parse_module_item(AST::Module module_for_items, AST::AttributeList
-        // item_outer_attributes); AST::Visibility parse_visibility();
+        int left_binding_power(const_TokenPtr token);
 
         bool done_end();
         bool done_end_or_else();
         bool done_end_of_file();
 
-        typedef Tree (Parser::*BinaryHandler)(const_TokenPtr, Tree);
-        BinaryHandler get_binary_handler(TokenId id);
-
       public:
         // Construct parser with specified lexer reference.
-        Parser(Lexer& parLexer) : lexer(parLexer), printf_fn(), puts_fn(), scanf_fn() {}
-
-        // (old) Main entry point for parser.
-        void parse_program();
+        Parser(Lexer& parLexer) : lexer(parLexer) {}
 
         // Main entry point for parser.
         AST::Crate parse_crate();
-
-        Tree parse_statement();
-
-        Tree parse_variable_declaration();
-        Tree parse_type_declaration();
-
-        // Tree parse_type();
-        Tree parse_record();
-        Tree parse_field_declaration(std::vector<std::string>& field_names);
-
-        Tree parse_assignment_statement();
-        Tree parse_if_statement();
-        Tree parse_while_statement();
-        Tree parse_for_statement();
-        Tree parse_read_statement();
-        Tree parse_write_statement();
-
-        Tree parse_expression();
-        Tree parse_expression_naming_variable();
-        Tree parse_lhs_assignment_expression();
-        Tree parse_boolean_expression();
-        Tree parse_integer_expression();
 
         // Dumps all lexer output.
         void debug_dump_lex_output();
@@ -527,86 +453,6 @@ namespace Rust {
       private:
         // The lexer associated with the parser.
         Lexer& lexer;
-        // The current scope.
-        Scope scope;
-
-        // The simulated "main" function inside which the entire program lies.
-        tree main_fndecl;
-
-        // Address to function declaration of printf.
-        Tree printf_fn;
-        // Address to function declaration of puts.
-        Tree puts_fn;
-        // Address to function declaration of scanf.
-        Tree scanf_fn;
-
-        // The statement stack.
-        std::vector<TreeStmtList> stack_stmt_list;
-        // The VAR_DECL stack.
-        std::vector<TreeChain> stack_var_decl_chain;
-
-        // The block stack.
-        std::vector<BlockChain> stack_block_chain;
-
-// x-macro list for binary operators - only defined here to be inside Parser class
-#define BINARY_HANDLER_LIST                                             \
-    BINARY_HANDLER(plus, PLUS)                                          \
-    BINARY_HANDLER(minus, MINUS)                                        \
-    BINARY_HANDLER(mult, ASTERISK)                                      \
-    BINARY_HANDLER(div, DIV)                                            \
-    BINARY_HANDLER(mod, PERCENT)                                        \
-    BINARY_HANDLER(bitwise_and, AMP)                                    \
-    BINARY_HANDLER(bitwise_or, PIPE)                                    \
-    BINARY_HANDLER(bitwise_xor, CARET)                                  \
-    BINARY_HANDLER(left_shift, LEFT_SHIFT)                              \
-    BINARY_HANDLER(right_shift, RIGHT_SHIFT)                            \
-                                                                        \
-    BINARY_HANDLER(equal, EQUAL_EQUAL)                                  \
-    BINARY_HANDLER(not_equal, NOT_EQUAL)                                \
-    BINARY_HANDLER(smaller_than, LEFT_ANGLE)                            \
-    BINARY_HANDLER(smaller_equal, LESS_OR_EQUAL)                        \
-    BINARY_HANDLER(greater_than, RIGHT_ANGLE)                           \
-    BINARY_HANDLER(greater_equal, GREATER_OR_EQUAL)                     \
-                                                                        \
-    BINARY_HANDLER(logical_and, LOGICAL_AND)                            \
-    BINARY_HANDLER(logical_or, OR)                                      \
-                                                                        \
-    BINARY_HANDLER(as_cast, AS)                                         \
-    /* should this really be an operator? */                            \
-                                                                        \
-    BINARY_HANDLER(array_index, LEFT_SQUARE)                            \
-                                                                        \
-    BINARY_HANDLER(field_ref, DOT)                                      \
-    /*BINARY_HANDLER(method_call, DOT)*/                                \
-    BINARY_HANDLER(error_propagation, QUESTION_MARK)                    \
-    /* not a binary operator, technically, but still left denotation */ \
-    BINARY_HANDLER(assignment_expr, EQUAL)                              \
-    /* should this really be an operator? or a binary one? */           \
-    /* if it should, also add all operation-assign below:*/             \
-    BINARY_HANDLER(plus_assig, PLUS_EQ)                                 \
-    BINARY_HANDLER(minus_assig, MINUS_EQ)                               \
-    BINARY_HANDLER(mult_assig, ASTERISK_EQ)                             \
-    BINARY_HANDLER(div_assig, DIV_EQ)                                   \
-    BINARY_HANDLER(mod_assig, PERCENT_EQ)                               \
-    BINARY_HANDLER(bitwise_and_assig, AMP_EQ)                           \
-    BINARY_HANDLER(bitwise_or_assig, PIPE_EQ)                           \
-    BINARY_HANDLER(bitwise_xor_assig, CARET_EQ)                         \
-    BINARY_HANDLER(left_shift_assig, LEFT_SHIFT_EQ)                     \
-    BINARY_HANDLER(right_shift_assig, RIGHT_SHIFT_EQ)                   \
-                                                                        \
-    BINARY_HANDLER(range_exclusive, DOT_DOT)                            \
-    BINARY_HANDLER(range_inclusive, DOT_DOT_EQ)                         \
-                                                                        \
-    BINARY_HANDLER(path, SCOPE_RESOLUTION)                              \
-                                                                        \
-    BINARY_HANDLER(return, RETURN_TOK)                                  \
-    BINARY_HANDLER(break, BREAK)                                        \
-    BINARY_HANDLER(closure, MOVE)
-
-// create declarations for binary op handling
-#define BINARY_HANDLER(name, _) Tree binary_##name(const_TokenPtr tok, Tree left);
-        BINARY_HANDLER_LIST
-#undef BINARY_HANDLER
     };
 }
 

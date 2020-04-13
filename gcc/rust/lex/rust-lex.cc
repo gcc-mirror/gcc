@@ -1,6 +1,7 @@
 #include "rust-lex.h"
 
-#include "diagnostic.h" // for error_at
+#include "rust-diagnostics.h" // for rust_error_at
+#include "rust-linemap.h"
 #include "safe-ctype.h"
 
 #include <sstream> // for ostringstream
@@ -25,7 +26,7 @@ namespace Rust {
             str += static_cast<char>(0x80 | ((char32.value >> 0) & 0x3F));
         } else {
             fprintf(stderr, "Invalid unicode codepoint found: '%u' \n", char32.value);
-            // error_at(get_current_location(), "Invalid unicode codepoint found: '%u'",
+            // rust_error_at(get_current_location(), "Invalid unicode codepoint found: '%u'",
             // char32.value);
         }
         return str;
@@ -54,7 +55,7 @@ namespace Rust {
             str += static_cast<char>(0x80 | ((value >> 6) & 0x3F));
             str += static_cast<char>(0x80 | ((value >> 0) & 0x3F));
         } else {
-            error_at(get_current_location(), "Invalid unicode codepoint found: '%u'", value);
+            rust_error_at(get_current_location(), "Invalid unicode codepoint found: '%u'", value);
         }*/
         return str;
     }
@@ -86,20 +87,18 @@ namespace Rust {
         return ISSPACE(character);
     }
 
-    Lexer::Lexer(const char* filename, FILE* input) :
-      input(input), current_line(1), current_column(1), line_map(0), input_source(input),
+    Lexer::Lexer(const char* filename, FILE* input, Linemap* linemap) :
+      input(input), current_line(1), current_column(1), line_map(linemap), input_source(input),
       input_queue(input_source), token_source(this), token_queue(token_source) {
         // inform line_table that file is being entered and is in line 1
-        line_map
-          = ::linemap_add(::line_table, ::LC_ENTER, /* sysp */ 0, filename, /* current_line */ 1);
+        line_map->start_file(filename, current_line);
     }
 
     Lexer::~Lexer() {
-        ::linemap_add(::line_table, ::LC_LEAVE, /* sysp */ 0, /* filename */ NULL, /* to_line */ 0);
     }
 
-    location_t Lexer::get_current_location() {
-        return ::linemap_position_for_column(::line_table, current_column);
+    Location Lexer::get_current_location() {
+        return line_map->get_location(current_column);
     }
 
     int Lexer::peek_input(int n) {
@@ -177,7 +176,7 @@ namespace Rust {
     TokenPtr Lexer::build_token() {
         // loop to go through multiple characters to build a single token
         while (true) {
-            location_t loc = get_current_location();
+            Location loc = get_current_location();
             /*int */ current_char = peek_input();
             skip_input();
 
@@ -187,7 +186,7 @@ namespace Rust {
             }
 
             // detect shebang
-            if (loc == 1 && current_line == 1 && current_char == '#') {
+            if (current_line == 1 && current_char == '#') {
                 current_char = peek_input();
 
                 if (current_char == '!') {
@@ -210,7 +209,7 @@ namespace Rust {
                             current_line++;
                             current_column = 1;
                             // tell line_table that new line starts
-                            linemap_line_start(::line_table, current_line, max_column_hint);
+                            line_map->start_line(current_line, max_column_hint);
                             continue;
                     }
                 }
@@ -609,7 +608,7 @@ namespace Rust {
                         parse_escape(length, byte_char, '\'');
 
                         if (byte_char > 127) {
-                            error_at(
+                            rust_error_at(
                               get_current_location(), "byte char '%c' out of range", byte_char);
                             byte_char = 0;
                         }
@@ -619,7 +618,7 @@ namespace Rust {
                         length++;
 
                         if (current_char != '\'') {
-                            error_at(get_current_location(), "unclosed byte char");
+                            rust_error_at(get_current_location(), "unclosed byte char");
                         }
 
                         // TODO: ensure skipping is needed here
@@ -634,7 +633,7 @@ namespace Rust {
                         current_char = peek_input();
 
                         if (current_char != '\'') {
-                            error_at(get_current_location(), "unclosed byte char");
+                            rust_error_at(get_current_location(), "unclosed byte char");
                         }
 
                         // TODO: ensure skipping is needed here
@@ -642,7 +641,7 @@ namespace Rust {
                         current_char = peek_input();
                         length++; // go to next char
                     } else {
-                        error_at(get_current_location(), "no character inside '' for byte char");
+                        rust_error_at(get_current_location(), "no character inside '' for byte char");
                     }
 
                     current_column += length;
@@ -667,7 +666,7 @@ namespace Rust {
                             parse_escape(length, output_char, '"');
 
                             if (output_char > 127) {
-                                error_at(get_current_location(),
+                                rust_error_at(get_current_location(),
                                   "char '%c' in byte string out of range", output_char);
                                 output_char = 0;
                             }
@@ -687,7 +686,7 @@ namespace Rust {
                     current_column += length;
 
                     if (current_char == '\n') {
-                        error_at(get_current_location(), "unended byte string literal");
+                        rust_error_at(get_current_location(), "unended byte string literal");
                     } else if (current_char == '"') {
                         skip_input();
                         current_char = peek_input();
@@ -717,7 +716,7 @@ namespace Rust {
                     }
 
                     if (current_char != '"') {
-                        error_at(get_current_location(), "raw byte string has no opening '\"'");
+                        rust_error_at(get_current_location(), "raw byte string has no opening '\"'");
                     }
 
                     skip_input();
@@ -790,12 +789,12 @@ namespace Rust {
 
                     // if just a single underscore, not an identifier
                     if (first_is_underscore && length == 1) {
-                        error_at(get_current_location(), "'_' is not a valid raw identifier");
+                        rust_error_at(get_current_location(), "'_' is not a valid raw identifier");
                     }
 
                     if (str == "crate" || str == "extern" || str == "self" || str == "super"
                         || str == "Self") {
-                        error_at(
+                        rust_error_at(
                           get_current_location(), "'%s' is a forbidden raw identifier", str.c_str());
                     } else {
                         return Token::make_identifier(loc, str);
@@ -819,7 +818,7 @@ namespace Rust {
                     }
 
                     if (current_char != '"') {
-                        error_at(get_current_location(), "raw string has no opening '\"'");
+                        rust_error_at(get_current_location(), "raw string has no opening '\"'");
                     }
 
                     skip_input();
@@ -960,7 +959,7 @@ namespace Rust {
                         parse_in_type_suffix(/*current_char, */ type_hint, length);
 
                         if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for integer (hex) literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1012,7 +1011,7 @@ namespace Rust {
                         parse_in_type_suffix(/*current_char, */ type_hint, length);
 
                         if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for integer (octal) literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1065,7 +1064,7 @@ namespace Rust {
                         parse_in_type_suffix(/*current_char, */ type_hint, length);
 
                         if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for integer (binary) literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1106,7 +1105,7 @@ namespace Rust {
 
                         if (type_hint != CORETYPE_F32 && type_hint != CORETYPE_F64
                             && type_hint != CORETYPE_UNKNOWN) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for float literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1134,7 +1133,7 @@ namespace Rust {
 
                         if (type_hint != CORETYPE_F32 && type_hint != CORETYPE_F64
                             && type_hint != CORETYPE_UNKNOWN) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for float literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1149,7 +1148,7 @@ namespace Rust {
 
                         if (type_hint != CORETYPE_F32 && type_hint != CORETYPE_F64
                             && type_hint != CORETYPE_UNKNOWN) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for float literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1160,7 +1159,7 @@ namespace Rust {
                         parse_in_type_suffix(/*current_char, */ type_hint, length);
 
                         if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64) {
-                            error_at(get_current_location(),
+                            rust_error_at(get_current_location(),
                               "invalid type suffix '%s' for integer (decimal) literal",
                               get_type_hint_string(type_hint));
                         }
@@ -1217,7 +1216,7 @@ namespace Rust {
                 current_column += length;
 
                 if (current_char32.value == '\n') {
-                    error_at(get_current_location(), "unended string literal");
+                    rust_error_at(get_current_location(), "unended string literal");
                 } else if (current_char32.value == '"') {
                     skip_input();
 
@@ -1249,7 +1248,7 @@ namespace Rust {
                     // test_skip_codepoint_input();
 
                     if (test_peek_codepoint_input().value != '\'') {
-                        error_at(get_current_location(), "unended char literal");
+                        rust_error_at(get_current_location(), "unended char literal");
                     } else {
                         test_skip_codepoint_input();
                         current_char = peek_input();
@@ -1302,13 +1301,13 @@ namespace Rust {
 
                         return Token::make_lifetime(loc, str);
                     } else {
-                        error_at(get_current_location(), "expected ' after character constant");
+                        rust_error_at(get_current_location(), "expected ' after character constant");
                     }
                 }
             }
 
             // didn't match anything so error
-            error_at(loc, "unexpected character '%x'", current_char);
+            rust_error_at(loc, "unexpected character '%x'", current_char);
             current_column++;
         }
     }
@@ -1370,7 +1369,7 @@ namespace Rust {
         } else if (suffix == "usize") {
             type_hint = CORETYPE_USIZE;
         } else {
-            error_at(get_current_location(), "unknown number suffix '%s'", suffix.c_str());
+            rust_error_at(get_current_location(), "unknown number suffix '%s'", suffix.c_str());
 
             return false;
         }
@@ -1446,7 +1445,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[0] = current_char;
@@ -1457,7 +1456,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[1] = current_char;
@@ -1465,7 +1464,7 @@ namespace Rust {
                 long hexLong = ::std::strtol(hexNum, NULL, 16);
 
                 if (hexLong > 127)
-                    error_at(get_current_location(),
+                    rust_error_at(get_current_location(),
                       "ascii \\x escape '\\x%s' out of range - allows up to '\\x7F'", hexNum);
                 // gcc_assert(hexLong < 128); // as ascii
                 char hexChar = static_cast<char>(hexLong);
@@ -1550,13 +1549,13 @@ namespace Rust {
                 // ensure closing brace
                 if (need_close_brace && current_char != '}') {
                     // actually an error
-                    error_at(get_current_location(), "expected terminating '}' in unicode escape");
+                    rust_error_at(get_current_location(), "expected terminating '}' in unicode escape");
                     return false;
                 }
 
                 // ensure 1-6 hex characters
                 if (num_str.length() > 6 || num_str.length() < 1) {
-                    error_at(get_current_location(),
+                    rust_error_at(get_current_location(),
                       "unicode escape should be between 1 and 6 hex characters; it is %lu",
                       num_str.length());
                     return false;
@@ -1566,7 +1565,7 @@ namespace Rust {
 
                 // as debug, check hex_num = test_val
                 if (hex_num > 255) {
-                    error_at(
+                    rust_error_at(
                       get_current_location(), "non-ascii chars not implemented yet, defaulting to 0");
                     hex_num = 0;
                 }
@@ -1620,7 +1619,7 @@ namespace Rust {
                     return true;
                 }
             default:
-                error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
+                rust_error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
                 // returns false if no parsing could be done
                 return false;
                 break;
@@ -1651,7 +1650,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[0] = current_char;
@@ -1662,7 +1661,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[1] = current_char;
@@ -1670,7 +1669,7 @@ namespace Rust {
                 long hexLong = ::std::strtol(hexNum, NULL, 16);
 
                 if (hexLong > 127)
-                    error_at(get_current_location(),
+                    rust_error_at(get_current_location(),
                       "ascii \\x escape '\\x%s' out of range - allows up to '\\x7F'", hexNum);
                 // gcc_assert(hexLong < 128); // as ascii
                 char hexChar = static_cast<char>(hexLong);
@@ -1758,7 +1757,7 @@ namespace Rust {
                         length++;
                     } else {
                         // actually an error
-                        error_at(
+                        rust_error_at(
                           get_current_location(), "expected terminating '}' in unicode escape");
                         return false;
                     }
@@ -1766,7 +1765,7 @@ namespace Rust {
 
                 // ensure 1-6 hex characters
                 if (num_str.length() > 6 || num_str.length() < 1) {
-                    error_at(get_current_location(),
+                    rust_error_at(get_current_location(),
                       "unicode escape should be between 1 and 6 hex characters; it is %lu",
                       num_str.length());
                     return false;
@@ -1828,7 +1827,7 @@ namespace Rust {
                     return true;
                 }
             default:
-                error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
+                rust_error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
                 // returns false if no parsing could be done
                 return false;
                 break;
@@ -1860,7 +1859,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[0] = current_char;
@@ -1871,7 +1870,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[1] = current_char;
@@ -1879,7 +1878,7 @@ namespace Rust {
                 long hexLong = ::std::strtol(hexNum, NULL, 16);
 
                 if (hexLong > 127)
-                    error_at(get_current_location(),
+                    rust_error_at(get_current_location(),
                       "ascii \\x escape '\\x%s' out of range - allows up to '\\x7F'", hexNum);
                 // gcc_assert(hexLong < 128); // as ascii
                 char hexChar = static_cast<char>(hexLong);
@@ -1903,7 +1902,7 @@ namespace Rust {
                 output_char = '\0';
                 break;
             default:
-                // error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
+                // rust_error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
                 // returns false if no parsing could be done
                 return false;
                 break;
@@ -1996,13 +1995,13 @@ namespace Rust {
         // ensure closing brace
         if (need_close_brace && current_char != '}') {
             // actually an error
-            error_at(get_current_location(), "expected terminating '}' in unicode escape");
+            rust_error_at(get_current_location(), "expected terminating '}' in unicode escape");
             return false;
         }
 
         // ensure 1-6 hex characters
         if (num_str.length() > 6 || num_str.length() < 1) {
-            error_at(get_current_location(),
+            rust_error_at(get_current_location(),
               "unicode escape should be between 1 and 6 hex characters; it is %lu", num_str.length());
             return false;
         }
@@ -2035,7 +2034,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[0] = current_char;
@@ -2046,7 +2045,7 @@ namespace Rust {
                 length++;
 
                 if (!ISXDIGIT(current_char)) {
-                    error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
+                    rust_error_at(get_current_location(), "invalid character '\\x%c' in \\x sequence",
                       current_char);
                 }
                 hexNum[1] = current_char;
@@ -2054,7 +2053,7 @@ namespace Rust {
                 long hexLong = ::std::strtol(hexNum, NULL, 16);
 
                 if (hexLong > 255)
-                    error_at(get_current_location(),
+                    rust_error_at(get_current_location(),
                       "ascii \\x escape '\\x%s' out of range - allows up to '\\xFF'", hexNum);
                 // gcc_assert(hexLong < 128); // as ascii
                 char hexChar = static_cast<char>(hexLong);
@@ -2078,7 +2077,7 @@ namespace Rust {
                 output_char = '\0';
                 break;
             default:
-                // error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
+                // rust_error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
                 // returns false if no parsing could be done
                 return false;
                 break;
@@ -2149,7 +2148,7 @@ namespace Rust {
             return output;*/
             return 4;
         } else {
-            error_at(get_current_location(), "invalid UTF-8 (too long)");
+            rust_error_at(get_current_location(), "invalid UTF-8 (too long)");
             return 0;
         }
     }
@@ -2203,7 +2202,7 @@ namespace Rust {
                               | ((input3 & 0x3F) << 6) | ((input4 & 0x3F) << 0);
             return { output };
         } else {
-            error_at(get_current_location(), "invalid UTF-8 (too long)");
+            rust_error_at(get_current_location(), "invalid UTF-8 (too long)");
             return { 0xFFFE };
         }
     }
@@ -2274,7 +2273,7 @@ namespace Rust {
             return output;*/
             return 4;
         } else {
-            error_at(get_current_location(), "invalid UTF-8 (too long)");
+            rust_error_at(get_current_location(), "invalid UTF-8 (too long)");
             return 0;
         }
     }
@@ -2342,7 +2341,7 @@ namespace Rust {
                                       | ((input3 & 0x3F) << 6) | ((input4 & 0x3F) << 0);
                     return output;
                 } else {
-                    error_at(get_current_location(), "invalid UTF-8 (too long)");
+                    rust_error_at(get_current_location(), "invalid UTF-8 (too long)");
                     return 0xFFFE;
                 }*/
     }

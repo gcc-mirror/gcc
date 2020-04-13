@@ -53,7 +53,7 @@ namespace Rust {
             // Type type;
             ::std::unique_ptr<Type> type;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether binding is in an error state.
@@ -68,7 +68,7 @@ namespace Rust {
 
             // Pointer type for type in constructor to enable polymorphism
             GenericArgsBinding(Identifier ident, ::std::unique_ptr<Type> type_ptr,
-              location_t locus = UNKNOWN_LOCATION) :
+              Location locus = Location()) :
               identifier(::std::move(ident)),
               type(::std::move(type_ptr)), locus(locus) {}
 
@@ -101,7 +101,7 @@ namespace Rust {
             ::std::vector< ::std::unique_ptr<Type> > type_args;
             ::std::vector<GenericArgsBinding> binding_args;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns true if there are any generic arguments
@@ -111,7 +111,7 @@ namespace Rust {
 
             GenericArgs(::std::vector<Lifetime> lifetime_args,
               ::std::vector< ::std::unique_ptr<Type> > type_args,
-              ::std::vector<GenericArgsBinding> binding_args, location_t locus = UNKNOWN_LOCATION) :
+              ::std::vector<GenericArgsBinding> binding_args, Location locus = Location()) :
               lifetime_args(::std::move(lifetime_args)),
               type_args(::std::move(type_args)), binding_args(::std::move(binding_args)),
               locus(locus) {}
@@ -167,7 +167,7 @@ namespace Rust {
             // bool has_generic_args;
             GenericArgs generic_args;
 
-            location_t locus;
+            Location locus;
 
             // TODO: does this require visitor? pretty sure not polymorphic
 
@@ -178,13 +178,13 @@ namespace Rust {
             }
 
             // Constructor for segment (from IdentSegment and GenericArgs)
-            PathExprSegment(PathIdentSegment segment_name, location_t locus = UNKNOWN_LOCATION,
+            PathExprSegment(PathIdentSegment segment_name, Location locus = Location(),
               GenericArgs generic_args = GenericArgs::create_empty()) :
               segment_name(::std::move(segment_name)),
               generic_args(::std::move(generic_args)), locus(locus) {}
 
             // Constructor for segment with generic arguments (from segment name and all args)
-            PathExprSegment(::std::string segment_name, location_t locus,
+            PathExprSegment(::std::string segment_name, Location locus,
               ::std::vector<Lifetime> lifetime_args = ::std::vector<Lifetime>(),
               ::std::vector< ::std::unique_ptr<Type> > type_args
               = ::std::vector< ::std::unique_ptr<Type> >(),
@@ -206,7 +206,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            inline location_t get_locus() const {
+            inline Location get_locus() const {
                 return locus;
             }
         };
@@ -243,14 +243,14 @@ namespace Rust {
           , public PathExpr {
             bool has_opening_scope_resolution;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             // Constructor
             PathInExpression(::std::vector<PathExprSegment> path_segments,
-              location_t locus = UNKNOWN_LOCATION, bool has_opening_scope_resolution = false,
+              Location locus = Location(), bool has_opening_scope_resolution = false,
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               PathPattern(::std::move(path_segments)),
               PathExpr(::std::move(outer_attrs)),
@@ -276,11 +276,11 @@ namespace Rust {
                 return convert_to_simple_path(has_opening_scope_resolution);
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -307,7 +307,7 @@ namespace Rust {
              * so could disallow that in constructor, which won't give that much size overhead. */
             PathIdentSegment ident_segment;
 
-            location_t locus;
+            Location locus;
 
           protected:
             // This is protected because it is only really used by derived classes, not the base.
@@ -327,12 +327,12 @@ namespace Rust {
             }
 
             TypePathSegment(PathIdentSegment ident_segment, bool has_separating_scope_resolution,
-              location_t locus) :
+              Location locus) :
               ident_segment(::std::move(ident_segment)),
               locus(locus), has_separating_scope_resolution(has_separating_scope_resolution) {}
 
             TypePathSegment(
-              ::std::string segment_name, bool has_separating_scope_resolution, location_t locus) :
+              ::std::string segment_name, bool has_separating_scope_resolution, Location locus) :
               ident_segment(PathIdentSegment(::std::move(segment_name))),
               locus(locus), has_separating_scope_resolution(has_separating_scope_resolution) {}
 
@@ -351,7 +351,7 @@ namespace Rust {
                 return true;
             }
 
-            inline bool get_locus() const {
+            inline Location get_locus() const {
                 return locus;
             }
 
@@ -374,7 +374,7 @@ namespace Rust {
 
             // Constructor with PathIdentSegment and GenericArgs
             TypePathSegmentGeneric(PathIdentSegment ident_segment,
-              bool has_separating_scope_resolution, GenericArgs generic_args, location_t locus) :
+              bool has_separating_scope_resolution, GenericArgs generic_args, Location locus) :
               TypePathSegment(::std::move(ident_segment), has_separating_scope_resolution, locus),
               generic_args(::std::move(generic_args)) {}
 
@@ -382,7 +382,7 @@ namespace Rust {
             TypePathSegmentGeneric(::std::string segment_name, bool has_separating_scope_resolution,
               ::std::vector<Lifetime> lifetime_args,
               ::std::vector< ::std::unique_ptr<Type> > type_args,
-              ::std::vector<GenericArgsBinding> binding_args, location_t locus) :
+              ::std::vector<GenericArgsBinding> binding_args, Location locus) :
               TypePathSegment(::std::move(segment_name), has_separating_scope_resolution, locus),
               generic_args(GenericArgs(
                 ::std::move(lifetime_args), ::std::move(type_args), ::std::move(binding_args))) {}
@@ -497,13 +497,13 @@ namespace Rust {
             // Constructor with PathIdentSegment and TypePathFn
             TypePathSegmentFunction(PathIdentSegment ident_segment,
               bool has_separating_scope_resolution, TypePathFunction function_path,
-              location_t locus) :
+              Location locus) :
               TypePathSegment(::std::move(ident_segment), has_separating_scope_resolution, locus),
               function_path(::std::move(function_path)) {}
 
             // Constructor with segment name and TypePathFn
             TypePathSegmentFunction(::std::string segment_name, bool has_separating_scope_resolution,
-              TypePathFunction function_path, location_t locus) :
+              TypePathFunction function_path, Location locus) :
               TypePathSegment(::std::move(segment_name), has_separating_scope_resolution, locus),
               function_path(::std::move(function_path)) {}
 
@@ -527,7 +527,7 @@ namespace Rust {
             bool has_opening_scope_resolution;
             ::std::vector< ::std::unique_ptr<TypePathSegment> > segments;
 
-            location_t locus;
+            Location locus;
 
           protected:
             // Use covariance to implement clone function as returning this object rather than base
@@ -554,12 +554,16 @@ namespace Rust {
 
             // Creates an error state TypePath.
             static TypePath create_error() {
-                return TypePath(::std::vector< ::std::unique_ptr<TypePathSegment> >());
+                return TypePath(
+                    ::std::vector< ::std::unique_ptr<TypePathSegment> >(),
+                    Linemap::unknown_location(),
+                    false);
             }
 
             // Constructor
             TypePath(::std::vector< ::std::unique_ptr<TypePathSegment> > segments,
-              location_t locus = UNKNOWN_LOCATION, bool has_opening_scope_resolution = false) :
+                     Location locus,
+                     bool has_opening_scope_resolution = false) :
               has_opening_scope_resolution(has_opening_scope_resolution),
               segments(::std::move(segments)), locus(locus) {}
 
@@ -602,7 +606,7 @@ namespace Rust {
             // Creates a trait bound with a clone of this type path as its only element.
             virtual TraitBound* to_trait_bound(bool in_parens) const OVERRIDE;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -617,12 +621,12 @@ namespace Rust {
             // bool has_as_clause;
             TypePath trait_path;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Constructor
             QualifiedPathType(::std::unique_ptr<Type> invoke_on_type,
-              location_t locus = UNKNOWN_LOCATION, TypePath trait_path = TypePath::create_error()) :
+              Location locus = Location(), TypePath trait_path = TypePath::create_error()) :
               type_to_invoke_on(::std::move(invoke_on_type)),
               trait_path(::std::move(trait_path)), locus(locus) {}
 
@@ -663,7 +667,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            inline location_t get_locus() const {
+            inline Location get_locus() const {
                 return locus;
             }
         };
@@ -675,13 +679,13 @@ namespace Rust {
           , public PathExpr {
             QualifiedPathType path_type;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             QualifiedPathInExpression(QualifiedPathType qual_path_type,
-              ::std::vector<PathExprSegment> path_segments, location_t locus = UNKNOWN_LOCATION,
+              ::std::vector<PathExprSegment> path_segments, Location locus = Location(),
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               PathPattern(::std::move(path_segments)),
               PathExpr(::std::move(outer_attrs)), path_type(::std::move(qual_path_type)),
@@ -702,11 +706,11 @@ namespace Rust {
                   QualifiedPathType::create_error(), ::std::vector<PathExprSegment>());
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -730,7 +734,7 @@ namespace Rust {
             // ::std::vector<TypePathSegment> segments;
             ::std::vector< ::std::unique_ptr<TypePathSegment> > segments;
 
-            location_t locus;
+            Location locus;
 
           protected:
             // Use covariance to implement clone function as returning this object rather than base
@@ -746,7 +750,7 @@ namespace Rust {
           public:
             QualifiedPathInType(QualifiedPathType qual_path_type,
               ::std::vector< ::std::unique_ptr<TypePathSegment> > path_segments,
-              location_t locus = UNKNOWN_LOCATION) :
+              Location locus = Location()) :
               path_type(::std::move(qual_path_type)),
               segments(::std::move(path_segments)), locus(locus) {}
 

@@ -62,6 +62,7 @@ GRS_OBJS = \
     rust/rust-object-export.o \
     rust/rust-linemap.o \
     rust/rust-gcc-diagnostics.o \
+    rust/rust-diagnostics.o \
     rust/rust-gcc.o \
     rust/rust-token.o \
     rust/rust-lex.o \

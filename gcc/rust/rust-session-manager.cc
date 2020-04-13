@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+extern Linemap* rust_get_linemap();
+
 namespace Rust {
     // Simple wrapper for FILE* that simplifies destruction.
     struct RAIIFile {
@@ -280,7 +282,7 @@ namespace Rust {
 
         // parse file here
         // create lexer and parser - these are file-specific and so aren't instance variables
-        Rust::Lexer lex(filename, file_wrap.file);
+        Rust::Lexer lex(filename, file_wrap.file, rust_get_linemap());
         Rust::Parser parser(lex);
 
         // determine parsing method from options
@@ -515,8 +517,13 @@ namespace Rust {
             AST::Attribute attr(AST::SimplePath::from_str("macro_use"), NULL);
 
             // create "extern crate" item with the name
-            ::std::unique_ptr<AST::ExternCrate> extern_crate(new AST::ExternCrate(
-              *it, AST::Visibility::create_error(), { ::std::move(attr) }, UNKNOWN_LOCATION));
+            ::std::unique_ptr<AST::ExternCrate> extern_crate(
+                new AST::ExternCrate(
+                    *it,
+                    AST::Visibility::create_error(),
+                    { ::std::move(attr) },
+                    Linemap::unknown_location())
+                );
 
             // insert at beginning
             crate.items.insert(crate.items.begin(), ::std::move(extern_crate));
@@ -529,10 +536,10 @@ namespace Rust {
                 AST::SimplePathSegment("v1") };
         // create use tree and decl
         ::std::unique_ptr<AST::UseTreeGlob> use_tree(new AST::UseTreeGlob(
-          AST::UseTreeGlob::PATH_PREFIXED, AST::SimplePath(::std::move(segments)), UNKNOWN_LOCATION));
+          AST::UseTreeGlob::PATH_PREFIXED, AST::SimplePath(::std::move(segments)), Linemap::unknown_location()));
         AST::Attribute prelude_attr(AST::SimplePath::from_str("prelude_import"), NULL);
         ::std::unique_ptr<AST::UseDeclaration> use_decl(new AST::UseDeclaration(::std::move(use_tree),
-          AST::Visibility::create_error(), { ::std::move(prelude_attr) }, UNKNOWN_LOCATION));
+          AST::Visibility::create_error(), { ::std::move(prelude_attr) }, Linemap::unknown_location()));
 
         crate.items.insert(crate.items.begin(), ::std::move(use_decl));
 

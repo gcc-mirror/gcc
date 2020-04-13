@@ -9,16 +9,16 @@ namespace Rust {
     namespace AST {
         // Just a semi-colon, which apparently is a statement.
         class EmptyStmt : public Stmt {
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const {
                 return ::std::string(1, ';');
             }
 
-            EmptyStmt(location_t locus) : locus(locus) {}
+            EmptyStmt(Location locus) : locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -59,7 +59,7 @@ namespace Rust {
             // Expr* init_expr;
             ::std::unique_ptr<Expr> init_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether let statement has outer attributes.
@@ -86,7 +86,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             LetStmt(::std::unique_ptr<Pattern> variables_pattern, ::std::unique_ptr<Expr> init_expr,
-              ::std::unique_ptr<Type> type, ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::unique_ptr<Type> type, ::std::vector<Attribute> outer_attrs, Location locus) :
               outer_attrs(::std::move(outer_attrs)),
               variables_pattern(::std::move(variables_pattern)), type(::std::move(type)),
               init_expr(::std::move(init_expr)), locus(locus) {}
@@ -115,7 +115,7 @@ namespace Rust {
             LetStmt(LetStmt&& other) = default;
             LetStmt& operator=(LetStmt&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -132,15 +132,15 @@ namespace Rust {
         class ExprStmt : public Stmt {
             // TODO: add any useful virtual functions
 
-            location_t locus;
+            Location locus;
 
           public:
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
           protected:
-            ExprStmt(location_t locus) : locus(locus) {}
+            ExprStmt(Location locus) : locus(locus) {}
         };
 
         /* Statement containing an expression without a block (or, due to technical difficulties, can
@@ -161,7 +161,7 @@ namespace Rust {
 
             // ExprStmtWithoutBlock(::std::unique_ptr<ExprWithoutBlock> expr) :
             // expr(::std::move(expr)) {}
-            ExprStmtWithoutBlock(::std::unique_ptr<Expr> expr, location_t locus) :
+            ExprStmtWithoutBlock(::std::unique_ptr<Expr> expr, Location locus) :
               ExprStmt(locus), expr(::std::move(expr)) {}
 
             // Copy constructor with clone
@@ -203,7 +203,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            ExprStmtWithBlock(::std::unique_ptr<ExprWithBlock> expr, location_t locus) :
+            ExprStmtWithBlock(::std::unique_ptr<ExprWithBlock> expr, Location locus) :
               ExprStmt(locus), expr(::std::move(expr)) {}
 
             // Copy constructor with clone

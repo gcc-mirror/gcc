@@ -7,6 +7,10 @@
 #include "coretypes.h"
 #include "options.h"
 #include "rust-system.h"
+
+#include "rust-linemap.h"
+#include "backend.h"
+
 #include <utility>
 
 namespace Rust {
@@ -134,6 +138,12 @@ namespace Rust {
         CompileOptions options;
         // This should really be in a per-crate storage area but it is wiped with every file so eh.
         ::std::string injected_crate_name;
+
+        // backend wrapper to GCC GENERIC
+        Backend* backend;
+
+        // backend linemap
+        Linemap* linemap;
 
       public:
         /* Initialise compiler session. Corresponds to langhook grs_langhook_init(). Note that this is

@@ -282,14 +282,14 @@ namespace Rust {
             // MacroRules rules;
             ::std::vector<MacroRule> rules; // inlined form
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             MacroRulesDefinition(Identifier rule_name, DelimType delim_type,
               ::std::vector<MacroRule> rules, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               MacroItem(::std::move(outer_attrs)),
               rule_name(::std::move(rule_name)), delim_type(delim_type), rules(::std::move(rules)),
               locus(locus) {}
@@ -311,21 +311,21 @@ namespace Rust {
             SimplePath path;
             DelimTokenTree token_tree;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             MacroInvocation(SimplePath path, DelimTokenTree token_tree,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attrs)),
               path(::std::move(path)), token_tree(::std::move(token_tree)), locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 

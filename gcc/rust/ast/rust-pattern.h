@@ -15,21 +15,21 @@ namespace Rust {
             bool has_minus;
             // Actually, this might be a good place to use a template.
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             // Constructor for a literal pattern
-            LiteralPattern(Literal lit, location_t locus, bool has_minus = false) :
+            LiteralPattern(Literal lit, Location locus, bool has_minus = false) :
               lit(::std::move(lit)), has_minus(has_minus), locus(locus) {}
 
             LiteralPattern(
-              ::std::string val, Literal::LitType type, location_t locus, bool has_minus = false) :
+              ::std::string val, Literal::LitType type, Location locus, bool has_minus = false) :
               lit(Literal(::std::move(val), type)),
               has_minus(has_minus), locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -52,7 +52,7 @@ namespace Rust {
             // Pattern* to_bind;
             ::std::unique_ptr<Pattern> to_bind;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~IdentifierPattern() {
@@ -67,7 +67,7 @@ namespace Rust {
             }
 
             // Constructor
-            IdentifierPattern(Identifier ident, location_t locus, bool is_ref = false,
+            IdentifierPattern(Identifier ident, Location locus, bool is_ref = false,
               bool is_mut = false, ::std::unique_ptr<Pattern> to_bind = NULL) :
               variable_ident(::std::move(ident)),
               is_ref(is_ref), is_mut(is_mut), to_bind(::std::move(to_bind)), locus(locus) {}
@@ -102,7 +102,7 @@ namespace Rust {
             IdentifierPattern(IdentifierPattern&& other) = default;
             IdentifierPattern& operator=(IdentifierPattern&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -117,16 +117,16 @@ namespace Rust {
 
         // AST node for using the '_' wildcard "match any value" pattern
         class WildcardPattern : public Pattern {
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const {
                 return ::std::string(1, '_');
             }
 
-            WildcardPattern(location_t locus) : locus(locus) {}
+            WildcardPattern(Location locus) : locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -174,16 +174,16 @@ namespace Rust {
             // Minus prefixed to literal (if integer or floating-point)
             bool has_minus;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Constructor
-            RangePatternBoundLiteral(Literal literal, location_t locus, bool has_minus = false) :
+            RangePatternBoundLiteral(Literal literal, Location locus, bool has_minus = false) :
               literal(literal), has_minus(has_minus), locus(locus) {}
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -210,7 +210,7 @@ namespace Rust {
                 return path.as_string();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return path.get_locus();
             }
 
@@ -237,7 +237,7 @@ namespace Rust {
                 return path.as_string();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return path.get_locus();
             }
 
@@ -261,14 +261,14 @@ namespace Rust {
 
             // location only stored to avoid a dereference - lower pattern should give correct
             // location so maybe change in future
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             // Constructor
             RangePattern(::std::unique_ptr<RangePatternBound> lower,
-              ::std::unique_ptr<RangePatternBound> upper, location_t locus,
+              ::std::unique_ptr<RangePatternBound> upper, Location locus,
               bool has_ellipsis_syntax = false) :
               lower(::std::move(lower)),
               upper(::std::move(upper)), has_ellipsis_syntax(has_ellipsis_syntax), locus(locus) {}
@@ -295,7 +295,7 @@ namespace Rust {
             RangePattern(RangePattern&& other) = default;
             RangePattern& operator=(RangePattern&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -315,7 +315,7 @@ namespace Rust {
             // Pattern* pattern;
             ::std::unique_ptr<Pattern> pattern;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~ReferencePattern() {
@@ -325,7 +325,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             ReferencePattern(::std::unique_ptr<Pattern> pattern, bool is_mut_reference,
-              bool ref_has_two_amps, location_t locus) :
+              bool ref_has_two_amps, Location locus) :
               has_two_amps(ref_has_two_amps),
               is_mut(is_mut_reference), pattern(::std::move(pattern)), locus(locus) {}
 
@@ -395,7 +395,7 @@ namespace Rust {
                 } ident;
             } pattern;*/
 
-            location_t locus;
+            Location locus;
 
           public:
             virtual ~StructPatternField() {}
@@ -407,14 +407,14 @@ namespace Rust {
 
             virtual ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
             virtual void accept_vis(ASTVisitor& vis) = 0;
 
           protected:
-            StructPatternField(::std::vector<Attribute> outer_attribs, location_t locus) :
+            StructPatternField(::std::vector<Attribute> outer_attribs, Location locus) :
               outer_attrs(::std::move(outer_attribs)), locus(locus) {}
 
             // Clone function implementation as pure virtual method
@@ -433,7 +433,7 @@ namespace Rust {
             }*/
 
             StructPatternFieldTuplePat(TupleIndex index, ::std::unique_ptr<Pattern> tuple_pattern,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               StructPatternField(::std::move(outer_attribs), locus),
               index(index), tuple_pattern(::std::move(tuple_pattern)) {}
 
@@ -481,7 +481,7 @@ namespace Rust {
             }*/
 
             StructPatternFieldIdentPat(Identifier ident, ::std::unique_ptr<Pattern> ident_pattern,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               StructPatternField(::std::move(outer_attrs), locus),
               ident(::std::move(ident)), ident_pattern(::std::move(ident_pattern)) {}
 
@@ -526,7 +526,7 @@ namespace Rust {
 
           public:
             StructPatternFieldIdent(Identifier ident, bool is_ref, bool is_mut,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               StructPatternField(::std::move(outer_attrs), locus),
               has_ref(is_ref), has_mut(is_mut), ident(::std::move(ident)) {}
 
@@ -641,7 +641,7 @@ namespace Rust {
                 return !elems.is_empty();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return path.get_locus();
             }
 
@@ -819,7 +819,7 @@ namespace Rust {
             TupleStructPattern(TupleStructPattern&& other) = default;
             TupleStructPattern& operator=(TupleStructPattern&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return path.get_locus();
             }
 
@@ -1002,7 +1002,7 @@ namespace Rust {
             // TuplePatternItems items;
             ::std::unique_ptr<TuplePatternItems> items;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1012,7 +1012,7 @@ namespace Rust {
                 return items != NULL;
             }
 
-            TuplePattern(::std::unique_ptr<TuplePatternItems> items, location_t locus) :
+            TuplePattern(::std::unique_ptr<TuplePatternItems> items, Location locus) :
               items(::std::move(items)), locus(locus) {}
 
             // Copy constructor requires clone
@@ -1029,7 +1029,7 @@ namespace Rust {
                 return *this;
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -1047,14 +1047,14 @@ namespace Rust {
             // Pattern pattern_in_parens;
             ::std::unique_ptr<Pattern> pattern_in_parens;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const {
                 return "(" + pattern_in_parens->as_string() + ")";
             }
 
-            GroupedPattern(::std::unique_ptr<Pattern> pattern_in_parens, location_t locus) :
+            GroupedPattern(::std::unique_ptr<Pattern> pattern_in_parens, Location locus) :
               pattern_in_parens(::std::move(pattern_in_parens)), locus(locus) {}
 
             // Copy constructor uses clone
@@ -1075,7 +1075,7 @@ namespace Rust {
             GroupedPattern(GroupedPattern&& other) = default;
             GroupedPattern& operator=(GroupedPattern&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -1093,12 +1093,12 @@ namespace Rust {
             //::std::vector<Pattern> items;
             ::std::vector< ::std::unique_ptr<Pattern> > items;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
-            SlicePattern(::std::vector< ::std::unique_ptr<Pattern> > items, location_t locus) :
+            SlicePattern(::std::vector< ::std::unique_ptr<Pattern> > items, Location locus) :
               items(::std::move(items)), locus(locus) {}
 
             // Copy constructor with vector clone
@@ -1128,7 +1128,7 @@ namespace Rust {
             SlicePattern(SlicePattern&& other) = default;
             SlicePattern& operator=(SlicePattern&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 

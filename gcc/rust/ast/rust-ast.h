@@ -18,9 +18,11 @@
 // required for AST::Token
 #include "rust-token.h"
 
+#include "rust-location.h"
+
 namespace Rust {
     // TODO: remove typedefs and make actual types for these
-    // typedef int location_t;
+    // typedef int Location;
     // typedef ::std::string SimplePath;
     typedef ::std::string Identifier;
     typedef int TupleIndex;
@@ -37,13 +39,13 @@ namespace Rust {
         // Base AST node object - TODO is this really required or useful? Where to draw line?
         /*class Node {
           public:
-            // Gets node's location_t.
-            location_t get_locus() const {
+            // Gets node's Location.
+            Location get_locus() const {
                 return loc;
             }
 
-            // Sets node's location_t.
-            void set_locus(location_t loc_) {
+            // Sets node's Location.
+            void set_locus(Location loc_) {
                 loc = loc_;
             }
 
@@ -52,11 +54,11 @@ namespace Rust {
 
             virtual ~Node() {}
 
-            // TODO: constructor including location_t? Make all derived classes have location_t?
+            // TODO: constructor including Location? Make all derived classes have Location?
 
           private:
             // The node's location.
-            location_t loc;
+            Location loc;
         };*/
         // decided to not have node as a "node" would never need to be stored
 
@@ -141,7 +143,7 @@ namespace Rust {
             // Token kind.
             TokenId token_id;
             // Token location.
-            location_t locus;
+            Location locus;
             // Associated text (if any) of token.
             std::string str;
             // Token type hint (if any).
@@ -155,7 +157,7 @@ namespace Rust {
 
             // constructor from general text - avoid using if lexer const_TokenPtr is available
             Token(
-              TokenId token_id, location_t locus, ::std::string str, PrimitiveCoreType type_hint) :
+              TokenId token_id, Location locus, ::std::string str, PrimitiveCoreType type_hint) :
               token_id(token_id),
               locus(locus), str(::std::move(str)), type_hint(type_hint) {}
 
@@ -197,7 +199,7 @@ namespace Rust {
                 return token_id;
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -268,7 +270,7 @@ namespace Rust {
             DelimType delim_type;
             ::std::vector< ::std::unique_ptr<TokenTree> > token_trees;
 
-            location_t locus;
+            Location locus;
 
             // TODO: move all the "parse" functions into a separate class that has the token stream
             // reference - will be cleaner Parse a meta item inner.
@@ -299,12 +301,12 @@ namespace Rust {
 
           public:
             DelimTokenTree(DelimType delim_type,
-              ::std::vector< ::std::unique_ptr<TokenTree> > token_trees
-              = ::std::vector< ::std::unique_ptr<TokenTree> >(),
-              location_t locus = UNKNOWN_LOCATION) :
-              delim_type(delim_type),
-              token_trees(::std::move(token_trees)), locus(locus) {}
-
+                           ::std::vector< ::std::unique_ptr<TokenTree> > token_trees
+                           = ::std::vector< ::std::unique_ptr<TokenTree> >(),
+                           Location locus = Location()) :
+                delim_type(delim_type),
+                token_trees(::std::move(token_trees)), locus(locus) {}
+            
             // Copy constructor with vector clone
             DelimTokenTree(DelimTokenTree const& other) :
               delim_type(other.delim_type), locus(other.locus) {
@@ -370,12 +372,12 @@ namespace Rust {
         // A segment of a simple path without generic or type arguments
         class SimplePathSegment : public PathSegment {
             ::std::string segment_name;
-            location_t locus;
+            Location locus;
 
             // only allow identifiers, "super", "self", "crate", or "$crate"
           public:
             // TODO: put checks in constructor to enforce this rule?
-            SimplePathSegment(::std::string segment_name, location_t locus = UNKNOWN_LOCATION) :
+            SimplePathSegment(::std::string segment_name, Location locus = Location()) :
               segment_name(::std::move(segment_name)), locus(locus) {}
 
             // Returns whether simple path segment is in an invalid state (currently, if empty).
@@ -390,7 +392,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            inline location_t get_locus() const {
+            inline Location get_locus() const {
                 return locus;
             }
 
@@ -401,12 +403,12 @@ namespace Rust {
         class SimplePath {
             bool has_opening_scope_resolution;
             ::std::vector<SimplePathSegment> segments;
-            location_t locus;
+            Location locus;
 
           public:
             // Constructor
             SimplePath(::std::vector<SimplePathSegment> path_segments,
-              bool has_opening_scope_resolution = false, location_t locus = UNKNOWN_LOCATION) :
+              bool has_opening_scope_resolution = false, Location locus = Location()) :
               has_opening_scope_resolution(has_opening_scope_resolution),
               segments(::std::move(path_segments)), locus(locus) {}
 
@@ -422,7 +424,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
@@ -455,7 +457,7 @@ namespace Rust {
             // AttrInput* attr_input;
             ::std::unique_ptr<AttrInput> attr_input;
 
-            location_t locus;
+            Location locus;
 
             // TODO: maybe a variable storing whether attr input is parsed or not
 
@@ -467,7 +469,7 @@ namespace Rust {
 
             // Constructor has pointer AttrInput for polymorphism reasons
             Attribute(SimplePath path, ::std::unique_ptr<AttrInput> input,
-              location_t locus = UNKNOWN_LOCATION) :
+              Location locus = Location()) :
               path(::std::move(path)),
               attr_input(::std::move(input)), locus(locus) {}
 
@@ -803,8 +805,8 @@ namespace Rust {
             virtual ~Expr() {}
 
             // HACK: slow way of getting location from base expression through virtual methods.
-            virtual location_t get_locus_slow() const {
-                return UNKNOWN_LOCATION;
+            virtual Location get_locus_slow() const {
+                return Location();
             }
 
             virtual void accept_vis(ASTVisitor& vis) = 0;
@@ -860,10 +862,10 @@ namespace Rust {
         class IdentifierExpr : public ExprWithoutBlock {
             Identifier ident;
 
-            location_t locus;
+            Location locus;
 
           public:
-            IdentifierExpr(Identifier ident, location_t locus = UNKNOWN_LOCATION,
+            IdentifierExpr(Identifier ident, Location locus = Location(),
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               ExprWithoutBlock(::std::move(outer_attrs)),
               ident(::std::move(ident)), locus(locus) {}
@@ -872,11 +874,11 @@ namespace Rust {
                 return ident;
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -994,12 +996,12 @@ namespace Rust {
             ::std::string lifetime_name;
             // only applies for NAMED lifetime_type
 
-            location_t locus;
+            Location locus;
 
           public:
             // Constructor
             Lifetime(LifetimeType type, ::std::string name = ::std::string(),
-              location_t locus = UNKNOWN_LOCATION) :
+              Location locus = Location()) :
               lifetime_type(type),
               lifetime_name(::std::move(name)), locus(locus) {}
 
@@ -1055,7 +1057,7 @@ namespace Rust {
             //::std::unique_ptr<Attribute> outer_attr;
             Attribute outer_attr;
 
-            location_t locus;
+            Location locus;
 
           public:
             // Returns whether the lifetime param has any lifetime bounds.
@@ -1079,7 +1081,7 @@ namespace Rust {
             }
 
             // Constructor
-            LifetimeParam(Lifetime lifetime, location_t locus = UNKNOWN_LOCATION,
+            LifetimeParam(Lifetime lifetime, Location locus = Location(),
               ::std::vector<Lifetime> lifetime_bounds = ::std::vector<Lifetime>(),
               Attribute outer_attr = Attribute::create_empty()) :
               lifetime(::std::move(lifetime)),
@@ -1213,14 +1215,14 @@ namespace Rust {
             //::std::vector<TokenTree> token_trees;
             ::std::vector< ::std::unique_ptr<TokenTree> > token_trees;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             MacroInvocationSemi(SimplePath macro_path, DelimType delim_type,
               ::std::vector< ::std::unique_ptr<TokenTree> > token_trees,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               MacroItem(::std::move(outer_attribs)),
               path(::std::move(macro_path)), delim_type(delim_type),
               token_trees(::std::move(token_trees)), locus(locus) {}

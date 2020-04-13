@@ -1,14 +1,15 @@
 #ifndef RUST_LEX_H
 #define RUST_LEX_H
 
+#include "rust-linemap.h"
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
 
 namespace Rust {
     class Lexer {
       private:
-        // Request new location_t for current column in line_table
-        location_t get_current_location();
+        // Request new Location for current column in line_table
+        Location get_current_location();
 
         // Skips the current input char.
         void skip_input();
@@ -47,7 +48,7 @@ namespace Rust {
 
       public:
         // Construct lexer with input file and filename provided
-        Lexer(const char* filename, FILE* input);
+        Lexer(const char* filename, FILE* input, Linemap* linemap);
         ~Lexer();
 
         // Returns token n tokens ahead of current position.
@@ -63,6 +64,8 @@ namespace Rust {
         // Replaces the current token with a specified token.
         void replace_current_token(TokenPtr replacement);
 
+        Linemap* get_line_map() { return line_map; }
+
       private:
         // File for use as input.
         FILE* input;
@@ -72,7 +75,7 @@ namespace Rust {
         // Current column number.
         int current_column;
         // Line map.
-        const struct line_map* line_map;
+        Linemap* line_map;
 
         // Max column number that can be quickly allocated - higher may require allocating new linemap
         static const int max_column_hint = 80;

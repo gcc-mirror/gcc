@@ -67,7 +67,7 @@ namespace Rust {
             // moved to Literal
             Literal literal;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const {
@@ -78,12 +78,12 @@ namespace Rust {
                 return literal.get_lit_type();
             }
 
-            LiteralExpr(::std::string value_as_string, Literal::LitType type, location_t locus,
+            LiteralExpr(::std::string value_as_string, Literal::LitType type, Location locus,
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               ExprWithoutBlock(::std::move(outer_attrs)),
               literal(::std::move(value_as_string), type), locus(locus) {}
 
-            LiteralExpr(Literal literal, location_t locus,
+            LiteralExpr(Literal literal, Location locus,
               ::std::vector<Attribute> outer_attrs = ::std::vector<Attribute>()) :
               ExprWithoutBlock(::std::move(outer_attrs)),
               literal(::std::move(literal)), locus(locus) {}
@@ -93,11 +93,11 @@ namespace Rust {
                 return ::std::unique_ptr<LiteralExpr>(clone_literal_expr_impl());
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -261,7 +261,7 @@ namespace Rust {
         class OperatorExpr : public ExprWithoutBlock {
             // TODO: create binary and unary operator subclasses?
 
-            location_t locus;
+            Location locus;
 
           protected:
             // Variable must be protected to allow derived classes to use it as a first class citizen
@@ -270,7 +270,7 @@ namespace Rust {
 
             // Constructor (only for initialisation of expr purposes)
             OperatorExpr(::std::unique_ptr<Expr> main_or_left_expr,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               locus(locus), main_or_left_expr(::std::move(main_or_left_expr)) {}
 
@@ -310,11 +310,11 @@ namespace Rust {
                 delete main_or_left_expr;
             }*/
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
         };
@@ -328,7 +328,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             BorrowExpr(::std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
-              bool is_double_borrow, ::std::vector<Attribute> outer_attribs, location_t locus) :
+              bool is_double_borrow, ::std::vector<Attribute> outer_attribs, Location locus) :
               OperatorExpr(::std::move(borrow_lvalue), ::std::move(outer_attribs), locus),
               is_mut(is_mut_borrow), double_borrow(is_double_borrow) {}
 
@@ -364,7 +364,7 @@ namespace Rust {
 
             // Constructor calls OperatorExpr's protected constructor
             DereferenceExpr(::std::unique_ptr<Expr> deref_lvalue,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               OperatorExpr(::std::move(deref_lvalue), ::std::move(outer_attribs), locus) {}
 
             // Copy constructor - define here if required
@@ -399,7 +399,7 @@ namespace Rust {
 
             // Constructor calls OperatorExpr's protected constructor
             ErrorPropagationExpr(::std::unique_ptr<Expr> potential_error_value,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               OperatorExpr(::std::move(potential_error_value), ::std::move(outer_attribs), locus) {}
 
             // Copy constructor - define here if required
@@ -447,7 +447,7 @@ namespace Rust {
 
             // Constructor calls OperatorExpr's protected constructor
             NegationExpr(::std::unique_ptr<Expr> negated_value, NegationType negation_kind,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               OperatorExpr(::std::move(negated_value), ::std::move(outer_attribs), locus),
               negation_type(negation_kind) {}
 
@@ -512,7 +512,7 @@ namespace Rust {
 
             // Constructor calls OperatorExpr's protected constructor
             ArithmeticOrLogicalExpr(::std::unique_ptr<Expr> left_value,
-              ::std::unique_ptr<Expr> right_value, ExprType expr_kind, location_t locus) :
+              ::std::unique_ptr<Expr> right_value, ExprType expr_kind, Location locus) :
               OperatorExpr(::std::move(left_value), ::std::vector<Attribute>(), locus),
               expr_type(expr_kind), right_expr(::std::move(right_value)) {}
             // outer attributes not allowed
@@ -588,7 +588,7 @@ namespace Rust {
 
             // Constructor requires pointers for polymorphism
             ComparisonExpr(::std::unique_ptr<Expr> left_value, ::std::unique_ptr<Expr> right_value,
-              ExprType comparison_kind, location_t locus) :
+              ExprType comparison_kind, Location locus) :
               OperatorExpr(::std::move(left_value), ::std::vector<Attribute>(), locus),
               expr_type(comparison_kind), right_expr(::std::move(right_value)) {}
             // outer attributes not allowed
@@ -651,7 +651,7 @@ namespace Rust {
 
             // Constructor calls OperatorExpr's protected constructor
             LazyBooleanExpr(::std::unique_ptr<Expr> left_bool_expr,
-              ::std::unique_ptr<Expr> right_bool_expr, ExprType expr_kind, location_t locus) :
+              ::std::unique_ptr<Expr> right_bool_expr, ExprType expr_kind, Location locus) :
               OperatorExpr(::std::move(left_bool_expr), ::std::vector<Attribute>(), locus),
               expr_type(expr_kind), right_expr(::std::move(right_bool_expr)) {}
             // outer attributes not allowed
@@ -711,7 +711,7 @@ namespace Rust {
 
             // Constructor requires calling protected constructor of OperatorExpr
             TypeCastExpr(::std::unique_ptr<Expr> expr_to_cast,
-              ::std::unique_ptr<TypeNoBounds> type_to_cast_to, location_t locus) :
+              ::std::unique_ptr<TypeNoBounds> type_to_cast_to, Location locus) :
               OperatorExpr(::std::move(expr_to_cast), ::std::vector<Attribute>(), locus),
               type_to_convert_to(::std::move(type_to_cast_to)) {}
             // outer attributes not allowed
@@ -767,7 +767,7 @@ namespace Rust {
 
             // Call OperatorExpr constructor to initialise left_expr
             AssignmentExpr(::std::unique_ptr<Expr> value_to_assign_to,
-              ::std::unique_ptr<Expr> value_to_assign, location_t locus) :
+              ::std::unique_ptr<Expr> value_to_assign, Location locus) :
               OperatorExpr(::std::move(value_to_assign_to), ::std::vector<Attribute>(), locus),
               right_expr(::std::move(value_to_assign)) {}
             // outer attributes not allowed
@@ -860,7 +860,7 @@ namespace Rust {
 
             // Use pointers in constructor to enable polymorphism
             CompoundAssignmentExpr(::std::unique_ptr<Expr> value_to_assign_to,
-              ::std::unique_ptr<Expr> value_to_assign, ExprType expr_kind, location_t locus) :
+              ::std::unique_ptr<Expr> value_to_assign, ExprType expr_kind, Location locus) :
               OperatorExpr(::std::move(value_to_assign_to), ::std::vector<Attribute>(), locus),
               expr_type(expr_kind), right_expr(::std::move(value_to_assign)) {}
             // outer attributes not allowed
@@ -910,7 +910,7 @@ namespace Rust {
             // Expr* expr_in_parens;
             ::std::unique_ptr<Expr> expr_in_parens;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~GroupedExpr() {
@@ -925,7 +925,7 @@ namespace Rust {
 
             GroupedExpr(::std::unique_ptr<Expr> parenthesised_expr,
               ::std::vector<Attribute> inner_attribs, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               inner_attrs(::std::move(inner_attribs)),
               expr_in_parens(::std::move(parenthesised_expr)), locus(locus) {}
@@ -952,11 +952,11 @@ namespace Rust {
             GroupedExpr(GroupedExpr&& other) = default;
             GroupedExpr& operator=(GroupedExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1101,7 +1101,7 @@ namespace Rust {
             // ArrayElems internal_elements;
             ::std::unique_ptr<ArrayElems> internal_elements;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1118,7 +1118,7 @@ namespace Rust {
             // Constructor requires ArrayElems pointer
             ArrayExpr(::std::unique_ptr<ArrayElems> array_elems,
               ::std::vector<Attribute> inner_attribs, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               inner_attrs(::std::move(inner_attribs)), internal_elements(::std::move(array_elems)),
               locus(locus) {}
@@ -1150,11 +1150,11 @@ namespace Rust {
             ArrayExpr(ArrayExpr&& other) = default;
             ArrayExpr& operator=(ArrayExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1182,7 +1182,7 @@ namespace Rust {
             ::std::unique_ptr<Expr> array_expr;
             ::std::unique_ptr<Expr> index_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~ArrayIndexExpr() {
@@ -1194,7 +1194,7 @@ namespace Rust {
 
             ArrayIndexExpr(::std::unique_ptr<Expr> array_expr,
               ::std::unique_ptr<Expr> array_index_expr, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               array_expr(::std::move(array_expr)), index_expr(::std::move(array_index_expr)),
               locus(locus) {}
@@ -1221,11 +1221,11 @@ namespace Rust {
             ArrayIndexExpr(ArrayIndexExpr&& other) = default;
             ArrayIndexExpr& operator=(ArrayIndexExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1251,7 +1251,7 @@ namespace Rust {
             ::std::vector< ::std::unique_ptr<Expr> > tuple_elems;
             // replaces (inlined version of) TupleElements
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1262,7 +1262,7 @@ namespace Rust {
 
             TupleExpr(::std::vector< ::std::unique_ptr<Expr> > tuple_elements,
               ::std::vector<Attribute> inner_attribs, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               inner_attrs(::std::move(inner_attribs)), tuple_elems(::std::move(tuple_elements)),
               locus(locus) {}
@@ -1301,11 +1301,11 @@ namespace Rust {
             // Note: syntactically, can disambiguate single-element tuple from parens with comma, i.e.
             // (0,) rather than (0)
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1331,7 +1331,7 @@ namespace Rust {
             // TupleIndex is a decimal int literal with no underscores or suffix
             TupleIndex tuple_index;
 
-            location_t locus;
+            Location locus;
 
             // i.e. pair.0
 
@@ -1347,7 +1347,7 @@ namespace Rust {
             }
 
             TupleIndexExpr(::std::unique_ptr<Expr> tuple_expr, TupleIndex index,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               tuple_expr(::std::move(tuple_expr)), tuple_index(index), locus(locus) {}
 
@@ -1373,11 +1373,11 @@ namespace Rust {
             TupleIndexExpr(TupleIndexExpr&& other) = default;
             TupleIndexExpr& operator=(TupleIndexExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1416,7 +1416,7 @@ namespace Rust {
         class StructExprStruct : public StructExpr {
             ::std::vector<Attribute> inner_attrs;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1427,15 +1427,15 @@ namespace Rust {
 
             // Constructor has to call protected constructor of base class
             StructExprStruct(PathInExpression struct_path, ::std::vector<Attribute> inner_attribs,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               StructExpr(::std::move(struct_path), ::std::move(outer_attribs)),
               inner_attrs(::std::move(inner_attribs)), locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1656,7 +1656,7 @@ namespace Rust {
 
             // Constructor for StructExprStructFields when no struct base is used
             StructExprStructFields(PathInExpression struct_path,
-              ::std::vector< ::std::unique_ptr<StructExprField> > expr_fields, location_t locus,
+              ::std::vector< ::std::unique_ptr<StructExprField> > expr_fields, Location locus,
               StructBase base_struct = StructBase::error(),
               ::std::vector<Attribute> inner_attribs = ::std::vector<Attribute>(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
@@ -1756,7 +1756,7 @@ namespace Rust {
 
             StructExprStructBase(PathInExpression struct_path, StructBase base_struct,
               ::std::vector<Attribute> inner_attribs, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               StructExprStruct(::std::move(struct_path), ::std::move(inner_attribs),
                 ::std::move(outer_attribs), locus),
               struct_base(::std::move(base_struct)) {}
@@ -1781,7 +1781,7 @@ namespace Rust {
             //::std::vector<Expr> exprs;
             ::std::vector< ::std::unique_ptr<Expr> > exprs;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -1797,7 +1797,7 @@ namespace Rust {
             StructExprTuple(PathInExpression struct_path,
               ::std::vector< ::std::unique_ptr<Expr> > tuple_exprs,
               ::std::vector<Attribute> inner_attribs, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               StructExpr(::std::move(struct_path), ::std::move(outer_attribs)),
               inner_attrs(::std::move(inner_attribs)), exprs(::std::move(tuple_exprs)), locus(locus) {
             }
@@ -1833,11 +1833,11 @@ namespace Rust {
             StructExprTuple(StructExprTuple&& other) = default;
             StructExprTuple& operator=(StructExprTuple&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -1857,7 +1857,7 @@ namespace Rust {
 
         // AST node of a "unit" struct creator (no fields and no braces)
         class StructExprUnit : public StructExpr {
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const {
@@ -1866,15 +1866,15 @@ namespace Rust {
             }
 
             StructExprUnit(PathInExpression struct_path, ::std::vector<Attribute> outer_attribs,
-              location_t locus) :
+              Location locus) :
               StructExpr(::std::move(struct_path), ::std::move(outer_attribs)),
               locus(locus) {}
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2024,7 +2024,7 @@ namespace Rust {
             //::std::vector<EnumExprField> fields;
             ::std::vector< ::std::unique_ptr<EnumExprField> > fields;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -2035,7 +2035,7 @@ namespace Rust {
 
             EnumExprStruct(PathInExpression enum_variant_path,
               ::std::vector< ::std::unique_ptr<EnumExprField> > variant_fields,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               EnumVariantExpr(::std::move(enum_variant_path), ::std::move(outer_attribs)),
               fields(::std::move(variant_fields)), locus(locus) {}
 
@@ -2068,11 +2068,11 @@ namespace Rust {
             EnumExprStruct(EnumExprStruct&& other) = default;
             EnumExprStruct& operator=(EnumExprStruct&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2095,7 +2095,7 @@ namespace Rust {
             //::std::vector<Expr> values;
             ::std::vector< ::std::unique_ptr<Expr> > values;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -2106,7 +2106,7 @@ namespace Rust {
 
             EnumExprTuple(PathInExpression enum_variant_path,
               ::std::vector< ::std::unique_ptr<Expr> > variant_values,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               EnumVariantExpr(::std::move(enum_variant_path), ::std::move(outer_attribs)),
               values(::std::move(variant_values)), locus(locus) {}
 
@@ -2139,11 +2139,11 @@ namespace Rust {
             EnumExprTuple(EnumExprTuple&& other) = default;
             EnumExprTuple& operator=(EnumExprTuple&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2163,7 +2163,7 @@ namespace Rust {
 
         // No-field enum variant instance creation AST node
         class EnumExprFieldless : public EnumVariantExpr {
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const {
@@ -2172,17 +2172,17 @@ namespace Rust {
             }
 
             EnumExprFieldless(PathInExpression enum_variant_path,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               EnumVariantExpr(::std::move(enum_variant_path), ::std::move(outer_attribs)),
               locus(locus) {}
 
             // copy constructor, destructor, and assignment operator should not need defining
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2207,7 +2207,7 @@ namespace Rust {
             //::std::vector<Expr> params; // inlined form of CallParams
             ::std::vector< ::std::unique_ptr<Expr> > params;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~CallExpr() {
@@ -2222,7 +2222,7 @@ namespace Rust {
 
             CallExpr(::std::unique_ptr<Expr> function_expr,
               ::std::vector< ::std::unique_ptr<Expr> > function_params,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               function(::std::move(function_expr)), params(::std::move(function_params)),
               locus(locus) {}
@@ -2268,11 +2268,11 @@ namespace Rust {
                 return !params.empty();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2298,7 +2298,7 @@ namespace Rust {
             //::std::vector<Expr> params; // inlined form of CallParams
             ::std::vector< ::std::unique_ptr<Expr> > params;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~MethodCallExpr() {
@@ -2313,7 +2313,7 @@ namespace Rust {
 
             MethodCallExpr(::std::unique_ptr<Expr> call_receiver, PathExprSegment method_path,
               ::std::vector< ::std::unique_ptr<Expr> > method_params,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               receiver(::std::move(call_receiver)), method_name(::std::move(method_path)),
               params(::std::move(method_params)), locus(locus) {}
@@ -2356,11 +2356,11 @@ namespace Rust {
             MethodCallExpr(MethodCallExpr&& other) = default;
             MethodCallExpr& operator=(MethodCallExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2385,7 +2385,7 @@ namespace Rust {
             ::std::unique_ptr<Expr> receiver;
             Identifier field;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~FieldAccessExpr() {
@@ -2395,7 +2395,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             FieldAccessExpr(::std::unique_ptr<Expr> field_access_receiver, Identifier field_name,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               receiver(::std::move(field_access_receiver)), field(::std::move(field_name)),
               locus(locus) {}
@@ -2422,11 +2422,11 @@ namespace Rust {
             FieldAccessExpr(FieldAccessExpr&& other) = default;
             FieldAccessExpr& operator=(FieldAccessExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2509,11 +2509,11 @@ namespace Rust {
             ::std::vector<ClosureParam> params; // may be empty
             // also note a double pipe "||" can be used for empty params - does not need a space
 
-            location_t locus;
+            Location locus;
 
           protected:
             ClosureExpr(::std::vector<ClosureParam> closure_params, bool has_move,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               has_move(has_move), params(::std::move(closure_params)), locus(locus) {}
 
@@ -2521,11 +2521,11 @@ namespace Rust {
           public:
             virtual ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
         };
@@ -2544,7 +2544,7 @@ namespace Rust {
 
             // Constructor for a ClosureExprInner
             ClosureExprInner(::std::unique_ptr<Expr> closure_inner_expr,
-              ::std::vector<ClosureParam> closure_params, location_t locus, bool is_move = false,
+              ::std::vector<ClosureParam> closure_params, Location locus, bool is_move = false,
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               ClosureExpr(::std::move(closure_params), is_move, ::std::move(outer_attribs), locus),
               closure_inner(::std::move(closure_inner_expr)) {}
@@ -2600,7 +2600,7 @@ namespace Rust {
             // bool has_expr;
             ::std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -2617,7 +2617,7 @@ namespace Rust {
 
             BlockExpr(::std::vector< ::std::unique_ptr<Stmt> > block_statements,
               ::std::unique_ptr<ExprWithoutBlock> block_expr, ::std::vector<Attribute> inner_attribs,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithBlock(::std::move(outer_attribs)),
               inner_attrs(::std::move(inner_attribs)), statements(::std::move(block_statements)),
               expr(::std::move(block_expr)), locus(locus) {}
@@ -2669,11 +2669,11 @@ namespace Rust {
                 return ::std::unique_ptr<BlockExpr>(clone_block_expr_impl());
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2714,7 +2714,7 @@ namespace Rust {
             // Constructor potentially with a move
             ClosureExprInnerTyped(::std::unique_ptr<Type> closure_return_type,
               ::std::unique_ptr<BlockExpr> closure_expr, ::std::vector<ClosureParam> closure_params,
-              location_t locus, bool is_move = false,
+              Location locus, bool is_move = false,
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               ClosureExpr(::std::move(closure_params), is_move, ::std::move(outer_attribs), locus),
               return_type(::std::move(closure_return_type)), expr(::std::move(closure_expr)) {}
@@ -2761,7 +2761,7 @@ namespace Rust {
             // bool has_label;
             Lifetime label;
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
@@ -2772,18 +2772,18 @@ namespace Rust {
             }
 
             // Constructor for a ContinueExpr with a label.
-            ContinueExpr(location_t locus, Lifetime label = Lifetime::error(),
+            ContinueExpr(Location locus, Lifetime label = Lifetime::error(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               label(::std::move(label)), locus(locus) {}
 
             // copy constructor, destructor, and assignment operator should not need defining
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2811,7 +2811,7 @@ namespace Rust {
             // Expr* break_expr; // may be uninitialised
             ::std::unique_ptr<Expr> break_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~BreakExpr() {
@@ -2833,7 +2833,7 @@ namespace Rust {
             }
 
             // Constructor for a break expression
-            BreakExpr(location_t locus, Lifetime break_label = Lifetime::error(),
+            BreakExpr(Location locus, Lifetime break_label = Lifetime::error(),
               ::std::unique_ptr<Expr> expr_in_break = NULL,
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               ExprWithoutBlock(::std::move(outer_attribs)),
@@ -2865,11 +2865,11 @@ namespace Rust {
             BreakExpr(BreakExpr&& other) = default;
             BreakExpr& operator=(BreakExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -2889,19 +2889,19 @@ namespace Rust {
 
         // Base range expression AST node object - abstract
         class RangeExpr : public ExprWithoutBlock {
-            location_t locus;
+            Location locus;
 
           protected:
             // outer attributes not allowed before range expressions
-            RangeExpr(location_t locus) :
+            RangeExpr(Location locus) :
               ExprWithoutBlock(::std::vector<Attribute>()), locus(locus) {}
 
           public:
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
         };
@@ -2923,7 +2923,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             RangeFromToExpr(::std::unique_ptr<Expr> range_from, ::std::unique_ptr<Expr> range_to,
-              location_t locus) :
+              Location locus) :
               RangeExpr(locus),
               from(::std::move(range_from)), to(::std::move(range_to)) {}
 
@@ -2973,7 +2973,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            RangeFromExpr(::std::unique_ptr<Expr> range_from, location_t locus) :
+            RangeFromExpr(::std::unique_ptr<Expr> range_from, Location locus) :
               RangeExpr(locus), from(::std::move(range_from)) {}
 
             // Copy constructor with clone
@@ -3022,7 +3022,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             // outer attributes not allowed
-            RangeToExpr(::std::unique_ptr<Expr> range_to, location_t locus) :
+            RangeToExpr(::std::unique_ptr<Expr> range_to, Location locus) :
               RangeExpr(locus), to(::std::move(range_to)) {}
 
             // Copy constructor with clone
@@ -3062,7 +3062,7 @@ namespace Rust {
           public:
             ::std::string as_string() const;
 
-            RangeFullExpr(location_t locus) : RangeExpr(locus) {}
+            RangeFullExpr(Location locus) : RangeExpr(locus) {}
             // outer attributes not allowed
 
             virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
@@ -3096,7 +3096,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             RangeFromToInclExpr(::std::unique_ptr<Expr> range_from, ::std::unique_ptr<Expr> range_to,
-              location_t locus) :
+              Location locus) :
               RangeExpr(locus),
               from(::std::move(range_from)), to(::std::move(range_to)) {}
             // outer attributes not allowed
@@ -3147,7 +3147,7 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            RangeToInclExpr(::std::unique_ptr<Expr> range_to, location_t locus) :
+            RangeToInclExpr(::std::unique_ptr<Expr> range_to, Location locus) :
               RangeExpr(locus), to(::std::move(range_to)) {}
             // outer attributes not allowed
 
@@ -3189,7 +3189,7 @@ namespace Rust {
             // Expr* return_expr;
             ::std::unique_ptr<Expr> return_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~ReturnExpr() {
@@ -3206,7 +3206,7 @@ namespace Rust {
             }
 
             // Constructor for ReturnExpr.
-            ReturnExpr(location_t locus, ::std::unique_ptr<Expr> returned_expr = NULL,
+            ReturnExpr(Location locus, ::std::unique_ptr<Expr> returned_expr = NULL,
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               ExprWithoutBlock(::std::move(outer_attribs)),
               return_expr(::std::move(returned_expr)), locus(locus) {}
@@ -3235,11 +3235,11 @@ namespace Rust {
             ReturnExpr(ReturnExpr&& other) = default;
             ReturnExpr& operator=(ReturnExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -3270,7 +3270,7 @@ namespace Rust {
             // BlockExpr* expr;
             ::std::unique_ptr<BlockExpr> expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~UnsafeBlockExpr() {
@@ -3280,7 +3280,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             UnsafeBlockExpr(::std::unique_ptr<BlockExpr> block_expr,
-              ::std::vector<Attribute> outer_attribs, location_t locus) :
+              ::std::vector<Attribute> outer_attribs, Location locus) :
               ExprWithBlock(::std::move(outer_attribs)),
               expr(::std::move(block_expr)), locus(locus) {}
 
@@ -3304,11 +3304,11 @@ namespace Rust {
             UnsafeBlockExpr(UnsafeBlockExpr&& other) = default;
             UnsafeBlockExpr& operator=(UnsafeBlockExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -3331,12 +3331,12 @@ namespace Rust {
         class LoopLabel /*: public Node*/ {
             Lifetime label; // or type LIFETIME_OR_LABEL
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
-            LoopLabel(Lifetime loop_label, location_t locus = UNKNOWN_LOCATION) :
+            LoopLabel(Lifetime loop_label, Location locus = Location()) :
               label(::std::move(loop_label)), locus(locus) {}
 
             // Returns whether the LoopLabel is in an error state.
@@ -3349,7 +3349,7 @@ namespace Rust {
                 return LoopLabel(Lifetime::error());
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
         };
@@ -3365,11 +3365,11 @@ namespace Rust {
             ::std::unique_ptr<BlockExpr> loop_block;
 
           private:
-            location_t locus;
+            Location locus;
 
           protected:
             // Constructor for BaseLoopExpr
-            BaseLoopExpr(::std::unique_ptr<BlockExpr> loop_block, location_t locus,
+            BaseLoopExpr(::std::unique_ptr<BlockExpr> loop_block, Location locus,
               LoopLabel loop_label = LoopLabel::error(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               ExprWithBlock(::std::move(outer_attribs)),
@@ -3407,11 +3407,11 @@ namespace Rust {
                 return !loop_label.is_error();
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
         };
@@ -3422,7 +3422,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             // Constructor for LoopExpr
-            LoopExpr(::std::unique_ptr<BlockExpr> loop_block, location_t locus,
+            LoopExpr(::std::unique_ptr<BlockExpr> loop_block, Location locus,
               LoopLabel loop_label = LoopLabel::error(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               BaseLoopExpr(::std::move(loop_block), locus, ::std::move(loop_label),
@@ -3458,7 +3458,7 @@ namespace Rust {
 
             // Constructor for while loop with loop label
             WhileLoopExpr(::std::unique_ptr<Expr> loop_condition,
-              ::std::unique_ptr<BlockExpr> loop_block, location_t locus,
+              ::std::unique_ptr<BlockExpr> loop_block, Location locus,
               LoopLabel loop_label = LoopLabel::error(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               BaseLoopExpr(
@@ -3520,7 +3520,7 @@ namespace Rust {
             // Constructor with a loop label
             WhileLetLoopExpr(::std::vector< ::std::unique_ptr<Pattern> > match_arm_patterns,
               ::std::unique_ptr<Expr> condition, ::std::unique_ptr<BlockExpr> loop_block,
-              location_t locus, LoopLabel loop_label = LoopLabel::error(),
+              Location locus, LoopLabel loop_label = LoopLabel::error(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               BaseLoopExpr(
                 ::std::move(loop_block), locus, ::std::move(loop_label), ::std::move(outer_attribs)),
@@ -3595,7 +3595,7 @@ namespace Rust {
             // Constructor with loop label
             ForLoopExpr(::std::unique_ptr<Pattern> loop_pattern,
               ::std::unique_ptr<Expr> iterator_expr, ::std::unique_ptr<BlockExpr> loop_body,
-              location_t locus, LoopLabel loop_label = LoopLabel::error(),
+              Location locus, LoopLabel loop_label = LoopLabel::error(),
               ::std::vector<Attribute> outer_attribs = ::std::vector<Attribute>()) :
               BaseLoopExpr(
                 ::std::move(loop_body), locus, ::std::move(loop_label), ::std::move(outer_attribs)),
@@ -3653,7 +3653,7 @@ namespace Rust {
                 IfLetExpr if_let_expr;
             } consequent_block;*/
 
-            location_t locus;
+            Location locus;
 
           public:
             /*virtual ~IfExpr() {
@@ -3664,7 +3664,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             IfExpr(::std::unique_ptr<Expr> condition, ::std::unique_ptr<BlockExpr> if_block,
-              location_t locus) :
+              Location locus) :
               ExprWithBlock(::std::vector<Attribute>()),
               condition(::std::move(condition)), if_block(::std::move(if_block)), locus(locus) {}
             // outer attributes are never allowed on IfExprs
@@ -3699,11 +3699,11 @@ namespace Rust {
              * else ifs - i.e. not like a switch statement. TODO - is this a better approach? or
              * does it not parse correctly and have downsides? */
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -3739,7 +3739,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             IfExprConseqElse(::std::unique_ptr<Expr> condition, ::std::unique_ptr<BlockExpr> if_block,
-              ::std::unique_ptr<BlockExpr> else_block, location_t locus) :
+              ::std::unique_ptr<BlockExpr> else_block, Location locus) :
               IfExpr(::std::move(condition), ::std::move(if_block), locus),
               else_block(::std::move(else_block)) {}
             // again, outer attributes not allowed
@@ -3796,7 +3796,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             IfExprConseqIf(::std::unique_ptr<Expr> condition, ::std::unique_ptr<BlockExpr> if_block,
-              ::std::unique_ptr<IfExpr> conseq_if_expr, location_t locus) :
+              ::std::unique_ptr<IfExpr> conseq_if_expr, Location locus) :
               IfExpr(::std::move(condition), ::std::move(if_block), locus),
               if_expr(::std::move(conseq_if_expr)) {}
             // outer attributes not allowed
@@ -3854,14 +3854,14 @@ namespace Rust {
                 IfLetExpr* if_let_expr;
             } consequent_block;*/
 
-            location_t locus;
+            Location locus;
 
           public:
             ::std::string as_string() const;
 
             IfLetExpr(::std::vector< ::std::unique_ptr<Pattern> > match_arm_patterns,
               ::std::unique_ptr<Expr> value, ::std::unique_ptr<BlockExpr> if_block,
-              location_t locus) :
+              Location locus) :
               ExprWithBlock(::std::vector<Attribute>()),
               match_arm_patterns(::std::move(match_arm_patterns)), value(::std::move(value)),
               if_block(::std::move(if_block)), locus(locus) {}
@@ -3909,11 +3909,11 @@ namespace Rust {
                 return ::std::unique_ptr<IfLetExpr>(clone_if_let_expr_impl());
             }
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -3950,7 +3950,7 @@ namespace Rust {
 
             IfExprConseqIfLet(::std::unique_ptr<Expr> condition,
               ::std::unique_ptr<BlockExpr> if_block, ::std::unique_ptr<IfLetExpr> conseq_if_let_expr,
-              location_t locus) :
+              Location locus) :
               IfExpr(::std::move(condition), ::std::move(if_block), locus),
               if_let_expr(::std::move(conseq_if_let_expr)) {}
             // outer attributes not allowed
@@ -4008,7 +4008,7 @@ namespace Rust {
 
             IfLetExprConseqElse(::std::vector< ::std::unique_ptr<Pattern> > match_arm_patterns,
               ::std::unique_ptr<Expr> value, ::std::unique_ptr<BlockExpr> if_block,
-              ::std::unique_ptr<BlockExpr> else_block, location_t locus) :
+              ::std::unique_ptr<BlockExpr> else_block, Location locus) :
               IfLetExpr(
                 ::std::move(match_arm_patterns), ::std::move(value), ::std::move(if_block), locus),
               else_block(::std::move(else_block)) {}
@@ -4069,7 +4069,7 @@ namespace Rust {
 
             IfLetExprConseqIf(::std::vector< ::std::unique_ptr<Pattern> > match_arm_patterns,
               ::std::unique_ptr<Expr> value, ::std::unique_ptr<BlockExpr> if_block,
-              ::std::unique_ptr<IfExpr> if_expr, location_t locus) :
+              ::std::unique_ptr<IfExpr> if_expr, Location locus) :
               IfLetExpr(
                 ::std::move(match_arm_patterns), ::std::move(value), ::std::move(if_block), locus),
               if_expr(::std::move(if_expr)) {}
@@ -4129,7 +4129,7 @@ namespace Rust {
 
             IfLetExprConseqIfLet(::std::vector< ::std::unique_ptr<Pattern> > match_arm_patterns,
               ::std::unique_ptr<Expr> value, ::std::unique_ptr<BlockExpr> if_block,
-              ::std::unique_ptr<IfLetExpr> if_let_expr, location_t locus) :
+              ::std::unique_ptr<IfLetExpr> if_let_expr, Location locus) :
               IfLetExpr(
                 ::std::move(match_arm_patterns), ::std::move(value), ::std::move(if_block), locus),
               if_let_expr(::std::move(if_let_expr)) {}
@@ -4413,7 +4413,7 @@ namespace Rust {
             // MatchArms match_arms;
             ::std::vector< ::std::unique_ptr<MatchCase> > match_arms; // inlined from MatchArms
 
-            location_t locus;
+            Location locus;
 
           public:
             /*~MatchExpr() {
@@ -4430,7 +4430,7 @@ namespace Rust {
             MatchExpr(::std::unique_ptr<Expr> branch_value,
               ::std::vector< ::std::unique_ptr<MatchCase> > match_arms,
               ::std::vector<Attribute> inner_attrs, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               ExprWithBlock(::std::move(outer_attrs)),
               branch_value(::std::move(branch_value)), inner_attrs(::std::move(inner_attrs)),
               match_arms(::std::move(match_arms)), locus(locus) {}
@@ -4481,11 +4481,11 @@ namespace Rust {
             MatchExpr(MatchExpr&& other) = default;
             MatchExpr& operator=(MatchExpr&& other) = default;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -4507,12 +4507,12 @@ namespace Rust {
         class AwaitExpr : public ExprWithoutBlock {
             ::std::unique_ptr<Expr> awaited_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             // TODO: ensure outer attributes are actually allowed
             AwaitExpr(::std::unique_ptr<Expr> awaited_expr, ::std::vector<Attribute> outer_attrs,
-              location_t locus) :
+              Location locus) :
               ExprWithoutBlock(::std::move(outer_attrs)),
               awaited_expr(::std::move(awaited_expr)), locus(locus) {}
 
@@ -4538,11 +4538,11 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
@@ -4561,11 +4561,11 @@ namespace Rust {
             bool has_move;
             ::std::unique_ptr<BlockExpr> block_expr;
 
-            location_t locus;
+            Location locus;
 
           public:
             AsyncBlockExpr(::std::unique_ptr<BlockExpr> block_expr, bool has_move,
-              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ::std::vector<Attribute> outer_attrs, Location locus) :
               ExprWithBlock(::std::move(outer_attrs)),
               has_move(has_move), block_expr(::std::move(block_expr)), locus(locus) {}
 
@@ -4592,11 +4592,11 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            location_t get_locus() const {
+            Location get_locus() const {
                 return locus;
             }
 
-            location_t get_locus_slow() const OVERRIDE {
+            Location get_locus_slow() const OVERRIDE {
                 return get_locus();
             }
 
