@@ -3161,7 +3161,7 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
    for the (integer) index of the matching constructor_elt within CTOR.  */
 
 static constructor_elt *
-get_or_insert_ctor_field (tree ctor, tree index, int pos_hint)
+get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
 {
   /* Check the hint first.  */
   if (pos_hint >= 0 && (unsigned)pos_hint < CONSTRUCTOR_NELTS (ctor)
@@ -3860,14 +3860,15 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	{
 	  /* If we built a new CONSTRUCTOR, attach it now so that other
 	     initializers can refer to it.  */
-	  CONSTRUCTOR_APPEND_ELT (*p, index, new_ctx.ctor);
-	  pos_hint = vec_safe_length (*p) - 1;
+	  constructor_elt *cep = get_or_insert_ctor_field (ctx->ctor, index);
+	  cep->value = new_ctx.ctor;
+	  pos_hint = cep - (*p)->begin();
 	}
       else if (TREE_CODE (type) == UNION_TYPE)
 	/* Otherwise if we're constructing a non-aggregate union member, set
 	   the active union member now so that we can later detect and diagnose
 	   if its initializer attempts to activate another member.  */
-	CONSTRUCTOR_APPEND_ELT (*p, index, NULL_TREE);
+	get_or_insert_ctor_field (ctx->ctor, index);
       tree elt = cxx_eval_constant_expression (&new_ctx, value,
 					       lval,
 					       non_constant_p, overflow_p);
@@ -4667,13 +4668,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   /* And then find/build up our initializer for the path to the subobject
      we're initializing.  */
   tree *valp;
-  if (object == ctx->object && VAR_P (object)
-      && DECL_NAME (object) && ctx->call == NULL)
-    /* The variable we're building up an aggregate initializer for is outside
-       the constant-expression, so don't evaluate the store.  We check
-       DECL_NAME to handle TARGET_EXPR temporaries, which are fair game.  */
-    valp = NULL;
-  else if (DECL_P (object))
+  if (DECL_P (object))
     valp = ctx->global->values.get (object);
   else
     valp = NULL;
@@ -4769,7 +4764,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       vec_safe_push (indexes, index);
 
       constructor_elt *cep
-	= get_or_insert_ctor_field (*valp, index, /*pos_hint=*/-1);
+	= get_or_insert_ctor_field (*valp, index);
       index_pos_hints.safe_push (cep - CONSTRUCTOR_ELTS (*valp)->begin());
 
       if (code == UNION_TYPE)

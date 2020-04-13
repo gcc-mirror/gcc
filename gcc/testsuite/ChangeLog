@@ -1,3 +1,10 @@
+2020-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94470
+	* g++.dg/cpp1y/constexpr-nsdmi8.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi9.C: New test.
+	* g++.dg/init/array57.C: New test.
+
 2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro-pre-proc.C: Update coroutines builtin

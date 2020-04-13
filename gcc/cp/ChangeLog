@@ -1,3 +1,12 @@
+2020-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94470
+	* constexpr.c (get_or_insert_ctor_field): Set default value of parameter
+	'pos_hint' to -1.
+	(cxx_eval_bare_aggregate): Use get_or_insert_ctor_field instead of
+	assuming the the next index belongs at the end of the new CONSTRUCTOR.
+	(cxx_eval_store_expression): Revert PR c++/78572 fix.
+
 2020-04-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94426  lambdas with internal linkage are different to no-linkage
