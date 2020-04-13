@@ -1,3 +1,8 @@
+2020-04-13 Zachary Spytz  <zspytz@gmail.com>
+
+	* doc/extend.texi: Add realloc to list of built-in functions
+	are recognized by the compiler.
+
 2020-04-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94556
