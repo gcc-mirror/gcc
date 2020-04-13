@@ -1,6 +1,14 @@
 2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline.
+	2020-04-13  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/94584
+	* gcc.target/xtensa/pr94584.c: New test.
+
+2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline.
 	2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* gcc.target/xtensa/pr91880.c: New test case.
