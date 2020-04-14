@@ -1,3 +1,9 @@
+2020-04-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/94542
+	* config/rs6000/rs6000.c (address_to_insn_form): Do not attempt to
+	use PC-relative addressing for TLS references.
+
 2020-04-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/94434

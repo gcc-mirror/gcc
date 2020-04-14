@@ -24824,15 +24824,21 @@ address_to_insn_form (rtx addr,
   if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC)
     return INSN_FORM_UPDATE;
 
-  /* Handle PC-relative symbols and labels.  Check for both local and external
-     symbols.  Assume labels are always local.  */
+  /* Handle PC-relative symbols and labels.  Check for both local and
+     external symbols.  Assume labels are always local.  TLS symbols
+     are not PC-relative for rs6000.  */
   if (TARGET_PCREL)
     {
-      if (SYMBOL_REF_P (addr) && !SYMBOL_REF_LOCAL_P (addr))
-	return INSN_FORM_PCREL_EXTERNAL;
-
-      if (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
+      if (LABEL_REF_P (addr))
 	return INSN_FORM_PCREL_LOCAL;
+
+      if (SYMBOL_REF_P (addr) && !SYMBOL_REF_TLS_MODEL (addr))
+	{
+	  if (!SYMBOL_REF_LOCAL_P (addr))
+	    return INSN_FORM_PCREL_EXTERNAL;
+	  else
+	    return INSN_FORM_PCREL_LOCAL;
+	}
     }
 
   if (GET_CODE (addr) == CONST)
@@ -24866,14 +24872,19 @@ address_to_insn_form (rtx addr,
     return INSN_FORM_BAD;
 
   /* Check for local and external PC-relative addresses.  Labels are always
-     local.  */
+     local.  TLS symbols are not PC-relative for rs6000.  */
   if (TARGET_PCREL)
     {
-      if (SYMBOL_REF_P (op0) && !SYMBOL_REF_LOCAL_P (op0))
-	return INSN_FORM_PCREL_EXTERNAL;
-
-      if (SYMBOL_REF_P (op0) || LABEL_REF_P (op0))
+      if (LABEL_REF_P (op0))
 	return INSN_FORM_PCREL_LOCAL;
+
+      if (SYMBOL_REF_P (op0) && !SYMBOL_REF_TLS_MODEL (op0))
+	{
+	  if (!SYMBOL_REF_LOCAL_P (op0))
+	    return INSN_FORM_PCREL_EXTERNAL;
+	  else
+	    return INSN_FORM_PCREL_LOCAL;
+	}
     }
 
   /* If it isn't PC-relative, the address must use a base register.  */
