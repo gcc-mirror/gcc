@@ -888,6 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Dp, typename _Up, typename _Ep>
     requires three_way_comparable_with<typename unique_ptr<_Tp, _Dp>::pointer,
 				       typename unique_ptr<_Up, _Ep>::pointer>
+    inline
     compare_three_way_result_t<typename unique_ptr<_Tp, _Dp>::pointer,
 			       typename unique_ptr<_Up, _Ep>::pointer>
     operator<=>(const unique_ptr<_Tp, _Dp>& __x,
@@ -896,11 +897,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Dp>
     requires three_way_comparable<typename unique_ptr<_Tp, _Dp>::pointer>
+    inline
     compare_three_way_result_t<typename unique_ptr<_Tp, _Dp>::pointer>
     operator<=>(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
     {
       using pointer = typename unique_ptr<_Tp, _Dp>::pointer;
-      return compare_three_way()(__x.get(), pointer(nullptr));
+      return compare_three_way()(__x.get(), static_cast<pointer>(nullptr));
     }
 #endif
   // @} relates unique_ptr

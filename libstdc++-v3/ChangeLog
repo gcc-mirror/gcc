@@ -1,5 +1,14 @@
 2020-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/94562
+	* include/bits/shared_ptr.h (operator<=>): Define for C++20.
+	* include/bits/shared_ptr_base.h (operator<=>): Likewise.
+	* include/bits/unique_ptr.h (operator<=>): Add inline specifier.
+	* testsuite/20_util/shared_ptr/comparison/cmp_c++20.cc: New test.
+	* testsuite/20_util/shared_ptr/comparison/less.cc: Do not expect
+	std::less<A*> to be used when comparing std::shared_ptr<A> objects in
+	C++20.
+
 	PR libstdc++/94565
 	* libsupc++/compare (__unspec): Add noexcept-specifier to constructor.
 	* testsuite/18_support/comparisons/categories/94565.cc: New test.

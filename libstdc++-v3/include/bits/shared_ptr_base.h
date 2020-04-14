@@ -54,6 +54,9 @@
 #include <bits/refwrap.h>
 #include <bits/stl_function.h>
 #include <ext/aligned_buffer.h>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1442,6 +1445,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
     { return !__a; }
 
+#ifdef __cpp_lib_three_way_comparison
+  template<typename _Tp, typename _Up, _Lock_policy _Lp>
+    inline strong_ordering
+    operator<=>(const __shared_ptr<_Tp, _Lp>& __a,
+		const __shared_ptr<_Up, _Lp>& __b) noexcept
+    { return compare_three_way()(__a.get(), __b.get()); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline strong_ordering
+    operator<=>(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    {
+      using pointer = typename __shared_ptr<_Tp, _Lp>::element_type*;
+      return compare_three_way()(__a.get(), static_cast<pointer>(nullptr));
+    }
+#else
   template<typename _Tp, _Lock_policy _Lp>
     inline bool
     operator==(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
@@ -1537,6 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
     { return !(nullptr < __a); }
+#endif // three-way comparison
 
   // 20.7.2.2.8 shared_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
