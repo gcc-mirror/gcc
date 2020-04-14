@@ -1,3 +1,10 @@
+2020-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/94270
+	* trans-decl.c (generate_local_decl): Do not warn if the
+	symbol is artifical.
+
 2020-04-02  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master

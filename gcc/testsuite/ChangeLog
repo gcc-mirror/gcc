@@ -1,3 +1,9 @@
+2020-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/94270
+	* gfortran.dg/warn_unused_dummy_argument_6.f90: New test.
+
 2020-04-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	Backport from mainline.
