@@ -1,5 +1,10 @@
 2020-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare (compare_three_way): Fix constraint so that
+	BUILTIN-PTR-THREE-WAY does not require three_way_comparable_with.
+	* testsuite/18_support/comparisons/object/builtin-ptr-three-way.cc:
+	New test.
+
 	PR libstdc++/94562
 	* include/bits/shared_ptr.h (operator<=>): Define for C++20.
 	* include/bits/shared_ptr_base.h (operator<=>): Likewise.
