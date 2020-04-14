@@ -5317,7 +5317,6 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	      s->ts.is_iso_c = 0;
 	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
-	      s->attr.artificial = 1;
 	      if (a->expr->rank > 0)
 		{
 		  s->attr.dimension = 1;
@@ -5332,6 +5331,7 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 		s->maybe_array = maybe_dummy_array_arg (a->expr);
 	    }
 	  s->attr.dummy = 1;
+	  s->attr.artificial = 1;
 	  s->declared_at = a->expr->where;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;
