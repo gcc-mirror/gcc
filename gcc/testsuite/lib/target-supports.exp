@@ -8069,6 +8069,21 @@ proc check_effective_target_d_runtime { } {
     }]
 }
 
+# Return 1 if the target provides the D standard library.
+
+proc check_effective_target_d_runtime_has_std_library { } {
+    return [check_no_compiler_messages d_runtime_has_std_library executable {
+	// D
+	module mod;
+
+	extern(C) int main() {
+	    import std.math;
+	    real function(real) pcos = &cos;
+	    return 0;
+	}
+    }]
+}
+
 # Return 1 if  target wchar_t is at least 4 bytes.
 
 proc check_effective_target_4byte_wchar_t { } {

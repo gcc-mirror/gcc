@@ -1,3 +1,8 @@
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Environment
+	attributes): Document d_runtime_has_std_library.
+
 2020-04-17  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/90275

@@ -1,3 +1,11 @@
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/link.d: Use d_runtime_has_std_library effective target.
+	* gdc.dg/runnable.d: Move phobos tests to...
+	* gdc.dg/runnable2.d: ...here.  New test.
+	* lib/target-supports.exp
+	(check_effective_target_d_runtime_has_std_library): New.
+
 2020-04-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94632
