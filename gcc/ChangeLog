@@ -1,3 +1,9 @@
+2020-04-14  Yang Yang <yangyang305@huawei.com>
+
+	PR tree-optimization/94574
+	* tree-ssa.c (non_rewritable_lvalue_p): Add size check when analyzing
+	whether a vector-insert is rewritable using a BIT_INSERT_EXPR.
+
 2020-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94561

@@ -1,3 +1,8 @@
+2020-04-14  Yang Yang <yangyang305@huawei.com>
+
+	PR tree-optimization/94574
+	* gcc.dg/pr94574.c: New test.
+
 2020-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/94561
