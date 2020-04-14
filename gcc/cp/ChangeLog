@@ -1,3 +1,9 @@
+2020-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94359
+	* coroutines.cc (build_actor_fn): Check that the target can
+	support the resume tailcall before mandating it.
+
 2020-04-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/85278

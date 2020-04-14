@@ -1,3 +1,10 @@
+2020-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94359
+	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:
+	Expect a run fail for targets without arbitrary indirect
+	tail-calls.
+
 2020-04-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/93207
