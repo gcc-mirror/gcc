@@ -1,3 +1,8 @@
+2020-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94539
+	* gcc.dg/alias-14.c: Make dg-do run.
+
 2020-04-13  Max Filippov  <jcmvbkbc@gmail.com>
 
 	PR target/94584

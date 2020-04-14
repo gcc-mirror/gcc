@@ -1,3 +1,9 @@
+2020-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94539
+	* tree-ssa-alias.c (same_type_for_tbaa): Defer to
+	alias_sets_conflict_p for pointers.
+
 2020-04-14  Max Filippov  <jcmvbkbc@gmail.com>
 
 	PR target/94584
