@@ -1,3 +1,7 @@
+2020-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS (Reviewers): Add myself as callgraph (IPA) reviewer.
+
 2020-04-09  Tom Tromey  <tom@tromey.com>
 
 	* configure: Rebuild.
