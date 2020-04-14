@@ -2216,19 +2216,37 @@ package body Sem_Ch13 is
                --  Will be set to True if we need to restore the scope table
                --  after analyzing the aspect expression.
 
+               Prev_Id : Entity_Id;
+
             --  Start of processing for Analyze_Aspect_Relaxed_Initialization
 
             begin
                --  Set name of the aspect for error messages
                Error_Msg_Name_1 := Nam;
 
-               --  Annotation of a type; no aspect expression is allowed
+               --  Annotation of a type; no aspect expression is allowed.
+               --  For a private type, the aspect must be attached to the
+               --  partial view.
+               --
                --  ??? Once the exact rule for this aspect is ready, we will
                --  likely reject concurrent types, etc., so let's keep the code
                --  for types and variable separate.
 
                if Is_First_Subtype (E) then
-                  if Present (Expr) then
+                  Prev_Id := Incomplete_Or_Partial_View (E);
+                  if Present (Prev_Id) then
+
+                     --  Aspect may appear on the full view of an incomplete
+                     --  type because the incomplete declaration cannot have
+                     --  any aspects.
+
+                     if Ekind (Prev_Id) = E_Incomplete_Type then
+                        null;
+                     else
+                        Error_Msg_N ("aspect % must apply to partial view", N);
+                     end if;
+
+                  elsif Present (Expr) then
                      Error_Msg_N ("illegal aspect % expression", Expr);
                   end if;
 
@@ -2236,6 +2254,19 @@ package body Sem_Ch13 is
 
                elsif Ekind (E) = E_Variable then
                   if Present (Expr) then
+                     Error_Msg_N ("illegal aspect % expression", Expr);
+                  end if;
+
+               --  Annotation of a constant; no aspect expression is allowed.
+               --  For a deferred constant, the aspect must be attached to the
+               --  partial view.
+
+               elsif Ekind (E) = E_Constant then
+                  if Present (Incomplete_Or_Partial_View (E)) then
+                     Error_Msg_N
+                       ("aspect % must apply to deferred constant", N);
+
+                  elsif Present (Expr) then
                      Error_Msg_N ("illegal aspect % expression", Expr);
                   end if;
 

@@ -12495,13 +12495,20 @@ package body Sem_Util is
          when E_Abstract_State =>
             return Is_Relaxed_Initialization_State (E);
 
+         --  Constants have this aspect attached directly; for deferred
+         --  constants, the aspect is attached to the partial view.
+
+         when E_Constant =>
+            return Has_Aspect (E, Aspect_Relaxed_Initialization);
+
          --  Variables have this aspect attached directly
 
          when E_Variable =>
             return Has_Aspect (E, Aspect_Relaxed_Initialization);
 
          --  Types have this aspect attached directly (though we only allow it
-         --  to be specified for the first subtype).
+         --  to be specified for the first subtype). For private types, the
+         --  aspect is attached to the partial view.
 
          when Type_Kind =>
             pragma Assert (Is_First_Subtype (E));

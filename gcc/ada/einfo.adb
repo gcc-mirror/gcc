@@ -8256,8 +8256,7 @@ package body Einfo is
    function Is_Relaxed_Initialization_State (Id : E) return B is
    begin
       --  To qualify, the abstract state must appear with simple option
-      --  "Relaxed_Initialization" (??? add reference to SPARK RM once the
-      --  Relaxed_Initialization aspect is described there).
+      --  "Relaxed_Initialization" (SPARK RM 6.10).
 
       return
         Ekind (Id) = E_Abstract_State
