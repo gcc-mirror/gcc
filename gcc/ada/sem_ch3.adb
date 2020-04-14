@@ -93,9 +93,9 @@ package body Sem_Ch3 is
    --  record type.
 
    procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id);
-   --  When an access_to_subprogram type has pre/postconditions, we
-   --  build a subprogram that includes these contracts and is invoked
-   --  by any indirect call through the corresponding access type.
+   --  When an access-to-subprogram type has pre/postconditions, we build a
+   --  subprogram that includes these contracts and is invoked by an indirect
+   --  call through the corresponding access type.
 
    procedure Build_Derived_Type
      (N             : Node_Id;
@@ -3142,9 +3142,9 @@ package body Sem_Ch3 is
                Validate_Access_Type_Declaration (T, N);
 
                --  If the type has contracts, we create the corresponding
-               --  wrapper at once, before analyzing the aspect
-               --  specifications, so that pre/postconditions can be
-               --  handled directly on the generated wrapper.
+               --  wrapper at once, before analyzing the aspect specifications,
+               --  so that pre/postconditions can be handled directly on the
+               --  generated wrapper.
 
                if Ada_Version >= Ada_2020
                  and then Present (Aspect_Specifications (N))
@@ -6483,13 +6483,11 @@ package body Sem_Ch3 is
       Spec      : Node_Id;
 
       procedure Replace_Type_Name (Expr : Node_Id);
-      --  In the expressions for contract aspects, replace
-      --  occurrences of the access type with the name of the
-      --  subprogram entity, as needed, e.g. for 'Result.
-      --  Apects that are not contracts 9e.g. Size or Aligment)
-      --  remain on the originsl access type declaration.
-      --  What about expanded names denoting formals, whose prefix
-      --  in the source is the type name ???
+      --  In the expressions for contract aspects, replace occurrences of the
+      --  access type with the name of the subprogram entity, as needed, e.g.
+      --  for 'Result. Aspects that are not contracts, e.g. Size or Alignment)
+      --  remain on the original access type declaration. What about expanded
+      --  names denoting formals, whose prefix in source is the type name ???
 
       -----------------------
       -- Replace_Type_Name --
@@ -6570,8 +6568,8 @@ package body Sem_Ch3 is
          Next (Form_P);
       end loop;
 
-      --  Add to parameter specifications the access parameter that
-      --  is passed in from an indirect call.
+      --  Add to parameter specifications the access parameter that is passed
+      --  in from an indirect call.
 
       Append (
          Make_Parameter_Specification (Loc,

@@ -4774,8 +4774,8 @@ package body Sem_Prag is
          then
             null;
 
-         --  Access_To_Subprogram type can have pre/postconditions, but
-         --  these are trasnfered to the generated subprogram wrapper and
+         --  An access-to-subprogram type can have pre/postconditions, but
+         --  these are transferred to the generated subprogram wrapper and
          --  analyzed there.
 
          --  Otherwise the placement of the pragma is illegal
