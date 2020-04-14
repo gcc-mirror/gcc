@@ -1547,8 +1547,8 @@ package body Sem_Res is
             null;
 
          elsif Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide)
-           and then Is_Fixed_Point_Type (Etype (Left_Opnd  (Op_Node)))
-           and then Is_Fixed_Point_Type (Etype (Right_Opnd (Op_Node)))
+           and then Is_Fixed_Point_Type (Etype (Act1))
+           and then Is_Fixed_Point_Type (Etype (Act2))
          then
             if Pack /= Standard_Standard then
                Error := True;
@@ -1559,7 +1559,8 @@ package body Sem_Res is
 
          elsif Ada_Version >= Ada_2005
            and then Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne)
-           and then Ekind (Etype (Act1)) = E_Anonymous_Access_Type
+           and then (Is_Anonymous_Access_Type (Etype (Act1))
+                      or else Is_Anonymous_Access_Type (Etype (Act2)))
          then
             null;
 
@@ -8470,10 +8471,8 @@ package body Sem_Res is
          --  Why no similar processing for case expressions???
 
          elsif Ada_Version >= Ada_2012
-           and then Ekind_In (Etype (L), E_Anonymous_Access_Type,
-                                         E_Anonymous_Access_Subprogram_Type)
-           and then Ekind_In (Etype (R), E_Anonymous_Access_Type,
-                                         E_Anonymous_Access_Subprogram_Type)
+           and then Is_Anonymous_Access_Type (Etype (L))
+           and then Is_Anonymous_Access_Type (Etype (R))
          then
             Check_If_Expression (L);
             Check_If_Expression (R);
@@ -13327,13 +13326,14 @@ package body Sem_Res is
                      return False;
 
                   --  Implicit conversions aren't allowed for anonymous access
-                  --  parameters. The "not Is_Local_Anonymous_Access_Type" test
-                  --  is done to exclude anonymous access results.
+                  --  parameters. We exclude anonymous access results as well
+                  --  as universal_access "=".
 
                   elsif not Is_Local_Anonymous_Access (Opnd_Type)
                     and then Nkind_In (Associated_Node_For_Itype (Opnd_Type),
                                        N_Function_Specification,
                                        N_Procedure_Specification)
+                    and then not Nkind_In (Parent (N), N_Op_Eq, N_Op_Ne)
                   then
                      Conversion_Error_N
                        ("implicit conversion of anonymous access parameter "
@@ -13355,7 +13355,7 @@ package body Sem_Res is
                   --  implicit conversion is disallowed (by RM12-8.6(27.1/3)).
 
                   elsif Type_Access_Level (Opnd_Type) >
-                        Deepest_Type_Access_Level (Target_Type)
+                    Deepest_Type_Access_Level (Target_Type)
                   then
                      Conversion_Error_N
                        ("implicit conversion of anonymous access value "

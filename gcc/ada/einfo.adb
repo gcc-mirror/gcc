@@ -3644,6 +3644,11 @@ package body Einfo is
    -- Classification Functions --
    ------------------------------
 
+   function Is_Access_Object_Type               (Id : E) return B is
+   begin
+      return Is_Access_Type (Id) and then not Is_Access_Subprogram_Type (Id);
+   end Is_Access_Object_Type;
+
    function Is_Access_Type                      (Id : E) return B is
    begin
       return Ekind (Id) in Access_Kind;
