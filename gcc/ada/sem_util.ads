@@ -1382,9 +1382,10 @@ package Sem_Util is
    --  yet received a full declaration.
 
    function Has_Relaxed_Initialization (E : Entity_Id) return Boolean;
-   --  Returns True iff entity E, which can be either a type, a variable, an
-   --  abstract state or a function, is subject to the Relaxed_Initialization
-   --  aspect.
+   --  Returns True iff entity E is subject to the Relaxed_Initialization
+   --  aspect. Entity E can be either type, variable, constant, function,
+   --  or abstract state. For private types and deferred constants E should
+   --  be the private view, because aspect can only be attached there.
 
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
