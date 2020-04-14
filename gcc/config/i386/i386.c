@@ -4969,12 +4969,12 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       && !TARGET_AVX512VL
       && GET_MODE_SIZE (mode) < 64)
     {
-      /* NB: Since ix86_hard_regno_mode_ok only allows xmm16-xmm31 or
-	 ymm16-ymm31 in 128/256 bit modes when AVX512VL is enabled,
-	 we get here only for xmm16-xmm31 or ymm16-ymm31 in 32/64 bit
+      /* NB: Even though ix86_hard_regno_mode_ok doesn't allow
+	 xmm16-xmm31 nor ymm16-ymm31 in 128/256 bit modes when
+	 AVX512VL is disabled, LRA can still generate reg to
+	 reg moves with xmm16-xmm31 and ymm16-ymm31 in 128/256 bit
 	 modes.  */
-      if (GET_MODE_SIZE (mode) >= 16
-	  || memory_operand (operands[0], mode)
+      if (memory_operand (operands[0], mode)
 	  || memory_operand (operands[1], mode))
 	gcc_unreachable ();
       size = 64;

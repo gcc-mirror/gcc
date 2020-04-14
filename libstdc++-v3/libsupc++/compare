@@ -56,7 +56,7 @@ namespace std
 
     struct __unspec
     {
-      constexpr __unspec(__unspec*) { }
+      constexpr __unspec(__unspec*) noexcept { }
     };
   }
 

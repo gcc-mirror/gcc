@@ -1,4 +1,10 @@
-//  { dg-do run }
+// { dg-do run }
+// See PR94359 - some targets are unable to make general indirect tailcalls
+// for example, between different DSOs.
+// { dg-xfail-run-if "" { hppa*-*-hpux11* } }
+// { dg-xfail-run-if "" { ia64-*-linux-gnu } }
+// { dg-xfail-run-if "" { { lp64 && { powerpc*-linux-gnu } } || { *-*-aix* } } }
+// { dg-xfail-run-if "" { sparc*-*-* } }
 
 #if __has_include(<coroutine>)
 

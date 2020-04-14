@@ -2670,8 +2670,8 @@ check_local_shadow (tree decl)
 	}
       /* Don't complain if it's from an enclosing function.  */
       else if (DECL_CONTEXT (old) == current_function_decl
-	  && TREE_CODE (decl) != PARM_DECL
-	  && TREE_CODE (old) == PARM_DECL)
+	       && TREE_CODE (decl) != PARM_DECL
+	       && TREE_CODE (old) == PARM_DECL)
 	{
 	  /* Go to where the parms should be and see if we find
 	     them there.  */
@@ -2681,11 +2681,14 @@ check_local_shadow (tree decl)
 	    /* Skip the ctor/dtor cleanup level.  */
 	    b = b->level_chain;
 
-	  /* ARM $8.3 */
+	  /* [basic.scope.param] A parameter name shall not be redeclared
+	     in the outermost block of the function definition.  */
 	  if (b->kind == sk_function_parms)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (decl),
 			"declaration of %q#D shadows a parameter", decl);
+	      inform (DECL_SOURCE_LOCATION (old),
+		      "%q#D previously declared here", old);
 	      return;
 	    }
 	}

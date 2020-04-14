@@ -1,3 +1,68 @@
+2020-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94359
+	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:
+	Expect a run fail for targets without arbitrary indirect
+	tail-calls.
+
+2020-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93207
+	* g++.dg/concepts/variadic5.C: New test.
+
+	PR c++/85278
+	* g++.dg/concepts/diagnostic9.C: New test.
+
+	PR c++/94034
+	* g++.dg/cpp0x/constexpr-empty15.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi6a.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi6b.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi7a.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi7b.C: New test.
+
+2020-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94573
+	* gcc.dg/store_merging_30.c: New test.
+
+2020-04-14  Yang Yang  <yangyang305@huawei.com>
+
+	PR tree-optimization/94574
+	* gcc.dg/pr94574.c: New test.
+
+2020-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94561
+	* gcc.target/i386/pr94561.c: New test.
+
+2020-04-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/use_rename_10.f90: New.
+	* gfortran.dg/use_rename_11.f90: New.
+
+2020-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94588
+	* g++.dg/diagnostic/redeclaration-1.C: Add dg-message.
+
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/92326
+	* c-c++-common/Warray-bounds-8.c: New test.
+	* gcc.dg/Warray-bounds-46.c: Adjust expected format of flexible array
+	memebrs in diagnostics.
+	* gcc.dg/Warray-bounds-49.c: Same.
+
+2020-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94521
+	* g++.dg/cpp2a/lambda-uneval12.C: New test.
+
+	PR c++/94470
+	* g++.dg/cpp1y/constexpr-nsdmi8.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi9.C: New test.
+	* g++.dg/init/array57.C: New test.
+
 2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro-pre-proc.C: Update coroutines builtin

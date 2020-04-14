@@ -2376,14 +2376,22 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree resume = build_call_expr_loc
     (loc, builtin_decl_explicit (BUILT_IN_CORO_RESUME), 1, addr);
 
+  /* In order to support an arbitrary number of coroutine continuations,
+     we must tail call them.  However, some targets might not support this
+     for indirect calls, or calls between DSOs.
+     FIXME: see if there's an alternate strategy for such targets.  */
   /* Now we have the actual call, and we can mark it as a tail.  */
   CALL_EXPR_TAILCALL (resume) = true;
-  /* ... and for optimisation levels 0..1, mark it as requiring a tail-call
-     for correctness.  It seems that doing this for optimisation levels that
-     normally perform tail-calling, confuses the ME (or it would be logical
-     to put this on unilaterally).  */
-  if (optimize < 2)
-    CALL_EXPR_MUST_TAIL_CALL (resume) = true;
+  /* Temporarily, switch cfun so that we can use the target hook.  */
+  push_struct_function (actor);
+  if (targetm.function_ok_for_sibcall (NULL_TREE, resume))
+    {
+      /* ... and for optimisation levels 0..1, which do not normally tail-
+	-call, mark it as requiring a tail-call for correctness.  */
+      if (optimize < 2)
+	CALL_EXPR_MUST_TAIL_CALL (resume) = true;
+    }
+  pop_cfun ();
   resume = coro_build_cvt_void_expr_stmt (resume, loc);
   add_stmt (resume);
 
@@ -3951,7 +3959,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   push_deferring_access_checks (dk_no_check);
 
-  /* Actor ...  */
+  /* Build the actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
 		  &local_var_uses, param_dtor_list, initial_await, final_await,
 		  body_aw_points.await_number, frame_size);

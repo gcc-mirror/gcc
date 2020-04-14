@@ -1,3 +1,8 @@
+2020-04-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* module.c (gfc_match_use): Fix name-conflict check for use-associating
+	the same symbol again in a submodule.
+
 2020-04-13  Linus Koenig <link@sig-st.de>
 
 	PR fortran/94192

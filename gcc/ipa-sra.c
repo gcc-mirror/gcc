@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfganal.h"
 #include "tree-streamer.h"
-
+#include "internal-fn.h"
 
 /* Bits used to track size of an aggregate in bytes interprocedurally.  */
 #define ISRA_ARG_SIZE_LIMIT_BITS 16
@@ -1281,7 +1281,9 @@ allocate_access (gensum_param_desc *desc,
 }
 
 /* In what context scan_expr_access has been called, whether it deals with a
-   load, a function argument, or a store.  */
+   load, a function argument, or a store.  Please note that in rare
+   circumstances when it is not clear if the access is a load or store,
+   ISRA_CTX_STORE is used too.  */
 
 enum isra_scan_context {ISRA_CTX_LOAD, ISRA_CTX_ARG, ISRA_CTX_STORE};
 
@@ -1870,15 +1872,27 @@ scan_function (cgraph_node *node, struct function *fun)
 	    case GIMPLE_CALL:
 	      {
 		unsigned argument_count = gimple_call_num_args (stmt);
-		scan_call_info call_info;
-		call_info.cs = node->get_edge (stmt);
-		call_info.argument_count = argument_count;
+		isra_scan_context ctx = ISRA_CTX_ARG;
+		scan_call_info call_info, *call_info_p = &call_info;
+		if (gimple_call_internal_p (stmt))
+		  {
+		    call_info_p = NULL;
+		    ctx = ISRA_CTX_LOAD;
+		    internal_fn ifn = gimple_call_internal_fn (stmt);
+		    if (internal_store_fn_p (ifn))
+		      ctx = ISRA_CTX_STORE;
+		  }
+		else
+		  {
+		    call_info.cs = node->get_edge (stmt);
+		    call_info.argument_count = argument_count;
+		  }
 
 		for (unsigned i = 0; i < argument_count; i++)
 		  {
 		    call_info.arg_idx = i;
 		    scan_expr_access (gimple_call_arg (stmt, i), stmt,
-				      ISRA_CTX_ARG, bb, &call_info);
+				      ctx, bb, call_info_p);
 		  }
 
 		tree lhs = gimple_call_lhs (stmt);

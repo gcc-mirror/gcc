@@ -1,3 +1,33 @@
+2020-04-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/94542
+	* config/rs6000/rs6000.c (address_to_insn_form): Do not attempt to
+	use PC-relative addressing for TLS references.
+
+2020-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94434
+	* ipa-sra.c: Include internal-fn.h.
+	(enum isra_scan_context): Update comment.
+	(scan_function): Treat calls to internal_functions like loads or stores.
+
+2020-04-14  Yang Yang <yangyang305@huawei.com>
+
+	PR tree-optimization/94574
+	* tree-ssa.c (non_rewritable_lvalue_p): Add size check when analyzing
+	whether a vector-insert is rewritable using a BIT_INSERT_EXPR.
+
+2020-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94561
+	* config/i386/i386.c (ix86_get_ssemov): Remove mode size check.
+
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (-Wall): Mention -Wformat-overflow and
+	-Wformat-truncation.  Move -Wzero-length-bounds last.
+	(-Wrestrict): Document positive form of option enabled by -Wall.
+
 2020-04-13 Zachary Spytz  <zspytz@gmail.com>
 
 	* doc/extend.texi: Add realloc to list of built-in functions
