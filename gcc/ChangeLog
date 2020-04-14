@@ -1,3 +1,11 @@
+2020-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_advsimd_ldp_stp_p): New function.
+	(aarch64_sve_adjust_stmt_cost): Add a vectype parameter.  Double the
+	cost of load and store insns if one loop iteration has enough scalar
+	elements to use an Advanced SIMD LDP or STP.
+	(aarch64_add_stmt_cost): Update call accordingly.
+
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 	    Jeff Law  <law@redhat.com>
 

@@ -1,3 +1,12 @@
+2020-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_2.c: New test.
+	* gcc.target/aarch64/sve/cost_model_3.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_4.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_5.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_6.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_7.c: Likewise.
+
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
