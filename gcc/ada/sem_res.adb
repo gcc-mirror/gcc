@@ -11998,6 +11998,18 @@ package body Sem_Res is
 
       Resolve (Operand, Opnd_Type);
 
+      --  If the expression is a conversion to universal integer of an
+      --  an expression with an integer type, then we can eliminate the
+      --  intermediate conversion to universal integer.
+
+      if Nkind (Operand) = N_Type_Conversion
+        and then Entity (Subtype_Mark (Operand)) = Universal_Integer
+        and then Is_Integer_Type (Etype (Expression (Operand)))
+      then
+         Rewrite (Operand, Relocate_Node (Expression (Operand)));
+         Analyze_And_Resolve (Operand);
+      end if;
+
       --  In an inlined context, the unchecked conversion may be applied
       --  to a literal, in which case its type is the type of the context.
       --  (In other contexts conversions cannot apply to literals).
