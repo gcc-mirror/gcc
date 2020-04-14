@@ -3470,9 +3470,7 @@ package body Exp_Attr is
                   Bnd := Type_High_Bound (Ptyp);
                end if;
 
-               if Is_Entity_Name (Bnd)
-                 and then Ekind (Entity (Bnd)) /= E_Discriminant
-               then
+               if Is_Entity_Name (Bnd) then
                   Rewrite (N, New_Occurrence_Of (Entity (Bnd), Loc));
                end if;
             end;
