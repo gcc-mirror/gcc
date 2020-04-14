@@ -47,15 +47,14 @@ package Exp_Ch3 is
    --  Add a field _parent in the extension part of the record
 
    procedure Build_Access_Subprogram_Wrapper_Body
-     (Decl : Node_Id;
+     (Decl     : Node_Id;
       New_Decl : Node_Id);
-   --  Build the wrapper body, which holds the indirect call through
-   --  an access_to_subprogram, and whose expansion incorporates the
-   --  contracts of the access type declaration. Called from Build_
-   --  Access_Subprogram_Wrapper.
-   --  Building the wrapper is done during analysis to perform proper
-   --  semantic checks on the relevant aspects. The wrapper body could
-   --  be simplified to a null body when expansion is disabled ???
+   --  Build the wrapper body, which holds the indirect call through an access-
+   --  to-subprogram, and whose expansion incorporates the contracts of the
+   --  access type declaration. Called from Build_Access_Subprogram_Wrapper.
+   --  Building the wrapper is done during analysis to perform proper semantic
+   --  checks on the relevant aspects. The wrapper body could be simplified to
+   --  a null body when expansion is disabled ???
 
    procedure Build_Discr_Checking_Funcs (N : Node_Id);
    --  Builds function which checks whether the component name is consistent

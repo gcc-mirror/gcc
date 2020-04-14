@@ -520,20 +520,21 @@ package body Exp_Ch3 is
    ------------------------------------------
 
    procedure Build_Access_Subprogram_Wrapper_Body
-     (Decl : Node_Id;
+     (Decl     : Node_Id;
       New_Decl : Node_Id)
    is
       Loc       : constant Source_Ptr := Sloc (Decl);
-      Actuals   : constant List_Id := New_List;
-      Type_Def  : constant Node_Id := Type_Definition (Decl);
-      Type_Id   : constant Entity_Id := Defining_Identifier (Decl);
-      Spec_Node : constant Node_Id :=
-        New_Copy_Tree (Specification (New_Decl));
+      Actuals   : constant List_Id    := New_List;
+      Type_Def  : constant Node_Id    := Type_Definition (Decl);
+      Type_Id   : constant Entity_Id  := Defining_Identifier (Decl);
+      Spec_Node : constant Node_Id    :=
+                    New_Copy_Tree (Specification (New_Decl));
 
       Act       : Node_Id;
       Body_Node : Node_Id;
       Call_Stmt : Node_Id;
       Ptr       : Entity_Id;
+
    begin
       if not Expander_Active then
          return;
@@ -543,8 +544,8 @@ package body Exp_Ch3 is
         Make_Defining_Identifier
           (Loc, Chars (Defining_Unit_Name (Spec_Node))));
 
-      --  Create List of actuals for indirect call. The last
-      --  parameter of the subprogram is the access value itself.
+      --  Create List of actuals for indirect call. The last parameter of the
+      --  subprogram is the access value itself.
 
       Act := First (Parameter_Specifications (Spec_Node));
 
