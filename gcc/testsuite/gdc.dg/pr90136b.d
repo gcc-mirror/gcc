@@ -3,7 +3,7 @@
 // { dg-options "-fdump-tree-optimized" }
 // { dg-final { scan-tree-dump-times "sum_array \\(array\\)" 1 "optimized"} }
 
-import gcc.attribute;
+import gcc.attributes;
 
 @attribute("noinline") int sum_array(int[] input);
 

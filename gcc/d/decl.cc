@@ -108,7 +108,7 @@ gcc_attribute_p (Dsymbol *decl)
   if (md && md->packages && md->packages->length == 1)
     {
       if (!strcmp ((*md->packages)[0]->toChars (), "gcc")
-	  && !strcmp (md->id->toChars (), "attribute"))
+	  && !strcmp (md->id->toChars (), "attributes"))
 	return true;
     }
 
@@ -1123,6 +1123,10 @@ get_symbol_decl (Declaration *decl)
 	  Declaration *other = IDENTIFIER_DSYMBOL (mangled_name);
 	  tree olddecl = decl->csym;
 	  decl->csym = get_symbol_decl (other);
+
+	  /* Update the symbol location to the current definition.  */
+	  if (DECL_EXTERNAL (decl->csym) && !DECL_INITIAL (decl->csym))
+	    DECL_SOURCE_LOCATION (decl->csym) = DECL_SOURCE_LOCATION (olddecl);
 
 	  /* The current declaration is a prototype or marked extern, merge
 	     applied user attributes and return.  */

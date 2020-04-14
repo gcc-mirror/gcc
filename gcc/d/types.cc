@@ -354,6 +354,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	      const char *ident = var->ident ? var->ident->toChars () : NULL;
 	      tree field = create_field_decl (declaration_type (var), ident,
 					      inherited_p, inherited_p);
+	      apply_user_attributes (var, field);
 	      insert_aggregate_field (context, field, var->offset);
 
 	      /* Because the front-end shares field decls across classes, don't
@@ -403,6 +404,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 
 	  /* And make the corresponding data member.  */
 	  tree field = create_field_decl (type, NULL, 0, 0);
+	  apply_user_attributes (ad, field);
 	  insert_aggregate_field (context, field, ad->anonoffset);
 	  continue;
 	}
