@@ -1,5 +1,12 @@
 2020-04-14  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/85278
+	* cxx-pretty-print.c (cxx_pretty_printer:simple_type_specifier)
+	<case DECLTYPE_TYPE>: Handle DECLTYPE_TYPE here instead of ...
+	(pp_cxx_type_specifier_seq) <case DECLTYPE_TYPE>: ... here.
+	(cxx_pretty_printer::direct_abstract_declarator) <case DECLTYPE_TYPE>:
+	New no-op case.
+
 	PR c++/94034
 	* constexpr.c (replace_result_decl_data): New struct.
 	(replace_result_decl_data_r): New function.

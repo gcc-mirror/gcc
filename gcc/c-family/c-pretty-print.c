@@ -278,7 +278,11 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       if (TREE_CODE (t) == POINTER_TYPE)
 	pp_c_star (pp);
       else
-	pp_c_ampersand (pp);
+	{
+	  pp_c_ampersand (pp);
+	  if (TYPE_REF_IS_RVALUE (t))
+	    pp_c_ampersand (pp);
+	}
       pp_c_type_qualifier_list (pp, t);
       break;
 
