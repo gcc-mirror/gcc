@@ -1,5 +1,8 @@
 2020-04-14  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/93207
+	* g++.dg/concepts/variadic5.C: New test.
+
 	PR c++/85278
 	* g++.dg/concepts/diagnostic9.C: New test.
 
