@@ -6011,7 +6011,7 @@ generate_local_decl (gfc_symbol * sym)
       /* Unused procedure passed as dummy argument.  */
       if (sym->attr.flavor == FL_PROCEDURE)
 	{
-	  if (!sym->attr.referenced)
+	  if (!sym->attr.referenced && !sym->attr.artificial)
 	    {
 	      if (warn_unused_dummy_argument)
 		gfc_warning (OPT_Wunused_dummy_argument,
