@@ -2331,6 +2331,9 @@ package Einfo is
 --    Is_Access_Type (synthesized)
 --       Applies to all entities, true for access types and subtypes
 
+--    Is_Access_Object_Type (synthesized)
+--       Applies to all entities, true for access-to-object types and subtypes
+
 --    Is_Activation_Record (Flag305)
 --       Applies to E_In_Parameters generated in Exp_Unst for nested
 --       subprograms, to mark the added formal that carries the activation
@@ -7588,6 +7591,7 @@ package Einfo is
    --  Is_Generic_Type where the Ekind does not provide the needed
    --  information).
 
+   function Is_Access_Object_Type               (Id : E) return B;
    function Is_Access_Type                      (Id : E) return B;
    function Is_Access_Protected_Subprogram_Type (Id : E) return B;
    function Is_Access_Subprogram_Type           (Id : E) return B;
