@@ -648,18 +648,6 @@ gfc_match_use (void)
 	  if (type == INTERFACE_USER_OP)
 	    new_use->op = INTRINSIC_USER;
 
-	  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
-	  if (st && type != INTERFACE_USER_OP)
-	    {
-	      if (m == MATCH_YES)
-		gfc_error ("Symbol %qs at %L conflicts with the rename symbol "
-			   "at %L", name, &st->n.sym->declared_at, &loc);
-	      else
-		gfc_error ("Symbol %qs at %L conflicts with the symbol "
-			   "at %L", name, &st->n.sym->declared_at, &loc);
-	      goto cleanup;
-	    }
-
 	  if (use_list->only_flag)
 	    {
 	      if (m != MATCH_YES)
@@ -689,6 +677,20 @@ gfc_match_use (void)
 		goto syntax;
 	      if (m == MATCH_ERROR)
 		goto cleanup;
+	    }
+
+	  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+	  if (st && type != INTERFACE_USER_OP
+	      && (st->n.sym->module != use_list->module_name
+		  || strcmp (st->n.sym->name, new_use->use_name) != 0))
+	    {
+	      if (m == MATCH_YES)
+		gfc_error ("Symbol %qs at %L conflicts with the rename symbol "
+			   "at %L", name, &st->n.sym->declared_at, &loc);
+	      else
+		gfc_error ("Symbol %qs at %L conflicts with the symbol "
+			   "at %L", name, &st->n.sym->declared_at, &loc);
+	      goto cleanup;
 	    }
 
 	  if (strcmp (new_use->use_name, use_list->module_name) == 0
