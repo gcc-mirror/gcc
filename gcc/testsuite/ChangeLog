@@ -1,4 +1,9 @@
-2020-04-14  Yang Yang <yangyang305@huawei.com>
+2020-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94573
+	* gcc.dg/store_merging_30.c: New test.
+
+2020-04-14  Yang Yang  <yangyang305@huawei.com>
 
 	PR tree-optimization/94574
 	* gcc.dg/pr94574.c: New test.
