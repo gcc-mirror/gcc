@@ -1,13 +1,13 @@
-2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
-
-	* include/std/coroutine: Update coroutines builtin define,
-	per n4861.
-
 2020-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94565
 	* libsupc++/compare (__unspec): Add noexcept-specifier to constructor.
 	* testsuite/18_support/comparisons/categories/94565.cc: New test.
+
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/std/coroutine: Update coroutines builtin define,
+	per n4861.
 
 2020-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
