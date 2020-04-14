@@ -1,6 +1,6 @@
 #include "rust-token.h"
 
-#include "diagnostic.h" // for error_at
+#include "rust-diagnostics.h" // for error_at
 
 namespace Rust {
     // Hackily defined way to get token description for enum value using x-macros
@@ -89,7 +89,7 @@ namespace Rust {
         static const ::std::string empty = "";
 
         if (str == NULL) {
-            error_at(get_locus(),
+            rust_error_at(get_locus(),
               "attempted to get string for '%s', which has no string. returning empty string "
               "instead.",
               get_token_description());
