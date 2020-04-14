@@ -1267,6 +1267,7 @@ OBJS = \
 	insn-recog.o \
 	insn-enums.o \
 	ggc-page.o \
+	adjust-alignment.o \
 	alias.o \
 	alloc-pool.o \
 	auto-inc-dec.o \
