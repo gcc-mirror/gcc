@@ -1756,17 +1756,17 @@ package body Exp_Attr is
       begin
          --  We need to accommodate unsigned values
 
-         if Siz < 8 then
-            Int_Typ := Standard_Integer_8;
+         if Siz < RM_Size (Standard_Short_Short_Integer) then
+            Int_Typ := Standard_Short_Short_Integer;
 
-         elsif Siz < 16 then
-            Int_Typ := Standard_Integer_16;
+         elsif Siz < RM_Size (Standard_Short_Integer) then
+            Int_Typ := Standard_Short_Integer;
 
-         elsif Siz < 32 then
-            Int_Typ := Standard_Integer_32;
+         elsif Siz < RM_Size (Standard_Integer) then
+            Int_Typ := Standard_Integer;
 
          else
-            Int_Typ := Standard_Integer_64;
+            Int_Typ := Standard_Long_Long_Integer;
          end if;
 
          return Int_Typ;
