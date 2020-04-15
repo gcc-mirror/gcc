@@ -2076,7 +2076,7 @@ temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
 				      bool forcibly_enable_dumping,
 				      dump_flags_t test_pp_flags)
 : m_context (),
-  m_saved (&dump_context ().get ())
+  m_saved (&dump_context::get ())
 {
   dump_context::s_current = &m_context;
   if (forcibly_enable_optinfo)

@@ -1,3 +1,9 @@
+2020-04-15  Gustavo Romero  <gromero@linux.ibm.com>
+
+	PR bootstrap/89494
+	* dumpfile.c (selftest::temp_dump_context::temp_dump_context):
+	Don't construct a dump_context temporary to call static method.
+
 2020-04-15  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* config/aarch64/falkor-tag-collision-avoidance.c
