@@ -3961,7 +3961,7 @@ package body Sem_Eval is
             T : constant Entity_Id := Etype (E);
 
          begin
-            if Ekind (E) = E_Constant
+            if Is_Object (E)
               and then Is_Array_Type (T)
               and then Is_Entity_Name (Drange)
             then
