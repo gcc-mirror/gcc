@@ -1,3 +1,7 @@
+2020-04-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm.md (arm_movdi): Disallow for MVE.
+
 2020-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94539
