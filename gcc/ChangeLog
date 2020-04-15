@@ -1,3 +1,9 @@
+2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94603
+	* config/i386/i386-builtin.def (__builtin_ia32_movq128):
+	Require OPTION_MASK_ISA_SSE2.
+
 2020-04-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94494
