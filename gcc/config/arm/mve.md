@@ -17,8 +17,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_attr V_sz_elem2 [(V16QI "s8") (V8HI "u16") (V4SI "u32")
-			      (V2DI "u64")])
 (define_mode_iterator MVE_types [V16QI V8HI V4SI V2DI TI V8HF V4SF V2DF])
 (define_mode_iterator MVE_VLD_ST [V16QI V8HI V4SI V8HF V4SF])
 (define_mode_iterator MVE_0 [V8HF V4SF])
@@ -11301,6 +11299,13 @@
  "vpst\;vshlct\t%q0, %1, %4"
  [(set_attr "type" "mve_move")
   (set_attr "length" "8")])
+
+(define_insn "*mve_vec_duplicate<mode>"
+ [(set (match_operand:MVE_VLD_ST 0 "s_register_operand" "=w")
+       (vec_duplicate:MVE_VLD_ST (match_operand:<V_elem> 1 "general_operand" "r")))]
+ "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
+ "vdup.<V_sz_elem>\t%q0, %1"
+ [(set_attr "type" "mve_move")])
 
 ;; CDE instructions on MVE registers.
 

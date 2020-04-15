@@ -1,3 +1,8 @@
+2020-04-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (mve_vec_duplicate<mode>): New pattern.
+	(V_sz_elem2): Remove unused mode attribute.
+
 2020-04-15  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/arm/arm.md (arm_movdi): Disallow for MVE.

@@ -1,3 +1,8 @@
+2020-04-15  Andre Vieira <andre.simoesdiasvieira@arm.com>
+            Srinath Parvathaneni <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_vec_duplicate.c: New test.
+
 2020-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94593
