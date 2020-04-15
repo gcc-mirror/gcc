@@ -2020,7 +2020,7 @@ early_remat::process_block (basic_block bb)
 	}
 
       /* Now process definitions.  */
-      if (next_def && insn == next_def->insn)
+      while (next_def && insn == next_def->insn)
 	{
 	  unsigned int gen = canon_candidate (next_candidate);
 

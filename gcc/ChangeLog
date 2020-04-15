@@ -1,3 +1,9 @@
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94605
+	* early-remat.c (early_remat::process_block): Handle insns that
+	set multiple candidate registers.
+
 2020-04-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94614
