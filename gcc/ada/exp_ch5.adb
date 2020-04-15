@@ -441,7 +441,7 @@ package body Exp_Ch5 is
       --  respect to the right-hand side as given, not a possible underlying
       --  renamed object, since this would generate incorrect extra checks.
 
-      Apply_Length_Check (Rhs, L_Type);
+      Apply_Length_Check_On_Assignment (Rhs, L_Type, Lhs);
 
       --  We start by assuming that the move can be done in either direction,
       --  i.e. that the two sides are completely disjoint.

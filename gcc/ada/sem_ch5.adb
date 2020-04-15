@@ -995,7 +995,7 @@ package body Sem_Ch5 is
         and then (Nkind (Rhs) /= N_Function_Call
                    or else Nkind (N) /= N_Block_Statement)
       then
-         --  Assignment verifies that the length of the Lsh and Rhs are equal,
+         --  Assignment verifies that the length of the Lhs and Rhs are equal,
          --  but of course the indexes do not have to match. If the right-hand
          --  side is a type conversion to an unconstrained type, a length check
          --  is performed on the expression itself during expansion. In rare
@@ -1003,7 +1003,7 @@ package body Sem_Ch5 is
          --  with a different representation, triggering incorrect code in the
          --  back end.
 
-         Apply_Length_Check (Rhs, Etype (Lhs));
+         Apply_Length_Check_On_Assignment (Rhs, Etype (Lhs), Lhs);
 
       else
          --  Discriminant checks are applied in the course of expansion
