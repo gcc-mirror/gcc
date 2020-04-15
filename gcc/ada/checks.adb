@@ -2220,6 +2220,34 @@ package body Checks is
         (Expr, Target_Typ, Source_Typ, Do_Static => False);
    end Apply_Length_Check;
 
+   --------------------------------------
+   -- Apply_Length_Check_On_Assignment --
+   --------------------------------------
+
+   procedure Apply_Length_Check_On_Assignment
+     (Expr       : Node_Id;
+      Target_Typ : Entity_Id;
+      Target     : Node_Id;
+      Source_Typ : Entity_Id := Empty)
+   is
+      Assign : constant Node_Id := Parent (Target);
+
+   begin
+      --  No check is needed for the initialization of an object whose
+      --  nominal subtype is unconstrained.
+
+      if Is_Constr_Subt_For_U_Nominal (Target_Typ)
+        and then Nkind (Parent (Assign)) = N_Freeze_Entity
+        and then Is_Entity_Name (Target)
+        and then Entity (Target) = Entity (Parent (Assign))
+      then
+         return;
+      end if;
+
+      Apply_Selected_Length_Checks
+        (Expr, Target_Typ, Source_Typ, Do_Static => False);
+   end Apply_Length_Check_On_Assignment;
+
    -------------------------------------
    -- Apply_Parameter_Aliasing_Checks --
    -------------------------------------
