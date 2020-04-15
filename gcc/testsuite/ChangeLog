@@ -1,3 +1,10 @@
+2020-04-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94475
+	* g++.dg/conversion/err-recover2.C: New test.
+	* g++.dg/diagnostic/pr84138.C: Remove now-bogus warning.
+	* g++.dg/warn/Wsign-compare-8.C: Remove now-bogus warning.
+
 2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/94605

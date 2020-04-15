@@ -1,3 +1,9 @@
+2020-04-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94475
+	* cvt.c (ocp_convert): If the result of scalar_constant_value is
+	erroneous, ignore it and use the original expression.
+
 2020-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94571
