@@ -680,6 +680,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const function<_Res(_Args...)>& __f, nullptr_t) noexcept
     { return !static_cast<bool>(__f); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   /// @overload
   template<typename _Res, typename... _Args>
     inline bool
@@ -703,7 +704,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(nullptr_t, const function<_Res(_Args...)>& __f) noexcept
     { return static_cast<bool>(__f); }
-
+#endif
 
   // [20.7.15.2.7] specialized algorithms
 

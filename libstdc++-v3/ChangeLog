@@ -1,5 +1,22 @@
 2020-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocator.h (operator!=): Do not define for C++20.
+	* include/bits/locale_classes.h (operator!=): Likewise.
+	* include/bits/std_function.h (operator==(nullptr_t, const function&))
+	(operator!=(const function&, nullptr_t))
+	(operator!=(nullptr_t, const function&)): Likewise.
+	* include/ext/bitmap_allocator.h (operator!=): Likewise.
+	* include/ext/debug_allocator.h (operator!=): Likewise.
+	* include/ext/extptr_allocator.h (operator!=): Likewise.
+	* include/ext/malloc_allocator.h (operator!=): Likewise.
+	* include/ext/mt_allocator.h (operator!=): Likewise.
+	* include/ext/new_allocator.h (operator!=): Likewise.
+	* include/ext/pool_allocator.h (operator!=): Likewise.
+	* include/ext/throw_allocator.h (operator!=): Likewise.
+	* include/std/bitset (bitset::operator!=): Likewise.
+	* include/std/memory_resource (operator!=): Likewise.
+	* include/std/scoped_allocator (operator!=): Likewise.
+
 	* include/std/typeindex (operator<=>): Define for C++20.
 	* testsuite/20_util/typeindex/comparison_operators_c++20.cc: New test.
 

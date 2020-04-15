@@ -174,11 +174,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOTHROW
 	{ return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       template<typename _Up>
 	friend _GLIBCXX20_CONSTEXPR bool
 	operator!=(const malloc_allocator&, const malloc_allocator<_Up>&)
 	_GLIBCXX_NOTHROW
 	{ return false; }
+#endif
 
     private:
       _GLIBCXX_CONSTEXPR size_type

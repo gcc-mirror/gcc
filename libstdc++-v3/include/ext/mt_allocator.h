@@ -771,10 +771,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const __mt_alloc<_Tp, _Poolp>&, const __mt_alloc<_Tp, _Poolp>&)
     { return true; }
   
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp, typename _Poolp>
     inline bool
     operator!=(const __mt_alloc<_Tp, _Poolp>&, const __mt_alloc<_Tp, _Poolp>&)
     { return false; }
+#endif
 
 #undef __thread_default
 
