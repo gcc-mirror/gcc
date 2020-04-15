@@ -1,3 +1,9 @@
+2020-04-15  Fritz Reese  <foreese@gcc.gnu.org>
+	Linus Koenig <link@sig-st.de>
+
+	PR fortran/94192
+	* simplify.c (simplify_bound): Simplify condition for error check.
+
 2020-04-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* module.c (gfc_match_use): Fix name-conflict check for use-associating
