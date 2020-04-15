@@ -36,6 +36,10 @@
 # include <bits/unique_ptr.h>
 # include <bits/shared_ptr.h>
 
+#if __cplusplus > 201703L
+# include <compare>	// std::strong_ordering
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -71,6 +75,11 @@ namespace filesystem
     // modifiers
     void       type(file_type __ft) noexcept { _M_type = __ft; }
     void       permissions(perms __prms) noexcept { _M_perms = __prms; }
+
+#if __cpp_lib_three_way_comparison
+    friend bool
+    operator==(const file_status&, const file_status&) noexcept = default;
+#endif
 
   private:
     file_type	_M_type;
@@ -273,16 +282,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     { return filesystem::symlink_status(_M_path, __ec); }
 
     bool
-    operator< (const directory_entry& __rhs) const noexcept
-    { return _M_path < __rhs._M_path; }
-
-    bool
     operator==(const directory_entry& __rhs) const noexcept
     { return _M_path == __rhs._M_path; }
 
+#if __cpp_lib_three_way_comparison
+    strong_ordering
+    operator<=>(const directory_entry& __rhs) const noexcept
+    { return _M_path <=> __rhs._M_path; }
+#else
     bool
     operator!=(const directory_entry& __rhs) const noexcept
     { return _M_path != __rhs._M_path; }
+
+    bool
+    operator< (const directory_entry& __rhs) const noexcept
+    { return _M_path < __rhs._M_path; }
 
     bool
     operator<=(const directory_entry& __rhs) const noexcept
@@ -295,6 +309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     bool
     operator>=(const directory_entry& __rhs) const noexcept
     { return _M_path >= __rhs._M_path; }
+#endif
 
   private:
     friend class _Dir;

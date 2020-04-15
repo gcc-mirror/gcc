@@ -1,5 +1,16 @@
 2020-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_dir.h (file_status): Define operator== for C++20.
+	(directory_entry): Define operator<=> and remove redundant comparison
+	operators for C++20.
+	* include/bits/fs_fwd.h (space_info): Define operator== for C++20.
+	* include/bits/fs_path.h (path): Define operator<=> and remove
+	redundant comparison operators for C++20.
+	* testsuite/27_io/filesystem/path/compare/compare.cc: Fix comment.
+	* testsuite/27_io/filesystem/path/compare/lwg2936.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/strings.cc: Likewise.
+
 	* include/bits/allocator.h (operator!=): Do not define for C++20.
 	* include/bits/locale_classes.h (operator!=): Likewise.
 	* include/bits/std_function.h (operator==(nullptr_t, const function&))
