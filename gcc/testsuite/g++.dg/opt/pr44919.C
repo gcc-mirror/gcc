@@ -1,6 +1,5 @@
 // { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } }
-// { dg-options "-O3 -fselective-scheduling2" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-O3 -fselective-scheduling2 -Wno-return-type" }
 
 namespace std {
 

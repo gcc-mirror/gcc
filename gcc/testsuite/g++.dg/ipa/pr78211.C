@@ -1,7 +1,6 @@
 // PR lto/78211
 // { dg-do compile { target { lto && c++11 } } }
-// { dg-options "-fcompare-debug -fno-printf-return-value -flto -fno-use-linker-plugin -O3" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-fcompare-debug -fno-printf-return-value -flto -fno-use-linker-plugin -O3 -Wno-return-type" }
 
 namespace std {
   typedef __SIZE_TYPE__ size_t;

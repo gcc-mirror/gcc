@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fno-tree-forwprop -fno-tree-fre -fno-tree-vrp" } */
-/* { dg-additional-options "-fdump-tree-dse1-details" } */
+/* { dg-options "-O2 -fno-tree-ccp -fno-tree-forwprop -fno-tree-fre -fno-tree-vrp -fdump-tree-dse1-details" } */
 
 int
 f ()

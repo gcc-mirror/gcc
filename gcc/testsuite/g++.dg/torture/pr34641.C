@@ -1,8 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target fpic }
 // { dg-require-visibility "" }
-// { dg-options "-fPIC" }
-/* { dg-additional-options "-Wno-return-type" } */
+// { dg-options "-fPIC -Wno-return-type" }
 
 
 typedef __SIZE_TYPE__ size_t;

@@ -1,7 +1,6 @@
 // PR c++/44625
 // { dg-do compile }
-// { dg-options "" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-Wno-return-type" }
 
 template<typename FP_> struct Vec { // { dg-message "note" "" { target c++17_down } }
     Vec& operator^=(Vec& rhs)     {
