@@ -1,3 +1,8 @@
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	* gdbhooks.py (TreePrinter): Print SSA_NAME_VERSION of SSA_NAME
+	nodes.
+
 2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94603
