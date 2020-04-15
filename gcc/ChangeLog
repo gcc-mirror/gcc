@@ -1,3 +1,9 @@
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94606
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_eor): Take
+	the VNx16BI lowpart of the recursively-generated constant.
+
 2020-04-16  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 

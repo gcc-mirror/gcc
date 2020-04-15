@@ -4742,6 +4742,7 @@ aarch64_expand_sve_const_pred_eor (rtx target, rtx_vector_builder &builder,
   /* EOR the result with an ELT_SIZE PTRUE.  */
   rtx mask = aarch64_ptrue_all (elt_size);
   mask = force_reg (VNx16BImode, mask);
+  inv = gen_lowpart (VNx16BImode, inv);
   target = aarch64_target_reg (target, VNx16BImode);
   emit_insn (gen_aarch64_pred_z (XOR, VNx16BImode, target, mask, inv, mask));
   return target;

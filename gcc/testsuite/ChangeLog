@@ -1,3 +1,8 @@
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94606
+	* gcc.dg/vect/pr94606.c: New test.
+
 2020-04-16  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
