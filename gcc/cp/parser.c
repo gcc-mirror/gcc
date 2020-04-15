@@ -43801,6 +43801,13 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       return true;
 
     case PRAGMA_OMP_REQUIRES:
+      if (context != pragma_external)
+	{
+	  error_at (pragma_tok->location,
+		    "%<#pragma omp requires%> may only be used at file or "
+		    "namespace scope");
+	  break;
+	}
       return cp_parser_omp_requires (parser, pragma_tok);
 
     case PRAGMA_OMP_ORDERED:

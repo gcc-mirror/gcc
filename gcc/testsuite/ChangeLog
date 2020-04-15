@@ -1,3 +1,16 @@
+2020-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94593
+	* c-c++-common/gomp/requires-1.c: Fix a typo, requries -> requires.
+	Move directives to file scope.
+	(i): Remove.
+	* c-c++-common/gomp/requires-2.c: Move directives to file scope.
+	(i, foo): Remove.
+	* c-c++-common/gomp/requires-4.c: Move directives to file scope.
+	* gcc.dg/gomp/requires-1.c: New test.
+	* g++.dg/gomp/requires-1.C: New test.
+	* g++.dg/gomp/requires-2.C: New test.
+
 2020-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94539
