@@ -1,3 +1,9 @@
+2020-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94593
+	* c-parser.c (c_parser_pragma) <case PRAGMA_OMP_REQUIRES>: Reject
+	requires directive when not at file scope.
+
 2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/94120

@@ -196,9 +196,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       friend _GLIBCXX20_CONSTEXPR bool
       operator!=(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return false; }
+#endif
 
       // Inherit everything else.
     };
@@ -209,11 +211,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOTHROW
     { return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _T1, typename _T2>
     inline _GLIBCXX20_CONSTEXPR bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
     _GLIBCXX_NOTHROW
     { return false; }
+#endif
 
   // Invalid allocator<cv T> partial specializations.
   // allocator_traits::rebind_alloc can be used to form a valid allocator type.

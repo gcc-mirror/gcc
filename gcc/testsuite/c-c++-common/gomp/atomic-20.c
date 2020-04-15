@@ -10,10 +10,16 @@ int i, j, k, l, m, n;
 void
 foo ()
 {
-  int v;
   #pragma omp atomic release
   i = i + 1;
-  #pragma omp requires atomic_default_mem_order (seq_cst)
+}
+
+#pragma omp requires atomic_default_mem_order (seq_cst)
+
+void
+bar ()
+{
+  int v;
   #pragma omp atomic
   j = j + 1;
   #pragma omp atomic update

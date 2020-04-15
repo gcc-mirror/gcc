@@ -122,10 +122,11 @@ namespace pmr
   operator==(const memory_resource& __a, const memory_resource& __b) noexcept
   { return &__a == &__b || __a.is_equal(__b); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   inline bool
   operator!=(const memory_resource& __a, const memory_resource& __b) noexcept
   { return !(__a == __b); }
-
+#endif
 
   // C++17 23.12.3 Class template polymorphic_allocator
   template<typename _Tp>
@@ -362,12 +363,13 @@ namespace pmr
 	       const polymorphic_allocator<_Tp2>& __b) noexcept
     { return *__a.resource() == *__b.resource(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp1, typename _Tp2>
     inline bool
     operator!=(const polymorphic_allocator<_Tp1>& __a,
 	       const polymorphic_allocator<_Tp2>& __b) noexcept
     { return !(__a == __b); }
-
+#endif
 
   /// Parameters for tuning a pool resource's behaviour.
   struct pool_options

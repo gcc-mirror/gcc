@@ -198,10 +198,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const __pool_alloc<_Tp>&, const __pool_alloc<_Tp>&)
     { return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp>
     inline bool
     operator!=(const __pool_alloc<_Tp>&, const __pool_alloc<_Tp>&)
     { return false; }
+#endif
 
   template<typename _Tp>
     _Atomic_word

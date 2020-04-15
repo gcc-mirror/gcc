@@ -1,3 +1,42 @@
+2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94603
+	* config/i386/i386-builtin.def (__builtin_ia32_movq128):
+	Require OPTION_MASK_ISA_SSE2.
+
+2020-04-15  Gustavo Romero  <gromero@linux.ibm.com>
+
+	PR bootstrap/89494
+	* dumpfile.c (selftest::temp_dump_context::temp_dump_context):
+	Don't construct a dump_context temporary to call static method.
+
+2020-04-15  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(valid_src_p): Check for aarch64_address_info type before
+	accessing base field.
+
+2020-04-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (mve_vec_duplicate<mode>): New pattern.
+	(V_sz_elem2): Remove unused mode attribute.
+
+2020-04-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm.md (arm_movdi): Disallow for MVE.
+
+2020-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94539
+	* tree-ssa-alias.c (same_type_for_tbaa): Defer to
+	alias_sets_conflict_p for pointers.
+
+2020-04-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/94584
+	* config/xtensa/xtensa.md (zero_extendhisi2, zero_extendqisi2)
+	(extendhisi2_internal): Add %v1 before the load instructions.
+
 2020-04-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/94542
