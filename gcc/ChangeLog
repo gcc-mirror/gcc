@@ -1,3 +1,14 @@
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/33315
+	* tree-ssa-sink.c: Include tree-eh.h.
+	(sink_stats): Add commoned member.
+	(sink_common_stores_to_bb): New function implementing store
+	commoning by sinking to the successor.
+	(sink_code_in_bb): Call it, pass down TODO_cleanup_cfg returned.
+	(pass_sink_code::execute): Likewise.  Record commoned stores
+	in statistics.
+
 2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR rtl-optimization/37451, part of PR target/61837

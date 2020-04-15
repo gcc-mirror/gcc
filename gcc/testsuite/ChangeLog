@@ -1,3 +1,10 @@
+2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/33315
+	* gcc.dg/tree-ssa/ssa-sink-13.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-sink-14.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-7.c: Disable sinking.
+
 2020-05-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR rtl-optimization/37451, part of PR target/61837
