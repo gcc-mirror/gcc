@@ -1,7 +1,6 @@
 // PR c++/67159
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
-// { dg-additional-options "-fconcepts-diagnostics-depth=2" }
+// { dg-options "-fconcepts -fconcepts-diagnostics-depth=2" }
 
 template <class T, class U>
 concept bool SameAs = __is_same_as(T, U);

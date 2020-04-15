@@ -3,8 +3,7 @@
 // to the addressable vars list, because this may cause false aliasing
 // with the subvars leading to the subvars not being renamed when they should
 // { dg-do compile }
-// { dg-options "-O2" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-O2 -Wno-return-type" }
 __extension__ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 __extension__ typedef __SIZE_TYPE__ size_t;
 namespace std
