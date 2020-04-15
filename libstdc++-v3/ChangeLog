@@ -1,3 +1,8 @@
+2020-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/typeindex (operator<=>): Define for C++20.
+	* testsuite/20_util/typeindex/comparison_operators_c++20.cc: New test.
+
 2020-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare (compare_three_way): Fix constraint so that
