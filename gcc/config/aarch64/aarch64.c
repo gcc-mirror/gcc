@@ -14454,27 +14454,6 @@ aarch64_emit_bic (machine_mode mode, rtx dst, rtx s1, rtx s2, int shift)
   emit_insn (gen (dst, s2, shift_rtx, s1));
 }
 
-/* Emit an atomic swap.  */
-
-static void
-aarch64_emit_atomic_swap (machine_mode mode, rtx dst, rtx value,
-			  rtx mem, rtx model)
-{
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-
-  switch (mode)
-    {
-    case E_QImode: gen = gen_aarch64_atomic_swpqi; break;
-    case E_HImode: gen = gen_aarch64_atomic_swphi; break;
-    case E_SImode: gen = gen_aarch64_atomic_swpsi; break;
-    case E_DImode: gen = gen_aarch64_atomic_swpdi; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (dst, mem, value, model));
-}
-
 /* Operations supported by aarch64_emit_atomic_load_op.  */
 
 enum aarch64_atomic_load_op_code
@@ -14587,10 +14566,6 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
      a SET then emit a swap instruction and finish.  */
   switch (code)
     {
-    case SET:
-      aarch64_emit_atomic_swap (mode, out_data, src, mem, model_rtx);
-      return;
-
     case MINUS:
       /* Negate the value and treat it as a PLUS.  */
       {

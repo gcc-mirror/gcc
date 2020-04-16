@@ -3,6 +3,20 @@
 	Backport from mainline.
 	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_emit_atomic_swap): Remove.
+	(aarch64_gen_atomic_ldop): Don't call it.
+	* config/aarch64/atomics.md (atomic_exchange<ALLI>):
+	Use aarch64_reg_or_zero.
+	(aarch64_atomic_exchange<ALLI>): Likewise.
+	(aarch64_atomic_exchange<ALLI>_lse): Remove split; remove & from
+	operand 0; use aarch64_reg_or_zero for input; merge ...
+	(aarch64_atomic_swp<ALLI>): ... this and remove.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): New.
 	(aarch64_split_compare_and_swap): Use it.
 	(aarch64_expand_compare_and_swap): Likewise.  Remove convert_modes;

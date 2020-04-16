@@ -136,7 +136,7 @@
 (define_expand "atomic_exchange<mode>"
  [(match_operand:ALLI 0 "register_operand" "")
   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
-  (match_operand:ALLI 2 "register_operand" "")
+  (match_operand:ALLI 2 "aarch64_reg_or_zero" "")
   (match_operand:SI 3 "const_int_operand" "")]
   ""
   {
@@ -156,10 +156,10 @@
 
 (define_insn_and_split "aarch64_atomic_exchange<mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=&r")		;; output
-    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
+    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))	;; memory
    (set (match_dup 1)
     (unspec_volatile:ALLI
-      [(match_operand:ALLI 2 "register_operand" "r")	;; input
+      [(match_operand:ALLI 2 "aarch64_reg_or_zero" "rZ")	;; input
        (match_operand:SI 3 "const_int_operand" "")]		;; model
       UNSPECV_ATOMIC_EXCHG))
    (clobber (reg:CC CC_REGNUM))
@@ -175,22 +175,25 @@
   }
 )
 
-(define_insn_and_split "aarch64_atomic_exchange<mode>_lse"
-  [(set (match_operand:ALLI 0 "register_operand" "=&r")
+(define_insn "aarch64_atomic_exchange<mode>_lse"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
     (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
    (set (match_dup 1)
     (unspec_volatile:ALLI
-      [(match_operand:ALLI 2 "register_operand" "r")
+      [(match_operand:ALLI 2 "aarch64_reg_or_zero" "rZ")
        (match_operand:SI 3 "const_int_operand" "")]
       UNSPECV_ATOMIC_EXCHG))]
   "TARGET_LSE"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
   {
-    aarch64_gen_atomic_ldop (SET, operands[0], NULL, operands[1],
-			     operands[2], operands[3]);
-    DONE;
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model))
+      return "swp<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else if (is_mm_acquire (model) || is_mm_consume (model))
+      return "swpa<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else if (is_mm_release (model))
+      return "swpl<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else
+      return "swpal<atomic_sfx>\t%<w>2, %<w>0, %1";
   }
 )
 
@@ -581,28 +584,6 @@
 )
 
 ;; ARMv8.1-A LSE instructions.
-
-;; Atomic swap with memory.
-(define_insn "aarch64_atomic_swp<mode>"
- [(set (match_operand:ALLI 0 "register_operand" "+&r")
-   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
-  (set (match_dup 1)
-   (unspec_volatile:ALLI
-    [(match_operand:ALLI 2 "register_operand" "r")
-     (match_operand:SI 3 "const_int_operand" "")]
-    UNSPECV_ATOMIC_SWP))]
-  "TARGET_LSE && reload_completed"
-  {
-    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
-    if (is_mm_relaxed (model))
-      return "swp<atomic_sfx>\t%<w>2, %<w>0, %1";
-    else if (is_mm_acquire (model) || is_mm_consume (model))
-      return "swpa<atomic_sfx>\t%<w>2, %<w>0, %1";
-    else if (is_mm_release (model))
-      return "swpl<atomic_sfx>\t%<w>2, %<w>0, %1";
-    else
-      return "swpal<atomic_sfx>\t%<w>2, %<w>0, %1";
-  })
 
 ;; Atomic load-op: Load data, operate, store result, keep data.
 
