@@ -4204,7 +4204,7 @@ package body Sem_Ch3 is
          Analyze (E);
 
          --  In case of errors detected in the analysis of the expression,
-         --  decorate it with the expected type to avoid cascaded errors
+         --  decorate it with the expected type to avoid cascaded errors.
 
          if No (Etype (E)) then
             Set_Etype (E, T);

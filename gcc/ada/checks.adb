@@ -6814,9 +6814,9 @@ package body Checks is
 
       else
          declare
-            A_Idx   : Node_Id := Empty;
+            A_Idx   : Node_Id;
             A_Range : Node_Id;
-            Ind     : Nat;
+            Ind     : Pos;
             Num     : List_Id;
             Range_N : Node_Id;
 
@@ -6839,9 +6839,7 @@ package body Checks is
                   if Nkind (A_Idx) = N_Range then
                      A_Range := A_Idx;
 
-                  elsif Nkind (A_Idx) = N_Identifier
-                    or else Nkind (A_Idx) = N_Expanded_Name
-                  then
+                  elsif Nkind_In (A_Idx, N_Identifier, N_Expanded_Name) then
                      A_Range := Scalar_Range (Entity (A_Idx));
 
                   else pragma Assert (Nkind (A_Idx) = N_Subtype_Indication);
