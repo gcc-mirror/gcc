@@ -1,3 +1,9 @@
+2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* lib/target-supports.exp (available_vector_sizes): Add amdgcn.
+	(check_effective_target_vect_cmdline_needed): Disable for amdgcn.
+	(check_effective_target_vect_pack_trunc): Add amdgcn.
+
 2020-04-24 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR c++/94288

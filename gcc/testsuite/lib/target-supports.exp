@@ -3261,7 +3261,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 		     || [check_effective_target_powerpc_altivec]))
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_vis])
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon])
-	     || [istarget aarch64*-*-*] } {
+	     || [istarget aarch64*-*-*]
+             || [istarget amdgcn*-*-*]} {
 	    return 0
 	} else {
 	    return 1
@@ -6806,7 +6807,8 @@ proc check_effective_target_vect_pack_trunc { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+             || [istarget amdgcn*-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7231,6 +7233,8 @@ proc available_vector_sizes { } {
 	}
     } elseif { [istarget sparc*-*-*] } {
 	lappend result 64
+    } elseif { [istarget amdgcn*-*-*] } {
+	lappend result 4096
     } else {
 	# The traditional default asumption.
 	lappend result 128
