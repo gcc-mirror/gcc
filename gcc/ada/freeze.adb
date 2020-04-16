@@ -8700,9 +8700,59 @@ package body Freeze is
    -----------------------
 
    procedure Freeze_Subprogram (E : Entity_Id) is
+      function Check_Extra_Formals (E : Entity_Id) return Boolean;
+      --  Return True if the decoration of the attributes associated with extra
+      --  formals are properly set.
+
       procedure Set_Profile_Convention (Subp_Id : Entity_Id);
       --  Set the conventions of all anonymous access-to-subprogram formals and
       --  result subtype of subprogram Subp_Id to the convention of Subp_Id.
+
+      -------------------------
+      -- Check_Extra_Formals --
+      -------------------------
+
+      function Check_Extra_Formals (E : Entity_Id) return Boolean is
+         Last_Formal       : Entity_Id := Empty;
+         Formal            : Entity_Id;
+         Has_Extra_Formals : Boolean := False;
+
+      begin
+         --  Check attribute Extra_Formal: if available it must be set only
+         --  in the last formal of E
+
+         Formal := First_Formal (E);
+         while Present (Formal) loop
+            if Present (Extra_Formal (Formal)) then
+               if Has_Extra_Formals then
+                  return False;
+               end if;
+
+               Has_Extra_Formals := True;
+            end if;
+
+            Last_Formal := Formal;
+            Next_Formal (Formal);
+         end loop;
+
+         --  Check attribute Extra_Formals: if E has extra formals then this
+         --  attribute must must point to the first extra formal of E.
+
+         if Has_Extra_Formals then
+            return Present (Extra_Formals (E))
+              and then Present (Extra_Formal (Last_Formal))
+              and then Extra_Formal (Last_Formal) = Extra_Formals (E);
+
+         --  When E has no formals the first extra formal is available through
+         --  the Extra_Formals attribute.
+
+         elsif Present (Extra_Formals (E)) then
+            return No (First_Formal (E));
+
+         else
+            return True;
+         end if;
+      end Check_Extra_Formals;
 
       ----------------------------
       -- Set_Profile_Convention --
@@ -8840,9 +8890,27 @@ package body Freeze is
 
       if not Has_Foreign_Convention (E) then
          if No (Extra_Formals (E)) then
-            Create_Extra_Formals (E);
+
+            --  Extra formals are shared by derived subprograms; therefore if
+            --  the ultimate alias of E has been frozen before E then the extra
+            --  formals have been added but the attribute Extra_Formals is
+            --  still unset (and must be set now).
+
+            if Present (Alias (E))
+              and then Present (Extra_Formals (Ultimate_Alias (E)))
+              and then Last_Formal (Ultimate_Alias (E)) = Last_Formal (E)
+            then
+               pragma Assert (Is_Frozen (Ultimate_Alias (E)));
+               pragma Assert (No (First_Formal (Ultimate_Alias (E)))
+                 or else
+                   Present (Extra_Formal (Last_Formal (Ultimate_Alias (E)))));
+               Set_Extra_Formals (E, Extra_Formals (Ultimate_Alias (E)));
+            else
+               Create_Extra_Formals (E);
+            end if;
          end if;
 
+         pragma Assert (Check_Extra_Formals (E));
          Set_Mechanisms (E);
 
          --  If this is convention Ada and a Valued_Procedure, that's odd
