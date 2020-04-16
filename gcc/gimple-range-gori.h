@@ -169,6 +169,15 @@ protected:
   virtual bool compute_logical_operands (irange &r, gimple *stmt,
 					 const irange &lhs,
 					 tree name, const irange *name_range);
+  bool logical_combine (irange &r, enum tree_code code,
+			const irange &lhs,
+			const irange &op1_true,
+			const irange &op1_false,
+			const irange &op2_true,
+			const irange &op2_false);
+  int_range<1> m_bool_zero;           // Boolean false cached.
+  int_range<1> m_bool_one;            // Boolean true cached.
+
   gori_map m_gori_map;
 private:
   void get_tree_range (irange &, tree expr, tree name,
@@ -189,15 +198,7 @@ private:
 				(irange &r, gimple *stmt,
 				 const irange &lhs,
 				 tree name, const irange *name_range);
-  bool logical_combine (irange &r, enum tree_code code,
-			const irange &lhs,
-			const irange &op1_true,
-			const irange &op1_false,
-			const irange &op2_true,
-			const irange &op2_false);
   bool logical_operation_is_linear (const gimple *, const irange &);
-  int_range<1> m_bool_zero;           /* Boolean zero cached.  */
-  int_range<1> m_bool_one;            /* Boolean true cached.  */
   static const unsigned m_default_depth_limit = 6;
   // Max depth of logical recursion.
   unsigned m_depth_limit;
@@ -205,7 +206,27 @@ private:
   unsigned m_depth;
 };
 
-class trace_gori_compute : public gori_compute
+class gori_compute_cache : public gori_compute
+{
+public:
+  gori_compute_cache ();
+  ~gori_compute_cache ();
+protected:
+  virtual bool compute_operand_range (irange &r, gimple *stmt,
+				      const irange &lhs,
+				      tree name,
+				      const irange *name_range = NULL);
+private:
+  void cache_comparison (gimple *);
+  void cache_comparison_with_int (gimple *, enum tree_code,
+				  tree op1, tree op2);
+  void cache_comparison_with_ssa (gimple *, enum tree_code,
+				  tree op1, tree op2);
+  typedef gori_compute super;
+  class logical_stmt_cache *m_cache;
+};
+
+class trace_gori_compute : public gori_compute_cache
 {
 public:
   trace_gori_compute ();
@@ -222,7 +243,7 @@ protected:
 					 const irange &lhs,
 					 tree name, const irange *name_range);
 private:
-  typedef gori_compute super; 	// Inherited from class for easy changing.
+  typedef gori_compute_cache super;
 protected:
   static const unsigned bump = 2;
   unsigned indent;

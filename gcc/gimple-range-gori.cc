@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define DEBUG_CACHE (1 && getenv("DEBUG_CACHE"))
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1331,4 +1333,318 @@ trace_gori_compute::compute_logical_operands (irange &r, gimple *stmt,
     }
   bool res = super::compute_logical_operands (r, stmt, lhs, name, name_range);
   return trailer (idx, "compute_logical_operands", res, name, r);
+}
+
+class logical_stmt_cache
+{
+public:
+  logical_stmt_cache ();
+  ~logical_stmt_cache ();
+  void set_range (gimple *stmt, tree carrier, tree name,
+		  const irange &true_range, const irange &false_range);
+  bool get_range (irange &, gimple *stmt, const irange &lhs,
+		  tree name, const irange *name_range) const;
+  bool get_true_range (irange &, tree carrier, tree name) const;
+  bool get_false_range (irange &, tree carrier, tree name) const;
+  bool cacheable_p (const gimple *, const irange *lhs_range = NULL) const;
+  tree cached_name (tree carrier) const;
+  void dump (FILE *, gimple *stmt) const;
+private:
+  struct cache_entry
+  {
+    tree name;
+    widest_irange true_range;
+    widest_irange false_range;
+    void dump (FILE *out) const;
+  };
+  vec<cache_entry *> m_ssa_cache;
+};
+
+logical_stmt_cache::logical_stmt_cache ()
+{
+  m_ssa_cache.create (num_ssa_names);
+  m_ssa_cache.safe_grow_cleared (num_ssa_names);
+}
+
+logical_stmt_cache::~logical_stmt_cache ()
+{
+  for (unsigned i = 0; i < m_ssa_cache.length (); ++i)
+    if (m_ssa_cache[i])
+      delete m_ssa_cache[i];
+  m_ssa_cache.release ();
+}
+
+void
+logical_stmt_cache::cache_entry::dump (FILE *out) const
+{
+  fprintf (out, "name=");
+  print_generic_expr (out, name, TDF_SLIM);
+  fprintf (out, " ");
+  true_range.dump (out);
+  fprintf (out, ", ");
+  false_range.dump (out);
+  fprintf (out, "\n");
+}
+
+void
+logical_stmt_cache::set_range (gimple *stmt, tree carrier, tree name,
+			       const irange &true_range,
+			       const irange &false_range)
+{
+  unsigned version = SSA_NAME_VERSION (carrier);
+
+  // If pass added SSA values after gori started, give up.
+  if (version >= m_ssa_cache.length ())
+    return;
+
+  cache_entry *slot = m_ssa_cache[version];
+  if (slot)
+    {
+      if (DEBUG_CACHE)
+	fprintf (dump_file ? dump_file : stderr,
+		 "reusing range for SSA #%d\n", version);
+
+      // ?? The IL must have changed.  Update the carried SSA name for
+      // consistency.  Perhaps we should update the other entries in
+      // the cache that have this same slot->name.
+      //
+      // This happens in DOM and the testcase is
+      // libgomp.fortran/doacross1.f90).
+      if (slot->name != name)
+	slot->name = name;
+
+      if (CHECKING_P && (slot->true_range != true_range
+			 || slot->false_range != false_range))
+	{
+	  fprintf (stderr, "FATAL: range altered for cached: ");
+	  dump (stderr, stmt);
+	  fprintf (stderr, "Attempt to change to:\n");
+	  fprintf (stderr, "TRUE=");
+	  true_range.dump (stderr);
+	  fprintf (stderr, ", FALSE=");
+	  false_range.dump (stderr);
+	  fprintf (stderr, "\n");
+	  gcc_unreachable ();
+	}
+      return;
+    }
+  slot = m_ssa_cache[version] = new cache_entry;
+  slot->name = name;
+  slot->true_range = true_range;
+  slot->false_range = false_range;
+  if (DEBUG_CACHE)
+    {
+      fprintf (dump_file ? dump_file : stderr, "registering range for: ");
+      dump (dump_file ? dump_file : stderr, stmt);
+    }
+}
+
+bool
+logical_stmt_cache::get_range (irange &r, gimple *stmt,
+			       const irange &lhs, tree name,
+			       const irange *name_range) const
+{
+  gcc_checking_assert (cacheable_p (stmt));
+
+  tree carrier = gimple_assign_lhs (stmt);
+  if (cached_name (carrier) == name)
+    {
+      if (lhs.zero_p ())
+	get_false_range (r, carrier, name);
+      else
+	get_true_range (r, carrier, name);
+      if (name_range)
+	r.intersect (*name_range);
+      return true;
+    }
+  return false;
+}
+
+bool
+logical_stmt_cache::get_true_range (irange &r, tree carrier, tree name) const
+{
+  gcc_checking_assert (name == cached_name (carrier));
+  unsigned version = SSA_NAME_VERSION (carrier);
+  if (m_ssa_cache[version])
+    {
+      r = m_ssa_cache[version]->true_range;
+      return true;
+    }
+  return false;
+}
+
+bool
+logical_stmt_cache::get_false_range (irange &r, tree carrier, tree name) const
+{
+  gcc_checking_assert (name == cached_name (carrier));
+  unsigned version = SSA_NAME_VERSION (carrier);
+  if (m_ssa_cache[version])
+    {
+      r = m_ssa_cache[version]->false_range;
+      return true;
+    }
+  return false;
+}
+
+tree
+logical_stmt_cache::cached_name (tree carrier) const
+{
+  unsigned version = SSA_NAME_VERSION (carrier);
+
+  // ?? Someone created an SSA after gori started.
+  // Perhaps we should start the cache size at 2 * num_ssa_names ??
+  if (version >= m_ssa_cache.length ())
+    return NULL;
+
+  if (m_ssa_cache[version])
+    return m_ssa_cache[version]->name;
+  return NULL;
+}
+
+bool
+logical_stmt_cache::cacheable_p (const gimple *stmt,
+				 const irange *lhs_range) const
+{
+  if (gimple_code (stmt) == GIMPLE_ASSIGN
+      && types_compatible_p (TREE_TYPE (gimple_assign_lhs (stmt)),
+			     boolean_type_node)
+      && TREE_CODE (gimple_range_operand1 (stmt)) == SSA_NAME)
+    {
+      switch (gimple_expr_code (stmt))
+	{
+	case LT_EXPR:
+	case LE_EXPR:
+	case GT_EXPR:
+	case GE_EXPR:
+	case EQ_EXPR:
+	case NE_EXPR:
+	case TRUTH_AND_EXPR:
+	case BIT_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	case BIT_IOR_EXPR:
+	  return !lhs_range || range_is_either_true_or_false (*lhs_range);
+	default:
+	  return false;
+	}
+    }
+  return false;
+}
+
+void
+logical_stmt_cache::dump (FILE *out, gimple *stmt) const
+{
+  tree carrier = gimple_assign_lhs (stmt);
+  cache_entry *entry = m_ssa_cache[SSA_NAME_VERSION (carrier)];
+
+  print_gimple_stmt (out, stmt, 0, TDF_SLIM);
+  if (entry)
+    {
+      fprintf (out, "\tname = ");
+      print_generic_expr (out, entry->name);
+      fprintf (out, " carrier(%d)= ", SSA_NAME_VERSION (carrier));
+      print_generic_expr (out, carrier);
+      fprintf (out, "\n\tTRUE=");
+      entry->true_range.dump (out);
+      fprintf (out, ", FALSE=");
+      entry->false_range.dump (out);
+      fprintf (out, "\n");
+    }
+  else
+    fprintf (out, "[EMPTY]\n");
+}
+
+gori_compute_cache::gori_compute_cache ()
+{
+  m_cache = new logical_stmt_cache;
+}
+
+gori_compute_cache::~gori_compute_cache ()
+{
+  delete m_cache;
+}
+
+bool
+gori_compute_cache::compute_operand_range (irange &r, gimple *stmt,
+					   const irange &lhs,
+					   tree name,
+					   const irange *name_range)
+{
+  if (!gimple_range_handler (stmt))
+    return false;
+
+  if (lhs.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
+
+  bool cacheable = m_cache->cacheable_p (stmt, &lhs);
+  if (cacheable && m_cache->get_range (r, stmt, lhs, name, name_range))
+    return true;
+
+  bool res = super::compute_operand_range (r, stmt, lhs, name, name_range);
+  if (cacheable)
+    cache_comparison (stmt);
+  return res;
+}
+
+void
+gori_compute_cache::cache_comparison (gimple *stmt)
+{
+  gcc_checking_assert (m_cache->cacheable_p (stmt));
+
+  enum tree_code code = gimple_expr_code (stmt);
+  tree op1 = gimple_range_operand1 (stmt);
+  tree op2 = gimple_range_operand2 (stmt);
+  widest_irange r_true_side, r_false_side;
+
+  if (TREE_CODE (op2) == INTEGER_CST)
+    cache_comparison_with_int (stmt, code, op1, op2);
+  else
+    {
+      tree cached_name = m_cache->cached_name (op1);
+      if (cached_name && cached_name == m_cache->cached_name (op2))
+	cache_comparison_with_ssa (stmt, code, op1, op2);
+    }
+}
+
+void
+gori_compute_cache::cache_comparison_with_int (gimple *stmt,
+					       enum tree_code code,
+					       tree op1, tree op2)
+{
+  widest_irange r_true_side, r_false_side;
+  tree lhs = gimple_assign_lhs (stmt);
+  range_operator *handler = range_op_handler (code, TREE_TYPE (lhs));
+  widest_irange op2_range;
+  gcc_assert (range_of_expr (op2_range, op2));
+  tree type = TREE_TYPE (op1);
+  handler->op1_range (r_true_side, type, m_bool_one, op2_range);
+  handler->op1_range (r_false_side, type, m_bool_zero, op2_range);
+  m_cache->set_range (stmt, lhs, op1, r_true_side, r_false_side);
+}
+
+void
+gori_compute_cache::cache_comparison_with_ssa (gimple *stmt,
+					       enum tree_code code,
+					       tree op1, tree op2)
+{
+  tree cached_name = m_cache->cached_name (op1);
+  widest_irange r_true_side, r_false_side;
+  widest_irange op1_true, op1_false, op2_true, op2_false;
+  gcc_assert (m_cache->get_true_range (op1_true, op1, cached_name));
+  gcc_assert (m_cache->get_false_range (op1_false, op1, cached_name));
+  gcc_assert (m_cache->get_true_range (op2_true, op2, cached_name));
+  gcc_assert (m_cache->get_false_range (op2_false, op2, cached_name));
+  gcc_checking_assert (logical_combine (r_true_side, code, m_bool_one,
+					op1_true, op1_false,
+					op2_true, op2_false));
+  gcc_checking_assert (logical_combine (r_false_side, code, m_bool_zero,
+					op1_true, op1_false,
+					op2_true, op2_false));
+  if (!r_true_side.varying_p () && !r_false_side.varying_p ())
+    {
+      tree lhs = gimple_assign_lhs (stmt);
+      m_cache->set_range (stmt, lhs, cached_name, r_true_side, r_false_side);
+    }
 }

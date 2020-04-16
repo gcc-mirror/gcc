@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_CFG_H
 #define GCC_GIMPLE_RANGE_CFG_H
 
-class gimple_ranger : public gori_compute
+class gimple_ranger : public gori_compute_cache
 {
 public:
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);

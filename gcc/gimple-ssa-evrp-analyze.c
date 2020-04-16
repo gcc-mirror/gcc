@@ -216,7 +216,7 @@ bool
 vr_gori_interface::outgoing_edge_range_p (irange &r, edge e, tree name,
 				const irange *known_range ATTRIBUTE_UNUSED)
 {
-  if (!gori_compute::outgoing_edge_range_p (r, e, name))
+  if (!gori_compute_cache::outgoing_edge_range_p (r, e, name))
     r.set_varying (TREE_TYPE (name));
   if (!r.singleton_p ())
     refine_range_with_equivalences (r, e, name);
