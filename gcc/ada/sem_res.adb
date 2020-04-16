@@ -13336,7 +13336,7 @@ package body Sem_Res is
                                        N_Procedure_Specification)
                   then
                      Conversion_Error_N
-                       ("implicit conversion of anonymous access formal "
+                       ("implicit conversion of anonymous access parameter "
                         & "not allowed", Operand);
                      return False;
 
