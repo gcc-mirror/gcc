@@ -1,5 +1,14 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	Backport from mainline
+	2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/92692
+	* config/aarch64/atomics.md (aarch64_compare_and_swap<mode>)
+	Use epilogue_completed rather than reload_completed.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	Backport from mainline.
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
