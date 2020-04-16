@@ -3,6 +3,24 @@
 	Backport from mainline.
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg): Add support
+	for NE comparison of TImode values.
+	(aarch64_emit_load_exclusive): Add support for TImode.
+	(aarch64_emit_store_exclusive): Likewise.
+	(aarch64_split_compare_and_swap): Disable strong_zero_p for TImode.
+	* config/aarch64/atomics.md (atomic_compare_and_swapti):
+	Change iterator from ALLI to ALLI_TI.
+	(atomic_compare_and_swapti): New.
+	(atomic_compare_and_swapti: New.
+	(aarch64_load_exclusive_pair): New.
+	(aarch64_store_exclusive_pair): New.
+	* config/aarch64/iterators.md (ALLI_TI): New iterator.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_print_operand): Allow integer
 	registers with %R.
 

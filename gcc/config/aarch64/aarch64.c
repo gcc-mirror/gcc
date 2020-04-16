@@ -1517,10 +1517,33 @@ emit_set_insn (rtx x, rtx y)
 rtx
 aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 {
-  machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+  machine_mode cmp_mode = GET_MODE (x);
+  machine_mode cc_mode;
+  rtx cc_reg;
 
-  emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+  if (cmp_mode == TImode)
+    {
+      gcc_assert (code == NE);
+
+      cc_mode = CCmode;
+      cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+
+      rtx x_lo = operand_subword (x, 0, 0, TImode);
+      rtx y_lo = operand_subword (y, 0, 0, TImode);
+      emit_set_insn (cc_reg, gen_rtx_COMPARE (cc_mode, x_lo, y_lo));
+
+      rtx x_hi = operand_subword (x, 1, 0, TImode);
+      rtx y_hi = operand_subword (y, 1, 0, TImode);
+      emit_insn (gen_ccmpdi (cc_reg, cc_reg, x_hi, y_hi,
+			     gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
+			     GEN_INT (AARCH64_EQ)));
+    }
+  else
+    {
+      cc_mode = SELECT_CC_MODE (code, x, y);
+      cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+      emit_set_insn (cc_reg, gen_rtx_COMPARE (cc_mode, x, y));
+    }
   return cc_reg;
 }
 
@@ -14145,40 +14168,54 @@ static void
 aarch64_emit_load_exclusive (machine_mode mode, rtx rval,
 			     rtx mem, rtx model_rtx)
 {
-  rtx (*gen) (rtx, rtx, rtx);
-
-  switch (mode)
+  if (mode == TImode)
+    emit_insn (gen_aarch64_load_exclusive_pair (gen_lowpart (DImode, rval),
+						gen_highpart (DImode, rval),
+						mem, model_rtx));
+  else
     {
-    case E_QImode: gen = gen_aarch64_load_exclusiveqi; break;
-    case E_HImode: gen = gen_aarch64_load_exclusivehi; break;
-    case E_SImode: gen = gen_aarch64_load_exclusivesi; break;
-    case E_DImode: gen = gen_aarch64_load_exclusivedi; break;
-    default:
-      gcc_unreachable ();
-    }
+      rtx (*gen) (rtx, rtx, rtx);
 
-  emit_insn (gen (rval, mem, model_rtx));
+      switch (mode)
+	{
+	case E_QImode: gen = gen_aarch64_load_exclusiveqi; break;
+	case E_HImode: gen = gen_aarch64_load_exclusivehi; break;
+	case E_SImode: gen = gen_aarch64_load_exclusivesi; break;
+	case E_DImode: gen = gen_aarch64_load_exclusivedi; break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      emit_insn (gen (rval, mem, model_rtx));
+    }
 }
 
 /* Emit store exclusive.  */
 
 static void
 aarch64_emit_store_exclusive (machine_mode mode, rtx bval,
-			      rtx rval, rtx mem, rtx model_rtx)
+			      rtx mem, rtx rval, rtx model_rtx)
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-
-  switch (mode)
+  if (mode == TImode)
+    emit_insn (gen_aarch64_store_exclusive_pair
+	       (bval, mem, operand_subword (rval, 0, 0, TImode),
+		operand_subword (rval, 1, 0, TImode), model_rtx));
+  else
     {
-    case E_QImode: gen = gen_aarch64_store_exclusiveqi; break;
-    case E_HImode: gen = gen_aarch64_store_exclusivehi; break;
-    case E_SImode: gen = gen_aarch64_store_exclusivesi; break;
-    case E_DImode: gen = gen_aarch64_store_exclusivedi; break;
-    default:
-      gcc_unreachable ();
-    }
+      rtx (*gen) (rtx, rtx, rtx, rtx);
 
-  emit_insn (gen (bval, rval, mem, model_rtx));
+      switch (mode)
+	{
+	case E_QImode: gen = gen_aarch64_store_exclusiveqi; break;
+	case E_HImode: gen = gen_aarch64_store_exclusivehi; break;
+	case E_SImode: gen = gen_aarch64_store_exclusivesi; break;
+	case E_DImode: gen = gen_aarch64_store_exclusivedi; break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      emit_insn (gen (bval, mem, rval, model_rtx));
+    }
 }
 
 /* Mark the previous jump instruction as unlikely.  */
@@ -14197,16 +14234,6 @@ aarch64_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x, cc_reg;
   machine_mode mode, r_mode;
-  typedef rtx (*gen_atomic_cas_fn) (rtx, rtx, rtx, rtx);
-  int idx;
-  gen_atomic_cas_fn atomic_gen;
-  const gen_atomic_cas_fn atomic_cas[] =
-  {
-    gen_aarch64_compare_and_swapqi_lse,
-    gen_aarch64_compare_and_swaphi_lse,
-    gen_aarch64_compare_and_swapsi_lse,
-    gen_aarch64_compare_and_swapdi_lse
-  };
 
   bval = operands[0];
   rval = operands[1];
@@ -14232,18 +14259,29 @@ aarch64_expand_compare_and_swap (rtx operands[])
       rval = gen_reg_rtx (r_mode);
     }
 
-  switch (mode)
-    {
-    case E_QImode: idx = 0; break;
-    case E_HImode: idx = 1; break;
-    case E_SImode: idx = 2; break;
-    case E_DImode: idx = 3; break;
-    default:
-      gcc_unreachable ();
-    }
   if (TARGET_LSE)
     {
-      atomic_gen = atomic_cas[idx];
+      insn_code code;
+      switch (mode)
+	{
+	case E_QImode:
+	 code = CODE_FOR_aarch64_compare_and_swapqi_lse;
+	 break;
+	case E_HImode:
+	 code = CODE_FOR_aarch64_compare_and_swaphi_lse;
+	 break;
+	case E_SImode:
+	 code = CODE_FOR_aarch64_compare_and_swapsi_lse;
+	 break;
+	case E_DImode:
+	 code = CODE_FOR_aarch64_compare_and_swapdi_lse;
+	 break;
+	case E_TImode:
+	 code = CODE_FOR_aarch64_compare_and_swapti_lse;
+	 break;
+	default:
+	  gcc_unreachable ();
+	}
       /* The CAS insn requires oldval and rval overlap, but we need to
 	 have a copy of oldval saved across the operation to tell if
 	 the operation is successful.  */
@@ -14252,7 +14290,7 @@ aarch64_expand_compare_and_swap (rtx operands[])
       else
 	emit_move_insn (rval, gen_lowpart (r_mode, oldval));
 
-      emit_insn (atomic_gen (rval, mem, newval, mod_s));
+      emit_insn (GEN_FCN (code) (rval, mem, newval, mod_s));
 
       cc_reg = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
     }
@@ -14273,6 +14311,9 @@ aarch64_expand_compare_and_swap (rtx operands[])
 	    break;
 	  case E_DImode:
 	    code = CODE_FOR_aarch64_compare_and_swapdi;
+	    break;
+	  case E_TImode:
+	    code = CODE_FOR_aarch64_compare_and_swapti;
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -14345,7 +14386,7 @@ aarch64_split_compare_and_swap (rtx operands[])
 	CBNZ	scratch, .label1
     .label2:
 	CMP	rval, 0.  */
-  bool strong_zero_p = !is_weak && oldval == const0_rtx;
+  bool strong_zero_p = !is_weak && oldval == const0_rtx && mode != TImode;
 
   label1 = NULL;
   if (!is_weak)
