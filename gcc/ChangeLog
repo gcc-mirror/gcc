@@ -3,6 +3,25 @@
 	Backport from mainline.
 	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_emit_bic): Remove.
+	(aarch64_atomic_ldop_supported_p): Remove.
+	(aarch64_gen_atomic_ldop): Remove.
+	* config/aarch64/atomic.md (atomic_<atomic_optab><ALLI>):
+	Fully expand LSE operations here.
+	(atomic_fetch_<atomic_optab><ALLI>): Likewise.
+	(atomic_<atomic_optab>_fetch<ALLI>): Likewise.
+	(aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse): Drop atomic_op iterator
+	and use ATOMIC_LDOP instead; use register_operand for the input;
+	drop the split and emit insns directly.
+	(aarch64_atomic_fetch_<ATOMIC_LDOP><ALLI>_lse): Likewise.
+	(aarch64_atomic_<atomic_op>_fetch<ALLI>_lse): Remove.
+	(aarch64_atomic_load<ATOMIC_LDOP><ALLI>): Remove.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_emit_atomic_swap): Remove.
 	(aarch64_gen_atomic_ldop): Don't call it.
 	* config/aarch64/atomics.md (atomic_exchange<ALLI>):
