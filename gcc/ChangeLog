@@ -1,6 +1,15 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2020-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94435
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): For
+	y_mode E_[QH]Imode and y being a CONST_INT, change y_mode to SImode.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2020-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94368
