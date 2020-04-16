@@ -1,3 +1,8 @@
+2020-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88754
+	* g++.dg/parse/ambig10.C: New test.
+
 2020-04-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94090
