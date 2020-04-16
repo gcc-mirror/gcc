@@ -3,6 +3,15 @@
 	Backport from mainline.
 	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/atomics.md (aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse):
+	scratch register need not be early-clobber.  Document the reason
+	why we cannot use ST<OP>.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_emit_bic): Remove.
 	(aarch64_atomic_ldop_supported_p): Remove.
 	(aarch64_gen_atomic_ldop): Remove.
