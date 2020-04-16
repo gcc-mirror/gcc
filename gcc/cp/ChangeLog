@@ -1,3 +1,9 @@
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94571
+	* parser.c (cp_parser_simple_declaration): Fix up a pasto in
+	diagnostics.
+
 2020-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94593
@@ -97,7 +103,7 @@
 	LOOKUP_AGGREGATE_PAREN_INIT but don't build up a constructor yet.
 
 2020-04-08  Iain Sandoe  <iain@sandoe.co.uk>
-	    Jun Ma <JunMa@linux.alibaba.com>
+	    Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (maybe_promote_captured_temps): Add a cleanup
 	expression, if needed, to any call from which we promoted
@@ -762,7 +768,7 @@
 	* coroutines.cc (captures_temporary): Strip component_ref
 	to its base object.
 
-2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (finish_co_await_expr): Build co_await_expr
 	with unknown_type_node.
@@ -991,7 +997,7 @@
 	* tree.c (cp_walk_subtrees): Walk CONSTRUCTOR types here.
 	* pt.c (find_parameter_packs_r): Not here.
 
-2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+2020-02-12 Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (build_actor_fn): Implement deallocation function
 	selection per n4849, dcl.fct.def.coroutine bullet 12.
@@ -1146,7 +1152,7 @@
 	* coroutines.cc (maybe_promote_captured_temps): Increase the index
 	number for temporary variables' name.
 
-2020-02-05  Jun Ma <JunMa@linux.alibaba.com>
+2020-02-05  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (build_co_await): Call convert_from_reference
 	to wrap co_await_expr with indirect_ref which avoid
@@ -1221,7 +1227,7 @@
 	* cp-gimplify.c (predeclare_vla): New.
 	(cp_genericize_r) [NOP_EXPR]: Call it.
 
-2020-02-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-02-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (transform_await_wrapper): Set actor funcion as
 	new context of label_decl.
