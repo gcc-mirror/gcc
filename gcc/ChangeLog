@@ -1,3 +1,12 @@
+2020-04-16  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94314
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
+	DECL_IS_REPLACEABLE_OPERATOR during cloning.
+	* tree-ssa-dce.c (valid_new_delete_pair_p): New function.
+	(propagate_necessity): Check operator names.
+
 2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/94605

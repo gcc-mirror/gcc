@@ -165,6 +165,7 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_STATIC_DESTRUCTOR (new_node->decl) = 0;
   DECL_SET_IS_OPERATOR_NEW (new_node->decl, 0);
   DECL_SET_IS_OPERATOR_DELETE (new_node->decl, 0);
+  DECL_IS_REPLACEABLE_OPERATOR (new_node->decl) = 0;
 
   new_node->externally_visible = 0;
   new_node->local = 1;
@@ -1030,6 +1031,7 @@ cgraph_node::create_version_clone_with_body
   DECL_STATIC_DESTRUCTOR (new_decl) = 0;
   DECL_SET_IS_OPERATOR_NEW (new_decl, 0);
   DECL_SET_IS_OPERATOR_DELETE (new_decl, 0);
+  DECL_IS_REPLACEABLE_OPERATOR (new_decl) = 0;
 
   /* Create the new version's call-graph node.
      and update the edges of the new node. */

@@ -1,3 +1,13 @@
+2020-04-16  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94314
+	* g++.dg/pr94314.C: Do not use dg-additional-options
+	and remove not needed stdio.h include.
+	* g++.dg/pr94314-2.C: Likewise.
+	* g++.dg/pr94314-3.C: Likewise.
+	* g++.dg/pr94314-4.C: New test.
+
 2020-04-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94475
