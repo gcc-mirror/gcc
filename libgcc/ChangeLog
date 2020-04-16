@@ -1,6 +1,15 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
+
+	PR target/91834
+	* config/aarch64/lse.S (LDNM): Ensure STXR output does not
+	overlap the inputs.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/lse-init.c: New file.
