@@ -1,3 +1,8 @@
+2020-04-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/cpp0x/lambda/pr94426-2.C: Adjust scan-asms to test
+	for the change on more platforms.
+
 2020-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/93621
