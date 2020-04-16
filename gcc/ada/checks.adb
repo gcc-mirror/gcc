@@ -6842,6 +6842,10 @@ package body Checks is
                   elsif Nkind_In (A_Idx, N_Identifier, N_Expanded_Name) then
                      A_Range := Scalar_Range (Entity (A_Idx));
 
+                     if Nkind (A_Range) = N_Subtype_Indication then
+                        A_Range := Range_Expression (Constraint (A_Range));
+                     end if;
+
                   else pragma Assert (Nkind (A_Idx) = N_Subtype_Indication);
                      A_Range := Range_Expression (Constraint (A_Idx));
                   end if;
