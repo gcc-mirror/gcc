@@ -1,3 +1,11 @@
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2018-07-16  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_store_execlusive<mode>): Add
+	early clobber.
+
 2020-04-21  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from master
@@ -39,6 +47,7 @@
 	PR target/94417
 	* config/i386/i386.c (rest_of_insert_endbranch): Insert ENDBR at
 	function entry if function will be called indirectly.
+
 
 2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
 
