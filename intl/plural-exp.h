@@ -20,6 +20,8 @@
 #ifndef _PLURAL_EXP_H
 #define _PLURAL_EXP_H
 
+#include <plural-config.h>
+
 #ifndef PARAMS
 # if __STDC__ || defined __GNUC__ || defined __SUNPRO_C || defined __cplusplus || __PROTOTYPES
 #  define PARAMS(args) args
@@ -111,7 +113,7 @@ struct parse_args
 
 extern void FREE_EXPRESSION PARAMS ((struct expression *exp))
      internal_function;
-#ifdef HAVE_BISON3
+#ifdef USE_BISON3
 extern int PLURAL_PARSE PARAMS ((struct parse_args *arg));
 #else
 extern int PLURAL_PARSE PARAMS ((void *arg));

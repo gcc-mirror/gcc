@@ -28,9 +28,6 @@
 /* Define to 1 if you have the <argz.h> header file. */
 #undef HAVE_ARGZ_H
 
-/* Define if bison 3 or later is used. */
-#undef HAVE_BISON3
-
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #undef HAVE_DCGETTEXT

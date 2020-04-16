@@ -62,7 +62,6 @@ changequote([,])dnl
   esac
   AC_MSG_RESULT([$ac_prog_version])
   if test $ac_bison3 = yes; then
-    AC_DEFINE(HAVE_BISON3, 1, [Define if bison 3 or later is used.])
     BISON3_YES=
     BISON3_NO='#'
   fi

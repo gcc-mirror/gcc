@@ -59,7 +59,7 @@
 # define __gettextparse PLURAL_PARSE
 #endif
 
-#ifndef HAVE_BISON3
+#ifndef USE_BISON3
 #define YYLEX_PARAM	&((struct parse_args *) arg)->cp
 #define YYPARSE_PARAM	arg
 #endif
@@ -89,7 +89,7 @@ static inline struct expression *new_exp_3 PARAMS ((enum operator op,
 						   struct expression *bexp,
 						   struct expression *tbranch,
 						   struct expression *fbranch));
-#ifdef HAVE_BISON3
+#ifdef USE_BISON3
 static int yylex PARAMS ((YYSTYPE *lval, struct parse_args *arg));
 static void yyerror PARAMS ((struct parse_args *arg, const char *str));
 #else
@@ -1372,7 +1372,7 @@ FREE_EXPRESSION (exp)
 }
 
 
-#ifdef HAVE_BISON3
+#ifdef USE_BISON3
 static int
 yylex (lval, arg)
      YYSTYPE *lval;
@@ -1526,7 +1526,7 @@ yylex (lval, pexp)
 }
 
 
-#ifdef HAVE_BISON3
+#ifdef USE_BISON3
 static void
 yyerror (arg, str)
      struct parse_args *arg;

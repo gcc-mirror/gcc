@@ -6808,9 +6808,6 @@ $as_echo_n "checking bison 3 or later... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_prog_version" >&5
 $as_echo "$ac_prog_version" >&6; }
   if test $ac_bison3 = yes; then
-
-$as_echo "#define HAVE_BISON3 1" >>confdefs.h
-
     BISON3_YES=
     BISON3_NO='#'
   fi
