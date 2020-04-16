@@ -1150,6 +1150,10 @@ resolve_clobber (rtx pat, rtx_insn *insn)
   int ret;
 
   reg = XEXP (pat, 0);
+  /* For clobbers we can look through paradoxical subregs which
+     we do not handle in simplify_gen_subreg_concatn.  */
+  if (paradoxical_subreg_p (reg))
+    reg = SUBREG_REG (reg);
   if (!resolve_reg_p (reg) && !resolve_subreg_p (reg))
     return false;
 

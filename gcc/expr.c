@@ -3692,6 +3692,11 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
   need_clobber = false;
   for (i = 0; i < CEIL (mode_size, UNITS_PER_WORD); i++)
     {
+      /* Do not generate code for a move if it would go entirely
+	 to the non-existing bits of a paradoxical subreg.  */
+      if (undefined_operand_subword_p (x, i))
+	continue;
+
       rtx xpart = operand_subword (x, i, 1, mode);
       rtx ypart;
 

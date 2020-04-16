@@ -1,3 +1,11 @@
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94614
+	* expr.c (emit_move_multi_word): Do not generate code when
+	the destination part is undefined_operand_subword_p.
+	* lower-subreg.c (resolve_clobber): Look through a paradoxica
+	subreg.
+
 2020-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/94598
