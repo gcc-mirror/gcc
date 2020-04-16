@@ -2414,7 +2414,15 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 {
   int unsignedp;
 
+#ifndef BROKEN_VALUE_INITIALIZATION
   *data = assign_parm_data_one ();
+#else
+  /* Old versions of GCC used to miscompile the above by only initializing
+     the members with explicit constructors and copying garbage
+     to the other members.  */
+  assign_parm_data_one zero_data = {};
+  *data = zero_data;
+#endif
 
   /* NAMED_ARG is a misnomer.  We really mean 'non-variadic'. */
   if (!cfun->stdarg)
