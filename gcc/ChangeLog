@@ -1,3 +1,9 @@
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94598
+	* tree-sra.c (verify_sra_access_forest): Fix verification of total
+	scalarization accesses under access to one-element arrays.
+
 2020-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/89494
