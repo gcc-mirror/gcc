@@ -1,3 +1,11 @@
+2020-04-16  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/94557
+	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Fix
+	regression caused by PR target/93932 backport.  Mask variable
+	vector extract index so it does not go beyond the vector when
+	extracting a vector element from memory.
+
 2020-04-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
