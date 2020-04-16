@@ -1,3 +1,15 @@
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/interchange-1.c: Remove scan for tiled.
+	* gcc.dg/graphite/interchange-10.c: Likewise.
+	* gcc.dg/graphite/interchange-11.c: Likewise.
+	* gcc.dg/graphite/interchange-3.c: Likewise.
+	* gcc.dg/graphite/interchange-4.c: Likewise.
+	* gcc.dg/graphite/interchange-7.c: Likewise.
+	* gcc.dg/graphite/interchange-9.c: Likewise.
+	* gcc.dg/graphite/uns-interchange-9.c: Likewise.
+	* gfortran.dg/graphite/interchange-3.f90: Likewise.
+
 2020-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/94598
