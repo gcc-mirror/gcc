@@ -1,3 +1,8 @@
+2020-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Remove
+	name of unused parameter.
+
 2020-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_dir.h (file_status): Define operator== for C++20.
