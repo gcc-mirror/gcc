@@ -186,16 +186,27 @@
   (match_operand:SI 3 "const_int_operand" "")]
   ""
   {
-    rtx (*gen) (rtx, rtx, rtx, rtx);
-
     /* Use an atomic SWP when available.  */
     if (TARGET_LSE)
-      gen = gen_aarch64_atomic_exchange<mode>_lse;
+      {
+	emit_insn (gen_aarch64_atomic_exchange<mode>_lse
+		   (operands[0], operands[1], operands[2], operands[3]));
+      }
+    else if (TARGET_OUTLINE_ATOMICS)
+      {
+	machine_mode mode = <MODE>mode;
+	rtx func = aarch64_atomic_ool_func (mode, operands[3],
+					    &aarch64_ool_swp_names);
+	rtx rval = emit_library_call_value (func, operands[0], LCT_NORMAL,
+					    mode, operands[2], mode,
+					    XEXP (operands[1], 0), Pmode);
+        emit_move_insn (operands[0], rval);
+      }
     else
-      gen = gen_aarch64_atomic_exchange<mode>;
-
-    emit_insn (gen (operands[0], operands[1], operands[2], operands[3]));
-
+      {
+	emit_insn (gen_aarch64_atomic_exchange<mode>
+		   (operands[0], operands[1], operands[2], operands[3]));
+      }
     DONE;
   }
 )
@@ -279,6 +290,39 @@
 	    gcc_unreachable ();
 	  }
 	operands[1] = force_reg (<MODE>mode, operands[1]);
+      }
+    else if (TARGET_OUTLINE_ATOMICS)
+      {
+        const atomic_ool_names *names;
+	switch (<CODE>)
+	  {
+	  case MINUS:
+	    operands[1] = expand_simple_unop (<MODE>mode, NEG, operands[1],
+					      NULL, 1);
+	    /* fallthru */
+	  case PLUS:
+	    names = &aarch64_ool_ldadd_names;
+	    break;
+	  case IOR:
+	    names = &aarch64_ool_ldset_names;
+	    break;
+	  case XOR:
+	    names = &aarch64_ool_ldeor_names;
+	    break;
+	  case AND:
+	    operands[1] = expand_simple_unop (<MODE>mode, NOT, operands[1],
+					      NULL, 1);
+	    names = &aarch64_ool_ldclr_names;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+        machine_mode mode = <MODE>mode;
+	rtx func = aarch64_atomic_ool_func (mode, operands[2], names);
+	emit_library_call_value (func, NULL_RTX, LCT_NORMAL, mode,
+				 operands[1], mode,
+				 XEXP (operands[0], 0), Pmode);
+        DONE;
       }
     else
       gen = gen_aarch64_atomic_<atomic_optab><mode>;
@@ -405,6 +449,40 @@
 	}
       operands[2] = force_reg (<MODE>mode, operands[2]);
     }
+  else if (TARGET_OUTLINE_ATOMICS)
+    {
+      const atomic_ool_names *names;
+      switch (<CODE>)
+	{
+	case MINUS:
+	  operands[2] = expand_simple_unop (<MODE>mode, NEG, operands[2],
+					    NULL, 1);
+	  /* fallthru */
+	case PLUS:
+	  names = &aarch64_ool_ldadd_names;
+	  break;
+	case IOR:
+	  names = &aarch64_ool_ldset_names;
+	  break;
+	case XOR:
+	  names = &aarch64_ool_ldeor_names;
+	  break;
+	case AND:
+	  operands[2] = expand_simple_unop (<MODE>mode, NOT, operands[2],
+					    NULL, 1);
+	  names = &aarch64_ool_ldclr_names;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      machine_mode mode = <MODE>mode;
+      rtx func = aarch64_atomic_ool_func (mode, operands[3], names);
+      rtx rval = emit_library_call_value (func, operands[0], LCT_NORMAL, mode,
+					  operands[2], mode,
+					  XEXP (operands[1], 0), Pmode);
+      emit_move_insn (operands[0], rval);
+      DONE;
+    }
   else
     gen = gen_aarch64_atomic_fetch_<atomic_optab><mode>;
 
@@ -494,7 +572,7 @@
 {
   /* Use an atomic load-operate instruction when possible.  In this case
      we will re-compute the result from the original mem value. */
-  if (TARGET_LSE)
+  if (TARGET_LSE || TARGET_OUTLINE_ATOMICS)
     {
       rtx tmp = gen_reg_rtx (<MODE>mode);
       operands[2] = force_reg (<MODE>mode, operands[2]);

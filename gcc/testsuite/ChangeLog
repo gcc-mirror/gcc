@@ -1,3 +1,26 @@
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
+	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* gcc.target/aarch64/atomic-op-acq_rel.c: Use -mno-outline-atomics.
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Likewise.
+	* gcc.target/aarch64/atomic-op-acquire.c: Likewise.
+	* gcc.target/aarch64/atomic-op-char.c: Likewise.
+	* gcc.target/aarch64/atomic-op-consume.c: Likewise.
+	* gcc.target/aarch64/atomic-op-imm.c: Likewise.
+	* gcc.target/aarch64/atomic-op-int.c: Likewise.
+	* gcc.target/aarch64/atomic-op-long.c: Likewise.
+	* gcc.target/aarch64/atomic-op-relaxed.c: Likewise.
+	* gcc.target/aarch64/atomic-op-release.c: Likewise.
+	* gcc.target/aarch64/atomic-op-seq_cst.c: Likewise.
+	* gcc.target/aarch64/atomic-op-short.c: Likewise.
+	* gcc.target/aarch64/atomic_cmp_exchange_zero_reg_1.c: Likewise.
+	* gcc.target/aarch64/atomic_cmp_exchange_zero_strong_1.c: Likewise.
+	* gcc.target/aarch64/sync-comp-swap.c: Likewise.
+	* gcc.target/aarch64/sync-op-acquire.c: Likewise.
+	* gcc.target/aarch64/sync-op-full.c: Likewise.
+
 2020-04-21  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from master
