@@ -3,6 +3,13 @@
 	PR rtl-optimization/94605
 	* early-remat.c (early_remat::process_block): Handle insns that
 	set multiple candidate registers.
+2020-04-16  Jan Hubicka  <hubicka@ucw.cz>
+	
+	PR gcov-profile/93401
+	* common.opt (profile-prefix-path): New option.
+	* coverae.c: Include diagnostics.h.
+	(coverage_init): Strip profile prefix path.
+	* doc/invoke.texi (-fprofile-prefix-path): Document.
 
 2020-04-16  Richard Biener  <rguenther@suse.de>
 

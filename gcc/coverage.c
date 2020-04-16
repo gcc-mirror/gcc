@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "auto-profile.h"
 #include "profile.h"
+#include "diagnostic.h"
 
 #include "gcov-io.c"
 
@@ -1221,6 +1222,19 @@ coverage_init (const char *filename)
 	  const char *separator = "/";
 #endif
 	  filename = concat (getpwd (), separator, filename, NULL);
+	  if (profile_prefix_path)
+	    {
+	      if (!strncmp (filename, profile_prefix_path,
+			    strlen (profile_prefix_path)))
+		{
+		  filename += strlen (profile_prefix_path);
+		  while (*filename == *separator)
+		    filename++;
+		}
+	      else
+		warning (0, "filename %qs does not start with profile "
+			 "prefix %qs", filename, profile_prefix_path);
+	    }
 	  filename = mangle_path (filename);
 	  len = strlen (filename);
 	}

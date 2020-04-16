@@ -549,8 +549,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
--fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
+-fprofile-note=@var{path} -fprofile-prefix-path=@var{path} @gol
+-fprofile-update=@var{method} -fprofile-filter-files=@var{regex} @gol
+-fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -13399,6 +13400,20 @@ To optimize the program based on the collected profile information, use
 If @var{path} is specified, GCC saves @file{.gcno} file into @var{path}
 location.  If you combine the option with multiple source files,
 the @file{.gcno} file will be overwritten.
+
+@item -fprofile-prefix-path=@var{path}
+
+This option can be used in combination with
+@option{profile-generate=}@var{profile_dir} and
+@option{profile-use=}@var{profile_dir} to inform GCC where is the base
+directory of built source tree.  By default @var{profile_dir} will contain
+files with mangled absolute paths of all object files in the built project.
+This is not desirable when directory used to build the instrumented binary
+differs from the directory used to build the binary optimized with profile
+feedback because the profile data will not be found during the optimized build.
+In such setups @option{-fprofile-prefix-path=}@var{path} with @var{path}
+pointing to the base directory of the build can be used to strip the irrelevant
+part of the path and keep all file names relative to the main build directory.
 
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
