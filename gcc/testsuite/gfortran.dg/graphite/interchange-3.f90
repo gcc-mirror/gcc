@@ -23,5 +23,3 @@ Program FOO
 366  format(/, ' PC = ',E12.4,/,' UC = ',E12.4,/,' VC = ',E12.4,/)
 
 end Program FOO
-
-! { dg-final { scan-tree-dump "tiled" "graphite" } }

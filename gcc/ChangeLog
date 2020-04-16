@@ -1,3 +1,69 @@
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93621
+	* ipa-inline.h (ipa_saved_clone_sources): Declare.
+	* ipa-inline-transform.c (ipa_saved_clone_sources): New variable.
+	(save_inline_function_body): Link the new body holder with the
+	previous one.
+	* cgraph.c: Include ipa-inline.h.
+	(cgraph_edge::redirect_call_stmt_to_callee): Try to find the decl from
+	the statement in ipa_saved_clone_sources.
+	* cgraphunit.c: Include ipa-inline.h.
+	(expand_all_functions): Free ipa_saved_clone_sources.
+
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94606
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_eor): Take
+	the VNx16BI lowpart of the recursively-generated constant.
+
+2020-04-16  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94314
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
+	DECL_IS_REPLACEABLE_OPERATOR during cloning.
+	* tree-ssa-dce.c (valid_new_delete_pair_p): New function.
+	(propagate_necessity): Check operator names.
+
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94605
+	* early-remat.c (early_remat::process_block): Handle insns that
+	set multiple candidate registers.
+2020-04-16  Jan Hubicka  <hubicka@ucw.cz>
+	
+	PR gcov-profile/93401
+	* common.opt (profile-prefix-path): New option.
+	* coverae.c: Include diagnostics.h.
+	(coverage_init): Strip profile prefix path.
+	* doc/invoke.texi (-fprofile-prefix-path): Document.
+
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94614
+	* expr.c (emit_move_multi_word): Do not generate code when
+	the destination part is undefined_operand_subword_p.
+	* lower-subreg.c (resolve_clobber): Look through a paradoxica
+	subreg.
+
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94598
+	* tree-sra.c (verify_sra_access_forest): Fix verification of total
+	scalarization accesses under access to one-element arrays.
+
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/89494
+	* function.c (assign_parm_find_data_types): Add workaround for
+	BROKEN_VALUE_INITIALIZATION compilers.
+
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	* gdbhooks.py (TreePrinter): Print SSA_NAME_VERSION of SSA_NAME
+	nodes.
+
 2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94603

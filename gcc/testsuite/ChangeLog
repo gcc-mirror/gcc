@@ -1,10 +1,73 @@
+2020-04-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/cpp0x/lambda/pr94426-2.C: Adjust scan-asms to test
+	for the change on more platforms.
+
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93621
+	* g++.dg/ipa/pr93621.C: New test.
+
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94606
+	* gcc.dg/vect/pr94606.c: New test.
+
+2020-04-16  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94314
+	* g++.dg/pr94314.C: Do not use dg-additional-options
+	and remove not needed stdio.h include.
+	* g++.dg/pr94314-2.C: Likewise.
+	* g++.dg/pr94314-3.C: Likewise.
+	* g++.dg/pr94314-4.C: New test.
+
+2020-04-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94475
+	* g++.dg/conversion/err-recover2.C: New test.
+	* g++.dg/diagnostic/pr84138.C: Remove now-bogus warning.
+	* g++.dg/warn/Wsign-compare-8.C: Remove now-bogus warning.
+
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94605
+	* gcc.target/aarch64/sve/pr94605.c: New test.
+
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/interchange-1.c: Remove scan for tiled.
+	* gcc.dg/graphite/interchange-10.c: Likewise.
+	* gcc.dg/graphite/interchange-11.c: Likewise.
+	* gcc.dg/graphite/interchange-3.c: Likewise.
+	* gcc.dg/graphite/interchange-4.c: Likewise.
+	* gcc.dg/graphite/interchange-7.c: Likewise.
+	* gcc.dg/graphite/interchange-9.c: Likewise.
+	* gcc.dg/graphite/uns-interchange-9.c: Likewise.
+	* gfortran.dg/graphite/interchange-3.f90: Likewise.
+
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94598
+	* gcc.dg/tree-ssa/pr94598.c: New test.
+
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/92372
+	* gcc.c-torture/pr92372.c: Move ...
+	* gcc.c-torture/compile/pr92372.c: ... here.
+
+	PR c++/94571
+	* g++.dg/cpp1z/decomp51.C: New test.
+
 2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94603
 	* gcc.target/i386/pr94603.c: New test.
 
-2020-04-15  Andre Vieira <andre.simoesdiasvieira@arm.com>
-            Srinath Parvathaneni <srinath.parvathaneni@arm.com>
+2020-04-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_vec_duplicate.c: New test.
 
@@ -112,7 +175,7 @@
 	PR fortran/87644
 	* gfortran.dg/variable_parameter.f90: New test.
 
-2020-04-13  Linus Koenig <link@sig-st.de>
+2020-04-13  Linus Koenig  <link@sig-st.de>
 
 	PR fortran/94192
 	* gfortran.dg/bound_resolve_after_error_1.f90: New test.
@@ -404,7 +467,7 @@
 	PR c++/94507 - ICE-on-invalid with lambda template.
 	* g++.dg/cpp2a/lambda-generic7.C: New test.
 
-2020-04-08  Alexandre Oliva <oliva@adacore.com>
+2020-04-08  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.target/arm/fp16-aapcs-3.c: Explicitly use the
 	-mfp16-format=alternative option.
@@ -429,7 +492,7 @@
 	* gfortran.dg/ieee/dec_math_1.f90: ... here; change
 	dg-options to dg-additional-options.
 
-2020-04-08  Alexandre Oliva <oliva@adacore.com>
+2020-04-08  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.dg/tls/pr78796.c: Require tls_runtime.
 
@@ -472,7 +535,7 @@
 	PR c++/94478 - ICE with defaulted comparison operator
 	* g++.dg/cpp2a/spaceship-err4.C: New test.
 
-2020-04-08  Alexandre Oliva <oliva@adacore.com>
+2020-04-08  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.target/arm/polytypes.c: Add quotes around
 	-flax-vector-conversions.
@@ -1037,7 +1100,7 @@
 	PR c++/94336 - template keyword accepted before destructor names.
 	* g++.dg/template/template-keyword2.C: New test.
 
-2020-03-27 Iain Sandoe <iain@sandoe.co.uk>
+2020-03-27 Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:
 	Add <cstdio>.
@@ -7095,11 +7158,11 @@
 	* gcc.c-torture/compile/pr93927-1.c: New test.
 	* gcc.c-torture/compile/pr93927-2.c: New test.
 
-2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* g++.dg/coroutines/torture/co-await-15-capture-comp-ref.C: New test.
 
-2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* g++.dg/coroutines/torture/co-await-14-template-traits.C: New test.
 
@@ -7115,7 +7178,7 @@
 	* g++.dg/analyzer/cstdlib.C: New test.
 
 2020-03-02  Iain Sandoe  <iain@sandoe.co.uk>
-	    Jun Ma <JunMa@linux.alibaba.com>
+	    Jun Ma  <JunMa@linux.alibaba.com>
 
 	* g++.dg/coroutines/torture/class-05-lambda-capture-copy-local.C:
 	* g++.dg/coroutines/torture/lambda-09-init-captures.C: New test.
@@ -7183,7 +7246,7 @@
 	* gcc.target/powerpc/pr88233.c: Update expected output and
 	add target selector.
 
-2020-03-01 Iain Sandoe <iain@sandoe.co.uk>
+2020-03-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/class-07-data-member.C: New test.
 
@@ -7197,7 +7260,7 @@
 	PR fortran/92959
 	* gfortran.dg/associated_8.f90 : New test.
 
-2020-02-29 Iain Sandoe <iain@sandoe.co.uk>
+2020-02-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Add templated
 	awaitable.
@@ -7297,7 +7360,7 @@
 	* gcc.target/powerpc/ppc64-abi-1.c: Compile with -mno-pcrel.
 	* gcc.target/powerpc/ppc64-abi-2.c: Likewise.
 
-2020-02-27  Alexandre Oliva <oliva@adacore.com>
+2020-02-27  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.target/aarch64/vect-mull.x (SH): Undefine.
 
@@ -7656,11 +7719,11 @@
 	PR c++/93817
 	* g++.dg/diagnostic/array-init1.C: Fix for ILP32.
 
-2020-02-18  Jon Beniston <jon@beniston.com>
+2020-02-18  Jon Beniston  <jon@beniston.com>
 
 	* gcc.dg/strcmpopt_6.c: Add space in array for terminator.
 
-2020-02-18  Mark Eggleston <markeggleston@gcc.gnu.org>
+2020-02-18  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	PR fortran/93714
 	* gfortran.dg/char_pointer_assign_6.f90: Look for no target
@@ -7706,7 +7769,7 @@
 	PR fortran/93603
 	* gfortran.dg/pr93603.f90 : New test.
 
-2020-02-20  Mark Eggleston <markeggleston@gcc.gnu.org>
+2020-02-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	PR fortran/93580
 	* gfortran.dg/dg/pr93580.f90: New test.
@@ -8097,7 +8160,7 @@
 	PR target/91927
 	* gcc.target/aarch64/pr91927.c: New testcase.
 
-2020-02-08  Peter Bergner <bergner@linux.ibm.com>
+2020-02-08  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/93136
 	* gcc.dg/vmx/ops.c: Add -flax-vector-conversions to dg-options.
@@ -9199,7 +9262,7 @@
 	PR ipa/93166
 	* g++.dg/pr93166.C: New test.
 
-2020-01-25  Andrew Pinski <apinski@marvell.com>
+2020-01-25  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.target/aarch64/vec_zeroextend.c: Fix for big-endian.
 
@@ -10191,12 +10254,12 @@
 	PR c++/92542
 	* g++.dg/pr92542.C: New.
 
-2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-17  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 	    Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/armv8_1m-shift-imm_1.c: New test.
 
-2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-17  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 	    Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/armv8_1m-shift-reg_1.c: New test.
@@ -10288,8 +10351,8 @@
 
 	* testsuite/gcc.target/arm/multilib.exp: Add v8.1-M entries.
 
-2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/cmse-1.c: Add check for BLXNS when instructions
 	introduced in Armv8.1-M Mainline Security Extensions are available and
@@ -10555,8 +10618,8 @@
 	* lib/target-supports.exp (check_effective_target_arm_cmse_clear_ok):
 	New procedure.
 
-2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/target-supports.exp
 	(check_effective_target_arm_arch_v8_1m_main_ok): Define.

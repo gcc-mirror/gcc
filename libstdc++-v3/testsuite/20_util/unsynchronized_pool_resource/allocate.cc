@@ -197,7 +197,7 @@ test06()
     void do_deallocate(void* p, std::size_t bytes, std::size_t align)
     { std::pmr::new_delete_resource()->deallocate(p, bytes, align); }
 
-    bool do_is_equal(const memory_resource& r) const noexcept
+    bool do_is_equal(const memory_resource&) const noexcept
     { return false; }
   };
 

@@ -2196,6 +2196,10 @@ Enum(profile_update) String(atomic) Value(PROFILE_UPDATE_ATOMIC)
 EnumValue
 Enum(profile_update) String(prefer-atomic) Value(PROFILE_UPDATE_PREFER_ATOMIC)
 
+fprofile-prefix-path=
+Common Joined RejectNegative Var(profile_prefix_path)
+Remove prefix from absolute path before manging name for -fprofile-generate= and -fprofile-use=.
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.

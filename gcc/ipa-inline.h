@@ -65,6 +65,7 @@ void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
 
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
+extern function_summary <tree *> *ipa_saved_clone_sources;
 
 /* Return estimated size of the inline sequence of EDGE.  */
 
