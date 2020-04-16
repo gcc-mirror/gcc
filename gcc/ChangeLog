@@ -1,6 +1,17 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
+	* optabs-libfuncs.c (build_libfunc_function_visibility):
+	New, split out from...
+	(build_libfunc_function): ... here.
+	(init_one_libfunc_visibility): New, split out from ...
+	(init_one_libfunc): ... here.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/aarch64 (aarch64_split_compare_and_swap): Disable
