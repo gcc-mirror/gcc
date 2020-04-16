@@ -1,6 +1,23 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_expand_compare_and_swap):
+	Force oldval into the rval register for TARGET_LSE; emit the compare
+	during initial expansion so that it may be deleted if unused.
+	(aarch64_gen_atomic_cas): Remove.
+	* config/aarch64/atomics.md (aarch64_compare_and_swap<SHORT>_lse):
+	Change =&r to +r for operand 0; use match_dup for operand 2;
+	remove is_weak and mod_f operands as unused.  Drop the split
+	and merge with...
+	(aarch64_atomic_cas<SHORT>): ... this pattern's output; remove.
+	(aarch64_compare_and_swap<GPI>_lse): Similarly.
+	(aarch64_atomic_cas<GPI>): Similarly.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
 	2018-07-16  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/atomics.md (aarch64_store_execlusive<mode>): Add

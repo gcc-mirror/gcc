@@ -14169,17 +14169,19 @@ aarch64_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
   machine_mode mode, cmp_mode;
-  typedef rtx (*gen_cas_fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx (*gen_split_cas_fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx (*gen_atomic_cas_fn) (rtx, rtx, rtx, rtx);
   int idx;
-  gen_cas_fn gen;
-  const gen_cas_fn split_cas[] =
+  gen_split_cas_fn split_gen;
+  gen_atomic_cas_fn atomic_gen;
+  const gen_split_cas_fn split_cas[] =
   {
     gen_aarch64_compare_and_swapqi,
     gen_aarch64_compare_and_swaphi,
     gen_aarch64_compare_and_swapsi,
     gen_aarch64_compare_and_swapdi
   };
-  const gen_cas_fn atomic_cas[] =
+  const gen_atomic_cas_fn atomic_cas[] =
   {
     gen_aarch64_compare_and_swapqi_lse,
     gen_aarch64_compare_and_swaphi_lse,
@@ -14238,14 +14240,29 @@ aarch64_expand_compare_and_swap (rtx operands[])
       gcc_unreachable ();
     }
   if (TARGET_LSE)
-    gen = atomic_cas[idx];
+    {
+      atomic_gen = atomic_cas[idx];
+      /* The CAS insn requires oldval and rval overlap, but we need to
+	 have a copy of oldval saved across the operation to tell if
+	 the operation is successful.  */
+      if (mode == QImode || mode == HImode)
+	rval = copy_to_mode_reg (SImode, gen_lowpart (SImode, oldval));
+      else if (reg_overlap_mentioned_p (rval, oldval))
+        rval = copy_to_mode_reg (mode, oldval);
+      else
+	emit_move_insn (rval, oldval);
+      emit_insn (atomic_gen (rval, mem, newval, mod_s));
+      aarch64_gen_compare_reg (EQ, rval, oldval);
+    }
   else
-    gen = split_cas[idx];
-
-  emit_insn (gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+    {
+      split_gen = split_cas[idx];
+      emit_insn (split_gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+    }
 
   if (mode == QImode || mode == HImode)
-    emit_move_insn (operands[1], gen_lowpart (mode, rval));
+    rval = gen_lowpart (mode, rval);
+  emit_move_insn (operands[1], rval);
 
   x = gen_rtx_REG (CCmode, CC_REGNUM);
   x = gen_rtx_EQ (SImode, x, const0_rtx);
@@ -14293,42 +14310,6 @@ aarch64_emit_post_barrier (enum memmodel model)
     {
       emit_insn (gen_mem_thread_fence (GEN_INT (MEMMODEL_SEQ_CST)));
     }
-}
-
-/* Emit an atomic compare-and-swap operation.  RVAL is the destination register
-   for the data in memory.  EXPECTED is the value expected to be in memory.
-   DESIRED is the value to store to memory.  MEM is the memory location.  MODEL
-   is the memory ordering to use.  */
-
-void
-aarch64_gen_atomic_cas (rtx rval, rtx mem,
-			rtx expected, rtx desired,
-			rtx model)
-{
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  machine_mode mode;
-
-  mode = GET_MODE (mem);
-
-  switch (mode)
-    {
-    case E_QImode: gen = gen_aarch64_atomic_casqi; break;
-    case E_HImode: gen = gen_aarch64_atomic_cashi; break;
-    case E_SImode: gen = gen_aarch64_atomic_cassi; break;
-    case E_DImode: gen = gen_aarch64_atomic_casdi; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  /* Move the expected value into the CAS destination register.  */
-  emit_insn (gen_rtx_SET (rval, expected));
-
-  /* Emit the CAS.  */
-  emit_insn (gen (rval, mem, desired, model));
-
-  /* Compare the expected value with the value loaded by the CAS, to establish
-     whether the swap was made.  */
-  aarch64_gen_compare_reg (EQ, rval, expected);
 }
 
 /* Split a compare and swap pattern.  */
