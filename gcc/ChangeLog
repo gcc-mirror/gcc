@@ -1,3 +1,13 @@
+2020-04-20  Andrea Corallo  <andrea.corallo@arm.com>
+
+	Backport from mainline.
+	2020-04-15  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/94530
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(valid_src_p): Check for aarch64_address_info type before
+	accessing base field.
+
 2020-04-20  Tamar Christina  <tamar.christina@arm.com>
 
 	Backport from mainline.

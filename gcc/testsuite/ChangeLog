@@ -1,3 +1,11 @@
+2020-04-20  Andrea Corallo  <andrea.corallo@arm.com>
+
+	Backport from mainline.
+	2020-04-09  Andrea Corallo  <andrea.corallo@arm.com
+
+	PR target/94530
+	* gcc.target/aarch64/pr94530.c: New test.
+
 2020-04-20  Tamar Christina  <tamar.christina@arm.com>
 
 	Backport from mainline.
