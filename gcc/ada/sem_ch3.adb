@@ -15557,6 +15557,12 @@ package body Sem_Ch3 is
          Next_Formal (Formal);
       end loop;
 
+      --  Extra formals are shared between the parent subprogram and the
+      --  derived subprogram (implicit in the above copy of formals), and
+      --  hence we must inherit also the reference to the first extra formal.
+
+      Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
+
       --  If this derivation corresponds to a tagged generic actual, then
       --  primitive operations rename those of the actual. Otherwise the
       --  primitive operations rename those of the parent type, If the parent

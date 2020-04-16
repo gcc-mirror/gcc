@@ -272,6 +272,15 @@ package body Exp_Ch6 is
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
+   function Has_BIP_Extra_Formal
+     (E    : Entity_Id;
+      Kind : BIP_Formal_Kind) return Boolean;
+   --  Given a frozen subprogram, subprogram type, entry or entry family,
+   --  return True if E has the BIP extra formal associated with Kind. It must
+   --  be invoked with a frozen entity or a subprogram type of a dispatching
+   --  call since we can only rely on the availability of the extra formals
+   --  on these entities.
+
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
@@ -828,8 +837,8 @@ package body Exp_Ch6 is
      (Func : Entity_Id;
       Kind : BIP_Formal_Kind) return Entity_Id
    is
+      Extra_Formal  : Entity_Id := Extra_Formals (Func);
       Formal_Suffix : constant String := BIP_Formal_Suffix (Kind);
-      Extra_Formal : Entity_Id := Extra_Formals (Func);
 
    begin
       --  Maybe it would be better for each implicit formal of a build-in-place
@@ -8230,6 +8239,41 @@ package body Exp_Ch6 is
       end if;
    end Freeze_Subprogram;
 
+   --------------------------
+   -- Has_BIP_Extra_Formal --
+   --------------------------
+
+   function Has_BIP_Extra_Formal
+     (E    : Entity_Id;
+      Kind : BIP_Formal_Kind) return Boolean
+   is
+      Extra_Formal : Entity_Id := Extra_Formals (E);
+
+   begin
+      --  We can only rely on the availability of the extra formals in frozen
+      --  entities or in subprogram types of dispatching calls (since their
+      --  extra formals are added when the target subprogram is frozen; see
+      --  Expand_Dispatching_Call).
+
+      pragma Assert (Is_Frozen (E)
+        or else (Ekind (E) = E_Subprogram_Type
+                   and then Is_Dispatch_Table_Entity (E))
+        or else (Is_Dispatching_Operation (E)
+                   and then Is_Frozen (Find_Dispatching_Type (E))));
+
+      while Present (Extra_Formal) loop
+         if Is_Build_In_Place_Entity (Extra_Formal)
+           and then BIP_Suffix_Kind (Extra_Formal) = Kind
+         then
+            return True;
+         end if;
+
+         Next_Formal_With_Extras (Extra_Formal);
+      end loop;
+
+      return False;
+   end Has_BIP_Extra_Formal;
+
    ------------------------------
    -- Insert_Post_Call_Actions --
    ------------------------------
@@ -9871,6 +9915,10 @@ package body Exp_Ch6 is
       Func_Typ : Entity_Id;
 
    begin
+      if Global_No_Tasking or else No_Run_Time_Mode then
+         return False;
+      end if;
+
       --  For thunks we must rely on their target entity; otherwise, given that
       --  the profile of thunks for functions returning a limited interface
       --  type returns a class-wide type, we would erroneously add these extra
@@ -9887,8 +9935,34 @@ package body Exp_Ch6 is
 
       Func_Typ := Underlying_Type (Etype (Subp_Id));
 
-      return not Global_No_Tasking
-        and then (Has_Task (Func_Typ) or else Might_Have_Tasks (Func_Typ));
+      --  At first sight, for all the following cases, we could add assertions
+      --  to ensure that if Func_Id is frozen then the computed result matches
+      --  with the availability of the task master extra formal; unfortunately
+      --  this is not feasible because we may be precisely freezing this entity
+      --  (ie. Is_Frozen has been set by Freeze_Entity but it has not completed
+      --  its work).
+
+      if Has_Task (Func_Typ) then
+         return True;
+
+      elsif Ekind (Func_Id) = E_Function then
+         return Might_Have_Tasks (Func_Typ);
+
+      --  Handle subprogram type internally generated for dispatching call. We
+      --  can not rely on the return type of the subprogram type of dispatching
+      --  calls since it is always a class-wide type (cf. Expand_Dispatching_
+      --  _Call).
+
+      elsif Ekind (Func_Id) = E_Subprogram_Type then
+         if Is_Dispatch_Table_Entity (Func_Id) then
+            return Has_BIP_Extra_Formal (Func_Id, BIP_Task_Master);
+         else
+            return Might_Have_Tasks (Func_Typ);
+         end if;
+
+      else
+         raise Program_Error;
+      end if;
    end Needs_BIP_Task_Actuals;
 
    -----------------------------------
