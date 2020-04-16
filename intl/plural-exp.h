@@ -1,5 +1,5 @@
 /* Expression parsing and evaluation for plural form selection.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@cygnus.com>, 2000.
 
    This program is free software; you can redistribute it and/or modify it
@@ -111,7 +111,11 @@ struct parse_args
 
 extern void FREE_EXPRESSION PARAMS ((struct expression *exp))
      internal_function;
+#ifdef HAVE_BISON3
+extern int PLURAL_PARSE PARAMS ((struct parse_args *arg));
+#else
 extern int PLURAL_PARSE PARAMS ((void *arg));
+#endif
 extern struct expression GERMANIC_PLURAL attribute_hidden;
 extern void EXTRACT_PLURAL_EXPRESSION PARAMS ((const char *nullentry,
 					       struct expression **pluralp,

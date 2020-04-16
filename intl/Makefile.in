@@ -133,7 +133,11 @@ libintl.h: $(srcdir)/libgnuintl.h
 	$(COMPILE) $<
 
 .y.c:
-	$(YACC) $(YFLAGS) --output $@ $<
+@BISON3_YES@	sed 's,%pure_parser,,;s,^/\* BISON3 \(.*\) \*/$$,\1,' $< > $@.y
+@BISON3_YES@	$(YACC) $(YFLAGS) --output $@.c $@.y
+@BISON3_YES@	sed 's/\.c\.y"/.y"/' $@.c > $@
+@BISON3_YES@	rm -f $@.c $@.y $@.h
+@BISON3_NO@	$(YACC) $(YFLAGS) --output $@ $<
 	rm -f $*.h
 
 INCLUDES = -I. -I$(srcdir)
