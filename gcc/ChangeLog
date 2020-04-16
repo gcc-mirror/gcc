@@ -1,3 +1,16 @@
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93621
+	* ipa-inline.h (ipa_saved_clone_sources): Declare.
+	* ipa-inline-transform.c (ipa_saved_clone_sources): New variable.
+	(save_inline_function_body): Link the new body holder with the
+	previous one.
+	* cgraph.c: Include ipa-inline.h.
+	(cgraph_edge::redirect_call_stmt_to_callee): Try to find the decl from
+	the statement in ipa_saved_clone_sources.
+	* cgraphunit.c: Include ipa-inline.h.
+	(expand_all_functions): Free ipa_saved_clone_sources.
+
 2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/94606

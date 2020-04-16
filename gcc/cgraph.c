@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "selftest.h"
 #include "tree-into-ssa.h"
+#include "ipa-inline.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1469,6 +1470,16 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
   if (e->indirect_unknown_callee
       || decl == e->callee->decl)
     return e->call_stmt;
+
+  if (decl && ipa_saved_clone_sources)
+    {
+      tree *p = ipa_saved_clone_sources->get (e->callee);
+      if (p && decl == *p)
+	{
+	  gimple_call_set_fndecl (e->call_stmt, e->callee->decl);
+	  return e->call_stmt;
+	}
+    }
 
   if (flag_checking && decl)
     {

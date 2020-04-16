@@ -1,3 +1,8 @@
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93621
+	* g++.dg/ipa/pr93621.C: New test.
+
 2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/94606
