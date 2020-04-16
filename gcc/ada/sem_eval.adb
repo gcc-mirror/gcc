@@ -2704,7 +2704,7 @@ package body Sem_Eval is
 
       --  Similarly if the indexed component appears as the prefix of an
       --  attribute we don't want to evaluate it, because at least for
-      --  some cases of attributes we need the identify (e.g. Access, Size)
+      --  some cases of attributes we need the identify (e.g. Access, Size).
 
       elsif Nkind (Parent (N)) = N_Attribute_Reference then
          return;
@@ -2868,7 +2868,7 @@ package body Sem_Eval is
       --  and misleading warnings.
 
       if (Nkind_In (Par, N_Case_Expression_Alternative, N_If_Expression)
-           or else Nkind (Parent (N)) not in N_Subexpr)
+           or else Nkind (Par) not in N_Subexpr)
         and then (not Nkind_In (Par, N_Case_Expression_Alternative,
                                      N_If_Expression)
                    or else Comes_From_Source (N))
@@ -3205,7 +3205,7 @@ package body Sem_Eval is
    -------------------------------
 
    --  A qualified expression is potentially static if its subtype mark denotes
-   --  a static subtype and its expression is potentially static (RM 4.9 (11)).
+   --  a static subtype and its expression is potentially static (RM 4.9 (10)).
 
    procedure Eval_Qualified_Expression (N : Node_Id) is
       Operand     : constant Node_Id   := Expression (N);
@@ -3228,7 +3228,7 @@ package body Sem_Eval is
       then
          Check_Non_Static_Context (Operand);
 
-         --  If operand is known to raise constraint_error, set the flag on the
+         --  If operand is known to raise Constraint_Error, set the flag on the
          --  expression so it does not get optimized away.
 
          if Nkind (Operand) = N_Raise_Constraint_Error then
@@ -3252,14 +3252,15 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  Here we will fold, save Print_In_Hex indication
-
-      Hex := Nkind (Operand) = N_Integer_Literal
-               and then Print_In_Hex (Operand);
-
       --  Fold the result of qualification
 
       if Is_Discrete_Type (Target_Type) then
+
+         --  Save Print_In_Hex indication
+
+         Hex := Nkind (Operand) = N_Integer_Literal
+                  and then Print_In_Hex (Operand);
+
          Fold_Uint (N, Expr_Value (Operand), Stat);
 
          --  Preserve Print_In_Hex indication
