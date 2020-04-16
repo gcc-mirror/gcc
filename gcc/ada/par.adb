@@ -699,7 +699,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  private part (in which case Declare_Expression is False), and
       --  the declare_items of a declare_expression (in which case
       --  Declare_Expression is True). Declare_Expression is used to
-      --  affect the wording of error messages.
+      --  affect the wording of error messages, and to control style
+      --  checking.
 
       function P_Access_Definition
         (Null_Exclusion_Present : Boolean) return Node_Id;

@@ -78,18 +78,24 @@ package body Ch3 is
    --  it very unlikely that this will ever arise in practice.
 
    procedure P_Declarative_Items
-     (Decls   : List_Id;
-      Done    : out Boolean;
-      In_Spec : Boolean);
+     (Decls              : List_Id;
+      Done               : out Boolean;
+      Declare_Expression : Boolean;
+      In_Spec            : Boolean);
    --  Scans out a single declarative item, or, in the case of a declaration
    --  with a list of identifiers, a list of declarations, one for each of the
    --  identifiers in the list. The declaration or declarations scanned are
    --  appended to the given list. Done indicates whether or not there may be
    --  additional declarative items to scan. If Done is True, then a decision
    --  has been made that there are no more items to scan. If Done is False,
-   --  then there may be additional declarations to scan. In_Spec is true if
-   --  we are scanning a package declaration, and is used to generate an
-   --  appropriate message if a statement is encountered in such a context.
+   --  then there may be additional declarations to scan.
+   --
+   --  Declare_Expression is true if we are parsing a declare_expression, in
+   --  which case we want to suppress certain style checking.
+   --
+   --  In_Spec is true if we are scanning a package declaration, and is used to
+   --  generate an appropriate message if a statement is encountered in such a
+   --  context.
 
    procedure P_Identifier_Declarations
      (Decls   : List_Id;
@@ -4310,7 +4316,8 @@ package body Ch3 is
       --  Loop to scan out the declarations
 
       loop
-         P_Declarative_Items (Decls, Done, In_Spec => False);
+         P_Declarative_Items
+           (Decls, Done, Declare_Expression => False, In_Spec => False);
          exit when Done;
       end loop;
 
@@ -4337,16 +4344,20 @@ package body Ch3 is
    --  then the scan is set past the next semicolon and Error is returned.
 
    procedure P_Declarative_Items
-     (Decls   : List_Id;
-      Done    : out Boolean;
-      In_Spec : Boolean)
+     (Decls              : List_Id;
+      Done               : out Boolean;
+      Declare_Expression : Boolean;
+      In_Spec            : Boolean)
    is
       Scan_State : Saved_Scan_State;
 
    begin
       Done := False;
 
-      if Style_Check then
+      --  In -gnatg mode, we don't want a "bad indentation" error inside a
+      --  declare_expression.
+
+      if Style_Check and not Declare_Expression then
          Style.Check_Indentation;
       end if;
 
@@ -4727,7 +4738,8 @@ package body Ch3 is
       Decls := New_List;
 
       loop
-         P_Declarative_Items (Decls, Done, In_Spec => True);
+         P_Declarative_Items
+           (Decls, Done, Declare_Expression, In_Spec => True);
          exit when Done;
       end loop;
 
@@ -4827,7 +4839,8 @@ package body Ch3 is
       Dummy_Done : Boolean;
       pragma Warnings (Off, Dummy_Done);
    begin
-      P_Declarative_Items (S, Dummy_Done, False);
+      P_Declarative_Items
+        (S, Dummy_Done, Declare_Expression => False, In_Spec => False);
    end Skip_Declaration;
 
    -----------------------------------------
