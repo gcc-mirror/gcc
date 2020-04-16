@@ -1,10 +1,9 @@
-// { dg-do run }
-// See PR94359 - some targets are unable to make general indirect tailcalls
-// for example, between different DSOs.
-// { dg-xfail-run-if "" { hppa*-*-hpux11* } }
-// { dg-xfail-run-if "" { ia64-*-linux-gnu } }
-// { dg-xfail-run-if "" { { lp64 && { powerpc*-linux-gnu } } || { *-*-aix* } } }
-// { dg-xfail-run-if "" { sparc*-*-* } }
+// See PR94359, we will need either a general solution to this, or at least
+// some hook for targets to opt in, for now the test will work on targets that
+// can do the tailcall (which would normally be available for O2+)
+
+// { dg-do run { target { i?86-*-linux-gnu x86_64-*-linux-gnu *-*-darwin* } } }
+// { dg-additional-options "-O2" }
 
 #if __has_include(<coroutine>)
 

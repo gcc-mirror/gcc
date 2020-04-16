@@ -2377,21 +2377,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
     (loc, builtin_decl_explicit (BUILT_IN_CORO_RESUME), 1, addr);
 
   /* In order to support an arbitrary number of coroutine continuations,
-     we must tail call them.  However, some targets might not support this
-     for indirect calls, or calls between DSOs.
-     FIXME: see if there's an alternate strategy for such targets.  */
-  /* Now we have the actual call, and we can mark it as a tail.  */
+     we must tail call them.  However, some targets do not support indirect
+     tail calls to arbitrary callees.  See PR94359.  */
   CALL_EXPR_TAILCALL (resume) = true;
-  /* Temporarily, switch cfun so that we can use the target hook.  */
-  push_struct_function (actor);
-  if (targetm.function_ok_for_sibcall (NULL_TREE, resume))
-    {
-      /* ... and for optimisation levels 0..1, which do not normally tail-
-	-call, mark it as requiring a tail-call for correctness.  */
-      if (optimize < 2)
-	CALL_EXPR_MUST_TAIL_CALL (resume) = true;
-    }
-  pop_cfun ();
   resume = coro_build_cvt_void_expr_stmt (resume, loc);
   add_stmt (resume);
 
