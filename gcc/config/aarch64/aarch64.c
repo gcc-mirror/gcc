@@ -1574,6 +1574,9 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
 	}
     }
 
+  if (!aarch64_plus_operand (y, y_mode))
+    y = force_reg (y_mode, y);
+
   return aarch64_gen_compare_reg (code, x, y);
 }
 

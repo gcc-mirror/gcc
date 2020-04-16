@@ -1,6 +1,15 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2019-08-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/90724
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): Force y
+	in reg if it fails aarch64_plus_operand predicate.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2020-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94435
