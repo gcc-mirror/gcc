@@ -1,5 +1,9 @@
 2020-04-17  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94483
+	* lambda.c (lambda_capture_field_type): Avoid doing auto deduction if
+	the explicit initializer has parameter packs.
+
 	PR c++/88754
 	* parser.c (cp_parser_check_template_parameters): Before issuing a hard
 	error, first try simulating an error instead.

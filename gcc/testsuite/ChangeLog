@@ -1,5 +1,8 @@
 2020-04-17  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94483
+	* g++.dg/cpp2a/lambda-pack-init5.C: New test.
+
 	PR c++/88754
 	* g++.dg/parse/ambig10.C: New test.
 
