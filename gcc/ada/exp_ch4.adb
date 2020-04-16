@@ -8778,8 +8778,7 @@ package body Exp_Ch4 is
 
                --  Determine range to see if it can be larger than MaxS
 
-               Determine_Range
-                 (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
+               Determine_Range (Exp, OK, Lo, Hi, Assume_Valid => True);
                TestS := (not OK) or else Hi > MaxS;
 
                --  Signed integer case
@@ -8796,7 +8795,7 @@ package body Exp_Ch4 is
                        Make_Raise_Constraint_Error (Loc,
                          Condition =>
                            Make_Op_Gt (Loc,
-                             Left_Opnd  => Duplicate_Subexpr (Right_Opnd (N)),
+                             Left_Opnd  => Duplicate_Subexpr (Exp),
                              Right_Opnd => Make_Integer_Literal (Loc, MaxS)),
                          Reason    => CE_Overflow_Check_Failed));
                   end if;
@@ -8806,7 +8805,7 @@ package body Exp_Ch4 is
                   Rewrite (N,
                     Make_Op_Shift_Left (Loc,
                       Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
-                      Right_Opnd => Right_Opnd (N)));
+                      Right_Opnd => Exp));
 
                --  Modular integer case
 
@@ -8824,7 +8823,7 @@ package body Exp_Ch4 is
 
                      Test_Gt :=
                        Make_Op_Gt (Loc,
-                         Left_Opnd  => Duplicate_Subexpr (Right_Opnd (N)),
+                         Left_Opnd  => Duplicate_Subexpr (Exp),
                          Right_Opnd => Make_Integer_Literal (Loc, MaxS));
 
                      Rewrite (N,
@@ -8834,7 +8833,7 @@ package body Exp_Ch4 is
                            Make_Integer_Literal (Loc, Uint_0),
                            Make_Op_Shift_Left (Loc,
                              Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
-                             Right_Opnd => Right_Opnd (N)))));
+                             Right_Opnd => Exp))));
 
                   --  If we know shift count cannot be greater than MaxS, then
                   --  it is safe to just rewrite as a shift with no test.
@@ -8843,7 +8842,7 @@ package body Exp_Ch4 is
                      Rewrite (N,
                        Make_Op_Shift_Left (Loc,
                          Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
-                         Right_Opnd => Right_Opnd (N)));
+                         Right_Opnd => Exp));
                   end if;
                end if;
 
