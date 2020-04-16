@@ -24,8 +24,8 @@
   [(match_operand:SI 0 "register_operand" "")			;; bool out
    (match_operand:ALLI 1 "register_operand" "")			;; val out
    (match_operand:ALLI 2 "aarch64_sync_memory_operand" "")	;; memory
-   (match_operand:ALLI 3 "general_operand" "")			;; expected
-   (match_operand:ALLI 4 "aarch64_reg_or_zero" "")			;; desired
+   (match_operand:ALLI 3 "nonmemory_operand" "")		;; expected
+   (match_operand:ALLI 4 "aarch64_reg_or_zero" "")		;; desired
    (match_operand:SI 5 "const_int_operand")			;; is_weak
    (match_operand:SI 6 "const_int_operand")			;; mod_s
    (match_operand:SI 7 "const_int_operand")]			;; mod_f
@@ -36,19 +36,22 @@
   }
 )
 
+(define_mode_attr cas_short_expected_pred
+  [(QI "aarch64_reg_or_imm") (HI "aarch64_plushi_operand")])
+
 (define_insn_and_split "aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
-   (set (match_operand:SI 0 "register_operand" "=&r")	   ;; val out
+   (set (match_operand:SI 0 "register_operand" "=&r")		;; val out
     (zero_extend:SI
       (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q"))) ;; memory
    (set (match_dup 1)
     (unspec_volatile:SHORT
-      [(match_operand:SI 2 "aarch64_plus_operand" "rI")	;; expected
+      [(match_operand:SHORT 2 "<cas_short_expected_pred>" "rn")	;; expected
        (match_operand:SHORT 3 "aarch64_reg_or_zero" "rZ")	;; desired
-       (match_operand:SI 4 "const_int_operand")		;; is_weak
-       (match_operand:SI 5 "const_int_operand")		;; mod_s
-       (match_operand:SI 6 "const_int_operand")]	;; mod_f
+       (match_operand:SI 4 "const_int_operand")			;; is_weak
+       (match_operand:SI 5 "const_int_operand")			;; mod_s
+       (match_operand:SI 6 "const_int_operand")]		;; mod_f
       UNSPECV_ATOMIC_CMPSW))
    (clobber (match_scratch:SI 7 "=&r"))]
   ""
@@ -68,7 +71,7 @@
     (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))   ;; memory
    (set (match_dup 1)
     (unspec_volatile:GPI
-      [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
+      [(match_operand:GPI 2 "aarch64_plus_operand" "rn")	;; expect
        (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")		;; desired
        (match_operand:SI 4 "const_int_operand")			;; is_weak
        (match_operand:SI 5 "const_int_operand")			;; mod_s

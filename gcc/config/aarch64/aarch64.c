@@ -1524,6 +1524,33 @@ aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
   return cc_reg;
 }
 
+/* Similarly, but maybe zero-extend Y if Y_MODE < SImode.  */
+
+static rtx
+aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
+                                  machine_mode y_mode)
+{
+  if (y_mode == E_QImode || y_mode == E_HImode)
+    {
+      if (CONST_INT_P (y))
+	y = GEN_INT (INTVAL (y) & GET_MODE_MASK (y_mode));
+      else
+	{
+	  rtx t, cc_reg;
+	  machine_mode cc_mode;
+
+	  t = gen_rtx_ZERO_EXTEND (SImode, y);
+	  t = gen_rtx_COMPARE (CC_SWPmode, t, x);
+	  cc_mode = CC_SWPmode;
+	  cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+	  emit_set_insn (cc_reg, t);
+	  return cc_reg;
+	}
+    }
+
+  return aarch64_gen_compare_reg (code, x, y);
+}
+
 /* Build the SYMBOL_REF for __tls_get_addr.  */
 
 static GTY(()) rtx tls_get_addr_libfunc;
@@ -14167,20 +14194,11 @@ aarch64_emit_unlikely_jump (rtx insn)
 void
 aarch64_expand_compare_and_swap (rtx operands[])
 {
-  rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
-  machine_mode mode, cmp_mode;
-  typedef rtx (*gen_split_cas_fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x, cc_reg;
+  machine_mode mode, r_mode;
   typedef rtx (*gen_atomic_cas_fn) (rtx, rtx, rtx, rtx);
   int idx;
-  gen_split_cas_fn split_gen;
   gen_atomic_cas_fn atomic_gen;
-  const gen_split_cas_fn split_cas[] =
-  {
-    gen_aarch64_compare_and_swapqi,
-    gen_aarch64_compare_and_swaphi,
-    gen_aarch64_compare_and_swapsi,
-    gen_aarch64_compare_and_swapdi
-  };
   const gen_atomic_cas_fn atomic_cas[] =
   {
     gen_aarch64_compare_and_swapqi_lse,
@@ -14198,36 +14216,19 @@ aarch64_expand_compare_and_swap (rtx operands[])
   mod_s = operands[6];
   mod_f = operands[7];
   mode = GET_MODE (mem);
-  cmp_mode = mode;
 
   /* Normally the succ memory model must be stronger than fail, but in the
      unlikely event of fail being ACQUIRE and succ being RELEASE we need to
      promote succ to ACQ_REL so that we don't lose the acquire semantics.  */
-
   if (is_mm_acquire (memmodel_from_int (INTVAL (mod_f)))
       && is_mm_release (memmodel_from_int (INTVAL (mod_s))))
     mod_s = GEN_INT (MEMMODEL_ACQ_REL);
 
-  switch (mode)
+  r_mode = mode;
+  if (mode == QImode || mode == HImode)
     {
-    case E_QImode:
-    case E_HImode:
-      /* For short modes, we're going to perform the comparison in SImode,
-	 so do the zero-extension now.  */
-      cmp_mode = SImode;
-      rval = gen_reg_rtx (SImode);
-      oldval = convert_modes (SImode, mode, oldval, true);
-      /* Fall through.  */
-
-    case E_SImode:
-    case E_DImode:
-      /* Force the value into a register if needed.  */
-      if (!aarch64_plus_operand (oldval, mode))
-	oldval = force_reg (cmp_mode, oldval);
-      break;
-
-    default:
-      gcc_unreachable ();
+      r_mode = SImode;
+      rval = gen_reg_rtx (r_mode);
     }
 
   switch (mode)
@@ -14245,27 +14246,49 @@ aarch64_expand_compare_and_swap (rtx operands[])
       /* The CAS insn requires oldval and rval overlap, but we need to
 	 have a copy of oldval saved across the operation to tell if
 	 the operation is successful.  */
-      if (mode == QImode || mode == HImode)
-	rval = copy_to_mode_reg (SImode, gen_lowpart (SImode, oldval));
-      else if (reg_overlap_mentioned_p (rval, oldval))
-        rval = copy_to_mode_reg (mode, oldval);
+      if (reg_overlap_mentioned_p (rval, oldval))
+        rval = copy_to_mode_reg (r_mode, oldval);
       else
-	emit_move_insn (rval, oldval);
+	emit_move_insn (rval, gen_lowpart (r_mode, oldval));
+
       emit_insn (atomic_gen (rval, mem, newval, mod_s));
-      aarch64_gen_compare_reg (EQ, rval, oldval);
+
+      cc_reg = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
     }
   else
     {
-      split_gen = split_cas[idx];
-      emit_insn (split_gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+      /* The oldval predicate varies by mode.  Test it and force to reg.  */
+      insn_code code;
+      switch (mode)
+	{
+	  case E_QImode:
+	    code = CODE_FOR_aarch64_compare_and_swapqi;
+	    break;
+	  case E_HImode:
+	    code = CODE_FOR_aarch64_compare_and_swaphi;
+	    break;
+	  case E_SImode:
+	    code = CODE_FOR_aarch64_compare_and_swapsi;
+	    break;
+	  case E_DImode:
+	    code = CODE_FOR_aarch64_compare_and_swapdi;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
+      if (!insn_data[code].operand[2].predicate (oldval, mode))
+	oldval = force_reg (mode, oldval);
+
+      emit_insn (GEN_FCN (code) (rval, mem, oldval, newval,
+				 is_weak, mod_s, mod_f));
+      cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
     }
 
-  if (mode == QImode || mode == HImode)
+  if (r_mode != mode)
     rval = gen_lowpart (mode, rval);
   emit_move_insn (operands[1], rval);
 
-  x = gen_rtx_REG (CCmode, CC_REGNUM);
-  x = gen_rtx_EQ (SImode, x, const0_rtx);
+  x = gen_rtx_EQ (SImode, cc_reg, const0_rtx);
   emit_insn (gen_rtx_SET (bval, x));
 }
 
@@ -14374,10 +14397,10 @@ aarch64_split_compare_and_swap (rtx operands[])
     }
   else
     {
-      cond = aarch64_gen_compare_reg (NE, rval, oldval);
+      cond = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
       x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
       x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				 gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+				gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
       aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
     }
 

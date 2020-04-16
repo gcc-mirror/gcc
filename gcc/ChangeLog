@@ -3,6 +3,23 @@
 	Backport from mainline.
 	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): New.
+	(aarch64_split_compare_and_swap): Use it.
+	(aarch64_expand_compare_and_swap): Likewise.  Remove convert_modes;
+	test oldval against the proper predicate.
+	* config/aarch64/atomics.md (atomic_compare_and_swap<ALLI>):
+	Use nonmemory_operand for expected.
+	(cas_short_expected_pred): New.
+	(aarch64_compare_and_swap<SHORT>): Use it; use "rn" not "rI" to match.
+	(aarch64_compare_and_swap<GPI>): Use "rn" not "rI" for expected.
+	* config/aarch64/predicates.md (aarch64_plushi_immediate): New.
+	(aarch64_plushi_operand): New.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_expand_compare_and_swap):
 	Force oldval into the rval register for TARGET_LSE; emit the compare
 	during initial expansion so that it may be deleted if unused.
