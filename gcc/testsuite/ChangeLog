@@ -1,5 +1,9 @@
 2020-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/92372
+	* gcc.c-torture/pr92372.c: Move ...
+	* gcc.c-torture/compile/pr92372.c: ... here.
+
 	PR c++/94571
 	* g++.dg/cpp1z/decomp51.C: New test.
 
