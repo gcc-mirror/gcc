@@ -1,6 +1,14 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline.
+	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Allow integer
+	registers with %R.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
 	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/atomics.md (aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse):
