@@ -1,6 +1,13 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr94368.c: New test.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* gcc.target/aarch64/atomic-op-acq_rel.c: Use -mno-outline-atomics.

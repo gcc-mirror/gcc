@@ -1,6 +1,17 @@
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2020-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94368
+	* config/aarch64/constraints.md (Uph): New constraint.
+	* config/aarch64/atomics.md (cas_short_expected_imm): New mode attr.
+	(aarch64_compare_and_swap<mode>): Use it instead of n in operand 2's
+	constraint.
+
+2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/aarch64.opt (-moutline-atomics): New.
