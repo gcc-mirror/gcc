@@ -1,3 +1,8 @@
+2020-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/native_type/native_priority_queue.hpp: Use
+	allocator_traits to rebind allocator.
+
 2020-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/forward_list.h (forward_list): Define operator<=> and
