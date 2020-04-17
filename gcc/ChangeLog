@@ -1,3 +1,9 @@
+2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): Turn MAP_TO_PSET to
+	MAP_DELETE.
+
 2020-04-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_advsimd_ldp_stp_p): New function.
