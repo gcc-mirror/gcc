@@ -1,5 +1,8 @@
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/94618
+	* g++.dg/opt/pr94618.C: New test.
+
 	PR tree-optimization/94621
 	* gcc.c-torture/compile/pr94621.c: New test.
 

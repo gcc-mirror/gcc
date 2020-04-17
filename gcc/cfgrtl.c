@@ -230,10 +230,20 @@ delete_insn_and_edges (rtx_insn *insn)
 {
   bool purge = false;
 
-  if (INSN_P (insn)
-      && BLOCK_FOR_INSN (insn)
-      && BB_END (BLOCK_FOR_INSN (insn)) == insn)
-    purge = true;
+  if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
+    {
+      basic_block bb = BLOCK_FOR_INSN (insn);
+      if (BB_END (bb) == insn)
+	purge = true;
+      else if (DEBUG_INSN_P (BB_END (bb)))
+	for (rtx_insn *dinsn = NEXT_INSN (insn);
+	     DEBUG_INSN_P (dinsn); dinsn = NEXT_INSN (dinsn))
+	  if (BB_END (bb) == dinsn)
+	    {
+	      purge = true;
+	      break;
+	    }
+    }
   delete_insn (insn);
   if (purge)
     return purge_dead_edges (BLOCK_FOR_INSN (insn));

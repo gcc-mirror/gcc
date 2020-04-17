@@ -1,5 +1,10 @@
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/94618
+	* cfgrtl.c (delete_insn_and_edges): Set purge not just when
+	insn is the BB_END of its block, but also when it is only followed
+	by DEBUG_INSNs in its block.
+
 	PR tree-optimization/94621
 	* tree-inline.c (remap_type_1): Don't dereference NULL TYPE_DOMAIN.
 	Move id->adjust_array_error_bounds check first in the condition.
