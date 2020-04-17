@@ -3897,30 +3897,11 @@ public:
     gcc_assert (!from);
   }
 
-private:
-  void kill (location_t);
-  static module_mapper *make (location_t loc);
-
 public:
   const char *open (location_t loc, const char *connection, const char *dflt);
   void close (location_t loc);
 
 public:
-  static module_mapper *get (location_t loc)
-  {
-    if (!mapper)
-      mapper = make (loc);
-    return mapper;
-  }
-  static void fini (location_t loc)
-  {
-    if (mapper)
-      {
-	mapper->kill (loc);
-	delete mapper;
-	mapper = NULL;
-      }
-  }
 
 public:
   bool is_live () const
@@ -3942,10 +3923,10 @@ public:
     from = NULL;
     /* Leave fd_from alone to show liveness.  */
   }
-
-public:
-  static const char *import_export (location_t loc, const char *, bool export_p);
-  static bool export_done (location_t, const char *);
+  char const *get_name () const
+  {
+    return name;
+  }
 
 public:
   bool cork ()
@@ -3989,7 +3970,7 @@ public:
 	response_unexpected (loc);
   }
 
-private:
+public:
   bool handshake (location_t, const char *main_src);
   void send_command (location_t, const char * = NULL, ...) ATTRIBUTE_PRINTF_3;
   int get_response (location_t);
@@ -4004,13 +3985,22 @@ private:
   void response_unexpected (location_t);
   bool response_eol (location_t, bool ignore = false);
   const char *cmi_response (location_t, const char *);
-
-private:
-  static module_mapper *mapper;
 };
 
 /* Our module mapper (created lazily).  */
-module_mapper *module_mapper::mapper;
+module_mapper *mapper;
+
+static module_mapper *make_mapper (location_t loc);
+inline module_mapper *get_mapper (location_t loc)
+{
+  module_mapper *res = mapper;
+  if (!res)
+    res = make_mapper (loc);
+  return res;
+}
+static const char *mapper_import_export (location_t loc, const char *,
+					 bool export_p);
+static bool mapper_export_done (location_t, const char *);
 
 /********************************************************************/
 static tree
@@ -13754,98 +13744,6 @@ module_mapper::close (location_t loc)
   size = 0;
 }
 
-/* Close down the mapper.  Mark it as not restartable.  */
-
-void
-module_mapper::kill (location_t loc)
-{
-  timevar_start (TV_MODULE_MAPPER);
-  if (!is_live ())
-    return;
-
-  dump () && dump ("Killing mapper %s", name);
-  close (loc);
-
-  timevar_stop (TV_MODULE_MAPPER);
-}
-
-/* Create a new mapper connecting to OPTION.  */
-
-module_mapper *
-module_mapper::make (location_t loc)
-{
-  timevar_start (TV_MODULE_MAPPER);
-  const char *option = module_mapper_name;
-  if (!option)
-    option = getenv ("CXX_MODULE_MAPPER");
-
-  module_mapper *mapper = new module_mapper ();
-
-  char const *cookie = mapper->open (loc, option, "|cxx-mapper");
-
-  /* String never modified in this case.  */
-  set_cmi_repo (const_cast<char *> ("gcm.cache"));
-
-  if (mapper->is_server ())
-    {
-      if (!mapper->handshake (loc, cookie ? cookie : main_input_filename))
-	mapper->kill (loc);
-    }
-  else if (mapper->is_file ())
-    {
-      /* A mapping file.  Read it.  */
-      dump () && dump ("Reading mapping file %s", mapper->name);
-
-      bool starting = true;
-      for (int r; (r = mapper->get_response (loc)) >= 0;)
-	if (r)
-	  {
-	    char *mod = mapper->response_token (loc);
-	    bool ignore = false;
-	    char *file = NULL;
-
-	    /* Ignore non-cookie lines.  */
-	    if (cookie && 0 != strcmp (mod, cookie))
-	      ignore = true;
-	    else
-	      {
-		if (cookie)
-		  mod = mapper->response_token (loc);
-		if (mod)
-		  file = mapper->response_token (loc, true);
-	      }
-
-	    if (!mapper->response_eol (loc, ignore))
-	      continue;
-
-	    if (!file)
-	      continue;
-
-	    if (starting && 0 == strcmp (mod, "$root"))
-	      {
-		set_cmi_repo (file);
-		continue;
-	      }
-
-	    starting = false;
-	    file = maybe_strip_cmi_prefix (file);
-	    module_state *state = get_module (mod);
-	    if (!state)
-	      mapper->response_unexpected (loc);
-	    else if (!state->filename)
-	      state->filename = xstrdup (file);
-	    else if (strcmp (state->filename, file))
-	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
-			  state->get_flatname (), file);
-	  }
-      mapper->close_file ();
-    }
-
-  timevar_stop (TV_MODULE_MAPPER);
-
-  return mapper;
-}
-
 /* Send a command to the mapper.  */
 
 void
@@ -14190,10 +14088,10 @@ module_mapper::cmi_response (location_t loc, const char *flatname)
 /* Import query.  */
 
 const char *
-module_mapper::import_export (location_t loc, const char *flatname,
+mapper_import_export (location_t loc, const char *flatname,
 			      bool export_p)
 {
-  module_mapper *mapper = get (main_source_loc);
+  module_mapper *mapper = get_mapper (main_source_loc);
 
   if (!mapper->is_server ())
     return NULL;
@@ -14209,10 +14107,10 @@ module_mapper::import_export (location_t loc, const char *flatname,
 /* Export done.  */
 
 bool
-module_mapper::export_done (location_t loc, const char *flatname)
+mapper_export_done (location_t loc, const char *flatname)
 {
   bool ok = true;
-  module_mapper *mapper = get (main_source_loc);
+  module_mapper *mapper = get_mapper (main_source_loc);
 
   if (mapper->is_server ())
     {
@@ -14266,6 +14164,83 @@ module_mapper::translate_include (location_t loc, const char *path, size_t len)
   timevar_stop (TV_MODULE_MAPPER);
 
   return xlate;
+}
+
+/* Create a new mapper connecting to OPTION.  */
+
+module_mapper *
+make_mapper (location_t loc)
+{
+  timevar_start (TV_MODULE_MAPPER);
+  const char *option = module_mapper_name;
+  if (!option)
+    option = getenv ("CXX_MODULE_MAPPER");
+
+  mapper = new module_mapper ();
+
+  char const *cookie = mapper->open (loc, option, "|cxx-mapper");
+
+  /* String never modified in this case.  */
+  set_cmi_repo (const_cast<char *> ("gcm.cache"));
+
+  if (mapper->is_server ())
+    {
+      if (!mapper->handshake (loc, cookie ? cookie : main_input_filename))
+	mapper->close (loc);
+    }
+  else if (mapper->is_file ())
+    {
+      /* A mapping file.  Read it.  */
+      dump () && dump ("Reading mapping file %s", mapper->get_name ());
+
+      bool starting = true;
+      for (int r; (r = mapper->get_response (loc)) >= 0;)
+	if (r)
+	  {
+	    char *mod = mapper->response_token (loc);
+	    bool ignore = false;
+	    char *file = NULL;
+
+	    /* Ignore non-cookie lines.  */
+	    if (cookie && 0 != strcmp (mod, cookie))
+	      ignore = true;
+	    else
+	      {
+		if (cookie)
+		  mod = mapper->response_token (loc);
+		if (mod)
+		  file = mapper->response_token (loc, true);
+	      }
+
+	    if (!mapper->response_eol (loc, ignore))
+	      continue;
+
+	    if (!file)
+	      continue;
+
+	    if (starting && 0 == strcmp (mod, "$root"))
+	      {
+		set_cmi_repo (file);
+		continue;
+	      }
+
+	    starting = false;
+	    file = maybe_strip_cmi_prefix (file);
+	    module_state *state = get_module (mod);
+	    if (!state)
+	      mapper->response_unexpected (loc);
+	    else if (!state->filename)
+	      state->filename = xstrdup (file);
+	    else if (strcmp (state->filename, file))
+	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
+			  state->get_flatname (), file);
+	  }
+      mapper->close_file ();
+    }
+
+  timevar_stop (TV_MODULE_MAPPER);
+
+  return mapper;
 }
 
 /* If THIS is the current purview, issue an import error and return false.  */
@@ -14585,7 +14560,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      if (imp->filename)
 		fname = NULL;
 	      else if (!fname[0])
-		fname = module_mapper::import_export
+		fname = mapper_import_export
 		  (imp->loc, imp->get_flatname (),false);
 
 	      if (imp->is_partition ())
@@ -19164,7 +19139,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   dump (dumper::MAPPER) && dump ("Checking include translation '%s'", path);
   bool res = false;
-  module_mapper *mapper = module_mapper::get (main_source_loc);
+  module_mapper *mapper = get_mapper (main_source_loc);
   if (mapper->is_live ())
     {
       size_t len = strlen (path);
@@ -19329,7 +19304,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	     our module state flags are inadequate.  */
 	  spans.close ();
 
-	  const char *fname = module_mapper::import_export
+	  const char *fname = mapper_import_export
 	    (module->loc, module->get_flatname (), false);
 	  if (!module->do_import (fname, reader, true))
 	    gcc_unreachable ();
@@ -19356,7 +19331,7 @@ preprocess_module (module_state *module, location_t from_loc,
 void
 preprocessed_module (cpp_reader *reader)
 {
-  module_mapper *mapper = module_mapper::get (main_source_loc);
+  module_mapper *mapper = get_mapper (main_source_loc);
 
   spans.close ();
 
@@ -19638,7 +19613,7 @@ init_module_processing (cpp_reader *reader)
 
   if (!flag_module_lazy)
     /* Get the mapper now, if we're not being lazy.  */
-    module_mapper::get (main_source_loc);
+    get_mapper (main_source_loc);
 
   if (!flag_preprocess_only)
     {
@@ -19762,7 +19737,7 @@ finish_module_processing (cpp_reader *reader)
 	}
 
       if (!errorcount)
-	module_mapper::export_done (state->loc, state->get_flatname ());
+	mapper_export_done (state->loc, state->get_flatname ());
       else if (path)
 	{
 	  /* We failed, attempt to erase all evidence we even tried.  */
@@ -19795,7 +19770,15 @@ finish_module_processing (cpp_reader *reader)
 
   /* We're now done with everything but the module names.  */
   set_cmi_repo (NULL);
-  module_mapper::fini (main_source_loc);
+  if (mapper)
+    {
+      timevar_start (TV_MODULE_MAPPER);
+      if (mapper->is_live ())
+	mapper->close (main_source_loc);
+      delete mapper;
+      mapper = NULL;
+      timevar_stop (TV_MODULE_MAPPER);
+    }
   module_state_config::release ();
 
 #if CHECKING_P

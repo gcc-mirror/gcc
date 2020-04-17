@@ -1,6 +1,13 @@
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_mapper::{get,make}): Replace with ...
+	(get_mapper, make_mapper): ... these.
+	(module_mapper:(kill,fini): Delete.
+	(module_mapper::{import_export,export_done}): Replace with ...
+	(module_import_export, module_export_done): ... these.
+
+	gcc/cp/
 	* module.cc (module_mapper::to): Drop unneeded field.
 
 	gcc/cp/
