@@ -1,3 +1,9 @@
+2020-04-17  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* cse.c (cse_insn): Avoid recording nop sets in multi-set parallels
+	when the destination has a REG_UNUSED note.
+
 2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/94635

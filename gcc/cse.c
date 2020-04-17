@@ -4715,8 +4715,20 @@ cse_insn (rtx_insn *insn)
 
       /* Compute SRC's hash code, and also notice if it
 	 should not be recorded at all.  In that case,
-	 prevent any further processing of this assignment.  */
-      do_not_record = 0;
+	 prevent any further processing of this assignment.
+
+	 We set DO_NOT_RECORD if the destination has a REG_UNUSED note.
+	 This avoids getting the source register into the tables, where it
+	 may be invalidated later (via REG_QTY), then trigger an ICE upon
+	 re-insertion.
+
+	 This is only a problem in multi-set insns.  If it were a single
+	 set the dead copy would have been removed.  If the RHS were anything
+	 but a simple REG, then we won't call insert_regs and thus there's
+	 no potential for triggering the ICE.  */
+      do_not_record = (REG_P (dest)
+		       && REG_P (src)
+		       && find_reg_note (insn, REG_UNUSED, dest));
       hash_arg_in_memory = 0;
 
       sets[i].src = src;

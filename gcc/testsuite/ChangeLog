@@ -1,3 +1,8 @@
+2020-04-17  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* gcc.c-torture/compile/pr90275-2.c: New test.
+
 2020-04-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94483
