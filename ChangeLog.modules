@@ -1,6 +1,9 @@
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_mapper::{open,close}): New methods, use them.
+
+	gcc/cp/
 	* module.cc (module_mapper): Break more stuff out of ctor.
 
 2020-04-13  Nathan Sidwell  <nathan@acm.org>

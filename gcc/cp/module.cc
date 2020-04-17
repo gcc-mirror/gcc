@@ -3886,9 +3886,13 @@ class module_mapper {
   int fd_to;	/* Fileno to mapper. */
   bool batching;/* Batching requests or responses.  */
 
-private:
-  /* Construction always succeeds, but may result in a dead mapper.  */
-  module_mapper (location_t loc, const char *&connection);
+public:
+  module_mapper ()
+    : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
+      buffer (NULL), size (0), pos (NULL), end (NULL),
+      start (NULL), fd_from (-1), fd_to (-1), batching (false)
+  {
+  }
   ~module_mapper ()
   {
     gcc_assert (!from);
@@ -3897,6 +3901,10 @@ private:
 private:
   void kill (location_t);
   static module_mapper *make (location_t loc);
+
+public:
+  const char *open (location_t loc, const char *connection, const char *dflt);
+  void close (location_t loc);
 
 public:
   static module_mapper *get (location_t loc)
@@ -13373,29 +13381,19 @@ get_module (const char *ptr)
   return mod;
 }
 
+
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
-// FIXME: Most of this logic should not be in the ctor -- have an open
-// method
 
-module_mapper::module_mapper (location_t loc, const char *&option)
-  : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
-    /* Exercise buffer expansion code.  */
-    buffer (NULL), size (EXPERIMENT (3, 200)), pos (NULL), end (NULL),
-    start (NULL), fd_from (-1), fd_to (-1), batching (false)
+char const *
+module_mapper::open (location_t loc, const char *option, const char *dflt)
 {
-  const char *dflt = "|cxx-mapper";
-  pex = NULL;
-
   /* We set name as soon as we know what kind of mapper this is.  */
   if (!option)
     option = dflt;
 
   dump () && dump ("Initializing mapper %s", option);
-
-  /* String never modified in this case.  */
-  set_cmi_repo (const_cast<char *> ("gcm.cache"));
 
   int err = 0;
   const char *errmsg = NULL;
@@ -13613,7 +13611,7 @@ module_mapper::module_mapper (location_t loc, const char *&option)
 	    {
 	      if (connect (fd, (sockaddr *)&un, un_len) < 0)
 		{
-		  close (fd);
+		  ::close (fd);
 		  fd = -1;
 		}
 	    }
@@ -13636,7 +13634,7 @@ module_mapper::module_mapper (location_t loc, const char *&option)
 
 	      if (!next)
 		{
-		  close (fd);
+		  ::close (fd);
 		  fd = -1;
 		}
 	    }
@@ -13685,7 +13683,7 @@ module_mapper::module_mapper (location_t loc, const char *&option)
 		: G_("failed %s of mapper %qs: %m"),
 		errmsg, name ? name : option,
 		err < 0 ? gai_strerror (err) : _("Facility not provided"));
-      kill (loc);
+      close (loc);
       goto done;
     }
 
@@ -13696,25 +13694,19 @@ module_mapper::module_mapper (location_t loc, const char *&option)
     }
   dump () && dump ("Initialized mapper");
 
+  /* Exercise buffer expansion code.  */
+  size = EXPERIMENT (3, 200);
   pos = end = buffer = XNEWVEC (char, size);
 
  done:
 
   /* Return any cookie we found.  */
-  option = cookie ? cookie + 1 : cookie;
+  return cookie ? cookie + 1 : cookie;
 }
 
-/* Close down the mapper.  Mark it as not restartable.  */
-
 void
-module_mapper::kill (location_t loc)
+module_mapper::close (location_t loc)
 {
-  if (!is_live ())
-    return;
-
-  timevar_start (TV_MODULE_MAPPER);
-  dump () && dump ("Killing mapper %s", name);
-
   if (to)
     {
       fclose (to);
@@ -13749,7 +13741,7 @@ module_mapper::kill (location_t loc)
   else if (fd_from >= 0)
     {
       if (!is_file ())
-	close (fd_from);
+	::close (fd_from);
       fd_from = -1;
     }
 
@@ -13760,7 +13752,21 @@ module_mapper::kill (location_t loc)
 #endif
 
   XDELETEVEC (buffer);
-  buffer = NULL;
+  buffer = pos = end = NULL;
+  size = 0;
+}
+
+/* Close down the mapper.  Mark it as not restartable.  */
+
+void
+module_mapper::kill (location_t loc)
+{
+  timevar_start (TV_MODULE_MAPPER);
+  if (!is_live ())
+    return;
+
+  dump () && dump ("Killing mapper %s", name);
+  close (loc);
 
   timevar_stop (TV_MODULE_MAPPER);
 }
@@ -13774,12 +13780,17 @@ module_mapper::make (location_t loc)
   const char *option = module_mapper_name;
   if (!option)
     option = getenv ("CXX_MODULE_MAPPER");
-  module_mapper *mapper = new module_mapper (loc, option);
-  /* OPTION is now the cookie -- or null.  */
+
+  module_mapper *mapper = new module_mapper ();
+
+  char const *cookie = mapper->open (loc, option, "|cxx-mapper");
+
+  /* String never modified in this case.  */
+  set_cmi_repo (const_cast<char *> ("gcm.cache"));
 
   if (mapper->is_server ())
     {
-      if (!mapper->handshake (loc, option ? option : main_input_filename))
+      if (!mapper->handshake (loc, cookie ? cookie : main_input_filename))
 	mapper->kill (loc);
     }
   else if (mapper->is_file ())
@@ -13796,11 +13807,11 @@ module_mapper::make (location_t loc)
 	    char *file = NULL;
 
 	    /* Ignore non-cookie lines.  */
-	    if (option && 0 != strcmp (mod, option))
+	    if (cookie && 0 != strcmp (mod, cookie))
 	      ignore = true;
 	    else
 	      {
-		if (option)
+		if (cookie)
 		  mod = mapper->response_token (loc);
 		if (mod)
 		  file = mapper->response_token (loc, true);
