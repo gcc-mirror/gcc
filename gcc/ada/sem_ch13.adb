@@ -1792,6 +1792,9 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Relaxed_Initialization;
             --  Perform analysis of aspect Relaxed_Initialization
 
+            procedure Analyze_Aspect_Yield;
+            --  Perform analysis of aspect Yield
+
             procedure Analyze_Aspect_Static;
             --  Ada 202x (AI12-0075): Perform analysis of aspect Static
 
@@ -2465,6 +2468,97 @@ package body Sem_Ch13 is
                   end if;
                end if;
             end Analyze_Aspect_Static;
+
+            --------------------------
+            -- Analyze_Aspect_Yield --
+            --------------------------
+
+            procedure Analyze_Aspect_Yield is
+               Expr_Value : Boolean := False;
+
+            begin
+               --  Check valid declarations for 'Yield
+
+               if (Nkind_In (N, N_Abstract_Subprogram_Declaration,
+                                N_Entry_Declaration,
+                                N_Generic_Subprogram_Declaration,
+                                N_Subprogram_Declaration)
+                     or else Nkind (N) in N_Formal_Subprogram_Declaration)
+                 and then not Within_Protected_Type (E)
+               then
+                  null;
+
+               elsif Within_Protected_Type (E) then
+                  Error_Msg_N
+                    ("aspect% not applicable to protected operations", Id);
+                  return;
+
+               else
+                  Error_Msg_N
+                    ("aspect% only applicable to subprogram and entry "
+                     & "declarations", Id);
+                  return;
+               end if;
+
+               --  Evaluate its static expression (if available); otherwise it
+               --  defaults to True.
+
+               if No (Expr) then
+                  Expr_Value := True;
+
+               --  Otherwise it must have a static boolean expression
+
+               else
+                  if Inside_A_Generic then
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  else
+                     Analyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+                  if Is_OK_Static_Expression (Expr) then
+                     if Is_True (Static_Boolean (Expr)) then
+                        Expr_Value := True;
+                     end if;
+                  else
+                     Error_Msg_N
+                       ("expression of aspect % must be static", Aspect);
+                  end if;
+               end if;
+
+               if Expr_Value then
+
+                  --  Adding minimum decoration to generic subprograms to set
+                  --  the Yield attribute (since at this stage it may not be
+                  --  set; see Analyze_Generic_Subprogram_Declaration).
+
+                  if Nkind (N) in N_Generic_Subprogram_Declaration
+                    and then Ekind (E) = E_Void
+                  then
+                     if Nkind (Specification (N)) = N_Function_Specification
+                     then
+                        Set_Ekind (E, E_Function);
+                     else
+                        Set_Ekind (E, E_Procedure);
+                     end if;
+                  end if;
+
+                  Set_Has_Yield_Aspect (E);
+               end if;
+
+               --  If the Yield aspect is specified for a dispatching
+               --  subprogram that inherits the aspect, the specified
+               --  value shall be confirming.
+
+               if Present (Expr)
+                 and then Is_Dispatching_Operation (E)
+                 and then Present (Overridden_Operation (E))
+                 and then Has_Yield_Aspect (Overridden_Operation (E))
+                            /= Is_True (Static_Boolean (Expr))
+               then
+                  Error_Msg_N ("specification of inherited aspect% can only " &
+                               "confirm parent value", Id);
+               end if;
+            end Analyze_Aspect_Yield;
 
             -----------------------
             -- Make_Aitem_Pragma --
@@ -4219,6 +4313,12 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Static then
                      Analyze_Aspect_Static;
+                     goto Continue;
+
+                  --  Ada 2020 (AI12-0279)
+
+                  elsif A_Id = Aspect_Yield then
+                     Analyze_Aspect_Yield;
                      goto Continue;
                   end if;
 

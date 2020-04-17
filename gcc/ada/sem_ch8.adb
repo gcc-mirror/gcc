@@ -3772,6 +3772,17 @@ package body Sem_Ch8 is
          Analyze_Aspect_Specifications (N, New_S);
       end if;
 
+      --  AI12-0279
+
+      if Is_Actual
+        and then Has_Yield_Aspect (Formal_Spec)
+        and then not Has_Yield_Aspect (Old_S)
+      then
+         Error_Msg_Name_1 := Name_Yield;
+         Error_Msg_N
+           ("actual subprogram& must have aspect% to match formal", Name (N));
+      end if;
+
       Ada_Version := Save_AV;
       Ada_Version_Pragma := Save_AVP;
       Ada_Version_Explicit := Save_AV_Exp;

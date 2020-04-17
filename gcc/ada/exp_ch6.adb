@@ -6463,6 +6463,19 @@ package body Exp_Ch6 is
                    Name =>
                      New_Occurrence_Of (Postconditions_Proc (Spec_Id), Loc)));
             end if;
+
+            --  Ada 2020 (AI12-0279): append the call to 'Yield unless this is
+            --  a generic subprogram (since in such case it will be added to
+            --  the instantiations).
+
+            if Has_Yield_Aspect (Spec_Id)
+              and then Ekind (Spec_Id) /= E_Generic_Procedure
+              and then RTE_Available (RE_Yield)
+            then
+               Insert_Action (Stmt,
+                 Make_Procedure_Call_Statement (Loc,
+                   New_Occurrence_Of (RTE (RE_Yield), Loc)));
+            end if;
          end if;
       end Add_Return;
 
@@ -6894,6 +6907,16 @@ package body Exp_Ch6 is
          Insert_Action (N,
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc)));
+      end if;
+
+      --  Ada 2020 (AI12-0279)
+
+      if Has_Yield_Aspect (Scope_Id)
+        and then RTE_Available (RE_Yield)
+      then
+         Insert_Action (N,
+           Make_Procedure_Call_Statement (Loc,
+             New_Occurrence_Of (RTE (RE_Yield), Loc)));
       end if;
 
       --  If it is a return from a procedure do no extra steps
@@ -8044,6 +8067,16 @@ package body Exp_Ch6 is
          if Exp /= Original_Node (Exp) then
             Set_Original_Node (Exp, New_Copy_Of_Exp);
          end if;
+      end if;
+
+      --  Ada 2020 (AI12-0279)
+
+      if Has_Yield_Aspect (Scope_Id)
+        and then RTE_Available (RE_Yield)
+      then
+         Insert_Action (N,
+           Make_Procedure_Call_Statement (Loc,
+             New_Occurrence_Of (RTE (RE_Yield), Loc)));
       end if;
    end Expand_Simple_Function_Return;
 
