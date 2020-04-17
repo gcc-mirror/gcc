@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++17" }
-// { dg-do run { target c++17 } }
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,33 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// C++17 24.4.3 Non-member comparison functions [string.view.comparison]
+// C++20 21.4.4 Non-member comparison functions [string.view.comparisons]
+
+// operator==
+/*
+template<class charT, class traits>
+  constexpr bool
+  operator==(basic_string_view<charT, traits> lhs,
+	     basic_string_view<charT, traits> rhs) noexcept;
+
+template<class charT, class traits>
+  constexpr bool
+  operator==(basic_string_view<charT, traits> lhs,
+	     type_identity_t<basic_string_view<charT, traits>> rhs) noexcept;
+*/
+
+// operator<=>
+/*
+template<class charT, class traits>
+  constexpr [see below]
+  operator<=>(basic_string_view<charT, traits> lhs,
+	      basic_string_view<charT, traits> rhs) noexcept;
+
+template<class charT, class traits>
+  constexpr [see below]
+  operator<=>(basic_string_view<charT, traits> lhs,
+	      type_identity_t<basic_string_view<charT, traits>> rhs) noexcept;
+*/
 
 #include <string_view>
 #include <testsuite_hooks.h>
@@ -88,6 +114,15 @@ test01()
   VERIFY( str_0 <= str_4 );
   VERIFY( str_4 <= str_0 );
 
+  VERIFY( std::is_gt(str_0 <=> str_1) );
+  VERIFY( std::is_gt(str_0 <=> str_2) );
+  VERIFY( std::is_lt(str_0 <=> str_3) );
+  VERIFY( std::is_eq(str_0 <=> str_4) );
+  VERIFY( std::is_lt(str_1 <=> str_0) );
+  VERIFY( std::is_lt(str_2 <=> str_0) );
+  VERIFY( std::is_gt(str_3 <=> str_0) );
+  VERIFY( std::is_eq(str_4 <=> str_0) );
+
   //comparisons between string object and string literal
   VERIFY( !(str_0 == "costa marbella") );
   VERIFY( !(str_0 == "cost") );
@@ -142,6 +177,15 @@ test01()
   VERIFY( !("costa ricans" <= str_0) );
   VERIFY( "costa rica" <= str_0 );
   VERIFY( str_0 <= "costa rica" );
+
+  VERIFY( std::is_gt(str_0 <=> "costa marbella") );
+  VERIFY( std::is_gt(str_0 <=> "cost") );
+  VERIFY( std::is_lt(str_0 <=> "costa ricans") );
+  VERIFY( std::is_eq(str_0 <=> "costa rica") );
+  VERIFY( std::is_lt("costa marbella" <=> str_0) );
+  VERIFY( std::is_lt("cost" <=> str_0) );
+  VERIFY( std::is_gt("costa ricans" <=> str_0) );
+  VERIFY( std::is_eq("costa rica" <=> str_0) );
 }
 
 constexpr bool
@@ -212,6 +256,15 @@ test02()
   VERIFY( str_0 <= str_4 );
   VERIFY( str_4 <= str_0 );
 
+  VERIFY( std::is_gt(str_0 <=> str_1) );
+  VERIFY( std::is_gt(str_0 <=> str_2) );
+  VERIFY( std::is_lt(str_0 <=> str_3) );
+  VERIFY( std::is_eq(str_0 <=> str_4) );
+  VERIFY( std::is_lt(str_1 <=> str_0) );
+  VERIFY( std::is_lt(str_2 <=> str_0) );
+  VERIFY( std::is_gt(str_3 <=> str_0) );
+  VERIFY( std::is_eq(str_4 <=> str_0) );
+
   //comparisons between string object and string literal
   VERIFY( !(str_0 == "costa marbella") );
   VERIFY( !(str_0 == "cost") );
@@ -266,6 +319,15 @@ test02()
   VERIFY( !("costa ricans" <= str_0) );
   VERIFY( "costa rica" <= str_0 );
   VERIFY( str_0 <= "costa rica" );
+
+  VERIFY( std::is_gt(str_0 <=> "costa marbella") );
+  VERIFY( std::is_gt(str_0 <=> "cost") );
+  VERIFY( std::is_lt(str_0 <=> "costa ricans") );
+  VERIFY( std::is_eq(str_0 <=> "costa rica") );
+  VERIFY( std::is_lt("costa marbella" <=> str_0) );
+  VERIFY( std::is_lt("cost" <=> str_0) );
+  VERIFY( std::is_gt("costa ricans" <=> str_0) );
+  VERIFY( std::is_eq("costa rica" <=> str_0) );
 
   return true;
 }
