@@ -1,5 +1,12 @@
 2020-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/chrono (duration, time_point): Define operator<=> and
+	remove redundant operator!= for C++20.
+	* testsuite/20_util/duration/comparison_operators/three_way.cc: New
+	test.
+	* testsuite/20_util/time_point/comparison_operators/three_way.cc: New
+	test.
+
 	* testsuite/util/native_type/native_priority_queue.hpp: Use
 	allocator_traits to rebind allocator.
 
