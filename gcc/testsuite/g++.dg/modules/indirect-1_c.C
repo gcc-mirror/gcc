@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-eh-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
 import bar;
 
 
@@ -47,6 +47,3 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::Plain_Const_Three'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::Scoped_Const_Three'@'bar' section} module } }
-
-// { dg-final { scan-lang-dump {Mapper request:[^\n]*IMPORT bar} module } }
-// { dg-final { scan-lang-dump-not {Mapper request:IMPORT foo} module } }

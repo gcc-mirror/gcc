@@ -179,8 +179,6 @@ Classes used:
    macro_import - imported macro data
    macro_export - exported macro data
 
-   module_mapper - mapper object
-
    The ELROND objects use mmap, for both reading and writing.  If mmap
    is unavailable, fileno IO is used to read and write blocks of data.
 
@@ -206,30 +204,8 @@ Classes used:
 #error "This is not the version I was looking for."
 #endif
 
-/* Mapper Protocol version.  Very new.  */
-#define MAPPER_VERSION 0
 #define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
-
-/* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
-   we poison later!  */
-#if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
-/* socket, connect, shutdown  */
-# define NETWORKING 1
-# include <sys/socket.h>
-# ifdef HAVE_AF_UNIX
-/* sockaddr_un  */
-#  include <sys/un.h>
-# endif
-# include <netinet/in.h>
-# ifdef HAVE_AF_INET6
-/* sockaddr_in6, getaddrinfo, freeaddrinfo, gai_strerror, ntohs, htons.  */
-#  include <netdb.h>
-# endif
-#endif
-#ifndef HAVE_AF_INET6
-# define gai_strerror(X) ""
-#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -252,6 +228,7 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
+#include "mapper-client.h"
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
 /* mmap, munmap.  */
@@ -266,23 +243,6 @@ Classes used:
 #else
 #define MAPPED_READING 0
 #define MAPPED_WRITING 0
-#endif
-
-#ifndef HAVE_MEMRCHR
-/* Some unfortunate souls do not have memrchr.
-   Everyone is fighting a struggle you know nothing about.  */
-static void *
-memrchr (void *s_, int c, size_t n)
-{
-  unsigned char *s = (unsigned char *)s_;
-  while (n--)
-    if (s[n] == c)
-      return &s[n];
-  return NULL;
-}
-#endif
-#ifndef HAVE_SIGHANDLER_T
-typedef void (*sighandler_t) (int);
 #endif
 
 static inline cpp_hashnode *cpp_node (tree id)
@@ -3863,129 +3823,6 @@ static vec<mc_slot, va_heap, vl_embed> *entity_ary;
 static GTY(()) vec<tree, va_gc> *class_members;
 
 /********************************************************************/
-/* Mapper to query and inform of modular compilations.  This is a
-   singleton.  It contains both FILE and fd entities.  The PEX
-   interface provides the former, so we need to keep them around.
-   the fd entities are used when networking is supported.  */
-// FIXME: module_mapper could be generalized and moved to a separate
-// file, there's commonality with LTO
-
-class module_mapper {
-  const char *name;
-  FILE *from;   /* Read from mapper.  */
-  pex_obj *pex; /* If it's a subprocess.  */
-  sighandler_t sigpipe; /* Original sigpipe disposition.  */
-
-  char *buffer; /* Line buffer.  */
-  size_t size;  /* Allocated size of buffer.  */
-  char *pos;	/* Read/Write point in buffer.  */
-  char *end;	/* Ending NUL byte.  */
-  char *start;  /* Start of current response line.  */
-  int fd_from;	/* Fileno from mapper. */
-  int fd_to;	/* Fileno to mapper. */
-  bool batching;/* Batching requests or responses.  */
-
-public:
-  module_mapper ()
-    : name (NULL), from (NULL), pex (NULL), sigpipe (SIG_IGN),
-      buffer (NULL), size (0), pos (NULL), end (NULL),
-      start (NULL), fd_from (-1), fd_to (-1), batching (false)
-  {
-  }
-  ~module_mapper ()
-  {
-    gcc_assert (!from);
-  }
-
-public:
-  const char *open (location_t loc, const char *connection, const char *dflt);
-  void close (location_t loc);
-
-public:
-
-public:
-  bool is_live () const
-  {
-    return fd_from >= 0;
-  }
-  bool is_server () const
-  {
-    return is_live () && fd_to >= 0;
-  }
-  bool is_file () const
-  {
-    return is_live () && fd_to < 0;
-  }
-  void close_file ()
-  {
-    gcc_checking_assert (is_file ());
-    fclose (from);
-    from = NULL;
-    /* Leave fd_from alone to show liveness.  */
-  }
-  char const *get_name () const
-  {
-    return name;
-  }
-
-public:
-  bool cork ()
-  {
-    batching = true;
-    return batching;
-  }
-  void uncork (location_t loc)
-  {
-    if (batching)
-      {
-	batching = false;
-	/* Need to disable gnu-printf zero-length format warning.  */
-	send_command (loc, "%s", "");
-      }
-  }
-  bool is_corked () const
-  {
-    return batching;
-  }
-  bool eol_p () const
-  {
-    return pos == end;
-  }
-
-public:
-  void imex_query (location_t loc, const char *flatname, bool exporting);
-  const char *imex_response (location_t loc, const char *flatname)
-  {
-    return get_response (loc) > 0 ? cmi_response (loc, flatname) : NULL;
-  }
-  bool translate_include (location_t, const char *path, size_t len);
-
-public:
-  /* After a response that may be corked, eat blank lines until it is
-     uncorked.  */
-  void maybe_uncork (location_t loc)
-  {
-    while (is_corked ())
-      if (get_response (loc) > 0)
-	response_unexpected (loc);
-  }
-
-public:
-  bool handshake (location_t, const char *main_src);
-  void send_command (location_t, const char * = NULL, ...) ATTRIBUTE_PRINTF_3;
-  int get_response (location_t);
-  char *response_token (location_t, bool all = false);
-  int response_word (location_t, const char *, ...);
-  const char *response_error ()
-  {
-    const char *result = pos != end ? pos : "unspecified error";
-    pos = end;
-    return result;
-  }
-  void response_unexpected (location_t);
-  bool response_eol (location_t, bool ignore = false);
-  const char *cmi_response (location_t, const char *);
-};
 
 /* Our module mapper (created lazily).  */
 module_mapper *mapper;
@@ -4138,7 +3975,6 @@ public:
     TREE = TDF_UID, 	/* -uid:Tree streaming.  */
     MERGE = TDF_ALIAS,	/* -alias:Mergeable Entities.  */
     ELF = TDF_ASMNAME,	/* -asmname:Elf data.  */
-    MAPPER = TDF_EH,	/* -eh:Mapper.  */
     MACRO = TDF_VOPS	/* -vops:Macros.  */
   };
 
@@ -4742,23 +4578,6 @@ create_dirs (char *path)
 	    && errno != EEXIST)
 	  break;
       }
-}
-
-/* If CMI path TO begins with the prefix, return a pointer to the
-   trailing suffix.  Otherwise return TO.  */
-
-static char *
-maybe_strip_cmi_prefix (char *to)
-{
-  if (cmi_repo
-      && 0 == strncmp (to, cmi_repo, cmi_repo_length)
-      && IS_DIR_SEPARATOR (to[cmi_repo_length]))
-    {
-      to += cmi_repo_length + 1;
-      while (IS_DIR_SEPARATOR (*to))
-	to++;
-    }
-  return to;
 }
 
 /* Given a CLASSTYPE_DECL_LIST VALUE get the the template friend decl,
@@ -13370,721 +13189,6 @@ get_module (const char *ptr)
   return mod;
 }
 
-
-/* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
-   client-side socket handling in the compiler.  At least it's not
-   ipv4.  */
-
-char const *
-module_mapper::open (location_t loc, const char *option, const char *dflt)
-{
-  /* We set name as soon as we know what kind of mapper this is.  */
-  if (!option)
-    option = dflt;
-
-  dump () && dump ("Initializing mapper %s", option);
-
-  int err = 0;
-  const char *errmsg = NULL;
-
-  /* First copy.  */
-  unsigned spaces = 0;
-  unsigned len = 0;
-  char *cookie = NULL;
-
-  for (; option[len]; len++)
-    {
-      if (option[len] == ' ')
-	spaces++;
-      if (option[len] == '?' && !cookie)
-	cookie = const_cast<char *> (&option[len]);
-    }
-  char *writable = XNEWVEC (char, len + 1);
-  memcpy (writable, option, len + 1);
-  if (cookie)
-    {
-      len = cookie - option;
-      cookie = writable + len;
-      *cookie = 0;
-    }
-
-  if (writable[0] == '|')
-    {
-      /* A program to spawn and talk to.  */
-      /* Split writable at white-space.  No space-containing args
-	 for you!  */
-      char **argv = XALLOCAVEC (char *, spaces + 2);
-      unsigned arg_no = 0;
-
-      for (char *ptr = writable + 1; ; ptr++)
-	{
-	  argv[arg_no] = ptr;
-	  for (;; ptr++)
-	    {
-	      if (*ptr == ' ')
-		break;
-	      else if (*ptr)
-		continue;
-	      else if (ptr != cookie)
-		break;
-	      else if (arg_no != 1)
-		{
-		  /* Not a cookie after all.  */
-		  *cookie = '?';
-		  cookie = NULL;
-		}
-	    }
-	  if (!arg_no++)
-	    len = ptr - (writable + 1);	  
-	  if (!*ptr)
-	    break;
-	  *ptr = 0;
-	}
-      argv[arg_no] = NULL;
-
-      pex = pex_init (PEX_USE_PIPES, progname, NULL);
-      FILE *to = pex_input_pipe (pex, false);
-      if (!to)
-	{
-	  err = errno;
-	  errmsg = "connecting input";
-	}
-      else
-	{
-	  int flags = PEX_SEARCH;
-
-	  /* Use strcmp to detect default, so we may explicitly name
-	     it with additional args in tests etc.  */
-	  if ((option == dflt || 0 == strcmp (argv[0], dflt + 1))
-	      && save_decoded_options[0].opt_index == OPT_SPECIAL_program_name
-	      && save_decoded_options[0].arg != progname)
-	    {
-	      /* Prepend the invoking path.  */
-	      const char *fullname = save_decoded_options[0].arg;
-	      size_t dir_len = progname - fullname;
-	      char *argv0 = XNEWVEC (char, dir_len + len + 1);
-	      memcpy (argv0, fullname, dir_len);
-	      memcpy (argv0 + dir_len, argv[0], len + 1);
-	      argv[0] = argv0;
-	      flags = 0;
-	    }
-	  errmsg = pex_run (pex, flags, argv[0], argv, NULL, NULL, &err);
-	  if (!flags)
-	    XDELETEVEC (argv[0]);
-	}
-
-      if (!errmsg)
-	{
-	  from = pex_read_output (pex, false);
-	  if (from
-	      && (fd_to = dup (fileno (to))) >= 0)
-	    fd_from = fileno (from);
-	  else
-	    {
-	      err = errno;
-	      errmsg = "connecting output";
-	    }
-	  fclose (to);
-	}
-      name = writable;
-    }
-  else if (writable[0] == '<')
-    {
-      /* File descriptors, inc stdin/out.  */
-      int from = -1, to = -1;
-      char *ptr = writable + 1, *eptr;
-      from = strtoul (ptr, &eptr, 0);
-      if (*eptr == '>')
-	{
-	  ptr = eptr + 1;
-	  to = strtoul (ptr, &eptr, 0);
-	  if (eptr != ptr && from == -1)
-	    from = to;
-	}
-      if (*eptr)
-	errmsg = "parsing";
-      else
-	{
-	  if (eptr == writable + 2)
-	    {
-	      from = fileno (stdin);
-	      to = fileno (stdout);
-	    }
-	  fd_to = to;
-	  fd_from = from;
-	}
-      name = writable;
-    }
-
-  if (!name)
-    {
-      int fd;
-
-      /* Does it look like a socket?  */
-#ifdef NETWORKING
-#ifdef HAVE_AF_UNIX
-      sockaddr_un un;
-      size_t un_len = 0;
-      un.sun_family = AF_UNSPEC;
-#endif
-      int port = 0;
-#ifdef HAVE_AF_INET6
-      struct addrinfo *addrs = NULL;
-#endif
-#endif
-      if (writable[0] == '=')
-	{
-	  /* A local socket.  */
-#ifdef HAVE_AF_UNIX
-	  if (len < sizeof (un.sun_path))
-	    {
-	      memset (&un, 0, sizeof (un));
-	      un.sun_family = AF_UNIX;
-	      memcpy (un.sun_path, writable + 1, len);
-	    }
-	  un_len = offsetof (struct sockaddr_un, sun_path) + len + 1;
-#else
-	  errmsg = "unix protocol unsupported";
-#endif
-	  name = writable;
-	}
-      else if (char *colon = (char *)memrchr (writable, ':', len))
-	{
-	  /* Try a hostname:port address.  */
-	  char *endp;
-	  port = strtoul (colon + 1, &endp, 10);
-	  if (port && endp != colon + 1 && !*endp)
-	    {
-	      /* Ends in ':number', treat as ipv6 domain socket.  */
-#ifdef HAVE_AF_INET6
-	      addrinfo hints;
-
-	      hints.ai_flags = AI_NUMERICSERV;
-	      hints.ai_family = AF_INET6;
-	      hints.ai_socktype = SOCK_STREAM;
-	      hints.ai_protocol = 0;
-	      hints.ai_addrlen = 0;
-	      hints.ai_addr = NULL;
-	      hints.ai_canonname = NULL;
-	      hints.ai_next = NULL;
-
-	      *colon = 0;
-	      /* getaddrinfo requires a port number, but is quite
-		 happy to accept invalid ones.  So don't rely on it.  */
-	      if (int e = getaddrinfo (colon == writable ? NULL : writable,
-				       "0", &hints, &addrs))
-		{
-		  err = e;
-		  errmsg = "resolving address";
-		}
-	      else
-		un.sun_family = AF_INET6;
-	      *colon = ':';
-#else
-	      errmsg = "ipv6 protocol unsupported";
-#endif
-	      name = writable;
-	    }
-	}
-      
-      if (un.sun_family != AF_UNSPEC)
-	{
-	  fd = socket (un.sun_family, SOCK_STREAM, 0);
-	  if (fd < 0)
-	    ;
-#ifdef HAVE_AF_UNIX
-	  else if (un.sun_family == AF_UNIX)
-	    {
-	      if (connect (fd, (sockaddr *)&un, un_len) < 0)
-		{
-		  ::close (fd);
-		  fd = -1;
-		}
-	    }
-#endif
-#ifdef HAVE_AF_INET6
-	  else if (un.sun_family == AF_INET6)
-	    {
-	      struct addrinfo *next;
-	      for (next = addrs; next; next = next->ai_next)
-		if (next->ai_family == AF_INET6
-		    && next->ai_socktype == SOCK_STREAM)
-		  {
-		    sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
-		    in6->sin6_port = htons (port);
-		    if (ntohs (in6->sin6_port) != port)
-		      errno = EINVAL;
-		    else if (!connect (fd, next->ai_addr, next->ai_addrlen))
-		      break;
-		  }
-
-	      if (!next)
-		{
-		  ::close (fd);
-		  fd = -1;
-		}
-	    }
-#endif
-	  else
-	    gcc_unreachable ();
-
-#ifdef HAVE_AF_INET6
-	  freeaddrinfo (addrs);
-#endif
-	  if (fd >= 0)
-	    {
-	      /* We have a socket.  */
-	      fd_from = fd_to = fd;
-#ifdef SIGPIPE
-	      /* We need to ignore sig pipe for a while.  */
-	      sigpipe = signal (SIGPIPE, SIG_IGN);
-#endif
-	    }
-	  else if (!errmsg)
-	    {
-	      err = errno;
-	      errmsg = "connecting socket";
-	    }
-	}
-    }
-
-  if (!name)
-    {
-      /* Try a mapping file.  */
-      from = fopen (writable, "r");
-      if (from)
-	fd_from = fileno (from);
-      else
-	{
-	  err = errno;
-	  errmsg = "opening";
-	}
-      name = writable;
-    }
-
-  if (errmsg)
-    {
-      errno = err;
-      error_at (loc, err <= 0 ? G_("failed %s of mapper %qs: %s")
-		: G_("failed %s of mapper %qs: %m"),
-		errmsg, name ? name : option,
-		err < 0 ? gai_strerror (err) : _("Facility not provided"));
-      close (loc);
-      goto done;
-    }
-
-  if (noisy_p ())
-    {
-      fprintf (stderr, " mapper:%s", name);
-      fflush (stderr);
-    }
-  dump () && dump ("Initialized mapper");
-
-  /* Exercise buffer expansion code.  */
-  size = EXPERIMENT (3, 200);
-  pos = end = buffer = XNEWVEC (char, size);
-
- done:
-
-  /* Return any cookie we found.  */
-  return cookie ? cookie + 1 : cookie;
-}
-
-void
-module_mapper::close (location_t loc)
-{
-  if (fd_to >= 0)
-    {
-#ifdef NETWORKING
-      if (fd_to == fd_from)
-	{
-	  shutdown (fd_to, SHUT_WR);
-#ifdef SIGPIPE
-	  if (sigpipe != SIG_IGN)
-	    /* Restore sigpipe.  */
-	    signal (SIGPIPE, sigpipe);
-#endif
-	}
-      else
-#endif
-	::close (fd_to);
-      fd_to = -1;
-    }
-  
-
-  if (pex)
-    {
-      int status;
-      pex_get_status (pex, 1, &status);
-
-      pex_free (pex);
-      pex = NULL;
-
-      if (WIFSIGNALED (status))
-	error_at (loc, "mapper %qs died by signal %s",
-		  name, strsignal (WTERMSIG (status)));
-      else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-	error_at (loc, "mapper %qs exit status %d",
-		  name, WEXITSTATUS (status));
-      from = NULL;
-      fd_from = -1;
-    }
-  else
-    {
-      if (fd_from >= 0)
-	{
-	  if (!is_file ())
-	    ::close (fd_from);
-	  fd_from = -1;
-	}
-    }
-
-  XDELETEVEC (buffer);
-  buffer = pos = end = NULL;
-  size = 0;
-}
-
-/* Send a command to the mapper.  */
-
-void
-module_mapper::send_command (location_t loc, const char *format, ...)
-{
-  size_t actual = 0;
-  if (pos != buffer)
-    pos = end = buffer;
-  if (batching)
-    *end++ = '+';
-  else if (end != buffer)
-    *end++ = '-';
-
-  for (;;)
-    {
-      va_list args;
-      va_start (args, format);
-      size_t available = (buffer + size) - end;
-      actual = vsnprintf (end, available, format, args);
-      va_end (args);
-      if (actual < available)
-	break;
-
-      size = size * 2 + actual + 20;
-      char *next = XRESIZEVEC (char, buffer, size);
-      end = next + (end - buffer);
-      buffer = pos = next;
-    }
-
-  if (batching)
-    dump (dumper::MAPPER) && dump ("Mapper pending request:%s", end);
-  else
-    dump (dumper::MAPPER) && dump ("Mapper request:%s", buffer);
-  end += actual;
-  *end++ = '\n';
-  if (!batching)
-    {
-      if (is_live () && end - buffer != write (fd_to, buffer, end - buffer))
-	error_at (loc, "failed write to mapper %qs: %m", name);
-      end = pos = buffer;
-    }
-}
-
-/* Read a response from the mapper.  -ve -> end, 0 -> blank, +ve -> something*/
-
-int
-module_mapper::get_response (location_t loc)
-{
-  if (batching)
-    pos = end + 1;
-  else
-    {
-      gcc_assert (pos == end);
-      size_t off = 0;
-      bool bol = true;
-      bool last = false;
-      int stop = 0;
-
-      if (is_live ())
-	{
-	  for (;;)
-	    {
-	      if (fd_to < 0)
-		{
-		  /* We're reading a file.  There can be no
-		     continuations.  */
-		  if (!fgets (buffer + off, size - off, from))
-		    {
-		      stop = feof (from) ? +1 : -1;
-		      break;
-		    }
-		  off += strlen (buffer + off);
-		  if (off && buffer[off - 1] == '\n')
-		    break;
-		}
-	      else
-		{
-		  /* Reading a pipe or socket.  */
-		  int bytes = read (fd_from, buffer + off, size - off - 1);
-		  if (bytes <= 0)
-		    {
-		      stop = bytes ? -1 : +1;
-		      break;
-		    }
-		  while (bytes)
-		    {
-		      if (bol)
-			{
-			  if (buffer[off] == '+')
-			    batching = true;
-			  else
-			    last = true;
-			}
-		      bol = false;
-		      if (char *eol
-			  = (char *)memchr (buffer + off, '\n', size - off))
-			{
-			  bol = true;
-			  unsigned nline = eol + 1 - buffer;
-			  bytes -= nline - off;
-			  off = nline;
-			}
-		      else
-			{
-			  off += bytes;
-			  bytes = 0;
-			  break;
-			}
-		    }
-		  if (bol && last)
-		    break;
-		}
-	      if (off + 1 == size)
-		{
-		  size *= 2;
-		  buffer = XRESIZEVEC (char, buffer, size);
-		}
-	    }
-
-	  if (stop)
-	    {
-	      if (stop < 0)
-		error_at (loc, "failed read of mapper %qs: %m", name);
-	      else if (is_server ())
-		error_at (loc, "unexpected close from mapper %qs", name);
-	      start = NULL;
-	      return -1;
-	    }
-
-	  off--;
-	}
-
-      buffer[off] = 0;
-      dump (dumper::MAPPER) && dump ("Mapper response:%s", buffer);
-      end = buffer + off;
-      pos = buffer;
-    }
-
-  for (;; pos = end + 1)
-    {
-      start = pos;
-      end = NULL;
-      if (*pos == '+')
-	{
-	  pos++;
-	  end = strchr (pos, '\n');
-	  if (end)
-	    *end = 0;
-	}
-
-      if (!end)
-	{
-	  if (*pos == '-')
-	    pos++;
-	  end = pos + strlen (pos);
-	  batching = false;
-	}
-
-      while (*pos && ISSPACE (*pos))
-	pos++;
-
-      if (*pos)
-	return true;
-      if (!batching)
-	break;
-    }
-
-  return false;
-}
-
-void
-module_mapper::response_unexpected (location_t loc)
-{
-  if (start)
-    {
-      /* Restore the whitespace we zapped tokenizing.  */
-      for (char *ptr = start; ptr != pos; ptr++)
-	if (!*ptr)
-	  *ptr = ' ';
-      error_at (loc, "mapper response malformed: %qs", start);
-    }
-  pos = end;
-}
-
-bool
-module_mapper::response_eol (location_t loc, bool ignore)
-{
-  bool at_end = eol_p ();
-  if (!at_end && !ignore)
-    response_unexpected (loc);
-  pos = end;
-  return at_end;
-}
-
-char *
-module_mapper::response_token (location_t loc, bool all)
-{
-  char *ptr = pos;
-
-  if (ptr == end)
-    {
-      response_unexpected (loc);
-      ptr = NULL;
-    }
-  else if (all)
-    pos = end;
-  else
-    {
-      char *eptr = ptr;
-      while (eptr != end && !ISSPACE (*eptr))
-	eptr++;
-
-      if (eptr != end)
-	{
-	  *eptr++ = 0;
-	  while (eptr != end && ISSPACE (*eptr))
-	    eptr++;
-	}
-      pos = eptr;
-    }
-
-  return ptr;
-}
-
-int
-module_mapper::response_word (location_t loc, const char *option, ...)
-{
-  if (const char *tok = response_token (loc))
-    {
-      va_list args;
-      int count = 0;
-
-      va_start (args, option);
-      do
-	{
-	  if (!strcmp (option, tok))
-	    {
-	      va_end (args);
-	      return count;
-	    }
-	  count++;
-	  option = va_arg (args, const char *);
-	}
-      while (option);
-      va_end (args);
-      response_unexpected (loc);
-    }
-  return -1;
-}
-
-/*  Module mapper protocol non-canonical precis:
-
-    HELLO version kind cookie
-    	-> HELLO/ERROR response
-    IMPORT module-name
-    	-> OK bmipath
-	-> ERROR
-    EXPORT module-name
-    	-> OK bmipath
-    DONE module-name
-    	No response
-    RESET
-        No response
- */
-
-/* Start handshake.  */
-
-bool
-module_mapper::handshake (location_t loc, const char *cookie)
-{
-  send_command (loc, "HELLO %d GCC %s", MAPPER_VERSION, cookie);
-
-  bool ok = get_response (loc) > 0;
-  switch (response_word (loc, "HELLO", "ERROR", NULL))
-    {
-    default:
-      ok = false;
-      break;
-
-    case 0: /* HELLO $ver $agent $repo */
-      {
-	const char *ver = response_token (loc);
-	const char *agent = !eol_p () ? response_token (loc) : NULL;
-	char *repo = !eol_p () ? response_token (loc, true) : NULL;
-
-	if (ver)
-	  dump () && dump ("Connected to mapper:%s version %s",
-			   agent ? agent : "unknown", ver);
-	if (response_eol (loc))
-	  {
-	    if (repo)
-	      set_cmi_repo (repo);
-	    ok = true;
-	  }
-      }
-      break;
-
-    case 1: /* ERROR $msg */
-      error_at (loc, "mapper handshake failure: %s", response_error ());
-      ok = false;
-      break;
-    }
-
-  return ok;
-}
-
-/* IMPORT or EXPORT query.  */
-
-void
-module_mapper::imex_query (location_t loc, const char *flatname, bool exporting)
-{
-  send_command (loc, "%sPORT %s", exporting ? "EX" : "IM", flatname);
-}
-
-/* Response to import/export query.  */
-
-const char *
-module_mapper::cmi_response (location_t loc, const char *flatname)
-{
-  char *filename = NULL;
-
-  switch (response_word (loc, "OK", "ERROR", NULL))
-    {
-    default:
-      break;
-
-    case 0: /* OK $cmifile  */
-      filename = response_token (loc, true);
-      filename = maybe_strip_cmi_prefix (filename);
-      response_eol (loc);
-      break;
-
-    case 1: /* ERROR $msg */
-      error_at (loc, "mapper cannot provide module %qs: %s",
-		flatname, response_error ());
-      break;
-    }
-
-  return filename;
-}
-
 /* Import query.  */
 
 const char *
@@ -14115,7 +13219,6 @@ mapper_export_done (location_t loc, const char *flatname)
   if (mapper->is_server ())
     {
       timevar_start (TV_MODULE_MAPPER);
-      dump (dumper::MAPPER) && dump ("Completed mapper");
       mapper->send_command (loc, "DONE %s", flatname);
       timevar_stop (TV_MODULE_MAPPER);
     }
@@ -14123,47 +13226,6 @@ mapper_export_done (location_t loc, const char *flatname)
     ok = mapper->is_live ();
 
   return ok;
-}
-
-/* Include translation.  Query if PATH should be turned into a header
-   import.  Return false if it should remain a #include, true
-   otherwise.  */
-
-bool
-module_mapper::translate_include (location_t loc, const char *path, size_t len)
-{
-  bool xlate = false;
-
-  timevar_start (TV_MODULE_MAPPER);
-  if (mapper->is_server ())
-    {
-      send_command (loc, "INCLUDE %s", path);
-      if (get_response (loc) <= 0)
-	return false;
-
-      switch (response_word (loc, "IMPORT", "TEXT", NULL))
-	{
-	default:
-	  break;
-
-	case 0:  /* Divert to import.  */
-	  xlate = true;
-	  break;
-
-	case 1:  /* Treat as include.  */
-	  break;
-	}
-      response_eol (loc);
-    }
-  else if (mapper->is_live ())
-    {
-      tree name = build_string (len, path);
-
-      xlate = get_module_slot (name, NULL, false, false) != NULL;
-    }
-  timevar_stop (TV_MODULE_MAPPER);
-
-  return xlate;
 }
 
 /* Create a new mapper connecting to OPTION.  */
@@ -14185,8 +13247,11 @@ make_mapper (location_t loc)
 
   if (mapper->is_server ())
     {
-      if (!mapper->handshake (loc, cookie ? cookie : main_input_filename))
+      char *repo = NULL;
+      if (!mapper->handshake (loc, cookie ? cookie : main_input_filename, &repo))
 	mapper->close (loc);
+      if (repo)
+	set_cmi_repo (repo);
     }
   else if (mapper->is_file ())
     {
@@ -14225,7 +13290,6 @@ make_mapper (location_t loc)
 	      }
 
 	    starting = false;
-	    file = maybe_strip_cmi_prefix (file);
 	    module_state *state = get_module (mod);
 	    if (!state)
 	      mapper->response_unexpected (loc);
@@ -19137,17 +18201,25 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   dump.push (NULL);
 
-  dump (dumper::MAPPER) && dump ("Checking include translation '%s'", path);
+  dump () && dump ("Checking include translation '%s'", path);
   bool res = false;
   module_mapper *mapper = get_mapper (main_source_loc);
   if (mapper->is_live ())
     {
+      timevar_start (TV_MODULE_MAPPER);
+
       size_t len = strlen (path);
       path = canonicalize_header_name (NULL, loc, true, path, len);
-      res = mapper->translate_include (loc, path, len);
+      if (mapper->is_server ())
+	res = mapper->translate_include (loc, path);
+      else
+	{
+	  tree name = build_string (len, path);
+	  res = get_module_slot (name, NULL, false, false) != NULL;
+	}
+      timevar_stop (TV_MODULE_MAPPER);
 
       bool note = false;
-
       if (note_include_translate < 0)
 	note = true;
       else if (note_include_translate > 0 && res)
@@ -19170,8 +18242,8 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 		: G_("include %qs processed textually") , path);
     }
 
-  dump (dumper::MAPPER) && dump (res ? "Translating include to import"
-				 : "Keeping include as include");
+  dump () && dump (res ? "Translating include to import"
+		   : "Keeping include as include");
 
   if (res)
     {

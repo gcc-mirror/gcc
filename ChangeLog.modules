@@ -1,6 +1,11 @@
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* mapper-client.{h,cc}: New, broken out of ...
+	* module.cc: ... here.
+	* Make-lang.in: Add mapper-client.
+
+	gcc/cp/
 	* module.cc (module_mapper::{get,make}): Replace with ...
 	(get_mapper, make_mapper): ... these.
 	(module_mapper:(kill,fini): Delete.

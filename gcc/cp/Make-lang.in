@@ -124,7 +124,7 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/error.o cp/except.o cp/expr.o \
 	cp/friend.o cp/init.o \
 	cp/lambda.o cp/lex.o cp/logic.o \
-	cp/mangle.o cp/method.o cp/module.o \
+	cp/mangle.o cp/mapper-client.o cp/method.o cp/module.o \
 	cp/name-lookup.o cp/optimize.o \
 	cp/parser.o cp/pt.o cp/ptree.o \
 	cp/rtti.o \
