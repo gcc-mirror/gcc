@@ -1,5 +1,5 @@
 /* PR c++/94314.  */
-/* { dg-do run { target c++11 } } */
+/* { dg-do run { target c++14 } } */
 /* { dg-options "-O2 -fdump-tree-cddce-details -fdelete-null-pointer-checks" } */
 
 int count = 0;

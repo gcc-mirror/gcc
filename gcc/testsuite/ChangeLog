@@ -1,3 +1,8 @@
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94314
+	* g++.dg/pr94314-4.C: Require c++14 rather than c++11.
+
 2020-04-16  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/93974
