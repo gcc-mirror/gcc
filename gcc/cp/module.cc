@@ -3873,7 +3873,6 @@ static GTY(()) vec<tree, va_gc> *class_members;
 class module_mapper {
   const char *name;
   FILE *from;   /* Read from mapper.  */
-  FILE *to;	/* Write to mapper.  */
   pex_obj *pex; /* If it's a subprocess.  */
   sighandler_t sigpipe; /* Original sigpipe disposition.  */
 
@@ -3888,7 +3887,7 @@ class module_mapper {
 
 public:
   module_mapper ()
-    : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
+    : name (NULL), from (NULL), pex (NULL), sigpipe (SIG_IGN),
       buffer (NULL), size (0), pos (NULL), end (NULL),
       start (NULL), fd_from (-1), fd_to (-1), batching (false)
   {
@@ -13454,7 +13453,7 @@ module_mapper::open (location_t loc, const char *option, const char *dflt)
       argv[arg_no] = NULL;
 
       pex = pex_init (PEX_USE_PIPES, progname, NULL);
-      to = pex_input_pipe (pex, false);
+      FILE *to = pex_input_pipe (pex, false);
       if (!to)
 	{
 	  err = errno;
@@ -13487,18 +13486,15 @@ module_mapper::open (location_t loc, const char *option, const char *dflt)
       if (!errmsg)
 	{
 	  from = pex_read_output (pex, false);
-	  if (from)
-	    {
-	      fd_to = fileno (to);
-	      fd_from = fileno (from);
-	    }
+	  if (from
+	      && (fd_to = dup (fileno (to))) >= 0)
+	    fd_from = fileno (from);
 	  else
 	    {
 	      err = errno;
 	      errmsg = "connecting output";
-	      fclose (to);
-	      to = NULL;
 	    }
+	  fclose (to);
 	}
       name = writable;
     }
@@ -13707,25 +13703,30 @@ module_mapper::open (location_t loc, const char *option, const char *dflt)
 void
 module_mapper::close (location_t loc)
 {
-  if (to)
+  if (fd_to >= 0)
     {
-      fclose (to);
-      to = NULL;
-      fd_to = -1;
-    }
 #ifdef NETWORKING
-  else if (fd_to >= 0)
-    {
-      shutdown (fd_to, SHUT_WR);
+      if (fd_to == fd_from)
+	{
+	  shutdown (fd_to, SHUT_WR);
+#ifdef SIGPIPE
+	  if (sigpipe != SIG_IGN)
+	    /* Restore sigpipe.  */
+	    signal (SIGPIPE, sigpipe);
+#endif
+	}
+      else
+#endif
+	::close (fd_to);
       fd_to = -1;
     }
-#endif
+  
 
   if (pex)
     {
       int status;
-
       pex_get_status (pex, 1, &status);
+
       pex_free (pex);
       pex = NULL;
 
@@ -13738,18 +13739,15 @@ module_mapper::close (location_t loc)
       from = NULL;
       fd_from = -1;
     }
-  else if (fd_from >= 0)
+  else
     {
-      if (!is_file ())
-	::close (fd_from);
-      fd_from = -1;
+      if (fd_from >= 0)
+	{
+	  if (!is_file ())
+	    ::close (fd_from);
+	  fd_from = -1;
+	}
     }
-
-#ifdef SIGPIPE
-  if (sigpipe != SIG_IGN)
-    /* Restore sigpipe.  */
-    signal (SIGPIPE, sigpipe);
-#endif
 
   XDELETEVEC (buffer);
   buffer = pos = end = NULL;
