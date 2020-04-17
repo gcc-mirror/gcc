@@ -1,3 +1,9 @@
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94621
+	* tree-inline.c (remap_type_1): Don't dereference NULL TYPE_DOMAIN.
+	Move id->adjust_array_error_bounds check first in the condition.
+
 2020-04-17  Martin Liska  <mliska@suse.cz>
 	    Jonathan Yong <10walls@gmail.com>
 
