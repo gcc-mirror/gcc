@@ -1,3 +1,52 @@
+2020-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94483
+	* g++.dg/cpp2a/lambda-pack-init5.C: New test.
+
+	PR c++/88754
+	* g++.dg/parse/ambig10.C: New test.
+
+2020-04-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94090
+	* gfortran.dg/interface_46.f90: New test.
+
+2020-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_2.c: New test.
+	* gcc.target/aarch64/sve/cost_model_3.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_4.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_5.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_6.c: Likewise.
+	* gcc.target/aarch64/sve/cost_model_7.c: Likewise.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR target/94567
+	* gcc.c-torture/execute/pr94567.c: New test.
+
+2020-04-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94608
+	* g++.dg/lto/pr83720_0.C: Add fn def to avoid warning on arm ABI.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94618
+	* g++.dg/opt/pr94618.C: New test.
+
+	PR tree-optimization/94621
+	* gcc.c-torture/compile/pr94621.c: New test.
+
+	PR c++/94314
+	* g++.dg/pr94314-4.C: Require c++14 rather than c++11.
+
+2020-04-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/93974
+	* g++.dg/pr93974.C: New test.
+
 2020-04-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/cpp0x/lambda/pr94426-2.C: Adjust scan-asms to test

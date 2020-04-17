@@ -1,3 +1,36 @@
+2020-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string): Define operator<=> and
+	remove redundant comparison operators for C++20.
+	* include/bits/char_traits.h (__gnu_cxx::char_traits, char_traits):
+	Add comparison_category members.
+	(__detail::__char_traits_cmp_cat): New helper to get comparison
+	category from char traits class.
+	* include/bits/regex.h (regex_traits::_RegexMask::operator!=): Do not
+	define for C++20.
+	(sub_match): Define operator<=> and remove redundant comparison
+	operators for C++20.
+	(match_results): Remove redundant operator!= for C++20.
+	* include/std/string_view (basic_string_view): Define operator<=> and
+	remove redundant comparison operators for C++20.
+	* testsuite/21_strings/basic_string/operators/char/cmp_c++20.cc: New
+	test.
+	* testsuite/21_strings/basic_string/operators/wchar_t/cmp_c++20.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/
+	constexpr.cc: Initialize variable.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/
+	constexpr.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operators/char/2.cc: Add
+	dg-do directive and remove comments showing incorrect signatures.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operators/char/cmp_c++20.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/cmp_c++20.cc:
+	New test.
+	* testsuite/28_regex/sub_match/compare_c++20.cc: New test.
+
 2020-04-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Remove

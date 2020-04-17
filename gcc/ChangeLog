@@ -1,3 +1,63 @@
+2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): Turn MAP_TO_PSET to
+	MAP_DELETE.
+
+2020-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_advsimd_ldp_stp_p): New function.
+	(aarch64_sve_adjust_stmt_cost): Add a vectype parameter.  Double the
+	cost of load and store insns if one loop iteration has enough scalar
+	elements to use an Advanced SIMD LDP or STP.
+	(aarch64_add_stmt_cost): Update call accordingly.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR target/94567
+	* config/i386/i386.md (*testqi_ext_3): Use CCZmode rather than
+	CCNOmode in ix86_match_ccmode if len is equal to <MODE>mode precision,
+	or pos + len >= 32, or pos + len is equal to operands[2] precision
+	and operands[2] is not a register operand.  During splitting perform
+	SImode AND if operands[0] doesn't have CCZmode and pos + len is
+	equal to mode precision.
+
+2020-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR other/94629
+	* cgraphclones.c (cgraph_node::create_clone): Remove duplicate
+	initialization.
+	* dwarf2out.c (dw_val_equal_p): Fix pasto in
+	dw_val_class_vms_delta comparison.
+	* optabs.c (expand_binop_directly): Fix pasto in commutation
+	check.
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Fix pasto in
+	initialization.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94618
+	* cfgrtl.c (delete_insn_and_edges): Set purge not just when
+	insn is the BB_END of its block, but also when it is only followed
+	by DEBUG_INSNs in its block.
+
+	PR tree-optimization/94621
+	* tree-inline.c (remap_type_1): Don't dereference NULL TYPE_DOMAIN.
+	Move id->adjust_array_error_bounds check first in the condition.
+
+2020-04-17  Martin Liska  <mliska@suse.cz>
+	    Jonathan Yong <10walls@gmail.com>
+
+	PR gcov-profile/94570
+	* coverage.c (coverage_init): Use separator properly.
+
+2020-04-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/93974
+	* config/rs6000/rs6000.c (TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): Define.
+	(rs6000_cannot_substitute_mem_equiv_p): New function.
+
 2020-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/93621

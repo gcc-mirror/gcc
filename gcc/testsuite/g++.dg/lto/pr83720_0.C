@@ -48,7 +48,7 @@ public:
   k(al<void(b::ai)>);
 } d([](b::ai) {
   struct be {
-    virtual void f();
+    virtual void f(){}
   };
   struct bf;
   b::c<bf>().aj("", &be::f);

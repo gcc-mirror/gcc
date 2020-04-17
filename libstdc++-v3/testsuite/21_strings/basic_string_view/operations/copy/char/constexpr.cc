@@ -24,7 +24,7 @@ constexpr bool
 test01()
 {
   std::string_view s = "Everything changes and nothing stands still.";
-  char buf[7];
+  char buf[7]{};
   auto n = s.copy(buf, 7, 11);
   return std::string_view(buf, n) == "changes";
 }

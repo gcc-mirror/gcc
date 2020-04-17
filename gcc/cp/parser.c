@@ -28530,6 +28530,10 @@ cp_parser_check_template_parameters (cp_parser* parser,
   if (!template_id_p
       && parser->num_template_parameter_lists == num_templates + 1)
     return true;
+
+  if (cp_parser_simulate_error (parser))
+    return false;
+
   /* If there are more template classes than parameter lists, we have
      something like:
 

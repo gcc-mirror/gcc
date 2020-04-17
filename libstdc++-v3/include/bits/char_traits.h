@@ -39,6 +39,9 @@
 #include <bits/stl_algobase.h>  // std::copy, std::fill_n
 #include <bits/postypes.h>      // For streampos
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
 # define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
@@ -91,6 +94,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Char_types<_CharT>::pos_type    pos_type;
       typedef typename _Char_types<_CharT>::off_type    off_type;
       typedef typename _Char_types<_CharT>::state_type  state_type;
+#if __cpp_lib_three_way_comparison
+      using comparison_category = std::strong_ordering;
+#endif
 
       static _GLIBCXX14_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2)
@@ -307,6 +313,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef streampos         pos_type;
       typedef streamoff         off_type;
       typedef mbstate_t         state_type;
+#if __cpp_lib_three_way_comparison
+      using comparison_category = strong_ordering;
+#endif
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
@@ -432,6 +441,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef streamoff         off_type;
       typedef wstreampos        pos_type;
       typedef mbstate_t         state_type;
+#if __cpp_lib_three_way_comparison
+      using comparison_category = strong_ordering;
+#endif
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
@@ -550,6 +562,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef u8streampos       pos_type;
       typedef streamoff         off_type;
       typedef mbstate_t         state_type;
+#if __cpp_lib_three_way_comparison
+      using comparison_category = strong_ordering;
+#endif
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
@@ -687,6 +702,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef streamoff         off_type;
       typedef u16streampos      pos_type;
       typedef mbstate_t         state_type;
+#if __cpp_lib_three_way_comparison
+      using comparison_category = strong_ordering;
+#endif
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) noexcept
@@ -798,6 +816,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef streamoff         off_type;
       typedef u32streampos      pos_type;
       typedef mbstate_t         state_type;
+#if __cpp_lib_three_way_comparison
+      using comparison_category = strong_ordering;
+#endif
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) noexcept
@@ -894,6 +915,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       not_eof(const int_type& __c) noexcept
       { return eq_int_type(__c, eof()) ? 0 : __c; }
     };
+
+#if __cpp_lib_three_way_comparison
+  namespace __detail
+  {
+    template<typename _ChTraits>
+      constexpr auto
+      __char_traits_cmp_cat(int __cmp) noexcept
+      {
+	if constexpr (requires { typename _ChTraits::comparison_category; })
+	  {
+	    using _Cat = typename _ChTraits::comparison_category;
+	    static_assert( !is_void_v<common_comparison_category_t<_Cat>> );
+	    return static_cast<_Cat>(__cmp <=> 0);
+	  }
+	else
+	  return static_cast<weak_ordering>(__cmp <=> 0);
+      }
+  } // namespace __detail
+#endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -1050,7 +1050,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
   commutative_p = commutative_optab_p (binoptab);
   if (commutative_p
       && GET_MODE (xop0) != xmode0 && GET_MODE (xop1) != xmode1
-      && GET_MODE (xop0) == xmode1 && GET_MODE (xop1) == xmode1)
+      && GET_MODE (xop0) == xmode1 && GET_MODE (xop1) == xmode0)
     std::swap (xop0, xop1);
 
   /* If we are optimizing, force expensive constants into a register.  */

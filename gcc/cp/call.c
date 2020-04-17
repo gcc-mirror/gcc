@@ -5112,7 +5112,7 @@ build_conditional_expr_1 (const op_location_t &loc,
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
       if (glvalue_p (arg1))
 	{
-	  arg2 = arg1 = cp_stabilize_reference (arg1);
+	  arg1 = cp_stabilize_reference (arg1);
 	  arg2 = arg1 = prevent_lifetime_extension (arg1);
 	}
       else

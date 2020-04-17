@@ -1,3 +1,10 @@
+2020-04-17  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94612
+	* lto-common.c: Initialize file_data->lto_section_header
+	before lto_mode_identity_table call.  It is needed because
+	it decompresses a LTO section.
+
 2020-04-08  Martin Liska  <mliska@suse.cz>
 
 	PR c++/94314

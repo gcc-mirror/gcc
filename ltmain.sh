@@ -3425,8 +3425,8 @@ int setenv (const char *, const char *, int);
 # define PATH_SEPARATOR ':'
 #endif
 
-#if defined (_WIN32) || defined (__MSDOS__) || defined (__DJGPP__) || \
-  defined (__OS2__)
+#if (defined (_WIN32) && ! defined(__CYGWIN__)) || defined (__MSDOS__) || \
+  defined (__DJGPP__) || defined (__OS2__)
 # define HAVE_DOS_BASED_FILE_SYSTEM
 # define FOPEN_WB "wb"
 # ifndef DIR_SEPARATOR_2

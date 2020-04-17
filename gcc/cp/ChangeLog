@@ -1,3 +1,19 @@
+2020-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94483
+	* lambda.c (lambda_capture_field_type): Avoid doing auto deduction if
+	the explicit initializer has parameter packs.
+
+	PR c++/88754
+	* parser.c (cp_parser_check_template_parameters): Before issuing a hard
+	error, first try simulating an error instead.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/94629
+	* call.c (build_conditional_expr_1): Remove redundant assignment to
+	arg2.
+
 2020-04-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94475

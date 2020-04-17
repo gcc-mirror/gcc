@@ -2197,11 +2197,6 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
   file_data->order = order;
-#ifdef ACCEL_COMPILER
-  lto_input_mode_table (file_data);
-#else
-  file_data->mode_table = lto_mode_identity_table;
-#endif
 
   /* Read and verify LTO section.  */
   data = lto_get_summary_section_data (file_data, LTO_section_lto, &len);
@@ -2216,6 +2211,12 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
   lto_check_version (file_data->lto_section_header.major_version,
 		     file_data->lto_section_header.minor_version,
 		     file_data->file_name);
+
+#ifdef ACCEL_COMPILER
+  lto_input_mode_table (file_data);
+#else
+  file_data->mode_table = lto_mode_identity_table;
+#endif
 
   data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);
   if (data == NULL)

@@ -8785,10 +8785,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	     'exit data' - and in particular for 'delete:' - having an 'alloc:'
 	     does not make sense.  Likewise, for 'update' only transferring the
 	     data itself is needed as the rest has been handled in previous
-	     directives.  */
-	  if ((code == OMP_TARGET_EXIT_DATA || code == OMP_TARGET_UPDATE)
-	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
-		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET))
+	     directives.  However, for 'exit data', the array descriptor needs
+	     to be delete; hence, we turn the MAP_TO_PSET into a MAP_DELETE.  */
+	  if (code == OMP_TARGET_EXIT_DATA
+	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET)
+	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DELETE);
+	  else if ((code == OMP_TARGET_EXIT_DATA || code == OMP_TARGET_UPDATE)
+		   && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
+		       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET))
 	    remove = true;
 
 	  if (remove)

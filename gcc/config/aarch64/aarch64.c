@@ -13518,6 +13518,32 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* Return true if creating multiple copies of STMT_INFO for Advanced SIMD
+   vectors would produce a series of LDP or STP operations.  KIND is the
+   kind of statement that STMT_INFO represents.  */
+static bool
+aarch64_advsimd_ldp_stp_p (enum vect_cost_for_stmt kind,
+			   stmt_vec_info stmt_info)
+{
+  switch (kind)
+    {
+    case vector_load:
+    case vector_store:
+    case unaligned_load:
+    case unaligned_store:
+      break;
+
+    default:
+      return false;
+    }
+
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
+    return false;
+
+  return is_gimple_assign (stmt_info->stmt);
+}
+
 /* Return true if STMT_INFO extends the result of a load.  */
 static bool
 aarch64_extending_load_p (stmt_vec_info stmt_info)
@@ -13556,10 +13582,12 @@ aarch64_integer_truncation_p (stmt_vec_info stmt_info)
 }
 
 /* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
-   for STMT_INFO, which has cost kind KIND.  Adjust the cost as necessary
-   for SVE targets.  */
+   for STMT_INFO, which has cost kind KIND and which when vectorized would
+   operate on vector type VECTYPE.  Adjust the cost as necessary for SVE
+   targets.  */
 static unsigned int
-aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind,
+			      stmt_vec_info stmt_info, tree vectype,
 			      unsigned int stmt_cost)
 {
   /* Unlike vec_promote_demote, vector_stmt conversions do not change the
@@ -13577,6 +13605,46 @@ aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
      because we can just ignore the unused upper bits of the source.  */
   if (kind == vector_stmt && aarch64_integer_truncation_p (stmt_info))
     stmt_cost = 0;
+
+  /* Advanced SIMD can load and store pairs of registers using LDP and STP,
+     but there are no equivalent instructions for SVE.  This means that
+     (all other things being equal) 128-bit SVE needs twice as many load
+     and store instructions as Advanced SIMD in order to process vector pairs.
+
+     Also, scalar code can often use LDP and STP to access pairs of values,
+     so it is too simplistic to say that one SVE load or store replaces
+     VF scalar loads and stores.
+
+     Ideally we would account for this in the scalar and Advanced SIMD
+     costs by making suitable load/store pairs as cheap as a single
+     load/store.  However, that would be a very invasive change and in
+     practice it tends to stress other parts of the cost model too much.
+     E.g. stores of scalar constants currently count just a store,
+     whereas stores of vector constants count a store and a vec_init.
+     This is an artificial distinction for AArch64, where stores of
+     nonzero scalar constants need the same kind of register invariant
+     as vector stores.
+
+     An alternative would be to double the cost of any SVE loads and stores
+     that could be paired in Advanced SIMD (and possibly also paired in
+     scalar code).  But this tends to stress other parts of the cost model
+     in the same way.  It also means that we can fall back to Advanced SIMD
+     even if full-loop predication would have been useful.
+
+     Here we go for a more conservative version: double the costs of SVE
+     loads and stores if one iteration of the scalar loop processes enough
+     elements for it to use a whole number of Advanced SIMD LDP or STP
+     instructions.  This makes it very likely that the VF would be 1 for
+     Advanced SIMD, and so no epilogue should be needed.  */
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    {
+      stmt_vec_info first = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      unsigned int count = DR_GROUP_SIZE (first) - DR_GROUP_GAP (first);
+      unsigned int elt_bits = GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype));
+      if (multiple_p (count * elt_bits, 256)
+	  && aarch64_advsimd_ldp_stp_p (kind, stmt_info))
+	stmt_cost *= 2;
+    }
 
   return stmt_cost;
 }
@@ -13597,7 +13665,8 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
 
       if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
-	stmt_cost = aarch64_sve_adjust_stmt_cost (kind, stmt_info, stmt_cost);
+	stmt_cost = aarch64_sve_adjust_stmt_cost (kind, stmt_info, vectype,
+						  stmt_cost);
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
