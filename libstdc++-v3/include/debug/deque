@@ -648,6 +648,12 @@ namespace __debug
 	       const deque<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _Tp, typename _Alloc>
+    constexpr __detail::__synth3way_t<_Tp>
+    operator<=>(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
+    { return __x._M_base() <=> __y._M_base(); }
+#else
   template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const deque<_Tp, _Alloc>& __lhs,
@@ -677,6 +683,7 @@ namespace __debug
     operator>(const deque<_Tp, _Alloc>& __lhs,
 	      const deque<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
+#endif // three-way comparison
 
   template<typename _Tp, typename _Alloc>
     inline void

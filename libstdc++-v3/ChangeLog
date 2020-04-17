@@ -1,5 +1,26 @@
 2020-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/forward_list.h (forward_list): Define operator<=> and
+	remove redundant comparison operators for C++20.
+	* include/bits/stl_bvector.h (vector<bool, Alloc>): Likewise.
+	* include/bits/stl_deque.h (deque): Likewise.
+	* include/bits/stl_iterator.h (__normal_iterator): Likewise.
+	* include/bits/stl_list.h (list): Likewise.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* include/debug/deque (__gnu_debug::deque): Likewise.
+	* include/debug/forward_list (__gnu_debug::forward_list): Likewise.
+	* include/debug/list (__gnu_debug::list): Likewise.
+	* include/debug/safe_iterator.h (__gnu_debug::_Safe_iterator):
+	Likewise.
+	* include/debug/vector (__gnu_debug::vector): Likewise.
+	* include/ext/pointer.h (__gnu_cxx::_Pointer_adapter): Define
+	operator<=> for C++20.
+	* testsuite/23_containers/deque/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/forward_list/cmp_c++20.cc: New test.
+	* testsuite/23_containers/list/cmp_c++20.cc: New test.
+	* testsuite/23_containers/vector/bool/cmp_c++20.cc: New test.
+	* testsuite/23_containers/vector/cmp_c++20.cc: New test.
+
 	* include/bits/basic_string.h (basic_string): Define operator<=> and
 	remove redundant comparison operators for C++20.
 	* include/bits/char_traits.h (__gnu_cxx::char_traits, char_traits):

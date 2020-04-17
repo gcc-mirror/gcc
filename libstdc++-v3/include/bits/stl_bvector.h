@@ -182,10 +182,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_offset = static_cast<unsigned int>(__n);
     }
 
-    friend bool
+    friend _GLIBCXX20_CONSTEXPR bool
     operator==(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset; }
 
+#if __cpp_lib_three_way_comparison
+    friend constexpr strong_ordering
+    operator<=>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    noexcept
+    {
+      if (const auto __cmp = __x._M_p <=> __y._M_p; __cmp != 0)
+	return __cmp;
+      return __x._M_offset <=> __y._M_offset;
+    }
+#else
     friend bool
     operator<(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
@@ -208,6 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     friend bool
     operator>=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
     friend ptrdiff_t
     operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)

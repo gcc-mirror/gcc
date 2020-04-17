@@ -838,6 +838,13 @@ namespace __debug
 	       const forward_list<_Tp, _Alloc>& __ly)
     { return __lx._M_base() == __ly._M_base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<typename _Tp, typename _Alloc>
+    constexpr __detail::__synth3way_t<_Tp>
+    operator<=>(const forward_list<_Tp, _Alloc>& __x,
+		const forward_list<_Tp, _Alloc>& __y)
+    { return __x._M_base() <=> __y._M_base(); }
+#else
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<(const forward_list<_Tp, _Alloc>& __lx,
@@ -870,6 +877,7 @@ namespace __debug
     operator<=(const forward_list<_Tp, _Alloc>& __lx,
 	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__ly < __lx); }
+#endif // three-way comparison
 
   /// See std::forward_list::swap().
   template<typename _Tp, typename _Alloc>
