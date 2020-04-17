@@ -5172,6 +5172,8 @@ package body Sem_Ch13 is
          procedure Check_Inherited_Indexing;
          --  For a derived type, check that no indexing aspect is specified
          --  for the type if it is also inherited
+         --  AI12-0160: verify that an indexing cannot be specified for
+         --  a derived type unless it is specified for the parent.
 
          procedure Check_One_Function (Subp : Entity_Id);
          --  Check one possible interpretation. Sets Indexing_Found True if a
@@ -5186,15 +5188,21 @@ package body Sem_Ch13 is
          ------------------------------
 
          procedure Check_Inherited_Indexing is
-            Inherited : Node_Id;
+            Inherited      : Node_Id;
+            Other_Indexing : Node_Id;
 
          begin
             if Attr = Name_Constant_Indexing then
                Inherited :=
                  Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
+               Other_Indexing :=
+                 Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
+
             else pragma Assert (Attr = Name_Variable_Indexing);
                Inherited :=
                   Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
+               Other_Indexing :=
+                 Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
             end if;
 
             if Present (Inherited) then
@@ -5207,6 +5215,16 @@ package body Sem_Ch13 is
                elsif Aspect_Rep_Item (Inherited) = N then
                   null;
 
+               --  Check if this is a confirming specification. The name
+               --  may be overloaded between the parent operation and the
+               --  inherited one, so we check that the Chars fields match.
+
+               elsif Is_Entity_Name (Expression (Inherited))
+                 and then Chars (Entity (Expression (Inherited))) =
+                    Chars (Entity (Expression (N)))
+               then
+                  Indexing_Found := True;
+
                --  Indicate the operation that must be overridden, rather than
                --  redefining the indexing aspect.
 
@@ -5217,6 +5235,15 @@ package body Sem_Ch13 is
                     ("!override & instead",
                      N, Entity (Expression (Inherited)));
                end if;
+
+            --  If not inherited and the parent has another indexing function
+            --  this is illegal, because it leads to inconsistent results in
+            --  class-wide calls.
+
+            elsif Present (Other_Indexing) then
+               Error_Msg_N
+                 ("cannot specify indexing operation on derived type"
+                   & " if not specified for parent", N);
             end if;
          end Check_Inherited_Indexing;
 
@@ -5239,7 +5266,12 @@ package body Sem_Ch13 is
                   --  Indexing function can't be declared elsewhere
 
                   Illegal_Indexing
-                    ("indexing function must be declared in scope of type&");
+                    ("indexing function must be declared"
+                      & " in scope of type&");
+               end if;
+
+               if Is_Derived_Type (Ent) then
+                  Check_Inherited_Indexing;
                end if;
 
                return;
