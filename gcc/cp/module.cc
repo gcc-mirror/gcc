@@ -3835,9 +3835,8 @@ inline module_mapper *get_mapper (location_t loc)
     res = make_mapper (loc);
   return res;
 }
-static const char *mapper_import_export (location_t loc, const char *,
-					 bool export_p);
-static bool mapper_export_done (location_t, const char *);
+static const char *mapper_import_export (const module_state *, bool export_p);
+static bool mapper_export_done (const module_state *);
 
 /********************************************************************/
 static tree
@@ -13192,8 +13191,7 @@ get_module (const char *ptr)
 /* Import query.  */
 
 const char *
-mapper_import_export (location_t loc, const char *flatname,
-			      bool export_p)
+mapper_import_export (const module_state *import, bool export_p)
 {
   module_mapper *mapper = get_mapper (main_source_loc);
 
@@ -13201,8 +13199,9 @@ mapper_import_export (location_t loc, const char *flatname,
     return NULL;
 
   timevar_start (TV_MODULE_MAPPER);
-  mapper->imex_query (loc, flatname, export_p);
-  const char *fname = mapper->imex_response (loc, flatname);
+  mapper->imex_query (import->loc, import->get_flatname (), export_p);
+  const char *fname
+    = mapper->imex_response (import->loc, import->get_flatname ());
   timevar_stop (TV_MODULE_MAPPER);
 
   return fname;
@@ -13211,7 +13210,7 @@ mapper_import_export (location_t loc, const char *flatname,
 /* Export done.  */
 
 bool
-mapper_export_done (location_t loc, const char *flatname)
+mapper_export_done (const module_state *module)
 {
   bool ok = true;
   module_mapper *mapper = get_mapper (main_source_loc);
@@ -13219,7 +13218,7 @@ mapper_export_done (location_t loc, const char *flatname)
   if (mapper->is_server ())
     {
       timevar_start (TV_MODULE_MAPPER);
-      mapper->send_command (loc, "DONE %s", flatname);
+      mapper->send_command (module->loc, "DONE %s", module->get_flatname ());
       timevar_stop (TV_MODULE_MAPPER);
     }
   else
@@ -13624,8 +13623,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      if (imp->filename)
 		fname = NULL;
 	      else if (!fname[0])
-		fname = mapper_import_export
-		  (imp->loc, imp->get_flatname (),false);
+		fname = mapper_import_export (imp, false);
 
 	      if (imp->is_partition ())
 		dump () && dump ("Importing elided partition %M", imp);
@@ -18376,8 +18374,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	     our module state flags are inadequate.  */
 	  spans.close ();
 
-	  const char *fname = mapper_import_export
-	    (module->loc, module->get_flatname (), false);
+	  const char *fname = mapper_import_export (module, false);
 	  if (!module->do_import (fname, reader, true))
 	    gcc_unreachable ();
 
@@ -18809,7 +18806,7 @@ finish_module_processing (cpp_reader *reader)
 	}
 
       if (!errorcount)
-	mapper_export_done (state->loc, state->get_flatname ());
+	mapper_export_done (state);
       else if (path)
 	{
 	  /* We failed, attempt to erase all evidence we even tried.  */

@@ -1,8 +1,13 @@
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (mapper_{import_export,export_done}): Revert
+	2020-04-13 change/
+
+	gcc/cp/
 	* mapper-client.{h,cc}: New, broken out of ...
 	* module.cc: ... here.
+	(maybe_remove_cmi_prefix): Delete.
 	* Make-lang.in: Add mapper-client.
 
 	gcc/cp/
@@ -10,7 +15,7 @@
 	(get_mapper, make_mapper): ... these.
 	(module_mapper:(kill,fini): Delete.
 	(module_mapper::{import_export,export_done}): Replace with ...
-	(module_import_export, module_export_done): ... these.
+	(mapper_import_export, mapper_export_done): ... these.
 
 	gcc/cp/
 	* module.cc (module_mapper::to): Drop unneeded field.
