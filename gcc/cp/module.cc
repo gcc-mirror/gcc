@@ -13239,7 +13239,7 @@ make_mapper (location_t loc)
 
   mapper = new module_mapper ();
 
-  char const *cookie = mapper->open (loc, option, "|cxx-mapper");
+  char const *cookie = mapper->open (loc, option, "|mapper-server");
 
   /* String never modified in this case.  */
   set_cmi_repo (const_cast<char *> ("gcm.cache"));

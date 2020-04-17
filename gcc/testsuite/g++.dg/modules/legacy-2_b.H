@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-header -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-2.map" }
+// { dg-additional-options "-fmodule-header -fmodule-mapper=|mapper-server\\ -f\\ $srcdir/g++.dg/modules/legacy-2.map" }
 // { dg-module-cmi {} }
 
 #define frob FROB

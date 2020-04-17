@@ -46,7 +46,7 @@ CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h ope
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-c++: cc1plus$(exeext) cxx-mapper$(exeext)
+c++: cc1plus$(exeext) mapper-server$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c++
@@ -138,10 +138,10 @@ $(CXX_AND_OBJCXX_OBJS): CFLAGS += -fauto-profile=cc1plus.fda
 $(CXX_AND_OBJCXX_OBJS): cc1plus.fda
 endif
 
-CXX_MAPPER_OBJS := cp/cxx-mapper.o
-cxx-mapper$(exeext): $(CXX_MAPPER_OBJS) $(LIBDEPS)
+MAPPER_SERVER_OBJS := cp/mapper-server.o
+mapper-server$(exeext): $(MAPPER_SERVER_OBJS) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	$(CXX_MAPPER_OBJS) version.o $(LIBIBERTY) $(LIBINTL)
+	$(MAPPER_SERVER_OBJS) version.o $(LIBIBERTY) $(LIBINTL)
 
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
@@ -288,9 +288,9 @@ c++.install-common: installdirs
 	    fi ; \
 	  fi; \
 	fi
-	rm -f $(DESTDIR)$(libexecsubdir)/cxx-mapper$(exeext)
-	$(INSTALL_PROGRAM) cxx-mapper$(exeext) \
-	  $(DESTDIR)$(libexecsubdir)/cxx-mapper$(exeext)
+	rm -f $(DESTDIR)$(libexecsubdir)/mapper-server$(exeext)
+	$(INSTALL_PROGRAM) mapper-server$(exeext) \
+	  $(DESTDIR)$(libexecsubdir)/mapper-server$(exeext)
 
 # We can't use links because not everyone supports them.  So just copy the
 # manpage.
@@ -336,7 +336,7 @@ c++.mostlyclean:
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext) cc1plus.fda
-	-rm -f cxx-mapper$(exeext)
+	-rm -f mapper-server$(exeext)
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile

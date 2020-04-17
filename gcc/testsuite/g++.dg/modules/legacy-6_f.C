@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-mapper=|cxx-mapper\\ -f\\ [srcdir]/legacy-6.map" }
+// { dg-additional-options "-fmodule-mapper=|mapper-server\\ -f\\ [srcdir]/legacy-6.map" }
 
 #include "legacy-6_a.H"
 int i;

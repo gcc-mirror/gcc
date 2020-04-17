@@ -1,8 +1,17 @@
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cxx-mapper.cc: Rename to ...
+	* mapper-server.cc: ... here.
+	* Make-lang.in: Adjust.
+	* module.cc (make_mapper): Adjust.
+	gcc/testsuite/
+	* g++.dg/modulex/inc-xlate-1_e.C: Adjust.
+	* g++.dg/modulex/legacy-[26]_[bcdef].[CH]: Likewise.
+
+	gcc/cp/
 	* module.cc (mapper_{import_export,export_done}): Revert
-	2020-04-13 change/
+	2020-04-13 change.
 
 	gcc/cp/
 	* mapper-client.{h,cc}: New, broken out of ...
