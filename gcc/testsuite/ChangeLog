@@ -1,3 +1,8 @@
+2020-04-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94608
+	* g++.dg/lto/pr83720_0.C: Add fn def to avoid warning on arm ABI.
+
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94618
