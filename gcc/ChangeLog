@@ -1,3 +1,15 @@
+2020-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR other/94629
+	* cgraphclones.c (cgraph_node::create_clone): Remove duplicate
+	initialization.
+	* dwarf2out.c (dw_val_equal_p): Fix pasto in
+	dw_val_class_vms_delta comparison.
+	* optabs.c (expand_binop_directly): Fix pasto in commutation
+	check.
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Fix pasto in
+	initialization.
+
 2020-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/94618
