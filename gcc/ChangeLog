@@ -1,3 +1,12 @@
+2020-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94417
+	* config/i386/i386.c (rest_of_insert_endbranch): Insert ENDBR at
+	function entry if function will be called indirectly.
+
 2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from mainline

@@ -1,3 +1,13 @@
+2020-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94417
+	* gcc.target/i386/pr94417-1.c: New test.
+	* gcc.target/i386/pr94417-2.c: Likewise.
+	* gcc.target/i386/pr94417-3.c: Likewise.
+
 2020-04-17  Kewen Lin  <linkw@gcc.gnu.org>
 
 	Backport from mainline
