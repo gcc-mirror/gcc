@@ -72,8 +72,8 @@ GRS_OBJS = \
     $(END)
 # removed object files from here 
 
-# The compiler itself is called grs1
-grs1$(exeext): $(GRS_OBJS) attribs.o  $(BACKEND) $(LIBDEPS)
+# The compiler itself is called rust1 (formerly grs1)
+rust1$(exeext): $(GRS_OBJS) attribs.o  $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(GRS_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
