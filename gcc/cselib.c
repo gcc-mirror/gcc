@@ -884,21 +884,29 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
       else
 	e = cselib_lookup (x, GET_MODE (x), 0, memmode);
       if (e)
-	for (struct elt_loc_list *l = e->locs; l; l = l->next)
-	  if (GET_CODE (l->loc) == PLUS
-	      && GET_CODE (XEXP (l->loc, 0)) == VALUE
-	      && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
-	      && CONST_INT_P (XEXP (l->loc, 1)))
+	{
+	  if (SP_DERIVED_VALUE_P (e->val_rtx)
+	      && (*off == NULL_RTX || *off == const0_rtx))
 	    {
-	      if (*off == NULL_RTX)
-		*off = XEXP (l->loc, 1);
-	      else
-		*off = plus_constant (Pmode, *off,
-				      INTVAL (XEXP (l->loc, 1)));
-	      if (*off == const0_rtx)
-		*off = NULL_RTX;
-	      return XEXP (l->loc, 0);
+	      *off = NULL_RTX;
+	      return e->val_rtx;
 	    }
+	  for (struct elt_loc_list *l = e->locs; l; l = l->next)
+	    if (GET_CODE (l->loc) == PLUS
+		&& GET_CODE (XEXP (l->loc, 0)) == VALUE
+		&& SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+		&& CONST_INT_P (XEXP (l->loc, 1)))
+	      {
+		if (*off == NULL_RTX)
+		  *off = XEXP (l->loc, 1);
+		else
+		  *off = plus_constant (Pmode, *off,
+					INTVAL (XEXP (l->loc, 1)));
+		if (*off == const0_rtx)
+		  *off = NULL_RTX;
+		return XEXP (l->loc, 0);
+	      }
+	}
     }
   return x;
 }
@@ -2655,6 +2663,67 @@ bool
 cselib_have_permanent_equivalences (void)
 {
   return cselib_any_perm_equivs;
+}
+
+/* Record stack_pointer_rtx to be equal to
+   (plus:P cfa_base_preserved_val offset).  Used by var-tracking
+   at the start of basic blocks for !frame_pointer_needed functions.  */
+
+void
+cselib_record_sp_cfa_base_equiv (HOST_WIDE_INT offset, rtx_insn *insn)
+{
+  rtx sp_derived_value = NULL_RTX;
+  for (struct elt_loc_list *l = cfa_base_preserved_val->locs; l; l = l->next)
+    if (GET_CODE (l->loc) == VALUE
+	&& SP_DERIVED_VALUE_P (l->loc))
+      {
+	sp_derived_value = l->loc;
+	break;
+      }
+    else if (GET_CODE (l->loc) == PLUS
+	     && GET_CODE (XEXP (l->loc, 0)) == VALUE
+	     && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+	     && CONST_INT_P (XEXP (l->loc, 1)))
+      {
+	sp_derived_value = XEXP (l->loc, 0);
+	offset = offset + UINTVAL (XEXP (l->loc, 1));
+	break;
+      }
+  if (sp_derived_value == NULL_RTX)
+    return;
+  cselib_val *val
+    = cselib_lookup_from_insn (plus_constant (Pmode, sp_derived_value, offset),
+			       Pmode, 1, VOIDmode, insn);
+  if (val != NULL)
+    {
+      PRESERVED_VALUE_P (val->val_rtx) = 1;
+      cselib_record_set (stack_pointer_rtx, val, NULL);
+    }
+}
+
+/* Return true if V is SP_DERIVED_VALUE_P (or SP_DERIVED_VALUE_P + CONST_INT)
+   that can be expressed using cfa_base_preserved_val + CONST_INT.  */
+
+bool
+cselib_sp_derived_value_p (cselib_val *v)
+{
+  if (!SP_DERIVED_VALUE_P (v->val_rtx))
+    for (struct elt_loc_list *l = v->locs; l; l = l->next)
+      if (GET_CODE (l->loc) == PLUS
+	  && GET_CODE (XEXP (l->loc, 0)) == VALUE
+	  && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+	  && CONST_INT_P (XEXP (l->loc, 1)))
+	v = CSELIB_VAL_PTR (XEXP (l->loc, 0));
+  if (!SP_DERIVED_VALUE_P (v->val_rtx))
+    return false;
+  for (struct elt_loc_list *l = v->locs; l; l = l->next)
+    if (l->loc == cfa_base_preserved_val->val_rtx)
+      return true;
+    else if (GET_CODE (l->loc) == PLUS
+	     && XEXP (l->loc, 0) == cfa_base_preserved_val->val_rtx
+	     && CONST_INT_P (XEXP (l->loc, 1)))
+      return true;
+  return false;
 }
 
 /* There is no good way to determine how many elements there can be

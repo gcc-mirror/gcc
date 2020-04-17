@@ -6165,18 +6165,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
 						    __lhs.size())); }
 
   /**
-   *  @brief  Test equivalence of C string and string.
-   *  @param __lhs  C string.
-   *  @param __rhs  String.
-   *  @return  True if @a __rhs.compare(@a __lhs) == 0.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    inline bool
-    operator==(const _CharT* __lhs,
-	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    { return __rhs.compare(__lhs) == 0; }
-
-  /**
    *  @brief  Test equivalence of string and C string.
    *  @param __lhs  String.
    *  @param __rhs  C string.
@@ -6187,6 +6175,47 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
     { return __lhs.compare(__rhs) == 0; }
+
+#if __cpp_lib_three_way_comparison
+  /**
+   *  @brief  Three-way comparison of a string and a C string.
+   *  @param __lhs  A string.
+   *  @param __rhs  A null-terminated string.
+   *  @return  A value indicating whether `__lhs` is less than, equal to,
+   *	       greater than, or incomparable with `__rhs`.
+   */
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline auto
+    operator<=>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+		const basic_string<_CharT, _Traits, _Alloc>& __rhs) noexcept
+    -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
+    { return __detail::__char_traits_cmp_cat<_Traits>(__lhs.compare(__rhs)); }
+
+  /**
+   *  @brief  Three-way comparison of a string and a C string.
+   *  @param __lhs  A string.
+   *  @param __rhs  A null-terminated string.
+   *  @return  A value indicating whether `__lhs` is less than, equal to,
+   *	       greater than, or incomparable with `__rhs`.
+   */
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline auto
+    operator<=>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+		const _CharT* __rhs) noexcept
+    -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
+    { return __detail::__char_traits_cmp_cat<_Traits>(__lhs.compare(__rhs)); }
+#else
+  /**
+   *  @brief  Test equivalence of C string and string.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __rhs.compare(@a __lhs) == 0.  False otherwise.
+   */
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline bool
+    operator==(const _CharT* __lhs,
+	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    { return __rhs.compare(__lhs) == 0; }
 
   // operator !=
   /**
@@ -6377,6 +6406,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator>=(const _CharT* __lhs,
 	     const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     { return __rhs.compare(__lhs) <= 0; }
+#endif // three-way comparison
 
   /**
    *  @brief  Swap contents of two strings.

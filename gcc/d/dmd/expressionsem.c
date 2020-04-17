@@ -37,7 +37,6 @@
 bool typeMerge(Scope *sc, TOK op, Type **pt, Expression **pe1, Expression **pe2);
 bool isArrayOpValid(Expression *e);
 Expression *expandVar(int result, VarDeclaration *v);
-TypeTuple *toArgTypes(Type *t);
 bool checkAssignEscape(Scope *sc, Expression *e, bool gag);
 bool checkParamArgumentEscape(Scope *sc, FuncDeclaration *fdc, Identifier *par, Expression *arg, bool gag);
 bool checkAccess(AggregateDeclaration *ad, Loc loc, Scope *sc, Dsymbol *smember);
@@ -2074,7 +2073,7 @@ public:
                      * The results of this are highly platform dependent, and intended
                      * primarly for use in implementing va_arg().
                      */
-                    tded = toArgTypes(e->targ);
+                    tded = Target::toArgTypes(e->targ);
                     if (!tded)
                         goto Lno;           // not valid for a parameter
                     break;

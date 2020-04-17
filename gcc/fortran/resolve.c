@@ -2601,21 +2601,27 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 	  goto done;
 	}
 
-      if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU))
-	/* Turn erros into warnings with -std=gnu and -std=legacy.  */
-	gfc_errors_to_warnings (true);
-
+      bool bad_result_characteristics;
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
-				   reason, sizeof(reason), NULL, NULL))
+				   reason, sizeof(reason), NULL, NULL,
+				   &bad_result_characteristics))
 	{
-	  gfc_error_opt (0, "Interface mismatch in global procedure %qs at %L:"
-			 " %s", sym->name, &sym->declared_at, reason);
+	  /* Turn erros into warnings with -std=gnu and -std=legacy,
+	     unless a function returns a wrong type, which can lead
+	     to all kinds of ICEs and wrong code.  */
+
+	  if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU)
+	      && !bad_result_characteristics)
+	    gfc_errors_to_warnings (true);
+
+	  gfc_error ("Interface mismatch in global procedure %qs at %L: %s",
+		     sym->name, &sym->declared_at, reason);
+	  gfc_errors_to_warnings (false);
 	  goto done;
 	}
     }
 
 done:
-  gfc_errors_to_warnings (false);
 
   if (gsym->type == GSYM_UNKNOWN)
     {
@@ -9941,9 +9947,6 @@ resolve_transfer (gfc_code *code)
 		 "an assumed-size array", &code->loc);
       return;
     }
-
-  if (async_io_dt && exp->expr_type == EXPR_VARIABLE)
-    exp->symtree->n.sym->attr.asynchronous = 1;
 }
 
 
@@ -12003,14 +12006,14 @@ start:
 	  break;
 
 	case EXEC_OPEN:
-	  if (!gfc_resolve_open (code->ext.open))
+	  if (!gfc_resolve_open (code->ext.open, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.open->err, code);
 	  break;
 
 	case EXEC_CLOSE:
-	  if (!gfc_resolve_close (code->ext.close))
+	  if (!gfc_resolve_close (code->ext.close, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.close->err, code);
@@ -12052,7 +12055,7 @@ start:
 
 	case EXEC_READ:
 	case EXEC_WRITE:
-	  if (!gfc_resolve_dt (code->ext.dt, &code->loc))
+	  if (!gfc_resolve_dt (code, code->ext.dt, &code->loc))
 	    break;
 
 	  resolve_branch (code->ext.dt->err, code);
@@ -12625,6 +12628,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Array pointer %qs at %L must have a deferred shape or "
 		     "assumed rank", sym->name, &sym->declared_at);
+	  sym->error = 1;
 	  return false;
 	}
     }
@@ -15009,11 +15013,6 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
     }
 
-  if (async_io_dt)
-    {
-      for (nl = sym->namelist; nl; nl = nl->next)
-	nl->sym->attr.asynchronous = 1;
-    }
   return true;
 }
 

@@ -2257,7 +2257,7 @@ create_access_replacement (struct access *access, tree reg_type = NULL_TREE)
 	  print_generic_expr (dump_file, access->base);
 	  fprintf (dump_file, " offset: %u, size: %u: ",
 		   (unsigned) access->offset, (unsigned) access->size);
-	  print_generic_expr (dump_file, repl);
+	  print_generic_expr (dump_file, repl, TDF_UID);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2357,9 +2357,11 @@ verify_sra_access_forest (struct access *root)
       gcc_assert (base == first_base);
       gcc_assert (offset == access->offset);
       gcc_assert (access->grp_unscalarizable_region
+		  || access->grp_total_scalarization
 		  || size == max_size);
-      gcc_assert (!is_gimple_reg_type (access->type)
-		  || max_size == access->size);
+      gcc_assert (access->grp_unscalarizable_region
+		  || !is_gimple_reg_type (access->type)
+		  || size == access->size);
       gcc_assert (reverse == access->reverse);
 
       if (access->first_child)
@@ -3698,6 +3700,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
   location_t loc;
   struct access *access;
   tree type, bfr, orig_expr;
+  bool partial_cplx_access = false;
 
   if (TREE_CODE (*expr) == BIT_FIELD_REF)
     {
@@ -3708,7 +3711,10 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
     bfr = NULL_TREE;
 
   if (TREE_CODE (*expr) == REALPART_EXPR || TREE_CODE (*expr) == IMAGPART_EXPR)
-    expr = &TREE_OPERAND (*expr, 0);
+    {
+      expr = &TREE_OPERAND (*expr, 0);
+      partial_cplx_access = true;
+    }
   access = get_access_for_expr (*expr);
   if (!access)
     return false;
@@ -3736,13 +3742,32 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
          be accessed as a different type too, potentially creating a need for
          type conversion (see PR42196) and when scalarized unions are involved
          in assembler statements (see PR42398).  */
-      if (!useless_type_conversion_p (type, access->type))
+      if (!bfr && !useless_type_conversion_p (type, access->type))
 	{
 	  tree ref;
 
 	  ref = build_ref_for_model (loc, orig_expr, 0, access, gsi, false);
 
-	  if (write)
+	  if (partial_cplx_access)
+	    {
+	    /* VIEW_CONVERT_EXPRs in partial complex access are always fine in
+	       the case of a write because in such case the replacement cannot
+	       be a gimple register.  In the case of a load, we have to
+	       differentiate in between a register an non-register
+	       replacement.  */
+	      tree t = build1 (VIEW_CONVERT_EXPR, type, repl);
+	      gcc_checking_assert (!write || access->grp_partial_lhs);
+	      if (!access->grp_partial_lhs)
+		{
+		  tree tmp = make_ssa_name (type);
+		  gassign *stmt = gimple_build_assign (tmp, t);
+		  /* This is always a read. */
+		  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+		  t = tmp;
+		}
+	      *expr = t;
+	    }
+	  else if (write)
 	    {
 	      gassign *stmt;
 

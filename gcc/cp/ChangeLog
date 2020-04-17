@@ -1,3 +1,187 @@
+2020-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94483
+	* lambda.c (lambda_capture_field_type): Avoid doing auto deduction if
+	the explicit initializer has parameter packs.
+
+	PR c++/88754
+	* parser.c (cp_parser_check_template_parameters): Before issuing a hard
+	error, first try simulating an error instead.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/94629
+	* call.c (build_conditional_expr_1): Remove redundant assignment to
+	arg2.
+
+2020-04-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94475
+	* cvt.c (ocp_convert): If the result of scalar_constant_value is
+	erroneous, ignore it and use the original expression.
+
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94571
+	* parser.c (cp_parser_simple_declaration): Fix up a pasto in
+	diagnostics.
+
+2020-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94593
+	* parser.c (cp_parser_pragma) <case PRAGMA_OMP_REQUIRES>: Reject
+	requires directive when not at file or namespace scope.
+
+2020-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94359
+	* coroutines.cc (build_actor_fn): Check that the target can
+	support the resume tailcall before mandating it.
+
+2020-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/85278
+	* cxx-pretty-print.c (cxx_pretty_printer:simple_type_specifier)
+	<case DECLTYPE_TYPE>: Handle DECLTYPE_TYPE here instead of ...
+	(pp_cxx_type_specifier_seq) <case DECLTYPE_TYPE>: ... here.
+	(cxx_pretty_printer::direct_abstract_declarator) <case DECLTYPE_TYPE>:
+	New no-op case.
+
+	PR c++/94034
+	* constexpr.c (replace_result_decl_data): New struct.
+	(replace_result_decl_data_r): New function.
+	(replace_result_decl): New function.
+	(cxx_eval_call_expression): Use it.
+	* tree.c (build_aggr_init_expr): Set the location of the AGGR_INIT_EXPR
+	to that of its initializer.
+
+2020-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94588
+	* name-lookup.c (check_local_shadow): Add an inform call.
+
+2020-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94521
+	* error.c (dump_scope): Pass TFF_NO_FUNCTION_ARGUMENTS to
+	dump_function_decl when printing a function template instantiation as a
+	scope.
+
+	PR c++/94470
+	* constexpr.c (get_or_insert_ctor_field): Set default value of parameter
+	'pos_hint' to -1.
+	(cxx_eval_bare_aggregate): Use get_or_insert_ctor_field instead of
+	assuming the the next index belongs at the end of the new CONSTRUCTOR.
+	(cxx_eval_store_expression): Revert PR c++/78572 fix.
+
+2020-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94426  lambdas with internal linkage are different to no-linkage
+	* decl2.c (determine_visibility): A lambda's visibility is
+	affected by its extra scope.
+	* pt.c (instantiate_decl): Determine var's visibility before
+	instantiating its initializer.
+	* tree.c (no_linkage_check): Revert code looking at visibility of
+	lambda's extra scope.
+`
+2020-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94528
+	* coroutines.cc (co_await_expander): Remove.
+	(expand_one_await_expression): New.
+	(process_one_statement): New.
+	(await_statement_expander): New.
+	(build_actor_fn): Revise to use per-statement expander.
+	(struct susp_frame_data): Reorder and comment.
+	(register_awaits): Factor code.
+	(replace_statement_captures): New, factored from...
+	(maybe_promote_captured_temps):.. here.
+	(await_statement_walker): Revise to process per statement.
+	(morph_fn_to_coro): Use revised susp_frame_data layout.
+
+2020-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94149
+	* method.c (constructible_expr): In C++20, try using parenthesized
+	initialization of aggregates to determine the result of
+	__is_constructible.
+
+2020-04-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (co_await_expander): Simplify.
+
+2020-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94523
+	* constexpr.c (cxx_eval_constant_expression) [VAR_DECL]: Look at
+	ctx->object and ctx->global->values first.
+
+2020-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93790
+	* call.c (initialize_reference): If the reference binding failed, maybe
+	try initializing from { }.
+	* decl.c (grok_reference_init): For T& t(e), set
+	LOOKUP_AGGREGATE_PAREN_INIT but don't build up a constructor yet.
+
+2020-04-08  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (maybe_promote_captured_temps): Add a cleanup
+	expression, if needed, to any call from which we promoted
+	temporaries captured by reference.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94507 - ICE-on-invalid with lambda template.
+	* pt.c (tsubst_lambda_expr): Cope when tsubst_template_decl or
+	tsubst_function_decl returns error_mark_node.
+
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* decl.c (duplicate_decls): Duplicate also DECL_IS_REPLACEABLE_OPERATOR.
+	(cxx_init_decl_processing): Mark replaceable all implicitly defined
+	operators.
+
+2020-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Core issues 1001 and 1322
+	PR c++/92010
+	* pt.c (rebuild_function_or_method_type): Split function out from ...
+	(tsubst_function_type): ... here.
+	(maybe_rebuild_function_decl_type): New function.
+	(tsubst_function_decl): Use it.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94325
+	* decl.c (begin_destructor_body): For CLASSTYPE_VBASECLASSES class
+	dtors, if CLASSTYPE_PRIMARY_BINFO is non-NULL, but not BINFO_VIRTUAL_P,
+	look at CLASSTYPE_PRIMARY_BINFO of its BINFO_TYPE if it is not
+	BINFO_VIRTUAL_P, and so on.
+
+2020-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94478 - ICE with defaulted comparison operator
+	* method.c (early_check_defaulted_comparison): Give an error when the
+	context is null.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* paser.c (cp_parser_oacc_declare): Add check that variables
+	are declared in the same scope as the directive.
+
+2020-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94480
+	* parser.c (cp_parser_requires_expression): Use tentative_firewall.
+
+	PR c++/94481
+	* parser.c (cp_parser_placeholder_type_specifier): Use
+	matching_parens.
+
 2020-04-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (maybe_promote_captured_temps): Ensure that
@@ -606,7 +790,7 @@
 	* coroutines.cc (captures_temporary): Strip component_ref
 	to its base object.
 
-2020-03-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-03-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (finish_co_await_expr): Build co_await_expr
 	with unknown_type_node.
@@ -835,7 +1019,7 @@
 	* tree.c (cp_walk_subtrees): Walk CONSTRUCTOR types here.
 	* pt.c (find_parameter_packs_r): Not here.
 
-2020-02-12 Iain Sandoe <iain@sandoe.co.uk>
+2020-02-12 Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (build_actor_fn): Implement deallocation function
 	selection per n4849, dcl.fct.def.coroutine bullet 12.
@@ -990,7 +1174,7 @@
 	* coroutines.cc (maybe_promote_captured_temps): Increase the index
 	number for temporary variables' name.
 
-2020-02-05  Jun Ma <JunMa@linux.alibaba.com>
+2020-02-05  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (build_co_await): Call convert_from_reference
 	to wrap co_await_expr with indirect_ref which avoid
@@ -1065,7 +1249,7 @@
 	* cp-gimplify.c (predeclare_vla): New.
 	(cp_genericize_r) [NOP_EXPR]: Call it.
 
-2020-02-03  Jun Ma <JunMa@linux.alibaba.com>
+2020-02-03  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (transform_await_wrapper): Set actor funcion as
 	new context of label_decl.

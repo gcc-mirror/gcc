@@ -1,3 +1,20 @@
+2020-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/85278
+	* c-pretty-print.c (pp_c_pointer) <case REFERENCE_TYPE>: Print a double
+	ampersand if it's an rvalue reference type.
+
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/92326
+	* c-pretty-print.c (c_pretty_printer::direct_abstract_declarator): Avoid
+	printing array bound for flexible array members.
+
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update coroutines builtin
+	define, per n4861.
+
 2020-04-02  Richard Biener  <rguenther@suse.de>
 
 	PR c/94392

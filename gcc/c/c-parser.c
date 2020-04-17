@@ -12402,6 +12402,13 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       return false;
 
     case PRAGMA_OMP_REQUIRES:
+      if (context != pragma_external)
+	{
+	  error_at (c_parser_peek_token (parser)->location,
+		    "%<#pragma omp requires%> may only be used at file scope");
+	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+	  return false;
+	}
       c_parser_omp_requires (parser);
       return false;
 
@@ -16580,6 +16587,15 @@ c_parser_oacc_declare (c_parser *parser)
 	  break;
 	}
 
+      if (!c_check_in_current_scope (decl))
+	{
+	  error_at (loc,
+		    "%qD must be a variable declared in the same scope as "
+		    "%<#pragma acc declare%>", decl);
+	  error = true;
+	  continue;
+	}
+
       if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("omp declare target link",
 			       DECL_ATTRIBUTES (decl)))
@@ -16923,7 +16939,6 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
   oacc_routine_data data;
   data.error_seen = false;
   data.fndecl_seen = false;
-  data.clauses = NULL_TREE;
   data.loc = c_parser_peek_token (parser)->location;
 
   c_parser_consume_pragma (parser);

@@ -1236,6 +1236,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_DISREGARD_INLINE_LIMITS);
       compare_values (DECL_PURE_P);
       compare_values (DECL_LOOPING_CONST_OR_PURE_P);
+      compare_values (DECL_IS_REPLACEABLE_OPERATOR);
       compare_values (DECL_FINAL_P);
       compare_values (DECL_CXX_CONSTRUCTOR_P);
       compare_values (DECL_CXX_DESTRUCTOR_P);
@@ -2196,11 +2197,6 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
   file_data->order = order;
-#ifdef ACCEL_COMPILER
-  lto_input_mode_table (file_data);
-#else
-  file_data->mode_table = lto_mode_identity_table;
-#endif
 
   /* Read and verify LTO section.  */
   data = lto_get_summary_section_data (file_data, LTO_section_lto, &len);
@@ -2215,6 +2211,12 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
   lto_check_version (file_data->lto_section_header.major_version,
 		     file_data->lto_section_header.minor_version,
 		     file_data->file_name);
+
+#ifdef ACCEL_COMPILER
+  lto_input_mode_table (file_data);
+#else
+  file_data->mode_table = lto_mode_identity_table;
+#endif
 
   data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);
   if (data == NULL)

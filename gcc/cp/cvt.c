@@ -723,7 +723,9 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   if (!CLASS_TYPE_P (type))
     {
       e = mark_rvalue_use (e);
-      e = scalar_constant_value (e);
+      tree v = scalar_constant_value (e);
+      if (!error_operand_p (v))
+	e = v;
     }
   if (error_operand_p (e))
     return error_mark_node;

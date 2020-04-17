@@ -6117,6 +6117,19 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       && preserve)
     cselib_set_value_sp_based (v);
 
+  /* Don't record MO_VAL_SET for VALUEs that can be described using
+     cfa_base_rtx or cfa_base_rtx + CONST_INT, cselib already knows
+     all the needed equivalences and they shouldn't change depending
+     on which register holds that VALUE in some instruction.  */
+  if (!frame_pointer_needed
+      && cfa_base_rtx
+      && cselib_sp_derived_value_p (v))
+    {
+      if (preserve)
+	preserve_value (v);
+      return;
+    }
+
   nloc = replace_expr_with_values (oloc);
   if (nloc)
     oloc = nloc;
@@ -10154,6 +10167,7 @@ vt_initialize (void)
 
   vt_add_function_parameters ();
 
+  bool record_sp_value = false;
   FOR_EACH_BB_FN (bb, cfun)
     {
       rtx_insn *insn;
@@ -10167,6 +10181,15 @@ vt_initialize (void)
 	    fprintf (dump_file, "first value: %i\n",
 		     cselib_get_next_uid ());
 	}
+
+      if (MAY_HAVE_DEBUG_BIND_INSNS
+	  && cfa_base_rtx
+	  && !frame_pointer_needed
+	  && record_sp_value)
+	cselib_record_sp_cfa_base_equiv (-cfa_base_offset
+					 - VTI (bb)->in.stack_adjust,
+					 BB_HEAD (bb));
+      record_sp_value = true;
 
       first_bb = bb;
       for (;;)

@@ -1107,6 +1107,17 @@ early_check_defaulted_comparison (tree fn)
       return false;
     }
 
+  if (!ctx)
+    {
+      if (DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR))
+	error_at (loc, "three-way comparison operator can only be defaulted "
+		  "in a class definition");
+      else
+	error_at (loc, "equality comparison operator can only be defaulted "
+		  "in a class definition");
+      return false;
+    }
+
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
@@ -1793,12 +1804,48 @@ constructible_expr (tree to, tree from)
     {
       if (from == NULL_TREE)
 	return build_value_init (strip_array_types (to), tf_none);
-      else if (TREE_CHAIN (from))
-	return error_mark_node; // too many initializers
-      from = build_stub_object (TREE_VALUE (from));
+      const int len = list_length (from);
+      if (len > 1)
+	{
+	  if (cxx_dialect < cxx2a)
+	    /* Too many initializers.  */
+	    return error_mark_node;
+
+	  /* In C++20 this is well-formed:
+	       using T = int[2];
+	       T t(1, 2);
+	     which means that std::is_constructible_v<int[2], int, int>
+	     should be true.  */
+	  vec<constructor_elt, va_gc> *v;
+	  vec_alloc (v, len);
+	  for (tree t = from; t; t = TREE_CHAIN (t))
+	    {
+	      tree stub = build_stub_object (TREE_VALUE (t));
+	      constructor_elt elt = { NULL_TREE, stub };
+	      v->quick_push (elt);
+	    }
+	  from = build_constructor (init_list_type_node, v);
+	  CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (from) = true;
+	}
+      else
+	from = build_stub_object (TREE_VALUE (from));
       expr = perform_direct_initialization_if_possible (to, from,
 							/*cast*/false,
 							tf_none);
+      /* If t(e) didn't work, maybe t{e} will.  */
+      if (expr == NULL_TREE
+	  && len == 1
+	  && cxx_dialect >= cxx2a)
+	{
+	  from = build_constructor_single (init_list_type_node, NULL_TREE,
+					   from);
+	  CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (from) = true;
+	  expr = perform_direct_initialization_if_possible (to, from,
+							    /*cast*/false,
+							    tf_none);
+	}
     }
   return expr;
 }

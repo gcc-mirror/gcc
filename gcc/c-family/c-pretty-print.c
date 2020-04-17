@@ -278,7 +278,11 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       if (TREE_CODE (t) == POINTER_TYPE)
 	pp_c_star (pp);
       else
-	pp_c_ampersand (pp);
+	{
+	  pp_c_ampersand (pp);
+	  if (TYPE_REF_IS_RVALUE (t))
+	    pp_c_ampersand (pp);
+	}
       pp_c_type_qualifier_list (pp, t);
       break;
 
@@ -593,7 +597,9 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 		expression (fold_build2 (PLUS_EXPR, type, maxval,
 					 build_int_cst (type, 1)));
 	    }
-	  else
+	  else if (TYPE_SIZE (t))
+	    /* Print zero for zero-length arrays but not for flexible
+	       array members whose TYPE_SIZE is null.  */
 	    pp_string (this, "0");
 	}
       pp_c_right_bracket (this);

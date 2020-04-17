@@ -12434,6 +12434,7 @@ is called and the @var{flag} argument passed to it.
 @findex printf_unlocked
 @findex putchar
 @findex puts
+@findex realloc
 @findex remainder
 @findex remainderf
 @findex remainderl
@@ -12677,8 +12678,8 @@ The ISO C90 functions
 @code{toupper}, @code{labs}, @code{ldexp}, @code{log10}, @code{log},
 @code{malloc}, @code{memchr}, @code{memcmp}, @code{memcpy},
 @code{memset}, @code{modf}, @code{pow}, @code{printf}, @code{putchar},
-@code{puts}, @code{scanf}, @code{sinh}, @code{sin}, @code{snprintf},
-@code{sprintf}, @code{sqrt}, @code{sscanf}, @code{strcat},
+@code{puts}, @code{realloc}, @code{scanf}, @code{sinh}, @code{sin},
+@code{snprintf}, @code{sprintf}, @code{sqrt}, @code{sscanf}, @code{strcat},
 @code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
 @code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
 @code{strpbrk}, @code{strrchr}, @code{strspn}, @code{strstr},

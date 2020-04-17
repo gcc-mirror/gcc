@@ -1,3 +1,519 @@
+2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* gimplify.c (gimplify_scan_omp_clauses): Turn MAP_TO_PSET to
+	MAP_DELETE.
+
+2020-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_advsimd_ldp_stp_p): New function.
+	(aarch64_sve_adjust_stmt_cost): Add a vectype parameter.  Double the
+	cost of load and store insns if one loop iteration has enough scalar
+	elements to use an Advanced SIMD LDP or STP.
+	(aarch64_add_stmt_cost): Update call accordingly.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR target/94567
+	* config/i386/i386.md (*testqi_ext_3): Use CCZmode rather than
+	CCNOmode in ix86_match_ccmode if len is equal to <MODE>mode precision,
+	or pos + len >= 32, or pos + len is equal to operands[2] precision
+	and operands[2] is not a register operand.  During splitting perform
+	SImode AND if operands[0] doesn't have CCZmode and pos + len is
+	equal to mode precision.
+
+2020-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR other/94629
+	* cgraphclones.c (cgraph_node::create_clone): Remove duplicate
+	initialization.
+	* dwarf2out.c (dw_val_equal_p): Fix pasto in
+	dw_val_class_vms_delta comparison.
+	* optabs.c (expand_binop_directly): Fix pasto in commutation
+	check.
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Fix pasto in
+	initialization.
+
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94618
+	* cfgrtl.c (delete_insn_and_edges): Set purge not just when
+	insn is the BB_END of its block, but also when it is only followed
+	by DEBUG_INSNs in its block.
+
+	PR tree-optimization/94621
+	* tree-inline.c (remap_type_1): Don't dereference NULL TYPE_DOMAIN.
+	Move id->adjust_array_error_bounds check first in the condition.
+
+2020-04-17  Martin Liska  <mliska@suse.cz>
+	    Jonathan Yong <10walls@gmail.com>
+
+	PR gcov-profile/94570
+	* coverage.c (coverage_init): Use separator properly.
+
+2020-04-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/93974
+	* config/rs6000/rs6000.c (TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): Define.
+	(rs6000_cannot_substitute_mem_equiv_p): New function.
+
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93621
+	* ipa-inline.h (ipa_saved_clone_sources): Declare.
+	* ipa-inline-transform.c (ipa_saved_clone_sources): New variable.
+	(save_inline_function_body): Link the new body holder with the
+	previous one.
+	* cgraph.c: Include ipa-inline.h.
+	(cgraph_edge::redirect_call_stmt_to_callee): Try to find the decl from
+	the statement in ipa_saved_clone_sources.
+	* cgraphunit.c: Include ipa-inline.h.
+	(expand_all_functions): Free ipa_saved_clone_sources.
+
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94606
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_eor): Take
+	the VNx16BI lowpart of the recursively-generated constant.
+
+2020-04-16  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94314
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
+	DECL_IS_REPLACEABLE_OPERATOR during cloning.
+	* tree-ssa-dce.c (valid_new_delete_pair_p): New function.
+	(propagate_necessity): Check operator names.
+
+2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94605
+	* early-remat.c (early_remat::process_block): Handle insns that
+	set multiple candidate registers.
+2020-04-16  Jan Hubicka  <hubicka@ucw.cz>
+	
+	PR gcov-profile/93401
+	* common.opt (profile-prefix-path): New option.
+	* coverae.c: Include diagnostics.h.
+	(coverage_init): Strip profile prefix path.
+	* doc/invoke.texi (-fprofile-prefix-path): Document.
+
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94614
+	* expr.c (emit_move_multi_word): Do not generate code when
+	the destination part is undefined_operand_subword_p.
+	* lower-subreg.c (resolve_clobber): Look through a paradoxica
+	subreg.
+
+2020-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94598
+	* tree-sra.c (verify_sra_access_forest): Fix verification of total
+	scalarization accesses under access to one-element arrays.
+
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/89494
+	* function.c (assign_parm_find_data_types): Add workaround for
+	BROKEN_VALUE_INITIALIZATION compilers.
+
+2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	* gdbhooks.py (TreePrinter): Print SSA_NAME_VERSION of SSA_NAME
+	nodes.
+
+2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94603
+	* config/i386/i386-builtin.def (__builtin_ia32_movq128):
+	Require OPTION_MASK_ISA_SSE2.
+
+2020-04-15  Gustavo Romero  <gromero@linux.ibm.com>
+
+	PR bootstrap/89494
+	* dumpfile.c (selftest::temp_dump_context::temp_dump_context):
+	Don't construct a dump_context temporary to call static method.
+
+2020-04-15  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(valid_src_p): Check for aarch64_address_info type before
+	accessing base field.
+
+2020-04-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/mve.md (mve_vec_duplicate<mode>): New pattern.
+	(V_sz_elem2): Remove unused mode attribute.
+
+2020-04-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm.md (arm_movdi): Disallow for MVE.
+
+2020-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94539
+	* tree-ssa-alias.c (same_type_for_tbaa): Defer to
+	alias_sets_conflict_p for pointers.
+
+2020-04-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/94584
+	* config/xtensa/xtensa.md (zero_extendhisi2, zero_extendqisi2)
+	(extendhisi2_internal): Add %v1 before the load instructions.
+
+2020-04-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/94542
+	* config/rs6000/rs6000.c (address_to_insn_form): Do not attempt to
+	use PC-relative addressing for TLS references.
+
+2020-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94434
+	* ipa-sra.c: Include internal-fn.h.
+	(enum isra_scan_context): Update comment.
+	(scan_function): Treat calls to internal_functions like loads or stores.
+
+2020-04-14  Yang Yang <yangyang305@huawei.com>
+
+	PR tree-optimization/94574
+	* tree-ssa.c (non_rewritable_lvalue_p): Add size check when analyzing
+	whether a vector-insert is rewritable using a BIT_INSERT_EXPR.
+
+2020-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94561
+	* config/i386/i386.c (ix86_get_ssemov): Remove mode size check.
+
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (-Wall): Mention -Wformat-overflow and
+	-Wformat-truncation.  Move -Wzero-length-bounds last.
+	(-Wrestrict): Document positive form of option enabled by -Wall.
+
+2020-04-13 Zachary Spytz  <zspytz@gmail.com>
+
+	* doc/extend.texi: Add realloc to list of built-in functions
+	are recognized by the compiler.
+
+2020-04-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94556
+	* config/i386/i386.c (ix86_expand_epilogue): Restore the frame
+	pointer in word_mode for eh_return epilogues.
+
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Don't add offsets to
+	memory references in %B, %C and %D operand selectors when the inner
+	operand is a post increment address.
+
+2020-04-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Offset a %C memory
+	reference by 4 bytes, and %D memory reference by 6 bytes.
+
+2020-04-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94494
+	* config/i386/sse.md (REDUC_SSE_SMINMAX_MODE): Use TARGET_SSE2
+	condition for V4SI, V8HI and V16QI modes.
+
+2020-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94495
+	PR target/94551
+	* cselib.c (cselib_record_sp_cfa_base_equiv): Set PRESERVED_VALUE_P on
+	val->val_rtx.
+
+2020-04-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/89433
+	PR middle-end/93465
+	* omp-general.c (oacc_verify_routine_clauses): Diagnose if
+	"#pragma omp declare target" has also been applied.
+
+2020-04-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_expand_epilogue): Use emit_jump_insn
+	when to emit the epilogue_helper insn.
+	* config/msp430/msp430.md (epilogue_helper): Add a return insn to the
+	RTL pattern.
+
+2020-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94495
+	* cselib.h (cselib_record_sp_cfa_base_equiv,
+	cselib_sp_derived_value_p): Declare.
+	* cselib.c (cselib_record_sp_cfa_base_equiv,
+	cselib_sp_derived_value_p): New functions.
+	* var-tracking.c (add_stores): Don't record MO_VAL_SET for
+	cselib_sp_derived_value_p values.
+	(vt_initialize): Call cselib_record_sp_cfa_base_equiv at the
+	start of extended basic blocks other than the first one
+	for !frame_pointer_needed functions.
+
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (aarch64_sve_hw, aarch64_sve128_hw)
+	(aarch64_sve256_hw, aarch64_sve512_hw, aarch64_sve1024_hw)
+	(aarch64_sve2048_hw): Document.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve::handle_arm_sve_vector_bits_attribute): Declare.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS when SVE is enabled.
+	* config/aarch64/aarch64-sve-builtins.cc (matches_type_p): New
+	function.
+	(find_type_suffix_for_scalar_type): Use it instead of comparing
+	TYPE_MAIN_VARIANTs.
+	(function_resolver::infer_vector_or_tuple_type): Likewise.
+	(function_resolver::require_vector_type): Likewise.
+	(handle_arm_sve_vector_bits_attribute): New function.
+	* config/aarch64/aarch64.c (pure_scalable_type_info): New class.
+	(aarch64_attribute_table): Add arm_sve_vector_bits.
+	(aarch64_return_in_memory_1):
+	(pure_scalable_type_info::piece::get_rtx): New function.
+	(pure_scalable_type_info::num_zr): Likewise.
+	(pure_scalable_type_info::num_pr): Likewise.
+	(pure_scalable_type_info::get_rtx): Likewise.
+	(pure_scalable_type_info::analyze): Likewise.
+	(pure_scalable_type_info::analyze_registers): Likewise.
+	(pure_scalable_type_info::analyze_array): Likewise.
+	(pure_scalable_type_info::analyze_record): Likewise.
+	(pure_scalable_type_info::add_piece): Likewise.
+	(aarch64_some_values_include_pst_objects_p): Likewise.
+	(aarch64_returns_value_in_sve_regs_p): Use pure_scalable_type_info
+	to analyze whether the type is returned in SVE registers.
+	(aarch64_takes_arguments_in_sve_regs_p): Likwise whether the type
+	is passed in SVE registers.
+	(aarch64_pass_by_reference_1): New function, extracted from...
+	(aarch64_pass_by_reference): ...here.  Use pure_scalable_type_info
+	to analyze whether the type is a pure scalable type and, if so,
+	whether it should be passed by reference.
+	(aarch64_return_in_msb): Return false for pure scalable types.
+	(aarch64_function_value_1): Fold back into...
+	(aarch64_function_value): ...this function.  Use
+	pure_scalable_type_info to analyze whether the type is a pure
+	scalable type and, if so, which registers it should use.  Handle
+	types that include pure scalable types but are not themselves
+	pure scalable types.
+	(aarch64_return_in_memory_1): New function, split out from...
+	(aarch64_return_in_memory): ...here.  Use pure_scalable_type_info
+	to analyze whether the type is a pure scalable type and, if so,
+	whether it should be returned by reference.
+	(aarch64_layout_arg): Remove orig_mode argument.  Use
+	pure_scalable_type_info to analyze whether the type is a pure
+	scalable type and, if so, which registers it should use.  Handle
+	types that include pure scalable types but are not themselves
+	pure scalable types.
+	(aarch64_function_arg): Update call accordingly.
+	(aarch64_function_arg_advance): Likewise.
+	(aarch64_pad_reg_upward): On big-endian targets, return false for
+	pure scalable types that are smaller than 16 bytes.
+	(aarch64_member_type_forces_blk): New function.
+	(aapcs_vfp_sub_candidate): Exit early for built-in SVE types.
+	(aarch64_short_vector_p): Return false for VECTOR_TYPEs that
+	correspond to built-in SVE types.  Do not rely on a vector mode
+	if the type includes an pure scalable type.  When returning true,
+	assert that the mode is not an SVE mode.
+	(aarch64_vfp_is_call_or_return_candidate): Do not check for SVE
+	built-in types here.  When returning true, assert that the type
+	does not have an SVE mode.
+	(aarch64_can_change_mode_class): Don't allow anything to change
+	between a predicate mode and a non-predicate mode.  Also don't
+	allow changes between SVE vector modes and other modes that
+	might be bigger than 128 bits.
+	(aarch64_invalid_binary_op): Reject binary operations that mix
+	SVE and GNU vector types.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): Define.
+
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_attribute_table): Add
+	"SVE sizeless type".
+	* config/aarch64/aarch64-sve-builtins.cc (make_type_sizeless)
+	(sizeless_type_p): New functions.
+	(register_builtin_types): Apply make_type_sizeless to the type.
+	(register_tuple_type): Likewise.
+	(verify_type_context): Use sizeless_type_p instead of builin_type_p.
+
+2020-04-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm_cde.h: Remove `extern "C"` when compiling for
+	C++.
+
+2020-04-09  Martin Jambor  <mjambor@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94482
+	* tree-sra.c (create_access_replacement): Dump new replacement with
+	TDF_UID.
+	(sra_modify_expr): Fix handling of cases when the original EXPR writes
+	to only part of the replacement.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Properly verify
+	the first operand of combinations into REAL/IMAGPART_EXPR and
+	BIT_FIELD_REF.
+
+2020-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Treat the third
+	parameter as a list of option regexps and require each regexp
+	to match.
+
+2020-04-09  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/94530
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(valid_src_p): Fix missing rtx type check.
+
+2020-04-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93674
+	* tree-ssa-loop-ivopts.c (langhooks.h): New include.
+	(add_iv_candidate_for_use): For iv_use of non integer or pointer type,
+	or non-mode precision type, add candidate in unsigned type with the
+	same precision.
+
+2020-04-08  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix61.h (LIB_SPEC): Add -lc128 with -mlong-double-128.
+	* config/rs6000/aix71.h (LIB_SPEC): Likewise.
+	* config/rs6000/aix72.h (LIB_SPEC): Likewise.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94526
+	* cselib.c (autoinc_split): Handle e->val_rtx being SP_DERIVED_VALUE_P
+	with zero offset.
+	* reload1.c (eliminate_regs_1): Avoid creating
+	(plus (reg) (const_int 0)) in DEBUG_INSNs.
+
+	PR tree-optimization/94524
+	* tree-vect-generic.c (expand_vector_divmod): If any elt of op1 is
+	negative for signed TRUNC_MOD_EXPR, multiply with absolute value of
+	op1 rather than op1 itself at the end.  Punt for signed modulo by
+	most negative constant.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Punt for signed
+	modulo by most negative constant.
+
+2020-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/93946
+	* cse.c (cse_insn): Record the tabled expression in
+	src_related.  Verify a redundant store removal is valid.
+
+2020-04-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/94417
+	* config/i386/i386-features.c (rest_of_insert_endbranch): Insert
+	ENDBR at function entry if function will be called indirectly.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94438
+	* config/i386/i386.c (ix86_get_mask_mode): Only use int mask for elem_size
+	1, 2, 4 and 8.
+
+2020-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR c++/94314
+	* gimple.c (gimple_call_operator_delete_p): Rename to...
+	(gimple_call_replaceable_operator_delete_p): ... this.
+	Use DECL_IS_REPLACEABLE_OPERATOR_DELETE_P.
+	* gimple.h (gimple_call_operator_delete_p): Rename to ...
+	(gimple_call_replaceable_operator_delete_p): ... this.
+	* tree-core.h (tree_function_decl): Add replaceable_operator
+	flag.
+	* tree-ssa-dce.c (mark_all_reaching_defs_necessary_1):
+	Use DECL_IS_REPLACEABLE_OPERATOR_DELETE_P.
+	(propagate_necessity): Use gimple_call_replaceable_operator_delete_p.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields):
+	Pack DECL_IS_REPLACEABLE_OPERATOR.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields):
+	Unpack the field here.
+	* tree.h (DECL_IS_REPLACEABLE_OPERATOR): New.
+	(DECL_IS_REPLACEABLE_OPERATOR_NEW_P): New.
+	(DECL_IS_REPLACEABLE_OPERATOR_DELETE_P): New.
+	* cgraph.c (cgraph_node::dump): Dump if an operator is replaceable.
+	* ipa-icf.c (sem_item::compare_referenced_symbol_properties): Compare
+	replaceable operator flags.
+
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm-builtins.c (CX_IMM_QUALIFIERS): New macro.
+	(CX_UNARY_QUALIFIERS, CX_BINARY_QUALIFIERS): Likewise.
+	(CX_TERNARY_QUALIFIERS): Likewise.
+	(ARM_BUILTIN_CDE_PATTERN_START): Likewise.
+	(ARM_BUILTIN_CDE_PATTERN_END): Likewise.
+	(arm_init_acle_builtins): Initialize CDE builtins.
+	(arm_expand_acle_builtin): Check CDE constant operands.
+	* config/arm/arm.h (ARM_CDE_CONST_COPROC): New macro to set the range
+	of CDE constant operand.
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Support DImode for
+	TARGET_VFP_BASE.
+	(ARM_VCDE_CONST_1, ARM_VCDE_CONST_2, ARM_VCDE_CONST_3): Likewise.
+	* config/arm/arm_cde.h (__arm_vcx1_u32): New macro of ACLE interface.
+	(__arm_vcx1a_u32, __arm_vcx2_u32, __arm_vcx2a_u32): Likewise.
+	(__arm_vcx3_u32, __arm_vcx3a_u32, __arm_vcx1d_u64): Likewise.
+	(__arm_vcx1da_u64, __arm_vcx2d_u64, __arm_vcx2da_u64): Likewise.
+	(__arm_vcx3d_u64, __arm_vcx3da_u64): Likewise.
+	* config/arm/arm_cde_builtins.def: New file.
+	* config/arm/iterators.md (V_reg): New attribute of SI.
+	* config/arm/predicates.md (const_int_coproc_operand): New.
+	(const_int_vcde1_operand, const_int_vcde2_operand): New.
+	(const_int_vcde3_operand): New.
+	* config/arm/unspecs.md (UNSPEC_VCDE, UNSPEC_VCDEA): New.
+	* config/arm/vfp.md (arm_vcx1<mode>): New entry.
+	(arm_vcx1a<mode>, arm_vcx2<mode>, arm_vcx2a<mode>): Likewise.
+	(arm_vcx3<mode>, arm_vcx3a<mode>): Likewise.
+
+2020-04-08  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config.gcc: Add arm_cde.h.
+	* config/arm/arm-c.c (arm_cpu_builtins): Define or undefine
+	__ARM_FEATURE_CDE and __ARM_FEATURE_CDE_COPROC.
+	* config/arm/arm-cpus.in (cdecp0, cdecp1, ..., cdecp7): New options.
+	* config/arm/arm.c (arm_option_reconfigure_globals): Configure
+	arm_arch_cde and arm_arch_cde_coproc to store the feature bits.
+	* config/arm/arm.h (TARGET_CDE): New macro.
+	* config/arm/arm_cde.h: New file.
+	* doc/invoke.texi: Document CDE options +cdecp[0-7].
+	* doc/sourcebuild.texi (arm_v8m_main_cde_ok): Document new target
+	supports option.
+	(arm_v8m_main_cde_fp, arm_v8_1m_main_cde_mve): Likewise.
+
+2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94516
+	* postreload.c: Include rtl-iter.h.
+	(reload_cse_move2add): Handle SP autoinc here by FOR_EACH_SUBRTX_VAR
+	looking for all MEMs with RTX_AUTOINC operand.
+	(move2add_note_store): Remove {PRE,POST}_{INC,DEC} handling.
+
+2020-04-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-grid.c (grid_eliminate_combined_simd_part): Use
+	OMP_CLAUSE_CODE to access the omp clause code.
+
+2020-04-07  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/92264
+	* config/h8300/h8300.md (mov;add peephole2): Avoid applying when
+	the destination is the stack pointer.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94291
+	PR rtl-optimization/84169
+	* combine.c (try_combine): For split_i2i3, don't assume SET_DEST
+	must be a REG or SUBREG of REG; if it is not one of these, don't
+	update LOG_LINKs.
+
 2020-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/94479

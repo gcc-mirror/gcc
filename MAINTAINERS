@@ -255,6 +255,8 @@ check in changes outside of the parts of the compiler they maintain.
 
 arc port		Andrew Burgess		<andrew.burgess@embecosm.com>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
+callgraph		Martin Liska		<mliska@suse.cz>
+callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>

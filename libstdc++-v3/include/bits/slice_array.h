@@ -78,6 +78,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ///  Return array stride of slice.
     size_t stride() const;
 
+#if __cpp_impl_three_way_comparison >= 201907L
+    /// Equality comparison
+    friend bool operator==(const slice&, const slice&) = default;
+#endif
+
   private:
     size_t _M_off;                      // offset
     size_t _M_sz;			// size

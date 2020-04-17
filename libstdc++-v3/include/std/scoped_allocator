@@ -500,12 +500,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           && __a._M_inner == __b._M_inner;
     }
 
+#if __cpp_impl_three_way_comparison < 201907L
   /// @related std::scoped_allocator_adaptor
   template <typename _OutA1, typename _OutA2, typename... _InA>
     inline bool
     operator!=(const scoped_allocator_adaptor<_OutA1, _InA...>& __a,
                const scoped_allocator_adaptor<_OutA2, _InA...>& __b) noexcept
     { return !(__a == __b); }
+#endif
 
   /// @}
 

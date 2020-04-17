@@ -3446,7 +3446,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
     = valueize_refs (shared_lookup_references);
   vr1.type = type;
   vr1.set = set;
-  vr1.set = base_set;
+  vr1.base_set = base_set;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;

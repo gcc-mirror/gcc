@@ -46,6 +46,10 @@
 #include <bits/shared_ptr.h>
 #include <bits/unique_ptr.h>
 
+#if __cplusplus > 201703L
+# include <compare>
+#endif
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
 # include <algorithm>
@@ -452,6 +456,20 @@ namespace __detail
     // non-member operators
 
     /// Compare paths
+    friend bool operator==(const path& __lhs, const path& __rhs) noexcept
+    { return __lhs.compare(__rhs) == 0; }
+
+#if __cpp_lib_three_way_comparison
+    /// Compare paths
+    friend strong_ordering
+    operator<=>(const path& __lhs, const path& __rhs) noexcept
+    { return __lhs.compare(__rhs) <=> 0; }
+#else
+    /// Compare paths
+    friend bool operator!=(const path& __lhs, const path& __rhs) noexcept
+    { return !(__lhs == __rhs); }
+
+    /// Compare paths
     friend bool operator<(const path& __lhs, const path& __rhs) noexcept
     { return __lhs.compare(__rhs) < 0; }
 
@@ -466,14 +484,7 @@ namespace __detail
     /// Compare paths
     friend bool operator>=(const path& __lhs, const path& __rhs) noexcept
     { return !(__lhs < __rhs); }
-
-    /// Compare paths
-    friend bool operator==(const path& __lhs, const path& __rhs) noexcept
-    { return __lhs.compare(__rhs) == 0; }
-
-    /// Compare paths
-    friend bool operator!=(const path& __lhs, const path& __rhs) noexcept
-    { return !(__lhs == __rhs); }
+#endif
 
     /// Append one path to another
     friend path operator/(const path& __lhs, const path& __rhs)

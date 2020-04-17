@@ -29,7 +29,7 @@ namespace coro = std::experimental;
 // Fragments (with short-cuts) to mimic enough of the library header to
 // make some progress.
 
-#  if __cpp_coroutines
+#  if __cpp_impl_coroutine
 
 namespace std {
 inline namespace __n4835 {

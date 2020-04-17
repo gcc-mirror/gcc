@@ -138,6 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator==(const _ExtPtr_allocator& __rarg) const
       { return _M_real_alloc == __rarg._M_real_alloc; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       template<typename _Up>
         inline bool
         operator!=(const _ExtPtr_allocator<_Up>& __rarg) const
@@ -146,6 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline bool
       operator!=(const _ExtPtr_allocator& __rarg) const
       { return _M_real_alloc != __rarg._M_real_alloc; }
+#endif
 
       template<typename _Up>
         inline friend void

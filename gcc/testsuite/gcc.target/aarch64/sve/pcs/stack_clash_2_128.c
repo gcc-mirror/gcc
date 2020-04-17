@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fshrink-wrap -fstack-clash-protection -msve-vector-bits=128 -g" } */
-/* { dg-final { check-function-bodies "**" "" { target { aarch64_little_endian && lp64 } } } } */
+/* { dg-final { check-function-bodies "**" "" "" { target { aarch64_little_endian && lp64 } } } } */
 
 #pragma GCC aarch64 "arm_sve.h"
 

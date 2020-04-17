@@ -839,7 +839,16 @@ same_type_for_tbaa (tree type1, tree type2)
      would mean that conversions between them are useless, whereas they are
      not (e.g. type and subtypes can have different modes).  So, in the end,
      they are only guaranteed to have the same alias set.  */
-  if (get_alias_set (type1) == get_alias_set (type2))
+  alias_set_type set1 = get_alias_set (type1);
+  alias_set_type set2 = get_alias_set (type2);
+  if (set1 == set2)
+    return -1;
+
+  /* Pointers to void are considered compatible with all other pointers,
+     so for two pointers see what the alias set resolution thinks.  */
+  if (POINTER_TYPE_P (type1)
+      && POINTER_TYPE_P (type2)
+      && alias_sets_conflict_p (set1, set2))
     return -1;
 
   /* The types are known to be not equal.  */

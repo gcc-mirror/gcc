@@ -1529,7 +1529,7 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 bool
 gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
-			      char *errmsg, int err_len)
+				  char *errmsg, int err_len)
 {
   gfc_symbol *r1, *r2;
 
@@ -1695,11 +1695,15 @@ bool
 gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			int generic_flag, int strict_flag,
 			char *errmsg, int err_len,
-			const char *p1, const char *p2)
+			const char *p1, const char *p2,
+			bool *bad_result_characteristics)
 {
   gfc_formal_arglist *f1, *f2;
 
   gcc_assert (name2 != NULL);
+
+  if (bad_result_characteristics)
+    *bad_result_characteristics = false;
 
   if (s1->attr.function && (s2->attr.subroutine
       || (!s2->attr.function && s2->ts.type == BT_UNKNOWN
@@ -1726,7 +1730,11 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  /* If both are functions, check result characteristics.  */
 	  if (!gfc_check_result_characteristics (s1, s2, errmsg, err_len)
 	      || !gfc_check_result_characteristics (s2, s1, errmsg, err_len))
-	    return false;
+	    {
+	      if (bad_result_characteristics)
+		*bad_result_characteristics = true;
+	      return false;
+	    }
 	}
 
       if (s1->attr.pure && !s2->attr.pure)
@@ -5317,7 +5325,6 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	      s->ts.is_iso_c = 0;
 	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
-	      s->attr.artificial = 1;
 	      if (a->expr->rank > 0)
 		{
 		  s->attr.dimension = 1;
@@ -5332,6 +5339,7 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 		s->maybe_array = maybe_dummy_array_arg (a->expr);
 	    }
 	  s->attr.dummy = 1;
+	  s->attr.artificial = 1;
 	  s->declared_at = a->expr->where;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;

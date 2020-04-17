@@ -1,3 +1,5 @@
+! { dg-do run }
+
 program main
   implicit none
   integer, allocatable, dimension(:) :: AA, BB, CC, DD

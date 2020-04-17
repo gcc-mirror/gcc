@@ -1901,8 +1901,9 @@ struct GTY(()) tree_function_decl {
   ENUM_BITFIELD(function_decl_type) decl_type: 2;
   unsigned has_debug_args_flag : 1;
   unsigned versioned_function : 1;
+  unsigned replaceable_operator : 1;
 
-  /* 12 bits left for future expansion.  */
+  /* 11 bits left for future expansion.  */
   /* 32 bits on 64-bit HW.  */
 };
 

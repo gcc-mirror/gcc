@@ -4169,6 +4169,10 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       goto done;
     }
 
+  /* Do not attempt to resolve if error has already been issued.  */
+  if (array->symtree->n.sym->error)
+    return NULL;
+
   /* Follow any component references.  */
   as = array->symtree->n.sym->as;
   for (ref = array->ref; ref; ref = ref->next)

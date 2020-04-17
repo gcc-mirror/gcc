@@ -617,7 +617,7 @@ proc check-function-bodies { args } {
     }
 
     if { [llength $args] >= 3 } {
-	set required_flag [lindex $args 2]
+	set required_flags [lindex $args 2]
 
 	upvar 2 dg-extra-tool-flags extra_tool_flags
 	set flags $extra_tool_flags
@@ -626,8 +626,18 @@ proc check-function-bodies { args } {
 	if { [info exists torture_current_flags] } {
 	    append flags " " $torture_current_flags
 	}
-	if { ![regexp " $required_flag " $flags] } {
-	    return
+	foreach required_flag $required_flags {
+	    switch -- $required_flag {
+		target -
+		xfail {
+		    error "misplaced $required_flag in check-function-bodies"
+		}
+	    }
+	}
+	foreach required_flag $required_flags {
+	    if { ![regexp " $required_flag " $flags] } {
+		return
+	    }
 	}
     }
 
@@ -679,7 +689,7 @@ proc check-function-bodies { args } {
 	if { [string equal -length $prefix_len $line $prefix] } {
 	    set line [string trim [string range $line $prefix_len end]]
 	    if { !$in_function } {
-		if { [regexp "^(.*\\S)\\s+{(.*)}\$" $line dummy \
+		if { [regexp "^(.*?\\S)\\s+{(.*)}\$" $line dummy \
 			  line selector] } {
 		    set selector [dg-process-target $selector]
 		} else {

@@ -347,6 +347,10 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
       if (DECL_IS_OPERATOR_NEW_P (n1->decl)
 	  != DECL_IS_OPERATOR_NEW_P (n2->decl))
 	return return_false_with_msg ("operator new flags are different");
+
+      if (DECL_IS_REPLACEABLE_OPERATOR (n1->decl)
+	  != DECL_IS_REPLACEABLE_OPERATOR (n2->decl))
+	return return_false_with_msg ("replaceable operator flags are different");
     }
 
   /* Merging two definitions with a reference to equivalent vtables, but

@@ -1,3 +1,10 @@
+2020-04-17  Martin Liska  <mliska@suse.cz>
+	    Jonathan Yong <10walls@gmail.com>
+
+	PR gcov-profile/94570
+	* filenames.h (defined): Do not define HAVE_DOS_BASED_FILE_SYSTEM
+	for CYGWIN.
+
 2020-04-01 Maciej W. Rozycki <macro@linux-mips.org>
 
 	PR lto/94249

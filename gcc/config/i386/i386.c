@@ -4969,12 +4969,12 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       && !TARGET_AVX512VL
       && GET_MODE_SIZE (mode) < 64)
     {
-      /* NB: Since ix86_hard_regno_mode_ok only allows xmm16-xmm31 or
-	 ymm16-ymm31 in 128/256 bit modes when AVX512VL is enabled,
-	 we get here only for xmm16-xmm31 or ymm16-ymm31 in 32/64 bit
+      /* NB: Even though ix86_hard_regno_mode_ok doesn't allow
+	 xmm16-xmm31 nor ymm16-ymm31 in 128/256 bit modes when
+	 AVX512VL is disabled, LRA can still generate reg to
+	 reg moves with xmm16-xmm31 and ymm16-ymm31 in 128/256 bit
 	 modes.  */
-      if (GET_MODE_SIZE (mode) >= 16
-	  || memory_operand (operands[0], mode)
+      if (memory_operand (operands[0], mode)
 	  || memory_operand (operands[1], mode))
 	gcc_unreachable ();
       size = 64;
@@ -9052,8 +9052,13 @@ ix86_expand_epilogue (int style)
 	      t = plus_constant (Pmode, t, m->fs.fp_offset - UNITS_PER_WORD);
 	      emit_insn (gen_rtx_SET (sa, t));
 
-	      t = gen_frame_mem (Pmode, hard_frame_pointer_rtx);
-	      insn = emit_move_insn (hard_frame_pointer_rtx, t);
+	      /* NB: eh_return epilogues must restore the frame pointer
+		 in word_mode since the upper 32 bits of RBP register
+		 can have any values.  */
+	      t = gen_frame_mem (word_mode, hard_frame_pointer_rtx);
+	      rtx frame_reg = gen_rtx_REG (word_mode,
+					   HARD_FRAME_POINTER_REGNUM);
+	      insn = emit_move_insn (frame_reg, t);
 
 	      /* Note that we use SA as a temporary CFA, as the return
 		 address is at the proper place relative to it.  We
@@ -9068,7 +9073,7 @@ ix86_expand_epilogue (int style)
 	      add_reg_note (insn, REG_CFA_DEF_CFA,
 			    plus_constant (Pmode, sa, UNITS_PER_WORD));
 	      ix86_add_queued_cfa_restore_notes (insn);
-	      add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
+	      add_reg_note (insn, REG_CFA_RESTORE, frame_reg);
 	      RTX_FRAME_RELATED_P (insn) = 1;
 
 	      m->fs.cfa_reg = sa;
@@ -21771,7 +21776,9 @@ ix86_get_mask_mode (machine_mode data_mode)
   if ((TARGET_AVX512F && vector_size == 64)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     {
-      if (elem_size == 4 || elem_size == 8 || TARGET_AVX512BW)
+      if (elem_size == 4
+	  || elem_size == 8
+	  || (TARGET_AVX512BW && (elem_size == 1 || elem_size == 2)))
 	return smallest_int_mode_for_size (nunits);
     }
 

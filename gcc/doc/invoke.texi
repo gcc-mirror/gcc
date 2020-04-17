@@ -550,8 +550,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
--fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
+-fprofile-note=@var{path} -fprofile-prefix-path=@var{path} @gol
+-fprofile-update=@var{method} -fprofile-filter-files=@var{regex} @gol
+-fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -4881,12 +4882,13 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wenum-conversion @r{in C/ObjC;} @gol
 -Wformat   @gol
+-Wformat-overflow  @gol
+-Wformat-truncation  @gol
 -Wint-in-bool-context  @gol
 -Wimplicit @r{(C and Objective-C only)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Winit-self @r{(only for C++)} @gol
--Wzero-length-bounds @gol
 -Wlogical-not-parentheses @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
@@ -4921,7 +4923,8 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
--Wvolatile-register-var}
+-Wvolatile-register-var  @gol
+-Wzero-length-bounds}
 
 Note that some warning flags are not implied by @option{-Wall}.  Some of
 them warn about constructions that users generally do not consider
@@ -8050,7 +8053,7 @@ reduce the padding and so make the structure smaller.
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
-@item -Wno-restrict
+@item -Wrestrict
 @opindex Wrestrict
 @opindex Wno-restrict
 Warn when an object referenced by a @code{restrict}-qualified parameter
@@ -13444,6 +13447,20 @@ If @var{path} is specified, GCC saves @file{.gcno} file into @var{path}
 location.  If you combine the option with multiple source files,
 the @file{.gcno} file will be overwritten.
 
+@item -fprofile-prefix-path=@var{path}
+
+This option can be used in combination with
+@option{profile-generate=}@var{profile_dir} and
+@option{profile-use=}@var{profile_dir} to inform GCC where is the base
+directory of built source tree.  By default @var{profile_dir} will contain
+files with mangled absolute paths of all object files in the built project.
+This is not desirable when directory used to build the instrumented binary
+differs from the directory used to build the binary optimized with profile
+feedback because the profile data will not be found during the optimized build.
+In such setups @option{-fprofile-prefix-path=}@var{path} with @var{path}
+pointing to the base directory of the build can be used to strip the irrelevant
+part of the path and keep all file names relative to the main build directory.
+
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
 
@@ -18738,6 +18755,10 @@ The single- and double-precision floating-point instructions.
 
 @item +nofp
 Disable the floating-point extension.
+
+@item +cdecp0, +cdecp1, ... , +cdecp7
+Enable the Custom Datapath Extension (CDE) on selected coprocessors according
+to the numbers given in the options in the range 0 to 7.
 @end table
 
 @item  armv8-m.main
@@ -18756,6 +18777,10 @@ The single- and double-precision floating-point instructions.
 
 @item +nofp
 Disable the floating-point extension.
+
+@item +cdecp0, +cdecp1, ... , +cdecp7
+Enable the Custom Datapath Extension (CDE) on selected coprocessors according
+to the numbers given in the options in the range 0 to 7.
 @end table
 
 @item armv8-r

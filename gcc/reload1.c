@@ -2607,8 +2607,9 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 		   structure of the insn in a way that reload can't handle.
 		   We special-case the commonest situation in
 		   eliminate_regs_in_insn, so just replace a PLUS with a
-		   PLUS here, unless inside a MEM.  */
-		if (mem_mode != 0
+		   PLUS here, unless inside a MEM.  In DEBUG_INSNs, it is
+		   always ok to replace a PLUS with just a REG.  */
+		if ((mem_mode != 0 || (insn && DEBUG_INSN_P (insn)))
 		    && CONST_INT_P (XEXP (x, 1))
 		    && known_eq (INTVAL (XEXP (x, 1)), -ep->previous_offset))
 		  return ep->to_rtx;

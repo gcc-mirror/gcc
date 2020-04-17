@@ -585,6 +585,43 @@ lookup_sve_type_attribute (const_tree type)
   return lookup_attribute ("SVE type", TYPE_ATTRIBUTES (type));
 }
 
+/* Force TYPE to be a sizeless type.  */
+static void
+make_type_sizeless (tree type)
+{
+  TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("SVE sizeless type"),
+				      NULL_TREE, TYPE_ATTRIBUTES (type));
+}
+
+/* Return true if TYPE is a sizeless type.  */
+static bool
+sizeless_type_p (const_tree type)
+{
+  if (type == error_mark_node)
+    return NULL_TREE;
+  return lookup_attribute ("SVE sizeless type", TYPE_ATTRIBUTES (type));
+}
+
+/* Return true if CANDIDATE is equivalent to MODEL_TYPE for overloading
+   purposes.  */
+static bool
+matches_type_p (const_tree model_type, const_tree candidate)
+{
+  if (VECTOR_TYPE_P (model_type))
+    {
+      if (!VECTOR_TYPE_P (candidate)
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (model_type),
+		       TYPE_VECTOR_SUBPARTS (candidate))
+	  || TYPE_MODE (model_type) != TYPE_MODE (candidate))
+	return false;
+
+      model_type = TREE_TYPE (model_type);
+      candidate = TREE_TYPE (candidate);
+    }
+  return (candidate != error_mark_node
+	  && TYPE_MAIN_VARIANT (model_type) == TYPE_MAIN_VARIANT (candidate));
+}
+
 /* If TYPE is a valid SVE element type, return the corresponding type
    suffix, otherwise return NUM_TYPE_SUFFIXES.  */
 static type_suffix_index
@@ -592,12 +629,11 @@ find_type_suffix_for_scalar_type (const_tree type)
 {
   /* A linear search should be OK here, since the code isn't hot and
      the number of types is only small.  */
-  type = TYPE_MAIN_VARIANT (type);
   for (unsigned int suffix_i = 0; suffix_i < NUM_TYPE_SUFFIXES; ++suffix_i)
     if (!type_suffixes[suffix_i].bool_p)
       {
 	vector_type_index vector_i = type_suffixes[suffix_i].vector_type;
-	if (type == TYPE_MAIN_VARIANT (scalar_types[vector_i]))
+	if (matches_type_p (scalar_types[vector_i], type))
 	  return type_suffix_index (suffix_i);
       }
   return NUM_TYPE_SUFFIXES;
@@ -1256,7 +1292,7 @@ function_resolver::infer_vector_or_tuple_type (unsigned int argno,
       {
 	vector_type_index type_i = type_suffixes[suffix_i].vector_type;
 	tree type = acle_vector_types[size_i][type_i];
-	if (type && TYPE_MAIN_VARIANT (actual) == TYPE_MAIN_VARIANT (type))
+	if (type && matches_type_p (type, actual))
 	  {
 	    if (size_i + 1 == num_vectors)
 	      return type_suffix_index (suffix_i);
@@ -1394,8 +1430,7 @@ function_resolver::require_vector_type (unsigned int argno,
 {
   tree expected = acle_vector_types[0][type];
   tree actual = get_argument_type (argno);
-  if (actual != error_mark_node
-      && TYPE_MAIN_VARIANT (expected) != TYPE_MAIN_VARIANT (actual))
+  if (!matches_type_p (expected, actual))
     {
       error_at (location, "passing %qT to argument %d of %qE, which"
 		" expects %qT", actual, argno + 1, fndecl, expected);
@@ -3293,6 +3328,7 @@ register_builtin_types ()
       TYPE_INDIVISIBLE_P (vectype) = 1;
       add_sve_type_attribute (vectype, num_zr, num_pr,
 			      vector_types[i].mangled_name);
+      make_type_sizeless (vectype);
       abi_vector_types[i] = vectype;
       lang_hooks.types.register_builtin_type (vectype,
 					      vector_types[i].abi_name);
@@ -3361,6 +3397,7 @@ register_tuple_type (unsigned int num_vectors, vector_type_index type)
   DECL_FIELD_CONTEXT (field) = tuple_type;
   TYPE_FIELDS (tuple_type) = field;
   add_sve_type_attribute (tuple_type, num_vectors, 0, NULL);
+  make_type_sizeless (tuple_type);
   layout_type (tuple_type);
   gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
 	      && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
@@ -3573,12 +3610,67 @@ builtin_type_p (const_tree type, unsigned int *num_zr, unsigned int *num_pr)
   return false;
 }
 
+/* An attribute callback for the "arm_sve_vector_bits" attribute.  */
+tree
+handle_arm_sve_vector_bits_attribute (tree *node, tree, tree args, int,
+				      bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+
+  tree type = *node;
+  if (!VECTOR_TYPE_P (type) || !builtin_type_p (type))
+    {
+      error ("%qs applied to non-SVE type %qT", "arm_sve_vector_bits", type);
+      return NULL_TREE;
+    }
+
+  tree size = TREE_VALUE (args);
+  if (TREE_CODE (size) != INTEGER_CST)
+    {
+      error ("%qs requires an integer constant expression",
+	     "arm_sve_vector_bits");
+      return NULL_TREE;
+    }
+
+  unsigned HOST_WIDE_INT value = tree_to_uhwi (size);
+  if (maybe_ne (value, BITS_PER_SVE_VECTOR))
+    {
+      warning (OPT_Wattributes, "unsupported SVE vector size");
+      return NULL_TREE;
+    }
+
+  /* FIXME: The type ought to be a distinct copy in all cases, but
+     currently that makes the C frontend reject conversions between
+     svbool_t and its fixed-length variants.  Using a type variant
+     avoids that but means that we treat some ambiguous combinations
+     as valid.  */
+  if (lang_GNU_C () && VECTOR_BOOLEAN_TYPE_P (type))
+    type = build_variant_type_copy (type);
+  else
+    type = build_distinct_type_copy (type);
+
+  /* The new type is a normal sized type; it doesn't have the same
+     restrictions as sizeless types.  */
+  TYPE_ATTRIBUTES (type)
+    = remove_attribute ("SVE sizeless type",
+			copy_list (TYPE_ATTRIBUTES (type)));
+
+  /* Allow the GNU vector extensions to be applied to vectors.
+     The extensions aren't yet defined for packed predicates,
+     so continue to treat them as abstract entities for now.  */
+  if (!VECTOR_BOOLEAN_TYPE_P (type))
+    TYPE_INDIVISIBLE_P (type) = 0;
+
+  *node = type;
+  return NULL_TREE;
+}
+
 /* Implement TARGET_VERIFY_TYPE_CONTEXT for SVE types.  */
 bool
 verify_type_context (location_t loc, type_context_kind context,
 		     const_tree type, bool silent_p)
 {
-  if (!builtin_type_p (type))
+  if (!sizeless_type_p (type))
     return true;
 
   switch (context)

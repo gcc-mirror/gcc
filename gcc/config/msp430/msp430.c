@@ -2587,7 +2587,7 @@ msp430_expand_epilogue (int is_eh)
 		 && helper_n > 1
 		 && !is_eh)
 	  {
-	    emit_insn (gen_epilogue_helper (GEN_INT (helper_n)));
+	    emit_jump_insn (gen_epilogue_helper (GEN_INT (helper_n)));
 	    return;
 	  }
 	else
@@ -3474,7 +3474,9 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       switch (GET_CODE (op))
 	{
 	case MEM:
-	  op = adjust_address (op, Pmode, 2);
+	  /* We don't need to adjust the address for post_inc.  */
+	  op = adjust_address (op, Pmode,
+			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 2);
 	  break;
 	case REG:
 	  op = gen_rtx_REG (Pmode, REGNO (op) + 1);
@@ -3492,7 +3494,8 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       switch (GET_CODE (op))
 	{
 	case MEM:
-	  op = adjust_address (op, Pmode, 3);
+	  op = adjust_address (op, Pmode,
+			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 4);
 	  break;
 	case REG:
 	  op = gen_rtx_REG (Pmode, REGNO (op) + 2);
@@ -3510,7 +3513,8 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       switch (GET_CODE (op))
 	{
 	case MEM:
-	  op = adjust_address (op, Pmode, 4);
+	  op = adjust_address (op, Pmode,
+			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 6);
 	  break;
 	case REG:
 	  op = gen_rtx_REG (Pmode, REGNO (op) + 3);

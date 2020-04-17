@@ -669,6 +669,9 @@ build_aggr_init_expr (tree type, tree init)
   else
     rval = init;
 
+  if (location_t loc = EXPR_LOCATION (init))
+    SET_EXPR_LOCATION (rval, loc);
+
   return rval;
 }
 
@@ -2856,9 +2859,10 @@ verify_stmt_tree (tree t)
   cp_walk_tree (&t, verify_stmt_tree_r, &statements, NULL);
 }
 
-/* Check if the type T depends on a type with no linkage and if so, return
-   it.  If RELAXED_P then do not consider a class type declared within
-   a vague-linkage function to have no linkage.  */
+/* Check if the type T depends on a type with no linkage and if so,
+   return it.  If RELAXED_P then do not consider a class type declared
+   within a vague-linkage function to have no linkage.  Remember:
+   no-linkage is not the same as internal-linkage*/
 
 tree
 no_linkage_check (tree t, bool relaxed_p)
@@ -2876,17 +2880,6 @@ no_linkage_check (tree t, bool relaxed_p)
     {
       tree extra = LAMBDA_TYPE_EXTRA_SCOPE (t);
       if (!extra)
-	return t;
-
-      /* If the mangling scope is internal-linkage or not repeatable
-	 elsewhere, the lambda effectively has no linkage.  (Sadly
-	 we're not very careful with the linkages of types.)  */
-      if (TREE_CODE (extra) == VAR_DECL
-	  && !(TREE_PUBLIC (extra)
-	       && (processing_template_decl
-		   || (DECL_LANG_SPECIFIC (extra) && DECL_USE_TEMPLATE (extra))
-		   /* DECL_COMDAT is set too late for us to check.  */
-		   || DECL_VAR_DECLARED_INLINE_P (extra))))
 	return t;
     }
 

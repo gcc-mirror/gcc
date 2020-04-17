@@ -223,7 +223,10 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
 	/* Add the reference now, so deduction doesn't lose
 	   outermost CV qualifiers of EXPR.  */
 	type = build_reference_type (type);
-      type = do_auto_deduction (type, expr, auto_node);
+      if (uses_parameter_packs (expr))
+	/* Stick with 'auto' even if the type could be deduced.  */;
+      else
+	type = do_auto_deduction (type, expr, auto_node);
     }
   else if (!is_this && type_dependent_expression_p (expr))
     {

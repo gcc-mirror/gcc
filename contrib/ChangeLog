@@ -1,3 +1,13 @@
+2020-04-17  Martin Liska  <mliska@suse.cz>
+
+	* vimrc: We do not want to modify tab options
+	for Python files.
+
+2020-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/92008
+	* gcc_update: Add intl/plural.y dependency for intl/plural-config.h.
+
 2020-04-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc-git-customization.sh: Search for the pattern

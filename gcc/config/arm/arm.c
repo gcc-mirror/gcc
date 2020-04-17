@@ -1021,6 +1021,13 @@ int arm_arch_i8mm = 0;
 /* Nonzero if chip supports the BFloat16 instructions.  */
 int arm_arch_bf16 = 0;
 
+/* Nonzero if chip supports the Custom Datapath Extension.  */
+int arm_arch_cde = 0;
+int arm_arch_cde_coproc = 0;
+const int arm_arch_cde_coproc_bits[] = {
+  0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80
+};
+
 /* The condition codes of the ARM, and the inverse function.  */
 static const char * const arm_condition_codes[] =
 {
@@ -3738,6 +3745,21 @@ arm_option_reconfigure_globals (void)
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
 	error ("selected fp16 options are incompatible");
       arm_fp16_format = ARM_FP16_FORMAT_IEEE;
+    }
+
+  arm_arch_cde = 0;
+  arm_arch_cde_coproc = 0;
+  int cde_bits[] = {isa_bit_cdecp0, isa_bit_cdecp1, isa_bit_cdecp2,
+		    isa_bit_cdecp3, isa_bit_cdecp4, isa_bit_cdecp5,
+		    isa_bit_cdecp6, isa_bit_cdecp7};
+  for (int i = 0, e = ARRAY_SIZE (cde_bits); i < e; i++)
+    {
+      int cde_bit = bitmap_bit_p (arm_active_target.isa, cde_bits[i]);
+      if (cde_bit)
+	{
+	  arm_arch_cde |= cde_bit;
+	  arm_arch_cde_coproc |= arm_arch_cde_coproc_bits[i];
+	}
     }
 
   /* And finally, set up some quirks.  */
@@ -24991,7 +25013,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   if (TARGET_VFP_BASE && IS_VFP_REGNUM (regno))
     {
-      if (mode == DFmode)
+      if (mode == DFmode || mode == DImode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
       if (mode == HFmode || mode == BFmode || mode == HImode
@@ -25035,10 +25057,11 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (ARM_NUM_REGS (mode) > 4)
 	return false;
 
-      if (TARGET_THUMB2 && !TARGET_HAVE_MVE)
+      if (TARGET_THUMB2 && !(TARGET_HAVE_MVE || TARGET_CDE))
 	return true;
 
-      return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
+      return !((TARGET_LDRD || TARGET_CDE)
+	       && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
     }
 
   if (regno == FRAME_POINTER_REGNUM

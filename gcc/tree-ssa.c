@@ -1543,7 +1543,9 @@ non_rewritable_lvalue_p (tree lhs)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (lhs))
 	  && multiple_of_p (sizetype, TREE_OPERAND (lhs, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
+			    TYPE_SIZE_UNIT (TREE_TYPE (lhs)))
+	  && known_ge (wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (decl))),
+		       wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (lhs)))))
 	{
 	  poly_uint64 lhs_bits, nelts;
 	  if (poly_int_tree_p (TYPE_SIZE (TREE_TYPE (lhs)), &lhs_bits)

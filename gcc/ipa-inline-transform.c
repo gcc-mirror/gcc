@@ -531,6 +531,11 @@ inline_call (struct cgraph_edge *e, bool update_original,
   return new_edges_found;
 }
 
+/* For each node that was made the holder of function body by
+   save_inline_function_body, this summary contains pointer to the previous
+   holder of the body.  */
+
+function_summary <tree *> *ipa_saved_clone_sources;
 
 /* Copy function body of NODE and redirect all inline clones to it.
    This is done before inline plan is applied to NODE when there are
@@ -588,6 +593,20 @@ save_inline_function_body (struct cgraph_node *node)
       first_clone->next_sibling_clone = NULL;
       gcc_assert (!first_clone->prev_sibling_clone);
     }
+
+  tree prev_body_holder = node->decl;
+  if (!ipa_saved_clone_sources)
+    ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+  else
+    {
+      tree *p = ipa_saved_clone_sources->get (node);
+      if (p)
+	{
+	  prev_body_holder = *p;
+	  gcc_assert (prev_body_holder);
+	}
+    }
+  *ipa_saved_clone_sources->get_create (first_clone) = prev_body_holder;
   first_clone->clone_of = NULL;
 
   /* Now node in question has no clones.  */

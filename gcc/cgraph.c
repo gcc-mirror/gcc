@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "selftest.h"
 #include "tree-into-ssa.h"
+#include "ipa-inline.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1470,6 +1471,16 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       || decl == e->callee->decl)
     return e->call_stmt;
 
+  if (decl && ipa_saved_clone_sources)
+    {
+      tree *p = ipa_saved_clone_sources->get (e->callee);
+      if (p && decl == *p)
+	{
+	  gimple_call_set_fndecl (e->call_stmt, e->callee->decl);
+	  return e->call_stmt;
+	}
+    }
+
   if (flag_checking && decl)
     {
       cgraph_node *node = cgraph_node::get (decl);
@@ -2157,10 +2168,11 @@ cgraph_node::dump (FILE *f)
   if (parallelized_function)
     fprintf (f, " parallelized_function");
   if (DECL_IS_OPERATOR_NEW_P (decl))
-    fprintf (f, " operator_new");
+    fprintf (f, " %soperator_new",
+	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");
   if (DECL_IS_OPERATOR_DELETE_P (decl))
-    fprintf (f, " operator_delete");
-
+    fprintf (f, " %soperator_delete",
+	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");
 
   fprintf (f, "\n");
 

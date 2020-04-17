@@ -1098,11 +1098,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const bitmap_allocator<_Tp2>&) throw()
     { return true; }
   
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp1, typename _Tp2>
     bool 
     operator!=(const bitmap_allocator<_Tp1>&, 
 	       const bitmap_allocator<_Tp2>&) throw() 
-  { return false; }
+    { return false; }
+#endif
 
   // Static member definitions.
   template<typename _Tp>

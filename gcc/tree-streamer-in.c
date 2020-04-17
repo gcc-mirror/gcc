@@ -343,6 +343,7 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_IS_REPLACEABLE_OPERATOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   unsigned int fcode = 0;
   if (cl != NOT_BUILT_IN)
     {

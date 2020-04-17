@@ -13521,6 +13521,116 @@ lookup_explicit_specifier (tree v)
   return *explicit_specifier_map->get (v);
 }
 
+/* Given T, a FUNCTION_TYPE or METHOD_TYPE, construct and return a corresponding
+   FUNCTION_TYPE or METHOD_TYPE whose return type is RETURN_TYPE, argument types
+   are ARG_TYPES, and exception specification is RAISES, and otherwise is
+   identical to T.  */
+
+static tree
+rebuild_function_or_method_type (tree t, tree return_type, tree arg_types,
+				 tree raises, tsubst_flags_t complain)
+{
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (t));
+
+  tree new_type;
+  if (TREE_CODE (t) == FUNCTION_TYPE)
+    {
+      new_type = build_function_type (return_type, arg_types);
+      new_type = apply_memfn_quals (new_type, type_memfn_quals (t));
+    }
+  else
+    {
+      tree r = TREE_TYPE (TREE_VALUE (arg_types));
+      /* Don't pick up extra function qualifiers from the basetype.  */
+      r = cp_build_qualified_type_real (r, type_memfn_quals (t), complain);
+      if (! MAYBE_CLASS_TYPE_P (r))
+	{
+	  /* [temp.deduct]
+
+	     Type deduction may fail for any of the following
+	     reasons:
+
+	     -- Attempting to create "pointer to member of T" when T
+	     is not a class type.  */
+	  if (complain & tf_error)
+	    error ("creating pointer to member function of non-class type %qT",
+		   r);
+	  return error_mark_node;
+	}
+
+      new_type = build_method_type_directly (r, return_type,
+					     TREE_CHAIN (arg_types));
+    }
+  new_type = cp_build_type_attribute_variant (new_type, TYPE_ATTRIBUTES (t));
+
+  cp_ref_qualifier rqual = type_memfn_rqual (t);
+  bool late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (t);
+  return build_cp_fntype_variant (new_type, rqual, raises, late_return_type_p);
+}
+
+/* Check if the function type of DECL, a FUNCTION_DECL, agrees with the type of
+   each of its formal parameters.  If there is a disagreement then rebuild
+   DECL's function type according to its formal parameter types, as part of a
+   resolution for Core issues 1001/1322.  */
+
+static void
+maybe_rebuild_function_decl_type (tree decl)
+{
+  bool function_type_needs_rebuilding = false;
+  if (tree parm_list = FUNCTION_FIRST_USER_PARM (decl))
+    {
+      tree parm_type_list = FUNCTION_FIRST_USER_PARMTYPE (decl);
+      while (parm_type_list && parm_type_list != void_list_node)
+	{
+	  tree parm_type = TREE_VALUE (parm_type_list);
+	  tree formal_parm_type_unqual = strip_top_quals (TREE_TYPE (parm_list));
+	  if (!same_type_p (parm_type, formal_parm_type_unqual))
+	    {
+	      function_type_needs_rebuilding = true;
+	      break;
+	    }
+
+	  parm_list = DECL_CHAIN (parm_list);
+	  parm_type_list = TREE_CHAIN (parm_type_list);
+	}
+    }
+
+  if (!function_type_needs_rebuilding)
+    return;
+
+  const tree fntype = TREE_TYPE (decl);
+  tree parm_list = DECL_ARGUMENTS (decl);
+  tree old_parm_type_list = TYPE_ARG_TYPES (fntype);
+  tree new_parm_type_list = NULL_TREE;
+  tree *q = &new_parm_type_list;
+  for (int skip = num_artificial_parms_for (decl); skip > 0; skip--)
+    {
+      *q = copy_node (old_parm_type_list);
+      parm_list = DECL_CHAIN (parm_list);
+      old_parm_type_list = TREE_CHAIN (old_parm_type_list);
+      q = &TREE_CHAIN (*q);
+    }
+  while (old_parm_type_list && old_parm_type_list != void_list_node)
+    {
+      *q = copy_node (old_parm_type_list);
+      tree *new_parm_type = &TREE_VALUE (*q);
+      tree formal_parm_type_unqual = strip_top_quals (TREE_TYPE (parm_list));
+      if (!same_type_p (*new_parm_type, formal_parm_type_unqual))
+	*new_parm_type = formal_parm_type_unqual;
+
+      parm_list = DECL_CHAIN (parm_list);
+      old_parm_type_list = TREE_CHAIN (old_parm_type_list);
+      q = &TREE_CHAIN (*q);
+    }
+  if (old_parm_type_list == void_list_node)
+    *q = void_list_node;
+
+  TREE_TYPE (decl)
+    = rebuild_function_or_method_type (fntype,
+				       TREE_TYPE (fntype), new_parm_type_list,
+				       TYPE_RAISES_EXCEPTIONS (fntype), tf_none);
+}
+
 /* Subroutine of tsubst_decl for the case when T is a FUNCTION_DECL.  */
 
 static tree
@@ -13711,6 +13821,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
     }
   DECL_ARGUMENTS (r) = parms;
   DECL_RESULT (r) = NULL_TREE;
+
+  maybe_rebuild_function_decl_type (r);
 
   TREE_STATIC (r) = 0;
   TREE_PUBLIC (r) = TREE_PUBLIC (t);
@@ -14755,7 +14867,6 @@ tsubst_function_type (tree t,
 {
   tree return_type;
   tree arg_types = NULL_TREE;
-  tree fntype;
 
   /* The TYPE_CONTEXT is not used for function/method types.  */
   gcc_assert (TYPE_CONTEXT (t) == NULL_TREE);
@@ -14826,42 +14937,8 @@ tsubst_function_type (tree t,
     }
 
   /* Construct a new type node and return it.  */
-  if (TREE_CODE (t) == FUNCTION_TYPE)
-    {
-      fntype = build_function_type (return_type, arg_types);
-      fntype = apply_memfn_quals (fntype, type_memfn_quals (t));
-    }
-  else
-    {
-      tree r = TREE_TYPE (TREE_VALUE (arg_types));
-      /* Don't pick up extra function qualifiers from the basetype.  */
-      r = cp_build_qualified_type_real (r, type_memfn_quals (t), complain);
-      if (! MAYBE_CLASS_TYPE_P (r))
-	{
-	  /* [temp.deduct]
-
-	     Type deduction may fail for any of the following
-	     reasons:
-
-	     -- Attempting to create "pointer to member of T" when T
-	     is not a class type.  */
-	  if (complain & tf_error)
-	    error ("creating pointer to member function of non-class type %qT",
-		      r);
-	  return error_mark_node;
-	}
-
-      fntype = build_method_type_directly (r, return_type,
-					   TREE_CHAIN (arg_types));
-    }
-  fntype = cp_build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
-
-  /* See comment above.  */
-  tree raises = NULL_TREE;
-  cp_ref_qualifier rqual = type_memfn_rqual (t);
-  fntype = build_cp_fntype_variant (fntype, rqual, raises, late_return_type_p);
-
-  return fntype;
+  return rebuild_function_or_method_type (t, return_type, arg_types,
+					  /*raises=*/NULL_TREE, complain);
 }
 
 /* FNTYPE is a FUNCTION_TYPE or METHOD_TYPE.  Substitute the template
@@ -18938,6 +19015,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (oldtmpl)
 	{
 	  tmpl = tsubst_template_decl (oldtmpl, args, complain, fntype);
+	  if (tmpl == error_mark_node)
+	    {
+	      r = error_mark_node;
+	      goto out;
+	    }
 	  fn = DECL_TEMPLATE_RESULT (tmpl);
 	  finish_member_declaration (tmpl);
 	}
@@ -18945,6 +19027,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	{
 	  tmpl = NULL_TREE;
 	  fn = tsubst_function_decl (oldfn, args, complain, fntype);
+	  if (fn == error_mark_node)
+	    {
+	      r = error_mark_node;
+	      goto out;
+	    }
 	  finish_member_declaration (fn);
 	}
 
@@ -19010,6 +19097,7 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       maybe_add_lambda_conv_op (type);
     }
 
+out:
   finish_struct (type, /*attr*/NULL_TREE);
 
   insert_pending_capture_proxies ();
@@ -25526,6 +25614,14 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       push_function_context ();
       cp_unevaluated_operand = 0;
       c_inhibit_evaluation_warnings = 0;
+    }
+
+  if (VAR_P (d))
+    {
+      /* The variable might be a lambda's extra scope, and that
+	 lambda's visibility depends on D's.  */
+      maybe_commonize_var (d);
+      determine_visibility (d);
     }
 
   /* Mark D as instantiated so that recursive calls to

@@ -28,7 +28,7 @@ case ${query} in
       ;;
     --gdcflags)
       GDCFLAGS_default="-fmessage-length=0 -fno-show-column"
-      GDCFLAGS_config="@GDCFLAGSX@"
+      GDCFLAGS_config="@WARN_DFLAGS@ @GDCFLAGSX@ -fno-release -funittest"
       echo ${GDCFLAGS_default} ${GDCFLAGS_config}
       ;;
     --gdcpaths)
@@ -42,7 +42,6 @@ case ${query} in
     --gdcldflags)
       GDCLDFLAGS="-B${BUILD_DIR}/src
                   -B${BUILD_DIR}/libdruntime/gcc
-                  -L${BUILD_DIR}/libdruntime/.libs
                   -L${BUILD_DIR}/src/.libs"
       echo ${GDCLDFLAGS}
       ;;

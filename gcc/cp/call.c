@@ -5112,7 +5112,7 @@ build_conditional_expr_1 (const op_location_t &loc,
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
       if (glvalue_p (arg1))
 	{
-	  arg2 = arg1 = cp_stabilize_reference (arg1);
+	  arg1 = cp_stabilize_reference (arg1);
 	  arg2 = arg1 = prevent_lifetime_extension (arg1);
 	}
       else
@@ -12196,6 +12196,20 @@ initialize_reference (tree type, tree expr,
 
   conv = reference_binding (type, TREE_TYPE (expr), expr, /*c_cast_p=*/false,
 			    flags, complain);
+  /* If this conversion failed, we're in C++20, and we have something like
+     A& a(b) where A is an aggregate, try again, this time as A& a{b}.  */
+  if ((!conv || conv->bad_p)
+      && (flags & LOOKUP_AGGREGATE_PAREN_INIT))
+    {
+      tree e = build_constructor_single (init_list_type_node, NULL_TREE, expr);
+      CONSTRUCTOR_IS_DIRECT_INIT (e) = true;
+      CONSTRUCTOR_IS_PAREN_INIT (e) = true;
+      conversion *c = reference_binding (type, TREE_TYPE (e), e,
+					 /*c_cast_p=*/false, flags, complain);
+      /* If this worked, use it.  */
+      if (c && !c->bad_p)
+	expr = e, conv = c;
+    }
   if (!conv || conv->bad_p)
     {
       if (complain & tf_error)

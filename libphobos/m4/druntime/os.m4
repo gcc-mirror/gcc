@@ -52,33 +52,12 @@ AC_DEFUN([DRUNTIME_OS_DETECT],
 ])
 
 
-# DRUNTIME_OS_UNIX
-# ----------------
-# Add --enable-unix option or autodetects if system is unix
-# and create the DRUNTIME_OS_UNIX conditional.
-AC_DEFUN([DRUNTIME_OS_UNIX],
-[
-  AC_REQUIRE([DRUNTIME_OS_DETECT])
-  AC_ARG_ENABLE(unix,
-    AC_HELP_STRING([--enable-unix],
-                   [enables Unix runtime (default: yes, for Unix targets)]),
-    :,[enable_unix=auto])
-
-  case "$druntime_cv_target_os" in
-    aix*|*bsd*|cygwin*|darwin*|gnu*|linux*|skyos*|*solaris*|sysv*) d_have_unix=1 ;;
-  esac
-  if test -n "$d_have_unix" && test "$enable_unix" = auto ; then
-    enable_unix=yes
-  fi
-  AM_CONDITIONAL([DRUNTIME_OS_UNIX], [test "$enable_unix" = "yes"])
-])
-
-
 # DRUNTIME_OS_SOURCES
 # -------------------
 # Detect target OS and add DRUNTIME_OS_AIX DRUNTIME_OS_DARWIN
 # DRUNTIME_OS_FREEBSD DRUNTIME_OS_LINUX DRUNTIME_OS_MINGW
 # DRUNTIME_OS_SOLARIS DRUNTIME_OS_OPENBSD conditionals.
+# If the system is posix, add DRUNTIME_OS_POSIX conditional.
 AC_DEFUN([DRUNTIME_OS_SOURCES],
 [
   AC_REQUIRE([DRUNTIME_OS_DETECT])
@@ -130,6 +109,14 @@ AC_DEFUN([DRUNTIME_OS_SOURCES],
                  [test "$druntime_target_os_parsed" = "mingw"])
   AM_CONDITIONAL([DRUNTIME_OS_SOLARIS],
                  [test "$druntime_target_os_parsed" = "solaris"])
+
+  druntime_target_posix="no"
+  case "$druntime_cv_target_os" in
+    aix*|*bsd*|cygwin*|darwin*|gnu*|linux*|skyos*|*solaris*|sysv*)
+      druntime_target_posix="yes"
+      ;;
+  esac
+  AM_CONDITIONAL([DRUNTIME_OS_POSIX], [test "$druntime_target_posix" = "yes"])
 ])
 
 

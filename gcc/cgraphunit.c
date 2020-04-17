@@ -205,6 +205,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "ipa-inline.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -2481,7 +2482,8 @@ expand_all_functions (void)
 
   symtab->process_new_functions ();
   free_gimplify_stack ();
-
+  delete ipa_saved_clone_sources;
+  ipa_saved_clone_sources = NULL;
   free (order);
 }
 
