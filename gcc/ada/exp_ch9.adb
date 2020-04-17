@@ -3933,6 +3933,13 @@ package body Exp_Ch9 is
 
       Set_Is_Eliminated (New_Id, Is_Eliminated (Def_Id));
 
+      --  It seems we should set Has_Nested_Subprogram here, but instead we
+      --  currently set it in Expand_N_Protected_Body, because the entity
+      --  created here isn't the one that Corresponding_Spec of the body
+      --  will later be set to, and that's the entity where it's needed. ???
+
+      Set_Has_Nested_Subprogram (New_Id, Has_Nested_Subprogram (Def_Id));
+
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          New_Spec :=
            Make_Procedure_Specification (Loc,
@@ -8716,9 +8723,31 @@ package body Exp_Ch9 is
                   Current_Node := New_Op_Body;
                   Analyze (New_Op_Body);
 
+                  --  When the original protected body has nested subprograms,
+                  --  the new body also has them, so set the flag accordingly
+                  --  and reset the scopes of the top-level nested subprograms
+                  --  and other declaration entities so that they now refer to
+                  --  the new body's entity. (It would preferable to do this
+                  --  within Build_Protected_Sub_Specification, which is called
+                  --  from Build_Unprotected_Subprogram_Body, but the needed
+                  --  subprogram entity isn't available via Corresponding_Spec
+                  --  until after the above Analyze call.)
+
+                  if Has_Nested_Subprogram (Corresponding_Spec (Op_Body)) then
+                     Set_Has_Nested_Subprogram
+                       (Corresponding_Spec (New_Op_Body));
+
+                     Reset_Scopes_To
+                       (New_Op_Body, Corresponding_Spec (New_Op_Body));
+                  end if;
+
                   --  Build the corresponding protected operation. This is
                   --  needed only if this is a public or private operation of
                   --  the type.
+
+                  --  Why do we need to test for Corresponding_Spec being
+                  --  present here when it's assumed to be set further above
+                  --  in the Is_Eliminated test???
 
                   if Present (Corresponding_Spec (Op_Body)) then
                      Op_Decl :=
