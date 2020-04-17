@@ -1,3 +1,9 @@
+2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94697
+	* config/aarch64/aarch64-bti-insert.c (rest_of_insert_bti): Swap
+	bti c and bti j handling.
+
 2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
