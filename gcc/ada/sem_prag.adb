@@ -17195,7 +17195,7 @@ package body Sem_Prag is
                --  By_Protected_Procedure to the primitive procedure of a task
                --  interface.
 
-               if Chars (Arg2) = Name_By_Protected_Procedure
+               if Chars (Get_Pragma_Arg (Arg2)) = Name_By_Protected_Procedure
                  and then Is_Interface (Typ)
                  and then Is_Task_Interface (Typ)
                then
@@ -17217,6 +17217,18 @@ package body Sem_Prag is
             else
                Error_Pragma_Arg
                  ("pragma % must be applied to a primitive procedure", Arg1);
+               return;
+            end if;
+
+            --  Ada 2012 (AI12-0279): Cannot apply the implementation_kind
+            --  By_Protected_Procedure to a procedure that has aspect Yield
+
+            if Chars (Get_Pragma_Arg (Arg2)) = Name_By_Protected_Procedure
+              and then Has_Yield_Aspect (Proc_Id)
+            then
+               Error_Pragma_Arg
+                 ("implementation kind By_Protected_Procedure cannot be "
+                  & "applied to entities with aspect 'Yield", Arg2);
                return;
             end if;
 

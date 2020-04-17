@@ -218,7 +218,8 @@ package Aspects is
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
       Aspect_Volatile_Components,
-      Aspect_Volatile_Full_Access);         -- GNAT
+      Aspect_Volatile_Full_Access,          -- GNAT
+      Aspect_Yield);
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
@@ -566,7 +567,8 @@ package Aspects is
       Aspect_Unreferenced_Objects         => False,
       Aspect_Volatile                     => True,
       Aspect_Volatile_Components          => True,
-      Aspect_Volatile_Full_Access         => True);
+      Aspect_Volatile_Full_Access         => True,
+      Aspect_Yield                        => False);
 
    -----------------------------------------
    -- Table Linking Names and Aspect_Id's --
@@ -709,7 +711,8 @@ package Aspects is
       Aspect_Volatile_Full_Access         => Name_Volatile_Full_Access,
       Aspect_Volatile_Function            => Name_Volatile_Function,
       Aspect_Warnings                     => Name_Warnings,
-      Aspect_Write                        => Name_Write);
+      Aspect_Write                        => Name_Write,
+      Aspect_Yield                        => Name_Yield);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
    pragma Inline (Get_Aspect_Id);
@@ -943,6 +946,7 @@ package Aspects is
       Aspect_Unimplemented                => Never_Delay,
       Aspect_Volatile_Function            => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
+      Aspect_Yield                        => Never_Delay,
 
       Aspect_Alignment                    => Rep_Aspect,
       Aspect_Atomic                       => Rep_Aspect,

@@ -2189,6 +2189,10 @@ package Einfo is
 --       references an entity with a type reference. See package Lib.Xref for
 --       further details).
 
+--    Has_Yield_Aspect (Flag308)
+--       Defined in subprograms, generic subprograms, entries, entry families.
+--       Set if the entity has aspect Yield.
+
 --    Hiding_Loop_Variable (Node8)
 --       Defined in variables. Set only if a variable of a discrete type is
 --       hidden by a loop variable in the same local scope, in which case
@@ -6092,6 +6096,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node40)   (protected kind)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
+   --    Has_Yield_Aspect                    (Flag308)
    --    Has_Expanded_Contract               (Flag240)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
@@ -6229,6 +6234,7 @@ package Einfo is
    --    Has_Nested_Subprogram               (Flag282)
    --    Has_Out_Or_In_Out_Parameter         (Flag110)
    --    Has_Recursive_Call                  (Flag143)
+   --    Has_Yield_Aspect                    (Flag308)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
@@ -6554,6 +6560,7 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Nested_Subprogram               (Flag282)
+   --    Has_Yield_Aspect                    (Flag308)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Asynchronous                     (Flag81)
@@ -7297,6 +7304,7 @@ package Einfo is
    function Has_Visible_Refinement              (Id : E) return B;
    function Has_Volatile_Components             (Id : E) return B;
    function Has_Xref_Entry                      (Id : E) return B;
+   function Has_Yield_Aspect                    (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
    function Hidden_In_Formal_Instance           (Id : E) return L;
    function Homonym                             (Id : E) return E;
@@ -8008,6 +8016,7 @@ package Einfo is
    procedure Set_Has_Visible_Refinement          (Id : E; V : B := True);
    procedure Set_Has_Volatile_Components         (Id : E; V : B := True);
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
+   procedure Set_Has_Yield_Aspect                (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Hidden_In_Formal_Instance       (Id : E; V : L);
    procedure Set_Homonym                         (Id : E; V : E);
@@ -8839,6 +8848,7 @@ package Einfo is
    pragma Inline (Has_Visible_Refinement);
    pragma Inline (Has_Volatile_Components);
    pragma Inline (Has_Xref_Entry);
+   pragma Inline (Has_Yield_Aspect);
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Hidden_In_Formal_Instance);
    pragma Inline (Homonym);
@@ -9452,6 +9462,7 @@ package Einfo is
    pragma Inline (Set_Has_Visible_Refinement);
    pragma Inline (Set_Has_Volatile_Components);
    pragma Inline (Set_Has_Xref_Entry);
+   pragma Inline (Set_Has_Yield_Aspect);
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Hidden_In_Formal_Instance);
    pragma Inline (Set_Homonym);

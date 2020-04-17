@@ -826,6 +826,16 @@ package body Exp_Ch9 is
       Insert_Before (Last (Statements (Stats)), Call);
       Analyze (Call);
 
+      --  Ada 2020 (AI12-0279)
+
+      if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
+        and then RTE_Available (RE_Yield)
+      then
+         Insert_Action_After (Call,
+           Make_Procedure_Call_Statement (Loc,
+             New_Occurrence_Of (RTE (RE_Yield), Loc)));
+      end if;
+
       --  If exception handlers are present, then append Complete_Rendezvous
       --  calls to the handlers, and construct the required outer block. As
       --  above, the Sloc is copied from the last statement in the sequence.
@@ -838,6 +848,17 @@ package body Exp_Ch9 is
                 (Sloc (Last (Statements (Hand))), RE_Complete_Rendezvous);
             Append (Call, Statements (Hand));
             Analyze (Call);
+
+            --  Ada 2020 (AI12-0279)
+
+            if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
+              and then RTE_Available (RE_Yield)
+            then
+               Insert_Action_After (Call,
+                 Make_Procedure_Call_Statement (Loc,
+                   New_Occurrence_Of (RTE (RE_Yield), Loc)));
+            end if;
+
             Next (Hand);
          end loop;
 
@@ -861,6 +882,16 @@ package body Exp_Ch9 is
       --  We handle Abort_Signal to make sure that we properly catch the abort
       --  case and wake up the caller.
 
+      Call :=
+        Make_Procedure_Call_Statement (Sloc (Stats),
+          Name                   => New_Occurrence_Of (
+            RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
+          Parameter_Associations => New_List (
+            Make_Function_Call (Sloc (Stats),
+              Name =>
+                New_Occurrence_Of
+                  (RTE (RE_Get_GNAT_Exception), Sloc (Stats)))));
+
       Ohandle := Make_Others_Choice (Loc);
       Set_All_Others (Ohandle);
 
@@ -869,15 +900,17 @@ package body Exp_Ch9 is
           Make_Implicit_Exception_Handler (Loc,
             Exception_Choices => New_List (Ohandle),
 
-            Statements => New_List (
-              Make_Procedure_Call_Statement (Sloc (Stats),
-                Name                   => New_Occurrence_Of (
-                  RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
-                Parameter_Associations => New_List (
-                  Make_Function_Call (Sloc (Stats),
-                    Name =>
-                      New_Occurrence_Of
-                        (RTE (RE_Get_GNAT_Exception), Sloc (Stats)))))))));
+            Statements => New_List (Call))));
+
+      --  Ada 2020 (AI12-0279)
+
+      if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
+        and then RTE_Available (RE_Yield)
+      then
+         Insert_Action_After (Call,
+           Make_Procedure_Call_Statement (Loc,
+             New_Occurrence_Of (RTE (RE_Yield), Loc)));
+      end if;
 
       Set_Parent (New_S, Astat); -- temp parent for Analyze call
       Analyze_Exception_Handlers (Exception_Handlers (New_S));
@@ -6548,6 +6581,16 @@ package body Exp_Ch9 is
 
          Analyze (N);
 
+         --  Ada 2020 (AI12-0279)
+
+         if Has_Yield_Aspect (Eent)
+           and then RTE_Available (RE_Yield)
+         then
+            Insert_Action_After (N,
+              Make_Procedure_Call_Statement (Loc,
+                New_Occurrence_Of (RTE (RE_Yield), Loc)));
+         end if;
+
          --  Discard Entry_Address that was created for it, so it will not be
          --  emitted if this accept statement is in the statement part of a
          --  delay alternative.
@@ -10842,7 +10885,23 @@ package body Exp_Ch9 is
          --  Accept with no body (followed by trailing statements)
 
          else
-            Alt_Stats := Empty_List;
+            declare
+               Entry_Id : constant Entity_Id :=
+                           Entity (Entry_Direct_Name (Accept_Statement (Alt)));
+            begin
+               --  Ada 2020 (AI12-0279)
+
+               if Has_Yield_Aspect (Entry_Id)
+                 and then RTE_Available (RE_Yield)
+               then
+                  Alt_Stats :=
+                    New_List (
+                      Make_Procedure_Call_Statement (Sloc (Proc),
+                        New_Occurrence_Of (RTE (RE_Yield), Sloc (Proc))));
+               else
+                  Alt_Stats := Empty_List;
+               end if;
+            end;
          end if;
 
          Ensure_Statement_Present (Sloc (Astmt), Alt);

@@ -15803,6 +15803,17 @@ package body Sem_Ch3 is
       if Ekind (New_Subp) = E_Function then
          Set_Mechanism (New_Subp, Mechanism (Parent_Subp));
       end if;
+
+      --  Ada 2020 (AI12-0279): If a Yield aspect is specified True for a
+      --  primitive subprogram S of a type T, then the aspect is inherited
+      --  by the corresponding primitive subprogram of each descendant of T.
+
+      if Is_Tagged_Type (Derived_Type)
+        and then Is_Dispatching_Operation (New_Subp)
+        and then Has_Yield_Aspect (Alias (New_Subp))
+      then
+         Set_Has_Yield_Aspect (New_Subp, Has_Yield_Aspect (Alias (New_Subp)));
+      end if;
    end Derive_Subprogram;
 
    ------------------------
