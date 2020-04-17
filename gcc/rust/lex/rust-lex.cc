@@ -95,8 +95,21 @@ namespace Rust {
     }
 
     Lexer::~Lexer() {
+        /* ok apparently stop (which is equivalent of original code in destructor) is meant to be
+         * called after all files have finished parsing, for cleanup. On the other hand, actual code
+         * that it calls to leave a certain line map is mentioned in GCC docs as being useful for
+         * "just leaving an included header" and stuff like that, so this line mapping functionality
+         * may need fixing.
+         * FIXME: find out whether this occurs. */
+        // line_map->stop();
     }
 
+    // TODO: need to optimise somehow to avoid the virtual function call in the tight loop.
+    // Best idea at the moment is CRTP, but that might make lexer implementation annoying when storing
+    // the "base class" (i.e. would need template parameter everywhere), although in practice it would
+    // mostly just look ugly and make enclosing classes like Parser also require a type parameter.
+    // At this point a macro might be better.
+    // OK I guess macros can be replaced by constexpr if or something if possible.
     Location Lexer::get_current_location() {
         return line_map->get_location(current_column);
     }
@@ -186,7 +199,7 @@ namespace Rust {
             }
 
             // detect shebang
-            if (current_line == 1 && current_char == '#') {
+            if (loc == 1 && current_line == 1 && current_char == '#') {
                 current_char = peek_input();
 
                 if (current_char == '!') {
@@ -1549,7 +1562,8 @@ namespace Rust {
                 // ensure closing brace
                 if (need_close_brace && current_char != '}') {
                     // actually an error
-                    rust_error_at(get_current_location(), "expected terminating '}' in unicode escape");
+                    rust_error_at(
+                      get_current_location(), "expected terminating '}' in unicode escape");
                     return false;
                 }
 

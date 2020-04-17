@@ -2,6 +2,29 @@
 #include "rust-linemap.h"
 #include "rust-diagnostics.h"
 
+#if 0
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "target.h"
+#include "tree.h"
+#include "tree-iterator.h"
+#include "input.h"
+#include "diagnostic.h"
+#include "stringpool.h"
+#include "cgraph.h"
+#include "gimplify.h"
+#include "gimple-expr.h"
+#include "convert.h"
+#include "print-tree.h"
+#include "stor-layout.h"
+#include "fold-const.h"
+/* order: config, system, coretypes, target, tree, tree-iterator, input, diagnostic, stringpool,
+ * cgraph, gimplify, gimple-expr, convert, print-tree, stor-layout, fold-const  */
+// probably don't need all these
+#endif
+// maybe put these back in if compiling no longer works
+
 #include <algorithm> // for std::find
 
 namespace Rust {
@@ -159,7 +182,7 @@ namespace Rust {
                 /* shit. preferred HACK would be to replace this token in stream with '>', but may not
                  * be possible at this point. */
                 // FIXME: ensure locations aren't messed up
-                TokenPtr right_angle = Token::make(RIGHT_ANGLE, tok->get_locus());
+                TokenPtr right_angle = Token::make(RIGHT_ANGLE, tok->get_locus() + 1);
                 lexer.replace_current_token(right_angle);
                 return true;
             }
@@ -168,7 +191,7 @@ namespace Rust {
                 /* FIXME: is this even required? how many people wouldn't leave a space? - apparently
                  * rustc has this feature */
                 // FIXME: ensure locations aren't messed up
-                TokenPtr equal = Token::make(EQUAL, tok->get_locus());
+                TokenPtr equal = Token::make(EQUAL, tok->get_locus() + 1);
                 lexer.replace_current_token(equal);
                 return true;
             }
@@ -176,12 +199,13 @@ namespace Rust {
                 // another HACK - replace with greater or equal
                 // FIXME: again, is this really required? rustc has the feature, though
                 // FIXME: ensure locations aren't messed up
-                TokenPtr greater_equal = Token::make(GREATER_OR_EQUAL, tok->get_locus());
+                TokenPtr greater_equal = Token::make(GREATER_OR_EQUAL, tok->get_locus() + 1);
                 lexer.replace_current_token(greater_equal);
                 return true;
             }
             default:
-                rust_error_at(tok->get_locus(), "expected '>' at end of generic argument - found '%s'",
+                rust_error_at(tok->get_locus(),
+                  "expected '>' at end of generic argument - found '%s'",
                   tok->get_token_description());
                 return false;
         }
@@ -328,7 +352,6 @@ namespace Rust {
         const_TokenPtr t = lexer.peek_token();
         return (t->get_id() == END_OF_FILE);
     }
-
 
     // Parses a crate (compilation unit) - entry point
     AST::Crate Parser::parse_crate() {
@@ -516,8 +539,8 @@ namespace Rust {
                 gcc_fallthrough();
             default:
                 // do nothing but inactivates warning from gcc when compiling
-                // could put the rust_error_at thing here but fallthrough (from failing $crate condition)
-                // isn't completely obvious if it is.
+                // could put the rust_error_at thing here but fallthrough (from failing $crate
+                // condition) isn't completely obvious if it is.
 
                 // test prevent error
                 return AST::SimplePathSegment::create_error();
@@ -1406,7 +1429,8 @@ namespace Rust {
             ::std::unique_ptr<AST::MacroMatch> match = parse_macro_match();
 
             if (match == NULL) {
-                rust_error_at(t->get_locus(), "failed to parse macro match for macro matcher - found '%s'",
+                rust_error_at(t->get_locus(),
+                  "failed to parse macro match for macro matcher - found '%s'",
                   t->get_token_description());
                 return AST::MacroMatcher::create_error();
             }
@@ -1499,7 +1523,8 @@ namespace Rust {
 
         const_TokenPtr ident_tok = expect_token(IDENTIFIER);
         if (ident_tok == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "missing identifier in macro match fragment");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "missing identifier in macro match fragment");
             return NULL;
         }
         Identifier ident = ident_tok->get_str();
@@ -1825,7 +1850,8 @@ namespace Rust {
         // parse use tree, which is required
         ::std::unique_ptr<AST::UseTree> use_tree = parse_use_tree();
         if (use_tree == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "could not parse use tree in use declaration");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "could not parse use tree in use declaration");
             skip_after_semicolon();
             return NULL;
         }
@@ -2828,7 +2854,8 @@ namespace Rust {
         // TODO: use this token for identifier when finished that
         const_TokenPtr alias_name_tok = expect_token(IDENTIFIER);
         if (alias_name_tok == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "could not parse identifier in type alias");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "could not parse identifier in type alias");
             skip_after_semicolon();
             return NULL;
         }
@@ -3089,7 +3116,8 @@ namespace Rust {
         ::std::unique_ptr<AST::Type> field_type = parse_type();
         if (field_type == NULL) {
             // error if null
-            rust_error_at(lexer.peek_token()->get_locus(), "could not parse type in tuple struct field");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "could not parse type in tuple struct field");
             // skip after something
             return AST::TupleField::create_error();
         }
@@ -3675,7 +3703,8 @@ namespace Rust {
             }
             // Type is required, so error if null
             if (type == NULL) {
-                rust_error_at(lexer.peek_token()->get_locus(), "could not parse type in inherent impl");
+                rust_error_at(
+                  lexer.peek_token()->get_locus(), "could not parse type in inherent impl");
                 skip_after_next_block();
                 return NULL;
             }
@@ -3841,7 +3870,8 @@ namespace Rust {
                                 return NULL;
                         }
                     default:
-                        rust_error_at(t->get_locus(), "unrecognised token '%s' for item in inherent impl",
+                        rust_error_at(t->get_locus(),
+                          "unrecognised token '%s' for item in inherent impl",
                           t->get_token_description());
                         // skip?
                         return NULL;
@@ -3886,8 +3916,8 @@ namespace Rust {
     /* For internal use only by parse_inherent_impl_item() - splits giant method into smaller ones
      * and prevents duplication of logic. Strictly, this parses a function or method item inside an
      * inherent impl item block. */
-    // TODO: make this a templated function with "return type" as type param - InherentImplItem is this 
-    // specialisation of the template while TraitImplItem will be the other.
+    // TODO: make this a templated function with "return type" as type param - InherentImplItem is
+    // this specialisation of the template while TraitImplItem will be the other.
     ::std::unique_ptr<AST::InherentImplItem> Parser::parse_inherent_impl_function_or_method(
       AST::Visibility vis, ::std::vector<AST::Attribute> outer_attrs) {
         Location locus = lexer.peek_token()->get_locus();
@@ -4022,7 +4052,8 @@ namespace Rust {
                                 return NULL;
                         }
                     default:
-                        rust_error_at(t->get_locus(), "unrecognised token '%s' for item in trait impl",
+                        rust_error_at(t->get_locus(),
+                          "unrecognised token '%s' for item in trait impl",
                           t->get_token_description());
                         // skip?
                         return NULL;
@@ -4379,7 +4410,8 @@ namespace Rust {
             }
             default:
                 // error
-                rust_error_at(t->get_locus(), "unrecognised token '%s' in extern block item declaration",
+                rust_error_at(t->get_locus(),
+                  "unrecognised token '%s' in extern block item declaration",
                   t->get_token_description());
                 skip_after_semicolon();
                 return NULL;
@@ -4505,7 +4537,8 @@ namespace Rust {
         // parse pattern (required)
         ::std::unique_ptr<AST::Pattern> pattern = parse_pattern();
         if (pattern == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "failed to parse pattern in let statement");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "failed to parse pattern in let statement");
             skip_after_semicolon();
             return NULL;
         }
@@ -4518,7 +4551,8 @@ namespace Rust {
 
             type = parse_type();
             if (type == NULL) {
-                rust_error_at(lexer.peek_token()->get_locus(), "failed to parse type in let statement");
+                rust_error_at(
+                  lexer.peek_token()->get_locus(), "failed to parse type in let statement");
                 skip_after_semicolon();
                 return NULL;
             }
@@ -4589,9 +4623,8 @@ namespace Rust {
             t = lexer.peek_token();
         }
 
-         return AST::TypePath(::std::move(segments),
-                              Linemap::unknown_location(),
-                              has_opening_scope_resolution);
+        return AST::TypePath(
+          ::std::move(segments), Linemap::unknown_location(), has_opening_scope_resolution);
     }
 
     // Parses the generic arguments in each path segment.
@@ -4963,13 +4996,14 @@ namespace Rust {
             }
         } else {
             // move back by 1 if pratt parsing due to skipping '<'
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 1;
         }
 
         // parse type (required)
         ::std::unique_ptr<AST::Type> type = parse_type();
         if (type == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "could not parse type in qualified path type");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "could not parse type in qualified path type");
             // skip somewhere?
             return AST::QualifiedPathType::create_error();
         }
@@ -5183,7 +5217,8 @@ namespace Rust {
         // parse block expression
         ::std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr();
         if (block_expr == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "method declaration missing block expression");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "method declaration missing block expression");
             skip_after_end_block();
             return AST::Method::create_error();
         }
@@ -5319,7 +5354,8 @@ namespace Rust {
 
         // ensure expr parsed exists
         if (expr_parsed == NULL) {
-            rust_error_at(t->get_locus(), "failed to parse expr with block in parsing expr statement");
+            rust_error_at(
+              t->get_locus(), "failed to parse expr with block in parsing expr statement");
             skip_after_end_block();
             return NULL;
         }
@@ -5437,7 +5473,7 @@ namespace Rust {
 
                 if (expr == NULL) {
                     rust_error_at(t->get_locus(), "failed to parse expression for expression without "
-                                             "block (pratt-parsed expression is null)");
+                                                  "block (pratt-parsed expression is null)");
                     return NULL;
                 }
 
@@ -5474,7 +5510,7 @@ namespace Rust {
                 return NULL;
             }
         } else {
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 1;
         }
 
         ::std::vector<AST::Attribute> inner_attrs = parse_inner_attributes();
@@ -5506,7 +5542,7 @@ namespace Rust {
 
         if (!skip_token(RIGHT_CURLY)) {
             rust_error_at(t->get_locus(), "error may be from having an expression (as opposed to "
-                                     "statement) in the body of the function but not last");
+                                          "statement) in the body of the function but not last");
             skip_after_end_block();
             return NULL;
         }
@@ -5621,7 +5657,8 @@ namespace Rust {
             ::std::unique_ptr<AST::BlockExpr> block = parse_block_expr();
             if (block == NULL) {
                 // error
-                rust_error_at(lexer.peek_token()->get_locus(), "failed to parse block expr in closure");
+                rust_error_at(
+                  lexer.peek_token()->get_locus(), "failed to parse block expr in closure");
                 // skip somewhere?
                 return NULL;
             }
@@ -5725,7 +5762,7 @@ namespace Rust {
         } else {
             // minus 7 chars for 6 in return and a space
             // or just TODO: pass in location data
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 7;
         }
 
         // parse expression to return, if it exists
@@ -5747,7 +5784,7 @@ namespace Rust {
         } else {
             // minus 6 chars for 5 in return and a space
             // or just TODO: pass in location data
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 6;
         }
 
         // parse label (lifetime) if it exists - create dummy first
@@ -5774,7 +5811,7 @@ namespace Rust {
         } else {
             // minus 9 chars for 8 in return and a space
             // or just TODO: pass in location data
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 9;
         }
 
         // parse label (lifetime) if it exists - create dummy first
@@ -6034,7 +6071,8 @@ namespace Rust {
                 }
                 default:
                     // error - invalid token
-                    rust_error_at(t->get_locus(), "unexpected token '%s' after else in if let expression",
+                    rust_error_at(t->get_locus(),
+                      "unexpected token '%s' after else in if let expression",
                       t->get_token_description());
                     // skip somewhere?
                     return NULL;
@@ -6190,7 +6228,8 @@ namespace Rust {
         // parse pattern, which is required
         ::std::unique_ptr<AST::Pattern> pattern = parse_pattern();
         if (pattern == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "failed to parse iterator pattern in for loop");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "failed to parse iterator pattern in for loop");
             // skip somewhere?
             return NULL;
         }
@@ -6283,7 +6322,7 @@ namespace Rust {
         } else {
             // TODO: probably just pass in location data as param
             // get current pos then move back 6 - 5 for match, 1 for space
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 6;
         }
 
         // parse scrutinee expression, which is required (and HACK to prevent struct expr)
@@ -6409,7 +6448,8 @@ namespace Rust {
         ::std::vector< ::std::unique_ptr<AST::Pattern> > match_arm_patterns
           = parse_match_arm_patterns(RIGHT_CURLY);
         if (match_arm_patterns.empty()) {
-            rust_error_at(lexer.peek_token()->get_locus(), "failed to parse any patterns in match arm");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "failed to parse any patterns in match arm");
             // skip somewhere?
             return AST::MatchArm::create_error();
         }
@@ -6552,7 +6592,7 @@ namespace Rust {
 
             skip_token(LEFT_SQUARE);
         } else {
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 1;
         }
 
         // parse optional inner attributes
@@ -6665,7 +6705,8 @@ namespace Rust {
             // parse type, which is now required
             type = parse_type();
             if (type == NULL) {
-                rust_error_at(lexer.peek_token()->get_locus(), "failed to parse type in closure parameter");
+                rust_error_at(
+                  lexer.peek_token()->get_locus(), "failed to parse type in closure parameter");
                 // skip somewhere?
                 return AST::ClosureParam::create_error();
             }
@@ -6684,7 +6725,7 @@ namespace Rust {
 
             skip_token(LEFT_PAREN);
         } else {
-            locus = lexer.peek_token()->get_locus();
+            locus = lexer.peek_token()->get_locus() - 1;
         }
 
         // parse optional inner attributes
@@ -6735,7 +6776,8 @@ namespace Rust {
                 // parse expr, which is now required
                 ::std::unique_ptr<AST::Expr> expr = parse_expr();
                 if (expr == NULL) {
-                    rust_error_at(lexer.peek_token()->get_locus(), "failed to parse expr in tuple expr");
+                    rust_error_at(
+                      lexer.peek_token()->get_locus(), "failed to parse expr in tuple expr");
                     // skip somewhere?
                     return NULL;
                 }
@@ -7255,7 +7297,8 @@ namespace Rust {
         // parse type (required)
         ::std::unique_ptr<AST::Type> type = parse_type();
         if (type == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "failed to parse type in maybe named param");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "failed to parse type in maybe named param");
             return AST::MaybeNamedParam::create_error();
         }
 
@@ -7300,7 +7343,8 @@ namespace Rust {
             // parse required param
             AST::MaybeNamedParam param = parse_maybe_named_param();
             if (param.is_error()) {
-                rust_error_at(t->get_locus(), "failed to parse maybe named param in bare function type");
+                rust_error_at(
+                  t->get_locus(), "failed to parse maybe named param in bare function type");
                 return NULL;
             }
             params.push_back(::std::move(param));
@@ -7491,7 +7535,7 @@ namespace Rust {
                 // probably a lifetime bound, so probably type param bounds in TraitObjectType
                 // this is not allowed, but detection here for error message
                 rust_error_at(t->get_locus(), "lifetime bounds (i.e. in type param bounds, in "
-                                         "TraitObjectType) are not allowed as TypeNoBounds");
+                                              "TraitObjectType) are not allowed as TypeNoBounds");
                 return NULL;
             }
             case IDENTIFIER:
@@ -7586,8 +7630,9 @@ namespace Rust {
                     // ensure not a trait with multiple bounds
                     t = lexer.peek_token();
                     if (t->get_id() == PLUS) {
-                        rust_error_at(t->get_locus(), "plus after trait bound means an ImplTraitType, "
-                                                 "which is not allowed as a TypeNoBounds");
+                        rust_error_at(t->get_locus(),
+                          "plus after trait bound means an ImplTraitType, "
+                          "which is not allowed as a TypeNoBounds");
                         return NULL;
                     }
 
@@ -7631,7 +7676,7 @@ namespace Rust {
                 t = lexer.peek_token();
                 if (t->get_id() == PLUS) {
                     rust_error_at(t->get_locus(), "plus after trait bound means a TraitObjectType, "
-                                             "which is not allowed as a TypeNoBounds");
+                                                  "which is not allowed as a TypeNoBounds");
                     return NULL;
                 }
 
@@ -7698,8 +7743,8 @@ namespace Rust {
             if (lexer.peek_token()->get_id() == PLUS) {
                 // error - this is not allowed for type no bounds
                 rust_error_at(lexer.peek_token()->get_locus(),
-                              "plus (implying TraitObjectType as type param "
-                              "bounds) is not allowed in type no bounds");
+                  "plus (implying TraitObjectType as type param "
+                  "bounds) is not allowed in type no bounds");
                 return NULL;
             } else {
                 // release vector pointer
@@ -7794,17 +7839,13 @@ namespace Rust {
         if (next->get_id() == DOT_DOT_EQ || next->get_id() == ELLIPSIS) {
             // range pattern
             lexer.skip_token();
-            ::std::unique_ptr<AST::RangePatternBound> lower(
-                new AST::RangePatternBoundLiteral(
-                    AST::Literal(range_lower->get_str(), type),
-                    range_lower->get_locus(),
-                    has_minus)
-                );
+            ::std::unique_ptr<AST::RangePatternBound> lower(new AST::RangePatternBoundLiteral(
+              AST::Literal(range_lower->get_str(), type), range_lower->get_locus(), has_minus));
 
             ::std::unique_ptr<AST::RangePatternBound> upper = parse_range_pattern_bound();
             if (upper == NULL) {
-                rust_error_at(next->get_locus(),
-                              "failed to parse range pattern bound in range pattern");
+                rust_error_at(
+                  next->get_locus(), "failed to parse range pattern bound in range pattern");
                 return NULL;
             }
 
@@ -8010,12 +8051,8 @@ namespace Rust {
                           = parse_range_pattern_bound();
 
                         return ::std::unique_ptr<AST::RangePattern>(
-                            new AST::RangePattern(
-                                ::std::move(lower_bound),
-                                ::std::move(upper_bound),
-                                Linemap::unknown_location(),
-                                has_ellipsis_syntax)
-                            );
+                          new AST::RangePattern(::std::move(lower_bound), ::std::move(upper_bound),
+                            Linemap::unknown_location(), has_ellipsis_syntax));
                     }
                     case EXCLAM:
                         return parse_macro_invocation_partial(
@@ -8096,7 +8133,8 @@ namespace Rust {
         // parse pattern to get reference of (required)
         ::std::unique_ptr<AST::Pattern> pattern = parse_pattern();
         if (pattern == NULL) {
-            rust_error_at(lexer.peek_token()->get_locus(), "failed to parse pattern in reference pattern");
+            rust_error_at(
+              lexer.peek_token()->get_locus(), "failed to parse pattern in reference pattern");
             // skip somewhere?
             return NULL;
         }
@@ -8284,7 +8322,8 @@ namespace Rust {
             // parse pattern (required)
             ::std::unique_ptr<AST::Pattern> pattern = parse_pattern();
             if (pattern == NULL) {
-                rust_error_at(lexer.peek_token()->get_locus(), "failed to parse pattern in slice pattern");
+                rust_error_at(
+                  lexer.peek_token()->get_locus(), "failed to parse pattern in slice pattern");
                 return NULL;
             }
             patterns.push_back(::std::move(pattern));
@@ -8383,7 +8422,8 @@ namespace Rust {
                 // parse items
                 ::std::unique_ptr<AST::TupleStructItems> items = parse_tuple_struct_items();
                 if (items == NULL) {
-                    rust_error_at(lexer.peek_token()->get_locus(), "failed to parse tuple struct items");
+                    rust_error_at(
+                      lexer.peek_token()->get_locus(), "failed to parse tuple struct items");
                     return NULL;
                 }
 
@@ -8429,12 +8469,8 @@ namespace Rust {
                 ::std::unique_ptr<AST::RangePatternBound> upper_bound = parse_range_pattern_bound();
 
                 return ::std::unique_ptr<AST::RangePattern>(
-                    new AST::RangePattern(
-                        ::std::move(lower_bound),
-                        ::std::move(upper_bound),
-                        Linemap::unknown_location(),
-                        has_ellipsis_syntax)
-                    );
+                  new AST::RangePattern(::std::move(lower_bound), ::std::move(upper_bound),
+                    Linemap::unknown_location(), has_ellipsis_syntax));
             }
             case PATTERN_BIND: {
                 // only allow on single-segment paths
@@ -8452,7 +8488,8 @@ namespace Rust {
                       new AST::IdentifierPattern(::std::move(initial_ident), initial_tok->get_locus(),
                         false, false, ::std::move(bind_pattern)));
                 }
-                rust_error_at(t->get_locus(), "failed to parse pattern bind to a path, not an identifier");
+                rust_error_at(
+                  t->get_locus(), "failed to parse pattern bind to a path, not an identifier");
                 return NULL;
             }
             default:
@@ -8694,7 +8731,8 @@ namespace Rust {
                     }
                     default:
                         // error
-                        rust_error_at(t->get_locus(), "unrecognised token '%s' in struct pattern field",
+                        rust_error_at(t->get_locus(),
+                          "unrecognised token '%s' in struct pattern field",
                           t->get_token_description());
                         return NULL;
                 }
@@ -8958,7 +8996,7 @@ namespace Rust {
                 AST::SimplePath macro_path = path.as_simple_path();
                 if (macro_path.is_empty()) {
                     rust_error_at(t2->get_locus(), "failed to convert parsed path to simple "
-                                              "path (for macro invocation or semi)");
+                                                   "path (for macro invocation or semi)");
                     return ExprOrStmt::create_error();
                 }
 
@@ -9058,9 +9096,9 @@ namespace Rust {
                 bool not_a_block
                   = lexer.peek_token(1)->get_id() == IDENTIFIER
                     && (lexer.peek_token(2)->get_id() == COMMA
-                         || (lexer.peek_token(2)->get_id() == COLON
-                              && (lexer.peek_token(4)->get_id() == COMMA
-                                   || !can_tok_start_type(lexer.peek_token(3)->get_id()))));
+                        || (lexer.peek_token(2)->get_id() == COLON
+                            && (lexer.peek_token(4)->get_id() == COMMA
+                                || !can_tok_start_type(lexer.peek_token(3)->get_id()))));
                 ::std::unique_ptr<AST::ExprWithoutBlock> expr = NULL;
 
                 if (not_a_block) {
@@ -9349,13 +9387,12 @@ namespace Rust {
             lexer.skip_token();
             return t;
         } else {
-            rust_error_at(t->get_locus(), "expecting %s but %s found!\n", get_token_description(token_id),
-              t->get_token_description());
+            rust_error_at(t->get_locus(), "expecting %s but %s found!\n",
+              get_token_description(token_id), t->get_token_description());
 
             return const_TokenPtr();
         }
     }
-
 
     // Skips all tokens until EOF or }. Don't use.
     void Parser::skip_after_end() {
@@ -9497,8 +9534,6 @@ namespace Rust {
         return parse_expr(LBP_LOWEST, ::std::move(outer_attrs), restrictions);
     }
 
-
-
     /* Determines action to take when finding token at beginning of expression.
      * FIXME: this may only apply to precedence-capable expressions (which are all expressions without
      * blocks), so make return type ExprWithoutBlock? It would simplify stuff. */
@@ -9548,9 +9583,9 @@ namespace Rust {
                         bool not_a_block
                           = lexer.peek_token(1)->get_id() == IDENTIFIER
                             && (lexer.peek_token(2)->get_id() == COMMA
-                                 || (lexer.peek_token(2)->get_id() == COLON
-                                      && (lexer.peek_token(4)->get_id() == COMMA
-                                           || !can_tok_start_type(lexer.peek_token(3)->get_id()))));
+                                || (lexer.peek_token(2)->get_id() == COLON
+                                    && (lexer.peek_token(4)->get_id() == COMMA
+                                        || !can_tok_start_type(lexer.peek_token(3)->get_id()))));
 
                         /* definitely not a block:
                          *  path '{' ident ','
@@ -9790,8 +9825,9 @@ namespace Rust {
             }
             case SCOPE_RESOLUTION: {
                 // TODO: fix: this is for global paths, i.e. ::std::string::whatever
-                rust_error_at(tok->get_locus(), "found null denotation scope resolution operator, and "
-                                           "haven't written handling for it.");
+                rust_error_at(tok->get_locus(),
+                  "found null denotation scope resolution operator, and "
+                  "haven't written handling for it.");
                 return NULL;
             }
             case SELF:
@@ -9835,9 +9871,9 @@ namespace Rust {
                         bool not_a_block
                           = lexer.peek_token(1)->get_id() == IDENTIFIER
                             && (lexer.peek_token(2)->get_id() == COMMA
-                                 || (lexer.peek_token(2)->get_id() == COLON
-                                      && (lexer.peek_token(4)->get_id() == COMMA
-                                           || !can_tok_start_type(lexer.peek_token(3)->get_id()))));
+                                || (lexer.peek_token(2)->get_id() == COLON
+                                    && (lexer.peek_token(4)->get_id() == COMMA
+                                        || !can_tok_start_type(lexer.peek_token(3)->get_id()))));
 
                         if (!restrictions.can_be_struct_expr && !not_a_block) {
                             // assume path is returned
@@ -10061,8 +10097,9 @@ namespace Rust {
                   tok, ::std::move(left), ::std::move(outer_attrs), restrictions);
             case SCOPE_RESOLUTION:
                 // path expression - binary infix? FIXME should this even be parsed here?
-                rust_error_at(tok->get_locus(), "found scope resolution operator in left denotation "
-                                           "function - this should probably be handled elsewhere.");
+                rust_error_at(tok->get_locus(),
+                  "found scope resolution operator in left denotation "
+                  "function - this should probably be handled elsewhere.");
                 return NULL;
             case DOT: {
                 // field expression or method call - relies on parentheses after next identifier
@@ -11020,7 +11057,7 @@ namespace Rust {
             ::std::unique_ptr<AST::Expr> expr = parse_expr();
             if (expr == NULL) {
                 rust_error_at(t->get_locus(), "failed to parse expression in struct "
-                                         "(or enum) expression tuple");
+                                              "(or enum) expression tuple");
                 return NULL;
             }
             exprs.push_back(::std::move(expr));
@@ -11214,7 +11251,8 @@ namespace Rust {
             ::std::unique_ptr<AST::BlockExpr> block = parse_block_expr();
             if (block == NULL) {
                 // error
-                rust_error_at(lexer.peek_token()->get_locus(), "failed to parse block expr in closure");
+                rust_error_at(
+                  lexer.peek_token()->get_locus(), "failed to parse block expr in closure");
                 // skip somewhere?
                 return NULL;
             }
@@ -11291,10 +11329,10 @@ namespace Rust {
 
             fprintf(stderr, "<id=%s%s, %s\n", tok->token_id_to_str(),
               has_text ? (std::string(", text=") + tok->get_str() + std::string(", typehint=")
-                           + std::string(tok->get_type_hint_str()))
+                          + std::string(tok->get_type_hint_str()))
                            .c_str()
                        : "",
-                    lexer.get_line_map()->to_string(loc).c_str());
+              lexer.get_line_map()->to_string(loc).c_str());
 
             if (tok->get_id() == Rust::END_OF_FILE)
                 break;
@@ -11312,5 +11350,3 @@ namespace Rust {
         fprintf(stderr, "%s", crate.as_string().c_str());
     }
 }
-
-    

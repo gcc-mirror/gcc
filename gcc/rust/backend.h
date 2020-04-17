@@ -1,17 +1,13 @@
-// backend.h -- Rust frontend interface to backend  -*- C++ -*-
-
-// Copyright 2011 The Rust Authors. All rights reserved.
-// Use of this source code is rustverned by a BSD-style
-// license that can be found in the LICENSE file.
-
-#ifndef RUST_BACKEND_H
-#define RUST_BACKEND_H
+#pragma once
 
 #include <gmp.h>
 #include <mpfr.h>
 #include <mpc.h>
 
 #include "operator.h"
+
+// TODO: Will have to be significantly modified to work with Rust and current
+// setup of gccrs
 
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
@@ -95,7 +91,7 @@ public:
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
   // is provided so that the names are available.  This should return
-  // not the type of a Rust function (which is a pointer to a struct)
+  // not the type of a Go function (which is a pointer to a struct)
   // but the type of a C function pointer (which will be used as the
   // type of the first field of the struct).  If there is more than
   // one result, RESULT_STRUCT is a struct type to hold the results,
@@ -115,12 +111,12 @@ public:
   virtual Btype *array_type (Btype *element_type, Bexpression *length) = 0;
 
   // Create a placeholder pointer type.  This is used for a named
-  // pointer type, since in Rust a pointer type may refer to itself.
+  // pointer type, since in Go a pointer type may refer to itself.
   // NAME is the name of the type, and the location is where the named
   // type is defined.  This function is also used for unnamed function
   // types with multiple results, in which case the type has no name
   // and NAME will be empty.  FOR_FUNCTION is true if this is for a C
-  // pointer to function type.  A Rust func type is represented as a
+  // pointer to function type.  A Go func type is represented as a
   // pointer to a struct, and the first field of the struct is a C
   // pointer to function.  The return value will later be passed as
   // the first parameter to set_placeholder_pointer_type or
@@ -139,7 +135,7 @@ public:
 
   // Fill in a placeholder pointer type as a function.  This takes a
   // type returned by placeholder_pointer_type and arranges for it to
-  // become a real Rust function type (which corresponds to a C/C++
+  // become a real Go function type (which corresponds to a C/C++
   // pointer to function type).  FT will be something returned by the
   // function_type method.  Returns true on success, false on failure.
   virtual bool set_placeholder_function_type (Btype *placeholder, Btype *ft)
@@ -181,7 +177,7 @@ public:
   // struct, or array type in a case like "type P *byte; type Q P".)
   virtual Btype *named_type (const std::string &name, Btype *, Location) = 0;
 
-  // Create a marker for a circular pointer type.  Rust pointer and
+  // Create a marker for a circular pointer type.  Go pointer and
   // function types can refer to themselves in ways that are not
   // permitted in C/C++.  When a circular type is found, this function
   // is called for the circular reference.  This permits the backend
@@ -228,7 +224,7 @@ public:
 
   // Create an error expression. This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
-  // rusting without crashing.
+  // going without crashing.
   virtual Bexpression *error_expression () = 0;
 
   // Create a nil pointer expression.
@@ -367,7 +363,7 @@ public:
 
   // Create an error statement.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
-  // rusting without crashing.
+  // going without crashing.
   virtual Bstatement *error_statement () = 0;
 
   // Create an expression statement within the specified function.
@@ -419,7 +415,7 @@ public:
   // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if
   // an exception occurs. EXCEPT_STMT may be NULL.  FINALLY_STMT may be NULL and
   // if not NULL, it will always be executed.  This is used for handling defers
-  // in Rust functions.  In C++, the resulting code is of this form:
+  // in Go functions.  In C++, the resulting code is of this form:
   //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
   virtual Bstatement *
   exception_handler_statement (Bstatement *bstat, Bstatement *except_stmt,
@@ -459,7 +455,7 @@ public:
 
   // Create an error variable.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
-  // rusting without crashing.
+  // going without crashing.
   virtual Bvariable *error_variable () = 0;
 
   // Create a global variable. NAME is the package-qualified name of
@@ -672,7 +668,7 @@ public:
 
   // Create an error function.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
-  // rusting without crashing.
+  // going without crashing.
   virtual Bfunction *error_function () = 0;
 
   // Bit flags to pass to the function method.
@@ -710,7 +706,7 @@ public:
   static const unsigned int function_only_inline = 1 << 6;
 
   // Declare or define a function of FNTYPE.
-  // NAME is the Rust name of the function.  ASM_NAME, if not the empty
+  // NAME is the Go name of the function.  ASM_NAME, if not the empty
   // string, is the name that should be used in the symbol table; this
   // will be non-empty if a magic extern comment is used.  FLAGS is
   // bit flags described above.
@@ -760,5 +756,3 @@ public:
   // section in the output object file.
   virtual void write_export_data (const char *bytes, unsigned int size) = 0;
 };
-
-#endif // !defined(RUST_BACKEND_H)

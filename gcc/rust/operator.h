@@ -9,6 +9,8 @@
 
 // The operators.
 
+// TODO: Will have to be significantly modified to work with Rust and current setup of gccrs
+
 enum Operator
 {
   OPERATOR_INVALID,

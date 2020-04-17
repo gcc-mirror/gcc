@@ -116,11 +116,11 @@ namespace Rust {
                 return *this;
             }
 
-            // move constructors 
+            // move constructors
             ConfigurationNot(ConfigurationNot&& other) = default;
             ConfigurationNot& operator=(ConfigurationNot&& other) = default;
 
-          virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this object rather than base
@@ -150,13 +150,14 @@ namespace Rust {
                 return *this;
             }
 
-            // move constructors 
+            // move constructors
             CfgAttribute(CfgAttribute&& other) = default;
             CfgAttribute& operator=(CfgAttribute&& other) = default;
         };
-        /* TODO: ok, best thing to do would be eliminating this class, making Attribute has a "is_cfg()"
-         * method, and having attribute path as "cfg" and AttrInput as ConfigurationPredicate (so make
-         * ConfigurationPredicate a subclass of AttrInput?). Would need special handling in parser, however. */
+        /* TODO: ok, best thing to do would be eliminating this class, making Attribute has a
+         * "is_cfg()" method, and having attribute path as "cfg" and AttrInput as
+         * ConfigurationPredicate (so make ConfigurationPredicate a subclass of AttrInput?). Would
+         * need special handling in parser, however. */
 
         // TODO: inline
         struct CfgAttrs {
@@ -189,7 +190,7 @@ namespace Rust {
                 return *this;
             }
 
-            // move constructors 
+            // move constructors
             CfgAttrAttribute(CfgAttrAttribute&& other) = default;
             CfgAttrAttribute& operator=(CfgAttrAttribute&& other) = default;
         };

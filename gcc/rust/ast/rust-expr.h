@@ -198,7 +198,8 @@ namespace Rust {
             virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
 
             virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
-            // TODO: return true if "ident" is defined and value of it is "lit", return false otherwise
+            // TODO: return true if "ident" is defined and value of it is "lit", return false
+            // otherwise
 
           protected:
             // Use covariance to implement clone function as returning this type
@@ -1865,8 +1866,8 @@ namespace Rust {
                 // return struct_name.as_string();
             }
 
-            StructExprUnit(PathInExpression struct_path, ::std::vector<Attribute> outer_attribs,
-              Location locus) :
+            StructExprUnit(
+              PathInExpression struct_path, ::std::vector<Attribute> outer_attribs, Location locus) :
               StructExpr(::std::move(struct_path), ::std::move(outer_attribs)),
               locus(locus) {}
 
@@ -2893,8 +2894,7 @@ namespace Rust {
 
           protected:
             // outer attributes not allowed before range expressions
-            RangeExpr(Location locus) :
-              ExprWithoutBlock(::std::vector<Attribute>()), locus(locus) {}
+            RangeExpr(Location locus) : ExprWithoutBlock(::std::vector<Attribute>()), locus(locus) {}
 
           public:
             Location get_locus() const {
@@ -2922,8 +2922,8 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            RangeFromToExpr(::std::unique_ptr<Expr> range_from, ::std::unique_ptr<Expr> range_to,
-              Location locus) :
+            RangeFromToExpr(
+              ::std::unique_ptr<Expr> range_from, ::std::unique_ptr<Expr> range_to, Location locus) :
               RangeExpr(locus),
               from(::std::move(range_from)), to(::std::move(range_to)) {}
 
@@ -3095,8 +3095,8 @@ namespace Rust {
 
             ::std::string as_string() const;
 
-            RangeFromToInclExpr(::std::unique_ptr<Expr> range_from, ::std::unique_ptr<Expr> range_to,
-              Location locus) :
+            RangeFromToInclExpr(
+              ::std::unique_ptr<Expr> range_from, ::std::unique_ptr<Expr> range_to, Location locus) :
               RangeExpr(locus),
               from(::std::move(range_from)), to(::std::move(range_to)) {}
             // outer attributes not allowed
@@ -3860,8 +3860,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             IfLetExpr(::std::vector< ::std::unique_ptr<Pattern> > match_arm_patterns,
-              ::std::unique_ptr<Expr> value, ::std::unique_ptr<BlockExpr> if_block,
-              Location locus) :
+              ::std::unique_ptr<Expr> value, ::std::unique_ptr<BlockExpr> if_block, Location locus) :
               ExprWithBlock(::std::vector<Attribute>()),
               match_arm_patterns(::std::move(match_arm_patterns)), value(::std::move(value)),
               if_block(::std::move(if_block)), locus(locus) {}

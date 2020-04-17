@@ -11,6 +11,10 @@
 #include "rust-linemap.h"
 #include "backend.h"
 
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 #include <utility>
 
 namespace Rust {
@@ -144,6 +148,8 @@ namespace Rust {
 
         // backend linemap
         Linemap* linemap;
+
+        // TODO: replace raw pointers with smart pointers?
 
       public:
         /* Initialise compiler session. Corresponds to langhook grs_langhook_init(). Note that this is

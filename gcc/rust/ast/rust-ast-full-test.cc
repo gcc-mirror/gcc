@@ -2128,7 +2128,7 @@ namespace Rust {
             // kind of a HACK to get locus depending on opening scope resolution
             Location locus = Linemap::unknown_location();
             if (with_opening_scope_resolution) {
-                locus = simple_segments[0].get_locus()/* - 2*/; // minus 2 chars for ::
+                locus = simple_segments[0].get_locus() - 2; // minus 2 chars for ::
             } else {
                 locus = simple_segments[0].get_locus();
             }
@@ -3455,7 +3455,8 @@ namespace Rust {
                         return parse_path_meta_item();
                     }
                     default:
-                        rust_error_at(peek_token()->get_locus(), "unrecognised token '%s' in meta item",
+                        rust_error_at(peek_token()->get_locus(),
+                          "unrecognised token '%s' in meta item",
                           get_token_description(peek_token()->get_id()));
                         return NULL;
                 }
@@ -3578,7 +3579,8 @@ namespace Rust {
                     Location locus = peek_token()->get_locus();
                     Literal lit = parse_literal();
                     if (lit.is_error()) {
-                        rust_error_at(peek_token()->get_locus(), "failed to parse literal in attribute");
+                        rust_error_at(
+                          peek_token()->get_locus(), "failed to parse literal in attribute");
                         return NULL;
                     }
                     LiteralExpr expr(::std::move(lit), locus);
@@ -3916,25 +3918,11 @@ namespace Rust {
         }
 
         bool MetaNameValueStr::check_cfg_predicate(const Session& session) const {
-            auto it = session.options.target_data.features.find(ident);
-            if (it != session.options.target_data.features.end()) {
-                // value must also be the same, not just the name existing
-                if (it->second.find(str) != it->second.end()) {
-                    return true;
-                }
-            }
-            return false;
+            return session.options.target_data.has_key_value_pair(ident, str);
         }
 
         bool MetaItemPathLit::check_cfg_predicate(const Session& session) const {
-            auto it = session.options.target_data.features.find(path.as_string());
-            if (it != session.options.target_data.features.end()) {
-                // value must also be the same, not just the name existing
-                if (it->second.find(lit.as_string()) != it->second.end()) {
-                    return true;
-                }
-            }
-            return false;
+            return session.options.target_data.has_key_value_pair(path.as_string(), lit.as_string());
         }
 
         ::std::vector< ::std::unique_ptr<Token> > Token::to_token_stream() const {

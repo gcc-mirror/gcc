@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+// FIXME: doesn't this duplicate lots of code from rust-backend.c? Is one meant to be a replacement?
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -30,6 +32,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "output.h"	/* for assemble_string */
 #include "common/common-target.h"
+
+// satisfy intellisense
+#include "options.h"
 
 /* The segment name we pass to simple_object_start_read to find Rust
    export data.  */
@@ -83,7 +88,7 @@ rust_field_alignment (tree t)
 /* This is called by the Rust frontend proper if the unsafe package was
    imported.  When that happens we cannot do type-based alias
    analysis.  */
-
+// TODO: this should be removed, as it only pertains to Go, not Rust
 void
 rust_imported_unsafe (void)
 {

@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "opts.h"
 
+// satisfy intellisense
+#include "options.h"
+
 /* This bit is set if we saw a `-xfoo' language specification.  */
 #define LANGSPEC (1 << 1)
 /* This bit is set if they did `-lm' or `-lmath'.  */

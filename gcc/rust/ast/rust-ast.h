@@ -9,10 +9,13 @@
 #include "system.h"
 #include "coretypes.h" // order: config, INCLUDE, system, coretypes
 
-// STL imports
 #include "rust-system.h"
+
+// STL imports
 // with C++11, now can use actual std::unique_ptr
 #include <memory>
+#include <string>
+#include <vector>
 
 // gccrs imports
 // required for AST::Token
@@ -156,10 +159,8 @@ namespace Rust {
             }
 
             // constructor from general text - avoid using if lexer const_TokenPtr is available
-            Token(
-              TokenId token_id, Location locus, ::std::string str, PrimitiveCoreType type_hint) :
-              token_id(token_id),
-              locus(locus), str(::std::move(str)), type_hint(type_hint) {}
+            Token(TokenId token_id, Location locus, ::std::string str, PrimitiveCoreType type_hint) :
+              token_id(token_id), locus(locus), str(::std::move(str)), type_hint(type_hint) {}
 
             // Constructor from lexer const_TokenPtr
             /* TODO: find workaround for std::string being NULL - probably have to introduce new
@@ -276,11 +277,11 @@ namespace Rust {
             // reference - will be cleaner Parse a meta item inner.
             //::std::unique_ptr<MetaItemInner> parse_meta_item_inner(const ::std::vector<
             //::std::unique_ptr<Token> >& token_stream, int& i) const; SimplePath
-            // parse_simple_path(const ::std::vector< ::std::unique_ptr<Token> >& token_stream, int& i)
-            // const; SimplePathSegment parse_simple_path_segment(const ::std::vector<
+            // parse_simple_path(const ::std::vector< ::std::unique_ptr<Token> >& token_stream, int&
+            // i) const; SimplePathSegment parse_simple_path_segment(const ::std::vector<
             // ::std::unique_ptr<Token> >& token_stream, int& i) const;
             //::std::unique_ptr<MetaItemLitExpr> parse_meta_item_lit(const ::std::unique_ptr<Token>&
-            //tok) const;
+            // tok) const;
             //::std::vector< ::std::unique_ptr<MetaItemInner> > parse_meta_item_seq(const
             //::std::vector< ::std::unique_ptr<Token> >& token_stream, int& i) const; Literal
             // parse_literal(const ::std::unique_ptr<Token>& tok) const;
@@ -301,12 +302,12 @@ namespace Rust {
 
           public:
             DelimTokenTree(DelimType delim_type,
-                           ::std::vector< ::std::unique_ptr<TokenTree> > token_trees
-                           = ::std::vector< ::std::unique_ptr<TokenTree> >(),
-                           Location locus = Location()) :
-                delim_type(delim_type),
-                token_trees(::std::move(token_trees)), locus(locus) {}
-            
+              ::std::vector< ::std::unique_ptr<TokenTree> > token_trees
+              = ::std::vector< ::std::unique_ptr<TokenTree> >(),
+              Location locus = Location()) :
+              delim_type(delim_type),
+              token_trees(::std::move(token_trees)), locus(locus) {}
+
             // Copy constructor with vector clone
             DelimTokenTree(DelimTokenTree const& other) :
               delim_type(other.delim_type), locus(other.locus) {
@@ -468,8 +469,8 @@ namespace Rust {
             }
 
             // Constructor has pointer AttrInput for polymorphism reasons
-            Attribute(SimplePath path, ::std::unique_ptr<AttrInput> input,
-              Location locus = Location()) :
+            Attribute(
+              SimplePath path, ::std::unique_ptr<AttrInput> input, Location locus = Location()) :
               path(::std::move(path)),
               attr_input(::std::move(input)), locus(locus) {}
 
@@ -1000,8 +1001,8 @@ namespace Rust {
 
           public:
             // Constructor
-            Lifetime(LifetimeType type, ::std::string name = ::std::string(),
-              Location locus = Location()) :
+            Lifetime(
+              LifetimeType type, ::std::string name = ::std::string(), Location locus = Location()) :
               lifetime_type(type),
               lifetime_name(::std::move(name)), locus(locus) {}
 

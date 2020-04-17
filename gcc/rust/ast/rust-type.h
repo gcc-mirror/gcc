@@ -68,8 +68,8 @@ namespace Rust {
             }
 
           public:
-            ImplTraitType(::std::vector< ::std::unique_ptr<TypeParamBound> > type_param_bounds,
-              Location locus) :
+            ImplTraitType(
+              ::std::vector< ::std::unique_ptr<TypeParamBound> > type_param_bounds, Location locus) :
               type_param_bounds(::std::move(type_param_bounds)),
               locus(locus) {}
 
@@ -480,8 +480,8 @@ namespace Rust {
             }
 
             // Constructor
-            ReferenceType(bool is_mut, ::std::unique_ptr<TypeNoBounds> type_no_bounds,
-              Location locus, Lifetime lifetime = Lifetime::error()) :
+            ReferenceType(bool is_mut, ::std::unique_ptr<TypeNoBounds> type_no_bounds, Location locus,
+              Lifetime lifetime = Lifetime::error()) :
               lifetime(::std::move(lifetime)),
               has_mut(is_mut), type(::std::move(type_no_bounds)), locus(locus) {}
 

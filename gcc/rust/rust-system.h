@@ -41,6 +41,9 @@
 #include <deque>
 #include <functional>
 
+/* TODO: strictly speaking, as AST move semantics make frontend C++11-and-up only, unordered map should
+ * always be definable (i.e. don't have to resort to tr1 like in C++03), so don't need to have this
+ * macro switch - just include <unordered_map> and <unordered_set>. */
 #if defined(HAVE_UNORDERED_MAP)
 
 # include <unordered_map>

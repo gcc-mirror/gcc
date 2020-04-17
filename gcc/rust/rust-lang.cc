@@ -265,9 +265,9 @@ static bool grs_langhook_post_options(const char** pfilename ATTRIBUTE_UNUSED) {
 static int grs_langhook_gimplify_expr(tree* expr_p ATTRIBUTE_UNUSED,
   gimple_seq* pre_p ATTRIBUTE_UNUSED, gimple_seq* post_p ATTRIBUTE_UNUSED) {
     if (TREE_CODE (*expr_p) == CALL_EXPR
-        && CALL_EXPR_STATIC_CHAIN (*expr_p) != NULL_TREE)
+      && CALL_EXPR_STATIC_CHAIN (*expr_p) != NULL_TREE)
         gimplify_expr (&CALL_EXPR_STATIC_CHAIN (*expr_p), pre_p, post_p,
-                       is_gimple_val, fb_rvalue);
+          is_gimple_val, fb_rvalue);
     return GS_UNHANDLED;
 }
 

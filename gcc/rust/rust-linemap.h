@@ -22,6 +22,11 @@
 // The Linemap class is a pure abstract interface, plus some static
 // convenience functions.  The backend must implement the interface.
 
+/* TODO: probably better to replace linemap implementation as pure abstract interface with some sort of 
+ * compile-time switch (macros or maybe templates if doable without too much extra annoyance) as to the
+ * definition of the methods or whatever. This is to improve performance, as virtual function calls would
+ * otherwise have to be made in tight loops like in the lexer. */
+
 class Linemap
 {
  public:

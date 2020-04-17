@@ -1697,10 +1697,9 @@ namespace Rust {
                 return !outer_attrs.empty();
             }
 
-            EnumItem(
-              Identifier variant_name, ::std::vector<Attribute> outer_attrs, Location locus) :
-              outer_attrs(::std::move(outer_attrs)),
-              variant_name(::std::move(variant_name)), locus(locus) {}
+            EnumItem(Identifier variant_name, ::std::vector<Attribute> outer_attrs, Location locus) :
+              outer_attrs(::std::move(outer_attrs)), variant_name(::std::move(variant_name)),
+              locus(locus) {}
 
             // Unique pointer custom clone function
             ::std::unique_ptr<EnumItem> clone_enum_item() const {

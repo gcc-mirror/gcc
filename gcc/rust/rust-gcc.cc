@@ -49,6 +49,8 @@
 #include "backend.h"
 #include "rust-object-export.h"
 
+// TODO: this will have to be significantly modified to work with Rust
+
 // A class wrapping a tree.
 
 class Gcc_tree

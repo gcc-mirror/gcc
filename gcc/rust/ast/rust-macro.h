@@ -288,8 +288,7 @@ namespace Rust {
             ::std::string as_string() const;
 
             MacroRulesDefinition(Identifier rule_name, DelimType delim_type,
-              ::std::vector<MacroRule> rules, ::std::vector<Attribute> outer_attrs,
-              Location locus) :
+              ::std::vector<MacroRule> rules, ::std::vector<Attribute> outer_attrs, Location locus) :
               MacroItem(::std::move(outer_attrs)),
               rule_name(::std::move(rule_name)), delim_type(delim_type), rules(::std::move(rules)),
               locus(locus) {}
@@ -377,7 +376,7 @@ namespace Rust {
                 return path;
             }
 
-            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE; 
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this type
@@ -451,7 +450,7 @@ namespace Rust {
 
             virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
 
-            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE; 
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this type
@@ -480,7 +479,7 @@ namespace Rust {
                 return clone_meta_item_inner_impl();
             }
 
-            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE; 
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this type

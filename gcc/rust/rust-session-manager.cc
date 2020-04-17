@@ -518,12 +518,8 @@ namespace Rust {
 
             // create "extern crate" item with the name
             ::std::unique_ptr<AST::ExternCrate> extern_crate(
-                new AST::ExternCrate(
-                    *it,
-                    AST::Visibility::create_error(),
-                    { ::std::move(attr) },
-                    Linemap::unknown_location())
-                );
+              new AST::ExternCrate(*it, AST::Visibility::create_error(), { ::std::move(attr) },
+              Linemap::unknown_location()));
 
             // insert at beginning
             crate.items.insert(crate.items.begin(), ::std::move(extern_crate));
@@ -536,10 +532,10 @@ namespace Rust {
                 AST::SimplePathSegment("v1") };
         // create use tree and decl
         ::std::unique_ptr<AST::UseTreeGlob> use_tree(new AST::UseTreeGlob(
-          AST::UseTreeGlob::PATH_PREFIXED, AST::SimplePath(::std::move(segments)), Linemap::unknown_location()));
+          AST::UseTreeGlob::PATH_PREFIXED, AST::SimplePath(::std::move(segments)), Location()));
         AST::Attribute prelude_attr(AST::SimplePath::from_str("prelude_import"), NULL);
         ::std::unique_ptr<AST::UseDeclaration> use_decl(new AST::UseDeclaration(::std::move(use_tree),
-          AST::Visibility::create_error(), { ::std::move(prelude_attr) }, Linemap::unknown_location()));
+          AST::Visibility::create_error(), { ::std::move(prelude_attr) }, Location()));
 
         crate.items.insert(crate.items.begin(), ::std::move(use_decl));
 

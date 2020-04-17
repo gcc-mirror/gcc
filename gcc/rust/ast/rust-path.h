@@ -29,7 +29,8 @@ namespace Rust {
             /* TODO: insert check in constructor for this? Or is this a semantic error best handled
              * then? */
 
-            // TODO: does this require visitor. pretty sure this isn't polymorphic, but not entirely sure
+            // TODO: does this require visitor. pretty sure this isn't polymorphic, but not entirely
+            // sure
 
             // Creates an error PathIdentSegment.
             static PathIdentSegment create_error() {
@@ -67,8 +68,8 @@ namespace Rust {
             }
 
             // Pointer type for type in constructor to enable polymorphism
-            GenericArgsBinding(Identifier ident, ::std::unique_ptr<Type> type_ptr,
-              Location locus = Location()) :
+            GenericArgsBinding(
+              Identifier ident, ::std::unique_ptr<Type> type_ptr, Location locus = Location()) :
               identifier(::std::move(ident)),
               type(::std::move(type_ptr)), locus(locus) {}
 
@@ -326,8 +327,8 @@ namespace Rust {
                 return ::std::unique_ptr<TypePathSegment>(clone_type_path_segment_impl());
             }
 
-            TypePathSegment(PathIdentSegment ident_segment, bool has_separating_scope_resolution,
-              Location locus) :
+            TypePathSegment(
+              PathIdentSegment ident_segment, bool has_separating_scope_resolution, Location locus) :
               ident_segment(::std::move(ident_segment)),
               locus(locus), has_separating_scope_resolution(has_separating_scope_resolution) {}
 
@@ -496,8 +497,7 @@ namespace Rust {
           public:
             // Constructor with PathIdentSegment and TypePathFn
             TypePathSegmentFunction(PathIdentSegment ident_segment,
-              bool has_separating_scope_resolution, TypePathFunction function_path,
-              Location locus) :
+              bool has_separating_scope_resolution, TypePathFunction function_path, Location locus) :
               TypePathSegment(::std::move(ident_segment), has_separating_scope_resolution, locus),
               function_path(::std::move(function_path)) {}
 
@@ -554,16 +554,12 @@ namespace Rust {
 
             // Creates an error state TypePath.
             static TypePath create_error() {
-                return TypePath(
-                    ::std::vector< ::std::unique_ptr<TypePathSegment> >(),
-                    Linemap::unknown_location(),
-                    false);
+                return TypePath(::std::vector< ::std::unique_ptr<TypePathSegment> >(), Location());
             }
 
             // Constructor
-            TypePath(::std::vector< ::std::unique_ptr<TypePathSegment> > segments,
-                     Location locus,
-                     bool has_opening_scope_resolution = false) :
+            TypePath(::std::vector< ::std::unique_ptr<TypePathSegment> > segments, Location locus,
+              bool has_opening_scope_resolution = false) :
               has_opening_scope_resolution(has_opening_scope_resolution),
               segments(::std::move(segments)), locus(locus) {}
 
@@ -625,8 +621,8 @@ namespace Rust {
 
           public:
             // Constructor
-            QualifiedPathType(::std::unique_ptr<Type> invoke_on_type,
-              Location locus = Location(), TypePath trait_path = TypePath::create_error()) :
+            QualifiedPathType(::std::unique_ptr<Type> invoke_on_type, Location locus = Location(),
+              TypePath trait_path = TypePath::create_error()) :
               type_to_invoke_on(::std::move(invoke_on_type)),
               trait_path(::std::move(trait_path)), locus(locus) {}
 

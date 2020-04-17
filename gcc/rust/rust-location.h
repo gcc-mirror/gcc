@@ -20,7 +20,24 @@ class Location
 
   location_t
   gcc_location() const
-  { return this->gcc_loc_; }
+  { return gcc_loc_; }
+
+  Location 
+  operator+=(location_t rhs) {
+    gcc_loc_ += rhs;
+    return *this;
+  }
+
+  Location 
+  operator-=(location_t rhs) {
+    gcc_loc_ -= rhs;
+    return *this;
+  }
+
+  bool 
+  operator==(location_t rhs) {
+    return rhs == gcc_loc_;
+  }
 
  private:
   location_t gcc_loc_;
@@ -38,6 +55,20 @@ inline bool
 operator==(Location loca, Location locb)
 {
   return loca.gcc_location() == locb.gcc_location();
+}
+
+inline Location 
+operator+(Location lhs, location_t rhs) 
+{
+  lhs += rhs;
+  return lhs;
+}
+
+inline Location 
+operator-(Location lhs, location_t rhs) 
+{
+  lhs -= rhs;
+  return lhs;
 }
 
 #endif // !defined(RUST_LOCATION_H)
