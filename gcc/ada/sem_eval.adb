@@ -600,7 +600,7 @@ package body Sem_Eval is
             --  mode since the actual target compiler may provide a wider
             --  range.
 
-            if CodePeer_Mode and then T = RTE (RE_Priority) then
+            if CodePeer_Mode and then Is_RTE (T, RE_Priority) then
                Set_Do_Range_Check (N, False);
 
             --  Determine if the out-of-range violation constitutes a warning
