@@ -1,3 +1,9 @@
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/94629
+	* c-parser.c (c_parser_oacc_routine): Remove redundant assignment
+	to data.clauses.
+
 2020-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94593

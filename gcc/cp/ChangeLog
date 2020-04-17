@@ -1,3 +1,9 @@
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/94629
+	* call.c (build_conditional_expr_1): Remove redundant assignment to
+	arg2.
+
 2020-04-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94475
