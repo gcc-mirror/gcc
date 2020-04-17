@@ -3888,7 +3888,7 @@ class module_mapper {
 
 private:
   /* Construction always succeeds, but may result in a dead mapper.  */
-  module_mapper (location_t loc, const char *connection);
+  module_mapper (location_t loc, const char *&connection);
   ~module_mapper ()
   {
     gcc_assert (!from);
@@ -3927,6 +3927,13 @@ public:
   bool is_file () const
   {
     return is_live () && fd_to < 0;
+  }
+  void close_file ()
+  {
+    gcc_checking_assert (is_file ());
+    fclose (from);
+    from = NULL;
+    /* Leave fd_from alone to show liveness.  */
   }
 
 public:
@@ -13369,8 +13376,10 @@ get_module (const char *ptr)
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
+// FIXME: Most of this logic should not be in the ctor -- have an open
+// method
 
-module_mapper::module_mapper (location_t loc, const char *option)
+module_mapper::module_mapper (location_t loc, const char *&option)
   : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
     /* Exercise buffer expansion code.  */
     buffer (NULL), size (EXPERIMENT (3, 200)), pos (NULL), end (NULL),
@@ -13383,7 +13392,6 @@ module_mapper::module_mapper (location_t loc, const char *option)
   if (!option)
     option = dflt;
 
-  timevar_start (TV_MODULE_MAPPER);
   dump () && dump ("Initializing mapper %s", option);
 
   /* String never modified in this case.  */
@@ -13640,8 +13648,14 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  freeaddrinfo (addrs);
 #endif
 	  if (fd >= 0)
-	    /* We have a socket.  */
-	    fd_from = fd_to = fd;
+	    {
+	      /* We have a socket.  */
+	      fd_from = fd_to = fd;
+#ifdef SIGPIPE
+	      /* We need to ignore sig pipe for a while.  */
+	      sigpipe = signal (SIGPIPE, SIG_IGN);
+#endif
+	    }
 	  else if (!errmsg)
 	    {
 	      err = errno;
@@ -13684,69 +13698,10 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   pos = end = buffer = XNEWVEC (char, size);
 
-  if (fd_to >= 0)
-    {
-#ifdef SIGPIPE
-      /* We need to ignore sig pipe for a while.  */
-      sigpipe = signal (SIGPIPE, SIG_IGN);
-#endif
-      if (!handshake (loc, cookie ? cookie + 1 : main_input_filename))
-	kill (loc);
-    }
-  else
-    {
-      /* A mapping file.  Read it.  */
-      dump () && dump ("Reading mapping file %s", name);
-
-      bool starting = true;
-      for (int r; (r = get_response (loc)) >= 0;)
-	if (r)
-	  {
-	    char *mod = response_token (loc);
-	    bool ignore = false;
-	    char *file = NULL;
-
-	    /* Ignore non-cookie lines.  */
-	    if (cookie && 0 != strcmp (mod, cookie + 1))
-	      ignore = true;
-	    else
-	      {
-		if (cookie)
-		  mod = response_token (loc);
-		if (mod)
-		  file = response_token (loc, true);
-	      }
-
-	    if (!response_eol (loc, ignore))
-	      continue;
-
-	    if (!file)
-	      continue;
-
-	    if (starting && 0 == strcmp (mod, "$root"))
-	      {
-		set_cmi_repo (file);
-		continue;
-	      }
-
-	    starting = false;
-	    file = maybe_strip_cmi_prefix (file);
-	    module_state *state = get_module (mod);
-	    if (!state)
-	      response_unexpected (loc);
-	    else if (!state->filename)
-	      state->filename = xstrdup (file);
-	    else if (strcmp (state->filename, file))
-	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
-			  state->get_flatname (), file);
-	  }
-      fclose (from);
-      from = NULL;
-      /* Leave fd_from alone to show liveness.  */
-    }
-
  done:
-  timevar_stop (TV_MODULE_MAPPER);
+
+  /* Return any cookie we found.  */
+  option = cookie ? cookie + 1 : cookie;
 }
 
 /* Close down the mapper.  Mark it as not restartable.  */
@@ -13815,10 +13770,71 @@ module_mapper::kill (location_t loc)
 module_mapper *
 module_mapper::make (location_t loc)
 {
+  timevar_start (TV_MODULE_MAPPER);
   const char *option = module_mapper_name;
   if (!option)
     option = getenv ("CXX_MODULE_MAPPER");
-  return new module_mapper (loc, option);
+  module_mapper *mapper = new module_mapper (loc, option);
+  /* OPTION is now the cookie -- or null.  */
+
+  if (mapper->is_server ())
+    {
+      if (!mapper->handshake (loc, option ? option : main_input_filename))
+	mapper->kill (loc);
+    }
+  else if (mapper->is_file ())
+    {
+      /* A mapping file.  Read it.  */
+      dump () && dump ("Reading mapping file %s", mapper->name);
+
+      bool starting = true;
+      for (int r; (r = mapper->get_response (loc)) >= 0;)
+	if (r)
+	  {
+	    char *mod = mapper->response_token (loc);
+	    bool ignore = false;
+	    char *file = NULL;
+
+	    /* Ignore non-cookie lines.  */
+	    if (option && 0 != strcmp (mod, option))
+	      ignore = true;
+	    else
+	      {
+		if (option)
+		  mod = mapper->response_token (loc);
+		if (mod)
+		  file = mapper->response_token (loc, true);
+	      }
+
+	    if (!mapper->response_eol (loc, ignore))
+	      continue;
+
+	    if (!file)
+	      continue;
+
+	    if (starting && 0 == strcmp (mod, "$root"))
+	      {
+		set_cmi_repo (file);
+		continue;
+	      }
+
+	    starting = false;
+	    file = maybe_strip_cmi_prefix (file);
+	    module_state *state = get_module (mod);
+	    if (!state)
+	      mapper->response_unexpected (loc);
+	    else if (!state->filename)
+	      state->filename = xstrdup (file);
+	    else if (strcmp (state->filename, file))
+	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
+			  state->get_flatname (), file);
+	  }
+      mapper->close_file ();
+    }
+
+  timevar_stop (TV_MODULE_MAPPER);
+
+  return mapper;
 }
 
 /* Send a command to the mapper.  */
