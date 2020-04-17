@@ -1,3 +1,9 @@
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR target/94567
+	* gcc.c-torture/execute/pr94567.c: New test.
+
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/94608

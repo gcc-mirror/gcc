@@ -1,3 +1,14 @@
+2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR target/94567
+	* config/i386/i386.md (*testqi_ext_3): Use CCZmode rather than
+	CCNOmode in ix86_match_ccmode if len is equal to <MODE>mode precision,
+	or pos + len >= 32, or pos + len is equal to operands[2] precision
+	and operands[2] is not a register operand.  During splitting perform
+	SImode AND if operands[0] doesn't have CCZmode and pos + len is
+	equal to mode precision.
+
 2020-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR other/94629
