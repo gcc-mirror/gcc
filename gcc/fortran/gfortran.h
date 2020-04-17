@@ -3445,7 +3445,8 @@ bool gfc_check_dummy_characteristics (gfc_symbol *, gfc_symbol *,
 bool gfc_check_result_characteristics (gfc_symbol *, gfc_symbol *,
 				       char *, int);
 bool gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, const char *, int, int,
-			     char *, int, const char *, const char *);
+			     char *, int, const char *, const char *,
+			     bool *bad_result_characteristics = NULL);
 void gfc_check_interfaces (gfc_namespace *);
 bool gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
 void gfc_ppc_use (gfc_component *, gfc_actual_arglist **, locus *);

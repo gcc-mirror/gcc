@@ -1,3 +1,15 @@
+2020-04-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94090
+	* gfortran.dg (gfc_compare_interfaces): Add
+	optional argument bad_result_characteristics.
+	* interface.c (gfc_check_result_characteristics): Fix
+	whitespace.
+	(gfc_compare_interfaces): Handle new argument; return
+	true if function return values are wrong.
+	* resolve.c (resolve_global_procedure): Hard error if
+	the return value of a function is wrong.
+
 2020-04-15  Fritz Reese  <foreese@gcc.gnu.org>
 	Linus Koenig <link@sig-st.de>
 

@@ -1529,7 +1529,7 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 bool
 gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
-			      char *errmsg, int err_len)
+				  char *errmsg, int err_len)
 {
   gfc_symbol *r1, *r2;
 
@@ -1695,11 +1695,15 @@ bool
 gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			int generic_flag, int strict_flag,
 			char *errmsg, int err_len,
-			const char *p1, const char *p2)
+			const char *p1, const char *p2,
+			bool *bad_result_characteristics)
 {
   gfc_formal_arglist *f1, *f2;
 
   gcc_assert (name2 != NULL);
+
+  if (bad_result_characteristics)
+    *bad_result_characteristics = false;
 
   if (s1->attr.function && (s2->attr.subroutine
       || (!s2->attr.function && s2->ts.type == BT_UNKNOWN
@@ -1726,7 +1730,11 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  /* If both are functions, check result characteristics.  */
 	  if (!gfc_check_result_characteristics (s1, s2, errmsg, err_len)
 	      || !gfc_check_result_characteristics (s2, s1, errmsg, err_len))
-	    return false;
+	    {
+	      if (bad_result_characteristics)
+		*bad_result_characteristics = true;
+	      return false;
+	    }
 	}
 
       if (s1->attr.pure && !s2->attr.pure)
