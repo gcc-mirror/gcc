@@ -179,9 +179,6 @@ private:
   bool compute_name_range_op (irange &r, gimple *stmt,
 			      const irange &lhs,
 			      tree name, const irange *name_range);
-  bool compute_operand_range_op (irange &r, gimple *stmt,
-				 const irange &lhs,
-				 tree name, const irange *name_range);
   bool compute_operand1_range (irange &r, gimple *stmt,
 			       const irange &lhs,
 			       tree name, const irange *name_range);

@@ -636,26 +636,6 @@ gori_compute::~gori_compute ()
 {
 }
 
-// Return an evaluation for NAME as it would appear in STMT when the
-// statement's lhs evaluates to LHS.  If successful, return TRUE and
-// store the evaluation in R, otherwise return FALSE.
-//
-// If present, NAME_RANGE is any known range for NAME coming into STMT.
-
-bool
-gori_compute::compute_operand_range (irange &r, gimple *stmt,
-				     const irange &lhs,
-				     tree name,
-				     const irange *name_range)
-{
-  if (gimple_range_handler (stmt))
-    return compute_operand_range_op (r, stmt, lhs, name, name_range);
-  if (is_a<gswitch *> (stmt))
-    return compute_operand_range_switch (r, as_a<gswitch *> (stmt), lhs,
-					 name, name_range);
-  return false;
-}
-
 // Given the switch S, return an evaluation in R for NAME when the lhs
 // evaluates to LHS.  Returning false means the name being looked for
 // was not resolvable.  If present, NAME_RANGE is any known range for
@@ -738,11 +718,17 @@ gori_compute::logical_operation_is_linear (const gimple *stmt,
 // If present, NAME_RANGE is any known range for NAME coming into STMT.
 
 bool
-gori_compute::compute_operand_range_op (irange &r, gimple *stmt,
-					const irange &lhs,
-					tree name,
-					const irange *name_range)
+gori_compute::compute_operand_range (irange &r, gimple *stmt,
+				     const irange &lhs,
+				     tree name,
+				     const irange *name_range)
 {
+  if (is_a<gswitch *> (stmt))
+    return compute_operand_range_switch (r, as_a<gswitch *> (stmt), lhs,
+					 name, name_range);
+  if (!gimple_range_handler (stmt))
+    return false;
+
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
 
