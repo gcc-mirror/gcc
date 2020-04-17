@@ -625,8 +625,6 @@ gori_compute::compute_name_range_op (irange &r, gimple *stmt,
 
 gori_compute::gori_compute ()
 {
-  m_depth = 0;
-  m_depth_limit = m_default_depth_limit;
   // Create a boolean_type true and false range.
   m_bool_zero = int_range<1> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<1> (boolean_true_node, boolean_true_node);
@@ -698,21 +696,6 @@ is_gimple_logical_p (const gimple *gs)
   return false;
 }
 
-bool
-gori_compute::logical_operation_is_linear (const gimple *stmt,
-					   const irange &lhs)
-{
-  tree_code code = gimple_expr_code (stmt);
-
-  if (code == BIT_IOR_EXPR && lhs.zero_p ())
-    return true;
-
-  if (code == BIT_AND_EXPR && lhs == m_bool_one)
-    return true;
-
-  return false;
-}
-
 // Return an evaluation for NAME as it would appear in STMT when the
 // statement's lhs evaluates to LHS.  If successful, return TRUE and
 // store the evaluation in R, otherwise return FALSE.
@@ -741,23 +724,6 @@ gori_compute::compute_operand_range (irange &r, gimple *stmt,
       return true;
     }
 
-  // Set the depth limit to the default for the duration of this
-  // iteration.
-  class save_depth_limit
-  {
-  public:
-    save_depth_limit (gori_compute *g)
-    {
-      gori = g;
-      save = g->m_depth_limit;
-    }
-    ~save_depth_limit () { gori->m_depth_limit = save; }
-  private:
-    gori_compute *gori;
-    unsigned save;
-  } limit (this);
-  m_depth_limit = m_default_depth_limit;
-
   op1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
   op2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
 
@@ -769,10 +735,6 @@ gori_compute::compute_operand_range (irange &r, gimple *stmt,
   // ranges and combining the results based on the operation.
   if (is_gimple_logical_p (stmt))
     {
-      // Allow infinite recursion for operations that are known to be
-      // linear.
-      if (logical_operation_is_linear (stmt, lhs))
-	m_depth_limit = ~0;
       bool ret = compute_logical_operands (r, stmt, lhs, name, name_range);
       return ret;
     }
@@ -968,18 +930,6 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
-  // Long chains of nested logical expressions rarely produce good
-  // ranges but can take exponential times to compute since we are
-  // recursively evaluating them for the true and false result.  If
-  // the depth is too great simply terminate the calculation.  See gcc
-  // testcase rvrp-logic-1.c.
-  if (m_depth > m_depth_limit)
-    {
-      r.set_varying (TREE_TYPE (name));
-      return true;
-    }
-  m_depth++;
-
   // The false path is not always a simple inversion of the true side.
   // Calulate ranges for true and false on both sides.
   if (op1_in_chain)
@@ -1016,7 +966,6 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
 			op1_true, op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
 
-  m_depth--;
   return true;
 }
 

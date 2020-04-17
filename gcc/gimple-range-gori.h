@@ -198,12 +198,6 @@ private:
 				(irange &r, gimple *stmt,
 				 const irange &lhs,
 				 tree name, const irange *name_range);
-  bool logical_operation_is_linear (const gimple *, const irange &);
-  static const unsigned m_default_depth_limit = 6;
-  // Max depth of logical recursion.
-  unsigned m_depth_limit;
-  // Current depth of logical recursion.
-  unsigned m_depth;
 };
 
 class gori_compute_cache : public gori_compute
