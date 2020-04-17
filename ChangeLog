@@ -1,3 +1,10 @@
+2020-04-17  Martin Liska  <mliska@suse.cz>
+	    Jonathan Yong <10walls@gmail.com>
+
+	PR gcov-profile/94570
+	* ltmain.sh: Do not define HAVE_DOS_BASED_FILE_SYSTEM
+	for CYGWIN.
+
 2020-04-14  Martin Jambor  <mjambor@suse.cz>
 
 	* MAINTAINERS (Reviewers): Add myself as callgraph (IPA) reviewer.

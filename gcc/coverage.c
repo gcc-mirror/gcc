@@ -1200,6 +1200,11 @@ coverage_obj_finish (vec<constructor_elt, va_gc> *ctor)
 void
 coverage_init (const char *filename)
 {
+#if HAVE_DOS_BASED_FILE_SYSTEM
+  const char *separator = "\\";
+#else
+  const char *separator = "/";
+#endif
   int len = strlen (filename);
   int prefix_len = 0;
 
@@ -1216,11 +1221,6 @@ coverage_init (const char *filename)
 	 of filename in order to prevent file path clashing.  */
       if (profile_data_prefix)
 	{
-#if HAVE_DOS_BASED_FILE_SYSTEM
-	  const char *separator = "\\";
-#else
-	  const char *separator = "/";
-#endif
 	  filename = concat (getpwd (), separator, filename, NULL);
 	  if (profile_prefix_path)
 	    {
@@ -1252,7 +1252,7 @@ coverage_init (const char *filename)
   if (profile_data_prefix)
     {
       memcpy (da_file_name, profile_data_prefix, prefix_len);
-      da_file_name[prefix_len++] = '/';
+      da_file_name[prefix_len++] = *separator;
     }
   memcpy (da_file_name + prefix_len, filename, len);
   strcpy (da_file_name + prefix_len + len, GCOV_DATA_SUFFIX);
