@@ -6534,6 +6534,12 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool non_constant_p = false;
   bool overflow_p = false;
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (t))
+    {
+      gcc_checking_assert (allow_non_constant);
+      return t;
+    }
+
   constexpr_global_ctx global_ctx;
   constexpr_ctx ctx = { &global_ctx, NULL, NULL, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict,
@@ -8295,7 +8301,6 @@ bool
 is_nondependent_constant_expression (tree t)
 {
   return (!type_unknown_p (t)
-	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
 	  && is_constant_expression (t)
 	  && !instantiation_dependent_expression_p (t));
 }
@@ -8307,7 +8312,6 @@ bool
 is_nondependent_static_init_expression (tree t)
 {
   return (!type_unknown_p (t)
-	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
 	  && is_static_init_expression (t)
 	  && !instantiation_dependent_expression_p (t));
 }

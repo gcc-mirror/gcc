@@ -1,3 +1,12 @@
+2020-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94592
+	* constexpr.c (cxx_eval_outermost_constant_expr): Return when T is
+	a BRACE_ENCLOSED_INITIALIZER_P.
+	(is_nondependent_constant_expression): Don't check
+	BRACE_ENCLOSED_INITIALIZER_P.
+	(is_nondependent_static_init_expression): Likewise.
+
 2020-04-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94628

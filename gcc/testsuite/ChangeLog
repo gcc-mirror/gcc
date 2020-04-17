@@ -1,3 +1,9 @@
+2020-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94592
+	* g++.dg/cpp2a/nontype-class34.C: New test.
+	* g++.dg/cpp2a/nontype-class35.C: New test.
+
 2020-04-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94628
