@@ -30,7 +30,7 @@ GCCRS_INSTALL_NAME := $(shell echo gccrs|sed '$(program_transform_name)')
 GCCRS_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccrs|sed '$(program_transform_name)')
 
 # Define the names for selecting rust in LANGUAGES.
-rust: gccrs$(exeext) grs1$(exeext)
+rust: gccrs$(exeext) rust1$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: rust
