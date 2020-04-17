@@ -1,3 +1,8 @@
+2020-04-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/93974
+	* g++.dg/pr93974.C: New test.
+
 2020-04-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/cpp0x/lambda/pr94426-2.C: Adjust scan-asms to test

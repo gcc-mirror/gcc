@@ -1,3 +1,9 @@
+2020-04-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/93974
+	* config/rs6000/rs6000.c (TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): Define.
+	(rs6000_cannot_substitute_mem_equiv_p): New function.
+
 2020-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/93621
