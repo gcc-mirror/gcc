@@ -1,3 +1,9 @@
+2020-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92187
+	* g++.dg/concepts/abbrev5.C: New test.
+	* g++.dg/concepts/abbrev6.C: New test.
+
 2020-04-17  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/90275
