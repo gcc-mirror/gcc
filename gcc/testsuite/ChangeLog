@@ -1,5 +1,10 @@
 2020-05-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/94255
+	* g++.dg/template/spec41.C: New test.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
 	P1957R2
 	* g++.dg/cpp0x/initlist92.C: Don't expect an error in C++20 only.
 
