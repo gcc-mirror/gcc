@@ -13898,13 +13898,14 @@ package body Exp_Ch4 is
             end if;
          end if;
 
-         --  Here we have to make sure of being within 32-bits
+         --  Here we have to make sure of being within a 32-bit range (take the
+         --  full unsigned range so the length of 32-bit arrays is accepted).
 
          Determine_Range (N, OK, Lo, Hi, Assume_Valid => True);
 
          if not OK
            or else Lo < Uint_0
-           or else Hi > UI_From_Int (Int'Last)
+           or else Hi > Uint_2 ** 32
          then
             return False;
          end if;
