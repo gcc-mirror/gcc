@@ -1,5 +1,11 @@
 2020-05-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/94255
+	* parser.c (cp_parser_class_specifier_1): Check that the scope is
+	nested inside current scope before pushing it.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
 	  P1957R2
 	  * typeck2.c (check_narrowing): Consider T* to bool narrowing
 	  in C++11 and up.
