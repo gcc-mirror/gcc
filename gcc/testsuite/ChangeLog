@@ -1,5 +1,8 @@
 2020-04-18  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94632
+	* g++.dg/template/canon-type-14.C: New test.
+
 	PR c++/92187
 	* g++.dg/concepts/abbrev5.C: New test.
 	* g++.dg/concepts/abbrev6.C: New test.
