@@ -1,5 +1,16 @@
 2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/94304
+	* configure: Regenerate.
+	* configure.ac: Add --with-libphobos-druntime-only option and the
+	conditional ENABLE_LIBDRUNTIME_ONLY.
+	* configure.tgt: Define LIBDRUNTIME_ONLY.
+	* src/Makefile.am: Add phobos sources if not ENABLE_LIBDRUNTIME_ONLY.
+	* src/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add phobos path if compiling phobos.
+
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* testsuite/libphobos.phobos/phobos.exp: Skip if effective target is
 	not d_runtime_has_std_library.
 	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
