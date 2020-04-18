@@ -1,3 +1,30 @@
+2020-04-18  Jeff Law  <law@redhat.com>
+
+	PR debug/94439
+	* gcc.dg/torture/pr94439.c: New test.
+
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/link.d: Use d_runtime_has_std_library effective target.
+	* gdc.dg/runnable.d: Move phobos tests to...
+	* gdc.dg/runnable2.d: ...here.  New test.
+	* lib/target-supports.exp
+	(check_effective_target_d_runtime_has_std_library): New.
+
+2020-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94632
+	* g++.dg/template/canon-type-14.C: New test.
+
+	PR c++/92187
+	* g++.dg/concepts/abbrev5.C: New test.
+	* g++.dg/concepts/abbrev6.C: New test.
+
+2020-04-17  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/90275
+	* gcc.c-torture/compile/pr90275-2.c: New test.
+
 2020-04-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94483

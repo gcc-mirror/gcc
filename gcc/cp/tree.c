@@ -3723,11 +3723,12 @@ cp_tree_equal (tree t1, tree t2)
 	 up for expressions that involve 'this' in a member function
 	 template.  */
 
-      if (comparing_specializations && !CONSTRAINT_VAR_P (t1))
+      if (comparing_specializations
+	  && DECL_CONTEXT (t1) != DECL_CONTEXT (t2))
 	/* When comparing hash table entries, only an exact match is
 	   good enough; we don't want to replace 'this' with the
 	   version from another function.  But be more flexible
-	   with local parameters in a requires-expression.  */
+	   with parameters with identical contexts.  */
 	return false;
 
       if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))

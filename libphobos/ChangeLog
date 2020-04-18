@@ -1,3 +1,9 @@
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.phobos/phobos.exp: Skip if effective target is
+	not d_runtime_has_std_library.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
 2020-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/core/stdc/stdarg.d: Remove run-time va_list template.

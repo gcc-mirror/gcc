@@ -479,7 +479,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _Storage_policy::set(_Storage_policy::get() - 1);
         return __tmp;
       }
-  
+
+#if __cpp_lib_three_way_comparison
+      friend std::strong_ordering
+      operator<=>(const _Pointer_adapter& __lhs, const _Pointer_adapter& __rhs)
+      noexcept
+      { return __lhs.get() <=> __rhs.get(); }
+#endif
     }; // class _Pointer_adapter
 
 

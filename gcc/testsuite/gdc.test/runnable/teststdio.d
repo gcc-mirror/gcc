@@ -31,3 +31,4 @@ void main()
     } while (!feof(fp));
     //fclose(fp);
 }
+// RUNNABLE_PHOBOS_TEST

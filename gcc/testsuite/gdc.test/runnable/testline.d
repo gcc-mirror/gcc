@@ -41,3 +41,4 @@ void checkFileSpec(Object o){
 writeln(str);
         assert(str[start .. start+3]=="(1)");
 }
+// RUNNABLE_PHOBOS_TEST

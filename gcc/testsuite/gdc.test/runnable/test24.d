@@ -8,3 +8,4 @@ void main()
 {
     string hi = std.string.format("%s", 3);
 }
+// RUNNABLE_PHOBOS_TEST

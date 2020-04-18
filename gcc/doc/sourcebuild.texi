@@ -2207,6 +2207,9 @@ overloads for @code{strchr} etc. functions.
 @item d_runtime
 Target provides the D runtime.
 
+@item d_runtime_has_std_library
+Target provides the D standard library (Phobos).
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 

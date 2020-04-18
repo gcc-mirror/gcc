@@ -1037,7 +1037,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // provide overloads whose operands are of the same type.  Can someone
   // remind me what generic programming is about? -- Gaby
 
-  // Forward iterator requirements
+#if __cpp_lib_three_way_comparison
+  template<typename _IteratorL, typename _IteratorR, typename _Container>
+    requires requires (_IteratorL __lhs, _IteratorR __rhs)
+    { { __lhs == __rhs } -> std::convertible_to<bool>; }
+    constexpr bool
+    operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	       const __normal_iterator<_IteratorR, _Container>& __rhs)
+    noexcept(noexcept(__lhs.base() == __rhs.base()))
+    { return __lhs.base() == __rhs.base(); }
+
+  template<typename _IteratorL, typename _IteratorR, typename _Container>
+    constexpr auto
+    operator<=>(const __normal_iterator<_IteratorL, _Container>& __lhs,
+		const __normal_iterator<_IteratorR, _Container>& __rhs)
+    noexcept(noexcept(__lhs.base() <=> __rhs.base()))
+    -> decltype(__lhs.base() <=> __rhs.base())
+    { return __lhs.base() <=> __rhs.base(); }
+#else
+   // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
     _GLIBCXX20_CONSTEXPR
     inline bool
@@ -1072,11 +1090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Random access iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-#if __cplusplus > 201703L
-    constexpr auto
-#else
     inline bool
-#endif
     operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
     _GLIBCXX_NOEXCEPT
@@ -1091,11 +1105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() < __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-#if __cplusplus > 201703L
-    constexpr auto
-#else
     inline bool
-#endif
     operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
     _GLIBCXX_NOEXCEPT
@@ -1110,11 +1120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() > __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-#if __cplusplus > 201703L
-    constexpr auto
-#else
     inline bool
-#endif
     operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
     _GLIBCXX_NOEXCEPT
@@ -1129,11 +1135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() <= __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-#if __cplusplus > 201703L
-    constexpr auto
-#else
     inline bool
-#endif
     operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
     _GLIBCXX_NOEXCEPT
@@ -1146,6 +1148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
     _GLIBCXX_NOEXCEPT
     { return __lhs.base() >= __rhs.base(); }
+#endif // three-way comparison
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // According to the resolution of DR179 not only the various comparison

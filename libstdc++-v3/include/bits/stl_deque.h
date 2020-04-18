@@ -63,6 +63,9 @@
 #include <initializer_list>
 #include <bits/stl_uninitialized.h> // for __is_bitwise_relocatable
 #endif
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 #include <debug/assertions.h>
 
@@ -266,14 +269,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return __x._M_cur == __y._M_cur; }
 
       // Note: we also provide overloads whose operands are of the same type in
-      // order to avoid ambiguous overload resolution when std::rel_ops operators
-      // are in scope (for additional details, see libstdc++/3628)
+      // order to avoid ambiguous overload resolution when std::rel_ops
+      // operators are in scope (for additional details, see libstdc++/3628)
       template<typename _RefR, typename _PtrR>
 	friend bool
 	operator==(const _Self& __x,
-		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{ return __x._M_cur == __y._M_cur; }
 
+#if __cpp_lib_three_way_comparison
+      friend strong_ordering
+      operator<=>(const _Self& __x, const _Self& __y) noexcept
+      {
+	if (const auto __cmp = __x._M_node <=> __y._M_node; __cmp != 0)
+	  return __cmp;
+	return __x._M_cur <=> __y._M_cur;
+      }
+#else
       friend bool
       operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       { return !(__x == __y); }
@@ -281,7 +294,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _RefR, typename _PtrR>
 	friend bool
 	operator!=(const _Self& __x,
-		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{ return !(__x == __y); }
 
       friend bool
@@ -294,7 +308,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _RefR, typename _PtrR>
 	friend bool
 	operator<(const _Self& __x,
-		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{
 	  return (__x._M_node == __y._M_node)
 	    ? (__x._M_cur < __y._M_cur) : (__x._M_node < __y._M_node);
@@ -307,7 +322,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _RefR, typename _PtrR>
 	friend bool
 	operator>(const _Self& __x,
-		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{ return __y < __x; }
 
       friend bool
@@ -317,7 +333,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _RefR, typename _PtrR>
 	friend bool
 	operator<=(const _Self& __x,
-		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{ return !(__y < __x); }
 
       friend bool
@@ -327,8 +344,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _RefR, typename _PtrR>
 	friend bool
 	operator>=(const _Self& __x,
-		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{ return !(__x < __y); }
+#endif // three-way comparison
 
       friend difference_type
       operator-(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
@@ -2223,6 +2242,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return __x.size() == __y.size()
 	     && std::equal(__x.begin(), __x.end(), __y.begin()); }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   *  @brief  Deque ordering relation.
+   *  @param  __x  A `deque`.
+   *  @param  __y  A `deque` of the same type as `__x`.
+   *  @return  A value indicating whether `__x` is less than, equal to,
+   *           greater than, or incomparable with `__y`.
+   *
+   *  See `std::lexicographical_compare_three_way()` for how the determination
+   *  is made. This operator is used to synthesize relational operators like
+   *  `<` and `>=` etc.
+  */
+  template<typename _Tp, typename _Alloc>
+    inline __detail::__synth3way_t<_Tp>
+    operator<=>(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
+    {
+      return std::lexicographical_compare_three_way(__x.begin(), __x.end(),
+						    __y.begin(), __y.end(),
+						    __detail::__synth3way);
+    }
+#else
   /**
    *  @brief  Deque ordering relation.
    *  @param  __x  A %deque.
@@ -2263,6 +2303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator>=(const deque<_Tp, _Alloc>& __x, const deque<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
   /// See std::deque::swap().
   template<typename _Tp, typename _Alloc>
