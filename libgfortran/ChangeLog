@@ -1,3 +1,8 @@
+2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (local_feraiseexcept) [__SSE_MATH__]:
+	Remove unneeded assignments to volatile memory.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.
