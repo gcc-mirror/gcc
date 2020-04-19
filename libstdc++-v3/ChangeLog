@@ -1,3 +1,9 @@
+2020-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/94629
+	* include/debug/formatter.h (_Error_formatter::_Parameter): Fix
+	redundant assignment in constructor.
+
 2020-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (duration, time_point): Define operator<=> and
