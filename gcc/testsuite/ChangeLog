@@ -1,7 +1,7 @@
 2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94347
-	* gfortran.dg/char_pointer_init_1.f90: New test.
+	* gfortran.dg/char_pointer_init_12.f90: New test.
 
 2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
