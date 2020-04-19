@@ -1,3 +1,8 @@
+2020-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/94637
+	* objc.dg/pr94637.m: New test.
+
 2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* lib/gdc-utils.exp (gdc-convert-test): Add dg-skip-if for tests that
