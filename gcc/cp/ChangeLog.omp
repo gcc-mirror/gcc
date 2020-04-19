@@ -1,0 +1,9 @@
+2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/76739
+
+	* semantics.cc (handle_omp_array_sections_1): Add 'bool &non_contiguous'
+	parameter, adjust recursive call site, add cases for allowing
+	pointer based multi-dimensional arrays for OpenACC.
+	(handle_omp_array_sections): Adjust handle_omp_array_sections_1 call,
+	handle non-contiguous case to create dynamic array map.
