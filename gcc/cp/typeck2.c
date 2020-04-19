@@ -1008,10 +1008,17 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 	      || !int_fits_type_p (init, type)))
 	ok = false;
     }
+  /* [dcl.init.list]#7.2: "from long double to double or float, or from
+      double to float".  */
   else if (TREE_CODE (ftype) == REAL_TYPE
 	   && TREE_CODE (type) == REAL_TYPE)
     {
-      if (TYPE_PRECISION (type) < TYPE_PRECISION (ftype))
+      if ((same_type_p (ftype, long_double_type_node)
+	   && (same_type_p (type, double_type_node)
+	       || same_type_p (type, float_type_node)))
+	  || (same_type_p (ftype, double_type_node)
+	      && same_type_p (type, float_type_node))
+	  || (TYPE_PRECISION (type) < TYPE_PRECISION (ftype)))
 	{
 	  if (TREE_CODE (init) == REAL_CST)
 	    {

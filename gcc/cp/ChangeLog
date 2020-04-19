@@ -1,5 +1,12 @@
 2020-05-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/94590 - Detect long double -> double narrowing.
+	* typeck2.c (check_narrowing): Detect long double -> double
+	narrowing even when double and long double have the same
+	precision.  Make it handle conversions to float too.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/94255
 	* parser.c (cp_parser_class_specifier_1): Check that the scope is
 	nested inside current scope before pushing it.
