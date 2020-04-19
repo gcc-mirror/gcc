@@ -58,7 +58,7 @@ void *spellerY(const char *seed, size_t seedlen, fp_speller_t fp, void *fparg,
     memcpy(buf, seed, index);
     *cost = INT_MAX;
     void* p = NULL;
-    int ncost;
+    int ncost = 0;
 
     /* Delete at seed[index] */
     if (index < seedlen)
@@ -122,7 +122,7 @@ void *spellerX(const char *seed, size_t seedlen, fp_speller_t fp, void *fparg,
         if (!buf)
             return NULL;                      // no matches
     }
-    int cost = INT_MAX, ncost;
+    int cost = INT_MAX, ncost = 0;
     void *p = NULL, *np;
 
     /* Deletions */
