@@ -1,5 +1,14 @@
 2020-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	Remove redundant operator!= for C++20.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* include/debug/unordered_map (unordered_map, unordered_multimap):
+	Likewise.
+	* include/debug/unordered_set (unordered_set, unordered_multiset):
+	Likewise.
+
 	PR other/94629
 	* include/debug/formatter.h (_Error_formatter::_Parameter): Fix
 	redundant assignment in constructor.
