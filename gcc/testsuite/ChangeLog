@@ -1,7 +1,12 @@
 2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/57129
+	* gfortran.dg/subroutine_as_type.f90: New test.
+
+2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/93500
-	* arith_divide_3.f90: New test.
+	* gfortran.dg/arith_divide_3.f90: New test.
 
 2020-04-19  Jakub Jelinek  <jakub@redhat.com>
 
