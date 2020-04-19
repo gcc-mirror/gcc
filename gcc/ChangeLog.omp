@@ -1,3 +1,27 @@
+2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/76739
+
+	* builtin-types.def (BT_FN_VOID_INT_SIZE_PTR_PTR_PTR_VAR): New type.
+	* omp-builtins.def (BUILT_IN_GOACC_DATA_START): Adjust function type
+	to new BT_FN_VOID_INT_SIZE_PTR_PTR_PTR_VAR.
+	* gimplify.cc (gimplify_scan_omp_clauses): Skip gimplification of
+	OMP_CLAUSE_SIZE of non-contiguous array maps (which is a TREE_LIST).
+	* omp-expand.cc (expand_omp_target): Add non-contiguous array descriptor
+	pointers to variadic arguments.
+	* omp-low.cc (append_field_to_record_type): New function.
+	(create_noncontig_array_descr_type): Likewise.
+	(create_noncontig_array_descr_init_code): Likewise.
+	(scan_sharing_clauses): For non-contiguous array map kinds, check for
+	supported dimension structure, and install non-contiguous array
+	variable into current omp_context.
+	(reorder_noncontig_array_clauses): New function.
+	(scan_omp_target): Call reorder_noncontig_array_clauses to place
+	non-contiguous array map clauses at beginning of clause sequence.
+	(lower_omp_target): Add handling for non-contiguous array map kinds,
+	add all created non-contiguous array descriptors to
+	gimple_omp_target_data_arg.
+
 2022-06-20  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* Makefile.in (REVISION_s): Change default message.

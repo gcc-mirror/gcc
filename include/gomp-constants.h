@@ -167,6 +167,26 @@ enum gomp_map_kind
     /* In OpenACC, detach a pointer to a mapped struct field.  */
     GOMP_MAP_FORCE_DETACH =		(GOMP_MAP_DEEP_COPY
 					 | GOMP_MAP_FLAG_FORCE | 1),
+    /* Mapping kinds for non-contiguous arrays.  */
+    GOMP_MAP_NONCONTIG_ARRAY =		(GOMP_MAP_FLAG_SPECIAL_3),
+    GOMP_MAP_NONCONTIG_ARRAY_TO =	(GOMP_MAP_NONCONTIG_ARRAY
+					 | GOMP_MAP_TO),
+    GOMP_MAP_NONCONTIG_ARRAY_FROM =	(GOMP_MAP_NONCONTIG_ARRAY
+					 | GOMP_MAP_FROM),
+    GOMP_MAP_NONCONTIG_ARRAY_TOFROM =	(GOMP_MAP_NONCONTIG_ARRAY
+					 | GOMP_MAP_TOFROM),
+    GOMP_MAP_NONCONTIG_ARRAY_FORCE_TO =		(GOMP_MAP_NONCONTIG_ARRAY_TO
+						 | GOMP_MAP_FLAG_FORCE),
+    GOMP_MAP_NONCONTIG_ARRAY_FORCE_FROM =	(GOMP_MAP_NONCONTIG_ARRAY_FROM
+						 | GOMP_MAP_FLAG_FORCE),
+    GOMP_MAP_NONCONTIG_ARRAY_FORCE_TOFROM =	(GOMP_MAP_NONCONTIG_ARRAY_TOFROM
+						 | GOMP_MAP_FLAG_FORCE),
+    GOMP_MAP_NONCONTIG_ARRAY_ALLOC =		(GOMP_MAP_NONCONTIG_ARRAY
+						 | GOMP_MAP_ALLOC),
+    GOMP_MAP_NONCONTIG_ARRAY_FORCE_ALLOC =	(GOMP_MAP_NONCONTIG_ARRAY
+						 | GOMP_MAP_FORCE_ALLOC),
+    GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT =	(GOMP_MAP_NONCONTIG_ARRAY
+						 | GOMP_MAP_FORCE_PRESENT),
 
     /* Like GOMP_MAP_ATTACH, but allow attaching to zero-length array sections
        (i.e. set to NULL when array section is not mapped) Currently only used
@@ -212,6 +232,8 @@ enum gomp_map_kind
 #define GOMP_MAP_IMPLICIT_P(X) \
   (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_IMPLICIT)
 
+#define GOMP_MAP_NONCONTIG_ARRAY_P(X) \
+  ((X) & GOMP_MAP_NONCONTIG_ARRAY)
 
 /* Asynchronous behavior.  Keep in sync with
    libgomp/{openacc.h,openacc.f90,openacc_lib.h}:acc_async_t.  */

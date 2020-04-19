@@ -1,0 +1,6 @@
+2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/76739
+
+	* f95-lang.cc (DEF_FUNCTION_TYPE_VAR_5): New symbol.
+	* types.def (BT_FN_VOID_INT_SIZE_PTR_PTR_PTR_VAR): New type.
