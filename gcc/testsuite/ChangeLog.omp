@@ -1,0 +1,5 @@
+2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/76739
+
+	* c-c++-common/goacc/noncontig_array-1.c: New test.

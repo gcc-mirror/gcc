@@ -12921,12 +12921,14 @@ c_finish_omp_cancellation_point (location_t loc, tree clauses)
    <= FIRST_NON_ONE we diagnose non-contiguous arrays if low bound isn't
    0 or length isn't the array domain max + 1, for > FIRST_NON_ONE we
    can if MAYBE_ZERO_LEN is false.  MAYBE_ZERO_LEN will be true in the above
-   case though, as some lengths could be zero.  */
+   case though, as some lengths could be zero.
+   NON_CONTIGUOUS will be true if this is an OpenACC non-contiguous array
+   section.  */
 
 static tree
 handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 			     bool &maybe_zero_len, unsigned int &first_non_one,
-			     enum c_omp_region_type ort)
+			     bool &non_contiguous, enum c_omp_region_type ort)
 {
   tree ret, low_bound, length, type;
   if (TREE_CODE (t) != TREE_LIST)
@@ -13019,7 +13021,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     }
 
   ret = handle_omp_array_sections_1 (c, TREE_CHAIN (t), types,
-				     maybe_zero_len, first_non_one, ort);
+				     maybe_zero_len, first_non_one,
+				     non_contiguous, ort);
   if (ret == error_mark_node || ret == NULL_TREE)
     return ret;
 
@@ -13237,14 +13240,21 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       /* If there is a pointer type anywhere but in the very first
-	 array-section-subscript, the array section can't be contiguous.  */
+	 array-section-subscript, the array section can't be contiguous.
+	 Note that OpenACC does accept these kinds of non-contiguous pointer
+	 based arrays.  */
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "array section is not contiguous in %qs clause",
-		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	  return error_mark_node;
+	  if (ort == C_ORT_ACC)
+	    non_contiguous = true;
+	  else
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"array section is not contiguous in %qs clause",
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      return error_mark_node;
+	    }
 	}
     }
   else
@@ -13273,6 +13283,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 {
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
+  bool non_contiguous = false;
   auto_vec<tree, 10> types;
   tree *tp = &OMP_CLAUSE_DECL (c);
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
@@ -13282,7 +13293,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
     tp = &TREE_VALUE (*tp);
   tree first = handle_omp_array_sections_1 (c, *tp, types,
 					    maybe_zero_len, first_non_one,
-					    ort);
+					    non_contiguous, ort);
   if (first == error_mark_node)
     return true;
   if (first == NULL_TREE)
@@ -13315,6 +13326,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
       unsigned int num = types.length (), i;
       tree t, side_effects = NULL_TREE, size = NULL_TREE;
       tree condition = NULL_TREE;
+      tree ncarray_dims = NULL_TREE;
 
       if (int_size_in_bytes (TREE_TYPE (first)) <= 0)
 	maybe_zero_len = true;
@@ -13338,6 +13350,13 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    length = fold_convert (sizetype, length);
 	  if (low_bound == NULL_TREE)
 	    low_bound = integer_zero_node;
+
+	  if (non_contiguous)
+	    {
+	      ncarray_dims = tree_cons (low_bound, length, ncarray_dims);
+	      continue;
+	    }
+
 	  if (!maybe_zero_len && i > first_non_one)
 	    {
 	      if (integer_nonzerop (low_bound))
@@ -13433,6 +13452,14 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      else
 		size = size_binop (MULT_EXPR, size, l);
 	    }
+	}
+      if (non_contiguous)
+	{
+	  int kind = OMP_CLAUSE_MAP_KIND (c);
+	  OMP_CLAUSE_SET_MAP_KIND (c, kind | GOMP_MAP_NONCONTIG_ARRAY);
+	  OMP_CLAUSE_DECL (c) = t;
+	  OMP_CLAUSE_SIZE (c) = ncarray_dims;
+	  return false;
 	}
       if (side_effects)
 	size = build2 (COMPOUND_EXPR, sizetype, side_effects, size);

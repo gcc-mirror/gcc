@@ -632,6 +632,8 @@ gfc_init_builtin_functions (void)
 #define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
 #define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
 #define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_VAR_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
+				 NAME,
 #define DEF_FUNCTION_TYPE_VAR_6(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 				 ARG6) NAME,
 #define DEF_FUNCTION_TYPE_VAR_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
@@ -654,6 +656,7 @@ gfc_init_builtin_functions (void)
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_5
 #undef DEF_FUNCTION_TYPE_VAR_6
 #undef DEF_FUNCTION_TYPE_VAR_7
 #undef DEF_POINTER_TYPE
@@ -1145,6 +1148,15 @@ gfc_init_builtin_functions (void)
 					builtin_types[(int) ARG1],     	\
 					builtin_types[(int) ARG2],     	\
 					NULL_TREE);
+#define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
+  builtin_types[(int) ENUM]						\
+    = build_varargs_function_type_list (builtin_types[(int) RETURN],   	\
+					builtin_types[(int) ARG1],     	\
+					builtin_types[(int) ARG2],     	\
+					builtin_types[(int) ARG3],	\
+					builtin_types[(int) ARG4],	\
+					builtin_types[(int) ARG5],	\
+					NULL_TREE);
 #define DEF_FUNCTION_TYPE_VAR_6(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 				ARG6)	\
   builtin_types[(int) ENUM]						\
@@ -1186,6 +1198,7 @@ gfc_init_builtin_functions (void)
 #undef DEF_FUNCTION_TYPE_VAR_0
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_5
 #undef DEF_FUNCTION_TYPE_VAR_6
 #undef DEF_FUNCTION_TYPE_VAR_7
 #undef DEF_POINTER_TYPE
