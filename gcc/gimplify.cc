@@ -11195,8 +11195,16 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
 	    OMP_CLAUSE_SIZE (c) = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
 				  : TYPE_SIZE_UNIT (TREE_TYPE (decl));
-	  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
-			     NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+	  if (GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
+	    {
+	      gcc_assert (OMP_CLAUSE_SIZE (c)
+			  && TREE_CODE (OMP_CLAUSE_SIZE (c)) == TREE_LIST);
+	      /* For non-contiguous array maps, OMP_CLAUSE_SIZE is a TREE_LIST
+		 of the individual array dimensions, which gimplify_expr doesn't
+		 handle, so skip the call to gimplify_expr here.  */
+	    }
+	  else if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
+				  NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
 	    {
 	      remove = true;
 	      break;

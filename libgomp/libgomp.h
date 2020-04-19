@@ -1444,6 +1444,10 @@ extern struct target_mem_desc *goacc_map_vars (struct gomp_device_descr *,
 					       size_t, void **, void **,
 					       size_t *, void *, bool,
 					       enum gomp_map_vars_kind);
+extern struct target_mem_desc *gomp_map_vars_openacc (struct gomp_device_descr *,
+						      struct goacc_asyncqueue *,
+						      size_t, void **, size_t *,
+						      unsigned short *, void *);
 extern void goacc_unmap_vars (struct target_mem_desc *, bool,
 			      struct goacc_asyncqueue *);
 extern void gomp_init_device (struct gomp_device_descr *);

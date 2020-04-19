@@ -964,6 +964,123 @@ omp_copy_decl (tree var, copy_body_data *cb)
   return error_mark_node;
 }
 
+/* Helper function for create_noncontig_array_descr_type(), to append a new field
+   to a record type.  */
+
+static void
+append_field_to_record_type (tree record_type, tree fld_ident, tree fld_type)
+{
+  tree *p, fld = build_decl (UNKNOWN_LOCATION, FIELD_DECL, fld_ident, fld_type);
+  DECL_CONTEXT (fld) = record_type;
+
+  for (p = &TYPE_FIELDS (record_type); *p; p = &DECL_CHAIN (*p))
+    ;
+  *p = fld;
+}
+
+/* Create type for non-contiguous array descriptor. Returns created type, and
+   returns the number of dimensions in *DIM_NUM.  */
+
+static tree
+create_noncontig_array_descr_type (tree dims, int *dim_num)
+{
+  int n = 0;
+  tree array_descr_type, name, x;
+  gcc_assert (TREE_CODE (dims) == TREE_LIST);
+
+  array_descr_type = lang_hooks.types.make_type (RECORD_TYPE);
+  name = create_tmp_var_name (".omp_noncontig_array_descr_type");
+  name = build_decl (UNKNOWN_LOCATION, TYPE_DECL, name, array_descr_type);
+  DECL_ARTIFICIAL (name) = 1;
+  DECL_NAMELESS (name) = 1;
+  TYPE_NAME (array_descr_type) = name;
+  TYPE_ARTIFICIAL (array_descr_type) = 1;
+
+  /* Number of dimensions.  */
+  append_field_to_record_type (array_descr_type, get_identifier ("__dim_num"),
+			       sizetype);
+
+  for (x = dims; x; x = TREE_CHAIN (x), n++)
+    {
+      char *fldname;
+      /* One for the start index.  */
+      ASM_FORMAT_PRIVATE_NAME (fldname, "__dim_base", n);
+      append_field_to_record_type (array_descr_type, get_identifier (fldname),
+				   sizetype);
+      /* One for the length.  */
+      ASM_FORMAT_PRIVATE_NAME (fldname, "__dim_length", n);
+      append_field_to_record_type (array_descr_type, get_identifier (fldname),
+				   sizetype);
+      /* One for the element size.  */
+      ASM_FORMAT_PRIVATE_NAME (fldname, "__dim_elem_size", n);
+      append_field_to_record_type (array_descr_type, get_identifier (fldname),
+				   sizetype);
+      /* One for is_array flag.  */
+      ASM_FORMAT_PRIVATE_NAME (fldname, "__dim_is_array", n);
+      append_field_to_record_type (array_descr_type, get_identifier (fldname),
+				   sizetype);
+    }
+
+  layout_type (array_descr_type);
+  *dim_num = n;
+  return array_descr_type;
+}
+
+/* Generate code sequence for initializing non-contiguous array descriptor.  */
+
+static void
+create_noncontig_array_descr_init_code (tree array_descr, tree array_var,
+					tree dimensions, int dim_num,
+					gimple_seq *ilist)
+{
+  tree fld, fldref;
+  tree array_descr_type = TREE_TYPE (array_descr);
+  tree dim_type = TREE_TYPE (array_var);
+
+  if (TREE_CODE (dim_type) == REFERENCE_TYPE)
+    dim_type = TREE_TYPE (dim_type);
+
+  fld = TYPE_FIELDS (array_descr_type);
+  fldref = omp_build_component_ref (array_descr, fld);
+  gimplify_assign (fldref, build_int_cst (sizetype, dim_num), ilist);
+
+  while (dimensions)
+    {
+      tree dim_base = fold_convert (sizetype, TREE_PURPOSE (dimensions));
+      tree dim_length = fold_convert (sizetype, TREE_VALUE (dimensions));
+      tree dim_elem_size = TYPE_SIZE_UNIT (TREE_TYPE (dim_type));
+      tree dim_is_array = (TREE_CODE (dim_type) == ARRAY_TYPE
+			   ? integer_one_node : integer_zero_node);
+      /* Set base.  */
+      fld = TREE_CHAIN (fld);
+      fldref = omp_build_component_ref (array_descr, fld);
+      dim_base = fold_build2 (MULT_EXPR, sizetype, dim_base, dim_elem_size);
+      gimplify_assign (fldref, dim_base, ilist);
+
+      /* Set length.  */
+      fld = TREE_CHAIN (fld);
+      fldref = omp_build_component_ref (array_descr, fld);
+      dim_length = fold_build2 (MULT_EXPR, sizetype, dim_length, dim_elem_size);
+      gimplify_assign (fldref, dim_length, ilist);
+
+      /* Set elem_size.  */
+      fld = TREE_CHAIN (fld);
+      fldref = omp_build_component_ref (array_descr, fld);
+      dim_elem_size = fold_convert (sizetype, dim_elem_size);
+      gimplify_assign (fldref, dim_elem_size, ilist);
+
+      /* Set is_array flag.  */
+      fld = TREE_CHAIN (fld);
+      fldref = omp_build_component_ref (array_descr, fld);
+      dim_is_array = fold_convert (sizetype, dim_is_array);
+      gimplify_assign (fldref, dim_is_array, ilist);
+
+      dimensions = TREE_CHAIN (dimensions);
+      dim_type = TREE_TYPE (dim_type);
+    }
+  gcc_assert (TREE_CHAIN (fld) == NULL_TREE);
+}
+
 /* Create a new context, with OUTER_CTX being the surrounding context.  */
 
 static omp_context *
@@ -1654,6 +1771,38 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      install_var_local (decl, ctx);
 	      break;
 	    }
+
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
+	    {
+	      tree array_decl = OMP_CLAUSE_DECL (c);
+	      tree array_type = TREE_TYPE (array_decl);
+	      bool by_ref = (TREE_CODE (array_type) == ARRAY_TYPE
+			     ? true : false);
+
+	      /* Checking code to ensure we only have arrays at top dimension.
+		 This limitation might be lifted in the future. See PR76639.  */
+	      if (TREE_CODE (array_type) == REFERENCE_TYPE)
+		array_type = TREE_TYPE (array_type);
+	      tree t = array_type, prev_t = NULL_TREE;
+	      while (t)
+		{
+		  if (TREE_CODE (t) == ARRAY_TYPE && prev_t)
+		    {
+		      error_at (gimple_location (ctx->stmt), "array types are"
+				" only allowed at outermost dimension of"
+				" non-contiguous array");
+		      break;
+		    }
+		  prev_t = t;
+		  t = TREE_TYPE (t);
+		}
+
+	      install_var_field (array_decl, by_ref, 3, ctx);
+	      install_var_local (array_decl, ctx);
+	      break;
+	    }
+
 	  if (DECL_P (decl))
 	    {
 	      if (DECL_SIZE (decl)
@@ -3081,6 +3230,50 @@ scan_omp_single (gomp_single *stmt, omp_context *outer_ctx)
     layout_type (ctx->record_type);
 }
 
+/* Reorder clauses so that non-contiguous array map clauses are placed at the very
+   front of the chain.  */
+
+static void
+reorder_noncontig_array_clauses (tree *clauses_ptr)
+{
+  tree c, clauses = *clauses_ptr;
+  tree prev_clause = NULL_TREE, next_clause;
+  tree array_clauses = NULL_TREE, array_clauses_tail = NULL_TREE;
+
+  for (c = clauses; c; c = next_clause)
+    {
+      next_clause = OMP_CLAUSE_CHAIN (c);
+
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	  && GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
+	{
+	  /* Unchain c from clauses.  */
+	  if (c == clauses)
+	    clauses = next_clause;
+
+	  /* Link on to array_clauses.  */
+	  if (array_clauses_tail)
+	    OMP_CLAUSE_CHAIN (array_clauses_tail) = c;
+	  else
+	    array_clauses = c;
+	  array_clauses_tail = c;
+
+	  if (prev_clause)
+	    OMP_CLAUSE_CHAIN (prev_clause) = next_clause;
+	  continue;
+	}
+
+      prev_clause = c;
+    }
+
+  /* Place non-contiguous array clauses at the start of the clause list.  */
+  if (array_clauses)
+    {
+      OMP_CLAUSE_CHAIN (array_clauses_tail) = clauses;
+      *clauses_ptr = array_clauses;
+    }
+}
+
 /* Scan a GIMPLE_OMP_TARGET.  */
 
 static void
@@ -3089,7 +3282,6 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
   omp_context *ctx;
   tree name;
   bool offloaded = is_gimple_omp_offloaded (stmt);
-  tree clauses = gimple_omp_target_clauses (stmt);
 
   ctx = new_omp_context (stmt, outer_ctx);
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
@@ -3101,6 +3293,14 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
   DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
   TYPE_ARTIFICIAL (ctx->record_type) = 1;
+
+  /* If is OpenACC construct, put non-contiguous array clauses (if any)
+     in front of clause chain. The runtime can then test the first to see
+     if the additional map processing for them is required.  */
+  if (is_gimple_omp_oacc (stmt))
+    reorder_noncontig_array_clauses (gimple_omp_target_clauses_ptr (stmt));
+
+  tree clauses = gimple_omp_target_clauses (stmt);
 
   if (offloaded)
     {
@@ -12815,6 +13015,15 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_PRESENT:
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
+	  case GOMP_MAP_NONCONTIG_ARRAY_TO:
+	  case GOMP_MAP_NONCONTIG_ARRAY_FROM:
+	  case GOMP_MAP_NONCONTIG_ARRAY_TOFROM:
+	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_TO:
+	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_FROM:
+	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_TOFROM:
+	  case GOMP_MAP_NONCONTIG_ARRAY_ALLOC:
+	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_ALLOC:
+	  case GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT:
 	  case GOMP_MAP_LINK:
 	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
@@ -12889,8 +13098,15 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			   && is_gimple_omp_oacc (ctx->stmt)
 			   && OMP_CLAUSE_MAP_IN_REDUCTION (c)))
 	  {
-	    x = build_receiver_ref (var, true, ctx);
+	    tree var_type = TREE_TYPE (var);
 	    tree new_var = lookup_decl (var, ctx);
+	    bool rcv_by_ref =
+	      (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	       && GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c))
+	       && TREE_CODE (var_type) != ARRAY_TYPE
+	       ? false : true);
+
+	    x = build_receiver_ref (var, rcv_by_ref, ctx);
 
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		&& OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
@@ -13094,6 +13310,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       vec_alloc (vkind, map_cnt);
       unsigned int map_idx = 0;
 
+      vec<tree> nca_descrs = vNULL;
+
       for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
 	switch (OMP_CLAUSE_CODE (c))
 	  {
@@ -13240,6 +13458,29 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    avar = build_fold_addr_expr (avar);
 		    gimplify_assign (x, avar, &ilist);
 		  }
+		else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			 && GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
+		  {
+		    int dim_num;
+		    tree dimensions = OMP_CLAUSE_SIZE (c);
+
+		    tree array_descr_type =
+		      create_noncontig_array_descr_type (dimensions, &dim_num);
+		    tree array_descr =
+		      create_tmp_var_raw (array_descr_type,
+					  ".omp_noncontig_array_descr");
+		    TREE_ADDRESSABLE (array_descr) = 1;
+		    TREE_STATIC (array_descr) = 1;
+		    gimple_add_tmp_var (array_descr);
+
+		    create_noncontig_array_descr_init_code
+		      (array_descr, ovar, dimensions, dim_num, &ilist);
+		    nca_descrs.safe_push (build_fold_addr_expr (array_descr));
+
+		    gimplify_assign (x, (TREE_CODE (TREE_TYPE (ovar)) == ARRAY_TYPE
+					 ? build_fold_addr_expr (ovar) : ovar),
+				     &ilist);
+		  }
 		else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
 		  {
 		    gcc_assert (is_gimple_omp_oacc (ctx->stmt));
@@ -13312,6 +13553,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  s = TREE_TYPE (s);
 		s = TYPE_SIZE_UNIT (s);
 	      }
+	    else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		     && GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
+	      s = NULL_TREE;
 	    else
 	      s = OMP_CLAUSE_SIZE (c);
 	    if (s == NULL_TREE)
@@ -13667,6 +13911,19 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  }
 
       gcc_assert (map_idx == map_cnt);
+
+      unsigned nca_num = nca_descrs.length ();
+      if (nca_num > 0)
+	{
+	  tree nca, t = gimple_omp_target_data_arg (stmt);
+	  int i, oldlen = TREE_VEC_LENGTH (t);
+	  tree nt = make_tree_vec (oldlen + nca_num);
+	  for (i = 0; i < oldlen; i++)
+	    TREE_VEC_ELT (nt, i) = TREE_VEC_ELT (t, i);
+	  for (i = 0; nca_descrs.iterate (i, &nca); i++)
+	    TREE_VEC_ELT (nt, oldlen + i) = nca;
+	  gimple_omp_target_set_data_arg (stmt, nt);
+	}
 
       DECL_INITIAL (TREE_VEC_ELT (t, 1))
 	= build_constructor (TREE_TYPE (TREE_VEC_ELT (t, 1)), vsize);

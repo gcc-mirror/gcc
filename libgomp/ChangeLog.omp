@@ -1,0 +1,32 @@
+2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/76739
+
+	* libgomp_g.h (GOACC_data_start): Add variadic '...' to declaration.
+	* libgomp.h (gomp_map_vars_openacc): New function declaration.
+	* oacc-int.h (struct goacc_ncarray_dim): New struct declaration.
+	(struct goacc_ncarray_descr_type): Likewise.
+	(struct goacc_ncarray): Likewise.
+	(struct goacc_ncarray_info): Likewise.
+	(goacc_noncontig_array_create_ptrblock): New function declaration.
+	* oacc-parallel.c (goacc_noncontig_array_count_rows): New function.
+	(goacc_noncontig_array_compute_sizes): Likewise.
+	(goacc_noncontig_array_fill_rows_1): Likewise.
+	(goacc_noncontig_array_fill_rows): Likewise.
+	(goacc_process_noncontiguous_arrays): Likewise.
+	(goacc_noncontig_array_create_ptrblock): Likewise.
+	(GOACC_parallel_keyed): Use goacc_process_noncontiguous_arrays to
+	handle non-contiguous array descriptors at end of varargs, adjust
+	to use gomp_map_vars_openacc.
+	(GOACC_data_start): Likewise. Adjust function type to accept varargs.
+	* target.c (gomp_map_vars_internal): Add struct goacc_ncarray_info *
+	nca_info parameter, add handling code for non-contiguous arrays.
+	(gomp_map_vars_openacc): Add new function for specialization of
+	gomp_map_vars_internal for OpenACC structured region usage.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-utils.h: Support
+	header for new tests.
+

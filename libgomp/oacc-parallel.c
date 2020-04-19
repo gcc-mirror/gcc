@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
-
+#include <stdio.h>
 
 /* In the ABI, the GOACC_FLAGs are encoded as an inverted bitmask, so that we
    continue to support the following two legacy values.  */
@@ -46,6 +46,172 @@ _Static_assert (GOACC_FLAGS_UNMARSHAL (GOMP_DEVICE_HOST_FALLBACK)
 		== GOACC_FLAG_HOST_FALLBACK,
 		"legacy GOMP_DEVICE_HOST_FALLBACK broken");
 
+static size_t
+goacc_noncontig_array_count_rows (struct goacc_ncarray_descr_type *descr)
+{
+  size_t nrows = 1;
+  for (size_t d = 0; d < descr->ndims - 1; d++)
+    nrows *= descr->dims[d].length / sizeof (void *);
+  return nrows;
+}
+
+static void
+goacc_noncontig_array_compute_sizes (struct goacc_ncarray *nca)
+{
+  size_t d, n = 1;
+  struct goacc_ncarray_descr_type *descr = nca->descr;
+
+  nca->ptrblock_size = 0;
+  for (d = 0; d < descr->ndims - 1; d++)
+    {
+      size_t dim_count = descr->dims[d].length / descr->dims[d].elem_size;
+      size_t dim_ptrblock_size = (descr->dims[d + 1].is_array
+				  ? 0 : descr->dims[d].length * n);
+      nca->ptrblock_size += dim_ptrblock_size;
+      n *= dim_count;
+    }
+  nca->data_row_num = n;
+  nca->data_row_size = descr->dims[d].length;
+}
+
+static void
+goacc_noncontig_array_fill_rows_1 (struct goacc_ncarray_descr_type *descr, void *nca,
+				   size_t d, void ***row_ptr, size_t *count)
+{
+  if (d < descr->ndims - 1)
+    {
+      size_t elsize = descr->dims[d].elem_size;
+      size_t n = descr->dims[d].length / elsize;
+      void *p = nca + descr->dims[d].base;
+      for (size_t i = 0; i < n; i++)
+	{
+	  void *ptr = p + i * elsize;
+	  /* Deref if next dimension is not array.  */
+	  if (!descr->dims[d + 1].is_array)
+	    ptr = *((void **) ptr);
+	  goacc_noncontig_array_fill_rows_1 (descr, ptr, d + 1, row_ptr, count);
+	}
+    }
+  else
+    {
+      **row_ptr = nca + descr->dims[d].base;
+      *row_ptr += 1;
+      *count += 1;
+    }
+}
+
+static size_t
+goacc_noncontig_array_fill_rows (struct goacc_ncarray *nca)
+{
+  size_t count = 0;
+  void **p = nca->data_rows;
+  goacc_noncontig_array_fill_rows_1 (nca->descr, nca->ptr, 0, &p, &count);
+  return count;
+}
+
+static struct goacc_ncarray_info *
+goacc_process_noncontiguous_arrays (size_t mapnum, void **hostaddrs,
+				    unsigned short *kinds, va_list* ap)
+{
+  size_t i, nr, num_data_rows = 0, num_ncarray = 0, curr_row_start = 0;
+  struct goacc_ncarray_descr_type *descr;
+
+  /* We need to go over *ap twice, so preserve *ap state here.  */
+  va_list itr;
+  va_copy (itr, *ap);
+  for (i = 0; i < mapnum; i++)
+    if (GOMP_MAP_NONCONTIG_ARRAY_P (kinds[i] & 0xff))
+      {
+	descr = va_arg (itr, struct goacc_ncarray_descr_type *);
+	num_data_rows += goacc_noncontig_array_count_rows (descr);
+	num_ncarray += 1;
+      }
+    else
+      break;
+
+  /* Allocate the entire info struct, array entries, and row pointer
+     arrays in one large block.  */
+  struct goacc_ncarray_info *nca_info
+    = gomp_malloc (sizeof (struct goacc_ncarray_info)
+		   + sizeof (struct goacc_ncarray) * num_ncarray
+		   + sizeof (void *) * num_data_rows * 2);
+  nca_info->num_data_rows = num_data_rows;
+  nca_info->num_ncarray = num_ncarray;
+  nca_info->data_rows = (void **) (nca_info->ncarray + num_ncarray);
+  nca_info->tgt_data_rows = nca_info->data_rows + num_data_rows;
+
+  struct goacc_ncarray *curr_ncarray = nca_info->ncarray;
+  for (i = 0; i < mapnum; i++)
+    if (GOMP_MAP_NONCONTIG_ARRAY_P (kinds[i] & 0xff))
+      {
+	descr = va_arg (*ap, struct goacc_ncarray_descr_type *);
+	curr_ncarray->descr = descr;
+	curr_ncarray->ptr = hostaddrs[i];
+	curr_ncarray->map_index = i;
+
+	goacc_noncontig_array_compute_sizes (curr_ncarray);
+
+	curr_ncarray->data_rows = nca_info->data_rows + curr_row_start;
+	curr_ncarray->tgt_data_rows = nca_info->tgt_data_rows + curr_row_start;
+
+	nr = goacc_noncontig_array_fill_rows (curr_ncarray);
+	assert (nr == curr_ncarray->data_row_num);
+	curr_row_start += nr;
+	curr_ncarray += 1;
+      }
+    else
+      break;
+
+  return nca_info;
+}
+
+void *
+goacc_noncontig_array_create_ptrblock (struct goacc_ncarray *nca,
+				       void *tgt_ptrblock_addr)
+{
+  struct goacc_ncarray_descr_type *descr = nca->descr;
+  void **tgt_data_rows = nca->tgt_data_rows;
+  void *ptrblock = gomp_malloc (nca->ptrblock_size);
+  void **curr_dim_ptrblock = (void **) ptrblock;
+  size_t n = 1;
+
+  for (size_t d = 0; d < descr->ndims - 1; d++)
+    {
+      int curr_dim_len = descr->dims[d].length;
+      int next_dim_len = descr->dims[d + 1].length;
+      int curr_dim_num = curr_dim_len / sizeof (void *);
+      size_t next_dim_bias = descr->dims[d + 1].base;
+
+      void *next_dim_ptrblock
+	= (void *)(curr_dim_ptrblock + n * curr_dim_num);
+
+      for (int b = 0; b < n; b++)
+	for (int i = 0; i < curr_dim_num; i++)
+	  {
+	    if (d < descr->ndims - 2)
+	      {
+		void *ptr = (next_dim_ptrblock
+			     + b * curr_dim_num * next_dim_len
+			     + i * next_dim_len);
+		void *tgt_ptr = (tgt_ptrblock_addr
+				 + (ptr - ptrblock) - next_dim_bias);
+		curr_dim_ptrblock[b * curr_dim_num + i] = tgt_ptr;
+	      }
+	    else
+	      {
+		curr_dim_ptrblock[b * curr_dim_num + i]
+		  = tgt_data_rows[b * curr_dim_num + i] - next_dim_bias;
+	      }
+	    void *addr = &curr_dim_ptrblock[b * curr_dim_num + i];
+	    assert (ptrblock <= addr && addr < ptrblock + nca->ptrblock_size);
+	  }
+
+      n *= curr_dim_num;
+      curr_dim_ptrblock = next_dim_ptrblock;
+    }
+  assert (n == nca->data_row_num);
+  return ptrblock;
+}
 
 /* Handle the mapping pair that are presented when a
    deviceptr clause is used with Fortran.  */
@@ -115,6 +281,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   int async = GOMP_ASYNC_SYNC;
   unsigned dims[GOMP_DIM_MAX];
   unsigned tag;
+  struct goacc_ncarray_info *nca_info = NULL;
 
 #ifdef HAVE_INTTYPES_H
   gomp_debug (0, "%s: mapnum=%"PRIu64", hostaddrs=%p, size=%p, kinds=%p\n",
@@ -247,13 +414,22 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 	    break;
 	  }
 
+	  /*case GOMP_LAUNCH_NONCONTIG_ARRAYS:
+	  nca_info = goacc_process_noncontiguous_arrays (mapnum, hostaddrs,
+							 kinds, &ap);
+							 break;*/
+
 	default:
 	  gomp_fatal ("unrecognized offload code '%d',"
 		      " libgomp is too old", GOMP_LAUNCH_CODE (tag));
 	}
     }
+
+  if (mapnum > 0 && GOMP_MAP_NONCONTIG_ARRAY_P (kinds[0] & 0xff))
+    nca_info = goacc_process_noncontiguous_arrays (mapnum, hostaddrs, kinds, &ap);
+
   va_end (ap);
-  
+
   if (!(acc_dev->capabilities & GOMP_OFFLOAD_CAP_NATIVE_EXEC))
     {
       k.host_start = (uintptr_t) fn;
@@ -289,8 +465,9 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   goacc_aq aq = get_goacc_asyncqueue (async);
 
   struct target_mem_desc *tgt
-    = goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds, true,
-		      GOMP_MAP_VARS_TARGET);
+      = gomp_map_vars_openacc (acc_dev, aq, mapnum, hostaddrs, sizes, kinds,
+			       nca_info);
+  free (nca_info);
 
   if (profiling_p)
     {
@@ -359,7 +536,7 @@ GOACC_parallel (int flags_m, void (*fn) (void *),
 
 void
 GOACC_data_start (int flags_m, size_t mapnum,
-		  void **hostaddrs, size_t *sizes, unsigned short *kinds)
+		  void **hostaddrs, size_t *sizes, unsigned short *kinds, ...)
 {
   int flags = GOACC_FLAGS_UNMARSHAL (flags_m);
 
@@ -450,16 +627,26 @@ GOACC_data_start (int flags_m, size_t mapnum,
     {
       prof_info.device_type = acc_device_host;
       api_info.device_type = prof_info.device_type;
-      tgt = goacc_map_vars (NULL, NULL, 0, NULL, NULL, NULL, NULL, true, 0);
+      tgt = gomp_map_vars_openacc (NULL, NULL, 0, NULL, NULL, NULL, NULL);
       tgt->prev = thr->mapped_data;
       thr->mapped_data = tgt;
 
       goto out_prof;
     }
 
+  struct goacc_ncarray_info *nca_info = NULL;
+  if (mapnum > 0 && GOMP_MAP_NONCONTIG_ARRAY_P (kinds[0] & 0xff))
+    {
+      va_list ap;
+      va_start (ap, kinds);
+      nca_info = goacc_process_noncontiguous_arrays (mapnum, hostaddrs, kinds, &ap);
+      va_end (ap);
+    }
+
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
-  tgt = goacc_map_vars (acc_dev, NULL, mapnum, hostaddrs, NULL, sizes, kinds,
-			true, 0);
+  tgt = gomp_map_vars_openacc (acc_dev, NULL, mapnum, hostaddrs, sizes, kinds,
+			       nca_info);
+  free (nca_info);
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
   tgt->prev = thr->mapped_data;
   thr->mapped_data = tgt;

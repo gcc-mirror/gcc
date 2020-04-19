@@ -950,11 +950,12 @@ static inline __attribute__((always_inline)) struct target_mem_desc *
 gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			struct goacc_asyncqueue *aq, size_t mapnum,
 			void **hostaddrs, void **devaddrs, size_t *sizes,
-			void *kinds, bool short_mapkind,
-			htab_t *refcount_set,
+			void *kinds, struct goacc_ncarray_info *nca_info,
+			bool short_mapkind, htab_t *refcount_set,
 			enum gomp_map_vars_kind pragma_kind)
 {
   size_t i, tgt_align, tgt_size, not_found_cnt = 0;
+  size_t nca_data_row_num = (nca_info ? nca_info->num_data_rows : 0);
   bool has_firstprivate = false;
   bool has_always_ptrset = false;
   bool openmp_p = (pragma_kind & GOMP_MAP_VARS_OPENACC) == 0;
@@ -963,8 +964,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   struct splay_tree_s *mem_map = &devicep->mem_map;
   struct splay_tree_key_s cur_node;
   struct target_mem_desc *tgt
-    = gomp_malloc (sizeof (*tgt) + sizeof (tgt->list[0]) * mapnum);
-  tgt->list_count = mapnum;
+    = gomp_malloc (sizeof (*tgt)
+		   + sizeof (tgt->list[0]) * (mapnum + nca_data_row_num));
+  tgt->list_count = mapnum + nca_data_row_num;
   tgt->refcount = (pragma_kind & GOMP_MAP_VARS_ENTER_DATA) ? 0 : 1;
   tgt->device_descr = devicep;
   tgt->prev = NULL;
@@ -1116,6 +1118,28 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  has_firstprivate = true;
 	  continue;
 	}
+      else if (GOMP_MAP_NONCONTIG_ARRAY_P (kind & typemask))
+	{
+	  /* Ignore non-contiguous arrays for now, we process them together
+	     later.  */
+	  tgt->list[i].key = NULL;
+	  tgt->list[i].offset = 0;
+	  not_found_cnt++;
+
+	  /* The map for the non-contiguous array itself is never copied from
+	     during unmapping, its the data rows that count. Set copy-from
+	     flags to false here.  */
+	  tgt->list[i].copy_from = false;
+	  tgt->list[i].always_copy_from = false;
+	  tgt->list[i].is_attach = false;
+
+	  size_t align = (size_t) 1 << (kind >> rshift);
+	  if (tgt_align < align)
+	    tgt_align = align;
+
+	  continue;
+	}
+
       cur_node.host_start = (uintptr_t) hostaddrs[i];
       if (!GOMP_MAP_POINTER_P (kind & typemask))
 	cur_node.host_end = cur_node.host_start + sizes[i];
@@ -1249,6 +1273,45 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  }
 	    }
 	}
+    }
+
+  /* For non-contiguous arrays. Each data row is one target item, separated
+     from the normal map clause items, hence we order them after mapnum.  */
+  if (nca_info)
+    {
+      struct target_var_desc *next_var_desc = &tgt->list[mapnum];
+      for (i = 0; i < nca_info->num_ncarray; i++)
+	{
+	  struct goacc_ncarray *nca = &nca_info->ncarray[i];
+	  int kind = get_kind (short_mapkind, kinds, nca->map_index);
+	  size_t align = (size_t) 1 << (kind >> rshift);
+	  tgt_size = (tgt_size + align - 1) & ~(align - 1);
+	  tgt_size += nca->ptrblock_size;
+
+	  for (size_t j = 0; j < nca->data_row_num; j++)
+	    {
+	      struct target_var_desc *row_desc = next_var_desc++;
+	      void *row = nca->data_rows[j];
+	      cur_node.host_start = (uintptr_t) row;
+	      cur_node.host_end = cur_node.host_start + nca->data_row_size;
+	      splay_tree_key n = splay_tree_lookup (mem_map, &cur_node);
+	      if (n)
+		{
+		  assert (n->refcount != REFCOUNT_LINK);
+		  gomp_map_vars_existing (devicep, aq, n, &cur_node, row_desc,
+					  kind & typemask, false, false,
+					  /* TODO: cbuf? */ NULL,
+					  refcount_set);
+		}
+	      else
+		{
+		  tgt_size = (tgt_size + align - 1) & ~(align - 1);
+		  tgt_size += nca->data_row_size;
+		  not_found_cnt++;
+		}
+	    }
+	}
+      assert (next_var_desc == &tgt->list[mapnum + nca_info->num_data_rows]);
     }
 
   if (devaddrs)
@@ -1545,6 +1608,15 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      default:
 		break;
 	      }
+
+	    if (GOMP_MAP_NONCONTIG_ARRAY_P (kind & typemask))
+	      {
+		tgt->list[i].key = &array->key;
+		tgt->list[i].key->tgt = tgt;
+		array++;
+		continue;
+	      }
+
 	    splay_tree_key k = &array->key;
 	    k->host_start = (uintptr_t) hostaddrs[i];
 	    if (!GOMP_MAP_POINTER_P (kind & typemask))
@@ -1741,6 +1813,100 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		array++;
 	      }
 	  }
+
+      /* Processing of non-contiguous array rows.  */
+      if (nca_info)
+	{
+	  struct target_var_desc *next_var_desc = &tgt->list[mapnum];
+	  for (i = 0; i < nca_info->num_ncarray; i++)
+	    {
+	      struct goacc_ncarray *nca = &nca_info->ncarray[i];
+	      int kind = get_kind (short_mapkind, kinds, nca->map_index);
+	      size_t align = (size_t) 1 << (kind >> rshift);
+	      tgt_size = (tgt_size + align - 1) & ~(align - 1);
+
+	      assert (nca->ptr == hostaddrs[nca->map_index]);
+
+	      /* For the map of the non-contiguous array itself, adjust so that
+		 the passed device address points to the beginning of the
+		 ptrblock. Remember to adjust the first-dimension's bias here.   */
+	      tgt->list[nca->map_index].key->tgt_offset
+		= tgt_size - nca->descr->dims[0].base;
+
+	      void *target_ptrblock = (void*) tgt->tgt_start + tgt_size;
+	      tgt_size += nca->ptrblock_size;
+
+	      /* Add splay key for each data row in current non-contiguous
+		 array.  */
+	      for (size_t j = 0; j < nca->data_row_num; j++)
+		{
+		  struct target_var_desc *row_desc = next_var_desc++;
+		  void *row = nca->data_rows[j];
+		  cur_node.host_start = (uintptr_t) row;
+		  cur_node.host_end = cur_node.host_start + nca->data_row_size;
+		  splay_tree_key k = splay_tree_lookup (mem_map, &cur_node);
+		  if (k)
+		    {
+		      assert (k->refcount != REFCOUNT_LINK);
+		      gomp_map_vars_existing (devicep, aq, k, &cur_node, row_desc,
+					      kind & typemask, false, false,
+					      cbufp, refcount_set);
+		    }
+		  else
+		    {
+		      tgt->refcount++;
+		      tgt_size = (tgt_size + align - 1) & ~(align - 1);
+
+		      k = &array->key;
+		      k->host_start = (uintptr_t) row;
+		      k->host_end = k->host_start + nca->data_row_size;
+
+		      k->tgt = tgt;
+		      k->refcount = 1;
+		      k->dynamic_refcount = 0;
+		      k->aux = NULL;
+		      k->tgt_offset = tgt_size;
+
+		      tgt_size += nca->data_row_size;
+
+		      row_desc->key = k;
+		      row_desc->copy_from
+			= GOMP_MAP_COPY_FROM_P (kind & typemask);
+		      row_desc->always_copy_from
+			= GOMP_MAP_COPY_FROM_P (kind & typemask);
+		      row_desc->is_attach = false;
+		      row_desc->offset = 0;
+		      row_desc->length = nca->data_row_size;
+
+		      array->left = NULL;
+		      array->right = NULL;
+		      splay_tree_insert (mem_map, array);
+
+		      if (GOMP_MAP_COPY_TO_P (kind & typemask))
+			gomp_copy_host2dev (devicep, aq,
+					    (void *) tgt->tgt_start + k->tgt_offset,
+					    (void *) k->host_start,
+					    nca->data_row_size, false,
+					    cbufp);
+		      array++;
+		    }
+		  nca->tgt_data_rows[j]
+		    = (void *) (k->tgt->tgt_start + k->tgt_offset);
+		}
+
+	      /* Now we have the target memory allocated, and target offsets of all
+		 row blocks assigned and calculated, we can construct the
+		 accelerator side ptrblock and copy it in.  */
+	      if (nca->ptrblock_size)
+		{
+		  void *ptrblock = goacc_noncontig_array_create_ptrblock
+		    (nca, target_ptrblock);
+		  gomp_copy_host2dev (devicep, aq, target_ptrblock, ptrblock,
+				      nca->ptrblock_size, false, cbufp);
+		  free (ptrblock);
+		}
+	    }
+	}
     }
 
   if (pragma_kind & GOMP_MAP_VARS_TARGET)
@@ -1787,6 +1953,18 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   return tgt;
 }
 
+attribute_hidden struct target_mem_desc *
+gomp_map_vars_openacc (struct gomp_device_descr *devicep,
+		       struct goacc_asyncqueue *aq, size_t mapnum,
+		       void **hostaddrs, size_t *sizes, unsigned short *kinds,
+		       void *nca_info)
+{
+  return gomp_map_vars_internal (devicep, aq, mapnum, hostaddrs, NULL,
+				 sizes, (void *) kinds,
+				 (struct goacc_ncarray_info *) nca_info,
+				 true, NULL, GOMP_MAP_VARS_OPENACC);
+}
+
 static struct target_mem_desc *
 gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
 	       void **hostaddrs, void **devaddrs, size_t *sizes, void *kinds,
@@ -1804,8 +1982,8 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
 
   struct target_mem_desc *tgt;
   tgt = gomp_map_vars_internal (devicep, NULL, mapnum, hostaddrs, devaddrs,
-				sizes, kinds, short_mapkind, refcount_set,
-				pragma_kind);
+				sizes, kinds, NULL, short_mapkind,
+				refcount_set, pragma_kind);
   if (local_refcount_set)
     htab_free (local_refcount_set);
 
@@ -1820,7 +1998,7 @@ goacc_map_vars (struct gomp_device_descr *devicep,
 		enum gomp_map_vars_kind pragma_kind)
 {
   return gomp_map_vars_internal (devicep, aq, mapnum, hostaddrs, devaddrs,
-				 sizes, kinds, short_mapkind, NULL,
+				 sizes, kinds, NULL, short_mapkind, NULL,
 				 GOMP_MAP_VARS_OPENACC | pragma_kind);
 }
 

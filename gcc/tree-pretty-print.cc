@@ -991,6 +991,33 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 	  pp_string (pp, "attach_zero_length_array_section");
 	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_TO:
+	  pp_string (pp, "to,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_FROM:
+	  pp_string (pp, "from,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_TOFROM:
+	  pp_string (pp, "tofrom,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_TO:
+	  pp_string (pp, "force_to,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_FROM:
+	  pp_string (pp, "force_from,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_TOFROM:
+	  pp_string (pp, "force_tofrom,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_ALLOC:
+	  pp_string (pp, "alloc,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_ALLOC:
+	  pp_string (pp, "force_alloc,noncontig_array");
+	  break;
+	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT:
+	  pp_string (pp, "force_present,noncontig_array");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1001,8 +1028,15 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       if (OMP_CLAUSE_SIZE (clause))
 	{
 	  switch (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
-		  ? OMP_CLAUSE_MAP_KIND (clause) : GOMP_MAP_TO)
+		  ? (GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (clause))
+		     ? GOMP_MAP_NONCONTIG_ARRAY
+		     : OMP_CLAUSE_MAP_KIND (clause))
+		  : GOMP_MAP_TO)
 	    {
+	    case GOMP_MAP_NONCONTIG_ARRAY:
+	      gcc_assert (TREE_CODE (OMP_CLAUSE_SIZE (clause)) == TREE_LIST);
+	      pp_string (pp, " [dimensions: ");
+	      break;
 	    case GOMP_MAP_POINTER:
 	    case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:

@@ -10526,6 +10526,19 @@ expand_omp_target (struct omp_region *region)
       gsi_insert_before (&gsi, g, GSI_SAME_STMT);
     }
 
+  /* We assume index >= 3 in gimple_omp_target_data_arg are non-contiguous
+     array descriptor pointer arguments.  */
+  if (t != NULL
+      && TREE_VEC_LENGTH (t) > 3
+      && (start_ix == BUILT_IN_GOACC_DATA_START
+	  || start_ix == BUILT_IN_GOACC_PARALLEL))
+    {
+      gcc_assert ((c = omp_find_clause (clauses, OMP_CLAUSE_MAP))
+		  && GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)));
+      for (int i = 3; i < TREE_VEC_LENGTH (t); i++)
+	args.safe_push (TREE_VEC_ELT (t, i));
+    }
+
   g = gimple_build_call_vec (builtin_decl_explicit (start_ix), args);
   gimple_set_location (g, gimple_location (entry_stmt));
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
