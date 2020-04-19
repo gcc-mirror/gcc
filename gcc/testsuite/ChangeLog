@@ -1,3 +1,10 @@
+2020-04-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/pr85550.C: Skip AIX.
+	* g++.dg/debug/pr94272.C: Skip AIX.
+	* g++.dg/debug/pr94281.C: Skip AIX.
+	* g++.dg/debug/pr94323.C: Skip AIX.
+
 2020-04-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/co-await-17-capture-comp-ref.C: Require
