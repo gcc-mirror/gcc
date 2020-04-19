@@ -915,7 +915,7 @@ public:
     /* For structs with a user defined postblit or a destructor,
        also set TREE_ADDRESSABLE on the type and all variants.
        This will make the struct be passed around by reference.  */
-    if (t->sym->postblit || t->sym->dtor)
+    if (!t->sym->isPOD ())
       {
 	for (tree tv = t->ctype; tv != NULL_TREE; tv = TYPE_NEXT_VARIANT (tv))
 	  TREE_ADDRESSABLE (tv) = 1;
