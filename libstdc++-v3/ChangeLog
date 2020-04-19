@@ -1,5 +1,10 @@
 2020-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_queue.h (queue): Define operator<=> for C++20.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/queue/cmp_c++20.cc: New test.
+	* testsuite/23_containers/stack/cmp_c++20.cc: New test.
+
 	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
 	Remove redundant operator!= for C++20.
 	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
