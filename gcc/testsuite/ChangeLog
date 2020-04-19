@@ -1,3 +1,8 @@
+2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94505 - bogus -Wparentheses warning with fold-expression.
+	* g++.dg/cpp1z/fold11.C: New test.
+
 2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* g++.dg/pr94666.C: New test.
