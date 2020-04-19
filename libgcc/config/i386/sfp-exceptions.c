@@ -48,9 +48,7 @@ __sfp_handle_exceptions (int _fex)
     {
       float f = 0.0f;
 #ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
-      r = f; /* Needed to trigger exception.   */
 #else
       asm volatile ("fdiv\t{%y0, %0|%0, %y0}" : "+t" (f));
       /* No need for fwait, exception is triggered by emitted fstp.  */
@@ -68,9 +66,7 @@ __sfp_handle_exceptions (int _fex)
     {
       float f = 1.0f, g = 0.0f;
 #ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-      r = f; /* Needed to trigger exception.   */
 #else
       asm volatile ("fdivs\t%1" : "+t" (f) : "m" (g));
       /* No need for fwait, exception is triggered by emitted fstp.  */
@@ -96,9 +92,7 @@ __sfp_handle_exceptions (int _fex)
     {
       float f = 1.0f, g = 3.0f;
 #ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-      r = f; /* Needed to trigger exception.   */
 #else
       asm volatile ("fdivs\t%1" : "+t" (f) : "m" (g));
       /* No need for fwait, exception is triggered by emitted fstp.  */
