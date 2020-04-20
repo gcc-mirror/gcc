@@ -18382,15 +18382,27 @@ aarch64_sve_expand_vector_init_handle_trailing_constants
   int n_trailing_constants = 0;
 
   for (int i = nelts_reqd - 1;
-       i >= 0 && aarch64_legitimate_constant_p (elem_mode, builder.elt (i));
+       i >= 0 && valid_for_const_vector_p (elem_mode, builder.elt (i));
        i--)
     n_trailing_constants++;
 
   if (n_trailing_constants >= nelts_reqd / 2)
     {
-      rtx_vector_builder v (mode, 1, nelts);
+      /* Try to use the natural pattern of BUILDER to extend the trailing
+	 constant elements to a full vector.  Replace any variables in the
+	 extra elements with zeros.
+
+	 ??? It would be better if the builders supported "don't care"
+	     elements, with the builder filling in whichever elements
+	     give the most compact encoding.  */
+      rtx_vector_builder v (mode, nelts, 1);
       for (int i = 0; i < nelts; i++)
-	v.quick_push (builder.elt (i + nelts_reqd - n_trailing_constants));
+	{
+	  rtx x = builder.elt (i + nelts_reqd - n_trailing_constants);
+	  if (!valid_for_const_vector_p (elem_mode, x))
+	    x = const0_rtx;
+	  v.quick_push (x);
+	}
       rtx const_vec = v.build ();
       emit_move_insn (target, const_vec);
 
@@ -18508,7 +18520,7 @@ aarch64_sve_expand_vector_init (rtx target, const rtx_vector_builder &builder,
 
   /* Case 2: Vector contains leading constants.  */
 
-  rtx_vector_builder rev_builder (mode, 1, nelts_reqd);
+  rtx_vector_builder rev_builder (mode, nelts_reqd, 1);
   for (int i = 0; i < nelts_reqd; i++)
     rev_builder.quick_push (builder.elt (nelts_reqd - i - 1));
   rev_builder.finalize ();
@@ -18541,8 +18553,8 @@ aarch64_sve_expand_vector_init (rtx target, const rtx_vector_builder &builder,
   if (nelts_reqd <= 4)
     return false;
 
-  rtx_vector_builder v_even (mode, 1, nelts);
-  rtx_vector_builder v_odd (mode, 1, nelts);
+  rtx_vector_builder v_even (mode, nelts, 1);
+  rtx_vector_builder v_odd (mode, nelts, 1);
 
   for (int i = 0; i < nelts * 2; i += 2)
     {
@@ -18586,7 +18598,7 @@ aarch64_sve_expand_vector_init (rtx target, rtx vals)
   machine_mode mode = GET_MODE (target);
   int nelts = XVECLEN (vals, 0);
 
-  rtx_vector_builder v (mode, 1, nelts);
+  rtx_vector_builder v (mode, nelts, 1);
   for (int i = 0; i < nelts; i++)
     v.quick_push (XVECEXP (vals, 0, i));
   v.finalize ();

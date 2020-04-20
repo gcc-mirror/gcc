@@ -1,3 +1,8 @@
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94668
+	* gcc.target/aarch64/sve/pr94668.c: New test.
+
 2020-04-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/94582

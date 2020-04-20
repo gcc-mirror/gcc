@@ -1,3 +1,12 @@
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94668
+	* config/aarch64/aarch64.c (aarch64_sve_expand_vector_init): Fix
+	order of arguments to rtx_vector_builder.
+	(aarch64_sve_expand_vector_init_handle_trailing_constants): Likewise.
+	When extending the trailing constants to a full vector, replace any
+	variables with zeros.
+
 2020-04-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/94582
