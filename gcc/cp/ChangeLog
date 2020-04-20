@@ -1,5 +1,9 @@
 2020-04-20  Nathan Sidwell  <nathan@acm.org>
 
+	PR 94454 - Expr pack expansion equality
+	* tree.c (cp_tree_equal): [TEMPLATE_ID_EXPR, default] Refactor.
+	[EXPR_PACK_EXPANSION]: Add.
+
 	PR c++/94454 Template Argument Hashing
 	* pt.c (iterative_hash_template_arg): Strip nodes as
 	template_args_equal does.

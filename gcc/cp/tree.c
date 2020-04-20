@@ -3771,8 +3771,11 @@ cp_tree_equal (tree t1, tree t2)
 			      TREE_TYPE (TEMPLATE_PARM_DECL (t2))));
 
     case TEMPLATE_ID_EXPR:
-      return (cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0))
-	      && cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)));
+      if (!cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0)))
+	return false;
+      if (!comp_template_args (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)))
+	return false;
+      return true;
 
     case CONSTRAINT_INFO:
       return cp_tree_equal (CI_ASSOCIATED_CONSTRAINTS (t1),
@@ -3902,6 +3905,15 @@ cp_tree_equal (tree t1, tree t2)
 	return true;
       }
 
+    case EXPR_PACK_EXPANSION:
+      if (!cp_tree_equal (PACK_EXPANSION_PATTERN (t1),
+			  PACK_EXPANSION_PATTERN (t2)))
+	return false;
+      if (!comp_template_args (PACK_EXPANSION_EXTRA_ARGS (t1),
+			       PACK_EXPANSION_EXTRA_ARGS (t2)))
+	return false;
+      return true;
+
     default:
       break;
     }
@@ -3916,14 +3928,12 @@ cp_tree_equal (tree t1, tree t2)
     case tcc_reference:
     case tcc_statement:
       {
-	int i, n;
-
-	n = cp_tree_operand_length (t1);
+	int n = cp_tree_operand_length (t1);
 	if (TREE_CODE_CLASS (code1) == tcc_vl_exp
 	    && n != TREE_OPERAND_LENGTH (t2))
 	  return false;
 
-	for (i = 0; i < n; ++i)
+	for (int i = 0; i < n; ++i)
 	  if (!cp_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i)))
 	    return false;
 
@@ -3932,9 +3942,11 @@ cp_tree_equal (tree t1, tree t2)
 
     case tcc_type:
       return same_type_p (t1, t2);
+
     default:
       gcc_unreachable ();
     }
+
   /* We can get here with --disable-checking.  */
   return false;
 }
