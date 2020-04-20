@@ -1,3 +1,9 @@
+2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/94613
+	* gcc.target/s390/zvector/pr94613.c: New test.
+	* gcc.target/s390/zvector/vec_sel-1.c: New test.
+
 2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/cost_model_8.c: New test.
