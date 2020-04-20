@@ -1,3 +1,15 @@
+2020-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94628
+	* cp-tree.h (lss_policy::lss_nop): New enumerator.
+	* pt.c (local_specialization_stack::local_specialization_stack): Handle
+	an lss_nop policy.
+	(local_specialization_stack::~local_specialization_stack): Likewise.
+	(tsubst_pack_expansion): Use a local_specialization_stack instead of
+	manually saving and restoring local_specializations.  Conditionally
+	replace local_specializations sooner, before the handling of the
+	unsubstituted_packs case.
+
 2020-04-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94505 - bogus -Wparentheses warning with fold-expression.

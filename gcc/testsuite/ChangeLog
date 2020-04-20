@@ -1,3 +1,9 @@
+2020-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94628
+	* g++.dg/cpp0x/variadic179.C: New test.
+	* g++.dg/cpp0x/variadic180.C: New test.
+
 2020-04-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94505 - bogus -Wparentheses warning with fold-expression.
