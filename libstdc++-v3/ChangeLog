@@ -1,3 +1,7 @@
+2020-04-20  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/lib/libstdc++.exp: Avoid illegal argument to verbose.
+
 2020-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_queue.h (queue): Define operator<=> for C++20.
