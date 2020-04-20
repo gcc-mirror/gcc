@@ -2652,7 +2652,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	  parm = TREE_OPERAND (parm, 0);
 	  if (TREE_CODE (parm) == INDIRECT_REF)
 	    parm = TREE_OPERAND (parm, 0);
-	  parm = STRIP_NOPS (parm);
+	  STRIP_NOPS (parm);
 	}
 
       /* This isn't a temporary.  */

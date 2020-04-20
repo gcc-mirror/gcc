@@ -1,3 +1,8 @@
+2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	* coroutines.cc (captures_temporary): Don't assign the result of
+	STRIP_NOPS to the same variable.
+
 2020-04-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR 94454 - tpl-tpl-parms are not canonicalizable types
