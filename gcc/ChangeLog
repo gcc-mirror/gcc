@@ -1,3 +1,12 @@
+2020-04-20  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from mainline.
+	2020-04-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94396
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_get_extension_string_for_isa_flags): Handle default flags.
+
 2020-04-20  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
