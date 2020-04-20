@@ -5267,7 +5267,7 @@ proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
 
     # Iterate through sets of options to find the compiler flags that
     # need to be added to the -march option.
-    foreach flags {"" "-mfloat-abi=hard -mfpu=neon-fp-armv8" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" } {
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8" } {
         if { [check_no_compiler_messages_nocache \
                   arm_v8_2a_i8mm_ok object {
             #include <arm_neon.h>
@@ -5352,7 +5352,7 @@ proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
         return 0;
     }
 
-    foreach flags {"" "-mfloat-abi=hard -mfpu=neon-fp-armv8" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" } {
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8" } {
         if { [check_no_compiler_messages_nocache arm_v8_2a_bf16_neon_ok object {
             #include <arm_neon.h>
             #if !defined (__ARM_FEATURE_BF16_VECTOR_ARITHMETIC)
