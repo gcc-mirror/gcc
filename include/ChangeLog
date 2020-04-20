@@ -1,3 +1,13 @@
+2020-04-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-04-17  Martin Liska  <mliska@suse.cz>
+		    Jonathan Yong <10walls@gmail.com>
+
+	PR gcov-profile/94570
+	* filenames.h (defined): Do not define HAVE_DOS_BASED_FILE_SYSTEM
+	for CYGWIN.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
