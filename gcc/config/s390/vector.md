@@ -855,7 +855,7 @@
 
 (define_expand "popcountv8hi2_vx"
   [(set (match_dup 2)
-	(unspec:V16QI [(subreg:V16QI (match_operand:V8HI 1 "register_operand" "v") 0)]
+	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v")]
 		      UNSPEC_POPCNT))
    ; Make a copy of the result
    (set (match_dup 3) (match_dup 2))
@@ -887,6 +887,8 @@
 ]
   "TARGET_VX && !TARGET_VXE"
 {
+  operands[1] = simplify_gen_subreg (V16QImode, operands[1],
+				     V8HImode, 0);
   operands[2] = gen_reg_rtx (V16QImode);
   operands[3] = gen_reg_rtx (V16QImode);
   operands[4] = gen_reg_rtx (V16QImode);
@@ -895,20 +897,21 @@
 
 (define_expand "popcountv4si2_vx"
   [(set (match_dup 2)
-	(unspec:V16QI [(subreg:V16QI (match_operand:V4SI 1 "register_operand" "v") 0)]
+	(unspec:V16QI [(match_operand:V4SI 1 "register_operand" "v")]
 		      UNSPEC_POPCNT))
    (set (match_operand:V4SI 0 "register_operand" "=v")
 	(unspec:V4SI [(match_dup 2) (match_dup 3)]
 		     UNSPEC_VEC_VSUM))]
   "TARGET_VX && !TARGET_VXE"
 {
+  operands[1] = simplify_gen_subreg (V16QImode, operands[1], V4SImode, 0);
   operands[2] = gen_reg_rtx (V16QImode);
   operands[3] = force_reg (V16QImode, CONST0_RTX (V16QImode));
 })
 
 (define_expand "popcountv2di2_vx"
   [(set (match_dup 2)
-	(unspec:V16QI [(subreg:V16QI (match_operand:V2DI 1 "register_operand" "v") 0)]
+	(unspec:V16QI [(match_operand:V2DI 1 "register_operand" "v")]
 		      UNSPEC_POPCNT))
    (set (match_dup 3)
 	(unspec:V4SI [(match_dup 2) (match_dup 4)]
@@ -918,6 +921,7 @@
 		     UNSPEC_VEC_VSUMG))]
   "TARGET_VX && !TARGET_VXE"
 {
+  operands[1] = simplify_gen_subreg (V16QImode, operands[1], V2DImode, 0);
   operands[2] = gen_reg_rtx (V16QImode);
   operands[3] = gen_reg_rtx (V4SImode);
   operands[4] = force_reg (V16QImode, CONST0_RTX (V16QImode));
