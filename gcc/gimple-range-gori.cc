@@ -900,10 +900,62 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   return true;
 }
 
+// Given a logical STMT, calculate TRUE_RANGE and FALSE_RANGE for each
+// potential path of NAME, assuming NAME came through the OP chain if
+// OP_IN_CHAIN is true.  If present, NAME_RANGE is any known range for
+// NAME coming into STMT.
+
+void
+gori_compute::compute_logical_operands_in_chain (irange &true_range,
+						 irange &false_range,
+						 gimple *stmt,
+						 const irange &lhs,
+						 tree name,
+						 const irange *name_range,
+						 tree op, bool op_in_chain)
+{
+  if (!op_in_chain)
+    {
+      // If op is not in chain, use its known value.
+      get_tree_range (true_range, name, name, name_range);
+      false_range = true_range;
+      return;
+    }
+
+  enum tree_code code = gimple_expr_code (stmt);
+  // Optimize [0 = x | y], since neither operand can ever be non-zero.
+  if ((code == BIT_IOR_EXPR || code == TRUTH_OR_EXPR) && lhs.zero_p ())
+    {
+      if (!compute_operand_range (false_range, SSA_NAME_DEF_STMT (op),
+				  m_bool_zero, name, name_range))
+	get_tree_range (false_range, name, name, name_range);
+      true_range = false_range;
+      return;
+    }
+  // Optimize [1 = x & y], since neither operand can ever be zero.
+  if ((code == BIT_AND_EXPR || code == TRUTH_AND_EXPR) && lhs == m_bool_one)
+    {
+      if (!compute_operand_range (true_range, SSA_NAME_DEF_STMT (op),
+				  m_bool_one, name, name_range))
+	get_tree_range (true_range, name, name, name_range);
+      false_range = true_range;
+      return;
+    }
+
+  // Calulate ranges for true and false on both sides, since the false
+  // path is not always a simple inversion of the true side.
+  if (!compute_operand_range (true_range, SSA_NAME_DEF_STMT (op),
+			      m_bool_one, name, name_range))
+    get_tree_range (true_range, name, name, name_range);
+  if (!compute_operand_range (false_range, SSA_NAME_DEF_STMT (op),
+			      m_bool_zero, name, name_range))
+    get_tree_range (false_range, name, name, name_range);
+}
+
 // Given a logical STMT, calculate true and false for each potential
-// path using NAME and resolve the outcome based on the logical
+// path using NAME, and resolve the outcome based on the logical
 // operator.  If present, NAME_RANGE is any known range for NAME
-// coming into S.
+// coming into STMT.
 
 bool
 gori_compute::compute_logical_operands (irange &r, gimple *stmt,
@@ -911,64 +963,32 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
 					tree name,
 					const irange *name_range)
 {
-  tree op1, op2;
-  bool op1_in_chain, op2_in_chain;
-  widest_irange op1_true, op1_false, op2_true, op2_false;
-
   // Reaching this point means NAME is not in this stmt, but one of
   // the names in it ought to be derived from it.  */
-  op1 = gimple_range_operand1 (stmt);
-  op2 = gimple_range_operand2 (stmt);
+  tree op1 = gimple_range_operand1 (stmt);
+  tree op2 = gimple_range_operand2 (stmt);
   gcc_checking_assert (op1 != name && op2 != name);
 
-  op1_in_chain = (gimple_range_ssa_p (op1)
-		  && m_gori_map.in_chain_p (name, op1));
-  op2_in_chain = (gimple_range_ssa_p (op2)
-		  && m_gori_map.in_chain_p (name, op2));
+  bool op1_in_chain = (gimple_range_ssa_p (op1)
+		       && m_gori_map.in_chain_p (name, op1));
+  bool op2_in_chain = (gimple_range_ssa_p (op2)
+		       && m_gori_map.in_chain_p (name, op2));
 
   // If neither operand is derived, then this stmt tells us nothing.
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
-  // The false path is not always a simple inversion of the true side.
-  // Calulate ranges for true and false on both sides.
-  if (op1_in_chain)
-    {
-      if (!compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1),
-				  m_bool_one, name, name_range))
-	get_tree_range (op1_true, name, name, name_range);
-      if (!compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1),
-				  m_bool_zero, name, name_range))
-	get_tree_range (op1_false, name, name, name_range);
-    }
-  else
-    {
-      // Otherwise just get the value for name in operand 1 position.
-      get_tree_range (op1_true, name, name, name_range);
-      op1_false = op1_true;
-    }
-  if (op2_in_chain)
-    {
-      if (!compute_operand_range (op2_true, SSA_NAME_DEF_STMT (op2),
-				  m_bool_one, name, name_range))
-	get_tree_range (op2_true, name, name, name_range);
-      if (!compute_operand_range (op2_false, SSA_NAME_DEF_STMT (op2),
-				  m_bool_zero, name, name_range))
-	get_tree_range (op2_false, name, name, name_range);
-    }
-  else
-    {
-      // Otherwise just get the value for name in operand 2 position.
-      get_tree_range (op2_true, name, name, name_range);
-      op2_false = op2_true;
-    }
+  widest_irange op1_true, op1_false, op2_true, op2_false;
+  compute_logical_operands_in_chain (op1_true, op1_false, stmt, lhs,
+				     name, name_range, op1, op1_in_chain);
+  compute_logical_operands_in_chain (op2_true, op2_false, stmt, lhs,
+				     name, name_range, op2, op2_in_chain);
   if (!logical_combine (r, gimple_expr_code (stmt), lhs,
 			op1_true, op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
 
   return true;
 }
-
 
 // Calculate a range for NAME from the operand 1 position of STMT
 // assuming the result of the statement is LHS.  Return the range in
