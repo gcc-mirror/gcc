@@ -13982,7 +13982,6 @@ fi
       WERROR_FLAG="-Werror"
   fi
 
-DRUNTIME_GC
 
   druntime_target_cpu_parsed=""
   case "$target_cpu" in
