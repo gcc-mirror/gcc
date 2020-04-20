@@ -1750,23 +1750,25 @@ package body Exp_Attr is
       ----------------------
 
       function Get_Integer_Type (Typ : Entity_Id) return Entity_Id is
-         Siz     : constant Uint := RM_Size (Base_Type (Typ));
+         Siz     : constant Uint := Esize (Base_Type (Typ));
          Int_Typ : Entity_Id;
 
       begin
-         --  We need to accommodate unsigned values
+         --  We need to accommodate invalid values of the base type since we
+         --  accept them for Enum_Rep and Pos, so we reason on the Esize. And
+         --  we use an unsigned type since the enumeration type is unsigned.
 
-         if Siz < RM_Size (Standard_Short_Short_Integer) then
-            Int_Typ := Standard_Short_Short_Integer;
+         if Siz <= Esize (Standard_Short_Short_Unsigned) then
+            Int_Typ := Standard_Short_Short_Unsigned;
 
-         elsif Siz < RM_Size (Standard_Short_Integer) then
-            Int_Typ := Standard_Short_Integer;
+         elsif Siz <= Esize (Standard_Short_Unsigned) then
+            Int_Typ := Standard_Short_Unsigned;
 
-         elsif Siz < RM_Size (Standard_Integer) then
-            Int_Typ := Standard_Integer;
+         elsif Siz <= Esize (Standard_Unsigned) then
+            Int_Typ := Standard_Unsigned;
 
          else
-            Int_Typ := Standard_Long_Long_Integer;
+            raise Program_Error;
          end if;
 
          return Int_Typ;
