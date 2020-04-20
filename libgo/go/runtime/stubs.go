@@ -297,6 +297,10 @@ func getSigactionHandler(*_sigaction) uintptr
 //go:noescape
 func setSigactionHandler(*_sigaction, uintptr)
 
+// Get signal code, written in C.
+//go:noescape
+func getSiginfoCode(*_siginfo_t) uintptr
+
 // Retrieve fields from the siginfo_t and ucontext_t pointers passed
 // to a signal handler using C, as they are often hidden in a union.
 // Returns  and, if available, PC where signal occurred.
