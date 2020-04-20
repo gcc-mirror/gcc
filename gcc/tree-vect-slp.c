@@ -2969,7 +2969,22 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	{
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
-	  subtree_life.safe_splice (*life);
+	  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	    {
+	      subtree_life.safe_grow_cleared (SLP_TREE_LANES (child));
+	      for (unsigned j = 0;
+		   j < SLP_TREE_LANE_PERMUTATION (node).length (); ++j)
+		{
+		  auto perm = SLP_TREE_LANE_PERMUTATION (node)[j];
+		  if (perm.first == i)
+		    subtree_life[perm.second] = (*life)[j];
+		}
+	    }
+	  else
+	    {
+	      gcc_assert (SLP_TREE_LANES (node) == SLP_TREE_LANES (child));
+	      subtree_life.safe_splice (*life);
+	    }
 	  vect_bb_slp_scalar_cost (vinfo, child, &subtree_life, cost_vec,
 				   visited);
 	  subtree_life.truncate (0);
