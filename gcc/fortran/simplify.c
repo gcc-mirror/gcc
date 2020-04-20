@@ -4251,7 +4251,11 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
 	      for (j = 0; j < d; j++)
 		gfc_free_expr (bounds[j]);
-	      return bounds[d];
+
+	      if (gfc_seen_div0)
+		return &gfc_bad_expr;
+	      else
+		return bounds[d];
 	    }
 	}
 

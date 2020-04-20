@@ -120,7 +120,6 @@ GCC_BASE_VER
 DRUNTIME_CONFIGURE
 DRUNTIME_MULTILIB
 DRUNTIME_WERROR
-DRUNTIME_GC
 DRUNTIME_CPU_SOURCES
 DRUNTIME_OS_SOURCES
 DRUNTIME_OS_THREAD_MODEL
@@ -153,13 +152,13 @@ AC_ARG_ENABLE(libphobos,
 AC_MSG_RESULT($enable_libphobos)
 
 AC_MSG_CHECKING([for --with-libphobos-druntime-only])
-AC_ARG_WITH(libdruntime-only,
+AC_ARG_WITH(libphobos-druntime-only,
   AS_HELP_STRING([--with-libphobos-druntime-only={yes,no,auto}],
 		 [build only the druntime library (default: auto)]),,
-	    [with_libdruntime_only=auto])
-AC_MSG_RESULT($with_libdruntime_only)
+	    [with_libphobos_druntime_only=auto])
+AC_MSG_RESULT($with_libphobos_druntime_only)
 
-case "$with_libdruntime_only" in
+case "$with_libphobos_druntime_only" in
   yes|no|auto) ;;
   *) AC_MSG_ERROR([Invalid argument for --with-libphobos-druntime-only]) ;;
 esac
@@ -201,7 +200,7 @@ esac
 AM_CONDITIONAL(ENABLE_LIBPHOBOS, test x$use_libphobos = xyes)
 
 # Decide if only libdruntime should be built.
-case $LIBDRUNTIME_ONLY:$with_libdruntime_only in
+case $LIBDRUNTIME_ONLY:$with_libphobos_druntime_only in
 *:no)  only_libdruntime=no  ;;
 *:yes) only_libdruntime=yes ;;
 yes:*) only_libdruntime=yes ;;

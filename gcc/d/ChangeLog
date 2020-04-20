@@ -1,3 +1,13 @@
+2020-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94609
+	* d-codegen.cc (argument_reference_p): Don't check TREE_ADDRESSABLE.
+	(type_passed_as): Build reference type if TREE_ADDRESSABLE.
+	* d-convert.cc (convert_for_argument): Build explicit TARGET_EXPR if
+	needed for arguments passed by invisible reference.
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Mark all structs that
+	are not POD as TREE_ADDRESSABLE.
+
 2020-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Make-lang.in (D_FRONTEND_OBJS): Remove d/argtypes.o.

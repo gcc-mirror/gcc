@@ -11782,15 +11782,28 @@ c_parser_objc_selector_arg (c_parser *parser)
 {
   tree sel = c_parser_objc_selector (parser);
   tree list = NULL_TREE;
-  if (sel && c_parser_next_token_is_not (parser, CPP_COLON))
+  if (sel
+      && c_parser_next_token_is_not (parser, CPP_COLON)
+      && c_parser_next_token_is_not (parser, CPP_SCOPE))
     return sel;
   while (true)
     {
-      if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
-	return list;
-      list = chainon (list, build_tree_list (sel, NULL_TREE));
+      if (c_parser_next_token_is (parser, CPP_SCOPE))
+	{
+	  c_parser_consume_token (parser);
+	  list = chainon (list, build_tree_list (sel, NULL_TREE));
+	  list = chainon (list, build_tree_list (NULL_TREE, NULL_TREE));
+	}
+      else
+	{
+	  if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+	    return list;
+	  list = chainon (list, build_tree_list (sel, NULL_TREE));
+	}
       sel = c_parser_objc_selector (parser);
-      if (!sel && c_parser_next_token_is_not (parser, CPP_COLON))
+      if (!sel
+	  && c_parser_next_token_is_not (parser, CPP_COLON)
+	  && c_parser_next_token_is_not (parser, CPP_SCOPE))
 	break;
     }
   return list;

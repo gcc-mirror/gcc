@@ -5775,7 +5775,7 @@ Expression *VectorExp::syntaxCopy()
 /************************************************************/
 
 VectorArrayExp::VectorArrayExp(Loc loc, Expression *e1)
-        : UnaExp(loc, TOKvectorarray, sizeof(VectorExp), e1)
+        : UnaExp(loc, TOKvectorarray, sizeof(VectorArrayExp), e1)
 {
 }
 

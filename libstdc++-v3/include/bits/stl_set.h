@@ -921,9 +921,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	friend bool
 	operator==(const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
 
+#if __cpp_lib_three_way_comparison
+      template<typename _K1, typename _C1, typename _A1>
+	friend __detail::__synth3way_t<_K1>
+	operator<=>(const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
+#else
       template<typename _K1, typename _C1, typename _A1>
 	friend bool
 	operator<(const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
+#endif
     };
 
 #if __cpp_deduction_guides >= 201606
@@ -962,7 +968,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     set(initializer_list<_Key>, _Allocator)
     -> set<_Key, less<_Key>, _Allocator>;
 
-#endif
+#endif // deduction guides
 
   /**
    *  @brief  Set equality comparison.
@@ -980,6 +986,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const set<_Key, _Compare, _Alloc>& __y)
     { return __x._M_t == __y._M_t; }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   *  @brief  Set ordering relation.
+   *  @param  __x  A `set`.
+   *  @param  __y  A `set` of the same type as `x`.
+   *  @return  A value indicating whether `__x` is less than, equal to,
+   *           greater than, or incomparable with `__y`.
+   *
+   *  This is a total ordering relation.  It is linear in the size of the
+   *  maps.  The elements must be comparable with @c <.
+   *
+   *  See `std::lexicographical_compare_three_way()` for how the determination
+   *  is made. This operator is used to synthesize relational operators like
+   *  `<` and `>=` etc.
+  */
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline __detail::__synth3way_t<_Key>
+    operator<=>(const set<_Key, _Compare, _Alloc>& __x,
+		const set<_Key, _Compare, _Alloc>& __y)
+    { return __x._M_t <=> __y._M_t; }
+#else
   /**
    *  @brief  Set ordering relation.
    *  @param  __x  A %set.
@@ -1024,6 +1051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator>=(const set<_Key, _Compare, _Alloc>& __x,
 	       const set<_Key, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
   /// See std::set::swap().
   template<typename _Key, typename _Compare, typename _Alloc>

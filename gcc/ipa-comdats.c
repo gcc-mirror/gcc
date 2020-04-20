@@ -376,6 +376,15 @@ ipa_comdats (void)
 		   true);
 	}
     }
+
+#if 0
+  /* Recompute calls comdat local flag.  This need to be done after all changes
+     are made.  */
+  cgraph_node *function;
+  FOR_EACH_DEFINED_FUNCTION (function)
+    if (function->get_comdat_group ())
+      function->calls_comdat_local = function->check_calls_comdat_local_p ();
+#endif
   return 0;
 }
 

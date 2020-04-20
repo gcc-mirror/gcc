@@ -1,3 +1,29 @@
+2020-04-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_attr): Add numerous flags, some cleanup.
+
+2020-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93364
+	* array.c (gfc_set_array_spec): Check for sum of rank and corank
+	not exceeding GFC_MAX_DIMENSIONS.
+
+2020-04-20  Steve Kargl  <kargl@gcc.gnu.org>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91800
+	* decl.c (variable_decl): Reject Hollerith constants as type
+	initializer.
+
+2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93500
+	* resolve.c (resolve_operator): If both operands are
+	NULL, return false.
+	* simplify.c (simplify_bound): If a division by zero
+	was seen during bound simplification, free the
+	corresponcing expression and return &gfc_bad_expr.
+
 2020-04-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94090

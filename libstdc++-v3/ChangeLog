@@ -1,3 +1,50 @@
+2020-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_three_way_comparison): Update value.
+	* libsupc++/compare (__cpp_lib_three_way_comparison): Likewise.
+	(__detail::__synth3way): Add noexcept-specifier.
+
+	* include/bits/stl_map.h (map): Define operator<=> and remove
+	operator< for C++20.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree): Likewise.
+	(_Rb_tree_iterator, _Rb_tree_const_iterator): Remove redundant
+	operator!= for C++20.
+	* include/debug/map.h (__gnu_debug::map): Define operator<=> for C++20.
+	* include/debug/multimap.h (__gnu_debug::multimap): Likewise.
+	* include/debug/multiset.h (__gnu_debug::multiset): Likewise.
+	* include/debug/set.h (__gnu_debug::set): Likewise.
+	* testsuite/23_containers/map/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/multimap/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/multiset/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/set/operators/cmp_c++20.cc: New test.
+
+2020-04-20  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/lib/libstdc++.exp: Avoid illegal argument to verbose.
+
+2020-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h (queue): Define operator<=> for C++20.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/queue/cmp_c++20.cc: New test.
+	* testsuite/23_containers/stack/cmp_c++20.cc: New test.
+
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	Remove redundant operator!= for C++20.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* include/debug/unordered_map (unordered_map, unordered_multimap):
+	Likewise.
+	* include/debug/unordered_set (unordered_set, unordered_multiset):
+	Likewise.
+
+	PR other/94629
+	* include/debug/formatter.h (_Error_formatter::_Parameter): Fix
+	redundant assignment in constructor.
+
 2020-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (duration, time_point): Define operator<=> and

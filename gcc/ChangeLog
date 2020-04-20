@@ -1,3 +1,44 @@
+2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md ("popcountv8hi2_vx", "popcountv4si2_vx")
+	("popcountv2di2_vx"): Use simplify_gen_subreg.
+
+2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/94613
+	* config/s390/s390-builtin-types.def: Add 3 new function modes.
+	* config/s390/s390-builtins.def: Add mode dependent low-level
+	builtin and map the overloaded builtins to these.
+	* config/s390/vx-builtins.md ("vec_selV_HW"): Rename to ...
+	("vsel<V_HW"): ... this and rewrite the pattern with bitops.
+
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): If old_loop_vinfo
+	has a variable VF, prefer new_loop_vinfo if it is cheaper for the
+	estimated VF and is no worse at double the estimated VF.
+
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94668
+	* config/aarch64/aarch64.c (aarch64_sve_expand_vector_init): Fix
+	order of arguments to rtx_vector_builder.
+	(aarch64_sve_expand_vector_init_handle_trailing_constants): Likewise.
+	When extending the trailing constants to a full vector, replace any
+	variables with zeros.
+
+2020-04-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/94582
+	* tree-inline.c (optimize_inline_calls): Recompute calls_comdat_local
+	flag.
+
+2020-04-20  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (symtab_node::dump_references): Add space after
+	one entry.
+	(symtab_node::dump_referring): Likewise.
+
 2020-04-18  Jeff Law  <law@redhat.com>
 
 	PR debug/94439

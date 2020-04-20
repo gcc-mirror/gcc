@@ -35,6 +35,7 @@ f (void)
       C[i] = outer::inner::B[i];
     }
 
+#pragma acc parallel
   for (i = 0; i < N; i++)
     {
       if (C[i] != i + 1)

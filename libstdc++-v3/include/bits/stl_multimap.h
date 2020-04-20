@@ -1065,10 +1065,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	operator==(const multimap<_K1, _T1, _C1, _A1>&,
 		   const multimap<_K1, _T1, _C1, _A1>&);
 
+#if __cpp_lib_three_way_comparison
+      template<typename _K1, typename _T1, typename _C1, typename _A1>
+	friend __detail::__synth3way_t<pair<const _K1, _T1>>
+	operator<=>(const multimap<_K1, _T1, _C1, _A1>&,
+		    const multimap<_K1, _T1, _C1, _A1>&);
+#else
       template<typename _K1, typename _T1, typename _C1, typename _A1>
 	friend bool
 	operator<(const multimap<_K1, _T1, _C1, _A1>&,
 		  const multimap<_K1, _T1, _C1, _A1>&);
+#endif
   };
 
 #if __cpp_deduction_guides >= 201606
@@ -1104,7 +1111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     multimap(initializer_list<pair<_Key, _Tp>>, _Allocator)
     -> multimap<_Key, _Tp, less<_Key>, _Allocator>;
 
-#endif
+#endif // deduction guides
 
   /**
    *  @brief  Multimap equality comparison.
@@ -1122,6 +1129,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t == __y._M_t; }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   *  @brief  Multimap ordering relation.
+   *  @param  __x  A `multimap`.
+   *  @param  __y  A `multimap` of the same type as `x`.
+   *  @return  A value indicating whether `__x` is less than, equal to,
+   *           greater than, or incomparable with `__y`.
+   *
+   *  This is a total ordering relation.  It is linear in the size of the
+   *  maps.  The elements must be comparable with @c <.
+   *
+   *  See `std::lexicographical_compare_three_way()` for how the determination
+   *  is made. This operator is used to synthesize relational operators like
+   *  `<` and `>=` etc.
+  */
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+    inline __detail::__synth3way_t<pair<const _Key, _Tp>>
+    operator<=>(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
+		const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+    { return __x._M_t <=> __y._M_t; }
+#else
   /**
    *  @brief  Multimap ordering relation.
    *  @param  __x  A %multimap.
@@ -1166,6 +1194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator>=(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
 	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
+#endif // three-way comparison
 
   /// See std::multimap::swap().
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>

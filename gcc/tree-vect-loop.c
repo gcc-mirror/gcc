@@ -2414,7 +2414,36 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
   poly_widest_int rel_old = (old_loop_vinfo->vec_inside_cost
 			     * poly_widest_int (new_vf));
   if (maybe_lt (rel_old, rel_new))
-    return false;
+    {
+      /* When old_loop_vinfo uses a variable vectorization factor,
+	 we know that it has a lower cost for at least one runtime VF.
+	 However, we don't know how likely that VF is.
+
+	 One option would be to compare the costs for the estimated VFs.
+	 The problem is that that can put too much pressure on the cost
+	 model.  E.g. if the estimated VF is also the lowest possible VF,
+	 and if old_loop_vinfo is 1 unit worse than new_loop_vinfo
+	 for the estimated VF, we'd then choose new_loop_vinfo even
+	 though (a) new_loop_vinfo might not actually be better than
+	 old_loop_vinfo for that VF and (b) it would be significantly
+	 worse at larger VFs.
+
+	 Here we go for a hacky compromise: pick new_loop_vinfo if it is
+	 no more expensive than old_loop_vinfo even after doubling the
+	 estimated old_loop_vinfo VF.  For all but trivial loops, this
+	 ensures that we only pick new_loop_vinfo if it is significantly
+	 better than old_loop_vinfo at the estimated VF.  */
+      if (rel_new.is_constant ())
+	return false;
+
+      HOST_WIDE_INT new_estimated_vf = estimated_poly_value (new_vf);
+      HOST_WIDE_INT old_estimated_vf = estimated_poly_value (old_vf);
+      widest_int estimated_rel_new = (new_loop_vinfo->vec_inside_cost
+				      * widest_int (old_estimated_vf));
+      widest_int estimated_rel_old = (old_loop_vinfo->vec_inside_cost
+				      * widest_int (new_estimated_vf));
+      return estimated_rel_new * 2 <= estimated_rel_old;
+    }
   if (known_lt (rel_new, rel_old))
     return true;
 

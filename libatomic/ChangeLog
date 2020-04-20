@@ -1,3 +1,8 @@
+2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/fenv.c (__atomic_feraiseexcept) [__SSE_MATH__]:
+	Remove unneeded assignments to volatile memory.
+
 2020-04-06  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Add testsuite/libatomic-site-extra.exp to output

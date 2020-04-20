@@ -2904,6 +2904,15 @@ variable_decl (int elem)
     }
 
   if (gfc_current_state () == COMP_DERIVED
+      && initializer && initializer->ts.type == BT_HOLLERITH)
+    {
+      gfc_error ("Initialization of structure component with a HOLLERITH "
+		 "constant at %L is not allowed", &initializer->where);
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  if (gfc_current_state () == COMP_DERIVED
       && gfc_current_block ()->attr.pdt_template)
     {
       gfc_symbol *param;

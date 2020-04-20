@@ -180,10 +180,6 @@ argument_reference_p (Parameter *arg)
   if (tb->ty == Treference || arg->storageClass & (STCout | STCref))
     return true;
 
-  tree type = build_ctype (arg->type);
-  if (TREE_ADDRESSABLE (type))
-    return true;
-
   return false;
 }
 
@@ -211,7 +207,7 @@ type_passed_as (Parameter *arg)
   tree type = build_ctype (arg->type);
 
   /* Parameter is passed by reference.  */
-  if (argument_reference_p (arg))
+  if (TREE_ADDRESSABLE (type) || argument_reference_p (arg))
     return build_reference_type (type);
 
   return type;

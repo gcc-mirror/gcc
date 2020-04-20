@@ -1,3 +1,80 @@
+2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/pr94666.C: New test.
+
+2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/94613
+	* gcc.target/s390/zvector/pr94613.c: New test.
+	* gcc.target/s390/zvector/vec_sel-1.c: New test.
+
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_8.c: New test.
+	* gcc.target/aarch64/sve/cost_model_9.c: Likewise.
+	* gcc.target/aarch64/sve/pr89007-1.c: Add -msve-vector-bits=512.
+	* gcc.target/aarch64/sve/pr89007-2.c: Likewise.
+
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/94668
+	* gcc.target/aarch64/sve/pr94668.c: New test.
+
+2020-04-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/94582
+	PR ipa/94582
+	* g++.dg/torture/pr94582.C: New test.
+
+2020-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93364
+	* gfortran.dg/pr93364.f90: New test.
+
+2020-04-20  Steve Kargl  <kargl@gcc.gnu.org>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91800
+	* gfortran.dg/hollerith_9.f90: New test.
+
+2020-04-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/pr85550.C: Skip AIX.
+	* g++.dg/debug/pr94272.C: Skip AIX.
+	* g++.dg/debug/pr94281.C: Skip AIX.
+	* g++.dg/debug/pr94323.C: Skip AIX.
+
+2020-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/co-await-17-capture-comp-ref.C: Require
+	C++17.
+	* g++.dg/coroutines/torture/co-ret-15-default-return_void.C: Likewise.
+
+2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94347
+	* gfortran.dg/char_pointer_init_12.f90: New test.
+
+2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57129
+	* gfortran.dg/subroutine_as_type.f90: New test.
+
+2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93500
+	* gfortran.dg/arith_divide_3.f90: New test.
+
+2020-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/94637
+	* objc.dg/pr94637.m: New test.
+
+2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc-utils.exp (gdc-convert-test): Add dg-skip-if for tests that
+	depending on the phobos standard library.
+
 2020-04-18  Jeff Law  <law@redhat.com>
 
 	PR debug/94439

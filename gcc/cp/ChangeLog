@@ -1,3 +1,26 @@
+2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	* coroutines.cc (captures_temporary): Don't assign the result of
+	STRIP_NOPS to the same variable.
+
+2020-04-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR 94454 - tpl-tpl-parms are not canonicalizable types
+	* pt.c (canonical_type_parameter): Assert not a tpl-tpl-parm.
+	(process_template_parm): tpl-tpl-parms are structural.
+	(rewrite_template_parm): Propagate structuralness.
+
+	PR 94454 - Expr pack expansion equality
+	* tree.c (cp_tree_equal): [TEMPLATE_ID_EXPR, default] Refactor.
+	[EXPR_PACK_EXPANSION]: Add.
+
+	PR c++/94454 Template Argument Hashing
+	* pt.c (iterative_hash_template_arg): Strip nodes as
+	template_args_equal does.
+	[ARGUMENT_PACK_SELECT, TREE_VEC, CONSTRUCTOR]: Refactor.
+	[node_class:TEMPLATE_TEMPLATE_PARM]: Hash by level & index.
+	[node_class:default]: Refactor.
+
 2020-04-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94632
