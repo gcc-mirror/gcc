@@ -1,5 +1,7 @@
 2020-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/24_iterators/istreambuf_iterator/sentinel.cc: New test.
+
 	* testsuite/20_util/is_constructible/51185.cc: Make test class a
 	non-aggregate so that the test verifies the same thing in all -std
 	modes.
