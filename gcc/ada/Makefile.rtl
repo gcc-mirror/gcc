@@ -274,6 +274,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-stouut$(objext) \
   a-strbou$(objext) \
   a-stream$(objext) \
+  a-strsto$(objext) \
+  a-ststbo$(objext) \
+  a-ststun$(objext) \
   a-strfix$(objext) \
   a-strhas$(objext) \
   a-string$(objext) \

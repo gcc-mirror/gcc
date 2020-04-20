@@ -635,7 +635,10 @@ package body Impunit is
     ("a-stoufi", T),  -- Ada.Strings.Text_Output.Files
     ("a-stobfi", T),  -- Ada.Strings.Text_Output.Basic_Files
     ("a-stobbu", T),  -- Ada.Strings.Text_Output.Bit_Buckets
-    ("a-stoufo", T)   -- Ada.Strings.Text_Output.Formatting
+    ("a-stoufo", T),  -- Ada.Strings.Text_Output.Formatting
+    ("a-strsto", T),  -- Ada.Streams.Storage
+    ("a-ststbo", T),  -- Ada.Streams.Storage.Bounded
+    ("a-ststun", T)   -- Ada.Streams.Storage.Unbounded
    );
 
    -----------------------
