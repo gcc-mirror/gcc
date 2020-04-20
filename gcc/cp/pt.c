@@ -4399,6 +4399,9 @@ canonical_type_parameter (tree type)
 {
   tree list;
   int idx = TEMPLATE_TYPE_IDX (type);
+
+  gcc_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM);
+
   if (!canonical_template_parms)
     vec_alloc (canonical_template_parms, idx + 1);
 
@@ -4581,7 +4584,10 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
 				     processing_template_decl,
 				     decl, TREE_TYPE (parm));
       TEMPLATE_TYPE_PARAMETER_PACK (t) = is_parameter_pack;
-      TYPE_CANONICAL (t) = canonical_type_parameter (t);
+      if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
+	SET_TYPE_STRUCTURAL_EQUALITY (t);
+      else
+	TYPE_CANONICAL (t) = canonical_type_parameter (t);
     }
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
@@ -28022,7 +28028,10 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       TEMPLATE_PARM_PARAMETER_PACK (newidx)
 	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype) = newdecl;
-      TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
+      if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (olddecl)))
+	SET_TYPE_STRUCTURAL_EQUALITY (newtype);
+      else
+	TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
 
       if (TREE_CODE (olddecl) == TEMPLATE_DECL)
 	{
