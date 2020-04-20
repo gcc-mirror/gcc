@@ -15563,6 +15563,11 @@ package body Sem_Ch3 is
 
       Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
 
+      if Ekind (New_Subp) = E_Function then
+         Set_Extra_Accessibility_Of_Result (New_Subp,
+           Extra_Accessibility_Of_Result (Parent_Subp));
+      end if;
+
       --  If this derivation corresponds to a tagged generic actual, then
       --  primitive operations rename those of the actual. Otherwise the
       --  primitive operations rename those of the parent type, If the parent

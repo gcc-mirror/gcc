@@ -8718,6 +8718,14 @@ package body Freeze is
          Has_Extra_Formals : Boolean := False;
 
       begin
+         --  No check required if expansion is disabled because extra
+         --  formals are only generated when we are generating code.
+         --  See Create_Extra_Formals.
+
+         if not Expander_Active then
+            return True;
+         end if;
+
          --  Check attribute Extra_Formal: if available it must be set only
          --  in the last formal of E
 
@@ -8734,6 +8742,15 @@ package body Freeze is
             Last_Formal := Formal;
             Next_Formal (Formal);
          end loop;
+
+         --  Check attribute Extra_Accessibility_Of_Result
+
+         if Ekind_In (E, E_Function, E_Subprogram_Type)
+           and then Needs_Result_Accessibility_Level (E)
+           and then No (Extra_Accessibility_Of_Result (E))
+         then
+            return False;
+         end if;
 
          --  Check attribute Extra_Formals: if E has extra formals then this
          --  attribute must must point to the first extra formal of E.
@@ -8897,14 +8914,16 @@ package body Freeze is
             --  still unset (and must be set now).
 
             if Present (Alias (E))
+              and then Is_Frozen (Ultimate_Alias (E))
               and then Present (Extra_Formals (Ultimate_Alias (E)))
               and then Last_Formal (Ultimate_Alias (E)) = Last_Formal (E)
             then
-               pragma Assert (Is_Frozen (Ultimate_Alias (E)));
-               pragma Assert (No (First_Formal (Ultimate_Alias (E)))
-                 or else
-                   Present (Extra_Formal (Last_Formal (Ultimate_Alias (E)))));
                Set_Extra_Formals (E, Extra_Formals (Ultimate_Alias (E)));
+
+               if Ekind (E) = E_Function then
+                  Set_Extra_Accessibility_Of_Result (E,
+                    Extra_Accessibility_Of_Result (Ultimate_Alias (E)));
+               end if;
             else
                Create_Extra_Formals (E);
             end if;
