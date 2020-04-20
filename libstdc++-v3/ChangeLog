@@ -1,5 +1,8 @@
 2020-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/version (__cpp_lib_three_way_comparison): Update value.
+	* libsupc++/compare (__cpp_lib_three_way_comparison): Likewise.
+
 	* include/bits/stl_map.h (map): Define operator<=> and remove
 	operator< for C++20.
 	* include/bits/stl_multimap.h (multimap): Likewise.

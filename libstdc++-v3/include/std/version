@@ -200,7 +200,7 @@
 #endif
 #define __cpp_lib_span 202002L
 #if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
-# define __cpp_lib_three_way_comparison 201711L
+# define __cpp_lib_three_way_comparison 201907L
 #endif
 #define __cpp_lib_to_array 201907L
 #endif

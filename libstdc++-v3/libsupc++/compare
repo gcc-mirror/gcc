@@ -39,7 +39,7 @@
 #include <concepts>
 
 #if __cpp_lib_concepts
-# define __cpp_lib_three_way_comparison 201711L
+# define __cpp_lib_three_way_comparison 201907L
 #endif
 
 namespace std
@@ -866,12 +866,23 @@ namespace std
 
   namespace __detail
   {
-    // [expos.only.func]
+    // [expos.only.func] synth-three-way
     inline constexpr struct _Synth3way
     {
       template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept(const _Tp* __t = nullptr, const _Up* __u = nullptr)
+	{
+	  if constexpr (three_way_comparable_with<_Tp, _Up>)
+	    return noexcept(*__t <=> *__u);
+	  else
+	    return noexcept(*__t < *__u) && noexcept(*__u < *__t);
+	}
+
+      template<typename _Tp, typename _Up>
 	constexpr auto
 	operator()(const _Tp& __t, const _Up& __u) const
+	noexcept(_S_noexcept<_Tp, _Up>())
 	requires requires
 	{
 	  { __t < __u } -> __boolean_testable;
@@ -892,6 +903,7 @@ namespace std
 	}
     } __synth3way = {};
 
+    // [expos.only.func] synth-three-way-result
     template<typename _Tp, typename _Up = _Tp>
       using __synth3way_t
 	= decltype(__detail::__synth3way(std::declval<_Tp&>(),
