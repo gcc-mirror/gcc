@@ -1,3 +1,8 @@
+2020-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93364
+	* gfortran.dg/pr93364.f90: New test.
+
 2020-04-20  Steve Kargl  <kargl@gcc.gnu.org>
 	Thomas Koenig  <tkoenig@gcc.gnu.org>
 
