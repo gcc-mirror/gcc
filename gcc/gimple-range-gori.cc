@@ -1331,7 +1331,7 @@ private:
 
 logical_stmt_cache::logical_stmt_cache ()
 {
-  m_ssa_cache.create (num_ssa_names);
+  m_ssa_cache.create (num_ssa_names + num_ssa_names / 10);
   m_ssa_cache.safe_grow_cleared (num_ssa_names);
 }
 
@@ -1362,9 +1362,8 @@ logical_stmt_cache::set_range (gimple *stmt, tree carrier, tree name,
 {
   unsigned version = SSA_NAME_VERSION (carrier);
 
-  // If pass added SSA values after gori started, give up.
   if (version >= m_ssa_cache.length ())
-    return;
+    m_ssa_cache.safe_grow_cleared (num_ssa_names + num_ssa_names / 10);
 
   cache_entry *slot = m_ssa_cache[version];
   if (slot)
@@ -1460,8 +1459,6 @@ logical_stmt_cache::cached_name (tree carrier) const
 {
   unsigned version = SSA_NAME_VERSION (carrier);
 
-  // ?? Someone created an SSA after gori started.
-  // Perhaps we should start the cache size at 2 * num_ssa_names ??
   if (version >= m_ssa_cache.length ())
     return NULL;
 
