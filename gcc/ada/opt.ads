@@ -1907,7 +1907,8 @@ package Opt is
    --  Controls treatment of warning messages. If set to Suppress, warning
    --  messages are not generated at all. In Normal mode, they are generated
    --  but do not count as errors. In Treat_As_Error mode, warning messages are
-   --  generated and treated as errors. In Treat_Run_Time_Warnings_As_Errors,
+   --  generated and treated as errors, except for warnings emitted by the
+   --  Compile_Time_Warning pragma. In Treat_Run_Time_Warnings_As_Errors,
    --  warning messages regarding errors raised at run time are treated as
    --  errors. Note that Warning_Mode = Suppress causes pragma Warnings to be
    --  ignored (except for legality checks), unless we are in GNATprove_Mode,

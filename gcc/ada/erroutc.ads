@@ -51,6 +51,10 @@ package Erroutc is
    --  Set true to indicate that the current message contains the insertion
    --  sequence !! (force warnings even in non-main unit source files).
 
+   Is_Compile_Time_Msg : Boolean := False;
+   --  Set true to indicate that the current message originates from a
+   --  Compile_Time_Warning or Compile_Time_Error pragma.
+
    Is_Serious_Error : Boolean := False;
    --  Set True for a serious error (i.e. any message that is not a warning
    --  or style message, and that does not contain a | insertion character).
@@ -210,6 +214,10 @@ package Erroutc is
 
       Col : Column_Number;
       --  Column number for error message
+
+      Compile_Time_Pragma : Boolean;
+      --  True if the message originates from a Compile_Time_Warning or
+      --  Compile_Time_Error pragma
 
       Warn : Boolean;
       --  True if warning message
@@ -412,6 +420,10 @@ package Erroutc is
    --  ignored. Otherwise a check is made to see if M1 and M2 are duplicated or
    --  redundant. If so, the message to be deleted and all its continuations
    --  are marked with the Deleted flag set to True.
+
+   function Count_Compile_Time_Pragma_Warnings return Int;
+   --  Returns the number of warnings in the Errors table that were triggered
+   --  by a Compile_Time_Warning pragma.
 
    function Get_Warning_Tag (Id : Error_Msg_Id) return String;
    --  Given an error message ID, return tag showing warning message class, or
