@@ -195,6 +195,7 @@ static void set_current_access_from_decl (tree);
 static enum template_base_result get_template_base (tree, tree, tree, tree,
 						    bool , tree *);
 static tree try_class_unification (tree, tree, tree, tree, bool);
+static bool class_nttp_const_wrapper_p (tree t);
 static int coerce_template_template_parms (tree, tree, tsubst_flags_t,
 					   tree, tree);
 static bool template_template_parm_bindings_ok_p (tree, tree);
@@ -1737,31 +1738,32 @@ spec_hasher::hash (spec_entry *e)
 }
 
 /* Recursively calculate a hash value for a template argument ARG, for use
-   in the hash tables of template specializations.  */
+   in the hash tables of template specializations.   We must be
+   careful to (at least) skip the same entities template_args_equal
+   does.  */
 
 hashval_t
 iterative_hash_template_arg (tree arg, hashval_t val)
 {
-  unsigned HOST_WIDE_INT i;
-  enum tree_code code;
-  char tclass;
-
   if (arg == NULL_TREE)
     return iterative_hash_object (arg, val);
 
   if (!TYPE_P (arg))
-    STRIP_NOPS (arg);
+    /* Strip nop-like things, but not the same as STRIP_NOPS.  */
+    while (CONVERT_EXPR_P (arg)
+	   || TREE_CODE (arg) == NON_LVALUE_EXPR
+	   || class_nttp_const_wrapper_p (arg))
+      arg = TREE_OPERAND (arg, 0);
 
-  if (TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
-    gcc_unreachable ();
-
-  code = TREE_CODE (arg);
-  tclass = TREE_CODE_CLASS (code);
+  enum tree_code code = TREE_CODE (arg);
 
   val = iterative_hash_object (code, val);
 
   switch (code)
     {
+    case ARGUMENT_PACK_SELECT:
+      gcc_unreachable ();
+
     case ERROR_MARK:
       return val;
 
@@ -1769,12 +1771,9 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return iterative_hash_object (IDENTIFIER_HASH_VALUE (arg), val);
 
     case TREE_VEC:
-      {
-	int i, len = TREE_VEC_LENGTH (arg);
-	for (i = 0; i < len; ++i)
-	  val = iterative_hash_template_arg (TREE_VEC_ELT (arg, i), val);
-	return val;
-      }
+      for (int i = 0, len = TREE_VEC_LENGTH (arg); i < len; ++i)
+	val = iterative_hash_template_arg (TREE_VEC_ELT (arg, i), val);
+      return val;
 
     case TYPE_PACK_EXPANSION:
     case EXPR_PACK_EXPANSION:
@@ -1798,6 +1797,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case CONSTRUCTOR:
       {
 	tree field, value;
+	unsigned i;
 	iterative_hash_template_arg (TREE_TYPE (arg), val);
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
 	  {
@@ -1884,6 +1884,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       break;
     }
 
+  char tclass = TREE_CODE_CLASS (code);
   switch (tclass)
     {
     case tcc_type:
@@ -1899,12 +1900,30 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	  tree ti = TYPE_ALIAS_TEMPLATE_INFO (ats);
 	  return hash_tmpl_and_args (TI_TEMPLATE (ti), TI_ARGS (ti));
 	}
-      if (TYPE_CANONICAL (arg))
-	return iterative_hash_object (TYPE_HASH (TYPE_CANONICAL (arg)),
-				      val);
-      else if (TREE_CODE (arg) == DECLTYPE_TYPE)
-	return iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
-      /* Otherwise just compare the types during lookup.  */
+
+      switch (TREE_CODE (arg))
+	{
+	case TEMPLATE_TEMPLATE_PARM:
+	  {
+	    tree tpi = TEMPLATE_TYPE_PARM_INDEX (arg);
+
+	    /* Do not recurse with TPI directly, as that is unbounded
+	       recursion.  */
+	    val = iterative_hash_object (TEMPLATE_PARM_LEVEL (tpi), val);
+	    val = iterative_hash_object (TEMPLATE_PARM_IDX (tpi), val);
+	  }
+	  break;
+
+	case  DECLTYPE_TYPE:
+	  val = iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
+	  break;
+
+	default:
+	  if (tree canonical = TYPE_CANONICAL (arg))
+	    val = iterative_hash_object (TYPE_HASH (canonical), val);
+	  break;
+	}
+
       return val;
 
     case tcc_declaration:
@@ -1913,13 +1932,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
     default:
       gcc_assert (IS_EXPR_CODE_CLASS (tclass));
-      {
-	unsigned n = cp_tree_operand_length (arg);
-	for (i = 0; i < n; ++i)
-	  val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
-	return val;
-      }
+      for (int i = 0, n = cp_tree_operand_length (arg); i < n; ++i)
+	val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
+      return val;
     }
+
   gcc_unreachable ();
   return 0;
 }

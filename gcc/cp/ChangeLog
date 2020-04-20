@@ -1,3 +1,12 @@
+2020-04-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94454 Template Argument Hashing
+	* pt.c (iterative_hash_template_arg): Strip nodes as
+	template_args_equal does.
+	[ARGUMENT_PACK_SELECT, TREE_VEC, CONSTRUCTOR]: Refactor.
+	[node_class:TEMPLATE_TEMPLATE_PARM]: Hash by level & index.
+	[node_class:default]: Refactor.
+
 2020-04-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94632
