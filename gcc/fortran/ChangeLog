@@ -1,3 +1,7 @@
+2020-04-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_attr): Add numerous flags, some cleanup.
+
 2020-04-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93364
