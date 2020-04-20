@@ -1,6 +1,11 @@
 2020-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure: Regenerate.
+	* configure.ac: Fix option name for --with-libphobos-druntime-only.
+
+2020-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
 	* configure.ac: Remove DRUNTIME_GC.
 
 2020-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>

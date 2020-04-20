@@ -842,7 +842,7 @@ with_cross_host
 enable_version_specific_runtime_libs
 with_toolexeclibdir
 enable_libphobos
-with_libdruntime_only
+with_libphobos_druntime_only
 enable_libphobos_checking
 '
       ac_precious_vars='build_alias
@@ -15237,17 +15237,17 @@ $as_echo "$enable_libphobos" >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for --with-libphobos-druntime-only" >&5
 $as_echo_n "checking for --with-libphobos-druntime-only... " >&6; }
 
-# Check whether --with-libdruntime-only was given.
-if test "${with_libdruntime_only+set}" = set; then :
-  withval=$with_libdruntime_only;
+# Check whether --with-libphobos-druntime-only was given.
+if test "${with_libphobos_druntime_only+set}" = set; then :
+  withval=$with_libphobos_druntime_only;
 else
-  with_libdruntime_only=auto
+  with_libphobos_druntime_only=auto
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_libdruntime_only" >&5
-$as_echo "$with_libdruntime_only" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_libphobos_druntime_only" >&5
+$as_echo "$with_libphobos_druntime_only" >&6; }
 
-case "$with_libdruntime_only" in
+case "$with_libphobos_druntime_only" in
   yes|no|auto) ;;
   *) as_fn_error $? "Invalid argument for --with-libphobos-druntime-only" "$LINENO" 5 ;;
 esac
@@ -15298,7 +15298,7 @@ fi
 
 
 # Decide if only libdruntime should be built.
-case $LIBDRUNTIME_ONLY:$with_libdruntime_only in
+case $LIBDRUNTIME_ONLY:$with_libphobos_druntime_only in
 *:no)  only_libdruntime=no  ;;
 *:yes) only_libdruntime=yes ;;
 yes:*) only_libdruntime=yes ;;
