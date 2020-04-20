@@ -1,3 +1,9 @@
+2020-04-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* testsuite/libgomp.oacc-c++/declare-pr94120.C: Fix 'declare copy(out)'
+	test case.
+
 2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/94635
