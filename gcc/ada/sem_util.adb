@@ -7410,8 +7410,7 @@ package body Sem_Util is
 
       --  No body is generated if the protected operation is eliminated
 
-      elsif Convention (Dyn_Scop) = Convention_Protected
-        and then not Is_Eliminated (Dyn_Scop)
+      elsif not Is_Eliminated (Dyn_Scop)
         and then Present (Protected_Body_Subprogram (Dyn_Scop))
       then
          return Protected_Body_Subprogram (Dyn_Scop);
