@@ -1,3 +1,9 @@
+2020-04-20  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (symtab_node::dump_references): Add space after
+	one entry.
+	(symtab_node::dump_referring): Likewise.
+
 2020-04-18  Jeff Law  <law@redhat.com>
 
 	PR debug/94439
