@@ -1,3 +1,12 @@
+2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94505 - bogus -Wparentheses warning with fold-expression.
+	* pt.c (fold_expression): Add warning_sentinel for -Wparentheses
+	before calling build_x_binary_op.
+
 2020-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94512
