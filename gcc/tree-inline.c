@@ -5469,6 +5469,7 @@ optimize_inline_calls (tree fn)
   number_blocks (fn);
 
   delete_unreachable_blocks_update_callgraph (id.dst_node, false);
+  id.dst_node->calls_comdat_local = id.dst_node->check_calls_comdat_local_p ();
 
   if (flag_checking)
     id.dst_node->verify ();

@@ -1,3 +1,9 @@
+2020-04-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/94582
+	PR ipa/94582
+	* g++.dg/torture/pr94582.C: New test.
+
 2020-04-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93364
