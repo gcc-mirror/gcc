@@ -1,3 +1,22 @@
+2020-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h (map): Define operator<=> and remove
+	operator< for C++20.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree): Likewise.
+	(_Rb_tree_iterator, _Rb_tree_const_iterator): Remove redundant
+	operator!= for C++20.
+	* include/debug/map.h (__gnu_debug::map): Define operator<=> for C++20.
+	* include/debug/multimap.h (__gnu_debug::multimap): Likewise.
+	* include/debug/multiset.h (__gnu_debug::multiset): Likewise.
+	* include/debug/set.h (__gnu_debug::set): Likewise.
+	* testsuite/23_containers/map/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/multimap/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/multiset/operators/cmp_c++20.cc: New test.
+	* testsuite/23_containers/set/operators/cmp_c++20.cc: New test.
+
 2020-04-20  Matthias Kretz  <kretz@kde.org>
 
 	* testsuite/lib/libstdc++.exp: Avoid illegal argument to verbose.
