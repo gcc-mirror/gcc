@@ -1,3 +1,9 @@
+2020-04-20  Steve Kargl  <kargl@gcc.gnu.org>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91800
+	* gfortran.dg/hollerith_9.f90: New test.
+
 2020-04-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/pr85550.C: Skip AIX.

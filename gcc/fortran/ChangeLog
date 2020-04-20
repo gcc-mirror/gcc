@@ -1,3 +1,10 @@
+2020-04-20  Steve Kargl  <kargl@gcc.gnu.org>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91800
+	* decl.c (variable_decl): Reject Hollerith constants as type
+	initializer.
+
 2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93500
