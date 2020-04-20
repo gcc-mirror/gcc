@@ -3823,6 +3823,11 @@ package body Checks is
       if Inside_A_Generic then
          return;
 
+      --  Nothing to do if the result type is universal integer
+
+      elsif Typ = Universal_Integer then
+         return;
+
       --  Nothing to do if checks are suppressed
 
       elsif Range_Checks_Suppressed (Typ)
