@@ -249,13 +249,47 @@ package body Erroutc is
    ------------------------
 
    function Compilation_Errors return Boolean is
+      Warnings_Count : constant Int
+         := Warnings_Detected - Warning_Info_Messages;
    begin
-      return
-        Total_Errors_Detected /= 0
-          or else (Warnings_Detected - Warning_Info_Messages /= 0
-                    and then Warning_Mode = Treat_As_Error)
-          or else Warnings_Treated_As_Errors /= 0;
+      if Total_Errors_Detected /= 0 then
+         return True;
+
+      elsif Warnings_Treated_As_Errors /= 0 then
+         return True;
+
+         --  We should never treat warnings that originate from a
+         --  Compile_Time_Warning pragma as an error. Warnings_Count is the sum
+         --  of both "normal" and Compile_Time_Warning warnings. This means
+         --  that there only is one or more non-Compile_Time_Warning warnings
+         --  if Warnings_Count is greater than
+         --  Count_Compile_Time_Pragma_Warnings.
+      elsif Warning_Mode = Treat_As_Error
+         and then Warnings_Count > Count_Compile_Time_Pragma_Warnings
+      then
+         return True;
+      end if;
+
+      return False;
    end Compilation_Errors;
+
+   ----------------------------------------
+   -- Count_Compile_Time_Pragma_Warnings  --
+   ----------------------------------------
+
+   function Count_Compile_Time_Pragma_Warnings return Int is
+      Result : Int := 0;
+   begin
+      for J in 1 .. Errors.Last loop
+         begin
+            if Errors.Table (J).Warn and Errors.Table (J).Compile_Time_Pragma
+            then
+               Result := Result + 1;
+            end if;
+         end;
+      end loop;
+      return Result;
+   end Count_Compile_Time_Pragma_Warnings;
 
    ------------------
    -- Debug_Output --

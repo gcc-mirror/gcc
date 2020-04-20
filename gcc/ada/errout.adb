@@ -311,6 +311,18 @@ package body Errout is
    end Error_Msg;
 
    procedure Error_Msg
+      (Msg : String;
+       Flag_Location : Source_Ptr;
+       Is_Compile_Time_Pragma : Boolean)
+   is
+      Save_Is_Compile_Time_Msg : constant Boolean := Is_Compile_Time_Msg;
+   begin
+      Is_Compile_Time_Msg := Is_Compile_Time_Pragma;
+      Error_Msg (Msg, Flag_Location, Current_Node);
+      Is_Compile_Time_Msg := Save_Is_Compile_Time_Msg;
+   end Error_Msg;
+
+   procedure Error_Msg
      (Msg           : String;
       Flag_Location : Source_Ptr;
       N             : Node_Id)
@@ -1084,25 +1096,26 @@ package body Errout is
       --  Here we build a new error object
 
       Errors.Append
-        ((Text     => new String'(Msg_Buffer (1 .. Msglen)),
-          Next     => No_Error_Msg,
-          Prev     => No_Error_Msg,
-          Sptr     => Sptr,
-          Optr     => Optr,
-          Sfile    => Get_Source_File_Index (Sptr),
-          Line     => Get_Physical_Line_Number (Sptr),
-          Col      => Get_Column_Number (Sptr),
-          Warn     => Is_Warning_Msg,
-          Info     => Is_Info_Msg,
-          Check    => Is_Check_Msg,
-          Warn_Err => False, -- reset below
-          Warn_Chr => Warning_Msg_Char,
-          Style    => Is_Style_Msg,
-          Serious  => Is_Serious_Error,
-          Uncond   => Is_Unconditional_Msg,
-          Msg_Cont => Continuation,
-          Deleted  => False,
-          Node     => Node));
+        ((Text                => new String'(Msg_Buffer (1 .. Msglen)),
+          Next                => No_Error_Msg,
+          Prev                => No_Error_Msg,
+          Sptr                => Sptr,
+          Optr                => Optr,
+          Sfile               => Get_Source_File_Index (Sptr),
+          Line                => Get_Physical_Line_Number (Sptr),
+          Col                 => Get_Column_Number (Sptr),
+          Compile_Time_Pragma => Is_Compile_Time_Msg,
+          Warn                => Is_Warning_Msg,
+          Info                => Is_Info_Msg,
+          Check               => Is_Check_Msg,
+          Warn_Err            => False, -- reset below
+          Warn_Chr            => Warning_Msg_Char,
+          Style               => Is_Style_Msg,
+          Serious             => Is_Serious_Error,
+          Uncond              => Is_Unconditional_Msg,
+          Msg_Cont            => Continuation,
+          Deleted             => False,
+          Node                => Node));
       Cur_Msg := Errors.Last;
 
       --  Test if warning to be treated as error
@@ -2195,9 +2208,15 @@ package body Errout is
       --  must not be treated as errors when -gnatwe is in effect.
 
       if Warning_Mode = Treat_As_Error then
-         Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected - Warning_Info_Messages;
-         Warnings_Detected := Warning_Info_Messages;
+         declare
+            Compile_Time_Pragma_Warnings : constant Int :=
+               Count_Compile_Time_Pragma_Warnings;
+         begin
+            Total_Errors_Detected := Total_Errors_Detected + Warnings_Detected
+               - Warning_Info_Messages - Compile_Time_Pragma_Warnings;
+            Warnings_Detected :=
+               Warning_Info_Messages + Compile_Time_Pragma_Warnings;
+         end;
       end if;
    end Output_Messages;
 
