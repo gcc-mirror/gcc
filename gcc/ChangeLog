@@ -1,5 +1,11 @@
 2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): If old_loop_vinfo
+	has a variable VF, prefer new_loop_vinfo if it is cheaper for the
+	estimated VF and is no worse at double the estimated VF.
+
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR target/94668
 	* config/aarch64/aarch64.c (aarch64_sve_expand_vector_init): Fix
 	order of arguments to rtx_vector_builder.

@@ -1,5 +1,12 @@
 2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/cost_model_8.c: New test.
+	* gcc.target/aarch64/sve/cost_model_9.c: Likewise.
+	* gcc.target/aarch64/sve/pr89007-1.c: Add -msve-vector-bits=512.
+	* gcc.target/aarch64/sve/pr89007-2.c: Likewise.
+
+2020-04-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR target/94668
 	* gcc.target/aarch64/sve/pr94668.c: New test.
 
