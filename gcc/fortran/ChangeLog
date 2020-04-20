@@ -1,3 +1,10 @@
+2020-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline.
+	PR fortran/93364
+	* array.c (gfc_set_array_spec): Check for sum of rank and corank
+	not exceeding GFC_MAX_DIMENSIONS.
+
 2020-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk.

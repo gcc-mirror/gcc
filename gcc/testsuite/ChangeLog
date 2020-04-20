@@ -1,3 +1,9 @@
+2020-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline.
+	PR fortran/93364
+	* gfortran.dg/pr93364.f90: New test.
+
 2020-04-20  Andrea Corallo  <andrea.corallo@arm.com>
 
 	Backport from mainline.
