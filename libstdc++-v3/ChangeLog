@@ -2,6 +2,7 @@
 
 	* include/std/version (__cpp_lib_three_way_comparison): Update value.
 	* libsupc++/compare (__cpp_lib_three_way_comparison): Likewise.
+	(__detail::__synth3way): Add noexcept-specifier.
 
 	* include/bits/stl_map.h (map): Define operator<=> and remove
 	operator< for C++20.
