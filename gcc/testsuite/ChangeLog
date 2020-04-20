@@ -1,3 +1,26 @@
+2020-04-20  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from mainline.
+	2020-04-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/94396
+	* gcc.target/aarch64/options_set_11.c: New test.
+	* gcc.target/aarch64/options_set_12.c: New test.
+	* gcc.target/aarch64/options_set_13.c: New test.
+	* gcc.target/aarch64/options_set_14.c: New test.
+	* gcc.target/aarch64/options_set_15.c: New test.
+	* gcc.target/aarch64/options_set_16.c: New test.
+	* gcc.target/aarch64/options_set_17.c: New test.
+	* gcc.target/aarch64/options_set_18.c: New test.
+	* gcc.target/aarch64/options_set_19.c: New test.
+	* gcc.target/aarch64/options_set_20.c: New test.
+	* gcc.target/aarch64/options_set_21.c: New test.
+	* gcc.target/aarch64/options_set_22.c: New test.
+	* gcc.target/aarch64/options_set_23.c: New test.
+	* gcc.target/aarch64/options_set_24.c: New test.
+	* gcc.target/aarch64/options_set_25.c: New test.
+	* gcc.target/aarch64/options_set_26.c: New test.
+
 2020-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from master
