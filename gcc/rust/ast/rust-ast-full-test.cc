@@ -783,8 +783,7 @@ UseTreeGlob::as_string () const
       return "*";
     case GLOBAL:
       return "::*";
-    case PATH_PREFIXED:
-      {
+      case PATH_PREFIXED: {
 	::std::string path_str = path.as_string ();
 	return path_str + "::*";
       }
@@ -807,8 +806,7 @@ UseTreeList::as_string () const
     case GLOBAL:
       path_str = "::{";
       break;
-    case PATH_PREFIXED:
-      {
+      case PATH_PREFIXED: {
 	path_str = path.as_string () + "::{";
 	break;
       }
@@ -4688,8 +4686,7 @@ MacroParser::parse_meta_item_inner ()
 	case SELF:
 	case CRATE:
 	case DOLLAR_SIGN:
-	case SCOPE_RESOLUTION:
-	  {
+	  case SCOPE_RESOLUTION: {
 	    return parse_path_meta_item ();
 	  }
 	default:
@@ -4830,16 +4827,14 @@ MacroParser::parse_path_meta_item ()
 
   switch (peek_token ()->get_id ())
     {
-    case LEFT_PAREN:
-      {
+      case LEFT_PAREN: {
 	::std::vector< ::std::unique_ptr<MetaItemInner> > meta_items
 	  = parse_meta_item_seq ();
 
 	return ::std::unique_ptr<MetaItemSeq> (
 	  new MetaItemSeq (::std::move (path), ::std::move (meta_items)));
       }
-    case EQUAL:
-      {
+      case EQUAL: {
 	skip_token ();
 
 	Location locus = peek_token ()->get_locus ();

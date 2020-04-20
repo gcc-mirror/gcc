@@ -49,6 +49,7 @@ protected:
 // Identifier pattern AST node (bind value matched to a variable)
 class IdentifierPattern : public Pattern
 {
+public:
   Identifier variable_ident;
   bool is_ref;
   bool is_mut;
@@ -59,7 +60,6 @@ class IdentifierPattern : public Pattern
 
   Location locus;
 
-public:
   /*~IdentifierPattern() {
       delete to_bind;
   }*/

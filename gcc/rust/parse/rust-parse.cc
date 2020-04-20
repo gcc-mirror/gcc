@@ -192,8 +192,7 @@ Parser::skip_generics_right_angle ()
       // this is good - skip token
       lexer.skip_token ();
       return true;
-    case RIGHT_SHIFT:
-      {
+      case RIGHT_SHIFT: {
 	/* shit. preferred HACK would be to replace this token in stream with
 	 * '>', but may not be possible at this point. */
 	// FIXME: ensure locations aren't messed up
@@ -201,8 +200,7 @@ Parser::skip_generics_right_angle ()
 	lexer.replace_current_token (right_angle);
 	return true;
       }
-    case GREATER_OR_EQUAL:
-      {
+      case GREATER_OR_EQUAL: {
 	// another HACK - replace with equal (as assignment intended, probably)
 	/* FIXME: is this even required? how many people wouldn't leave a space?
 	 * - apparently rustc has this feature */
@@ -211,8 +209,7 @@ Parser::skip_generics_right_angle ()
 	lexer.replace_current_token (equal);
 	return true;
       }
-    case RIGHT_SHIFT_EQ:
-      {
+      case RIGHT_SHIFT_EQ: {
 	// another HACK - replace with greater or equal
 	// FIXME: again, is this really required? rustc has the feature, though
 	// FIXME: ensure locations aren't messed up
@@ -677,8 +674,7 @@ Parser::parse_attr_input ()
     {
     case LEFT_PAREN:
     case LEFT_SQUARE:
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	// must be a delimited token tree, so parse that
 	::std::unique_ptr<AST::DelimTokenTree> input_tree (
 	  new AST::DelimTokenTree (parse_delim_token_tree ()));
@@ -687,8 +683,7 @@ Parser::parse_attr_input ()
 
 	return input_tree;
       }
-    case EQUAL:
-      {
+      case EQUAL: {
 	// = LiteralExpr
 	lexer.skip_token ();
 
@@ -1713,8 +1708,7 @@ Parser::parse_macro_match ()
     {
     case LEFT_PAREN:
     case LEFT_SQUARE:
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	// must be macro matcher as delimited
 	AST::MacroMatcher matcher = parse_macro_matcher ();
 	if (matcher.is_error ())
@@ -1726,8 +1720,7 @@ Parser::parse_macro_match ()
 	return ::std::unique_ptr<AST::MacroMatcher> (
 	  new AST::MacroMatcher (::std::move (matcher)));
       }
-    case DOLLAR_SIGN:
-      {
+      case DOLLAR_SIGN: {
 	// have to do more lookahead to determine if fragment or repetition
 	const_TokenPtr t2 = lexer.peek_token (1);
 	switch (t2->get_id ())
@@ -1949,8 +1942,7 @@ Parser::parse_visibility ()
       skip_token (RIGHT_PAREN);
 
       return AST::Visibility::create_super ();
-    case IN:
-      {
+      case IN: {
 	lexer.skip_token ();
 
 	// parse the "in" path as well
@@ -2001,8 +1993,7 @@ Parser::parse_module (AST::Visibility vis,
 	new AST::ModuleNoBody (::std::move (name), ::std::move (vis),
 			       ::std::move (outer_attrs),
 			       locus)); // module name?
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	lexer.skip_token ();
 
 	// parse inner attributes
@@ -2234,8 +2225,7 @@ Parser::parse_use_tree ()
 	  return ::std::unique_ptr<AST::UseTreeGlob> (
 	    new AST::UseTreeGlob (AST::UseTreeGlob::NO_PATH,
 				  AST::SimplePath::create_empty (), locus));
-	case LEFT_CURLY:
-	  {
+	  case LEFT_CURLY: {
 	    // nested tree UseTree type
 	    lexer.skip_token ();
 
@@ -2307,8 +2297,7 @@ Parser::parse_use_tree ()
 	  return ::std::unique_ptr<AST::UseTreeGlob> (
 	    new AST::UseTreeGlob (AST::UseTreeGlob::PATH_PREFIXED,
 				  ::std::move (path), locus));
-	case LEFT_CURLY:
-	  {
+	  case LEFT_CURLY: {
 	    // nested tree UseTree type
 	    lexer.skip_token ();
 
@@ -2347,8 +2336,7 @@ Parser::parse_use_tree ()
 				    ::std::move (path), std::move (use_trees),
 				    locus));
 	  }
-	case AS:
-	  {
+	  case AS: {
 	    // rebind UseTree type
 	    lexer.skip_token ();
 
@@ -3490,8 +3478,7 @@ Parser::parse_struct (AST::Visibility vis,
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	// struct with body
 
 	// skip curly bracket
@@ -3808,8 +3795,7 @@ Parser::parse_enum_item ()
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
-    case LEFT_PAREN:
-      {
+      case LEFT_PAREN: {
 	// tuple enum item
 	lexer.skip_token ();
 
@@ -3825,8 +3811,7 @@ Parser::parse_enum_item ()
 	  ::std::move (item_name), ::std::move (tuple_fields),
 	  ::std::move (outer_attrs), item_name_tok->get_locus ()));
       }
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	// struct enum item
 	lexer.skip_token ();
 
@@ -3842,8 +3827,7 @@ Parser::parse_enum_item ()
 	  ::std::move (item_name), ::std::move (struct_fields),
 	  ::std::move (outer_attrs), item_name_tok->get_locus ()));
       }
-    case EQUAL:
-      {
+      case EQUAL: {
 	// discriminant enum item
 	lexer.skip_token ();
 
@@ -4127,8 +4111,7 @@ Parser::parse_trait_item ()
       gcc_fallthrough ();
     case UNSAFE:
     case EXTERN_TOK:
-    case FN_TOK:
-      {
+      case FN_TOK: {
 	/* function and method can't be disambiguated by lookahead alone
 	 * (without a lot of work and waste), so either make a
 	 * "parse_trait_function_or_method" or parse here mostly and pass in
@@ -4248,8 +4231,7 @@ Parser::parse_trait_item ()
 				      tok->get_locus ()));
 	  }
       }
-    default:
-      {
+      default: {
 	// TODO: try and parse macro invocation semi - if fails, maybe error.
 	::std::unique_ptr<AST::MacroInvocationSemi> macro_invoc
 	  = parse_macro_invocation_semi (outer_attrs);
@@ -4560,8 +4542,7 @@ Parser::parse_inherent_impl_item ()
     case DOLLAR_SIGN:
       // these seem to be SimplePath tokens, so this is a macro invocation semi
       return parse_macro_invocation_semi (::std::move (outer_attrs));
-    case PUB:
-      {
+      case PUB: {
 	// visibility, so not a macro invocation semi - must be constant,
 	// function, or method
 	AST::Visibility vis = parse_visibility ();
@@ -4777,8 +4758,7 @@ Parser::parse_trait_impl_item ()
     case TYPE:
       return parse_type_alias (AST::Visibility::create_error (),
 			       ::std::move (outer_attrs));
-    case PUB:
-      {
+      case PUB: {
 	// visibility, so not a macro invocation semi - must be constant,
 	// function, or method
 	AST::Visibility vis = parse_visibility ();
@@ -5099,8 +5079,7 @@ Parser::parse_external_item ()
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
-    case STATIC_TOK:
-      {
+      case STATIC_TOK: {
 	// parse extern static item
 	lexer.skip_token ();
 
@@ -5148,8 +5127,7 @@ Parser::parse_external_item ()
 				       has_mut, ::std::move (vis),
 				       ::std::move (outer_attrs), locus));
       }
-    case FN_TOK:
-      {
+      case FN_TOK: {
 	// parse extern function declaration item
 	// skip function token
 	lexer.skip_token ();
@@ -5687,8 +5665,7 @@ Parser::parse_type_path_segment ()
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
-    case LEFT_ANGLE:
-      {
+      case LEFT_ANGLE: {
 	// parse generic args
 	AST::GenericArgs generic_args = parse_path_generic_args ();
 
@@ -5697,8 +5674,7 @@ Parser::parse_type_path_segment ()
 					   has_separating_scope_resolution,
 					   ::std::move (generic_args), locus));
       }
-    case LEFT_PAREN:
-      {
+      case LEFT_PAREN: {
 	// parse type path function
 	AST::TypePathFunction type_path_function = parse_type_path_function ();
 
@@ -6272,8 +6248,7 @@ Parser::parse_expr_stmt (::std::vector<AST::Attribute> outer_attrs)
     case ASYNC:
       // expression with block
       return parse_expr_stmt_with_block (::std::move (outer_attrs));
-    case LIFETIME:
-      {
+      case LIFETIME: {
 	/* FIXME: are there any expressions without blocks that can have
 	 * lifetime as their first token? Or is loop expr the only one? */
 	// safe side for now:
@@ -6287,8 +6262,7 @@ Parser::parse_expr_stmt (::std::vector<AST::Attribute> outer_attrs)
 	    return parse_expr_stmt_without_block (::std::move (outer_attrs));
 	  }
       }
-    case UNSAFE:
-      {
+      case UNSAFE: {
 	/* FIXME: are there any expressions without blocks that can have unsafe
 	 * as their first token? Or is unsafe the only one? */
 	// safe side for now
@@ -6342,8 +6316,7 @@ Parser::parse_expr_stmt_with_block (::std::vector<AST::Attribute> outer_attrs)
       // "for" iterator loop
       expr_parsed = parse_for_loop_expr (::std::move (outer_attrs));
       break;
-    case WHILE:
-      {
+      case WHILE: {
 	// while or while let, so more lookahead to find out
 	if (lexer.peek_token ()->get_id () == LET)
 	  {
@@ -6510,8 +6483,7 @@ Parser::parse_expr_without_block (::std::vector<AST::Attribute> outer_attrs)
       /* either grouped expr or tuple expr - depends on whether there is a comma
        * inside the parentheses - if so, tuple expr, otherwise, grouped expr. */
       return parse_grouped_or_tuple_expr (::std::move (outer_attrs));
-    default:
-      {
+      default: {
 	// HACK: piggyback on pratt parsed expr and abuse polymorphism to
 	// essentially downcast
 
@@ -7038,8 +7010,7 @@ Parser::parse_if_expr (
       const_TokenPtr t = lexer.peek_token ();
       switch (t->get_id ())
 	{
-	case LEFT_CURLY:
-	  {
+	  case LEFT_CURLY: {
 	    // double selection - else
 	    // parse else block expr (required)
 	    ::std::unique_ptr<AST::BlockExpr> else_body = parse_block_expr ();
@@ -7057,8 +7028,7 @@ Parser::parse_if_expr (
 					 ::std::move (if_body),
 					 ::std::move (else_body), locus));
 	  }
-	case IF:
-	  {
+	  case IF: {
 	    // multiple selection - else if or else if let
 	    // branch on whether next token is 'let' or not
 	    if (lexer.peek_token (1)->get_id () == LET)
@@ -7200,8 +7170,7 @@ Parser::parse_if_let_expr (
       const_TokenPtr t = lexer.peek_token ();
       switch (t->get_id ())
 	{
-	case LEFT_CURLY:
-	  {
+	  case LEFT_CURLY: {
 	    // double selection - else
 	    // parse else block expr (required)
 	    ::std::unique_ptr<AST::BlockExpr> else_body = parse_block_expr ();
@@ -7220,8 +7189,7 @@ Parser::parse_if_let_expr (
 					    ::std::move (if_let_body),
 					    ::std::move (else_body), locus));
 	  }
-	case IF:
-	  {
+	  case IF: {
 	    // multiple selection - else if or else if let
 	    // branch on whether next token is 'let' or not
 	    if (lexer.peek_token (1)->get_id () == LET)
@@ -8207,8 +8175,7 @@ Parser::parse_type ()
     case LEFT_SQUARE:
       // slice type or array type - requires further disambiguation
       return parse_slice_or_array_type ();
-    case LEFT_ANGLE:
-      {
+      case LEFT_ANGLE: {
 	// qualified path in type
 	AST::QualifiedPathInType path = parse_qualified_path_in_type ();
 	if (path.is_error ())
@@ -8231,8 +8198,7 @@ Parser::parse_type ()
     case AMP: // does this also include AMP_AMP?
       // reference type
       return parse_reference_type ();
-    case LIFETIME:
-      {
+      case LIFETIME: {
 	// probably a lifetime bound, so probably type param bounds in
 	// TraitObjectType
 	::std::vector< ::std::unique_ptr<AST::TypeParamBound> > bounds
@@ -8247,8 +8213,7 @@ Parser::parse_type ()
     case SELF_ALIAS:
     case CRATE:
     case DOLLAR_SIGN:
-    case SCOPE_RESOLUTION:
-      {
+      case SCOPE_RESOLUTION: {
 	// macro invocation or type path - requires further disambiguation.
 	/* for parsing path component of each rule, perhaps parse it as a
 	 * typepath and attempt conversion to simplepath if a trailing '!' is
@@ -8273,8 +8238,7 @@ Parser::parse_type ()
 	t = lexer.peek_token ();
 	switch (t->get_id ())
 	  {
-	  case EXCLAM:
-	    {
+	    case EXCLAM: {
 	      // macro invocation
 	      // convert to simple path
 	      AST::SimplePath macro_path = path.as_simple_path ();
@@ -8296,8 +8260,7 @@ Parser::parse_type ()
 					  ::std::vector<AST::Attribute> (),
 					  locus));
 	    }
-	  case PLUS:
-	    {
+	    case PLUS: {
 	      // type param bounds
 	      ::std::vector< ::std::unique_ptr<AST::TypeParamBound> > bounds;
 
@@ -8413,8 +8376,7 @@ Parser::parse_type ()
 	    new AST::ImplTraitType (::std::move (bounds), locus));
 	}
     case DYN:
-    case QUESTION_MARK:
-      {
+      case QUESTION_MARK: {
 	// either TraitObjectType or TraitObjectTypeOneBound
 	bool has_dyn = false;
 	if (t->get_id () == DYN)
@@ -8664,8 +8626,7 @@ Parser::parse_for_prefixed_type ()
     case SELF:
     case SELF_ALIAS:
     case CRATE:
-    case DOLLAR_SIGN:
-      {
+      case DOLLAR_SIGN: {
 	// path, so trait type
 
 	// parse type path to finish parsing trait bound
@@ -8966,8 +8927,7 @@ Parser::parse_slice_or_array_type ()
 
       return ::std::unique_ptr<AST::SliceType> (
 	new AST::SliceType (::std::move (inner_type), locus));
-    case SEMICOLON:
-      {
+      case SEMICOLON: {
 	// array type
 	lexer.skip_token ();
 
@@ -9014,8 +8974,7 @@ Parser::parse_type_no_bounds ()
     case LEFT_SQUARE:
       // slice type or array type - requires further disambiguation
       return parse_slice_or_array_type ();
-    case LEFT_ANGLE:
-      {
+      case LEFT_ANGLE: {
 	// qualified path in type
 	AST::QualifiedPathInType path = parse_qualified_path_in_type ();
 	if (path.is_error ())
@@ -9038,8 +8997,7 @@ Parser::parse_type_no_bounds ()
     case AMP: // does this also include AMP_AMP?
       // reference type
       return parse_reference_type ();
-    case LIFETIME:
-      {
+      case LIFETIME: {
 	// probably a lifetime bound, so probably type param bounds in
 	// TraitObjectType this is not allowed, but detection here for error
 	// message
@@ -9054,8 +9012,7 @@ Parser::parse_type_no_bounds ()
     case SELF_ALIAS:
     case CRATE:
     case DOLLAR_SIGN:
-    case SCOPE_RESOLUTION:
-      {
+      case SCOPE_RESOLUTION: {
 	// macro invocation or type path - requires further disambiguation.
 	/* for parsing path component of each rule, perhaps parse it as a
 	 * typepath and attempt conversion to simplepath if a trailing '!' is
@@ -9081,8 +9038,7 @@ Parser::parse_type_no_bounds ()
 	t = lexer.peek_token ();
 	switch (t->get_id ())
 	  {
-	  case EXCLAM:
-	    {
+	    case EXCLAM: {
 	      // macro invocation
 	      // convert to simple path
 	      AST::SimplePath macro_path = path.as_simple_path ();
@@ -9104,8 +9060,7 @@ Parser::parse_type_no_bounds ()
 					  ::std::vector<AST::Attribute> (),
 					  locus));
 	    }
-	  case PLUS:
-	    {
+	    case PLUS: {
 	      // type param bounds - not allowed, here for error message
 	      rust_error_at (t->get_locus (),
 			     "type param bounds (in TraitObjectType) are not "
@@ -9178,8 +9133,7 @@ Parser::parse_type_no_bounds ()
 	    new AST::ImplTraitTypeOneBound (::std::move (value_bound), locus));
 	}
     case DYN:
-    case QUESTION_MARK:
-      {
+      case QUESTION_MARK: {
 	// either TraitObjectTypeOneBound
 	bool has_dyn = false;
 	if (t->get_id () == DYN)
@@ -9506,8 +9460,7 @@ Parser::parse_range_pattern_bound ()
     case SELF_ALIAS:
     case CRATE:
     case SCOPE_RESOLUTION:
-    case DOLLAR_SIGN:
-      {
+      case DOLLAR_SIGN: {
 	// path in expression
 	AST::PathInExpression path = parse_path_in_expression ();
 	if (path.is_error ())
@@ -9520,8 +9473,7 @@ Parser::parse_range_pattern_bound ()
 	return ::std::unique_ptr<AST::RangePatternBoundPath> (
 	  new AST::RangePatternBoundPath (::std::move (path)));
       }
-    case LEFT_ANGLE:
-      {
+      case LEFT_ANGLE: {
 	// qualified path in expression
 	AST::QualifiedPathInExpression path
 	  = parse_qualified_path_in_expression ();
@@ -9611,8 +9563,7 @@ Parser::parse_pattern ()
     case LEFT_SQUARE:
       // slice pattern
       return parse_slice_pattern ();
-    case LEFT_ANGLE:
-      {
+      case LEFT_ANGLE: {
 	// qualified path in expression or qualified range pattern bound
 	AST::QualifiedPathInExpression path
 	  = parse_qualified_path_in_expression ();
@@ -9647,8 +9598,7 @@ Parser::parse_pattern ()
     case SELF_ALIAS:
     case CRATE:
     case SCOPE_RESOLUTION:
-    case DOLLAR_SIGN:
-      {
+      case DOLLAR_SIGN: {
 	// path in expression or range pattern bound
 	AST::PathInExpression path = parse_path_in_expression ();
 
@@ -9656,8 +9606,7 @@ Parser::parse_pattern ()
 	switch (next->get_id ())
 	  {
 	  case DOT_DOT_EQ:
-	  case ELLIPSIS:
-	    {
+	    case ELLIPSIS: {
 	      // qualified range pattern bound, so parse rest of range pattern
 	      bool has_ellipsis_syntax
 		= lexer.peek_token ()->get_id () == ELLIPSIS;
@@ -9677,8 +9626,7 @@ Parser::parse_pattern ()
 	  case EXCLAM:
 	    return parse_macro_invocation_partial (
 	      ::std::move (path), ::std::vector<AST::Attribute> ());
-	  case LEFT_PAREN:
-	    {
+	    case LEFT_PAREN: {
 	      // tuple struct
 	      lexer.skip_token ();
 
@@ -9701,8 +9649,7 @@ Parser::parse_pattern ()
 		new AST::TupleStructPattern (::std::move (path),
 					     ::std::move (items)));
 	    }
-	  case LEFT_CURLY:
-	    {
+	    case LEFT_CURLY: {
 	      // struct
 	      lexer.skip_token ();
 
@@ -9854,8 +9801,7 @@ Parser::parse_grouped_or_tuple_pattern ()
 
       return ::std::unique_ptr<AST::GroupedPattern> (
 	new AST::GroupedPattern (::std::move (initial_pattern), paren_locus));
-    case COMMA:
-      {
+      case COMMA: {
 	// tuple pattern
 	lexer.skip_token ();
 
@@ -10097,8 +10043,7 @@ Parser::parse_ident_leading_pattern ()
     case EXCLAM:
       return parse_macro_invocation_partial (::std::move (path),
 					     ::std::vector<AST::Attribute> ());
-    case LEFT_PAREN:
-      {
+      case LEFT_PAREN: {
 	// tuple struct
 	lexer.skip_token ();
 
@@ -10130,8 +10075,7 @@ Parser::parse_ident_leading_pattern ()
 	  new AST::TupleStructPattern (::std::move (path),
 				       ::std::move (items)));
       }
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	// struct
 	lexer.skip_token ();
 
@@ -10150,8 +10094,7 @@ Parser::parse_ident_leading_pattern ()
 	  new AST::StructPattern (::std::move (path), ::std::move (elems)));
       }
     case DOT_DOT_EQ:
-    case ELLIPSIS:
-      {
+      case ELLIPSIS: {
 	// range
 	bool has_ellipsis_syntax = lexer.peek_token ()->get_id () == ELLIPSIS;
 
@@ -10166,8 +10109,7 @@ Parser::parse_ident_leading_pattern ()
 	  ::std::move (lower_bound), ::std::move (upper_bound),
 	  Linemap::unknown_location (), has_ellipsis_syntax));
       }
-    case PATTERN_BIND:
-      {
+      case PATTERN_BIND: {
 	// only allow on single-segment paths
 	if (path.is_single_segment ())
 	  {
@@ -10300,8 +10242,7 @@ Parser::parse_tuple_struct_items ()
     case RIGHT_PAREN:
       return ::std::unique_ptr<AST::TupleStructItemsNoRange> (
 	new AST::TupleStructItemsNoRange (::std::move (lower_patterns)));
-    case DOT_DOT:
-      {
+      case DOT_DOT: {
 	// has an upper range that must be parsed separately
 	lexer.skip_token ();
 
@@ -10412,8 +10353,7 @@ Parser::parse_struct_pattern_field ()
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
-    case INT_LITERAL:
-      {
+      case INT_LITERAL: {
 	// tuple index
 	::std::string index_str = t->get_str ();
 	int index = atoi (index_str.c_str ());
@@ -10443,8 +10383,7 @@ Parser::parse_struct_pattern_field ()
       // branch on next token
       switch (lexer.peek_token (1)->get_id ())
 	{
-	case COLON:
-	  {
+	  case COLON: {
 	    // identifier-pattern
 	    Identifier ident = t->get_str ();
 	    lexer.skip_token ();
@@ -10468,8 +10407,7 @@ Parser::parse_struct_pattern_field ()
 						   t->get_locus ()));
 	  }
 	case COMMA:
-	case RIGHT_CURLY:
-	  {
+	  case RIGHT_CURLY: {
 	    // identifier only
 	    Identifier ident = t->get_str ();
 	    lexer.skip_token ();
@@ -10488,8 +10426,7 @@ Parser::parse_struct_pattern_field ()
 	  return NULL;
 	}
     case REF:
-    case MUT:
-      {
+      case MUT: {
 	// only identifier
 	bool has_ref = false;
 	if (t->get_id () == REF)
@@ -10557,8 +10494,7 @@ Parser::parse_stmt_or_expr_without_block ()
   t = lexer.peek_token ();
   switch (t->get_id ())
     {
-    case LET:
-      {
+      case LET: {
 	// let statement
 	::std::unique_ptr<AST::LetStmt> stmt (
 	  parse_let_stmt (::std::move (outer_attrs)));
@@ -10575,48 +10511,42 @@ Parser::parse_stmt_or_expr_without_block ()
     case CONST:
     case STATIC_TOK:
     case TRAIT:
-    case IMPL:
-      {
+      case IMPL: {
 	::std::unique_ptr<AST::VisItem> item (
 	  parse_vis_item (::std::move (outer_attrs)));
 	return ExprOrStmt (::std::move (item));
       }
-    /* TODO: implement union keyword but not really because of
-     * context-dependence crappy hack way to parse a union written below to
-     * separate it from the good code. */
-    // case UNION:
-    case UNSAFE:
-      { // maybe - unsafe traits are a thing
+      /* TODO: implement union keyword but not really because of
+       * context-dependence crappy hack way to parse a union written below to
+       * separate it from the good code. */
+      // case UNION:
+      case UNSAFE: { // maybe - unsafe traits are a thing
 	// if any of these (should be all possible VisItem prefixes), parse a
 	// VisItem can't parse item because would require reparsing outer
 	// attributes
 	const_TokenPtr t2 = lexer.peek_token (1);
 	switch (t2->get_id ())
 	  {
-	  case LEFT_CURLY:
-	    {
+	    case LEFT_CURLY: {
 	      // unsafe block
 	      ::std::unique_ptr<AST::ExprStmtWithBlock> stmt (
 		parse_expr_stmt_with_block (::std::move (outer_attrs)));
 	      return ExprOrStmt (::std::move (stmt));
 	    }
-	  case TRAIT:
-	    {
+	    case TRAIT: {
 	      // unsafe trait
 	      ::std::unique_ptr<AST::VisItem> item (
 		parse_vis_item (::std::move (outer_attrs)));
 	      return ExprOrStmt (::std::move (item));
 	    }
 	  case EXTERN_TOK:
-	  case FN_TOK:
-	    {
+	    case FN_TOK: {
 	      // unsafe function
 	      ::std::unique_ptr<AST::VisItem> item (
 		parse_vis_item (::std::move (outer_attrs)));
 	      return ExprOrStmt (::std::move (item));
 	    }
-	  case IMPL:
-	    {
+	    case IMPL: {
 	      // unsafe trait impl
 	      ::std::unique_ptr<AST::VisItem> item (
 		parse_vis_item (::std::move (outer_attrs)));
@@ -10635,8 +10565,7 @@ Parser::parse_stmt_or_expr_without_block ()
     case SUPER:
     case SELF:
     case CRATE:
-    case DOLLAR_SIGN:
-      {
+      case DOLLAR_SIGN: {
 	/* path-based thing so struct/enum or path or macro invocation of a
 	 * kind. however, the expressions are composable (i think) */
 
@@ -10668,16 +10597,14 @@ Parser::parse_stmt_or_expr_without_block ()
     case IF:
     case MATCH_TOK:
     case LEFT_CURLY:
-    case ASYNC:
-      {
+      case ASYNC: {
 	// all expressions with block, so cannot be final expr without block in
 	// function
 	::std::unique_ptr<AST::ExprStmtWithBlock> stmt (
 	  parse_expr_stmt_with_block (::std::move (outer_attrs)));
 	return ExprOrStmt (::std::move (stmt));
       }
-    case LIFETIME:
-      {
+      case LIFETIME: {
 	/* FIXME: are there any expressions without blocks that can have
 	 * lifetime as their first token? Or is loop expr the only one? */
 	// safe side for now:
@@ -10757,8 +10684,7 @@ Parser::parse_stmt_or_expr_without_block ()
 	}
       gcc_fallthrough ();
       // TODO: find out how to disable gcc "implicit fallthrough" warning
-    default:
-      {
+      default: {
 	// expression statement (without block) or expression itself - parse
 	// expression then make it statement if semi afterwards
 
@@ -10796,8 +10722,7 @@ Parser::parse_path_based_stmt_or_expr (
   const_TokenPtr t2 = lexer.peek_token ();
   switch (t2->get_id ())
     {
-    case EXCLAM:
-      {
+      case EXCLAM: {
 	// macro invocation or macro invocation semi - depends on whether there
 	// is a final ';' convert path in expr to simple path (as that is used
 	// in macros)
@@ -10912,8 +10837,7 @@ Parser::parse_path_based_stmt_or_expr (
 	    return ExprOrStmt::create_error ();
 	  }
       }
-    case LEFT_CURLY:
-      {
+      case LEFT_CURLY: {
 	/* definitely not a block:
 	 *  path '{' ident ','
 	 *  path '{' ident ':' [anything] ','
@@ -10924,7 +10848,7 @@ Parser::parse_path_based_stmt_or_expr (
 			       || (lexer.peek_token (2)->get_id () == COLON
 				   && (lexer.peek_token (4)->get_id () == COMMA
 				       || !can_tok_start_type (
-					    lexer.peek_token (3)->get_id ()))));
+					 lexer.peek_token (3)->get_id ()))));
 	::std::unique_ptr<AST::ExprWithoutBlock> expr = NULL;
 
 	if (not_a_block)
@@ -10965,8 +10889,7 @@ Parser::parse_path_based_stmt_or_expr (
 	// otherwise, expression
 	return ExprOrStmt (::std::move (expr));
       }
-    case LEFT_PAREN:
-      {
+      case LEFT_PAREN: {
 	// assume struct expr tuple (as struct-enum disambiguation requires name
 	// lookup) again, make statement if final ';'
 	::std::unique_ptr<AST::StructExprTuple> struct_expr
@@ -10993,8 +10916,7 @@ Parser::parse_path_based_stmt_or_expr (
 	// otherwise, expression
 	return ExprOrStmt (::std::move (struct_expr));
       }
-    default:
-      {
+      default: {
 	// assume path - make statement if final ';'
 	// lexer.skip_token();
 
@@ -11067,8 +10989,7 @@ Parser::parse_struct_expr_field ()
 	  return ::std::unique_ptr<AST::StructExprFieldIdentifier> (
 	    new AST::StructExprFieldIdentifier (::std::move (ident)));
 	}
-    case INT_LITERAL:
-      {
+      case INT_LITERAL: {
 	// parse tuple index field
 	int index = atoi (t->get_str ().c_str ());
 	lexer.skip_token ();
@@ -11478,21 +11399,21 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 
   switch (tok->get_id ())
     {
-    /*case IDENTIFIER: {
-	// when encountering identifier, lookup in scope
-	SymbolPtr s = scope.lookup(tok->get_str());
-	if (s == NULL) {
-	    rust_error_at(tok->get_locus(), "variable '%s' not declared in the
-    current scope", tok->get_str().c_str());
+      /*case IDENTIFIER: {
+	  // when encountering identifier, lookup in scope
+	  SymbolPtr s = scope.lookup(tok->get_str());
+	  if (s == NULL) {
+	      rust_error_at(tok->get_locus(), "variable '%s' not declared in the
+      current scope", tok->get_str().c_str());
 
-	    return Tree::error();
-	}
-	// expression is just its VAR_DECL that was stored in the Symbol at
-    declaration return Tree(s->get_tree_decl(), tok->get_locus());
-    }*/
-    // symbol table must be created in semantic analysis pass, so can't use this
-    case IDENTIFIER:
-      {
+	      return Tree::error();
+	  }
+	  // expression is just its VAR_DECL that was stored in the Symbol at
+      declaration return Tree(s->get_tree_decl(), tok->get_locus());
+      }*/
+      // symbol table must be created in semantic analysis pass, so can't use
+      // this
+      case IDENTIFIER: {
 	// DEBUG
 	fprintf (stderr, "beginning null denotation identifier handling\n");
 
@@ -11512,15 +11433,14 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	    // macro
 	    return parse_macro_invocation_partial (::std::move (path),
 						   ::std::move (outer_attrs));
-	  case LEFT_CURLY:
-	    {
+	    case LEFT_CURLY: {
 	      bool not_a_block
 		= lexer.peek_token (1)->get_id () == IDENTIFIER
 		  && (lexer.peek_token (2)->get_id () == COMMA
 		      || (lexer.peek_token (2)->get_id () == COLON
 			  && (lexer.peek_token (4)->get_id () == COMMA
 			      || !can_tok_start_type (
-				   lexer.peek_token (3)->get_id ()))));
+				lexer.peek_token (3)->get_id ()))));
 
 	      /* definitely not a block:
 	       *  path '{' ident ','
@@ -11598,12 +11518,11 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	  }
 	gcc_unreachable ();
       }
-    // FIXME: delegate to parse_literal_expr instead? would have to rejig tokens
-    // and whatever.
-    // FIXME: could also be path expression (and hence macro expression,
-    // struct/enum expr)
-    case LEFT_ANGLE:
-      {
+      // FIXME: delegate to parse_literal_expr instead? would have to rejig
+      // tokens and whatever.
+      // FIXME: could also be path expression (and hence macro expression,
+      // struct/enum expr)
+      case LEFT_ANGLE: {
 	// qualified path
 	// HACK: add outer attrs to path
 	AST::QualifiedPathInExpression path
@@ -11633,8 +11552,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
     case FALSE_LITERAL:
       return ::std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr ("false", AST::Literal::BOOL, tok->get_locus ()));
-    case LEFT_PAREN:
-      { // have to parse whole expression if inside brackets
+      case LEFT_PAREN: { // have to parse whole expression if inside brackets
 	/* recursively invoke parse_expression with lowest priority possible as
 	 * it it were a top-level expression. */
 	/*AST::Expr* expr = parse_expr();
@@ -11652,24 +11570,23 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 
 	return parse_grouped_or_tuple_expr (::std::move (outer_attrs), true);
       }
-    /*case PLUS: { // unary plus operator
-	// invoke parse_expr recursively with appropriate priority, etc. for
-    below AST::Expr* expr = parse_expr(LBP_UNARY_PLUS);
+      /*case PLUS: { // unary plus operator
+	  // invoke parse_expr recursively with appropriate priority, etc. for
+      below AST::Expr* expr = parse_expr(LBP_UNARY_PLUS);
 
-	if (expr == NULL)
-	    return NULL;
-	// can only apply to integer and float expressions
-	if (expr->get_type() != integer_type_node || expr->get_type() !=
-    float_type_node) { rust_error_at(tok->get_locus(), "operand of unary plus
-    must be int or float but it is %s", print_type(expr->get_type())); return
-    NULL;
-	}
+	  if (expr == NULL)
+	      return NULL;
+	  // can only apply to integer and float expressions
+	  if (expr->get_type() != integer_type_node || expr->get_type() !=
+      float_type_node) { rust_error_at(tok->get_locus(), "operand of unary plus
+      must be int or float but it is %s", print_type(expr->get_type())); return
+      NULL;
+	  }
 
-	return Tree(expr, tok->get_locus());
-    }*/
-    // Rust has no unary plus operator
-    case MINUS:
-      { // unary minus
+	  return Tree(expr, tok->get_locus());
+      }*/
+      // Rust has no unary plus operator
+      case MINUS: { // unary minus
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	::std::unique_ptr<AST::Expr> expr
@@ -11694,8 +11611,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	  new AST::NegationExpr (::std::move (expr), AST::NegationExpr::NEGATE,
 				 ::std::move (outer_attrs), tok->get_locus ()));
       }
-    case EXCLAM:
-      { // logical or bitwise not
+      case EXCLAM: { // logical or bitwise not
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	::std::unique_ptr<AST::Expr> expr
@@ -11719,8 +11635,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	  new AST::NegationExpr (::std::move (expr), AST::NegationExpr::NOT,
 				 ::std::move (outer_attrs), tok->get_locus ()));
       }
-    case ASTERISK:
-      {
+      case ASTERISK: {
 	// pointer dereference only - HACK: as struct expressions should always
 	// be value expressions, cannot be dereferenced
 	ParseRestrictions entered_from_unary;
@@ -11735,8 +11650,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 				    ::std::move (outer_attrs),
 				    tok->get_locus ()));
       }
-    case AMP:
-      {
+      case AMP: {
 	// (single) "borrow" expression - shared (mutable) or immutable
 	::std::unique_ptr<AST::Expr> expr = NULL;
 	bool is_mut_borrow = false;
@@ -11766,8 +11680,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	  new AST::BorrowExpr (::std::move (expr), is_mut_borrow, false,
 			       ::std::move (outer_attrs), tok->get_locus ()));
       }
-    case LOGICAL_AND:
-      {
+      case LOGICAL_AND: {
 	// (double) "borrow" expression - shared (mutable) or immutable
 	::std::unique_ptr<AST::Expr> expr = NULL;
 	bool is_mut_borrow = false;
@@ -11794,8 +11707,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	  new AST::BorrowExpr (::std::move (expr), is_mut_borrow, true,
 			       ::std::move (outer_attrs), tok->get_locus ()));
       }
-    case SCOPE_RESOLUTION:
-      {
+      case SCOPE_RESOLUTION: {
 	// TODO: fix: this is for global paths, i.e. ::std::string::whatever
 	rust_error_at (tok->get_locus (),
 		       "found null denotation scope resolution operator, and "
@@ -11806,8 +11718,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
     case SELF_ALIAS:
     case DOLLAR_SIGN:
     case CRATE:
-    case SUPER:
-      {
+      case SUPER: {
 	// DEBUG
 	fprintf (stderr, "beginning null denotation "
 			 "self/self-alias/dollar/crate/super handling\n");
@@ -11839,8 +11750,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 	    // macro
 	    return parse_macro_invocation_partial (::std::move (path),
 						   ::std::move (outer_attrs));
-	  case LEFT_CURLY:
-	    {
+	    case LEFT_CURLY: {
 	      // struct/enum expr struct
 	      fprintf (stderr, "can_be_struct_expr: %s\n",
 		       restrictions.can_be_struct_expr ? "true" : "false");
@@ -11851,7 +11761,7 @@ Parser::null_denotation_NEW (const_TokenPtr tok,
 		      || (lexer.peek_token (2)->get_id () == COLON
 			  && (lexer.peek_token (4)->get_id () == COMMA
 			      || !can_tok_start_type (
-				   lexer.peek_token (3)->get_id ()))));
+				lexer.peek_token (3)->get_id ()))));
 
 	      if (!restrictions.can_be_struct_expr && !not_a_block)
 		{
@@ -11942,9 +11852,8 @@ Parser::left_denotation (const_TokenPtr tok, ::std::unique_ptr<AST::Expr> left,
 
   switch (tok->get_id ())
     {
-    // FIXME: allow for outer attributes to be applied
-    case QUESTION_MARK:
-      {
+      // FIXME: allow for outer attributes to be applied
+      case QUESTION_MARK: {
 	Location left_locus = left->get_locus_slow ();
 	// error propagation expression - unary postfix
 	return ::std::unique_ptr<AST::ErrorPropagationExpr> (
@@ -12108,8 +12017,7 @@ Parser::left_denotation (const_TokenPtr tok, ::std::unique_ptr<AST::Expr> left,
 		     "found scope resolution operator in left denotation "
 		     "function - this should probably be handled elsewhere.");
       return NULL;
-    case DOT:
-      {
+      case DOT: {
 	// field expression or method call - relies on parentheses after next
 	// identifier or await if token after is "await" (unary postfix) or
 	// tuple index if token after is a decimal int literal
@@ -13222,8 +13130,7 @@ Parser::parse_struct_expr_struct_partial (
       /* technically this would give a struct base-only struct, but this
        * algorithm should work too. As such, AST type not happening. */
     case IDENTIFIER:
-    case INT_LITERAL:
-      {
+      case INT_LITERAL: {
 	// struct with struct expr fields
 
 	// parse struct expr fields
@@ -13504,8 +13411,7 @@ Parser::parse_closure_expr_pratt (const_TokenPtr tok,
     case OR:
       // no parameters, don't skip token
       break;
-    case PIPE:
-      {
+      case PIPE: {
 	// actually may have parameters
 	// don't skip token
 	const_TokenPtr t = lexer.peek_token ();
@@ -13687,10 +13593,8 @@ Parser::debug_dump_lex_output ()
 
 // Parses crate and dumps AST to stderr, recursively.
 void
-Parser::debug_dump_ast_output ()
+Parser::debug_dump_ast_output (AST::Crate &crate)
 {
-  AST::Crate crate = parse_crate ();
-
   // print crate "as string", which then calls each item as string, etc.
   fprintf (stderr, "%s", crate.as_string ().c_str ());
 }

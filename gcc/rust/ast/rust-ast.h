@@ -303,7 +303,7 @@ class DelimTokenTree : public TokenTree, public AttrInput
   // tok) const;
   //::std::vector< ::std::unique_ptr<MetaItemInner> > parse_meta_item_seq(const
   //::std::vector< ::std::unique_ptr<Token> >& token_stream, int& i) const;
-  //Literal
+  // Literal
   // parse_literal(const ::std::unique_ptr<Token>& tok) const;
   //::std::unique_ptr<MetaItem> parse_path_meta_item(const ::std::vector<
   //::std::unique_ptr<Token> >& token_stream, int& i) const; bool
@@ -818,6 +818,8 @@ public:
   virtual void
   add_crate_name (::std::vector< ::std::string> &names ATTRIBUTE_UNUSED) const
   {}
+
+  virtual void accept_vis (ASTVisitor &vis ATTRIBUTE_UNUSED) {}
 
 protected:
   // Constructor

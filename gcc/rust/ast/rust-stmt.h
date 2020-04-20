@@ -46,6 +46,7 @@ protected:
  * introduces new name into scope */
 class LetStmt : public Stmt
 {
+public:
   // bool has_outer_attrs;
   ::std::vector<Attribute> outer_attrs;
 
@@ -62,7 +63,6 @@ class LetStmt : public Stmt
 
   Location locus;
 
-public:
   // Returns whether let statement has outer attributes.
   inline bool has_outer_attrs () const { return !outer_attrs.empty (); }
 

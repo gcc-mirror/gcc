@@ -1310,6 +1310,7 @@ protected:
 // Rust function declaration AST node
 class Function : public VisItem, public InherentImplItem, public TraitImplItem
 {
+public:
   FunctionQualifiers qualifiers;
 
   Identifier function_name;
@@ -1334,7 +1335,6 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
 
   Location locus;
 
-public:
   /*~Function() {
       delete function_body;
   }*/

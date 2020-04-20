@@ -556,7 +556,7 @@ public:
 
   // Dumps all lexer output.
   void debug_dump_lex_output ();
-  void debug_dump_ast_output ();
+  void debug_dump_ast_output (AST::Crate &crate);
 
 private:
   // The lexer associated with the parser.
