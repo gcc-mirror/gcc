@@ -1,3 +1,13 @@
+2020-04-20  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/94622
+	* config/rs6000/sync.md (load_quadpti): Add attr "prefixed"
+	if TARGET_PREFIXED.
+	(store_quadpti): Ditto.
+	(atomic_load<mode>): Do not swap doublewords if TARGET_PREFIXED as
+	plq will be used and doesn't need it.
+	(atomic_store<mode>): Ditto, for pstq.
+
 2020-04-22  Erick Ochoa  <erick.ochoa@theobroma-systems.com>
 
 	* doc/invoke.texi: Update flags turned on by -O3.
