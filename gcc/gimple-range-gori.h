@@ -169,8 +169,7 @@ protected:
   virtual bool compute_logical_operands (irange &r, gimple *stmt,
 					 const irange &lhs,
 					 tree name, const irange *name_range);
-  void compute_logical_operands_in_chain (irange &true_range,
-					  irange &false_range,
+  void compute_logical_operands_in_chain (class tf_range &range,
 					  gimple *stmt, const irange &lhs,
 					  tree name,
 					  const irange *name_range,
@@ -183,10 +182,8 @@ protected:
 
   bool logical_combine (irange &r, enum tree_code code,
 			const irange &lhs,
-			const irange &op1_true,
-			const irange &op1_false,
-			const irange &op2_true,
-			const irange &op2_false);
+			const class tf_range &op1_range,
+			const class tf_range &op2_range);
   int_range<1> m_bool_zero;           // Boolean false cached.
   int_range<1> m_bool_one;            // Boolean true cached.
 

@@ -758,6 +758,14 @@ range_is_either_true_or_false (const irange &r)
   return (r.singleton_p () || !r.contains_p (build_zero_cst (type)));
 }
 
+struct tf_range
+{
+  tf_range () { }
+  tf_range (const irange &t_range, const irange &f_range)
+    : true_range (t_range), false_range (f_range) { }
+  widest_irange true_range, false_range;
+};
+
 // Evaluate a binary logical expression by combining the true and
 // false ranges for each of the operands based on the result value in
 // the LHS.
@@ -765,13 +773,12 @@ range_is_either_true_or_false (const irange &r)
 bool
 gori_compute::logical_combine (irange &r, enum tree_code code,
 			       const irange &lhs,
-			       const irange &op1_true,
-			       const irange &op1_false,
-			       const irange &op2_true,
-			       const irange &op2_false)
+			       const tf_range &op1, const tf_range &op2)
 {
-  if (op1_true.varying_p () && op1_false.varying_p ()
-      && op2_true.varying_p () && op2_false.varying_p ())
+  if (op1.true_range.varying_p ()
+      && op1.false_range.varying_p ()
+      && op2.true_range.varying_p ()
+      && op2.false_range.varying_p ())
     return false;
 
   // This is not a simple fold of a logical expression, rather it
@@ -812,10 +819,8 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   if (!range_is_either_true_or_false (lhs))
     {
       widest_irange r1;
-      if (logical_combine (r1, code, m_bool_zero, op1_true, op1_false,
-			   op2_true, op2_false)
-	  && logical_combine (r, code, m_bool_one, op1_true, op1_false,
-			      op2_true, op2_false))
+      if (logical_combine (r1, code, m_bool_zero, op1, op2)
+	  && logical_combine (r, code, m_bool_one, op1, op2))
 	{
 	  r.union_ (r1);
 	  return true;
@@ -832,18 +837,18 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         if (!lhs.zero_p ())
 	  {
 	    // The TRUE side is the intersection of the the 2 true ranges.
-	    r = op1_true;
-	    r.intersect (op2_true);
+	    r = op1.true_range;
+	    r.intersect (op2.true_range);
 	  }
 	else
 	  {
 	    // The FALSE side is the union of the other 3 cases.
-	    widest_irange ff (op1_false);
-	    ff.intersect (op2_false);
-	    widest_irange tf (op1_true);
-	    tf.intersect (op2_false);
-	    widest_irange ft (op1_false);
-	    ft.intersect (op2_true);
+	    widest_irange ff (op1.false_range);
+	    ff.intersect (op2.false_range);
+	    widest_irange tf (op1.true_range);
+	    tf.intersect (op2.false_range);
+	    widest_irange ft (op1.false_range);
+	    ft.intersect (op2.true_range);
 	    r = ff;
 	    r.union_ (tf);
 	    r.union_ (ft);
@@ -859,19 +864,19 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	    // An OR operation will only take the FALSE path if both
 	    // operands are false. so [20, 255] intersect [0, 5] is the
 	    // union: [0,5][20,255].  */
-	    r = op1_false;
-	    r.intersect (op2_false);
+	    r = op1.false_range;
+	    r.intersect (op2.false_range);
 	  }
 	else
 	  {
 	    // The TRUE side of an OR operation will be the union of
 	    // the other three combinations.
-	    widest_irange tt (op1_true);
-	    tt.intersect (op2_true);
-	    widest_irange tf (op1_true);
-	    tf.intersect (op2_false);
-	    widest_irange ft (op1_false);
-	    ft.intersect (op2_true);
+	    widest_irange tt (op1.true_range);
+	    tt.intersect (op2.true_range);
+	    widest_irange tf (op1.true_range);
+	    tf.intersect (op2.false_range);
+	    widest_irange ft (op1.false_range);
+	    ft.intersect (op2.true_range);
 	    r = tt;
 	    r.union_ (tf);
 	    r.union_ (ft);
@@ -923,8 +928,7 @@ gori_compute::optimize_logical_operands (irange &true_range,
 // NAME coming into STMT.
 
 void
-gori_compute::compute_logical_operands_in_chain (irange &true_range,
-						 irange &false_range,
+gori_compute::compute_logical_operands_in_chain (tf_range &range,
 						 gimple *stmt,
 						 const irange &lhs,
 						 tree name,
@@ -934,23 +938,23 @@ gori_compute::compute_logical_operands_in_chain (irange &true_range,
   if (!op_in_chain)
     {
       // If op is not in chain, use its known value.
-      get_tree_range (true_range, name, name, name_range);
-      false_range = true_range;
+      get_tree_range (range.true_range, name, name, name_range);
+      range.false_range = range.true_range;
       return;
     }
 
-  if (optimize_logical_operands (true_range, false_range,
+  if (optimize_logical_operands (range.true_range, range.false_range,
 				 stmt, lhs, name, name_range, op))
     return;
 
   // Calulate ranges for true and false on both sides, since the false
   // path is not always a simple inversion of the true side.
-  if (!compute_operand_range (true_range, SSA_NAME_DEF_STMT (op),
+  if (!compute_operand_range (range.true_range, SSA_NAME_DEF_STMT (op),
 			      m_bool_one, name, name_range))
-    get_tree_range (true_range, name, name, name_range);
-  if (!compute_operand_range (false_range, SSA_NAME_DEF_STMT (op),
+    get_tree_range (range.true_range, name, name, name_range);
+  if (!compute_operand_range (range.false_range, SSA_NAME_DEF_STMT (op),
 			      m_bool_zero, name, name_range))
-    get_tree_range (false_range, name, name, name_range);
+    get_tree_range (range.false_range, name, name, name_range);
 }
 
 // Given a logical STMT, calculate true and false for each potential
@@ -979,13 +983,14 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
-  widest_irange op1_true, op1_false, op2_true, op2_false;
-  compute_logical_operands_in_chain (op1_true, op1_false, stmt, lhs,
+  tf_range op1_range, op2_range;
+  compute_logical_operands_in_chain (op1_range, stmt, lhs,
 				     name, name_range, op1, op1_in_chain);
-  compute_logical_operands_in_chain (op2_true, op2_false, stmt, lhs,
+  compute_logical_operands_in_chain (op2_range, stmt, lhs,
 				     name, name_range, op2, op2_in_chain);
+  // FIXME: just return logical_combine result.
   if (!logical_combine (r, gimple_expr_code (stmt), lhs,
-			op1_true, op1_false, op2_true, op2_false))
+			op1_range, op2_range))
     r.set_varying (TREE_TYPE (name));
 
   return true;
@@ -1310,26 +1315,22 @@ class logical_stmt_cache
 public:
   logical_stmt_cache ();
   ~logical_stmt_cache ();
-  void set_range (tree carrier, tree name,
-		  const irange &true_range, const irange &false_range);
-  bool get_range (irange &r, tree carrier, tree name,
-		  const irange &carrier_range) const;
-  bool get_true_range (irange &r, tree carrier, tree name) const;
-  bool get_false_range (irange &r, tree carrier, tree name) const;
+  void set_range (tree carrier, tree name, const tf_range &);
+  bool get_range (tf_range &r, tree carrier, tree name) const;
   bool cacheable_p (const gimple *, const irange *lhs_range = NULL) const;
   void dump (FILE *, gimple *stmt) const;
   tree same_cached_name (tree op1, tree op2) const;
 private:
   tree cached_name (tree carrier) const;
-  void slot_diagnostics (tree carrier,
-			 const irange &true_range,
-			 const irange &false_range) const;
+  void slot_diagnostics (tree carrier, const tf_range &range) const;
   struct cache_entry
   {
-    tree name;
-    widest_irange true_range;
-    widest_irange false_range;
+    cache_entry (tree name, const irange &t_range, const irange &f_range)
+      : name (name), range (t_range, f_range) { }
     void dump (FILE *out) const;
+
+    tree name;
+    tf_range range;
   };
   vec<cache_entry *> m_ssa_cache;
 };
@@ -1354,23 +1355,21 @@ logical_stmt_cache::cache_entry::dump (FILE *out) const
   fprintf (out, "name=");
   print_generic_expr (out, name, TDF_SLIM);
   fprintf (out, " ");
-  true_range.dump (out);
+  range.true_range.dump (out);
   fprintf (out, ", ");
-  false_range.dump (out);
+  range.false_range.dump (out);
   fprintf (out, "\n");
 }
 
 void
-logical_stmt_cache::set_range (tree carrier, tree name,
-			       const irange &true_range,
-			       const irange &false_range)
+logical_stmt_cache::set_range (tree carrier, tree name, const tf_range &range)
 {
   unsigned version = SSA_NAME_VERSION (carrier);
   if (version >= m_ssa_cache.length ())
     m_ssa_cache.safe_grow_cleared (num_ssa_names + num_ssa_names / 10);
 
   cache_entry *slot = m_ssa_cache[version];
-  slot_diagnostics (carrier, true_range, false_range);
+  slot_diagnostics (carrier, range);
   if (slot)
     {
       // The IL must have changed.  Update the carried SSA name for
@@ -1379,16 +1378,13 @@ logical_stmt_cache::set_range (tree carrier, tree name,
 	slot->name = name;
       return;
     }
-  slot = m_ssa_cache[version] = new cache_entry;
-  slot->name = name;
-  slot->true_range = true_range;
-  slot->false_range = false_range;
+  m_ssa_cache[version]
+    = new cache_entry (name, range.true_range, range.false_range);
 }
 
 void
 logical_stmt_cache::slot_diagnostics (tree carrier,
-				      const irange &true_range,
-				      const irange &false_range) const
+				      const tf_range &range) const
 {
   gimple *stmt = SSA_NAME_DEF_STMT (carrier);
   unsigned version = SSA_NAME_VERSION (carrier);
@@ -1408,59 +1404,33 @@ logical_stmt_cache::slot_diagnostics (tree carrier,
     fprintf (dump_file ? dump_file : stderr,
 	     "reusing range for SSA #%d\n", version);
 
-  if (CHECKING_P && (slot->true_range != true_range
-		     || slot->false_range != false_range))
+  if (CHECKING_P && (slot->range.true_range != range.true_range
+		     || slot->range.false_range != range.false_range))
     {
       fprintf (stderr, "FATAL: range altered for cached: ");
       dump (stderr, stmt);
       fprintf (stderr, "Attempt to change to:\n");
       fprintf (stderr, "TRUE=");
-      true_range.dump (stderr);
+      range.true_range.dump (stderr);
       fprintf (stderr, ", FALSE=");
-      false_range.dump (stderr);
+      range.false_range.dump (stderr);
       fprintf (stderr, "\n");
       gcc_unreachable ();
     }
 }
 
 bool
-logical_stmt_cache::get_range (irange &r, tree carrier, tree name,
-			       const irange &carrier_range) const
+logical_stmt_cache::get_range (tf_range &r, tree carrier, tree name) const
 {
   gcc_checking_assert (cacheable_p (SSA_NAME_DEF_STMT (carrier)));
   if (cached_name (carrier) == name)
     {
-      if (carrier_range.zero_p ())
-	get_false_range (r, carrier, name);
-      else
-	get_true_range (r, carrier, name);
-      return true;
-    }
-  return false;
-}
-
-bool
-logical_stmt_cache::get_true_range (irange &r, tree carrier, tree name) const
-{
-  gcc_checking_assert (name == cached_name (carrier));
-  unsigned version = SSA_NAME_VERSION (carrier);
-  if (m_ssa_cache[version])
-    {
-      r = m_ssa_cache[version]->true_range;
-      return true;
-    }
-  return false;
-}
-
-bool
-logical_stmt_cache::get_false_range (irange &r, tree carrier, tree name) const
-{
-  gcc_checking_assert (name == cached_name (carrier));
-  unsigned version = SSA_NAME_VERSION (carrier);
-  if (m_ssa_cache[version])
-    {
-      r = m_ssa_cache[version]->false_range;
-      return true;
+      unsigned version = SSA_NAME_VERSION (carrier);
+      if (m_ssa_cache[version])
+	{
+	  r = m_ssa_cache[version]->range;
+	  return true;
+	}
     }
   return false;
 }
@@ -1530,9 +1500,9 @@ logical_stmt_cache::dump (FILE *out, gimple *stmt) const
       fprintf (out, " carrier(%d)= ", SSA_NAME_VERSION (carrier));
       print_generic_expr (out, carrier);
       fprintf (out, "\n\tTRUE=");
-      entry->true_range.dump (out);
+      entry->range.true_range.dump (out);
       fprintf (out, ", FALSE=");
-      entry->false_range.dump (out);
+      entry->range.false_range.dump (out);
       fprintf (out, "\n");
     }
   else
@@ -1568,14 +1538,18 @@ gori_compute_cache::compute_operand_range (irange &r, gimple *stmt,
   if (cacheable)
     {
       tree carrier = gimple_assign_lhs (stmt);
-      if (m_cache->get_range (r, carrier, name, lhs))
+      tf_range range;
+      if (m_cache->get_range (range, carrier, name))
 	{
+	  if (lhs.zero_p ())
+	    r = range.false_range;
+	  else
+	    r = range.true_range;
 	  if (name_range)
 	    r.intersect (*name_range);
 	  return true;
 	}
     }
-
   bool res = super::compute_operand_range (r, stmt, lhs, name, name_range);
   if (res && cacheable)
     cache_comparison (stmt);
@@ -1590,7 +1564,6 @@ gori_compute_cache::cache_comparison (gimple *stmt)
   enum tree_code code = gimple_expr_code (stmt);
   tree op1 = gimple_range_operand1 (stmt);
   tree op2 = gimple_range_operand2 (stmt);
-  widest_irange r_true_side, r_false_side;
 
   if (TREE_CODE (op2) == INTEGER_CST)
     cache_comparison_with_int (stmt, code, op1, op2);
@@ -1611,7 +1584,7 @@ gori_compute_cache::cache_comparison_with_int (gimple *stmt,
   tree type = TREE_TYPE (op1);
   handler->op1_range (r_true_side, type, m_bool_one, op2_range);
   handler->op1_range (r_false_side, type, m_bool_zero, op2_range);
-  m_cache->set_range (lhs, op1, r_true_side, r_false_side);
+  m_cache->set_range (lhs, op1, tf_range (r_true_side, r_false_side));
 }
 
 void
@@ -1621,20 +1594,17 @@ gori_compute_cache::cache_comparison_with_ssa (gimple *stmt,
 {
   tree cached_name = m_cache->same_cached_name (op1, op2);
   widest_irange r_true_side, r_false_side;
-  widest_irange op1_true, op1_false, op2_true, op2_false;
-  gcc_assert (m_cache->get_true_range (op1_true, op1, cached_name));
-  gcc_assert (m_cache->get_false_range (op1_false, op1, cached_name));
-  gcc_assert (m_cache->get_true_range (op2_true, op2, cached_name));
-  gcc_assert (m_cache->get_false_range (op2_false, op2, cached_name));
+  tf_range op1_range, op2_range;
+  gcc_assert (m_cache->get_range (op1_range, op1, cached_name));
+  gcc_assert (m_cache->get_range (op2_range, op2, cached_name));
   gcc_checking_assert (logical_combine (r_true_side, code, m_bool_one,
-					op1_true, op1_false,
-					op2_true, op2_false));
+					op1_range, op2_range));
   gcc_checking_assert (logical_combine (r_false_side, code, m_bool_zero,
-					op1_true, op1_false,
-					op2_true, op2_false));
+					op1_range, op2_range));
   if (!r_true_side.varying_p () && !r_false_side.varying_p ())
     {
       tree carrier = gimple_assign_lhs (stmt);
-      m_cache->set_range (carrier, cached_name, r_true_side, r_false_side);
+      m_cache->set_range (carrier, cached_name,
+			  tf_range (r_true_side, r_false_side));
     }
 }
