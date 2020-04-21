@@ -1,3 +1,14 @@
+2020-04-21  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94647
+	* c-c++-common/Warray-bounds-2.c: Adjust a test case and add a new one.
+	* c-c++-common/Warray-bounds-3.c: Add tests for missing warnings.
+	* c-c++-common/Wrestrict.c: Invert bounds in printed ranges.
+	* gcc.dg/Warray-bounds-59.c: New test.
+	* gcc.dg/Wrestrict-10.c: Add a missing warning.
+	* gcc.dg/Wrestrict-5.c: Adjust text of expected warning.
+	* gcc.dg/Wrestrict-6.c: Expect to see a range of overlap offsets.
+
 2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94514

@@ -1,3 +1,11 @@
+2020-04-21  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94647
+	* gimple-ssa-warn-restrict.c (builtin_access::builtin_access): Correct
+	the computation of the lower bound of the source access size.
+	(builtin_access::generic_overlap): Remove a hack for setting ranges
+	of overlap offsets.
+
 2020-04-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/som.h (ASM_WEAKEN_LABEL): Delete.
