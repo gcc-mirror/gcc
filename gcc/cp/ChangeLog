@@ -1,5 +1,9 @@
 2020-04-21  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94549
+	* constraint.cc (satisfy_declaration_constraints): Don't strip the
+	inherited constructor if it already has template information.
+
 	PR c++/94597
 	* pt.c (any_template_parm_r) <case IDENTIFIER_NODE>: New case.  If this
 	is a conversion operator, visit its TREE_TYPE.

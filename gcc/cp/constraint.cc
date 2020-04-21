@@ -2737,9 +2737,10 @@ satisfy_declaration_constraints (tree t, subst_info info)
 {
   gcc_assert (DECL_P (t));
 
-  /* For inherited constructors, consider the original declaration;
-     it has the correct template information attached. */
-  if (flag_new_inheriting_ctors)
+  if (!DECL_TEMPLATE_INFO (t))
+    /* For inherited constructors without template information, consider
+       the original declaration; it has the correct template information
+       attached.  */
     t = strip_inheriting_ctors (t);
 
   /* Update the declaration for diagnostics.  */
