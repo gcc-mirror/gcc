@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfloat-abi=softfp -mlittle-endian" } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
+/* { dg-options "-O2 -mlittle-endian" } */
 /* { dg-add-options arm_v8_1m_mve } */
 
 long long longval1;
