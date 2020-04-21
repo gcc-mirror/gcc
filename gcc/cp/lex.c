@@ -1007,7 +1007,6 @@ cxx_dup_lang_specific_decl (tree node)
   DECL_LANG_SPECIFIC (node) = ld;
   DECL_MODULE_ENTITY_P (node) = false;
   DECL_MODULE_IMPORT_P (node) = false;
-  DECL_MODULE_PARTITION_P (node) = false;
   DECL_ATTACHED_DECLS_P (node) = false;
 
   if (GATHER_STATISTICS)

@@ -1730,15 +1730,6 @@ check_constraint_info (tree t)
 #define DECL_MODULE_IMPORT_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
 
-/* True if we're the primary interface and this decl was imported from
-   a partition, or is in the PMF (not implemented).  */
-// FIXME: We can probably elide this, as we can simply find the
-// importing module and note it is a partition.  Plus we cannot set
-// this on a namespace, because that'd confuse other users of the same
-// namespace
-#define DECL_MODULE_PARTITION_P(NODE) \
-  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_partition_p)
-
 /* True if this decl is in the entity hash & array.  This means that
    some variant was imported, even if DECL_MODULE_IMPORT_P is false.  */
 #define DECL_MODULE_ENTITY_P(NODE) \
@@ -2807,9 +2798,6 @@ struct GTY(()) lang_decl_base {
 
   unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
   unsigned module_import_p : 1;     	   /* from an import */
-  unsigned module_partition_p : 1;	   /* from an imported
-					      partition, or in the
-					      PMF.  */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
   /* Has specializations or members yet to load.  */
@@ -2819,7 +2807,7 @@ struct GTY(()) lang_decl_base {
   /* Is in the decl-attached hash table, (with attached decls).  */
   unsigned attached_decls_p : 1;
   
-  /* 9 spare bits.  */
+  /* 10 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */

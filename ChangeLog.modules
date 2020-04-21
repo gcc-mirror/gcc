@@ -1,3 +1,19 @@
+2020-04-21  Nathan Sidwell  <nathan@acm.org>
+
+	Remove DECL_MODULE_PARTITION_P, it is not needed.
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_PARTITION_P): Delete.
+	(lang_decl_base): Remove module_partition_p bitfield.
+	* decl.c (duplicate_decls): No need to check or reset it.
+	* lex.c (cxx_dup_lang_specific): No need to reset it.
+	* pt.c (build_template_decl): No need to check it.
+	(tsubst_template_decl): Likewise, or reset it.
+	* module.cc (trees_in::decl_value): No need to set it.
+	(trees_out::decl_node): No need to check it.
+	(depset::hash::make_dependency): Likewise, Adjust import marking
+	code.
+	(set_instantiating_module): No need to reset it.
+
 2020-04-17  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master a28edad3da5c59f09565d3d42e20be1a924986c4

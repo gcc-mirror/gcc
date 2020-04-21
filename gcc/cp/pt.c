@@ -4847,8 +4847,7 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
       if (DECL_LANG_SPECIFIC (decl))
 	{
 	  DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (decl);
-	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (decl)
-			       && !DECL_MODULE_PARTITION_P (decl));
+	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (decl));
 	}
     }
 
@@ -14089,10 +14088,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
       if (DECL_LANG_SPECIFIC (inner))
 	{
 	  DECL_MODULE_PURVIEW_P (r) = DECL_MODULE_PURVIEW_P (inner);
-	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (inner)
-			       && !DECL_MODULE_PARTITION_P (inner));
+	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (inner));
 	  DECL_MODULE_IMPORT_P (r) = false;
-	  DECL_MODULE_PARTITION_P (r) = false;
 	}
     }
 

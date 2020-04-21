@@ -2844,10 +2844,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
 	    {
 	      DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
-	      gcc_checking_assert (!DECL_MODULE_IMPORT_P (olddecl)
-				   && !DECL_MODULE_PARTITION_P (olddecl));
+	      gcc_checking_assert (!DECL_MODULE_IMPORT_P (olddecl));
 	      DECL_MODULE_IMPORT_P (tmpl) = false;
-	      DECL_MODULE_PARTITION_P (tmpl) = false;
 	    }
 	}
 

@@ -7824,14 +7824,6 @@ trees_in::decl_value ()
 	      retrofit_lang_decl (inner);
 	      DECL_MODULE_IMPORT_P (inner) = true;
 	    }
-
-	  if (state->is_partition ()
-	      && (module_interface_p () && !module_partition_p ()))
-	    {
-	      DECL_MODULE_PARTITION_P (decl) = true;
-	      if (inner_tag)
-		DECL_MODULE_PARTITION_P (inner) = true;
-	    }
 	}
 
       if (constraints)
@@ -8221,8 +8213,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	   || TREE_CODE (decl) == TEMPLATE_DECL
 	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
 	   || (DECL_LANG_SPECIFIC (decl)
-	       && DECL_MODULE_IMPORT_P (decl)
-	       && !DECL_MODULE_PARTITION_P (decl)))
+	       && DECL_MODULE_IMPORT_P (decl)))
     dep = dep_hash->add_dependency (decl,
 				    TREE_CODE (decl) == NAMESPACE_DECL
 				    && !DECL_NAMESPACE_ALIAS (decl)
@@ -11771,8 +11762,6 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 			       == DECL_MODULE_PURVIEW_P (res));
 	  gcc_checking_assert ((DECL_MODULE_IMPORT_P (decl)
 				== DECL_MODULE_IMPORT_P (res)));
-	  gcc_checking_assert ((DECL_MODULE_PARTITION_P (decl)
-				== DECL_MODULE_PARTITION_P (res)));
 	}
     }
 
@@ -11805,37 +11794,34 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
 	}
 
-      if (ek == EK_USING)
-	;
-      else if (DECL_LANG_SPECIFIC (decl)
-	       && DECL_MODULE_IMPORT_P (decl)
-	       && !DECL_MODULE_PARTITION_P (decl))
+      if (ek != EK_USING
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_MODULE_IMPORT_P (decl))
 	{
 	  /* Store the module number and index in cluster/section, so
 	     we don't have to look them up again.  */
 	  unsigned index = import_entity_index (decl);
 	  module_state *from = import_entity_module (index);
-	  if (!from->remap)
-	    // FIXME: We can't set DECL_MODULE_PARTITION_P on a
-	    // namespace, because it is shared.  See fixme in
-	    // cp-tree.h about getting rid of D_M_P_P
-	    gcc_checking_assert (ek == EK_NAMESPACE);
-	  else
+	  // Remap will be zero for imports from partitions, which we
+	  // want to treat asif declared in this TU.
+	  if (from->remap)
 	    {
 	      dep->cluster = index - from->entity_lwm;
 	      dep->section = from->remap;
 	      dep->set_flag_bit<DB_IMPORTED_BIT> ();
 	    }
 	}
-      else if (ek == EK_DECL
-	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
-	       && !(TREE_CODE (decl) == TEMPLATE_DECL
-		    && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl)))
+
+      if (ek == EK_DECL
+	  && !dep->is_import ()
+	  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
+	  && !(TREE_CODE (decl) == TEMPLATE_DECL
+	       && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl)))
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
 
-	  // FIXME: I think I have to defer some internal linakage
+	  // FIXME: I think I have to defer some internal linkage
 	  // checking until later, as we can be inside a member of an
 	  // internal linkage entity, and we don't want to complain
 	  // about that touching internal things itself.
@@ -17562,7 +17548,6 @@ set_instantiating_module (tree decl)
       DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
       /* If this was imported, we'll still be in the entity_hash.  */
       DECL_MODULE_IMPORT_P (decl) = false;
-      DECL_MODULE_PARTITION_P (decl) = false;
     }
 }
 
