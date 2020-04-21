@@ -1,3 +1,9 @@
+2020-04-20  Thomas Rodgers  <trodgers@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Add additional_flags=
+	-DTBB_SUPRESS_DEPRECATED_MESSAGES=1 to suppress warnings when
+	compiling with a newer Thread Building Blocks.
+
 2020-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/24_iterators/istreambuf_iterator/sentinel.cc: New test.

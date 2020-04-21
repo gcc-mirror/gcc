@@ -1597,7 +1597,8 @@ proc check_effective_target_tbb-backend { } {
         puts $f "}"
         close $f
 
-        set lines [v3_target_compile $src $exe executable "additional_flags=-std=c++17 additional_flags=-ltbb"]
+        set lines [v3_target_compile $src $exe executable "additional_flags=-std=c++17 additional_flags=-ltbb
+                                                           additional_flags=-DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"]
         file delete $src
 
         if [string match "" $lines] {
