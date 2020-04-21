@@ -7750,13 +7750,24 @@ package body Sem_Attr is
         or else (Is_Entity_Name (P)
                  and then Ekind (Entity (P)) = E_Enumeration_Literal)
       then
+         --  For Alignment, give alignment of object if available, otherwise we
+         --  cannot fold Alignment.
+
+         if Id = Attribute_Alignment then
+            if Is_Entity_Name (P) and then Known_Alignment (Entity (P)) then
+               Compile_Time_Known_Attribute (N, Alignment (Entity (P)));
+            else
+               Check_Expressions;
+            end if;
+
+            return;
 
          --  For Component_Size, the prefix is an array object, and we apply
          --  the attribute to the type of the object. This is allowed for both
          --  unconstrained and constrained arrays, since the bounds have no
          --  influence on the value of this attribute.
 
-         if Id = Attribute_Component_Size then
+         elsif Id = Attribute_Component_Size then
             P_Entity := Etype (P);
 
          --  For Enum_Rep, evaluation depends on the nature of the prefix and
@@ -7818,13 +7829,126 @@ package body Sem_Attr is
                return;
             end if;
 
-         --  For First and Last, the prefix is an array object, and we apply
-         --  the attribute to the type of the array, but we need a constrained
-         --  type for this, so we use the actual subtype if available.
+         --  For Bit_Position, give Component_Bit_Offset of object if available
+         --  otherwise we cannot fold Bit_Position. Note that the attribute can
+         --  be applied to a naked record component in generated code, in which
+         --  case the prefix is an identifier that references the component or
+         --  discriminant entity.
 
-         elsif Id = Attribute_First or else
-               Id = Attribute_Last  or else
-               Id = Attribute_Length
+         elsif Id = Attribute_Bit_Position then
+            declare
+               CE : Entity_Id;
+
+            begin
+               if Is_Entity_Name (P) then
+                  CE := Entity (P);
+               else
+                  CE := Entity (Selector_Name (P));
+               end if;
+
+               if Known_Static_Component_Bit_Offset (CE) then
+                  Compile_Time_Known_Attribute
+                    (N, Component_Bit_Offset (Entity (P)));
+               else
+                  Check_Expressions;
+               end if;
+
+               return;
+            end;
+
+         --  For Position, in Ada 2005 (or later) if we have the non-default
+         --  bit order, we return the original value as given in the component
+         --  clause (RM 2005 13.5.2(3/2)). Otherwise (Ada 83/95, or later with
+         --  default bit order) return the value if it is known statically.
+
+         elsif Id = Attribute_Position then
+            declare
+               CE : constant Entity_Id := Entity (Selector_Name (P));
+
+            begin
+               if Present (Component_Clause (CE))
+                 and then Ada_Version >= Ada_2005
+                 and then Reverse_Bit_Order (Scope (CE))
+               then
+                  Compile_Time_Known_Attribute
+                    (N, Expr_Value (Position (Component_Clause (CE))));
+
+               elsif Known_Static_Component_Bit_Offset (CE) then
+                  Compile_Time_Known_Attribute
+                    (N, Component_Bit_Offset (CE) / System_Storage_Unit);
+
+               else
+                  Check_Expressions;
+               end if;
+
+               return;
+            end;
+
+         --  For First_Bit, in Ada 2005 (or later) if we have the non-default
+         --  bit order, we return the original value as given in the component
+         --  clause (RM 2005 13.5.2(3/2)). Otherwise (Ada 83/95, or later with
+         --  default bit order) return the value if it is known statically.
+
+         elsif Id = Attribute_First_Bit then
+            declare
+               CE : constant Entity_Id := Entity (Selector_Name (P));
+
+            begin
+               if Present (Component_Clause (CE))
+                 and then Ada_Version >= Ada_2005
+                 and then Reverse_Bit_Order (Scope (CE))
+               then
+                  Compile_Time_Known_Attribute
+                    (N, Expr_Value (First_Bit (Component_Clause (CE))));
+
+               elsif Known_Static_Component_Bit_Offset (CE) then
+                  Compile_Time_Known_Attribute
+                    (N, Component_Bit_Offset (CE) mod System_Storage_Unit);
+
+               else
+                  Check_Expressions;
+               end if;
+
+               return;
+            end;
+
+         --  For Last_Bit, in Ada 2005 (or later) if we have the non-default
+         --  bit order, we return the original value as given in the component
+         --  clause (RM 2005 13.5.2(3/2)). Otherwise (Ada 83/95, or later with
+         --  default bit order) return the value if it is known statically.
+
+         elsif Id = Attribute_Last_Bit then
+            declare
+               CE : constant Entity_Id := Entity (Selector_Name (P));
+
+            begin
+               if Present (Component_Clause (CE))
+                 and then Ada_Version >= Ada_2005
+                 and then Reverse_Bit_Order (Scope (CE))
+               then
+                  Compile_Time_Known_Attribute
+                    (N, Expr_Value (Last_Bit (Component_Clause (CE))));
+
+               elsif Known_Static_Component_Bit_Offset (CE)
+                 and then Known_Static_Esize (CE)
+               then
+                  Compile_Time_Known_Attribute
+                    (N, (Component_Bit_Offset (CE) mod System_Storage_Unit)
+                                                             + Esize (CE) - 1);
+               else
+                  Check_Expressions;
+               end if;
+
+               return;
+            end;
+
+         --  For First, Last and Length, the prefix is an array object, and we
+         --  apply the attribute to its type, but we need a constrained type
+         --  for this, so we use the actual subtype if available.
+
+         elsif Id = Attribute_First
+           or else Id = Attribute_Last
+           or else Id = Attribute_Length
          then
             declare
                AS : constant Entity_Id := Get_Actual_Subtype_If_Available (P);
@@ -7846,30 +7970,14 @@ package body Sem_Attr is
 
          elsif Id = Attribute_Size then
             if Is_Entity_Name (P)
-              and then Known_Esize (Entity (P))
+              and then Known_Static_Esize (Entity (P))
             then
                Compile_Time_Known_Attribute (N, Esize (Entity (P)));
-               return;
-
             else
                Check_Expressions;
-               return;
             end if;
 
-         --  For Alignment, give size of object if available, otherwise we
-         --  cannot fold Alignment.
-
-         elsif Id = Attribute_Alignment then
-            if Is_Entity_Name (P)
-              and then Known_Alignment (Entity (P))
-            then
-               Fold_Uint (N, Alignment (Entity (P)), Static);
-               return;
-
-            else
-               Check_Expressions;
-               return;
-            end if;
+            return;
 
          --  For Lock_Free, we apply the attribute to the type of the object.
          --  This is allowed since we have already verified that the type is a
@@ -7995,11 +8103,11 @@ package body Sem_Attr is
 
       --  Definite must be folded if the prefix is not a generic type, that
       --  is to say if we are within an instantiation. Same processing applies
-      --  to the GNAT attributes Atomic_Always_Lock_Free, Has_Discriminants,
-      --  Lock_Free, Type_Class, Has_Tagged_Value, and Unconstrained_Array.
+      --  to selected GNAT attributes.
 
       elsif (Id = Attribute_Atomic_Always_Lock_Free or else
              Id = Attribute_Definite                or else
+             Id = Attribute_Descriptor_Size         or else
              Id = Attribute_Has_Access_Values       or else
              Id = Attribute_Has_Discriminants       or else
              Id = Attribute_Has_Tagged_Values       or else
@@ -8110,7 +8218,7 @@ package body Sem_Attr is
       --  since we can't do anything with unconstrained arrays. In addition,
       --  only the First, Last and Length attributes are possibly static.
 
-      --  Atomic_Always_Lock_Free, Definite, Has_Access_Values,
+      --  Atomic_Always_Lock_Free, Definite, Descriptor_Size, Has_Access_Values
       --  Has_Discriminants, Has_Tagged_Values, Lock_Free, Type_Class, and
       --  Unconstrained_Array are again exceptions, because they apply as well
       --  to unconstrained types.
@@ -8122,6 +8230,7 @@ package body Sem_Attr is
 
       elsif Id = Attribute_Atomic_Always_Lock_Free or else
             Id = Attribute_Definite                or else
+            Id = Attribute_Descriptor_Size         or else
             Id = Attribute_Has_Access_Values       or else
             Id = Attribute_Has_Discriminants       or else
             Id = Attribute_Has_Tagged_Values       or else
@@ -8490,8 +8599,12 @@ package body Sem_Attr is
       -- Descriptor_Size --
       ---------------------
 
+      --  Descriptor_Size is nonnull only for unconstrained array types
+
       when Attribute_Descriptor_Size =>
-         null;
+         if not Is_Array_Type (P_Type) or else Is_Constrained (P_Type) then
+            Fold_Uint (N, Uint_0, Static);
+         end if;
 
       ------------
       -- Digits --
