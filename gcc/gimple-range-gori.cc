@@ -708,55 +708,40 @@ gori_compute::compute_operand_range (irange &r, gimple *stmt,
 				     tree name,
 				     const irange *name_range)
 {
+  // Empty ranges are viral as they are on an unexecutable path.
+  if (lhs.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
   if (is_a<gswitch *> (stmt))
     return compute_operand_range_switch (r, as_a<gswitch *> (stmt), lhs,
 					 name, name_range);
   if (!gimple_range_handler (stmt))
     return false;
 
-  tree op1, op2;
-  bool op1_in_chain, op2_in_chain;
-
-  // Empty ranges are viral as they are on a path which isn't executable.
-  if (lhs.undefined_p ())
-    {
-      r.set_undefined ();
-      return true;
-    }
-
-  op1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
-  op2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
+  tree op1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
+  tree op2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
 
   // The base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
     return compute_name_range_op (r, stmt, lhs, name, name_range);
 
-  // Check for logical combination cases which require developing
-  // ranges and combining the results based on the operation.
   if (is_gimple_logical_p (stmt))
-    {
-      bool ret = compute_logical_operands (r, stmt, lhs, name, name_range);
-      return ret;
-    }
+    return compute_logical_operands (r, stmt, lhs, name, name_range);
 
-  // Reaching this point means NAME is not in this stmt, but one of
-  // the names in it ought to be derived from it.
-  op1_in_chain = op1 && m_gori_map.in_chain_p (name, op1);
-  op2_in_chain = op2 && m_gori_map.in_chain_p (name, op2);
-
+  // NAME is not in this stmt, but one of the names in it ought to be
+  // derived from it.
+  bool op1_in_chain = op1 && m_gori_map.in_chain_p (name, op1);
+  bool op2_in_chain = op2 && m_gori_map.in_chain_p (name, op2);
+  if (op1_in_chain && op2_in_chain)
+    return compute_operand1_and_operand2_range (r, stmt, lhs, name, name_range);
+  if (op1_in_chain)
+    return compute_operand1_range (r, stmt, lhs, name, name_range);
   if (op2_in_chain)
-    {
-      if (op1_in_chain)
-	return compute_operand1_and_operand2_range (r, stmt, lhs, name,
-						    name_range);
-      else
-	return compute_operand2_range (r, stmt, lhs, name, name_range);
-    }
-  else
-    if (op1_in_chain)
-      return compute_operand1_range (r, stmt, lhs, name, name_range);
+    return compute_operand2_range (r, stmt, lhs, name, name_range);
 
-  // If neither operand is derived, then this stmt tells us nothing.
+  // If neither operand is derived, this statement tells us nothing.
   return false;
 }
 
