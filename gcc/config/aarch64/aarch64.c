@@ -14777,32 +14777,37 @@ aarch64_init_expanders (void)
 static void
 initialize_aarch64_code_model (struct gcc_options *opts)
 {
-   if (opts->x_flag_pic)
-     {
-       switch (opts->x_aarch64_cmodel_var)
-	 {
-	 case AARCH64_CMODEL_TINY:
-	   aarch64_cmodel = AARCH64_CMODEL_TINY_PIC;
-	   break;
-	 case AARCH64_CMODEL_SMALL:
+  aarch64_cmodel = opts->x_aarch64_cmodel_var;
+  switch (opts->x_aarch64_cmodel_var)
+    {
+    case AARCH64_CMODEL_TINY:
+      if (opts->x_flag_pic)
+	aarch64_cmodel = AARCH64_CMODEL_TINY_PIC;
+      break;
+    case AARCH64_CMODEL_SMALL:
+      if (opts->x_flag_pic)
+	{
 #ifdef HAVE_AS_SMALL_PIC_RELOCS
-	   aarch64_cmodel = (flag_pic == 2
-			     ? AARCH64_CMODEL_SMALL_PIC
-			     : AARCH64_CMODEL_SMALL_SPIC);
+	  aarch64_cmodel = (flag_pic == 2
+			    ? AARCH64_CMODEL_SMALL_PIC
+			    : AARCH64_CMODEL_SMALL_SPIC);
 #else
-	   aarch64_cmodel = AARCH64_CMODEL_SMALL_PIC;
+	  aarch64_cmodel = AARCH64_CMODEL_SMALL_PIC;
 #endif
-	   break;
-	 case AARCH64_CMODEL_LARGE:
-	   sorry ("code model %qs with %<-f%s%>", "large",
-		  opts->x_flag_pic > 1 ? "PIC" : "pic");
-	   break;
-	 default:
-	   gcc_unreachable ();
-	 }
-     }
-   else
-     aarch64_cmodel = opts->x_aarch64_cmodel_var;
+	}
+      break;
+    case AARCH64_CMODEL_LARGE:
+      if (opts->x_flag_pic)
+	sorry ("code model %qs with %<-f%s%>", "large",
+	       opts->x_flag_pic > 1 ? "PIC" : "pic");
+      if (opts->x_aarch64_abi == AARCH64_ABI_ILP32)
+	sorry ("code model %qs not supported in ilp32 mode", "large");
+      break;
+    case AARCH64_CMODEL_TINY_PIC:
+    case AARCH64_CMODEL_SMALL_PIC:
+    case AARCH64_CMODEL_SMALL_SPIC:
+      gcc_unreachable ();
+    }
 }
 
 /* Implement TARGET_OPTION_SAVE.  */

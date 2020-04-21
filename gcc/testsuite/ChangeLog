@@ -1,3 +1,8 @@
+2020-04-21  Duan bo  <duanbo3@huawei.com>
+
+	PR target/94577
+	* gcc.target/aarch64/pr94577.c: New test.
+
 2020-04-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94686

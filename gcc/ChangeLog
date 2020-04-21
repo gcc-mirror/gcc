@@ -1,3 +1,10 @@
+2020-04-21  Duan bo  <duanbo3@huawei.com>
+
+	PR target/94577
+	* config/aarch64/aarch64.c: Add an error message for option conflict.
+	* doc/invoke.texi (-mcmodel=large): Mention that -mcmodel=large is
+	incompatible with -fpic, -fPIC and -mabi=ilp32.
+
 2020-04-21  Frederik Harwath  <frederik@codesourcery.com>
 
 	PR other/94629

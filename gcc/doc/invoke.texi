@@ -16759,7 +16759,9 @@ dynamically linked.  This is the default code model.
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate code for the large code model.  This makes no assumptions about
-addresses and sizes of sections.  Programs can be statically linked only.
+addresses and sizes of sections.  Programs can be statically linked only.  The
+@option{-mcmodel=large} option is incompatible with @option{-mabi=ilp32},
+@option{-fpic} and @option{-fPIC}.
 
 @item -mstrict-align
 @itemx -mno-strict-align
