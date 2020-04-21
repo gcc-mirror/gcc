@@ -10529,6 +10529,12 @@ any_template_parm_r (tree t, void *data)
       }
       break;
 
+    case IDENTIFIER_NODE:
+      if (IDENTIFIER_CONV_OP_P (t))
+	/* The conversion-type-id of a conversion operator may be dependent.  */
+	WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     default:
       break;
     }

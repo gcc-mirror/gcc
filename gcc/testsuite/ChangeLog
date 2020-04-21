@@ -1,3 +1,8 @@
+2020-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94597
+	* g++.dg/cpp2a/concepts-conv2.C: New test.
+
 2020-04-21  Duan bo  <duanbo3@huawei.com>
 
 	PR target/94577

@@ -1,3 +1,9 @@
+2020-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94597
+	* pt.c (any_template_parm_r) <case IDENTIFIER_NODE>: New case.  If this
+	is a conversion operator, visit its TREE_TYPE.
+
 2020-04-21  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (tsubst_copy_and_build) [POINTER_PLUS_EXPR]: Check for
