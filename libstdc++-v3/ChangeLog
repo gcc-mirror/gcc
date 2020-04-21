@@ -1,5 +1,17 @@
 2020-04-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/Makefile.am (xml_sources_manual): Add missing XML files.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/manual/status_cxx1998.xml: Refer to "this section" instead
+	of "this page".
+	* doc/xml/manual/status_cxx2011.xml: Formatting and other corrections
+	to the C++11 status table.
+	* doc/xml/manual/status_cxx2014.xml: Replace list of C++14 feature
+	proposals with table matching contents of the C++14 standard.
+	* doc/xml/manual/status_cxx2017.xml: Add table matching contents of
+	the C++17 standard.
+	* doc/html/*: Regenerate.
+
 	PR c++/94149
 	* include/std/type_traits (__is_nt_constructible_impl): Add partial
 	specializations for bounded arrays with non-empty initializers.
