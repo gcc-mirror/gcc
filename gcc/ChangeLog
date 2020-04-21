@@ -1,3 +1,18 @@
+2020-04-21  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from master
+	2020-04-09  Martin Jambor  <mjambor@suse.cz>
+	            Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94482
+	* tree-sra.c (create_access_replacement): Dump new replacement with
+	TDF_UID.
+	(sra_modify_expr): Fix handling of cases when the original EXPR writes
+	to only part of the replacement.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Properly verify
+	the first operand of combinations into REAL/IMAGPART_EXPR and
+	BIT_FIELD_REF.
+
 2020-04-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from master
