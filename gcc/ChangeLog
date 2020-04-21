@@ -1,3 +1,9 @@
+2020-04-21  Frederik Harwath  <frederik@codesourcery.com>
+
+	PR other/94629
+	* omp-low.c (new_omp_context): Remove assignments to
+	ctx->outer_reduction_clauses and ctx->local_reduction_clauses.
+
 2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/vector.md ("popcountv8hi2_vx", "popcountv4si2_vx")
