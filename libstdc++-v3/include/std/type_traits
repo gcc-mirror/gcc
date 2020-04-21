@@ -986,6 +986,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __bool_constant<noexcept(typename remove_all_extents<_Tp>::type())>
     { };
 
+#if __cpp_aggregate_paren_init
+  template<typename _Tp, size_t _Num, typename _Arg>
+    struct __is_nt_constructible_impl<true, _Tp[_Num], _Arg>
+    : public __is_nt_constructible_impl<true, _Tp, _Arg>
+    { };
+
+  template<typename _Tp, size_t _Num, typename... _Args>
+    struct __is_nt_constructible_impl<true, _Tp[_Num], _Args...>
+    : public __and_<__is_nt_constructible_impl<true, _Tp, _Args>...>
+    { };
+#endif
+
   template<typename _Tp, typename... _Args>
     using __is_nothrow_constructible_impl
       = __is_nt_constructible_impl<__is_constructible(_Tp, _Args...),
