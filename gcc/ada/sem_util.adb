@@ -17298,6 +17298,7 @@ package body Sem_Util is
       elsif Nkind (Context) = N_Object_Declaration
         and then Present (Expression (Context))
         and then Expression (Context) = Obj_Ref
+        and then Nkind (Parent (Context)) /= N_Expression_With_Actions
       then
          Obj_Id := Defining_Entity (Context);
 
