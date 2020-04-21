@@ -885,6 +885,38 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   return true;
 }
 
+bool
+gori_compute::optimize_logical_operands (irange &true_range,
+					 irange &false_range,
+					 gimple *stmt,
+					 const irange &lhs,
+					 tree name,
+					 const irange *name_range,
+					 tree op)
+{
+  enum tree_code code = gimple_expr_code (stmt);
+
+  // Optimize [0 = x | y], since neither operand can ever be non-zero.
+  if ((code == BIT_IOR_EXPR || code == TRUTH_OR_EXPR) && lhs.zero_p ())
+    {
+      if (!compute_operand_range (false_range, SSA_NAME_DEF_STMT (op),
+				  m_bool_zero, name, name_range))
+	get_tree_range (false_range, name, name, name_range);
+      true_range = false_range;
+      return true;
+    }
+  // Optimize [1 = x & y], since neither operand can ever be zero.
+  if ((code == BIT_AND_EXPR || code == TRUTH_AND_EXPR) && lhs == m_bool_one)
+    {
+      if (!compute_operand_range (true_range, SSA_NAME_DEF_STMT (op),
+				  m_bool_one, name, name_range))
+	get_tree_range (true_range, name, name, name_range);
+      false_range = true_range;
+      return true;
+    }
+  return false;
+}
+
 // Given a logical STMT, calculate TRUE_RANGE and FALSE_RANGE for each
 // potential path of NAME, assuming NAME came through the OP chain if
 // OP_IN_CHAIN is true.  If present, NAME_RANGE is any known range for
@@ -907,25 +939,9 @@ gori_compute::compute_logical_operands_in_chain (irange &true_range,
       return;
     }
 
-  enum tree_code code = gimple_expr_code (stmt);
-  // Optimize [0 = x | y], since neither operand can ever be non-zero.
-  if ((code == BIT_IOR_EXPR || code == TRUTH_OR_EXPR) && lhs.zero_p ())
-    {
-      if (!compute_operand_range (false_range, SSA_NAME_DEF_STMT (op),
-				  m_bool_zero, name, name_range))
-	get_tree_range (false_range, name, name, name_range);
-      true_range = false_range;
-      return;
-    }
-  // Optimize [1 = x & y], since neither operand can ever be zero.
-  if ((code == BIT_AND_EXPR || code == TRUTH_AND_EXPR) && lhs == m_bool_one)
-    {
-      if (!compute_operand_range (true_range, SSA_NAME_DEF_STMT (op),
-				  m_bool_one, name, name_range))
-	get_tree_range (true_range, name, name, name_range);
-      false_range = true_range;
-      return;
-    }
+  if (optimize_logical_operands (true_range, false_range,
+				 stmt, lhs, name, name_range, op))
+    return;
 
   // Calulate ranges for true and false on both sides, since the false
   // path is not always a simple inversion of the true side.
