@@ -1310,17 +1310,18 @@ class logical_stmt_cache
 public:
   logical_stmt_cache ();
   ~logical_stmt_cache ();
-  void set_range (gimple *stmt, tree carrier, tree name,
+  void set_range (tree carrier, tree name,
 		  const irange &true_range, const irange &false_range);
-  bool get_range (irange &, gimple *stmt, const irange &lhs,
-		  tree name, const irange *name_range) const;
-  bool get_true_range (irange &, tree carrier, tree name) const;
-  bool get_false_range (irange &, tree carrier, tree name) const;
+  bool get_range (irange &r, tree carrier, tree name,
+		  const irange &carrier_range) const;
+  bool get_true_range (irange &r, tree carrier, tree name) const;
+  bool get_false_range (irange &r, tree carrier, tree name) const;
   bool cacheable_p (const gimple *, const irange *lhs_range = NULL) const;
-  tree cached_name (tree carrier) const;
   void dump (FILE *, gimple *stmt) const;
+  tree same_cached_name (tree op1, tree op2) const;
 private:
-  void slot_diagnostics (gimple *stmt, tree carrier,
+  tree cached_name (tree carrier) const;
+  void slot_diagnostics (tree carrier,
 			 const irange &true_range,
 			 const irange &false_range) const;
   struct cache_entry
@@ -1360,7 +1361,7 @@ logical_stmt_cache::cache_entry::dump (FILE *out) const
 }
 
 void
-logical_stmt_cache::set_range (gimple *stmt, tree carrier, tree name,
+logical_stmt_cache::set_range (tree carrier, tree name,
 			       const irange &true_range,
 			       const irange &false_range)
 {
@@ -1369,7 +1370,7 @@ logical_stmt_cache::set_range (gimple *stmt, tree carrier, tree name,
     m_ssa_cache.safe_grow_cleared (num_ssa_names + num_ssa_names / 10);
 
   cache_entry *slot = m_ssa_cache[version];
-  slot_diagnostics (stmt, carrier, true_range, false_range);
+  slot_diagnostics (carrier, true_range, false_range);
   if (slot)
     {
       // The IL must have changed.  Update the carried SSA name for
@@ -1385,10 +1386,11 @@ logical_stmt_cache::set_range (gimple *stmt, tree carrier, tree name,
 }
 
 void
-logical_stmt_cache::slot_diagnostics (gimple *stmt, tree carrier,
+logical_stmt_cache::slot_diagnostics (tree carrier,
 				      const irange &true_range,
 				      const irange &false_range) const
 {
+  gimple *stmt = SSA_NAME_DEF_STMT (carrier);
   unsigned version = SSA_NAME_VERSION (carrier);
   cache_entry *slot = m_ssa_cache[version];
 
@@ -1422,21 +1424,16 @@ logical_stmt_cache::slot_diagnostics (gimple *stmt, tree carrier,
 }
 
 bool
-logical_stmt_cache::get_range (irange &r, gimple *stmt,
-			       const irange &lhs, tree name,
-			       const irange *name_range) const
+logical_stmt_cache::get_range (irange &r, tree carrier, tree name,
+			       const irange &carrier_range) const
 {
-  gcc_checking_assert (cacheable_p (stmt));
-
-  tree carrier = gimple_assign_lhs (stmt);
+  gcc_checking_assert (cacheable_p (SSA_NAME_DEF_STMT (carrier)));
   if (cached_name (carrier) == name)
     {
-      if (lhs.zero_p ())
+      if (carrier_range.zero_p ())
 	get_false_range (r, carrier, name);
       else
 	get_true_range (r, carrier, name);
-      if (name_range)
-	r.intersect (*name_range);
       return true;
     }
   return false;
@@ -1478,6 +1475,15 @@ logical_stmt_cache::cached_name (tree carrier) const
 
   if (m_ssa_cache[version])
     return m_ssa_cache[version]->name;
+  return NULL;
+}
+
+tree
+logical_stmt_cache::same_cached_name (tree op1, tree op2) const
+{
+  tree name = cached_name (op1);
+  if (name && name == cached_name (op2))
+    return name;
   return NULL;
 }
 
@@ -1559,8 +1565,16 @@ gori_compute_cache::compute_operand_range (irange &r, gimple *stmt,
     return false;
 
   bool cacheable = m_cache->cacheable_p (stmt, &lhs);
-  if (cacheable && m_cache->get_range (r, stmt, lhs, name, name_range))
-    return true;
+  if (cacheable)
+    {
+      tree carrier = gimple_assign_lhs (stmt);
+      if (m_cache->get_range (r, carrier, name, lhs))
+	{
+	  if (name_range)
+	    r.intersect (*name_range);
+	  return true;
+	}
+    }
 
   bool res = super::compute_operand_range (r, stmt, lhs, name, name_range);
   if (res && cacheable)
@@ -1580,12 +1594,8 @@ gori_compute_cache::cache_comparison (gimple *stmt)
 
   if (TREE_CODE (op2) == INTEGER_CST)
     cache_comparison_with_int (stmt, code, op1, op2);
-  else
-    {
-      tree cached_name = m_cache->cached_name (op1);
-      if (cached_name && cached_name == m_cache->cached_name (op2))
-	cache_comparison_with_ssa (stmt, code, op1, op2);
-    }
+  else if (m_cache->same_cached_name (op1, op2))
+    cache_comparison_with_ssa (stmt, code, op1, op2);
 }
 
 void
@@ -1601,7 +1611,7 @@ gori_compute_cache::cache_comparison_with_int (gimple *stmt,
   tree type = TREE_TYPE (op1);
   handler->op1_range (r_true_side, type, m_bool_one, op2_range);
   handler->op1_range (r_false_side, type, m_bool_zero, op2_range);
-  m_cache->set_range (stmt, lhs, op1, r_true_side, r_false_side);
+  m_cache->set_range (lhs, op1, r_true_side, r_false_side);
 }
 
 void
@@ -1609,7 +1619,7 @@ gori_compute_cache::cache_comparison_with_ssa (gimple *stmt,
 					       enum tree_code code,
 					       tree op1, tree op2)
 {
-  tree cached_name = m_cache->cached_name (op1);
+  tree cached_name = m_cache->same_cached_name (op1, op2);
   widest_irange r_true_side, r_false_side;
   widest_irange op1_true, op1_false, op2_true, op2_false;
   gcc_assert (m_cache->get_true_range (op1_true, op1, cached_name));
@@ -1624,7 +1634,7 @@ gori_compute_cache::cache_comparison_with_ssa (gimple *stmt,
 					op2_true, op2_false));
   if (!r_true_side.varying_p () && !r_false_side.varying_p ())
     {
-      tree lhs = gimple_assign_lhs (stmt);
-      m_cache->set_range (stmt, lhs, cached_name, r_true_side, r_false_side);
+      tree carrier = gimple_assign_lhs (stmt);
+      m_cache->set_range (carrier, cached_name, r_true_side, r_false_side);
     }
 }
