@@ -1,4 +1,9 @@
-2020-04-21 Iain Sandoe <iain@sandoe.co.uk>
+2020-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94686
+	* gcc.c-torture/compile/pr94686.c: New test.
+
+2020-04-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94661
 	* g++.dg/coroutines/ramp-return-a.C: New test.
@@ -1277,7 +1282,7 @@
 	PR c++/94336 - template keyword accepted before destructor names.
 	* g++.dg/template/template-keyword2.C: New test.
 
-2020-03-27 Iain Sandoe  <iain@sandoe.co.uk>
+2020-03-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:
 	Add <cstdio>.
