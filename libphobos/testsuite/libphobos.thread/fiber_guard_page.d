@@ -1,3 +1,4 @@
+// { dg-options "-O0" }
 // { dg-shouldfail "segv or bus error" }
 import core.thread;
 import core.sys.posix.sys.mman;

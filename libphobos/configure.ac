@@ -256,11 +256,6 @@ if test -z "$GDCFLAGS"; then
 fi
 AC_SUBST(GDCFLAGS)
 
-if test -z "$GDCFLAGSX"; then
-    GDCFLAGSX="-g"
-fi
-AC_SUBST(GDCFLAGSX)
-
 WARN_DFLAGS="-Wall $WERROR_FLAG"
 AC_SUBST(WARN_DFLAGS)
 
