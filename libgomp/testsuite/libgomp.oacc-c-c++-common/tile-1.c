@@ -1,5 +1,5 @@
 /* AMD GCN does not use 32-lane vectors, so the expected use counts mismatch.
-   { dg-skip-if "unsuitable dimensions" { openacc_amdgcn_accel_selected } { "*" } { "" } } */
+   { dg-skip-if "unsuitable dimensions" { openacc_radeon_accel_selected } { "*" } { "" } } */
 
 /* { dg-additional-options "-fopenacc-dim=32" } */
 

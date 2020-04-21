@@ -1,5 +1,17 @@
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-init.c (get_openacc_name): Handle 'gcn'.
+	* testsuite/lib/libgomp.exp
+	(offload_target_to_openacc_device_type) [amdgcn*]: Return
+	'radeon'.  Adjust all users.
+	(check_effective_target_openacc_amdgcn_accel_present): Rename
+	to...
+	(check_effective_target_openacc_radeon_accel_present): ... this.
+	Adjust all users.
+	(check_effective_target_openacc_amdgcn_accel_selected): Rename to...
+	(check_effective_target_openacc_radeon_accel_selected): ... this.
+	Adjust all users.
+
 	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Add
 	'dg-do run'.
 

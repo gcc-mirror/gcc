@@ -99,7 +99,9 @@ unknown_device_type_error (acc_device_t invalid_type)
 static const char *
 get_openacc_name (const char *name)
 {
-  if (strcmp (name, "nvptx") == 0)
+  if (strcmp (name, "gcn") == 0)
+    return "radeon";
+  else if (strcmp (name, "nvptx") == 0)
     return "nvidia";
   else
     return name;
