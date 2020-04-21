@@ -468,7 +468,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7.1 </entry>
-      <entry><code> __cpp_lib_is_callable >= 201603 </code></entry>
+      <entry><code> __cpp_lib_is_invocable >= 201703 </code></entry>
     </row>
 
     <row>
