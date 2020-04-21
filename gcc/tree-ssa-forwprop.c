@@ -2598,6 +2598,11 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			    res, TYPE_SIZE (type), bitsize_zero_node);
       if (conv_code != ERROR_MARK)
 	res = gimple_build (&stmts, conv_code, type, res);
+      else if (!useless_type_conversion_p (type, TREE_TYPE (res)))
+	{
+	  gcc_assert (!targetm.compatible_vector_types_p (type, perm_type));
+	  res = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, res);
+	}
       /* Blend in the actual constant.  */
       if (converted_orig1)
 	res = gimple_build (&stmts, VEC_PERM_EXPR, type,

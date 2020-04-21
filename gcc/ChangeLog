@@ -1,3 +1,10 @@
+2020-04-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94683
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Use a
+	VIEW_CONVERT_EXPR to handle mixtures of similarly-structured
+	but distinct vector types.
+
 2020-04-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94641
