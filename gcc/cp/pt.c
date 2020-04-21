@@ -6753,6 +6753,11 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 
 }
 
+/* The template arguments corresponding to template parameter objects of types
+   that contain pointers to members.  */
+
+static GTY(()) hash_map<tree, tree> *tparm_obj_values;
+
 /* Return a VAR_DECL for the C++20 template parameter object corresponding to
    template argument EXPR.  */
 
@@ -6786,8 +6791,32 @@ get_template_parm_object (tree expr, tsubst_flags_t complain)
   SET_DECL_ASSEMBLER_NAME (decl, name);
   DECL_CONTEXT (decl) = global_namespace;
   comdat_linkage (decl);
+
+  if (!zero_init_p (type))
+    {
+      /* If EXPR contains any PTRMEM_CST, they will get clobbered by
+	 lower_var_init before we're done mangling.  So store the original
+	 value elsewhere.  */
+      tree copy = unshare_constructor (expr);
+      if (!tparm_obj_values)
+	tparm_obj_values = hash_map<tree, tree>::create_ggc (13);
+      tparm_obj_values->put (decl, copy);
+    }
+
   pushdecl_top_level_and_finish (decl, expr);
+
   return decl;
+}
+
+/* Return the actual template argument corresponding to template parameter
+   object VAR.  */
+
+tree
+tparm_object_argument (tree var)
+{
+  if (zero_init_p (TREE_TYPE (var)))
+    return DECL_INITIAL (var);
+  return *(tparm_obj_values->get (var));
 }
 
 /* Attempt to convert the non-type template parameter EXPR to the

@@ -1,3 +1,11 @@
+2020-04-21  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94510
+	* g++.dg/init/array58.C: New test.
+	* g++.dg/init/array59.C: New test.
+	* g++.dg/cpp2a/nontype-class34.C: New test.
+	* g++.dg/cpp2a/nontype-class35.C: New test.
+
 2020-04-21  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from master
