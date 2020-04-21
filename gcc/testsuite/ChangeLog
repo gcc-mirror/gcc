@@ -1,5 +1,25 @@
 2020-04-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94383
+	* g++.dg/compat/struct-layout-1.exp: If !$use_alt, add -c to generator
+	args.
+	* g++.dg/compat/struct-layout-1_generate.c (dg_options): Add another
+	%s to the start of dg-options arg.
+	(cxx14_vs_cxx17, do_cxx14_vs_cxx17): New variables.
+	(switchfiles): If cxx14_vs_cxx17, prepend -std=c++14 -DCXX14_VS_CXX17
+	or -std=c++17 -DCXX17_VS_CXX14 - randomly - to dg-options.
+	(output): Don't append further fields once one with flexible array
+	member is added.
+	(generate_random_tests): Don't use toplevel unions if cxx14_vs_cxx17.
+	(main): If -c, emit second set of tests for -std=c++14 vs. -std=c++17
+	testing.
+	* g++.dg/compat/struct-layout-1_x1.h (empty_base): New type.
+	(EMPTY_BASE): Define.
+	(TX): Use EMPTY_BASE.
+	* g++.dg/compat/struct-layout-1_y1.h (empty_base): New type.
+	(EMPTY_BASE): Define.
+	(TX): Use EMPTY_BASE.
+
 	PR c/94641
 	* c-c++-common/ubsan/pr94641.c: New test.
 
