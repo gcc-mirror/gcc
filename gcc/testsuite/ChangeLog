@@ -1,3 +1,8 @@
+2020-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93807
+	* g++.dg/cpp2a/fn-template20.C: New test.
+
 2020-04-22  Duan bo  <duanbo3@huawei.com>
 
 	PR testsuite/94712
