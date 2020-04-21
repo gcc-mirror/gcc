@@ -5019,33 +5019,14 @@ package body Sem_Ch13 is
 
                Typ := Etype (F);
 
-               --  If the attribute specification comes from an aspect
-               --  specification for a class-wide stream, the parameter must be
-               --  a class-wide type of the entity to which the aspect applies.
-
-               if From_Aspect_Specification (N)
-                 and then Class_Present (Parent (N))
-                 and then Is_Class_Wide_Type (Typ)
-               then
-                  Typ := Etype (Typ);
-               end if;
-
             else
                Typ := Etype (Subp);
             end if;
 
             --  Verify that the prefix of the attribute and the local name for
-            --  the type of the formal match, or one is the class-wide of the
-            --  other, in the case of a class-wide stream operation.
+            --  the type of the formal match.
 
-            if Base_Type (Typ) = Base_Type (Ent)
-              or else (Is_Class_Wide_Type (Typ)
-                        and then Typ = Class_Wide_Type (Base_Type (Ent)))
-              or else (Is_Class_Wide_Type (Ent)
-                        and then Ent = Class_Wide_Type (Base_Type (Typ)))
-            then
-               null;
-            else
+            if Base_Type (Typ) /= Base_Type (Ent) then
                return False;
             end if;
 
@@ -5158,7 +5139,13 @@ package body Sem_Ch13 is
 
          else
             Error_Msg_Name_1 := Attr;
-            Error_Msg_N ("incorrect expression for% attribute", Expr);
+
+            if Is_Class_Wide_Type (Base_Type (Ent)) then
+               Error_Msg_N
+                 ("incorrect expression for class-wide% attribute", Expr);
+            else
+               Error_Msg_N ("incorrect expression for% attribute", Expr);
+            end if;
          end if;
       end Analyze_Stream_TSS_Definition;
 
