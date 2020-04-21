@@ -2044,6 +2044,12 @@ ARM Target supports options suitable for accessing the Q-bit manipulation
 intrinsics from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
+@item arm_dsp_ok
+@anchor{arm_dsp_ok}
+ARM Target supports options suitable for accessing the DSP intrinsics
+from @code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
 @item arm_softfp_ok
 @anchor{arm_softfp_ok}
 ARM target supports the @code{-mfloat-abi=softfp} option.
@@ -2777,6 +2783,11 @@ supported by the target; see the
 Add options to enable generation of the @code{VFMAL} and @code{VFMSL}
 instructions, if this is supported by the target; see the
 @ref{arm_fp16fml_neon_ok} effective target keyword.
+
+@item arm_dsp
+Add options for ARM DSP intrinsics support, if this is supported by
+the target; see the @ref{arm_dsp_ok,,arm_dsp_ok effective target
+keyword}.
 
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
