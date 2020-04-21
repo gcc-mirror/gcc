@@ -1,5 +1,11 @@
 2020-04-21  Nathan Sidwell  <nathan@acm.org>
 
+	Don't stream DECL_ODR_USED or TREE_ASM_WRITTEN
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_values): Don't stream
+	base.asm_written_flag.
+	(trees_{in,out}::lang_decl_bools): Don't stream u.base.odr_used.
+
 	Remove DECL_MODULE_PARTITION_P, it is not needed.
 	gcc/cp/
 	* cp-tree.h (DECL_MODULE_PARTITION_P): Delete.

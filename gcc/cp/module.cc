@@ -5100,20 +5100,11 @@ trees_out::core_bools (tree t)
   WB (t->base.addressable_flag);
   WB (t->base.volatile_flag);
   WB (t->base.readonly_flag);
-
-  bool asm_written = t->base.asm_written_flag;
-  if (asm_written)
-    {
-      /* Some cases we do not want to propagate asm_written, as it is
-	 TU-local.  */
-      if (TYPE_P (t) || TREE_CODE (t) == TYPE_DECL)
-	/* It's telling us about debug info.  */
-	asm_written = false;
-    }
-  WB (asm_written);
-  
+  /* base.asm_written_flag is a property of the current TU's use of
+     this decl.  */
   WB (t->base.nowarning_flag);
-  // visited is zero
+  /* base.Visited read as zero (it's set for writer, because that's
+     how we mark nodes).  */
   WB (t->base.used_flag); // FIXME: should we be dumping this?
   WB (t->base.nothrow_flag);
   WB (t->base.static_flag);
@@ -5270,10 +5261,9 @@ trees_in::core_bools (tree t)
   RB (t->base.addressable_flag);
   RB (t->base.volatile_flag);
   RB (t->base.readonly_flag);
-  /* The writer will have written false when we don't need it.  */
-  RB (t->base.asm_written_flag);
+  /* base.asm_written_flag is not streamed.  */
   RB (t->base.nowarning_flag);
-  // visited is zero
+  /* base.visited is not streamed.  */
   RB (t->base.used_flag);
   RB (t->base.nothrow_flag);
   RB (t->base.static_flag);
@@ -5426,7 +5416,8 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.anticipated_p);
   WB (lang->u.base.friend_or_tls);
   WB (lang->u.base.unknown_bound_p);
-  WB (lang->u.base.odr_used); // FIXME: Should this be written?
+  /* Do not write u.base.odr_used, importer will recalculate if they
+     do ODR use this decl.  */
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
@@ -5494,7 +5485,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.anticipated_p);
   RB (lang->u.base.friend_or_tls);
   RB (lang->u.base.unknown_bound_p);
-  RB (lang->u.base.odr_used);
+  /* u.base.odr_used is not streamed.  */
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
@@ -12464,6 +12455,10 @@ depset::hash::find_dependencies ()
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
 
+		  // FIXME: Perhaps p1815 makes this redundant? Or at
+		  // least simplifies it.  Voldemort types are only
+		  // ever emissable when containing (inline) function
+		  // definition is emitted?
 		  /* Turn the Sneakoscope on when depending the decl.  */
 		  sneakoscope = true;
 		  walker.decl_value (decl, current);

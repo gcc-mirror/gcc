@@ -2186,6 +2186,7 @@ decl_needed_p (tree decl)
      emitted; they may be referred to from other object files.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_REALLY_EXTERN (decl))
     return true;
+
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
   if (flag_keep_inline_dllexport
