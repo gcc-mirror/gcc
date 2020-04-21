@@ -1,3 +1,10 @@
+2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/94282
+	* common/config/gcn/gcn-common.c (gcn_except_unwind_info): New
+	function.
+	(TARGET_EXCEPT_UNWIND_INFO): Define.
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94248
