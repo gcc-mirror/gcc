@@ -1,3 +1,9 @@
+2020-04-21 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94661
+	* coroutines.cc (morph_fn_to_coro): Simplify return
+	value computation.
+
 2020-04-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94592
