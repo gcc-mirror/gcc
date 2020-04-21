@@ -5421,7 +5421,7 @@ enum unification_kind_t {
 // An RAII class used to create a new pointer map for local
 // specializations. When the stack goes out of scope, the
 // previous pointer map is restored.
-enum lss_policy { lss_blank, lss_copy };
+enum lss_policy { lss_blank, lss_copy, lss_nop };
 class local_specialization_stack
 {
 public:

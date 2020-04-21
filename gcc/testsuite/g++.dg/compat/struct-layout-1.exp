@@ -142,6 +142,9 @@ if { $status == 0 } then {
     file delete -force $tstobjdir
     file mkdir $tstobjdir
     set generator_args "-s $srcdir/$subdir -d $tstobjdir"
+    if { $use_alt == 0 } then {
+	set generator_args "$generator_args -c"
+    }
     if [info exists env(RUN_ALL_COMPAT_TESTS) ] then {
 	set generator_args "$generator_args -n 15000"
     }

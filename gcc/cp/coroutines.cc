@@ -3726,23 +3726,14 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   tree gro_context_body = push_stmt_list ();
-  tree gro, gro_bind_vars;
-  if (same_type_p (TREE_TYPE (get_ro), fn_return_type))
-    {
-      gro = DECL_RESULT (orig);
-      gro_bind_vars = NULL_TREE; /* We don't need a separate var.  */
-    }
-  else
-    {
-      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			     TREE_TYPE (TREE_OPERAND (get_ro, 0)));
-      DECL_CONTEXT (gro) = current_scope ();
-      r = build_stmt (fn_start, DECL_EXPR, gro);
-      add_stmt (r);
-      gro_bind_vars = gro; /* We need a temporary var.  */
-    }
+  tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
+			      TREE_TYPE (get_ro));
+  DECL_CONTEXT (gro) = current_scope ();
+  add_decl_expr (gro);
+  tree gro_bind_vars = gro;
 
-  /* Initialize our actual var.  */
+  /* We have to sequence the call to get_return_object before initial
+     suspend.  */
   r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
@@ -3779,30 +3770,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      logically doing things related to the end of the function.  */
 
   /* The ramp is done, we just need the return value.  */
-  if (!same_type_p (TREE_TYPE (gro), fn_return_type))
+  if (!same_type_p (TREE_TYPE (get_ro), fn_return_type))
     {
       /* construct the return value with a single GRO param.  */
       vec<tree, va_gc> *args = make_tree_vector_single (gro);
-      r = build_special_member_call (DECL_RESULT (orig),
+      r = build_special_member_call (NULL_TREE,
 				     complete_ctor_identifier, &args,
 				     fn_return_type, LOOKUP_NORMAL,
 				     tf_warning_or_error);
-      r = coro_build_cvt_void_expr_stmt (r, input_location);
-      add_stmt (r);
-      release_tree_vector (args);
+      r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
     }
-  /* Else the GRO is the return and we already built it in place.  */
+  else
+    r = rvalue (gro); /* The GRO is the return value.  */
 
-  bool no_warning;
-  r = check_return_expr (DECL_RESULT (orig), &no_warning);
-  if (error_operand_p (r) && warn_return_type)
-    /* Suppress -Wreturn-type for the ramp.  */
-    TREE_NO_WARNING (orig) = true;
+  finish_return_stmt (r);
 
-  r = build_stmt (input_location, RETURN_EXPR, DECL_RESULT (orig));
-  TREE_NO_WARNING (r) |= no_warning;
-  r = maybe_cleanup_point_expr_void (r);
-  add_stmt (r);
+  /* Finish up the ramp function.  */
   BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;
   BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);

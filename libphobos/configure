@@ -15047,6 +15047,79 @@ $as_echo "$druntime_cv_lib_sockets" >&6; }
   LIBS="$LIBS $druntime_cv_lib_sockets"
 
 
+  # Keep this in sync with core/thread.d, set druntime_fiber_asm_external to
+  # "yes" for targets that have 'version = AsmExternal'.
+  druntime_fiber_asm_external=no
+  case "$target_cpu" in
+    aarch64* | \
+    arm* | \
+    i[34567]86|x86_64 | \
+    powerpc)
+      druntime_fiber_asm_external=yes
+      ;;
+  esac
+  if test "$druntime_fiber_asm_external" = no; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing swapcontext" >&5
+$as_echo_n "checking for library containing swapcontext... " >&6; }
+if ${ac_cv_search_swapcontext+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char swapcontext ();
+int
+main ()
+{
+return swapcontext ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' c ucontext; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_swapcontext=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_swapcontext+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_swapcontext+:} false; then :
+
+else
+  ac_cv_search_swapcontext=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_swapcontext" >&5
+$as_echo "$ac_cv_search_swapcontext" >&6; }
+ac_res=$ac_cv_search_swapcontext
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  as_fn_error $? "swapcontext required but not found" "$LINENO" 5
+fi
+
+  fi
+
+
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

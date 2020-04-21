@@ -1652,21 +1652,28 @@ public:
     {
         // Little sanity check to make sure it's really a Throwable
         ClassReferenceExp *boss = oldest->thrown;
-        assert((*boss->value->elements)[4]->type->ty == Tclass);    // Throwable.next
+        const int next = 4;                         // index of Throwable.next
+        assert((*boss->value->elements)[next]->type->ty == Tclass); // Throwable.next
         ClassReferenceExp *collateral = newest->thrown;
         if ( isAnErrorException(collateral->originalClass()) &&
             !isAnErrorException(boss->originalClass()))
         {
+            /* Find the index of the Error.bypassException field
+             */
+            int bypass = next + 1;
+            if ((*collateral->value->elements)[bypass]->type->ty == Tuns32)
+                bypass += 1;  // skip over _refcount field
+            assert((*collateral->value->elements)[bypass]->type->ty == Tclass);
+
             // The new exception bypass the existing chain
-            assert((*collateral->value->elements)[5]->type->ty == Tclass);
-            (*collateral->value->elements)[5] = boss;
+            (*collateral->value->elements)[bypass] = boss;
             return newest;
         }
-        while ((*boss->value->elements)[4]->op == TOKclassreference)
+        while ((*boss->value->elements)[next]->op == TOKclassreference)
         {
-            boss = (ClassReferenceExp *)(*boss->value->elements)[4];
+            boss = (ClassReferenceExp *)(*boss->value->elements)[next];
         }
-        (*boss->value->elements)[4] = collateral;
+        (*boss->value->elements)[next] = collateral;
         return oldest;
     }
 

@@ -1,4 +1,18 @@
+2020-04-20  Thomas Rodgers  <trodgers@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Add additional_flags=
+	-DTBB_SUPRESS_DEPRECATED_MESSAGES=1 to suppress warnings when
+	compiling with a newer Thread Building Blocks.
+
 2020-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/istreambuf_iterator/sentinel.cc: New test.
+
+	* testsuite/20_util/is_constructible/51185.cc: Make test class a
+	non-aggregate so that the test verifies the same thing in all -std
+	modes.
+	* testsuite/20_util/is_constructible/value-2.cc: Adjust expected
+	results for some types when paren-init for aggregates is supported.
 
 	* include/std/version (__cpp_lib_three_way_comparison): Update value.
 	* libsupc++/compare (__cpp_lib_three_way_comparison): Likewise.

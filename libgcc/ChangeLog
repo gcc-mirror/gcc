@@ -1,3 +1,9 @@
+2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* config/aarch64/aarch64-unwind.h (aarch64_frob_update_context):
+	Update context->flags accroding to the frame state.
+
 2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions) [__SSE_MATH__]:

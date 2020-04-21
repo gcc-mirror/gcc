@@ -212,3 +212,27 @@ AC_DEFUN([DRUNTIME_LIBRARIES_CLIB],
   AC_SUBST(DCFG_HAVE_QSORT_R)
   AC_LANG_POP([C])
 ])
+
+# DRUNTIME_LIBRARIES_UCONTEXT
+# ------------------------------
+# Autodetect and add ucontext library to LIBS if necessary.
+# This is only required if fiber_switchContext does not have
+# its own internal asm implementation.
+AC_DEFUN([DRUNTIME_LIBRARIES_UCONTEXT],
+[
+  # Keep this in sync with core/thread.d, set druntime_fiber_asm_external to
+  # "yes" for targets that have 'version = AsmExternal'.
+  druntime_fiber_asm_external=no
+  case "$target_cpu" in
+    aarch64* | \
+    arm* | \
+    i[[34567]]86|x86_64 | \
+    powerpc)
+      druntime_fiber_asm_external=yes
+      ;;
+  esac
+  if test "$druntime_fiber_asm_external" = no; then
+    AC_SEARCH_LIBS([swapcontext], [c ucontext], [],
+      AC_MSG_ERROR([swapcontext required but not found]))
+  fi
+])

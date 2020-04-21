@@ -68,9 +68,9 @@ func semasleep(ns int64) int32 {
 	}
 
 	for {
-		v := atomic.Load(&_g_.m.mos.waitsemacount)
+		v := atomic.Load(&_g_.m.waitsemacount)
 		if v > 0 {
-			if atomic.Cas(&_g_.m.mos.waitsemacount, v, v-1) {
+			if atomic.Cas(&_g_.m.waitsemacount, v, v-1) {
 				return 0 // semaphore acquired
 			}
 			continue
@@ -96,15 +96,15 @@ func semasleep(ns int64) int32 {
 
 //go:nosplit
 func semawakeup(mp *m) {
-	atomic.Xadd(&mp.mos.waitsemacount, 1)
+	atomic.Xadd(&mp.waitsemacount, 1)
 	// From NetBSD's _lwp_unpark(2) manual:
 	// "If the target LWP is not currently waiting, it will return
 	// immediately upon the next call to _lwp_park()."
-	ret := lwp_unpark(int32(mp.procid), unsafe.Pointer(&mp.mos.waitsemacount))
+	ret := lwp_unpark(int32(mp.procid), unsafe.Pointer(&mp.waitsemacount))
 	if ret != 0 && ret != _ESRCH {
 		// semawakeup can be called on signal stack.
 		systemstack(func() {
-			print("thrwakeup addr=", &mp.mos.waitsemacount, " sem=", mp.mos.waitsemacount, " ret=", ret, "\n")
+			print("thrwakeup addr=", &mp.waitsemacount, " sem=", mp.waitsemacount, " ret=", ret, "\n")
 		})
 	}
 }
@@ -113,5 +113,36 @@ func osinit() {
 	ncpu = getncpu()
 	if physPageSize == 0 {
 		physPageSize = getPageSize()
+	}
+}
+
+func sysargs(argc int32, argv **byte) {
+	n := argc + 1
+
+	// skip over argv, envp to get to auxv
+	for argv_index(argv, n) != nil {
+		n++
+	}
+
+	// skip NULL separator
+	n++
+
+	// now argv+n is auxv
+	auxv := (*[1 << 28]uintptr)(add(unsafe.Pointer(argv), uintptr(n)*sys.PtrSize))
+	sysauxv(auxv[:])
+}
+
+const (
+	_AT_NULL   = 0 // Terminates the vector
+	_AT_PAGESZ = 6 // Page size in bytes
+)
+
+func sysauxv(auxv []uintptr) {
+	for i := 0; auxv[i] != _AT_NULL; i += 2 {
+		tag, val := auxv[i], auxv[i+1]
+		switch tag {
+		case _AT_PAGESZ:
+			physPageSize = val
+		}
 	}
 }

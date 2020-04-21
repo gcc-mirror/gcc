@@ -1,3 +1,89 @@
+2020-04-21  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94647
+	* c-c++-common/Warray-bounds-2.c: Adjust a test case and add a new one.
+	* c-c++-common/Warray-bounds-3.c: Add tests for missing warnings.
+	* c-c++-common/Wrestrict.c: Invert bounds in printed ranges.
+	* gcc.dg/Warray-bounds-59.c: New test.
+	* gcc.dg/Wrestrict-10.c: Add a missing warning.
+	* gcc.dg/Wrestrict-5.c: Adjust text of expected warning.
+	* gcc.dg/Wrestrict-6.c: Expect to see a range of overlap offsets.
+
+2020-04-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* g++.target/aarch64/pr94514.C: New test.
+	* gcc.target/aarch64/pr94514.c: New test.
+
+2020-04-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94683
+	* gcc.target/aarch64/sve/acle/general/pr94683.c: New test.
+
+2020-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94383
+	* g++.dg/compat/struct-layout-1.exp: If !$use_alt, add -c to generator
+	args.
+	* g++.dg/compat/struct-layout-1_generate.c (dg_options): Add another
+	%s to the start of dg-options arg.
+	(cxx14_vs_cxx17, do_cxx14_vs_cxx17): New variables.
+	(switchfiles): If cxx14_vs_cxx17, prepend -std=c++14 -DCXX14_VS_CXX17
+	or -std=c++17 -DCXX17_VS_CXX14 - randomly - to dg-options.
+	(output): Don't append further fields once one with flexible array
+	member is added.
+	(generate_random_tests): Don't use toplevel unions if cxx14_vs_cxx17.
+	(main): If -c, emit second set of tests for -std=c++14 vs. -std=c++17
+	testing.
+	* g++.dg/compat/struct-layout-1_x1.h (empty_base): New type.
+	(EMPTY_BASE): Define.
+	(TX): Use EMPTY_BASE.
+	* g++.dg/compat/struct-layout-1_y1.h (empty_base): New type.
+	(EMPTY_BASE): Define.
+	(TX): Use EMPTY_BASE.
+
+	PR c/94641
+	* c-c++-common/ubsan/pr94641.c: New test.
+
+2020-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94597
+	* g++.dg/cpp2a/concepts-conv2.C: New test.
+
+2020-04-21  Duan bo  <duanbo3@huawei.com>
+
+	PR target/94577
+	* gcc.target/aarch64/pr94577.c: New test.
+
+2020-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94686
+	* gcc.c-torture/compile/pr94686.c: New test.
+
+2020-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94661
+	* g++.dg/coroutines/ramp-return-a.C: New test.
+	* g++.dg/coroutines/ramp-return-b.C: New test.
+	* g++.dg/coroutines/ramp-return-c.C: New test.
+
+2020-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94592
+	* g++.dg/cpp2a/nontype-class34.C: New test.
+	* g++.dg/cpp2a/nontype-class35.C: New test.
+
+2020-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94628
+	* g++.dg/cpp0x/variadic179.C: New test.
+	* g++.dg/cpp0x/variadic180.C: New test.
+
+2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94505 - bogus -Wparentheses warning with fold-expression.
+	* g++.dg/cpp1z/fold11.C: New test.
+
 2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* g++.dg/pr94666.C: New test.
@@ -1253,7 +1339,7 @@
 	PR c++/94336 - template keyword accepted before destructor names.
 	* g++.dg/template/template-keyword2.C: New test.
 
-2020-03-27 Iain Sandoe  <iain@sandoe.co.uk>
+2020-03-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/symmetric-transfer-00-basic.C:
 	Add <cstdio>.

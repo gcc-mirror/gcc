@@ -83,7 +83,9 @@ static tree cur_stmt_expr;
 local_specialization_stack::local_specialization_stack (lss_policy policy)
   : saved (local_specializations)
 {
-  if (policy == lss_blank || !saved)
+  if (policy == lss_nop)
+    ;
+  else if (policy == lss_blank || !saved)
     local_specializations = new hash_map<tree, tree>;
   else
     local_specializations = new hash_map<tree, tree>(*saved);
@@ -91,8 +93,11 @@ local_specialization_stack::local_specialization_stack (lss_policy policy)
 
 local_specialization_stack::~local_specialization_stack ()
 {
-  delete local_specializations;
-  local_specializations = saved;
+  if (local_specializations != saved)
+    {
+      delete local_specializations;
+      local_specializations = saved;
+    }
 }
 
 /* True if we've recursed into fn_type_unification too many times.  */
@@ -10524,6 +10529,12 @@ any_template_parm_r (tree t, void *data)
       }
       break;
 
+    case IDENTIFIER_NODE:
+      if (IDENTIFIER_CONV_OP_P (t))
+	/* The conversion-type-id of a conversion operator may be dependent.  */
+	WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     default:
       break;
     }
@@ -12379,6 +12390,7 @@ fold_expression (tree t, tree left, tree right, tsubst_flags_t complain)
   if (FOLD_EXPR_MODIFY_P (t))
     return build_x_modify_expr (input_location, left, code, right, complain);
 
+  warning_sentinel s(warn_parentheses);
   switch (code)
     {
     case COMPOUND_EXPR:
@@ -12717,7 +12729,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   bool unsubstituted_fn_pack = false;
   int i, len = -1;
   tree result;
-  hash_map<tree, tree> *saved_local_specializations = NULL;
   bool need_local_specializations = false;
   int levels;
 
@@ -12916,7 +12927,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	= build_extra_args (pattern, args, complain);
       return t;
     }
-  else if (unsubstituted_packs)
+
+  /* If NEED_LOCAL_SPECIALIZATIONS then we're in a late-specified return
+     type, so create our own local specializations map; the current map is
+     either NULL or (in the case of recursive unification) might have
+     bindings that we don't want to use or alter.  */
+  local_specialization_stack lss (need_local_specializations
+				  ? lss_blank : lss_nop);
+
+  if (unsubstituted_packs)
     {
       /* There were no real arguments, we're just replacing a parameter
 	 pack with another version of itself. Substitute into the
@@ -12932,16 +12951,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
     }
 
   gcc_assert (len >= 0);
-
-  if (need_local_specializations)
-    {
-      /* We're in a late-specified return type, so create our own local
-	 specializations map; the current map is either NULL or (in the
-	 case of recursive unification) might have bindings that we don't
-	 want to use or alter.  */
-      saved_local_specializations = local_specializations;
-      local_specializations = new hash_map<tree, tree>;
-    }
 
   /* For each argument in each argument pack, substitute into the
      pattern.  */
@@ -12987,12 +12996,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
           else
             TREE_VEC_ELT (args, idx) = TREE_TYPE (pack);
         }
-    }
-
-  if (need_local_specializations)
-    {
-      delete local_specializations;
-      local_specializations = saved_local_specializations;
     }
 
   /* If the dependent pack arguments were such that we end up with only a
@@ -19412,7 +19415,11 @@ tsubst_copy_and_build (tree t,
     case POINTER_PLUS_EXPR:
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	if (op0 == error_mark_node)
+	  RETURN (error_mark_node);
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
+	if (op1 == error_mark_node)
+	  RETURN (error_mark_node);
 	RETURN (fold_build_pointer_plus (op0, op1));
       }
 

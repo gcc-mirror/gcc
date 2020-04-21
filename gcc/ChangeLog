@@ -1,3 +1,47 @@
+2020-04-21  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94647
+	* gimple-ssa-warn-restrict.c (builtin_access::builtin_access): Correct
+	the computation of the lower bound of the source access size.
+	(builtin_access::generic_overlap): Remove a hack for setting ranges
+	of overlap offsets.
+
+2020-04-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/som.h (ASM_WEAKEN_LABEL): Delete.
+	(ASM_WEAKEN_DECL): New define.
+	(HAVE_GAS_WEAKREF): Undefine.
+
+2020-04-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94683
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Use a
+	VIEW_CONVERT_EXPR to handle mixtures of similarly-structured
+	but distinct vector types.
+
+2020-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94641
+	* stor-layout.c (place_field, finalize_record_size): Don't emit
+	-Wpadded warning on TYPE_ARTIFICIAL rli->t.
+	* ubsan.c (ubsan_get_type_descriptor_type,
+	ubsan_get_source_location_type, ubsan_create_data): Set
+	TYPE_ARTIFICIAL.
+	* asan.c (asan_global_struct): Likewise.
+
+2020-04-21  Duan bo  <duanbo3@huawei.com>
+
+	PR target/94577
+	* config/aarch64/aarch64.c: Add an error message for option conflict.
+	* doc/invoke.texi (-mcmodel=large): Mention that -mcmodel=large is
+	incompatible with -fpic, -fPIC and -mabi=ilp32.
+
+2020-04-21  Frederik Harwath  <frederik@codesourcery.com>
+
+	PR other/94629
+	* omp-low.c (new_omp_context): Remove assignments to
+	ctx->outer_reduction_clauses and ctx->local_reduction_clauses.
+
 2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/vector.md ("popcountv8hi2_vx", "popcountv4si2_vx")

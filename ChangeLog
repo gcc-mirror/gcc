@@ -1,3 +1,9 @@
+2020-04-21  Stephen Casner  <casner@acm.org>
+
+	PR 25830
+	* configure.ac (noconfigdirs): Exclude gdb & gprof for pdp11.
+	* configure: Rebuild.
+
 2020-04-17  Martin Liska  <mliska@suse.cz>
 	    Jonathan Yong <10walls@gmail.com>
 

@@ -1,3 +1,13 @@
+2020-04-21  Mathias Lang  <pro.mathias.lang@gmail.com>
+	    Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac: Call DRUNTIME_LIBRARIES_UCONTEXT.
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_UCONTEXT): Define to
+	search libraries for swapcontext.
+	* libdruntime/gcc/sections/elf_shared.d (getTLSRange): Always use
+	__tls_get_addr on Musl.
+
 2020-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure: Regenerate.

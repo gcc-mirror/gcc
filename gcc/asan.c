@@ -2661,6 +2661,7 @@ asan_global_struct (void)
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = type_decl;
   TYPE_STUB_DECL (ret) = type_decl;
+  TYPE_ARTIFICIAL (ret) = 1;
   layout_type (ret);
   return ret;
 }

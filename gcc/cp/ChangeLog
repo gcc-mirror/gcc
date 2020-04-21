@@ -1,3 +1,47 @@
+2020-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94597
+	* pt.c (any_template_parm_r) <case IDENTIFIER_NODE>: New case.  If this
+	is a conversion operator, visit its TREE_TYPE.
+
+2020-04-21  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst_copy_and_build) [POINTER_PLUS_EXPR]: Check for
+	error_mark_node.
+
+2020-04-21 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94661
+	* coroutines.cc (morph_fn_to_coro): Simplify return
+	value computation.
+
+2020-04-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94592
+	* constexpr.c (cxx_eval_outermost_constant_expr): Return when T is
+	a BRACE_ENCLOSED_INITIALIZER_P.
+	(is_nondependent_constant_expression): Don't check
+	BRACE_ENCLOSED_INITIALIZER_P.
+	(is_nondependent_static_init_expression): Likewise.
+
+2020-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94628
+	* cp-tree.h (lss_policy::lss_nop): New enumerator.
+	* pt.c (local_specialization_stack::local_specialization_stack): Handle
+	an lss_nop policy.
+	(local_specialization_stack::~local_specialization_stack): Likewise.
+	(tsubst_pack_expansion): Use a local_specialization_stack instead of
+	manually saving and restoring local_specializations.  Conditionally
+	replace local_specializations sooner, before the handling of the
+	unsubstituted_packs case.
+
+2020-04-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94505 - bogus -Wparentheses warning with fold-expression.
+	* pt.c (fold_expression): Add warning_sentinel for -Wparentheses
+	before calling build_x_binary_op.
+
 2020-04-20  Marek Polacek  <polacek@redhat.com>
 
 	* coroutines.cc (captures_temporary): Don't assign the result of
@@ -5,13 +49,13 @@
 
 2020-04-20  Nathan Sidwell  <nathan@acm.org>
 
-	PR 94454 - tpl-tpl-parms are not canonicalizable types
+	PR c++/94454 - tpl-tpl-parms are not canonicalizable types
 	* pt.c (canonical_type_parameter): Assert not a tpl-tpl-parm.
 	(process_template_parm): tpl-tpl-parms are structural.
 	(rewrite_template_parm): Propagate structuralness.
 
-	PR 94454 - Expr pack expansion equality
-	* tree.c (cp_tree_equal): [TEMPLATE_ID_EXPR, default] Refactor.
+	PR c++/94454 - Expr pack expansion equality
+	* tree.c (cp_tree_equal) [TEMPLATE_ID_EXPR, default]: Refactor.
 	[EXPR_PACK_EXPANSION]: Add.
 
 	PR c++/94454 Template Argument Hashing

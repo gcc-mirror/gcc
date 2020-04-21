@@ -128,10 +128,16 @@ struct omp_context
      corresponding tracking loop iteration variables.  */
   hash_map<tree, tree> *lastprivate_conditional_map;
 
-  /* A tree_list of the reduction clauses in this context.  */
+  /* A tree_list of the reduction clauses in this context. This is
+    only used for checking the consistency of OpenACC reduction
+    clauses in scan_omp_for and is not guaranteed to contain a valid
+    value outside of this function. */
   tree local_reduction_clauses;
 
-  /* A tree_list of the reduction clauses in outer contexts.  */
+  /* A tree_list of the reduction clauses in outer contexts. This is
+    only used for checking the consistency of OpenACC reduction
+    clauses in scan_omp_for and is not guaranteed to contain a valid
+    value outside of this function. */
   tree outer_reduction_clauses;
 
   /* Nesting depth of this context.  Used to beautify error messages re
@@ -931,8 +937,6 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->outer = outer_ctx;
       ctx->cb = outer_ctx->cb;
       ctx->cb.block = NULL;
-      ctx->local_reduction_clauses = NULL;
-      ctx->outer_reduction_clauses = ctx->outer_reduction_clauses;
       ctx->depth = outer_ctx->depth + 1;
     }
   else
@@ -948,8 +952,6 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
       ctx->cb.transform_call_graph_edges = CB_CGE_MOVE;
       ctx->cb.adjust_array_error_bounds = true;
       ctx->cb.dont_remap_vla_if_no_change = true;
-      ctx->local_reduction_clauses = NULL;
-      ctx->outer_reduction_clauses = NULL;
       ctx->depth = 1;
     }
 

@@ -11,6 +11,7 @@
 # bundle		bunt
 # cast			typkonvertering
 # chunk			stycke
+# clique		klick
 # kind			sort
 # load			ladda
 # offset		avstånd
@@ -26,7 +27,7 @@ msgstr ""
 "Project-Id-Version: gcc 10.1-b20200322\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-03-20 23:17+0000\n"
-"PO-Revision-Date: 2020-04-13 23:00+0200\n"
+"PO-Revision-Date: 2020-04-19 20:57+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -24707,10 +24708,9 @@ msgid "%qs specifies a conflicting level of parallelism"
 msgstr "%qs anger en motstridig nivå av parallellism"
 
 #: omp-general.c:1754
-#, fuzzy, gcc-internal-format
-#| msgid "previously used here"
+#, gcc-internal-format
 msgid "... to the previous %qs clause here"
-msgstr "tidigare använt här"
+msgstr "… till den tidigare %qs-klausulen här"
 
 #: omp-general.c:1814
 #, gcc-internal-format
@@ -24723,10 +24723,9 @@ msgid "missing %qs clause when applying %<%s%> to %qD, which has already been ma
 msgstr "saknad %qs-klausul när %<%s%> används på %qD, som redan har markerats med ett OpenACC ”routine”-direktiv"
 
 #: omp-general.c:1830
-#, fuzzy, gcc-internal-format
-#| msgid "switch starts here"
+#, gcc-internal-format
 msgid "... with %qs clause here"
-msgstr "switch börjar här"
+msgstr "… med en %qs-klausul här"
 
 #: omp-general.c:1838
 #, gcc-internal-format
@@ -24749,22 +24748,19 @@ msgid "inner loop uses same OpenACC parallelism as containing loop"
 msgstr "den inre slingan använder samma OpenACC-parallellism som den omgivande slingan"
 
 #: omp-low.c:2434
-#, fuzzy, gcc-internal-format
-#| msgid "argument not permitted on %qs clause in OpenACC %<parallel%>"
+#, gcc-internal-format
 msgid "argument not permitted on %qs clause in OpenACC %<parallel%> or %<serial%>"
-msgstr "argument är inte tillåtna på %qs-klausulen i OpenACC %<parallel%>"
+msgstr "argument är inte tillåtna på %qs-klausulen i OpenACC %<parallel%> eller %<serial%>"
 
 #: omp-low.c:2489
-#, fuzzy, gcc-internal-format
-#| msgid "conflicting types for %q+D"
+#, gcc-internal-format
 msgid "conflicting reduction operations for %qE"
-msgstr "motstridiga typer på %q+D"
+msgstr "motstridiga reduktionsoperationer för %qE"
 
 #: omp-low.c:2492
-#, fuzzy, gcc-internal-format
-#| msgid "no previous declaration for %qD"
+#, gcc-internal-format
 msgid "location of the previous reduction for %qE"
-msgstr "ingen tidigare deklaration av %qD"
+msgstr "platsen för den tidigare reduktionen för %qE"
 
 #: omp-low.c:2525
 #, gcc-internal-format
@@ -24782,10 +24778,9 @@ msgid "non-OpenACC construct inside of OpenACC region"
 msgstr "icke-OpenACC-konstruktion inuti OpenACC-region"
 
 #: omp-low.c:2849 omp-low.c:2916
-#, fuzzy, gcc-internal-format
-#| msgid "OpenMP constructs other than %<#pragma omp ordered simd%> or %<#pragma omp atomic%> may not be nested inside %<simd%> region"
+#, gcc-internal-format
 msgid "OpenMP constructs other than %<parallel%>, %<loop%> or %<simd%> may not be nested inside a region with the %<order(concurrent)%> clause"
-msgstr "OpenMP-konstruktioner andra än %<#pragma omp ordered simd%> eller %<#pragma omp atomic%> får inte inneslutna i en %<simd%>-region"
+msgstr "OpenMP-konstruktioner andra än %<parallel%>, %<loop%> eller %<simd%> får inte nästas inuti en region med klausulen %<order(concurrent)%>"
 
 #: omp-low.c:2868
 #, gcc-internal-format
@@ -24793,22 +24788,19 @@ msgid "%<ordered simd threads%> must be closely nested inside of %<for simd%> re
 msgstr "%<ordered simd threads%> måste vara nära inneslutet inuti en %<for simd%>-region"
 
 #: omp-low.c:2883
-#, fuzzy, gcc-internal-format
-#| msgid "OpenMP constructs other than %<#pragma omp ordered simd%> or %<#pragma omp atomic%> may not be nested inside %<simd%> region"
+#, gcc-internal-format
 msgid "OpenMP constructs other than %<ordered simd%>, %<simd%>, %<loop%> or %<atomic%> may not be nested inside %<simd%> region"
-msgstr "OpenMP-konstruktioner andra än %<#pragma omp ordered simd%> eller %<#pragma omp atomic%> får inte inneslutna i en %<simd%>-region"
+msgstr "OpenMP-konstruktioner andra än %<ordered simd%>, %<simd%>, %<loop%> eller %<atomic%> får inte nästas inuti i en %<simd%>-region"
 
 #: omp-low.c:2898
-#, fuzzy, gcc-internal-format
-#| msgid "only %<distribute%> or %<parallel%> regions are allowed to be strictly nested inside %<teams%> region"
+#, gcc-internal-format
 msgid "only %<distribute%>, %<parallel%> or %<loop%> regions are allowed to be strictly nested inside %<teams%> region"
-msgstr "endast %<distribute%>- eller %<parallel%>-regioner tillåts vara strikt inneslutna inuti en %<teams%>-region"
+msgstr "endast %<distribute%>- %<parallel%>-, eller %<loop%>-regioner tillåts vara strikt inneslutna inuti en %<teams%>-region"
 
 #: omp-low.c:2912
-#, fuzzy, gcc-internal-format
-#| msgid "OpenMP constructs other than %<#pragma omp ordered simd%> or %<#pragma omp atomic%> may not be nested inside %<simd%> region"
+#, gcc-internal-format
 msgid "OpenMP constructs other than %<parallel%>, %<loop%> or %<simd%> may not be nested inside a %<loop%> region"
-msgstr "OpenMP-konstruktioner andra än %<#pragma omp ordered simd%> eller %<#pragma omp atomic%> får inte inneslutna i en %<simd%>-region"
+msgstr "OpenMP-konstruktioner andra än %<parallel%>, %<loop%> eller %<simd%> får inte inneslutna i en %<loop%>-region"
 
 #: omp-low.c:2932
 #, gcc-internal-format
@@ -24826,22 +24818,19 @@ msgid "orphaned %qs construct"
 msgstr "föräldralös %qs-konstruktion"
 
 #: omp-low.c:3030
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma omp cancel for%> inside %<nowait%> for construct"
+#, gcc-internal-format
 msgid "%<cancel for%> inside %<nowait%> for construct"
-msgstr "%<#pragma omp cancel for%> inuti %<nowait%> for-konstruktion"
+msgstr "%<cancel for%> inuti %<nowait%> for-konstruktion"
 
 #: omp-low.c:3035
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma omp cancel for%> inside %<ordered%> for construct"
+#, gcc-internal-format
 msgid "%<cancel for%> inside %<ordered%> for construct"
-msgstr "%<#pragma omp cancel for%> inuti %<ordered%> for-konstruktion"
+msgstr "%<cancel for%> inuti %<ordered%> for-konstruktion"
 
 #: omp-low.c:3055 omp-low.c:3068
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma omp cancel sections%> inside %<nowait%> sections construct"
+#, gcc-internal-format
 msgid "%<cancel sections%> inside %<nowait%> sections construct"
-msgstr "%<#pragma omp cancel sections%> inuti %<nowait%>-sektionskonstruktion"
+msgstr "%<cancel sections%> inuti %<nowait%>-sektionskonstruktion"
 
 #: omp-low.c:3097
 #, gcc-internal-format
@@ -24859,22 +24848,19 @@ msgid "%<%s %s%> construct not closely nested inside of %qs"
 msgstr "%<%s %s%>-konstruktion inte nära innesluten inuti %qs"
 
 #: omp-low.c:3156
-#, fuzzy, gcc-internal-format
-#| msgid "barrier region may not be closely nested inside of work-sharing, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "barrier region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
-msgstr "barriärregion får inte vara nära innesluten inuti en arbetsdelande, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
+msgstr "barriärregion får inte vara nära innesluten inuti en arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
 
 #: omp-low.c:3163
-#, fuzzy, gcc-internal-format
-#| msgid "work-sharing region may not be closely nested inside of work-sharing, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "work-sharing region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
-msgstr "arbetsdelande region får inte vara nära innesluten inuti arbetsdelande, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
+msgstr "arbetsdelande region får inte vara nära innesluten inuti arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
 
 #: omp-low.c:3192
-#, fuzzy, gcc-internal-format
-#| msgid "%<master%> region may not be closely nested inside of work-sharing, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "%<master%> region may not be closely nested inside of work-sharing, %<loop%>, explicit %<task%> or %<taskloop%> region"
-msgstr "en %<master%>-region får inte vara nära innesluten inuti arbetsdelande, explicit %<task%> eller %<taskloop%> region"
+msgstr "en %<master%>-region får inte vara nära innesluten inuti arbetsdelande, %<loop%>, explicit %<task%> eller %<taskloop%> region"
 
 #: omp-low.c:3216 omp-low.c:3373 c-family/c-omp.c:493
 #, gcc-internal-format
@@ -24942,10 +24928,9 @@ msgid "%qs construct inside of %qs region"
 msgstr "%qs-konstruktion inuti en %qs-region"
 
 #: omp-low.c:3686
-#, fuzzy, gcc-internal-format
-#| msgid "setjmp/longjmp inside simd construct"
+#, gcc-internal-format
 msgid "setjmp/longjmp inside %<simd%> construct"
-msgstr "setjmp/longjmp inuti simd-konstruktion"
+msgstr "setjmp/longjmp inuti %<simd%>-konstruktion"
 
 #: omp-low.c:3712
 #, gcc-internal-format
@@ -25054,8 +25039,7 @@ msgid "indirect jumps are not available on this target"
 msgstr "indirekta hopp är inte tillgängliga på denna målarkitektur"
 
 #: opts-common.c:1275
-#, fuzzy, gcc-internal-format
-#| msgid "command line option %qs is not supported by this configuration"
+#, gcc-internal-format
 msgid "command-line option %qs is not supported by this configuration"
 msgstr "kommandoradsflaggan %qs stödjs inte av denna konfiguration"
 
@@ -25100,30 +25084,26 @@ msgid "switch %qs is no longer supported"
 msgstr "flaggan %qs stödjs inte längre"
 
 #: opts-common.c:1764
-#, fuzzy, gcc-internal-format
-#| msgid "malformed COLLECT_GCC_OPTIONS"
+#, gcc-internal-format
 msgid "malformed %<COLLECT_GCC_OPTIONS%>"
-msgstr "felformaterad COLLECT_GCC_OPTIONS"
+msgstr "felformaterad %<COLLECT_GCC_OPTIONS%>"
 
 #: opts-global.c:102
-#, fuzzy, gcc-internal-format
-#| msgid "command line option %qs is valid for the driver but not for %s"
+#, gcc-internal-format
 msgid "command-line option %qs is valid for the driver but not for %s"
 msgstr "kommandoradsflaggan %qs är giltig för drivrutinen men inte för %s"
 
 #. Eventually this should become a hard error IMO.
 #: opts-global.c:108
-#, fuzzy, gcc-internal-format
-#| msgid "command line option %qs is valid for %s but not for %s"
+#, gcc-internal-format
 msgid "command-line option %qs is valid for %s but not for %s"
 msgstr "kommandoradsflaggan %qs är giltig för %s men inte för %s"
 
 #. Happens for -Werror=warning_name.
 #: opts-global.c:112
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not valid for %qs"
+#, gcc-internal-format
 msgid "%<-Werror=%> argument %qs is not valid for %s"
-msgstr "%qs är inte giltigt för %qs"
+msgstr "%<-Werror=%>-argumentet %qs är inte giltigt för %qs"
 
 #: opts-global.c:144
 #, gcc-internal-format
@@ -25131,14 +25111,12 @@ msgid "unrecognized command-line option %qs may have been intended to silence ea
 msgstr "okänd kommandoradsflagga %s kan ha varit avsedd att tysta tidare felmeddelanden"
 
 #: opts-global.c:389
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized command line option %<-fdump-%s%>"
+#, gcc-internal-format
 msgid "unrecognized command-line option %<-fdump-%s%>"
 msgstr "okänd kommandoradsflagga %<-fdump-%s%>"
 
 #: opts-global.c:394
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized command line option %<-fopt-info-%s%>"
+#, gcc-internal-format
 msgid "unrecognized command-line option %<-fopt-info-%s%>"
 msgstr "okänd kommandoradsflagga %<-fopt-info-%s%>"
 
@@ -25363,16 +25341,14 @@ msgid "live patching is not supported with LTO"
 msgstr "uppdateringar i drift stödjs inte med LTO"
 
 #: opts.c:1165
-#, fuzzy, gcc-internal-format
-#| msgid "live patching is not supported with LTO"
+#, gcc-internal-format
 msgid "vtable verification is not supported with LTO"
-msgstr "uppdateringar i drift stödjs inte med LTO"
+msgstr "vtable-verifiering stödjs inte med LTO"
 
 #: opts.c:1659
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized include_flags 0x%x passed to print_specific_help"
+#, gcc-internal-format
 msgid "unrecognized %<include_flags 0x%x%> passed to %<print_specific_help%>"
-msgstr "okända include_flags 0x%x skickade till print_specific_help"
+msgstr "okänd %<include_flags 0x%x%> skickade till %<print_specific_help%>"
 
 #: opts.c:1873
 #, gcc-internal-format
@@ -25390,10 +25366,9 @@ msgid "unrecognized argument to %<-f%ssanitize%s=%> option: %q.*s"
 msgstr "okänt argument till flaggan %<-f%ssanitize%s=%>: %q.*s"
 
 #: opts.c:1954
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute directive ignored"
+#, gcc-internal-format
 msgid "%qs attribute directive ignored"
-msgstr "attributdirektivet %qE ignorerat"
+msgstr "attributdirektivet %qs ignorerat"
 
 #: opts.c:1981
 #, gcc-internal-format
@@ -25411,16 +25386,14 @@ msgid "%<-falign-%s%> is not between 0 and %d"
 msgstr "%<-falign-%s%> är inte mellan 0 och %d"
 
 #: opts.c:2131
-#, fuzzy, gcc-internal-format
-#| msgid "--help argument %q.*s is ambiguous, please be more specific"
+#, gcc-internal-format
 msgid "%<--help%> argument %q.*s is ambiguous, please be more specific"
-msgstr "argumentet %q.*s till --help är tvetydigt, var mer precis"
+msgstr "argumentet %q.*s till %<--help%> är tvetydigt, var mer precis"
 
 #: opts.c:2140
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to --help= option: %q.*s"
+#, gcc-internal-format
 msgid "unrecognized argument to %<--help=%> option: %q.*s"
-msgstr "okänt argument till --help=-flagga: %q.*s"
+msgstr "okänt argument till %<--help=%>-flagga: %q.*s"
 
 #: opts.c:2509
 #, gcc-internal-format
@@ -25458,10 +25431,9 @@ msgid "dwarf version %wu is not supported"
 msgstr "dwarf-version %wu stödjs inte"
 
 #: opts.c:2755
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to --help= option: %q.*s"
+#, gcc-internal-format
 msgid "unrecognized argument to %<-flto=%> option: %qs"
-msgstr "okänt argument till --help=-flagga: %q.*s"
+msgstr "okänt argument till flaggan %<-flto=%>: %qs"
 
 #: opts.c:2933
 #, gcc-internal-format
@@ -25499,22 +25471,19 @@ msgid "unrecognized gcc debugging option: %c"
 msgstr "ej igenkänd felsökningsflagga för gcc: %c"
 
 #: opts.c:3060
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized command line option %<-%s%>; did you mean %<-%s%>?"
+#, gcc-internal-format
 msgid "%<-W%serror=%s%>: no option %<-%s%>; did you mean %<-%s%>?"
-msgstr "okänd kommandoradsflagga %<-%s%>, menade du %<-%s%>?"
+msgstr "%<-W%serror=%s%>: inge flagga %<-%s%>; menade du %<-%s%>?"
 
 #: opts.c:3064
-#, fuzzy, gcc-internal-format
-#| msgid "%<-Werror=%s%>: no option -%s"
+#, gcc-internal-format
 msgid "%<-W%serror=%s%>: no option %<-%s%>"
-msgstr "%<-Werror=%s%>: ingen flagga -%s"
+msgstr "%<-W%serror=%s%>: ingen flagga %<-%s%>"
 
 #: opts.c:3068
-#, fuzzy, gcc-internal-format
-#| msgid "%<-Werror=%s%>: -%s is not an option that controls warnings"
+#, gcc-internal-format
 msgid "%<-Werror=%s%>: %<-%s%> is not an option that controls warnings"
-msgstr "%<-Werror=%s%>: -%s är inte en flagga som styr varningar"
+msgstr "%<-Werror=%s%>: %<-%s%> är inte en flagga som styr varningar"
 
 #: passes.c:84
 #, gcc-internal-format, gfc-internal-format
@@ -25522,10 +25491,9 @@ msgid "pass %s does not support cloning"
 msgstr "pass %s stödjer inte kloning"
 
 #: passes.c:90
-#, fuzzy, gcc-internal-format
-#| msgid "pass %s needs a set_pass_param implementation to handle the extra argument in NEXT_PASS"
+#, gcc-internal-format
 msgid "pass %s needs a %<set_pass_param%> implementation to handle the extra argument in %<NEXT_PASS%>"
-msgstr "pass %s behöver en set_pass_param-implementation för att hantera det extra argumentet i NEXT_PASS"
+msgstr "pass %s behöver en %<set_pass_param%>-implementation för att hantera det extra argumentet i %<NEXT_PASS%>"
 
 #: passes.c:1026
 #, gcc-internal-format
@@ -25603,22 +25571,14 @@ msgid "inaccessible plugin file %s expanded from short plugin name %s: %m"
 msgstr "oåtkomlig insticksmodulsfil %s expanderad från kort namn på insticksmodul %s: %m"
 
 #: plugin.c:234
-#, fuzzy, gcc-internal-format
-#| msgid ""
-#| "plugin %s was specified with different paths:\n"
-#| "%s\n"
-#| "%s"
+#, gcc-internal-format
 msgid "plugin %qs was specified with different paths: %qs and %qs"
-msgstr ""
-"insticksmodul %s angavs med olika sökvägar:\n"
-"%s\n"
-"%s"
+msgstr "insticksmodulen %qs angavs med olika sökvägar: %qs och %qs"
 
 #: plugin.c:293
-#, fuzzy, gcc-internal-format
-#| msgid "malformed option %<-fplugin-arg-%s%> (missing -<key>[=<value>])"
+#, gcc-internal-format
 msgid "malformed option %<-fplugin-arg-%s%>: missing %<-<key>[=<value>]%>"
-msgstr "felformaterad flagga %<-fplugin-arg-%s%> (saknat -<nyckel>[=<värde>])"
+msgstr "felformaterad flagga %<-fplugin-arg-%s%>: (saknat %<-<nyckel>[=<värde>]%>)"
 
 #: plugin.c:357
 #, gcc-internal-format
@@ -25673,38 +25633,22 @@ msgid "fail to initialize plugin %s"
 msgstr "misslyckades att initiera insticksmodulen %s"
 
 #: plugin.c:704
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid ""
-#| "cannot load plugin %s\n"
-#| "%s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot load plugin %s: %s"
-msgstr ""
-"det går inte att läsa in insticksmodul %s\n"
-"%s"
+msgstr "det går inte att läsa in insticksmodul %s: %s"
 
 #: plugin.c:714
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid ""
-#| "plugin %s is not licensed under a GPL-compatible license\n"
-#| "%s"
+#, gcc-internal-format, gfc-internal-format
 msgid "plugin %s is not licensed under a GPL-compatible license %s"
-msgstr ""
-"insticksmodul %s är inte licensierad under en GPL-kompatibel licens\n"
-"%s"
+msgstr "insticksmodul %s är inte licensierad under en GPL-kompatibel licens: %s"
 
 #: plugin.c:724
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid ""
-#| "cannot find %s in plugin %s\n"
-#| "%s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot find %s in plugin %s: %s"
-msgstr ""
-"det går inte att hitta %s i insticksmodul %s\n"
-"%s"
+msgstr "det går inte att hitta %s i insticksmodul %s: %s"
 
 #: plugin.c:733
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "fail to initialize plugin %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to initialize plugin %s"
 msgstr "misslyckades att initiera insticksmodulen %s"
 
@@ -25744,10 +25688,9 @@ msgid "corrupted profile info: number of executions for edge %d-%d thought to be
 msgstr "trasig profileringsinformation: antal körningar för bågen %d-%d förmodas vara %i"
 
 #: profile.c:888
-#, fuzzy, gcc-internal-format
-#| msgid "corrupted profile info: profile data is not flow-consistent"
+#, gcc-internal-format
 msgid "corrupted profile info: invalid time profile"
-msgstr "trasig profileringsinformation: profileringsdata är inte flödeskonsistent"
+msgstr "trasig profileringsinformation: felaktig tidsprofil"
 
 #: read-rtl-function.c:265
 #, gcc-internal-format, gfc-internal-format
@@ -25765,10 +25708,9 @@ msgid "%<__RTL%> function cannot be compiled with %<-flto%>"
 msgstr "en %<__RTL%>-funktion kan inte kompileras med %<-flto%>"
 
 #: read-rtl-function.c:713
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized edge flag: '%s'"
+#, gcc-internal-format
 msgid "unrecognized edge flag: %qs"
-msgstr "okänd bågflagga: ”%s”"
+msgstr "okänd bågflagga: %qs"
 
 #: read-rtl-function.c:856
 #, gcc-internal-format
@@ -25776,10 +25718,9 @@ msgid "more than one 'crtl' directive"
 msgstr "mer än ett ”crtl”-direktiv"
 
 #: read-rtl-function.c:984
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized enum value: '%s'"
+#, gcc-internal-format
 msgid "unrecognized enum value: %qs"
-msgstr "okänt uppräkningsvärde: ”%s”"
+msgstr "okänt uppräkningsvärde: %qs"
 
 #: read-rtl-function.c:1140 read-rtl-function.c:1199
 #, gcc-internal-format, gfc-internal-format
@@ -25812,26 +25753,22 @@ msgid "output constraint %d must specify a single register"
 msgstr "utmatningsbegränsning %d måste ange ett enskilt register"
 
 #: reg-stack.c:547
-#, fuzzy, gcc-internal-format
-#| msgid "output constraint %d cannot be specified together with \"%s\" clobber"
+#, gcc-internal-format
 msgid "output constraint %d cannot be specified together with %qs clobber"
-msgstr "utmatningsbegränsning %d kan inte anges tillsammans med överskrivning av ”%s”"
+msgstr "utmatningsbegränsning %d kan inte anges tillsammans med överskrivning av %qs"
 
 #: reg-stack.c:571
-#, fuzzy, gcc-internal-format
-#| msgid "output regs must be grouped at top of stack"
+#, gcc-internal-format
 msgid "output registers must be grouped at top of stack"
 msgstr "utmatningsregister måste vara grupperade i toppen på stacken"
 
 #: reg-stack.c:611
-#, fuzzy, gcc-internal-format
-#| msgid "implicitly popped regs must be grouped at top of stack"
+#, gcc-internal-format
 msgid "implicitly popped registers must be grouped at top of stack"
 msgstr "implicit poppade register måste vara grupperade i toppen på stacken"
 
 #: reg-stack.c:629
-#, fuzzy, gcc-internal-format
-#| msgid "explicitly used regs must be grouped at top of stack"
+#, gcc-internal-format
 msgid "explicitly used registers must be grouped at top of stack"
 msgstr "explicit använda register måste vara grupperade i toppen på stacken"
 
@@ -25841,44 +25778,37 @@ msgid "output operand %d must use %<&%> constraint"
 msgstr "utdataoperand %d måste använda %<&%>-begränsning"
 
 #: regcprop.c:1200
-#, fuzzy, gcc-internal-format
-#| msgid "validate_value_data: [%u] Bad next_regno for empty chain (%u)"
+#, gcc-internal-format
 msgid "%qs: [%u] bad %<next_regno%> for empty chain (%u)"
-msgstr "validate_value_data: [%u] Felaktigt next_regno för tom kedja (%u)"
+msgstr "%qs: [%u] felaktigt %<next_regno%> för tom kedja (%u)"
 
 #: regcprop.c:1212
-#, fuzzy, gcc-internal-format
-#| msgid "validate_value_data: Loop in regno chain (%u)"
+#, gcc-internal-format
 msgid "%qs: loop in %<next_regno%> chain (%u)"
-msgstr "validate_value_data: Slinga i regno-kedja (%u)"
+msgstr "%qs: slinga i %<next_regno%>-kedja (%u)"
 
 #: regcprop.c:1215
-#, fuzzy, gcc-internal-format
-#| msgid "validate_value_data: [%u] Bad oldest_regno (%u)"
+#, gcc-internal-format
 msgid "%qs: [%u] bad %<oldest_regno%> (%u)"
-msgstr "validate_value_data: [%u] Felaktig oldest_regno (%u)"
+msgstr "%qs: [%u] felaktigt %<oldest_regno%> (%u)"
 
 #: regcprop.c:1227
-#, fuzzy, gcc-internal-format
-#| msgid "validate_value_data: [%u] Non-empty reg in chain (%s %u %i)"
+#, gcc-internal-format
 msgid "%qs: [%u] non-empty register in chain (%s %u %i)"
-msgstr "validate_value_data: [%u] Ej tomt reg i kedja (%s %u %i)"
+msgstr "%qs: [%u] ej tomt register i kedja (%s %u %i)"
 
 #: reginfo.c:647
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t use %qs as a call-saved register"
+#, gcc-internal-format
 msgid "cannot use %qs as a call-saved register"
 msgstr "det går inte att använda %qs som ett anropssparat register"
 
 #: reginfo.c:651
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t use %qs as a call-used register"
+#, gcc-internal-format
 msgid "cannot use %qs as a call-used register"
 msgstr "det går inte att använda %qs som ett anropsanvänt register"
 
 #: reginfo.c:663
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t use %qs as a fixed register"
+#, gcc-internal-format
 msgid "cannot use %qs as a fixed register"
 msgstr "det går inte att använda %qs som ett fast register"
 
@@ -25930,8 +25860,7 @@ msgid "%<&%> constraint used with no register class"
 msgstr "%<&%>-begränsning använd utan registerklass"
 
 #: reload1.c:2061
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t find a register in class %qs while reloading %<asm%>"
+#, gcc-internal-format
 msgid "cannot find a register in class %qs while reloading %<asm%>"
 msgstr "det går inte att hitta ett register i klassen %qs vid omläsning av %<asm%>"
 
@@ -26051,10 +25980,9 @@ msgid "matching constraint does not allow a register"
 msgstr "matchningsbegränsning tillåter inte ett register"
 
 #: stmt.c:524
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate asm operand name %qs"
+#, gcc-internal-format
 msgid "duplicate %<asm%> operand name %qs"
-msgstr "upprepning av asm-operandnamn %qs"
+msgstr "upprepning av %<asm%>-operandnamn %qs"
 
 #: stmt.c:621
 #, gcc-internal-format
@@ -26222,10 +26150,9 @@ msgid "node is transparent_alias but not an alias"
 msgstr "noden är transparent_alias men inte ett alias"
 
 #: symtab.c:1172
-#, fuzzy, gcc-internal-format
-#| msgid "node is alias but not implicit alias"
+#, gcc-internal-format
 msgid "node is symver but not alias"
-msgstr "noden är ett alias men inte ett implicit alias"
+msgstr "noden är en symver men inte ett alias"
 
 #: symtab.c:1181
 #, gcc-internal-format
@@ -26233,10 +26160,9 @@ msgid "symver target is not exported with default visibility"
 msgstr "symver-målet exporteras inte med standardsynlighet"
 
 #: symtab.c:1188
-#, fuzzy, gcc-internal-format
-#| msgid "%qD was declared %qs which implies default visibility"
+#, gcc-internal-format
 msgid "symver is not exported with default visibility"
-msgstr "%qD deklarerades %qs vilket medför standardsynlighet"
+msgstr "symver är inte exporterad med standardsynlighet"
 
 #: symtab.c:1197
 #, gcc-internal-format
@@ -26344,14 +26270,12 @@ msgid "target attribute is not supported on this machine"
 msgstr "målattribut stödjs inte på denna maskin"
 
 #: targhooks.c:1588
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GCC target is not supported for this machine"
+#, gcc-internal-format
 msgid "%<#pragma GCC target%> is not supported for this machine"
-msgstr "#pragma GCC target stödjs inte för denna maskin"
+msgstr "%<#pragma GCC target%> stödjs inte för denna maskin"
 
 #: toplev.c:864
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t open %qs for writing: %m"
+#, gcc-internal-format
 msgid "cannot open %qs for writing: %m"
 msgstr "det går inte att öppna %qs för skrivning: %m"
 
@@ -26381,8 +26305,7 @@ msgid "stack usage is %wu bytes"
 msgstr "stackanvändningen är %wu byte"
 
 #: toplev.c:1118
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t open %s for writing: %m"
+#, gcc-internal-format
 msgid "cannot open %s for writing: %m"
 msgstr "det går inte att öppna %s för skrivning: %m"
 
@@ -26507,10 +26430,9 @@ msgid "%<-fstack-clash-protection%> is not supported on targets where the stack 
 msgstr "%<-fstack-clash-protection%> stödjs inte på mål där stacken växer från lägre mot högre adresser"
 
 #: toplev.c:1798
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fstack-check=%> and %<-fstack-clash_protection%> are mutually exclusive.  Disabling %<-fstack-check=%>"
+#, gcc-internal-format
 msgid "%<-fstack-check=%> and %<-fstack-clash_protection%> are mutually exclusive; disabling %<-fstack-check=%>"
-msgstr "%<-fstack-check=%> och %<-fstack-clash_protection%> är ömsesidigt uteslutande.  Avaktiverar %<-fstack-check=%>"
+msgstr "%<-fstack-check=%> och %<-fstack-clash_protection%> är ömsesidigt uteslutande; avaktiverar %<-fstack-check=%>"
 
 #: toplev.c:1816
 #, gcc-internal-format
@@ -26533,8 +26455,7 @@ msgid "error closing %s: %m"
 msgstr "fel när %s stängdes: %m"
 
 #: toplev.c:2251
-#, fuzzy, gcc-internal-format
-#| msgid "mpfr not configured to handle all float modes"
+#, gcc-internal-format
 msgid "mpfr not configured to handle all floating modes"
 msgstr "mpfr är inte konfigurerat att hantera alla flyttalslägen"
 
@@ -26594,16 +26515,14 @@ msgid "unsafe indirect function call within %<transaction_safe%> function"
 msgstr "osäkert indirekt funktionsanrop inuti en %<transaction_safe%>-funktion"
 
 #: trans-mem.c:756 trans-mem.c:4790
-#, fuzzy, gcc-internal-format
-#| msgid "asm not allowed in atomic transaction"
+#, gcc-internal-format
 msgid "%<asm%> not allowed in atomic transaction"
-msgstr "asm är inte tillåtet i en atomär transaktion"
+msgstr "%<asm%> är inte tillåtet i en atomär transaktion"
 
 #: trans-mem.c:759
-#, fuzzy, gcc-internal-format
-#| msgid "%Kasm not allowed in %<transaction_safe%> function"
+#, gcc-internal-format
 msgid "%<asm%> not allowed in %<transaction_safe%> function"
-msgstr "%Kasm är inte tillåtet i en %<transaction_safe%>-funktion"
+msgstr "%<asm%> är inte tillåtet i en %<transaction_safe%>-funktion"
 
 #: trans-mem.c:771
 #, gcc-internal-format
@@ -26631,10 +26550,9 @@ msgid "outer transaction in %<transaction_safe%> function"
 msgstr "yttre transaktion i %<transaction_safe%>-funktion"
 
 #: trans-mem.c:4415
-#, fuzzy, gcc-internal-format
-#| msgid "%Kasm not allowed in %<transaction_safe%> function"
+#, gcc-internal-format
 msgid "%K%<asm%> not allowed in %<transaction_safe%> function"
-msgstr "%Kasm är inte tillåtet i en %<transaction_safe%>-funktion"
+msgstr "%K%<asm%> är inte tillåtet i en %<transaction_safe%>-funktion"
 
 #: tree-cfg.c:353
 #, gcc-internal-format
@@ -26642,28 +26560,24 @@ msgid "ignoring loop annotation"
 msgstr "ignorerar slingannotering"
 
 #: tree-cfg.c:2965
-#, fuzzy, gcc-internal-format
-#| msgid "constant not recomputed when ADDR_EXPR changed"
+#, gcc-internal-format
 msgid "constant not recomputed when %<ADDR_EXPR%> changed"
-msgstr "konstant inte omräknad när ADDR_EXPR ändrades"
+msgstr "konstant inte omräknad när %<ADDR_EXPR%> ändrades"
 
 #: tree-cfg.c:2970
-#, fuzzy, gcc-internal-format
-#| msgid "side effects not recomputed when ADDR_EXPR changed"
+#, gcc-internal-format
 msgid "side effects not recomputed when %<ADDR_EXPR%> changed"
-msgstr "sidoeffekter inte omräknade när ADDR_EXPR ändrades"
+msgstr "sidoeffekter inte omräknade när %<ADDR_EXPR%> ändrades"
 
 #: tree-cfg.c:2985
-#, fuzzy, gcc-internal-format
-#| msgid "DECL_GIMPLE_REG_P set on a variable with address taken"
+#, gcc-internal-format
 msgid "%<DECL_GIMPLE_REG_P%> set on a variable with address taken"
-msgstr "DECL_GIMPLE_REG_P satt på en variabel vars adress tas"
+msgstr "%<DECL_GIMPLE_REG_P%> satt på en variabel vars adress tas"
 
 #: tree-cfg.c:2991
-#, fuzzy, gcc-internal-format
-#| msgid "address taken, but ADDRESSABLE bit not set"
+#, gcc-internal-format
 msgid "address taken but %<TREE_ADDRESSABLE%> bit not set"
-msgstr "adress tagen, men ADDRESSABLE-biten är inte satt"
+msgstr "adress tagen, men %<TREE_ADDRESSABLE%>-biten är inte satt"
 
 #: tree-cfg.c:3013
 #, gcc-internal-format
@@ -26676,46 +26590,39 @@ msgid "invalid operand in indirect reference"
 msgstr "ogiltig operand i indirektreferens"
 
 #: tree-cfg.c:3049
-#, fuzzy, gcc-internal-format
-#| msgid "non-scalar type"
+#, gcc-internal-format
 msgid "non-scalar %qs"
-msgstr "icke skalär typ"
+msgstr "icke skalär %qs"
 
 #: tree-cfg.c:3063
-#, fuzzy, gcc-internal-format
-#| msgid "invalid position or size operand to BIT_FIELD_REF"
+#, gcc-internal-format
 msgid "invalid position or size operand to %qs"
-msgstr "ogiltig position eller storleksoperand till BIT_FIELD_REF"
+msgstr "ogiltig position eller storleksoperand till %qs"
 
 #: tree-cfg.c:3069
-#, fuzzy, gcc-internal-format
-#| msgid "integral result type precision does not match field size of BIT_FIELD_REF"
+#, gcc-internal-format
 msgid "integral result type precision does not match field size of %qs"
-msgstr "precisionen på typen på heltalsresultatet stämmer inte med fältstorleken på BIT_FIELD_REF"
+msgstr "precisionen på typen på heltalsresultatet stämmer inte med fältstorleken på %qs"
 
 #: tree-cfg.c:3078
-#, fuzzy, gcc-internal-format
-#| msgid "mode size of non-integral result does not match field size of BIT_FIELD_REF"
+#, gcc-internal-format
 msgid "mode size of non-integral result does not match field size of %qs"
-msgstr "lägesstorleken på resultat av icke-heltalstyp stämmer inte med fältstorleken på BIT_FIELD_REF"
+msgstr "lägesstorleken på resultat av icke-heltalstyp stämmer inte med fältstorleken på %qs"
 
 #: tree-cfg.c:3086
-#, fuzzy, gcc-internal-format
-#| msgid "BIT_FIELD_REF of non-mode-precision operand"
+#, gcc-internal-format
 msgid "%qs of non-mode-precision operand"
-msgstr "BIT_FIELD_REF av icke-läges-precisionsoperand"
+msgstr "%qs av icke-läges-precisionsoperand"
 
 #: tree-cfg.c:3093
-#, fuzzy, gcc-internal-format
-#| msgid "position plus size exceeds size of referenced object in BIT_FIELD_REF"
+#, gcc-internal-format
 msgid "position plus size exceeds size of referenced object in %qs"
-msgstr "position plus storlek överskrider storleken på det refererade objektet i BIT_FIELD_REF"
+msgstr "position plus storlek överskrider storleken på det refererade objektet i %qs"
 
 #: tree-cfg.c:3104
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in array reference"
+#, gcc-internal-format
 msgid "type mismatch in %qs reference"
-msgstr "typfel i vektorreferens"
+msgstr "typfel i %qs-referens"
 
 #: tree-cfg.c:3120
 #, gcc-internal-format
@@ -26723,10 +26630,9 @@ msgid "non-top-level %qs"
 msgstr "icke-toppnivås %qs"
 
 #: tree-cfg.c:3135
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand to %%R"
+#, gcc-internal-format
 msgid "invalid operands to %qs"
-msgstr "ogiltig operand till %%R"
+msgstr "ogiltig operand till %qs"
 
 #: tree-cfg.c:3146 tree-cfg.c:3155 tree-cfg.c:3172 tree-cfg.c:3806
 #: tree-cfg.c:3835 tree-cfg.c:3852 tree-cfg.c:3873 tree-cfg.c:3919
@@ -26734,52 +26640,44 @@ msgstr "ogiltig operand till %%R"
 #: tree-cfg.c:4071 tree-cfg.c:4103 tree-cfg.c:4179 tree-cfg.c:4211
 #: tree-cfg.c:4223 tree-cfg.c:4282 tree-cfg.c:4307 tree-cfg.c:4380
 #: tree-cfg.c:4458
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in parameter %i"
+#, gcc-internal-format
 msgid "type mismatch in %qs"
-msgstr "typer stämmer inte i parameter %i"
+msgstr "typer stämmer inte i %qs"
 
 #: tree-cfg.c:3166
-#, fuzzy, gcc-internal-format
-#| msgid "invalid COMPONENT_REF offset operator"
+#, gcc-internal-format
 msgid "invalid %qs offset operator"
-msgstr "ogiltig COMPONENT_REF-avståndsoperator"
+msgstr "ogiltig %qs-avståndsoperator"
 
 #: tree-cfg.c:3190
-#, fuzzy, gcc-internal-format
-#| msgid "conversion of an SSA_NAME on the left hand side"
+#, gcc-internal-format
 msgid "conversion of %qs on the left hand side of %qs"
-msgstr "konvertering av en SSA_NAME på vänster sida"
+msgstr "konvertering av %qs på vänster sida av %qs"
 
 #: tree-cfg.c:3198
-#, fuzzy, gcc-internal-format
-#| msgid "conversion of register to a different size"
+#, gcc-internal-format
 msgid "conversion of register to a different size in %qs"
-msgstr "konvertering av register till en annan storlek"
+msgstr "konvertering av register till en annan storlek i %qs"
 
 #: tree-cfg.c:3218 tree-cfg.c:3244
-#, fuzzy, gcc-internal-format
-#| msgid "invalid address operand in MEM_REF"
+#, gcc-internal-format
 msgid "invalid address operand in %qs"
-msgstr "ogiltig adressoperand i MEM_REF"
+msgstr "ogiltig adressoperand i %qs"
 
 #: tree-cfg.c:3225 tree-cfg.c:3251
-#, fuzzy, gcc-internal-format
-#| msgid "invalid offset operand in MEM_REF"
+#, gcc-internal-format
 msgid "invalid offset operand in %qs"
-msgstr "ogiltig avståndsoperand i MEM_REF"
+msgstr "ogiltig avståndsoperand i %qs"
 
 #: tree-cfg.c:3232 tree-cfg.c:3258
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of %qD"
+#, gcc-internal-format
 msgid "invalid clique in %qs"
-msgstr "ogiltigt användning av %qD"
+msgstr "felaktig klick i %qs"
 
 #: tree-cfg.c:3265 tree-cfg.c:4470
-#, fuzzy, gcc-internal-format
-#| msgid "simple IF"
+#, gcc-internal-format
 msgid "%qs in gimple IL"
-msgstr "enkelt IF"
+msgstr "%qs i gimple IL"
 
 #: tree-cfg.c:3318
 #, gcc-internal-format
@@ -26812,10 +26710,9 @@ msgid "invalid LHS in gimple call"
 msgstr "ogiltig vänstersida i gimple-anrop"
 
 #: tree-cfg.c:3372
-#, fuzzy, gcc-internal-format
-#| msgid "LHS in noreturn call"
+#, gcc-internal-format
 msgid "LHS in %<noreturn%> call"
-msgstr "LHS i noreturn-anrop"
+msgstr "LHS i %<noreturn%>-anrop"
 
 #: tree-cfg.c:3386
 #, gcc-internal-format
@@ -26889,10 +26786,9 @@ msgid "invalid operand in unary operation"
 msgstr "ogiltig operand i unär operation"
 
 #: tree-cfg.c:3582
-#, fuzzy, gcc-internal-format
-#| msgid "invalid types in nop conversion"
+#, gcc-internal-format
 msgid "invalid vector types in nop conversion"
-msgstr "ogiltiga typer i nop-konvertering"
+msgstr "ogiltiga vektortyper i nop-konvertering"
 
 #: tree-cfg.c:3611
 #, gcc-internal-format
@@ -26910,8 +26806,7 @@ msgid "invalid types in fixed-point conversion"
 msgstr "ogiltiga typer i fixdecimalskonvertering"
 
 #: tree-cfg.c:3655
-#, fuzzy, gcc-internal-format
-#| msgid "invalid types in conversion to floating point"
+#, gcc-internal-format
 msgid "invalid types in conversion to floating-point"
 msgstr "ogiltiga typer i konvertering till flyttal"
 
@@ -26921,22 +26816,19 @@ msgid "invalid types in conversion to integer"
 msgstr "ogiltiga typer i konvertering till heltal"
 
 #: tree-cfg.c:3710
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in sad expression"
+#, gcc-internal-format
 msgid "type mismatch in %qs expression"
-msgstr "typfel i sad-uttryck"
+msgstr "typer stämmer inte i %qs-uttryck"
 
 #: tree-cfg.c:3732
-#, fuzzy, gcc-internal-format
-#| msgid "invalid prototype for '%s'"
+#, gcc-internal-format
 msgid "invalid types for %qs"
-msgstr "ogiltig prototyp för ”%s”"
+msgstr "ogiltiga typer för %qs"
 
 #: tree-cfg.c:3743
-#, fuzzy, gcc-internal-format
-#| msgid "vec_duplicate should be from a scalar to a like vector"
+#, gcc-internal-format
 msgid "%qs should be from a scalar to a like vector"
-msgstr "vec_duplicate skall vara från en skalär till en liknande vektor"
+msgstr "%qs skall vara från en skalär till en liknande vektor"
 
 #: tree-cfg.c:3757
 #, gcc-internal-format
@@ -26954,22 +26846,19 @@ msgid "invalid operands in binary operation"
 msgstr "ogiltiga operander binär operation"
 
 #: tree-cfg.c:3894
-#, fuzzy, gcc-internal-format
-#| msgid "invalid non-vector operands to vector valued plus"
+#, gcc-internal-format
 msgid "invalid non-vector operands to %qs"
-msgstr "ogiltig operander som inte är vektor till vektorvärt plus"
+msgstr "ogiltig operander som inte är vektor till %qs"
 
 #: tree-cfg.c:3905
-#, fuzzy, gcc-internal-format
-#| msgid "invalid pointer mode %qs"
+#, gcc-internal-format
 msgid "invalid (pointer) operands %qs"
-msgstr "ogiltigt pekarläge %qs"
+msgstr "ogiltiga (pekar)operander %qs"
 
 #: tree-cfg.c:4111
-#, fuzzy, gcc-internal-format
-#| msgid "vector types expected in sad expression"
+#, gcc-internal-format
 msgid "vector type expected in %qs"
-msgstr "vektortyper förväntades i sad-uttryck"
+msgstr "vektortyper förväntades i %qs"
 
 #: tree-cfg.c:4124
 #, gcc-internal-format
@@ -26987,94 +26876,79 @@ msgid "invalid operands in ternary operation"
 msgstr "ogiltiga operander treställig operation"
 
 #: tree-cfg.c:4193
-#, fuzzy, gcc-internal-format
-#| msgid "the first argument of a VEC_COND_EXPR must be of a boolean vector type of the same number of elements as the result"
+#, gcc-internal-format
 msgid "the first argument of a %qs must be of a boolean vector type of the same number of elements as the result"
-msgstr "första argumentet till en VEC_COND_EXPR måste vara av boolesk vektortyp med samma antal element som resultatet"
+msgstr "första argumentet till en %qs måste vara av boolesk vektortyp med samma antal element som resultatet"
 
 #: tree-cfg.c:4235 tree-cfg.c:4294
-#, fuzzy, gcc-internal-format
-#| msgid "vector types expected in sad expression"
+#, gcc-internal-format
 msgid "vector types expected in %qs"
-msgstr "vektortyper förväntades i sad-uttryck"
+msgstr "vektortyper förväntades i %qs"
 
 #: tree-cfg.c:4250
-#, fuzzy, gcc-internal-format
-#| msgid "vectors with different element number found in vector permute expression"
+#, gcc-internal-format
 msgid "vectors with different element number found in %qs"
-msgstr "vektorer med olika elementantal funna i vektorpermuteringsuttryck"
+msgstr "vektorer med olika elementantal funna %qs"
 
 #: tree-cfg.c:4266
-#, fuzzy, gcc-internal-format
-#| msgid "invalid offload table in %s"
+#, gcc-internal-format
 msgid "invalid mask type in %qs"
-msgstr "ogiltig avlastningstabell i %s"
+msgstr "ogiltig masktyp i %qs"
 
 #: tree-cfg.c:4326
-#, fuzzy, gcc-internal-format
-#| msgid "not allowed type combination in BIT_INSERT_EXPR"
+#, gcc-internal-format
 msgid "not allowed type combination in %qs"
-msgstr "otillåten typkombination i BIT_INSERT_EXPR"
+msgstr "otillåten typkombination i %qs"
 
 #: tree-cfg.c:4335
-#, fuzzy, gcc-internal-format
-#| msgid "invalid position or size in BIT_INSERT_EXPR"
+#, gcc-internal-format
 msgid "invalid position or size in %qs"
-msgstr "ogiltig position eller storlek i BIT_INSERT_EXPR"
+msgstr "ogiltig position eller storlek i %qs"
 
 #: tree-cfg.c:4341
-#, fuzzy, gcc-internal-format
-#| msgid "BIT_INSERT_EXPR into non-mode-precision operand"
+#, gcc-internal-format
 msgid "%qs into non-mode-precision operand"
-msgstr "BIT_INSERT_EXPR in i icke-läges-precisionsoperand"
+msgstr "%qs in i icke-läges-precisionsoperand"
 
 #: tree-cfg.c:4351
-#, fuzzy, gcc-internal-format
-#| msgid "insertion out of range in BIT_INSERT_EXPR"
+#, gcc-internal-format
 msgid "insertion out of range in %qs"
-msgstr "insättning utanför intervallet i BIT_INSERT_EXPR"
+msgstr "insättning utanför intervallet i %qs"
 
 #: tree-cfg.c:4361
-#, fuzzy, gcc-internal-format
-#| msgid "vector insertion not at element boundary"
+#, gcc-internal-format
 msgid "%qs not at element boundary"
-msgstr "vektorinsättning inte på elementgräns"
+msgstr "%qs inte på elementgräns"
 
 #: tree-cfg.c:4416
-#, fuzzy, gcc-internal-format
-#| msgid "non-trivial conversion at assignment"
+#, gcc-internal-format
 msgid "non-trivial conversion in %qs"
-msgstr "icketrivial konvertering vid tilldelning"
+msgstr "icketrivial konvertering i %qs"
 
 #: tree-cfg.c:4425
-#, fuzzy, gcc-internal-format
-#| msgid "non-decl/MEM_REF LHS in clobber statement"
+#, gcc-internal-format
 msgid "%qs LHS in clobber statement"
-msgstr "icke-deklarativ/MEM_REF-vänsterhandssida i clobber-sats"
+msgstr "%qs vänstersida i clobber-sats"
 
 #: tree-cfg.c:4444
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand to %%R"
+#, gcc-internal-format
 msgid "invalid operand in %qs"
-msgstr "ogiltig operand till %%R"
+msgstr "ogiltig operand till %qs"
 
 #: tree-cfg.c:4485 tree-cfg.c:4511
-#, fuzzy, gcc-internal-format
-#| msgid "invalid rhs for gimple memory store"
+#, gcc-internal-format
 msgid "invalid RHS for gimple memory store: %qs"
-msgstr "ogiltig högersida för gimple-minneslagring"
+msgstr "ogiltig högersida för gimple-minneslagring: %qs"
 
 #: tree-cfg.c:4545 tree-cfg.c:4563
-#, fuzzy, gcc-internal-format
-#| msgid "incorrect type of vector CONSTRUCTOR elements"
+#, gcc-internal-format
 msgid "incorrect type of vector %qs elements"
-msgstr "felaktig typ av vektor-CONSTRUCTOR-element"
+msgstr "felaktig typ av vektor-%qs-element"
 
 #: tree-cfg.c:4554 tree-cfg.c:4571
-#, fuzzy, gcc-internal-format
-#| msgid "incorrect number of vector CONSTRUCTOR elements"
+#, gcc-internal-format
 msgid "incorrect number of vector %qs elements"
-msgstr "felaktigt antal vektor-CONSTRUCTOR-element"
+msgstr "felaktigt antal vektor-%qs-element"
 
 #: tree-cfg.c:4579
 #, gcc-internal-format
@@ -27082,28 +26956,24 @@ msgid "incorrect type of vector CONSTRUCTOR elements"
 msgstr "felaktig typ av vektor-CONSTRUCTOR-element"
 
 #: tree-cfg.c:4588
-#, fuzzy, gcc-internal-format
-#| msgid "vector CONSTRUCTOR with non-NULL element index"
+#, gcc-internal-format
 msgid "vector %qs with non-NULL element index"
-msgstr "vektor-CONSTRUCTOR med elementindex som inte är NULL "
+msgstr "vektor-%qs med elementindex som inte är NULL"
 
 #: tree-cfg.c:4595
-#, fuzzy, gcc-internal-format
-#| msgid "vector CONSTRUCTOR element is not a GIMPLE value"
+#, gcc-internal-format
 msgid "vector %qs element is not a GIMPLE value"
-msgstr "vektor-CONSTRUCTOR-element är inte ett GIMPLE-värde"
+msgstr "vektor-%qs-element är inte ett GIMPLE-värde"
 
 #: tree-cfg.c:4604
-#, fuzzy, gcc-internal-format
-#| msgid "non-vector CONSTRUCTOR with elements"
+#, gcc-internal-format
 msgid "non-vector %qs with elements"
-msgstr "CONSTRUCTOR för annat än en vektor med element"
+msgstr "%qs för annat än en vektor med element"
 
 #: tree-cfg.c:4615
-#, fuzzy, gcc-internal-format
-#| msgid "ASSERT_EXPR with an always-false condition"
+#, gcc-internal-format
 msgid "%qs with an always-false condition"
-msgstr "ASSERT_EXPR med villkor som alltid är falskt"
+msgstr "%qs med villkor som alltid är falskt"
 
 #: tree-cfg.c:4674
 #, gcc-internal-format
@@ -27136,10 +27006,9 @@ msgid "invalid default case label in switch statement"
 msgstr "ogiltig standardfallsetikett i en switch-sats"
 
 #: tree-cfg.c:4762
-#, fuzzy, gcc-internal-format
-#| msgid "invalid CASE_CHAIN"
+#, gcc-internal-format
 msgid "invalid %<CASE_CHAIN%>"
-msgstr "ogiltig CASE_CHAIN"
+msgstr "ogiltig %<CASE_CHAIN%>"
 
 #: tree-cfg.c:4768
 #, gcc-internal-format
@@ -27167,16 +27036,14 @@ msgid "case labels not sorted in switch statement"
 msgstr "case-etiketter är inte sorterade i en switch-sats"
 
 #: tree-cfg.c:4847
-#, fuzzy, gcc-internal-format
-#| msgid "label%'s context is not the current function decl"
+#, gcc-internal-format
 msgid "label context is not the current function declaration"
 msgstr "etikettens kontext är inte den aktuella funktionsdeklarationen"
 
 #: tree-cfg.c:4856
-#, fuzzy, gcc-internal-format
-#| msgid "incorrect entry in label_to_block_map"
+#, gcc-internal-format
 msgid "incorrect entry in %<label_to_block_map%>"
-msgstr "felaktig post i label_to_block_map"
+msgstr "felaktig post i %<label_to_block_map%>"
 
 #: tree-cfg.c:4866
 #, gcc-internal-format
@@ -27194,28 +27061,24 @@ msgid "invalid labels in gimple cond"
 msgstr "ogiltig etikett i gimple-villkor"
 
 #: tree-cfg.c:4973 tree-cfg.c:4982
-#, fuzzy, gcc-internal-format
-#| msgid "invalid PHI result"
+#, gcc-internal-format
 msgid "invalid %<PHI%> result"
-msgstr "ogiltigt PHI-resultat"
+msgstr "ogiltigt %<PHI%>-resultat"
 
 #: tree-cfg.c:4992
-#, fuzzy, gcc-internal-format
-#| msgid "missing PHI def"
+#, gcc-internal-format
 msgid "missing %<PHI%> def"
-msgstr "PHI-definition saknas"
+msgstr "%<PHI%>-definition saknas"
 
 #: tree-cfg.c:5006
-#, fuzzy, gcc-internal-format
-#| msgid "invalid PHI argument"
+#, gcc-internal-format
 msgid "invalid %<PHI%> argument"
-msgstr "ogiltigt PHI-argument"
+msgstr "ogiltigt %<PHI%>-argument"
 
 #: tree-cfg.c:5013
-#, fuzzy, gcc-internal-format
-#| msgid "incompatible types in PHI argument %u"
+#, gcc-internal-format
 msgid "incompatible types in %<PHI%> argument %u"
-msgstr "inkompatibla typer i PHI-argument %u"
+msgstr "inkompatibla typer i %<PHI%>-argument %u"
 
 #: tree-cfg.c:5111
 #, fuzzy, gcc-internal-format

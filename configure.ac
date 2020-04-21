@@ -1204,6 +1204,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld gas gdb gprof sim"
     noconfigdirs="$noconfigdirs $target_libraries"
     ;;
+  pdp11-*-*)
+    noconfigdirs="$noconfigdirs gdb gprof"
+    ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof"
