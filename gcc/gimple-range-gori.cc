@@ -1319,6 +1319,9 @@ public:
   tree cached_name (tree carrier) const;
   void dump (FILE *, gimple *stmt) const;
 private:
+  void slot_diagnostics (gimple *stmt, tree carrier,
+			 const irange &true_range,
+			 const irange &false_range) const;
   struct cache_entry
   {
     tree name;
@@ -1361,49 +1364,59 @@ logical_stmt_cache::set_range (gimple *stmt, tree carrier, tree name,
 			       const irange &false_range)
 {
   unsigned version = SSA_NAME_VERSION (carrier);
-
   if (version >= m_ssa_cache.length ())
     m_ssa_cache.safe_grow_cleared (num_ssa_names + num_ssa_names / 10);
 
   cache_entry *slot = m_ssa_cache[version];
+  slot_diagnostics (stmt, carrier, true_range, false_range);
   if (slot)
     {
-      if (DEBUG_CACHE)
-	fprintf (dump_file ? dump_file : stderr,
-		 "reusing range for SSA #%d\n", version);
-
-      // ?? The IL must have changed.  Update the carried SSA name for
-      // consistency.  Perhaps we should update the other entries in
-      // the cache that have this same slot->name.
-      //
-      // This happens in DOM and the testcase is
-      // libgomp.fortran/doacross1.f90).
+      // The IL must have changed.  Update the carried SSA name for
+      // consistency.  Testcase is libgomp.fortran/doacross1.f90.
       if (slot->name != name)
 	slot->name = name;
-
-      if (CHECKING_P && (slot->true_range != true_range
-			 || slot->false_range != false_range))
-	{
-	  fprintf (stderr, "FATAL: range altered for cached: ");
-	  dump (stderr, stmt);
-	  fprintf (stderr, "Attempt to change to:\n");
-	  fprintf (stderr, "TRUE=");
-	  true_range.dump (stderr);
-	  fprintf (stderr, ", FALSE=");
-	  false_range.dump (stderr);
-	  fprintf (stderr, "\n");
-	  gcc_unreachable ();
-	}
       return;
     }
   slot = m_ssa_cache[version] = new cache_entry;
   slot->name = name;
   slot->true_range = true_range;
   slot->false_range = false_range;
-  if (DEBUG_CACHE)
+}
+
+void
+logical_stmt_cache::slot_diagnostics (gimple *stmt, tree carrier,
+				      const irange &true_range,
+				      const irange &false_range) const
+{
+  unsigned version = SSA_NAME_VERSION (carrier);
+  cache_entry *slot = m_ssa_cache[version];
+
+  if (!slot)
     {
-      fprintf (dump_file ? dump_file : stderr, "registering range for: ");
-      dump (dump_file ? dump_file : stderr, stmt);
+      if (DEBUG_CACHE)
+	{
+	  fprintf (dump_file ? dump_file : stderr, "registering range for: ");
+	  dump (dump_file ? dump_file : stderr, stmt);
+	}
+      return;
+    }
+
+  if (DEBUG_CACHE)
+    fprintf (dump_file ? dump_file : stderr,
+	     "reusing range for SSA #%d\n", version);
+
+  if (CHECKING_P && (slot->true_range != true_range
+		     || slot->false_range != false_range))
+    {
+      fprintf (stderr, "FATAL: range altered for cached: ");
+      dump (stderr, stmt);
+      fprintf (stderr, "Attempt to change to:\n");
+      fprintf (stderr, "TRUE=");
+      true_range.dump (stderr);
+      fprintf (stderr, ", FALSE=");
+      false_range.dump (stderr);
+      fprintf (stderr, "\n");
+      gcc_unreachable ();
     }
 }
 
@@ -1535,21 +1548,21 @@ gori_compute_cache::compute_operand_range (irange &r, gimple *stmt,
 					   tree name,
 					   const irange *name_range)
 {
-  if (!gimple_range_handler (stmt))
-    return false;
-
   if (lhs.undefined_p ())
     {
       r.set_undefined ();
       return true;
     }
 
+  if (!gimple_range_handler (stmt))
+    return false;
+
   bool cacheable = m_cache->cacheable_p (stmt, &lhs);
   if (cacheable && m_cache->get_range (r, stmt, lhs, name, name_range))
     return true;
 
   bool res = super::compute_operand_range (r, stmt, lhs, name, name_range);
-  if (cacheable)
+  if (res && cacheable)
     cache_comparison (stmt);
   return res;
 }
