@@ -1048,12 +1048,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    constexpr auto
+    constexpr std::__detail::__synth3way_t<_IteratorR, _IteratorL>
     operator<=>(const __normal_iterator<_IteratorL, _Container>& __lhs,
 		const __normal_iterator<_IteratorR, _Container>& __rhs)
-    noexcept(noexcept(__lhs.base() <=> __rhs.base()))
-    -> decltype(__lhs.base() <=> __rhs.base())
-    { return __lhs.base() <=> __rhs.base(); }
+    noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
+    { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
 #else
    // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>

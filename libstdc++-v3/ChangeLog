@@ -1,5 +1,9 @@
 2020-04-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__normal_iterator): Use synth-three-way
+	to define operator<=>.
+	* testsuite/24_iterators/normal_iterator/cmp_c++20.cc: New test.
+
 	* doc/Makefile.am (xml_sources_manual): Add missing XML files.
 	* doc/Makefile.in: Regenerate.
 	* doc/xml/manual/status_cxx1998.xml: Refer to "this section" instead
