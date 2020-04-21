@@ -2009,34 +2009,33 @@ package body Exp_Ch4 is
             Ctyp         : constant Entity_Id := Component_Type (Ltyp);
             L, R         : Node_Id;
             TestL, TestH : Node_Id;
-            Index_List   : List_Id;
 
          begin
-            Index_List := New_List (New_Copy_Tree (Low_Bound (First_Idx)));
-
             L :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Copy_Tree (New_Lhs),
-                Expressions => Index_List);
+                Expressions =>
+                  New_List (New_Copy_Tree (Low_Bound (First_Idx))));
 
             R :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Copy_Tree (New_Rhs),
-                Expressions => Index_List);
+                Expressions =>
+                  New_List (New_Copy_Tree (Low_Bound (First_Idx))));
 
             TestL := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
-
-            Index_List := New_List (New_Copy_Tree (High_Bound (First_Idx)));
 
             L :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Lhs,
-                Expressions => Index_List);
+                Expressions =>
+                  New_List (New_Copy_Tree (High_Bound (First_Idx))));
 
             R :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Rhs,
-                Expressions => Index_List);
+                Expressions =>
+                  New_List (New_Copy_Tree (High_Bound (First_Idx))));
 
             TestH := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
 
