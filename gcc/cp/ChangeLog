@@ -1,3 +1,8 @@
+2020-04-21  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst_copy_and_build) [POINTER_PLUS_EXPR]: Check for
+	error_mark_node.
+
 2020-04-21 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR c++/94661
@@ -38,13 +43,13 @@
 
 2020-04-20  Nathan Sidwell  <nathan@acm.org>
 
-	PR 94454 - tpl-tpl-parms are not canonicalizable types
+	PR c++/94454 - tpl-tpl-parms are not canonicalizable types
 	* pt.c (canonical_type_parameter): Assert not a tpl-tpl-parm.
 	(process_template_parm): tpl-tpl-parms are structural.
 	(rewrite_template_parm): Propagate structuralness.
 
-	PR 94454 - Expr pack expansion equality
-	* tree.c (cp_tree_equal): [TEMPLATE_ID_EXPR, default] Refactor.
+	PR c++/94454 - Expr pack expansion equality
+	* tree.c (cp_tree_equal) [TEMPLATE_ID_EXPR, default]: Refactor.
 	[EXPR_PACK_EXPANSION]: Add.
 
 	PR c++/94454 Template Argument Hashing

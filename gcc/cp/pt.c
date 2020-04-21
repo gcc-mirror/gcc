@@ -19409,7 +19409,11 @@ tsubst_copy_and_build (tree t,
     case POINTER_PLUS_EXPR:
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	if (op0 == error_mark_node)
+	  RETURN (error_mark_node);
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
+	if (op1 == error_mark_node)
+	  RETURN (error_mark_node);
 	RETURN (fold_build_pointer_plus (op0, op1));
       }
 
