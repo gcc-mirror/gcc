@@ -1,3 +1,8 @@
+2020-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/94149
+	* g++.dg/cpp2a/paren-init24.C: Fix FIXMEs.
+
 2020-04-21  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/94647
@@ -66,11 +71,6 @@
 	* g++.dg/coroutines/ramp-return-a.C: New test.
 	* g++.dg/coroutines/ramp-return-b.C: New test.
 	* g++.dg/coroutines/ramp-return-c.C: New test.
-
-2020-04-21  Jonathan Wakely  <jwakely@redhat.com>
-
-	PR c++/94149
-	* g++.dg/cpp2a/paren-init24.C: Fix FIXMEs.
 
 2020-04-17  Marek Polacek  <polacek@redhat.com>
 
