@@ -1,3 +1,7 @@
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/gcc-dg.exp (schedule-cleanups): Accept --save-temps.
+
 2020-04-22  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/94510
