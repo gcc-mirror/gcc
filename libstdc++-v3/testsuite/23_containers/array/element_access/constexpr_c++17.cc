@@ -1,19 +1,19 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
-//
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+
+// Copyright (C) 2011-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
-//
+
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
@@ -28,26 +28,30 @@
 # error "Feature test macro for array constexpr has wrong value for C++17"
 #endif
 
-constexpr int
-test()
+constexpr std::size_t test01()
 {
-  constexpr std::array<int, 3> a1{{1, 2, 3}};
-  static_assert(1 == *a1.begin());
-  auto n = a1[0] * a1[1]* a1[2];
-  static_assert(1 == *a1.cbegin());
-
-  std::array<int, 3> a2{{0, 0, 0}};
-  auto a1i = a1.begin();
-  auto a1e = a1.end();
-  auto a2i = a2.begin();
-  while (a1i != a1e)
-    *a2i++ = *a1i++;
-
-  return n;
+  // array
+  typedef std::array<std::size_t, 6> array_type;
+  array_type a = { { 0, 55, 66, 99, 4115, 2 } };
+  auto v1  = a[1];
+  auto v2  = a.at(2);
+  auto v3  = a.front();
+  auto v4  = a.back();
+  return v1 + v2 + v3 + v4;
 }
 
-void
-run_test()
+static_assert( test01() == (55 + 66 + 0 + 2) );
+
+constexpr std::size_t test02()
 {
-  constexpr int n = test();
+  // array
+  typedef std::array<std::size_t, 6> array_type;
+  const array_type a = { { 0, 55, 66, 99, 4115, 2 } };
+  auto v1  = a[1];
+  auto v2  = a.at(2);
+  auto v3  = a.front();
+  auto v4  = a.back();
+  return v1 + v2 + v3 + v4;
 }
+
+static_assert( test02() == (55 + 66 + 0 + 2) );

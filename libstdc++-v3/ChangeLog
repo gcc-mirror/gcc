@@ -1,5 +1,18 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__cpp_lib_array_constexpr): Define
+	different values for C++17 and C++20, to indicate different feature
+	sets. Update value for C++20 to indicate P1032R1 support.
+	* include/std/version (__cpp_lib_array_constexpr): Likewise.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc:
+	Check feature test macro.
+	* testsuite/23_containers/array/element_access/constexpr_c++17.cc:
+	New test.
+	* testsuite/23_containers/array/requirements/constexpr_fill.cc: Check
+	feature test macro.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc: Test
+	in C++17 mode and check feature test macro.
+
 	* include/std/utility (__cpp_lib_constexpr_algorithms): Do not define
 	here.
 	* testsuite/20_util/exchange/constexpr.cc: Do not expect macro to be
