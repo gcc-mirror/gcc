@@ -281,7 +281,7 @@ package GNAT.Sockets.Thin_Common is
      (Name     : C.char_array;
       Ret      : not null access Hostent;
       Buf      : System.Address;
-      Buflen   : C.int;
+      Buflen   : C.size_t;
       H_Errnop : not null access C.int) return C.int;
 
    function C_Gethostbyaddr
@@ -290,7 +290,7 @@ package GNAT.Sockets.Thin_Common is
       Addr_Type : C.int;
       Ret       : not null access Hostent;
       Buf       : System.Address;
-      Buflen    : C.int;
+      Buflen    : C.size_t;
       H_Errnop  : not null access C.int) return C.int;
 
    function C_Getservbyname
@@ -298,14 +298,14 @@ package GNAT.Sockets.Thin_Common is
       Proto  : C.char_array;
       Ret    : not null access Servent;
       Buf    : System.Address;
-      Buflen : C.int) return C.int;
+      Buflen : C.size_t) return C.int;
 
    function C_Getservbyport
      (Port   : C.int;
       Proto  : C.char_array;
       Ret    : not null access Servent;
       Buf    : System.Address;
-      Buflen : C.int) return C.int;
+      Buflen : C.size_t) return C.int;
 
    Address_Size : constant := Standard'Address_Size;
 

@@ -1222,7 +1222,7 @@ package body GNAT.Sockets is
       pragma Unreferenced (Family);
 
       HA     : aliased In_Addr_Union (Address.Family);
-      Buflen : constant C.int := Netdb_Buffer_Size;
+      Buflen : constant C.size_t := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Hostent;
       Err    : aliased C.int;
@@ -1277,7 +1277,7 @@ package body GNAT.Sockets is
 
       declare
          HN     : constant C.char_array := C.To_C (Name);
-         Buflen : constant C.int := Netdb_Buffer_Size;
+         Buflen : constant C.size_t := Netdb_Buffer_Size;
          Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
          Res    : aliased Hostent;
          Err    : aliased C.int;
@@ -1325,7 +1325,7 @@ package body GNAT.Sockets is
    is
       SN     : constant C.char_array := C.To_C (Name);
       SP     : constant C.char_array := C.To_C (Protocol);
-      Buflen : constant C.int := Netdb_Buffer_Size;
+      Buflen : constant C.size_t := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Servent;
 
@@ -1355,7 +1355,7 @@ package body GNAT.Sockets is
       Protocol : String) return Service_Entry_Type
    is
       SP     : constant C.char_array := C.To_C (Protocol);
-      Buflen : constant C.int := Netdb_Buffer_Size;
+      Buflen : constant C.size_t := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Servent;
 
