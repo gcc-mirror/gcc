@@ -1,5 +1,10 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/utility (__cpp_lib_constexpr_algorithms): Do not define
+	here.
+	* testsuite/20_util/exchange/constexpr.cc: Do not expect macro to be
+	defined by <utility>.
+
 	* include/std/functional (__cpp_lib_concepts): Update macro value to
 	indicate P1964R2 support.
 	* include/std/version (__cpp_lib_concepts): Likewise.
