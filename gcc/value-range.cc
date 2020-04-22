@@ -281,6 +281,10 @@ widest_irange::resize_if_needed (unsigned nranges)
   if (m_max_ranges >= nranges)
     return;
 
+  // We're about to double the size.  Bail if it won't fit.
+  if (nranges * 2 > sizeof (m_max_ranges) * 255)
+    return;
+
   bool must_initialize = m_blob == NULL;
   m_max_ranges = nranges * 2;
   unsigned alloc_size = m_max_ranges * sizeof (*m_blob) * 2;
