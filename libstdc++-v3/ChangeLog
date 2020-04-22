@@ -1,5 +1,15 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/execution (__cpp_lib_execution): Define to indicate
+	support for P0024R2 and P1001R2.
+	* include/std/version (__cpp_lib_execution): Define.
+	* testsuite/25_algorithms/pstl/feature_test.cc: Only test macro
+	defined by <algorithm>, move other tests to new tests ...
+	* testsuite/25_algorithms/pstl/feature_test-2.cc: New test.
+	* testsuite/25_algorithms/pstl/feature_test-3.cc: New test.
+	* testsuite/25_algorithms/pstl/feature_test-4.cc: New test.
+	* testsuite/25_algorithms/pstl/feature_test-5.cc: New test.
+
 	* include/bits/stl_iterator.h (__cpp_lib_array_constexpr): Define
 	different values for C++17 and C++20, to indicate different feature
 	sets. Update value for C++20 to indicate P1032R1 support.

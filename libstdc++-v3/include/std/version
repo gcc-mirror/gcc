@@ -127,6 +127,7 @@
 #define __cpp_lib_clamp 201603
 #define __cpp_lib_constexpr_char_traits 201611
 #define __cpp_lib_enable_shared_from_this 201603
+#define __cpp_lib_execution 201902L // FIXME: should be 201603L
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606
@@ -188,6 +189,7 @@
 #define __cpp_lib_array_constexpr 201811L
 #define __cpp_lib_assume_aligned 201811L
 #define __cpp_lib_bind_front 201907L
+// FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex 201711L

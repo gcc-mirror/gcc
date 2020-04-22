@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,10 +18,17 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do preprocess { target c++17 } }
 
-#include <algorithm>
+#include <execution>
 
+#ifndef __cpp_lib_execution
+# error "Feature-test macro for execution policies is missing in <execution>"
+#elif __cpp_lib_execution != 201902L
+# error "Feature-test macro for parallel algorithms has wrong value in <execution>"
+#endif
+
+// Neither SD-6 nor C++20 requires this macro to be defined in <execution>.
 #ifndef __cpp_lib_parallel_algorithm
-# error "Feature-test macro for parallel algorithms missing in <algorithm>"
+# error "Feature-test macro for parallel algorithms missing in <execution>"
 #elif __cpp_lib_parallel_algorithm != 201603L
-# error "Feature-test macro for parallel algorithms has wrong value in <algorithm>"
+# error "Feature-test macro for parallel algorithms has wrong value in <execution>"
 #endif
