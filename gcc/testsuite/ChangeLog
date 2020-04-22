@@ -1,3 +1,11 @@
+2020-04-22  Duan bo  <duanbo3@huawei.com>
+
+	PR testsuite/94712
+	* gcc.target/aarch64/pr63304_1.c: Require lp64 target.
+	* gcc.target/aarch64/pr70120-2.c: Likewise.
+	* gcc.target/aarch64/pr94530.c: Likewise.
+	* gcc.target/aarch64/reload-valid-spoff.c: Likewise.
+
 2020-04-22  Felix Yang  <felix.yang@huawei.com>
 
 	PR target/94678
