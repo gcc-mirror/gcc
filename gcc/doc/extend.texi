@@ -12315,6 +12315,7 @@ is called and the @var{flag} argument passed to it.
 @findex fprintf_unlocked
 @findex fputs
 @findex fputs_unlocked
+@findex free
 @findex frexp
 @findex frexpf
 @findex frexpl
