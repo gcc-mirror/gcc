@@ -66,7 +66,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_erase_if 201900L
+#define __cpp_lib_erase_if 202002L
 
   template<typename _Tp, typename _Alloc, typename _Predicate>
     inline typename forward_list<_Tp, _Alloc>::size_type 
