@@ -3176,7 +3176,8 @@ write_expression (tree expr)
 	  write_type (etype);
 	}
 
-      if (!initializer_zerop (expr) || !trivial_type_p (etype))
+      bool nontriv = !trivial_type_p (etype);
+      if (nontriv || !zero_init_expr_p (expr))
 	{
 	  /* Convert braced initializer lists to STRING_CSTs so that
 	     A<"Foo"> mangles the same as A<{'F', 'o', 'o', 0}> while
@@ -3187,19 +3188,22 @@ write_expression (tree expr)
 	  if (TREE_CODE (expr) == CONSTRUCTOR)
 	    {
 	      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (expr);
-	      unsigned last_nonzero = -1, i;
+	      unsigned last_nonzero = UINT_MAX, i;
 	      tree val;
 
-	      FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
-		if (!initializer_zerop (val))
-		  last_nonzero = i;
+	      if (!nontriv)
+		FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
+		  if (!zero_init_expr_p (val))
+		    last_nonzero = i;
 
-	      FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
-		{
-		  if (i > last_nonzero)
-		    break;
-		  write_expression (val);
-		}
+	      if (nontriv || last_nonzero != UINT_MAX)
+		FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
+		  {
+		    if (i > last_nonzero)
+		      break;
+		    /* FIXME handle RANGE_EXPR */
+		    write_expression (val);
+		  }
 	    }
 	  else
 	    {
@@ -3525,7 +3529,7 @@ write_template_arg (tree node)
 
   if (template_parm_object_p (node))
     /* We want to mangle the argument, not the var we stored it in.  */
-    node = DECL_INITIAL (node);
+    node = tparm_object_argument (node);
 
   /* Strip a conversion added by convert_nontype_argument.  */
   if (TREE_CODE (node) == IMPLICIT_CONV_EXPR)

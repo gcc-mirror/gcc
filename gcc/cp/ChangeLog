@@ -1,4 +1,50 @@
+2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR translation/94698
+	* class.c (check_field_decls): Change "override" to "define" in
+	-Weffc++ diagnostics.
+
+2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94682
+	* coroutines.cc (struct param_info): Add a field to note that
+	the param is 'this'.
+	(morph_fn_to_coro): Convert this to a reference before using it
+	in the promise parameter preview.
+
+2020-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94546
+	* pt.c (register_parameter_specializations): If the instantiation is
+	still a parameter pack, don't wrap it in a NONTYPE_ARGUMENT_PACK.
+	(tsubst_pack_expansion, tsubst_expr): Adjust.
+
+2020-04-22  Martin Sebor  <msebor@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/94510
+	* decl.c (reshape_init_array_1): Avoid stripping redundant trailing
+	zero initializers...
+	* mangle.c (write_expression): ...and handle them here even for
+	pointers to members by calling zero_init_expr_p.
+	* cp-tree.h (zero_init_expr_p): Declare.
+	* tree.c (zero_init_expr_p): Define.
+	(type_initializer_zero_p): Remove.
+	* pt.c (tparm_obj_values): New hash_map.
+	(get_template_parm_object): Store to it.
+	(tparm_object_argument): New.
+
+2020-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67825
+	* constraint.cc (diagnose_valid_expression): Check convert_to_void here
+	as well as in tsubst_valid_expression_requirement.
+
 2020-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94549
+	* constraint.cc (satisfy_declaration_constraints): Don't strip the
+	inherited constructor if it already has template information.
 
 	PR c++/94597
 	* pt.c (any_template_parm_r) <case IDENTIFIER_NODE>: New case.  If this

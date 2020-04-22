@@ -2475,7 +2475,18 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  orig[0] = gimple_assign_lhs (lowpart);
 	}
       if (conv_code == ERROR_MARK)
-	gimple_assign_set_rhs_from_tree (gsi, orig[0]);
+	{
+	  tree src_type = TREE_TYPE (orig[0]);
+	  if (!useless_type_conversion_p (type, src_type))
+	    {
+	      gcc_assert (!targetm.compatible_vector_types_p (type, src_type));
+	      tree rhs = build1 (VIEW_CONVERT_EXPR, type, orig[0]);
+	      orig[0] = make_ssa_name (type);
+	      gassign *assign = gimple_build_assign (orig[0], rhs);
+	      gsi_insert_before (gsi, assign, GSI_SAME_STMT);
+	    }
+	  gimple_assign_set_rhs_from_tree (gsi, orig[0]);
+	}
       else
 	gimple_assign_set_rhs_with_ops (gsi, conv_code, orig[0],
 					NULL_TREE, NULL_TREE);

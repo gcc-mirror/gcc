@@ -634,7 +634,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 WARN_DFLAGS
-GDCFLAGSX
 libtool_VERSION
 SPEC_PHOBOS_DEPS
 CHECKING_DFLAGS
@@ -11650,7 +11649,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11653 "configure"
+#line 11652 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11756,7 +11755,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11759 "configure"
+#line 11758 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15430,11 +15429,6 @@ libtool_VERSION=1:0:0
 # Set default flags (after DRUNTIME_WERROR!)
 if test -z "$GDCFLAGS"; then
     GDCFLAGS="-g -O2"
-fi
-
-
-if test -z "$GDCFLAGSX"; then
-    GDCFLAGSX="-g"
 fi
 
 

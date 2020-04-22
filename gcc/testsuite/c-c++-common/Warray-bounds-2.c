@@ -189,7 +189,7 @@ void call_strncpy_src_diff_max_m1 (char *d, const char *s, size_t n)
 static void
 wrap_strncpy_src_diff_max (char *d, const char *s, ptrdiff_t i, size_t n)
 {
-  strncpy (d, s + i, n);  /* { dg-warning "pointer overflow between offset 9223372036854775807 and size \\\[1, 0]" } */
+  strncpy (d, s + i, n);  /* { dg-warning "pointer overflow between offset \[0-9\]+ and size \\\[1, 0]" } */
 }
 
 void call_strncpy_src_diff_max (char *d, const char *s, size_t n)

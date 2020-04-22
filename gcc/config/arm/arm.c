@@ -27889,7 +27889,11 @@ arm_file_start (void)
 	{
 	  const char* truncated_name
 	    = arm_rewrite_selected_cpu (arm_active_target.core_name);
-	  asm_fprintf (asm_out_file, "\t.cpu %s\n", truncated_name);
+	  if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_asmcpu))
+	    asm_fprintf (asm_out_file, "\t.eabi_attribute 5, \"%s\"\n",
+			 truncated_name);
+	  else
+	    asm_fprintf (asm_out_file, "\t.cpu %s\n", truncated_name);
 	}
 
       if (print_tune_info)

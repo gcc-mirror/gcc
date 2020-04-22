@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -mzarch --save-temps" } */
+/* { dg-options "-O3 -march=z13 -mzarch --save-temps" } */
 
 #include <stddef.h>
 #include <limits.h>

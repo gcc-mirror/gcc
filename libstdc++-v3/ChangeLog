@@ -1,3 +1,40 @@
+2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/erasure.cc: Check for
+	__cpp_lib_erase_if macro.
+	* testsuite/23_containers/deque/erasure.cc: Add header name to #error
+	messages.
+	* testsuite/23_containers/forward_list/erasure.cc: Likewise.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+	* testsuite/23_containers/map/erasure.cc: Likewise.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/23_containers/vector/erasure.cc: Likewise.
+
+2020-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__normal_iterator): Use synth-three-way
+	to define operator<=>.
+	* testsuite/24_iterators/normal_iterator/cmp_c++20.cc: New test.
+
+	* doc/Makefile.am (xml_sources_manual): Add missing XML files.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/manual/status_cxx1998.xml: Refer to "this section" instead
+	of "this page".
+	* doc/xml/manual/status_cxx2011.xml: Formatting and other corrections
+	to the C++11 status table.
+	* doc/xml/manual/status_cxx2014.xml: Replace list of C++14 feature
+	proposals with table matching contents of the C++14 standard.
+	* doc/xml/manual/status_cxx2017.xml: Add table matching contents of
+	the C++17 standard.
+	* doc/html/*: Regenerate.
+
+	PR c++/94149
+	* include/std/type_traits (__is_nt_constructible_impl): Add partial
+	specializations for bounded arrays with non-empty initializers.
+	* testsuite/20_util/is_nothrow_constructible/value_c++20.cc: New test.
+
 2020-04-20  Thomas Rodgers  <trodgers@redhat.com>
 
 	* testsuite/lib/libstdc++.exp: Add additional_flags=

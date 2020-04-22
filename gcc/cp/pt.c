@@ -7006,6 +7006,11 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 
 }
 
+/* The template arguments corresponding to template parameter objects of types
+   that contain pointers to members.  */
+
+static GTY(()) hash_map<tree, tree> *tparm_obj_values;
+
 /* Return a VAR_DECL for the C++20 template parameter object corresponding to
    template argument EXPR.  */
 
@@ -7039,8 +7044,30 @@ get_template_parm_object (tree expr, tsubst_flags_t complain)
   SET_DECL_ASSEMBLER_NAME (decl, name);
   DECL_CONTEXT (decl) = global_namespace;
   comdat_linkage (decl);
+
+  if (!zero_init_p (type))
+    {
+      /* If EXPR contains any PTRMEM_CST, they will get clobbered by
+	 lower_var_init before we're done mangling.  So store the original
+	 value elsewhere.  */
+      tree copy = unshare_constructor (expr);
+      hash_map_safe_put<hm_ggc> (tparm_obj_values, decl, copy);
+    }
+
   pushdecl_top_level_and_finish (decl, expr);
+
   return decl;
+}
+
+/* Return the actual template argument corresponding to template parameter
+   object VAR.  */
+
+tree
+tparm_object_argument (tree var)
+{
+  if (zero_init_p (TREE_TYPE (var)))
+    return DECL_INITIAL (var);
+  return *(tparm_obj_values->get (var));
 }
 
 /* Attempt to convert the non-type template parameter EXPR to the
@@ -12726,7 +12753,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   tree pattern;
   tree pack, packs = NULL_TREE;
   bool unsubstituted_packs = false;
-  bool unsubstituted_fn_pack = false;
   int i, len = -1;
   tree result;
   bool need_local_specializations = false;
@@ -12806,19 +12832,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	      else
 		arg_pack = make_fnparm_pack (arg_pack);
 	    }
-	  else if (argument_pack_element_is_expansion_p (arg_pack, 0))
-	    /* This argument pack isn't fully instantiated yet.  We set this
-	       flag rather than clear arg_pack because we do want to do the
-	       optimization below, and we don't want to substitute directly
-	       into the pattern (as that would expose a NONTYPE_ARGUMENT_PACK
-	       where it isn't expected).  */
-	    unsubstituted_fn_pack = true;
+	  else if (DECL_PACK_P (arg_pack))
+	    /* This argument pack isn't fully instantiated yet.  */
+	    arg_pack = NULL_TREE;
 	}
       else if (is_capture_proxy (parm_pack))
 	{
 	  arg_pack = retrieve_local_specialization (parm_pack);
-	  if (argument_pack_element_is_expansion_p (arg_pack, 0))
-	    unsubstituted_fn_pack = true;
+	  if (DECL_PACK_P (arg_pack))
+	    arg_pack = NULL_TREE;
 	}
       else
         {
@@ -12853,8 +12875,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
           if (len < 0)
 	    len = my_len;
-          else if (len != my_len
-		   && !unsubstituted_fn_pack)
+	  else if (len != my_len)
             {
 	      if (!(complain & tf_error))
 		/* Fail quietly.  */;
@@ -12877,10 +12898,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  /* We can't substitute for this parameter pack.  We use a flag as
 	     well as the missing_level counter because function parameter
 	     packs don't have a level.  */
-          if (!(processing_template_decl || is_auto (parm_pack)))
-	    {
-	      gcc_unreachable ();
-	    }
 	  gcc_assert (processing_template_decl || is_auto (parm_pack));
 	  unsubstituted_packs = true;
 	}
@@ -17870,7 +17887,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      {
 		inst = (retrieve_local_specialization
 			(DECL_CAPTURED_VARIABLE (decl)));
-		gcc_assert (TREE_CODE (inst) == NONTYPE_ARGUMENT_PACK);
+		gcc_assert (TREE_CODE (inst) == NONTYPE_ARGUMENT_PACK
+			    || DECL_PACK_P (inst));
 	      }
 	    else
 	      inst = lookup_init_capture_pack (decl);
@@ -25288,7 +25306,8 @@ register_parameter_specializations (tree pattern, tree inst)
     }
   for (; tmpl_parm; tmpl_parm = DECL_CHAIN (tmpl_parm))
     {
-      if (!DECL_PACK_P (tmpl_parm))
+      if (!DECL_PACK_P (tmpl_parm)
+	  || (spec_parm && DECL_PACK_P (spec_parm)))
 	{
 	  register_local_specialization (spec_parm, tmpl_parm);
 	  spec_parm = DECL_CHAIN (spec_parm);

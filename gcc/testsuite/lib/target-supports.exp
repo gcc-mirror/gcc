@@ -3731,6 +3731,7 @@ proc check_effective_target_arm_dsp { } {
 	#ifndef __ARM_FEATURE_DSP
 	#error not DSP
 	#endif
+	#include <arm_acle.h>
 	int i;
     }]
 }
@@ -4032,6 +4033,7 @@ proc check_effective_target_arm_crc_ok_nocache { } {
 	#if !defined (__ARM_FEATURE_CRC32)
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     } "$et_arm_crc_flags"]
 }
 
@@ -4739,6 +4741,26 @@ proc check_effective_target_default_branch_protection { } {
     return [check_configured_with "enable-standard-branch-protection"]
 }
 
+# Return 1 if this is an ARM target supporting -mfloat-abi=softfp.
+
+proc check_effective_target_arm_softfp_ok { } {
+    return [check_no_compiler_messages arm_softfp_ok object {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
+	} "-mfloat-abi=softfp"]
+}
+
+# Return 1 if this is an ARM target supporting -mfloat-abi=hard.
+
+proc check_effective_target_arm_hard_ok { } {
+    return [check_no_compiler_messages arm_hard_ok object {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
+	} "-mfloat-abi=hard"]
+}
+
 # Return 1 if the target supports ARMv8.1-M MVE with floating point
 # instructions, 0 otherwise.  The test is valid for ARM.
 # Record the command line options needed.
@@ -4945,6 +4967,7 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
 	    #if __ARM_BIG_ENDIAN
 	    #error "MVE intrinsics are not supported in Big-Endian mode."
 	    #endif
+	    #include <arm_mve.h>
         } "$flags -mthumb"] } {
             set et_arm_v8_1m_mve_flags "$flags -mthumb --save-temps"
             return 1
@@ -5119,21 +5142,25 @@ proc add_options_for_arm_v8_2a_bf16_neon { flags } {
 #   /* { dg-add-options arm_v8m_main_cde } */
 # The tests are valid for Arm.
 
-foreach { armfunc armflag armdef } {
+foreach { armfunc armflag armdef arminc } {
 	arm_v8m_main_cde
 		"-march=armv8-m.main+cdecp0+cdecp6 -mthumb"
 		"defined (__ARM_FEATURE_CDE)"
+		""
 	arm_v8m_main_cde_fp
 		"-march=armv8-m.main+fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FP)"
+		""
 	arm_v8_1m_main_cde_mve
 		"-march=armv8.1-m.main+mve+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FEATURE_MVE)"
+		"#include <arm_mve.h>"
 	arm_v8_1m_main_cde_mve_fp
 		"-march=armv8.1-m.main+mve.fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) || __ARM_FEATURE_MVE == 3"
+		"#include <arm_mve.h>"
 	} {
-    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
+    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef INC $arminc ] {
 	proc check_effective_target_FUNC_ok_nocache { } {
 	    global et_FUNC_flags
 	    set et_FUNC_flags ""
@@ -5146,6 +5173,8 @@ foreach { armfunc armflag armdef } {
 		#if !(DEF)
 		#error "DEF failed"
 		#endif
+		#include <arm_cde.h>
+		INC
 	    } "FLAG"] } {
 		    set et_FUNC_flags "FLAG"
 		    return 1
@@ -9843,6 +9872,7 @@ proc check_effective_target_arm_coproc1_ok_nocache { } {
 	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 4
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 
@@ -9862,6 +9892,7 @@ proc check_effective_target_arm_coproc2_ok_nocache { } {
 	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 5
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 
@@ -9882,6 +9913,7 @@ proc check_effective_target_arm_coproc3_ok_nocache { } {
 	    || (__ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__))
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 
@@ -9901,6 +9933,7 @@ proc check_effective_target_arm_coproc4_ok_nocache { } {
 	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 6
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 

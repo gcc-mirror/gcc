@@ -11,8 +11,7 @@ int main()
   static_assert(__is_constructible(T, int));
   static_assert(!__is_constructible(T, int, int));
   static_assert(std::is_constructible_v<T, int>);
-  //FIXME: libstdc++ problem?
-  //static_assert(std::is_nothrow_constructible_v<T, int>);
+  static_assert(std::is_nothrow_constructible_v<T, int>);
 
   using T2 = int[2];
   T2 t2(1);
@@ -21,6 +20,5 @@ int main()
   static_assert(__is_constructible(T2, int));
   static_assert(__is_constructible(T2, int, int));
   static_assert(std::is_constructible_v<T2, int, int>);
-  // FIXME libstdc++ problem?
-  //static_assert(std::is_nothrow_constructible_v<T2, int, int>);
+  static_assert(std::is_nothrow_constructible_v<T2, int, int>);
 }

@@ -1760,14 +1760,15 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 
 struct param_info
 {
-  tree field_id;  /* The name of the copy in the coroutine frame.  */
+  tree field_id;     /* The name of the copy in the coroutine frame.  */
   vec<tree *> *body_uses; /* Worklist of uses, void if there are none.  */
-  tree frame_type; /* The type used to represent this parm in the frame.  */
-  tree orig_type;  /* The original type of the parm (not as passed).  */
-  bool by_ref;  /* Was passed by reference.  */
-  bool rv_ref;  /* Was an rvalue reference.  */
-  bool pt_ref;  /* Was a pointer to object.  */
+  tree frame_type;   /* The type used to represent this parm in the frame.  */
+  tree orig_type;    /* The original type of the parm (not as passed).  */
+  bool by_ref;       /* Was passed by reference.  */
+  bool rv_ref;       /* Was an rvalue reference.  */
+  bool pt_ref;       /* Was a pointer to object.  */
   bool trivial_dtor; /* The frame type has a trivial DTOR.  */
+  bool this_ptr;     /* Is 'this' */
 };
 
 struct local_var_info
@@ -3279,7 +3280,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    parm.frame_type = actual_type;
-
+	  parm.this_ptr = is_this_parameter (arg);
 	  parm.trivial_dtor = TYPE_HAS_TRIVIAL_DESTRUCTOR (parm.frame_type);
 	  tree pname = DECL_NAME (arg);
 	  char *buf = xasprintf ("__parm.%s", IDENTIFIER_POINTER (pname));
@@ -3617,8 +3618,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					      false, tf_warning_or_error);
 
 	  /* Add this to the promise CTOR arguments list, accounting for
-	     refs.  */
-	  if (parm.by_ref)
+	     refs and this ptr.  */
+	  if (parm.this_ptr)
+	    {
+	      /* We pass a reference to *this to the param preview.  */
+	      tree tt = TREE_TYPE (arg);
+	      gcc_checking_assert (POINTER_TYPE_P (tt));
+	      tree ct = TREE_TYPE (tt);
+	      tree this_ref = build1 (INDIRECT_REF, ct, arg);
+	      tree rt = cp_build_reference_type (ct, false);
+	      this_ref = convert_to_reference (rt, this_ref, CONV_STATIC,
+					       LOOKUP_NORMAL , NULL_TREE,
+					       tf_warning_or_error);
+	      vec_safe_push (promise_args, this_ref);
+	    }
+	  else if (parm.by_ref)
 	    vec_safe_push (promise_args, fld_idx);
 	  else if (parm.rv_ref)
 	    vec_safe_push (promise_args, rvalue (fld_idx));

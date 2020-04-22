@@ -1,3 +1,151 @@
+2020-04-22  Duan bo  <duanbo3@huawei.com>
+
+	PR testsuite/94712
+	* gcc.target/aarch64/pr63304_1.c: Require lp64 target.
+	* gcc.target/aarch64/pr70120-2.c: Likewise.
+	* gcc.target/aarch64/pr94530.c: Likewise.
+	* gcc.target/aarch64/reload-valid-spoff.c: Likewise.
+
+2020-04-22  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94678
+	* gcc.target/aarch64/sve/acle/general/nosve_6.c: New test.
+
+2020-04-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/90350
+	* gfortran.dg/PR90350.f90: New test.
+
+2020-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90448
+	* g++.dg/cpp1y/lambda-generic-variadic20.C: New.
+
+2020-04-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94647
+	* c-c++-common/Warray-bounds-2.c: Replace a large value harcoded
+	in an expected warning with a pattern.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * lib/target-supports.exp (check_effective_target_arm_dsp)
+        (check_effective_target_arm_crc_ok_nocache)
+        (check_effective_target_arm_coproc1_ok_nocache)
+        (check_effective_target_arm_coproc2_ok_nocache)
+        (check_effective_target_arm_coproc3_ok_nocache)
+        (check_effective_target_arm_coproc4_ok_nocache): Include
+        arm_acle.h.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        gcc/testsuite/
+        * lib/target-supports.exp (arm_v8m_main_cde, arm_v8m_main_cde_fp)
+        (arm_v8_1m_main_cde_mve, arm_v8_1m_main_cde_mve_fp): Include
+        arm_cde.h and arm_mve.h as ineeded.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * lib/target-supports.exp
+        (check_effective_target_arm_v8_1m_mve_ok_nocache): Include
+        arm_mve.h.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * gcc.target/arm/mve/intrinsics/mve_vector_float.c: Use
+        arm_v8_1m_mve_fp.
+        * gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_int.c: Use
+        arm_v8_1m_mve.
+        * gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * gcc.target/arm/mve/intrinsics/mve_move_gpr_to_gpr.c: Remove
+        useless options.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: Use arm_hard_ok
+        effective target and arm_v8_1m_mve_fp options.
+        * gcc.target/arm/mve/intrinsics/mve_fp_fpu2.c: Use arm_softfp_ok
+        effective target and arm_v8_1m_mve_fp options.
+        * gcc.target/arm/mve/intrinsics/mve_fpu1.c: Use arm_hard_ok
+        effective target and arm_v8_1m_mve options.
+        * gcc.target/arm/mve/intrinsics/mve_fpu2.c: Use arm_softfp_ok
+        effective target and arm_v8_1m_mve options.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+        * lib/target-supports.exp (arm_softfp_ok): New effective target.
+        (arm_hard_ok): Likewise.
+
+2020-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94709
+	* gfortran.dg/gomp/warn_truncated.f: New.
+	* gfortran.dg/gomp/warn_truncated.f90: New.
+
+2020-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94700
+	* gcc.target/aarch64/sve/acle/general/pr94700.c: New test.
+
+2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/local-var-0.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-00-const.C: ...this.
+	* g++.dg/coroutines/torture/local-var-1.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-01-single.C: ...this.
+	* g++.dg/coroutines/torture/local-var-2.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-02-conditional.C: ...this.
+	* g++.dg/coroutines/torture/local-var-3.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-03-with-awaits.C: ...this.
+	* g++.dg/coroutines/torture/local-var-4.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C: this.
+	* g++.dg/coroutines/torture/local-var-5-awaitable.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this. 
+
+2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94682
+	* g++.dg/coroutines/promise-parm-preview-this.C: New test.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/gcc-dg.exp (schedule-cleanups): Accept --save-temps.
+
+2020-04-22  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/94510
+	* g++.dg/init/array58.C: New test.
+	* g++.dg/init/array59.C: New test.
+	* g++.dg/cpp2a/nontype-class34.C: New test.
+	* g++.dg/cpp2a/nontype-class35.C: New test.
+
+2020-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67825
+	* g++.dg/concepts/diagnostic10.C: New test.
+	* g++.dg/cpp2a/concepts-pr67178.C: Adjust dg-message.
+
+2020-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94549
+	* g++.dg/concepts/inherit-ctor3.C: Adjust expected diagnostics.
+	* g++.dg/cpp2a/concepts-inherit-ctor4.C: Likewise.
+	* g++.dg/cpp2a/concepts-inherit-ctor8.C: New test.
+
+2020-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/94149
+	* g++.dg/cpp2a/paren-init24.C: Fix FIXMEs.
+
 2020-04-21  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/94647

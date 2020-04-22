@@ -4478,6 +4478,33 @@ zero_init_p (const_tree t)
   return 1;
 }
 
+/* Returns true if the expression or initializer T is the result of
+   zero-initialization for its type, taking pointers to members
+   into consideration.  */
+
+bool
+zero_init_expr_p (tree t)
+{
+  tree type = TREE_TYPE (t);
+  if (!type || dependent_type_p (type))
+    return false;
+  if (zero_init_p (type))
+    return initializer_zerop (t);
+  if (TYPE_PTRMEM_P (type))
+    return null_member_pointer_value_p (t);
+  if (TREE_CODE (t) == CONSTRUCTOR
+      && CP_AGGREGATE_TYPE_P (type))
+    {
+      tree elt_init;
+      unsigned HOST_WIDE_INT i;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, elt_init)
+	if (!zero_init_expr_p (elt_init))
+	  return false;
+      return true;
+    }
+  return false;
+}
+
 /* True IFF T is a C++20 structural type (P1907R1) that can be used as a
    non-type template parameter.  If EXPLAIN, explain why not.  */
 
@@ -5744,76 +5771,6 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
       return true;
     }
   return false;
-}
-
-/* Given an initializer INIT for a TYPE, return true if INIT is zero
-   so that it can be replaced by value initialization.  This function
-   distinguishes betwen empty strings as initializers for arrays and
-   for pointers (which make it return false).  */
-
-bool
-type_initializer_zero_p (tree type, tree init)
-{
-  if (type == error_mark_node || init == error_mark_node)
-    return false;
-
-  STRIP_NOPS (init);
-
-  if (POINTER_TYPE_P (type))
-    return TREE_CODE (init) != STRING_CST && initializer_zerop (init);
-
-  if (TREE_CODE (init) != CONSTRUCTOR)
-    {
-      /* A class can only be initialized by a non-class type if it has
-	 a ctor that converts from that type.  Such classes are excluded
-	 since their semantics are unknown.  */
-      if (RECORD_OR_UNION_TYPE_P (type)
-	  && !RECORD_OR_UNION_TYPE_P (TREE_TYPE (init)))
-	return false;
-      return initializer_zerop (init);
-    }
-
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      tree elt_type = TREE_TYPE (type);
-      elt_type = TYPE_MAIN_VARIANT (elt_type);
-      if (elt_type == char_type_node)
-	return initializer_zerop (init);
-
-      tree elt_init;
-      unsigned HOST_WIDE_INT i;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, elt_init)
-	if (!type_initializer_zero_p (elt_type, elt_init))
-	  return false;
-      return true;
-    }
-
-  if (TREE_CODE (type) != RECORD_TYPE)
-    return initializer_zerop (init);
-
-  if (TYPE_NON_AGGREGATE_CLASS (type))
-    return false;
-
-  tree fld = TYPE_FIELDS (type);
-
-  tree fld_init;
-  unsigned HOST_WIDE_INT i;
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, fld_init)
-    {
-      fld = next_initializable_field (fld);
-      if (!fld)
-	return true;
-
-      tree fldtype = TREE_TYPE (fld);
-      if (!type_initializer_zero_p (fldtype, fld_init))
-	return false;
-
-      fld = DECL_CHAIN (fld);
-      if (!fld)
-	break;
-    }
-
-  return true;
 }
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)

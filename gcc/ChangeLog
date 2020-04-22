@@ -1,3 +1,76 @@
+2020-04-22  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94678
+	* config/aarch64/aarch64.h (TARGET_SVE):
+	Add && !TARGET_GENERAL_REGS_ONLY.
+	(TARGET_SVE2): Add && TARGET_SVE.
+	(TARGET_SVE2_AES, TARGET_SVE2_BITPERM, TARGET_SVE2_SHA3,
+	TARGET_SVE2_SM4): Add && TARGET_SVE2.
+	* config/aarch64/aarch64-sve-builtins.h
+	(sve_switcher::m_old_general_regs_only): New member.
+	* config/aarch64/aarch64-sve-builtins.cc (check_required_registers):
+	New function.
+	(reported_missing_registers_p): New variable.
+	(check_required_extensions): Call check_required_registers before
+	return if all required extenstions are present.
+	(sve_switcher::sve_switcher): Save TARGET_GENERAL_REGS_ONLY in
+	m_old_general_regs_only and clear MASK_GENERAL_REGS_ONLY in
+	global_options.x_target_flags.
+	(sve_switcher::~sve_switcher): Set MASK_GENERAL_REGS_ONLY in
+	global_options.x_target_flags if m_old_general_regs_only is true.
+
+2020-04-22  Zackery Spytz  <zspytz@gmail.com>
+
+	* doc/extend.exi: Add "free" to list of other builtin functions
+	supported by GCC.
+
+2020-04-20  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/94622
+	* config/rs6000/sync.md (load_quadpti): Add attr "prefixed"
+	if TARGET_PREFIXED.
+	(store_quadpti): Ditto.
+	(atomic_load<mode>): Do not swap doublewords if TARGET_PREFIXED as
+	plq will be used and doesn't need it.
+	(atomic_store<mode>): Ditto, for pstq.
+
+2020-04-22  Erick Ochoa  <erick.ochoa@theobroma-systems.com>
+
+	* doc/invoke.texi: Update flags turned on by -O3.
+
+2020-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94706
+	* config/ia64/ia64.c (hfa_element_mode): Ignore
+	cxx17_empty_base_field_p fields.
+
+	PR target/94383
+	* calls.h (cxx17_empty_base_field_p): Declare.
+	* calls.c (cxx17_empty_base_field_p): Define.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_softfp_ok, arm_hard_ok): Document.
+
+2020-04-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm.c (arm_file_start): Handle isa_bit_quirk_no_asmcpu.
+	* config/arm/arm-cpus.in (quirk_no_asmcpu): Define.
+	(ALL_QUIRKS): Add quirk_no_asmcpu.
+	(cortex-m55): Define new cpu.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* doc/invoke.texi (Arm Options): Document -mcpu=cortex-m55.
+
+2020-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94700
+	* tree-ssa-forwprop.c (simplify_vector_constructor): When processing
+	an identity constructor, use a VIEW_CONVERT_EXPR to handle mixtures
+	of similarly-structured but distinct vector types.
+
 2020-04-21  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/94647
