@@ -4739,6 +4739,26 @@ proc check_effective_target_default_branch_protection { } {
     return [check_configured_with "enable-standard-branch-protection"]
 }
 
+# Return 1 if this is an ARM target supporting -mfloat-abi=softfp.
+
+proc check_effective_target_arm_softfp_ok { } {
+    return [check_no_compiler_messages arm_softfp_ok object {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
+	} "-mfloat-abi=softfp"]
+}
+
+# Return 1 if this is an ARM target supporting -mfloat-abi=hard.
+
+proc check_effective_target_arm_hard_ok { } {
+    return [check_no_compiler_messages arm_hard_ok object {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
+	} "-mfloat-abi=hard"]
+}
+
 # Return 1 if the target supports ARMv8.1-M MVE with floating point
 # instructions, 0 otherwise.  The test is valid for ARM.
 # Record the command line options needed.

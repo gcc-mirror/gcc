@@ -1971,6 +1971,14 @@ ARM Target supports options suitable for accessing the Q-bit manipulation
 intrinsics from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
+@item arm_softfp_ok
+@anchor{arm_softfp_ok}
+ARM target supports the @code{-mfloat-abi=softfp} option.
+
+@item arm_hard_ok
+@anchor{arm_hard_ok}
+ARM target supports the @code{-mfloat-abi=hard} option.
+
 @end table
 
 @subsubsection AArch64-specific attributes
