@@ -6677,8 +6677,8 @@ package body Sem_Ch4 is
          I     : Interp_Index;
          It    : Interp;
          I1    : Interp_Index := 0;
-         Found : Boolean := False;
-         Tmp   : Entity_Id;
+         Found : Boolean      := False;
+         Tmp   : Entity_Id    := Empty;
 
       begin
          if not Is_Overloaded (N) then
