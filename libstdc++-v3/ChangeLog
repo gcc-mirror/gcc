@@ -1,5 +1,19 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/condition_variable (__cpp_lib_jthread): Remove
+	redundant definition.
+	* include/std/stop_token (__cpp_lib_jthread): Update macro value to
+	indicate P1869R1 support.
+	* include/std/version (__cpp_lib_jthread): Update value.
+	* testsuite/30_threads/condition_variable_any/stop_token/1.cc: Check
+	for updated macro value.
+	* testsuite/30_threads/condition_variable_any/stop_token/2.cc:
+	Likewise.
+	* testsuite/30_threads/jthread/1.cc: Likewise.
+	* testsuite/30_threads/jthread/2.cc: Likewise.
+	* testsuite/30_threads/stop_token/1.cc: Likewise.
+	* testsuite/30_threads/stop_token/2.cc: Likewise.
+
 	* testsuite/21_strings/basic_string/erasure.cc: Check for
 	__cpp_lib_erase_if macro.
 	* testsuite/23_containers/deque/erasure.cc: Add header name to #error

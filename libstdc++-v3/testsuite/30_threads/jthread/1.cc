@@ -23,6 +23,6 @@
 
 #ifndef __cpp_lib_jthread
 # error "Feature-test macro for jthread missing in <thread>"
-#elif __cpp_lib_jthread != 201907L
+#elif __cpp_lib_jthread != 201911L
 # error "Feature-test macro for jthread has wrong value in <thread>"
 #endif
