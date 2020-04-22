@@ -1,5 +1,11 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (__cpp_lib_concepts): Update macro value to
+	indicate P1964R2 support.
+	* include/std/version (__cpp_lib_concepts): Likewise.
+	* testsuite/std/concepts/1.cc: Adjust expected value.
+	* testsuite/std/concepts/2.cc: Likewise.
+
 	* include/std/functional (__cpp_lib_constexpr_invoke): Rename to
 	__cpp_lib_constexpr_functional.
 	* include/std/version (__cpp_lib_constexpr_invoke): Likewise.
