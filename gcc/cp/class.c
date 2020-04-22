@@ -3838,13 +3838,13 @@ check_field_decls (tree t, tree *access_decls,
 	  if (! TYPE_HAS_COPY_CTOR (t))
 	    {
 	      warning (OPT_Weffc__,
-		       "  but does not override %<%T(const %T&)%>", t, t);
+		       "  but does not define %<%T(const %T&)%>", t, t);
 	      if (!TYPE_HAS_COPY_ASSIGN (t))
 		warning (OPT_Weffc__, "  or %<operator=(const %T&)%>", t);
 	    }
 	  else if (! TYPE_HAS_COPY_ASSIGN (t))
 	    warning (OPT_Weffc__,
-		     "  but does not override %<operator=(const %T&)%>", t);
+		     "  but does not define %<operator=(const %T&)%>", t);
 	  inform (DECL_SOURCE_LOCATION (pointer_member),
 		  "pointer member %q+D declared here", pointer_member);
 	}
