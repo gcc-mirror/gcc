@@ -1,3 +1,9 @@
+2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:
+	Guard against unavailable math functions.
+	Use suffixes from kinds.h based on the REAL kind.
+
 2020-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/94694
