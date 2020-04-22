@@ -3731,6 +3731,7 @@ proc check_effective_target_arm_dsp { } {
 	#ifndef __ARM_FEATURE_DSP
 	#error not DSP
 	#endif
+	#include <arm_acle.h>
 	int i;
     }]
 }
@@ -4032,6 +4033,7 @@ proc check_effective_target_arm_crc_ok_nocache { } {
 	#if !defined (__ARM_FEATURE_CRC32)
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     } "$et_arm_crc_flags"]
 }
 
@@ -9870,6 +9872,7 @@ proc check_effective_target_arm_coproc1_ok_nocache { } {
 	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 4
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 
@@ -9889,6 +9892,7 @@ proc check_effective_target_arm_coproc2_ok_nocache { } {
 	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 5
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 
@@ -9909,6 +9913,7 @@ proc check_effective_target_arm_coproc3_ok_nocache { } {
 	    || (__ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__))
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 
@@ -9928,6 +9933,7 @@ proc check_effective_target_arm_coproc4_ok_nocache { } {
 	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 6
 	#error FOO
 	#endif
+	#include <arm_acle.h>
     }]
 }
 

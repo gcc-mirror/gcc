@@ -1,5 +1,15 @@
 2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
+        * lib/target-supports.exp (check_effective_target_arm_dsp)
+        (check_effective_target_arm_crc_ok_nocache)
+        (check_effective_target_arm_coproc1_ok_nocache)
+        (check_effective_target_arm_coproc2_ok_nocache)
+        (check_effective_target_arm_coproc3_ok_nocache)
+        (check_effective_target_arm_coproc4_ok_nocache): Include
+        arm_acle.h.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
         gcc/testsuite/
         * lib/target-supports.exp (arm_v8m_main_cde, arm_v8m_main_cde_fp)
         (arm_v8_1m_main_cde_mve, arm_v8_1m_main_cde_mve_fp): Include
