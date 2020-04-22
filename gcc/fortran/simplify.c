@@ -4157,6 +4157,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 {
   gfc_ref *ref;
   gfc_array_spec *as;
+  ar_type type = AR_UNKNOWN;
   int d;
 
   if (array->ts.type == BT_CLASS)
@@ -4180,6 +4181,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       switch (ref->type)
 	{
 	case REF_ARRAY:
+	  type = ref->u.ar.type;
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_ELEMENT:
@@ -4233,7 +4235,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       int k;
 
       /* UBOUND(ARRAY) is not valid for an assumed-size array.  */
-      if (upper && as && as->type == AS_ASSUMED_SIZE)
+      if (upper && type == AR_FULL && as && as->type == AS_ASSUMED_SIZE)
 	{
 	  /* An error message will be emitted in
 	     check_assumed_size_reference (resolve.c).  */
