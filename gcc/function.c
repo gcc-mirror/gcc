@@ -3913,9 +3913,8 @@ gimplify_parameters (gimple_seq *cleanup)
 		     as we'll query that flag during gimplification.  */
 		  if (TREE_ADDRESSABLE (parm))
 		    TREE_ADDRESSABLE (local) = 1;
-		  else if (TREE_CODE (type) == COMPLEX_TYPE
-			   || TREE_CODE (type) == VECTOR_TYPE)
-		    DECL_GIMPLE_REG_P (local) = 1;
+		  if (DECL_NOT_GIMPLE_REG_P (parm))
+		    DECL_NOT_GIMPLE_REG_P (local) = 1;
 
 		  if (!is_gimple_reg (local)
 		      && flag_stack_reuse != SR_NONE)

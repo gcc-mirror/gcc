@@ -10322,7 +10322,6 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
   gimple_seq_add_stmt (body_p, g);
 
   tree cplx = create_tmp_var (build_complex_type (unsigned_type_node, false));
-  DECL_GIMPLE_REG_P (cplx) = 1;
   g = gimple_build_call_internal (IFN_MUL_OVERFLOW, 2, thread_nump1, twok);
   gimple_call_set_lhs (g, cplx);
   gimple_seq_add_stmt (body_p, g);

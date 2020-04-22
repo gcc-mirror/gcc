@@ -559,9 +559,6 @@ create_tmp_from_val (tree val)
   /* Drop all qualifiers and address-space information from the value type.  */
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (val));
   tree var = create_tmp_var (type, get_name (val));
-  if (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
-      || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (var) = 1;
   return var;
 }
 
@@ -1400,16 +1397,6 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  if (DECL_HARD_REGISTER (t) && !is_global_var (t) && cfun)
 	    cfun->has_local_explicit_reg_vars = true;
 	}
-
-      /* Preliminarily mark non-addressed complex variables as eligible
-	 for promotion to gimple registers.  We'll transform their uses
-	 as we find them.  */
-      if ((TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-	   || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-	  && !TREE_THIS_VOLATILE (t)
-	  && (VAR_P (t) && !DECL_HARD_REGISTER (t))
-	  && !needs_to_live_in_memory (t))
-	DECL_GIMPLE_REG_P (t) = 1;
     }
 
   bind_stmt = gimple_build_bind (BIND_EXPR_VARS (bind_expr), NULL,
@@ -4308,7 +4295,7 @@ prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
     {
       /* Do not allow an SSA name as the temporary.  */
       tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL, false);
-      DECL_GIMPLE_REG_P (var) = 0;
+      DECL_NOT_GIMPLE_REG_P (var) = 1;
       *expr_p = var;
     }
 }
@@ -4773,15 +4760,6 @@ gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p,
       *expr_p = init;
       return GS_OK;
     }
-
-  /* Preliminarily mark non-addressed complex variables as eligible
-     for promotion to gimple registers.  We'll transform their uses
-     as we find them.  */
-  if ((TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE
-       || TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE)
-      && !TREE_THIS_VOLATILE (decl)
-      && !needs_to_live_in_memory (decl))
-    DECL_GIMPLE_REG_P (decl) = 1;
 
   /* If the decl is not addressable, then it is being used in some
      expression or on the right hand side of a statement, and it can
@@ -5617,8 +5595,7 @@ is_gimple_stmt (tree t)
 
 
 /* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
-   a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
-   DECL_GIMPLE_REG_P set.
+   a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a gimple register.
 
    IMPORTANT NOTE: This promotion is performed by introducing a load of the
    other, unmodified part of the complex object just before the total store.
@@ -14992,7 +14969,6 @@ flag_instrument_functions_exclude_p (tree fndecl)
 void
 gimplify_function_tree (tree fndecl)
 {
-  tree parm, ret;
   gimple_seq seq;
   gbind *bind;
 
@@ -15006,24 +14982,6 @@ gimplify_function_tree (tree fndecl)
   /* Tentatively set PROP_gimple_lva here, and reset it in gimplify_va_arg_expr
      if necessary.  */
   cfun->curr_properties |= PROP_gimple_lva;
-
-  for (parm = DECL_ARGUMENTS (fndecl); parm ; parm = DECL_CHAIN (parm))
-    {
-      /* Preliminarily mark non-addressed complex variables as eligible
-         for promotion to gimple registers.  We'll transform their uses
-         as we find them.  */
-      if ((TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE
-	   || TREE_CODE (TREE_TYPE (parm)) == VECTOR_TYPE)
-          && !TREE_THIS_VOLATILE (parm)
-          && !needs_to_live_in_memory (parm))
-        DECL_GIMPLE_REG_P (parm) = 1;
-    }
-
-  ret = DECL_RESULT (fndecl);
-  if ((TREE_CODE (TREE_TYPE (ret)) == COMPLEX_TYPE
-       || TREE_CODE (TREE_TYPE (ret)) == VECTOR_TYPE)
-      && !needs_to_live_in_memory (ret))
-    DECL_GIMPLE_REG_P (ret) = 1;
 
   if (asan_sanitize_use_after_scope () && sanitize_flags_p (SANITIZE_ADDRESS))
     asan_poisoned_variables = new hash_set<tree> ();
