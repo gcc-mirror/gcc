@@ -1631,12 +1631,18 @@ set_noop_p (const_rtx set)
       int i;
       rtx par = XEXP (src, 1);
       rtx src0 = XEXP (src, 0);
-      poly_int64 c0 = rtx_to_poly_int64 (XVECEXP (par, 0, 0));
+      poly_int64 c0;
+      if (!poly_int_rtx_p (XVECEXP (par, 0, 0), &c0))
+	return 0;
       poly_int64 offset = GET_MODE_UNIT_SIZE (GET_MODE (src0)) * c0;
 
       for (i = 1; i < XVECLEN (par, 0); i++)
-	if (maybe_ne (rtx_to_poly_int64 (XVECEXP (par, 0, i)), c0 + i))
-	  return 0;
+	{
+	  poly_int64 c0i;
+	  if (!poly_int_rtx_p (XVECEXP (par, 0, i), &c0i)
+	      || maybe_ne (c0i, c0 + i))
+	    return 0;
+	}
       return
 	REG_CAN_CHANGE_MODE_P (REGNO (dst), GET_MODE (src0), GET_MODE (dst))
 	&& simplify_subreg_regno (REGNO (src0), GET_MODE (src0),

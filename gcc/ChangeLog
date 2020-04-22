@@ -1,5 +1,8 @@
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR target/94279
+	* rtlanal.c (set_noop_p): Handle non-constant selectors.
+
 	PR target/94282
 	* common/config/gcn/gcn-common.c (gcn_except_unwind_info): New
 	function.
