@@ -1,5 +1,9 @@
 2020-04-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94706
+	* config/ia64/ia64.c (hfa_element_mode): Ignore
+	cxx17_empty_base_field_p fields.
+
 	PR target/94383
 	* calls.h (cxx17_empty_base_field_p): Declare.
 	* calls.c (cxx17_empty_base_field_p): Define.
