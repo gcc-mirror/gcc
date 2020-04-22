@@ -1,3 +1,8 @@
+2020-04-22  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94678
+	* gcc.target/aarch64/sve/acle/general/nosve_6.c: New test.
+
 2020-04-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/90350
