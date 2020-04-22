@@ -1,3 +1,18 @@
+2020-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/94694
+	PR libfortran/94586
+	* configure.ac: Add math func checks for fmaf, fma and fmal.  Add
+	HAVE_INLINE_BUILTIN_COPYSIGN check.
+	* c99_protos.h (copysign, fmaf, fma, fmal): Provide fallback
+	prototypes.
+	(HAVE_COPYSIGN, HAVE_FMAF, HAVE_FMA, HAVE_FMAL): Define if not
+	defined and fallback version is provided.
+	* intrinsics/c99_functions.c (copysign, fmaf, fma, fmal): Provide
+	fallback implementations if possible
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
 2020-04-19  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h (local_feraiseexcept) [__SSE_MATH__]:
