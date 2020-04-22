@@ -1,5 +1,15 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/Makefile.am (xml_sources_manual): Add missing XML files.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/manual/status_cxx1998.xml: Refer to "this section" instead
+	of "this page".
+	* doc/xml/manual/status_cxx2011.xml: Formatting and other corrections
+	to the C++11 status table.
+	* doc/xml/manual/status_cxx2014.xml: Replace list of C++14 feature
+	proposals with table matching contents of the C++14 standard.
+	* doc/html/*: Regenerate.
+
 	Backport from mainline
 	2020-02-15  Jonathan Wakely  <jwakely@redhat.com>
 

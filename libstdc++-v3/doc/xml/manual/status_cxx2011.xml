@@ -27,7 +27,11 @@ presence of the required flag.
 </para>
 
 <para>
-This page describes the C++11 support in the GCC 9 series.
+This status table is based on the table of contents of ISO/IEC 14882:2011.
+</para>
+
+<para>
+This section describes the C++11 support in the GCC 9 series.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
@@ -70,7 +74,7 @@ This page describes the C++11 support in the GCC 9 series.
     <row>
       <entry>18.1</entry>
       <entry>General</entry>
-      <entry>Y</entry>
+      <entry/>
       <entry/>
     </row>
     <row>
@@ -264,7 +268,7 @@ This page describes the C++11 support in the GCC 9 series.
     <row>
       <entry>19.1</entry>
       <entry>General</entry>
-      <entry>Y</entry>
+      <entry/>
       <entry/>
     </row>
     <row>
@@ -349,13 +353,13 @@ This page describes the C++11 support in the GCC 9 series.
     </row>
     <row>
       <entry>20.2.2</entry>
-      <entry>Swap</entry>
+      <entry>swap</entry>
       <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>20.2.3</entry>
-      <entry><code>forward</code> and <code>move</code> helpers</entry>
+      <entry>forward/move helpers</entry>
       <entry>Y</entry>
       <entry/>
     </row>
@@ -626,7 +630,7 @@ This page describes the C++11 support in the GCC 9 series.
     <row>
       <entry>20.7.2</entry>
       <entry>Shared-ownership pointers</entry>
-      <entry>Y</entry>
+      <entry/>
       <entry/>
     </row>
     <row>
@@ -652,7 +656,7 @@ This page describes the C++11 support in the GCC 9 series.
     </row>
     <row>
       <entry>20.7.2.4</entry>
-      <entry>Class template <code>emable_shared_from_this</code></entry>
+      <entry>Class template <code>enable_shared_from_this</code></entry>
       <entry>Y</entry>
       <entry/>
     </row>
@@ -1114,9 +1118,7 @@ This page describes the C++11 support in the GCC 9 series.
       <entry>21.7</entry>
       <entry>Null-terminated sequence utilities</entry>
       <entry>Partial</entry>
-      <entry>C library dependency.
-      Missing <filename class="headerfile">&lt;cuchar&gt;</filename>
-      </entry>
+      <entry>C library dependency. </entry>
     </row>
     <row>
       <entry>
@@ -1635,7 +1637,7 @@ This page describes the C++11 support in the GCC 9 series.
     <row>
       <entry>26.1</entry>
       <entry>General</entry>
-      <entry>Y</entry>
+      <entry/>
       <entry/>
     </row>
     <row>
@@ -1988,31 +1990,31 @@ This page describes the C++11 support in the GCC 9 series.
     </row>
     <row>
       <entry>26.7.2</entry>
-      <entry><code>accumulate</code></entry>
+      <entry>Accumulate></entry>
       <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>26.7.3</entry>
-      <entry><code>inner_product</code></entry>
+      <entry>Inner product</entry>
       <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>26.7.4</entry>
-      <entry><code>partial_sum</code></entry>
+      <entry>Partial sum</entry>
       <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>26.7.5</entry>
-      <entry><code>adjacent_difference</code></entry>
+      <entry>Adjacent difference</entry>
       <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>26.7.6</entry>
-      <entry>iota</entry>
+      <entry>Iota</entry>
       <entry>Y</entry>
       <entry/>
     </row>
@@ -2230,10 +2232,9 @@ This page describes the C++11 support in the GCC 9 series.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>29.3</entry>
       <entry>Order and consistency</entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -2396,10 +2397,14 @@ This page describes the C++11 support in the GCC 9 series.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.4.4.2</entry>
       <entry>Function <code>call_once</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Broken</entry>
+      <entry>See <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66146">PR
+	66146</link>
+      </entry>
     </row>
     <row>
       <entry>30.5</entry>
@@ -2514,43 +2519,43 @@ This page describes the C++11 support in the GCC 9 series.
     <row>
       <entry>D.5</entry>
       <entry>C standard library headers</entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>D.6</entry>
       <entry>Old iostreams members</entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>D.7</entry>
       <entry><code>char*</code> streams</entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>D.8</entry>
       <entry>Function objects</entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>D.9</entry>
       <entry>Binders</entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>D.10</entry>
       <entry><code>auto_ptr</code></entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
       <entry>D.11</entry>
       <entry>Violating exception-specifications</entry>
-      <entry/>
+      <entry>Y</entry>
       <entry/>
     </row>
 
