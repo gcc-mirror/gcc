@@ -1,3 +1,11 @@
+2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94682
+	* coroutines.cc (struct param_info): Add a field to note that
+	the param is 'this'.
+	(morph_fn_to_coro): Convert this to a reference before using it
+	in the promise parameter preview.
+
 2020-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94546

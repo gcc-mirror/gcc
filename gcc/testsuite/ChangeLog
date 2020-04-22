@@ -1,3 +1,8 @@
+2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94682
+	* g++.dg/coroutines/promise-parm-preview-this.C: New test.
+
 2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/gcc-dg.exp (schedule-cleanups): Accept --save-temps.
