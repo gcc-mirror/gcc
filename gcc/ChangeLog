@@ -1,3 +1,15 @@
+2020-04-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Andre Vieira  <andre.simoesdiasvieira@arm.com>
+            Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm.c (arm_file_start): Handle isa_bit_quirk_no_asmcpu.
+	* config/arm/arm-cpus.in (quirk_no_asmcpu): Define.
+	(ALL_QUIRKS): Add quirk_no_asmcpu.
+	(cortex-m55): Define new cpu.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* doc/invoke.texi (Arm Options): Document -mcpu=cortex-m55.
+
 2020-04-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94700

@@ -18773,7 +18773,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p},
+@samp{cortex-m35p}, @samp{cortex-m55},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
@@ -18850,7 +18850,7 @@ Disables the floating-point and SIMD instructions on
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
 @samp{cortex-a15}, @samp{cortex-a17}, @samp{cortex-a15.cortex-a7},
 @samp{cortex-a17.cortex-a7}, @samp{cortex-a32}, @samp{cortex-a35},
-@samp{cortex-a53} and @samp{cortex-a55}.
+@samp{cortex-a53},@samp{cortex-a55} and @samp{cortex-m55}.
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions
