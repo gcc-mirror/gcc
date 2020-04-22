@@ -1,5 +1,10 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (__cpp_lib_constexpr_invoke): Rename to
+	__cpp_lib_constexpr_functional.
+	* include/std/version (__cpp_lib_constexpr_invoke): Likewise.
+	* testsuite/20_util/function_objects/invoke/constexpr.cc: Adjust.
+
 	* include/bits/ptr_traits.h (__cpp_lib_constexpr_memory): Define to
 	indicate P1006R1 support.
 	(__cpp_lib_to_address): Define to indicate P0653R2 support.
