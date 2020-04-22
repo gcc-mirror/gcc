@@ -201,7 +201,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_USER_ALIGN (expr), 1);
   bp_pack_value (bp, DECL_PRESERVE_P (expr), 1);
   bp_pack_value (bp, DECL_EXTERNAL (expr), 1);
-  bp_pack_value (bp, DECL_GIMPLE_REG_P (expr), 1);
+  bp_pack_value (bp, DECL_NOT_GIMPLE_REG_P (expr), 1);
   bp_pack_var_len_unsigned (bp, DECL_ALIGN (expr));
 
   if (TREE_CODE (expr) == LABEL_DECL)

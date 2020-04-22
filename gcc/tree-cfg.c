@@ -577,9 +577,6 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
 	      gimple_set_location (s, gimple_location (stmt));
 	      gimple_set_block (s, gimple_block (stmt));
 	      gimple_set_lhs (stmt, tmp);
-	      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-		  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-		DECL_GIMPLE_REG_P (tmp) = 1;
 	      gsi_insert_after (&i, s, GSI_SAME_STMT);
 	    }
 	  start_new_block = true;
@@ -2982,12 +2979,6 @@ verify_address (tree t, bool verify_addressable)
 	|| TREE_CODE (base) == PARM_DECL
 	|| TREE_CODE (base) == RESULT_DECL))
     return false;
-
-  if (DECL_GIMPLE_REG_P (base))
-    {
-      error ("%<DECL_GIMPLE_REG_P%> set on a variable with address taken");
-      return true;
-    }
 
   if (verify_addressable && !TREE_ADDRESSABLE (base))
     {

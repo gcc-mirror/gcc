@@ -3670,11 +3670,9 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	  if (TREE_ADDRESSABLE (result))
 	    mark_addressable (var);
 	}
-      if ((TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
-           || TREE_CODE (TREE_TYPE (result)) == VECTOR_TYPE)
-	  && !DECL_GIMPLE_REG_P (result)
+      if (DECL_NOT_GIMPLE_REG_P (result)
 	  && DECL_P (var))
-	DECL_GIMPLE_REG_P (var) = 0;
+	DECL_NOT_GIMPLE_REG_P (var) = 1;
 
       if (!useless_type_conversion_p (callee_type, caller_type))
 	var = build1 (VIEW_CONVERT_EXPR, callee_type, var);
@@ -3717,10 +3715,8 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	    use_it = false;
 	  else if (is_global_var (base_m))
 	    use_it = false;
-	  else if ((TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
-		    || TREE_CODE (TREE_TYPE (result)) == VECTOR_TYPE)
-		   && !DECL_GIMPLE_REG_P (result)
-		   && DECL_GIMPLE_REG_P (base_m))
+	  else if (DECL_NOT_GIMPLE_REG_P (result)
+		   && !DECL_NOT_GIMPLE_REG_P (base_m))
 	    use_it = false;
 	  else if (!TREE_ADDRESSABLE (base_m))
 	    use_it = true;
@@ -3760,11 +3756,8 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	     to using a MEM_REF to not leak invalid GIMPLE to the following
 	     passes.  */
 	  /* Prevent var from being written into SSA form.  */
-	  if (TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE
-	      || TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE)
-	    DECL_GIMPLE_REG_P (var) = false;
-	  else if (is_gimple_reg_type (TREE_TYPE (var)))
-	    TREE_ADDRESSABLE (var) = true;
+	  if (is_gimple_reg_type (TREE_TYPE (var)))
+	    DECL_NOT_GIMPLE_REG_P (var) = true;
 	  use = fold_build2 (MEM_REF, caller_type,
 			     build_fold_addr_expr (var),
 			     build_int_cst (ptr_type_node, 0));
@@ -5930,7 +5923,7 @@ copy_decl_to_var (tree decl, copy_body_data *id)
   TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
   TREE_READONLY (copy) = TREE_READONLY (decl);
   TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
-  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (decl);
+  DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (decl);
   DECL_BY_REFERENCE (copy) = DECL_BY_REFERENCE (decl);
 
   return copy_decl_for_dup_finish (id, decl, copy);
@@ -5960,7 +5953,12 @@ copy_result_decl_to_var (tree decl, copy_body_data *id)
   if (!DECL_BY_REFERENCE (decl))
     {
       TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
-      DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (decl);
+      DECL_NOT_GIMPLE_REG_P (copy)
+	= (DECL_NOT_GIMPLE_REG_P (decl)
+	   /* RESULT_DECLs are treated special by needs_to_live_in_memory,
+	      mirror that to the created VAR_DECL.  */
+	   || (TREE_CODE (decl) == RESULT_DECL
+	       && aggregate_value_p (decl, id->src_fn)));
     }
 
   return copy_decl_for_dup_finish (id, decl, copy);

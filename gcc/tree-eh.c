@@ -2072,9 +2072,6 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	  gimple_set_location (s, gimple_location (stmt));
 	  gimple_set_block (s, gimple_block (stmt));
 	  gimple_set_lhs (stmt, tmp);
-	  if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-	      || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (tmp) = 1;
 	  gsi_insert_after (gsi, s, GSI_SAME_STMT);
 	}
       /* Look for things that can throw exceptions, and record them.  */

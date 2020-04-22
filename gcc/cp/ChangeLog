@@ -1,3 +1,8 @@
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* optimize.c (update_cloned_parm): Copy DECL_NOT_GIMPLE_REG_P.
+
 2020-05-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94938

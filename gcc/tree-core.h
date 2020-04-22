@@ -1724,7 +1724,7 @@ struct GTY(()) tree_decl_common {
   unsigned decl_flag_3 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
-  unsigned gimple_reg_flag : 1;
+  unsigned not_gimple_reg_flag : 1;
   /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
   unsigned decl_by_reference_flag : 1;
   /* In a VAR_DECL and PARM_DECL, this is DECL_READ_P.  */

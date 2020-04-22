@@ -1,3 +1,57 @@
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* tree-core.h (tree_decl_common::gimple_reg_flag): Rename ...
+	(tree_decl_common::not_gimple_reg_flag): ... to this.
+	* tree.h (DECL_GIMPLE_REG_P): Rename ...
+	(DECL_NOT_GIMPLE_REG_P): ... to this.
+	* gimple-expr.c (copy_var_decl): Copy DECL_NOT_GIMPLE_REG_P.
+	(create_tmp_reg): Simplify.
+	(create_tmp_reg_fn): Likewise.
+	(is_gimple_reg): Check DECL_NOT_GIMPLE_REG_P for all regs.
+	* gimplify.c (create_tmp_from_val): Simplify.
+	(gimplify_bind_expr): Likewise.
+	(gimplify_compound_literal_expr): Likewise.
+	(gimplify_function_tree): Likewise.
+	(prepare_gimple_addressable): Set DECL_NOT_GIMPLE_REG_P.
+	* asan.c (create_odr_indicator): Do not clear DECL_GIMPLE_REG_P.
+	(asan_add_global): Copy it.
+	* cgraphunit.c (cgraph_node::expand_thunk): Force args
+	to be GIMPLE regs.
+	* function.c (gimplify_parameters): Copy
+	DECL_NOT_GIMPLE_REG_P.
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::common_initialization): Simplify.
+	(ipa_param_body_adjustments::reset_debug_stmts): Copy
+	DECL_NOT_GIMPLE_REG_P.
+	* omp-low.c (lower_omp_for_scan): Do not set DECL_GIMPLE_REG_P.
+	* sanopt.c (sanitize_rewrite_addressable_params): Likewise.
+	* tree-cfg.c (make_blocks_1): Simplify.
+	(verify_address): Do not verify DECL_GIMPLE_REG_P setting.
+	* tree-eh.c (lower_eh_constructs_2): Simplify.
+	* tree-inline.c (declare_return_variable): Adjust and
+	generalize.
+	(copy_decl_to_var): Copy DECL_NOT_GIMPLE_REG_P.
+	(copy_result_decl_to_var): Likewise.
+	* tree-into-ssa.c (pass_build_ssa::execute): Adjust comment.
+	* tree-nested.c (create_tmp_var_for): Simplify.
+	* tree-parloops.c (separate_decls_in_region_name): Copy
+	DECL_NOT_GIMPLE_REG_P.
+	* tree-sra.c (create_access_replacement): Adjust and
+	generalize partial def support.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Set
+	DECL_NOT_GIMPLE_REG_P on decls we introduce partial defs on.
+	* tree-ssa.c (maybe_optimize_var): Handle clearing of
+	TREE_ADDRESSABLE and setting/clearing DECL_NOT_GIMPLE_REG_P
+	independently.
+	* lto-streamer-out.c (hash_tree): Hash DECL_NOT_GIMPLE_REG_P.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Stream
+	DECL_NOT_GIMPLE_REG_P.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Likewise.
+	* cfgexpand.c (avoid_type_punning_on_regs): New.
+	(discover_nonconstant_array_refs): Call
+	avoid_type_punning_on_regs to avoid unsupported mode punning.
+
 2020-05-07  Alex Coplan  <alex.coplan@arm.com>
 
 	* config/arm/arm.c (arm_add_stmt_cost): Fix declaration, remove class
