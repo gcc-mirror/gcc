@@ -3048,6 +3048,10 @@ private:
   depset::hash *dep_hash;    	/* Dependency table.  */
   int ref_num;			/* Back reference number.  */
   unsigned section;
+#if CHECKING_P
+  int importedness;		/* Checker that imports not occurring
+				   inappropriately.  */
+#endif
 
 public:
   trees_out (allocator *, module_state *, depset::hash &deps, unsigned sec = 0);
@@ -3085,6 +3089,14 @@ private:
 
 private:
   walk_kind ref_node (tree);
+public:
+  int get_tag (tree);
+  void set_importing (int i)
+  {
+#if CHECKING_P
+    importedness = i;
+#endif
+  }
 
 private:
   void core_bools (tree);
@@ -3181,6 +3193,9 @@ trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps,
   :parent (mem), state (state), tree_map (500),
    dep_hash (&deps), ref_num (0), section (section)
 {
+#if CHECKING_P
+  importedness = 0;
+#endif
 }
 
 trees_out::~trees_out ()
@@ -4747,6 +4762,13 @@ trees_out::mark_by_value (tree decl)
     }
 }
 
+int
+trees_out::get_tag (tree t)
+{
+  gcc_checking_assert (TREE_VISITED (t));
+  return *tree_map.get (t);
+}
+
 /* Insert T into the map, return its tag number.    */
 
 int
@@ -5103,9 +5125,17 @@ trees_out::core_bools (tree t)
   /* base.asm_written_flag is a property of the current TU's use of
      this decl.  */
   WB (t->base.nowarning_flag);
-  /* base.Visited read as zero (it's set for writer, because that's
+  /* base.visited read as zero (it's set for writer, because that's
      how we mark nodes).  */
-  WB (t->base.used_flag); // FIXME: should we be dumping this?
+  // FIXME: We should not be writing out used flag.  There are 2
+  // issues
+  // a) the importer may do more work than necessary, feeding things
+  // that are used only in the importee and not in the importer (this
+  // is harmless, but time consuming)
+  // b) we may be the only use of something from one of our own imports, and
+  // that won't be propagated into our importer.  This will lead to
+  // unresolved symbols I think.
+  WB (t->base.used_flag);
   WB (t->base.nothrow_flag);
   WB (t->base.static_flag);
   if (TREE_CODE_CLASS (code) != tcc_type)
@@ -6909,8 +6939,7 @@ trees_out::ref_node (tree t)
     return WK_normal;
 
   /* An already-visited tree.  It must be in the map.  */
-  int *val_ptr = tree_map.get (t);
-  int val = *val_ptr;
+  int val = get_tag (t);
 
   if (val == tag_value)
     /* An entry we should walk into.  */
@@ -7489,7 +7518,7 @@ trees_out::decl_value (tree decl, depset *dep)
       if (streaming_p ())
 	dump (dumper::TREE)
 	  && dump ("Wrote(%d) alias template %C:%N",
-		   *tree_map.get (inner), TREE_CODE (inner), inner);
+		   get_tag (inner), TREE_CODE (inner), inner);
       inner = NULL_TREE;
     }
 
@@ -7833,27 +7862,21 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
+      /* The late insertion of an alias here or an implicit member
+         (next block), is ok, because we ensured that all imports were
+         loaded up before we started this cluster.  Thus an insertion
+         from some other import cannot have happened between the
+         merged insertion above and these insertions down here.  */
       if (mk == MK_alias_spec)
 	{
 	  /* Insert into type table.  */
 	  tree ti = DECL_TEMPLATE_INFO (inner);
-	  // FIXME: I am concerned about this late insertion for the
-	  // same reasons as the next FIXME
 	  tree texist = match_mergeable_specialization
 	    (false, TI_TEMPLATE (ti), TI_ARGS (ti), TREE_TYPE (inner));
 	  if (texist)
 	    set_overrun ();
 	}
 
-      // FIXME: I am concerned we can get issues here where reading in
-      // this cluster caused us to read some other module's cluster
-      // that also instantiated this implicit member.  That loading
-      // will not have discovered this instance as we have not have
-      // inserted it yet.  If this is correct, then I think the
-      // solution is to preseed the imported decls needed by the
-      // cluster, before reading any trees of the cluster.  We know
-      // that set because they are in the dependencies of the depsets
-      // -- hey, horcruxes would be back! (I suppose that's their point?)
       if (DECL_ARTIFICIAL (decl)
 	  && TREE_CODE (decl) == FUNCTION_DECL
 	  && !DECL_TEMPLATE_INFO (decl)
@@ -8241,6 +8264,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	/* It should be what we put there.  */
 	gcc_checking_assert (index == ~import_entity_index (decl));
 
+#if CHECKING_P
+      if (importedness)
+	gcc_assert (!import == (importedness < 0));
+#endif
       i (tt_entity);
       u (import);
       u (index);
@@ -11943,7 +11970,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
   else
     {
       dep = make_dependency (decl, ek);
-      if (dep->get_entity_kind () != EK_REDIRECT && !dep->is_import ())
+      if (dep->get_entity_kind () != EK_REDIRECT)
 	add_dependency (dep);
     }
 
@@ -12666,17 +12693,21 @@ depset::tarjan::connect (depset *v)
   for (unsigned ix = v->is_special (); ix != v->deps.length (); ix++)
     {
       depset *dep = v->deps[ix];
-      unsigned lwm = dep->cluster;
 
-      if (!dep->cluster)
+      if (dep->is_binding () || !dep->is_import ())
 	{
-	  /* A new node.  Connect it.  */
-	  connect (dep);
-	  lwm = dep->section;
-	}
+	  unsigned lwm = dep->cluster;
 
-      if (dep->section && v->section > lwm)
-	v->section = lwm;
+	  if (!dep->cluster)
+	    {
+	      /* A new node.  Connect it.  */
+	      connect (dep);
+	      lwm = dep->section;
+	    }
+
+	  if (dep->section && v->section > lwm)
+	    v->section = lwm;
+	}
     }
 
   if (v->section == v->cluster)
@@ -13857,7 +13888,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   trees_out sec (to, this, table, table.section);
   sec.begin ();
 
-  /* Prepare, determine entity numbers   */
+  /* Determine entity numbers, mark for writing.   */
   dump (dumper::CLUSTER) && dump ("Cluster members:") && (dump.indent (), true);
   for (unsigned ix = 0; ix != size; ix++)
     {
@@ -13896,7 +13927,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* FALLTHROUGH  */
 
 	case depset::EK_USING:
-	  gcc_checking_assert (!b->is_unreached ());
+	  gcc_checking_assert (!b->is_import ()
+			       && !b->is_unreached ());
 	  dump (dumper::CLUSTER)
 	    && dump ("[%u]=%s %s %N", ix, b->entity_kind_name (),
 		     b->has_defn () ? "definition" : "declaration",
@@ -13905,6 +13937,35 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
     }
   dump (dumper::CLUSTER) && (dump.outdent (), true);
+
+  /* Ensure every imported decl is referenced before we start
+     streaming.  This ensures that we never encounter the
+     situation where this cluster instantiates some implicit
+     member that importing some other decl causes to be
+     instantiated.  */
+  sec.set_importing (+1);
+  for (unsigned ix = 0; ix != size; ix++)
+    {
+      depset *b = scc[ix];
+      for (unsigned jx = (b->get_entity_kind () == depset::EK_BINDING
+			  || b->is_special ()) ? 1 : 0;
+	   jx != b->deps.length (); jx++)
+	{
+	  depset *dep = b->deps[jx];
+
+	  if (!dep->is_binding ()
+	      && dep->is_import () && !TREE_VISITED (dep->get_entity ()))
+	    {
+	      tree import = dep->get_entity ();
+
+	      sec.tree_node (import);
+	      dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
+	    }
+	}
+    }
+  sec.tree_node (NULL_TREE);
+  /* We're done importing now.  */
+  sec.set_importing (-1);
 
   depset *namer = NULL;
 
@@ -14043,6 +14104,10 @@ module_state::read_cluster (unsigned snum)
   dump () && dump ("Reading section:%u", snum);
   dump.indent ();
   module_streaming++;
+
+  /* First seed the imports.  */
+  while (tree import = sec.tree_node ())
+    dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
 
   while (!sec.get_overrun () && sec.more_p ())
     {

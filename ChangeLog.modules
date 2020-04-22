@@ -1,3 +1,19 @@
+2020-04-22  Nathan Sidwell  <nathan@acm.org>
+
+	Stream imports at start of cluster
+	gcc/cp/
+	* module.cc (trees_out::importedness): New checker.
+	(depset::hash::add_dependency): Add imports.
+	(depset::tarjan::connect): Skip imports.
+	(module_state::{read,write}_cluster): Seed imports before the
+	cluster itself.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[bd].C: Adjust scans.
+	* g++.dg/modules/imp-member-[12]_[ce].C: Adjust scans.
+	* g++.dg/modules/member-def-2_c.C: Adjust scans.
+	* g++.dg/modules/vmort-2_c.C: Adjust scans.
+
+
 2020-04-21  Nathan Sidwell  <nathan@acm.org>
 
 	Don't stream DECL_ODR_USED or TREE_ASM_WRITTEN

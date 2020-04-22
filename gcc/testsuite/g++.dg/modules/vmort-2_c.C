@@ -18,4 +18,4 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Loading entity voldy\[1\] section:1} module } }
-// { dg-final { scan-lang-dump {Indirect:-8 decl's type record_type:'::frobber@voldy:.::._anon_3@voldy:.'} module } }
+// { dg-final { scan-lang-dump {Indirect:-[0-9]* decl's type record_type:'::frobber@voldy:.::._anon_3@voldy:.'} module } }

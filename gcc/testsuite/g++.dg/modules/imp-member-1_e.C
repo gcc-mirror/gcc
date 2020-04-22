@@ -11,5 +11,5 @@ void fn2 ()
   D d; // merges implicit C::C
 }
 
-// { dg-final { scan-lang-dump {Read:-1's named merge key \(matched\) function_decl:'::C@A:.::__ct '\n} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) function_decl:'::C@A:.::__ct '\n} module } }
 // { dg-final { scan-lang-dump-not {Adding implicit member '::C@A:.::__ct @B:.} module } }
