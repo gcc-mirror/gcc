@@ -3242,7 +3242,8 @@ static tree
 diagnose_valid_expression (tree expr, tree args, tree in_decl)
 {
   tree result = tsubst_expr (expr, args, tf_none, in_decl, false);
-  if (result != error_mark_node)
+  if (result != error_mark_node
+      && convert_to_void (result, ICV_STATEMENT, tf_none) != error_mark_node)
     return result;
 
   location_t loc = cp_expr_loc_or_input_loc (expr);
@@ -3250,7 +3251,10 @@ diagnose_valid_expression (tree expr, tree args, tree in_decl)
     {
       /* Replay the substitution error.  */
       inform (loc, "the required expression %qE is invalid, because", expr);
-      tsubst_expr (expr, args, tf_error, in_decl, false);
+      if (result == error_mark_node)
+	tsubst_expr (expr, args, tf_error, in_decl, false);
+      else
+	convert_to_void (result, ICV_STATEMENT, tf_error);
     }
   else
     inform (loc, "the required expression %qE is invalid", expr);

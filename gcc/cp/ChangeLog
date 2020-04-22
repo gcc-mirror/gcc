@@ -1,3 +1,9 @@
+2020-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67825
+	* constraint.cc (diagnose_valid_expression): Check convert_to_void here
+	as well as in tsubst_valid_expression_requirement.
+
 2020-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94549
