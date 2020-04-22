@@ -40,8 +40,9 @@ private:
   // This is named differently than get_value_range to make it obvious
   // that it returns an equivalence.  Only use this for calculations
   // that may take equivalences, otherwise use range_of_expr.
-  const value_range_equiv *get_value_range_equiv (const_tree op)
-  { return store->get_value_range (op); }
+  const value_range_equiv *get_value_range_equiv (const_tree op,
+						  gimple *stmt = NULL)
+  { return store->get_value_range (op, stmt); }
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -100,7 +101,7 @@ class vr_values : public range_store
  public:
   virtual ~vr_values (void);
 
-  const value_range_equiv *get_value_range (const_tree);
+  const value_range_equiv *get_value_range (const_tree, gimple *stmt = NULL);
   void set_vr_value (tree, value_range_equiv *);
   value_range_equiv *swap_vr_value (tree, value_range_equiv *);
   bool range_of_expr (irange &r, tree expr, gimple *stmt = NULL);

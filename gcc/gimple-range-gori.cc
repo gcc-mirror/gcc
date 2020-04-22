@@ -483,7 +483,8 @@ debug (gori_map &g)
 }
 
 const value_range_equiv *
-range_store::get_value_range (const_tree expr ATTRIBUTE_UNUSED)
+range_store::get_value_range (const_tree expr ATTRIBUTE_UNUSED,
+			      gimple *stmt ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
   return NULL;

@@ -148,7 +148,7 @@ vr_values::get_lattice_entry (const_tree var)
    return NULL.  Otherwise create an empty range if none existed for VAR.  */
 
 const value_range_equiv *
-vr_values::get_value_range (const_tree var)
+vr_values::get_value_range (const_tree var, gimple *stmt ATTRIBUTE_UNUSED)
 {
   /* If we have no recorded ranges, then return NULL.  */
   if (!vr_value)
@@ -2513,7 +2513,7 @@ simplify_using_ranges::vrp_evaluate_conditional (tree_code code, tree op0,
 	 always fold regardless of the value of OP0.  If -Wtype-limits
 	 was specified, emit a warning.  */
       tree type = TREE_TYPE (op0);
-      const value_range_equiv *vr0 = get_value_range_equiv (op0);
+      const value_range_equiv *vr0 = get_value_range_equiv (op0, stmt);
 
       if (vr0->kind () == VR_RANGE
 	  && INTEGRAL_TYPE_P (type)
@@ -2566,7 +2566,7 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
 	  fprintf (dump_file, "\t");
 	  print_generic_expr (dump_file, use);
 	  fprintf (dump_file, ": ");
-	  dump_value_range (dump_file, store->get_value_range (use));
+	  dump_value_range (dump_file, get_value_range_equiv (use, stmt));
 	}
 
       fprintf (dump_file, "\n");
