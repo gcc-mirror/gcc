@@ -5140,21 +5140,25 @@ proc add_options_for_arm_v8_2a_bf16_neon { flags } {
 #   /* { dg-add-options arm_v8m_main_cde } */
 # The tests are valid for Arm.
 
-foreach { armfunc armflag armdef } {
+foreach { armfunc armflag armdef arminc } {
 	arm_v8m_main_cde
 		"-march=armv8-m.main+cdecp0+cdecp6 -mthumb"
 		"defined (__ARM_FEATURE_CDE)"
+		""
 	arm_v8m_main_cde_fp
 		"-march=armv8-m.main+fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FP)"
+		""
 	arm_v8_1m_main_cde_mve
 		"-march=armv8.1-m.main+mve+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) && defined (__ARM_FEATURE_MVE)"
+		"#include <arm_mve.h>"
 	arm_v8_1m_main_cde_mve_fp
 		"-march=armv8.1-m.main+mve.fp+cdecp0+cdecp6 -mthumb -mfpu=auto"
 		"defined (__ARM_FEATURE_CDE) || __ARM_FEATURE_MVE == 3"
+		"#include <arm_mve.h>"
 	} {
-    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
+    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef INC $arminc ] {
 	proc check_effective_target_FUNC_ok_nocache { } {
 	    global et_FUNC_flags
 	    set et_FUNC_flags ""
@@ -5167,6 +5171,8 @@ foreach { armfunc armflag armdef } {
 		#if !(DEF)
 		#error "DEF failed"
 		#endif
+		#include <arm_cde.h>
+		INC
 	    } "FLAG"] } {
 		    set et_FUNC_flags "FLAG"
 		    return 1
