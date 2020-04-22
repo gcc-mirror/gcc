@@ -4666,9 +4666,8 @@ package body Exp_Ch6 is
 
                procedure Convert (Act : Node_Id; Typ : Entity_Id) is
                begin
-                  Rewrite (Act, OK_Convert_To (Typ, Relocate_Node (Act)));
-                  Analyze (Act);
-                  Resolve (Act, Typ);
+                  Rewrite (Act, OK_Convert_To (Typ, Act));
+                  Analyze_And_Resolve (Act, Typ);
                end Convert;
 
                --  Local variables
@@ -4686,8 +4685,8 @@ package body Exp_Ch6 is
                   Formal_Typ := Etype (Formal);
                   Parent_Typ := Etype (Parent_Formal);
 
-                  --  For an IN parameter of a scalar type, the parent formal
-                  --  type and derived formal type differ or the parent formal
+                  --  For an IN parameter of a scalar type, the derived formal
+                  --  type and parent formal type differ, and the parent formal
                   --  type and actual type do not match statically.
 
                   if Is_Scalar_Type (Formal_Typ)
@@ -4698,15 +4697,6 @@ package body Exp_Ch6 is
                     and then not Raises_Constraint_Error (Actual)
                   then
                      Convert (Actual, Parent_Typ);
-                     Enable_Range_Check (Actual);
-
-                     --  If the actual has been marked as requiring a range
-                     --  check, then generate it here.
-
-                     if Do_Range_Check (Actual) then
-                        Generate_Range_Check
-                          (Actual, Etype (Formal), CE_Range_Check_Failed);
-                     end if;
 
                   --  For access types, the parent formal type and actual type
                   --  differ.
@@ -4728,10 +4718,8 @@ package body Exp_Ch6 is
                         --  inlined.
 
                         Rewrite (Actual,
-                          Unchecked_Convert_To (Parent_Typ,
-                            Relocate_Node (Actual)));
-                        Analyze (Actual);
-                        Resolve (Actual, Parent_Typ);
+                          Unchecked_Convert_To (Parent_Typ, Actual));
+                        Analyze_And_Resolve (Actual, Parent_Typ);
                      end if;
 
                   --  If there is a change of representation, then generate a
