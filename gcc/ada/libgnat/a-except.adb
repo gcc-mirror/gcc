@@ -1660,10 +1660,10 @@ package body Ada.Exceptions is
    ---------------
 
    procedure To_Stderr (C : Character) is
-      procedure Put_Char_Stderr (C : Character);
+      procedure Put_Char_Stderr (C : Integer);
       pragma Import (C, Put_Char_Stderr, "put_char_stderr");
    begin
-      Put_Char_Stderr (C);
+      Put_Char_Stderr (Character'Pos (C));
    end To_Stderr;
 
    procedure To_Stderr (S : String) is
