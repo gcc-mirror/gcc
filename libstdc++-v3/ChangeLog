@@ -1,5 +1,12 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_map.h (__cpp_lib_map_insertion): Remove old
+	macro.
+	* include/bits/unordered_map.h (__cpp_lib_unordered_map_insertion):
+	Likewise.
+	* include/std/version (__cpp_lib_map_insertion)
+	(__cpp_lib_unordered_map_insertion): Remove.
+
 	* include/std/condition_variable (__cpp_lib_jthread): Remove
 	redundant definition.
 	* include/std/stop_token (__cpp_lib_jthread): Update macro value to
