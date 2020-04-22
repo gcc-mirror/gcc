@@ -1,3 +1,8 @@
+2020-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90448
+	* g++.dg/cpp1y/lambda-generic-variadic20.C: New.
+
 2020-04-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/94647
