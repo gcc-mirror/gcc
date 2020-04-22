@@ -174,9 +174,8 @@ protected:
 					  tree name,
 					  const irange *name_range,
 					  tree op, bool op_in_chain);
-  bool optimize_logical_operands (irange &true_range, irange &false_range,
-				  gimple *stmt,
-				  const irange &lhs,
+  bool optimize_logical_operands (tf_range &range,
+				  gimple *stmt, const irange &lhs,
 				  tree name, const irange *name_range,
 				  tree op);
 
