@@ -5,6 +5,21 @@
 
 2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
 
+	* g++.dg/coroutines/torture/local-var-0.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-00-const.C: ...this.
+	* g++.dg/coroutines/torture/local-var-1.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-01-single.C: ...this.
+	* g++.dg/coroutines/torture/local-var-2.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-02-conditional.C: ...this.
+	* g++.dg/coroutines/torture/local-var-3.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-03-with-awaits.C: ...this.
+	* g++.dg/coroutines/torture/local-var-4.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C: this.
+	* g++.dg/coroutines/torture/local-var-5-awaitable.C: Rename to...
+	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this. 
+
+2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
+
 	PR c++/94682
 	* g++.dg/coroutines/promise-parm-preview-this.C: New test.
 
