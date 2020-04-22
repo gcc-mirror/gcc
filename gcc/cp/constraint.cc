@@ -2736,12 +2736,17 @@ static tree
 satisfy_declaration_constraints (tree t, subst_info info)
 {
   gcc_assert (DECL_P (t));
+  const tree saved_t = t;
 
-  if (!DECL_TEMPLATE_INFO (t))
-    /* For inherited constructors without template information, consider
-       the original declaration; it has the correct template information
-       attached.  */
-    t = strip_inheriting_ctors (t);
+  /* For inherited constructors, consider the original declaration;
+     it has the correct template information attached. */
+  t = strip_inheriting_ctors (t);
+  tree inh_ctor_targs = NULL_TREE;
+  if (t != saved_t)
+    if (tree ti = DECL_TEMPLATE_INFO (saved_t))
+      /* The inherited constructor points to an instantiation of a constructor
+	 template; remember its template arguments.  */
+      inh_ctor_targs = TI_ARGS (ti);
 
   /* Update the declaration for diagnostics.  */
   info.in_decl = t;
@@ -2761,6 +2766,8 @@ satisfy_declaration_constraints (tree t, subst_info info)
       /* The initial parameter mapping is the complete set of
 	 template arguments substituted into the declaration.  */
       args = TI_ARGS (ti);
+      if (inh_ctor_targs)
+	args = add_outermost_template_args (args, inh_ctor_targs);
     }
   else
     {

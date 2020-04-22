@@ -1,3 +1,11 @@
+2020-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94719
+	PR c++/94549
+	* constraint.cc (satisfy_declaration_constraints): If the inherited
+	constructor points to an instantiation of a constructor template,
+	remember and use its attached template arguments.
+
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR translation/94698
