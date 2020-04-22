@@ -29,5 +29,5 @@ $ make
 Running the compiler itself - no need to make install
 
 ```
-$ gdb --args ./gcc/grs1 test1.rs -frust-dump-parse -dumpbase test.rs -mtune=generic -march=x86-64 -auxbase-strip test.s -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
+$ gdb --args ./gcc/rust1 test1.rs -frust-dump-parse -dumpbase test.rs -mtune=generic -march=x86-64 -auxbase-strip test.s -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
