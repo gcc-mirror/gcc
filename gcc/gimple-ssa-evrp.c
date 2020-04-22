@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 class evrp_folder : public substitute_and_fold_engine
 {
  public:
-  tree get_value (tree) FINAL OVERRIDE;
+  tree get_value (tree, gimple *) FINAL OVERRIDE;
   evrp_folder (class vr_values *vr_values_)
     : vr_values (vr_values_),
     simplifier (vr_values_) { }
@@ -61,7 +61,7 @@ class evrp_folder : public substitute_and_fold_engine
 };
 
 tree
-evrp_folder::get_value (tree op)
+evrp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 {
   return vr_values->op_with_constant_singleton_value_range (op);
 }
@@ -332,7 +332,7 @@ public:
       }
   }
 
-  tree get_value (tree op)
+  tree get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
   {
     return vr_values->op_with_constant_singleton_value_range (op);
   }
