@@ -1,5 +1,16 @@
 2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
+        * gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: Use arm_hard_ok
+        effective target and arm_v8_1m_mve_fp options.
+        * gcc.target/arm/mve/intrinsics/mve_fp_fpu2.c: Use arm_softfp_ok
+        effective target and arm_v8_1m_mve_fp options.
+        * gcc.target/arm/mve/intrinsics/mve_fpu1.c: Use arm_hard_ok
+        effective target and arm_v8_1m_mve options.
+        * gcc.target/arm/mve/intrinsics/mve_fpu2.c: Use arm_softfp_ok
+        effective target and arm_v8_1m_mve options.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
         * lib/target-supports.exp (arm_softfp_ok): New effective target.
         (arm_hard_ok): Likewise.
 
