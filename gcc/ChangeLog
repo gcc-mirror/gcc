@@ -1,3 +1,9 @@
+2020-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94383
+	* calls.h (cxx17_empty_base_field_p): Declare.
+	* calls.c (cxx17_empty_base_field_p): Define.
+
 2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/sourcebuild.texi (arm_softfp_ok, arm_hard_ok): Document.
