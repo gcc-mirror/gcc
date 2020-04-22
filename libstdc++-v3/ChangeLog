@@ -1,5 +1,32 @@
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/ptr_traits.h (__cpp_lib_constexpr_memory): Define to
+	indicate P1006R1 support.
+	(__cpp_lib_to_address): Define to indicate P0653R2 support.
+	* include/bits/range_access.h (__cpp_lib_ssize): Define to indicate
+	P1227R2 support.
+	* include/bits/ranges_algo.h (__cpp_lib_shift): Define to indicate
+	P0769R2 support.
+	* include/std/atomic (__cpp_lib_atomic_float): Define to indicate
+	P0020R6 support.
+	* include/std/memory (__cpp_lib_assume_aligned): Define to indicate
+	P1007R3 support.
+	* include/std/memory_resource (__cpp_lib_polymorphic_allocator):
+	Define to indicate P0339R6 support.
+	* include/std/string_view (__cpp_lib_starts_ends_with): Define to
+	indicate P0457R2 support.
+	* include/std/type_traits (__cpp_lib_is_nothrow_convertible): Define
+	to indicate P0758R1 support.
+	(__cpp_lib_remove_cvref): Define to indicate P0550R2 support.
+	(__cpp_lib_type_identity): Define to indicate P0887R1 support.
+	* include/std/version (__cpp_lib_atomic_float)
+	(__cpp_lib_is_nothrow_convertible, __cpp_lib_remove_cvref)
+	(__cpp_lib_type_identity, __cpp_lib_assume_aligned)
+	(__cpp_lib_constexpr_memory, __cpp_lib_polymorphic_allocator)
+	(__cpp_lib_shift, __cpp_lib_ssize, __cpp_lib_starts_ends_with)
+	(__cpp_lib_to_address): Define.
+	* testsuite/20_util/to_address/1_neg.cc: Adjust dg-error line number.
+
 	* include/bits/stl_map.h (__cpp_lib_map_insertion): Remove old
 	macro.
 	* include/bits/unordered_map.h (__cpp_lib_unordered_map_insertion):

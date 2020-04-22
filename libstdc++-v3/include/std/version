@@ -161,10 +161,12 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_atomic_value_initialization 201911L
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
+// __cpp_lib_char8_t is defined in <bits/c++config.h>
 #if __cpp_concepts >= 201907L
 # define __cpp_lib_concepts 201806L
 #endif
@@ -176,15 +178,20 @@
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif
+#define __cpp_lib_is_nothrow_convertible 201806L
+#define __cpp_lib_remove_cvref 201711L
+#define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref 201811L
 
 #if _GLIBCXX_HOSTED
+#define __cpp_lib_assume_aligned 201811L
 #define __cpp_lib_bind_front 201907L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_invoke 201907L
+#define __cpp_lib_constexpr_memory 201811L
 #define __cpp_lib_constexpr_numeric 201911L
 #define __cpp_lib_erase_if 202002L
 #define __cpp_lib_interpolate 201902L
@@ -193,13 +200,18 @@
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants 201907L
+#define __cpp_lib_polymorphic_allocator 201902L
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 201911L
 #endif
+#define __cpp_lib_shift 201806L
 #define __cpp_lib_span 202002L
+#define __cpp_lib_ssize 201902L
+#define __cpp_lib_starts_ends_with 201711L
 #if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
 # define __cpp_lib_three_way_comparison 201907L
 #endif
+#define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
 #endif
 #endif // C++2a
