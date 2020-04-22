@@ -9241,14 +9241,15 @@ by @option{-O2} and also turns on the following optimization flags:
 -floop-unroll-and-jam @gol
 -fpeel-loops @gol
 -fpredictive-commoning @gol
+-fsplit-loops @gol
 -fsplit-paths @gol
--ftree-loop-distribute-patterns @gol
 -ftree-loop-distribution @gol
 -ftree-loop-vectorize @gol
 -ftree-partial-pre @gol
 -ftree-slp-vectorize @gol
 -funswitch-loops @gol
 -fvect-cost-model @gol
+-fvect-cost-model=dynamic @gol
 -fversion-loops-for-strides}
 
 @item -O0
