@@ -1,3 +1,10 @@
+2020-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94546
+	* pt.c (register_parameter_specializations): If the instantiation is
+	still a parameter pack, don't wrap it in a NONTYPE_ARGUMENT_PACK.
+	(tsubst_pack_expansion, tsubst_expr): Adjust.
+
 2020-04-22  Martin Sebor  <msebor@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
