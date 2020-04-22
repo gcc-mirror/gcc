@@ -1,5 +1,19 @@
 2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
+        * gcc.target/arm/mve/intrinsics/mve_vector_float.c: Use
+        arm_v8_1m_mve_fp.
+        * gcc.target/arm/mve/intrinsics/mve_vector_float1.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_int.c: Use
+        arm_v8_1m_mve.
+        * gcc.target/arm/mve/intrinsics/mve_vector_int1.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_int2.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+        * gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+
+2020-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
         * gcc.target/arm/mve/intrinsics/mve_move_gpr_to_gpr.c: Remove
         useless options.
 
