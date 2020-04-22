@@ -1,3 +1,10 @@
+2020-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94700
+	* tree-ssa-forwprop.c (simplify_vector_constructor): When processing
+	an identity constructor, use a VIEW_CONVERT_EXPR to handle mixtures
+	of similarly-structured but distinct vector types.
+
 2020-04-21  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/94647

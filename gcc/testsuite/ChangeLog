@@ -1,3 +1,8 @@
+2020-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94700
+	* gcc.target/aarch64/sve/acle/general/pr94700.c: New test.
+
 2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR c++/94682
