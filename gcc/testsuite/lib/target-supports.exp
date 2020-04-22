@@ -4965,6 +4965,7 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
 	    #if __ARM_BIG_ENDIAN
 	    #error "MVE intrinsics are not supported in Big-Endian mode."
 	    #endif
+	    #include <arm_mve.h>
         } "$flags -mthumb"] } {
             set et_arm_v8_1m_mve_flags "$flags -mthumb --save-temps"
             return 1
