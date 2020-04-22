@@ -1,3 +1,7 @@
+2020-04-30  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/emmintrin.h (_mm_movemask_epi8): Fix comment.
+
 2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from master
