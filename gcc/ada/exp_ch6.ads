@@ -102,6 +102,9 @@ package Exp_Ch6 is
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names
    --  for build-in-place formal parameters of the given kind.
 
+   function BIP_Suffix_Kind (E : Entity_Id) return BIP_Formal_Kind;
+   --  Ada 2005 (AI-318-02): Returns the kind of the given BIP extra formal.
+
    function Build_In_Place_Formal
      (Func : Entity_Id;
       Kind : BIP_Formal_Kind) return Entity_Id;
@@ -116,6 +119,9 @@ package Exp_Ch6 is
    --  Func_Body is the root of the body of the function before its analysis.
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
+
+   function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 
    function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if functions returning the type use

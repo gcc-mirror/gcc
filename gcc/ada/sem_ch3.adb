@@ -15539,6 +15539,15 @@ package body Sem_Ch3 is
       while Present (Formal) loop
          New_Formal := New_Copy (Formal);
 
+         --  Extra formals are not inherited from a limited interface parent
+         --  since limitedness is not inherited in such case (AI-419) and this
+         --  affects the extra formals.
+
+         if Is_Limited_Interface (Parent_Type) then
+            Set_Extra_Formal (New_Formal, Empty);
+            Set_Extra_Accessibility (New_Formal, Empty);
+         end if;
+
          --  Normally we do not go copying parents, but in the case of
          --  formals, we need to link up to the declaration (which is the
          --  parameter specification), and it is fine to link up to the
@@ -15558,14 +15567,19 @@ package body Sem_Ch3 is
       end loop;
 
       --  Extra formals are shared between the parent subprogram and the
-      --  derived subprogram (implicit in the above copy of formals), and
-      --  hence we must inherit also the reference to the first extra formal.
+      --  derived subprogram (implicit in the above copy of formals), unless
+      --  the parent type is a limited interface type; hence we must inherit
+      --  also the reference to the first extra formal. When the parent type is
+      --  an interface the extra formals will be added when the subprogram is
+      --  frozen (see Freeze.Freeze_Subprogram).
 
-      Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
+      if not Is_Limited_Interface (Parent_Type) then
+         Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
 
-      if Ekind (New_Subp) = E_Function then
-         Set_Extra_Accessibility_Of_Result (New_Subp,
-           Extra_Accessibility_Of_Result (Parent_Subp));
+         if Ekind (New_Subp) = E_Function then
+            Set_Extra_Accessibility_Of_Result (New_Subp,
+              Extra_Accessibility_Of_Result (Parent_Subp));
+         end if;
       end if;
 
       --  If this derivation corresponds to a tagged generic actual, then
