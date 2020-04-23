@@ -1,5 +1,12 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_map.h (__cpp_lib_map_insertion): Add comment to
+	non-standard macro.
+	* include/bits/unordered_map.h (__cpp_lib_unordered_map_insertion):
+	Likewise.
+	* include/std/version (__cpp_lib_map_insertion)
+	(__cpp_lib_unordered_map_insertion): Likewise.
+
 	* include/std/bit (__cpp_lib_int_pow2): Define to indicate P0556R3
 	support.
 	* include/std/version (__cpp_lib_int_pow2): Likewise.

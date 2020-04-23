@@ -892,7 +892,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ _M_t._M_insert_range_unique(__first, __last); }
 
 #if __cplusplus > 201402L
-#define __cpp_lib_map_insertion 201411
+#define __cpp_lib_map_insertion 201411 // non-standard macro
       /**
        *  @brief Attempts to insert or assign a std::pair into the %map.
        *  @param __k    Key to use for finding a possibly existing pair in
