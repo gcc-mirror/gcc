@@ -5559,6 +5559,8 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       if (shift_amt)
 	{
 	  struct expand_operand ops[3];
+	  if (shift_amt == const0_rtx)
+	    return v0;
 	  if (shift_code != CODE_FOR_nothing)
 	    {
 	      create_output_operand (&ops[0], target, mode);
