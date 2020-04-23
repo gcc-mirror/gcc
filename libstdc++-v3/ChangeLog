@@ -1,5 +1,7 @@
-2020-04-20  Thomas Rodgers  <trodgers@redhat.com>
+2020-04-23  Thomas Rodgers  <trodgers@redhat.com>
 
+	Backport from mainline
+	2020-04-20  Thomas Rodgers  <trodgers@redhat.com>
 	* testsuite/lib/libstdc++.exp: Add additional_flags=
 	-DTBB_SUPRESS_DEPRECATED_MESSAGES=1 to suppress warnings when
 	compiling with a newer Thread Building Blocks.
