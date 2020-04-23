@@ -1,3 +1,9 @@
+2020-04-28  Alexandre Oliva <oliva@adacore.com>
+
+	PR target/94812
+	* gcc/config/rs6000/rs6000.md (rs6000_mffsl): Copy result to
+	output operand in emulation.  Don't overwrite pseudos.
+
 2020-04-28  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (H8/SX mult patterns): All H8/SX specific

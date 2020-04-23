@@ -1,3 +1,10 @@
+2020-04-28  Alexandre Oliva <oliva@adacore.com>
+
+	PR target/94812
+	* gcc.target/powerpc/test_mffsl.c: Call mffsl only once.
+	Reinterpret the doubles as long longs for compares.  Mask out
+	mffs bits that are not expected from mffsl.
+
 2020-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94816
