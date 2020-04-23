@@ -1,3 +1,13 @@
+2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94288
+	* g++.dg/coroutines/torture/co-await-18-if-cond.C: New test.
+	* g++.dg/coroutines/torture/co-await-19-while-cond.C: New test.
+	* g++.dg/coroutines/torture/co-await-20-do-while-cond.C: New test.
+	* g++.dg/coroutines/torture/co-await-21-switch-value.C: New test.
+	* g++.dg/coroutines/torture/co-await-22-truth-and-of-if.C: New test.
+	* g++.dg/coroutines/torture/co-ret-16-simple-control-flow.C: New test.
+
 2020-04-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94733
