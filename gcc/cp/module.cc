@@ -5758,52 +5758,6 @@ trees_out::core_vals (tree t)
       WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
-    {
-      tree type = t->typed.type;
-      unsigned prec = 0;
-
-      switch (code)
-	{
-	default:
-	  break;
-
-	case TEMPLATE_DECL:
-	  /* We fill in the template's type separately.  */
-	  type = NULL_TREE;
-	  break;
-
-	case TYPE_DECL:
-	  if (DECL_ORIGINAL_TYPE (t) && t == TYPE_NAME (type))
-	    /* This is a typedef.  We set its type separately.  */
-	    type = NULL_TREE;
-	  break;
-
-	case ENUMERAL_TYPE:
-	  if (type && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
-	    {
-	      /* Type is a restricted range integer type derived from the
-		 integer_types.  Find the right one.  */
-	      prec = TYPE_PRECISION (type);
-	      tree name = DECL_NAME (TYPE_NAME (type));
-
-	      for (unsigned itk = itk_none; itk--;)
-		if (integer_types[itk]
-		    && DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
-		  {
-		    type = integer_types[itk];
-		    break;
-		  }
-	      gcc_assert (type != t->typed.type);
-	    }
-	  break;
-	}
-
-      WT (type);
-      if (prec && streaming_p ())
-	WU (prec);
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
       if (streaming_p ())
@@ -6190,6 +6144,60 @@ trees_out::core_vals (tree t)
       break;
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    {
+      /* We want to stream the type of a expression-like nodes /after/
+         we've streamed the operands.  The type often contains (bits
+         of the) types of the operands, and with things like decltype
+         and noexcept in play, we really want to stream the decls
+         defining the type before we try and stream the type on its
+         own.  Otherwise we can find ourselves trying to read in a
+         decl, when we're already partially reading in a component of
+         its type.  And that's bad.  */
+      tree type = t->typed.type;
+      unsigned prec = 0;
+
+      switch (code)
+	{
+	default:
+	  break;
+
+	case TEMPLATE_DECL:
+	  /* We fill in the template's type separately.  */
+	  type = NULL_TREE;
+	  break;
+
+	case TYPE_DECL:
+	  if (DECL_ORIGINAL_TYPE (t) && t == TYPE_NAME (type))
+	    /* This is a typedef.  We set its type separately.  */
+	    type = NULL_TREE;
+	  break;
+
+	case ENUMERAL_TYPE:
+	  if (type && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
+	    {
+	      /* Type is a restricted range integer type derived from the
+		 integer_types.  Find the right one.  */
+	      prec = TYPE_PRECISION (type);
+	      tree name = DECL_NAME (TYPE_NAME (type));
+
+	      for (unsigned itk = itk_none; itk--;)
+		if (integer_types[itk]
+		    && DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
+		  {
+		    type = integer_types[itk];
+		    break;
+		  }
+	      gcc_assert (type != t->typed.type);
+	    }
+	  break;
+	}
+
+      WT (type);
+      if (prec && streaming_p ())
+	WU (prec);
+    }
+
 #undef WT
 #undef WU
 }
@@ -6238,24 +6246,6 @@ trees_in::core_vals (tree t)
       RT (t->type_common.attributes);
 
       RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
-    {
-      tree type = tree_node ();
-
-      if (type && code == ENUMERAL_TYPE && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
-	{
-	  unsigned precision = u ();
-
-	  type = build_distinct_type_copy (type);
-	  TYPE_PRECISION (type) = precision;
-	  set_min_and_max_values_for_integral_type (type, precision,
-						    TYPE_SIGN (type));
-	}
-
-      if (code != TEMPLATE_DECL)
-	t->typed.type = type;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
@@ -6599,6 +6589,24 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->trait_expression.type2);
       RUC (cp_trait_kind, ((lang_tree_node *)t)->trait_expression.kind);
       break;
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    {
+      tree type = tree_node ();
+
+      if (type && code == ENUMERAL_TYPE && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
+	{
+	  unsigned precision = u ();
+
+	  type = build_distinct_type_copy (type);
+	  TYPE_PRECISION (type) = precision;
+	  set_min_and_max_values_for_integral_type (type, precision,
+						    TYPE_SIGN (type));
+	}
+
+      if (code != TEMPLATE_DECL)
+	t->typed.type = type;
     }
 
 #undef RT
