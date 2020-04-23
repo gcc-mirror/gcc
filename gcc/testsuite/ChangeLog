@@ -1,4 +1,9 @@
-2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
+2020-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	* gfortran.dg/pointer_assign_13.f90: New test.
+
+	2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: Adjust for
 	changed inline namespace.
