@@ -702,7 +702,8 @@ decl_attributes (tree *node, tree attributes, int flags,
       bool built_in = flags & ATTR_FLAG_BUILT_IN;
       if (spec->exclude
 	  && !no_add_attrs
-	  && (flag_checking || !built_in))
+	  && (flag_checking || !built_in)
+	  && !error_operand_p (last_decl))
 	{
 	  /* Always check attributes on user-defined functions.
 	     Check them on built-ins only when -fchecking is set.
