@@ -1,3 +1,9 @@
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94705
+	* attribs.c (decl_attribute): Don't diagnose attribute exclusions
+	if last_decl is error_mark_node or has such a TREE_TYPE.
+
 2020-04-22  Felix Yang  <felix.yang@huawei.com>
 
 	PR target/94678
