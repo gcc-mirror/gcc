@@ -1,3 +1,9 @@
+2020-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94645
+	* pt.c (template_class_depth): Walk into the DECL_FRIEND_CONTEXT of a
+	friend declaration rather than into its CP_DECL_CONTEXT.
+
 2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR c++/94288

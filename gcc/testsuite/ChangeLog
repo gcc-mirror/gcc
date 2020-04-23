@@ -1,3 +1,8 @@
+2020-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94645
+	* g++.dg/cpp2a/concepts-lambda6.C: New test.
+
 2019-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/opt/store-merging-4.C: New test.
