@@ -1,3 +1,12 @@
+2020-04-23  Thomas Rodgers  <rodgert@appliantology.com>
+
+	Backport from mainline
+	2020-04-23  Thomas Rodgers  <rodgert@appliantology.com>
+	* include/experimental/net/executor (system_context): Mark
+	system_context::system_context() = delete.
+	* testsuite/experimental/net/executor/1.cc: Add new
+	test to check system_context is not default constructible.
+
 2020-04-23  Thomas Rodgers  <trodgers@redhat.com>
 
 	Backport from mainline
