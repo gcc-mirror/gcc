@@ -165,6 +165,7 @@
 // c++2a
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
+// __cpp_lib_char8_t is defined in <bits/c++config.h>
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif
@@ -173,14 +174,22 @@
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif
+#define __cpp_lib_is_nothrow_convertible 201806L
+#define __cpp_lib_remove_cvref 201711L
+#define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref 201811L
 
 #if _GLIBCXX_HOSTED
+#define __cpp_lib_assume_aligned 201811L
 #define __cpp_lib_bind_front 201907L
 #define __cpp_lib_constexpr_complex 201711L
+#define __cpp_lib_constexpr_memory 201811L
 #define __cpp_lib_erase_if 202002L
 #define __cpp_lib_interpolate 201902L
 #define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_polymorphic_allocator 201902L
+#define __cpp_lib_starts_ends_with 201711L
+#define __cpp_lib_to_address 201711L
 #endif
 #endif // C++2a
 #endif // C++17
