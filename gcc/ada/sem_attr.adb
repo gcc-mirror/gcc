@@ -6274,9 +6274,9 @@ package body Sem_Attr is
          if Is_OK_Static_Expression (E1) then
             Val := Expr_Value (E1);
 
-            if Val < -(2 ** UI_From_Int (Standard'Address_Size - 1))
+            if Val < -(Uint_2 ** (System_Address_Size - 1))
                  or else
-               Val > 2 ** UI_From_Int (Standard'Address_Size) - 1
+               Val > Uint_2 ** System_Address_Size - 1
             then
                Error_Attr ("address value out of range for % attribute", E1);
             end if;
@@ -6293,7 +6293,7 @@ package body Sem_Attr is
             elsif Val < 0 then
                Set_Etype (E1, Universal_Integer);
 
-            --  Otherwise set type to Unsigned_64 to accommodate max values
+            --  Otherwise set type to Unsigned_64 to accommodate large values
 
             else
                Set_Etype (E1, Standard_Unsigned_64);
