@@ -1,3 +1,12 @@
+2020-04-23  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94383
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Account for C++17
+	empty base class artificial fields.
+	(aarch64_vfp_is_call_or_return_candidate): Warn when ABI PCS decision is
+	different after this fix.
+
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94707
