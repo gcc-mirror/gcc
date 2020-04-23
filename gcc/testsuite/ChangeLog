@@ -1,3 +1,10 @@
+2020-04-23  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/90983
+	* gcc.dg/Wframe-larger-than-3.c: New test.
+	* gcc.dg/Wlarger-than4.c: New test.
+	* gcc.dg/Wstack-usage.c: New test.
+
 2020-04-23  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/cpp0x/dependent3.C: New test.
