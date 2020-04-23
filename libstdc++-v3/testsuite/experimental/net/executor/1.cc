@@ -85,9 +85,16 @@ test02()
   VERIFY( e == g );
 }
 
+void
+test03()
+{
+  static_assert( ! std::is_default_constructible<net::system_context>::value, "" );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

@@ -850,7 +850,7 @@ inline namespace v1
 
     // construct / copy / destroy:
 
-    system_context() = default;
+    system_context() = delete;
     system_context(const system_context&) = delete;
     system_context& operator=(const system_context&) = delete;
 

@@ -14,6 +14,13 @@
 	* include/std/version (__cpp_lib_three_way_comparison): Define for
 	freestanding builds.
 
+2020-04-23  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/experimental/net/executor (system_context): Mark
+	system_context::system_context() = delete.
+	* testsuite/experimental/net/executor/1.cc: Add new
+	test to check system_context is not default constructible.
+
 2020-04-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/std/coroutine: Update the inline namespace to __n4861.
