@@ -1,3 +1,10 @@
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* config/rs6000/rs6000-call.c (rs6000_discover_homogeneous_aggregate):
+	Use TYPE_UID (TYPE_MAIN_VARIANT (type)) instead of type to check
+	if the same type has been diagnosed most recently already.
+
 2020-04-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* config/arm/arm_mve.h (__arm_vbicq_n_u16): Modify function parameter's

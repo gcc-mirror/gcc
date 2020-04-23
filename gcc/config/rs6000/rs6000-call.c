@@ -5739,14 +5739,15 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 		*n_elts = field_count;
 	      if (cxx17_empty_base_seen && warn_psabi)
 		{
-		  static const_tree last_reported_type;
-		  if (type != last_reported_type)
+		  static unsigned last_reported_type_uid;
+		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+		  if (uid != last_reported_type_uid)
 		    {
 		      inform (input_location,
 			      "parameter passing for argument of type %qT "
 			      "when C++17 is enabled changed to match C++14 "
 			      "in GCC 10.1", type);
-		      last_reported_type = type;
+		      last_reported_type_uid = uid;
 		    }
 		}
 	      return true;
