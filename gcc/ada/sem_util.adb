@@ -24237,6 +24237,18 @@ package body Sem_Util is
       elsif Nkind (Orig_Obj) = N_Aggregate then
          return Object_Access_Level (Current_Scope);
 
+      --  Treat an Old/Loop_Entry attribute reference like an aggregate.
+      --  AARM 6.1.1(27.d) says "... the implicit constant declaration
+      --  defines the accessibility level of X'Old", so that is what
+      --  we are trying to implement here.
+
+      elsif Nkind (Orig_Obj) = N_Attribute_Reference
+        and then Nam_In (Attribute_Name (Orig_Obj),
+                         Name_Old,
+                         Name_Loop_Entry)
+      then
+         return Object_Access_Level (Current_Scope);
+
       --  Otherwise return the scope level of Standard. (If there are cases
       --  that fall through to this point they will be treated as having
       --  global accessibility for now. ???)
