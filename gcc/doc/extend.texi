@@ -17633,7 +17633,7 @@ subject to change without notice.
 
 GCC complies with the OpenPOWER 64-Bit ELF V2 ABI Specification,
 which may be found at
-@uref{http://openpowerfoundation.org/wp-content/uploads/resources/leabi-prd/content/index.html}.
+@uref{https://openpowerfoundation.org/?resource_lib=64-bit-elf-v2-abi-specification-power-architecture}.
 Appendix A of this document lists the vector API interfaces that must be
 provided by compliant compilers.  Programmers should preferentially use
 the interfaces described therein.  However, historically GCC has provided
