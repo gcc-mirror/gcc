@@ -1,3 +1,8 @@
+2020-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94727
+	* gcc.dg/vect/pr94727.c: New test.
+
 2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94514

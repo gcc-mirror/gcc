@@ -10566,8 +10566,11 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* Invariant comparison.  */
   if (!vectype)
     {
-      vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1),
-					     slp_node);
+      if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs1)))
+	vectype = mask_type;
+      else
+	vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1),
+					       slp_node);
       if (!vectype || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype), nunits))
 	return false;
     }
