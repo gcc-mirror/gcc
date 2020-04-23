@@ -2531,6 +2531,19 @@ package body Exp_Attr is
          end if;
       end Alignment;
 
+      ---------------------------
+      -- Asm_Input, Asm_Output --
+      ---------------------------
+
+      --  The Asm_Input and Asm_Output attributes are not expanded at this
+      --  stage, but will be eliminated in the expansion of the Asm call,
+      --  see Exp_Intr for details. So the back end will never see them.
+
+      when Attribute_Asm_Input
+         | Attribute_Asm_Output
+      =>
+         null;
+
       ---------
       -- Bit --
       ---------
@@ -2796,6 +2809,15 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Id_Kind);
       end Caller;
 
+      --------------------
+      -- Component_Size --
+      --------------------
+
+      --  Component_Size is handled by the back end
+
+      when Attribute_Component_Size =>
+         Apply_Universal_Integer_Attribute_Checks (N);
+
       -------------
       -- Compose --
       -------------
@@ -2999,7 +3021,7 @@ package body Exp_Attr is
       -- Descriptor_Size --
       ---------------------
 
-      --  Attribute Descriptor_Size is handled by the back end
+      --  Descriptor_Size is handled by the back end
 
       when Attribute_Descriptor_Size =>
          Apply_Universal_Integer_Attribute_Checks (N);
@@ -7444,40 +7466,17 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
       end Write;
 
-      --  Component_Size is handled by the back end, unless the component size
-      --  is known at compile time, which is always true in the packed array
-      --  case. It is important that the packed array case is handled in the
-      --  front end (see Eval_Attribute) since the back end would otherwise get
-      --  confused by the equivalent packed array type.
-
-      when Attribute_Component_Size =>
-         null;
-
       --  The following attributes are handled by the back end (except that
       --  static cases have already been evaluated during semantic processing,
       --  but in any case the back end should not count on this).
 
-      --  The back end also handles the non-class-wide cases of Size
-
-      when Attribute_Bit_Order
-         | Attribute_Code_Address
-         | Attribute_Definite
+      when Attribute_Code_Address
          | Attribute_Deref
          | Attribute_Null_Parameter
          | Attribute_Passed_By_Reference
          | Attribute_Pool_Address
-         | Attribute_Scalar_Storage_Order
       =>
          null;
-
-      --  The following attributes are also handled by the back end, but return
-      --  a universal integer result, so may need a conversion for checking
-      --  that the result is in range.
-
-      when Attribute_Aft
-         | Attribute_Max_Alignment_For_Allocation
-      =>
-         Apply_Universal_Integer_Attribute_Checks (N);
 
       --  The following attributes should not appear at this stage, since they
       --  have already been handled by the analyzer (and properly rewritten
@@ -7485,12 +7484,15 @@ package body Exp_Attr is
 
       when Attribute_Abort_Signal
          | Attribute_Address_Size
+         | Attribute_Aft
          | Attribute_Atomic_Always_Lock_Free
          | Attribute_Base
+         | Attribute_Bit_Order
          | Attribute_Class
          | Attribute_Compiler_Version
          | Attribute_Default_Bit_Order
          | Attribute_Default_Scalar_Storage_Order
+         | Attribute_Definite
          | Attribute_Delta
          | Attribute_Denorm
          | Attribute_Digits
@@ -7512,6 +7514,7 @@ package body Exp_Attr is
          | Attribute_Machine_Overflows
          | Attribute_Machine_Radix
          | Attribute_Machine_Rounds
+         | Attribute_Max_Alignment_For_Allocation
          | Attribute_Maximum_Alignment
          | Attribute_Model_Emin
          | Attribute_Model_Epsilon
@@ -7526,6 +7529,7 @@ package body Exp_Attr is
          | Attribute_Safe_Large
          | Attribute_Safe_Last
          | Attribute_Safe_Small
+         | Attribute_Scalar_Storage_Order
          | Attribute_Scale
          | Attribute_Signed_Zeros
          | Attribute_Small
@@ -7541,15 +7545,6 @@ package body Exp_Attr is
          | Attribute_Word_Size
       =>
          raise Program_Error;
-
-      --  The Asm_Input and Asm_Output attributes are not expanded at this
-      --  stage, but will be eliminated in the expansion of the Asm call, see
-      --  Exp_Intr for details. So the back end will never see these either.
-
-      when Attribute_Asm_Input
-         | Attribute_Asm_Output
-      =>
-         null;
       end case;
 
    --  Note: as mentioned earlier, individual sections of the above case
