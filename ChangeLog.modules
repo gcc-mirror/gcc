@@ -1,5 +1,12 @@
 2020-04-23  Nathan Sidwell  <nathan@acm.org>
 
+	Stream definitions after decls.
+	gcc/cp
+	* module.cc (module_state::write_cluster): Break out definition
+	streaming to separate loop.
+	gcc/testsuite/
+	* g++.dg/modules/member-def-[12]_c.C: Adjust scans, oh for CHECK-DAG.
+
 	Stream node types last
 	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Move type streaming to

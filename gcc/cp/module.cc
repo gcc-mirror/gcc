@@ -13975,9 +13975,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   /* We're done importing now.  */
   sec.set_importing (-1);
 
-  depset *namer = NULL;
-
-  /* Write things out.  */
+  /* Write non-definitions.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -14051,7 +14049,24 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  dump () && dump ("Wrote declaration entity:%u %C:%N",
 			   b->cluster, TREE_CODE (decl), decl);
+	  break;
+	}
+    }
 
+  depset *namer = NULL;
+
+  /* Write out definitions  */
+  for (unsigned ix = 0; ix != size; ix++)
+    {
+      depset *b = scc[ix];
+      tree decl = b->get_entity ();
+      switch (b->get_entity_kind ())
+	{
+	default:
+	  break;
+
+	case depset::EK_SPECIALIZATION:
+	case depset::EK_DECL:
 	  if (!namer)
 	    namer = b;
 
@@ -14062,7 +14077,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	      dump () && dump ("Writing definition %N", decl);
 	      sec.write_definition (decl);
 
-	      /* Is this a good enough human name?  */
 	      if (!namer->has_defn ())
 		namer = b;
 	    }
