@@ -1,3 +1,9 @@
+2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* g++.target/aarch64/pr94514.C: Require lp64.
+	* gcc.target/aarch64/pr94514.c: Likewise.
+
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94707
