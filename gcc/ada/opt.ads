@@ -915,7 +915,7 @@ package Opt is
    Leap_Seconds_Support : Boolean := False;
    --  GNATBIND
    --  Set to True to enable leap seconds support in Ada.Calendar and its
-   --  children.
+   --  children. Set by -y.
 
    Legacy_Elaboration_Checks : Boolean := False;
    --  GNAT
@@ -1006,6 +1006,10 @@ package Opt is
    --  Set to True if symbols for preprocessing a source are to be listed
    --  before preprocessing occurs. Set to True by switch -s of gnatprep or
    --  -s in preprocessing data file for the compiler.
+
+   XDR_Stream : Boolean := False;
+   --  GNATBIND
+   --  Set to True to enable XDR in s-stratt.adb. Set by -xdr.
 
    type Create_Repinfo_File_Proc is access procedure (Src  : String);
    type Write_Repinfo_Line_Proc  is access procedure (Info : String);

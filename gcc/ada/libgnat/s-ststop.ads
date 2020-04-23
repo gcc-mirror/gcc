@@ -60,8 +60,8 @@
 --  Note that if System.Stream_Attributes.Block_IO_OK is False, then the BLK_IO
 --  form is treated as equivalent to the normal case, so that the optimization
 --  is inhibited anyway, regardless of the setting of the restriction. This
---  handles versions of System.Stream_Attributes (in particular the XDR version
---  found in s-stratt-xdr) which do not permit block io optimization.
+--  handles the XDR implementation of System.Stream_Attributes in particular
+--  which does not permit block io optimization.
 
 pragma Compiler_Unit_Warning;
 

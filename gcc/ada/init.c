@@ -122,6 +122,7 @@ int   __gl_default_stack_size            = -1;
 int   __gl_leap_seconds_support          = 0;
 int   __gl_canonical_streams             = 0;
 char *__gl_bind_env_addr                 = NULL;
+int   __gl_xdr_stream                    = 0;
 
 /* This value is not used anymore, but kept for bootstrapping purpose.  */
 int   __gl_zero_cost_exceptions          = 0;

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---             S Y S T E M . S T R E A M _ A T T R I B U T E S              --
+--          S Y S T E M . S T R E A M _ A T T R I B U T E S . X D R         --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,20 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This file is an alternate version of s-stratt.adb based on the XDR
---  standard. It is especially useful for exchanging streams between two
---  different systems with different basic type representations and endianness.
-
-pragma Warnings (Off, "*not allowed in compiler unit");
---  This body is used only when rebuilding the runtime library, not when
---  building the compiler, so it's OK to depend on features that would
---  otherwise break bootstrap (e.g. IF-expressions).
-
 with Ada.IO_Exceptions;
 with Ada.Streams;              use Ada.Streams;
 with Ada.Unchecked_Conversion;
 
-package body System.Stream_Attributes is
+package body System.Stream_Attributes.XDR is
 
    pragma Suppress (Range_Check);
    pragma Suppress (Overflow_Check);
@@ -68,19 +59,16 @@ package body System.Stream_Attributes is
    subtype SEA is Ada.Streams.Stream_Element_Array;
    subtype SEO is Ada.Streams.Stream_Element_Offset;
 
-   generic function UC renames Ada.Unchecked_Conversion;
-
-   type Field_Type is
-      record
-         E_Size       : Integer; --  Exponent bit size
-         E_Bias       : Integer; --  Exponent bias
-         F_Size       : Integer; --  Fraction bit size
-         E_Last       : Integer; --  Max exponent value
-         F_Mask       : SE;      --  Mask to apply on first fraction byte
-         E_Bytes      : SEO;     --  N. of exponent bytes completely used
-         F_Bytes      : SEO;     --  N. of fraction bytes completely used
-         F_Bits       : Integer; --  N. of bits used on first fraction word
-      end record;
+   type Field_Type is record
+      E_Size       : Integer; --  Exponent bit size
+      E_Bias       : Integer; --  Exponent bias
+      F_Size       : Integer; --  Fraction bit size
+      E_Last       : Integer; --  Max exponent value
+      F_Mask       : SE;      --  Mask to apply on first fraction byte
+      E_Bytes      : SEO;     --  N. of exponent bytes completely used
+      F_Bytes      : SEO;     --  N. of fraction bytes completely used
+      F_Bits       : Integer; --  N. of bits used on first fraction word
+   end record;
 
    type Precision is (Single, Double, Quadruple);
 
@@ -255,8 +243,8 @@ package body System.Stream_Attributes is
    type XDR_TM is mod BB ** TM_L;
 
    type XDR_SA is mod 2 ** Standard'Address_Size;
-   function To_XDR_SA is new UC (System.Address, XDR_SA);
-   function To_XDR_SA is new UC (XDR_SA, System.Address);
+   function To_XDR_SA is new Ada.Unchecked_Conversion (System.Address, XDR_SA);
+   function To_XDR_SA is new Ada.Unchecked_Conversion (XDR_SA, System.Address);
 
    --  Enumerations have the same representation as signed integers.
    --  Enumerations are handy for describing subsets of the integers.
@@ -298,19 +286,6 @@ package body System.Stream_Attributes is
 
    Optimize_Integers : constant Boolean :=
      Default_Bit_Order = High_Order_First;
-
-   -----------------
-   -- Block_IO_OK --
-   -----------------
-
-   --  We must inhibit Block_IO, because in XDR mode, each element is output
-   --  according to XDR requirements, which is not at all the same as writing
-   --  the whole array in one block.
-
-   function Block_IO_OK return Boolean is
-   begin
-      return False;
-   end Block_IO_OK;
 
    ----------
    -- I_AD --
@@ -1485,7 +1460,7 @@ package body System.Stream_Attributes is
 
    procedure W_LI (Stream : not null access RST; Item : Long_Integer) is
       S : XDR_S_LI;
-      U : Unsigned;
+      U : Unsigned := 0;
       X : Long_Unsigned;
 
    begin
@@ -1629,7 +1604,7 @@ package body System.Stream_Attributes is
       Item   : Long_Long_Integer)
    is
       S : XDR_S_LLI;
-      U : Unsigned;
+      U : Unsigned := 0;
       X : Long_Long_Unsigned;
 
    begin
@@ -1677,7 +1652,7 @@ package body System.Stream_Attributes is
       Item   : Long_Long_Unsigned)
    is
       S : XDR_S_LLU;
-      U : Unsigned;
+      U : Unsigned := 0;
       X : Long_Long_Unsigned := Item;
 
    begin
@@ -1714,7 +1689,7 @@ package body System.Stream_Attributes is
 
    procedure W_LU (Stream : not null access RST; Item : Long_Unsigned) is
       S : XDR_S_LU;
-      U : Unsigned;
+      U : Unsigned := 0;
       X : Long_Unsigned := Item;
 
    begin
@@ -2032,4 +2007,4 @@ package body System.Stream_Attributes is
       end if;
    end W_WWC;
 
-end System.Stream_Attributes;
+end System.Stream_Attributes.XDR;

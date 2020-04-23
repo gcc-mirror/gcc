@@ -707,6 +707,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-stopoo$(objext) \
   s-stposu$(objext) \
   s-stratt$(objext) \
+  s-statxd$(objext) \
   s-strhas$(objext) \
   s-string$(objext) \
   s-ststop$(objext) \

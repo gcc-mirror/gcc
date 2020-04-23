@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---             S Y S T E M . S T R E A M _ A T T R I B U T E S              --
+--          S Y S T E M . S T R E A M _ A T T R I B U T E S . X D R         --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,71 +29,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the implementations of the stream attributes for
---  elementary types. These are the subprograms that are directly accessed
---  by occurrences of the stream attributes where the type is elementary.
+--  This package contains alternate implementations of the stream attributes
+--  for elementary types based on the XDR standard. These are the subprograms
+--  that are directly accessed by occurrences of the stream attributes where
+--  the type is elementary.
+
+--  It is especially useful for exchanging streams between two different
+--  systems with different basic type representations and endianness.
 
 --  We only provide the subprograms for the standard base types. For user
 --  defined types, the subprogram for the corresponding root type is called
 --  with an appropriate conversion.
 
-with System;
-with System.Unsigned_Types;
-with Ada.Streams;
-
-package System.Stream_Attributes is
+package System.Stream_Attributes.XDR is
    pragma Preelaborate;
 
-   pragma Suppress (Accessibility_Check, Stream_Attributes);
+   pragma Suppress (Accessibility_Check, XDR);
    --  No need to check accessibility on arguments of subprograms
-
-   package UST renames System.Unsigned_Types;
-
-   subtype RST is Ada.Streams.Root_Stream_Type'Class;
-
-   subtype SEC is Ada.Streams.Stream_Element_Count;
-
-   type Integer_24 is range -2 ** 23 .. 2 ** 23 - 1;
-   for Integer_24'Size use 24;
-
-   type Unsigned_24 is mod 2 ** 24;
-   for Unsigned_24'Size use 24;
-
-   --  Enumeration types are usually transferred using the routine for the
-   --  corresponding integer. The exception is that special routines are
-   --  provided for Boolean and the character types, in case the protocol
-   --  in use provides specially for these types.
-
-   --  Access types use either a thin pointer (single address) or fat pointer
-   --  (double address) form. The following types are used to hold access
-   --  values using unchecked conversions.
-
-   type Thin_Pointer is record
-      P1 : System.Address;
-   end record;
-
-   type Fat_Pointer is record
-      P1 : System.Address;
-      P2 : System.Address;
-   end record;
-
-   ------------------------------------
-   -- Treatment of enumeration types --
-   ------------------------------------
-
-   --  In this interface, there are no specific routines for general input
-   --  or output of enumeration types. Generally, enumeration types whose
-   --  representation is unsigned (no negative representation values) are
-   --  treated as unsigned integers, and enumeration types that do have
-   --  negative representation values are treated as signed integers.
-
-   --  An exception is that there are specialized routines for Boolean,
-   --  Character, and Wide_Character types, but these specialized routines
-   --  are used only if the type in question has a standard representation.
-   --  For the case of a non-standard representation (one where the size of
-   --  the first subtype is specified, or where an enumeration representation
-   --  clause is given), these three types are treated like any other cases
-   --  of enumeration types, as described above.
 
    ---------------------
    -- Input Functions --
@@ -162,53 +114,4 @@ package System.Stream_Attributes is
    procedure W_WC  (Stream : not null access RST; Item : Wide_Character);
    procedure W_WWC (Stream : not null access RST; Item : Wide_Wide_Character);
 
-   function Block_IO_OK return Boolean;
-   --  Indicate whether the current setting supports block IO. See
-   --  System.Strings.Stream_Ops (s-ststop) for details on block IO.
-
-private
-   pragma Inline (I_AD);
-   pragma Inline (I_AS);
-   pragma Inline (I_B);
-   pragma Inline (I_C);
-   pragma Inline (I_F);
-   pragma Inline (I_I);
-   pragma Inline (I_LF);
-   pragma Inline (I_LI);
-   pragma Inline (I_LLF);
-   pragma Inline (I_LLI);
-   pragma Inline (I_LLU);
-   pragma Inline (I_LU);
-   pragma Inline (I_SF);
-   pragma Inline (I_SI);
-   pragma Inline (I_SSI);
-   pragma Inline (I_SSU);
-   pragma Inline (I_SU);
-   pragma Inline (I_U);
-   pragma Inline (I_WC);
-   pragma Inline (I_WWC);
-
-   pragma Inline (W_AD);
-   pragma Inline (W_AS);
-   pragma Inline (W_B);
-   pragma Inline (W_C);
-   pragma Inline (W_F);
-   pragma Inline (W_I);
-   pragma Inline (W_LF);
-   pragma Inline (W_LI);
-   pragma Inline (W_LLF);
-   pragma Inline (W_LLI);
-   pragma Inline (W_LLU);
-   pragma Inline (W_LU);
-   pragma Inline (W_SF);
-   pragma Inline (W_SI);
-   pragma Inline (W_SSI);
-   pragma Inline (W_SSU);
-   pragma Inline (W_SU);
-   pragma Inline (W_U);
-   pragma Inline (W_WC);
-   pragma Inline (W_WWC);
-
-   pragma Inline (Block_IO_OK);
-
-end System.Stream_Attributes;
+end System.Stream_Attributes.XDR;
