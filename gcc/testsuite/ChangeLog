@@ -1,3 +1,8 @@
+2020-04-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94733
+	* g++.dg/tm/attrib-5.C: New test.
+
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94724

@@ -1,3 +1,9 @@
+2020-04-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94733
+	* c-attribs.c (find_tm_attribute): Use get_attribute_name instead of
+	TREE_PURPOSE.
+
 2020-04-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/85278
