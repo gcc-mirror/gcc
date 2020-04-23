@@ -156,9 +156,6 @@ package body Exp_Ch6 is
    --  level is known not to be statically deeper than the result type of the
    --  function.
 
-   function BIP_Suffix_Kind (E : Entity_Id) return BIP_Formal_Kind;
-   --  Ada 2005 (AI-318-02): Returns the kind of the given extra formal.
-
    function Caller_Known_Size
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean;
@@ -284,9 +281,6 @@ package body Exp_Ch6 is
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
-
-   function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 
    procedure Replace_Renaming_Declaration_Id
       (New_Decl  : Node_Id;

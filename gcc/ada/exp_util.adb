@@ -8829,7 +8829,6 @@ package body Exp_Util is
    --------------------------------------
 
    function Is_Secondary_Stack_BIP_Func_Call (Expr : Node_Id) return Boolean is
-      Alloc_Nam : Name_Id := No_Name;
       Actual    : Node_Id;
       Call      : Node_Id := Expr;
       Formal    : Node_Id;
@@ -8856,20 +8855,10 @@ package body Exp_Util is
                Formal := Selector_Name (Param);
                Actual := Explicit_Actual_Parameter (Param);
 
-               --  Construct the name of formal BIPalloc. It is much easier to
-               --  extract the name of the function using an arbitrary formal's
-               --  scope rather than the Name field of Call.
-
-               if Alloc_Nam = No_Name and then Present (Entity (Formal)) then
-                  Alloc_Nam :=
-                    New_External_Name
-                      (Chars (Scope (Entity (Formal))),
-                       BIP_Formal_Suffix (BIP_Alloc_Form));
-               end if;
-
                --  A match for BIPalloc => 2 has been found
 
-               if Chars (Formal) = Alloc_Nam
+               if Is_Build_In_Place_Entity (Formal)
+                 and then BIP_Suffix_Kind (Formal) = BIP_Alloc_Form
                  and then Nkind (Actual) = N_Integer_Literal
                  and then Intval (Actual) = Uint_2
                then

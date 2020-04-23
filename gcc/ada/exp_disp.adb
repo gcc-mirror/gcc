@@ -1081,6 +1081,7 @@ package body Exp_Disp is
          then
             Old_Formal := Extra_Formal (Last_Formal);
             New_Formal := New_Copy (Old_Formal);
+            Set_Scope (New_Formal, Subp_Typ);
 
             Set_Extra_Formal (Last_Formal, New_Formal);
             Set_Extra_Formals (Subp_Typ, New_Formal);
