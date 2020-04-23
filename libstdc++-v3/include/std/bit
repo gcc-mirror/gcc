@@ -307,6 +307,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [bit.pow.two], integral powers of 2
 
+#define __cpp_lib_int_pow2 201806L
+
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, bool>
     ispow2(_Tp __x) noexcept

@@ -1,5 +1,9 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/bit (__cpp_lib_int_pow2): Define to indicate P0556R3
+	support.
+	* include/std/version (__cpp_lib_int_pow2): Likewise.
+
 	Backport from mainline
 	2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
