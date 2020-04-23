@@ -1753,8 +1753,10 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
   gfc_intrinsic_sym* isym = NULL;
   const char* symstd;
 
-  if (sym->formal)
+  if (sym->resolve_symbol_called >= 2)
     return true;
+
+  sym->resolve_symbol_called = 2;
 
   /* Already resolved.  */
   if (sym->from_intmod && sym->ts.type != BT_UNKNOWN)
@@ -13909,7 +13911,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
     {
       /* If proc has not been resolved at this point, proc->name may
 	 actually be a USE associated entity. See PR fortran/89647. */
-      if (!proc->resolved
+      if (!proc->resolve_symbol_called
 	  && proc->attr.function == 0 && proc->attr.subroutine == 0)
 	{
 	  gfc_symbol *tmp;
@@ -15154,9 +15156,9 @@ resolve_symbol (gfc_symbol *sym)
   gfc_array_spec *as;
   bool saved_specification_expr;
 
-  if (sym->resolved)
+  if (sym->resolve_symbol_called >= 1)
     return;
-  sym->resolved = 1;
+  sym->resolve_symbol_called = 1;
 
   /* No symbol will ever have union type; only components can be unions.
      Union type declaration symbols have type BT_UNKNOWN but flavor FL_UNION
