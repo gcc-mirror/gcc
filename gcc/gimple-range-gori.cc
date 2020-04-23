@@ -800,22 +800,22 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   //    b_2 FALSE     x_8 = [0,5].
   //
   // These ranges are then combined based on the expected outcome of
-  // the branch The range on the TRUE side of the branch must satisfy
+  // the branch.  The range on the TRUE side of the branch must satisfy
   //     b_1 == true && b_2 == true
-
-  // in terms of x_8, that means both x_8 == [0, 19] and x_8 = [6, 255]
+  //
+  // In terms of x_8, that means both x_8 == [0, 19] and x_8 = [6, 255]
   // must be true.  The range of x_8 on the true side must be the
   // intersection of both ranges since both must be true.  Thus the
-  // range of x_8 on the true side is [6, 19]
+  // range of x_8 on the true side is [6, 19].
   //
   // To determine the ranges on the FALSE side, all 3 combinations of
   // failing ranges must be considered, and combined as any of them
   // can cause the false result.
-
-  // If the LHS can be TRUE OR FALSE, then evaluate both a TRUE and
+  //
+  // If the LHS can be TRUE or FALSE, then evaluate both a TRUE and
   // FALSE results and combine them.  If we fell back to VARYING any
   // range restrictions that have been discovered up to this point
-  // would be lost.  */
+  // would be lost.
   if (!range_is_either_true_or_false (lhs))
     {
       widest_irange r1;
@@ -854,7 +854,6 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	    r.union_ (ft);
 	  }
         break;
-
       //  A logical OR combines ranges from 2 boolean conditons.
       // 	c_2 = b_1 || b_2
       case TRUTH_OR_EXPR:
@@ -862,8 +861,8 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         if (lhs.zero_p ())
 	  {
 	    // An OR operation will only take the FALSE path if both
-	    // operands are false. so [20, 255] intersect [0, 5] is the
-	    // union: [0,5][20,255].  */
+	    // operands are false, so [20, 255] intersect [0, 5] is the
+	    // union: [0,5][20,255].
 	    r = op1.false_range;
 	    r.intersect (op2.false_range);
 	  }
@@ -882,7 +881,6 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	    r.union_ (ft);
 	  }
 	break;
-
       default:
         gcc_unreachable ();
     }
@@ -1003,22 +1001,21 @@ gori_compute::compute_operand1_range (irange &r, gimple *stmt,
   tree op1 = gimple_range_operand1 (stmt);
   tree op2 = gimple_range_operand2 (stmt);
 
-  // Determine a known range for operand1 ().
   get_tree_range (op1_range, op1, name, name_range);
 
   // Now calcuated the operand and put that result in r.
-  if (!op2)
+  if (op2)
+    {
+      get_tree_range (op2_range, op2, name, name_range);
+      if (!gimple_range_calc_op1 (stmt, r, lhs, op2_range))
+	return false;
+    }
+  else
     {
       // We pass op1_range to the unary operation.  Nomally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
       if (!gimple_range_calc_op1 (stmt, r, lhs, op1_range))
-	return false;
-    }
-  else
-    {
-      get_tree_range (op2_range, op2, name, name_range);
-      if (!gimple_range_calc_op1 (stmt, r, lhs, op2_range))
 	return false;
     }
 
@@ -1045,7 +1042,6 @@ gori_compute::compute_operand2_range (irange &r, gimple *stmt,
   tree op1 = gimple_range_operand1 (stmt);
   tree op2 = gimple_range_operand2 (stmt);
 
-  // Get a range for op1.
   get_tree_range (op1_range, op1, name, name_range);
 
   // Calculate the range for op2 based on lhs and op1.
@@ -1082,7 +1078,7 @@ gori_compute::compute_operand1_and_operand2_range
 {
   widest_irange op_range;
 
-  // Calculate a good a range for op2. Since op1 == op2, this will
+  // Calculate a good a range for op2.  Since op1 == op2, this will
   // have already included whatever the actual range of name is.
   if (!compute_operand2_range (op_range, stmt, lhs, name, name_range))
     return false;
