@@ -1,5 +1,8 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2020.xml: Update C++20 status table.
+	* doc/html/*: Regenerate.
+
 	* include/bits/stl_iterator.h (__cpp_lib_array_constexpr): Revert
 	value for C++17 to 201803L because P0858R0 is supported for C++17.
 	* include/std/version (__cpp_lib_array_constexpr): Likewise.
