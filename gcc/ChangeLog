@@ -1,3 +1,88 @@
+2020-04-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq_n_u16): Modify function parameter's
+	datatype.
+	(__arm_vbicq_n_s16): Likewise.
+	(__arm_vbicq_n_u32): Likewise.
+	(__arm_vbicq_n_s32): Likewise.
+	(__arm_vbicq): Likewise.
+	(__arm_vbicq_n_s16): Modify MVE polymorphic variant argument's datatype.
+	(__arm_vbicq_n_s32): Likewise.
+	(__arm_vbicq_n_u16): Likewise.
+	(__arm_vbicq_n_u32): Likewise.
+	(__arm_vdupq_m_n_s8): Likewise.
+	(__arm_vdupq_m_n_s16): Likewise.
+	(__arm_vdupq_m_n_s32): Likewise.
+	(__arm_vdupq_m_n_u8): Likewise.
+	(__arm_vdupq_m_n_u16): Likewise.
+	(__arm_vdupq_m_n_u32): Likewise.
+	(__arm_vdupq_m_n_f16): Likewise.
+	(__arm_vdupq_m_n_f32): Likewise.
+	(__arm_vldrhq_gather_offset_s16): Likewise.
+	(__arm_vldrhq_gather_offset_s32): Likewise.
+	(__arm_vldrhq_gather_offset_u16): Likewise.
+	(__arm_vldrhq_gather_offset_u32): Likewise.
+	(__arm_vldrhq_gather_offset_f16): Likewise.
+	(__arm_vldrhq_gather_offset_z_s16): Likewise.
+	(__arm_vldrhq_gather_offset_z_s32): Likewise.
+	(__arm_vldrhq_gather_offset_z_u16): Likewise.
+	(__arm_vldrhq_gather_offset_z_u32): Likewise.
+	(__arm_vldrhq_gather_offset_z_f16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_s16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_s32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_u16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_u32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_f16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_s16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_s32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_u16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_u32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_f16): Likewise.
+	(__arm_vldrwq_gather_offset_s32): Likewise.
+	(__arm_vldrwq_gather_offset_u32): Likewise.
+	(__arm_vldrwq_gather_offset_f32): Likewise.
+	(__arm_vldrwq_gather_offset_z_s32): Likewise.
+	(__arm_vldrwq_gather_offset_z_u32): Likewise.
+	(__arm_vldrwq_gather_offset_z_f32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_s32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_u32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_f32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_z_s32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_z_u32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_z_f32): Likewise.
+	(__arm_vdwdupq_x_n_u8): Likewise.
+	(__arm_vdwdupq_x_n_u16): Likewise.
+	(__arm_vdwdupq_x_n_u32): Likewise.
+	(__arm_viwdupq_x_n_u8): Likewise.
+	(__arm_viwdupq_x_n_u16): Likewise.
+	(__arm_viwdupq_x_n_u32): Likewise.
+	(__arm_vidupq_x_n_u8): Likewise.
+	(__arm_vddupq_x_n_u8): Likewise.
+	(__arm_vidupq_x_n_u16): Likewise.
+	(__arm_vddupq_x_n_u16): Likewise.
+	(__arm_vidupq_x_n_u32): Likewise.
+	(__arm_vddupq_x_n_u32): Likewise.
+	(__arm_vldrdq_gather_offset_s64): Likewise.
+	(__arm_vldrdq_gather_offset_u64): Likewise.
+	(__arm_vldrdq_gather_offset_z_s64): Likewise.
+	(__arm_vldrdq_gather_offset_z_u64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_s64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_u64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_z_s64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_z_u64): Likewise.
+	(__arm_vidupq_m_n_u8): Likewise.
+	(__arm_vidupq_m_n_u16): Likewise.
+	(__arm_vidupq_m_n_u32): Likewise.
+	(__arm_vddupq_m_n_u8): Likewise.
+	(__arm_vddupq_m_n_u16): Likewise.
+	(__arm_vddupq_m_n_u32): Likewise.
+	(__arm_vidupq_n_u16): Likewise.
+	(__arm_vidupq_n_u32): Likewise.
+	(__arm_vidupq_n_u8): Likewise.
+	(__arm_vddupq_n_u16): Likewise.
+	(__arm_vddupq_n_u32): Likewise.
+	(__arm_vddupq_n_u8): Likewise.
+
 2020-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* doc/install.texi (D-Specific Options): Document
