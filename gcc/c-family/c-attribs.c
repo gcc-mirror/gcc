@@ -3314,7 +3314,7 @@ find_tm_attribute (tree list)
 {
   for (; list ; list = TREE_CHAIN (list))
     {
-      tree name = TREE_PURPOSE (list);
+      tree name = get_attribute_name (list);
       if (tm_attr_to_mask (name) != 0)
 	return name;
     }

@@ -1,3 +1,156 @@
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94724
+	* tree.c (get_narrower): Instead of creating COMPOUND_EXPRs
+	temporarily with non-final second operand and updating it later,
+	push COMPOUND_EXPRs into a vector and process it in reverse,
+	creating COMPOUND_EXPRs with the final operands.
+
+2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94697
+	* config/aarch64/aarch64-bti-insert.c (rest_of_insert_bti): Swap
+	bti c and bti j handling.
+
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/93488
+
+	* omp-expand.c (expand_omp_target): Use force_gimple_operand_gsi on
+	t_async and the wait arguments.
+
+2020-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94727
+	* tree-vect-stmts.c (vectorizable_comparison): Use mask_type when
+	comparing invariant scalar booleans.
+
+2020-04-23  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94383
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Account for C++17
+	empty base class artificial fields.
+	(aarch64_vfp_is_call_or_return_candidate): Warn when ABI PCS decision is
+	different after this fix.
+
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* config/rs6000/rs6000-call.c (rs6000_discover_homogeneous_aggregate):
+	Use TYPE_UID (TYPE_MAIN_VARIANT (type)) instead of type to check
+	if the same type has been diagnosed most recently already.
+
+2020-04-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq_n_u16): Modify function parameter's
+	datatype.
+	(__arm_vbicq_n_s16): Likewise.
+	(__arm_vbicq_n_u32): Likewise.
+	(__arm_vbicq_n_s32): Likewise.
+	(__arm_vbicq): Likewise.
+	(__arm_vbicq_n_s16): Modify MVE polymorphic variant argument's datatype.
+	(__arm_vbicq_n_s32): Likewise.
+	(__arm_vbicq_n_u16): Likewise.
+	(__arm_vbicq_n_u32): Likewise.
+	(__arm_vdupq_m_n_s8): Likewise.
+	(__arm_vdupq_m_n_s16): Likewise.
+	(__arm_vdupq_m_n_s32): Likewise.
+	(__arm_vdupq_m_n_u8): Likewise.
+	(__arm_vdupq_m_n_u16): Likewise.
+	(__arm_vdupq_m_n_u32): Likewise.
+	(__arm_vdupq_m_n_f16): Likewise.
+	(__arm_vdupq_m_n_f32): Likewise.
+	(__arm_vldrhq_gather_offset_s16): Likewise.
+	(__arm_vldrhq_gather_offset_s32): Likewise.
+	(__arm_vldrhq_gather_offset_u16): Likewise.
+	(__arm_vldrhq_gather_offset_u32): Likewise.
+	(__arm_vldrhq_gather_offset_f16): Likewise.
+	(__arm_vldrhq_gather_offset_z_s16): Likewise.
+	(__arm_vldrhq_gather_offset_z_s32): Likewise.
+	(__arm_vldrhq_gather_offset_z_u16): Likewise.
+	(__arm_vldrhq_gather_offset_z_u32): Likewise.
+	(__arm_vldrhq_gather_offset_z_f16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_s16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_s32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_u16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_u32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_f16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_s16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_s32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_u16): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_u32): Likewise.
+	(__arm_vldrhq_gather_shifted_offset_z_f16): Likewise.
+	(__arm_vldrwq_gather_offset_s32): Likewise.
+	(__arm_vldrwq_gather_offset_u32): Likewise.
+	(__arm_vldrwq_gather_offset_f32): Likewise.
+	(__arm_vldrwq_gather_offset_z_s32): Likewise.
+	(__arm_vldrwq_gather_offset_z_u32): Likewise.
+	(__arm_vldrwq_gather_offset_z_f32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_s32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_u32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_f32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_z_s32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_z_u32): Likewise.
+	(__arm_vldrwq_gather_shifted_offset_z_f32): Likewise.
+	(__arm_vdwdupq_x_n_u8): Likewise.
+	(__arm_vdwdupq_x_n_u16): Likewise.
+	(__arm_vdwdupq_x_n_u32): Likewise.
+	(__arm_viwdupq_x_n_u8): Likewise.
+	(__arm_viwdupq_x_n_u16): Likewise.
+	(__arm_viwdupq_x_n_u32): Likewise.
+	(__arm_vidupq_x_n_u8): Likewise.
+	(__arm_vddupq_x_n_u8): Likewise.
+	(__arm_vidupq_x_n_u16): Likewise.
+	(__arm_vddupq_x_n_u16): Likewise.
+	(__arm_vidupq_x_n_u32): Likewise.
+	(__arm_vddupq_x_n_u32): Likewise.
+	(__arm_vldrdq_gather_offset_s64): Likewise.
+	(__arm_vldrdq_gather_offset_u64): Likewise.
+	(__arm_vldrdq_gather_offset_z_s64): Likewise.
+	(__arm_vldrdq_gather_offset_z_u64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_s64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_u64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_z_s64): Likewise.
+	(__arm_vldrdq_gather_shifted_offset_z_u64): Likewise.
+	(__arm_vidupq_m_n_u8): Likewise.
+	(__arm_vidupq_m_n_u16): Likewise.
+	(__arm_vidupq_m_n_u32): Likewise.
+	(__arm_vddupq_m_n_u8): Likewise.
+	(__arm_vddupq_m_n_u16): Likewise.
+	(__arm_vddupq_m_n_u32): Likewise.
+	(__arm_vidupq_n_u16): Likewise.
+	(__arm_vidupq_n_u32): Likewise.
+	(__arm_vidupq_n_u8): Likewise.
+	(__arm_vddupq_n_u16): Likewise.
+	(__arm_vddupq_n_u32): Likewise.
+	(__arm_vddupq_n_u8): Likewise.
+
+2020-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/install.texi (D-Specific Options): Document
+	--enable-libphobos-checking and --with-libphobos-druntime-only.
+
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* config/rs6000/rs6000-call.c (rs6000_aggregate_candidate): Add
+	cxx17_empty_base_seen argument.  Pass it to recursive calls.
+	Ignore cxx17_empty_base_field_p fields after setting
+	*cxx17_empty_base_seen to true.
+	(rs6000_discover_homogeneous_aggregate): Adjust
+	rs6000_aggregate_candidate caller.  With -Wpsabi, diagnose homogeneous
+	aggregates with C++17 empty base fields.
+
+	PR c/94705
+	* attribs.c (decl_attribute): Don't diagnose attribute exclusions
+	if last_decl is error_mark_node or has such a TREE_TYPE.
+
+	PR c/94705
+	* attribs.c (decl_attribute): Don't diagnose attribute exclusions
+	if last_decl is error_mark_node or has such a TREE_TYPE.
+
 2020-04-22  Felix Yang  <felix.yang@huawei.com>
 
 	PR target/94678

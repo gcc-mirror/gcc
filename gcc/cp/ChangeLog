@@ -1,3 +1,34 @@
+2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94288
+	* coroutines.cc (await_statement_expander): Simplify cases.
+	(struct susp_frame_data): Add fields for truth and/or if
+	cases, rename one field.
+	(analyze_expression_awaits): New.
+	(expand_one_truth_if): New.
+	(add_var_to_bind): New helper.
+	(coro_build_add_if_not_cond_break): New helper.
+	(await_statement_walker): Handle conditional expressions,
+	handle expansion of truth-and/or-if cases.
+	(bind_expr_find_in_subtree): New, checking-only.
+	(coro_body_contains_bind_expr_p): New, checking-only.
+	(morph_fn_to_coro): Ensure that we have a top level bind
+	expression.
+
+2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR translation/94698
+	* class.c (check_field_decls): Change "define" to "declare" in
+	-Weffc++ diagnostics.
+
+2020-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94719
+	PR c++/94549
+	* constraint.cc (satisfy_declaration_constraints): If the inherited
+	constructor points to an instantiation of a constructor template,
+	remember and use its attached template arguments.
+
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR translation/94698

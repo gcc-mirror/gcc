@@ -19848,6 +19848,150 @@ _ACEOF
 
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmaf" >&5
+$as_echo_n "checking for fmaf... " >&6; }
+if ${gcc_cv_math_func_fmaf+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())fmaf;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_fmaf=yes
+else
+  gcc_cv_math_func_fmaf=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_fmaf" >&5
+$as_echo "$gcc_cv_math_func_fmaf" >&6; }
+  if test $gcc_cv_math_func_fmaf = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMAF 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fma" >&5
+$as_echo_n "checking for fma... " >&6; }
+if ${gcc_cv_math_func_fma+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())fma;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_fma=yes
+else
+  gcc_cv_math_func_fma=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_fma" >&5
+$as_echo "$gcc_cv_math_func_fma" >&6; }
+  if test $gcc_cv_math_func_fma = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMA 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmal" >&5
+$as_echo_n "checking for fmal... " >&6; }
+if ${gcc_cv_math_func_fmal+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())fmal;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_fmal=yes
+else
+  gcc_cv_math_func_fmal=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_fmal" >&5
+$as_echo "$gcc_cv_math_func_fmal" >&6; }
+  if test $gcc_cv_math_func_fmal = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMAL 1
+_ACEOF
+
+  fi
+
+
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmodf" >&5
 $as_echo_n "checking for fmodf... " >&6; }
 if ${gcc_cv_math_func_fmodf+:} false; then :
@@ -25558,6 +25702,187 @@ $as_echo "#define HAVE_CLOG 1" >>confdefs.h
 
 fi
 
+
+
+
+if test $gcc_cv_math_func_copysign = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for inline __builtin_copysign" >&5
+$as_echo_n "checking for inline __builtin_copysign... " >&6; }
+if ${gcc_cv_math_inline_builtin_copysign+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+double
+copysign_fallback (double x, double y)
+{
+  return __builtin_copysign (x, y);
+}
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_inline_builtin_copysign=yes
+else
+  gcc_cv_math_inline_builtin_copysign=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_inline_builtin_copysign" >&5
+$as_echo "$gcc_cv_math_inline_builtin_copysign" >&6; }
+  if test $gcc_cv_math_inline_builtin_copysign = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_INLINE_BUILTIN_COPYSIGN 1
+_ACEOF
+
+  fi
+fi
+
+
+if test $gcc_cv_math_func_copysignl = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for inline __builtin_copysignl" >&5
+$as_echo_n "checking for inline __builtin_copysignl... " >&6; }
+if ${gcc_cv_math_inline_builtin_copysignl+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+long double
+copysignl_fallback (long double x, long double y)
+{
+  return __builtin_copysignl (x, y);
+}
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_inline_builtin_copysignl=yes
+else
+  gcc_cv_math_inline_builtin_copysignl=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_inline_builtin_copysignl" >&5
+$as_echo "$gcc_cv_math_inline_builtin_copysignl" >&6; }
+  if test $gcc_cv_math_inline_builtin_copysignl = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_INLINE_BUILTIN_COPYSIGNL 1
+_ACEOF
+
+  fi
+fi
+
+
+if test $gcc_cv_math_func_fabs = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for inline __builtin_fabs" >&5
+$as_echo_n "checking for inline __builtin_fabs... " >&6; }
+if ${gcc_cv_math_inline_builtin_fabs+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+double
+fabs_fallback (double x)
+{
+  return __builtin_fabs (x);
+}
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_inline_builtin_fabs=yes
+else
+  gcc_cv_math_inline_builtin_fabs=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_inline_builtin_fabs" >&5
+$as_echo "$gcc_cv_math_inline_builtin_fabs" >&6; }
+  if test $gcc_cv_math_inline_builtin_fabs = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_INLINE_BUILTIN_FABS 1
+_ACEOF
+
+  fi
+fi
+
+
+if test $gcc_cv_math_func_fabsl = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for inline __builtin_fabsl" >&5
+$as_echo_n "checking for inline __builtin_fabsl... " >&6; }
+if ${gcc_cv_math_inline_builtin_fabsl+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+long double
+fabsl_fallback (long double x)
+{
+  return __builtin_fabsl (x);
+}
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_inline_builtin_fabsl=yes
+else
+  gcc_cv_math_inline_builtin_fabsl=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_inline_builtin_fabsl" >&5
+$as_echo "$gcc_cv_math_inline_builtin_fabsl" >&6; }
+  if test $gcc_cv_math_inline_builtin_fabsl = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_INLINE_BUILTIN_FABSL 1
+_ACEOF
+
+  fi
+fi
 
 # Check whether the system has a working stat()
 

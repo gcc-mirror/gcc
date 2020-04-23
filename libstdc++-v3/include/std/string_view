@@ -322,6 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __cplusplus > 201703L
+#define __cpp_lib_starts_ends_with 201711L
       constexpr bool
       starts_with(basic_string_view __x) const noexcept
       { return this->substr(0, __x.size()) == __x; }

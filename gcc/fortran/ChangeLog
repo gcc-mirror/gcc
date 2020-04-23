@@ -1,3 +1,16 @@
+2020-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	* expr.c (gfc_check_pointer_assign): Also set subref_array_pointer
+	when a function returns a pointer.
+	* interface.c (gfc_set_subref_array_pointer_arg): New function.
+	(gfc_procedure_use): Call it.
+
+2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* trigd_fe.inc: Use mpfr to compute cosd(30) rather than a host-
+	precision floating point literal based on an invalid macro.
+
 2020-04-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/90350

@@ -69,8 +69,10 @@
 # include <type_traits>
 #endif
 
-#if __cplusplus > 201402L
-# define __cpp_lib_array_constexpr 201803
+#if __cplusplus > 201703L
+# define __cpp_lib_array_constexpr 201811L
+#elif __cplusplus == 201703L
+# define __cpp_lib_array_constexpr 201603L
 #endif
 
 #if __cplusplus > 201703L

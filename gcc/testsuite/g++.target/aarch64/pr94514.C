@@ -1,5 +1,6 @@
 /* PR target/94514. Unwind across mixed pac-ret and non-pac-ret frames.  */
 /* { dg-do run } */
+/* { dg-require-effective-target lp64 } */
 
 __attribute__((noinline, target("branch-protection=pac-ret")))
 static void do_throw (void)

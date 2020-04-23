@@ -1,3 +1,86 @@
+2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94288
+	* g++.dg/coroutines/torture/co-await-18-if-cond.C: New test.
+	* g++.dg/coroutines/torture/co-await-19-while-cond.C: New test.
+	* g++.dg/coroutines/torture/co-await-20-do-while-cond.C: New test.
+	* g++.dg/coroutines/torture/co-await-21-switch-value.C: New test.
+	* g++.dg/coroutines/torture/co-await-22-truth-and-of-if.C: New test.
+	* g++.dg/coroutines/torture/co-ret-16-simple-control-flow.C: New test.
+
+2020-04-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94733
+	* g++.dg/tm/attrib-5.C: New test.
+
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94724
+	* gcc.c-torture/execute/pr94724.c: New test.
+
+2020-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	* gfortran.dg/pointer_assign_13.f90: New test.
+
+2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: Adjust for
+	changed inline namespace.
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: Likewise.
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: Likewise
+	* g++.dg/coroutines/coro.h: Likewise
+
+2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94697
+	* gcc.target/aarch64/pr94697.c: New test.
+
+2020-04-23  Felix Yang  <felix.yang@huawei.com>
+
+	PR target/94678
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Fix typos, pop_pragma ->
+	pop_options. Add tests for general-regs-only.
+	* gcc.target/aarch64/pragma_cpp_predefs_3.c: Add tests for
+	general-regs-only.
+
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/93488
+
+	* c-c++-common/goacc/pr93488.c: New file.
+
+2020-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94727
+	* gcc.dg/vect/pr94727.c: New test.
+
+2020-04-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94514
+	* g++.target/aarch64/pr94514.C: Require lp64.
+	* gcc.target/aarch64/pr94514.c: Likewise.
+
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* g++.dg/tree-ssa/pr27830.C: Use -Wpsabi -w for -std=c++17 and higher.
+
+	PR c/94705
+	* gcc.dg/pr94705.c: New test.
+
+2020-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94719
+	PR c++/94549
+	* g++.dg/cpp2a/concepts-inherit-ctor9.C: New test.
+
+2020-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93807
+	* g++.dg/cpp2a/fn-template20.C: New test.
+
 2020-04-22  Duan bo  <duanbo3@huawei.com>
 
 	PR testsuite/94712

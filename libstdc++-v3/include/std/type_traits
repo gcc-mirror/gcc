@@ -1489,6 +1489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if __cplusplus > 201703L
+#define __cpp_lib_is_nothrow_convertible 201806L
   /// is_nothrow_convertible
   template<typename _From, typename _To>
     struct is_nothrow_convertible
@@ -3221,6 +3222,8 @@ template <typename _From, typename _To>
 #endif // C++17
 
 #if __cplusplus > 201703L
+#define __cpp_lib_remove_cvref 201711L
+
   /// Remove references and cv-qualifiers.
   template<typename _Tp>
     struct remove_cvref
@@ -3231,6 +3234,7 @@ template <typename _From, typename _To>
   template<typename _Tp>
     using remove_cvref_t = __remove_cvref_t<_Tp>;
 
+#define __cpp_lib_type_identity 201806L
   /// Identity metafunction.
   template<typename _Tp>
     struct type_identity { using type = _Tp; };

@@ -2460,6 +2460,37 @@ default locations.
 The following options apply to the build of the D runtime library.
 
 @table @code
+@item --enable-libphobos-checking
+@itemx --disable-libphobos-checking
+@itemx --enable-libphobos-checking=@var{list}
+This option controls whether run-time checks and contracts are compiled into
+the D runtime library.  When the option is not specified, the library is built
+with @samp{release} checking.  When the option is specified without a
+@var{list}, the result is the same as @samp{--enable-libphobos-checking=yes}.
+Likewise, @samp{--disable-libphobos-checking} is equivalent to
+@samp{--enable-libphobos-checking=no}.
+
+The categories of checks available in @var{list} are @samp{yes} (compiles
+libphobos with @option{-fno-release}), @samp{no} (compiles libphobos with
+@option{-frelease}), @samp{all} (same as @samp{yes}), @samp{none} or
+@samp{release} (same as @samp{no}).
+
+Individual checks available in @var{list} are @samp{assert} (compiles libphobos
+with an extra option @option{-fassert}).
+
+@item --with-libphobos-druntime-only
+@itemx --with-libphobos-druntime-only=@var{choice}
+Specify whether to build only the core D runtime library (druntime), or both
+the core and standard library (phobos) into libphobos.  This is useful for
+targets that have full support in druntime, but no or incomplete support
+in phobos.  @var{choice} can be one of @samp{auto}, @samp{yes}, and @samp{no}
+where @samp{auto} is the default.
+
+When the option is not specified, the default choice @samp{auto} means that it
+is inferred whether the target has support for the phobos standard library.
+When the option is specified without a @var{choice},  the result is the same as
+@samp{--with-libphobos-druntime-only=yes}.
+
 @item --with-target-system-zlib
 Use installed @samp{zlib} rather than that included with GCC@.  This needs
 to be available for each multilib variant, unless configured with

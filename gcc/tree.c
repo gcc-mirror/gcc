@@ -8881,18 +8881,22 @@ get_narrower (tree op, int *unsignedp_ptr)
 
   if (TREE_CODE (op) == COMPOUND_EXPR)
     {
-      while (TREE_CODE (op) == COMPOUND_EXPR)
+      do
 	op = TREE_OPERAND (op, 1);
+      while (TREE_CODE (op) == COMPOUND_EXPR);
       tree ret = get_narrower (op, unsignedp_ptr);
       if (ret == op)
 	return win;
-      op = win;
-      for (tree *p = &win; TREE_CODE (op) == COMPOUND_EXPR;
-	   op = TREE_OPERAND (op, 1), p = &TREE_OPERAND (*p, 1))
-	*p = build2_loc (EXPR_LOCATION (op), COMPOUND_EXPR,
-			 TREE_TYPE (ret), TREE_OPERAND (op, 0),
-			 ret);
-      return win;
+      auto_vec <tree, 16> v;
+      unsigned int i;
+      for (tree op = win; TREE_CODE (op) == COMPOUND_EXPR;
+	   op = TREE_OPERAND (op, 1))
+	v.safe_push (op);
+      FOR_EACH_VEC_ELT_REVERSE (v, i, op)
+	ret = build2_loc (EXPR_LOCATION (op), COMPOUND_EXPR,
+			  TREE_TYPE (win), TREE_OPERAND (op, 0),
+			  ret);
+      return ret;
     }
   while (TREE_CODE (op) == NOP_EXPR)
     {

@@ -71,6 +71,16 @@ extern float ceilf(float);
 extern float copysignf(float, float);
 #endif
 
+#if !defined(HAVE_COPYSIGN) && defined(HAVE_INLINE_BUILTIN_COPYSIGN)
+#define HAVE_COPYSIGN 1
+extern double copysign(double, double);
+#endif
+
+#if !defined(HAVE_COPYSIGNL) && defined(HAVE_INLINE_BUILTIN_COPYSIGNL)
+#define HAVE_COPYSIGNL 1
+extern long double copysignl(long double, long double);
+#endif
+
 #ifndef HAVE_COSF
 #define HAVE_COSF 1
 extern float cosf(float);
@@ -89,6 +99,16 @@ extern float expf(float);
 #ifndef HAVE_FABSF
 #define HAVE_FABSF 1
 extern float fabsf(float);
+#endif
+
+#if !defined(HAVE_FABS) && defined(HAVE_INLINE_BUILTIN_FABS)
+#define HAVE_FABS 1
+extern double fabs(double);
+#endif
+
+#if !defined(HAVE_FABSL) && defined(HAVE_INLINE_BUILTIN_FABSL)
+#define HAVE_FABSL 1
+extern long double fabsl(long double);
 #endif
 
 #ifndef HAVE_FLOORF
@@ -628,6 +648,20 @@ extern float tgammaf (float);
 extern float lgammaf (float);
 #endif
 
+#ifndef HAVE_FMA
+#define HAVE_FMA 1
+extern double fma(double, double, double);
+#endif
+
+#ifndef HAVE_FMAF
+#define HAVE_FMAF 1
+extern float fmaf(float, float, float);
+#endif
+
+#ifndef HAVE_FMAL
+#define HAVE_FMAL 1
+extern long double fmal(long double, long double, long double);
+#endif
 
 #endif  /* C99_PROTOS_H  */
 

@@ -61,6 +61,7 @@ namespace pmr
   template<typename _Tp>
     class polymorphic_allocator;
 #else // C++20
+# define __cpp_lib_polymorphic_allocator 201902L
   template<typename _Tp = std::byte>
     class polymorphic_allocator;
 #endif

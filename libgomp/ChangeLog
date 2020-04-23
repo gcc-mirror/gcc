@@ -1,3 +1,12 @@
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR other/94629
+
+	* plugin/plugin-gcn.c (init_hsa_context): Check return value from
+	hsa_iterate_agents.
+	(GOMP_OFFLOAD_init_device): Check return values from both calls to
+	hsa_agent_iterate_regions.
+
 2020-04-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/94635

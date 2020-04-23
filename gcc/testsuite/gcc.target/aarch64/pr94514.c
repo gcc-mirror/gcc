@@ -1,5 +1,6 @@
 /* PR target/94514. Unwind across mixed pac-ret and non-pac-ret frames.  */
 /* { dg-do run } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-fexceptions -O2" } */
 
 #include <unwind.h>

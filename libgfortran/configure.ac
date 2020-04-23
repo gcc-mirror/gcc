@@ -392,6 +392,9 @@ GCC_CHECK_MATH_FUNC([cabsl])
 GCC_CHECK_MATH_FUNC([floorf])
 GCC_CHECK_MATH_FUNC([floor])
 GCC_CHECK_MATH_FUNC([floorl])
+GCC_CHECK_MATH_FUNC([fmaf])
+GCC_CHECK_MATH_FUNC([fma])
+GCC_CHECK_MATH_FUNC([fmal])
 GCC_CHECK_MATH_FUNC([fmodf])
 GCC_CHECK_MATH_FUNC([fmod])
 GCC_CHECK_MATH_FUNC([fmodl])
@@ -515,6 +518,11 @@ GCC_CHECK_MATH_FUNC([catanl])
 
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
+
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysign], [double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysignl], [long double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabs], [double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabsl], [long double])
 
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT

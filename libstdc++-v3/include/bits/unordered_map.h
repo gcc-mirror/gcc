@@ -657,7 +657,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 
 #if __cplusplus > 201402L
-#define __cpp_lib_unordered_map_insertion 201411
       /**
        *  @brief Attempts to insert a std::pair into the %unordered_map.
        *  @param __k    Key to use for finding a possibly existing pair in

@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 //
 // Copyright (C) 2019-2020 Free Software Foundation, Inc.
 //
@@ -19,6 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <array>
+
+#ifndef __cpp_lib_array_constexpr
+# error "Feature test macro for array constexpr is missing in <array>"
+#elif __cpp_lib_array_constexpr < 201603L
+# error "Feature test macro for array constexpr has wrong value in <array>"
+#elif __cpp_lib_array_constexpr > 201603L && __cplusplus == 201703
+# error "Feature test macro for array constexpr has wrong value for C++17"
+#endif
 
 constexpr int
 test()

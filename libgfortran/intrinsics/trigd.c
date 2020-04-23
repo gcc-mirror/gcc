@@ -27,6 +27,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <math.h>
 
+/* Body of library functions which are cannot be implemented on the current
+ * platform because it lacks a capability, such as an underlying trigonometric
+ * function (sin, cos, tan) or C99 floating-point function (fabs, fmod). */
+#define STRINGIFY_EXPAND(x) #x
+#define ERROR_RETURN(f, k, x) runtime_error (#f " is unavailable for" \
+    " REAL(KIND=" STRINGIFY_EXPAND(k) ") because the system math library" \
+    " lacks support for it"); \
+    RETURN(x)
 
 /*
    For real x, let {x}_P or x_P be the closest representible number in the
@@ -65,141 +73,219 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
  */
 
+#ifdef HAVE_GFC_REAL_4
+
 /* Build _gfortran_sind_r4, _gfortran_cosd_r4, and _gfortran_tand_r4  */
 
-#define FTYPE       GFC_REAL_4
-#define SIND        sind_r4
-#define COSD        cosd_r4
-#define TAND        tand_r4
-#define SUFFIX(x)   x ## f
+#define KIND	4
+#define TINY	0x1.p-100	/* ~= 7.889e-31 */
+#define COSD_SMALL  0x1.p-7	/*  = 7.8125e-3 */
+#define SIND_SMALL  0x1.p-5	/*  = 3.125e-2 */
+#define COSD30      8.66025388e-01
+#define PIO180H     1.74560547e-02	/* high 12 bits.  */
+#define PIO180L    -2.76216747e-06	/* Next 24 bits.  */
 
-#define TINY        0x1.p-100f	/* ~= 7.889e-31 */
-#define COSD_SMALL  0x1.p-7f	/*  = 7.8125e-3 */
-#define SIND_SMALL  0x1.p-5f	/*  = 3.125e-2 */
-#define COSD30      8.66025388e-01f
+#if defined(HAVE_FABSF) && defined(HAVE_FMODF) && defined(HAVE_COPYSIGNF)
 
-#define PIO180H     1.74560547e-02f	/* high 12 bits.  */
-#define PIO180L    -2.76216747e-06f	/* Next 24 bits.  */
+#ifdef HAVE_SINF
+#define ENABLE_SIND
+#endif
+
+#ifdef HAVE_COSF
+#define ENABLE_COSD
+#endif
+
+#ifdef HAVE_TANF
+#define ENABLE_TAND
+#endif
+
+#endif /* HAVE_FABSF && HAVE_FMODF && HAVE_COPYSIGNF */
+
+#ifdef GFC_REAL_4_INFINITY
+#define HAVE_INFINITY_KIND
+#endif
 
 #include "trigd_lib.inc"
 
-#undef FTYPE
+#undef KIND
 #undef TINY
 #undef COSD_SMALL
 #undef SIND_SMALL
 #undef COSD30
 #undef PIO180H
 #undef PIO180L
-#undef SIND
-#undef COSD
-#undef TAND
-#undef SUFFIX
+#undef ENABLE_SIND
+#undef ENABLE_COSD
+#undef ENABLE_TAND
+#undef HAVE_INFINITY_KIND
+
+#endif /* HAVE_GFC_REAL_4... */
 
 
-/* Build _gfortran_sind_r8, _gfortran_cosd_r8, and _gfortran_tand_r8.  */
+#ifdef HAVE_GFC_REAL_8
 
-#define FTYPE       GFC_REAL_8
-#define SIND        sind_r8
-#define COSD        cosd_r8
-#define TAND        tand_r8
-#define SUFFIX(x)   x
+/* Build _gfortran_sind_r8, _gfortran_cosd_r8, and _gfortran_tand_r8  */
 
-#define TINY        0x1.p-1000	/* ~= 9.33e-302 (min exp -1074) */
+#define KIND	8
+#define TINY	0x1.p-1000	/* ~= 9.33e-302 (min exp -1074) */
 #define COSD_SMALL  0x1.p-21	/* ~= 4.768e-7 */
 #define SIND_SMALL  0x1.p-19	/* ~= 9.537e-7 */
 #define COSD30      8.6602540378443860e-01
-
 #define PIO180H     1.7453283071517944e-02	/* high 21 bits.  */
 #define PIO180L     9.4484253514332993e-09	/* Next 53 bits.  */
 
+#if defined(HAVE_FABS) && defined(HAVE_FMOD) && defined(HAVE_COPYSIGN)
+
+#ifdef HAVE_SIN
+#define ENABLE_SIND
+#endif
+
+#ifdef HAVE_COS
+#define ENABLE_COSD
+#endif
+
+#ifdef HAVE_TAN
+#define ENABLE_TAND
+#endif
+
+#endif /* HAVE_FABS && HAVE_FMOD && HAVE_COPYSIGN */
+
+#ifdef GFC_REAL_8_INFINITY
+#define HAVE_INFINITY_KIND
+#endif
+
 #include "trigd_lib.inc"
 
-#undef FTYPE
+#undef KIND
 #undef TINY
 #undef COSD_SMALL
 #undef SIND_SMALL
 #undef COSD30
 #undef PIO180H
 #undef PIO180L
-#undef SIND
-#undef COSD
-#undef TAND
-#undef SUFFIX
+#undef ENABLE_SIND
+#undef ENABLE_COSD
+#undef ENABLE_TAND
+#undef HAVE_INFINITY_KIND
 
+#endif /* HAVE_GFC_REAL_8... */
 
-/* Build _gfortran_sind_r10, _gfortran_cosd_r10, and _gfortran_tand_r10.  */
 
 #ifdef HAVE_GFC_REAL_10
 
-#define FTYPE       GFC_REAL_10
-#define SIND        sind_r10
-#define COSD        cosd_r10
-#define TAND        tand_r10
-#define SUFFIX(x)   x ## l	/* L */
+/* Build _gfortran_sind_r10, _gfortran_cosd_r10, and _gfortran_tand_r10  */
 
-#define TINY        0x1.p-16400L	/* ~= 1.28e-4937 (min exp -16494) */
-#define COSD_SMALL  0x1.p-26L	/* ~= 1.490e-8 */
+#define KIND	10
+#define TINY	0x1.p-16400	/* ~= 1.28e-4937 (min exp -16494) */
+#define COSD_SMALL  0x1.p-26	/* ~= 1.490e-8 */
 #undef  SIND_SMALL		/* not precise */
-#define COSD30       8.66025403784438646787e-01L
+#define COSD30      8.66025403784438646787e-01
+#define PIO180H     1.74532925229868851602e-02	/* high 32 bits */
+#define PIO180L    -3.04358939097084072823e-12	/* Next 64 bits */
 
-#define PIO180H     1.74532925229868851602e-02L	/* high 32 bits */
-#define PIO180L    -3.04358939097084072823e-12L	/* Next 64 bits */
+#if defined(HAVE_FABSL) && defined(HAVE_FMODL) && defined(HAVE_COPYSIGNL)
+
+#ifdef HAVE_SINL
+#define ENABLE_SIND
+#endif
+
+#ifdef HAVE_COSL
+#define ENABLE_COSD
+#endif
+
+#ifdef HAVE_TANL
+#define ENABLE_TAND
+#endif
+
+#endif /* HAVE_FABSL && HAVE_FMODL && HAVE_COPYSIGNL */
+
+#ifdef GFC_REAL_10_INFINITY
+#define HAVE_INFINITY_KIND
+#endif
 
 #include "trigd_lib.inc"
-#undef FTYPE
+
+#undef KIND
 #undef TINY
 #undef COSD_SMALL
 #undef SIND_SMALL
 #undef COSD30
 #undef PIO180H
 #undef PIO180L
-#undef SIND
-#undef COSD
-#undef TAND
-#undef SUFFIX
+#undef ENABLE_SIND
+#undef ENABLE_COSD
+#undef ENABLE_TAND
+#undef HAVE_INFINITY_KIND
+
 #endif /* HAVE_GFC_REAL_10 */
 
 
-/* Build _gfortran_sind_r16, _gfortran_cosd_r16, and _gfortran_tand_r16.  */
-
 #ifdef HAVE_GFC_REAL_16
 
-#define FTYPE       GFC_REAL_16
-#define SIND        sind_r16
-#define COSD        cosd_r16
-#define TAND        tand_r16
+/* Build _gfortran_sind_r16, _gfortran_cosd_r16, and _gfortran_tand_r16  */
 
-#ifdef GFC_REAL_16_IS_FLOAT128	/* libquadmath.  */
-#define SUFFIX(x) x ## q
-#else
-#define SUFFIX(x) x ## l
-#endif /* GFC_REAL_16_IS_FLOAT128  */
-
-#define TINY        SUFFIX(0x1.p-16400)	/* ~= 1.28e-4937 */
-#define COSD_SMALL  SUFFIX(0x1.p-51)	/* ~= 4.441e-16 */
+#define KIND	16
+#define TINY	0x1.p-16400	/* ~= 1.28e-4937 */
 #undef  SIND_SMALL		/* not precise */
-#define COSD30      SUFFIX(8.66025403784438646763723170752936183e-01)
-#define PIO180H     SUFFIX(1.74532925199433197605003442731685936e-02)
-#define PIO180L     SUFFIX(-2.39912634365882824665106671063098954e-17)
+
+#if GFC_REAL_16_DIGITS == 64
+/* 80 bit precision, use constants from REAL(10).  */
+#define COSD_SMALL  0x1.p-26	/* ~= 1.490e-8 */
+#define COSD30      8.66025403784438646787e-01
+#define PIO180H     1.74532925229868851602e-02	/* high 32 bits */
+#define PIO180L    -3.04358939097084072823e-12	/* Next 64 bits */
+
+#else
+/* Proper float128 precision.  */
+#define COSD_SMALL  0x1.p-51	/* ~= 4.441e-16 */
+#define COSD30      8.66025403784438646763723170752936183e-01
+#define PIO180H     1.74532925199433197605003442731685936e-02
+#define PIO180L     -2.39912634365882824665106671063098954e-17
+#endif
+
+#ifdef GFC_REAL_16_IS_LONG_DOUBLE
+
+#if defined(HAVE_FABSL) && defined(HAVE_FMODL) && defined(HAVE_COPYSIGNL)
+
+#ifdef HAVE_SINL
+#define ENABLE_SIND
+#endif
+
+#ifdef HAVE_COSL
+#define ENABLE_COSD
+#endif
+
+#ifdef HAVE_TANL
+#define ENABLE_TAND
+#endif
+
+#endif /* HAVE_FABSL && HAVE_FMODL && HAVE_COPYSIGNL */
+
+#else
+
+/* libquadmath: HAVE_*Q are never defined.  They must be available.  */
+#define ENABLE_SIND
+#define ENABLE_COSD
+#define ENABLE_TAND
+
+#endif /* GFC_REAL_16_IS_LONG_DOUBLE */
+
+#ifdef GFC_REAL_16_INFINITY
+#define HAVE_INFINITY_KIND
+#endif
 
 #include "trigd_lib.inc"
 
-#undef FTYPE
+#undef KIND
+#undef TINY
 #undef COSD_SMALL
 #undef SIND_SMALL
 #undef COSD30
 #undef PIO180H
 #undef PIO180L
-#undef PIO180
-#undef D2R
-#undef CPYSGN
-#undef FABS
-#undef FMOD
-#undef SIN
-#undef COS
-#undef TAN
-#undef SIND
-#undef COSD
-#undef TAND
-#undef SUFFIX
+#undef ENABLE_SIND
+#undef ENABLE_COSD
+#undef ENABLE_TAND
+#undef HAVE_INFINITY_KIND
+
 #endif /* HAVE_GFC_REAL_16 */

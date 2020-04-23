@@ -5528,7 +5528,8 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
    sub-tree.  */
 
 static int
-rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
+rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
+			    bool *cxx17_empty_base_seen)
 {
   machine_mode mode;
   HOST_WIDE_INT size;
@@ -5598,7 +5599,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
-	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep);
+	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep,
+					    cxx17_empty_base_seen);
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -5636,7 +5638,14 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep);
+	    if (cxx17_empty_base_field_p (field))
+	      {
+		*cxx17_empty_base_seen = true;
+		continue;
+	      }
+
+	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
+						    cxx17_empty_base_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count += sub_count;
@@ -5669,7 +5678,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep);
+	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
+						    cxx17_empty_base_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count = count > sub_count ? count : sub_count;
@@ -5710,7 +5720,9 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
       && AGGREGATE_TYPE_P (type))
     {
       machine_mode field_mode = VOIDmode;
-      int field_count = rs6000_aggregate_candidate (type, &field_mode);
+      bool cxx17_empty_base_seen = false;
+      int field_count = rs6000_aggregate_candidate (type, &field_mode,
+						    &cxx17_empty_base_seen);
 
       if (field_count > 0)
 	{
@@ -5725,6 +5737,19 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 		*elt_mode = field_mode;
 	      if (n_elts)
 		*n_elts = field_count;
+	      if (cxx17_empty_base_seen && warn_psabi)
+		{
+		  static unsigned last_reported_type_uid;
+		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+		  if (uid != last_reported_type_uid)
+		    {
+		      inform (input_location,
+			      "parameter passing for argument of type %qT "
+			      "when C++17 is enabled changed to match C++14 "
+			      "in GCC 10.1", type);
+		      last_reported_type_uid = uid;
+		    }
+		}
 	      return true;
 	    }
 	}
