@@ -1,5 +1,9 @@
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94710
+	* optabs.c (expand_vec_perm_const): For shift_amt const0_rtx
+	just return v2.
+
 	PR middle-end/94724
 	* tree.c (get_narrower): Instead of creating COMPOUND_EXPRs
 	temporarily with non-final second operand and updating it later,
