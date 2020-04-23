@@ -1,3 +1,8 @@
+2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_three_way_comparison): Define for
+	freestanding builds.
+
 2020-04-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/std/coroutine: Update the inline namespace to __n4861.

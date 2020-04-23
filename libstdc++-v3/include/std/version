@@ -184,6 +184,9 @@
 #endif
 #define __cpp_lib_is_nothrow_convertible 201806L
 #define __cpp_lib_remove_cvref 201711L
+#if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
+# define __cpp_lib_three_way_comparison 201907L
+#endif
 #define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref 201811L
 
@@ -215,9 +218,6 @@
 #define __cpp_lib_span 202002L
 #define __cpp_lib_ssize 201902L
 #define __cpp_lib_starts_ends_with 201711L
-#if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
-# define __cpp_lib_three_way_comparison 201907L
-#endif
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
 #endif
