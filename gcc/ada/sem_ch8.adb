@@ -3171,7 +3171,7 @@ package body Sem_Ch8 is
 
       Set_Kill_Elaboration_Checks (New_S, True);
 
-      --  If we had a previous error, indicate a completely is present to stop
+      --  If we had a previous error, indicate a completion is present to stop
       --  junk cascaded messages, but don't take any further action.
 
       if Etype (Nam) = Any_Type then
@@ -3409,6 +3409,8 @@ package body Sem_Ch8 is
 
                if Original_Subprogram (Old_S) = Rename_Spec then
                   Error_Msg_N ("unfrozen subprogram cannot rename itself ", N);
+               else
+                  Check_Formal_Subprogram_Conformance (New_S, Old_S, Spec);
                end if;
             else
                Check_Subtype_Conformant (New_S, Old_S, Spec);
