@@ -315,6 +315,11 @@ package body Bindusg is
       Write_Line
         ("  -x        Exclude source files (check object consistency only)");
 
+      --  Line for -xdr switch
+
+      Write_Line
+        ("  -xdr      Use the XDR protocol for streaming");
+
       --  Line for -X switch
 
       Write_Line
