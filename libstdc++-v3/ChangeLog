@@ -1,6 +1,14 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex (__cpp_lib_constexpr_complex): Define.
+	* include/std/version (__cpp_lib_constexpr_complex): Likewise.
+	* testsuite/26_numerics/complex/1.cc: New test.
+	* testsuite/26_numerics/complex/2.cc: New test.
+
+	Backport from mainline
 	2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/version [!_GLIBCXX_HOSTED]: Do not define feature test

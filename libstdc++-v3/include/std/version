@@ -176,6 +176,7 @@
 
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_bind_front 201907L
+#define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_erase_if 202002L
 #define __cpp_lib_interpolate 201902L
 #define __cpp_lib_list_remove_return_type 201806L
