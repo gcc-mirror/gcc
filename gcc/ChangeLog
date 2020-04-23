@@ -1,3 +1,8 @@
+2020-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/install.texi (D-Specific Options): Document
+	--enable-libphobos-checking and --with-libphobos-druntime-only.
+
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94707
