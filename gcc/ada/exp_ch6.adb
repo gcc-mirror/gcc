@@ -3617,6 +3617,21 @@ package body Exp_Ch6 is
             then
                Prev_Orig := Prev;
 
+            --  If the actual is an attribute reference that was expanded
+            --  into a reference to an entity, then get accessibility level
+            --  from that entity. AARM 6.1.1(27.d) says "... the implicit
+            --  constant declaration defines the accessibility level of X'Old".
+
+            elsif Nkind (Prev_Orig) = N_Attribute_Reference
+              and then Nam_In (Attribute_Name (Prev_Orig),
+                               Name_Old,
+                               Name_Loop_Entry)
+              and then Is_Entity_Name (Prev)
+              and then Present (Entity (Prev))
+              and then Is_Object (Entity (Prev))
+            then
+               Prev_Orig := Prev;
+
             elsif Nkind (Prev_Orig) = N_Type_Conversion then
                Prev_Orig := Expression (Prev_Orig);
             end if;
