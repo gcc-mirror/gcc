@@ -8530,6 +8530,11 @@ package body Sem_Attr is
       -- Component_Size --
       --------------------
 
+      --  Fold Component_Size if it is known at compile time, which is always
+      --  true in the packed array case. It is important that the packed array
+      --  case is handled here since the back end would otherwise get confused
+      --  by the equivalent packed array type.
+
       when Attribute_Component_Size =>
          if Known_Static_Component_Size (P_Type) then
             Fold_Uint (N, Component_Size (P_Type), Static);
