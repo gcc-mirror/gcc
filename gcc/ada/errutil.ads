@@ -30,8 +30,7 @@
 --  Err_Vars. Like Errout, it also uses the common variables and routines
 --  in package Erroutc.
 
---  This package is used by the preprocessor (gprep.adb) and the project
---  manager (prj-err.ads).
+--  This package is used by the preprocessor (gprep.adb).
 
 with Styleg;
 with Types; use Types;
