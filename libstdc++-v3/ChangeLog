@@ -1,3 +1,9 @@
+2020-04-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/std/coroutine: Update the inline namespace to __n4861.
+	Add the __cpp_lib_coroutine define, set to 201902L.
+	* include/std/version: Add __cpp_lib_coroutine, set to 201902L.
+
 2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/execution (__cpp_lib_execution): Define to indicate

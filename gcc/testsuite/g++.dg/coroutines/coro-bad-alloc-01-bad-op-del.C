@@ -6,7 +6,7 @@
 #include "coro1-allocators.h"
 
 struct coro1
-f ()  /* { dg-error {'operator delete' is provided by 'std::__n4835::coroutine_traits<coro1>::promise_type' \{aka 'coro1::promise_type'\} but is not usable with the function signature 'coro1 f\(\)'} } */
+f ()  /* { dg-error {'operator delete' is provided by 'std::__n4861::coroutine_traits<coro1>::promise_type' \{aka 'coro1::promise_type'\} but is not usable with the function signature 'coro1 f\(\)'} } */
 {
   co_return;
 }

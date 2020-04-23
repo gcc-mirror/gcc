@@ -52,10 +52,13 @@
 
 namespace std _GLIBCXX_VISIBILITY (default)
 {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_impl_coroutine
-  inline namespace __n4835 {
+
+#define __cpp_lib_coroutine 201902L
+
+  inline namespace __n4861 {
 
   // 17.12.2 coroutine traits
   /// [coroutine.traits]
@@ -277,7 +280,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
     void await_resume() {}
   };
 
-  } // namespace __n4835
+  } // namespace __n4861
 
 #else
 #error "the coroutine header requires -fcoroutines"

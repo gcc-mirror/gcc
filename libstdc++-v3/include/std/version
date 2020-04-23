@@ -69,6 +69,9 @@
 
 #if __cplusplus >= 201402L
 // c++14
+#if __cpp_impl_coroutine
+# define __cpp_lib_coroutine 201902L
+#endif
 #define __cpp_lib_integral_constant_callable 201304
 #define __cpp_lib_is_final 201402L
 #define __cpp_lib_transformation_trait_aliases 201304
