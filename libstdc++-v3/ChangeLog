@@ -1,6 +1,12 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version [!_GLIBCXX_HOSTED]: Do not define feature test
+	macros for features that are only present in hosted builds.
+
+	Backport from mainline
 	2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/bit (__cpp_lib_bitops): Define.
