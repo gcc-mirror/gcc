@@ -1,5 +1,9 @@
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* configure.ac <$enable_offload_targets>: Do parsing as done
+	elsewhere.
+	* configure: Regenerate.
+
 	* configure.ac <$enable_offload_targets>: 'amdgcn' is 'gcn'.
 	* configure: Regenerate.
 
