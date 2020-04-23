@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++17 } }
+// { dg-do run { target c++17 } }
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,29 +19,46 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <any>
+#include <utility>
+#include <tuple>
+#include <testsuite_hooks.h>
 
-using std::any;
-using std::any_cast;
-
-void test01()
+void
+test01()
 {
-  const any y(1);
-  any_cast<int&>(y); // { dg-error "here" }
-  // { dg-error "Template argument must be constructible from a const value" "" { target { *-*-* } } 0 }
+  // PR libstdc++/90415
+  static_assert( std::is_copy_constructible<std::tuple<std::any>>::value );
 }
 
-void test02()
+struct wrapper
 {
-  any y(1);
-  any_cast<int&&>(y); // { dg-error "here" }
-  // { dg-error "Template argument must be constructible from an lvalue" "" { target { *-*-* } } 0 }
+  wrapper() = default;
+
+  wrapper(const std::any& t);
+
+  wrapper(const wrapper& w);
+
+  auto& operator=(const std::any& t);
+
+  auto& operator=(const wrapper& w)
+  {
+    value = w.value;
+    return *this;
+  }
+
+  std::any value;
+};
+
+void
+test02()
+{
+  // PR libstdc++/91630
+  wrapper a, b;
+  a = b;
 }
 
-void test03()
+int main()
 {
-  any y(1);
-  any_cast<int&>(std::move(y)); // { dg-error "here" }
-  // { dg-error "Template argument must be constructible from an rvalue" "" { target { *-*-* } } 0 }
+  test01();
+  test02();
 }
-
-// { dg-prune-output "invalid 'static_cast'" }

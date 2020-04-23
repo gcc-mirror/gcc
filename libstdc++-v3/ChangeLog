@@ -1,3 +1,24 @@
+2020-04-24  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90415
+	PR libstdc++/92156
+	* include/std/any (any): Rename template parameters for consistency
+	with the standard.
+	(any::_Decay): Rename to _Decay_if_not_any.
+	(any::any(T&&):: Remove is_constructible from constraints. Remove
+	non-standard overload.
+	(any::any(in_place_type_t<T>, Args&&...))
+	(any::any(in_place_type_t<T>, initializer_list<U>, Args&&...))
+	(any::emplace(Args&&...))
+	(any::emplace(initializer_list<U>, Args&&...)):
+	Use decay_t instead of _Decay.
+	* testsuite/20_util/any/cons/90415.cc: New test.
+	* testsuite/20_util/any/cons/92156.cc: New Test.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Make dg-error directives
+	more robust.
+	* testsuite/20_util/any/modifiers/92156.cc: New test.
+
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update C++20 status table.
