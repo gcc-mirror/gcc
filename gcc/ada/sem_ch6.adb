@@ -5734,16 +5734,8 @@ package body Sem_Ch6 is
             end if;
 
             return;
-
-         elsif Is_Formal_Subprogram (Old_Id)
-           or else Is_Formal_Subprogram (New_Id)
-           or else (Is_Subprogram (New_Id)
-                     and then Present (Alias (New_Id))
-                     and then Is_Formal_Subprogram (Alias (New_Id)))
-         then
-            Conformance_Error
-              ("\formal subprograms are not subtype conformant "
-               & "(RM 6.3.1 (17/3))");
+         else
+            Check_Formal_Subprogram_Conformance (New_Id, Old_Id, Err_Loc);
          end if;
       end if;
 
@@ -6515,6 +6507,37 @@ package body Sem_Ch6 is
          return;
       end if;
    end Check_Discriminant_Conformance;
+
+   -----------------------------------------
+   -- Check_Formal_Subprogram_Conformance --
+   -----------------------------------------
+
+   procedure Check_Formal_Subprogram_Conformance
+     (New_Id  : Entity_Id;
+      Old_Id  : Entity_Id;
+      Err_Loc : Node_Id := Empty)
+   is
+      N : Node_Id;
+   begin
+      if Is_Formal_Subprogram (Old_Id)
+        or else Is_Formal_Subprogram (New_Id)
+        or else (Is_Subprogram (New_Id)
+                  and then Present (Alias (New_Id))
+                  and then Is_Formal_Subprogram (Alias (New_Id)))
+      then
+         if Present (Err_Loc) then
+            N := Err_Loc;
+         else
+            N := New_Id;
+         end if;
+
+         Error_Msg_Sloc := Sloc (Old_Id);
+         Error_Msg_N ("not subtype conformant with declaration#!", N);
+         Error_Msg_NE
+           ("\formal subprograms are not subtype conformant "
+            & "(RM 6.3.1 (17/3))", N, New_Id);
+      end if;
+   end Check_Formal_Subprogram_Conformance;
 
    ----------------------------
    -- Check_Fully_Conformant --
