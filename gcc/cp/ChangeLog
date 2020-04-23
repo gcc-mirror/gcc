@@ -1,5 +1,8 @@
 2020-04-23  Patrick Palka  <ppalka@redhat.com>
 
+	* tree.c (zero_init_expr_p): Use uses_template_parms instead of
+	dependent_type_p.
+
 	PR c++/94645
 	* pt.c (template_class_depth): Walk into the DECL_FRIEND_CONTEXT of a
 	friend declaration rather than into its CP_DECL_CONTEXT.

@@ -1,5 +1,7 @@
 2020-04-23  Patrick Palka  <ppalka@redhat.com>
 
+	* g++.dg/cpp0x/dependent3.C: New test.
+
 	PR c++/94645
 	* g++.dg/cpp2a/concepts-lambda6.C: New test.
 
