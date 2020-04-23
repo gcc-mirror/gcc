@@ -69,8 +69,8 @@
 # include <type_traits>
 #endif
 
-#if __cplusplus > 201402L
-# define __cpp_lib_array_constexpr 201603
+#if __cplusplus >= 201703L
+# define __cpp_lib_array_constexpr 201803L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

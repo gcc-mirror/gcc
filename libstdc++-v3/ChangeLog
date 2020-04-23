@@ -1,5 +1,15 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__cpp_lib_array_constexpr): Update
+	value to indicate P0858R0 support.
+	* include/std/string_view (__cpp_lib_string_view): Likewise.
+	* include/std/version (__cpp_lib_array_constexpr)
+	(__cpp_lib_string_view): Likewise.
+	* testsuite/23_containers/array/element_access/constexpr_c++17.cc:
+	New test.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc: Test
+	in C++17 mode and check feature test macro.
+
 	Backport from mainline
 	2020-04-22  Jonathan Wakely  <jwakely@redhat.com>
 
