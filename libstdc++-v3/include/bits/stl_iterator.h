@@ -72,7 +72,7 @@
 #if __cplusplus > 201703L
 # define __cpp_lib_array_constexpr 201811L
 #elif __cplusplus == 201703L
-# define __cpp_lib_array_constexpr 201603L
+# define __cpp_lib_array_constexpr 201803L
 #endif
 
 #if __cplusplus > 201703L

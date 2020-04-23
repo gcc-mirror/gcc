@@ -1,5 +1,13 @@
 2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__cpp_lib_array_constexpr): Revert
+	value for C++17 to 201803L because P0858R0 is supported for C++17.
+	* include/std/version (__cpp_lib_array_constexpr): Likewise.
+	* testsuite/23_containers/array/element_access/constexpr_c++17.cc:
+	Check for value corresponding to P0031R0 features being tested.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc:
+	Check for value corresponding to P0858R0 features being tested.
+
 	* include/std/version (__cpp_lib_three_way_comparison): Define for
 	freestanding builds.
 

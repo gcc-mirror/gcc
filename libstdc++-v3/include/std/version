@@ -123,7 +123,7 @@
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_any 201606L
 #define __cpp_lib_apply 201603
-#define __cpp_lib_array_constexpr 201603L
+#define __cpp_lib_array_constexpr 201803L
 #define __cpp_lib_as_const 201510
 #define __cpp_lib_boyer_moore_searcher 201603
 #define __cpp_lib_chrono 201611

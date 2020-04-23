@@ -22,11 +22,12 @@
 
 #ifndef __cpp_lib_array_constexpr
 # error "Feature test macro for array constexpr is missing in <array>"
-#elif __cpp_lib_array_constexpr < 201603L
+#elif __cpp_lib_array_constexpr < 201803L
 # error "Feature test macro for array constexpr has wrong value in <array>"
-#elif __cpp_lib_array_constexpr > 201603L && __cplusplus == 201703
-# error "Feature test macro for array constexpr has wrong value for C++17"
 #endif
+
+// This test is compiled as C++17 because array::iterator is just a pointer,
+// so always meets the C++20 constexpr iterator requirements, even in C++17.
 
 constexpr int
 test()
