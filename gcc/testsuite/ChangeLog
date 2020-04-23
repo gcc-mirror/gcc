@@ -1,5 +1,8 @@
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94707
+	* g++.dg/tree-ssa/pr27830.C: Use -Wpsabi -w for -std=c++17 and higher.
+
 	PR c/94705
 	* gcc.dg/pr94705.c: New test.
 

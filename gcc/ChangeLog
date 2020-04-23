@@ -1,5 +1,18 @@
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/94707
+	* config/rs6000/rs6000-call.c (rs6000_aggregate_candidate): Add
+	cxx17_empty_base_seen argument.  Pass it to recursive calls.
+	Ignore cxx17_empty_base_field_p fields after setting
+	*cxx17_empty_base_seen to true.
+	(rs6000_discover_homogeneous_aggregate): Adjust
+	rs6000_aggregate_candidate caller.  With -Wpsabi, diagnose homogeneous
+	aggregates with C++17 empty base fields.
+
+	PR c/94705
+	* attribs.c (decl_attribute): Don't diagnose attribute exclusions
+	if last_decl is error_mark_node or has such a TREE_TYPE.
+
 	PR c/94705
 	* attribs.c (decl_attribute): Don't diagnose attribute exclusions
 	if last_decl is error_mark_node or has such a TREE_TYPE.
