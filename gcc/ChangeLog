@@ -1,3 +1,11 @@
+2019-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/94717
+	* gimple-ssa-store-merging.c (try_coalesce_bswap): Return false if one
+	of the stores doesn't have the same landing pad number as the first.
+	(coalesce_immediate_stores): Do not try to coalesce the store using
+	bswap if it doesn't have the same landing pad number as the first.
+
 2020-04-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc/doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
