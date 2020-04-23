@@ -1,3 +1,12 @@
+2020-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90320
+	* call.c (struct conversion): Add copy_init_p.
+	(standard_conversion): Set copy_init_p in ck_base and ck_rvalue
+	if FLAGS demands LOOKUP_ONLYCONVERTING.
+	(convert_like_real) <case ck_base>: If copy_init_p is set, or
+	LOOKUP_ONLYCONVERTING into FLAGS.
+
 2020-04-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94752

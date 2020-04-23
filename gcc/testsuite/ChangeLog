@@ -1,3 +1,9 @@
+2020-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90320
+	* g++.dg/cpp0x/explicit13.C: New test.
+	* g++.dg/cpp0x/explicit14.C: New test.
+
 2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/89418
