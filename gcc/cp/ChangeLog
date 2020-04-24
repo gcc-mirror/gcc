@@ -1,3 +1,8 @@
+2020-04-24  Martin Liska  <mliska@suse.cz>
+
+	* coroutines.cc: Fix compilation error for release checking
+	where we miss declaration of ‘coro_body_contains_bind_expr_p’.
+
 2020-04-23  Patrick Palka  <ppalka@redhat.com>
 
 	* tree.c (zero_init_expr_p): Use uses_template_parms instead of

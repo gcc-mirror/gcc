@@ -3441,7 +3441,6 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   return fn;
 }
 
-#if CHECKING_P
 /* Return a bind expression if we see one, else NULL_TREE.  */
 static tree
 bind_expr_find_in_subtree (tree *stmt, int *, void *)
@@ -3460,7 +3459,6 @@ coro_body_contains_bind_expr_p (tree *stmt)
   hash_set<tree> visited;
   return cp_walk_tree (stmt, bind_expr_find_in_subtree, NULL, &visited);
 }
-#endif
 
 /* Here we:
    a) Check that the function and promise type are valid for a
