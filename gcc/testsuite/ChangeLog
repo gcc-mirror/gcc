@@ -1,3 +1,21 @@
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94447
+	PR analyzer/94639
+	PR analyzer/94732
+	PR analyzer/94754
+	* gcc.dg/analyzer/data-model-1.c: Mark "use of uninitialized
+	value" warnings as xfail for now.
+	* gcc.dg/analyzer/data-model-5b.c: Remove uninitialized warning.
+	* gcc.dg/analyzer/pr94099.c: Mark "uninitialized" warning as xfail
+	for now.
+	* gcc.dg/analyzer/pr94447.c: New test.
+	* gcc.dg/analyzer/pr94639.c: New test.
+	* gcc.dg/analyzer/pr94732.c: New test.
+	* gcc.dg/analyzer/pr94754.c: New test.
+	* gcc.dg/analyzer/zlib-6.c: Mark "uninitialized" warning as xfail
+	for now.
+
 2020-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94809

@@ -1,3 +1,13 @@
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94447
+	PR analyzer/94639
+	PR analyzer/94732
+	PR analyzer/94754
+	* doc/invoke.texi (Static Analyzer Options): Remove
+	-Wanalyzer-use-of-uninitialized-value.
+	(-Wno-analyzer-use-of-uninitialized-value): Remove item.
+
 2020-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94809

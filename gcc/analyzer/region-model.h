@@ -684,9 +684,6 @@ public:
 
 enum poison_kind
 {
-  /* For use to describe uninitialized memory.  */
-  POISON_KIND_UNINIT,
-
   /* For use to describe freed memory.  */
   POISON_KIND_FREED,
 

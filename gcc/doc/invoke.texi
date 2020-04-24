@@ -8256,7 +8256,6 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
--Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 }
 
@@ -8428,15 +8427,6 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
-
-@item -Wno-analyzer-use-of-uninitialized-value
-@opindex Wanalyzer-use-of-uninitialized-value
-@opindex Wno-analyzer-use-of-uninitialized-value
-This warning requires @option{-fanalyzer}, which enables it; use
-@option{-Wno-analyzer-use-of-uninitialized-value} to disable it.
-
-This diagnostic warns for paths through the code in which an uninitialized
-value is used.
 
 @end table
 
