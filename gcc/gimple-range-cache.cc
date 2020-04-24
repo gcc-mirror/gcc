@@ -277,7 +277,6 @@ void
 block_range_cache::set_bb_range (tree name, const basic_block bb,
 				 const irange &r)
 {
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).set_bb_range (bb, r);
 }
 
@@ -286,7 +285,6 @@ block_range_cache::set_bb_range (tree name, const basic_block bb,
 void
 block_range_cache::set_bb_varying (tree name, const basic_block bb)
 {
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).set_bb_varying (bb);
 }
 
@@ -296,7 +294,6 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
 bool
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 {
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).get_bb_range (r, bb);
 }
 
@@ -305,7 +302,6 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 bool
 block_range_cache::bb_range_p (tree name, const basic_block bb)
 {
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   return get_block_ranges (name).bb_range_p (bb);
 }
 
