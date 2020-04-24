@@ -4196,8 +4196,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
   if (rvalue->expr_type == EXPR_NULL)
     return true;
 
-  if (rvalue->expr_type == EXPR_VARIABLE && is_subref_array (rvalue))
-    lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
+  /* A function may also return subref arrray pointer.  */
+
+  if ((rvalue->expr_type == EXPR_VARIABLE && is_subref_array (rvalue))
+      || rvalue->expr_type == EXPR_FUNCTION)
+      lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
 
   attr = gfc_expr_attr (rvalue);
 
