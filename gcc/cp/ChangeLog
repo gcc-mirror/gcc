@@ -1,3 +1,9 @@
+2020-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94742
+	* semantics.c (finish_call_expr): When looking if all overloads
+	are noreturn, use STRIP_TEMPLATE to look through TEMPLATE_DECLs.
+
 2020-04-24  Martin Liska  <mliska@suse.cz>
 
 	* coroutines.cc: Fix compilation error for release checking

@@ -2508,7 +2508,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      bool abnormal = true;
 	      for (lkp_iterator iter (fn); abnormal && iter; ++iter)
 		{
-		  tree fndecl = *iter;
+		  tree fndecl = STRIP_TEMPLATE (*iter);
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
 		    abnormal = false;

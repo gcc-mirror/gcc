@@ -1,5 +1,8 @@
 2020-04-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/94742
+	* g++.dg/warn/Wreturn-type-12.C: New test.
+
 	PR tree-optimization/94734
 	PR tree-optimization/89430
 	* gcc.dg/tree-ssa/pr89430-1.c: Add xfail.
