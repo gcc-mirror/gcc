@@ -1,3 +1,9 @@
+2020-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/94710
+	* config/rs6000/vector.md (vec_shr_<mode> for VEC_L): Correct little
+	endian byteshift_val calculation.
+
 2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.md (*mov<mode>_insn): Only split post-reload.
