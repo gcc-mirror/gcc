@@ -79,6 +79,20 @@ inline namespace v1
     not_found = 4
   };
 
+} // namespace v1
+} // namespace net
+} // namespace experimental
+
+  template<>
+    struct is_error_code_enum<experimental::net::v1::socket_errc>
+    : public true_type {};
+
+namespace experimental
+{
+namespace net
+{
+inline namespace v1
+{
   const error_category& socket_category() noexcept
   {
     struct __cat : error_category
@@ -2601,10 +2615,6 @@ inline namespace v1
 } // namespace v1
 } // namespace net
 } // namespace experimental
-
-  template<>
-    struct is_error_code_enum<experimental::net::v1::socket_errc>
-    : public true_type {};
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
