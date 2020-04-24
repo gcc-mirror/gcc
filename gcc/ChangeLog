@@ -1,3 +1,13 @@
+2020-04-25  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94734
+	PR tree-optimization/89430
+	* tree-ssa-phiopt.c: Include tree-eh.h.
+	(cond_store_replacement): Return false if an automatic variable
+	access could trap.  If -fstore-data-races, don't return false
+	just because an automatic variable is addressable.
+
 2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (add<mode>_zext_dup2_exec): Fix merge

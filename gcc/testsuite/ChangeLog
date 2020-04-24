@@ -1,3 +1,13 @@
+2020-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94734
+	PR tree-optimization/89430
+	* gcc.dg/tree-ssa/pr89430-1.c: Add xfail.
+	* gcc.dg/tree-ssa/pr89430-2.c: Add xfail.
+	* gcc.dg/tree-ssa/pr89430-5.c: Add xfail.
+	* gcc.dg/tree-ssa/pr89430-6.c: Add xfail.
+	* gcc.c-torture/execute/pr94734.c: New test.
+
 2020-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94383
