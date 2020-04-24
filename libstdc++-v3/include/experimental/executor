@@ -129,10 +129,9 @@ inline namespace v1
 
   class service_already_exists : public logic_error
   {
-    template<typename _Service, typename... _Args>
-      friend _Service&
-      make_service(execution_context&, _Args&&...);
-
+  public:
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3414. service_already_exists has no usable constructors
     service_already_exists() : logic_error("service already exists") { }
   };
 
