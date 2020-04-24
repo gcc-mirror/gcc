@@ -224,6 +224,11 @@ package body Exp_Ch4 is
    --  skipped if the operation is done in Bignum mode but that's fine, since
    --  the Bignum call takes care of everything.
 
+   procedure Narrow_Large_Operation (N : Node_Id);
+   --  Try to compute the result of a large operation in a narrower type than
+   --  its nominal type. This is mainly aimed to get rid of operations done in
+   --  Universal_Integer that can be generated for attributes.
+
    procedure Optimize_Length_Comparison (N : Node_Id);
    --  Given an expression, if it is of the form X'Length op N (or the other
    --  way round), where N is known at compile time to be 0 or 1, or something
@@ -6545,6 +6550,12 @@ package body Exp_Ch4 is
             end if;
          end;
 
+         --  Try to narrow the operation
+
+         if Ltyp = Universal_Integer and then Nkind (N) = N_In then
+            Narrow_Large_Operation (N);
+         end if;
+
          --  For all other cases of an explicit range, nothing to be done
 
          goto Leave;
@@ -7224,6 +7235,7 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Abs (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Expr : constant Node_Id    := Right_Opnd (N);
+      Typ  : constant Entity_Id  := Etype (N);
 
    begin
       Unary_Op_Validity_Checks (N);
@@ -7235,9 +7247,19 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Abs then
+            return;
+         end if;
+      end if;
+
       --  Deal with software overflow checking
 
-      if Is_Signed_Integer_Type (Etype (N))
+      if Is_Signed_Integer_Type (Typ)
         and then Do_Overflow_Check (N)
       then
          --  The only case to worry about is when the argument is equal to the
@@ -7293,6 +7315,16 @@ package body Exp_Ch4 is
            and then Expr_Value (Left_Opnd (N)) = Uint_0
          then
             Rewrite (N, Right_Opnd (N));
+            return;
+         end if;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Add then
             return;
          end if;
       end if;
@@ -7472,6 +7504,16 @@ package body Exp_Ch4 is
       if Rknow and then Rval = Uint_1 then
          Rewrite (N, Lopnd);
          return;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Divide then
+            return;
+         end if;
       end if;
 
       --  Convert x / 2 ** y to Shift_Right (x, y). Note that the fact that
@@ -8437,6 +8479,12 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
+      --  Try to narrow the operation
+
+      if Typl = Universal_Integer and then Nkind (N) = N_Op_Eq then
+         Narrow_Large_Operation (N);
+      end if;
+
       --  Special optimization of length comparison
 
       Optimize_Length_Comparison (N);
@@ -9053,6 +9101,12 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
+      --  Try to narrow the operation
+
+      if Typ1 = Universal_Integer and then Nkind (N) = N_Op_Ge then
+         Narrow_Large_Operation (N);
+      end if;
+
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Ge;
 
@@ -9095,6 +9149,12 @@ package body Exp_Ch4 is
       end if;
 
       Rewrite_Comparison (N);
+
+      --  Try to narrow the operation
+
+      if Typ1 = Universal_Integer and then Nkind (N) = N_Op_Gt then
+         Narrow_Large_Operation (N);
+      end if;
 
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Gt;
@@ -9139,6 +9199,12 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
+      --  Try to narrow the operation
+
+      if Typ1 = Universal_Integer and then Nkind (N) = N_Op_Le then
+         Narrow_Large_Operation (N);
+      end if;
+
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Le;
 
@@ -9182,6 +9248,12 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
+      --  Try to narrow the operation
+
+      if Typ1 = Universal_Integer and then Nkind (N) = N_Op_Lt then
+         Narrow_Large_Operation (N);
+      end if;
+
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Lt;
 
@@ -9203,8 +9275,18 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Minus then
+            return;
+         end if;
+      end if;
+
       if not Backend_Overflow_Checks_On_Target
-         and then Is_Signed_Integer_Type (Etype (N))
+         and then Is_Signed_Integer_Type (Typ)
          and then Do_Overflow_Check (N)
       then
          --  Software overflow checking expands -expr into (0 - expr)
@@ -9252,7 +9334,17 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      if Is_Integer_Type (Etype (N)) then
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Mod then
+            return;
+         end if;
+      end if;
+
+      if Is_Integer_Type (Typ) then
          Apply_Divide_Checks (N);
 
          --  All done if we don't have a MOD any more, which can happen as a
@@ -9551,6 +9643,16 @@ package body Exp_Ch4 is
          end if;
       end if;
 
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Multiply then
+            return;
+         end if;
+      end if;
+
       --  Convert x * 2 ** y to Shift_Left (x, y). Note that the fact that
       --  Is_Power_Of_2_For_Shift is set means that we know that our left
       --  operand is an integer, as required for this to work.
@@ -9733,6 +9835,12 @@ package body Exp_Ch4 is
          end if;
 
          Rewrite_Comparison (N);
+
+         --  Try to narrow the operation
+
+         if Typ = Universal_Integer and then Nkind (N) = N_Op_Ne then
+            Narrow_Large_Operation (N);
+         end if;
 
       --  For all cases other than elementary types, we rewrite node as the
       --  negation of an equality operation, and reanalyze. The equality to be
@@ -10016,6 +10124,8 @@ package body Exp_Ch4 is
    ----------------------
 
    procedure Expand_N_Op_Plus (N : Node_Id) is
+      Typ : constant Entity_Id := Etype (N);
+
    begin
       Unary_Op_Validity_Checks (N);
 
@@ -10024,6 +10134,12 @@ package body Exp_Ch4 is
       if Minimized_Eliminated_Overflow_Check (N) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
       end if;
    end Expand_N_Op_Plus;
 
@@ -10056,6 +10172,16 @@ package body Exp_Ch4 is
       if Minimized_Eliminated_Overflow_Check (N) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Rem then
+            return;
+         end if;
       end if;
 
       if Is_Integer_Type (Etype (N)) then
@@ -10420,6 +10546,16 @@ package body Exp_Ch4 is
       if Minimized_Eliminated_Overflow_Check (N) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Subtract then
+            return;
+         end if;
       end if;
 
       --  N - 0 = N for integer types
@@ -11876,20 +12012,13 @@ package body Exp_Ch4 is
             L, R : Node_Id;
 
          begin
-            R :=
-              Make_Type_Conversion (Loc,
-                Subtype_Mark => New_Occurrence_Of (Standard_Integer, Loc),
-                Expression   => Relocate_Node (Right_Opnd (Operand)));
-
             Opnd := New_Op_Node (Nkind (Operand), Loc);
+
+            R := Convert_To (Standard_Integer, Right_Opnd (Operand));
             Set_Right_Opnd (Opnd, R);
 
             if Nkind (Operand) in N_Binary_Op then
-               L :=
-                 Make_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Standard_Integer, Loc),
-                   Expression   => Relocate_Node (Left_Opnd (Operand)));
-
+               L := Convert_To (Standard_Integer, Left_Opnd (Operand));
                Set_Left_Opnd  (Opnd, L);
             end if;
 
@@ -13776,6 +13905,207 @@ package body Exp_Ch4 is
         Is_Signed_Integer_Type (Etype (N))
           and then Overflow_Check_Mode in Minimized_Or_Eliminated;
    end Minimized_Eliminated_Overflow_Check;
+
+   ----------------------------
+   -- Narrow_Large_Operation --
+   ----------------------------
+
+   procedure Narrow_Large_Operation (N : Node_Id) is
+      Kind   : constant Node_Kind := Nkind (N);
+      In_Rng : constant Boolean   := Kind = N_In;
+      Binary : constant Boolean   := Kind in N_Binary_Op or else In_Rng;
+      Compar : constant Boolean   := Kind in N_Op_Compare or else In_Rng;
+      R      : constant Node_Id   := Right_Opnd (N);
+      Typ    : constant Entity_Id := Etype (R);
+
+      function Get_Size_For_Range (Lo, Hi : Uint) return Nat;
+      --  Return the size of the smallest signed integer type covering Lo .. Hi
+
+      ------------------------
+      -- Get_Size_For_Range --
+      ------------------------
+
+      function Get_Size_For_Range (Lo, Hi : Uint) return Nat is
+         B : Uint;
+         S : Nat;
+
+      begin
+         S := 1;
+         B := Uint_1;
+
+         --  S = size, B = 2 ** (size - 1) (can accommodate -B .. +(B - 1))
+
+         while Lo < -B or else Hi < -B or else Lo >= B or else Hi >= B loop
+            B := Uint_2 ** S;
+            S := S + 1;
+         end loop;
+
+         return S;
+      end Get_Size_For_Range;
+
+      --  Local variables
+
+      L          : Node_Id;
+      Llo, Lhi   : Uint;
+      Rlo, Rhi   : Uint;
+      Lsiz, Rsiz : Nat;
+      Nlo, Nhi   : Uint;
+      Nsiz       : Nat;
+      Ntyp       : Entity_Id;
+      Nop        : Node_Id;
+      OK         : Boolean;
+
+   --  Start of processing for Narrow_Large_Operation
+
+   begin
+      --  First, determine the range of the left operand, if any
+
+      if Binary then
+         L := Left_Opnd (N);
+         Determine_Range (L, OK, Llo, Lhi, Assume_Valid => True);
+         if not OK then
+            return;
+         end if;
+
+      else
+         L   := Empty;
+         Llo := Uint_0;
+         Lhi := Uint_0;
+      end if;
+
+      --  Second, determine the range of the right operand, which can itself
+      --  be a range, in which case we take the lower bound of the low bound
+      --  and the upper bound of the high bound.
+
+      if In_Rng then
+         declare
+            Zlo, Zhi : Uint;
+
+         begin
+            Determine_Range
+              (Low_Bound (R), OK, Rlo, Zhi, Assume_Valid => True);
+            if not OK then
+               return;
+            end if;
+
+            Determine_Range
+              (High_Bound (R), OK, Zlo, Rhi, Assume_Valid => True);
+            if not OK then
+               return;
+            end if;
+         end;
+
+      else
+         Determine_Range (R, OK, Rlo, Rhi, Assume_Valid => True);
+         if not OK then
+            return;
+         end if;
+      end if;
+
+      --  Then compute a size suitable for each range
+
+      if Binary then
+         Lsiz := Get_Size_For_Range (Llo, Lhi);
+      else
+         Lsiz := 0;
+      end if;
+
+      Rsiz := Get_Size_For_Range (Rlo, Rhi);
+
+      --  Now compute the size of the narrower type
+
+      if Compar then
+         --  The type must be able to accomodate the operands
+
+         Nsiz := Nat'Max (Lsiz, Rsiz);
+
+      else
+         --  The type must be able to accomodate the operand(s) and the result.
+
+         --  Note that Determine_Range typically does not report the bounds of
+         --  the value as being larger than those of the base type, which means
+         --  that it does not report overflow (see also Enable_Overflow_Check).
+
+         Determine_Range (N, OK, Nlo, Nhi, Assume_Valid => True);
+         if not OK then
+            return;
+         end if;
+
+         --  Therefore, if Nsiz is not lower than the size of the original type
+         --  here, we cannot be sure that the operation does not overflow.
+
+         Nsiz := Get_Size_For_Range (Nlo, Nhi);
+         Nsiz := Nat'Max (Nsiz, Lsiz);
+         Nsiz := Nat'Max (Nsiz, Rsiz);
+      end if;
+
+      --  If the size is not lower than the size of the original type, then
+      --  there is no point in changing the type, except in the case where
+      --  we can remove a conversion to the original type from an operand.
+
+      if Nsiz >= RM_Size (Typ)
+        and then not (Binary
+                       and then Nkind (L) = N_Type_Conversion
+                       and then Entity (Subtype_Mark (L)) = Typ)
+        and then not (Nkind (R) = N_Type_Conversion
+                       and then Entity (Subtype_Mark (R)) = Typ)
+      then
+         return;
+      end if;
+
+      --  Now pick the narrower type according to the size
+
+      if Nsiz <= RM_Size (Standard_Integer) then
+         Ntyp := Standard_Integer;
+
+      elsif Nsiz <= RM_Size (Standard_Long_Long_Integer) then
+         Ntyp := Standard_Long_Long_Integer;
+
+      else
+         return;
+      end if;
+
+      --  Finally rewrite the operation in the narrower type
+
+      Nop := New_Op_Node (Kind, Sloc (N));
+
+      if Binary then
+         Set_Left_Opnd (Nop, Convert_To (Ntyp, L));
+      end if;
+
+      if In_Rng then
+         Set_Right_Opnd (Nop,
+           Make_Range (Sloc (N),
+             Convert_To (Ntyp, Low_Bound (R)),
+             Convert_To (Ntyp, High_Bound (R))));
+      else
+         Set_Right_Opnd (Nop, Convert_To (Ntyp, R));
+      end if;
+
+      Rewrite (N, Nop);
+
+      if Compar then
+         --  Analyze it with the comparison type and checks suppressed since
+         --  the conversions of the operands cannot overflow.
+
+         Analyze_And_Resolve
+           (N, Etype (Original_Node (N)), Suppress => Overflow_Check);
+
+      else
+         --  Analyze it with the narrower type and checks suppressed, but only
+         --  when we are sure that the operation does not overflow, see above.
+
+         if Nsiz < RM_Size (Typ) then
+            Analyze_And_Resolve (N, Ntyp, Suppress => Overflow_Check);
+         else
+            Analyze_And_Resolve (N, Ntyp);
+         end if;
+
+         --  Put back a conversion to the original type
+
+         Convert_To_And_Rewrite (Typ, N);
+      end if;
+   end Narrow_Large_Operation;
 
    --------------------------------
    -- Optimize_Length_Comparison --
