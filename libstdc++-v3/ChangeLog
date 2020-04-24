@@ -1,3 +1,10 @@
+2020-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (service_already_exists): Make default
+	constructor public (LWG 3414).
+	* testsuite/experimental/net/execution_context/make_service.cc: Check
+	the service_already_exists can be default constructed.
+
 2020-04-24  Kamlesh Kumar  <kamleshbhalui@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
