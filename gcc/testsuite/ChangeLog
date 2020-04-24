@@ -1,3 +1,8 @@
+2020-04-24  Haijian Zhang <z.zhanghaijian@huawei.com>
+
+	PR rtl-optimization/94708
+	* gfortran.dg/pr94708.f90: New test.
+
 2020-04-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/pr90020.c: Skip on AIX.

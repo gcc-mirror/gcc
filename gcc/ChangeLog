@@ -1,3 +1,9 @@
+2020-04-24  Haijian Zhang <z.zhanghaijian@huawei.com>
+
+	PR rtl-optimization/94708
+	* combine.c (simplify_if_then_else): Add check for
+	!HONOR_NANS (mode) && !HONOR_SIGNED_ZEROS (mode).
+
 2020-04-23  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/90983
