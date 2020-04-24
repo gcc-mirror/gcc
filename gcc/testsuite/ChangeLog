@@ -1,5 +1,9 @@
 2020-04-23  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.dg/torture/pr90020.c: Skip on AIX.
+
+2020-04-23  David Edelsohn  <dje.gcc@gmail.com>
+
 	* g++.dg/cpp0x/lambda/pr94426-1.C: Require LTO.
 
 2020-04-23  Martin Sebor  <msebor@redhat.com>
