@@ -1,3 +1,7 @@
+2020-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/arm_sve.h: Add a comment.
+
 2020-04-24  Haijian Zhang <z.zhanghaijian@huawei.com>
 
 	PR rtl-optimization/94708
