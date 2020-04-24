@@ -1,3 +1,9 @@
+2020-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94583
+	* decl.c (redeclaration_error_message): Reject defaulted comparison
+	operator that has been previously declared.
+
 2020-04-25  Patrick Palka  <ppalka@redhat.com>
 
 	* parser.c (cp_parser_diagnose_invalid_type_name): Suggest enabling
