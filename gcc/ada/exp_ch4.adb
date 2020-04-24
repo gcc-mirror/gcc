@@ -99,7 +99,7 @@ package body Exp_Ch4 is
 
    procedure Expand_Allocator_Expression (N : Node_Id);
    --  Subsidiary to Expand_N_Allocator, for the case when the expression
-   --  is a qualified expression or an aggregate.
+   --  is a qualified expression.
 
    procedure Expand_Array_Comparison (N : Node_Id);
    --  This routine handles expansion of the comparison operators (N_Op_Lt,
@@ -781,10 +781,10 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Aggr_In_Place : constant Boolean   := Is_Delayed_Aggregate (Exp);
       Indic         : constant Node_Id   := Subtype_Mark (Expression (N));
       T             : constant Entity_Id := Entity (Indic);
       Adj_Call      : Node_Id;
+      Aggr_In_Place : Boolean;
       Node          : Node_Id;
       Tag_Assign    : Node_Id;
       Temp          : Entity_Id;
@@ -805,6 +805,44 @@ package body Exp_Ch4 is
          Make_CPP_Constructor_Call_In_Allocator
            (Allocator => N,
             Function_Call => Exp);
+         return;
+      end if;
+
+      --  If we have:
+      --    type A is access T1;
+      --    X : A := new T2'(...);
+      --  T1 and T2 can be different subtypes, and we might need to check
+      --  both constraints. First check against the type of the qualified
+      --  expression.
+
+      Apply_Constraint_Check (Exp, T, No_Sliding => True);
+
+      Apply_Predicate_Check (Exp, T);
+
+      if Do_Range_Check (Exp) then
+         Generate_Range_Check (Exp, T, CE_Range_Check_Failed);
+      end if;
+
+      --  A check is also needed in cases where the designated subtype is
+      --  constrained and differs from the subtype given in the qualified
+      --  expression. Note that the check on the qualified expression does
+      --  not allow sliding, but this check does (a relaxation from Ada 83).
+
+      if Is_Constrained (DesigT)
+        and then not Subtypes_Statically_Match (T, DesigT)
+      then
+         Apply_Constraint_Check (Exp, DesigT, No_Sliding => False);
+
+         Apply_Predicate_Check (Exp, DesigT);
+
+         if Do_Range_Check (Exp) then
+            Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
+         end if;
+      end if;
+
+      if Nkind (Exp) = N_Raise_Constraint_Error then
+         Rewrite (N, New_Copy (Exp));
+         Set_Etype (N, PtrT);
          return;
       end if;
 
@@ -836,6 +874,8 @@ package body Exp_Ch4 is
             end if;
          end;
       end if;
+
+      Aggr_In_Place := Is_Delayed_Aggregate (Exp);
 
       --  Case of tagged type or type requiring finalization
 
@@ -1217,35 +1257,6 @@ package body Exp_Ch4 is
 
       else
          Build_Allocate_Deallocate_Proc (N, True);
-
-         --  If we have:
-         --    type A is access T1;
-         --    X : A := new T2'(...);
-         --  T1 and T2 can be different subtypes, and we might need to check
-         --  both constraints. First check against the type of the qualified
-         --  expression.
-
-         Apply_Constraint_Check (Exp, T, No_Sliding => True);
-
-         if Do_Range_Check (Exp) then
-            Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
-         end if;
-
-         --  A check is also needed in cases where the designated subtype is
-         --  constrained and differs from the subtype given in the qualified
-         --  expression. Note that the check on the qualified expression does
-         --  not allow sliding, but this check does (a relaxation from Ada 83).
-
-         if Is_Constrained (DesigT)
-           and then not Subtypes_Statically_Match (T, DesigT)
-         then
-            Apply_Constraint_Check
-              (Exp, DesigT, No_Sliding => False);
-
-            if Do_Range_Check (Exp) then
-               Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
-            end if;
-         end if;
 
          --  For an access to unconstrained packed array, GIGI needs to see an
          --  expression with a constrained subtype in order to compute the
@@ -4796,20 +4807,9 @@ package body Exp_Ch4 is
                New_Occurrence_Of (RTE (RE_Check_Standard_Allocator), Loc)));
       end if;
 
-      --  Handle case of qualified expression (other than optimization above).
-      --  First apply constraint checks, because the bounds or discriminants
-      --  in the aggregate might not match the subtype mark in the allocator.
+      --  Handle case of qualified expression (other than optimization above)
 
       if Nkind (Expression (N)) = N_Qualified_Expression then
-         declare
-            Exp : constant Node_Id   := Expression (Expression (N));
-            Typ : constant Entity_Id := Etype (Expression (N));
-
-         begin
-            Apply_Constraint_Check (Exp, Typ);
-            Apply_Predicate_Check  (Exp, Typ);
-         end;
-
          Expand_Allocator_Expression (N);
          return;
       end if;
@@ -4842,6 +4842,21 @@ package body Exp_Ch4 is
          Temp_Type : Entity_Id;
 
       begin
+         --  Apply constraint checks against designated subtype (RM 4.8(10/2)).
+         --  Discriminant checks will be generated by the expansion below.
+
+         if Is_Array_Type (Dtyp) then
+            Apply_Constraint_Check (Expression (N), Dtyp, No_Sliding => True);
+
+            Apply_Predicate_Check (Expression (N), Dtyp);
+
+            if Nkind (Expression (N)) = N_Raise_Constraint_Error then
+               Rewrite (N, New_Copy (Expression (N)));
+               Set_Etype (N, PtrT);
+               return;
+            end if;
+         end if;
+
          if No_Initialization (N) then
 
             --  Even though this might be a simple allocation, create a custom
