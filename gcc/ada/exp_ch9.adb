@@ -6185,7 +6185,7 @@ package body Exp_Ch9 is
                if No (Entity (N)) then
                   return Abandon;
 
-               elsif Is_Universal_Numeric_Type (Entity (N)) then
+               elsif Is_Numeric_Type (Entity (N)) then
                   return Skip;
                end if;
 
@@ -6283,11 +6283,13 @@ package body Exp_Ch9 is
 
             when N_Type_Conversion =>
 
-               --  Conversions to Universal_Integer will not raise constraint
-               --  errors.
+               --  Conversions to Universal_Integer do not raise constraint
+               --  errors. Likewise if the expression's type is statically
+               --  compatible with the target's type.
 
-               if Cannot_Raise_Constraint_Error (N)
-                 or else Etype (N) = Universal_Integer
+               if Etype (N) = Universal_Integer
+                 or else Subtypes_Statically_Compatible
+                           (Etype (Expression (N)), Etype (N))
                then
                   return OK;
                end if;
