@@ -751,6 +751,19 @@ proc check_effective_target_freestanding { } {
     return 0
 }
 
+# Check to see that file I/O functions are available.
+proc check_effective_target_fileio { } {
+    return [check_no_compiler_messages fileio_available executable {
+#include <stdio.h>
+int main() {
+    char *n = tmpnam (NULL);
+    FILE *f = fopen (n, "w");
+    fclose (f);
+    remove (n);
+    return 0;
+} } ""]
+}
+
 # Return 1 if target has packed layout of structure members by
 # default, 0 otherwise.  Note that this is slightly different than
 # whether the target has "natural alignment": both attributes may be

@@ -1,3 +1,10 @@
+2020-04-24  Alexandre Oliva <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_fileio): New.
+	* gcc.c-torture/execute/fprintf-2.c: Require it.
+	* gcc.c-torture/execute/printf-2.c: Likewise.
+	* gcc.c-torture/execute/user-printf.c: Likewise.
+
 2020-04-24  Haijian Zhang <z.zhanghaijian@huawei.com>
 
 	PR rtl-optimization/94708
