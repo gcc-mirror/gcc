@@ -1,3 +1,10 @@
+2020-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94383
+	* g++.dg/compat/struct-layout-1.exp: Use the -std=c++14 vs. -std=c++17
+	ABI compatibility testing even with ALT_CXX_UNDER_TEST, as long as
+	that compiler accepts -std=c++14 and -std=c++17 options.
+
 2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* lib/target-supports.exp (available_vector_sizes): Add amdgcn.

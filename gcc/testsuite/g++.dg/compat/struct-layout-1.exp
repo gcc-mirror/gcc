@@ -142,7 +142,19 @@ if { $status == 0 } then {
     file delete -force $tstobjdir
     file mkdir $tstobjdir
     set generator_args "-s $srcdir/$subdir -d $tstobjdir"
-    if { $use_alt == 0 } then {
+    set test_cxx14_vs_cxx17 1
+    if { $use_alt != 0 } then {
+	compat-use-alt-compiler
+	if { [check_no_compiler_messages_nocache compat_alt_has_cxx14 object {
+		int dummy; } "-std=c++14"] == 0 } {
+	    set test_cxx14_vs_cxx17 0
+	} elseif { [check_no_compiler_messages_nocache compat_alt_has_cxx17 object {
+		int dummy; } "-std=c++17"] == 0 } {
+	    set test_cxx14_vs_cxx17 0
+	}
+	compat-use-tst-compiler
+    }
+    if { $test_cxx14_vs_cxx17 != 0 } then {
 	set generator_args "$generator_args -c"
     }
     if [info exists env(RUN_ALL_COMPAT_TESTS) ] then {
