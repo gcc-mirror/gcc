@@ -1,6 +1,14 @@
 2020-05-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline.
+	2020-04-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94748
+	* gcc.target/aarch64/pr94748.c: New test.
+
+2020-05-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline.
 	2020-04-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94515
