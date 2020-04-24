@@ -1,3 +1,9 @@
+2020-04-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94748
+	* config/aarch64/aarch64-bti-insert.c (rest_of_insert_bti): Remove
+	the check for NOTE_INSN_DELETED_LABEL.
+
 2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (--with-documentation-root-url,

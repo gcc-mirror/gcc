@@ -139,14 +139,10 @@ rest_of_insert_bti (void)
 	   insn = NEXT_INSN (insn))
 	{
 	  /* If a label is marked to be preserved or can be a non-local goto
-	     target, it must be protected with a BTI J.  The same applies to
-	     NOTE_INSN_DELETED_LABEL since they are basically labels that might
-	     be referenced via variables or constant pool.  */
-	  if ((LABEL_P (insn)
+	     target, it must be protected with a BTI J.  */
+	  if (LABEL_P (insn)
 	       && (LABEL_PRESERVE_P (insn)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
-	      || (NOTE_P (insn)
-		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
 	    {
 	      bti_insn = gen_bti_j ();
 	      emit_insn_after (bti_insn, insn);
