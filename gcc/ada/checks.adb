@@ -2679,8 +2679,8 @@ package body Checks is
 
       if not Comes_From_Source (Subp)
 
-         --  Do not process formal subprograms because the corresponding actual
-         --  will receive the proper checks when the instance is analyzed.
+        --  Do not process formal subprograms because the corresponding actual
+        --  will receive the proper checks when the instance is analyzed.
 
         or else Is_Formal_Subprogram (Subp)
 
@@ -2723,14 +2723,12 @@ package body Checks is
          --    mode IN OUT - Pre, Post => Formal'Valid[_Scalars]
          --    mode    OUT -      Post => Formal'Valid[_Scalars]
 
-         if Check_Validity_Of_Parameters then
-            if Ekind_In (Formal, E_In_Parameter, E_In_Out_Parameter) then
-               Add_Validity_Check (Formal, Name_Precondition, False);
-            end if;
+         if Ekind_In (Formal, E_In_Parameter, E_In_Out_Parameter) then
+            Add_Validity_Check (Formal, Name_Precondition, False);
+         end if;
 
-            if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
-               Add_Validity_Check (Formal, Name_Postcondition, False);
-            end if;
+         if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+            Add_Validity_Check (Formal, Name_Postcondition, False);
          end if;
 
          Next_Formal (Formal);
@@ -2740,7 +2738,7 @@ package body Checks is
 
       --    Post => Subp'Result'Valid[_Scalars]
 
-      if Check_Validity_Of_Parameters and then Ekind (Subp) = E_Function then
+      if Ekind (Subp) = E_Function then
          Add_Validity_Check (Subp, Name_Postcondition, True);
       end if;
    end Apply_Parameter_Validity_Checks;
