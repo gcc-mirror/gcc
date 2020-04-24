@@ -1,3 +1,10 @@
+2020-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.cc (need_phobos): Remove.
+	(lang_specific_driver): Replace need_phobos with phobos_library.
+	Reorder -debuglib and -defaultlib to have precedence over libphobos.
+	(lang_specific_pre_link): Remove test for need_phobos.
+
 2020-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94609
