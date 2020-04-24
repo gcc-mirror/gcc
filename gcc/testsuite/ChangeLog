@@ -1,3 +1,8 @@
+2020-04-24 Iain Sandoe <iain@sandoe.co.uk>
+
+	PR c++/94288
+	* g++.dg/coroutines/pr94288.C: New test.
+
 2020-04-24  Alexandre Oliva <oliva@adacore.com>
 
 	* lib/target-supports.exp (check_effective_target_fileio): New.
