@@ -1,5 +1,4 @@
-#if 0
-//  { d g-do run }
+//  { dg-do run }
 
 // Test returning an int.
 // We will use the promise to contain this to avoid having to include
@@ -46,4 +45,3 @@ int main ()
   PRINT ("main: returning");
   return 0;
 }
-#endif

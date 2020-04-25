@@ -1,3 +1,8 @@
+2020-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/co-ret-16-simple-control-flow.C:
+	Enable test.
+
 2020-04-25  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/concepts/diagnostic11.C: New test.
