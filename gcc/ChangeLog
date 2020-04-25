@@ -1,3 +1,15 @@
+2020-04-25  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/linux64.h (PCREL_SUPPORTED_BY_OS): Define to
+	enable PC-relative addressing for -mcpu=future.
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): Move
+	after OTHER_FUTURE_MASKS.  Use OTHER_FUTURE_MASKS.
+	* config/rs6000/rs6000.c (PCREL_SUPPORTED_BY_OS): If not defined,
+	suppress PC-relative addressing.
+	(rs6000_option_override_internal): Split up error messages
+	checking for -mprefixed and -mpcrel.  Enable -mpcrel if the target
+	system supports it.
+
 2020-04-25  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
