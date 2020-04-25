@@ -1,3 +1,7 @@
+2020-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic11.C: New test.
+
 2020-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94742

@@ -1,3 +1,8 @@
+2020-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name): Suggest enabling
+	concepts if the invalid identifier is 'requires'.
+
 2020-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/94742
