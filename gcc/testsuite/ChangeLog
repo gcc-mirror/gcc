@@ -1,3 +1,8 @@
+2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/debug/dwarf2/pr82718-1.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/pr82718-2.c: Skip on AIX.
+
 2020-04-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/co-ret-16-simple-control-flow.C:
