@@ -578,10 +578,20 @@ package Checks is
    --  which the check is to be done. Used to filter out specific cases where
    --  the check is superfluous.
 
-   procedure Apply_Range_Check
+   procedure Apply_Static_Length_Check
      (Expr       : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id := Empty);
+   --  Tries to determine statically whether the two array types source type
+   --  and Target_Typ have the same length. If it can be determined at compile
+   --  time that they do not, then an N_Raise_Constraint_Error node replaces
+   --  Expr, and a warning message is issued.
+
+   procedure Apply_Range_Check
+     (Expr        : Node_Id;
+      Target_Typ  : Entity_Id;
+      Source_Typ  : Entity_Id := Empty;
+      Insert_Node : Node_Id   := Empty);
    --  For a Node of kind N_Range, constructs a range check action that tests
    --  first that the range is not null and then that the range is contained in
    --  the Target_Typ range.
@@ -606,14 +616,8 @@ package Checks is
    --  The source type is used by type conversions to unconstrained array
    --  types to retrieve the corresponding bounds.
 
-   procedure Apply_Static_Length_Check
-     (Expr       : Node_Id;
-      Target_Typ : Entity_Id;
-      Source_Typ : Entity_Id := Empty);
-   --  Tries to determine statically whether the two array types source type
-   --  and Target_Typ have the same length. If it can be determined at compile
-   --  time that they do not, then an N_Raise_Constraint_Error node replaces
-   --  Expr, and a warning message is issued.
+   --  Insert_Node indicates the node where the check should be inserted.
+   --  If it is empty, then the check is inserted directly at Expr instead.
 
    procedure Apply_Scalar_Range_Check
      (Expr       : Node_Id;

@@ -240,16 +240,6 @@ package body Checks is
    --  described for the above routines. The Do_Static flag indicates that
    --  only a static check is to be done.
 
-   procedure Apply_Selected_Range_Checks
-     (Expr       : Node_Id;
-      Target_Typ : Entity_Id;
-      Source_Typ : Entity_Id;
-      Do_Static  : Boolean);
-   --  This is the subprogram that does all the work for Apply_Range_Check.
-   --  Expr, Target_Typ and Source_Typ are as described for the above
-   --  routine. The Do_Static flag indicates that only a static check is
-   --  to be done.
-
    procedure Compute_Range_For_Arithmetic_Op
      (Op       : Node_Kind;
       Lo_Left  : Uint;
@@ -364,8 +354,8 @@ package body Checks is
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
       Warn_Node  : Node_Id) return Check_Result;
-   --  Like Apply_Selected_Range_Checks, except it doesn't modify anything,
-   --  just returns a list of nodes as described in the spec of this package
+   --  Like Apply_Range_Checks, except it doesn't modify anything, just
+   --  returns a list of nodes as described in the spec of this package
    --  for the Range_Check function.
 
    ------------------------------
@@ -2910,13 +2900,107 @@ package body Checks is
    -----------------------
 
    procedure Apply_Range_Check
-     (Expr       : Node_Id;
-      Target_Typ : Entity_Id;
-      Source_Typ : Entity_Id := Empty)
+     (Expr        : Node_Id;
+      Target_Typ  : Entity_Id;
+      Source_Typ  : Entity_Id := Empty;
+      Insert_Node : Node_Id   := Empty)
    is
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Target_Typ)
+                      or else
+                    not Range_Checks_Suppressed (Target_Typ);
+
+      Loc : constant Source_Ptr := Sloc (Expr);
+
+      Cond     : Node_Id;
+      R_Cno    : Node_Id;
+      R_Result : Check_Result;
+
    begin
-      Apply_Selected_Range_Checks
-        (Expr, Target_Typ, Source_Typ, Do_Static => False);
+      --  Only apply checks when generating code. In GNATprove mode, we do not
+      --  apply the checks, but we still call Selected_Range_Checks to possibly
+      --  issue errors on SPARK code when a run-time error can be detected at
+      --  compile time.
+
+      if not GNATprove_Mode then
+         if not Expander_Active or not Checks_On then
+            return;
+         end if;
+      end if;
+
+      R_Result :=
+        Selected_Range_Checks (Expr, Target_Typ, Source_Typ, Insert_Node);
+
+      if GNATprove_Mode then
+         return;
+      end if;
+
+      for J in 1 .. 2 loop
+         R_Cno := R_Result (J);
+         exit when No (R_Cno);
+
+         --  The range check requires runtime evaluation. Depending on what its
+         --  triggering condition is, the check may be converted into a compile
+         --  time constraint check.
+
+         if Nkind (R_Cno) = N_Raise_Constraint_Error
+           and then Present (Condition (R_Cno))
+         then
+            Cond := Condition (R_Cno);
+
+            --  Insert the range check before the related context. Note that
+            --  this action analyses the triggering condition.
+
+            if Present (Insert_Node) then
+               Insert_Action (Insert_Node, R_Cno);
+            else
+               Insert_Action (Expr, R_Cno);
+            end if;
+
+            --  The triggering condition evaluates to True, the range check
+            --  can be converted into a compile time constraint check.
+
+            if Is_Entity_Name (Cond)
+              and then Entity (Cond) = Standard_True
+            then
+               --  Since an N_Range is technically not an expression, we have
+               --  to set one of the bounds to C_E and then just flag the
+               --  N_Range. The warning message will point to the lower bound
+               --  and complain about a range, which seems OK.
+
+               if Nkind (Expr) = N_Range then
+                  Apply_Compile_Time_Constraint_Error
+                    (Low_Bound (Expr),
+                     "static range out of bounds of}??",
+                     CE_Range_Check_Failed,
+                     Ent => Target_Typ,
+                     Typ => Target_Typ);
+
+                  Set_Raises_Constraint_Error (Expr);
+
+               else
+                  Apply_Compile_Time_Constraint_Error
+                    (Expr,
+                     "static value out of range of}??",
+                     CE_Range_Check_Failed,
+                     Ent => Target_Typ,
+                     Typ => Target_Typ);
+               end if;
+            end if;
+
+         --  The range check raises Constraint_Error explicitly
+
+         elsif Present (Insert_Node) then
+            R_Cno :=
+              Make_Raise_Constraint_Error (Sloc (Insert_Node),
+                Reason => CE_Range_Check_Failed);
+
+            Insert_Action (Insert_Node, R_Cno);
+
+         else
+            Install_Static_Check (R_Cno, Loc);
+         end if;
+      end loop;
    end Apply_Range_Check;
 
    ------------------------------
@@ -3428,111 +3512,6 @@ package body Checks is
          end if;
       end loop;
    end Apply_Selected_Length_Checks;
-
-   ---------------------------------
-   -- Apply_Selected_Range_Checks --
-   ---------------------------------
-
-   procedure Apply_Selected_Range_Checks
-     (Expr       : Node_Id;
-      Target_Typ : Entity_Id;
-      Source_Typ : Entity_Id;
-      Do_Static  : Boolean)
-   is
-      Checks_On : constant Boolean :=
-                    not Index_Checks_Suppressed (Target_Typ)
-                      or else
-                    not Range_Checks_Suppressed (Target_Typ);
-
-      Loc : constant Source_Ptr := Sloc (Expr);
-
-      Cond     : Node_Id;
-      R_Cno    : Node_Id;
-      R_Result : Check_Result;
-
-   begin
-      --  Only apply checks when generating code. In GNATprove mode, we do not
-      --  apply the checks, but we still call Selected_Range_Checks to possibly
-      --  issue errors on SPARK code when a run-time error can be detected at
-      --  compile time.
-
-      if not GNATprove_Mode then
-         if not Expander_Active or not Checks_On then
-            return;
-         end if;
-      end if;
-
-      R_Result :=
-        Selected_Range_Checks (Expr, Target_Typ, Source_Typ, Empty);
-
-      if GNATprove_Mode then
-         return;
-      end if;
-
-      for J in 1 .. 2 loop
-         R_Cno := R_Result (J);
-         exit when No (R_Cno);
-
-         --  The range check requires runtime evaluation. Depending on what its
-         --  triggering condition is, the check may be converted into a compile
-         --  time constraint check.
-
-         if Nkind (R_Cno) = N_Raise_Constraint_Error
-           and then Present (Condition (R_Cno))
-         then
-            Cond := Condition (R_Cno);
-
-            --  Insert the range check before the related context. Note that
-            --  this action analyses the triggering condition.
-
-            Insert_Action (Expr, R_Cno);
-
-            --  The triggering condition evaluates to True, the range check
-            --  can be converted into a compile time constraint check.
-
-            if Is_Entity_Name (Cond)
-              and then Entity (Cond) = Standard_True
-            then
-               --  Since an N_Range is technically not an expression, we have
-               --  to set one of the bounds to C_E and then just flag the
-               --  N_Range. The warning message will point to the lower bound
-               --  and complain about a range, which seems OK.
-
-               if Nkind (Expr) = N_Range then
-                  Apply_Compile_Time_Constraint_Error
-                    (Low_Bound (Expr),
-                     "static range out of bounds of}??",
-                     CE_Range_Check_Failed,
-                     Ent => Target_Typ,
-                     Typ => Target_Typ);
-
-                  Set_Raises_Constraint_Error (Expr);
-
-               else
-                  Apply_Compile_Time_Constraint_Error
-                    (Expr,
-                     "static value out of range of}??",
-                     CE_Range_Check_Failed,
-                     Ent => Target_Typ,
-                     Typ => Target_Typ);
-               end if;
-
-            --  If we were only doing a static check, or if checks are not
-            --  on, then we want to delete the check, since it is not needed.
-            --  We do this by replacing the if statement by a null statement
-
-            elsif Do_Static then
-               Remove_Warning_Messages (R_Cno);
-               Rewrite (R_Cno, Make_Null_Statement (Loc));
-            end if;
-
-         --  The range check raises Constraint_Error explicitly
-
-         else
-            Install_Static_Check (R_Cno, Loc);
-         end if;
-      end loop;
-   end Apply_Selected_Range_Checks;
 
    -------------------------------
    -- Apply_Static_Length_Check --
