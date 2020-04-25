@@ -1,5 +1,9 @@
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.dg/ipa/ipa-sra-19.c: Add -Wno-psabi option on AIX.
+
+2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
+
 	* gcc.dg/spellcheck-options-21.c: Require LTO.
 
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
