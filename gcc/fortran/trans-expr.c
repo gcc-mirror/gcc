@@ -9823,9 +9823,13 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
 
   /* If we have reached here with an intrinsic function, we do not
      need a temporary except in the particular case that reallocation
-     on assignment is active and the lhs is allocatable and a target.  */
+     on assignment is active and the lhs is allocatable and a target,
+     or a pointer which may be a subref pointer.  FIXME: The last
+     condition can go away when we use span in the intrinsics
+     directly.*/
   if (expr2->value.function.isym)
-    return (flag_realloc_lhs && sym->attr.allocatable && sym->attr.target);
+    return (flag_realloc_lhs && sym->attr.allocatable && sym->attr.target)
+      || (sym->attr.pointer && sym->attr.subref_array_pointer);
 
   /* If the LHS is a dummy, we need a temporary if it is not
      INTENT(OUT).  */
