@@ -1,5 +1,9 @@
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.dg/spellcheck-options-21.c: Require LTO.
+
+2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
+
 	* gcc.dg/debug/dwarf2/pr82718-1.c: Skip on AIX.
 	* gcc.dg/debug/dwarf2/pr82718-2.c: Skip on AIX.
 
