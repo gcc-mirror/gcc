@@ -1,3 +1,8 @@
+2020-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* cet.m4 (GCC_CET_HOST_FLAGS): New.
+
 2020-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/94694
