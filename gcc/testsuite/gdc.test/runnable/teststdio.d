@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // EXTRA_FILES: extra-files/teststdio.txt
 
@@ -31,4 +32,3 @@ void main()
     } while (!feof(fp));
     //fclose(fp);
 }
-// RUNNABLE_PHOBOS_TEST

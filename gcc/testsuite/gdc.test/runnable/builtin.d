@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 
 import std.stdio;
 import std.math;
@@ -116,4 +117,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

@@ -1,4 +1,4 @@
-
+// RUNNABLE_PHOBOS_TEST
 import core.vararg;
 import std.stdio;
 
@@ -684,4 +684,3 @@ int main()
 
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

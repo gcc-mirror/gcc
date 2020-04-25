@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 module dstress.run.module_01;
@@ -930,4 +931,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

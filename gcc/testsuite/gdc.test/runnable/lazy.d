@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 import core.vararg;
 import std.stdio;
 
@@ -308,4 +309,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

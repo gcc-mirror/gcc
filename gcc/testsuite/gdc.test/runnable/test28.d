@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 module test;
 
 import core.vararg;
@@ -1318,4 +1319,3 @@ void main()
     printf("Success\n");
 }
 
-// RUNNABLE_PHOBOS_TEST

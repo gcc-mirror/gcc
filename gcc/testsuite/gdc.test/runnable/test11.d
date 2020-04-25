@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // REQUIRED_ARGS:
 
 extern(C) int printf(const char*, ...);
@@ -1390,4 +1391,3 @@ int main(string[] argv)
 }
 
 
-// RUNNABLE_PHOBOS_TEST

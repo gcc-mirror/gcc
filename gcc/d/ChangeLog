@@ -1,3 +1,9 @@
+2020-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_toprec): New function.
+	(maybe_expand_intrinsic): Handle toPrec intrinsics.
+	* intrinsics.def (TOPRECF, TOPREC, TOPRECL): Add toPrec intrinsics.
+
 2020-04-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-spec.cc (need_phobos): Remove.

@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 module breaker;
@@ -4965,4 +4966,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

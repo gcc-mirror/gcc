@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 import std.file;
@@ -22,4 +23,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

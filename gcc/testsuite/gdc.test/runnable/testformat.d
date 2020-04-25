@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 import std.stdio;
@@ -123,4 +124,3 @@ int main()
     std.stdio.writefln("Success");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

@@ -95,6 +95,9 @@ DEF_D_BUILTIN (SIN, SIN, "sin", "core.math", "FNaNbNiNfeZe")
 DEF_D_BUILTIN (SQRTF, SQRTF, "sqrt", "core.math", "FNaNbNiNffZf")
 DEF_D_BUILTIN (SQRT, SQRT, "sqrt", "core.math", "FNaNbNiNfdZd")
 DEF_D_BUILTIN (SQRTL, SQRTL, "sqrt", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (TOPRECF, TOPREC, "toPrec", "core.math", "FNaNbNffZI1T")
+DEF_D_BUILTIN (TOPREC, TOPREC, "toPrec", "core.math", "FNaNbNfdZI1T")
+DEF_D_BUILTIN (TOPRECL, TOPREC, "toPrec", "core.math", "FNaNbNfeZI1T")
 
 /* std.math intrinsics.  */
 

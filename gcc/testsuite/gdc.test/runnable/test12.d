@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS: -unittest -O -release -inline -fPIC -g
 
 extern(C) int printf(const char*, ...);
@@ -1250,4 +1251,3 @@ int main(string[] argv)
     return 0;
 }
 
-// RUNNABLE_PHOBOS_TEST

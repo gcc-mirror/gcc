@@ -1,4 +1,4 @@
-
+// RUNNABLE_PHOBOS_TEST
 module mixin1;
 
 import std.stdio;
@@ -1468,4 +1468,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

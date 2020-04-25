@@ -1,5 +1,5 @@
+// RUNNABLE_PHOBOS_TEST
 // REQUIRED_ARGS:
-//
 
 module test42;
 
@@ -6438,4 +6438,3 @@ int main()
     return 0;
 }
 
-// RUNNABLE_PHOBOS_TEST

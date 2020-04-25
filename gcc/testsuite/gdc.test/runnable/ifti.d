@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 import std.stdio;
 
 struct S {
@@ -118,4 +119,3 @@ void main() {
     }
 
 }
-// RUNNABLE_PHOBOS_TEST
