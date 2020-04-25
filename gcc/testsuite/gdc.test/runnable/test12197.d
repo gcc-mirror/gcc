@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // import std.math;
 
 void foo(T)(T[] b)
@@ -10,4 +11,3 @@ void main()
     foo(a);
     assert(a[0] == 10000);
 }
-// RUNNABLE_PHOBOS_TEST

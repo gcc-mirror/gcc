@@ -98,6 +98,11 @@
 #endif
 #endif
 
+/* Don't enable PC-relative addressing if the target does not support it.  */
+#ifndef PCREL_SUPPORTED_BY_OS
+#define PCREL_SUPPORTED_BY_OS	0
+#endif
+
 /* Support targetm.vectorize.builtin_mask_for_load.  */
 tree altivec_builtin_mask_for_load;
 
@@ -4024,15 +4029,17 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
-  /* -mprefixed (and hence -mpcrel) requires -mcpu=future.  */
-  if (TARGET_PREFIXED && !TARGET_FUTURE)
+  /* Enable -mprefixed by default on 'future' systems.  */
+  if (TARGET_FUTURE && (rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) == 0)
+    rs6000_isa_flags |= OPTION_MASK_PREFIXED;
+
+  /* -mprefixed requires -mcpu=future.  */
+  else if (TARGET_PREFIXED && !TARGET_FUTURE)
     {
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED) != 0)
 	error ("%qs requires %qs", "-mprefixed", "-mcpu=future");
 
-      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED);
+      rs6000_isa_flags &= ~OPTION_MASK_PREFIXED;
     }
 
   /* -mpcrel requires prefixed load/store addressing.  */
@@ -4175,9 +4182,16 @@ rs6000_option_override_internal (bool global_init_p)
   SUB3TARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* If the ABI has support for PC-relative relocations, enable it by default.
+     This test depends on the sub-target tests above setting the code model to
+     medium for ELF v2 systems.  */
+  if (PCREL_SUPPORTED_BY_OS
+      && (rs6000_isa_flags_explicit & OPTION_MASK_PCREL) == 0)
+    rs6000_isa_flags |= OPTION_MASK_PCREL;
+
   /* -mpcrel requires -mcmodel=medium, but we can't check TARGET_CMODEL until
       after the subtarget override options are done.  */
-  if (TARGET_PCREL && TARGET_CMODEL != CMODEL_MEDIUM)
+  else if (TARGET_PCREL && TARGET_CMODEL != CMODEL_MEDIUM)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
 	error ("%qs requires %qs", "-mpcrel", "-mcmodel=medium");

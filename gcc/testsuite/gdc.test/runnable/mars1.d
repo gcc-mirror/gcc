@@ -1,4 +1,5 @@
 /*
+RUNNABLE_PHOBOS_TEST
 REQUIRED_ARGS: -mcpu=native
 PERMUTE_ARGS: -O -inline
 */
@@ -1723,4 +1724,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

@@ -32,6 +32,11 @@ typedef __fp16 float16_t;
 typedef float float32_t;
 typedef double float64_t;
 
+/* NOTE: This implementation of arm_sve.h is intentionally short.  It does
+   not define the SVE types and intrinsic functions directly in C and C++
+   code, but instead uses the following pragma to tell GCC to insert the
+   necessary type and function definitions itself.  The net effect is the
+   same, and the file is a complete implementation of arm_sve.h.  */
 #pragma GCC aarch64 "arm_sve.h"
 
 #endif

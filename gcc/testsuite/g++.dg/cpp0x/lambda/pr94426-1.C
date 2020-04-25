@@ -1,6 +1,7 @@
 // { dg-do compile { target c++14 } }
 // PR 94426 ICE mangling lambda
 // { dg-options {-flto -O2} }
+// { dg-require-effective-target lto }
 
 template <bool> using Void = void;
 

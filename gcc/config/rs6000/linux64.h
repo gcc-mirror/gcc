@@ -640,3 +640,10 @@ extern int dot_symbols;
    enabling the __float128 keyword.  */
 #undef	TARGET_FLOAT128_ENABLE_TYPE
 #define TARGET_FLOAT128_ENABLE_TYPE 1
+
+/* Enable using prefixed PC-relative addressing on the 'future' machine if the
+   ABI supports it.  The ELF v2 ABI only supports PC-relative relocations for
+   the medium code model.  */
+#define PCREL_SUPPORTED_BY_OS	(TARGET_FUTURE && TARGET_PREFIXED	\
+				 && ELFv2_ABI_CHECK			\
+				 && TARGET_CMODEL == CMODEL_MEDIUM)

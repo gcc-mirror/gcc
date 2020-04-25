@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // EXECUTE_ARGS: runnable/wc.d
 
@@ -48,4 +49,3 @@ int main (string[] args)
     }
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

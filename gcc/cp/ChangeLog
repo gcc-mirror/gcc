@@ -1,3 +1,34 @@
+2020-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94583
+	* decl.c (redeclaration_error_message): Reject defaulted comparison
+	operator that has been previously declared.
+
+2020-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name): Suggest enabling
+	concepts if the invalid identifier is 'requires'.
+
+2020-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94742
+	* semantics.c (finish_call_expr): When looking if all overloads
+	are noreturn, use STRIP_TEMPLATE to look through TEMPLATE_DECLs.
+
+2020-04-24  Martin Liska  <mliska@suse.cz>
+
+	* coroutines.cc: Fix compilation error for release checking
+	where we miss declaration of ‘coro_body_contains_bind_expr_p’.
+
+2020-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.c (zero_init_expr_p): Use uses_template_parms instead of
+	dependent_type_p.
+
+	PR c++/94645
+	* pt.c (template_class_depth): Walk into the DECL_FRIEND_CONTEXT of a
+	friend declaration rather than into its CP_DECL_CONTEXT.
+
 2020-04-23 Iain Sandoe <iain@sandoe.co.uk>
 
 	PR c++/94288

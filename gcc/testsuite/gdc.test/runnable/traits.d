@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 module traits;
 
@@ -1606,4 +1607,3 @@ int main()
     writeln("Success");
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

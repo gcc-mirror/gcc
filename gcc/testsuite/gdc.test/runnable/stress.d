@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 import core.stdc.stdio : printf;
@@ -725,4 +726,3 @@ void CLASS()
         }
     }
 }
-// RUNNABLE_PHOBOS_TEST

@@ -1,4 +1,4 @@
-
+// RUNNABLE_PHOBOS_TEST
 module test34;
 
 import std.stdio;
@@ -1292,4 +1292,3 @@ void main()
 }
 
 
-// RUNNABLE_PHOBOS_TEST

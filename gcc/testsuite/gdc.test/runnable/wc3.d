@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // EXECUTE_ARGS: runnable/extra-files/alice30.txt
 // EXTRA_FILES: extra-files/alice30.txt
@@ -70,4 +71,3 @@ int main (string[] args)
     }
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

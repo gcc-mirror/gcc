@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // COMPILE_SEPARATELY
 // EXTRA_SOURCES: imports/test27a.d
 // PERMUTE_ARGS:
@@ -11,4 +12,3 @@ int main()
     return 0;
 }
 
-// RUNNABLE_PHOBOS_TEST

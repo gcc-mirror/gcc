@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // EXTRA_SOURCES: imports/test24a.d imports/test24b.d
 // PERMUTE_ARGS:
 // REQUIRED_ARGS:
@@ -8,4 +9,3 @@ void main()
 {
     string hi = std.string.format("%s", 3);
 }
-// RUNNABLE_PHOBOS_TEST

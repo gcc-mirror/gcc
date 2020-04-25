@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 import core.memory, std.stdio;
@@ -22,4 +23,3 @@ int main()
     return 0;
 }
 
-// RUNNABLE_PHOBOS_TEST

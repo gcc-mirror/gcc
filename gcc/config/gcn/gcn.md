@@ -615,9 +615,11 @@
   ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
   global_store_dwordx2\t%A0, %1%O0%g0"
-  "(reload_completed && !MEM_P (operands[0]) && !MEM_P (operands[1])
-    && !gcn_sgpr_move_p (operands[0], operands[1]))
-   || (GET_CODE (operands[1]) == CONST_INT && !gcn_constant64_p (operands[1]))"
+  "reload_completed
+   && ((!MEM_P (operands[0]) && !MEM_P (operands[1])
+        && !gcn_sgpr_move_p (operands[0], operands[1]))
+       || (GET_CODE (operands[1]) == CONST_INT
+	   && !gcn_constant64_p (operands[1])))"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
   {

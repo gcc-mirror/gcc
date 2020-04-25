@@ -164,3 +164,74 @@ unittest
     }
 }
 
+/*************************************
+ * Round argument to a specific precision.
+ *
+ * D language types specify a minimum precision, not a maximum. The
+ * `toPrec()` function forces rounding of the argument `f` to the
+ * precision of the specified floating point type `T`.
+ *
+ * Params:
+ *      T = precision type to round to
+ *      f = value to convert
+ * Returns:
+ *      f in precision of type `T`
+ */
+@safe pure nothrow
+T toPrec(T:float)(float f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:float)(double f) { pragma(inline, false); return cast(T) f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:float)(real f)  { pragma(inline, false); return cast(T) f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:double)(float f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:double)(double f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:double)(real f)  { pragma(inline, false); return cast(T) f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:real)(float f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:real)(double f) { pragma(inline, false); return f; }
+/// ditto
+@safe pure nothrow
+T toPrec(T:real)(real f)  { pragma(inline, false); return f; }
+
+@safe unittest
+{
+    static float f = 1.1f;
+    static double d = 1.1;
+    static real r = 1.1L;
+    f = toPrec!float(f + f);
+    f = toPrec!float(d + d);
+    f = toPrec!float(r + r);
+    d = toPrec!double(f + f);
+    d = toPrec!double(d + d);
+    d = toPrec!double(r + r);
+    r = toPrec!real(f + f);
+    r = toPrec!real(d + d);
+    r = toPrec!real(r + r);
+
+    /+ Uncomment these once compiler support has been added.
+    enum real PIR = 0xc.90fdaa22168c235p-2;
+    enum double PID = 0x1.921fb54442d18p+1;
+    enum float PIF = 0x1.921fb6p+1;
+
+    assert(toPrec!float(PIR) == PIF);
+    assert(toPrec!double(PIR) == PID);
+    assert(toPrec!real(PIR) == PIR);
+    assert(toPrec!float(PID) == PIF);
+    assert(toPrec!double(PID) == PID);
+    assert(toPrec!real(PID) == PID);
+    assert(toPrec!float(PIF) == PIF);
+    assert(toPrec!double(PIF) == PIF);
+    assert(toPrec!real(PIF) == PIF);
+    +/
+}

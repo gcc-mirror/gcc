@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 import std.algorithm : map;
@@ -106,4 +107,3 @@ void main() {
     }
 }
 
-// RUNNABLE_PHOBOS_TEST

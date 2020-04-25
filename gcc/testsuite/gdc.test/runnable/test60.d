@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 import std.stdio;
 import std.algorithm;
 
@@ -20,4 +21,3 @@ void main()
 
     writeln("Success");
 }
-// RUNNABLE_PHOBOS_TEST

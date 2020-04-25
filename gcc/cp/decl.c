@@ -2972,6 +2972,14 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	    }
 	}
 
+      /* [class.compare.default]: A definition of a comparison operator as
+	 defaulted that appears in a class shall be the first declaration of
+	 that function.  */
+      special_function_kind sfk = special_function_p (olddecl);
+      if (sfk == sfk_comparison && DECL_DEFAULTED_FN (newdecl))
+	return G_("comparison operator %q+D defaulted after "
+		  "its first declaration");
+
       check_abi_tag_redeclaration
 	(olddecl, lookup_attribute ("abi_tag", DECL_ATTRIBUTES (olddecl)),
 	 lookup_attribute ("abi_tag", DECL_ATTRIBUTES (newdecl)));

@@ -1,3 +1,54 @@
+2020-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (service_already_exists): Make default
+	constructor public (LWG 3414).
+	* testsuite/experimental/net/execution_context/make_service.cc: Check
+	the service_already_exists can be default constructed.
+
+2020-04-24  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90415
+	PR libstdc++/92156
+	* include/std/any (any): Rename template parameters for consistency
+	with the standard.
+	(any::_Decay): Rename to _Decay_if_not_any.
+	(any::any(T&&):: Remove is_constructible from constraints. Remove
+	non-standard overload.
+	(any::any(in_place_type_t<T>, Args&&...))
+	(any::any(in_place_type_t<T>, initializer_list<U>, Args&&...))
+	(any::emplace(Args&&...))
+	(any::emplace(initializer_list<U>, Args&&...)):
+	Use decay_t instead of _Decay.
+	* testsuite/20_util/any/cons/90415.cc: New test.
+	* testsuite/20_util/any/cons/92156.cc: New Test.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Make dg-error directives
+	more robust.
+	* testsuite/20_util/any/modifiers/92156.cc: New test.
+
+2020-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update C++20 status table.
+	* doc/html/*: Regenerate.
+
+	* include/bits/stl_iterator.h (__cpp_lib_array_constexpr): Revert
+	value for C++17 to 201803L because P0858R0 is supported for C++17.
+	* include/std/version (__cpp_lib_array_constexpr): Likewise.
+	* testsuite/23_containers/array/element_access/constexpr_c++17.cc:
+	Check for value corresponding to P0031R0 features being tested.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc:
+	Check for value corresponding to P0858R0 features being tested.
+
+	* include/std/version (__cpp_lib_three_way_comparison): Define for
+	freestanding builds.
+
+2020-04-23  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/experimental/net/executor (system_context): Mark
+	system_context::system_context() = delete.
+	* testsuite/experimental/net/executor/1.cc: Add new
+	test to check system_context is not default constructible.
+
 2020-04-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/std/coroutine: Update the inline namespace to __n4861.

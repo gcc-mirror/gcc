@@ -1,4 +1,83 @@
+2020-04-25  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/linux64.h (PCREL_SUPPORTED_BY_OS): Define to
+	enable PC-relative addressing for -mcpu=future.
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): Move
+	after OTHER_FUTURE_MASKS.  Use OTHER_FUTURE_MASKS.
+	* config/rs6000/rs6000.c (PCREL_SUPPORTED_BY_OS): If not defined,
+	suppress PC-relative addressing.
+	(rs6000_option_override_internal): Split up error messages
+	checking for -mprefixed and -mpcrel.  Enable -mpcrel if the target
+	system supports it.
+
+2020-04-25  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94734
+	PR tree-optimization/89430
+	* tree-ssa-phiopt.c: Include tree-eh.h.
+	(cond_store_replacement): Return false if an automatic variable
+	access could trap.  If -fstore-data-races, don't return false
+	just because an automatic variable is addressable.
+
+2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (add<mode>_zext_dup2_exec): Fix merge
+	of high-part.
+	(add<mode>_sext_dup2_exec): Likewise.
+
+2020-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/94710
+	* config/rs6000/vector.md (vec_shr_<mode> for VEC_L): Correct little
+	endian byteshift_val calculation.
+
+2020-04-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (*mov<mode>_insn): Only split post-reload.
+
+2020-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/arm_sve.h: Add a comment.
+
+2020-04-24  Haijian Zhang <z.zhanghaijian@huawei.com>
+
+	PR rtl-optimization/94708
+	* combine.c (simplify_if_then_else): Add check for
+	!HONOR_NANS (mode) && !HONOR_SIGNED_ZEROS (mode).
+
+2020-04-23  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/90983
+	* common.opt (-Wno-frame-larger-than): New option.
+	(-Wno-larger-than, -Wno-stack-usage): Same.
+
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (mov<mode>_exec): Swap the numbers on operands
+	2 and 3.
+	(mov<mode>_exec): Likewise.
+	(trunc<vndi><mode>2_exec): Swap parameters to gen_mov<mode>_exec.
+	(<convop><mode><vndi>2_exec): Likewise.
+
+2019-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/94717
+	* gimple-ssa-store-merging.c (try_coalesce_bswap): Return false if one
+	of the stores doesn't have the same landing pad number as the first.
+	(coalesce_immediate_stores): Do not try to coalesce the store using
+	bswap if it doesn't have the same landing pad number as the first.
+
+2020-04-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc/doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Replace outdated link to ELFv2 ABI.
+
 2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94710
+	* optabs.c (expand_vec_perm_const): For shift_amt const0_rtx
+	just return v2.
 
 	PR middle-end/94724
 	* tree.c (get_narrower): Instead of creating COMPOUND_EXPRs

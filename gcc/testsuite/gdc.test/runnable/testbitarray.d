@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 import std.bitmanip;
@@ -14,4 +15,3 @@ void main() {
 }
 
 
-// RUNNABLE_PHOBOS_TEST

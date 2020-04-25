@@ -1,4 +1,4 @@
-
+// RUNNABLE_PHOBOS_TEST
 import std.stdio;
 
 /***********************************/
@@ -479,4 +479,3 @@ void main()
 
     writefln("Success");
 }
-// RUNNABLE_PHOBOS_TEST

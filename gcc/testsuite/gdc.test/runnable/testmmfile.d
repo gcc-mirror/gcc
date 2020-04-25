@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // REQUIRED_ARGS:
 
@@ -117,4 +118,3 @@ int main()
 
     return 0;
 }
-// RUNNABLE_PHOBOS_TEST

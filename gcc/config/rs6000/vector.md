@@ -1426,7 +1426,8 @@
   emit_move_insn (zero_reg, CONST0_RTX (<MODE>mode));
   if (!BYTES_BIG_ENDIAN)
     {
-      byteshift_val = 16 - byteshift_val;
+      /* Note, byteshift_val can be 0!  */
+      byteshift_val = -byteshift_val & 15;
       op1 = zero_reg;
       op2 = operands[1];
     }

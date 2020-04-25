@@ -6643,7 +6643,10 @@ simplify_if_then_else (rtx x)
 
   /* Look for MIN or MAX.  */
 
-  if ((! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
+  if ((! FLOAT_MODE_P (mode)
+       || (flag_unsafe_math_optimizations
+	   && !HONOR_NANS (mode)
+	   && !HONOR_SIGNED_ZEROS (mode)))
       && comparison_p
       && rtx_equal_p (XEXP (cond, 0), true_rtx)
       && rtx_equal_p (XEXP (cond, 1), false_rtx)

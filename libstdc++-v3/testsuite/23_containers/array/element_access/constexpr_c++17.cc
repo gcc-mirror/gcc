@@ -24,8 +24,6 @@
 # error "Feature test macro for array constexpr is missing in <array>"
 #elif __cpp_lib_array_constexpr < 201603L
 # error "Feature test macro for array constexpr has wrong value in <array>"
-#elif __cpp_lib_array_constexpr > 201603L && __cplusplus == 201703
-# error "Feature test macro for array constexpr has wrong value for C++17"
 #endif
 
 constexpr std::size_t test01()
