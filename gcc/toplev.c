@@ -972,7 +972,7 @@ output_stack_usage_1 (FILE *cf)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  if (flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
+  if (cf && flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
     fprintf (cf, "\\n" HOST_WIDE_INT_PRINT_DEC " bytes (%s)",
 	     stack_usage,
 	     stack_usage_kind_str[stack_usage_kind]);
