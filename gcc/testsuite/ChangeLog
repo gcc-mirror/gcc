@@ -1,3 +1,8 @@
+2020-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94737
+	* gfortran.dg/binding_label_tests_34.f90: New test case.
+
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/pr61433.C: Unfail AIX.
