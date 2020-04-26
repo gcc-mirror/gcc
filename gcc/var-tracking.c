@@ -10171,7 +10171,6 @@ vt_initialize (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       rtx_insn *insn;
-      HOST_WIDE_INT pre, post = 0;
       basic_block first_bb, last_bb;
 
       if (MAY_HAVE_DEBUG_BIND_INSNS)
@@ -10216,6 +10215,8 @@ vt_initialize (void)
 	    {
 	      if (INSN_P (insn))
 		{
+		  HOST_WIDE_INT pre = 0, post = 0;
+
 		  if (!frame_pointer_needed)
 		    {
 		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
@@ -10235,7 +10236,7 @@ vt_initialize (void)
 		  cselib_hook_called = false;
 		  adjust_insn (bb, insn);
 
-		  if (!frame_pointer_needed && pre)
+		  if (pre)
 		    VTI (bb)->out.stack_adjust += pre;
 
 		  if (DEBUG_MARKER_INSN_P (insn))
@@ -10262,7 +10263,7 @@ vt_initialize (void)
 		    add_with_sets (insn, 0, 0);
 		  cancel_changes (0);
 
-		  if (!frame_pointer_needed && post)
+		  if (post)
 		    {
 		      micro_operation mo;
 		      mo.type = MO_ADJUST;

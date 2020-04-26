@@ -1,5 +1,12 @@
 2020-04-30  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
+	* var-tracking.c (vt_initialize): Move variables pre and post
+	into inner block and initialize both in order to fix warning
+	about uninitialized use.  Remove unnecessary checks for
+	frame_pointer_needed.
+
+2020-04-30  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
 	* toplev.c (output_stack_usage_1): Ensure that first
 	argument to fprintf is not null.
 
