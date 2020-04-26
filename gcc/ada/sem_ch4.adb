@@ -6540,12 +6540,24 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index : Interp_Index := 0;
-      It    : Interp;
-      Found : Boolean := False;
-      I_F   : Interp_Index;
-      T_F   : Entity_Id;
-      Scop  : Entity_Id := Empty;
+      Index               : Interp_Index := 0;
+      It                  : Interp;
+      Found               : Boolean := False;
+      Is_Universal_Access : Boolean := False;
+      I_F                 : Interp_Index;
+      T_F                 : Entity_Id;
+      Scop                : Entity_Id := Empty;
+
+      procedure Check_Access_Attribute (N : Node_Id);
+      --  For any object, '[Unchecked_]Access of such object can never be
+      --  passed as a parameter of a call to the Universal_Access equality
+      --  operator.
+      --  This is because the expected type for Obj'Access in a call to
+      --  the Standard."=" operator whose formals are of type
+      --  Universal_Access is Universal_Integer, and Universal_Access
+      --  doesn't have a designated type. For more detail see RM 6.4.1(3)
+      --  and 3.10.2.
+      --  This procedure assumes that the context is a universal_access.
 
       function Check_Access_Object_Types
         (N : Node_Id; Typ : Entity_Id) return Boolean;
@@ -6573,6 +6585,23 @@ package body Sem_Ch4 is
       --  operands that is compatible with equality, the construct is ambiguous
       --  and an error can be emitted now, after trying to disambiguate, i.e.
       --  applying preference rules.
+
+      ----------------------------
+      -- Check_Access_Attribute --
+      ----------------------------
+
+      procedure Check_Access_Attribute (N : Node_Id) is
+      begin
+         if Nkind (N) = N_Attribute_Reference
+           and then Nam_In (Attribute_Name (N),
+                            Name_Access,
+                            Name_Unchecked_Access)
+         then
+            Error_Msg_N
+              ("access attribute cannot be used as actual for "
+               & "universal_access equality", N);
+         end if;
+      end Check_Access_Attribute;
 
       -------------------------------
       -- Check_Access_Object_Types --
@@ -6867,14 +6896,6 @@ package body Sem_Ch4 is
            and then (not Universal_Access
                       or else Check_Access_Object_Types (R, T1))
          then
-            if Universal_Access
-              and then Is_Access_Subprogram_Type (T1)
-              and then Nkind (L) /= N_Null
-              and then Nkind (R) /= N_Null
-            then
-               Check_Compatible_Profiles (R, T1);
-            end if;
-
             if Found
               and then Base_Type (T1) /= Base_Type (T_F)
             then
@@ -6887,12 +6908,14 @@ package body Sem_Ch4 is
 
                else
                   T_F := It.Typ;
+                  Is_Universal_Access := Universal_Access;
                end if;
 
             else
                Found := True;
                T_F   := T1;
                I_F   := Index;
+               Is_Universal_Access := Universal_Access;
             end if;
 
             if not Analyzed (L) then
@@ -6946,6 +6969,18 @@ package body Sem_Ch4 is
             Try_One_Interp (It.Typ);
             Get_Next_Interp (Index, It);
          end loop;
+      end if;
+
+      if Is_Universal_Access then
+         if Is_Access_Subprogram_Type (Etype (L))
+           and then Nkind (L) /= N_Null
+           and then Nkind (R) /= N_Null
+         then
+            Check_Compatible_Profiles (R, Etype (L));
+         end if;
+
+         Check_Access_Attribute (R);
+         Check_Access_Attribute (L);
       end if;
    end Find_Equality_Types;
 
