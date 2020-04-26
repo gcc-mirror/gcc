@@ -1,5 +1,11 @@
 2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/89418
+	* lib/gdc-utils.exp (gdc-convert-test): Add dg-skip-if for compilable
+	tests that depend on the phobos standard library.
+
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/94777
 	* gdc.dg/pr94777a.d: New test.
 	* gdc.dg/pr94777b.d: New test.
