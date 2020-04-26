@@ -61,6 +61,11 @@ AC_PROG_LIBTOOL
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
 
+cat > local.exp <<EOF
+set CC_FOR_TARGET "$CC"
+set CXX_FOR_TARGET "$CXX"
+EOF
+
 AM_MAINTAINER_MODE
 
 AC_CHECK_HEADERS(sys/mman.h)

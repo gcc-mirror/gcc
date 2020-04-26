@@ -1,3 +1,8 @@
+2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-logue.c (rs6000_stack_info): Don't push a
+	stack frame when debugging and flag_compare_debug is enabled.
+
 2020-04-25  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/linux64.h (PCREL_SUPPORTED_BY_OS): Define to

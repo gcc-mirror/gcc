@@ -1,3 +1,11 @@
+2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.tgt: Add power*-*-linux* as a supported target, only
+	building libdruntime.
+	* m4/druntime/cpu.m4 (DRUNTIME_CPU_SOURCES): Add cases for powerpcle
+	and powerpc64le target cpus.
+
 2020-04-21  Mathias Lang  <pro.mathias.lang@gmail.com>
 	    Iain Buclaw  <ibuclaw@gdcproject.org>
 

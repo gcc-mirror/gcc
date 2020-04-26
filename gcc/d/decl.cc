@@ -1277,6 +1277,13 @@ get_symbol_decl (Declaration *decl)
 	  DECL_NO_INLINE_WARNING_P (decl->csym) = 1;
 	}
 
+      /* In [pragma/inline], functions decorated with 'pragma(inline)' affects
+	 whether they are inlined or not.  */
+      if (fd->inlining == PINLINEalways)
+	DECL_DECLARED_INLINE_P (decl->csym) = 1;
+      else if (fd->inlining == PINLINEnever)
+	DECL_UNINLINABLE (decl->csym) = 1;
+
       /* Function was declared 'naked'.  */
       if (fd->naked)
 	{

@@ -1,3 +1,9 @@
+2020-04-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94578
+	* trans-expr.c (arrayfunc_assign_needs_temporary): If the
+	LHS is a subref pointer, we also need a temporary.
+
 2020-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93956

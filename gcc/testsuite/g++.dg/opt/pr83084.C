@@ -1,7 +1,6 @@
 // PR debug/83084
 // { dg-do compile }
 // { dg-options "-O2 -fcompare-debug -Wno-return-type" }
-// { dg-xfail-if "" { powerpc-ibm-aix* } }
 
 enum E { F };
 template <E = F> struct A {

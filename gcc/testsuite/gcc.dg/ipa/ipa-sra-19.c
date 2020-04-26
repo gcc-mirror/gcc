@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2"  } */
 /* { dg-additional-options "-msse2" { target ia32 } } */
+/* { dg-additional-options "-Wno-psabi" { target powerpc-ibm-aix* } } */
 
 typedef int __attribute__((__vector_size__(16))) vectype;
 
