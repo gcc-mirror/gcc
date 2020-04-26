@@ -1,3 +1,10 @@
+2020-04-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94752
+	* coroutines.cc (morph_fn_to_coro): Ensure that
+	unnamed function params have a usable and distinct
+	frame field name.
+
 2020-04-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94583

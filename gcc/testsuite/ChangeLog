@@ -1,3 +1,8 @@
+2020-04-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94752
+	* g++.dg/coroutines/pr94752.C: New test.
+
 2020-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/94737

@@ -3653,6 +3653,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  when we see uses.  */
       param_uses = new hash_map<tree, param_info>;
 
+      unsigned no_name_parm = 0;
       for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
 	   arg = DECL_CHAIN (arg))
 	{
@@ -3693,8 +3694,14 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    parm.frame_type = actual_type;
 	  parm.this_ptr = is_this_parameter (arg);
 	  parm.trivial_dtor = TYPE_HAS_TRIVIAL_DESTRUCTOR (parm.frame_type);
-	  tree pname = DECL_NAME (arg);
-	  char *buf = xasprintf ("__parm.%s", IDENTIFIER_POINTER (pname));
+	  char *buf;
+	  if (DECL_NAME (arg))
+	    {
+	      tree pname = DECL_NAME (arg);
+	      buf = xasprintf ("__parm.%s", IDENTIFIER_POINTER (pname));
+	    }
+	  else
+	    buf = xasprintf ("__unnamed_parm.%d", no_name_parm++);
 	  parm.field_id = coro_make_frame_entry
 	    (&field_list, buf, actual_type, DECL_SOURCE_LOCATION (arg));
 	  free (buf);
