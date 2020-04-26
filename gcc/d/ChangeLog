@@ -1,3 +1,10 @@
+2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (get_symbol_decl): Set DECL_DECLARED_INLINE_P or
+	DECL_UNINLINABLE for declarations with pragma(inline).
+	* toir.cc (IRVisitor::visit (GccAsmStatement *)): Set ASM_INLINE_P if
+	in function decorated with pragma(inline).
+
 2020-04-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* intrinsics.cc (expand_intrinsic_toprec): New function.
