@@ -46,6 +46,12 @@
 	* gcc.dg/debug/dwarf2/pr82718-1.c: Skip on AIX.
 	* gcc.dg/debug/dwarf2/pr82718-2.c: Skip on AIX.
 
+2020-04-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94578
+	* gfortran.dg/pointer_assign_14.f90: New test.
+	* gfortran.dg/pointer_assign_15.f90: New test.
+
 2020-04-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/torture/co-ret-16-simple-control-flow.C:
