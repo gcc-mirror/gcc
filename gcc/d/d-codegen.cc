@@ -172,7 +172,7 @@ declaration_type (Declaration *decl)
    Return TRUE if parameter ARG is a reference type.  */
 
 bool
-argument_reference_p (Parameter *arg)
+parameter_reference_p (Parameter *arg)
 {
   Type *tb = arg->type->toBasetype ();
 
@@ -186,7 +186,7 @@ argument_reference_p (Parameter *arg)
 /* Returns the real type for parameter ARG.  */
 
 tree
-type_passed_as (Parameter *arg)
+parameter_type (Parameter *arg)
 {
   /* Lazy parameters are converted to delegates.  */
   if (arg->storageClass & STClazy)
@@ -207,9 +207,18 @@ type_passed_as (Parameter *arg)
   tree type = build_ctype (arg->type);
 
   /* Parameter is passed by reference.  */
-  if (TREE_ADDRESSABLE (type) || argument_reference_p (arg))
+  if (parameter_reference_p (arg))
     return build_reference_type (type);
 
+  /* Pass non-POD structs by invisible reference.  */
+  if (TREE_ADDRESSABLE (type))
+    {
+      type = build_reference_type (type);
+      /* There are no other pointer to this temporary.  */
+      type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
+    }
+
+  /* Front-end has already taken care of type promotions.  */
   return type;
 }
 
@@ -1952,6 +1961,23 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	    {
 	      tree t = build_constructor (TREE_TYPE (targ), NULL);
 	      targ = build2 (COMPOUND_EXPR, TREE_TYPE (t), targ, t);
+	    }
+
+	  /* Parameter is a struct passed by invisible reference.  */
+	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
+	    {
+	      Type *t = arg->type->toBasetype ();
+	      gcc_assert (t->ty == Tstruct);
+	      StructDeclaration *sd = ((TypeStruct *) t)->sym;
+
+	      /* Nested structs also have ADDRESSABLE set, but if the type has
+		 neither a copy constructor nor a destructor available, then we
+		 need to take care of copying its value before passing it.  */
+	      if (arg->op == TOKstructliteral || (!sd->postblit && !sd->dtor))
+		targ = force_target_expr (targ);
+
+	      targ = convert (build_reference_type (TREE_TYPE (targ)),
+			      build_address (targ));
 	    }
 
 	  vec_safe_push (args, targ);

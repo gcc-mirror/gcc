@@ -672,25 +672,10 @@ convert_for_argument (tree expr, Parameter *arg)
       if (!POINTER_TYPE_P (TREE_TYPE (expr)))
 	return build_address (expr);
     }
-  else if (argument_reference_p (arg))
+  else if (parameter_reference_p (arg))
     {
       /* Front-end shouldn't automatically take the address.  */
-      return convert (type_passed_as (arg), build_address (expr));
-    }
-  else if (TREE_ADDRESSABLE (TREE_TYPE (expr)))
-    {
-      /* Type is a struct passed by invisible reference.  */
-      Type *t = arg->type->toBasetype ();
-      gcc_assert (t->ty == Tstruct);
-      StructDeclaration *sd = ((TypeStruct *) t)->sym;
-
-      /* Nested structs also have ADDRESSABLE set, but if the type has
-	 neither a copy constructor nor a destructor available, then we
-	 need to take care of copying its value before passing it.  */
-      if (!sd->postblit && !sd->dtor)
-	expr = force_target_expr (expr);
-
-      return convert (type_passed_as (arg), build_address (expr));
+      return convert (parameter_type (arg), build_address (expr));
     }
 
   return expr;
