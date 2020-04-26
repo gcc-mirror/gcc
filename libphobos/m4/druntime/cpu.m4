@@ -17,9 +17,10 @@ AC_DEFUN([DRUNTIME_CPU_SOURCES],
                ;;
       mips*)   druntime_target_cpu_parsed="mips"
                ;;
-      powerpc) druntime_target_cpu_parsed="powerpc"
+      powerpc|powerpcle)
+               druntime_target_cpu_parsed="powerpc"
                ;;
-      powerpc64)
+      powerpc64|powerpc64le)
                druntime_target_cpu_parsed="powerpc64"
                ;;
       i[[34567]]86|x86_64)
