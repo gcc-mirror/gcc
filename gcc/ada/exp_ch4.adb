@@ -13919,28 +13919,50 @@ package body Exp_Ch4 is
       Typ    : constant Entity_Id := Etype (R);
 
       function Get_Size_For_Range (Lo, Hi : Uint) return Nat;
-      --  Return the size of the smallest signed integer type covering Lo .. Hi
+      --  Return the size of a small signed integer type covering Lo .. Hi.
+      --  The important thing is to return a size lower than that of Typ.
 
       ------------------------
       -- Get_Size_For_Range --
       ------------------------
 
       function Get_Size_For_Range (Lo, Hi : Uint) return Nat is
-         B : Uint;
-         S : Nat;
+
+         function Is_OK_For_Range (Siz : Nat) return Boolean;
+         --  Return True if a signed integer with given size can cover Lo .. Hi
+
+         --------------------------
+         -- Is_OK_For_Range --
+         --------------------------
+
+         function Is_OK_For_Range (Siz : Nat) return Boolean is
+            B : constant Uint := Uint_2 ** (Siz - 1);
+
+         begin
+            --  Test B = 2 ** (size - 1) (can accommodate -B .. +(B - 1))
+
+            return Lo >= -B and then Hi >= -B and then Lo < B and then Hi < B;
+         end Is_OK_For_Range;
 
       begin
-         S := 1;
-         B := Uint_1;
+         --  This is (almost always) the size of Integer
 
-         --  S = size, B = 2 ** (size - 1) (can accommodate -B .. +(B - 1))
+         if Is_OK_For_Range (32) then
+            return 32;
 
-         while Lo < -B or else Hi < -B or else Lo >= B or else Hi >= B loop
-            B := Uint_2 ** S;
-            S := S + 1;
-         end loop;
+         --  If the size of Typ is 64 then check 63
 
-         return S;
+         elsif RM_Size (Typ) = 64 and then Is_OK_For_Range (63) then
+            return 63;
+
+         --  This is (almost always) the size of Long_Long_Integer
+
+         elsif Is_OK_For_Range (64) then
+            return 64;
+
+         else
+            return 128;
+         end if;
       end Get_Size_For_Range;
 
       --  Local variables
