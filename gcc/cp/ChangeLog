@@ -1,3 +1,12 @@
+2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94759
+	* coroutines.cc (coro_promise_type_found_p): Do not
+	exclude non-classes here (this needs to be handled in the
+	coroutine header).
+	(morph_fn_to_coro):  Allow for the case where the coroutine
+	returns void.
+
 2020-04-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94701

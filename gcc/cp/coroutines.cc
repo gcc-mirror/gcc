@@ -441,18 +441,6 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
     {
       /* Get the coroutine traits template class instance for the function
 	 signature we have - coroutine_traits <R, ...>  */
-      tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
-      if (!CLASS_TYPE_P (return_type))
-	{
-	  /* It makes more sense to show the function header for this, even
-	     though we will have encountered it when processing a keyword.
-	     Only emit the error once, not for every keyword we encounter.  */
-	  if (!coro_info->coro_ret_type_error_emitted)
-	    error_at (DECL_SOURCE_LOCATION (fndecl), "coroutine return type"
-		      " %qT is not a class", return_type);
-	  coro_info->coro_ret_type_error_emitted = true;
-	  return false;
-	}
 
       tree templ_class = instantiate_coro_traits (fndecl, loc);
 
@@ -3518,9 +3506,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   if (!coro_function_valid_p (orig))
     return false;
 
-  /* The ramp function does return a value.  */
-  current_function_returns_value = 1;
-
   /* We can't validly get here with an empty statement list, since there's no
      way for the FE to decide it's a coroutine in the absence of any code.  */
   tree fnbody = pop_stmt_list (DECL_SAVED_TREE (orig));
@@ -3593,7 +3578,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      1. Types we already know.  */
 
   tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
-  gcc_assert (!VOID_TYPE_P (fn_return_type));
   tree handle_type = get_coroutine_handle_type (orig);
   tree promise_type = get_coroutine_promise_type (orig);
 
@@ -3778,7 +3762,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree ramp_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   add_stmt (ramp_bind);
   tree ramp_body = push_stmt_list ();
-  tree empty_list = build_empty_stmt (fn_start);
 
   tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
 				  coro_frame_ptr);
@@ -3952,33 +3935,27 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	 control to the caller of the coroutine and the return value is
 	 obtained by a call to T::get_return_object_on_allocation_failure(),
 	 where T is the promise type.  */
-       tree cfra_label
-	= create_named_label_with_ctx (fn_start, "coro.frame.active",
-				       current_scope ());
-      tree early_ret_list = NULL;
-      /* init the retval using the user's func.  */
-      r = build2 (INIT_EXPR, TREE_TYPE (DECL_RESULT (orig)), DECL_RESULT (orig),
-		  grooaf);
-      r = coro_build_cvt_void_expr_stmt (r, fn_start);
-      append_to_statement_list (r, &early_ret_list);
-      /* We know it's the correct type.  */
-      r = DECL_RESULT (orig);
-      r = build_stmt (fn_start, RETURN_EXPR, r);
-      TREE_NO_WARNING (r) |= 1;
-      r = maybe_cleanup_point_expr_void (r);
-      append_to_statement_list (r, &early_ret_list);
 
-      tree goto_st = NULL;
-      r = build1 (GOTO_EXPR, void_type_node, cfra_label);
-      append_to_statement_list (r, &goto_st);
-
-      tree ckk = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
-      tree ckz = build2 (EQ_EXPR, boolean_type_node, coro_fp, ckk);
-      r = build3 (COND_EXPR, void_type_node, ckz, early_ret_list, empty_list);
-      add_stmt (r);
-
-      cfra_label = build_stmt (fn_start, LABEL_EXPR, cfra_label);
-      add_stmt (cfra_label);
+      gcc_checking_assert (same_type_p (fn_return_type, TREE_TYPE (grooaf)));
+      tree if_stmt = begin_if_stmt ();
+      tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
+      cond = build2 (EQ_EXPR, boolean_type_node, coro_fp, cond);
+      finish_if_stmt_cond (cond, if_stmt);
+      if (VOID_TYPE_P (fn_return_type))
+	{
+	  /* Execute the get-return-object-on-alloc-fail call...  */
+	  finish_expr_stmt (grooaf);
+	  /* ... but discard the result, since we return void.  */
+	  finish_return_stmt (NULL_TREE);
+	}
+      else
+	{
+	  /* Get the fallback return object.  */
+	  r = build_cplus_new (fn_return_type, grooaf, tf_warning_or_error);
+	  finish_return_stmt (r);
+	}
+      finish_then_clause (if_stmt);
+      finish_if_stmt (if_stmt);
     }
 
   /* deref the frame pointer, to use in member access code.  */
@@ -4176,17 +4153,25 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   tree gro_context_body = push_stmt_list ();
-  tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			      TREE_TYPE (get_ro));
-  DECL_CONTEXT (gro) = current_scope ();
-  add_decl_expr (gro);
-  tree gro_bind_vars = gro;
+  bool gro_is_void_p = VOID_TYPE_P (TREE_TYPE (get_ro));
 
+  tree gro, gro_bind_vars = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
      suspend.  */
-  r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
+  if (gro_is_void_p)
+    finish_expr_stmt (get_ro);
+  else
+    {
+      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
+			      TREE_TYPE (get_ro));
+      DECL_CONTEXT (gro) = current_scope ();
+      add_decl_expr (gro);
+      gro_bind_vars = gro;
+
+      r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
+      r = coro_build_cvt_void_expr_stmt (r, fn_start);
+      add_stmt (r);
+    }
 
   /* Initialize the resume_idx_name to 0, meaning "not started".  */
   tree resume_idx_m
@@ -4222,16 +4207,25 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* The ramp is done, we just need the return value.  */
   if (!same_type_p (TREE_TYPE (get_ro), fn_return_type))
     {
-      /* construct the return value with a single GRO param.  */
-      vec<tree, va_gc> *args = make_tree_vector_single (gro);
+      /* construct the return value with a single GRO param, if it's not
+	 void.  */
+      vec<tree, va_gc> *args = NULL;
+      vec<tree, va_gc> **arglist = NULL;
+      if (!gro_is_void_p)
+	{
+	  args = make_tree_vector_single (gro);
+	  arglist = &args;
+	}
       r = build_special_member_call (NULL_TREE,
-				     complete_ctor_identifier, &args,
+				     complete_ctor_identifier, arglist,
 				     fn_return_type, LOOKUP_NORMAL,
 				     tf_warning_or_error);
       r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
     }
-  else
+  else if (!gro_is_void_p)
     r = rvalue (gro); /* The GRO is the return value.  */
+  else
+    r = NULL_TREE;
 
   finish_return_stmt (r);
 

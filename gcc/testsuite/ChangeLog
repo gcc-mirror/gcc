@@ -1,4 +1,15 @@
-2020-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94759
+	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: Adjust for
+	updated error messages.
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: Likewise.
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: Likewise.
+	* g++.dg/coroutines/coro-missing-promise.C: Likewise.
+	* g++.dg/coroutines/pr93458-5-bad-coro-type.C: Liekwise.
+	* g++.dg/coroutines/torture/co-ret-17-void-ret-coro.C: New test.
+
+2020-04-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94701
 	* g++.dg/coroutines/torture/local-var-06-structured-binding.C:
