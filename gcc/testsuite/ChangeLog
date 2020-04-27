@@ -1,3 +1,11 @@
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57359
+	* gcc.dg/torture/pr57359-1.c: New testcase.
+	* gcc.dg/torture/pr57359-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-14.c: Likewise.
+	* gcc.dg/graphite/pr80906.c: XFAIL.
+
 2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/debug16.adb: New test.

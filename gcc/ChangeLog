@@ -1,3 +1,43 @@
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57359
+	* tree-ssa-loop-im.c (im_mem_ref::indep_loop): Remove.
+	(in_mem_ref::dep_loop): Repurpose.
+	(LOOP_DEP_BIT): Remove.
+	(enum dep_kind): New.
+	(enum dep_state): Likewise.
+	(record_loop_dependence): New function to populate the
+	dependence cache.
+	(query_loop_dependence): New function to query the dependence
+	cache.
+	(memory_accesses::refs_in_loop): Rename to ...
+	(memory_accesses::refs_loaded_in_loop): ... this and change to
+	only record loads.
+	(outermost_indep_loop): Adjust.
+	(mem_ref_alloc): Likewise.
+	(gather_mem_refs_stmt): Likewise.
+	(mem_refs_may_alias_p): Add tbaa_p parameter and pass it down.
+	(struct sm_aux): New.
+	(execute_sm): Split code generation on exits, record state
+	into new hash-map.
+	(enum sm_kind): New.
+	(execute_sm_exit): Exit code generation part.
+	(sm_seq_push_down): Helper for sm_seq_valid_bb performing
+	dependence checking on stores reached from exits.
+	(sm_seq_valid_bb): New function gathering SM stores on exits.
+	(hoist_memory_references): Re-implement.
+	(refs_independent_p): Add tbaa_p parameter and pass it down.
+	(record_dep_loop): Remove.
+	(ref_indep_loop_p_1): Fold into ...
+	(ref_indep_loop_p): ... this and generalize for three kinds
+	of dependence queries.
+	(can_sm_ref_p): Adjust according to hoist_memory_references
+	changes.
+	(store_motion_loop): Don't do anything if the set of SM
+	candidates is empty.
+	(tree_ssa_lim_initialize): Adjust.
+	(tree_ssa_lim_finalize): Likewise.
+
 2020-05-07  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 
