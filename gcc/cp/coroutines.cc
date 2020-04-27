@@ -748,7 +748,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   if (INDIRECT_REF_P (e_proxy))
     e_proxy = TREE_OPERAND (e_proxy, 0);
   if (TREE_CODE (e_proxy) == PARM_DECL
-      || (TREE_CODE (e_proxy) == VAR_DECL && !DECL_ARTIFICIAL (e_proxy)))
+      || (VAR_P (e_proxy) && (!DECL_ARTIFICIAL (e_proxy)
+			      || DECL_HAS_VALUE_EXPR_P (e_proxy))))
     e_proxy = o;
   else
     {
@@ -2659,7 +2660,8 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	}
 
       /* This isn't a temporary.  */
-      if ((TREE_CODE (parm) == VAR_DECL && !DECL_ARTIFICIAL (parm))
+      if ((VAR_P (parm)
+	   && (!DECL_ARTIFICIAL (parm) || DECL_HAS_VALUE_EXPR_P (parm)))
 	  || TREE_CODE (parm) == PARM_DECL
 	  || TREE_CODE (parm) == NON_LVALUE_EXPR)
 	continue;
@@ -2742,7 +2744,8 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   if (INDIRECT_REF_P (aw))
     aw = TREE_OPERAND (aw, 0);
   if (TREE_CODE (aw) == PARM_DECL
-      || (TREE_CODE (aw) == VAR_DECL && !DECL_ARTIFICIAL (aw)))
+      || (VAR_P (aw) && (!DECL_ARTIFICIAL (aw)
+			 || DECL_HAS_VALUE_EXPR_P (aw))))
     ; /* Don't make an additional copy.  */
   else
     {

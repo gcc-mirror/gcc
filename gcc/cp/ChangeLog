@@ -1,3 +1,11 @@
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94879
+	* coroutines.cc (build_co_await): Account for variables
+	with DECL_VALUE_EXPRs.
+	(captures_temporary): Likewise.
+	(register_awaits): Likewise.
+
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94830
