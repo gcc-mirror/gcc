@@ -1123,6 +1123,18 @@ operator_mult::op1_range (irange &r, tree type,
 			  const irange &lhs, const irange &op2) const
 {
   tree offset;
+
+  // FIXME: We can't solve 0 = OP1 * N by dividing by N with a
+  // wrapping type.  Bail for now.
+  //
+  // For example: For 0 = OP1 * 2, OP1 could be 0, or
+  // MAXINT.
+  //
+  // For example: For 4 = OP1 * 2, OP1 could be 2 or 130 (unsigned
+  // 8-bit)
+  if (TYPE_OVERFLOW_WRAPS (type))
+    return false;
+
   if (op2.singleton_p (&offset) && !integer_zerop (offset))
     return range_op_handler (TRUNC_DIV_EXPR, type)->fold_range (r, type,
 								lhs, op2);
