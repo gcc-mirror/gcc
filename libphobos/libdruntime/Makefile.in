@@ -334,13 +334,12 @@ am__objects_17 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/stdio.lo core/sys/linux/string.lo \
 	core/sys/linux/sys/auxv.lo core/sys/linux/sys/eventfd.lo \
 	core/sys/linux/sys/file.lo core/sys/linux/sys/inotify.lo \
-	core/sys/linux/sys/mman.lo core/sys/linux/sys/netinet/tcp.lo \
-	core/sys/linux/sys/prctl.lo core/sys/linux/sys/signalfd.lo \
-	core/sys/linux/sys/socket.lo core/sys/linux/sys/sysinfo.lo \
-	core/sys/linux/sys/time.lo core/sys/linux/sys/xattr.lo \
-	core/sys/linux/termios.lo core/sys/linux/time.lo \
-	core/sys/linux/timerfd.lo core/sys/linux/tipc.lo \
-	core/sys/linux/unistd.lo
+	core/sys/linux/sys/mman.lo core/sys/linux/sys/prctl.lo \
+	core/sys/linux/sys/signalfd.lo core/sys/linux/sys/socket.lo \
+	core/sys/linux/sys/sysinfo.lo core/sys/linux/sys/time.lo \
+	core/sys/linux/sys/xattr.lo core/sys/linux/termios.lo \
+	core/sys/linux/time.lo core/sys/linux/timerfd.lo \
+	core/sys/linux/tipc.lo core/sys/linux/unistd.lo
 @DRUNTIME_OS_LINUX_TRUE@am__objects_18 = $(am__objects_17)
 am__objects_19 = core/sys/windows/accctrl.lo \
 	core/sys/windows/aclapi.lo core/sys/windows/aclui.lo \
@@ -878,12 +877,12 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/sched.d core/sys/linux/stdio.d core/sys/linux/string.d \
 	core/sys/linux/sys/auxv.d core/sys/linux/sys/eventfd.d \
 	core/sys/linux/sys/file.d core/sys/linux/sys/inotify.d \
-	core/sys/linux/sys/mman.d core/sys/linux/sys/netinet/tcp.d \
-	core/sys/linux/sys/prctl.d core/sys/linux/sys/signalfd.d \
-	core/sys/linux/sys/socket.d core/sys/linux/sys/sysinfo.d \
-	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
-	core/sys/linux/termios.d core/sys/linux/time.d \
-	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
+	core/sys/linux/sys/mman.d core/sys/linux/sys/prctl.d \
+	core/sys/linux/sys/signalfd.d core/sys/linux/sys/socket.d \
+	core/sys/linux/sys/sysinfo.d core/sys/linux/sys/time.d \
+	core/sys/linux/sys/xattr.d core/sys/linux/termios.d \
+	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
+	core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/execinfo.d core/sys/netbsd/string.d \
@@ -1526,11 +1525,6 @@ core/sys/linux/sys/eventfd.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/file.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/inotify.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/mman.lo: core/sys/linux/sys/$(am__dirstamp)
-core/sys/linux/sys/netinet/$(am__dirstamp):
-	@$(MKDIR_P) core/sys/linux/sys/netinet
-	@: > core/sys/linux/sys/netinet/$(am__dirstamp)
-core/sys/linux/sys/netinet/tcp.lo:  \
-	core/sys/linux/sys/netinet/$(am__dirstamp)
 core/sys/linux/sys/prctl.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/signalfd.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/socket.lo: core/sys/linux/sys/$(am__dirstamp)
@@ -1867,8 +1861,6 @@ mostlyclean-compile:
 	-rm -f core/sys/linux/netinet/*.lo
 	-rm -f core/sys/linux/sys/*.$(OBJEXT)
 	-rm -f core/sys/linux/sys/*.lo
-	-rm -f core/sys/linux/sys/netinet/*.$(OBJEXT)
-	-rm -f core/sys/linux/sys/netinet/*.lo
 	-rm -f core/sys/netbsd/*.$(OBJEXT)
 	-rm -f core/sys/netbsd/*.lo
 	-rm -f core/sys/netbsd/sys/*.$(OBJEXT)
@@ -2027,7 +2019,6 @@ clean-libtool:
 	-rm -rf core/sys/linux/.libs core/sys/linux/_libs
 	-rm -rf core/sys/linux/netinet/.libs core/sys/linux/netinet/_libs
 	-rm -rf core/sys/linux/sys/.libs core/sys/linux/sys/_libs
-	-rm -rf core/sys/linux/sys/netinet/.libs core/sys/linux/sys/netinet/_libs
 	-rm -rf core/sys/netbsd/.libs core/sys/netbsd/_libs
 	-rm -rf core/sys/netbsd/sys/.libs core/sys/netbsd/sys/_libs
 	-rm -rf core/sys/openbsd/.libs core/sys/openbsd/_libs
@@ -2183,7 +2174,6 @@ distclean-generic:
 	-rm -f core/sys/linux/$(am__dirstamp)
 	-rm -f core/sys/linux/netinet/$(am__dirstamp)
 	-rm -f core/sys/linux/sys/$(am__dirstamp)
-	-rm -f core/sys/linux/sys/netinet/$(am__dirstamp)
 	-rm -f core/sys/netbsd/$(am__dirstamp)
 	-rm -f core/sys/netbsd/sys/$(am__dirstamp)
 	-rm -f core/sys/openbsd/$(am__dirstamp)

@@ -126,20 +126,6 @@ version (CRuntime_Glibc)
     char* dlerror();
     void* dlopen(in char*, int);
     void* dlsym(void*, in char*);
-
-    deprecated("Please use core.sys.linux.dlfcn for non-POSIX extensions")
-    {
-        int   dladdr(in void* addr, Dl_info* info);
-        void* dlvsym(void* handle, in char* symbol, in char* version_);
-
-        struct Dl_info
-        {
-            const(char)* dli_fname;
-            void*        dli_fbase;
-            const(char)* dli_sname;
-            void*        dli_saddr;
-        }
-    }
 }
 else version (Darwin)
 {

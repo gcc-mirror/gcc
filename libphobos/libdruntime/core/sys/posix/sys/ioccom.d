@@ -6,11 +6,20 @@
 
 module core.sys.posix.sys.ioccom;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 version (Posix):
 
 nothrow @nogc:
 
-version (OSX)
+version (Darwin)
 {
     /* OSX ioctl's (based on FreeBSD) encode the command in the lower 16-bits
      * and the size of any in/out parameters in the lower 13 bits of the upper

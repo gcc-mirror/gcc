@@ -167,9 +167,11 @@ unittest
 /*************************************
  * Round argument to a specific precision.
  *
- * D language types specify a minimum precision, not a maximum. The
- * `toPrec()` function forces rounding of the argument `f` to the
- * precision of the specified floating point type `T`.
+ * D language types specify only a minimum precision, not a maximum. The
+ * `toPrec()` function forces rounding of the argument `f` to the precision
+ * of the specified floating point type `T`.
+ * The rounding mode used is inevitably target-dependent, but will be done in
+ * a way to maximize accuracy. In most cases, the default is round-to-nearest.
  *
  * Params:
  *      T = precision type to round to
@@ -206,9 +208,10 @@ T toPrec(T:real)(real f)  { pragma(inline, false); return f; }
 
 @safe unittest
 {
-    static float f = 1.1f;
-    static double d = 1.1;
-    static real r = 1.1L;
+    // Test all instantiations work with all combinations of float.
+    float f = 1.1f;
+    double d = 1.1;
+    real r = 1.1L;
     f = toPrec!float(f + f);
     f = toPrec!float(d + d);
     f = toPrec!float(r + r);
@@ -219,19 +222,32 @@ T toPrec(T:real)(real f)  { pragma(inline, false); return f; }
     r = toPrec!real(d + d);
     r = toPrec!real(r + r);
 
-    /+ Uncomment these once compiler support has been added.
+    // Comparison tests.
+    bool approxEqual(T)(T lhs, T rhs)
+    {
+        return fabs((lhs - rhs) / rhs) <= 1e-2 || fabs(lhs - rhs) <= 1e-5;
+    }
+
     enum real PIR = 0xc.90fdaa22168c235p-2;
     enum double PID = 0x1.921fb54442d18p+1;
     enum float PIF = 0x1.921fb6p+1;
+    static assert(approxEqual(toPrec!float(PIR), PIF));
+    static assert(approxEqual(toPrec!double(PIR), PID));
+    static assert(approxEqual(toPrec!real(PIR), PIR));
+    static assert(approxEqual(toPrec!float(PID), PIF));
+    static assert(approxEqual(toPrec!double(PID), PID));
+    static assert(approxEqual(toPrec!real(PID), PID));
+    static assert(approxEqual(toPrec!float(PIF), PIF));
+    static assert(approxEqual(toPrec!double(PIF), PIF));
+    static assert(approxEqual(toPrec!real(PIF), PIF));
 
-    assert(toPrec!float(PIR) == PIF);
-    assert(toPrec!double(PIR) == PID);
-    assert(toPrec!real(PIR) == PIR);
-    assert(toPrec!float(PID) == PIF);
-    assert(toPrec!double(PID) == PID);
-    assert(toPrec!real(PID) == PID);
-    assert(toPrec!float(PIF) == PIF);
-    assert(toPrec!double(PIF) == PIF);
-    assert(toPrec!real(PIF) == PIF);
-    +/
+    assert(approxEqual(toPrec!float(PIR), PIF));
+    assert(approxEqual(toPrec!double(PIR), PID));
+    assert(approxEqual(toPrec!real(PIR), PIR));
+    assert(approxEqual(toPrec!float(PID), PIF));
+    assert(approxEqual(toPrec!double(PID), PID));
+    assert(approxEqual(toPrec!real(PID), PID));
+    assert(approxEqual(toPrec!float(PIF), PIF));
+    assert(approxEqual(toPrec!double(PIF), PIF));
+    assert(approxEqual(toPrec!real(PIF), PIF));
 }

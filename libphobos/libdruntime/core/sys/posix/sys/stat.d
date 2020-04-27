@@ -1391,7 +1391,6 @@ else version (Solaris)
             dev_t st_rdev;
             c_long[2] st_pad2;
             off_t st_size;
-            c_long st_pad3;
             union
             {
                 timestruc_t st_atim;

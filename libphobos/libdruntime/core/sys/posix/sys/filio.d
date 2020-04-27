@@ -8,11 +8,20 @@ module core.sys.posix.sys.filio;
 
 import core.sys.posix.sys.ioccom;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 version (Posix):
 
 nothrow @nogc:
 
-version (OSX)
+version (Darwin)
 {
     // File-descriptor ioctl's
     enum uint FIOCLEX   = _IO('f', 1);         // set close on exec on fd

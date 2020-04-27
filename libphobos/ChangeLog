@@ -1,5 +1,11 @@
 2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_LINUX): Remove
+	core/sys/linux/sys/netinet/tcp.d.
+	* libdruntime/Makefile.in: Regenerate.
+
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* configure.tgt: Add hppa-*-linux* as a supported target.
 
 2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
