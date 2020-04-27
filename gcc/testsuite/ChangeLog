@@ -1,3 +1,10 @@
+2020-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94772
+	* g++.dg/cpp1y/constexpr-tracking-const23.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const24.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const25.C: New test.
+
 2020-04-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94697

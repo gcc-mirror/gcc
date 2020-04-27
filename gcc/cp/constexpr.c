@@ -2371,6 +2371,21 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       STRIP_NOPS (new_obj);
       if (TREE_CODE (new_obj) == ADDR_EXPR)
 	new_obj = TREE_OPERAND (new_obj, 0);
+
+      if (ctx->call && ctx->call->fundef
+	  && DECL_CONSTRUCTOR_P (ctx->call->fundef->decl))
+	{
+	  tree cur_obj = TREE_VEC_ELT (ctx->call->bindings, 0);
+	  STRIP_NOPS (cur_obj);
+	  if (TREE_CODE (cur_obj) == ADDR_EXPR)
+	    cur_obj = TREE_OPERAND (cur_obj, 0);
+	  if (new_obj == cur_obj)
+	    /* We're calling the target constructor of a delegating
+	       constructor, or accessing a base subobject through a
+	       NOP_EXPR as part of a call to a base constructor, so
+	       there is no new (sub)object.  */
+	    new_obj = NULL_TREE;
+	}
     }
 
   tree result = NULL_TREE;
@@ -4950,7 +4965,18 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   if (TREE_CODE (t) == INIT_EXPR
       && TREE_CODE (*valp) == CONSTRUCTOR
       && TYPE_READONLY (type))
-    TREE_READONLY (*valp) = true;
+    {
+      if (INDIRECT_REF_P (target)
+	  && (is_this_parameter
+	      (tree_strip_nop_conversions (TREE_OPERAND (target, 0)))))
+	/* We've just initialized '*this' (perhaps via the target
+	   constructor of a delegating constructor).  Leave it up to the
+	   caller that set 'this' to set TREE_READONLY appropriately.  */
+	gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
+			     (TREE_TYPE (target), type));
+      else
+	TREE_READONLY (*valp) = true;
+    }
 
   /* Update TREE_CONSTANT and TREE_SIDE_EFFECTS on enclosing
      CONSTRUCTORs, if any.  */

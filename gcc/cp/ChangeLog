@@ -1,3 +1,11 @@
+2020-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94772
+	* constexpr.c (cxx_eval_call_expression): Don't set new_obj if we're
+	evaluating the target constructor of a delegating constructor.
+	(cxx_eval_store_expression): Don't set TREE_READONLY if the LHS of the
+	INIT_EXPR is '*this'.
+
 2020-04-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90320
