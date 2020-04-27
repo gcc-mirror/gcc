@@ -1,3 +1,7 @@
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.tgt: Add hppa-*-linux* as a supported target.
+
 2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure: Regenerate.

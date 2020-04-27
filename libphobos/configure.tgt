@@ -30,6 +30,9 @@ case "${target}" in
   arm*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  hppa-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   mips*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
