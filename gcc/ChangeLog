@@ -1,3 +1,9 @@
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94704
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Ignore cxx17_empty_base_field_p fields.
+
 2020-04-27  Jiufu Guo   <guojiufu@cn.ibm.com>
 
 	* common/config/rs6000/rs6000-common.c

@@ -11917,7 +11917,8 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
-	  if (TREE_CODE (field) != FIELD_DECL)
+	  if (TREE_CODE (field) != FIELD_DECL
+	      || cxx17_empty_base_field_p (field))
 	    continue;
 
 	  if (single == NULL_TREE)
@@ -11967,7 +11968,8 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
-	  if (TREE_CODE (field) != FIELD_DECL)
+	  if (TREE_CODE (field) != FIELD_DECL
+	      || cxx17_empty_base_field_p (field))
 	    continue;
 
 	  if (single == NULL_TREE)
