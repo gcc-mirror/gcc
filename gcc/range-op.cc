@@ -3375,6 +3375,18 @@ range_tests ()
   int_range<1> i1, i2, i3;
   int_range<1> r0, r1, rold;
 
+  // Test 1-bit signed integer union.
+  // [-1,-1] U [0,0] = VARYING.
+  tree one_bit_type = build_nonstandard_integer_type (1, 0);
+  {
+    tree one_bit_min = vrp_val_min (one_bit_type);
+    tree one_bit_max = vrp_val_max (one_bit_type);
+    int_range<2> min (one_bit_min, one_bit_min);
+    int_range<2> max (one_bit_max, one_bit_max);
+    max.union_ (min);
+    ASSERT_TRUE (max.varying_p ());
+  }
+
   // Test that NOT(255) is [0..254] in 8-bit land.
   int_range<1> not_255 (UCHAR (255), UCHAR (255), VR_ANTI_RANGE);
   ASSERT_TRUE (not_255 == int_range<1> (UCHAR (0), UCHAR (254)));

@@ -1878,7 +1878,7 @@ irange::multi_range_union (const irange &r)
       // Overflow indicates we are at MAX already.
       // A wide int bug requires the previous max_val check
       // trigger: gcc.c-torture/compile/pr80443.c  with -O3
-      if (ovf)
+      if (ovf == wi::OVF_OVERFLOW)
 	break;
 
       // Current upper+1 is >= lower bound next pair, then we merge ranges.
