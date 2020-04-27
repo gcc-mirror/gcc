@@ -1,3 +1,10 @@
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94780
+	* config/i386/i386.c (ix86_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to
+	sw_var, exceptions_var, mxcsr_orig_var and mxcsr_mod_var.
+
 2020-04-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/arm/arm-builtins.c (arm_expand_builtin_args): Only apply
