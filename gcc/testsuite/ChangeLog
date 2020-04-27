@@ -1,3 +1,8 @@
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94755
+	* c-c++-common/pr94755.c: New test.
+
 2020-04-27  Felix Yang  <felix.yang@huawei.com>
 
 	PR tree-optimization/94784
