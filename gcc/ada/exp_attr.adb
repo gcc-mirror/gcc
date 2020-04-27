@@ -7094,7 +7094,8 @@ package body Exp_Attr is
 
          Expr := Empty;
 
-         --  Attribute 'Valid_Scalars is not supported on private tagged types
+         --  Attribute 'Valid_Scalars is not supported on private tagged types;
+         --  see a detailed explanation where this attribute is analyzed.
 
          if Is_Private_Type (Ptyp) and then Is_Tagged_Type (Ptyp) then
             null;
