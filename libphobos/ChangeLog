@@ -1,3 +1,9 @@
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90719
+	* libdruntime/core/sys/posix/sys/stat.d (Solaris): Remove st_pad3 from
+	struct stat32_t.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
