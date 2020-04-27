@@ -1860,6 +1860,7 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "sP", NL ("sizeof..."), 1 },
   { "sZ", NL ("sizeof..."), 1 },
   { "sc", NL ("static_cast"), 2 },
+  { "ss", NL ("<=>"),       2 },
   { "st", NL ("sizeof "),   1 },
   { "sz", NL ("sizeof "),   1 },
   { "tr", NL ("throw"),     0 },
