@@ -2207,14 +2207,16 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
       minv = masked_increment (valv, cst2v, sgnbit, nprec);
       if (minv == valv)
 	{
-	  r.set_varying (type);
-	  we_know_nothing = true;
 	  // If we can't determine anything on this bound, fall
 	  // through and conservatively solve for the other end point.
+	  we_know_nothing = true;
 	}
     }
   maxv = wi::mask (nprec - (cst2n ? 1 : 0), false, nprec);
-  r = int_range<1> (type, minv, maxv);
+  if (we_know_nothing)
+    r.set_varying (type);
+  else
+    r = int_range<1> (type, minv, maxv);
 
   // Solve [-INF, lhs.upper_bound ()] = x & MASK.
   //
@@ -2235,6 +2237,8 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
       maxv = masked_increment (valv, cst2v, sgnbit, nprec);
       if (maxv == valv)
 	{
+	  // If we couldn't determine anything on either bound, return
+	  // undefined.
 	  if (we_know_nothing)
 	    r.set_undefined ();
 	  return;
