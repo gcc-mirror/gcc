@@ -2150,6 +2150,16 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
 					       const irange &lhs,
 					       const irange &op2) const
 {
+  // FIXME: This needs work.  Ideally, start with VARYING and take out
+  // ranges we know are impossible.
+  //
+  // i.e. [MIN+1, MAX] = op1 & 255
+  // op1 is still varying.
+  if (lhs.varying_p ())
+    {
+      r.set_varying (type);
+      return;
+    }
   if (!op2.singleton_p ())
     {
       // We bail on anything that's not a singleton mask, but at least
@@ -2235,7 +2245,11 @@ operator_bitwise_and::op1_range (irange &r, tree type,
     return op_logical_and.op1_range (r, type, lhs, op2);
 
   if (lhs.num_pairs () == 1)
-    simple_op1_range_solver (r, type, lhs, op2);
+    {
+      simple_op1_range_solver (r, type, lhs, op2);
+      if (r.undefined_p ())
+	return false;
+    }
   else
     {
       r.set_undefined ();
