@@ -1,3 +1,8 @@
+2020-04-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.c (output_move_neon): Only get the first operand if
+	addr is PLUS.
+
 2020-04-27  Felix Yang  <felix.yang@huawei.com>
 
 	PR tree-optimization/94784

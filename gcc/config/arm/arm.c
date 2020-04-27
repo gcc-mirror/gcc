@@ -20145,7 +20145,8 @@ output_move_neon (rtx *operands)
 	}
       /* Fall through.  */
     case PLUS:
-      addr = XEXP (addr, 0);
+      if (GET_CODE (addr) == PLUS)
+	addr = XEXP (addr, 0);
       /* Fall through.  */
     case LABEL_REF:
       {
