@@ -1,3 +1,29 @@
+2020-04-27  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/constraints.md (e): Remove constraint.
+	(Te): Define constraint.
+	* config/arm/mve.md (vaddvq_<supf><mode>): Modify constraint in
+	operand 0 from "e" to "Te".
+	(vaddvaq_<supf><mode>): Likewise.
+	(vaddvq_p_<supf><mode>): Likewise.
+	(vmladavq_<supf><mode>): Likewise.
+	(vmladavxq_s<mode>): Likewise.
+	(vmlsdavq_s<mode>): Likewise.
+	(vmlsdavxq_s<mode>): Likewise.
+	(vaddvaq_p_<supf><mode>): Likewise.
+	(vmladavaq_<supf><mode>): Likewise.
+	(vmladavq_p_<supf><mode>): Likewise.
+	(vmladavxq_p_s<mode>): Likewise.
+	(vmlsdavq_p_s<mode>): Likewise.
+	(vmlsdavxq_p_s<mode>): Likewise.
+	(vmlsdavaxq_s<mode>): Likewise.
+	(vmlsdavaq_s<mode>): Likewise.
+	(vmladavaxq_s<mode>): Likewise.
+	(vmladavaq_p_<supf><mode>): Likewise.
+	(vmladavaxq_p_s<mode>): Likewise.
+	(vmlsdavaq_p_s<mode>): Likewise.
+	(vmlsdavaxq_p_s<mode>): Likewise.
+
 2020-04-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm.c (output_move_neon): Only get the first operand if

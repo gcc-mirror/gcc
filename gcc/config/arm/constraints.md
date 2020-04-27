@@ -32,7 +32,7 @@
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
-;;			 Dt, Dp, Dz, Tu
+;;			 Dt, Dp, Dz, Tu, Te
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
 ;;		     Rg, Ri
@@ -50,8 +50,8 @@
 (define_register_constraint "Uf" "TARGET_HAVE_MVE ? VFPCC_REG : NO_REGS"
   "MVE FPCCR register")
 
-(define_register_constraint "e" "TARGET_HAVE_MVE ? EVEN_REG : NO_REGS"
-  "MVE EVEN registers @code{r0}, @code{r2}, @code{r4}, @code{r6}, @code{r8},
+(define_register_constraint "Te" "TARGET_HAVE_MVE ? EVEN_REG : NO_REGS"
+  "EVEN core registers @code{r0}, @code{r2}, @code{r4}, @code{r6}, @code{r8},
    @code{r10}, @code{r12}, @code{r14}")
 
 (define_constraint "Rd"
