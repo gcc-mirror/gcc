@@ -1,3 +1,15 @@
+2020-04-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94515
+	* dwarf2cfi.c (struct GTY): Add ra_mangled.
+	(cfi_row_equal_p): Check ra_mangled.
+	(dwarf2out_frame_debug_cfa_window_save): Remove the argument,
+	this only handles the sparc logic now.
+	(dwarf2out_frame_debug_cfa_toggle_ra_mangle): New function for
+	the aarch64 specific logic.
+	(dwarf2out_frame_debug): Update to use the new subroutines.
+	(change_cfi_row): Check ra_mangled.
+
 2020-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94704
