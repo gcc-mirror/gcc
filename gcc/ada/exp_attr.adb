@@ -4587,6 +4587,7 @@ package body Exp_Attr is
          Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
+         Decl    : Node_Id;
          Ins_Nod : Node_Id;
          Subp    : Node_Id;
          Temp    : Entity_Id;
@@ -4685,13 +4686,15 @@ package body Exp_Attr is
             CW_Temp := Make_Temporary (Loc, 'T');
             CW_Typ  := Class_Wide_Type (Typ);
 
-            Insert_Before_And_Analyze (Ins_Nod,
+            Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => CW_Temp,
                 Constant_Present    => True,
                 Object_Definition   => New_Occurrence_Of (CW_Typ, Loc),
                 Expression          =>
-                  Convert_To (CW_Typ, Relocate_Node (Pref))));
+                  Convert_To (CW_Typ, Relocate_Node (Pref)));
+
+            Insert_Before_And_Analyze (Ins_Nod, Decl);
 
             --  Generate:
             --    Temp : Typ renames Typ (CW_Temp);
@@ -4709,12 +4712,15 @@ package body Exp_Attr is
             --  Generate:
             --    Temp : constant Typ := Pref;
 
-            Insert_Before_And_Analyze (Ins_Nod,
+            Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Constant_Present    => True,
                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression          => Relocate_Node (Pref)));
+                Expression          => Relocate_Node (Pref));
+
+            Insert_Before_And_Analyze (Ins_Nod, Decl);
+
          end if;
 
          if Present (Subp) then
@@ -4726,7 +4732,7 @@ package body Exp_Attr is
          --  to reflect the new placement of the prefix.
 
          if Validity_Checks_On and then Validity_Check_Operands then
-            Ensure_Valid (Pref);
+            Ensure_Valid (Expression (Decl));
          end if;
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
