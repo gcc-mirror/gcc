@@ -1,3 +1,11 @@
+2020-04-27  Jiufu Guo   <guojiufu@cn.ibm.com>
+
+	* common/config/rs6000/rs6000-common.c
+	(rs6000_option_optimization_table) [OPT_LEVELS_ALL]: Remove turn off
+	-fweb.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Avoid to
+	set flag_web.
+
 2020-04-27  Martin Liska  <mliska@suse.cz>
 
 	PR lto/94659

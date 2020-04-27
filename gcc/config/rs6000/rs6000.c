@@ -4557,7 +4557,7 @@ rs6000_option_override_internal (bool global_init_p)
 			   SCHED_PRESSURE_MODEL);
 
       /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
-	 turns -fweb and -frename-registers on.  */
+	 turns -frename-registers on.  */
       if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
 	   || (global_options_set.x_flag_unroll_all_loops
 	       && flag_unroll_all_loops))
@@ -4566,8 +4566,6 @@ rs6000_option_override_internal (bool global_init_p)
 	    unroll_only_small_loops = 0;
 	  if (!global_options_set.x_flag_rename_registers)
 	    flag_rename_registers = 1;
-	  if (!global_options_set.x_flag_web)
-	    flag_web = 1;
 	}
 
       /* If using typedef char *va_list, signal that
