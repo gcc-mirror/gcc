@@ -1,3 +1,9 @@
+2020-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	PR fortran/94788
+	* gfortran.dg/pointer_assign_13.f90: Remove.
+
 2020-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94780

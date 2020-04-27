@@ -3788,36 +3788,6 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
   return true;
 }
 
-/* Go through the argument list of a procedure and look for
-   pointers which may be set, possibly introducing a span.  */
-
-static void
-gfc_set_subref_array_pointer_arg (gfc_formal_arglist *dummy_args,
-				  gfc_actual_arglist *actual_args)
-{
-  gfc_formal_arglist *f;
-  gfc_actual_arglist *a;
-  gfc_symbol *a_sym;
-  for (f = dummy_args, a = actual_args; f && a ; f = f->next, a = a->next)
-    {
-
-      if (f->sym == NULL)
-	continue;
-
-      if (!f->sym->attr.pointer || f->sym->attr.intent == INTENT_IN)
-	continue;
-
-      if (a->expr == NULL || a->expr->expr_type != EXPR_VARIABLE)
-	continue;
-      a_sym = a->expr->symtree->n.sym;
-
-      if (!a_sym->attr.pointer)
-	continue;
-
-      a_sym->attr.subref_array_pointer = 1;
-    }
-  return;
-}
 
 /* Check how a procedure is used against its interface.  If all goes
    well, the actual argument list will also end up being properly
@@ -3997,10 +3967,6 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
   if (warn_aliasing)
     check_some_aliasing (dummy_args, *ap);
-
-  /* Set the subref_array_pointer_arg if needed.  */
-  if (dummy_args)
-    gfc_set_subref_array_pointer_arg (dummy_args, *ap);
 
   return true;
 }
