@@ -1,3 +1,14 @@
+2020-04-27  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/91518
+	* config/rs6000/rs6000-logue.c (frame_pointer_needed_indeed):
+	New variable.
+	(rs6000_emit_prologue_components):
+	Check with frame_pointer_needed_indeed.
+	(rs6000_emit_epilogue_components): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Set frame_pointer_needed_indeed.
+
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000-logue.c (rs6000_stack_info): Don't push a
