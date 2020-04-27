@@ -2556,20 +2556,26 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
     {
       tree use;
       ssa_op_iter i;
+      bool first = true;
 
       fprintf (dump_file, "\nVisiting conditional with predicate: ");
       print_gimple_stmt (dump_file, stmt, 0);
-      fprintf (dump_file, "\nWith known ranges\n");
 
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
 	{
+	  if (first)
+	    {
+	      fprintf (dump_file, "With known ranges\n");
+	      first = false;
+	    }
 	  fprintf (dump_file, "\t");
 	  print_generic_expr (dump_file, use);
 	  fprintf (dump_file, ": ");
 	  dump_value_range (dump_file, get_value_range_equiv (use, stmt));
 	}
 
-      fprintf (dump_file, "\n");
+      if (!first)
+	fprintf (dump_file, "\n");
     }
 
   /* Compute the value of the predicate COND by checking the known

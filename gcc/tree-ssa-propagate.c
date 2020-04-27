@@ -902,12 +902,6 @@ substitute_and_fold_engine::replace_phi_args_in (gphi *phi)
   size_t i;
   bool replaced = false;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Folding PHI node: ");
-      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
-    }
-
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
@@ -1054,6 +1048,11 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       tree res = gimple_phi_result (phi);
       if (virtual_operand_p (res))
 	continue;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Folding PHI node: ");
+	  print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+	}
       if (res && TREE_CODE (res) == SSA_NAME)
 	{
 	  tree sprime = substitute_and_fold_engine->get_value (res, phi);
@@ -1061,6 +1060,12 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      && sprime != res
 	      && may_propagate_copy (res, sprime))
 	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Queued PHI for removal.  Folds to: ");
+		  print_generic_expr (dump_file, sprime);
+		  fprintf (dump_file, "\n");
+		}
 	      stmts_to_remove.safe_push (phi);
 	      continue;
 	    }
@@ -1079,6 +1084,12 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
       substitute_and_fold_engine->pre_fold_stmt (stmt);
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Folding statement: ");
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+
       /* No point propagating into a stmt we have a value for we
          can propagate into all uses.  Mark it for removal instead.  */
       tree lhs = gimple_get_lhs (stmt);
@@ -1094,6 +1105,12 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      && (!is_gimple_assign (stmt)
 		  || gimple_assign_rhs_code (stmt) != ASSERT_EXPR))
 	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Queued stmt for removal.  Folds to: ");
+		  print_generic_expr (dump_file, sprime);
+		  fprintf (dump_file, "\n");
+		}
 	      stmts_to_remove.safe_push (stmt);
 	      continue;
 	    }
@@ -1102,12 +1119,6 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Replace the statement with its folded version and mark it
 	 folded.  */
       did_replace = false;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Folding statement: ");
-	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-	}
-
       gimple *old_stmt = stmt;
       bool was_noreturn = (is_gimple_call (stmt)
 			   && gimple_call_noreturn_p (stmt));
