@@ -1,3 +1,9 @@
+2020-04-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/94774
+	* gimple-ssa-sprintf.c (try_substitute_return_value): Initialize
+	variable retval.
+
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* calls.h (cxx17_empty_base_field_p): Turn into a function declaration.
