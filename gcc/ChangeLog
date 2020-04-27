@@ -1,3 +1,9 @@
+2020-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94659
+	* cgraph.h (cgraph_node::can_remove_if_no_direct_calls_and_refs_p):
+	Do not remove ifunc_resolvers in remove unreachable nodes in LTO.
+
 2020-04-27  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR target/91518
