@@ -1,3 +1,12 @@
+2020-04-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94701
+	* coroutines.cc (struct local_var_info): Add fields for static
+	variables and those with DECL_VALUE_EXPR redirection.
+	(transform_local_var_uses): Skip past typedefs and static vars
+	and then account for redirected variables.
+	(register_local_var_uses): Likewise.
+
 2020-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90750

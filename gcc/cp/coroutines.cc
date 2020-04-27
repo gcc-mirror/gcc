@@ -1774,6 +1774,8 @@ struct local_var_info
   tree field_idx;
   tree frame_type;
   bool is_lambda_capture;
+  bool is_static;
+  bool has_value_expr_p;
   location_t def_loc;
 };
 
@@ -1819,7 +1821,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 			NULL);
 
 	/* For capture proxies, this could include the decl value expr.  */
-	if (local_var.is_lambda_capture)
+	if (local_var.is_lambda_capture || local_var.has_value_expr_p)
 	  {
 	    tree ve = DECL_VALUE_EXPR (lvar);
 	    cp_walk_tree (&ve, transform_local_var_uses, d, NULL);
@@ -1852,15 +1854,12 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 
 	  /* Leave lambda closure captures alone, we replace the *this
 	     pointer with the frame version and let the normal process
-	     deal with the rest.  */
-	  if (local_var.is_lambda_capture)
-	    {
-	      pvar = &DECL_CHAIN (*pvar);
-	      continue;
-	    }
-
-	  /* It's not used, but we can let the optimizer deal with that.  */
-	  if (local_var.field_id == NULL_TREE)
+	     deal with the rest.
+	     Likewise, variables with their value found elsewhere.
+	     Skip past unused ones too.  */
+	  if (local_var.is_lambda_capture
+	     || local_var.has_value_expr_p
+	     || local_var.field_id == NULL_TREE)
 	    {
 	      pvar = &DECL_CHAIN (*pvar);
 	      continue;
@@ -1894,10 +1893,13 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
      for the promise and coroutine handle(s), to global vars or to compiler
      temporaries.  Skip past these, we will handle them later.  */
   local_var_info *local_var_i = lvd->local_var_uses->get (var_decl);
+
   if (local_var_i == NULL)
     return NULL_TREE;
 
-  if (local_var_i->is_lambda_capture)
+  if (local_var_i->is_lambda_capture
+      || local_var_i->is_static
+      || local_var_i->has_value_expr_p)
     return NULL_TREE;
 
   /* This is our revised 'local' i.e. a frame slot.  */
@@ -3390,12 +3392,28 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  tree lvtype = TREE_TYPE (lvar);
 	  local_var.frame_type = lvtype;
 	  local_var.field_idx = local_var.field_id = NULL_TREE;
+
+	  /* Make sure that we only present vars to the tests below.  */
+	  if (TREE_CODE (lvar) == TYPE_DECL)
+	    continue;
+
+	  /* We don't move static vars into the frame. */
+	  local_var.is_static = TREE_STATIC (lvar);
+	  if (local_var.is_static)
+	    continue;
+
 	  lvd->local_var_seen = true;
 	  /* If this var is a lambda capture proxy, we want to leave it alone,
 	     and later rewrite the DECL_VALUE_EXPR to indirect through the
 	     frame copy of the pointer to the lambda closure object.  */
 	  local_var.is_lambda_capture = is_capture_proxy (lvar);
 	  if (local_var.is_lambda_capture)
+	    continue;
+
+	  /* If a variable has a value expression, then that's what needs
+	     to be processed.  */
+	  local_var.has_value_expr_p = DECL_HAS_VALUE_EXPR_P (lvar);
+	  if (local_var.has_value_expr_p)
 	    continue;
 
 	  /* Make names depth+index unique, so that we can support nested
