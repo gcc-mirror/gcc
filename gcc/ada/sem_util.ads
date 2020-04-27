@@ -3050,10 +3050,10 @@ package Sem_Util is
    --  conversions, and unchecked conversions.
 
    function Validated_View (Typ : Entity_Id) return Entity_Id;
-   --  Obtain the "validated view" of arbitrary type Typ which is suitable
-   --  for verification by attributes 'Valid and 'Valid_Scalars. This view
-   --  is the type itself or its full view while stripping away concurrency,
-   --  derivations, and privacy.
+   --  Obtain the "validated view" of arbitrary type Typ which is suitable for
+   --  verification by attributes 'Valid_Scalars. This view is the type itself
+   --  or its full view while stripping away concurrency, derivations, and
+   --  privacy.
 
    function Visible_Ancestors (Typ : Entity_Id) return Elist_Id;
    --  [Ada 2012:AI-0125-1]: Collect all the visible parents and progenitors
