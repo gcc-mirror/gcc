@@ -737,7 +737,7 @@ package body Exp_Attr is
       --  Use the root type when dealing with a class-wide type
 
       if Is_Class_Wide_Type (Typ) then
-         Typ := Root_Type (Typ);
+         Typ := Validated_View (Root_Type (Typ));
       end if;
 
       Typ_Decl := Declaration_Node (Typ);
