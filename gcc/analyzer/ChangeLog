@@ -1,5 +1,16 @@
 2020-04-28  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/94816
+	* engine.cc (impl_region_model_context::on_unexpected_tree_code):
+	Handle NULL tree.
+	* region-model.cc (region_model::add_region_for_type): Handle
+	NULL type.
+	* region-model.h
+	(test_region_model_context::on_unexpected_tree_code): Handle NULL
+	tree.
+
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/94447
 	PR analyzer/94639
 	PR analyzer/94732

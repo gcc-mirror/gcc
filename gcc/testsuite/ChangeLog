@@ -1,5 +1,10 @@
 2020-04-28  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/94816
+	* g++.dg/analyzer/pr94816.C: New test.
+
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/94447
 	PR analyzer/94639
 	PR analyzer/94732

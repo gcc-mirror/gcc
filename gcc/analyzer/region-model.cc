@@ -6448,10 +6448,13 @@ region_id
 region_model::add_region_for_type (region_id parent_rid, tree type,
 				   region_model_context *ctxt)
 {
-  gcc_assert (TYPE_P (type));
+  if (type)
+    {
+      gcc_assert (TYPE_P (type));
 
-  if (region *new_region = make_region_for_type (parent_rid, type))
-    return add_region (new_region);
+      if (region *new_region = make_region_for_type (parent_rid, type))
+	return add_region (new_region);
+    }
 
   /* If we can't handle TYPE, return a placeholder region, and stop
      exploring this path.  */

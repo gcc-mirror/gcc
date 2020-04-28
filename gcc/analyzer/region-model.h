@@ -2205,7 +2205,7 @@ public:
     FINAL OVERRIDE
   {
     internal_error ("unhandled tree code: %qs",
-		    get_tree_code_name (TREE_CODE (t)));
+		    t ? get_tree_code_name (TREE_CODE (t)) : "(null)");
   }
 
 private:
