@@ -1,3 +1,18 @@
+2020-04-27 Anton Youdkevitch <anton.youdkevitch@bell-sw.com>
+
+	* config/aarch64/aarch64-cores.def (thunderx3t110): Add the chip name.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.c (thunderx3t110_addrcost_table): Define.
+	(thunderx3t110_regmove_cost): Likewise.
+	(thunderx3t110_vector_cost): Likewise.
+	(thunderx3t110_prefetch_tune): Likewise.
+	(thunderx3t110_tunings): Likewise.
+	* gcc/config/aarch64/aarch64-cost-tables.h (thunderx3t110_extra_costs):
+	Define.
+	* config/aarch64/thunderx3t110.md: New file.
+	* config/aarch64/aarch64.md: Include thunderx3t110.md.
+	* doc/invoke.texi (AArch64 options): Add thunderx3t110.
+
 2020-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94704

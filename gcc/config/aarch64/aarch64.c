@@ -416,6 +416,22 @@ static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
   0, /* imm_offset  */
 };
 
+static const struct cpu_addrcost_table thunderx3t110_addrcost_table =
+{
+    {
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
+      2, /* ti  */
+    },
+  0, /* pre_modify  */
+  0, /* post_modify  */
+  2, /* register_offset  */
+  3, /* register_sextend  */
+  3, /* register_zextend  */
+  0, /* imm_offset  */
+};
+
 static const struct cpu_addrcost_table tsv110_addrcost_table =
 {
     {
@@ -521,6 +537,15 @@ static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
   /* Avoid the use of int<->fp moves for spilling.  */
   8, /* GP2FP  */
   8, /* FP2GP  */
+  4  /* FP2FP  */
+};
+
+static const struct cpu_regmove_cost thunderx3t110_regmove_cost =
+{
+  1, /* GP2GP  */
+  /* Avoid the use of int<->fp moves for spilling.  */
+  4, /* GP2FP  */
+  5, /* FP2GP  */
   4  /* FP2FP  */
 };
 
@@ -692,6 +717,26 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
   1  /* cond_not_taken_branch_cost  */
 };
 
+static const struct cpu_vector_cost thunderx3t110_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  5, /* scalar_fp_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  5, /* vec_int_stmt_cost  */
+  5, /* vec_fp_stmt_cost  */
+  10, /* vec_permute_cost  */
+  5, /* vec_to_scalar_cost  */
+  5, /* scalar_to_vec_cost  */
+  4, /* vec_align_load_cost  */
+  4, /* vec_unalign_load_cost  */
+  4, /* vec_unalign_store_cost  */
+  4, /* vec_store_cost  */
+  2, /* cond_taken_branch_cost  */
+  1  /* cond_not_taken_branch_cost  */
+};
+
+
 /* Generic costs for branch instructions.  */
 static const struct cpu_branch_cost generic_branch_cost =
 {
@@ -780,6 +825,17 @@ static const cpu_prefetch_tune thunderx_prefetch_tune =
 };
 
 static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
+{
+  8,			/* num_slots  */
+  32,			/* l1_cache_size  */
+  64,			/* l1_cache_line_size  */
+  256,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
+  -1			/* default_opt_level  */
+};
+
+static const cpu_prefetch_tune thunderx3t110_prefetch_tune =
 {
   8,			/* num_slots  */
   32,			/* l1_cache_size  */
@@ -1214,6 +1270,33 @@ static const struct tune_params thunderx2t99_tunings =
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
   &thunderx2t99_prefetch_tune
+};
+
+static const struct tune_params thunderx3t110_tunings =
+{
+  &thunderx3t110_extra_costs,
+  &thunderx3t110_addrcost_table,
+  &thunderx3t110_regmove_cost,
+  &thunderx3t110_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
+  4, /* memmov_cost.  */
+  6, /* issue_rate.  */
+  (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
+  3,	/* int_reassoc_width.  */
+  2,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &thunderx3t110_prefetch_tune
 };
 
 static const struct tune_params neoversen1_tunings =
