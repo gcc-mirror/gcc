@@ -81,10 +81,8 @@ if DRUNTIME_CPU_MIPS
     DRUNTIME_SOURCES_CONFIGURED += config/mips/switchcontext.S
 endif
 if DRUNTIME_CPU_POWERPC
-    DRUNTIME_SOURCES_CONFIGURED += config/powerpc/switchcontext.S
-endif
-if DRUNTIME_CPU_POWERPC64
-    DRUNTIME_SOURCES_CONFIGURED += config/powerpc64/callwithstack.S
+    DRUNTIME_SOURCES_CONFIGURED += config/powerpc/callwithstack.S \
+				   config/powerpc/switchcontext.S
 endif
 if DRUNTIME_CPU_X86
 if DRUNTIME_OS_MINGW

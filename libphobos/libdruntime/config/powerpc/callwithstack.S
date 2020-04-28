@@ -24,6 +24,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "../common/threadasm.S"
 
+#if defined(__PPC64__)
+
 #if defined(_CALL_ELF) && _CALL_ELF == 2
 #define USE_ABI_2
 #define LINKAGE_SZ   32
@@ -166,3 +168,5 @@ _D4core6thread18callWithStackShellFNbMDFNbPvZvZv:
 .Lend:
     .size _D4core6thread18callWithStackShellFNbMDFNbPvZvZv, .Lend-.L._D4core6thread18callWithStackShellFNbMDFNbPvZvZv
     .cfi_endproc
+
+#endif /* defined(__PPC64__) */

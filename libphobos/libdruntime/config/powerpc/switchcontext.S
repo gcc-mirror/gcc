@@ -24,6 +24,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "../common/threadasm.S"
 
+#if !defined(__PPC64__)
+
 /**
  * Performs a context switch.
  *
@@ -148,3 +150,5 @@ CSYM(_fiber_switchContext):
     blr
     .cfi_endproc
     .size CSYM(_fiber_switchContext),.-CSYM(_fiber_switchContext)
+
+#endif /* !defined(__PPC64__) */

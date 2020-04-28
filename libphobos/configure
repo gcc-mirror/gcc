@@ -692,8 +692,6 @@ DRUNTIME_CPU_SYSTEMZ_FALSE
 DRUNTIME_CPU_SYSTEMZ_TRUE
 DRUNTIME_CPU_X86_FALSE
 DRUNTIME_CPU_X86_TRUE
-DRUNTIME_CPU_POWERPC64_FALSE
-DRUNTIME_CPU_POWERPC64_TRUE
 DRUNTIME_CPU_POWERPC_FALSE
 DRUNTIME_CPU_POWERPC_TRUE
 DRUNTIME_CPU_MIPS_FALSE
@@ -11649,7 +11647,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11652 "configure"
+#line 11650 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11755,7 +11753,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11758 "configure"
+#line 11756 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13991,11 +13989,8 @@ fi
                ;;
       mips*)   druntime_target_cpu_parsed="mips"
                ;;
-      powerpc|powerpcle)
+      powerpc*)
                druntime_target_cpu_parsed="powerpc"
-               ;;
-      powerpc64|powerpc64le)
-               druntime_target_cpu_parsed="powerpc64"
                ;;
       i[34567]86|x86_64)
                druntime_target_cpu_parsed="x86"
@@ -14037,14 +14032,6 @@ fi
 else
   DRUNTIME_CPU_POWERPC_TRUE='#'
   DRUNTIME_CPU_POWERPC_FALSE=
-fi
-
-   if test "$druntime_target_cpu_parsed" = "powerpc64"; then
-  DRUNTIME_CPU_POWERPC64_TRUE=
-  DRUNTIME_CPU_POWERPC64_FALSE='#'
-else
-  DRUNTIME_CPU_POWERPC64_TRUE='#'
-  DRUNTIME_CPU_POWERPC64_FALSE=
 fi
 
    if test "$druntime_target_cpu_parsed" = "x86"; then
@@ -15603,10 +15590,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_CPU_POWERPC_TRUE}" && test -z "${DRUNTIME_CPU_POWERPC_FALSE}"; then
   as_fn_error $? "conditional \"DRUNTIME_CPU_POWERPC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${DRUNTIME_CPU_POWERPC64_TRUE}" && test -z "${DRUNTIME_CPU_POWERPC64_FALSE}"; then
-  as_fn_error $? "conditional \"DRUNTIME_CPU_POWERPC64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_CPU_X86_TRUE}" && test -z "${DRUNTIME_CPU_X86_FALSE}"; then
