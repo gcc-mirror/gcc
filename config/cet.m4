@@ -98,9 +98,19 @@ asm ("setssbsy");
     ;;
 esac
 
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fcf-protection=none"
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,-z,ibt,-z,shstk"
 if test x$may_have_cet = xyes; then
-  save_LDFLAGS="$LDFLAGS"
-  LDFLAGS="$LDFLAGS -Wl,-z,ibt,-z,shstk"
+  # Check whether -fcf-protection=none -Wl,-z,ibt,-z,shstk work.
+  AC_TRY_LINK(
+    [],[return 0;],
+    [may_have_cet=yes],
+    [may_have_cet=no])
+fi
+
+if test x$may_have_cet = xyes; then
   AC_TRY_RUN([
 static void
 foo (void)
@@ -130,7 +140,6 @@ main ()
   ],
   [have_cet=no],
   [have_cet=yes])
-  LDFLAGS="$save_LDFLAGS"
   if test x$enable_cet = xno -a x$have_cet = xyes; then
     AC_MSG_ERROR([Intel CET must be enabled on Intel CET enabled host])
   fi
@@ -141,4 +150,6 @@ if test x$enable_cet = xyes; then
 else
   AC_MSG_RESULT([no])
 fi
+CFLAGS="$save_CFLAGS"
+LDFLAGS="$save_LDFLAGS"
 ])
