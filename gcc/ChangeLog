@@ -1,3 +1,7 @@
+2020-05-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (v<expander><mode>3): Fix unsignedp.
+
 2020-05-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/95133
