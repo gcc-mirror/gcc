@@ -63,11 +63,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 17.12.2 coroutine traits
   /// [coroutine.traits]
   /// [coroutine.traits.primary]
-  template <typename _Result, typename...>
-    struct coroutine_traits
+  /// If _Result::promise_type is valid and denotes a type then the traits
+  /// have a single publicly accessible member, otherwise they are empty.
+  template <typename _Result, typename = void>
+   struct __coroutine_traits_impl {};
+
+  template <typename _Result>
+    struct __coroutine_traits_impl<_Result,
+				    __void_t<typename _Result::promise_type>>
     {
-       using promise_type = typename _Result::promise_type;
+      using promise_type = typename _Result::promise_type;
     };
+
+  template <typename _Result, typename...>
+    struct coroutine_traits : __coroutine_traits_impl<_Result> {};
 
   // 17.12.3 Class template coroutine_handle
   /// [coroutine.handle]

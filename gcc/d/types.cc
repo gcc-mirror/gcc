@@ -720,7 +720,7 @@ public:
 
 	for (size_t i = 0; i < n_args; i++)
 	  {
-	    tree type = type_passed_as (Parameter::getNth (t->parameters, i));
+	    tree type = parameter_type (Parameter::getNth (t->parameters, i));
 	    fnparams = chainon (fnparams, build_tree_list (0, type));
 	  }
       }

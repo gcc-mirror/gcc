@@ -3169,7 +3169,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (NODE)->has_dependent_explicit_spec_p)
 
 /* Nonzero for a defaulted FUNCTION_DECL for which we haven't decided yet if
-   it's deleted.  */
+   it's deleted; we will decide in synthesize_method.  */
 #define DECL_MAYBE_DELETED(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->maybe_deleted)
 
@@ -6626,6 +6626,7 @@ extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
 		       tree, bool, tree, tree);
 extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree, tree, tree);
+extern tree splice_template_attributes		(tree *, tree);
 extern bool any_dependent_type_attributes_p	(tree);
 extern tree cp_reconstruct_complex_type		(tree, tree);
 extern bool attributes_naming_typedef_ok	(tree);

@@ -6139,9 +6139,19 @@ aapcs_vfp_cum_init (CUMULATIVE_ARGS *pcum  ATTRIBUTE_UNUSED,
    If *MODEP is VOIDmode, then set it to the first valid floating point
    type.  If a non-floating point type is found, or if a floating point
    type that doesn't match a non-VOIDmode *MODEP is found, then return -1,
-   otherwise return the count in the sub-tree.  */
+   otherwise return the count in the sub-tree.
+
+   The AVOID_CXX17_EMPTY_BASE argument is to allow the caller to check whether
+   this function has changed its behavior after the fix for PR94384 -- this fix
+   is to avoid artificial fields in empty base classes.
+   When called with this argument as a NULL pointer this function does not
+   avoid the artificial fields -- this is useful to check whether the function
+   returns something different after the fix.
+   When called pointing at a value, this function avoids such artificial fields
+   and sets the value to TRUE when one of these fields has been set.  */
 static int
-aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
+aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
+			 bool *avoid_cxx17_empty_base)
 {
   machine_mode mode;
   HOST_WIDE_INT size;
@@ -6213,7 +6223,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
-	count = aapcs_vfp_sub_candidate (TREE_TYPE (type), modep);
+	count = aapcs_vfp_sub_candidate (TREE_TYPE (type), modep,
+					 avoid_cxx17_empty_base);
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -6251,7 +6262,20 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep);
+	    /* Ignore C++17 empty base fields, while their type indicates they
+	       contain padding, this is only sometimes contributed to the derived
+	       class.
+	       When the padding is contributed to the derived class that's
+	       caught by the general test for padding below.  */
+	    if (cxx17_empty_base_field_p (field)
+		&& avoid_cxx17_empty_base)
+	      {
+		*avoid_cxx17_empty_base = true;
+		continue;
+	      }
+
+	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep,
+						 avoid_cxx17_empty_base);
 	    if (sub_count < 0)
 	      return -1;
 	    count += sub_count;
@@ -6284,7 +6308,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep);
+	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep,
+						 avoid_cxx17_empty_base);
 	    if (sub_count < 0)
 	      return -1;
 	    count = count > sub_count ? count : sub_count;
@@ -6346,10 +6371,27 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
      out from the mode.  */
   if (type)
     {
-      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode);
-
+      bool avoided = false;
+      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode, &avoided);
       if (ag_count > 0 && ag_count <= 4)
-	*count = ag_count;
+	{
+	  static unsigned last_reported_type_uid;
+	  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+	  int alt;
+	  if (warn_psabi
+	      && avoided
+	      && uid != last_reported_type_uid
+	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
+		  != ag_count))
+	    {
+	      gcc_assert (alt == -1);
+	      last_reported_type_uid = uid;
+	      inform (input_location, "parameter passing for argument of type "
+		      "%qT when C++17 is enabled changed to match C++14 "
+		      "in GCC 10.1", type);
+	    }
+	  *count = ag_count;
+	}
       else
 	return false;
     }
@@ -20145,7 +20187,8 @@ output_move_neon (rtx *operands)
 	}
       /* Fall through.  */
     case PLUS:
-      addr = XEXP (addr, 0);
+      if (GET_CODE (addr) == PLUS)
+	addr = XEXP (addr, 0);
       /* Fall through.  */
     case LABEL_REF:
       {

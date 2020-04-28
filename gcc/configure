@@ -7853,7 +7853,7 @@ if test "${with_documentation_root_url+set}" = set; then :
 	   ;;
      esac
 else
-  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
 
 fi
 

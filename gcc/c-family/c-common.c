@@ -7402,9 +7402,11 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	enum built_in_function fncode
 	  = speculation_safe_value_resolve_call (function, params);;
 
+	if (fncode == BUILT_IN_NONE)
+	  return error_mark_node;
+
 	first_param = (*params)[0];
-	if (fncode == BUILT_IN_NONE
-	    || !speculation_safe_value_resolve_params (loc, function, params))
+	if (!speculation_safe_value_resolve_params (loc, function, params))
 	  return error_mark_node;
 
 	if (targetm.have_speculation_safe_value (true))

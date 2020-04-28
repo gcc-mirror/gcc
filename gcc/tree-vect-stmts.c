@@ -9942,16 +9942,21 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, slp_tree slp_node,
   if (! *comp_vectype)
     {
       tree scalar_type = TREE_TYPE (lhs);
-      /* If we can widen the comparison to match vectype do so.  */
-      if (INTEGRAL_TYPE_P (scalar_type)
-	  && vectype
-	  && tree_int_cst_lt (TYPE_SIZE (scalar_type),
-			      TYPE_SIZE (TREE_TYPE (vectype))))
-	scalar_type = build_nonstandard_integer_type
-	  (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
-	   TYPE_UNSIGNED (scalar_type));
-      *comp_vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
-						   slp_node);
+      if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
+	*comp_vectype = truth_type_for (vectype);
+      else
+	{
+	  /* If we can widen the comparison to match vectype do so.  */
+	  if (INTEGRAL_TYPE_P (scalar_type)
+	      && !slp_node
+	      && tree_int_cst_lt (TYPE_SIZE (scalar_type),
+				  TYPE_SIZE (TREE_TYPE (vectype))))
+	    scalar_type = build_nonstandard_integer_type
+	      (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
+	       TYPE_UNSIGNED (scalar_type));
+	  *comp_vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
+						       slp_node);
+	}
     }
 
   return true;
@@ -10066,7 +10071,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   else_clause = gimple_assign_rhs3 (stmt);
 
   if (!vect_is_simple_cond (cond_expr, stmt_info->vinfo, slp_node,
-			    &comp_vectype, &dts[0], slp_node ? NULL : vectype)
+			    &comp_vectype, &dts[0], vectype)
       || !comp_vectype)
     return false;
 

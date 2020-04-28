@@ -4,8 +4,6 @@
 
 // Diagnose completely missing promise.
 
-// { dg-error {no type named 'promise_type' in 'struct NoPromiseHere'} "" { target *-*-* } 0 }
-
 struct NoPromiseHere {
   coro::coroutine_handle<> handle;
   NoPromiseHere () : handle (nullptr) {}

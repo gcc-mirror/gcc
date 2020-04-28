@@ -47,10 +47,10 @@ template <class T>
 void f_var_type_unused ()
 {
   // The variable's type is marked unused.
-  T* UNUSED t = new T;   // { dg-bogus "unused variable" "bug 79585" { xfail *-*-* } }
+  T* UNUSED t = new T;   // { dg-bogus "unused variable" "bug 79585" }
 
   typedef T U;
-  U* UNUSED u = new U;   // { dg-bogus "unused variable" "bug 79585" { xfail *-*-* } }
+  U* UNUSED u = new U;   // { dg-bogus "unused variable" "bug 79585" }
 
   typedef T UNUSED U;
   U v = U ();   // { dg-bogus "unused variable" "bug 79585" }

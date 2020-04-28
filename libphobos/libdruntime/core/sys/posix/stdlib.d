@@ -574,9 +574,45 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    char*  realpath(in char*, char*);
-    int    putenv(char*);
+    c_long a64l(in char*);
+    double drand48();
+    char*  ecvt(double, int, int *, int *); // LEGACY
+    double erand48(ref ushort[3]);
+    char*  fcvt(double, int, int *, int *); // LEGACY
+    char*  gcvt(double, int, char*); // LEGACY
+    int    getsubopt(char**, in char**, char**);
+    int    grantpt(int);
+    char*  initstate(uint, char*, size_t);
+    c_long jrand48(ref ushort[3]);
+    char*  l64a(c_long);
+    void   lcong48(ref ushort[7]);
+    c_long lrand48();
+    char*  mktemp(char*); // LEGACY
+    char*  mkdtemp(char*); // Defined in IEEE 1003.1, 2008 Edition
     int    mkstemp(char*);
+    c_long mrand48();
+    c_long nrand48(ref ushort[3]);
+    int    posix_openpt(int);
+    char*  ptsname(int);
+    int    putenv(char*);
+    c_long random();
+    char*  realpath(in char*, char*);
+    ushort *seed48(ref ushort[3]);
+    void   setkey(in char*);
+    char*  setstate(in char*);
+    void   srand48(c_long);
+    void   srandom(uint);
+    int    unlockpt(int);
+
+  static if ( __USE_LARGEFILE64 )
+  {
+    int    mkstemp64(char*);
+    alias  mkstemp64 mkstemp;
+  }
+  else
+  {
+    int    mkstemp(char*);
+  }
 
 }
 else version (Solaris)

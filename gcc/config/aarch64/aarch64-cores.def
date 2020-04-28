@@ -122,6 +122,11 @@ AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, 8_2A,  AARCH64_FL_FOR_
 /* HiSilicon ('H') cores. */
 AARCH64_CORE("tsv110",  tsv110, tsv110, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2, tsv110,   0x48, 0xd01, -1)
 
+/* ARMv8.3-A Architecture Processors.  */
+
+/* Marvell cores (TX3). */
+AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, 8_3A,  AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC | AARCH64_FL_SM4 | AARCH64_FL_SHA3 | AARCH64_FL_F16FML | AARCH64_FL_RCPC8_4, thunderx3t110, 0x43, 0x0b8, 0x0a)
+
 /* ARMv8.4-A Architecture Processors.  */
 
 /* Qualcomm ('Q') cores. */

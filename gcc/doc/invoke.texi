@@ -8256,7 +8256,6 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
--Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 }
 
@@ -8428,15 +8427,6 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
-
-@item -Wno-analyzer-use-of-uninitialized-value
-@opindex Wanalyzer-use-of-uninitialized-value
-@opindex Wno-analyzer-use-of-uninitialized-value
-This warning requires @option{-fanalyzer}, which enables it; use
-@option{-Wno-analyzer-use-of-uninitialized-value} to disable it.
-
-This diagnostic warns for paths through the code in which an uninitialized
-value is used.
 
 @end table
 
@@ -16950,7 +16940,7 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx2f95mm}
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
-@samp{thunderxt83}, @samp{thunderx2t99},
+@samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}
@@ -18851,7 +18841,7 @@ Disables the floating-point and SIMD instructions on
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
 @samp{cortex-a15}, @samp{cortex-a17}, @samp{cortex-a15.cortex-a7},
 @samp{cortex-a17.cortex-a7}, @samp{cortex-a32}, @samp{cortex-a35},
-@samp{cortex-a53},@samp{cortex-a55} and @samp{cortex-m55}.
+@samp{cortex-a53} and @samp{cortex-a55}.
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions

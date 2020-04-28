@@ -1,3 +1,40 @@
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94816
+	* engine.cc (impl_region_model_context::on_unexpected_tree_code):
+	Handle NULL tree.
+	* region-model.cc (region_model::add_region_for_type): Handle
+	NULL type.
+	* region-model.h
+	(test_region_model_context::on_unexpected_tree_code): Handle NULL
+	tree.
+
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94447
+	PR analyzer/94639
+	PR analyzer/94732
+	PR analyzer/94754
+	* analyzer.opt (Wanalyzer-use-of-uninitialized-value): Delete.
+	* program-state.cc (selftest::test_program_state_dumping): Update
+	expected dump result for removal of "uninit".
+	* region-model.cc (poison_kind_to_str): Delete POISON_KIND_UNINIT
+	case.
+	(root_region::ensure_stack_region): Initialize stack with null
+	svalue_id rather than with a typeless POISON_KIND_UNINIT value.
+	(root_region::ensure_heap_region): Likewise for the heap.
+	(region_model::dump_summary_of_rep_path_vars): Remove
+	summarization of uninit values.
+	(region_model::validate): Remove check that the stack has a
+	POISON_KIND_UNINIT value.
+	(poisoned_value_diagnostic::emit): Remove POISON_KIND_UNINIT
+	case.
+	(poisoned_value_diagnostic::describe_final_event): Likewise.
+	(selftest::test_dump): Update expected dump result for removal of
+	"uninit".
+	(selftest::test_svalue_equality): Remove "uninit" and "freed".
+	* region-model.h (enum poison_kind): Remove POISON_KIND_UNINIT.
+
 2020-04-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94378

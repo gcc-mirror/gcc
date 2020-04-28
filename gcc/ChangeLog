@@ -1,3 +1,173 @@
+2020-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-m55): Remove +nofp option.
+	* doc/invoke.texi (Arm Options): Remove -mcpu=cortex-m55 from +nofp option.
+
+2020-04-28  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94711
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Account for C++17 empty
+	base class artificial fields.
+	(aapcs_vfp_is_call_or_return_candidate): Warn when PCS ABI
+	decision is different after this fix.
+
+2020-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94447
+	PR analyzer/94639
+	PR analyzer/94732
+	PR analyzer/94754
+	* doc/invoke.texi (Static Analyzer Options): Remove
+	-Wanalyzer-use-of-uninitialized-value.
+	(-Wno-analyzer-use-of-uninitialized-value): Remove item.
+
+2020-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94809
+	* tree.c (build_call_expr_internal_loc_array): Call
+	process_call_operands.
+
+2020-04-27  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
+
+	* config/aarch64/aarch64-cores.def (thunderx3t110): Add the chip name.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.c (thunderx3t110_addrcost_table): Define.
+	(thunderx3t110_regmove_cost): Likewise.
+	(thunderx3t110_vector_cost): Likewise.
+	(thunderx3t110_prefetch_tune): Likewise.
+	(thunderx3t110_tunings): Likewise.
+	* config/aarch64/aarch64-cost-tables.h (thunderx3t110_extra_costs):
+	Define.
+	* config/aarch64/thunderx3t110.md: New file.
+	* config/aarch64/aarch64.md: Include thunderx3t110.md.
+	* doc/invoke.texi (AArch64 options): Add thunderx3t110.
+
+2020-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94704
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Emit -Wpsabi diagnostics if the ABI changed.
+
+2020-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94727
+	* tree-vect-stmts.c (vect_is_simple_cond): If both comparison
+	operands are invariant booleans, use the mask type associated with the
+	STMT_VINFO_VECTYPE.  Use !slp_node instead of !vectype to exclude SLP.
+	(vectorizable_condition): Pass vectype unconditionally to
+	vect_is_simple_cond.
+
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94780
+	* config/i386/i386.c (ix86_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to
+	sw_var, exceptions_var, mxcsr_orig_var and mxcsr_mod_var.
+
+2020-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 92830
+	* configure.ac (DOCUMENTATION_ROOT_URL): Drop trailing "gcc/" from
+	default value, so that it can by supplied by get_option_html_page.
+	* configure: Regenerate.
+	* opts.c: Include "selftest.h".
+	(get_option_html_page): New function.
+	(get_option_url): Use it.  Reformat to place comments next to the
+	expressions they refer to.
+	(selftest::test_get_option_html_page): New.
+	(selftest::opts_c_tests): New.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::opts_c_tests.
+	* selftest.h (selftest::opts_c_tests): New decl.
+
+2020-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm-builtins.c (arm_expand_builtin_args): Only apply
+	UINTVAL to CONST_INTs.
+
+2020-04-27  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/constraints.md (e): Remove constraint.
+	(Te): Define constraint.
+	* config/arm/mve.md (vaddvq_<supf><mode>): Modify constraint in
+	operand 0 from "e" to "Te".
+	(vaddvaq_<supf><mode>): Likewise.
+	(vaddvq_p_<supf><mode>): Likewise.
+	(vmladavq_<supf><mode>): Likewise.
+	(vmladavxq_s<mode>): Likewise.
+	(vmlsdavq_s<mode>): Likewise.
+	(vmlsdavxq_s<mode>): Likewise.
+	(vaddvaq_p_<supf><mode>): Likewise.
+	(vmladavaq_<supf><mode>): Likewise.
+	(vmladavq_p_<supf><mode>): Likewise.
+	(vmladavxq_p_s<mode>): Likewise.
+	(vmlsdavq_p_s<mode>): Likewise.
+	(vmlsdavxq_p_s<mode>): Likewise.
+	(vmlsdavaxq_s<mode>): Likewise.
+	(vmlsdavaq_s<mode>): Likewise.
+	(vmladavaxq_s<mode>): Likewise.
+	(vmladavaq_p_<supf><mode>): Likewise.
+	(vmladavaxq_p_s<mode>): Likewise.
+	(vmlsdavaq_p_s<mode>): Likewise.
+	(vmlsdavaxq_p_s<mode>): Likewise.
+
+2020-04-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.c (output_move_neon): Only get the first operand if
+	addr is PLUS.
+
+2020-04-27  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/94784
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Flip the
+	assert around so that it checks that the two vectors have equal
+	TYPE_VECTOR_SUBPARTS and that converting the corresponding element
+	types is a useless_type_conversion_p.
+
+2020-04-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94515
+	* dwarf2cfi.c (struct GTY): Add ra_mangled.
+	(cfi_row_equal_p): Check ra_mangled.
+	(dwarf2out_frame_debug_cfa_window_save): Remove the argument,
+	this only handles the sparc logic now.
+	(dwarf2out_frame_debug_cfa_toggle_ra_mangle): New function for
+	the aarch64 specific logic.
+	(dwarf2out_frame_debug): Update to use the new subroutines.
+	(change_cfi_row): Check ra_mangled.
+
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94704
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Ignore cxx17_empty_base_field_p fields.
+
+2020-04-27  Jiufu Guo   <guojiufu@cn.ibm.com>
+
+	* common/config/rs6000/rs6000-common.c
+	(rs6000_option_optimization_table) [OPT_LEVELS_ALL]: Remove turn off
+	-fweb.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Avoid to
+	set flag_web.
+
+2020-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94659
+	* cgraph.h (cgraph_node::can_remove_if_no_direct_calls_and_refs_p):
+	Do not remove ifunc_resolvers in remove unreachable nodes in LTO.
+
+2020-04-27  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/91518
+	* config/rs6000/rs6000-logue.c (frame_pointer_needed_indeed):
+	New variable.
+	(rs6000_emit_prologue_components):
+	Check with frame_pointer_needed_indeed.
+	(rs6000_emit_epilogue_components): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Set frame_pointer_needed_indeed.
+
 2020-04-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000-logue.c (rs6000_stack_info): Don't push a

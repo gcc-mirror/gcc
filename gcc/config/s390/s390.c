@@ -11911,6 +11911,7 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
+  bool cxx17_empty_base_seen = false;
   while (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field, single = NULL_TREE;
@@ -11919,6 +11920,12 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+
+	  if (cxx17_empty_base_field_p (field))
+	    {
+	      cxx17_empty_base_seen = true;
+	      continue;
+	    }
 
 	  if (single == NULL_TREE)
 	    single = TREE_TYPE (field);
@@ -11939,7 +11946,22 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	}
     }
 
-  return VECTOR_TYPE_P (type);
+  if (!VECTOR_TYPE_P (type))
+    return false;
+
+  if (warn_psabi && cxx17_empty_base_seen)
+    {
+      static unsigned last_reported_type_uid;
+      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+      if (uid != last_reported_type_uid)
+	{
+	  last_reported_type_uid = uid;
+	  inform (input_location, "parameter passing for argument of type "
+				  "%qT when C++17 is enabled changed to match "
+				  "C++14 in GCC 10.1", type);
+	}
+    }
+  return true;
 }
 
 /* Return true if a function argument of type TYPE and mode MODE
@@ -11961,6 +11983,7 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
+  bool cxx17_empty_base_seen = false;
   while (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field, single = NULL_TREE;
@@ -11969,6 +11992,11 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+	  if (cxx17_empty_base_field_p (field))
+	    {
+	      cxx17_empty_base_seen = true;
+	      continue;
+	    }
 
 	  if (single == NULL_TREE)
 	    single = TREE_TYPE (field);
@@ -11982,7 +12010,23 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 	type = single;
     }
 
-  return TREE_CODE (type) == REAL_TYPE;
+  if (TREE_CODE (type) != REAL_TYPE)
+    return false;
+
+  if (warn_psabi && cxx17_empty_base_seen)
+    {
+      static unsigned last_reported_type_uid;
+      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+      if (uid != last_reported_type_uid)
+	{
+	  last_reported_type_uid = uid;
+	  inform (input_location, "parameter passing for argument of type "
+				  "%qT when C++17 is enabled changed to match "
+				  "C++14 in GCC 10.1", type);
+	}
+    }
+
+  return true;
 }
 
 /* Return true if a function argument of type TYPE and mode MODE

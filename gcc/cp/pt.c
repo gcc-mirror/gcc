@@ -25180,6 +25180,18 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       && (!flag_noexcept_type || type_dependent_expression_p (fn)))
     return true;
 
+  if (DECL_MAYBE_DELETED (fn))
+    {
+      if (fn == current_function_decl)
+	/* We're in start_preparsed_function, keep going.  */
+	return true;
+
+      ++function_depth;
+      synthesize_method (fn);
+      --function_depth;
+      return !DECL_MAYBE_DELETED (fn);
+    }
+
   if (DECL_CLONED_FUNCTION_P (fn))
     fn = DECL_CLONED_FUNCTION (fn);
 

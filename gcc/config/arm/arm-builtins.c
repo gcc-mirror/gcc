@@ -3081,7 +3081,8 @@ constant_arg:
 		    {
 		      if (argc == 0)
 			{
-			  unsigned int cp_bit = UINTVAL (op[argc]);
+			  unsigned int cp_bit = (CONST_INT_P (op[argc])
+						 ? UINTVAL (op[argc]) : -1);
 			  if (IN_RANGE (cp_bit, 0, ARM_CDE_CONST_COPROC))
 			    error ("%Kcoprocessor %d is not enabled "
 				   "with +cdecp%d", exp, cp_bit, cp_bit);

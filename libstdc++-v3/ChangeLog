@@ -1,3 +1,10 @@
+2020-04-28  Jonathan Wakely  <jwakely@redhat.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94759
+	* include/std/coroutine: Implement handing for non-
+	class coroutine return types.
+
 2020-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/executor (service_already_exists): Make default

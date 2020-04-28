@@ -73,6 +73,7 @@ selftest::run_tests ()
   typed_splay_tree_c_tests ();
   unique_ptr_tests_cc_tests ();
   opt_proposer_c_tests ();
+  opts_c_tests ();
   json_cc_tests ();
   cgraph_c_tests ();
   optinfo_emit_json_cc_tests ();

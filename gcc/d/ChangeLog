@@ -1,3 +1,20 @@
+2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/94777
+	* d-builtins.cc (build_frontend_type): Set parent for generated
+	fields of built-in types.
+	* d-codegen.cc (argument_reference_p): Rename to ...
+	(parameter_reference_p): ... this.
+	(type_passed_as): Rename to ...
+	(parameter_type): ... this.  Make TREE_ADDRESSABLE types restrict.
+	(d_build_call): Move handling of non-POD types here from ...
+	* d-convert.cc (convert_for_argument): ... here.
+	* d-tree.h (argument_reference_p): Rename declaration to ...
+	(parameter_reference_p): ... this.
+	(type_passed_as): Rename declaration to ...
+	(parameter_type): ... this.
+	* types.cc (TypeVisitor::visit (TypeFunction *)): Update caller.
+
 2020-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* decl.cc (get_symbol_decl): Set DECL_DECLARED_INLINE_P or

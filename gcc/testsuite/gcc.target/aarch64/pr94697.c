@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -mbranch-protection=standard" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

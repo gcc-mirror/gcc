@@ -2479,7 +2479,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  tree src_type = TREE_TYPE (orig[0]);
 	  if (!useless_type_conversion_p (type, src_type))
 	    {
-	      gcc_assert (!targetm.compatible_vector_types_p (type, src_type));
+	      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type),
+				    TYPE_VECTOR_SUBPARTS (src_type))
+			  && useless_type_conversion_p (TREE_TYPE (type),
+							TREE_TYPE (src_type)));
 	      tree rhs = build1 (VIEW_CONVERT_EXPR, type, orig[0]);
 	      orig[0] = make_ssa_name (type);
 	      gassign *assign = gimple_build_assign (orig[0], rhs);
@@ -2611,7 +2614,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	res = gimple_build (&stmts, conv_code, type, res);
       else if (!useless_type_conversion_p (type, TREE_TYPE (res)))
 	{
-	  gcc_assert (!targetm.compatible_vector_types_p (type, perm_type));
+	  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type),
+				TYPE_VECTOR_SUBPARTS (perm_type))
+		      && useless_type_conversion_p (TREE_TYPE (type),
+						    TREE_TYPE (perm_type)));
 	  res = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, res);
 	}
       /* Blend in the actual constant.  */

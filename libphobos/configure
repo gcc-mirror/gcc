@@ -14932,25 +14932,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 fi
 
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket libraries" >&5
-$as_echo_n "checking for socket libraries... " >&6; }
-if ${druntime_cv_lib_sockets+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  druntime_cv_lib_sockets=
-     druntime_check_both=no
-     ac_fn_c_check_func "$LINENO" "connect" "ac_cv_func_connect"
+                            druntime_check_both=no
+  ac_fn_c_check_func "$LINENO" "connect" "ac_cv_func_connect"
 if test "x$ac_cv_func_connect" = xyes; then :
-  druntime_check_socket=no
-else
-  druntime_check_socket=yes
-fi
 
-     if test "$druntime_check_socket" = "yes"; then
-       unset ac_cv_func_connect
-       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lsocket" >&5
-$as_echo_n "checking for main in -lsocket... " >&6; }
-if ${ac_cv_lib_socket_main+:} false; then :
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for connect in -lsocket" >&5
+$as_echo_n "checking for connect in -lsocket... " >&6; }
+if ${ac_cv_lib_socket_connect+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -14958,55 +14947,58 @@ LIBS="-lsocket  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char connect ();
 int
 main ()
 {
-return main ();
+return connect ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_socket_main=yes
+  ac_cv_lib_socket_connect=yes
 else
-  ac_cv_lib_socket_main=no
+  ac_cv_lib_socket_connect=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_socket_main" >&5
-$as_echo "$ac_cv_lib_socket_main" >&6; }
-if test "x$ac_cv_lib_socket_main" = xyes; then :
-  druntime_cv_lib_sockets="-lsocket"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_socket_connect" >&5
+$as_echo "$ac_cv_lib_socket_connect" >&6; }
+if test "x$ac_cv_lib_socket_connect" = xyes; then :
+  LIBS="$LIBS -lsocket"
 else
   druntime_check_both=yes
 fi
 
-     fi
-     if test "$druntime_check_both" = "yes"; then
-       druntime_old_libs=$LIBS
-       LIBS="$LIBS -lsocket -lnsl"
-       unset ac_cv_func_accept
-       ac_fn_c_check_func "$LINENO" "accept" "ac_cv_func_accept"
-if test "x$ac_cv_func_accept" = xyes; then :
-  druntime_check_nsl=no
-		      druntime_cv_lib_sockets="-lsocket -lnsl"
 fi
 
-       unset ac_cv_func_accept
-       LIBS=$druntime_old_libs
-     fi
-     unset ac_cv_func_gethostbyname
-     druntime_old_libs="$LIBS"
-     ac_fn_c_check_func "$LINENO" "gethostbyname" "ac_cv_func_gethostbyname"
+  if test "$druntime_check_both" = "yes"; then
+    druntime_old_libs=$LIBS
+    LIBS="$LIBS -lsocket -lnsl"
+    ac_fn_c_check_func "$LINENO" "accept" "ac_cv_func_accept"
+if test "x$ac_cv_func_accept" = xyes; then :
+
+else
+  LIBS=$druntime_old_libs
+fi
+
+  fi
+  ac_fn_c_check_func "$LINENO" "gethostbyname" "ac_cv_func_gethostbyname"
 if test "x$ac_cv_func_gethostbyname" = xyes; then :
 
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lnsl" >&5
-$as_echo_n "checking for main in -lnsl... " >&6; }
-if ${ac_cv_lib_nsl_main+:} false; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
+$as_echo_n "checking for gethostbyname in -lnsl... " >&6; }
+if ${ac_cv_lib_nsl_gethostbyname+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -15014,37 +15006,38 @@ LIBS="-lnsl  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gethostbyname ();
 int
 main ()
 {
-return main ();
+return gethostbyname ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_nsl_main=yes
+  ac_cv_lib_nsl_gethostbyname=yes
 else
-  ac_cv_lib_nsl_main=no
+  ac_cv_lib_nsl_gethostbyname=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_nsl_main" >&5
-$as_echo "$ac_cv_lib_nsl_main" >&6; }
-if test "x$ac_cv_lib_nsl_main" = xyes; then :
-  druntime_cv_lib_sockets="$druntime_cv_lib_sockets -lnsl"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_nsl_gethostbyname" >&5
+$as_echo "$ac_cv_lib_nsl_gethostbyname" >&6; }
+if test "x$ac_cv_lib_nsl_gethostbyname" = xyes; then :
+  LIBS="$LIBS -lnsl"
 fi
 
 fi
 
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $druntime_cv_lib_sockets" >&5
-$as_echo "$druntime_cv_lib_sockets" >&6; }
-  LIBS="$LIBS $druntime_cv_lib_sockets"
 
 
   # Keep this in sync with core/thread.d, set druntime_fiber_asm_external to

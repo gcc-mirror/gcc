@@ -253,6 +253,7 @@ build_frontend_type (tree type)
 	    = Identifier::idPool (IDENTIFIER_POINTER (DECL_NAME (field)));
 	  VarDeclaration *vd = VarDeclaration::create (Loc (), ftype, fident,
 						       NULL);
+	  vd->parent = sdecl;
 	  vd->offset = tree_to_uhwi (DECL_FIELD_OFFSET (field));
 	  vd->semanticRun = PASSsemanticdone;
 	  vd->csym = field;

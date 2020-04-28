@@ -849,7 +849,7 @@ void test_36 (int i)
 int test_37 (void)
 {
   int *ptr;
-  return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" } */
+  return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" "uninit-warning-removed" { xfail *-*-* } } */
 }
 
 /* Write through uninitialized pointer.  */
@@ -857,7 +857,7 @@ int test_37 (void)
 void test_37a (int i)
 {
   int *ptr;
-  *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" } */
+  *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" "uninit-warning-removed" { xfail *-*-* } } */
 }
 
 // TODO: the various other ptr deref poisonings

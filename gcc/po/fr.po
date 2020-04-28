@@ -98,7 +98,7 @@ msgstr ""
 "Project-Id-Version: gcc 10.1-b20200322\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-03-20 23:17+0000\n"
-"PO-Revision-Date: 2020-03-25 17:08+0100\n"
+"PO-Revision-Date: 2020-04-25 23:05+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -6307,7 +6307,7 @@ msgstr "Avertir à propos des fonctions qui pourraient être candidates pour les
 #: c-family/c.opt:836
 #, no-c-format
 msgid "Suggest that the override keyword be used when the declaration of a virtual function overrides another."
-msgstr "L'utilisation du mot-clé « override » est suggérée quand la déclaration d'une fonction virtuelle en écrase une autre."
+msgstr "L'utilisation du mot-clé « override » est suggérée quand la déclaration d'une fonction virtuelle en redéfini une autre."
 
 #: c-family/c.opt:841
 #, no-c-format
@@ -44730,7 +44730,7 @@ msgstr "%q#D est public mais requiert un objet %q#T existant"
 #: cp/class.c:2479
 #, gcc-internal-format
 msgid "no unique final overrider for %qD in %qT"
-msgstr "pas de surcharge finale unique pour %qD dans %qT"
+msgstr "pas de redéfinition finale unique pour %qD dans %qT"
 
 #: cp/class.c:2841
 #, gcc-internal-format
@@ -44740,7 +44740,7 @@ msgstr "%qD peut être marqué « override »"
 #: cp/class.c:2844
 #, gcc-internal-format
 msgid "%q+#D marked %<override%>, but does not override"
-msgstr "%q+#D est marqué %<override%> mais il ne surcharge rien"
+msgstr "%q+#D est marqué %<override%> mais il ne redéfini rien"
 
 #: cp/class.c:2859
 #, gcc-internal-format
@@ -44880,7 +44880,7 @@ msgstr "%q#T a des membres de données qui sont des pointeurs"
 #: cp/class.c:3841
 #, gcc-internal-format
 msgid "  but does not override %<%T(const %T&)%>"
-msgstr "  mais il ne surcharge pas %<%T(const %T&)%>"
+msgstr "  mais il ne redéfini pas %<%T(const %T&)%>"
 
 #: cp/class.c:3843
 #, gcc-internal-format
@@ -44890,7 +44890,7 @@ msgstr "  ou %<operator=(const %T&)%>"
 #: cp/class.c:3847
 #, gcc-internal-format
 msgid "  but does not override %<operator=(const %T&)%>"
-msgstr "  mais il ne surcharge pas %<operator=(const %T&)%>"
+msgstr "  mais il ne redéfini pas %<operator=(const %T&)%>"
 
 #: cp/class.c:3849
 #, gcc-internal-format
@@ -44920,12 +44920,12 @@ msgstr "le destructeur pour %qT est ambigu"
 #: cp/class.c:5039
 #, gcc-internal-format
 msgid "method overrides both %<transaction_pure%> and %qE methods"
-msgstr "la méthode surcharge à la fois les méthodes %<transaction_pure%> et %qE"
+msgstr "la méthode redéfini à la fois les méthodes %<transaction_pure%> et %qE"
 
 #: cp/class.c:5060
 #, gcc-internal-format
 msgid "method declared %qE overriding %qE method"
-msgstr "la méthode déclarée %qE surcharge la méthode %qE"
+msgstr "la méthode déclarée %qE redéfini la méthode %qE"
 
 #: cp/class.c:5718 cp/constexpr.c:254
 #, gcc-internal-format
@@ -49250,7 +49250,7 @@ msgstr "les espaces de noms en ligne sont uniquement disponibles avec %<-std=c++
 #: cp/error.c:4357
 #, gcc-internal-format
 msgid "override controls (override/final) only available with %<-std=c++11%> or %<-std=gnu++11%>"
-msgstr "le contrôle de la surcharge (override/final) est uniquement disponible avec %<-std=c++11%> ou %<-std=gnu++11%>"
+msgstr "le contrôle de la redéfinition (override/final) est uniquement disponible avec %<-std=c++11%> ou %<-std=gnu++11%>"
 
 #: cp/error.c:4362
 #, gcc-internal-format
@@ -54242,12 +54242,12 @@ msgstr "%qT est une base inaccessible de %qT"
 #: cp/search.c:1890
 #, gcc-internal-format
 msgid "looser exception specification on overriding virtual function %q+#F"
-msgstr "spécification d'exception plus lâche sur la fonction virtuelle surchargeante %q+#F"
+msgstr "spécification d'exception plus lâche sur la fonction virtuelle redéfinie %q+#F"
 
 #: cp/search.c:1893
 #, gcc-internal-format
 msgid "overridden function is %q#F"
-msgstr "la fonction surchargée est %q#F"
+msgstr "la fonction redéfinie est %q#F"
 
 #: cp/search.c:1962
 #, gcc-internal-format
@@ -54257,7 +54257,7 @@ msgstr "type de retour covariant invalide pour %q#D"
 #: cp/search.c:1964 cp/search.c:1980 cp/search.c:1987 cp/search.c:2005
 #, gcc-internal-format
 msgid "overridden function is %q#D"
-msgstr "la fonction surchargée est %q#D"
+msgstr "la fonction redéfinie est %q#D"
 
 #: cp/search.c:1978
 #, gcc-internal-format
@@ -54282,27 +54282,27 @@ msgstr "%qD est déclaré %<transaction_safe_dynamic%>"
 #: cp/search.c:2023
 #, gcc-internal-format
 msgid "overriding %qD declared %<transaction_safe%>"
-msgstr "dans la surcharge de %qD déclaré %<transaction_safe%>"
+msgstr "dans la redéfinition de %qD déclaré %<transaction_safe%>"
 
 #: cp/search.c:2031
 #, gcc-internal-format
 msgid "deleted function %q+D overriding non-deleted function"
-msgstr "la fonction supprimée %q+D surcharge une fonction non supprimée"
+msgstr "la fonction supprimée %q+D redéfini une fonction non supprimée"
 
 #: cp/search.c:2034 cp/search.c:2043 cp/search.c:2052
 #, gcc-internal-format
 msgid "overridden function is %qD"
-msgstr "la fonction surchargée est %qD"
+msgstr "la fonction redéfinie est %qD"
 
 #: cp/search.c:2040
 #, gcc-internal-format
 msgid "non-deleted function %q+D overriding deleted function"
-msgstr "la fonction non supprimée %q+D surcharge la fonction supprimée"
+msgstr "la fonction non supprimée %q+D redéfini la fonction supprimée"
 
 #: cp/search.c:2050
 #, gcc-internal-format
 msgid "virtual function %q+D overriding final function"
-msgstr "la fonction virtuelle %q+D surcharge une fonction finale"
+msgstr "la fonction virtuelle %q+D redéfini une fonction finale"
 
 #: cp/search.c:2135
 #, gcc-internal-format
@@ -61109,77 +61109,77 @@ msgstr "Ne peut écraser GENERIC %qs à %L"
 #: fortran/interface.c:4743
 #, gcc-internal-format
 msgid "%qs at %L overrides a procedure binding declared NON_OVERRIDABLE"
-msgstr "%qs à %L surcharge une liaison de procédure déclarée NON_OVERRRIDABLE"
+msgstr "%qs à %L redéfini une liaison de procédure déclarée NON_OVERRRIDABLE"
 
 #: fortran/interface.c:4751
 #, gcc-internal-format
 msgid "%qs at %L must not be DEFERRED as it overrides a non-DEFERRED binding"
-msgstr "%qs à %L ne doit pas être DEFERRED car il surcharge une liaison non DEFERRED"
+msgstr "%qs à %L ne doit pas être DEFERRED car il redéfini une liaison non DEFERRED"
 
 #: fortran/interface.c:4759
 #, gcc-internal-format
 msgid "%qs at %L overrides a PURE procedure and must also be PURE"
-msgstr "%qs à %L surcharge une procédure PURE et doit aussi être PURE"
+msgstr "%qs à %L redéfini une procédure PURE et doit aussi être PURE"
 
 #: fortran/interface.c:4768
 #, gcc-internal-format
 msgid "%qs at %L overrides an ELEMENTAL procedure and must also be ELEMENTAL"
-msgstr "%qs à %L surcharge une procédure ELEMENTAL et doit aussi être ELEMENTAL"
+msgstr "%qs à %L redéfini une procédure ELEMENTAL et doit aussi être ELEMENTAL"
 
 #: fortran/interface.c:4774
 #, gcc-internal-format
 msgid "%qs at %L overrides a non-ELEMENTAL procedure and must not be ELEMENTAL, either"
-msgstr "%qs à %L surcharge une procédure non ELEMENTAL et ne doit pas être ELEMENTAL non plus"
+msgstr "%qs à %L redéfini une procédure non ELEMENTAL et ne doit pas être ELEMENTAL non plus"
 
 #: fortran/interface.c:4783
 #, gcc-internal-format
 msgid "%qs at %L overrides a SUBROUTINE and must also be a SUBROUTINE"
-msgstr "%qs à %L surcharge une SUBROUTINE et doit aussi être une SUBROUTINE"
+msgstr "%qs à %L redéfini une SUBROUTINE et doit aussi être une SUBROUTINE"
 
 #: fortran/interface.c:4794
 #, gcc-internal-format
 msgid "%qs at %L overrides a FUNCTION and must also be a FUNCTION"
-msgstr "%qs à %L surcharge une FUNCTION et doit aussi être une FUNCTION"
+msgstr "%qs à %L redéfini une FUNCTION et doit aussi être une FUNCTION"
 
 #: fortran/interface.c:4802
 #, gcc-internal-format
 msgid "Result mismatch for the overriding procedure %qs at %L: %s"
-msgstr "Résultat non concordant pour la surcharge de la procédure %qs à %L: %s"
+msgstr "Résultat non concordant pour la redéfinition de la procédure %qs à %L: %s"
 
 #: fortran/interface.c:4813
 #, gcc-internal-format
 msgid "%qs at %L overrides a PUBLIC procedure and must not be PRIVATE"
-msgstr "%qs à %L surcharge une procédure PUBLIC et ne doit pas être PRIVATE"
+msgstr "%qs à %L redéfini une procédure PUBLIC et ne doit pas être PRIVATE"
 
 #: fortran/interface.c:4843
 #, gcc-internal-format
 msgid "Dummy argument %qs of %qs at %L should be named %qs as to match the corresponding argument of the overridden procedure"
-msgstr "L'argument muet %qs de %qs à %L devrait être nommé %qs pour correspondre à l'argument équivalent de la procédure qui surcharge"
+msgstr "L'argument muet %qs de %qs à %L devrait être nommé %qs pour correspondre à l'argument équivalent de la procédure redéfinie"
 
 #: fortran/interface.c:4854
 #, gcc-internal-format
 msgid "Argument mismatch for the overriding procedure %qs at %L: %s"
-msgstr "Argument non concordant pour la procédure surchargeante %qs à %L: %s"
+msgstr "Argument non concordant pour la procédure redéfinissante %qs à %L: %s"
 
 #: fortran/interface.c:4863
 #, gcc-internal-format
 msgid "%qs at %L must have the same number of formal arguments as the overridden procedure"
-msgstr "%qs à %L doit avoir le même nombre d'arguments formels que la procédure surchargeante"
+msgstr "%qs à %L doit avoir le même nombre d'arguments formels que la procédure redéfinie"
 
 #: fortran/interface.c:4872
 #, gcc-internal-format
 msgid "%qs at %L overrides a NOPASS binding and must also be NOPASS"
-msgstr "%qs à %L surcharge une liaison NOPASS et doit aussi être NOPASS"
+msgstr "%qs à %L redéfini une liaison NOPASS et doit aussi être NOPASS"
 
 #: fortran/interface.c:4883
 #, gcc-internal-format
 msgid "%qs at %L overrides a binding with PASS and must also be PASS"
-msgstr "%qs à %L surcharge une liaison PASS et doit aussi être PASS"
+msgstr "%qs à %L redéfini une liaison PASS et doit aussi être PASS"
 
 #: fortran/interface.c:4890
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must be at the same position as the passed-object dummy argument of the overridden procedure"
-msgstr "L'argument muet %qs de type objet passé à %L doit être à la même position que l'argument muet de type objet passé à la procédure surchargée"
+msgstr "L'argument muet %qs de type objet passé à %L doit être à la même position que l'argument muet de type objet passé à la procédure redéfinie"
 
 #: fortran/interface.c:4911
 #, gcc-internal-format, gfc-internal-format
@@ -67336,7 +67336,7 @@ msgstr "La procédure %qs à %L a le même nom qu'un composant hérité de %qs"
 #: fortran/resolve.c:14144
 #, gcc-internal-format
 msgid "Derived-type %qs declared at %L must be ABSTRACT because %qs is DEFERRED and not overridden"
-msgstr "Le type dérivé %qs déclaré à %L doit être ABSTRACT car %qs est DEFERRED et pas surchargé"
+msgstr "Le type dérivé %qs déclaré à %L doit être ABSTRACT car %qs est DEFERRED et pas redéfini"
 
 #: fortran/resolve.c:14247
 #, gcc-internal-format

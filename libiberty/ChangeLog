@@ -1,3 +1,14 @@
+2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94739
+	* configure: Regenerated.
+
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR demangler/94797
+	* cp-demangle.c (cplus_demangle_operators): Add ss <=> operator.
+	* testsuite/demangle-expected: Add operator<=> test.
+
 2020-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94739

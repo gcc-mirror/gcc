@@ -92,7 +92,7 @@ struct conversion {
      language standards, e.g. disregarding pointer qualifiers or
      converting integers to pointers.  */
   BOOL_BITFIELD bad_p : 1;
-  /* If KIND is ck_ref_bind ck_base_conv, true to indicate that a
+  /* If KIND is ck_ref_bind or ck_base, true to indicate that a
      temporary should be created to hold the result of the
      conversion.  If KIND is ck_ambig or ck_user, true means force
      copy-initialization.  */
@@ -111,6 +111,10 @@ struct conversion {
   /* Whether check_narrowing should only check TREE_CONSTANTs; used
      in build_converted_constant_expr.  */
   BOOL_BITFIELD check_narrowing_const_only: 1;
+  /* True if this conversion is taking place in a copy-initialization context
+     and we should only consider converting constructors.  Only set in
+     ck_base and ck_rvalue.  */
+  BOOL_BITFIELD copy_init_p : 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
   union {
@@ -1252,6 +1256,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       if (flags & LOOKUP_PREFER_RVALUE)
 	/* Tell convert_like_real to set LOOKUP_PREFER_RVALUE.  */
 	conv->rvaluedness_matches_p = true;
+      /* If we're performing copy-initialization, remember to skip
+	 explicit constructors.  */
+      if (flags & LOOKUP_ONLYCONVERTING)
+	conv->copy_init_p = true;
     }
 
    /* Allow conversion between `__complex__' data types.  */
@@ -1528,6 +1536,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       if (flags & LOOKUP_PREFER_RVALUE)
 	/* Tell convert_like_real to set LOOKUP_PREFER_RVALUE.  */
 	conv->rvaluedness_matches_p = true;
+      /* If we're performing copy-initialization, remember to skip
+	 explicit constructors.  */
+      if (flags & LOOKUP_ONLYCONVERTING)
+	conv->copy_init_p = true;
     }
   else
     return NULL;
@@ -7653,12 +7665,16 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	 type is the same class as, or a derived class of, the class of the
 	 destination [is treated as direct-initialization].  [dcl.init] */
       flags = LOOKUP_NORMAL;
+      /* This conversion is being done in the context of a user-defined
+	 conversion (i.e. the second step of copy-initialization), so
+	 don't allow any more.  */
       if (convs->user_conv_p)
-	/* This conversion is being done in the context of a user-defined
-	   conversion (i.e. the second step of copy-initialization), so
-	   don't allow any more.  */
 	flags |= LOOKUP_NO_CONVERSION;
-      else
+      /* We might be performing a conversion of the argument
+	 to the user-defined conversion, i.e., not a conversion of the
+	 result of the user-defined conversion.  In which case we skip
+	 explicit constructors.  */
+      if (convs->copy_init_p)
 	flags |= LOOKUP_ONLYCONVERTING;
       if (convs->rvaluedness_matches_p)
 	/* standard_conversion got LOOKUP_PREFER_RVALUE.  */
