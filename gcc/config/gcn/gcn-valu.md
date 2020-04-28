@@ -2113,7 +2113,7 @@
   ""
   {
     enum {ashift, lshiftrt, ashiftrt};
-    bool unsignedp = (<code> == ashift || <code> == ashiftrt);
+    bool unsignedp = (<code> == lshiftrt);
     rtx insi1 = gen_reg_rtx (<VnSI>mode);
     rtx insi2 = gen_reg_rtx (<VnSI>mode);
     rtx outsi = gen_reg_rtx (<VnSI>mode);
