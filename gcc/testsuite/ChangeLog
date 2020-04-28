@@ -1,3 +1,8 @@
+2020-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94809
+	* gcc.c-torture/execute/pr94809.c: New test.
+
 2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94760

@@ -11523,6 +11523,7 @@ build_call_expr_internal_loc_array (location_t loc, internal_fn ifn,
     CALL_EXPR_ARG (t, i) = args[i];
   SET_EXPR_LOCATION (t, loc);
   CALL_EXPR_IFN (t) = ifn;
+  process_call_operands (t);
   return t;
 }
 

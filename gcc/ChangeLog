@@ -1,4 +1,10 @@
-2020-04-27 Anton Youdkevitch <anton.youdkevitch@bell-sw.com>
+2020-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94809
+	* tree.c (build_call_expr_internal_loc_array): Call
+	process_call_operands.
+
+2020-04-27  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
 
 	* config/aarch64/aarch64-cores.def (thunderx3t110): Add the chip name.
 	* config/aarch64/aarch64-tune.md: Regenerate.
@@ -7,7 +13,7 @@
 	(thunderx3t110_vector_cost): Likewise.
 	(thunderx3t110_prefetch_tune): Likewise.
 	(thunderx3t110_tunings): Likewise.
-	* gcc/config/aarch64/aarch64-cost-tables.h (thunderx3t110_extra_costs):
+	* config/aarch64/aarch64-cost-tables.h (thunderx3t110_extra_costs):
 	Define.
 	* config/aarch64/thunderx3t110.md: New file.
 	* config/aarch64/aarch64.md: Include thunderx3t110.md.
