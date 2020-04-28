@@ -1,3 +1,12 @@
+2020-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94727
+	* tree-vect-stmts.c (vect_is_simple_cond): If both comparison
+	operands are invariant booleans, use the mask type associated with the
+	STMT_VINFO_VECTYPE.  Use !slp_node instead of !vectype to exclude SLP.
+	(vectorizable_condition): Pass vectype unconditionally to
+	vect_is_simple_cond.
+
 2020-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94780
