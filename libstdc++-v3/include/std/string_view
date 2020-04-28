@@ -48,7 +48,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_string_view 201803
+# define __cpp_lib_string_view 201803L
+#if __cplusplus > 201703L
+# define __cpp_lib_constexpr_string_view 201811L
+#endif
 
   // Helper for basic_string and basic_string_view members.
   constexpr size_t

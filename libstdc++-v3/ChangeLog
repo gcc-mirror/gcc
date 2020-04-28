@@ -1,5 +1,23 @@
 2020-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/91480
+	* include/bits/allocator.h (__cpp_lib_allocator_is_always_equal):
+	Remove non-standard macro.
+	* include/bits/stl_iterator.h (__cpp_lib_constexpr_iterator): Define
+	to indicate P1032R1 support.
+	* include/bits/stl_pair.h (__cpp_lib_constexpr_utility): Likewise.
+	* include/std/string_view (__cpp_lib_constexpr_string_view): Likewise.
+	* include/std/tuple (__cpp_lib_constexpr_tuple): Likewise.
+	* include/std/version (__cpp_lib_allocator_is_always_equal): Remove.
+	(__cpp_lib_constexpr_iterator, __cpp_lib_constexpr_string_view)
+	(__cpp_lib_constexpr_tuple, __cpp_lib_constexpr_utility): Define.
+	* testsuite/20_util/function_objects/constexpr_searcher.cc: Check
+	feature test macro.
+	* testsuite/20_util/tuple/cons/constexpr_allocator_arg_t.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/
+	constexpr.cc: Likewise.
+	* testsuite/24_iterators/insert_iterator/constexpr.cc: Likewise.
+
 	PR libstdc++/94831
 	* include/bits/alloc_traits.h (_S_construct): Restore placement
 	new-expression for C++11/14/17 and call std::construct_at directly

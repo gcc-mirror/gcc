@@ -20,6 +20,12 @@
 
 #include <iterator>
 
+#ifndef __cpp_lib_constexpr_iterator
+# error "Feature test macro for constexpr insert iterators is missing in <iterator>"
+#elif __cpp_lib_constexpr_iterator < 201811L
+# error "Feature test macro for constexpr insert iterators has wrong value in <iterator>"
+#endif
+
 struct container
 {
   using value_type = int;
