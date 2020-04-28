@@ -1,3 +1,15 @@
+2020-04-28  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/94814
+	Backport from gcc-9.
+	2020-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/94518
+	2019-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_store_exclusive_pair): Fix
+	memmodel index.
+
 2020-04-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline

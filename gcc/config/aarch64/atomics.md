@@ -752,7 +752,7 @@
 	  UNSPECV_SX))]
   ""
   {
-    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    enum memmodel model = memmodel_from_int (INTVAL (operands[4]));
     if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return "stxp\t%w0, %x2, %x3, %1";
     else
