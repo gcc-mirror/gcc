@@ -5513,17 +5513,6 @@ mark_used (tree decl, tsubst_flags_t complain)
     used_types_insert (DECL_CONTEXT (decl));
 
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_MAYBE_DELETED (decl))
-    {
-      /* ??? Switch other defaulted functions to use DECL_MAYBE_DELETED?  */
-      gcc_assert (special_function_p (decl) == sfk_comparison);
-
-      ++function_depth;
-      synthesize_method (decl);
-      --function_depth;
-    }
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
       && !maybe_instantiate_noexcept (decl, complain))
     return false;
 

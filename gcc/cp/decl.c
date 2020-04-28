@@ -16503,7 +16503,6 @@ use_eh_spec_block (tree fn)
 {
   return (flag_exceptions && flag_enforce_eh_specs
 	  && !processing_template_decl
-	  && !type_throw_all_p (TREE_TYPE (fn))
 	  /* We insert the EH_SPEC_BLOCK only in the original
 	     function; then, it is copied automatically to the
 	     clones.  */
@@ -16516,7 +16515,8 @@ use_eh_spec_block (tree fn)
 	     not creating the EH_SPEC_BLOCK we save a little memory,
 	     and we avoid spurious warnings about unreachable
 	     code.  */
-	  && !DECL_DEFAULTED_FN (fn));
+	  && !DECL_DEFAULTED_FN (fn)
+	  && !type_throw_all_p (TREE_TYPE (fn)));
 }
 
 /* Helper function to push ARGS into the current lexical scope.  DECL

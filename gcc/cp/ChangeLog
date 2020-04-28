@@ -1,3 +1,13 @@
+2020-04-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94583
+	* decl.c (use_eh_spec_block): Check nothrow type after
+	DECL_DEFAULTED_FN.
+	* pt.c (maybe_instantiate_noexcept): Call synthesize_method for
+	DECL_MAYBE_DELETED fns here.
+	* decl2.c (mark_used): Not here.
+	* method.c (get_defaulted_eh_spec): Reject DECL_MAYBE_DELETED here.
+
 2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94760

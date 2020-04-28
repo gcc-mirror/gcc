@@ -3169,7 +3169,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (NODE)->has_dependent_explicit_spec_p)
 
 /* Nonzero for a defaulted FUNCTION_DECL for which we haven't decided yet if
-   it's deleted.  */
+   it's deleted; we will decide in synthesize_method.  */
 #define DECL_MAYBE_DELETED(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->maybe_deleted)
 
