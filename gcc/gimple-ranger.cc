@@ -498,27 +498,25 @@ global_ranger::calculate_and_dump (FILE *output)
   fprintf (output, "\n");
 }
 
-// Return a static range for NAME on entry to basic block BB in R.
-// If calc is true, Fill any cache entries required between BB and the def
-// block for NAME.  Otherwise, return false if the cache is empty.
+// Return a static range for NAME on entry to basic block BB in R.  If
+// calc is true, fill any cache entries required between BB and the
+// def block for NAME.  Otherwise, return false if the cache is empty.
 
 bool
 global_ranger::block_range (irange &r, basic_block bb, tree name, bool calc)
 {
-
-  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-  basic_block def_bb = NULL;
-
   gcc_checking_assert (gimple_range_ssa_p (name));
 
   if (calc)
     {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+      basic_block def_bb = NULL;
       if (def_stmt)
 	def_bb = gimple_bb (def_stmt);;
       if (!def_bb)
 	{
 	  // If we get to the entry block, this better be a default def
-	  // or range_on_entry was called fo a block not dominated by
+	  // or range_on_entry was called for a block not dominated by
 	  // the def.  This would be a bug.
 	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
 	  def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
@@ -567,9 +565,8 @@ global_ranger::edge_range (irange &r, edge e, tree name)
 	    r = gimple_range_global (name);
 	}
     }
-  else
-    if (!m_on_entry.get_bb_range (r, name, src))
-      return false;
+  else if (!m_on_entry.get_bb_range (r, name, src))
+    return false;
 
   // Check if pointers have any non-null dereferences.  Non-call
   // exceptions mean we could throw in the middle of he block, so just
