@@ -1,3 +1,8 @@
+2020-04-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (ref_always_accessed::operator ()):
+	Just check whether the stmt stores.
+
 2020-04-28  Alexandre Oliva <oliva@adacore.com>
 
 	PR target/94812
