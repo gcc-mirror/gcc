@@ -2924,7 +2924,7 @@ Enables the dynamic vectorizer cost model.  Preserved for backward compatibility
 
 ;; Allow RVRP to make IL changes.
 frvrp-changes
-Common Var(flag_rvrp_changes) Init(1)
+Common Var(flag_rvrp_changes) Init(0)
 
 ftree-vect-loop-version
 Common Ignore
