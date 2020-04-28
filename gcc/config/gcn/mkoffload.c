@@ -628,11 +628,6 @@ main (int argc, char **argv)
       gcc_unreachable ();
     }
 
-  gcn_s1_name = make_temp_file (".mkoffload.1.s");
-  gcn_s2_name = make_temp_file (".mkoffload.2.s");
-  gcn_o_name = make_temp_file (".mkoffload.hsaco");
-  gcn_cfile_name = make_temp_file (".c");
-
   /* Build arguments for compiler pass.  */
   struct obstack cc_argv_obstack;
   obstack_init (&cc_argv_obstack);
@@ -661,76 +656,87 @@ main (int argc, char **argv)
 	}
     }
 
-  obstack_ptr_grow (&cc_argv_obstack, "-o");
-  obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
-  obstack_ptr_grow (&cc_argv_obstack,
-		    concat ("-mlocal-symbol-id=", offloadsrc, NULL));
-  obstack_ptr_grow (&cc_argv_obstack, NULL);
-  const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
-
-  /* Build arguments for assemble/link pass.  */
-  struct obstack ld_argv_obstack;
-  obstack_init (&ld_argv_obstack);
-  obstack_ptr_grow (&ld_argv_obstack, driver);
-  obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
-  obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
-
-  for (int i = 1; i < argc; i++)
-    if (strncmp (argv[i], "-l", 2) == 0
-	|| strncmp (argv[i], "-Wl", 3) == 0
-	|| strncmp (argv[i], "-march", 6) == 0)
-      obstack_ptr_grow (&ld_argv_obstack, argv[i]);
-
-  obstack_ptr_grow (&ld_argv_obstack, "-o");
-  obstack_ptr_grow (&ld_argv_obstack, gcn_o_name);
-  obstack_ptr_grow (&ld_argv_obstack, NULL);
-  const char **ld_argv = XOBFINISH (&ld_argv_obstack, const char **);
-
-  /* Clean up unhelpful environment variables.  */
-  char *execpath = getenv ("GCC_EXEC_PREFIX");
-  char *cpath = getenv ("COMPILER_PATH");
-  char *lpath = getenv ("LIBRARY_PATH");
-  unsetenv ("GCC_EXEC_PREFIX");
-  unsetenv ("COMPILER_PATH");
-  unsetenv ("LIBRARY_PATH");
-
-  /* Run the compiler pass.  */
-  fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true);
-  obstack_free (&cc_argv_obstack, NULL);
-
-  in = fopen (gcn_s1_name, "r");
-  if (!in)
-    fatal_error (input_location, "cannot open intermediate gcn asm file");
-
-  out = fopen (gcn_s2_name, "w");
-  if (!out)
-    fatal_error (input_location, "cannot open '%s'", gcn_s2_name);
+  gcn_cfile_name = make_temp_file (".c");
 
   cfile = fopen (gcn_cfile_name, "w");
   if (!cfile)
     fatal_error (input_location, "cannot open '%s'", gcn_cfile_name);
 
-  process_asm (in, out, cfile);
+  /* Currently, we only support offloading in 64-bit configurations.  */
+  if (offload_abi == OFFLOAD_ABI_LP64)
+    {
+      gcn_s1_name = make_temp_file (".mkoffload.1.s");
+      gcn_s2_name = make_temp_file (".mkoffload.2.s");
+      gcn_o_name = make_temp_file (".mkoffload.hsaco");
 
-  fclose (in);
-  fclose (out);
+      obstack_ptr_grow (&cc_argv_obstack, "-o");
+      obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
+      obstack_ptr_grow (&cc_argv_obstack,
+			concat ("-mlocal-symbol-id=", offloadsrc, NULL));
+      obstack_ptr_grow (&cc_argv_obstack, NULL);
+      const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
 
-  /* Run the assemble/link pass.  */
-  fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true);
-  obstack_free (&ld_argv_obstack, NULL);
+      /* Build arguments for assemble/link pass.  */
+      struct obstack ld_argv_obstack;
+      obstack_init (&ld_argv_obstack);
+      obstack_ptr_grow (&ld_argv_obstack, driver);
+      obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
+      obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
 
-  in = fopen (gcn_o_name, "r");
-  if (!in)
-    fatal_error (input_location, "cannot open intermediate gcn obj file");
+      for (int i = 1; i < argc; i++)
+	if (strncmp (argv[i], "-l", 2) == 0
+	    || strncmp (argv[i], "-Wl", 3) == 0
+	    || strncmp (argv[i], "-march", 6) == 0)
+	  obstack_ptr_grow (&ld_argv_obstack, argv[i]);
 
-  process_obj (in, cfile);
+      obstack_ptr_grow (&ld_argv_obstack, "-o");
+      obstack_ptr_grow (&ld_argv_obstack, gcn_o_name);
+      obstack_ptr_grow (&ld_argv_obstack, NULL);
+      const char **ld_argv = XOBFINISH (&ld_argv_obstack, const char **);
 
-  fclose (in);
+      /* Clean up unhelpful environment variables.  */
+      char *execpath = getenv ("GCC_EXEC_PREFIX");
+      char *cpath = getenv ("COMPILER_PATH");
+      char *lpath = getenv ("LIBRARY_PATH");
+      unsetenv ("GCC_EXEC_PREFIX");
+      unsetenv ("COMPILER_PATH");
+      unsetenv ("LIBRARY_PATH");
+
+      /* Run the compiler pass.  */
+      fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true);
+      obstack_free (&cc_argv_obstack, NULL);
+
+      in = fopen (gcn_s1_name, "r");
+      if (!in)
+	fatal_error (input_location, "cannot open intermediate gcn asm file");
+
+      out = fopen (gcn_s2_name, "w");
+      if (!out)
+	fatal_error (input_location, "cannot open '%s'", gcn_s2_name);
+
+      process_asm (in, out, cfile);
+
+      fclose (in);
+      fclose (out);
+
+      /* Run the assemble/link pass.  */
+      fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true);
+      obstack_free (&ld_argv_obstack, NULL);
+
+      in = fopen (gcn_o_name, "r");
+      if (!in)
+	fatal_error (input_location, "cannot open intermediate gcn obj file");
+
+      process_obj (in, cfile);
+
+      fclose (in);
+
+      xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
+      xputenv (concat ("COMPILER_PATH=", cpath, NULL));
+      xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
+    }
+
   fclose (cfile);
-
-  xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
-  xputenv (concat ("COMPILER_PATH=", cpath, NULL));
-  xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
 
   compile_native (gcn_cfile_name, outname, collect_gcc);
 
