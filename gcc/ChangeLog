@@ -1,3 +1,9 @@
+2020-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94704
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Emit -Wpsabi diagnostics if the ABI changed.
+
 2020-04-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/94727
