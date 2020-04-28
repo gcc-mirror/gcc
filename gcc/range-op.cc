@@ -1909,37 +1909,39 @@ unsigned_singleton_p (const irange &op)
   return false;
 }
 
+// Remove any ranges from R that are known to be impossible when an
+// range is ANDed with MASK.
+
 void
 operator_bitwise_and::remove_impossible_ranges (irange &r,
-						const irange &rh) const
+						const irange &mask) const
 {
-  if (r.undefined_p () || !unsigned_singleton_p (rh))
+  if (r.undefined_p () || !unsigned_singleton_p (mask))
     return;
 
-  tree tmask;
-  rh.singleton_p (&tmask);
-  if (!tree_fits_uhwi_p (tmask)) // FIXME: Rewrite to wide_int's.
+  tree tree_mask;
+  mask.singleton_p (&tree_mask);
+  if (!tree_fits_uhwi_p (tree_mask)) // ?? Rewrite with wide_int's.
     return;
-  unsigned HOST_WIDE_INT mask = tree_to_uhwi (tmask);
+
+  unsigned HOST_WIDE_INT int_mask = tree_to_uhwi (tree_mask);
   tree type = r.type ();
-  unsigned prec = TYPE_PRECISION (type);
-  unsigned leading_zeros = __builtin_clz (mask);
-  if (prec <= leading_zeros)
-    return;
+  int prec = TYPE_PRECISION (type);
+  int leading_zeros = wi::clz (mask.lower_bound ());
   widest_irange impossible_ranges;
 
-  /* We know that starting at the most significant bit, any 0 number is
-     impossible, so the following ranges are impossible:
+  /* We know that starting at the most significant bit, any 0 in the
+     mask is impossible, so the following ranges are impossible:
 
 	x & 0b1001 1010
-
+			  IMPOSSIBLE RANGES
 	    0b01xx xxxx   [0100 0000, 0111 1111]
 	    0b001x xxxx   [0010 0000, 0011 1111]
 	    0b0000 01xx   [0000 0100, 0000 0111]
 	    0b0000 0001   [0000 0001, 0000 0001]
   */
-  for (unsigned int i = 0; i <= prec - leading_zeros - 1; ++i)
-    if ((mask & (1 << i)) == 0)
+  for (int i = 0; i < prec - leading_zeros - 1; ++i)
+    if ((int_mask & (1 << i)) == 0)
       {
 	tree lb = fold_build2 (LSHIFT_EXPR, type,
 			       build_one_cst (type),
