@@ -1,3 +1,15 @@
+2020-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94831
+	* include/bits/alloc_traits.h (_S_construct): Restore placement
+	new-expression for C++11/14/17 and call std::construct_at directly
+	for C++20.
+	* include/bits/stl_construct.h (_Construct): Revert to non-constexpr
+	function returning void.
+	* testsuite/20_util/specialized_algorithms/
+	uninitialized_value_construct/94831.cc: New test.
+	* testsuite/23_containers/vector/cons/94831.cc: New test.
+
 2020-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	LWG 3433 subrange::advance(n) has UB when n < 0

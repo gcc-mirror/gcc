@@ -253,7 +253,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
 	noexcept(noexcept(::new((void*)__p)
 			  _Tp(std::forward<_Args>(__args)...)))
-	{ std::_Construct(__p, std::forward<_Args>(__args)...); }
+	{
+#if __cplusplus <= 201703L
+	  ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
+#else
+	  std::construct_at(__p, std::forward<_Args>(__args)...);
+#endif
+	}
 
       template<typename _Alloc2, typename _Tp>
 	static _GLIBCXX14_CONSTEXPR auto
