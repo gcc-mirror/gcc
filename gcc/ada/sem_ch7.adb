@@ -462,17 +462,11 @@ package body Sem_Ch7 is
 
                --  Exceptions, objects and renamings do not need to be public
                --  if they are not followed by a construct which can reference
-               --  and export them. Likewise for subprograms but we work harder
-               --  for them to see whether they are referenced on an individual
-               --  basis by looking into the table of referenced subprograms.
-               --  But we cannot say anything for entities declared in nested
-               --  instances because instantiations are not done yet so the
-               --  bodies are not visible and could contain references to them.
+               --  and export them.
+
                elsif Nkind_In (Decl, N_Exception_Declaration,
                                      N_Object_Declaration,
-                                     N_Object_Renaming_Declaration,
-                                     N_Subprogram_Declaration,
-                                     N_Subprogram_Renaming_Declaration)
+                                     N_Object_Renaming_Declaration)
                then
                   Decl_Id := Defining_Entity (Decl);
 
@@ -480,11 +474,32 @@ package body Sem_Ch7 is
                     and then not Is_Imported (Decl_Id)
                     and then not Is_Exported (Decl_Id)
                     and then No (Interface_Name (Decl_Id))
-                    and then
-                      ((Nkind (Decl) /= N_Subprogram_Declaration
-                         and then not Has_Referencer_Of_Non_Subprograms)
-                        or else (Nkind (Decl) = N_Subprogram_Declaration
-                                  and then not Subprogram_Table.Get (Decl_Id)))
+                    and then not Has_Referencer_Of_Non_Subprograms
+                  then
+                     Set_Is_Public (Decl_Id, False);
+                  end if;
+
+               --  Likewise for subprograms and renamings, but we work harder
+               --  for them to see whether they are referenced on an individual
+               --  basis by looking into the table of referenced subprograms.
+
+               elsif Nkind_In (Decl, N_Subprogram_Declaration,
+                                     N_Subprogram_Renaming_Declaration)
+               then
+                  Decl_Id := Defining_Entity (Decl);
+
+                  --  We cannot say anything for subprograms declared in nested
+                  --  instances because instantiations are not done yet so the
+                  --  bodies are not visible and could contain references to
+                  --  them, except if we still have no subprograms at all which
+                  --  are referenced by an inlined body.
+
+                  if (not In_Nested_Instance
+                       or else not Subprogram_Table.Get_First)
+                    and then not Is_Imported (Decl_Id)
+                    and then not Is_Exported (Decl_Id)
+                    and then No (Interface_Name (Decl_Id))
+                    and then not Subprogram_Table.Get (Decl_Id)
                   then
                      Set_Is_Public (Decl_Id, False);
                   end if;
@@ -1081,9 +1096,13 @@ package body Sem_Ch7 is
       --        unit, especially subprograms.
 
       --  This is done only for top-level library packages or child units as
-      --  the algorithm does a top-down traversal of the package body.
+      --  the algorithm does a top-down traversal of the package body. This is
+      --  also done for instances because instantiations are still pending by
+      --  the time the enclosing package body is analyzed.
 
-      if (Scope (Spec_Id) = Standard_Standard or else Is_Child_Unit (Spec_Id))
+      if (Scope (Spec_Id) = Standard_Standard
+           or else Is_Child_Unit (Spec_Id)
+           or else Is_Generic_Instance (Spec_Id))
         and then not Is_Generic_Unit (Spec_Id)
       then
          Hide_Public_Entities (Declarations (N));
