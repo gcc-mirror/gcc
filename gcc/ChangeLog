@@ -1,3 +1,12 @@
+2020-04-28  Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94711
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Account for C++17 empty
+	base class artificial fields.
+	(aapcs_vfp_is_call_or_return_candidate): Warn when PCS ABI
+	decision is different after this fix.
+
 2020-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94447
