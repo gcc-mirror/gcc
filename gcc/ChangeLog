@@ -41,6 +41,22 @@
 	TARGET_EXPR instead of MODIFY_EXPR for first assignment to
 	sw_var, exceptions_var, mxcsr_orig_var and mxcsr_mod_var.
 
+2020-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 92830
+	* configure.ac (DOCUMENTATION_ROOT_URL): Drop trailing "gcc/" from
+	default value, so that it can by supplied by get_option_html_page.
+	* configure: Regenerate.
+	* opts.c: Include "selftest.h".
+	(get_option_html_page): New function.
+	(get_option_url): Use it.  Reformat to place comments next to the
+	expressions they refer to.
+	(selftest::test_get_option_html_page): New.
+	(selftest::opts_c_tests): New.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::opts_c_tests.
+	* selftest.h (selftest::opts_c_tests): New decl.
+
 2020-04-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/arm/arm-builtins.c (arm_expand_builtin_args): Only apply
