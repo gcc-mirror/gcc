@@ -8304,7 +8304,8 @@ package body Sem_Prag is
                  ("??C_Variadic_0 cannot be used for an 'I'S'O C function",
                   Get_Pragma_Arg (Arg2));
 
-            --  Now check the number of parameters of the subprogram
+            --  Now check the number of parameters of the subprogram and give
+            --  an error if it is lower than n.
 
             elsif Present (Subp) then
                declare
@@ -8323,21 +8324,11 @@ package body Sem_Prag is
                      Next_Formal (Formal);
                   end loop;
 
-                  --  Error out if the number of parameters is lower than n
-
                   if Count < Minimum then
                      Error_Msg_Uint_1 := UI_From_Int (Minimum);
                      Error_Pragma_Arg
                        ("argument of pragma% must have at least"
                         & "^ parameters", Arg2);
-
-                  --  But warn if it is exactly n because this is useless
-
-                  elsif Count = Minimum then
-                     Error_Msg_Uint_1 := UI_From_Int (Minimum + 1);
-                     Error_Msg_N
-                       ("??subprogram should have at least ^ parameters",
-                        Get_Pragma_Arg (Arg2));
                   end if;
                end;
             end if;
