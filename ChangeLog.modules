@@ -1,3 +1,16 @@
+2020-04-28  Nathan Sidwell  <nathan@acm.org>
+
+	Partition pending indirection fixes
+	gcc/cp/
+	* module.cc (trees_in::install_entity): Treat pending flags
+	independently, adjust indirection installation.
+	(pendset_lazy_load): Add specialization_p arg.  Use for
+	indirection adjustment.
+	(get_primary_module): Look at implementation unit's parent.
+	(lazy_load_{specializations,members}): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/part-6_[abcde].C: New.
+
 2020-04-23  Nathan Sidwell  <nathan@acm.org>
 
 	Stream definitions after decls.

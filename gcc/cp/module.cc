@@ -7308,8 +7308,7 @@ trees_in::install_entity (tree decl)
   unsigned ident = state->entity_lwm + entity_index - 1;
   mc_slot &elt = (*entity_ary)[ident];
 
-  /* See module_state::read_pendings for how this got set, at most
-     one bit will be set.  */
+  /* See module_state::read_pendings for how this got set.  */
   int pending = elt.get_lazy () & 3;
 
   elt = decl;
@@ -7323,21 +7322,26 @@ trees_in::install_entity (tree decl)
 
       /* Insert into the entity hash (it cannot already be there).  */
       bool existed;
-      unsigned &slot
-	= entity_map->get_or_insert (DECL_UID (decl), &existed);
+      unsigned &slot = entity_map->get_or_insert (DECL_UID (decl), &existed);
       gcc_checking_assert (!existed);
       slot = ident;
     }
   else if (pending != 0)
     {
       unsigned key_ident = import_entity_index (decl);
-      if (!pending_table->add (pending & 1 ? key_ident : ~key_ident, ~ident))
-	pending = 0;
+      if (pending & 1)
+	if (!pending_table->add (key_ident, ~ident))
+	  pending &= ~1;
+
+      if (pending & 2)
+	if (!pending_table->add (~key_ident, ~ident))
+	  pending &= ~2;
     }
 
   if (pending & 1)
     DECL_MODULE_PENDING_SPECIALIZATIONS_P (decl) = true;
-  else if (pending & 2)
+
+  if (pending & 2)
     {
       DECL_MODULE_PENDING_MEMBERS_P (decl) = true;
       if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -12943,7 +12947,7 @@ depset::hash::connect ()
 /* Load the entities referred to by this pendset.  */
 
 static bool
-pendset_lazy_load (pendset *pendings)
+pendset_lazy_load (pendset *pendings, bool specializations_p)
 {
   bool ok = true;
 
@@ -12953,8 +12957,10 @@ pendset_lazy_load (pendset *pendings)
       if (index & ~(~0u >> 1))
 	{
 	  /* An indirection.  */
-	  pendset *other = pending_table->get (~index, true);
-	  if (!pendset_lazy_load (other))
+	  if (specializations_p)
+	    index = ~index;
+	  pendset *other = pending_table->get (index, true);
+	  if (!pendset_lazy_load (other, specializations_p))
 	    ok = false;
 	}
       else
@@ -13142,6 +13148,11 @@ get_primary (module_state *parent)
 {
   while (parent->is_partition ())
     parent = parent->parent;
+
+  if (!parent->name)
+    // Implementation unit has null name
+    parent = parent->parent;
+
   return parent;
 }
 
@@ -17976,7 +17987,7 @@ lazy_load_specializations (tree tmpl)
 	    && dump ("Reading %u pending specializations keyed to %M[%u] %N",
 		     set->num, import_entity_module (ident),
 		     ident - import_entity_module (ident)->entity_lwm, tmpl);
-	  if (!pendset_lazy_load (set))
+	  if (!pendset_lazy_load (set, true))
 	    ok = false;
 	  dump.pop (n);
 
@@ -18023,7 +18034,7 @@ lazy_load_members (tree decl)
       dump () && dump ("Reading %u pending members keyed to %M[%u] %N",
 		       set->num, import_entity_module (ident),
 		       ident - import_entity_module (ident)->entity_lwm, decl);
-      pendset_lazy_load (set);
+      pendset_lazy_load (set, false);
       dump.pop (n);
 
       function_depth--;
