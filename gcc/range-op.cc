@@ -2159,6 +2159,15 @@ wide_int
 masked_increment (const wide_int &val_in, const wide_int &mask,
 		  const wide_int &sgnbit, unsigned int prec);
 
+static void
+set_nonzero_range_from_mask (irange &r, tree type, const irange &lhs)
+{
+  if (!lhs.contains_p (build_zero_cst (type)))
+    r = range_nonzero (type);
+  else
+    r.set_varying (type);
+}
+
 void
 operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
 					       const irange &lhs,
@@ -2176,12 +2185,7 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
     }
   if (!op2.singleton_p ())
     {
-      // We bail on anything that's not a singleton mask, but at least
-      // we can determine non-zeroness.
-      if (!lhs.contains_p (build_zero_cst (type)))
-	r = range_nonzero (type);
-      else
-	r.set_varying (type);
+      set_nonzero_range_from_mask (r, type, lhs);
       return;
     }
   unsigned int nprec = TYPE_PRECISION (type);
@@ -2266,7 +2270,8 @@ operator_bitwise_and::op1_range (irange &r, tree type,
     {
       simple_op1_range_solver (r, type, lhs, op2);
       if (r.undefined_p ())
-	return false;
+	set_nonzero_range_from_mask (r, type, lhs);
+      return !r.varying_p ();
     }
   else
     {
@@ -2281,7 +2286,7 @@ operator_bitwise_and::op1_range (irange &r, tree type,
 	  r.union_ (res);
 	}
       if (r.undefined_p ())
-	r.set_varying (type);
+	set_nonzero_range_from_mask (r, type, lhs);
     }
   return true;
 }
