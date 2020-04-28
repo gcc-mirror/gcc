@@ -296,14 +296,26 @@ instantiate_coro_traits (tree fndecl, location_t kw)
      type.  */
 
   tree functyp = TREE_TYPE (fndecl);
+  tree arg = DECL_ARGUMENTS (fndecl);
+  bool lambda_p = LAMBDA_FUNCTION_P (fndecl);
   tree arg_node = TYPE_ARG_TYPES (functyp);
   tree argtypes = make_tree_vec (list_length (arg_node)-1);
   unsigned p = 0;
 
   while (arg_node != NULL_TREE && !VOID_TYPE_P (TREE_VALUE (arg_node)))
     {
-      TREE_VEC_ELT (argtypes, p++) = TREE_VALUE (arg_node);
+      /* See PR94807, as to why we must exclude lambda here.  */
+      if (is_this_parameter (arg) && !lambda_p)
+	{
+	  /* We pass a reference to *this to the param preview.  */
+	  tree ct = TREE_TYPE (TREE_TYPE (arg));
+	  TREE_VEC_ELT (argtypes, p++) = cp_build_reference_type (ct, false);
+	}
+      else
+	TREE_VEC_ELT (argtypes, p++) = TREE_VALUE (arg_node);
+
       arg_node = TREE_CHAIN (arg_node);
+      arg = DECL_CHAIN (arg);
     }
 
   tree argtypepack = cxx_make_type (TYPE_ARGUMENT_PACK);
@@ -1754,6 +1766,7 @@ struct param_info
   bool pt_ref;       /* Was a pointer to object.  */
   bool trivial_dtor; /* The frame type has a trivial DTOR.  */
   bool this_ptr;     /* Is 'this' */
+  bool lambda_cobj;  /* Lambda capture object */
 };
 
 struct local_var_info
@@ -3654,6 +3667,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  The second two entries start out empty - and only get populated
 	  when we see uses.  */
       param_uses = new hash_map<tree, param_info>;
+      bool lambda_p = LAMBDA_FUNCTION_P (orig);
 
       unsigned no_name_parm = 0;
       for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
@@ -3694,7 +3708,19 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    parm.frame_type = actual_type;
+
 	  parm.this_ptr = is_this_parameter (arg);
+	  /* See PR94807.  When a lambda is in a template instantiation, the
+	     closure object is named 'this' instead of '__closure'.  */
+	  if (lambda_p)
+	    {
+	      parm.lambda_cobj = parm.this_ptr
+				 || (DECL_NAME (arg) == closure_identifier);
+	      parm.this_ptr = false;
+	    }
+	  else
+	    parm.lambda_cobj = false;
+
 	  parm.trivial_dtor = TYPE_HAS_TRIVIAL_DESTRUCTOR (parm.frame_type);
 	  char *buf;
 	  if (DECL_NAME (arg))
@@ -3839,9 +3865,28 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	those of the original function.  */
       vec<tree, va_gc> *args = make_tree_vector ();
       vec_safe_push (args, resizeable); /* Space needed.  */
+
       for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
 	   arg = DECL_CHAIN (arg))
-	vec_safe_push (args, arg);
+	{
+	  param_info *parm_i = param_uses->get (arg);
+	  gcc_checking_assert (parm_i);
+	  if (parm_i->lambda_cobj)
+	    vec_safe_push (args, arg);
+	  else if (parm_i->this_ptr)
+	    {
+	      /* We pass a reference to *this to the allocator lookup.  */
+	      tree tt = TREE_TYPE (TREE_TYPE (arg));
+	      tree this_ref = build1 (INDIRECT_REF, tt, arg);
+	      tt = cp_build_reference_type (tt, false);
+	      this_ref = convert_to_reference (tt, this_ref, CONV_STATIC,
+					       LOOKUP_NORMAL , NULL_TREE,
+					       tf_warning_or_error);
+	      vec_safe_push (args, this_ref);
+	    }
+	  else
+	    vec_safe_push (args, arg);
+	}
 
       /* We might need to check that the provided function is nothrow.  */
       tree func;
@@ -4031,8 +4076,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					      false, tf_warning_or_error);
 
 	  /* Add this to the promise CTOR arguments list, accounting for
-	     refs and this ptr.  */
-	  if (parm.this_ptr)
+	     refs and special handling for method this ptr.  */
+	  if (parm.lambda_cobj)
+	    vec_safe_push (promise_args, arg);
+	  else if (parm.this_ptr)
 	    {
 	      /* We pass a reference to *this to the param preview.  */
 	      tree tt = TREE_TYPE (arg);

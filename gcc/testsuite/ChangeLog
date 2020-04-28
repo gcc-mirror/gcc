@@ -1,5 +1,11 @@
 2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR c++/94760
+	* g++.dg/coroutines/pr94760-mismatched-traits-and-promise-prev.C:
+	New test.
+
+2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR c++/94759
 	* g++.dg/coroutines/coro-bad-alloc-00-bad-op-new.C: Adjust for
 	updated error messages.

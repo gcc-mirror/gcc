@@ -1,5 +1,17 @@
 2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR c++/94760
+	* coroutines.cc (instantiate_coro_traits): Pass a reference to
+	object type rather than a pointer type for 'this', for method
+	coroutines.
+	(struct param_info): Add a field to hold that the parm is a lambda
+	closure pointer.
+	(morph_fn_to_coro): Check for lambda closure pointers in the
+	args.  Use a reference to *this when building the args list for the
+	promise allocator lookup.
+
+2020-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR c++/94759
 	* coroutines.cc (coro_promise_type_found_p): Do not
 	exclude non-classes here (this needs to be handled in the
