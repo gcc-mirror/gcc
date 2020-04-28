@@ -1509,7 +1509,6 @@ begin cpu cortex-m55
  tune flags LDSCHED
  architecture armv8.1-m.main+mve.fp+fp.dp
  isa quirk_no_asmcpu
- option nofp remove ALL_FP MVE_FP
  costs v7m
  vendor 41
 end cpu cortex-m55

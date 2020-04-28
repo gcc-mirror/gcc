@@ -1,3 +1,8 @@
+2020-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-m55): Remove +nofp option.
+	* doc/invoke.texi (Arm Options): Remove -mcpu=cortex-m55 from +nofp option.
+
 2020-04-28  Matthew Malcomson  <matthew.malcomson@arm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

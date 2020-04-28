@@ -18841,7 +18841,7 @@ Disables the floating-point and SIMD instructions on
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
 @samp{cortex-a15}, @samp{cortex-a17}, @samp{cortex-a15.cortex-a7},
 @samp{cortex-a17.cortex-a7}, @samp{cortex-a32}, @samp{cortex-a35},
-@samp{cortex-a53},@samp{cortex-a55} and @samp{cortex-m55}.
+@samp{cortex-a53} and @samp{cortex-a55}.
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions
