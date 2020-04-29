@@ -2255,28 +2255,18 @@ operator_bitwise_and::op1_range (irange &r, tree type,
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
-  if (lhs.num_pairs () == 1)
+  r.set_undefined ();
+  for (unsigned i = 0; i < lhs.num_pairs (); ++i)
     {
-      simple_op1_range_solver (r, type, lhs, op2);
-      if (r.undefined_p ())
-	set_nonzero_range_from_mask (r, type, lhs);
-      return !r.varying_p ();
+      widest_irange chunk (lhs.type (),
+			   lhs.lower_bound (i),
+			   lhs.upper_bound (i));
+      widest_irange res;
+      simple_op1_range_solver (res, type, chunk, op2);
+      r.union_ (res);
     }
-  else
-    {
-      r.set_undefined ();
-      for (unsigned i = 0; i < lhs.num_pairs (); ++i)
-	{
-	  widest_irange chunk (lhs.type (),
-			       lhs.lower_bound (i),
-			       lhs.upper_bound (i));
-	  widest_irange res;
-	  simple_op1_range_solver (res, type, chunk, op2);
-	  r.union_ (res);
-	}
-      if (r.undefined_p ())
-	set_nonzero_range_from_mask (r, type, lhs);
-    }
+  if (r.undefined_p ())
+    set_nonzero_range_from_mask (r, type, lhs);
   return true;
 }
 
