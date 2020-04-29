@@ -70,7 +70,8 @@ private:
 class rvrp_folder : public substitute_and_fold_engine
 {
 public:
-  rvrp_folder () : simplifier (&ranger) { }
+  rvrp_folder (bool allow_il_changes)
+    : simplifier (&ranger), allow_il_changes (allow_il_changes) { }
 
   tree get_value (tree op, gimple *stmt)
   {
@@ -94,23 +95,24 @@ public:
 
   bool disable_il_changes_p ()
   {
-    return !flag_rvrp_changes;
+    return !allow_il_changes;
   }
 
 private:
   rvrp_ranger ranger;
   simplify_using_ranges simplifier;
+  bool allow_il_changes;
 };
 
 static unsigned int
-execute_ranger_vrp ()
+execute_ranger_vrp (bool allow_il_changes)
 {
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
   calculate_dominance_info (CDI_DOMINATORS);
 
-  rvrp_folder folder;
+  rvrp_folder folder (allow_il_changes);
   folder.substitute_and_fold ();
 
   scev_finalize ();
@@ -138,12 +140,31 @@ class pass_ranger_vrp : public gimple_opt_pass
 public:
   pass_ranger_vrp (gcc::context *ctxt)
     : gimple_opt_pass (pass_data_ranger_vrp, ctxt)
-    {}
-  opt_pass * clone () { return new pass_ranger_vrp (m_ctxt); }
+    {
+      static int pass = 1;
+      rvrp_pass_num = pass;
+      pass++;
+    }
+  opt_pass *clone () { return new pass_ranger_vrp (m_ctxt); }
+  void set_pass_param (unsigned int n ATTRIBUTE_UNUSED, bool param)
+  {
+    allow_il_changes = param;
+  }
   virtual bool gate (function *)
     { return flag_tree_vrp != 0; }
   virtual unsigned int execute (function *)
-    { return execute_ranger_vrp (); }
+    {
+      // -frvrp*_changes flag overrides pass defaults.
+      if (rvrp_pass_num == 1 && flag_rvrp1_changes != -1)
+	allow_il_changes = flag_rvrp1_changes;
+      if (rvrp_pass_num == 2 && flag_rvrp2_changes != -1)
+	allow_il_changes = flag_rvrp2_changes;
+
+      return execute_ranger_vrp (allow_il_changes);
+    }
+private:
+  bool allow_il_changes;
+  int rvrp_pass_num;
 };
 
 } // anon namespace
