@@ -1,5 +1,10 @@
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/accel/openacc.f90 (acc_device_current): Set to '-1'.
+	* openacc.f90 (acc_device_current): Likewise.
+	* openacc.h (acc_device_current): Likewise.
+	* openacc_lib.h (acc_device_current): Likewise.
+
 	PR target/94282
 	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Remove
 	'dg-allow-blank-lines-in-output'.
