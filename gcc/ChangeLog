@@ -1,3 +1,27 @@
+2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (arm_arch_v8a_hard_ok): Document new
+	effective-target keyword.
+	(arm_arch_v8a_hard_multilib): Likewise.
+	(arm_arch_v8a_hard): Document new dg-add-options keyword.
+	* config/arm/arm.c (arm_return_in_memory): Note that the APCS
+	code is deprecated and has not been updated to handle
+	DECL_FIELD_ABI_IGNORED.
+	(WARN_PSABI_EMPTY_CXX17_BASE): New constant.
+	(WARN_PSABI_NO_UNIQUE_ADDRESS): Likewise.
+	(aapcs_vfp_sub_candidate): Replace the boolean pointer parameter
+	avoid_cxx17_empty_base with a pointer to a bitmask.  Ignore fields
+	whose DECL_FIELD_ABI_IGNORED bit is set when determining whether
+	something actually is a HFA or HVA.  Record whether we see a
+	[[no_unique_address]] field that previous GCCs would not have
+	ignored in this way.
+	(aapcs_vfp_is_call_or_return_candidate): Update the calls to
+	aapcs_vfp_sub_candidate and report a -Wpsabi warning for the
+	[[no_unique_address]] case.  Use TYPE_MAIN_VARIANT in the
+	diagnostic messages.
+	(arm_needs_doubleword_align): Add a comment explaining why we
+	consider even zero-sized fields.
+
 2020-04-29  Richard Biener  <rguenther@suse.de>
 	    Li Zekun  <lizekun1@huawei.com>
 

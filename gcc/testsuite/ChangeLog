@@ -1,3 +1,10 @@
+2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp: Add v8a_hard to the list of arm_arch_*
+	targets.
+	* g++.target/arm/no_unique_address_1.C: New test.
+	* g++.target/arm/no_unique_address_2.C: Likewise.
+
 2020-04-29  Richard Biener  <rguenther@suse.de>
 	    Li Zekun  <lizekun1@huawei.com>
 
