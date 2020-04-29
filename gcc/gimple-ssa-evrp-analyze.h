@@ -24,7 +24,11 @@ class evrp_range_analyzer
 {
  public:
   evrp_range_analyzer (bool update_global_ranges);
-  ~evrp_range_analyzer (void);
+  ~evrp_range_analyzer (void)
+  {
+    delete vr_values;
+    stack.release ();
+  }
 
   void enter (basic_block);
   void push_marker (void);
@@ -62,7 +66,6 @@ class evrp_range_analyzer
   class vr_values *vr_values;
 
   void pop_value_range ();
-  value_range_equiv *try_find_new_range_for_assert (const assert_info &, edge);
   value_range_equiv *try_find_new_range (tree, tree op, tree_code code,
 					 tree limit);
   void record_ranges_from_incoming_edge (basic_block);
@@ -74,9 +77,6 @@ class evrp_range_analyzer
 
   /* True if we are updating global ranges, false otherwise.  */
   bool m_update_global_ranges;
-
-  class trace_vr_gori_interface *gori;
-  class gimple_ranger *ranger;
 };
 
 #endif /* GCC_GIMPLE_SSA_EVRP_ANALYZE_H */
