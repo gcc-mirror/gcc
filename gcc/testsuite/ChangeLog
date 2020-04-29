@@ -1,5 +1,10 @@
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* g++.target/aarch64/no_unique_address_1.C: New test.
+	* g++.target/aarch64/no_unique_address_2.C: Likewise.
+
+2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* g++.target/arm/mve.exp: Restore the original dg-do-what-default
 	before finishing.
 

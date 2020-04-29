@@ -1,3 +1,33 @@
+2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_function_arg_alignment): Add a
+	comment explaining why we consider even zero-sized fields.
+	(WARN_PSABI_EMPTY_CXX17_BASE): New constant.
+	(WARN_PSABI_NO_UNIQUE_ADDRESS): Likewise.
+	(aapcs_vfp_sub_candidate): Replace the boolean pointer parameter
+	avoid_cxx17_empty_base with a pointer to a bitmask.  Ignore fields
+	whose DECL_FIELD_ABI_IGNORED bit is set when determining whether
+	something actually is a HFA or HVA.  Record whether we see a
+	[[no_unique_address]] field that previous GCCs would not have
+	ignored in this way.
+	(aarch64_vfp_is_call_or_return_candidate): Add a parameter to say
+	whether diagnostics should be suppressed.  Update the calls to
+	aapcs_vfp_sub_candidate and report a -Wpsabi warning for the
+	[[no_unique_address]] case.
+	(aarch64_return_in_msb): Update call accordingly, never silencing
+	diagnostics.
+	(aarch64_function_value): Likewise.
+	(aarch64_return_in_memory_1): Likewise.
+	(aarch64_init_cumulative_args): Likewise.
+	(aarch64_gimplify_va_arg_expr): Likewise.
+	(aarch64_pass_by_reference_1): Take a CUMULATIVE_ARGS pointer and
+	use it to decide whether arch64_vfp_is_call_or_return_candidate
+	should be silent.
+	(aarch64_pass_by_reference): Update calls accordingly.
+	(aarch64_vfp_is_call_candidate): Use the CUMULATIVE_ARGS argument
+	to decide whether arch64_vfp_is_call_or_return_candidate should be
+	silent.
+
 2020-04-29  Haijian Zhang  <z.zhanghaijian@huawei.com>
 
 	PR target/94820
