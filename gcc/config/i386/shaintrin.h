@@ -64,8 +64,8 @@ _mm_sha1rnds4_epu32 (__m128i __A, __m128i __B, const int __I)
 }
 #else
 #define _mm_sha1rnds4_epu32(A, B, I)				    \
-  ((__m128i) __builtin_ia32_sha1rnds4 ((__v4si)(__m128i)A,	    \
-				       (__v4si)(__m128i)B, (int)I))
+  ((__m128i) __builtin_ia32_sha1rnds4 ((__v4si)(__m128i)(A),	    \
+				       (__v4si)(__m128i)(B), (int)(I)))
 #endif
 
 extern __inline __m128i
