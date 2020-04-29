@@ -2173,16 +2173,6 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
 					       const irange &lhs,
 					       const irange &op2) const
 {
-  // FIXME: This needs work.  Ideally, start with VARYING and take out
-  // ranges we know are impossible.
-  //
-  // i.e. [MIN+1, MAX] = op1 & 255
-  // op1 is still varying.
-  if (lhs.varying_p ())
-    {
-      r.set_varying (type);
-      return;
-    }
   if (!op2.singleton_p ())
     {
       set_nonzero_range_from_mask (r, type, lhs);
@@ -2262,7 +2252,6 @@ operator_bitwise_and::op1_range (irange &r, tree type,
 				 const irange &lhs,
 				 const irange &op2) const
 {
-  // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
@@ -3389,6 +3378,28 @@ multi_precision_range_tests ()
   range3_tests ();
 }
 
+static void
+operator_tests ()
+{
+  tree min = vrp_val_min (integer_type_node);
+  tree max = vrp_val_max (integer_type_node);
+  tree tiny = fold_build2 (PLUS_EXPR, integer_type_node, min,
+			   build_one_cst (integer_type_node));
+  widest_irange res;
+  widest_irange i1 (tiny, max);
+  widest_irange i2 (build_int_cst (integer_type_node, 255),
+		    build_int_cst (integer_type_node, 255));
+
+  // [MIN+1, MAX] = OP1 & 255: OP1 is VARYING
+  op_bitwise_and.op1_range (res, integer_type_node, i1, i2);
+  ASSERT_TRUE (res == int_range<1> (integer_type_node));
+
+  // VARYING = OP1 & 255: OP1 is VARYING
+  i1 = int_range<1> (integer_type_node);
+  op_bitwise_and.op1_range (res, integer_type_node, i1, i2);
+  ASSERT_TRUE (res == int_range<1> (integer_type_node));
+}
+
 // Run all of the selftests within this file.
 
 void
@@ -3674,6 +3685,7 @@ range_tests ()
 
   multi_precision_range_tests ();
   widest_irange_tests ();
+  operator_tests ();
 }
 
 } // namespace selftest
