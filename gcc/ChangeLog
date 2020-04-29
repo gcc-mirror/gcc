@@ -1,3 +1,10 @@
+2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* calls.h (cxx17_empty_base_field_p): Turn into a function declaration.
+	* calls.c (cxx17_empty_base_field_p): New function.  Check
+	DECL_ARTIFICIAL and RECORD_OR_UNION_TYPE_P in addition to the
+	previous checks.
+
 2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/93654

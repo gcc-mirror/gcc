@@ -6261,5 +6261,20 @@ must_pass_va_arg_in_stack (tree type)
   return targetm.calls.must_pass_in_stack (arg);
 }
 
+/* Return true if FIELD is the C++17 empty base field that should
+   be ignored for ABI calling convention decisions in order to
+   maintain ABI compatibility between C++14 and earlier, which doesn't
+   add this FIELD to classes with empty bases, and C++17 and later
+   which does.  */
+
+bool
+cxx17_empty_base_field_p (const_tree field)
+{
+  return (DECL_FIELD_ABI_IGNORED (field)
+	  && DECL_ARTIFICIAL (field)
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (field))
+	  && !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (field)));
+}
+
 /* Tell the garbage collector about GTY markers in this source file.  */
 #include "gt-calls.h"
