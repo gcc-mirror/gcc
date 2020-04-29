@@ -44,21 +44,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa-evrp-analyze.h"
 #include "gimple-ranger.h"
 
-#define DEBUG_RVRP getenv("DEBUG_RVRP")
-
 class rvrp_ranger : public trace_ranger
 {
 public:
+  rvrp_ranger () : trace_ranger (), range_pool ("rvrp value range pool") { }
+  ~rvrp_ranger ()
+  {
+    range_pool.release ();
+  }
   // This is the range getter for the simplifier, but is really only
   // used for the conditional folding which still uses equivalences.
   virtual const value_range_equiv *get_value_range (const_tree expr,
 						    gimple *stmt)
   {
     widest_irange r;
-    if (range_of_expr (r, const_cast<tree> (expr), stmt))
-      return new value_range_equiv (r); // FIXME: leaks
-    return new value_range_equiv (TREE_TYPE (expr));
+    value_range_equiv *vr = new (range_pool.allocate ()) value_range_equiv;
+    if (!range_of_expr (r, const_cast<tree> (expr), stmt))
+      vr->set_varying (TREE_TYPE (expr));
+    return vr;
   }
+private:
+  object_allocator<value_range_equiv> range_pool;
 };
 
 class rvrp_folder : public substitute_and_fold_engine
