@@ -1,3 +1,8 @@
+2020-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_decl_context): Don't include module in the name of
+	class and struct types that aren't extern(D).
+
 2020-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94777

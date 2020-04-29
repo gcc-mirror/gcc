@@ -66,6 +66,7 @@ d_decl_context (Dsymbol *dsym)
 {
   Dsymbol *parent = dsym;
   Declaration *decl = dsym->isDeclaration ();
+  AggregateDeclaration *ad = dsym->isAggregateDeclaration ();
 
   while ((parent = parent->toParent2 ()))
     {
@@ -74,7 +75,8 @@ d_decl_context (Dsymbol *dsym)
 	 but only for extern(D) symbols.  */
       if (parent->isModule ())
 	{
-	  if (decl != NULL && decl->linkage != LINKd)
+	  if ((decl != NULL && decl->linkage != LINKd)
+	      || (ad != NULL && ad->classKind != ClassKind::d))
 	    return NULL_TREE;
 
 	  return build_import_decl (parent);

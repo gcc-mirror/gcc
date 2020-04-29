@@ -71,6 +71,19 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc);
 FuncDeclaration *buildInv(AggregateDeclaration *ad, Scope *sc);
 FuncDeclaration *search_toString(StructDeclaration *sd);
 
+struct ClassKind
+{
+    enum Type
+    {
+        /// the class is a d(efault) class
+        d,
+        /// the class is a C++ interface
+        cpp,
+        /// the class is an Objective-C class/interface
+        objc,
+    };
+};
+
 class AggregateDeclaration : public ScopeDsymbol
 {
 public:
@@ -83,6 +96,8 @@ public:
     Sizeok sizeok;              // set when structsize contains valid data
     Dsymbol *deferred;          // any deferred semantic2() or semantic3() symbol
     bool isdeprecated;          // true if deprecated
+
+    ClassKind::Type classKind;  // specifies the linkage type
 
     /* !=NULL if is nested
      * pointing to the dsymbol that directly enclosing it.
@@ -274,8 +289,6 @@ public:
 
     TypeInfoClassDeclaration *vclassinfo;       // the ClassInfo object for this ClassDeclaration
     bool com;                           // true if this is a COM class (meaning it derives from IUnknown)
-    bool cpp;                           // true if this is a C++ interface
-    bool isobjc;                        // true if this is an Objective-C class/interface
     bool isscope;                       // true if this is a scope class
     Abstract isabstract;                // 0: fwdref, 1: is abstract class, 2: not abstract
     int inuse;                          // to prevent recursive attempts
