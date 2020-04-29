@@ -13723,24 +13723,25 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
     /* MEMBER is a true flexible array member.  Compute its size from
        the initializer of the BASE object if it has one.  */
     if (tree init = DECL_P (base) ? DECL_INITIAL (base) : NULL_TREE)
-      {
-	init = get_initializer_for (init, member);
-	if (init)
-	  {
-	    memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
-	    if (tree refsize = TYPE_SIZE_UNIT (reftype))
-	      {
-		/* Use the larger of the initializer size and the tail
-		   padding in the enclosing struct.  */
-		poly_int64 rsz = tree_to_poly_int64 (refsize);
-		rsz -= baseoff;
-		if (known_lt (tree_to_poly_int64 (memsize), rsz))
-		  memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
-	      }
+      if (init != error_mark_node)
+	{
+	  init = get_initializer_for (init, member);
+	  if (init)
+	    {
+	      memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
+	      if (tree refsize = TYPE_SIZE_UNIT (reftype))
+		{
+		  /* Use the larger of the initializer size and the tail
+		     padding in the enclosing struct.  */
+		  poly_int64 rsz = tree_to_poly_int64 (refsize);
+		  rsz -= baseoff;
+		  if (known_lt (tree_to_poly_int64 (memsize), rsz))
+		    memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
+		}
 
-	    baseoff = 0;
-	  }
-      }
+	      baseoff = 0;
+	    }
+	}
 
   if (!memsize)
     {

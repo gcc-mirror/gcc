@@ -1,3 +1,11 @@
+2020-04-29  Richard Biener  <rguenther@suse.de>
+	    Li Zekun  <lizekun1@huawei.com>
+
+	PR lto/94822
+	* gcc.dg/lto/pr94822_0.c: New testcase.
+	* gcc.dg/lto/pr94822_1.c: Alternate file.
+	* gcc.dg/lto/pr94822.h: Likewise.
+
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/no_unique_address_1.C: New test.

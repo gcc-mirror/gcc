@@ -1,3 +1,10 @@
+2020-04-29  Richard Biener  <rguenther@suse.de>
+	    Li Zekun  <lizekun1@huawei.com>
+
+	PR lto/94822
+	* tree.c (component_ref_size): Guard against error_mark_node
+	DECL_INITIAL as it happens with LTO.
+
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_function_arg_alignment): Add a
