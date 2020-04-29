@@ -26012,7 +26012,9 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
       tree fenv_var = create_tmp_var_raw (double_type_node);
       TREE_ADDRESSABLE (fenv_var) = 1;
-      tree fenv_addr = build1 (ADDR_EXPR, double_ptr_type_node, fenv_var);
+      tree fenv_addr = build1 (ADDR_EXPR, double_ptr_type_node,
+			       build4 (TARGET_EXPR, double_type_node, fenv_var,
+				       void_node, NULL_TREE, NULL_TREE));
 
       *hold = build_call_expr (atomic_hold_decl, 1, fenv_addr);
       *clear = build_call_expr (atomic_clear_decl, 0);
@@ -26035,12 +26037,13 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
   /* Mask to clear everything except for the rounding modes and non-IEEE
      arithmetic flag.  */
-  const unsigned HOST_WIDE_INT hold_exception_mask =
-    HOST_WIDE_INT_C (0xffffffff00000007);
+  const unsigned HOST_WIDE_INT hold_exception_mask
+    = HOST_WIDE_INT_C (0xffffffff00000007);
 
   tree fenv_var = create_tmp_var_raw (double_type_node);
 
-  tree hold_mffs = build2 (MODIFY_EXPR, void_type_node, fenv_var, call_mffs);
+  tree hold_mffs = build4 (TARGET_EXPR, double_type_node, fenv_var, call_mffs,
+			   NULL_TREE, NULL_TREE);
 
   tree fenv_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, fenv_var);
   tree fenv_llu_and = build2 (BIT_AND_EXPR, uint64_type_node, fenv_llu,
@@ -26064,12 +26067,13 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
   /* Mask to clear everything except for the rounding modes and non-IEEE
      arithmetic flag.  */
-  const unsigned HOST_WIDE_INT clear_exception_mask =
-    HOST_WIDE_INT_C (0xffffffff00000000);
+  const unsigned HOST_WIDE_INT clear_exception_mask
+    = HOST_WIDE_INT_C (0xffffffff00000000);
 
   tree fenv_clear = create_tmp_var_raw (double_type_node);
 
-  tree clear_mffs = build2 (MODIFY_EXPR, void_type_node, fenv_clear, call_mffs);
+  tree clear_mffs = build4 (TARGET_EXPR, double_type_node, fenv_clear,
+			    call_mffs, NULL_TREE, NULL_TREE);
 
   tree fenv_clean_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, fenv_clear);
   tree fenv_clear_llu_and = build2 (BIT_AND_EXPR, uint64_type_node,
@@ -26094,13 +26098,14 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
                                 (*(uint64_t*)fenv_var 0x1ff80fff);
      __builtin_mtfsf (0xff, fenv_update);  */
 
-  const unsigned HOST_WIDE_INT update_exception_mask =
-    HOST_WIDE_INT_C (0xffffffff1fffff00);
-  const unsigned HOST_WIDE_INT new_exception_mask =
-    HOST_WIDE_INT_C (0x1ff80fff);
+  const unsigned HOST_WIDE_INT update_exception_mask
+    = HOST_WIDE_INT_C (0xffffffff1fffff00);
+  const unsigned HOST_WIDE_INT new_exception_mask
+    = HOST_WIDE_INT_C (0x1ff80fff);
 
   tree old_fenv = create_tmp_var_raw (double_type_node);
-  tree update_mffs = build2 (MODIFY_EXPR, void_type_node, old_fenv, call_mffs);
+  tree update_mffs = build4 (TARGET_EXPR, double_type_node, old_fenv,
+			     call_mffs, NULL_TREE, NULL_TREE);
 
   tree old_llu = build1 (VIEW_CONVERT_EXPR, uint64_type_node, old_fenv);
   tree old_llu_and = build2 (BIT_AND_EXPR, uint64_type_node, old_llu,

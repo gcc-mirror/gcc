@@ -1,3 +1,12 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94826
+	* config/rs6000/rs6000.c (rs6000_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to
+	fenv_var, fenv_clear and old_fenv variables.  For fenv_addr
+	take address of TARGET_EXPR of fenv_var with void_node initializer.
+	Formatting fixes.
+
 2020-04-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	PR tree-optimization/94774
