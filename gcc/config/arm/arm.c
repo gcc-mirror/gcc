@@ -3925,8 +3925,6 @@ static const isr_attribute_arg isr_attribute_args [] =
   { "fiq",   ARM_FT_FIQ },
   { "ABORT", ARM_FT_ISR },
   { "abort", ARM_FT_ISR },
-  { "ABORT", ARM_FT_ISR },
-  { "abort", ARM_FT_ISR },
   { "UNDEF", ARM_FT_EXCEPTION },
   { "undef", ARM_FT_EXCEPTION },
   { "SWI",   ARM_FT_EXCEPTION },

@@ -1,3 +1,8 @@
+2020-04-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/57002
+	* config/arm/arm.c (isr_attribute_args): Remove duplicate entries.
+
 2020-04-30  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/constraints.md ("j>f", "jb4"): New constraints.
