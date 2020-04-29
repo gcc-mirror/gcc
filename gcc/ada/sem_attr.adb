@@ -6836,7 +6836,7 @@ package body Sem_Attr is
             --  Verify the consistency of types when the current component is
             --  part of a miltiple component update.
 
-            --    Comp_1, ..., Comp_N => <value>
+            --    Comp_1 | ... | Comp_N => <value>
 
             if Present (Etype (Comp)) then
                Base_Typ := Base_Type (Etype (Comp));
@@ -6877,6 +6877,11 @@ package body Sem_Attr is
 
          elsif Nkind (E1) /= N_Aggregate then
             Error_Attr ("attribute % requires component association list", N);
+
+         elsif Present (Expressions (E1)) then
+            Error_Attr ("attribute % requires named component associations",
+                        First (Expressions (E1)));
+
          end if;
 
          --  Inspect the update aggregate, looking at all the associations and
