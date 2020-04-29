@@ -1,3 +1,11 @@
+2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from master
+	2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93654
+	* gcc.target/i386/pr93654.c: New test.
+
 2020-04-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

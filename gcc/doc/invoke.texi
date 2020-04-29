@@ -28735,9 +28735,9 @@ Note that @option{-mcmodel=large} is incompatible with
 @option{-mindirect-branch=thunk-extern} since the thunk function may
 not be reachable in the large code model.
 
-Note that @option{-mindirect-branch=thunk-extern} is incompatible with
-@option{-fcf-protection=branch} since the external thunk cannot be modified
-to disable control-flow check.
+Note that @option{-mindirect-branch=thunk-extern} is compatible with
+@option{-fcf-protection=branch} since the external thunk can be made
+to enable control-flow check.
 
 @item -mfunction-return=@var{choice}
 @opindex mfunction-return
@@ -28749,6 +28749,10 @@ function return to external call and return thunk provided in a separate
 object file.  You can control this behavior for a specific function by
 using the function attribute @code{function_return}.
 @xref{Function Attributes}.
+
+Note that @option{-mindirect-return=thunk-extern} is compatible with
+@option{-fcf-protection=branch} since the external thunk can be made
+to enable control-flow check.
 
 Note that @option{-mcmodel=large} is incompatible with
 @option{-mfunction-return=thunk} and
