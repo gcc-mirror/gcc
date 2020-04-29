@@ -1,3 +1,76 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94832
+	* config/i386/avx2intrin.h (_mm_mask_i32gather_pd,
+	_mm256_mask_i32gather_pd, _mm_mask_i64gather_pd,
+	_mm256_mask_i64gather_pd, _mm_mask_i32gather_ps,
+	_mm256_mask_i32gather_ps, _mm_mask_i64gather_ps,
+	_mm256_mask_i64gather_ps, _mm_i32gather_epi64,
+	_mm_mask_i32gather_epi64, _mm256_i32gather_epi64,
+	_mm256_mask_i32gather_epi64, _mm_i64gather_epi64,
+	_mm_mask_i64gather_epi64, _mm256_i64gather_epi64,
+	_mm256_mask_i64gather_epi64, _mm_i32gather_epi32,
+	_mm_mask_i32gather_epi32, _mm256_i32gather_epi32,
+	_mm256_mask_i32gather_epi32, _mm_i64gather_epi32,
+	_mm_mask_i64gather_epi32, _mm256_i64gather_epi32,
+	_mm256_mask_i64gather_epi32): Surround macro parameter uses with
+	parens.
+	(_mm_i32gather_pd, _mm256_i32gather_pd, _mm_i64gather_pd,
+	_mm256_i64gather_pd, _mm_i32gather_ps, _mm256_i32gather_ps,
+	_mm_i64gather_ps, _mm256_i64gather_ps): Likewise.  Don't use
+	as mask vector containing -1.0 or -1.0f elts, but instead vector
+	with all bits set using _mm*_cmpeq_p? with zero operands.
+	* config/i386/avx512fintrin.h (_mm512_i32gather_ps,
+	_mm512_mask_i32gather_ps, _mm512_i32gather_pd,
+	_mm512_mask_i32gather_pd, _mm512_i64gather_ps,
+	_mm512_mask_i64gather_ps, _mm512_i64gather_pd,
+	_mm512_mask_i64gather_pd, _mm512_i32gather_epi32,
+	_mm512_mask_i32gather_epi32, _mm512_i32gather_epi64,
+	_mm512_mask_i32gather_epi64, _mm512_i64gather_epi32,
+	_mm512_mask_i64gather_epi32, _mm512_i64gather_epi64,
+	_mm512_mask_i64gather_epi64, _mm512_i32scatter_ps,
+	_mm512_mask_i32scatter_ps, _mm512_i32scatter_pd,
+	_mm512_mask_i32scatter_pd, _mm512_i64scatter_ps,
+	_mm512_mask_i64scatter_ps, _mm512_i64scatter_pd,
+	_mm512_mask_i64scatter_pd, _mm512_i32scatter_epi32,
+	_mm512_mask_i32scatter_epi32, _mm512_i32scatter_epi64,
+	_mm512_mask_i32scatter_epi64, _mm512_i64scatter_epi32,
+	_mm512_mask_i64scatter_epi32, _mm512_i64scatter_epi64,
+	_mm512_mask_i64scatter_epi64): Surround macro parameter uses with
+	parens.
+	* config/i386/avx512pfintrin.h (_mm512_prefetch_i32gather_pd,
+	_mm512_prefetch_i32gather_ps, _mm512_mask_prefetch_i32gather_pd,
+	_mm512_mask_prefetch_i32gather_ps, _mm512_prefetch_i64gather_pd,
+	_mm512_prefetch_i64gather_ps, _mm512_mask_prefetch_i64gather_pd,
+	_mm512_mask_prefetch_i64gather_ps, _mm512_prefetch_i32scatter_pd,
+	_mm512_prefetch_i32scatter_ps, _mm512_mask_prefetch_i32scatter_pd,
+	_mm512_mask_prefetch_i32scatter_ps, _mm512_prefetch_i64scatter_pd,
+	_mm512_prefetch_i64scatter_ps, _mm512_mask_prefetch_i64scatter_pd,
+	_mm512_mask_prefetch_i64scatter_ps): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_mmask_i32gather_ps,
+	_mm_mmask_i32gather_ps, _mm256_mmask_i32gather_pd,
+	_mm_mmask_i32gather_pd, _mm256_mmask_i64gather_ps,
+	_mm_mmask_i64gather_ps, _mm256_mmask_i64gather_pd,
+	_mm_mmask_i64gather_pd, _mm256_mmask_i32gather_epi32,
+	_mm_mmask_i32gather_epi32, _mm256_mmask_i32gather_epi64,
+	_mm_mmask_i32gather_epi64, _mm256_mmask_i64gather_epi32,
+	_mm_mmask_i64gather_epi32, _mm256_mmask_i64gather_epi64,
+	_mm_mmask_i64gather_epi64, _mm256_i32scatter_ps,
+	_mm256_mask_i32scatter_ps, _mm_i32scatter_ps, _mm_mask_i32scatter_ps,
+	_mm256_i32scatter_pd, _mm256_mask_i32scatter_pd, _mm_i32scatter_pd,
+	_mm_mask_i32scatter_pd, _mm256_i64scatter_ps,
+	_mm256_mask_i64scatter_ps, _mm_i64scatter_ps, _mm_mask_i64scatter_ps,
+	_mm256_i64scatter_pd, _mm256_mask_i64scatter_pd, _mm_i64scatter_pd,
+	_mm_mask_i64scatter_pd, _mm256_i32scatter_epi32,
+	_mm256_mask_i32scatter_epi32, _mm_i32scatter_epi32,
+	_mm_mask_i32scatter_epi32, _mm256_i32scatter_epi64,
+	_mm256_mask_i32scatter_epi64, _mm_i32scatter_epi64,
+	_mm_mask_i32scatter_epi64, _mm256_i64scatter_epi32,
+	_mm256_mask_i64scatter_epi32, _mm_i64scatter_epi32,
+	_mm_mask_i64scatter_epi32, _mm256_i64scatter_epi64,
+	_mm256_mask_i64scatter_epi64, _mm_i64scatter_epi64,
+	_mm_mask_i64scatter_epi64): Likewise.
+
 2020-04-29  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (H8/SX div patterns): All H8/SX specific
