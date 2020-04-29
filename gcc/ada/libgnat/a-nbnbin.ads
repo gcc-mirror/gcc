@@ -23,24 +23,28 @@ private with System;
 package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
 is
-   type Big_Integer is private with
-     Integer_Literal => From_String,
-     Put_Image       => Put_Image;
+   type Big_Integer is private
+     with Integer_Literal => From_String,
+          Put_Image       => Put_Image;
 
    function Is_Valid (Arg : Big_Integer) return Boolean
      with Convention => Intrinsic;
 
-   function "=" (L, R : Big_Integer) return Boolean;
+   subtype Valid_Big_Integer is Big_Integer
+     with Dynamic_Predicate => Is_Valid (Valid_Big_Integer),
+          Predicate_Failure => raise Program_Error;
 
-   function "<" (L, R : Big_Integer) return Boolean;
+   function "=" (L, R : Valid_Big_Integer) return Boolean;
 
-   function "<=" (L, R : Big_Integer) return Boolean;
+   function "<" (L, R : Valid_Big_Integer) return Boolean;
 
-   function ">" (L, R : Big_Integer) return Boolean;
+   function "<=" (L, R : Valid_Big_Integer) return Boolean;
 
-   function ">=" (L, R : Big_Integer) return Boolean;
+   function ">" (L, R : Valid_Big_Integer) return Boolean;
 
-   function To_Big_Integer (Arg : Integer) return Big_Integer;
+   function ">=" (L, R : Valid_Big_Integer) return Boolean;
+
+   function To_Big_Integer (Arg : Integer) return Valid_Big_Integer;
 
    subtype Big_Positive is Big_Integer
      with Dynamic_Predicate =>
@@ -67,7 +71,7 @@ is
       type Int is range <>;
    package Signed_Conversions is
 
-      function To_Big_Integer (Arg : Int) return Big_Integer;
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer;
 
       function From_Big_Integer (Arg : Big_Integer) return Int
         with Pre => In_Range (Arg,
@@ -81,7 +85,7 @@ is
       type Int is mod <>;
    package Unsigned_Conversions is
 
-      function To_Big_Integer (Arg : Int) return Big_Integer;
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer;
 
       function From_Big_Integer (Arg : Big_Integer) return Int
         with Pre => In_Range (Arg,
@@ -91,7 +95,7 @@ is
 
    end Unsigned_Conversions;
 
-   function To_String (Arg   : Big_Integer;
+   function To_String (Arg   : Valid_Big_Integer;
                        Width : Field := 0;
                        Base  : Number_Base := 10) return String
      with Post => To_String'Result'First = 1;
@@ -100,32 +104,32 @@ is
 
    procedure Put_Image (S : in out Sink'Class; V : Big_Integer);
 
-   function "+" (L : Big_Integer) return Big_Integer;
+   function "+" (L : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "-" (L : Big_Integer) return Big_Integer;
+   function "-" (L : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "abs" (L : Big_Integer) return Big_Integer;
+   function "abs" (L : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "+" (L, R : Big_Integer) return Big_Integer;
+   function "+" (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "-" (L, R : Big_Integer) return Big_Integer;
+   function "-" (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "*" (L, R : Big_Integer) return Big_Integer;
+   function "*" (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "/" (L, R : Big_Integer) return Big_Integer;
+   function "/" (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "mod" (L, R : Big_Integer) return Big_Integer;
+   function "mod" (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "rem" (L, R : Big_Integer) return Big_Integer;
+   function "rem" (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function "**" (L : Big_Integer; R : Natural) return Big_Integer;
+   function "**" (L : Valid_Big_Integer; R : Natural) return Valid_Big_Integer;
 
-   function Min (L, R : Big_Integer) return Big_Integer;
+   function Min (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
-   function Max (L, R : Big_Integer) return Big_Integer;
+   function Max (L, R : Valid_Big_Integer) return Valid_Big_Integer;
 
    function Greatest_Common_Divisor
-     (L, R : Big_Integer) return Big_Positive
+     (L, R : Valid_Big_Integer) return Big_Positive
      with Pre => (L /= To_Big_Integer (0) and R /= To_Big_Integer (0))
        or else (raise Constraint_Error);
 

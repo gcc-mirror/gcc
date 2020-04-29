@@ -54,7 +54,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "/" --
    ---------
 
-   function "/" (Num, Den : Big_Integer) return Big_Real is
+   function "/" (Num, Den : Valid_Big_Integer) return Valid_Big_Real is
       Result : Big_Real;
    begin
       if Den = To_Big_Integer (0) then
@@ -71,49 +71,47 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Numerator --
    ---------------
 
-   function Numerator (Arg : Big_Real) return Big_Integer is
-     (if Is_Valid (Arg.Num) then Arg.Num
-      else raise Constraint_Error with "invalid big real");
+   function Numerator (Arg : Valid_Big_Real) return Valid_Big_Integer is
+     (Arg.Num);
 
    -----------------
    -- Denominator --
    -----------------
 
-   function Denominator (Arg : Big_Real) return Big_Positive is
-     (if Is_Valid (Arg.Den) then Arg.Den
-      else raise Constraint_Error with "invalid big real");
+   function Denominator (Arg : Valid_Big_Real) return Big_Positive is
+     (Arg.Den);
 
    ---------
    -- "=" --
    ---------
 
-   function "=" (L, R : Big_Real) return Boolean is
+   function "=" (L, R : Valid_Big_Real) return Boolean is
      (abs L.Num = abs R.Num and then L.Den = R.Den);
 
    ---------
    -- "<" --
    ---------
 
-   function "<" (L, R : Big_Real) return Boolean is
+   function "<" (L, R : Valid_Big_Real) return Boolean is
      (abs L.Num * R.Den < abs R.Num * L.Den);
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (L, R : Big_Real) return Boolean is (not (R < L));
+   function "<=" (L, R : Valid_Big_Real) return Boolean is (not (R < L));
 
    ---------
    -- ">" --
    ---------
 
-   function ">" (L, R : Big_Real) return Boolean is (R < L);
+   function ">" (L, R : Valid_Big_Real) return Boolean is (R < L);
 
    ----------
    -- ">=" --
    ----------
 
-   function ">=" (L, R : Big_Real) return Boolean is (not (L < R));
+   function ">=" (L, R : Valid_Big_Real) return Boolean is (not (L < R));
 
    -----------------------
    -- Float_Conversions --
@@ -125,7 +123,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       -- To_Big_Real --
       -----------------
 
-      function To_Big_Real (Arg : Num) return Big_Real is
+      function To_Big_Real (Arg : Num) return Valid_Big_Real is
       begin
          return From_String (Arg'Image);
       end To_Big_Real;
@@ -151,7 +149,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       -- To_Big_Real --
       -----------------
 
-      function To_Big_Real (Arg : Num) return Big_Real is
+      function To_Big_Real (Arg : Num) return Valid_Big_Real is
       begin
          return From_String (Arg'Image);
       end To_Big_Real;
@@ -172,8 +170,10 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------------
 
    function To_String
-     (Arg : Big_Real; Fore : Field := 2; Aft : Field := 3; Exp : Field := 0)
-      return String
+     (Arg  : Valid_Big_Real;
+      Fore : Field := 2;
+      Aft  : Field := 3;
+      Exp  : Field := 0) return String
    is
       Zero : constant Big_Integer := To_Big_Integer (0);
       Ten  : constant Big_Integer := To_Big_Integer (10);
@@ -379,7 +379,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- From_Quotient_String --
    --------------------------
 
-   function From_Quotient_String (Arg : String) return Big_Real is
+   function From_Quotient_String (Arg : String) return Valid_Big_Real is
       Index : Natural := 0;
    begin
       for J in Arg'First + 1 .. Arg'Last - 1 loop
@@ -413,13 +413,9 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "+" --
    ---------
 
-   function "+" (L : Big_Real) return Big_Real is
+   function "+" (L : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
-      if not Is_Valid (L) then
-         raise Constraint_Error with "invalid big real";
-      end if;
-
       Result.Num := L.Num;
       Result.Den := L.Den;
       return Result;
@@ -429,29 +425,23 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "-" --
    ---------
 
-   function "-" (L : Big_Real) return Big_Real is
-     (if Is_Valid (L) then (Num => -L.Num, Den => L.Den)
-      else raise Constraint_Error with "invalid big real");
+   function "-" (L : Valid_Big_Real) return Valid_Big_Real is
+     (Num => -L.Num, Den => L.Den);
 
    -----------
    -- "abs" --
    -----------
 
-   function "abs" (L : Big_Real) return Big_Real is
-     (if Is_Valid (L) then (Num => abs L.Num, Den => L.Den)
-      else raise Constraint_Error with "invalid big real");
+   function "abs" (L : Valid_Big_Real) return Valid_Big_Real is
+     (Num => abs L.Num, Den => L.Den);
 
    ---------
    -- "+" --
    ---------
 
-   function "+" (L, R : Big_Real) return Big_Real is
+   function "+" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
-      if not Is_Valid (L) or not Is_Valid (R) then
-         raise Constraint_Error with "invalid big real";
-      end if;
-
       Result.Num := L.Num * R.Den + R.Num * L.Den;
       Result.Den := L.Den * R.Den;
       Normalize (Result);
@@ -462,13 +452,9 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "-" --
    ---------
 
-   function "-" (L, R : Big_Real) return Big_Real is
+   function "-" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
-      if not Is_Valid (L) or not Is_Valid (R) then
-         raise Constraint_Error with "invalid big real";
-      end if;
-
       Result.Num := L.Num * R.Den - R.Num * L.Den;
       Result.Den := L.Den * R.Den;
       Normalize (Result);
@@ -479,13 +465,9 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "*" --
    ---------
 
-   function "*" (L, R : Big_Real) return Big_Real is
+   function "*" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
-      if not Is_Valid (L) or not Is_Valid (R) then
-         raise Constraint_Error with "invalid big real";
-      end if;
-
       Result.Num := L.Num * R.Num;
       Result.Den := L.Den * R.Den;
       Normalize (Result);
@@ -496,13 +478,9 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "/" --
    ---------
 
-   function "/" (L, R : Big_Real) return Big_Real is
+   function "/" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
-      if not Is_Valid (L) or not Is_Valid (R) then
-         raise Constraint_Error with "invalid big real";
-      end if;
-
       Result.Num := L.Num * R.Den;
       Result.Den := L.Den * R.Num;
       Normalize (Result);
@@ -513,13 +491,9 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "**" --
    ----------
 
-   function "**" (L : Big_Real; R : Integer) return Big_Real is
+   function "**" (L : Valid_Big_Real; R : Integer) return Valid_Big_Real is
       Result : Big_Real;
    begin
-      if not Is_Valid (L) then
-         raise Constraint_Error with "invalid big real";
-      end if;
-
       if R = 0 then
          Result.Num := To_Big_Integer (1);
          Result.Den := To_Big_Integer (1);
@@ -542,13 +516,15 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Min --
    ---------
 
-   function Min (L, R : Big_Real) return Big_Real is (if L < R then L else R);
+   function Min (L, R : Valid_Big_Real) return Valid_Big_Real is
+     (if L < R then L else R);
 
    ---------
    -- Max --
    ---------
 
-   function Max (L, R : Big_Real) return Big_Real is (if L > R then L else R);
+   function Max (L, R : Valid_Big_Real) return Valid_Big_Real is
+     (if L > R then L else R);
 
    ---------------
    -- Normalize --

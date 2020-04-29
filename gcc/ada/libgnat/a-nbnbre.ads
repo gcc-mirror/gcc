@@ -29,36 +29,44 @@ is
    function Is_Valid (Arg : Big_Real) return Boolean
      with Convention => Intrinsic;
 
-   function "/" (Num, Den : Big_Integers.Big_Integer) return Big_Real;
---   with Pre => (if Big_Integers."=" (Den, Big_Integers.To_Big_Integer (0))
---                then raise Constraint_Error);
+   subtype Valid_Big_Real is Big_Real
+     with Dynamic_Predicate => Is_Valid (Valid_Big_Real),
+          Predicate_Failure => raise Program_Error;
 
-   function Numerator (Arg : Big_Real) return Big_Integers.Big_Integer;
+   function "/"
+     (Num, Den : Big_Integers.Valid_Big_Integer) return Valid_Big_Real;
+--   with Pre => (Big_Integers."/=" (Den, Big_Integers.To_Big_Integer (0))
+--                or else Constraint_Error);
 
-   function Denominator (Arg : Big_Real) return Big_Integers.Big_Positive
+   function Numerator
+     (Arg : Valid_Big_Real) return Big_Integers.Valid_Big_Integer;
+
+   function Denominator (Arg : Valid_Big_Real) return Big_Integers.Big_Positive
      with Post =>
-       (Arg = To_Real (0)) or else
-       (Big_Integers."="
-         (Big_Integers.Greatest_Common_Divisor
-           (Numerator (Arg), Denominator'Result),
-          Big_Integers.To_Big_Integer (1)));
+       (if Arg = To_Real (0)
+        then Big_Integers."=" (Denominator'Result,
+                               Big_Integers.To_Big_Integer (1))
+        else Big_Integers."="
+               (Big_Integers.Greatest_Common_Divisor
+                 (Numerator (Arg), Denominator'Result),
+                Big_Integers.To_Big_Integer (1)));
 
    function To_Big_Real
      (Arg : Big_Integers.Big_Integer)
-     return Big_Real is (Arg / Big_Integers.To_Big_Integer (1));
+     return Valid_Big_Real is (Arg / Big_Integers.To_Big_Integer (1));
 
-   function To_Real (Arg : Integer) return Big_Real is
+   function To_Real (Arg : Integer) return Valid_Big_Real is
      (Big_Integers.To_Big_Integer (Arg) / Big_Integers.To_Big_Integer (1));
 
-   function "=" (L, R : Big_Real) return Boolean;
+   function "=" (L, R : Valid_Big_Real) return Boolean;
 
-   function "<" (L, R : Big_Real) return Boolean;
+   function "<" (L, R : Valid_Big_Real) return Boolean;
 
-   function "<=" (L, R : Big_Real) return Boolean;
+   function "<=" (L, R : Valid_Big_Real) return Boolean;
 
-   function ">" (L, R : Big_Real) return Boolean;
+   function ">" (L, R : Valid_Big_Real) return Boolean;
 
-   function ">=" (L, R : Big_Real) return Boolean;
+   function ">=" (L, R : Valid_Big_Real) return Boolean;
 
    function In_Range (Arg, Low, High : Big_Real) return Boolean is
      (Low <= Arg and then Arg <= High);
@@ -67,7 +75,7 @@ is
       type Num is digits <>;
    package Float_Conversions is
 
-      function To_Big_Real (Arg : Num) return Big_Real;
+      function To_Big_Real (Arg : Num) return Valid_Big_Real;
 
       function From_Big_Real (Arg : Big_Real) return Num
         with Pre => In_Range (Arg,
@@ -81,7 +89,7 @@ is
       type Num is delta <>;
    package Fixed_Conversions is
 
-      function To_Big_Real (Arg : Num) return Big_Real;
+      function To_Big_Real (Arg : Num) return Valid_Big_Real;
 
       function From_Big_Real (Arg : Big_Real) return Num
         with Pre => In_Range (Arg,
@@ -91,7 +99,7 @@ is
 
    end Fixed_Conversions;
 
-   function To_String (Arg  : Big_Real;
+   function To_String (Arg  : Valid_Big_Real;
                        Fore : Field := 2;
                        Aft  : Field := 3;
                        Exp  : Field := 0) return String
@@ -103,29 +111,29 @@ is
      (Big_Integers.To_String (Numerator (Arg)) & " / "
       & Big_Integers.To_String (Denominator (Arg)));
 
-   function From_Quotient_String (Arg : String) return Big_Real;
+   function From_Quotient_String (Arg : String) return Valid_Big_Real;
 
    procedure Put_Image (S : in out Sink'Class; V : Big_Real);
 
-   function "+" (L : Big_Real) return Big_Real;
+   function "+" (L : Valid_Big_Real) return Valid_Big_Real;
 
-   function "-" (L : Big_Real) return Big_Real;
+   function "-" (L : Valid_Big_Real) return Valid_Big_Real;
 
-   function "abs" (L : Big_Real) return Big_Real;
+   function "abs" (L : Valid_Big_Real) return Valid_Big_Real;
 
-   function "+" (L, R : Big_Real) return Big_Real;
+   function "+" (L, R : Valid_Big_Real) return Valid_Big_Real;
 
-   function "-" (L, R : Big_Real) return Big_Real;
+   function "-" (L, R : Valid_Big_Real) return Valid_Big_Real;
 
-   function "*" (L, R : Big_Real) return Big_Real;
+   function "*" (L, R : Valid_Big_Real) return Valid_Big_Real;
 
-   function "/" (L, R : Big_Real) return Big_Real;
+   function "/" (L, R : Valid_Big_Real) return Valid_Big_Real;
 
-   function "**" (L : Big_Real; R : Integer) return Big_Real;
+   function "**" (L : Valid_Big_Real; R : Integer) return Valid_Big_Real;
 
-   function Min (L, R : Big_Real) return Big_Real;
+   function Min (L, R : Valid_Big_Real) return Valid_Big_Real;
 
-   function Max (L, R : Big_Real) return Big_Real;
+   function Max (L, R : Valid_Big_Real) return Valid_Big_Real;
 
 private
 

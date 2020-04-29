@@ -120,7 +120,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "=" --
    ---------
 
-   function "=" (L, R : Big_Integer) return Boolean is
+   function "=" (L, R : Valid_Big_Integer) return Boolean is
    begin
       return mpz_cmp (Get_Mpz (L), Get_Mpz (R)) = 0;
    end "=";
@@ -129,7 +129,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "<" --
    ---------
 
-   function "<" (L, R : Big_Integer) return Boolean is
+   function "<" (L, R : Valid_Big_Integer) return Boolean is
    begin
       return mpz_cmp (Get_Mpz (L), Get_Mpz (R)) < 0;
    end "<";
@@ -138,7 +138,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "<=" --
    ----------
 
-   function "<=" (L, R : Big_Integer) return Boolean is
+   function "<=" (L, R : Valid_Big_Integer) return Boolean is
    begin
       return mpz_cmp (Get_Mpz (L), Get_Mpz (R)) <= 0;
    end "<=";
@@ -147,7 +147,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- ">" --
    ---------
 
-   function ">" (L, R : Big_Integer) return Boolean is
+   function ">" (L, R : Valid_Big_Integer) return Boolean is
    begin
       return mpz_cmp (Get_Mpz (L), Get_Mpz (R)) > 0;
    end ">";
@@ -156,7 +156,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- ">=" --
    ----------
 
-   function ">=" (L, R : Big_Integer) return Boolean is
+   function ">=" (L, R : Valid_Big_Integer) return Boolean is
    begin
       return mpz_cmp (Get_Mpz (L), Get_Mpz (R)) >= 0;
    end ">=";
@@ -165,7 +165,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- To_Big_Integer --
    --------------------
 
-   function To_Big_Integer (Arg : Integer) return Big_Integer is
+   function To_Big_Integer (Arg : Integer) return Valid_Big_Integer is
       Result : Big_Integer;
    begin
       Allocate (Result);
@@ -177,7 +177,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- To_Integer --
    ----------------
 
-   function To_Integer (Arg : Big_Integer) return Integer is
+   function To_Integer (Arg : Valid_Big_Integer) return Integer is
    begin
       return Integer (mpz_get_si (Get_Mpz (Arg)));
    end To_Integer;
@@ -192,7 +192,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       -- To_Big_Integer --
       --------------------
 
-      function To_Big_Integer (Arg : Int) return Big_Integer is
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
          Result : Big_Integer;
       begin
          Allocate (Result);
@@ -204,7 +204,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       -- From_Big_Integer --
       ----------------------
 
-      function From_Big_Integer (Arg : Big_Integer) return Int is
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int is
       begin
          return Int (mpz_get_si (Get_Mpz (Arg)));
       end From_Big_Integer;
@@ -221,7 +221,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       -- To_Big_Integer --
       --------------------
 
-      function To_Big_Integer (Arg : Int) return Big_Integer is
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
          Result : Big_Integer;
       begin
          Allocate (Result);
@@ -233,7 +233,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       -- From_Big_Integer --
       ----------------------
 
-      function From_Big_Integer (Arg : Big_Integer) return Int is
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int is
       begin
          return Int (mpz_get_ui (Get_Mpz (Arg)));
       end From_Big_Integer;
@@ -245,7 +245,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------------
 
    function To_String
-     (Arg : Big_Integer; Width : Field := 0; Base : Number_Base := 10)
+     (Arg : Valid_Big_Integer; Width : Field := 0; Base : Number_Base := 10)
       return String
    is
       function mpz_get_str
@@ -330,7 +330,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Integer is
+   function From_String (Arg : String) return Valid_Big_Integer is
       function mpz_set_str
         (this : access mpz_t;
          str  : System.Address;
@@ -417,7 +417,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "+" --
    ---------
 
-   function "+" (L : Big_Integer) return Big_Integer is
+   function "+" (L : Valid_Big_Integer) return Valid_Big_Integer is
       Result : Big_Integer;
    begin
       Set_Mpz (Result, new mpz_t);
@@ -429,7 +429,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "-" --
    ---------
 
-   function "-" (L : Big_Integer) return Big_Integer is
+   function "-" (L : Valid_Big_Integer) return Valid_Big_Integer is
       Result : Big_Integer;
    begin
       Allocate (Result);
@@ -441,7 +441,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "abs" --
    -----------
 
-   function "abs" (L : Big_Integer) return Big_Integer is
+   function "abs" (L : Valid_Big_Integer) return Valid_Big_Integer is
       procedure mpz_abs (ROP : access mpz_t;  OP : access constant mpz_t);
       pragma Import (C, mpz_abs, "__gmpz_abs");
 
@@ -456,7 +456,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "+" --
    ---------
 
-   function "+" (L, R : Big_Integer) return Big_Integer is
+   function "+" (L, R : Valid_Big_Integer) return Valid_Big_Integer is
       procedure mpz_add
         (ROP : access mpz_t;  OP1, OP2 : access constant mpz_t);
       pragma Import (C, mpz_add, "__gmpz_add");
@@ -473,7 +473,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "-" --
    ---------
 
-   function "-" (L, R : Big_Integer) return Big_Integer is
+   function "-" (L, R : Valid_Big_Integer) return Valid_Big_Integer is
       Result : Big_Integer;
    begin
       Allocate (Result);
@@ -485,7 +485,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "*" --
    ---------
 
-   function "*" (L, R : Big_Integer) return Big_Integer is
+   function "*" (L, R : Valid_Big_Integer) return Valid_Big_Integer is
       procedure mpz_mul
         (ROP : access mpz_t;  OP1, OP2 : access constant mpz_t);
       pragma Import (C, mpz_mul, "__gmpz_mul");
@@ -502,7 +502,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "/" --
    ---------
 
-   function "/" (L, R : Big_Integer) return Big_Integer is
+   function "/" (L, R : Valid_Big_Integer) return Valid_Big_Integer is
       procedure mpz_tdiv_q (Q : access mpz_t;  N, D : access constant mpz_t);
       pragma Import (C, mpz_tdiv_q, "__gmpz_tdiv_q");
    begin
@@ -523,7 +523,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "mod" --
    -----------
 
-   function "mod" (L, R : Big_Integer) return Big_Integer is
+   function "mod" (L, R : Valid_Big_Integer) return Valid_Big_Integer is
       procedure mpz_mod (R : access mpz_t;  N, D : access constant mpz_t);
       pragma Import (C, mpz_mod, "__gmpz_mod");
       --  result is always non-negative
@@ -605,7 +605,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "rem" --
    -----------
 
-   function "rem" (L, R : Big_Integer) return Big_Integer is
+   function "rem" (L, R : Valid_Big_Integer) return Valid_Big_Integer is
       procedure mpz_tdiv_r (R : access mpz_t;  N, D : access constant mpz_t);
       pragma Import (C, mpz_tdiv_r, "__gmpz_tdiv_r");
       --   R will have the same sign as N.
@@ -632,7 +632,9 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- "**" --
    ----------
 
-   function "**" (L : Big_Integer; R : Natural) return Big_Integer is
+   function "**"
+     (L : Valid_Big_Integer; R : Natural) return Valid_Big_Integer
+   is
       procedure mpz_pow_ui (ROP : access mpz_t;
                             BASE : access constant mpz_t;
                             EXP : unsigned_long);
@@ -650,21 +652,23 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Min --
    ---------
 
-   function Min (L, R : Big_Integer) return Big_Integer is
+   function Min (L, R : Valid_Big_Integer) return Valid_Big_Integer is
      (if L < R then L else R);
 
    ---------
    -- Max --
    ---------
 
-   function Max (L, R : Big_Integer) return Big_Integer is
+   function Max (L, R : Valid_Big_Integer) return Valid_Big_Integer is
      (if L > R then L else R);
 
    -----------------------------
    -- Greatest_Common_Divisor --
    -----------------------------
 
-   function Greatest_Common_Divisor (L, R : Big_Integer) return Big_Positive is
+   function Greatest_Common_Divisor
+     (L, R : Valid_Big_Integer) return Big_Positive
+   is
       procedure mpz_gcd
         (ROP : access mpz_t;  Op1, Op2 : access constant mpz_t);
       pragma Import (C, mpz_gcd, "__gmpz_gcd");
