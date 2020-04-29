@@ -1,21 +1,21 @@
 /* rust-backend.c -- Rust frontend interface to gcc backend.
-   Copyright (C) 2010-2019 Free Software Foundation, Inc.
+   Copyright (C) 2010-2020 Free Software Foundation, Inc.
 
-This file is part of GCC.
+   This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 3, or (at your option) any later
-version.
+   GCC is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3, or (at your option) any later
+   version.
 
-GCC is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+   GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "stor-layout.h"
 #include "intl.h"
-#include "output.h"	/* for assemble_string */
+#include "output.h"     /* for assemble_string */
 #include "common/common-target.h"
 //#include "rust-c.h" // import no longer exists, so hopefully not broken
 
@@ -110,8 +110,8 @@ rust_write_export_data (const char *bytes, unsigned int size)
     {
       gcc_assert (targetm_common.have_named_sections);
       sec = get_section (RUST_EXPORT_SECTION_NAME,
-			 TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG,
-			 NULL);
+                         TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG,
+                         NULL);
     }
 
   switch_to_section (sec);
@@ -131,7 +131,7 @@ rust_write_export_data (const char *bytes, unsigned int size)
 
 const char *
 rust_read_export_data (int fd, off_t offset, char **pbuf, size_t *plen,
-		     int *perr)
+		       int *perr)
 {
   simple_object_read *sobj;
   const char *errmsg;
@@ -145,20 +145,20 @@ rust_read_export_data (int fd, off_t offset, char **pbuf, size_t *plen,
   *plen = 0;
 
   sobj = simple_object_start_read (fd, offset, RUST_EXPORT_SEGMENT_NAME,
-				   &errmsg, perr);
+                                   &errmsg, perr);
   if (sobj == NULL)
     {
       /* If we get an error here, just pretend that we didn't find any
-	 export data.  This is the right thing to do if the error is
-	 that the file was not recognized as an object file.  This
-	 will ignore file I/O errors, but it's not too big a deal
-	 because we will wind up giving some other error later.  */
+         export data.  This is the right thing to do if the error is
+         that the file was not recognized as an object file.  This
+         will ignore file I/O errors, but it's not too big a deal
+         because we will wind up giving some other error later.  */
       return NULL;
     }
 
   found = simple_object_find_section (sobj, RUST_EXPORT_SECTION_NAME,
-				      &sec_offset, &sec_length,
-				      &errmsg, perr);
+                                      &sec_offset, &sec_length,
+                                      &errmsg, perr);
   simple_object_release_read (sobj);
   if (!found)
     return errmsg;

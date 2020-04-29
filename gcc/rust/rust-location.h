@@ -9,63 +9,54 @@
 
 class Location
 {
- public:
-  Location()
-    : gcc_loc_(UNKNOWN_LOCATION)
-  { }
+public:
+  Location () : gcc_loc_ (UNKNOWN_LOCATION) {}
 
-  explicit Location(location_t loc)
-    : gcc_loc_(loc)
-  { }
+  explicit Location (location_t loc) : gcc_loc_ (loc) {}
 
-  location_t
-  gcc_location() const
-  { return gcc_loc_; }
+  location_t gcc_location () const { return gcc_loc_; }
 
-  Location 
-  operator+=(location_t rhs) {
+  Location operator+= (location_t rhs)
+  {
     gcc_loc_ += rhs;
     return *this;
   }
 
-  Location 
-  operator-=(location_t rhs) {
+  Location operator-= (location_t rhs)
+  {
     gcc_loc_ -= rhs;
     return *this;
   }
 
-  bool 
-  operator==(location_t rhs) {
-    return rhs == gcc_loc_;
-  }
+  bool operator== (location_t rhs) { return rhs == gcc_loc_; }
 
- private:
+private:
   location_t gcc_loc_;
 };
 
 // The Rust frontend requires the ability to compare Locations.
 
 inline bool
-operator<(Location loca, Location locb)
+operator< (Location loca, Location locb)
 {
-  return loca.gcc_location() < locb.gcc_location();
+  return loca.gcc_location () < locb.gcc_location ();
 }
 
 inline bool
-operator==(Location loca, Location locb)
+operator== (Location loca, Location locb)
 {
-  return loca.gcc_location() == locb.gcc_location();
+  return loca.gcc_location () == locb.gcc_location ();
 }
 
-inline Location 
-operator+(Location lhs, location_t rhs) 
+inline Location
+operator+ (Location lhs, location_t rhs)
 {
   lhs += rhs;
   return lhs;
 }
 
-inline Location 
-operator-(Location lhs, location_t rhs) 
+inline Location
+operator- (Location lhs, location_t rhs)
 {
   lhs -= rhs;
   return lhs;

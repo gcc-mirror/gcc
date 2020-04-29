@@ -1,5 +1,5 @@
 // rust-diagnostics.cc -- GCC implementation of rust diagnostics interface.
-// Copyright (C) 2016-2019 Free Software Foundation, Inc.
+// Copyright (C) 2016-2020 Free Software Foundation, Inc.
 // Contributed by Than McIntosh, Google.
 
 // This file is part of GCC.
@@ -22,9 +22,9 @@
 #include "rust-diagnostics.h"
 
 static std::string
-mformat_value()
+mformat_value ()
 {
-  return std::string(xstrerror(errno));
+  return std::string (xstrerror (errno));
 }
 
 // Rewrite a format string to expand any extensions not
@@ -32,66 +32,66 @@ mformat_value()
 // for list of supported format specifiers.
 
 static std::string
-expand_format(const char* fmt)
+expand_format (const char *fmt)
 {
   std::stringstream ss;
-  for (const char* c = fmt; *c; ++c)
+  for (const char *c = fmt; *c; ++c)
     {
       if (*c != '%')
-        {
-          ss << *c;
-          continue;
-        }
+	{
+	  ss << *c;
+	  continue;
+	}
       c++;
       switch (*c)
-        {
-          case '\0':
-            {
-              // malformed format string
-              rust_unreachable();
-            }
-          case '%':
-            {
-              ss << "%";
-              break;
-            }
-          case 'm':
-            {
-              ss << mformat_value();
-              break;
-            }
-          case '<':
-            {
-              ss << rust_open_quote();
-              break;
-            }
-          case '>':
-            {
-              ss << rust_close_quote();
-              break;
-            }
-          case 'q':
-            {
-              ss << rust_open_quote();
-              c++;
-              if (*c == 'm')
-                {
-                  ss << mformat_value();
-                }
-              else
-                {
-                  ss << "%" << *c;
-                }
-              ss << rust_close_quote();
-              break;
-            }
-          default:
-            {
-              ss << "%" << *c;
-            }
-        }
+	{
+	case '\0':
+	  {
+	    // malformed format string
+	    rust_unreachable ();
+	  }
+	case '%':
+	  {
+	    ss << "%";
+	    break;
+	  }
+	case 'm':
+	  {
+	    ss << mformat_value ();
+	    break;
+	  }
+	case '<':
+	  {
+	    ss << rust_open_quote ();
+	    break;
+	  }
+	case '>':
+	  {
+	    ss << rust_close_quote ();
+	    break;
+	  }
+	case 'q':
+	  {
+	    ss << rust_open_quote ();
+	    c++;
+	    if (*c == 'm')
+	      {
+		ss << mformat_value ();
+	      }
+	    else
+	      {
+		ss << "%" << *c;
+	      }
+	    ss << rust_close_quote ();
+	    break;
+	  }
+	default:
+	  {
+	    ss << "%" << *c;
+	  }
+	}
     }
-  return ss.str();
+  return ss.str ();
 }
 
 // Expand message format specifiers, using a combination of
@@ -99,7 +99,9 @@ expand_format(const char* fmt)
 // to handle regular printf-style formatting. A pragma is being used here to
 // suppress this warning:
 //
-//   warning: function ‘std::__cxx11::string expand_message(const char*, __va_list_tag*)’ might be a candidate for ‘gnu_printf’ format attribute [-Wsuggest-attribute=format]
+//   warning: function ‘std::__cxx11::string expand_message(const char*,
+//   __va_list_tag*)’ might be a candidate for ‘gnu_printf’ format attribute
+//   [-Wsuggest-attribute=format]
 //
 // What appears to be happening here is that the checker is deciding that
 // because of the call to vasprintf() (which has attribute gnu_printf), the
@@ -107,109 +109,108 @@ expand_format(const char* fmt)
 // though there is already an attribute declaration for it.
 
 static std::string
-expand_message(const char* fmt, va_list ap) RUST_ATTRIBUTE_GCC_DIAG(1,0);
+expand_message (const char *fmt, va_list ap) RUST_ATTRIBUTE_GCC_DIAG (1, 0);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 
 static std::string
-expand_message(const char* fmt, va_list ap)
+expand_message (const char *fmt, va_list ap)
 {
-  char* mbuf = 0;
-  std::string expanded_fmt = expand_format(fmt);
-  int nwr = vasprintf(&mbuf, expanded_fmt.c_str(), ap);
+  char *mbuf = 0;
+  std::string expanded_fmt = expand_format (fmt);
+  int nwr = vasprintf (&mbuf, expanded_fmt.c_str (), ap);
   if (nwr == -1)
     {
       // memory allocation failed
-      rust_be_error_at(Linemap::unknown_location(),
-                     "memory allocation failed in vasprintf");
-      rust_assert(0);
+      rust_be_error_at (Linemap::unknown_location (),
+			"memory allocation failed in vasprintf");
+      rust_assert (0);
     }
-  std::string rval = std::string(mbuf);
-  free(mbuf);
+  std::string rval = std::string (mbuf);
+  free (mbuf);
   return rval;
 }
 
 #pragma GCC diagnostic pop
 
-static const char* cached_open_quote = NULL;
-static const char* cached_close_quote = NULL;
+static const char *cached_open_quote = NULL;
+static const char *cached_close_quote = NULL;
 
-const char*
-rust_open_quote()
+const char *
+rust_open_quote ()
 {
   if (cached_open_quote == NULL)
-    rust_be_get_quotechars(&cached_open_quote, &cached_close_quote);
+    rust_be_get_quotechars (&cached_open_quote, &cached_close_quote);
   return cached_open_quote;
 }
 
-const char*
-rust_close_quote()
+const char *
+rust_close_quote ()
 {
   if (cached_close_quote == NULL)
-    rust_be_get_quotechars(&cached_open_quote, &cached_close_quote);
+    rust_be_get_quotechars (&cached_open_quote, &cached_close_quote);
   return cached_close_quote;
 }
 
 void
-rust_error_at(const Location location, const char* fmt, ...)
+rust_error_at (const Location location, const char *fmt, ...)
 {
   va_list ap;
 
-  va_start(ap, fmt);
-  rust_be_error_at(location, expand_message(fmt, ap));
-  va_end(ap);
+  va_start (ap, fmt);
+  rust_be_error_at (location, expand_message (fmt, ap));
+  va_end (ap);
 }
 
 void
-rust_warning_at(const Location location, int opt, const char* fmt, ...)
+rust_warning_at (const Location location, int opt, const char *fmt, ...)
 {
   va_list ap;
 
-  va_start(ap, fmt);
-  rust_be_warning_at(location, opt, expand_message(fmt, ap));
-  va_end(ap);
+  va_start (ap, fmt);
+  rust_be_warning_at (location, opt, expand_message (fmt, ap));
+  va_end (ap);
 }
 
 void
-rust_fatal_error(const Location location, const char* fmt, ...)
+rust_fatal_error (const Location location, const char *fmt, ...)
 {
   va_list ap;
 
-  va_start(ap, fmt);
-  rust_be_fatal_error(location, expand_message(fmt, ap));
-  va_end(ap);
+  va_start (ap, fmt);
+  rust_be_fatal_error (location, expand_message (fmt, ap));
+  va_end (ap);
 }
 
 void
-rust_inform(const Location location, const char* fmt, ...)
+rust_inform (const Location location, const char *fmt, ...)
 {
   va_list ap;
 
-  va_start(ap, fmt);
-  rust_be_inform(location, expand_message(fmt, ap));
-  va_end(ap);
+  va_start (ap, fmt);
+  rust_be_inform (location, expand_message (fmt, ap));
+  va_end (ap);
 }
 
 // rust_debug uses normal printf formatting, not GCC diagnostic formatting.
 
 void
-rust_debug(const Location location, const char* fmt, ...)
+rust_debug (const Location location, const char *fmt, ...)
 {
   va_list ap;
 
-  va_start(ap, fmt);
-  char* mbuf = NULL;
-  int nwr = vasprintf(&mbuf, fmt, ap);
-  va_end(ap);
+  va_start (ap, fmt);
+  char *mbuf = NULL;
+  int nwr = vasprintf (&mbuf, fmt, ap);
+  va_end (ap);
   if (nwr == -1)
     {
-      rust_be_error_at(Linemap::unknown_location(),
-		     "memory allocation failed in vasprintf");
-      rust_assert(0);
+      rust_be_error_at (Linemap::unknown_location (),
+			"memory allocation failed in vasprintf");
+      rust_assert (0);
     }
-  std::string rval = std::string(mbuf);
-  free(mbuf);
-  rust_be_inform(location, rval);
+  std::string rval = std::string (mbuf);
+  free (mbuf);
+  rust_be_inform (location, rval);
 }
-

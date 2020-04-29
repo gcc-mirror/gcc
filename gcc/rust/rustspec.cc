@@ -1,5 +1,5 @@
 /* rustspec.c -- Specific flags and argument handling of the gcc Go front end.
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -340,7 +340,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if (library > 0)
     {
       // generate_option (OPT_l, LIBGOBEGIN, 1, CL_DRIVER,
-      //   	       &new_decoded_options[j]);
+      //               &new_decoded_options[j]);
       // added_libraries++;
       // j++;
 
