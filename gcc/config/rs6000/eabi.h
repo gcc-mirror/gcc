@@ -39,3 +39,15 @@
       TARGET_OS_SYSV_CPP_BUILTINS ();     \
     }                                     \
   while (0)
+
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in eabi.h (rs6000) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()                 \
+  do {                                        \
+    /*TODO: values here are assumed from rustc's "bare metal" template*/ \
+    builtin_rust_info ("target_family", "");  \
+    builtin_rust_info ("target_os", "none");  \
+    builtin_rust_info ("target_vendor", "");  \
+    builtin_rust_info ("target_env", "");     \
+  } while (0)

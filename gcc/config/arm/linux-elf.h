@@ -83,6 +83,11 @@
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+   do {						\
+	   GNU_USER_TARGET_RUST_OS_INFO();	\
+   } while (0)
+
 /* Call the function profiler with a given profile label.  */
 #undef  ARM_FUNCTION_PROFILER
 #define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  			\

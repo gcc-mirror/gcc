@@ -33,6 +33,14 @@ along with GCC; see the file COPYING3.  If not see
 	  builtin_define ("_GNU_SOURCE");			\
     } while (0)
 
+#define TARGET_RUST_OS_INFO()				\
+  do {				\
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "linux");			\
+    builtin_rust_info ("target_vendor", "unknown");			\
+    builtin_rust_info ("target_env", "gnu");			\
+  } while (0)
+
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{pthread:-lpthread} \

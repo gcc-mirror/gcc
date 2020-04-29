@@ -90,6 +90,18 @@ along with GCC; see the file COPYING3.  If not see
     }									\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in pa-hpux10.h (pa) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()			\
+  do {							\
+    /*TODO: rustc has no supported for hp-ux, so this is subject to change (and guessed)*/ \
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "hpux");			\
+    builtin_rust_info ("target_vendor", "hp");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 #define CPP_SPEC "%{threads: -D_REENTRANT -D_DCE_THREADS}"
 
 /* We can debug dynamically linked executables on hpux9; we also want

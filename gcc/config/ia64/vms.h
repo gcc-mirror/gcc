@@ -26,6 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
+#define SUBTARGET_RUST_OS_INFO()		\
+  do {} while (0)
+
 /* Need .debug_line info generated from gcc and gas.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS)

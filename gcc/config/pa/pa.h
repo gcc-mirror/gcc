@@ -199,6 +199,8 @@ do {								\
     }								\
   while (0)
 
+/* TODO: is a TARGET_RUST_OS_INFO() required here? probably not */
+
 #define CC1_SPEC "%{pg:} %{p:}"
 
 #define LINK_SPEC "%{mlinker-opt:-O} %{!shared:-u main} %{shared:-b}"

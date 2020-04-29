@@ -36,6 +36,18 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in nto.h (i386) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: not supported by rustc and so subject to change - based on triple found online*/ \
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "nto");	\
+    builtin_rust_info ("target_vendor", "pc");	\
+    builtin_rust_info ("target_env", "qnx");	\
+  } while (0)
+
 #undef THREAD_MODEL_SPEC
 #define THREAD_MODEL_SPEC "posix"
 

@@ -57,6 +57,15 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*rustc has no support for this, so values are taken from rusty-dos' djgpp github issue guesses*/ \
+    builtin_rust_info ("target_family", "windows");	\
+    builtin_rust_info ("target_os", "msdos");	\
+    builtin_rust_info ("target_vendor", "pc");	\
+    builtin_rust_info ("target_env", "djgpp");	\
+  } while (0)
+
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %{posix:-D_POSIX_SOURCE}"
 

@@ -36,3 +36,14 @@
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)
+
+#undef TARGET_RUST_OS_INFO /* This undef is actually necessary because m68kemb.h assumes embedded.  */
+#define TARGET_RUST_OS_INFO()		\
+  do {					\
+    /*note: as far as I know, rustc has no supported for rtems, so this is just guessed*/ \
+    /*everything is subject to change, especially target_env and target_family - TODO*/ \
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "rtems");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "");	\
+  } while (0)

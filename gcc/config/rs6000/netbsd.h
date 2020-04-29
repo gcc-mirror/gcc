@@ -34,6 +34,14 @@
     }						\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in netbsd.h (rs6000) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()          \
+  do {                                 \
+    NETBSD_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 /* Override the default from rs6000.h to avoid conflicts with macros
    defined in NetBSD header files.  */
 

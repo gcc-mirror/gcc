@@ -42,6 +42,8 @@
 #include "rust-parse.h"
 #include "rust-session-manager.h"
 
+#include "rust-target.h"
+
 // Language-dependent contents of a type. GTY() mark used for garbage collector.
 struct GTY(()) lang_type {
     char dummy;
@@ -73,6 +75,11 @@ struct GTY(()) language_function {
 
 // Kinda HACK-ish - store parsing session as static variable
 static Rust::Session session;
+
+// has to be in same compilation unit as session, so here for now
+void rust_add_target_info(const char* key, const char* value) {
+    session.options.target_data.insert_key_value_pair(key, value);
+}
 
 /* Language hooks.  */
 

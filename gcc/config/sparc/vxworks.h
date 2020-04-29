@@ -27,6 +27,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    VXWORKS_TARGET_RUST_OS_INFO ();		\
+  } while (0)
+
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS VXWORKS_OVERRIDE_OPTIONS
 

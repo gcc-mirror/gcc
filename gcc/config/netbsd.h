@@ -29,6 +29,15 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+/* TARGET_RUST_OS_INFO() common to all NetBSD targets.  */
+#define NETBSD_TARGET_RUST_OS_INFO()		\
+  do {		\
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "netbsd");			\
+    builtin_rust_info ("target_vendor", "unknown");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 /* CPP_SPEC parts common to all NetBSD targets.  */
 #define NETBSD_CPP_SPEC				\
   "%{posix:-D_POSIX_SOURCE} \

@@ -28,6 +28,11 @@ along with GCC; see the file COPYING3.  If not see
    }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+   do {						\
+      OPENBSD_TARGET_RUST_OS_INFO();	\
+   } while (0)
+
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */
 #undef CPP_SPEC

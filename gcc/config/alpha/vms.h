@@ -41,6 +41,9 @@ along with GCC; see the file COPYING3.  If not see
         builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
+#define SUBTARGET_RUST_OS_INFO()		\
+  do {} while (0)
+
 #undef PCC_STATIC_STRUCT_RETURN
 
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */

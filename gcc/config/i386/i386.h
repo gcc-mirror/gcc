@@ -801,6 +801,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS ix86_d_target_versions
 
+/* Target CPU info for Rust.  */
+#define TARGET_RUST_CPU_INFO ix86_rust_target_cpu_info 
+
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
 #endif

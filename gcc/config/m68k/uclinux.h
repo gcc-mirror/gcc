@@ -58,6 +58,19 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in uclinux.h (m68k) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {					\
+    /*note: as far as I know, rustc does not distinguish between uclinux and regular linux kernels*/ \
+    /*TODO: check whether defining this as GNU_USER_TARGET_RUST_OS_INFO would have different behaviour*/ \
+    builtin_rust_info ("target_family", "unix");	   \
+    builtin_rust_info ("target_os", "linux");	      \
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "gnu");	         \
+  } while (0)
+
 /* -msep-data is the default PIC mode on this target.  */
 #define DRIVER_SELF_SPECS \
   "%{" FPIE_OR_FPIC_SPEC ":%{!msep-data:%{!mid-shared-library: -msep-data}}}"

@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 

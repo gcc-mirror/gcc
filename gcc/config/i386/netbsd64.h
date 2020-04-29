@@ -26,6 +26,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    NETBSD_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 
 /* Extra specs needed for NetBSD/x86-64 ELF.  */
 

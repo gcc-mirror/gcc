@@ -71,6 +71,18 @@
     }						\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in lynx.h (rs6000) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: not supported by rustc and so subject to change - based on llvm triple*/ \
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "lynxos");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "");	\
+  } while (0)
+
 /* LynxOS does not do anything with .fixup plus let's not create
    writable section for linkonce.r and linkonce.t.  */
 

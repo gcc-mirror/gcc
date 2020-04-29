@@ -30,6 +30,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    GNU_USER_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 /* On Linux, the combination sparc64-* --with-cpu=v8 is supported and
    selects a 32-bit compiler.  */
 #if defined(TARGET_64BIT_DEFAULT) && TARGET_CPU_DEFAULT >= TARGET_CPU_v9

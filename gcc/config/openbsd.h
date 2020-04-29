@@ -102,6 +102,14 @@ while (0)
     }						\
   while (0)
 
+#define OPENBSD_TARGET_RUST_OS_INFO()		\
+  do {		\
+    builtin_rust_info ("target_family", "unix");		\
+    builtin_rust_info ("target_os", "openbsd");		\
+    builtin_rust_info ("target_vendor", "unknown"); \
+    builtin_rust_info ("target_env", "");			      \
+  } while(0)
+
 /* CPP_SPEC appropriate for OpenBSD. We deal with -posix and -pthread.
    XXX the way threads are handled currently is not very satisfying,
    since all code must be compiled with -pthread to work. 

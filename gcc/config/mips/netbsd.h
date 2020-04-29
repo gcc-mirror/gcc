@@ -45,6 +45,11 @@ along with GCC; see the file COPYING3.  If not see
     }							\
   while (0)
 
+#define TARGET_RUST_OS_INFO()			\
+  do {		\
+    NETBSD_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 /* The generic MIPS TARGET_CPU_CPP_BUILTINS are incorrect for NetBSD.
    Specifically, they define too many namespace-invasive macros.  Override
    them here.  Note this is structured for easy comparison to the version

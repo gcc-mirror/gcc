@@ -88,4 +88,6 @@
                                                                                 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack

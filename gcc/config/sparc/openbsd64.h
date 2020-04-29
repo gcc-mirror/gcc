@@ -41,6 +41,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    OPENBSD_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 #undef ASM_SPEC
 #define ASM_SPEC "\
 -s %{" FPIE_OR_FPIC_SPEC ":-K PIC} \

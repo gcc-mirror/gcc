@@ -66,6 +66,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  builtin_version ("CRuntime_Musl");			\
     } while (0)
 
+#define GNU_USER_TARGET_RUST_OS_INFO()				\
+    do {							\
+  builtin_rust_info ("target_family", "unix");			\
+  builtin_rust_info ("target_vendor", "unknown");			\
+  /*is there way of determining target_os and target_env here since could also be android?*/		\
+  /*target_vendor may not be "unknown" - FIXME ensure it is*/  \
+    } while (0)
+
 /* Determine which dynamic linker to use depending on whether GLIBC or
    uClibc or Bionic or musl is the default C library and whether
    -muclibc or -mglibc or -mbionic or -mmusl has been passed to change

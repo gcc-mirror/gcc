@@ -48,6 +48,18 @@
     }						\
   while (false)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in uclinux-elf.h (arm) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {					\
+    /*note: as far as I know, rustc does not distinguish between uclinux and regular linux kernels*/ \
+    builtin_rust_info ("target_family", "unix");	   \
+    builtin_rust_info ("target_os", "linux");	      \
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "gnu");	         \
+  } while (0)
+
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"

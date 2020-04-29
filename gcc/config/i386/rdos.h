@@ -37,3 +37,14 @@ along with GCC; see the file COPYING3.  If not see
       builtin_assert ("system=rdos");		\
     }						\
   while (0)
+
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: not supported by rustc and so subject to change - based on triple found online*/ \
+    /*this seems to not refer to the 70s Data General RDOS, but one partly compatible with win32*/ \
+    /*as such, target_family could be windows*/ \
+    builtin_rust_info ("target_family", "");	\
+    builtin_rust_info ("target_os", "rdos");	\
+    builtin_rust_info ("target_vendor", "pc");	\
+    builtin_rust_info ("target_env", "");	\
+  } while (0)

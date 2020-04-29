@@ -52,6 +52,15 @@ do {							\
 	  builtin_define("_ILP32");			\
 } while (0)
 
+#define TARGET_RUST_OS_INFO()			\
+  do {							\
+    /*TODO: rustc has no supported for hp-ux, so this is subject to change (and guessed)*/ \
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "hpux");			\
+    builtin_rust_info ("target_vendor", "hp");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 #undef CPP_SPEC
 #define CPP_SPEC \
   "%{mt|pthread:-D_REENTRANT -D_THREAD_SAFE -D_POSIX_C_SOURCE=199506L}"

@@ -37,3 +37,12 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 	builtin_version ("Hurd");		\
 	builtin_version ("CRuntime_Glibc");	\
     } while (0)
+
+#define GNU_USER_TARGET_RUST_OS_INFO()		\
+	do { /*is this correct? or should os be "hurd"?*/ \
+	builtin_rust_info ("target_family", "unix");	\
+	builtin_rust_info ("target_os", "gnu");	\
+	builtin_rust_info ("target_vendor", "unknown");	\
+	builtin_rust_info ("target_env", "");			\
+	/* TODO: is target_env required?*/ \
+	} while (0)

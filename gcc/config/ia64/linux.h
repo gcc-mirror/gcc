@@ -34,6 +34,11 @@ do {						\
 	builtin_define("_LONGLONG");		\
 } while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    GNU_USER_TARGET_RUST_OS_INFO();	\
+  } while (0)
+
 /* Need to override linux.h STARTFILE_SPEC, since it has crtbeginT.o in.  */
 #undef STARTFILE_SPEC
 #ifdef HAVE_LD_PIE

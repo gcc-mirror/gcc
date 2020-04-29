@@ -89,6 +89,18 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in pa-hpux.h (pa) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()			\
+  do {							\
+    /*TODO: rustc has no supported for hp-ux, so this is subject to change (and guessed)*/ \
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "hpux");			\
+    builtin_rust_info ("target_vendor", "hp");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 /* Like the default, except no -lg.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}}"

@@ -35,6 +35,14 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_version ("CRuntime_Glibc");	\
     } while (0)
 
+#define GNU_USER_TARGET_RUST_OS_INFO()		\
+    do {					\
+  builtin_rust_info ("target_family", "unix");			\
+  builtin_rust_info ("target_os", "kfreebsd");			\
+  builtin_rust_info ("target_vendor", "unknown");			\
+  builtin_rust_info ("target_env", "gnu");			\
+    } while (0)
+
 #define GNU_USER_DYNAMIC_LINKER        GLIBC_DYNAMIC_LINKER
 #define GNU_USER_DYNAMIC_LINKER32      GLIBC_DYNAMIC_LINKER32
 #define GNU_USER_DYNAMIC_LINKER64      GLIBC_DYNAMIC_LINKER64

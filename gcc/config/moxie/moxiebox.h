@@ -28,6 +28,16 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: rustc has no supported for moxiebox, so this is just guessed - values subject to change*/ \
+    /*I can find virtually no info on target triples, so target_family and target_vendor most of all*/ \
+    builtin_rust_info ("target_family", "");			\
+    builtin_rust_info ("target_os", "moxiebox");			\
+    builtin_rust_info ("target_vendor", "unknown");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 #undef LIB_SPEC
 #define LIB_SPEC \
 "%{!T*:-Tmoxiebox.ld} \

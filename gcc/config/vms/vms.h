@@ -38,6 +38,19 @@ along with GCC; see the file COPYING3.  If not see
     builtin_define_with_int_value ("__VMS_VER", vms_c_get_vms_ver ());   \
   } while (0)
 
+#define TARGET_RUST_OS_INFO()					 \
+  do {					 \
+    /*target_family (and others) are subject to change - no support by rustc so unknown values - TODO*/ \
+    /*target_family written as unix because of supposed POSIX-compliance*/ \
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "vms");			\
+    /*target_vendor written as unknown because i don't know what it would be (maybe HP?)*/ \
+    builtin_rust_info ("target_vendor", "unknown");			\
+    /*target_env is empty as not a gnu target environment*/ \
+    builtin_rust_info ("target_env", "");			\
+    SUBTARGET_RUST_OS_INFO();					 \
+  } while (0)
+
 extern void vms_c_register_includes (const char *, const char *, int);
 #define TARGET_EXTRA_INCLUDES vms_c_register_includes
 

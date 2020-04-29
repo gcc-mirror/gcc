@@ -35,6 +35,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     }                                       \
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in dragonflybsd.h - c++ undefines it and redefines it."
+/* TODO: ensure that this works correctly and the undef and redef reason is known */
+#endif
+#define TARGET_RUST_OS_INFO()                       \
+  do {                                              \
+    builtin_rust_info ("target_family", "unix");		\
+    builtin_rust_info ("target_os", "dragonfly");		\
+    builtin_rust_info ("target_vendor", "unknown"); \
+    builtin_rust_info ("target_env", "");			      \
+  } while (0)
+
 #undef  CPP_SPEC
 #define CPP_SPEC \
  "%(cpp_cpu) %(cpp_arch) %{posix:-D_POSIX_SOURCE}"

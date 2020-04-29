@@ -49,6 +49,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Define the default FreeBSD-specific per-CPU hook code.  */
 #define FBSD_TARGET_CPU_CPP_BUILTINS() do {} while (0)
 
+#define FBSD_TARGET_RUST_OS_INFO()					\
+  do {					\
+    builtin_rust_info ("target_family", "unix");		\
+    builtin_rust_info ("target_os", "freebsd");		\
+    builtin_rust_info ("target_vendor", "unknown"); \
+    builtin_rust_info ("target_env", "");			      \
+    /*TODO: is default per-CPU hook code required here?*/ \
+  } while (0)
+
 /* Provide a CPP_SPEC appropriate for FreeBSD.  We just deal with the GCC 
    option `-posix', and PIC issues.  */
 

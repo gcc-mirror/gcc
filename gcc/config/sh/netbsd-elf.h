@@ -35,6 +35,11 @@ along with GCC; see the file COPYING3.  If not see
     }									\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    NETBSD_TARGET_RUST_OS_INFO();	\
+  } while (0)
+
 /* Provide a LINK_SPEC appropriate for a NetBSD/sh ELF target.
    We use the SH_LINK_SPEC from sh/sh.h, and define the appropriate
    SUBTARGET_LINK_SPEC that pulls in what we need from a generic

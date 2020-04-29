@@ -83,6 +83,15 @@
     }						\
   while (false)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in freebsd.h (arm) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO() 		\
+  do {						\
+    FBSD_TARGET_RUST_OS_INFO ();		\
+    BPABI_TARGET_RUST_OS_INFO ();		\
+  } while (0)
+
 /* We default to a soft-float ABI so that binaries can run on all
    target hardware.  */
 #undef TARGET_DEFAULT_FLOAT_ABI

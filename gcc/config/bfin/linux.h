@@ -28,6 +28,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in linux.h (bfin) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} crtreloc.o%s \

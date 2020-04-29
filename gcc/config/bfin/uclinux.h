@@ -27,6 +27,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "\
   %{mfast-fp:-lbffastfp} %G %{!nolibc:%L} %{mfast-fp:-lbffastfp} %G \

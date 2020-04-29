@@ -104,6 +104,17 @@
 #define TARGET_OS_CPP_BUILTINS() \
   TARGET_BPABI_CPP_BUILTINS()
 
+#define BPABI_TARGET_RUST_OS_INFO() \
+  do { \
+    /*TODO: is this even an OS? What should go here?*/ \
+  } while (0)
+
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in bpabi.h - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO() \
+  BPABI_TARGET_RUST_OS_INFO()
+
 /* The BPABI specifies the use of .{init,fini}_array.  Therefore, we
    do not want GCC to put anything into the .{init,fini} sections.  */
 #undef INIT_SECTION_ASM_OP

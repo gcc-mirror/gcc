@@ -18,6 +18,12 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: ensure that this is all that needs to be defined*/ \
+    GNU_USER_TARGET_RUST_OS_INFO ();		\
+  } while (0)
+
 #undef CPP_SPEC
 #define CPP_SPEC "%{pthread:-D_REENTRANT}"
 

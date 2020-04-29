@@ -57,6 +57,14 @@
     builtin_assert ("system=linux");	\
   } while (0)
 
+#define TARGET_RUST_OS_INFO()	\
+  do {					\
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "linux");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "gnu");	\
+  } while (0)
+
 #define HAS_INIT_SECTION 1
 #define INIT_SECTION_ASM_OP	"\t.section .init,\"ax\""
 #define FINI_SECTION_ASM_OP	"\t.section .fini,\"ax\""

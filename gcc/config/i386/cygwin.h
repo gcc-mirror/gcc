@@ -29,6 +29,16 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#define EXTRA_TARGET_RUST_OS_INFO()					\
+  do {								\
+    /*TODO: derived from llvm triple - rustc has no support for cygwin, but follows llvm triple*/ \
+    /*target_family is defined as unix due to posix-compliance, but this is subject to change*/ \
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "windows");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "cygnus");	\
+  } while (0)
+
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   %{!ansi:-Dunix} \

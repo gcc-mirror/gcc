@@ -29,6 +29,14 @@
   builtin_assert( "system=rtems" );		\
 } while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {				\
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "rtems");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "");	\
+  } while (0)
+
 /* Redefine to include only items relevant for RTEMS */
 #undef LINK_SPEC
 #define LINK_SPEC "%{shared:-shared} -N -relax \

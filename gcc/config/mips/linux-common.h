@@ -30,6 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #define EXTRA_TARGET_D_OS_VERSIONS()				\
   ANDROID_TARGET_D_OS_VERSIONS();
 
+#define EXTRA_TARGET_RUST_OS_INFO()				\
+  ANDROID_TARGET_RUST_OS_INFO();
+/*TODO: ensure that correct target data is being set here. */
+
 #undef  LINK_SPEC
 #define LINK_SPEC							\
   LINUX_OR_ANDROID_LD (GNU_USER_TARGET_LINK_SPEC,			\

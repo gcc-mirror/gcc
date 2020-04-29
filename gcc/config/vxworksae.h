@@ -73,6 +73,15 @@ along with GCC; see the file COPYING3.  If not see
     }                                                                   \
   while (0)
 
+#define VXWORKS_TARGET_RUST_OS_INFO()					\
+  do {					\
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "vxworks");			\
+    builtin_rust_info ("target_vendor", "wrs");			\
+    builtin_rust_info ("target_env", "gnu");			\
+    /*is env correct? vxworks.h implies that this might not come with a gnu toolchain*/ \
+  } while (0)
+
 /* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
 
 /* None of the VxWorks AE/653/MILS ports to date has native TLS support.  */

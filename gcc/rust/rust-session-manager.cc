@@ -3,8 +3,13 @@
 #include "diagnostic.h"
 #include "input.h"
 
+#include "target.h"
+#include "tm.h"
+
 #include "rust-lex.h"
 #include "rust-parse.h"
+
+#include "rust-target.h"
 
 #include <algorithm>
 
@@ -193,7 +198,13 @@ namespace Rust {
     }
 
     void Session::init() {
-        // nothing yet
+# define builtin_rust_info(KEY, VALUE) rust_add_target_info (KEY, VALUE)
+
+        // initialise target hooks
+        targetrustm.rust_cpu_info();
+        targetrustm.rust_os_info();
+        
+#undef builtin_rust_info
     }
 
     // Initialise default options. Actually called before handle_option, unlike init itself.
@@ -428,7 +439,7 @@ namespace Rust {
     }
 
     // TODO: move somewhere else
-    bool contains_name(::std::vector<AST::Attribute> attrs, ::std::string name) {
+    bool contains_name(const std::vector<AST::Attribute>& attrs, std::string name) {
         for (const auto& attr : attrs) {
             if (attr.get_path() == name) {
                 return true;

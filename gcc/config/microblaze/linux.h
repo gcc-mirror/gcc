@@ -58,4 +58,9 @@
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in linux.h (microblaze) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack

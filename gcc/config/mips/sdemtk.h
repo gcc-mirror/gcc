@@ -53,6 +53,17 @@ along with GCC; see the file COPYING3.  If not see
     }							\
   while (0)
 
+#define TARGET_RUST_OS_INFO()			\
+  do {							\
+    /*TODO: WTF is SDE and why can't I find any info on it? is it even a real os?*/ \
+    /*note: as far as I know, rustc has no supported for sde, so this is just guessed*/ \
+    /*literally everything is subject to change because of the lack of info I can find on it*/ \
+    builtin_rust_info ("target_family", "unix");			\
+    builtin_rust_info ("target_os", "sde");			\
+    builtin_rust_info ("target_vendor", "unknown");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 /* For __clear_cache in libgcc2.c.  */
 #ifdef IN_LIBGCC2
 extern void mips_sync_icache (void *beg, unsigned long len);

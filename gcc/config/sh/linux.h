@@ -37,6 +37,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    GNU_USER_TARGET_RUST_OS_INFO();	\
+  } while (0)
+
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (TARGET_CPU_DEFAULT | TARGET_ENDIAN_DEFAULT | TARGET_OPT_DEFAULT)

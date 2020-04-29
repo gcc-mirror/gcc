@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 /* We use GAS, G-float double and want new DI patterns.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_QMATH | MASK_G_FLOAT)

@@ -69,6 +69,19 @@ along with GCC; see the file COPYING3.  If not see
     }                                           \
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in tpf.h (s390) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()			\
+  do {			\
+    /*TODO: everything in here is just guessed from gcc triples as rustc has no support*/ \
+    /*as such, stuff subject to change*/ \
+    builtin_rust_info ("target_family", "");			\
+    builtin_rust_info ("target_os", "tpf");			\
+    builtin_rust_info ("target_vendor", "ibm");			\
+    builtin_rust_info ("target_env", "");			\
+  } while (0)
+
 
 #define EXTRA_SPECS                             \
   { "entry_spec", ENTRY_SPEC }

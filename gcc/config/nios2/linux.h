@@ -26,6 +26,11 @@
     }                                           \
   while (0)
 
+#define TARGET_RUST_OS_INFO()                 \
+  do {                                        \
+    GNU_USER_TARGET_RUST_OS_INFO();           \
+  } while (0)
+
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 

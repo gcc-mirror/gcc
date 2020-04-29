@@ -67,6 +67,8 @@
 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"

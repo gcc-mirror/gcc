@@ -23,6 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 	NETBSD_OS_CPP_BUILTINS_ELF();		\
     } while (0)
 
+#define TARGET_RUST_OS_INFO()		 	\
+  do {					\
+    NETBSD_TARGET_RUST_OS_INFO();	\
+  } while (0)
 
 /* NetBSD doesn't use the LANGUAGE* built-ins.  */
 #undef SUBTARGET_LANGUAGE_CPP_BUILTINS

@@ -31,6 +31,18 @@
 	  builtin_version ("Android");				\
     } while (0)
 
+#define ANDROID_TARGET_RUST_OS_INFO()				\
+    do {							\
+  if (TARGET_ANDROID)	{				\
+    builtin_rust_info ("target_family", "unix");				\
+    builtin_rust_info ("target_os", "android");				\
+    builtin_rust_info ("target_vendor", "unknown");				\
+    builtin_rust_info ("target_env", "");				\
+  } else {				\
+    builtin_rust_info ("target_os", "linux");				\
+  }	/*this else is required if I'm intepreting structure of defines correctly*/			\
+    } while (0)
+
 #if ANDROID_DEFAULT
 # define NOANDROID "mno-android"
 #else

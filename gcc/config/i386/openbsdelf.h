@@ -25,6 +25,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    OPENBSD_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n) \
   (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])

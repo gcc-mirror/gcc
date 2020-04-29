@@ -78,6 +78,21 @@
     }								\
   while (false)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in symbian.h (arm) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {					\
+    /*note: as far as I know, rustc has no supported for symbian, so this is just guessed*/ \
+    /*everything is subject to change, especially target_env and target_vendor - TODO*/ \
+    /*some triple examples i've seen are "arm-nokia-symbian-eabi" and possibly "arm-none-symbian-elf"*/ \
+    builtin_rust_info ("target_family", "");	\
+    builtin_rust_info ("target_os", "symbian");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "");	\
+    BPABI_TARGET_RUST_OS_INFO();	\
+  } while (0)
+
 /* On SymbianOS, these sections are not writable, so we use "a",
    rather than "aw", for the section attributes.  */
 #undef ARM_EABI_CTORS_SECTION_OP

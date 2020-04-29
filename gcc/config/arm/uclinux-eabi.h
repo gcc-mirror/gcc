@@ -46,6 +46,19 @@
     }						\
   while (false)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in uclinux-eabi.h (arm) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {					\
+    BPABI_TARGET_RUST_OS_INFO();	\
+    /*note: as far as I know, rustc does not distinguish between uclinux and regular linux kernels*/ \
+    builtin_rust_info ("target_family", "unix");	   \
+    builtin_rust_info ("target_os", "linux");	      \
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "gnu");	         \
+  } while (0)
+
 #undef SUBTARGET_EXTRA_LINK_SPEC
 #define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux_eabi -elf2flt" \
   " --pic-veneer --target2=abs"

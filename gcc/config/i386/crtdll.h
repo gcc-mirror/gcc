@@ -31,6 +31,18 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#ifdef EXTRA_TARGET_RUST_OS_INFO
+# error "EXTRA_TARGET_RUST_OS_INFO already defined in crtdll.h (i386) - c++ undefines it and redefines it."
+#endif
+#define EXTRA_TARGET_RUST_OS_INFO()					\
+  do {								\
+    builtin_rust_info ("target_family", "windows");	\
+    builtin_rust_info ("target_os", "windows");	\
+    builtin_rust_info ("target_vendor", "pc");	\
+    /*TODO: is this the right target_env? it says gnu tools up there, but env may change.*/ \
+    builtin_rust_info ("target_env", "gnu");	\
+  } while (0)
+
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC \
   "%{mthreads:-lmingwthrd} -lmingw32 -lgcc -lcoldname -libmingwex -lcrtdll"

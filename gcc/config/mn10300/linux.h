@@ -24,6 +24,8 @@
 
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
+#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
+
 #undef  CPP_SPEC
 #define CPP_SPEC "%{mam33:-D__AM33__} %{!mam33:-D__AM33__=2 -D__AM33_2__} \
   %{posix:-D_POSIX_SOURCE} \

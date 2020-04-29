@@ -29,6 +29,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    OPENBSD_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 /* Layout of source language data types.  */
 
 /* This must agree with <machine/ansi.h>  */

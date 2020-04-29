@@ -36,5 +36,17 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_version ("CRuntime_Glibc");	\
     } while (0)
 
+#ifdef GNU_USER_TARGET_RUST_OS_INFO
+# error # error "TARGET_RUST_OS_INFO already defined in kopensolaris-gnu.h - c++ undefines it and redefines it."
+#endif
+#define GNU_USER_TARGET_RUST_OS_INFO()		\
+    do {					\
+  builtin_rust_info ("target_family", "unix");			\
+  builtin_rust_info ("target_os", "kopensolaris");			\
+  /*the target_os is maybe not right but i can't find any better atm*/ \
+  builtin_rust_info ("target_vendor", "unknown");			\
+  builtin_rust_info ("target_env", "gnu");			\
+    } while (0)
+
 #undef GNU_USER_DYNAMIC_LINKER
 #define GNU_USER_DYNAMIC_LINKER "/lib/ld.so.1"

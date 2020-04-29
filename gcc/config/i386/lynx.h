@@ -25,6 +25,15 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: not supported by rustc and so subject to change - based on llvm triple*/ \
+    builtin_rust_info ("target_family", "unix");	\
+    builtin_rust_info ("target_os", "lynxos");	\
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "");	\
+  } while (0)
+
 /* The svr4 ABI for the i386 says that records and unions are returned
    in memory.  */
 

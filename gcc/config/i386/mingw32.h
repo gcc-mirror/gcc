@@ -53,6 +53,14 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#define EXTRA_TARGET_RUST_OS_INFO()					\
+  do {								\
+    builtin_rust_info ("target_family", "windows");	\
+    builtin_rust_info ("target_os", "windows");	\
+    builtin_rust_info ("target_vendor", "pc");	\
+    builtin_rust_info ("target_env", "gnu");	\
+  } while (0)
+
 #ifndef TARGET_USE_PTHREAD_BY_DEFAULT
 #define SPEC_PTHREAD1 "pthread"
 #define SPEC_PTHREAD2 "!no-pthread"

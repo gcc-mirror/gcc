@@ -27,6 +27,14 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in pa-openbsd.h (pa) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()			\
+  do {							\
+    OPENBSD_TARGET_RUST_OS_INFO();	\
+  } while (0)
+
 /* Our profiling scheme doesn't LP labels and counter words.  */
 #define NO_DEFERRED_PROFILE_COUNTERS 1
 

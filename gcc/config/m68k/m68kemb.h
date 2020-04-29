@@ -39,6 +39,16 @@
     }						\
   while (0)
 
+#define TARGET_RUST_OS_INFO()		\
+  do {						\
+    /*TODO: assuming that embedded means "no operating system", at least by rustc terms*/ \
+    /*basing this all on embedinomicon sample targets*/ \
+    builtin_rust_info ("target_family", "");	\
+    builtin_rust_info ("target_os", "none");	\
+    builtin_rust_info ("target_vendor", "");	\
+    builtin_rust_info ("target_env", "");	\
+  } while (0)
+
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
    profiling, or libg.a.  */
 

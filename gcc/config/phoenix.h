@@ -26,6 +26,18 @@ along with GCC; see the file COPYING3.  If not see
       builtin_assert ("system=unix");      \
     } while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in phoenix.h - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()                       \
+  do {                                              \
+    builtin_rust_info ("target_family", "unix");		\
+    builtin_rust_info ("target_os", "phoenix");		  \
+    builtin_rust_info ("target_vendor", "unknown"); \
+    builtin_rust_info ("target_env", "");			      \
+    /*TODO: ensure these values are correct*/       \
+  } while(0)
+
 #define STD_LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
 
 /* This will prevent selecting 'unsigned long int' instead of 'unsigned int' as 'uint32_t' in stdint-newlib.h. */

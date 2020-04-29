@@ -27,6 +27,19 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in uclinux.h (xtensa) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {					\
+    /*note: as far as I know, rustc does not distinguish between uclinux and regular linux kernels*/ \
+    builtin_rust_info ("target_family", "unix");	   \
+    builtin_rust_info ("target_os", "linux");	      \
+    builtin_rust_info ("target_vendor", "unknown");	\
+    builtin_rust_info ("target_env", "gnu");	         \
+    /*TODO: is GNU_USER_TARGET_RUST_OS_INFO() better here or is hardcoded stuff fine?*/ \
+  } while (0)
+
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 

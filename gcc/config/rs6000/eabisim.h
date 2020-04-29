@@ -34,6 +34,18 @@
     }                                      \
   while (0)
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in eabisim.h (rs6000) - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()                 \
+  do {                                        \
+    /*TODO: values here are assumed from rustc's "bare metal" template*/ \
+    builtin_rust_info ("target_family", "");  \
+    builtin_rust_info ("target_os", "none");  \
+    builtin_rust_info ("target_vendor", "");  \
+    builtin_rust_info ("target_env", "");     \
+  } while (0)
+
 /* Make the simulator the default */
 #undef	LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "%(lib_sim)"

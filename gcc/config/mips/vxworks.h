@@ -58,6 +58,11 @@ VXWORKS_LINK_SPEC
     }                                                   \
   while (0)
 
+#define TARGET_RUST_OS_INFO()			\
+  do {			\
+    VXWORKS_TARGET_RUST_OS_INFO();		\
+  } while (0)
+
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC VXWORKS_ADDITIONAL_CPP_SPEC
 

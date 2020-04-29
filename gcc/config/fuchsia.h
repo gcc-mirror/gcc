@@ -66,3 +66,19 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (false)
 
+#ifndef EXTRA_TARGET_RUST_OS_INFO
+#define EXTRA_TARGET_RUST_OS_INFO()
+#endif
+
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in fuchsia.h - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO()		\
+  do {		\
+    builtin_rust_info ("target_family", "unix");		\
+	/*NOTE: target_family is subject to change if rustc decides to change it to non-unix*/ \
+    builtin_rust_info ("target_os", "fuchsia");		\
+    builtin_rust_info ("target_vendor", ""); \
+    builtin_rust_info ("target_env", "");			      \
+	EXTRA_TARGET_RUST_OS_INFO();		\
+  } while (0)

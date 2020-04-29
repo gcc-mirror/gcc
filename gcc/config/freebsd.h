@@ -32,6 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS() FBSD_TARGET_OS_CPP_BUILTINS()
 
+#ifdef TARGET_RUST_OS_INFO
+# error "TARGET_RUST_OS_INFO already defined in freebsd.h - c++ undefines it and redefines it."
+#endif
+#define TARGET_RUST_OS_INFO() FBSD_TARGET_RUST_OS_INFO()
+
 #undef  CPP_SPEC
 #define CPP_SPEC FBSD_CPP_SPEC
 
