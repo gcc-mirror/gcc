@@ -3492,6 +3492,43 @@ riscv_select_section (tree decl, int reloc,
     }
 }
 
+/* Switch to the appropriate section for output of DECL.  */
+
+static void
+riscv_unique_section (tree decl, int reloc)
+{
+  const char *prefix = NULL;
+  bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
+
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_SRODATA:
+      prefix = one_only ? ".sr" : ".srodata";
+      break;
+
+    default:
+      break;
+    }
+  if (prefix)
+    {
+      const char *name, *linkonce;
+      char *string;
+
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      name = targetm.strip_name_encoding (name);
+
+      /* If we're using one_only, then there needs to be a .gnu.linkonce
+	 prefix to the section name.  */
+      linkonce = one_only ? ".gnu.linkonce" : "";
+
+      string = ACONCAT ((linkonce, prefix, ".", name, NULL));
+
+      set_decl_section_name (decl, string);
+      return;
+    }
+  default_unique_section (decl, reloc);
+}
+
 /* Return a section for X, handling small data. */
 
 static section *
@@ -5253,6 +5290,9 @@ riscv_new_address_profitable_p (rtx memref, rtx_insn *insn, rtx new_addr)
 
 #undef TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION riscv_select_section
+
+#undef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION riscv_unique_section
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  riscv_elf_select_rtx_section
