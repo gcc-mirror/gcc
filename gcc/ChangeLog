@@ -1,5 +1,11 @@
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/arm/arm-builtins.c (arm_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for the first assignments to
+	fenv_var and new_fenv_var.
+
+2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/sourcebuild.texi (arm_arch_v8a_hard_ok): Document new
 	effective-target keyword.
 	(arm_arch_v8a_hard_multilib): Likewise.
