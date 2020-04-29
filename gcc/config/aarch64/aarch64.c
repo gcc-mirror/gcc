@@ -1369,10 +1369,14 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   if (regno == FRAME_POINTER_REGNUM || regno == ARG_POINTER_REGNUM)
     return mode == Pmode;
 
-  if (GP_REGNUM_P (regno) && known_le (GET_MODE_SIZE (mode), 16))
-    return true;
-
-  if (FP_REGNUM_P (regno))
+  if (GP_REGNUM_P (regno))
+    {
+      if (known_le (GET_MODE_SIZE (mode), 8))
+	return true;
+      else if (known_le (GET_MODE_SIZE (mode), 16))
+	return (regno & 1) == 0;
+    }
+  else if (FP_REGNUM_P (regno))
     {
       if (vec_flags & VEC_STRUCT)
 	return end_hard_regno (mode, regno) - 1 <= V31_REGNUM;

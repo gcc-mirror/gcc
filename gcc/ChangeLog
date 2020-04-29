@@ -1,3 +1,11 @@
+2020-04-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline.
+	2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Force
+	16-byte modes held in GP registers to use an even regno.
+
 2020-04-28  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR target/94814
