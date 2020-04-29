@@ -818,7 +818,7 @@ trace_ranger::trace_ranger ()
 inline bool
 trace_ranger::dumping (unsigned counter, bool trailing)
 {
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_GORI))
     {
       // Print counter index as well as INDENT spaces.
       if (!trailing)
