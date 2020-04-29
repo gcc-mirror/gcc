@@ -251,6 +251,53 @@ package body Exp_SPARK is
             Analyze_And_Resolve (N, Standard_Boolean);
          end if;
 
+      elsif Attr_Id = Attribute_Update then
+         declare
+            Aggr : constant Node_Id := First (Expressions (N));
+            --  The aggregate expression
+
+            Assoc     : Node_Id;
+            Comp      : Node_Id;
+            Comp_Type : Node_Id;
+            Expr      : Node_Id;
+
+         begin
+            --  Apply scalar range checks on the updated components, if needed
+
+            if Is_Array_Type (Typ) then
+               Assoc := First (Component_Associations (Aggr));
+
+               while Present (Assoc) loop
+                  Expr      := Expression (Assoc);
+                  Comp_Type := Component_Type (Typ);
+
+                  if Is_Scalar_Type (Comp_Type) then
+                     Apply_Scalar_Range_Check (Expr, Comp_Type);
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+
+            else pragma Assert (Is_Record_Type (Typ));
+
+               Assoc := First (Component_Associations (Aggr));
+               while Present (Assoc) loop
+                  Expr      := Expression (Assoc);
+                  Comp      := First (Choices (Assoc));
+                  Comp_Type := Etype (Entity (Comp));
+
+                  --  Use the type of the first component from the Choices
+                  --  list, as multiple components can only appear there if
+                  --  they have exactly the same type.
+
+                  if Is_Scalar_Type (Comp_Type) then
+                     Apply_Scalar_Range_Check (Expr, Comp_Type);
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+            end if;
+         end;
       end if;
    end Expand_SPARK_N_Attribute_Reference;
 
