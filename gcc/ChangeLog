@@ -1,3 +1,8 @@
+2020-05-12  Keith Packard  <keith.packard@sifive.com>
+
+	* config/riscv/riscv.c (riscv_unique_section): New.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
 2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
 
 	* config.gcc:  Add riscv-shorten-memrefs.o to extra_objs for riscv.
