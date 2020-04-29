@@ -1,3 +1,11 @@
+2020-05-18  Carl Love  <cel@us.ibm.com>
+
+	PR target/94833
+	* config/rs6000/vsx.md (define_expand): Fix instruction generation for
+	first_match_index_<mode>.
+	* testsuite/gcc.target/powerpc/builtins-8-p9-runnable.c (main): Add
+	additional test cases with zero vector elements.
+
 2020-05-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95169
