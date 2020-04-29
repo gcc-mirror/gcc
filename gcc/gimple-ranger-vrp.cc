@@ -58,10 +58,9 @@ public:
 						    gimple *stmt)
   {
     widest_irange r;
-    value_range_equiv *vr = new (range_pool.allocate ()) value_range_equiv;
-    if (!range_of_expr (r, const_cast<tree> (expr), stmt))
-      vr->set_varying (TREE_TYPE (expr));
-    return vr;
+    if (range_of_expr (r, const_cast<tree> (expr), stmt))
+      return new (range_pool.allocate ()) value_range_equiv (r);
+    return new (range_pool.allocate ()) value_range_equiv (TREE_TYPE (expr));
   }
 private:
   object_allocator<value_range_equiv> range_pool;
