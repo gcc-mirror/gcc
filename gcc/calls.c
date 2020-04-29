@@ -6270,13 +6270,10 @@ must_pass_va_arg_in_stack (tree type)
 bool
 cxx17_empty_base_field_p (const_tree field)
 {
-  return (TREE_CODE (field) == FIELD_DECL
+  return (DECL_FIELD_ABI_IGNORED (field)
 	  && DECL_ARTIFICIAL (field)
 	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (field))
-	  && DECL_SIZE (field)
-	  && integer_zerop (DECL_SIZE (field))
-	  && TYPE_SIZE (TREE_TYPE (field))
-	  && !integer_zerop (TYPE_SIZE (TREE_TYPE (field))));
+	  && !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (field)));
 }
 
 /* Tell the garbage collector about GTY markers in this source file.  */

@@ -668,6 +668,10 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
       # VxWorks uses the Dinkumware C++ library.
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
+    amdgcn*-*-*)
+      # Not ported/fails to build when using newlib.
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
     arm*-wince-pe*)
       # the C++ libraries don't build on top of CE's C libraries
       noconfigdirs="$noconfigdirs target-libstdc++-v3"

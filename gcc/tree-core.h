@@ -1709,7 +1709,8 @@ struct GTY(()) tree_decl_common {
   unsigned lang_flag_8 : 1;
 
   /* In VAR_DECL and PARM_DECL, this is DECL_REGISTER
-     IN TRANSLATION_UNIT_DECL, this is TRANSLATION_UNIT_WARN_EMPTY_P.  */
+     In TRANSLATION_UNIT_DECL, this is TRANSLATION_UNIT_WARN_EMPTY_P.
+     In FIELD_DECL, this is DECL_FIELD_ABI_IGNORED.  */
   unsigned decl_flag_0 : 1;
   /* In FIELD_DECL, this is DECL_BIT_FIELD
      In VAR_DECL and FUNCTION_DECL, this is DECL_EXTERNAL.

@@ -319,7 +319,7 @@ proc libgomp_option_proc { option } {
 proc offload_target_to_openacc_device_type { offload_target } {
     switch -glob $offload_target {
 	amdgcn* {
-	    return "gcn"
+	    return "radeon"
 	}
 	disable {
 	    return "host"
@@ -483,10 +483,10 @@ proc check_effective_target_hsa_offloading_selected {} {
     }]
 }
 
-# Return 1 if at least one AMD GCN board is present.
+# Return 1 if at least one AMD GPU is accessible.
 
-proc check_effective_target_openacc_amdgcn_accel_present { } {
-    return [check_runtime openacc_amdgcn_accel_present {
+proc check_effective_target_openacc_radeon_accel_present { } {
+    return [check_runtime openacc_radeon_accel_present {
 	#include <openacc.h>
 	int main () {
 	return !(acc_get_num_devices (acc_device_radeon) > 0);
@@ -494,11 +494,11 @@ proc check_effective_target_openacc_amdgcn_accel_present { } {
     } "" ]
 }
 
-# Return 1 if at least one AMD GCN board is present, and the AMD GCN device
-# type is selected by default.
+# Return 1 if at least one AMD GPU is accessible, and the OpenACC 'radeon'
+# device type is selected.
 
-proc check_effective_target_openacc_amdgcn_accel_selected { } {
-    if { ![check_effective_target_openacc_amdgcn_accel_present] } {
+proc check_effective_target_openacc_radeon_accel_selected { } {
+    if { ![check_effective_target_openacc_radeon_accel_present] } {
 	return 0;
     }
     global offload_target

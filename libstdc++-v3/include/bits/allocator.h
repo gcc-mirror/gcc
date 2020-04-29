@@ -50,9 +50,6 @@
 #endif
 
 #define __cpp_lib_incomplete_container_elements 201505
-#if __cplusplus >= 201103L
-# define __cpp_lib_allocator_is_always_equal 201411
-#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

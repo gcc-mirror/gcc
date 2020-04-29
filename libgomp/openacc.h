@@ -49,7 +49,7 @@ extern "C" {
 /* Types */
 typedef enum acc_device_t {
   /* Keep in sync with include/gomp-constants.h.  */
-  acc_device_current = -3,
+  acc_device_current = -1,
   acc_device_none = 0,
   acc_device_default = 1,
   acc_device_host = 2,

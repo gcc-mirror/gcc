@@ -10439,12 +10439,14 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
 struct find_template_parameter_info
 {
   explicit find_template_parameter_info (tree ctx_parms)
-    : ctx_parms (ctx_parms),
+    : parm_list (NULL_TREE),
+      ctx_parms (ctx_parms),
       max_depth (TMPL_PARMS_DEPTH (ctx_parms))
   {}
 
   hash_set<tree> visited;
   hash_set<tree> parms;
+  tree parm_list;
   tree ctx_parms;
   int max_depth;
 };
@@ -10476,7 +10478,8 @@ keep_template_parm (tree t, void* data)
      T and const T. Adjust types to their unqualified versions.  */
   if (TYPE_P (t))
     t = TYPE_MAIN_VARIANT (t);
-  ftpi->parms.add (t);
+  if (!ftpi->parms.add (t))
+    ftpi->parm_list = tree_cons (NULL_TREE, t, ftpi->parm_list);
 
   return 0;
 }
@@ -10587,11 +10590,7 @@ find_template_parameters (tree t, tree ctx_parms)
   find_template_parameter_info ftpi (ctx_parms);
   for_each_template_parm (t, keep_template_parm, &ftpi, &ftpi.visited,
 			  /*include_nondeduced*/true, any_template_parm_r);
-  tree list = NULL_TREE;
-  for (hash_set<tree>::iterator iter = ftpi.parms.begin();
-       iter != ftpi.parms.end(); ++iter)
-    list = tree_cons (NULL_TREE, *iter, list);
-  return list;
+  return ftpi.parm_list;
 }
 
 /* Returns true if T depends on any template parameter.  */

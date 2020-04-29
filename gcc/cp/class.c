@@ -4515,6 +4515,7 @@ build_base_field (record_layout_info rli, tree binfo, tree access,
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
+	  DECL_FIELD_ABI_IGNORED (decl) = 1;
 	}
 
       /* An empty virtual base causes a class to be non-empty
@@ -6522,7 +6523,10 @@ layout_class_type (tree t, tree *virtuals_p)
 	  SET_DECL_MODE (field, TYPE_MODE (type));
 	}
       else if (might_overlap && is_empty_class (type))
-	layout_empty_base_or_field (rli, field, empty_base_offsets);
+	{
+	  DECL_FIELD_ABI_IGNORED (field) = 1;
+	  layout_empty_base_or_field (rli, field, empty_base_offsets);
+	}
       else
 	layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				       empty_base_offsets);

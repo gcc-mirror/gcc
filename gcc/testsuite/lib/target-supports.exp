@@ -4443,6 +4443,7 @@ foreach { armfunc armflag armdefs } {
 	v7ve "-march=armv7ve -marm"
 		"__ARM_ARCH_7A__ && __ARM_FEATURE_IDIV"
 	v8a "-march=armv8-a" __ARM_ARCH_8A__
+	v8a_hard "-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard" __ARM_ARCH_8A__
 	v8_1a "-march=armv8.1-a" __ARM_ARCH_8A__
 	v8_2a "-march=armv8.2-a" __ARM_ARCH_8A__
 	v8r "-march=armv8-r" __ARM_ARCH_8R__

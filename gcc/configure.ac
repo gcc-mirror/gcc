@@ -1047,17 +1047,20 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   else
     enable_offloading=1
     case "$tgt" in
-      *-intelmicemul-*)
+      *-intelmic-* | *-intelmicemul-*)
 	omp_device_property=omp-device-properties-i386
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
 	;;
-      gcn*-*)
+      amdgcn*)
 	omp_device_property=omp-device-properties-gcn
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
 	;;
-      nvptx*-*)
+      nvptx*)
 	omp_device_property=omp-device-properties-nvptx
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+      *)
+	AC_MSG_ERROR([unknown offload target specified])
 	;;
     esac
     omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"

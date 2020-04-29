@@ -194,6 +194,7 @@ AggregateDeclaration::AggregateDeclaration(Loc loc, Identifier *id)
     sizeok = SIZEOKnone;        // size not determined yet
     deferred = NULL;
     isdeprecated = false;
+    classKind = ClassKind::d;
     inv = NULL;
     aggNew = NULL;
     aggDelete = NULL;
@@ -1071,6 +1072,9 @@ void StructDeclaration::semantic(Scope *sc)
         if (storage_class & STCabstract)
             error("structs, unions cannot be abstract");
         userAttribDecl = sc->userAttribDecl;
+
+        if (sc->linkage == LINKcpp)
+            classKind = ClassKind::cpp;
     }
     else if (symtab && !scx)
     {

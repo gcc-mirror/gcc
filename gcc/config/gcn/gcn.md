@@ -629,7 +629,7 @@
     rtx outhi = gen_highpart_mode (SImode, <MODE>mode, operands[0]);
 
     /* Ensure that overlapping registers aren't corrupted.  */
-    if (REGNO (outlo) == REGNO (inhi))
+    if (reg_overlap_mentioned_p (outlo, inhi))
       {
 	operands[0] = outhi;
 	operands[1] = inhi;

@@ -5963,6 +5963,8 @@ arm_return_in_memory (const_tree type, const_tree fntype)
 
       /* Find the first field, ignoring non FIELD_DECL things which will
 	 have been created by C++.  */
+      /* NOTE: This code is deprecated and has not been updated to handle
+	 DECL_FIELD_ABI_IGNORED.  */
       for (field = TYPE_FIELDS (type);
 	   field && TREE_CODE (field) != FIELD_DECL;
 	   field = DECL_CHAIN (field))
@@ -6135,23 +6137,42 @@ aapcs_vfp_cum_init (CUMULATIVE_ARGS *pcum  ATTRIBUTE_UNUSED,
   pcum->aapcs_vfp_reg_alloc = 0;
 }
 
+/* Bitmasks that indicate whether earlier versions of GCC would have
+   taken a different path through the ABI logic.  This should result in
+   a -Wpsabi warning if the earlier path led to a different ABI decision.
+
+   WARN_PSABI_EMPTY_CXX17_BASE
+      Indicates that the type includes an artificial empty C++17 base field
+      that, prior to GCC 10.1, would prevent the type from being treated as
+      a HFA or HVA.  See PR94711 for details.
+
+   WARN_PSABI_NO_UNIQUE_ADDRESS
+      Indicates that the type includes an empty [[no_unique_address]] field
+      that, prior to GCC 10.1, would prevent the type from being treated as
+      a HFA or HVA.  */
+const unsigned int WARN_PSABI_EMPTY_CXX17_BASE = 1U << 0;
+const unsigned int WARN_PSABI_NO_UNIQUE_ADDRESS = 1U << 1;
+
 /* Walk down the type tree of TYPE counting consecutive base elements.
    If *MODEP is VOIDmode, then set it to the first valid floating point
    type.  If a non-floating point type is found, or if a floating point
    type that doesn't match a non-VOIDmode *MODEP is found, then return -1,
    otherwise return the count in the sub-tree.
 
-   The AVOID_CXX17_EMPTY_BASE argument is to allow the caller to check whether
-   this function has changed its behavior after the fix for PR94384 -- this fix
-   is to avoid artificial fields in empty base classes.
-   When called with this argument as a NULL pointer this function does not
-   avoid the artificial fields -- this is useful to check whether the function
-   returns something different after the fix.
-   When called pointing at a value, this function avoids such artificial fields
-   and sets the value to TRUE when one of these fields has been set.  */
+   The WARN_PSABI_FLAGS argument allows the caller to check whether this
+   function has changed its behavior relative to earlier versions of GCC.
+   Normally the argument should be nonnull and point to a zero-initialized
+   variable.  The function then records whether the ABI decision might
+   be affected by a known fix to the ABI logic, setting the associated
+   WARN_PSABI_* bits if so.
+
+   When the argument is instead a null pointer, the function tries to
+   simulate the behavior of GCC before all such ABI fixes were made.
+   This is useful to check whether the function returns something
+   different after the ABI fixes.  */
 static int
 aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
-			 bool *avoid_cxx17_empty_base)
+			 unsigned int *warn_psabi_flags)
 {
   machine_mode mode;
   HOST_WIDE_INT size;
@@ -6224,7 +6245,7 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
 	  return -1;
 
 	count = aapcs_vfp_sub_candidate (TREE_TYPE (type), modep,
-					 avoid_cxx17_empty_base);
+					 warn_psabi_flags);
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -6262,20 +6283,30 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    /* Ignore C++17 empty base fields, while their type indicates they
-	       contain padding, this is only sometimes contributed to the derived
-	       class.
-	       When the padding is contributed to the derived class that's
-	       caught by the general test for padding below.  */
-	    if (cxx17_empty_base_field_p (field)
-		&& avoid_cxx17_empty_base)
+	    if (DECL_FIELD_ABI_IGNORED (field))
 	      {
-		*avoid_cxx17_empty_base = true;
-		continue;
+		/* See whether this is something that earlier versions of
+		   GCC failed to ignore.  */
+		unsigned int flag;
+		if (lookup_attribute ("no_unique_address",
+				      DECL_ATTRIBUTES (field)))
+		  flag = WARN_PSABI_NO_UNIQUE_ADDRESS;
+		else if (cxx17_empty_base_field_p (field))
+		  flag = WARN_PSABI_EMPTY_CXX17_BASE;
+		else
+		  /* No compatibility problem.  */
+		  continue;
+
+		/* Simulate the old behavior when WARN_PSABI_FLAGS is null.  */
+		if (warn_psabi_flags)
+		  {
+		    *warn_psabi_flags |= flag;
+		    continue;
+		  }
 	      }
 
 	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep,
-						 avoid_cxx17_empty_base);
+						 warn_psabi_flags);
 	    if (sub_count < 0)
 	      return -1;
 	    count += sub_count;
@@ -6309,7 +6340,7 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
 	      continue;
 
 	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep,
-						 avoid_cxx17_empty_base);
+						 warn_psabi_flags);
 	    if (sub_count < 0)
 	      return -1;
 	    count = count > sub_count ? count : sub_count;
@@ -6371,24 +6402,32 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
      out from the mode.  */
   if (type)
     {
-      bool avoided = false;
-      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode, &avoided);
+      unsigned int warn_psabi_flags = 0;
+      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode,
+					      &warn_psabi_flags);
       if (ag_count > 0 && ag_count <= 4)
 	{
 	  static unsigned last_reported_type_uid;
 	  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
 	  int alt;
 	  if (warn_psabi
-	      && avoided
+	      && warn_psabi_flags
 	      && uid != last_reported_type_uid
 	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
 		  != ag_count))
 	    {
 	      gcc_assert (alt == -1);
 	      last_reported_type_uid = uid;
-	      inform (input_location, "parameter passing for argument of type "
-		      "%qT when C++17 is enabled changed to match C++14 "
-		      "in GCC 10.1", type);
+	      /* Use TYPE_MAIN_VARIANT to strip any redundant const
+		 qualification.  */
+	      if (warn_psabi_flags & WARN_PSABI_NO_UNIQUE_ADDRESS)
+		inform (input_location, "parameter passing for argument of "
+			"type %qT with %<[[no_unique_address]]%> members "
+			"changed in GCC 10.1", TYPE_MAIN_VARIANT (type));
+	      else if (warn_psabi_flags & WARN_PSABI_EMPTY_CXX17_BASE)
+		inform (input_location, "parameter passing for argument of "
+			"type %qT when C++17 is enabled changed to match "
+			"C++14 in GCC 10.1", TYPE_MAIN_VARIANT (type));
 	    }
 	  *count = ag_count;
 	}
@@ -6933,7 +6972,20 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
 
   int ret = 0;
   int ret2 = 0;
-  /* Record/aggregate types: Use greatest member alignment of any member.  */
+  /* Record/aggregate types: Use greatest member alignment of any member.
+
+     Note that we explicitly consider zero-sized fields here, even though
+     they don't map to AAPCS machine types.  For example, in:
+
+	 struct __attribute__((aligned(8))) empty {};
+
+	 struct s {
+	   [[no_unique_address]] empty e;
+	   int x;
+	 };
+
+     "s" contains only one Fundamental Data Type (the int field)
+     but gains 8-byte alignment and size thanks to "e".  */
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (DECL_ALIGN (field) > PARM_BOUNDARY)
       {

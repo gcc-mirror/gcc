@@ -82,8 +82,11 @@ if { $lang_test_file_found } {
 		unsupported "$subdir $offload_target offloading"
 		continue
 	    }
-	    gcn {
-		if { ![check_effective_target_openacc_amdgcn_accel_present] } {
+	    host {
+		set acc_mem_shared 1
+	    }
+	    nvidia {
+		if { ![check_effective_target_openacc_nvidia_accel_present] } {
 		    # Don't bother; execution testing is going to FAIL.
 		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
 		    continue
@@ -91,11 +94,8 @@ if { $lang_test_file_found } {
 
 		set acc_mem_shared 0
 	    }
-	    host {
-		set acc_mem_shared 1
-	    }
-	    nvidia {
-		if { ![check_effective_target_openacc_nvidia_accel_present] } {
+	    radeon {
+		if { ![check_effective_target_openacc_radeon_accel_present] } {
 		    # Don't bother; execution testing is going to FAIL.
 		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
 		    continue

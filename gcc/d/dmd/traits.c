@@ -1135,12 +1135,32 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         {
             Dsymbol *s = getDsymbol(o);
             Declaration *d = NULL;
-            if (!s || (d = s->isDeclaration()) == NULL)
+            AggregateDeclaration *ad = NULL;
+            if (!s || ((d = s->isDeclaration()) == NULL
+                       && (ad = s->isAggregateDeclaration()) == NULL))
             {
                 e->error("argument to `__traits(getLinkage, %s)` is not a declaration", o->toChars());
                 return new ErrorExp();
             }
-            link = d->linkage;
+            if (d != NULL)
+                link = d->linkage;
+            else
+            {
+                switch (ad->classKind)
+                {
+                    case ClassKind::d:
+                        link = LINKd;
+                        break;
+                    case ClassKind::cpp:
+                        link = LINKcpp;
+                        break;
+                    case ClassKind::objc:
+                        link = LINKobjc;
+                        break;
+                    default:
+                        assert(0);
+                }
+            }
         }
         const char *linkage = linkageToChars(link);
         StringExp *se = new StringExp(e->loc, const_cast<char *>(linkage));

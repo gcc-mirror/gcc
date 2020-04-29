@@ -2750,6 +2750,13 @@ extern void decl_value_expr_insert (tree, tree);
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->base.u.bits.packed_flag)
 
+/* In a FIELD_DECL, indicates this field should be ignored for ABI decisions
+   like passing/returning containing struct by value.
+   Set for C++17 empty base artificial FIELD_DECLs as well as
+   empty [[no_unique_address]] non-static data members.  */
+#define DECL_FIELD_ABI_IGNORED(NODE) \
+  (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_0)
+
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
 #define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_1)

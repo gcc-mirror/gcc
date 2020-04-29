@@ -3083,6 +3083,8 @@ ix86_set_indirect_branch_type (tree fndecl)
 		? "thunk-extern" : "thunk"));
 
       if (cfun->machine->indirect_branch_type != indirect_branch_keep
+	  && (cfun->machine->indirect_branch_type
+	      != indirect_branch_thunk_extern)
 	  && (flag_cf_protection & CF_RETURN))
 	error ("%<-mindirect-branch%> and %<-fcf-protection%> are not "
 	       "compatible");
@@ -3126,6 +3128,8 @@ ix86_set_indirect_branch_type (tree fndecl)
 		? "thunk-extern" : "thunk"));
 
       if (cfun->machine->function_return_type != indirect_branch_keep
+	  && (cfun->machine->function_return_type
+	      != indirect_branch_thunk_extern)
 	  && (flag_cf_protection & CF_RETURN))
 	error ("%<-mfunction-return%> and %<-fcf-protection%> are not "
 	       "compatible");

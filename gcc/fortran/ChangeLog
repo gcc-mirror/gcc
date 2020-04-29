@@ -1,3 +1,10 @@
+2020-04-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR fortran/94769
+	* io.c (check_io_constraints): Initialize local variable num to
+	-1 and assert that it receives a meaningful value by function
+	compare_to_allowed_values.
+
 2020-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93956

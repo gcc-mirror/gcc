@@ -1,3 +1,30 @@
+2020-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94830
+	* pt.c (find_template_parameter_info::parm_list): New field.
+	(keep_template_parm): Use the new field to build up the
+	parameter list here instead of ...
+	(find_template_parameters): ... here.  Return ftpi.parm_list.
+
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* class.c (build_base_field): Set DECL_FIELD_ABI_IGNORED on C++17 empty
+	base artificial FIELD_DECLs.
+	(layout_class_type): Set DECL_FIELD_ABI_IGNORED on empty class
+	field_poverlapping_p FIELD_DECLs.
+
+2020-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94819
+	* constraint.cc (satisfy_declaration_constraints): Use saved_t
+	instead of t as the key to decl_satisfied_cache.
+
+	PR c++/94808
+	* error.c (print_requires_expression_info): Print the dependent
+	form of the parameter list with its template parameter mapping,
+	rather than printing the substituted form.
+
 2020-04-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94583

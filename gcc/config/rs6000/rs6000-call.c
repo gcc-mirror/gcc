@@ -5529,7 +5529,7 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
 
 static int
 rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
-			    bool *cxx17_empty_base_seen)
+			    int *empty_base_seen)
 {
   machine_mode mode;
   HOST_WIDE_INT size;
@@ -5600,7 +5600,7 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	  return -1;
 
 	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep,
-					    cxx17_empty_base_seen);
+					    empty_base_seen);
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -5638,14 +5638,18 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
 
-	    if (cxx17_empty_base_field_p (field))
+	    if (DECL_FIELD_ABI_IGNORED (field))
 	      {
-		*cxx17_empty_base_seen = true;
+		if (lookup_attribute ("no_unique_address",
+				      DECL_ATTRIBUTES (field)))
+		  *empty_base_seen |= 2;
+		else
+		  *empty_base_seen |= 1;
 		continue;
 	      }
 
 	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
-						    cxx17_empty_base_seen);
+						    empty_base_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count += sub_count;
@@ -5679,7 +5683,7 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep,
 	      continue;
 
 	    sub_count = rs6000_aggregate_candidate (TREE_TYPE (field), modep,
-						    cxx17_empty_base_seen);
+						    empty_base_seen);
 	    if (sub_count < 0)
 	      return -1;
 	    count = count > sub_count ? count : sub_count;
@@ -5720,9 +5724,9 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
       && AGGREGATE_TYPE_P (type))
     {
       machine_mode field_mode = VOIDmode;
-      bool cxx17_empty_base_seen = false;
+      int empty_base_seen = 0;
       int field_count = rs6000_aggregate_candidate (type, &field_mode,
-						    &cxx17_empty_base_seen);
+						    &empty_base_seen);
 
       if (field_count > 0)
 	{
@@ -5737,16 +5741,22 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 		*elt_mode = field_mode;
 	      if (n_elts)
 		*n_elts = field_count;
-	      if (cxx17_empty_base_seen && warn_psabi)
+	      if (empty_base_seen && warn_psabi)
 		{
 		  static unsigned last_reported_type_uid;
 		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
 		  if (uid != last_reported_type_uid)
 		    {
-		      inform (input_location,
-			      "parameter passing for argument of type %qT "
-			      "when C++17 is enabled changed to match C++14 "
-			      "in GCC 10.1", type);
+		      if (empty_base_seen & 1)
+			inform (input_location,
+				"parameter passing for argument of type %qT "
+				"when C++17 is enabled changed to match C++14 "
+				"in GCC 10.1", type);
+		      else
+			inform (input_location,
+				"parameter passing for argument of type %qT "
+				"with %<[[no_unique_address]]%> members "
+				"changed in GCC 10.1", type);
 		      last_reported_type_uid = uid;
 		    }
 		}

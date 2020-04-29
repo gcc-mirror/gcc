@@ -2179,20 +2179,21 @@ ref_always_accessed::operator () (mem_ref_loc *loc)
 {
   class loop *must_exec;
 
-  if (!get_lim_data (loc->stmt))
+  struct lim_aux_data *lim_data = get_lim_data (loc->stmt);
+  if (!lim_data)
     return false;
 
   /* If we require an always executed store make sure the statement
-     stores to the reference.  */
+     is a store.  */
   if (stored_p)
     {
       tree lhs = gimple_get_lhs (loc->stmt);
       if (!lhs
-	  || lhs != *loc->ref)
+	  || !(DECL_P (lhs) || REFERENCE_CLASS_P (lhs)))
 	return false;
     }
 
-  must_exec = get_lim_data (loc->stmt)->always_executed_in;
+  must_exec = lim_data->always_executed_in;
   if (!must_exec)
     return false;
 

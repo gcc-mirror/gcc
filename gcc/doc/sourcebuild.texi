@@ -1829,6 +1829,17 @@ Some multilibs may be incompatible with these options.
 ARM target supports @code{-mfpu=vfp3 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
+@item arm_arch_v8a_hard_ok
+@anchor{arm_arch_v8a_hard_ok}
+The compiler is targeting @code{arm*-*-*} and can compile and assemble code
+using the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
+This is not enough to guarantee that linking works.
+
+@item arm_arch_v8a_hard_multilib
+The compiler is targeting @code{arm*-*-*} and can build programs using
+the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
+The target can also run the resulting binaries.
+
 @item arm_v8_vfp_ok
 ARM target supports @code{-mfpu=fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
@@ -2585,6 +2596,11 @@ the @ref{arm_neon_fp16_ok,,arm_neon_fp16_ok effective target keyword}.
 @item arm_vfp3
 arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
+
+@item arm_arch_v8a_hard
+Add options for ARMv8-A and the hard-float variant of the AAPCS,
+if this is supported by the compiler; see the
+@ref{arm_arch_v8a_hard_ok,,arm_arch_v8a_hard_ok} effective target keyword.
 
 @item arm_v8_1a_neon
 Add options for ARMv8.1-A with Adv.SIMD support, if this is supported
