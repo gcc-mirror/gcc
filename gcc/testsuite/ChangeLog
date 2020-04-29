@@ -1,5 +1,10 @@
 2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR c++/94883
+	* g++.dg/coroutines/pr94883-folly-2.C: New test.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR c++/94879
 	* g++.dg/coroutines/pr94xxx-folly-1.C: New test.
 

@@ -1,5 +1,12 @@
 2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR c++/94883
+	* coroutines.cc (register_awaits): Update target
+	expressions for awaitable and suspend handle
+	initializers.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR c++/94879
 	* coroutines.cc (build_co_await): Account for variables
 	with DECL_VALUE_EXPRs.

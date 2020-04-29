@@ -2757,6 +2757,17 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       free (nam);
     }
 
+  tree o = TREE_OPERAND (aw_expr, 2); /* Initialiser for the frame var.  */
+  /* If this is a target expression, then we need to remake it to strip off
+     any extra cleanups added.  */
+  if (TREE_CODE (o) == TARGET_EXPR)
+    TREE_OPERAND (aw_expr, 2) = get_target_expr (TREE_OPERAND (o, 1));
+
+  tree v = TREE_OPERAND (aw_expr, 3);
+  o = TREE_VEC_ELT (v, 1);
+  if (TREE_CODE (o) == TARGET_EXPR)
+    TREE_VEC_ELT (v, 1) = get_target_expr (TREE_OPERAND (o, 1));
+
   register_await_info (aw_expr, aw_field_type, aw_field_nam);
 
   /* Count how many awaits the current expression contains.  */
