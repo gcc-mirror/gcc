@@ -1,5 +1,9 @@
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94819
+	* g++.dg/cpp2a/concepts-inherit-ctor10.C: New test.
+	* g++.dg/cpp2a/concepts-inherit-ctor11.C: New test.
+
 	PR c++/94808
 	* g++.dg/concepts/diagnostic12.C: New test.
 	* g++.dg/concepts/diagnostic5.C: Adjust dg-message.

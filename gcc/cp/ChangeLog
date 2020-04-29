@@ -1,5 +1,9 @@
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
+	PR c++/94819
+	* constraint.cc (satisfy_declaration_constraints): Use saved_t
+	instead of t as the key to decl_satisfied_cache.
+
 	PR c++/94808
 	* error.c (print_requires_expression_info): Print the dependent
 	form of the parameter list with its template parameter mapping,

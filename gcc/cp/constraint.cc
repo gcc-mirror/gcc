@@ -2752,7 +2752,7 @@ satisfy_declaration_constraints (tree t, subst_info info)
   info.in_decl = t;
 
   if (info.quiet ())
-    if (tree *result = hash_map_safe_get (decl_satisfied_cache, t))
+    if (tree *result = hash_map_safe_get (decl_satisfied_cache, saved_t))
       return *result;
 
   /* Get the normalized constraints.  */
@@ -2787,7 +2787,7 @@ satisfy_declaration_constraints (tree t, subst_info info)
     }
 
   if (info.quiet ())
-    hash_map_safe_put<hm_ggc> (decl_satisfied_cache, t, result);
+    hash_map_safe_put<hm_ggc> (decl_satisfied_cache, saved_t, result);
 
   return result;
 }
