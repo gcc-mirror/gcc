@@ -11995,26 +11995,6 @@ package body Sem_Attr is
                   Expr := Expression (Assoc);
                   Resolve (Expr, Component_Type (Typ));
 
-                  --  For scalar array components set Do_Range_Check when
-                  --  needed. Constraint checking on non-scalar components
-                  --  is done in Aggregate_Constraint_Checks, but only if
-                  --  full analysis is enabled. These flags are not set in
-                  --  the front-end in GnatProve mode.
-
-                  if Is_Scalar_Type (Component_Type (Typ))
-                    and then not Is_OK_Static_Expression (Expr)
-                    and then not Range_Checks_Suppressed (Component_Type (Typ))
-                  then
-                     if Is_Entity_Name (Expr)
-                       and then Etype (Expr) = Component_Type (Typ)
-                     then
-                        null;
-
-                     else
-                        Set_Do_Range_Check (Expr);
-                     end if;
-                  end if;
-
                   --  The choices in the association are static constants,
                   --  or static aggregates each of whose components belongs
                   --  to the proper index type. However, they must also
@@ -12072,14 +12052,6 @@ package body Sem_Attr is
                     and then not Error_Posted (Comp)
                   then
                      Resolve (Expr, Etype (Entity (Comp)));
-
-                     if Is_Scalar_Type (Etype (Entity (Comp)))
-                       and then not Is_OK_Static_Expression (Expr)
-                       and then not Range_Checks_Suppressed
-                                      (Etype (Entity (Comp)))
-                     then
-                        Set_Do_Range_Check (Expr);
-                     end if;
                   end if;
 
                   Next (Assoc);
