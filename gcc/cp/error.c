@@ -3746,7 +3746,6 @@ print_requires_expression_info (diagnostic_context *context, tree constr, tree a
   map = tsubst_parameter_mapping (map, args, tf_none, NULL_TREE);
   if (map == error_mark_node)
     return;
-  args = get_mapped_args (map);
 
   print_location (context, cp_expr_loc_or_input_loc (expr));
   pp_verbatim (context->printer, "in requirements ");
@@ -3756,19 +3755,12 @@ print_requires_expression_info (diagnostic_context *context, tree constr, tree a
     pp_verbatim (context->printer, "with ");
   while (parms)
     {
-      tree next = TREE_CHAIN (parms);
-
-      TREE_CHAIN (parms) = NULL_TREE;
-      cp_unevaluated u;
-      tree p = tsubst (parms, args, tf_none, NULL_TREE);
-      pp_verbatim (context->printer, "%q#D", p);
-      TREE_CHAIN (parms) = next;
-
-      if (next)
+      pp_verbatim (context->printer, "%q#D", parms);
+      if (TREE_CHAIN (parms))
         pp_separate_with_comma ((cxx_pretty_printer *)context->printer);
-
-      parms = next;
+      parms = TREE_CHAIN (parms);
     }
+  pp_cxx_parameter_mapping ((cxx_pretty_printer *)context->printer, map);
 
   pp_verbatim (context->printer, "\n");
 }

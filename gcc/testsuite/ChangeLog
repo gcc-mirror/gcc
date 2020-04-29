@@ -1,3 +1,9 @@
+2020-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94808
+	* g++.dg/concepts/diagnostic12.C: New test.
+	* g++.dg/concepts/diagnostic5.C: Adjust dg-message.
+
 2020-04-28  Alexandre Oliva <oliva@adacore.com>
 
 	PR target/94812

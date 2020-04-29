@@ -1,3 +1,10 @@
+2020-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94808
+	* error.c (print_requires_expression_info): Print the dependent
+	form of the parameter list with its template parameter mapping,
+	rather than printing the substituted form.
+
 2020-04-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94583
