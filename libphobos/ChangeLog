@@ -1,3 +1,8 @@
+2020-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/lib/libphobos.exp (check_effective_target_linux_pre_2639):
+	Fix KERNEL_VERSION condition.
+
 2020-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94825
