@@ -4665,7 +4665,7 @@ hfa_element_mode (const_tree type, bool nested)
     case QUAL_UNION_TYPE:
       for (t = TYPE_FIELDS (type); t; t = DECL_CHAIN (t))
 	{
-	  if (TREE_CODE (t) != FIELD_DECL || cxx17_empty_base_field_p (t))
+	  if (TREE_CODE (t) != FIELD_DECL || DECL_FIELD_ABI_IGNORED (t))
 	    continue;
 
 	  mode = hfa_element_mode (TREE_TYPE (t), 1);
