@@ -1,3 +1,8 @@
+2020-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* g++.dg/warn/Warray-bounds-10.C: New test.
+
 2020-04-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94748
