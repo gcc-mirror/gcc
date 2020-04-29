@@ -986,6 +986,20 @@ AC_ARG_WITH(documentation-root-url,
 )
 AC_SUBST(DOCUMENTATION_ROOT_URL)
 
+# Allow overriding the default URL for GCC changes
+AC_ARG_WITH(changes-root-url,
+    AS_HELP_STRING([--with-changes-root-url=URL],
+                   [Root for GCC changes URLs]),
+    [case "$withval" in
+      yes) AC_MSG_ERROR([changes root URL not specified]) ;;
+      no)  AC_MSG_ERROR([changes root URL not specified]) ;;
+      *)   CHANGES_ROOT_URL="$withval"
+	   ;;
+     esac],
+     CHANGES_ROOT_URL="https://gcc.gnu.org/"
+)
+AC_SUBST(CHANGES_ROOT_URL)
+
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.
 AC_ARG_ENABLE(languages,

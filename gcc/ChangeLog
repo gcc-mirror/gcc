@@ -1,5 +1,25 @@
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.ac (-with-changes-root-url): New configure option,
+	defaulting to https://gcc.gnu.org/.
+	* Makefile.in (CFLAGS-opts.o): Define CHANGES_ROOT_URL for
+	opts.c.
+	* pretty-print.c (get_end_url_string): New function.
+	(pp_format): Handle %{ and %} for URLs.
+	(pp_begin_url): Use pp_string instead of pp_printf.
+	(pp_end_url): Use get_end_url_string.
+	* opts.h (get_changes_url): Declare.
+	* opts.c (get_changes_url): New function.
+	* config/rs6000/rs6000-call.c: Include opts.h.
+	(rs6000_discover_homogeneous_aggregate): Use %{in GCC 10.1%} instead
+	of just in GCC 10.1 in diagnostics and add URL.
+	* config/arm/arm.c (aapcs_vfp_is_call_or_return_candidate): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vfp_is_call_or_return_candidate):
+	Likewise.
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Likewise.
+	* configure: Regenerated.
+
 	PR target/94704
 	* config/s390/s390.c (s390_function_arg_vector,
 	s390_function_arg_float): Use DECL_FIELD_ABI_IGNORED instead of

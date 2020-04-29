@@ -3190,6 +3190,16 @@ get_option_url (diagnostic_context *, int option_index)
     return NULL;
 }
 
+/* Given "gcc-10/changes.html#foobar", return that URL under
+   CHANGES_ROOT_URL (see --with-changes-root-url).
+   The caller is responsible for freeing the returned string.  */
+
+char *
+get_changes_url (const char *str)
+{
+  return concat (CHANGES_ROOT_URL, str, NULL);
+}
+
 #if CHECKING_P
 
 namespace selftest {
