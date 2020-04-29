@@ -1,3 +1,8 @@
+2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93654
+	* gcc.target/i386/pr93654.c: New test.
+
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lib/target-supports.exp: Add v8a_hard to the list of arm_arch_*

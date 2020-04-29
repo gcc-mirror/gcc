@@ -1,3 +1,12 @@
+2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93654
+	* config/i386/i386-options.c (ix86_set_indirect_branch_type):
+	Allow -fcf-protection with -mindirect-branch=thunk-extern and
+	-mfunction-return=thunk-extern.
+	* doc/invoke.texi: Update notes for -fcf-protection=branch with
+	-mindirect-branch=thunk-extern and -mindirect-return=thunk-extern.
+
 2020-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/sourcebuild.texi: Add missing arm_arch_v8a_hard_ok anchor.
