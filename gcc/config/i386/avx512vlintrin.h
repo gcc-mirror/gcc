@@ -13466,19 +13466,19 @@ _mm256_permutex_pd (__m256d __X, const int __M)
         (__mmask8)(U)))
 
 #define _mm_mask_cvtps_ph(W, U, A, I)						\
-  ((__m128i) __builtin_ia32_vcvtps2ph_mask ((__v4sf)(__m128) A, (int) (I),      \
+  ((__m128i) __builtin_ia32_vcvtps2ph_mask ((__v4sf)(__m128) (A), (int) (I),	\
       (__v8hi)(__m128i) (W), (__mmask8) (U)))
 
 #define _mm_maskz_cvtps_ph(U, A, I)						\
-  ((__m128i) __builtin_ia32_vcvtps2ph_mask ((__v4sf)(__m128) A, (int) (I),      \
+  ((__m128i) __builtin_ia32_vcvtps2ph_mask ((__v4sf)(__m128) (A), (int) (I),	\
       (__v8hi)(__m128i) _mm_setzero_si128 (), (__mmask8) (U)))
 
 #define _mm256_mask_cvtps_ph(W, U, A, I)					\
-  ((__m128i) __builtin_ia32_vcvtps2ph256_mask ((__v8sf)(__m256) A, (int) (I),	\
+  ((__m128i) __builtin_ia32_vcvtps2ph256_mask ((__v8sf)(__m256) (A), (int) (I),	\
       (__v8hi)(__m128i) (W), (__mmask8) (U)))
 
 #define _mm256_maskz_cvtps_ph(U, A, I)						\
-  ((__m128i) __builtin_ia32_vcvtps2ph256_mask ((__v8sf)(__m256) A, (int) (I),   \
+  ((__m128i) __builtin_ia32_vcvtps2ph256_mask ((__v8sf)(__m256) (A), (int) (I),	\
       (__v8hi)(__m128i) _mm_setzero_si128 (), (__mmask8) (U)))
 
 #define _mm256_mask_srai_epi32(W, U, A, B)				\

@@ -3128,16 +3128,16 @@ _mm512_bsrli_epi128 (__m512i __A, const int __N)
 #define _mm512_alignr_epi8(X, Y, N)						    \
   ((__m512i) __builtin_ia32_palignr512 ((__v8di)(__m512i)(X),			    \
 					(__v8di)(__m512i)(Y),			    \
-					(int)(N * 8)))
+					(int)((N) * 8)))
 
 #define _mm512_mask_alignr_epi8(W, U, X, Y, N)					    \
   ((__m512i) __builtin_ia32_palignr512_mask ((__v8di)(__m512i)(X),		    \
-					    (__v8di)(__m512i)(Y), (int)(N * 8),	    \
+					    (__v8di)(__m512i)(Y), (int)((N) * 8),   \
 					    (__v8di)(__m512i)(W), (__mmask64)(U)))
 
 #define _mm512_maskz_alignr_epi8(U, X, Y, N)					    \
   ((__m512i) __builtin_ia32_palignr512_mask ((__v8di)(__m512i)(X),		    \
-					     (__v8di)(__m512i)(Y), (int)(N * 8),    \
+					     (__v8di)(__m512i)(Y), (int)((N) * 8),  \
 					     (__v8di)(__m512i)			    \
 					     _mm512_setzero_si512 (),		    \
 					     (__mmask64)(U)))

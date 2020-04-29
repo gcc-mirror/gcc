@@ -8570,22 +8570,22 @@ _mm512_maskz_cvtps_ph (__mmask16 __W, __m512 __A, const int __I)
     (__m512)__builtin_ia32_vcvtph2ps512_mask((__v16hi)(A), (__v16sf)_mm512_setzero_ps(), U, B)
 
 #define _mm512_cvt_roundps_ph(A, I)						 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_undefined_si256 (), -1))
 #define _mm512_cvtps_ph(A, I)						 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_undefined_si256 (), -1))
 #define _mm512_mask_cvt_roundps_ph(U, W, A, I)				 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)(__m256i)(U), (__mmask16) (W)))
 #define _mm512_mask_cvtps_ph(U, W, A, I)				 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)(__m256i)(U), (__mmask16) (W)))
 #define _mm512_maskz_cvt_roundps_ph(W, A, I)					 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_setzero_si256 (), (__mmask16) (W)))
 #define _mm512_maskz_cvtps_ph(W, A, I)					 \
-  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) A, (int) (I),\
+  ((__m256i) __builtin_ia32_vcvtps2ph512_mask ((__v16sf)(__m512) (A), (int) (I),\
     (__v16hi)_mm256_setzero_si256 (), (__mmask16) (W)))
 #endif
 
@@ -10081,32 +10081,32 @@ _mm_mask_cmp_round_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y,
 #define _mm512_mask_cmp_epi64_mask(M, X, Y, P)				\
   ((__mmask8) __builtin_ia32_cmpq512_mask ((__v8di)(__m512i)(X),	\
 					   (__v8di)(__m512i)(Y), (int)(P),\
-					   (__mmask8)M))
+					   (__mmask8)(M)))
 
 #define _mm512_mask_cmp_epi32_mask(M, X, Y, P)				\
   ((__mmask16) __builtin_ia32_cmpd512_mask ((__v16si)(__m512i)(X),	\
 					    (__v16si)(__m512i)(Y), (int)(P), \
-					    (__mmask16)M))
+					    (__mmask16)(M)))
 
 #define _mm512_mask_cmp_epu64_mask(M, X, Y, P)				\
   ((__mmask8) __builtin_ia32_ucmpq512_mask ((__v8di)(__m512i)(X),	\
 					    (__v8di)(__m512i)(Y), (int)(P),\
-					    (__mmask8)M))
+					    (__mmask8)(M)))
 
 #define _mm512_mask_cmp_epu32_mask(M, X, Y, P)				\
   ((__mmask16) __builtin_ia32_ucmpd512_mask ((__v16si)(__m512i)(X),	\
 					     (__v16si)(__m512i)(Y), (int)(P), \
-					     (__mmask16)M))
+					     (__mmask16)(M)))
 
 #define _mm512_mask_cmp_round_pd_mask(M, X, Y, P, R)			\
   ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
 					    (__v8df)(__m512d)(Y), (int)(P),\
-					    (__mmask8)M, R))
+					    (__mmask8)(M), R))
 
 #define _mm512_mask_cmp_round_ps_mask(M, X, Y, P, R)			\
   ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
 					     (__v16sf)(__m512)(Y), (int)(P),\
-					     (__mmask16)M, R))
+					     (__mmask16)(M), R))
 
 #define _mm_cmp_round_sd_mask(X, Y, P, R)				\
   ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
@@ -15498,12 +15498,12 @@ _mm_mask_cmp_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y, const int __P)
 #define _mm512_mask_cmp_pd_mask(M, X, Y, P)					\
   ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
 					    (__v8df)(__m512d)(Y), (int)(P),\
-					    (__mmask8)M, _MM_FROUND_CUR_DIRECTION))
+					    (__mmask8)(M), _MM_FROUND_CUR_DIRECTION))
 
 #define _mm512_mask_cmp_ps_mask(M, X, Y, P)					\
   ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
 					     (__v16sf)(__m512)(Y), (int)(P),\
-					     (__mmask16)M,_MM_FROUND_CUR_DIRECTION))
+					     (__mmask16)(M),_MM_FROUND_CUR_DIRECTION))
 
 #define _mm_cmp_sd_mask(X, Y, P)					\
   ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\

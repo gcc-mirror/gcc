@@ -1,6 +1,25 @@
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94832
+	* config/i386/avx512bwintrin.h (_mm512_alignr_epi8,
+	_mm512_mask_alignr_epi8, _mm512_maskz_alignr_epi8): Wrap macro operands
+	used in casts into parens.
+	* config/i386/avx512fintrin.h (_mm512_cvt_roundps_ph, _mm512_cvtps_ph,
+	_mm512_mask_cvt_roundps_ph, _mm512_mask_cvtps_ph,
+	_mm512_maskz_cvt_roundps_ph, _mm512_maskz_cvtps_ph,
+	_mm512_mask_cmp_epi64_mask, _mm512_mask_cmp_epi32_mask,
+	_mm512_mask_cmp_epu64_mask, _mm512_mask_cmp_epu32_mask,
+	_mm512_mask_cmp_round_pd_mask, _mm512_mask_cmp_round_ps_mask,
+	_mm512_mask_cmp_pd_mask, _mm512_mask_cmp_ps_mask): Likewise.
+	* config/i386/avx512vlbwintrin.h (_mm256_mask_alignr_epi8,
+	_mm256_maskz_alignr_epi8, _mm_mask_alignr_epi8, _mm_maskz_alignr_epi8,
+	_mm256_mask_cmp_epu8_mask): Likewise.
+	* config/i386/avx512vlintrin.h (_mm_mask_cvtps_ph, _mm_maskz_cvtps_ph,
+	_mm256_mask_cvtps_ph, _mm256_maskz_cvtps_ph): Likewise.
+	* config/i386/f16cintrin.h (_mm_cvtps_ph, _mm256_cvtps_ph): Likewise.
+	* config/i386/shaintrin.h (_mm_sha1rnds4_epu32): Likewise.
+
+	PR target/94832
 	* config/i386/avx2intrin.h (_mm_mask_i32gather_pd,
 	_mm256_mask_i32gather_pd, _mm_mask_i64gather_pd,
 	_mm256_mask_i64gather_pd, _mm_mask_i32gather_ps,
