@@ -1830,6 +1830,7 @@ ARM target supports @code{-mfpu=vfp3 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
 @item arm_arch_v8a_hard_ok
+@anchor{arm_arch_v8a_hard_ok}
 The compiler is targeting @code{arm*-*-*} and can compile and assemble code
 using the options @code{-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard}.
 This is not enough to guarantee that linking works.
