@@ -83,11 +83,11 @@ gimple_range_adjustment (const gimple *stmt, irange &res)
 
 // This function will calculate the "constant" range on edge E from
 // switch SW returning it in R, and return the switch statement
-// itself.  THis is currently not very efficent as the way we
+// itself.  This is currently not very efficent as the way we
 // represent switches in GIMPLE does not map well to this calculation.
 
 static gimple *
-calc_single_range (irange &r, gswitch *sw, edge e)
+calc_range_for_switch_on_edge (irange &r, gswitch *sw, edge e)
 {
   unsigned x, lim;
   lim = gimple_switch_num_labels (sw);
@@ -104,11 +104,12 @@ calc_single_range (irange &r, gswitch *sw, edge e)
   if (lim > 1 && !types_compatible_p (type, case_type))
     return NULL;
 
-  if (e != gimple_switch_default_edge (cfun, sw))
+  edge default_edge = gimple_switch_default_edge (cfun, sw);
+  if (e != default_edge)
     {
       r.set_undefined ();
-      // Loop through all the switches edges, ignoring the default edge.
-      // unioning the ranges together.
+      // Union all the ranges for each switch edge, ignoring the
+      // default edge.
       for (x = 1; x < lim; x++)
 	{
 	  if (gimple_switch_edge (cfun, sw, x) != e)
@@ -124,10 +125,14 @@ calc_single_range (irange &r, gswitch *sw, edge e)
   else
     {
       r.set_varying (type);
-      // Loop through all the switches edges, ignoring the default edge.
-      // intersecting the ranges not covered by the case.
+      // Loop through all the switches edges, ignoring the default
+      // edge, while intersecting the ranges not covered by the case.
       for (x = 1; x < lim; x++)
 	{
+	  // Some other edge could still point to the default edge
+	  // destination.  Ignore it.
+	  if (gimple_switch_edge (cfun, sw, x) == default_edge)
+	    continue;
 	  tree low = CASE_LOW (gimple_switch_label (sw, x));
 	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
 	  if (!high)
@@ -196,7 +201,7 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
   if (!irange::supports_type_p (type))
     return NULL;
 
-  return calc_single_range (r, sw, e);
+  return calc_range_for_switch_on_edge (r, sw, e);
 }
 
 
