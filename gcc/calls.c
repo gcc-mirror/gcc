@@ -6261,23 +6261,5 @@ must_pass_va_arg_in_stack (tree type)
   return targetm.calls.must_pass_in_stack (arg);
 }
 
-/* Return true if FIELD is the C++17 empty base field that should
-   be ignored for ABI calling convention decisions in order to
-   maintain ABI compatibility between C++14 and earlier, which doesn't
-   add this FIELD to classes with empty bases, and C++17 and later
-   which does.  */
-
-bool
-cxx17_empty_base_field_p (const_tree field)
-{
-  return (TREE_CODE (field) == FIELD_DECL
-	  && DECL_ARTIFICIAL (field)
-	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (field))
-	  && DECL_SIZE (field)
-	  && integer_zerop (DECL_SIZE (field))
-	  && TYPE_SIZE (TREE_TYPE (field))
-	  && !integer_zerop (TYPE_SIZE (TREE_TYPE (field))));
-}
-
 /* Tell the garbage collector about GTY markers in this source file.  */
 #include "gt-calls.h"

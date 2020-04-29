@@ -1,3 +1,11 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* class.c (build_base_field): Set DECL_FIELD_ABI_IGNORED on C++17 empty
+	base artificial FIELD_DECLs.
+	(layout_class_type): Set DECL_FIELD_ABI_IGNORED on empty class
+	field_poverlapping_p FIELD_DECLs.
+
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94819

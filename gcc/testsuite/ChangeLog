@@ -1,3 +1,13 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* g++.target/powerpc/pr94707-1.C: New test.
+	* g++.target/powerpc/pr94707-2.C: New test.
+	* g++.target/powerpc/pr94707-3.C: New test.
+	* g++.target/powerpc/pr94707-4.C: New test.
+	* g++.target/powerpc/pr94707-5.C: New test.
+	* g++.target/powerpc/pr94707-4.C: New test.
+
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94819

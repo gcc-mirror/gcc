@@ -135,6 +135,9 @@ extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 extern void maybe_warn_nonstring_arg (tree, tree);
 extern bool get_size_range (tree, tree[2], bool = false);
 extern rtx rtx_for_static_chain (const_tree, bool);
-extern bool cxx17_empty_base_field_p (const_tree);
+/* FIXME: Remove after all backends are converted.  */
+#define cxx17_empty_base_field_p(t) \
+  (DECL_FIELD_ABI_IGNORED (t)						\
+   && !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (t)))
 
 #endif // GCC_CALLS_H

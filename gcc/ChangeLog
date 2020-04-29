@@ -1,3 +1,30 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* tree-core.h (tree_decl_common): Note decl_flag_0 used for
+	DECL_FIELD_ABI_IGNORED.
+	* tree.h (DECL_FIELD_ABI_IGNORED): Define.
+	* calls.h (cxx17_empty_base_field_p): Change into a temporary
+	macro, check DECL_FIELD_ABI_IGNORED flag with no "no_unique_address"
+	attribute.
+	* calls.c (cxx17_empty_base_field_p): Remove.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Handle
+	DECL_FIELD_ABI_IGNORED.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Likewise.
+	* lto-streamer-out.c (hash_tree): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_aggregate_candidate): Rename
+	cxx17_empty_base_seen to empty_base_seen, change type to int *,
+	adjust recursive calls, use DECL_FIELD_ABI_IGNORED instead of
+	cxx17_empty_base_field_p, if "no_unique_address" attribute is
+	present, propagate that to the caller too.
+	(rs6000_discover_homogeneous_aggregate): Adjust
+	rs6000_aggregate_candidate caller, emit different diagnostics
+	when c++17 empty base fields are present and when empty
+	[[no_unique_address]] fields are present.
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align,
+	darwin_rs6000_special_round_type_align): Skip DECL_FIELD_ABI_IGNORED
+	fields.
+
 2020-04-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (ref_always_accessed::operator ()):

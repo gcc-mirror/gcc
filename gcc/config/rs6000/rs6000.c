@@ -7204,7 +7204,9 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
   tree field = TYPE_FIELDS (type);
 
   /* Skip all non field decls */
-  while (field != NULL && TREE_CODE (field) != FIELD_DECL)
+  while (field != NULL
+	 && (TREE_CODE (field) != FIELD_DECL
+	     || DECL_FIELD_ABI_IGNORED (field)))
     field = DECL_CHAIN (field);
 
   if (field != NULL && field != type)
@@ -7236,7 +7238,9 @@ darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
   do {
     tree field = TYPE_FIELDS (type);
     /* Skip all non field decls */
-    while (field != NULL && TREE_CODE (field) != FIELD_DECL)
+    while (field != NULL
+	   && (TREE_CODE (field) != FIELD_DECL
+	       || DECL_FIELD_ABI_IGNORED (field)))
       field = DECL_CHAIN (field);
     if (! field)
       break;
