@@ -1,3 +1,12 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94704
+	* g++.target/s390/s390.exp: New file.
+	* g++.target/s390/pr94704-1.C: New test.
+	* g++.target/s390/pr94704-2.C: New test.
+	* g++.target/s390/pr94704-3.C: New test.
+	* g++.target/s390/pr94704-4.C: New test.
+
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94830

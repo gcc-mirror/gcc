@@ -11911,7 +11911,8 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
-  bool cxx17_empty_base_seen = false;
+  int empty_base_seen = 0;
+  const_tree orig_type = type;
   while (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field, single = NULL_TREE;
@@ -11921,9 +11922,13 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
 
-	  if (cxx17_empty_base_field_p (field))
+	  if (DECL_FIELD_ABI_IGNORED (field))
 	    {
-	      cxx17_empty_base_seen = true;
+	      if (lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field)))
+		empty_base_seen |= 2;
+	      else
+		empty_base_seen |= 1;
 	      continue;
 	    }
 
@@ -11949,16 +11954,23 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
   if (!VECTOR_TYPE_P (type))
     return false;
 
-  if (warn_psabi && cxx17_empty_base_seen)
+  if (warn_psabi && empty_base_seen)
     {
       static unsigned last_reported_type_uid;
-      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
       if (uid != last_reported_type_uid)
 	{
 	  last_reported_type_uid = uid;
-	  inform (input_location, "parameter passing for argument of type "
-				  "%qT when C++17 is enabled changed to match "
-				  "C++14 in GCC 10.1", type);
+	  if (empty_base_seen & 1)
+	    inform (input_location,
+		    "parameter passing for argument of type %qT when C++17 "
+		    "is enabled changed to match C++14 in GCC 10.1",
+		    orig_type);
+	  else
+	    inform (input_location,
+		    "parameter passing for argument of type %qT with "
+		    "%<[[no_unique_address]]%> members changed in GCC 10.1",
+		    orig_type);
 	}
     }
   return true;
@@ -11983,7 +11995,8 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
-  bool cxx17_empty_base_seen = false;
+  int empty_base_seen = 0;
+  const_tree orig_type = type;
   while (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field, single = NULL_TREE;
@@ -11992,9 +12005,13 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
-	  if (cxx17_empty_base_field_p (field))
+	  if (DECL_FIELD_ABI_IGNORED (field))
 	    {
-	      cxx17_empty_base_seen = true;
+	      if (lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field)))
+		empty_base_seen |= 2;
+	      else
+		empty_base_seen |= 1;
 	      continue;
 	    }
 
@@ -12013,16 +12030,23 @@ s390_function_arg_float (machine_mode mode, const_tree type)
   if (TREE_CODE (type) != REAL_TYPE)
     return false;
 
-  if (warn_psabi && cxx17_empty_base_seen)
+  if (warn_psabi && empty_base_seen)
     {
       static unsigned last_reported_type_uid;
-      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
+      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
       if (uid != last_reported_type_uid)
 	{
 	  last_reported_type_uid = uid;
-	  inform (input_location, "parameter passing for argument of type "
-				  "%qT when C++17 is enabled changed to match "
-				  "C++14 in GCC 10.1", type);
+	  if (empty_base_seen & 1)
+	    inform (input_location,
+		    "parameter passing for argument of type %qT when C++17 "
+		    "is enabled changed to match C++14 in GCC 10.1",
+		    orig_type);
+	  else
+	    inform (input_location,
+		    "parameter passing for argument of type %qT with "
+		    "%<[[no_unique_address]]%> members changed in GCC 10.1",
+		    orig_type);
 	}
     }
 
