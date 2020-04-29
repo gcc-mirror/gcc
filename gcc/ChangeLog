@@ -1,3 +1,11 @@
+2020-04-29  Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	PR target/94820
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_atomic_assign_expand_fenv): Use TARGET_EXPR instead of
+	MODIFY_EXPR for first assignment to fenv_cr, fenv_sr and
+	new_fenv_var.
+
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac <$enable_offload_targets>: Do parsing as done
