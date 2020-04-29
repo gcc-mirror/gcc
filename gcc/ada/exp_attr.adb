@@ -1766,7 +1766,7 @@ package body Exp_Attr is
             Int_Typ := Standard_Unsigned;
 
          else
-            raise Program_Error;
+            Int_Typ := Standard_Long_Long_Unsigned;
          end if;
 
          return Int_Typ;
