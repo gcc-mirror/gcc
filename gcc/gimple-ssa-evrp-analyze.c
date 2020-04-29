@@ -84,7 +84,7 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
         e->flags |= EDGE_EXECUTABLE;
     }
   vr_values = new class vr_values_tester;
-  ranger = new global_ranger;
+  ranger = new trace_ranger;
   gori = new trace_vr_gori_interface (vr_values);
 }
 
@@ -373,6 +373,7 @@ evrp_range_analyzer::try_find_new_range_for_assert (const assert_info &assert,
   bool gori_can_calculate = (assert.gori_computable_p
 			     && gori->gori_computable_p (name, e->src));
 
+  gori_can_calculate = false;
   if (gori_can_calculate)
     {
       if (!gori->outgoing_edge_range_p (vr_gori, e, name))
