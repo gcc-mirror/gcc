@@ -1,3 +1,10 @@
+2020-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94830
+	* g++.dg/concepts/diagnostics12.C: Clarify the dg-message now
+	that the corresponding diagnostic is deterministic.
+	* g++.dg/concepts/diagnostics13.C: New test.
+
 2020-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/93654

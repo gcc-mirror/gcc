@@ -1,3 +1,11 @@
+2020-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94830
+	* pt.c (find_template_parameter_info::parm_list): New field.
+	(keep_template_parm): Use the new field to build up the
+	parameter list here instead of ...
+	(find_template_parameters): ... here.  Return ftpi.parm_list.
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94707
