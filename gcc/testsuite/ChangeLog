@@ -1,3 +1,12 @@
+2020-05-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94799
+	* g++.dg/lookup/this1.C: Adjust dg-error.
+	* g++.dg/template/lookup12.C: New test.
+	* g++.dg/template/lookup13.C: New test.
+	* g++.dg/template/lookup14.C: New test.
+	* g++.dg/template/lookup15.C: New test.
+
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/spellcheck-options-22.c: New test.
