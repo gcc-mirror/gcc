@@ -1,3 +1,8 @@
+2020-04-29  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (H8/SX div patterns): All H8/SX specific
+	division instructions are 4 bytes long.
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94826
