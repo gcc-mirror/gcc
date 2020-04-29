@@ -1,3 +1,15 @@
+2020-05-05  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/94799
+	* parser.c (cp_parser_postfix_dot_deref_expression): If we have
+	a type-dependent object of class type, stash it to
+	parser->context->object_type.  If the postfix expression doesn't have
+	a type, use typeof.
+	(cp_parser_class_name): Consider object scope too.
+	(cp_parser_lookup_name): Remove code dealing with the case when
+	object_type is unknown_type_node.
+
 2020-05-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94038
