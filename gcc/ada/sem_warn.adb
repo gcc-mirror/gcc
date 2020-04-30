@@ -3520,6 +3520,7 @@ package body Sem_Warn is
       if Constant_Condition_Warnings
         and then Is_Known_Branch
         and then Comes_From_Source (Orig)
+        and then Nkind (Orig) in N_Has_Entity
         and then not In_Instance
       then
          --  Don't warn if comparison of result of attribute against a constant
