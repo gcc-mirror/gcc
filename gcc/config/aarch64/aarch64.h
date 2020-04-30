@@ -105,6 +105,11 @@
    port.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
+
+/* Emit calls to libgcc helpers for atomic operations for runtime detection
+   of LSE instructions.  */
+#define TARGET_OUTLINE_ATOMICS (aarch64_flag_outline_atomics)
+
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the

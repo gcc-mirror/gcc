@@ -1,3 +1,9 @@
+2020-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_OUTLINE_ATOMICS): Define.
+	* config/aarch64/aarch64.opt (moutline-atomics): Change to Int variable.
+	* doc/invoke.texi (moutline-atomics): Document as on by default.
+
 2020-04-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/94748
