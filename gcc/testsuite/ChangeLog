@@ -1,3 +1,8 @@
+2020-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94885
+	* g++.dg/cpp2a/paren-init26.C: New test.
+
 2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* gcc.dg/asan/pr87930.c: Enable on x86_64 FreeBSD.
