@@ -1005,7 +1005,7 @@ substitute_and_fold_dom_walker::massage_new_statments
   while (gsi_stmt (old_gsi) != gsi_stmt (new_gsi))
     {
       gimple *stmt = gsi_stmt (old_gsi);
-      substitute_and_fold_engine->post_fold_stmt (stmt);
+      substitute_and_fold_engine->post_new_stmt (stmt);
       gsi_next (&old_gsi);
     }
 }

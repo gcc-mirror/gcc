@@ -364,7 +364,7 @@ public:
     range_analyzer.leave (bb);
   }
 
-  void post_fold_stmt (gimple *stmt)
+  void post_new_stmt (gimple *stmt)
   {
     range_analyzer.get_vr_values ()->set_defs_to_varying (stmt);
   }

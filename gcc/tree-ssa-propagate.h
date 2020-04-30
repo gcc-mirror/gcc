@@ -113,7 +113,7 @@ class substitute_and_fold_engine
   virtual void pre_fold_bb (basic_block) { }
   virtual void post_fold_bb (basic_block) { }
   virtual void pre_fold_stmt (gimple *) { }
-  virtual void post_fold_stmt (gimple *) { }
+  virtual void post_new_stmt (gimple *) { }
 
   void propagate_into_phi_args (basic_block);
 
