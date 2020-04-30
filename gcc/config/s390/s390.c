@@ -11960,7 +11960,7 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
       unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
       if (uid != last_reported_type_uid)
 	{
-	  char *url = get_changes_url ("gcc-10/changes.html#empty_base");
+	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
 	  last_reported_type_uid = uid;
 	  if (empty_base_seen & 1)
 	    inform (input_location,
@@ -11972,7 +11972,6 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 		    "parameter passing for argument of type %qT with "
 		    "%<[[no_unique_address]]%> members changed "
 		    "%{in GCC 10.1%}", orig_type, url);
-	  free (url);
 	}
     }
   return true;
@@ -12038,7 +12037,7 @@ s390_function_arg_float (machine_mode mode, const_tree type)
       unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
       if (uid != last_reported_type_uid)
 	{
-	  char *url = get_changes_url ("gcc-10/changes.html#empty_base");
+	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
 	  last_reported_type_uid = uid;
 	  if (empty_base_seen & 1)
 	    inform (input_location,
@@ -12050,7 +12049,6 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 		    "parameter passing for argument of type %qT with "
 		    "%<[[no_unique_address]]%> members changed "
 		    "%{in GCC 10.1%}", orig_type, url);
-	  free (url);
 	}
     }
 

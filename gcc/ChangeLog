@@ -1,3 +1,26 @@
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (--with-documentation-root-url,
+	--with-changes-root-url): Diagnose URL not ending with /,
+	use AC_DEFINE_UNQUOTED instead of AC_SUBST.
+	* opts.h (get_changes_url): Remove.
+	* opts.c (get_changes_url): Remove.
+	* Makefile.in (CFLAGS-opts.o): Don't add -DDOCUMENTATION_ROOT_URL
+	or -DCHANGES_ROOT_URL.
+	* doc/install.texi (--with-documentation-root-url,
+	--with-changes-root-url): Document.
+	* config/arm/arm.c (aapcs_vfp_is_call_or_return_candidate): Don't call
+	get_changes_url and free, change url variable type to const char * and
+	set it to CHANGES_ROOT_URL "gcc-10/changes.html#empty_base".
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vfp_is_call_or_return_candidate):
+	Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_discover_homogeneous_aggregate):
+	Likewise.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
 2020-04-30  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/57002

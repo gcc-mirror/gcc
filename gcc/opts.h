@@ -464,7 +464,6 @@ extern void parse_options_from_collect_gcc_options (const char *, obstack *,
 						    int *);
 
 extern void prepend_xassembler_to_collect_as_options (const char *, obstack *);
-extern char *get_changes_url (const char *);
 
 /* Set OPTION in OPTS to VALUE if the option is not set in OPTS_SET.  */
 

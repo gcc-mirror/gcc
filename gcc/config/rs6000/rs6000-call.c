@@ -5748,8 +5748,8 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
 		  if (uid != last_reported_type_uid)
 		    {
-		      char *url
-			= get_changes_url ("gcc-10/changes.html#empty_base");
+		      const char *url
+			= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
 		      if (empty_base_seen & 1)
 			inform (input_location,
 				"parameter passing for argument of type %qT "
@@ -5761,7 +5761,6 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 				"with %<[[no_unique_address]]%> members "
 				"changed %{in GCC 10.1%}", type, url);
 		      last_reported_type_uid = uid;
-		      free (url);
 		    }
 		}
 	      return true;

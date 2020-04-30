@@ -6414,7 +6414,8 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
 		  != ag_count))
 	    {
-	      char *url = get_changes_url ("gcc-10/changes.html#empty_base");
+	      const char *url
+		= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
 	      gcc_assert (alt == -1);
 	      last_reported_type_uid = uid;
 	      /* Use TYPE_MAIN_VARIANT to strip any redundant const
@@ -6429,7 +6430,6 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 			"type %qT when C++17 is enabled changed to match "
 			"C++14 %{in GCC 10.1%}",
 			TYPE_MAIN_VARIANT (type), url);
-	      free (url);
 	    }
 	  *count = ag_count;
 	}
