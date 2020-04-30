@@ -1,3 +1,8 @@
+2020-04-30  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/94740
+	* gcc.target/powerpc/pr94740.c: New test.
+
 2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94842
