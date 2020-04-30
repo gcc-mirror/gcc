@@ -1,3 +1,20 @@
+2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89510
+	* include/bits/alloc_traits.h (allocator_traits::_S_construct)
+	(allocator_traits::_S_destroy)
+	(allocator_traits<allocator<T>>::construct): Use traits in
+	noexcept-specifiers.
+	* include/bits/allocator.h (allocator<void>::construct)
+	(allocator<void>::destroy): Likewise.
+	* include/ext/malloc_allocator.h (malloc_allocator::construct)
+	(malloc_allocator::destroy): Likewise.
+	* include/ext/new_allocator.h (new_allocator::construct)
+	(new_allocator::destroy): Likewise.
+	* testsuite/20_util/allocator/89510.cc: New test.
+	* testsuite/ext/malloc_allocator/89510.cc: New test.
+	* testsuite/ext/new_allocator/89510.cc: New test.
+
 2020-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94854
