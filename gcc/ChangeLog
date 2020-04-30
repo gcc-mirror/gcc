@@ -1,3 +1,7 @@
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 11.0.0.
+
 2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* pretty-print.c (pp_take_prefix): Fix spelling in comment.
