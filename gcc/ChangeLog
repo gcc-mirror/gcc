@@ -1,3 +1,14 @@
+2020-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39612
+	* tree-ssa-loop-im.c (im_mem_ref::loaded): New member.
+	(set_ref_loaded_in_loop): New.
+	(mark_ref_loaded): Likewise.
+	(gather_mem_refs_stmt): Call mark_ref_loaded for loads.
+	(execute_sm): Avoid issueing a load when it was not there.
+	(execute_sm_if_changed): Avoid issueing warnings for the
+	conditional store.
+
 2020-05-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/93385
