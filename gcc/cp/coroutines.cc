@@ -1814,14 +1814,6 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* Re-write the variable's context to be in the actor func.  */
 	  DECL_CONTEXT (lvar) = lvd->context;
 
-	  /* we need to walk some of the decl trees, which might contain
-	     references to vars replaced at a higher level.  */
-	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses, d,
-			NULL);
-	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses, d, NULL);
-	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses, d,
-			NULL);
-
 	/* For capture proxies, this could include the decl value expr.  */
 	if (local_var.is_lambda_capture || local_var.has_value_expr_p)
 	  {
@@ -1842,6 +1834,22 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
 				     lvd->actor_frame, fld_ref, NULL_TREE);
 	  local_var.field_idx = fld_idx;
+	}
+      /* FIXME: we should be able to do this in the loop above, but (at least
+	 for range for) there are cases where the DECL_INITIAL contains
+	 forward references.
+	 So, now we've built the revised var in the frame, substitute uses of
+	 it in initializers and the bind expr body.  */
+      for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
+	   lvar = DECL_CHAIN (lvar))
+	{
+	  /* we need to walk some of the decl trees, which might contain
+	     references to vars replaced at a higher level.  */
+	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses, d,
+			NULL);
+	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses, d, NULL);
+	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses, d,
+			NULL);
 	}
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), transform_local_var_uses, d, NULL);
 

@@ -1,5 +1,12 @@
 2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR c++/94886
+	* coroutines.cc (transform_local_var_uses): Defer walking
+	the DECL_INITIALs of BIND_EXPR vars until all the frame
+	allocations have been made.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR c++/94883
 	* coroutines.cc (register_awaits): Update target
 	expressions for awaitable and suspend handle
