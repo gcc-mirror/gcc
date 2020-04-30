@@ -202,16 +202,34 @@
   "vlbb\t%v0,%1,%2"
   [(set_attr "op_type" "VRX")])
 
-(define_insn "vlrlrv16qi"
-  [(set (match_operand:V16QI              0 "register_operand"  "=v,v")
-	(unspec:V16QI [(match_operand:BLK 2 "memory_operand"     "Q,Q")
-		       (match_operand:SI  1 "nonmemory_operand"  "d,C")]
+; Vector load rightmost with length
+
+(define_expand "vlrlrv16qi"
+  [(set (match_operand:V16QI              0 "register_operand"  "")
+	(unspec:V16QI [(match_operand:BLK 2 "memory_operand"    "")
+		       (match_operand:SI  1 "nonmemory_operand" "")]
+		      UNSPEC_VEC_LOAD_LEN_R))]
+  "TARGET_VXE"
+{
+  /* vlrlr sets all length values beyond 15 to 15.  Emulate the same
+     behavior for immediate length operands.  vlrl would trigger a
+     SIGILL for too large immediate operands.  */
+  if (CONST_INT_P (operands[1])
+      && (UINTVAL (operands[1]) & 0xffffffff) > 15)
+    operands[1] = GEN_INT (15);
+})
+
+(define_insn "*vlrlrv16qi"
+  [(set (match_operand:V16QI              0 "register_operand"  "=v,  v,  v")
+	(unspec:V16QI [(match_operand:BLK 2 "memory_operand"     "Q,  R,  Q")
+		       (match_operand:SI  1 "nonmemory_operand"  "d,j>f,jb4")]
 		      UNSPEC_VEC_LOAD_LEN_R))]
   "TARGET_VXE"
   "@
    vlrlr\t%v0,%1,%2
+   vl\t%v0,%2%A2
    vlrl\t%v0,%2,%1"
-  [(set_attr "op_type" "VRS,VSI")])
+  [(set_attr "op_type" "VRS,VRX,VSI")])
 
 
 ; FIXME: The following two patterns might using vec_merge. But what is
@@ -545,16 +563,32 @@
 
 ; Vector store rightmost with length
 
-(define_insn "vstrlrv16qi"
-  [(set (match_operand:BLK                2 "memory_operand"    "=Q,Q")
-	(unspec:BLK [(match_operand:V16QI 0 "register_operand"   "v,v")
-		     (match_operand:SI    1 "nonmemory_operand"  "d,C")]
+(define_expand "vstrlrv16qi"
+  [(set (match_operand:BLK                2 "memory_operand"    "")
+	(unspec:BLK [(match_operand:V16QI 0 "register_operand"  "")
+		     (match_operand:SI    1 "nonmemory_operand" "")]
+		    UNSPEC_VEC_STORE_LEN_R))]
+  "TARGET_VXE"
+{
+  /* vstrlr sets all length values beyond 15 to 15.  Emulate the same
+     behavior for immediate length operands.  vstrl would trigger a
+     SIGILL for too large immediate operands.  */
+  if (CONST_INT_P (operands[1])
+      && (UINTVAL (operands[1]) & 0xffffffff) > 15)
+    operands[1] = GEN_INT (15);
+})
+
+(define_insn "*vstrlrv16qi"
+  [(set (match_operand:BLK                2 "memory_operand"    "=Q,  R,  Q")
+	(unspec:BLK [(match_operand:V16QI 0 "register_operand"   "v,  v,  v")
+		     (match_operand:SI    1 "nonmemory_operand"  "d,j>f,jb4")]
 		    UNSPEC_VEC_STORE_LEN_R))]
   "TARGET_VXE"
   "@
-   vstrlr\t%v0,%2,%1
-   vstrl\t%v0,%1,%2"
-  [(set_attr "op_type" "VRS,VSI")])
+   vstrlr\t%v0,%1,%2
+   vst\t%v0,%2%A2
+   vstrl\t%v0,%2,%1"
+  [(set_attr "op_type" "VRS,VRX,VSI")])
 
 
 

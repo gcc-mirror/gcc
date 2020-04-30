@@ -1,3 +1,13 @@
+2020-04-30  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/constraints.md ("j>f", "jb4"): New constraints.
+	* config/s390/vecintrin.h (vec_load_len_r, vec_store_len_r): Fix
+	macro definitions.
+	* config/s390/vx-builtins.md ("vlrlrv16qi", "vstrlrv16qi"): Add a
+	separate expander.
+	("*vlrlrv16qi", "*vstrlrv16qi"): Add alternative for vl/vst.
+	Change constraint for vlrl/vstrl to jb4.
+
 2020-04-30  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* var-tracking.c (vt_initialize): Move variables pre and post

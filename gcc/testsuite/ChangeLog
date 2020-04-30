@@ -1,3 +1,8 @@
+2020-04-30  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec_load_len_r.c: New test.
+	* gcc.target/s390/zvector/vec_store_len_r.c: New test.
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94704
