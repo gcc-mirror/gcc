@@ -5840,9 +5840,23 @@ get_namespace_binding (tree ns, tree name)
 
   if (ret && TREE_CODE (ret) == MODULE_VECTOR)
     {
+      // FIXME: We should really be pulling out this TU's definition,
+      // and then dealing with duplicate discovery in push_decl.  But
+      // the users of get_namespace_binding are generally unprepared
+      // to deal with that happening.  So fake things by looking in
+      // the global slot.
       unsigned ix = MODULE_SLOT_GLOBAL / MODULE_VECTOR_SLOTS_PER_CLUSTER;
       unsigned off = MODULE_SLOT_GLOBAL % MODULE_VECTOR_SLOTS_PER_CLUSTER;
       ret = MODULE_VECTOR_CLUSTER (ret, ix).slots[off];
+      /* The GLOBAL slot is always OVERLOADS.  For robustness the
+	 rest of the compiler should already be coping with that.
+	 But it rarely expects that for its library interface.  */
+      if (ret)
+	{
+	  gcc_checking_assert (TREE_CODE (ret) == OVERLOAD);
+	  if (!OVL_CHAIN (ret))
+	    ret = OVL_FUNCTION (ret);
+	}
     }
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
