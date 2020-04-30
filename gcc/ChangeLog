@@ -1,3 +1,16 @@
+2020-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94740
+	* cse.c (cse_process_notes_1): Replace with...
+	(cse_process_note_1): ...this new function, acting as a
+	simplify_replace_fn_rtx callback to process_note.  Handle only
+	REGs and MEMs directly.  Validate the MEM if cse_process_note
+	changes its address.
+	(cse_process_notes): Replace with...
+	(cse_process_note): ...this new function.
+	(cse_extended_basic_block): Update accordingly, iterating over
+	the register notes and passing individual notes to cse_process_note.
+
 2020-04-30  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/emmintrin.h (_mm_movemask_epi8): Fix comment.
