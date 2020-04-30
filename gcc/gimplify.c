@@ -7096,13 +7096,13 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
 	      {
 		error ("threadprivate variable %qE used in a region with"
 		       " %<order(concurrent)%> clause", DECL_NAME (decl));
-		error_at (octx->location, "enclosing region");
+		inform (octx->location, "enclosing region");
 	      }
 	    else
 	      {
 		error ("threadprivate variable %qE used in target region",
 		       DECL_NAME (decl));
-		error_at (octx->location, "enclosing target region");
+		inform (octx->location, "enclosing target region");
 	      }
 	    splay_tree_insert (octx->variables, (splay_tree_key)decl, 0);
 	  }
@@ -7117,7 +7117,7 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
     {
       error ("threadprivate variable %qE used in untied task",
 	     DECL_NAME (decl));
-      error_at (ctx->location, "enclosing task");
+      inform (ctx->location, "enclosing task");
       splay_tree_insert (ctx->variables, (splay_tree_key)decl, 0);
     }
   if (decl2)
@@ -7195,7 +7195,7 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 	
 	error ("%qE not specified in enclosing %qs",
 	       DECL_NAME (lang_hooks.decls.omp_report_decl (decl)), rtype);
-	error_at (ctx->location, "enclosing %qs", rtype);
+	inform (ctx->location, "enclosing %qs", rtype);
       }
       /* FALLTHRU */
     case OMP_CLAUSE_DEFAULT_SHARED:
@@ -7476,7 +7476,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		      tree d = lang_hooks.decls.omp_report_decl (decl);
 		      error ("%qE not specified in enclosing %<target%>",
 			     DECL_NAME (d));
-		      error_at (ctx->location, "enclosing %<target%>");
+		      inform (ctx->location, "enclosing %<target%>");
 		    }
 		  else if (ctx->defaultmap[gdmk]
 			   & (GOVD_MAP_0LEN_ARRAY | GOVD_FIRSTPRIVATE))

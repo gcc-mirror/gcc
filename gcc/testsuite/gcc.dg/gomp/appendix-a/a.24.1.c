@@ -21,7 +21,7 @@ a24 (int a)
 					      is listed in shared clause */
     z[i] = y;
     /* { dg-error "'i' not specified" "" { target *-*-* } .-1 } */
-    /* { dg-error "enclosing 'parallel'" "" { target *-*-* } omp_parallel } */
+    /* { dg-message "note: enclosing 'parallel'" "" { target *-*-* } omp_parallel } */
     /* { dg-error "'y' not specified" "" { target *-*-* } .-3 }  */
 #pragma omp for firstprivate(y)
     for (i = 0; i < 10; i++)
