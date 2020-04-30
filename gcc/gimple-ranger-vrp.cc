@@ -74,27 +74,19 @@ public:
 
   tree get_value (tree op, gimple *stmt)
   {
-    if (disable_il_changes_p ())
-      return NULL;
-
     widest_irange r;
     tree singleton;
-    if (ranger.range_of_expr (r, op, stmt) && r.singleton_p (&singleton))
+    if (ranger.range_of_expr (r, op, stmt) && r.singleton_p (&singleton)
+	&& allow_il_changes)
       return singleton;
     return NULL;
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi)
   {
-    if (disable_il_changes_p ())
-      return false;
-
-    return simplifier.simplify (gsi);
-  }
-
-  bool disable_il_changes_p ()
-  {
-    return !allow_il_changes;
+    if (allow_il_changes)
+      return simplifier.simplify (gsi);
+    return false;
   }
 
 private:
