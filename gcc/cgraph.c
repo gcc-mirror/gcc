@@ -3104,15 +3104,17 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 	return false;
       /* In case of instrumented expanded thunks, which can have multiple calls
 	 in them, we do not know how to continue and just have to be
-	 optimistic.  */
-      if (node->callees->next_callee)
+	 optimistic.  The same applies if all calls have already been inlined
+	 into the thunk.  */
+      if (!node->callees || node->callees->next_callee)
 	return true;
       node = node->callees->callee->ultimate_alias_target ();
 
       if (!node2->clone.param_adjustments
 	  || node2->clone.param_adjustments->first_param_intact_p ())
 	return false;
-      if (node2->former_clone_of == node->decl)
+      if (node2->former_clone_of == node->decl
+	  || node2->former_clone_of == node->former_clone_of)
 	return true;
 
       cgraph_node *n2 = node2;

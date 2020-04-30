@@ -1,3 +1,11 @@
+2020-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94856
+	* cgraph.c (clone_of_p): Also consider thunks whih had their bodies
+	saved by the inliner and thunks which had their call inlined.
+	* ipa-inline-transform.c (save_inline_function_body): Fill in
+	former_clone_of of new body holders.
+
 2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 11.0.0.
