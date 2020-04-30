@@ -1595,7 +1595,7 @@ pp_set_prefix (pretty_printer *pp, char *prefix)
 }
 
 /* Take ownership of PP's prefix, setting it to NULL.
-   This allows clients to save, overide, and then restore an existing
+   This allows clients to save, override, and then restore an existing
    prefix, without it being free-ed.  */
 
 char *
