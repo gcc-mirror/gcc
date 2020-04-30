@@ -1,3 +1,8 @@
+2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi (Options for Linking): Clarify usage of -defaultlib= and
+	-debuglib= options.
+
 2020-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-codegen.cc (d_decl_context): Don't include module in the name of
