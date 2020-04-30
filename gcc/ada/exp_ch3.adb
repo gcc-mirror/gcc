@@ -4764,6 +4764,47 @@ package body Exp_Ch3 is
       end if;
    end Clean_Task_Names;
 
+   ----------------------------------------
+   -- Ensure_Activation_Chain_And_Master --
+   ----------------------------------------
+
+   procedure Ensure_Activation_Chain_And_Master (Obj_Decl : Node_Id) is
+      Def_Id : constant Entity_Id := Defining_Identifier (Obj_Decl);
+      Expr   : constant Node_Id   := Expression (Obj_Decl);
+      Expr_Q : Node_Id;
+      Typ    : constant Entity_Id := Etype (Def_Id);
+
+   begin
+      pragma Assert (Nkind (Obj_Decl) = N_Object_Declaration);
+
+      if Has_Task (Typ) or else Might_Have_Tasks (Typ) then
+         Build_Activation_Chain_Entity (Obj_Decl);
+
+         if Has_Task (Typ) then
+            Build_Master_Entity (Def_Id);
+
+         --  Handle objects initialized with BIP function calls
+
+         elsif Present (Expr) then
+            if Nkind (Expr) = N_Qualified_Expression then
+               Expr_Q := Expression (Expr);
+            else
+               Expr_Q := Expr;
+            end if;
+
+            if Is_Build_In_Place_Function_Call (Expr_Q)
+              or else Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
+              or else
+                (Nkind (Expr_Q) = N_Reference
+                   and then
+                 Is_Build_In_Place_Function_Call (Prefix (Expr_Q)))
+            then
+               Build_Master_Entity (Def_Id);
+            end if;
+         end if;
+      end if;
+   end Ensure_Activation_Chain_And_Master;
+
    ------------------------------
    -- Expand_Freeze_Array_Type --
    ------------------------------
@@ -6743,35 +6784,7 @@ package body Exp_Ch3 is
       --  also that a Master variable is established (and that the appropriate
       --  enclosing construct is established as a task master).
 
-      if Has_Task (Typ) or else Might_Have_Tasks (Typ) then
-         Build_Activation_Chain_Entity (N);
-
-         if Has_Task (Typ) then
-            Build_Master_Entity (Def_Id);
-
-         --  Handle objects initialized with BIP function calls
-
-         elsif Present (Expr) then
-            declare
-               Expr_Q : Node_Id := Expr;
-
-            begin
-               if Nkind (Expr) = N_Qualified_Expression then
-                  Expr_Q := Expression (Expr);
-               end if;
-
-               if Is_Build_In_Place_Function_Call (Expr_Q)
-                 or else Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
-                 or else
-                   (Nkind (Expr_Q) = N_Reference
-                      and then
-                    Is_Build_In_Place_Function_Call (Prefix (Expr_Q)))
-               then
-                  Build_Master_Entity (Def_Id);
-               end if;
-            end;
-         end if;
-      end if;
+      Ensure_Activation_Chain_And_Master (N);
 
       --  If No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
       --  restrictions are active then default-sized secondary stacks are
