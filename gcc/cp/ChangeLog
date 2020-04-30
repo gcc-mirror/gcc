@@ -1,3 +1,13 @@
+2020-04-30  Jason Merrill  <jason@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94827
+	* constraint.cc (map_arguments): If ARGS is null, it's a
+	self-mapping of parms.
+	(finish_nested_requirement): Do not pass argified
+	current_template_parms to normalization.
+	(tsubst_nested_requirement): Don't assert no template parms.
+
 2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/94886
