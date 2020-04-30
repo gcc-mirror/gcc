@@ -1,8 +1,24 @@
 2020-04-30  Nathan Sidwell  <nathan@acm.org>
 
-	Tweak buultin fn hack
+	Set TREE_USED on stream in.
 	gcc/cp/
-	* name-lookup.c (get_namespace_binding): Strip singleton overloads.
+	* module.cc (trees_in::unused): New field.
+	(trees_in::tree_node): Add defaulted off is_use arg, set TREE_USED
+	on streamed in obect.  Adjust callers to set it.
+	(trees_{in,out}::core_bools): Do not stream base.used_flag.
+	(trees_{in,out}::core_vals): Reorder BINFO fields.  Increment
+	unused around vtbl pieces.
+	(trees_in::decl_value): Save and reset unused field.
+	(trees_in::read_var_def): Increment unsused for vtbl initializers.
+	gcc/testsuite/
+	* g++.dg/modules/used-1_[abc].C: New.
+
+	Tweak builtin fn hack
+	gcc/cp/
+	* name-lookup.c (get_namespace_binding): Strip singleton
+	overloads.
+	gcc/testsuite/
+	* g++.dg/modules/libfn-1_[ab].C: New.
 
 2020-04-28  Nathan Sidwell  <nathan@acm.org>
 

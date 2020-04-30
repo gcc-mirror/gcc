@@ -2920,6 +2920,8 @@ private:
   vec<tree> back_refs;		/* Back references.  */
   duplicate_hash_map *duplicates;	/* Map from existings to duplicate.  */
   vec<tree> post_decls;		/* Decls to post process.  */
+  unsigned unused;		/* Inhibit any interior TREE_USED
+				   marking.  */
 
 public:
   trees_in (module_state *);
@@ -2959,7 +2961,7 @@ private:
 
 public:
   /* Read a tree node.  */
-  tree tree_node ();
+  tree tree_node (bool is_use = false);
 
 private:
   bool install_entity (tree decl);
@@ -3024,7 +3026,7 @@ private:
 };
 
 trees_in::trees_in (module_state *state)
-  :parent (), state (state)
+  :parent (), state (state), unused (0)
 {
   duplicates = NULL;
   back_refs.create (500);
@@ -5127,15 +5129,8 @@ trees_out::core_bools (tree t)
   WB (t->base.nowarning_flag);
   /* base.visited read as zero (it's set for writer, because that's
      how we mark nodes).  */
-  // FIXME: We should not be writing out used flag.  There are 2
-  // issues
-  // a) the importer may do more work than necessary, feeding things
-  // that are used only in the importee and not in the importer (this
-  // is harmless, but time consuming)
-  // b) we may be the only use of something from one of our own imports, and
-  // that won't be propagated into our importer.  This will lead to
-  // unresolved symbols I think.
-  WB (t->base.used_flag);
+  /* base.used_flag is not streamed.  Readers may set TREE_USED of
+     decls they use.  */
   WB (t->base.nothrow_flag);
   WB (t->base.static_flag);
   if (TREE_CODE_CLASS (code) != tcc_type)
@@ -5294,7 +5289,7 @@ trees_in::core_bools (tree t)
   /* base.asm_written_flag is not streamed.  */
   RB (t->base.nowarning_flag);
   /* base.visited is not streamed.  */
-  RB (t->base.used_flag);
+  /* base.used_flag is not streamed.  */
   RB (t->base.nothrow_flag);
   RB (t->base.static_flag);
   if (TREE_CODE_CLASS (code) != tcc_type)
@@ -6011,9 +6006,10 @@ trees_out::core_vals (tree t)
 	WT (t->binfo.common.chain);
 	WT (t->binfo.offset);
 	WT (t->binfo.inheritance);
+	WT (t->binfo.vptr_field);
+
 	WT (t->binfo.vtable);
 	WT (t->binfo.virtuals);
-	WT (t->binfo.vptr_field);
 	WT (t->binfo.vtt_subvtt);
 	WT (t->binfo.vtt_vptr);
 
@@ -6202,12 +6198,15 @@ trees_out::core_vals (tree t)
 #undef WU
 }
 
+// FIXME: Not 100% sure I'm marking all the TREE_USED's that need to
+// be marked
 bool
 trees_in::core_vals (tree t)
 {
 #define RU(X) ((X) = u ())
 #define RUC(T,X) ((X) = T (u ()))
 #define RT(X) ((X) = tree_node ())
+#define RTU(X) ((X) = tree_node (true))
   tree_code code = TREE_CODE (t);
 
   /* First by tree shape.  */
@@ -6295,7 +6294,7 @@ trees_in::core_vals (tree t)
       for (unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
 			     : TREE_OPERAND_LENGTH (t)),
 	     ix = unsigned (vl); ix != limit; ix++)
-	RT (TREE_OPERAND (t, ix));
+	RTU (TREE_OPERAND (t, ix));
     }
 
   /* Then by CODE.  Special cases and/or 1:1 tree shape
@@ -6439,7 +6438,7 @@ trees_in::core_vals (tree t)
 	      constructor_elt elt;
 
 	      RT (elt.index);
-	      RT (elt.value);
+	      RTU (elt.value);
 	      t->constructor.elts->quick_push (elt);
 	    }
 	}
@@ -6476,11 +6475,16 @@ trees_in::core_vals (tree t)
       RT (t->binfo.common.chain);
       RT (t->binfo.offset);
       RT (t->binfo.inheritance);
+      RT (t->binfo.vptr_field);
+
+      /* Do not mark the vtables as USED in the address expressions
+	 here.  */
+      unused++;
       RT (t->binfo.vtable);
       RT (t->binfo.virtuals);
-      RT (t->binfo.vptr_field);
       RT (t->binfo.vtt_subvtt);
       RT (t->binfo.vtt_vptr);
+      unused--;
 
       BINFO_BASE_ACCESSES (t) = tree_vec ();
       if (!get_overrun ())
@@ -6506,7 +6510,7 @@ trees_in::core_vals (tree t)
       /* C++-specific nodes ...  */
     case BASELINK:
       RT (((lang_tree_node *)t)->baselink.binfo);
-      RT (((lang_tree_node *)t)->baselink.functions);
+      RTU (((lang_tree_node *)t)->baselink.functions);
       RT (((lang_tree_node *)t)->baselink.access_binfo);
       break;
 
@@ -7618,6 +7622,10 @@ trees_in::decl_value ()
       set_overrun ();
       return NULL_TREE;
     }
+
+  unsigned saved_unused = unused;
+  unused = 0;
+  
   merge_kind mk = merge_kind (mk_u);
 
   tree decl = start ();
@@ -7722,6 +7730,7 @@ trees_in::decl_value ()
 	back_refs[~tag] = NULL_TREE;
       set_overrun ();
       /* Bail.  */
+      unused = saved_unused;
       return NULL_TREE;
     }
 
@@ -7959,6 +7968,7 @@ trees_in::decl_value ()
 	}
     }
 
+  unused = saved_unused;
   return decl;
 }
 
@@ -8814,7 +8824,7 @@ trees_out::tree_node (tree t)
 /* Stream in a tree node.  */
 
 tree
-trees_in::tree_node ()
+trees_in::tree_node (bool is_use)
 {
   if (get_overrun ())
     return NULL_TREE;
@@ -9296,9 +9306,7 @@ trees_in::tree_node ()
 	  for (res = CLASSTYPE_VTABLES (ctx); res; res = DECL_CHAIN (res))
 	    if (!ix--)
 	      break;
-	if (res)
-	  mark_used (res, tf_none);
-	else
+	if (!res)
 	  set_overrun ();
       }
       break;
@@ -9400,6 +9408,23 @@ trees_in::tree_node ()
 	    && dump ("Read template %C:%N", TREE_CODE (res), res);
 	}
       break;
+    }
+
+  if (is_use && !unused && res && DECL_P (res) && !TREE_USED (res))
+    {
+      /* Mark decl used as mark_used does -- we cannot call
+	 mark_used in the middle of streaming, we only need a subset
+	 of its functionality.   */
+      TREE_USED (res) = true;
+
+      /* And for structured bindings also the underlying decl.  */
+      if (DECL_DECOMPOSITION_P (res) && DECL_DECOMP_BASE (res))
+	TREE_USED (DECL_DECOMP_BASE (res)) = true;
+
+      if (DECL_CLONED_FUNCTION_P (res))
+	TREE_USED (DECL_CLONED_FUNCTION (res)) = true;
+
+      // FIXME: What about the enum const debug thingy?
     }
 
   dump.outdent ();
@@ -11004,6 +11029,8 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   return true;
 }
 
+// Also for CONCEPT_DECLs
+
 void
 trees_out::write_var_def (tree decl)
 {
@@ -11018,7 +11045,11 @@ trees_out::mark_var_def (tree)
 bool
 trees_in::read_var_def (tree decl, tree maybe_template)
 {
+  /* Do not mark the virtual table entries as used.  */
+  bool vtable = TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl);
+  unused += vtable;
   tree init = tree_node ();
+  unused -= vtable;
 
   if (get_overrun ())
     return false;
@@ -14583,7 +14614,7 @@ void
 module_state::write_entities (elf_out *to, vec<depset *> depsets,
 			      unsigned count, unsigned *crc_p)
 {
-  dump () && dump ("Writing entites");
+  dump () && dump ("Writing entities");
   dump.indent ();
 
   bytes_out sec (to);
