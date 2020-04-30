@@ -1,3 +1,8 @@
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 11 related.
+	Add GCC 10 snapshots from the respective branch.
+
 2020-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc_release (upload_files): Without -l, pass -m 755 to the mkdir
