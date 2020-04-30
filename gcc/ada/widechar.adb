@@ -203,7 +203,16 @@ package body Widechar is
    --  Start of processing for Skip_Wide
 
    begin
-      Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);
+      --  Capture invalid wide characters errors since we are going to discard
+      --  the result anyway. We just want to move past it.
+
+      begin
+         Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);
+      exception
+         when Constraint_Error =>
+            null;
+      end;
+
       Wide_Char_Byte_Count := Wide_Char_Byte_Count + Nat (P - P_Init - 1);
    end Skip_Wide;
 
@@ -235,7 +244,16 @@ package body Widechar is
    --  Start of processing for Skip_Wide
 
    begin
-      Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);
+      --  Capture invalid wide characters errors since we are going to discard
+      --  the result anyway. We just want to move past it.
+
+      begin
+         Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);
+      exception
+         when Constraint_Error =>
+            null;
+      end;
+
       Wide_Char_Byte_Count := Wide_Char_Byte_Count + Nat (P - P_Init - 1);
    end Skip_Wide;
 
