@@ -84,7 +84,10 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqua
             ubyte[] buff = ctfe_alloc(T.sizeof);
             enum msbSize = double.sizeof;
 
-            double hi = toPrec!double(val);
+            static if (is(Unqual!T == ireal))
+                double hi = toPrec!double(val.im);
+            else
+                double hi = toPrec!double(val);
             buff[0 .. msbSize] = toUbyte(hi)[];
 
             if (val is cast(T)0.0 || val is cast(T)-0.0 ||
@@ -98,7 +101,10 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqua
             }
             else
             {
-                double low = toPrec!double(val - hi);
+                static if (is(Unqual!T == ireal))
+                    double low = toPrec!double(val.im - hi);
+                else
+                    double low = toPrec!double(val - hi);
                 buff[msbSize .. $] = toUbyte(low)[];
             }
 

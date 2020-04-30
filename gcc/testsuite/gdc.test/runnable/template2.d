@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // original post to the D newsgroup:
 //    http://www.digitalmars.com/pnews/read.php?server=news.digitalmars.com&group=D&artnum=10554&header
 // Test to manipulate 3D vectors, in D!

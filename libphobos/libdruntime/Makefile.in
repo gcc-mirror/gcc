@@ -123,9 +123,7 @@ target_triplet = @target@
 @DRUNTIME_CPU_AARCH64_TRUE@am__append_11 = config/aarch64/switchcontext.S
 @DRUNTIME_CPU_ARM_TRUE@am__append_12 = config/arm/switchcontext.S
 @DRUNTIME_CPU_MIPS_TRUE@am__append_13 = config/mips/switchcontext.S
-@DRUNTIME_CPU_POWERPC_TRUE@am__append_14 = config/powerpc/callwithstack.S \
-@DRUNTIME_CPU_POWERPC_TRUE@				   config/powerpc/switchcontext.S
-
+@DRUNTIME_CPU_POWERPC_TRUE@am__append_14 = config/powerpc/switchcontext.S
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_TRUE@am__append_15 = config/mingw/switchcontext.S
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_FALSE@am__append_16 = config/x86/switchcontext.S
 @DRUNTIME_CPU_SYSTEMZ_TRUE@am__append_17 = config/systemz/get_tls_offset.S
@@ -441,8 +439,7 @@ am__objects_21 = core/sys/solaris/dlfcn.lo core/sys/solaris/elf.lo \
 @DRUNTIME_CPU_AARCH64_TRUE@am__objects_23 = config/aarch64/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_ARM_TRUE@am__objects_24 = config/arm/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_MIPS_TRUE@am__objects_25 = config/mips/libgdruntime_la-switchcontext.lo
-@DRUNTIME_CPU_POWERPC_TRUE@am__objects_26 = config/powerpc/libgdruntime_la-callwithstack.lo \
-@DRUNTIME_CPU_POWERPC_TRUE@	config/powerpc/libgdruntime_la-switchcontext.lo
+@DRUNTIME_CPU_POWERPC_TRUE@am__objects_26 = config/powerpc/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_TRUE@am__objects_27 = config/mingw/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_FALSE@am__objects_28 = config/x86/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_SYSTEMZ_TRUE@am__objects_29 = config/systemz/libgdruntime_la-get_tls_offset.lo
@@ -463,8 +460,7 @@ am__objects_34 = core/stdc/libgdruntime_convenience_la-errno_.lo
 @DRUNTIME_CPU_AARCH64_TRUE@am__objects_35 = config/aarch64/libgdruntime_convenience_la-switchcontext.lo
 @DRUNTIME_CPU_ARM_TRUE@am__objects_36 = config/arm/libgdruntime_convenience_la-switchcontext.lo
 @DRUNTIME_CPU_MIPS_TRUE@am__objects_37 = config/mips/libgdruntime_convenience_la-switchcontext.lo
-@DRUNTIME_CPU_POWERPC_TRUE@am__objects_38 = config/powerpc/libgdruntime_convenience_la-callwithstack.lo \
-@DRUNTIME_CPU_POWERPC_TRUE@	config/powerpc/libgdruntime_convenience_la-switchcontext.lo
+@DRUNTIME_CPU_POWERPC_TRUE@am__objects_38 = config/powerpc/libgdruntime_convenience_la-switchcontext.lo
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_TRUE@am__objects_39 = config/mingw/libgdruntime_convenience_la-switchcontext.lo
 @DRUNTIME_CPU_X86_TRUE@@DRUNTIME_OS_MINGW_FALSE@am__objects_40 = config/x86/libgdruntime_convenience_la-switchcontext.lo
 @DRUNTIME_CPU_SYSTEMZ_TRUE@am__objects_41 = config/systemz/libgdruntime_convenience_la-get_tls_offset.lo
@@ -1748,8 +1744,6 @@ config/mips/libgdruntime_la-switchcontext.lo:  \
 config/powerpc/$(am__dirstamp):
 	@$(MKDIR_P) config/powerpc
 	@: > config/powerpc/$(am__dirstamp)
-config/powerpc/libgdruntime_la-callwithstack.lo:  \
-	config/powerpc/$(am__dirstamp)
 config/powerpc/libgdruntime_la-switchcontext.lo:  \
 	config/powerpc/$(am__dirstamp)
 config/mingw/$(am__dirstamp):
@@ -1785,8 +1779,6 @@ config/arm/libgdruntime_convenience_la-switchcontext.lo:  \
 	config/arm/$(am__dirstamp)
 config/mips/libgdruntime_convenience_la-switchcontext.lo:  \
 	config/mips/$(am__dirstamp)
-config/powerpc/libgdruntime_convenience_la-callwithstack.lo:  \
-	config/powerpc/$(am__dirstamp)
 config/powerpc/libgdruntime_convenience_la-switchcontext.lo:  \
 	config/powerpc/$(am__dirstamp)
 config/mingw/libgdruntime_convenience_la-switchcontext.lo:  \
@@ -1921,9 +1913,6 @@ config/arm/libgdruntime_la-switchcontext.lo: config/arm/switchcontext.S
 config/mips/libgdruntime_la-switchcontext.lo: config/mips/switchcontext.S
 	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/mips/libgdruntime_la-switchcontext.lo `test -f 'config/mips/switchcontext.S' || echo '$(srcdir)/'`config/mips/switchcontext.S
 
-config/powerpc/libgdruntime_la-callwithstack.lo: config/powerpc/callwithstack.S
-	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/powerpc/libgdruntime_la-callwithstack.lo `test -f 'config/powerpc/callwithstack.S' || echo '$(srcdir)/'`config/powerpc/callwithstack.S
-
 config/powerpc/libgdruntime_la-switchcontext.lo: config/powerpc/switchcontext.S
 	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/powerpc/libgdruntime_la-switchcontext.lo `test -f 'config/powerpc/switchcontext.S' || echo '$(srcdir)/'`config/powerpc/switchcontext.S
 
@@ -1947,9 +1936,6 @@ config/arm/libgdruntime_convenience_la-switchcontext.lo: config/arm/switchcontex
 
 config/mips/libgdruntime_convenience_la-switchcontext.lo: config/mips/switchcontext.S
 	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/mips/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/mips/switchcontext.S' || echo '$(srcdir)/'`config/mips/switchcontext.S
-
-config/powerpc/libgdruntime_convenience_la-callwithstack.lo: config/powerpc/callwithstack.S
-	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/powerpc/libgdruntime_convenience_la-callwithstack.lo `test -f 'config/powerpc/callwithstack.S' || echo '$(srcdir)/'`config/powerpc/callwithstack.S
 
 config/powerpc/libgdruntime_convenience_la-switchcontext.lo: config/powerpc/switchcontext.S
 	$(AM_V_CPPAS)$(LIBTOOL) $(AM_V_lt) $(libgdruntime_convenience_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o config/powerpc/libgdruntime_convenience_la-switchcontext.lo `test -f 'config/powerpc/switchcontext.S' || echo '$(srcdir)/'`config/powerpc/switchcontext.S

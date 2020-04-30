@@ -18,7 +18,7 @@ void stackMethod()
 
 void main()
 {
-    auto test_fiber = new Fiber(&stackMethod, stackSize);
+    auto test_fiber = new Fiber(&stackMethod, stackSize, stackSize);
 
     // allocate a page below (above) the fiber's stack to make stack overflows possible (w/o segfaulting)
     version (StackGrowsDown)
