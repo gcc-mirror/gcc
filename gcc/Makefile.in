@@ -221,15 +221,13 @@ libgcov-merge-tool.o-warn = -Wno-error
 gimple-match.o-warn = -Wno-unused
 generic-match.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
-tree-ssa-strlen.o-warn = -Wno-format -Wno-implicit-fallthrough
-gimple-ssa-sprintf.o-warn = -Wno-format -Wno-implicit-fallthrough
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
 # $(GCC_WARN_CFLAGS), or nothing.  Similarly, WARN_CXXFLAGS will be
 # either $(GCC_WARN_CXXFLAGS), or nothing.
-WARN_CFLAGS = @warn_cflags@
-WARN_CXXFLAGS = @warn_cxxflags@
+WARN_CFLAGS = @warn_cflags@ -Wno-format -Wno-implicit-fallthrough
+WARN_CXXFLAGS = @warn_cxxflags@ -Wno-format -Wno-implicit-fallthrough
 
 CPPFLAGS = @CPPFLAGS@
 
