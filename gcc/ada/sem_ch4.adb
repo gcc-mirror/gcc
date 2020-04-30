@@ -5268,25 +5268,21 @@ package body Sem_Ch4 is
                   end loop;
 
                --  Another special case: the type is an extension of a private
-               --  type T, is an actual in an instance, and we are in the body
-               --  of the instance, so the generic body had a full view of the
-               --  type declaration for T or of some ancestor that defines the
-               --  component in question.
+               --  type T, either is an actual in an instance or is immediately
+               --  visible, and we are in the body of the instance, which means
+               --  the generic body had a full view of the type declaration for
+               --  T or some ancestor that defines the component in question.
+               --  This happens because Is_Visible_Component returned False on
+               --  this component, as T or the ancestor is still private since
+               --  the Has_Private_View mechanism is bypassed because T or the
+               --  ancestor is not directly referenced in the generic body.
 
                elsif Is_Derived_Type (Type_To_Use)
-                 and then Used_As_Generic_Actual (Type_To_Use)
+                 and then (Used_As_Generic_Actual (Type_To_Use)
+                            or else Is_Immediately_Visible (Type_To_Use))
                  and then In_Instance_Body
                then
                   Find_Component_In_Instance (Parent_Subtype (Type_To_Use));
-
-               --  In ASIS mode the generic parent type may be absent. Examine
-               --  the parent type directly for a component that may have been
-               --  visible in a parent generic unit.
-               --  ??? Revisit now that ASIS mode is gone
-
-               elsif Is_Derived_Type (Prefix_Type) then
-                  Par := Etype (Prefix_Type);
-                  Find_Component_In_Instance (Par);
                end if;
             end;
 
