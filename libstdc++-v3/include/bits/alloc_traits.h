@@ -248,8 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Require<__and_<__not_<__has_construct<_Tp, _Args...>>,
 			       is_constructible<_Tp, _Args...>>>
 	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
-	noexcept(noexcept(::new((void*)__p)
-			  _Tp(std::forward<_Args>(__args)...)))
+	noexcept(std::is_nothrow_constructible<_Tp, _Args...>::value)
 	{ ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
 
       template<typename _Alloc2, typename _Tp>
@@ -262,7 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc2, typename _Tp>
 	static void
 	_S_destroy(_Alloc2&, _Tp* __p, ...)
-	noexcept(noexcept(__p->~_Tp()))
+	noexcept(std::is_nothrow_destructible<_Tp>::value)
 	{ __p->~_Tp(); }
 
       template<typename _Alloc2>
@@ -480,7 +479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	static void
 	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
-	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
+	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
 	{ __a.construct(__p, std::forward<_Args>(__args)...); }
 
       /**
