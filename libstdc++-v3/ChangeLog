@@ -1,4 +1,19 @@
 2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/92894
+	* include/bits/iterator_concepts.h (ranges::__cust_imove::_IMove):
+	Add trait to determine return type and an alias for it.
+	(ranges::__cust_imove::_IMove::operator()): Use __result instead of
+	deduced return type.
+	(iter_rvalue_reference_t): Use _IMove::__type instead of checking
+	the result of ranges::iter_move.
+	(__detail::__indirectly_readable_impl): Use iter_rvalue_reference_t
+	instead of checking the result of ranges::iter_move.
+	* testsuite/24_iterators/customization_points/92894.cc: New test.
+	* testsuite/24_iterators/indirect_callable/92894.cc: New test.
+
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94901
 	* include/std/type_traits (__is_complete_or_unbounded): Replace
