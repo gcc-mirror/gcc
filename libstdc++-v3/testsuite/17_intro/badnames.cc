@@ -40,7 +40,20 @@
 #define _E7		_E7 is a BADNAME
 #define _E8		_E8 is a BADNAME
 #define _E9		_E9 is a BADNAME
-	// ..
+#define _E10		_E10 is a BADNAME
+#define _E11		_E11 is a BADNAME
+#define _E12		_E12 is a BADNAME
+#define _E13		_E13 is a BADNAME
+#define _E14		_E14 is a BADNAME
+#define _E15		_E15 is a BADNAME
+#define _E16		_E16 is a BADNAME
+#define _E17		_E17 is a BADNAME
+#define _E18		_E18 is a BADNAME
+#define _E19		_E19 is a BADNAME
+#define _E20		_E20 is a BADNAME
+#define _E21		_E21 is a BADNAME
+#define _E22		_E22 is a BADNAME
+#define _E23		_E23 is a BADNAME
 #define _E24		_E24 is a BADNAME
 
 // Irix adds:

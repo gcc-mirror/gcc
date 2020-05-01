@@ -1,4 +1,9 @@
 2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94901
+	* testsuite/17_intro/badnames.cc: Test values between _E9 and _E24 too.
+
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/92894
