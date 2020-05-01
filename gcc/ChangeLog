@@ -1,3 +1,8 @@
+2020-04-30  Alexandre Oliva <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	the newly-introduced fileio effective target.
+
 2020-04-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/94740

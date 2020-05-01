@@ -2244,6 +2244,12 @@ Target provides @file{fenv.h} include file.
 Target supports @file{fenv.h} with all the standard IEEE exceptions
 and floating-point exceptions are raised by arithmetic operations.
 
+@item fileio
+Target offers such file I/O library functions as @code{fopen},
+@code{fclose}, @code{tmpnam}, and @code{remove}.  This is a link-time
+requirement for the presence of the functions in the library; even if
+they fail at runtime, the requirement is still regarded as satisfied.
+
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
 Effectively, it is a target which supports no extra headers or libraries
