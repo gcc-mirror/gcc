@@ -1,3 +1,10 @@
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94901
+	* include/std/type_traits (__is_complete_or_unbounded): Replace
+	BADNAME _T with _Tp.
+	* testsuite/17_intro/badnames.cc: New test.
+
 2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89510
