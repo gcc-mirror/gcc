@@ -1,3 +1,8 @@
+2020-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90880
+	* g++.dg/template/sfinae29.C: New test.
+
 2020-05-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94885
