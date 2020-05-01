@@ -2936,6 +2936,8 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
   pfile->about_to_expand_macro_p = saved_about_to_expand_macro;
 
   if (pfile->state.directive_file_token
+      && !pfile->state.parsing_args
+      && !(result->type == CPP_PADDING || result->type == CPP_COMMENT)
       && !(15 & --pfile->state.directive_file_token))
     {
       /* Do header-name frobbery.  Concatenate < ... > as approprate.

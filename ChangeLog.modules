@@ -1,3 +1,12 @@
+2020-05-01  Nathan Sidwell  <nathan@acm.org>
+
+	Fix macro expansion of header-unit names
+	libcpp/
+	* macro.c (cpp_get_token_1): Pay attention to arg parsing mode,
+	and the existence of padding/comment tokens.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-6_[abc].[CH]: New.
+
 2020-04-30  Nathan Sidwell  <nathan@acm.org>
 
 	Set TREE_USED on stream in.
