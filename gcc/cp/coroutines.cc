@@ -4234,6 +4234,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
 			      TREE_TYPE (get_ro));
       DECL_CONTEXT (gro) = current_scope ();
+      DECL_ARTIFICIAL (gro) = true;
+      DECL_IGNORED_P (gro) = true;
       add_decl_expr (gro);
       gro_bind_vars = gro;
 

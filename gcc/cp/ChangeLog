@@ -1,3 +1,8 @@
+2020-05-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Mark the coro.gro variable
+	as artificial and ignored.
+
 2020-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	pt.c (process_template_parm): Don't walk the template list twice,
