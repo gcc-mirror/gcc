@@ -1,3 +1,8 @@
+2020-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h: Repair SUBTARGET_INIT_BUILTINS.
+	Override SUBTARGET_SHADOW_OFFSET macro.
+
 2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/i386/i386.h: Define a new macro: SUBTARGET_SHADOW_OFFSET.
