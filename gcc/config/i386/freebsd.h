@@ -129,3 +129,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
+/* Define the shadow offsets for asan.  */
+#undef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET	\
+  (TARGET_LP64 ? HOST_WIDE_INT_1 << 46 : HOST_WIDE_INT_1 << 30)

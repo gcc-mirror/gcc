@@ -347,6 +347,12 @@ along with GCC; see the file COPYING3.  If not see
 #define SUBTARGET_INIT_BUILTINS						\
   do {									\
     ix86_builtins[(int) IX86_BUILTIN_CFSTRING]				\
+
+/* Define the shadow offset for asan.  */
+#undef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET	\
+  (TARGET_LP64 ? HOST_WIDE_INT_1 << 44 : HOST_WIDE_INT_1 << 29)
+
       = darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_CFSTRING)); \
     darwin_rename_builtins ();						\
   } while(0)

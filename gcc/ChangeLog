@@ -1,3 +1,12 @@
+2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/i386/i386.h: Define a new macro: SUBTARGET_SHADOW_OFFSET.
+	* config/i386/i386.c (ix86_asan_shadow_offset): Use this macro.
+	* config/i386/darwin.h: Override the SUBTARGET_SHADOW_OFFSET macro.
+	* config/i386/freebsd.h: Likewise.
+	* config/freebsd.h (LIBASAN_EARLY_SPEC): Define.
+	LIBTSAN_EARLY_SPEC): Likewise. (LIBLSAN_EARLY_SPEC): Likewise.
+
 2020-04-30  Alexandre Oliva <oliva@adacore.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document
