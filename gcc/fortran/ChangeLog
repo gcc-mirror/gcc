@@ -1,3 +1,10 @@
+2020-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	PR fortran/94788
+	* expr.c (gfc_check_pointer_assign): Revert patch for PR 93956.
+	* interface.c: Likewise.
+
 2020-04-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
