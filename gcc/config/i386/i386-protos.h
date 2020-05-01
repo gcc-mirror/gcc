@@ -265,6 +265,9 @@ extern void ix86_register_pragmas (void);
 /* In i386-d.c  */
 extern void ix86_d_target_versions (void);
 
+/* In i386-rust.c  */
+extern void ix86_rust_target_cpu_info (void);
+
 /* In winnt.c  */
 extern void i386_pe_unique_section (tree, int);
 extern void i386_pe_declare_function_type (FILE *, const char *, int);

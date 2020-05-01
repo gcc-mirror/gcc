@@ -17,3 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 PASSES_EXTRA += $(srcdir)/config/alpha/alpha-passes.def
+
+alpha-rust.o: $(srcdir)/config/alpha/alpha-rust.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

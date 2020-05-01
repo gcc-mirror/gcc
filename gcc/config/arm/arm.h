@@ -50,6 +50,9 @@ extern char arm_arch_name[];
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS arm_d_target_versions
 
+/* Target CPU info for Rust.  */
+#define TARGET_RUST_CPU_INFO arm_rust_target_cpu_info
+
 #include "config/arm/arm-opts.h"
 
 /* The processor for which instructions should be scheduled.  */

@@ -398,6 +398,9 @@ extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 /* Defined in arm-d.c  */
 extern void arm_d_target_versions (void);
 
+/* Defined in arm-rust.c  */
+extern void arm_rust_target_cpu_info (void);
+
 extern bool arm_is_constant_pool_ref (rtx);
 
 /* The bits in this mask specify which instruction scheduling options should

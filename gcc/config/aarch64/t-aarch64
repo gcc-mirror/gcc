@@ -118,6 +118,10 @@ aarch64-d.o: $(srcdir)/config/aarch64/aarch64-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+aarch64-rust.o: $(srcdir)/config/aarch64/aarch64-rust.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 PASSES_EXTRA += $(srcdir)/config/aarch64/aarch64-passes.def
 
 cortex-a57-fma-steering.o: $(srcdir)/config/aarch64/cortex-a57-fma-steering.c \

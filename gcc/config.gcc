@@ -89,6 +89,9 @@
 #  tm_d_file		A list of headers with definitions of target hook
 #			macros for the D compiler.
 #
+#  tm_rust_file		A list of headers with definitions of target hook
+#			macros for the Rust compiler.
+#
 #  out_file		The name of the machine description C support
 #			file, if different from "$cpu_type/$cpu_type.c".
 #
@@ -145,6 +148,9 @@
 #  d_target_objs	List of extra target-dependent objects that be
 #			linked into the D compiler only.
 #
+#  rust_target_objs	List of extra target-dependent objects that be
+#			linked into the Rust compiler only.
+#
 #  fortran_target_objs	List of extra target-dependent objects that be
 #			linked into the fortran compiler only.
 #
@@ -200,6 +206,9 @@
 #
 #  target_has_targetdm	Set to yes or no depending on whether the target
 #			has its own definition of targetdm.
+#
+#  target_has_targetrustm	Set to yes or no depending on whether the target
+#			has its own definition of targetrustm.
 
 out_file=
 common_out_file=
@@ -216,6 +225,7 @@ extra_options=
 c_target_objs=
 cxx_target_objs=
 d_target_objs=
+rust_target_objs=
 fortran_target_objs=
 target_has_targetcm=no
 target_has_targetm_common=yes
@@ -321,12 +331,14 @@ aarch64*-*-*)
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
+	rust_target_objs="aarch64-rust.o"
 	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o aarch64-sve-builtins-sve2.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o"
 	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
 	cpu_type=alpha
+	rust_target_objs="alpha-rust.o"
 	extra_options="${extra_options} g.opt"
 	;;
 amdgcn*)
@@ -340,6 +352,7 @@ arc*-*-*)
 	cpu_type=arc
 	c_target_objs="arc-c.o"
 	cxx_target_objs="arc-c.o"
+	rust_target_objs="arc-rust.o"
 	extra_options="${extra_options} arc/arc-tables.opt g.opt"
 	extra_headers="arc-simd.h"
 	;;
@@ -351,6 +364,7 @@ arm*-*-*)
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	d_target_objs="arm-d.o"
+	rust_target_objs="arm-rust.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
 	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c"
 	;;
@@ -384,6 +398,7 @@ i[34567]86-*-*)
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	d_target_objs="i386-d.o"
+	rust_target_objs="i386-rust.o"
 	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o i386-options.o i386-builtins.o i386-expand.o i386-features.o"
 	target_gtfiles="\$(srcdir)/config/i386/i386-builtins.c \$(srcdir)/config/i386/i386-expand.c \$(srcdir)/config/i386/i386-options.c"
 	extra_options="${extra_options} fused-madd.opt"
@@ -421,6 +436,7 @@ x86_64-*-*)
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	d_target_objs="i386-d.o"
+	rust_target_objs="i386-rust.o"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o i386-options.o i386-builtins.o i386-expand.o i386-features.o"
 	target_gtfiles="\$(srcdir)/config/i386/i386-builtins.c \$(srcdir)/config/i386/i386-expand.c \$(srcdir)/config/i386/i386-options.c"
@@ -578,10 +594,12 @@ esac
 
 tm_file=${cpu_type}/${cpu_type}.h
 tm_d_file=${cpu_type}/${cpu_type}.h
+tm_rust_file=${cpu_type}/${cpu_type}.h
 if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h
 then
 	tm_p_file=${cpu_type}/${cpu_type}-protos.h
 	tm_d_file="${tm_d_file} ${cpu_type}/${cpu_type}-protos.h"
+	tm_rust_file="${tm_rust_file} ${cpu_type}/${cpu_type}-protos.h"
 fi
 
 extra_modes=
@@ -3593,6 +3611,10 @@ if [ "$target_has_targetdm" = "no" ]; then
   d_target_objs="$d_target_objs default-d.o"
 fi
 
+if [ "$target_has_targetrustm" = "no" ]; then
+  rust_target_objs="$rust_target_objs default-rust.o"
+fi
+
 # Support for --with-cpu and related options (and a few unrelated options,
 # too).
 case ${with_cpu} in
@@ -5338,6 +5360,7 @@ case ${target} in
 		c_target_objs="${c_target_objs} ${cpu_type}-c.o"
 		cxx_target_objs="${cxx_target_objs} ${cpu_type}-c.o"
 		d_target_objs="${d_target_objs} ${cpu_type}-d.o"
+		rust_target_objs="${rust_target_objs} ${cpu_type}-rust.o"		
 		tmake_file="${cpu_type}/t-${cpu_type} ${tmake_file}"
 		;;
 

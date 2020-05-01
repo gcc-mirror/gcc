@@ -22,9 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust/rust-target.h"
 #include "rust/rust-target-def.h"
 
-// FIXME: remove: this is only here to make intellisense happy
-#include "i386.h"
-
 // HACK: allows conversion of (presumably) numeric values to string
 #ifndef STR_HELPER_RUST
  #define STR_HELPER_RUST(x) #x
@@ -47,12 +44,13 @@ ix86_rust_target_cpu_info (void)
         rust_add_target_info("target_arch", "x86_64");
 
         // TODO: should these go here or is there a platform-neutral way of getting them (since they aren't defined in i386-c.c or i386-d.c)?
-        rust_add_target_info("target_pointer_width", STRINGIFY_RUST(POINTER_SIZE));
-        rust_add_target_info("target_endian", BYTES_BIG_ENDIAN ? "big" : "little");
+        //rust_add_target_info("target_pointer_width", STRINGIFY_RUST(POINTER_SIZE)); // this did not work
+        //rust_add_target_info("target_endian", BYTES_BIG_ENDIAN ? "big" : "little");
+        // there is a platform-neutral way actually, I'm pretty sure - see cppbuiltins.c
 
         if (TARGET_X32) {
             // this means it uses 32-bit pointers with 64-bit, basically (ILP32)
-            rust_add_target_info("target_pointer_width", "32");
+            //rust_add_target_info("target_pointer_width", "32");
             // TODO: may also change x86_64-...-linux-gnu to x86_64-...-linux-gnux32
 
             // is this better than just putting in pointer width outside of if statement?
@@ -71,16 +69,26 @@ ix86_rust_target_cpu_info (void)
 
     // note: options that don't seem to have a target feature in rust are commented out
 
-    if (isa_flag2 & OPTION_MASK_ISA_WBNOINVD)
-    //def_or_undef (parse_in, "__WBNOINVD__");
-  if (isa_flag2 & OPTION_MASK_ISA_AVX512VP2INTERSECT)
-    //def_or_undef (parse_in, "__AVX512VP2INTERSECT__");
+    // TODO: properly change at some point instead of macro def
+#ifndef isa_flag
+# define isa_flag ix86_isa_flags
+# define isa_flag2 ix86_isa_flags2
+# define fpmath ix86_fpmath
+#else
+# error "isa_flag and isa_flag2 already defined in i386-rust.c - weird things might happen"
+#endif
+
+    // options should be feature complete for rustc atm
+  if (isa_flag2 & OPTION_MASK_ISA2_WBNOINVD)
+    ; //def_or_undef (parse_in, "__WBNOINVD__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX512VP2INTERSECT)
+    ; //def_or_undef (parse_in, "__AVX512VP2INTERSECT__");
   if (isa_flag & OPTION_MASK_ISA_MMX)
     rust_add_target_info("target_feature", "mmx");
   if (isa_flag & OPTION_MASK_ISA_3DNOW)
-    //def_or_undef (parse_in, "__3dNOW__");
+    ; //def_or_undef (parse_in, "__3dNOW__");
   if (isa_flag & OPTION_MASK_ISA_3DNOW_A)
-    //def_or_undef (parse_in, "__3dNOW_A__");
+    ; //def_or_undef (parse_in, "__3dNOW_A__");
   if (isa_flag & OPTION_MASK_ISA_SSE)
     rust_add_target_info("target_feature", "sse");
   if (isa_flag & OPTION_MASK_ISA_SSE2)
@@ -98,59 +106,59 @@ ix86_rust_target_cpu_info (void)
   if (isa_flag & OPTION_MASK_ISA_SHA)
     rust_add_target_info("target_feature", "sha");
   if (isa_flag & OPTION_MASK_ISA_PCLMUL)
-    //def_or_undef (parse_in, "__PCLMUL__");
+    ; //def_or_undef (parse_in, "__PCLMUL__");
   if (isa_flag & OPTION_MASK_ISA_AVX)
     rust_add_target_info("target_feature", "avx");
   if (isa_flag & OPTION_MASK_ISA_AVX2)
     rust_add_target_info("target_feature", "avx2");
   if (isa_flag & OPTION_MASK_ISA_AVX512F)
-    //def_or_undef (parse_in, "__AVX512F__");
+    rust_add_target_info("target_feature", "avx512f");
   if (isa_flag & OPTION_MASK_ISA_AVX512ER)
-    //def_or_undef (parse_in, "__AVX512ER__");
+    rust_add_target_info("target_feature", "avx512er");
   if (isa_flag & OPTION_MASK_ISA_AVX512CD)
-    //def_or_undef (parse_in, "__AVX512CD__");
+    rust_add_target_info("target_feature", "avx512cd");
   if (isa_flag & OPTION_MASK_ISA_AVX512PF)
-    //def_or_undef (parse_in, "__AVX512PF__");
+    rust_add_target_info("target_feature", "avx512pf");
   if (isa_flag & OPTION_MASK_ISA_AVX512DQ)
-    //def_or_undef (parse_in, "__AVX512DQ__");
+    rust_add_target_info("target_feature", "avx512dq");
   if (isa_flag & OPTION_MASK_ISA_AVX512BW)
-    //def_or_undef (parse_in, "__AVX512BW__");
+    rust_add_target_info("target_feature", "avx512bw");
   if (isa_flag & OPTION_MASK_ISA_AVX512VL)
-    //def_or_undef (parse_in, "__AVX512VL__");
+    rust_add_target_info("target_feature", "avx512vl");
   if (isa_flag & OPTION_MASK_ISA_AVX512VBMI)
-    //def_or_undef (parse_in, "__AVX512VBMI__");
+    rust_add_target_info("target_feature", "avx512vbmi");
   if (isa_flag & OPTION_MASK_ISA_AVX512IFMA)
-    //def_or_undef (parse_in, "__AVX512IFMA__");
-  if (isa_flag2 & OPTION_MASK_ISA_AVX5124VNNIW)
-    //def_or_undef (parse_in, "__AVX5124VNNIW__");
+    rust_add_target_info("target_feature", "avx512ifma");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX5124VNNIW)
+    ; //def_or_undef (parse_in, "__AVX5124VNNIW__");
   if (isa_flag & OPTION_MASK_ISA_AVX512VBMI2)
-    //def_or_undef (parse_in, "__AVX512VBMI2__");
+    ; //def_or_undef (parse_in, "__AVX512VBMI2__");
   if (isa_flag & OPTION_MASK_ISA_AVX512VNNI)
-    //def_or_undef (parse_in, "__AVX512VNNI__");
-  if (isa_flag2 & OPTION_MASK_ISA_PCONFIG)
-    //def_or_undef (parse_in, "__PCONFIG__");
-  if (isa_flag2 & OPTION_MASK_ISA_SGX)
-    //def_or_undef (parse_in, "__SGX__");
-  if (isa_flag2 & OPTION_MASK_ISA_AVX5124FMAPS)
-    //def_or_undef (parse_in, "__AVX5124FMAPS__");
+    ; //def_or_undef (parse_in, "__AVX512VNNI__");
+  if (isa_flag2 & OPTION_MASK_ISA2_PCONFIG)
+    ; //def_or_undef (parse_in, "__PCONFIG__");
+  if (isa_flag2 & OPTION_MASK_ISA2_SGX)
+    ; //def_or_undef (parse_in, "__SGX__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX5124FMAPS)
+    ; //def_or_undef (parse_in, "__AVX5124FMAPS__");
   if (isa_flag & OPTION_MASK_ISA_AVX512BITALG)
-    //def_or_undef (parse_in, "__AVX512BITALG__");
+    ; //def_or_undef (parse_in, "__AVX512BITALG__");
   if (isa_flag & OPTION_MASK_ISA_AVX512VPOPCNTDQ)
-    //def_or_undef (parse_in, "__AVX512VPOPCNTDQ__");
+    rust_add_target_info("target_feature", "avx512vpopcntdq");
   if (isa_flag & OPTION_MASK_ISA_FMA)
     rust_add_target_info("target_feature", "fma");
   if (isa_flag & OPTION_MASK_ISA_RTM)
-    //def_or_undef (parse_in, "__RTM__");
+    rust_add_target_info("target_feature", "rtm");
   if (isa_flag & OPTION_MASK_ISA_SSE4A)
-    //def_or_undef (parse_in, "__SSE4A__");
+    rust_add_target_info("target_feature", "sse4a");
   if (isa_flag & OPTION_MASK_ISA_FMA4)
-    //def_or_undef (parse_in, "__FMA4__");
+    ; //def_or_undef (parse_in, "__FMA4__");
   if (isa_flag & OPTION_MASK_ISA_XOP)
-    //def_or_undef (parse_in, "__XOP__");
+    ; //def_or_undef (parse_in, "__XOP__");
   if (isa_flag & OPTION_MASK_ISA_LWP)
-    //def_or_undef (parse_in, "__LWP__");
+    ; //def_or_undef (parse_in, "__LWP__");
   if (isa_flag & OPTION_MASK_ISA_ABM)
-    //def_or_undef (parse_in, "__ABM__");
+    ; //def_or_undef (parse_in, "__ABM__");
   if (isa_flag & OPTION_MASK_ISA_BMI)
     rust_add_target_info("target_feature", "bmi1");
   if (isa_flag & OPTION_MASK_ISA_BMI2)
@@ -158,21 +166,21 @@ ix86_rust_target_cpu_info (void)
   if (isa_flag & OPTION_MASK_ISA_LZCNT)
     rust_add_target_info("target_feature", "lzcnt");
   if (isa_flag & OPTION_MASK_ISA_TBM)
-    //def_or_undef (parse_in, "__TBM__");
+    rust_add_target_info("target_feature", "tbm");
   if (isa_flag & OPTION_MASK_ISA_POPCNT)
     rust_add_target_info("target_feature", "popcnt");
   if (isa_flag & OPTION_MASK_ISA_FSGSBASE)
-    //def_or_undef (parse_in, "__FSGSBASE__");
+    ; //def_or_undef (parse_in, "__FSGSBASE__");
   if (isa_flag & OPTION_MASK_ISA_RDRND)
     rust_add_target_info("target_feature", "rdrand");
   if (isa_flag & OPTION_MASK_ISA_F16C)
-    //def_or_undef (parse_in, "__F16C__");
+    rust_add_target_info("target_feature", "f16c");
   if (isa_flag & OPTION_MASK_ISA_RDSEED)
     rust_add_target_info("target_feature", "rdseed");
   if (isa_flag & OPTION_MASK_ISA_PRFCHW)
-    //def_or_undef (parse_in, "__PRFCHW__");
+    ; //def_or_undef (parse_in, "__PRFCHW__");
   if (isa_flag & OPTION_MASK_ISA_ADX)
-    //def_or_undef (parse_in, "__ADX__");
+    rust_add_target_info("target_feature", "adx");
   if (isa_flag & OPTION_MASK_ISA_FXSR)
     rust_add_target_info("target_feature", "fxsr");
   if (isa_flag & OPTION_MASK_ISA_XSAVE)
@@ -180,56 +188,64 @@ ix86_rust_target_cpu_info (void)
   if (isa_flag & OPTION_MASK_ISA_XSAVEOPT)
     rust_add_target_info("target_feature", "xsaveopt");
   if (isa_flag & OPTION_MASK_ISA_PREFETCHWT1)
-    //def_or_undef (parse_in, "__PREFETCHWT1__");
+    ; //def_or_undef (parse_in, "__PREFETCHWT1__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
-    //def_or_undef (parse_in, "__SSE_MATH__");
+    ; //def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))
-    //def_or_undef (parse_in, "__SSE2_MATH__");
+    ; //def_or_undef (parse_in, "__SSE2_MATH__");
   if (isa_flag & OPTION_MASK_ISA_CLFLUSHOPT)
-    //def_or_undef (parse_in, "__CLFLUSHOPT__");
-  if (isa_flag2 & OPTION_MASK_ISA_CLZERO)
-    //def_or_undef (parse_in, "__CLZERO__");
+    ; //def_or_undef (parse_in, "__CLFLUSHOPT__");
+  if (isa_flag2 & OPTION_MASK_ISA2_CLZERO)
+    ; //def_or_undef (parse_in, "__CLZERO__");
   if (isa_flag & OPTION_MASK_ISA_XSAVEC)
     rust_add_target_info("target_feature", "xsavec");
   if (isa_flag & OPTION_MASK_ISA_XSAVES)
     rust_add_target_info("target_feature", "xsaves");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
-    //def_or_undef (parse_in, "__CLWB__");
-  if (isa_flag2 & OPTION_MASK_ISA_MWAITX)
-    //def_or_undef (parse_in, "__MWAITX__");
+    ; //def_or_undef (parse_in, "__CLWB__");
+  if (isa_flag2 & OPTION_MASK_ISA2_MWAITX)
+    ; //def_or_undef (parse_in, "__MWAITX__");
   if (isa_flag & OPTION_MASK_ISA_PKU)
-    //def_or_undef (parse_in, "__PKU__");
-  if (isa_flag2 & OPTION_MASK_ISA_RDPID)
-    //def_or_undef (parse_in, "__RDPID__");
+    ; //def_or_undef (parse_in, "__PKU__");
+  if (isa_flag2 & OPTION_MASK_ISA2_RDPID)
+    ; //def_or_undef (parse_in, "__RDPID__");
   if (isa_flag & OPTION_MASK_ISA_GFNI)
-    //def_or_undef (parse_in, "__GFNI__");
+    ; //def_or_undef (parse_in, "__GFNI__");
   if ((isa_flag & OPTION_MASK_ISA_SHSTK))
-    //def_or_undef (parse_in, "__SHSTK__");
-  if (isa_flag2 & OPTION_MASK_ISA_VAES)
-    //def_or_undef (parse_in, "__VAES__");
+    ; //def_or_undef (parse_in, "__SHSTK__");
+  if (isa_flag2 & OPTION_MASK_ISA2_VAES)
+    ; //def_or_undef (parse_in, "__VAES__");
   if (isa_flag & OPTION_MASK_ISA_VPCLMULQDQ)
     rust_add_target_info("target_feature", "pclmulqdq");
   if (isa_flag & OPTION_MASK_ISA_MOVDIRI)
-    //def_or_undef (parse_in, "__MOVDIRI__");
-  if (isa_flag2 & OPTION_MASK_ISA_MOVDIR64B)
-    //def_or_undef (parse_in, "__MOVDIR64B__");
-  if (isa_flag2 & OPTION_MASK_ISA_WAITPKG)
-    //def_or_undef (parse_in, "__WAITPKG__");
-  if (isa_flag2 & OPTION_MASK_ISA_CLDEMOTE)
-    //def_or_undef (parse_in, "__CLDEMOTE__");
-  if (isa_flag2 & OPTION_MASK_ISA_PTWRITE)
-    //def_or_undef (parse_in, "__PTWRITE__");
-  if (isa_flag2 & OPTION_MASK_ISA_AVX512BF16)
-    //def_or_undef (parse_in, "__AVX512BF16__");
+    ; //def_or_undef (parse_in, "__MOVDIRI__");
+  if (isa_flag2 & OPTION_MASK_ISA2_MOVDIR64B)
+    ; //def_or_undef (parse_in, "__MOVDIR64B__");
+  if (isa_flag2 & OPTION_MASK_ISA2_WAITPKG)
+    ; //def_or_undef (parse_in, "__WAITPKG__");
+  if (isa_flag2 & OPTION_MASK_ISA2_CLDEMOTE)
+    ; //def_or_undef (parse_in, "__CLDEMOTE__");
+  if (isa_flag2 & OPTION_MASK_ISA2_PTWRITE)
+    ; //def_or_undef (parse_in, "__PTWRITE__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX512BF16)
+    ; //def_or_undef (parse_in, "__AVX512BF16__");
   if (TARGET_MMX_WITH_SSE)
-    //def_or_undef (parse_in, "__MMX_WITH_SSE__");
-  if (isa_flag2 & OPTION_MASK_ISA_ENQCMD)
-    //def_or_undef (parse_in, "__ENQCMD__");
+    ; //def_or_undef (parse_in, "__MMX_WITH_SSE__");
+  if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)
+    ; //def_or_undef (parse_in, "__ENQCMD__");
   if (TARGET_IAMCU)
     {
       //def_or_undef (parse_in, "__iamcu");
       //def_or_undef (parse_in, "__iamcu__");
     }
+  if (TARGET_CMPXCHG16B)
+    rust_add_target_info("target_feature", "cmpxchg16b");
+  if (TARGET_MOVBE)
+    rust_add_target_info("target_feature", "movbe");
+
+#undef isa_flag
+#undef isa_flag2
+#undef fpmath
 }
 
 #undef STR_HELPER_RUST
