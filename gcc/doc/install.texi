@@ -684,6 +684,19 @@ if you determine that they are not bugs in your modifications.
 
 The default value refers to the FSF's GCC bug tracker.
 
+@item --with-documentation-root-url=@var{url}
+Specify the URL root that contains GCC option documentation.  The @var{url}
+should end with a @code{/} character.
+
+The default value is @uref{https://gcc.gnu.org/onlinedocs/,,https://gcc.gnu.org/onlinedocs/}.
+
+@item --with-changes-root-url=@var{url}
+Specify the URL root that contains information about changes in GCC
+releases like @code{gcc-@var{version}/changes.html}.
+The @var{url} should end with a @code{/} character.
+
+The default value is @uref{https://gcc.gnu.org/,,https://gcc.gnu.org/}.
+
 @end table
 
 @heading Target specification

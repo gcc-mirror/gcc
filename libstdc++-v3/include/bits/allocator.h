@@ -93,14 +93,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	void
 	construct(_Up* __p, _Args&&... __args)
-	noexcept(noexcept(::new((void *)__p)
-			    _Up(std::forward<_Args>(__args)...)))
+	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
       template<typename _Up>
 	void
 	destroy(_Up* __p)
-	noexcept(noexcept(__p->~_Up()))
+	noexcept(std::is_nothrow_destructible<_Up>::value)
 	{ __p->~_Up(); }
 #endif // C++11 to C++17
     };

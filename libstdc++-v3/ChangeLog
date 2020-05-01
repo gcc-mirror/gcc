@@ -1,3 +1,47 @@
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94901
+	* testsuite/17_intro/badnames.cc: Test values between _E9 and _E24 too.
+
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/92894
+	* include/bits/iterator_concepts.h (ranges::__cust_imove::_IMove):
+	Add trait to determine return type and an alias for it.
+	(ranges::__cust_imove::_IMove::operator()): Use __result instead of
+	deduced return type.
+	(iter_rvalue_reference_t): Use _IMove::__type instead of checking
+	the result of ranges::iter_move.
+	(__detail::__indirectly_readable_impl): Use iter_rvalue_reference_t
+	instead of checking the result of ranges::iter_move.
+	* testsuite/24_iterators/customization_points/92894.cc: New test.
+	* testsuite/24_iterators/indirect_callable/92894.cc: New test.
+
+2020-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94901
+	* include/std/type_traits (__is_complete_or_unbounded): Replace
+	BADNAME _T with _Tp.
+	* testsuite/17_intro/badnames.cc: New test.
+
+2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89510
+	* include/bits/alloc_traits.h (allocator_traits::_S_construct)
+	(allocator_traits::_S_destroy)
+	(allocator_traits<allocator<T>>::construct): Use traits in
+	noexcept-specifiers.
+	* include/bits/allocator.h (allocator<void>::construct)
+	(allocator<void>::destroy): Likewise.
+	* include/ext/malloc_allocator.h (malloc_allocator::construct)
+	(malloc_allocator::destroy): Likewise.
+	* include/ext/new_allocator.h (new_allocator::construct)
+	(new_allocator::destroy): Likewise.
+	* testsuite/20_util/allocator/89510.cc: New test.
+	* testsuite/ext/malloc_allocator/89510.cc: New test.
+	* testsuite/ext/new_allocator/89510.cc: New test.
+
 2020-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94854

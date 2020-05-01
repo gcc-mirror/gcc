@@ -748,7 +748,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   if (INDIRECT_REF_P (e_proxy))
     e_proxy = TREE_OPERAND (e_proxy, 0);
   if (TREE_CODE (e_proxy) == PARM_DECL
-      || (TREE_CODE (e_proxy) == VAR_DECL && !DECL_ARTIFICIAL (e_proxy)))
+      || (VAR_P (e_proxy) && (!DECL_ARTIFICIAL (e_proxy)
+			      || DECL_HAS_VALUE_EXPR_P (e_proxy))))
     e_proxy = o;
   else
     {
@@ -1813,14 +1814,6 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* Re-write the variable's context to be in the actor func.  */
 	  DECL_CONTEXT (lvar) = lvd->context;
 
-	  /* we need to walk some of the decl trees, which might contain
-	     references to vars replaced at a higher level.  */
-	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses, d,
-			NULL);
-	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses, d, NULL);
-	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses, d,
-			NULL);
-
 	/* For capture proxies, this could include the decl value expr.  */
 	if (local_var.is_lambda_capture || local_var.has_value_expr_p)
 	  {
@@ -1841,6 +1834,22 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
 				     lvd->actor_frame, fld_ref, NULL_TREE);
 	  local_var.field_idx = fld_idx;
+	}
+      /* FIXME: we should be able to do this in the loop above, but (at least
+	 for range for) there are cases where the DECL_INITIAL contains
+	 forward references.
+	 So, now we've built the revised var in the frame, substitute uses of
+	 it in initializers and the bind expr body.  */
+      for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
+	   lvar = DECL_CHAIN (lvar))
+	{
+	  /* we need to walk some of the decl trees, which might contain
+	     references to vars replaced at a higher level.  */
+	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses, d,
+			NULL);
+	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses, d, NULL);
+	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses, d,
+			NULL);
 	}
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), transform_local_var_uses, d, NULL);
 
@@ -2659,7 +2668,8 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	}
 
       /* This isn't a temporary.  */
-      if ((TREE_CODE (parm) == VAR_DECL && !DECL_ARTIFICIAL (parm))
+      if ((VAR_P (parm)
+	   && (!DECL_ARTIFICIAL (parm) || DECL_HAS_VALUE_EXPR_P (parm)))
 	  || TREE_CODE (parm) == PARM_DECL
 	  || TREE_CODE (parm) == NON_LVALUE_EXPR)
 	continue;
@@ -2742,7 +2752,8 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   if (INDIRECT_REF_P (aw))
     aw = TREE_OPERAND (aw, 0);
   if (TREE_CODE (aw) == PARM_DECL
-      || (TREE_CODE (aw) == VAR_DECL && !DECL_ARTIFICIAL (aw)))
+      || (VAR_P (aw) && (!DECL_ARTIFICIAL (aw)
+			 || DECL_HAS_VALUE_EXPR_P (aw))))
     ; /* Don't make an additional copy.  */
   else
     {
@@ -2753,6 +2764,17 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 					    aw_field_type, aw_loc);
       free (nam);
     }
+
+  tree o = TREE_OPERAND (aw_expr, 2); /* Initialiser for the frame var.  */
+  /* If this is a target expression, then we need to remake it to strip off
+     any extra cleanups added.  */
+  if (TREE_CODE (o) == TARGET_EXPR)
+    TREE_OPERAND (aw_expr, 2) = get_target_expr (TREE_OPERAND (o, 1));
+
+  tree v = TREE_OPERAND (aw_expr, 3);
+  o = TREE_VEC_ELT (v, 1);
+  if (TREE_CODE (o) == TARGET_EXPR)
+    TREE_VEC_ELT (v, 1) = get_target_expr (TREE_OPERAND (o, 1));
 
   register_await_info (aw_expr, aw_field_type, aw_field_nam);
 

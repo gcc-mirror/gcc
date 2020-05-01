@@ -1,3 +1,7 @@
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-format.c (PP_FORMAT_CHAR_TABLE): Add %{ and %}.
+
 2020-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94755

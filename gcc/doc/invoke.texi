@@ -16886,6 +16886,7 @@ instruction set.  If using a later revision, e.g. @option{-march=armv8.1-a}
 or @option{-march=armv8-a+lse}, the ARMv8.1-Atomics instructions will be
 used directly.  The same applies when using @option{-mcpu=} when the
 selected cpu supports the @samp{lse} feature.
+This option is on by default.
 
 @item -march=@var{name}
 @opindex march

@@ -68,6 +68,7 @@
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "targhooks.h"
+#include "opts.h"
 
 #include "rs6000-internal.h"
 
@@ -5747,16 +5748,18 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (type));
 		  if (uid != last_reported_type_uid)
 		    {
+		      const char *url
+			= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
 		      if (empty_base_seen & 1)
 			inform (input_location,
 				"parameter passing for argument of type %qT "
 				"when C++17 is enabled changed to match C++14 "
-				"in GCC 10.1", type);
+				"%{in GCC 10.1%}", type, url);
 		      else
 			inform (input_location,
 				"parameter passing for argument of type %qT "
 				"with %<[[no_unique_address]]%> members "
-				"changed in GCC 10.1", type);
+				"changed %{in GCC 10.1%}", type, url);
 		      last_reported_type_uid = uid;
 		    }
 		}

@@ -1,4 +1,153 @@
+2020-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h: Repair SUBTARGET_INIT_BUILTINS.
+	Override SUBTARGET_SHADOW_OFFSET macro.
+
+2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/i386/i386.h: Define a new macro: SUBTARGET_SHADOW_OFFSET.
+	* config/i386/i386.c (ix86_asan_shadow_offset): Use this macro.
+	* config/i386/darwin.h: Override the SUBTARGET_SHADOW_OFFSET macro.
+	* config/i386/freebsd.h: Likewise.
+	* config/freebsd.h (LIBASAN_EARLY_SPEC): Define.
+	LIBTSAN_EARLY_SPEC): Likewise. (LIBLSAN_EARLY_SPEC): Likewise.
+
+2020-04-30  Alexandre Oliva <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	the newly-introduced fileio effective target.
+
+2020-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94740
+	* cse.c (cse_process_notes_1): Replace with...
+	(cse_process_note_1): ...this new function, acting as a
+	simplify_replace_fn_rtx callback to process_note.  Handle only
+	REGs and MEMs directly.  Validate the MEM if cse_process_note
+	changes its address.
+	(cse_process_notes): Replace with...
+	(cse_process_note): ...this new function.
+	(cse_extended_basic_block): Update accordingly, iterating over
+	the register notes and passing individual notes to cse_process_note.
+
+2020-04-30  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/emmintrin.h (_mm_movemask_epi8): Fix comment.
+
+2020-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94856
+	* cgraph.c (clone_of_p): Also consider thunks whih had their bodies
+	saved by the inliner and thunks which had their call inlined.
+	* ipa-inline-transform.c (save_inline_function_body): Fill in
+	former_clone_of of new body holders.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 11.0.0.
+
+2020-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* pretty-print.c (pp_take_prefix): Fix spelling in comment.
+
+2020-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* tree.c (check_base_type): Return true only if TYPE_USER_ALIGN match.
+	(check_aligned_type): Check if TYPE_USER_ALIGN match.
+
+2020-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_OUTLINE_ATOMICS): Define.
+	* config/aarch64/aarch64.opt (moutline-atomics): Change to Int variable.
+	* doc/invoke.texi (moutline-atomics): Document as on by default.
+
+2020-04-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94748
+	* config/aarch64/aarch64-bti-insert.c (rest_of_insert_bti): Remove
+	the check for NOTE_INSN_DELETED_LABEL.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (--with-documentation-root-url,
+	--with-changes-root-url): Diagnose URL not ending with /,
+	use AC_DEFINE_UNQUOTED instead of AC_SUBST.
+	* opts.h (get_changes_url): Remove.
+	* opts.c (get_changes_url): Remove.
+	* Makefile.in (CFLAGS-opts.o): Don't add -DDOCUMENTATION_ROOT_URL
+	or -DCHANGES_ROOT_URL.
+	* doc/install.texi (--with-documentation-root-url,
+	--with-changes-root-url): Document.
+	* config/arm/arm.c (aapcs_vfp_is_call_or_return_candidate): Don't call
+	get_changes_url and free, change url variable type to const char * and
+	set it to CHANGES_ROOT_URL "gcc-10/changes.html#empty_base".
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vfp_is_call_or_return_candidate):
+	Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_discover_homogeneous_aggregate):
+	Likewise.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2020-04-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/57002
+	* config/arm/arm.c (isr_attribute_args): Remove duplicate entries.
+
+2020-04-30  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/constraints.md ("j>f", "jb4"): New constraints.
+	* config/s390/vecintrin.h (vec_load_len_r, vec_store_len_r): Fix
+	macro definitions.
+	* config/s390/vx-builtins.md ("vlrlrv16qi", "vstrlrv16qi"): Add a
+	separate expander.
+	("*vlrlrv16qi", "*vstrlrv16qi"): Add alternative for vl/vst.
+	Change constraint for vlrl/vstrl to jb4.
+
+2020-04-30  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* var-tracking.c (vt_initialize): Move variables pre and post
+	into inner block and initialize both in order to fix warning
+	about uninitialized use.  Remove unnecessary checks for
+	frame_pointer_needed.
+
+2020-04-30  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* toplev.c (output_stack_usage_1): Ensure that first
+	argument to fprintf is not null.
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (-with-changes-root-url): New configure option,
+	defaulting to https://gcc.gnu.org/.
+	* Makefile.in (CFLAGS-opts.o): Define CHANGES_ROOT_URL for
+	opts.c.
+	* pretty-print.c (get_end_url_string): New function.
+	(pp_format): Handle %{ and %} for URLs.
+	(pp_begin_url): Use pp_string instead of pp_printf.
+	(pp_end_url): Use get_end_url_string.
+	* opts.h (get_changes_url): Declare.
+	* opts.c (get_changes_url): New function.
+	* config/rs6000/rs6000-call.c: Include opts.h.
+	(rs6000_discover_homogeneous_aggregate): Use %{in GCC 10.1%} instead
+	of just in GCC 10.1 in diagnostics and add URL.
+	* config/arm/arm.c (aapcs_vfp_is_call_or_return_candidate): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vfp_is_call_or_return_candidate):
+	Likewise.
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Likewise.
+	* configure: Regenerated.
+
+	PR target/94704
+	* config/s390/s390.c (s390_function_arg_vector,
+	s390_function_arg_float): Use DECL_FIELD_ABI_IGNORED instead of
+	cxx17_empty_base_field_p.  In -Wpsabi diagnostics use the type
+	passed to the function rather than the type of the single element.
+	Rename cxx17_empty_base_seen variable to empty_base_seen, change
+	type to int, and adjust diagnostics depending on if the field
+	has [[no_unique_attribute]] or not.
 
 	PR target/94832
 	* config/i386/avx512bwintrin.h (_mm512_alignr_epi8,

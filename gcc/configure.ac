@@ -981,12 +981,28 @@ AC_ARG_WITH(documentation-root-url,
     [case "$withval" in
       yes) AC_MSG_ERROR([documentation root URL not specified]) ;;
       no)  AC_MSG_ERROR([documentation root URL not specified]) ;;
-      *)   DOCUMENTATION_ROOT_URL="$withval"
-	   ;;
+      */)  DOCUMENTATION_ROOT_URL="$withval" ;;
+      *)   AC_MSG_ERROR([documentation root URL does not end with /]) ;;
      esac],
      DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
 )
-AC_SUBST(DOCUMENTATION_ROOT_URL)
+AC_DEFINE_UNQUOTED(DOCUMENTATION_ROOT_URL,"$DOCUMENTATION_ROOT_URL",
+	[Define to the root for documentation URLs.])
+
+# Allow overriding the default URL for GCC changes
+AC_ARG_WITH(changes-root-url,
+    AS_HELP_STRING([--with-changes-root-url=URL],
+                   [Root for GCC changes URLs]),
+    [case "$withval" in
+      yes) AC_MSG_ERROR([changes root URL not specified]) ;;
+      no)  AC_MSG_ERROR([changes root URL not specified]) ;;
+      */)  CHANGES_ROOT_URL="$withval" ;;
+      *)   AC_MSG_ERROR([changes root URL does not end with /]) ;;
+     esac],
+     CHANGES_ROOT_URL="https://gcc.gnu.org/"
+)
+AC_DEFINE_UNQUOTED(CHANGES_ROOT_URL,"$CHANGES_ROOT_URL",
+	[Define to the root for URLs about GCC changes.])
 
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.

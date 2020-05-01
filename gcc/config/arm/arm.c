@@ -3925,8 +3925,6 @@ static const isr_attribute_arg isr_attribute_args [] =
   { "fiq",   ARM_FT_FIQ },
   { "ABORT", ARM_FT_ISR },
   { "abort", ARM_FT_ISR },
-  { "ABORT", ARM_FT_ISR },
-  { "abort", ARM_FT_ISR },
   { "UNDEF", ARM_FT_EXCEPTION },
   { "undef", ARM_FT_EXCEPTION },
   { "SWI",   ARM_FT_EXCEPTION },
@@ -6416,6 +6414,8 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
 		  != ag_count))
 	    {
+	      const char *url
+		= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
 	      gcc_assert (alt == -1);
 	      last_reported_type_uid = uid;
 	      /* Use TYPE_MAIN_VARIANT to strip any redundant const
@@ -6423,11 +6423,13 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 	      if (warn_psabi_flags & WARN_PSABI_NO_UNIQUE_ADDRESS)
 		inform (input_location, "parameter passing for argument of "
 			"type %qT with %<[[no_unique_address]]%> members "
-			"changed in GCC 10.1", TYPE_MAIN_VARIANT (type));
+			"changed %{in GCC 10.1%}",
+			TYPE_MAIN_VARIANT (type), url);
 	      else if (warn_psabi_flags & WARN_PSABI_EMPTY_CXX17_BASE)
 		inform (input_location, "parameter passing for argument of "
 			"type %qT when C++17 is enabled changed to match "
-			"C++14 in GCC 10.1", TYPE_MAIN_VARIANT (type));
+			"C++14 %{in GCC 10.1%}",
+			TYPE_MAIN_VARIANT (type), url);
 	    }
 	  *count = ag_count;
 	}

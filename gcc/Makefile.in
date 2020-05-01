@@ -2186,8 +2186,6 @@ lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
 	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
 	mv -f T$@ $@
 
-CFLAGS-opts.o += -DDOCUMENTATION_ROOT_URL=\"@DOCUMENTATION_ROOT_URL@\"
-
 # Files used by all variants of C or by the stand-alone pre-processor.
 
 CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@

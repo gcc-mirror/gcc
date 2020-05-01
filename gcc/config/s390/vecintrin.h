@@ -111,8 +111,10 @@ __lcbb(const void *ptr, int bndry)
 #define vec_round(X)  __builtin_s390_vfi((X), 4, 4)
 #define vec_doublee(X) __builtin_s390_vfll((X))
 #define vec_floate(X) __builtin_s390_vflr((X), 0, 0)
-#define vec_load_len_r(X,Y) __builtin_s390_vlrl((Y),(X))
-#define vec_store_len_r(X,Y) __builtin_s390_vstrl((Y),(X))
+#define vec_load_len_r(X,L)				\
+  (__vector unsigned char)__builtin_s390_vlrlr((L),(X))
+#define vec_store_len_r(X,Y,L) \
+  __builtin_s390_vstrlr((__vector signed char)(X),(L),(Y))
 
 #define vec_all_nan(a)						\
   __extension__ ({						\

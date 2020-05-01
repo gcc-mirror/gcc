@@ -1,3 +1,70 @@
+2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.dg/asan/pr87930.c: Enable on x86_64 FreeBSD.
+	* c-c++-common/asan/asan-interface-1.c: Likewise.
+	* c-c++-common/asan/clone-test-1.c: Likewise.
+	* c-c++-common/asan/no-asan-stack.c: Likewise.
+	* c-c++-common/asan/pr59063-1.c: Likewise.
+	* c-c++-common/asan/pr59063-2.c: Likewise.
+	* g++.dg/asan/asan_test.C: Likewise.
+	* g++.dg/asan/asan_test_utils.h: Likewise.
+	* g++.dg/asan/interception-failure-test-1.C: Likewise.
+	* g++.dg/asan/interception-malloc-test-1.C: Likewise.
+
+2020-04-30  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/94740
+	* gcc.target/powerpc/pr94740.c: New test.
+
+2020-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94842
+	* gcc.dg/pr94842.c: New test.
+
+2020-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/94856
+	* g++.dg/ipa/pr94856.C: New test.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94886
+	* g++.dg/coroutines/pr94886-folly-3.C: New test.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94883
+	* g++.dg/coroutines/pr94883-folly-2.C: New test.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94879
+	* g++.dg/coroutines/pr94xxx-folly-1.C: New test.
+
+2020-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* g++.dg/warn/Warray-bounds-10.C: New test.
+
+2020-04-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94748
+	* gcc.target/aarch64/pr94748.c: New test.
+
+2020-04-30  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec_load_len_r.c: New test.
+	* gcc.target/s390/zvector/vec_store_len_r.c: New test.
+
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94704
+	* g++.target/s390/s390.exp: New file.
+	* g++.target/s390/pr94704-1.C: New test.
+	* g++.target/s390/pr94704-2.C: New test.
+	* g++.target/s390/pr94704-3.C: New test.
+	* g++.target/s390/pr94704-4.C: New test.
+
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94830

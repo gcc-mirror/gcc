@@ -256,7 +256,7 @@ TargetVariable
 long aarch64_stack_protector_guard_offset = 0
 
 moutline-atomics
-Target Report Mask(OUTLINE_ATOMICS) Save
+Target Report Var(aarch64_flag_outline_atomics) Init(2) Save
 Generate local calls to out-of-line atomic operations.
 
 -param=aarch64-sve-compare-costs=

@@ -757,6 +757,8 @@ static const format_char_info asm_fprintf_char_table[] =
   { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL }, \
   { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL }, \
   { "'" ,  0, STD_C89, NOARGUMENTS, "",      "",    NULL }, \
+  { "{",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "cR", NULL }, \
+  { "}",   0, STD_C89, NOARGUMENTS, "",      "",    NULL }, \
   { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL }, \
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL }, \
   { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_diag_char_table[0] }

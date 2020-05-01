@@ -1,3 +1,52 @@
+2020-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90479
+	* init.c (get_nsdmi): Don't push_to_top_level for a local class.
+
+2020-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91529
+	* decl.c (cp_finish_decl): Also clear TREE_READONLY if
+	-fmerge-all-constants.
+
+2020-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93822
+	* pt.c (tsubst_decl): Make sure DECL_VALUE_EXPR continues to have
+	the same type as the variable.
+
+2020-04-30  Jason Merrill  <jason@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94827
+	* constraint.cc (map_arguments): If ARGS is null, it's a
+	self-mapping of parms.
+	(finish_nested_requirement): Do not pass argified
+	current_template_parms to normalization.
+	(tsubst_nested_requirement): Don't assert no template parms.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94886
+	* coroutines.cc (transform_local_var_uses): Defer walking
+	the DECL_INITIALs of BIND_EXPR vars until all the frame
+	allocations have been made.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94883
+	* coroutines.cc (register_awaits): Update target
+	expressions for awaitable and suspend handle
+	initializers.
+
+2020-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/94879
+	* coroutines.cc (build_co_await): Account for variables
+	with DECL_VALUE_EXPRs.
+	(captures_temporary): Likewise.
+	(register_awaits): Likewise.
+
 2020-04-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94830

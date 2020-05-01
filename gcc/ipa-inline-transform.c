@@ -607,6 +607,8 @@ save_inline_function_body (struct cgraph_node *node)
 	}
     }
   *ipa_saved_clone_sources->get_create (first_clone) = prev_body_holder;
+  first_clone->former_clone_of
+    = node->former_clone_of ? node->former_clone_of : node->decl;
   first_clone->clone_of = NULL;
 
   /* Now node in question has no clones.  */

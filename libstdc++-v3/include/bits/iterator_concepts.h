@@ -90,6 +90,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       private:
 	template<typename _Tp>
+	  struct __result
+	  { using type = iter_reference_t<_Tp>; };
+
+	template<typename _Tp>
+	  requires __adl_imove<_Tp>
+	  struct __result<_Tp>
+	  { using type = decltype(iter_move(std::declval<_Tp>())); };
+
+	template<typename _Tp>
+	  requires (!__adl_imove<_Tp>)
+	  && is_lvalue_reference_v<iter_reference_t<_Tp>>
+	  struct __result<_Tp>
+	  { using type = remove_reference_t<iter_reference_t<_Tp>>&&; };
+
+	template<typename _Tp>
 	  static constexpr bool
 	  _S_noexcept()
 	  {
@@ -100,16 +115,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
       public:
-	template<typename _Tp>
-	  requires __adl_imove<_Tp> || requires(_Tp& __e) { *__e; }
-	  constexpr decltype(auto)
+	// The result type of iter_move(std::declval<_Tp>())
+	template<std::__detail::__dereferenceable _Tp>
+	  using __type = typename __result<_Tp>::type;
+
+	template<std::__detail::__dereferenceable _Tp>
+	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
 	  noexcept(_S_noexcept<_Tp>())
 	  {
 	    if constexpr (__adl_imove<_Tp>)
 	      return iter_move(static_cast<_Tp&&>(__e));
-	    else if constexpr (is_reference_v<iter_reference_t<_Tp>>)
-	      return std::move(*__e);
+	    else if constexpr (is_lvalue_reference_v<iter_reference_t<_Tp>>)
+	      return static_cast<__type<_Tp>>(*__e);
 	    else
 	      return *__e;
 	  }
@@ -123,10 +141,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace ranges
 
   template<__detail::__dereferenceable _Tp>
-    requires requires(_Tp& __t)
-    { { ranges::iter_move(__t) } -> __detail::__can_reference; }
+    requires __detail::
+      __can_reference<ranges::__cust_imove::_IMove::__type<_Tp&>>
     using iter_rvalue_reference_t
-      = decltype(ranges::iter_move(std::declval<_Tp&>()));
+      = ranges::__cust_imove::_IMove::__type<_Tp&>;
 
   template<typename> struct incrementable_traits { };
 
@@ -443,13 +461,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __iter_concept = typename __iter_concept_impl<_Iter>::type;
 
   template<typename _In>
-    concept __indirectly_readable_impl = requires(const _In __in)
+    concept __indirectly_readable_impl = requires
       {
 	typename iter_value_t<_In>;
 	typename iter_reference_t<_In>;
 	typename iter_rvalue_reference_t<_In>;
-	{ *__in } -> same_as<iter_reference_t<_In>>;
-	{ ranges::iter_move(__in) } -> same_as<iter_rvalue_reference_t<_In>>;
+	requires same_as<iter_reference_t<const _In>,
+			 iter_reference_t<_In>>;
+	requires same_as<iter_rvalue_reference_t<const _In>,
+			 iter_rvalue_reference_t<_In>>;
       }
       && common_reference_with<iter_reference_t<_In>&&, iter_value_t<_In>&>
       && common_reference_with<iter_reference_t<_In>&&,

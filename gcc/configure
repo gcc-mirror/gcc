@@ -819,7 +819,6 @@ accel_dir_suffix
 real_target_noncanonical
 enable_as_accelerator
 gnat_install_lib
-DOCUMENTATION_ROOT_URL
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -967,6 +966,7 @@ with_specs
 with_pkgversion
 with_bugurl
 with_documentation_root_url
+with_changes_root_url
 enable_languages
 with_multilib_list
 with_zstd
@@ -1803,6 +1803,8 @@ Optional Packages:
   --with-bugurl=URL       Direct users to URL to report a bug
   --with-documentation-root-url=URL
                           Root for documentation URLs
+  --with-changes-root-url=URL
+                          Root for GCC changes URLs
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
@@ -7849,14 +7851,39 @@ if test "${with_documentation_root_url+set}" = set; then :
   withval=$with_documentation_root_url; case "$withval" in
       yes) as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
       no)  as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
-      *)   DOCUMENTATION_ROOT_URL="$withval"
-	   ;;
+      */)  DOCUMENTATION_ROOT_URL="$withval" ;;
+      *)   as_fn_error $? "documentation root URL does not end with /" "$LINENO" 5 ;;
      esac
 else
   DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
 
 fi
 
+
+cat >>confdefs.h <<_ACEOF
+#define DOCUMENTATION_ROOT_URL "$DOCUMENTATION_ROOT_URL"
+_ACEOF
+
+
+# Allow overriding the default URL for GCC changes
+
+# Check whether --with-changes-root-url was given.
+if test "${with_changes_root_url+set}" = set; then :
+  withval=$with_changes_root_url; case "$withval" in
+      yes) as_fn_error $? "changes root URL not specified" "$LINENO" 5 ;;
+      no)  as_fn_error $? "changes root URL not specified" "$LINENO" 5 ;;
+      */)  CHANGES_ROOT_URL="$withval" ;;
+      *)   as_fn_error $? "changes root URL does not end with /" "$LINENO" 5 ;;
+     esac
+else
+  CHANGES_ROOT_URL="https://gcc.gnu.org/"
+
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define CHANGES_ROOT_URL "$CHANGES_ROOT_URL"
+_ACEOF
 
 
 # Sanity check enable_languages in case someone does not run the toplevel
@@ -18990,7 +19017,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18993 "configure"
+#line 19020 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19096,7 +19123,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19099 "configure"
+#line 19126 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -1,3 +1,15 @@
+2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Remove
+	config/powerpc/switchcontext.S
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/powerpc/callwithstack.S: Remove.
+	* libdruntime/config/powerpc/switchcontext.S: Fix symbol name of
+	fiber_switchContext.
+	* libdruntime/core/thread.d: Disable fiber migration tests on PPC.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Set guardPageSize
+	same as stackSize.
+
 2020-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* testsuite/lib/libphobos.exp (check_effective_target_linux_pre_2639):

@@ -34,10 +34,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *
  */
     .text
-    .globl CSYM(_fiber_switchContext)
-    .type CSYM(_fiber_switchContext), @function
+    .globl CSYM(fiber_switchContext)
+    .type CSYM(fiber_switchContext), @function
     .align 2
-CSYM(_fiber_switchContext):
+CSYM(fiber_switchContext):
     .cfi_startproc
     /* Save linkage area */
     mflr        0
@@ -149,6 +149,6 @@ CSYM(_fiber_switchContext):
     /* Return and switch context */
     blr
     .cfi_endproc
-    .size CSYM(_fiber_switchContext),.-CSYM(_fiber_switchContext)
+    .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
 
 #endif /* !defined(__PPC64__) */

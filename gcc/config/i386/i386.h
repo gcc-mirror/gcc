@@ -1321,6 +1321,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
+/* Define the shadow offset for asan. Other OS's can override in the
+   respective tm.h files.  */
+#ifndef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET	    \
+  (TARGET_LP64 ? HOST_WIDE_INT_C (0x7fff8000) : HOST_WIDE_INT_1 << 29)
+#endif
+
 /* Make sure we can access arbitrary call frames.  */
 #define SETUP_FRAME_ADDRESSES()  ix86_setup_frame_addresses ()
 

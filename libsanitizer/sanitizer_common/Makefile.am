@@ -44,6 +44,7 @@ sanitizer_common_files = \
 	sanitizer_netbsd.cpp \
 	sanitizer_openbsd.cpp \
 	sanitizer_persistent_allocator.cpp \
+	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
 	sanitizer_platform_limits_openbsd.cpp \
 	sanitizer_platform_limits_posix.cpp \
