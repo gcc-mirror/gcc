@@ -1,3 +1,9 @@
+2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (__math_force_eval): New define.
+	(local_feraiseexcept): Use __math_force_eval to evaluete
+	generic division to generate INVALID and DIVZERO exceptions.
+
 2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
 
 	* intrinsics/trigd.c, intrinsics/trigd_lib.inc, intrinsics/trigd.inc:

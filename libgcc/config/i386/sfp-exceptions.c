@@ -41,18 +41,19 @@ struct fenv
   unsigned short int __unused5;
 };
 
+#ifdef __SSE_MATH__
+# define __math_force_eval(x) asm volatile ("" : : "x" (x));
+#else
+# define __math_force_eval(x) asm volatile ("" : : "f" (x));
+#endif
+
 void
 __sfp_handle_exceptions (int _fex)
 {
   if (_fex & FP_EX_INVALID)
     {
       float f = 0.0f;
-#ifdef __SSE_MATH__
-      asm volatile ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
-#else
-      asm volatile ("fdiv\t{%y0, %0|%0, %y0}" : "+t" (f));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval (f / f);
     }
   if (_fex & FP_EX_DENORM)
     {
@@ -65,12 +66,7 @@ __sfp_handle_exceptions (int _fex)
   if (_fex & FP_EX_DIVZERO)
     {
       float f = 1.0f, g = 0.0f;
-#ifdef __SSE_MATH__
-      asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-#else
-      asm volatile ("fdivs\t%1" : "+t" (f) : "m" (g));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval (f / g);
     }
   if (_fex & FP_EX_OVERFLOW)
     {
