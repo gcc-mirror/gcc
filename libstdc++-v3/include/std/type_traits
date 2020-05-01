@@ -197,8 +197,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Helper functions that return false_type for incomplete classes,
   // incomplete unions and arrays of known bound from those.
 
-  template <typename _T, size_t = sizeof(_T)>
-    constexpr true_type __is_complete_or_unbounded(__type_identity<_T>)
+  template <typename _Tp, size_t = sizeof(_Tp)>
+    constexpr true_type __is_complete_or_unbounded(__type_identity<_Tp>)
     { return {}; }
 
   template <typename _TypeIdentity,
