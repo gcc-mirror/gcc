@@ -411,7 +411,7 @@ StaticItem::as_string () const
 {
   ::std::string str = VisItem::as_string ();
 
-  str += "static";
+  str += indent_spaces (stay) + "static";
 
   if (has_mut)
     {
@@ -427,7 +427,7 @@ StaticItem::as_string () const
 		       "pointer type in static item.");
       return "NULL_POINTER_MARK";
     }
-  str += "\n  Type: " + type->as_string ();
+  str += "\n" + indent_spaces (stay) + "Type: " + type->as_string ();
 
   // DEBUG: null pointer check
   if (expr == NULL)
@@ -436,7 +436,7 @@ StaticItem::as_string () const
 		       "pointer expr in static item.");
       return "NULL_POINTER_MARK";
     }
-  str += "\n  Expression: " + expr->as_string ();
+  str += "\n" + indent_spaces (stay) + "Expression: " + expr->as_string ();
 
   return str + "\n";
 }
@@ -3326,13 +3326,15 @@ LetStmt::as_string () const
     {
       // note that this does not print them with "outer attribute" syntax -
       // just the body
+      indent_spaces (enter);
       for (const auto &attr : outer_attrs)
 	{
-	  str += "\n  " + attr.as_string ();
+	  str += "\n" + indent_spaces (stay) + attr.as_string ();
 	}
+      indent_spaces (out);
     }
 
-  str += "\nlet " + variables_pattern->as_string ();
+  str += "\n" + indent_spaces (stay) + "let " + variables_pattern->as_string ();
 
   if (has_type ())
     {
