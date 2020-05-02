@@ -2615,10 +2615,12 @@ common_handle_option (struct gcc_options *opts,
 	    function_entry_patch_area_start = 0;
 	  }
 	if (function_entry_patch_area_size < 0
+	    || function_entry_patch_area_size > USHRT_MAX
 	    || function_entry_patch_area_start < 0
+	    || function_entry_patch_area_start > USHRT_MAX
 	    || function_entry_patch_area_size 
 		< function_entry_patch_area_start)
-	  error ("invalid arguments for %<-fpatchable_function_entry%>");
+	  error ("invalid arguments for %<-fpatchable-function-entry%>");
 	free (patch_area_arg);
       }
       break;

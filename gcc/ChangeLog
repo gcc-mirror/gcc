@@ -1,3 +1,17 @@
+2020-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93492
+	* cfgexpand.c (pass_expand::execute): Set crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* emit-rtl.h (rtl_data): Add patch_area_size and patch_area_entry.
+	* opts.c (common_handle_option): Limit
+	function_entry_patch_area_size and function_entry_patch_area_start
+	to USHRT_MAX.  Fix a typo in error message.
+	* varasm.c (assemble_start_function): Use crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* doc/invoke.texi: Document the maximum value for
+	-fpatchable-function-entry.
+
 2020-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h: Repair SUBTARGET_INIT_BUILTINS.

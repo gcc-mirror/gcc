@@ -14112,6 +14112,7 @@ If @code{N=0}, no pad location is recorded.
 The NOP instructions are inserted at---and maybe before, depending on
 @var{M}---the function entry address, even before the prologue.
 
+The maximum value of @var{N} and @var{M} is 65535.
 @end table
 
 
