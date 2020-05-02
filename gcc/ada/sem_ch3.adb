@@ -18864,7 +18864,9 @@ package body Sem_Ch3 is
       --  a component in a sibling package that is inherited from a visible
       --  component of a type in an ancestor package; the component in the
       --  sibling package should not be visible even though the component it
-      --  inherited from is visible). This does not apply however in the case
+      --  inherited from is visible), but instance bodies are not subject to
+      --  this second case since they have the Has_Private_View mechanism to
+      --  ensure proper visibility. This does not apply however in the case
       --  where the scope of the type is a private child unit, or when the
       --  parent comes from a local package in which the ancestor is currently
       --  visible. The latter suppression of visibility is needed for cases
@@ -18874,7 +18876,8 @@ package body Sem_Ch3 is
         or else
           (not Is_Private_Descendant (Type_Scope)
             and then not In_Open_Scopes (Type_Scope)
-            and then Has_Private_Declaration (Original_Type))
+            and then Has_Private_Declaration (Original_Type)
+            and then not In_Instance_Body)
       then
          --  If the type derives from an entity in a formal package, there
          --  are no additional visible components.
