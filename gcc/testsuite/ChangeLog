@@ -1,3 +1,10 @@
+2020-05-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94788
+	* gfortran.dg/asan: New directory.
+	* gfortran.dg/asan/asan.exp: New file.
+	* gfortran.dg/asan/pointer_assign_16.f90: New test case.
+
 2020-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/93492
