@@ -10161,10 +10161,12 @@ package body Sem_Res is
 
       --  If the target type is unconstrained, then we reset the type of the
       --  result from the type of the expression. For other cases, the actual
-      --  subtype of the expression is the target type.
+      --  subtype of the expression is the target type. But we avoid doing it
+      --  for an allocator since this is not needed and might be problematic.
 
       if Is_Composite_Type (Target_Typ)
         and then not Is_Constrained (Target_Typ)
+        and then Nkind (Parent (N)) /= N_Allocator
       then
          Set_Etype (N, Etype (Expr));
       end if;
