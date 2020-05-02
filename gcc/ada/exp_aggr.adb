@@ -4429,15 +4429,26 @@ package body Exp_Aggr is
       then
          Aggr_In := First_Index (Etype (N));
 
+         --  Context is an assignment
+
          if Parent_Kind = N_Assignment_Statement then
             Obj_In := First_Index (Etype (Name (Parent_Node)));
 
-         else
-            --  Context is an allocator. Check bounds of aggregate against
-            --  given type in qualified expression.
+         --  Context is an allocator. Check the bounds of the aggregate against
+         --  those of the designated type, except in the case where the type is
+         --  unconstrained (and then we can directly return true, see below).
 
-            pragma Assert (Parent_Kind = N_Allocator);
-            Obj_In := First_Index (Etype (Entity (Subtype_Mark (Parent (N)))));
+         else pragma Assert (Parent_Kind = N_Allocator);
+            declare
+               Desig_Typ : constant Entity_Id :=
+                                         Designated_Type (Etype (Parent_Node));
+            begin
+               if not Is_Constrained (Desig_Typ) then
+                  return True;
+               end if;
+
+               Obj_In := First_Index (Desig_Typ);
+            end;
          end if;
 
          while Present (Aggr_In) loop
