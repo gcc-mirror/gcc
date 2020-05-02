@@ -70,6 +70,7 @@ GRS_OBJS = \
     rust/rust-ast-full-test.o \
     rust/rust-session-manager.o \
     rust/rust-resolution.o \
+    rust/rust-compile.o \
     $(END)
 # removed object files from here 
 
@@ -209,7 +210,7 @@ CFLAGS-rust/rust-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	-DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\"
 
 # cross-folder includes - add new folders later
-RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse -I $(srcdir)/rust/ast -I $(srcdir)/rust/analysis
+RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse -I $(srcdir)/rust/ast -I $(srcdir)/rust/analysis -I $(srcdir)/rust/backend
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
@@ -236,5 +237,10 @@ rust/%.o: rust/ast/%.cc
 
 # build rust/analysis files in rust folder
 rust/%.o: rust/analysis/%.cc
+	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build rust/backend files in rust folder
+rust/%.o: rust/backend/%.cc
 	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)

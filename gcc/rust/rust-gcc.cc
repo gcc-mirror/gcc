@@ -46,7 +46,7 @@
 
 #include "rust-location.h"
 #include "rust-linemap.h"
-#include "backend.h"
+#include "rust-backend.h"
 #include "rust-object-export.h"
 
 // TODO: this will have to be significantly modified to work with Rust
@@ -428,7 +428,6 @@ private:
   tree convert_tree (tree, tree, Location);
 
 private:
-<<<<<<< HEAD
   static const int builtin_const = 1 << 0;
   static const int builtin_noreturn = 1 << 1;
   static const int builtin_novops = 1 << 2;
@@ -437,13 +436,6 @@ private:
 		       const char *libname, tree fntype, int flags);
 
   // A mapping of the GCC built-ins exposed to GCCRust.
-=======
-  void define_builtin (built_in_function bcode, const char *name,
-		       const char *libname, tree fntype, bool const_p,
-		       bool noreturn_p);
-
-  // A mapping of the GCC built-ins exposed to GCCGo.
->>>>>>> 12e994a7967... Fix indentation
   std::map<std::string, Bfunction *> builtin_functions_;
 };
 
@@ -464,42 +456,22 @@ Gcc_backend::Gcc_backend ()
   tree t = this->integer_type (true, BITS_PER_UNIT)->get_tree ();
   tree p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
   this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_1, "__sync_fetch_and_add_1",
-<<<<<<< HEAD
 			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
-=======
-			NULL, build_function_type_list (t, p, t, NULL_TREE),
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = this->integer_type (true, BITS_PER_UNIT * 2)->get_tree ();
   p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
   this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_2, "__sync_fetch_and_add_2",
-<<<<<<< HEAD
 			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
-=======
-			NULL, build_function_type_list (t, p, t, NULL_TREE),
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = this->integer_type (true, BITS_PER_UNIT * 4)->get_tree ();
   p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
   this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_4, "__sync_fetch_and_add_4",
-<<<<<<< HEAD
 			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
-=======
-			NULL, build_function_type_list (t, p, t, NULL_TREE),
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = this->integer_type (true, BITS_PER_UNIT * 8)->get_tree ();
   p = build_pointer_type (build_qualified_type (t, TYPE_QUAL_VOLATILE));
   this->define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_8, "__sync_fetch_and_add_8",
-<<<<<<< HEAD
 			NULL, build_function_type_list (t, p, t, NULL_TREE), 0);
-=======
-			NULL, build_function_type_list (t, p, t, NULL_TREE),
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // We use __builtin_expect for magic import functions.
   this->define_builtin (BUILT_IN_EXPECT, "__builtin_expect", NULL,
@@ -507,11 +479,7 @@ Gcc_backend::Gcc_backend ()
 						  long_integer_type_node,
 						  long_integer_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // We use __builtin_memcmp for struct comparisons.
   this->define_builtin (BUILT_IN_MEMCMP, "__builtin_memcmp", "memcmp",
@@ -519,86 +487,53 @@ Gcc_backend::Gcc_backend ()
 						  const_ptr_type_node,
 						  const_ptr_type_node,
 						  size_type_node, NULL_TREE),
-<<<<<<< HEAD
 			0);
-=======
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // We use __builtin_memmove for copying data.
   this->define_builtin (BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
 			build_function_type_list (void_type_node, ptr_type_node,
 						  const_ptr_type_node,
 						  size_type_node, NULL_TREE),
-<<<<<<< HEAD
 			0);
-=======
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // We use __builtin_memset for zeroing data.
   this->define_builtin (BUILT_IN_MEMSET, "__builtin_memset", "memset",
 			build_function_type_list (void_type_node, ptr_type_node,
 						  integer_type_node,
 						  size_type_node, NULL_TREE),
-<<<<<<< HEAD
 			0);
-=======
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // Used by runtime/internal/sys and math/bits.
   this->define_builtin (BUILT_IN_CTZ, "__builtin_ctz", "ctz",
 			build_function_type_list (integer_type_node,
 						  unsigned_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_CTZLL, "__builtin_ctzll", "ctzll",
 			build_function_type_list (integer_type_node,
 						  long_long_unsigned_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_CLZ, "__builtin_clz", "clz",
 			build_function_type_list (integer_type_node,
 						  unsigned_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_CLZLL, "__builtin_clzll", "clzll",
 			build_function_type_list (integer_type_node,
 						  long_long_unsigned_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_POPCOUNT, "__builtin_popcount", "popcount",
 			build_function_type_list (integer_type_node,
 						  unsigned_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_POPCOUNTLL, "__builtin_popcountll",
 			"popcountll",
 			build_function_type_list (integer_type_node,
 						  long_long_unsigned_type_node,
 						  NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
   this->define_builtin (BUILT_IN_BSWAP16, "__builtin_bswap16", "bswap16",
 			build_function_type_list (uint16_type_node,
@@ -612,21 +547,6 @@ Gcc_backend::Gcc_backend ()
 			build_function_type_list (uint64_type_node,
 						  uint64_type_node, NULL_TREE),
 			builtin_const);
-=======
-			true, false);
-  this->define_builtin (BUILT_IN_BSWAP16, "__builtin_bswap16", "bswap16",
-			build_function_type_list (uint16_type_node,
-						  uint16_type_node, NULL_TREE),
-			true, false);
-  this->define_builtin (BUILT_IN_BSWAP32, "__builtin_bswap32", "bswap32",
-			build_function_type_list (uint32_type_node,
-						  uint32_type_node, NULL_TREE),
-			true, false);
-  this->define_builtin (BUILT_IN_BSWAP64, "__builtin_bswap64", "bswap64",
-			build_function_type_list (uint64_type_node,
-						  uint64_type_node, NULL_TREE),
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // We provide some functions for the math library.
   tree math_function_type
@@ -641,7 +561,6 @@ Gcc_backend::Gcc_backend ()
     = build_function_type_list (long_double_type_node, long_double_type_node,
 				long_double_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ACOS, "__builtin_acos", "acos",
-<<<<<<< HEAD
 			math_function_type, builtin_const);
   this->define_builtin (BUILT_IN_ACOSL, "__builtin_acosl", "acosl",
 			math_function_type_long, builtin_const);
@@ -685,65 +604,15 @@ Gcc_backend::Gcc_backend ()
 			math_function_type_two, builtin_const);
   this->define_builtin (BUILT_IN_FMODL, "__builtin_fmodl", "fmodl",
 			math_function_type_long_two, builtin_const);
-=======
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_ACOSL, "__builtin_acosl", "acosl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_ASIN, "__builtin_asin", "asin",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_ASINL, "__builtin_asinl", "asinl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_ATAN, "__builtin_atan", "atan",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_ATANL, "__builtin_atanl", "atanl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_ATAN2, "__builtin_atan2", "atan2",
-			math_function_type_two, true, false);
-  this->define_builtin (BUILT_IN_ATAN2L, "__builtin_atan2l", "atan2l",
-			math_function_type_long_two, true, false);
-  this->define_builtin (BUILT_IN_CEIL, "__builtin_ceil", "ceil",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_CEILL, "__builtin_ceill", "ceill",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_COS, "__builtin_cos", "cos",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_COSL, "__builtin_cosl", "cosl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_EXP, "__builtin_exp", "exp",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_EXPL, "__builtin_expl", "expl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_EXPM1, "__builtin_expm1", "expm1",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_EXPM1L, "__builtin_expm1l", "expm1l",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_FABS, "__builtin_fabs", "fabs",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_FABSL, "__builtin_fabsl", "fabsl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_FLOOR, "__builtin_floor", "floor",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_FLOORL, "__builtin_floorl", "floorl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_FMOD, "__builtin_fmod", "fmod",
-			math_function_type_two, true, false);
-  this->define_builtin (BUILT_IN_FMODL, "__builtin_fmodl", "fmodl",
-			math_function_type_long_two, true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_LDEXP, "__builtin_ldexp", "ldexp",
 			build_function_type_list (double_type_node,
 						  double_type_node,
 						  integer_type_node, NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
-=======
-			true, false);
->>>>>>> 12e994a7967... Fix indentation
   this->define_builtin (BUILT_IN_LDEXPL, "__builtin_ldexpl", "ldexpl",
 			build_function_type_list (long_double_type_node,
 						  long_double_type_node,
 						  integer_type_node, NULL_TREE),
-<<<<<<< HEAD
 			builtin_const);
   this->define_builtin (BUILT_IN_LOG, "__builtin_log", "log",
 			math_function_type, builtin_const);
@@ -777,47 +646,11 @@ Gcc_backend::Gcc_backend ()
 			math_function_type, builtin_const);
   this->define_builtin (BUILT_IN_TRUNCL, "__builtin_truncl", "truncl",
 			math_function_type_long, builtin_const);
-=======
-			true, false);
-  this->define_builtin (BUILT_IN_LOG, "__builtin_log", "log",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_LOGL, "__builtin_logl", "logl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_LOG1P, "__builtin_log1p", "log1p",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_LOG1PL, "__builtin_log1pl", "log1pl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_LOG10, "__builtin_log10", "log10",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_LOG10L, "__builtin_log10l", "log10l",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_LOG2, "__builtin_log2", "log2",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_LOG2L, "__builtin_log2l", "log2l",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_SIN, "__builtin_sin", "sin",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_SINL, "__builtin_sinl", "sinl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_SQRTL, "__builtin_sqrtl", "sqrtl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_TAN, "__builtin_tan", "tan",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_TANL, "__builtin_tanl", "tanl",
-			math_function_type_long, true, false);
-  this->define_builtin (BUILT_IN_TRUNC, "__builtin_trunc", "trunc",
-			math_function_type, true, false);
-  this->define_builtin (BUILT_IN_TRUNCL, "__builtin_truncl", "truncl",
-			math_function_type_long, true, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // We use __builtin_return_address in the thunk we build for
   // functions which call recover, and for runtime.getcallerpc.
   t = build_function_type_list (ptr_type_node, unsigned_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
-<<<<<<< HEAD
 			NULL, t, 0);
 
   // The runtime calls __builtin_dwarf_cfa for runtime.getcallersp.
@@ -829,176 +662,94 @@ Gcc_backend::Gcc_backend ()
   this->define_builtin (
     BUILT_IN_EXTRACT_RETURN_ADDR, "__builtin_extract_return_addr", NULL,
     build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE), 0);
-=======
-			NULL, t, false, false);
-
-  // The runtime calls __builtin_dwarf_cfa for runtime.getcallersp.
-  t = build_function_type_list (ptr_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_DWARF_CFA, "__builtin_dwarf_cfa", NULL, t,
-			false, false);
-
-  // The runtime calls __builtin_extract_return_addr when recording
-  // the address to which a function returns.
-  this->define_builtin (BUILT_IN_EXTRACT_RETURN_ADDR,
-			"__builtin_extract_return_addr", NULL,
-			build_function_type_list (ptr_type_node, ptr_type_node,
-						  NULL_TREE),
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // The compiler uses __builtin_trap for some exception handling
   // cases.
   this->define_builtin (BUILT_IN_TRAP, "__builtin_trap", NULL,
 			build_function_type (void_type_node, void_list_node),
-<<<<<<< HEAD
 			builtin_noreturn);
-=======
-			false, true);
->>>>>>> 12e994a7967... Fix indentation
 
   // The runtime uses __builtin_prefetch.
   this->define_builtin (BUILT_IN_PREFETCH, "__builtin_prefetch", NULL,
 			build_varargs_function_type_list (void_type_node,
 							  const_ptr_type_node,
 							  NULL_TREE),
-<<<<<<< HEAD
 			builtin_novops);
-=======
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   // The compiler uses __builtin_unreachable for cases that cannot
   // occur.
   this->define_builtin (BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
 			build_function_type (void_type_node, void_list_node),
-<<<<<<< HEAD
 			builtin_const | builtin_noreturn);
-=======
-			true, true);
->>>>>>> 12e994a7967... Fix indentation
 
   // We provide some atomic functions.
   t = build_function_type_list (uint32_type_node, ptr_type_node,
 				integer_type_node, NULL_TREE);
-<<<<<<< HEAD
   this->define_builtin (BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4", NULL, t, 0);
 
   t = build_function_type_list (uint64_type_node, ptr_type_node,
 				integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8", NULL, t, 0);
-=======
-  this->define_builtin (BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4", NULL, t,
-			false, false);
-
-  t = build_function_type_list (uint64_type_node, ptr_type_node,
-				integer_type_node, NULL_TREE);
-  this->define_builtin (BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8", NULL, t,
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (void_type_node, ptr_type_node, uint32_type_node,
 				integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4", NULL, t,
-<<<<<<< HEAD
 			0);
-=======
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (void_type_node, ptr_type_node, uint64_type_node,
 				integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8", NULL, t,
-<<<<<<< HEAD
 			0);
-=======
-			false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (uint32_type_node, ptr_type_node,
 				uint32_type_node, integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_EXCHANGE_4, "__atomic_exchange_4", NULL,
-<<<<<<< HEAD
 			t, 0);
-=======
-			t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (uint64_type_node, ptr_type_node,
 				uint64_type_node, integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_EXCHANGE_8, "__atomic_exchange_8", NULL,
-<<<<<<< HEAD
 			t, 0);
-=======
-			t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (boolean_type_node, ptr_type_node, ptr_type_node,
 				uint32_type_node, boolean_type_node,
 				integer_type_node, integer_type_node,
 				NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4,
-<<<<<<< HEAD
 			"__atomic_compare_exchange_4", NULL, t, 0);
-=======
-			"__atomic_compare_exchange_4", NULL, t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (boolean_type_node, ptr_type_node, ptr_type_node,
 				uint64_type_node, boolean_type_node,
 				integer_type_node, integer_type_node,
 				NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8,
-<<<<<<< HEAD
 			"__atomic_compare_exchange_8", NULL, t, 0);
-=======
-			"__atomic_compare_exchange_8", NULL, t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (uint32_type_node, ptr_type_node,
 				uint32_type_node, integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
-<<<<<<< HEAD
 			NULL, t, 0);
-=======
-			NULL, t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (uint64_type_node, ptr_type_node,
 				uint64_type_node, integer_type_node, NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
-<<<<<<< HEAD
 			NULL, t, 0);
-=======
-			NULL, t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (unsigned_char_type_node, ptr_type_node,
 				unsigned_char_type_node, integer_type_node,
 				NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
-<<<<<<< HEAD
 			NULL, t, 0);
   this->define_builtin (BUILT_IN_ATOMIC_FETCH_AND_1, "__atomic_fetch_and_1",
 			NULL, t, 0);
-=======
-			NULL, t, false, false);
-  this->define_builtin (BUILT_IN_ATOMIC_FETCH_AND_1, "__atomic_fetch_and_1",
-			NULL, t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 
   t = build_function_type_list (unsigned_char_type_node, ptr_type_node,
 				unsigned_char_type_node, integer_type_node,
 				NULL_TREE);
   this->define_builtin (BUILT_IN_ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1", NULL,
-<<<<<<< HEAD
 			t, 0);
   this->define_builtin (BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1", NULL,
 			t, 0);
-=======
-			t, false, false);
-  this->define_builtin (BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1", NULL,
-			t, false, false);
->>>>>>> 12e994a7967... Fix indentation
 }
 
 // Get an unnamed integer type.
@@ -1385,13 +1136,9 @@ Gcc_backend::named_type (const std::string &name, Btype *btype,
   if (type == error_mark_node)
     return this->error_type ();
 
-  // The middle-end expects a basic type to have a name.  In Rust every
+  // The middle-end expects a basic type to have a name.  In Go every
   // basic type will have a name.  The first time we see a basic type,
-<<<<<<< HEAD
-  // give it whatever Rust name we have at this point.
-=======
   // give it whatever Go name we have at this point.
->>>>>>> 12e994a7967... Fix indentation
   if (TYPE_NAME (type) == NULL_TREE
       && location.gcc_location () == BUILTINS_LOCATION
       && (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == REAL_TYPE
@@ -1837,11 +1584,7 @@ Gcc_backend::unary_expression (Operator op, Bexpression *expr,
   enum tree_code code;
   switch (op)
     {
-<<<<<<< HEAD
       case OPERATOR_MINUS: {
-=======
-      case OPERATOR_MINUS: {
->>>>>>> 12e994a7967... Fix indentation
 	tree computed_type = excess_precision_type (type_tree);
 	if (computed_type != NULL_TREE)
 	  {
@@ -2173,13 +1916,8 @@ Gcc_backend::call_expression (Bfunction *, // containing fcn for call
   // This is to support builtin math functions when using 80387 math.
   tree excess_type = NULL_TREE;
   if (optimize && TREE_CODE (fndecl) == FUNCTION_DECL
-<<<<<<< HEAD
       && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
       && DECL_IS_UNDECLARED_BUILTIN (fndecl) && nargs > 0
-=======
-      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL) && DECL_IS_BUILTIN (fndecl)
-      && nargs > 0
->>>>>>> 12e994a7967... Fix indentation
       && ((SCALAR_FLOAT_TYPE_P (rettype)
 	   && SCALAR_FLOAT_TYPE_P (TREE_TYPE (args[0])))
 	  || (COMPLEX_FLOAT_TYPE_P (rettype)
@@ -2682,19 +2420,11 @@ Gcc_backend::non_zero_size_type (tree type)
 	  DECL_CONTEXT (field) = type;
 	  TYPE_FIELDS (type) = field;
 	  layout_type (type);
-<<<<<<< HEAD
 	  rust_non_zero_struct = type;
-=======
-	  go_non_zero_struct = type;
->>>>>>> 12e994a7967... Fix indentation
 	}
       return rust_non_zero_struct;
 
-<<<<<<< HEAD
       case ARRAY_TYPE: {
-=======
-      case ARRAY_TYPE: {
->>>>>>> 12e994a7967... Fix indentation
 	tree element_type = non_zero_size_type (TREE_TYPE (type));
 	return build_array_type_nelts (element_type, 1);
       }
@@ -2802,11 +2532,7 @@ Gcc_backend::global_variable_set_init (Bvariable *var, Bexpression *expr)
   if (symtab_node::get (var_decl)
       && symtab_node::get (var_decl)->implicit_section)
     {
-<<<<<<< HEAD
       set_decl_section_name (var_decl, (const char *) NULL);
-=======
-      set_decl_section_name (var_decl, NULL);
->>>>>>> 12e994a7967... Fix indentation
       resolve_unique_section (var_decl, compute_reloc_for_constant (expr_tree),
 			      1);
     }
@@ -2921,22 +2647,14 @@ Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
       else
 	push_cfun (DECL_STRUCT_FUNCTION (decl));
 
-<<<<<<< HEAD
       var = create_tmp_var (type_tree, "RUSTTMP");
-=======
-      var = create_tmp_var (type_tree, "GOTMP");
->>>>>>> 12e994a7967... Fix indentation
       pop_cfun ();
     }
   else
     {
       gcc_assert (bblock != NULL);
       var = build_decl (location.gcc_location (), VAR_DECL,
-<<<<<<< HEAD
 			create_tmp_var_name ("RUSTTMP"), type_tree);
-=======
-			create_tmp_var_name ("GOTMP"), type_tree);
->>>>>>> 12e994a7967... Fix indentation
       DECL_ARTIFICIAL (var) = 1;
       DECL_IGNORED_P (var) = 1;
       TREE_USED (var) = 1;
@@ -3330,24 +3048,15 @@ Gcc_backend::function (Btype *fntype, const std::string &name,
       if (pos == name.length ())
 	{
 	  struct cl_optimization cur_opts;
-<<<<<<< HEAD
 	  cl_optimization_save (&cur_opts, &global_options,
 				&global_options_set);
-=======
-	  cl_optimization_save (&cur_opts, &global_options);
->>>>>>> 12e994a7967... Fix indentation
 	  global_options.x_optimize_size = 1;
 	  global_options.x_optimize_fast = 0;
 	  global_options.x_optimize_debug = 0;
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
-<<<<<<< HEAD
 	    = build_optimization_node (&global_options, &global_options_set);
 	  cl_optimization_restore (&global_options, &global_options_set,
 				   &cur_opts);
-=======
-	    = build_optimization_node (&global_options);
-	  cl_optimization_restore (&global_options, &cur_opts);
->>>>>>> 12e994a7967... Fix indentation
 	}
     }
 

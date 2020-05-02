@@ -6,6 +6,9 @@
 
 #include "operator.h"
 
+extern bool
+saw_errors (void);
+
 // TODO: Will have to be significantly modified to work with Rust and current
 // setup of gccrs
 

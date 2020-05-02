@@ -10,6 +10,7 @@
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-resolution.h"
+#include "rust-compile.h"
 
 #include "rust-target.h"
 
@@ -17,6 +18,9 @@
 
 extern Linemap *
 rust_get_linemap ();
+
+extern Backend *
+rust_get_backend ();
 
 namespace Rust {
 // Simple wrapper for FILE* that simplifies destruction.
@@ -410,6 +414,8 @@ Session::parse_file (const char *filename)
       fatal_error (UNKNOWN_LOCATION, "cannot open filename %s: %m", filename);
     }
 
+  Backend *backend = rust_get_backend ();
+
   // parse file here
   // create lexer and parser - these are file-specific and so aren't instance
   // variables
@@ -487,6 +493,9 @@ Session::parse_file (const char *filename)
       // TODO: what do I dump here? resolved names? AST with resolved names?
       return;
     }
+
+  // do compile
+  Compile::Compilation::Compile (parsed_crate, backend);
 }
 
 // Checks whether 'cfg' attribute prevents compilation.
