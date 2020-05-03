@@ -1,0 +1,40 @@
+# Copyright (C) 2020 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite for gfortran that checks for -fsanitize=address error.
+
+# Contributed by Thomas König, <tkoenig@gcc.gnu.org>
+
+# Load support procs.
+load_lib gfortran-dg.exp
+load_lib asan-dg.exp
+
+
+# Initialize `dg'.
+dg-init
+asan_init
+
+# Main loop.
+if [check_effective_target_fsanitize_address] {
+    gfortran-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "-fsanitize=address" ""
+}
+
+# All done.
+asan_finish
+dg-finish

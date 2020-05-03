@@ -28394,7 +28394,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
      During an explicit instantiation, access is not checked at all,
      as per [temp.explicit].  */
   if (DECL_P (decl))
-    check_accessibility_of_qualified_id (decl, object_type, parser->scope);
+    check_accessibility_of_qualified_id (decl, object_type, parser->scope,
+					 tf_warning_or_error);
 
   maybe_record_typedef_use (decl);
 

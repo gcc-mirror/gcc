@@ -6656,6 +6656,39 @@ pass_expand::execute (function *fun)
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
 
+  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
+  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
+
+  tree patchable_function_entry_attr
+    = lookup_attribute ("patchable_function_entry",
+			DECL_ATTRIBUTES (cfun->decl));
+  if (patchable_function_entry_attr)
+    {
+      tree pp_val = TREE_VALUE (patchable_function_entry_attr);
+      tree patchable_function_entry_value1 = TREE_VALUE (pp_val);
+
+      patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
+      patch_area_entry = 0;
+      if (TREE_CHAIN (pp_val) != NULL_TREE)
+	{
+	  tree patchable_function_entry_value2
+	    = TREE_VALUE (TREE_CHAIN (pp_val));
+	  patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
+	}
+    }
+
+  if (patch_area_entry > patch_area_size)
+    {
+      if (patch_area_size > 0)
+	warning (OPT_Wattributes,
+		 "patchable function entry %wu exceeds size %wu",
+		 patch_area_entry, patch_area_size);
+      patch_area_entry = 0;
+    }
+
+  crtl->patch_area_size = patch_area_size;
+  crtl->patch_area_entry = patch_area_entry;
+
   /* BB subdivision may have created basic blocks that are only reachable
      from unlikely bbs but not marked as such in the profile.  */
   if (optimize)

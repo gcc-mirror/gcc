@@ -1,3 +1,23 @@
+2020-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90880
+	* cp-tree.h (check_accessibility_of_qualified_id): Add
+	tsubst_flags_t parameter and change return type to bool.
+	* parser.c (cp_parser_lookup_name): Pass tf_warning_to_error to
+	check_accessibility_of_qualified_id.
+	* pt.c (tsubst_qualified_id): Return error_mark_node if
+	check_accessibility_of_qualified_id returns false.
+	* semantics.c (check_accessibility_of_qualified_id): Add
+	complain parameter.  Pass complain instead of
+	tf_warning_or_error to perform_or_defer_access_check.  Return
+	true unless perform_or_defer_access_check returns false.
+
+2020-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94885
+	* typeck2.c (process_init_constructor_record): Return PICFLAG_ERRONEOUS
+	if an initializer element was erroneous.
+
 2020-05-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90479

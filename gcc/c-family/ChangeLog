@@ -1,3 +1,9 @@
+2020-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93492
+	* c-attribs.c (handle_patchable_function_entry_attribute): Limit
+	value to USHRT_MAX (65535).
+
 2020-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-format.c (PP_FORMAT_CHAR_TABLE): Add %{ and %}.

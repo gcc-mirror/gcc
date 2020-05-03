@@ -16180,8 +16180,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (DECL_P (expr))
     {
-      check_accessibility_of_qualified_id (expr, /*object_type=*/NULL_TREE,
-					   scope);
+      if (!check_accessibility_of_qualified_id (expr, /*object_type=*/NULL_TREE,
+						scope, complain))
+	return error_mark_node;
       /* Remember that there was a reference to this entity.  */
       if (!mark_used (expr, complain) && !(complain & tf_error))
 	return error_mark_node;

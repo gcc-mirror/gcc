@@ -7258,7 +7258,7 @@ extern bool expand_or_defer_fn_1		(tree);
 extern void expand_or_defer_fn			(tree);
 extern void add_typedef_to_current_template_for_access_check (tree, tree,
 							      location_t);
-extern void check_accessibility_of_qualified_id (tree, tree, tree);
+extern bool check_accessibility_of_qualified_id (tree, tree, tree, tsubst_flags_t);
 extern tree finish_qualified_id_expr		(tree, tree, bool, bool,
 						 bool, bool, tsubst_flags_t);
 extern void simplify_aggr_init_expr		(tree *);

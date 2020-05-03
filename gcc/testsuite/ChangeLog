@@ -1,3 +1,37 @@
+2020-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/limited1_inner.adb (Finalize): Use 'Unrestricted_Access.
+
+2020-05-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/94788
+	* lib/gfortran.exp (gfortran_target_compile): Get asan library
+	from TEST_ALWAYS_FLAGS.
+
+2020-05-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94788
+	* gfortran.dg/asan: New directory.
+	* gfortran.dg/asan/asan.exp: New file.
+	* gfortran.dg/asan/pointer_assign_16.f90: New test case.
+
+2020-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93492
+	* c-c++-common/patchable_function_entry-error-1.c: New test.
+	* c-c++-common/patchable_function_entry-error-2.c: Likewise.
+	* c-c++-common/patchable_function_entry-error-3.c: Likewise.
+
+2020-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90880
+	* g++.dg/template/sfinae29.C: New test.
+
+2020-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94885
+	* g++.dg/cpp2a/paren-init26.C: New test.
+
 2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* gcc.dg/asan/pr87930.c: Enable on x86_64 FreeBSD.

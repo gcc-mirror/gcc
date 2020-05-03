@@ -173,6 +173,12 @@ struct GTY(()) rtl_data {
         local stack.  */
   unsigned int stack_alignment_estimated;
 
+  /* How many NOP insns to place at each function entry by default.  */
+  unsigned short patch_area_size;
+
+  /* How far the real asm entry point is into this area.  */
+  unsigned short patch_area_entry;
+
   /* For reorg.  */
 
   /* Nonzero if function being compiled called builtin_return_addr or
