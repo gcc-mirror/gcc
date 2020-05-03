@@ -1973,8 +1973,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
   tree stmt = begin_compound_stmt (BCS_FN_BODY);
 
-  /* ??? Can we dispense with the enclosing bind if the function body does
-     not start with a bind_expr? (i.e. there's no contained scopes).  */
   tree actor_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (actor_bind) = top_block;
@@ -2425,8 +2423,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 		       continue_label, continuation, 2};
   cp_walk_tree (&actor_body, await_statement_expander, &data, NULL);
 
-  actor_body = pop_stmt_list (actor_body);
-  BIND_EXPR_BODY (actor_bind) = actor_body;
+  BIND_EXPR_BODY (actor_bind) = pop_stmt_list (actor_body);
+  TREE_SIDE_EFFECTS (actor_bind) = true;
 
   finish_compound_stmt (stmt);
   DECL_SAVED_TREE (actor) = pop_stmt_list (actor_outer);
@@ -2891,6 +2889,7 @@ replace_statement_captures (tree *stmt, void *d)
 	}
     }
   BIND_EXPR_BLOCK (aw_bind) = b_block;
+  TREE_SIDE_EFFECTS (aw_bind) = TREE_SIDE_EFFECTS (BIND_EXPR_BODY (aw_bind));
   *stmt = aw_bind;
 }
 
@@ -3613,10 +3612,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	{
 	  tree tlist = NULL_TREE;
 	  append_to_statement_list_force (fnbody, &tlist);
+	  TREE_SIDE_EFFECTS (tlist) = TREE_SIDE_EFFECTS (fnbody);
 	  BIND_EXPR_BODY (update_body) = tlist;
 	}
       tree new_body_list = NULL_TREE;
-      append_to_statement_list_force (update_body, &new_body_list);
+      TREE_SIDE_EFFECTS (update_body) = true;
+      append_to_statement_list (update_body, &new_body_list);
+      TREE_SIDE_EFFECTS (new_body_list) = true;
       fnbody = new_body_list;
     }
 
@@ -4323,7 +4325,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Finish up the ramp function.  */
   BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;
   BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
+  TREE_SIDE_EFFECTS (gro_context_bind) = true;
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
+  TREE_SIDE_EFFECTS (ramp_bind) = true;
 
   /* We know the "real" promise and have a frame layout with a slot for each
      suspend point, so we can build an actor function (which contains the
@@ -4442,6 +4446,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  BLOCK_SUPERCONTEXT (replace_blk) = tcb_block;
 	  BLOCK_SUBBLOCKS (tcb_block) = replace_blk;
 	  BIND_EXPR_BLOCK (fnbody) = tcb_block;
+	  TREE_SIDE_EFFECTS (fnbody) = true;
 	}
     }
   else if (pedantic)

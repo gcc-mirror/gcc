@@ -1,3 +1,8 @@
+2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95003
+	* g++.dg/coroutines/torture/pr95003.C: New test.
+
 2020-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/cpp/counter-[23].c: Move to c-c+_-common/cpp.
