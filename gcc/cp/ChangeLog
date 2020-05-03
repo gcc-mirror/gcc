@@ -1,3 +1,11 @@
+2020-05-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95003
+	* coroutines.cc (build_actor_fn): Ensure that bind scopes
+	are marked as having side-effects where necessary.
+	(replace_statement_captures): Likewise.
+	(morph_fn_to_coro): Likewise.
+
 2020-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	* NEWS: Delete, it is so stale.
