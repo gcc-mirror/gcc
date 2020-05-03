@@ -1,3 +1,20 @@
+2020-05-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+        * config/i386/i386-expand.c (ix86_expand_int_movcc):
+	Use plus_constant instead of gen_rtx_PLUS with GEN_INT.
+	(emit_memmov): Ditto.
+	(emit_memset): Ditto.
+	(ix86_expand_strlensi_unroll_1): Ditto.
+	(release_scratch_register_on_entry): Ditto.
+	(gen_frame_set): Ditto.
+	(ix86_emit_restore_reg_using_pop): Ditto.
+	(ix86_emit_outlined_ms2sysv_restore): Ditto.
+	(ix86_expand_epilogue): Ditto.
+	(ix86_expand_split_stack_prologue): Ditto.
+	* config/i386/i386.md (push immediate splitter): Ditto.
+	(strmov): Ditto.
+	(strset): Ditto.
+
 2020-05-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR translation/93861
