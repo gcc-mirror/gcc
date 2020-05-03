@@ -32,6 +32,7 @@
 
 with Atree;  use Atree;
 with Einfo;  use Einfo;
+with Nlists; use Nlists;
 with Snames; use Snames;
 with Stand;  use Stand;
 with Uintp;  use Uintp;
@@ -1374,6 +1375,18 @@ package body Sem_Aux is
                return Entity (Subtype_Mark (SI));
             end if;
          end;
+
+      --  If this is a concurrent declaration with a nonempty interface list,
+      --  get the first progenitor. Account for case of a record type created
+      --  for a concurrent type (which is the only case that seems to occur
+      --  in practice).
+
+      elsif Nkind (D) = N_Full_Type_Declaration
+        and then (Is_Concurrent_Type (Defining_Identifier (D))
+                   or else Is_Concurrent_Record_Type (Defining_Identifier (D)))
+        and then Is_Non_Empty_List (Interface_List (Type_Definition (D)))
+      then
+         return Entity (First (Interface_List (Type_Definition (D))));
 
       --  If derived type and private type, get the full view to find who we
       --  are derived from.
