@@ -9584,6 +9584,9 @@ package body Sem_Ch13 is
       --  Add predicates for ancestor if present. These must come before the
       --  ones for the current type, as required by AI12-0071-1.
 
+      --  Looks like predicates aren't added for case of inheriting from
+      --  multiple progenitors???
+
       declare
          Atyp : Entity_Id;
       begin
