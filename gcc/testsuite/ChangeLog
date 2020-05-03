@@ -1,3 +1,7 @@
+2020-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/limited1_inner.adb (Finalize): Use 'Unrestricted_Access.
+
 2020-05-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/94788
