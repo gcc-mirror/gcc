@@ -1,6 +1,11 @@
 2020-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94718
+	* match.pd (bitop (convert @0) (convert? @1)): For GIMPLE, if we can,
+	replace two nop conversions on bit_{and,ior,xor} argument
+	and result with just one conversion on the result or another argument.
+
+	PR tree-optimization/94718
 	* fold-const.c (fold_binary_loc): Move (X & C) eqne (Y & C)
 	-> (X ^ Y) & C eqne 0 optimization to ...
 	* match.pd ((X & C) op (Y & C) into (X ^ Y) & C op 0): ... here.

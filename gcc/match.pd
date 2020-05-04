@@ -1311,7 +1311,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    We combine the above two cases by using a conditional convert.  */
 (for bitop (bit_and bit_ior bit_xor)
  (simplify
-  (bitop (convert @0) (convert? @1))
+  (bitop (convert@2 @0) (convert?@3 @1))
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	 && int_fits_type_p (@1, TREE_TYPE (@0)))
@@ -1330,8 +1330,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || GET_MODE_CLASS (TYPE_MODE (type)) != MODE_INT
 	   /* Or if the precision of TO is not the same as the precision
 	      of its mode.  */
-	   || !type_has_mode_precision_p (type)))
-   (convert (bitop @0 (convert @1))))))
+	   || !type_has_mode_precision_p (type)
+	   /* In GIMPLE, getting rid of 2 conversions for one new results
+	      in smaller IL.  */
+	   || (GIMPLE
+	       && TREE_CODE (@1) != INTEGER_CST
+	       && tree_nop_conversion_p (type, TREE_TYPE (@0))
+	       && single_use (@2)
+	       && single_use (@3))))
+   (convert (bitop @0 (convert @1)))))
+ /* In GIMPLE, getting rid of 2 conversions for one new results
+    in smaller IL.  */
+ (simplify
+  (convert (bitop:cs@2 (nop_convert:s @0) @1))
+  (if (GIMPLE
+       && TREE_CODE (@1) != INTEGER_CST
+       && tree_nop_conversion_p (type, TREE_TYPE (@2))
+       && types_match (type, @0))
+   (bitop @0 (convert @1)))))
 
 (for bitop (bit_and bit_ior)
      rbitop (bit_ior bit_and)

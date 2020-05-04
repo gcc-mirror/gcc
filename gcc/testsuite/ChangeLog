@@ -1,6 +1,9 @@
 2020-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94718
+	* gcc.dg/tree-ssa/pr94718-3.c: New test.
+
+	PR tree-optimization/94718
 	* gcc.dg/tree-ssa/pr94718-1.c: New test.
 	* gcc.dg/tree-ssa/pr94718-2.c: New test.
 
