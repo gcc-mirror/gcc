@@ -1,3 +1,10 @@
+2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94795
+	* config/i386/i386.md (*neg<mode>_ccc): New insn pattern.
+	(EQ compare->LTU compare splitter): New splitter.
+	(NE compare->NEG splitter): Ditto.
+
 2020-05-04  Marek Polacek  <polacek@redhat.com>
 
 	Revert:
