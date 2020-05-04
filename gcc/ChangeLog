@@ -3,6 +3,14 @@
 	Backport from mainline
 	2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/vector.md ("popcountv8hi2_vx", "popcountv4si2_vx")
+	("popcountv2di2_vx"): Use simplify_gen_subreg.
+
+2020-05-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	PR target/94613
 	* config/s390/s390-builtin-types.def: Add 3 new function modes.
 	* config/s390/s390-builtins.def: Add mode dependent low-level
