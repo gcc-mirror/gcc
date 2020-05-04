@@ -1,6 +1,9 @@
 2020-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/94718
+	* match.pd ((X < 0) != (Y < 0) into (X ^ Y) < 0): New simplification.
+
+	PR tree-optimization/94718
 	* match.pd (bitop (convert @0) (convert? @1)): For GIMPLE, if we can,
 	replace two nop conversions on bit_{and,ior,xor} argument
 	and result with just one conversion on the result or another argument.
