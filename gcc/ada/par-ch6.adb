@@ -1856,6 +1856,7 @@ package body Ch6 is
       if Token = Tok_Colon_Equal then
          Scan; -- past :=
          Set_Expression (Decl_Node, P_Expression_No_Right_Paren);
+         Set_Has_Init_Expression (Decl_Node);
       end if;
 
       return Decl_Node;
