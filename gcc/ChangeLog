@@ -1,3 +1,10 @@
+2020-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93385
+	* tree-inline.c (tree_function_versioning): Leave any type conversion
+	of replacements to setup_one_parameter and its friend
+	force_value_to_type.
+
 2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94650
