@@ -1255,7 +1255,9 @@ adjust_temp_type (tree type, tree temp)
   if (TREE_CODE (temp) == EMPTY_CLASS_EXPR)
     return build0 (EMPTY_CLASS_EXPR, type);
   gcc_assert (scalarish_type_p (type));
-  return cp_fold_convert (type, temp);
+  /* Now we know we're dealing with a scalar, and a prvalue of non-class
+     type is cv-unqualified.  */
+  return cp_fold_convert (cv_unqualified (type), temp);
 }
 
 /* Callback for walk_tree used by unshare_constructor.  */

@@ -1,3 +1,11 @@
+2020-05-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90736 - bogus error with alignof.
+	* constexpr.c (adjust_temp_type): Use cv_unqualified type.
+
 2020-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91377
