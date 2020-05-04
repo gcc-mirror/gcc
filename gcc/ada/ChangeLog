@@ -1,3 +1,8 @@
+2020-05-04  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR bootstrap/94918
+	* mingw32.h: Prevent windows.h from including emmintrin.h on Cygwin64.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.
