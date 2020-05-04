@@ -1,3 +1,86 @@
+2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94795
+	* config/i386/i386.md (*neg<mode>_ccc): New insn pattern.
+	(EQ compare->LTU compare splitter): New splitter.
+	(NE compare->NEG splitter): Ditto.
+
+2020-05-04  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2020-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* tree.c (check_base_type): Return true only if TYPE_USER_ALIGN match.
+	(check_aligned_type): Check if TYPE_USER_ALIGN match.
+
+2020-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93891
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fall back to
+	the original reference tree for assessing access alignment.
+
+2020-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39612
+	* tree-ssa-loop-im.c (im_mem_ref::loaded): New member.
+	(set_ref_loaded_in_loop): New.
+	(mark_ref_loaded): Likewise.
+	(gather_mem_refs_stmt): Call mark_ref_loaded for loads.
+	(execute_sm): Avoid issueing a load when it was not there.
+	(execute_sm_if_changed): Avoid issueing warnings for the
+	conditional store.
+
+2020-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93385
+	* tree-inline.c (tree_function_versioning): Leave any type conversion
+	of replacements to setup_one_parameter and its friend
+	force_value_to_type.
+
+2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94650
+	* config/i386/predicates.md (shr_comparison_operator): New predicate.
+	* config/i386/i386.md (compare->shr splitter): New splitters.
+
+2020-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94718
+	* match.pd ((X < 0) != (Y < 0) into (X ^ Y) < 0): New simplification.
+
+	PR tree-optimization/94718
+	* match.pd (bitop (convert @0) (convert? @1)): For GIMPLE, if we can,
+	replace two nop conversions on bit_{and,ior,xor} argument
+	and result with just one conversion on the result or another argument.
+
+	PR tree-optimization/94718
+	* fold-const.c (fold_binary_loc): Move (X & C) eqne (Y & C)
+	-> (X ^ Y) & C eqne 0 optimization to ...
+	* match.pd ((X & C) op (Y & C) into (X ^ Y) & C op 0): ... here.
+
+	* opts.c (get_option_html_page): Instead of hardcoding a list of
+	options common between C/C++ and Fortran only use gfortran/
+	documentation for warnings that have CL_Fortran set but not
+	CL_C or CL_CXX.
+
+2020-05-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+        * config/i386/i386-expand.c (ix86_expand_int_movcc):
+	Use plus_constant instead of gen_rtx_PLUS with GEN_INT.
+	(emit_memmov): Ditto.
+	(emit_memset): Ditto.
+	(ix86_expand_strlensi_unroll_1): Ditto.
+	(release_scratch_register_on_entry): Ditto.
+	(gen_frame_set): Ditto.
+	(ix86_emit_restore_reg_using_pop): Ditto.
+	(ix86_emit_outlined_ms2sysv_restore): Ditto.
+	(ix86_expand_epilogue): Ditto.
+	(ix86_expand_split_stack_prologue): Ditto.
+	* config/i386/i386.md (push immediate splitter): Ditto.
+	(strmov): Ditto.
+	(strset): Ditto.
+
 2020-05-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR translation/93861

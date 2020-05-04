@@ -1,3 +1,32 @@
+2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94795
+	* gcc.target/i386/pr94795-1.c: New test.
+	* gcc.target/i386/pr94795-2.c: Ditto.
+
+2020-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39612
+	* gcc.dg/tree-ssa/pr39612.c: New testcase.
+
+2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/94650
+	* gcc.targeti/i386/pr94650.c: New test.
+
+2020-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94718
+	* gcc.dg/tree-ssa/pr94718-4.c: New test.
+	* gcc.dg/tree-ssa/pr94718-5.c: New test.
+
+	PR tree-optimization/94718
+	* gcc.dg/tree-ssa/pr94718-3.c: New test.
+
+	PR tree-optimization/94718
+	* gcc.dg/tree-ssa/pr94718-1.c: New test.
+	* gcc.dg/tree-ssa/pr94718-2.c: New test.
+
 2020-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/limited1_inner.adb (Finalize): Use 'Unrestricted_Access.

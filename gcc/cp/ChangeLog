@@ -1,3 +1,23 @@
+2020-05-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Mark the coro.gro variable
+	as artificial and ignored.
+
+2020-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	pt.c (process_template_parm): Don't walk the template list twice,
+	remember the final node instead.
+	(end_template_parm_list): Refactor.  Comment on why we do a pop
+	and a push.
+
+	PR c++/94827 -- don't save parms in nested requirement
+	* constraint.cc (tsubst_nested_requirement): TYPE directly holds
+	notmalized requirement.
+	(finish_nested_requirement): Don't stash current tpl parms into
+	the requirement.
+	(diagnose_nested_requirement): TYPE directly holds notmalized
+	requirement.
+
 2020-05-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/90880

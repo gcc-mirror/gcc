@@ -4496,28 +4496,26 @@ tree
 process_template_parm (tree list, location_t parm_loc, tree parm,
 		       bool is_non_type, bool is_parameter_pack)
 {
-  tree decl = 0;
-  int idx = 0;
-
   gcc_assert (TREE_CODE (parm) == TREE_LIST);
-  tree defval = TREE_PURPOSE (parm);
-  tree constr = TREE_TYPE (parm);
+  tree prev = NULL_TREE;
+  int idx = 0;
 
   if (list)
     {
-      tree p = tree_last (list);
+      prev = tree_last (list);
 
-      if (p && TREE_VALUE (p) != error_mark_node)
-        {
-          p = TREE_VALUE (p);
-          if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
-            idx = TEMPLATE_TYPE_IDX (TREE_TYPE (p));
-          else
-            idx = TEMPLATE_PARM_IDX (DECL_INITIAL (p));
-        }
+      tree p = TREE_VALUE (prev);
+      if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
+	idx = TEMPLATE_TYPE_IDX (TREE_TYPE (p));
+      else if (TREE_CODE (p) == PARM_DECL)
+	idx = TEMPLATE_PARM_IDX (DECL_INITIAL (p));
 
       ++idx;
     }
+
+  tree decl = NULL_TREE;
+  tree defval = TREE_PURPOSE (parm);
+  tree constr = TREE_TYPE (parm);
 
   if (is_non_type)
     {
@@ -4616,7 +4614,12 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
   parm = build_tree_list (defval, parm);
   TEMPLATE_PARM_CONSTRAINTS (parm) = reqs;
 
-  return chainon (list, parm);
+  if (prev)
+    TREE_CHAIN (prev) = parm;
+  else
+    list = parm;
+
+  return list;
 }
 
 /* The end of a template parameter list has been reached.  Process the
@@ -4627,22 +4630,24 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
 tree
 end_template_parm_list (tree parms)
 {
-  int nparms;
-  tree parm, next;
   tree saved_parmlist = make_tree_vec (list_length (parms));
 
-  /* Pop the dummy parameter level and add the real one.  */
+  /* Pop the dummy parameter level and add the real one.  We do not
+     morph the dummy parameter in place, as it might have been
+     captured by a (nested) template-template-parm.  */
   current_template_parms = TREE_CHAIN (current_template_parms);
 
   current_template_parms
     = tree_cons (size_int (processing_template_decl),
 		 saved_parmlist, current_template_parms);
 
-  for (parm = parms, nparms = 0; parm; parm = next, nparms++)
+  for (unsigned ix = 0; parms; ix++)
     {
-      next = TREE_CHAIN (parm);
-      TREE_VEC_ELT (saved_parmlist, nparms) = parm;
+      tree parm = parms;
+      parms = TREE_CHAIN (parms);
       TREE_CHAIN (parm) = NULL_TREE;
+
+      TREE_VEC_ELT (saved_parmlist, ix) = parm;
     }
 
   --processing_template_parmlist;

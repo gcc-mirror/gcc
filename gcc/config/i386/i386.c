@@ -7101,14 +7101,14 @@ release_scratch_register_on_entry (struct scratch_reg *sr, HOST_WIDE_INT offset,
 
 	  /* The RX FRAME_RELATED_P mechanism doesn't know about pop.  */
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
+	  x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
 	  x = gen_rtx_SET (stack_pointer_rtx, x);
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
 	  m->fs.sp_offset -= UNITS_PER_WORD;
 	}
       else
 	{
-	  rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, offset);
 	  x = gen_rtx_SET (sr->reg, gen_rtx_MEM (word_mode, x));
 	  emit_insn (x);
 	}
@@ -7895,7 +7895,7 @@ gen_frame_set (rtx reg, rtx frame_reg, int offset, bool store)
   rtx addr, mem;
 
   if (offset)
-    addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
+    addr = plus_constant (Pmode, frame_reg, offset);
   mem = gen_frame_mem (GET_MODE (reg), offset ? addr : frame_reg);
   return gen_rtx_SET (store ? mem : reg, store ? reg : mem);
 }
@@ -8591,8 +8591,8 @@ ix86_emit_restore_reg_using_pop (rtx reg)
 	  m->fs.cfa_offset -= UNITS_PER_WORD;
 
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				      GEN_INT (m->fs.cfa_offset)));
+			plus_constant (Pmode, stack_pointer_rtx,
+				       m->fs.cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -8776,7 +8776,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 	  gcc_assert (m->fs.fp_valid);
 	  gcc_assert (m->fs.cfa_reg == hard_frame_pointer_rtx);
 
-	  tmp = gen_rtx_PLUS (DImode, rbp, GEN_INT (8));
+	  tmp = plus_constant (DImode, rbp, 8);
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, tmp);
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (rbp, gen_rtx_MEM (DImode, rbp));
 	  tmp = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
@@ -8790,7 +8790,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 	  gcc_assert (m->fs.sp_valid);
 
 	  r10 = gen_rtx_REG (DImode, R10_REG);
-	  tmp = gen_rtx_PLUS (Pmode, rsi, GEN_INT (stub_ptr_offset));
+	  tmp = plus_constant (Pmode, rsi, stub_ptr_offset);
 	  emit_insn (gen_rtx_SET (r10, tmp));
 
 	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, r10);
@@ -9187,17 +9187,16 @@ ix86_expand_epilogue (int style)
 
       insn = emit_insn (gen_rtx_SET
 			(stack_pointer_rtx,
-			 gen_rtx_PLUS (Pmode,
-				       crtl->drap_reg,
-				       GEN_INT (-param_ptr_offset))));
+			 plus_constant (Pmode, crtl->drap_reg,
+					-param_ptr_offset)));
       m->fs.cfa_reg = stack_pointer_rtx;
       m->fs.cfa_offset = param_ptr_offset;
       m->fs.sp_offset = param_ptr_offset;
       m->fs.realigned = false;
 
       add_reg_note (insn, REG_CFA_DEF_CFA,
-		    gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				  GEN_INT (param_ptr_offset)));
+		    plus_constant (Pmode, stack_pointer_rtx,
+				   param_ptr_offset));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
@@ -9709,8 +9708,8 @@ ix86_expand_split_stack_prologue (void)
       */
       words = TARGET_64BIT ? 3 : 5;
       emit_insn (gen_rtx_SET (scratch_reg,
-			      gen_rtx_PLUS (Pmode, frame_reg,
-					    GEN_INT (words * UNITS_PER_WORD))));
+			      plus_constant (Pmode, frame_reg,
+					     words * UNITS_PER_WORD)));
 
       varargs_label = gen_label_rtx ();
       emit_jump_insn (gen_jump (varargs_label));
@@ -9728,8 +9727,8 @@ ix86_expand_split_stack_prologue (void)
   if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
     {
       emit_insn (gen_rtx_SET (scratch_reg,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					    GEN_INT (UNITS_PER_WORD))));
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     UNITS_PER_WORD)));
 
       emit_label (varargs_label);
       LABEL_NUSES (varargs_label) = 1;

@@ -127,6 +127,8 @@ public:
 
   bitmap stored;		/* The set of loops in that this memory location
 				   is stored to.  */
+  bitmap loaded;		/* The set of loops in that this memory location
+				   is loaded from.  */
   vec<mem_ref_loc>		accesses_in_loop;
 				/* The locations of the accesses.  Vector
 				   indexed by the loop number.  */
@@ -1395,6 +1397,7 @@ mem_ref_alloc (ao_ref *mem, unsigned hash, unsigned id)
   ref->ref_decomposed = false;
   ref->hash = hash;
   ref->stored = NULL;
+  ref->loaded = NULL;
   bitmap_initialize (&ref->indep_loop, &lim_bitmap_obstack);
   bitmap_initialize (&ref->dep_loop, &lim_bitmap_obstack);
   ref->accesses_in_loop.create (1);
@@ -1432,6 +1435,27 @@ mark_ref_stored (im_mem_ref *ref, class loop *loop)
 {
   while (loop != current_loops->tree_root
 	 && set_ref_stored_in_loop (ref, loop))
+    loop = loop_outer (loop);
+}
+
+/* Set the LOOP bit in REF loaded bitmap and allocate that if
+   necessary.  Return whether a bit was changed.  */
+
+static bool
+set_ref_loaded_in_loop (im_mem_ref *ref, class loop *loop)
+{
+  if (!ref->loaded)
+    ref->loaded = BITMAP_ALLOC (&lim_bitmap_obstack);
+  return bitmap_set_bit (ref->loaded, loop->num);
+}
+
+/* Marks reference REF as loaded in LOOP.  */
+
+static void
+mark_ref_loaded (im_mem_ref *ref, class loop *loop)
+{
+  while (loop != current_loops->tree_root
+	 && set_ref_loaded_in_loop (ref, loop))
     loop = loop_outer (loop);
 }
 
@@ -1571,6 +1595,8 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
       bitmap_set_bit (&memory_accesses.refs_stored_in_loop[loop->num], ref->id);
       mark_ref_stored (ref, loop);
     }
+  else
+    mark_ref_loaded (ref, loop);
   init_lim_data (stmt)->ref = ref->id;
   return;
 }
@@ -1968,6 +1994,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   gsi = gsi_start_bb (then_bb);
   /* Insert actual store.  */
   stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
+  /* Make sure to not warn about maybe-uninit uses of tmp_var here.  */
+  gimple_set_no_warning (stmt, true);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
   edge e1 = single_succ_edge (new_bb);
@@ -2115,14 +2143,17 @@ execute_sm (class loop *loop, vec<edge> exits, im_mem_ref *ref)
      by move_computations after all dependencies.  */
   gsi = gsi_for_stmt (first_mem_ref_loc (loop, ref)->stmt);
 
-  /* FIXME/TODO: For the multi-threaded variant, we could avoid this
-     load altogether, since the store is predicated by a flag.  We
-     could, do the load only if it was originally in the loop.  */
-  load = gimple_build_assign (tmp_var, unshare_expr (ref->mem.ref));
-  lim_data = init_lim_data (load);
-  lim_data->max_loop = loop;
-  lim_data->tgt_loop = loop;
-  gsi_insert_before (&gsi, load, GSI_SAME_STMT);
+  /* Avoid doing a load if there was no load of the ref in the loop.
+     Esp. when the ref is not always stored we cannot optimize it
+     away later.  */
+  if (ref->loaded && bitmap_bit_p (ref->loaded, loop->num))
+    {
+      load = gimple_build_assign (tmp_var, unshare_expr (ref->mem.ref));
+      lim_data = init_lim_data (load);
+      lim_data->max_loop = loop;
+      lim_data->tgt_loop = loop;
+      gsi_insert_before (&gsi, load, GSI_SAME_STMT);
+    }
 
   if (multi_threaded_model_p)
     {

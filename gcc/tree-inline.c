@@ -6261,46 +6261,14 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	  p = new_param_indices[p];
 
 	tree parm;
-	tree req_type, new_type;
-
 	for (parm = DECL_ARGUMENTS (old_decl); p;
 	     parm = DECL_CHAIN (parm))
 	  p--;
-	tree old_tree = parm;
-	req_type = TREE_TYPE (parm);
-	new_type = TREE_TYPE (replace_info->new_tree);
-	if (!useless_type_conversion_p (req_type, new_type))
-	  {
-	    if (fold_convertible_p (req_type, replace_info->new_tree))
-	      replace_info->new_tree
-		= fold_build1 (NOP_EXPR, req_type, replace_info->new_tree);
-	    else if (TYPE_SIZE (req_type) == TYPE_SIZE (new_type))
-	      replace_info->new_tree
-		= fold_build1 (VIEW_CONVERT_EXPR, req_type,
-			       replace_info->new_tree);
-	    else
-	      {
-		if (dump_file)
-		  {
-		    fprintf (dump_file, "    const ");
-		    print_generic_expr (dump_file,
-					replace_info->new_tree);
-		    fprintf (dump_file,
-			     "  can't be converted to param ");
-		    print_generic_expr (dump_file, parm);
-		    fprintf (dump_file, "\n");
-		  }
-		old_tree = NULL;
-	      }
-	  }
-
-	if (old_tree)
-	  {
-	    init = setup_one_parameter (&id, old_tree, replace_info->new_tree,
-					id.src_fn, NULL, &vars);
-	    if (init)
-	      init_stmts.safe_push (init);
-	  }
+	gcc_assert (parm);
+	init = setup_one_parameter (&id, parm, replace_info->new_tree,
+				    id.src_fn, NULL, &vars);
+	if (init)
+	  init_stmts.safe_push (init);
       }
 
   ipa_param_body_adjustments *param_body_adjs = NULL;

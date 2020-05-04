@@ -3170,7 +3170,7 @@ ix86_expand_int_movcc (rtx operands[])
 	    }
 	  if (cf != 0)
 	    {
-	      tmp = gen_rtx_PLUS (mode, tmp, GEN_INT (cf));
+	      tmp = plus_constant (mode, tmp, cf);
 	      nops++;
 	    }
 	  if (!rtx_equal_p (tmp, out))
@@ -5986,7 +5986,7 @@ static rtx
 emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
 	     HOST_WIDE_INT size_to_move)
 {
-  rtx dst = destmem, src = *srcmem, adjust, tempreg;
+  rtx dst = destmem, src = *srcmem, tempreg;
   enum insn_code code;
   machine_mode move_mode;
   int piece_size, i;
@@ -6022,7 +6022,7 @@ emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
 
   /* Emit moves.  We'll need SIZE_TO_MOVE/PIECE_SIZES moves.  */
   gcc_assert (size_to_move % piece_size == 0);
-  adjust = GEN_INT (piece_size);
+
   for (i = 0; i < size_to_move; i += piece_size)
     {
       /* We move from memory to memory, so we'll need to do it via
@@ -6032,9 +6032,9 @@ emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
       emit_insn (GEN_FCN (code) (dst, tempreg));
 
       emit_move_insn (destptr,
-		      gen_rtx_PLUS (Pmode, copy_rtx (destptr), adjust));
+		      plus_constant (Pmode, copy_rtx (destptr), piece_size));
       emit_move_insn (srcptr,
-		      gen_rtx_PLUS (Pmode, copy_rtx (srcptr), adjust));
+		      plus_constant (Pmode, copy_rtx (srcptr), piece_size));
 
       dst = adjust_automodify_address_nv (dst, move_mode, destptr,
 					  piece_size);
@@ -6191,7 +6191,7 @@ static rtx
 emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
 	     HOST_WIDE_INT size_to_move)
 {
-  rtx dst = destmem, adjust;
+  rtx dst = destmem;
   enum insn_code code;
   machine_mode move_mode;
   int piece_size, i;
@@ -6216,7 +6216,7 @@ emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
 
   /* Emit moves.  We'll need SIZE_TO_MOVE/PIECE_SIZES moves.  */
   gcc_assert (size_to_move % piece_size == 0);
-  adjust = GEN_INT (piece_size);
+
   for (i = 0; i < size_to_move; i += piece_size)
     {
       if (piece_size <= GET_MODE_SIZE (word_mode))
@@ -6230,7 +6230,7 @@ emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
       emit_insn (GEN_FCN (code) (dst, promoted_val));
 
       emit_move_insn (destptr,
-		      gen_rtx_PLUS (Pmode, copy_rtx (destptr), adjust));
+		      plus_constant (Pmode, copy_rtx (destptr), piece_size));
 
       dst = adjust_automodify_address_nv (dst, move_mode, destptr,
 					  piece_size);
@@ -7783,7 +7783,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 						     reg,
 						     tmpreg)));
        /* Emit lea manually to avoid clobbering of flags.  */
-       emit_insn (gen_rtx_SET (reg2, gen_rtx_PLUS (Pmode, out, const2_rtx)));
+       emit_insn (gen_rtx_SET (reg2, plus_constant (Pmode, out, 2)));
 
        tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
        tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
