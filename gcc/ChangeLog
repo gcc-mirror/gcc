@@ -1,5 +1,16 @@
 2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* config/arm/arm.c (reg_needs_saving_p): New function.
+	(use_return_insn): Use reg_needs_saving_p.
+	(arm_get_vfp_saved_size): Likewise.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(thumb1_expand_epilogue): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+
+2020-05-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
         * config/arm/arm.c (thumb1_expand_prologue): Update error message.
 
 2020-05-14  Uroš Bizjak  <ubizjak@gmail.com>
