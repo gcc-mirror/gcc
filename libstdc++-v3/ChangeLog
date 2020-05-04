@@ -1,3 +1,27 @@
+2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94936
+	* src/c++17/memory_resource.cc (synchronized_pool_resource::_TPools):
+	Add comment about single-threaded behaviour.
+	(synchronized_pool_resource::_TPools::move_nonempty_chunks()): Hoist
+	class member access out of loop.
+	(synchronized_pool_resource::synchronized_pool_resource())
+	(synchronized_pool_resource::~synchronized_pool_resource())
+	(synchronized_pool_resource::release()): Check __gthread_active_p
+	before creating and/or deleting the thread-specific data key.
+	(synchronized_pool_resource::_M_thread_specific_pools()): Adjust
+	assertions.
+	(synchronized_pool_resource::do_allocate(size_t, size_t)): Add fast
+	path for single-threaded case.
+	(synchronized_pool_resource::do_deallocate(void*, size_t, size_t)):
+	Likewise. Return if unable to find a pool that owns the allocation.
+	* testsuite/20_util/synchronized_pool_resource/allocate_single.cc:
+	New test.
+	* testsuite/20_util/synchronized_pool_resource/cons_single.cc: New
+	test.
+	* testsuite/20_util/synchronized_pool_resource/release_single.cc: New
+	test.
+
 2020-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94933

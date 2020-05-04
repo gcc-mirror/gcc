@@ -1043,7 +1043,8 @@ namespace pmr
    * exposition as _M_tpools[_M_key]).
    * The first element, _M_tpools[0], contains "orphaned chunks" which were
    * allocated by a thread which has since exited, and so there is no
-   * _M_tpools[_M_key] for that thread.
+   * _M_tpools[_M_key] for that thread. Orphaned chunks are never reused,
+   * they're only held in _M_tpools[0] so they can be deallocated.
    * A thread can access its own thread-specific set of pools via _M_key
    * while holding a shared lock on _M_mx. Accessing _M_impl._M_unpooled
    * or _M_tpools[0] or any other thread's _M_tpools[_M_key] requires an
@@ -1052,6 +1053,10 @@ namespace pmr
    * any dereference of that pointer requires an exclusive lock.
    * The _M_impl._M_opts and _M_impl._M_npools members are immutable,
    * and can safely be accessed concurrently.
+   *
+   * In a single-threaded program (i.e. __gthread_active_p() == false)
+   * the pool resource only needs one set of pools and never has orphaned
+   * chunks, so just uses _M_tpools[0] directly, and _M_tpools->next is null.
    */
 
   extern "C" {
@@ -1092,14 +1097,16 @@ namespace pmr
     void move_nonempty_chunks()
     {
       __glibcxx_assert(pools);
+      __glibcxx_assert(__gthread_active_p());
       if (!pools)
 	return;
-      memory_resource* r = owner.upstream_resource();
+      memory_resource* const r = owner.upstream_resource();
+      auto* const shared = owner._M_tpools->pools;
       // move all non-empty chunks to the shared _TPools
       for (int i = 0; i < owner._M_impl._M_npools; ++i)
 	for (auto& c : pools[i]._M_chunks)
 	  if (!c.empty())
-	    owner._M_tpools->pools[i]._M_chunks.insert(std::move(c), r);
+	    shared[i]._M_chunks.insert(std::move(c), r);
     }
 
     synchronized_pool_resource& owner;
@@ -1133,8 +1140,9 @@ namespace pmr
 			     memory_resource* upstream)
   : _M_impl(opts, upstream)
   {
-    if (int err = __gthread_key_create(&_M_key, destroy_TPools))
-      __throw_system_error(err);
+    if (__gthread_active_p())
+      if (int err = __gthread_key_create(&_M_key, destroy_TPools))
+	__throw_system_error(err);
     exclusive_lock l(_M_mx);
     _M_tpools = _M_alloc_shared_tpools(l);
   }
@@ -1143,7 +1151,8 @@ namespace pmr
   synchronized_pool_resource::~synchronized_pool_resource()
   {
     release();
-    __gthread_key_delete(_M_key); // does not run destroy_TPools
+    if (__gthread_active_p())
+      __gthread_key_delete(_M_key); // does not run destroy_TPools
   }
 
   void
@@ -1152,8 +1161,11 @@ namespace pmr
     exclusive_lock l(_M_mx);
     if (_M_tpools)
       {
-	__gthread_key_delete(_M_key); // does not run destroy_TPools
-	__gthread_key_create(&_M_key, destroy_TPools);
+	if (__gthread_active_p())
+	  {
+	    __gthread_key_delete(_M_key); // does not run destroy_TPools
+	    __gthread_key_create(&_M_key, destroy_TPools);
+	  }
 	polymorphic_allocator<_TPools> a(upstream_resource());
 	// destroy+deallocate each _TPools
 	do
@@ -1175,10 +1187,11 @@ namespace pmr
   synchronized_pool_resource::_M_thread_specific_pools() noexcept
   {
     __pool_resource::_Pool* pools = nullptr;
+    __glibcxx_assert(__gthread_active_p());
     if (auto tp = static_cast<_TPools*>(__gthread_getspecific(_M_key)))
       {
-      pools = tp->pools;
-      __glibcxx_assert(tp->pools);
+	pools = tp->pools;
+	// __glibcxx_assert(tp->pools);
       }
     return pools;
   }
@@ -1189,24 +1202,34 @@ namespace pmr
   do_allocate(size_t bytes, size_t alignment)
   {
     const auto block_size = std::max(bytes, alignment);
-    if (block_size <= _M_impl._M_opts.largest_required_pool_block)
+    const pool_options opts = _M_impl._M_opts;
+    if (block_size <= opts.largest_required_pool_block)
       {
 	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
-	memory_resource* const r = upstream_resource();
-	const pool_options opts = _M_impl._M_opts;
-	{
-	  // Try to allocate from the thread-specific pool
-	  shared_lock l(_M_mx);
-	  if (auto pools = _M_thread_specific_pools()) // [[likely]]
-	    {
-	      // Need exclusive lock to replenish so use try_allocate:
-	      if (void* p = pools[index].try_allocate())
-		return p;
-	      // Need to take exclusive lock and replenish pool.
-	    }
-	  // Need to allocate or replenish thread-specific pools using
-	  // upstream resource, so need to hold exclusive lock.
-	}
+	if (__gthread_active_p())
+	  {
+	    // Try to allocate from the thread-specific pool.
+	    shared_lock l(_M_mx);
+	    if (auto pools = _M_thread_specific_pools()) // [[likely]]
+	      {
+		// Need exclusive lock to replenish so use try_allocate:
+		if (void* p = pools[index].try_allocate())
+		  return p;
+		// Need to take exclusive lock and replenish pool.
+	      }
+	    // Need to allocate or replenish thread-specific pools using
+	    // upstream resource, so need to hold exclusive lock.
+	  }
+	else // single-threaded
+	  {
+	    if (!_M_tpools) // [[unlikely]]
+	      {
+		exclusive_lock dummy(_M_mx);
+		_M_tpools = _M_alloc_shared_tpools(dummy);
+	      }
+	    return _M_tpools->pools[index].allocate(upstream_resource(), opts);
+	  }
+
 	// N.B. Another thread could call release() now lock is not held.
 	exclusive_lock excl(_M_mx);
 	if (!_M_tpools) // [[unlikely]]
@@ -1214,7 +1237,7 @@ namespace pmr
 	auto pools = _M_thread_specific_pools();
 	if (!pools)
 	  pools = _M_alloc_tpools(excl)->pools;
-	return pools[index].allocate(r, opts);
+	return pools[index].allocate(upstream_resource(), opts);
       }
     exclusive_lock l(_M_mx);
     return _M_impl.allocate(bytes, alignment); // unpooled allocation
@@ -1230,30 +1253,45 @@ namespace pmr
       {
 	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
 	__glibcxx_assert(index != -1);
-	{
-	  shared_lock l(_M_mx);
-	  auto pools = _M_thread_specific_pools();
-	  if (pools)
-	    {
-	      // No need to lock here, no other thread is accessing this pool.
-	      if (pools[index].deallocate(upstream_resource(), p))
-		return;
-	    }
-	  // Block might have come from a different thread's pool,
-	  // take exclusive lock and check every pool.
-	}
+	if (__gthread_active_p())
+	  {
+	    shared_lock l(_M_mx);
+	    if (auto pools = _M_thread_specific_pools())
+	      {
+		// No need to lock here, no other thread is accessing this pool.
+		if (pools[index].deallocate(upstream_resource(), p))
+		  return;
+	      }
+	    // Block might have come from a different thread's pool,
+	    // take exclusive lock and check every pool.
+	  }
+	else // single-threaded
+	  {
+	    __glibcxx_assert(_M_tpools != nullptr);
+	    if (_M_tpools) // [[likely]]
+	      _M_tpools->pools[index].deallocate(upstream_resource(), p);
+	    return;
+	  }
+
 	// TODO store {p, bytes, alignment} somewhere and defer returning
 	// the block to the correct thread-specific pool until we next
 	// take the exclusive lock.
+
 	exclusive_lock excl(_M_mx);
+	auto my_pools = _M_thread_specific_pools();
 	for (_TPools* t = _M_tpools; t != nullptr; t = t->next)
 	  {
-	    if (t->pools) // [[likely]]
-	      {
-		if (t->pools[index].deallocate(upstream_resource(), p))
-		  return;
-	      }
+	    if (t->pools != my_pools)
+	      if (t->pools) // [[likely]]
+		{
+		  if (t->pools[index].deallocate(upstream_resource(), p))
+		    return;
+		}
 	  }
+	// Not necessarily an error to reach here, release() could have been
+	// called on another thread between releasing the shared lock and
+	// acquiring the exclusive lock.
+	return;
       }
     exclusive_lock l(_M_mx);
     _M_impl.deallocate(p, bytes, alignment);
@@ -1265,6 +1303,7 @@ namespace pmr
   -> _TPools*
   {
     __glibcxx_assert(_M_tpools != nullptr);
+    __glibcxx_assert(__gthread_active_p());
     // dump_list(_M_tpools);
     polymorphic_allocator<_TPools> a(upstream_resource());
     _TPools* p = a.allocate(1);
