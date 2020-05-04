@@ -2744,7 +2744,7 @@ cp_fold (tree x)
 
     case CALL_EXPR:
       {
-	int i, m, sv = optimize, nw = sv, changed = 0;
+	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
 
 	/* Some built-in function calls will be evaluated at compile-time in
@@ -2770,10 +2770,9 @@ cp_fold (tree x)
 	    break;
 	  }
 
-	x = copy_node (x);
-
-	m = call_expr_nargs (x);
-	for (i = 0; i < m; i++)
+	bool changed = false;
+	int m = call_expr_nargs (x);
+	for (int i = 0; i < m; i++)
 	  {
 	    r = cp_fold (CALL_EXPR_ARG (x, i));
 	    if (r != CALL_EXPR_ARG (x, i))
@@ -2783,9 +2782,11 @@ cp_fold (tree x)
 		    x = error_mark_node;
 		    break;
 		  }
-		changed = 1;
+		if (!changed)
+		  x = copy_node (x);
+		CALL_EXPR_ARG (x, i) = r;
+		changed = true;
 	      }
-	    CALL_EXPR_ARG (x, i) = r;
 	  }
 	if (x == error_mark_node)
 	  break;
@@ -2825,8 +2826,6 @@ cp_fold (tree x)
 	    break;
 	  }
 
-	if (!changed)
-	  x = org_x;
 	break;
       }
 
@@ -2865,24 +2864,18 @@ cp_fold (tree x)
     case TREE_VEC:
       {
 	bool changed = false;
-	releasing_vec vec;
-	int i, n = TREE_VEC_LENGTH (x);
-	vec_safe_reserve (vec, n);
+	int n = TREE_VEC_LENGTH (x);
 
-	for (i = 0; i < n; i++)
+	for (int i = 0; i < n; i++)
 	  {
 	    tree op = cp_fold (TREE_VEC_ELT (x, i));
-	    vec->quick_push (op);
 	    if (op != TREE_VEC_ELT (x, i))
-	      changed = true;
-	  }
-
-	if (changed)
-	  {
-	    r = copy_node (x);
-	    for (i = 0; i < n; i++)
-	      TREE_VEC_ELT (r, i) = (*vec)[i];
-	    x = r;
+	      {
+		if (!changed)
+		  x = copy_node (x);
+		TREE_VEC_ELT (x, i) = op;
+		changed = true;
+	      }
 	  }
       }
 

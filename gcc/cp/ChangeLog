@@ -1,3 +1,13 @@
+2020-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94038
+	* cp-gimplify.c (cp_fold) <case CALL_EXPR>: Move some variable
+	declarations closer to their uses.  Copy the CALL_EXPR only
+	when one of its arguments has changed.
+	<case TREE_VEC>: Instead of first collecting the folded
+	arguments into a releasing_vec, just make a copy of the TREE_VEC
+	as soon as folding changes one of its arguments.
+
 2020-05-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (morph_fn_to_coro): Mark the coro.gro variable
