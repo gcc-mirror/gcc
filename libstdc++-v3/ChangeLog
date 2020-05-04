@@ -1,3 +1,7 @@
+2020-05-04  Fangrui Song  <maskray@google.com>
+
+	* libsupc++/cxxabi.h (__cxa_finalize): Fix return type.
+
 2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Use working link for SGI STL FAQ.
