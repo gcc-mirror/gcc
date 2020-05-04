@@ -1,3 +1,12 @@
+2020-05-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2020-04-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/94613
+	* gcc.target/s390/zvector/pr94613.c: New test.
+	* gcc.target/s390/zvector/vec_sel-1.c: New test.
+
 2020-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93956

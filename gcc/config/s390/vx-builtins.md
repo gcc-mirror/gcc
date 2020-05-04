@@ -487,23 +487,22 @@
 
 ; Vector select
 
-; Operand 3 selects bits from either OP1 (0) or OP2 (1)
+; for all b in bits op0[b] = op3[b] == 0 ? op2[b] : op1[b]
+; implemented as: op0 = (op1 & op3) | (op2 & ~op3)
 
-; Comparison operator should not matter as long as we always use the same ?!
+; Used to expand the vec_sel builtin. Operands op1 and op2 already got
+; swapped in s390-c.c when we get here.
 
-; Operands 1 and 2 are swapped in order to match the altivec builtin.
-; If operand 3 is a const_int bitmask this would be vec_merge
-(define_expand "vec_sel<mode>"
-  [(set (match_operand:V_HW 0 "register_operand" "")
-	(if_then_else:V_HW
-	 (eq (match_operand:<tointvec> 3 "register_operand"  "")
-	     (match_dup 4))
-	 (match_operand:V_HW 2 "register_operand"  "")
-	 (match_operand:V_HW 1 "register_operand"  "")))]
+(define_insn "vsel<mode>"
+  [(set (match_operand:V_HW                      0 "register_operand" "=v")
+	(ior:V_HW
+	 (and:V_HW (match_operand:V_HW           1 "register_operand"  "v")
+		   (match_operand:V_HW           3 "register_operand"  "v"))
+	 (and:V_HW (not:V_HW (match_dup 3))
+		   (match_operand:V_HW           2 "register_operand"  "v"))))]
   "TARGET_VX"
-{
-  operands[4] = CONST0_RTX (<tointvec>mode);
-})
+  "vsel\t%v0,%1,%2,%3"
+  [(set_attr "op_type" "VRR")])
 
 
 ; Vector sign extend to doubleword
