@@ -5826,8 +5826,10 @@ do_class_using_decl (tree scope, tree name)
 }
 
 
-/* Return the binding for NAME in NS.  If NS is NULL, look in
-   global_namespace.  */
+/* Return the binding for NAME in NS in the current TU.  If NS is
+   NULL, look in global_namespace.  We will not find declarations
+   from imports.  Users of this who, having found nothing, push a new
+   decl must be prepared for that pushing to match an existing decl.  */
 
 tree
 get_namespace_binding (tree ns, tree name)
@@ -5836,26 +5838,37 @@ get_namespace_binding (tree ns, tree name)
   if (!ns)
     ns = global_namespace;
   gcc_checking_assert (!DECL_NAMESPACE_ALIAS (ns));
-  tree ret = find_namespace_value (ns, name);
+  tree ret = NULL_TREE;
 
-  if (ret && TREE_CODE (ret) == MODULE_VECTOR)
+  if (tree *b = find_namespace_slot (ns, name))
     {
-      // FIXME: We should really be pulling out this TU's definition,
-      // and then dealing with duplicate discovery in push_decl.  But
-      // the users of get_namespace_binding are generally unprepared
-      // to deal with that happening.  So fake things by looking in
-      // the global slot.
-      unsigned ix = MODULE_SLOT_GLOBAL / MODULE_VECTOR_SLOTS_PER_CLUSTER;
-      unsigned off = MODULE_SLOT_GLOBAL % MODULE_VECTOR_SLOTS_PER_CLUSTER;
-      ret = MODULE_VECTOR_CLUSTER (ret, ix).slots[off];
-      /* The GLOBAL slot is always OVERLOADS.  For robustness the
-	 rest of the compiler should already be coping with that.
-	 But it rarely expects that for its library interface.  */
+      ret = *b;
+
+      if (TREE_CODE (ret) == MODULE_VECTOR)
+	ret = MODULE_VECTOR_CLUSTER (ret, 0).slots[0];
       if (ret)
+	ret = MAYBE_STAT_DECL (ret);
+    }
+
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return ret;
+}
+
+tree
+get_global_module_decls (tree ns, tree name)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  tree ret = NULL_TREE;
+
+  if (tree *b = find_namespace_slot (ns, name))
+    {
+      ret = *b;
+
+      if (TREE_CODE (ret) == MODULE_VECTOR)
 	{
-	  gcc_checking_assert (TREE_CODE (ret) == OVERLOAD);
-	  if (!OVL_CHAIN (ret))
-	    ret = OVL_FUNCTION (ret);
+	  unsigned ix = MODULE_SLOT_GLOBAL / MODULE_VECTOR_SLOTS_PER_CLUSTER;
+	  unsigned off = MODULE_SLOT_GLOBAL % MODULE_VECTOR_SLOTS_PER_CLUSTER;
+	  ret = MODULE_VECTOR_CLUSTER (ret, ix).slots[off];
 	}
     }
 

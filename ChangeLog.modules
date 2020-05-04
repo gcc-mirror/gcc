@@ -1,3 +1,24 @@
+2020-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	Simplify except fn helper pushing part 1
+	gcc/cp/
+	* decl.c (push_library_fn): Return the decl pushdecl_toplevel returns.
+	* except.c (verify_library_fn): Replace with ...
+	(declare_library_fn_1): ... this fn.
+	(declare_library_fn): Call it.
+	(build_throw): Call declare_library_fn_1.
+	* name-lookup.h (get_global_module_decls): Declare.
+	* name-lookup.c (get_namespace_binding): Return this TU's
+	bindings.
+	(get_global_module_decls): New.
+	gcc/testsuite/
+	* g++.dg/eh/builtin10.C: Adjust expected errors.
+	* g++.dg/eh/builtin11.C: Likewise.
+	* g++.dg/eh/builtin6.C: Likewise.
+	* g++.dg/eh/builtin7.C: Likewise.
+	* g++.dg/eh/builtin9.C: Likewise.
+	* g++.dg/parse/crash55.C: Likewise.
+
 2020-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	Fix macro expansion of header-unit names

@@ -4856,14 +4856,11 @@ build_cp_library_fn_ptr (const char* name, tree type, int ecf_flags)
 tree
 push_library_fn (tree name, tree type, tree raises, int ecf_flags)
 {
-  tree fn;
-
   if (raises)
     type = build_exception_variant (type, raises);
 
-  fn = build_library_fn (name, ERROR_MARK, type, ecf_flags);
-  pushdecl_top_level (fn);
-  return fn;
+  tree fn = build_library_fn (name, ERROR_MARK, type, ecf_flags);
+  return pushdecl_top_level (fn);
 }
 
 /* Like build_cp_library_fn, but also pushes the function so that it

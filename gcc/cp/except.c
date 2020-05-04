@@ -133,47 +133,72 @@ build_exc_ptr (void)
 		       1, integer_zero_node);
 }
 
-/* Check that user declared function FN is a function and has return
-   type RTYPE and argument types ARG{1,2,3}TYPE.  */
+/* I don't know why this complexity.  why not just push a new decl and
+   let the matching machinery deal with it?  */
 
-static bool
-verify_library_fn (tree fn, const char *name, tree rtype,
-		   tree arg1type, tree arg2type, tree arg3type)
+static tree
+declare_library_fn_1 (const char *name, int ecf,
+		      tree rtype, int nargs, tree args[])
 {
-  if (TREE_CODE (fn) != FUNCTION_DECL
-      || TREE_CODE (TREE_TYPE (fn)) != FUNCTION_TYPE)
+  tree ident = get_identifier (name);
+  tree except = ecf & ECF_NOTHROW ? empty_except_spec : NULL_TREE;
+
+  tree ovls = get_global_module_decls (global_namespace, ident);
+  tree res = NULL_TREE;
+
+  for (ovl_iterator iter (ovls); iter; ++iter)
     {
-  bad:
-      error_at (DECL_SOURCE_LOCATION (fn), "%qs declared incorrectly", name);
-      return false;
-    }
-  tree fntype = TREE_TYPE (fn);
-  if (!same_type_p (TREE_TYPE (fntype), rtype))
-    goto bad;
-  tree targs = TYPE_ARG_TYPES (fntype);
-  tree args[3] = { arg1type, arg2type, arg3type };
-  for (int i = 0; i < 3 && args[i]; i++)
-    {
-      if (targs == NULL_TREE)
-	goto bad;
-      if (!same_type_p (TREE_VALUE (targs), args[i]))
+      tree fn = *iter;
+
+      if (TREE_CODE (fn) != FUNCTION_DECL)
+	continue;
+
+      tree fntype = TREE_TYPE (fn);
+      if (!same_type_p (TREE_TYPE (fntype), rtype))
+	continue;
+
+      tree targs = TYPE_ARG_TYPES (fntype);
+      for (int ix = 0; ix != nargs && targs; ix++, targs = TREE_CHAIN (targs))
+	if (same_type_p (TREE_VALUE (targs), args[ix]))
+	  /* Ok */;
+	else if (!ix)
+	  break;
+        /* Be less strict for second and following arguments, __cxa_throw
+	   needs to be more permissive.  */
+        // FIXME: See, we should fix libitm, which was the plan then
+      // https://gcc.gnu.org/pipermail/gcc-patches/2018-December/513302.html
+	else if (ix == 1
+		 && TYPE_PTROBV_P (TREE_VALUE (targs))
+		 && TYPE_PTROBV_P (args[ix]))
+	  /* Both object pointers.  */;
+	else if (ix == 2
+		 && TYPE_PTRFN_P (TREE_VALUE (targs))
+		 && TYPE_PTRFN_P (args[ix]))
+	  /* Both function pointers.  */;
+	else
+	  break;
+
+      if (targs == void_list_node)
 	{
-	  if (i == 0)
-	    goto bad;
-	  /* Be less strict for second and following arguments, __cxa_throw
-	     needs to be more permissive.  */
-	  if (TYPE_PTROBV_P (TREE_VALUE (targs)) && TYPE_PTROBV_P (args[i]))
-	    /* Both object pointers.  */;
-	  else if (TYPE_PTRFN_P (TREE_VALUE (targs)) && TYPE_PTRFN_P (args[i]))
-	    /* Both function pointers.  */;
-	  else
-	    goto bad;
+	  /* Found it.  */
+	  res = fn;
+	  break;
 	}
-      targs = TREE_CHAIN (targs);
     }
-  if (targs != void_list_node)
-    goto bad;
-  return true;
+
+  if (res)
+    res = pushdecl_top_level (res);
+  else
+    {
+      /* Make a new decl.  */
+      tree arg_list = void_list_node;
+      for (unsigned ix = nargs; ix--;)
+	arg_list = tree_cons (NULL_TREE, args[ix], arg_list);
+      tree fntype = build_function_type (rtype, arg_list);
+      res = push_library_fn (ident, fntype, except, ecf);
+    }
+
+  return res;
 }
 
 /* Find or declare a function NAME, returning RTYPE, taking a single
@@ -190,42 +215,21 @@ static tree
 declare_library_fn (const char *name, tree rtype, tree ptype,
 		    int ecf, int tm_ecf)
 {
-  tree ident = get_identifier (name);
-  tree res = get_global_binding (ident);
-  tree fntype = NULL_TREE;
-  tree except = NULL_TREE;
-  if (!res)
-    {
-      fntype = build_function_type_list (rtype, ptype, NULL_TREE);
-      if (ecf & ECF_NOTHROW)
-	except = empty_except_spec;
-      res = push_library_fn (ident, fntype, except, ecf);
-    }
-  else if (!verify_library_fn (res, name, rtype, ptype, NULL_TREE, NULL_TREE))
-    return error_mark_node;
+  tree res = declare_library_fn_1 (name, ecf, rtype, ptype ? 1 : 0, &ptype);
+  if (res == error_mark_node)
+    return res;
 
   if (tm_ecf && flag_tm)
     {
       char *tm_name = concat ("_ITM_", name + 2, NULL_TREE);
-      tree tm_ident = get_identifier (tm_name);
-      tree tm_fn = get_global_binding (tm_ident);
-      if (!tm_fn)
-	{
-	  if (!fntype)
-	    {
-	      fntype = build_function_type_list (rtype, ptype, NULL_TREE);
-	      if (ecf & ECF_NOTHROW)
-		except = empty_except_spec;
-	    }
-	  tm_fn = push_library_fn (tm_ident, fntype, except, ecf | tm_ecf);
-	}
-      else if (!verify_library_fn (tm_fn, tm_name, rtype, ptype,
-				   NULL_TREE, NULL_TREE))
-	tm_fn = error_mark_node;
+
+      tree tm_fn = declare_library_fn_1 (tm_name, ecf | tm_ecf, rtype,
+					 ptype ? 1 : 0, &ptype);
       free (tm_name);
       if (tm_fn != error_mark_node)
 	record_tm_replacement (res, tm_fn);
     }
+
   return res;
 }
 
@@ -660,55 +664,28 @@ build_throw (location_t loc, tree exp)
       tree temp_type;
       tree cleanup;
       tree object, ptr;
-      tree tmp;
       tree allocate_expr;
 
       /* The CLEANUP_TYPE is the internal type of a destructor.  */
       if (!cleanup_type)
 	{
-	  tmp = build_function_type_list (void_type_node,
-					  ptr_type_node, NULL_TREE);
+	  tree tmp = build_function_type_list (void_type_node,
+					       ptr_type_node, NULL_TREE);
 	  cleanup_type = build_pointer_type (tmp);
 	}
 
       if (!throw_fn)
 	{
-	  const char *name = "__cxa_throw";
-	  tree ident = get_identifier (name);
-	  tree fntype = NULL_TREE;
-	  throw_fn = get_global_binding (ident);
-	  if (!throw_fn)
-	    {
-	      /* Declare void __cxa_throw (void*, void*, void (*)(void*)).  */
-	      /* ??? Second argument is supposed to be "std::type_info*".  */
-	      fntype = build_function_type_list (void_type_node,
-						 ptr_type_node, ptr_type_node,
-						 cleanup_type, NULL_TREE);
-	      throw_fn = push_throw_library_fn (ident, fntype);
-	    }
-	  else if (!verify_library_fn (throw_fn, name, void_type_node,
-				       ptr_type_node, ptr_type_node,
-				       cleanup_type))
-	    throw_fn = error_mark_node;
+	  tree args[3] = {ptr_type_node, ptr_type_node, cleanup_type};
 
+	  throw_fn = declare_library_fn_1 ("__cxa_throw",
+					   ECF_NORETURN | ECF_COLD,
+					   void_type_node, 3, args);
 	  if (flag_tm && throw_fn != error_mark_node)
 	    {
-	      const char *itm_name = "_ITM_cxa_throw";
-	      tree itm_ident = get_identifier (itm_name);
-	      tree itm_fn = get_global_binding (itm_ident);
-	      if (!itm_fn)
-		{
-		  if (!fntype)
-		    fntype
-		      = build_function_type_list (void_type_node,
-						  ptr_type_node, ptr_type_node,
-						  cleanup_type, NULL_TREE);
-		  itm_fn = push_throw_library_fn (itm_ident, fntype);
-		}
-	      else if (!verify_library_fn (itm_fn, itm_name, void_type_node,
-					   ptr_type_node, ptr_type_node,
-					   cleanup_type))
-		itm_fn = error_mark_node;
+	      tree itm_fn = declare_library_fn_1 ("_ITM_cxa_throw",
+						  ECF_NORETURN | ECF_COLD,
+						  void_type_node, 3, args);
 	      if (itm_fn != error_mark_node)
 		{
 		  apply_tm_attr (itm_fn, get_identifier ("transaction_pure"));
@@ -798,7 +775,7 @@ build_throw (location_t loc, tree exp)
 	}
       else
 	{
-	  tmp = decay_conversion (exp, tf_warning_or_error);
+	  tree tmp = decay_conversion (exp, tf_warning_or_error);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	  exp = build2 (INIT_EXPR, temp_type, object, tmp);
@@ -835,8 +812,9 @@ build_throw (location_t loc, tree exp)
 	cleanup = build_int_cst (cleanup_type, 0);
 
       /* ??? Indicate that this function call throws throw_type.  */
-      tmp = cp_build_function_call_nary (throw_fn, tf_warning_or_error,
-					 ptr, throw_type, cleanup, NULL_TREE);
+      tree tmp = cp_build_function_call_nary (throw_fn, tf_warning_or_error,
+					      ptr, throw_type, cleanup,
+					      NULL_TREE);
 
       /* Tack on the initialization stuff.  */
       exp = build2 (COMPOUND_EXPR, TREE_TYPE (tmp), exp, tmp);
@@ -846,20 +824,9 @@ build_throw (location_t loc, tree exp)
       /* Rethrow current exception.  */
       if (!rethrow_fn)
 	{
-	  const char *name = "__cxa_rethrow";
-	  tree ident = get_identifier (name);
-	  rethrow_fn = get_global_binding (ident);
-	  if (!rethrow_fn)
-	    {
-	      /* Declare void __cxa_rethrow (void).  */
-	      tree fntype
-		= build_function_type_list (void_type_node, NULL_TREE);
-	      rethrow_fn = push_throw_library_fn (ident, fntype);
-	    }
-	  else if (!verify_library_fn (rethrow_fn, name, void_type_node,
-				       NULL_TREE, NULL_TREE, NULL_TREE))
-	    rethrow_fn = error_mark_node;
-
+	  rethrow_fn = declare_library_fn_1 ("__cxa_rethrow",
+					     ECF_NORETURN | ECF_COLD,
+					     void_type_node, 0, NULL);
 	  if (flag_tm && rethrow_fn != error_mark_node)
 	    apply_tm_attr (rethrow_fn, get_identifier ("transaction_pure"));
 	}
