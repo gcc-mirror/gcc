@@ -251,18 +251,14 @@ package body Exp_Unst is
    -----------------------
 
    function Needs_Fat_Pointer (E : Entity_Id) return Boolean is
-      Typ : Entity_Id;
-   begin
-      if Is_Formal (E) then
-         Typ := Etype (E);
-         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-            Typ := Full_View (Typ);
-         end if;
+      Typ : Entity_Id := Etype (E);
 
-         return Is_Array_Type (Typ) and then not Is_Constrained (Typ);
-      else
-         return False;
+   begin
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         Typ := Full_View (Typ);
       end if;
+
+      return Is_Array_Type (Typ) and then not Is_Constrained (Typ);
    end Needs_Fat_Pointer;
 
    ----------------
@@ -2084,7 +2080,7 @@ package body Exp_Unst is
                                  --  or else 'Access for unconstrained array
 
                                  if Needs_Fat_Pointer (Ent) then
-                                    Attr := Name_Access;
+                                    Attr := Name_Unchecked_Access;
                                  else
                                     Attr := Name_Address;
                                  end if;
