@@ -1,3 +1,10 @@
+2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94906
+	* src/c++17/memory_resource.cc
+	(monotonic_buffer_resource::_Chunk::release): Use size_t for shift
+	operands.
+
 2020-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	PR libstdc++/94747
