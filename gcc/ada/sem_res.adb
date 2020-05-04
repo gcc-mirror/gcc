@@ -10257,13 +10257,8 @@ package body Sem_Res is
    begin
       Set_Etype (N, Typ);
 
-      --  The lower bound should be in Typ. The higher bound can be in Typ's
-      --  base type if the range is null. It may still be invalid if it is
-      --  higher than the lower bound. This is checked later in the context in
-      --  which the range appears.
-
       Resolve (L, Typ);
-      Resolve (H, Base_Type (Typ));
+      Resolve (H, Typ);
 
       --  Reanalyze the lower bound after both bounds have been analyzed, so
       --  that the range is known to be static or not by now. This may trigger
