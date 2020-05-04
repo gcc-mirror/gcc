@@ -1,3 +1,12 @@
+2020-05-04  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2020-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* tree.c (check_base_type): Return true only if TYPE_USER_ALIGN match.
+	(check_aligned_type): Check if TYPE_USER_ALIGN match.
+
 2020-05-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93891
