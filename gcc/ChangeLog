@@ -1,3 +1,11 @@
+2020-05-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94941
+	* internal-fn.c (expand_load_lanes_optab_fn): Emit a move if the
+	chosen lhs is different from the gcall lhs.
+	(expand_mask_load_optab_fn): Likewise.
+	(expand_gather_load_optab_fn): Likewise.
+
 2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94795

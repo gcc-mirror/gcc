@@ -1,3 +1,8 @@
+2020-05-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/94941
+	* gcc.target/aarch64/sve/acle/general/unoptimized_1.c: New test.
+
 2020-05-04  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94795
