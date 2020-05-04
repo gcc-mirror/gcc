@@ -1681,6 +1681,8 @@ private:
   bool truncating_cast_p (const irange &inner, const irange &outer) const;
   bool conversion_fits_p (const irange &inner, unsigned inner_pair,
 			  const irange &outer) const;
+  bool inside_domain_p (const wide_int &min, const wide_int &max,
+			const irange &outer) const;
 } op_convert;
 
 // Return TRUE if casting from INNER to OUTER is a truncating cast.
@@ -1699,17 +1701,42 @@ bool
 operator_cast::conversion_fits_p (const irange &inner, unsigned inner_pair,
 				  const irange &outer) const
 {
-  if (!truncating_cast_p (inner, outer))
-    return true;
-
-  // Otherwise, the conversion fits if the size of the range is less
-  // than what the precision of the target type can represent.
   wide_int inner_lb = inner.lower_bound (inner_pair);
   wide_int inner_ub = inner.upper_bound (inner_pair);
-  return wi::rshift (wi::sub (inner_ub, inner_lb),
-		     wi::uhwi (TYPE_PRECISION (outer.type ()),
-			       TYPE_PRECISION (inner.type ())),
-		     TYPE_SIGN (inner.type ())) == 0;
+  if (truncating_cast_p (inner, outer))
+    {
+      // We may be able to accomodate a truncating cast if the
+      // resulting range can be represented in the target type...
+      if (wi::rshift (wi::sub (inner_ub, inner_lb),
+		      wi::uhwi (TYPE_PRECISION (outer.type ()),
+				TYPE_PRECISION (inner.type ())),
+		      TYPE_SIGN (inner.type ())) != 0)
+	return false;
+    }
+  // ...but we must still verify that the final range fits in the
+  // domain.  This catches -fstrict-enum restrictions where the domain
+  // range is smaller than what fits in the underlying type.
+  signop inner_sign = TYPE_SIGN (inner.type ());
+  unsigned outer_prec = TYPE_PRECISION (outer.type ());
+  wide_int min = wide_int::from (inner_lb, outer_prec, inner_sign);
+  wide_int max = wide_int::from (inner_ub, outer_prec, inner_sign);
+  return inside_domain_p (min, max, outer);
+}
+
+// Return TRUE if [MIN,MAX] is inside the domain of RANGE's type.
+
+bool
+operator_cast::inside_domain_p (const wide_int &min,
+				const wide_int &max,
+				const irange &range) const
+{
+  wide_int domain_min = wi::to_wide (vrp_val_min (range.type ()));
+  wide_int domain_max = wi::to_wide (vrp_val_max (range.type ()));
+  signop domain_sign = TYPE_SIGN (range.type ());
+  return (wi::le_p (min, domain_max, domain_sign)
+	  && wi::le_p (max, domain_max, domain_sign)
+	  && wi::ge_p (min, domain_min, domain_sign)
+	  && wi::ge_p (max, domain_min, domain_sign));
 }
 
 bool
@@ -1725,29 +1752,22 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
   gcc_checking_assert (outer.varying_p ());
   signop inner_sign = TYPE_SIGN (inner_type);
   unsigned outer_prec = TYPE_PRECISION (outer_type);
-  wide_int outer_min = wi::to_wide (vrp_val_min (outer_type));
-  wide_int outer_max = wi::to_wide (vrp_val_max (outer_type));
 
-  // Start with an empty range and add sub-ranges.
   r.set_undefined ();
   for (unsigned x = 0; x < inner.num_pairs (); ++x)
     {
-      wide_int inner_lb = inner.lower_bound (x);
-      wide_int inner_ub = inner.upper_bound (x);
-
-      // If the conversion fits, we can convert the min and max values
-      // and canonicalize the resulting range.
       if (conversion_fits_p (inner, x, outer))
 	{
+	  wide_int inner_lb = inner.lower_bound (x);
+	  wide_int inner_ub = inner.upper_bound (x);
 	  wide_int min = wide_int::from (inner_lb, outer_prec, inner_sign);
 	  wide_int max = wide_int::from (inner_ub, outer_prec, inner_sign);
-	  if (wi::ne_p (min, outer_min) || wi::ne_p (max, outer_max))
-	    {
-	      widest_irange tmp;
-	      create_possibly_reversed_range (tmp, outer_type, min, max);
-	      r.union_ (tmp);
-	      continue;
-	    }
+	  widest_irange tmp;
+	  create_possibly_reversed_range (tmp, outer_type, min, max);
+	  r.union_ (tmp);
+	  if (r.varying_p ())
+	    return true;
+	  continue;
 	}
       r.set_varying (outer_type);
       break;
