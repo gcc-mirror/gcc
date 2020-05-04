@@ -1,3 +1,11 @@
+2020-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94938
+	* g++.dg/warn/Wdiv-by-zero-3.C: New test.
+	* g++.dg/warn/Wtype-limits4.C: New test.
+	* g++.dg/warn/template-2.C: New test.
+	* g++.old-deja/g++.pt/crash10.C: Add dg-warning.
+
 2020-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/94970
