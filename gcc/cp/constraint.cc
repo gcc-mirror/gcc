@@ -2010,7 +2010,7 @@ static tree
 tsubst_nested_requirement (tree t, tree args, subst_info info)
 {
   /* Ensure that we're in an evaluation context prior to satisfaction.  */
-  tree norm = TREE_VALUE (TREE_TYPE (t));
+  tree norm = TREE_TYPE (t);
   tree result = satisfy_constraint (norm, args, info);
   if (result == error_mark_node && info.quiet ())
     {
@@ -2958,16 +2958,9 @@ finish_nested_requirement (location_t loc, tree expr)
   /* Currently open template headers have dummy arg vectors, so don't
      pass into normalization.  */
   tree norm = normalize_constraint_expression (expr, NULL_TREE, false);
-  tree args = current_template_parms
-    ? template_parms_to_args (current_template_parms) : NULL_TREE;
-
-  /* Save the normalized constraint and complete set of normalization
-     arguments with the requirement.  We keep the complete set of arguments
-     around for re-normalization during diagnostics.  */
-  tree info = build_tree_list (args, norm);
 
   /* Build the constraint, saving its normalization as its type.  */
-  tree r = build1 (NESTED_REQ, info, expr);
+  tree r = build1 (NESTED_REQ, norm, expr);
   SET_EXPR_LOCATION (r, loc);
   return r;
 }
@@ -3370,7 +3363,7 @@ diagnose_nested_requirement (tree req, tree args)
 {
   /* Quietly check for satisfaction first. We can elaborate details
      later if needed.  */
-  tree norm = TREE_VALUE (TREE_TYPE (req));
+  tree norm = TREE_TYPE (req);
   subst_info info (tf_none, NULL_TREE);
   tree result = satisfy_constraint (norm, args, info);
   if (result == boolean_true_node)

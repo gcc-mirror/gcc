@@ -1,3 +1,13 @@
+2020-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/94827 -- don't save parms in nested requirement
+	* constraint.cc (tsubst_nested_requirement): TYPE directly holds
+	notmalized requirement.
+	(finish_nested_requirement): Don't stash current tpl parms into
+	the requirement.
+	(diagnose_nested_requirement): TYPE directly holds notmalized
+	requirement.
+
 2020-05-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/90880
