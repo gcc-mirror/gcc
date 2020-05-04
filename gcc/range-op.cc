@@ -1677,55 +1677,79 @@ public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2) const;
-
+private:
+  bool truncating_cast_p (const irange &inner, const irange &outer) const;
+  bool conversion_fits_p (const irange &inner, unsigned inner_pair,
+			  const irange &outer) const;
 } op_convert;
+
+// Return TRUE if casting from INNER to OUTER is a truncating cast.
+
+bool
+operator_cast::truncating_cast_p (const irange &inner,
+				  const irange &outer) const
+{
+  return TYPE_PRECISION (outer.type ()) < TYPE_PRECISION (inner.type ());
+}
+
+// Return TRUE if casting from INNER to OUTER is a conversion that
+// fits in the resulting OUTER type.
+
+bool
+operator_cast::conversion_fits_p (const irange &inner, unsigned inner_pair,
+				  const irange &outer) const
+{
+  if (!truncating_cast_p (inner, outer))
+    return true;
+
+  // Otherwise, the conversion fits if the size of the range is less
+  // than what the precision of the target type can represent.
+  wide_int inner_lb = inner.lower_bound (inner_pair);
+  wide_int inner_ub = inner.upper_bound (inner_pair);
+  return wi::rshift (wi::sub (inner_ub, inner_lb),
+		     wi::uhwi (TYPE_PRECISION (outer.type ()),
+			       TYPE_PRECISION (inner.type ())),
+		     TYPE_SIGN (inner.type ())) == 0;
+}
 
 bool
 operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
-			   const irange &lh,
-			   const irange &rh) const
+			   const irange &inner,
+			   const irange &outer) const
 {
-  if (empty_range_check (r, lh, rh))
+  if (empty_range_check (r, inner, outer))
     return true;
-  
-  tree inner = lh.type ();
-  tree outer = rh.type ();
-  gcc_checking_assert (rh.varying_p ());
-  gcc_checking_assert (types_compatible_p (outer, type));
-  signop inner_sign = TYPE_SIGN (inner);
-  signop outer_sign = TYPE_SIGN (outer);
-  unsigned inner_prec = TYPE_PRECISION (inner);
-  unsigned outer_prec = TYPE_PRECISION (outer);
 
-  // Start with an empty range and add subranges.
+  tree inner_type = inner.type ();
+  tree outer_type = outer.type ();
+  gcc_checking_assert (outer.varying_p ());
+  signop inner_sign = TYPE_SIGN (inner_type);
+  unsigned outer_prec = TYPE_PRECISION (outer_type);
+  wide_int outer_min = wi::to_wide (vrp_val_min (outer_type));
+  wide_int outer_max = wi::to_wide (vrp_val_max (outer_type));
+
+  // Start with an empty range and add sub-ranges.
   r.set_undefined ();
-  for (unsigned x = 0; x < lh.num_pairs (); ++x)
+  for (unsigned x = 0; x < inner.num_pairs (); ++x)
     {
-      wide_int lh_lb = lh.lower_bound (x);
-      wide_int lh_ub = lh.upper_bound (x);
+      wide_int inner_lb = inner.lower_bound (x);
+      wide_int inner_ub = inner.upper_bound (x);
 
-      // If the conversion is not truncating we can convert the min
-      // and max values and canonicalize the resulting range.
-      // Otherwise, we can do the conversion if the size of the range
-      // is less than what the precision of the target type can
-      // represent.
-      if (outer_prec >= inner_prec
-	  || wi::rshift (wi::sub (lh_ub, lh_lb),
-			 wi::uhwi (outer_prec, inner_prec),
-			 inner_sign) == 0)
+      // If the conversion fits, we can convert the min and max values
+      // and canonicalize the resulting range.
+      if (conversion_fits_p (inner, x, outer))
 	{
-	  wide_int min = wide_int::from (lh_lb, outer_prec, inner_sign);
-	  wide_int max = wide_int::from (lh_ub, outer_prec, inner_sign);
-	  if (!wi::eq_p (min, wi::min_value (outer_prec, outer_sign))
-	      || !wi::eq_p (max, wi::max_value (outer_prec, outer_sign)))
+	  wide_int min = wide_int::from (inner_lb, outer_prec, inner_sign);
+	  wide_int max = wide_int::from (inner_ub, outer_prec, inner_sign);
+	  if (wi::ne_p (min, outer_min) || wi::ne_p (max, outer_max))
 	    {
 	      widest_irange tmp;
-	      create_possibly_reversed_range (tmp, type, min, max);
+	      create_possibly_reversed_range (tmp, outer_type, min, max);
 	      r.union_ (tmp);
 	      continue;
 	    }
 	}
-      r.set_varying (type);
+      r.set_varying (outer_type);
       break;
     }
   return true;
@@ -1737,20 +1761,16 @@ operator_cast::op1_range (irange &r, tree type,
 			  const irange &op2) const
 {
   tree lhs_type = lhs.type ();
-  widest_irange tmp;
   gcc_checking_assert (types_compatible_p (op2.type(), type));
 
-  // If the precision of the LHS is smaller than the precision of the
-  // RHS, then there would be truncation of the value on the RHS, and
-  // so we can tell nothing about it.
-  if (TYPE_PRECISION (lhs_type) < TYPE_PRECISION (type))
+  if (truncating_cast_p (op2, lhs))
     {
       if (lhs.varying_p ())
 	r.set_varying (type);
       else
         {
-	  // we want to insert the LHS as an unsigned value since it would not
-	  // trigger the signed bit of the larger type..
+	  // We want to insert the LHS as an unsigned value since it
+	  // would not trigger the signed bit of the larger type.
 	  widest_irange converted_lhs = lhs;
 	  range_cast (converted_lhs, unsigned_type_for (lhs_type));
 	  range_cast (converted_lhs, type);
@@ -1786,19 +1806,20 @@ operator_cast::op1_range (irange &r, tree type,
       return true;
     }
 
-  // If the LHS precision is greater than the rhs precision, the LHS
-  // range is restricted to the range of the RHS by this
-  // assignment.
-  if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (type))
+  widest_irange tmp;
+  if (TYPE_PRECISION (lhs_type) == TYPE_PRECISION (type))
+    tmp = lhs;
+  else
     {
+      // The cast is not truncating, and the range is restricted to
+      // the range of the RHS by this assignment.
+      //
       // Cast the range of the RHS to the type of the LHS.
       fold_range (tmp, lhs_type, int_range<1> (type), int_range<1> (lhs_type));
-      // Intersect this with the LHS range will produce the range, which
-      // will be cast to the RHS type before returning.
+      // Intersect this with the LHS range will produce the range,
+      // which will be cast to the RHS type before returning.
       tmp.intersect (lhs);
     }
-  else
-    tmp = lhs;
 
   // Cast the calculated range to the type of the RHS.
   fold_range (r, type, tmp, int_range<1> (type));
