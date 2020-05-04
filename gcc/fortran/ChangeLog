@@ -1,3 +1,14 @@
+2020-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline.
+	2020-03-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93581
+	* resolve.c (gfc_resolve_ref): Modify array refs to be elements
+	if the ref chain ends in INQUIRY_LEN.
+	* trans-array.c (gfc_get_dataptr_offset): Provide the offsets
+	for INQUIRY_RE and INQUIRY_IM.
+
 2020-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93956

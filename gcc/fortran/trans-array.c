@@ -6945,6 +6945,24 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 	      tmp = gfc_build_array_ref (tmp, index, NULL);
 	      break;
 
+	    case REF_INQUIRY:
+	      switch (ref->u.i)
+		{
+		case INQUIRY_RE:
+		  tmp = fold_build1_loc (input_location, REALPART_EXPR,
+					 TREE_TYPE (TREE_TYPE (tmp)), tmp);
+		  break;
+
+		case INQUIRY_IM:
+		  tmp = fold_build1_loc (input_location, IMAGPART_EXPR,
+					 TREE_TYPE (TREE_TYPE (tmp)), tmp);
+		  break;
+
+		default:
+		  break;
+		}
+	      break;
+
 	    default:
 	      gcc_unreachable ();
 	      break;
